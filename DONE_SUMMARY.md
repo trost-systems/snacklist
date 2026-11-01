@@ -446,3 +446,8 @@ Gates gitleaks, lint, flutter, fg-cli pass locally.
 
 **Missing / for Peter.** NEEDS_PETER "Job 57": a look at the self-drawn Apple button on an
 iPhone; retailer logos for the store badge after the Legal Review; job 56 item 6.
+iPhone; job 56's taste calls (items 31 to 34) and item 6.
+
+## Job 58: add your own store (inline in the store picker, Mehr → Läden), PR #176
+
+Households add their own stores right in the add and edit sheets' store options ("+ Neuer Laden": type, Enter, created and picked) or under Mehr → Läden, which now also renames and deletes stores (open items fall back to "Ohne Laden"). Store names are unique per household ignoring case and spacing; a new store starts from the route order with every category. Works live for the partner and over MCP by name. Details: [docs/done/58-add-own-store.md](docs/done/58-add-own-store.md).
