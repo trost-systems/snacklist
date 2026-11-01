@@ -10,6 +10,7 @@ import 'package:family_groceries/list/list_view/item_row.dart';
 import 'package:family_groceries/list/list_view/sections.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/store_badge.dart';
+import 'package:family_groceries/list/store_name_field.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hummlist_widgetbook/src/fixtures.dart' as fixtures;
@@ -42,6 +43,36 @@ final appComponents = [
   component(_path, 'FoldoutChips', [
     plain('Laden und Kategorie', (context) => const _Chips()),
     plain('Geändert', (context) => const _Chips(changed: true)),
+    plain('Läden offen', (context) => const _Chips(storesOpen: true)),
+    plain(
+      'Viele Läden (Suche)',
+      (context) => _Chips(storesOpen: true, catalog: fixtures.manyStores),
+    ),
+  ]),
+  component(_path, 'StoreNameField', [
+    plain(
+      'Neuer Laden',
+      (context) => SizedBox(
+        width: 390,
+        child: StoreNameField(
+          initial: 'Rewe',
+          confirmLabel: AppLocalizations.of(context).storeCreateConfirm,
+          onConfirm: (_) async => false,
+          onCancel: () {},
+        ),
+      ),
+    ),
+    plain(
+      'Leer',
+      (context) => SizedBox(
+        width: 390,
+        child: StoreNameField(
+          confirmLabel: AppLocalizations.of(context).storeCreateConfirm,
+          onConfirm: (_) async => false,
+          onCancel: () {},
+        ),
+      ),
+    ),
   ]),
   component(_path, 'Liste', [
     plain('Ausschnitt', (context) => const _ListExcerpt()),
@@ -76,7 +107,11 @@ class const _Badges(final List<Store> stores) extends StatelessWidget {
   );
 }
 
-class const _Chips({final bool changed = false}) extends StatefulWidget {
+class const _Chips({
+  final bool changed = false,
+  final bool storesOpen = false,
+  final Catalog? catalog,
+}) extends StatefulWidget {
   @override
   State<_Chips> createState() => _ChipsState();
 }
@@ -91,11 +126,14 @@ class _ChipsState() extends State<_Chips> {
     return SizedBox(
       width: 390,
       child: FoldoutChips(
-        catalog: fixtures.catalog,
+        catalog: widget.catalog ?? fixtures.catalog,
         storeId: _store,
         categoryId: _category,
         storeLabel: l10n.noStore,
         categoryLabel: l10n.categoryAuto,
+        storesOpen: widget.storesOpen,
+        onCreateStore: (name) async =>
+            Store(id: 'story-$name', name: name, sortOrder: 99),
         storeChanged: widget.changed,
         categoryChanged: widget.changed,
         onStore: (id) => setState(() => _store = id),

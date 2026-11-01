@@ -54,6 +54,17 @@ final catalog = Catalog(
   stores: [seededStores[0], seededStores[1], ownStores[0]],
 );
 
+/// Over five stores: the store options get a search field.
+final manyStores = Catalog(
+  categories: catalog.categories,
+  stores: [
+    ...seededStores,
+    ...ownStores,
+    for (final (i, name) in const ['Penny', 'Netto', 'Kaufland'].indexed)
+      Store(id: name.toLowerCase(), name: name, sortOrder: 100 + i * 10),
+  ],
+);
+
 Item item(
   String id,
   String name, {

@@ -47,6 +47,9 @@ class const FoldoutChips({
   /// picked. Null when it could not be saved.
   final Future<Store?> Function(String name)? onCreateStore,
 
+  /// Shows the store options from the start (Widgetbook stories).
+  final bool storesOpen = false,
+
   /// Outlines a chip whose value the user changed.
   final bool storeChanged = false,
   final bool categoryChanged = false,
@@ -57,7 +60,7 @@ class const FoldoutChips({
 }
 
 class _FoldoutChipsState() extends State<FoldoutChips> {
-  _Fold? _fold;
+  late _Fold? _fold = widget.storesOpen ? _Fold.store : null;
 
   void _toggle(_Fold fold) =>
       setState(() => _fold = _fold == fold ? null : fold);
