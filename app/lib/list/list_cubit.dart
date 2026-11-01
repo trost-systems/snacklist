@@ -72,6 +72,8 @@ final class const ItemRejected(final String itemName) extends Rejected;
 
 final class const NameTaken(final String name) extends Rejected;
 
+final class const StoreNameTaken(final String name) extends Rejected;
+
 /// A duplicate-hint merge could not be done: an item is gone or no longer
 /// open, or the merged quantity would be too long. Both items stay.
 final class const MergeRefused(final String name) extends Rejected;
@@ -81,6 +83,9 @@ final class const CatalogRejected() extends Rejected;
 
 /// A store or category order change made offline; nothing changed.
 final class const NeedsConnection() extends Rejected;
+
+/// A store added, renamed or deleted offline; nothing changed.
+final class const StoreNeedsConnection() extends Rejected;
 
 /// Job 32b: [added] just landed, and [onList] (open, another spelling or a
 /// synonym of it) was on the list already. The UI offers to merge them.
@@ -514,11 +519,87 @@ class ListCubit(
   Future<void> renameCategory(String id, String name) => _changeCatalog(
     state.catalog.withName(id, name),
     () => _repo.renameCategory(id, name),
-    name: name,
+    taken: NameTaken(name),
   );
 
-  Future<void> createCategory(String name) =>
-      _changeCatalog(null, () => _repo.createCategory(name), name: name);
+  Future<void> createCategory(String name) => _changeCatalog(
+    null,
+    () => _repo.createCategory(name),
+    taken: NameTaken(name),
+  );
+
+  /// The household's store named [name] (any case or spacing), created after
+  /// the others when there is none, so that creating and picking a store is
+  /// one step. Null when there is no name or it could not be saved; the user
+  /// is told why. Not queued like item writes: offline it is refused.
+  Future<Store?> addStore(String name) async {
+    final clean = name.trim().replaceAll(RegExp(r'\s+'), ' ');
+    if (clean.isEmpty) {
+      return null;
+    }
+    if (state.catalog.storeNamed(clean) case final existing?) {
+      return existing;
+    }
+    if (state.connection == ConnectionStatus.offline) {
+      _report(const StoreNeedsConnection());
+      return null;
+    }
+    final String id;
+    try {
+      id = await _repo.addStore(clean);
+    } on Object {
+      _report(const CatalogRejected());
+      await _reloadCatalog();
+      return null;
+    }
+    // Someone else may have made it a moment ago, under another spelling.
+    final store =
+        state.catalog.store(id) ??
+        Store(
+          id: id,
+          name: clean,
+          sortOrder: (state.catalog.stores.lastOrNull?.sortOrder ?? 0) + 10,
+        );
+    if (state.catalog.store(id) == null) {
+      emit(state.copyWith(catalog: state.catalog.withStore(store)));
+    }
+    unawaited(_reloadCatalog());
+    return store;
+  }
+
+  /// Whether the server took it.
+  Future<bool> renameStore(String id, String name) {
+    final clean = name.trim().replaceAll(RegExp(r'\s+'), ' ');
+    return _changeStores(
+      state.catalog.withStoreName(id, clean),
+      () => _repo.renameStore(id, clean),
+      taken: StoreNameTaken(clean),
+    );
+  }
+
+  /// Its items fall back to no store on the server; a resync brings them.
+  Future<bool> deleteStore(String id) async {
+    final saved = await _changeStores(
+      state.catalog.withoutStore(id),
+      () => _repo.deleteStore(id),
+    );
+    if (saved) {
+      await resync();
+    }
+    return saved;
+  }
+
+  Future<bool> _changeStores(
+    Catalog optimistic,
+    Future<void> Function() write, {
+    Rejected? taken,
+  }) async {
+    if (state.connection == ConnectionStatus.offline) {
+      _report(const StoreNeedsConnection());
+      return false;
+    }
+    return await _changeCatalog(optimistic, write, taken: taken);
+  }
 
   Future<void> reorderCategories(List<String> ids) async {
     final before = [
@@ -592,7 +673,7 @@ class ListCubit(
   Future<bool> _changeCatalog(
     Catalog? optimistic,
     Future<void> Function() write, {
-    String? name,
+    Rejected? taken,
   }) async {
     final before = state.catalog;
     if (optimistic != null) {
@@ -607,8 +688,8 @@ class ListCubit(
         emit(state.copyWith(catalog: before));
       }
       _report(
-        e is RejectedOp && e.nameTaken && name != null
-            ? NameTaken(name)
+        e is RejectedOp && e.nameTaken && taken != null
+            ? taken
             : const CatalogRejected(),
       );
     }

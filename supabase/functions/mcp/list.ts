@@ -28,12 +28,15 @@ export function fold(text: string): string {
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
- * Finds one entry by id, exact name, or a unique partial name. Names are matched folded, so
- * "kuehlregal", "Kühlregal" and "kühl" all find "Kühlregal".
+ * Finds one entry by id, its name in any case, or a unique folded or partial name: "kuehlregal",
+ * "Kühlregal" and "kühl" all find "Kühlregal", and "aldi süd" finds "Aldi Süd" next to "Aldi Sued".
  */
 export function resolve<T extends Named>(options: readonly T[], query: string, what: string): T {
   const byId = UUID.test(query) ? options.find((o) => o.id === query.toLowerCase()) : undefined;
   if (byId) return byId;
+  const key = query.trim().replace(/\s+/g, ' ').toLowerCase();
+  const named = options.filter((o) => o.name.trim().replace(/\s+/g, ' ').toLowerCase() === key);
+  if (named.length === 1) return named[0];
   const q = fold(query);
   const exact = options.filter((o) => fold(o.name) === q);
   if (exact.length === 1) return exact[0];

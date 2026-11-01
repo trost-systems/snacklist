@@ -1394,6 +1394,90 @@ abstract class AppLocalizations {
   /// **'{store} verschieben'**
   String dragStore(String store);
 
+  /// + row in the store picker and on the stores screen
+  ///
+  /// In de, this message translates to:
+  /// **'Neuer Laden'**
+  String get storeNew;
+
+  /// a11y label of the + row
+  ///
+  /// In de, this message translates to:
+  /// **'Neuen Laden anlegen'**
+  String get storeNewLabel;
+
+  /// the inline new-store or rename field
+  ///
+  /// In de, this message translates to:
+  /// **'Name des Ladens'**
+  String get storeNameHint;
+
+  /// check button of the inline new-store field
+  ///
+  /// In de, this message translates to:
+  /// **'Laden anlegen'**
+  String get storeCreateConfirm;
+
+  /// screen-reader announcement after create-and-select in the store picker
+  ///
+  /// In de, this message translates to:
+  /// **'{store} angelegt und ausgewählt'**
+  String storeAddedAndSelected(String store);
+
+  /// screen-reader announcement after adding a store on the stores screen
+  ///
+  /// In de, this message translates to:
+  /// **'{store} angelegt'**
+  String storeAdded(String store);
+
+  /// search field on top of the store picker
+  ///
+  /// In de, this message translates to:
+  /// **'Läden durchsuchen'**
+  String get storeSearch;
+
+  /// rename action of a store
+  ///
+  /// In de, this message translates to:
+  /// **'{store} umbenennen'**
+  String storeRename(String store);
+
+  /// delete action of a store
+  ///
+  /// In de, this message translates to:
+  /// **'{store} löschen'**
+  String storeDelete(String store);
+
+  /// delete confirmation title
+  ///
+  /// In de, this message translates to:
+  /// **'{store} löschen?'**
+  String storeDeleteTitle(String store);
+
+  /// rename onto another store's name
+  ///
+  /// In de, this message translates to:
+  /// **'Einen Laden „{name}“ gibt es schon.'**
+  String storeNameTaken(String name);
+
+  /// store add/rename/delete while offline
+  ///
+  /// In de, this message translates to:
+  /// **'Läden lassen sich nur mit Verbindung anlegen, umbenennen oder löschen.'**
+  String get storesNeedConnection;
+
+  /// stores screen of a household without stores
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Läden. Leg einen an, dann sortiert die Liste deine Artikel nach seinem Laufweg.'**
+  String get storesEmpty;
+
+  /// delete confirmation: how many open items lose their store
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =0{In diesem Laden sind keine offenen Artikel.} =1{1 offener Artikel kommt zu „Ohne Laden“.} other{{count} offene Artikel kommen zu „Ohne Laden“.}} Sein Laufweg geht mit.'**
+  String storeDeleteBody(int count);
+
   /// More: under Zugänge
   ///
   /// In de, this message translates to:

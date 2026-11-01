@@ -37,6 +37,15 @@ abstract interface class ListRepository() {
   /// [ids] is every store, in the new order.
   Future<void> reorderStores(List<String> ids);
 
+  /// The id of the household's store named [name] (any case or spacing),
+  /// created after the others when there is none.
+  Future<String> addStore(String name);
+
+  Future<void> renameStore(String id, String name);
+
+  /// Its items fall back to no store.
+  Future<void> deleteStore(String id);
+
   /// Splits one typed entry into its fields with the server's parser.
   /// Throws when the server can't be reached.
   Future<ParsedEntry> parse(String text);
@@ -173,6 +182,27 @@ class SupabaseListRepository(
       'reorder_stores',
       params: {'p_household': householdId, 'p_ids': ids},
     ),
+  );
+
+  @override
+  Future<String> addStore(String name) => _refusable(
+    () => _client.rpc<String>(
+      'add_store',
+      params: {'p_household': householdId, 'p_name': name},
+    ),
+  );
+
+  @override
+  Future<void> renameStore(String id, String name) => _refusable(
+    () => _client.rpc<void>(
+      'rename_store',
+      params: {'p_store': id, 'p_name': name},
+    ),
+  );
+
+  @override
+  Future<void> deleteStore(String id) => _refusable(
+    () => _client.rpc<void>('delete_store', params: {'p_store': id}),
   );
 
   @override

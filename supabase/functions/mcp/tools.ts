@@ -65,7 +65,9 @@ function run(auth: Auth, gate: Gate, lang: Lang, body: (tx: Tx) => Promise<unkno
 const itemRef = z.string().min(1).max(120).describe(
   'Name des Eintrags auf der Liste (z. B. "Milch") oder seine id',
 );
-const storeName = z.string().min(1).max(60).describe('Laden, z. B. "dm", "Lidl", "Edeka"');
+const storeName = z.string().min(1).max(60).describe(
+  'Ein Laden des Haushalts (list_stores), z. B. "dm", "Lidl" oder ein eigener wie "Rewe"',
+);
 const categoryName = z.string().min(1).max(60).describe(
   'Kategorie, z. B. "Obst & Gemüse" oder "Kühlregal"',
 );

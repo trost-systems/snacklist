@@ -309,6 +309,98 @@ void main() {
     );
   });
 
+  group('own stores', () {
+    List<String> storeNames() => [
+      for (final s in cubit.state.catalog.stores) s.name,
+    ];
+
+    test('a new store is created, shown last and returned', () async {
+      final store = await cubit.addStore('  Rewe   City ');
+      expect(store?.name, 'Rewe City');
+      expect(storeNames(), ['dm', 'Lidl', 'Rewe City']);
+      await settle();
+      expect(repo.catalogCalls, ['addStore(Rewe City)']);
+      expect(storeNames(), ['dm', 'Lidl', 'Rewe City']);
+    });
+
+    test('a name the household has, in any case, picks that store', () async {
+      final store = await cubit.addStore(' LIDL ');
+      expect(store?.id, 'lidl');
+      expect(repo.catalogCalls, isEmpty);
+    });
+
+    test('an empty name makes nothing', () async {
+      expect(await cubit.addStore('   '), isNull);
+      expect(repo.catalogCalls, isEmpty);
+    });
+
+    test('a store someone else just made under another spelling is the one '
+        'returned', () async {
+      repo.stores = [
+        ...repo.stores,
+        const Store(id: 'rewe', name: 'REWE', sortOrder: 30),
+      ];
+      final store = await cubit.addStore('Rewe');
+      expect(store?.id, 'rewe');
+      await settle();
+      expect(storeNames(), ['dm', 'Lidl', 'REWE']);
+    });
+
+    test('offline, adding, renaming and deleting a store is refused', () async {
+      final rejections = <Rejected>[];
+      final sub = cubit.rejections.listen(rejections.add);
+      repo.online = false;
+      await cubit.resync();
+      expect(await cubit.addStore('Rewe'), isNull);
+      expect(await cubit.renameStore('dm', 'Rossmann'), isFalse);
+      expect(await cubit.deleteStore('dm'), isFalse);
+      await settle();
+      expect(storeNames(), ['dm', 'Lidl']);
+      expect(rejections, [
+        isA<StoreNeedsConnection>(),
+        isA<StoreNeedsConnection>(),
+        isA<StoreNeedsConnection>(),
+      ]);
+      await sub.cancel();
+    });
+
+    test('offline, a store the household has is still picked', () async {
+      repo.online = false;
+      await cubit.resync();
+      expect((await cubit.addStore('dm'))?.id, 'dm');
+    });
+
+    test('a rename shows at once; a preset store renamed is no longer its '
+        'chain', () async {
+      final saved = cubit.renameStore('dm', ' Rossmann ');
+      expect(storeNames(), ['Rossmann', 'Lidl']);
+      expect(await saved, isTrue);
+      expect(repo.catalogCalls, ['renameStore(dm, Rossmann)']);
+      expect(cubit.state.catalog.store('dm')?.seedKey, isNull);
+    });
+
+    test("renaming onto another store's name is refused and undone", () async {
+      final rejections = <Rejected>[];
+      final sub = cubit.rejections.listen(rejections.add);
+      expect(await cubit.renameStore('dm', 'lidl'), isFalse);
+      await settle();
+      expect(storeNames(), ['dm', 'Lidl']);
+      expect(
+        rejections.single,
+        isA<StoreNameTaken>().having((r) => r.name, 'name', 'lidl'),
+      );
+      await sub.cancel();
+    });
+
+    test('a deleted store goes, and its items have no store', () async {
+      final milk = repo.remoteAdd('Milch', storeId: 'lidl');
+      await cubit.resync();
+      expect(await cubit.deleteStore('lidl'), isTrue);
+      expect(storeNames(), ['dm']);
+      expect(cubit.state.items[milk.id]!.storeId, isNull);
+    });
+  });
+
   test('a store reorder shows at once and is saved', () async {
     final saved = cubit.reorderStores(['lidl', 'dm']);
     expect([for (final s in cubit.state.catalog.stores) s.id], ['lidl', 'dm']);

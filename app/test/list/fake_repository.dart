@@ -146,6 +146,43 @@ class FakeRepository() implements ListRepository {
     stores = Catalog(stores: stores).withStoreOrder(ids).stores;
   }
 
+  @override
+  Future<String> addStore(String name) async {
+    _writeCatalog('addStore($name)');
+    if (Catalog(stores: stores).storeNamed(name) case final existing?) {
+      return existing.id;
+    }
+    final id = 'new-$name';
+    stores = [
+      ...stores,
+      Store(id: id, name: name, sortOrder: stores.last.sortOrder + 10),
+    ];
+    return id;
+  }
+
+  @override
+  Future<void> renameStore(String id, String name) async {
+    if (stores.any(
+      (s) => s.id != id && storeNameKey(s.name) == storeNameKey(name),
+    )) {
+      throw const RejectedOp('store_name_taken', nameTaken: true);
+    }
+    _writeCatalog('renameStore($id, $name)');
+    stores = Catalog(stores: stores).withStoreName(id, name).stores;
+  }
+
+  @override
+  Future<void> deleteStore(String id) async {
+    _writeCatalog('deleteStore($id)');
+    stores = [...stores.where((s) => s.id != id)];
+    layout = [...layout.where((row) => row.storeId != id)];
+    for (final item in [...rows.values]) {
+      if (item.storeId == id) {
+        rows[item.id] = item.copyWith(storeId: () => null);
+      }
+    }
+  }
+
   /// What parse_item answers for a text; unknown texts parse to their name.
   final parsed = <String, ParsedEntry>{};
 

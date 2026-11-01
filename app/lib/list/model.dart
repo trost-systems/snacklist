@@ -27,6 +27,17 @@ class const Category({
   };
 }
 
+/// The longest store name the household can give (`public.store_name`); the
+/// table keeps longer names households already had.
+const maxStoreNameLength = 40;
+
+/// The identity of a store name, as `public.store_name_key`: trimmed, inner
+/// whitespace collapsed, case folded. Two stores never share it.
+String storeNameKey(String name) =>
+    name.trim().replaceAll(RegExp(r'\s+'), ' ').toLowerCase();
+
+// Logos: a retailer logo would hang off Store once its legal check is done
+// (docs/DECISIONS.md, "Job 58"); StoreBadge is where it shows.
 @immutable
 class const Store({
   required final String id,
@@ -114,6 +125,49 @@ class const Catalog({
       categories.where((c) => c.seedKey == 'other').firstOrNull;
 
   Store? store(String id) => stores.where((s) => s.id == id).firstOrNull;
+
+  /// The store with [name], in any case or spacing.
+  Store? storeNamed(String name) {
+    final key = storeNameKey(name);
+    return stores.where((s) => storeNameKey(s.name) == key).firstOrNull;
+  }
+
+  /// [store] added after the others; its layout follows the route order.
+  Catalog withStore(Store store) => Catalog(
+    categories: categories,
+    stores: [...stores, store],
+    layout: layout,
+    members: members,
+  );
+
+  /// A preset store given another name stops being its chain, as
+  /// `public.rename_store` does.
+  Catalog withStoreName(String storeId, String name) => Catalog(
+    categories: categories,
+    stores: [
+      for (final s in stores)
+        if (s.id == storeId)
+          Store(
+            id: s.id,
+            name: name,
+            sortOrder: s.sortOrder,
+            seedKey: storeNameKey(name) == storeNameKey(s.name)
+                ? s.seedKey
+                : null,
+          )
+        else
+          s,
+    ],
+    layout: layout,
+    members: members,
+  );
+
+  Catalog withoutStore(String storeId) => Catalog(
+    categories: categories,
+    stores: [...stores.where((s) => s.id != storeId)],
+    layout: [...layout.where((row) => row.storeId != storeId)],
+    members: members,
+  );
 
   /// The store order is the position in [ids].
   Catalog withStoreOrder(List<String> ids) {

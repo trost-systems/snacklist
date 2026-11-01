@@ -46,3 +46,31 @@ Deno.test('ambiguous and unknown names are tool errors that name the options', (
   );
   assertThrows(() => resolve(items, '!!!', 'Eintrag'), ToolError);
 });
+
+const stores = [
+  { id: 'b0000000-0000-0000-0000-000000000001', name: 'dm' },
+  { id: 'b0000000-0000-0000-0000-000000000002', name: 'Rewe City' },
+  { id: 'b0000000-0000-0000-0000-000000000003', name: 'Aldi Süd' },
+  { id: 'b0000000-0000-0000-0000-000000000004', name: 'Aldi Sued' },
+];
+
+Deno.test("a household's own stores resolve like the preset ones", () => {
+  assertEquals(resolve(stores, 'rewe  city', 'Laden').name, 'Rewe City');
+  assertEquals(resolve(stores, 'Rewe', 'Laden').name, 'Rewe City');
+  assertEquals(resolve(stores, 'DM', 'Laden').name, 'dm');
+});
+
+Deno.test('a store name in any case wins over another that only folds the same', () => {
+  assertEquals(resolve(stores, 'aldi süd', 'Laden').id, 'b0000000-0000-0000-0000-000000000003');
+  assertEquals(resolve(stores, 'ALDI SUED', 'Laden').id, 'b0000000-0000-0000-0000-000000000004');
+  const ambiguous = assertThrows(() => resolve(stores, 'aldi', 'Laden'), ToolError);
+  assertEquals(ambiguous.message, 'Laden „aldi“ ist nicht eindeutig: Aldi Süd, Aldi Sued.');
+});
+
+Deno.test('a deleted or renamed store is the friendly unknown-store error', () => {
+  const unknown = assertThrows(() => resolve(stores, 'Lidl', 'Laden'), ToolError);
+  assertEquals(
+    unknown.message,
+    'Laden „Lidl“ nicht gefunden. Vorhanden: dm, Rewe City, Aldi Süd, Aldi Sued.',
+  );
+});
