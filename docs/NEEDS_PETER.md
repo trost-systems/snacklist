@@ -1054,3 +1054,23 @@ Built as decided on 2026-10-31 (DECISIONS "Job 43"), on RevenueCat. Four calls a
    RevenueCat (NEEDS_LEAD Job 43 lists the affected sentences). Then the Lead turns it on, first in
    your own build.
 
+
+## Job 53: approve the first homepage (2026-11-01)
+
+PR #157 adds the landing pages `/de` and `/en` and points `/` at them. It is not merged: every
+push to `main` goes live on hummlist.com.
+
+1. **Look at the preview** (Vercel login):
+   https://hummlist-site-git-job-53-homepage-v1-peter-trost.vercel.app/de and `/en`, in light and
+   dark mode, on the phone and the desktop. The guides, the changelog and the legal pages now
+   share the new header and footer; their texts are unchanged.
+2. **Copy is a draft.** `site/COPY_NEEDED.md` lists every new or changed string (DE and EN) for
+   Hummlist Launch. Approve them as they are, or have Launch change them in
+   `site/content/landing/copy.yml`. The Siri card says „Bald“ / "Coming soon" until native Siri
+   (job 51) is in the stores.
+3. **Merge** when you're happy: on the box, under the merge lock,
+   `~/groceries-ops/bin/merge-lock bash -c 'scripts/push-pr.sh && scripts/merge-pr.sh --wait 157'`.
+   The production build then serves `/de` and `/en`, and `/` redirects there. `noindex` stays on
+   every response until you decide on the beta launch.
+4. **Job 54's demo videos** drop into the three slots without a code change
+   (`site/public/media/README.md`); until then the slots show stills.

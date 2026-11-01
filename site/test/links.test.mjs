@@ -4,7 +4,7 @@ import { buildSite, guide, legal, hrefs, alternates, htmlRoutes } from './helper
 
 const SITE = 'https://hummlist.com';
 const switchLink = (doc) => {
-  const a = doc.querySelector('header nav a');
+  const a = doc.querySelector('header nav.lang a');
   return { href: a.getAttribute('href'), lang: a.getAttribute('lang'), hreflang: a.getAttribute('hreflang') };
 };
 
@@ -48,20 +48,43 @@ test('a guide without translation links to the other index and has no alternate 
   assert.deepEqual(alternates(de), { de: `${SITE}/de/anleitungen/nur-deutsch`, 'x-default': `${SITE}/de/anleitungen/nur-deutsch` });
 });
 
-test('the site name links to the locale index', () => {
+test('the site name links to the landing page of its language, in the header and the footer', () => {
   const { page } = buildSite();
-  assert.equal(page('/en/imprint').querySelector('header a').getAttribute('href'), '/en/guides');
-  assert.equal(page('/impressum').querySelector('header a').getAttribute('href'), '/de/anleitungen');
+  for (const [route, landing] of [['/en/imprint', '/en'], ['/impressum', '/de'], ['/de/anleitungen/alexa', '/de'], ['/en', '/en']]) {
+    assert.equal(page(route).querySelector('header a.brand').getAttribute('href'), landing, route);
+    assert.equal(page(route).querySelector('footer a.brand').getAttribute('href'), landing, route);
+  }
 });
 
-const footer = (doc) => doc.querySelectorAll('footer a').map((a) => [a.text, a.getAttribute('href')]);
+test('every page links the guides, the changelog and the web app in the header', () => {
+  const { outDir, page } = buildSite();
+  for (const route of htmlRoutes(outDir).filter((r) => r !== '/' && r !== '/404')) {
+    const doc = page(route);
+    const de = doc.querySelector('html').getAttribute('lang') === 'de';
+    const nav = doc.querySelectorAll('header nav.nav a').map((a) => [a.text, a.getAttribute('href')]);
+    assert.deepEqual(nav, de ? [['Anleitungen', '/de/anleitungen'], ['Neuigkeiten', '/de/changelog']] : [['Guides', '/en/guides'], ["What's new", '/en/changelog']], route);
+    assert.equal(doc.querySelector('header a.header-cta').getAttribute('href'), 'https://app.hummlist.com', route);
+    assert.equal(doc.querySelector('a.skip').getAttribute('href'), '#inhalt', route);
+    assert.ok(doc.querySelector('main#inhalt'), route);
+  }
+  assert.equal(page('/de/anleitungen').querySelector('header [aria-current="page"]').getAttribute('href'), '/de/anleitungen');
+  assert.equal(page('/en/changelog').querySelector('header [aria-current="page"]').getAttribute('href'), '/en/changelog');
+  assert.equal(page('/de').querySelector('header [aria-current]'), null);
+});
+
+const SITE_LINKS = {
+  de: [['Anleitungen', '/de/anleitungen'], ['Neuigkeiten', '/de/changelog']],
+  en: [['Guides', '/en/guides'], ["What's new", '/en/changelog']],
+};
+const footer = (doc) => doc.querySelectorAll('footer nav a').map((a) => [a.text, a.getAttribute('href')]);
 
 const LEGAL_PATHS = ['/datenschutz', '/en/privacy', '/privacy', '/support', '/en/support'];
 
 test('with nothing published the footer links only the imprint', () => {
   const { outDir, page } = buildSite({ config: { privacyPublished: false, supportPublished: false } });
-  assert.deepEqual(footer(page('/de/anleitungen/siri-kurzbefehl')), [['Impressum', '/impressum'], ['Neuigkeiten', '/de/changelog']]);
-  assert.deepEqual(footer(page('/en/guides')), [['Imprint', '/en/imprint'], ["What's new", '/en/changelog']]);
+  assert.deepEqual(footer(page('/de/anleitungen/siri-kurzbefehl')), [...SITE_LINKS.de, ['Impressum', '/impressum']]);
+  assert.deepEqual(footer(page('/en/guides')), [...SITE_LINKS.en, ['Imprint', '/en/imprint']]);
+  assert.deepEqual(footer(page('/de')), [...SITE_LINKS.de, ['Impressum', '/impressum']]);
   for (const route of htmlRoutes(outDir)) {
     const links = page(route).querySelectorAll('footer a').map((a) => a.getAttribute('href'));
     for (const path of LEGAL_PATHS) assert.ok(!links.includes(path), `${route} links ${path} in the footer`);
@@ -74,8 +97,8 @@ test('the published privacy policy is in the footer of every page, support is no
   for (const route of htmlRoutes(outDir).filter((r) => r !== '/' && r !== '/404')) {
     const locale = page(route).querySelector('html').getAttribute('lang');
     const expected = locale === 'de'
-      ? [['Impressum', '/impressum'], ['Datenschutz', '/datenschutz'], ['Neuigkeiten', '/de/changelog']]
-      : [['Imprint', '/en/imprint'], ['Privacy', '/en/privacy'], ["What's new", '/en/changelog']];
+      ? [...SITE_LINKS.de, ['Impressum', '/impressum'], ['Datenschutz', '/datenschutz']]
+      : [...SITE_LINKS.en, ['Imprint', '/en/imprint'], ['Privacy', '/en/privacy']];
     assert.deepEqual(footer(page(route)), expected, route);
   }
 });
@@ -94,8 +117,8 @@ test('with support published and its page present the footer links it too', () =
     config: { privacyPublished: true, supportPublished: true },
     files: { 'legal/support.md': legal({ locale: 'de', path: '/support', key: 'support' }) },
   });
-  assert.deepEqual(footer(page('/de/anleitungen')), [['Impressum', '/impressum'], ['Datenschutz', '/datenschutz'], ['Hilfe', '/support'], ['Neuigkeiten', '/de/changelog']]);
-  assert.deepEqual(footer(page('/en/guides')), [['Imprint', '/en/imprint'], ['Privacy', '/en/privacy'], ['Support', '/en/support'], ["What's new", '/en/changelog']]);
+  assert.deepEqual(footer(page('/de/anleitungen')), [...SITE_LINKS.de, ['Impressum', '/impressum'], ['Datenschutz', '/datenschutz'], ['Hilfe', '/support']]);
+  assert.deepEqual(footer(page('/en/guides')), [...SITE_LINKS.en, ['Imprint', '/en/imprint'], ['Privacy', '/en/privacy'], ['Support', '/en/support']]);
 });
 
 test('a published flag without its page fails the build on the broken link', () => {

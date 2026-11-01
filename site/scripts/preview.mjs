@@ -16,6 +16,12 @@ const TYPES = {
   '.txt': 'text/plain; charset=utf-8',
   '.json': 'application/json',
   '.xml': 'application/xml',
+  '.js': 'text/javascript; charset=utf-8',
+  '.webp': 'image/webp',
+  '.woff2': 'font/woff2',
+  '.webm': 'video/webm',
+  '.mp4': 'video/mp4',
+  '.vtt': 'text/vtt; charset=utf-8',
 };
 
 // Sources here are plain paths or regex groups like "/(.*)", which path-to-regexp treats like a regex.

@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>stores</title>
+<link rel="stylesheet" href="scenes.css">
+<style>
+  .chips {
+    position: absolute;
+    left: 32px;
+    top: 50%;
+    translate: 0 -50%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .chip {
+    --h: 44px;
+    font-family: var(--hl-font-family-display);
+    font-size: 18px;
+    font-weight: var(--hl-font-weight-heavy);
+    filter: drop-shadow(0 2px 0 var(--hl-color-edge));
+  }
+
+  .chip.hx--honey {
+    filter: drop-shadow(0 var(--hl-depth-edge) 0 var(--hl-color-edge));
+  }
+
+  .route {
+    position: absolute;
+    left: 184px;
+    top: 26px;
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .route li {
+    --h: 48px;
+    width: fit-content;
+    gap: 10px;
+    padding-left: calc(var(--h) * var(--hl-shape-hex-tip) - 2px);
+    padding-right: calc(var(--h) * var(--hl-shape-hex-tip) + var(--hl-space-3));
+    font-size: 18px;
+    font-weight: var(--hl-font-weight-bold);
+    filter: drop-shadow(0 2px 0 var(--hl-color-edge));
+  }
+
+  .route li:nth-child(2) { margin-left: 20px; }
+  .route li:nth-child(3) { margin-left: 40px; }
+  .route li:nth-child(4) { margin-left: 60px; }
+  .route li:nth-child(5) { margin-left: 80px; }
+
+  .step {
+    --s: 32px;
+    font-family: var(--hl-font-family-display);
+    font-size: 15px;
+    font-weight: var(--hl-font-weight-heavy);
+    line-height: 1;
+  }
+
+  .route .emo { font-size: 18px; }
+
+  @media (max-width: 400px) {
+    .chips { left: 24px; right: 24px; top: 38px; translate: none; flex-direction: row; gap: 10px; }
+    .route { left: 24px; top: 112px; gap: 14px; }
+    .route li:nth-child(2) { margin-left: 12px; }
+    .route li:nth-child(3) { margin-left: 24px; }
+    .route li:nth-child(4) { margin-left: 36px; }
+    .route li:nth-child(5) { margin-left: 48px; }
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="chips">
+    <span class="hx chip">dm</span>
+    <span class="hx chip">Lidl</span>
+    <span class="hx hx--honey chip">Edeka</span>
+  </div>
+  <ol class="route">
+    <li class="hx"><span class="hxp step">1</span><span class="emo">🥕</span><span data-t="produce"></span></li>
+    <li class="hx"><span class="hxp step">2</span><span class="emo">🥖</span><span data-t="bakery"></span></li>
+    <li class="hx"><span class="hxp step">3</span><span class="emo">🥛</span><span data-t="chilled"></span></li>
+    <li class="hx"><span class="hxp step">4</span><span class="emo">🥫</span><span data-t="pantry"></span></li>
+    <li class="hx"><span class="hxp step">5</span><span class="emo">🧊</span><span data-t="frozen"></span></li>
+  </ol>
+</div>
+<script>
+  globalThis.STRINGS = {
+    de: {
+      produce: 'Obst &amp; Gemüse', bakery: 'Brot &amp; Backwaren', chilled: 'Kühlregal',
+      pantry: 'Vorrat &amp; Konserven', frozen: 'Tiefkühl',
+    },
+    en: {
+      produce: 'Fruit &amp; veg', bakery: 'Bread &amp; bakery', chilled: 'Chilled',
+      pantry: 'Pantry', frozen: 'Frozen',
+    },
+  };
+</script>
+<script src="scene.js"></script>
+</body>
+</html>

@@ -185,12 +185,12 @@ test('the two changelog pages pair with each other', () => {
     assert.equal(doc.querySelector('link[rel="canonical"]').getAttribute('href'), `${SITE}${route}`);
     assert.equal(meta(doc, 'og:url'), `${SITE}${route}`);
     assert.equal(meta(doc, 'og:type'), 'website');
-    const link = doc.querySelector('header nav a');
+    const link = doc.querySelector('header nav.lang a');
     assert.deepEqual([link.getAttribute('href'), link.getAttribute('hreflang')], [other, lang]);
   }
 });
 
-test('every page with a footer links the changelog of its language last', () => {
+test('every page with a footer links the changelog of its language', () => {
   for (const env of [{}, PROD]) {
     const { outDir, page } = buildSite({ env });
     const routes = htmlRoutes(outDir).filter((r) => r !== '/' && r !== '/404');
@@ -199,9 +199,9 @@ test('every page with a footer links the changelog of its language last', () => 
     }
     for (const route of routes) {
       const doc = page(route);
-      const last = doc.querySelectorAll('footer a').at(-1);
+      const links = doc.querySelectorAll('footer nav a').map((a) => [a.text, a.getAttribute('href')]);
       const expected = doc.querySelector('html').getAttribute('lang') === 'de' ? ['Neuigkeiten', DE] : ["What's new", EN];
-      assert.deepEqual([last.text, last.getAttribute('href')], expected, route);
+      assert.ok(links.some((l) => l.join() === expected.join()), route);
     }
     assert.ok(hrefs(page('/impressum'), 'footer a').includes(DE));
   }

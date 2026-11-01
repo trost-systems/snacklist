@@ -1,0 +1,558 @@
+/* The landing pages /de and /en: the 6b homepage's colour blocks (cobalt hero, lemon, cobalt
+   mist and mint feature cards, tomato voice block, cobalt privacy block, lemon test block), each
+   naming its own text colour so dark mode keeps the fields. Built on styles.css and tokens.css. */
+
+.landing main {
+  display: grid;
+  gap: var(--hl-space-4);
+}
+
+.display {
+  margin: 0;
+  font-family: var(--hl-type-display-family);
+  font-size: clamp(2.5rem, 6vw + 1rem, 3.5rem);
+  font-weight: var(--hl-type-display-weight);
+  line-height: var(--hl-type-display-line);
+  letter-spacing: var(--hl-type-headline-l-tracking);
+  text-wrap: balance;
+}
+
+.headline {
+  margin: 0;
+  font-family: var(--hl-type-headline-family);
+  font-size: clamp(2rem, 1.5rem + 2vw, var(--hl-type-headline-l-size));
+  font-weight: var(--hl-type-headline-weight);
+  line-height: var(--hl-type-headline-l-line);
+  letter-spacing: var(--hl-type-headline-tracking);
+  text-wrap: balance;
+}
+
+.title-l {
+  margin: 0;
+  font-family: var(--hl-type-headline-family);
+  font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.25rem);
+  font-weight: var(--hl-font-weight-heavy);
+  line-height: 1;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--hl-type-title-family);
+  font-size: var(--hl-type-title-size);
+  font-weight: var(--hl-font-weight-heavy);
+  line-height: var(--hl-type-title-line);
+  letter-spacing: var(--hl-type-headline-tracking);
+}
+
+.lead {
+  margin: 0;
+  font-size: var(--hl-type-body-l-size);
+  line-height: var(--hl-type-body-l-line);
+  text-wrap: pretty;
+}
+
+.landing p {
+  margin: 0;
+}
+
+/* Colour blocks */
+.block {
+  --ring-gap: var(--blk);
+  border-radius: var(--hl-radius-l);
+  background: var(--blk);
+  color: var(--on-blk);
+}
+
+.block a:not(.hex) {
+  color: var(--on-blk);
+}
+
+.block--cobalt {
+  --blk: var(--hl-color-cobalt);
+  --on-blk: var(--hl-color-on-cobalt);
+  --ring: var(--hl-color-honey);
+}
+
+.block--honey {
+  --blk: var(--hl-color-honey);
+  --on-blk: var(--hl-color-on-honey);
+  --ring: var(--hl-color-ink);
+}
+
+.block--mist {
+  --blk: var(--hl-color-accent-soft);
+  --on-blk: var(--hl-color-on-accent-soft);
+  --ring: var(--hl-color-accent);
+}
+
+.block--mint {
+  --blk: var(--hl-color-mint);
+  --on-blk: var(--hl-color-on-mint);
+  --ring: var(--hl-color-ink);
+}
+
+.block--tomato {
+  --blk: var(--hl-color-tomato);
+  --on-blk: var(--hl-color-on-tomato);
+  --ring: var(--hl-color-ink);
+}
+
+.section-head {
+  display: grid;
+  gap: var(--hl-space-3);
+  max-width: 640px;
+  margin-bottom: var(--hl-space-5);
+}
+
+.link-strong {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--hl-size-target);
+  padding-inline: var(--hl-space-1);
+  text-decoration-color: currentColor;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.3em;
+  transition: text-underline-offset var(--hl-motion-duration-medium) var(--hl-motion-easing-bounce);
+}
+
+.link-strong:hover {
+  text-underline-offset: 0.45em;
+}
+
+/* Hero: copy on the cobalt block, the illustration runs off its bottom edge. */
+.hero-block {
+  display: grid;
+  overflow: hidden;
+  padding: var(--hl-space-6) var(--hl-space-5) 0;
+}
+
+.hero-copy {
+  display: grid;
+  gap: var(--hl-space-5);
+  justify-items: start;
+  padding-bottom: var(--hl-space-6);
+}
+
+.chip {
+  --h: auto;
+  --line: var(--hl-color-ink);
+  --face: var(--hl-color-on-cobalt);
+  min-height: 40px;
+  padding: var(--hl-space-1) var(--hl-space-4) var(--hl-space-1) var(--hl-space-2);
+  color: var(--hl-color-ink);
+  font-size: var(--hl-type-label-size);
+  font-weight: var(--hl-font-weight-bold);
+  line-height: var(--hl-type-label-line);
+  white-space: normal;
+}
+
+/* The chip wraps on phones, so its hexagon is a rounded pill there. */
+.chip::before,
+.chip::after {
+  mask: none;
+  border-radius: var(--hl-radius-full);
+}
+
+.chip .dot {
+  --s: 28px;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--hl-space-3) var(--hl-space-5);
+}
+
+.hero-visual {
+  align-self: end;
+  margin-inline: calc(-1 * var(--hl-space-5));
+}
+
+.hero-visual img,
+.media-frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Features */
+.features .wrap {
+  display: grid;
+  gap: var(--hl-space-4);
+}
+
+.features .section-head {
+  margin: var(--hl-space-6) 0 var(--hl-space-2);
+}
+
+.features .section-head .lead {
+  color: var(--hl-color-text-muted);
+}
+
+.feature {
+  display: grid;
+  gap: var(--hl-space-5);
+  align-items: center;
+  overflow: hidden;
+  padding: var(--hl-space-5) var(--hl-space-5) 0;
+}
+
+.feature-copy {
+  display: grid;
+  gap: var(--hl-space-4);
+  max-width: 520px;
+}
+
+.feature-copy p {
+  text-wrap: pretty;
+}
+
+/* A media frame holds an illustration or a demo video. On phones it runs flush to its card's
+   sides and bottom; from 600 px it is a framed card with the navy contour. */
+.media-frame {
+  position: relative;
+  margin: 0 calc(-1 * var(--hl-space-5));
+  overflow: hidden;
+  border-top: var(--hl-border-width) solid var(--hl-color-ink);
+  background: var(--hl-color-surface-raised);
+  aspect-ratio: 4 / 5;
+}
+
+@media (min-width: 37.5625rem) {
+  .media-frame {
+    margin: 0 0 var(--hl-space-5);
+    border: var(--hl-border-width) solid var(--hl-color-ink);
+    border-radius: var(--hl-radius-l);
+    box-shadow: var(--sticker);
+    aspect-ratio: 16 / 9;
+  }
+
+  .feature {
+    padding-bottom: 0;
+  }
+}
+
+.media-frame picture,
+.media-frame video {
+  position: absolute;
+  inset: 0;
+}
+
+.media-frame img,
+.media-frame video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* The poster shows until the video plays; without demo.js the video keeps its own controls. */
+.demo video:not([controls]) {
+  opacity: 0;
+  transition: opacity var(--hl-motion-duration-short) var(--hl-motion-easing-standard);
+}
+
+.demo.is-playing video {
+  opacity: 1;
+}
+
+.demo-toggle {
+  --s: 52px;
+  position: absolute;
+  right: var(--hl-space-3);
+  bottom: var(--hl-space-3);
+  display: grid;
+  place-items: center;
+  width: var(--s);
+  height: var(--s);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--hl-color-on-honey);
+  cursor: pointer;
+}
+
+.demo-toggle[hidden] {
+  display: none;
+}
+
+.demo-toggle-face {
+  --s: 48px;
+  --face: var(--hl-color-honey);
+  --line: var(--hl-color-ink);
+  --b: var(--hl-border-width);
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  width: calc(var(--s) * 0.866);
+  height: var(--s);
+  background: var(--line);
+  mask: var(--pointy-img) center / 100% 100% no-repeat;
+  transition: transform var(--hl-motion-duration-release) var(--hl-motion-easing-bounce);
+}
+
+.demo-toggle-face::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: calc(var(--b) * 1.1547) var(--b);
+  background: var(--face);
+  mask: var(--pointy-img) center / 100% 100% no-repeat;
+}
+
+.demo-toggle svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+.demo-toggle:active .demo-toggle-face {
+  transform: scale(0.92);
+  transition-duration: var(--hl-motion-duration-press);
+}
+
+.demo-toggle:focus-visible {
+  outline: var(--hl-focus-ring-width) solid var(--hl-color-ink);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 calc(var(--hl-focus-ring-width) + 2px) var(--hl-color-honey);
+}
+
+.demo .icon-pause,
+.demo.is-on .icon-play {
+  display: none;
+}
+
+.demo.is-on .icon-pause {
+  display: block;
+}
+
+/* Voice: the tomato block with white cards. */
+.voice .block {
+  padding: var(--hl-space-6) var(--hl-space-5);
+}
+
+.voice-grid {
+  display: grid;
+  gap: var(--hl-space-4);
+}
+
+.assistant {
+  --ring: var(--hl-color-accent);
+  --ring-gap: var(--hl-color-surface-raised);
+  display: grid;
+  gap: var(--hl-space-4);
+  align-content: start;
+  overflow: hidden;
+  padding: var(--hl-space-5) var(--hl-space-5) 0;
+  border: var(--hl-border-width) solid var(--hl-color-ink);
+  border-radius: var(--hl-radius-l);
+  background: var(--hl-color-surface-raised);
+  color: var(--hl-color-text);
+  box-shadow: 0 6px 0 var(--hl-color-ink);
+}
+
+.assistant--siri {
+  padding-bottom: var(--hl-space-5);
+}
+
+.assistant-copy {
+  display: grid;
+  gap: var(--hl-space-3);
+}
+
+.assistant .media-frame {
+  background: var(--hl-color-surface);
+  box-shadow: none;
+}
+
+.block .assistant a {
+  color: var(--hl-color-accent);
+}
+
+.assistant-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--hl-space-3);
+}
+
+.soon {
+  --h: 32px;
+  font-size: var(--hl-type-label-size);
+  font-weight: var(--hl-font-weight-heavy);
+}
+
+.muted {
+  color: var(--hl-color-text-muted);
+}
+
+/* Privacy: the second cobalt block, a white list with mint hex ticks. */
+.privacy {
+  display: grid;
+  gap: var(--hl-space-5);
+  padding: var(--hl-space-6) var(--hl-space-5);
+}
+
+.privacy .section-head {
+  margin: 0;
+}
+
+.checklist {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: var(--hl-border-width) solid var(--hl-color-ink);
+  border-radius: var(--hl-radius-l);
+  background: var(--hl-color-surface-raised);
+  color: var(--hl-color-text);
+  box-shadow: var(--sticker);
+}
+
+.checklist li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--hl-space-3);
+  align-items: start;
+  padding: var(--hl-space-4) var(--hl-space-5);
+}
+
+.checklist li + li {
+  border-top: var(--hl-border-width-thin) solid var(--hl-color-divider);
+}
+
+.checklist strong {
+  font-weight: var(--hl-font-weight-heavy);
+}
+
+.tick {
+  --s: 30px;
+}
+
+/* Test: the lemon block, the browser button tomato with the navy contour. */
+.cta {
+  display: grid;
+  gap: var(--hl-space-4);
+  justify-items: start;
+  padding: var(--hl-space-6) var(--hl-space-5);
+}
+
+.cta p {
+  max-width: 640px;
+}
+
+.cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--hl-space-3) var(--hl-space-5);
+  margin-top: var(--hl-space-2);
+}
+
+.hex--tomato {
+  --face: var(--hl-color-tomato);
+  --on-face: var(--hl-color-on-tomato);
+  --wall: var(--hl-color-tomato-edge);
+}
+
+.landing .site-footer {
+  margin-top: var(--hl-space-7);
+}
+
+/* From 720 px: roomier blocks, a see-through hex cluster in the big blocks' empty corners. */
+@media (min-width: 720px) {
+  .block {
+    border-radius: var(--hl-radius-xl);
+  }
+
+  /* The hero has no empty corner (copy and phone fill it), so only the other big blocks get one. */
+  .voice .block,
+  .privacy,
+  .cta {
+    background: url("/hex/block-hex.svg") no-repeat, var(--blk);
+  }
+
+  .hero-block {
+    padding: var(--hl-space-7) var(--hl-space-7) 0;
+  }
+
+  .hero-visual {
+    margin-inline: 0;
+  }
+
+  .feature {
+    padding: var(--hl-space-6) var(--hl-space-6) var(--hl-space-1);
+  }
+
+  .voice .block {
+    padding: var(--hl-space-7);
+    background-position: right 48px top -60px;
+    background-size: 240px auto;
+  }
+
+  .privacy {
+    grid-template-columns: 0.8fr 1.2fr;
+    align-items: start;
+    gap: var(--hl-space-7);
+    padding: var(--hl-space-7);
+    background-position: left -60px bottom -140px;
+    background-size: 240px auto;
+  }
+
+  .cta {
+    padding: var(--hl-space-7);
+    background-position: right -40px bottom -90px;
+    background-size: 210px auto;
+  }
+}
+
+@media (min-width: 720px) and (prefers-color-scheme: dark) {
+  .voice .block,
+  .privacy,
+  .cta {
+    background-image: url("/hex/block-hex-dark.svg");
+  }
+}
+
+@media (min-width: 1000px) {
+  .hero-block {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    gap: var(--hl-space-6);
+    align-items: center;
+    padding-right: var(--hl-space-5);
+  }
+
+  .hero-copy {
+    padding-bottom: var(--hl-space-7);
+  }
+
+  .display {
+    font-size: var(--hl-type-display-size);
+    letter-spacing: var(--hl-type-display-tracking);
+  }
+
+  .feature {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: var(--hl-space-7);
+    padding: var(--hl-space-6) var(--hl-space-6) var(--hl-space-1);
+  }
+
+  .feature--flip {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  }
+
+  .feature--flip .feature-copy {
+    order: 2;
+  }
+
+  .assistant--ai {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: var(--hl-space-6);
+    align-items: center;
+  }
+}

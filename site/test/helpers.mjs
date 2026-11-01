@@ -64,7 +64,7 @@ export function record(versions, patch = (data) => data) {
 
 // Builds the real content plus `files` (path relative to content/ -> text, or null to delete),
 // against `repo` (see repoDir).
-export function buildSite({ files = {}, env = {}, config = {}, repo = {} } = {}) {
+export function buildSite({ files = {}, env = {}, config = {}, repo = {}, publicDir } = {}) {
   const root = tempDir();
   const contentDir = join(root, 'content');
   const outDir = join(root, 'dist');
@@ -77,7 +77,7 @@ export function buildSite({ files = {}, env = {}, config = {}, repo = {} } = {})
       writeFileSync(file, text);
     }
   }
-  const result = build({ contentDir, outDir, repoDir: repoDir(repo), env, config: { ...readConfig(), ...config } });
+  const result = build({ contentDir, outDir, publicDir, repoDir: repoDir(repo), env, config: { ...readConfig(), ...config } });
   return { ...result, outDir, page: (route) => readPage(outDir, route) };
 }
 
@@ -90,6 +90,21 @@ export function htmlRoutes(outDir) {
   return readdirSync(outDir, { recursive: true })
     .filter((f) => f.endsWith('.html'))
     .map((f) => (f === 'index.html' ? '/' : `/${f.slice(0, -5)}`));
+}
+
+// A copy of public/ plus `files` (path relative to public/ -> Buffer or text, or null to delete).
+export function publicWith(files) {
+  const dir = join(tempDir(), 'public');
+  cpSync(join(SITE_DIR, 'public'), dir, { recursive: true });
+  for (const [rel, data] of Object.entries(files)) {
+    const file = join(dir, rel);
+    if (data === null) rmSync(file);
+    else {
+      mkdirSync(dirname(file), { recursive: true });
+      writeFileSync(file, data);
+    }
+  }
+  return dir;
 }
 
 // `since` goes in unquoted, so `since: 1.4` is the number YAML makes of it.

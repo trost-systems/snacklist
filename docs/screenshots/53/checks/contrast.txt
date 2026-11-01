@@ -1,0 +1,113 @@
+measured /de
+measured /en
+measured /de/anleitungen/siri-kurzbefehl
+measured /en/changelog
+measured /datenschutz
+
+Per page and run (text: axe after removing background images, then pixels for what axe leaves open)
+
+| page                            | run        | axe pass | axe FAIL | lowest axe | pixel nodes | pixel FAIL | lowest median | mixed bg | non-text FAIL |
+| ------------------------------- | ---------- | -------- | -------- | ---------- | ----------- | ---------- | ------------- | -------- | ------------- |
+| /de                             | 390 light  | 54       | 0        | 5.81       | 0           | 0          | -             | 0        | 0             |
+| /de                             | 390 dark   | 54       | 0        | 5.79       | 0           | 0          | -             | 0        | 0             |
+| /de                             | 1440 light | 54       | 0        | 5.81       | 0           | 0          | -             | 0        | 0             |
+| /de                             | 1440 dark  | 54       | 0        | 5.79       | 0           | 0          | -             | 0        | 0             |
+| /en                             | 390 light  | 54       | 0        | 5.81       | 0           | 0          | -             | 0        | 0             |
+| /en                             | 390 dark   | 54       | 0        | 5.79       | 0           | 0          | -             | 0        | 0             |
+| /en                             | 1440 light | 54       | 0        | 5.81       | 0           | 0          | -             | 0        | 0             |
+| /en                             | 1440 dark  | 54       | 0        | 5.79       | 0           | 0          | -             | 0        | 0             |
+| /de/anleitungen/siri-kurzbefehl | 390 light  | 172      | 0        | 7.09       | 4           | 0          | 16.70         | 0        | 0             |
+| /de/anleitungen/siri-kurzbefehl | 390 dark   | 172      | 0        | 9.67       | 4           | 0          | 17.00         | 0        | 0             |
+| /de/anleitungen/siri-kurzbefehl | 1440 light | 176      | 0        | 7.09       | 0           | 0          | -             | 0        | 0             |
+| /de/anleitungen/siri-kurzbefehl | 1440 dark  | 176      | 0        | 9.67       | 0           | 0          | -             | 0        | 0             |
+| /en/changelog                   | 390 light  | 13       | 0        | 12.46      | 0           | 0          | -             | 0        | 0             |
+| /en/changelog                   | 390 dark   | 13       | 0        | 11.86      | 0           | 0          | -             | 0        | 0             |
+| /en/changelog                   | 1440 light | 13       | 0        | 12.46      | 0           | 0          | -             | 0        | 0             |
+| /en/changelog                   | 1440 dark  | 13       | 0        | 11.86      | 0           | 0          | -             | 0        | 0             |
+| /datenschutz                    | 390 light  | 82       | 0        | 8.24       | 0           | 0          | -             | 0        | 0             |
+| /datenschutz                    | 390 dark   | 82       | 0        | 9.52       | 0           | 0          | -             | 0        | 0             |
+| /datenschutz                    | 1440 light | 82       | 0        | 8.24       | 0           | 0          | -             | 0        | 0             |
+| /datenschutz                    | 1440 dark  | 82       | 0        | 9.52       | 0           | 0          | -             | 0        | 0             |
+
+Text colour pairs axe measured (lowest ratio per pair, every page and run)
+
+| fg      | bg      | ratio | needs | nodes | schemes | lowest at                                                                      |
+| ------- | ------- | ----- | ----- | ----- | ------- | ------------------------------------------------------------------------------ |
+| #0b1024 | #f0603f | 5.79  | 3     | 4     | dark    | /de #voice-title                                                               |
+| #0b1024 | #f0603f | 5.79  | 4.5   | 4     | dark    | /de p[data-copy-id="voice.lead"]                                               |
+| #0f1530 | #ff5b3a | 5.81  | 3     | 4     | light   | /de #voice-title                                                               |
+| #0f1530 | #ff5b3a | 5.81  | 4.5   | 4     | light   | /de p[data-copy-id="voice.lead"]                                               |
+| #4b536c | #f7f7f2 | 7.09  | 4.5   | 8     | light   | /de p[data-copy-id="features.lead"]                                            |
+| #ffffff | #2448c0 | 7.60  | 3     | 8     | dark    | /de #hero-title                                                                |
+| #ffffff | #2448c0 | 7.60  | 4.5   | 20    | dark    | /de p[data-copy-id="hero.lead"]                                                |
+| #4b536c | #ffffff | 7.62  | 4.5   | 16    | light   | /de p[data-copy-id="voice.ai.how"]                                             |
+| #1b3fae | #f7f7f2 | 8.24  | 4.5   | 6     | light   | /datenschutz p:nth-child(5) > a[href="mailto:support@hummlist.com"]            |
+| #9fb6ff | #151c3a | 8.42  | 4.5   | 4     | dark    | /de p[data-copy-id="voice.siri.now"] > a                                       |
+| #b0b9d8 | #151c3a | 8.55  | 4.5   | 16    | dark    | /de p[data-copy-id="voice.ai.how"]                                             |
+| #ffffff | #1b3fae | 8.86  | 3     | 8     | light   | /de #hero-title                                                                |
+| #ffffff | #1b3fae | 8.86  | 4.5   | 20    | light   | /de p[data-copy-id="hero.lead"]                                                |
+| #1b3fae | #ffffff | 8.86  | 4.5   | 4     | light   | /de p[data-copy-id="voice.siri.now"] > a                                       |
+| #0b1024 | #62c99d | 9.30  | 3     | 4     | dark    | /de #feature-stores                                                            |
+| #0b1024 | #62c99d | 9.30  | 4.5   | 8     | dark    | /de p[data-copy-id="feature.stores.body"]                                      |
+| #9fb6ff | #0b1024 | 9.52  | 4.5   | 6     | dark    | /datenschutz p:nth-child(5) > a[href="mailto:support@hummlist.com"]            |
+| #132f86 | #e1e8ff | 9.66  | 3     | 4     | light   | /de #feature-household                                                         |
+| #132f86 | #e1e8ff | 9.66  | 4.5   | 8     | light   | /de p[data-copy-id="feature.household.body"]                                   |
+| #b0b9d8 | #0b1024 | 9.67  | 4.5   | 8     | dark    | /de p[data-copy-id="features.lead"]                                            |
+| #e1e8ff | #1d2b66 | 10.81 | 3     | 4     | dark    | /de #feature-household                                                         |
+| #e1e8ff | #1d2b66 | 10.81 | 4.5   | 8     | dark    | /de p[data-copy-id="feature.household.body"]                                   |
+| #0f1530 | #7fe3b8 | 11.60 | 3     | 4     | light   | /de #feature-stores                                                            |
+| #0f1530 | #7fe3b8 | 11.60 | 4.5   | 8     | light   | /de p[data-copy-id="feature.stores.body"]                                      |
+| #d0d4e3 | #111735 | 11.86 | 4.5   | 10    | dark    | /de .tagline                                                                   |
+| #d3d7e2 | #0f1530 | 12.46 | 4.5   | 10    | light   | /de .tagline                                                                   |
+| #0f1530 | #ffe24a | 13.86 | 3     | 8     | light   | /de #feature-list                                                              |
+| #0f1530 | #ffe24a | 13.86 | 4.5   | 12    | light   | /de p[data-copy-id="feature.list.body"]                                        |
+| #0b1024 | #ffe24a | 14.57 | 3     | 8     | dark    | /de #feature-list                                                              |
+| #0b1024 | #ffe24a | 14.57 | 4.5   | 12    | dark    | /de p[data-copy-id="feature.list.body"]                                        |
+| #eff3ff | #151c3a | 15.03 | 3     | 8     | dark    | /de #voice-ai                                                                  |
+| #eff3ff | #151c3a | 15.03 | 4.5   | 82    | dark    | /de p[data-copy-id="voice.ai.body"]                                            |
+| #0f1530 | #eceff6 | 15.58 | 4.5   | 50    | light   | /de/anleitungen/siri-kurzbefehl li:nth-child(4) > code                         |
+| #eff3ff | #111735 | 15.80 | 3     | 10    | dark    | /de footer > .wrap > .brand[href="/de"][aria-label="Hummlist, zur Startseite"] |
+| #eff3ff | #111735 | 15.80 | 4.5   | 100   | dark    | /de .footer-site > ul > li:nth-child(1) > a[href$="anleitungen"]               |
+| #f3f6ff | #0f1530 | 16.60 | 3     | 10    | light   | /de footer > .wrap > .brand[href="/de"][aria-label="Hummlist, zur Startseite"] |
+| #f3f6ff | #0f1530 | 16.60 | 4.5   | 50    | light   | /de .footer-site > ul > li:nth-child(1) > a[href$="anleitungen"]               |
+| #0f1530 | #f7f7f2 | 16.69 | 3     | 78    | light   | /de header > .wrap > .brand[href="/de"][aria-label="Hummlist, zur Startseite"] |
+| #0f1530 | #f7f7f2 | 16.69 | 4.5   | 352   | light   | /de .nav > ul > li:nth-child(1) > a[href$="anleitungen"]                       |
+| #eff3ff | #0b1024 | 16.99 | 3     | 78    | dark    | /de header > .wrap > .brand[href="/de"][aria-label="Hummlist, zur Startseite"] |
+| #eff3ff | #0b1024 | 16.99 | 4.5   | 352   | dark    | /de .nav > ul > li:nth-child(1) > a[href$="anleitungen"]                       |
+| #0f1530 | #ffffff | 17.94 | 3     | 8     | light   | /de #voice-ai                                                                  |
+| #0f1530 | #ffffff | 17.94 | 4.5   | 82    | light   | /de p[data-copy-id="voice.ai.body"]                                            |
+
+Non-text: hex contour and face vs the block (one of them needs 3:1), focus ring vs the ground outside it (needs 3:1)
+
+| kind             | fg      | bg      | ratio | ring vs gap | ground                                   | n  | schemes | sample                                                                           |
+| ---------------- | ------- | ------- | ----- | ----------- | ---------------------------------------- | -- | ------- | -------------------------------------------------------------------------------- |
+| hex contour      | #03050f | #0b1024 | 1.08  | -           | body                                     | 10 | dark    | /de body.landing > header.site-header > div.wrap > a.hex.hex--small:nth-of-type( |
+| hex face         | #ffe24a | #f7f7f2 | 1.20  | -           | body                                     | 10 | light   | /de body.landing > header.site-header > div.wrap > a.hex.hex--small:nth-of-type( |
+| hex contour      | #0f1530 | #1b3fae | 2.02  | -           | #inhalt > section.hero:nth-of-type(1) >  | 4  | light   | /de #inhalt > section.hero:nth-of-type(1) > div.wrap.block > div.hero-copy:nth-o |
+| hex face         | #ff5b3a | #ffe24a | 2.38  | -           | #test > div.wrap.block                   | 4  | light   | /de #test > div.wrap.block > div.cta-actions > a.hex.hex--tomato:nth-of-type(1)  |
+| hex face         | #f0603f | #ffe24a | 2.52  | -           | #test > div.wrap.block                   | 4  | dark    | /de #test > div.wrap.block > div.cta-actions > a.hex.hex--tomato:nth-of-type(1)  |
+| hex contour      | #03050f | #2448c0 | 2.68  | -           | #inhalt > section.hero:nth-of-type(1) >  | 4  | dark    | /de #inhalt > section.hero:nth-of-type(1) > div.wrap.block > div.hero-copy:nth-o |
+| hex face         | #ffe24a | #2448c0 | 5.87  | -           | #inhalt > section.hero:nth-of-type(1) >  | 4  | dark    | /de #inhalt > section.hero:nth-of-type(1) > div.wrap.block > div.hero-copy:nth-o |
+| focus ring (hex) | #ffe24a | #2448c0 | 5.87  | 5.87        | #inhalt > section.hero:nth-of-type(1) >  | 4  | dark    | /de #inhalt > section.hero:nth-of-type(1) > div.wrap.block > div.hero-copy:nth-o |
+| focus outline    | #ffe24a | #2448c0 | 5.87  | -           | #inhalt > section.hero:nth-of-type(1) >  | 8  | dark    | /de #inhalt > section.hero:nth-of-type(1) > div.wrap.block > div.hero-copy:nth-o |
+| hex face         | #ffe24a | #1b3fae | 6.85  | -           | #inhalt > section.hero:nth-of-type(1) >  | 4  | light   | /de #inhalt > section.hero:nth-of-type(1) > div.wrap.block > div.hero-copy:nth-o |
+| focus ring (hex) | #ffe24a | #1b3fae | 6.85  | 6.85        | #inhalt > section.hero:nth-of-type(1) >  | 4  | light   | /de #inhalt > section.hero:nth-of-type(1) > div.wrap.block > div.hero-copy:nth-o |
+| focus outline    | #ffe24a | #1b3fae | 6.85  | -           | #inhalt > section.hero:nth-of-type(1) >  | 8  | light   | /de #inhalt > section.hero:nth-of-type(1) > div.wrap.block > div.hero-copy:nth-o |
+| focus outline    | #1b3fae | #f7f7f2 | 8.25  | -           | body                                     | 64 | light   | /de body.landing > a.skip                                                        |
+| focus ring (hex) | #1b3fae | #f7f7f2 | 8.25  | 8.25        | body                                     | 10 | light   | /de body.landing > header.site-header > div.wrap > a.hex.hex--small:nth-of-type( |
+| focus outline    | #9fb6ff | #151c3a | 8.43  | -           | #voice > div.wrap.block > div.voice-grid | 4  | dark    | /de #voice > div.wrap.block > div.voice-grid:nth-of-type(2) > article.assistant. |
+| focus outline    | #1b3fae | #ffffff | 8.87  | -           | #voice > div.wrap.block > div.voice-grid | 4  | light   | /de #voice > div.wrap.block > div.voice-grid:nth-of-type(2) > article.assistant. |
+| focus outline    | #9fb6ff | #0b1024 | 9.53  | -           | body                                     | 64 | dark    | /de body.landing > a.skip                                                        |
+| focus ring (hex) | #9fb6ff | #0b1024 | 9.53  | 9.53        | body                                     | 10 | dark    | /de body.landing > header.site-header > div.wrap > a.hex.hex--small:nth-of-type( |
+| focus outline    | #ffe24a | #111735 | 13.55 | -           | body.landing > footer.site-footer        | 60 | dark    | /de body.landing > footer.site-footer > div.wrap > a.brand                       |
+| hex contour      | #0f1530 | #ffe24a | 13.87 | -           | #test > div.wrap.block                   | 4  | light   | /de #test > div.wrap.block > div.cta-actions > a.hex.hex--tomato:nth-of-type(1)  |
+| focus ring (hex) | #0f1530 | #ffe24a | 13.87 | 13.87       | #test > div.wrap.block                   | 4  | light   | /de #test > div.wrap.block > div.cta-actions > a.hex.hex--tomato:nth-of-type(1)  |
+| focus outline    | #0f1530 | #ffe24a | 13.87 | -           | #test > div.wrap.block                   | 4  | light   | /de #test > div.wrap.block > div.cta-actions > a.link-strong:nth-of-type(2)      |
+| focus outline    | #ffe24a | #0f1530 | 13.87 | -           | body.landing > footer.site-footer        | 60 | light   | /de body.landing > footer.site-footer > div.wrap > a.brand                       |
+| hex face         | #ffe24a | #0b1024 | 14.57 | -           | body                                     | 10 | dark    | /de body.landing > header.site-header > div.wrap > a.hex.hex--small:nth-of-type( |
+| hex contour      | #03050f | #ffe24a | 15.72 | -           | #test > div.wrap.block                   | 4  | dark    | /de #test > div.wrap.block > div.cta-actions > a.hex.hex--tomato:nth-of-type(1)  |
+| focus ring (hex) | #03050f | #ffe24a | 15.72 | 15.72       | #test > div.wrap.block                   | 4  | dark    | /de #test > div.wrap.block > div.cta-actions > a.hex.hex--tomato:nth-of-type(1)  |
+| focus outline    | #03050f | #ffe24a | 15.72 | -           | #test > div.wrap.block                   | 4  | dark    | /de #test > div.wrap.block > div.cta-actions > a.link-strong:nth-of-type(2)      |
+| hex contour      | #0f1530 | #f7f7f2 | 16.70 | -           | body                                     | 10 | light   | /de body.landing > header.site-header > div.wrap > a.hex.hex--small:nth-of-type( |
+
+all text and non-text contrast passes

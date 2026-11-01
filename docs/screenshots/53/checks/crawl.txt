@@ -1,0 +1,28 @@
+
+17 pages, 48 linked files, 5 runs per page
+
+| page                            | 390 light | 390 dark | 1440 light | 1440 dark | 1440 light motion |
+| ------------------------------- | --------- | -------- | ---------- | --------- | ----------------- |
+| /de                             | 0         | 0        | 0          | 0         | 0                 |
+| /en                             | 0         | 0        | 0          | 0         | 0                 |
+| /gibt-es-nicht                  | 0         | 0        | 0          | 0         | 0                 |
+| /de/anleitungen                 | 0         | 0        | 0          | 0         | 0                 |
+| /de/changelog                   | 0         | 0        | 0          | 0         | 0                 |
+| /de/anleitungen/siri-kurzbefehl | 0         | 0        | 0          | 0         | 0                 |
+| /datenschutz                    | 0         | 0        | 0          | 0         | 0                 |
+| /support                        | 0         | 0        | 0          | 0         | 0                 |
+| /impressum                      | 0         | 0        | 0          | 0         | 0                 |
+| /en/guides                      | 0         | 0        | 0          | 0         | 0                 |
+| /en/changelog                   | 0         | 0        | 0          | 0         | 0                 |
+| /en/guides/siri-shortcut        | 0         | 0        | 0          | 0         | 0                 |
+| /en/privacy                     | 0         | 0        | 0          | 0         | 0                 |
+| /en/support                     | 0         | 0        | 0          | 0         | 0                 |
+| /en/imprint                     | 0         | 0        | 0          | 0         | 0                 |
+| /de/anleitungen/alexa           | 0         | 0        | 0          | 0         | 0                 |
+| /en/guides/alexa                | 0         | 0        | 0          | 0         | 0                 |
+
+measured over all reduced-motion runs: 1028 tab stops, 832 targets, 80 hex presses, 0 videos
+
+by check: none
+
+all pages pass

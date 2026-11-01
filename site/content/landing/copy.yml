@@ -1,0 +1,238 @@
+# The landing pages /de and /en (site/landing.mjs). One entry per string: `de` and `en` (inline
+# Markdown: **bold**, [link](/path)), `status` (`draft`: new or changed, waiting for Hummlist
+# Launch; `reused`: taken word for word from published copy) and `source` (where it comes from,
+# or why it is new). `node scripts/copy-needed.mjs` writes site/COPY_NEEDED.md from this file.
+
+meta.title:
+  de: "Hummlist: die Einkaufsliste für euren Haushalt"
+  en: "Hummlist: the shopping list for your household"
+  status: draft
+  source: "Title of the 6b prototype homepage; English new."
+meta.description:
+  de: "Eine gemeinsame Einkaufsliste für euren Haushalt. Was einer einträgt, sehen alle sofort, sortiert nach Laden und nach dem Weg durch die Regale."
+  en: "One shared shopping list for your household. What one of you adds, everyone sees right away, sorted by store and by your way through the aisles."
+  status: draft
+  source: "New: search and share description, built from the hero lead."
+
+header.open-app:
+  de: "Im Browser öffnen"
+  en: "Open in browser"
+  status: draft
+  source: "6b prototype header button; English new. Links app.hummlist.com, which the help page already links."
+footer.tagline:
+  de: "Hummlist ist eine Einkaufsliste für einen Haushalt. Für iPhone, Android und den Browser."
+  en: "Hummlist is a shopping list for one household. For iPhone, Android and the browser."
+  status: draft
+  source: "6b prototype footer; English new."
+
+hero.badge:
+  de: "Geschlossener Test für Familie und Freunde"
+  en: "Closed test for family and friends"
+  status: reused
+  source: "Help page (/support, /en/support): „noch in einem geschlossenen Test für Familie und Freunde“."
+hero.title:
+  de: "Eine Einkaufsliste, die der ganze Haushalt mitsummt."
+  en: "A shopping list your whole household hums along to."
+  status: draft
+  source: "6b prototype hero; English new."
+hero.lead:
+  de: "Einer tippt „Milch“, alle sehen es sofort. Sortiert nach Laden und nach dem Weg durch die Regale."
+  en: "One of you types “milk”, everyone sees it right away. Sorted by store and by your way through the aisles."
+  status: draft
+  source: "6b prototype hero; English new."
+hero.test-link:
+  de: "Mehr zum Test"
+  en: "More about the test"
+  status: draft
+  source: "New: replaces the prototype's store badges (no store listing yet); jumps to the test block."
+hero.image:
+  de: "Die Hummlist-App mit der Liste von Familie Brandt: Zahnpasta bei dm, bei Edeka sind die Bananen abgehakt und die Hafermilch ist neu. Darüber die Meldung „Mia hat ‚Hafermilch‘ hinzugefügt“."
+  en: "The Hummlist app with the Brandts’ list: toothpaste at dm, at Edeka the bananas are ticked off and the oat milk is new. Above it the note “Mia added ‘Oat milk’”."
+  status: draft
+  source: "New: text alternative of the hero illustration; must match site/public/media/hero-*."
+
+features.title:
+  de: "Was Hummlist für euch erledigt"
+  en: "What Hummlist does for you"
+  status: draft
+  source: "6b prototype; English new."
+features.lead:
+  de: "Drei Dinge, die den Wocheneinkauf leiser machen."
+  en: "Three things that make the weekly shop quieter."
+  status: draft
+  source: "6b prototype; English new."
+
+feature.list.title:
+  de: "Eine Liste für alle"
+  en: "One list for everyone"
+  status: draft
+  source: "6b prototype; English new."
+feature.list.body:
+  de: "Das Eingabefeld ist sofort bereit, unten am Daumen. Vorschläge kommen aus dem, was ihr schon gekauft habt. Abgehakt ist mit einem Tipp, und wer sich vertippt, nimmt es gleich zurück."
+  en: "The input field is ready right away, down by your thumb. Suggestions come from what you have bought before. One tap ticks an item off, and a slip of the finger is undone just as fast."
+  status: draft
+  source: "6b prototype feature „App auf, tippen, fertig“, merged into this card; English new."
+feature.household.title:
+  de: "Der ganze Haushalt, live auf einer Liste"
+  en: "The whole household, live on one list"
+  status: draft
+  source: "New: the prototype's sync card, now for any number of members."
+feature.household.body:
+  de: "Was einer einträgt, sehen alle anderen sofort auf ihrem Handy. Was jemand im Laden abhakt, verschwindet bei allen. Ohne Netz geht es auch: Hummlist holt alles nach, sobald ihr wieder online seid."
+  en: "What one of you adds, everyone else sees on their phone right away. What someone ticks off in the store disappears for all of you. It works offline too: Hummlist catches up as soon as you are back online."
+  status: draft
+  source: "6b prototype „Eine Liste für alle“ (Peter and Lea made general); English new."
+feature.household.invite:
+  de: "Mitbewohner, Partner und Kinder lädst du mit einem Link oder Code ein. Jede Einladung gilt sieben Tage."
+  en: "You invite flatmates, partners and kids with a link or a code. Each invitation is valid for seven days."
+  status: draft
+  source: "6b prototype (one partner) and the help page (an invitation is valid 7 days, for one person each)."
+feature.stores.title:
+  de: "Sortiert, wie du durch den Laden gehst"
+  en: "Sorted the way you walk through the store"
+  status: draft
+  source: "6b prototype; English new."
+feature.stores.body:
+  de: "Jeder Artikel landet von selbst in seiner Kategorie, von Obst & Gemüse bis Drogerie. dm, Lidl und Edeka sind schon eingerichtet, jeder mit eigenem Laufweg. Hummlist merkt sich, wo du was meistens kaufst."
+  en: "Every item lands in its category by itself, from fruit & vegetables to toiletries. dm, Lidl and Edeka are set up already, each with its own route. Hummlist remembers where you usually buy what."
+  status: draft
+  source: "6b prototype; English new. Names the seeded stores dm, Lidl and Edeka (retailer names, flag for Launch)."
+feature.stores.more:
+  de: "Eigene Läden legst du dazu, die Reihenfolge der Kategorien stellst du um."
+  en: "Add your own stores and change the order of the categories."
+  status: draft
+  source: "6b prototype; English new."
+feature.stores.image:
+  de: "Die Läden dm, Lidl und Edeka zur Auswahl, Edeka ist gewählt. Die Kategorien stehen in der Reihenfolge des Laufwegs: Obst & Gemüse, Brot & Backwaren, Kühlregal, Vorrat & Konserven, Tiefkühl."
+  en: "The stores dm, Lidl and Edeka to choose from, Edeka selected. The categories follow the route through the store: fruit & veg, bread & bakery, chilled, pantry, frozen."
+  status: draft
+  source: "New: text alternative of the stores illustration; must match site/public/media/stores-*."
+
+voice.title:
+  de: "Sag es einfach. Hummlist hört zu."
+  en: "Just say it. Hummlist is listening."
+  status: draft
+  source: "6b prototype; English new."
+voice.lead:
+  de: "Hände voller Taschen oder Teig an den Fingern? Dann sprich, und es steht auf der Liste."
+  en: "Hands full of bags or dough on your fingers? Just speak, and it's on the list."
+  status: draft
+  source: "6b prototype; English new."
+voice.ai.title:
+  de: "Mit KI-Assistenten"
+  en: "With AI assistants"
+  status: draft
+  source: "New: replaces the prototype's one-line MCP mention."
+voice.ai.body:
+  de: "Verbinde einen KI-Assistenten wie Claude über den MCP-Server von Hummlist mit eurer Liste. Dann schreibst oder sagst du ihm, was fehlt, und er setzt es auf die Liste."
+  en: "Connect an AI assistant such as Claude to your list through the Hummlist MCP server. Then write or tell it what's missing, and it puts it on the list."
+  status: draft
+  source: "New, from the help page's MCP answer (MCP server under More › Connections)."
+voice.ai.how:
+  de: "Die Adresse des MCP-Servers steht in der App unter **Mehr** › **Zugänge**. Dort widerrufst du jeden Zugang auch wieder."
+  en: "The MCP server's address is in the app under **More** › **Connections**. You can revoke every connection there too."
+  status: draft
+  source: "Help page (/support, /en/support), shortened."
+voice.siri.title:
+  de: "Mit Siri"
+  en: "With Siri"
+  status: draft
+  source: "6b prototype; English new."
+voice.siri.badge:
+  de: "Bald"
+  en: "Coming soon"
+  status: draft
+  source: "New: native Siri is not live yet (job 51)."
+voice.siri.body:
+  de: "Bald sagst du Siri direkt, was auf die Liste soll, ganz ohne Kurzbefehl."
+  en: "Soon you can tell Siri directly what goes on the list, no shortcut needed."
+  status: draft
+  source: "New, draft until native Siri ships (job 51)."
+voice.siri.now:
+  de: "Bis dahin geht es mit einem [Kurzbefehl](/de/anleitungen/siri-kurzbefehl). In der App diktierst du direkt ins Eingabefeld."
+  en: "Until then, use a [shortcut](/en/guides/siri-shortcut). In the app you dictate straight into the input field."
+  status: draft
+  source: "6b prototype (dictation sentence) and the Siri guide; English new."
+
+privacy.title:
+  de: "Eure Liste bleibt eure Sache."
+  en: "Your list stays your business."
+  status: draft
+  source: "6b prototype; English new."
+privacy.lead:
+  de: "Hummlist zeigt keine Werbung und verkauft keine Daten."
+  en: "Hummlist shows no ads and sells no data."
+  status: reused
+  source: "Privacy policy (/datenschutz, /en/privacy), word for word."
+privacy.frankfurt:
+  de: "**Gespeichert in Frankfurt am Main.** Dort steht die Datenbank."
+  en: "**Stored in Frankfurt am Main.** That's where the database is."
+  status: draft
+  source: "6b prototype; privacy policy: the database is in a data centre in Frankfurt am Main. English new."
+privacy.consent:
+  de: "**Nutzungsdaten nur mit deinem Ja.** Du kannst es jederzeit wieder abschalten."
+  en: "**Usage data only with your yes.** You can switch it off again at any time."
+  status: draft
+  source: "6b prototype; privacy policy section on usage data. English new."
+privacy.export:
+  de: "**Alles zum Mitnehmen.** Exportiere deine Daten als JSON-Datei."
+  en: "**Take it all with you.** Export your data as a JSON file."
+  status: draft
+  source: "6b prototype, aligned with the help page („als JSON-Datei“); English new."
+privacy.delete:
+  de: "**Löschen geht in der App.** Dein Konto löschst du unter **Mehr** › **Konto**, sofort."
+  en: "**Deleting works in the app.** You delete your account under **More** › **Account**, right away."
+  status: draft
+  source: "Changed from the prototype's „Konto weg, Daten weg“, which the policy's 90-day backups contradict; help page: deleted immediately."
+privacy.website:
+  de: "**Diese Website ist leise.** Keine Cookies, nichts von fremden Servern."
+  en: "**This website is quiet.** No cookies, nothing from other servers."
+  status: draft
+  source: "6b prototype; privacy policy section 2 (no cookies, no content from other servers). English new."
+privacy.more:
+  de: "Alles Weitere steht in der [Datenschutzerklärung](/datenschutz)."
+  en: "Everything else is in the [privacy policy](/en/privacy)."
+  status: draft
+  source: "New: link to the published policy (shown only while privacyPublished is on)."
+
+test.title:
+  de: "Gerade summt Hummlist im kleinen Kreis."
+  en: "Right now Hummlist hums in a small circle."
+  status: draft
+  source: "6b prototype; English new."
+test.body:
+  de: "Familie und Freunde testen die App auf dem iPhone über TestFlight und auf Android im internen Test von Google Play. Im Browser läuft sie unter app.hummlist.com."
+  en: "Family and friends test the app on iPhone through TestFlight and on Android in Google Play's internal test. In the browser it runs at app.hummlist.com."
+  status: draft
+  source: "6b prototype, matches the help page's test answer; English new."
+test.help:
+  de: "Fragen zum Test?"
+  en: "Questions about the test?"
+  status: draft
+  source: "New: link to the help page (shown only while supportPublished is on)."
+
+demo.play:
+  de: "Video abspielen"
+  en: "Play video"
+  status: draft
+  source: "New: label of the demo videos' play button."
+demo.pause:
+  de: "Video anhalten"
+  en: "Pause video"
+  status: draft
+  source: "New: label of the demo videos' pause button."
+demo.add-tick:
+  de: "Bananen sind abgehakt und leuchten grün, Avocados sind gerade dazugekommen. Unten wartet das Eingabefeld „Was brauchst du?“."
+  en: "Bananas are ticked off and glow green, avocados were just added. At the bottom the input field “What do you need?” is ready."
+  status: draft
+  source: "New: text alternative of the demo slot add-tick; job 54 rewrites it to match its video."
+demo.household-sync:
+  de: "Noah setzt 10 Eier auf die Liste. Auf Mias Handy erscheint der Eintrag im selben Moment, mit dem Hinweis „1 neu von Noah“."
+  en: "Noah puts 10 eggs on the list. The item appears on Mia’s phone at the same moment, with the note “1 new from Noah”."
+  status: draft
+  source: "New: text alternative of the demo slot household-sync; job 54 rewrites it to match its video."
+demo.mcp-chat:
+  de: "Ein KI-Assistent bekommt die Bitte „Setz Milch, Eier und Äpfel auf unsere Einkaufsliste“. Hummlist meldet drei neue Einträge, schon nach Kategorie sortiert."
+  en: "An AI assistant gets the request “Put milk, eggs and apples on our shopping list”. Hummlist reports three new items, already sorted by category."
+  status: draft
+  source: "New: text alternative of the demo slot mcp-chat; job 54 rewrites it to match its video."

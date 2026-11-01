@@ -66,8 +66,8 @@ test('the German and English support pages link each other', () => {
   const { page } = buildSite();
   assert.equal(page('/support').querySelector('html').getAttribute('lang'), 'de');
   assert.equal(page('/en/support').querySelector('html').getAttribute('lang'), 'en');
-  assert.equal(page('/support').querySelector('header nav a').getAttribute('href'), '/en/support');
-  assert.equal(page('/en/support').querySelector('header nav a').getAttribute('href'), '/support');
+  assert.equal(page('/support').querySelector('header nav.lang a').getAttribute('href'), '/en/support');
+  assert.equal(page('/en/support').querySelector('header nav.lang a').getAttribute('href'), '/support');
   assert.deepEqual(alternates(page('/support')), {
     de: 'https://hummlist.com/support',
     en: 'https://hummlist.com/en/support',

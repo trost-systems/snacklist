@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mcp-chat</title>
+<link rel="stylesheet" href="scenes.css">
+<style>
+  .thread {
+    position: absolute;
+    inset: 32px 32px auto;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  .thread > * { flex: none; }
+
+  .bubble {
+    max-width: 330px;
+    padding: 12px 16px;
+    border: var(--hl-border-width) solid var(--hl-color-border);
+    border-radius: var(--hl-radius-m) var(--hl-radius-m) var(--hl-radius-m) var(--hl-space-1);
+    background: var(--hl-color-surface-raised);
+    box-shadow: var(--sticker-s);
+    font-size: 15px;
+    font-weight: var(--hl-font-weight-medium);
+    line-height: 1.4;
+  }
+
+  .bubble--ask {
+    align-self: flex-end;
+    border-color: var(--hl-color-ink);
+    border-radius: var(--hl-radius-m) var(--hl-radius-m) var(--hl-space-1) var(--hl-radius-m);
+    background: var(--hl-color-cobalt);
+    color: var(--hl-color-on-cobalt);
+    font-weight: var(--hl-font-weight-bold);
+  }
+
+  .bubble--filler {
+    display: grid;
+    gap: 10px;
+    width: 250px;
+    padding-block: 16px;
+  }
+
+  .card {
+    width: 100%;
+    border: var(--hl-border-width) solid var(--hl-color-border);
+    border-radius: var(--hl-radius-l);
+    background: var(--hl-color-surface-raised);
+    box-shadow: var(--sticker);
+    overflow: hidden;
+  }
+
+  .card-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-bottom: var(--hl-border-width-thin) solid var(--hl-color-divider);
+    font-size: 13px;
+    font-weight: var(--hl-font-weight-medium);
+    color: var(--hl-color-text-muted);
+  }
+
+  .card-head img { width: 28px; height: 28px; }
+
+  .card-head b {
+    font-family: var(--hl-font-family-display);
+    font-size: 17px;
+    font-weight: var(--hl-font-weight-heavy);
+    color: var(--hl-color-text);
+  }
+
+  .card .item { grid-template-columns: 28px 132px 1fr auto; min-height: 44px; }
+  .card .item .name { grid-row: 1 / span 2; }
+  .card .sub { grid-column: 3; grid-row: 1 / span 2; margin: 0; }
+  .card .bubble--filler, .bubble--filler { display: none; }
+
+  .tick {
+    --s: 26px;
+    --line: var(--hl-color-mint-edge);
+    --face: var(--hl-color-mint);
+    grid-column: 4;
+    grid-row: 1 / span 2;
+    color: var(--hl-color-on-mint);
+  }
+  .tick .mi { font-size: 16px; font-weight: bold; }
+
+  .bubble--ask { max-width: 440px; }
+
+  @media (max-width: 400px) {
+    .thread { inset: 32px 24px auto; gap: 16px; }
+    .bubble--ask { max-width: 280px; }
+    .bubble--filler { display: grid; }
+    .card { width: 100%; }
+    .card .item { grid-template-columns: 28px 1fr auto; min-height: 52px; }
+    .card .item .name { grid-row: 1; }
+    .card .sub { grid-column: 2; grid-row: 2; justify-self: start; margin-top: 6px; }
+    .tick { grid-column: 3; }
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="thread">
+    <p class="bubble bubble--ask" data-t="ask"></p>
+    <div class="card">
+      <div class="card-head"><img src="../public/favicon.svg" alt=""><b>Hummlist</b><span data-t="added"></span></div>
+      <div class="item"><span class="emo">🥛</span><span class="name" data-t="milk"></span><span class="sub" data-t="chilled"></span><span class="hxp tick"><i class="mi">&#xe156;</i></span></div>
+      <div class="item"><span class="emo">🥚</span><span class="name" data-t="eggs"></span><span class="sub" data-t="chilled"></span><span class="hxp tick"><i class="mi">&#xe156;</i></span></div>
+      <div class="item"><span class="emo">🍎</span><span class="name" data-t="apples"></span><span class="sub" data-t="produce"></span><span class="hxp tick"><i class="mi">&#xe156;</i></span></div>
+    </div>
+    <div class="bubble bubble--filler"><span class="bar" style="width: 72%"></span><span class="bar" style="width: 90%"></span><span class="bar" style="width: 84%"></span><span class="bar" style="width: 40%"></span></div>
+  </div>
+</div>
+<script>
+  globalThis.STRINGS = {
+    de: {
+      ask: 'Setz Milch, Eier und Äpfel auf unsere Einkaufsliste', added: '3 Artikel hinzugefügt',
+      milk: 'Milch', eggs: 'Eier', apples: 'Äpfel', chilled: 'Kühlregal', produce: 'Obst &amp; Gemüse',
+    },
+    en: {
+      ask: 'Put milk, eggs and apples on our shopping list', added: '3 items added',
+      milk: 'Milk', eggs: 'Eggs', apples: 'Apples', chilled: 'Chilled', produce: 'Fruit &amp; veg',
+    },
+  };
+</script>
+<script src="scene.js"></script>
+</body>
+</html>

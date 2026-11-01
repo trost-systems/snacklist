@@ -1,0 +1,448 @@
+@import url("../public/tokens.css");
+
+@font-face {
+  font-family: "Bricolage Grotesque";
+  src: url("../public/fonts/bricolage-grotesque-latin-standard-normal.woff2") format("woff2");
+  font-weight: 200 800;
+  font-display: block;
+}
+
+@font-face {
+  font-family: Inter;
+  src: url("../public/fonts/inter-latin-wght-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: block;
+}
+
+/* The app's Material Icons, served by film-all.mjs from the Flutter SDK. */
+@font-face {
+  font-family: "Material Icons";
+  src: url("material-icons.otf") format("opentype");
+  font-display: block;
+}
+
+:root {
+  --sticker-s: var(--hl-shadow-sticker-s);
+  --sticker: var(--hl-shadow-sticker);
+  --sticker-l: var(--hl-shadow-sticker-l);
+  --hex-img: url("../public/hex/hex-cap-l.svg"), url("../public/hex/hex-cap-r.svg"), linear-gradient(#000 0 0);
+  --pointy-img: url("../public/hex/hex-pointy.svg");
+  --ground: var(--hl-color-surface-raised);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --sticker-s: var(--hl-shadow-night-s);
+    --sticker: var(--hl-shadow-night);
+    --sticker-l: var(--hl-shadow-night-l);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: var(--ground);
+  color: var(--hl-color-text);
+  font-family: var(--hl-font-family-sans);
+  font-size: 15px;
+  line-height: 1.3;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "cv11", "ss01";
+}
+
+.stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+p {
+  margin: 0;
+}
+
+.mi {
+  font-family: "Material Icons";
+  font-style: normal;
+  font-weight: normal;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: normal;
+  white-space: nowrap;
+  font-feature-settings: "liga";
+}
+
+.emo {
+  font-family: "Noto Color Emoji", sans-serif;
+  font-size: 18px;
+  line-height: 1;
+  text-align: center;
+}
+
+/* Horizontal hexagon: chips, the add field. Two caps half its height wide and a band. An
+   outline is a second hexagon inset by --b on top. */
+.hx {
+  --h: 32px;
+  --b: var(--hl-border-width);
+  --line: var(--hl-color-border);
+  --face: var(--hl-color-surface-raised);
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--hl-space-2);
+  height: var(--h);
+  min-width: var(--h);
+  padding-inline: calc(var(--h) * var(--hl-shape-hex-tip) + var(--hl-space-2));
+  white-space: nowrap;
+}
+
+.hx::before,
+.hx::after {
+  --cw: calc(var(--mh) / 2);
+  content: "";
+  position: absolute;
+  z-index: -1;
+  mask-image: var(--hex-img);
+  mask-size: var(--cw) 100%, var(--cw) 100%, calc(100% - 2 * var(--cw) + 2px) 100%;
+  mask-position: left center, right center, center;
+  mask-repeat: no-repeat;
+}
+
+.hx::before {
+  --mh: var(--h);
+  inset: 0;
+  background: var(--line);
+}
+
+.hx::after {
+  --mh: calc(var(--h) - 2 * var(--b));
+  inset: var(--b) calc(var(--b) * 1.1547);
+  background: var(--face);
+}
+
+.hx--honey {
+  --line: var(--hl-color-ink);
+  --face: var(--hl-color-honey);
+  color: var(--hl-color-on-honey);
+}
+
+/* A hexagon with depth: the edge as a hard drop shadow that follows the shape. */
+.hx--edge {
+  filter: drop-shadow(0 var(--hl-depth-edge) 0 var(--hl-color-edge));
+}
+
+/* Pointy-top hexagon: avatars, check boxes, step numbers, the plus. --s is its height. */
+.hxp {
+  --s: 32px;
+  --b: var(--hl-border-width);
+  --line: var(--hl-color-ink);
+  --face: var(--hl-color-honey);
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: calc(var(--s) * 0.866);
+  height: var(--s);
+  background: var(--line);
+  color: var(--hl-color-on-honey);
+  mask: var(--pointy-img) center / 100% 100% no-repeat;
+}
+
+.hxp::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: calc(var(--b) * 1.1547) var(--b);
+  background: var(--face);
+  mask: var(--pointy-img) center / 100% 100% no-repeat;
+}
+
+/* Members: each in their own colour. */
+.av {
+  --s: 30px;
+  font-family: var(--hl-font-family-display);
+  font-size: 13px;
+  font-weight: var(--hl-font-weight-heavy);
+  line-height: 1;
+}
+
+.av--mia {
+  --face: var(--hl-color-tomato);
+  color: var(--hl-color-on-tomato);
+}
+
+.av--noah {
+  --face: var(--hl-color-honey);
+  color: var(--hl-color-on-honey);
+}
+
+.av--ida {
+  --face: var(--hl-color-cobalt);
+  color: var(--hl-color-on-cobalt);
+}
+
+.avs {
+  display: flex;
+}
+
+.avs .av + .av {
+  margin-left: -2px;
+}
+
+/* Phone: the app's list screen in a plain bezel. No status bar or island is drawn; the
+   crop always starts inside the content or at the app's own header. */
+.phone {
+  position: absolute;
+  padding: 10px;
+  border: var(--hl-border-width) solid var(--hl-color-border);
+  border-radius: var(--hl-radius-xl);
+  background: var(--hl-color-ink);
+  box-shadow: var(--sticker-l);
+}
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  border-radius: calc(var(--hl-radius-xl) - 10px);
+  background: var(--hl-color-surface);
+  color: var(--hl-color-text);
+}
+
+.app-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hl-space-3);
+  padding: 20px var(--hl-space-4) var(--hl-space-3);
+  border-bottom: var(--hl-border-width-thin) solid var(--hl-color-divider);
+}
+
+.hh {
+  font-size: 14px;
+  font-weight: var(--hl-font-weight-heavy);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  color: var(--hl-color-brand);
+}
+
+.count {
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: var(--hl-font-weight-medium);
+  color: var(--hl-color-text-muted);
+}
+
+.fresh-note {
+  font-size: 13px;
+  font-weight: var(--hl-font-weight-bold);
+  color: var(--hl-color-brand);
+}
+
+.store {
+  display: flex;
+  align-items: center;
+  gap: var(--hl-space-2);
+  padding: 14px var(--hl-space-4) 2px;
+}
+
+.store-name {
+  font-family: var(--hl-font-family-display);
+  font-size: 20px;
+  font-weight: var(--hl-font-weight-heavy);
+  line-height: 1;
+}
+
+.store-rule {
+  flex: 1;
+  height: 3px;
+  border-radius: var(--hl-radius-full);
+  background: var(--hl-color-brand);
+}
+
+.store-count {
+  font-size: 13px;
+  font-weight: var(--hl-font-weight-medium);
+  white-space: nowrap;
+  color: var(--hl-color-text-muted);
+}
+
+.store-count b {
+  font-family: var(--hl-font-family-display);
+  font-size: 15px;
+  color: var(--hl-color-text);
+}
+
+.cat {
+  display: flex;
+  align-items: center;
+  gap: var(--hl-space-2);
+  padding: 10px var(--hl-space-4) 2px;
+  font-size: 11px;
+  font-weight: var(--hl-font-weight-heavy);
+  letter-spacing: 0.12em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--hl-color-text-muted);
+}
+
+.cat::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--hl-color-divider);
+}
+
+.item {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  column-gap: 10px;
+  align-items: center;
+  min-height: 44px;
+  padding: 6px var(--hl-space-4);
+}
+
+.item + .item {
+  border-top: var(--hl-border-width-thin) solid var(--hl-color-divider);
+}
+
+.name {
+  font-family: var(--hl-font-family-display);
+  font-size: 17px;
+  font-weight: var(--hl-font-weight-bold);
+  line-height: 1.25;
+  white-space: nowrap;
+  text-box: trim-both cap alphabetic;
+}
+
+.qty {
+  color: var(--hl-color-brand);
+  font-weight: var(--hl-font-weight-heavy);
+}
+
+.sub {
+  grid-column: 2;
+  margin-top: 6px;
+  text-box: trim-both cap alphabetic;
+  font-size: 13px;
+  font-weight: var(--hl-font-weight-medium);
+  line-height: 1.3;
+  color: var(--hl-color-text-muted);
+}
+
+.item .emo,
+.item .bar,
+.item:not(:has(.sub)) .name {
+  grid-row: 1 / span 2;
+}
+
+.cb {
+  --s: 26px;
+  --line: var(--hl-color-border);
+  --face: var(--hl-color-surface-raised);
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  color: var(--hl-color-on-mint);
+}
+
+.cb .mi {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.item--done {
+  background: var(--hl-color-mint-soft);
+}
+
+.item--done .cb {
+  --line: var(--hl-color-mint-edge);
+  --face: var(--hl-color-mint);
+}
+
+.item--done .name {
+  text-decoration: line-through;
+  text-decoration-thickness: var(--hl-border-width);
+  color: var(--hl-color-text-muted);
+}
+
+/* An item a partner added that this phone has not shown yet. */
+.item--fresh {
+  background: var(--hl-color-honey-soft);
+}
+
+.item--fresh + .item,
+.item + .item--fresh,
+.item--done + .item,
+.item + .item--done {
+  border-top-color: transparent;
+}
+
+.compose {
+  --h: 52px;
+  --line: var(--hl-color-border);
+  display: flex;
+  margin: var(--hl-space-3) var(--hl-space-3) 0;
+  padding-inline: calc(var(--h) * var(--hl-shape-hex-tip) - var(--hl-space-1)) calc(var(--h) * var(--hl-shape-hex-tip) + var(--hl-space-1));
+  font-size: 16px;
+  font-weight: var(--hl-font-weight-medium);
+  color: var(--hl-color-text-muted);
+}
+
+.plus {
+  --s: 38px;
+}
+
+.plus .mi {
+  font-size: 22px;
+}
+
+.compose .mic {
+  margin-left: auto;
+  font-size: 22px;
+  color: var(--hl-color-brand);
+}
+
+/* Bars for filler rows. */
+.bar {
+  display: block;
+  height: 10px;
+  border-radius: var(--hl-radius-full);
+  background: var(--hl-color-divider);
+}
+
+/* Sticker: a raised card with the navy contour and the sticker shadow. */
+.sticker {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px 10px 12px;
+  border: var(--hl-border-width) solid var(--hl-color-border);
+  border-radius: var(--hl-radius-m);
+  background: var(--hl-color-surface-raised);
+  box-shadow: var(--sticker);
+  font-size: 15px;
+  font-weight: var(--hl-font-weight-bold);
+  line-height: 1.3;
+  color: var(--hl-color-text);
+}
+
+.sticker .av {
+  --s: 34px;
+  font-size: 15px;
+}

@@ -1,111 +1,674 @@
+/* Every page: fonts, base type, the 6b hex controls, header, footer and the prose of guides,
+   legal pages and the changelog. Colours, type, space and motion come from tokens.css (generated
+   from design/tokens, never edited by hand); the landing page adds landing.css. */
+
+@font-face {
+  font-family: "Bricolage Grotesque";
+  src: url("/fonts/bricolage-grotesque-latin-standard-normal.woff2") format("woff2");
+  font-weight: 200 800;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/inter-latin-wght-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+/* The face offset of a tactile hex control: 0 at rest, up on hover, down by its edge on press.
+   Registered so one transition moves the face and the top of its side wall together. */
+@property --y {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
 :root {
-  --text: #1c1b1a;
-  --muted: #55514c;
-  --bg: #fdfcfa;
-  --surface: #f2efe9;
-  --border: #d9d4cb;
-  --link: #0b5c8a;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  line-height: 1.6;
-  color: var(--text);
-  background: var(--bg);
-  -webkit-text-size-adjust: 100%;
+  --page: 1160px;
+  --gutter: var(--hl-space-4);
+  --sticker: var(--hl-shadow-sticker);
+  --sticker-l: var(--hl-shadow-sticker-l);
+  --hex-img: url("/hex/hex-cap-l.svg"), url("/hex/hex-cap-r.svg"), linear-gradient(#000 0 0);
+  --sweep-img: url("/hex/hex-cap-l.svg"), url("/hex/hex-cap-r.svg"), url("/hex/hex-cap-l.svg"), url("/hex/hex-cap-r.svg"), linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+  --pointy-img: url("/hex/hex-pointy.svg");
+  --ring: var(--hl-color-accent);
+  --ring-gap: var(--hl-color-surface);
+  --foot: var(--hl-color-inverse);
+  --on-foot: var(--hl-color-on-inverse);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --text: #ecebe8;
-    --muted: #b8b3ab;
-    --bg: #161514;
-    --surface: #232120;
-    --border: #3d3a36;
-    --link: #7cc4f0;
+    --sticker: var(--hl-shadow-night);
+    --sticker-l: var(--hl-shadow-night-l);
   }
 }
 
-* { box-sizing: border-box; }
+@media (min-width: 720px) {
+  :root {
+    --gutter: var(--hl-space-6);
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
 
 body {
-  margin: 0 auto;
-  max-width: 44rem;
-  padding: 0 1rem;
-  font-size: 1.0625rem;
+  margin: 0;
+  background: var(--hl-color-surface);
+  color: var(--hl-color-text);
+  font-family: var(--hl-type-body-family);
+  font-size: var(--hl-type-body-size);
+  font-weight: var(--hl-type-body-weight);
+  line-height: var(--hl-type-body-line);
+  letter-spacing: -0.006em;
   overflow-wrap: break-word;
-}
-
-a { color: var(--link); }
-a:focus-visible { outline: 3px solid var(--link); outline-offset: 2px; }
-
-.site-header {
+  overflow-x: clip;
+  /* The footer sits at the bottom of short pages too. */
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main {
+  flex: 1 0 auto;
+}
+
+img,
+svg {
+  max-width: 100%;
+}
+
+a {
+  color: var(--hl-color-accent);
+  font-weight: var(--hl-font-weight-bold);
+  text-decoration-thickness: var(--hl-border-width);
+  text-underline-offset: 0.18em;
+}
+
+:focus-visible {
+  outline: var(--hl-focus-ring-width) solid var(--ring);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.wrap {
+  width: min(100% - 2 * var(--gutter), var(--page));
+  margin-inline: auto;
+}
+
+.skip {
+  position: absolute;
+  left: var(--hl-space-4);
+  top: calc(-1 * var(--hl-space-9));
+  z-index: 10;
+  display: inline-flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--border);
-}
-.site-name { font-weight: 700; font-size: 1.25rem; text-decoration: none; color: var(--text); }
-
-main { padding: 1rem 0 2rem; }
-
-h1 { font-size: 1.75rem; line-height: 1.25; margin: 1rem 0; }
-h2 { font-size: 1.375rem; line-height: 1.3; margin: 2rem 0 0.75rem; }
-h3 { font-size: 1.125rem; margin: 1.5rem 0 0.5rem; }
-
-li { margin: 0.25rem 0; }
-
-blockquote {
-  margin: 1rem 0;
-  padding: 0.5rem 1rem;
-  border-left: 4px solid var(--border);
-  background: var(--surface);
+  min-height: var(--hl-size-target);
+  padding: var(--hl-space-2) var(--hl-space-4);
+  background: var(--hl-color-honey);
+  color: var(--hl-color-on-honey);
+  border: var(--hl-border-width) solid var(--hl-color-ink);
+  border-radius: var(--hl-radius-full);
 }
 
-code {
+.skip:focus {
+  top: var(--hl-space-3);
+}
+
+/* Hexagons. hex/hex-cap-l.svg, hex-cap-r.svg and hex-pointy.svg are the 6b prototype's masks:
+   a horizontal hexagon is two caps half its height wide with a rectangle stretched between; an
+   outline is a second, inset hexagon on top (inset b: b shorter at top and bottom, 1.1547 b
+   narrower at each point). */
+.hex .face::before,
+.hex .face::after,
+.hx::before,
+.hx::after {
+  --cw: calc(var(--mh) / 2);
+  content: "";
+  position: absolute;
+  z-index: -1;
+  mask-image: var(--hex-img);
+  mask-size: var(--cw) 100%, var(--cw) 100%, calc(100% - 2 * var(--cw) + 2px) 100%;
+  mask-position: left center, right center, center;
+  mask-repeat: no-repeat;
+}
+
+.hex .face::before,
+.hx::before {
+  --mh: var(--h);
+  inset: 0;
+  background: var(--line);
+}
+
+.hex .face::after,
+.hx::after {
+  --mh: calc(var(--h) - 2 * var(--b));
+  inset: var(--b) calc(var(--b) * 1.1547);
+  background: var(--face);
+}
+
+/* Static hexagon: tags and chips. Its height is fixed so the mask fits. */
+.hx {
+  --h: 32px;
+  --b: var(--hl-border-width);
+  --line: var(--hl-color-ink);
+  --face: var(--hl-color-surface-raised);
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--hl-space-2);
+  height: var(--h);
+  min-width: var(--h);
+  padding-inline: calc(var(--h) * var(--hl-shape-hex-tip) + var(--hl-space-2));
+  white-space: nowrap;
+}
+
+.hx--honey {
+  --face: var(--hl-color-honey);
+  color: var(--hl-color-on-honey);
+}
+
+/* Pointy-top hexagon: ticks and the play button's face. --s is the height. */
+.hxp {
+  --s: 32px;
+  --b: var(--hl-border-width);
+  --line: var(--hl-color-ink);
+  --face: var(--hl-color-mint);
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: calc(var(--s) * 0.866);
+  height: var(--s);
+  background: var(--line);
+  color: var(--hl-color-on-mint);
+  mask: var(--pointy-img) center / 100% 100% no-repeat;
+}
+
+.hxp::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: calc(var(--b) * 1.1547) var(--b);
+  background: var(--face);
+  mask: var(--pointy-img) center / 100% 100% no-repeat;
+}
+
+.hxp svg {
+  width: 62%;
+  height: 62%;
+  fill: currentColor;
+}
+
+/* Tactile hex control (a > .face). The face sits on a side wall that ends in a solid edge: hover
+   lifts the face, press sinks it into the edge. The control itself is never masked, so its focus
+   ring is never clipped. Lemon face with the navy contour, as the contrast rules require. */
+.hex {
+  --h: 48px;
+  --d: var(--hl-depth-edge);
+  --b: var(--hl-border-width);
+  --face: var(--hl-color-honey);
+  --on-face: var(--hl-color-on-honey);
+  --line: var(--hl-color-ink);
+  --wall: var(--hl-color-honey-edge);
+  --edge: var(--hl-color-edge);
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  flex-direction: column;
+  min-width: var(--hl-size-target);
+  margin: 0;
+  padding: 0 0 var(--d);
+  border: 0;
+  background: none;
+  color: var(--on-face);
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: --y var(--hl-motion-duration-release) var(--hl-motion-easing-press);
+}
+
+.hex::before,
+.hex::after {
+  --cw: calc(var(--mh) / 2);
+  --e: calc(var(--hl-shape-hex-corner-radius) * 0.1547);
+  content: "";
+  position: absolute;
+  z-index: -1;
+  mask-image: var(--sweep-img);
+  mask-size:
+    var(--cw) var(--mh), var(--cw) var(--mh), var(--cw) var(--mh), var(--cw) var(--mh),
+    calc(100% - 2 * var(--cw) + 2px) 100%,
+    calc(100% - 2 * var(--e)) calc(100% - var(--mh));
+  mask-position: left top, right top, left bottom, right bottom, center, center;
+  mask-repeat: no-repeat;
+}
+
+.hex::before {
+  --mh: var(--h);
+  inset: var(--y) 0 0;
+  background: var(--edge);
+}
+
+.hex::after {
+  --mh: calc(var(--h) - 2 * var(--b));
+  inset: calc(var(--y) + var(--b)) calc(var(--b) * 1.1547) var(--b);
+  background: var(--wall);
+}
+
+.hex .face {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--hl-space-2);
+  height: var(--h);
+  padding-inline: calc(var(--h) * var(--hl-shape-hex-tip) + var(--hl-space-3));
+  transform: translateY(var(--y));
+  font-family: var(--hl-type-label-family);
+  font-size: var(--hl-type-label-size);
+  font-weight: var(--hl-font-weight-heavy);
+  line-height: var(--hl-type-label-line);
+  white-space: nowrap;
+}
+
+.hex .face svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+@media (hover: hover) {
+  .hex:hover {
+    --y: calc(-1 * var(--hl-depth-lift));
+  }
+}
+
+.hex:active {
+  --y: var(--d);
+  transition-duration: var(--hl-motion-duration-press);
+}
+
+/* Focus: a hexagonal ring from stacked drop shadows on the unmasked control, a gap in the ground's
+   colour first, then the ring. The transparent outline shows in forced-colours mode. */
+.hex:focus-visible {
+  --g: var(--hl-focus-ring-gap);
+  --w: var(--hl-focus-ring-width);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  filter:
+    drop-shadow(var(--g) 0 0 var(--ring-gap)) drop-shadow(calc(-1 * var(--g)) 0 0 var(--ring-gap))
+    drop-shadow(0 var(--g) 0 var(--ring-gap)) drop-shadow(0 calc(-1 * var(--g)) 0 var(--ring-gap))
+    drop-shadow(var(--w) 0 0 var(--ring)) drop-shadow(calc(-1 * var(--w)) 0 0 var(--ring))
+    drop-shadow(0 var(--w) 0 var(--ring)) drop-shadow(0 calc(-1 * var(--w)) 0 var(--ring));
+}
+
+.hex--small {
+  --h: 44px;
+}
+
+.hex--small .face {
+  padding-inline: calc(var(--h) * var(--hl-shape-hex-tip) + var(--hl-space-2));
+}
+
+/* Header */
+.site-header {
+  padding-block: var(--hl-space-3);
+}
+
+.site-header .wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--hl-space-2) var(--hl-space-4);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--hl-space-2);
+  min-height: var(--hl-size-target);
+  margin-inline-end: auto;
+  color: var(--hl-color-text);
+  text-decoration: none;
+  font-family: var(--hl-type-headline-family);
+  font-size: 1.5rem;
+  font-weight: var(--hl-font-weight-heavy);
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.mark {
+  display: inline-block;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 9px;
+  background: url("/favicon.svg") center / contain no-repeat;
+  transition: transform var(--hl-motion-duration-medium) var(--hl-motion-easing-bounce);
+}
+
+.brand:hover .mark {
+  transform: rotate(-6deg) scale(1.06);
+}
+
+.nav ul,
+.site-footer ul {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nav a,
+.lang a,
+.site-footer nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--hl-size-target);
+  padding-inline: var(--hl-space-3);
+  color: var(--hl-color-text);
+  font-size: var(--hl-type-label-size);
+  text-decoration: none;
+  border-radius: var(--hl-radius-s);
+}
+
+.nav a:hover,
+.lang a:hover {
+  background: var(--hl-color-accent-soft);
+  color: var(--hl-color-on-accent-soft);
+}
+
+.nav a[aria-current="page"] {
+  text-decoration: underline;
+  text-decoration-color: var(--hl-color-honey-edge);
+  text-decoration-thickness: 3px;
+  text-underline-offset: 0.35em;
+}
+
+/* Phones: brand and app button on the first row, the links below. */
+@media (max-width: 719px) {
+  .site-header .nav {
+    order: 3;
+    margin-inline-start: calc(-1 * var(--hl-space-3));
+  }
+
+  .site-header .lang {
+    order: 4;
+    margin-inline-start: auto;
+  }
+}
+
+/* Footer: a navy band. */
+.site-footer {
+  --ring: var(--hl-color-honey);
+  --ring-gap: var(--foot);
+  margin-top: var(--hl-space-8);
+  padding-block: var(--hl-space-6) var(--hl-space-7);
+  background: var(--foot);
+  color: var(--on-foot);
+}
+
+.site-footer .wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--hl-space-2) var(--hl-space-5);
+}
+
+.site-footer .brand {
+  color: var(--on-foot);
+}
+
+.site-footer nav ul {
+  margin-inline: calc(-1 * var(--hl-space-3));
+}
+
+.site-footer nav a {
+  color: var(--on-foot);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+}
+
+.site-footer nav a:hover {
+  text-decoration-thickness: 2px;
+}
+
+.site-footer .tagline {
+  flex-basis: 100%;
+  margin: var(--hl-space-3) 0 0;
+  color: var(--on-foot);
+  font-size: var(--hl-type-label-size);
+  opacity: 0.86;
+}
+
+@media (prefers-color-scheme: dark) {
+  .site-footer {
+    border-top: var(--hl-border-width-thin) solid var(--hl-color-divider);
+  }
+}
+
+/* Guides, legal pages, the changelog, 404 */
+.prose {
+  width: min(100% - 2 * var(--gutter), 44rem);
+  padding-block: var(--hl-space-5) var(--hl-space-6);
+}
+
+.prose h1,
+.prose h2,
+.prose h3 {
+  font-family: var(--hl-type-headline-family);
+  font-weight: var(--hl-font-weight-heavy);
+  text-wrap: balance;
+}
+
+.prose h1 {
+  margin: var(--hl-space-4) 0 var(--hl-space-5);
+  font-size: clamp(2.25rem, 1.6rem + 2.6vw, 3rem);
+  line-height: var(--hl-type-headline-l-line);
+  letter-spacing: var(--hl-type-headline-l-tracking);
+}
+
+.prose h2 {
+  margin: var(--hl-space-7) 0 var(--hl-space-3);
+  font-size: 1.75rem;
+  line-height: 1.1;
+  letter-spacing: var(--hl-type-headline-tracking);
+}
+
+.prose h3 {
+  margin: var(--hl-space-5) 0 var(--hl-space-2);
+  font-size: var(--hl-type-title-size);
+  line-height: var(--hl-type-title-line);
+  letter-spacing: var(--hl-type-title-tracking);
+}
+
+.prose li {
+  margin: var(--hl-space-1) 0;
+}
+
+.prose blockquote {
+  margin: var(--hl-space-4) 0;
+  padding: var(--hl-space-3) var(--hl-space-4);
+  border: var(--hl-border-width) solid var(--hl-color-border);
+  border-radius: var(--hl-radius-m);
+  background: var(--hl-color-surface-raised);
+  box-shadow: var(--sticker);
+}
+
+.prose code {
+  padding: 0.1em 0.3em;
+  border-radius: 6px;
+  background: var(--hl-color-surface-sunken);
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 0.9em;
-  background: var(--surface);
-  padding: 0.1em 0.3em;
-  border-radius: 3px;
 }
 
-pre {
+.prose pre {
   overflow-x: auto;
-  padding: 0.75rem;
-  background: var(--surface);
-  border-radius: 4px;
+  padding: var(--hl-space-3);
+  border-radius: var(--hl-radius-s);
+  background: var(--hl-color-surface-sunken);
   line-height: 1.4;
 }
-pre code { padding: 0; background: none; overflow-wrap: normal; }
 
-table {
+.prose pre code {
+  padding: 0;
+  background: none;
+  overflow-wrap: normal;
+}
+
+.prose table {
   display: block;
   overflow-x: auto;
+  margin: var(--hl-space-4) 0;
   border-collapse: collapse;
-  margin: 1rem 0;
 }
-th, td { border: 1px solid var(--border); padding: 0.4rem 0.6rem; text-align: left; vertical-align: top; min-width: 8rem; }
-th { background: var(--surface); }
 
-img { max-width: 100%; height: auto; }
+.prose th,
+.prose td {
+  min-width: 8rem;
+  padding: var(--hl-space-2) var(--hl-space-3);
+  border: var(--hl-border-width-thin) solid var(--hl-color-divider);
+  text-align: left;
+  vertical-align: top;
+}
 
-.guide-list { list-style: none; padding: 0; }
-.guide-list li { margin: 1rem 0; }
-.guide-list a { font-weight: 600; font-size: 1.125rem; }
-.guide-list p { margin: 0.25rem 0 0; color: var(--muted); }
+.prose th {
+  background: var(--hl-color-surface-sunken);
+}
 
-.updated { color: var(--muted); font-size: 0.9375rem; margin-top: 2rem; }
-.since-note { color: var(--muted); font-size: 0.9375rem; }
-.release-date { color: var(--muted); font-size: 0.9375rem; margin-top: 0; }
-.release-title { font-weight: 600; }
+.prose img {
+  height: auto;
+}
 
-.site-footer { border-top: 1px solid var(--border); padding: 1rem 0 2rem; }
-.site-footer ul { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; }
+.guide-list {
+  display: grid;
+  gap: var(--hl-space-3);
+  padding: 0;
+  list-style: none;
+}
+
+.guide-list li {
+  margin: 0;
+  padding: var(--hl-space-4) var(--hl-space-5);
+  border: var(--hl-border-width) solid var(--hl-color-border);
+  border-radius: var(--hl-radius-m);
+  background: var(--hl-color-surface-raised);
+  box-shadow: var(--sticker);
+}
+
+.guide-list a {
+  font-family: var(--hl-type-headline-family);
+  font-size: var(--hl-type-title-size);
+  font-weight: var(--hl-font-weight-heavy);
+  letter-spacing: var(--hl-type-title-tracking);
+}
+
+.guide-list p {
+  margin: var(--hl-space-1) 0 0;
+  color: var(--hl-color-text-muted);
+}
+
+.updated,
+.since-note,
+.release-date {
+  color: var(--hl-color-text-muted);
+  font-size: var(--hl-type-label-size);
+}
+
+.updated {
+  margin-top: var(--hl-space-6);
+}
+
+.release-date {
+  margin-top: 0;
+}
+
+.release-title {
+  font-weight: var(--hl-font-weight-bold);
+}
 
 .draft-banner {
-  margin: 0 -1rem;
-  padding: 0.75rem 1rem;
-  background: #fff3c4;
-  color: #3d2f00;
-  border-bottom: 2px solid #8a6d00;
+  margin: 0;
+  padding: var(--hl-space-3) var(--gutter);
+  background: var(--hl-color-honey);
+  color: var(--hl-color-on-honey);
+  border-bottom: var(--hl-border-width) solid var(--hl-color-ink);
+}
+
+.prose .draft-banner {
+  border: var(--hl-border-width) solid var(--hl-color-ink);
+  border-radius: var(--hl-radius-s);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+
+  .brand:hover .mark {
+    transform: none;
+  }
+}
+
+/* Forced colours: the masked layers keep their shape in system colours; focus is a system outline. */
+@media (forced-colors: active) {
+  .hex::before,
+  .hex::after,
+  .hex .face::before,
+  .hex .face::after,
+  .hx::before,
+  .hx::after,
+  .hxp,
+  .hxp::before {
+    forced-color-adjust: none;
+  }
+
+  .hex::before,
+  .hex .face::before,
+  .hx::before,
+  .hxp {
+    background: CanvasText;
+  }
+
+  .hex::after,
+  .hex .face::after,
+  .hx::after,
+  .hxp::before {
+    background: Canvas;
+  }
+
+  .hex,
+  .hx,
+  .hxp {
+    color: CanvasText;
+  }
+
+  .hex:focus-visible {
+    filter: none;
+    outline: 3px solid Highlight;
+  }
 }

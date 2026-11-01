@@ -34,9 +34,10 @@ reasons are in [`docs/DECISIONS.md`](docs/DECISIONS.md).
   `scripts/smoke-remote.sh`; its `ref` input rolls functions back.
   `keepalive.yml` reads through `health` daily so the free project doesn't
   pause. Runbook: `docs/DEPLOY.md`.
-- `site/`: the public guides site on hummlist.com, its own Vercel project
-  (Root Directory `site`), static HTML from Markdown in `site/content/`;
-  `site/README.md` explains adding a guide. Separate from the app's build.
+- `site/`: the public site on hummlist.com (landing pages `/de` and `/en`,
+  guides, changelog, legal pages), its own Vercel project (Root Directory
+  `site`), static HTML from Markdown and `site/content/landing/copy.yml`;
+  `site/README.md` explains adding a guide and the landing copy and media. Separate from the app's build.
   Production hides content tagged `since:` a version above the live one:
   the newest public release in `releases/releases.json` (the public release
   record, `releases/README.md`), else `app/pubspec.yaml`.

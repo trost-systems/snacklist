@@ -1,0 +1,80 @@
+checked /de
+
+1 pages, 0 linked files, 5 runs per page
+
+| page | 390 light | 390 dark | 1440 light | 1440 dark | 1440 light motion |
+| ---- | --------- | -------- | ---------- | --------- | ----------------- |
+| /de  | 53        | 53       | 38         | 38        | 4                 |
+
+measured over all reduced-motion runs: 76 tab stops, 68 targets, 12 hex presses, 4 videos
+
+by check: csp 1, console 1, request 2, overflow 39, axe 1, target 1, motion 3, focus 14, press 3
+
+65 distinct problem(s):
+- /de [csp] document: img-src blocked https://example.com/selftest.png (http://127.0.0.1:57623/de:156) (all runs)
+- /de [console] document: Loading the image 'https://example.com/selftest.png' violates the following Content Security Policy directive: "default-src 'self'". Note that 'img-src' was not explicitly set, so 'default-src' is used as a fallback. The action has been blocked. (all runs)
+- /de [request] document: off-origin https://example.com/selftest.png (all runs)
+- /de [request] document: failed https://example.com/selftest.png csp (all runs)
+- /de [overflow] html: page scrolls sideways by 2010px (390 light, 390 dark)
+- /de [overflow] #inhalt > p.selftest-wide:nth-of-type(1): text box spans 0..2400px, viewport 390px (390 light, 390 dark)
+- /de [overflow] #inhalt > p.selftest-faint:nth-of-type(2): text box spans 0..2400px, viewport 390px (390 light, 390 dark)
+- /de [overflow] #features-title: text box spans 620..1260px, viewport 390px (390 light, 390 dark)
+- /de [overflow] #features > div.wrap > div.section-head > p.lead: text box spans 620..1260px, viewport 390px (390 light, 390 dark)
+- /de [overflow] #voice-title: text box spans 644..1284px, viewport 390px (390 light, 390 dark)
+- /de [overflow] #voice > div.wrap.block > div.section-head:nth-of-type(1) > p.lead: text box spans 644..1284px, viewport 390px (390 light, 390 dark)
+- /de [overflow] #privacy-title: text box spans 644..1284px, viewport 390px (390 light, 390 dark)
+- /de [overflow] #privacy > div.wrap.block > div.section-head > p.lead:nth-of-type(1): text box spans 644..1284px, viewport 390px (390 light, 390 dark)
+- /de [overflow] #privacy > div.wrap.block > div.section-head > p.privacy-more:nth-of-type(2): text box spans 644..1284px, viewport 390px (390 light, 390 dark)
+- /de [overflow] #privacy > div.wrap.block > div.section-head > p.privacy-more:nth-of-type(2) > a: text box spans 848..1034px, viewport 390px (390 light, 390 dark)
+- /de [overflow] #privacy > div.wrap.block > ul.checklist > li:nth-of-type(1) > span:nth-of-type(2): text box spans 708..1730px, viewport 390px (390 light, 390 dark)
+- /de [overflow] #privacy > div.wrap.block > ul.checklist > li:nth-of-type(1) > span:nth-of-type(2) > strong: text box spans 708..993px, viewport 390px (390 light, 390 dark)
+- /de [overflow] #privacy > div.wrap.block > ul.checklist > li:nth-of-type(2) > span:nth-of-type(2): text box spans 708..1730px, viewport 390px (390 light, 390 dark)
+- /de [overflow] #privacy > div.wrap.block > ul.checklist > li:nth-of-type(2) > span:nth-of-type(2) > strong: text box spans 708..997px, viewport 390px (390 light, 390 dark)
+- /de [overflow] #privacy > div.wrap.block > ul.checklist > li:nth-of-type(3) > span:nth-of-type(2): text box spans 708..1730px, viewport 390px (390 light, 390 dark)
+- /de [overflow] #privacy > div.wrap.block > ul.checklist > li:nth-of-type(3) > span:nth-of-type(2) > strong: text box spans 708..896px, viewport 390px (390 light, 390 dark)
+- /de [overflow] #privacy > div.wrap.block > ul.checklist > li:nth-of-type(4) > span:nth-of-type(2): text box spans 708..1730px, viewport 390px (390 light, 390 dark)
+- /de [overflow] #privacy > div.wrap.block > ul.checklist > li:nth-of-type(4) > span:nth-of-type(2) > strong:nth-of-type(1): text box spans 708..918px, viewport 390px (390 light, 390 dark)
+- /de [overflow] #privacy > div.wrap.block > ul.checklist > li:nth-of-type(4) > span:nth-of-type(2) > strong:nth-of-type(2): text box spans 1147..1190px, viewport 390px (390 light, 390 dark)
+- /de [overflow] #privacy > div.wrap.block > ul.checklist > li:nth-of-type(4) > span:nth-of-type(2) > strong:nth-of-type(3): text box spans 1207..1257px, viewport 390px (390 light, 390 dark)
+- /de [overflow] #privacy > div.wrap.block > ul.checklist > li:nth-of-type(5) > span:nth-of-type(2): text box spans 708..1730px, viewport 390px (390 light, 390 dark)
+- /de [overflow] #privacy > div.wrap.block > ul.checklist > li:nth-of-type(5) > span:nth-of-type(2) > strong: text box spans 708..901px, viewport 390px (390 light, 390 dark)
+- /de [overflow] #test-title: text box spans 644..1248px, viewport 390px (390 light, 390 dark)
+- /de [overflow] #test > div.wrap.block > p: text box spans 644..1284px, viewport 390px (390 light, 390 dark)
+- /de [overflow] #test > div.wrap.block > div.cta-actions > a.hex.hex--tomato:nth-of-type(1) > span.face: text box spans 644..857px, viewport 390px (390 light, 390 dark)
+- /de [overflow] #test > div.wrap.block > div.cta-actions > a.link-strong:nth-of-type(2): text box spans 881..1034px, viewport 390px (390 light, 390 dark)
+- /de [axe] .selftest-faint: color-contrast: Fix any of the following: Element has insufficient color contrast of 1.35 (foreground color: #dddddd, background color: #ffffff, font size: 12.8pt (17px), font weight: normal). Expected contrast ratio of 4.5:1 (390 light, 390 dark, 1440 light, 1440 dark)
+- /de [target] #inhalt > button.selftest-small: target 20x20 < 48px (button or nav, 48 px rule) "x" (390 light, 390 dark, 1440 light, 1440 dark)
+- /de [motion] body.landing > header.site-header > div.wrap > a.brand:nth-of-type(1) > span.mark: CSSAnimation selftest-spin running under reduced motion (390 light, 390 dark, 1440 light, 1440 dark)
+- /de [motion] body.landing > footer.site-footer > div.wrap > a.brand > span.mark: CSSAnimation selftest-spin running under reduced motion (390 light, 390 dark, 1440 light, 1440 dark)
+- /de [motion] #inhalt > video.selftest-video: video plays under reduced motion (390 light, 390 dark, 1440 light, 1440 dark)
+- /de [focus] body.landing > header.site-header > div.wrap > a.brand:nth-of-type(1): focus indicator changes 0 px by >= 3:1, needs 407 (its perimeter) "Hummlist, zur Startseite" (390 light, 390 dark, 1440 light, 1440 dark)
+- /de [focus] body.landing > header.site-header > div.wrap > nav.nav:nth-of-type(1) > ul > li:nth-of-type(1) > a: focus indicator changes 0 px by >= 3:1, needs 316 (its perimeter) "Anleitungen" (390 light, 390 dark, 1440 light, 1440 dark)
+- /de [focus] body.landing > header.site-header > div.wrap > nav.nav:nth-of-type(1) > ul > li:nth-of-type(2) > a: focus indicator changes 0 px by >= 3:1, needs 316 (its perimeter) "Neuigkeiten" (390 light, 390 dark, 1440 light, 1440 dark)
+- /de [focus] body.landing > header.site-header > div.wrap > nav.lang:nth-of-type(2) > a: focus indicator changes 0 px by >= 3:1, needs 247 (its perimeter) "English" (390 light, 390 dark, 1440 light, 1440 dark)
+- /de [focus] #inhalt > section.hero:nth-of-type(1) > div.wrap.block > div.hero-copy:nth-of-type(1) > div.hero-actions > a.link-strong:nth-of-type(2): focus indicator changes 0 px by >= 3:1, needs 355 (its perimeter) "Mehr zum Test" (390 light, 390 dark, 1440 light, 1440 dark)
+- /de [focus] #voice > div.wrap.block > div.voice-grid:nth-of-type(2) > article.assistant.assistant--siri:nth-of-type(2) > p.muted:nth-of-type(2) > a: focus indicator changes 0 px by >= 3:1, needs 224 (its perimeter) "Kurzbefehl" (390 light, 390 dark, 1440 light, 1440 dark)
+- /de [focus] #privacy > div.wrap.block > div.section-head > p.privacy-more:nth-of-type(2) > a: focus indicator changes 0 px by >= 3:1, needs 412 (its perimeter) "Datenschutzerklärung" (390 light, 390 dark, 1440 light, 1440 dark)
+- /de [focus] #test > div.wrap.block > div.cta-actions > a.link-strong:nth-of-type(2): focus indicator changes 0 px by >= 3:1, needs 403 (its perimeter) "Fragen zum Test?" (390 light, 390 dark, 1440 light, 1440 dark)
+- /de [focus] body.landing > footer.site-footer > div.wrap > a.brand: focus indicator changes 0 px by >= 3:1, needs 407 (its perimeter) "Hummlist, zur Startseite" (390 light, 390 dark, 1440 light, 1440 dark)
+- /de [focus] body.landing > footer.site-footer > div.wrap > nav.footer-site:nth-of-type(1) > ul > li:nth-of-type(1) > a: focus indicator changes 0 px by >= 3:1, needs 316 (its perimeter) "Anleitungen" (390 light, 390 dark, 1440 light, 1440 dark)
+- /de [focus] body.landing > footer.site-footer > div.wrap > nav.footer-site:nth-of-type(1) > ul > li:nth-of-type(2) > a: focus indicator changes 0 px by >= 3:1, needs 316 (its perimeter) "Neuigkeiten" (390 light, 390 dark, 1440 light, 1440 dark)
+- /de [focus] body.landing > footer.site-footer > div.wrap > nav.footer-legal:nth-of-type(2) > ul > li:nth-of-type(1) > a: focus indicator changes 0 px by >= 3:1, needs 304 (its perimeter) "Impressum" (390 light, 390 dark, 1440 light, 1440 dark)
+- /de [focus] body.landing > footer.site-footer > div.wrap > nav.footer-legal:nth-of-type(2) > ul > li:nth-of-type(2) > a: focus indicator changes 0 px by >= 3:1, needs 326 (its perimeter) "Datenschutz" (390 light, 390 dark, 1440 light, 1440 dark)
+- /de [focus] body.landing > footer.site-footer > div.wrap > nav.footer-legal:nth-of-type(2) > ul > li:nth-of-type(3) > a: focus indicator changes 0 px by >= 3:1, needs 211 (its perimeter) "Hilfe" (390 light, 390 dark, 1440 light, 1440 dark)
+- /de [press] body.landing > header.site-header > div.wrap > a.hex.hex--small:nth-of-type(2): face moved 0.0px on press, expected its edge 4px (390 light, 390 dark, 1440 light, 1440 dark)
+- /de [press] #inhalt > section.hero:nth-of-type(1) > div.wrap.block > div.hero-copy:nth-of-type(1) > div.hero-actions > a.hex:nth-of-type(1): face moved 0.0px on press, expected its edge 4px (390 light, 390 dark, 1440 light, 1440 dark)
+- /de [press] #test > div.wrap.block > div.cta-actions > a.hex.hex--tomato:nth-of-type(1): face moved 0.0px on press, expected its edge 4px (390 light, 390 dark, 1440 light, 1440 dark)
+- /de [overflow] html: page scrolls sideways by 960px (1440 light, 1440 dark)
+- /de [overflow] #inhalt > p.selftest-wide:nth-of-type(1): text box spans 0..2400px, viewport 1440px (1440 light, 1440 dark)
+- /de [overflow] #inhalt > p.selftest-faint:nth-of-type(2): text box spans 0..2400px, viewport 1440px (1440 light, 1440 dark)
+- /de [overflow] #privacy > div.wrap.block > ul.checklist > li:nth-of-type(1) > span:nth-of-type(2): text box spans 1186..1706px, viewport 1440px (1440 light, 1440 dark)
+- /de [overflow] #privacy > div.wrap.block > ul.checklist > li:nth-of-type(1) > span:nth-of-type(2) > strong: text box spans 1186..1471px, viewport 1440px (1440 light, 1440 dark)
+- /de [overflow] #privacy > div.wrap.block > ul.checklist > li:nth-of-type(2) > span:nth-of-type(2): text box spans 1186..1706px, viewport 1440px (1440 light, 1440 dark)
+- /de [overflow] #privacy > div.wrap.block > ul.checklist > li:nth-of-type(2) > span:nth-of-type(2) > strong: text box spans 1186..1475px, viewport 1440px (1440 light, 1440 dark)
+- /de [overflow] #privacy > div.wrap.block > ul.checklist > li:nth-of-type(3) > span:nth-of-type(2): text box spans 1186..1706px, viewport 1440px (1440 light, 1440 dark)
+- /de [overflow] #privacy > div.wrap.block > ul.checklist > li:nth-of-type(4) > span:nth-of-type(2): text box spans 1186..1706px, viewport 1440px (1440 light, 1440 dark)
+- /de [overflow] #privacy > div.wrap.block > ul.checklist > li:nth-of-type(4) > span:nth-of-type(2) > strong:nth-of-type(2): text box spans 1625..1669px, viewport 1440px (1440 light, 1440 dark)
+- /de [overflow] #privacy > div.wrap.block > ul.checklist > li:nth-of-type(5) > span:nth-of-type(2): text box spans 1186..1706px, viewport 1440px (1440 light, 1440 dark)
+- /de [overflow] #test-title: text box spans 668..1554px, viewport 1440px (1440 light, 1440 dark)
+
+selftest: crawl.mjs reported all 8 breakages

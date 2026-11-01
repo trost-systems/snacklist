@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>household-sync</title>
+<link rel="stylesheet" href="scenes.css">
+<style>
+  .lead { left: 48px; top: 24px; width: 296px; height: 420px; z-index: 1; }
+  .mate { left: 326px; top: 58px; width: 202px; height: 320px; z-index: 2; padding: 8px; box-shadow: var(--sticker); }
+  .lead .app-head { padding-top: 36px; }
+  .mate .screen { border-radius: calc(var(--hl-radius-xl) - 8px); }
+
+  .mate-head {
+    display: flex;
+    align-items: center;
+    gap: var(--hl-space-2);
+    padding: 14px var(--hl-space-4) 10px;
+    border-bottom: var(--hl-border-width-thin) solid var(--hl-color-divider);
+  }
+  .mate-head .av { --s: 28px; font-size: 12px; }
+
+  .item--arrived {
+    background: var(--hl-color-mint-soft);
+    box-shadow: inset 4px 0 0 var(--hl-color-mint-edge);
+  }
+
+  @media (max-width: 400px) {
+    .lead { left: 24px; top: 24px; width: 280px; height: 480px; }
+    .lead .app-head { padding-top: 20px; }
+    .mate { left: 106px; top: 214px; width: 228px; }
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="phone lead">
+    <div class="screen">
+      <div class="app-head">
+        <div>
+          <div class="hh" data-t="household"></div>
+          <div class="count" data-t="count"></div>
+        </div>
+        <div class="avs">
+          <span class="hxp av av--mia">M</span>
+          <span class="hxp av av--noah">N</span>
+          <span class="hxp av av--ida">I</span>
+        </div>
+      </div>
+      <div class="cat" data-t="chilled"></div>
+      <div class="item"><span class="emo">🥚</span><span class="name"><span class="qty">10×</span> <span data-t="eggs"></span></span><span class="hxp cb"></span></div>
+      <div class="item"><span class="emo">🧈</span><span class="name" data-t="butter"></span><span class="hxp cb"></span></div>
+      <div class="item"><span class="emo">🧀</span><span class="bar" style="width: 52%"></span><span class="hxp cb"></span></div>
+      <div class="item"><span class="emo">🥛</span><span class="bar" style="width: 40%"></span><span class="hxp cb"></span></div>
+      <div class="item"><span class="emo">🥫</span><span class="bar" style="width: 60%"></span><span class="hxp cb"></span></div>
+    </div>
+  </div>
+  <div class="phone mate">
+    <div class="screen">
+      <div class="mate-head"><span class="hxp av av--noah">N</span><span class="fresh-note" data-t="fresh"></span></div>
+      <div class="cat" data-t="chilled"></div>
+      <div class="item item--arrived"><span class="emo">🥚</span><span class="name"><span class="qty">10×</span> <span data-t="eggs"></span></span><span class="hxp cb"></span></div>
+      <div class="item"><span class="emo">🧈</span><span class="bar" style="width: 50%"></span><span class="hxp cb"></span></div>
+      <div class="item"><span class="emo">🧀</span><span class="bar" style="width: 64%"></span><span class="hxp cb"></span></div>
+      <div class="item"><span class="emo">🥛</span><span class="bar" style="width: 42%"></span><span class="hxp cb"></span></div>
+    </div>
+  </div>
+</div>
+<script>
+  globalThis.STRINGS = {
+    de: {
+      household: 'Familie Brandt', count: '6 Artikel', chilled: 'Kühlregal', eggs: 'Eier', butter: 'Butter',
+      fresh: '1 neu von Noah',
+    },
+    en: {
+      household: 'The Brandts', count: '6 items', chilled: 'Chilled', eggs: 'Eggs', butter: 'Butter',
+      fresh: '1 new from Noah',
+    },
+  };
+</script>
+<script src="scene.js"></script>
+</body>
+</html>

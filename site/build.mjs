@@ -6,6 +6,7 @@ import MarkdownIt from 'markdown-it';
 import container from 'markdown-it-container';
 import { parse } from 'node-html-parser';
 import { CATEGORIES, RecordError, compareVersions, draftFileNames, isVersion, parseDraft, parseRecord, publicReleases } from './releases.mjs';
+import { APP_URL, CopyError, readCopy, renderLanding } from './landing.mjs';
 
 const SITE_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_DIR = join(SITE_DIR, '..');
@@ -14,6 +15,7 @@ const PUBLIC_DIR = join(SITE_DIR, 'public');
 export const LOCALES = {
   de: {
     name: 'Deutsch',
+    landing: '/de',
     guidesBase: '/de/anleitungen',
     ogLocale: 'de_DE',
     footer: {
@@ -25,7 +27,12 @@ export const LOCALES = {
     ui: {
       updated: 'Aktualisiert',
       languageNav: 'Sprache',
+      mainNav: 'Hauptnavigation',
       footerNav: 'Rechtliches',
+      siteNav: 'Hummlist',
+      home: 'Hummlist, zur Startseite',
+      skip: 'Zum Inhalt',
+      guides: 'Anleitungen',
       draft: 'ENTWURF: Freigabe durch Peter',
       unreleased: (v) => `Ab Version ${v}, noch nicht im Store`,
       since: (v) => `Ab App-Version ${v}`,
@@ -42,6 +49,7 @@ export const LOCALES = {
   },
   en: {
     name: 'English',
+    landing: '/en',
     guidesBase: '/en/guides',
     ogLocale: 'en_US',
     footer: {
@@ -53,7 +61,12 @@ export const LOCALES = {
     ui: {
       updated: 'Updated',
       languageNav: 'Language',
+      mainNav: 'Main',
       footerNav: 'Legal',
+      siteNav: 'Hummlist',
+      home: 'Hummlist, home',
+      skip: 'Skip to content',
+      guides: 'Guides',
       draft: "DRAFT: pending Peter's approval",
       unreleased: (v) => `From version ${v}, not in the stores yet`,
       since: (v) => `From app version ${v}`,
@@ -77,7 +90,6 @@ const FOOTER_LINKS = [
   { key: 'imprint', shown: () => true },
   { key: 'privacy', shown: (config) => config.privacyPublished },
   { key: 'support', shown: (config) => config.supportPublished },
-  { key: 'changelog', shown: () => true },
 ];
 
 // `draft: true` in the frontmatter: built with a banner and noindex in preview and local builds,
@@ -114,6 +126,13 @@ function headingAttrs(text) {
 }
 
 const md = new MarkdownIt({ html: false, linkify: false, typographer: false, breaks: true });
+
+// Code blocks and tables scroll sideways on phones; keyboard users reach them with tabindex.
+for (const rule of ['fence', 'code_block']) {
+  const render = md.renderer.rules[rule];
+  md.renderer.rules[rule] = (...args) => render(...args).replace(/^<pre>/, '<pre tabindex="0">');
+}
+md.renderer.rules.table_open = () => '<table tabindex="0">\n';
 
 // `::: since 1.4.0` ... `:::` versions the blocks between; the `since` core rule decides what renders.
 md.use(container, 'since', {
@@ -299,6 +318,7 @@ function mainContent(page, guidesByLocale) {
       .join('\n');
     return `<h1>${escapeHtml(page.title)}</h1>\n${page.body}<ul class="guide-list">\n${items}\n</ul>`;
   }
+  if (page.kind === 'landing') return page.body;
   if (page.kind === 'guide') {
     const label = LOCALES[page.locale].ui.updated;
     return `${page.body}<p class="updated">${label}: <time datetime="${page.updated}">${formatDate(page.updated, page.locale)}</time></p>`;
@@ -306,7 +326,38 @@ function mainContent(page, guidesByLocale) {
   return page.body;
 }
 
-function renderPage(page, { config, groups, guidesByLocale }) {
+// The header and footer every page shares: the brand back to the landing page, the guides and
+// the changelog, the language switch, the web app; in the footer the legal links by their flags.
+function siteHeader(page, { switches, copy, current }) {
+  const locale = LOCALES[page.locale];
+  const link = (href, label) => `<li><a href="${href}"${current === href ? ' aria-current="page"' : ''}>${label}</a></li>`;
+  return `<a class="skip" href="#inhalt">${locale.ui.skip}</a>
+<header class="site-header">
+<div class="wrap">
+<a class="brand" href="${locale.landing}" aria-label="${locale.ui.home}"><span class="mark" aria-hidden="true"></span>${SITE_NAME}</a>
+<nav class="nav" aria-label="${locale.ui.mainNav}"><ul>${link(locale.guidesBase, locale.ui.guides)}${link(locale.footer.changelog.href, locale.footer.changelog.label)}</ul></nav>
+<nav class="lang" aria-label="${locale.ui.languageNav}">${switches}</nav>
+<a class="hex hex--small header-cta" href="${APP_URL}"><span class="face" data-copy-id="header.open-app">${escapeHtml(copy.get('header.open-app')[page.locale])}</span></a>
+</div>
+</header>`;
+}
+
+function siteFooter(page, { config, copy }) {
+  const locale = LOCALES[page.locale];
+  const legal = FOOTER_LINKS.filter((link) => link.shown(config))
+    .map(({ key }) => `<li><a href="${locale.footer[key].href}">${locale.footer[key].label}</a></li>`)
+    .join('');
+  return `<footer class="site-footer">
+<div class="wrap">
+<a class="brand" href="${locale.landing}" aria-label="${locale.ui.home}"><span class="mark" aria-hidden="true"></span>${SITE_NAME}</a>
+<nav class="footer-site" aria-label="${locale.ui.siteNav}"><ul><li><a href="${locale.guidesBase}">${locale.ui.guides}</a></li><li><a href="${locale.footer.changelog.href}">${locale.footer.changelog.label}</a></li></ul></nav>
+<nav class="footer-legal" aria-label="${locale.ui.footerNav}"><ul>${legal}</ul></nav>
+<p class="tagline" data-copy-id="footer.tagline">${escapeHtml(copy.get('footer.tagline')[page.locale])}</p>
+</div>
+</footer>`;
+}
+
+function renderPage(page, { config, groups, guidesByLocale, copy }) {
   const { siteUrl, defaultLocale } = config;
   const locale = LOCALES[page.locale];
   const versions = groups.get(page.group);
@@ -323,9 +374,8 @@ function renderPage(page, { config, groups, guidesByLocale }) {
       return `<a href="${href}" lang="${code}" hreflang="${code}">${LOCALES[code].name}</a>`;
     })
     .join(' ');
-  const footer = FOOTER_LINKS.filter((link) => link.shown(config))
-    .map(({ key }) => `<li><a href="${locale.footer[key].href}">${locale.footer[key].label}</a></li>`)
-    .join('');
+  const landing = page.kind === 'landing';
+  const current = page.kind === 'index' ? locale.guidesBase : page.kind === 'changelog' ? locale.footer.changelog.href : null;
   const title = escapeHtml(page.title);
   const description = escapeHtml(page.description);
   const comments = page.notices.map((text) => `<!-- ${text} -->\n`).join('');
@@ -334,7 +384,7 @@ function renderPage(page, { config, groups, guidesByLocale }) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-${page.notices.length > 0 ? `${comments}<meta name="robots" content="noindex">\n` : ''}<title>${title} | ${SITE_NAME}</title>
+${page.notices.length > 0 ? `${comments}<meta name="robots" content="noindex">\n` : ''}<title>${landing ? title : `${title} | ${SITE_NAME}`}</title>
 <meta name="description" content="${description}">
 <link rel="canonical" href="${url}">
 ${alternates}
@@ -347,24 +397,26 @@ ${alternates}
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="${title}">
 <meta name="twitter:description" content="${description}">
-<link rel="icon" href="/favicon.png" type="image/png">
-<link rel="stylesheet" href="/styles.css">
-</head>
-<body>
-${page.notices.map(banner).join('')}<header class="site-header">
-<a class="site-name" href="${locale.guidesBase}">${SITE_NAME}</a>
-<nav aria-label="${locale.ui.languageNav}">${switches}</nav>
-</header>
-<main>
+${HEAD_ASSETS}${landing ? '<link rel="stylesheet" href="/landing.css">\n<script src="/demo.js" defer></script>\n' : ''}</head>
+<body${landing ? ' class="landing"' : ''}>
+${page.notices.map(banner).join('')}${siteHeader(page, { switches, copy, current })}
+<main id="inhalt"${landing ? '' : ' class="wrap prose"'}>
 ${mainContent(page, guidesByLocale)}
 </main>
-<footer class="site-footer">
-<nav aria-label="${locale.ui.footerNav}"><ul>${footer}</ul></nav>
-</footer>
+${siteFooter(page, { config, copy })}
 </body>
 </html>
 `;
 }
+
+const HEAD_ASSETS = `<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preload" href="/fonts/bricolage-grotesque-latin-standard-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/tokens.css">
+<link rel="stylesheet" href="/styles.css">
+`;
 
 function standalonePage({ lang, title, head = '', body }) {
   return `<!doctype html>
@@ -373,11 +425,9 @@ function standalonePage({ lang, title, head = '', body }) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${title}</title>
-${head}<link rel="icon" href="/favicon.png" type="image/png">
-<link rel="stylesheet" href="/styles.css">
-</head>
+${head}${HEAD_ASSETS}</head>
 <body>
-<main>
+<main id="inhalt" class="wrap prose">
 ${body}
 </main>
 </body>
@@ -387,12 +437,12 @@ ${body}
 
 function indexLinks() {
   return Object.entries(LOCALES)
-    .map(([code, l]) => `<li><a href="${l.guidesBase}" lang="${code}" hreflang="${code}">${l.name}</a></li>`)
+    .map(([code, l]) => `<li><a href="${l.landing}" lang="${code}" hreflang="${code}">${l.name}</a></li>`)
     .join('\n');
 }
 
 function rootPage(config) {
-  const target = LOCALES[config.defaultLocale].guidesBase;
+  const target = LOCALES[config.defaultLocale].landing;
   return standalonePage({
     lang: config.defaultLocale,
     title: SITE_NAME,
@@ -421,7 +471,7 @@ function htmlFiles(dir) {
 
 const EXTERNAL = /^(https?:)?\/\//i;
 
-function checkHtml(file, html, outDir, siteUrl) {
+export function checkHtml(file, html, outDir, siteUrl) {
   const name = relative(outDir, file);
   const doc = parse(html);
   const h1s = doc.querySelectorAll('h1').length;
@@ -435,15 +485,29 @@ function checkHtml(file, html, outDir, siteUrl) {
   for (const img of doc.querySelectorAll('img')) {
     if (!img.getAttribute('alt')?.trim()) fail(name, `<img src="${img.getAttribute('src')}"> has no alt text`);
   }
-  for (const tag of ['script', 'iframe', 'object', 'embed']) {
+  for (const tag of ['iframe', 'object', 'embed']) {
     if (doc.querySelector(tag)) fail(name, `<${tag}> is not allowed`);
+  }
+  // Only script files from this site (the CSP blocks inline code and other origins anyway).
+  for (const script of doc.querySelectorAll('script')) {
+    if (!script.getAttribute('src') || script.innerHTML.trim() !== '') fail(name, '<script> is allowed only as a file from this site, without inline code');
   }
   const resources = [
     ...doc.querySelectorAll('link').filter((l) => !['canonical', 'alternate'].includes(l.getAttribute('rel'))).map((l) => l.getAttribute('href')),
-    ...doc.querySelectorAll('img, source').flatMap((el) => [el.getAttribute('src'), ...(el.getAttribute('srcset') ?? '').split(',').map((s) => s.trim().split(/\s+/)[0])]),
+    ...doc.querySelectorAll('img, source, video, track, script').flatMap((el) => [
+      el.getAttribute('src'),
+      el.getAttribute('poster'),
+      ...(el.getAttribute('srcset') ?? '').split(',').map((s) => s.trim().split(/\s+/)[0]),
+    ]),
   ].filter(Boolean);
   for (const url of resources) {
     if (EXTERNAL.test(url)) fail(name, `external resource ${url} is not allowed`);
+    const path = decodeURIComponent(url.split(/[#?]/)[0]);
+    if (!path.startsWith('/') || !existsSync(join(outDir, path)) || !statSync(join(outDir, path)).isFile()) fail(name, `missing resource ${url}`);
+  }
+  const ids = new Set(doc.querySelectorAll('[id]').map((el) => el.getAttribute('id')));
+  for (const a of doc.querySelectorAll('a[href^="#"]')) {
+    if (!ids.has(a.getAttribute('href').slice(1))) fail(name, `link ${a.getAttribute('href')} has no target on the page`);
   }
   const hrefs = doc.querySelectorAll('a[href], link[href]').map((el) => el.getAttribute('href'));
   for (const href of hrefs) {
@@ -522,6 +586,32 @@ function changelogBody(entries, locale) {
   return `<h1>${escapeHtml(ui.title)}</h1>\n${sections.length > 0 ? sections.join('') : `<p>${escapeHtml(ui.empty)}</p>\n`}`;
 }
 
+// The landing page per locale. Every copy id in copy.yml must appear on it, so the file holds no
+// strings nobody sees.
+function landingPages(contentDir, publicDir, config) {
+  const copy = readCopy(contentDir);
+  const used = new Set(['meta.title', 'meta.description', 'header.open-app', 'footer.tagline']);
+  const pages = Object.keys(LOCALES).map((locale) => {
+    const landing = renderLanding({ locale, copy, config, publicDir });
+    for (const id of landing.used) used.add(id);
+    return {
+      kind: 'landing',
+      file: `content/landing/copy.yml (${locale})`,
+      route: LOCALES[locale].landing,
+      group: 'landing',
+      ogType: 'website',
+      locale,
+      title: copy.get('meta.title')[locale],
+      description: copy.get('meta.description')[locale],
+      notices: [],
+      body: landing.html,
+    };
+  });
+  const unused = [...copy.keys()].filter((id) => !used.has(id));
+  if (unused.length > 0) fail('content/landing/copy.yml', `copy ids not used on the landing page: ${unused.join(', ')}`);
+  return { pages, copy };
+}
+
 function changelogPages(repoDir, production) {
   const entries = changelogEntries(repoDir, production);
   return Object.keys(LOCALES).map((locale) => ({
@@ -541,6 +631,7 @@ function changelogPages(repoDir, production) {
 export function build({
   contentDir = join(SITE_DIR, 'content'),
   outDir = join(SITE_DIR, 'dist'),
+  publicDir = PUBLIC_DIR,
   repoDir = REPO_DIR,
   env = {},
   config = readConfig(),
@@ -551,6 +642,8 @@ export function build({
     .flatMap((kind) => KINDS[kind].files(contentDir).map((entry) => loadPage(kind, entry, contentDir, versions)))
     .filter((page) => !(versions.production && page.notices.length > 0))
     .concat(changelogPages(repoDir, versions.production));
+  const landing = landingPages(contentDir, publicDir, config);
+  pages.push(...landing.pages);
 
   const byRoute = new Map([['/', { file: '(root page)' }], ['/404', { file: '(404 page)' }]]);
   for (const page of pages) {
@@ -573,7 +666,7 @@ export function build({
     ]),
   );
 
-  const rendered = pages.map((page) => ({ page, html: renderPage(page, { config, groups, guidesByLocale }) }));
+  const rendered = pages.map((page) => ({ page, html: renderPage(page, { config, groups, guidesByLocale, copy: landing.copy }) }));
 
   const warnings = [];
   const placeholders = rendered.flatMap(({ page, html }) =>
@@ -587,7 +680,7 @@ export function build({
 
   rmSync(outDir, { recursive: true, force: true });
   mkdirSync(outDir, { recursive: true });
-  cpSync(PUBLIC_DIR, outDir, { recursive: true });
+  cpSync(publicDir, outDir, { recursive: true });
   const write = (route, html) => {
     const file = join(outDir, routeFile(route));
     mkdirSync(dirname(file), { recursive: true });
@@ -609,7 +702,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     console.log(`live version: ${live.live} (from ${live.source})`);
     console.log(`built ${routes.length} pages into dist/`);
   } catch (error) {
-    if (!(error instanceof BuildError || error instanceof RecordError)) throw error;
+    if (!(error instanceof BuildError || error instanceof RecordError || error instanceof CopyError)) throw error;
     console.error(`build failed: ${error.message}`);
     process.exit(1);
   }

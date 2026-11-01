@@ -1,7 +1,9 @@
-# hummlist.com guides site
+# hummlist.com
 
-Static HTML from Markdown, no JavaScript in the browser. `build.mjs` (markdown-it, gray-matter)
-writes `dist/`; it is its own Vercel project, separate from the app on app.hummlist.com.
+The landing pages, guides, changelog and legal pages: static HTML from Markdown and YAML.
+`build.mjs` (markdown-it, gray-matter) writes `dist/`; it is its own Vercel project, separate from
+the app on app.hummlist.com. The only JavaScript is `public/demo.js`, which starts and pauses the
+landing pages' demo videos.
 
 ```bash
 npm ci
@@ -12,7 +14,26 @@ npm run preview                        # http://127.0.0.1:55990 with vercel.json
 ```
 
 `scripts/gates/site.sh` (the `site` CI gate, `scripts/verify.sh --only site`) runs the tests and a
-production build.
+production build. The browser checks (axe, contrast, Lighthouse, CSP crawl) live in `checks/`
+(`checks/README.md`).
+
+## Landing pages
+
+`/de` and `/en` (job 53) are built by `landing.mjs` from one copy file and the media folder:
+
+- `content/landing/copy.yml`: every string, with `de`, `en`, `status` (`draft` or `reused`) and
+  `source`. A string missing in one language, an unknown field or an id the page doesn't use fails
+  the build. In the page every string carries `data-copy-id="<id>"`. After a change run
+  `node scripts/copy-needed.mjs`, which writes `COPY_NEEDED.md` (the list for Hummlist Launch; a
+  test fails while it is stale).
+- `public/media/`: the illustrations' posters (light and dark, wide and compact) and the demo
+  videos' files; `public/media/README.md` names them. A missing poster, a poster of the wrong
+  shape or half a video set fails the build. The illustrations are filmed from the HTML scenes in
+  `scenes/` (`scenes/README.md`), which are not part of the build.
+- Styles: `public/tokens.css` is generated from `design/tokens/hummlist.tokens.json`
+  (`node design/tokens/build.mjs`, never edit it); `public/styles.css` (every page: fonts, hex
+  controls, header, footer, prose) and `public/landing.css` use its `--hl-*` variables. Fonts
+  (Bricolage Grotesque, Inter, OFL texts beside them) are in `public/fonts/`.
 
 ## Adding a guide
 
@@ -140,6 +161,6 @@ of the new version (`docs/DEPLOY.md`, "Guides site").
 Project settings: Root Directory `site`, "Include files outside the root directory in the Build
 Step" on; everything else comes from `vercel.json` (install
 `npm ci`, build `npm run build`, output `dist`). `/` redirects by `Accept-Language`: `de…` to
-`/de/anleitungen`, any other language to `/en/guides`, no header to `/de/anleitungen`.
+`/de`, any other language to `/en`, no header to `/de` (the landing pages).
 `dist/index.html` (meta refresh) only serves hosts without these redirects. Every response
 carries `X-Robots-Tag: noindex` until the beta launch; remove that header then.

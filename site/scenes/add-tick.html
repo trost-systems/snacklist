@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>add-tick</title>
+<link rel="stylesheet" href="scenes.css">
+<style>
+  .phone { left: 48px; top: -40px; width: 372px; height: 400px; }
+  .filler { visibility: hidden; }
+  .phone .app-head { display: none; }
+
+  .added { left: 404px; top: 158px; width: 124px; }
+  .added .plus { display: none; }
+
+  @media (max-width: 400px) {
+    .phone { left: 24px; top: 64px; width: 310px; height: 420px; }
+    .phone .app-head { display: flex; padding-top: 30px; }
+    .filler { display: none; }
+    .added .plus { display: grid; --s: 30px; }
+    .added { left: 50%; top: 22px; width: auto; translate: -50% 0; white-space: nowrap; transform: rotate(-2deg); }
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="phone">
+    <div class="screen">
+      <div class="app-head">
+        <div>
+          <div class="hh" data-t="household"></div>
+          <div class="count" data-t="count"></div>
+        </div>
+        <div class="avs">
+          <span class="hxp av av--mia">M</span>
+          <span class="hxp av av--noah">N</span>
+          <span class="hxp av av--ida">I</span>
+        </div>
+      </div>
+      <div class="item filler"><span class="emo">🥖</span><span class="bar" style="width: 46%"></span><span class="hxp cb"></span></div>
+      <div class="cat" data-t="produce"></div>
+      <div class="item item--done"><span class="emo">🍌</span><span class="name"><span class="qty">6×</span> <span data-t="bananas"></span></span><span class="hxp cb"><i class="mi">&#xe156;</i></span></div>
+      <div class="item"><span class="emo">🥒</span><span class="name" data-t="cucumbers"></span><span class="hxp cb"></span></div>
+      <div class="item"><span class="emo">🍅</span><span class="name"><span class="qty">500 g</span> <span data-t="tomatoes"></span></span><span class="hxp cb"></span></div>
+      <div class="item"><span class="emo">🥑</span><span class="name"><span class="qty">2×</span> <span data-t="avocados"></span></span><span class="hxp cb"></span></div>
+      <div class="compose hx"><span class="plus hxp"><i class="mi">&#xe047;</i></span><span data-t="hint"></span></div>
+    </div>
+  </div>
+  <p class="sticker added"><span class="plus hxp"><i class="mi">&#xe047;</i></span><span data-t="added"></span></p>
+</div>
+<script>
+  globalThis.STRINGS = {
+    de: {
+      household: 'Familie Brandt', count: '4 Artikel', produce: 'Obst &amp; Gemüse', bananas: 'Bananen',
+      avocados: 'Avocados', cucumbers: 'Gurke', tomatoes: 'Tomaten',
+      hint: 'Was brauchst du?', added: 'Hinzugefügt: Avocados',
+    },
+    en: {
+      household: 'The Brandts', count: '4 items', produce: 'Fruit &amp; veg', bananas: 'Bananas',
+      avocados: 'Avocados', cucumbers: 'Cucumber', tomatoes: 'Tomatoes',
+      hint: 'What do you need?', added: 'Added: Avocados',
+    },
+  };
+</script>
+<script src="scene.js"></script>
+</body>
+</html>

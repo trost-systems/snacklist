@@ -37,7 +37,7 @@ test('the CLI logs the live version and reports a bad record as a build failure'
   const root = tempDir();
   const site = join(root, 'site');
   mkdirSync(site);
-  for (const f of ['build.mjs', 'releases.mjs', 'config.json', 'package.json', 'public', 'content']) cpSync(join(SITE_DIR, f), join(site, f), { recursive: true });
+  for (const f of ['build.mjs', 'releases.mjs', 'landing.mjs', 'config.json', 'package.json', 'public', 'content']) cpSync(join(SITE_DIR, f), join(site, f), { recursive: true });
   symlinkSync(join(SITE_DIR, 'node_modules'), join(site, 'node_modules'));
   mkdirSync(join(root, 'releases'));
   mkdirSync(join(root, 'app'));
@@ -64,7 +64,7 @@ test('production leaves out a guide the stores do not have yet, like a draft', a
   assert.ok(!hrefs(page('/de/anleitungen')).includes(NEU), 'not on the index');
   const en = page(NEW);
   assert.deepEqual(alternates(en), { en: `https://hummlist.com${NEW}`, 'x-default': `https://hummlist.com${NEW}` });
-  assert.equal(en.querySelector('header nav a').getAttribute('href'), '/de/anleitungen', 'the switch falls back to the index');
+  assert.equal(en.querySelector('header nav.lang a').getAttribute('href'), '/de/anleitungen', 'the switch falls back to the index');
   for (const route of htmlRoutes(outDir)) assert.doesNotMatch(readFileSync(join(outDir, route === '/' ? 'index.html' : `${route.slice(1)}.html`), 'utf8'), /noch nicht im Store|not in the stores yet/, route);
   const res = await serve(outDir, [NEU, NEW]);
   assert.equal(res[NEU].status, 404);
@@ -80,7 +80,7 @@ test('preview shows a guide the stores do not have yet with banner, comment and 
     assert.ok(html(outDir, NEU).includes(`<!-- ${BANNER_DE} -->`), 'comment');
     assert.equal(meta(doc, 'robots'), 'noindex');
     assert.ok(hrefs(page('/de/anleitungen')).includes(NEU), 'on the index');
-    assert.equal(page(NEW).querySelector('header nav a').getAttribute('href'), NEU);
+    assert.equal(page(NEW).querySelector('header nav.lang a').getAttribute('href'), NEU);
     assert.equal(doc.querySelector('.since-note'), null, 'no note before any public release');
     assert.equal(meta(page(NEW), 'robots'), undefined, 'the released translation is indexable');
     assert.equal((await serve(outDir, [NEU]))[NEU].status, 200);
@@ -199,7 +199,7 @@ test('a block waiting for a version: production removes it, preview wraps it wit
   assert.doesNotMatch(prod, /Geheim|geheim|since-block/);
   assert.match(prod, /Schritt drei/);
   assert.match(prod, /Danach\./);
-  for (const word of ['Tilde', 'Backtick']) assert.ok(prod.includes(`<pre><code class="language-text">::: since 1.4.0\n${word}\n:::\n</code></pre>`), `${word} fence stays literal`);
+  for (const word of ['Tilde', 'Backtick']) assert.ok(prod.includes(`<pre tabindex="0"><code class="language-text">::: since 1.4.0\n${word}\n:::\n</code></pre>`), `${word} fence stays literal`);
 
   const preview = buildSite({ files }).page(NEU);
   const blocks = preview.querySelectorAll('.since-block');

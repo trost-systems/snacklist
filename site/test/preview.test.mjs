@@ -28,13 +28,14 @@ const get = (path, headers = {}) =>
     }).on('error', reject).end();
   });
 
-test('the root redirects by Accept-Language', async () => {
+test('the root redirects by Accept-Language to the landing pages', async () => {
   const cases = [
-    ['de-DE,de;q=0.9', '/de/anleitungen'],
-    ['de', '/de/anleitungen'],
-    ['en-US,en;q=0.9,de;q=0.8', '/en/guides'],
-    ['fr', '/en/guides'],
-    [undefined, '/de/anleitungen'],
+    ['de-DE,de;q=0.9', '/de'],
+    ['de', '/de'],
+    ['  de-AT', '/de'],
+    ['en-US,en;q=0.9,de;q=0.8', '/en'],
+    ['fr', '/en'],
+    [undefined, '/de'],
   ];
   for (const [language, location] of cases) {
     const res = await get('/', language === undefined ? {} : { 'Accept-Language': language });
@@ -72,8 +73,14 @@ test('clean URLs, trailing slashes and 404', async () => {
   assert.equal((await get('/styles.css')).status, 200);
 });
 
-test('every page carries the privacy headers and no cookie', async () => {
-  const paths = [...htmlRoutes(site.outDir).filter((r) => r !== '/'), '/', '/styles.css', '/favicon.png', '/nope'];
+test('every page and file carries the privacy headers, noindex included, and no cookie', async () => {
+  const files = readdirSync(site.outDir, { recursive: true, withFileTypes: true })
+    .filter((f) => f.isFile() && !f.name.endsWith('.html'))
+    .map((f) => `/${join(f.parentPath, f.name).slice(site.outDir.length + 1)}`);
+  for (const file of ['/landing.css', '/demo.js', '/tokens.css', '/favicon.svg', '/fonts/inter-latin-wght-normal.woff2', '/media/hero-de-wide.webp']) {
+    assert.ok(files.includes(file), file);
+  }
+  const paths = [...htmlRoutes(site.outDir).filter((r) => r !== '/'), '/', '/de', '/en', ...files, '/nope'];
   for (const path of paths) {
     const res = await get(path);
     assert.equal(res.headers.get('set-cookie'), null, path);
@@ -84,12 +91,14 @@ test('every page carries the privacy headers and no cookie', async () => {
   }
 });
 
-test('no file in the build has a script or an external resource', () => {
+test('the landing pages load one script, /demo.js; no file in the build has an inline script or an external resource', () => {
   const files = readdirSync(site.outDir, { recursive: true }).filter((f) => /\.(html|css)$/.test(f));
   assert.ok(files.length >= 9);
   for (const file of files) {
     const text = readFileSync(join(site.outDir, file), 'utf8');
-    assert.doesNotMatch(text, /<script/i, file);
+    const scripts = [...text.matchAll(/<script[^>]*>/gi)].map((m) => m[0]);
+    assert.deepEqual(scripts, ['de.html', 'en.html'].includes(file) ? ['<script src="/demo.js" defer>'] : [], file);
+    assert.doesNotMatch(text, /<script[^>]*>[^<]/i, file);
     assert.doesNotMatch(text, /<iframe/i, file);
     assert.doesNotMatch(text, /(src|srcset)="(https?:)?\/\//i, file);
     assert.doesNotMatch(text, /url\(\s*['"]?(https?:)?\/\//i, file);

@@ -1,0 +1,1798 @@
+{
+  "$description": "Hummlist design tokens (job 52): option 6b Hex Frische (original 5 colours) with option 6s yellow in dark mode. Source of app/lib/design/tokens.g.dart and site/public/tokens.css (node design/tokens/build.mjs).",
+  "$extensions": {
+    "com.hummlist": {
+      "option": "hummlist (6b Hex Frische, original 5 colours, 6s yellow)",
+      "contrastPairs": [
+        [
+          "on-honey",
+          "honey",
+          4.5
+        ],
+        [
+          "text",
+          "honey-soft",
+          4.5
+        ],
+        [
+          "text",
+          "accent-soft",
+          4.5
+        ],
+        [
+          "text",
+          "success-soft",
+          4.5
+        ],
+        [
+          "text",
+          "surface-sunken",
+          4.5
+        ],
+        [
+          "text-muted",
+          "surface-sunken",
+          4.5
+        ],
+        [
+          "brand",
+          "surface-raised",
+          4.5
+        ],
+        [
+          "brand",
+          "honey-soft",
+          4.5
+        ],
+        [
+          "accent",
+          "surface",
+          4.5
+        ],
+        [
+          "accent",
+          "surface-raised",
+          4.5
+        ],
+        [
+          "success",
+          "surface-raised",
+          3
+        ],
+        [
+          "border",
+          "surface",
+          3
+        ],
+        [
+          "border",
+          "surface-raised",
+          3
+        ],
+        [
+          "on-mint",
+          "mint",
+          4.5
+        ],
+        [
+          "text",
+          "mint-soft",
+          4.5
+        ],
+        [
+          "on-cobalt",
+          "cobalt",
+          4.5
+        ],
+        [
+          "on-tomato",
+          "tomato",
+          4.5
+        ],
+        [
+          "on-accent-soft",
+          "accent-soft",
+          4.5
+        ],
+        [
+          "on-inverse",
+          "inverse",
+          4.5
+        ],
+        [
+          "text-muted",
+          "accent-soft",
+          4.5
+        ],
+        [
+          "honey",
+          "cobalt",
+          3
+        ],
+        [
+          "ink",
+          "on-cobalt",
+          4.5
+        ],
+        [
+          "ink",
+          "honey",
+          3
+        ],
+        [
+          "ink",
+          "tomato",
+          3
+        ],
+        [
+          "ink",
+          "mint",
+          3
+        ],
+        [
+          "accent",
+          "accent-soft",
+          3
+        ],
+        [
+          "honey",
+          "inverse",
+          3
+        ],
+        [
+          "text-muted",
+          "honey",
+          4.5,
+          "light"
+        ],
+        [
+          "brand",
+          "honey",
+          4.5,
+          "light"
+        ],
+        [
+          "honey",
+          "surface",
+          3,
+          "dark"
+        ],
+        [
+          "honey",
+          "surface-raised",
+          3,
+          "dark"
+        ],
+        [
+          "honey-edge",
+          "surface",
+          3,
+          "dark"
+        ],
+        [
+          "edge",
+          "honey",
+          3
+        ],
+        [
+          "on-honey",
+          "honey-soft",
+          4.5,
+          "light"
+        ]
+      ],
+      "variant": "soft",
+      "artStyle": "Hex Frische (Original 5 Farben)",
+      "contourRequired": [
+        {
+          "pair": [
+            "honey",
+            "surface"
+          ],
+          "mode": "light",
+          "contour": "edge",
+          "why": "Yellow controls on light surfaces keep the 2 px navy contour and edge"
+        },
+        {
+          "pair": [
+            "tomato",
+            "honey"
+          ],
+          "contour": "edge",
+          "why": "Tomato on a yellow block only with the navy contour; never tomato text"
+        },
+        {
+          "pair": [
+            "honey",
+            "brand"
+          ],
+          "mode": "dark",
+          "contour": "edge",
+          "why": "Yellow next to #9fb6ff never as touching fields without contour"
+        },
+        {
+          "pair": [
+            "on-cobalt",
+            "honey"
+          ],
+          "never": true,
+          "why": "No white or brand-light text on yellow: on-yellow text is on-honey"
+        }
+      ]
+    }
+  },
+  "color": {
+    "light": {
+      "$type": "color",
+      "brand": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1059,
+            0.2471,
+            0.6824
+          ],
+          "hex": "#1b3fae"
+        },
+        "$description": "Kobalt: Schrift, Linien und Mengen („2×“) auf hellem Grund"
+      },
+      "on-brand": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            1,
+            1
+          ],
+          "hex": "#ffffff"
+        }
+      },
+      "honey": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            0.8863,
+            0.2902
+          ],
+          "hex": "#ffe24a"
+        },
+        "$description": "Zitrone: Knöpfe und Blöcke, auch direkt auf und neben Kobalt, immer mit Navy darauf"
+      },
+      "on-honey": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0588,
+            0.0824,
+            0.1882
+          ],
+          "hex": "#0f1530"
+        }
+      },
+      "honey-soft": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            0.949,
+            0.6588
+          ],
+          "hex": "#fff2a8"
+        },
+        "$description": "Zitrone hell: neue Einträge, Antworten"
+      },
+      "accent": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1059,
+            0.2471,
+            0.6824
+          ],
+          "hex": "#1b3fae"
+        },
+        "$description": "Kobalt hell, Kobalt-Hell nachts: Links und Fokusring auf hellem Grund"
+      },
+      "on-accent": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            1,
+            1
+          ],
+          "hex": "#ffffff"
+        }
+      },
+      "accent-soft": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.8824,
+            0.9098,
+            1
+          ],
+          "hex": "#e1e8ff"
+        },
+        "$description": "Kobalt-Nebel (brand-container von 5): ein Block, Sprechblasen, Avatare"
+      },
+      "surface": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.9686,
+            0.9686,
+            0.949
+          ],
+          "hex": "#f7f7f2"
+        },
+        "$description": "Kreideweiß von 5: die Luft zwischen den Blöcken"
+      },
+      "surface-raised": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            1,
+            1
+          ],
+          "hex": "#ffffff"
+        },
+        "$description": "Karten, Listen, Eingabefeld"
+      },
+      "surface-sunken": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.9255,
+            0.9373,
+            0.9647
+          ],
+          "hex": "#eceff6"
+        },
+        "$description": "Blaugrauer Hauch von 5: Mulden und Bildflächen"
+      },
+      "text": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0588,
+            0.0824,
+            0.1882
+          ],
+          "hex": "#0f1530"
+        },
+        "$description": "Navy statt Schwarz"
+      },
+      "text-muted": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.2941,
+            0.3255,
+            0.4235
+          ],
+          "hex": "#4b536c"
+        }
+      },
+      "border": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0588,
+            0.0824,
+            0.1882
+          ],
+          "hex": "#0f1530"
+        },
+        "$description": "Die 2-px-Kontur in Navy"
+      },
+      "divider": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.8275,
+            0.8471,
+            0.902
+          ],
+          "hex": "#d3d8e6"
+        },
+        "$description": "Haarlinien (die border-Farbe von 5)"
+      },
+      "ink": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0588,
+            0.0824,
+            0.1882
+          ],
+          "hex": "#0f1530"
+        },
+        "$description": "Kontur auf Zitrone, Kante unter Karten"
+      },
+      "success": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.051,
+            0.4784,
+            0.3059
+          ],
+          "hex": "#0d7a4e"
+        },
+        "$description": "Abgehakt und synchron"
+      },
+      "on-success": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            1,
+            1
+          ],
+          "hex": "#ffffff"
+        }
+      },
+      "success-soft": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.8392,
+            0.9608,
+            0.9059
+          ],
+          "hex": "#d6f5e7"
+        }
+      },
+      "warning": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.5412,
+            0.3255,
+            0
+          ],
+          "hex": "#8a5300"
+        }
+      },
+      "on-warning": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            1,
+            1
+          ],
+          "hex": "#ffffff"
+        }
+      },
+      "error": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.7686,
+            0.1569,
+            0.0588
+          ],
+          "hex": "#c4280f"
+        }
+      },
+      "on-error": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            1,
+            1
+          ],
+          "hex": "#ffffff"
+        }
+      },
+      "edge": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0588,
+            0.0824,
+            0.1882
+          ],
+          "hex": "#0f1530"
+        }
+      },
+      "honey-edge": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.8314,
+            0.698,
+            0.0588
+          ],
+          "hex": "#d4b20f"
+        }
+      },
+      "surface-edge": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.7647,
+            0.7922,
+            0.8784
+          ],
+          "hex": "#c3cae0"
+        }
+      },
+      "mint": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.498,
+            0.8902,
+            0.7216
+          ],
+          "hex": "#7fe3b8"
+        },
+        "$description": "Mint: Nebenblock und Häkchen"
+      },
+      "on-mint": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0588,
+            0.0824,
+            0.1882
+          ],
+          "hex": "#0f1530"
+        }
+      },
+      "mint-soft": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.8392,
+            0.9608,
+            0.9059
+          ],
+          "hex": "#d6f5e7"
+        }
+      },
+      "mint-edge": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.2471,
+            0.749,
+            0.5412
+          ],
+          "hex": "#3fbf8a"
+        },
+        "$description": "Seitenwand eines Mint-Knopfs"
+      },
+      "cobalt": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1059,
+            0.2471,
+            0.6824
+          ],
+          "hex": "#1b3fae"
+        },
+        "$description": "Kobalt als Fläche: Hero, Privatsphäre, E-Mail-Kopf"
+      },
+      "on-cobalt": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            1,
+            1
+          ],
+          "hex": "#ffffff"
+        }
+      },
+      "on-accent-soft": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0745,
+            0.1843,
+            0.5255
+          ],
+          "hex": "#132f86"
+        },
+        "$description": "Schrift auf Kobalt-Nebel"
+      },
+      "tomato": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            0.3569,
+            0.2275
+          ],
+          "hex": "#ff5b3a"
+        },
+        "$description": "Tomate: echter Akzentblock (Stimme) und Hervorhebung"
+      },
+      "on-tomato": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0588,
+            0.0824,
+            0.1882
+          ],
+          "hex": "#0f1530"
+        }
+      },
+      "tomato-edge": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.7843,
+            0.251,
+            0.1647
+          ],
+          "hex": "#c8402a"
+        },
+        "$description": "Seitenwand eines Tomaten-Knopfs"
+      },
+      "inverse": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0588,
+            0.0824,
+            0.1882
+          ],
+          "hex": "#0f1530"
+        },
+        "$description": "Navy-Band: der Fuß"
+      },
+      "on-inverse": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.9529,
+            0.9647,
+            1
+          ],
+          "hex": "#f3f6ff"
+        }
+      }
+    },
+    "dark": {
+      "$type": "color",
+      "brand": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.6235,
+            0.7137,
+            1
+          ],
+          "hex": "#9fb6ff"
+        }
+      },
+      "on-brand": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0431,
+            0.0627,
+            0.1412
+          ],
+          "hex": "#0b1024"
+        }
+      },
+      "honey": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            0.8863,
+            0.2902
+          ],
+          "hex": "#ffe24a"
+        }
+      },
+      "on-honey": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0431,
+            0.0627,
+            0.1412
+          ],
+          "hex": "#0b1024"
+        }
+      },
+      "honey-soft": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.2078,
+            0.1922,
+            0.0588
+          ],
+          "hex": "#35310f"
+        }
+      },
+      "accent": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.6235,
+            0.7137,
+            1
+          ],
+          "hex": "#9fb6ff"
+        }
+      },
+      "on-accent": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0431,
+            0.0627,
+            0.1412
+          ],
+          "hex": "#0b1024"
+        }
+      },
+      "accent-soft": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1137,
+            0.1686,
+            0.4
+          ],
+          "hex": "#1d2b66"
+        }
+      },
+      "surface": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0431,
+            0.0627,
+            0.1412
+          ],
+          "hex": "#0b1024"
+        }
+      },
+      "surface-raised": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0824,
+            0.1098,
+            0.2275
+          ],
+          "hex": "#151c3a"
+        }
+      },
+      "surface-sunken": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0667,
+            0.0902,
+            0.2078
+          ],
+          "hex": "#111735"
+        }
+      },
+      "text": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.9373,
+            0.9529,
+            1
+          ],
+          "hex": "#eff3ff"
+        }
+      },
+      "text-muted": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.6902,
+            0.7255,
+            0.8471
+          ],
+          "hex": "#b0b9d8"
+        }
+      },
+      "border": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.498,
+            0.549,
+            0.7686
+          ],
+          "hex": "#7f8cc4"
+        }
+      },
+      "divider": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1843,
+            0.2275,
+            0.4
+          ],
+          "hex": "#2f3a66"
+        }
+      },
+      "ink": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0118,
+            0.0196,
+            0.0588
+          ],
+          "hex": "#03050f"
+        }
+      },
+      "success": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.3843,
+            0.7882,
+            0.6157
+          ],
+          "hex": "#62c99d"
+        }
+      },
+      "on-success": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0431,
+            0.0627,
+            0.1412
+          ],
+          "hex": "#0b1024"
+        }
+      },
+      "success-soft": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0706,
+            0.2275,
+            0.1922
+          ],
+          "hex": "#123a31"
+        }
+      },
+      "warning": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            0.8235,
+            0.3529
+          ],
+          "hex": "#ffd25a"
+        }
+      },
+      "on-warning": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0431,
+            0.0627,
+            0.1412
+          ],
+          "hex": "#0b1024"
+        }
+      },
+      "error": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            0.5412,
+            0.451
+          ],
+          "hex": "#ff8a73"
+        }
+      },
+      "on-error": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0431,
+            0.0627,
+            0.1412
+          ],
+          "hex": "#0b1024"
+        }
+      },
+      "edge": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0118,
+            0.0196,
+            0.0588
+          ],
+          "hex": "#03050f"
+        }
+      },
+      "honey-edge": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.702,
+            0.6078,
+            0.102
+          ],
+          "hex": "#b39b1a"
+        }
+      },
+      "surface-edge": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1647,
+            0.2039,
+            0.3882
+          ],
+          "hex": "#2a3463"
+        }
+      },
+      "mint": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.3843,
+            0.7882,
+            0.6157
+          ],
+          "hex": "#62c99d"
+        }
+      },
+      "on-mint": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0431,
+            0.0627,
+            0.1412
+          ],
+          "hex": "#0b1024"
+        }
+      },
+      "mint-soft": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0706,
+            0.2275,
+            0.1922
+          ],
+          "hex": "#123a31"
+        }
+      },
+      "mint-edge": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.2275,
+            0.6196,
+            0.4706
+          ],
+          "hex": "#3a9e78"
+        }
+      },
+      "cobalt": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1412,
+            0.2824,
+            0.7529
+          ],
+          "hex": "#2448c0"
+        }
+      },
+      "on-cobalt": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            1,
+            1
+          ],
+          "hex": "#ffffff"
+        }
+      },
+      "on-accent-soft": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.8824,
+            0.9098,
+            1
+          ],
+          "hex": "#e1e8ff"
+        }
+      },
+      "tomato": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.9412,
+            0.3765,
+            0.2471
+          ],
+          "hex": "#f0603f"
+        }
+      },
+      "on-tomato": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0431,
+            0.0627,
+            0.1412
+          ],
+          "hex": "#0b1024"
+        }
+      },
+      "tomato-edge": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.6902,
+            0.2706,
+            0.1882
+          ],
+          "hex": "#b04530"
+        }
+      },
+      "inverse": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0667,
+            0.0902,
+            0.2078
+          ],
+          "hex": "#111735"
+        }
+      },
+      "on-inverse": {
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.9373,
+            0.9529,
+            1
+          ],
+          "hex": "#eff3ff"
+        }
+      }
+    }
+  },
+  "font": {
+    "family": {
+      "$type": "fontFamily",
+      "display": {
+        "$value": [
+          "Bricolage Grotesque",
+          "Helvetica Neue",
+          "Arial",
+          "sans-serif"
+        ],
+        "$extensions": {
+          "com.hummlist": {
+            "license": "OFL-1.1",
+            "source": "@fontsource-variable/bricolage-grotesque 5.3.0 (ateliertriay/bricolage)",
+            "files": "fonts/bricolage-grotesque-latin-standard-normal.woff2",
+            "weight": "200 800",
+            "role": "Überschriften, Zahlen, Ladennamen"
+          }
+        }
+      },
+      "sans": {
+        "$value": [
+          "Inter",
+          "system-ui",
+          "-apple-system",
+          "Segoe UI",
+          "Roboto",
+          "sans-serif"
+        ],
+        "$extensions": {
+          "com.hummlist": {
+            "license": "OFL-1.1",
+            "source": "@fontsource-variable/inter 5.3.0 (rsms/inter)",
+            "files": "fonts/inter-latin-wght-normal.woff2",
+            "weight": "100 900",
+            "role": "Alles andere: Fließtext, Artikel, Knöpfe"
+          }
+        }
+      }
+    },
+    "weight": {
+      "$type": "fontWeight",
+      "regular": {
+        "$value": 400
+      },
+      "medium": {
+        "$value": 500
+      },
+      "bold": {
+        "$value": 650
+      },
+      "heavy": {
+        "$value": 800
+      }
+    }
+  },
+  "type": {
+    "$type": "typography",
+    "display": {
+      "$value": {
+        "fontFamily": "{font.family.display}",
+        "fontSize": {
+          "value": 4.5,
+          "unit": "rem"
+        },
+        "fontWeight": 800,
+        "lineHeight": 0.94,
+        "letterSpacing": {
+          "value": -0.045,
+          "unit": "em"
+        }
+      }
+    },
+    "headline-l": {
+      "$value": {
+        "fontFamily": "{font.family.display}",
+        "fontSize": {
+          "value": 3,
+          "unit": "rem"
+        },
+        "fontWeight": 800,
+        "lineHeight": 0.98,
+        "letterSpacing": {
+          "value": -0.04,
+          "unit": "em"
+        }
+      }
+    },
+    "headline": {
+      "$value": {
+        "fontFamily": "{font.family.display}",
+        "fontSize": {
+          "value": 2.25,
+          "unit": "rem"
+        },
+        "fontWeight": 800,
+        "lineHeight": 1,
+        "letterSpacing": {
+          "value": -0.035,
+          "unit": "em"
+        }
+      }
+    },
+    "title": {
+      "$value": {
+        "fontFamily": "{font.family.display}",
+        "fontSize": {
+          "value": 1.375,
+          "unit": "rem"
+        },
+        "fontWeight": 700,
+        "lineHeight": 1.15,
+        "letterSpacing": {
+          "value": -0.02,
+          "unit": "em"
+        }
+      }
+    },
+    "body-l": {
+      "$value": {
+        "fontFamily": "{font.family.sans}",
+        "fontSize": {
+          "value": 1.1875,
+          "unit": "rem"
+        },
+        "fontWeight": 400,
+        "lineHeight": 1.5,
+        "letterSpacing": {
+          "value": -0.006,
+          "unit": "em"
+        }
+      }
+    },
+    "body": {
+      "$value": {
+        "fontFamily": "{font.family.sans}",
+        "fontSize": {
+          "value": 1.0625,
+          "unit": "rem"
+        },
+        "fontWeight": 400,
+        "lineHeight": 1.55,
+        "letterSpacing": {
+          "value": 0,
+          "unit": "em"
+        }
+      }
+    },
+    "label": {
+      "$value": {
+        "fontFamily": "{font.family.sans}",
+        "fontSize": {
+          "value": 0.9375,
+          "unit": "rem"
+        },
+        "fontWeight": 700,
+        "lineHeight": 1.2,
+        "letterSpacing": {
+          "value": 0,
+          "unit": "em"
+        }
+      }
+    },
+    "caption": {
+      "$value": {
+        "fontFamily": "{font.family.sans}",
+        "fontSize": {
+          "value": 0.75,
+          "unit": "rem"
+        },
+        "fontWeight": 700,
+        "lineHeight": 1.3,
+        "letterSpacing": {
+          "value": 0.09,
+          "unit": "em"
+        }
+      }
+    }
+  },
+  "space": {
+    "1": {
+      "$value": {
+        "value": 4,
+        "unit": "px"
+      }
+    },
+    "2": {
+      "$value": {
+        "value": 8,
+        "unit": "px"
+      }
+    },
+    "3": {
+      "$value": {
+        "value": 12,
+        "unit": "px"
+      }
+    },
+    "4": {
+      "$value": {
+        "value": 16,
+        "unit": "px"
+      }
+    },
+    "5": {
+      "$value": {
+        "value": 24,
+        "unit": "px"
+      }
+    },
+    "6": {
+      "$value": {
+        "value": 32,
+        "unit": "px"
+      }
+    },
+    "7": {
+      "$value": {
+        "value": 48,
+        "unit": "px"
+      }
+    },
+    "8": {
+      "$value": {
+        "value": 64,
+        "unit": "px"
+      }
+    },
+    "9": {
+      "$value": {
+        "value": 96,
+        "unit": "px"
+      }
+    },
+    "$type": "dimension"
+  },
+  "radius": {
+    "$type": "dimension",
+    "s": {
+      "$value": {
+        "value": 12,
+        "unit": "px"
+      }
+    },
+    "m": {
+      "$value": {
+        "value": 18,
+        "unit": "px"
+      }
+    },
+    "l": {
+      "$value": {
+        "value": 28,
+        "unit": "px"
+      }
+    },
+    "xl": {
+      "$value": {
+        "value": 40,
+        "unit": "px"
+      }
+    },
+    "full": {
+      "$value": {
+        "value": 999,
+        "unit": "px"
+      }
+    }
+  },
+  "border": {
+    "$type": "dimension",
+    "width": {
+      "$value": {
+        "value": 2,
+        "unit": "px"
+      },
+      "$description": "Sticker outline"
+    },
+    "width-thin": {
+      "$value": {
+        "value": 1,
+        "unit": "px"
+      }
+    }
+  },
+  "shadow": {
+    "$type": "shadow",
+    "sticker-s": {
+      "$value": [
+        {
+          "color": {
+            "colorSpace": "srgb",
+            "components": [
+              0.0588,
+              0.0824,
+              0.1882
+            ],
+            "hex": "#0f1530"
+          },
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": 2,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 0,
+            "unit": "px"
+          },
+          "spread": {
+            "value": 0,
+            "unit": "px"
+          }
+        }
+      ]
+    },
+    "sticker": {
+      "$value": [
+        {
+          "color": {
+            "colorSpace": "srgb",
+            "components": [
+              0.0588,
+              0.0824,
+              0.1882
+            ],
+            "hex": "#0f1530"
+          },
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": 4,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 0,
+            "unit": "px"
+          },
+          "spread": {
+            "value": 0,
+            "unit": "px"
+          }
+        }
+      ]
+    },
+    "sticker-l": {
+      "$value": [
+        {
+          "color": {
+            "colorSpace": "srgb",
+            "components": [
+              0.0588,
+              0.0824,
+              0.1882
+            ],
+            "hex": "#0f1530"
+          },
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": 8,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 0,
+            "unit": "px"
+          },
+          "spread": {
+            "value": 0,
+            "unit": "px"
+          }
+        }
+      ]
+    },
+    "night-s": {
+      "$value": [
+        {
+          "color": {
+            "colorSpace": "srgb",
+            "components": [
+              0.0118,
+              0.0196,
+              0.0588
+            ],
+            "hex": "#03050f"
+          },
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": 2,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 0,
+            "unit": "px"
+          },
+          "spread": {
+            "value": 0,
+            "unit": "px"
+          }
+        },
+        {
+          "color": {
+            "colorSpace": "srgb",
+            "components": [
+              0.6235,
+              0.7137,
+              1
+            ],
+            "alpha": 0.122,
+            "hex": "#9fb6ff"
+          },
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": 0,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 12,
+            "unit": "px"
+          },
+          "spread": {
+            "value": 0,
+            "unit": "px"
+          }
+        }
+      ]
+    },
+    "night": {
+      "$value": [
+        {
+          "color": {
+            "colorSpace": "srgb",
+            "components": [
+              0.0118,
+              0.0196,
+              0.0588
+            ],
+            "hex": "#03050f"
+          },
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": 4,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 0,
+            "unit": "px"
+          },
+          "spread": {
+            "value": 0,
+            "unit": "px"
+          }
+        },
+        {
+          "color": {
+            "colorSpace": "srgb",
+            "components": [
+              0.6235,
+              0.7137,
+              1
+            ],
+            "alpha": 0.141,
+            "hex": "#9fb6ff"
+          },
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": 0,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 24,
+            "unit": "px"
+          },
+          "spread": {
+            "value": 0,
+            "unit": "px"
+          }
+        }
+      ]
+    },
+    "night-l": {
+      "$value": [
+        {
+          "color": {
+            "colorSpace": "srgb",
+            "components": [
+              0.0118,
+              0.0196,
+              0.0588
+            ],
+            "hex": "#03050f"
+          },
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": 8,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 0,
+            "unit": "px"
+          },
+          "spread": {
+            "value": 0,
+            "unit": "px"
+          }
+        },
+        {
+          "color": {
+            "colorSpace": "srgb",
+            "components": [
+              0.6235,
+              0.7137,
+              1
+            ],
+            "alpha": 0.18,
+            "hex": "#9fb6ff"
+          },
+          "offsetX": {
+            "value": 0,
+            "unit": "px"
+          },
+          "offsetY": {
+            "value": 0,
+            "unit": "px"
+          },
+          "blur": {
+            "value": 48,
+            "unit": "px"
+          },
+          "spread": {
+            "value": 0,
+            "unit": "px"
+          }
+        }
+      ]
+    }
+  },
+  "motion": {
+    "duration": {
+      "$type": "duration",
+      "short": {
+        "$value": {
+          "value": 180,
+          "unit": "ms"
+        }
+      },
+      "medium": {
+        "$value": {
+          "value": 260,
+          "unit": "ms"
+        }
+      },
+      "long": {
+        "$value": {
+          "value": 360,
+          "unit": "ms"
+        }
+      },
+      "press": {
+        "$value": {
+          "value": 70,
+          "unit": "ms"
+        },
+        "$description": "Face sinking on press"
+      },
+      "release": {
+        "$value": {
+          "value": 160,
+          "unit": "ms"
+        },
+        "$description": "Face returning after press or hover"
+      }
+    },
+    "easing": {
+      "$type": "cubicBezier",
+      "bounce": {
+        "$value": [
+          0.34,
+          1.56,
+          0.64,
+          1
+        ],
+        "$description": "Overshoot: ticks, presses, stickers settling"
+      },
+      "standard": {
+        "$value": [
+          0.2,
+          0,
+          0,
+          1
+        ]
+      },
+      "exit": {
+        "$value": [
+          0.4,
+          0,
+          1,
+          1
+        ]
+      },
+      "press": {
+        "$value": [
+          0.3,
+          0,
+          0.6,
+          1
+        ]
+      }
+    }
+  },
+  "shape": {
+    "hex": {
+      "tip": {
+        "$type": "number",
+        "$value": 0.2887,
+        "$description": "Width of each pointed end as a fraction of the control's height. 0.2887 = 1/(2·tan 60°): all six corners are 120°, the honeycomb angle."
+      },
+      "reference-height": {
+        "$type": "dimension",
+        "$value": {
+          "value": 48,
+          "unit": "px"
+        },
+        "$description": "Height at which corner-radius applies; the radius scales with the control's height"
+      },
+      "corner-radius": {
+        "$type": "dimension",
+        "$value": {
+          "value": 8,
+          "unit": "px"
+        },
+        "$description": "Hex Soft: every corner rounded with this radius at reference-height (48 px), scaled with the control's height"
+      }
+    }
+  },
+  "depth": {
+    "$type": "dimension",
+    "edge": {
+      "$value": {
+        "value": 4,
+        "unit": "px"
+      }
+    },
+    "edge-l": {
+      "$value": {
+        "value": 6,
+        "unit": "px"
+      }
+    },
+    "lift": {
+      "$value": {
+        "value": 2,
+        "unit": "px"
+      }
+    },
+    "press": {
+      "$value": "{depth.edge}",
+      "$description": "How far the face sinks on press: all the way into its edge"
+    }
+  },
+  "focus": {
+    "ring": {
+      "$type": "dimension",
+      "width": {
+        "$value": {
+          "value": 3,
+          "unit": "px"
+        },
+        "$description": "Focus ring around a hex control, drawn on the unmasked control so the hex mask never clips it"
+      },
+      "gap": {
+        "$value": {
+          "value": 2,
+          "unit": "px"
+        },
+        "$description": "Surface-coloured gap between the control and its focus ring"
+      }
+    }
+  },
+  "size": {
+    "target": {
+      "$type": "dimension",
+      "$value": {
+        "value": 48,
+        "unit": "px"
+      },
+      "$description": "Minimum interactive target, face plus edge"
+    }
+  }
+}

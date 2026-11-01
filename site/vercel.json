@@ -10,16 +10,16 @@
     {
       "source": "/",
       "has": [{ "type": "header", "key": "accept-language", "value": "^\\s*de.*" }],
-      "destination": "/de/anleitungen",
+      "destination": "/de",
       "permanent": false
     },
     {
       "source": "/",
       "has": [{ "type": "header", "key": "accept-language" }],
-      "destination": "/en/guides",
+      "destination": "/en",
       "permanent": false
     },
-    { "source": "/", "destination": "/de/anleitungen", "permanent": false },
+    { "source": "/", "destination": "/de", "permanent": false },
     { "source": "/privacy", "destination": "/en/privacy", "permanent": true }
   ],
   "headers": [

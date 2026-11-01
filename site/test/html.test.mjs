@@ -59,9 +59,16 @@ test('guides show the localized updated date', () => {
   assert.match(page('/en/guides/siri-shortcut').querySelector('main').text, /Updated: October 27, 2026/);
 });
 
-test('the root page refreshes to the German index and links both indexes', () => {
+test('the root page refreshes to the German landing page and links both landing pages', () => {
   const doc = buildSite().page('/');
   assert.equal(doc.querySelector('html').getAttribute('lang'), 'de');
-  assert.equal(doc.querySelector('meta[http-equiv="refresh"]').getAttribute('content'), '0; url=/de/anleitungen');
-  assert.deepEqual(doc.querySelectorAll('a').map((a) => a.getAttribute('href')), ['/de/anleitungen', '/en/guides']);
+  assert.equal(doc.querySelector('meta[http-equiv="refresh"]').getAttribute('content'), '0; url=/de');
+  assert.deepEqual(doc.querySelectorAll('a').map((a) => a.getAttribute('href')), ['/de', '/en']);
+});
+
+test('code blocks and tables can take keyboard focus, since they scroll sideways on phones', () => {
+  const doc = buildSite().page('/de/anleitungen/siri-kurzbefehl');
+  const scrollers = doc.querySelectorAll('main pre, main table');
+  assert.ok(scrollers.length >= 3);
+  for (const el of scrollers) assert.equal(el.getAttribute('tabindex'), '0', el.tagName);
 });

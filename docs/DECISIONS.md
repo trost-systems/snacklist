@@ -5106,3 +5106,92 @@ does not touch them.
     has no anchor and #148's pages stay untouched, so the link opens the page. The longer text
     makes the sheet taller; it stays scrollable and closes with its drag handle or back.
 
+
+## Job 53: first hummlist.com homepage (landing pages /de and /en), 2026-11-01
+
+1. **Routes `/de` and `/en`.** The landing pages sit at the language root, next to
+   `/de/anleitungen` and `/en/guides`, and form one translation group (`hreflang` de, en,
+   `x-default` /de). `/` keeps its `Accept-Language` redirects (`de…` to `/de`, any other language
+   to `/en`, no header to `/de`, `Vary: Accept-Language`) and only changes the targets;
+   `dist/index.html` refreshes to `/de`. Every other route, guide, changelog, legal page,
+   `/privacy` and the footer flags work as before (site tests). `de.html` beside a `de/` folder is
+   the pattern `/en/guides` already uses in production. Changing the paths touches
+   `LOCALES.landing` in `site/build.mjs`, `site/vercel.json` and the tests.
+2. **Tokens from job 52, verbatim.** Job 52 owns `design/tokens/hummlist.tokens.json` and
+   `design/tokens/build.mjs`, which writes `site/public/tokens.css` and
+   `app/lib/design/tokens.g.dart`. 52 had not merged, so this branch takes all four files from
+   `origin/job/52-design-6b-app` unchanged, plus the `--check` line in `scripts/gates/lint.sh`
+   (not 52's app-icon check, whose generator is not here). On every rebase onto a main with 52,
+   take 52's versions. The site never hand-edits `tokens.css`: `styles.css` and `landing.css` use
+   only its `--hl-*` variables. The favicons (`favicon.svg`, `favicon.png`,
+   `apple-touch-icon.png`) are copies of 52's generated app icon #5 web outputs.
+3. **Noindex, checked and unchanged.** `site/vercel.json` sends `X-Robots-Tag: noindex` on
+   `/(.*)`, which covers every response: `/`, the landing pages, every asset and the 404.
+   `build.mjs` adds `<meta name="robots" content="noindex">` only to pages with a notice (draft or
+   unreleased); the landing pages have none, so they carry only the header, like the guides. There
+   is no `robots.txt` and no sitemap, and none was added. Tests: every built file and route is
+   served with the header (`preview.test.mjs`), including `/de`, `/en` and the media.
+4. **One copy file for both languages.** `site/content/landing/copy.yml` maps a copy id to `de`,
+   `en`, `status` (`draft` or `reused`) and `source`. A missing language, an unknown field or an
+   unused id fails the build. Each string is rendered with `data-copy-id`, and
+   `site/scripts/copy-needed.mjs` generates `site/COPY_NEEDED.md` from the YAML. A test fails while
+   it is stale, so the list for Hummlist Launch cannot drift from the page. Copy reused from the
+   6b prototype (DE only) counts as a draft, since its English is new; only strings already
+   published word for word (the help page's „geschlossener Test für Familie und Freunde“, the
+   privacy policy's „keine Werbung und verkauft keine Daten“)
+   are `reused`.
+5. **Claims follow published pages.** The privacy block repeats the privacy policy and the help
+   page. The prototype's „Konto weg, Daten weg“ became „Löschen geht in der App“, because the
+   policy keeps deleted data in backups up to 90 days. No pricing (the paywall is off), no store
+   badges (no listing yet): the calls to action are the web app at app.hummlist.com (the help page
+   links it already) and the test block. The prototype's Alexa card is gone. MCP is described
+   generically ("ein KI-Assistent wie Claude"). Siri is marked „Bald“ / "Coming soon" with draft
+   copy and points to the shortcut guide that works today.
+6. **Three demo-video slots, not five.** The brief listed add and tick, household sync and voice
+   (Siri, Android, AI chat via MCP). Peter dropped the Siri and Assistant videos for job 54
+   (54 ADDENDUM 1, 2026-10-31 21:33), so the slots are `add-tick`, `household-sync` and
+   `mcp-chat`; `site/public/media/README.md` names the files job 54 drops in.
+7. **Video slot design.** A `<picture>` poster (light and dark, wide 16:9 and compact 4:5,
+   switched at 600 px like the videos) is the slot's ground. The `<video>` appears only when all
+   four files (WebM and MP4, wide and compact) and the captions exist. Half a set fails the build,
+   and so does a poster of the wrong shape. The video is `muted loop playsinline preload="none"`,
+   with `controls`, a `poster`, `<source media>` per width, a captions `<track>` and an
+   `aria-label` (the text alternative); it never has `autoplay`. `public/demo.js`, the site's
+   only script (self-hosted, so the CSP `default-src 'self'` allows it), removes the native
+   controls, shows a hex play/pause button, and plays a video only while half of it is in view
+   and `prefers-reduced-motion` is not `reduce`. With reduced motion the poster stays until the
+   button is pressed; without JavaScript the native controls stay. The build's HTML check now
+   allows script files of this site only, no inline code, and requires every local resource (img,
+   source, video poster, track, script) and every `#anchor` to exist.
+8. **Illustrations are filmed stills, not live HTML.** Per the hummlist-ui-craft skill, the hero
+   and the feature cards are HTML/CSS scenes in `site/scenes/` (not part of the build), filmed by
+   `node site/scenes/film-all.mjs` into 40 WebP stills (5 scenes, DE and EN, wide and compact,
+   light and dark, 29 to 50 KB each). No loops: the three demo slots get job 54's real app
+   footage, and a still hero paints fast and looks the same with reduced motion. Members are the
+   fictional Mia, Noah and Ida of the demo household „Familie Brandt“, never Peter or Lea. The
+   seeded stores dm, Lidl and Edeka appear as text in Hummlist colours, never as logos. The item
+   emoji follow the app's own `item_icon.dart`.
+9. **Shared header and footer on every page.** The brand (app icon #5) links the landing page of
+   the page's language. The header links Anleitungen/Guides and Neuigkeiten/What's new (with
+   `aria-current`), the language switch and "Im Browser öffnen". The footer has a site nav
+   (guides, changelog) and the legal nav (imprint, plus privacy and help by their flags) and a
+   tagline. Every page gets a skip link to `main#inhalt`. Guides, legal pages and the changelog
+   keep their content and get the 6b type and colours.
+10. **Browser checks are manual, not a CI gate.** `site/checks/` (Playwright, axe-core,
+    Lighthouse) needs Chromium and takes minutes; the `site` gate stays a fast Node build and
+    test. Run the checks after any change to the site's CSS, templates or media
+    (`site/checks/README.md`).
+11. **Icons** in the page are Material Symbols paths (Apache 2.0): check, play, pause, open in new.
+    `js-yaml` 3.15.2 (already in the lockfile under gray-matter) is now a direct dependency to read
+    the copy file.
+12. **Fresh-eye review, what stands.** A reviewer saw only the screenshots. Fixed: the hex
+    decoration behind the hero button (the hero has no empty corner, so it has none now), the footer
+    links' gutter on phones, the nested shadow in the voice card, plus the crawl's findings (the Siri
+    link's focus ring in dark mode, `tabindex="0"` on the guides' sideways-scrolling code blocks and
+    tables). Kept on purpose: the framed white media box in each colour card. It holds job 54's
+    real video footage, which needs a rectangle with its own ground, and the 6b prototype frames its
+    feature visuals the same way. Also kept: the tomato test button on the lemon block (6b's choice,
+    allowed with the navy contour), the five equal colour blocks (6b's rhythm), and the „euch“ (the
+    household) beside „du“ (the reader) in the prototype copy, which is Launch's call
+    (COPY_NEEDED.md). The filler bars in the cropped rows and the cropped next message in the
+    compact chat follow the hummlist-ui-craft word budget.

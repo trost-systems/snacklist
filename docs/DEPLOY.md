@@ -84,7 +84,8 @@ invite links still point at `https://app.hummlist.com` (`APP_URL`).
 ## Guides site: hummlist.com from every push to main
 
 The Vercel project `hummlist-site` (Root Directory `site`, `site/vercel.json`)
-builds the guides site from every push. A push to `main` is its production
+builds the site from every push: the landing pages `/de` and `/en` (where `/`
+redirects by `Accept-Language`), the guides, the changelog and the legal pages. A push to `main` is its production
 deployment and goes live on `https://hummlist.com` without a manual step
 (`www.hummlist.com` and `hummlist-site.vercel.app` redirect there). Every other
 branch gets a preview deployment behind Vercel Authentication; the PR shows it

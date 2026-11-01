@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>hero</title>
+<link rel="stylesheet" href="scenes.css">
+<style>
+  :root { --ground: var(--hl-color-cobalt); }
+
+  .phone { left: 72px; top: 72px; width: 356px; height: 520px; }
+
+  .sync { left: 22px; top: 26px; max-width: 250px; transform: rotate(-3deg); }
+
+  @media (max-width: 400px) {
+    .phone { left: 24px; top: 52px; width: 310px; height: 400px; }
+    .phone .app-head { padding-top: 30px; }
+    .sync { left: 50%; top: 20px; translate: -50% 0; max-width: none; white-space: nowrap; }
+    .compact-hide { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="phone">
+    <div class="screen">
+      <div class="app-head">
+        <div>
+          <div class="hh" data-t="household"></div>
+          <div class="count" data-t="count"></div>
+        </div>
+        <div class="avs">
+          <span class="hxp av av--mia">M</span>
+          <span class="hxp av av--noah">N</span>
+          <span class="hxp av av--ida">I</span>
+        </div>
+      </div>
+      <div class="list">
+        <div class="compact-hide">
+          <div class="store"><span class="store-name">dm</span><span class="store-rule"></span><span class="store-count" data-t="dmCount"></span></div>
+          <div class="cat" data-t="drugstore"></div>
+          <div class="item"><span class="emo">🪥</span><span class="name" data-t="toothpaste"></span><span class="hxp cb"></span></div>
+        </div>
+        <div class="store"><span class="store-name">Edeka</span><span class="store-rule"></span><span class="store-count" data-t="edekaCount"></span></div>
+        <div class="cat" data-t="produce"></div>
+        <div class="item item--done"><span class="emo">🍌</span><span class="name"><span class="qty">6×</span> <span data-t="bananas"></span></span><span class="hxp cb"><i class="mi">&#xe156;</i></span></div>
+                <div class="cat" data-t="chilled"></div>
+        <div class="item item--fresh"><span class="emo">🥛</span><span class="name" data-t="oatmilk"></span><span class="hxp cb"></span></div>
+      </div>
+      <div class="compose hx"><span class="plus hxp"><i class="mi">&#xe047;</i></span><span data-t="hint"></span></div>
+    </div>
+  </div>
+  <p class="sticker sync"><span class="hxp av av--mia">M</span><span data-t="sync"></span></p>
+</div>
+<script>
+  globalThis.STRINGS = {
+    de: {
+      household: 'Familie Brandt', count: '3 Artikel', dmCount: '<b>1</b> Artikel', edekaCount: '<b>2</b> Artikel',
+      drugstore: 'Drogerie', toothpaste: 'Zahnpasta', produce: 'Obst &amp; Gemüse', bananas: 'Bananen',
+      chilled: 'Kühlregal', oatmilk: 'Hafermilch', hint: 'Was brauchst du?',
+      sync: 'Mia hat „Hafermilch“ hinzugefügt',
+    },
+    en: {
+      household: 'The Brandts', count: '3 items', dmCount: '<b>1</b> item', edekaCount: '<b>2</b> items',
+      drugstore: 'Drugstore', toothpaste: 'Toothpaste', produce: 'Fruit &amp; veg', bananas: 'Bananas',
+      chilled: 'Chilled', oatmilk: 'Oat milk', hint: 'What do you need?',
+      sync: 'Mia added “Oat milk”',
+    },
+  };
+</script>
+<script src="scene.js"></script>
+</body>
+</html>
