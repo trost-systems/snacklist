@@ -1,5 +1,5 @@
 begin;
-select plan(61);
+select plan(64);
 
 create function pg_temp.login(uid uuid) returns void language plpgsql as $$
 begin
@@ -229,6 +229,15 @@ select throws_ok($$ select count(*) from public.household_departures where house
   '42501', null, 'departures of another household are not readable');
 select throws_ok($$ select count(*) from public.household_departures where household_id = (select id from hb) $$,
   '42501', null, 'nor of one''s own');
+
+-- Job 58: adding, renaming and deleting stores.
+select pg_temp.login('00000000-0000-0000-0000-0000000000b1');
+select throws_ok($$ select public.add_store((select id from ha), 'Rewe') $$,
+  '42501', 'not_a_member', 'adding a store to another household is denied');
+select throws_ok($$ select public.rename_store((select id from alice_store), 'Aldi') $$,
+  '42501', 'not_a_member', 'renaming another household''s store is denied');
+select throws_ok($$ select public.delete_store((select id from alice_store)) $$,
+  '42501', 'not_a_member', 'deleting another household''s store is denied');
 
 select * from finish();
 rollback;
