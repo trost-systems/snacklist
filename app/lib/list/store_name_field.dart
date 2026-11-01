@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:family_groceries/design/hex_border.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/model.dart';
@@ -70,6 +71,7 @@ class _StoreNameFieldState() extends State<StoreNameField> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
+    final t = HummlistColors.of(Theme.of(context).brightness);
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
@@ -131,6 +133,12 @@ class _StoreNameFieldState() extends State<StoreNameField> {
           ),
           IconButton.filled(
             key: ValueKey(widget.confirmKey),
+            style: IconButton.styleFrom(
+              minimumSize: const Size(56, 48),
+              shape: HexBorder(
+                side: BorderSide(color: t.edge, width: HlBorder.width),
+              ),
+            ),
             tooltip: widget.confirmLabel,
             onPressed: _busy || _empty ? null : () => unawaited(_confirm()),
             icon: const Icon(Icons.check),
