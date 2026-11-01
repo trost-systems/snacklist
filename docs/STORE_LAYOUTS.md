@@ -6,6 +6,10 @@ then "Reihenfolge bearbeiten"). The defaults are seeded by
 `public.apply_default_store_layouts` in
 `supabase/migrations/20261022233800_classifier_stores.sql`.
 
+A store the household adds itself (job 58, `public.add_store`) has no researched
+layout: it starts from the household's route order (the "Ohne Laden" order),
+every category shown, and is edited the same way.
+
 None of the three chains publishes a floor plan, and Edeka stores are run by
 independent retailers, so layouts vary from store to store. The defaults below
 come from store reports in the German retail trade press. Where those reports

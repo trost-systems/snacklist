@@ -10,7 +10,7 @@ An item on the list has a Bezeichnung (name), an optional Marke (brand), Eigensc
 - `ed-a11y` gives screen readers "Bearbeiten" and "Löschen" as custom actions on the row, besides the long-press action that edits.
 - `ed-prefill` prefills `edit-name`, `edit-brand`, `edit-quantity` and `edit-properties`, sets the store chip (`chip-store`, showing the store such as "dm", or "Ohne Laden") and the category chip (`chip-category`, showing the category such as "👶 Drogerie"). Screen readers name them "Laden: <store>" and "Kategorie: <name>".
 - `ed-steppers` changes the Menge with `edit-quantity-minus` and `edit-quantity-plus`: "2" gives "3", "2 l" gives "3 l", "500 g" gives "600 g", and an empty Menge counts as 1. The steppers hide for a Menge that does not start with a number. "−" is disabled at 1.
-- `ed-chips` folds out `store-option-<id>` (plus `store-option-none`) or `category-option-<id>`. A pick folds them back, and the sheet grows and shrinks with them.
+- `ed-chips` folds out `store-option-<id>` (plus `store-option-none` and `store-option-new`, `features/stores.md` `st-own-picker`) or `category-option-<id>`. A pick folds them back, and the sheet grows and shrinks with them.
 - `ed-patch` makes Fertig (`edit-done`) write only the changed columns. An unchanged Fertig writes nothing, and Fertig is disabled while the name is empty.
 - `ed-delete` makes Löschen (`edit-delete`) delete the item with "<name> gelöscht" and "Rückgängig".
 - `ed-cancel` makes Abbrechen (`edit-cancel`) close the sheet without writing.
