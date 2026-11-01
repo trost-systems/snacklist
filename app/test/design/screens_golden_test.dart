@@ -322,6 +322,28 @@ void main() {
       );
     });
 
+    // Job 58: "+ Neuer Laden" turned into its field, a name typed.
+    testWidgets('add sheet new store, $mode', (tester) async {
+      await _pumpShell(tester, brightness);
+      final field = find.byKey(const ValueKey('add-item-field'));
+      await tester.tap(field);
+      await tester.enterText(field, 'Milch');
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('chip-store')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('store-option-new')));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey('store-new-field')),
+        'Rewe',
+      );
+      await tester.pumpAndSettle();
+      await expectLater(
+        find.byType(MaterialApp),
+        matchesGoldenFile('goldens/add-sheet-new-store-$mode.png'),
+      );
+    });
+
     testWidgets('settings, $mode', (tester) async {
       await pumpMore(
         tester,
