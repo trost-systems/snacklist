@@ -39,6 +39,7 @@ void main() {
     Future<void> Function()? act, {
     Item? item,
     Size size = const Size(400, 900),
+    Future<Store?> Function(String name)? onCreateStore,
   }) async {
     EditResult? result;
     var closed = false;
@@ -60,6 +61,10 @@ void main() {
                     context,
                     item: item ?? milk,
                     catalog: catalog,
+                    onCreateStore:
+                        onCreateStore ??
+                        (name) async =>
+                            Store(id: 'new', name: name, sortOrder: 30),
                   );
                   closed = true;
                 },
@@ -201,6 +206,35 @@ void main() {
       'store_id': 'dm',
       'category_id': 'other',
     });
+  });
+
+  testWidgets('a store made in the sheet is picked and saved', (tester) async {
+    final made = <String>[];
+    final result = await run(
+      tester,
+      () async {
+        await tester.tap(key('chip-store'));
+        await tester.pumpAndSettle();
+        await tester.tap(key('store-option-new'));
+        await tester.pumpAndSettle();
+        await tester.enterText(key('store-new-field'), 'Rewe');
+        await tester.pump();
+        await tester.tap(key('store-new-confirm'));
+        await tester.pumpAndSettle();
+        expect(key('store-new-field'), findsNothing, reason: 'folded back');
+        expect(
+          find.descendant(of: key('chip-store'), matching: find.text('Rewe')),
+          findsOneWidget,
+        );
+        await tester.tap(key('edit-done'));
+      },
+      onCreateStore: (name) async {
+        made.add(name);
+        return Store(id: 'rewe', name: name, sortOrder: 30);
+      },
+    );
+    expect(made, ['Rewe']);
+    expect((result! as EditSaved).changes.toColumns(), {'store_id': 'rewe'});
   });
 
   testWidgets('Ohne Laden clears the store', (tester) async {

@@ -868,6 +868,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'No stores yet. Add one and the list sorts your items along its walking route.';
 
   @override
+  String storeMenu(String store) {
+    return 'Options for $store';
+  }
+
+  @override
+  String get storeRenameAction => 'Rename';
+
+  @override
   String storeDeleteBody(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

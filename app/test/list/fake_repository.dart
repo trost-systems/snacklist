@@ -155,7 +155,11 @@ class FakeRepository() implements ListRepository {
     final id = 'new-$name';
     stores = [
       ...stores,
-      Store(id: id, name: name, sortOrder: stores.last.sortOrder + 10),
+      Store(
+        id: id,
+        name: name,
+        sortOrder: (stores.lastOrNull?.sortOrder ?? 0) + 10,
+      ),
     ];
     return id;
   }

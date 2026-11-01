@@ -1472,6 +1472,18 @@ abstract class AppLocalizations {
   /// **'Noch keine Läden. Leg einen an, dann sortiert die Liste deine Artikel nach seinem Laufweg.'**
   String get storesEmpty;
 
+  /// stores screen: a store's menu button (rename, delete)
+  ///
+  /// In de, this message translates to:
+  /// **'Optionen für {store}'**
+  String storeMenu(String store);
+
+  /// stores screen: menu entry
+  ///
+  /// In de, this message translates to:
+  /// **'Umbenennen'**
+  String get storeRenameAction;
+
   /// delete confirmation: how many open items lose their store
   ///
   /// In de, this message translates to:

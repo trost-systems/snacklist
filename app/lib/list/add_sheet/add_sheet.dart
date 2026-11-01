@@ -272,6 +272,7 @@ class const _Content({
                   pickedStore != null && pickedStore.value != first?.storeId,
               categoryChanged:
                   sheet.category != null && sheet.category != first?.categoryId,
+              onCreateStore: list.addStore,
               onStore: (id) {
                 context.read<AddSheetCubit>().pickStore(id);
                 onPicked();

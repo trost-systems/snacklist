@@ -1465,6 +1465,47 @@ void main() {
       expect(tester.widget<TextField>(addField()).controller!.text, 'Gurken!');
     });
 
+    testWidgets('a store made in the add sheet is picked for the item; '
+        'Escape leaves only the store field', (tester) async {
+      phone(tester);
+      await pumpList(tester, seed: seedUsuals);
+      await tester.tap(addField());
+      await tester.enterText(addField(), 'Gurken');
+      await settleRows(tester);
+      await tester.tap(find.byKey(const ValueKey('chip-store')));
+      await tester.pumpAndSettle();
+      final newField = find.byKey(const ValueKey('store-new-field'));
+      await tester.tap(find.byKey(const ValueKey('store-option-new')));
+      await tester.pumpAndSettle();
+      expect(
+        FocusManager.instance.primaryFocus,
+        tester.widget<TextField>(newField).focusNode,
+        reason: 'from the add field into the store field',
+      );
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
+      expect(newField, findsNothing);
+      expect(sheetRow('Gurken, Wie getippt'), findsOneWidget, reason: 'open');
+
+      await tester.tap(find.byKey(const ValueKey('store-option-new')));
+      await tester.pumpAndSettle();
+      await tester.enterText(newField, 'Rewe');
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pumpAndSettle();
+      expect(repo.catalogCalls, ['addStore(Rewe)']);
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('chip-store')),
+          matching: find.text('Rewe'),
+        ),
+        findsOneWidget,
+      );
+      expect(FocusManager.instance.primaryFocus, fieldFocus(tester));
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pumpAndSettle();
+      expect(itemNamed('Gurken').storeId, 'new-Rewe');
+    });
+
     testWidgets('a row goes once its item is on the list; the typed row '
         'stays', (tester) async {
       phone(tester);

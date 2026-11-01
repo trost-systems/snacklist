@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 class const HexPill({
   required final Widget child,
   final VoidCallback? onTap,
+  final FocusNode? focusNode,
   super.key,
 }) extends StatelessWidget {
   static const height = 56.0;
@@ -40,6 +41,7 @@ class const HexPill({
         button: onTap != null,
         child: InkWell(
           customBorder: const HexBorder(),
+          focusNode: focusNode,
           onTap: onTap,
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: height),

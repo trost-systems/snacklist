@@ -222,6 +222,7 @@ class _ShoppingListViewState()
       context,
       item: item,
       catalog: cubit.state.catalog,
+      onCreateStore: cubit.addStore,
     );
     switch (result) {
       case EditSaved(:final changes):

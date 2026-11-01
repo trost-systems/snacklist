@@ -875,6 +875,14 @@ class AppLocalizationsDe extends AppLocalizations {
       'Noch keine Läden. Leg einen an, dann sortiert die Liste deine Artikel nach seinem Laufweg.';
 
   @override
+  String storeMenu(String store) {
+    return 'Optionen für $store';
+  }
+
+  @override
+  String get storeRenameAction => 'Umbenennen';
+
+  @override
   String storeDeleteBody(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

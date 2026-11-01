@@ -21,6 +21,7 @@ Future<EditResult?> showEditItemSheet(
   BuildContext context, {
   required Item item,
   required Catalog catalog,
+  required Future<Store?> Function(String name) onCreateStore,
 }) => showModalBottomSheet<EditResult>(
   context: context,
   // Over the whole app, tabs included: the sheet stands on the bottom edge.
@@ -35,12 +36,17 @@ Future<EditResult?> showEditItemSheet(
           duration: HlDuration.medium,
           reverseDuration: HlDuration.short,
         ),
-  builder: (_) => _EditItemSheet(item: item, catalog: catalog),
+  builder: (_) => _EditItemSheet(
+    item: item,
+    catalog: catalog,
+    onCreateStore: onCreateStore,
+  ),
 );
 
 class const _EditItemSheet({
   required final Item item,
   required final Catalog catalog,
+  required final Future<Store?> Function(String name) onCreateStore,
 }) extends StatefulWidget {
   @override
   State<_EditItemSheet> createState() => _EditItemSheetState();
@@ -58,6 +64,17 @@ class _EditItemSheetState() extends State<_EditItemSheet> {
       ?.id;
   late String? _storeId = _originalStore;
   late String? _categoryId = widget.item.categoryId;
+
+  /// The catalog as opened, plus the stores made in the sheet.
+  late Catalog _catalog = widget.catalog;
+
+  Future<Store?> _createStore(String name) async {
+    final store = await widget.onCreateStore(name);
+    if (store != null && mounted && _catalog.store(store.id) == null) {
+      setState(() => _catalog = _catalog.withStore(store));
+    }
+    return store;
+  }
 
   @override
   void dispose() {
@@ -262,13 +279,14 @@ class _EditItemSheetState() extends State<_EditItemSheet> {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
                   child: FoldoutChips(
-                    catalog: widget.catalog,
+                    catalog: _catalog,
                     storeId: _storeId,
                     categoryId: _categoryId,
                     storeLabel: l10n.noStore,
                     categoryLabel: l10n.categoryAuto,
                     storeChanged: _storeId != _originalStore,
                     categoryChanged: _categoryId != widget.item.categoryId,
+                    onCreateStore: _createStore,
                     onStore: (id) => setState(() => _storeId = id),
                     onCategory: (id) => setState(() => _categoryId = id),
                   ),
