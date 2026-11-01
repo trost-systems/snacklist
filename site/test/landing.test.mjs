@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { buildSite, publicWith, alternates, meta, serve, SITE_DIR, CONTENT_DIR } from './helpers.mjs';
 import { parseCopy } from '../landing.mjs';
 import { checkHtml } from '../build.mjs';
-import { copyNeeded } from '../scripts/copy-needed.mjs';
+import { copyNeeded, readVideoCopy } from '../scripts/copy-needed.mjs';
 
 const SITE = 'https://hummlist.com';
 const COPY_TEXT = readFileSync(join(CONTENT_DIR, 'landing/copy.yml'), 'utf8');
@@ -30,6 +30,10 @@ const videoFiles = (slot, locale) => ({
   ...Object.fromEntries(['wide.webm', 'wide.mp4', 'compact.webm', 'compact.mp4'].map((f) => [`media/${slot}-${locale}-${f}`, 'video'])),
   [`media/${slot}-${locale}.vtt`]: CUES,
 });
+// The same file names removed: the slot falls back to its poster.
+const withoutVideos = (slots) => Object.fromEntries(
+  slots.flatMap((slot) => ['de', 'en'].flatMap((locale) => Object.keys(videoFiles(slot, locale)).map((f) => [f, null]))),
+);
 
 test('/de and /en are the landing pages, paired with each other', () => {
   const { page } = buildSite();
@@ -77,7 +81,7 @@ test('copy.yml must give both languages, a status and a source, and every id mus
 
 test('COPY_NEEDED.md is generated from copy.yml and lists every draft', () => {
   const file = readFileSync(join(SITE_DIR, 'COPY_NEEDED.md'), 'utf8');
-  assert.equal(file, copyNeeded(COPY), 'stale: run node site/scripts/copy-needed.mjs');
+  assert.equal(file, copyNeeded(COPY, readVideoCopy()), 'stale: run node site/scripts/copy-needed.mjs');
   for (const [id, entry] of COPY) {
     if (entry.status === 'draft') assert.match(file, new RegExp(`\\| \`${id.replaceAll('.', '\\.')}\` \\|.*\\| draft \\|`), id);
   }
@@ -140,7 +144,7 @@ test('the illustrations are responsive pictures with their size, light and dark,
 });
 
 test('without its video files a demo slot shows its poster and no video', () => {
-  const doc = buildSite().page('/de');
+  const doc = buildSite({ publicDir: publicWith(withoutVideos(SLOTS)) }).page('/de');
   assert.equal(doc.querySelectorAll('video').length, 0);
   for (const slot of SLOTS) {
     const figure = doc.querySelector(`figure[data-copy-id="demo.${slot}"]`);
@@ -150,7 +154,7 @@ test('without its video files a demo slot shows its poster and no video', () => 
 });
 
 test('with its video files a demo slot is a muted, looped, captioned video that loads nothing up front', () => {
-  const publicDir = publicWith({ ...videoFiles('add-tick', 'de'), ...videoFiles('add-tick', 'en') });
+  const publicDir = publicWith({ ...withoutVideos(SLOTS.filter((s) => s !== 'add-tick')), ...videoFiles('add-tick', 'de'), ...videoFiles('add-tick', 'en') });
   const { page } = buildSite({ publicDir });
   for (const locale of ['de', 'en']) {
     const doc = page(`/${locale}`);
@@ -159,7 +163,9 @@ test('with its video files a demo slot is a muted, looped, captioned video that 
     for (const attr of ['muted', 'loop', 'playsinline', 'controls']) assert.ok(video.hasAttribute(attr), attr);
     assert.equal(video.getAttribute('preload'), 'none');
     assert.equal(video.hasAttribute('autoplay'), false, 'demo.js starts it only without reduced motion');
-    assert.equal(video.getAttribute('poster'), `/media/add-tick-${locale}-wide.webp`);
+    // The lazy, responsive <picture> is the poster; a poster attribute would fetch the wide image
+    // on phones before anything else (Lighthouse mobile LCP 3.1 s -> 4.0 s, job 54).
+    assert.equal(video.hasAttribute('poster'), false);
     assert.equal(video.getAttribute('aria-label'), COPY.get('demo.add-tick')[locale]);
     assert.deepEqual(video.querySelectorAll('source').map((s) => [s.getAttribute('media'), s.getAttribute('src'), s.getAttribute('type')]), [
       ['(max-width: 37.5rem)', `/media/add-tick-${locale}-compact.webm`, 'video/webm'],
@@ -169,6 +175,8 @@ test('with its video files a demo slot is a muted, looped, captioned video that 
     ]);
     const track = video.querySelector('track');
     assert.deepEqual([track.getAttribute('kind'), track.getAttribute('srclang'), track.getAttribute('src')], ['captions', locale, `/media/add-tick-${locale}.vtt`]);
+    // The words are in the picture; a default track would draw them a second time over it (job 54).
+    assert.equal(track.hasAttribute('default'), false);
     assert.equal(figure.querySelector('picture').getAttribute('aria-hidden'), 'true', 'the video carries the description');
     const button = figure.querySelector('button.demo-toggle');
     assert.ok(button.hasAttribute('hidden'), 'demo.js shows the button');
@@ -178,11 +186,23 @@ test('with its video files a demo slot is a muted, looped, captioned video that 
   }
 });
 
+test('the shipped demo videos fill all three slots in both languages', () => {
+  const { page } = buildSite();
+  for (const locale of ['de', 'en']) {
+    const doc = page(`/${locale}`);
+    for (const slot of SLOTS) {
+      const video = doc.querySelector(`figure[data-copy-id="demo.${slot}"] video`);
+      assert.ok(video, `${slot} ${locale} is a video`);
+      assert.equal(video.querySelector('track').getAttribute('src'), `/media/${slot}-${locale}.vtt`);
+    }
+  }
+});
+
 test('half a video set, a missing poster or a poster of the wrong shape fails the build', () => {
   const fails = (files, pattern) => assert.throws(() => buildSite({ publicDir: publicWith(files) }), pattern);
-  fails({ 'media/mcp-chat-en-wide.mp4': 'video' }, /mcp-chat-en has mcp-chat-en-wide\.mp4 but not .*mcp-chat-en-wide\.webm/);
-  fails({ ...videoFiles('mcp-chat', 'en'), 'media/mcp-chat-en.vtt': null }, /but not mcp-chat-en\.vtt/);
-  fails({ ...videoFiles('mcp-chat', 'en'), 'media/mcp-chat-en.vtt': 'WEBVTT\n' }, /mcp-chat-en\.vtt has no cues; a demo video ships with its captions/);
+  fails({ 'media/mcp-chat-en-wide.webm': null }, /mcp-chat-en has .*mcp-chat-en-wide\.mp4.* but not mcp-chat-en-wide\.webm/);
+  fails({ 'media/mcp-chat-en.vtt': null }, /but not mcp-chat-en\.vtt/);
+  fails({ 'media/mcp-chat-en.vtt': 'WEBVTT\n' }, /mcp-chat-en\.vtt has no cues; a demo video ships with its captions/);
   fails({ 'media/stores-en-compact.webp': null }, /public\/media\/stores-en-compact\.webp is missing/);
   fails({ 'media/add-tick-de-wide.webp': webp(1000, 1000) }, /add-tick-de-wide\.webp is 1000x1000; a wide poster must be 16:9/);
   fails({ 'media/add-tick-de-compact-dark.webp': webp(716, 800) }, /compact-dark\.webp is 716x800; a compact poster must be 4:5/);

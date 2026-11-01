@@ -1,0 +1,452 @@
+/* Shared styles of the demo-video compositions. Sizes in --u, one pixel as the site shows the
+   video (lib.mjs). Values from the 6b tokens (assets/tokens.css = site/public/tokens.css). */
+
+@font-face {
+  font-family: "Bricolage Grotesque";
+  src: url("fonts/bricolage-grotesque-latin-standard-normal.woff2") format("woff2");
+  font-weight: 200 800;
+  font-display: block;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("fonts/inter-latin-wght-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: block;
+}
+
+@font-face {
+  font-family: "Material Icons";
+  src: url("fonts/MaterialIcons-Regular.otf") format("opentype");
+  font-display: block;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--hl-color-surface-raised);
+}
+
+#root {
+  position: relative;
+  overflow: hidden;
+  color: var(--hl-color-text);
+  font-family: "Inter", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "cv11", "ss01";
+}
+
+.ground {
+  position: absolute;
+  inset: 0;
+  background: var(--hl-color-surface-raised);
+}
+
+.phone {
+  position: absolute;
+  padding: calc(10 * var(--u));
+  border: calc(2 * var(--u)) solid var(--hl-color-border);
+  border-radius: calc(28 * var(--u));
+  background: var(--hl-color-ink);
+  box-shadow: 0 calc(6 * var(--u)) 0 0 var(--hl-color-ink);
+}
+
+.phone--quiet {
+  box-shadow: 0 calc(4 * var(--u)) 0 0 var(--hl-color-ink);
+}
+
+.screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: calc(18 * var(--u));
+  background: var(--hl-color-surface);
+}
+
+.screen video {
+  position: absolute;
+  display: block;
+}
+
+.touch-host {
+  position: absolute;
+  width: 0;
+  height: 0;
+  z-index: 9;
+}
+
+.touch {
+  position: absolute;
+  left: calc(-13 * var(--u));
+  top: calc(-13 * var(--u));
+  width: calc(26 * var(--u));
+  height: calc(26 * var(--u));
+  border: calc(2 * var(--u)) solid rgb(15 21 48 / 0.55);
+  border-radius: 50%;
+  background: rgb(15 21 48 / 0.16);
+  opacity: 0;
+}
+
+.caption {
+  position: absolute;
+  z-index: 10;
+  margin: 0;
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-weight: 800;
+  font-size: calc(19 * var(--u));
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  color: var(--hl-color-text);
+  text-wrap: balance;
+}
+
+.caption .cap > span:last-child {
+  display: inline-block;
+}
+
+.caption--center {
+  font-size: calc(17 * var(--u));
+  text-align: center;
+}
+
+/* A caption is a display line led by a pointy hex with the app's own glyph for what happens:
+   stacked in the wide format's side column, side by side above the compact phone. */
+.caption .cap {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(10 * var(--u));
+}
+
+.caption--row {
+  font-size: calc(17 * var(--u));
+}
+
+.caption--row .cap,
+.caption--center .cap {
+  flex-direction: row;
+  align-items: center;
+  text-align: left;
+}
+
+.hxp {
+  --s: calc(30 * var(--u));
+  --b: calc(2 * var(--u));
+  --face: var(--hl-color-honey);
+  position: relative;
+  display: block;
+  flex: none;
+  width: calc(var(--s) * 0.866);
+  height: var(--s);
+  background: var(--hl-color-ink);
+  color: var(--hl-color-on-honey);
+  mask: url("hex-pointy.svg") center / 100% 100% no-repeat;
+}
+
+.hxp > b {
+  position: absolute;
+  inset: calc(var(--b) * 1.1547) var(--b);
+  display: grid;
+  place-items: center;
+  background: var(--face);
+  mask: url("hex-pointy.svg") center / 100% 100% no-repeat;
+  font: inherit;
+}
+
+.hxp--mint {
+  --face: var(--hl-color-mint);
+}
+
+.hxp--cobalt {
+  --face: var(--hl-color-cobalt);
+  color: #ffffff;
+}
+
+.mi {
+  font-family: "Material Icons";
+  font-style: normal;
+  font-weight: normal;
+  font-size: calc(18 * var(--u));
+  line-height: 1;
+}
+
+.hxp--tomato {
+  --face: var(--hl-color-tomato);
+  color: var(--hl-color-on-tomato);
+}
+
+/* Members: a pointy hex in their own colour with their initial, as in the app's household. */
+.av {
+  --s: calc(26 * var(--u));
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-size: calc(12 * var(--u));
+  font-weight: 800;
+  line-height: 1;
+}
+
+.avs {
+  display: inline-flex;
+  gap: calc(3 * var(--u));
+}
+
+.tag {
+  position: absolute;
+  z-index: 6;
+  display: inline-flex;
+  align-items: center;
+  gap: calc(6 * var(--u));
+  margin: 0;
+  padding: calc(3 * var(--u)) calc(12 * var(--u)) calc(3 * var(--u)) calc(4 * var(--u));
+  border: calc(2 * var(--u)) solid var(--hl-color-border);
+  border-radius: 999px;
+  background: var(--hl-color-surface-raised);
+  box-shadow: 0 calc(3 * var(--u)) 0 0 var(--hl-color-ink);
+  font-size: calc(13 * var(--u));
+  font-weight: 650;
+  line-height: 1;
+}
+
+.tag .av {
+  --s: calc(20 * var(--u));
+  font-size: calc(10 * var(--u));
+}
+
+/* The generic AI chat (hummlist-ui-craft "Generic AI chat"): Hummlist's own raised card, navy
+   contour and Inter; the user's side in cobalt, the tool result as a Hummlist card. No vendor
+   layout, avatar, logo, name, model picker, sparkle or purple. */
+.chat {
+  position: absolute;
+  z-index: 4;
+  overflow: hidden;
+  border: calc(2 * var(--u)) solid var(--hl-color-border);
+  border-radius: calc(20 * var(--u));
+  background: var(--hl-color-surface-raised);
+  box-shadow: 0 calc(6 * var(--u)) 0 0 var(--hl-color-ink);
+  font-size: calc(13 * var(--u));
+  line-height: 1.3;
+}
+
+.thread-box {
+  position: absolute;
+  inset: calc(12 * var(--u)) calc(12 * var(--u)) calc(58 * var(--u));
+  overflow: hidden;
+}
+
+.thread {
+  display: flex;
+  flex-direction: column;
+  gap: calc(8 * var(--u));
+}
+
+.msg {
+  margin: 0;
+  opacity: 0;
+}
+
+.me {
+  align-self: flex-end;
+  max-width: 82%;
+  padding: calc(7 * var(--u)) calc(12 * var(--u));
+  border-radius: calc(14 * var(--u)) calc(14 * var(--u)) calc(4 * var(--u)) calc(14 * var(--u));
+  background: var(--hl-color-cobalt);
+  color: var(--hl-color-on-cobalt);
+  font-weight: 650;
+}
+
+.me .mi {
+  font-size: calc(14 * var(--u));
+  vertical-align: calc(-2 * var(--u));
+}
+
+.work {
+  display: flex;
+  align-items: center;
+  gap: calc(8 * var(--u));
+  color: var(--hl-color-text-muted);
+  font-size: calc(12 * var(--u));
+}
+
+.dots {
+  display: inline-flex;
+  gap: calc(3 * var(--u));
+}
+
+.dots i {
+  width: calc(6 * var(--u));
+  height: calc(7 * var(--u));
+  background: var(--hl-color-cobalt);
+  mask: url("hex-pointy.svg") center / 100% 100% no-repeat;
+  opacity: 0.25;
+}
+
+.card {
+  align-self: flex-start;
+  width: 92%;
+  padding: calc(8 * var(--u)) calc(10 * var(--u)) calc(6 * var(--u));
+  border: calc(2 * var(--u)) solid var(--hl-color-border);
+  border-radius: calc(12 * var(--u));
+  background: var(--hl-color-surface);
+}
+
+.card-h {
+  display: flex;
+  align-items: center;
+  gap: calc(6 * var(--u));
+  margin: 0 0 calc(4 * var(--u));
+  font-size: calc(12 * var(--u));
+}
+
+.card-h img {
+  width: calc(16 * var(--u));
+  height: calc(16 * var(--u));
+}
+
+.card-h span {
+  color: var(--hl-color-text-muted);
+}
+
+.card ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card li {
+  display: flex;
+  align-items: center;
+  gap: calc(8 * var(--u));
+  padding: calc(4 * var(--u)) 0;
+}
+
+.card li + li {
+  border-top: 1px solid var(--hl-color-divider);
+}
+
+.ok {
+  --s: calc(18 * var(--u));
+}
+
+.ok .mi {
+  font-size: calc(12 * var(--u));
+}
+
+.nm {
+  font-weight: 650;
+}
+
+.nm--done {
+  text-decoration: line-through;
+  text-decoration-thickness: calc(1.5 * var(--u));
+}
+
+.cat {
+  margin-left: auto;
+  color: var(--hl-color-text-muted);
+  font-size: calc(11 * var(--u));
+}
+
+.composer {
+  position: absolute;
+  left: calc(12 * var(--u));
+  right: calc(12 * var(--u));
+  bottom: calc(12 * var(--u));
+  display: flex;
+  align-items: center;
+  gap: calc(6 * var(--u));
+  height: calc(34 * var(--u));
+}
+
+.field {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  margin: 0;
+  padding: 0 calc(12 * var(--u));
+  border: calc(2 * var(--u)) solid var(--hl-color-border);
+  border-radius: 999px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.ph {
+  position: absolute;
+  color: var(--hl-color-text-muted);
+}
+
+.ch {
+  display: none;
+}
+
+.listen {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: calc(2 * var(--u));
+  height: 100%;
+  opacity: 0;
+}
+
+.listen i {
+  width: calc(2.5 * var(--u));
+  height: calc(16 * var(--u));
+  border-radius: 999px;
+  background: var(--hl-color-tomato);
+}
+
+.listen em {
+  margin-left: calc(8 * var(--u));
+  font-style: normal;
+  color: var(--hl-color-text-muted);
+}
+
+.btn {
+  --s: calc(32 * var(--u));
+}
+
+/* Typing keeps its end in view, as a real field scrolls: short text starts left, long text
+   is clipped at the left. */
+.typed-box {
+  position: absolute;
+  left: calc(12 * var(--u));
+  right: calc(12 * var(--u));
+  display: flex;
+  justify-content: flex-end;
+  overflow: hidden;
+}
+
+#typed {
+  flex: none;
+  min-width: 100%;
+  white-space: pre;
+}
+
+.caret {
+  display: inline-block;
+  width: calc(1.5 * var(--u));
+  height: calc(15 * var(--u));
+  margin-left: 1px;
+  vertical-align: calc(-3 * var(--u));
+  background: var(--hl-color-cobalt);
+  opacity: 0;
+}
+
+.marker-host {
+  position: absolute;
+  z-index: 5;
+  width: 0;
+  height: 0;
+}
+
+.marker {
+  --s: calc(26 * var(--u));
+  position: absolute;
+  left: calc(-11.3 * var(--u));
+  top: calc(-13 * var(--u));
+}

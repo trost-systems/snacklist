@@ -705,3 +705,41 @@ new server switch is seeded off. Decisions: DECISIONS "Job 47". Behavior: docs/P
   tombstone after 30 days, like any purged purchase. Leaving refunds out needs a decision whether a
   refunded-then-reversed purchase may then bind elsewhere, so it waits for Legal Review.
 
+
+## Job 54: demo videos for hummlist.com (2026-11-01)
+
+- **Human gate: Peter watches each loop once on a phone.** Open the PR's Vercel preview (`/de` and
+  `/en`, Vercel login) on a phone and on a laptop, let each of the three demo cards play once,
+  and check: it reads, it loops without a jump, nothing looks drawn that should be the app. With
+  reduced motion on (iOS: Settings › Accessibility › Motion), the cards show the still and a play
+  button. Then approve together with job 53 (NEEDS_PETER "Job 53"); the videos go live only with
+  53's merge.
+- **Launch copy.** Every word on screen is a draft: `site/COPY_NEEDED.md`, section "Demo videos:
+  words on screen" (`marketing/videos/copy.json`), plus the rewritten text alternatives
+  `demo.add-tick`, `demo.household-sync`, `demo.mcp-chat`. A copy change needs only
+  `node marketing/videos/build.mjs` (no new filming).
+- **English mcp-chat shows a German list.** The brief allows only the test household "Sams
+  Wohnung" (fixture `solo-long-list`, German item names) for the MCP video, so the English cut has
+  Sam's German rows (Senf, Ketchup, Tee) around the new "Honey" and "Jam". If an English list reads
+  better, allow an English copy of the fixture (or `demo-family-en`) for that cut; then rerun
+  `capture/take.ts mcp-chat en` and the build.
+- **Material Icons credit.** The hex glyphs in the captions and the chat's buttons come from the
+  app's own icon font in the Flutter SDK, licensed CC BY 4.0 (Google), which asks for attribution.
+  The app and job 53's posters use the same font. A credits line on the site (for example in the
+  imprint or footer: "Icons: Material Icons by Google, CC BY 4.0") is a legal-text change, so not
+  made here.
+- **Job 53 needs a rebase onto main** (52 and 51 landed). Until then this PR's and 53's lint gate
+  fail the schema check on main's two newer migrations. After 53 is rebased or merged, this branch
+  follows (DECISIONS 54.1).
+- **No retailer on screen.** The demo households carry no store tags, so dm, Lidl and Edeka (seeded
+  in every household) never show in the videos.
+- **App findings from the fresh-eye review (not changed: no app behaviour changes in this job).**
+  The videos show the app as it is; these would make the app, and the next takes, look better:
+  - English item names get the wrong emoji: "Honey", "Jam", "Pasta" and "Rice" show the tin can,
+    "Eggs" a milk glass (`item_icon.dart` seems to key on German names; "Honig" gets the honey pot).
+  - A ticked row leaves in one frame after its 260 ms fade and the rows below jump up; no collapse.
+  - Closing the add sheet shows the empty white sheet surface for about 300 ms while it shrinks.
+  - The add sheet's suggestion row trails the typed text by a letter or two (debounce plus
+    server round trip), visible when typing at speed.
+  - Your own additions (here through MCP) get no "new" highlight, unlike another member's mint
+    row; the mcp-chat video adds a mint marker beside the phone to point at them.

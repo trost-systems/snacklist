@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../scenario.schema.json
+name: demo-family-en
+summary: The fictional Brandt family for the hummlist.com demo videos (job 54), in English; the same tidy list as demo-familie with English item names and English-speaking members.
+goodFor:
+  - filming the English demo videos (marketing/videos/capture)
+  - English item names through the classifier's synonyms
+  - live sync with three English-locale members (mia, noah, ida)
+users:
+  - { handle: mia, name: Mia Brandt, locale: en }
+  - { handle: noah, name: Noah Brandt, locale: en }
+  - { handle: ida, name: Ida Brandt, locale: en }
+households:
+  - name: Brandt family
+    members: [mia, noah, ida]
+    items:
+      - { name: Bananas, quantity: "6", by: mia }
+      - { name: Apples, quantity: "1 kg", by: ida }
+      - { name: Bread, by: ida }
+      - { name: Milk, quantity: "2", by: mia }
+      - { name: Butter, by: noah }
+      - { name: Pasta, by: mia }
+      - { name: Rice, by: noah }
+      - { name: Cookies, by: ida }
+      - { name: Sparkling water, by: noah }
+      - { name: Apple juice, by: ida }
+      - { name: Ice cream, by: mia }
+      - { name: Dish soap, by: noah }
+      - { name: Toothpaste, by: ida }

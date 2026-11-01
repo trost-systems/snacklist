@@ -1,0 +1,99 @@
+{
+  "_": "Every word the demo videos put on screen besides the app’s own (marketing/videos/lib.mjs t()). Drafts for Hummlist Launch, listed in site/COPY_NEEDED.md by site/scripts/copy-needed.mjs. Item names come from the takes (capture/shots.ts). A \"\\n\" is a line break in the wide format and a space in the compact format and the captions file.",
+  "add-tick.add": {
+    "de": "Eintippen, Enter,\nsteht drauf.",
+    "en": "Type it, press enter,\nit’s on.",
+    "status": "draft",
+    "source": "New: caption of the add-tick video while Mia adds two items (job 54)."
+  },
+  "add-tick.tick": {
+    "de": "Im Laden:\nantippen, abgehakt.",
+    "en": "In the store:\none tap, ticked off.",
+    "status": "draft",
+    "source": "New: caption of the add-tick video while the items are ticked off (job 54)."
+  },
+  "household-sync.add": {
+    "de": "Mia setzt Eier auf die Liste.",
+    "en": "Mia puts eggs on the list.",
+    "status": "draft",
+    "source": "New: household-sync video, Mia adds an item (job 54). Mia, Noah, Ida are the fictional Brandt family of the homepage."
+  },
+  "household-sync.arrive": {
+    "de": "Noah und Ida sehen es sofort.",
+    "en": "Noah and Ida see it right away.",
+    "status": "draft",
+    "source": "New: household-sync video, the item arrives on the other phones (job 54)."
+  },
+  "household-sync.tick": {
+    "de": "Noah hakt ab, weg bei allen.",
+    "en": "Noah ticks it off, gone for everyone.",
+    "status": "draft",
+    "source": "New: household-sync video, Noah ticks it off (job 54)."
+  },
+  "household-sync.member.mia": {
+    "de": "Mia",
+    "en": "Mia",
+    "status": "draft",
+    "source": "Name tag on Mia’s phone; fictional member, as in the hero."
+  },
+  "household-sync.member.noah": {
+    "de": "Noah",
+    "en": "Noah",
+    "status": "draft",
+    "source": "Name tag on Noah’s phone; fictional member."
+  },
+  "household-sync.member.ida": {
+    "de": "Ida",
+    "en": "Ida",
+    "status": "draft",
+    "source": "Name tag on Ida’s phone; fictional member."
+  },
+  "mcp-chat.caption": {
+    "de": "Jeder KI-Assistent mit MCP.",
+    "en": "Any AI assistant with MCP.",
+    "status": "draft",
+    "source": "New: caption of the mcp-chat video; generic on purpose (no assistant named, hummlist-ui-craft \"Generic AI chat\")."
+  },
+  "mcp-chat.add.request": {
+    "de": "Noch Honig und Marmelade",
+    "en": "Add honey and jam",
+    "status": "draft",
+    "source": "New: the typed request in the generic chat."
+  },
+  "mcp-chat.tick.request": {
+    "de": "Hab beides gekauft, hak es ab",
+    "en": "Bought both, tick them off",
+    "status": "draft",
+    "source": "New: the spoken request in the generic chat (shown as text after the voice input)."
+  },
+  "mcp-chat.working": {
+    "de": "Hummlist wird gefragt …",
+    "en": "Asking Hummlist …",
+    "status": "draft",
+    "source": "New: the chat’s line while the Hummlist MCP tool runs."
+  },
+  "mcp-chat.composer": {
+    "de": "Nachricht schreiben",
+    "en": "Write a message",
+    "status": "draft",
+    "source": "New: placeholder of the chat’s input field."
+  },
+  "mcp-chat.added": {
+    "de": "Auf eurer Liste",
+    "en": "On your list",
+    "status": "draft",
+    "source": "New: title of the result card after add_items."
+  },
+  "mcp-chat.ticked": {
+    "de": "Abgehakt",
+    "en": "Ticked off",
+    "status": "draft",
+    "source": "New: title of the result card after tick_items."
+  },
+  "mcp-chat.listening": {
+    "de": "Hört zu …",
+    "en": "Listening …",
+    "status": "draft",
+    "source": "New: the chat’s voice-input state."
+  }
+}

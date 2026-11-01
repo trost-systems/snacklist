@@ -51,9 +51,9 @@ until native Siri ships. **reused**: word for word from copy that is already pub
 | `test.help` | Landing: test block | Fragen zum Test? | Questions about the test? | New: link to the help page (shown only while supportPublished is on). | draft |
 | `demo.play` | Landing: demo videos | Video abspielen | Play video | New: label of the demo videos' play button. | draft |
 | `demo.pause` | Landing: demo videos | Video anhalten | Pause video | New: label of the demo videos' pause button. | draft |
-| `demo.add-tick` | Landing: demo videos | Bananen sind abgehakt und leuchten grün, Avocados sind gerade dazugekommen. Unten wartet das Eingabefeld „Was brauchst du?“. | Bananas are ticked off and glow green, avocados were just added. At the bottom the input field “What do you need?” is ready. | New: text alternative of the demo slot add-tick; job 54 rewrites it to match its video. | draft |
-| `demo.household-sync` | Landing: demo videos | Noah setzt 10 Eier auf die Liste. Auf Mias Handy erscheint der Eintrag im selben Moment, mit dem Hinweis „1 neu von Noah“. | Noah puts 10 eggs on the list. The item appears on Mia’s phone at the same moment, with the note “1 new from Noah”. | New: text alternative of the demo slot household-sync; job 54 rewrites it to match its video. | draft |
-| `demo.mcp-chat` | Landing: demo videos | Ein KI-Assistent bekommt die Bitte „Setz Milch, Eier und Äpfel auf unsere Einkaufsliste“. Hummlist meldet drei neue Einträge, schon nach Kategorie sortiert. | An AI assistant gets the request “Put milk, eggs and apples on our shopping list”. Hummlist reports three new items, already sorted by category. | New: text alternative of the demo slot mcp-chat; job 54 rewrites it to match its video. | draft |
+| `demo.add-tick` | Landing: demo videos | Video ohne Ton: Ins Eingabefeld der Hummlist-App tippt jemand „Honig“ und „Marmelade“, beide landen unter Vorrat & Konserven. Danach hakt je ein Tipp sie wieder ab. | Silent video: someone types “Honey” and “Jam” into the Hummlist app’s input field, and both land under Pantry. Then one tap each ticks them off again. | Job 54: text alternative of the add-tick video; matches its take (marketing/videos/capture/shots.ts). | draft |
+| `demo.household-sync` | Landing: demo videos | Video ohne Ton: drei Handys der Familie Brandt. Mia setzt Eier auf die Liste, eine halbe Sekunde später stehen sie bei Noah und Ida, mit dem Hinweis „1 neu von Mia Brandt“. Noah hakt sie ab, und sie verschwinden bei allen. | Silent video: three phones of the Brandt family. Mia puts eggs on the list; half a second later they are on Noah’s and Ida’s phones, with the note “1 new from Mia Brandt”. Noah ticks them off, and they disappear for everyone. | Job 54: text alternative of the household-sync video; half a second is the measured sync time of the take. | draft |
+| `demo.mcp-chat` | Landing: demo videos | Video ohne Ton: Ein KI-Chat bekommt „Schreib Honig und Marmelade auf“. Hummlist meldet beide unter Vorrat & Konserven, und sie erscheinen in der App. Per Sprache folgt „Hab beides gekauft, hak es ab“, und beide verschwinden wieder. | Silent video: an AI chat gets “Put honey and jam on the list”. Hummlist reports both under Pantry, and they appear in the app. By voice follows “Bought both, tick them off”, and both disappear again. | Job 54: text alternative of the mcp-chat video; the results are the real MCP answers of the take. | draft |
 
 ## Reused
 
@@ -61,3 +61,27 @@ until native Siri ships. **reused**: word for word from copy that is already pub
 | --- | --- | --- | --- | --- | --- |
 | `hero.badge` | Landing: hero | Geschlossener Test für Familie und Freunde | Closed test for family and friends | Help page (/support, /en/support): „noch in einem geschlossenen Test für Familie und Freunde“. | reused |
 | `privacy.lead` | Landing: privacy block | Hummlist zeigt keine Werbung und verkauft keine Daten. | Hummlist shows no ads and sells no data. | Privacy policy (/datenschutz, /en/privacy), word for word. | reused |
+
+## Demo videos: words on screen
+
+From `marketing/videos/copy.json` (job 54). They are burnt into the videos: after a change,
+re-render with `node marketing/videos/build.mjs` (marketing/videos/README.md).
+
+| Id | Page / section | DE | EN | Why / source | Status |
+| --- | --- | --- | --- | --- | --- |
+| `add-tick.add` | Demo video add-tick | Eintippen, Enter, steht drauf. | Type it, press enter, it’s on. | New: caption of the add-tick video while Mia adds two items (job 54). | draft |
+| `add-tick.tick` | Demo video add-tick | Im Laden: antippen, abgehakt. | In the store: one tap, ticked off. | New: caption of the add-tick video while the items are ticked off (job 54). | draft |
+| `household-sync.add` | Demo video household-sync | Mia setzt Eier auf die Liste. | Mia puts eggs on the list. | New: household-sync video, Mia adds an item (job 54). Mia, Noah, Ida are the fictional Brandt family of the homepage. | draft |
+| `household-sync.arrive` | Demo video household-sync | Noah und Ida sehen es sofort. | Noah and Ida see it right away. | New: household-sync video, the item arrives on the other phones (job 54). | draft |
+| `household-sync.tick` | Demo video household-sync | Noah hakt ab, weg bei allen. | Noah ticks it off, gone for everyone. | New: household-sync video, Noah ticks it off (job 54). | draft |
+| `household-sync.member.mia` | Demo video household-sync | Mia | Mia | Name tag on Mia’s phone; fictional member, as in the hero. | draft |
+| `household-sync.member.noah` | Demo video household-sync | Noah | Noah | Name tag on Noah’s phone; fictional member. | draft |
+| `household-sync.member.ida` | Demo video household-sync | Ida | Ida | Name tag on Ida’s phone; fictional member. | draft |
+| `mcp-chat.caption` | Demo video mcp-chat | Jeder KI-Assistent mit MCP. | Any AI assistant with MCP. | New: caption of the mcp-chat video; generic on purpose (no assistant named, hummlist-ui-craft "Generic AI chat"). | draft |
+| `mcp-chat.add.request` | Demo video mcp-chat | Noch Honig und Marmelade | Add honey and jam | New: the typed request in the generic chat. | draft |
+| `mcp-chat.tick.request` | Demo video mcp-chat | Hab beides gekauft, hak es ab | Bought both, tick them off | New: the spoken request in the generic chat (shown as text after the voice input). | draft |
+| `mcp-chat.working` | Demo video mcp-chat | Hummlist wird gefragt … | Asking Hummlist … | New: the chat’s line while the Hummlist MCP tool runs. | draft |
+| `mcp-chat.composer` | Demo video mcp-chat | Nachricht schreiben | Write a message | New: placeholder of the chat’s input field. | draft |
+| `mcp-chat.added` | Demo video mcp-chat | Auf eurer Liste | On your list | New: title of the result card after add_items. | draft |
+| `mcp-chat.ticked` | Demo video mcp-chat | Abgehakt | Ticked off | New: title of the result card after tick_items. | draft |
+| `mcp-chat.listening` | Demo video mcp-chat | Hört zu … | Listening … | New: the chat’s voice-input state. | draft |

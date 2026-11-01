@@ -5195,3 +5195,116 @@ does not touch them.
     household) beside „du“ (the reader) in the prototype copy, which is Launch's call
     (COPY_NEEDED.md). The filler bars in the cropped rows and the cropped next message in the
     compact chat follow the hummlist-ui-craft word budget.
+
+## Job 54: demo videos for hummlist.com, 2026-11-01
+
+Three silent, captioned loops for job 53's video slots, from the real app: `add-tick`,
+`household-sync`, `mcp-chat`, each in German and English, wide and compact. Sources in
+`marketing/videos/` (README there); finals in `site/public/media/`.
+
+1. **Branch and PR.** `job/54-demo-videos` sits on `origin/job/53-homepage-v1` (46b531d) and its
+   PR targets that branch, so the diff is only the videos (brief). Job 52 landed on main
+   (c4d4090) during the job; I filmed 52's PR head 2dcd896. Between that head and main the app
+   differs only in job 51's iOS Siri code and the Access screen, none of which is on screen in the
+   videos, so the footage is main's app. I did not rebase onto main: 53 is not rebased yet, and a
+   54 on main would show main's four new commits in a diff against 53. Until 53 rebases, the lint
+   gate's schema check fails on this PR (and would on 53's) because main has two newer migrations;
+   nothing in this PR touches migrations. Pushes go with `--force-with-lease` to my branch, not
+   push-pr.sh (it would squash 53's commit). Once 53 is merged: rebase onto main, retarget the PR
+   to main, push with push-pr.sh. Never merged here: Peter approves 53 and 54.
+2. **Capture: the Linux profile build, real input, one clock.** `capture/driver.ts` runs each
+   member's app on its own Xvfb display at 3× (`GDK_SCALE=3`), signs in through the real login
+   screen (fields filled by Marionette, not filmed) and films with ffmpeg `x11grab` (30 fps,
+   near-lossless 4:4:4, no pointer). Taps and typing are real X events (xdotool, unpacked into
+   ~/tools without root); Marionette only reports widget bounds. One ffmpeg grabs all displays and
+   the take reads each input's own start stamp, so the three phones of `household-sync` share one
+   clock and the sync latency on screen is the real one. Profile mode has no debug banner.
+   Research §1.1 named `integration_test` as the driver: Marionette plus X input is the repo's
+   existing way to drive the Linux app (verify-family-groceries) and gives real key strokes, which
+   `enterText` does not.
+3. **Software renderer with Skia.** Under Xvfb the engine's OpenGL path (llvmpipe, no DRI3)
+   presented a frame only when an X event arrived: the 240 ms tick (blue fill, strike line, fade)
+   showed as one frame and the add sheet popped. Measured at 1×, 2× and 3× with the same result, so
+   not pixel cost; `vblank_mode=0` made it worse. `FLUTTER_LINUX_RENDERER=software` with
+   `--enable-impeller=false` (Impeller cannot draw to the software surface) renders every frame.
+   Phones run Impeller; on these screens (flat colours, text, emoji) the two look the same.
+4. **Test data.** New scenarios `demo-familie` and `demo-family-en`: the fictional Brandt family
+   (Mia, Noah, Ida, as on 53's hero) with no store tags, so the seeded dm/Lidl/Edeka never show.
+   Items were picked against the real classifier and brand table: no item that suggests real
+   brands (Kaffee showed Dallmayr, Eduscho, illy), and English names only where the synonyms sort
+   them right (`Bread rolls` landed in Haushalt, `Chocolate` and `Frozen peas` in Sonstiges, so they
+   were replaced). Each take seeds a fresh run and tears it down. `mcp-chat` uses `solo-long-list`
+   (Sams Wohnung, member sam) only, as the brief says, in both languages: the English cut shows
+   Sam's German rows next to the new "Honey" and "Jam" (COPY_NEEDED and NEEDS_LEAD flag it).
+5. **Real MCP results.** The `mcp-chat` take signs Sam in over the auth API, creates a personal
+   access token through `create_personal_access_token` (the app's own RPC), keeps it in memory and
+   calls the local `mcp` function's `add_items` and `tick_items`. The chat shows exactly what came
+   back (names, categories; English cut: the app's own English category labels from `app_en.arb`)
+   at the time it came back: add answered in 344 ms, rows in the app 646 ms after the call (DE).
+   The token never reaches a file; the fixture teardown deletes it with the user.
+6. **Compositor: HyperFrames 0.8.225, local only.** Pinned in `marketing/videos/package.json`
+   with GSAP 3.13.0; `telemetry disable`, `browser ensure`, `doctor --json` gated on Node, FFmpeg and
+   Chrome. No sign-in, cloud render or media generation; GSAP, tokens, fonts and the app icon are
+   copied into each project. One generated project per video, language and format
+   (`build.mjs`), from the take's event log: touch dots land on the logged taps.
+   The HyperFrames skills (`hyperframes`, `hyperframes-cli`, their review and format references)
+   were read from the pinned package (`node_modules/hyperframes/dist/skills/`) rather than installed
+   with `skills update`, which writes into the runner's shared `~/.claude`. No HyperFrames agent ran:
+   the projects are generated, and they carry no audio, so the skill's music rule never applied.
+7. **Framing (hummlist-ui-craft).** The site shows a video at 576 × 324 (wide) or 358 × 448
+   (compact), so the app sits at 0.55× to 0.85× of its logical size, cropped to where the story
+   happens, the phone running off the frame; text stays at 10 px or more on screen. The phone body
+   is 53's (navy, 10 px, contour, sticker shadow). No status bar is drawn: the Linux window has
+   none. Where a crop would put a screen edge above mid-list content, the phone's head dissolves
+   into the ground under the caption instead (hummlist-ui-craft "fade at the foot", turned over).
+   `household-sync`: wide fans Ida and Noah (0.55×) behind Mia; compact is a deck, Mia (cause) on
+   top, then Noah's and Ida's phones as two bands, each showing its "1 neu von Mia Brandt" note
+   and the mint row (review 0: an earlier compact hid Ida behind Noah). Their lists were scrolled
+   before filming so the new row sits under the header.
+8. **Loops.** Every loop starts and ends on the same app state with a seen cause: what was added
+   is ticked off (add-tick, household-sync), and the chat's thread leaves upwards after the tick
+   (mcp-chat, a conveyor). Seams measured on the rendered masters: SSIM 0.997 to 0.998 (the rest is
+   keyframe versus predicted-frame noise). Lengths 10.5 to 10.9 s.
+9. **Captions** are display lines with a hex glyph from the app's icon font (wide: beside the
+   phone or above the satellites; compact: one line on top), from `copy.json`, plus WebVTT tracks
+   for 53's `<track>`. Name tags carry the members' colours. Silent: no audio track at all.
+10. **Generic AI chat.** Built in HTML/CSS from the 6b tokens per the skill: raised card, navy
+    contour, cobalt user bubbles, the result as a Hummlist card with the app icon. No vendor
+    layout, avatar, logo, name, model picker, sparkle or purple; caption "Jeder KI-Assistent mit
+    MCP." / "Any AI assistant with MCP." (drafts). The first request is typed, the second spoken
+    (mic state and moving bars, UI only), as the brief asks.
+11. **Poster attribute dropped.** 53's template gave each `<video>` `poster=<wide webp>`. With
+    real videos in place Lighthouse mobile went from 94 to 87–89 (LCP 3.1 s to 4.0 s): a poster
+    attribute is not responsive, so phones fetched three wide posters first. The lazy, responsive
+    `<picture>` already is the poster (demo.js keeps it on top until frames play; without JS the
+    controls sit over it), so the attribute is gone and the score is back to 93–94. The dark
+    posters of the three slots are gone too: the videos are light, and a slot without a dark
+    poster shows the light one (53's rule).
+12. **Caption track not `default`.** 53's `<track default>` made the browser draw the captions a
+    second time over the lower part of the picture (seen in the page screenshots), on top of the
+    words already in the video, and fetched the files up front. Without `default` the track stays
+    for assistive tech and a visitor's caption preference.
+13. **Sizes.** Web files are 0.28 to 0.45 MB each, under the brief's 1.5 to 3 MB: the loops are
+    flat UI, and at CRF 24 (H.264) and 38 (VP9) text stays sharp in full-size stills. Twelve loops,
+    24 files, 9 MB together.
+
+Research items applied: §2.3 instruction block as the work loop (copy file, no stops, silence,
+local only, determinism, loop seam, master 1920 × 1080 at 30 fps plus 4:5, check → snapshot →
+notes → render → stills from the render → encode → ffprobe → REVIEW.md); §2.4 storyboards 1 and 2
+(Video 3 is only its MCP part, ADDENDUM 1); §2.5 review loop; §3 output specs (WebM VP9 before
+MP4 H.264, `yuv420p`, even sizes, `+faststart`, `-an`, poster, captions, reduced motion shows the
+poster); §6 licences. Pitfalls handled: 1 (copy file, real UI only), 2 (beat ranges), 3 (real
+recordings, no animated screenshots), 4 (fixed locale per take; no status bar or clock on screen),
+5 (no goldens used), 6 (Xvfb), 7 (no emulator needed), 8 (no Siri, ADDENDUM 1), 9
+(`--no-low-memory-mode --workers 6`), 10 (doctor gated on JSON), 11 (no network at render), 12
+(`check --json` clean), 13 (no Docker render), 14 (`browser ensure`), 17 (no stops), 19 and 21
+(brand gate, own look), 20 (even sizes), 22 (no paid run). Not applicable: 15, 16, 18 (no
+transcript).
+
+Deviations from the research: no bee mascot, no honey-and-brown theme and no "Hummlist +
+hummlist.com" end card (locked 6b design; the card already sits on hummlist.com); no Siri or
+Android segments and no slots for them (ADDENDUM 1); no `device_frame` package (53's phone body);
+Remotion not used; stageshow not used (ADDENDUM 3); a capture driver of our own instead of
+`integration_test` (item 2); the software renderer (item 3); loops of 10.5 to 10.9 s instead of 12
+to 14 s for videos 1 and 2 (each beat at its real length, no padding); the research's poster advice
+for autoplay loops (no poster) yields to 53's reduced-motion poster, which is a picture element.

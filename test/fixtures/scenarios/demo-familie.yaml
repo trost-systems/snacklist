@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../scenario.schema.json
+name: demo-familie
+summary: The fictional Brandt family for the hummlist.com demo videos (job 54), in German; a tidy list with no store tags, so no retailer appears on screen.
+goodFor:
+  - filming the demo videos (marketing/videos/capture)
+  - adding and ticking off in one tidy household
+  - live sync with three members (mia, noah, ida)
+users:
+  - { handle: mia, name: Mia Brandt }
+  - { handle: noah, name: Noah Brandt }
+  - { handle: ida, name: Ida Brandt }
+households:
+  - name: Familie Brandt
+    members: [mia, noah, ida]
+    items:
+      - { name: Bananen, quantity: "6", by: mia }
+      - { name: Äpfel, quantity: "1 kg", by: ida }
+      - { name: Brötchen, quantity: "4", by: ida }
+      - { name: Vollmilch, quantity: "2", by: mia }
+      - { name: Butter, by: noah }
+      - { name: Nudeln, by: mia }
+      - { name: Reis, by: noah }
+      - { name: Schokolade, by: ida }
+      - { name: Mineralwasser, by: noah }
+      - { name: Apfelsaft, by: ida }
+      - { name: Erbsen, by: mia }
+      - { name: Spülmittel, by: noah }
+      - { name: Zahnpasta, by: ida }

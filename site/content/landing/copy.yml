@@ -222,17 +222,17 @@ demo.pause:
   status: draft
   source: "New: label of the demo videos' pause button."
 demo.add-tick:
-  de: "Bananen sind abgehakt und leuchten grün, Avocados sind gerade dazugekommen. Unten wartet das Eingabefeld „Was brauchst du?“."
-  en: "Bananas are ticked off and glow green, avocados were just added. At the bottom the input field “What do you need?” is ready."
+  de: "Video ohne Ton: Ins Eingabefeld der Hummlist-App tippt jemand „Honig“ und „Marmelade“, beide landen unter Vorrat & Konserven. Danach hakt je ein Tipp sie wieder ab."
+  en: "Silent video: someone types “Honey” and “Jam” into the Hummlist app’s input field, and both land under Pantry. Then one tap each ticks them off again."
   status: draft
-  source: "New: text alternative of the demo slot add-tick; job 54 rewrites it to match its video."
+  source: "Job 54: text alternative of the add-tick video; matches its take (marketing/videos/capture/shots.ts)."
 demo.household-sync:
-  de: "Noah setzt 10 Eier auf die Liste. Auf Mias Handy erscheint der Eintrag im selben Moment, mit dem Hinweis „1 neu von Noah“."
-  en: "Noah puts 10 eggs on the list. The item appears on Mia’s phone at the same moment, with the note “1 new from Noah”."
+  de: "Video ohne Ton: drei Handys der Familie Brandt. Mia setzt Eier auf die Liste, eine halbe Sekunde später stehen sie bei Noah und Ida, mit dem Hinweis „1 neu von Mia Brandt“. Noah hakt sie ab, und sie verschwinden bei allen."
+  en: "Silent video: three phones of the Brandt family. Mia puts eggs on the list; half a second later they are on Noah’s and Ida’s phones, with the note “1 new from Mia Brandt”. Noah ticks them off, and they disappear for everyone."
   status: draft
-  source: "New: text alternative of the demo slot household-sync; job 54 rewrites it to match its video."
+  source: "Job 54: text alternative of the household-sync video; half a second is the measured sync time of the take."
 demo.mcp-chat:
-  de: "Ein KI-Assistent bekommt die Bitte „Setz Milch, Eier und Äpfel auf unsere Einkaufsliste“. Hummlist meldet drei neue Einträge, schon nach Kategorie sortiert."
-  en: "An AI assistant gets the request “Put milk, eggs and apples on our shopping list”. Hummlist reports three new items, already sorted by category."
+  de: "Video ohne Ton: Ein KI-Chat bekommt „Schreib Honig und Marmelade auf“. Hummlist meldet beide unter Vorrat & Konserven, und sie erscheinen in der App. Per Sprache folgt „Hab beides gekauft, hak es ab“, und beide verschwinden wieder."
+  en: "Silent video: an AI chat gets “Put honey and jam on the list”. Hummlist reports both under Pantry, and they appear in the app. By voice follows “Bought both, tick them off”, and both disappear again."
   status: draft
-  source: "New: text alternative of the demo slot mcp-chat; job 54 rewrites it to match its video."
+  source: "Job 54: text alternative of the mcp-chat video; the results are the real MCP answers of the take."

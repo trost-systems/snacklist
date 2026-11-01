@@ -151,7 +151,7 @@ export function renderLanding({ locale, copy, config, publicDir }) {
       `<source src="${wideMp4}" type="video/mp4">`,
     ].join('');
     const label = locale === 'de' ? 'Deutsch' : 'English';
-    return `<figure class="media-frame demo" data-demo data-copy-id="demo.${slot}">${picture(media, alt, { hidden: true })}<video muted loop playsinline preload="none" controls poster="${media.posters.wide.light}" aria-label="${escapeAttr(alt)}">${sources}<track kind="captions" srclang="${locale}" label="${label}" src="${media.video.captions}" default></video><button type="button" class="demo-toggle" hidden data-play="${play}" data-pause="${pause}" aria-label="${play}"><span class="demo-toggle-face">${icon('play', 'icon-play')}${icon('pause', 'icon-pause')}</span></button></figure>`;
+    return `<figure class="media-frame demo" data-demo data-copy-id="demo.${slot}">${picture(media, alt, { hidden: true })}<video muted loop playsinline preload="none" controls aria-label="${escapeAttr(alt)}">${sources}<track kind="captions" srclang="${locale}" label="${label}" src="${media.video.captions}"></video><button type="button" class="demo-toggle" hidden data-play="${play}" data-pause="${pause}" aria-label="${play}"><span class="demo-toggle-face">${icon('play', 'icon-play')}${icon('pause', 'icon-pause')}</span></button></figure>`;
   };
 
   const still = (name, altId) => `<figure class="media-frame" data-copy-id="${altId}">${picture(mediaFor(publicDir, name, locale, { shape: 'card' }), text(altId))}</figure>`;

@@ -1,0 +1,5 @@
+# Captures and renders are rebuilt by the scripts; only finals in site/public/media are committed.
+*/footage/
+out/
+.hyperframes/
+node_modules/

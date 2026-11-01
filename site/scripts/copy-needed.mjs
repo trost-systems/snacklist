@@ -24,7 +24,15 @@ const SECTIONS = {
 
 const cell = (s) => s.replaceAll('|', '\\|').replaceAll('\n', ' ');
 
-export function copyNeeded(copy) {
+/** The demo videos' on-screen words (job 54), kept with their sources in marketing/videos. */
+export const VIDEO_COPY = join(SITE_DIR, '../marketing/videos/copy.json');
+
+export function readVideoCopy() {
+  const raw = JSON.parse(readFileSync(VIDEO_COPY, 'utf8'));
+  return Object.entries(raw).filter(([id]) => id !== '_');
+}
+
+export function copyNeeded(copy, videoCopy = []) {
   const rows = (status) =>
     [...copy]
       .filter(([, e]) => e.status === status)
@@ -48,11 +56,19 @@ ${rows('draft').join('\n')}
 
 ${head}
 ${rows('reused').join('\n')}
-`;
+${videoCopy.length ? `
+## Demo videos: words on screen
+
+From \`marketing/videos/copy.json\` (job 54). They are burnt into the videos: after a change,
+re-render with \`node marketing/videos/build.mjs\` (marketing/videos/README.md).
+
+${head}
+${videoCopy.map(([id, e]) => `| \`${id}\` | Demo video ${id.split('.')[0]} | ${cell(e.de)} | ${cell(e.en)} | ${cell(e.source)} | ${e.status} |`).join('\n')}
+` : ''}`;
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const text = copyNeeded(parseCopy(readFileSync(join(SITE_DIR, SOURCE), 'utf8'), SOURCE));
+  const text = copyNeeded(parseCopy(readFileSync(join(SITE_DIR, SOURCE), 'utf8'), SOURCE), readVideoCopy());
   if (process.argv.includes('--check')) {
     if (readFileSync(TARGET, 'utf8') !== text) {
       console.error('site/COPY_NEEDED.md is stale: run node site/scripts/copy-needed.mjs');

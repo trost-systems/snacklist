@@ -1,0 +1,13 @@
+{
+  "name": "hummlist-demo-videos",
+  "private": true,
+  "description": "The hummlist.com demo loops: capture (capture/), HyperFrames compositions (build.mjs) and web encodes.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "gsap": "3.13.0",
+    "hyperframes": "0.8.225"
+  }
+}
