@@ -246,6 +246,34 @@ test('personal access token: create in settings, use over MCP in both protocol e
   await expect(connectWithToken(token)).rejects.toThrow();
 });
 
+test('a store the household added, renamed or deleted is what MCP knows by name', async ({ browser }) => {
+  const page = await (await browser.newContext()).newPage();
+  const email = newEmail('own-store');
+  await signUpWithHousehold(page, email);
+  const db = await apiAs(email);
+  const { data: household } = await db.from('household_members').select('household_id').single();
+  const { data: rewe, error } = await db.rpc('add_store', { p_household: household!.household_id, p_name: 'Rewe' });
+  expect(error).toBeNull();
+  const client = await connectWithToken(await createTokenInSettings(page, 'Läden'));
+
+  const stores = await call<{ name: string }[]>(client, 'list_stores');
+  expect(stores.map((s) => s.name)).toEqual(['dm', 'Lidl', 'Edeka', 'Rewe']);
+  const added = await call<{ added: Item[] }>(client, 'add_items', { items: [{ name: 'Milch', store: 'rewe' }] });
+  expect(added.added.map((i) => i.store)).toEqual(['Rewe']);
+  const inRewe = await call<{ items: Item[] }>(client, 'list_items', { store: 'REWE' });
+  expect(inRewe.items.map((i) => i.name)).toEqual(['Milch']);
+
+  await db.rpc('rename_store', { p_store: rewe, p_name: 'Rewe Markt' });
+  const moved = await call<Item>(client, 'move_item', { item: 'Milch', store: 'rewe markt' });
+  expect(moved.store).toBe('Rewe Markt');
+
+  await db.rpc('delete_store', { p_store: rewe });
+  const after = await call<{ items: Item[] }>(client, 'list_items', {});
+  expect(after.items.map((i) => [i.name, i.store])).toEqual([['Milch', null]]);
+  expect(await callExpectingError(client, 'add_items', { items: [{ name: 'Brot', store: 'Rewe Markt' }] }))
+    .toContain('Laden „Rewe Markt“ nicht gefunden. Vorhanden: dm, Lidl, Edeka.');
+});
+
 test('another household\'s credentials can neither see nor change this household\'s list', async ({ browser }) => {
   const peter = await (await browser.newContext()).newPage();
   const peterEmail = newEmail('peter');

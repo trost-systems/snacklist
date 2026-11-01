@@ -6050,3 +6050,57 @@ for autoplay loops (no poster) yields to 53's reduced-motion poster, which is a 
    mint is done, as on the homepage hero. Site follow-up: `household-sync.html` drops
    `.item--arrived` (mint plus edge bar) for `.item--fresh` and is re-filmed; the household-sync
    demo loop shows the new honey once re-taken.
+## Job 58: the household's own stores, 2026-11-01
+
+Peter (Q22 = S1): picking a store while adding an item offers "+ Neuer Laden" with an inline field
+that creates the store and selects it; Mehr → Läden adds, renames and deletes stores. The landing
+page and the onboarding hint ("Du kannst sie später unter Mehr anlegen") already promised this.
+
+- **One name, one store.** `public.store_name_key(name)` (trimmed, spaces collapsed, lower case)
+  is unique per household (`stores_household_name_key`), replacing in effect the case-sensitive
+  `unique (household_id, name)`, which stays. Existing names that clash under the key keep their
+  store, items and layout; all but the first by sort order get a number ("Lidl (2)") in the
+  migration, so nothing is merged or lost and the household can rename or delete them.
+- **`add_store` is idempotent.** A name the household has in any case or spacing returns that
+  store's id instead of failing, so "type a name, confirm" always ends with a selected store, also
+  when two members create the same store at once (`on conflict do nothing`, then the lookup). The
+  app looks in its catalog first and only calls the server for a new name.
+- **40 characters.** The RPCs refuse longer names (`store_name_too_long`, 22001); the column's
+  60-character check stays the hard limit for names households already have. A store name sits in
+  a section divider, a badge and a picker row on a 358 px screen; 40 still fits "Edeka Center
+  Musterstadt-Südost" with room to spare.
+- **Rename clash** raises `store_name_taken` with SQLSTATE 23505, which `RejectedOp.nameTaken`
+  already maps; the app says "Einen Laden „…“ gibt es schon."
+- **A new store's layout** is a full copy of the household's route order, every category shown
+  (the "Ohne Laden" order), so the layout screen edits it like a preset store's.
+  `create_category` already extends every store's layout, custom ones included (pgTAP).
+- **Preset stores are household data:** dm, Lidl and Edeka can be renamed and deleted like any
+  other store. Renaming one to another name clears its `seed_key`: "dm" renamed to "Rossmann" is
+  no longer dm, so dm's brand defaults (Balea → dm, drugstore items → dm) stop picking it and the
+  badge no longer treats it as the chain. A change of case or spacing ("dm" → "DM") keeps it.
+- **Delete** lets the foreign keys do it: items (open and bought) fall back to no store, layout
+  and item→store memories go (cascade). The app's confirmation names how many open items move to
+  "Ohne Laden".
+- **Online only.** Like the store and category orders, adding, renaming and deleting a store is
+  not queued: offline the app says "Läden lassen sich nur mit Verbindung anlegen, umbenennen oder
+  löschen." An existing store is still picked offline, by name too. A queued create would need a
+  client-made id and a queued item tagged with a store the server does not know yet.
+- **RPCs are security invoker** with the member check, like `create_category` and
+  `set_store_layout`: RLS (`stores_member`) is a second guard, and nothing needs the owner's
+  rights.
+- **Realtime:** `stores` and `store_category_order` were in the publication since the foundation
+  and the list's channel reloads the catalog on any change there; deletes are unfiltered and
+  reload too. Items untagged by a delete arrive as item updates. No change needed.
+- **Data export:** stores have no section of their own (items carry their store's name), so the
+  export is unchanged; household deletion cascades to stores as before.
+- **No analytics event** for store changes: category creation has none either, and the gate
+  insights do not need one.
+- **MCP:** `resolve` first tries the name in any case and spacing, then the folded and partial
+  matches as before, so "Aldi Süd" and "Aldi Sued" (two stores to the database) stay reachable by
+  name. The `store` argument's description names the household's stores (`list_stores`) with
+  "Rewe" as an own example. Siri, the voice endpoint and Alexa never match stores by name (the
+  store comes from memory or the preset chains' defaults), so they work with any store as they
+  are; a custom store is picked automatically once an item was bought or tagged there.
+- **Logos:** none. Retailer logos wait for a legal check (Peter). The slot is a "Logos:" comment
+  on `Store` (`app/lib/list/model.dart`) and at `StoreBadge`; the analyzer's `todo` diagnostic is
+  an error in this repo, so it is not written as a TODO. No column, no assets.
