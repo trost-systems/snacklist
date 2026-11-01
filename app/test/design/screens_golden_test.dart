@@ -209,6 +209,7 @@ Future<void> _pumpEditSheet(WidgetTester tester, Brightness brightness) async {
                   ],
                   stores: [Store(id: 'lidl', name: 'Lidl', sortOrder: 10)],
                 ),
+                onCreateStore: (_) async => null,
               ),
               child: const Text('open'),
             ),

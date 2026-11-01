@@ -6101,6 +6101,17 @@ page and the onboarding hint ("Du kannst sie später unter Mehr anlegen") alread
   "Rewe" as an own example. Siri, the voice endpoint and Alexa never match stores by name (the
   store comes from memory or the preset chains' defaults), so they work with any store as they
   are; a custom store is picked automatically once an item was bought or tagged there.
-- **Logos:** none. Retailer logos wait for a legal check (Peter). The slot is a "Logos:" comment
-  on `Store` (`app/lib/list/model.dart`) and at `StoreBadge`; the analyzer's `todo` diagnostic is
-  an error in this repo, so it is not written as a TODO. No column, no assets.
+- **Logos:** none. Retailer logos wait for a legal check (Peter). Job 57's `StoreBadge` already
+  has the slot (`StoreBadgeStyle.logo`, an empty logo table by seed key); an own store shows its
+  full name in the badge like every store. A "Logos:" comment on `Store`
+  (`app/lib/list/model.dart`) points there; the analyzer's `todo` diagnostic is an error in this
+  repo, so it is not written as a TODO. No column, no assets.
+- **Picker search from six stores.** More than five stores make a second row of option pills on
+  a 358 px phone; from there a search field (`store-search`) sits above them. Enter on a name the
+  household has picks it; any other text opens the new-store field with it. Partial matches are
+  tapped, not guessed, so "Re" + Enter never picks "Rewe" by surprise.
+- **Focus.** The new-store field asks for focus itself after its first frame (`autofocus` yields
+  to the add field or the search field, which have focus already). After confirming in the add or
+  edit sheet the options fold back and focus returns where a pick returns it (the add field);
+  after a cancel it goes to the "+ Neuer Laden" option. Escape and Android back close only the
+  field, not the sheet.

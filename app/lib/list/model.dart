@@ -36,8 +36,8 @@ const maxStoreNameLength = 40;
 String storeNameKey(String name) =>
     name.trim().replaceAll(RegExp(r'\s+'), ' ').toLowerCase();
 
-// Logos: a retailer logo would hang off Store once its legal check is done
-// (docs/DECISIONS.md, "Job 58"); StoreBadge is where it shows.
+// Logos: retailer logos wait for a legal check (docs/DECISIONS.md, "Job 58");
+// StoreBadgeStyle.logo is their slot, keyed by seedKey. Own stores have none.
 @immutable
 class const Store({
   required final String id,
