@@ -1700,4 +1700,21 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get apiPremium =>
       'The Hummlist API is part of Hummlist Premium. Your keys stay and work again as soon as your household has Premium.';
+
+  @override
+  String get tipEditTitle => 'Edit an item';
+
+  @override
+  String get tipEditBody =>
+      'Press and hold an item and let go without dragging. Then change its quantity, brand, store and more.';
+
+  @override
+  String get tipAmountsTitle => 'Type the amount too';
+
+  @override
+  String get tipAmountsBody =>
+      'Write “2 cucumbers” or “milk 2 l” and Hummlist picks up the amount.';
+
+  @override
+  String get tipDismiss => 'Hide tip';
 }

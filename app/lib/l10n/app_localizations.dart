@@ -2821,6 +2821,36 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Die Hummlist-API gehört zu Hummlist Premium. Deine Schlüssel bleiben und funktionieren wieder, sobald dein Haushalt Premium hat.'**
   String get apiPremium;
+
+  /// List tab tip card (job 80): title of the tip that a hold without dragging opens an item's edit sheet
+  ///
+  /// In de, this message translates to:
+  /// **'Artikel bearbeiten'**
+  String get tipEditTitle;
+
+  /// List tab tip card (job 80): a hold released without moving (touch or mouse) opens the edit sheet with these fields; a hold that moves drags instead
+  ///
+  /// In de, this message translates to:
+  /// **'Halte einen Artikel gedrückt und lass los, ohne zu ziehen. Dann änderst du Menge, Marke, Laden und mehr.'**
+  String get tipEditBody;
+
+  /// List tab tip card (job 80): title of the tip that the amount can be typed with the item
+  ///
+  /// In de, this message translates to:
+  /// **'Menge gleich mittippen'**
+  String get tipAmountsTitle;
+
+  /// List tab tip card (job 80): the quoted examples must parse with a Menge (app/test/tips/tips_test.dart checks them with parseEntry)
+  ///
+  /// In de, this message translates to:
+  /// **'Schreib „2 Gurken“ oder „Milch 2 l“, und Hummlist erkennt die Menge.'**
+  String get tipAmountsBody;
+
+  /// List tab tip card (job 80): tooltip and screen reader label of the X that hides the tip
+  ///
+  /// In de, this message translates to:
+  /// **'Tipp ausblenden'**
+  String get tipDismiss;
 }
 
 class _AppLocalizationsDelegate

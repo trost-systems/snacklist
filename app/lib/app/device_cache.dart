@@ -5,6 +5,7 @@ import 'package:family_groceries/household/pending_invite.dart';
 import 'package:family_groceries/list/list_cache.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/session/session_cubit.dart';
+import 'package:family_groceries/tips/tips.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_linux/shared_preferences_linux.dart';
 
@@ -13,7 +14,7 @@ import 'package:shared_preferences_linux/shared_preferences_linux.dart';
 /// value that cannot be read counts as missing, and a failed write is
 /// dropped.
 class DeviceCache(final SharedPreferencesAsync _prefs)
-    implements SessionCache, AnalyticsStore, PendingInviteStore {
+    implements SessionCache, AnalyticsStore, PendingInviteStore, TipStore {
   /// On Linux, supabase_flutter's legacy SharedPreferences and
   /// SharedPreferencesAsync each rewrite the whole file from their own copy,
   /// so sharing shared_preferences.json loses the session. The other
@@ -52,6 +53,11 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
   /// `{code, at}`. Not under [forget]'s prefixes: a signed-out start (which
   /// forgets) must keep the link that is about to be signed in for.
   static const _pendingInviteKey = 'invite.pending';
+
+  /// The List tab's dismissed tips per user (job 80), a JSON list of tip
+  /// ids. Not under [forget]'s prefixes: ids only, and a user who signs in
+  /// again has seen them.
+  static const _tipsPrefix = 'tips.';
 
   static String _householdKey(String userId) => '$_householdPrefix$userId';
 
@@ -182,6 +188,25 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
           null => _prefs.remove(_pendingInviteKey),
         },
       );
+
+  @override
+  Future<Set<String>> dismissedTips(String userId) async {
+    try {
+      return switch (jsonDecode(
+        await _prefs.getString('$_tipsPrefix$userId') ?? '[]',
+      )) {
+        final List<Object?> ids => {...ids.whereType<String>()},
+        _ => const {},
+      };
+    } on Object {
+      return const {};
+    }
+  }
+
+  @override
+  Future<void> saveDismissedTips(String userId, Set<String> ids) => _write(
+    () => _prefs.setString('$_tipsPrefix$userId', jsonEncode([...ids])),
+  );
 
   Future<String?> _readString(String key) async {
     try {

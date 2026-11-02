@@ -706,5 +706,15 @@
   "apiDisabled": "Die API ist noch nicht freigeschaltet.",
   "@apiDisabled": {"description": "Snack bar: the server refused to create an API key because the public API is switched off on it (api_disabled, job 75)"},
   "apiPremium": "Die Hummlist-API gehört zu Hummlist Premium. Deine Schlüssel bleiben und funktionieren wieder, sobald dein Haushalt Premium hat.",
-  "@apiPremium": {"description": "PLACEHOLDER (job 73): Hummlist Launch writes the final copy. Zugänge, API section, locked household (job 50): the keys stay, unused for now; new ones can still be made"}
+  "@apiPremium": {"description": "PLACEHOLDER (job 73): Hummlist Launch writes the final copy. Zugänge, API section, locked household (job 50): the keys stay, unused for now; new ones can still be made"},
+  "tipEditTitle": "Artikel bearbeiten",
+  "@tipEditTitle": {"description": "List tab tip card (job 80): title of the tip that a hold without dragging opens an item's edit sheet"},
+  "tipEditBody": "Halte einen Artikel gedrückt und lass los, ohne zu ziehen. Dann änderst du Menge, Marke, Laden und mehr.",
+  "@tipEditBody": {"description": "List tab tip card (job 80): a hold released without moving (touch or mouse) opens the edit sheet with these fields; a hold that moves drags instead"},
+  "tipAmountsTitle": "Menge gleich mittippen",
+  "@tipAmountsTitle": {"description": "List tab tip card (job 80): title of the tip that the amount can be typed with the item"},
+  "tipAmountsBody": "Schreib „2 Gurken“ oder „Milch 2 l“, und Hummlist erkennt die Menge.",
+  "@tipAmountsBody": {"description": "List tab tip card (job 80): the quoted examples must parse with a Menge (app/test/tips/tips_test.dart checks them with parseEntry)"},
+  "tipDismiss": "Tipp ausblenden",
+  "@tipDismiss": {"description": "List tab tip card (job 80): tooltip and screen reader label of the X that hides the tip"}
 }

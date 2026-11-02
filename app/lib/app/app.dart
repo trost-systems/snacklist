@@ -25,6 +25,7 @@ import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/session/social_sign_in.dart';
 import 'package:family_groceries/settings/account_repository.dart';
 import 'package:family_groceries/settings/integration_lock.dart';
+import 'package:family_groceries/tips/tips.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -166,6 +167,7 @@ class _AppState() extends State<App> {
     providers: [
       RepositoryProvider.value(value: widget.social),
       RepositoryProvider.value(value: widget.cache),
+      RepositoryProvider<TipStore>.value(value: widget.cache),
       RepositoryProvider.value(value: widget.account),
       RepositoryProvider.value(value: _screens),
       RepositoryProvider.value(value: _device),

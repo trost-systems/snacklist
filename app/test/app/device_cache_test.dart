@@ -138,4 +138,20 @@ void main() {
     expect(await cache.consentTextVersion(), isNull);
     expect(await cache.internalInstall(), isTrue);
   });
+
+  test('dismissed tips are kept per user and survive sign-outs', () async {
+    expect(await cache.dismissedTips('peter'), isEmpty);
+    await cache.saveDismissedTips('peter', {'edit-long-press', 'siri'});
+    await cache.remember('peter', null);
+    await cache.forget();
+    expect(await cache.dismissedTips('peter'), {'edit-long-press', 'siri'});
+    expect(await cache.dismissedTips('lea'), isEmpty);
+  });
+
+  test('unreadable dismissed tips count as none', () async {
+    await SharedPreferencesAsync().setString('tips.peter', '{"no": 1}');
+    expect(await cache.dismissedTips('peter'), isEmpty);
+    await SharedPreferencesAsync().setString('tips.peter', 'not json');
+    expect(await cache.dismissedTips('peter'), isEmpty);
+  });
 }

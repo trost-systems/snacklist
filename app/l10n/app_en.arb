@@ -624,5 +624,10 @@
   "tooManyApiKeys": "At most 10 active API keys. Revoke one first.",
   "apiKeySessionRequired": "You can only create API keys here in the app while you're signed in.",
   "apiDisabled": "The API isn't available yet.",
-  "apiPremium": "The Hummlist API is part of Hummlist Premium. Your keys stay and work again as soon as your household has Premium."
+  "apiPremium": "The Hummlist API is part of Hummlist Premium. Your keys stay and work again as soon as your household has Premium.",
+  "tipEditTitle": "Edit an item",
+  "tipEditBody": "Press and hold an item and let go without dragging. Then change its quantity, brand, store and more.",
+  "tipAmountsTitle": "Type the amount too",
+  "tipAmountsBody": "Write “2 cucumbers” or “milk 2 l” and Hummlist picks up the amount.",
+  "tipDismiss": "Hide tip"
 }

@@ -6800,3 +6800,21 @@ rate limiting etc in mind there." Addendum 1 (Q41 = PA2): the API is Premium. Gu
    Deno integration tests save and restore it like `integration_lock`, the e2e spec turns it on
    for the local stack only. Production's value comes only from the migration's default.
 8. **Local ports 576xx**, since 751xx is past 65535.
+
+## Job 80: tips card, 2026-11-02
+
+1. **One tip per start.** The List tab picks its tip once, when it is built. The X hides the card
+   and stores its id; the next tip in the queue waits for the next app start, so the user never
+   meets a stack of cards.
+2. **Not on an empty list, and not beside the gesture card.** The tip shows only when the list has
+   an active item (the same test as the empty state) and the gesture card ("Tippen hakt ab …") is
+   dismissed. The first empty list stays clean, and there is never more than one card.
+3. **In the list's scroll view**, right under the gesture card's slot, not in the column above the
+   list: at a large text scale the card is taller than a small phone's free space and would
+   overflow a fixed column, while in the list it scrolls away.
+4. **Dismissed ids per user on this device** (`DeviceCache`, key `tips.<user id>`), kept across
+   sign-outs: ids only, nothing personal, and a returning user has already seen them.
+5. **Targeting:** a tip names its surfaces (iOS, Android, web, macOS, Windows, Linux; none means
+   everywhere) and an inclusive `x.y.z` version range compared per segment (0.1.10 after 0.1.9),
+   build number ignored. A tip with a range is skipped when the version cannot be read. The queue
+   is `tips` in `app/lib/tips/tips.dart`.

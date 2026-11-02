@@ -1717,4 +1717,21 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get apiPremium =>
       'Die Hummlist-API gehört zu Hummlist Premium. Deine Schlüssel bleiben und funktionieren wieder, sobald dein Haushalt Premium hat.';
+
+  @override
+  String get tipEditTitle => 'Artikel bearbeiten';
+
+  @override
+  String get tipEditBody =>
+      'Halte einen Artikel gedrückt und lass los, ohne zu ziehen. Dann änderst du Menge, Marke, Laden und mehr.';
+
+  @override
+  String get tipAmountsTitle => 'Menge gleich mittippen';
+
+  @override
+  String get tipAmountsBody =>
+      'Schreib „2 Gurken“ oder „Milch 2 l“, und Hummlist erkennt die Menge.';
+
+  @override
+  String get tipDismiss => 'Tipp ausblenden';
 }
