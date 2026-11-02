@@ -236,3 +236,356 @@ demo.mcp-chat:
   en: "Silent video: an AI chat gets “Put honey and jam on the list”. Hummlist reports both under Pantry, and they appear in the app. By voice follows “Bought both, tick them off”, and both disappear again."
   status: draft
   source: "Job 54: text alternative of the mcp-chat video; the results are the real MCP answers of the take."
+
+# Waitlist mode (job 82, docs/WAITLIST.md): hummlist.com before the store launch. Texts from the
+# V1 variant and the shared building blocks of Hummlist Launch (job 83 brief, 2026-11-02), and the
+# Legal Review handoff of 2026-11-02 21:55. ⟦LAUNCH COPY⟧, ⟦LAUNCH COPY FAQ⟧ and ⟦LEGAL …⟧ mark text
+# Peter has not approved in his own words; a production build fails while one is left.
+
+waitlist.meta.title:
+  de: "Hummlist: gemeinsam einkaufen, ohne Werbung"
+  en: "Hummlist: shop together, no ads"
+  status: draft
+  source: "Launch V1 meta title (job 83 brief)."
+waitlist.meta.description:
+  de: "Die gemeinsame Einkaufsliste ohne Banner und Prospekt-Angebote, bei allen sofort aktuell. Beta im November: Trag dich jetzt auf die Warteliste ein."
+  en: "The shared grocery list without banners or sponsored deals, up to date for everyone. Beta in November: join the waitlist now."
+  status: draft
+  source: "Launch V1 meta description (job 83 brief)."
+waitlist.cta:
+  de: "Auf die Warteliste"
+  en: "Join the waitlist"
+  status: draft
+  source: "Launch shared blocks: header button and form button; Legal's consent text quotes it, so a change needs a new consent version."
+waitlist.footer-tagline:
+  de: "⟦LAUNCH COPY⟧ Hummlist ist eine Einkaufsliste für einen Haushalt. Für iPhone und Android."
+  en: "⟦LAUNCH COPY⟧ Hummlist is a shopping list for one household. For iPhone and Android."
+  status: draft
+  source: "footer.tagline without the browser (addendum 1: no browser mentions in waitlist mode)."
+waitlist.hero.badge:
+  de: "Beta im November"
+  en: "Beta in November"
+  status: draft
+  source: "Launch V1 hero badge."
+waitlist.hero.lead:
+  de: "⟦LAUNCH COPY⟧ Auf eurer Liste steht nur, was ihr braucht. Keine Banner, keine Prospekt-Angebote zwischen Milch und Brot."
+  en: "⟦LAUNCH COPY⟧ Your list only has what you need on it. No banners, no sponsored deals between the milk and the bread."
+  status: draft
+  source: "Launch V1 hero subline."
+waitlist.hero.audience:
+  de: "Für Paare, Familien und WGs, auf iPhone und Android."
+  en: "For couples, families and roommates, on iPhone and Android."
+  status: draft
+  source: "Launch V1 hero small line."
+waitlist.form.title:
+  de: "Sei bei der Beta dabei"
+  en: "Be part of the beta"
+  status: draft
+  source: "Launch V1 form block heading."
+waitlist.form.intro:
+  de: "⟦LAUNCH COPY⟧ Die Beta startet im November und ist kostenlos. Trag dich ein, dann schicken wir dir die Einladung per E-Mail."
+  en: "⟦LAUNCH COPY⟧ The beta starts in November and is free. Sign up and we'll email you the invite."
+  status: draft
+  source: "Launch V1 form block intro."
+waitlist.form.email:
+  de: "E-Mail-Adresse"
+  en: "Email address"
+  status: draft
+  source: "Launch shared blocks: field label."
+waitlist.form.email-placeholder:
+  de: "name@beispiel.de"
+  en: "name@example.com"
+  status: draft
+  source: "Launch shared blocks: field placeholder."
+waitlist.form.email-hint:
+  de: "Am besten die E-Mail deiner Apple-ID bzw. deines Google-Kontos"
+  en: "Ideally the email of your Apple ID or Google account"
+  status: draft
+  source: "Spec #10 AC2, word for word."
+waitlist.form.platform:
+  de: "Dein Handy"
+  en: "Your phone"
+  status: draft
+  source: "Launch shared blocks: platform choice."
+waitlist.form.ios:
+  de: "iPhone"
+  en: "iPhone"
+  status: draft
+  source: "Launch shared blocks: platform choice."
+waitlist.form.android:
+  de: "Android"
+  en: "Android"
+  status: draft
+  source: "Launch shared blocks: platform choice."
+waitlist.form.launch-news:
+  de: "⟦LEGAL W2⟧ Schreibt mir auch, wenn die App offiziell startet (eine E-Mail, freiwillig)."
+  en: "⟦LEGAL W2⟧ Also email me when the app officially launches (one email, optional)."
+  status: draft
+  source: "Legal handoff 21:55, 2.2 launch-news checkbox (optional, not ticked, above the button)."
+waitlist.form.honeypot:
+  de: "Bitte leer lassen"
+  en: "Leave this empty"
+  status: draft
+  source: "New: label of the hidden spam trap; screen readers and people never meet it."
+waitlist.form.sending:
+  de: "Einen Moment …"
+  en: "One moment …"
+  status: draft
+  source: "Launch shared blocks (v1 section 3): sending."
+waitlist.error.email-missing:
+  de: "⟦LAUNCH COPY⟧ Bitte gib deine E-Mail-Adresse ein."
+  en: "⟦LAUNCH COPY⟧ Please enter your email address."
+  status: draft
+  source: "New draft: v1 section 3 names the error (E-Mail fehlt) but its text was not handed over."
+waitlist.error.email-invalid:
+  de: "⟦LAUNCH COPY⟧ Diese E-Mail-Adresse sieht nicht richtig aus. Prüf sie bitte noch mal."
+  en: "⟦LAUNCH COPY⟧ This email address doesn't look right. Please check it."
+  status: draft
+  source: "New draft for v1 section 3's invalid email error."
+waitlist.error.platform-missing:
+  de: "⟦LAUNCH COPY⟧ Bitte wähl iPhone oder Android."
+  en: "⟦LAUNCH COPY⟧ Please choose iPhone or Android."
+  status: draft
+  source: "New draft for v1 section 3's missing phone error."
+waitlist.error.invalid-request:
+  de: "⟦LAUNCH COPY⟧ Das hat nicht geklappt. Lade die Seite neu und versuch es noch mal."
+  en: "⟦LAUNCH COPY⟧ That didn't work. Reload the page and try again."
+  status: draft
+  source: "New draft: the server refused the request (an old page, a broken field)."
+waitlist.error.rate-limited:
+  de: "⟦LAUNCH COPY⟧ Zu viele Versuche. Bitte versuch es in einer Stunde noch mal."
+  en: "⟦LAUNCH COPY⟧ Too many tries. Please try again in an hour."
+  status: draft
+  source: "New draft: 5 sign-ups per hour per network (docs/WAITLIST.md)."
+waitlist.error.unavailable:
+  de: "⟦LAUNCH COPY⟧ Das hat gerade nicht geklappt. Bitte versuch es gleich noch mal."
+  en: "⟦LAUNCH COPY⟧ That didn't work just now. Please try again in a moment."
+  status: draft
+  source: "New draft for v1 section 3's error: the server is unreachable."
+waitlist.error.network:
+  de: "⟦LAUNCH COPY⟧ Keine Verbindung. Prüf dein Netz und versuch es noch mal."
+  en: "⟦LAUNCH COPY⟧ No connection. Check your network and try again."
+  status: draft
+  source: "New draft for v1 section 3's network error."
+waitlist.thanks.title:
+  de: "Fast geschafft, check dein Postfach"
+  en: "Almost there, check your inbox"
+  status: draft
+  source: "Launch shared blocks, state 1 after sending."
+waitlist.thanks.body:
+  de: "⟦LAUNCH COPY⟧ Wir haben dir eine E-Mail geschickt. Tipp darin auf „E-Mail bestätigen“, dann stehst du auf der Warteliste."
+  en: "⟦LAUNCH COPY⟧ We sent you an email. Tap \"Confirm email\" in it, and you're on the waitlist."
+  status: draft
+  source: "Launch shared blocks, state 1, without the address: the page never repeats what was typed."
+waitlist.thanks.small:
+  de: "Nichts angekommen? Schau im Spam-Ordner nach oder trag dich mit der richtigen Adresse noch mal ein."
+  en: "Nothing arrived? Check your spam folder, or sign up again with the right address."
+  status: draft
+  source: "Launch shared blocks, state 1, small line."
+waitlist.privacy-website:
+  de: "⟦LEGAL privacy.website⟧ **Diese Website ist leise:** keine Cookies, kein Tracking, nichts von fremden Servern. Trägst du dich ein, liegt deine E-Mail-Adresse in unserer Datenbank bei Supabase in Frankfurt. Unser Hoster Vercel und unser Mail-Dienst Resend sind US-Firmen; Resend speichert unsere Mails in den USA. Nur für die Warteliste und die Einladung."
+  en: "⟦LEGAL privacy.website⟧ **This website is quiet:** no cookies, no tracking, nothing loaded from other servers. If you sign up, your email address is kept in our database at Supabase in Frankfurt. Our host Vercel and our email service Resend are US companies; Resend stores our emails in the USA. Only for the waitlist and the invite."
+  status: draft
+  source: "Legal handoff 21:55 (N-49), 2.1, revised text, word for word; only the bold lead is styling."
+waitlist.faq.title:
+  de: "Fragen und Antworten"
+  en: "Questions and answers"
+  status: draft
+  source: "New draft: heading of Launch V1's FAQ."
+waitlist.faq.what.q:
+  de: "Was ist Hummlist?"
+  en: "What is Hummlist?"
+  status: draft
+  source: "Launch V1 FAQ."
+waitlist.faq.what.a:
+  de: "⟦LAUNCH COPY⟧ Eine gemeinsame Einkaufsliste für alle, die zusammen einkaufen. Jede Änderung ist sofort bei allen da, und es gibt keine Werbung."
+  en: "⟦LAUNCH COPY⟧ A shared grocery list for everyone who shops together. Every change shows up for everyone right away, and there are no ads."
+  status: draft
+  source: "Launch V1 FAQ."
+waitlist.faq.when.q:
+  de: "Wann geht's los?"
+  en: "When does it start?"
+  status: draft
+  source: "Launch V1 FAQ."
+waitlist.faq.when.a:
+  de: "⟦LAUNCH COPY⟧ Die Beta startet im November. Danach laden wir jede Woche neue Tester:innen ein, die Einladung kommt per E-Mail."
+  en: "⟦LAUNCH COPY⟧ The beta starts in November. After that we invite new testers every week; the invite comes by email."
+  status: draft
+  source: "Launch V1 FAQ."
+waitlist.faq.cost.q:
+  de: "Was kostet die Beta?"
+  en: "What does the beta cost?"
+  status: draft
+  source: "Launch V1 FAQ (Launch's open point: drop it if a free beta is delicate)."
+waitlist.faq.cost.a:
+  de: "⟦LAUNCH COPY⟧ Die Beta ist kostenlos."
+  en: "⟦LAUNCH COPY⟧ The beta is free."
+  status: draft
+  source: "Launch V1 FAQ."
+waitlist.faq.account.q:
+  de: "Brauche ich ein Konto?"
+  en: "Do I need an account?"
+  status: draft
+  source: "Launch V1 FAQ (Launch's open point: check the sign-in methods against the app)."
+waitlist.faq.account.a:
+  de: "⟦LAUNCH COPY⟧ Ja, du meldest dich in der App an, zum Beispiel mit Apple, Google oder deiner E-Mail. So bleibt eure Liste auf allen Handys gleich."
+  en: "⟦LAUNCH COPY⟧ Yes, you sign in in the app, for example with Apple, Google or your email. That keeps your list the same on every phone."
+  status: draft
+  source: "Launch V1 FAQ."
+waitlist.faq.email.q:
+  de: "Was passiert mit meiner E-Mail-Adresse?"
+  en: "What happens with my email address?"
+  status: draft
+  source: "Legal handoff 21:55, 2.4 (question as in Launch V1)."
+waitlist.faq.email.a:
+  de: "⟦LEGAL W2⟧ Wir nutzen sie für die Warteliste und die Einladung zur Beta, und, wenn du das angekreuzt hast, für eine E-Mail zum Start der App. Für die Einladung geht sie an Apple bzw. Google. Alles Weitere steht in der [Datenschutzerklärung](/datenschutz)."
+  en: "⟦LEGAL W2⟧ We use it for the waitlist and the beta invite, and, if you ticked the box, for one email when the app launches. For the invite it goes to Apple or Google. Details are in the [privacy policy](/en/privacy)."
+  status: draft
+  source: "Legal handoff 21:55, 2.4, word for word; the link replaces Launch V1's [LEGAL: Link Datenschutzerklärung]."
+waitlist.faq.install-ios.q:
+  de: "Wie installiere ich die Beta auf dem iPhone?"
+  en: "How do I install the beta on iPhone?"
+  status: draft
+  source: "Launch install FAQ (late-signup brief B)."
+waitlist.faq.install-ios.a:
+  de: "⟦LAUNCH COPY FAQ⟧ Deine Einladung kommt per E-Mail von Apple (TestFlight), an die Adresse, mit der du dich auf der Warteliste eingetragen hast. Lad dir zuerst Apples kostenlose App „TestFlight“ aus dem App Store. Öffne dann die Einladungsmail auf deinem iPhone, tipp auf den Knopf darin und installier Hummlist in TestFlight. Einen öffentlichen Link gibt es nicht."
+  en: "⟦LAUNCH COPY FAQ⟧ Your invite comes by email from Apple (TestFlight), sent to the address you used for the waitlist. First, get Apple's free TestFlight app from the App Store. Then open the invite email on your iPhone, tap the button in it, and install Hummlist in TestFlight. There's no public link."
+  status: draft
+  source: "Launch install FAQ (late-signup brief B)."
+waitlist.faq.install-android.q:
+  de: "Wie installiere ich die Beta auf Android?"
+  en: "How do I install the beta on Android?"
+  status: draft
+  source: "Launch install FAQ (late-signup brief B)."
+waitlist.faq.install-android.a:
+  de: "⟦LAUNCH COPY FAQ⟧ In deiner Einladungsmail ist ein Knopf „Beta beitreten“. Öffne ihn auf deinem Handy, und zwar mit dem Play Store im selben Google-Konto wie die E-Mail-Adresse, an die die Einladung ging. Bestätige dort die Teilnahme und installier Hummlist dann aus dem Play Store. Updates kommen danach ganz normal über den Play Store."
+  en: "⟦LAUNCH COPY FAQ⟧ Your invite email has a \"Join the beta\" button. Open it on your phone, with the Play Store signed in to the same Google account as the email address the invite went to. Accept there, then install Hummlist from the Play Store. After that, updates arrive as normal Play Store updates."
+  status: draft
+  source: "Launch install FAQ (late-signup brief B)."
+waitlist.faq.wrong-email.q:
+  de: "Ich habe mich mit der falschen E-Mail eingetragen. Was jetzt?"
+  en: "I signed up with the wrong email. What now?"
+  status: draft
+  source: "Launch install FAQ (late-signup brief B)."
+waitlist.faq.wrong-email.a:
+  de: "⟦LAUNCH COPY FAQ⟧ Die Einladung klappt nur mit der E-Mail deiner Apple-ID (iPhone) bzw. deines Google-Kontos (Android). Trag dich auf hummlist.com einfach noch mal mit der richtigen Adresse ein."
+  en: "⟦LAUNCH COPY FAQ⟧ The invite only works with the email of your Apple ID (iPhone) or Google account (Android). Just sign up again on hummlist.com/en with the right address."
+  status: draft
+  source: "Launch install FAQ (late-signup brief B)."
+waitlist.faq.no-invite.q:
+  de: "Meine Einladung ist nicht angekommen. Was kann ich tun?"
+  en: "My invite hasn't arrived. What can I do?"
+  status: draft
+  source: "Launch install FAQ (late-signup brief B)."
+waitlist.faq.no-invite.a:
+  de: "⟦LAUNCH COPY FAQ⟧ Schau im Spam-Ordner nach und bei Gmail auch im Tab „Werbung“. Wir verschicken die Einladungen in Wellen: die erste am 15. November, danach jede Woche. Auf dem iPhone kommt die TestFlight-Mail von Apple, nicht von Hummlist. Fehlt sie dann immer noch, schreib an [support@hummlist.com](mailto:support@hummlist.com)."
+  en: "⟦LAUNCH COPY FAQ⟧ Check your spam folder, and in Gmail the Promotions tab too. We send invites in waves: the first on November 15, then every week. On iPhone, the TestFlight email comes from Apple, not from Hummlist. If it's still missing, write to [support@hummlist.com](mailto:support@hummlist.com)."
+  status: draft
+  source: "Launch install FAQ (late-signup brief B); the address linked."
+waitlist.closing.title:
+  de: "⟦LAUNCH COPY⟧ Einkaufen ohne Werbung, ab November."
+  en: "⟦LAUNCH COPY⟧ Grocery shopping without ads, starting in November."
+  status: draft
+  source: "Launch V1 closing call."
+waitlist.back:
+  de: "Zurück zu hummlist.com"
+  en: "Back to hummlist.com"
+  status: draft
+  source: "Launch shared blocks, state 2 link."
+
+waitlist.confirm.meta-title:
+  de: "E-Mail bestätigen"
+  en: "Confirm your email"
+  status: draft
+  source: "New draft: title of the page behind the confirmation mail's link."
+waitlist.confirm.description:
+  de: "Bestätige deine E-Mail für die Warteliste der Hummlist-Beta."
+  en: "Confirm your email for the Hummlist beta waitlist."
+  status: draft
+  source: "New draft."
+waitlist.confirm.title:
+  de: "Bestätige deine E-Mail"
+  en: "Confirm your email"
+  status: draft
+  source: "New draft: before the button is pressed."
+waitlist.confirm.body:
+  de: "⟦LAUNCH COPY⟧ Tipp auf den Knopf, dann stehst du auf der Warteliste für die Hummlist-Beta."
+  en: "⟦LAUNCH COPY⟧ Tap the button, and you're on the waitlist for the Hummlist beta."
+  status: draft
+  source: "New draft: the link alone changes nothing (Legal: mail scanners open links)."
+waitlist.confirm.button:
+  de: "E-Mail bestätigen"
+  en: "Confirm email"
+  status: draft
+  source: "Legal handoff 2.5 (the mail's button) and the 82 brief."
+waitlist.confirm.done-title:
+  de: "Du stehst auf der Warteliste"
+  en: "You're on the waitlist"
+  status: draft
+  source: "Launch shared blocks, state 2."
+waitlist.confirm.done-body:
+  de: "⟦LAUNCH COPY⟧ Danke! Die Beta startet im November, und wir laden jede Woche neue Tester:innen ein. Deine Einladung kommt per E-Mail an diese Adresse."
+  en: "⟦LAUNCH COPY⟧ Thank you! The beta starts in November, and we invite new testers every week. Your invite will come by email to this address."
+  status: draft
+  source: "Launch shared blocks, state 2."
+waitlist.confirm.done-line:
+  de: "Bis dahin: Schreib schon mal auf, was auf eure erste Liste kommt."
+  en: "Until then: start jotting down what goes on your first list."
+  status: draft
+  source: "Launch V1 thank-you line."
+waitlist.confirm.invalid-title:
+  de: "Schon bestätigt oder abgelaufen"
+  en: "Already confirmed or expired"
+  status: draft
+  source: "Spec #10 AC11: the neutral page."
+waitlist.confirm.invalid-body:
+  de: "⟦LAUNCH COPY⟧ Dieser Link ist schon benutzt oder nicht mehr gültig. Hast du schon bestätigt, musst du nichts weiter tun. Sonst trag dich einfach noch mal ein."
+  en: "⟦LAUNCH COPY⟧ This link has been used already or is no longer valid. If you've confirmed, there's nothing more to do. If not, just sign up again."
+  status: draft
+  source: "New draft for v1's expired link page, which was not handed over."
+
+waitlist.unsubscribe.meta-title:
+  de: "Eintrag löschen"
+  en: "Delete your sign-up"
+  status: draft
+  source: "New draft: title of the page behind every mail's unsubscribe link."
+waitlist.unsubscribe.description:
+  de: "Lösche deinen Eintrag auf der Warteliste der Hummlist-Beta."
+  en: "Delete your sign-up for the Hummlist beta waitlist."
+  status: draft
+  source: "New draft."
+waitlist.unsubscribe.title:
+  de: "Eintrag löschen"
+  en: "Delete your sign-up"
+  status: draft
+  source: "New draft (Legal: „Eintrag sofort löschen“ in the confirmation mail)."
+waitlist.unsubscribe.body:
+  de: "⟦LAUNCH COPY⟧ Tipp auf den Knopf, dann löschen wir deinen Eintrag auf der Warteliste sofort. Danach bekommst du keine E-Mails mehr von uns."
+  en: "⟦LAUNCH COPY⟧ Tap the button and we delete your waitlist sign-up right away. After that you won't get any more emails from us."
+  status: draft
+  source: "New draft: the link alone changes nothing."
+waitlist.unsubscribe.button:
+  de: "Eintrag löschen"
+  en: "Delete my sign-up"
+  status: draft
+  source: "82 brief: button „Eintrag löschen“."
+waitlist.unsubscribe.done-title:
+  de: "Dein Eintrag ist gelöscht"
+  en: "Your sign-up is deleted"
+  status: draft
+  source: "New draft."
+waitlist.unsubscribe.done-body:
+  de: "⟦LAUNCH COPY⟧ Du bekommst keine E-Mails mehr von uns. Willst du doch dabei sein, trag dich einfach noch mal ein."
+  en: "⟦LAUNCH COPY⟧ You won't get any more emails from us. If you change your mind, just sign up again."
+  status: draft
+  source: "New draft."
+waitlist.unsubscribe.invalid-title:
+  de: "Dieser Link passt zu keinem Eintrag"
+  en: "This link doesn't match a sign-up"
+  status: draft
+  source: "New draft."
+waitlist.unsubscribe.invalid-body:
+  de: "⟦LAUNCH COPY⟧ Vielleicht ist dein Eintrag schon gelöscht. Bekommst du trotzdem noch Mails, schreib an [support@hummlist.com](mailto:support@hummlist.com)."
+  en: "⟦LAUNCH COPY⟧ Your sign-up may be deleted already. If you still get emails, write to [support@hummlist.com](mailto:support@hummlist.com)."
+  status: draft
+  source: "New draft."

@@ -2,15 +2,17 @@
 
 The landing pages, guides, changelog and legal pages: static HTML from Markdown and YAML.
 `build.mjs` (markdown-it, gray-matter) writes `dist/`; it is its own Vercel project, separate from
-the app on app.hummlist.com. The only JavaScript is `public/demo.js`, which starts and pauses the
-landing pages' demo videos.
+the app on app.hummlist.com. The JavaScript is `public/demo.js`, which starts and pauses the
+landing pages' demo videos, and in waitlist mode `public/waitlist.js` (below).
 
 ```bash
 npm ci
-npm run build                          # dist/; warns about [PETER: placeholders
-VERCEL_ENV=production npm run build    # fails on them, like the production deploy
+npm run build                          # dist/ in waitlist mode; warns about placeholders
+HUMMLIST_WAITLIST=off npm run build    # the site without the waitlist, as production builds it today
+VERCEL_ENV=production npm run build    # fails on [PETER: placeholders, like the production deploy
 npm test                               # builds real content and fixtures, checks the output
 npm run preview                        # http://127.0.0.1:55990 with vercel.json's redirects and headers
+node scripts/classic-diff.mjs          # production without the waitlist vs origin/main's build
 ```
 
 `scripts/gates/site.sh` (the `site` CI gate, `scripts/verify.sh --only site`) runs the tests and a
@@ -146,10 +148,90 @@ its path stays a 404. The help pages `/support` and `/en/support` are drafts unt
 them (job 24). To publish, delete the `draft: true` line and then set the footer flag; a footer
 link to a draft fails the production build.
 
+## Waitlist mode
+
+Until the store launch hummlist.com shows a waitlist instead of the browser app (job 82; the
+contract is `../docs/WAITLIST.md`). The build decides the mode from two variables:
+
+| `VERCEL_ENV` | `HUMMLIST_WAITLIST` | Mode |
+| --- | --- | --- |
+| `production` | unset or `off` | the site as before job 82 |
+| `production` | `on` | waitlist; fails while a placeholder is left (below) |
+| anything else (preview, local, tests) | unset or `on` | waitlist |
+| anything else | `off` | the site as before job 82 |
+
+Any other value fails the build. The log says `waitlist mode: on` or `off`.
+
+In waitlist mode:
+
+- `/de` and `/en` carry the sign-up form in the hero (`waitlist.mjs`, copy ids `waitlist.*` in
+  `content/landing/copy.yml`), the questions (`#faq`) and a last call to sign up instead of the test
+  block. The header button on every page is „Auf die Warteliste“ / "Join the waitlist" and jumps to
+  the form (`/de#warteliste`, `/en#waitlist`). Nothing links app.hummlist.com.
+- The text under the button is the newest `content/legal/consent/waitlist-<locale>-v<n>.md`, one
+  paragraph that links the privacy policy; its file name is the version the form sends. Change the
+  wording only with a new file (`-v2`) and the same version in
+  `../supabase/functions/waitlist/consent.ts` (a test compares them).
+- `/de/warteliste/bestaetigen` and `/en/waitlist/confirm` confirm an address, `/de/warteliste/abmelden`
+  and `/en/waitlist/unsubscribe` delete a sign-up. The mails link them with the values in the
+  fragment (`#t=…`, `#id=…&s=…`); the page sends them only when its button is pressed.
+- `public/waitlist.js` and `public/waitlist.css` ship with these pages only. The script checks the
+  address with the edge function's rule (a test compares them), shows labelled errors, posts to
+  `/api/waitlist*` with `fetch` and shows the answer. It sets no cookie and stores nothing.
+
+Markdown pages switch per mode with blocks, which work like `::: since` (also inside list items,
+four colons around a block holding a code fence):
+
+~~~markdown
+::: classic
+Shown only without the waitlist.
+:::
+
+::: waitlist
+Shown only in waitlist mode.
+:::
+~~~
+
+The support pages hold the beta questions this way; the privacy policy holds Legal's waitlist
+redlines (§2, §2a, §8 without the link, §12, §13, §14), each paragraph once as it is and once as it
+will be.
+
+### The functions under /api
+
+`api/waitlist/index.mjs`, `confirm.mjs` and `unsubscribe.mjs` are Vercel functions (Node, region
+`fra1` from `vercel.json`); `api/_waitlist.mjs` holds their code. They forward to the `waitlist`
+edge function and answer `404` until both variables are set in the Vercel project:
+
+| Variable | |
+| --- | --- |
+| `WAITLIST_UPSTREAM_URL` | `https://<ref>.supabase.co/functions/v1/waitlist` |
+| `WAITLIST_PROXY_SECRET` | the edge function's `WAITLIST_PROXY_SECRET` |
+
+They never log an address, a token, a body or an IP; each request logs one line like
+`waitlist signup 202`. `npm run preview` serves them too, with the variables of its own process, so
+the whole flow runs against a local edge function:
+
+```bash
+WAITLIST_UPSTREAM_URL=http://127.0.0.1:54321/functions/v1/waitlist WAITLIST_PROXY_SECRET=… npm run preview
+```
+
+### Noindex
+
+`vercel.json` sends `X-Robots-Tag: noindex` on every path except `/de` and `/en`. Those two say
+`<meta name="robots" content="noindex">` in the page, except in a production build in waitlist mode,
+so the landing pages become indexable exactly when the waitlist goes live. Everything else, the
+confirm and unsubscribe pages included, keeps noindex.
+
 ## Placeholders
 
 Write open facts as `[PETER: what is missing]`. Preview builds warn; a production build
 (`VERCEL_ENV=production`) fails while any published page still contains one.
+
+Text that waits for Peter's approval in his own words starts with a marker: `⟦LAUNCH COPY⟧` and
+`⟦LAUNCH COPY FAQ⟧` (Hummlist Launch's copy), `⟦LEGAL W1⟧` (a retention period), `⟦LEGAL W2⟧` (consent
+and privacy policy) and `⟦LEGAL privacy.website⟧`. Preview builds show each as a lemon tag in the
+text; a production build fails while any page, `waitlist.js` or `waitlist.css` still contains `⟦`.
+Delete the marker when Peter has approved that text.
 
 ## Vercel
 
@@ -162,5 +244,6 @@ Project settings: Root Directory `site`, "Include files outside the root directo
 Step" on; everything else comes from `vercel.json` (install
 `npm ci`, build `npm run build`, output `dist`). `/` redirects by `Accept-Language`: `de…` to
 `/de`, any other language to `/en`, no header to `/de` (the landing pages).
-`dist/index.html` (meta refresh) only serves hosts without these redirects. Every response
-carries `X-Robots-Tag: noindex` until the beta launch; remove that header then.
+`dist/index.html` (meta refresh) only serves hosts without these redirects. Every response but
+`/de` and `/en` carries `X-Robots-Tag: noindex` until the public launch; the landing pages follow
+the waitlist (Noindex, above).

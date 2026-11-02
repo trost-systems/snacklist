@@ -3,6 +3,8 @@
 // page reachable from /de and /en, plus / and a missing path, in Chromium at 390 and 1440 px,
 // light and dark, under prefers-reduced-motion: reduce. One more run per page at 1440 light with
 // motion allowed checks what demo.js loads once videos play. README.md lists what each run proves.
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { chromium } from 'playwright';
 import { PNG } from 'pngjs';
 import { AXE_PATH, RUNS, VIEWPORTS, contrast, groupProblems, pageKit, parseArgs, runName, serve, table } from './lib.mjs';
@@ -64,7 +66,9 @@ async function settle(page) {
 // Crawl: collect same-origin pages and linked files from /de, /en, / and a missing path.
 const pages = [];
 {
-  const queue = only ? [...only] : ['/de', '/en', '/', MISSING];
+  // No page links the confirm and unsubscribe pages (the mails do), so a waitlist build adds them.
+  const mailLinks = ['/de/warteliste/bestaetigen', '/de/warteliste/abmelden', '/en/waitlist/confirm', '/en/waitlist/unsubscribe'].filter((p) => existsSync(join(dist, `${p}.html`)));
+  const queue = only ? [...only] : ['/de', '/en', ...mailLinks, '/', MISSING];
   const seen = new Set();
   const { ctx, page } = await newPage({ width: 1440, scheme: 'light' });
   while (queue.length) {
@@ -171,7 +175,8 @@ async function check(path, run) {
         && [...e.parentElement.childNodes].some((n) => n !== e && n.textContent.trim());
       for (const e of document.querySelectorAll('a[href], button, input, select, textarea, summary, [role="button"], [tabindex]:not([tabindex="-1"])')) {
         const b = e.getBoundingClientRect();
-        if (b.width <= 1 || b.height <= 1 || e.closest('[hidden]') || inText(e)) continue;
+        // aria-hidden: the waitlist's spam trap, off screen and out of the tab order.
+        if (b.width <= 1 || b.height <= 1 || e.closest('[hidden], [aria-hidden="true"]') || inText(e)) continue;
         n++;
         const control = e.matches('button, input, select, textarea, summary, [role="button"], .hex, .link-strong') || e.closest('nav, header, footer');
         const min = control ? 48 : 24;

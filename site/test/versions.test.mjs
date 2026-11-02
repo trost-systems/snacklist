@@ -37,17 +37,17 @@ test('the CLI logs the live version and reports a bad record as a build failure'
   const root = tempDir();
   const site = join(root, 'site');
   mkdirSync(site);
-  for (const f of ['build.mjs', 'releases.mjs', 'landing.mjs', 'config.json', 'package.json', 'public', 'content']) cpSync(join(SITE_DIR, f), join(site, f), { recursive: true });
+  for (const f of ['build.mjs', 'releases.mjs', 'landing.mjs', 'waitlist.mjs', 'config.json', 'package.json', 'public', 'content']) cpSync(join(SITE_DIR, f), join(site, f), { recursive: true });
   symlinkSync(join(SITE_DIR, 'node_modules'), join(site, 'node_modules'));
   mkdirSync(join(root, 'releases'));
   mkdirSync(join(root, 'app'));
   writeFileSync(join(root, 'app/pubspec.yaml'), REAL_PUBSPEC);
-  const run = () => spawnSync(process.execPath, [join(site, 'build.mjs')], { encoding: 'utf8', env: { ...process.env, VERCEL_ENV: '' } });
+  const run = () => spawnSync(process.execPath, [join(site, 'build.mjs')], { encoding: 'utf8', env: { ...process.env, VERCEL_ENV: '', HUMMLIST_WAITLIST: '' } });
 
   writeFileSync(join(root, 'releases/releases.json'), REAL_RECORD);
   let out = run();
   assert.equal(out.status, 0, out.stderr);
-  assert.match(out.stdout, /^live version: 0\.1\.0 \(from app\/pubspec\.yaml, no public release yet\)\nbuilt \d+ pages into dist\/\n$/);
+  assert.match(out.stdout, /^live version: 0\.1\.0 \(from app\/pubspec\.yaml, no public release yet\)\nwaitlist mode: on\nbuilt \d+ pages into dist\/\n$/);
 
   writeFileSync(join(root, 'releases/releases.json'), record(['1.0.0', '1.4.0']));
   assert.match(run().stdout, /^live version: 1\.4\.0 \(from public release record\)\n/);
@@ -250,7 +250,7 @@ test('an unclosed or misspelled block fails', () => {
   const at = (body) => ({ 'guides/de/x.md': guide({ locale: 'de', slug: 'x', body }) });
   assert.throws(() => buildSite({ files: at('# X\n\n::: since 1.4.0\nY\n') }), /guides\/de\/x\.md: "::: since 1\.4\.0" is not closed; end it with a line ":::"/);
   assert.throws(() => buildSite({ files: at('# X\n\n1. Eins\n\n   ::: since 1.4.0\n   Y\n\nZ\n') }), /is not closed/);
-  assert.throws(() => buildSite({ files: at('# X\n\n::: sinse 1.4.0\nY\n:::\n') }), /guides\/de\/x\.md: "::: sinse 1\.4\.0" is not a block this site knows; a versioned block is "::: since 1\.4\.0" up to a line ":::"/);
+  assert.throws(() => buildSite({ files: at('# X\n\n::: sinse 1.4.0\nY\n:::\n') }), /guides\/de\/x\.md: "::: sinse 1\.4\.0" is not a block this site knows; a block is "::: since 1\.4\.0", "::: waitlist" or "::: classic" up to a line ":::"/);
 });
 
 test('a ":::" line in a fence inside a block fails instead of ending the block; more colons work', () => {

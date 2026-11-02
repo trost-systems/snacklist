@@ -63,8 +63,10 @@ export function record(versions, patch = (data) => data) {
 }
 
 // Builds the real content plus `files` (path relative to content/ -> text, or null to delete),
-// against `repo` (see repoDir).
+// against `repo` (see repoDir). Without HUMMLIST_WAITLIST in `env` it builds the site without the
+// waitlist, as production does today; waitlist tests pass HUMMLIST_WAITLIST: 'on'.
 export function buildSite({ files = {}, env = {}, config = {}, repo = {}, publicDir } = {}) {
+  env = { HUMMLIST_WAITLIST: 'off', ...env };
   const root = tempDir();
   const contentDir = join(root, 'content');
   const outDir = join(root, 'dist');

@@ -25,7 +25,32 @@ Ein Datenschutzbeauftragter ist nicht benannt.
 
 ## 2. Website hummlist.com
 
+::: classic
 Die Website setzt keine Cookies, lädt keine Inhalte von anderen Servern und nutzt keine Analyse-Werkzeuge. Die Seiten werden als statische Dateien ausgeliefert. Beim Aufruf verarbeitet unser Hosting-Anbieter Vercel Inc. (440 N Barranca Ave #4133, Covina, CA 91723, USA) technisch notwendige Daten: IP-Adresse, Zeitpunkt, aufgerufene Seite, Browser-Kennung. Das ist nötig, um die Seite auszuliefern und vor Angriffen zu schützen (Art. 6 Abs. 1 lit. f DSGVO; unser berechtigtes Interesse ist ein sicherer Betrieb). Speicherdauer der Server-Protokolle: höchstens 30 Tage.
+:::
+
+::: waitlist
+⟦LEGAL W2⟧ Die Website setzt keine Cookies, lädt keine Inhalte von anderen Servern und nutzt keine Analyse-Werkzeuge. Die Seiten werden als statische Dateien ausgeliefert. Nur das Formular der Warteliste schickt deine Angaben an unseren Server, eine Funktion bei Vercel (Abschnitt 2a). Die Verbindung nimmt der Vercel-Standort an, der dir am nächsten liegt. Vercel ist ein US-Unternehmen; ein Zugriff aus den USA ist möglich, die Übermittlung stützt sich auf das EU-US Data Privacy Framework und Standardvertragsklauseln (Abschnitt 13). Beim Aufruf verarbeitet unser Hosting-Anbieter Vercel Inc. (440 N Barranca Ave #4133, Covina, CA 91723, USA) technisch notwendige Daten: IP-Adresse, Zeitpunkt, aufgerufene Seite, Browser-Kennung. Das ist nötig, um die Seite auszuliefern und vor Angriffen zu schützen (Art. 6 Abs. 1 lit. f DSGVO; unser berechtigtes Interesse ist ein sicherer Betrieb). Speicherdauer der Server-Protokolle: höchstens 30 Tage.
+
+## 2a. Warteliste für die Beta
+
+⟦LEGAL W2⟧ Wenn du dich auf hummlist.com für die Warteliste einträgst, speichern wir deine E-Mail-Adresse, ob du ein iPhone oder ein Android-Handy hast, die Sprache der Seite (Deutsch oder Englisch), ob du auch eine E-Mail zum Start der App möchtest, die Zeitpunkte von Eintragung und Bestätigung und die Fassung des Einwilligungstexts.
+
+Wozu: Wir schicken dir eine E-Mail, mit der du deine Adresse bestätigst, danach eine Willkommens-E-Mail und die Einladung zur Hummlist-Beta. Nur wenn du das Kästchen angekreuzt hast, schreiben wir dir außerdem einmal, wenn die App offiziell startet. Das Handy-System brauchen wir, um dich richtig einzuladen, die Sprache, um dir auf Deutsch oder Englisch zu schreiben. Für die Einladung geben wir deine E-Mail-Adresse an Apple (TestFlight) bzw. Google (Google Play) weiter; die Einladung schickt dir dann Apple bzw. Google (Abschnitt 12).
+Rechtsgrundlage: deine Einwilligung (Art. 6 Abs. 1 lit. a DSGVO).
+
+⟦LEGAL W1⟧ Bestätigung: Du stehst erst auf der Liste, wenn du auf den Link in der Bestätigungs-E-Mail tippst. Der Link gilt 48 Stunden. Dabei speichern wir nur den Zeitpunkt, nicht deine IP-Adresse. Bestätigst du nicht, löschen wir die Eintragung nach 7 Tagen.
+
+⟦LEGAL W1⟧ Dienstleister: Das Formular nimmt unser Hoster Vercel entgegen; die Server-Funktion läuft in Frankfurt am Main, Vercel sieht dabei wie bei jedem Aufruf deine IP-Adresse (Abschnitt 2). Die Eintragungen speichern wir bei Supabase in der Datenbank in Frankfurt am Main. Die E-Mails verschickt Resend aus Irland; Resend speichert die E-Mails und Versandprotokolle in den USA und löscht sie nach 30 Tagen (Abschnitte 12 und 13). Unsere E-Mails enthalten keine Zählpixel, und Links werden nicht zur Klickmessung umgeleitet.
+
+Abmelden und Widerspruch: Jede E-Mail hat einen Link zum Abmelden; ein Klick genügt, ohne Anmeldung. Du kannst auch an support@hummlist.com schreiben. Damit widerrufst du deine Einwilligung für die Zukunft und widersprichst der Nutzung für diese E-Mails (Art. 21 Abs. 2 DSGVO); wir löschen deine Eintragung sofort.
+
+⟦LEGAL W1⟧ Speicherdauer: Ohne Start-E-Mail löschen wir deine Eintragung 3 Monate nach dem Versand der Beta-Einladung, mit Start-E-Mail 30 Tage nach dem Versand dieser E-Mail, spätestens am 31. Dezember 2027.
+
+⟦LEGAL W1⟧ Nachweis der Einwilligung: Damit wir belegen können, dass du eingewilligt hast, bewahren wir nach dem Ende einen Nachweis auf: einen Prüfwert deiner E-Mail-Adresse, aus dem sich die Adresse nicht ablesen lässt, die Fassung des Einwilligungstexts, die Sprache und die Zeitpunkte von Eintragung, Bestätigung, letzter E-Mail und Abmeldung. Wir löschen ihn nach 3 Jahren. Rechtsgrundlage: Art. 6 Abs. 1 lit. c DSGVO i. V. m. Art. 7 Abs. 1 DSGVO sowie Art. 6 Abs. 1 lit. f DSGVO (unser berechtigtes Interesse, die Einwilligung nachweisen zu können).
+
+Die Warteliste und die Beta sind für Personen ab 16 Jahren.
+:::
 
 ## 3. Web-App app.hummlist.com
 
@@ -90,7 +115,13 @@ Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.
 
 ## 8. Daten exportieren und Konto löschen
 
+::: classic
 Unter Konto › Meine Daten exportieren erhältst du deine Daten als JSON-Datei. Unter Konto › Konto löschen löschst du dein Konto sofort. Was dabei mit gemeinsamen Haushalten passiert, steht unter [https://app.hummlist.com/konto-loeschen.html](https://app.hummlist.com/konto-loeschen.html).
+:::
+
+::: waitlist
+Unter Konto › Meine Daten exportieren erhältst du deine Daten als JSON-Datei. Unter Konto › Konto löschen löschst du dein Konto sofort. Was dabei mit gemeinsamen Haushalten passiert, steht unter https://app.hummlist.com/konto-loeschen.html.
+:::
 
 ## 9. Nutzungsdaten und Fehlerberichte (nur mit Einwilligung)
 
@@ -117,30 +148,64 @@ Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (Datensicherheit, Art. 32 DSGVO).
 
 Wir setzen folgende Dienstleister ein, die Daten in unserem Auftrag und nach unseren Weisungen verarbeiten (Art. 28 DSGVO):
 
+::: classic
 - Supabase Pte. Ltd., Singapur (Datenbank, Anmeldung, Versand der Anmelde-E-Mails, Server-Funktionen; die Datenbank liegt im Rechenzentrum Frankfurt am Main, die Server-Funktionen laufen am Standort, der dem Aufruf am nächsten liegt, auch außerhalb der EU; die Server-Funktion für Käufe läuft immer in Frankfurt am Main)
 - RevenueCat, Inc., Brandon (Florida), USA (kostenlose Freischaltung von Hummlist Premium für Tester und für die App-Prüfung (Abschnitt 5) und, sobald Hummlist Premium verkauft wird, Käufe in der App: Prüfung und Verwaltung der Freischaltung; Server bei Amazon Web Services in den USA)
 - Vercel Inc. (Hosting von hummlist.com, app.hummlist.com, mcp.hummlist.com; Domain und DNS)
 - PostHog Inc. (Nutzungsdaten und Fehlerberichte, Server in der EU; nur wie in Abschnitt 9 beschrieben)
 - GitHub Inc. (verschlüsselte Sicherungskopien)
 - Google Cloud EMEA Limited, Dublin, Irland (Google Workspace, E-Mail)
+:::
 
+::: waitlist
+- Supabase Pte. Ltd., Singapur (Datenbank, Anmeldung, Versand der Anmelde-E-Mails, Server-Funktionen; die Datenbank liegt im Rechenzentrum Frankfurt am Main, die Server-Funktionen laufen am Standort, der dem Aufruf am nächsten liegt, auch außerhalb der EU; die Server-Funktion für Käufe läuft immer in Frankfurt am Main)
+- ⟦LEGAL W2⟧ ⟦LEGAL W1⟧ Plus Five Five, Inc. („Resend“), San Francisco, USA (Versand unserer E-Mails, auch für die Warteliste; versendet aus Irland, speichert E-Mails und Versandprotokolle in den USA und löscht sie nach 30 Tagen)
+- RevenueCat, Inc., Brandon (Florida), USA (Käufe in der App und kostenlose Freischaltungen für Tester und App-Prüfung: Prüfung und Verwaltung der Freischaltung; Server bei Amazon Web Services in den USA)
+- Vercel Inc. (Hosting von hummlist.com, app.hummlist.com, mcp.hummlist.com; Domain und DNS)
+- PostHog Inc. (Nutzungsdaten und Fehlerberichte, Server in der EU; nur wie in Abschnitt 9 beschrieben)
+- GitHub Inc. (verschlüsselte Sicherungskopien)
+- Google Cloud EMEA Limited, Dublin, Irland (Google Workspace, E-Mail)
+:::
+
+::: classic
 Eigenständig verantwortlich sind: Google bzw. Apple, wenn du dich darüber anmeldest; Google, solange die Web-App Programmbibliotheken und Schriften von gstatic.com lädt (Abschnitt 3); der Anbieter der Spracherkennung deines Betriebssystems; KI-Assistenten, die du selbst verbindest; Amazon, wenn du den Alexa-Skill nutzt (Abschnitt 7); Apple und Google als App-Stores.
+:::
+
+::: waitlist
+⟦LEGAL W2⟧ Eigenständig verantwortlich sind: Google bzw. Apple, wenn du dich darüber anmeldest; Google, solange die Web-App Programmbibliotheken und Schriften von gstatic.com lädt (Abschnitt 3); der Anbieter der Spracherkennung deines Betriebssystems; KI-Assistenten, die du selbst verbindest; Amazon, wenn du den Alexa-Skill nutzt (Abschnitt 7); Apple und Google als App-Stores sowie als Anbieter von TestFlight bzw. Google Play, wenn wir dich zur Beta einladen (Abschnitt 2a).
+:::
 
 ## 13. Übermittlung in Drittländer
 
 Einige Dienstleister haben ihren Sitz in den USA oder gehören zu US-Unternehmen. Die Server-Funktionen von Supabase können, außer der Funktion für Käufe, auch in Rechenzentren außerhalb der EU laufen (siehe Abschnitt 12). Soweit dabei Daten in die USA oder andere Drittländer übermittelt werden oder US-Behörden darauf zugreifen könnten, stützen wir uns auf folgende Grundlagen:
 
+::: classic
 - Vercel Inc., GitHub Inc., PostHog Inc. und Google LLC (USA; gehört zum selben Konzern wie Google Cloud EMEA Limited und verarbeitet Daten für sie) sind nach dem EU-US Data Privacy Framework zertifiziert. Für sie gilt der Angemessenheitsbeschluss der EU-Kommission (Art. 45 DSGVO). Vercel und PostHog haben in ihren Auftragsverarbeitungsverträgen zusätzlich Standardvertragsklauseln (Art. 46 Abs. 2 lit. c DSGVO) vereinbart; bei Google gelten Standardvertragsklauseln, falls Google sich nicht mehr auf das Data Privacy Framework stützt.
 - PostHog speichert die Daten in Frankfurt am Main. Laut Vertrag kann PostHog sie auch in den USA verarbeiten, etwa durch Unterauftragsverarbeiter; dafür gilt das eben Gesagte.
 - Supabase Pte. Ltd. (Singapur) ist nicht nach dem Data Privacy Framework zertifiziert. Hier gelten die Standardvertragsklauseln der EU-Kommission (Art. 46 Abs. 2 lit. c DSGVO), die Teil des Auftragsverarbeitungsvertrags von Supabase sind.
 - RevenueCat, Inc. (USA) ist nicht nach dem EU-US Data Privacy Framework zertifiziert. Hier gelten die Standardvertragsklauseln der EU-Kommission (Art. 46 Abs. 2 lit. c DSGVO), die Teil des Auftragsverarbeitungsvertrags von RevenueCat sind. RevenueCat speichert die Daten bei Amazon Web Services in den USA und setzt weitere Unterauftragsverarbeiter in den USA ein, die an gleichwertige Pflichten gebunden sind. Zur Prüfung eines Kaufs übermittelt RevenueCat den Kaufbeleg und die Kennung deines Haushalts (bei Google einen daraus gebildeten Hashwert) an Apple bzw. Google. Für die kostenlose Freischaltung (Abschnitt 5) erhält RevenueCat nur die Kennung deines Haushalts und die Angaben zur Freischaltung.
 - Amazon (Alexa) erhält unsere Antworten als eigenständig Verantwortlicher (Abschnitt 7). Soweit Amazon sie an Amazon-Gesellschaften in den USA weitergibt, ist Amazon.com, Inc. (einschließlich Amazon.com Services LLC) nach dem EU-US Data Privacy Framework zertifiziert (Art. 45 DSGVO); wo kein Angemessenheitsbeschluss greift, gelten nach Amazons Entwicklervereinbarung Standardvertragsklauseln zwischen Verantwortlichen.
+:::
+
+::: waitlist
+- ⟦LEGAL W2⟧ Vercel Inc., GitHub Inc., PostHog Inc., Plus Five Five, Inc. (Resend) und Google LLC (USA; gehört zum selben Konzern wie Google Cloud EMEA Limited und verarbeitet Daten für sie) sind nach dem EU-US Data Privacy Framework zertifiziert. Für sie gilt der Angemessenheitsbeschluss der EU-Kommission (Art. 45 DSGVO). Vercel, PostHog und Resend haben in ihren Auftragsverarbeitungsverträgen zusätzlich Standardvertragsklauseln (Art. 46 Abs. 2 lit. c DSGVO) vereinbart; bei Google gelten Standardvertragsklauseln, falls Google sich nicht mehr auf das Data Privacy Framework stützt.
+- PostHog speichert die Daten in Frankfurt am Main. Laut Vertrag kann PostHog sie auch in den USA verarbeiten, etwa durch Unterauftragsverarbeiter; dafür gilt das eben Gesagte.
+- Supabase Pte. Ltd. (Singapur) ist nicht nach dem Data Privacy Framework zertifiziert. Hier gelten die Standardvertragsklauseln der EU-Kommission (Art. 46 Abs. 2 lit. c DSGVO), die Teil des Auftragsverarbeitungsvertrags von Supabase sind.
+- RevenueCat, Inc. (USA) ist nicht nach dem EU-US Data Privacy Framework zertifiziert. Hier gelten die Standardvertragsklauseln der EU-Kommission (Art. 46 Abs. 2 lit. c DSGVO), die Teil des Auftragsverarbeitungsvertrags von RevenueCat sind. RevenueCat speichert die Daten bei Amazon Web Services in den USA und setzt weitere Unterauftragsverarbeiter in den USA ein, die an gleichwertige Pflichten gebunden sind. Zur Prüfung eines Kaufs übermittelt RevenueCat den Kaufbeleg und die Kennung deines Haushalts (bei Google einen daraus gebildeten Hashwert) an Apple bzw. Google.
+- Amazon (Alexa) erhält unsere Antworten als eigenständig Verantwortlicher (Abschnitt 7). Soweit Amazon sie an Amazon-Gesellschaften in den USA weitergibt, ist Amazon.com, Inc. (einschließlich Amazon.com Services LLC) nach dem EU-US Data Privacy Framework zertifiziert (Art. 45 DSGVO); wo kein Angemessenheitsbeschluss greift, gelten nach Amazons Entwicklervereinbarung Standardvertragsklauseln zwischen Verantwortlichen.
+:::
 
 Eine Kopie der Garantien erhältst du auf Anfrage an support@hummlist.com.
 
 ## 14. Speicherdauer
 
+::: classic
 Wir speichern deine Daten, solange du dein Konto hast. Löschst du dein Konto, löschen wir Konto, Profil, Mitgliedschaften, Zugangsschlüssel, Verbindungen (auch zu Alexa) und deine Entscheidungen zu Nutzungsdaten sofort; bei Käufen entfernen wir die Verbindung zu deinem Konto. Den Datensatz eines Haushalts bei RevenueCat löschen wir 30 Tage nach dem Löschen des Haushalts (Abschnitt 5). Daten zur Alexa-Verbindung löschen wir außerdem, sobald die Verbindung endet (Abschnitt 7). Bist du das letzte Mitglied eines Haushalts, wird der Haushalt mit allem gelöscht, ebenso jeder Haushalt, den du archiviert hast. Verlässt du einen Haushalt mit Hummlist Lifetime als letztes Mitglied, ohne dein Konto zu löschen, kannst du ihn archivieren; wir löschen ihn, wenn er nicht innerhalb von 24 Monaten wieder aktiviert wird. Sonst bleiben die Einträge und der Verlauf für die anderen Mitglieder erhalten, aber ohne Bezug zu dir; die Artikelnamen bleiben dabei sichtbar. Gemeinsame Haushaltsdaten, auch den Verlauf, speichern wir, solange der Haushalt besteht, auch archiviert. Protokolle unseres Datenbank-Anbieters werden nach höchstens 1 Tag gelöscht, Sicherungskopien nach 90 Tagen, Nutzungsdaten und Fehlerberichte bei PostHog nach 1 Jahr.
+:::
+
+::: waitlist
+⟦LEGAL W1⟧ Wir speichern deine Daten, solange du dein Konto hast. Löschst du dein Konto, löschen wir Konto, Profil, Mitgliedschaften, Zugangsschlüssel, Verbindungen (auch zu Alexa) und deine Entscheidungen zu Nutzungsdaten sofort; bei Käufen entfernen wir die Verbindung zu deinem Konto. Den Datensatz eines Haushalts bei RevenueCat löschen wir 30 Tage nach dem Löschen des Haushalts (Abschnitt 5). Daten zur Alexa-Verbindung löschen wir außerdem, sobald die Verbindung endet (Abschnitt 7). Bist du das letzte Mitglied eines Haushalts, wird der Haushalt mit allem gelöscht, ebenso jeder Haushalt, den du archiviert hast. Verlässt du einen Haushalt mit Hummlist Lifetime als letztes Mitglied, ohne dein Konto zu löschen, kannst du ihn archivieren; wir löschen ihn, wenn er nicht innerhalb von 24 Monaten wieder aktiviert wird. Sonst bleiben die Einträge und der Verlauf für die anderen Mitglieder erhalten, aber ohne Bezug zu dir; die Artikelnamen bleiben dabei sichtbar. Gemeinsame Haushaltsdaten, auch den Verlauf, speichern wir, solange der Haushalt besteht, auch archiviert. Protokolle unseres Datenbank-Anbieters werden nach höchstens 1 Tag gelöscht, Sicherungskopien nach 90 Tagen, Nutzungsdaten und Fehlerberichte bei PostHog nach 1 Jahr. Für die Warteliste gelten die Fristen in Abschnitt 2a.
+:::
 
 ## 15. Deine Rechte {#rechte}
 

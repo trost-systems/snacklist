@@ -28,12 +28,14 @@ supabase/bench/suggest_latency.sh
 # Job 62: list_items counts the whole list, per household.
 # Job 64: two members adding the same item at once leave one open row (items_skip_duplicate).
 # Job 73: the api function's wiring (keys, limits, idempotency, pagination, households, lock).
+# Job 82: the waitlist function's wiring (sign-up, confirm, one-click unsubscribe, rate limit).
 db_port="$(sed -n '/^\[db\]/,/^\[/ s/^port = \([0-9]*\)$/\1/p' supabase/config.toml)"
 (cd supabase/functions && FG_DB_TEST=1 SUPABASE_DB_URL="postgresql://postgres:postgres@127.0.0.1:$db_port/postgres" \
   deno test --allow-env --allow-net --allow-read _shared/add_paths_integration_test.ts alexa/store_integration_test.ts \
   _shared/dedupe_integration_test.ts purchases/store_integration_test.ts _shared/premium_integration_test.ts \
   _shared/zero_stores_integration_test.ts _shared/list_integration_test.ts \
-  _shared/one_open_item_integration_test.ts api/api_integration_test.ts)
+  _shared/one_open_item_integration_test.ts api/api_integration_test.ts \
+  waitlist/waitlist_integration_test.ts)
 supabase db lint --local --fail-on warning
 scripts/backup/drill.sh
 

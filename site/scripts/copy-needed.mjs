@@ -20,6 +20,7 @@ const SECTIONS = {
   privacy: 'Landing: privacy block',
   test: 'Landing: test block',
   demo: 'Landing: demo videos',
+  waitlist: 'Waitlist mode (form, questions, mail-link pages)',
 };
 
 const cell = (s) => s.replaceAll('|', '\\|').replaceAll('\n', ' ');
@@ -46,6 +47,10 @@ file. Every string on \`/de\` and \`/en\` carries its id in the page as \`data-c
 **draft**: new or changed for the first homepage (job 53), waiting for Launch. Change the text in
 \`copy.yml\` and set \`status: reused\` once approved, or keep it a draft. Siri copy stays a draft
 until native Siri ships. **reused**: word for word from copy that is already published.
+
+\`waitlist.*\` is the site in waitlist mode (job 82, docs/WAITLIST.md). Text starting with
+\`⟦LAUNCH COPY⟧\`, \`⟦LAUNCH COPY FAQ⟧\` or \`⟦LEGAL …⟧\` waits for Peter's approval in his own words;
+delete the marker once he gave it. A production build in waitlist mode fails while one is left.
 
 ## Drafts
 

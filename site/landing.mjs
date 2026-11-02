@@ -5,6 +5,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import yaml from 'js-yaml';
 import MarkdownIt from 'markdown-it';
+import { WAITLIST_ANCHOR, faqItems, signupForm } from './waitlist.mjs';
 
 export const APP_URL = 'https://app.hummlist.com';
 const LOCALES = ['de', 'en'];
@@ -124,7 +125,9 @@ function picture({ posters }, alt, { className = '', eager = false, hidden = fal
   return `<picture${className ? ` class="${className}"` : ''}${hidden ? ' aria-hidden="true"' : ''}>${sources.join('')}<img src="${wide.light}" alt="${escapeAttr(alt)}" width="${w}" height="${h}" decoding="async"${loading}></picture>`;
 }
 
-export function renderLanding({ locale, copy, config, publicDir }) {
+// The copy of one locale for one page: `text` is the plain string, `md` its inline Markdown as
+// HTML, `el` an element carrying its copy id; `used` collects the ids the page asked for.
+export function copyReader(copy, locale) {
   const used = new Set();
   const text = (id) => {
     const entry = copy.get(id);
@@ -134,6 +137,15 @@ export function renderLanding({ locale, copy, config, publicDir }) {
   };
   const md = (id) => inline.renderInline(text(id));
   const el = (tag, id, attrs = '') => `<${tag} data-copy-id="${id}"${attrs ? ` ${attrs}` : ''}>${md(id)}</${tag}>`;
+  return { text, md, el, used, inline: (markdown) => inline.renderInline(markdown) };
+}
+
+// `waitlist` (docs/WAITLIST.md): the hero holds the sign-up form, the test block gives way to the
+// questions and a last call to sign up, and nothing links the browser app. `consent` is the text
+// under the button, { version, markdown }.
+export function renderLanding({ locale, copy, config, publicDir, waitlist = false, consent }) {
+  const reader = copyReader(copy, locale);
+  const { text, md, el, used } = reader;
 
   const demo = (slot) => {
     const media = mediaFor(publicDir, slot, locale, { shape: 'card', video: true });
@@ -162,19 +174,59 @@ export function renderLanding({ locale, copy, config, publicDir }) {
     ? `<a class="link-strong" href="${locale === 'de' ? '/support' : '/en/support'}" data-copy-id="test.help">${md('test.help')}</a>`
     : (text('test.help'), '');
   const tick = `<span class="tick hxp" aria-hidden="true">${icon('check')}</span>`;
-  const privacyItems = ['privacy.frankfurt', 'privacy.consent', 'privacy.export', 'privacy.delete', 'privacy.website'];
+  const privacyItems = ['privacy.frankfurt', 'privacy.consent', 'privacy.export', 'privacy.delete', waitlist ? 'waitlist.privacy-website' : 'privacy.website'];
+  const anchor = WAITLIST_ANCHOR[locale];
 
-  const html = `<section class="hero" aria-labelledby="hero-title">
-<div class="wrap block block--cobalt hero-block">
-<div class="hero-copy">
-<p class="chip hx"><span class="dot hxp" aria-hidden="true">${icon('check')}</span><span data-copy-id="hero.badge">${md('hero.badge')}</span></p>
+  const heroCopy = waitlist
+    ? `<p class="chip hx"><span class="dot hxp" aria-hidden="true">${icon('check')}</span><span data-copy-id="waitlist.hero.badge">${md('waitlist.hero.badge')}</span></p>
+${el('h1', 'hero.title', 'class="display" id="hero-title"')}
+${el('p', 'waitlist.hero.lead', 'class="lead"')}
+${el('p', 'waitlist.hero.audience', 'class="audience"')}`
+    : `<p class="chip hx"><span class="dot hxp" aria-hidden="true">${icon('check')}</span><span data-copy-id="hero.badge">${md('hero.badge')}</span></p>
 ${el('h1', 'hero.title', 'class="display" id="hero-title"')}
 ${el('p', 'hero.lead', 'class="lead"')}
 <div class="hero-actions">
 <a class="hex" href="${APP_URL}"><span class="face" data-copy-id="header.open-app">${md('header.open-app')}${icon('open')}</span></a>
 <a class="link-strong" href="#test" data-copy-id="hero.test-link">${md('hero.test-link')}</a>
+</div>`;
+
+  const closing = waitlist
+    ? `<section class="section faq-section" id="faq" aria-labelledby="faq-title">
+<div class="wrap">
+<div class="section-head">
+${el('h2', 'waitlist.faq.title', 'class="headline" id="faq-title"')}
+</div>
+<div class="faq">
+${faqItems(reader)}
 </div>
 </div>
+</section>
+<section class="section test-section" aria-labelledby="closing-title">
+<div class="wrap block block--honey cta">
+${el('h2', 'waitlist.closing.title', 'class="headline" id="closing-title"')}
+<div class="cta-actions">
+<a class="hex hex--tomato" href="#${anchor}"><span class="face" data-copy-id="waitlist.cta">${md('waitlist.cta')}</span></a>
+</div>
+</div>
+</section>
+`
+    : `<section class="section test-section" id="test" aria-labelledby="test-title">
+<div class="wrap block block--honey cta">
+${el('h2', 'test.title', 'class="headline" id="test-title"')}
+${el('p', 'test.body')}
+<div class="cta-actions">
+<a class="hex hex--tomato" href="${APP_URL}"><span class="face" data-copy-id="header.open-app">${md('header.open-app')}${icon('open')}</span></a>
+${helpLink}
+</div>
+</div>
+</section>
+`;
+
+  const html = `<section class="hero" aria-labelledby="hero-title">
+<div class="wrap block block--cobalt hero-block">
+<div class="hero-copy">
+${heroCopy}
+</div>${waitlist ? `\n${signupForm({ locale, reader, consent, anchor })}` : ''}
 <div class="hero-visual" data-copy-id="hero.image">${picture(mediaFor(publicDir, 'hero', locale, { shape: 'hero' }), text('hero.image'), { eager: true })}</div>
 </div>
 </section>
@@ -247,17 +299,7 @@ ${privacyItems.map((id) => `<li>${tick}<span data-copy-id="${id}">${md(id)}</spa
 </ul>
 </div>
 </section>
-<section class="section test-section" id="test" aria-labelledby="test-title">
-<div class="wrap block block--honey cta">
-${el('h2', 'test.title', 'class="headline" id="test-title"')}
-${el('p', 'test.body')}
-<div class="cta-actions">
-<a class="hex hex--tomato" href="${APP_URL}"><span class="face" data-copy-id="header.open-app">${md('header.open-app')}${icon('open')}</span></a>
-${helpLink}
-</div>
-</div>
-</section>
-`;
+${closing}`;
   return { html, used };
 }
 

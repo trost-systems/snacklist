@@ -152,4 +152,14 @@ from public.personal_access_tokens where token_hash = repeat('d', 64);
 insert into public.oauth_app_devices (user_id, client_id, device)
 select id, '00000000-0000-4000-8000-0000000b0080', 'Chrome · macOS' from auth.users where email = 'peter@backup.test';
 
+-- Job 82: a confirmed waitlist sign-up, a proof record and a rate counter (test addresses only).
+insert into public.waitlist (email, email_hmac, platform, locale, launch_news, consent_text_version,
+  confirmed_at, last_mail_at)
+values ('hello+backup@hummlist.com', repeat('a', 64), 'ios', 'de', true, 'waitlist-de-v1', now(), now());
+insert into public.waitlist_consent_proof (email_hmac, consent_text_version, locale, launch_news,
+  created_at, confirmed_at, last_mail_at, ended_at, end_reason)
+values (repeat('b', 64), 'waitlist-en-v1', 'en', false, now() - interval '2 days',
+  now() - interval '2 days', now() - interval '1 day', now(), 'unsubscribed');
+insert into public.waitlist_rate (key_hash, window_start, hits) values (repeat('c', 64), date_trunc('hour', now()), 2);
+
 commit;

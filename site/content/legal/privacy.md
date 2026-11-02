@@ -20,7 +20,32 @@ Peter Trost, Yalovastr. 5, 72108 Rottenburg am Neckar, Germany. E-mail: [support
 
 ## 2. Website hummlist.com
 
+::: classic
 The website sets no cookies, loads nothing from other servers and uses no analytics. The pages are served as static files. When you visit it, our host Vercel Inc. (440 N Barranca Ave #4133, Covina, CA 91723, USA) processes technically necessary data: IP address, time, page requested and browser identifier. This is needed to deliver the site and protect it from attacks (Art. 6(1)(f) GDPR; our legitimate interest is secure operation). Server logs are kept for at most 30 days.
+:::
+
+::: waitlist
+⟦LEGAL W2⟧ The website sets no cookies, loads nothing from other servers and uses no analytics. The pages are served as static files. Only the waitlist form sends your details to our server, a function at Vercel (section 2a). The connection is received by the Vercel location nearest to you. Vercel is a US company; access from the USA is possible, and the transfer relies on the EU-US Data Privacy Framework and Standard Contractual Clauses (section 13). When you visit it, our host Vercel Inc. (440 N Barranca Ave #4133, Covina, CA 91723, USA) processes technically necessary data: IP address, time, page requested and browser identifier. This is needed to deliver the site and protect it from attacks (Art. 6(1)(f) GDPR; our legitimate interest is secure operation). Server logs are kept for at most 30 days.
+
+## 2a. Beta waitlist
+
+⟦LEGAL W2⟧ If you join the waitlist on hummlist.com, we store your email address, whether you have an iPhone or an Android phone, the language of the page (German or English), whether you also want an email when the app launches, the times you signed up and confirmed, and the version of the consent text.
+
+Why: we send you an email to confirm your address, then a welcome email and the invite to the Hummlist beta. Only if you ticked the box do we also email you once when the app officially launches. We need your phone platform to invite you the right way, and the language to write to you in German or English. For the invite we pass your email address to Apple (TestFlight) or Google (Google Play); Apple or Google then sends you the invite (section 12).
+Legal basis: your consent (Art. 6(1)(a) GDPR).
+
+⟦LEGAL W1⟧ Confirmation: you are only on the list once you tap the link in the confirmation email. The link works for 48 hours. We store only the time, not your IP address. If you don't confirm, we delete the sign-up after 7 days.
+
+⟦LEGAL W1⟧ Service providers: the form is received by our host Vercel; the server function runs in Frankfurt am Main, and Vercel sees your IP address as with every visit (section 2). Sign-ups are stored at Supabase in the database in Frankfurt am Main. Emails are sent by Resend from Ireland; Resend stores the emails and delivery logs in the USA and deletes them after 30 days (sections 12 and 13). Our emails contain no tracking pixels, and links are not redirected to count clicks.
+
+Unsubscribe and objection: every email has an unsubscribe link; one click is enough, no sign-in. You can also write to support@hummlist.com. This withdraws your consent for the future and objects to the use for these emails (Art. 21(2) GDPR); we delete your sign-up at once.
+
+⟦LEGAL W1⟧ Retention: without the launch email, we delete your sign-up 3 months after the beta invite is sent; with it, 30 days after that email is sent, and in any case by 31 December 2027.
+
+⟦LEGAL W1⟧ Proof of consent: so that we can show you agreed, we keep a record after the end: a check value of your email address from which the address can't be read, the version of the consent text, the language and the times of sign-up, confirmation, last email and unsubscribe. We delete it after 3 years. Legal basis: Art. 6(1)(c) GDPR with Art. 7(1) GDPR, and Art. 6(1)(f) GDPR (our legitimate interest in being able to prove consent).
+
+The waitlist and the beta are for people aged 16 and over.
+:::
 
 ## 3. Web app app.hummlist.com
 
@@ -77,7 +102,13 @@ Legal basis: Art. 6(1)(b) GDPR.
 
 ## 8. Export your data and delete your account
 
+::: classic
 Account › Export my data gives you your data as a JSON file. Account › Delete account deletes your account immediately. What happens to shared households is explained at [https://app.hummlist.com/konto-loeschen.html](https://app.hummlist.com/konto-loeschen.html).
+:::
+
+::: waitlist
+Account › Export my data gives you your data as a JSON file. Account › Delete account deletes your account immediately. What happens to shared households is explained at https://app.hummlist.com/konto-loeschen.html.
+:::
 
 ## 9. Usage data and error reports (only with consent)
 
@@ -104,30 +135,64 @@ Legal basis: Art. 6(1)(f) GDPR (data security, Art. 32 GDPR).
 
 These service providers process data on our behalf and on our instructions (Art. 28 GDPR):
 
+::: classic
 - Supabase Pte. Ltd., Singapore (database, sign-in, sending the sign-in e-mails, server functions; the database is in a data centre in Frankfurt am Main, the server functions run at the location nearest the request, including outside the EU; the server function for purchases always runs in Frankfurt am Main)
 - RevenueCat, Inc., Brandon (Florida), USA (free Hummlist Premium unlock for testers and for app review (section 5), and, once Hummlist Premium is sold, in-app purchases: checking and managing the unlock; servers at Amazon Web Services in the USA)
 - Vercel Inc. (hosting of hummlist.com, app.hummlist.com and mcp.hummlist.com; domain and DNS)
 - PostHog Inc. (usage data and error reports, servers in the EU; only as described in section 9)
 - GitHub Inc. (encrypted backups)
 - Google Cloud EMEA Limited, Dublin, Ireland (Google Workspace, e-mail)
+:::
 
+::: waitlist
+- Supabase Pte. Ltd., Singapore (database, sign-in, sending the sign-in e-mails, server functions; the database is in a data centre in Frankfurt am Main, the server functions run at the location nearest the request, including outside the EU; the server function for purchases always runs in Frankfurt am Main)
+- ⟦LEGAL W2⟧ ⟦LEGAL W1⟧ Plus Five Five, Inc. ("Resend"), San Francisco, USA (sending our emails, including for the waitlist; sent from Ireland, stores emails and delivery logs in the USA and deletes them after 30 days)
+- RevenueCat, Inc., Brandon (Florida), USA (in-app purchases and free unlocks for testers and app review: checking and managing the unlock; servers at Amazon Web Services in the USA)
+- Vercel Inc. (hosting of hummlist.com, app.hummlist.com and mcp.hummlist.com; domain and DNS)
+- PostHog Inc. (usage data and error reports, servers in the EU; only as described in section 9)
+- GitHub Inc. (encrypted backups)
+- Google Cloud EMEA Limited, Dublin, Ireland (Google Workspace, e-mail)
+:::
+
+::: classic
 Independent controllers: Google or Apple when you sign in with them; Google, as long as the web app loads program libraries and fonts from gstatic.com (section 3); the provider of your operating system's speech recognition; AI assistants you connect yourself; Amazon, when you use the Alexa skill (section 7); Apple and Google as app stores.
+:::
+
+::: waitlist
+⟦LEGAL W2⟧ Independent controllers: Google or Apple when you sign in with them; Google, as long as the web app loads program libraries and fonts from gstatic.com (section 3); the provider of your operating system's speech recognition; AI assistants you connect yourself; Amazon, when you use the Alexa skill (section 7); Apple and Google as app stores and as providers of TestFlight and Google Play when we invite you to the beta (section 2a).
+:::
 
 ## 13. Transfers outside the EU
 
 Some providers are based in the USA or belong to US companies. Supabase's server functions, except the one for purchases, can also run in data centres outside the EU (see section 12). Where data is transferred to the USA or other third countries or US authorities could access it, we rely on the following:
 
+::: classic
 - Vercel Inc., GitHub Inc., PostHog Inc. and Google LLC (USA; part of the same group as Google Cloud EMEA Limited and processes data for it) are certified under the EU-US Data Privacy Framework. The European Commission's adequacy decision applies to them (Art. 45 GDPR). Vercel and PostHog have also agreed Standard Contractual Clauses (Art. 46(2)(c) GDPR) in their data processing agreements; for Google, Standard Contractual Clauses apply if Google stops relying on the Data Privacy Framework.
 - PostHog stores the data in Frankfurt am Main. Under its contract, PostHog may also process it in the USA, for example through sub-processors; the above applies to that.
 - Supabase Pte. Ltd. (Singapore) is not certified under the Data Privacy Framework. The European Commission's Standard Contractual Clauses apply (Art. 46(2)(c) GDPR); they are part of Supabase's data processing agreement.
 - RevenueCat, Inc. (USA) is not certified under the EU-US Data Privacy Framework. The European Commission's Standard Contractual Clauses apply (Art. 46(2)(c) GDPR); they are part of RevenueCat's data processing agreement. RevenueCat stores the data at Amazon Web Services in the USA and uses further sub-processors in the USA that are bound by equivalent obligations. To check a purchase, RevenueCat sends the receipt and your household's ID (to Google a hash value made from it) to Apple or Google. For the free unlock (section 5), RevenueCat receives only your household's ID and the details of the unlock.
 - Amazon (Alexa) receives our replies as an independent controller (section 7). Where Amazon passes them to Amazon companies in the USA, Amazon.com, Inc. (including Amazon.com Services LLC) is certified under the EU-US Data Privacy Framework (Art. 45 GDPR); where no adequacy decision applies, Amazon's developer agreement provides for controller-to-controller Standard Contractual Clauses.
+:::
+
+::: waitlist
+- ⟦LEGAL W2⟧ Vercel Inc., GitHub Inc., PostHog Inc., Plus Five Five, Inc. (Resend) and Google LLC (USA; part of the same group as Google Cloud EMEA Limited and processes data for it) are certified under the EU-US Data Privacy Framework. The European Commission's adequacy decision applies to them (Art. 45 GDPR). Vercel, PostHog and Resend have also agreed Standard Contractual Clauses (Art. 46(2)(c) GDPR) in their data processing agreements; for Google, Standard Contractual Clauses apply if Google stops relying on the Data Privacy Framework.
+- PostHog stores the data in Frankfurt am Main. Under its contract, PostHog may also process it in the USA, for example through sub-processors; the above applies to that.
+- Supabase Pte. Ltd. (Singapore) is not certified under the Data Privacy Framework. The European Commission's Standard Contractual Clauses apply (Art. 46(2)(c) GDPR); they are part of Supabase's data processing agreement.
+- RevenueCat, Inc. (USA) is not certified under the EU-US Data Privacy Framework. The European Commission's Standard Contractual Clauses apply (Art. 46(2)(c) GDPR); they are part of RevenueCat's data processing agreement. RevenueCat stores the data at Amazon Web Services in the USA and uses further sub-processors in the USA that are bound by equivalent obligations. To check a purchase, RevenueCat sends the receipt and your household's ID (to Google a hash value made from it) to Apple or Google.
+- Amazon (Alexa) receives our replies as an independent controller (section 7). Where Amazon passes them to Amazon companies in the USA, Amazon.com, Inc. (including Amazon.com Services LLC) is certified under the EU-US Data Privacy Framework (Art. 45 GDPR); where no adequacy decision applies, Amazon's developer agreement provides for controller-to-controller Standard Contractual Clauses.
+:::
 
 You can get a copy of the safeguards from support@hummlist.com.
 
 ## 14. Retention
 
+::: classic
 We keep your data as long as you have an account. When you delete your account, we delete your account, profile, memberships, access keys, connections (Alexa included) and your usage-data decisions immediately; for purchases we remove the link to your account. We delete a household's record at RevenueCat 30 days after the household is deleted (section 5). We also delete Alexa connection data as soon as the connection ends (section 7). If you are the last member of a household, the household and everything in it is deleted, as is any household you archived. If you leave a household with Hummlist Lifetime as its last member without deleting your account, you can archive it; we delete it if it is not re-enabled within 24 months. Otherwise the items and history stay for the other members, without any link to you; the item names remain visible. We keep shared household data, the history included, as long as the household exists, archived households included. Our database provider's logs are deleted after at most 1 day, backups after 90 days, and usage data and error reports at PostHog after 1 year.
+:::
+
+::: waitlist
+⟦LEGAL W1⟧ We keep your data as long as you have an account. When you delete your account, we delete your account, profile, memberships, access keys, connections (Alexa included) and your usage-data decisions immediately; for purchases we remove the link to your account. We delete a household's record at RevenueCat 30 days after the household is deleted (section 5). We also delete Alexa connection data as soon as the connection ends (section 7). If you are the last member of a household, the household and everything in it is deleted, as is any household you archived. If you leave a household with Hummlist Lifetime as its last member without deleting your account, you can archive it; we delete it if it is not re-enabled within 24 months. Otherwise the items and history stay for the other members, without any link to you; the item names remain visible. We keep shared household data, the history included, as long as the household exists, archived households included. Our database provider's logs are deleted after at most 1 day, backups after 90 days, and usage data and error reports at PostHog after 1 year. For the waitlist, the periods in section 2a apply.
+:::
 
 ## 15. Your rights {#rights}
 

@@ -1,0 +1,433 @@
+/* The waitlist (job 82): the sign-up card in the landing hero, the questions, the pages behind the
+   mail links, and the tag on text still waiting for approval. Only waitlist mode loads it. */
+
+.placeholder {
+  display: inline-block;
+  margin-inline-end: 0.35em;
+  padding: 0 0.4em;
+  border: var(--hl-border-width-thin) solid var(--hl-color-ink);
+  border-radius: 6px;
+  background: var(--hl-color-honey);
+  color: var(--hl-color-on-honey);
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.75em;
+  font-weight: var(--hl-font-weight-bold);
+  line-height: 1.6;
+  letter-spacing: 0;
+  vertical-align: 0.1em;
+  white-space: nowrap;
+}
+
+/* The card: a raised white surface with the navy contour and the sticker shadow, the one object
+   in the hero that asks for something. */
+.wl-card {
+  --ring: var(--hl-color-accent);
+  --ring-gap: var(--hl-color-surface-raised);
+  justify-self: stretch;
+  max-width: 34rem;
+  padding: var(--hl-space-5);
+  border: var(--hl-border-width) solid var(--hl-color-ink);
+  border-radius: var(--hl-radius-l);
+  background: var(--hl-color-surface-raised);
+  color: var(--hl-color-text);
+  box-shadow: var(--sticker);
+  scroll-margin-top: var(--hl-space-4);
+}
+
+.wl-card a:not(.hex) {
+  color: var(--hl-color-accent);
+}
+
+.wl-form {
+  display: grid;
+  gap: var(--hl-space-4);
+}
+
+.wl-form[hidden],
+.wl-done[hidden],
+.wl-panel[hidden],
+[data-when][hidden] {
+  display: none;
+}
+
+.wl-intro {
+  margin-top: calc(-1 * var(--hl-space-2));
+  color: var(--hl-color-text-muted);
+}
+
+.wl-field {
+  display: grid;
+  gap: var(--hl-space-2);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.wl-field > label,
+.wl-field legend {
+  padding: 0;
+  font-weight: var(--hl-font-weight-heavy);
+}
+
+.wl-field legend {
+  margin-bottom: var(--hl-space-2);
+}
+
+.wl-input {
+  width: 100%;
+  min-height: var(--hl-size-target);
+  padding: var(--hl-space-2) var(--hl-space-3);
+  border: var(--hl-border-width) solid var(--hl-color-ink);
+  border-radius: var(--hl-radius-m);
+  background: var(--hl-color-surface);
+  color: var(--hl-color-text);
+  font: inherit;
+}
+
+.wl-input::placeholder {
+  color: var(--hl-color-text-muted);
+  opacity: 1;
+}
+
+.wl-input:focus-visible {
+  outline-offset: 2px;
+}
+
+.wl-input[aria-invalid="true"] {
+  border-color: var(--hl-color-error);
+  box-shadow: inset 0 0 0 1px var(--hl-color-error);
+}
+
+.wl-hint,
+.wl-small,
+.wl-consent {
+  color: var(--hl-color-text-muted);
+  font-size: var(--hl-type-label-size);
+  line-height: var(--hl-type-label-line);
+}
+
+.wl-error,
+.wl-status {
+  color: var(--hl-color-error);
+  font-size: var(--hl-type-label-size);
+  font-weight: var(--hl-font-weight-bold);
+  line-height: var(--hl-type-label-line);
+}
+
+.wl-status:empty {
+  display: none;
+}
+
+/* iPhone or Android: two equal tiles; the chosen one turns lemon. */
+.wl-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--hl-space-3);
+}
+
+.wl-option {
+  display: flex;
+  align-items: center;
+  gap: var(--hl-space-3);
+  min-height: var(--hl-size-target);
+  padding: var(--hl-space-2) var(--hl-space-3);
+  border: var(--hl-border-width) solid var(--hl-color-ink);
+  border-radius: var(--hl-radius-m);
+  background: var(--hl-color-surface);
+  font-weight: var(--hl-font-weight-bold);
+  cursor: pointer;
+}
+
+.wl-option:has(:checked) {
+  background: var(--hl-color-honey);
+  color: var(--hl-color-on-honey);
+}
+
+.wl-option:has(:focus-visible) {
+  outline: var(--hl-focus-ring-width) solid var(--ring);
+  outline-offset: 2px;
+}
+
+.wl-option,
+.wl-check {
+  position: relative;
+}
+
+/* The native input covers its whole label, so the tap target is the tile; the mark beside the
+   words is drawn. */
+.wl-option input,
+.wl-check input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.wl-mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: var(--hl-border-width) solid var(--hl-color-ink);
+  background: var(--hl-color-surface-raised);
+}
+
+.wl-option .wl-mark {
+  border-radius: 50%;
+}
+
+.wl-option :checked + .wl-mark::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--hl-color-ink);
+}
+
+.wl-check .wl-mark {
+  margin-top: 1px;
+  border-radius: 6px;
+}
+
+.wl-check :checked + .wl-mark {
+  background: var(--hl-color-ink);
+}
+
+.wl-check :checked + .wl-mark::after {
+  content: "";
+  width: 6px;
+  height: 11px;
+  margin-top: -2px;
+  border: solid var(--hl-color-surface-raised);
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg);
+}
+
+.wl-check:has(:focus-visible) {
+  outline: var(--hl-focus-ring-width) solid var(--ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.wl-platform:has([aria-invalid="true"]) .wl-option {
+  border-color: var(--hl-color-error);
+}
+
+.wl-check {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--hl-space-3);
+  min-height: var(--hl-size-target);
+  padding-block: var(--hl-space-2);
+  cursor: pointer;
+}
+
+/* The spam trap: off screen for people and out of the accessibility tree; bots fill it. */
+.wl-hp {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.wl-submit {
+  justify-self: start;
+}
+
+.wl-done {
+  display: grid;
+  gap: var(--hl-space-3);
+  justify-items: start;
+}
+
+.wl-done:focus {
+  outline: none;
+}
+
+.wl-done .tick {
+  --s: 40px;
+}
+
+/* Under the hero's lead: who it is for, quieter than the lead. */
+.audience {
+  font-weight: var(--hl-font-weight-bold);
+  opacity: 0.9;
+}
+
+/* Questions: one raised list, each answer folded under its question. */
+.faq-section .section-head {
+  margin: var(--hl-space-6) 0 var(--hl-space-4);
+}
+
+.faq {
+  --ring: var(--hl-color-accent);
+  --ring-gap: var(--hl-color-surface-raised);
+  max-width: 48rem;
+  border: var(--hl-border-width) solid var(--hl-color-ink);
+  border-radius: var(--hl-radius-l);
+  background: var(--hl-color-surface-raised);
+  box-shadow: var(--sticker);
+  overflow: hidden;
+}
+
+.faq-item + .faq-item {
+  border-top: var(--hl-border-width-thin) solid var(--hl-color-divider);
+}
+
+.faq-item summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hl-space-3);
+  min-height: var(--hl-size-target);
+  padding: var(--hl-space-3) var(--hl-space-5);
+  font-weight: var(--hl-font-weight-heavy);
+  cursor: pointer;
+  list-style: none;
+}
+
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+/* A plus that turns into a minus. */
+.faq-item summary::after {
+  content: "";
+  flex: none;
+  width: 14px;
+  height: 14px;
+  background:
+    linear-gradient(currentColor 0 0) center / 100% 2px no-repeat,
+    linear-gradient(currentColor 0 0) center / 2px 100% no-repeat;
+  transition: transform var(--hl-motion-duration-medium) var(--hl-motion-easing-bounce);
+}
+
+.faq-item[open] summary::after {
+  background: linear-gradient(currentColor 0 0) center / 100% 2px no-repeat;
+}
+
+.faq-item summary:focus-visible {
+  outline-offset: -4px;
+}
+
+.faq-item p {
+  padding: 0 var(--hl-space-5) var(--hl-space-4);
+  max-width: 44rem;
+}
+
+/* The pages behind the mail links: the same card on the plain page. */
+.wl-page {
+  --ring: var(--hl-color-accent);
+  --ring-gap: var(--hl-color-surface-raised);
+  display: grid;
+  gap: var(--hl-space-4);
+  margin-top: var(--hl-space-2);
+  padding: var(--hl-space-5);
+  border: var(--hl-border-width) solid var(--hl-color-ink);
+  border-radius: var(--hl-radius-l);
+  background: var(--hl-color-surface-raised);
+  box-shadow: var(--sticker);
+}
+
+.prose .wl-page h1 {
+  margin: 0;
+  font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.5rem);
+  text-wrap: balance;
+}
+
+.wl-page h1:focus {
+  outline: none;
+}
+
+.wl-panel {
+  display: grid;
+  gap: var(--hl-space-4);
+  justify-items: start;
+}
+
+.wl-panel p {
+  margin: 0;
+}
+
+@media (min-width: 720px) {
+  .wl-card,
+  .wl-page {
+    padding: var(--hl-space-6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .faq-item summary::after {
+    transition: none;
+  }
+}
+
+/* The hero with the card: copy, card, illustration in one column on phones; from 1000 px the card
+   takes the right column and the illustration runs off the bottom under the copy. */
+.hero-block > .wl-card {
+  margin-bottom: var(--hl-space-6);
+}
+
+.hero-block:has(> .wl-card) .hero-copy {
+  gap: var(--hl-space-4);
+  padding-bottom: var(--hl-space-5);
+}
+
+@media (max-width: 719px) {
+  .hero-block > .wl-card {
+    margin-inline: calc(-1 * var(--hl-space-2));
+    padding: var(--hl-space-4);
+  }
+}
+
+@media (min-width: 1000px) {
+  .hero-block:has(> .wl-card) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 30rem);
+    grid-template-areas: "copy card" "visual card";
+    column-gap: var(--hl-space-7);
+    align-items: start;
+    padding-right: var(--hl-space-7);
+  }
+
+  .hero-block:has(> .wl-card) .hero-copy {
+    grid-area: copy;
+    padding-bottom: var(--hl-space-5);
+  }
+
+  .hero-block > .wl-card {
+    grid-area: card;
+    max-width: none;
+    margin-bottom: var(--hl-space-7);
+  }
+
+  .hero-block:has(> .wl-card) .hero-visual {
+    grid-area: visual;
+    align-self: end;
+  }
+}
+
+.wl-page .link-strong {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--hl-size-target);
+}
+
+@media (forced-colors: active) {
+  .wl-option :checked + .wl-mark::after,
+  .wl-check :checked + .wl-mark {
+    background: CanvasText;
+  }
+}
+
+/* Over the tile's contour too, so the target is the whole 48 px tile. */
+.wl-option input {
+  inset: calc(-1 * var(--hl-border-width));
+  width: calc(100% + 2 * var(--hl-border-width));
+  height: calc(100% + 2 * var(--hl-border-width));
+}

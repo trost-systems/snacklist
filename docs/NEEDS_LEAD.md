@@ -1410,3 +1410,94 @@ Legal-relevant, for information; nothing waits on Legal:
    changes.
 3. The Premium row no longer shows „Freigeschaltet“ (M-P2 has no row hints); the Premium page
    still shows the household's status.
+
+## Job 82: the hummlist.com waitlist (Spec #10), 2026-11-02
+
+Everything is built and off. Production looks exactly as before until Peter turns three things
+on (below). The design and every route are in [`WAITLIST.md`](WAITLIST.md).
+
+### Not merged: Legal's "no copy may be merged"
+
+PR #210 is green and invisible in production, so the PM's rule would allow a merge. The Legal
+handoff also says "no copy may be merged or deployed, before Peter's approval in his own words",
+and the PR carries Legal's draft texts (behind `⟦LEGAL …⟧` markers in the consent files, the
+privacy-policy blocks and the mail templates). I left it open with its Vercel preview. Two ways
+on, your call:
+
+- Merge as is: production stays the old site (`site/scripts/classic-diff.mjs`), the edge function
+  answers 404 without its secrets, and the drafts sit unpublished in the public repo.
+- Wait for Peter's approval, replace the markers with the approved texts in this PR, then merge
+  and switch on (NEEDS_PETER "Job 82").
+
+Region proof (Addendum 4): the preview is behind Vercel login, so `curl -si -X POST
+<preview>/api/waitlist` answers 401 from the edge (`x-vercel-id: arn1::…`) and never reaches the
+function. `docs/legal/waitlist-region-proof.txt` is not written yet; it needs a logged-in or
+bypass request once the Vercel env vars are set (NEEDS_PETER "Job 82", step 3).
+
+### Data flow for Legal Review
+
+| Step | Where | What is stored or seen | How long |
+| --- | --- | --- | --- |
+| Form | hummlist.com page, `fetch` to the same origin | nothing (no cookie, no storage, no analytics, no third-party resource) | |
+| Vercel function `/api/waitlist*` | Vercel, `regions: ["fra1"]` in `site/vercel.json` | sees the IP and the body; logs only a fixed outcome code; sends on an HMAC of `<UTC date>\|<IP>` (keyed with the proxy secret), never the IP | Vercel's own request logs (path, no body) |
+| Edge function `waitlist` | Supabase, `x-region: eu-central-1` | sees the body; logs only outcome codes | |
+| `public.waitlist` | Supabase Postgres, Frankfurt | email, HMAC of the email, platform, locale, launch news, consent version, sign-up, confirm, invite, launch-mail and last-mail times, the SHA-256 of the confirm token and its expiry | unconfirmed 7 days; confirmed 3 months after the invite, with launch news 30 days after the launch mail; everything by 2027-12-31 (Berlin); unsubscribe deletes at once |
+| `public.waitlist_consent_proof` | same | HMAC of the email, consent version, locale, launch news, the four times, end reason; never the address, never an IP | 3 years after the later of last mail and end |
+| `public.waitlist_rate` | same | SHA-256 of the daily client key, the hour, a count | deleted after 2 hours |
+| Resend | Resend (USA), domain hummlist.com in eu-west-1 | the mail (to, subject, body); no tags, no metadata; single sends with an idempotency key | Resend's 30 days |
+
+Retention hook: `public.purge_waitlist(now)`, pg_cron `purge-waitlist` daily at 03:23 UTC, every
+period tested to the minute in `supabase/tests/waitlist.test.sql`.
+
+### What is still a placeholder
+
+Every text not yet approved by Peter is behind a visible marker, and a production build or a mail
+fails while one is left: `⟦LAUNCH COPY⟧` (landing, welcome and invite mails, confirmation pages),
+`⟦LAUNCH COPY FAQ⟧` (FAQ, /support), `⟦LEGAL W2⟧` (consent line, checkbox, FAQ answer, the
+privacy-policy redlines, the confirmation mail body), `⟦LEGAL FOOTER⟧` (mail footers),
+`⟦LEGAL privacy.website⟧`, `⟦LEGAL W1⟧` (stated periods). The Legal drafts are used word for
+word behind them. The policy line about Vercel uses the variant without „läuft in Frankfurt am
+Main“, since the fra1 check (below) has not run.
+
+### Ambiguous, decided, please confirm
+
+1. **Rate limit storage.** Addendum 3 says "ephemeral keys that are never persisted", the handoff
+   "a short-lived hashed counter (≤ 24 h)". In-memory counters don't hold across Vercel
+   instances, so the counter lives in Postgres: SHA-256 of a daily-rotating HMAC of the IP,
+   per hour, deleted after 2 hours. 10 sign-ups per key per hour (IPv6 clients keyed by their /64), 300 per hour in total.
+2. **No `unsubscribed_at`.** Spec AC8 lists it; the Legal handoff (binding) says unsubscribe
+   deletes the row. The column is not there.
+3. **The 2027-12-31 cap applies to every row**, not only launch-news ones, so a confirmed address
+   that is never invited doesn't stay forever.
+4. **Sender name per language:** "Peter von Hummlist" in German mails, "Peter from Hummlist" in
+   English ones (Legal handoff 2.5).
+5. **Welcome mail** goes out automatically right after confirming (consent text names it). It is
+   not an invite. Its text is a neutral draft behind `⟦LAUNCH COPY⟧`: Launch's draft 5b was not
+   in the brief.
+6. **Root `/`.** Live today it already redirects by language to `/de` or `/en` (307), the landing
+   pages, not the browser app. Kept as it is (PM override 3).
+7. **Backups.** The backup drill dumps every public table, so encrypted backups hold waitlist
+   addresses for the backup retention. Legal should say whether its periods cover backups.
+8. **Deletion request by mail** (`end_reason = deletion_request`) has no function yet; Peter
+   handles it with the unsubscribe link of the address's mail, or by SQL (NEEDS_PETER).
+9. **app.hummlist.com had no noindex** (AC15 assumed it). The app's `vercel.json` now sends
+   `X-Robots-Tag: noindex`; it reaches app.hummlist.com with the next store release, or sooner if
+   you move the `release` branch.
+10. **Launch mail** is not built (later spec); `launch_mail_sent_at` exists for the purge.
+
+### Invites (Addendum 2)
+
+Nothing sends an invite by itself: no cron, trigger or webhook. Confirmed sign-ups fall into a
+batch by the ISO week of `confirmed_at` (Europe/Berlin), for example `2026-W47`.
+`scripts/waitlist/invite.ts --batch 2026-W47` prints counts only (confirmed, invited, to invite,
+per platform and locale). `--batch 2026-W47 --confirm 2026-W47 --export-dir <dir>` sends the
+invite mail to each uninvited row of that batch, sets `invite_sent_at`, and writes `ios.csv`
+(TestFlight import) and `android.csv` (Play email list). It prints counts only. Peter runs it
+himself; no agent runs `--confirm`.
+
+### W4: Android tester limit
+
+Checked 2026-11-02 in the Play Console help ("Set up an open, closed or internal test"): internal
+testing allows up to 100 testers per app; closed testing takes email lists of up to 2,000 users
+each (up to 200 lists, 50 per track). Past 100 Android sign-ups, move the beta to a closed track
+with an email list (`android.csv` fits it).

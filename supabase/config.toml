@@ -467,6 +467,11 @@ import_map = "./functions/deno.json"
 # app's session for the claim (purchases/deps.ts).
 verify_jwt = false
 
+[functions.waitlist]
+import_map = "./functions/deno.json"
+# Only the hummlist.com Vercel function calls it, with its shared secret (docs/WAITLIST.md).
+verify_jwt = false
+
 [functions.voice]
 import_map = "./functions/deno.json"
 # Siri and the app send personal access tokens or session JWTs; the function checks them itself.

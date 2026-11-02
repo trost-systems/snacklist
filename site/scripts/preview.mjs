@@ -1,9 +1,13 @@
 // Serves dist/ with the parts of vercel.json this site uses, so redirects and headers can be
 // checked locally: headers, redirects with `has` header conditions, cleanUrls, trailingSlash false.
+// The site/api waitlist functions answer under /api/waitlist* with the env of this process.
 import { createServer } from 'node:http';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { dirname, extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import * as signup from '../api/waitlist/index.mjs';
+import * as confirm from '../api/waitlist/confirm.mjs';
+import * as unsubscribe from '../api/waitlist/unsubscribe.mjs';
 
 const SITE_DIR = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -36,6 +40,24 @@ function matchesHas(has = [], req) {
   });
 }
 
+const FUNCTIONS = { '/api/waitlist': signup, '/api/waitlist/confirm': confirm, '/api/waitlist/unsubscribe': unsubscribe };
+
+// Hands the request to a site/api function the way Vercel does, x-real-ip from the socket.
+async function callFunction(module, req, res) {
+  const chunks = [];
+  for await (const chunk of req) chunks.push(chunk);
+  const headers = new Headers();
+  for (const [key, value] of Object.entries(req.headers)) headers.set(key, [value].flat().join(', '));
+  headers.set('x-real-ip', req.socket.remoteAddress);
+  const hasBody = !['GET', 'HEAD'].includes(req.method);
+  const request = new Request(`http://${req.headers.host}${req.url}`, { method: req.method, headers, body: hasBody ? Buffer.concat(chunks) : undefined });
+  // An unexported method still reaches the shared handler, which answers 405 with allow.
+  const response = await (module[req.method] ?? module.POST)(request);
+  res.statusCode = response.status;
+  for (const [key, value] of response.headers) res.setHeader(key, value);
+  res.end(Buffer.from(await response.arrayBuffer()));
+}
+
 function fileFor(dir, path) {
   const candidates = path === '/' ? ['index.html'] : [path, `${path}.html`];
   for (const candidate of candidates) {
@@ -65,6 +87,9 @@ export function startPreview({ dir = join(SITE_DIR, 'dist'), port = 55990, host 
       if (matchesSource(rule.source, path) && matchesHas(rule.has, req)) {
         return redirect(rule.statusCode ?? (rule.permanent === false ? 307 : 308), rule.destination);
       }
+    }
+    if (FUNCTIONS[path]) {
+      return callFunction(FUNCTIONS[path], req, res).catch(() => res.writeHead(500).end());
     }
     const file = fileFor(root, path);
     const status = file ? 200 : 404;

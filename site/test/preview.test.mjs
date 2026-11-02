@@ -84,7 +84,9 @@ test('every page and file carries the privacy headers, noindex included, and no 
   for (const path of paths) {
     const res = await get(path);
     assert.equal(res.headers.get('set-cookie'), null, path);
-    assert.equal(res.headers.get('x-robots-tag'), 'noindex', path);
+    // /de and /en say noindex in the page (test/waitlist.test.mjs), so production can lift it there alone.
+    if (path === '/de' || path === '/en') assert.match(await res.text(), /<meta name="robots" content="noindex">/, path);
+    else assert.equal(res.headers.get('x-robots-tag'), 'noindex', path);
     assert.match(res.headers.get('content-security-policy'), /^default-src 'self'/, path);
     assert.equal(res.headers.get('x-frame-options'), 'DENY', path);
     assert.equal(res.headers.get('referrer-policy'), 'no-referrer', path);

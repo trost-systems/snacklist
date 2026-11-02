@@ -1,8 +1,9 @@
 # Site browser checks
 
 Chromium checks of the built site (`site/dist`), served by `../scripts/preview.mjs` with
-`vercel.json`'s headers (CSP `default-src 'self'`, `X-Robots-Tag: noindex`), redirects and clean
-URLs. They are not part of `npm test` or the `site` CI gate: they need a browser and take minutes.
+`vercel.json`'s headers (CSP `default-src 'self'`, `X-Robots-Tag: noindex` beside `/de` and `/en`),
+redirects and clean URLs. `npm run build` builds waitlist mode (job 82); check the site without the
+waitlist after `HUMMLIST_WAITLIST=off npm run build`. They are not part of `npm test` or the `site` CI gate: they need a browser and take minutes.
 Run them after any change to the site's CSS, templates, scripts or media.
 
 ```bash
@@ -12,6 +13,7 @@ flock /tmp/fg-e2e.lock node crawl.mjs ../dist        # pages, links, CSP, axe, t
 flock /tmp/fg-e2e.lock node contrast.mjs ../dist     # text and non-text contrast, with a table
 flock /tmp/fg-e2e.lock node lighthouse.mjs ../dist   # Lighthouse scores, JSON and summary in --out
 flock /tmp/fg-e2e.lock node selftest.mjs ../dist     # proves crawl.mjs reports each breakage
+flock /tmp/fg-e2e.lock node waitlist.mjs ../dist     # the waitlist form and mail-link pages (waitlist build)
 ```
 
 Every script takes `--port` (127.0.0.1 only) and `--pages /de,/en` to narrow it. On a shared host
@@ -20,7 +22,8 @@ selector and run.
 
 ## What each check proves
 
-`crawl.mjs` crawls every page reachable from `/de` and `/en`, plus `/` and a missing path, at
+`crawl.mjs` crawls every page reachable from `/de` and `/en`, plus `/`, a missing path and, in a
+waitlist build, the confirm and unsubscribe pages, at
 390 and 1440 px in light and dark with reduced motion, and once more at 1440 light with motion
 allowed:
 
@@ -33,7 +36,7 @@ allowed:
   view;
 - a hex button's face sinks by its edge (`--hl-depth-edge`) on press.
 
-`contrast.mjs` covers the landing pages, a guide, the changelog and the privacy policy: text through
+`contrast.mjs` covers the landing pages, a guide, the changelog, the privacy policy and, in a waitlist build, the confirm page: text through
 axe's color-contrast rule with the blocks' background images removed, and the pixels for nodes axe
 cannot decide (at least 4.5:1, large text 3:1). Non-text: each hex control's contour against its
 block and each focus ring against its surroundings (at least 3:1).
@@ -42,6 +45,27 @@ block and each focus ring against its surroundings (at least 3:1).
 dark. Chrome gets `--blink-settings=preferredColorScheme=0|1`, and each run proves the scheme took
 effect from the page ground in Lighthouse's own final screenshot. `is-crawlable` fails on purpose
 (the noindex header until the beta launch); accessibility must be 100.
+
+`waitlist.mjs` serves the build with the `/api/waitlist*` functions against a stub of the edge
+function (an address with `+busy` is rate limited, `+down` fails upstream, token `good` confirms,
+id `good` with sig `sig` deletes) and drives the form at 390 px:
+
+- the email field is above the fold at 390 and 1440 px on `/de` and `/en`; the header button brings
+  the form into view;
+- an empty submit shows both field errors, marks the field `aria-invalid`, ties each error to its
+  field with `aria-describedby` and moves focus to the first; an invalid address is named and never
+  reaches the server; choosing a phone clears its error;
+- 429 and an upstream failure show their message; a valid sign-up sends exactly the contract's body
+  (address, platform, locale, launch news, consent version, empty honeypot, `elapsed_ms`) with the
+  proxy secret and `x-region: eu-central-1`, and shows the success state with focus on it; a filled
+  honeypot still shows success and reaches the edge function, which drops it;
+- the confirm and unsubscribe pages send nothing on opening, show the neutral page without values,
+  send one request on the button, show the result with focus on its heading and drop the values
+  from the address bar;
+- on every page: no cookie, no request off the origin, no console error.
+
+`--shots <dir>` also writes the PR screenshots (landing at 390 and 1440 px, form errors, success,
+confirm and unsubscribe before and after).
 
 `selftest.mjs` copies the build, breaks `/de` in one known way per check (a small button, an
 autoplaying video, an external image, a wide paragraph, faint text, no focus ring, no press depth,

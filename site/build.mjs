@@ -6,7 +6,8 @@ import MarkdownIt from 'markdown-it';
 import container from 'markdown-it-container';
 import { parse } from 'node-html-parser';
 import { CATEGORIES, RecordError, compareVersions, draftFileNames, isVersion, parseDraft, parseRecord, publicReleases } from './releases.mjs';
-import { APP_URL, CopyError, readCopy, renderLanding } from './landing.mjs';
+import { APP_URL, CopyError, copyReader, readCopy, renderLanding } from './landing.mjs';
+import { ACTION_PAGES, WAITLIST_ANCHOR, actionPage, readConsent } from './waitlist.mjs';
 
 const SITE_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_DIR = join(SITE_DIR, '..');
@@ -96,6 +97,15 @@ const FOOTER_LINKS = [
 // left out of Vercel production builds, so the path answers 404 there as before.
 const isProduction = (env) => env.VERCEL_ENV === 'production';
 
+// Waitlist mode (job 82, docs/WAITLIST.md): the site before the store launch, with the waitlist
+// form instead of the browser app. On in preview and local builds and with HUMMLIST_WAITLIST=on;
+// a production build without HUMMLIST_WAITLIST builds the site as before job 82.
+export function waitlistMode(env) {
+  const value = env.HUMMLIST_WAITLIST ?? '';
+  if (!['', 'on', 'off'].includes(value)) throw new BuildError(`HUMMLIST_WAITLIST must be "on" or "off" (or unset), got ${JSON.stringify(value)}`);
+  return value === 'on' || (value === '' && !isProduction(env));
+}
+
 // Content tagged `since` a version above the live one is not in the stores yet: production leaves
 // it out, preview and local builds show it with a banner, like a draft.
 const released = (since, versions) => since === undefined || compareVersions(since, versions.live) <= 0;
@@ -140,8 +150,17 @@ md.use(container, 'since', {
   render: (tokens, idx, options, env, self) => self.renderToken(tokens, idx, options),
 });
 
+// `::: waitlist` ... `:::` renders only in waitlist mode, `::: classic` ... `:::` only without it.
+const MODE_BLOCKS = { waitlist: true, classic: false };
+for (const name of Object.keys(MODE_BLOCKS)) {
+  md.use(container, name, {
+    validate: (params) => params.trim() === name,
+    render: (tokens, idx, options, env, self) => self.renderToken(tokens, idx, options),
+  });
+}
+
 md.core.ruler.push('since', (state) => {
-  const { file, kind, locale, versions, since: pageSince } = state.env;
+  const { file, kind, locale, versions, waitlist, since: pageSince } = state.env;
   const { tokens } = state;
   const lines = state.src.split('\n');
   const ui = LOCALES[locale].ui;
@@ -157,10 +176,25 @@ md.core.ruler.push('since', (state) => {
   const hide = (from, to) => {
     for (let j = from; j <= to; j++) hidden.add(j);
   };
+  // The plugin closes an unclosed block silently at its parent's end, and its search for the
+  // closing line doesn't skip code fences, so a ":::" line in a fence ends the block there.
+  const closeOf = (open, i) => {
+    const name = open.info.trim();
+    if (!/^[\s>]*:{3,}\s*$/.test(lines[open.map[1]] ?? '')) fail(file, `"::: ${name}" is not closed; end it with a line ":::"`);
+    const close = tokens.findIndex((t, j) => j > i && t.type === open.type.replace(/_open$/, '_close') && t.level === open.level);
+    const cut = tokens.slice(i, close).find((t) => {
+      if (t.type !== 'fence') return false;
+      const end = t.map[1] - 1;
+      const closer = (lines[end] ?? '').replace(/^[\s>]*/, '');
+      return end === t.map[0] || !closer.startsWith(t.markup) || closer.replace(/^[`~]+/, '').trim() !== '';
+    });
+    if (cut) fail(file, `a code fence inside "::: ${name}" holds a ":::" line, which ends the block; open and close the block with more colons ("::::")`);
+    return close;
+  };
   let h1Seen = false;
   tokens.forEach((token, i) => {
     if (token.type === 'paragraph_open' && tokens[i + 1].content.startsWith(':::')) {
-      fail(file, `"${tokens[i + 1].content.split('\n')[0]}" is not a block this site knows; a versioned block is "::: since 1.4.0" up to a line ":::"`);
+      fail(file, `"${tokens[i + 1].content.split('\n')[0]}" is not a block this site knows; a block is "::: since 1.4.0", "::: waitlist" or "::: classic" up to a line ":::"`);
     }
     if (token.type === 'heading_open') {
       const last = tokens[i + 1].children.at(-1);
@@ -184,18 +218,7 @@ md.core.ruler.push('since', (state) => {
     }
     if (token.type === 'container_since_open') {
       const since = checkSince(token.info.trim().slice('since'.length).trim(), file, kind, 'block');
-      // The plugin closes an unclosed block silently at its parent's end.
-      if (!/^[\s>]*:{3,}\s*$/.test(lines[token.map[1]] ?? '')) fail(file, `"::: ${token.info.trim()}" is not closed; end it with a line ":::"`);
-      const close = tokens.findIndex((t, j) => j > i && t.type === 'container_since_close' && t.level === token.level);
-      // The plugin's search for the closing line doesn't skip code fences, so a ":::" line in a
-      // fence ends the block there and leaves the fence open up to it.
-      const cut = tokens.slice(i, close).find((t) => {
-        if (t.type !== 'fence') return false;
-        const end = t.map[1] - 1;
-        const closer = (lines[end] ?? '').replace(/^[\s>]*/, '');
-        return end === t.map[0] || !closer.startsWith(t.markup) || closer.replace(/^[`~]+/, '').trim() !== '';
-      });
-      if (cut) fail(file, `a code fence inside "::: ${token.info.trim()}" holds a ":::" line, which ends the block; open and close the block with more colons ("::::")`);
+      const close = closeOf(token, i);
       if (released(since, versions)) {
         unwrapped.add(i).add(close);
         insert(i, inner(since));
@@ -204,6 +227,12 @@ md.core.ruler.push('since', (state) => {
         token.attrSet('class', 'since-block');
         insert(i, notices(since));
       }
+    }
+    const mode = /^container_(waitlist|classic)_open$/.exec(token.type)?.[1];
+    if (mode) {
+      const close = closeOf(token, i);
+      if (MODE_BLOCKS[mode] === waitlist) unwrapped.add(i).add(close);
+      else hide(i, close);
     }
   });
   const kept = tokens.flatMap((t, j) => (hidden.has(j) ? [] : [...(unwrapped.has(j) ? [] : [t]), ...(after.get(j) ?? [])]));
@@ -267,7 +296,7 @@ function normalizeDate(value, file) {
   fail(file, `frontmatter field "updated" must be a date (YYYY-MM-DD), got ${JSON.stringify(value)}`);
 }
 
-function loadPage(kindName, { file, expect }, contentDir, versions) {
+function loadPage(kindName, { file, expect }, contentDir, versions, waitlist) {
   const kind = KINDS[kindName];
   const name = relative(contentDir, file);
   const { data, content } = matter(readFileSync(file, 'utf8'));
@@ -300,7 +329,7 @@ function loadPage(kindName, { file, expect }, contentDir, versions) {
     updated: fm.updated,
     // Why the page is not published: production leaves out a page with any notice.
     notices: [...(fm.draft === true ? [ui.draft] : []), ...(released(fm.since, versions) ? [] : [ui.unreleased(fm.since)])],
-    body: md.render(content, { file: name, kind: kindName, locale: fm.locale, versions, since: fm.since }),
+    body: md.render(content, { file: name, kind: kindName, locale: fm.locale, versions, waitlist, since: fm.since }),
   };
 }
 
@@ -328,8 +357,11 @@ function mainContent(page, guidesByLocale) {
 
 // The header and footer every page shares: the brand back to the landing page, the guides and
 // the changelog, the language switch, the web app; in the footer the legal links by their flags.
-function siteHeader(page, { switches, copy, current }) {
+function siteHeader(page, { switches, copy, current, waitlist }) {
   const locale = LOCALES[page.locale];
+  const cta = waitlist
+    ? { id: 'waitlist.cta', href: `${page.kind === 'landing' ? '' : locale.landing}#${WAITLIST_ANCHOR[page.locale]}` }
+    : { id: 'header.open-app', href: APP_URL };
   const link = (href, label) => `<li><a href="${href}"${current === href ? ' aria-current="page"' : ''}>${label}</a></li>`;
   return `<a class="skip" href="#inhalt">${locale.ui.skip}</a>
 <header class="site-header">
@@ -337,13 +369,14 @@ function siteHeader(page, { switches, copy, current }) {
 <a class="brand" href="${locale.landing}" aria-label="${locale.ui.home}"><span class="mark" aria-hidden="true"></span>${SITE_NAME}</a>
 <nav class="nav" aria-label="${locale.ui.mainNav}"><ul>${link(locale.guidesBase, locale.ui.guides)}${link(locale.footer.changelog.href, locale.footer.changelog.label)}</ul></nav>
 <nav class="lang" aria-label="${locale.ui.languageNav}">${switches}</nav>
-<a class="hex hex--small header-cta" href="${APP_URL}"><span class="face" data-copy-id="header.open-app">${escapeHtml(copy.get('header.open-app')[page.locale])}</span></a>
+<a class="hex hex--small header-cta" href="${cta.href}"><span class="face" data-copy-id="${cta.id}">${escapeHtml(copy.get(cta.id)[page.locale])}</span></a>
 </div>
 </header>`;
 }
 
-function siteFooter(page, { config, copy }) {
+function siteFooter(page, { config, copy, waitlist }) {
   const locale = LOCALES[page.locale];
+  const tagline = waitlist ? 'waitlist.footer-tagline' : 'footer.tagline';
   const legal = FOOTER_LINKS.filter((link) => link.shown(config))
     .map(({ key }) => `<li><a href="${locale.footer[key].href}">${locale.footer[key].label}</a></li>`)
     .join('');
@@ -352,12 +385,12 @@ function siteFooter(page, { config, copy }) {
 <a class="brand" href="${locale.landing}" aria-label="${locale.ui.home}"><span class="mark" aria-hidden="true"></span>${SITE_NAME}</a>
 <nav class="footer-site" aria-label="${locale.ui.siteNav}"><ul><li><a href="${locale.guidesBase}">${locale.ui.guides}</a></li><li><a href="${locale.footer.changelog.href}">${locale.footer.changelog.label}</a></li></ul></nav>
 <nav class="footer-legal" aria-label="${locale.ui.footerNav}"><ul>${legal}</ul></nav>
-<p class="tagline" data-copy-id="footer.tagline">${escapeHtml(copy.get('footer.tagline')[page.locale])}</p>
+<p class="tagline" data-copy-id="${tagline}">${escapeHtml(copy.get(tagline)[page.locale])}</p>
 </div>
 </footer>`;
 }
 
-function renderPage(page, { config, groups, guidesByLocale, copy }) {
+function renderPage(page, { config, groups, guidesByLocale, copy, mode }) {
   const { siteUrl, defaultLocale } = config;
   const locale = LOCALES[page.locale];
   const versions = groups.get(page.group);
@@ -375,16 +408,28 @@ function renderPage(page, { config, groups, guidesByLocale, copy }) {
     })
     .join(' ');
   const landing = page.kind === 'landing';
+  const waitlistPage = page.kind === 'waitlist';
+  // Every response but /de and /en carries X-Robots-Tag: noindex (vercel.json); the landing pages
+  // say it here, until a production build in waitlist mode, which fails while any copy or legal
+  // text is still a placeholder.
+  const noindex = page.notices.length > 0 || waitlistPage || (landing && !(mode.production && mode.waitlist));
+  const form = (landing || waitlistPage) && mode.waitlist;
+  const assets = [
+    landing && '<link rel="stylesheet" href="/landing.css">',
+    form && '<link rel="stylesheet" href="/waitlist.css">',
+    landing && '<script src="/demo.js" defer></script>',
+    form && '<script src="/waitlist.js" defer></script>',
+  ].filter(Boolean).map((line) => `${line}\n`).join('');
   const current = page.kind === 'index' ? locale.guidesBase : page.kind === 'changelog' ? locale.footer.changelog.href : null;
   const title = escapeHtml(page.title);
   const description = escapeHtml(page.description);
   const comments = page.notices.map((text) => `<!-- ${text} -->\n`).join('');
-  return `<!doctype html>
+  const html = `<!doctype html>
 <html lang="${page.locale}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-${page.notices.length > 0 ? `${comments}<meta name="robots" content="noindex">\n` : ''}<title>${landing ? title : `${title} | ${SITE_NAME}`}</title>
+${comments}${noindex ? '<meta name="robots" content="noindex">\n' : ''}<title>${landing ? title : `${title} | ${SITE_NAME}`}</title>
 <meta name="description" content="${description}">
 <link rel="canonical" href="${url}">
 ${alternates}
@@ -397,16 +442,25 @@ ${alternates}
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="${title}">
 <meta name="twitter:description" content="${description}">
-${HEAD_ASSETS}${landing ? '<link rel="stylesheet" href="/landing.css">\n<script src="/demo.js" defer></script>\n' : ''}</head>
+${HEAD_ASSETS}${assets}</head>
 <body${landing ? ' class="landing"' : ''}>
-${page.notices.map(banner).join('')}${siteHeader(page, { switches, copy, current })}
+${page.notices.map(banner).join('')}${siteHeader(page, { switches, copy, current, waitlist: mode.waitlist })}
 <main id="inhalt"${landing ? '' : ' class="wrap prose"'}>
 ${mainContent(page, guidesByLocale)}
 </main>
-${siteFooter(page, { config, copy })}
+${siteFooter(page, { config, copy, waitlist: mode.waitlist })}
 </body>
 </html>
 `;
+  return mode.waitlist ? markPlaceholders(html) : html;
+}
+
+// A placeholder for copy or legal text not approved yet (docs/WAITLIST.md) shows as a tag in the
+// page's text; attributes and the head keep it as written.
+const PLACEHOLDER = /⟦[^⟧]*⟧/g;
+function markPlaceholders(html) {
+  const at = html.indexOf('<body');
+  return html.slice(0, at) + html.slice(at).replace(/>([^<]+)</g, (whole, text) => `>${text.replace(PLACEHOLDER, (p) => `<mark class="placeholder">${p}</mark>`)}<`);
 }
 
 const HEAD_ASSETS = `<link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -586,26 +640,51 @@ function changelogBody(entries, locale) {
   return `<h1>${escapeHtml(ui.title)}</h1>\n${sections.length > 0 ? sections.join('') : `<p>${escapeHtml(ui.empty)}</p>\n`}`;
 }
 
-// The landing page per locale. Every copy id in copy.yml must appear on it, so the file holds no
-// strings nobody sees.
-function landingPages(contentDir, publicDir, config) {
+// The landing page per locale, and in waitlist mode the pages behind the mail links. Every copy id
+// in copy.yml must appear on a page of one of the two modes, so the file holds no strings nobody sees.
+function landingPages(contentDir, publicDir, config, waitlist) {
   const copy = readCopy(contentDir);
-  const used = new Set(['meta.title', 'meta.description', 'header.open-app', 'footer.tagline']);
-  const pages = Object.keys(LOCALES).map((locale) => {
-    const landing = renderLanding({ locale, copy, config, publicDir });
-    for (const id of landing.used) used.add(id);
-    return {
-      kind: 'landing',
-      file: `content/landing/copy.yml (${locale})`,
-      route: LOCALES[locale].landing,
-      group: 'landing',
-      ogType: 'website',
-      locale,
-      title: copy.get('meta.title')[locale],
-      description: copy.get('meta.description')[locale],
-      notices: [],
-      body: landing.html,
-    };
+  const consent = readConsent(contentDir);
+  const used = new Set(['meta.title', 'meta.description', 'header.open-app', 'footer.tagline', 'waitlist.meta.title', 'waitlist.meta.description', 'waitlist.footer-tagline']);
+  const pages = Object.keys(LOCALES).flatMap((locale) => {
+    const render = (mode) => renderLanding({ locale, copy, config, publicDir, waitlist: mode, consent: consent[locale] });
+    const landing = render(waitlist);
+    for (const id of [...landing.used, ...render(!waitlist).used]) used.add(id);
+    const meta = waitlist ? 'waitlist.meta' : 'meta';
+    const actions = Object.entries(ACTION_PAGES).map(([action, routes]) => {
+      const reader = copyReader(copy, locale);
+      const body = actionPage(action, { locale, reader });
+      const title = reader.text(`waitlist.${action}.meta-title`);
+      const description = reader.text(`waitlist.${action}.description`);
+      for (const id of reader.used) used.add(id);
+      return {
+        kind: 'waitlist',
+        file: `content/landing/copy.yml (${locale}, ${action} page)`,
+        route: routes[locale],
+        group: `waitlist:${action}`,
+        ogType: 'website',
+        locale,
+        title,
+        description,
+        notices: [],
+        body,
+      };
+    });
+    return [
+      {
+        kind: 'landing',
+        file: `content/landing/copy.yml (${locale})`,
+        route: LOCALES[locale].landing,
+        group: 'landing',
+        ogType: 'website',
+        locale,
+        title: copy.get(`${meta}.title`)[locale],
+        description: copy.get(`${meta}.description`)[locale],
+        notices: [],
+        body: landing.html,
+      },
+      ...(waitlist ? actions : []),
+    ];
   });
   const unused = [...copy.keys()].filter((id) => !used.has(id));
   if (unused.length > 0) fail('content/landing/copy.yml', `copy ids not used on the landing page: ${unused.join(', ')}`);
@@ -638,11 +717,12 @@ export function build({
 } = {}) {
   const live = liveVersion(repoDir);
   const versions = { live: live.live, firstPublic: live.firstPublic, production: isProduction(env) };
+  const mode = { production: versions.production, waitlist: waitlistMode(env) };
   const pages = Object.keys(KINDS)
-    .flatMap((kind) => KINDS[kind].files(contentDir).map((entry) => loadPage(kind, entry, contentDir, versions)))
+    .flatMap((kind) => KINDS[kind].files(contentDir).map((entry) => loadPage(kind, entry, contentDir, versions, mode.waitlist)))
     .filter((page) => !(versions.production && page.notices.length > 0))
     .concat(changelogPages(repoDir, versions.production));
-  const landing = landingPages(contentDir, publicDir, config);
+  const landing = landingPages(contentDir, publicDir, config, mode.waitlist);
   pages.push(...landing.pages);
 
   const byRoute = new Map([['/', { file: '(root page)' }], ['/404', { file: '(404 page)' }]]);
@@ -666,11 +746,15 @@ export function build({
     ]),
   );
 
-  const rendered = pages.map((page) => ({ page, html: renderPage(page, { config, groups, guidesByLocale, copy: landing.copy }) }));
+  const rendered = pages.map((page) => ({ page, html: renderPage(page, { config, groups, guidesByLocale, copy: landing.copy, mode }) }));
 
   const warnings = [];
-  const placeholders = rendered.flatMap(({ page, html }) =>
-    [...new Set(html.match(/\[PETER:[^\]]*\]?/g) ?? [])].map((p) => `${page.file}: ${p}`),
+  const shipped = [
+    ...rendered.map(({ page, html }) => ({ file: page.file, text: html })),
+    ...(mode.waitlist ? ['waitlist.js', 'waitlist.css'].map((f) => ({ file: `public/${f}`, text: readFileSync(join(publicDir, f), 'utf8') })) : []),
+  ];
+  const placeholders = shipped.flatMap(({ file, text }) =>
+    [...new Set(text.match(/\[PETER:[^\]]*\]?|⟦[^⟧]*⟧?/g) ?? [])].map((p) => `${file}: ${p}`),
   );
   if (placeholders.length > 0) {
     const list = placeholders.join('\n  ');
@@ -680,7 +764,9 @@ export function build({
 
   rmSync(outDir, { recursive: true, force: true });
   mkdirSync(outDir, { recursive: true });
-  cpSync(publicDir, outDir, { recursive: true });
+  // The waitlist's script and styles ship only with its pages.
+  const waitlistFiles = ['waitlist.js', 'waitlist.css'].map((f) => join(publicDir, f));
+  cpSync(publicDir, outDir, { recursive: true, filter: (src) => mode.waitlist || !waitlistFiles.includes(src) });
   const write = (route, html) => {
     const file = join(outDir, routeFile(route));
     mkdirSync(dirname(file), { recursive: true });
@@ -692,14 +778,15 @@ export function build({
 
   for (const file of htmlFiles(outDir)) checkHtml(file, readFileSync(file, 'utf8'), outDir, config.siteUrl);
 
-  return { routes: ['/', ...pages.map((p) => p.route)], warnings, live };
+  return { routes: ['/', ...pages.map((p) => p.route)], warnings, live, waitlist: mode.waitlist };
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   try {
-    const { routes, warnings, live } = build({ env: { VERCEL_ENV: process.env.VERCEL_ENV } });
+    const { routes, warnings, live, waitlist } = build({ env: { VERCEL_ENV: process.env.VERCEL_ENV, HUMMLIST_WAITLIST: process.env.HUMMLIST_WAITLIST } });
     for (const w of warnings) console.warn(`warning: ${w}`);
     console.log(`live version: ${live.live} (from ${live.source})`);
+    console.log(`waitlist mode: ${waitlist ? 'on' : 'off'}`);
     console.log(`built ${routes.length} pages into dist/`);
   } catch (error) {
     if (!(error instanceof BuildError || error instanceof RecordError || error instanceof CopyError)) throw error;

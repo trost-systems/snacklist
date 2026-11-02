@@ -15,7 +15,7 @@ const contentFiles = () => readdirSync(CONTENT_DIR, { recursive: true }).filter(
 // e.g. /konto-loeschen.html, or the reader lands in the app instead (review of job 24).
 test('links to app.hummlist.com name a file the app host really serves', () => {
   const links = contentFiles().flatMap((file) =>
-    [...readFileSync(join(CONTENT_DIR, file), 'utf8').matchAll(/https:\/\/app\.hummlist\.com(\/[^\s)\]"']*)?/g)]
+    [...readFileSync(join(CONTENT_DIR, file), 'utf8').matchAll(/https:\/\/app\.hummlist\.com(\/[^\s)\]"']*[^\s)\]"'.,])?/g)]
       .map((m) => ({ file, path: (m[1] ?? '/').split(/[?#]/)[0] })),
   );
   assert.ok(links.some((l) => l.path === '/konto-loeschen.html'), 'the help page links the deletion page');

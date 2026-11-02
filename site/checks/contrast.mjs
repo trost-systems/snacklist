@@ -4,13 +4,16 @@
 // (the blocks' hex clusters, paper textures), and the pixels for nodes axe cannot decide. Non-text:
 // each hex control's contour and edge against the block around it, and every focus indicator's
 // ring colour against what surrounds it, both read from computed styles. README.md has the rules.
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { chromium } from 'playwright';
 import { PNG } from 'pngjs';
 import { AXE_PATH, RUNS, VIEWPORTS, contrast, pageKit, parseArgs, parseRgb, runName, serve, table } from './lib.mjs';
 
 const { dist, port, pages: only } = parseArgs({ port: 57621 });
-const PAGES = only ?? ['/de', '/en', '/de/anleitungen/siri-kurzbefehl', '/en/changelog', '/datenschutz'];
+// In waitlist mode also the confirm page (the unsubscribe page has the same parts).
+const WAITLIST = existsSync(join(dist, 'de/warteliste/bestaetigen.html')) ? ['/de/warteliste/bestaetigen'] : [];
+const PAGES = only ?? ['/de', '/en', '/de/anleitungen/siri-kurzbefehl', '/en/changelog', '/datenschutz', ...WAITLIST];
 const { origin, close } = await serve(dist, port);
 const browser = await chromium.launch();
 const axeSource = readFileSync(AXE_PATH, 'utf8');

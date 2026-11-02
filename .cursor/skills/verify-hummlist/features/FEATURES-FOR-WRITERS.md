@@ -27,6 +27,23 @@ What Hummlist does today, in plain words, with the exact button and screen label
 
 # Getting started
 
+## hummlist.com waitlist (not live yet)
+
+**What it does.** Once Peter turns it on, hummlist.com shows a waitlist instead of links to the browser version: people leave their email (ideally the one of their Apple ID or Google account), say whether they have an iPhone or an Android phone, and can tick that they want one email when the app launches. They confirm by tapping a link in the confirmation mail and pressing the button on the page. Confirmed people are invited to the beta in weekly batches, by hand. Every mail has a link that deletes the entry at once.
+
+**How to get there.**
+1. hummlist.com (opens /de or /en by browser language).
+2. „Auf die Warteliste“ (EN: "Join the waitlist").
+3. In the mail: „E-Mail bestätigen“ (EN: "Confirm email").
+
+**Never claim.**
+- That the waitlist is live before Peter turns it on (today hummlist.com still shows the test page).
+- A place in line, a referral reward, a counter, or a date for a particular person's invite.
+- That the browser version is open to new users.
+- Any text marked ⟦LAUNCH COPY⟧ or ⟦LEGAL …⟧ on the preview as final.
+
+**Last verified.** job 82 branch (job/82-waitlist), 2026-11-03 (CET), driven on a local preview against the local stack (sign-up, duplicate, confirm, unsubscribe, one-click unsubscribe) and by pgTAP, Deno and site tests. Recipe: [waitlist.md](./waitlist.md).
+
 ## Sign-up and sign-in
 
 **What it does.** A new or returning user signs in with Google or Apple, or with email: email and password, a new account with "Registrieren", or a sign-in link by email opened on the same device. Google and Apple come first; email is one more button below them, „Weiter mit E-Mail“ (EN: "Continue with email"). The keyboard opens only when the user taps a field. Signing out is in the More tab. The login screen links the imprint and the privacy policy.

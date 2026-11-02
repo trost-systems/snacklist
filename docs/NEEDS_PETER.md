@@ -1222,3 +1222,42 @@ it is called directly. Please open the developer console (developer.amazon.com �
 there. Then check which Amazon country the developer account and Lea's account use (Alexa app →
 Einstellungen → Info/Über: Host Name alexa.amazon.de). Details in docs/ALEXA_CERTIFICATION.md
 „Results“.
+
+## Job 82: the hummlist.com waitlist (2026-11-02)
+
+Built and off (`docs/WAITLIST.md`). Three steps turn it on, in this order. Nothing here costs
+money. Keep every secret out of the repo, PR texts and chats.
+
+1. **Resend key** (only you can make it): in Resend, domain hummlist.com, create an API key with
+   "Sending access" for that domain. Check that open and click tracking are off for the domain.
+2. **Supabase secrets** (project `jdwqrallbpdbshrdhenk`, Edge Functions › Secrets, or
+   `supabase secrets set --project-ref jdwqrallbpdbshrdhenk ...`):
+   - `RESEND_API_KEY`: the key from step 1.
+   - `WAITLIST_PROXY_SECRET`: a new random value (`openssl rand -hex 32`); the same value goes
+     into Vercel in step 3.
+   - `WAITLIST_HMAC_SECRET`: another random value. Never change it later: it signs every
+     unsubscribe link and the proof records.
+   - Leave `WAITLIST_MAIL_ALLOW` unset while testing: then only `hello+…@hummlist.com`
+     addresses are stored and mailed. Set it to `*` on the day the waitlist goes public.
+   - `WAITLIST_ALLOW_PLACEHOLDERS=1` only while testing with unapproved texts; remove it before
+     going public.
+3. **Vercel** (project of hummlist.com, Settings › Environment Variables), first for **Preview**
+   only:
+   - `WAITLIST_UPSTREAM_URL` = `https://jdwqrallbpdbshrdhenk.supabase.co/functions/v1/waitlist`
+   - `WAITLIST_PROXY_SECRET` = the value from step 2.
+   Then sign up on the PR's preview with a `hello+waitlisttest…@hummlist.com` address, confirm,
+   and unsubscribe. Region proof: `curl -si -X POST <preview>/api/waitlist ...` with your Vercel
+   login's bypass, and check that `x-vercel-id` contains `::fra1::`; save the output to
+   `docs/legal/waitlist-region-proof.txt` (Addendum 4).
+4. **Going live in production** (after your OK of the copy and Legal's texts in your own words):
+   replace every `⟦…⟧` text in a PR (a production build fails while one is left), set the two
+   variables from step 3 for **Production** too, `HUMMLIST_WAITLIST=on` for Production, and
+   `WAITLIST_MAIL_ALLOW=*` in Supabase. Redeploy main.
+
+Off again: delete `HUMMLIST_WAITLIST` in Vercel Production and redeploy (the old site), or unset
+`WAITLIST_PROXY_SECRET` in Supabase (every request 404 at once).
+
+Requests by mail: an unsubscribe or deletion request at support@hummlist.com is yours the same day
+(Legal). Without the person's link, delete by SQL in the SQL editor (this writes the proof
+record for a confirmed row):
+`select public.waitlist_unsubscribe(id, now()) from public.waitlist where lower(email) = lower('<address>');`

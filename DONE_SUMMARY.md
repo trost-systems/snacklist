@@ -524,3 +524,7 @@ Dictating „Gurken zwei“ (in-app dictation, Siri, Alexa; DE and EN „cucumbe
 ## Job 88: an own store named like an offered chain ticks the chain
 
 In onboarding, typing an own store such as „edeka“ now ticks the EDEKA chip instead of keeping a hidden store; server already deduplicated. PR #214. Details: [docs/done/88-fix-onboarding-own-store-chain.md](docs/done/88-fix-onboarding-own-store-chain.md).
+
+## Job 82: the hummlist.com waitlist (Spec #10)
+
+hummlist.com gets a waitlist instead of browser-app links: a double opt-in form, confirm and unsubscribe pages, a Vercel function in fra1 in front of a Supabase edge function, locked-down tables with Legal's retention purge, and a manual invite script. Everything is off in production until Peter sets the env vars and approves the texts, and a production build fails while a placeholder is left. PR #210 is open (Legal: no copy merged before Peter's approval). Details: [docs/done/82-waitlist.md](docs/done/82-waitlist.md).

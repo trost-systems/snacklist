@@ -7084,3 +7084,49 @@ on the way:
    the policy with the legal rows. In builds without a PostHog key the row is hidden, since its
    page would be empty. This also makes the approved consent text and the privacy policy right
    again: they say „Mehr → Nutzungsdaten“. Replaces items 3 and 4's Datenschutz page.
+
+## Job 82: the hummlist.com waitlist (Spec #10), 2026-11-02
+
+1. **Off until Peter turns it on, so it can merge.** Every push to `main` deploys hummlist.com,
+   and the brief allows a merge only if production doesn't change. The site builds a waitlist
+   mode only when `HUMMLIST_WAITLIST=on` or in a non-production build. The Vercel function answers
+   404 without its two env vars, and the edge function answers 404 without its two secrets.
+   `site/scripts/classic-diff.mjs` builds `origin/main` and the branch with production settings
+   and compares `dist/`: 95 files each, identical except one added
+   `<meta name="robots" content="noindex">` on `/de` and `/en`, which replaces the header
+   (point 3).
+2. **The logic lives in a Supabase edge function behind a thin Vercel function.** Legal wants the
+   form to post to hummlist.com and run in fra1. The Vercel function only hashes the IP and
+   forwards, so the database credentials and the Resend key stay in Supabase, and the logic is
+   tested with Deno and pgTAP like the other functions. A shared secret keeps everyone else out of
+   the edge function.
+3. **Noindex per path.** PM override 2: only the landing pages lose noindex, and only once the copy
+   is live. `vercel.json` sends `X-Robots-Tag: noindex` on every path except `/de` and `/en`,
+   and those two carry a robots meta tag in every build except a production waitlist build.
+   That build can only succeed without placeholders (point 4).
+4. **Placeholders block production.** Unapproved texts carry `⟦LAUNCH COPY⟧`, `⟦LEGAL W2⟧` and
+   similar markers. A production build fails on any marker, and the edge function won't mail a
+   marked template unless `WAITLIST_ALLOW_PLACEHOLDERS=1`. That makes AC21 a build rule rather
+   than a reminder.
+5. **Answer before the work (AC6).** The sign-up answers right after validation and the rate
+   counter, and stores and mails in `EdgeRuntime.waitUntil`. A new address, a known one and a
+   dropped bot get the same body at the same time. The local stack's oneshot workers drop
+   `waitUntil` work, so locally the function finishes the work first.
+6. **Tokens in the fragment, actions on a button.** Mail links carry the token in `#…`, so no
+   server log sees it, and the page sends it only when the button is pressed (Legal: no action on
+   GET, mail scanners). Unsubscribe links are signed with an HMAC of the row id, so links in old
+   mails keep working without storing a second token.
+7. **Rate limit in Postgres.** Counters keyed by SHA-256 of a daily HMAC of the IP, per hour,
+   deleted after 2 hours: in-memory counters don't survive Vercel's instances
+   (NEEDS_LEAD "Job 82", point 1).
+8. **Recipients closed by default.** Without `WAITLIST_MAIL_ALLOW=*` only `hello+…@hummlist.com`
+   is stored and mailed, so a preview can't mail a stranger before Peter opens it.
+9. **Invites are a script, never automatic** (Addendum 2): `scripts/waitlist/invite.ts`, dry run by
+   default with counts only, `--confirm <batch>` repeating the batch id.
+10. **Root `/` unchanged.** Live it already redirects to the landing pages by language (307), not
+    to the browser app (PM override 3).
+11. **app.hummlist.com gets noindex.** AC15 says the browser app "still has noindex", but on
+    2026-11-03 it had none (no `X-Robots-Tag`, no robots meta, `robots.txt` 404). The app's
+    `vercel.json` now sends `X-Robots-Tag: noindex` on every path. preview.app.hummlist.com gets
+    it with this merge, and app.hummlist.com with the next store release (`docs/DEPLOY.md`, "Web
+    app").

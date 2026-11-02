@@ -47,27 +47,35 @@ test('/de and /en are the landing pages, paired with each other', () => {
     assert.deepEqual(alternates(doc), expected, route);
     assert.equal(doc.querySelector('link[rel="canonical"]').getAttribute('href'), `${SITE}${route}`);
     assert.equal(doc.querySelector('header nav.lang a').getAttribute('href'), other);
-    assert.equal(doc.querySelector('meta[name="robots"]'), null, 'the landing page is not a draft');
+    assert.equal(meta(doc, 'robots'), 'noindex', 'the noindex header skips /de and /en, so the page says it');
+    assert.doesNotMatch(doc.toString(), /ENTWURF|DRAFT/, 'the landing page is not a draft');
   }
 });
 
-test('every copy id is on both landing pages with its text, and every string on them has an id', () => {
-  const { page } = buildSite();
+test('every copy id is on a landing or waitlist page with its text, and every string on them has an id', () => {
+  const classic = buildSite().page;
+  const waitlist = buildSite({ env: { HUMMLIST_WAITLIST: 'on' } }).page;
+  const routes = { de: ['/de/warteliste/bestaetigen', '/de/warteliste/abmelden'], en: ['/en/waitlist/confirm', '/en/waitlist/unsubscribe'] };
   for (const locale of ['de', 'en']) {
-    const doc = page(`/${locale}`);
-    const seen = new Set(doc.querySelectorAll('[data-copy-id]').map((el) => el.getAttribute('data-copy-id')));
-    // The play and pause labels sit on the button of a slot with a video (tested below).
-    const meta = ['meta.title', 'meta.description', 'demo.play', 'demo.pause'];
-    assert.deepEqual([...COPY.keys()].filter((id) => !seen.has(id) && !meta.includes(id)), [], locale);
-    for (const el of doc.querySelectorAll('main [data-copy-id]')) {
-      const entry = COPY.get(el.getAttribute('data-copy-id'));
-      const plain = entry[locale].replace(/\*\*|\[|\]\([^)]*\)/g, '');
-      const shown = el.querySelector('img')?.getAttribute('alt') ?? el.text;
-      assert.equal(shown.trim(), plain, el.getAttribute('data-copy-id'));
+    const docs = [classic(`/${locale}`), waitlist(`/${locale}`), ...routes[locale].map(waitlist)];
+    const seen = new Set(docs.flatMap((doc) => doc.querySelectorAll('[data-copy-id]').map((el) => el.getAttribute('data-copy-id'))));
+    // The play and pause labels sit on the button of a slot with a video (tested below); the
+    // placeholder is an attribute; titles and descriptions are in the head.
+    const elsewhere = ['meta.title', 'meta.description', 'demo.play', 'demo.pause', 'waitlist.form.email-placeholder', /\.(meta-title|description)$/, /^waitlist\.meta\./];
+    const unseen = [...COPY.keys()].filter((id) => !seen.has(id) && !elsewhere.some((e) => (typeof e === 'string' ? e === id : e.test(id))));
+    assert.deepEqual(unseen, [], locale);
+    for (const doc of docs) {
+      for (const el of doc.querySelectorAll('main [data-copy-id]')) {
+        const entry = COPY.get(el.getAttribute('data-copy-id'));
+        const plain = entry[locale].replace(/\*\*|\[|\]\([^)]*\)/g, '');
+        const shown = el.querySelector('img')?.getAttribute('alt') ?? el.text;
+        assert.equal(shown.trim(), plain, el.getAttribute('data-copy-id'));
+      }
+      const text = (el) => el.childNodes.filter((n) => n.nodeType === 3).map((n) => n.text).join('').trim();
+      // The consent text under the button comes from content/legal/consent/ (data-legal names it).
+      const loose = doc.querySelectorAll('main *').filter((el) => text(el) !== '' && !el.closest('[data-copy-id], [data-legal]'));
+      assert.deepEqual(loose.map((el) => `${el.tagName} ${text(el)}`), [], `${locale}: text without a copy id`);
     }
-    const text = (el) => el.childNodes.filter((n) => n.nodeType === 3).map((n) => n.text).join('').trim();
-    const loose = doc.querySelectorAll('main *').filter((el) => text(el) !== '' && !el.closest('[data-copy-id]'));
-    assert.deepEqual(loose.map((el) => `${el.tagName} ${text(el)}`), [], `${locale}: text without a copy id`);
   }
 });
 
@@ -227,23 +235,25 @@ test('the HTML check allows only script files of this site and resources that ex
   assert.throws(() => check('<a href="#nowhere">x</a>'), /link #nowhere has no target on the page/);
 });
 
-test('served like Vercel: the landing pages answer 200 with noindex, slashes and .html redirect', async () => {
+test('served like Vercel: the landing pages answer 200 with noindex in the page, slashes and .html redirect', async () => {
   const { outDir } = buildSite();
   const res = await serve(outDir, ['/de', '/en', '/de/', '/en.html', '/demo.js', '/landing.css', '/media/hero-en-compact.webp', '/media/README.md']);
   for (const path of ['/de', '/en']) {
     assert.equal(res[path].status, 200, path);
-    assert.equal(res[path].headers['x-robots-tag'], 'noindex', path);
+    assert.equal(res[path].headers['x-robots-tag'], undefined, `${path}: the header skips the landing pages`);
+    assert.match(res[path].body, /<meta name="robots" content="noindex">/, path);
     assert.match(res[path].body, /<h1 /, path);
   }
   assert.deepEqual([res['/de/'].status, res['/de/'].headers.location], [308, '/de']);
   assert.deepEqual([res['/en.html'].status, res['/en.html'].headers.location], [308, '/en']);
   assert.match(res['/demo.js'].headers['content-type'], /javascript/);
   assert.equal(res['/media/hero-en-compact.webp'].headers['content-type'], 'image/webp');
-  for (const path of Object.keys(res)) assert.equal(res[path].headers['x-robots-tag'], 'noindex', path);
+  for (const path of Object.keys(res).filter((p) => !['/de', '/en'].includes(p))) assert.equal(res[path].headers['x-robots-tag'], 'noindex', path);
 });
 
 test('production builds the landing pages too, without drafts or placeholders', () => {
   const { routes, page } = buildSite({ env: PROD });
   assert.ok(routes.includes('/de') && routes.includes('/en'));
-  assert.doesNotMatch(page('/de').toString(), /ENTWURF|noindex/);
+  assert.doesNotMatch(page('/de').toString(), /ENTWURF/);
+  assert.equal(meta(page('/de'), 'robots'), 'noindex', 'without the waitlist the landing page stays out of search');
 });

@@ -10,7 +10,33 @@ draft: false
 
 # Hilfe und Kontakt
 
+::: classic
 Hummlist ist eine gemeinsame Einkaufsliste für einen Haushalt. Was einer einträgt, sehen alle anderen im Haushalt sofort. Hummlist sortiert jeden Eintrag in seine Kategorie. Es gibt Hummlist für iPhone und Android und im Browser unter [app.hummlist.com](https://app.hummlist.com).
+:::
+
+::: waitlist
+⟦LAUNCH COPY⟧ Hummlist ist eine gemeinsame Einkaufsliste für einen Haushalt. Was einer einträgt, sehen alle anderen im Haushalt sofort. Hummlist sortiert jeden Eintrag in seine Kategorie. Es gibt Hummlist für iPhone und Android.
+
+## Fragen zur Beta {#beta}
+
+⟦LAUNCH COPY FAQ⟧
+
+### Wie installiere ich die Beta auf dem iPhone?
+
+Deine Einladung kommt per E-Mail von Apple (TestFlight), an die Adresse, mit der du dich auf der Warteliste eingetragen hast. Lad dir zuerst Apples kostenlose App „TestFlight“ aus dem App Store. Öffne dann die Einladungsmail auf deinem iPhone, tipp auf den Knopf darin und installier Hummlist in TestFlight. Einen öffentlichen Link gibt es nicht.
+
+### Wie installiere ich die Beta auf Android?
+
+In deiner Einladungsmail ist ein Knopf „Beta beitreten“. Öffne ihn auf deinem Handy, und zwar mit dem Play Store im selben Google-Konto wie die E-Mail-Adresse, an die die Einladung ging. Bestätige dort die Teilnahme und installier Hummlist dann aus dem Play Store. Updates kommen danach ganz normal über den Play Store.
+
+### Ich habe mich mit der falschen E-Mail eingetragen. Was jetzt?
+
+Die Einladung klappt nur mit der E-Mail deiner Apple-ID (iPhone) bzw. deines Google-Kontos (Android). Trag dich auf [hummlist.com](/de#warteliste) einfach noch mal mit der richtigen Adresse ein.
+
+### Meine Einladung ist nicht angekommen. Was kann ich tun?
+
+Schau im Spam-Ordner nach und bei Gmail auch im Tab „Werbung“. Wir verschicken die Einladungen in Wellen: die erste am 15. November, danach jede Woche. Auf dem iPhone kommt die TestFlight-Mail von Apple, nicht von Hummlist. Fehlt sie dann immer noch, schreib an [support@hummlist.com](mailto:support@hummlist.com).
+:::
 
 ## So bekommst du Hilfe
 
@@ -37,7 +63,13 @@ Tippe auf **Mehr**, dann auf **Konto** und auf **Meine Daten exportieren**. Du b
 
 Tippe auf **Mehr**, dann auf **Konto** und auf **Konto löschen**, und bestätige mit dem Wort LÖSCHEN. Dein Konto, dein Profil, deine Zugriffstoken und verbundenen Apps werden sofort gelöscht. Bleiben andere im Haushalt, behalten sie die Liste; deine Einträge stehen dort ohne deinen Namen. Bist du das letzte Mitglied, wird der ganze Haushalt gelöscht, auch mit Hummlist Lifetime; der Kauf lässt sich nicht auf einen anderen Haushalt übertragen. Ob du dein Geld zurückbekommen kannst, steht unter „Kann ich Hummlist Lifetime zurückgeben?“. Auch Haushalte, die du archiviert hast, werden gelöscht. Bleiben andere im Haushalt, bleibt Hummlist Lifetime bei ihnen. In unseren verschlüsselten Sicherungen bleiben gelöschte Daten noch bis zu 90 Tage, danach sind sie auch dort weg.
 
+::: classic
 Ohne App geht es auch: Die Schritte stehen unter [app.hummlist.com/konto-loeschen.html](https://app.hummlist.com/konto-loeschen.html), oder schreib an [support@hummlist.com](mailto:support@hummlist.com).
+:::
+
+::: waitlist
+⟦LAUNCH COPY⟧ Ohne App geht es auch: Schreib an [support@hummlist.com](mailto:support@hummlist.com).
+:::
 
 ### Was passiert mit Hummlist Lifetime, wenn ich als letztes Mitglied einen Haushalt verlasse?
 

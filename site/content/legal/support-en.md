@@ -10,7 +10,33 @@ draft: false
 
 # Help and contact
 
+::: classic
 Hummlist is a shared shopping list for one household. Whatever one person adds, everyone else in the household sees right away. Hummlist sorts each item into its category. It runs on iPhone, Android and in the browser at [app.hummlist.com](https://app.hummlist.com).
+:::
+
+::: waitlist
+⟦LAUNCH COPY⟧ Hummlist is a shared shopping list for one household. Whatever one person adds, everyone else in the household sees right away. Hummlist sorts each item into its category. It runs on iPhone and Android.
+
+## Beta questions {#beta}
+
+⟦LAUNCH COPY FAQ⟧
+
+### How do I install the beta on iPhone?
+
+Your invite comes by email from Apple (TestFlight), sent to the address you used for the waitlist. First, get Apple's free TestFlight app from the App Store. Then open the invite email on your iPhone, tap the button in it, and install Hummlist in TestFlight. There's no public link.
+
+### How do I install the beta on Android?
+
+Your invite email has a "Join the beta" button. Open it on your phone, with the Play Store signed in to the same Google account as the email address the invite went to. Accept there, then install Hummlist from the Play Store. After that, updates arrive as normal Play Store updates.
+
+### I signed up with the wrong email. What now?
+
+The invite only works with the email of your Apple ID (iPhone) or Google account (Android). Just sign up again on [hummlist.com/en](/en#waitlist) with the right address.
+
+### My invite hasn't arrived. What can I do?
+
+Check your spam folder, and in Gmail the Promotions tab too. We send invites in waves: the first on November 15, then every week. On iPhone, the TestFlight email comes from Apple, not from Hummlist. If it's still missing, write to [support@hummlist.com](mailto:support@hummlist.com).
+:::
 
 ## How to get help
 
@@ -37,7 +63,13 @@ Tap **More**, then **Account** and **Export my data**. You get everything stored
 
 Tap **More**, then **Account** and **Delete account**, and confirm by typing DELETE. Your account, your profile, your access tokens and connected apps are deleted right away. If others stay in the household, they keep the list; your items stay there without your name. If you are the last member, the whole household is deleted, Hummlist Lifetime included; the purchase can't be moved to another household. Whether you can get your money back is under "Can I get a refund for Hummlist Lifetime?". Households you archived are deleted too. If others stay in the household, Hummlist Lifetime stays with them. Deleted data stays in our encrypted backups for up to 90 more days, then it is gone there too.
 
+::: classic
 Without the app: the steps are at [app.hummlist.com/konto-loeschen.html](https://app.hummlist.com/konto-loeschen.html) (German), or write to [support@hummlist.com](mailto:support@hummlist.com).
+:::
+
+::: waitlist
+⟦LAUNCH COPY⟧ Without the app: write to [support@hummlist.com](mailto:support@hummlist.com).
+:::
 
 ### What happens to Hummlist Lifetime if I leave a household as its last member?
 

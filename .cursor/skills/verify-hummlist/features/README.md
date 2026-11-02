@@ -55,6 +55,10 @@ Getting started
 - [household-invites](./household-invites.md): inviting a partner by code or link (7 days, single use), joining, revoking, switching households.
 - [app-links](./app-links.md): app.hummlist.com links to the list, the add sheet, a store, More's pages and invites; they open the installed app or the web app and wait through sign-in.
 
+The website
+
+- [waitlist](./waitlist.md): hummlist.com's waitlist form, confirmation and unsubscribe pages, the FAQ and support page (off in production until enabled).
+
 The list
 
 - [quick-add](./quick-add.md): the add bar and add sheet, suggestions and their sources, quantities, tap or Enter to add, store and category chips, the added note with undo, duplicates.
