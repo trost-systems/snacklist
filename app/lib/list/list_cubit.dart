@@ -256,6 +256,11 @@ class ListCubit(
   /// ignored.
   var _watchGeneration = 0;
 
+  /// Set as [close] starts: `isClosed` turns true only once it has
+  /// awaited the channel and the network, and a cache read or a rewatch may
+  /// resume in between.
+  var _closing = false;
+
   /// Whether the device cache was read: a resync sets the first seen mark
   /// only then, and only then may a save before the first load replace it.
   var _cacheRead = false;
@@ -302,7 +307,7 @@ class ListCubit(
       emit(state.copyWith(seen: seen));
     }
     _cacheRead = true;
-    if (isClosed) {
+    if (_closing) {
       return;
     }
     _network = _networkChanges?.listen(_onNetwork);
@@ -407,15 +412,18 @@ class ListCubit(
 
   Future<void> _rewatch() async {
     _resubscribe = null;
-    if (isClosed || _channelUp) {
+    if (_closing || _channelUp) {
       return;
     }
     final doubled = _resubscribeDelay * 2;
     _resubscribeDelay = doubled < _maxResubscribe ? doubled : _maxResubscribe;
     final previous = _unwatch;
-    _watchGeneration++;
+    _unwatch = null;
+    // A reconnect may start another rewatch while this one waits; the
+    // later one subscribes.
+    final generation = ++_watchGeneration;
     await previous?.call();
-    if (!isClosed && !_channelUp) {
+    if (!_closing && !_channelUp && generation == _watchGeneration) {
       _watch();
     }
   }
@@ -1503,6 +1511,7 @@ class ListCubit(
 
   @override
   Future<void> close() async {
+    _closing = true;
     _retry?.cancel();
     _networkBack?.cancel();
     _resubscribe?.cancel();

@@ -759,6 +759,65 @@ void main() {
       });
     });
 
+    test('a reconnect while a resubscribe waits on the old channel '
+        'subscribes once', () {
+      fakeAsync((async) {
+        final (c, _) = following(async);
+        down(async);
+        repo.emitStatus!(ConnectionStatus.offline);
+        final closing = Completer<void>();
+        repo.unwatchGates.add(closing);
+        final watches = repo.watches;
+        // The 3 s resubscribe starts and waits for the old channel to close.
+        async.elapse(const Duration(seconds: 3));
+        up(async);
+        async.elapse(networkSettle);
+        closing.complete();
+        async.elapse(Duration.zero);
+        expect(repo.watches - watches, 1, reason: 'one live channel');
+        close(async, c);
+      });
+    });
+
+    test('after a reconnect, a channel that drops again is retried at the '
+        'first backoff, not the grown one', () {
+      fakeAsync((async) {
+        final (c, _) = following(async);
+        down(async);
+        // Two failed resubscribes, at 3 s and 6 s later: the next waits 12 s.
+        repo.emitStatus!(ConnectionStatus.offline);
+        async.elapse(const Duration(seconds: 3));
+        repo.emitStatus!(ConnectionStatus.offline);
+        async.elapse(const Duration(seconds: 6));
+        repo.emitStatus!(ConnectionStatus.offline);
+        up(async);
+        async.elapse(networkSettle);
+        final watches = repo.watches;
+        repo.emitStatus!(ConnectionStatus.offline);
+        async.elapse(const Duration(milliseconds: 6100));
+        expect(repo.watches, watches + 1);
+        close(async, c);
+      });
+    });
+
+    test('a closed list follows the network no more', () {
+      fakeAsync((async) {
+        final (c, _) = following(async);
+        down(async);
+        up(async);
+        unawaited(c.close());
+        async.flushMicrotasks();
+        final fetches = repo.itemFetches;
+        network
+          ..add(Network.down)
+          ..add(Network.up);
+        async.elapse(const Duration(seconds: 10));
+        expect(repo.itemFetches, fetches);
+        unawaited(network.close());
+        async.flushMicrotasks();
+      });
+    });
+
     test('up while the server is out of reach still goes offline on the '
         'first failed request', () {
       fakeAsync((async) {

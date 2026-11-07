@@ -1,8 +1,5 @@
-import 'dart:async';
-
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:family_groceries/app/network.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -68,6 +65,7 @@ void main() {
       final seen = <Network>[];
       final sub = const PlatformNetworkWatch().watch().listen(seen.add);
       await pumpEventQueue();
+      expect(seen, [Network.up], reason: 'the check, with no event yet');
       sink
         ..success(['wifi'])
         ..success(['none'])
@@ -75,6 +73,15 @@ void main() {
         ..success(['mobile']);
       await pumpEventQueue();
       expect(seen, [Network.up, Network.down, Network.up]);
+      await sub.cancel();
+    });
+
+    test('a start with no network says down before any change', () async {
+      check = () => ['none'];
+      final seen = <Network>[];
+      final sub = const PlatformNetworkWatch().watch().listen(seen.add);
+      await pumpEventQueue();
+      expect(seen, [Network.down]);
       await sub.cancel();
     });
 

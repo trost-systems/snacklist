@@ -10020,3 +10020,44 @@ Baumarkt off the landing page because the app had no hardware categories.
    style, 3D), not on the sticker shadow; its retry hex is a cue only, since a tap anywhere
    retries. Reduced motion: no morph, scale or spin, the form switches inside a 200 ms opacity
    dip.
+
+## Job 166: the sync indicator follows the device's network, 2026-11-07
+
+1. **connectivity_plus alone (Peter t651u).** Flight mode on showed „Offline“ only after the
+   next request failed or the realtime heartbeat timed out (25 s or more); flight mode off
+   cleared it only at the next 3 s retry once the channel's resubscribe backoff (up to 30 s) had
+   come round. `connectivity_plus` 7.3.2 (BSD-3-Clause, Flutter Community) reports the OS's
+   network: NWPathMonitor on iOS (no permission, no entitlement), a NetworkCallback on Android
+   (its manifest merges in `ACCESS_NETWORK_STATE`, a normal permission granted at install), the
+   browser's `online` and `offline` events on the web. `internet_connection_checker_plus` is
+   left out: it probes reachability by fetching third-party hosts on a timer, which would be a
+   new outbound contact and battery cost for something the list already does. The list's own
+   fetch to our backend is the reachability check; connectivity only says when to make it.
+2. **One state, one source.** `app/lib/app/network.dart` maps the plugin to `Network` (`up`,
+   `down`: down only when every interface is `none`) and swallows plugin errors. `main.dart`
+   creates the watch on the web, Android and iOS only; Linux (the verify-family-groceries
+   surface, no shipped build) has none, since NetworkManager may be absent or not manage the
+   interface and would report "none" on a working machine. `App` provides it, `ListScope` passes
+   its stream to `ListCubit`, which feeds the existing `connection` field: no second banner, no
+   second offline flag. `SyncTrouble` and the indicator are untouched.
+3. **Down at once, up after 1.5 s.** `Network.down` calls the same `_goOffline` a failed request
+   does: the card shows at once and job 165's rules (Z104 round, card-to-pill morph) apply
+   unchanged. `Network.up` after a down waits `networkSettle` (1.5 s) and restarts on every
+   change, so a flapping network shows offline once and reconnects once, after the last change.
+   Then the list subscribes the realtime channel again at once if it is down (backoff reset) and
+   calls `retry()`: a resync and the queue. Offline clears when that resync answers and the
+   channel is up, as before. A down that turns out short (a WLAN-to-mobile handover reported as
+   a brief "none") still shows the card for about 1.5 s; showing it at once was Peter's ask, and
+   a handover normally reports the new interface without a "none" in between.
+4. **The error path stays.** Connectivity can say "wifi" while our backend is out of reach
+   (captive portal, a dead router, Supabase down): requests still go offline or failing as
+   before, and the 3 s retry loop still runs. The loop also keeps running while the OS says down,
+   so a wrong "down" from a plugin heals on the next answered request instead of leaving the
+   list offline. An "up" with no down before it does nothing (the first event on every start).
+5. **Tests.** Cubit tests with a fake network stream under fake time (group "the OS network (job
+   166)": down shows offline with no request; up retries at 1.5 s, before the 3 s retry, and
+   sends the queue; flapping retries once; a dropped channel is subscribed again at once; the
+   error path still works; a 503 on the reconnect is not failing yet). A widget test drives the
+   indicator through the real `ShoppingList`. `app/test/app/network_test.dart` drives the
+   plugin's channels. The e2e `e2e/tests/connectivity.spec.ts` uses Playwright's offline mode,
+   which fires the browser events, and touches nothing while it switches.
