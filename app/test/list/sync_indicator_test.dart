@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:family_groceries/app/network.dart';
 import 'package:family_groceries/app/theme.dart';
 import 'package:family_groceries/design/tactile.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
@@ -164,6 +165,7 @@ void main() {
       Locale locale = const Locale('de'),
       Brightness brightness = Brightness.light,
       bool reduceMotion = false,
+      Stream<Network>? network,
     }) async {
       repo = FakeRepository();
       [
@@ -194,8 +196,12 @@ void main() {
             child: child!,
           ),
           home: BlocProvider(
-            create: (_) =>
-                ListCubit(repo, MemoryListCache(), userId: 'peter')..start(),
+            create: (_) => ListCubit(
+              repo,
+              MemoryListCache(),
+              userId: 'peter',
+              network: network,
+            )..start(),
             child: const ShoppingList(),
           ),
         ),
@@ -288,6 +294,37 @@ void main() {
       expect(pill(), findsNothing);
       expect(tester.takeAnnouncements(), isEmpty, reason: 'no confirmation');
       handle.dispose();
+    });
+
+    testWidgets('the OS network going down opens the card with no tap; back '
+        'up it goes on its own (job 166)', (tester) async {
+      phone(tester);
+      final network = StreamController<Network>();
+      addTearDown(network.close);
+      await pumpList(tester, network: network.stream);
+      network.add(Network.up);
+      await tester.pumpAndSettle();
+      expect(card(), findsNothing);
+
+      repo.online = false;
+      network.add(Network.down);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(card(), findsOneWidget, reason: 'no channel drop, no request');
+      expect(find.text('Offline'), findsOneWidget);
+
+      // Past the 3 s retry, which failed; the next comes at 6 s.
+      await tester.pump(const Duration(milliseconds: 3100));
+      expect(pill(), findsOneWidget);
+      repo.online = true;
+      network.add(Network.up);
+      await tester.pump();
+      await tester.pump(networkSettle - const Duration(milliseconds: 100));
+      expect(pill(), findsOneWidget, reason: 'the network has to hold');
+      await tester.pump(const Duration(milliseconds: 200));
+      await tester.pumpAndSettle();
+      expect(card(), findsNothing);
+      expect(pill(), findsNothing);
     });
 
     testWidgets('the fading card text stays inside the shrinking hex', (

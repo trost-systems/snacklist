@@ -7,6 +7,7 @@ import 'package:family_groceries/app/device_cache.dart';
 import 'package:family_groceries/app/early_keys.dart';
 import 'package:family_groceries/app/environment.dart';
 import 'package:family_groceries/app/language.dart';
+import 'package:family_groceries/app/network.dart';
 import 'package:family_groceries/app/theme.dart';
 import 'package:family_groceries/design/fonts.dart';
 import 'package:family_groceries/feedback/feedback_repository.dart';
@@ -193,6 +194,7 @@ Future<void> _main(WidgetsBinding Function() binding) async {
         web: kIsWeb,
         platform: defaultTargetPlatform,
       ),
+      network: networkWatchFor(web: kIsWeb, platform: defaultTargetPlatform),
     ),
   );
   // Started after runApp, so the first frame waits for no cache read; the

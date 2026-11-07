@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/analytics/events.dart';
+import 'package:family_groceries/app/network.dart';
 import 'package:family_groceries/list/add_sheet/suggestion.dart';
 import 'package:family_groceries/list/entry.dart';
 import 'package:family_groceries/list/list_cache.dart';
@@ -140,6 +141,10 @@ final class const TripCompleted(final int ticked) extends ListActivity;
 
 const _maxResubscribe = Duration(seconds: 30);
 
+/// How long the OS's network stays up before the list reconnects: a
+/// network that flaps reconnects once, after the last change.
+const networkSettle = Duration(milliseconds: 1500);
+
 class ListCubit(
   final ListRepository _repo,
   final ListCache _cache, {
@@ -152,10 +157,22 @@ class ListCubit(
   /// Told once per user action (add, tick, re-add, reorder); never by an
   /// op's retry, a realtime echo or an undo (docs/ANALYTICS.md).
   final Analytics? analytics,
+
+  /// The OS's network: down shows the list offline at once, back up for
+  /// [networkSettle] retries at once. Without it, or when it says up while
+  /// the server is out of reach, the list's own requests tell.
+  Stream<Network>? network,
 }) extends Cubit<ListState> {
   this : super(const ListState());
 
   final DateTime Function() _clock = clock ?? DateTime.now;
+  final _networkChanges = network;
+  StreamSubscription<Network>? _network;
+  Timer? _networkBack;
+
+  /// Whether the OS's network went down and has not been back for
+  /// [networkSettle] since.
+  var _networkDown = false;
   final _rejections = StreamController<Rejected>.broadcast();
   final _hints = StreamController<DedupeHint>.broadcast();
   final _renameMerges = StreamController<Merge>.broadcast();
@@ -288,6 +305,7 @@ class ListCubit(
     if (isClosed) {
       return;
     }
+    _network = _networkChanges?.listen(_onNetwork);
     _watch();
     unawaited(resync());
   }
@@ -358,6 +376,33 @@ class ListCubit(
     } else {
       _resubscribe ??= Timer(_resubscribeDelay, () => unawaited(_rewatch()));
     }
+  }
+
+  void _onNetwork(Network network) {
+    _networkBack?.cancel();
+    _networkBack = null;
+    switch (network) {
+      case Network.down:
+        _networkDown = true;
+        _goOffline();
+      case Network.up when _networkDown:
+        _networkBack = Timer(networkSettle, _reconnect);
+      case Network.up:
+        break;
+    }
+  }
+
+  /// The network is back: subscribe and fetch now, not when the backoff and
+  /// the 3 s retry come due.
+  void _reconnect() {
+    _networkBack = null;
+    _networkDown = false;
+    if (!_channelUp) {
+      _resubscribe?.cancel();
+      _resubscribeDelay = _firstResubscribe;
+      unawaited(_rewatch());
+    }
+    unawaited(retry());
   }
 
   Future<void> _rewatch() async {
@@ -1459,10 +1504,12 @@ class ListCubit(
   @override
   Future<void> close() async {
     _retry?.cancel();
+    _networkBack?.cancel();
     _resubscribe?.cancel();
     _catalogReload?.cancel();
     _save?.cancel();
     _usualsReload?.cancel();
+    await _network?.cancel();
     await _unwatch?.call();
     await _rejections.close();
     await _hints.close();

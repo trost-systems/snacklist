@@ -4,6 +4,7 @@ import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/app/device_cache.dart';
 import 'package:family_groceries/app/environment.dart';
 import 'package:family_groceries/app/language.dart';
+import 'package:family_groceries/app/network.dart';
 import 'package:family_groceries/app/notices.dart';
 import 'package:family_groceries/app/router.dart';
 import 'package:family_groceries/app/theme.dart';
@@ -79,6 +80,10 @@ class const App({
 
   /// Taps on the Home Screen widgets; null without widgets.
   final WidgetLaunches? widgetLaunches,
+
+  /// The OS's network, which the list follows; null where it is not
+  /// watched.
+  final NetworkWatch? network,
 
   /// The item icon table, which `main` updates from the remote one; the
   /// bundled table by default.
@@ -206,6 +211,8 @@ class _AppState() extends State<App> {
       RepositoryProvider.value(value: widget.storeReview),
       if (widget.homeWidgets case final homeWidgets?)
         RepositoryProvider.value(value: homeWidgets),
+      if (widget.network case final network?)
+        RepositoryProvider.value(value: network),
     ],
     child: MultiBlocProvider(
       providers: [

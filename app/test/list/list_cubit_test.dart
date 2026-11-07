@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:fake_async/fake_async.dart';
+import 'package:family_groceries/app/network.dart';
 import 'package:family_groceries/list/entry.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_repository.dart';
@@ -631,6 +632,175 @@ void main() {
           expect(troubles(seen), isNot(contains(SyncTrouble.failing)));
           close(async, c);
         });
+      });
+    });
+  });
+
+  group('the OS network (job 166)', () {
+    late StreamController<Network> network;
+
+    /// A list cubit under fake time that follows [network], online, with
+    /// every state it emits.
+    (ListCubit, List<ListState>) following(FakeAsync async) {
+      network = StreamController<Network>();
+      final c = ListCubit(
+        repo,
+        MemoryListCache(),
+        userId: 'peter',
+        network: network.stream,
+      )..start();
+      async.elapse(Duration.zero);
+      repo.emitStatus!(ConnectionStatus.online);
+      network.add(Network.up);
+      async.elapse(Duration.zero);
+      final seen = <ListState>[];
+      c.stream.listen(seen.add);
+      return (c, seen);
+    }
+
+    /// The device loses its network: nothing reaches the server, and the
+    /// channel has not noticed yet.
+    void down(FakeAsync async) {
+      repo.online = false;
+      network.add(Network.down);
+      async.elapse(Duration.zero);
+    }
+
+    void up(FakeAsync async) {
+      repo.online = true;
+      network.add(Network.up);
+      async.elapse(Duration.zero);
+    }
+
+    void close(FakeAsync async, ListCubit c) {
+      unawaited(c.close());
+      unawaited(network.close());
+      async.flushMicrotasks();
+    }
+
+    test('down shows offline at once, with no request and no tap', () {
+      fakeAsync((async) {
+        final (c, _) = following(async);
+        final fetches = repo.itemFetches;
+        down(async);
+        expect(c.state.trouble, SyncTrouble.offline);
+        expect(repo.itemFetches, fetches, reason: 'the OS told, not a fetch');
+        close(async, c);
+      });
+    });
+
+    test('back up, it retries once the network held for 1.5 s and clears '
+        'offline, before the 3 s retry would', () {
+      fakeAsync((async) {
+        final (c, _) = following(async);
+        down(async);
+        c.addEntry(parseEntry('Kaffee'));
+        // The 3 s retry fails at 3 s and comes due again at 6 s.
+        async.elapse(const Duration(milliseconds: 3500));
+        expect(c.state.trouble, SyncTrouble.offline);
+        up(async);
+        async.elapse(networkSettle - const Duration(milliseconds: 100));
+        expect(c.state.trouble, SyncTrouble.offline, reason: 'not settled');
+        expect(c.state.pending, hasLength(1));
+        async.elapse(const Duration(milliseconds: 200));
+        expect(c.state.trouble, isNull);
+        expect(c.state.pending, isEmpty, reason: 'the queue was sent');
+        expect(repo.rows.values.map((i) => i.name), contains('Kaffee'));
+        close(async, c);
+      });
+    });
+
+    test('a flapping network shows offline once and retries once, after '
+        'the last change', () {
+      fakeAsync((async) {
+        final (c, seen) = following(async);
+        down(async);
+        // All within the 3 s retry's first wait, which keeps running.
+        for (var i = 0; i < 3; i++) {
+          async.elapse(const Duration(milliseconds: 150));
+          up(async);
+          async.elapse(const Duration(milliseconds: 150));
+          down(async);
+        }
+        async.elapse(const Duration(milliseconds: 150));
+        up(async);
+        final fetches = repo.itemFetches;
+        async.elapse(networkSettle - const Duration(milliseconds: 100));
+        expect(repo.itemFetches, fetches, reason: 'nothing while it flaps');
+        expect(
+          seen.map((s) => s.trouble).toList(),
+          everyElement(SyncTrouble.offline),
+          reason: 'never cleared in between',
+        );
+        async.elapse(const Duration(milliseconds: 200));
+        expect(repo.itemFetches, fetches + 1, reason: 'one retry');
+        expect(c.state.trouble, isNull);
+        close(async, c);
+      });
+    });
+
+    test('a channel that dropped meanwhile is subscribed again at once, '
+        'not after its backoff', () {
+      fakeAsync((async) {
+        final (c, _) = following(async);
+        down(async);
+        repo.emitStatus!(ConnectionStatus.offline);
+        // Two failed resubscribes: the next waits 12 s.
+        async.elapse(const Duration(seconds: 10));
+        final watches = repo.watches;
+        up(async);
+        async.elapse(networkSettle);
+        expect(repo.watches, watches + 1);
+        expect(c.state.trouble, SyncTrouble.offline, reason: 'channel not up');
+        repo.emitStatus!(ConnectionStatus.online);
+        async.elapse(Duration.zero);
+        expect(c.state.trouble, isNull);
+        close(async, c);
+      });
+    });
+
+    test('up while the server is out of reach still goes offline on the '
+        'first failed request', () {
+      fakeAsync((async) {
+        final (c, _) = following(async);
+        repo.online = false;
+        c.addEntry(parseEntry('Kaffee'));
+        async.elapse(Duration.zero);
+        expect(c.state.trouble, SyncTrouble.offline);
+        repo.online = true;
+        async.elapse(const Duration(seconds: 4));
+        expect(c.state.trouble, isNull, reason: 'the 3 s retry got through');
+        close(async, c);
+      });
+    });
+
+    test('up with nothing lost before fetches nothing', () {
+      fakeAsync((async) {
+        final (c, _) = following(async);
+        final fetches = repo.itemFetches;
+        up(async);
+        async.elapse(const Duration(seconds: 5));
+        expect(repo.itemFetches, fetches);
+        close(async, c);
+      });
+    });
+
+    test('a 503 on the reconnect is no failing server yet (job 165)', () {
+      fakeAsync((async) {
+        final (c, seen) = following(async);
+        down(async);
+        repo.fetchTrouble = true;
+        up(async);
+        async.elapse(networkSettle);
+        expect(c.state.trouble, isNot(SyncTrouble.failing));
+        repo.fetchTrouble = false;
+        async.elapse(const Duration(seconds: 4));
+        expect(c.state.trouble, isNull);
+        expect(
+          seen.map((s) => s.trouble),
+          isNot(contains(SyncTrouble.failing)),
+        );
+        close(async, c);
       });
     });
   });

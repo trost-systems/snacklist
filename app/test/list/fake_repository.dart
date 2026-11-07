@@ -87,6 +87,9 @@ class FakeRepository() implements ListRepository {
   /// How many times the list subscribed to realtime.
   var watches = 0;
 
+  /// How many times the list asked for its items, answered or not.
+  var itemFetches = 0;
+
   /// Each unsubscribe waits for the next of these, if any.
   final unwatchGates = <Completer<void>>[];
 
@@ -269,6 +272,7 @@ class FakeRepository() implements ListRepository {
 
   @override
   Future<List<Item>> fetchItems() async {
+    itemFetches++;
     _ensureOnline();
     _ensureFetchable();
     await itemsGate?.future;

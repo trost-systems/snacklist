@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/app/device_cache.dart';
+import 'package:family_groceries/app/network.dart';
 import 'package:family_groceries/app/notices.dart';
 import 'package:family_groceries/home_widget/home_widget_sync.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
@@ -40,6 +41,7 @@ class const ListScope({
         context.read<DeviceCache>().list(session.userId, household.id),
         userId: session.userId,
         analytics: context.read<Analytics>(),
+        network: context.read<NetworkWatch?>()?.watch(),
       )..start(),
       child: _Scope(householdId: household.id, child: child),
     );
