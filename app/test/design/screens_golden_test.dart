@@ -492,6 +492,10 @@ void main() {
               unawaited(cubit.resync());
           }
           await tester.pump();
+          if (kind == SyncTrouble.failing) {
+            // Failing shows once the 3 s retry failed too (job 165).
+            await tester.pump(const Duration(seconds: 3));
+          }
           await tester.pumpAndSettle();
           await expectLater(
             find.byType(MaterialApp),

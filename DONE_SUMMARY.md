@@ -595,6 +595,7 @@ A short 504 from GitHub releases or dl.deno.land no longer fails the gitleaks, l
 - Job 159, three small gaps: a store name the household has keeps the add dialog open with why, „Drei Glocken Nudeln“ said stays one item, the mouse wheel over the add field and the tab pill scrolls the list: [docs/done/159-small-gaps.md](docs/done/159-small-gaps.md)
 - Job 162, legal and help texts follow the app (tester list, archived households, Alexa 12-month purge, Zugriffstoken): [docs/done/162-legal-copy-sync.md](docs/done/162-legal-copy-sync.md)
 - Job 161, the sync indicator S2-C3F2 (a hex card for offline and sync failing that folds into a pill; a real failing state; a 5xx no longer drops a change): [docs/done/161.md](docs/done/161.md)
+- Job 165, sync indicator polish (one transient error shows nothing; the card folds into the pill as one shape): [docs/done/165.md](docs/done/165.md)
 
 
 

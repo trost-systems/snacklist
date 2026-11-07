@@ -213,11 +213,12 @@ void main() {
     expect(review.requests, 0);
   });
 
-  testWidgets('a 503 that the next retry gets past does not', (tester) async {
+  testWidgets('a 503 that a later retry gets past does not', (tester) async {
     await pumpTrigger(tester);
     repo.sendTrouble = true;
     final first = (cubit.addEntry(parseEntry('Ding')) as Added).item.id;
-    await idle(tester, const Duration(seconds: 2));
+    // Failing shows once the 3 s retry failed too (job 165).
+    await idle(tester, const Duration(seconds: 4));
     expect(cubit.state.trouble, SyncTrouble.failing);
     repo.sendTrouble = false;
     await idle(tester, const Duration(seconds: 5));

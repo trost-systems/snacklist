@@ -82,7 +82,7 @@ test('a server that answers with errors shows sync failing, keeps the change and
     else await route.fulfill({ status: 503, contentType: 'text/plain', body: 'Service Unavailable' });
   });
   await tick(page, 'Kaffee');
-  await expect(failing(page), 'sync failing shows').toHaveCount(1, { timeout: 10_000 });
+  await expect(failing(page), 'sync failing shows once the 3 s retry is refused too').toHaveCount(1, { timeout: 10_000 });
   await expect(offline(page)).toHaveCount(0);
   // A dropped change would put the open row back.
   await expect(itemRow(page, 'Kaffee'), 'the tick stays').toHaveCount(0);

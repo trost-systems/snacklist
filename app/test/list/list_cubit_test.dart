@@ -366,13 +366,14 @@ void main() {
       await settle();
     });
 
-    test('a send answered with a 5xx is failing; the change stays queued and '
-        'is not refused', () async {
+    test('a send answered with a 5xx again on the retry is failing; the '
+        'change stays queued and is not refused', () async {
       final rejections = <Rejected>[];
       final sub = cubit.rejections.listen(rejections.add);
       repo.sendTrouble = true;
       cubit.addEntry(parseEntry('Kaffee'));
       await settle();
+      await cubit.retry();
       expect(cubit.state.trouble, SyncTrouble.failing);
       expect(cubit.state.connection, isNot(ConnectionStatus.offline));
       expect(cubit.state.pending, hasLength(1));
@@ -389,16 +390,21 @@ void main() {
       expect(cubit.state.failing, isFalse);
     });
 
-    test('a fetch answered with a 5xx is failing too', () async {
-      repo.fetchTrouble = true;
-      await cubit.resync();
-      expect(cubit.state.trouble, SyncTrouble.failing);
-    });
+    test(
+      'a fetch answered with a 5xx again on the retry is failing too',
+      () async {
+        repo.fetchTrouble = true;
+        await cubit.resync();
+        await cubit.retry();
+        expect(cubit.state.trouble, SyncTrouble.failing);
+      },
+    );
 
     test('an acknowledged send clears failing', () async {
       repo.sendTrouble = true;
       cubit.addEntry(parseEntry('Kaffee'));
       await settle();
+      await cubit.retry();
       expect(cubit.state.trouble, SyncTrouble.failing);
       repo.sendTrouble = false;
       await cubit.retry();
@@ -417,6 +423,8 @@ void main() {
       repo.sendTrouble = true;
       cubit.addEntry(parseEntry('Kaffee'));
       await settle();
+      await cubit.retry();
+      expect(cubit.state.trouble, SyncTrouble.failing);
       repo.emitStatus!(ConnectionStatus.offline);
       await settle();
       expect(cubit.state.trouble, SyncTrouble.offline);
@@ -455,6 +463,174 @@ void main() {
         unawaited(sub.cancel());
         unawaited(looping.close());
         async.flushMicrotasks();
+      });
+    });
+
+    group('one failure is no failing server (job 165)', () {
+      /// A list cubit under fake time, online, with every state it emits.
+      (ListCubit, List<ListState>) online(FakeAsync async) {
+        final c = ListCubit(repo, MemoryListCache(), userId: 'peter')..start();
+        async.elapse(Duration.zero);
+        repo.emitStatus!(ConnectionStatus.online);
+        async.elapse(Duration.zero);
+        final seen = <ListState>[];
+        c.stream.listen(seen.add);
+        return (c, seen);
+      }
+
+      void close(FakeAsync async, ListCubit c) {
+        unawaited(c.close());
+        async.flushMicrotasks();
+      }
+
+      Iterable<SyncTrouble?> troubles(List<ListState> seen) =>
+          seen.map((s) => s.trouble);
+
+      test('a send answered with one 5xx goes through on the 3 s retry and '
+          'never shows failing', () {
+        fakeAsync((async) {
+          final (c, seen) = online(async);
+          repo.sendTrouble = true;
+          c.addEntry(parseEntry('Kaffee'));
+          async.elapse(Duration.zero);
+          expect(c.state.pending, hasLength(1), reason: 'the send failed');
+          repo.sendTrouble = false;
+          async.elapse(const Duration(seconds: 4));
+          expect(c.state.pending, isEmpty);
+          expect(repo.rows.values.map((i) => i.name), contains('Kaffee'));
+          expect(troubles(seen), isNot(contains(SyncTrouble.failing)));
+          close(async, c);
+        });
+      });
+
+      test('a fetch answered with one 5xx goes through on the 3 s retry and '
+          'never shows failing', () {
+        fakeAsync((async) {
+          final (c, seen) = online(async);
+          repo.fetchTrouble = true;
+          final brot = repo.remoteAdd('Brot').id;
+          bool? fetched;
+          unawaited(c.resync().then((ok) => fetched = ok));
+          async.elapse(Duration.zero);
+          expect(fetched, isFalse);
+          repo.fetchTrouble = false;
+          async.elapse(const Duration(seconds: 4));
+          expect(c.state.server.keys, contains(brot), reason: 'refetched');
+          expect(c.state.trouble, isNull);
+          expect(troubles(seen), isNot(contains(SyncTrouble.failing)));
+          close(async, c);
+        });
+      });
+
+      test('a send failing and the 3 s retry failing too shows failing, '
+          'only after the retry', () {
+        fakeAsync((async) {
+          final (c, _) = online(async);
+          repo
+            ..sendTrouble = true
+            ..fetchTrouble = true;
+          c.addEntry(parseEntry('Kaffee'));
+          async.elapse(const Duration(milliseconds: 2900));
+          expect(c.state.trouble, isNull);
+          async.elapse(const Duration(milliseconds: 200));
+          expect(c.state.trouble, SyncTrouble.failing);
+          close(async, c);
+        });
+      });
+
+      test('reads that work and writes that all fail end up failing', () {
+        fakeAsync((async) {
+          final (c, _) = online(async);
+          repo.sendTrouble = true;
+          c.addEntry(parseEntry('Kaffee'));
+          async.elapse(const Duration(seconds: 4));
+          expect(c.state.trouble, SyncTrouble.failing);
+          expect(c.state.pending, hasLength(1));
+          close(async, c);
+        });
+      });
+
+      test('a fetch and a send failing in the same round are one failure', () {
+        fakeAsync((async) {
+          final (c, _) = online(async);
+          repo
+            ..sendTrouble = true
+            ..fetchTrouble = true;
+          unawaited(c.resync());
+          c.addEntry(parseEntry('Kaffee'));
+          async.elapse(Duration.zero);
+          expect(repo.sent, isEmpty, reason: 'both failed');
+          expect(c.state.trouble, isNull);
+          async.elapse(const Duration(seconds: 2));
+          expect(c.state.trouble, isNull);
+          async.elapse(const Duration(seconds: 2));
+          expect(c.state.trouble, SyncTrouble.failing, reason: 'retry failed');
+          close(async, c);
+        });
+      });
+
+      test('a send started before the retry that fails after it is no second '
+          'failure', () {
+        fakeAsync((async) {
+          final (c, _) = online(async);
+          repo
+            ..fetchTrouble = true
+            ..sendTrouble = true
+            ..gate = Completer();
+          unawaited(c.resync());
+          c.addEntry(parseEntry('Kaffee'));
+          async.elapse(Duration.zero);
+          repo.fetchTrouble = false;
+          async.elapse(const Duration(seconds: 4));
+          expect(c.state.pending, hasLength(1), reason: 'still in flight');
+          repo.gate!.complete();
+          async.elapse(Duration.zero);
+          expect(c.state.trouble, isNull);
+          async.elapse(const Duration(seconds: 4));
+          expect(c.state.trouble, SyncTrouble.failing);
+          close(async, c);
+        });
+      });
+
+      test('a failure a refused rename got past is forgotten: the next '
+          'single 5xx shows nothing', () {
+        fakeAsync((async) {
+          final (c, seen) = online(async);
+          final papier = repo.remoteAdd(
+            'Papier',
+            quantity: 'Kleinpackung mit vielen Rollen',
+          );
+          unawaited(c.resync());
+          async.elapse(Duration.zero);
+          // A copy the list does not show yet: the server refuses the rename.
+          repo.remoteAdd(
+            'Klopapier',
+            quantity: 'Großpackung mit vielen Rollen',
+          );
+          // The refusal's resync fails once; the 3 s retry folds the rename
+          // ("already on the list") and leaves nothing queued, unacked.
+          repo.beforeSend = (op) {
+            if (op is EditItem) {
+              repo
+                ..fetchTrouble = true
+                ..beforeSend = null;
+            }
+          };
+          c.edit(papier.id, const ItemChanges(name: 'Klopapier'));
+          async.elapse(Duration.zero);
+          repo.fetchTrouble = false;
+          async.elapse(const Duration(seconds: 4));
+          expect(c.state.pending, isEmpty);
+          repo.sendTrouble = true;
+          c.addEntry(parseEntry('Kaffee'));
+          async.elapse(Duration.zero);
+          expect(c.state.trouble, isNull, reason: 'one 5xx, a new outage');
+          repo.sendTrouble = false;
+          async.elapse(const Duration(seconds: 4));
+          expect(c.state.pending, isEmpty);
+          expect(troubles(seen), isNot(contains(SyncTrouble.failing)));
+          close(async, c);
+        });
       });
     });
   });

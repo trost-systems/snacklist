@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:family_groceries/app/theme.dart';
+import 'package:family_groceries/design/tactile.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/entry.dart';
 import 'package:family_groceries/list/list_cubit.dart';
@@ -8,6 +10,7 @@ import 'package:family_groceries/list/list_repository.dart';
 import 'package:family_groceries/list/list_screen.dart';
 import 'package:family_groceries/list/sync_indicator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -139,7 +142,11 @@ void main() {
   group('on the list', () {
     late FakeRepository repo;
 
-    Finder card() => find.byKey(const ValueKey('sync-indicator'));
+    /// The one hex shell, in either form.
+    Finder shell() => find.byKey(const ValueKey('sync-indicator'));
+
+    /// The shell's content in the open and in the folded form.
+    Finder card() => find.byKey(const ValueKey('sync-card'));
     Finder pill() => find.byKey(const ValueKey('sync-pill'));
     Finder edit() => find.byKey(const ValueKey('list-edit'));
     ListCubit cubit(WidgetTester tester) =>
@@ -206,11 +213,19 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    /// The server answers every read with a 503.
+    /// The server answers every read with a 503, until the list calls it
+    /// failing (after its automatic retry, since job 165).
     Future<void> goFailing(WidgetTester tester) async {
       repo.fetchTrouble = true;
       unawaited(cubit(tester).resync());
       await tester.pump();
+      for (var i = 0; i < 40; i++) {
+        if (cubit(tester).state.trouble == SyncTrouble.failing) {
+          break;
+        }
+        await tester.pump(const Duration(milliseconds: 250));
+      }
+      expect(cubit(tester).state.trouble, SyncTrouble.failing);
       await tester.pumpAndSettle();
     }
 
@@ -273,6 +288,99 @@ void main() {
       expect(pill(), findsNothing);
       expect(tester.takeAnnouncements(), isEmpty, reason: 'no confirmation');
       handle.dispose();
+    });
+
+    testWidgets('the fading card text stays inside the shrinking hex', (
+      tester,
+    ) async {
+      phone(tester);
+      await pumpList(tester);
+      await goOffline(tester);
+      await tester.tap(node('Offline:'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 16));
+      final fading = tester.layers.whereType<OpacityLayer>().where(
+        (l) => (l.alpha ?? 255) > 0 && (l.alpha ?? 255) < 255,
+      );
+      expect(fading, isNotEmpty, reason: 'the card text is fading');
+      for (final layer in fading) {
+        var clipped = false;
+        for (Layer? up = layer.parent; up != null; up = up.parent) {
+          clipped = clipped || up is ClipPathLayer;
+        }
+        expect(clipped, isTrue, reason: 'a fading part under the hex clip');
+      }
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('one shell folds from the card into the pill and back, '
+        'moving and resizing on the way', (tester) async {
+      phone(tester);
+      await pumpList(tester);
+      await goOffline(tester);
+      // By its semantics node: the shell a screen reader and a finger find.
+      Finder shell() => node('Offline:');
+      expect(shell(), findsOneWidget);
+      final card = tester.getRect(shell());
+
+      /// The shell's rect at every frame after a tap on it, settled last.
+      Future<List<Rect>> fold() async {
+        await tester.tap(shell());
+        final rects = <Rect>[];
+        for (var ms = 16; ms <= 480; ms += 16) {
+          await tester.pump(const Duration(milliseconds: 16));
+          expect(shell(), findsOneWidget, reason: 'one shell at $ms ms');
+          rects.add(tester.getRect(shell()));
+        }
+        await tester.pumpAndSettle();
+        rects.add(tester.getRect(shell()));
+        return rects;
+      }
+
+      void travels(List<Rect> rects, Rect from, Rect to) {
+        double? Function(Rect) side(String name) => switch (name) {
+          'top' => (r) => r.top,
+          'width' => (r) => r.width,
+          _ => (r) => r.height,
+        };
+        for (final name in ['top', 'width', 'height']) {
+          final of = side(name);
+          final sign = (of(to)! - of(from)!).sign;
+          expect(sign, isNot(0), reason: '$name differs between the forms');
+          var before = of(from)!;
+          for (final (i, rect) in rects.indexed) {
+            expect(
+              (of(rect)! - before) * sign,
+              greaterThanOrEqualTo(-0.01),
+              reason: '$name runs one way, frame $i: $rects',
+            );
+            before = of(rect)!;
+          }
+        }
+        expect(
+          rects.any(
+            (r) => [r.top, r.width, r.height].indexed.every((e) {
+              final (i, v) = e;
+              final a = [from.top, from.width, from.height][i];
+              final b = [to.top, to.width, to.height][i];
+              return v > min(a, b) + 0.5 && v < max(a, b) - 0.5;
+            }),
+          ),
+          isTrue,
+          reason: 'a frame between the forms in top, width and height: $rects',
+        );
+        expect(rects.last, to);
+      }
+
+      final there = await fold();
+      final pill = there.last;
+      expect(pill.height, 48, reason: 'the pill: a 48 px target');
+      expect(pill.width, lessThan(card.width / 2));
+      travels(there, card, pill);
+      expect(find.byIcon(Icons.cloud_off), findsOneWidget, reason: 'one icon');
+
+      travels(await fold(), pill, card);
+      await recover(tester);
     });
 
     testWidgets('a scroll of the list collapses the card at once', (
@@ -395,14 +503,14 @@ void main() {
       await recover(tester);
     });
 
-    testWidgets('reduced motion only fades: no scale, slide or turn', (
+    testWidgets('reduced motion only fades: no morph, scale, slide or turn', (
       tester,
     ) async {
       phone(tester);
       await pumpList(tester, reduceMotion: true);
 
       /// Anything between the indicator and [of] that moves it. Inside the
-      /// pill only turns count: its face moves when pressed, as every
+      /// shell only turns count: its face moves when pressed, as every
       /// raised button's does.
       Finder moving(Finder of, {bool transforms = true}) => find.ancestor(
         of: of,
@@ -417,20 +525,29 @@ void main() {
           ),
         ),
       );
+      double opacity() => tester
+          .widgetList<Opacity>(
+            find.ancestor(of: shell(), matching: find.byType(Opacity)),
+          )
+          .fold(1, (o, w) => o * w.opacity);
 
       await goFailing(tester);
-      await tester.pump(const Duration(milliseconds: 100));
+      final open = tester.getRect(shell());
       expect(card(), findsOneWidget);
-      expect(moving(card()), findsNothing);
-      expect(
-        find.ancestor(of: card(), matching: find.byType(FadeTransition)),
-        findsWidgets,
-      );
       await tester.tap(card());
-      await tester.pump(const Duration(milliseconds: 50));
-      expect(moving(pill()), findsNothing, reason: 'no nudge');
+      final rects = <Rect>{};
+      var faded = false;
+      for (var ms = 0; ms < 2000; ms += 16) {
+        await tester.pump(const Duration(milliseconds: 16));
+        expect(moving(shell()), findsNothing, reason: 'no scale or nudge');
+        rects.add(tester.getRect(shell()));
+        faded |= opacity() < 0.5;
+      }
       await tester.pumpAndSettle();
       expect(pill(), findsOneWidget, reason: 'the retry failed');
+      final pillRect = tester.getRect(shell());
+      expect(rects, {open, pillRect}, reason: 'no rect between the forms');
+      expect(faded, isTrue, reason: 'the forms crossfade');
 
       final held = repo.itemsGate = Completer<void>();
       repo.fetchTrouble = false;
@@ -447,7 +564,7 @@ void main() {
       held.complete();
       repo.itemsGate = null;
       await tester.pumpAndSettle();
-      expect(pill(), findsNothing);
+      expect(shell(), findsNothing);
       await recover(tester);
     });
 
@@ -566,12 +683,14 @@ void main() {
         for (final go in [goOffline, goFailing]) {
           await go(tester);
           await tester.pumpAndSettle();
-          expect(tester.getSize(card()).height, greaterThanOrEqualTo(48));
+          expect(card(), findsOneWidget);
+          expect(tester.getSize(shell()).height, greaterThanOrEqualTo(48));
           await tester.pump(const Duration(seconds: 3));
           await tester.pumpAndSettle();
-          final face = tester.getRect(pill());
-          expect(face.height, greaterThanOrEqualTo(48));
-          expect(face.right, lessThanOrEqualTo(tester.getRect(edit()).left));
+          expect(pill(), findsOneWidget);
+          final folded = tester.getRect(shell());
+          expect(folded.height, greaterThanOrEqualTo(48));
+          expect(folded.right, lessThanOrEqualTo(tester.getRect(edit()).left));
           await recover(tester);
         }
       });
@@ -583,25 +702,35 @@ void main() {
       ) async {
         phone(tester);
         await pumpList(tester, brightness: brightness);
-        for (final go in [goOffline, goFailing]) {
-          await go(tester);
-          await tester.pumpAndSettle();
+        void readable(Finder form) {
           final face = tester
-              .widget<Material>(
+              .widget<TactileFace>(
                 find
-                    .descendant(of: card(), matching: find.byType(Material))
+                    .descendant(of: shell(), matching: find.byType(TactileFace))
                     .first,
               )
-              .color!;
-          for (final text in tester.widgetList<Text>(
-            find.descendant(of: card(), matching: find.byType(Text)),
-          )) {
+              .colors
+              .face;
+          final texts = tester.widgetList<Text>(
+            find.descendant(of: form, matching: find.byType(Text)),
+          );
+          expect(texts, isNotEmpty);
+          for (final text in texts) {
             expect(
               contrastRatio(text.style!.color!, face),
               greaterThanOrEqualTo(4.5),
               reason: '${text.data} on $face',
             );
           }
+        }
+
+        for (final go in [goOffline, goFailing]) {
+          await go(tester);
+          await tester.pumpAndSettle();
+          readable(card());
+          await tester.pump(const Duration(seconds: 3));
+          await tester.pumpAndSettle();
+          readable(pill());
           await recover(tester);
         }
       });

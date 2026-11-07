@@ -1,17 +1,16 @@
 import 'dart:async';
 import 'dart:math';
-import 'dart:ui' show SemanticsHitTestBehavior;
+import 'dart:ui' show SemanticsHitTestBehavior, lerpDouble;
 
 import 'package:family_groceries/design/hex_border.dart';
-import 'package:family_groceries/design/sticker.dart';
+import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/tactile.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_view/shopping_list_view.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart' show ScrollDirection;
-import 'package:flutter/semantics.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// Where the indicator is: nothing, the card, the pill in the top bar, or
@@ -102,11 +101,12 @@ SyncView reduceSync(SyncView view, SyncEvent event) => switch (event) {
   RetryDone() => view,
 };
 
-/// The list's sync trouble over [child], the list: a floating hex card
-/// below the top bar, collapsing into a pill in the bar's empty left slot.
-/// Nothing while the list syncs, pending changes included; no word when it
-/// syncs again (screen readers hear one after a retry). One layer for both
-/// forms, so they share one state and the list never moves.
+/// The list's sync trouble over [child], the list: one hex shell that is a
+/// card under the top bar while open and folds into a pill in the bar's
+/// empty left slot, moving and resizing as one object while its content
+/// crossfades. Nothing while the list syncs, pending changes included; no
+/// word when it syncs again (screen readers hear one after a retry). The
+/// shell floats over the list, so the list never moves.
 class const SyncIndicator({
   required final Widget child,
 
@@ -133,13 +133,17 @@ class _SyncIndicatorState()
     TroubleChanged(context.read<ListCubit>().state.trouble),
   );
   Timer? _collapse;
-  late final _card = AnimationController(
-    vsync: this,
-    value: _view.showsCard ? 1 : 0,
-  );
-  late final _pill = AnimationController(
+
+  /// 0 the card, 1 the pill.
+  late final _fold = AnimationController(
     vsync: this,
     value: _view.showsPill ? 1 : 0,
+  );
+
+  /// 0 gone, 1 there.
+  late final _shown = AnimationController(
+    vsync: this,
+    value: _view.phase == SyncPhase.hidden ? 0 : 1,
   );
 
   /// The busy arrows: a turn, or with reduced motion a pulse.
@@ -155,6 +159,9 @@ class _SyncIndicatorState()
 
   bool get _reduced => MediaQuery.maybeDisableAnimationsOf(context) ?? false;
 
+  /// Reduced motion: every change is the same short crossfade.
+  static const _reducedFade = Duration(milliseconds: 200);
+
   @override
   void initState() {
     super.initState();
@@ -164,8 +171,8 @@ class _SyncIndicatorState()
   @override
   void dispose() {
     _collapse?.cancel();
-    _card.dispose();
-    _pill.dispose();
+    _fold.dispose();
+    _shown.dispose();
     _spin.dispose();
     _nudge.dispose();
     super.dispose();
@@ -180,28 +187,38 @@ class _SyncIndicatorState()
     setState(() => _view = after);
     _restartTimer(before, after);
     final reduced = _reduced;
-    // Reduced motion: every change is the same short crossfade.
-    final fade = reduced
-        ? const Duration(milliseconds: 200)
-        : HlDuration.medium;
-    _show(_card, shown: after.showsCard, duration: fade);
-    _show(_pill, shown: after.showsPill, duration: fade);
+    if (after.phase == SyncPhase.hidden) {
+      // Backwards: an animateTo 0 ends completed, not dismissed, and the
+      // shell would stay.
+      _shown.animateBack(
+        0,
+        duration: reduced ? _reducedFade : HlDuration.medium,
+        curve: HlEasing.exit,
+      );
+    } else {
+      final fold = after.showsPill ? 1.0 : 0.0;
+      if (_shown.isDismissed) {
+        // Nothing to fold from: it arrives in its form.
+        _fold.value = fold;
+      } else if (_fold.value != fold) {
+        _fold.animateTo(
+          fold,
+          duration: reduced ? _reducedFade : HlDuration.long,
+          curve: reduced ? Curves.linear : HlEasing.standard,
+        );
+      }
+      _shown.animateTo(
+        1,
+        duration: reduced ? _reducedFade : HlDuration.medium,
+        curve: HlEasing.standard,
+      );
+    }
     if (after.phase == SyncPhase.busy) {
       _spin.repeat(reverse: reduced);
     } else {
       _spin.reset();
     }
   }
-
-  /// Backwards when leaving: an [AnimationController.animateTo] 0 ends
-  /// completed, not dismissed, and the form would stay.
-  static void _show(
-    AnimationController form, {
-    required bool shown,
-    required Duration duration,
-  }) => shown
-      ? form.animateTo(1, duration: duration)
-      : form.animateBack(0, duration: duration);
 
   void _restartTimer(SyncView before, SyncView after) {
     final opened =
@@ -249,7 +266,6 @@ class _SyncIndicatorState()
   @override
   Widget build(BuildContext context) {
     final state = context.watch<ListCubit>().state;
-    final top = MediaQuery.paddingOf(context).top;
     return BlocListener<ListCubit, ListState>(
       listenWhen: (a, b) => a.trouble != b.trouble,
       listener: (_, state) => _dispatch(TroubleChanged(state.trouble)),
@@ -258,7 +274,6 @@ class _SyncIndicatorState()
           final side =
               ShoppingListView.frameFor(constraints.maxWidth, state).side +
               HlSpace.s4;
-          final row = constraints.maxWidth - 2 * side;
           return Stack(
             fit: StackFit.expand,
             children: [
@@ -274,121 +289,146 @@ class _SyncIndicatorState()
                 },
                 child: widget.child,
               ),
-              if (_view.kind case final kind?) ...[
-                Positioned(
-                  left: side,
-                  top: top + widget.rowTop + (widget.rowHeight - _Pill.box) / 2,
-                  child: _Presence(
-                    animation: _pill,
-                    shown: _view.showsPill,
-                    reduced: _reduced,
-                    alignment: Alignment.center,
-                    from: 0.5,
-                    grow: HlEasing.bounce,
-                    child: _Nudge(
-                      animation: _nudge,
-                      child: MediaQuery.withClampedTextScaling(
-                        maxScaleFactor: SyncPillSpace.maxTextScale,
-                        child: _Pill(
-                          kind: kind,
-                          view: _view,
-                          spin: _spin,
-                          row: row,
-                          onTap: () => unawaited(_tap()),
-                        ),
-                      ),
-                    ),
+              if (_view.kind case final kind?)
+                AnimatedBuilder(
+                  animation: Listenable.merge([_fold, _shown]),
+                  builder: (context, _) => _shell(
+                    context,
+                    kind,
+                    side: side,
+                    width: constraints.maxWidth - 2 * side,
                   ),
                 ),
-                Positioned(
-                  left: side,
-                  right: side,
-                  top: top + widget.cardTop,
-                  child: _Presence(
-                    animation: _card,
-                    shown: _view.showsCard,
-                    reduced: _reduced,
-                    // It shrinks towards the pill and grows out of it.
-                    alignment: Alignment.topLeft,
-                    from: 0.2,
-                    grow: HlEasing.standard,
-                    child: GestureDetector(
-                      onVerticalDragStart: (_) => _swipe = 0,
-                      onVerticalDragUpdate: (d) {
-                        _swipe += d.delta.dy;
-                        if (_swipe <= -20) {
-                          _dispatch(const SwipedUp());
-                        }
-                      },
-                      child: _Card(
-                        kind: kind,
-                        view: _view,
-                        spin: _spin,
-                        onTap: () => unawaited(_tap()),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
             ],
           );
         },
       ),
     );
   }
-}
 
-/// One form fading and scaling in or out. A leaving form is out of the
-/// semantics tree and takes no taps at once: one indicator node at a time.
-/// Reduced motion fades only.
-class const _Presence({
-  required final Animation<double> animation,
-  required final bool shown,
-  required final bool reduced,
-  required final Alignment alignment,
+  /// The shell at this frame of the fold and of its presence.
+  Widget _shell(
+    BuildContext context,
+    SyncTrouble kind, {
+    required double side,
+    required double width,
+  }) {
+    if (_shown.isDismissed) {
+      return const Positioned(left: 0, top: 0, child: SizedBox.shrink());
+    }
+    final reduced = _reduced;
+    // Reduced motion: no morph; the form switches at the bottom of a dip in
+    // the opacity.
+    final fold = reduced ? (_fold.value < 0.5 ? 0.0 : 1.0) : _fold.value;
+    final dip = reduced ? (2 * _fold.value - 1).abs() : 1.0;
+    final shown = _view.phase != SyncPhase.hidden;
+    final top = MediaQuery.paddingOf(context).top;
+    final brightness = Theme.of(context).brightness;
+    final t = HummlistColors.of(brightness);
+    final tone = _tone(kind, brightness);
+    final busy = _view.phase == SyncPhase.busy;
+    void onTap() => unawaited(_tap());
+    final open = _view.showsCard;
 
-  /// The scale it grows from.
-  required final double from,
-  required final Curve grow,
-  required final Widget child,
-}) extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) => AnimatedBuilder(
-    animation: animation,
-    builder: (context, child) =>
-        animation.isDismissed ? const SizedBox.shrink() : child!,
-    child: IgnorePointer(
-      ignoring: !shown,
-      child: ExcludeSemantics(
-        excluding: !shown,
-        child: FadeTransition(
-          opacity: reduced
-              ? animation
-              : CurvedAnimation(
-                  parent: animation,
-                  curve: HlEasing.standard,
-                  reverseCurve: HlEasing.exit,
-                ),
-          child: reduced
-              ? child
-              : ScaleTransition(
-                  alignment: alignment,
-                  scale: Tween<double>(begin: from, end: 1).animate(
-                    CurvedAnimation(
-                      parent: animation,
-                      curve: grow,
-                      reverseCurve: HlEasing.standard,
-                    ),
+    var shell = _node(
+      context,
+      kind: kind,
+      view: _view,
+      onTap: onTap,
+      child: TextButton(
+        key: const ValueKey('sync-indicator'),
+        onPressed: onTap,
+        style:
+            tactileButtonStyle(
+              colors: (_) => TactileColors(
+                face: tone.face,
+                contour: t.border,
+                edge: tone.edge,
+                focus: t.accent,
+              ),
+              foreground: WidgetStatePropertyAll(tone.text),
+              textStyle: _Pill.wordStyle(context),
+            ).copyWith(
+              minimumSize: const WidgetStatePropertyAll(Size.zero),
+              padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+              // 48 px to tap in every form, the pill's 36 included.
+              tapTargetSize: MaterialTapTargetSize.padded,
+              visualDensity: VisualDensity.standard,
+            ),
+        child: _Morph(
+          fold: fold,
+          cardWidth: width,
+          pill: Size(_Pill.width(context, kind, width), _Pill.height),
+          icon: _StateIcon(
+            kind: kind,
+            busy: busy,
+            spin: _spin,
+            color: tone.text,
+            size: lerpDouble(_Card.icon, _Pill.icon, fold)!,
+          ),
+          // A form's content is there from the moment it is the target.
+          card: fold < 1 || open
+              ? _Card(
+                  key: const ValueKey('sync-card'),
+                  kind: kind,
+                  busy: busy,
+                  color: tone.text,
+                )
+              : null,
+          word: fold > 0 || _view.showsPill
+              ? MediaQuery.withClampedTextScaling(
+                  maxScaleFactor: SyncPillSpace.maxTextScale,
+                  child: _Pill(
+                    key: const ValueKey('sync-pill'),
+                    kind: kind,
+                    color: tone.text,
                   ),
-                  child: child,
-                ),
+                )
+              : null,
         ),
       ),
-    ),
-  );
+    );
+    shell = GestureDetector(
+      onVerticalDragStart: open ? (_) => _swipe = 0 : null,
+      onVerticalDragUpdate: open
+          ? (d) {
+              _swipe += d.delta.dy;
+              if (_swipe <= -20) {
+                _dispatch(const SwipedUp());
+              }
+            }
+          : null,
+      child: _Nudge(animation: _nudge, child: shell),
+    );
+    if (!reduced && _shown.value < 1) {
+      // It grows out of where it stands: the card from the bar's left end,
+      // the pill from its middle.
+      shell = Transform.scale(
+        scale: lerpDouble(lerpDouble(0.92, 0.6, fold), 1, _shown.value),
+        alignment: Alignment.lerp(Alignment.topLeft, Alignment.center, fold),
+        child: shell,
+      );
+    }
+    return Positioned(
+      left: side,
+      top: lerpDouble(
+        top + widget.cardTop,
+        top + widget.rowTop + (widget.rowHeight - HlSize.target) / 2,
+        fold,
+      ),
+      // A leaving shell is out of the semantics tree and takes no taps.
+      child: IgnorePointer(
+        ignoring: !shown,
+        child: ExcludeSemantics(
+          excluding: !shown,
+          child: Opacity(opacity: _shown.value * dip, child: shell),
+        ),
+      ),
+    );
+  }
 }
 
-/// A short shake of the pill after a retry that failed again.
+/// A short shake of the shell after a retry that failed again.
 class const _Nudge({
   required final Animation<double> animation,
   required final Widget child,
@@ -431,8 +471,8 @@ class const _Nudge({
   };
 }
 
-/// The one semantics node of either form: the full sentence, so the pill
-/// says as much as the card. Offline toggles the card; failing retries.
+/// The shell's one semantics node: the full sentence, so the pill says as
+/// much as the card. Offline toggles the card; failing retries.
 Widget _node(
   BuildContext context, {
   required SyncTrouble kind,
@@ -500,32 +540,28 @@ class const _StateIcon({
   }
 }
 
-/// The collapsed form: a raised hex with the state icon and one word, in the
-/// top bar's empty left slot. 36 px to see, 48 px to tap.
+/// The folded form's word, right of the icon: the pill sits in the top
+/// bar's empty left slot, 36 px to see, 48 px to tap.
 class const _Pill({
   required final SyncTrouble kind,
-  required final SyncView view,
-  required final Animation<double> spin,
-
-  /// The top bar's row: the pill leaves Anpassen its room.
-  required final double row,
-  required final VoidCallback onTap,
+  required final Color color,
+  super.key,
 }) extends StatelessWidget {
-  /// The tap area's height.
-  static const box = HlSize.target;
-
   /// The face and its edge.
-  static const _height = 36.0;
+  static const height = 36.0;
 
-  static const _pad = HlHex.tip * _height + HlSpace.s2;
-  static const _icon = 18.0;
+  static const _pad = HlHex.tip * height + HlSpace.s2;
+  static const icon = 18.0;
   static const _gap = HlSpace.s1 + 2;
+
+  /// Where the icon sits in the pill.
+  static const iconLeft = _pad;
 
   /// Anpassen at its widest and the bar's gaps before it, the partner's
   /// capsule's included (it shrinks to fit).
   static const _anpassen = 160.0 + 2 * HlSpace.s2;
 
-  static TextStyle _wordStyle(BuildContext context) =>
+  static TextStyle wordStyle(BuildContext context) =>
       (Theme.of(context).textTheme.labelLarge ?? const TextStyle()).copyWith(
         fontSize: 13,
         fontWeight: FontWeight.w700,
@@ -543,80 +579,33 @@ class const _Pill({
     final word = TextPainter(
       text: TextSpan(
         text: _word(AppLocalizations.of(context), kind),
-        style: _wordStyle(context),
+        style: wordStyle(context),
       ),
-      textScaler: MediaQuery.textScalerOf(context),
+      textScaler: MediaQuery.textScalerOf(context)
+          .clamp(maxScaleFactor: SyncPillSpace.maxTextScale),
       textDirection: Directionality.of(context),
       maxLines: 1,
     )..layout();
-    final natural = 2 * _pad + _icon + _gap + word.width.ceilToDouble();
+    final natural = 2 * _pad + icon + _gap + word.width.ceilToDouble();
     word.dispose();
-    return min(natural, max(box, row - _anpassen));
+    return min(natural, max(HlSize.target, row - _anpassen));
   }
 
   @override
-  Widget build(BuildContext context) {
-    final brightness = Theme.of(context).brightness;
-    final t = HummlistColors.of(brightness);
-    final tone = _tone(kind, brightness);
-    return _node(
-      context,
-      kind: kind,
-      view: view,
-      onTap: onTap,
-      child: TextButton(
-        key: const ValueKey('sync-pill'),
-        onPressed: onTap,
-        style:
-            tactileButtonStyle(
-              colors: (_) => TactileColors(
-                face: tone.face,
-                contour: t.border,
-                edge: tone.edge,
-                focus: t.accent,
-              ),
-              foreground: WidgetStatePropertyAll(tone.text),
-              textStyle: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-              ),
-            ).copyWith(
-              minimumSize: const WidgetStatePropertyAll(Size(box, _height)),
-              fixedSize: WidgetStatePropertyAll(
-                Size(width(context, kind, row), _height),
-              ),
-              tapTargetSize: MaterialTapTargetSize.padded,
-              visualDensity: VisualDensity.standard,
-              padding: const WidgetStatePropertyAll(
-                EdgeInsets.symmetric(horizontal: _pad),
-              ),
-            ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          spacing: _gap,
-          children: [
-            _StateIcon(
-              kind: kind,
-              busy: view.phase == SyncPhase.busy,
-              spin: spin,
-              color: tone.text,
-              size: _icon,
-            ),
-            Flexible(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  _word(AppLocalizations.of(context), kind),
-                  maxLines: 1,
-                  style: _wordStyle(context).copyWith(color: tone.text),
-                ),
-              ),
-            ),
-          ],
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(left: _pad + icon + _gap, right: _pad),
+    child: Align(
+      alignment: AlignmentDirectional.centerStart,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
+          _word(AppLocalizations.of(context), kind),
+          maxLines: 1,
+          style: wordStyle(context).copyWith(color: color),
         ),
       ),
-    );
-  }
+    ),
+  );
 }
 
 /// Holds the pill's width in the top bar while there is trouble, so the
@@ -640,118 +629,326 @@ class const SyncPillSpace({
   }
 }
 
-/// The expanded form: a floating hex card under the top bar with the state
-/// icon, a bold title and one line; failing adds a retry button.
+/// The open form's text right of the icon: a bold title and one line;
+/// failing adds the retry hex.
 class const _Card({
   required final SyncTrouble kind,
-  required final SyncView view,
-  required final Animation<double> spin,
-  required final VoidCallback onTap,
+  required final bool busy,
+  required final Color color,
+  super.key,
 }) extends StatelessWidget {
+  static const icon = 24.0;
+  static const iconLeft = HlSpace.s5 + 2;
+
+  /// The face's least height.
+  static const minHeight = 64.0;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final brightness = Theme.of(context).brightness;
-    final t = HummlistColors.of(brightness);
-    final tone = _tone(kind, brightness);
-    final busy = view.phase == SyncPhase.busy;
     final failing = kind == SyncTrouble.failing;
-    return _node(
-      context,
-      kind: kind,
-      view: view,
-      onTap: onTap,
-      child: DecoratedBox(
-        key: const ValueKey('sync-indicator'),
-        decoration: ShapeDecoration(
-          shape: const HexBorder(),
-          shadows: HlSticker.shadow(brightness, StickerDepth.s),
-        ),
-        child: Material(
-          color: tone.face,
-          shape: HexBorder(
-            side: BorderSide(color: t.border, width: HlBorder.width),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            customBorder: const HexBorder(),
-            onTap: onTap,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(minHeight: 64),
-              child: Padding(
-                // The tips grow with the card's height: the text keeps clear
-                // of them at large text sizes, the icon and the button sit
-                // where the card is widest.
-                padding: EdgeInsets.fromLTRB(
-                  HlSpace.s5 + 2,
-                  HlSpace.s2 + 2,
-                  failing ? HlSpace.s5 - 2 : HlSpace.s6 + HlSpace.s2,
-                  HlSpace.s2 + 2,
+    return Padding(
+      // The tips grow with the card's height: the text keeps clear of them
+      // at large text sizes, the icon and the retry hex sit where the card
+      // is widest.
+      padding: EdgeInsets.fromLTRB(
+        iconLeft + icon + HlSpace.s3,
+        HlSpace.s2 + 2,
+        failing ? HlSpace.s5 - 2 : HlSpace.s6 + HlSpace.s2,
+        HlSpace.s2 + 2,
+      ),
+      child: Row(
+        spacing: HlSpace.s3,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  failing ? l10n.syncFailing : l10n.syncOffline,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: color,
+                  ),
                 ),
-                child: Row(
-                  spacing: HlSpace.s3,
-                  children: [
-                    _StateIcon(
-                      kind: kind,
-                      busy: busy,
-                      spin: spin,
-                      color: tone.text,
-                      size: 24,
-                    ),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            failing ? l10n.syncFailing : l10n.syncOffline,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: tone.text,
-                            ),
-                          ),
-                          Text(
-                            failing
-                                ? l10n.syncFailingLine
-                                : l10n.syncOfflineLine,
-                            style: TextStyle(
-                              fontSize: 13,
-                              height: 1.3,
-                              color: tone.text,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (failing)
-                      // The card is the button for screen readers and the
-                      // keyboard; this is its visible cue.
-                      ExcludeFocus(
-                        child: AnimatedOpacity(
-                          opacity: busy ? 0.45 : 1,
-                          duration: HlDuration.short,
-                          child: OutlinedButton(
-                            key: const ValueKey('sync-retry'),
-                            onPressed: onTap,
-                            style: OutlinedButton.styleFrom(
-                              minimumSize: const Size(52, 40),
-                              fixedSize: const Size(52, 40),
-                              padding: EdgeInsets.zero,
-                              tapTargetSize: MaterialTapTargetSize.padded,
-                              visualDensity: VisualDensity.standard,
-                            ),
-                            child: const Icon(Icons.refresh, size: 20),
-                          ),
-                        ),
-                      ),
-                  ],
+                Text(
+                  failing ? l10n.syncFailingLine : l10n.syncOfflineLine,
+                  // Not the button's bold label style.
+                  style: TextStyle(
+                    fontSize: 13,
+                    height: 1.3,
+                    fontWeight: FontWeight.w400,
+                    color: color,
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
+          if (failing)
+            // The shell is the button, for taps, screen readers and the
+            // keyboard; this is its visible cue.
+            AnimatedOpacity(
+              key: const ValueKey('sync-retry'),
+              opacity: busy ? 0.45 : 1,
+              duration: hlMotion(context, HlDuration.short),
+              child: const _RetryCue(),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A raised hex with the retry arrow, drawn as the theme's secondary button.
+class const _RetryCue() extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final t = HummlistColors.of(Theme.of(context).brightness);
+    return TactileFace(
+      states: const {},
+      colors: TactileColors(
+        face: t.surfaceRaised,
+        contour: t.border,
+        edge: t.surfaceEdge,
+        focus: t.accent,
+      ),
+      child: SizedBox(
+        width: 52,
+        height: 40,
+        child: Padding(
+          // Centred on the face, above its edge.
+          padding: const EdgeInsets.only(bottom: HlDepth.edge),
+          child: Icon(Icons.refresh, size: 20, color: t.text),
         ),
       ),
     );
+  }
+}
+
+enum _Part() {
+  card,
+  word,
+  icon,
+}
+
+/// The shell's content at one point of the fold: the card's text laid out
+/// at the card's width, the pill's word at the pill's size, each as it
+/// stands when the fold ends, so nothing reflows on the way. It takes the
+/// size between the two forms, crossfades them and moves the one icon
+/// between their places, all clipped to the hex face.
+class const _Morph({
+  /// 0 the card, 1 the pill.
+  required final double fold,
+  required final double cardWidth,
+
+  /// The pill's face and edge.
+  required final Size pill,
+  required final Widget icon,
+  final Widget? card,
+  final Widget? word,
+}) extends SlottedMultiChildRenderObjectWidget<_Part, RenderBox> {
+  @override
+  Iterable<_Part> get slots => _Part.values;
+
+  @override
+  Widget? childForSlot(_Part slot) => switch (slot) {
+    _Part.card => card,
+    _Part.word => word,
+    _Part.icon => icon,
+  };
+
+  @override
+  _RenderMorph createRenderObject(BuildContext context) =>
+      _RenderMorph(fold: fold, cardWidth: cardWidth, pill: pill);
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderMorph renderObject) =>
+      renderObject
+        ..fold = fold
+        ..cardWidth = cardWidth
+        ..pill = pill;
+}
+
+class _RenderMorph({
+  required double fold,
+  required double cardWidth,
+  required Size pill,
+}) extends RenderBox with SlottedContainerRenderObjectMixin<_Part, RenderBox> {
+  var _fold = fold;
+  var _cardWidth = cardWidth;
+  var _pill = pill;
+
+  /// The card's text goes in the first part of the fold, the pill's word
+  /// comes in the rest; the other way round on the way back.
+  static const _cardOut = Interval(0, 0.3);
+  static const _wordIn = Interval(0.55, 1);
+
+  static const _shape = HexBorder();
+  final _clip = LayerHandle<ClipPathLayer>();
+  final _opacities = {
+    for (final part in _Part.values) part: LayerHandle<OpacityLayer>(),
+  };
+
+  double get fold => _fold;
+  set fold(double value) {
+    if (value != _fold) {
+      final fading = _fading;
+      _fold = value;
+      markNeedsLayout();
+      if (_fading != fading) {
+        markNeedsCompositingBitsUpdate();
+      }
+    }
+  }
+
+  /// A fading part paints into its own opacity layer, which a clip on the
+  /// canvas would not reach.
+  bool get _fading => _Part.values.any((part) {
+    final opacity = _opacity(part);
+    return opacity > 0 && opacity < 1;
+  });
+
+  @override
+  bool get alwaysNeedsCompositing => _fading;
+
+  double get cardWidth => _cardWidth;
+  set cardWidth(double value) {
+    if (value != _cardWidth) {
+      _cardWidth = value;
+      markNeedsLayout();
+    }
+  }
+
+  Size get pill => _pill;
+  set pill(Size value) {
+    if (value != _pill) {
+      _pill = value;
+      markNeedsLayout();
+    }
+  }
+
+  double _opacity(_Part part) => switch (part) {
+    _Part.card => 1 - _cardOut.transform(_fold.clamp(0, 1)),
+    _Part.word => _wordIn.transform(_fold.clamp(0, 1)),
+    _Part.icon => 1,
+  };
+
+  BoxConstraints get _cardConstraints => BoxConstraints(
+    minWidth: _cardWidth,
+    maxWidth: _cardWidth,
+    minHeight: _Card.minHeight,
+  );
+
+  Size _sizeFor(Size? card, BoxConstraints constraints) {
+    final open = card == null
+        ? _pill
+        : Size(_cardWidth, card.height + HlDepth.edge);
+    return constraints.constrain(Size.lerp(open, _pill, _fold)!);
+  }
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) => _sizeFor(
+    childForSlot(_Part.card)?.getDryLayout(_cardConstraints),
+    constraints,
+  );
+
+  @override
+  void performLayout() {
+    final card = childForSlot(_Part.card);
+    final word = childForSlot(_Part.word);
+    final icon = childForSlot(_Part.icon);
+    card?.layout(_cardConstraints, parentUsesSize: true);
+    word?.layout(
+      BoxConstraints.tight(Size(_pill.width, _pill.height - HlDepth.edge)),
+      parentUsesSize: true,
+    );
+    icon?.layout(const BoxConstraints(), parentUsesSize: true);
+    size = _sizeFor(card?.size, constraints);
+    // The face is the shell less its edge, and the label moves up by half
+    // the edge to sit on it (tactileButtonStyle): centred here is centred
+    // on the face.
+    for (final child in [?card, ?word]) {
+      (child.parentData! as BoxParentData).offset = Offset(
+        0,
+        (size.height - child.size.height) / 2,
+      );
+    }
+    if (icon != null) {
+      (icon.parentData! as BoxParentData).offset = Offset(
+        lerpDouble(_Card.iconLeft, _Pill.iconLeft, _fold)!,
+        (size.height - icon.size.height) / 2,
+      );
+    }
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    final face = Rect.fromLTRB(
+      0,
+      HlDepth.edge / 2,
+      size.width,
+      size.height - HlDepth.edge / 2,
+    );
+    _clip.layer = context.pushClipPath(
+      needsCompositing,
+      offset,
+      Offset.zero & size,
+      _shape.pathFor(face, outset: -HlBorder.width),
+      (context, offset) {
+        for (final part in _Part.values) {
+          final child = childForSlot(part);
+          final opacity = _opacity(part);
+          final handle = _opacities[part]!;
+          if (child == null || opacity == 0) {
+            handle.layer = null;
+            continue;
+          }
+          final at = offset + (child.parentData! as BoxParentData).offset;
+          if (opacity == 1) {
+            handle.layer = null;
+            context.paintChild(child, at);
+          } else {
+            handle.layer = context.pushOpacity(
+              at,
+              (opacity * 255).round(),
+              (context, offset) => context.paintChild(child, offset),
+              oldLayer: handle.layer,
+            );
+          }
+        }
+      },
+      oldLayer: _clip.layer,
+    );
+  }
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
+    for (final part in _Part.values.reversed) {
+      final child = childForSlot(part);
+      if (child == null || _opacity(part) == 0) {
+        continue;
+      }
+      final hit = result.addWithPaintOffset(
+        offset: (child.parentData! as BoxParentData).offset,
+        position: position,
+        hitTest: (result, position) =>
+            child.hitTest(result, position: position),
+      );
+      if (hit) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  @override
+  void dispose() {
+    _clip.layer = null;
+    for (final handle in _opacities.values) {
+      handle.layer = null;
+    }
+    super.dispose();
   }
 }

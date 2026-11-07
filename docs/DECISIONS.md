@@ -9986,3 +9986,37 @@ Baumarkt off the landing page because the app had no hardware categories.
     cron) run with the lock's fd 9 closed, so a child that outlived its run could not keep
     `/tmp/nexus-publish.lock`; checked on a live run: the script held the lock, its deno child no
     fd on it.
+
+## Job 165: sync indicator polish, 2026-11-07
+
+1. **One failure is no failing server (Peter, Z104).** A single transient `ServerTrouble` (one
+   503, a token that expires mid-request and a refresh fixes, which PostgREST answers with a
+   PGRST3xx) used to show „Sync gestört“ at once, and the 3 s retry then took it away again.
+   `ListState.failing` now turns true only once a request started after the automatic retry
+   fired (or after a tapped retry) fails too, so failing shows about 3 s after the first error at
+   the earliest. Offline is unchanged: it shows at once.
+2. **Retry rounds, not a failure counter.** `ListCubit` counts rounds (one per firing of the
+   retry timer and per `retry()`), each request remembers the round it started in, and the first
+   unshown failure records its round. Only a failure from a later round shows failing. Failures
+   come in bunches within one round: a resync fetches the catalog and the items in parallel, and
+   a slow write sent before the retry fired can fail after it. A counter would read those as two
+   failures and show failing on one outage; rounds read them as one. What clears failing also
+   clears the recorded round (`_clearTrouble`): an acknowledged write, a resync with nothing
+   queued, a send loop that the server answered until the queue was empty (review: a refused
+   rename folded into "already on the list" empties it with no write acknowledged, which left a
+   stale round, and before this job a stale „Sync gestört“), and going offline. A resync with writes queued still clears nothing, so a server that refuses every
+   write while reads work ends up failing (the write fails, the retry's resync works, its send
+   fails in the new round).
+3. **One hex shell, not a card and a pill (Peter).** #311 drew the card and the pill as two widgets:
+   the card scaled out towards the top left, then the pill bounced in, and it read as two
+   objects. Now one tactile hex button carries both forms. One controller (`_fold`, 0 card, 1
+   pill) lerps its top, width and height between the two rects in `HlDuration.long` (360 ms) on
+   `HlEasing.standard`, both ways, as job 157's S3 capsule did with one background. A small
+   render object (`_Morph`) lays the card content out at the card width and the pill word at the
+   pill size, so neither reflows, sizes itself between them and clips to the face. The card
+   text fades out early, the word fades in late, and the one icon travels and shrinks from 24 to
+   18 px, so the eye follows one object. No bounce: it would overshoot the card's size. The card
+   now rests on the 4 px solid edge like the pill and every other raised hex (job 148: one depth
+   style, 3D), not on the sticker shadow; its retry hex is a cue only, since a tap anywhere
+   retries. Reduced motion: no morph, scale or spin, the form switches inside a 200 ms opacity
+   dip.
