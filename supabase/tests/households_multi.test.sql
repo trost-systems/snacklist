@@ -506,8 +506,8 @@ select is((select count(*)::int from public.households where name in ('Solo')), 
 select results_eq(
   $$ select h.name, m.role from public.household_members m join public.households h on h.id = m.household_id
      where h.name in ('Zuhause', 'Geteilt') order by h.name $$,
-  $$ values ('Geteilt', 'owner'), ('Zuhause', 'member') $$,
-  'shared households are kept; his owner role passed on where he had it (Geteilt to Carl)'
+  $$ values ('Geteilt', 'owner'), ('Zuhause', 'owner') $$,
+  'shared households are kept with an owner: Geteilt passed to Carl, Zuhause to Lea when Peter left it (W2)'
 );
 select is(pg_temp.default_of('00000000-0000-0000-0000-0000000169c1'), 'Carl',
   'Carl''s default is untouched by the new membership');

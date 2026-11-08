@@ -1,5 +1,5 @@
 begin;
-select plan(76);
+select plan(83);
 
 create function pg_temp.login(uid uuid) returns void language plpgsql as $$
 begin
@@ -272,6 +272,33 @@ select is((select count(*)::int from public.household_members where household_id
 set local role postgres;
 select is((select household_id from public.feedback where id = '30000000-0000-4000-8000-0000000001b2'),
   (select id from hb), 'feedback naming another household lands in the sender''s default');
+
+-- Job 169b W2: who joined through an invite, roles and removal stay inside the household.
+insert into public.invites (household_id, code, created_by)
+select id, 'BBBB2222', '00000000-0000-0000-0000-0000000000b1' from hb;
+insert into public.invite_uses (invite_id, household_id, user_id)
+select inv.id, ha.id, '00000000-0000-0000-0000-0000000000a1' from inv, ha;
+insert into public.invite_uses (invite_id, household_id, user_id)
+select i.id, i.household_id, '00000000-0000-0000-0000-0000000000b1'
+from public.invites i, hb where i.household_id = hb.id and i.code = 'BBBB2222';
+select pg_temp.login('00000000-0000-0000-0000-0000000000b1');
+select is((select count(*)::int from public.invite_uses where household_id = (select id from ha)), 0,
+  'invite_uses of another household are invisible');
+select is((select count(*)::int from public.invite_uses where household_id = (select id from hb)), 1,
+  'a member reads their own household''s invite_uses');
+select throws_ok($$ select * from public.household_invites((select id from ha)) $$, '42501', 'not_member',
+  'household_invites of another household is refused');
+select throws_ok($$ select * from public.invite_joins((select id from inv)) $$, '42501', 'not_member',
+  'invite_joins of another household''s invite is refused');
+select throws_ok($$ select public.create_invite((select id from ha), 'group') $$, '42501', 'not_a_member',
+  'a group link for another household is refused');
+select throws_ok(
+  $$ select public.remove_member((select id from ha), '00000000-0000-0000-0000-0000000000a1') $$,
+  '42501', 'not_member', 'removing a member of another household is refused');
+select throws_ok(
+  $$ select public.set_member_role((select id from ha), '00000000-0000-0000-0000-0000000000a1', 'admin') $$,
+  '42501', 'not_member', 'changing a role in another household is refused');
+set local role postgres;
 
 select * from finish();
 rollback;

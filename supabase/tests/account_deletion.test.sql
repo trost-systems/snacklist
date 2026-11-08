@@ -29,6 +29,7 @@ language sql as $$
   select 'households', count(*)::int from public.households where id = p_household
   union all select 'household_members', count(*)::int from public.household_members where household_id = p_household
   union all select 'invites', count(*)::int from public.invites where household_id = p_household
+  union all select 'invite_uses', count(*)::int from public.invite_uses where household_id = p_household
   union all select 'categories', count(*)::int from public.categories where household_id = p_household
   union all select 'stores', count(*)::int from public.stores where household_id = p_household
   union all select 'store_category_order', count(*)::int from public.store_category_order where household_id = p_household
