@@ -33,7 +33,8 @@ supabase/bench/suggest_latency.sh
 # Job 112: a plain name whose item is open with a brand, a note or a product word (Q79), through
 # the Shortcut, native Siri and Alexa on parser-stored items.
 # Job 82: the waitlist function's wiring (sign-up, confirm, one-click unsubscribe, rate limit).
-# Job 169b: one default per user under concurrent leaves, joins and creates; the MCP household tools.
+# Job 169b: one default per user under concurrent leaves, joins and creates; the MCP household tools;
+# W2: joins racing for a group link's last uses never pass 50.
 db_port="$(sed -n '/^\[db\]/,/^\[/ s/^port = \([0-9]*\)$/\1/p' supabase/config.toml)"
 (cd supabase/functions && FG_DB_TEST=1 SUPABASE_DB_URL="postgresql://postgres:postgres@127.0.0.1:$db_port/postgres" \
   deno test --allow-env --allow-net --allow-read _shared/add_paths_integration_test.ts alexa/store_integration_test.ts \

@@ -200,3 +200,92 @@ test('householdOf and the Alexa analytics subject read the default household', (
     const subject = await analyticsSubject(admin, user);
     assertEquals([subject?.householdId, subject?.role], [ids.B, 'member']);
   }));
+
+type Joiner = { sql: Sql; user: string };
+
+/** A household with a group link at [used] of its 50 uses, and [count] users on their own
+ * connections who are not in it. */
+async function withGroupLink(
+  used: number,
+  count: number,
+  work: (
+    s: { admin: Sql; joiners: Joiner[]; code: string; invite: string; household: string },
+  ) => Promise<void>,
+) {
+  const admin = connect();
+  const owner = crypto.randomUUID();
+  const joiners = Array.from(
+    { length: count },
+    () => ({ sql: connect(), user: crypto.randomUUID() }),
+  );
+  const everyone = [owner, ...joiners.map((j) => j.user)];
+  try {
+    for (const id of everyone) {
+      await admin`insert into auth.users (id, email) values (${id}, ${`${id}@fg-test.invalid`})`;
+    }
+    const [household] = await admin<{ id: string }[]>`
+      insert into public.households (name, created_by) values ('Verein', ${owner}) returning id`;
+    await admin`insert into public.household_members (household_id, user_id, role)
+      values (${household?.id ?? ''}, ${owner}, 'owner')`;
+    const [invite] = await as(
+      admin,
+      owner,
+      (tx) =>
+        tx<{ id: string; code: string }[]>`
+          select id, code from public.create_invite(${household?.id ?? ''}, 'group')`,
+    );
+    await admin`update public.invites set use_count = ${used} where id = ${invite?.id ?? ''}`;
+    await work({
+      admin,
+      joiners,
+      code: invite?.code ?? '',
+      invite: invite?.id ?? '',
+      household: household?.id ?? '',
+    });
+  } finally {
+    await admin`delete from public.households where created_by = ${owner}`;
+    await admin`delete from auth.users where id in ${admin(everyone)}`;
+    await Promise.all([admin.end(), ...joiners.map((j) => j.sql.end())]);
+  }
+}
+
+/** The first joiner holds its join open while the others try; their sorted answers. */
+async function groupLinkRace(joiners: Joiner[], code: string): Promise<string[]> {
+  const [holder, ...racers] = joiners;
+  const statuses: string[] = [];
+  const accept = (tx: postgres.TransactionSql) =>
+    tx<{ status: string }[]>`
+      select public.accept_invite(${code}, p_mode => 'add') ->> 'status' as status`
+      .then(([row]) => statuses.push(row?.status ?? ''));
+  if (holder === undefined) throw new Error('no joiners');
+  await overlapping(
+    (release) =>
+      as(holder.sql, holder.user, async (tx) => {
+        await accept(tx);
+        await release;
+      }),
+    () => Promise.all(racers.map((r) => as(r.sql, r.user, (tx) => accept(tx)))),
+  );
+  return statuses.sort();
+}
+
+const uses = async (admin: Sql, invite: string, household: string) => {
+  const [row] = await admin<{ use_count: number; joins: number; members: number }[]>`
+    select i.use_count,
+      (select count(*)::int from public.invite_uses u where u.invite_id = i.id) as joins,
+      (select count(*)::int from public.household_members m where m.household_id = ${household}) as members
+    from public.invites i where i.id = ${invite}`;
+  return row;
+};
+
+test("two joins race for a group link's last use: one joins, the 51st is refused", () =>
+  withGroupLink(49, 2, async ({ admin, joiners, code, invite, household }) => {
+    assertEquals(await groupLinkRace(joiners, code), ['invalid_invite', 'joined']);
+    assertEquals(await uses(admin, invite, household), { use_count: 50, joins: 1, members: 2 });
+  }));
+
+test('three joins race for the last two uses: two join, the third is refused', () =>
+  withGroupLink(48, 3, async ({ admin, joiners, code, invite, household }) => {
+    assertEquals(await groupLinkRace(joiners, code), ['invalid_invite', 'joined', 'joined']);
+    assertEquals(await uses(admin, invite, household), { use_count: 50, joins: 2, members: 3 });
+  }));
