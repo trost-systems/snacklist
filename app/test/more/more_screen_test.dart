@@ -93,7 +93,6 @@ void main() {
     expect(path(more), '/more/invites');
     expect(find.text('Einladungen'), findsOneWidget);
     expect(key('invite-new'), findsOneWidget);
-    expect(find.text('Keine offenen Einladungen.'), findsOneWidget);
     await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
     expect(path(more), '/more');

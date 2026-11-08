@@ -10,6 +10,10 @@
 library;
 
 import 'package:family_groceries/app/router.dart' show screenNames;
+import 'package:family_groceries/household/invite_repository.dart'
+    show InviteKind;
+import 'package:family_groceries/household/invite_share.dart'
+    show InviteChannel, InviteContext;
 import 'package:family_groceries/session/session_cubit.dart'
     show HouseholdOrigin;
 
@@ -36,10 +40,14 @@ enum ReorderScope(final String wire) {
 }
 
 /// How a join reached the app: `link` when the code came from an invite
-/// link (`/join/<code>` or `?invite=`), `code` when it was typed.
+/// link (`/join/<code>` or `?invite=`), `code` when it was typed,
+/// `referrer` from the Play Store's install referrer (job 169b W2), `paste`
+/// from the start screens' "Einladung einfügen".
 enum JoinMethod() {
   link,
   code,
+  referrer,
+  paste,
 }
 
 /// One allowed property: a check its value must pass.
@@ -88,11 +96,15 @@ final eventCatalog = <String, Map<String, PropertyRule>>{
   'household_switched': const {},
   'invite_accepted': {'method': _namesOf(JoinMethod.values)},
   // Job 22: an invite handed out (share sheet opened, link or code
-  // copied). Never the code, the link or the household's name.
-  'invite_sent': const {
-    'channel': OneOf({'share_sheet', 'copy_link', 'copy_code'}),
-    'context': OneOf({'onboarding', 'settings'}),
+  // copied). Never the code, the link or the household's name. Job 169b
+  // W2: which kind of invite, and the invite sheet's places.
+  'invite_sent': {
+    'channel': OneOf({for (final c in InviteChannel.values) c.wire}),
+    'context': _namesOf(InviteContext.values),
+    'kind': _namesOf(InviteKind.values),
   },
+  // Job 169b W2: an owner or admin removed a member. Nothing else: not who.
+  'member_removed': const {},
   'item_added': {
     'source': _namesOf(AddSource.values),
     'actor_role': _roles,

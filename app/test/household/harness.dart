@@ -51,6 +51,17 @@ class FakeInvites() implements InviteRepository {
   final unlocked = <String>{};
   final created = <Invite>[];
   final revoked = <String>[];
+
+  /// Who joined with each invite, by invite id.
+  final joinLists = <String, List<InviteJoin>>{};
+
+  /// Each removal and role change: household, user (and role).
+  final removed = <(String, String)>[];
+  final roles = <(String, String, HouseholdRole)>[];
+
+  /// The sheets watching joins, by household: call one to say someone
+  /// joined.
+  final joinWatchers = <String, void Function()>{};
   final previews = <String>[];
   HouseholdProblem? next;
   var _n = 0;
@@ -67,12 +78,27 @@ class FakeInvites() implements InviteRepository {
   }
 
   @override
-  Future<Invite> create(String householdId) async {
+  Future<Invite> create(
+    String householdId, {
+    InviteKind kind = InviteKind.person,
+  }) async {
     await _answer();
+    if (kind == InviteKind.group) {
+      if (created
+              .where((i) => i.kind == kind && !revoked.contains(i.id))
+              .firstOrNull
+          case final open?) {
+        return open;
+      }
+    }
     final invite = Invite(
       id: 'invite-${++_n}',
       code: 'NEWCODE${'XYZ'[_n % 3]}',
-      expiresAt: DateTime.utc(2026, 11, 6, 9, 30),
+      expiresAt: kind == InviteKind.group
+          ? DateTime.utc(2026, 12, 8, 9, 30)
+          : DateTime.utc(2026, 11, 6, 9, 30),
+      kind: kind,
+      maxUses: kind == InviteKind.group ? 50 : 1,
     );
     created.add(invite);
     return invite;
@@ -85,6 +111,52 @@ class FakeInvites() implements InviteRepository {
       for (final i in created.reversed)
         if (!revoked.contains(i.id)) i,
     ];
+  }
+
+  @override
+  Future<List<InviteJoin>> joins(String inviteId) async {
+    await _answer();
+    return [...?joinLists[inviteId]];
+  }
+
+  @override
+  Future<void> Function() watchJoins(
+    String householdId,
+    void Function() onChange,
+  ) {
+    joinWatchers[householdId] = onChange;
+    return () async => joinWatchers.remove(householdId);
+  }
+
+  @override
+  Future<void> removeMember(String householdId, String userId) async {
+    removed.add((householdId, userId));
+    await _answer();
+    memberLists[householdId]?.removeWhere((m) => m.userId == userId);
+  }
+
+  @override
+  Future<void> setRole(
+    String householdId,
+    String userId,
+    HouseholdRole role,
+  ) async {
+    roles.add((householdId, userId, role));
+    await _answer();
+    final members = memberLists[householdId];
+    if (members != null) {
+      memberLists[householdId] = [
+        for (final m in members)
+          if (m.userId == userId)
+            HouseholdMember(
+              userId: m.userId,
+              displayName: m.displayName,
+              role: role,
+            )
+          else
+            m,
+      ];
+    }
   }
 
   @override
@@ -237,13 +309,7 @@ class TestSession(super.initialState)
     defaults.add(householdId);
     await _answer();
     if (state case InHousehold(:final household, :final households)) {
-      Household flip(Household h) => Household(
-        id: h.id,
-        name: h.name,
-        isDefault: h.id == householdId,
-        memberCount: h.memberCount,
-        openCount: h.openCount,
-      );
+      Household flip(Household h) => h.copyWith(isDefault: h.id == householdId);
       emit(
         InHousehold('peter', flip(household), [
           for (final h in households) flip(h),
@@ -257,15 +323,8 @@ class TestSession(super.initialState)
     renames.add((householdId, name));
     await _answer();
     if (state case InHousehold(:final household, :final households)) {
-      Household renamed(Household h) => h.id == householdId
-          ? Household(
-              id: h.id,
-              name: name.trim(),
-              isDefault: h.isDefault,
-              memberCount: h.memberCount,
-              openCount: h.openCount,
-            )
-          : h;
+      Household renamed(Household h) =>
+          h.id == householdId ? h.copyWith(name: name.trim()) : h;
       emit(
         InHousehold('peter', renamed(household), [
           for (final h in households) renamed(h),
@@ -307,14 +366,20 @@ class TestSession(super.initialState)
 }
 
 class MemoryPendingStore() implements PendingInviteStore {
-  ({String code, DateTime at})? saved;
+  KeptInvite? saved;
+  var referrerRead = false;
 
   @override
-  Future<({String code, DateTime at})?> pendingInvite() async => saved;
+  Future<KeptInvite?> pendingInvite() async => saved;
 
   @override
-  Future<void> savePendingInvite(({String code, DateTime at})? invite) async =>
-      saved = invite;
+  Future<void> savePendingInvite(KeptInvite? invite) async => saved = invite;
+
+  @override
+  Future<bool> installReferrerRead() async => referrerRead;
+
+  @override
+  Future<void> saveInstallReferrerRead() async => referrerRead = true;
 }
 
 typedef Onboarding = ({

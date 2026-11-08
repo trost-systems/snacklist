@@ -10,6 +10,35 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
+/// What a member may do in a household (docs/households/W2.md): the
+/// [owner] created it and names [admin]s; both remove members and make
+/// group links.
+enum HouseholdRole() {
+  owner,
+  admin,
+  member;
+
+  /// The server's `role`; anything unknown counts as [member].
+  static HouseholdRole parse(Object? role) =>
+      values.where((r) => r.name == role).firstOrNull ?? member;
+
+  /// Removes members, makes and revokes group links.
+  bool get manages => this != member;
+}
+
+/// Who the household shops together: what the user picked when creating
+/// it (job 168), null when not asked. Invites say it in their text.
+enum HouseholdKind() {
+  partner,
+  family,
+  flat,
+  club,
+  solo;
+
+  static HouseholdKind? parse(Object? kind) =>
+      values.where((k) => k.name == kind).firstOrNull;
+}
+
 /// One of the user's households, as `my_households()` answers it.
 @immutable
 class const Household({
@@ -23,6 +52,13 @@ class const Household({
 
   /// Items not ticked yet.
   final int openCount = 0,
+  final HouseholdKind? kind,
+
+  /// The user's own role in it.
+  final HouseholdRole role = HouseholdRole.member,
+
+  /// It has Hummlist Premium, which covers every member.
+  final bool premium = false,
 }) {
   /// A row of `my_households()` or of the device cache; null when it has no
   /// id or name.
@@ -39,6 +75,9 @@ class const Household({
         final int n => n,
         _ => 0,
       },
+      kind: HouseholdKind.parse(json['kind']),
+      role: HouseholdRole.parse(json['role']),
+      premium: json['premium'] == true,
     ),
     _ => null,
   };
@@ -49,7 +88,21 @@ class const Household({
     'is_default': isDefault,
     'member_count': memberCount,
     'open_count': openCount,
+    'kind': kind?.name,
+    'role': role.name,
+    'premium': premium,
   };
+
+  Household copyWith({String? name, bool? isDefault}) => Household(
+    id: id,
+    name: name ?? this.name,
+    isDefault: isDefault ?? this.isDefault,
+    memberCount: memberCount,
+    openCount: openCount,
+    kind: kind,
+    role: role,
+    premium: premium,
+  );
 }
 
 /// Where a household was created, for `household_created`'s `context`.

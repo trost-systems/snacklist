@@ -28,8 +28,10 @@ dependencies:
   intl: ^0.20.3
   package_info_plus: ^10.2.2
   path_provider: ^2.1.6
+  play_install_referrer: ^0.6.0
   posthog_flutter: 5.58.3
   purchases_flutter: ^11.0.0
+  qr: ^4.0.1
   share_plus: ^13.3.1
   shared_preferences: ^2.5.6
   shared_preferences_linux: ^2.4.1
