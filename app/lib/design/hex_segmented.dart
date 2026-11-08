@@ -33,6 +33,8 @@ class const HexSegmented<T>({
 }) extends StatelessWidget {
   /// Between the track's contour and the indicator's: the contour and 2 px.
   static const _gap = HlBorder.width + 2;
+  static const _iconSize = 18.0;
+  static const _iconGap = HlSpace.s2;
 
   @override
   Widget build(BuildContext context) {
@@ -43,6 +45,26 @@ class const HexSegmented<T>({
     // The indicator's slanted sides sit [_gap] from the track's.
     final along = _gap / math.sin(math.atan(1 / (2 * HlHex.tip)));
     final slide = hlMotion(context, HlDuration.medium);
+    final scaler = MediaQuery.textScalerOf(context);
+    // The picked weight, the widest a label gets.
+    final style = DefaultTextStyle.of(context).style.merge(
+      Theme.of(context).textTheme.labelLarge!
+          .copyWith(fontWeight: FontWeight.w800),
+    );
+    final inset = hexLabelInset(style, scaler);
+    double widthOf(HexSegment<T> segment) {
+      final text = TextPainter(
+        text: TextSpan(text: segment.label, style: style),
+        textScaler: scaler,
+        maxLines: 1,
+        textDirection: Directionality.of(context),
+      )..layout();
+      final width = text.width;
+      text.dispose();
+      return width + (segment.icon == null ? 0 : _iconSize + _iconGap);
+    }
+
+    final widest = segments.map(widthOf).reduce(math.max);
     return Semantics(
       container: true,
       label: label,
@@ -53,48 +75,50 @@ class const HexSegmented<T>({
             onChanged?.call(picked);
           }
         },
-        child: SizedBox(
-          height: HlSize.target,
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: ShapeDecoration(
-                    color: t.surfaceSunken,
-                    shape: HexBorder(
-                      side: BorderSide(
-                        color: enabled ? t.border : t.divider,
-                        width: HlBorder.width,
+        child: LayoutBuilder(
+          builder: (context, constraints) => SizedBox(
+            height: HlSize.target,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: ShapeDecoration(
+                      color: t.surfaceSunken,
+                      shape: HexBorder(
+                        side: BorderSide(
+                          color: enabled ? t.border : t.divider,
+                          width: HlBorder.width,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              Positioned.fill(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: along,
-                    vertical: _gap,
-                  ),
-                  child: AnimatedAlign(
-                    duration: slide,
-                    curve: HlEasing.standard,
-                    alignment: Alignment(
-                      segments.length == 1
-                          ? 0
-                          : -1 + 2 * picked / (segments.length - 1),
-                      0,
+                Positioned.fill(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: along,
+                      vertical: _gap,
                     ),
-                    child: FractionallySizedBox(
-                      widthFactor: 1 / segments.length,
-                      heightFactor: 1,
-                      child: DecoratedBox(
-                        decoration: ShapeDecoration(
-                          color: enabled ? t.honey : t.honeySoft,
-                          shape: HexBorder(
-                            side: BorderSide(
-                              color: enabled ? t.edge : t.divider,
-                              width: HlBorder.width,
+                    child: AnimatedAlign(
+                      duration: slide,
+                      curve: HlEasing.standard,
+                      alignment: Alignment(
+                        segments.length == 1
+                            ? 0
+                            : -1 + 2 * picked / (segments.length - 1),
+                        0,
+                      ),
+                      child: FractionallySizedBox(
+                        widthFactor: 1 / segments.length,
+                        heightFactor: 1,
+                        child: DecoratedBox(
+                          decoration: ShapeDecoration(
+                            color: enabled ? t.honey : t.honeySoft,
+                            shape: HexBorder(
+                              side: BorderSide(
+                                color: enabled ? t.edge : t.divider,
+                                width: HlBorder.width,
+                              ),
                             ),
                           ),
                         ),
@@ -102,27 +126,32 @@ class const HexSegmented<T>({
                     ),
                   ),
                 ),
-              ),
-              Positioned.fill(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: along),
-                  child: Row(
-                    children: [
-                      for (final segment in segments)
-                        Expanded(
-                          child: _Segment<T>(
-                            key: segment.key,
-                            segment: segment,
-                            picked: segment.value == value,
-                            enabled: enabled,
-                            slide: slide,
+                Positioned.fill(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: along),
+                    child: Row(
+                      children: [
+                        for (final segment in segments)
+                          Expanded(
+                            child: _Segment<T>(
+                              key: segment.key,
+                              segment: segment,
+                              picked: segment.value == value,
+                              enabled: enabled,
+                              slide: slide,
+                              inset: inset,
+                              icon:
+                                  widest + 2 * inset <=
+                                  (constraints.maxWidth - 2 * along) /
+                                      segments.length,
+                            ),
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -135,6 +164,12 @@ class const _Segment<T>({
   required final bool picked,
   required final bool enabled,
   required final Duration slide,
+
+  /// Room between the label and the segment's tips.
+  required final double inset,
+
+  /// Whether the segment shows its icon: all of them or none.
+  required final bool icon,
   super.key,
 }) extends StatefulWidget {
   @override
@@ -188,25 +223,31 @@ class _SegmentState<T>() extends State<_Segment<T>> {
                 tween: ColorTween(end: color),
                 duration: slide,
                 builder: (context, color, _) => IconTheme.merge(
-                  data: IconThemeData(color: color, size: 18),
+                  data: IconThemeData(
+                    color: color,
+                    size: HexSegmented._iconSize,
+                  ),
                   child: DefaultTextStyle.merge(
                     style: Theme.of(context).textTheme.labelLarge!.copyWith(
                       color: color,
                       fontWeight: picked ? FontWeight.w800 : FontWeight.w600,
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      spacing: HlSpace.s2,
-                      children: [
-                        if (segment.icon case final icon?) Icon(icon),
-                        Flexible(
-                          child: Text(
-                            segment.label,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: widget.inset),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        spacing: HexSegmented._iconGap,
+                        children: [
+                          if (segment.icon case final icon? when widget.icon)
+                            Icon(icon),
+                          Flexible(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(segment.label, maxLines: 1),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),

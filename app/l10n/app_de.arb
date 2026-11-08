@@ -100,6 +100,8 @@
   "onboardingBody": "Hummlist teilt eine Einkaufsliste mit allen in deinem Haushalt. Erstelle einen neuen Haushalt oder nimm eine Einladung an.",
   "householdName": "Name des Haushalts",
   "householdNameDefault": "Unser Haushalt",
+  "householdNameHintFurther": "z. B. Eltern, WG, Verein",
+  "@householdNameHintFurther": {"description": "Hint in the empty name field when creating a further household from the switcher (job 169b)."},
   "createHousehold": "Haushalt erstellen",
   "inviteCode": "Einladungscode",
   "joinHousehold": "Haushalt beitreten",

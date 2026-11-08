@@ -620,3 +620,15 @@ Each Siri and Alexa request now writes one log line on the server (`voice` new, 
 ## Job 170b: Alexa logs why a linked token is rejected
 
 A rejected Alexa link now logs its reason, as in `-> link invalid_token:expired` or `-> link invalid_token:not_oauth`, and so does a `SkillAccountLinked` event whose new token Hummlist rejects. `diagnose.sh` prints each reason with its next step. The runbook's X5 row and docs/ALEXA.md's troubleshooting table are split by reason. This supersedes #321 and carries all of it. Details: [docs/done/170b-alexa-link-reason.md](docs/done/170b-alexa-link-reason.md)
+
+## Job 154: design hill-climb with a frozen rubric and a blind council (app and site)
+
+A researched, frozen 10-aspect rubric and three blind Opus judges (absolute scores plus a blind pairwise per step) climbed the app from 4 to 5 (mean 5.3 to 6.2, 11 kept steps: wrapping and iconed field errors, edit-sheet reflow, visible 44 px hex targets, hex label clearance at large text, 12 px overlines, aligned edges, the empty list heading) and hummlist.com from 4 to 7 (mean 6.6 to 7.7, 12 kept CSS steps: one depth style in dark mode, empty and 404 states, German hyphenation, hex form controls, even paddings and gaps, nav reflow, tracking). Two PRs: #300 (app, closed; its commit landed through #320) and #299 (site). Details: [docs/done/154-hc-design-v2-app.md](docs/done/154-hc-design-v2-app.md).
+
+## Job 154b: app design climb on harness v3
+
+Harness v3 adds a drawn status bar and puts More, settings and stores inside the tab-pill shell. On it, 12 steps aimed at the lowest aspect: 10 kept, 2 reverted. A blind pairwise of the final against the baseline prefers the final 6-0 (3 ties). Min-aspect 5 -> 6 equals the noise band (1); per-aspect medians: lowest 6 -> 6 (consistency), five aspects 6 -> 7; mean 6.44 -> 7.0. The kept steps: scroll edges top and bottom, 44 pt targets, the add-sheet hint at large text, dark-mode depth and buttons, one sheet scrim, inset hairlines, grouped settings, a 13 px caption floor for labels and captions, and the store-name field. Peter's waiver A105 (`_Header` / Anpassen, empty-state copy) arrived after the climb's prompt, so all rules were kept; those are the first targets of a next climb. Landed as #320 in job 154c. Details: [docs/done/154b-hc-app-v2.md](docs/done/154b-hc-app-v2.md).
+
+## Job 154c: land the app design climb
+
+PR #320 (jobs 154 and 154b) rebased onto main and landed on Peter's go (A107). The merge review drove the release web build in light and dark at 100 % and 150 % and found three regressions, now fixed with tests that fail on the old code: turning an iPhone on the login screen lost the typed text, turning the phone in the edit sheet dropped the focused field, and „Ohne Laden“ was cut at 150 % text. Details: docs/DECISIONS.md, job 154c.

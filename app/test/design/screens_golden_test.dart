@@ -11,6 +11,7 @@ import 'package:family_groceries/app/language.dart';
 import 'package:family_groceries/app/router.dart';
 import 'package:family_groceries/app/shell.dart';
 import 'package:family_groceries/app/theme.dart';
+import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/invite_share.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
@@ -394,6 +395,38 @@ void main() {
     expect(
       tester.getTopLeft(find.byKey(const ValueKey('chip-category'))).dy,
       tester.getTopLeft(find.byKey(const ValueKey('chip-store'))).dy,
+    );
+  });
+
+  testWidgets('at 150 % text the empty list stays clear of the add field', (
+    tester,
+  ) async {
+    tester.platformDispatcher.textScaleFactorTestValue = 1.5;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    await _pumpShell(
+      tester,
+      Brightness.light,
+      size: const Size(375, 667),
+      empty: true,
+    );
+    final text = tester.getRect(
+      find.text('Die Liste ist leer. Tippe unten ein, was fehlt.'),
+    );
+    final hex = tester.getRect(
+      find
+          .ancestor(
+            of: find.byKey(const ValueKey('add-item-field')),
+            matching: find.byWidgetPredicate(
+              (w) => w is Container && w.decoration is ShapeDecoration,
+            ),
+          )
+          .first,
+    );
+    expect(text.overlaps(hex), isFalse, reason: '$text over $hex');
+    expect(
+      hex.top - text.bottom,
+      greaterThanOrEqualTo(HlSpace.s5),
+      reason: 'clear space above the add field',
     );
   });
 

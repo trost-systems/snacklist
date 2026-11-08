@@ -24,6 +24,20 @@ export const hillClimbDocs: readonly HillClimbDoc[] = [
     target: null,
   },
   {
+    id: 'hc-design-v2-app',
+    metric: 'weakest design aspect, blind council (harness v2, of 10)',
+    direction: 'higher',
+    baseline: /Score \(median\) \*\*([\d.]+)\*\*/,
+    target: null,
+  },
+  {
+    id: 'hc-design-v3-app',
+    metric: 'weakest design aspect, blind council (harness v3, of 10)',
+    direction: 'higher',
+    baseline: /Score \(median\) \*\*([\d.]+)\*\*/,
+    target: null,
+  },
+  {
     id: 'hc-size-start',
     metric: 'download size and start time (1.0 = baseline)',
     direction: 'lower',

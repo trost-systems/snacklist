@@ -101,8 +101,15 @@ class const StoreDetailsScreen({required final String? storeId, super.key})
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 if (store != null) _StoreName(store),
+                // With HexPill.margin's s1, s4 above and below the intro,
+                // as on the stores screen.
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                  padding: const EdgeInsets.fromLTRB(
+                    HlSpace.s4,
+                    HlSpace.s3,
+                    HlSpace.s4,
+                    HlSpace.s3,
+                  ),
                   child: Text(
                     store == null ? l10n.categoriesHint : l10n.storeLayoutHint,
                   ),
@@ -157,14 +164,36 @@ class const _StoreName(final Store store) extends StatelessWidget {
         button: true,
         onTap: rename,
         excludeSemantics: true,
-        child: HexPill(
+        // Drawn as the app's flat hex field, like the edit sheet's, since
+        // it shows a value to edit; the raised pills below are rows.
+        child: GestureDetector(
           key: const ValueKey('store-rename'),
+          behavior: HitTestBehavior.opaque,
           onTap: rename,
-          child: Row(
-            children: [
-              Expanded(child: PillTitle(store.name)),
-              Icon(Icons.edit_outlined, color: t.textMuted),
-            ],
+          child: Padding(
+            // Lined up with the rows below.
+            padding: HexPill.margin,
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: InputDecorator(
+                decoration: InputDecoration(
+                  constraints: const BoxConstraints.tightFor(
+                    height: HlSize.target,
+                  ),
+                  suffixIcon: Icon(Icons.edit_outlined, color: t.textMuted),
+                ),
+                child: Text(
+                  store.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
       ),

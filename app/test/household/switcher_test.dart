@@ -15,6 +15,7 @@ import 'package:family_groceries/more/more_screen.dart';
 import 'package:family_groceries/purchases/premium_server.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -289,6 +290,19 @@ void main() {
     expect(chip.right, lessThan(edit.left));
     expect(find.text('Anpassen'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('an everyday name shows whole on a 390 px phone', (tester) async {
+    final s = await _pumpShell(tester);
+    await s.session.rename('home', 'Unser Haushalt');
+    await tester.pumpAndSettle();
+    final name = tester.renderObject<RenderParagraph>(
+      find.descendant(
+        of: _key('household-chip'),
+        matching: find.text('Unser Haushalt'),
+      ),
+    );
+    expect(name.didExceedMaxLines, isFalse);
   });
 
   testWidgets('large text at 358 px fits the bar', (tester) async {

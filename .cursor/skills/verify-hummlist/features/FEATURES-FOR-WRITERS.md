@@ -381,7 +381,7 @@ The starting categories, in order: Obst & Gemüse, Brot & Backwaren, Kühlregal,
 - A scheduled or automatic day/night switch beyond „System“.
 - The old label „Wie Gerät“ for the theme (it is „System“ since 2026-11-01).
 
-**Last verified.** main 6c93da99, 2026-11-08 (CET), from code and driven on the web build (verify-hummlist): „Darstellung“, „Dunkel“ kept after a reload, back to System. Earlier: main c2ce938f, 2026-11-07 (CET), from code and driven on the web build (verify-hummlist): „Darstellung“ with System, „Dunkel“ kept after a reload, and back. Recipe: [theme.md](./theme.md).
+**Last verified.** job 154b (PR #320, ba198151), 2026-11-08 (CET), driven on the web build in its review: „Darstellung“ and „Sprache“ sit in cards like the rows on „Mehr“; System, „Dunkel“ and back still switch. Earlier: main 6c93da99, 2026-11-08 (CET), from code and driven on the web build (verify-hummlist): „Darstellung“, „Dunkel“ kept after a reload, back to System. Earlier: main c2ce938f, 2026-11-07 (CET), from code and driven on the web build (verify-hummlist): „Darstellung“ with System, „Dunkel“ kept after a reload, and back. Recipe: [theme.md](./theme.md).
 
 ## App language
 

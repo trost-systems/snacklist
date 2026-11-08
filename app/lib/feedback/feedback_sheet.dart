@@ -121,6 +121,9 @@ class _FeedbackFormState() extends State<FeedbackForm> {
     final state = context.watch<FeedbackCubit>().state;
     final sending = state.status == FeedbackStatus.sending;
     final failed = state.status == FeedbackStatus.failed;
+    final tooLong = state.tooLong
+        ? l10n.feedbackTooLong(maxFeedbackLength)
+        : null;
     return Padding(
       padding: EdgeInsets.only(bottom: keyboard),
       child: Semantics(
@@ -176,23 +179,24 @@ class _FeedbackFormState() extends State<FeedbackForm> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
                 child: RoundedFields(
-                  child: TextField(
-                    key: const ValueKey('feedback-message'),
-                    controller: _message,
-                    autofocus: true,
-                    readOnly: sending,
-                    minLines: 4,
-                    maxLines: 8,
-                    keyboardType: TextInputType.multiline,
-                    textCapitalization: TextCapitalization.sentences,
-                    onChanged: context.read<FeedbackCubit>().edit,
-                    decoration: InputDecoration(
-                      labelText: l10n.feedbackMessage,
-                      hintText: l10n.feedbackMessageHint,
-                      alignLabelWithHint: true,
-                      errorText: state.tooLong
-                          ? l10n.feedbackTooLong(maxFeedbackLength)
-                          : null,
+                  child: Semantics(
+                    hint: tooLong ?? '',
+                    child: TextField(
+                      key: const ValueKey('feedback-message'),
+                      controller: _message,
+                      autofocus: true,
+                      readOnly: sending,
+                      minLines: 4,
+                      maxLines: 8,
+                      keyboardType: TextInputType.multiline,
+                      textCapitalization: TextCapitalization.sentences,
+                      onChanged: context.read<FeedbackCubit>().edit,
+                      decoration: InputDecoration(
+                        labelText: l10n.feedbackMessage,
+                        hintText: l10n.feedbackMessageHint,
+                        alignLabelWithHint: true,
+                        error: tooLong == null ? null : FieldError(tooLong),
+                      ),
                     ),
                   ),
                 ),

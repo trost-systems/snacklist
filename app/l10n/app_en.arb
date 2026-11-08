@@ -94,6 +94,7 @@
   "onboardingBody": "Hummlist shares one shopping list with everyone in your household. Create a new household or accept an invite.",
   "householdName": "Household name",
   "householdNameDefault": "Our household",
+  "householdNameHintFurther": "e.g. Parents, flat, club",
   "createHousehold": "Create a household",
   "inviteCode": "Invite code",
   "joinHousehold": "Join household",
