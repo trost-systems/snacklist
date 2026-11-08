@@ -213,6 +213,27 @@ void main() {
       ], reason: 'Lea keeps the list');
     });
 
+    test(
+      'a left household is gone even when the reload after it fails',
+      () async {
+        await cubit.refresh();
+        server.failReads = true;
+        await cubit.leave('home');
+        final state = cubit.state as InHousehold;
+        expect(state, _shows('club', households: ['club']));
+        expect(
+          state.defaultHousehold.id,
+          'club',
+          reason: 'as the server moves it',
+        );
+        expect(cache.households['peter']?.households.map((h) => h.id), [
+          'club',
+        ]);
+        await cubit.leave('club');
+        expect(cubit.state, isA<NeedsHousehold>());
+      },
+    );
+
     test('leaving the last household goes to onboarding', () async {
       await cubit.refresh();
       await cubit.leave('club');

@@ -346,11 +346,63 @@ class SessionCubit(
     );
     switch (result) {
       case {'status': 'left'}:
-        await householdCall(refresh);
+        await _left(householdId);
+        try {
+          await refresh();
+        } on Object {
+          // The household is gone here already; the next reload brings
+          // what else changed.
+        }
       case {'status': final String status}:
         throw HouseholdError.fromStatus(status);
       default:
         throw const HouseholdError(HouseholdProblem.other);
+    }
+  }
+
+  /// Drops [householdId], which the server says the user left, at once: a
+  /// reload that fails or started before must not show it again. Its
+  /// default passes to the oldest membership left, as on the server.
+  Future<void> _left(String householdId) async {
+    if (state case InHousehold(
+      :final userId,
+      :final household,
+      :final households,
+    )) {
+      _reloads++;
+      final rest = [
+        for (final h in households)
+          if (h.id != householdId) h,
+      ];
+      final kept = switch (rest) {
+        [final first, ...final others] when !rest.any((h) => h.isDefault) => [
+          Household(
+            id: first.id,
+            name: first.name,
+            isDefault: true,
+            memberCount: first.memberCount,
+            openCount: first.openCount,
+          ),
+          ...others,
+        ],
+        _ => rest,
+      };
+      final next = kept.isEmpty
+          ? NeedsHousehold(userId)
+          : InHousehold(
+              userId,
+              _pick(kept, household.id == householdId ? null : household.id),
+              kept,
+            );
+      await _cache.remember(
+        userId,
+        households: kept,
+        shown: switch (next) {
+          InHousehold(:final household) => household.id,
+          _ => null,
+        },
+      );
+      emit(next);
     }
   }
 
