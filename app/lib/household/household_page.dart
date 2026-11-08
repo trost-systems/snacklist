@@ -58,9 +58,9 @@ enum _Leave() {
 }
 
 class _HouseholdViewState() extends State<_HouseholdView> {
-  late final Future<List<HouseholdMember>> _members = context
-      .read<InviteRepository>()
-      .members(widget.household.id);
+  late var _members = context.read<InviteRepository>().members(
+    widget.household.id,
+  );
   var _busy = false;
 
   /// Runs a household call; a refusal is told in a snackbar.
@@ -98,10 +98,16 @@ class _HouseholdViewState() extends State<_HouseholdView> {
     final session = context.read<SessionCubit>();
     final invites = context.read<InviteRepository>();
     final household = widget.household;
-    final alone = await _members.then(
-      (members) => members.every((m) => m.userId == widget.userId),
-      onError: (_) => household.memberCount <= 1,
-    );
+    // Asked again now: members may have left or joined since the page
+    // opened, and the dialog says whether the household goes with the user.
+    final alone = await invites.members(household.id).then((members) {
+      if (mounted) {
+        setState(() {
+          _members = Future.value(members);
+        });
+      }
+      return members.every((m) => m.userId == widget.userId);
+    }, onError: (_) => household.memberCount <= 1);
     final unlocked =
         alone &&
         await invites

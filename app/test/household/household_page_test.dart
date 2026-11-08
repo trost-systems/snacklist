@@ -118,6 +118,34 @@ void main() {
     expect((o.session.state as InHousehold).household.id, 'club');
   });
 
+  testWidgets('the dialog reads the members when it opens, not when the page '
+      'did', (tester) async {
+    final invites = _members('home', ['Peter', 'Lea']);
+    await pumpOnboarding(
+      tester,
+      location: householdPath,
+      session: _peterIn(home),
+      invites: invites,
+    );
+    expect(find.text('Lea'), findsOneWidget);
+    // Lea leaves on her phone while Peter's page is open.
+    invites.memberLists['home'] = [
+      const HouseholdMember(userId: 'peter', displayName: 'Peter'),
+    ];
+    await tester.tap(_key('household-leave'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text(
+        'Du bist das letzte Mitglied. Der Haushalt wird mit Liste, Verlauf, '
+        'Kategorien und Geschäften gelöscht.',
+      ),
+      findsOneWidget,
+    );
+    await tester.tap(_key('household-leave-cancel'));
+    await tester.pumpAndSettle();
+    expect(find.text('Lea'), findsNothing, reason: 'the page shows them too');
+  });
+
   testWidgets('cancel leaves nothing', (tester) async {
     final o = await pumpOnboarding(
       tester,
