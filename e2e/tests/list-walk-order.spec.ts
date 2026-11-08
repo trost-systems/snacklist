@@ -76,7 +76,7 @@ test('stores and categories are dividers that scroll away, stores fold for good,
   expect(moved, 'store divider, category divider and row move by the same delta: nothing sticks').toEqual([moved[0], moved[0], moved[0]]);
   await page.mouse.wheel(0, -80);
 
-  await page.getByRole('button', { name: 'Verstanden' }).click();
+  await page.getByRole('button', { name: 'Erste Schritte ausblenden' }).click();
   await expect(page.getByText(hint)).toHaveCount(0);
 
   await store.click();
@@ -115,7 +115,7 @@ test('stores and categories are dividers that scroll away, stores fold for good,
 test('nothing on the list drags: a hold on a row edits, a hold on a divider opens its store\'s details', async ({ page }) => {
   const email = newEmail('walk-hold');
   await signUpWithHousehold(page, email, { stores: chainStores });
-  await page.getByRole('button', { name: 'Verstanden' }).click();
+  await page.getByRole('button', { name: 'Erste Schritte ausblenden' }).click();
   await seed(page, email, lidl);
   const before = await outline(page);
 
@@ -196,7 +196,7 @@ test('wide screens put the stores in columns, and an item moves across them', as
   const email = newEmail('walk-wide');
   await page.setViewportSize({ width: 1366, height: 1024 });
   await signUpWithHousehold(page, email, { stores: chainStores });
-  await page.getByRole('button', { name: 'Verstanden' }).click();
+  await page.getByRole('button', { name: 'Erste Schritte ausblenden' }).click();
   await seed(page, email, [
     ...lidl,
     { name: 'Hack', store: 'EDEKA', category: 'Fleisch/Wurst/Fisch', quantity: '500 g', key: 1024 },

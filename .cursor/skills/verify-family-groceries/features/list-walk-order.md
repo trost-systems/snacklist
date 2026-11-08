@@ -1,6 +1,6 @@
 # List and walk order
 
-The list is one scroll of sections, one per store in the household's store order, then "Ohne Laden" for items without a store. Each store starts with a divider "<Store>, N Artikel" (the name in a hex badge, a cobalt rule) and a fold caret. Inside a store, small uppercase category dividers follow that store's walk order, and the rows under each follow the household's walk order (`sort_key`). A row is a full-width checkbox for screen readers (unchecked, checked while it leaves; job 57), with no visible check box: a tap ticks it, a hold or a right click opens the edit sheet, a swipe does nothing (job 78; it edited since job 29c and deleted before). Nothing on the list drags (job 78): an item changes store or category in the edit sheet, and a hold or right click on a store or category divider opens that section's store details in Anpassen (`storeDetailsPath`, `/edit/<store id>` or `/edit/none`), where the order of stores and categories lives. Folds and the explainer card are kept per device. A partner's adds and moves show live.
+The list is one scroll of sections, one per store in the household's store order, then "Ohne Laden" for items without a store. Each store starts with a divider "<Store>, N Artikel" (the name in a hex badge, a cobalt rule) and a fold caret. Inside a store, small uppercase category dividers follow that store's walk order, and the rows under each follow the household's walk order (`sort_key`). A row is a full-width checkbox for screen readers (unchecked, checked while it leaves; job 57), with no visible check box: a tap ticks it, a hold or a right click opens the edit sheet, a swipe does nothing (job 78; it edited since job 29c and deleted before). Nothing on the list drags (job 78): an item changes store or category in the edit sheet, and a hold or right click on a store or category divider opens that section's store details in Anpassen (`storeDetailsPath`, `/edit/<store id>` or `/edit/none`), where the order of stores and categories lives. Folds and the dismissed „Erste Schritte“ card are kept per device. A partner's adds and moves show live.
 
 ## Sub-features
 
@@ -12,7 +12,7 @@ The list is one scroll of sections, one per store in the household's store order
 - `lw-no-drag` a hold on a row opens the edit sheet once the hold completes (about 300 ms), while the finger is still down; moving afterwards moves nothing, and no empty store ever shows as a drop target. A finger may drift 18 px and still hold.
 - `lw-divider-hold` a hold or a right click on a store divider pushes that store's details (`/edit/<store id>`; "Ohne Laden": `/edit/none`); on a category divider, the details of the store whose section it is in. No menu, no up/down moves; a screen reader's long-press action does the same.
 - `lw-fold` folds a store with a tap on its divider (the caret turns from ˅ to ›); the fold survives a restart.
-- `lw-hint` shows the explainer card (key `list-hint`, "Tippen hakt ab · Halten bearbeitet", since job 78) until "Verstanden" (`list-hint-dismiss`); it stays gone after a restart.
+- `lw-hint` shows the „Erste Schritte“ card (key `list-hint`, job 168b; "Tippen hakt ab · Halten bearbeitet" is its „Einmal einkaufen“ line) until its X (`list-hint-dismiss`, „Erste Schritte ausblenden“); it stays gone after a restart.
 - `lw-empty` shows the empty state (key `list-empty`) when the list has no items: a honey pointy hex with the cart icon (`list-empty-mark`, job 57) over "Die Liste ist leer. Tippe unten ein, was fehlt."
 - `lw-partner` tints a partner's new row (key `new-<id>`, label ends in "Neu") with "N neu von <name>" under the title (`new-items-subtitle`) and no initial; the tint clears after 3 s on screen.
 - `lw-partner-move` shows a partner's move (edit sheet) on the other client without a reload.
@@ -25,7 +25,7 @@ The list is one scroll of sections, one per store in the household's store order
 - Press and hold a row (or right-click it) to edit it; its store and category chips move it.
 - Tap a store divider to fold or unfold it. Hold it (or right-click) to open its store's details in Anpassen.
 - Hold a category divider (or right-click) for the same store's details.
-- Tap "Verstanden" on the card above the list.
+- Tap the X („Erste Schritte ausblenden“) on the card above the list.
 
 ## Driving it with fg
 

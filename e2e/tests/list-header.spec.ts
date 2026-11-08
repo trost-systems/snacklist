@@ -17,9 +17,9 @@ test('the bar above the list keeps its height in every sync state and names no h
   await expect(page.getByText('Unser Haushalt'), 'no household name').toHaveCount(0);
   await expect(page.getByText(/^\d+ Artikel$/), 'no item count').toHaveCount(0);
 
-  // The explainer card is the list's first entry, right under the bar, and stays while items are ticked
+  // The Erste Schritte card is the list's first entry, right under the bar, and stays while items are ticked
   // (a store divider would move when its last item goes). It must not move while the indicator comes and goes.
-  const card = page.getByRole('button', { name: 'Verstanden', exact: true });
+  const card = page.getByRole('button', { name: 'Erste Schritte ausblenden', exact: true });
   const top = async () => (await boxOf(card)).y;
   const synced = await top();
   const anpassen = await boxOf(edit(page));

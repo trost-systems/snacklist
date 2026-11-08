@@ -260,8 +260,8 @@ async function signIn(/** @type {any} */ c) {
       if (landed === 'consent') landed = null;
     }
     if (landed) {
-      // A returning user has dismissed the explainer card; it would push the list down.
-      const hint = page.getByRole('button', { name: 'Verstanden', exact: true });
+      // A returning user has dismissed the Erste Schritte card; it would push the list down.
+      const hint = page.getByRole('button', { name: 'Erste Schritte ausblenden', exact: true });
       if (landed === 'list' && (await hint.waitFor({ timeout: 5_000 }).then(() => true, () => false))) await hint.click();
       if (c.store) await shopAt(page, c.store);
       return landed;

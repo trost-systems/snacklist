@@ -10246,3 +10246,51 @@ Job 170 review 2, Must fix 1. Supersedes #321 (all of its commits are in this PR
 5. **Review 2's nice-to-haves are done too.** tail.sh maps `token_revoked` to
    `grant=refresh_token`. The runbook names `nothing_added` and refresh rows and tells you to
    tick Zahnpasta off first. No feature file changes, since nothing users see changed.
+
+## Job 168b: hints, 2026-11-08
+
+Peter's H2 trigger hints and the „Erste Schritte“ checklist (docs/onboarding/PLAN.md, „Contextual
+hints“), replacing job 80's fixed tip queue and the gesture card.
+
+1. **One pure policy, one log.** `nextHint(registry, log, now, context)` in
+   `app/lib/tips/hints.dart` applies every rule; `UsageLog` (`usage_log.dart`) is the device's
+   memory per user under `hints.<user>`, outside `forget()`'s prefixes like job 80's
+   `tips.<user>`. Job 80's dismissed ids are read once into the log (`DeviceCache.hintLog`), so a
+   tip hidden then stays hidden. A new hint is a `HintId`, two `hint…` ARB strings and a
+   registry entry.
+2. **Signals the app already sees.** `ListCubit.activity` grew `OwnItemAdded(source,
+   withAmount)`, `ItemEdited` and `CategoriesReordered`; trips, a store in the catalog, a second
+   member and the owner role come from the list's state. Two probes run at most once per start,
+   only while a hint or the club checklist waits for them: the access repository (an OAuth
+   grant, an MCP token or an API key; Siri's credential does not count, a Shortcut's token
+   does) and `HomeWidget.getInstalledWidgets` (the plugin's own native code, nothing new).
+   Siri adds and a second household are not visible: `siri` and `second-household` retire only on
+   X, their button or three showings.
+3. **„Retired by use“ means saved, not opened.** The edit hint retires on a saved edit, not on
+   opening the sheet: the list view does not report sheet opens and a saved edit is the use the
+   hint is about.
+4. **One slot per session.** A session that showed the checklist shows no hint, also after its
+   X or after its last item is done: no card follows another (job 80's rule). A „session“ is the
+   List tab's `HintsCubit`, one per app start and household.
+5. **The quiet start is 10 s from the List tab's first build**, and a hint needs the List tab on
+   screen (`TickerMode`, the route current), no add sheet, no popup on the root navigator
+   (`Popups`) and no keyboard inset.
+6. **The checklist takes the gesture card's flag** (`ListPrefs.hintDismissed`, per household and
+   device) and its keys (`list-hint`, `list-hint-dismiss`), so fg recipes keep working; e2e and
+   the verify helpers click „Erste Schritte ausblenden“ instead of „Verstanden“. Its steps are
+   per user (a log signal), so a second household's checklist shows a shop already done.
+   `checklist_step_done` goes once per user and step.
+7. **Club checklist from day one, on every platform** (Q-O5's default): „KI-Assistenten
+   verbinden“ opens Zugänge. `ai-assistant` shows for a club on any platform, otherwise after 7
+   active days on the web or a computer (the brief's reading of the plan's two lines).
+8. **Second household: one capability, flipped in `main.dart`.** `HintHost.addHousehold` is null
+   until job 169b; `canAddHousehold` is its presence, so a hint whose button cannot work never
+   shows (nor on More → Tipps). 169b sets `addHousehold: (context) =>
+   context.go(onboardingWhoPath)` in `main.dart` and adds the signal for a second household.
+9. **Flat surfaces.** `StickerDepth.flat` (the 2 px contour, no shadow) for the hint card, the
+   callout and the checklist: they are not pressed as a whole. The callout is a `CalloutBorder`
+   with its tip under „Anpassen“ or above the microphone; no hint text sits in a hex pill or
+   badge.
+10. **Texts.** Peter's sentences verbatim; titles and the dictation and Siri texts from the
+    phase 1 prototype. `tipEditBody` changed to Peter's, the other job 80 keys stay.
+    `listHintDismiss` („Verstanden“) is gone with the gesture card.

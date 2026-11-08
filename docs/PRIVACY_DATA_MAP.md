@@ -65,7 +65,7 @@ interest.
 
 | Data | Where | Purpose | Basis | Kept | Processor / region | Deletion | Source |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Events from `eventCatalog`: first_open, household_created, invite_accepted, invite_sent, item_added, item_ticked, category_reordered, store_reordered, item_categorized, dedupe_hint_*, feedback_submitted, with only the listed properties (no item names, no text) | PostHog EU | Product decisions | (a) consent on the consent screen after sign-in; TDDDG §25 for the install id on the device | 1 year at PostHog (policy) | PostHog, EU cloud (Frankfurt) | Withdraw: Mehr → Nutzungsdaten switch off (stops the SDK and deletes its ids and queue on the device, job 44) | `app/lib/analytics/events.dart` |
+| Events from `eventCatalog`: first_open, household_created, invite_accepted, invite_sent, item_added, item_ticked, category_reordered, store_reordered, item_categorized, dedupe_hint_*, feedback_submitted, hint_shown, hint_dismissed, hint_acted (the hint's catalogue id), checklist_step_done, checklist_dismissed (job 168b), with only the listed properties (no item names, no text) | PostHog EU | Product decisions | (a) consent on the consent screen after sign-in; TDDDG §25 for the install id on the device | 1 year at PostHog (policy) | PostHog, EU cloud (Frankfurt) | Withdraw: Mehr → Nutzungsdaten switch off (stops the SDK and deletes its ids and queue on the device, job 44) | `app/lib/analytics/events.dart` |
 | Context on every event: random install id (`install_id`, also the `distinct_id`), household id, platform, app version, internal flag; `$geoip_disable: true`, `$process_person_profile: false`; also kept by the SDK as super properties for the events it builds itself | PostHog EU | Counting installs and households | (a) | 1 year | PostHog EU | As above | `app/lib/analytics/analytics.dart` `_context`, `_registerContext` |
 | Added by PostHog's SDK (job 44): iOS and Android: app name, version, build and bundle id, device maker, model and type, emulator/TestFlight/sideloaded flags, OS name and version, screen size (Android: density), locale, time zone, Wi-Fi/cellular (Android: Bluetooth, carrier name, the system HTTP user agent), a random in-memory session id; web: browser and OS name and version, device type, screen and window size, language, time zone (URL, referrer, user agent, session and device ids stripped by our `before_send`); the SDK's name and version | PostHog EU | Sent by the SDK with every event; used to tell platforms and versions apart in error tracking | (a) | 1 year | PostHog EU | As above | `docs/ANALYTICS.md` "What the SDKs add"; web: `app/lib/analytics/posthog_platform_web.dart` |
 | Feature-flag requests (job 44): install id (as distinct id and device id), time zone, SDK name and version; the answer is cached by the native SDKs on the device | PostHog EU | Runtime toggles (`Analytics.flags`) | (a), only after a yes to the current consent text version; no request before it | Not stored as events | PostHog EU | Off stops the SDK; no further requests | `app/lib/analytics/flags.dart`, `posthog_client.dart` |
@@ -82,6 +82,16 @@ interest.
 `DeviceCache` (`app/lib/app/device_cache.dart`) keeps the last household (id, name), a list cache
 for offline start, list preferences (folded stores, hints), language, theme and a pending invite
 code. Device only, needed for the app to work (TDDDG §25(2) no. 2), gone on sign-out or uninstall.
+
+The hints' log per user (job 168b, `hints.<user id>`, `app/lib/tips/usage_log.dart`): counts of
+what the user did on the list (typed adds, adds with an amount, dictation, saved edits, category
+reorders, finished trips), whether the household had a store, a second member or the user as
+owner, whether an assistant or a Home Screen widget was found, the number of active days, and per
+hint how often it showed, its X and its button. Never item names or text. It is the user's own
+"hide this" and "used it already", needed to honour them (TDDDG §25(2) no. 2), device only, never
+sent, and kept after sign-out like job 80's dismissed tips (`tips.<user id>`, read into it once);
+uninstall removes it. Hint and checklist events go to PostHog only after the analytics yes (the
+`eventCatalog` row above).
 
 ## Backups and hosting
 

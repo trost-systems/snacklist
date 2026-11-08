@@ -77,7 +77,7 @@ A journey is `journeys/<feature-id>.mjs`, a plain Node script on `helpers/lib.mj
 | `instance()`, `member(inst, 'mia')` | The launched instance and a seeded member (`email`, `password`, `id`, `householdId`) |
 | `openApp(inst, { lang, viewport, dpr, dark, videoDir })` | A fresh Chromium context on the build: `de-DE` or `en-US` locale, 390×844 at DPR 2 by default. Returns `{ browser, context, page, L, errors }` |
 | `L(key, params)` / `labels(lang)` | UI text from `app/l10n/app_<lang>.arb` by key, so one script runs in both languages |
-| `signIn(page, L, user)` | The login screen with email and password, declines the analytics question, dismisses the explainer card |
+| `signIn(page, L, user)` | The login screen with email and password, declines the analytics question, dismisses the „Erste Schritte“ card |
 | `addField`, `addSheet`, `itemRow(page, name)`, `openTab(page, L, 'tabMore')`, `headingAbove(page, row)` | Stable handles: the textbox „Was brauchst du?“, the group „Hinzufügen“, a row by item name, the tabs, the category heading above a row |
 | `typeInto(field, text, { perKey })` | Focus, then insert (synthetic key events drop umlauts) |
 | `apiAs(inst, user)` | supabase-js signed in as the member: the second view of stored state |
@@ -151,7 +151,7 @@ How-to clips (GIF for emails, MP4/WebM for the site) of the same build: [hummlis
 ## Gotchas
 
 - `flutter build web --output` leaves `assets/FontManifest.json` out and no text renders. `launch.sh` builds into `app/build/web` and copies it. A later e2e gate run in the same checkout rebuilds `app/build/web` with its own defines; the copy here stays.
-- Clicking „Verstanden“ (the explainer card) takes focus from the add field. Test autofocus after a reload, as `ready.mjs` does.
+- Clicking „Erste Schritte ausblenden“ (the checklist's X) takes focus from the add field. Test autofocus after a reload, as `ready.mjs` does.
 - The add sheet's note „✓ Hinzugefügt: …“ exists twice in the DOM (the note and a screen-reader announcement). Scope it to `addSheet(page, L)`.
 - Catalogue suggestions are German words in both UI languages. In English, type a prefix of a German word ("Ched" → „Cheddar“).
 - `fg` accepts port blocks 500 to 649. On the Hetzner runner `env.sh` sources `~/groceries-ops/env.hz` for PATH.

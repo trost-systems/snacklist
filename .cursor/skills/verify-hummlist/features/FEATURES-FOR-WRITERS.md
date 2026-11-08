@@ -247,17 +247,20 @@ Each field's name sits above its field; what is typed sits in the middle of the 
 
 ## Tips on the list
 
-**What it does.** Once there is something on the list, a small card at the top shows one tip at a time, for example how to edit an item or that the amount can be typed with the item. The X hides a tip for good on that device; the next one shows from the next app start on. A new, empty list shows no tip, and the first tip waits until the user has tapped „Verstanden“ (EN: "Got it") on the card „Tippen hakt ab · Halten bearbeitet“ (EN: "Tap ticks off · Hold to edit").
+**What it does.** A new list starts with a small card „Erste Schritte“ (EN: "First steps"): list started, invite someone (for households that shop together), do one shop, and for a club „KI-Assistenten verbinden“ (EN: "Connect an AI assistant"). Each item ticks itself off when it happens; „Einladen“ (EN: "Invite") and „Öffnen“ (EN: "Open") lead there. The card goes once everything is done, or with its X. After that, Hummlist shows a short tip only once it is useful: after five typed items without an amount, how to type the amount; after a first finished shop, that the categories can be sorted in the order you walk through the shop; after a day alone on the list, an invite; and so on. At most one tip per app start, a new one at most once a day, never while you are typing or a window is open, and a tip goes for good once you use what it is about, tap its X, or have seen it three times. After the X, a note says where all tips are: Mehr → „Tipps“ (EN: More → "Tips"), which lists every tip to read again.
 
 **How to get there.**
-1. Open Hummlist with at least one item on the list („Liste“, EN: "List").
-2. Read the card at the top; tap the X („Tipp ausblenden“, EN: "Hide tip") to hide it.
+1. Create a household or open a list that is new on this device: „Erste Schritte“ is at the top of „Liste“ (EN: "List").
+2. Tips come by themselves later. To read them all: „Mehr“ (EN: "More") → „Tipps“ (EN: "Tips").
 
 **Never claim.**
-- That tips sync between devices or members (they are per device and user).
-- That tips show news or offers today (the two tips are how-tos).
+- That tips or the checklist sync between devices or members (they are per device and user; the checklist per household).
+- That tips show news, offers or Hummlist Premium (they are how-tos and invitations).
+- That a tip can be snoozed: the X hides it for good, and the „Tipps“ page shows it again.
+- That Hummlist sees Siri use or a placed widget everywhere: the Siri tip goes on X or after three showings.
+- A second household from a tip: that comes with multiple households (not yet).
 
-**Last verified.** main 8ad168f5, 2026-11-08 (CET), from code and driven on the web build (verify-hummlist), `journeys/tips.mjs`: the first tip, hiding it, the next tip after a reload. main 6c93da99, 2026-11-08 (CET): the same in English. Earlier: main c2ce938f, 2026-11-07 (CET), from code and driven on the web build (verify-hummlist), `journeys/tips.mjs`: the first tip, hiding it, the next tip after a reload (DE, EN, dark). Recipe: [tips.md](./tips.md).
+**Last verified.** branch job/168b-hints, 2026-11-08 (CET), from code and widget tests (`app/test/tips/`); not yet driven on the web build. Earlier (job 80's fixed tips): main 8ad168f5, 2026-11-08 (CET), `journeys/tips.mjs`. Recipe: [tips.md](./tips.md).
 
 ## Automatic category (the classifier)
 
