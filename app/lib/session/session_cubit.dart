@@ -181,6 +181,14 @@ class SessionCubit(
   String? _loadedFor;
   Timer? _retry;
 
+  /// Counts [refresh]es: only the newest one's answer is shown, so a reload
+  /// that started before a change can't undo it.
+  var _reloads = 0;
+
+  /// A household a change asked to show (a create, a join, an unarchive)
+  /// until a reload shows it: a reload that failed leaves it to the next.
+  String? _toShow;
+
   /// The create that failed or is out, by its arguments: calling again with
   /// the same ones sends the same request id, so the server makes no second
   /// household.
@@ -247,15 +255,22 @@ class SessionCubit(
       emit(const SignedOut());
       return;
     }
+    if (show != null) {
+      _toShow = show;
+    }
+    final reload = ++_reloads;
     final cached = await _cache.householdsOf(userId);
     final rows = await _client.rpc<List<dynamic>>('my_households');
+    if (reload != _reloads) {
+      return;
+    }
     final households = [
       for (final row in rows.whereType<Map<String, dynamic>>())
         ?Household.fromJson(row),
     ];
     // Read after the answer: a switch while it was out wins.
     final shown =
-        show ??
+        _toShow ??
         switch (state) {
           InHousehold(userId: final user, :final household)
               when user == userId =>
@@ -265,6 +280,7 @@ class SessionCubit(
     final next = households.isEmpty
         ? NeedsHousehold(userId)
         : InHousehold(userId, _pick(households, shown), households);
+    _toShow = null;
     await _cache.remember(
       userId,
       households: households,
@@ -286,6 +302,7 @@ class SessionCubit(
       if (next == null) {
         return;
       }
+      _toShow = null;
       emit(InHousehold(userId, next, households));
       analytics?.track('household_switched');
       await _cache.remember(userId, households: households, shown: next.id);

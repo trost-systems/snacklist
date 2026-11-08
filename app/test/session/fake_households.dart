@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -40,6 +41,10 @@ class FakeHouseholds(final FakeAuth fakeAuth)
 
   /// `my_households` fails: the reload after an RPC.
   var failReads = false;
+
+  /// While set, a `my_households` answer is read at once but sent only when
+  /// it completes: a reload that started before a change answers after it.
+  Completer<void>? holdReads;
   final _requests = <(String, String), String>{};
   var _n = 0;
 
@@ -74,6 +79,11 @@ class FakeHouseholds(final FakeAuth fakeAuth)
       }
       if (failReads && path == 'rpc/my_households') {
         return _json({'message': 'timeout'}, 503, request);
+      }
+      if (holdReads case final hold? when path == 'rpc/my_households') {
+        final answer = _answer(request.method, path, request.url, body);
+        await hold.future;
+        return _json(answer, 200, request);
       }
       try {
         return _json(

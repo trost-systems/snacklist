@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'dart:convert';
 
 import 'package:family_groceries/household/invite_repository.dart';
@@ -303,6 +305,37 @@ void main() {
       await cubit.join('ABCD2345');
       expect(cubit.state, _shows('club', households: ['home', 'club']));
     });
+
+    test(
+      'a reload that started before an unarchive does not hide it',
+      () async {
+        await cubit.refresh();
+        final hold = server.holdReads = Completer<void>();
+        final stale = cubit.refresh();
+        await pumpEventQueue();
+        expect(server.calls.last, startsWith('rpc/my_households'));
+        server.holdReads = null;
+        await cubit.unarchive('old');
+        hold.complete();
+        await stale;
+        expect(cubit.state, _shows('old', households: ['home', 'club', 'old']));
+      },
+    );
+
+    test(
+      'an unarchive whose reload failed shows it on the next reload',
+      () async {
+        await cubit.refresh();
+        server.failReads = true;
+        await expectLater(
+          cubit.unarchive('old'),
+          throwsA(isA<HouseholdError>()),
+        );
+        server.failReads = false;
+        await cubit.refresh();
+        expect(cubit.state, _shows('old', households: ['home', 'club', 'old']));
+      },
+    );
 
     test('unarchiving adds the household and shows it', () async {
       await cubit.refresh();
