@@ -30,7 +30,7 @@ class const HouseholdChip({
   super.key,
 }) extends StatelessWidget {
   /// The largest share of the bar's row the chip takes.
-  static const _share = 0.45;
+  static const _share = 0.55;
 
   /// Anpassen at its widest, until it is measured.
   static const _anpassen = 160.0;

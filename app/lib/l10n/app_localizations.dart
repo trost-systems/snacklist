@@ -596,6 +596,12 @@ abstract class AppLocalizations {
   /// **'Unser Haushalt'**
   String get householdNameDefault;
 
+  /// Hint in the empty name field when creating a further household from the switcher (job 169b).
+  ///
+  /// In de, this message translates to:
+  /// **'z. B. Eltern, WG, Verein'**
+  String get householdNameHintFurther;
+
   /// No description provided for @createHousehold.
   ///
   /// In de, this message translates to:

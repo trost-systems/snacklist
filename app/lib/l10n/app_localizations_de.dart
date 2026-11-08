@@ -294,6 +294,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get householdNameDefault => 'Unser Haushalt';
 
   @override
+  String get householdNameHintFurther => 'z. B. Eltern, WG, Verein';
+
+  @override
   String get createHousehold => 'Haushalt erstellen';
 
   @override
