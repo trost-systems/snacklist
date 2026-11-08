@@ -75,7 +75,7 @@ const categorizedVia = {
   'picked',
 };
 
-const _roles = OneOf({'owner', 'member'});
+const _roles = OneOf({'owner', 'admin', 'member'});
 const _householdSize = IntIn(1, 100);
 
 /// Event name to its allowed properties. An event not in here is refused;

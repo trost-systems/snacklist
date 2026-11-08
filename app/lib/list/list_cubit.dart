@@ -1114,7 +1114,8 @@ class ListCubit(
     final members = state.catalog.members;
     final role = members.where((m) => m.id == userId).firstOrNull?.role;
     return {
-      if (role == 'owner' || role == 'member') 'actor_role': role!,
+      if (role == 'owner' || role == 'admin' || role == 'member')
+        'actor_role': role!,
       if (members.isNotEmpty && members.length <= 100)
         'household_size': members.length,
     };

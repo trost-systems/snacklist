@@ -57,6 +57,7 @@ void main() {
       {'source': 'suggestion', 'actor_role': 'member', 'household_size': 3},
     ),
     ('item_ticked', {'actor_role': 'owner', 'household_size': 2}),
+    ('item_ticked', {'actor_role': 'admin', 'household_size': 2}),
     ('item_ticked', {}),
     ('category_reordered', {'scope': 'default'}),
     ('category_reordered', {'scope': 'store'}),
