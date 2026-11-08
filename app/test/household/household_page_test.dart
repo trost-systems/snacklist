@@ -417,6 +417,14 @@ void main() {
       expect(await menuOf(tester, 'tom'), ['member-remove']);
     });
 
+    testWidgets('someone made admin elsewhere gets the admin menu at once', (
+      tester,
+    ) async {
+      // The session still says member; the members list just read says admin.
+      await pumpAs(tester, 'lea', HouseholdRole.member);
+      expect(await menuOf(tester, 'tom'), ['member-remove']);
+    });
+
     testWidgets('a member has no member actions', (tester) async {
       await pumpAs(tester, 'tom', HouseholdRole.member);
       expect(find.byWidgetPredicate((w) => w is PopupMenuButton), findsNothing);

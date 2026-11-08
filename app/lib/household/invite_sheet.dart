@@ -519,9 +519,11 @@ class const _GroupLinkCard({
             ),
             if (!invite.full) ...[
               const SizedBox(height: HlSpace.s4),
-              Wrap(
+              // Full width and stacked: side by side, "Link kopieren" and
+              // "Code kopieren" wrapped to two rows of different widths.
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 spacing: HlSpace.s2,
-                runSpacing: HlSpace.s2,
                 children: [
                   if (sharer.canShare)
                     Builder(
