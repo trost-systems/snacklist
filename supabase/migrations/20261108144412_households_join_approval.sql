@@ -21,6 +21,30 @@ $$;
 revoke execute on function public.is_household_admin(uuid) from public, anon;
 grant execute on function public.is_household_admin(uuid) to authenticated;
 
+-- my_households gains join_approval for the household page's switch. Its row type changes, so
+-- it is made anew.
+-- squawk-ignore ban-drop-function -- my_households came with this job's wave 1, which no released build calls yet
+drop function public.my_households();
+create function public.my_households()
+returns table (
+  id uuid, name text, kind text, role text, is_default boolean, member_count integer,
+  open_count integer, premium boolean, joined_at timestamptz, join_approval boolean
+)
+language sql stable security definer set search_path = '' as $$
+  select h.id, h.name, h.kind, m.role, m.is_default,
+    (select count(*)::int from public.household_members o where o.household_id = h.id),
+    (select count(*)::int from public.items i where i.household_id = h.id and i.status = 'active'),
+    public.household_has_premium(h.id),
+    m.joined_at,
+    h.join_approval
+  from public.household_members m
+  join public.households h on h.id = m.household_id
+  where m.user_id = auth.uid()
+  order by m.joined_at, h.id
+$$;
+revoke execute on function public.my_households() from public, anon;
+grant execute on function public.my_households() to authenticated;
+
 -- Requests ---------------------------------------------------------------------------------------
 
 create table public.join_requests (

@@ -3,7 +3,7 @@
 -- (membership, invite_uses, the counted use) or decline; the requester cancels. Two approvals
 -- racing for a group link's last use are in supabase/functions/_shared/households_integration_test.ts.
 begin;
-select plan(60);
+select plan(61);
 
 create function pg_temp.login(uid uuid) returns void language plpgsql as $$
 begin
@@ -75,6 +75,9 @@ select pg_temp.as_postgres();
 select results_eq($$ select name, join_approval from public.households order by name $$,
   $$ values ('Bei Jana', false), ('Bei Jonas', false), ('Bei Udo', false), ('Familie', false), ('TSV', true) $$,
   'a club starts with join approval on, every other household with it off');
+select pg_temp.login(:olga);
+select results_eq($$ select name, join_approval from public.my_households() order by name $$,
+  $$ values ('Familie', false), ('TSV', true) $$, 'my_households shows the switch');
 
 -- Anna is an admin of the TSV, Max a plain member (both joined before approval mattered).
 select pg_temp.login(:olga);
