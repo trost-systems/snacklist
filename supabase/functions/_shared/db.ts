@@ -69,10 +69,11 @@ export async function asUserWithin<T>(
   return result;
 }
 
+/** The user's default household (job 169b): OAuth connections and Alexa act there. */
 export async function householdOf(userId: string): Promise<string | null> {
   const sql = db();
   const [row] = await sql<{ household_id: string }[]>`
-    select household_id from public.household_members where user_id = ${userId}`;
+    select household_id from public.household_members where user_id = ${userId} and is_default`;
   return row?.household_id ?? null;
 }
 

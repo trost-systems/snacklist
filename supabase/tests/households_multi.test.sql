@@ -3,7 +3,7 @@
 -- signatures act on the default only; the new ones add and leave single households. The
 -- concurrent cases (two sessions) are in supabase/functions/_shared/households_integration_test.ts.
 begin;
-select plan(87);
+select plan(88);
 
 create function pg_temp.login(uid uuid, claims jsonb default '{}') returns void language plpgsql as $$
 begin
@@ -23,7 +23,7 @@ create function pg_temp.memberships(p_user uuid) returns table (name text, is_de
 language sql security definer as $$
   select h.name, m.is_default from public.household_members m
   join public.households h on h.id = m.household_id
-  where m.user_id = p_user order by m.joined_at, h.id
+  where m.user_id = p_user order by m.joined_at, h.name
 $$;
 
 create function pg_temp.default_of(p_user uuid) returns text language sql security definer as $$
@@ -373,6 +373,8 @@ select results_eq(
   $$ values ('Dritte', true), ('Vierte', false), ('Archiv A', false) $$,
   'and leaves nothing'
 );
+select throws_ok($$ select public.unarchive_household(pg_temp.hid('Archiv B'), false, p_mode => 'move') $$,
+  '22023', 'invalid_mode', 'unarchive_household knows mode add only');
 select is(
   public.unarchive_household(pg_temp.hid('Archiv B'), false),
   jsonb_build_object('status', 'unarchived', 'previous', 'deleted'),

@@ -250,7 +250,7 @@ select is((select count(*)::int from public.items where household_id in ((select
   2, 'and the items of both');
 select is((select count(*)::int from public.items where household_id = (select id from ha)), 0,
   'and still no item of another household');
-select results_eq($$ select name from public.my_households() $$, $$ values ('Bob'), ('Bob 2') $$,
+select results_eq($$ select name from public.my_households() order by name $$, $$ values ('Bob'), ('Bob 2') $$,
   'my_households lists only the caller''s memberships');
 select throws_ok($$ select * from public.household_members_of((select id from ha)) $$, '42501', 'not_member',
   'household_members_of another household is refused');

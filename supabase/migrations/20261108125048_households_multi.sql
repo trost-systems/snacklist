@@ -308,6 +308,13 @@ end $$;
 
 -- Joining ----------------------------------------------------------------------------------------
 
+create function public.invalid_mode() returns jsonb
+language plpgsql volatile set search_path = '' as $$
+begin
+  raise exception 'invalid_mode' using errcode = '22023';
+end $$;
+revoke execute on function public.invalid_mode() from public, anon, authenticated;
+
 -- Checks [p_code] and uses the invite: status 'ok' with the household to join, else the answer
 -- (member, invalid_invite, too_many_attempts) for the caller to return.
 create function public.claim_invite(p_code text, out status text, out household_id uuid)
@@ -412,14 +419,11 @@ begin
   return jsonb_build_object('status', 'unarchived', 'previous', v_previous);
 end $$;
 
--- The new app's restore: adds the household back and leaves nothing (p_archive is unused here).
-create function public.unarchive_household(p_household uuid, p_archive boolean, p_mode text)
-returns jsonb
+-- The new app's restore: adds the household back and leaves nothing. p_archive (what to do with
+-- a household the restore leaves) takes the old call's arguments but has nothing to act on here.
+create function public.unarchive_household_add(p_household uuid) returns jsonb
 language plpgsql security definer set search_path = '' as $$
 begin
-  if p_mode is distinct from 'add' then
-    raise exception 'invalid_mode' using errcode = '22023';
-  end if;
   perform from public.households h
   where h.id = p_household and h.archived_by = auth.uid() and h.archived_at is not null
   for update;
@@ -431,6 +435,14 @@ begin
   values (p_household, auth.uid(), 'owner');
   return jsonb_build_object('status', 'unarchived', 'previous', 'none');
 end $$;
+revoke execute on function public.unarchive_household_add(uuid) from public, anon, authenticated;
+
+create function public.unarchive_household(p_household uuid, p_archive boolean, p_mode text)
+returns jsonb
+language sql security definer set search_path = '' as $$
+  select case when p_mode = 'add' then public.unarchive_household_add(p_household)
+    else public.invalid_mode() end
+$$;
 revoke execute on function public.unarchive_household(uuid, boolean, text) from public, anon;
 grant execute on function public.unarchive_household(uuid, boolean, text) to authenticated;
 
