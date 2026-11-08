@@ -110,9 +110,11 @@ void main() {
     expect(fate.households, hasLength(2));
     expect(
       fate.households.first,
-      isA<FateKept>()
-          .having((f) => f.householdName, 'name', 'Zuhause')
-          .having((f) => f.otherMemberNames, 'others', ['Lea']),
+      isA<FateKept>().having((f) => f.householdName, 'name', 'Zuhause').having(
+        (f) => f.otherMemberNames,
+        'others',
+        ['Lea'],
+      ),
     );
     expect(
       fate.households.last,

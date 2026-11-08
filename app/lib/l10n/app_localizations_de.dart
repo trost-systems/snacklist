@@ -1898,4 +1898,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String consentDefaultHousehold(String name) {
     return 'Arbeitet in deinem Standard-Haushalt: $name';
   }
+
+  @override
+  String get voiceDefaultMake => 'Als Standard nutzen';
 }

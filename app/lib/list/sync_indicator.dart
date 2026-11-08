@@ -9,6 +9,7 @@ import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_view/shopping_list_view.dart';
+import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -116,6 +117,10 @@ class const SyncIndicator({
 
   /// Where the card starts, below the top safe area.
   required final double cardTop,
+
+  /// The width of what sits left of the pill in the bar, its gap
+  /// included: the household chip (job 169b).
+  final ValueListenable<double>? pillInset,
   super.key,
 }) extends StatefulWidget {
   /// How long the card stays open on its own.
@@ -274,6 +279,7 @@ class _SyncIndicatorState()
           final side =
               ShoppingListView.frameFor(constraints.maxWidth, state).side +
               HlSpace.s4;
+          final row = constraints.maxWidth - 2 * side;
           return Stack(
             fit: StackFit.expand,
             children: [
@@ -291,12 +297,17 @@ class _SyncIndicatorState()
               ),
               if (_view.kind case final kind?)
                 AnimatedBuilder(
-                  animation: Listenable.merge([_fold, _shown]),
+                  animation: Listenable.merge([
+                    _fold,
+                    _shown,
+                    widget.pillInset,
+                  ]),
                   builder: (context, _) => _shell(
                     context,
                     kind,
                     side: side,
-                    width: constraints.maxWidth - 2 * side,
+                    width: row,
+                    inset: widget.pillInset?.value ?? 0,
                   ),
                 ),
             ],
@@ -306,12 +317,14 @@ class _SyncIndicatorState()
     );
   }
 
-  /// The shell at this frame of the fold and of its presence.
+  /// The shell at this frame of the fold and of its presence: the card
+  /// spans the row, the pill sits [inset] in.
   Widget _shell(
     BuildContext context,
     SyncTrouble kind, {
     required double side,
     required double width,
+    required double inset,
   }) {
     if (_shown.isDismissed) {
       return const Positioned(left: 0, top: 0, child: SizedBox.shrink());
@@ -358,7 +371,7 @@ class _SyncIndicatorState()
         child: _Morph(
           fold: fold,
           cardWidth: width,
-          pill: Size(_Pill.width(context, kind, width), _Pill.height),
+          pill: Size(_Pill.width(context, kind, width - inset), _Pill.height),
           icon: _StateIcon(
             kind: kind,
             busy: busy,
@@ -410,7 +423,7 @@ class _SyncIndicatorState()
       );
     }
     return Positioned(
-      left: side,
+      left: side + inset * fold,
       top: lerpDouble(
         top + widget.cardTop,
         top + widget.rowTop + (widget.rowHeight - HlSize.target) / 2,

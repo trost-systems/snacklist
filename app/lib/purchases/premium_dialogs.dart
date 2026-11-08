@@ -115,14 +115,19 @@ Future<bool> confirmLifetimeWhileYearly(
 /// manage page; other members of a household with such a plan get the
 /// short line. True to go on. Nothing to say, or the server can't be asked:
 /// true, the flow goes on as before.
+///
+/// [household]: the one being left (job 169b); null asks about the default.
 Future<bool> confirmBillingContinues(
   BuildContext context, {
   required bool account,
+  String? household,
 }) async {
   final l10n = AppLocalizations.of(context);
   final MyYearlyPlan mine;
   try {
-    mine = await context.read<PremiumServer>().myYearlyPlan();
+    mine = await context.read<PremiumServer>().myYearlyPlan(
+      household: household,
+    );
   } on Object {
     return true;
   }

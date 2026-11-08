@@ -4,6 +4,7 @@ import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/analytics/events.dart';
 import 'package:family_groceries/app/router.dart';
 import 'package:family_groceries/household/create_household_screen.dart';
+import 'package:family_groceries/household/household_page.dart';
 import 'package:family_groceries/household/invite_partner_screen.dart';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/invite_share.dart';
@@ -343,6 +344,9 @@ Future<Onboarding> pumpOnboarding(
 
   /// The current household's premium rows.
   FakeEntitlementsSource? entitlements,
+
+  /// The household page offers archiving (job 43).
+  bool archiveOffered = false,
 }) async {
   tester.view
     ..devicePixelRatio = 1
@@ -390,6 +394,11 @@ Future<Onboarding> pumpOnboarding(
       GoRoute(
         path: invitesPath,
         builder: (_, _) => const Scaffold(body: InvitesPage()),
+      ),
+      GoRoute(
+        path: householdPath,
+        builder: (_, _) =>
+            Scaffold(body: HouseholdPage(archiveOffered: archiveOffered)),
       ),
       GoRoute(
         path: welcomePath,

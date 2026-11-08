@@ -3121,6 +3121,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Arbeitet in deinem Standard-Haushalt: {name}'**
   String consentDefaultHousehold(String name);
+
+  /// Job 169b: household page button that makes the shown household the default for Siri, Alexa and AI
+  ///
+  /// In de, this message translates to:
+  /// **'Als Standard nutzen'**
+  String get voiceDefaultMake;
 }
 
 class _AppLocalizationsDelegate

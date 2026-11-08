@@ -188,8 +188,8 @@ class FakePremiumServer({
   }
 
   @override
-  Future<MyYearlyPlan> myYearlyPlan() async {
-    calls.add('mine');
+  Future<MyYearlyPlan> myYearlyPlan({String? household}) async {
+    calls.add(household == null ? 'mine' : 'mine $household');
     if (mineFails) {
       throw Exception('offline');
     }

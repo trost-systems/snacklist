@@ -1878,4 +1878,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String consentDefaultHousehold(String name) {
     return 'Works in your default household: $name';
   }
+
+  @override
+  String get voiceDefaultMake => 'Make default';
 }

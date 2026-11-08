@@ -683,5 +683,6 @@
   "leaveArchive": "Archive and leave",
   "leaveDelete": "Delete and leave",
   "consentDefaultHousehold": "Works in your default household: {name}",
-  "@consentDefaultHousehold": {"placeholders": {"name": {"type": "String"}}}
+  "@consentDefaultHousehold": {"placeholders": {"name": {"type": "String"}}},
+  "voiceDefaultMake": "Make default"
 }

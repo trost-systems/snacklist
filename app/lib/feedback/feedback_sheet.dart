@@ -86,6 +86,10 @@ class _FeedbackFormState() extends State<FeedbackForm> {
     final device = context.read<FeedbackDevice>();
     final analytics = context.read<Analytics>();
     final locale = Localizations.localeOf(context).languageCode;
+    final householdId = switch (context.read<SessionCubit>().state) {
+      InHousehold(:final household) => household.id,
+      _ => null,
+    };
     // The status changes at once, so a second tap meets a disabled button.
     if (!cubit.state.canSend) {
       return;
@@ -100,6 +104,7 @@ class _FeedbackFormState() extends State<FeedbackForm> {
         locale: locale,
         screen: widget.screen,
         isInternal: analytics.internalNow,
+        householdId: householdId,
       ),
     );
     if (ok && mounted) {

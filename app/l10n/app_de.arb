@@ -816,5 +816,7 @@
   "leaveDelete": "Löschen und verlassen",
   "@leaveDelete": {"description": "Job 169b: leave dialog button that deletes the household with its Lifetime"},
   "consentDefaultHousehold": "Arbeitet in deinem Standard-Haushalt: {name}",
-  "@consentDefaultHousehold": {"description": "Job 169b: OAuth consent for a user with several households; the default is the one MCP acts in (changed in the switcher)", "placeholders": {"name": {"type": "String"}}}
+  "@consentDefaultHousehold": {"description": "Job 169b: OAuth consent for a user with several households; the default is the one MCP acts in (changed in the switcher)", "placeholders": {"name": {"type": "String"}}},
+  "voiceDefaultMake": "Als Standard nutzen",
+  "@voiceDefaultMake": {"description": "Job 169b: household page button that makes the shown household the default for Siri, Alexa and AI"}
 }
