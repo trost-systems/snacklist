@@ -21,17 +21,20 @@ A household can keep several lists (job 169b K): „Wocheneinkauf“ next to „
 
 ## Driving it with Playwright
 
-Not driven yet: it needs the W3 server (`lists`, `items.list_id`, `item_claims`, `create_list`, `claim_item`). Until then the behaviour is proved by widget and unit tests:
+Driven 2026-11-08 on the release web build against the W3 server, `e2e/tests/club.spec.ts`:
 
-- `app/test/list/lists_and_claims_test.dart` (shown list, adds per list, a move offline then sent, lists added, renamed, moved and deleted, offline refusal, the device copy from before lists, claims optimistic, retried, ended by a tick, live).
-- `app/test/list/list_tabs_test.dart` (no tabs with one list, three lists and a tap, „+“, 358 px scrolling, the claim line).
-- `app/test/list/edit_sheet_lists_claims_test.dart` (the „Liste“ picker, „Ich bringe das“ with an amount, taking it back).
-- `app/test/household/lists_section_test.dart` (counts, rename, move, delete with its confirm).
-- Goldens: `list-tabs-{light,dark}`, `list-tabs-compact-{light,dark}`, `household-lists-{light,dark}`, `edit-sheet-{light,dark}` in `app/test/design/goldens/`.
-
-Once the server is there, a recipe: seed a household, `apiAs(...).rpc('create_list', { p_household, p_name: 'Sommerfest', p_id })`, reload; the track shows with `getByRole('tab', { name: 'Sommerfest' })`; click it, add an item, read its `list_id` through the API.
+- **Second list** (`lc-new`, `lc-manage`). With one list there is no `page.getByRole('tablist', { name: 'Listen' })` (the bottom bar „Liste“/„Mehr“ is a tablist too, so name it). `openMore(page, '<household>')`, wheel to `page.getByRole('button', { name: 'Neue Liste', exact: true })`, click, `typeInto(page.getByRole('textbox', { name: 'Name der Liste' }), 'Sommerfest')`, button „Erstellen“. On the list: `page.getByRole('tab', { name: 'Sommerfest', exact: true })`; the shown one has `aria-selected="true"`. The track's „+“ is the same button name „Neue Liste“; a list made there is shown at once.
+- **Adds and switching** (`lc-shown`, `lc-add`). `addItem` adds to the shown list; another tab hides it. „Kuchen“ open on two lists at once is fine. Server check: `adminClient().from('items').select('name, lists(name)')`. After `page.reload()` the last shown list is still selected.
+- **Move** (`lc-move`). `openEdit(page, 'Milch')`, then `editSheet(page).getByRole('group', { name: 'Liste', exact: true })` holds one button per list, in order; click „Sommerfest“, `saveEdit`. The row leaves the shown list; `items.list_id` changes.
+- **Delete** (`lc-manage`). On the household page `page.getByRole('button', { name: 'Aktionen für „Vereinsheim“' })`, then „Löschen“ (`menuitem`); the dialog „„Vereinsheim“ löschen?“ with „Die 2 offenen Artikel darauf werden mit gelöscht.“, button „Löschen“. The list and its items are gone on the server, the tab too.
+- **Claims** (`lc-claim`, `lc-claim-row`). In the edit sheet `getByRole('checkbox', { name: 'Ich bringe das' })`, then `getByRole('textbox', { name: 'Wie viel?' })`, `saveEdit`. The own row's accessible name contains „Du bringst 2“; another member's open app gets „Lea Berg bringt 2“ (the display name in full) live within seconds. Unticking „Ich bringe das“ takes it back live. Ticking the item leaves no `item_claims` row.
+- **Old writes** (`lc-old-builds`). `apiAs(email).from('items').insert({ household_id, name })` without `list_id` lands in the first list by `position` (also after `move_list(p_list, 0)` put another list first).
+- **MCP**. `list_lists` answers `[{ id, name, default }]`, the first list `default: true`; `add_items` and `list_items` take `list` (id or exact name, any case); `list_items` answers the shown list's name in `list`.
+- Unit and widget tests: `app/test/list/lists_and_claims_test.dart`, `list_tabs_test.dart`, `edit_sheet_lists_claims_test.dart`, `app/test/household/lists_section_test.dart`; goldens `list-tabs-*`, `household-lists-*`, `edit-sheet-*` in `app/test/design/goldens/`.
 
 ## Gotchas
 
 - Flutter's test font is wide: in widget tests the last tabs sit past the row; `tester.ensureVisible` before tapping them.
 - The tabs' `+` is not a tab (outside the `tablist`): find it with `getByRole('button', { name: 'Neue Liste' })`.
+- A claim line names the claimant by display name in full („Lea Berg bringt 2“), not the first name. A member who joined after the list loaded is named once their first claim arrives (the app reads the members again; before job 169b W3's fix it said „Jemand bringt“ until a reload).
+- The first list of every household is called „Einkaufsliste“, also for English users (the server names it; seen in `w3-en-dark-list-tabs.png`).
