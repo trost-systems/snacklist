@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:family_groceries/design/field_border.dart';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/join_cubit.dart';
+import 'package:family_groceries/household/join_request_waiting.dart';
 import 'package:family_groceries/household/onboarding_page.dart';
 import 'package:family_groceries/household/pending_invite.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
@@ -14,7 +15,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 /// Onboarding Step 2b, also for someone in a household (the switcher's and
 /// More's "Mit Code beitreten", or an invite link): enter or keep the code,
 /// see the household's name, then join. Joining adds the household beside
-/// the user's others (job 169b) and shows it.
+/// the user's others (job 169b) and shows it; a household that confirms
+/// joins shows [JoinRequestWaiting] instead.
 class const JoinScreen({
   super.key,
 
@@ -77,6 +79,15 @@ class _JoinViewState() extends State<_JoinView> {
       // To the list, or to the MCP authorization this was on the way to.
       listener: (context, _) => leaveStep(context),
       builder: (context, state) {
+        if (state case JoinState(
+          phase: JoinPhase.requested,
+          :final requested?,
+        )) {
+          return JoinRequestWaiting(
+            householdId: requested,
+            householdName: state.household ?? '',
+          );
+        }
         final cubit = context.read<JoinCubit>();
         final previewed =
             state.phase == JoinPhase.previewed ||

@@ -7,6 +7,7 @@ import 'package:family_groceries/app/notices.dart';
 import 'package:family_groceries/app/shell.dart';
 import 'package:family_groceries/household/create_household_screen.dart';
 import 'package:family_groceries/household/invite_partner_screen.dart';
+import 'package:family_groceries/household/join_request_waiting.dart';
 import 'package:family_groceries/household/join_screen.dart';
 import 'package:family_groceries/household/pending_invite.dart';
 import 'package:family_groceries/household/welcome_screen.dart';
@@ -43,6 +44,10 @@ String storeDetailsPath(String? storeId) =>
 /// the partner; Step 2b is the join screen ([joinCodePath], [joinPath]).
 const welcomePath = '/welcome';
 const createHouseholdPath = '/welcome/create';
+
+/// Waiting for a join request (job 169b W3 M), instead of Step 1 while
+/// the user has no household but a request ([PendingJoinScreen]).
+const joinWaitingPath = '/welcome/waiting';
 const invitePartnerPath = '/welcome/invite';
 
 /// The switcher's "Neuer Haushalt" (job 169b): the create step for one
@@ -152,7 +157,7 @@ String screenNameOf(Uri location) => switch (location.path) {
   newHouseholdPath => 'new_household',
   analyticsConsentPath => 'analytics_consent',
   consentPath => 'oauth_consent',
-  moreJoinPath => 'join',
+  moreJoinPath || joinWaitingPath => 'join',
   _ when location.pathSegments.firstOrNull == 'join' => 'join',
   _ => 'other',
 };
@@ -193,7 +198,12 @@ String? inviteIn(Uri uri) {
 
 /// Where someone without a household may be: onboarding's steps before
 /// there is one.
-const _beforeHousehold = {welcomePath, createHouseholdPath, joinCodePath};
+const _beforeHousehold = {
+  welcomePath,
+  createHouseholdPath,
+  joinCodePath,
+  joinWaitingPath,
+};
 
 /// The only auth gate. An invite code from a `/join/<code>` link survives
 /// sign-in, the analytics consent and onboarding as the `invite` query
@@ -210,7 +220,8 @@ const _beforeHousehold = {welcomePath, createHouseholdPath, joinCodePath};
 /// interrupted and the app asks the next time it is opened.
 ///
 /// Without a household: Step 1 ([welcomePath]), or the join screen at once
-/// for an invite. In one: the list and its Anpassen pages, the More tab,
+/// for an invite; while a join request waits, [joinWaitingPath] instead of
+/// Step 1. In one: the list and its Anpassen pages, the More tab,
 /// Step 3 right after creating ([invitePartnerPath]), creating one more
 /// ([newHouseholdPath]), or the join screen for an invite.
 String? authRedirect(
@@ -246,12 +257,19 @@ String? authRedirect(
     NeedsHousehold() || InHousehold() when askConsent && consent == null =>
       carry(analyticsConsentPath),
     NeedsHousehold() when invite != null => carry(joinPath(invite)),
+    NeedsHousehold(requests: []) when uri.path == joinWaitingPath => carry(
+      welcomePath,
+    ),
+    NeedsHousehold(requests: [_, ...]) when uri.path == welcomePath => carry(
+      joinWaitingPath,
+    ),
     // An MCP authorization or a link (`next`) rides along onboarding's
     // steps.
     NeedsHousehold() when _beforeHousehold.contains(uri.path) => carry(
       uri.path,
     ),
-    NeedsHousehold() => carry(welcomePath),
+    NeedsHousehold(requests: []) => carry(welcomePath),
+    NeedsHousehold() => carry(joinWaitingPath),
     InHousehold() when next != null => next,
     InHousehold() when invite != null => joinPath(invite),
     // Created just now: Step 3, inviting the partner.
@@ -435,6 +453,7 @@ List<RouteBase> appRoutes({ListRepository? repository}) => [
     routes: [
       GoRoute(path: 'create', builder: (_, _) => const CreateHouseholdScreen()),
       GoRoute(path: 'invite', builder: (_, _) => const InvitePartnerScreen()),
+      GoRoute(path: 'waiting', builder: (_, _) => const PendingJoinScreen()),
     ],
   ),
   GoRoute(

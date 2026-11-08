@@ -395,4 +395,169 @@ void main() {
       );
     });
   });
+
+  group('join approval (job 169b W3 M)', () {
+    late FakeHouseholds server;
+    late SessionCubit cubit;
+
+    /// Realtime on join requests, by user: call one to say a request
+    /// changed.
+    late Map<String, void Function()> watching;
+    late List<JoinDecision> told;
+
+    setUp(() {
+      watching = {};
+      told = [];
+      server = FakeHouseholds(auth)
+        ..member('peter', 'home', 'Zuhause')
+        ..member('lea', 'club', 'Sommerfest')
+        ..approval.add('club')
+        ..invites['CLUB2345'] = 'club';
+      cubit = SessionCubit(
+        server,
+        cache,
+        watchJoinRequests: (user, onChange) {
+          watching[user] = onChange;
+          return () async => watching.remove(user);
+        },
+      );
+      cubit.joinDecisions.listen(told.add);
+    });
+    tearDown(() => cubit.close());
+
+    List<JoinRequest> requestsOf(Session s) => switch (s) {
+      InHousehold(:final requests) ||
+      NeedsHousehold(:final requests) => requests,
+      _ => const [],
+    };
+
+    test(
+      'a join answered requested switches nothing and lists the request',
+      () async {
+        await cubit.refresh();
+        final answer = await cubit.join('CLUB2345');
+        expect(
+          answer,
+          isA<JoinRequested>().having(
+            (a) => a.householdId,
+            'household',
+            'club',
+          ),
+        );
+        expect(cubit.state, _shows('home', households: ['home']));
+        expect(
+          [
+            for (final r in requestsOf(cubit.state))
+              (r.householdId, r.householdName),
+          ],
+          [('club', 'Sommerfest')],
+        );
+        expect(watching.keys, [
+          'peter',
+        ], reason: 'realtime follows the request');
+      },
+    );
+
+    test('without a household the user waits in onboarding', () async {
+      server
+        ..memberships['peter']!.clear()
+        ..households['home']!.members.clear();
+      await cubit.refresh();
+      expect(cubit.state, isA<NeedsHousehold>());
+      await cubit.join('CLUB2345');
+      expect(
+        cubit.state,
+        isA<NeedsHousehold>().having(
+          (s) => [for (final r in s.requests) r.householdId],
+          'requests',
+          ['club'],
+        ),
+      );
+    });
+
+    test(
+      'approved over realtime: the household shows and it is said',
+      () async {
+        await cubit.refresh();
+        await cubit.join('CLUB2345');
+        server.decide(server.requests.keys.single, approve: true);
+        watching['peter']!();
+        await pumpEventQueue();
+        expect(cubit.state, _shows('club', households: ['home', 'club']));
+        expect(requestsOf(cubit.state), isEmpty);
+        expect(told, [(household: 'Sommerfest', approved: true)]);
+        expect(watching, isEmpty, reason: 'nothing left to follow');
+      },
+    );
+
+    test('approved while away: the refresh on resume finds it', () async {
+      await cubit.refresh();
+      await cubit.join('CLUB2345');
+      server.decide(server.requests.keys.single, approve: true);
+      await cubit.refresh();
+      await pumpEventQueue();
+      expect(cubit.state, _shows('club'));
+      expect(told, [(household: 'Sommerfest', approved: true)]);
+    });
+
+    test('declined: the household shown stays and it is said', () async {
+      await cubit.refresh();
+      await cubit.join('CLUB2345');
+      server.decide(server.requests.keys.single, approve: false);
+      watching['peter']!();
+      await pumpEventQueue();
+      expect(cubit.state, _shows('home', households: ['home']));
+      expect(requestsOf(cubit.state), isEmpty);
+      expect(told, [(household: 'Sommerfest', approved: false)]);
+    });
+
+    test('two refreshes at once tell a decision once', () async {
+      await cubit.refresh();
+      await cubit.join('CLUB2345');
+      server.decide(server.requests.keys.single, approve: true);
+      await Future.wait([cubit.refresh(), cubit.refresh()]);
+      await pumpEventQueue();
+      expect(told, hasLength(1));
+    });
+
+    test('withdrawn: gone on the server, and no decision is said', () async {
+      await cubit.refresh();
+      await cubit.join('CLUB2345');
+      await cubit.withdrawJoinRequest('club');
+      await pumpEventQueue();
+      expect(server.requests, isEmpty);
+      expect(requestsOf(cubit.state), isEmpty);
+      expect(told, isEmpty);
+      expect(watching, isEmpty);
+    });
+
+    test('a server without join requests keeps the session working', () async {
+      final old = FakeHouseholds(auth)
+        ..member('peter', 'home', 'Zuhause')
+        ..missing.add('my_join_requests');
+      final oldCubit = SessionCubit(old, cache);
+      addTearDown(oldCubit.close);
+      await oldCubit.refresh();
+      expect(
+        old.calls.any((c) => c.startsWith('rpc/my_join_requests')),
+        isTrue,
+      );
+      expect(oldCubit.state, _shows('home'));
+    });
+
+    test('join_approval comes from my_households', () async {
+      server.member('peter', 'verein', 'Verein');
+      server.approval.add('verein');
+      await cubit.refresh();
+      final state = cubit.state as InHousehold;
+      expect(
+        {for (final h in state.households) h.id: h.joinApproval},
+        {'home': false, 'verein': true},
+      );
+      expect(
+        Household.fromJson(state.households.last.toJson())?.joinApproval,
+        isTrue,
+      );
+    });
+  });
 }

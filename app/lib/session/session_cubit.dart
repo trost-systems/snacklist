@@ -59,6 +59,10 @@ class const Household({
 
   /// It has Hummlist Premium, which covers every member.
   final bool premium = false,
+
+  /// An invite makes a join request an owner or admin decides on instead
+  /// of a membership (job 169b W3 M).
+  final bool joinApproval = false,
 }) {
   /// A row of `my_households()` or of the device cache; null when it has no
   /// id or name.
@@ -78,6 +82,7 @@ class const Household({
       kind: HouseholdKind.parse(json['kind']),
       role: HouseholdRole.parse(json['role']),
       premium: json['premium'] == true,
+      joinApproval: json['join_approval'] == true,
     ),
     _ => null,
   };
@@ -91,6 +96,7 @@ class const Household({
     'kind': kind?.name,
     'role': role.name,
     'premium': premium,
+    'join_approval': joinApproval,
   };
 
   Household copyWith({String? name, bool? isDefault}) => Household(
@@ -102,8 +108,47 @@ class const Household({
     kind: kind,
     role: role,
     premium: premium,
+    joinApproval: joinApproval,
   );
 }
+
+/// The user's own join request, waiting for an owner or admin of the
+/// household (job 169b W3 M), as `my_join_requests()` answers it.
+@immutable
+class const JoinRequest({
+  required final String id,
+  required final String householdId,
+  required final String householdName,
+}) {
+  /// A pending row, or null: no id or household, or decided already.
+  static JoinRequest? fromJson(Map<String, Object?> json) => switch (json) {
+    {'id': final String id, 'household_id': final String householdId}
+        when json['decision'] == null && json['decided_at'] == null =>
+      JoinRequest(
+        id: id,
+        householdId: householdId,
+        householdName: switch (json['household_name'] ?? json['name']) {
+          final String name => name,
+          _ => '',
+        },
+      ),
+    _ => null,
+  };
+}
+
+/// An owner or admin decided on one of the user's [JoinRequest]s. Approved,
+/// the session shows the household already.
+typedef JoinDecision = ({String household, bool approved});
+
+/// What `accept_invite` did with a join.
+sealed class const JoinAnswer();
+
+/// A member now (or already was); the session shows the household.
+final class const Joined(final String householdId) extends JoinAnswer;
+
+/// The household confirms joins: an owner or admin decides, the session
+/// lists it in its requests meanwhile.
+final class const JoinRequested(final String householdId) extends JoinAnswer;
 
 /// Where a household was created, for `household_created`'s `context`.
 enum HouseholdOrigin() {
@@ -135,7 +180,13 @@ class const AccountDeletedNotice({
   required final bool removeAppleManually,
 });
 
-final class const NeedsHousehold(final String userId) extends Session;
+final class const NeedsHousehold(
+  final String userId, {
+
+  /// Joins waiting for an owner or admin: the user waits instead of
+  /// creating a household, or creates one anyway.
+  final List<JoinRequest> requests = const [],
+}) extends Session;
 
 final class const InHousehold(
   final String userId,
@@ -146,8 +197,12 @@ final class const InHousehold(
 
   /// Every household of the user, oldest membership first; [household] is
   /// one of them.
-  final List<Household> households,
-) extends Session {
+  final List<Household> households, {
+
+  /// Joins waiting for an owner or admin, in households not among
+  /// [households].
+  final List<JoinRequest> requests = const [],
+}) extends Session {
   /// The one Siri, Alexa and AI assistants act in.
   Household get defaultHousehold =>
       households.where((h) => h.isDefault).firstOrNull ?? households.first;
@@ -158,6 +213,14 @@ Household _pick(List<Household> households, String? shown) =>
     households.where((h) => h.id == shown).firstOrNull ??
     households.where((h) => h.isDefault).firstOrNull ??
     households.first;
+
+/// Calls `onChange` when one of [userId]'s join requests changes (an owner
+/// or admin decided), as far as realtime tells; returns the call that stops
+/// it.
+typedef WatchJoinRequests = Future<void> Function() Function(
+  String userId,
+  void Function() onChange,
+);
 
 /// Each user's households and the one shown last, kept on the device so an
 /// offline start can open the list.
@@ -193,6 +256,9 @@ class SessionCubit(
 
   /// Runs while the session still exists, before [signOut] ends it.
   final Future<void> Function()? _beforeSignOut,
+
+  /// Realtime on the user's join requests; the client's channel when null.
+  final WatchJoinRequests? _watchJoinRequests,
 }) extends Cubit<Session> {
   this : super(const SessionLoading()) {
     // Job 31: the server learns each install's analytics answer, so an add
@@ -252,6 +318,21 @@ class SessionCubit(
   /// refresh finds it gone. The session already shows another one.
   Stream<Household> get removals => _removals.stream;
 
+  /// Join requests this device withdrew: gone after the next refresh, but
+  /// not declined.
+  final _withdrawing = <String>{};
+  final _decisions = StreamController<JoinDecision>.broadcast();
+  final _decided = <String>{};
+
+  /// Each of the user's join requests an owner or admin decided on, as a
+  /// refresh finds it gone (job 169b W3 M): approved, the session shows the
+  /// household already. A request decided while the app was closed finds
+  /// the household in the list without a word.
+  Stream<JoinDecision> get joinDecisions => _decisions.stream;
+
+  /// The user whose join requests realtime watches, and how to stop it.
+  ({String userId, Future<void> Function() stop})? _requestWatch;
+
   /// A join whose answer never came (offline, a timeout): the server may
   /// have done it. The retry then answers `member`, and the event goes out
   /// once, then.
@@ -310,14 +391,48 @@ class SessionCubit(
       return;
     }
     final cached = await _cache.householdsOf(userId);
-    final rows = await _client.rpc<List<dynamic>>('my_households');
+    final householdRows = _client.rpc<List<dynamic>>('my_households');
+    final ownRequests = _ownRequests();
+    final rows = await householdRows;
     final households = [
       for (final row in rows.whereType<Map<String, dynamic>>())
         ?Household.fromJson(row),
     ];
+    final waiting = switch (state) {
+      NeedsHousehold(userId: final user, :final requests) ||
+      InHousehold(
+        userId: final user,
+        :final requests,
+      ) when user == userId => requests,
+      _ => const <JoinRequest>[],
+    };
+    // Unknown (an older server, offline): the ones known stay.
+    final requests = [
+      for (final r in await ownRequests ?? waiting)
+        if (!households.any((h) => h.id == r.householdId)) r,
+    ];
+    final decided = [
+      for (final r in waiting)
+        if (!requests.any((now) => now.id == r.id) &&
+            !_withdrawing.remove(r.id) &&
+            // Two refreshes at once both find it gone.
+            _decided.add(r.id))
+          (
+            household:
+                households
+                    .where((h) => h.id == r.householdId)
+                    .firstOrNull
+                    ?.name ??
+                r.householdName,
+            approved: households.any((h) => h.id == r.householdId),
+            id: r.householdId,
+          ),
+    ];
     // Read after the answer: a switch while it was out wins.
     final shown =
         show ??
+        // Approved just now: the user waited for it, so it shows.
+        decided.where((d) => d.approved).lastOrNull?.id ??
         switch (state) {
           InHousehold(userId: final user, :final household)
               when user == userId =>
@@ -325,8 +440,13 @@ class SessionCubit(
           _ => cached?.shown,
         };
     final next = households.isEmpty
-        ? NeedsHousehold(userId)
-        : InHousehold(userId, _pick(households, shown), households);
+        ? NeedsHousehold(userId, requests: requests)
+        : InHousehold(
+            userId,
+            _pick(households, shown),
+            households,
+            requests: requests,
+          );
     final gone = switch (state) {
       InHousehold(userId: final user, households: final before)
           when user == userId =>
@@ -348,19 +468,41 @@ class SessionCubit(
     );
     emit(next);
     gone.forEach(_removals.add);
+    for (final d in decided) {
+      _decisions.add((household: d.household, approved: d.approved));
+    }
+  }
+
+  /// The user's pending join requests, or null when the server did not
+  /// say.
+  Future<List<JoinRequest>?> _ownRequests() async {
+    try {
+      final rows = await _client.rpc<List<dynamic>>('my_join_requests');
+      return [
+        for (final row in rows.whereType<Map<String, dynamic>>())
+          ?JoinRequest.fromJson(row),
+      ];
+    } on Object {
+      return null;
+    }
   }
 
   /// Shows [householdId], one of the user's households, on this device: the
   /// list switches at once, also offline, and the next start opens it.
   Future<void> switchTo(String householdId) async {
     if (state
-        case InHousehold(:final userId, :final household, :final households)
+        case InHousehold(
+          :final userId,
+          :final household,
+          :final households,
+          :final requests,
+        )
         when household.id != householdId) {
       final next = households.where((h) => h.id == householdId).firstOrNull;
       if (next == null) {
         return;
       }
-      emit(InHousehold(userId, next, households));
+      emit(InHousehold(userId, next, households, requests: requests));
       analytics?.track('household_switched');
       await _cache.remember(userId, households: households, shown: next.id);
     }
@@ -476,13 +618,19 @@ class SessionCubit(
   }
 
   /// Joins the household of invite [code] and shows it; the user's other
-  /// households stay. [method] says whether the code came from a link or
-  /// was typed. `invite_accepted` goes out only for a new membership
-  /// (status `joined`), not when the server answers that the user is a
-  /// member already, unless that answers an earlier try whose answer was
-  /// lost. Throws [HouseholdError] for a bad code, the rate limit or no
+  /// households stay. A household that confirms joins answers
+  /// [JoinRequested] instead: nothing switches, the session lists the
+  /// request until an owner or admin decides ([joinDecisions]). [method]
+  /// says whether the code came from a link or was typed.
+  /// `invite_accepted` goes out only for a new membership (status
+  /// `joined`), not when the server answers that the user is a member
+  /// already, unless that answers an earlier try whose answer was lost.
+  /// Throws [HouseholdError] for a bad code, the rate limit or no
   /// connection.
-  Future<void> join(String code, {JoinMethod method = JoinMethod.code}) async {
+  Future<JoinAnswer> join(
+    String code, {
+    JoinMethod method = JoinMethod.code,
+  }) async {
     final normalized = normalizeInviteCode(code);
     final Map<String, dynamic> result;
     try {
@@ -511,6 +659,12 @@ class SessionCubit(
             when code == normalized) {
           _trackIn(id, 'invite_accepted', {'method': method.name});
         }
+      case {'status': 'requested', 'household_id': final String id}:
+        // Not the household's member: the event keeps the user's own.
+        analytics?.track('join_requested');
+        pendingInvite?.clear();
+        await householdCall(refresh);
+        return JoinRequested(id);
       case {'status': final String status}:
         throw HouseholdError.fromStatus(status);
       default:
@@ -518,6 +672,41 @@ class SessionCubit(
     }
     pendingInvite?.clear();
     await householdCall(() => refresh(show: joined));
+    return Joined(joined);
+  }
+
+  /// Withdraws the user's join request for [householdId]. Throws
+  /// [HouseholdError].
+  Future<void> withdrawJoinRequest(String householdId) async {
+    JoinRequest? find() => switch (state) {
+      NeedsHousehold(:final requests) || InHousehold(:final requests) =>
+        requests.where((r) => r.householdId == householdId).firstOrNull,
+      _ => null,
+    };
+    // The answer to the join came before the server listed the request.
+    if (find() == null) {
+      await householdCall(refresh);
+    }
+    final request = find();
+    if (request == null) {
+      return;
+    }
+    _withdrawing.add(request.id);
+    try {
+      await householdCall(
+        () => _client.rpc<void>(
+          'cancel_join_request',
+          params: {'p_request': request.id},
+        ),
+      );
+    } on HouseholdError catch (e) {
+      // Offline, the server may have done it: then it is gone by our hand.
+      if (e.problem != HouseholdProblem.offline) {
+        _withdrawing.remove(request.id);
+      }
+      rethrow;
+    }
+    await householdCall(refresh);
   }
 
   /// Brings back the archived household [householdId] (job 43) beside the
@@ -602,13 +791,67 @@ class SessionCubit(
       ),
       SignedOut() || SessionLoading() => null,
     });
+    _followRequests(change.nextState);
+  }
+
+  /// Realtime on the user's join requests while there are any: a decision
+  /// shows at once, not only on the next refresh.
+  void _followRequests(Session session) {
+    final userId = switch (session) {
+      NeedsHousehold(:final userId, :final requests) ||
+      InHousehold(
+        :final userId,
+        :final requests,
+      ) when requests.isNotEmpty => userId,
+      _ => null,
+    };
+    if (_requestWatch?.userId == userId) {
+      return;
+    }
+    if (_requestWatch case (:final stop, userId: _)) {
+      unawaited(stop());
+    }
+    _requestWatch = userId == null
+        ? null
+        : (
+            userId: userId,
+            stop: (_watchJoinRequests ?? _watchOwnRequests)(
+              userId,
+              () => unawaited(refresh().catchError((Object _) {})),
+            ),
+          );
+  }
+
+  Future<void> Function() _watchOwnRequests(
+    String userId,
+    void Function() onChange,
+  ) {
+    final channel = _client.channel('join_requests:$userId')
+      ..onPostgresChanges(
+        event: PostgresChangeEvent.all,
+        schema: 'public',
+        table: 'join_requests',
+        filter: PostgresChangeFilter(
+          type: PostgresChangeFilterType.eq,
+          column: 'user_id',
+          value: userId,
+        ),
+        callback: (_) => onChange(),
+      )
+      ..subscribe();
+    return () async {
+      await _client.removeChannel(channel);
+    };
   }
 
   @override
   Future<void> close() async {
     _retry?.cancel();
     await _auth.cancel();
+    await _requestWatch?.stop();
+    _requestWatch = null;
     await _removals.close();
+    await _decisions.close();
     await super.close();
   }
 }

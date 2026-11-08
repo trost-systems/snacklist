@@ -89,6 +89,15 @@ class const HouseholdMember({
   final HouseholdRole role = HouseholdRole.member,
 });
 
+/// Someone waiting to join a household that confirms joins (job 169b W3
+/// M), as `household_join_requests` answers.
+@immutable
+class const PendingJoin({
+  required final String id,
+  required final String userId,
+  required final String displayName,
+});
+
 /// Why a household or invite call failed, as the screens tell the user.
 enum HouseholdProblem() {
   /// Made up, expired, revoked or used: one answer for all.
@@ -207,6 +216,24 @@ abstract interface class InviteRepository() {
 
   /// The user's archived households, newest first (`archived_households`).
   Future<List<ArchivedHousehold>> archived();
+
+  /// Whether an invite to [householdId] makes a join request instead of a
+  /// member (owner and admins, `set_join_approval`).
+  Future<void> setJoinApproval(String householdId, {required bool on});
+
+  /// The join requests waiting in [householdId], oldest first (owner and
+  /// admins, `household_join_requests`).
+  Future<List<PendingJoin>> joinRequests(String householdId);
+
+  /// Lets [requestId]'s user in, or not (owner and admins).
+  Future<void> decideJoinRequest(String requestId, {required bool approve});
+
+  /// Calls [onChange] when a join request in [householdId] comes or goes,
+  /// as far as realtime tells; returns the call that stops it.
+  Future<void> Function() watchJoinRequests(
+    String householdId,
+    void Function() onChange,
+  );
 }
 
 class SupabaseInviteRepository(final SupabaseClient _client)
@@ -374,6 +401,68 @@ class SupabaseInviteRepository(final SupabaseClient _client)
         ),
     ];
   });
+
+  @override
+  Future<void> setJoinApproval(String householdId, {required bool on}) =>
+      householdCall(
+        () => _client.rpc<void>(
+          'set_join_approval',
+          params: {'p_household': householdId, 'p_on': on},
+        ),
+      );
+
+  @override
+  Future<List<PendingJoin>> joinRequests(String householdId) =>
+      householdCall(() async {
+        final rows = await _client.rpc<List<dynamic>>(
+          'household_join_requests',
+          params: {'p_household': householdId},
+        );
+        return [
+          for (final row in rows.whereType<Map<String, dynamic>>())
+            if (row case {'id': final String id, 'user_id': final String user})
+              PendingJoin(
+                id: id,
+                userId: user,
+                displayName: switch (row['display_name']) {
+                  final String name => name,
+                  _ => '',
+                },
+              ),
+        ];
+      });
+
+  @override
+  Future<void> decideJoinRequest(String requestId, {required bool approve}) =>
+      householdCall(
+        () => _client.rpc<void>(
+          'decide_join_request',
+          params: {'p_request': requestId, 'p_approve': approve},
+        ),
+      );
+
+  @override
+  Future<void> Function() watchJoinRequests(
+    String householdId,
+    void Function() onChange,
+  ) {
+    final channel = _client.channel('join_requests:$householdId')
+      ..onPostgresChanges(
+        event: PostgresChangeEvent.all,
+        schema: 'public',
+        table: 'join_requests',
+        filter: PostgresChangeFilter(
+          type: PostgresChangeFilterType.eq,
+          column: 'household_id',
+          value: householdId,
+        ),
+        callback: (_) => onChange(),
+      )
+      ..subscribe();
+    return () async {
+      await _client.removeChannel(channel);
+    };
+  }
 
   static Invite _invite(Map<String, dynamic> row) => Invite(
     id: row['id']! as String,
