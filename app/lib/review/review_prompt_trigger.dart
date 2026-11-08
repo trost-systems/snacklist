@@ -91,6 +91,8 @@ class _ReviewPromptTriggerState() extends State<ReviewPromptTrigger> {
         switch (activity) {
           case OwnItemAdded():
             unawaited(prompt.itemAdded());
+          case ItemEdited() || CategoriesReordered():
+            break;
           case TripCompleted(:final ticked):
             unawaited(prompt.tripCompleted());
             if (ticked >= ReviewPromptTrigger.minTicks || prompt.forced) {

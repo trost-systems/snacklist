@@ -134,12 +134,23 @@ final class const Merge(
   required final Item result,
 });
 
-/// What the user did on the list that the store rating prompt counts
-/// (job 155). Never a retry, a realtime echo or a restore.
+/// What the user did on the list, for the store rating prompt (job 155)
+/// and the hints (job 168b). Never a retry, a realtime echo or a restore.
 sealed class const ListActivity();
 
-/// The user added an item (`item_added`).
-final class const OwnItemAdded() extends ListActivity;
+/// The user added an item (`item_added`) from [source], with an amount or
+/// without.
+final class const OwnItemAdded(
+  final AddSource source, {
+  required final bool withAmount,
+}) extends ListActivity;
+
+/// The user saved a change in an item's edit sheet.
+final class const ItemEdited() extends ListActivity;
+
+/// A category order the user changed reached the server
+/// (`category_reordered`).
+final class const CategoriesReordered() extends ListActivity;
 
 /// The user's tick left no item on the list; [ticked] is how many items
 /// they ticked since it last had none.
@@ -564,7 +575,7 @@ class ListCubit(
       ),
     );
     _track('item_added', {'source': source.name, ..._actor()});
-    _tell(const OwnItemAdded());
+    _tell(OwnItemAdded(source, withAmount: entry.quantity != null));
     return Added(item);
   }
 
@@ -622,7 +633,9 @@ class ListCubit(
     untick(id);
     if (bought && !undo) {
       _track('item_added', {'source': AddSource.suggestion.name, ..._actor()});
-      _tell(const OwnItemAdded());
+      _tell(
+        OwnItemAdded(AddSource.suggestion, withAmount: item?.quantity != null),
+      );
     }
   }
 
@@ -638,6 +651,7 @@ class ListCubit(
       return;
     }
     final item = state.items[id];
+    _tell(const ItemEdited());
     // The add's line is parsed when it syncs; so is its new name.
     final deviceParsed =
         changes.name != null &&
@@ -1019,6 +1033,7 @@ class ListCubit(
         ) &&
         !listEquals(before, ids)) {
       _track('category_reordered', {'scope': ReorderScope.route.wire});
+      _tell(const CategoriesReordered());
     }
   }
 
@@ -1058,6 +1073,7 @@ class ListCubit(
         ) &&
         !listEquals(before, orderedIds)) {
       _track('category_reordered', {'scope': ReorderScope.store.wire});
+      _tell(const CategoriesReordered());
     }
   }
 
