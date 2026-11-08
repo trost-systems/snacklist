@@ -93,9 +93,11 @@ class JoinCubit(
             ),
           );
         case InviteMember(:final name):
-          // Their own household's link: nothing to join.
+          // A link to one of their households: nothing to join, but it
+          // shows. accept_invite answers its id (status member) and uses
+          // up nothing.
+          await _session.join(normalized, method: _methodOf(normalized));
           pendingInvite?.clear();
-          await householdCall(_session.refresh);
           emit(state.copyWith(phase: JoinPhase.joined, household: name));
       }
     } on HouseholdError catch (e) {
@@ -119,12 +121,7 @@ class JoinCubit(
       ),
     );
     try {
-      await _session.join(
-        code,
-        method: link != null && normalizeInviteCode(link!) == code
-            ? JoinMethod.link
-            : JoinMethod.code,
-      );
+      await _session.join(code, method: _methodOf(code));
       pendingInvite?.clear();
       emit(state.copyWith(phase: JoinPhase.joined, household: household));
     } on HouseholdError catch (e) {
@@ -143,6 +140,11 @@ class JoinCubit(
       }
     }
   }
+
+  JoinMethod _methodOf(String code) =>
+      link != null && normalizeInviteCode(link!) == code
+      ? JoinMethod.link
+      : JoinMethod.code;
 
   @override
   void emit(JoinState state) {

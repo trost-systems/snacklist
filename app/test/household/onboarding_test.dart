@@ -494,18 +494,20 @@ void main() {
       expect(location(o), '/');
     });
 
-    testWidgets("a link of one's own household lands on the list", (
-      tester,
-    ) async {
+    testWidgets("a link of one of the user's households shows it on the "
+        'list (job 169b)', (tester) async {
       final invites = FakeInvites()..own.add('ABCD2345');
       final o = await pumpOnboarding(
         tester,
         location: '/join/ABCD2345',
-        session: inHome,
+        session: const InHousehold('peter', home, [
+          home,
+          Household(id: 'other', name: 'Familie Trost'),
+        ]),
         invites: invites,
       );
       expect(location(o), '/');
-      expect(o.session.joins, isEmpty);
+      expect((o.session.state as InHousehold).household.id, 'other');
       expect(o.pending.code, isNull);
     });
 
