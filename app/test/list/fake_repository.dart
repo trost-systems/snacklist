@@ -87,6 +87,9 @@ class FakeRepository() implements ListRepository {
   /// How many times the list subscribed to realtime.
   var watches = 0;
 
+  /// How many times the list unsubscribed: once more when it closed.
+  var unwatches = 0;
+
   /// How many times the list asked for its items, answered or not.
   var itemFetches = 0;
 
@@ -610,6 +613,7 @@ class FakeRepository() implements ListRepository {
     emitStatus = onStatus;
     emitCatalogChanged = onCatalogChanged;
     return () async {
+      unwatches++;
       if (unwatchGates.isNotEmpty) {
         await unwatchGates.removeAt(0).future;
       }

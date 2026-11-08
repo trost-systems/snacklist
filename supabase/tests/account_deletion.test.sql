@@ -295,7 +295,7 @@ create temp table export as select public.export_my_data() as doc;
 select is(
   (select array_agg(k order by k) from export, jsonb_object_keys(doc) k),
   array['access_tokens', 'account', 'alexa_links', 'analytics_decisions', 'archived_households', 'connected_apps', 'exported_at',
-        'feedback', 'format', 'history', 'household', 'invites_created', 'items_added',
+        'feedback', 'format', 'history', 'household', 'households', 'invites_created', 'items_added',
         'profile', 'purchases', 'version'],
   'the export has the documented sections'
 );
@@ -309,6 +309,8 @@ select is(
       'last_sign_in_at', null, 'providers', '[]'::jsonb),
     'profile', jsonb_build_object('display_name', 'emil', 'created_at', now()),
     'household', jsonb_build_object('id', (select id from he), 'name', 'Emil & Frida', 'role', 'owner', 'joined_at', now()),
+    'households', jsonb_build_array(jsonb_build_object('id', (select id from he), 'name', 'Emil & Frida',
+      'kind', null, 'role', 'owner', 'joined_at', now(), 'is_default', true)),
     'items_added', jsonb_build_array(jsonb_build_object('name', 'Äpfel', 'brand', 'Elstar', 'properties', 'Bio',
       'quantity', '1 kg', 'status', 'active',
       'category', 'Obst & Gemüse', 'store', null, 'created_at', now(), 'bought_at', null)),

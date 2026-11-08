@@ -11,10 +11,15 @@ const fail = (status: 401 | 403) =>
 function fakeDeps(overrides: Partial<Deps> = {}) {
   const calls: ParsedItem[][] = [];
   const deps: Deps = {
-    authenticate: (req) =>
-      req.headers.get('authorization') === 'Bearer fgp_good'
-        ? Promise.resolve(caller)
-        : Promise.reject(fail(401)),
+    authenticate: (req) => {
+      const token = req.headers.get('authorization');
+      if (token === 'Bearer fgp_good') return Promise.resolve(caller);
+      if (token === 'Bearer app-session') return Promise.resolve({ ...caller, via: 'session' });
+      if (token === 'Bearer fgp_siri') return Promise.resolve({ ...caller, via: 'siri' });
+      return Promise.reject(fail(401));
+    },
+    // u1 is in h1 (the default) and h2.
+    isMember: (_caller, household) => Promise.resolve(['h1', 'h2'].includes(household)),
     // The lock is off (or the household has premium): everything as before job 50.
     requirePremium: () => Promise.resolve('open'),
     splitItems: (_caller, items) =>
@@ -147,6 +152,90 @@ Deno.test('parse mode with split: brand, details, store and category as a typed 
       categoryId: 'kuehlregal',
     },
   ]);
+});
+
+Deno.test('job 169b: the app names the household it shows; the split runs there', async () => {
+  const splitIn: string[] = [];
+  const asked: string[] = [];
+  const { handle } = fakeDeps({
+    isMember: (_caller, household) => {
+      asked.push(household);
+      return Promise.resolve(household === 'h2');
+    },
+    splitItems: (c, items) => {
+      splitIn.push(c.householdId);
+      return Promise.resolve(
+        items.map((item) => ({
+          ...item,
+          brand: null,
+          properties: null,
+          storeId: 's2',
+          categoryId: null,
+        })),
+      );
+    },
+  });
+  const parse = (household?: string) =>
+    handle(post(
+      { text: 'Zahnpasta', mode: 'parse', split: true, ...(household && { household }) },
+      { token: 'app-session' },
+    ));
+  const res = await parse('h2');
+  assertEquals(res.status, 200);
+  assertEquals(await res.json(), {
+    speech: 'Verstanden: Zahnpasta.',
+    items: [{
+      name: 'Zahnpasta',
+      quantity: null,
+      brand: null,
+      properties: null,
+      storeId: 's2',
+      categoryId: null,
+    }],
+    truncated: false,
+  }, 'the answer keeps its shape');
+  assertEquals((await parse()).status, 200, 'without household: the default, as older apps get');
+  assertEquals(splitIn, ['h2', 'h1']);
+  assertEquals(asked, ['h2']);
+});
+
+Deno.test('job 169b: a household the session user is not in is refused, nothing split', async () => {
+  let splits = 0;
+  const { handle } = fakeDeps({
+    splitItems: () => {
+      splits++;
+      return Promise.reject(new Error('not asked'));
+    },
+  });
+  const res = await handle(
+    post({ text: 'Milch', mode: 'parse', split: true, household: 'h9' }, { token: 'app-session' }),
+  );
+  assertEquals(res.status, 403);
+  assertEquals((await res.json()).error, 'no_household');
+  assertEquals(splits, 0);
+});
+
+Deno.test('job 169b: Siri and token callers keep their credential household', async () => {
+  for (const token of ['fgp_good', 'fgp_siri']) {
+    const addedIn: string[] = [];
+    const { handle } = fakeDeps({
+      isMember: () => Promise.reject(new Error('not asked')),
+      addItems: (c, items) => {
+        addedIn.push(c.householdId);
+        return Promise.resolve(items.map((item) => ({
+          ...item,
+          brand: null,
+          properties: null,
+          category: 'Sonstiges',
+          alreadyOnList: false,
+          similarOnList: [],
+        })));
+      },
+    });
+    const res = await handle(post({ text: 'Milch', household: 'h2' }, { token }));
+    assertEquals(res.status, 200, token);
+    assertEquals(addedIn, ['h1'], token);
+  }
 });
 
 Deno.test('parse mode without split answers as before, for installed apps', async () => {

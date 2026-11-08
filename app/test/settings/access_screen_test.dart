@@ -1,6 +1,7 @@
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/design/field_border.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
+import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/settings/access_repository.dart';
 import 'package:family_groceries/settings/access_screen.dart';
 import 'package:family_groceries/siri/siri_channel.dart';
@@ -8,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../household/harness.dart' show TestSession;
 import '../siri/fake_siri_channel.dart';
 
 class FakeAccessRepository() implements AccessRepository {
@@ -98,7 +100,7 @@ void main() {
     addTearDown(tester.view.reset);
     repo = FakeAccessRepository();
     seed?.call(repo);
-    final Widget screen = AccessScreen(repository: repo, siri: siri);
+    final Widget screen = AccessScreen(repositories: (_) => repo, siri: siri);
     await tester.pumpWidget(
       MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -155,6 +157,60 @@ void main() {
       find.text('…1234 · Erstellt am 22.10.2026 · Noch nie benutzt'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('job 169b: a token made after a switch is bound to the household '
+      'shown, and the page says which one', (tester) async {
+    const home = Household(id: 'home', name: 'Zuhause', isDefault: true);
+    const club = Household(id: 'club', name: 'Sommerfest');
+    final session = TestSession(const InHousehold('peter', home, [home, club]));
+    addTearDown(session.close);
+    final repos = <String?, FakeAccessRepository>{
+      'home': FakeAccessRepository(),
+      'club': FakeAccessRepository(),
+    };
+    tester.view.physicalSize = const Size(800, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      BlocProvider<SessionCubit>.value(
+        value: session,
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('de'),
+          home: Scaffold(body: AccessScreen(repositories: (h) => repos[h]!)),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.text(
+        'Ein neuer Token gilt für „Zuhause“, den Haushalt, der gerade offen '
+        'ist.',
+      ),
+      findsOneWidget,
+    );
+    await session.switchTo('club');
+    await tester.pumpAndSettle();
+    expect(
+      find.text(
+        'Ein neuer Token gilt für „Sommerfest“, den Haushalt, der gerade '
+        'offen ist.',
+      ),
+      findsOneWidget,
+    );
+    await tapText(tester, 'Token erstellen');
+    await tester.enterText(find.widgetWithText(LabeledField, 'Name'), 'Skript');
+    await tapText(tester, 'Erstellen');
+    await tapText(tester, 'Fertig');
+    expect([for (final t in repos['club']!.tokens) t.name], ['Skript']);
+    expect(repos['home']!.tokens, isEmpty);
+  });
+
+  testWidgets('one household: no line about which one', (tester) async {
+    await pumpAccess(tester);
+    expect(find.byKey(const ValueKey('access-keys-household')), findsNothing);
   });
 
   testWidgets('the token limit is explained', (tester) async {

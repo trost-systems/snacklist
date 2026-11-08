@@ -10436,3 +10436,68 @@ or unfolds the section.
 4. **No in-app copy to change.** No ARB string mentions holding a store; the list explainer
    („Tippen hakt ab · Halten bearbeitet“) and the edit tip are about items and stay. The feature
    files, FEATURES-FOR-WRITERS and STORE_LAYOUTS.md no longer say a divider hold opens anything.
+
+## Job 169b: several households per user, wave 1, 2026-11-08
+
+Peter's calls (2026-11-08, on [`docs/households/PLAN.md`](households/PLAN.md)): HH3 in three
+waves, Premium per household (M-H1), reusable group links, a default household the user picks for
+Siri, Alexa and AI, club features without club outreach. Wave 1 is several households and the
+switcher; the contract is [`docs/households/W1.md`](households/W1.md). Supersedes 1.2 ("One
+household per user"), job 22 #4 ("joining switches") and the offline-cache rule that a household
+switch drops the user's other cached lists.
+
+1. **One default membership per user, kept by triggers.** `household_members.is_default` with a
+   partial unique index. A before-insert trigger makes the first membership the default; an
+   after-delete trigger hands it to the oldest remaining one (`for update` on the pick, PLAN
+   section 2). Every exit path (leave, a deleted household, account deletion, W2's removal) goes
+   through the trigger, so no function has to remember it.
+2. **A per-user advisory lock serializes membership changes** (`lock_memberships`). The row lock
+   alone did not cover a join racing a leave: the join's before-insert trigger saw the old default
+   still there and inserted a second non-default row, then the leave removed the default and
+   promoted nothing new. The two-connection tests in `_shared/households_integration_test.ts`
+   fail without the lock and without `for update`. One rare case remains: changing the default on
+   one device while leaving that household on another can deadlock (40P01) and fail one call; the
+   app retries household calls, so we accept it.
+3. **Old store builds see one membership.** The select policy shows a user's own rows only where
+   `is_default`, so today's `.maybeSingle()` keeps working. The new app reads `my_households()`
+   and `household_members_of(h)`. Old signatures (`accept_invite(code[, archive])`,
+   `leave_current_household`, `unarchive_household(h, archive)`, `create_household` without a
+   request id) act on the default membership only and keep their answers.
+4. **New calls take a required mode or request id, not a defaulted one.** With a default, an old
+   app's named call would match two overloads and PostgREST would refuse it as ambiguous. So
+   `create_household(p_request_id, ...)`, `accept_invite(p_code, p_mode => 'add')` and the
+   `p_household` overloads of `leaves_unlocked`, `create_personal_access_token`,
+   `create_api_token` and `my_yearly_plan` are separate signatures.
+5. **Siri credentials follow the default household at request time**; PATs and API keys stay
+   bound to the household they were created in. A Siri key is per user and device, so it should
+   act where Siri, Alexa and AI act (Peter's Q-HH4). It ends only when the user has no
+   membership left.
+6. **MCP gets `list_households` and an optional `household` argument** (id or name in any
+   case, member-checked). Without it, the default. The premium gate checks the household each
+   call acts in; `list_households` itself is not gated, since it lists only the user's own
+   households and a locked default must not hide an unlocked one.
+7. **Create is capped at 10 memberships** (`too_many_households`), an abuse guard. Joining has no
+   cap: an invite is somebody else's choice to let you in, and a club member may be in many.
+8. **A schema check stops new single-membership reads.** A new migration that reads
+   `household_members` by user without a household, `is_default` or an order fails the lint gate
+   (CLAUDE.md, lint rules). It caught the feedback trigger's old read when run on the old file.
+9. **`households.kind` lands here**, shared with job 168's "who do you shop with" step
+   (`partner | family | flat | club | solo`, nullable).
+10. **A household switched away from keeps its list open until its queue is sent.** `ListScope`
+    holds the lists by household: the shown one, plus each hidden one whose queued changes have
+    not reached the server. A hidden list closes once it has resynced with an empty queue; until
+    then it retries as the shown one does (network watch, 3 s retry). A start opens the list of
+    every other household whose cached queue is not empty, so a restart covers it too. Switching
+    back reuses the open list. We chose this over a separate flusher that replays cached queues
+    through a headless repository: that flusher would be a second writer of the same cached
+    queue (a race with the list when the user switches back) and would have to repeat the list's
+    acknowledgement rules (an add kept as another item, refused renames folded into a merge). The
+    list already has them and is the one owner of its queue. The cost is a realtime channel per
+    hidden household while it sends. A refusal in a hidden list is not shown, since the user is
+    looking at another household; the change is dropped as it would be on screen.
+11. **An old store build's account deletion warns only about the default household.** Its
+    `_householdFate` reads `leaves_unlocked()` and the one membership it sees, while
+    `delete_account` now deletes every household where the user is the last member. We accept
+    the incomplete warning: several households can only be made in the new app, and the builds
+    without it went to TestFlight and Play internal testing only, never to a public store. The new
+    app's deletion names every household that goes.

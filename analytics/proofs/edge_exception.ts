@@ -32,6 +32,7 @@ const caught = withTelemetry(
     authenticate: () => Promise.resolve({ userId: 'u', householdId: 'h' }),
     // Open, so the failure is the add itself.
     requirePremium: () => Promise.resolve('open'),
+    isMember: () => Promise.resolve(false),
     addItems: () =>
       Promise.reject(
         Object.assign(new Error('duplicate key (name)=(Hafermilch) for peter@example.com'), {

@@ -1,5 +1,5 @@
 import { expect, test } from './fixtures';
-import { addField, addItem, apiAs, confirmJoin, createInviteCode, editField, itemRow, joinWithCode, must, newEmail, offlineIndicator, openEdit, openMore, saveEdit, screenshot, signUp, signUpWithHousehold, tick, typeInto, within } from './helpers';
+import { addField, addItem, apiAs, confirmJoin, createHousehold, createInviteCode, editField, householdChip, invitePreview, itemRow, joinWithCode, must, newEmail, offlineIndicator, openEdit, openMore, saveEdit, screenshot, signUp, signUpWithHousehold, skipInvite, switchHousehold, tick, typeInto, within } from './helpers';
 
 test('two members of one household see each other\'s changes live', async ({ browser }) => {
   const peter = await (await browser.newContext()).newPage();
@@ -60,13 +60,15 @@ test('an invite link takes a new user through sign-up straight into the househol
   await within(2_000, (timeout) => expect(itemRow(peter, 'Brot'), 'and the other way').toBeVisible({ timeout }));
 });
 
-test('a member of another household joins with a code from the menu', async ({ browser }) => {
+test('a member of another household joins with a code from the menu and keeps both', async ({ browser }) => {
   const peter = await (await browser.newContext()).newPage();
   const lea = await (await browser.newContext()).newPage();
   const errors: string[] = [];
   lea.on('pageerror', (e) => errors.push(e.message));
   lea.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
-  await signUpWithHousehold(peter, newEmail('peter'));
+  await signUp(peter, newEmail('peter'));
+  await createHousehold(peter, { name: 'Familie Trost' });
+  await skipInvite(peter);
   await addItem(peter, 'Kaffee');
   const code = await createInviteCode(peter);
   await signUpWithHousehold(lea, newEmail('lea'));
@@ -76,19 +78,24 @@ test('a member of another household joins with a code from the menu', async ({ b
   await expect(lea).toHaveURL(/\/more\/join$/);
   await typeInto(lea.getByRole('textbox', { name: 'Einladungscode' }), code.toLowerCase());
   await lea.getByRole('button', { name: 'Weiter', exact: true }).click();
-  // Job 22: in a household, the screen says so first; switching takes the explicit Join.
-  await expect(lea.getByText('Du bist schon in einem Haushalt')).toBeVisible();
-  await expect(lea.getByText(/Du bist das einzige Mitglied von „Unser Haushalt“/)).toBeVisible();
+  await expect(invitePreview(lea, 'Familie Trost')).toBeVisible();
+  // Job 169b: joining adds a household, so nothing warns about leaving the old one.
+  await expect(lea.getByText('Du bist schon in einem Haushalt'), 'no move warning').toHaveCount(0);
   await screenshot(lea, '07-join-confirm');
-  await confirmJoin(lea, 'Unser Haushalt');
+  await confirmJoin(lea, 'Familie Trost');
 
+  await expect(householdChip(lea, 'Familie Trost'), 'the joined household shows').toBeVisible();
   await expect(itemRow(lea, 'Kaffee'), 'the joiner sees the new household\'s list').toBeVisible();
-  await expect(itemRow(lea, 'Tee'), 'the old list is gone').toHaveCount(0);
+  await expect(itemRow(lea, 'Tee'), 'the other household\'s list is not mixed in').toHaveCount(0);
   // Both opening resyncs have answered by now; a lost race shows Offline.
   await lea.waitForTimeout(1_000);
   await expect(offlineIndicator(lea), 'the new list is online').toHaveCount(0);
   await addItem(lea, 'Brot');
   await expect(itemRow(peter, 'Brot'), 'and both now share one list').toBeVisible();
+
+  await switchHousehold(lea, 'Familie Trost', 'Unser Haushalt');
+  await expect(itemRow(lea, 'Tee'), 'the joiner\'s own household and list stay').toBeVisible();
+  await expect(itemRow(lea, 'Kaffee')).toHaveCount(0);
   expect(errors, 'no Flutter errors on the way').toEqual([]);
 });
 

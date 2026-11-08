@@ -6,7 +6,7 @@ import { expect, test, type Browser, type Page } from './fixtures';
 import process from 'node:process';
 import {
   addField, addItem, adminClient, answerConsent, apiAs, type Collector, confirmJoin, createHousehold, createInviteCode,
-  cutOff, eventNames, fakeCollector, firstOf, inviteCodeLabel, itemRow, joinWithCode, latestLinkFor, must, newEmail, openMore, password,
+  cutOff, eventNames, fakeCollector, firstOf, inviteCodeLabel, invitePreview, itemRow, joinWithCode, latestLinkFor, must, newEmail, openMore, password,
   screenshot, shownInviteCodes, signUp, signUpWithHousehold, skipInvite, typeInto, viaFakeProvider, within,
   openEmailSignIn,
 } from './helpers';
@@ -316,7 +316,7 @@ test('AC8: a member revokes an invite under More; its link and code stop at once
   expect((await other.api.rpc('accept_invite', { p_code: code })).data.status).toBe('invalid_invite');
 });
 
-test('AC9: someone in a household who opens an invite is asked, and stays without a Join', async ({ browser }) => {
+test('AC9: someone in a household who opens an invite sees whose it is, and nothing changes without a Join', async ({ browser }) => {
   const page = await newPage(browser);
   const email = newEmail('ac9');
   await signUpWithHousehold(page, email);
@@ -324,16 +324,16 @@ test('AC9: someone in a household who opens an invite is asked, and stays withou
   const mine = firstOf(await householdsCreatedBy(email), 'household');
   const { code, household } = await householdWithInvite('ac9-other');
   await page.goto(`/join/${code}`);
-  await expect(page.getByText('Du bist schon in einem Haushalt')).toBeVisible();
-  await expect(page.getByText(/Du bist das einzige Mitglied von „Unser Haushalt“.*mit seiner Liste gelöscht/)).toBeVisible();
-  await expect(page.getByText('Familie Trost')).toBeVisible();
+  await expect(invitePreview(page, 'Familie Trost')).toBeVisible();
+  // Job 169b: joining adds a household beside this one, so there is no move to warn about.
+  await expect(page.getByText('Du bist schon in einem Haushalt'), 'no move warning').toHaveCount(0);
   await page.getByRole('button', { name: 'Abbrechen' }).click();
   await expect(itemRow(page, 'Tee')).toBeVisible();
-  expect(await membersOf(mine.id), 'not moved').toEqual([await userIdOf(email)]);
-  expect(await membersOf(household)).toHaveLength(1);
-  // Opening the link again asks again; nothing happened in between.
+  expect(await membersOf(mine.id), 'still in their household').toEqual([await userIdOf(email)]);
+  expect(await membersOf(household), 'not in the other').toHaveLength(1);
+  // Opening the link again shows the invite again; nothing happened in between.
   await page.goto(`/join/${code}`);
-  await expect(page.getByText('Du bist schon in einem Haushalt')).toBeVisible();
+  await expect(invitePreview(page, 'Familie Trost')).toBeVisible();
 });
 
 test('a link opened twice, or by a member, lands on the list without a second membership', async ({ browser }) => {
@@ -549,11 +549,10 @@ for (const [lang, locale] of [['de', 'de-DE'], ['en', 'en-US']] as const) {
       await expect(joiner.getByText(lang === 'de' ? tooMany : 'Too many attempts. Please try again later.').first()).toBeVisible();
       await shot(joiner, '11', 'join-rate-limit');
 
-      // Already in a household: the first user opens the link.
+      // Already in a household: the first user opens the link, which adds a household (job 169b).
       await page.goto(`/join/${code}`);
-      await expect(page.getByText(lang === 'de' ? 'Du bist schon in einem Haushalt' : "You're already in a household")).toBeVisible();
       await expect(page.getByText('Familie Trost').first()).toBeVisible();
-      await shot(page, '12', 'already-in-household');
+      await shot(page, '12', 'join-while-in-household');
     });
   }
 }

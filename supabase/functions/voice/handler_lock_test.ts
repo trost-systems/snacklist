@@ -33,6 +33,7 @@ function world(access: () => Promise<Access>) {
           categoryId: null,
         })),
       ),
+    isMember: () => Promise.resolve(false),
     requirePremium: (caller, integration) => {
       asked.push([caller, integration]);
       return access();

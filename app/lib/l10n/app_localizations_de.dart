@@ -294,6 +294,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get householdNameDefault => 'Unser Haushalt';
 
   @override
+  String get householdNameHintFurther => 'z. B. Eltern, WG, Verein';
+
+  @override
   String get createHousehold => 'Haushalt erstellen';
 
   @override
@@ -307,10 +310,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get invalidInvite => 'Dieser Code ist ungültig oder abgelaufen.';
-
-  @override
-  String get switchHouseholdWarning =>
-      'Du verlässt deinen aktuellen Haushalt. Bist du der letzte, wird er mit seiner Liste gelöscht.';
 
   @override
   String genericError(String message) {
@@ -1244,19 +1243,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get tooManyAttempts => 'Zu viele Versuche. Bitte später noch einmal.';
 
   @override
-  String get alreadyInHousehold => 'Du bist schon in einem Haushalt';
-
-  @override
-  String switchHouseholdAlone(String household) {
-    return 'Du bist das einzige Mitglied von „$household“. Trittst du bei, wird „$household“ mit seiner Liste gelöscht.';
-  }
-
-  @override
-  String switchHouseholdShared(String household) {
-    return 'Trittst du bei, verlässt du „$household“. Die anderen Mitglieder behalten die Liste.';
-  }
-
-  @override
   String get inviteCheck => 'Weiter';
 
   @override
@@ -1443,32 +1429,8 @@ class AppLocalizationsDe extends AppLocalizations {
       'Du hast Hummlist Lifetime vor Kurzem gekauft? So forderst du den Kauf zurück';
 
   @override
-  String joinLifetimeEnds(String household) {
-    return '„$household“ hat Hummlist Lifetime. Du bist das letzte Mitglied: Trittst du bei, wird der Haushalt gelöscht. Hummlist Lifetime endet mit ihm, denn ein Kauf gehört zu seinem Haushalt und zieht nicht mit um.';
-  }
-
-  @override
-  String get joinAnyway => 'Trotzdem beitreten';
-
-  @override
   String get joinLifetimeRefundLink =>
       'Erstattung bei Apple oder Google anfragen';
-
-  @override
-  String joinArchiveOffer(String household) {
-    return '„$household“ hat Hummlist Lifetime. Du bist das letzte Mitglied. Archiviere den Haushalt, statt ihn zu löschen: Liste und Hummlist Lifetime bleiben erhalten, und du kannst ihn später unter „Mehr“ wieder aktivieren. Aktivierst du ihn nicht innerhalb von 24 Monaten wieder, wird er gelöscht.';
-  }
-
-  @override
-  String get joinArchive => 'Archivieren und beitreten';
-
-  @override
-  String get joinDelete => 'Löschen und beitreten';
-
-  @override
-  String joinDeleteTitle(String household) {
-    return '„$household“ löschen?';
-  }
 
   @override
   String get archivedTitle => 'Archivierte Haushalte';
@@ -1497,12 +1459,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String archivedRestoreBody(String household) {
-    return 'Du wechselst in „$household“ und bist dort wieder Mitglied.';
-  }
-
-  @override
-  String archivedRestoreArchivesCurrent(String household) {
-    return 'Du bist das letzte Mitglied von „$household“. Weil er Hummlist Lifetime hat, wird er archiviert, nicht gelöscht.';
+    return 'Du bist wieder Mitglied von „$household“. Deine anderen Haushalte bleiben.';
   }
 
   @override
@@ -1769,6 +1726,16 @@ class AppLocalizationsDe extends AppLocalizations {
       'Mit einem Token baust du eigene Automationen am MCP-Server, die eure Liste pflegen. Für Programme ohne MCP gibt es unten die API.';
 
   @override
+  String accessKeysHousehold(String household) {
+    return 'Ein neuer Token gilt für „$household“, den Haushalt, der gerade offen ist.';
+  }
+
+  @override
+  String accessKeysHouseholdWithApi(String household) {
+    return 'Neue Token und API-Schlüssel gelten für „$household“, den Haushalt, der gerade offen ist.';
+  }
+
+  @override
   String lastActiveOn(DateTime date) {
     final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(localeName);
     final String dateString = dateDateFormat.format(date);
@@ -1820,4 +1787,131 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get tipDismiss => 'Tipp ausblenden';
+
+  @override
+  String get tooManyHouseholds =>
+      'Du bist schon in 10 Haushalten. Verlasse einen, bevor du einen neuen anlegst oder beitrittst.';
+
+  @override
+  String get householdSwitch => 'Haushalt wechseln';
+
+  @override
+  String get householdsTitle => 'Deine Haushalte';
+
+  @override
+  String householdMembers(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Mitglieder',
+      one: '1 Mitglied',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String householdOpenItems(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count offen',
+      one: '1 offen',
+      zero: 'nichts offen',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get householdCurrent => 'Angezeigt';
+
+  @override
+  String get newHousehold => 'Neuer Haushalt';
+
+  @override
+  String get joinWithCode => 'Mit Code beitreten';
+
+  @override
+  String voiceDefaultRow(String household) {
+    return 'Siri, Alexa & KI nutzen: $household';
+  }
+
+  @override
+  String get voiceDefaultTitle => 'Standard für Siri, Alexa & KI';
+
+  @override
+  String get voiceDefaultBody =>
+      'Was du Siri, Alexa oder einem KI-Assistenten sagst, landet in diesem Haushalt.';
+
+  @override
+  String get voiceDefaultOn =>
+      'Siri, Alexa und KI-Assistenten nutzen diesen Haushalt.';
+
+  @override
+  String voiceDefaultOff(String household) {
+    return 'Siri, Alexa und KI-Assistenten nutzen gerade „$household“.';
+  }
+
+  @override
+  String get householdPageTitle => 'Haushalt';
+
+  @override
+  String get householdRename => 'Umbenennen';
+
+  @override
+  String get householdRenameTitle => 'Haushalt umbenennen';
+
+  @override
+  String get householdMembersTitle => 'Mitglieder';
+
+  @override
+  String householdMemberYou(String name) {
+    return '$name (du)';
+  }
+
+  @override
+  String get householdMemberUnnamed => 'Ohne Namen';
+
+  @override
+  String get householdMembersFailed =>
+      'Die Mitglieder konnten nicht geladen werden.';
+
+  @override
+  String get leaveHousehold => 'Haushalt verlassen';
+
+  @override
+  String leaveTitle(String household) {
+    return '„$household“ verlassen?';
+  }
+
+  @override
+  String get leaveShared =>
+      'Die anderen Mitglieder behalten die Liste. Zurück kommst du nur mit einer neuen Einladung.';
+
+  @override
+  String get leaveLast =>
+      'Du bist das letzte Mitglied. Der Haushalt wird mit Liste, Verlauf, Kategorien und Geschäften gelöscht.';
+
+  @override
+  String leaveLifetimeEnds(String household) {
+    return '„$household“ hat Hummlist Lifetime. Du bist das letzte Mitglied: Verlässt du ihn, wird der Haushalt gelöscht. Hummlist Lifetime endet mit ihm, denn ein Kauf gehört zu seinem Haushalt.';
+  }
+
+  @override
+  String leaveArchiveOffer(String household) {
+    return '„$household“ hat Hummlist Lifetime. Du bist das letzte Mitglied. Archiviere den Haushalt, statt ihn zu löschen: Liste und Hummlist Lifetime bleiben erhalten, und du kannst ihn später unter „Mehr“ wieder aktivieren. Aktivierst du ihn nicht innerhalb von 24 Monaten wieder, wird er gelöscht.';
+  }
+
+  @override
+  String get leaveArchive => 'Archivieren und verlassen';
+
+  @override
+  String get leaveDelete => 'Löschen und verlassen';
+
+  @override
+  String consentDefaultHousehold(String name) {
+    return 'Arbeitet in deinem Standard-Haushalt „$name“. Nennst du einen anderen deiner Haushalte, auch dort.';
+  }
+
+  @override
+  String get voiceDefaultMake => 'Als Standard nutzen';
 }

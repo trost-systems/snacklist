@@ -54,7 +54,8 @@ abstract interface class PremiumServer() {
   Future<OfferSwitch> offerSwitch();
 
   /// Throws when it cannot be read.
-  Future<MyYearlyPlan> myYearlyPlan();
+  /// For [household] (job 169b); null asks about the default household.
+  Future<MyYearlyPlan> myYearlyPlan({String? household});
 
   /// The server switch `integration_lock` (job 50, seeded off): Siri and MCP
   /// need Hummlist Premium; Alexa stays free. False when it cannot be read.
@@ -75,8 +76,13 @@ class const SupabasePremiumServer(final SupabaseClient _client)
   }
 
   @override
-  Future<MyYearlyPlan> myYearlyPlan() async =>
-      MyYearlyPlan.parse(await _client.rpc<Object?>('my_yearly_plan'));
+  Future<MyYearlyPlan> myYearlyPlan({String? household}) async =>
+      MyYearlyPlan.parse(
+        await _client.rpc<Object?>(
+          'my_yearly_plan',
+          params: household == null ? null : {'p_household': household},
+        ),
+      );
 
   @override
   Future<bool> integrationLock() async {

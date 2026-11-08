@@ -2,7 +2,7 @@
 // of index.ts so the database integration test runs the same wiring.
 import { analyticsSubject } from '../alexa/store.ts';
 import { type Auth, authenticate } from '../_shared/auth.ts';
-import { asUser, serviceDb } from '../_shared/db.ts';
+import { asUser, isMember, serviceDb } from '../_shared/db.ts';
 import { listItems } from '../_shared/list.ts';
 import { requirePremiumWith } from '../_shared/premium.ts';
 import type { Telemetry } from '../_shared/telemetry.ts';
@@ -16,6 +16,7 @@ export function productionDeps(
   return {
     authenticate: resolve,
     requirePremium: requirePremiumWith(telemetry),
+    isMember: (auth, household) => isMember(auth.userId, household),
     addItems: (auth, items, options) =>
       asUser(auth.userId, (tx) => addItems(tx, auth.householdId, items, options)),
     splitItems: (auth, items) =>

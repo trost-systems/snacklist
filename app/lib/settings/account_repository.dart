@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart' show immutable;
 import 'package:http/http.dart' show ClientException;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// What deleting the account does to the user's household.
+/// What deleting the account does to one of the user's households.
 sealed class const HouseholdFate();
 
 /// Others stay in [householdName] with the whole list.
@@ -23,9 +23,6 @@ final class const FateDeleted(
   final bool unlocked = false,
 }) extends HouseholdFate;
 
-/// The user is in no household.
-final class const FateNone() extends HouseholdFate;
-
 /// A household the user archived (job 43). It has no members, so it is
 /// deleted with the account (DECISIONS 43.11).
 @immutable
@@ -34,14 +31,17 @@ class const ArchivedFate(final String name, {final bool unlocked = false});
 /// Everything deleting the account takes with it besides the account.
 @immutable
 class const AccountFate(
-  final HouseholdFate household, {
+  /// One per household the user is in; none without a household.
+  final List<HouseholdFate> households, {
   final List<ArchivedFate> archived = const [],
 }) {
+  /// The households deleted with the account that have Hummlist Premium.
+  Iterable<FateDeleted> get deletedPremium =>
+      households.whereType<FateDeleted>().where((h) => h.unlocked);
+
   /// Hummlist Premium of some household ends with the account.
-  bool get endsPremium => switch (household) {
-    FateDeleted(unlocked: true) => true,
-    _ => archived.any((a) => a.unlocked),
-  };
+  bool get endsPremium =>
+      deletedPremium.isNotEmpty || archived.any((a) => a.unlocked);
 }
 
 /// Whether the server revoked the app's Sign in with Apple grant.
@@ -129,12 +129,12 @@ class SupabaseAccountRepository(
 
   @override
   Future<AccountFate> fate() => _guard(() async {
-    final (household, archived) = await (
-      _householdFate(),
+    final (households, archived) = await (
+      _householdFates(),
       _client.rpc<List<dynamic>>('archived_households'),
     ).wait;
     return AccountFate(
-      household,
+      households,
       archived: [
         for (final row in archived.cast<Map<String, dynamic>>())
           ArchivedFate(
@@ -145,46 +145,41 @@ class SupabaseAccountRepository(
     );
   });
 
-  Future<HouseholdFate> _householdFate() async {
-    final userId = _client.auth.currentUser!.id;
-    final membership = await _client.rest
-        .from('household_members')
-        .select('household_id, households(name)')
-        .eq('user_id', userId)
-        .maybeSingle();
-    if (membership case {
-      'household_id': final String householdId,
-      'households': {'name': final String name},
-    }) {
-      final (members, profiles) = await (
-        _client.rest
-            .from('household_members')
-            .select('user_id')
-            .eq('household_id', householdId),
-        // As in the list's catalog: RLS returns everyone the user shares a
-        // household with, the member ids pick this one's.
-        _client.rest.from('profiles').select('id, display_name'),
-      ).wait;
-      final others = {for (final row in members) row['user_id']! as String}
-        ..remove(userId);
-      if (others.isEmpty) {
-        return FateDeleted(
-          name,
-          unlocked: await _client.rpc<bool>('leaves_unlocked'),
-        );
-      }
-      return FateKept(name, [
-        for (final profile in profiles)
-          if (profile
-              case {
-                'id': final String id,
-                'display_name': final String displayName,
-              }
-              when others.contains(id))
-            displayName,
-      ]);
+  /// Each household's fate: kept for its other members, or deleted with
+  /// its last one.
+  Future<List<HouseholdFate>> _householdFates() async {
+    final userId = _client.auth.currentUser?.id;
+    final rows = await _client.rpc<List<dynamic>>('my_households');
+    return await Future.wait([
+      for (final row in rows.whereType<Map<String, dynamic>>())
+        if (row case {'id': final String id, 'name': final String name})
+          _fateOf(id, name, userId),
+    ]);
+  }
+
+  Future<HouseholdFate> _fateOf(String id, String name, String? userId) async {
+    final members = await _client.rpc<List<dynamic>>(
+      'household_members_of',
+      params: {'p_household': id},
+    );
+    final others = <String>[
+      for (final row in members.whereType<Map<String, dynamic>>())
+        if (row['user_id'] != userId)
+          switch (row['display_name']) {
+            final String name => name,
+            _ => '',
+          },
+    ];
+    if (others.isEmpty) {
+      return FateDeleted(
+        name,
+        unlocked: await _client.rpc<bool>(
+          'leaves_unlocked',
+          params: {'p_household': id},
+        ),
+      );
     }
-    return const FateNone();
+    return FateKept(name, [...others.where((n) => n.isNotEmpty)]);
   }
 
   @override

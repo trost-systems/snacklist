@@ -47,7 +47,7 @@ class Lists() extends Cubit<ListState> {
 }
 
 const home = Household(id: 'home', name: 'Zuhause');
-const inHome = InHousehold('peter', home);
+const inHome = InHousehold('peter', home, [home]);
 
 void main() {
   group('with a fake list', () {
@@ -118,7 +118,9 @@ void main() {
         async.elapse(const Duration(seconds: 2));
 
         sessions.set(
-          const InHousehold('peter', Household(id: 'other', name: 'WG')),
+          const InHousehold('peter', Household(id: 'other', name: 'WG'), [
+            Household(id: 'other', name: 'WG'),
+          ]),
         );
         old.set(listOf([item('Brot'), item('Milch')]));
         async.elapse(const Duration(seconds: 2));

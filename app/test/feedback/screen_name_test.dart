@@ -18,6 +18,8 @@ void main() {
       '/more/account': 'account',
       '/more/settings': 'settings',
       '/more/lifetime': 'lifetime',
+      '/more/household': 'household',
+      '/households/new': 'new_household',
       '/more/settings/language': 'language',
       '/settings': 'access',
       '/settings?section=account': 'account',

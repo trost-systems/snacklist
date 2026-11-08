@@ -2,6 +2,7 @@ import { assertEquals, assertMatch } from '@std/assert';
 import {
   checkHistory,
   checkIgnores,
+  checkMembershipReads,
   checkTables,
   compat,
   qualifiedName,
@@ -371,4 +372,49 @@ Deno.test('tables: a commented-out mention in a test does not count', () => {
   );
   assertEquals(found.length, 1);
   assertMatch(nth(found, 0), /no pgTAP test with two households touches it/);
+});
+
+Deno.test("membership reads: feedback's pre-169b single-household read fails as new migrations", () => {
+  const old = (name: string) => {
+    const sql = repoMigrations.get(name);
+    if (sql === undefined) throw new Error(`no migration ${name}`);
+    return sql;
+  };
+  const tree = new Map([
+    ['20261030070000_feedback.sql', old('20261030070000_feedback.sql')],
+  ]);
+  const found = messages(checkMembershipReads(new Map(), tree));
+  assertEquals(found.length, 1, JSON.stringify(found));
+  assertMatch(nth(found, 0), /^20261030070000_feedback\.sql:74: reads household_members by user/);
+});
+
+Deno.test('membership reads: a household, the default or an ignore with a reason pass', () => {
+  const tree = new Map([
+    [
+      '20990101000000_a.sql',
+      `
+      select m.household_id from public.household_members m where m.user_id = p_user and m.is_default;
+      delete from public.household_members m where m.user_id = p_user and m.household_id = p_h;
+      select m.household_id from household_members m where m.user_id = u order by m.joined_at limit 1;
+      -- schema-ignore membership-read -- counts every membership of the user on purpose
+      select household_id from public.household_members where user_id = p_user;
+      select exists (select 1 from public.household_members where user_id = p_user);
+      select count(*) from public.household_members where user_id = p_user;`,
+    ],
+  ]);
+  assertEquals(checkMembershipReads(new Map(), tree), []);
+  const bare = new Map([[
+    '20990101000000_b.sql',
+    `
+      -- schema-ignore membership-read
+      select household_id from public.household_members where user_id = auth.uid();`,
+  ]]);
+  assertEquals(checkMembershipReads(new Map(), bare).length, 1);
+});
+
+Deno.test("membership reads: main's migrations are not checked, this tree's new ones pass", () => {
+  assertEquals(checkMembershipReads(repoMigrations, repoMigrations), []);
+  const added = [...repoMigrations.keys()].filter((f) => f >= '20261108125048');
+  const base = new Map([...repoMigrations].filter(([f]) => !added.includes(f)));
+  assertEquals(messages(checkMembershipReads(base, repoMigrations)), []);
 });

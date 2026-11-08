@@ -12,6 +12,7 @@ import 'package:family_groceries/app/router.dart';
 import 'package:family_groceries/app/shell.dart';
 import 'package:family_groceries/app/theme.dart';
 import 'package:family_groceries/design/tokens.g.dart';
+import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/edit_item_sheet.dart';
 import 'package:family_groceries/list/list_cubit.dart';
@@ -31,6 +32,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mocktail/mocktail.dart' show when;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
@@ -38,6 +40,7 @@ import 'package:supabase_flutter/supabase_flutter.dart'
     show AuthChangeEvent, AuthState;
 
 import '../analytics/fakes.dart' show MemoryAnalyticsStore, loadedAnalytics;
+import '../household/harness.dart' show FakeInvites;
 import '../list/fake_repository.dart';
 import '../more/more_harness.dart';
 import '../purchases/fakes.dart';
@@ -103,6 +106,12 @@ Future<FakeRepository> _pumpShell(
 
   /// The home indicator's or gesture bar's height.
   double inset = 0,
+
+  /// The user's households, the first one shown (job 169b).
+  List<Household> households = const [
+    Household(id: 'home', name: 'Zuhause', isDefault: true),
+  ],
+  String initialLocation = listPath,
 }) async {
   tester.view
     ..devicePixelRatio = 1
@@ -119,11 +128,9 @@ Future<FakeRepository> _pumpShell(
   whenListen(
     session,
     const Stream<Session>.empty(),
-    initialState: const InHousehold(
-      'peter',
-      Household(id: 'home', name: 'Zuhause'),
-    ),
+    initialState: InHousehold('peter', households.first, households),
   );
+  when(session.refresh).thenAnswer((_) => Future.value());
   final repo = FakeRepository();
   for (final item in [
     if (!empty) ...[
@@ -139,9 +146,11 @@ Future<FakeRepository> _pumpShell(
     repo.rows[item.id] = item;
   }
   final router = GoRouter(
+    initialLocation: initialLocation,
     routes: [
       StatefulShellRoute.indexedStack(
-        builder: (_, _, shell) => AppShell(shell: shell, repository: repo),
+        builder: (_, _, shell) =>
+            AppShell(shell: shell, repositories: (_) => repo),
         branches: [
           StatefulShellBranch(
             routes: [
@@ -150,7 +159,17 @@ Future<FakeRepository> _pumpShell(
           ),
           StatefulShellBranch(
             routes: [
-              GoRoute(path: morePath, builder: (_, _) => const MoreScreen()),
+              GoRoute(
+                path: morePath,
+                builder: (_, _) => const MoreScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'household',
+                    builder: (_, _) =>
+                        const MoreScreen(page: MorePage.household),
+                  ),
+                ],
+              ),
             ],
           ),
         ],
@@ -165,6 +184,13 @@ Future<FakeRepository> _pumpShell(
       providers: [
         RepositoryProvider.value(value: cache),
         RepositoryProvider<PremiumServer>.value(value: purchases.premium),
+        RepositoryProvider<InviteRepository>.value(
+          value: FakeInvites()
+            ..memberLists['home'] = const [
+              HouseholdMember(userId: 'peter', displayName: 'Peter'),
+              HouseholdMember(userId: 'lea', displayName: 'Lea'),
+            ],
+        ),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -545,6 +571,41 @@ void main() {
         });
       }
     }
+
+    // Job 169b: the switcher sheet over the list, and the household page.
+    const households = [
+      Household(
+        id: 'home',
+        name: 'Zuhause',
+        isDefault: true,
+        memberCount: 2,
+        openCount: 4,
+      ),
+      Household(id: 'club', name: 'Sommerfest', memberCount: 12, openCount: 7),
+      Household(id: 'parents', name: 'Eltern'),
+    ];
+    testWidgets('household sheet, $mode', (tester) async {
+      await _pumpShell(tester, brightness, households: households);
+      await tester.tap(find.byKey(const ValueKey('household-chip')));
+      await tester.pumpAndSettle();
+      await expectLater(
+        find.byType(MaterialApp),
+        matchesGoldenFile('goldens/household-sheet-$mode.png'),
+      );
+    });
+
+    testWidgets('household page, $mode', (tester) async {
+      await _pumpShell(
+        tester,
+        brightness,
+        households: households,
+        initialLocation: householdPath,
+      );
+      await expectLater(
+        find.byType(MaterialApp),
+        matchesGoldenFile('goldens/household-page-$mode.png'),
+      );
+    });
 
     testWidgets('list, $mode', (tester) async {
       await _pumpShell(tester, brightness);

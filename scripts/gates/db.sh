@@ -34,13 +34,15 @@ supabase/bench/suggest_latency.sh
 # the Shortcut, native Siri and Alexa on parser-stored items.
 # Job 172: Alexa, Siri and list_items read only the open items of the caller's household.
 # Job 82: the waitlist function's wiring (sign-up, confirm, one-click unsubscribe, rate limit).
+# Job 169b: one default per user under concurrent leaves, joins and creates; the MCP household tools.
 db_port="$(sed -n '/^\[db\]/,/^\[/ s/^port = \([0-9]*\)$/\1/p' supabase/config.toml)"
 (cd supabase/functions && FG_DB_TEST=1 SUPABASE_DB_URL="postgresql://postgres:postgres@127.0.0.1:$db_port/postgres" \
   deno test --allow-env --allow-net --allow-read _shared/add_paths_integration_test.ts alexa/store_integration_test.ts \
   _shared/dedupe_integration_test.ts purchases/store_integration_test.ts _shared/premium_integration_test.ts \
   _shared/zero_stores_integration_test.ts _shared/list_integration_test.ts \
   _shared/one_open_item_integration_test.ts _shared/read_open_only_integration_test.ts api/api_integration_test.ts _shared/number_words_integration_test.ts \
-  voice/split_integration_test.ts _shared/voice_variants_integration_test.ts waitlist/waitlist_integration_test.ts)
+  voice/split_integration_test.ts _shared/voice_variants_integration_test.ts waitlist/waitlist_integration_test.ts \
+  _shared/households_integration_test.ts mcp/households_integration_test.ts)
 supabase db lint --local --fail-on warning
 scripts/backup/drill.sh
 

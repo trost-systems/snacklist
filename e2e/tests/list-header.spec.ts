@@ -1,5 +1,5 @@
 import { expect, test, type Page, type Route } from './fixtures';
-import { addItem, apiAs, boxOf, cutOff, failingIndicator, itemRow, listBarHeight, newEmail, offlineIndicator, screenshot, signUpWithHousehold, tick } from './helpers';
+import { addItem, apiAs, boxOf, cutOff, failingIndicator, householdChip, itemRow, listBarHeight, newEmail, offlineIndicator, screenshot, signUpWithHousehold, tick } from './helpers';
 
 /** The sync indicator's accessible names; it shows nothing while online, even with changes in flight. */
 const offline = offlineIndicator;
@@ -7,14 +7,16 @@ const failing = failingIndicator;
 const retrying = (page: Page) => page.getByRole('button', { name: 'Wird erneut versucht', exact: true });
 const edit = (page: Page) => page.getByRole('button', { name: 'Anpassen', exact: true });
 
-test('the bar above the list keeps its height in every sync state and names no household or count', async ({ page }) => {
+test('the bar above the list keeps its height in every sync state and names the household only in its chip, no count', async ({ page }) => {
   await signUpWithHousehold(page, newEmail('topbar'));
   await addItem(page, 'Brot');
   await addItem(page, 'Milch');
   await addItem(page, 'Seife');
   await expect(itemRow(page, 'Seife')).toBeVisible();
 
-  await expect(page.getByText('Unser Haushalt'), 'no household name').toHaveCount(0);
+  // Job 169b: the household's name is the switcher chip, and nowhere else in the bar.
+  await expect(page.getByText('Unser Haushalt'), 'the name once').toHaveCount(1);
+  await expect(householdChip(page, 'Unser Haushalt'), 'as the chip').toBeVisible();
   await expect(page.getByText(/^\d+ Artikel$/), 'no item count').toHaveCount(0);
 
   // The explainer card is the list's first entry, right under the bar, and stays while items are ticked

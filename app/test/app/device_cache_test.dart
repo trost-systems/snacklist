@@ -33,9 +33,12 @@ void main() {
   });
 
   test('a list is kept per user and household', () async {
-    await cache.remember('peter', home);
+    await cache.remember('peter', households: [home], shown: home.id);
     await cache.list('peter', 'home').save(snapshot);
-    expect((await cache.household('peter'))?.name, 'Zuhause');
+    expect(
+      (await cache.householdsOf('peter'))?.households.single.name,
+      'Zuhause',
+    );
     expect(
       (await cache.list('peter', 'home').load())?.toJson(),
       snapshot.toJson(),
@@ -43,35 +46,81 @@ void main() {
     expect(await cache.list('lea', 'home').load(), isNull);
   });
 
-  test('moving to another household drops the old list', () async {
-    await cache.remember('peter', home);
+  test('each household keeps its list across switches (job 169b)', () async {
+    await cache.remember('peter', households: [home, work], shown: 'home');
     await cache.list('peter', 'home').save(snapshot);
-    await cache.remember('peter', work);
+    await cache.remember('peter', households: [home, work], shown: 'work');
+    final back = await cache.householdsOf('peter');
+    expect(back?.shown, 'work');
+    expect([for (final h in back!.households) h.name], ['Zuhause', 'Büro']);
+    expect(
+      (await cache.list('peter', 'home').load())?.toJson(),
+      snapshot.toJson(),
+    );
+    await cache.list('peter', 'home').save(snapshot);
+    expect(
+      await cache.list('peter', 'home').load(),
+      isNotNull,
+      reason: 'a list switched away from still saves its state',
+    );
+  });
+
+  test('a household left drops its list only', () async {
+    await cache.remember('peter', households: [home, work], shown: 'home');
+    await cache.list('peter', 'home').save(snapshot);
+    await cache.list('peter', 'work').save(snapshot);
+    await cache.remember('peter', households: [work], shown: 'work');
     expect(await cache.list('peter', 'home').load(), isNull);
+    expect(await cache.list('peter', 'work').load(), isNotNull);
 
     await cache.list('peter', 'home').save(snapshot);
     expect(
       await cache.list('peter', 'home').load(),
       isNull,
-      reason: 'a list closing late cannot write the old household back',
+      reason: 'a list closing late cannot write the left household back',
     );
   });
 
+  test('the defaults and counts survive a restart', () async {
+    const club = Household(
+      id: 'club',
+      name: 'Sommerfest',
+      isDefault: true,
+      memberCount: 12,
+      openCount: 4,
+    );
+    await cache.remember('peter', households: [home, club], shown: 'home');
+    final back = (await cache.householdsOf('peter'))!.households.last;
+    expect(back.isDefault, isTrue);
+    expect(back.memberCount, 12);
+    expect(back.openCount, 4);
+  });
+
+  test("a cache from before job 169b is the user's one household", () async {
+    await SharedPreferencesAsync().setString(
+      'household.peter',
+      '{"id":"home","name":"Zuhause"}',
+    );
+    final back = await cache.householdsOf('peter');
+    expect(back?.shown, 'home');
+    expect(back?.households.single.name, 'Zuhause');
+  });
+
   test('leaving every household drops the lists', () async {
-    await cache.remember('peter', home);
+    await cache.remember('peter', households: [home], shown: home.id);
     await cache.list('peter', 'home').save(snapshot);
-    await cache.remember('peter', null);
-    expect(await cache.household('peter'), isNull);
+    await cache.remember('peter', households: const []);
+    expect(await cache.householdsOf('peter'), isNull);
     expect(await cache.list('peter', 'home').load(), isNull);
   });
 
   test('signing out forgets every user', () async {
-    await cache.remember('peter', home);
-    await cache.remember('lea', home);
+    await cache.remember('peter', households: [home], shown: home.id);
+    await cache.remember('lea', households: [home], shown: home.id);
     await cache.list('peter', 'home').save(snapshot);
     await cache.forget();
-    expect(await cache.household('peter'), isNull);
-    expect(await cache.household('lea'), isNull);
+    expect(await cache.householdsOf('peter'), isNull);
+    expect(await cache.householdsOf('lea'), isNull);
     expect(await cache.list('peter', 'home').load(), isNull);
     await cache.list('peter', 'home').save(snapshot);
     expect(await cache.list('peter', 'home').load(), isNull);
@@ -84,7 +133,7 @@ void main() {
     );
 
     test('are kept per user and household', () async {
-      await cache.remember('peter', home);
+      await cache.remember('peter', households: [home], shown: home.id);
       expect(await cache.list('peter', 'home').loadSeen(), isNull);
       await cache.list('peter', 'home').saveSeen(mark);
       final back = await cache.list('peter', 'home').loadSeen();
@@ -95,16 +144,20 @@ void main() {
     });
 
     test('go with the household and on sign-out', () async {
-      await cache.remember('peter', home);
+      await cache.remember('peter', households: [home], shown: home.id);
       await cache.list('peter', 'home').saveSeen(mark);
-      await cache.remember('peter', home);
+      await cache.remember('peter', households: [home], shown: home.id);
       expect(
         await cache.list('peter', 'home').loadSeen(),
         isNotNull,
         reason: 'remembering the same household keeps it',
       );
-      await cache.remember('peter', work);
-      expect(await cache.list('peter', 'home').loadSeen(), isNull);
+      await cache.remember('peter', households: [work], shown: work.id);
+      expect(
+        await cache.list('peter', 'home').loadSeen(),
+        isNull,
+        reason: 'a household left takes its marks',
+      );
 
       await cache.list('peter', 'work').saveSeen(mark);
       await cache.forget();
@@ -120,7 +173,7 @@ void main() {
     await cache.saveConsent(granted: false, textVersion: '2026-11-01');
     await cache.saveFirstOpenSentFor('id-1');
     await cache.saveInternalInstall(internal: true);
-    await cache.remember('peter', home);
+    await cache.remember('peter', households: [home], shown: home.id);
     await cache.forget();
     expect(await cache.installId(), 'id-1');
     expect(await cache.consent(), isFalse);
@@ -143,7 +196,7 @@ void main() {
   test('dismissed tips are kept per user and survive sign-outs', () async {
     expect(await cache.dismissedTips('peter'), isEmpty);
     await cache.saveDismissedTips('peter', {'edit-long-press', 'siri'});
-    await cache.remember('peter', null);
+    await cache.remember('peter', households: const []);
     await cache.forget();
     expect(await cache.dismissedTips('peter'), {'edit-long-press', 'siri'});
     expect(await cache.dismissedTips('lea'), isEmpty);
@@ -168,7 +221,7 @@ void main() {
           etag: '"a"',
         ),
       );
-      await cache.remember('peter', null);
+      await cache.remember('peter', households: const []);
       await cache.forget();
       final cached = await cache.cachedItemIcons();
       expect(cached?.checkedAt, checkedAt);
@@ -190,7 +243,7 @@ void main() {
   test('the rating prompt counters survive sign-outs', () async {
     expect(await cache.reviewState(), isNull);
     await cache.saveReviewState('{"items_added":3}');
-    await cache.remember('peter', null);
+    await cache.remember('peter', households: const []);
     await cache.forget();
     expect(await cache.reviewState(), '{"items_added":3}');
   });
