@@ -20,9 +20,10 @@ flutter_defines() { :; }
 fg_on_repo_stack() { :; }
 LIB
 printf '#!/usr/bin/env bash\necho "sync smoke" >>"%s/calls"\n' "$tmp" >"$tmp/repo/e2e/sync-smoke.sh"
+printf '#!/usr/bin/env bash\n:\n' >"$tmp/repo/scripts/join-config.sh"
 printf '#!/usr/bin/env bash\n:\n' >"$tmp/bin/flutter"
 printf '#!/usr/bin/env bash\necho "npx $*" >>"%s/calls"\n' "$tmp" >"$tmp/bin/npx"
-chmod +x "$tmp/repo/e2e/sync-smoke.sh" "$tmp/bin/flutter" "$tmp/bin/npx"
+chmod +x "$tmp/repo/e2e/sync-smoke.sh" "$tmp/repo/scripts/join-config.sh" "$tmp/bin/flutter" "$tmp/bin/npx"
 
 calls_for() {
   : >"$tmp/calls"
