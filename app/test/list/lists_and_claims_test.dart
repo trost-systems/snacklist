@@ -5,6 +5,7 @@ import 'package:family_groceries/list/entry.dart';
 import 'package:family_groceries/list/list_cache.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/model.dart';
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'fake_repository.dart';
@@ -324,6 +325,21 @@ void main() {
       repo.itemsGate!.complete();
       await resync;
       expect(cubit.state.claims[id]?.map((c) => c.userId), ['mia']);
+    });
+
+    test('a claim from a member who joined after the start reads their '
+        'name', () {
+      fakeAsync((async) {
+        final id = kuchen().id;
+        repo.members = [
+          ...repo.members,
+          const Member(id: 'mia', displayName: 'Mia'),
+        ];
+        repo.emitClaim!(repo.remoteClaim(id, userId: 'mia'));
+        expect(cubit.state.catalog.member('mia'), isNull);
+        async.elapse(const Duration(seconds: 1));
+        expect(cubit.state.catalog.member('mia')?.displayName, 'Mia');
+      });
     });
 
     test('claims survive a restart offline', () async {

@@ -391,6 +391,11 @@ class ListCubit(
         if (current()) {
           _noteClaims({claim.key: claim});
           _setClaims({...state.claimRows, claim.key: claim});
+          // A member who joined after the catalog loaded: read their name,
+          // or the row says "Jemand bringt".
+          if (state.catalog.member(claim.userId) == null) {
+            _scheduleCatalogReload();
+          }
         }
       },
       onClaimDeleted: (key) {
