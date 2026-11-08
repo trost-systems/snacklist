@@ -328,6 +328,7 @@ grant execute on function public.remove_member(uuid, uuid) to authenticated;
 create function public.set_member_role(p_household uuid, p_user uuid, p_role text) returns void
 language plpgsql security definer set search_path = '' as $$
 declare
+  v_mine text;
   v_theirs text;
 begin
   if auth.uid() is null then
@@ -337,10 +338,10 @@ begin
     raise exception 'invalid_role' using errcode = '22023';
   end if;
   perform from public.households h where h.id = p_household for update;
-  if public.my_role_in(p_household) is distinct from 'owner' then
-    if public.my_role_in(p_household) is null then
-      raise exception 'not_member' using errcode = '42501';
-    end if;
+  v_mine := public.my_role_in(p_household);
+  if v_mine is null then
+    raise exception 'not_member' using errcode = '42501';
+  elsif v_mine <> 'owner' then
     raise exception 'not_owner' using errcode = '42501';
   end if;
   select m.role into v_theirs from public.household_members m
@@ -456,7 +457,8 @@ revoke execute on function public.invite_preview_hit(text, integer) from public,
 -- What a link holder sees before signing in: {status, household, kind, inviter, members,
 -- open_items, premium, invite_kind}. status ok, invalid (unknown, revoked, expired, a used person
 -- invite, an archived household), full (a group link at 50) or rate_limited; every other field
--- is null unless ok. inviter is the creator's first name. No ids, no emails, no item names.
+-- is null unless ok. inviter is the creator's first name, if they set one. No ids, no emails, no
+-- item names.
 create function public.preview_invite_public(p_code text) returns jsonb
 language plpgsql security definer set search_path = '' as $$
 declare
@@ -496,9 +498,12 @@ begin
     'status', 'ok',
     'household', v_household.name,
     'kind', v_household.kind,
+    -- A profile's name starts as the email's local part (handle_new_user): that one is not shown.
     'inviter', (
       select nullif(split_part(btrim(p.display_name), ' ', 1), '')
-      from public.profiles p where p.id = v_invite.created_by
+      from public.profiles p join auth.users u on u.id = p.id
+      where p.id = v_invite.created_by
+        and p.display_name is distinct from left(split_part(u.email, '@', 1), 80)
     ),
     'members', (
       select count(*)::int from public.household_members m where m.household_id = v_household.id

@@ -162,4 +162,15 @@ values (repeat('b', 64), 'waitlist-en-v1', 'en', false, now() - interval '2 days
   now() - interval '2 days', now() - interval '1 day', now(), 'unsubscribed');
 insert into public.waitlist_rate (key_hash, window_start, hits) values (repeat('c', 64), date_trunc('hour', now()), 2);
 
+-- Job 169b W2: Peter's group link, opened once on the signed-out join page (a preview counter).
+select pg_temp.login('peter@backup.test');
+insert into fx select 'group', i.id, i.code
+from public.create_invite((select id from fx where key = 'home'), 'group') i;
+reset role;
+select code as group_code from fx where key = 'group' \gset
+select set_config('role', 'anon', true);
+select set_config('request.headers', '{"x-real-ip": "192.0.2.10"}', true);
+select public.preview_invite_public(:'group_code');
+reset role;
+
 commit;

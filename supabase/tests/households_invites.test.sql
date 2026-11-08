@@ -3,7 +3,7 @@
 -- with its rate limits. Two joins racing for a group link's last use are in
 -- supabase/functions/_shared/households_integration_test.ts.
 begin;
-select plan(105);
+select plan(106);
 
 create function pg_temp.login(uid uuid) returns void language plpgsql as $$
 begin
@@ -425,6 +425,11 @@ update public.profiles set display_name = '' where id = :olga;
 select pg_temp.anon('203.0.113.8');
 select is(public.preview_invite_public((select code from p_open)) -> 'inviter', 'null'::jsonb,
   'no inviter when the creator has no name');
+select pg_temp.logout();
+update public.profiles set display_name = 'olga169' where id = :olga;
+select pg_temp.anon('203.0.113.8');
+select is(public.preview_invite_public((select code from p_open)) -> 'inviter', 'null'::jsonb,
+  'nor when the name is still the email''s local part');
 select pg_temp.anon(null);
 select is(public.preview_invite_public((select code from p_open)) ->> 'status', 'ok',
   'a call without the address header still answers');
