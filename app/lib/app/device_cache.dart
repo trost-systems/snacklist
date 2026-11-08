@@ -8,7 +8,7 @@ import 'package:family_groceries/list/list_cache.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/review/review_counters.dart';
 import 'package:family_groceries/session/session_cubit.dart';
-import 'package:family_groceries/tips/tips.dart';
+import 'package:family_groceries/tips/usage_log.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_linux/shared_preferences_linux.dart';
 
@@ -21,7 +21,7 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
         SessionCache,
         AnalyticsStore,
         PendingInviteStore,
-        TipStore,
+        HintStore,
         ItemIconsStore,
         ReviewStore {
   /// On Linux, supabase_flutter's legacy SharedPreferences and
@@ -64,9 +64,13 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
   static const _pendingInviteKey = 'invite.pending';
 
   /// The List tab's dismissed tips per user (job 80), a JSON list of tip
-  /// ids. Not under [forget]'s prefixes: ids only, and a user who signs in
-  /// again has seen them.
+  /// ids: read once into [_hintsPrefix]'s log.
   static const _tipsPrefix = 'tips.';
+
+  /// The hints' usage log per user (job 168b, `UsageLog`): signal counts,
+  /// active days, each hint's showings and X. Not under [forget]'s
+  /// prefixes: the user's own "hide this" holds after signing in again.
+  static const _hintsPrefix = 'hints.';
 
   /// The remote item icon table's last check (job 147): `{checked_at,
   /// body, etag}` in one value, so a cut-off write leaves the old check.
@@ -207,24 +211,28 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
         },
       );
 
+  /// The log, or job 80's dismissed tips as `{"dismissed": [ids]}` for a
+  /// user who has none yet.
   @override
-  Future<Set<String>> dismissedTips(String userId) async {
+  Future<String?> hintLog(String userId) async {
+    if (await _readString('$_hintsPrefix$userId') case final log?) {
+      return log;
+    }
     try {
       return switch (jsonDecode(
-        await _prefs.getString('$_tipsPrefix$userId') ?? '[]',
+        await _prefs.getString('$_tipsPrefix$userId') ?? '',
       )) {
-        final List<Object?> ids => {...ids.whereType<String>()},
-        _ => const {},
+        final List<Object?> ids => jsonEncode({'dismissed': ids}),
+        _ => null,
       };
     } on Object {
-      return const {};
+      return null;
     }
   }
 
   @override
-  Future<void> saveDismissedTips(String userId, Set<String> ids) => _write(
-    () => _prefs.setString('$_tipsPrefix$userId', jsonEncode([...ids])),
-  );
+  Future<void> saveHintLog(String userId, String json) =>
+      _write(() => _prefs.setString('$_hintsPrefix$userId', json));
 
   @override
   Future<CachedItemIcons?> cachedItemIcons() async {

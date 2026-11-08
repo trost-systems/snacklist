@@ -75,7 +75,7 @@ void main() {
     for (final size in phones) {
       final on = '(${size.width.toInt()}x${size.height.toInt()})';
 
-      testWidgets('at text scale $scale the explainer card fits $on', (
+      testWidgets('at text scale $scale the Erste Schritte card fits $on', (
         tester,
       ) async {
         phone(tester, size, scale);

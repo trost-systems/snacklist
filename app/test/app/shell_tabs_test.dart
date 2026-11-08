@@ -194,7 +194,7 @@ void main() {
     final semantics = tester.ensureSemantics();
     await pumpShell(tester, inset: 34);
     expect(tabsReachable(tester), isTrue);
-    expect(find.semantics.byLabel(RegExp('^Liste')), findsOne);
+    expect(find.semantics.byLabel(RegExp(r'^Liste\nTab')), findsOne);
     expect(opacity(tester, hint), 0);
     final tabsTop = tester.getTopLeft(tabs).dy;
     final fieldAt = hex(tester);
@@ -210,7 +210,7 @@ void main() {
     );
     expect(opacity(tester, tabs), 0, reason: 'faded out');
     expect(
-      find.semantics.byLabel(RegExp('^Liste')),
+      find.semantics.byLabel(RegExp(r'^Liste\nTab')),
       findsNothing,
       reason: 'out of semantics',
     );

@@ -3,6 +3,8 @@ import 'package:family_groceries/list/item_icons_remote.dart';
 import 'package:family_groceries/list/list_cache.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/session/session_cubit.dart';
+import 'package:family_groceries/tips/hints.dart';
+import 'package:family_groceries/tips/usage_log.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
@@ -140,20 +142,36 @@ void main() {
     expect(await cache.internalInstall(), isTrue);
   });
 
-  test('dismissed tips are kept per user and survive sign-outs', () async {
-    expect(await cache.dismissedTips('peter'), isEmpty);
-    await cache.saveDismissedTips('peter', {'edit-long-press', 'siri'});
+  test('the hint log is kept per user and survives sign-outs', () async {
+    expect(await cache.hintLog('peter'), isNull);
+    await cache.saveHintLog('peter', '{"active_days": 2}');
     await cache.remember('peter', null);
     await cache.forget();
-    expect(await cache.dismissedTips('peter'), {'edit-long-press', 'siri'});
-    expect(await cache.dismissedTips('lea'), isEmpty);
+    expect(await cache.hintLog('peter'), '{"active_days": 2}');
+    expect(await cache.hintLog('lea'), isNull);
+  });
+
+  test("job 80's dismissed tips come back as the hint log's", () async {
+    await SharedPreferencesAsync().setString(
+      'tips.peter',
+      '["edit-long-press"]',
+    );
+    expect(
+      UsageLog.parse(
+        await cache.hintLog('peter'),
+        now: DateTime(2026),
+      ).of(HintId.editLongPress).dismissed,
+      isTrue,
+    );
+    await cache.saveHintLog('peter', '{"active_days": 2}');
+    expect(await cache.hintLog('peter'), '{"active_days": 2}');
   });
 
   test('unreadable dismissed tips count as none', () async {
     await SharedPreferencesAsync().setString('tips.peter', '{"no": 1}');
-    expect(await cache.dismissedTips('peter'), isEmpty);
+    expect(await cache.hintLog('peter'), isNull);
     await SharedPreferencesAsync().setString('tips.peter', 'not json');
-    expect(await cache.dismissedTips('peter'), isEmpty);
+    expect(await cache.hintLog('peter'), isNull);
   });
 
   test(

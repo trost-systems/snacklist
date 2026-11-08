@@ -636,9 +636,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get listHint => 'Tippen hakt ab · Halten bearbeitet';
 
   @override
-  String get listHintDismiss => 'Verstanden';
-
-  @override
   String get reorderNeedsConnection =>
       'Die Reihenfolge lässt sich nur mit Verbindung ändern.';
 
@@ -1809,7 +1806,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get tipEditBody =>
-      'Halte einen Artikel gedrückt, ohne ihn zu ziehen, und ändere Menge, Marke, Laden und mehr.';
+      'Halte einen Artikel gedrückt und ändere Menge, Marke, Laden und mehr.';
 
   @override
   String get tipAmountsTitle => 'Menge gleich mittippen';
@@ -1820,4 +1817,138 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get tipDismiss => 'Tipp ausblenden';
+
+  @override
+  String get hintInviteTitle => 'Gemeinsam einkaufen';
+
+  @override
+  String get hintInviteBody =>
+      'Lade jemanden ein, um die Liste gemeinsam zu nutzen.';
+
+  @override
+  String get hintInviteAction => 'Einladen';
+
+  @override
+  String get hintStoreOrderTitle => 'Sortiert wie dein Laden';
+
+  @override
+  String get hintStoreOrderBody =>
+      'Hier kannst du die Kategorien so sortieren, wie du durch den Laden gehst.';
+
+  @override
+  String get hintAddStoreTitle => 'Noch ein Laden?';
+
+  @override
+  String get hintAddStoreBody =>
+      'Hier kannst du weitere Läden anlegen, bei denen du einkaufst.';
+
+  @override
+  String get hintDictationTitle => 'Sag einfach, was fehlt';
+
+  @override
+  String get hintDictationBody =>
+      'Tipp aufs Mikrofon und sprich: „Milch, zwei Gurken und Klopapier“.';
+
+  @override
+  String get hintAssistantTitle => 'Noch besser mit KI & Automatisierung';
+
+  @override
+  String get hintAssistantBody =>
+      'Lass deinen KI-Assistenten deine Liste verwalten oder nutze die API, um Automatisierungen zu erstellen.';
+
+  @override
+  String get hintAssistantAction => 'Zugriffe verwalten';
+
+  @override
+  String get hintSiriTitle => 'Mit Siri hinzufügen';
+
+  @override
+  String get hintSiriBody =>
+      'Sag „Hey Siri, etwas auf Hummlist setzen“, wenn die Hände voll sind.';
+
+  @override
+  String get hintWidgetTitle => 'Liste auf dem Home-Bildschirm';
+
+  @override
+  String get hintWidgetBody =>
+      'Füge das Hummlist-Widget hinzu, indem du den Home-Bildschirm deines Smartphones gedrückt hältst.';
+
+  @override
+  String get hintOwnHouseholdTitle => 'Deine eigene Liste';
+
+  @override
+  String get hintOwnHouseholdBody =>
+      'Diesen Haushalt hat jemand anderes angelegt. Leg auch einen eigenen an, zum Beispiel nur für dich.';
+
+  @override
+  String get hintSecondHouseholdTitle => 'Noch eine Liste?';
+
+  @override
+  String get hintSecondHouseholdBody =>
+      'Für den Verein oder die WG: Leg einen zweiten Haushalt an.';
+
+  @override
+  String get hintAddHouseholdAction => 'Haushalt erstellen';
+
+  @override
+  String get hintDismissedNotice => 'Alle Tipps unter Mehr → Tipps.';
+
+  @override
+  String get hintsTitle => 'Tipps';
+
+  @override
+  String get checklistTitle => 'Erste Schritte';
+
+  @override
+  String get checklistDismiss => 'Erste Schritte ausblenden';
+
+  @override
+  String checklistProgress(int done, int total) {
+    return '$done von $total';
+  }
+
+  @override
+  String get checklistStarted => 'Liste angelegt';
+
+  @override
+  String get checklistJoined => 'Haushalt beigetreten';
+
+  @override
+  String checklistInvite(String kind) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'partner': 'Partner einladen',
+      'family': 'Familie einladen',
+      'flat': 'Mitbewohner einladen',
+      'club': 'Mitglieder einladen',
+      'other': 'Jemanden einladen',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String checklistInviteBody(String kind) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'club': 'Alle sehen dieselbe Liste und können selbst etwas draufsetzen.',
+      'other': 'Sieht deine Artikel sofort und kann selbst etwas draufsetzen.',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get checklistShop => 'Einmal einkaufen';
+
+  @override
+  String get checklistAssistant => 'KI-Assistenten verbinden';
+
+  @override
+  String get checklistAssistantBody =>
+      'Mehr → Zugänge. Er setzt Dinge auf eure Liste.';
+
+  @override
+  String get checklistOpen => 'Öffnen';
+
+  @override
+  String checklistDone(String step) {
+    return '$step, erledigt';
+  }
 }

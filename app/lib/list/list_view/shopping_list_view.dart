@@ -14,7 +14,7 @@ import 'package:family_groceries/list/list_view/item_row.dart';
 import 'package:family_groceries/list/list_view/leaving_rows.dart';
 import 'package:family_groceries/list/list_view/sections.dart';
 import 'package:family_groceries/list/model.dart';
-import 'package:family_groceries/tips/tip_card.dart';
+import 'package:family_groceries/tips/hint_views.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show RenderAbstractViewport;
@@ -23,7 +23,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-/// Everything between the header and the add bar: the explainer card, the
+/// Everything between the header and the add bar: the hints' slot, the
 /// stores as sections with their categories and items in walk order, and
 /// the recently used items. Ticking, editing and folding happen here; the
 /// order is changed in Anpassen. It needs a [ListCubit] above it.
@@ -449,13 +449,7 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
           padding: EdgeInsets.symmetric(horizontal: side),
           sliver: SliverMainAxisGroup(
             slivers: [
-              if (!state.prefs.hintDismissed)
-                SliverToBoxAdapter(
-                  child: ExplainerCard(
-                    onDismiss: context.read<ListCubit>().dismissHint,
-                  ),
-                ),
-              const SliverToBoxAdapter(child: ListTips()),
+              const SliverToBoxAdapter(child: ListHints()),
               const SliverToBoxAdapter(child: SizedBox(height: 4)),
               body,
               if (used.isNotEmpty)

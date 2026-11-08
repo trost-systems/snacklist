@@ -35,6 +35,13 @@ void main() {
 
   /// [keepCache] starts the list again on the same server and device, like
   /// an app restart.
+  /// The Erste Schritte card is taller than the gesture card was; tests of
+  /// rows near the fold hide it first.
+  Future<void> hideChecklist(WidgetTester tester) async {
+    await tester.tap(find.byTooltip('Erste Schritte ausblenden'));
+    await tester.pumpAndSettle();
+  }
+
   Future<void> pumpList(
     WidgetTester tester, {
     void Function(FakeRepository repo)? seed,
@@ -678,6 +685,7 @@ void main() {
         ..remoteAdd('Seife', storeId: 'dm')
         ..remoteAdd('Milch', storeId: 'lidl'),
     );
+    await hideChecklist(tester);
     for (final kind in [PointerDeviceKind.touch, PointerDeviceKind.mouse]) {
       final from = tester.getCenter(row('Milch'));
       final gesture = await tester.startGesture(from, kind: kind);
@@ -868,10 +876,11 @@ void main() {
     expect(tester.getSize(row(long)).height, greaterThan(brot + 20));
   });
 
-  testWidgets('the explainer card is dismissed for good', (tester) async {
+  testWidgets('the Erste Schritte card is dismissed for good', (tester) async {
     await pumpList(tester, seed: (repo) => repo.remoteAdd('Brot'));
+    expect(find.text('Erste Schritte'), findsOneWidget);
     expect(find.text('Tippen hakt ab · Halten bearbeitet'), findsOneWidget);
-    await tester.tap(find.text('Verstanden'));
+    await tester.tap(find.byTooltip('Erste Schritte ausblenden'));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('list-hint')), findsNothing);
     expect(cache.prefs!.hintDismissed, isTrue);
@@ -888,6 +897,7 @@ void main() {
         ..remoteAdd('Milch', storeId: 'lidl')
         ..remoteAdd('Brot'),
     );
+    await hideChecklist(tester);
     Future<void> opens(Future<void> Function() hold, String path) async {
       await hold();
       await tester.pumpAndSettle();
@@ -1324,7 +1334,8 @@ void main() {
       final edit = find.byKey(const ValueKey('list-edit'));
       final height = tester.getSize(header()).height;
       final editRect = tester.getRect(edit);
-      // The list's first entry, the explainer card, stays while items go.
+      // The list's first entry, the Erste Schritte card, stays while items
+      // go.
       final card = find.byKey(const ValueKey('list-hint-dismiss'));
       final rowTop = tester.getTopLeft(card).dy;
       // The capsule, its gaps and the shadow below the notch (job 148).

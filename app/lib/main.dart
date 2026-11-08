@@ -29,9 +29,11 @@ import 'package:family_groceries/review/store_review.dart';
 import 'package:family_groceries/session/plugin_sign_in.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/session/social_sign_in.dart';
+import 'package:family_groceries/settings/access_repository.dart';
 import 'package:family_groceries/settings/account_repository.dart';
 import 'package:family_groceries/siri/siri_channel.dart';
 import 'package:family_groceries/siri/siri_credentials.dart';
+import 'package:family_groceries/tips/hint_host.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
@@ -190,6 +192,11 @@ Future<void> _main(WidgetsBinding Function() binding) async {
       invites: SupabaseInviteRepository(client),
       pendingInvite: pendingInvite,
       homeWidgets: homeWidgets,
+      hints: HintHost(
+        assistantConnected: () =>
+            assistantConnected(SupabaseAccessRepository(client)),
+        widgetPlaced: homeWidgets == null ? null : homeWidgetPlaced,
+      ),
       widgetLaunches: widgetLaunchesFor(
         web: kIsWeb,
         platform: defaultTargetPlatform,

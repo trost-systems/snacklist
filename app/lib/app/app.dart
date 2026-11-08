@@ -30,7 +30,8 @@ import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/session/social_sign_in.dart';
 import 'package:family_groceries/settings/account_repository.dart';
 import 'package:family_groceries/settings/integration_lock.dart';
-import 'package:family_groceries/tips/tips.dart';
+import 'package:family_groceries/tips/hint_host.dart';
+import 'package:family_groceries/tips/usage_log.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -88,6 +89,10 @@ class const App({
   /// The item icon table, which `main` updates from the remote one; the
   /// bundled table by default.
   final ItemIconsCubit? itemIcons,
+
+  /// What the List tab's hints may ask and open beyond the list (job 168b);
+  /// none by default.
+  final HintHost hints = const HintHost(),
 
   /// The theme picked there; the device's setting by default.
   final ThemeMode theme = ThemeMode.system,
@@ -196,7 +201,8 @@ class _AppState() extends State<App> {
     providers: [
       RepositoryProvider.value(value: widget.social),
       RepositoryProvider.value(value: widget.cache),
-      RepositoryProvider<TipStore>.value(value: widget.cache),
+      RepositoryProvider<HintStore>.value(value: widget.cache),
+      RepositoryProvider.value(value: widget.hints),
       RepositoryProvider.value(value: widget.account),
       RepositoryProvider.value(value: _screens),
       RepositoryProvider.value(value: _device),

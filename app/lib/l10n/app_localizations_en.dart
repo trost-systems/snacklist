@@ -629,9 +629,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get listHint => 'Tap ticks off · Hold to edit';
 
   @override
-  String get listHintDismiss => 'Got it';
-
-  @override
   String get reorderNeedsConnection => 'Reordering needs a connection.';
 
   @override
@@ -1790,7 +1787,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipEditBody =>
-      'Press and hold an item without dragging it to change its quantity, brand, store and more.';
+      'Press and hold an item to change its quantity, brand, store and more.';
 
   @override
   String get tipAmountsTitle => 'Type the amount too';
@@ -1801,4 +1798,136 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipDismiss => 'Hide tip';
+
+  @override
+  String get hintInviteTitle => 'Shop together';
+
+  @override
+  String get hintInviteBody => 'Invite someone to use the list together.';
+
+  @override
+  String get hintInviteAction => 'Invite';
+
+  @override
+  String get hintStoreOrderTitle => 'Sorted like your store';
+
+  @override
+  String get hintStoreOrderBody =>
+      'Here you can sort the categories in the order you walk through the store.';
+
+  @override
+  String get hintAddStoreTitle => 'Another store?';
+
+  @override
+  String get hintAddStoreBody => 'Here you can add more stores you shop at.';
+
+  @override
+  String get hintDictationTitle => 'Just say it';
+
+  @override
+  String get hintDictationBody =>
+      'Tap the mic and say: “milk, two cucumbers and toilet paper”.';
+
+  @override
+  String get hintAssistantTitle => 'Even better with AI & automation';
+
+  @override
+  String get hintAssistantBody =>
+      'Let your AI assistant manage your list, or use the API to build automations.';
+
+  @override
+  String get hintAssistantAction => 'Manage access';
+
+  @override
+  String get hintSiriTitle => 'Add with Siri';
+
+  @override
+  String get hintSiriBody =>
+      'Say “Hey Siri, add to Hummlist” when your hands are full.';
+
+  @override
+  String get hintWidgetTitle => 'Your list on the home screen';
+
+  @override
+  String get hintWidgetBody =>
+      'Add the Hummlist widget by pressing and holding your phone\'s home screen.';
+
+  @override
+  String get hintOwnHouseholdTitle => 'A list of your own';
+
+  @override
+  String get hintOwnHouseholdBody =>
+      'Someone else created this household. Create one of your own too, just for you for example.';
+
+  @override
+  String get hintSecondHouseholdTitle => 'Another list?';
+
+  @override
+  String get hintSecondHouseholdBody =>
+      'For your club or flat: create a second household.';
+
+  @override
+  String get hintAddHouseholdAction => 'Create a household';
+
+  @override
+  String get hintDismissedNotice => 'All tips under More → Tips.';
+
+  @override
+  String get hintsTitle => 'Tips';
+
+  @override
+  String get checklistTitle => 'First steps';
+
+  @override
+  String get checklistDismiss => 'Hide first steps';
+
+  @override
+  String checklistProgress(int done, int total) {
+    return '$done of $total';
+  }
+
+  @override
+  String get checklistStarted => 'List started';
+
+  @override
+  String get checklistJoined => 'Joined the household';
+
+  @override
+  String checklistInvite(String kind) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'partner': 'Invite your partner',
+      'family': 'Invite your family',
+      'flat': 'Invite your flatmates',
+      'club': 'Invite members',
+      'other': 'Invite someone',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String checklistInviteBody(String kind) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'club': 'Everyone sees the same list and can add to it.',
+      'other': 'They see your items right away and can add their own.',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get checklistShop => 'Do one shop';
+
+  @override
+  String get checklistAssistant => 'Connect an AI assistant';
+
+  @override
+  String get checklistAssistantBody =>
+      'More → Access. It puts things on your list.';
+
+  @override
+  String get checklistOpen => 'Open';
+
+  @override
+  String checklistDone(String step) {
+    return '$step, done';
+  }
 }

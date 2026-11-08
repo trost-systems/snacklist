@@ -24,6 +24,7 @@ import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/sync_indicator.dart';
 import 'package:family_groceries/review/review_prompt_trigger.dart';
 import 'package:family_groceries/session/session_cubit.dart';
+import 'package:family_groceries/tips/hint_views.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -79,8 +80,11 @@ class const ShoppingList({
     return BlocProvider(
       key: ObjectKey(list),
       create: (_) => AddSheetCubit(list),
-      // The list's snackbars float above the add bar, not above the tabs.
-      child: ScaffoldMessenger(child: _ShoppingList(dictation: dictation)),
+      child: ProvideHints(
+        list: list,
+        // The list's snackbars float above the add bar, not above the tabs.
+        child: ScaffoldMessenger(child: _ShoppingList(dictation: dictation)),
+      ),
     );
   }
 }
@@ -507,6 +511,16 @@ class _ShoppingListState() extends State<_ShoppingList> {
                         onPicked: _refocusAfterTap,
                       ),
                     ),
+                  ),
+                ),
+                // Above the add bar, which the body extends under.
+                PositionedDirectional(
+                  start: HlSpace.s3,
+                  end: HlSpace.s3,
+                  bottom: MediaQuery.paddingOf(context).bottom + HlSpace.s2,
+                  child: Align(
+                    alignment: AlignmentDirectional.bottomEnd,
+                    child: AddBarHint(hidden: open),
                   ),
                 ),
               ],

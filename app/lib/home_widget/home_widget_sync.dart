@@ -35,6 +35,12 @@ class const PluginWidgetPublisher() implements WidgetPublisher {
   }
 }
 
+/// Whether one of the app's Home Screen widgets is placed, as WidgetKit or
+/// Android's widget manager tell the plugin (job 168b's `home-widget`
+/// hint).
+Future<bool> homeWidgetPlaced() async =>
+    (await HomeWidget.getInstalledWidgets()).isNotEmpty;
+
 /// The sync on iOS and Android; the web and Linux have no widgets.
 HomeWidgetSync? homeWidgetSyncFor({
   required bool web,
