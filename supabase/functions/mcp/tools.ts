@@ -22,7 +22,7 @@ einsortiert; gib eine Kategorie nur an, wenn der Nutzer sie ausdrücklich nennt.
 Einträge, Kategorien und Läden lassen sich per Name (ungefähr, ohne Umlaute) oder per id angeben.
 Abgehakte Einträge verschwinden aus der Liste.
 Wer in mehreren Haushalten ist, findet sie mit list_households; die Listen-Werkzeuge nehmen dann
-"household" (id oder genauer Name), ohne Angabe gilt der Standardhaushalt.`;
+"household" (id oder Name), ohne Angabe gilt der Standardhaushalt.`;
 
 /**
  * Job 50: what a tool call of a household without Hummlist Premium gets while the lock is on. A
@@ -57,11 +57,11 @@ export type Gate = (householdId: string) => Promise<Access>;
 /**
  * A tool body: runs as the caller in one transaction once the household (the [household]
  * argument, else the one the credential acts in) may use MCP; ToolErrors become tool-level
- * errors. A failing check throws, like any database error.
+ * errors. A failing check throws, like any database error. A null [gate] is no check.
  */
 function run(
   auth: Auth,
-  gate: Gate,
+  gate: Gate | null,
   lang: Lang,
   household: string | undefined,
   body: (tx: Tx, household: string) => Promise<unknown>,
@@ -71,7 +71,7 @@ function run(
       const h = household === undefined
         ? auth.householdId
         : await asUser(auth.userId, (tx) => householdNamed(tx, auth, household));
-      if (await gate(h) === 'locked') {
+      if (gate && await gate(h) === 'locked') {
         return { isError: true, content: [{ type: 'text', text: premiumRequired[lang] }] };
       }
       const result = await asUser(auth.userId, (tx) => body(tx, h));
@@ -103,13 +103,14 @@ export async function households(tx: Tx, auth: Auth): Promise<Household[]> {
     }));
 }
 
-/** The id of the caller's household [ref] names (its id or its exact name). */
+/** The id of the caller's household [ref] names (its id or its name, in any case). */
 export async function householdNamed(tx: Tx, auth: Auth, ref: string): Promise<string> {
   const mine = await households(tx, auth);
   const wanted = ref.trim();
-  const byId = mine.find((h) => h.id === wanted.toLowerCase());
+  const folded = wanted.toLocaleLowerCase('de');
+  const byId = mine.find((h) => h.id === folded);
   if (byId) return byId.id;
-  const byName = mine.filter((h) => h.name === wanted);
+  const byName = mine.filter((h) => h.name.trim().toLocaleLowerCase('de') === folded);
   const names = mine.map((h) => h.name);
   const [only, ...more] = byName;
   if (only && more.length === 0) return only.id;
@@ -144,7 +145,7 @@ const categoryName = z.string().min(1).max(60).describe(
   'Kategorie, z. B. "Obst & Gemüse" oder "Kühlregal"',
 );
 const householdRef = z.string().min(1).max(80).optional().describe(
-  'Haushalt (list_households): seine id oder sein genauer Name. Ohne Angabe der Standardhaushalt.',
+  'Haushalt (list_households): seine id oder sein Name. Ohne Angabe der Standardhaushalt.',
 );
 
 export function buildServer(auth: Auth, gate: Gate, lang: Lang = 'de'): McpServer {
@@ -167,7 +168,9 @@ export function buildServer(auth: Auth, gate: Gate, lang: Lang = 'de'): McpServe
       'markiert den Standardhaushalt, in dem die anderen Werkzeuge ohne "household" arbeiten. ' +
       'Mit einem Zugriffstoken nur dessen Haushalt.',
     annotations: { readOnlyHint: true },
-  }, () => run(auth, once, lang, undefined, (tx) => households(tx, auth))());
+    // Ungated: it lists only the user's own households, so a locked default can still find an
+    // unlocked one.
+  }, () => run(auth, null, lang, undefined, (tx) => households(tx, auth))());
 
   server.registerTool(
     'list_items',

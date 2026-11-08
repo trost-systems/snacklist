@@ -89,7 +89,7 @@ A user can be in several households (job 169b). Without the optional
 OAuth connection the one the user picked in the app as "Standard für Siri,
 Alexa & KI" (`household_members.is_default`, read per request), for a personal
 access token the household it was made in. `household` takes a household's
-id or its exact name, as `list_households` shows them; one the user is not in
+id or its name in any case, as `list_households` shows them; one the user is not in
 is a tool error that lists theirs, and a personal access token cannot leave
 its own household. Items, categories and stores can be named loosely: case, umlauts and emoji are ignored ("kuehlregal"
 finds "Kühlregal", "drogerie" finds "👶 Drogerie"), and a unique part of a
@@ -97,7 +97,7 @@ name is enough. An id works too.
 
 | Tool | Input | What it does |
 | --- | --- | --- |
-| `list_households` | none | The user's households as `[{id, name, members, default}]` in joining order; `default` marks where calls without `household` go. A personal access token sees only its own household. |
+| `list_households` | none | The user's households as `[{id, name, members, default}]` in joining order; `default` marks where calls without `household` go. A personal access token sees only its own household. Not behind the Premium lock: it lists only the user's own households, so a locked default can find an unlocked one. |
 | `list_items` | `store?`, `category?`, `household?` | Open items in aisle order, and inside a category in the household's walk order (`sort_key`, the order the app's drag and drop sets), then by age. With `store`: that store's items plus untagged ones, in that store's order. Next to `items`, `counts: {open, checkedLast24h}` counts the whole list whatever the filter: open items, and items ticked in the last 24 hours (one query on `items_household_status_idx`). |
 | `add_items` | `items: [{name, quantity?, brand?, properties?, category?, store?}]` (1–50), `household?` | Adds items through `public.add_item`, the add path Siri shares. The name is split by the parser (`public.parse_item`): "Windeln Pampers Größe 3" becomes name "Windeln", brand "Pampers", properties "Größe 3"; "2 Gurken" becomes name "Gurken", quantity "2". A non-blank `quantity` (max 40), `brand` (max 60) or `properties` (max 120, comma-separated) replaces the parsed value. The category comes from the household's learned corrections, then the German dictionary. The store comes from where the item was last bought, else a store brand's store (Balea: dm), else dm for drugstore items. Items already on the list come back under `alreadyOnList` instead of being duplicated: name, brand and properties are compared, so "Gurke" is "2 Gurken" but "Windeln Größe 5" is not "Windeln Größe 4". An explicit `category` is learned like a correction. A new item whose spelling variant or synonym is already open ("Karotten" with "Möhren", `public.similar_items`, job 32b) is still added and reported under `similarOnList: [{added, onList: [item]}]`; nothing is merged. |
 | `tick_items` | `items: [name or id]` (1–50), `household?` | Ticks items off; they move to "Zuletzt verwendet". Unresolvable or already ticked names come back under `notFound` with the reason, so a repeated call changes nothing. |

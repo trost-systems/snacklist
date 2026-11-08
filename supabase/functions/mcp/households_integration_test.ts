@@ -1,5 +1,5 @@
 // Job 169b: the MCP tools for a user in several households, through the SDK's streamable HTTP
-// handler as a client sees it. list_households names them; "household" (id or exact name) picks
+// handler as a client sees it. list_households names them; "household" (id or name in any case) picks
 // one, the default without it; a personal access token stays in its own household; the premium
 // gate asks about the household a call acts in. Runs with FG_DB_TEST=1 and SUPABASE_DB_URL (db gate).
 import { assert, assertEquals } from '@std/assert';
@@ -112,7 +112,7 @@ test('list_households names every household with members and the default', () =>
     ]);
   }));
 
-test('household picks the list by exact name or id; without it the default', () =>
+test('household picks the list by name in any case or id; without it the default', () =>
   withPeter(async ({ peter, ids }) => {
     const auth = oauth(peter, ids.Zuhause ?? '');
     assertEquals(items(await call(auth, open, 'list_items')), ['Milch']);
@@ -122,6 +122,9 @@ test('household picks the list by exact name or id; without it the default', () 
     assertEquals(items(await call(auth, open, 'list_items', { household: ids.Sommerfest })), [
       'Bratwurst',
     ]);
+    for (const household of ['sommerfest', ' SOMMERFEST ']) {
+      assertEquals(items(await call(auth, open, 'list_items', { household })), ['Bratwurst']);
+    }
     const added = await call(auth, open, 'add_items', {
       items: [{ name: 'Senf' }],
       household: 'Sommerfest',
@@ -137,7 +140,7 @@ test('household picks the list by exact name or id; without it the default', () 
 test('a household the user is not in, or a loose name, is a tool error naming theirs', () =>
   withPeter(async ({ peter, ids }) => {
     const auth = oauth(peter, ids.Zuhause ?? '');
-    for (const household of ['Bei Lea', ids['Bei Lea'] ?? '', 'sommerfest']) {
+    for (const household of ['Bei Lea', ids['Bei Lea'] ?? '', 'Sommer']) {
       const r = await call(auth, open, 'list_stores', { household });
       assertEquals(r.isError, true, household);
       assertEquals(
@@ -158,6 +161,17 @@ test('a personal access token stays in the household it was made in', () =>
     const r = await call(auth, open, 'list_items', { household: 'Zuhause' });
     assertEquals(r.isError, true);
     assertEquals(r.content[0]?.text, 'Dieser Zugriffstoken gilt nur für den Haushalt Sommerfest.');
+  }));
+
+test('list_households answers with a locked default, so an unlocked household can be found', () =>
+  withPeter(async ({ peter, ids }) => {
+    const locked: Gate = () => Promise.resolve('locked');
+    const r = await call(oauth(peter, ids.Zuhause ?? ''), locked, 'list_households');
+    assertEquals(r.isError, undefined);
+    assertEquals(
+      (JSON.parse(r.content[0]?.text ?? '[]') as { name: string }[]).map((h) => h.name),
+      ['Zuhause', 'Sommerfest'],
+    );
   }));
 
 test('the premium gate asks about the household the call acts in', () =>

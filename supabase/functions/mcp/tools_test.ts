@@ -56,8 +56,8 @@ function serve(gate: Gate, lang?: string) {
 
 const locked: Gate = () => Promise.resolve<Access>('locked');
 
+/** The tools behind the lock; list_households only lists the user's own households. */
 const calls: [string, Record<string, unknown>][] = [
-  ['list_households', {}],
   ['list_items', {}],
   ['add_items', { items: [{ name: 'Milch' }] }],
   ['tick_items', { items: ['Milch'] }],
@@ -79,7 +79,7 @@ Deno.test('locked: initialize and tools/list answer without asking the gate', as
   assertEquals(list.status, 200);
   assertEquals(
     (await message(list)).result.tools.map((t) => t.name).sort(),
-    calls.map(([name]) => name).sort(),
+    ['list_households', ...calls.map(([name]) => name)].sort(),
   );
   assertEquals(s.asked(), 0);
 });
@@ -97,6 +97,14 @@ Deno.test('locked: every tool call is an isError result with HTTP 200, data unto
     assertEquals(s.asked(), 1, name);
     assertEquals(s.households(), ['h'], `${name}: without "household" the credential's household`);
   }
+});
+
+Deno.test('job 169b: list_households does not ask the gate', async () => {
+  const s = serve(locked);
+  // Without SUPABASE_DB_URL the database read fails; the gate must not have been asked first.
+  const res = await s.handle(rpc('tools/call', { name: 'list_households', arguments: {} }));
+  assertFalse(JSON.stringify(await message(res)).includes('Premium'));
+  assertEquals(s.asked(), 0);
 });
 
 Deno.test('job 169b: every list tool takes an optional household, list_households none', async () => {
