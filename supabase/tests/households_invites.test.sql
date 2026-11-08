@@ -3,7 +3,7 @@
 -- with its rate limits. Two joins racing for a group link's last use are in
 -- supabase/functions/_shared/households_integration_test.ts.
 begin;
-select plan(106);
+select plan(108);
 
 create function pg_temp.login(uid uuid) returns void language plpgsql as $$
 begin
@@ -323,6 +323,12 @@ select isnt((select revoked_at from public.personal_access_tokens where id = (se
   'her key for the household ended');
 select is((select count(*)::int from public.invite_uses where user_id = :j1), 1,
   'the join record stays (the household saw her join)');
+select pg_temp.login(:j1);
+select is(jsonb_array_length(public.export_my_data() -> 'invite_uses'), 1,
+  'her export lists the invite she joined through');
+select pg_temp.login(:max);
+select is((select count(*)::int from public.invite_joins((select id from g3)) where user_id = :j1), 0,
+  'and who-joined lists only current members');
 select pg_temp.login(:olga);
 select lives_ok($$ select public.remove_member(pg_temp.hid('Familie Brandt'), '00000000-0000-0000-0000-000000169f04') $$,
   'the owner removes an admin');
