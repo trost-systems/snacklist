@@ -1,5 +1,6 @@
-// Static server for the Flutter web build, routed like vercel.json: a path its rewrite matches
-// falls back to index.html, any other missing file is a 404.
+// Static server for the Flutter web build, routed like vercel.json: a missing file goes to the
+// first rewrite whose source matches (the join page's `/join/:code`, else the app's index.html),
+// a trailing slash redirects away (`trailingSlash: false`), any other missing file is a 404.
 // Usage: node e2e/serve.mjs <dir> <port> [--csp <supabase-url> <posthog-host>]
 // --csp sends vercel.json's Content-Security-Policy with the production Supabase and PostHog
 // origins swapped for the given ones (job 33c: the e2e suite runs under the production CSP).
@@ -16,6 +17,7 @@ const types = {
   '.json': 'application/json',
   '.wasm': 'application/wasm',
   '.png': 'image/png',
+  '.svg': 'image/svg+xml',
   '.otf': 'font/otf',
   '.ttf': 'font/ttf',
   '.woff2': 'font/woff2',
@@ -24,7 +26,12 @@ const types = {
 };
 
 const vercel = JSON.parse(readFileSync(new URL('../vercel.json', import.meta.url), 'utf8'));
-const spaPath = new RegExp(`^${vercel.rewrites.find((r) => r.destination === '/index.html').source}$`);
+// Vercel's sources are path-to-regexp patterns: a `:name` segment matches one path segment.
+const rewrites = vercel.rewrites.map((r) => ({
+  source: new RegExp(`^${r.source.replace(/\/:[A-Za-z_]\w*/g, '/[^/]+')}$`),
+  destination: r.destination,
+}));
+const rewrite = (urlPath) => rewrites.find((r) => r.source.test(urlPath))?.destination;
 
 function productionCsp() {
   for (const rule of vercel.headers) {
@@ -57,9 +64,14 @@ function resolve(urlPath) {
 }
 
 createServer((req, res) => {
-  const urlPath = req.url.split('?')[0];
-  const file = resolve(urlPath) ?? (spaPath.test(urlPath) ? join(root, 'index.html') : null);
+  const [urlPath, query] = req.url.split(/\?(.*)/s);
   const headers = { 'cache-control': 'no-store', ...(csp && { 'content-security-policy': csp }) };
+  if (vercel.trailingSlash === false && urlPath.length > 1 && urlPath.endsWith('/')) {
+    res.writeHead(308, { ...headers, location: urlPath.replace(/\/+$/, '') + (query ? `?${query}` : '') }).end();
+    return;
+  }
+  const destination = rewrite(urlPath);
+  const file = resolve(urlPath) ?? (destination ? resolve(destination) : null);
   if (!file) {
     res.writeHead(404, headers).end();
     return;

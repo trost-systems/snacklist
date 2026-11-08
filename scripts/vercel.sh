@@ -71,6 +71,7 @@ build() {
     --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY" \
     --dart-define-from-file=config/auth.json ${analytics[@]+"${analytics[@]}"} ${premium[@]+"${premium[@]}"} \
     ${maps[@]+"${maps[@]}"}
+  ../scripts/join-config.sh build/web
   if ((${#maps[@]})); then
     # Chunk ids into main.dart.js, the map to PostHog, then the map deleted so it is not served.
     # A failed upload does not stop the deploy: the traces just stay minified.
