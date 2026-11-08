@@ -317,7 +317,7 @@ Deno.test('an {id} that is not a UUID is 400 invalid_id', async () => {
 });
 
 Deno.test('unknown paths are 404 not_found, wrong methods 405 with Allow', async () => {
-  await rejected(call('/lists'), 404, 'not_found');
+  await rejected(call('/shops'), 404, 'not_found');
   await rejected(call('/items/'), 404, 'not_found');
   await rejected(
     new Request('http://localhost/api/v2/items', {
@@ -399,6 +399,8 @@ Deno.test('list errors map to their codes; a unique violation is 409; the rest 5
       'ambiguous_store',
     ],
     [new ToolError('x', 'ambiguous', 'category', ['a', 'b'], 'x'), 422, 'ambiguous_category'],
+    [new ToolError('x', 'not_found', 'list', ['Einkaufsliste'], 'Baumarkt'), 422, 'list_not_found'],
+    [new ToolError('x', 'ambiguous', 'list', ['a', 'b'], 'Fest'), 422, 'ambiguous_list'],
     [Object.assign(new Error('dup'), { name: 'PostgresError', code: '23505' }), 409, 'conflict'],
     [
       Object.assign(new Error('gone'), { name: 'PostgresError', code: '57P01' }),
@@ -438,7 +440,7 @@ Deno.test('one log line per request: template, status, key id; never the id or a
 });
 
 Deno.test('switched off, every request answers like an unknown path: 404, no limits, nothing runs', async () => {
-  const absent = await (await handle(call('/lists'), fake())).json();
+  const absent = await (await handle(call('/shops'), fake())).json();
   assertEquals(absent, { error: { code: 'not_found', message: 'No such endpoint.' } });
   for (
     const req of [

@@ -335,6 +335,7 @@ function errorReply(error: ApiError): Reply {
 const listErrors = {
   store: { not_found: 'store_not_found', ambiguous: 'ambiguous_store', label: 'Store' },
   category: { not_found: 'category_not_found', ambiguous: 'ambiguous_category', label: 'Category' },
+  list: { not_found: 'list_not_found', ambiguous: 'ambiguous_list', label: 'List' },
 } as const;
 
 /** SQLSTATE classes of a database that is down, full or shutting down. */
@@ -347,7 +348,10 @@ function asApiError(e: unknown, deps: Deps): ApiError {
     if (e.subject === 'item' && e.reason === 'not_found') {
       return new ApiError(404, 'item_not_found', 'No such item in this household.');
     }
-    if ((e.subject === 'store' || e.subject === 'category') && e.reason !== 'invalid') {
+    if (
+      (e.subject === 'store' || e.subject === 'category' || e.subject === 'list') &&
+      e.reason !== 'invalid'
+    ) {
       const kind = listErrors[e.subject];
       return new ApiError(
         422,

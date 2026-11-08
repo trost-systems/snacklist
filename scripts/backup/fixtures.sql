@@ -173,4 +173,21 @@ select set_config('request.headers', '{"x-real-ip": "192.0.2.10"}', true);
 select public.preview_invite_public(:'group_code');
 reset role;
 
+
+-- Job 169b W3: Lea's second list with an item, her "Ich bringe" claim, and Carl asking to join
+-- through the group link once Peter switched join approval on.
+reset role;
+select pg_temp.login('lea@backup.test');
+select public.create_list((select id from fx where key = 'home'), 'Baumarkt', gen_random_uuid());
+select public.add_list_item((select id from fx where key = 'home'),
+  (select id from public.lists where name = 'Baumarkt'), 'Schrauben');
+select public.claim_item((select id from public.items where name = 'Schrauben'), '1 Packung');
+reset role;
+select pg_temp.login('peter@backup.test');
+select public.set_join_approval((select id from fx where key = 'home'), true);
+reset role;
+select pg_temp.login('carl@backup.test');
+select public.accept_invite((select code from fx where key = 'group'), p_mode => 'add');
+reset role;
+
 commit;

@@ -174,3 +174,71 @@ test('the premium gate asks about the household the call acts in', () =>
     assert(!unlocked.isError);
     assertEquals(asked, [ids.Zuhause, ids.Sommerfest]);
   }));
+
+// Job 169b W3: several lists per household.
+const text = (r: Result) => JSON.parse(r.content[0]?.text ?? '{}');
+
+test('list_lists names the lists; "list" picks one, the first list without it', () =>
+  withPeter(async ({ peter, ids }) => {
+    const sql = postgres(databaseUrl(), { max: 1, prepare: false, onnotice: () => {} });
+    try {
+      await sql`insert into public.lists (household_id, name, position) values
+        (${ids.Sommerfest ?? ''}, 'Getränke', 1), (${ids['Bei Lea'] ?? ''}, 'Leas Liste', 1)`;
+    } finally {
+      await sql.end();
+    }
+    const auth = oauth(peter, ids.Zuhause ?? '');
+    const lists = await call(auth, open, 'list_lists', { household: 'Sommerfest' });
+    assertEquals(
+      text(lists).map((l: { name: string; default: boolean }) => [l.name, l.default]),
+      [['Einkaufsliste', true], ['Getränke', false]],
+    );
+
+    const added = await call(auth, open, 'add_items', {
+      household: 'Sommerfest',
+      list: 'getränke',
+      items: [{ name: 'Bratwurst' }, { name: 'Apfelschorle' }],
+    });
+    const { added: fresh, alreadyOnList } = text(added);
+    assertEquals(
+      fresh.map((i: { name: string }) => i.name),
+      ['Bratwurst', 'Apfelschorle'],
+      'Bratwurst is open on the first list, not on Getränke: added there',
+    );
+    assertEquals(alreadyOnList, []);
+    const getraenke = text(lists).find((l: { name: string }) => l.name === 'Getränke').id;
+    assert(fresh.every((i: { listId: string }) => i.listId === getraenke), 'items carry listId');
+
+    assertEquals(items(await call(auth, open, 'list_items', { household: 'Sommerfest' })), [
+      'Bratwurst',
+    ]);
+    const drinks = await call(auth, open, 'list_items', {
+      household: 'Sommerfest',
+      list: getraenke,
+    });
+    assertEquals(text(drinks).list, 'Getränke');
+    assertEquals(items(drinks).sort(), ['Apfelschorle', 'Bratwurst']);
+    assertEquals(text(drinks).counts, { open: 2, checkedLast24h: 0 }, "counts are the list's");
+
+    const ticked = await call(auth, open, 'tick_items', {
+      household: 'Sommerfest',
+      list: 'Getränke',
+      items: ['Bratwurst'],
+    });
+    assertEquals(text(ticked).ticked.map((i: { listId: string }) => i.listId), [getraenke]);
+    assertEquals(
+      items(await call(auth, open, 'list_items', { household: 'Sommerfest' })),
+      ['Bratwurst'],
+      "ticking on Getränke leaves the first list's Bratwurst open",
+    );
+
+    const foreign = await call(auth, open, 'list_items', {
+      household: 'Sommerfest',
+      list: 'Leas Liste',
+    });
+    assertEquals(foreign.isError, true, "another household's list is not found");
+    assert(
+      foreign.content[0]?.text.includes('Einkaufsliste, Getränke'),
+      'the error names the lists',
+    );
+  }));

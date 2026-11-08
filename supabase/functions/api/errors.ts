@@ -20,6 +20,8 @@ export type ErrorCode =
   | 'category_not_found'
   | 'ambiguous_store'
   | 'ambiguous_category'
+  | 'list_not_found'
+  | 'ambiguous_list'
   | 'idempotency_key_reused'
   | 'rate_limited'
   | 'auth_throttled'

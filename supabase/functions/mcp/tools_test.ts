@@ -58,6 +58,7 @@ const locked: Gate = () => Promise.resolve<Access>('locked');
 
 const calls: [string, Record<string, unknown>][] = [
   ['list_households', {}],
+  ['list_lists', {}],
   ['list_items', {}],
   ['add_items', { items: [{ name: 'Milch' }] }],
   ['tick_items', { items: ['Milch'] }],
@@ -106,6 +107,16 @@ Deno.test('job 169b: every list tool takes an optional household, list_household
     const takes = Object.keys(tool.inputSchema.properties ?? {}).includes('household');
     assertEquals(takes, tool.name !== 'list_households', tool.name);
   }
+});
+
+Deno.test('job 169b W3: the item tools take an optional list', async () => {
+  const s = serve(locked);
+  const { tools } = (await message(await s.handle(rpc('tools/list')))).result;
+  const takes = tools.filter((t) => Object.keys(t.inputSchema.properties ?? {}).includes('list'));
+  assertEquals(
+    takes.map((t) => t.name).sort(),
+    ['add_items', 'list_items', 'move_item', 'tick_items'],
+  );
 });
 
 Deno.test('locked: English for a client that prefers it', async () => {

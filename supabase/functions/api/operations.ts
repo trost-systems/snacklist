@@ -9,6 +9,7 @@ import {
   categories,
   counts,
   itemById,
+  lists,
   moveItemById,
   type OpenItem,
   openItems,
@@ -60,12 +61,13 @@ function idOf(raw: Raw): string {
 const noQuery = z.object({}).strict();
 const noBody = z.object({}).strict();
 
-/** A store or category, by id or name. */
+/** A store, category or list, by id or name. */
 const ref = z.string().trim().min(1).max(60);
 
 const listQuery = z.object({
   store: ref.optional(),
   category: ref.optional(),
+  list: ref.optional(),
   limit: z.string().regex(/^[0-9]{1,3}$/, 'Expected a whole number').transform(Number)
     .pipe(z.number().int().min(1).max(PAGE_MAX)).optional(),
   cursor: z.string().max(2048).optional(),
@@ -80,7 +82,8 @@ const newItem = z.object({
   store: ref.nullish(),
 }).strict();
 
-const addBody = z.object({ items: z.array(newItem).min(1).max(BATCH) }).strict();
+const addBody = z.object({ items: z.array(newItem).min(1).max(BATCH), list: ref.optional() })
+  .strict();
 
 const moveBody = z.object({ category: ref.optional(), store: ref.nullable().optional() }).strict()
   .refine((b) => b.category !== undefined || b.store !== undefined, {
@@ -89,12 +92,16 @@ const moveBody = z.object({ category: ref.optional(), store: ref.nullable().opti
 
 // Cursors ------------------------------------------------------------------------------------
 
-/** What a page continues after, and the filter (resolved store and category ids) it belongs to. */
-type Cursor = { filter: [string | null, string | null]; after: Position };
+/**
+ * What a page continues after, and the filter (resolved store, category and list ids) it belongs
+ * to. The list id travels as `l`, absent in cursors made before lists (no list filter).
+ */
+type Cursor = { filter: [string | null, string | null, string | null]; after: Position };
 
 const cursorShape = z.object({
   v: z.literal(1),
   f: z.tuple([z.string().regex(UUID).nullable(), z.string().regex(UUID).nullable()]),
+  l: z.string().regex(UUID).nullable().optional(),
   k: z.tuple([
     z.number().int(),
     z.string().max(200),
@@ -116,9 +123,13 @@ const base64url = {
 
 export function encodeCursor(cursor: Cursor): string {
   const { rank, category, sortKey, addedAt, id } = cursor.after;
-  return base64url.encode(
-    JSON.stringify({ v: 1, f: cursor.filter, k: [rank, category, sortKey, addedAt, id] }),
-  );
+  const [store, cat, list] = cursor.filter;
+  return base64url.encode(JSON.stringify({
+    v: 1,
+    f: [store, cat],
+    ...(list === null ? {} : { l: list }),
+    k: [rank, category, sortKey, addedAt, id],
+  }));
 }
 
 const invalidCursor = () =>
@@ -134,7 +145,11 @@ export function decodeCursor(text: string): Cursor {
   const parsed = cursorShape.safeParse(value);
   if (!parsed.success) throw invalidCursor();
   const [rank, category, sortKey, addedAt, id] = parsed.data.k;
-  return { filter: parsed.data.f, after: { rank, category, sortKey, addedAt, id } };
+  const [store, cat] = parsed.data.f;
+  return {
+    filter: [store, cat, parsed.data.l ?? null],
+    after: { rank, category, sortKey, addedAt, id },
+  };
 }
 
 // Operations ---------------------------------------------------------------------------------
@@ -155,22 +170,24 @@ export const operations: Record<Operation, Parse> = {
     const cursor = query.cursor === undefined ? null : decodeCursor(query.cursor);
     const limit = query.limit ?? PAGE_DEFAULT;
     return async (tx, household) => {
-      const { store, category } = await resolveFilter(tx, household, query);
-      const filter: [string | null, string | null] = [store?.id ?? null, category?.id ?? null];
-      if (cursor && (cursor.filter[0] !== filter[0] || cursor.filter[1] !== filter[1])) {
-        throw invalidCursor();
-      }
+      const { store, category, list } = await resolveFilter(tx, household, query);
+      const filter: [string | null, string | null, string | null] = [
+        store?.id ?? null,
+        category?.id ?? null,
+        list?.id ?? null,
+      ];
+      if (cursor && cursor.filter.some((id, i) => id !== filter[i])) throw invalidCursor();
       const rows = await openItems(
         tx,
         household,
-        { storeId: filter[0], categoryId: filter[1] },
+        { storeId: filter[0], categoryId: filter[1], listId: filter[2] },
         { after: cursor?.after ?? null, limit: limit + 1 },
       );
       const page = rows.slice(0, limit);
       const last = rows.length > limit ? page.at(-1) : undefined;
       return ok({
         data: page.map(item),
-        counts: await counts(tx, household),
+        counts: await counts(tx, household, filter[2]),
         nextCursor: last ? encodeCursor({ filter, after: last.position }) : null,
       });
     };
@@ -184,7 +201,7 @@ export const operations: Record<Operation, Parse> = {
 
   addItems: (raw) => {
     strict(noQuery, raw.query, 'query');
-    const { items } = strict(addBody, raw.body ?? {}, 'body');
+    const { items, list } = strict(addBody, raw.body ?? {}, 'body');
     const wanted = items.map((i) => ({
       name: i.name,
       quantity: i.quantity ?? undefined,
@@ -194,7 +211,7 @@ export const operations: Record<Operation, Parse> = {
       store: i.store ?? undefined,
     }));
     return async (tx, household) => {
-      const { added, existing, similar } = await addItemIds(tx, household, wanted);
+      const { added, existing, similar } = await addItemIds(tx, household, wanted, list);
       const rows = await apiItemsById(tx, [
         ...added,
         ...existing,
@@ -243,5 +260,11 @@ export const operations: Record<Operation, Parse> = {
   listStores: (raw) => {
     strict(noQuery, raw.query, 'query');
     return async (tx, household) => named(await stores(tx, household));
+  },
+
+  listLists: (raw) => {
+    strict(noQuery, raw.query, 'query');
+    return async (tx, household) =>
+      named((await lists(tx, household)).map((l) => ({ ...l, sort_order: l.position })));
   },
 };

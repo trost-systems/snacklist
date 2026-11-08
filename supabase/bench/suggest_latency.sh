@@ -30,8 +30,8 @@ select row_number() over () as n, initcap(term) as name from (
   select term from public.classifier_terms order by md5(term) limit 400
 ) t;
 set local session_replication_role = replica;
-insert into public.items (household_id, category_id, name, normalized_name, brand, properties, status, bought_at, updated_at, created_at)
-select (select id from h), (select c.id from public.categories c where c.household_id = (select id from h) and c.seed_key = 'other'),
+insert into public.items (household_id, list_id, category_id, name, normalized_name, brand, properties, status, bought_at, updated_at, created_at)
+select (select id from h), public.first_list((select id from h)), (select c.id from public.categories c where c.household_id = (select id from h) and c.seed_key = 'other'),
   p.name, public.normalize_item_name(p.name),
   (array[null, null, 'Bio', 'Ja!', 'Alnatura', 'Milsani'])[1 + floor(random() * 6)::int],
   (array[null, null, null, '500 g', '1 l', 'laktosefrei'])[1 + floor(random() * 6)::int],

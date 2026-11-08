@@ -130,6 +130,22 @@ begin
   status := 'ok';
 end $$;
 
+-- The oldest builds' join: the household's id once joined. A filed request is no membership, so
+-- it answers null, as an invalid code does, rather than an id the caller cannot open.
+create or replace function public.join_household(p_code text) returns uuid
+language plpgsql security definer set search_path = '' as $$
+declare
+  v_result jsonb := public.accept_invite(p_code);
+begin
+  if v_result ->> 'status' = 'too_many_attempts' then
+    raise exception 'too_many_attempts' using errcode = 'P0001';
+  end if;
+  if v_result ->> 'status' = 'requested' then
+    return null;
+  end if;
+  return (v_result ->> 'household_id')::uuid;
+end $$;
+
 -- The owner or an admin of [p_household] calling; not_member or not_admin otherwise.
 create function public.require_household_admin(p_household uuid) returns void
 language plpgsql stable security definer set search_path = '' as $$

@@ -8,6 +8,7 @@ import {
   addItems,
   categories,
   listItems,
+  lists,
   moveItem,
   stores,
   tickItems,
@@ -22,7 +23,9 @@ einsortiert; gib eine Kategorie nur an, wenn der Nutzer sie ausdrücklich nennt.
 Einträge, Kategorien und Läden lassen sich per Name (ungefähr, ohne Umlaute) oder per id angeben.
 Abgehakte Einträge verschwinden aus der Liste.
 Wer in mehreren Haushalten ist, findet sie mit list_households; die Listen-Werkzeuge nehmen dann
-"household" (id oder genauer Name), ohne Angabe gilt der Standardhaushalt.`;
+"household" (id oder genauer Name), ohne Angabe gilt der Standardhaushalt.
+Ein Haushalt kann mehrere Listen haben (list_lists, z. B. "Wocheneinkauf" und "Baumarkt"); die
+Werkzeuge nehmen dann "list" (id oder genauer Name), ohne Angabe gilt die erste Liste.`;
 
 /**
  * Job 50: what a tool call of a household without Hummlist Premium gets while the lock is on. A
@@ -146,6 +149,16 @@ const categoryName = z.string().min(1).max(60).describe(
 const householdRef = z.string().min(1).max(80).optional().describe(
   'Haushalt (list_households): seine id oder sein genauer Name. Ohne Angabe der Standardhaushalt.',
 );
+const listRef = z.string().min(1).max(60).optional().describe(
+  'Liste des Haushalts (list_lists): ihre id oder ihr genauer Name. Ohne Angabe die erste Liste.',
+);
+
+/** A list of the household; `default` is where a call without "list" goes. */
+export type ListEntry = { id: string; name: string; default: boolean };
+
+export async function listLists(tx: Tx, household: string): Promise<ListEntry[]> {
+  return (await lists(tx, household)).map((l, i) => ({ id: l.id, name: l.name, default: i === 0 }));
+}
 
 export function buildServer(auth: Auth, gate: Gate, lang: Lang = 'de'): McpServer {
   const server = new McpServer(
@@ -169,6 +182,15 @@ export function buildServer(auth: Auth, gate: Gate, lang: Lang = 'de'): McpServe
     annotations: { readOnlyHint: true },
   }, () => run(auth, once, lang, undefined, (tx) => households(tx, auth))());
 
+  server.registerTool('list_lists', {
+    title: 'Listen anzeigen',
+    description:
+      'Listet die Einkaufslisten des Haushalts in ihrer Reihenfolge. "default" markiert ' +
+      'die erste Liste, in der die anderen Werkzeuge ohne "list" arbeiten (auch Siri und Alexa).',
+    inputSchema: z.object({ household: householdRef }),
+    annotations: { readOnlyHint: true },
+  }, ({ household }) => run(auth, once, lang, household, (tx, h) => listLists(tx, h))());
+
   server.registerTool(
     'list_items',
     {
@@ -178,11 +200,12 @@ export function buildServer(auth: Auth, gate: Gate, lang: Lang = 'de'): McpServe
         'nur, was in diesem Laden gekauft werden kann (seine Einträge plus alle ohne Laden), in der ' +
         'Reihenfolge dieses Ladens. Mit "category" nur eine Kategorie. "counts" gilt immer für die ' +
         'ganze Liste, auch mit Filter: "open" offene Einträge, "checkedLast24h" in den letzten 24 ' +
-        'Stunden abgehakte.',
+        'Stunden abgehakte. "list" in der Antwort nennt die gezeigte Liste.',
       inputSchema: z.object({
         store: storeName.optional(),
         category: categoryName.optional(),
         household: householdRef,
+        list: listRef,
       }),
       annotations: { readOnlyHint: true },
     },
@@ -223,9 +246,11 @@ export function buildServer(auth: Auth, gate: Gate, lang: Lang = 'de'): McpServe
           ),
         })).min(1).max(50),
         household: householdRef,
+        list: listRef,
       }),
     },
-    ({ items, household }) => run(auth, once, lang, household, (tx, h) => addItems(tx, h, items))(),
+    ({ items, household, list }) =>
+      run(auth, once, lang, household, (tx, h) => addItems(tx, h, items, list))(),
   );
 
   server.registerTool(
@@ -236,11 +261,15 @@ export function buildServer(auth: Auth, gate: Gate, lang: Lang = 'de'): McpServe
         'Hakt einen oder mehrere Einträge als gekauft ab; sie verschwinden von der Liste und ' +
         'landen unter "Zuletzt verwendet". Nicht gefundene oder schon abgehakte Einträge werden ' +
         'unter "notFound" gemeldet, ein zweiter Aufruf ändert also nichts.',
-      inputSchema: z.object({ items: z.array(itemRef).min(1).max(50), household: householdRef }),
+      inputSchema: z.object({
+        items: z.array(itemRef).min(1).max(50),
+        household: householdRef,
+        list: listRef,
+      }),
       annotations: { destructiveHint: false, idempotentHint: true },
     },
-    ({ items, household }) =>
-      run(auth, once, lang, household, (tx, h) => tickItems(tx, h, items))(),
+    ({ items, household, list }) =>
+      run(auth, once, lang, household, (tx, h) => tickItems(tx, h, items, list))(),
   );
 
   server.registerTool(
@@ -257,6 +286,7 @@ export function buildServer(auth: Auth, gate: Gate, lang: Lang = 'de'): McpServe
         category: categoryName.optional(),
         store: storeName.nullable().optional(),
         household: householdRef,
+        list: listRef,
       }),
       annotations: { idempotentHint: true },
     },

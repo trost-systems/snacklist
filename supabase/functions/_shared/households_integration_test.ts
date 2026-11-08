@@ -289,3 +289,42 @@ test('three joins race for the last two uses: two join, the third is refused', (
     assertEquals(await groupLinkRace(joiners, code), ['invalid_invite', 'joined', 'joined']);
     assertEquals(await uses(admin, invite, household), { use_count: 50, joins: 2, members: 3 });
   }));
+
+test("W3: two admins approve requests racing for a group link's last use: one joins", () =>
+  withGroupLink(49, 4, async ({ admin, joiners, code, invite, household }) => {
+    const [first, second, ...requesters] = joiners;
+    if (first === undefined || second === undefined) throw new Error('no admins');
+    for (const { user } of [first, second]) {
+      await admin`insert into public.household_members (household_id, user_id, role)
+        values (${household}, ${user}, 'admin')`;
+    }
+    await admin`update public.households set join_approval = true where id = ${household}`;
+    const requests: string[] = [];
+    for (const r of requesters) {
+      const [row] = await as(r.sql, r.user, async (tx) => {
+        await tx`select public.accept_invite(${code}, p_mode => 'add')`;
+        return await tx<{ id: string; status: string }[]>`
+          select id, public.accept_invite(${code}, p_mode => 'add') ->> 'status' as status
+          from public.join_requests`;
+      });
+      assertEquals(row?.status, 'requested', 'asking twice answers requested, one request');
+      requests.push(row?.id ?? '');
+    }
+    assertEquals((await uses(admin, invite, household))?.use_count, 49, 'requests count nothing');
+
+    const statuses: string[] = [];
+    const decide = (tx: postgres.TransactionSql, request: string) =>
+      tx<{ status: string }[]>`
+        select public.decide_join_request(${request}, true) ->> 'status' as status`
+        .then(([row]) => statuses.push(row?.status ?? ''));
+    await overlapping(
+      (release) =>
+        as(first.sql, first.user, async (tx) => {
+          await decide(tx, requests[0] ?? '');
+          await release;
+        }),
+      () => as(second.sql, second.user, (tx) => decide(tx, requests[1] ?? '')),
+    );
+    assertEquals(statuses.sort(), ['approved', 'invite_full']);
+    assertEquals(await uses(admin, invite, household), { use_count: 50, joins: 1, members: 4 });
+  }));

@@ -256,6 +256,76 @@ test('pages follow the aisle order with stable cursors that belong to their filt
     assertEquals((await missing.json()).error.code, 'store_not_found');
   }));
 
+test('job 169b W3: lists, the list filter with its cursors, adds to a list, listId on items', () =>
+  withMembers(async (sql, [mine, theirs]) => {
+    const key = await mint(sql, mine, ['read', 'write']);
+    await asUser(
+      mine.userId,
+      (tx) => tx`select public.create_list(${mine.householdId}, 'Baumarkt', gen_random_uuid())`,
+    );
+    await asUser(
+      theirs.userId,
+      (tx) => tx`select public.create_list(${theirs.householdId}, 'Fremd', gen_random_uuid())`,
+    );
+
+    const lists = await (await api(key.token, 'GET', '/lists')).json();
+    assertEquals(
+      lists.data.map((l: { name: string; sortOrder: number }) => [l.name, l.sortOrder]),
+      [['Einkaufsliste', 0], ['Baumarkt', 1]],
+      "only the key's household, in order",
+    );
+    const [first, hardware] = lists.data as { id: string }[];
+    assertExists(first);
+    assertExists(hardware);
+
+    await api(key.token, 'POST', '/items', { body: { items: [{ name: 'Milch' }] } });
+    const toHardware = await api(key.token, 'POST', '/items', {
+      body: {
+        list: 'baumarkt',
+        items: [{ name: 'Milch' }, { name: 'Schrauben' }, { name: 'Dübel' }],
+      },
+    });
+    assertEquals(toHardware.status, 201);
+    const added = (await toHardware.json()).data.added as (Item & { listId: string })[];
+    assertEquals(
+      added.map((i) => i.name),
+      ['Milch', 'Schrauben', 'Dübel'],
+      'Milch is open elsewhere only',
+    );
+    assert(added.every((i) => i.listId === hardware.id), 'items carry their listId');
+
+    const all = await (await api(key.token, 'GET', '/items')).json();
+    assertEquals(all.data.length, 4, "without list, every list's items");
+    assertEquals(all.counts.open, 4);
+    const only = await (await api(key.token, 'GET', `/items?list=${hardware.id}&limit=2`)).json();
+    assertEquals(only.counts.open, 3, "with list, that list's counts");
+    const rest = await (await api(
+      key.token,
+      'GET',
+      `/items?list=${hardware.id}&limit=2&cursor=${only.nextCursor}`,
+    )).json();
+    assertEquals(
+      [...only.data, ...rest.data].map((i: Item) => i.name).sort(),
+      ['Dübel', 'Milch', 'Schrauben'],
+      'the cursor continues inside the list',
+    );
+    const elsewhere = await api(key.token, 'GET', `/items?limit=2&cursor=${only.nextCursor}`);
+    assertEquals((await elsewhere.json()).error.code, 'invalid_cursor', 'a cursor keeps its list');
+
+    const foreign = await api(key.token, 'POST', '/items', {
+      body: { list: 'Fremd', items: [{ name: 'Brot' }] },
+    });
+    assertEquals(foreign.status, 422);
+    const error = (await foreign.json()).error;
+    assertEquals(error.code, 'list_not_found');
+    assertEquals(error.details.candidates, ['Einkaufsliste', 'Baumarkt']);
+    assertEquals(
+      (await (await api(key.token, 'GET', '/items')).json()).data.length,
+      4,
+      'nothing added',
+    );
+  }));
+
 test('Idempotency-Key replays the first answer, refuses another request, serialises twins', () =>
   withMembers(async (sql, [mine]) => {
     const key = await mint(sql, mine, ['read', 'write']);

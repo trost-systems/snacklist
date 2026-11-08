@@ -35,6 +35,7 @@ supabase/bench/suggest_latency.sh
 # Job 82: the waitlist function's wiring (sign-up, confirm, one-click unsubscribe, rate limit).
 # Job 169b: one default per user under concurrent leaves, joins and creates; the MCP household tools;
 # W2: joins racing for a group link's last uses never pass 50.
+# W3: two approvals racing for a group link's last use count one join; Siri and Alexa use the first list.
 db_port="$(sed -n '/^\[db\]/,/^\[/ s/^port = \([0-9]*\)$/\1/p' supabase/config.toml)"
 (cd supabase/functions && FG_DB_TEST=1 SUPABASE_DB_URL="postgresql://postgres:postgres@127.0.0.1:$db_port/postgres" \
   deno test --allow-env --allow-net --allow-read _shared/add_paths_integration_test.ts alexa/store_integration_test.ts \

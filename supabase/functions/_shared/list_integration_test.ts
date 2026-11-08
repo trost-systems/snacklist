@@ -1,10 +1,12 @@
 // Job 62: list_items reports the whole list's counts next to the items, whatever the filter, and
-// only the caller's household. Runs _shared/list.ts as a signed-in user against the local stack
+// only the caller's household. Job 169b W3: Siri and Alexa act in the household's first list. Runs _shared/list.ts as a signed-in user against the local stack
 // (FG_DB_TEST=1, see add_paths_integration_test.ts).
-import { assertEquals, assertExists } from '@std/assert';
+import { assertEquals, assertExists, assertRejects } from '@std/assert';
 import postgres from 'postgres';
 import { asUser, databaseUrl } from './db.ts';
-import { addItems, listItems, tickItems } from './list.ts';
+import { addItems, counts, listItems, tickItems, ToolError } from './list.ts';
+import { openItems as alexaOpenItems } from '../alexa/store.ts';
+import { addItems as addVoiceItems } from '../voice/items.ts';
 
 const enabled = Deno.env.get('FG_DB_TEST') === '1';
 
@@ -70,10 +72,11 @@ Deno.test({
       await asUser(them, async (tx) => {
         assertEquals((await listItems(tx, theirs, {})).counts, { open: 2, checkedLast24h: 0 });
         assertEquals(
-          (await listItems(tx, mine, {})).counts,
+          await counts(tx, mine, null),
           { open: 0, checkedLast24h: 0 },
           "RLS hides another household's items from the counts too",
         );
+        await assertRejects(() => listItems(tx, mine, {}), ToolError, 'Keine Liste');
       });
     } finally {
       for (const user of users) {
@@ -81,6 +84,60 @@ Deno.test({
           select household_id from public.household_members where user_id = ${user})`;
         await admin`delete from auth.users where id = ${user}`;
       }
+      await admin.end();
+    }
+  },
+});
+
+Deno.test({
+  name: 'job 169b W3: Siri and Alexa add to and read the first list only',
+  ignore: !enabled,
+  sanitizeResources: false,
+  fn: async () => {
+    const admin = postgres(databaseUrl(), { max: 1, prepare: false });
+    const me = crypto.randomUUID();
+    try {
+      await admin`insert into auth.users (id, email) values (${me}, ${`${me}@fg-test.invalid`})`;
+      const household = await asUser(me, async (tx) => {
+        const [row] = await tx<{ id: string }[]>`select id from public.create_household('W3')`;
+        assertExists(row);
+        await tx`select public.create_list(${row.id}, 'Baumarkt', gen_random_uuid())`;
+        return row.id;
+      });
+      // The Baumarkt list goes in front: it is the first list now.
+      await asUser(
+        me,
+        (tx) =>
+          tx`select public.move_list(id, 0) from public.lists where name = 'Baumarkt'
+           and household_id = ${household}`,
+      );
+      await asUser(me, (tx) => addItems(tx, household, [{ name: 'Milch' }], 'Einkaufsliste'));
+      const said = await asUser(
+        me,
+        (tx) => addVoiceItems(tx, household, [{ name: 'Milch', quantity: null }]),
+      );
+      assertEquals(
+        said.map((i) => i.alreadyOnList),
+        [false],
+        'Milch on the other list is no match',
+      );
+      const [onFirst] = await admin<{ name: string }[]>`
+        select l.name from public.items i join public.lists l on l.id = i.list_id
+        where i.household_id = ${household} and i.added_by = ${me} order by i.created_at desc limit 1`;
+      assertEquals(onFirst?.name, 'Baumarkt', 'Siri adds to the first list');
+      assertEquals(
+        (await asUser(me, (tx) => alexaOpenItems(tx, household))).map((i) => i.name),
+        ['Milch'],
+        'Alexa reads the first list',
+      );
+      assertEquals(
+        (await asUser(me, (tx) => listItems(tx, household, {}))).counts.open,
+        1,
+        'one open item on the first list, the other list not counted',
+      );
+    } finally {
+      await admin`delete from public.households where created_by = ${me}`;
+      await admin`delete from auth.users where id = ${me}`;
       await admin.end();
     }
   },

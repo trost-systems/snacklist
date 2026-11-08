@@ -34,6 +34,7 @@ export const routes = [
     idempotent: false,
   },
   { operation: 'listStores', method: 'GET', path: '/v1/stores', scope: 'read', idempotent: false },
+  { operation: 'listLists', method: 'GET', path: '/v1/lists', scope: 'read', idempotent: false },
 ] as const satisfies readonly {
   operation: string;
   method: 'GET' | 'POST' | 'PATCH';

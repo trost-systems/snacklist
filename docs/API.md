@@ -95,8 +95,11 @@ An **item** (an entry on the list):
 | `storeId` | uuid or null | |
 | `status` | `open` or `ticked` | Ticked items leave the list |
 | `addedAt` | date-time | When it was added |
+| `listId` | uuid | The list it is on (`GET /v1/lists`) |
 
-A **category** and a **store**: `{ "id", "name", "sortOrder" }`.
+A **category**, a **store** and a **list**: `{ "id", "name", "sortOrder" }`. A household has one
+or more lists (e.g. `Wocheneinkauf` and `Baumarkt`); the first, the lowest `sortOrder`, is where an
+add without `list` goes, as Siri and Alexa add.
 
 Fields are camelCase, like the MCP tools' results.
 
@@ -104,7 +107,7 @@ Fields are camelCase, like the MCP tools' results.
 
 | Method and path | Scope | Does |
 | --- | --- | --- |
-| `GET /v1/items` | read | Open items in aisle order; `store`, `category` filter; paginated |
+| `GET /v1/items` | read | Open items in aisle order; `store`, `category`, `list` filter; paginated |
 | `GET /v1/items/{id}` | read | One item, open or ticked |
 | `POST /v1/items` | write | Adds 1 to 50 items (batch) |
 | `POST /v1/items/{id}/tick` | write | Ticks an item (bought) |
@@ -112,11 +115,13 @@ Fields are camelCase, like the MCP tools' results.
 | `PATCH /v1/items/{id}` | write | Moves an open item to another category and/or store |
 | `GET /v1/categories` | read | The household's categories in aisle order |
 | `GET /v1/stores` | read | The household's stores |
+| `GET /v1/lists` | read | The household's lists in their order |
 
 ### GET /v1/items
 
 Query: `store` and `category` (an id or a name; names match like the MCP tools: any case,
-umlauts optional, a unique part is enough), `limit` (1 to 100, default 50), `cursor`. With
+umlauts optional, a unique part is enough), `list` (an id or the exact name, any case; without
+it, every list's items), `limit` (1 to 100, default 50), `cursor`. With
 `store`, the list shows that store's items plus the ones without a store, in that store's aisle
 order; inside a category, the household's walk order.
 
@@ -124,13 +129,14 @@ order; inside a category, the household's walk order.
 {
   "data": [{ "id": "…", "name": "Milch", "brand": null, "properties": "1,5 %", "quantity": "2",
              "category": "Kühlregal", "categoryId": "…", "store": null, "storeId": null,
-             "status": "open", "addedAt": "2026-11-02T08:00:00.123456+00:00" }],
+             "status": "open", "addedAt": "2026-11-02T08:00:00.123456+00:00", "listId": "…" }],
   "counts": { "open": 12, "checkedLast24h": 3 },
   "nextCursor": "eyJ2IjoxLC…"
 }
 ```
 
-`counts` is always the whole list's, whatever the filter. `nextCursor` is null on the last page.
+`counts` is always the whole list's (with `list`, that list's; without, every list's), whatever
+the store or category filter. `nextCursor` is null on the last page.
 A cursor is opaque, belongs to the filter it came with (another filter: `400 invalid_cursor`) and
 is a position, not a page number: items added or ticked meanwhile do not shift the next page.
 
@@ -138,8 +144,11 @@ is a position, not a page number: items added or ticked meanwhile do not shift t
 
 ```json
 { "items": [ { "name": "Windeln Pampers Größe 3" }, { "name": "Gurken", "quantity": "2",
-               "store": "Lidl" } ] }
+               "store": "Lidl" } ], "list": "Wocheneinkauf" }
 ```
+
+`list` (optional, an id or the exact name, any case): the list the items go to; without it, the
+household's first list.
 
 Per item: `name` (1 to 120 characters, required), `quantity` (up to 40), `brand` (up to 60),
 `properties` (up to 120), `category` and `store` (an id or a name, up to 60). The name is split
@@ -153,11 +162,11 @@ the app. Without `store`, the item gets the store it was last bought in, an own 
             "similarOnList": [ { "itemId": "…", "onList": [ …items ] } ] } }
 ```
 
-`201` when something was added, else `200`. An item already on the list is not added twice and
+`201` when something was added, else `200`. An item already on that list is not added twice and
 comes back under `alreadyOnList`. A spelling variant or synonym of an open item ("Karotten" next to
 "Möhren") is added and reported under `similarOnList` (`itemId`: the new item). Nothing is merged.
-Items are added in order in one transaction: an unknown `store` or `category` anywhere fails the
-whole batch with `422` and adds nothing.
+Items are added in order in one transaction: an unknown `store`, `category` or `list` anywhere fails
+the whole batch with `422` and adds nothing.
 
 ### POST /v1/items/{id}/tick, POST /v1/items/{id}/untick
 
@@ -174,7 +183,7 @@ At least one of `category` (id or name) and `store` (id, name, or null to remove
 item goes to the end of its new group; the household remembers both for the next time the item is
 added (like a move in the app). Only open items: a ticked one is `404 item_not_found`.
 
-### GET /v1/categories, GET /v1/stores
+### GET /v1/categories, GET /v1/stores, GET /v1/lists
 
 `{ "data": [ { "id", "name", "sortOrder" } ], "nextCursor": null }`. These lists are short and
 always come whole; `nextCursor` is there so every list has the same shape.
@@ -218,8 +227,8 @@ optional.
 | 409 | `conflict` | The change clashes with the list's current state (for example the item is already open twice) |
 | 413 | `payload_too_large` | The body is over 64 KiB |
 | 415 | `unsupported_media_type` | A body that is not `application/json` |
-| 422 | `store_not_found`, `category_not_found` | A named store or category does not exist (`details.candidates`) |
-| 422 | `ambiguous_store`, `ambiguous_category` | A name matches several (`details.candidates`) |
+| 422 | `store_not_found`, `category_not_found`, `list_not_found` | A named store, category or list does not exist (`details.candidates`) |
+| 422 | `ambiguous_store`, `ambiguous_category`, `ambiguous_list` | A name matches several (`details.candidates`) |
 | 422 | `idempotency_key_reused` | The key came with a different request |
 | 429 | `rate_limited` | Over a rate limit (`Retry-After`) |
 | 429 | `auth_throttled` | Too many unknown keys from this address (`Retry-After`); valid keys still work |

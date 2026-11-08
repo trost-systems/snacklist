@@ -3,7 +3,7 @@
 -- (membership, invite_uses, the counted use) or decline; the requester cancels. Two approvals
 -- racing for a group link's last use are in supabase/functions/_shared/households_integration_test.ts.
 begin;
-select plan(59);
+select plan(60);
 
 create function pg_temp.login(uid uuid) returns void language plpgsql as $$
 begin
@@ -115,6 +115,8 @@ select is(public.accept_invite((select code from link)),
 select is(public.accept_invite((select code from link), false) ->> 'status', 'requested',
   'and so does the old one with p_archive');
 select is(pg_temp.default_of(:jonas), 'Bei Jonas', 'the old call left nothing');
+select is(public.join_household((select code from link)), null,
+  'the oldest join_household answers no household for a request');
 select is((select count(*)::int from public.join_requests), 1, 'Jonas sees only his own request');
 select pg_temp.login(:jule);
 select is(public.accept_invite((select code from person), p_mode => 'add') ->> 'status', 'requested',

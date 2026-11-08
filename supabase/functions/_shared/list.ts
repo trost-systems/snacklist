@@ -1,12 +1,14 @@
 // The shopping-list operations behind the MCP tools and the API. Every function runs as the
 // signed-in user (asUser), so RLS confines it to the caller's household; household_id filters
-// only narrow the query plan.
+// only narrow the query plan. A household has one or more lists (job 169b W3): the tools act in
+// the list a `list` reference names, else in the household's first list, where Siri and Alexa
+// act too.
 import { oneRow, type Tx } from './db.ts';
 
 export type ToolErrorReason = 'not_found' | 'ambiguous' | 'invalid';
 
 /** What a name or id was meant to find. */
-export type Subject = 'item' | 'store' | 'category';
+export type Subject = 'item' | 'store' | 'category' | 'list';
 
 /**
  * A request the list cannot carry out. The message is German (the MCP tools show it); the API
@@ -25,7 +27,12 @@ export class ToolError extends Error {
   }
 }
 
-const LABELS: Record<Subject, string> = { item: 'Eintrag', store: 'Laden', category: 'Kategorie' };
+const LABELS: Record<Subject, string> = {
+  item: 'Eintrag',
+  store: 'Laden',
+  category: 'Kategorie',
+  list: 'Liste',
+};
 
 export type Named = { id: string; name: string };
 
@@ -40,6 +47,7 @@ export type Item = {
   quantity: string | null;
   category: string;
   store: string | null;
+  listId: string;
 };
 
 /** An item as the API shows it (docs/API.md "Resources"). */
@@ -116,12 +124,56 @@ export function stores(tx: Tx, household: string): Promise<(Named & { sort_order
             where household_id = ${household} order by sort_order, name`;
 }
 
+/** The household's lists in their order; the first is where a write without a list goes. */
+export function lists(tx: Tx, household: string): Promise<(Named & { position: number })[]> {
+  return tx`select id, name, position from public.lists
+            where household_id = ${household} order by position, created_at, id`;
+}
+
+/**
+ * The list [ref] names in the household (its id, or its exact name in any case), or without a
+ * ref the first list. A list of another household is not found.
+ */
+export async function listOf(tx: Tx, household: string, ref?: string | undefined): Promise<Named> {
+  const options = await lists(tx, household);
+  const names = options.map((o) => o.name);
+  if (ref === undefined) {
+    const [first] = options;
+    if (first) return first;
+    // Every household has a list: none is visible only in a household the caller is not in.
+    throw new ToolError('Keine Liste in diesem Haushalt.', 'not_found', 'list', names);
+  }
+  const wanted = ref.trim();
+  const byId = UUID.test(wanted) ? options.find((o) => o.id === wanted.toLowerCase()) : undefined;
+  if (byId) return byId;
+  const named = options.filter((o) => o.name.toLowerCase() === wanted.toLowerCase());
+  const [only, ...more] = named;
+  if (only && more.length === 0) return only;
+  if (only) {
+    throw new ToolError(
+      `Mehrere Listen heißen „${wanted}“. Gib die id an: ` +
+        named.map((l) => `${l.name} (${l.id})`).join(', '),
+      'ambiguous',
+      'list',
+      named.map((l) => l.id),
+      ref,
+    );
+  }
+  throw new ToolError(
+    `Liste „${wanted}“ nicht gefunden. Vorhanden: ${names.join(', ') || '(keine)'}.`,
+    'not_found',
+    'list',
+    names,
+    ref,
+  );
+}
+
 function activeItems(
   tx: Tx,
-  household: string,
+  list: string,
 ): Promise<(Named & { store_id: string | null })[]> {
   return tx`select id, name, store_id from public.items
-            where household_id = ${household} and status = 'active' order by created_at`;
+            where list_id = ${list} and status = 'active' order by created_at`;
 }
 
 /** The API item's columns over items i, categories c and stores s. */
@@ -129,10 +181,12 @@ const apiColumns = (tx: Tx) =>
   tx`i.id, i.name, i.brand, i.properties, i.quantity, c.name as category,
      c.id as "categoryId", s.name as store, s.id as "storeId",
      case i.status when 'active' then 'open' else 'ticked' end as status,
-     to_json(i.created_at) #>> '{}' as "addedAt"`;
+     to_json(i.created_at) #>> '{}' as "addedAt", i.list_id as "listId"`;
 
 /** The MCP projection of an item, in the tools' key order. */
-const toItem = ({ id, name, brand, properties, quantity, category, store }: ApiItem): Item => ({
+const toItem = (
+  { id, name, brand, properties, quantity, category, store, listId }: ApiItem,
+): Item => ({
   id,
   name,
   brand,
@@ -140,6 +194,7 @@ const toItem = ({ id, name, brand, properties, quantity, category, store }: ApiI
   quantity,
   category,
   store,
+  listId,
 });
 
 /** Items by id in any status, once each, in the database's order. */
@@ -180,32 +235,39 @@ export async function itemById(tx: Tx, household: string, id: string): Promise<A
 
 /**
  * The whole list's size, whatever the filter: open items, and items ticked in the last 24 hours
- * (the shopping trip so far). One scan of items_household_status_idx.
+ * (the shopping trip so far); with [list] null, every list of the household. One scan of
+ * items_household_status_idx.
  */
 export type Counts = { open: number; checkedLast24h: number };
 
-export async function counts(tx: Tx, household: string): Promise<Counts> {
+export async function counts(tx: Tx, household: string, list: string | null): Promise<Counts> {
   const rows = await tx<Counts[]>`
     select count(*) filter (where status = 'active')::int as "open",
            count(*) filter (where status = 'bought' and bought_at > now() - interval '24 hours')::int
              as "checkedLast24h"
-    from public.items where household_id = ${household}`;
+    from public.items
+    where household_id = ${household} and (${list}::uuid is null or list_id = ${list}::uuid)`;
   return oneRow(rows, 'counts');
 }
 
-export type Filter = { store?: string | undefined; category?: string | undefined };
+export type Filter = {
+  store?: string | undefined;
+  category?: string | undefined;
+  list?: string | undefined;
+};
 
-/** The store and category a filter names, each null when not given. */
+/** The store, category and list a filter names, each null when not given. */
 export async function resolveFilter(
   tx: Tx,
   household: string,
   filter: Filter,
-): Promise<{ store: Named | null; category: Named | null }> {
+): Promise<{ store: Named | null; category: Named | null; list: Named | null }> {
   return {
     store: filter.store ? resolve(await stores(tx, household), filter.store, 'store') : null,
     category: filter.category
       ? resolve(await categories(tx, household), filter.category, 'category')
       : null,
+    list: filter.list === undefined ? null : await listOf(tx, household, filter.list),
   };
 }
 
@@ -227,16 +289,16 @@ export type OpenItem = ApiItem & { position: Position };
 /**
  * Open items in aisle order. A store view shows the store's own items plus untagged ones, in that
  * store's aisle order; inside a category, the household's walk order (sort_key; null as
- * 'Infinity' sorts last, like nulls, and keeps the keyset one comparable tuple). [page] continues
- * after a position.
+ * 'Infinity' sorts last, like nulls, and keeps the keyset one comparable tuple). A null listId
+ * shows every list. [page] continues after a position.
  */
 export async function openItems(
   tx: Tx,
   household: string,
-  filter: { storeId: string | null; categoryId: string | null },
+  filter: { storeId: string | null; categoryId: string | null; listId: string | null },
   page: { after: Position | null; limit: number | null } = { after: null, limit: null },
 ): Promise<OpenItem[]> {
-  const { storeId, categoryId } = filter;
+  const { storeId, categoryId, listId } = filter;
   const { after, limit } = page;
   const rows = await tx<(ApiItem & { rank: number; sortKey: string })[]>`
     select ${apiColumns(tx)},
@@ -250,6 +312,7 @@ export async function openItems(
     where i.household_id = ${household} and i.status = 'active'
       and (${storeId}::uuid is null or i.store_id is null or i.store_id = ${storeId}::uuid)
       and (${categoryId}::uuid is null or i.category_id = ${categoryId}::uuid)
+      and (${listId}::uuid is null or i.list_id = ${listId}::uuid)
       ${
     after
       ? tx`and (coalesce(o.sort_order, c.sort_order), c.name,
@@ -267,20 +330,26 @@ export async function openItems(
   }));
 }
 
+/** The open items of one list, the one [filter] names or the first. */
 export async function listItems(
   tx: Tx,
   household: string,
   filter: Filter,
-): Promise<{ store: string | null; category: string | null; counts: Counts; items: Item[] }> {
-  const { store, category } = await resolveFilter(tx, household, filter);
+): Promise<
+  { list: string; store: string | null; category: string | null; counts: Counts; items: Item[] }
+> {
+  const { store, category, list } = await resolveFilter(tx, household, filter);
+  const shown = list ?? await listOf(tx, household);
   const items = await openItems(tx, household, {
     storeId: store?.id ?? null,
     categoryId: category?.id ?? null,
+    listId: shown.id,
   });
   return {
+    list: shown.name,
     store: store?.name ?? null,
     category: category?.name ?? null,
-    counts: await counts(tx, household),
+    counts: await counts(tx, household, shown.id),
     items: items.map(toItem),
   };
 }
@@ -305,7 +374,8 @@ export type Added = {
 };
 
 /**
- * Adds items through public.add_item, the shared add path (also Siri's): it splits the name into
+ * Adds items to the list [list] names (else the first) through public.add_list_item, the shared
+ * add path (also Siri's): it splits the name into
  * Bezeichnung, Marke, Eigenschaften and Menge ("Windeln Pampers Größe 3", "2 Gurken"), classifies
  * with the household's learned corrections, picks the store, and returns the existing row for an
  * item already on the list ("Gurke" is "2 Gurken"). An explicit quantity, brand, properties or
@@ -318,11 +388,13 @@ export async function addItemIds(
   tx: Tx,
   household: string,
   wanted: readonly NewItem[],
+  list?: string | undefined,
 ): Promise<Added> {
+  const target = await listOf(tx, household, list);
   const [cats, shops, active] = await Promise.all([
     categories(tx, household),
     stores(tx, household),
-    activeItems(tx, household),
+    activeItems(tx, target.id),
   ]);
   const seen = new Set(active.map((i) => i.id));
   const added: string[] = [];
@@ -331,9 +403,9 @@ export async function addItemIds(
     const category = item.category ? resolve(cats, item.category, 'category').id : null;
     const store = item.store ? resolve(shops, item.store, 'store').id : null;
     const [row] = await tx<{ id: string; category_id: string }[]>`
-      select id, category_id from public.add_item(
-        ${household}, ${item.name}, ${store}, ${given(item.brand)}, ${given(item.properties)},
-        ${given(item.quantity)})`;
+      select id, category_id from public.add_list_item(
+        ${household}, ${target.id}, ${item.name}, ${store}, ${given(item.brand)},
+        ${given(item.properties)}, ${given(item.quantity)})`;
     if (!row) continue;
     if (seen.has(row.id)) {
       existing.push(row.id);
@@ -358,12 +430,13 @@ export async function addItems(
   tx: Tx,
   household: string,
   wanted: readonly NewItem[],
+  list?: string | undefined,
 ): Promise<{
   added: (Item | undefined)[];
   alreadyOnList: (Item | undefined)[];
   similarOnList: { added: string; onList: (Item | undefined)[] }[];
 }> {
-  const { added, existing, similar } = await addItemIds(tx, household, wanted);
+  const { added, existing, similar } = await addItemIds(tx, household, wanted, list);
   const rows = await itemsById(tx, [...added, ...existing, ...similar.flatMap((s) => s.onList)]);
   const pick = (ids: string[]) => ids.map((id) => rows.find((r) => r.id === id));
   const nameOf = (id: string) => {
@@ -378,12 +451,14 @@ export async function addItems(
   };
 }
 
+/** Ticks open items of the list [list] names (else the first) by name or id. */
 export async function tickItems(
   tx: Tx,
   household: string,
   refs: readonly string[],
+  list?: string | undefined,
 ): Promise<{ ticked: Item[]; notFound: { item: string; reason: string }[] }> {
-  const active = await activeItems(tx, household);
+  const active = await activeItems(tx, (await listOf(tx, household, list)).id);
   const ids: string[] = [];
   const notFound: { item: string; reason: string }[] = [];
   for (const ref of refs) {
@@ -441,14 +516,15 @@ async function moveOpen(
   await tx`select from public.move_item(${item.id}, ${store}, ${category})`;
 }
 
-/** Moves an open item named by its name or id (the MCP tool). */
+/** Moves an open item of the list [move.list] names (else the first) by name or id (the MCP tool). */
 export async function moveItem(
   tx: Tx,
   household: string,
-  move: Move & { item: string },
+  move: Move & { item: string; list?: string | undefined },
 ): Promise<Item> {
   if (move.category === undefined && move.store === undefined) throw nothingToMove();
-  const item = resolve(await activeItems(tx, household), move.item, 'item');
+  const list = await listOf(tx, household, move.list);
+  const item = resolve(await activeItems(tx, list.id), move.item, 'item');
   await moveOpen(tx, household, item, move);
   return oneRow(await itemsById(tx, [item.id]), 'moved item');
 }

@@ -1,4 +1,5 @@
 import type { Tx } from '../_shared/db.ts';
+import { listOf } from '../_shared/list.ts';
 import type { Added, SplitItem } from './handler.ts';
 import type { ParsedItem } from './parse.ts';
 
@@ -28,7 +29,8 @@ const variant = (row: Row) =>
     .every((p) => noteWords.has(p));
 
 /**
- * Adds the items through `add_item` (the parser, classifier, learned memory, store memory,
+ * Adds the items to the household's first list (Siri and Alexa know no other) through
+ * `add_list_item` (the parser, classifier, learned memory, store memory,
  * duplicate check) in one transaction. The splitter already read each amount, so the spoken
  * quantity goes in as the explicit one; brand and properties come from the parser. A new item
  * whose spelling variant or synonym is already open ("Karotten" with "Möhren") is still added
@@ -46,15 +48,16 @@ export async function addItems(
   items: ParsedItem[],
   { addVariants = false }: { addVariants?: boolean } = {},
 ): Promise<Added[]> {
+  const list = (await listOf(tx, householdId)).id;
   const active = await tx<{ id: string }[]>`
-    select id from public.items where household_id = ${householdId} and status = 'active'`;
+    select id from public.items where list_id = ${list} and status = 'active'`;
   const known = new Set(active.map((row) => row.id));
   const added: (Added & { id: string })[] = [];
   for (const item of items) {
     const named = addVariants ? [] : await tx<Row[]>`
       select o.id, o.name, o.brand, o.properties, o.quantity, c.name as category
       from public.parse_item(${householdId}, ${item.name}) p
-      join public.items o on o.household_id = ${householdId} and o.status = 'active'
+      join public.items o on o.list_id = ${list} and o.status = 'active'
         and public.item_name_key(o.name) = public.item_name_key(p.name)
       join public.categories c on c.id = o.category_id
       where p.brand is null and p.properties is null
@@ -62,7 +65,7 @@ export async function addItems(
     const open = named.find(plain) ?? named.find(variant);
     const [row] = open ? [open] : await tx<Row[]>`
       select a.id, a.name, a.brand, a.properties, a.quantity, c.name as category
-      from public.add_item(${householdId}, ${item.name}, p_quantity => ${item.quantity}) a
+      from public.add_list_item(${householdId}, ${list}, ${item.name}, p_quantity => ${item.quantity}) a
       join public.categories c on c.id = a.category_id`;
     // "Gurke und zwei Gurken" fold into one row; it is reported once.
     if (!row || added.some((a) => a.id === row.id)) continue;

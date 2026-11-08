@@ -34,7 +34,8 @@ paths:
       summary: Open items in aisle order
       description: >-
         With store, that store's items plus the ones without a store, in the store's aisle
-        order. counts is always the whole list's. Requires the read scope.
+        order. Without list, the items of every list of the household. counts is always the whole
+        list's (with list, that list's). Requires the read scope.
       parameters:
         - name: store
           in: query
@@ -44,12 +45,16 @@ paths:
           in: query
           description: A category id or name, matched like store.
           schema: { type: string, minLength: 1, maxLength: 60 }
+        - name: list
+          in: query
+          description: A list id or exact name (any case); see GET /v1/lists.
+          schema: { type: string, minLength: 1, maxLength: 60 }
         - name: limit
           in: query
           schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
         - name: cursor
           in: query
-          description: nextCursor of the previous page, with the same store and category.
+          description: nextCursor of the previous page, with the same store, category and list.
           schema: { type: string }
       responses:
         '200':
@@ -79,8 +84,10 @@ paths:
       description: >-
         Names are split like everywhere in Hummlist ("2 Gurken" is Gurken, quantity 2). An item
         already on the list is not added again (alreadyOnList); a spelling variant or synonym of
-        an open item is added and reported (similarOnList). One transaction: an unknown store or
-        category fails the whole batch. Requires the write scope.
+        an open item is added and reported (similarOnList). The items go to the list given by
+        list, else to the household's first list (where Siri and Alexa add too); "already on the
+        list" means on that list. One transaction: an unknown store, category or list fails the
+        whole batch. Requires the write scope.
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
@@ -97,6 +104,11 @@ paths:
                   minItems: 1
                   maxItems: 50
                   items: { $ref: '#/components/schemas/NewItem' }
+                list:
+                  type: string
+                  minLength: 1
+                  maxLength: 60
+                  description: A list id or exact name (any case); see GET /v1/lists.
       responses:
         '200':
           description: Nothing new; every item was already on the list.
@@ -230,6 +242,22 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '429': { $ref: '#/components/responses/TooManyRequests' }
         default: { $ref: '#/components/responses/Error' }
+  /v1/lists:
+    get:
+      operationId: listLists
+      tags: [catalog]
+      summary: The household's lists in their order
+      description: >-
+        A household has one or more lists (for example "Wocheneinkauf" and "Baumarkt"). The first
+        (lowest sortOrder) is where an add without list goes. Requires the read scope.
+      responses:
+        '200': { $ref: '#/components/responses/Catalog' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/PremiumRequired' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Error' }
   /v1/stores:
     get:
       operationId: listStores
@@ -290,7 +318,7 @@ components:
     Item:
       type: object
       additionalProperties: false
-      required: [id, name, brand, properties, quantity, category, categoryId, store, storeId, status, addedAt]
+      required: [id, name, brand, properties, quantity, category, categoryId, store, storeId, status, addedAt, listId]
       properties:
         id: { type: string, format: uuid }
         name: { type: string, examples: [Windeln] }
@@ -303,6 +331,7 @@ components:
         storeId: { type: [string, 'null'], format: uuid }
         status: { type: string, enum: [open, ticked] }
         addedAt: { type: string, format: date-time, examples: ['2026-11-02T08:00:00.123456+00:00'] }
+        listId: { type: string, format: uuid, description: The list the item is on (GET /v1/lists). }
     NewItem:
       type: object
       additionalProperties: false
@@ -382,6 +411,8 @@ components:
                 - category_not_found
                 - ambiguous_store
                 - ambiguous_category
+                - list_not_found
+                - ambiguous_list
                 - idempotency_key_reused
                 - rate_limited
                 - auth_throttled
@@ -461,7 +492,7 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
     Unprocessable:
-      description: store_not_found, category_not_found, ambiguous_store, ambiguous_category or idempotency_key_reused.
+      description: store_not_found, category_not_found, list_not_found, ambiguous_store, ambiguous_category, ambiguous_list or idempotency_key_reused.
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
