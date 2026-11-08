@@ -396,6 +396,10 @@ class FakeRepository() implements ListRepository {
         // items_rename_duplicate (job 104): another open row has that name.
         sent.removeLast();
         throw const RejectedOp('already_on_list', nameTaken: true);
+      case MoveToList(:final listId) when _movesOntoTwin(op.itemId, listId):
+        // items_rename_duplicate fires on a list_id change too (job 169b K).
+        sent.removeLast();
+        throw const RejectedOp('already_on_list', nameTaken: true);
       case AddItem(:final item) when _openTwin(item) != null:
         // put_item: the open item the add already is, unchanged.
         final kept = _openTwin(item)!;
@@ -472,6 +476,12 @@ class FakeRepository() implements ListRepository {
       rows[otherId] = _stamp(merge.merged);
     }
     return {op.itemId: rows[op.itemId], otherId: rows[otherId]};
+  }
+
+  bool _movesOntoTwin(String id, String listId) {
+    final current = rows[id];
+    return current != null &&
+        _openTwin(current.copyWith(listId: listId), except: id) != null;
   }
 
   bool _renamesOntoTwin(String id, ItemChanges changes) {

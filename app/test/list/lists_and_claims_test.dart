@@ -1,11 +1,11 @@
 import 'dart:async';
 
+import 'package:fake_async/fake_async.dart';
 import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/list/entry.dart';
 import 'package:family_groceries/list/list_cache.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/model.dart';
-import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'fake_repository.dart';
@@ -135,6 +135,23 @@ void main() {
       expect(repo.rows[milk.id]!.listId, 'weekly');
       expect(told.single, isA<OnListAlready>());
       expect((told.single as OnListAlready).listName, 'Sommerfest');
+      await sub.cancel();
+    });
+
+    test('a move that loses the race to a twin added elsewhere says where '
+        'the item is, not a generic refusal', () async {
+      final milk = repo.rows.values.firstWhere((i) => i.name == 'Milch');
+      repo.online = false;
+      cubit.moveToList(milk.id, 'party');
+      repo.remoteAdd('Milch', listId: 'party');
+      final told = <Rejected>[];
+      final sub = cubit.rejections.listen(told.add);
+      repo.online = true;
+      await cubit.retry();
+      await settle();
+      expect(repo.rows[milk.id]!.listId, 'weekly');
+      expect(told.whereType<OnListAlready>().single.listName, 'Sommerfest');
+      expect(told.whereType<ItemRejected>(), isEmpty);
       await sub.cancel();
     });
 

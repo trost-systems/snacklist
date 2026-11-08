@@ -1523,6 +1523,13 @@ class ListCubit(
           _report(switch (op) {
             MergeItems() => MergeRefused(_nameOf(op)),
             EditItem() when e.nameTaken => RenameTaken(_nameOf(op)),
+            // Another member added the twin there after the check in
+            // [moveToList]: items_rename_duplicate refuses the move.
+            MoveToList(:final listId) when e.nameTaken => switch (state.catalog
+                .list(listId)) {
+              final list? => OnListAlready(_nameOf(op), list.name),
+              null => ItemRejected(_nameOf(op)),
+            },
             _ => ItemRejected(_nameOf(op)),
           });
           unawaited(resync());
