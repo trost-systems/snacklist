@@ -44,7 +44,10 @@ language sql as $$
   union all select 'entitlements', count(*)::int from public.entitlements where household_id = p_household
   union all select 'household_departures', count(*)::int from public.household_departures where household_id = p_household
   union all select 'integration_blocks', count(*)::int from public.integration_blocks where household_id = p_household
-  union all select 'api_household_days', count(*)::int from public.api_household_days where household_id = p_household;
+  union all select 'api_household_days', count(*)::int from public.api_household_days where household_id = p_household
+  union all select 'lists', count(*)::int from public.lists where household_id = p_household
+  union all select 'item_claims', count(*)::int from public.item_claims where household_id = p_household
+  union all select 'join_requests', count(*)::int from public.join_requests where household_id = p_household;
 $$;
 
 select is(
@@ -238,6 +241,10 @@ select public.purchase_record('apple', '2000000000002501', '2000000000002501', r
 insert into public.integration_blocks (household_id, integration, reported_at) values ((select id from h), 'siri', now());
 -- Job 73: the household's API requests today.
 insert into public.api_household_days (household_id, day, requests) values ((select id from h), current_date, 3);
+-- Job 169b W3: Carl brings the bread; Dora asked to join.
+insert into public.item_claims (item_id, household_id, user_id)
+select i.id, i.household_id, '00000000-0000-0000-0000-0000000000c1' from public.items i where i.name = 'Brot';
+insert into public.join_requests (household_id, user_id) values ((select id from h), '00000000-0000-0000-0000-0000000000d1');
 select is(
   (select array_agg(tbl order by tbl) from pg_temp.household_rows((select id from h)) where n = 0),
   null, 'before: every household table has rows'
@@ -283,6 +290,9 @@ values ('40000000-0000-4000-8000-0000000000e1', 'Bitte dunkles Design', 'idea', 
 select pg_temp.login('00000000-0000-0000-0000-0000000000f1');
 select public.join_household((select code from inv_e));
 insert into public.items (household_id, name) select id, 'Fridas Geheimnis' from he;
+select public.claim_item((select id from public.items where name = 'Fridas Geheimnis'), '2');
+select pg_temp.login('00000000-0000-0000-0000-0000000000e1');
+select public.claim_item((select id from public.items where name = 'Äpfel'), null);
 select pg_temp.as_postgres();
 insert into auth.oauth_clients (id, registration_type, redirect_uris, grant_types, client_name, client_type, token_endpoint_auth_method)
 values ('00000000-0000-0000-0000-00000000c11e', 'dynamic', 'https://claude.ai/cb', 'authorization_code', 'Claude', 'public', 'none');
@@ -296,8 +306,8 @@ create temp table export as select public.export_my_data() as doc;
 select is(
   (select array_agg(k order by k) from export, jsonb_object_keys(doc) k),
   array['access_tokens', 'account', 'alexa_links', 'analytics_decisions', 'archived_households', 'connected_apps', 'exported_at',
-        'feedback', 'format', 'history', 'household', 'households', 'invite_uses', 'invites_created', 'items_added',
-        'profile', 'purchases', 'version'],
+        'feedback', 'format', 'history', 'household', 'households', 'invite_uses', 'invites_created', 'item_claims',
+        'items_added', 'join_requests', 'lists_created', 'profile', 'purchases', 'version'],
   'the export has the documented sections'
 );
 select is(
@@ -314,7 +324,7 @@ select is(
       'kind', null, 'role', 'owner', 'joined_at', now(), 'is_default', true)),
     'items_added', jsonb_build_array(jsonb_build_object('name', 'Äpfel', 'brand', 'Elstar', 'properties', 'Bio',
       'quantity', '1 kg', 'status', 'active',
-      'category', 'Obst & Gemüse', 'store', null, 'created_at', now(), 'bought_at', null)),
+      'category', 'Obst & Gemüse', 'store', null, 'list', 'Einkaufsliste', 'created_at', now(), 'bought_at', null)),
     'history', jsonb_build_array(jsonb_build_object('action', 'added', 'item_name', 'Äpfel',
       'category', 'Obst & Gemüse', 'created_at', now())),
     'access_tokens', jsonb_build_array(jsonb_build_object('name', 'Kurzbefehl',
@@ -335,7 +345,13 @@ select is(
     'purchases', '[]'::jsonb,
     'archived_households', '[]'::jsonb,
     -- Job 169b: Emil joined no household through an invite.
-    'invite_uses', '[]'::jsonb
+    'invite_uses', '[]'::jsonb,
+    -- W3: the first list came with his household; his claim, not Frida's.
+    'lists_created', jsonb_build_array(jsonb_build_object('household_id', (select id from he),
+      'name', 'Einkaufsliste', 'created_at', now())),
+    'item_claims', jsonb_build_array(jsonb_build_object('household_id', (select id from he),
+      'item_name', 'Äpfel', 'quantity', null, 'created_at', now())),
+    'join_requests', '[]'::jsonb
   ),
   'the export holds the user''s own data and nothing of the other member''s'
 );

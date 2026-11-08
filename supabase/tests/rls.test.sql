@@ -1,5 +1,5 @@
 begin;
-select plan(83);
+select plan(96);
 
 create function pg_temp.login(uid uuid) returns void language plpgsql as $$
 begin
@@ -298,6 +298,45 @@ select throws_ok(
 select throws_ok(
   $$ select public.set_member_role((select id from ha), '00000000-0000-0000-0000-0000000000a1', 'admin') $$,
   '42501', 'not_member', 'changing a role in another household is refused');
+set local role postgres;
+
+-- Job 169b W3: lists, "Ich bringe" claims and join requests stay inside the household.
+insert into auth.users (id, email) values ('00000000-0000-0000-0000-0000000000c1', 'carl@example.com');
+select pg_temp.login('00000000-0000-0000-0000-0000000000a1');
+select public.create_list((select id from ha), 'Sommerfest', 'f3000000-0000-4000-8000-000000000001');
+select public.claim_item((select id from alice_item), '2');
+set local role postgres;
+insert into public.join_requests (id, household_id, user_id) values
+  ('f3000000-0000-4000-8000-0000000000c1', (select id from ha), '00000000-0000-0000-0000-0000000000c1'),
+  ('f3000000-0000-4000-8000-0000000000b1', (select id from ha), '00000000-0000-0000-0000-0000000000b1');
+select pg_temp.login('00000000-0000-0000-0000-0000000000b1');
+select is((select count(*)::int from public.lists where household_id = (select id from ha)), 0,
+  'lists of another household are invisible');
+select is((select count(*)::int from public.item_claims where household_id = (select id from ha)), 0,
+  'item_claims of another household are invisible');
+select results_eq($$ select id from public.join_requests $$,
+  $$ values ('f3000000-0000-4000-8000-0000000000b1'::uuid) $$,
+  'join_requests: a requester sees their own, not another requester''s');
+select throws_ok($$ select public.create_list((select id from ha), 'X', gen_random_uuid()) $$,
+  '42501', 'not_a_member', 'creating a list in another household is refused');
+select throws_ok($$ select public.rename_list('f3000000-0000-4000-8000-000000000001', 'X') $$,
+  '42501', 'not_a_member', 'renaming another household''s list is refused');
+select throws_ok($$ select public.move_list('f3000000-0000-4000-8000-000000000001', 0) $$,
+  '42501', 'not_a_member', 'moving another household''s list is refused');
+select throws_ok($$ select public.delete_list('f3000000-0000-4000-8000-000000000001') $$,
+  '42501', 'not_a_member', 'deleting another household''s list is refused');
+select throws_ok($$ select public.claim_item((select id from alice_item), null) $$,
+  '42501', 'not_a_member', 'claiming another household''s item is refused');
+select throws_ok($$ select public.add_list_item((select id from ha), 'f3000000-0000-4000-8000-000000000001', 'X') $$,
+  '42501', 'not_a_member', 'adding to another household''s list is refused');
+select throws_ok($$ select * from public.household_join_requests((select id from ha)) $$,
+  '42501', 'not_member', 'household_join_requests of another household is refused');
+select throws_ok($$ select public.decide_join_request('f3000000-0000-4000-8000-0000000000c1', true) $$,
+  'P0002', 'request_not_found', 'deciding another household''s request is refused');
+select throws_ok($$ select public.set_join_approval((select id from ha), true) $$,
+  '42501', 'not_member', 'switching another household''s approval is refused');
+select pg_temp.login('00000000-0000-0000-0000-0000000000a1');
+select is((select count(*)::int from public.join_requests), 2, 'the owner sees her household''s requests');
 set local role postgres;
 
 select * from finish();
