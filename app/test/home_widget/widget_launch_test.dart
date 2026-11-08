@@ -156,7 +156,11 @@ void main() {
     final analytics = Analytics.off(cache);
     addTearDown(analytics.close);
     final session = FakeSession();
-    const inHome = InHousehold('peter', Household(id: 'home', name: 'Zuhause'));
+    const inHome = InHousehold(
+      'peter',
+      Household(id: 'home', name: 'Zuhause'),
+      [Household(id: 'home', name: 'Zuhause')],
+    );
     whenListen(session, const Stream<Session>.empty(), initialState: inHome);
     final publisher = FakePublisher();
     final sync = HomeWidgetSync(publisher, debounce: Duration.zero)

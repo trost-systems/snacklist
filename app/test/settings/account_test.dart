@@ -50,13 +50,15 @@ void main() {
     auth = FakeAuth()..user = user;
     addTearDown(auth.close);
     cache = MemorySessionCache()
-      ..households['peter'] = const Household(id: 'home', name: 'Zuhause');
+      ..only('peter', const Household(id: 'home', name: 'Zuhause'));
     session = SessionCubit(FakeClient(auth), cache);
     addTearDown(session.close);
     // The account page's own session is still loading here; the household's
     // rows follow one that is in the household.
     final inHousehold = TestSession(
-      const InHousehold('peter', Household(id: 'home', name: 'Zuhause')),
+      const InHousehold('peter', Household(id: 'home', name: 'Zuhause'), [
+        Household(id: 'home', name: 'Zuhause'),
+      ]),
     );
     addTearDown(inHousehold.close);
     final entitlements = Entitlements(
@@ -175,13 +177,10 @@ void main() {
         'Du bist das letzte Mitglied. Deshalb wird der Haushalt „Zuhause“ mit '
             'Liste, Verlauf, Kategorien und Geschäften gelöscht.',
       ),
-      (
-        const FateNone(),
-        'Du bist in keinem Haushalt, geteilte Daten gibt es nicht.',
-      ),
+      (null, 'Du bist in keinem Haushalt, geteilte Daten gibt es nicht.'),
     ]) {
       testWidgets('${fate.runtimeType}: $text', (tester) async {
-        account.fateResult = fate;
+        account.fateResult = [?fate];
         await openDialog(tester);
         expect(find.text(text), findsOneWidget);
         expect(
@@ -189,7 +188,7 @@ void main() {
             of: find.byKey(const ValueKey('account-delete-dialog')),
             matching: find.textContaining('Meine Daten exportieren'),
           ),
-          fate is FateNone ? findsNothing : findsOneWidget,
+          fate == null ? findsNothing : findsOneWidget,
         );
       });
     }
@@ -318,7 +317,7 @@ void main() {
   });
 
   testWidgets('the welcome screen offers deletion too', (tester) async {
-    account.fateResult = const FateNone();
+    account.fateResult = const [];
     await pump(tester, const WelcomeScreen());
     // Below the brand and Step 1's two choices, past the bottom of the test
     // window and the list's build-ahead.
@@ -588,7 +587,7 @@ void main() {
 
     testWidgets('the last member of an unlocked household confirms that '
         'Premium is not refunded before Delete works', (tester) async {
-      account.fateResult = const FateDeleted('Zuhause', unlocked: true);
+      account.fateResult = const [FateDeleted('Zuhause', unlocked: true)];
       await openWith(tester, archiveTexts: true);
 
       expect(find.text(premiumText), findsOneWidget);
@@ -613,14 +612,14 @@ void main() {
     });
 
     testWidgets('the refund help opens from the warning', (tester) async {
-      account.fateResult = const FateDeleted('Zuhause', unlocked: true);
+      account.fateResult = const [FateDeleted('Zuhause', unlocked: true)];
       await openWith(tester, archiveTexts: true);
       await tapKey(tester, 'account-delete-refund-help');
       expect(find.textContaining('reportaproblem.apple.com'), findsWidgets);
     });
 
     testWidgets('unticking the box disables Delete again', (tester) async {
-      account.fateResult = const FateDeleted('Zuhause', unlocked: true);
+      account.fateResult = const [FateDeleted('Zuhause', unlocked: true)];
       await openWith(tester, archiveTexts: true);
       await confirm(tester);
       await tapKey(tester, 'account-delete-premium-ack');
@@ -631,7 +630,7 @@ void main() {
     testWidgets('a household without premium asks nothing more', (
       tester,
     ) async {
-      account.fateResult = const FateDeleted('Zuhause');
+      account.fateResult = const [FateDeleted('Zuhause')];
       await openWith(tester, archiveTexts: true);
       expect(find.text(premiumText), findsNothing);
       expect(ack, findsNothing);
@@ -644,7 +643,7 @@ void main() {
       tester,
     ) async {
       account
-        ..fateResult = const FateDeleted('Zuhause', unlocked: true)
+        ..fateResult = const [FateDeleted('Zuhause', unlocked: true)]
         ..archived = [const ArchivedFate('Ferien', unlocked: true)];
       await openWith(tester, archiveTexts: false);
       expect(find.text(premiumText), findsNothing);
@@ -663,7 +662,9 @@ void main() {
     testWidgets('with the archive UI off an archived household with premium '
         'asks nothing', (tester) async {
       account
-        ..fateResult = const FateKept('Zuhause', ['Lea'])
+        ..fateResult = const [
+          FateKept('Zuhause', ['Lea']),
+        ]
         ..archived = [const ArchivedFate('Ferien', unlocked: true)];
       await openWith(tester, archiveTexts: false);
       expect(ack, findsNothing);
@@ -675,7 +676,9 @@ void main() {
       tester,
     ) async {
       account
-        ..fateResult = const FateKept('Zuhause', ['Lea'])
+        ..fateResult = const [
+          FateKept('Zuhause', ['Lea']),
+        ]
         ..archived = [const ArchivedFate('Ferien', unlocked: true)];
       await openWith(tester, archiveTexts: true);
       expect(
@@ -695,7 +698,7 @@ void main() {
     testWidgets('archived households without premium are named, nothing '
         'more is asked', (tester) async {
       account
-        ..fateResult = const FateNone()
+        ..fateResult = const []
         ..archived = [const ArchivedFate('Ferien'), const ArchivedFate('Büro')];
       await openWith(tester, archiveTexts: true);
       expect(
@@ -717,7 +720,7 @@ void main() {
           'is shown${offer ? '' : ' without the archive sentence'}', (
         tester,
       ) async {
-        account.fateResult = const FateDeleted('Zuhause', unlocked: true);
+        account.fateResult = const [FateDeleted('Zuhause', unlocked: true)];
         await pump(
           tester,
           settings(),
@@ -745,7 +748,7 @@ void main() {
     ]) {
       testWidgets('in a release build, deleting with $premium '
           '${warned ? 'warns' : 'does not warn'}', (tester) async {
-        account.fateResult = fate;
+        account.fateResult = [fate];
         await pump(
           tester,
           settings(),
@@ -771,7 +774,7 @@ void main() {
     testWidgets('in English, without the archive texts (job 104)', (
       tester,
     ) async {
-      account.fateResult = const FateDeleted('Home', unlocked: true);
+      account.fateResult = const [FateDeleted('Home', unlocked: true)];
       await openWith(tester, archiveTexts: false, locale: const Locale('en'));
       expect(
         find.text(
@@ -791,7 +794,7 @@ void main() {
     });
 
     testWidgets('in English', (tester) async {
-      account.fateResult = const FateDeleted('Home', unlocked: true);
+      account.fateResult = const [FateDeleted('Home', unlocked: true)];
       await openWith(tester, archiveTexts: true, locale: const Locale('en'));
       expect(
         find.text(

@@ -13,6 +13,7 @@ import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/purchases/entitlements.dart';
 import 'package:family_groceries/purchases/premium_features_card.dart';
 import 'package:family_groceries/purchases/purchase_cubit.dart';
+import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/settings/access_cubit.dart';
 import 'package:family_groceries/settings/access_repository.dart';
 import 'package:family_groceries/settings/integration_lock.dart';
@@ -45,7 +46,14 @@ class const AccessScreen({
     return BlocProvider(
       create: (_) {
         final cubit = AccessCubit(
-          repository ?? SupabaseAccessRepository(Supabase.instance.client),
+          repository ??
+              SupabaseAccessRepository(
+                Supabase.instance.client,
+                household: switch (context.read<SessionCubit>().state) {
+                  InHousehold(:final household) => household.id,
+                  _ => null,
+                },
+              ),
           siri: siri,
         );
         unawaited(cubit.load());

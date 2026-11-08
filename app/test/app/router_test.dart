@@ -4,7 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 void main() {
-  const household = InHousehold('u', Household(id: 'h', name: 'H'));
+  const household = InHousehold('u', Household(id: 'h', name: 'H'), [
+    Household(id: 'h', name: 'H'),
+  ]);
   const consent = '/oauth/consent?authorization_id=abc';
   const next = 'next=%2Foauth%2Fconsent%3Fauthorization_id%3Dabc';
   const cases = <(Session, String, String?)>[
@@ -26,11 +28,16 @@ void main() {
     (household, '/welcome/invite', null),
     (household, '/join', null),
     (household, '/more/invites', null),
+    // Job 169b: one more household and the household page, in one only.
+    (household, '/households/new', null),
+    (household, '/more/household', null),
+    (NeedsHousehold('u'), '/households/new', '/welcome'),
+    (SignedOut(), '/households/new', '/login'),
     (SignedOut(), '/welcome/invite', '/login'),
     (SignedOut(), '/join', '/login'),
     (household, '/login', '/'),
     (household, '/welcome', '/'),
-    // An invite in any location opens the join screen (which warns).
+    // An invite in any location opens the join screen.
     (household, '/welcome?invite=ABCD2345', '/join/ABCD2345'),
     (household, '/login?invite=ABCD2345', '/join/ABCD2345'),
     (household, '/join/ABCD2345', null),

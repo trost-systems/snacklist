@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/analytics/events.dart';
@@ -7,9 +8,58 @@ import 'package:family_groceries/household/pending_invite.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 
+/// One of the user's households, as `my_households()` answers it.
 @immutable
-class const Household({required final String id, required final String name});
+class const Household({
+  required final String id,
+  required final String name,
+
+  /// Siri, Alexa and AI assistants act in this one (job 169b); every user
+  /// with a household has exactly one.
+  final bool isDefault = false,
+  final int memberCount = 1,
+
+  /// Items not ticked yet.
+  final int openCount = 0,
+}) {
+  /// A row of `my_households()` or of the device cache; null when it has no
+  /// id or name.
+  static Household? fromJson(Map<String, Object?> json) => switch (json) {
+    {'id': final String id, 'name': final String name} => Household(
+      id: id,
+      name: name,
+      isDefault: json['is_default'] == true,
+      memberCount: switch (json['member_count']) {
+        final int n => n,
+        _ => 1,
+      },
+      openCount: switch (json['open_count']) {
+        final int n => n,
+        _ => 0,
+      },
+    ),
+    _ => null,
+  };
+
+  Map<String, Object?> toJson() => {
+    'id': id,
+    'name': name,
+    'is_default': isDefault,
+    'member_count': memberCount,
+    'open_count': openCount,
+  };
+}
+
+/// Where a household was created, for `household_created`'s `context`.
+enum HouseholdOrigin() {
+  /// Onboarding, before the user had a household (job 22, job 168).
+  onboarding,
+
+  /// The switcher's "Neuer Haushalt" (job 169b).
+  switcher,
+}
 
 sealed class const Session();
 
@@ -34,16 +84,43 @@ class const AccountDeletedNotice({
 
 final class const NeedsHousehold(final String userId) extends Session;
 
-final class const InHousehold(final String userId, final Household household)
-    extends Session;
+final class const InHousehold(
+  final String userId,
 
-/// The household each user was last in, kept on the device so an offline
-/// start can open the list.
+  /// The household this device shows: the one opened last here while the
+  /// user is still in it, else [defaultHousehold].
+  final Household household,
+
+  /// Every household of the user, oldest membership first; [household] is
+  /// one of them.
+  final List<Household> households,
+) extends Session {
+  /// The one Siri, Alexa and AI assistants act in.
+  Household get defaultHousehold =>
+      households.where((h) => h.isDefault).firstOrNull ?? households.first;
+}
+
+/// The household of [households] with id [shown], else the default one.
+Household _pick(List<Household> households, String? shown) =>
+    households.where((h) => h.id == shown).firstOrNull ??
+    households.where((h) => h.isDefault).firstOrNull ??
+    households.first;
+
+/// Each user's households and the one shown last, kept on the device so an
+/// offline start can open the list.
 abstract interface class SessionCache() {
-  Future<Household?> household(String userId);
+  Future<({List<Household> households, String? shown})?> householdsOf(
+    String userId,
+  );
 
-  /// Also drops the user's cached lists of any other household.
-  Future<void> remember(String userId, Household? household);
+  /// Keeps [households] (none: the user has no household) and the one
+  /// [shown]. Also drops the user's cached lists of any household not in
+  /// [households].
+  Future<void> remember(
+    String userId, {
+    required List<Household> households,
+    String? shown,
+  });
 
   /// Drops everything cached for every user.
   Future<void> forget();
@@ -54,7 +131,7 @@ class SessionCubit(
   final SessionCache _cache, {
 
   /// Follows who is signed in and in which household, and hears about
-  /// households created and invites accepted.
+  /// households created, switched to and invites accepted.
   final Analytics? analytics,
 
   /// The invite link waiting for an answer; dropped after a join and on
@@ -104,10 +181,18 @@ class SessionCubit(
   String? _loadedFor;
   Timer? _retry;
 
-  /// A create or join whose answer never came (offline, a timeout): the
-  /// server may have done it. The retry then answers
-  /// `already_in_household` or `member`, and the event goes out once, then.
-  ({int storeCount})? _unansweredCreate;
+  /// The create that failed or is out, by its arguments: calling again with
+  /// the same ones sends the same request id, so the server makes no second
+  /// household.
+  ({String key, String requestId})? _create;
+
+  /// Households whose `household_created` went out, so a double tap's
+  /// second answer (the same household) is not counted again.
+  final _created = <String>{};
+
+  /// A join whose answer never came (offline, a timeout): the server may
+  /// have done it. The retry then answers `member`, and the event goes out
+  /// once, then.
   ({String code, JoinMethod method})? _unansweredJoin;
 
   Future<void> _load(String? userId) async {
@@ -129,12 +214,13 @@ class SessionCubit(
     if (_loadedFor == userId) {
       return;
     }
-    // The device's household opens the list at once and the server's answer
-    // corrects it, so an offline start never waits for a request to fail.
+    // The device's households open the list at once and the server's answer
+    // corrects them, so an offline start never waits for a request to fail.
     if (state is SessionLoading) {
-      if (await _cache.household(userId) case final household?) {
+      if (await _cache.householdsOf(userId)
+          case (:final households, :final shown) when households.isNotEmpty) {
         if (state is SessionLoading && _client.auth.currentUser?.id == userId) {
-          emit(InHousehold(userId, household));
+          emit(InHousehold(userId, _pick(households, shown), households));
         }
       }
     }
@@ -152,99 +238,174 @@ class SessionCubit(
     }
   }
 
-  Future<void> refresh() async {
+  /// Reads the user's households (`my_households()`) and shows [show], or
+  /// the one shown now, or the one shown last on this device, while the
+  /// user is in it; else the default one.
+  Future<void> refresh({String? show}) async {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) {
       emit(const SignedOut());
       return;
     }
-    final row = await _client.rest
-        .from('household_members')
-        .select('households(id, name)')
-        .eq('user_id', userId)
-        .maybeSingle();
-    final next = switch (row?['households']) {
-      {'id': final String id, 'name': final String name} => InHousehold(
-        userId,
-        Household(id: id, name: name),
-      ),
-      _ => NeedsHousehold(userId),
-    };
-    await _cache.remember(userId, switch (next) {
-      InHousehold(:final household) => household,
-      _ => null,
-    });
+    final cached = await _cache.householdsOf(userId);
+    final rows = await _client.rpc<List<dynamic>>('my_households');
+    final households = [
+      for (final row in rows.whereType<Map<String, dynamic>>())
+        ?Household.fromJson(row),
+    ];
+    // Read after the answer: a switch while it was out wins.
+    final shown =
+        show ??
+        switch (state) {
+          InHousehold(userId: final user, :final household)
+              when user == userId =>
+            household.id,
+          _ => cached?.shown,
+        };
+    final next = households.isEmpty
+        ? NeedsHousehold(userId)
+        : InHousehold(userId, _pick(households, shown), households);
+    await _cache.remember(
+      userId,
+      households: households,
+      shown: switch (next) {
+        InHousehold(:final household) => household.id,
+        _ => null,
+      },
+    );
     emit(next);
   }
 
-  /// Creates the user's household with [stores], the ones picked in
-  /// onboarding, in that order; no store without a pick. Creating again (a
-  /// double tap, a retry after a lost answer) makes no second household: the
-  /// server answers `already_in_household`, which loads the one there is.
-  Future<void> createHousehold(
-    String name, {
-    List<String> stores = const [],
-  }) async {
-    final Object? created;
-    try {
-      created = await householdCall(
-        () => _client.rpc<Object?>(
-          'create_household',
-          params: {
-            'p_name': name,
-            'p_default_stores': false,
-            'p_stores': stores,
-          },
-        ),
-      );
-    } on HouseholdError catch (e) {
-      if (e.problem == HouseholdProblem.offline) {
-        _unansweredCreate ??= (storeCount: stores.length);
-        rethrow;
-      }
-      // The household is there already; show it.
-      if (e.problem != HouseholdProblem.alreadyInHousehold) {
-        rethrow;
-      }
-      await householdCall(refresh);
-      if (state case InHousehold(:final household)) {
-        if (_unansweredCreate case (:final storeCount)) {
-          _trackIn(household.id, 'household_created', {
-            'store_count': storeCount,
-          });
-        }
-        _unansweredCreate = null;
+  /// Shows [householdId], one of the user's households, on this device: the
+  /// list switches at once, also offline, and the next start opens it.
+  Future<void> switchTo(String householdId) async {
+    if (state
+        case InHousehold(:final userId, :final household, :final households)
+        when household.id != householdId) {
+      final next = households.where((h) => h.id == householdId).firstOrNull;
+      if (next == null) {
         return;
       }
-      rethrow;
+      emit(InHousehold(userId, next, households));
+      analytics?.track('household_switched');
+      await _cache.remember(userId, households: households, shown: next.id);
     }
-    _unansweredCreate = null;
-    if (created case {'id': final String id}) {
-      _trackIn(id, 'household_created', {'store_count': stores.length});
-    }
+  }
+
+  /// Makes [householdId] the one Siri, Alexa and AI assistants act in.
+  /// Throws [HouseholdError].
+  Future<void> setDefault(String householdId) async {
+    await householdCall(
+      () => _client.rpc<void>(
+        'set_default_household',
+        params: {'p_household': householdId},
+      ),
+    );
     await householdCall(refresh);
   }
 
-  /// Joins the household of invite [code]. [method] says whether the code
-  /// came from a link or was typed. `invite_accepted` goes out only for a
-  /// new membership (status `joined`), not when the server answers that the
-  /// user is a member already, unless that answers an earlier try whose
-  /// answer was lost. Throws [HouseholdError] for a bad code, the rate
-  /// limit or no connection. With [archive], the household the user leaves
-  /// as its last member is archived instead of deleted if it has Hummlist
-  /// Lifetime (job 43).
-  Future<void> join(
-    String code, {
-    JoinMethod method = JoinMethod.code,
-    bool archive = false,
+  /// Renames [householdId] for everyone in it. Throws [HouseholdError].
+  Future<void> rename(String householdId, String name) async {
+    await householdCall(
+      () => _client.rest
+          .from('households')
+          .update({'name': name.trim()})
+          .eq('id', householdId),
+    );
+    await householdCall(refresh);
+  }
+
+  /// Leaves [householdId]; the user's other households stay. As its last
+  /// member, the household is deleted, or with [archive] archived if it has
+  /// Hummlist Lifetime (job 43). Leaving the shown household shows the
+  /// default one; leaving the last one, onboarding. Throws
+  /// [HouseholdError].
+  Future<void> leave(String householdId, {bool archive = false}) async {
+    final result = await householdCall(
+      () => _client.rpc<Map<String, dynamic>>(
+        'leave_household',
+        params: {'p_household': householdId, 'p_archive': archive},
+      ),
+    );
+    switch (result) {
+      case {'status': 'left'}:
+        await householdCall(refresh);
+      case {'status': final String status}:
+        throw HouseholdError.fromStatus(status);
+      default:
+        throw const HouseholdError(HouseholdProblem.other);
+    }
+  }
+
+  /// Creates a household named [name] with [stores] in that order (no
+  /// store without a pick) and shows it; returns its id. [kind] is who the
+  /// user shops with there (`partner`, `family`, `flat`, `club`, `solo`),
+  /// null when not asked; [from] where it was created, for analytics.
+  ///
+  /// Each call is one household: onboarding may call it once per household
+  /// it creates, one after the other, and the last one created is shown.
+  /// Calling again with the same arguments after a failure (a lost answer,
+  /// a double tap while one is out) sends the same request id, so the
+  /// server answers with the household it made and creates no second one.
+  /// Throws [HouseholdError]: [HouseholdProblem.tooManyHouseholds] over 10
+  /// households, [HouseholdProblem.offline] without an answer.
+  Future<String> createHousehold(
+    String name, {
+    List<String> stores = const [],
+    String? kind,
+    HouseholdOrigin from = HouseholdOrigin.onboarding,
   }) async {
+    final key = jsonEncode([name, stores, kind]);
+    final requestId = switch (_create) {
+      (key: final k, :final requestId) when k == key => requestId,
+      _ => const Uuid().v4(),
+    };
+    _create = (key: key, requestId: requestId);
+    final created = await householdCall(
+      () => _client.rpc<Object?>(
+        'create_household',
+        params: {
+          'p_name': name,
+          'p_default_stores': false,
+          'p_stores': stores,
+          'p_request_id': requestId,
+          'p_kind': kind,
+        },
+      ),
+    );
+    if (created case {'id': final String id}) {
+      if (_created.add(id)) {
+        _trackIn(id, 'household_created', {
+          'store_count': stores.length,
+          'context': from.name,
+        });
+      }
+      // Kept until the household shows: a retry after a failed reload must
+      // not make a second one.
+      await householdCall(() => refresh(show: id));
+      if (_create?.requestId == requestId) {
+        _create = null;
+      }
+      return id;
+    }
+    throw const HouseholdError(HouseholdProblem.other);
+  }
+
+  /// Joins the household of invite [code] and shows it; the user's other
+  /// households stay. [method] says whether the code came from a link or
+  /// was typed. `invite_accepted` goes out only for a new membership
+  /// (status `joined`), not when the server answers that the user is a
+  /// member already, unless that answers an earlier try whose answer was
+  /// lost. Throws [HouseholdError] for a bad code, the rate limit or no
+  /// connection.
+  Future<void> join(String code, {JoinMethod method = JoinMethod.code}) async {
     final normalized = normalizeInviteCode(code);
     final Map<String, dynamic> result;
     try {
       result = await householdCall(
         () => _client.rpc<Map<String, dynamic>>(
           'accept_invite',
-          params: {'p_code': normalized, 'p_archive': archive},
+          params: {'p_code': normalized, 'p_mode': 'add'},
         ),
       );
     } on HouseholdError catch (e) {
@@ -255,12 +416,16 @@ class SessionCubit(
     }
     final unanswered = _unansweredJoin;
     _unansweredJoin = null;
+    final String joined;
     switch (result) {
       case {'status': 'joined', 'household_id': final String id}:
+        joined = id;
         _trackIn(id, 'invite_accepted', {'method': method.name});
       case {'status': 'member', 'household_id': final String id}:
-        if (unanswered?.code == normalized) {
-          _trackIn(id, 'invite_accepted', {'method': unanswered!.method.name});
+        joined = id;
+        if (unanswered case (:final code, :final method)
+            when code == normalized) {
+          _trackIn(id, 'invite_accepted', {'method': method.name});
         }
       case {'status': final String status}:
         throw HouseholdError.fromStatus(status);
@@ -268,21 +433,24 @@ class SessionCubit(
         throw const HouseholdError(HouseholdProblem.other);
     }
     pendingInvite?.clear();
-    await householdCall(refresh);
+    await householdCall(() => refresh(show: joined));
   }
 
-  /// Moves the user back into their archived household [householdId] (job
-  /// 43). The household they are in now is left like on a join, archived if
-  /// they are its last member and it has Hummlist Lifetime.
+  /// Brings back the archived household [householdId] (job 43) beside the
+  /// user's other households, and shows it.
   Future<void> unarchive(String householdId) async {
     final result = await householdCall(
       () => _client.rpc<Map<String, dynamic>>(
         'unarchive_household',
-        params: {'p_household': householdId, 'p_archive': true},
+        params: {
+          'p_household': householdId,
+          'p_archive': false,
+          'p_mode': 'add',
+        },
       ),
     );
     if (result case {'status': 'unarchived'}) {
-      await householdCall(refresh);
+      await householdCall(() => refresh(show: householdId));
       return;
     }
     throw const HouseholdError(HouseholdProblem.other);
@@ -309,7 +477,7 @@ class SessionCubit(
   /// nothing is sent once signed out.
   Future<void> signOut() async {
     pendingInvite?.signedOut();
-    _unansweredCreate = null;
+    _create = null;
     _unansweredJoin = null;
     await analytics?.flush().timeout(
       const Duration(seconds: 2),
@@ -325,7 +493,7 @@ class SessionCubit(
     _loadedFor = null;
     _retry?.cancel();
     pendingInvite?.signedOut();
-    _unansweredCreate = null;
+    _create = null;
     _unansweredJoin = null;
     emit(SignedOut(deleted: notice));
     await _cache.forget();

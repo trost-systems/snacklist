@@ -128,7 +128,10 @@ class const ConsentScreen({
     }
     return ConsentView(
       authorizationId: authorizationId,
-      household: session.household,
+      // MCP over OAuth acts in the default household (job 169b), not the
+      // one this device shows.
+      household: session.defaultHousehold,
+      several: session.households.length > 1,
       api: api ?? SupabaseConsentApi(Supabase.instance.client),
       navigate: navigate ?? _openHere,
     );
@@ -140,9 +143,14 @@ class const ConsentScreen({
 
 class const ConsentView({
   required final String? authorizationId,
+
+  /// The user's default household, the one the client acts in.
   required final Household household,
   required final ConsentApi api,
   required final Future<void> Function(Uri url) navigate,
+
+  /// The user has several households: the line says it is the default.
+  final bool several = false,
   super.key,
 }) extends StatefulWidget {
   @override
@@ -306,7 +314,11 @@ class _ConsentViewState() extends State<ConsentView> {
       if (clientUri != null) Text(clientUri, style: theme.textTheme.bodySmall),
       const SizedBox(height: 16),
       if (email != null) Text(l10n.consentSignedInAs(email)),
-      Text(l10n.consentHousehold(widget.household.name)),
+      Text(
+        widget.several
+            ? l10n.consentDefaultHousehold(widget.household.name)
+            : l10n.consentHousehold(widget.household.name),
+      ),
       const SizedBox(height: 16),
       Text(
         l10n.consentWants(request.clientName),

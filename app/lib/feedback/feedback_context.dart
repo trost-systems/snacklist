@@ -29,6 +29,11 @@ class const FeedbackContext({
 
   /// The analytics rules (internal.dart); the database adds test accounts.
   required final bool isInternal,
+
+  /// The household shown when the note was written (job 169b); the server
+  /// keeps it if the sender is a member, else files the note under their
+  /// default household.
+  final String? householdId,
 });
 
 /// The build and device facts of [FeedbackContext], read once.

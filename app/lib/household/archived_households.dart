@@ -3,8 +3,6 @@ import 'dart:async';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/onboarding_page.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
-import 'package:family_groceries/purchases/entitlements.dart';
-import 'package:family_groceries/purchases/premium_dialogs.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -52,53 +50,17 @@ class _ArchivedHouseholdsState() extends State<ArchivedHouseholds> {
     }
   }
 
+  /// Brings [household] back beside the user's other households; nothing
+  /// is left (job 169b).
   Future<void> _restore(ArchivedHousehold household) async {
     final l10n = AppLocalizations.of(context);
     final session = context.read<SessionCubit>();
-    final current = switch (session.state) {
-      InHousehold(:final household) => household,
-      _ => null,
-    };
-    final members = current == null
-        ? null
-        : await context
-              .read<InviteRepository>()
-              .memberCount(current.id)
-              .then<int?>((n) => n, onError: (_) => null);
-    if (!mounted) {
-      return;
-    }
-    final entitlements = context.read<Entitlements>();
-    final archivesCurrent =
-        members == 1 && entitlements.has(Entitlement.premium);
-    // Unknown whether the current household has Lifetime: say nothing more
-    // specific than that the user leaves it.
-    final knownMembers = entitlements.state is EntitlementsKnown
-        ? members
-        : null;
     final go = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         key: const ValueKey('archived-restore-dialog'),
         title: Text(l10n.archivedRestoreTitle(household.name)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(l10n.archivedRestoreBody(household.name)),
-            if (current != null) ...[
-              const SizedBox(height: 8),
-              Text(switch (knownMembers) {
-                1 when archivesCurrent => l10n.archivedRestoreArchivesCurrent(
-                  current.name,
-                ),
-                1 => l10n.switchHouseholdAlone(current.name),
-                int() => l10n.switchHouseholdShared(current.name),
-                null => l10n.switchHouseholdWarning,
-              }),
-            ],
-          ],
-        ),
+        content: Text(l10n.archivedRestoreBody(household.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -112,11 +74,7 @@ class _ArchivedHouseholdsState() extends State<ArchivedHouseholds> {
         ],
       ),
     );
-    if (!(go ?? false) ||
-        !mounted ||
-        (current != null &&
-            !await confirmBillingContinues(context, account: false)) ||
-        !mounted) {
+    if (!(go ?? false) || !mounted) {
       return;
     }
     setState(() => _busy = true);

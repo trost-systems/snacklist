@@ -11,8 +11,9 @@ import 'package:family_groceries/tips/tips.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_linux/shared_preferences_linux.dart';
 
-/// What an offline start needs, in shared preferences: each user's household
-/// and one list snapshot and seen mark per user and household. A cache: a
+/// What an offline start needs, in shared preferences: each user's
+/// households, the one shown, and one list snapshot and seen mark per user
+/// and household. A cache: a
 /// value that cannot be read counts as missing, and a failed write is
 /// dropped.
 class DeviceCache(final SharedPreferencesAsync _prefs)
@@ -276,15 +277,29 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
   ListCache list(String userId, String householdId) =>
       _PrefsListCache(this, userId, householdId);
 
+  /// The user's households and the one shown, as `{shown, households}`;
+  /// a value from before job 169b is the one household, `{id, name}`.
   @override
-  Future<Household?> household(String userId) async {
+  Future<({List<Household> households, String? shown})?> householdsOf(
+    String userId,
+  ) async {
     try {
       final json = await _prefs.getString(_householdKey(userId));
       return switch (json == null ? null : jsonDecode(json)) {
-        {'id': final String id, 'name': final String name} => Household(
-          id: id,
-          name: name,
+        {'households': final List<Object?> rows} && final value => (
+          households: [
+            for (final row in rows.whereType<Map<String, Object?>>())
+              ?Household.fromJson(row),
+          ],
+          shown: switch (value['shown']) {
+            final String id => id,
+            _ => null,
+          },
         ),
+        final Map<String, Object?> one => switch (Household.fromJson(one)) {
+          final household? => (households: [household], shown: household.id),
+          null => null,
+        },
         _ => null,
       };
     } on Object {
@@ -293,32 +308,38 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
   }
 
   @override
-  Future<void> remember(String userId, Household? household) =>
-      _write(() async {
-        final key = _householdKey(userId);
-        if (household == null) {
-          await _prefs.remove(key);
-        } else {
-          await _prefs.setString(
-            key,
-            jsonEncode({'id': household.id, 'name': household.name}),
-          );
-        }
-        final keep = household == null
-            ? const <String>{}
-            : {
-                _listKey(userId, household.id),
-                _seenKey(userId, household.id),
-                _prefsKey(userId, household.id),
-              };
-        await _removeWhere(
-          (k) =>
-              (k.startsWith('$_listPrefix$userId.') ||
-                  k.startsWith('$_seenPrefix$userId.') ||
-                  k.startsWith('$_prefsPrefix$userId.')) &&
-              !keep.contains(k),
-        );
-      });
+  Future<void> remember(
+    String userId, {
+    required List<Household> households,
+    String? shown,
+  }) => _write(() async {
+    final key = _householdKey(userId);
+    if (households.isEmpty) {
+      await _prefs.remove(key);
+    } else {
+      await _prefs.setString(
+        key,
+        jsonEncode({
+          'shown': shown,
+          'households': [for (final h in households) h.toJson()],
+        }),
+      );
+    }
+    final keep = {
+      for (final h in households) ...[
+        _listKey(userId, h.id),
+        _seenKey(userId, h.id),
+        _prefsKey(userId, h.id),
+      ],
+    };
+    await _removeWhere(
+      (k) =>
+          (k.startsWith('$_listPrefix$userId.') ||
+              k.startsWith('$_seenPrefix$userId.') ||
+              k.startsWith('$_prefsPrefix$userId.')) &&
+          !keep.contains(k),
+    );
+  });
 
   @override
   Future<void> forget() => _write(
@@ -390,11 +411,13 @@ class _PrefsListCache(
     }
   }
 
-  /// Skipped once the user signed out or moved to another household, so a
-  /// list closing late cannot write its state back.
+  /// Skipped once the user signed out or left the household, so a list
+  /// closing late cannot write its state back. A household switched away
+  /// from keeps its list.
   Future<void> _store(String key, Map<String, Object?> json) =>
       _device._write(() async {
-        if ((await _device.household(_userId))?.id == _householdId) {
+        final cached = await _device.householdsOf(_userId);
+        if (cached?.households.any((h) => h.id == _householdId) ?? false) {
           await _device._prefs.setString(key, jsonEncode(json));
         }
       });

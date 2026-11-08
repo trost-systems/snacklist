@@ -15,6 +15,7 @@ void main() {
     Session session = const InHousehold(
       'peter',
       Household(id: 'home', name: 'Zuhause'),
+      [Household(id: 'home', name: 'Zuhause')],
     ),
   }) async {
     final testSession = TestSession(session);
@@ -407,7 +408,9 @@ void main() {
 
     Future<Entitlements> known(List<Map<String, dynamic>> rows) async {
       final session = TestSession(
-        const InHousehold('peter', Household(id: 'home', name: 'Zuhause')),
+        const InHousehold('peter', Household(id: 'home', name: 'Zuhause'), [
+          Household(id: 'home', name: 'Zuhause'),
+        ]),
       );
       addTearDown(session.close);
       final entitlements = Entitlements(
@@ -487,7 +490,9 @@ void main() {
     fakeAsync((async) {
       var clock = DateTime.utc(2026, 11, 1, 12);
       final session = TestSession(
-        const InHousehold('peter', Household(id: 'home', name: 'Zuhause')),
+        const InHousehold('peter', Household(id: 'home', name: 'Zuhause'), [
+          Household(id: 'home', name: 'Zuhause'),
+        ]),
       );
       final rows = FakeEntitlementsSource()
         ..rowsNow = [promotionalRow(from: clock, days: 1)];
@@ -513,7 +518,9 @@ void main() {
     fakeAsync((async) {
       var clock = DateTime.utc(2026, 11, 1, 12);
       final session = TestSession(
-        const InHousehold('peter', Household(id: 'home', name: 'Zuhause')),
+        const InHousehold('peter', Household(id: 'home', name: 'Zuhause'), [
+          Household(id: 'home', name: 'Zuhause'),
+        ]),
       );
       final rows = FakeEntitlementsSource()
         ..rowsNow = [yearlyRow(from: clock, days: 1, renews: false)];
@@ -558,7 +565,9 @@ void main() {
     fakeAsync((async) {
       var clock = DateTime.utc(2026, 11, 1, 12);
       final session = TestSession(
-        const InHousehold('peter', Household(id: 'home', name: 'Zuhause')),
+        const InHousehold('peter', Household(id: 'home', name: 'Zuhause'), [
+          Household(id: 'home', name: 'Zuhause'),
+        ]),
       );
       final rows = FakeEntitlementsSource()
         ..rowsNow = [yearlyRow(from: clock, days: 1)];

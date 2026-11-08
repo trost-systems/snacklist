@@ -14,6 +14,7 @@ import 'package:family_groceries/design/sticker.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/feedback/feedback_sheet.dart';
 import 'package:family_groceries/household/archived_households.dart';
+import 'package:family_groceries/household/household_page.dart';
 import 'package:family_groceries/household/invites_page.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/more/app_update.dart';
@@ -45,6 +46,10 @@ enum MorePage() {
 
   /// Invite the partner, the open invites, revoke (`/more/invites`).
   invites,
+
+  /// The shown household: name, members, default, leave
+  /// (`/more/household`, job 169b).
+  household,
 
   /// Hummlist Premium's purchase, restore and status (`/more/lifetime`).
   premium,
@@ -158,6 +163,7 @@ class const MoreScreen({
     MorePage.access => l10n.accessTitle,
     MorePage.account => l10n.account,
     MorePage.invites => l10n.invitesTitle,
+    MorePage.household => l10n.householdPageTitle,
     MorePage.premium => l10n.premiumTitle,
     MorePage.settings => l10n.settingsTitle,
     MorePage.language => l10n.language,
@@ -172,6 +178,7 @@ class const _Page(final MorePage page, final PaywallEntry paywallEntry)
     MorePage.access => const AccessScreen(),
     MorePage.account => const AccountScreen(),
     MorePage.invites => const InvitesPage(),
+    MorePage.household => const HouseholdPage(),
     MorePage.premium => PremiumScreen(entry: paywallEntry),
     MorePage.settings => const SettingsScreen(),
     MorePage.language => const LanguageScreen(),
@@ -185,6 +192,7 @@ class const _Page(final MorePage page, final PaywallEntry paywallEntry)
 enum _Item(final IconData icon, final String key, final _Tint tint) {
   account(Icons.manage_accounts_outlined, 'menu-account', _Tint.mint),
   premium(Icons.favorite_outline, 'more-lifetime', _Tint.honey),
+  household(Icons.home_outlined, 'more-household', _Tint.honey),
   invite(Icons.person_add_outlined, 'more-invite', _Tint.honey),
   join(Icons.group_add_outlined, 'more-join', _Tint.honey),
   archived(Icons.inventory_2_outlined, 'more-archived', _Tint.honey),
@@ -205,7 +213,7 @@ enum _Item(final IconData icon, final String key, final _Tint tint) {
   /// sign-out stands alone at the end.
   static const groups = <({bool legal, List<_Item> items})>[
     (legal: false, items: [account, premium]),
-    (legal: false, items: [invite, join, archived]),
+    (legal: false, items: [household, invite, join, archived]),
     (legal: false, items: [access]),
     (legal: false, items: [settings, usageData]),
     (legal: false, items: [feedback, rate, help]),
@@ -259,7 +267,7 @@ class _MoreListState() extends State<_MoreList> {
         final premium = unlocked || (offer.data == true && !notYet);
         bool shown(_Item item) => switch (item) {
           _Item.premium => premium,
-          _Item.invite => household != null,
+          _Item.household || _Item.invite => household != null,
           _Item.archived => widget.showArchived,
           _Item.help => widget.showHelp,
           _Item.rate => storeListingShown(
@@ -288,7 +296,8 @@ class _MoreListState() extends State<_MoreList> {
                 _Group(
                   top: legal ? HlSpace.s2 : HlSpace.s5,
                   children: [
-                    for (final item in items) _row(context, l10n, item),
+                    for (final item in items)
+                      _row(context, l10n, item, household),
                   ],
                 ),
               ],
@@ -299,7 +308,12 @@ class _MoreListState() extends State<_MoreList> {
     );
   }
 
-  Widget _row(BuildContext context, AppLocalizations l10n, _Item item) {
+  Widget _row(
+    BuildContext context,
+    AppLocalizations l10n,
+    _Item item,
+    Household? household,
+  ) {
     final selected = widget.selected;
     final lang = Localizations.localeOf(context).languageCode;
     void go(String path) => context.go(path);
@@ -316,6 +330,12 @@ class _MoreListState() extends State<_MoreList> {
         label: l10n.premiumTitle,
         selected: selected == MorePage.premium,
         onTap: () => go(premiumPath),
+      ),
+      _Item.household => _Row(
+        item,
+        label: household?.name ?? l10n.householdPageTitle,
+        selected: selected == MorePage.household,
+        onTap: () => go(householdPath),
       ),
       _Item.invite => _Row(
         item,

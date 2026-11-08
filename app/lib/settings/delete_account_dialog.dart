@@ -131,11 +131,8 @@ class _DeleteAccountDialogState() extends State<DeleteAccountDialog> {
 
   /// Archived households are only named with the archive texts, so only
   /// then does their premium ask for the tick.
-  bool _endsPremium(AccountFate fate) => switch (fate.household) {
-    _ when widget.archiveTexts => fate.endsPremium,
-    FateDeleted(unlocked: true) => true,
-    _ => false,
-  };
+  bool _endsPremium(AccountFate fate) =>
+      widget.archiveTexts ? fate.endsPremium : fate.deletedPremium.isNotEmpty;
 
   @override
   Widget build(BuildContext context) {
@@ -176,7 +173,13 @@ class _DeleteAccountDialogState() extends State<DeleteAccountDialog> {
               if (fate == null && error == null)
                 const Center(child: CircularProgressIndicator())
               else if (fate != null) ...[
-                Text(_fateText(l10n, fate.household)),
+                if (fate.households.isEmpty)
+                  Text(l10n.accountDeleteNone)
+                else
+                  for (final (i, household) in fate.households.indexed) ...[
+                    if (i > 0) const SizedBox(height: 8),
+                    Text(_fateText(l10n, household)),
+                  ],
                 if (widget.archiveTexts && fate.archived.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   Text(
@@ -195,8 +198,7 @@ class _DeleteAccountDialogState() extends State<DeleteAccountDialog> {
                         : (ack) => setState(() => _premiumAcknowledged = ack),
                   ),
                 ],
-                if (fate.household is! FateNone ||
-                    fate.archived.isNotEmpty) ...[
+                if (fate.households.isNotEmpty || fate.archived.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   Text(l10n.accountDeleteExportHint),
                 ],
@@ -255,7 +257,6 @@ String _fateText(AppLocalizations l10n, HouseholdFate fate) => switch (fate) {
   FateKept(:final householdName, :final otherMemberNames) =>
     l10n.accountDeleteKept(householdName, _joinNames(l10n, otherMemberNames)),
   FateDeleted(:final householdName) => l10n.accountDeleteDeleted(householdName),
-  FateNone() => l10n.accountDeleteNone,
 };
 
 String _archivedText(AppLocalizations l10n, List<ArchivedFate> archived) {
@@ -288,10 +289,7 @@ class const _PremiumWarning({
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (fate.household case FateDeleted(
-              :final householdName,
-              unlocked: true,
-            ))
+            for (final FateDeleted(:householdName) in fate.deletedPremium)
               Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: Text(
