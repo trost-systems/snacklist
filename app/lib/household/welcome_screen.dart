@@ -4,6 +4,7 @@ import 'package:family_groceries/app/router.dart';
 import 'package:family_groceries/design/brand_block.dart';
 import 'package:family_groceries/design/sticker.dart';
 import 'package:family_groceries/household/onboarding_page.dart';
+import 'package:family_groceries/household/paste_invite.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/settings/delete_account_dialog.dart';
@@ -49,6 +50,8 @@ class const WelcomeScreen({super.key}) extends StatelessWidget {
           hint: l10n.onboardingJoinHint,
           onTap: () => context.go(_keepNext(context, joinCodePath)),
         ),
+        const SizedBox(height: 12),
+        const Align(child: PasteInvite()),
         const SizedBox(height: 32),
         Align(
           child: TextButton(

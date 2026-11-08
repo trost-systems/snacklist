@@ -56,6 +56,24 @@ class FakeHouseholds(final FakeAuth fakeAuth)
     defaults.putIfAbsent(userId, () => id);
   }
 
+  /// Another member removed [userId] from [id] (`remove_member`): their
+  /// default moves to their oldest other membership, as the server's
+  /// trigger does.
+  void removedBySomeone(String userId, String id) {
+    memberships[userId]?.remove(id);
+    households[id]?.members.remove(userId);
+    if (defaults[userId] == id) {
+      defaults.remove(userId);
+      if (memberships[userId]?.firstOrNull case final next?) {
+        defaults[userId] = next;
+      }
+    }
+  }
+
+  /// Households of a kind (job 168) and with Premium.
+  final kinds = <String, String>{};
+  final premium = <String>{};
+
   late final _rest = PostgrestClient(
     'http://db.invalid/rest/v1',
     httpClient: MockClient((request) async {
@@ -119,14 +137,14 @@ class FakeHouseholds(final FakeAuth fakeAuth)
             {
               'id': id,
               'name': households[id]!.name,
-              'kind': null,
+              'kind': kinds[id],
               'role': households[id]!.members.first == _user
                   ? 'owner'
                   : 'member',
               'is_default': defaults[_user] == id,
               'member_count': households[id]!.members.length,
               'open_count': households[id]!.open,
-              'premium': false,
+              'premium': premium.contains(id),
               'joined_at': '2026-11-08T10:00:00Z',
             },
         ];

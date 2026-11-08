@@ -1242,11 +1242,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get toTheList => 'Go to the list';
 
   @override
-  String inviteShareText(String link, String code) {
-    return 'Join our Hummlist household: $link · Code: $code';
-  }
-
-  @override
   String inviteShareTextCodeOnly(String code) {
     return 'Join our Hummlist household. Code: $code';
   }
@@ -1268,12 +1263,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get invitesTitle => 'Invites';
-
-  @override
-  String get invitesOpen => 'Open invites';
-
-  @override
-  String get invitesEmpty => 'No open invites.';
 
   @override
   String get newInvite => 'New invite';
@@ -1881,4 +1870,159 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get voiceDefaultMake => 'Make default';
+
+  @override
+  String get inviteSheetTitle => 'Invite people';
+
+  @override
+  String inviteSheetOpen(String name) {
+    return 'Invite people to $name';
+  }
+
+  @override
+  String get invitePremiumShared => 'Premium covers everyone in the household.';
+
+  @override
+  String get invitePersonTitle => 'For one person';
+
+  @override
+  String get invitePersonBody => 'A link for one person, valid for 7 days.';
+
+  @override
+  String get inviteGroupTitle => 'Group link';
+
+  @override
+  String get inviteGroupBody =>
+      'For up to 50 people, valid for 30 days. Show the QR code or share the link.';
+
+  @override
+  String get inviteGroupCreate => 'Create group link';
+
+  @override
+  String inviteGroupUses(int count, int max) {
+    return '$count of $max joined';
+  }
+
+  @override
+  String get inviteGroupFull =>
+      'This link is full: no one else can join with it.';
+
+  @override
+  String get inviteGroupRevoked =>
+      'Link revoked: no one can join with it any more.';
+
+  @override
+  String get inviteGroupRevoke => 'Revoke link';
+
+  @override
+  String get inviteGroupRenew => 'Create new link';
+
+  @override
+  String get inviteGroupRevokeTitle => 'Revoke the group link?';
+
+  @override
+  String get inviteGroupRevokeBody =>
+      'No one can join with the link any more. Everyone who joined stays in the household.';
+
+  @override
+  String get inviteGroupRevokeConfirm => 'Revoke';
+
+  @override
+  String get inviteGroupRenewTitle => 'Create a new link?';
+
+  @override
+  String get inviteGroupRenewBody =>
+      'The current link stops working. Everyone who joined stays in the household.';
+
+  @override
+  String get inviteGroupQr => 'QR code of the group link';
+
+  @override
+  String get inviteJoinsTitle => 'Who joined';
+
+  @override
+  String get inviteJoinsEmpty => 'No one yet.';
+
+  @override
+  String inviteJoinedOn(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.MMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return 'on $dateString';
+  }
+
+  @override
+  String inviteShareKind(String kind, String name, String link, String code) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'partner':
+          'I\'ve set up our shopping list in Hummlist. Join me: $link · Code: $code',
+      'family':
+          'Our family shopping list “$name” is on Hummlist now. Join us: $link · Code: $code',
+      'flat':
+          'Our flat\'s shopping list “$name” is on Hummlist now. Join us: $link · Code: $code',
+      'club':
+          'We\'re planning the shopping for “$name” in Hummlist. Join in: $link · Code: $code',
+      'solo':
+          'I\'m sharing my shopping list “$name” in Hummlist with you: $link · Code: $code',
+      'other': 'Join our Hummlist household: $link · Code: $code',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get householdRoleOwner => 'Owner';
+
+  @override
+  String get householdRoleAdmin => 'Admin';
+
+  @override
+  String memberActions(String name) {
+    return 'Options for $name';
+  }
+
+  @override
+  String get memberMakeAdmin => 'Make admin';
+
+  @override
+  String get memberRemoveAdmin => 'Remove admin rights';
+
+  @override
+  String get memberRemove => 'Remove from household';
+
+  @override
+  String memberRemoveTitle(String name) {
+    return 'Remove $name?';
+  }
+
+  @override
+  String memberRemoveBody(String name, String household) {
+    return '$name will no longer see the list of “$household”. A new invite brings them back.';
+  }
+
+  @override
+  String get memberRemoveConfirm => 'Remove';
+
+  @override
+  String householdRemovedNotice(String name) {
+    return 'You\'re no longer a member of “$name”.';
+  }
+
+  @override
+  String get householdNotAdmin => 'Only admins can do that.';
+
+  @override
+  String get householdCannotRemove => 'You can\'t remove this person.';
+
+  @override
+  String get invitePaste => 'Paste invite';
+
+  @override
+  String get invitePasteNothing =>
+      'There\'s no invite link or code on the clipboard.';
+
+  @override
+  String get invitePasteWaiting => 'Invite saved. Sign in to join.';
+
+  @override
+  String get householdNotOwner => 'Only the household\'s owner names admins.';
 }

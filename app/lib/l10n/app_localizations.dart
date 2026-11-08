@@ -2114,12 +2114,6 @@ abstract class AppLocalizations {
   /// **'Weiter zur Liste'**
   String get toTheList;
 
-  /// No description provided for @inviteShareText.
-  ///
-  /// In de, this message translates to:
-  /// **'Komm in unseren Hummlist-Haushalt: {link} · Code: {code}'**
-  String inviteShareText(String link, String code);
-
   /// No description provided for @inviteShareTextCodeOnly.
   ///
   /// In de, this message translates to:
@@ -2161,18 +2155,6 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Einladungen'**
   String get invitesTitle;
-
-  /// No description provided for @invitesOpen.
-  ///
-  /// In de, this message translates to:
-  /// **'Offene Einladungen'**
-  String get invitesOpen;
-
-  /// No description provided for @invitesEmpty.
-  ///
-  /// In de, this message translates to:
-  /// **'Keine offenen Einladungen.'**
-  String get invitesEmpty;
 
   /// No description provided for @newInvite.
   ///
@@ -3127,6 +3109,240 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Als Standard nutzen'**
   String get voiceDefaultMake;
+
+  /// Job 169b W2: title of the invite sheet (switcher row, household page, More's Einladungen)
+  ///
+  /// In de, this message translates to:
+  /// **'Leute einladen'**
+  String get inviteSheetTitle;
+
+  /// Job 169b W2: tooltip of the invite button on a household's row in the switcher
+  ///
+  /// In de, this message translates to:
+  /// **'Leute in {name} einladen'**
+  String inviteSheetOpen(String name);
+
+  /// Job 169b W2 (moment 5): in the invite sheet when the household has Premium
+  ///
+  /// In de, this message translates to:
+  /// **'Premium gilt für alle im Haushalt.'**
+  String get invitePremiumShared;
+
+  /// Job 169b W2: section of the invite sheet for a one-person invite
+  ///
+  /// In de, this message translates to:
+  /// **'Für eine Person'**
+  String get invitePersonTitle;
+
+  /// No description provided for @invitePersonBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein Link für eine Person, 7 Tage gültig.'**
+  String get invitePersonBody;
+
+  /// Job 169b W2: section of the invite sheet for the reusable group link (owner and admins)
+  ///
+  /// In de, this message translates to:
+  /// **'Gruppenlink'**
+  String get inviteGroupTitle;
+
+  /// No description provided for @inviteGroupBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Für bis zu 50 Leute, 30 Tage gültig. Zeig den QR-Code oder teil den Link.'**
+  String get inviteGroupBody;
+
+  /// No description provided for @inviteGroupCreate.
+  ///
+  /// In de, this message translates to:
+  /// **'Gruppenlink erstellen'**
+  String get inviteGroupCreate;
+
+  /// Job 169b W2: how many joined with the group link
+  ///
+  /// In de, this message translates to:
+  /// **'{count} von {max} beigetreten'**
+  String inviteGroupUses(int count, int max);
+
+  /// No description provided for @inviteGroupFull.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Link ist voll: Niemand kann mehr damit beitreten.'**
+  String get inviteGroupFull;
+
+  /// No description provided for @inviteGroupRevoked.
+  ///
+  /// In de, this message translates to:
+  /// **'Link widerrufen: Niemand kann mehr damit beitreten.'**
+  String get inviteGroupRevoked;
+
+  /// No description provided for @inviteGroupRevoke.
+  ///
+  /// In de, this message translates to:
+  /// **'Link widerrufen'**
+  String get inviteGroupRevoke;
+
+  /// No description provided for @inviteGroupRenew.
+  ///
+  /// In de, this message translates to:
+  /// **'Neuen Link erstellen'**
+  String get inviteGroupRenew;
+
+  /// No description provided for @inviteGroupRevokeTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Gruppenlink widerrufen?'**
+  String get inviteGroupRevokeTitle;
+
+  /// No description provided for @inviteGroupRevokeBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Mit dem Link kann dann niemand mehr beitreten. Wer schon dabei ist, bleibt im Haushalt.'**
+  String get inviteGroupRevokeBody;
+
+  /// No description provided for @inviteGroupRevokeConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Widerrufen'**
+  String get inviteGroupRevokeConfirm;
+
+  /// No description provided for @inviteGroupRenewTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Neuen Link erstellen?'**
+  String get inviteGroupRenewTitle;
+
+  /// No description provided for @inviteGroupRenewBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Der bisherige Link funktioniert dann nicht mehr. Wer schon dabei ist, bleibt im Haushalt.'**
+  String get inviteGroupRenewBody;
+
+  /// Job 169b W2: screen-reader label of the group link's QR code
+  ///
+  /// In de, this message translates to:
+  /// **'QR-Code des Gruppenlinks'**
+  String get inviteGroupQr;
+
+  /// No description provided for @inviteJoinsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Wer ist beigetreten'**
+  String get inviteJoinsTitle;
+
+  /// No description provided for @inviteJoinsEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch niemand.'**
+  String get inviteJoinsEmpty;
+
+  /// Job 169b W2: when someone joined with the group link
+  ///
+  /// In de, this message translates to:
+  /// **'am {date}'**
+  String inviteJoinedOn(DateTime date);
+
+  /// Job 169b W2: the share text by the household's kind (other: not asked); always link and code. The user sends it (N-18).
+  ///
+  /// In de, this message translates to:
+  /// **'{kind, select, partner{Ich hab unsere Einkaufsliste in Hummlist angelegt. Komm dazu: {link} · Code: {code}} family{Unsere Familien-Einkaufsliste „{name}“ ist jetzt in Hummlist. Komm dazu: {link} · Code: {code}} flat{Unsere WG-Einkaufsliste „{name}“ ist jetzt in Hummlist. Komm dazu: {link} · Code: {code}} club{Wir planen die Einkäufe für „{name}“ in Hummlist. Mach mit: {link} · Code: {code}} solo{Ich teile meine Einkaufsliste „{name}“ in Hummlist mit dir: {link} · Code: {code}} other{Komm in unseren Hummlist-Haushalt: {link} · Code: {code}}}'**
+  String inviteShareKind(String kind, String name, String link, String code);
+
+  /// Job 169b W2: role label of the member who created the household. Gender-neutral and short: der/die Hauptadmin; ranks above Admin (names admins, can't be removed)
+  ///
+  /// In de, this message translates to:
+  /// **'Hauptadmin'**
+  String get householdRoleOwner;
+
+  /// Job 169b W2: role label of an admin (removes members, makes group links)
+  ///
+  /// In de, this message translates to:
+  /// **'Admin'**
+  String get householdRoleAdmin;
+
+  /// Job 169b W2: tooltip of a member row's menu on the household page
+  ///
+  /// In de, this message translates to:
+  /// **'Optionen für {name}'**
+  String memberActions(String name);
+
+  /// No description provided for @memberMakeAdmin.
+  ///
+  /// In de, this message translates to:
+  /// **'Zum Admin machen'**
+  String get memberMakeAdmin;
+
+  /// No description provided for @memberRemoveAdmin.
+  ///
+  /// In de, this message translates to:
+  /// **'Adminrechte entziehen'**
+  String get memberRemoveAdmin;
+
+  /// No description provided for @memberRemove.
+  ///
+  /// In de, this message translates to:
+  /// **'Aus dem Haushalt entfernen'**
+  String get memberRemove;
+
+  /// No description provided for @memberRemoveTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'{name} entfernen?'**
+  String memberRemoveTitle(String name);
+
+  /// No description provided for @memberRemoveBody.
+  ///
+  /// In de, this message translates to:
+  /// **'{name} sieht die Liste von „{household}“ dann nicht mehr. Mit einer neuen Einladung geht es wieder.'**
+  String memberRemoveBody(String name, String household);
+
+  /// No description provided for @memberRemoveConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Entfernen'**
+  String get memberRemoveConfirm;
+
+  /// Job 169b W2: shown when a refresh finds that someone removed the user from a household
+  ///
+  /// In de, this message translates to:
+  /// **'Du bist nicht mehr Mitglied von „{name}“.'**
+  String householdRemovedNotice(String name);
+
+  /// No description provided for @householdNotAdmin.
+  ///
+  /// In de, this message translates to:
+  /// **'Das können nur Admins.'**
+  String get householdNotAdmin;
+
+  /// No description provided for @householdCannotRemove.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Person kannst du nicht entfernen.'**
+  String get householdCannotRemove;
+
+  /// Job 169b W2: start screens; reads the clipboard only on this tap
+  ///
+  /// In de, this message translates to:
+  /// **'Einladung einfügen'**
+  String get invitePaste;
+
+  /// No description provided for @invitePasteNothing.
+  ///
+  /// In de, this message translates to:
+  /// **'In der Zwischenablage ist kein Einladungslink und kein Code.'**
+  String get invitePasteNothing;
+
+  /// No description provided for @invitePasteWaiting.
+  ///
+  /// In de, this message translates to:
+  /// **'Einladung gemerkt. Melde dich an, dann trittst du bei.'**
+  String get invitePasteWaiting;
+
+  /// No description provided for @householdNotOwner.
+  ///
+  /// In de, this message translates to:
+  /// **'Admins ernennt nur, wer den Haushalt angelegt hat.'**
+  String get householdNotOwner;
 }
 
 class _AppLocalizationsDelegate

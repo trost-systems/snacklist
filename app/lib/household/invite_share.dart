@@ -7,6 +7,7 @@ import 'package:family_groceries/app/router.dart';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/web_share.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
+import 'package:family_groceries/session/session_cubit.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -20,6 +21,12 @@ enum InviteContext() {
 
   /// More's Einladungen.
   settings,
+
+  /// The invite sheet from a household's row in the switcher (job 169b).
+  switcher,
+
+  /// The invite sheet from the household page (job 169b).
+  household,
 }
 
 /// How an invite was handed out, for `invite_sent`'s `channel`.
@@ -76,19 +83,30 @@ String? inviteLink(String code) {
   return base.isEmpty ? null : '$base${joinPath(code)}';
 }
 
-/// What the share sheet sends, in the app's language: the link and the
-/// code, which can be typed after installing the app.
-String inviteShareText(AppLocalizations l10n, String code) =>
-    switch (inviteLink(code)) {
-      final link? => l10n.inviteShareText(link, code),
-      null => l10n.inviteShareTextCodeOnly(code),
-    };
+/// What the share sheet sends, in the app's language, worded for who
+/// shops in [household] (its kind): the link and the code, which can be
+/// typed after installing the app. The user sends it; Hummlist never does
+/// (N-18).
+String inviteShareText(
+  AppLocalizations l10n,
+  String code,
+  Household household,
+) => switch (inviteLink(code)) {
+  final link? => l10n.inviteShareKind(
+    household.kind?.name ?? 'other',
+    household.name,
+    link,
+    code,
+  ),
+  null => l10n.inviteShareTextCodeOnly(code),
+};
 
 /// One invite: its code and link, how long it is valid, and the ways to
 /// hand it out. Each way is one `invite_sent`; the code and the link never
 /// go to analytics.
 class const InviteCard({
   required final Invite invite,
+  required final Household household,
   required final InviteContext origin,
 
   /// More's Einladungen: revoke this invite.
@@ -165,8 +183,9 @@ class const InviteCard({
                       key: const ValueKey('invite-share'),
                       icon: const Icon(Icons.ios_share),
                       label: Text(l10n.share),
-                      onPressed: () =>
-                          unawaited(shareInvite(button, invite.code, origin)),
+                      onPressed: () => unawaited(
+                        shareInvite(button, invite, household, origin),
+                      ),
                     ),
                   ),
                 if (link != null)
@@ -214,7 +233,7 @@ class const InviteCard({
   ) async {
     final l10n = AppLocalizations.of(context);
     final messenger = Notices.of(context);
-    trackInviteSent(context.read<Analytics>(), channel, origin);
+    trackInviteSent(context.read<Analytics>(), channel, origin, invite.kind);
     await context.read<InviteSharer>().copy(text);
     messenger.showSnackBar(
       SnackBar(
@@ -226,17 +245,27 @@ class const InviteCard({
   }
 }
 
-/// Opens the share sheet with invite [code]'s text, anchored at [button]
-/// (the iPad's popover), and counts it once.
+/// Opens the share sheet with [invite]'s text for [household], anchored at
+/// [button] (the iPad's popover), and counts it once.
 Future<void> shareInvite(
   BuildContext button,
-  String code,
+  Invite invite,
+  Household household,
   InviteContext origin,
 ) async {
   final sharer = button.read<InviteSharer>();
-  final text = inviteShareText(AppLocalizations.of(button), code);
+  final text = inviteShareText(
+    AppLocalizations.of(button),
+    invite.code,
+    household,
+  );
   final box = button.findRenderObject() as RenderBox?;
-  trackInviteSent(button.read<Analytics>(), InviteChannel.shareSheet, origin);
+  trackInviteSent(
+    button.read<Analytics>(),
+    InviteChannel.shareSheet,
+    origin,
+    invite.kind,
+  );
   await sharer.share(
     text,
     origin: box == null ? null : box.localToGlobal(Offset.zero) & box.size,
@@ -247,7 +276,9 @@ void trackInviteSent(
   Analytics analytics,
   InviteChannel channel,
   InviteContext origin,
+  InviteKind kind,
 ) => analytics.track('invite_sent', {
   'channel': channel.wire,
   'context': origin.name,
+  'kind': kind.name,
 });

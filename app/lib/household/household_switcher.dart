@@ -9,6 +9,8 @@ import 'package:family_groceries/design/measured_width.dart';
 import 'package:family_groceries/design/pointy_hex.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/household/invite_repository.dart';
+import 'package:family_groceries/household/invite_share.dart';
+import 'package:family_groceries/household/invite_sheet.dart';
 import 'package:family_groceries/household/onboarding_page.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/list_cubit.dart';
@@ -117,10 +119,11 @@ class const HouseholdChip({
   }
 }
 
-/// The user's households, one row each with a check on the shown one;
-/// then "Neuer Haushalt", "Mit Code beitreten", and the default for Siri,
-/// Alexa & KI, which opens [showDefaultPicker]. [openNow] counts the shown
-/// list's open items better than the server's last answer.
+/// The user's households, one row each with a check on the shown one and
+/// "Leute einladen" ([showInviteSheet]); then "Neuer Haushalt", "Mit Code
+/// beitreten", and the default for Siri, Alexa & KI, which opens
+/// [showDefaultPicker]. [openNow] counts the shown list's open items better
+/// than the server's last answer.
 Future<void> showHouseholdSheet(BuildContext context, {int? openNow}) {
   // Fresh counts while the sheet opens; offline it shows the last ones.
   unawaited(context.read<SessionCubit>().refresh().catchError((Object _) {}));
@@ -196,14 +199,30 @@ class const HouseholdSheet({final int? openNow, super.key})
                   ),
                 ].join(' · '),
               ),
-              trailing: household.id == shown.id
-                  ? Icon(
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (household.id == shown.id)
+                    Icon(
                       Icons.check,
                       key: const ValueKey('household-current'),
                       color: t.text,
                       semanticLabel: l10n.householdCurrent,
-                    )
-                  : null,
+                    ),
+                  IconButton(
+                    key: ValueKey('household-invite-${household.id}'),
+                    tooltip: l10n.inviteSheetOpen(household.name),
+                    icon: const Icon(Icons.person_add_outlined),
+                    onPressed: () => unawaited(
+                      showInviteSheet(
+                        context,
+                        household,
+                        from: InviteContext.switcher,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
               selected: household.id == shown.id,
               onTap: () {
                 close();

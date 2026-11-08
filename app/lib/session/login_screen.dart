@@ -7,6 +7,7 @@ import 'package:family_groceries/app/router.dart';
 import 'package:family_groceries/design/brand_block.dart';
 import 'package:family_groceries/design/field_border.dart';
 import 'package:family_groceries/design/tokens.g.dart';
+import 'package:family_groceries/household/paste_invite.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/session/provider_buttons.dart';
 import 'package:family_groceries/session/session_cubit.dart';
@@ -68,6 +69,7 @@ class const LoginScreen({
                 ),
               ),
             Expanded(child: Center(child: panel)),
+            PasteInvite(waiting: invite),
             // Outside the scrolling form: visible without scrolling.
             const SafeArea(top: false, child: LegalFooter()),
           ],

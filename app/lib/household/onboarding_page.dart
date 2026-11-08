@@ -65,6 +65,9 @@ String householdProblemText(AppLocalizations l10n, HouseholdProblem problem) =>
       HouseholdProblem.offline => l10n.householdOffline,
       HouseholdProblem.archiveDisabled => l10n.householdArchiveDisabled,
       HouseholdProblem.tooManyHouseholds => l10n.tooManyHouseholds,
+      HouseholdProblem.notAdmin => l10n.householdNotAdmin,
+      HouseholdProblem.notOwner => l10n.householdNotOwner,
+      HouseholdProblem.cannotRemove => l10n.householdCannotRemove,
       HouseholdProblem.notMember ||
       HouseholdProblem.other => l10n.genericError(problem.name),
     };

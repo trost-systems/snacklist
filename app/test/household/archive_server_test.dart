@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/onboarding_page.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
+import 'package:family_groceries/session/session_cubit.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' show Request, Response;
@@ -11,6 +12,34 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Job 47: what the server says about archiving reaches the user.
 void main() {
+  test("the W2 server's refusals map to what the screens say", () {
+    expect(
+      {
+        for (final status in [
+          'not_member',
+          'not_a_member',
+          'not_admin',
+          'not_owner',
+          'cannot_remove_owner',
+          'cannot_remove_admin',
+          'cannot_remove_self',
+          'invalid_role',
+        ])
+          status: HouseholdError.fromStatus(status).problem,
+      },
+      {
+        'not_member': HouseholdProblem.notMember,
+        'not_a_member': HouseholdProblem.notMember,
+        'not_admin': HouseholdProblem.notAdmin,
+        'not_owner': HouseholdProblem.notOwner,
+        'cannot_remove_owner': HouseholdProblem.cannotRemove,
+        'cannot_remove_admin': HouseholdProblem.cannotRemove,
+        'cannot_remove_self': HouseholdProblem.cannotRemove,
+        'invalid_role': HouseholdProblem.other,
+      },
+    );
+  });
+
   final de = lookupAppLocalizations(const Locale('de'));
   final en = lookupAppLocalizations(const Locale('en'));
 
@@ -126,37 +155,99 @@ void main() {
       );
       final invite = await repo.create('home');
       expect(sent.single.url.path, '/rest/v1/rpc/create_invite');
-      expect(params(sent.single), {'p_household': 'home'});
+      expect(params(sent.single), {'p_household': 'home', 'p_kind': 'person'});
       expect(invite.code, 'ABCD2345');
       expect(invite.expiresAt, DateTime.utc(2026, 11, 12, 9));
+      expect(invite.kind, InviteKind.person);
+      expect(invite.maxUses, 1);
     });
 
-    test('the open invites are the household’s unused, unrevoked, unexpired '
-        'ones, newest first', () async {
+    test('a group link asks for one and comes back with its uses', () async {
+      final repo = server(
+        (_) => {
+          'id': 'g1',
+          'code': 'GRUP2345',
+          'kind': 'group',
+          'expires_at': '2026-12-08T09:00:00Z',
+          'max_uses': 50,
+          'use_count': 12,
+        },
+      );
+      final invite = await repo.create('home', kind: InviteKind.group);
+      expect(params(sent.single), {'p_household': 'home', 'p_kind': 'group'});
+      expect(
+        (invite.kind, invite.useCount, invite.maxUses, invite.full),
+        (InviteKind.group, 12, 50, false),
+      );
+    });
+
+    test('who joined with an invite (invite_joins)', () async {
       final repo = server(
         (_) => [
           {
-            'id': 'i2',
-            'code': 'NEWER234',
-            'expires_at': '2026-11-12T09:00:00Z',
+            'user_id': 'anna',
+            'display_name': 'Anna',
+            'joined_at': '2026-11-08T10:00:00Z',
           },
           {
-            'id': 'i1',
-            'code': 'OLDER234',
-            'expires_at': '2026-11-10T09:00:00Z',
+            'user_id': 'ben',
+            'display_name': null,
+            'joined_at': '2026-11-09T10:00:00Z',
           },
         ],
       );
-      final invites = await repo.open('home');
-      expect([for (final i in invites) i.code], ['NEWER234', 'OLDER234']);
-      final query = sent.single.url.queryParameters;
-      expect(sent.single.url.path, '/rest/v1/invites');
-      expect(query['household_id'], 'eq.home');
-      expect(query['used_at'], 'is.null');
-      expect(query['revoked_at'], 'is.null');
-      expect(query['expires_at'], startsWith('gt.'));
-      expect(query['order'], 'created_at.desc.nullslast');
+      final joins = await repo.joins('g1');
+      expect(sent.single.url.path, '/rest/v1/rpc/invite_joins');
+      expect(params(sent.single), {'p_invite': 'g1'});
+      expect(
+        [for (final j in joins) (j.userId, j.displayName, j.joinedAt)],
+        [
+          ('anna', 'Anna', DateTime.utc(2026, 11, 8, 10)),
+          ('ben', '', DateTime.utc(2026, 11, 9, 10)),
+        ],
+      );
     });
+
+    test('removing a member and naming an admin', () async {
+      final repo = server((_) => null);
+      await repo.removeMember('home', 'lea');
+      await repo.setRole('home', 'ben', HouseholdRole.admin);
+      expect(
+        [for (final r in sent) r.url.path],
+        ['/rest/v1/rpc/remove_member', '/rest/v1/rpc/set_member_role'],
+      );
+      expect(
+        [for (final r in sent) params(r)],
+        [
+          {'p_household': 'home', 'p_user': 'lea'},
+          {'p_household': 'home', 'p_user': 'ben', 'p_role': 'admin'},
+        ],
+      );
+    });
+
+    test(
+      'the open invites come from household_invites, newest first',
+      () async {
+        final repo = server(
+          (_) => [
+            {
+              'id': 'i2',
+              'code': 'NEWER234',
+              'expires_at': '2026-11-12T09:00:00Z',
+            },
+            {
+              'id': 'i1',
+              'code': 'OLDER234',
+              'expires_at': '2026-11-10T09:00:00Z',
+            },
+          ],
+        );
+        final invites = await repo.open('home');
+        expect([for (final i in invites) i.code], ['NEWER234', 'OLDER234']);
+        expect(sent.single.url.path, '/rest/v1/rpc/household_invites');
+        expect(params(sent.single), {'p_household': 'home'});
+      },
+    );
 
     test('revoking names the invite', () async {
       await server((_) => null).revoke('i1');
@@ -238,7 +329,10 @@ void main() {
       expect(params(sent.single), {'p_household': 'home'});
       expect(
         [for (final m in members) (m.userId, m.displayName, m.role)],
-        [('peter', 'Peter', 'owner'), ('lea', '', 'member')],
+        [
+          ('peter', 'Peter', HouseholdRole.owner),
+          ('lea', '', HouseholdRole.member),
+        ],
       );
     });
 

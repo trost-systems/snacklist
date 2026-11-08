@@ -27,14 +27,15 @@ class const InvitePartnerScreen({super.key}) extends StatelessWidget {
             household.id,
             load: false,
           ),
-          child: const _InvitePartnerView(),
+          child: _InvitePartnerView(household),
         ),
         // The router never shows this step without a household.
         _ => const SizedBox.shrink(),
       };
 }
 
-class const _InvitePartnerView() extends StatelessWidget {
+class const _InvitePartnerView(final Household household)
+    extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -55,13 +56,19 @@ class const _InvitePartnerView() extends StatelessWidget {
         Text(l10n.invitePartnerBody, textAlign: TextAlign.center),
         const SizedBox(height: 24),
         if (invite != null)
-          InviteCard(invite: invite, origin: InviteContext.onboarding)
+          InviteCard(
+            invite: invite,
+            household: household,
+            origin: InviteContext.onboarding,
+          )
         else
           FilledButton.icon(
             key: const ValueKey('invite-partner'),
             icon: const Icon(Icons.person_add_outlined),
             label: Text(l10n.inviteMember),
-            onPressed: state.busy ? null : () => unawaited(_invite(context)),
+            onPressed: state.busy
+                ? null
+                : () => unawaited(_invite(context, household)),
           ),
         if (problem != null)
           ProblemText(
@@ -82,13 +89,13 @@ class const _InvitePartnerView() extends StatelessWidget {
   /// for a tap on Teilen: Web Share needs a fresh tap, which the server's
   /// answer outlasts. The sheet is anchored at the page: the button is
   /// gone by then.
-  static Future<void> _invite(BuildContext page) async {
+  static Future<void> _invite(BuildContext page, Household household) async {
     final invite = await page.read<InvitesCubit>().create();
     if (invite != null &&
         !kIsWeb &&
         page.mounted &&
         page.read<InviteSharer>().canShare) {
-      await shareInvite(page, invite.code, InviteContext.onboarding);
+      await shareInvite(page, invite, household, InviteContext.onboarding);
     }
   }
 }

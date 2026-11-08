@@ -5,6 +5,8 @@ import 'package:family_groceries/app/notices.dart';
 import 'package:family_groceries/app/router.dart';
 import 'package:family_groceries/app/shell.dart';
 import 'package:family_groceries/app/theme.dart';
+import 'package:family_groceries/household/invite_repository.dart';
+import 'package:family_groceries/household/invite_share.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_screen.dart';
@@ -116,6 +118,8 @@ Future<_Shell> _pumpShell(
       providers: [
         RepositoryProvider.value(value: cache),
         RepositoryProvider<PremiumServer>.value(value: purchases.premium),
+        RepositoryProvider<InviteRepository>.value(value: FakeInvites()),
+        RepositoryProvider<InviteSharer>.value(value: FakeSharer()),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -187,6 +191,31 @@ void main() {
       findsNothing,
     );
     expect(s.session.refreshes, 1, reason: 'fresh counts');
+  });
+
+  testWidgets('every row invites to its household, on the root navigator', (
+    tester,
+  ) async {
+    final s = await _pumpShell(tester);
+    await _openSheet(tester);
+    expect(_key('household-invite-home'), findsOneWidget);
+    expect(find.byTooltip('Leute in Sommerfest einladen'), findsOneWidget);
+    await tester.tap(_key('household-invite-club'));
+    await tester.pumpAndSettle();
+    expect(_key('invite-sheet'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: _key('invite-sheet'),
+        matching: find.text('Sommerfest'),
+      ),
+      findsOneWidget,
+    );
+    expect(s.popups.open, isTrue);
+    expect(
+      (s.session.state as InHousehold).household.id,
+      'home',
+      reason: 'inviting switches nothing',
+    );
   });
 
   testWidgets('a row switches the list to that household', (tester) async {

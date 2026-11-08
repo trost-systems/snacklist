@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:family_groceries/analytics/analytics.dart';
+import 'package:family_groceries/analytics/events.dart' show JoinMethod;
 import 'package:family_groceries/household/pending_invite.dart';
 import 'package:family_groceries/list/item_icons_remote.dart';
 import 'package:family_groceries/list/list_cache.dart';
@@ -62,6 +63,11 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
   /// `{code, at}`. Not under [forget]'s prefixes: a signed-out start (which
   /// forgets) must keep the link that is about to be signed in for.
   static const _pendingInviteKey = 'invite.pending';
+
+  /// Set once the Play Store's install referrer was read (job 169b W2): it
+  /// is read on the first start only. Not under [forget]'s prefixes: it
+  /// belongs to the install.
+  static const _installReferrerKey = 'invite.referrer_read';
 
   /// The List tab's dismissed tips per user (job 80), a JSON list of tip
   /// ids. Not under [forget]'s prefixes: ids only, and a user who signs in
@@ -175,19 +181,27 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
       _write(() => _prefs.setBool(_internalKey, internal));
 
   @override
-  Future<({String code, DateTime at})?> pendingInvite() async =>
+  Future<KeptInvite?> pendingInvite() async =>
       switch (await _readString(_pendingInviteKey)) {
         final json? => _parsePendingInvite(json),
         null => null,
       };
 
-  static ({String code, DateTime at})? _parsePendingInvite(String json) {
+  static KeptInvite? _parsePendingInvite(String json) {
     try {
       return switch (jsonDecode(json)) {
-        {'code': final String code, 'at': final String at} => (
-          code: code,
-          at: DateTime.parse(at),
-        ),
+        {'code': final String code, 'at': final String at} &&
+            final Map<String, Object?> kept =>
+          (
+            code: code,
+            at: DateTime.parse(at),
+            // Kept before job 169b W2: from a link.
+            via:
+                JoinMethod.values
+                    .where((m) => m.name == kept['via'])
+                    .firstOrNull ??
+                JoinMethod.link,
+          ),
         _ => null,
       };
     } on FormatException {
@@ -196,16 +210,32 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
   }
 
   @override
-  Future<void> savePendingInvite(({String code, DateTime at})? invite) =>
-      _write(
-        () => switch (invite) {
-          (:final code, :final at) => _prefs.setString(
-            _pendingInviteKey,
-            jsonEncode({'code': code, 'at': at.toUtc().toIso8601String()}),
-          ),
-          null => _prefs.remove(_pendingInviteKey),
-        },
-      );
+  Future<void> savePendingInvite(KeptInvite? invite) => _write(
+    () => switch (invite) {
+      (:final code, :final at, :final via) => _prefs.setString(
+        _pendingInviteKey,
+        jsonEncode({
+          'code': code,
+          'at': at.toUtc().toIso8601String(),
+          'via': via.name,
+        }),
+      ),
+      null => _prefs.remove(_pendingInviteKey),
+    },
+  );
+
+  @override
+  Future<bool> installReferrerRead() async {
+    try {
+      return await _prefs.getBool(_installReferrerKey) ?? false;
+    } on Object {
+      return false;
+    }
+  }
+
+  @override
+  Future<void> saveInstallReferrerRead() =>
+      _write(() => _prefs.setBool(_installReferrerKey, true));
 
   @override
   Future<Set<String>> dismissedTips(String userId) async {
