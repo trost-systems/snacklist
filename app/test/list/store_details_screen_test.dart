@@ -117,12 +117,15 @@ void main() {
       semantics.dispose();
     });
 
-    testWidgets('its name pill holds the name centered, no badge, no hint', (
+    testWidgets('its name field holds the name centered, no badge, no hint', (
       tester,
     ) async {
       await pump(tester, 'dm');
       final pill = key('store-rename');
-      final face = find.descendant(of: pill, matching: find.byType(InkWell));
+      final face = find.descendant(
+        of: pill,
+        matching: find.byType(InputDecorator),
+      );
       final name = find.descendant(of: pill, matching: find.text('dm'));
       expect(
         tester.getCenter(name).dy,
@@ -135,7 +138,7 @@ void main() {
       expect(
         find.descendant(of: pill, matching: find.byType(StoreBadge)),
         findsNothing,
-        reason: 'one hex: the pill, no badge inside (job 148)',
+        reason: 'one hex: the field, no badge inside (job 148)',
       );
       expect(
         find.descendant(of: pill, matching: find.byIcon(Icons.edit_outlined)),

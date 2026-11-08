@@ -138,6 +138,70 @@ void main() {
     expect(tester.testTextInput.isVisible, isFalse);
   });
 
+  testWidgets('turning the phone keeps the open email form and its text', (
+    tester,
+  ) async {
+    tester.view.padding = const FakeViewPadding(top: 47);
+    await pumpLogin(tester);
+    await tester.tap(continueWithEmail());
+    await tester.pumpAndSettle();
+    await tester.enterText(emailField(), 'lea@example.com');
+    await tester.pump();
+
+    tester.view
+      ..physicalSize = const Size(844, 390)
+      ..padding = FakeViewPadding.zero;
+    await tester.pumpAndSettle();
+
+    expect(continueWithEmail(), findsNothing);
+    expect(find.text('lea@example.com'), findsOneWidget);
+  });
+
+  testWidgets('field errors show an icon beside the text and are read with '
+      'their field', (tester) async {
+    final semantics = tester.ensureSemantics();
+    await pumpLogin(tester);
+    await tester.tap(continueWithEmail());
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const ValueKey('login-email')), 'lea');
+    await tester.enterText(find.byKey(const ValueKey('login-password')), '12');
+    await tester.tap(find.widgetWithText(FilledButton, 'Anmelden'));
+    await tester.pumpAndSettle();
+
+    for (final (key, message) in [
+      ('login-email', 'Bitte eine gültige E-Mail-Adresse eingeben'),
+      ('login-password', 'Mindestens 6 Zeichen'),
+    ]) {
+      final field = find.descendant(
+        of: find.byKey(ValueKey(key)),
+        matching: find.byType(EditableText),
+      );
+      expect(tester.getSemantics(field).hint, message, reason: key);
+      final text = find.text(message);
+      expect(text, findsOneWidget);
+      final icon = find.descendant(
+        of: find.ancestor(of: text, matching: find.byType(Row)).first,
+        matching: find.byIcon(Icons.error_outline),
+      );
+      expect(icon, findsOneWidget, reason: message);
+      final iconBox = tester.getRect(icon);
+      final textBox = tester.getRect(text);
+      expect(iconBox.right, lessThanOrEqualTo(textBox.left), reason: message);
+      expect(
+        iconBox.center.dy,
+        inInclusiveRange(textBox.top, textBox.top + iconBox.height + 4),
+        reason: '$message: icon beside the first line',
+      );
+      expect(find.bySemanticsLabel(message), findsOneWidget, reason: message);
+      expect(
+        tester.getSemantics(text).label,
+        message,
+        reason: '$key: the icon adds nothing to the message',
+      );
+    }
+    semantics.dispose();
+  });
+
   for (final (name, flows) in [
     ('with providers', both),
     ('email only', const <SocialProvider, SignInFlow>{}),

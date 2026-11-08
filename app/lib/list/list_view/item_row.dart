@@ -174,6 +174,9 @@ const _iconGap = 10.0;
 const _detailSize = 13.0;
 const _rowPadding = 6.0;
 
+/// The rule between two rows.
+const _hairline = 1.0;
+
 class const _Tile({
   required final ItemRow row,
   required final AnimationController? leave,
@@ -242,69 +245,80 @@ class const _Tile({
         highlightColor: scheme.surfaceContainer,
         child: Opacity(
           opacity: 1 - rowLeaveFade.transform(t),
-          child: Container(
-            // 48, not the site's 44: the whole row is the tap target.
-            constraints: const BoxConstraints(minHeight: HlSpace.s7),
-            alignment: AlignmentDirectional.centerStart,
-            padding: const EdgeInsets.symmetric(
-              horizontal: HlSpace.s4,
-              vertical: _rowPadding,
-            ),
-            decoration: row.last
-                ? null
-                : BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(color: scheme.outlineVariant),
-                    ),
-                  ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: _iconGap,
-              children: [
-                SizedBox(
-                  width: _iconColumn,
-                  child: ItemIcon(
-                    item.name,
-                    size: _iconSize,
-                    height: _nameLine,
-                  ),
+          child: Stack(
+            fit: StackFit.passthrough,
+            children: [
+              Container(
+                // 48, not the site's 44: the whole row is the tap target.
+                constraints: const BoxConstraints(minHeight: HlSpace.s7),
+                alignment: AlignmentDirectional.centerStart,
+                // The hairline below keeps its pixel of the row's height.
+                padding: EdgeInsets.fromLTRB(
+                  HlSpace.s4,
+                  _rowPadding,
+                  HlSpace.s4,
+                  _rowPadding + (row.last ? 0 : _hairline),
                 ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    spacing: 1,
-                    children: [
-                      CustomPaint(
-                        foregroundPainter: drawn == 0
-                            ? null
-                            : StrikePainter(
-                                text: name,
-                                textScaler: scaler,
-                                textDirection: Directionality.of(context),
-                                progress: drawn,
-                                color: hl.textMuted,
-                              ),
-                        child: Text.rich(name, textScaler: scaler),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: _iconGap,
+                  children: [
+                    SizedBox(
+                      width: _iconColumn,
+                      child: ItemIcon(
+                        item.name,
+                        size: _iconSize,
+                        height: _nameLine,
                       ),
-                      if (details.isNotEmpty)
-                        Text(
-                          details,
-                          style: TextStyle(
-                            fontSize: _detailSize,
-                            height: 1.3,
-                            fontWeight: FontWeight.w500,
-                            color: Color.lerp(
-                              scheme.onSurfaceVariant,
-                              hl.textMuted,
-                              drawn,
-                            ),
+                    ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing: 1,
+                        children: [
+                          CustomPaint(
+                            foregroundPainter: drawn == 0
+                                ? null
+                                : StrikePainter(
+                                    text: name,
+                                    textScaler: scaler,
+                                    textDirection: Directionality.of(context),
+                                    progress: drawn,
+                                    color: hl.textMuted,
+                                  ),
+                            child: Text.rich(name, textScaler: scaler),
                           ),
-                        ),
-                    ],
-                  ),
+                          if (details.isNotEmpty)
+                            Text(
+                              details,
+                              style: TextStyle(
+                                fontSize: _detailSize,
+                                height: 1.3,
+                                fontWeight: FontWeight.w500,
+                                color: Color.lerp(
+                                  scheme.onSurfaceVariant,
+                                  hl.textMuted,
+                                  drawn,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              // Between rows of a section, a hairline from the name's start
+              // to the content's end, like the category dividers' rules.
+              if (!row.last)
+                PositionedDirectional(
+                  start: HlSpace.s4 + _iconColumn + _iconGap,
+                  end: HlSpace.s4,
+                  bottom: 0,
+                  height: _hairline,
+                  child: ColoredBox(color: scheme.outlineVariant),
+                ),
+            ],
           ),
         ),
       ),

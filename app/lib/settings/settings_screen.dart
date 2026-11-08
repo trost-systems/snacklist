@@ -1,6 +1,7 @@
 import 'package:family_groceries/app/language.dart';
 import 'package:family_groceries/app/router.dart';
 import 'package:family_groceries/app/theme.dart';
+import 'package:family_groceries/design/group_card.dart';
 import 'package:family_groceries/design/hex_radio.dart';
 import 'package:family_groceries/design/hex_segmented.dart';
 import 'package:family_groceries/design/section_label.dart';
@@ -14,61 +15,75 @@ import 'package:go_router/go_router.dart';
 /// control, System, Hell or Dunkel; and the language, a row that opens
 /// [LanguageScreen]. Both are kept on the device and apply at once.
 class const SettingsScreen({super.key}) extends StatelessWidget {
+  /// More's RECHTLICHES overline: over its group, at the group's inset.
+  static const _labelPadding = EdgeInsets.fromLTRB(20, HlSpace.s5, 20, 0);
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = context.watch<ThemeCubit>();
+    final t = HummlistColors.of(Theme.of(context).brightness);
     return ListView(
       key: const ValueKey('settings-screen'),
-      padding: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.only(bottom: HlSpace.s5),
       children: [
-        HlSectionLabel(l10n.appearance),
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: HlSpace.s4,
-            vertical: HlSpace.s2,
-          ),
-          child: HexSegmented<ThemeMode>(
-            key: const ValueKey('theme-mode'),
-            label: l10n.appearance,
-            value: theme.state,
-            onChanged: theme.pick,
-            segments: [
-              HexSegment(
-                key: const ValueKey('theme-system'),
-                value: ThemeMode.system,
-                label: l10n.themeSystem,
-                icon: Icons.brightness_auto_outlined,
+        HlSectionLabel(l10n.appearance, padding: _labelPadding),
+        HlGroup(
+          top: HlSpace.s2,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(HlSpace.s3),
+              child: HexSegmented<ThemeMode>(
+                key: const ValueKey('theme-mode'),
+                label: l10n.appearance,
+                value: theme.state,
+                onChanged: theme.pick,
+                segments: [
+                  HexSegment(
+                    key: const ValueKey('theme-system'),
+                    value: ThemeMode.system,
+                    label: l10n.themeSystem,
+                    icon: Icons.brightness_auto_outlined,
+                  ),
+                  HexSegment(
+                    key: const ValueKey('theme-light'),
+                    value: ThemeMode.light,
+                    label: l10n.themeLight,
+                    icon: Icons.light_mode_outlined,
+                  ),
+                  HexSegment(
+                    key: const ValueKey('theme-dark'),
+                    value: ThemeMode.dark,
+                    label: l10n.themeDark,
+                    icon: Icons.dark_mode_outlined,
+                  ),
+                ],
               ),
-              HexSegment(
-                key: const ValueKey('theme-light'),
-                value: ThemeMode.light,
-                label: l10n.themeLight,
-                icon: Icons.light_mode_outlined,
-              ),
-              HexSegment(
-                key: const ValueKey('theme-dark'),
-                value: ThemeMode.dark,
-                label: l10n.themeDark,
-                icon: Icons.dark_mode_outlined,
-              ),
-            ],
-          ),
-        ),
-        HlSectionLabel(l10n.language),
-        ListTile(
-          key: const ValueKey('settings-language'),
-          minTileHeight: 56,
-          leading: const Icon(Icons.language),
-          title: Text(l10n.language),
-          subtitle: Text(switch (context.watch<LanguageCubit>().state) {
-            final picked? => picked.nativeName,
-            null => l10n.languageSystemPicked(
-              deviceLanguage(context).nativeName,
             ),
-          }),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => context.go(languagePath),
+          ],
+        ),
+        HlSectionLabel(l10n.language, padding: _labelPadding),
+        HlGroup(
+          top: HlSpace.s2,
+          children: [
+            ListTile(
+              key: const ValueKey('settings-language'),
+              minTileHeight: 56,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: HlSpace.s3,
+              ),
+              leading: HlRowHex(Icons.language, face: t.surfaceSunken),
+              title: Text(l10n.language),
+              subtitle: Text(switch (context.watch<LanguageCubit>().state) {
+                final picked? => picked.nativeName,
+                null => l10n.languageSystemPicked(
+                  deviceLanguage(context).nativeName,
+                ),
+              }),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.go(languagePath),
+            ),
+          ],
         ),
       ],
     );

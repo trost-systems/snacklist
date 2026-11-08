@@ -9,7 +9,7 @@ enum StickerDepth() {
 }
 
 /// The site's `.sticker`: a raised surface with the 2 px navy contour and a
-/// hard shadow, the sticker shadow in light and the night shadow in dark.
+/// hard shadow in the contour's colour.
 /// For cards, notes and anything lifted (a dragged row).
 class const HlSticker({
   required final Widget child,
@@ -22,16 +22,21 @@ class const HlSticker({
   final Color? color,
   super.key,
 }) extends StatelessWidget {
-  /// The shadow of [depth] in [brightness].
-  static List<BoxShadow> shadow(Brightness brightness, StickerDepth depth) =>
-      switch ((brightness, depth)) {
-        (Brightness.light, StickerDepth.s) => HlShadow.stickerS,
-        (Brightness.light, StickerDepth.m) => HlShadow.sticker,
-        (Brightness.light, StickerDepth.l) => HlShadow.stickerL,
-        (Brightness.dark, StickerDepth.s) => HlShadow.nightS,
-        (Brightness.dark, StickerDepth.m) => HlShadow.night,
-        (Brightness.dark, StickerDepth.l) => HlShadow.nightL,
-      };
+  /// The hard shadow of [depth] in [brightness]: the contour colour offset
+  /// straight down, so the edge reads the same in light and dark (the
+  /// night token's near-black edge vanished on the dark page).
+  static List<BoxShadow> shadow(Brightness brightness, StickerDepth depth) {
+    final light = switch (depth) {
+      StickerDepth.s => HlShadow.stickerS,
+      StickerDepth.m => HlShadow.sticker,
+      StickerDepth.l => HlShadow.stickerL,
+    };
+    if (brightness == Brightness.light) {
+      return light;
+    }
+    final contour = HummlistColors.dark.border;
+    return [for (final s in light) BoxShadow(color: contour, offset: s.offset)];
+  }
 
   @override
   Widget build(BuildContext context) {

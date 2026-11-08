@@ -209,9 +209,18 @@ void main() {
       await tester.pump();
       await tapKey(tester, 'create-household');
       expect(
+        // The name field takes focus back and scrolls up; the line stays
+        // under the button, out of view.
         find.descendant(
-          of: key('create-name-problem'),
-          matching: find.text('Gib einen Namen mit 1 bis 80 Zeichen ein.'),
+          of: find.byKey(
+            const ValueKey('create-name-problem'),
+            skipOffstage: false,
+          ),
+          matching: find.text(
+            'Gib einen Namen mit 1 bis 80 Zeichen ein.',
+            skipOffstage: false,
+          ),
+          skipOffstage: false,
         ),
         findsOneWidget,
         reason: 'beside the button, where the tap was',

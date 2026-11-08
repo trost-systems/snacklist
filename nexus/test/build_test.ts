@@ -138,7 +138,7 @@ Deno.test('merged 7d counts the rolling 7 x 24 h, the bars keep calendar days', 
 Deno.test('a registered hill-climb doc that is missing is reported, not invented', async () => {
   const { snap, warnings } = await snapshot();
   assertEquals(snap.hillclimbs.map((h) => h.id), ['hc-strictness']);
-  assertEquals(warnings.length, 6);
+  assertEquals(warnings.length, 8);
 });
 
 const jobKeys = [

@@ -405,9 +405,29 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
       );
     }
 
-    // Every store empty: no section shows, the empty list says so.
-    final body = shown.isEmpty
+    // The bottom padding the add field comes in as (below).
+    final bottom = MediaQuery.paddingOf(context).bottom + HlSpace.s5;
+    // Every store empty: no section shows, the empty list says so. Alone,
+    // it is centred in the room above the add field; with recently used
+    // items it stays on top, so their tile shows below it.
+    final body = shown.isEmpty && used.isNotEmpty
         ? const SliverToBoxAdapter(child: EmptyList())
+        : shown.isEmpty
+        ? SliverLayoutBuilder(
+            builder: (context, constraints) => SliverToBoxAdapter(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: math.max(
+                    0,
+                    constraints.viewportMainAxisExtent -
+                        constraints.precedingScrollExtent -
+                        bottom,
+                  ),
+                ),
+                child: const Center(child: EmptyList()),
+              ),
+            ),
+          )
         : columnCount == 1
         ? column(shown)
         : SliverCrossAxisGroup(
@@ -477,11 +497,7 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
         ),
         // The add field floats over the list's bottom edge (job 135) and
         // comes in as the bottom padding: the last row scrolls clear of it.
-        SliverToBoxAdapter(
-          child: SizedBox(
-            height: MediaQuery.paddingOf(context).bottom + HlSpace.s5,
-          ),
-        ),
+        SliverToBoxAdapter(child: SizedBox(height: bottom)),
       ],
     );
   }
@@ -606,9 +622,44 @@ class _PinnedHeader(final Widget child, final double extent)
   @override
   double get maxExtent => extent;
 
+  /// Rows scrolled up under the bar fade out over its whole height, the
+  /// status bar included, behind the bar's buttons. It grows in as they
+  /// scroll in, so an unscrolled list shows the bar alone. The fade takes
+  /// no taps: they reach the bar or the rows as before.
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlaps) =>
-      child;
+  Widget build(BuildContext context, double shrinkOffset, bool overlaps) {
+    final strength = shrinkOffset / extent;
+    final top = MediaQuery.paddingOf(context).top;
+    final surface = Theme.of(context).scaffoldBackgroundColor;
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        IgnorePointer(
+          child: strength == 0
+              ? const SizedBox.shrink()
+              : DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        for (final alpha in const [1.0, 1.0, 0.9, 0.0])
+                          surface.withValues(alpha: alpha * strength),
+                      ],
+                      stops: [
+                        0,
+                        top / extent,
+                        (top + (extent - top) / 2) / extent,
+                        1,
+                      ],
+                    ),
+                  ),
+                ),
+        ),
+        child,
+      ],
+    );
+  }
 
   @override
   bool shouldRebuild(_PinnedHeader oldDelegate) =>

@@ -194,6 +194,28 @@ void main() {
     expect(enabled(tester, 'feedback-send'), isTrue, reason: 'trimmed: 2000');
   });
 
+  // On the web a new semantics node for the field means a new input
+  // element, which dropped the typed text when the limit error appeared.
+  testWidgets('the too-long error keeps the field and its text, and is the '
+      "field's hint", (tester) async {
+    final semantics = tester.ensureSemantics();
+    await openForm(tester);
+    final field = find.descendant(
+      of: key('feedback-message'),
+      matching: find.byType(EditableText),
+    );
+    await tester.enterText(key('feedback-message'), 'a' * 1999);
+    await tester.pump();
+    final before = tester.getSemantics(field).id;
+    await tester.enterText(key('feedback-message'), 'a' * 2001);
+    await tester.pump();
+    final node = tester.getSemantics(field);
+    expect(node.id, before);
+    expect(node.getSemanticsData().hint, 'Höchstens 2000 Zeichen');
+    expect(node.getSemanticsData().value, 'a' * 2001);
+    semantics.dispose();
+  });
+
   testWidgets('offline: the error, the note stays, Retry sends it once '
       '(AC7)', (tester) async {
     final more = await openForm(tester);
