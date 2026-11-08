@@ -380,6 +380,30 @@ void main() {
       },
     );
 
+    test('a reload that answers while a household to show is being kept on the '
+        'device does not undo it', () async {
+      final gated = _GatedCache();
+      final cubit = SessionCubit(server, gated);
+      addTearDown(cubit.close);
+      await cubit.refresh();
+      await cubit.switchTo('club');
+      final hold = server.holdReads = Completer<void>();
+      final stale = cubit.refresh();
+      await pumpEventQueue();
+      server
+        ..holdReads = null
+        ..member('peter', 'new', 'Neu');
+      final gate = gated.gate = Completer<void>();
+      gated.onRemember = () => scheduleMicrotask(() async {
+        hold.complete();
+        await stale;
+        gate.complete();
+      });
+      await cubit.refresh(show: 'new');
+      expect(cubit.state, _shows('new'));
+      expect(gated.households['peter']?.shown, 'new');
+    });
+
     test('unarchiving adds the household and shows it', () async {
       await cubit.refresh();
       await cubit.unarchive('old');
@@ -390,4 +414,24 @@ void main() {
       );
     });
   });
+}
+
+/// Holds its next [remember] until [gate] completes, after [onRemember].
+class _GatedCache() extends MemorySessionCache {
+  Completer<void>? gate;
+  void Function()? onRemember;
+
+  @override
+  Future<void> remember(
+    String userId, {
+    required List<Household> households,
+    String? shown,
+  }) async {
+    if (gate case final held?) {
+      gate = null;
+      onRemember?.call();
+      await held.future;
+    }
+    await super.remember(userId, households: households, shown: shown);
+  }
 }

@@ -206,6 +206,7 @@ class SessionCubit(
   Future<void> _load(String? userId) async {
     if (userId == null) {
       _loadedFor = null;
+      _toShow = null;
       _retry?.cancel();
       // The sign-out that [accountDeleted] causes keeps its notice.
       emit(
@@ -261,6 +262,9 @@ class SessionCubit(
       emit(const SignedOut());
       return;
     }
+    // Counted first: a reload that answers while this one is still keeping
+    // [show] on the device is older and must not undo it.
+    final reload = ++_reloads;
     if (show != null) {
       _toShow = show;
       // Kept on the device before the server answers: a reload of the page
@@ -270,7 +274,6 @@ class SessionCubit(
         await _cache.remember(userId, households: households, shown: show);
       }
     }
-    final reload = ++_reloads;
     final cached = await _cache.householdsOf(userId);
     final rows = await _client.rpc<List<dynamic>>('my_households');
     if (reload != _reloads) {
@@ -558,6 +561,7 @@ class SessionCubit(
   /// nothing is sent once signed out.
   Future<void> signOut() async {
     pendingInvite?.signedOut();
+    _toShow = null;
     _create = null;
     _unansweredJoin = null;
     await analytics?.flush().timeout(
@@ -574,6 +578,7 @@ class SessionCubit(
     _loadedFor = null;
     _retry?.cancel();
     pendingInvite?.signedOut();
+    _toShow = null;
     _create = null;
     _unansweredJoin = null;
     emit(SignedOut(deleted: notice));

@@ -63,6 +63,9 @@ class _HouseholdViewState() extends State<_HouseholdView> {
   );
   var _busy = false;
 
+  /// Set while leaving is being asked: a second tap opens no second dialog.
+  var _asking = false;
+
   /// Runs a household call; a refusal is told in a snackbar.
   Future<bool> _run(Future<void> Function() call) async {
     final notices = Notices.of(context);
@@ -93,9 +96,6 @@ class _HouseholdViewState() extends State<_HouseholdView> {
       await _run(() => session.rename(widget.household.id, name));
     }
   }
-
-  /// Set while leaving is being asked: a second tap opens no second dialog.
-  var _asking = false;
 
   Future<void> _leave() async {
     if (_asking) {
