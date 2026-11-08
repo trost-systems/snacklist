@@ -17,6 +17,7 @@ import {
   switchHousehold,
   typeInto,
   openEmailSignIn,
+  invitePath,
 } from './helpers';
 import { buy, householdOf, rcEvent, subscribe, yearlyId } from './iap';
 
@@ -185,7 +186,7 @@ test('leaving a household with a yearly plan: the subscriber hears it first, the
   await skipInvite(other);
   const code = await inviteCode(otherEmail);
   // Job 169b: joining adds a household and leaves nothing, so nothing about billing comes up.
-  await peter.goto(`/join/${code}`);
+  await peter.goto(invitePath(code));
   await peter.getByRole('button', { name: 'Haushalt beitreten', exact: true }).click();
   await expect(householdChip(peter, 'Familie Trost')).toBeVisible();
   await expect(billingContinues(peter)).toHaveCount(0);

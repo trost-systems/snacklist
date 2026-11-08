@@ -3,8 +3,7 @@
 // per test, so this spec runs against the served build alone; the CSP is the one serve.mjs takes
 // from vercel.json, as the deployed page gets it.
 import { readFileSync } from 'node:fs';
-import type { Browser, Page } from '@playwright/test';
-import { expect, test } from './fixtures';
+import { type Browser, expect, type Page, test } from './fixtures';
 import { screenshot } from './helpers';
 
 const code = 'ABCD2345';

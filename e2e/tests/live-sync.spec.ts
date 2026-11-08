@@ -1,5 +1,5 @@
 import { expect, test } from './fixtures';
-import { addField, addItem, apiAs, confirmJoin, createHousehold, createInviteCode, editField, householdChip, invitePreview, itemRow, joinWithCode, must, newEmail, offlineIndicator, openEdit, openMore, saveEdit, screenshot, signUp, signUpWithHousehold, skipInvite, switchHousehold, tick, typeInto, within } from './helpers';
+import { addField, invitePath, openJoinLink, signUpHere, addItem, apiAs, confirmJoin, createHousehold, createInviteCode, editField, householdChip, invitePreview, itemRow, joinWithCode, must, newEmail, offlineIndicator, openEdit, openMore, saveEdit, screenshot, signUp, signUpWithHousehold, skipInvite, switchHousehold, tick, typeInto, within } from './helpers';
 
 test('two members of one household see each other\'s changes live', async ({ browser }) => {
   const peter = await (await browser.newContext()).newPage();
@@ -47,7 +47,9 @@ test('an invite link takes a new user through sign-up straight into the househol
   await addItem(peter, 'Kaffee');
   const code = await createInviteCode(peter);
 
-  await signUp(lea, newEmail('lea'), `/join/${code}`);
+  // Job 169b W2: the link opens the static join page; its button goes on to the app's sign-in.
+  await openJoinLink(lea, `/join/${code}`);
+  await signUpHere(lea, newEmail('lea'));
   // Job 22: the link skips Step 1; the join screen names the household before joining.
   await expect(lea).toHaveURL(new RegExp(`/join/${code}$`));
   // The household's name shows: the screen looked the code up (a field's value is not in the DOM).
@@ -106,7 +108,7 @@ test('a tick made while offline syncs when the connection returns', async ({ bro
   await signUpWithHousehold(peter, newEmail('peter'));
   await addItem(peter, 'Brot');
   const code = await createInviteCode(peter);
-  await signUp(lea, newEmail('lea'), `/join/${code}`);
+  await signUp(lea, newEmail('lea'), invitePath(code));
   await confirmJoin(lea);
   await expect(itemRow(lea, 'Brot')).toBeVisible();
 

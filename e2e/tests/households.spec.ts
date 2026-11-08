@@ -8,6 +8,7 @@ import {
   addItem, adminClient, apiAs, confirmJoin, createHousehold, createInviteCode, firstOf, householdChip, householdRow,
   invitePreview, itemRow, must, newEmail, openEmailSignIn, openHouseholds, openMore, password, screenshot,
   signUp, signUpWithHousehold, skipInvite, switchHousehold, typeInto,
+  invitePath,
 } from './helpers';
 
 const phone = { width: 390, height: 844 };
@@ -96,7 +97,7 @@ test('joining by link adds the household: both in the switcher, the inviter\'s l
   await signUpWithNamed(lea, leaEmail, 'WG Lea');
   await addItem(lea, 'Tee');
 
-  await lea.goto(`/join/${code}`);
+  await lea.goto(invitePath(code));
   await expect(invitePreview(lea, 'Familie Trost')).toBeVisible();
   await confirmJoin(lea, 'Familie Trost');
   await expect(householdChip(lea, 'Familie Trost')).toBeVisible();
@@ -180,7 +181,7 @@ test('leaving a household from its page: it goes, the list shows another, the ot
   const code = await createInviteCode(peter);
   await signUpWithHousehold(lea, leaEmail);
   await addItem(lea, 'Tee');
-  await lea.goto(`/join/${code}`);
+  await lea.goto(invitePath(code));
   await confirmJoin(lea, 'Familie Trost');
   await expect(householdChip(lea, 'Familie Trost')).toBeVisible();
 
@@ -190,7 +191,8 @@ test('leaving a household from its page: it goes, the list shows another, the ot
     .toBeVisible();
   // Display names default to the email's local part.
   const nameOf = (email: string) => must(email.split('@')[0], 'local part');
-  await expect(lea.getByText(nameOf(peterEmail), { exact: true }), 'the other member').toBeVisible();
+  // Since W2 a row's text ends in the member's role, if any.
+  await expect(lea.getByText(`${nameOf(peterEmail)} Hauptadmin`, { exact: true }), 'the other member, the owner').toBeVisible();
   await expect(lea.getByText(`${nameOf(leaEmail)} (du)`, { exact: true }), 'herself, marked').toBeVisible();
   await lea.getByRole('button', { name: 'Haushalt verlassen', exact: true }).click();
   await expect(lea.getByText('„Familie Trost“ verlassen?')).toBeVisible();

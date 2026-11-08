@@ -373,20 +373,46 @@ export async function openEmailSignIn(page: Page, { button = 'Weiter mit E-Mail'
 /**
  * Signs up in a fresh browser context, then answers the analytics consent that follows the first
  * sign-in on an install (job 19): declined unless [consent] says otherwise. Ends on onboarding
- * (or its join form for an invite link).
+ * (or its join form for an invite, [invitePath]).
  */
 export async function signUp(
   page: Page,
   email: string,
   path = '/',
-  { consent = 'decline' }: { consent?: ConsentChoice } = {},
+  options: { consent?: ConsentChoice } = {},
 ): Promise<void> {
   await page.goto(path);
+  await signUpHere(page, email, options);
+}
+
+/** [signUp] on the sign-in screen the page shows already (after [openJoinLink], say). */
+export async function signUpHere(
+  page: Page,
+  email: string,
+  { consent = 'decline' }: { consent?: ConsentChoice } = {},
+): Promise<void> {
   await openEmailSignIn(page);
   await typeInto(page.getByRole('textbox', { name: 'E-Mail' }), email);
   await typeInto(page.getByRole('textbox', { name: 'Passwort' }), password);
   await page.getByRole('button', { name: 'Registrieren' }).click();
   await answerConsent(page, consent);
+}
+
+/**
+ * The app's join flow for [code]. On the web `/join/<code>` is the static join page (job 169b
+ * W2), whose "Im Browser beitreten" leads here; the app goes on to sign-in, or to its join screen.
+ */
+export const invitePath = (code: string): string => `/?invite=${code}`;
+
+/**
+ * Opens a shared join link the way a browser does: the static join page at [link] (a URL or a
+ * `/join/<code>` path), then its "Im Browser beitreten" (whatever the page says about the invite)
+ * into the app's join flow.
+ */
+export async function openJoinLink(page: Page, link: string): Promise<void> {
+  await page.goto(link);
+  const join = page.getByRole('link', { name: /^(Im Browser beitreten|Join in the browser|Code im Browser eingeben)$/ });
+  await Promise.all([page.waitForURL(/\/(\?invite=|$)/, { waitUntil: 'commit' }), join.click()]);
 }
 
 /** One finger swipe up the middle of the screen, as touch pointer events (WebKit has no swipe API). */
@@ -759,7 +785,8 @@ export async function shownInviteCodes(page: Page): Promise<string[]> {
 export async function createInviteCode(page: Page): Promise<string> {
   await openMore(page, 'Partner einladen');
   await expect(page).toHaveURL(/\/more\/invites$/);
-  await expect(page.getByText('Keine offenen Einladungen.').or(inviteCodeLabel(page).first())).toBeVisible();
+  // Since job 169b W2 the page has no empty text: the button shows once the invites are read.
+  await expect(page.getByRole('button', { name: 'Neue Einladung' })).toBeEnabled();
   const before = await shownInviteCodes(page);
   await page.getByRole('button', { name: 'Neue Einladung' }).click();
   let created: string | undefined;

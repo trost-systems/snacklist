@@ -2,6 +2,7 @@ import { type Browser, expect, type Page, test } from './fixtures';
 import {
   adminClient, apiAs, createHousehold, householdChip, newEmail, nextFrames, openEmailSignIn, openMore, openPremium, openTab, password,
   screenshot, signUp, signUpWithHousehold, skipInvite, switchHousehold, typeInto,
+  invitePath,
 } from './helpers';
 import { archiveSwitchOn, buy, householdOf, report } from './iap';
 
@@ -67,7 +68,7 @@ test('joining an unlocked household: nothing to buy, the refund help; the purcha
 
   // Ben opens Anna's invite link as the last member of his unlocked household. Joining adds a
   // household (job 169b), so the join screen no longer offers to archive or delete his own.
-  await ben.goto(`/join/${await inviteCode(annaEmail)}`);
+  await ben.goto(invitePath(await inviteCode(annaEmail)));
   await expect(ben.getByText('Dieser Haushalt hat Hummlist Lifetime. Du musst nichts kaufen.')).toBeVisible();
   await expect(ben.getByText(/Archiviere den Haushalt/), 'nothing about his own household').toHaveCount(0);
   const refundLink = ben.getByRole('button', { name: /vor Kurzem gekauft\? So forderst du den Kauf zurück/ });
@@ -116,7 +117,7 @@ test('a joiner into a locked household is told nothing; a household bought twice
   await signUpWithHousehold(dirk, dirkEmail);
   const caraHousehold = await householdOf(caraEmail);
 
-  await dirk.goto(`/join/${await inviteCode(caraEmail)}`);
+  await dirk.goto(invitePath(await inviteCode(caraEmail)));
   await expect(dirk.getByRole('button', { name: 'Haushalt beitreten', exact: true })).toBeVisible();
   await expect(dirk.getByText(/Du musst nichts kaufen/)).toHaveCount(0);
   await expect(dirk.getByText(/Hummlist Lifetime endet/)).toHaveCount(0);
@@ -148,7 +149,7 @@ test('the last member archives an unlocked household, its purchase stays its own
   expect(await buy(frankEmail, frankTx)).toBe('granted');
 
   // Job 169b: Frank joins Cara's household beside his own, then leaves his own from its page.
-  await frank.goto(`/join/${await inviteCode(caraEmail)}`);
+  await frank.goto(invitePath(await inviteCode(caraEmail)));
   await frank.getByRole('button', { name: 'Haushalt beitreten', exact: true }).click();
   await expect(householdChip(frank, 'Familie Cara')).toBeVisible();
   await switchHousehold(frank, 'Familie Cara', 'Unser Haushalt');

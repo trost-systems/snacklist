@@ -8,7 +8,7 @@ import {
   addField, addItem, adminClient, answerConsent, apiAs, type Collector, confirmJoin, createHousehold, createInviteCode,
   cutOff, eventNames, fakeCollector, firstOf, inviteCodeLabel, invitePreview, itemRow, joinWithCode, latestLinkFor, must, newEmail, openMore, password,
   screenshot, shownInviteCodes, signUp, signUpWithHousehold, skipInvite, typeInto, viaFakeProvider, within,
-  openEmailSignIn,
+  invitePath, openEmailSignIn, openJoinLink, signUpHere,
 } from './helpers';
 
 /** Waits until [collector] got exactly [names] among the events named there, in order. */
@@ -107,7 +107,9 @@ test('AC1-3: sign-in, consent, Step 1, create with picked stores, invite with a 
 
   // The shared link works: a second person joins with it (AC4 in live-sync.spec.ts).
   const lea = await newPage(browser);
-  await signUp(lea, newEmail('lea'), new URL(link).pathname);
+  await openJoinLink(lea, link);
+  await expect(lea).toHaveURL(new RegExp(`/login\\?invite=${code}$`));
+  await signUpHere(lea, newEmail('lea'));
   await confirmJoin(lea, 'Unser Haushalt');
   expect(await membersOf(household.id)).toHaveLength(2);
 });
@@ -205,7 +207,7 @@ test('AC12: declined, onboarding works the same and sends nothing', async ({ bro
   await page.getByRole('button', { name: 'Link kopieren' }).click();
   await skipInvite(page);
   const { code } = await householdWithInvite('declined-other');
-  await page.goto(`/join/${code}`);
+  await page.goto(invitePath(code));
   await confirmJoin(page, 'Familie Trost');
   await page.waitForTimeout(6_000);
   expect(collector.requests).toEqual([]);
@@ -213,7 +215,7 @@ test('AC12: declined, onboarding works the same and sends nothing', async ({ bro
 
 test('AC6: an invite link survives sign-in when the location loses it (password)', async ({ page }) => {
   const { code, household } = await householdWithInvite('ac6-pw');
-  await page.goto(`/join/${code}`);
+  await page.goto(invitePath(code));
   await expect(page).toHaveURL(new RegExp(`/login\\?invite=${code}$`));
   // The location drops the invite (as the apps' sign-in callback does): the device kept it.
   await page.goto('/');
@@ -231,7 +233,7 @@ test('AC6: an invite link survives sign-in when the location loses it (password)
 test('AC6: magic link sign-in lands on the join screen', async ({ page }) => {
   const { code, household } = await householdWithInvite('ac6-magic');
   const email = newEmail('ac6-magic');
-  await page.goto(`/join/${code}`);
+  await page.goto(invitePath(code));
   await openEmailSignIn(page);
   await typeInto(page.getByRole('textbox', { name: 'E-Mail' }), email);
   await page.getByRole('button', { name: 'Anmeldelink per E-Mail senden' }).click();
@@ -246,7 +248,7 @@ test('AC6: magic link sign-in lands on the join screen', async ({ page }) => {
 for (const provider of ['Google', 'Apple'] as const) {
   test(`AC6: ${provider} sign-in (fake provider) lands on the join screen`, async ({ page }) => {
     const { code, household } = await householdWithInvite(`ac6-${provider.toLowerCase()}`);
-    await page.goto(`/join/${code}`);
+    await page.goto(invitePath(code));
     await expect(page).toHaveURL(new RegExp(`/login\\?invite=${code}$`));
     await viaFakeProvider(page, newEmail(`ac6-${provider.toLowerCase()}`));
     await page.getByRole('button', { name: `Mit ${provider} anmelden` }).click();
@@ -305,7 +307,7 @@ test('AC8: a member revokes an invite under More; its link and code stop at once
   await expect(inviteCodeLabel(page, kept)).toBeVisible();
 
   const lea = await newPage(browser);
-  await signUp(lea, newEmail('ac8-lea'), `/join/${code}`);
+  await signUp(lea, newEmail('ac8-lea'), invitePath(code));
   await expect(problem(lea, invalid), 'the link').toBeVisible();
   const other = await apiUser('ac8-other');
   expect((await other.api.rpc('accept_invite', { p_code: code })).data.status, 'the code').toBe('invalid_invite');
@@ -323,7 +325,7 @@ test('AC9: someone in a household who opens an invite sees whose it is, and noth
   await addItem(page, 'Tee');
   const mine = firstOf(await householdsCreatedBy(email), 'household');
   const { code, household } = await householdWithInvite('ac9-other');
-  await page.goto(`/join/${code}`);
+  await page.goto(invitePath(code));
   await expect(invitePreview(page, 'Familie Trost')).toBeVisible();
   // Job 169b: joining adds a household beside this one, so there is no move to warn about.
   await expect(page.getByText('Du bist schon in einem Haushalt'), 'no move warning').toHaveCount(0);
@@ -332,7 +334,7 @@ test('AC9: someone in a household who opens an invite sees whose it is, and noth
   expect(await membersOf(mine.id), 'still in their household').toEqual([await userIdOf(email)]);
   expect(await membersOf(household), 'not in the other').toHaveLength(1);
   // Opening the link again shows the invite again; nothing happened in between.
-  await page.goto(`/join/${code}`);
+  await page.goto(invitePath(code));
   await expect(invitePreview(page, 'Familie Trost')).toBeVisible();
 });
 
@@ -342,15 +344,15 @@ test('a link opened twice, or by a member, lands on the list without a second me
   await signUpWithHousehold(page, email);
   const code = await createInviteCode(page);
   // The inviter opens their own link.
-  await page.goto(`/join/${code}`);
+  await page.goto(invitePath(code));
   await expect(addField(page)).toBeVisible();
   await expect(page).toHaveURL(/\/$/);
   const household = firstOf(await householdsCreatedBy(email), 'household');
 
   const lea = await newPage(browser);
-  await signUp(lea, newEmail('twice-lea'), `/join/${code}`);
+  await signUp(lea, newEmail('twice-lea'), invitePath(code));
   await confirmJoin(lea);
-  await lea.goto(`/join/${code}`);
+  await lea.goto(invitePath(code));
   await expect(addField(lea)).toBeVisible();
   await expect(lea).toHaveURL(/\/$/);
   expect(await membersOf(household.id)).toHaveLength(2);
@@ -524,7 +526,7 @@ for (const [lang, locale] of [['de', 'de-DE'], ['en', 'en-US']] as const) {
       const { code } = await householdWithInvite(`shots-${lang}-${size}`);
       const joiner = await newPage(browser, { locale, viewport });
       const joinerEmail = newEmail(`shots-join-${lang}`);
-      await joiner.goto(`/join/${code}`);
+      await joiner.goto(invitePath(code));
       await openEmailSignIn(joiner, { button: t.withEmail, field: t.email });
       await typeInto(joiner.getByRole('textbox', { name: t.email }), joinerEmail);
       await typeInto(joiner.getByRole('textbox', { name: t.password }), password);
@@ -550,7 +552,7 @@ for (const [lang, locale] of [['de', 'de-DE'], ['en', 'en-US']] as const) {
       await shot(joiner, '11', 'join-rate-limit');
 
       // Already in a household: the first user opens the link, which adds a household (job 169b).
-      await page.goto(`/join/${code}`);
+      await page.goto(invitePath(code));
       await expect(page.getByText('Familie Trost').first()).toBeVisible();
       await shot(page, '12', 'join-while-in-household');
     });
@@ -561,9 +563,12 @@ test("a used invite disappears from More's invite list", async ({ browser }) => 
   const page = await newPage(browser);
   await signUpWithHousehold(page, newEmail('used'));
   const code = await createInviteCode(page);
+  const kept = await createInviteCode(page);
   const lea = await newPage(browser);
-  await signUp(lea, newEmail('used-lea'), `/join/${code}`);
+  await signUp(lea, newEmail('used-lea'), invitePath(code));
   await confirmJoin(lea);
   await openMore(page, 'Partner einladen');
-  await within(10_000, (timeout) => expect(page.getByText('Keine offenen Einladungen.')).toBeVisible({ timeout }));
+  // Since job 169b W2 an empty list shows nothing: the open invite shows, the used one not.
+  await expect(inviteCodeLabel(page, kept)).toBeVisible();
+  await within(10_000, (timeout) => expect(inviteCodeLabel(page, code)).toHaveCount(0, { timeout }));
 });
