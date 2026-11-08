@@ -72,6 +72,7 @@ function voice(m: Member, telemetry: Telemetry) {
     authenticate: () =>
       Promise.resolve({ userId: m.userId, householdId: m.householdId, via: 'pat' as const }),
     requirePremium: requirePremiumWith(telemetry),
+    isMember: () => Promise.resolve(false),
     addItems: (auth, parsed) => asUser(auth.userId, (tx) => addItems(tx, auth.householdId, parsed)),
     splitItems: (auth, parsed) =>
       asUser(auth.userId, (tx) => splitItems(tx, auth.householdId, parsed)),

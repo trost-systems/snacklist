@@ -77,6 +77,17 @@ export async function householdOf(userId: string): Promise<string | null> {
   return row?.household_id ?? null;
 }
 
+/** Whether [userId] is a member of [householdId]; false for anything that is no household id. */
+export async function isMember(userId: string, householdId: string): Promise<boolean> {
+  const sql = db();
+  const rows = await sql<{ member: boolean }[]>`
+    select exists (
+      select from public.household_members
+      where user_id = ${userId}::uuid and household_id::text = ${householdId.toLowerCase()}
+    ) as member`;
+  return oneRow(rows, 'isMember').member;
+}
+
 /** Whether the Supabase session behind a JWT still exists for this user and OAuth client. */
 export async function sessionActive(
   session: { id: string; userId: string; clientId: string | null },

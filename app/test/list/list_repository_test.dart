@@ -288,7 +288,8 @@ void main() {
     },
   );
 
-  test('dictation asks the voice function for the split', () async {
+  test('dictation asks the voice function for the split, in the shown '
+      'household (job 169b)', () async {
     Object? sent;
     final repo = SupabaseListRepository(
       SupabaseClient(
@@ -304,10 +305,15 @@ void main() {
           );
         }),
       ),
-      'household',
+      'household-b',
     );
     await repo.splitSpoken('Milch');
-    expect(sent, {'text': 'Milch', 'mode': 'parse', 'split': true});
+    expect(sent, {
+      'text': 'Milch',
+      'mode': 'parse',
+      'split': true,
+      'household': 'household-b',
+    });
   });
 
   test('a dictated list cut at 30 items says so (job 111)', () async {
@@ -1089,6 +1095,7 @@ void main() {
           'text': 'zwei Liter Milch und Brot',
           'mode': 'parse',
           'split': true,
+          'household': 'household',
         });
         expect(
           [for (final e in entries) (e.name, e.quantity)],

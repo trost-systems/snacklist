@@ -6,7 +6,7 @@ import { assertEquals } from '@std/assert';
 import postgres from 'postgres';
 import { analyticsSubject } from '../alexa/store.ts';
 import { CONSENT_TEXT_VERSION } from './consent_version.ts';
-import { databaseUrl, householdOf } from './db.ts';
+import { databaseUrl, householdOf, isMember } from './db.ts';
 
 const enabled = Deno.env.get('FG_DB_TEST') === '1';
 
@@ -199,4 +199,15 @@ test('householdOf and the Alexa analytics subject read the default household', (
     assertEquals(await householdOf(user), ids.B);
     const subject = await analyticsSubject(admin, user);
     assertEquals([subject?.householdId, subject?.role], [ids.B, 'member']);
+  }));
+
+test("isMember: any of the user's households, by id in any case; nothing else (voice, job 169b)", () =>
+  withThree(async ({ user, ids }) => {
+    for (const id of [ids.A ?? '', ids.B ?? '', (ids.C ?? '').toUpperCase()]) {
+      assertEquals(await isMember(user, id), true, id);
+    }
+    for (const id of [crypto.randomUUID(), 'not-a-uuid', '']) {
+      assertEquals(await isMember(user, id), false, id);
+    }
+    assertEquals(await isMember(crypto.randomUUID(), ids.A ?? ''), false, 'another user');
   }));

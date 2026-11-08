@@ -503,7 +503,14 @@ class SupabaseListRepository(
     try {
       final response = await _client.functions.invoke(
         'voice',
-        body: {'text': text, 'mode': 'parse', 'split': true},
+        // The shown household, so stores and categories are this list's
+        // (job 169b); without it the server parses for the default.
+        body: {
+          'text': text,
+          'mode': 'parse',
+          'split': true,
+          'household': householdId,
+        },
       );
       final items = switch (response.data) {
         {'items': final List<Object?> items} => items,
