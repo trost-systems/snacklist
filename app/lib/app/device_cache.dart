@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:family_groceries/analytics/analytics.dart';
+import 'package:family_groceries/household/household_kind.dart';
 import 'package:family_groceries/household/pending_invite.dart';
 import 'package:family_groceries/list/item_icons_remote.dart';
 import 'package:family_groceries/list/list_cache.dart';
@@ -280,11 +281,12 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
   Future<Household?> household(String userId) async {
     try {
       final json = await _prefs.getString(_householdKey(userId));
-      return switch (json == null ? null : jsonDecode(json)) {
-        {'id': final String id, 'name': final String name} => Household(
-          id: id,
-          name: name,
-        ),
+      final decoded = json == null ? null : jsonDecode(json);
+      return switch (decoded) {
+        // A household cached before job 168b has no kind.
+        final Map<String, Object?> map &&
+            {'id': final String id, 'name': final String name} =>
+          Household(id: id, name: name, kind: HouseholdKind.parse(map['kind'])),
         _ => null,
       };
     } on Object {
@@ -301,7 +303,11 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
         } else {
           await _prefs.setString(
             key,
-            jsonEncode({'id': household.id, 'name': household.name}),
+            jsonEncode({
+              'id': household.id,
+              'name': household.name,
+              'kind': household.kind?.name,
+            }),
           );
         }
         final keep = household == null

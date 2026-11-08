@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/analytics/events.dart';
+import 'package:family_groceries/household/household_kind.dart';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/pending_invite.dart';
 import 'package:flutter/foundation.dart';
@@ -9,7 +10,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 @immutable
-class const Household({required final String id, required final String name});
+class const Household({
+  required final String id,
+  required final String name,
+
+  /// Who it shops with (job 168b); null when never answered.
+  final HouseholdKind? kind,
+});
 
 sealed class const Session();
 
@@ -160,14 +167,16 @@ class SessionCubit(
     }
     final row = await _client.rest
         .from('household_members')
-        .select('households(id, name)')
+        .select('households(id, name, kind)')
         .eq('user_id', userId)
         .maybeSingle();
     final next = switch (row?['households']) {
-      {'id': final String id, 'name': final String name} => InHousehold(
-        userId,
-        Household(id: id, name: name),
-      ),
+      final Map<String, Object?> h &&
+          {'id': final String id, 'name': final String name} =>
+        InHousehold(
+          userId,
+          Household(id: id, name: name, kind: HouseholdKind.parse(h['kind'])),
+        ),
       _ => NeedsHousehold(userId),
     };
     await _cache.remember(userId, switch (next) {
