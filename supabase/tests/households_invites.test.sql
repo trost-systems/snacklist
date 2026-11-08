@@ -506,8 +506,12 @@ select throws_ok(
      select id, household_id, '00000000-0000-0000-0000-000000169f01' from p_open $$,
   '42501', null, 'invite_uses are written by joins only'
 );
-select is((select count(*)::int from public.invite_uses where household_id = pg_temp.hid('Familie Brandt')), 6,
-  'members read their household''s invite_uses');
+select results_eq(
+  $$ select count(*)::int, count(m.user_id)::int from public.invite_uses u
+     left join public.household_members m on (m.household_id, m.user_id) = (u.household_id, u.user_id)
+     where u.household_id = pg_temp.hid('Familie Brandt') $$,
+  $$ values (3, 3) $$,
+  'members read their household''s invite_uses, all of current members (leavers'' rows went)');
 
 select * from finish();
 rollback;
