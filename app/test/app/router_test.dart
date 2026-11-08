@@ -426,7 +426,7 @@ void main() {
 
     final more = [for (final route in moreTabRoutes()) ...paths(route, '')]
         .where((p) => p.startsWith(morePath));
-    expect(more, containsAll([usageDataPath, moreLegalPath]));
+    expect(more, containsAll([usageDataPath, tipsPath, moreLegalPath]));
     for (final path in more) {
       expect(authRedirect(household, Uri.parse(path)), isNull, reason: path);
     }

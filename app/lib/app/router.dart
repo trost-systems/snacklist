@@ -73,6 +73,9 @@ const invitesPath = '/more/invites';
 /// `lifetime` from before job 49, so links and analytics keep their name.
 const premiumPath = '/more/lifetime';
 
+/// More's Tipps: every hint of the List tab, to read again (job 168b).
+const tipsPath = '/more/tips';
+
 /// More's Einstellungen: theme and language.
 const appSettingsPath = '/more/settings';
 
@@ -106,6 +109,7 @@ const screenNames = {
   'settings',
   'language',
   'usage_data',
+  'tips',
   'login',
   'welcome',
   'onboarding_create',
@@ -131,6 +135,7 @@ String screenNameOf(Uri location) => switch (location.path) {
   appSettingsPath => 'settings',
   languagePath => 'language',
   usageDataPath => 'usage_data',
+  tipsPath => 'tips',
   settingsPath when location.queryParameters['section'] == 'account' =>
     'account',
   settingsPath => 'access',
@@ -158,6 +163,7 @@ bool inMoreTab(Uri location) => const {
   appSettingsPath,
   languagePath,
   usageDataPath,
+  tipsPath,
   moreLegalPath,
   moreJoinPath,
 }.contains(location.path);
@@ -365,6 +371,7 @@ List<RouteBase> moreTabRoutes() => [
         ('invites', MorePage.invites),
         ('lifetime', MorePage.premium),
         ('usage-data', MorePage.usageData),
+        ('tips', MorePage.tips),
       ])
         GoRoute(
           path: path,

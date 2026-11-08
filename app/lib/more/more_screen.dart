@@ -28,6 +28,7 @@ import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/settings/access_screen.dart';
 import 'package:family_groceries/settings/account_screen.dart';
 import 'package:family_groceries/settings/settings_screen.dart';
+import 'package:family_groceries/tips/tips_page.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -57,6 +58,9 @@ enum MorePage() {
 
   /// The usage-data switch (`/more/usage-data`).
   usageData,
+
+  /// Every hint of the List tab (`/more/tips`).
+  tips,
 }
 
 /// The More tab (M-P2, job 85): the update card when there is one, inset
@@ -162,6 +166,7 @@ class const MoreScreen({
     MorePage.settings => l10n.settingsTitle,
     MorePage.language => l10n.language,
     MorePage.usageData => l10n.analyticsSection,
+    MorePage.tips => l10n.hintsTitle,
   };
 }
 
@@ -176,6 +181,7 @@ class const _Page(final MorePage page, final PaywallEntry paywallEntry)
     MorePage.settings => const SettingsScreen(),
     MorePage.language => const LanguageScreen(),
     MorePage.usageData => const _UsageDataPage(),
+    MorePage.tips => const TipsPage(),
   };
 }
 
@@ -191,6 +197,7 @@ enum _Item(final IconData icon, final String key, final _Tint tint) {
   access(Icons.key_outlined, 'more-access', _Tint.cobalt),
   settings(Icons.settings_outlined, 'more-settings', _Tint.mint),
   usageData(Icons.insights_outlined, 'more-usage-data', _Tint.mint),
+  tips(Icons.lightbulb_outline, 'more-tips', _Tint.plain),
   feedback(Icons.feedback_outlined, 'more-feedback', _Tint.plain),
   rate(Icons.star_outline, 'more-rate', _Tint.plain),
   help(Icons.help_outline, 'more-help', _Tint.plain),
@@ -208,7 +215,7 @@ enum _Item(final IconData icon, final String key, final _Tint tint) {
     (legal: false, items: [invite, join, archived]),
     (legal: false, items: [access]),
     (legal: false, items: [settings, usageData]),
-    (legal: false, items: [feedback, rate, help]),
+    (legal: false, items: [tips, feedback, rate, help]),
     (legal: true, items: [imprint, privacyPolicy, terms, licenses]),
     (legal: false, items: [signOut]),
   ];
@@ -351,6 +358,12 @@ class _MoreListState() extends State<_MoreList> {
         label: l10n.analyticsSection,
         selected: selected == MorePage.usageData,
         onTap: () => go(usageDataPath),
+      ),
+      _Item.tips => _Row(
+        item,
+        label: l10n.hintsTitle,
+        selected: selected == MorePage.tips,
+        onTap: () => go(tipsPath),
       ),
       _Item.feedback => _Row(
         item,
