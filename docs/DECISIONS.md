@@ -10449,3 +10449,9 @@ switch drops the user's other cached lists.
     list already has them and is the one owner of its queue. The cost is a realtime channel per
     hidden household while it sends. A refusal in a hidden list is not shown, since the user is
     looking at another household; the change is dropped as it would be on screen.
+11. **An old store build's account deletion warns only about the default household.** Its
+    `_householdFate` reads `leaves_unlocked()` and the one membership it sees, while
+    `delete_account` now deletes every household where the user is the last member. We accept
+    the incomplete warning: several households can only be made in the new app, and the builds
+    without it went to TestFlight and Play internal testing only, never to a public store. The new
+    app's deletion names every household that goes.
