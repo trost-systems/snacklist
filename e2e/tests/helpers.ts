@@ -616,6 +616,28 @@ export async function confirmJoin(page: Page, household?: string): Promise<void>
   await expect(addField(page)).toBeVisible();
 }
 
+/** The household chip top left of the list (job 169b), named after the household it shows. */
+export const householdChip = (page: Page, household: string): Locator =>
+  page.getByRole('button', { name: new RegExp(`^${escape(household)}(\\s|$)`) });
+
+/** The switcher sheet's row of [household]: "Familie Trost 2 Mitglieder · 1 offen". */
+export const householdRow = (page: Page, household: string): Locator =>
+  page.getByRole('button', { name: new RegExp(`^${escape(household)}\\s+\\d+ Mitglied`) });
+
+/** Opens the switcher sheet ("Deine Haushalte") from the chip of the [shown] household. */
+export async function openHouseholds(page: Page, shown: string): Promise<void> {
+  await householdChip(page, shown).click();
+  await expect(page.getByRole('heading', { name: 'Deine Haushalte' })).toBeVisible();
+}
+
+/** Shows [to] on this device through the switcher, from the [shown] household's list. */
+export async function switchHousehold(page: Page, shown: string, to: string): Promise<void> {
+  await openHouseholds(page, shown);
+  await householdRow(page, to).click();
+  await expect(page.getByRole('heading', { name: 'Deine Haushalte' })).toHaveCount(0);
+  await expect(householdChip(page, to)).toBeVisible();
+}
+
 /** The add sheet (job 17): a group whose rect is the sheet's content, open while adding. */
 export const addSheet = (page: Page): Locator => page.getByRole('group', { name: 'Hinzufügen', exact: true });
 

@@ -10390,3 +10390,49 @@ Peter's go (A107): review #320 and merge it on a review PASS and `ci-ok`.
    „Ohne Lad…“ at 150 % on a 375 px phone (main showed it whole). The fold key stays as wide as
    the add sheet's keys; the line between badge and count may now shrink to nothing instead of
    keeping 12 px. `store_header_test.dart` checks DE and EN; DE fails on the old code.
+
+## Job 169b: several households per user, wave 1, 2026-11-08
+
+Peter's calls (2026-11-08, on [`docs/households/PLAN.md`](households/PLAN.md)): HH3 in three
+waves, Premium per household (M-H1), reusable group links, a default household the user picks for
+Siri, Alexa and AI, club features without club outreach. Wave 1 is several households and the
+switcher; the contract is [`docs/households/W1.md`](households/W1.md). Supersedes 1.2 ("One
+household per user"), job 22 #4 ("joining switches") and the offline-cache rule that a household
+switch drops the user's other cached lists.
+
+1. **One default membership per user, kept by triggers.** `household_members.is_default` with a
+   partial unique index. A before-insert trigger makes the first membership the default; an
+   after-delete trigger hands it to the oldest remaining one (`for update` on the pick, PLAN
+   section 2). Every exit path (leave, a deleted household, account deletion, W2's removal) goes
+   through the trigger, so no function has to remember it.
+2. **A per-user advisory lock serializes membership changes** (`lock_memberships`). The row lock
+   alone did not cover a join racing a leave: the join's before-insert trigger saw the old default
+   still there and inserted a second non-default row, then the leave removed the default and
+   promoted nothing new. The two-connection tests in `_shared/households_integration_test.ts`
+   fail without the lock and without `for update`. One rare case remains: changing the default on
+   one device while leaving that household on another can deadlock (40P01) and fail one call; the
+   app retries household calls, so we accept it.
+3. **Old store builds see one membership.** The select policy shows a user's own rows only where
+   `is_default`, so today's `.maybeSingle()` keeps working. The new app reads `my_households()`
+   and `household_members_of(h)`. Old signatures (`accept_invite(code[, archive])`,
+   `leave_current_household`, `unarchive_household(h, archive)`, `create_household` without a
+   request id) act on the default membership only and keep their answers.
+4. **New calls take a required mode or request id, not a defaulted one.** With a default, an old
+   app's named call would match two overloads and PostgREST would refuse it as ambiguous. So
+   `create_household(p_request_id, ...)`, `accept_invite(p_code, p_mode => 'add')` and the
+   `p_household` overloads of `leaves_unlocked`, `create_personal_access_token`,
+   `create_api_token` and `my_yearly_plan` are separate signatures.
+5. **Siri credentials follow the default household at request time**; PATs and API keys stay
+   bound to the household they were created in. A Siri key is per user and device, so it should
+   act where Siri, Alexa and AI act (Peter's Q-HH4). It ends only when the user has no
+   membership left.
+6. **MCP gets `list_households` and an optional `household` argument** (id or exact name,
+   member-checked). Without it, the default. The premium gate checks the household each call
+   acts in.
+7. **Create is capped at 10 memberships** (`too_many_households`), an abuse guard. Joining has no
+   cap: an invite is somebody else's choice to let you in, and a club member may be in many.
+8. **A schema check stops new single-membership reads.** A new migration that reads
+   `household_members` by user without a household, `is_default` or an order fails the lint gate
+   (CLAUDE.md, lint rules). It caught the feedback trigger's old read when run on the old file.
+9. **`households.kind` lands here**, shared with job 168's "who do you shop with" step
+   (`partner | family | flat | club | solo`, nullable).

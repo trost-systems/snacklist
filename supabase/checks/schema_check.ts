@@ -380,6 +380,42 @@ export function checkIgnores(tree: Migrations): Finding[] {
   return findings;
 }
 
+const MEMBERSHIP_READ = /\bfrom\s+(?:public\.)?household_members\b/gi;
+const MEMBERSHIP_IGNORE = /schema-ignore\s+membership-read\s+--\s+\S+(?:\s+\S+){2,}/;
+
+/** Since job 169b a user is in several households: a read of household_members by user that
+ * names neither a household nor `is_default` gets an arbitrary row, or "more than one row" in a
+ * scalar subquery or `select into`. Only new migrations: older ones are superseded, not edited. */
+export function checkMembershipReads(base: Migrations, tree: Migrations): Finding[] {
+  const findings: Finding[] = [];
+  for (const [file, sql] of tree) {
+    if (base.has(file)) continue;
+    const lines = sql.split('\n');
+    for (const match of sql.matchAll(MEMBERSHIP_READ)) {
+      const end = sql.indexOf(';', match.index);
+      const read = sql.slice(match.index, end === -1 ? undefined : end).split(/\$\$/)[0] ?? '';
+      if (
+        !/\buser_id\s*=/i.test(read) || /\bhousehold_id\b|\bis_default\b|\border\s+by\b/i.test(read)
+      ) {
+        continue;
+      }
+      const select = sql.slice(sql.toLowerCase().lastIndexOf('select', match.index), match.index);
+      // An existence test or a count asks about every membership on purpose.
+      if (/^select\s*(?:1\s*)?$|\bcount\s*\(/i.test(select.trim())) continue;
+      const line = sql.slice(0, match.index).split('\n').length;
+      if (MEMBERSHIP_IGNORE.test(lines[line - 2] ?? '')) continue;
+      findings.push({
+        file: `${file}:${line}`,
+        message: 'reads household_members by user without naming a household: a user can be in ' +
+          'several, so filter on household_id (the one the caller acts in) or is_default ' +
+          '(public.default_household_of), or write "-- schema-ignore membership-read -- <why>" ' +
+          'on the line above',
+      });
+    }
+  }
+  return findings;
+}
+
 async function run(
   cmd: string,
   args: string[],
@@ -423,6 +459,7 @@ if (import.meta.main) {
     ...checkHistory(base, tree),
     ...checkTables(tree, await readDir(TESTS, /\.test\.sql$/)),
     ...checkIgnores(tree),
+    ...checkMembershipReads(base, tree),
   ];
   const added = [...tree.keys()].filter((f) => !base.has(f)).sort();
   if (added.length > 0) {

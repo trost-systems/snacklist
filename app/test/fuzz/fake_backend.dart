@@ -381,17 +381,15 @@ final class FakeBackend(
         ('GET', 'categories') => (200, categoryRows),
         ('GET', 'stores') => (200, storeRows),
         ('GET', 'store_category_order') => (200, const <Object?>[]),
-        ('GET', 'household_members') => (
+        ('POST', 'rpc/household_members_of') => (
           200,
           [
             for (final (i, m) in members.indexed)
-              {'user_id': m, 'role': i == 0 ? 'owner' : 'member'},
-          ],
-        ),
-        ('GET', 'profiles') => (
-          200,
-          [
-            for (final m in members) {'id': m, 'display_name': 'User $m'},
+              {
+                'user_id': m,
+                'display_name': 'User $m',
+                'role': i == 0 ? 'owner' : 'member',
+              },
           ],
         ),
         ('GET', 'items') => (200, _select(eq('id'), eq('status'), query)),

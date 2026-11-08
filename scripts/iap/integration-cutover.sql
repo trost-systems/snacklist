@@ -19,10 +19,10 @@ with household as (
          (select count(*) from public.personal_access_tokens t
           where t.household_id = h.id and t.revoked_at is null and t.kind = 'api') as api_keys,
          (select count(*) from public.alexa_links l
-          join public.household_members m on m.user_id = l.user_id
+          join public.household_members m on m.user_id = l.user_id and m.is_default
           where m.household_id = h.id) as alexa_links,
          (select count(*) from auth.sessions s
-          join public.household_members m on m.user_id = s.user_id
+          join public.household_members m on m.user_id = s.user_id and m.is_default
           where m.household_id = h.id and s.oauth_client_id is not null
             and (s.not_after is null or s.not_after > now())) as oauth_connections,
          (select max(t.last_used_at) from public.personal_access_tokens t
@@ -40,9 +40,9 @@ with household as (
   select h.id, public.household_has_premium(h.id) as premium,
          exists (select from public.personal_access_tokens t
                  where t.household_id = h.id and t.revoked_at is null)
-         or exists (select from public.alexa_links l join public.household_members m on m.user_id = l.user_id
+         or exists (select from public.alexa_links l join public.household_members m on m.user_id = l.user_id and m.is_default
                     where m.household_id = h.id)
-         or exists (select from auth.sessions s join public.household_members m on m.user_id = s.user_id
+         or exists (select from auth.sessions s join public.household_members m on m.user_id = s.user_id and m.is_default
                     where m.household_id = h.id and s.oauth_client_id is not null
                       and (s.not_after is null or s.not_after > now())) as integrated
   from public.households h

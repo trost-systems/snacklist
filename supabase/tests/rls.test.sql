@@ -1,5 +1,5 @@
 begin;
-select plan(64);
+select plan(76);
 
 create function pg_temp.login(uid uuid) returns void language plpgsql as $$
 begin
@@ -238,6 +238,40 @@ select throws_ok($$ select public.rename_store((select id from alice_store), 'Al
   '42501', 'not_a_member', 'renaming another household''s store is denied');
 select throws_ok($$ select public.delete_store((select id from alice_store)) $$,
   '42501', 'not_a_member', 'deleting another household''s store is denied');
+
+-- Job 169b: Bob in two households sees both and still nothing of Alice's.
+select pg_temp.login('00000000-0000-0000-0000-0000000000b1');
+create temp table hb2 as select id from public.create_household(p_request_id => gen_random_uuid(), p_name => 'Bob 2');
+insert into public.items (household_id, name) select id, 'Tee' from hb2;
+grant select on hb2 to authenticated;
+select results_eq($$ select name from public.households order by name $$, $$ values ('Bob'), ('Bob 2') $$,
+  'a user in two households sees both households');
+select is((select count(*)::int from public.items where household_id in ((select id from hb), (select id from hb2))),
+  2, 'and the items of both');
+select is((select count(*)::int from public.items where household_id = (select id from ha)), 0,
+  'and still no item of another household');
+select results_eq($$ select name from public.my_households() order by name $$, $$ values ('Bob'), ('Bob 2') $$,
+  'my_households lists only the caller''s memberships');
+select throws_ok($$ select * from public.household_members_of((select id from ha)) $$, '42501', 'not_member',
+  'household_members_of another household is refused');
+select throws_ok($$ select public.set_default_household((select id from ha)) $$, '42501', 'not_member',
+  'another household cannot become the default');
+select throws_ok($$ select public.leave_household((select id from ha)) $$, '42501', 'not_member',
+  'leaving another household is refused');
+select throws_ok($$ select public.create_personal_access_token('x', (select id from ha)) $$, '42501', 'not_a_member',
+  'a token for another household is refused');
+select is(public.leaves_unlocked((select id from ha)), false, 'leaves_unlocked tells nothing of another household');
+insert into public.feedback (id, household_id, message, app_version, build, platform, os_version, locale, screen)
+values ('30000000-0000-4000-8000-0000000001b2', (select id from ha), 'Als Alices Haushalt', '0.1.0', '1', 'web',
+  'Firefox on Linux', 'de', 'list');
+select pg_temp.login('00000000-0000-0000-0000-0000000000a1');
+select is((select count(*)::int from public.households where id = (select id from hb2)), 0,
+  'Alice does not see Bob''s second household');
+select is((select count(*)::int from public.household_members where household_id = (select id from hb2)), 0,
+  'nor its members');
+set local role postgres;
+select is((select household_id from public.feedback where id = '30000000-0000-4000-8000-0000000001b2'),
+  (select id from hb), 'feedback naming another household lands in the sender''s default');
 
 select * from finish();
 rollback;

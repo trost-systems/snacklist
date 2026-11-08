@@ -10,6 +10,8 @@
 library;
 
 import 'package:family_groceries/app/router.dart' show screenNames;
+import 'package:family_groceries/session/session_cubit.dart'
+    show HouseholdOrigin;
 
 /// Where an added item came from, as the app knows it.
 enum AddSource() {
@@ -74,11 +76,16 @@ final eventCatalog = <String, Map<String, PropertyRule>>{
   'first_open': const {},
   // Job 22: whether it started with dm, Lidl and Edeka.
   // default_stores: builds before job 58; store_count: the stores picked
-  // in onboarding.
-  'household_created': const {
-    'default_stores': IsBool(),
-    'store_count': IntIn(0, 50),
+  // in onboarding; context (job 169b): onboarding or the switcher's
+  // "Neuer Haushalt".
+  'household_created': {
+    'default_stores': const IsBool(),
+    'store_count': const IntIn(0, 50),
+    'context': _namesOf(HouseholdOrigin.values),
   },
+  // Job 169b: the user picked another of their households in the switcher.
+  // Nothing else: the household rides along as every event's household_id.
+  'household_switched': const {},
   'invite_accepted': {'method': _namesOf(JoinMethod.values)},
   // Job 22: an invite handed out (share sheet opened, link or code
   // copied). Never the code, the link or the household's name.

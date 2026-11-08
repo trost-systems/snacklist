@@ -6,106 +6,19 @@ import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/pending_invite.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:http/http.dart' as http;
-import 'package:http/testing.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide Session;
 
 import '../household/harness.dart' show MemoryPendingStore;
 import '../session/fake_auth.dart';
+import '../session/fake_households.dart';
 import 'fakes.dart';
 
 const _home = '0b6f7a52-6c1e-4f4e-9d55-3f1f0c2a9e01';
 const _other = '7d0c1c55-1111-4a2b-8c3d-2e9f6a1b0c02';
 
-/// A database whose `household_members` row is [household] and whose
-/// household RPCs answer with [joins] (the household joined).
-class _Db(final FakeAuth fakeAuth) extends Fake implements SupabaseClient {
-  String? household;
-  String joins = _other;
-
-  /// Reads fail: the reload after an RPC.
-  var failReads = false;
-
-  /// The next household call is done on the server but its answer is lost
-  /// (not analytics' own consent call, which runs beside it, job 31).
-  var dropNextAnswer = false;
-  final calls = <String>[];
-
-  late final _rest = PostgrestClient(
-    'http://db.invalid/rest/v1',
-    httpClient: MockClient((request) async {
-      calls.add(request.url.path);
-      if (dropNextAnswer &&
-          !request.url.path.endsWith('record_analytics_consent')) {
-        // The server does the work, but the answer never arrives.
-        dropNextAnswer = false;
-        _answer(request);
-        throw http.ClientException('connection lost', request.url);
-      }
-      if (request.url.path.endsWith('create_household') && household != null) {
-        return http.Response(
-          jsonEncode({'message': 'already_in_household', 'code': 'P0001'}),
-          400,
-          headers: {'content-type': 'application/json'},
-          request: request,
-        );
-      }
-      if (failReads && request.method == 'GET') {
-        return http.Response(
-          jsonEncode({'message': 'timeout'}),
-          503,
-          headers: {'content-type': 'application/json'},
-          request: request,
-        );
-      }
-      return http.Response(
-        jsonEncode(_answer(request)),
-        200,
-        headers: {'content-type': 'application/json'},
-        request: request,
-      );
-    }),
-  );
-
-  /// What the server does and answers for [request].
-  Object? _answer(http.Request request) => switch (request.url.path) {
-    '/rest/v1/rpc/accept_invite' when joins == 'invalid' => {
-      'status': 'invalid_invite',
-      'household_id': null,
-    },
-    '/rest/v1/rpc/accept_invite' => {
-      'status': household == joins ? 'member' : 'joined',
-      'household_id': household = joins,
-    },
-    '/rest/v1/rpc/create_household' => {
-      'id': household = _home,
-      'name': 'Zuhause',
-    },
-    _ =>
-      household == null
-          ? null
-          : {
-              'households': {'id': household, 'name': 'Zuhause'},
-            },
-  };
-
-  @override
-  GoTrueClient get auth => fakeAuth;
-
-  @override
-  PostgrestClient get rest => _rest;
-
-  @override
-  PostgrestFilterBuilder<T> rpc<T>(
-    String fn, {
-    Map<String, dynamic>? params,
-    Object? get,
-  }) => _rest.rpc<T>(fn, params: params);
-}
-
 void main() {
   late FakeAuth auth;
-  late _Db db;
+  late FakeHouseholds db;
   late NativePostHog sink;
   late Analytics analytics;
   late SessionCubit cubit;
@@ -120,7 +33,10 @@ void main() {
         createdAt: '2026-10-22T12:00:00Z',
         email: 'kunde@gmail.com',
       );
-    db = _Db(auth);
+    db = FakeHouseholds(auth)
+      ..nextIds.add(_home)
+      ..member('lea', _other, 'Trost')
+      ..invites['ABCD2345'] = _other;
     sink = NativePostHog()..install();
     analytics = await loadedAnalytics(MemoryAnalyticsStore());
     cubit = SessionCubit(db, MemorySessionCache(), analytics: analytics);
@@ -148,13 +64,13 @@ void main() {
   test('the yes reaches the server once, for this install (job 31)', () async {
     await pumpEventQueue();
     expect(
-      db.calls.where((c) => c.endsWith('/rpc/record_analytics_consent')),
+      db.calls.where((c) => c.startsWith('rpc/record_analytics_consent')),
       hasLength(1),
     );
     await cubit.createHousehold('Zuhause');
     await pumpEventQueue();
     expect(
-      db.calls.where((c) => c.endsWith('/rpc/record_analytics_consent')),
+      db.calls.where((c) => c.startsWith('rpc/record_analytics_consent')),
       hasLength(1),
       reason: 'a household change is not a new answer',
     );
@@ -172,6 +88,35 @@ void main() {
     expect(events.map((e) => e['event']), ['household_created']);
     expect(props(events.single)['household_id'], _home);
     expect(props(events.single)['store_count'], 0);
+    expect(props(events.single)['context'], 'onboarding');
+  });
+
+  test("the switcher's create says so", () async {
+    db.nextIds.add('5e1d2c3b-2222-4a2b-8c3d-2e9f6a1b0c03');
+    await cubit.createHousehold('Zuhause');
+    await cubit.createHousehold('Eltern', from: HouseholdOrigin.switcher);
+    final events = await sent();
+    expect(
+      [for (final e in events) props(e)['context']],
+      ['onboarding', 'switcher'],
+    );
+    expect(props(events.last)['household_id'], isNot(_home));
+  });
+
+  test('a switch sends household_switched in the household shown', () async {
+    await cubit.createHousehold('Zuhause');
+    await cubit.join('ABCD2345');
+    await cubit.switchTo(_home);
+    await cubit.switchTo(_home);
+    final events = await sent();
+    expect(events.map((e) => e['event']), [
+      'household_created',
+      'invite_accepted',
+      'household_switched',
+    ]);
+    final switched = props(events.last);
+    expect(switched['household_id'], _home);
+    expect(switched.keys, isNot(contains('household')));
   });
 
   test('the stores picked in onboarding are counted, not named', () async {
@@ -195,20 +140,27 @@ void main() {
       ),
     );
     expect(cubit.state, isA<NeedsHousehold>());
-    // The retry finds the household the first call made.
+    // The retry's request id finds the household the first call made.
     await cubit.createHousehold('Zuhause', stores: const ['REWE']);
     expect(cubit.state, isA<InHousehold>());
-    expect(db.calls.where((c) => c.endsWith('create_household')), hasLength(2));
+    expect(db.calls.where((c) => c.contains('create_household')), hasLength(2));
+    expect(db.memberships['peter'], [_home]);
     final events = await sent();
     expect(events.map((e) => e['event']), ['household_created']);
     expect(props(events.single)['store_count'], 1);
   });
 
-  test('a second create (double tap) sends nothing more', () async {
-    await cubit.createHousehold('Zuhause');
-    await cubit.createHousehold('Zuhause');
-    expect((await sent()).map((e) => e['event']), ['household_created']);
-  });
+  test(
+    'a second create while one is out (double tap) sends nothing more',
+    () async {
+      await Future.wait([
+        cubit.createHousehold('Zuhause'),
+        cubit.createHousehold('Zuhause'),
+      ]);
+      expect(db.memberships['peter'], [_home]);
+      expect((await sent()).map((e) => e['event']), ['household_created']);
+    },
+  );
 
   test('a join by link sends invite_accepted, method link', () async {
     await cubit.join('ABCD2345', method: JoinMethod.link);
@@ -224,7 +176,7 @@ void main() {
     expect(props((await sent()).single)['method'], 'code');
   });
 
-  test('switching households by invite is a join too', () async {
+  test('joining beside a household is a join too', () async {
     await cubit.createHousehold('Zuhause');
     await cubit.join('ABCD2345', method: JoinMethod.link);
     expect((await sent()).map((e) => e['event']), [
@@ -235,13 +187,12 @@ void main() {
 
   test('joining the household one is in already sends nothing', () async {
     await cubit.createHousehold('Zuhause');
-    db.joins = _home;
+    db.invites['ABCD2345'] = _home;
     await cubit.join('ABCD2345', method: JoinMethod.link);
     expect((await sent()).map((e) => e['event']), ['household_created']);
   });
 
   test('a refused invite sends nothing', () async {
-    db.joins = 'invalid';
     await expectLater(
       cubit.join('XXXX'),
       throwsA(
@@ -281,10 +232,10 @@ void main() {
     );
     addTearDown(withPending.close);
     await withPending.refresh();
-    db.joins = 'invalid';
+    db.invites.remove('ABCD2345');
     await expectLater(withPending.join('ABCD2345'), throwsA(anything));
     expect(pending.code, 'ABCD2345', reason: 'the screen decides on refusals');
-    db.joins = _other;
+    db.invites['ABCD2345'] = _other;
     await withPending.join('ABCD2345', method: JoinMethod.link);
     expect(pending.code, isNull);
     pending.remember('WXYZ6789');

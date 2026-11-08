@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:family_groceries/feedback/feedback_context.dart';
 import 'package:family_groceries/feedback/feedback_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -70,6 +71,31 @@ void main() {
       'screen': 'list',
       'is_internal': false,
     });
+  });
+
+  test('the shown household goes along when there is one (job 169b)', () async {
+    await repository((_) => http.Response('', 201)).submit(
+      FeedbackSubmission(
+        id: note.id,
+        message: 'x',
+        category: null,
+        contactOk: false,
+        context: const FeedbackContext(
+          appVersion: '1.2.3',
+          build: '45',
+          platform: 'android',
+          osVersion: 'Android 14 (SDK 34)',
+          locale: 'de',
+          screen: 'list',
+          isInternal: false,
+          householdId: 'club',
+        ),
+      ),
+    );
+    expect(
+      jsonDecode(requests.single.body),
+      containsPair('household_id', 'club'),
+    );
   });
 
   test('no category is null', () async {

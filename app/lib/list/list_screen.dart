@@ -7,10 +7,12 @@ import 'package:family_groceries/app/scroll_through.dart';
 import 'package:family_groceries/app/shell.dart';
 import 'package:family_groceries/design/bottom_scroll_edge.dart';
 import 'package:family_groceries/design/hex_border.dart';
+import 'package:family_groceries/design/measured_width.dart';
 import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/sticker.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/home_widget/widget_launch.dart';
+import 'package:family_groceries/household/household_switcher.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/add_sheet/add_sheet.dart';
 import 'package:family_groceries/list/add_sheet/add_sheet_cubit.dart';
@@ -102,6 +104,12 @@ class _ShoppingListState() extends State<_ShoppingList> {
 
   /// The page under the add bar, which takes the wheel over the bar.
   final _page = GlobalKey(debugLabel: 'list-page');
+
+  /// The household chip's and Anpassen's widths in the top bar, once laid
+  /// out: the sync pill sits right of the chip, the chip leaves Anpassen
+  /// its room.
+  final _chipWidth = ValueNotifier<double>(0);
+  final _anpassenWidth = ValueNotifier<double>(0);
 
   /// The add bar around the input: it holds focus between a tap in the
   /// sheet and the input's refocus, and after a close, and takes Escape
@@ -211,6 +219,8 @@ class _ShoppingListState() extends State<_ShoppingList> {
 
   @override
   void dispose() {
+    _chipWidth.dispose();
+    _anpassenWidth.dispose();
     _links?.changes.removeListener(_linked);
     _sheetOpen?.removeListener(_followShell);
     if (_addSheetRequest?.listTab == _openRequested) {
@@ -477,10 +487,14 @@ class _ShoppingListState() extends State<_ShoppingList> {
                       rowTop: _Header._gap,
                       rowHeight: _Header.height,
                       cardTop: _Header.extent,
+                      pillInset: _chipWidth,
                       child: BottomScrollEdge(
                         child: ShoppingListView(
                           onInteract: _leaveField,
-                          header: const _Header(),
+                          header: _Header(
+                            chipWidth: _chipWidth,
+                            anpassenWidth: _anpassenWidth,
+                          ),
                         ),
                       ),
                     ),
@@ -782,15 +796,19 @@ class const _AddBar({
 /// The compose field's height: the site's `.compose`.
 const _composeHeight = 52.0;
 
-/// The bar above the list: how many partner adds are new, the sync state
-/// and Anpassen, which opens the stores and categories; no household name
-/// and no count (Peter, DECISIONS Job 29a). It floats over the list like
-/// the tab pill below (job 148), at the frame's end, [height] tall in every
-/// state; the rows scroll on under it. Anpassen is a raised button on its
-/// own, with no frame around it (job 152); the new adds sit in their own
-/// small capsule beside it, only while there are any. The sync indicator's
-/// pill takes the bar's empty left slot (job 161).
-class const _Header() extends StatelessWidget implements PreferredSizeWidget {
+/// The bar above the list: the household chip (the switcher, job 169b),
+/// how many partner adds are new, the sync state and Anpassen, which opens
+/// the stores and categories; no count (Peter, DECISIONS Job 29a). It
+/// floats over the list like the tab pill below (job 148), at the frame's
+/// end, [height] tall in every state; the rows scroll on under it.
+/// Anpassen is a raised button on its own, with no frame around it (job
+/// 152); the new adds sit in their own small capsule beside it, only while
+/// there are any. The sync indicator's
+/// pill sits right of the household chip (job 161).
+class const _Header({
+  required final ValueNotifier<double> chipWidth,
+  required final ValueNotifier<double> anpassenWidth,
+}) extends StatelessWidget implements PreferredSizeWidget {
   /// The bar's height: the tab pill's.
   static const height = 52.0;
 
@@ -825,6 +843,7 @@ class const _Header() extends StatelessWidget implements PreferredSizeWidget {
               constraints.maxWidth,
               state,
             ).side;
+            final row = constraints.maxWidth - 2 * (side + HlSpace.s4);
             return Padding(
               padding: EdgeInsets.fromLTRB(
                 side + HlSpace.s4,
@@ -837,41 +856,58 @@ class const _Header() extends StatelessWidget implements PreferredSizeWidget {
                 child: MediaQuery.withClampedTextScaling(
                   // Large text still fits the 52 high bar.
                   maxScaleFactor: SyncPillSpace.maxTextScale,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    spacing: HlSpace.s2,
-                    children: [
-                      SyncPillSpace(
-                        row: constraints.maxWidth - 2 * (side + HlSpace.s4),
-                      ),
-                      const Flexible(child: _Status()),
-                      // On the web the rows under the button keep their
-                      // tappable semantics elements, which take a browser
-                      // click before the framework sees it; the opaque node
-                      // blocks them. Rows beside it stay tappable: they show
-                      // in full.
-                      Semantics(
-                        container: true,
-                        hitTestBehavior: SemanticsHitTestBehavior.opaque,
-                        // Large text shrinks the label rather than the bar.
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 160),
-                          child: OutlinedButton(
-                            key: const ValueKey('list-edit'),
-                            // Desktop's compact density would shrink it
-                            // under 48 px.
-                            style: OutlinedButton.styleFrom(
-                              visualDensity: VisualDensity.standard,
-                            ),
-                            onPressed: () => context.go(editPath),
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(l10n.listEdit),
+                  child: ListenableBuilder(
+                    listenable: Listenable.merge([chipWidth, anpassenWidth]),
+                    builder: (context, _) => Row(
+                      children: [
+                        HouseholdChip(
+                          maxWidth: HouseholdChip.widest(
+                            row,
+                            anpassen: anpassenWidth.value,
+                            trouble: state.trouble != null,
+                          ),
+                          onWidth: (width) => chipWidth.value = width,
+                        ),
+                        SyncPillSpace(row: row - chipWidth.value),
+                        const SizedBox(width: HlSpace.s2),
+                        const Expanded(
+                          child: Align(
+                            alignment: AlignmentDirectional.centerEnd,
+                            child: _Status(),
+                          ),
+                        ),
+                        const SizedBox(width: HlSpace.s2),
+                        // On the web the rows under the button keep their
+                        // tappable semantics elements, which take a browser
+                        // click before the framework sees it; the opaque node
+                        // blocks them. Rows beside it stay tappable: they show
+                        // in full.
+                        Semantics(
+                          container: true,
+                          hitTestBehavior: SemanticsHitTestBehavior.opaque,
+                          // Large text shrinks the label rather than the bar.
+                          child: MeasuredWidth(
+                            onWidth: (width) => anpassenWidth.value = width,
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 160),
+                              child: OutlinedButton(
+                                key: const ValueKey('list-edit'),
+                                // Desktop's compact density would shrink it
+                                // under 48 px.
+                                style: OutlinedButton.styleFrom(
+                                  visualDensity: VisualDensity.standard,
+                                ),
+                                onPressed: () => context.go(editPath),
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(l10n.listEdit),
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),

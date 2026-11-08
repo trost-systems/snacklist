@@ -2,6 +2,8 @@ import { type Browser, expect, type Page, test } from './fixtures';
 import {
   addItem,
   apiAs,
+  createHousehold,
+  householdChip,
   itemRow,
   joinWithCode,
   newEmail,
@@ -11,6 +13,8 @@ import {
   screenshot,
   signUp,
   signUpWithHousehold,
+  skipInvite,
+  switchHousehold,
   typeInto,
   openEmailSignIn,
 } from './helpers';
@@ -171,19 +175,33 @@ test('deleting the account: the subscriber hears the plan keeps billing, the par
     await expect(renews(lea)).toBeVisible({ timeout: 10_000 });
   });
 
-test('leaving for another household: the subscriber hears it first, then joins', async ({ browser }) => {
-  const { peter, peterEmail } = await couple(browser, 'leave');
+test('leaving a household with a yearly plan: the subscriber hears it first, then leaves', async ({ browser }) => {
+  const { peter, peterEmail, household } = await couple(browser, 'leave');
   expect(await subscribe(peterEmail, `4904${Date.now()}`)).toBe('granted');
   const otherEmail = newEmail('leave-other');
   const other = await newPage(browser);
-  await signUpWithHousehold(other, otherEmail);
+  await signUp(other, otherEmail);
+  await createHousehold(other, { name: 'Familie Trost' });
+  await skipInvite(other);
   const code = await inviteCode(otherEmail);
+  // Job 169b: joining adds a household and leaves nothing, so nothing about billing comes up.
   await peter.goto(`/join/${code}`);
   await peter.getByRole('button', { name: 'Haushalt beitreten', exact: true }).click();
+  await expect(householdChip(peter, 'Familie Trost')).toBeVisible();
+  await expect(billingContinues(peter)).toHaveCount(0);
+
+  // Leaving the household with the plan, from its page, is where the subscriber hears it.
+  await switchHousehold(peter, 'Familie Trost', 'Unser Haushalt');
+  await openMore(peter, 'Unser Haushalt');
+  await peter.getByRole('button', { name: 'Haushalt verlassen', exact: true }).click();
+  await expect(peter.getByText('„Unser Haushalt“ verlassen?')).toBeVisible();
+  await peter.getByRole('button', { name: 'Haushalt verlassen', exact: true }).last().click();
   await expect(billingContinues(peter)).toBeVisible();
   await peter.getByRole('button', { name: 'Trotzdem fortfahren' }).click();
   await expect(peter).toHaveURL(/\/$/, { timeout: 10_000 });
+  await expect(householdChip(peter, 'Familie Trost'), 'on to his other household').toBeVisible();
   expect(await householdOf(peterEmail)).toBe(await householdOf(otherEmail));
+  expect(await householdOf(peterEmail)).not.toBe(household);
 });
 
 test.describe('in English', () => {

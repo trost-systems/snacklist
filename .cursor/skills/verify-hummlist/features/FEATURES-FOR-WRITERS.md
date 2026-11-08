@@ -106,21 +106,23 @@ What Hummlist does today, in plain words, with the exact button and screen label
 
 ## Household and invites
 
-**What it does.** One household shares one shopping list. A member invites a partner with an 8-character code and a link; each invite is valid for 7 days and works for one person. The partner types the code or opens the link and joins. A member can revoke open invites at any time.
+**What it does.** One household shares one shopping list, and one person can be in several households, for example at home and with their parents (up to 10). The household's name sits top left of the list; a tap shows all your households and switches between them. A member invites a partner with an 8-character code and a link; each invite is valid for 7 days and works for one person. The partner types the code or opens the link and joins; their other households stay. A member can revoke open invites at any time. Each household has a page to rename it, see its members, make it the default for Siri, Alexa & AI, and leave it.
 
 **How to get there.**
-1. Tab „Mehr“ (EN: "More"), row „Partner einladen“ (EN: "Invite your partner").
-2. Tap „Neue Einladung“ (EN: "New invite"). In the iPhone and Android apps the share sheet opens right away. Otherwise share it with „Teilen“ (EN: "Share") where the browser offers it, or copy it with „Link kopieren“ / „Code kopieren“ (EN: "Copy link" / "Copy code").
-3. To join: „Anderem Haushalt beitreten“ (EN: "Join another household") right below it, enter the code, „Weiter“ (EN: "Continue"), then „Haushalt beitreten“ (EN: "Join household"). Or open the invite link. Back or „Abbrechen“ (EN: "Cancel") returns to „Mehr“. Someone already in a household first sees „Du bist schon in einem Haushalt“ (EN: "You're already in a household") with what joining means for the old household.
-4. To revoke: on the invites page tap „Widerrufen“ (EN: "Revoke") on an invite.
+1. Switch: tap the household's name top left of the list. „Deine Haushalte“ (EN: "Your households") lists them with members and open items; tap one. „Neuer Haushalt“ (EN: "New household") creates one more, „Mit Code beitreten“ (EN: "Join with a code") joins one.
+2. Invite: tab „Mehr“ (EN: "More"), row „Partner einladen“ (EN: "Invite your partner"), then „Neue Einladung“ (EN: "New invite"). In the iPhone and Android apps the share sheet opens right away. Otherwise share it with „Teilen“ (EN: "Share") where the browser offers it, or copy it with „Link kopieren“ / „Code kopieren“ (EN: "Copy link" / "Copy code").
+3. To join: „Anderem Haushalt beitreten“ (EN: "Join another household") in „Mehr“, enter the code, „Weiter“ (EN: "Continue"), then „Haushalt beitreten“ (EN: "Join household"). Or open the invite link.
+4. The household page: tab „Mehr“, the row with the household's name. „Umbenennen“ (EN: "Rename"), „Mitglieder“ (EN: "Members"), „Als Standard nutzen“ (EN: "Make default"), „Haushalt verlassen“ (EN: "Leave household").
+5. To revoke: on the invites page tap „Widerrufen“ (EN: "Revoke") on an invite.
 
 **Never claim.**
-- A members list, renaming a household, removing a member or a "leave household" button: none exist. Joining another household moves the person; if they were the last member, the old household is deleted with its list.
+- Removing a member or member roles: they don't exist yet.
+- That Siri, Alexa or an AI assistant follows the household shown in the app: they use the default household („Siri, Alexa & KI nutzen: …“).
 - An archive for households: it is off in the released apps.
 - Invites that stay valid longer than 7 days or work for several people.
-- Purchases or Premium tied to joining: Premium is not on sale yet.
+- Purchases or Premium tied to joining: Premium is not on sale yet. Premium belongs to one household, not to the person.
 
-**Last verified.** main 8ad168f5, 2026-11-08 (CET), from code and driven on the web build (verify-hummlist): a new invite with its code, revoking it („Keine offenen Einladungen.“). main 6c93da99, 2026-11-08 (CET): an invite link opened by someone already in a household shows „Du bist schon in einem Haushalt“ and „Abbrechen“ leaves both households as they were. Earlier: main c2ce938f, 2026-11-07 (CET), from code and driven on the web build (verify-hummlist): a new invite with its code, link and buttons, revoking it (no message, „Keine offenen Einladungen.“), the warning for someone already in a household. Recipe: [household-invites.md](./household-invites.md).
+**Last verified.** Branch job/169b-app (job 169b), 2026-11-08 (CET): from code and widget tests only, **not driven** (switcher, household page, joining without leaving). Unverified until driven on the web build. Before: main 8ad168f5, 2026-11-08 (CET), driven on the web build (verify-hummlist): a new invite with its code, revoking it. Recipe: [household-invites.md](./household-invites.md).
 
 ## Links into the app
 
