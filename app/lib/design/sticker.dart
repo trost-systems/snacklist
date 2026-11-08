@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 
 /// How far a sticker stands off the page: its hard shadow's depth.
 enum StickerDepth() {
+  /// On the page: the contour without a shadow, for a surface that is not
+  /// pressed as a whole (a hint card, job 168b).
+  flat,
   s,
   m,
   l,
@@ -25,6 +28,7 @@ class const HlSticker({
   /// The shadow of [depth] in [brightness].
   static List<BoxShadow> shadow(Brightness brightness, StickerDepth depth) =>
       switch ((brightness, depth)) {
+        (_, StickerDepth.flat) => const [],
         (Brightness.light, StickerDepth.s) => HlShadow.stickerS,
         (Brightness.light, StickerDepth.m) => HlShadow.sticker,
         (Brightness.light, StickerDepth.l) => HlShadow.stickerL,
