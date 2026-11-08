@@ -4,6 +4,7 @@
 //                                 radius, depth, shape, focus and motion constants
 //   site/public/tokens.css        the same as --hl-* custom properties, dark under
 //                                 prefers-color-scheme
+//   app/web/join/tokens.css       the same file for the web app's join page (job 169b)
 //   app/ios/HomeWidget/HummlistColors.swift, app/android/.../values{,-night}/hummlist_tokens.xml
 //                                 the colours for the Home Screen widgets (job 63)
 // Node only, no packages and no network. `--check` writes nothing and fails when an output
@@ -246,6 +247,7 @@ const outputs = [
   // dart format puts a blank line before a doc comment that follows a member, not after a brace.
   ['app/lib/design/tokens.g.dart', dart.replace(/\{\n\n/g, '{\n').replace(/\n\n\n/g, '\n\n')],
   ['site/public/tokens.css', css],
+  ['app/web/join/tokens.css', css],
   ['app/ios/HomeWidget/HummlistColors.swift', swift],
   [`${androidRes}/values/hummlist_tokens.xml`, androidColors('light')],
   [`${androidRes}/values-night/hummlist_tokens.xml`, androidColors('dark')],

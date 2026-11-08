@@ -47,3 +47,16 @@ fonts="$(grep -ohE '\b[a-z0-9]+/v[0-9]+/[A-Za-z0-9._-]+\.woff2' "$out/main.dart.
 (($(wc -l <<<"$fonts") > 100)) || { echo "web-prod: main.dart.js names only $(wc -l <<<"$fonts") fonts" >&2; exit 1; }
 missing="$(while read -r font; do [[ -s $out/fonts/$font ]] || echo "$font"; done <<<"$fonts")"
 [[ -z $missing ]] || { echo "web-prod: the engine fetches fonts app/web/fonts lacks; run scripts/web-fonts.sh:" >&2; echo "$missing" >&2; exit 1; }
+
+# Job 169b: the join page (app/web/join) ships in every build, and its config.js defaults are the
+# production project of environment.dart's defaults (scripts/join-config.sh overrides both together).
+for file in join/index.html join/join.js join/join.css join/tokens.css join/config.js; do
+  [[ -s $out/$file ]] || { echo "web-prod: $out/$file is missing" >&2; exit 1; }
+done
+for name in supabaseUrl publishableKey; do
+  value="$(sed -n "s/^export const $name = '\(.*\)';$/\1/p" "$out/join/config.js")"
+  if [[ -z $value ]] || ! grep -qF "'$value'" lib/app/environment.dart; then
+    echo "web-prod: join/config.js $name '$value' is not environment.dart's default" >&2
+    exit 1
+  fi
+done

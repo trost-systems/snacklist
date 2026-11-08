@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="robots" content="noindex">
+  <title>Einladung · Hummlist</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" href="/favicon.png" sizes="48x48">
+  <link rel="stylesheet" href="/join/tokens.css">
+  <link rel="stylesheet" href="/join/join.css">
+  <script type="module" src="/join/join.js"></script>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="/"><span class="mark" aria-hidden="true"></span>Hummlist</a>
+  </header>
+  <main class="sheet" data-state="loading" aria-busy="true">
+    <h1 id="title">Einladung wird geladen …</h1>
+    <p id="facts" class="facts" hidden></p>
+    <p id="premium" class="premium" hidden><span class="hxp" aria-hidden="true"></span><span id="premium-text"></span></p>
+    <p id="body" class="body" hidden></p>
+    <a id="join" class="hex hex--wide" href="/" hidden><span class="face"></span></a>
+    <section id="code" class="code" aria-labelledby="code-label" hidden>
+      <h2 id="code-label" class="code__label"></h2>
+      <span id="code-value" class="code__value"></span>
+      <p id="code-hint" class="code__hint"></p>
+      <button id="copy" class="hex hex--small hex--quiet" type="button"><span class="face"></span></button>
+      <p id="copy-status" class="visually-hidden" role="status"></p>
+    </section>
+    <section id="stores" class="stores" aria-labelledby="stores-label" hidden>
+      <h2 id="stores-label" class="code__label"></h2>
+      <div class="stores__row"></div>
+    </section>
+    <noscript><p class="body">Öffne Hummlist im Browser und gib dort den Code aus dem Link ein.</p></noscript>
+  </main>
+</body>
+</html>

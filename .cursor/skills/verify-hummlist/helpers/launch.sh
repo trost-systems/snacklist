@@ -42,7 +42,8 @@ if [[ $rebuild == 1 || ! -f $VH_BUILD_DIR/index.html || "$(cat "$VH_BUILD_DIR/.v
   vh_defines >"$defines"
   (cd "$REPO_ROOT/app" && flutter pub get >/dev/null && flutter build web --release --no-web-resources-cdn --wasm \
     --dart-define=SUPABASE_URL="$SUPABASE_URL" --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY" \
-    --dart-define-from-file="$defines" >"$VH_STATE_DIR/build.log" 2>&1) \
+    --dart-define-from-file="$defines" >"$VH_STATE_DIR/build.log" 2>&1 \
+    && "$REPO_ROOT/scripts/join-config.sh" build/web) \
     || { rm -f "$defines"; echo "web build failed; see $VH_STATE_DIR/build.log" >&2; exit 1; }
   rm -f "$defines"
   # flutter build web --output leaves out assets/FontManifest.json (no text renders), so the build

@@ -7,6 +7,7 @@
   "cleanUrls": false,
   "trailingSlash": false,
   "rewrites": [
+    { "source": "/join/:code", "destination": "/join/index.html" },
     { "source": "/((?!(?:assets|canvaskit|fonts|icons|\\.well-known)/)(?!.*\\.(?:html|js|mjs|json|wasm|symbols|css|map|png|jpe?g|gif|webp|svg|ico|ttf|otf|woff2?|frag|bin|txt)$).*)", "destination": "/index.html" }
   ],
   "headers": [
