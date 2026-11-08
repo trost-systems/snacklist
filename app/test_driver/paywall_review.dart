@@ -66,6 +66,7 @@ Future<void> main() async {
     initialState: const InHousehold(
       'peter',
       Household(id: 'home', name: 'Zuhause'),
+      [Household(id: 'home', name: 'Zuhause')],
     ),
   );
   final purchases = TestPurchases(session: session);

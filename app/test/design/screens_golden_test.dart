@@ -121,6 +121,7 @@ Future<FakeRepository> _pumpShell(
     initialState: const InHousehold(
       'peter',
       Household(id: 'home', name: 'Zuhause'),
+      [Household(id: 'home', name: 'Zuhause')],
     ),
   );
   final repo = FakeRepository();

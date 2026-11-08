@@ -4,7 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 void main() {
-  const household = InHousehold('u', Household(id: 'h', name: 'H'));
+  const household = InHousehold('u', Household(id: 'h', name: 'H'), [
+    Household(id: 'h', name: 'H'),
+  ]);
   const consent = '/oauth/consent?authorization_id=abc';
   const next = 'next=%2Foauth%2Fconsent%3Fauthorization_id%3Dabc';
   const cases = <(Session, String, String?)>[

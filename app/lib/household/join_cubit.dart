@@ -34,10 +34,6 @@ class const JoinState({
   /// What Hummlist Lifetime means for this join, once previewed.
   final JoinLifetime lifetime = const JoinLifetime(),
   final HouseholdProblem? problem,
-
-  /// The members of the user's current household, for the switch warning;
-  /// null without one or while unknown.
-  final int? currentMembers,
 }) {
   bool get busy => phase == JoinPhase.checking || phase == JoinPhase.joining;
 
@@ -47,13 +43,11 @@ class const JoinState({
     String? household,
     JoinLifetime lifetime = const JoinLifetime(),
     HouseholdProblem? problem,
-    int? currentMembers,
   }) => JoinState(
     phase: phase ?? this.phase,
     household: household,
     lifetime: lifetime,
     problem: problem,
-    currentMembers: currentMembers ?? this.currentMembers,
   );
 }
 
@@ -68,33 +62,10 @@ class JoinCubit(
   final PendingInvite? pendingInvite,
   final String? link,
 }) extends Cubit<JoinState> {
-  this : super(const JoinState()) {
-    if (_session.state case InHousehold(:final household)) {
-      unawaited(_countMembers(household.id));
-    }
-  }
+  this : super(const JoinState());
 
   /// The code that was looked at last, so a join uses what was confirmed.
   String? _checked;
-
-  Future<void> _countMembers(String householdId) async {
-    try {
-      final count = await _invites.memberCount(householdId);
-      if (!isClosed) {
-        emit(
-          state.copyWith(
-            phase: state.phase,
-            household: state.household,
-            lifetime: state.lifetime,
-            problem: state.problem,
-            currentMembers: count,
-          ),
-        );
-      }
-    } on HouseholdError {
-      // The warning then names no count.
-    }
-  }
 
   /// The code changed after a preview: it has to be looked at again.
   void edited(String code) {
@@ -132,10 +103,8 @@ class JoinCubit(
     }
   }
 
-  /// Joins the previewed household. With [archive], the user's current
-  /// household is archived instead of deleted if they are its last member
-  /// and it has Hummlist Lifetime.
-  Future<void> join({bool archive = false}) async {
+  /// Joins the previewed household; the user's other households stay.
+  Future<void> join() async {
     final code = _checked;
     if (state.busy || code == null) {
       return;
@@ -155,7 +124,6 @@ class JoinCubit(
         method: link != null && normalizeInviteCode(link!) == code
             ? JoinMethod.link
             : JoinMethod.code,
-        archive: archive,
       );
       pendingInvite?.clear();
       emit(state.copyWith(phase: JoinPhase.joined, household: household));

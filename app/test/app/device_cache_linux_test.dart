@@ -34,12 +34,15 @@ void main() {
 
   test('on Linux the session and the cache survive a relaunch', () async {
     final (session, cache) = await launch();
-    await cache.remember('peter', null);
+    await cache.remember('peter', households: const []);
     await session.persistSession('{"access_token":"t"}');
-    await cache.remember('peter', home);
+    await cache.remember('peter', households: [home], shown: home.id);
 
     final (relaunchedSession, relaunchedCache) = await launch();
     expect(await relaunchedSession.accessToken(), '{"access_token":"t"}');
-    expect((await relaunchedCache.household('peter'))?.name, 'Zuhause');
+    expect(
+      (await relaunchedCache.householdsOf('peter'))?.households.single.name,
+      'Zuhause',
+    );
   });
 }

@@ -568,19 +568,11 @@ void main() {
                 },
               ],
             ),
-            'household_members' => (
+            'household_members_of' => (
               200,
               [
-                {'user_id': 'peter', 'role': 'owner'},
-                {'user_id': 'lea', 'role': 'member'},
-              ],
-            ),
-            'profiles' => (
-              200,
-              [
-                {'id': 'peter', 'display_name': 'Peter'},
-                {'id': 'lea', 'display_name': 'Lea'},
-                {'id': 'other', 'display_name': 'Someone else'},
+                {'user_id': 'peter', 'display_name': 'Peter', 'role': 'owner'},
+                {'user_id': 'lea', 'display_name': 'Lea', 'role': 'member'},
               ],
             ),
             _ => (404, null),
@@ -594,12 +586,17 @@ void main() {
           [for (final m in catalog.members) '${m.displayName}:${m.role}'],
           ['Peter:owner', 'Lea:member'],
         );
-        for (final table in [
-          'categories',
-          'stores',
-          'store_category_order',
-          'household_members',
-        ]) {
+        expect(
+          jsonDecode(
+            sent
+                .singleWhere(
+                  (r) => r.url.pathSegments.last == 'household_members_of',
+                )
+                .body,
+          ),
+          {'p_household': 'household'},
+        );
+        for (final table in ['categories', 'stores', 'store_category_order']) {
           final request = sent.singleWhere(
             (r) => r.url.pathSegments.last == table,
           );

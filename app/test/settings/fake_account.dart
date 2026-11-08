@@ -7,7 +7,11 @@ import 'package:family_groceries/settings/account_repository.dart';
 class FakeAccountRepository() implements AccountRepository {
   @override
   String? email = 'peter@fg.test';
-  HouseholdFate fateResult = const FateKept('Zuhause', ['Lea']);
+
+  /// One per household; none without a household.
+  List<HouseholdFate> fateResult = const [
+    FateKept('Zuhause', ['Lea']),
+  ];
   var archived = <ArchivedFate>[];
   AccountError? fateError;
   var deleteResult = const AccountDeleted(AppleUnlink.notLinked);

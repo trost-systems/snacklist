@@ -41,10 +41,6 @@ class const JoinLifetime({
   /// The invite's household has it: nothing to buy there.
   final bool targetUnlocked = false,
 
-  /// The user is the last member of an unlocked household: joining deletes
-  /// it, and its Lifetime ends (it is household-bound, nothing moves).
-  final bool leavesUnlocked = false,
-
   /// The user verified a purchase in the last 30 days that stands.
   final bool recentPurchase = false,
 }) {
@@ -55,6 +51,14 @@ class const JoinLifetime({
 
 /// The user is in that household already: nothing to join.
 final class const InviteMember(final String name) extends InvitePreview;
+
+/// A member of a household, as `household_members_of` answers.
+@immutable
+class const HouseholdMember({
+  required final String userId,
+  required final String displayName,
+  final String role = 'member',
+});
 
 /// Why a household or invite call failed, as the screens tell the user.
 enum HouseholdProblem() {
@@ -67,8 +71,11 @@ enum HouseholdProblem() {
   /// No answer from the server.
   offline,
 
-  /// Create found the user in a household already (a double tap, a retry).
-  alreadyInHousehold,
+  /// The user is in 10 households already: no more.
+  tooManyHouseholds,
+
+  /// The user is not (or no longer) in that household.
+  notMember,
 
   /// The server's archive switch is off: nothing was archived or changed.
   archiveDisabled,
@@ -84,7 +91,8 @@ final class const HouseholdError(final HouseholdProblem problem)
   factory fromStatus(String status) => HouseholdError(switch (status) {
     'invalid_invite' => HouseholdProblem.invalidInvite,
     'too_many_attempts' => HouseholdProblem.tooManyAttempts,
-    'already_in_household' => HouseholdProblem.alreadyInHousehold,
+    'too_many_households' => HouseholdProblem.tooManyHouseholds,
+    'not_member' => HouseholdProblem.notMember,
     'archive_disabled' => HouseholdProblem.archiveDisabled,
     _ => HouseholdProblem.other,
   });
@@ -111,8 +119,9 @@ Future<T> householdCall<T>(Future<T> Function() call) async {
   }
 }
 
-/// Invites of the user's household: make one, list the open ones, revoke
-/// one, and look at a code before joining.
+/// Invites of the user's households: make one, list the open ones, revoke
+/// one, and look at a code before joining; a household's members and
+/// archived households.
 abstract interface class InviteRepository() {
   Future<Invite> create(String householdId);
 
@@ -123,8 +132,12 @@ abstract interface class InviteRepository() {
 
   Future<InvitePreview> preview(String code);
 
-  /// How many members [householdId] has, for the switch warning.
-  Future<int> memberCount(String householdId);
+  /// The members of [householdId], oldest first (`household_members_of`).
+  Future<List<HouseholdMember>> members(String householdId);
+
+  /// Whether [householdId] has Hummlist Premium that ends when its last
+  /// member leaves (`leaves_unlocked`).
+  Future<bool> leavesUnlocked(String householdId);
 
   /// The user's archived households, newest first (`archived_households`).
   Future<List<ArchivedHousehold>> archived();
@@ -170,7 +183,6 @@ class SupabaseInviteRepository(final SupabaseClient _client)
         name,
         lifetime: JoinLifetime(
           targetUnlocked: result['unlocked'] == true,
-          leavesUnlocked: result['leaves_unlocked'] == true,
           recentPurchase: result['recent_purchase'] == true,
         ),
       ),
@@ -183,13 +195,36 @@ class SupabaseInviteRepository(final SupabaseClient _client)
   });
 
   @override
-  Future<int> memberCount(String householdId) => householdCall(() async {
-    final rows = await _client.rest
-        .from('household_members')
-        .select('user_id')
-        .eq('household_id', householdId);
-    return rows.length;
-  });
+  Future<List<HouseholdMember>> members(String householdId) =>
+      householdCall(() async {
+        final rows = await _client.rpc<List<dynamic>>(
+          'household_members_of',
+          params: {'p_household': householdId},
+        );
+        return [
+          for (final row in rows.whereType<Map<String, dynamic>>())
+            if (row case {'user_id': final String userId})
+              HouseholdMember(
+                userId: userId,
+                displayName: switch (row['display_name']) {
+                  final String name => name,
+                  _ => '',
+                },
+                role: switch (row['role']) {
+                  final String role => role,
+                  _ => 'member',
+                },
+              ),
+        ];
+      });
+
+  @override
+  Future<bool> leavesUnlocked(String householdId) => householdCall(
+    () => _client.rpc<bool>(
+      'leaves_unlocked',
+      params: {'p_household': householdId},
+    ),
+  );
 
   @override
   Future<List<ArchivedHousehold>> archived() => householdCall(() async {

@@ -106,8 +106,12 @@ abstract interface class AccessRepository() {
   Future<void> disconnect(String clientId);
 }
 
-class SupabaseAccessRepository(final SupabaseClient _client)
-    implements AccessRepository {
+/// [household]: the one new tokens and API keys are bound to, the
+/// household shown (job 169b); null binds them to the default household.
+class SupabaseAccessRepository(
+  final SupabaseClient _client, {
+  final String? household,
+}) implements AccessRepository {
   @override
   Future<List<AccessToken>> fetchTokens() => _guard(() async {
     final rows = await _client.rest
@@ -123,7 +127,7 @@ class SupabaseAccessRepository(final SupabaseClient _client)
     final row = await _client
         .rpc<List<Map<String, dynamic>>>(
           'create_personal_access_token',
-          params: {'p_name': name},
+          params: {'p_name': name, 'p_household': ?household},
         )
         .single();
     return NewToken(
@@ -138,7 +142,11 @@ class SupabaseAccessRepository(final SupabaseClient _client)
         final row = await _client
             .rpc<List<Map<String, dynamic>>>(
               'create_api_token',
-              params: {'p_name': name, 'p_scopes': scopes.wire},
+              params: {
+                'p_name': name,
+                'p_scopes': scopes.wire,
+                'p_household': ?household,
+              },
             )
             .single();
         return NewToken(
