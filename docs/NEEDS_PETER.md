@@ -1389,3 +1389,15 @@ order, with the expected answer and a fix for each failure. It replaces the open
   Konto ist das?“).
 - [ ] If the Echo's account isn't the Alexa developer account: accept the skill's beta
   invitation on that account first (the lead sends the link from the console's Beta-Test page).
+
+## Job 172: „26 Artikel auf deiner Einkaufsliste“ was Alexa's own list (2026-11-08)
+
+The answer you heard at about 14:35 did not come from Hummlist: no read request reached the skill
+after your add at 14:33, and Hummlist never says „Artikel“ (it says „Auf der Hummlist stehen 3
+Sachen: …“). Alexa's built-in shopping list answered. Hummlist's read-back (Alexa, Siri, the AI
+assistants) counts only open items; a test now holds that with ticked items present.
+
+- [ ] Optional: Alexa app › Listen › Einkaufsliste. If it holds 26 old entries, clear them, so
+  a misheard „humm list“ doesn't read them out.
+- [ ] Ask again with „Alexa, öffne humm list“ (Humm-list in two syllables), then „Was steht auf
+  der Liste?“ (rows A8 and X9a in `docs/voice/TEST-SESSION-2026-11-08.md`).

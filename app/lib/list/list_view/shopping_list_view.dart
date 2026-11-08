@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:family_groceries/app/notices.dart';
-import 'package:family_groceries/app/router.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/edit_item_sheet.dart';
@@ -21,7 +20,6 @@ import 'package:flutter/rendering.dart' show RenderAbstractViewport;
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
 /// Everything between the header and the add bar: the explainer card, the
 /// stores as sections with their categories and items in walk order, and
@@ -342,13 +340,6 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
     }
   }
 
-  /// The store details of [storeId] (null: the section without a store),
-  /// where its order lives.
-  void _editStore(String? storeId) {
-    widget.onInteract?.call();
-    context.go(storeDetailsPath(storeId));
-  }
-
   @override
   Widget build(BuildContext context) => BlocListener<ListCubit, ListState>(
     listenWhen: (a, b) => a.loaded != b.loaded || a.resynced != b.resynced,
@@ -559,7 +550,6 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
     final entries = <Widget>[];
     for (final (i, section) in run.indexed) {
       final isFolded = folded(section);
-      final storeId = section.store?.id;
       entries.add(
         Padding(
           key: ValueKey('store-${section.key}'),
@@ -575,7 +565,6 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
             folded: isFolded,
             leaving: _leaving,
             onToggle: () => context.read<ListCubit>().toggleFold(section.key),
-            onEdit: () => _editStore(storeId),
           ),
         ),
       );
@@ -589,7 +578,6 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
             key: ValueKey('category-${section.key}-${category?.id}'),
             block: block,
             leaving: _leaving,
-            onEdit: () => _editStore(storeId),
           ),
         );
         for (final (j, item) in block.items.indexed) {

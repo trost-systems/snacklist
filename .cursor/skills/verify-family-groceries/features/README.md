@@ -51,7 +51,7 @@ Keep implementation details out of the map. Name only user paths, stable handles
 
 ## Features
 
-- [List and walk order](./list-walk-order.md) covers design H's list: store sections and category dividers, walk order, a tap that ticks with undo, a hold that edits (nothing drags), a divider hold that opens its store's details, folds and the explainer card kept per device, and a partner's adds and moves.
+- [List and walk order](./list-walk-order.md) covers design H's list: store sections and category dividers, walk order, a tap that ticks with undo, a hold that edits (nothing drags), a tap on a store divider that folds it (a hold on a divider does nothing), and the explainer card kept per device, and a partner's adds and moves.
 - [Quick add](./quick-add.md) covers the add bar and the add sheet: autofocus on desktop, rows with their sources, Enter for the first row, store and category chips, the added note with undo, due usuals, closing, and tick with undo and re-add from history.
 - [Shell and More](./shell-more.md) covers the tabs (Liste, Mehr; a rail from 840 px), every entry of the More tab, the Nutzungsdaten page, the Rechtliches rows (imprint, privacy policy, terms, licenses) (and how to read them on a host without a browser).
 - [Settings](./settings.md) covers Mehr → Einstellungen: light, dark or the device's theme and the language list, both applied at once and kept on the device across restarts and sign-out.
@@ -61,8 +61,8 @@ Keep implementation details out of the map. Name only user paths, stable handles
 - [Household](./household.md) covers creating a household, inviting by code and joining with it, the invite list and revoking.
 - [Onboarding](./onboarding.md) covers the steps after sign-in: create or join, invite the partner, the pending invite link, errors and events.
 - [Classifier](./classifier.md) covers automatic categories for new items, moving an item to another category, and learning from the move.
-- [Stores](./stores.md) covers stores as list sections in their own category order, "Ohne Laden", adding your own store (store chip, Liste → Anpassen, onboarding) and renaming or deleting it, tagging items to a store in the edit sheet and remembering it, and each store's details (from Anpassen or a hold on its divider).
-- [Categories](./categories.md) covers Liste → Anpassen → Ohne Laden (also a hold on the "Ohne Laden" divider): adding, renaming, deleting and reordering categories.
+- [Stores](./stores.md) covers stores as list sections in their own category order, "Ohne Laden", adding your own store (store chip, Liste → Anpassen, onboarding) and renaming or deleting it, tagging items to a store in the edit sheet and remembering it, and each store's details (from Anpassen).
+- [Categories](./categories.md) covers Liste → Anpassen → Ohne Laden: adding, renaming, deleting and reordering categories.
 - [Analytics and error tracking](./analytics.md) covers the analytics question after the first sign-in (before onboarding or the list), what is sent after a yes and that nothing is sent after a no, the switch under Mehr → Nutzungsdaten, the internal device mark with "Testfehler senden", and error tracking from the app and the edge functions.
 - [Feedback](./feedback.md) covers Mehr → Feedback senden: the note with optional kind and contact, what is attached, the length limits, the error with Retry, and the row in `public.feedback` (insert-only).
 - [MCP access](./mcp-access.md) covers the consent page an AI app opens (web build only) and Mehr → Zugänge: the MCP URL, creating and revoking access tokens, and disconnecting OAuth apps, each cut off on the next request.

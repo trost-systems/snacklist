@@ -4,22 +4,18 @@ import 'package:flutter/widgets.dart';
 
 /// A press on [child] held for [holdDelay] calls [onHold] at once, while
 /// still held. A finger may drift by the touch slop and still hold; past it
-/// the press scrolls instead. Screen readers get the hold from
-/// the row's or divider's own semantics node.
+/// the press scrolls instead. Screen readers get a row's hold from the
+/// row's own semantics node; a store divider's hold does nothing.
 class const Hold({
   required final VoidCallback onHold,
-
-  /// Whether [child] sits in a tappable semantics node (see [holdDelay]).
-  required final bool tappable,
   required final Widget child,
   super.key,
 }) extends StatelessWidget {
   /// How long a press is held (prototype: 300 ms). On web the engine holds
-  /// a press on a tappable semantics node back for 200 ms before the app
-  /// sees it (its click debouncer, `pointer_binding.dart`), so those wait
-  /// 100 ms more: 300 ms for the user.
-  static Duration holdDelay({required bool tappable}) =>
-      Duration(milliseconds: kIsWeb && tappable ? 100 : 300);
+  /// a press on a tappable semantics node, as a row or a store divider is,
+  /// back for 200 ms before the app sees it (its click debouncer,
+  /// `pointer_binding.dart`), so it waits 100 ms more: 300 ms for the user.
+  static const holdDelay = Duration(milliseconds: kIsWeb ? 100 : 300);
 
   @override
   Widget build(BuildContext context) => RawGestureDetector(
@@ -28,7 +24,7 @@ class const Hold({
       LongPressGestureRecognizer:
           GestureRecognizerFactoryWithHandlers<LongPressGestureRecognizer>(
             () => LongPressGestureRecognizer(
-              duration: holdDelay(tappable: tappable),
+              duration: holdDelay,
               debugOwner: this,
             ),
             (recognizer) => recognizer.onLongPress = onHold,

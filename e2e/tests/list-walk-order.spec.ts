@@ -112,7 +112,7 @@ test('stores and categories are dividers that scroll away, stores fold for good,
   await screenshot(page, 'walk-08-after-move-into-empty-store');
 });
 
-test('nothing on the list drags: a hold on a row edits, a hold on a divider opens its store\'s details', async ({ page }) => {
+test('nothing on the list drags: a hold on a row edits, a hold or right click on a divider does nothing, a tap folds', async ({ page }) => {
   const email = newEmail('walk-hold');
   await signUpWithHousehold(page, email, { stores: chainStores });
   await page.getByRole('button', { name: 'Verstanden' }).click();
@@ -130,18 +130,25 @@ test('nothing on the list drags: a hold on a row edits, a hold on a divider open
   await expect(editSheet(page)).toHaveCount(0);
   expect(await outline(page), 'a hold that moves on moves nothing').toEqual(before);
 
+  const url = page.url();
   for (const divider of [storeDivider(page, 'Lidl'), page.getByRole('heading', { name: 'Kühlregal', exact: true })]) {
     const box = await boxOf(divider);
     await page.mouse.move(box.x + 40, box.y + box.height / 2);
     await page.mouse.down();
     await page.waitForTimeout(700);
     await page.mouse.up();
-    // TODO(78-merge): expect worker A's StoreDetailsScreen for Lidl here too.
-    await expect(page, 'the hold opens the store\'s details').toHaveURL(/\/edit\/[^/]+$/);
-    await page.goBack();
-    await expect(itemRow(page, 'Gurke')).toBeVisible();
+    await page.mouse.click(box.x + 40, box.y + box.height / 2, { button: 'right' });
+    await page.waitForTimeout(500);
+    expect(page.url(), 'a hold or right click on a divider opens nothing').toBe(url);
+    expect(await outline(page), 'a hold or right click neither moves nor folds').toEqual(before);
   }
-  expect(await outline(page), 'no divider moved').toEqual(before);
+  await page.mouse.move(0, 899);
+  await screenshot(page, 'walk-hold-divider-nothing');
+  await storeDivider(page, 'Lidl').click();
+  await expect(itemRow(page, 'Gurke'), 'a tap folds the store').toHaveCount(0);
+  expect(page.url(), 'the tap only folds').toBe(url);
+  await page.mouse.move(0, 899);
+  await screenshot(page, 'walk-tap-divider-folds');
 });
 
 test('a tap ticks, a tap under Zuletzt verwendet puts it back in place, a hold or right click edits, names wrap, no added-by badge', async ({ browser }) => {

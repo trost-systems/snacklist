@@ -13,8 +13,9 @@ import 'package:family_groceries/list/store_badge.dart';
 import 'package:flutter/material.dart';
 
 /// A section's divider: the store's badge (its name), a brand-coloured
-/// rule, the count and a caret. A tap folds the section; a hold or a right
-/// click opens the store's details ([onEdit]), where its order lives.
+/// rule, the count and a caret. A tap folds or unfolds the section and does
+/// nothing else; a hold is not an edit (Peter, job 171), the store's details
+/// are under Liste → Anpassen.
 class const StoreDivider({
   required final StoreSection section,
 
@@ -22,7 +23,6 @@ class const StoreDivider({
   required final bool folded,
   required final LeavingRows leaving,
   required final VoidCallback onToggle,
-  required final VoidCallback onEdit,
   super.key,
 }) extends StatelessWidget {
   @override
@@ -36,15 +36,14 @@ class const StoreDivider({
       label: l10n.storeSectionLabel(name, section.count),
       hint: folded ? l10n.expandSection : l10n.collapseSection,
       onTap: onToggle,
-      onLongPress: onEdit,
       excludeSemantics: true,
+      // A hold, as long as a row's, claims the press, so its release is no
+      // tap: a hold does nothing.
       child: Hold(
-        tappable: true,
-        onHold: onEdit,
+        onHold: () {},
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: onToggle,
-          onSecondaryTap: onEdit,
           child: _Head(section: section, name: name, folded: folded),
         ),
       ),
@@ -169,12 +168,10 @@ class const _Head({
 }
 
 /// A category's quiet divider inside a section: its name in small faded
-/// capitals and a hairline. A hold or a right click opens its section's
-/// store details ([onEdit]), where the categories are ordered.
+/// capitals and a hairline. It reacts to no press.
 class const CategoryDivider({
   required final CategoryBlock block,
   required final LeavingRows leaving,
-  required final VoidCallback onEdit,
   super.key,
 }) extends StatelessWidget {
   @override
@@ -189,17 +186,8 @@ class const CategoryDivider({
       header: true,
       // The category's full name, as the edit sheet's chip calls it.
       label: category == null ? label : categoryName(category, l10n),
-      onLongPress: onEdit,
       excludeSemantics: true,
-      child: Hold(
-        tappable: false,
-        onHold: onEdit,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onSecondaryTap: onEdit,
-          child: _Line(label: label),
-        ),
-      ),
+      child: _Line(label: label),
     );
     return _ClosesWithRows(
       items: block.items,

@@ -883,8 +883,8 @@ void main() {
     expect(find.byKey(const ValueKey('list-hint')), findsNothing);
   });
 
-  testWidgets("a hold or right click on a divider opens its section's store "
-      'details; nothing moves', (tester) async {
+  testWidgets('a hold or right click on a divider does nothing; a tap on a '
+      'store divider only folds it', (tester) async {
     await pumpList(
       tester,
       seed: (repo) => repo
@@ -892,48 +892,69 @@ void main() {
         ..remoteAdd('Milch', storeId: 'lidl')
         ..remoteAdd('Brot'),
     );
-    Future<void> opens(Future<void> Function() hold, String path) async {
-      await hold();
+    Future<void> inert(Future<void> Function() press, String reason) async {
+      await press();
       await tester.pumpAndSettle();
-      expect(find.text(path), findsOneWidget);
-      tester.state<NavigatorState>(find.byType(Navigator).first).pop();
-      await tester.pumpAndSettle();
+      expect(find.textContaining('/edit/'), findsNothing, reason: reason);
+      expect(rowOrder(tester), ['Seife', 'Milch', 'Brot'], reason: reason);
+      expect(cache.prefs?.folded ?? const <String>{}, isEmpty, reason: reason);
     }
 
-    await opens(() => tester.longPress(storeDivider('lidl')), '/edit/lidl');
-    await opens(
+    await inert(() => tester.longPress(storeDivider('lidl')), 'store hold');
+    await inert(() async {
+      final press = await tester.startGesture(
+        tester.getCenter(storeDivider('lidl')),
+      );
+      await tester.pump(const Duration(milliseconds: 350));
+      await press.up();
+    }, 'a hold as long as a row edit');
+    await inert(
       () => tester.tap(storeDivider('dm'), buttons: kSecondaryButton),
-      '/edit/dm',
+      'store right click',
     );
-    await opens(
+    await inert(() => tester.longPress(storeDivider('none')), 'no-store hold');
+    await inert(
       () => tester.longPress(categoryDivider('Sonstiges').first),
-      '/edit/dm',
+      'category hold',
     );
-    await opens(
+    await inert(
       () => tester.tap(categoryDivider('Kühlregal'), buttons: kSecondaryButton),
-      '/edit/lidl',
+      'category right click',
     );
-    await opens(
-      () => tester.longPress(categoryDivider('Sonstiges').last),
-      '/edit/none',
-    );
-    await opens(() => tester.longPress(storeDivider('none')), '/edit/none');
-    expect(row('Brot'), findsOneWidget, reason: 'a hold does not fold');
     expect(repo.catalogCalls, isEmpty);
-    expect(rowOrder(tester), ['Seife', 'Milch', 'Brot']);
+
+    await tester.tap(storeDivider('lidl'));
+    await tester.pumpAndSettle();
+    expect(row('Milch'), findsNothing);
+    expect(rowOrder(tester), ['Seife', 'Brot']);
+    expect(find.textContaining('/edit/'), findsNothing);
+
+    await tester.longPress(storeDivider('lidl'));
+    await tester.pumpAndSettle();
+    expect(row('Milch'), findsNothing, reason: 'a hold does not unfold');
+    expect(find.textContaining('/edit/'), findsNothing);
   });
 
-  testWidgets("a screen reader's long press on a store divider opens its "
-      'details; the divider offers no up or down moves', (tester) async {
+  testWidgets("a screen reader's store divider offers a tap that folds and "
+      'no long press, up or down moves', (tester) async {
     final handle = tester.ensureSemantics();
     await pumpList(tester, seed: (repo) => repo.remoteAdd('Milch'));
     expect(
       tester.getSemantics(storeNode('none')),
-      isSemantics(hasLongPressAction: true, customActions: []),
+      isSemantics(
+        hasTapAction: true,
+        hasLongPressAction: false,
+        customActions: [],
+      ),
     );
-    tester.semantics.longPress(find.semantics.byLabel('Ohne Laden, 1 Artikel'));
+    expect(
+      tester.getSemantics(categoryDivider('Kühlregal')),
+      isSemantics(hasLongPressAction: false),
+    );
+    tester.semantics.tap(find.semantics.byLabel('Ohne Laden, 1 Artikel'));
     await tester.pumpAndSettle();
-    expect(find.text('/edit/none'), findsOneWidget);
+    expect(row('Milch'), findsNothing);
+    expect(find.textContaining('/edit/'), findsNothing);
     handle.dispose();
   });
 

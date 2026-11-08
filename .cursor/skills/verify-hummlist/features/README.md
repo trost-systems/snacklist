@@ -69,7 +69,7 @@ The list
 - [tips](./tips.md): the dismissible tip card at the top of the List tab, one tip at a time from a typed queue (job 80).
 - [classifier](./classifier.md): the automatic category for every new item, learning from moves, spelling variants and synonyms.
 - [categories](./categories.md): Liste → „Anpassen“ → „Ohne Laden“ (and every store's details): add, rename, delete, reorder; the 11 seeded categories.
-- [stores-walk-order](./stores-walk-order.md): store sections and category dividers in walk order, nothing on the list drags, a divider hold opens its store's details, the stores screen under Liste → „Anpassen“ and a store's details (add, rename, delete, reorder), adding a store from the store chip, item→store memory.
+- [stores-walk-order](./stores-walk-order.md): store sections and category dividers in walk order, nothing on the list drags, a tap on a store divider folds it (a hold does nothing), the stores screen under Liste → „Anpassen“ and a store's details (add, rename, delete, reorder), adding a store from the store chip, item→store memory.
 - [live-sync](./live-sync.md): members see each other's changes live; „N neu von <Name>“ and the sync icon.
 - [offline](./offline.md): what works without a connection, what waits, and the messages.
 

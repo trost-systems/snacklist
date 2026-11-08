@@ -228,6 +228,7 @@ Log: `LaunchRequest - en-GB … -> launch`. Set the Echo back to Deutsch.
 | X7 | „Bei der Antwort des angeforderten Skills ist ein Problem aufgetreten“ | `SessionEndedRequest … ended=ERROR error=INVALID_RESPONSE` | Hummlist's answer was malformed for Alexa | Note the time; the lead reads the line before it (the intent and kind) and fixes it on Monday. Move on |
 | X8 | Same, or a long pause and then an error | `ms=` above 7000, or `error=ENDPOINT_TIMEOUT` | Slow start of the function (Alexa waits 8 s) | Retry once right away (warm now) |
 | X9 | A7 lands in Amazon's own Einkaufsliste | no line | Alexa's built-in lists took the sentence (worse with Alexa+) | Use A4/A5 (open first). With Alexa+: note it |
+| X9a | A8 answers „Du hast N Artikel auf deiner Einkaufsliste“ | no `ReadListIntent` line | Alexa's own Einkaufsliste answered (Hummlist says „Auf der Hummlist stehen N Sachen“ and counts open items only; job 172) | Use A4, then „Was steht auf der Liste?“. Alexa app › Listen › Einkaufsliste holds the items she counted |
 | X10 | „Das habe ich nicht verstanden…“ | `AddItemIntent … -> reprompt slot=0` or `FallbackIntent` | Alexa opened Hummlist but didn't catch the items | Say the items with a verb: „füg Milch hinzu“ |
 | X11 | „Du bist noch in keinem Haushalt…“ | `-> no-household` | The linked Hummlist account has no household | Link the account that has your household (as in X5) |
 

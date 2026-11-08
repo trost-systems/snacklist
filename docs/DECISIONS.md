@@ -10391,6 +10391,52 @@ Peter's go (A107): review #320 and merge it on a review PASS and `ci-ok`.
    the add sheet's keys; the line between badge and count may now shrink to nothing instead of
    keeping 12 px. `store_header_test.dart` checks DE and EN; DE fails on the old code.
 
+## Job 172: voice read-back counts open items only, 2026-11-08
+
+Peter (Nov 8, about 14:35): „frag … was auf der Liste steht“ answered „Du hast 26 Artikel auf
+deiner Einkaufsliste“ with 3 items open. The brief suspected the read path counts ticked or
+recently used items.
+
+1. **The skill did not answer that.** `scripts/alexa/diagnose.sh` for 13:00 to 17:30 shows the
+   last request that reached the `alexa` function at 14:33:09 (an add); `alexa_links.last_seen`,
+   moved by every linked request, stops at 14:33:08. No `ReadListIntent` arrived. No version of
+   `speech.ts` ever said „Artikel auf deiner Einkaufsliste“; the skill says „Auf der Hummlist
+   stehen N Sachen“. Alexa's own shopping list answered (the misrouting the Troubleshooting table
+   already lists). Peter's household had 3 open, 1 ticked today and 27 rows in all (a counts-only
+   read-only query); 26 is Amazon's list, which this box cannot read.
+2. **Alexa, Siri and MCP already read open items only.** All three go through
+   `_shared/list.ts` `openItems` (`status = 'active'`, the caller's household). No query change.
+3. **The proof is a test through the production wiring.** `_shared/read_open_only_integration_test.ts`
+   seeds Peter's shape (3 open, 1 ticked today, 23 ticked before, a second household) and reads
+   through Alexa's `deps.ts`, Siri's new `voice/deps.ts` (the wiring moved out of `index.ts`,
+   as Alexa's did, so the test runs what production runs) and `listItems`. Without the status
+   filter it fails with „Auf der Hummlist stehen 27 Sachen“.
+4. **The symptom has a Troubleshooting row** in docs/ALEXA.md: „… Artikel auf deiner
+   Einkaufsliste“ means Amazon's list, with the phrasings that reach the skill.
+5. **No deploy needed for behaviour.** The functions' behaviour is unchanged; `supabase-deploy.yml`
+   redeploys `voice` from main with the refactor as usual.
+
+## Job 171: a store divider only folds, 2026-11-08
+
+Peter (Nov 8): a hold on a store's section header must not open its store menu; a tap only folds
+or unfolds the section.
+
+1. **Category dividers lose their hold too.** A hold on a category divider opened the same store
+   details as the store divider, so keeping it would keep the surprise Peter reported. Neither
+   divider reacts to a hold or a right click now; a store's details open only from Liste →
+   „Anpassen“ → the store. Item rows keep their hold and right click (the edit sheet).
+2. **A hold on a store divider does nothing, not a fold.** Without a long-press recognizer the
+   tap recognizer is alone in the arena and takes a hold's release as a tap, which folded the
+   section. The store divider sits in the rows' `Hold` with an empty `onHold`, so a hold claims
+   the press at the rows' threshold (300 ms; an empty `onLongPress` would wait 500 ms and fold a
+   press in between, found by the merge review) and ends in nothing. The widget test holds 350 ms
+   and the default long press; both fail without it.
+3. **Screen readers.** The store divider keeps its tap action (fold) and loses the long-press
+   action; the category divider is a heading with no action.
+4. **No in-app copy to change.** No ARB string mentions holding a store; the list explainer
+   („Tippen hakt ab · Halten bearbeitet“) and the edit tip are about items and stay. The feature
+   files, FEATURES-FOR-WRITERS and STORE_LAYOUTS.md no longer say a divider hold opens anything.
+
 ## Job 169b: several households per user, wave 1, 2026-11-08
 
 Peter's calls (2026-11-08, on [`docs/households/PLAN.md`](households/PLAN.md)): HH3 in three

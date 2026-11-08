@@ -211,11 +211,10 @@ class _ListExcerptState() extends State<_ListExcerpt> {
                     ? _folded.remove(section.key)
                     : _folded.add(section.key),
               ),
-              onEdit: () {},
             ),
             if (!_folded.contains(section.key))
               for (final block in section.blocks) ...[
-                CategoryDivider(block: block, leaving: _leaving, onEdit: () {}),
+                CategoryDivider(block: block, leaving: _leaving),
                 for (final (i, item) in block.items.indexed)
                   ItemRow(
                     key: ValueKey(item.id),

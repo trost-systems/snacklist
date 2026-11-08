@@ -114,11 +114,7 @@ class _ItemRowState()
             child: tile,
           )
         : tile;
-    return Hold(
-      tappable: true,
-      onHold: () => widget.onEdit(item),
-      child: watched,
-    );
+    return Hold(onHold: () => widget.onEdit(item), child: watched);
   }
 
   Widget _semantics(BuildContext context, Widget child) {

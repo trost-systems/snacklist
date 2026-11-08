@@ -2,7 +2,7 @@
 
 Each store has its own walking order of the categories, from the entrance to
 the checkout. A household can change it in the app: the drag handles on a
-store's details (Liste → "Anpassen" → the store, or a hold on its divider). The defaults are
+store's details (Liste → "Anpassen" → the store). The defaults are
 `public.apply_store_layout`, latest in
 `supabase/migrations/20261106163919_hardware_categories.sql`.
 
