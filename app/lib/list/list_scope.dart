@@ -14,7 +14,7 @@ import 'package:family_groceries/siri/siri_suggestions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide Session;
 
 /// The household's list above both tabs: the List tab shows it and its
 /// Anpassen pages manage its categories and stores; it keeps syncing while
@@ -48,6 +48,16 @@ class const ListScope({
   }
 }
 
+/// Whether the list of [householdId] gives Siri its item names: only the
+/// default household's, since Siri adds there (job 169b). Another
+/// household's list leaves Siri the names it learnt from the default.
+bool teachesSiri(Session session, String householdId) => switch (session) {
+  InHousehold(:final households) => households.any(
+    (h) => h.id == householdId && h.isDefault,
+  ),
+  _ => false,
+};
+
 /// Where the List tab tells refused writes while it shows; elsewhere
 /// [ListScope] tells them in the app's messenger, above the tabs.
 class RejectionNotices() {
@@ -79,7 +89,11 @@ class _ScopeState() extends State<_Scope> {
     super.initState();
     final cubit = context.read<ListCubit>();
     if (siriChannelFor(web: kIsWeb, platform: defaultTargetPlatform)
-        case final siri?) {
+        case final siri?
+        when teachesSiri(
+          context.read<SessionCubit>().state,
+          widget.householdId,
+        )) {
       _siri = SiriSuggestions(siri, cubit);
     }
     _homeWidgets = context.read<HomeWidgetSync?>()?.followList(

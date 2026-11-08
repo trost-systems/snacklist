@@ -3125,7 +3125,7 @@ abstract class AppLocalizations {
   /// Job 169b: OAuth consent for a user with several households; the default is the one MCP acts in (changed in the switcher)
   ///
   /// In de, this message translates to:
-  /// **'Arbeitet in deinem Standard-Haushalt: {name}'**
+  /// **'Arbeitet in deinem Standard-Haushalt „{name}“. Nennst du einen anderen deiner Haushalte, auch dort.'**
   String consentDefaultHousehold(String name);
 
   /// Job 169b: household page button that makes the shown household the default for Siri, Alexa and AI

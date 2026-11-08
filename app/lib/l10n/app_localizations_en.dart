@@ -1879,7 +1879,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String consentDefaultHousehold(String name) {
-    return 'Works in your default household: $name';
+    return 'Works in your default household “$name”, and in any other of your households you name.';
   }
 
   @override

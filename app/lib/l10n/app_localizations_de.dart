@@ -1899,7 +1899,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String consentDefaultHousehold(String name) {
-    return 'Arbeitet in deinem Standard-Haushalt: $name';
+    return 'Arbeitet in deinem Standard-Haushalt „$name“. Nennst du einen anderen deiner Haushalte, auch dort.';
   }
 
   @override
