@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:family_groceries/app/router.dart';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/purchases/premium_server.dart';
@@ -158,6 +160,26 @@ void main() {
     await tester.pumpAndSettle();
     expect(o.session.leaves, isEmpty);
     expect(_location(o), householdPath);
+  });
+
+  testWidgets('a double tap on leave opens one dialog', (tester) async {
+    final o = await pumpOnboarding(
+      tester,
+      location: householdPath,
+      session: _peterIn(home),
+    );
+    // The members are asked again first; both taps land while that is out.
+    final hold = o.invites.hold = Completer<void>();
+    await tester.tap(_key('household-leave'));
+    await tester.pump();
+    await tester.tap(_key('household-leave'));
+    await tester.pump();
+    hold.complete();
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('household-leave-cancel'), skipOffstage: false),
+      findsOneWidget,
+    );
   });
 
   testWidgets('the last member hears that the household goes', (tester) async {

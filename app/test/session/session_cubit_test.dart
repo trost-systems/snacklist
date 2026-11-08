@@ -358,6 +358,28 @@ void main() {
       },
     );
 
+    test(
+      'an unarchive whose reload never answered shows it after a restart',
+      () async {
+        await cubit.refresh();
+        server.failReads = true;
+        await expectLater(
+          cubit.unarchive('old'),
+          throwsA(isA<HouseholdError>()),
+        );
+        server.failReads = false;
+        // The page reloads (web) or the app restarts: a new cubit, same device.
+        final restarted = SessionCubit(server, cache);
+        addTearDown(restarted.close);
+        _signIn(auth);
+        await pumpEventQueue();
+        expect(
+          restarted.state,
+          _shows('old', households: ['home', 'club', 'old']),
+        );
+      },
+    );
+
     test('unarchiving adds the household and shows it', () async {
       await cubit.refresh();
       await cubit.unarchive('old');

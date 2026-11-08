@@ -227,6 +227,12 @@ class SessionCubit(
     if (state is SessionLoading) {
       if (await _cache.householdsOf(userId)
           case (:final households, :final shown) when households.isNotEmpty) {
+        // A household asked to show that the device doesn't know yet (an
+        // unarchive or join whose reload never answered) waits for the
+        // server's list.
+        if (shown != null && !households.any((h) => h.id == shown)) {
+          _toShow ??= shown;
+        }
         if (state is SessionLoading && _client.auth.currentUser?.id == userId) {
           emit(InHousehold(userId, _pick(households, shown), households));
         }
@@ -257,6 +263,12 @@ class SessionCubit(
     }
     if (show != null) {
       _toShow = show;
+      // Kept on the device before the server answers: a reload of the page
+      // or a restart while the answer is out still shows it (see _load).
+      if (state case InHousehold(userId: final user, :final households)
+          when user == userId) {
+        await _cache.remember(userId, households: households, shown: show);
+      }
     }
     final reload = ++_reloads;
     final cached = await _cache.householdsOf(userId);

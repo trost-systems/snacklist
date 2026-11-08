@@ -176,6 +176,8 @@ test('the last member archives an unlocked household, its purchase stays its own
   // Job 169b: it comes back beside Cara's household, which Frank keeps, and shows.
   await expect.poll(async () => ((await (await apiAs(frankEmail)).rpc('my_households')).data ?? []).map((h: { id: string }) => h.id).sort())
     .toEqual([frankHousehold, caraHousehold].sort());
+  // The app shows it before the Premium page reloads (the server answering is not enough).
+  await expect(householdChip(frank, 'Unser Haushalt')).toBeVisible();
   await openPremium(frank);
   await expect(unlocked(frank), 'back in his household, the unlock is back').toBeVisible({ timeout: 10_000 });
   expect(await report(frankEmail, frankTx, frankHousehold)).toBe('restored');

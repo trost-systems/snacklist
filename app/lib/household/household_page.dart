@@ -94,7 +94,22 @@ class _HouseholdViewState() extends State<_HouseholdView> {
     }
   }
 
+  /// Set while leaving is being asked: a second tap opens no second dialog.
+  var _asking = false;
+
   Future<void> _leave() async {
+    if (_asking) {
+      return;
+    }
+    _asking = true;
+    try {
+      await _askLeave();
+    } finally {
+      _asking = false;
+    }
+  }
+
+  Future<void> _askLeave() async {
     final session = context.read<SessionCubit>();
     final invites = context.read<InviteRepository>();
     final household = widget.household;
