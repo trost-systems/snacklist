@@ -5,8 +5,10 @@ import 'package:family_groceries/app/notices.dart';
 import 'package:family_groceries/app/router.dart';
 import 'package:family_groceries/app/shell.dart';
 import 'package:family_groceries/app/theme.dart';
+import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/invite_share.dart';
+import 'package:family_groceries/household/join_decision_notices.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_screen.dart';
@@ -54,6 +56,7 @@ Future<_Shell> _pumpShell(
   Size size = const Size(390, 844),
   double textScale = 1,
   Locale locale = const Locale('de'),
+  List<JoinRequest> requests = const [],
 }) async {
   tester.view
     ..devicePixelRatio = 1
@@ -67,7 +70,7 @@ Future<_Shell> _pumpShell(
   final language = LanguageCubit(cache, AppLanguage.de);
   addTearDown(language.close);
   final session = TestSession(
-    const InHousehold('peter', _home, [_home, _club]),
+    InHousehold('peter', _home, const [_home, _club], requests: requests),
   );
   addTearDown(session.close);
   final repo = FakeRepository();
@@ -135,8 +138,10 @@ Future<_Shell> _pumpShell(
           theme: appTheme(Brightness.light),
           locale: locale,
           routerConfig: router,
-          builder: (context, child) =>
-              NoticesHost(popups: popups, child: child!),
+          builder: (context, child) => NoticesHost(
+            popups: popups,
+            child: JoinDecisionNotices(child: child!),
+          ),
         ),
       ),
     ),
@@ -307,5 +312,64 @@ void main() {
     expect(find.text('New household'), findsOneWidget);
     expect(find.text('Join with a code'), findsOneWidget);
     expect(find.text('Siri, Alexa & AI use: Zuhause'), findsOneWidget);
+  });
+
+  group('a join request waiting (job 169b W3 M)', () {
+    const verein = JoinRequest(
+      id: 'r1',
+      householdId: 'verein',
+      householdName: 'Verein',
+    );
+
+    testWidgets('shows greyed, with no switching into it', (tester) async {
+      final s = await _pumpShell(tester, requests: const [verein]);
+      await _openSheet(tester);
+      final row = _key('household-request-verein');
+      expect(
+        find.descendant(of: row, matching: find.text('Verein')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: row, matching: find.text('Anfrage offen')),
+        findsOneWidget,
+      );
+      expect(
+        tester.widget<ListTile>(row).textColor,
+        HummlistColors.light.textMuted,
+      );
+      await tester.tap(row);
+      await tester.pumpAndSettle();
+      expect((s.session.state as InHousehold).household.id, 'home');
+      expect(find.text('Anfrage für „Verein“ zurückziehen?'), findsOneWidget);
+      await tester.tap(find.text('Abbrechen'));
+      await tester.pumpAndSettle();
+      expect(s.session.withdrawn, isEmpty);
+      expect(row, findsOneWidget);
+    });
+
+    testWidgets('a tap offers to withdraw it', (tester) async {
+      final s = await _pumpShell(tester, requests: const [verein]);
+      await _openSheet(tester);
+      await tester.tap(_key('household-request-verein'));
+      await tester.pumpAndSettle();
+      await tester.tap(_key('join-request-withdraw-confirm'));
+      await tester.pumpAndSettle();
+      expect(s.session.withdrawn, ['verein']);
+      expect(_key('household-request-verein'), findsNothing);
+      expect(_key('household-sheet'), findsOneWidget);
+    });
+
+    for (final (approved, text) in const [
+      (true, 'Du bist jetzt in „Verein“.'),
+      (false, 'Deine Anfrage für „Verein“ wurde nicht angenommen.'),
+    ]) {
+      testWidgets('the decision is told: approved $approved', (tester) async {
+        final s = await _pumpShell(tester);
+        s.session.decidedOn.add((household: 'Verein', approved: approved));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+        expect(find.text(text), findsOneWidget);
+      });
+    }
   });
 }

@@ -120,7 +120,8 @@ class const HouseholdChip({
 }
 
 /// The user's households, one row each with a check on the shown one and
-/// "Leute einladen" ([showInviteSheet]); then "Neuer Haushalt", "Mit Code
+/// "Leute einladen" ([showInviteSheet]), and greyed rows for the join
+/// requests waiting; then "Neuer Haushalt", "Mit Code
 /// beitreten", and the default for Siri, Alexa & KI, which opens
 /// [showDefaultPicker]. [openNow] counts the shown list's open items better
 /// than the server's last answer.
@@ -229,6 +230,31 @@ class const HouseholdSheet({final int? openNow, super.key})
                 unawaited(context.read<SessionCubit>().switchTo(household.id));
               },
             ),
+          // Asked to join, not in it yet (job 169b W3 M): greyed, no
+          // switching into it; a tap offers to withdraw.
+          for (final request in session.requests)
+            ListTile(
+              key: ValueKey('household-request-${request.householdId}'),
+              minTileHeight: 64,
+              textColor: t.textMuted,
+              leading: PointyHex(
+                face: t.surfaceSunken,
+                contour: t.divider,
+                size: 34,
+                child: Icon(
+                  Icons.hourglass_top_outlined,
+                  size: 18,
+                  color: t.textMuted,
+                ),
+              ),
+              title: Text(
+                request.householdName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              subtitle: Text(l10n.joinRequestPending),
+              onTap: () => unawaited(_offerWithdraw(context, request)),
+            ),
           Divider(height: HlSpace.s4, indent: 72, color: t.divider),
           ListTile(
             key: const ValueKey('household-new'),
@@ -255,6 +281,41 @@ class const HouseholdSheet({final int? openNow, super.key})
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Asks whether to withdraw [request], and does.
+Future<void> _offerWithdraw(BuildContext context, JoinRequest request) async {
+  final session = context.read<SessionCubit>();
+  final notices = Notices.of(context);
+  final l10n = AppLocalizations.of(context);
+  final withdraw = await showDialog<bool>(
+    context: context,
+    builder: (dialog) => AlertDialog(
+      key: const ValueKey('join-request-withdraw-dialog'),
+      title: Text(l10n.joinRequestWithdrawFor(request.householdName)),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialog).pop(false),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(
+          key: const ValueKey('join-request-withdraw-confirm'),
+          onPressed: () => Navigator.of(dialog).pop(true),
+          child: Text(l10n.joinRequestWithdraw),
+        ),
+      ],
+    ),
+  );
+  if (withdraw != true) {
+    return;
+  }
+  try {
+    await session.withdrawJoinRequest(request.householdId);
+  } on HouseholdError catch (e) {
+    notices.showSnackBar(
+      SnackBar(content: Text(householdProblemText(l10n, e.problem))),
     );
   }
 }

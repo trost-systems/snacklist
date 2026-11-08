@@ -10,6 +10,7 @@ import 'package:family_groceries/household/create_household_screen.dart';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/invite_share.dart';
 import 'package:family_groceries/household/invite_sheet.dart';
+import 'package:family_groceries/household/join_approval_section.dart';
 import 'package:family_groceries/household/onboarding_page.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/purchases/premium_dialogs.dart';
@@ -316,6 +317,12 @@ class _HouseholdViewState() extends State<_HouseholdView> {
           onTap: () => unawaited(
             showInviteSheet(context, household, from: InviteContext.household),
           ),
+        ),
+        JoinApprovalSection(
+          household: household,
+          onApproved: () => setState(() {
+            _members = _loadMembers();
+          }),
         ),
         HlSectionLabel(l10n.voiceDefaultTitle),
         // There is always one default: another household's button moves
