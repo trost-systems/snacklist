@@ -115,6 +115,16 @@ final eventCatalog = <String, Map<String, PropertyRule>>{
     'scope': OneOf({for (final s in ReorderScope.values) s.wire}),
   },
   'store_reordered': const {},
+  // Job 169b K: the user added a list, or picked another one in the tabs.
+  // Never its name: the household rides along as household_id.
+  'list_created': const {},
+  'list_switched': const {},
+  // Job 169b L: the user said "Ich bringe das" on an item they had not
+  // claimed yet. Never the item, the amount or who else brings it.
+  'item_claimed': const {
+    'actor_role': _roles,
+    'household_size': _householdSize,
+  },
   // Job 32a: once per added item, when the server confirmed the add.
   'item_categorized': const {'via': OneOf(categorizedVia)},
   // Spec #8 Part B (job 32b): the duplicate hint ("Möhren steht schon auf
