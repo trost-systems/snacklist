@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/app/environment.dart';
 import 'package:family_groceries/app/notices.dart';
 import 'package:family_groceries/app/router.dart';
@@ -7,6 +8,8 @@ import 'package:family_groceries/app/theme.dart';
 import 'package:family_groceries/design/section_label.dart';
 import 'package:family_groceries/household/create_household_screen.dart';
 import 'package:family_groceries/household/invite_repository.dart';
+import 'package:family_groceries/household/invite_share.dart';
+import 'package:family_groceries/household/invite_sheet.dart';
 import 'package:family_groceries/household/onboarding_page.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/purchases/premium_dialogs.dart';
@@ -17,7 +20,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 /// More's Haushalt (job 169b): the shown household's name (rename), its
-/// members, whether Siri, Alexa and AI assistants use it, and leaving it.
+/// members with their roles (the owner and admins remove members, the
+/// owner names admins), "Leute einladen", whether Siri, Alexa and AI
+/// assistants use it, and leaving it.
 class const HouseholdPage({
   super.key,
 
@@ -57,11 +62,19 @@ enum _Leave() {
   archive,
 }
 
+/// What a member's menu offers.
+enum _MemberAction() {
+  makeAdmin,
+  removeAdmin,
+  remove,
+}
+
 class _HouseholdViewState() extends State<_HouseholdView> {
-  late final Future<List<HouseholdMember>> _members = context
-      .read<InviteRepository>()
-      .members(widget.household.id);
+  late Future<List<HouseholdMember>> _members = _loadMembers();
   var _busy = false;
+
+  Future<List<HouseholdMember>> _loadMembers() =>
+      context.read<InviteRepository>().members(widget.household.id);
 
   /// Runs a household call; a refusal is told in a snackbar.
   Future<bool> _run(Future<void> Function() call) async {
@@ -138,6 +151,121 @@ class _HouseholdViewState() extends State<_HouseholdView> {
     }
   }
 
+  /// What the user may do to [member]: the owner names and un-names
+  /// admins and removes anyone; an admin removes members. Nobody acts on
+  /// themselves (that is leaving) or on the owner.
+  List<_MemberAction> _actionsFor(HouseholdMember member) => switch ((
+    widget.household.role,
+    member.role,
+  )) {
+    _ when member.userId == widget.userId => const [],
+    (HouseholdRole.owner, HouseholdRole.member) => const [
+      _MemberAction.makeAdmin,
+      _MemberAction.remove,
+    ],
+    (HouseholdRole.owner, HouseholdRole.admin) => const [
+      _MemberAction.removeAdmin,
+      _MemberAction.remove,
+    ],
+    (HouseholdRole.admin, HouseholdRole.member) => const [_MemberAction.remove],
+    _ => const [],
+  };
+
+  Future<void> _act(HouseholdMember member, _MemberAction action) async {
+    final invites = context.read<InviteRepository>();
+    final session = context.read<SessionCubit>();
+    final analytics = context.read<Analytics>();
+    final household = widget.household;
+    final done = switch (action) {
+      _MemberAction.makeAdmin => await _run(
+        () => invites.setRole(household.id, member.userId, HouseholdRole.admin),
+      ),
+      _MemberAction.removeAdmin => await _run(
+        () =>
+            invites.setRole(household.id, member.userId, HouseholdRole.member),
+      ),
+      _MemberAction.remove =>
+        await _confirmRemove(member) &&
+            await _run(() => invites.removeMember(household.id, member.userId)),
+    };
+    if (!done || !mounted) {
+      return;
+    }
+    if (action == _MemberAction.remove) {
+      analytics.track('member_removed');
+      // The household's member count in the switcher.
+      unawaited(session.refresh().catchError((Object _) {}));
+    }
+    setState(() {
+      _members = _loadMembers();
+    });
+  }
+
+  Future<bool> _confirmRemove(HouseholdMember member) async {
+    final name = _memberName(AppLocalizations.of(context), member);
+    return await showDialog<bool>(
+          context: context,
+          builder: (dialog) {
+            final l10n = AppLocalizations.of(dialog);
+            return AlertDialog(
+              key: const ValueKey('member-remove-dialog'),
+              title: Text(l10n.memberRemoveTitle(name)),
+              content: Text(l10n.memberRemoveBody(name, widget.household.name)),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialog).pop(false),
+                  child: Text(l10n.cancel),
+                ),
+                FilledButton(
+                  key: const ValueKey('member-remove-confirm'),
+                  style: dangerButtonStyle(dialog),
+                  onPressed: () => Navigator.of(dialog).pop(true),
+                  child: Text(l10n.memberRemoveConfirm),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
+  }
+
+  Widget _member(AppLocalizations l10n, HouseholdMember member) {
+    final name = _memberName(l10n, member);
+    final actions = _actionsFor(member);
+    final role = switch (member.role) {
+      HouseholdRole.owner => l10n.householdRoleOwner,
+      HouseholdRole.admin => l10n.householdRoleAdmin,
+      HouseholdRole.member => null,
+    };
+    return ListTile(
+      key: ValueKey('member-${member.userId}'),
+      leading: const Icon(Icons.person_outline),
+      title: Text(name),
+      subtitle: role == null ? null : Text(role),
+      trailing: actions.isEmpty
+          ? null
+          : PopupMenuButton<_MemberAction>(
+              key: ValueKey('member-actions-${member.userId}'),
+              tooltip: l10n.memberActions(name),
+              useRootNavigator: true,
+              enabled: !_busy,
+              onSelected: (action) => unawaited(_act(member, action)),
+              itemBuilder: (_) => [
+                for (final action in actions)
+                  PopupMenuItem(
+                    key: ValueKey('member-${action.name}'),
+                    value: action,
+                    child: Text(switch (action) {
+                      _MemberAction.makeAdmin => l10n.memberMakeAdmin,
+                      _MemberAction.removeAdmin => l10n.memberRemoveAdmin,
+                      _MemberAction.remove => l10n.memberRemove,
+                    }),
+                  ),
+              ],
+            ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -168,13 +296,7 @@ class _HouseholdViewState() extends State<_HouseholdView> {
           builder: (context, snapshot) => switch (snapshot) {
             AsyncSnapshot(:final data?) => Column(
               key: const ValueKey('household-members'),
-              children: [
-                for (final member in data)
-                  ListTile(
-                    leading: const Icon(Icons.person_outline),
-                    title: Text(_memberName(l10n, member)),
-                  ),
-              ],
+              children: [for (final member in data) _member(l10n, member)],
             ),
             AsyncSnapshot(hasError: true) => ListTile(
               key: const ValueKey('household-members-failed'),
@@ -185,6 +307,15 @@ class _HouseholdViewState() extends State<_HouseholdView> {
               child: Center(child: CircularProgressIndicator()),
             ),
           },
+        ),
+        ListTile(
+          key: const ValueKey('household-invite'),
+          leading: const Icon(Icons.person_add_outlined),
+          title: Text(l10n.inviteSheetTitle),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => unawaited(
+            showInviteSheet(context, household, from: InviteContext.household),
+          ),
         ),
         HlSectionLabel(l10n.voiceDefaultTitle),
         // There is always one default: another household's button moves

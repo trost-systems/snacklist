@@ -2022,4 +2022,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get invitePasteWaiting => 'Invite saved. Sign in to join.';
+
+  @override
+  String get householdNotOwner => 'Only the household\'s owner names admins.';
 }

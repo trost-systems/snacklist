@@ -2043,4 +2043,8 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get invitePasteWaiting =>
       'Einladung gemerkt. Melde dich an, dann trittst du bei.';
+
+  @override
+  String get householdNotOwner =>
+      'Admins ernennt nur, wer den Haushalt angelegt hat.';
 }

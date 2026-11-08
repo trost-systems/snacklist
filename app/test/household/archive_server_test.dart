@@ -12,6 +12,34 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Job 47: what the server says about archiving reaches the user.
 void main() {
+  test("the W2 server's refusals map to what the screens say", () {
+    expect(
+      {
+        for (final status in [
+          'not_member',
+          'not_a_member',
+          'not_admin',
+          'not_owner',
+          'cannot_remove_owner',
+          'cannot_remove_admin',
+          'cannot_remove_self',
+          'invalid_role',
+        ])
+          status: HouseholdError.fromStatus(status).problem,
+      },
+      {
+        'not_member': HouseholdProblem.notMember,
+        'not_a_member': HouseholdProblem.notMember,
+        'not_admin': HouseholdProblem.notAdmin,
+        'not_owner': HouseholdProblem.notOwner,
+        'cannot_remove_owner': HouseholdProblem.cannotRemove,
+        'cannot_remove_admin': HouseholdProblem.cannotRemove,
+        'cannot_remove_self': HouseholdProblem.cannotRemove,
+        'invalid_role': HouseholdProblem.other,
+      },
+    );
+  });
+
   final de = lookupAppLocalizations(const Locale('de'));
   final en = lookupAppLocalizations(const Locale('en'));
 

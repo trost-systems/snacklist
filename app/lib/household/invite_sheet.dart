@@ -576,6 +576,7 @@ class const InviteQr(
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Semantics(
+    container: true,
     image: true,
     label: semanticLabel,
     excludeSemantics: true,

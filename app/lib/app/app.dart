@@ -17,6 +17,7 @@ import 'package:family_groceries/home_widget/widget_launch.dart';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/invite_share.dart';
 import 'package:family_groceries/household/pending_invite.dart';
+import 'package:family_groceries/household/removed_notice.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/list_link.dart';
 import 'package:family_groceries/list/list_view/item_icon.dart';
@@ -145,7 +146,13 @@ class _AppState() extends State<App> {
     _reviewSessions = widget.reviewPrompt.followLifecycle();
     _lifecycle = AppLifecycleListener(
       onHide: () => unawaited(widget.analytics.flush()),
-      onResume: () => unawaited(widget.entitlements.refresh()),
+      onResume: () {
+        unawaited(widget.entitlements.refresh());
+        // Someone may have removed the user from a household meanwhile.
+        if (widget.session.state case InHousehold() || NeedsHousehold()) {
+          unawaited(widget.session.refresh().catchError((Object _) {}));
+        }
+      },
     );
     _router.routerDelegate.addListener(_onRoute);
     // The first location may be set before anyone listens (a reload on
@@ -244,12 +251,14 @@ class _AppState() extends State<App> {
           routerConfig: _router,
           builder: (context, child) => NoticesHost(
             popups: _popups,
-            child: BlocBuilder<SessionCubit, Session>(
-              builder: (context, session) => session is SessionLoading
-                  ? const Scaffold(
-                      body: Center(child: CircularProgressIndicator()),
-                    )
-                  : child!,
+            child: RemovedNotices(
+              child: BlocBuilder<SessionCubit, Session>(
+                builder: (context, session) => session is SessionLoading
+                    ? const Scaffold(
+                        body: Center(child: CircularProgressIndicator()),
+                      )
+                    : child!,
+              ),
             ),
           ),
         ),

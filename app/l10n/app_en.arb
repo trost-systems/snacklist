@@ -726,5 +726,6 @@
   "householdCannotRemove": "You can't remove this person.",
   "invitePaste": "Paste invite",
   "invitePasteNothing": "There's no invite link or code on the clipboard.",
-  "invitePasteWaiting": "Invite saved. Sign in to join."
+  "invitePasteWaiting": "Invite saved. Sign in to join.",
+  "householdNotOwner": "Only the household's owner names admins."
 }

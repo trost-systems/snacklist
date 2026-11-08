@@ -868,5 +868,6 @@
   "invitePaste": "Einladung einfügen",
   "@invitePaste": {"description": "Job 169b W2: start screens; reads the clipboard only on this tap"},
   "invitePasteNothing": "In der Zwischenablage ist kein Einladungslink und kein Code.",
-  "invitePasteWaiting": "Einladung gemerkt. Melde dich an, dann trittst du bei."
+  "invitePasteWaiting": "Einladung gemerkt. Melde dich an, dann trittst du bei.",
+  "householdNotOwner": "Admins ernennt nur, wer den Haushalt angelegt hat."
 }

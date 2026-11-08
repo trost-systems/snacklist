@@ -323,4 +323,168 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Leave “Sommerfest”?'), findsOneWidget);
   });
+
+  group('members and their roles (job 169b W2)', () {
+    FakeInvites crew() => FakeInvites()
+      ..memberLists['home'] = const [
+        HouseholdMember(
+          userId: 'peter',
+          displayName: 'Peter',
+          role: HouseholdRole.owner,
+        ),
+        HouseholdMember(
+          userId: 'lea',
+          displayName: 'Lea',
+          role: HouseholdRole.admin,
+        ),
+        HouseholdMember(userId: 'tom', displayName: 'Tom'),
+      ];
+
+    Future<Onboarding> pumpAs(
+      WidgetTester tester,
+      String user,
+      HouseholdRole role, {
+      FakeInvites? invites,
+    }) {
+      final household = Household(
+        id: 'home',
+        name: 'Zuhause',
+        isDefault: true,
+        role: role,
+      );
+      return pumpOnboarding(
+        tester,
+        location: householdPath,
+        session: InHousehold(user, household, [household]),
+        invites: invites ?? crew(),
+      );
+    }
+
+    Future<List<String>> menuOf(WidgetTester tester, String user) async {
+      await tester.tap(_key('member-actions-$user'));
+      await tester.pumpAndSettle();
+      final items = [
+        for (final item in tester.widgetList<PopupMenuItem<Object?>>(
+          find.byWidgetPredicate((w) => w is PopupMenuItem),
+        ))
+          (item.key! as ValueKey<String>).value,
+      ];
+      await tester.tapAt(Offset.zero);
+      await tester.pumpAndSettle();
+      return items;
+    }
+
+    testWidgets('roles show under the names', (tester) async {
+      await pumpAs(tester, 'peter', HouseholdRole.owner);
+      expect(
+        find.descendant(
+          of: _key('member-peter'),
+          matching: find.text('Hauptadmin'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: _key('member-lea'), matching: find.text('Admin')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: _key('member-tom'), matching: find.text('Tom')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('the owner names admins and removes anyone but themselves', (
+      tester,
+    ) async {
+      await pumpAs(tester, 'peter', HouseholdRole.owner);
+      expect(_key('member-actions-peter'), findsNothing);
+      expect(await menuOf(tester, 'lea'), [
+        'member-removeAdmin',
+        'member-remove',
+      ]);
+      expect(await menuOf(tester, 'tom'), [
+        'member-makeAdmin',
+        'member-remove',
+      ]);
+    });
+
+    testWidgets('an admin removes members only; a member does nothing', (
+      tester,
+    ) async {
+      await pumpAs(tester, 'lea', HouseholdRole.admin);
+      expect(_key('member-actions-peter'), findsNothing);
+      expect(_key('member-actions-lea'), findsNothing);
+      expect(await menuOf(tester, 'tom'), ['member-remove']);
+    });
+
+    testWidgets('a member has no member actions', (tester) async {
+      await pumpAs(tester, 'tom', HouseholdRole.member);
+      expect(find.byWidgetPredicate((w) => w is PopupMenuButton), findsNothing);
+    });
+
+    testWidgets('removing asks, naming the person; then the list refreshes', (
+      tester,
+    ) async {
+      final o = await pumpAs(tester, 'peter', HouseholdRole.owner);
+      await tester.tap(_key('member-actions-tom'));
+      await tester.pumpAndSettle();
+      await tester.tap(_key('member-remove'));
+      await tester.pumpAndSettle();
+      expect(find.text('Tom entfernen?'), findsOneWidget);
+      expect(
+        find.text(
+          'Tom sieht die Liste von „Zuhause“ dann nicht mehr. '
+          'Mit einer neuen Einladung geht es wieder.',
+        ),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Abbrechen'));
+      await tester.pumpAndSettle();
+      expect(o.invites.removed, isEmpty);
+      await tester.tap(_key('member-actions-tom'));
+      await tester.pumpAndSettle();
+      await tester.tap(_key('member-remove'));
+      await tester.pumpAndSettle();
+      await tapKey(tester, 'member-remove-confirm');
+      expect(o.invites.removed, [('home', 'tom')]);
+      expect(_key('member-tom'), findsNothing);
+      expect(o.session.refreshes, 1, reason: 'the member count');
+      final events = await sentEvents(tester, o);
+      expect(events.map((e) => e['event']), ['member_removed']);
+    });
+
+    testWidgets('making an admin shows the new role', (tester) async {
+      final o = await pumpAs(tester, 'peter', HouseholdRole.owner);
+      await tester.tap(_key('member-actions-tom'));
+      await tester.pumpAndSettle();
+      await tester.tap(_key('member-makeAdmin'));
+      await tester.pumpAndSettle();
+      expect(o.invites.roles, [('home', 'tom', HouseholdRole.admin)]);
+      expect(
+        find.descendant(of: _key('member-tom'), matching: find.text('Admin')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('a refusal is told and nobody is removed', (tester) async {
+      final o = await pumpAs(tester, 'lea', HouseholdRole.admin);
+      o.invites.next = HouseholdProblem.cannotRemove;
+      await tester.tap(_key('member-actions-tom'));
+      await tester.pumpAndSettle();
+      await tester.tap(_key('member-remove'));
+      await tester.pumpAndSettle();
+      await tapKey(tester, 'member-remove-confirm');
+      expect(
+        find.text('Diese Person kannst du nicht entfernen.'),
+        findsOneWidget,
+      );
+      expect(_key('member-tom'), findsOneWidget);
+    });
+
+    testWidgets('Leute einladen opens the invite sheet', (tester) async {
+      await pumpAs(tester, 'tom', HouseholdRole.member);
+      await tapKey(tester, 'household-invite');
+      expect(_key('invite-sheet'), findsOneWidget);
+    });
+  });
 }

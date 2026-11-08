@@ -3337,6 +3337,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Einladung gemerkt. Melde dich an, dann trittst du bei.'**
   String get invitePasteWaiting;
+
+  /// No description provided for @householdNotOwner.
+  ///
+  /// In de, this message translates to:
+  /// **'Admins ernennt nur, wer den Haushalt angelegt hat.'**
+  String get householdNotOwner;
 }
 
 class _AppLocalizationsDelegate

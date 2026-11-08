@@ -132,7 +132,12 @@ class FakeInvites() implements InviteRepository {
   Future<void> removeMember(String householdId, String userId) async {
     removed.add((householdId, userId));
     await _answer();
-    memberLists[householdId]?.removeWhere((m) => m.userId == userId);
+    if (memberLists[householdId] case final members?) {
+      memberLists[householdId] = [
+        for (final m in members)
+          if (m.userId != userId) m,
+      ];
+    }
   }
 
   @override
@@ -238,6 +243,19 @@ class TestSession(super.initialState)
 
   @override
   PendingInvite? get pendingInvite => null;
+
+  /// What [removals] tells: add a household to say someone removed the
+  /// user from it.
+  final removedFrom = StreamController<Household>.broadcast();
+
+  @override
+  Stream<Household> get removals => removedFrom.stream;
+
+  @override
+  Future<void> close() async {
+    await removedFrom.close();
+    await super.close();
+  }
 
   @override
   Analytics? get analytics => null;

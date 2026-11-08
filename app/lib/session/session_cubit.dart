@@ -243,6 +243,15 @@ class SessionCubit(
   /// second answer (the same household) is not counted again.
   final _created = <String>{};
 
+  /// Households this device is leaving: gone after the next refresh, but
+  /// not removed by someone else.
+  final _leaving = <String>{};
+  final _removals = StreamController<Household>.broadcast();
+
+  /// Each household someone else removed the user from (job 169b W2), as a
+  /// refresh finds it gone. The session already shows another one.
+  Stream<Household> get removals => _removals.stream;
+
   /// A join whose answer never came (offline, a timeout): the server may
   /// have done it. The retry then answers `member`, and the event goes out
   /// once, then.
@@ -318,6 +327,17 @@ class SessionCubit(
     final next = households.isEmpty
         ? NeedsHousehold(userId)
         : InHousehold(userId, _pick(households, shown), households);
+    final gone = switch (state) {
+      InHousehold(userId: final user, households: final before)
+          when user == userId =>
+        [
+          for (final h in before)
+            if (!households.any((now) => now.id == h.id) &&
+                !_leaving.remove(h.id))
+              h,
+        ],
+      _ => const <Household>[],
+    };
     await _cache.remember(
       userId,
       households: households,
@@ -327,6 +347,7 @@ class SessionCubit(
       },
     );
     emit(next);
+    gone.forEach(_removals.add);
   }
 
   /// Shows [householdId], one of the user's households, on this device: the
@@ -374,12 +395,22 @@ class SessionCubit(
   /// default one; leaving the last one, onboarding. Throws
   /// [HouseholdError].
   Future<void> leave(String householdId, {bool archive = false}) async {
-    final result = await householdCall(
-      () => _client.rpc<Map<String, dynamic>>(
-        'leave_household',
-        params: {'p_household': householdId, 'p_archive': archive},
-      ),
-    );
+    _leaving.add(householdId);
+    final Map<String, dynamic> result;
+    try {
+      result = await householdCall(
+        () => _client.rpc<Map<String, dynamic>>(
+          'leave_household',
+          params: {'p_household': householdId, 'p_archive': archive},
+        ),
+      );
+    } on HouseholdError catch (e) {
+      // Offline, the server may have done it: then it is gone by our hand.
+      if (e.problem != HouseholdProblem.offline) {
+        _leaving.remove(householdId);
+      }
+      rethrow;
+    }
     switch (result) {
       case {'status': 'left'}:
         await householdCall(refresh);
@@ -577,6 +608,7 @@ class SessionCubit(
   Future<void> close() async {
     _retry?.cancel();
     await _auth.cancel();
+    await _removals.close();
     await super.close();
   }
 }

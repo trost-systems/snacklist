@@ -109,7 +109,11 @@ enum HouseholdProblem() {
   /// Only the owner and admins may do that (a group link, removing).
   notAdmin,
 
-  /// The owner can't be removed, nor an admin by another admin.
+  /// Only the owner names and un-names admins.
+  notOwner,
+
+  /// The owner can't be removed, nor an admin by another admin, nor
+  /// oneself (that is leaving).
   cannotRemove,
 
   /// The server's archive switch is off: nothing was archived or changed.
@@ -127,10 +131,12 @@ final class const HouseholdError(final HouseholdProblem problem)
     'invalid_invite' => HouseholdProblem.invalidInvite,
     'too_many_attempts' => HouseholdProblem.tooManyAttempts,
     'too_many_households' => HouseholdProblem.tooManyHouseholds,
-    'not_member' => HouseholdProblem.notMember,
+    'not_member' || 'not_a_member' => HouseholdProblem.notMember,
     'not_admin' => HouseholdProblem.notAdmin,
+    'not_owner' => HouseholdProblem.notOwner,
     'cannot_remove_owner' ||
-    'cannot_remove_admin' => HouseholdProblem.cannotRemove,
+    'cannot_remove_admin' ||
+    'cannot_remove_self' => HouseholdProblem.cannotRemove,
     'archive_disabled' => HouseholdProblem.archiveDisabled,
     _ => HouseholdProblem.other,
   });
