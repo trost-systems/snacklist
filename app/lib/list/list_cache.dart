@@ -13,6 +13,9 @@ class const ListSnapshot({
   /// Oldest first, as queued.
   required final List<ItemOp> pending,
   final List<Usual> usuals = const [],
+
+  /// The "Ich bringe" claims on the household's open items (job 169b L).
+  final List<Claim> claims = const [],
 }) {
   /// Upgrades an older snapshot first, so its queued ops survive an app
   /// update. Throws on a version newer than [version] (the app was
@@ -40,13 +43,31 @@ class const ListSnapshot({
         for (final row in current['usuals']! as List<Object?>)
           Usual.fromJson(row! as _Json),
       ],
+      claims: [
+        for (final row in current['claims']! as List<Object?>)
+          Claim.fromJson(row! as _Json),
+      ],
     );
   }
 
-  static const version = 3;
+  static const version = 4;
 
   /// Version n to n + 1, for every n below [version].
-  static const _upgrades = <int, _Json Function(_Json)>{1: _v1ToV2, 2: _v2ToV3};
+  static const _upgrades = <int, _Json Function(_Json)>{
+    1: _v1ToV2,
+    2: _v2ToV3,
+    3: _v3ToV4,
+  };
+
+  /// Job 169b: lists and claims. A copy from before knows no lists: its
+  /// items have no list id, which reads as the household's first list once
+  /// the server names the lists.
+  static _Json _v3ToV4(_Json json) => {
+    ...json,
+    'version': 4,
+    'catalog': {...json['catalog']! as _Json, 'lists': const <Object?>[]},
+    'claims': const <Object?>[],
+  };
 
   static _Json _v1ToV2(_Json json) => {
     ...json,
@@ -92,6 +113,7 @@ class const ListSnapshot({
     'server': [for (final item in server) item.toJson()],
     'pending': [for (final op in pending) op.toJson()],
     'usuals': [for (final u in usuals) u.toJson()],
+    'claims': [for (final c in claims) c.toJson()],
   };
 }
 
@@ -118,25 +140,34 @@ abstract interface class ListCache() {
 const noStoreKey = 'none';
 
 /// How the user left the list on this device: which sections are folded
-/// (store ids and [noStoreKey]; ids of deleted stores are ignored), and
-/// whether the explainer card was dismissed.
+/// (store ids and [noStoreKey]; ids of deleted stores are ignored), whether
+/// the explainer card was dismissed, and which of the household's lists
+/// shows (job 169b K; null or a deleted list: the first).
 @immutable
 class const ListPrefs({
   final Set<String> folded = const {},
   final bool hintDismissed = false,
+  final String? shownList,
 }) {
   factory fromJson(Map<String, Object?> json) => ListPrefs(
     folded: {...(json['folded'] as List<Object?>? ?? const []).cast<String>()},
     hintDismissed: json['hint_dismissed'] as bool? ?? false,
+    shownList: json['shown_list'] as String?,
   );
 
   Map<String, Object?> toJson() => {
     'folded': [...folded],
     'hint_dismissed': hintDismissed,
+    'shown_list': ?shownList,
   };
 
-  ListPrefs copyWith({Set<String>? folded, bool? hintDismissed}) => ListPrefs(
+  ListPrefs copyWith({
+    Set<String>? folded,
+    bool? hintDismissed,
+    String? shownList,
+  }) => ListPrefs(
     folded: folded ?? this.folded,
     hintDismissed: hintDismissed ?? this.hintDismissed,
+    shownList: shownList ?? this.shownList,
   );
 }

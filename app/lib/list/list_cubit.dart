@@ -41,10 +41,41 @@ class const ListState({
   /// first resync.
   final SeenMark? seen,
 
-  /// Folded stores and the dismissed explainer, from the device.
+  /// Folded stores, the dismissed explainer and the shown list, from the
+  /// device.
   final ListPrefs prefs = const ListPrefs(),
+
+  /// The "Ich bringe" claims as last confirmed by the server (job 169b L).
+  final Map<ClaimKey, Claim> claimRows = const {},
 }) {
-  Map<String, Item> get items => visibleItems(server, pending);
+  /// Every list's items, pending ops folded in.
+  Map<String, Item> get allItems => visibleItems(server, pending);
+
+  /// The list the screen shows: the one picked on this device, else the
+  /// household's first. Null while the household's lists are not known
+  /// (a server or device copy without them): then every item shows.
+  HouseholdList? get shownList =>
+      catalog.list(prefs.shownList) ?? catalog.lists.firstOrNull;
+
+  /// The shown list's items, pending ops folded in.
+  Map<String, Item> get items => onList(allItems, shownList?.id);
+
+  /// [items] on the list [listId]; all of them for none. An item without a
+  /// list id is on the first list.
+  Map<String, Item> onList(Map<String, Item> items, String? listId) {
+    if (listId == null) {
+      return items;
+    }
+    final first = catalog.lists.firstOrNull?.id;
+    return {
+      for (final MapEntry(:key, :value) in items.entries)
+        if (value.listOn(first) == listId) key: value,
+    };
+  }
+
+  /// The claims on open items, by item id, oldest first.
+  Map<String, List<Claim>> get claims =>
+      visibleClaims(claimRows, pending, allItems);
 
   /// What keeps the list from syncing, if anything; offline wins.
   SyncTrouble? get trouble => connection == ConnectionStatus.offline
@@ -64,6 +95,7 @@ class const ListState({
     List<Usual>? usuals,
     SeenMark? seen,
     ListPrefs? prefs,
+    Map<ClaimKey, Claim>? claimRows,
   }) => ListState(
     catalog: catalog ?? this.catalog,
     server: server ?? this.server,
@@ -75,6 +107,7 @@ class const ListState({
     usuals: usuals ?? this.usuals,
     seen: seen ?? this.seen,
     prefs: prefs ?? this.prefs,
+    claimRows: claimRows ?? this.claimRows,
   );
 }
 
@@ -120,6 +153,14 @@ final class const NeedsConnection() extends Rejected;
 
 /// A store added, renamed or deleted offline; nothing changed.
 final class const StoreNeedsConnection() extends Rejected;
+
+/// A list added, renamed, moved or deleted offline; nothing changed.
+final class const ListsNeedConnection() extends Rejected;
+
+/// [name] is open on the list [listName] already: an item does not move
+/// there a second time (open items are unique per list).
+final class const OnListAlready(final String name, final String listName)
+    extends Rejected;
 
 /// Job 32b: [added] just landed, and [onList] (open, another spelling or a
 /// synonym of it) was on the list already. The UI offers to merge them.
@@ -311,6 +352,7 @@ class ListCubit(
           pending: [...cached.pending, ...state.pending],
           loaded: true,
           usuals: cached.usuals,
+          claimRows: {for (final c in cached.claims) c.key: c},
         ),
       );
     }
@@ -335,10 +377,27 @@ class ListCubit(
           _noteDuringResyncs({row.id: row}, answered: false);
           _heardInFlight?.add(row.id);
           _setServer(mergeServerRow(state.server, row));
-          // A new member: reload so the title can name them.
-          if (row.addedBy != null &&
-              state.catalog.member(row.addedBy) == null) {
+          // A new member or list: reload so the list can name them.
+          if ((row.addedBy != null &&
+                  state.catalog.member(row.addedBy) == null) ||
+              (row.listId != null &&
+                  state.catalog.lists.isNotEmpty &&
+                  state.catalog.list(row.listId) == null)) {
             _scheduleCatalogReload();
+          }
+        }
+      },
+      onClaim: (claim) {
+        if (current()) {
+          _noteClaims({claim.key: claim});
+          _setClaims({...state.claimRows, claim.key: claim});
+        }
+      },
+      onClaimDeleted: (key) {
+        if (current()) {
+          _noteClaims({key: null});
+          if (state.claimRows.containsKey(key)) {
+            _setClaims({...state.claimRows}..remove(key));
           }
         }
       },
@@ -458,14 +517,25 @@ class ListCubit(
     );
   }
 
-  /// Ids of partner items the user has not looked at yet.
-  Set<String> get fresh =>
-      state.seen?.fresh(state.items.values, userId) ?? const {};
+  /// Ids of partner items on the shown list the user has not looked at
+  /// yet.
+  Set<String> get fresh {
+    final seen = state.seen;
+    if (seen == null) {
+      return const {};
+    }
+    final shown = state.items;
+    return {
+      for (final id in seen.fresh(state.allItems.values, userId))
+        if (shown.containsKey(id)) id,
+    };
+  }
 
-  /// Marks [ids] as looked at; ids that are not fresh are ignored.
+  /// Marks [ids] as looked at; ids that are not fresh are ignored. Every
+  /// list counts: an unseen item on another list stays news.
   void markSeen(Set<String> ids) {
     if (state.seen case final seen?) {
-      _setSeen(seen.marking(ids, state.items.values, userId));
+      _setSeen(seen.marking(ids, state.allItems.values, userId));
     }
   }
 
@@ -554,6 +624,7 @@ class ListCubit(
       status: ItemStatus.active,
       createdAt: now,
       updatedAt: now,
+      listId: state.shownList?.id,
     );
     _enqueue(
       AddItem(
@@ -582,7 +653,7 @@ class ListCubit(
   ].join('|');
 
   void tick(String id) {
-    final active = state.items[id]?.status == ItemStatus.active;
+    final active = state.allItems[id]?.status == ItemStatus.active;
     // Counted before the enqueue, whose emptied list resets the count.
     if (active) {
       _tripTicked.add(id);
@@ -614,7 +685,7 @@ class ListCubit(
   /// no undo snackbar any more), which sends nothing, as `suggest_items`
   /// does not count it as a purchase.
   void readd(String id) {
-    final item = state.items[id];
+    final item = state.allItems[id];
     final bought = item?.status == ItemStatus.bought;
     final boughtAt = item?.boughtAt;
     final undo =
@@ -637,7 +708,7 @@ class ListCubit(
     if (changes.isEmpty) {
       return;
     }
-    final item = state.items[id];
+    final item = state.allItems[id];
     // The add's line is parsed when it syncs; so is its new name.
     final deviceParsed =
         changes.name != null &&
@@ -645,7 +716,7 @@ class ListCubit(
           (op) => op is AddItem && op.itemId == id && op.deviceParsed,
         );
     if (item != null) {
-      if (_openCopy(item, changes, state.items) case final onList?) {
+      if (_openCopy(item, changes, state.allItems) case final onList?) {
         final rename = EditItem(
           id,
           changes,
@@ -669,15 +740,18 @@ class ListCubit(
     );
   }
 
-  /// The other open item of [items] that [item] would be once [changes]
-  /// rename it.
+  /// The other open item of [items] on [item]'s list that [item] would be
+  /// once [changes] rename it.
   Item? _openCopy(Item item, ItemChanges changes, Map<String, Item> items) {
     if (item.status != ItemStatus.active || !changes.renames) {
       return null;
     }
     final edited = changes.apply(item);
     final key = _sameItem(edited.name, edited.brand, edited.properties);
-    return items.values
+    final first = state.catalog.lists.firstOrNull?.id;
+    return state
+        .onList(items, item.listOn(first))
+        .values
         .where(
           (other) =>
               other.id != item.id &&
@@ -835,7 +909,7 @@ class ListCubit(
   /// goes. Null, with a [MergeRefused], when an item is gone or ticked by now
   /// or the merged quantity would not fit.
   Merge? merge(DedupeHint hint) {
-    final items = state.items;
+    final items = state.allItems;
     final kept = items[hint.onList.id];
     final other = items[hint.added.id];
     if (kept == null ||
@@ -897,6 +971,146 @@ class ListCubit(
       noStore: item.storeId == null,
     ),
   );
+
+  /// Moves the item to the household's list [listId] (job 169b K). An item
+  /// open there already under the same name, brand and details does not
+  /// move: the user hears that it is there ([OnListAlready]).
+  void moveToList(String itemId, String listId) {
+    final items = state.allItems;
+    final item = items[itemId];
+    final target = state.catalog.list(listId);
+    if (item == null ||
+        target == null ||
+        item.listOn(state.catalog.lists.firstOrNull?.id) == listId) {
+      return;
+    }
+    final key = _sameItem(item.name, item.brand, item.properties);
+    final twin =
+        item.status == ItemStatus.active &&
+        state
+            .onList(items, listId)
+            .values
+            .any(
+              (other) =>
+                  other.status == ItemStatus.active &&
+                  _sameItem(other.name, other.brand, other.properties) == key,
+            );
+    if (twin) {
+      _report(OnListAlready(item.name, target.name));
+      return;
+    }
+    _enqueue(MoveToList(itemId, listId: listId));
+  }
+
+  /// The user's "Ich bringe das" on the item (job 169b L), with the amount
+  /// they bring or none; said again, it replaces the amount.
+  void claim(String itemId, {String? quantity}) {
+    final amount = quantity?.trim();
+    final had = state.claims[itemId]?.any((c) => c.userId == userId) ?? false;
+    _enqueue(
+      ClaimItem(
+        itemId,
+        userId: userId,
+        quantity: amount == null || amount.isEmpty ? null : amount,
+        at: _clock(),
+      ),
+    );
+    if (!had) {
+      _track('item_claimed', _actor());
+    }
+  }
+
+  /// Takes the user's claim on the item back.
+  void unclaim(String itemId) => _enqueue(UnclaimItem(itemId, userId: userId));
+
+  /// Shows the list [listId] on this device (job 169b K).
+  void showList(String listId) {
+    if (state.catalog.list(listId) == null || state.shownList?.id == listId) {
+      return;
+    }
+    _setPrefs(state.prefs.copyWith(shownList: listId));
+    _track('list_switched');
+  }
+
+  /// Adds a list after the others and shows it. Null when there is no name
+  /// or it could not be saved; the user is told why. Not queued like item
+  /// writes: offline it is refused, as for stores.
+  Future<HouseholdList?> createList(String name) async {
+    final clean = name.trim().replaceAll(RegExp(r'\s+'), ' ');
+    if (clean.isEmpty) {
+      return null;
+    }
+    final lists = state.catalog.lists;
+    final list = HouseholdList(
+      id: const Uuid().v4(),
+      name: clean,
+      position: lists.isEmpty
+          ? 0
+          : lists.map((l) => l.position).reduce(max) + 1,
+    );
+    if (!await _changeLists(
+      state.catalog.withList(list),
+      () => _repo.createList(list.id, clean),
+    )) {
+      return null;
+    }
+    _track('list_created');
+    _setPrefs(state.prefs.copyWith(shownList: list.id));
+    return list;
+  }
+
+  /// Whether the server took it.
+  Future<bool> renameList(String id, String name) {
+    final clean = name.trim().replaceAll(RegExp(r'\s+'), ' ');
+    return _changeLists(
+      state.catalog.withListName(id, clean),
+      () => _repo.renameList(id, clean),
+    );
+  }
+
+  /// Moves the list [id] to [position] (0: first). Whether the server took
+  /// it.
+  Future<bool> moveList(String id, int position) {
+    final ids = [
+      for (final l in state.catalog.lists)
+        if (l.id != id) l.id,
+    ];
+    if (ids.length == state.catalog.lists.length) {
+      return Future.value(false);
+    }
+    ids.insert(position.clamp(0, ids.length), id);
+    return _changeLists(
+      state.catalog.withListOrder(ids),
+      () => _repo.moveList(id, ids.indexOf(id)),
+    );
+  }
+
+  /// Deletes the list [id] and its items on the server; a resync brings
+  /// that. The household's last list stays.
+  Future<bool> deleteList(String id) async {
+    if (state.catalog.lists.length <= 1) {
+      return false;
+    }
+    final saved = await _changeLists(
+      state.catalog.withoutList(id),
+      () => _repo.deleteList(id),
+    );
+    if (saved) {
+      await resync();
+    }
+    return saved;
+  }
+
+  Future<bool> _changeLists(
+    Catalog optimistic,
+    Future<void> Function() write,
+  ) async {
+    if (state.connection == ConnectionStatus.offline) {
+      _report(const ListsNeedConnection());
+      return false;
+    }
+    return await _changeCatalog(optimistic, write);
+  }
 
   /// Folds or unfolds the section [key] (a store id, or [noStoreKey]).
   void toggleFold(String key) {
@@ -1146,12 +1360,13 @@ class ListCubit(
     try {
       final catalog = _repo.fetchCatalog();
       final rows = _repo.fetchItems();
+      final claims = _repo.fetchClaims();
       // Not a record `.wait`: its ParallelWaitError would hide a
       // ServerTrouble.
-      await Future.wait([catalog, rows]);
+      await Future.wait([catalog, rows, claims]);
       if (number > _resyncShown) {
         _resyncShown = number;
-        _showSnapshot(await catalog, await rows, heard);
+        _showSnapshot(await catalog, await rows, await claims, heard);
       }
       // With ops queued the next send decides: a server that fails every
       // write would otherwise flicker between failing and not.
@@ -1174,8 +1389,21 @@ class ListCubit(
     return fetched;
   }
 
-  void _showSnapshot(Catalog catalog, List<Item> rows, _Heard heard) {
+  void _showSnapshot(
+    Catalog catalog,
+    List<Item> rows,
+    List<Claim> claimRows,
+    _Heard heard,
+  ) {
     final snapshot = {for (final row in rows) row.id: row};
+    final claims = {for (final c in claimRows) c.key: c};
+    for (final MapEntry(:key, :value) in heard.claims.entries) {
+      if (value == null) {
+        claims.remove(key);
+      } else {
+        claims[key] = value;
+      }
+    }
     // An answered row the snapshot lacks: the snapshot was read before the
     // write, or after a delete realtime has not told (it may be down). The
     // row shows until another resync settles it.
@@ -1193,6 +1421,7 @@ class ListCubit(
       state.copyWith(
         catalog: catalog,
         server: snapshot,
+        claimRows: claims,
         loaded: true,
         connection: _channelUp ? ConnectionStatus.online : null,
       ),
@@ -1342,6 +1571,7 @@ class ListCubit(
           ? ({...server}..remove(key))
           : mergeServerRow(server, value);
     }
+    final claims = _claimsAfter(op, row);
     // Job 64b: the add was on the list already as another item (an undone
     // delete, a replayed add); what is queued for this copy goes to it.
     final kept = op is AddItem && row == null
@@ -1357,6 +1587,7 @@ class ListCubit(
         ],
         connection: ConnectionStatus.online,
         failing: false,
+        claimRows: claims,
       ),
     );
     _troubleRound = null;
@@ -1390,6 +1621,44 @@ class ListCubit(
       }
     }
   }
+
+  /// The server's claims once it acknowledged [op], [row] being the item's
+  /// row in its answer: `claim_item` and `unclaim_item` did what they say,
+  /// and a tick or a delete ended the item's claims (the server's trigger).
+  /// Null when [op] changed none.
+  Map<ClaimKey, Claim>? _claimsAfter(ItemOp op, Item? row) {
+    final rows = state.claimRows;
+    Map<ClaimKey, Claim> without(String itemId) =>
+        {...rows}..removeWhere((key, _) => key.$1 == itemId);
+    return switch (op) {
+      ClaimItem(:final userId, :final quantity, :final at)
+          when row?.status == ItemStatus.active =>
+        {
+          ...rows,
+          (op.itemId, userId): Claim(
+            itemId: op.itemId,
+            userId: userId,
+            quantity: quantity,
+            createdAt: rows[(op.itemId, userId)]?.createdAt ?? at,
+          ),
+        },
+      UnclaimItem(:final userId) => {...rows}..remove((op.itemId, userId)),
+      ClaimItem() || DeleteItem() => without(op.itemId),
+      SetStatus(status: ItemStatus.bought) => without(op.itemId),
+      _ => null,
+    };
+  }
+
+  /// Claims heard over realtime (null: taken back) while resyncs are in
+  /// flight; they beat the snapshot.
+  void _noteClaims(Map<ClaimKey, Claim?> claims) {
+    for (final heard in _resyncsHeard) {
+      heard.claims.addAll(claims);
+    }
+  }
+
+  void _setClaims(Map<ClaimKey, Claim> claims) =>
+      emit(state.copyWith(claimRows: claims));
 
   bool _deletedSince(Item row) => switch (_gone[row.id]) {
     final at? => !row.updatedAt.isAfter(at),
@@ -1504,7 +1773,8 @@ class ListCubit(
       _saveNow(next);
     } else if (!identical(next.catalog, before.catalog) ||
         !identical(next.server, before.server) ||
-        !identical(next.usuals, before.usuals)) {
+        !identical(next.usuals, before.usuals) ||
+        !identical(next.claimRows, before.claimRows)) {
       _save?.cancel();
       _save = Timer(const Duration(milliseconds: 300), () => _saveNow(state));
     }
@@ -1517,6 +1787,7 @@ class ListCubit(
         server: [...state.server.values],
         pending: state.pending,
         usuals: state.usuals,
+        claims: [...state.claimRows.values],
       ),
     ),
   );
@@ -1558,4 +1829,5 @@ class ListCubit(
 final class _Heard() {
   final rows = <String, Item?>{};
   final answered = <String>{};
+  final claims = <ClaimKey, Claim?>{};
 }

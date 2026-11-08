@@ -49,6 +49,16 @@ class FakeRepository() implements ListRepository {
   ];
   var me = 'peter';
 
+  /// The household's lists (job 169b K); none, as a server from before
+  /// them, by default.
+  var lists = const <HouseholdList>[];
+
+  /// The "Ich bringe" claims (job 169b L).
+  final claims = <ClaimKey, Claim>{};
+
+  /// The first list, where an add without a list lands.
+  String? get firstList => lists.firstOrNull?.id;
+
   /// What suggest_items answers; [usualsFail] makes it fail on its own.
   var usuals = <Usual>[];
   var usualsFail = false;
@@ -71,6 +81,8 @@ class FakeRepository() implements ListRepository {
   /// A delete, committed now on the fake's clock.
   void Function(String id)? emitDelete;
   void Function(ConnectionStatus status)? emitStatus;
+  void Function(Claim claim)? emitClaim;
+  void Function(ClaimKey key)? emitClaimDeleted;
   void Function()? emitCatalogChanged;
 
   Completer<void>? gate;
@@ -133,7 +145,53 @@ class FakeRepository() implements ListRepository {
       stores: stores,
       layout: layout,
       members: members,
+      lists: lists,
     );
+  }
+
+  @override
+  Future<List<Claim>> fetchClaims() async {
+    _ensureOnline();
+    _ensureFetchable();
+    return claims.values.toList();
+  }
+
+  @override
+  Future<void> createList(String id, String name) async {
+    if (lists.any((l) => l.id == id)) {
+      return;
+    }
+    _writeCatalog('createList($id, $name)');
+    lists = Catalog(lists: lists)
+        .withList(HouseholdList(id: id, name: name, position: lists.length))
+        .lists;
+  }
+
+  @override
+  Future<void> renameList(String id, String name) async {
+    _writeCatalog('renameList($id, $name)');
+    lists = Catalog(lists: lists).withListName(id, name).lists;
+  }
+
+  @override
+  Future<void> deleteList(String id) async {
+    if (lists.length <= 1) {
+      throw const RejectedOp('last_list');
+    }
+    _writeCatalog('deleteList($id)');
+    final first = firstList;
+    lists = Catalog(lists: lists).withoutList(id).lists;
+    rows.removeWhere((_, item) => item.listOn(first) == id);
+  }
+
+  @override
+  Future<void> moveList(String id, int position) async {
+    _writeCatalog('moveList($id, $position)');
+    final ids = [
+      for (final l in lists)
+        if (l.id != id) l.id,
+    ]..insert(position, id);
+    lists = Catalog(lists: lists).withListOrder(ids).lists;
   }
 
   void _writeCatalog(String call) {
@@ -342,6 +400,21 @@ class FakeRepository() implements ListRepository {
         // put_item: the open item the add already is, unchanged.
         final kept = _openTwin(item)!;
         touched = {op.itemId: null, kept.id: kept};
+      case ClaimItem(:final userId, :final quantity):
+        // claim_item: an upsert on an open item; the item stays as it is.
+        final item = rows[op.itemId];
+        if (item != null && item.status == ItemStatus.active) {
+          claims[(op.itemId, userId)] = Claim(
+            itemId: op.itemId,
+            userId: userId,
+            quantity: quantity,
+            createdAt: claims[(op.itemId, userId)]?.createdAt ?? _tick(),
+          );
+        }
+        touched = {op.itemId: item};
+      case UnclaimItem(:final userId):
+        claims.remove((op.itemId, userId));
+        touched = {op.itemId: rows[op.itemId]};
       default:
         return {op.itemId: _sendOne(op)};
     }
@@ -427,11 +500,14 @@ class FakeRepository() implements ListRepository {
         item.status != ItemStatus.active) {
       return null;
     }
+    // Job 169b K: per list.
+    final list = item.listOn(firstList);
     return rows.values
         .where(
           (r) =>
               r.id != except &&
               r.status == ItemStatus.active &&
+              r.listOn(firstList) == list &&
               key(r) == key(item),
         )
         .firstOrNull;
@@ -453,6 +529,7 @@ class FakeRepository() implements ListRepository {
     addedBy: item.addedBy,
     categorizedVia: item.categorizedVia,
     canonicalKey: item.canonicalKey,
+    listId: item.listId,
   );
 
   /// What the items trigger sets as `canonical_key` for a name: here the
@@ -481,6 +558,7 @@ class FakeRepository() implements ListRepository {
               addedBy: me,
               categorizedVia: categorizedVia,
               canonicalKey: canonicalOf(item.name),
+              listId: item.listId ?? firstList,
             ),
       PlaceItem(:final anchorId, :final edge) => _place(
         current,
@@ -491,7 +569,12 @@ class FakeRepository() implements ListRepository {
     };
     if (next == null) {
       rows.remove(op.itemId);
+      claims.removeWhere((key, _) => key.$1 == op.itemId);
       return null;
+    }
+    // A claim ends when the item is ticked (the claims trigger).
+    if (next.status == ItemStatus.bought) {
+      claims.removeWhere((key, _) => key.$1 == op.itemId);
     }
     // The items trigger: a new item, or one whose group changed without a
     // key, goes to the end of its group.
@@ -520,6 +603,7 @@ class FakeRepository() implements ListRepository {
       canonicalKey: next.name == current?.name
           ? next.canonicalKey
           : canonicalOf(next.name),
+      listId: next.listId,
     );
     rows[op.itemId] = stamped;
     if (loseNextAnswer) {
@@ -601,11 +685,15 @@ class FakeRepository() implements ListRepository {
   Future<void> Function() watch({
     required void Function(Item item) onItem,
     required void Function(String id, DateTime at) onItemDeleted,
+    required void Function(Claim claim) onClaim,
+    required void Function(ClaimKey key) onClaimDeleted,
     required void Function() onCatalogChanged,
     required void Function(ConnectionStatus status) onStatus,
   }) {
     watches++;
     emitItem = onItem;
+    emitClaim = onClaim;
+    emitClaimDeleted = onClaimDeleted;
     emitDelete = (id) => onItemDeleted(id, _tick());
     emitStatus = onStatus;
     emitCatalogChanged = onCatalogChanged;
@@ -636,6 +724,7 @@ class FakeRepository() implements ListRepository {
     String? brand,
     String? properties,
     String? quantity,
+    String? listId,
   }) {
     final item = Item(
       id: 'remote-${rows.length}',
@@ -650,7 +739,18 @@ class FakeRepository() implements ListRepository {
       updatedAt: _clock,
       addedBy: addedBy,
       canonicalKey: canonicalOf(name),
+      listId: listId ?? firstList,
     );
     return rows[item.id] = item.copyWith(sortKey: () => _endOf(item));
   }
+
+  /// [userId]'s claim on [itemId], made on another phone; not told over
+  /// realtime until the test calls [emitClaim].
+  Claim remoteClaim(String itemId, {String userId = 'lea', String? quantity}) =>
+      claims[(itemId, userId)] = Claim(
+        itemId: itemId,
+        userId: userId,
+        quantity: quantity,
+        createdAt: _tick(),
+      );
 }

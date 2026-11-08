@@ -16,8 +16,24 @@ enum ConnectionStatus() {
 abstract interface class ListRepository() {
   Future<Catalog> fetchCatalog();
 
-  /// Active items plus the most recently bought ones ("Zuletzt verwendet").
+  /// Active items plus the most recently bought ones ("Zuletzt verwendet"),
+  /// of every list of the household.
   Future<List<Item>> fetchItems();
+
+  /// The household's "Ich bringe" claims (job 169b L).
+  Future<List<Claim>> fetchClaims();
+
+  /// Adds the list [id] after the others; the same id again is the same
+  /// list (`create_list`).
+  Future<void> createList(String id, String name);
+
+  Future<void> renameList(String id, String name);
+
+  /// Its items go with it. Refused for the household's last list.
+  Future<void> deleteList(String id);
+
+  /// Moves the list to [position], 0 for the first.
+  Future<void> moveList(String id, int position);
 
   /// What the household buys again and again, best first, without what is
   /// on the list now.
@@ -73,10 +89,13 @@ abstract interface class ListRepository() {
   Future<SpokenSplit> splitSpoken(String text);
 
   /// Live changes for the household; returns a function that unsubscribes.
-  /// [onItemDeleted] gets the delete's commit time.
+  /// [onItemDeleted] gets the delete's commit time. A change to the
+  /// household's lists comes as [onCatalogChanged].
   Future<void> Function() watch({
     required void Function(Item item) onItem,
     required void Function(String id, DateTime at) onItemDeleted,
+    required void Function(Claim claim) onClaim,
+    required void Function(ClaimKey key) onClaimDeleted,
     required void Function() onCatalogChanged,
     required void Function(ConnectionStatus status) onStatus,
   });
@@ -164,7 +183,7 @@ class SupabaseListRepository(
   static const _itemColumns =
       'id, name, quantity, brand, properties, category_id, store_id, '
       'sort_key, status, created_at, updated_at, bought_at, added_by, '
-      'categorized_via, canonical_key';
+      'categorized_via, canonical_key, list_id';
 
   @override
   Future<Catalog> fetchCatalog() => _answered(() async {
@@ -198,9 +217,17 @@ class SupabaseListRepository(
           )
           .then((rows) => rows.whereType<Map<String, dynamic>>().toList()),
     );
+    final lists = _sent(
+      _client.rest
+          .from('lists')
+          .select('id, name, position')
+          .eq('household_id', householdId)
+          .order('position', ascending: true)
+          .order('created_at', ascending: true),
+    );
     // Not a record `.wait`: its ParallelWaitError would hide whether the
     // server answered. Future.wait throws the first error once all settled.
-    await Future.wait([categories, stores, layout, members]);
+    await Future.wait([categories, stores, layout, members, lists]);
     return Catalog(
       categories: (await categories).map(Category.fromJson).toList(),
       stores: (await stores).map(Store.fromJson).toList(),
@@ -217,8 +244,47 @@ class SupabaseListRepository(
               role: row['role'] as String?,
             ),
       ],
+      lists: (await lists).map(HouseholdList.fromJson).toList(),
     );
   });
+
+  @override
+  Future<List<Claim>> fetchClaims() => _answered(() async {
+    final rows = await _client.rest
+        .from('item_claims')
+        .select('item_id, user_id, quantity, created_at')
+        .eq('household_id', householdId);
+    return rows.map(Claim.fromJson).toList();
+  });
+
+  @override
+  Future<void> createList(String id, String name) => _refusable(
+    () => _client.rpc<void>(
+      'create_list',
+      params: {'p_household': householdId, 'p_name': name, 'p_id': id},
+    ),
+  );
+
+  @override
+  Future<void> renameList(String id, String name) => _refusable(
+    () => _client.rpc<void>(
+      'rename_list',
+      params: {'p_list': id, 'p_name': name},
+    ),
+  );
+
+  @override
+  Future<void> deleteList(String id) => _refusable(
+    () => _client.rpc<void>('delete_list', params: {'p_list': id}),
+  );
+
+  @override
+  Future<void> moveList(String id, int position) => _refusable(
+    () => _client.rpc<void>(
+      'move_list',
+      params: {'p_list': id, 'p_position': position},
+    ),
+  );
 
   @override
   Future<void> renameCategory(String id, String name) => _refusable(
@@ -388,6 +454,8 @@ class SupabaseListRepository(
           'p_sort_key': item.sortKey,
           'p_status': item.status.name,
           'p_no_store': noStore,
+          // None (an add queued before lists): the household's first list.
+          'p_list': ?item.listId,
         },
       ),
     );
@@ -456,6 +524,20 @@ class SupabaseListRepository(
           'p_anchor': anchorId,
           'p_edge': edge.name,
         });
+      case MoveToList(:final listId):
+        rows = await items
+            .update({'list_id': listId})
+            .eq('id', op.itemId)
+            .select(_itemColumns);
+      case ClaimItem(:final quantity):
+        await _client.rpc<void>(
+          'claim_item',
+          params: {'p_item': op.itemId, 'p_quantity': quantity},
+        );
+        return await _fetchItem(op.itemId);
+      case UnclaimItem():
+        await _client.rpc<void>('unclaim_item', params: {'p_item': op.itemId});
+        return await _fetchItem(op.itemId);
       case DeleteItem():
         await items.delete().eq('id', op.itemId).select('id');
         return null;
@@ -558,6 +640,8 @@ class SupabaseListRepository(
   Future<void> Function() watch({
     required void Function(Item item) onItem,
     required void Function(String id, DateTime at) onItemDeleted,
+    required void Function(Claim claim) onClaim,
+    required void Function(ClaimKey key) onClaimDeleted,
     required void Function() onCatalogChanged,
     required void Function(ConnectionStatus status) onStatus,
   }) {
@@ -567,7 +651,12 @@ class SupabaseListRepository(
       value: householdId,
     );
     final channel = _client.channel('household:$householdId');
-    for (final table in ['categories', 'stores', 'store_category_order']) {
+    for (final table in [
+      'categories',
+      'stores',
+      'store_category_order',
+      'lists',
+    ]) {
       for (final event in [
         PostgresChangeEvent.insert,
         PostgresChangeEvent.update,
@@ -611,6 +700,32 @@ class SupabaseListRepository(
           table: 'items',
           callback: (p) => switch (p.oldRecord['id']) {
             final String id => onItemDeleted(id, p.commitTimestamp),
+            _ => null,
+          },
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.insert,
+          schema: 'public',
+          table: 'item_claims',
+          filter: mine,
+          callback: (p) => onClaim(Claim.fromJson(p.newRecord)),
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.update,
+          schema: 'public',
+          table: 'item_claims',
+          filter: mine,
+          callback: (p) => onClaim(Claim.fromJson(p.newRecord)),
+        )
+        // Unfiltered like the items' deletes; the old record is the primary
+        // key, unknown claims are ignored.
+        .onPostgresChanges(
+          event: PostgresChangeEvent.delete,
+          schema: 'public',
+          table: 'item_claims',
+          callback: (p) => switch (p.oldRecord) {
+            {'item_id': final String item, 'user_id': final String user} =>
+              onClaimDeleted((item, user)),
             _ => null,
           },
         )

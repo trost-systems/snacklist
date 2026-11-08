@@ -575,10 +575,26 @@ void main() {
                 {'user_id': 'lea', 'display_name': 'Lea', 'role': 'member'},
               ],
             ),
+            'lists' => (
+              200,
+              [
+                {'id': 'l1', 'name': 'Wocheneinkauf', 'position': 0},
+                {'id': 'l2', 'name': 'Baumarkt', 'position': 1},
+              ],
+            ),
             _ => (404, null),
           },
         );
         final catalog = await repo.fetchCatalog();
+        expect(catalog.lists.map((l) => l.name), ['Wocheneinkauf', 'Baumarkt']);
+        expect(
+          sent
+              .singleWhere((r) => r.url.pathSegments.last == 'lists')
+              .url
+              .queryParametersAll['order'],
+          ['position.asc.nullslast,created_at.asc.nullslast'],
+          reason: 'the first list is the first by position, then age',
+        );
         expect(catalog.categories.single.seedKey, 'fruit');
         expect(catalog.stores.single.name, 'Lidl');
         expect(catalog.layout.single.hidden, isTrue);
@@ -596,7 +612,12 @@ void main() {
           ),
           {'p_household': 'household'},
         );
-        for (final table in ['categories', 'stores', 'store_category_order']) {
+        for (final table in [
+          'categories',
+          'stores',
+          'store_category_order',
+          'lists',
+        ]) {
           final request = sent.singleWhere(
             (r) => r.url.pathSegments.last == table,
           );
@@ -713,6 +734,22 @@ void main() {
           'delete_category',
           {'p_category': 'c1', 'p_reassign_to': 'c2'},
         ),
+        (
+          () => repo.createList('l3', 'Grillen'),
+          'create_list',
+          {'p_household': 'household', 'p_name': 'Grillen', 'p_id': 'l3'},
+        ),
+        (
+          () => repo.renameList('l3', 'Grillfest'),
+          'rename_list',
+          {'p_list': 'l3', 'p_name': 'Grillfest'},
+        ),
+        (
+          () => repo.moveList('l3', 0),
+          'move_list',
+          {'p_list': 'l3', 'p_position': 0},
+        ),
+        (() => repo.deleteList('l3'), 'delete_list', {'p_list': 'l3'}),
         (
           () => repo.setStoreLayout('s1', ['c2', 'c1'], {'c2'}),
           'set_store_layout',
@@ -879,6 +916,65 @@ void main() {
         expect(await repo.send(const DeleteItem('i1')), {'i1': null});
         expect(route(sent.single), 'DELETE /rest/v1/items');
         expect(sent.single.url.queryParameters['id'], 'eq.i1');
+      });
+
+      test('an add names its list; one queued before lists names none, so '
+          'the server takes the first (job 169b K)', () async {
+        final repo = server((_) => (200, [row('item-1')]));
+        await repo.send(AddItem(add.item.copyWith(listId: 'l2')));
+        expect((params(sent.single)! as Map)['p_list'], 'l2');
+        await repo.send(add);
+        expect((params(sent.last)! as Map).containsKey('p_list'), isFalse);
+      });
+
+      test('a move to another list writes its list (job 169b K)', () async {
+        final repo = server((_) => (200, [row('i1')..['list_id'] = 'l2']));
+        final rows = await repo.send(const MoveToList('i1', listId: 'l2'));
+        expect(route(sent.single), 'PATCH /rest/v1/items');
+        expect(sent.single.url.queryParameters['id'], 'eq.i1');
+        expect(params(sent.single), {'list_id': 'l2'});
+        expect(rows['i1']!.listId, 'l2');
+      });
+
+      test('a claim and its undo call their function, then read the item '
+          '(job 169b L)', () async {
+        final repo = server(
+          (r) => r.method == 'GET' ? (200, row('i1')) : (200, null),
+        );
+        final claimed = await repo.send(
+          ClaimItem('i1', userId: 'peter', quantity: '2', at: at),
+        );
+        expect(sent.map(route), [
+          'POST /rest/v1/rpc/claim_item',
+          'GET /rest/v1/items',
+        ]);
+        expect(params(sent.first), {'p_item': 'i1', 'p_quantity': '2'});
+        expect(claimed['i1']!.id, 'i1');
+
+        await repo.send(const UnclaimItem('i1', userId: 'peter'));
+        expect(route(sent[2]), 'POST /rest/v1/rpc/unclaim_item');
+        expect(params(sent[2]), {'p_item': 'i1'});
+      });
+
+      test('the claims are the household’s', () async {
+        final repo = server(
+          (_) => (
+            200,
+            [
+              {
+                'item_id': 'i1',
+                'user_id': 'lea',
+                'quantity': '2 Kuchen',
+                'created_at': '2026-10-28T00:00:00Z',
+              },
+            ],
+          ),
+        );
+        final claims = await repo.fetchClaims();
+        expect(route(sent.single), 'GET /rest/v1/item_claims');
+        expect(sent.single.url.queryParameters['household_id'], 'eq.household');
+        expect(claims.single.key, ('i1', 'lea'));
+        expect(claims.single.quantity, '2 Kuchen');
       });
 
       test('a move goes to the end of its new group', () async {

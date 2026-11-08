@@ -139,6 +139,9 @@ final class FakeBackend(
   final _deleted = <String>{};
   final resurrected = <String>[];
 
+  /// Whether [id] was deleted at some point.
+  bool wasDeleted(String id) => _deleted.contains(id);
+
   /// The open-item keys an untick gave a second open row: the server lets
   /// that through (job 104) and only renames are folded. Counted, not a
   /// failure, unless strict.
@@ -381,6 +384,9 @@ final class FakeBackend(
         ('GET', 'categories') => (200, categoryRows),
         ('GET', 'stores') => (200, storeRows),
         ('GET', 'store_category_order') => (200, const <Object?>[]),
+        // A household from before lists and claims (job 169b): none.
+        ('GET', 'lists') => (200, const <Object?>[]),
+        ('GET', 'item_claims') => (200, const <Object?>[]),
         ('POST', 'rpc/household_members_of') => (
           200,
           [
