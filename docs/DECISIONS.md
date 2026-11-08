@@ -10292,3 +10292,29 @@ switch drops the user's other cached lists.
    (CLAUDE.md, lint rules). It caught the feedback trigger's old read when run on the old file.
 9. **`households.kind` lands here**, shared with job 168's "who do you shop with" step
    (`partner | family | flat | club | solo`, nullable).
+
+## Job 169b: club features, wave 3, 2026-11-08
+
+Contract [`docs/households/W3.md`](households/W3.md). Peter (Q-HH5): club features in the build,
+no club outreach, research or landing page.
+
+1. **Every household has at least one list; old writes land in the first.** A before-insert
+   trigger fills a missing `list_id` with the household's first list, so old store builds, Siri,
+   Alexa, voice and API calls without a list keep working. Old builds show every list's items as
+   one list until they update; accepted for the transition.
+2. **`put_item` takes a required `p_list`** (null = the first list), a new signature next to the
+   old one, and `add_list_item` is a new name rather than an `add_item` overload: the edge
+   functions call `add_item` positionally, and two overloads made those calls ambiguous.
+3. **The duplicate rule is per list**: "Kuchen" may be open on "Sommerfest" and "Vereinsheim".
+4. **The device copy stays one per household**, not per list: the write queue, live updates and
+   moves between lists are per household, and splitting the copy would split the queue. The
+   shown list is remembered per user and household.
+5. **Claims are a person's promise**: members claim with an optional amount; claims end on a
+   tick, a delete, a list delete, leaving or a removal. MCP and the API don't expose claims.
+6. **Join approval is on by default for clubs only** (`kind = 'club'`), off for everyone else and
+   for existing households. With it on, every `accept_invite` signature answers `requested` and
+   counts no use until an admin approves (the use is counted then, under the invite lock; a link
+   full by then answers `invite_full` and the request stays open). Old builds show their generic
+   error for `requested`; approval is new and opt-in. Decided requests are deleted after 7 days.
+7. **The data processing agreement (AVV)** is a draft for Legal in the separate privacy draft
+   PR, linked from nothing until Legal approves.
