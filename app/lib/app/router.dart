@@ -408,11 +408,14 @@ List<RouteBase> moreTabRoutes() => [
   ),
 ];
 
-/// Every route of the app; [repository] overrides the Supabase list
-/// repository, for tests.
-List<RouteBase> appRoutes({ListRepository? repository}) => [
+/// Every route of the app; [repositories] overrides the Supabase list
+/// repository per household, for tests.
+List<RouteBase> appRoutes({
+  ListRepository Function(String householdId)? repositories,
+}) => [
   StatefulShellRoute.indexedStack(
-    builder: (_, _, shell) => AppShell(shell: shell, repository: repository),
+    builder: (_, _, shell) =>
+        AppShell(shell: shell, repositories: repositories),
     branches: [
       StatefulShellBranch(routes: listTabRoutes()),
       StatefulShellBranch(routes: moreTabRoutes()),

@@ -10426,9 +10426,10 @@ switch drops the user's other cached lists.
    bound to the household they were created in. A Siri key is per user and device, so it should
    act where Siri, Alexa and AI act (Peter's Q-HH4). It ends only when the user has no
    membership left.
-6. **MCP gets `list_households` and an optional `household` argument** (id or exact name,
-   member-checked). Without it, the default. The premium gate checks the household each call
-   acts in.
+6. **MCP gets `list_households` and an optional `household` argument** (id or name in any
+   case, member-checked). Without it, the default. The premium gate checks the household each
+   call acts in; `list_households` itself is not gated, since it lists only the user's own
+   households and a locked default must not hide an unlocked one.
 7. **Create is capped at 10 memberships** (`too_many_households`), an abuse guard. Joining has no
    cap: an invite is somebody else's choice to let you in, and a club member may be in many.
 8. **A schema check stops new single-membership reads.** A new migration that reads
@@ -10436,3 +10437,15 @@ switch drops the user's other cached lists.
    (CLAUDE.md, lint rules). It caught the feedback trigger's old read when run on the old file.
 9. **`households.kind` lands here**, shared with job 168's "who do you shop with" step
    (`partner | family | flat | club | solo`, nullable).
+10. **A household switched away from keeps its list open until its queue is sent.** `ListScope`
+    holds the lists by household: the shown one, plus each hidden one whose queued changes have
+    not reached the server. A hidden list closes once it has resynced with an empty queue; until
+    then it retries as the shown one does (network watch, 3 s retry). A start opens the list of
+    every other household whose cached queue is not empty, so a restart covers it too. Switching
+    back reuses the open list. We chose this over a separate flusher that replays cached queues
+    through a headless repository: that flusher would be a second writer of the same cached
+    queue (a race with the list when the user switches back) and would have to repeat the list's
+    acknowledgement rules (an add kept as another item, refused renames folded into a merge). The
+    list already has them and is the one owner of its queue. The cost is a realtime channel per
+    hidden household while it sends. A refusal in a hidden list is not shown, since the user is
+    looking at another household; the change is dropped as it would be on screen.

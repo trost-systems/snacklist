@@ -80,13 +80,25 @@ Future<_Shell> _pumpShell(
       updatedAt: at,
     );
   }
+  // Sommerfest's list has its own item, so a list for the wrong household
+  // shows.
+  final club = FakeRepository();
+  club.rows['wurst'] = Item(
+    id: 'wurst',
+    name: 'Bratwurst',
+    status: ItemStatus.active,
+    createdAt: at,
+    updatedAt: at,
+  );
+  final servers = {'home': repo, 'club': club};
   final popups = Popups();
   addTearDown(popups.dispose);
   final router = GoRouter(
     observers: [popups],
     routes: [
       StatefulShellRoute.indexedStack(
-        builder: (_, _, shell) => AppShell(shell: shell, repository: repo),
+        builder: (_, _, shell) =>
+            AppShell(shell: shell, repositories: (id) => servers[id]!),
         branches: [
           StatefulShellBranch(
             routes: [
@@ -192,6 +204,8 @@ void main() {
 
   testWidgets('a row switches the list to that household', (tester) async {
     final s = await _pumpShell(tester);
+    expect(find.text('Artikel 0'), findsOneWidget);
+    expect(find.text('Bratwurst'), findsNothing);
     final before = tester.element(find.byType(ListScreen)).read<ListCubit>();
     await _openSheet(tester);
     await tester.tap(_key('household-row-club'));
@@ -210,6 +224,8 @@ void main() {
       isNot(same(before)),
       reason: 'a new list for the new household',
     );
+    expect(find.text('Bratwurst'), findsOneWidget, reason: "Sommerfest's");
+    expect(find.text('Artikel 0'), findsNothing, reason: "Zuhause's");
   });
 
   testWidgets('Neuer Haushalt opens the create step', (tester) async {

@@ -76,7 +76,7 @@ Future<void> main() async {
     routes: [
       StatefulShellRoute.indexedStack(
         builder: (_, _, shell) =>
-            AppShell(shell: shell, repository: FakeRepository()),
+            AppShell(shell: shell, repositories: (_) => FakeRepository()),
         branches: [
           StatefulShellBranch(
             routes: [

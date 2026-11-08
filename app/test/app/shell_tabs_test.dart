@@ -96,7 +96,8 @@ Future<void> pumpShell(
     observers: [popups],
     routes: [
       StatefulShellRoute.indexedStack(
-        builder: (_, _, shell) => AppShell(shell: shell, repository: repo),
+        builder: (_, _, shell) =>
+            AppShell(shell: shell, repositories: (_) => repo),
         branches: [
           StatefulShellBranch(
             routes: [

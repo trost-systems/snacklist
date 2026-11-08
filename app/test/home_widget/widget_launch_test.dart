@@ -180,7 +180,7 @@ void main() {
             BlocProvider.value(value: analytics),
           ],
           child: MaterialApp(
-            home: ListScope(repository: repo, child: const SizedBox()),
+            home: ListScope(repositories: (_) => repo, child: const SizedBox()),
           ),
         ),
       ),

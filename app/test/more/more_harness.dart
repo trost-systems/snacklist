@@ -237,13 +237,13 @@ Future<More> pumpMore(
     observers: [popups],
     redirect: app ? (_, state) => authRedirect(session.state, state.uri) : null,
     routes: app
-        ? appRoutes(repository: repo)
+        ? appRoutes(repositories: (_) => repo)
         : [
             // As in the app, the list sits above the tabs (AppShell's
             // ListScope).
             ShellRoute(
               builder: (_, _, child) =>
-                  ListScope(repository: repo, child: child),
+                  ListScope(repositories: (_) => repo, child: child),
               routes:
                   routes ??
                   switch (updates) {
