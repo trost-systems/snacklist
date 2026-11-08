@@ -6,6 +6,7 @@ import 'package:family_groceries/app/notices.dart';
 import 'package:family_groceries/app/router.dart';
 import 'package:family_groceries/design/brand_block.dart';
 import 'package:family_groceries/design/field_border.dart';
+import 'package:family_groceries/design/status_bar_backdrop.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/household/paste_invite.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
@@ -39,40 +40,48 @@ class const LoginScreen({
       returnPath: switch (next) {
         final next? when Uri.parse(next).path == consentPath => next,
         // Back at the root, which the apps don't claim: a claimed link
-        // would open the app with a code only this browser can redeem.
+        // would open the app with a code only this browser can redeem. An
+        // invite comes back the same way: /join/<code> is claimed too, and
+        // on the web it is the static join page (job 169b).
         final next? => Uri(
           path: '/',
           queryParameters: {'next': next},
         ).toString(),
-        null => invite == null ? '/' : '/join/$invite',
+        null =>
+          invite == null
+              ? '/'
+              : Uri(path: '/', queryParameters: {'invite': invite}).toString(),
       },
       header: const BrandBlock(),
+      footer: PasteInvite(waiting: invite),
     );
     return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            if (deleted != null)
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 420),
-                child: Card(
-                  key: const ValueKey('account-deleted-notice'),
-                  margin: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-                  child: ListTile(
-                    leading: const Icon(Icons.check_circle_outline),
-                    title: Text(l10n.accountDeletedNotice),
-                    subtitle: deleted.removeAppleManually
-                        ? Text(l10n.accountDeletedApple)
-                        : null,
+      body: StatusBarBackdrop(
+        fade: HlSpace.s7,
+        child: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              if (deleted != null)
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 420),
+                  child: Card(
+                    key: const ValueKey('account-deleted-notice'),
+                    margin: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                    child: ListTile(
+                      leading: const Icon(Icons.check_circle_outline),
+                      title: Text(l10n.accountDeletedNotice),
+                      subtitle: deleted.removeAppleManually
+                          ? Text(l10n.accountDeletedApple)
+                          : null,
+                    ),
                   ),
                 ),
-              ),
-            Expanded(child: Center(child: panel)),
-            PasteInvite(waiting: invite),
-            // Outside the scrolling form: visible without scrolling.
-            const SafeArea(top: false, child: LegalFooter()),
-          ],
+              Expanded(child: Center(child: panel)),
+              // Outside the scrolling form: visible without scrolling.
+              const SafeArea(top: false, child: LegalFooter()),
+            ],
+          ),
         ),
       ),
     );
@@ -85,12 +94,15 @@ class const LoginScreen({
 /// have. The MCP consent page embeds it too, with its own [returnPath].
 class const SignInPanel({
   /// Where a web redirect or magic link lands after sign-in, e.g.
-  /// `/join/ABCD2345`. The mobile apps always return through
+  /// `/?invite=ABCD2345`. The mobile apps always return through
   /// [mobileAuthCallback].
   required final String returnPath,
 
   /// Shown above the methods, inside the scrolling form.
   final Widget? header,
+
+  /// Shown below the methods, inside the scrolling form.
+  final Widget? footer,
   super.key,
 }) extends StatefulWidget {
   @override
@@ -103,6 +115,20 @@ class _SignInPanelState() extends State<SignInPanel> {
   final _password = TextEditingController();
   var _busy = false;
   var _passwordRequired = true;
+
+  /// The errors the last submit showed, kept as the fields' semantics hints:
+  /// an error widget, unlike `errorText`, does not set them.
+  String? _emailError;
+  String? _passwordError;
+
+  String? _emailProblem(String? v) => (v ?? '').trim().contains('@')
+      ? null
+      : AppLocalizations.of(context).invalidEmail;
+
+  String? _passwordProblem(String? v) =>
+      !_passwordRequired || (v ?? '').length >= 6
+      ? null
+      : AppLocalizations.of(context).passwordTooShort;
   late var _emailOpen = context.read<SocialSignIn>().flows.isEmpty;
 
   @override
@@ -164,7 +190,12 @@ class _SignInPanelState() extends State<SignInPanel> {
     bool needsPassword = true,
   }) async {
     _passwordRequired = needsPassword;
-    if (_form.currentState!.validate()) {
+    final valid = _form.currentState!.validate();
+    setState(() {
+      _emailError = _emailProblem(_email.text);
+      _passwordError = _passwordProblem(_password.text);
+    });
+    if (valid) {
       await _run(action);
     }
   }
@@ -250,27 +281,32 @@ class _SignInPanelState() extends State<SignInPanel> {
               ],
               LabeledField(
                 label: l10n.email,
-                field: TextFormField(
-                  key: const ValueKey('login-email'),
-                  controller: _email,
-                  keyboardType: TextInputType.emailAddress,
-                  autofillHints: const [AutofillHints.email],
-                  validator: (v) =>
-                      (v ?? '').trim().contains('@') ? null : l10n.invalidEmail,
+                field: Semantics(
+                  hint: _emailError ?? '',
+                  child: TextFormField(
+                    key: const ValueKey('login-email'),
+                    controller: _email,
+                    keyboardType: TextInputType.emailAddress,
+                    autofillHints: const [AutofillHints.email],
+                    errorBuilder: (_, error) => FieldError(error),
+                    validator: _emailProblem,
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
               LabeledField(
                 label: l10n.password,
-                field: TextFormField(
-                  key: const ValueKey('login-password'),
-                  controller: _password,
-                  obscureText: true,
-                  autofillHints: const [AutofillHints.password],
-                  validator: (v) => !_passwordRequired || (v ?? '').length >= 6
-                      ? null
-                      : l10n.passwordTooShort,
-                  onFieldSubmitted: (_) => unawaited(_signIn()),
+                field: Semantics(
+                  hint: _passwordError ?? '',
+                  child: TextFormField(
+                    key: const ValueKey('login-password'),
+                    controller: _password,
+                    obscureText: true,
+                    autofillHints: const [AutofillHints.password],
+                    errorBuilder: (_, error) => FieldError(error),
+                    validator: _passwordProblem,
+                    onFieldSubmitted: (_) => unawaited(_signIn()),
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
@@ -311,6 +347,10 @@ class _SignInPanelState() extends State<SignInPanel> {
                       ),
                 child: Text(l10n.sendMagicLink),
               ),
+            ],
+            if (widget.footer case final footer?) ...[
+              const SizedBox(height: HlSpace.s4),
+              footer,
             ],
           ],
         ),

@@ -231,6 +231,9 @@ class const _TabBand({
     final t = HummlistColors.of(Theme.of(context).brightness);
     final open = band == _Band.hint;
     final short = hlMotion(context, HlDuration.short);
+    final hint = DefaultTextStyle.of(context).style
+        .merge(TextStyle(fontSize: 13, color: scheme.onSurfaceVariant));
+    final height = _bandHeight(context);
     // On the web the rows under the band keep their tappable semantics
     // elements, which take a browser click before the framework sees it;
     // the opaque node blocks them, the tabs still get theirs.
@@ -242,7 +245,7 @@ class const _TabBand({
       child: Listener(
         behavior: HitTestBehavior.opaque,
         child: AnimatedContainer(
-          height: _bandHeight(context),
+          height: open ? _openHeight(context, hint, height) : height,
           duration: short,
           curve: HlEasing.standard,
           color: open ? t.surfaceRaised : t.surfaceRaised.withValues(alpha: 0),
@@ -264,10 +267,7 @@ class const _TabBand({
                       l10n.addSheetHint,
                       key: const ValueKey('add-sheet-hint'),
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: scheme.onSurfaceVariant,
-                      ),
+                      style: hint,
                     ),
                   ),
                 ),
@@ -307,6 +307,24 @@ class const _TabBand({
   }
 }
 
+/// The open band's height: the closed [height], or more where the hint
+/// wraps further (large text on a small phone), so it ends a closed band's
+/// gap above the bottom edge.
+double _openHeight(BuildContext context, TextStyle hint, double height) {
+  final painter = TextPainter(
+    text: TextSpan(
+      text: AppLocalizations.of(context).addSheetHint,
+      style: hint,
+    ),
+    textAlign: TextAlign.center,
+    textDirection: Directionality.of(context),
+    textScaler: MediaQuery.textScalerOf(context),
+  )..layout(maxWidth: MediaQuery.sizeOf(context).width - 2 * HlSpace.s5);
+  final text = painter.height;
+  painter.dispose();
+  return math.max(height, HlSpace.s4 + text + height - _pillHeight);
+}
+
 /// The raised hex capsule with the tabs, as wide as its widest tab needs
 /// (twice over) and at least [_pillMinWidth]. Semantics as Material's
 /// NavigationBar has them, so screen readers and the web e2e find a tab bar.
@@ -319,7 +337,7 @@ class const _Pill({
     final brightness = Theme.of(context).brightness;
     final t = HummlistColors.of(brightness);
     return MediaQuery.withClampedTextScaling(
-      // Large text still fits the 34 high indicator.
+      // Large text still fits the 44 high indicator.
       maxScaleFactor: 1.5,
       child: DecoratedBox(
         decoration: ShapeDecoration(
@@ -377,7 +395,7 @@ class const _Tab({
   required final bool selected,
   required final VoidCallback onTap,
 }) extends StatefulWidget {
-  static const _indicatorHeight = 34.0;
+  static const _indicatorHeight = 44.0;
 
   @override
   State<_Tab> createState() => _TabState();

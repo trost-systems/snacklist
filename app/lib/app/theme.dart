@@ -2,11 +2,16 @@ import 'dart:async';
 
 import 'package:family_groceries/app/device_cache.dart';
 import 'package:family_groceries/design/field_border.dart';
+import 'package:family_groceries/design/fonts.dart';
 import 'package:family_groceries/design/hex_border.dart';
 import 'package:family_groceries/design/tactile.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+/// The dim over the page behind a sheet: the add sheet's scrim and every
+/// modal bottom sheet's barrier.
+const sheetBarrier = Color(0x66000000);
 
 /// The Material roles of the Hummlist palette (6b Hex Frische, design job
 /// 52): cobalt is primary, lemon ("honey") secondary, mint tertiary; outline
@@ -65,7 +70,8 @@ ColorScheme hummlistColorScheme(Brightness brightness) {
 /// Material's type scale in the Hummlist fonts: Bricolage Grotesque for
 /// display, headline and title, Inter for everything else. The sizes stay
 /// Material's ([geometry]: ThemeData only applies them in `Theme.of`), so
-/// layouts and text scaling behave as before.
+/// layouts and text scaling behave as before, except the small roles, which
+/// share [captionSize].
 ///
 /// Every style splits its leading evenly above and below the glyphs: with
 /// Material's proportional split, a line taller than the font (1.5 for
@@ -81,12 +87,16 @@ TextTheme _textTheme(TextTheme base, TextTheme geometry) {
     letterSpacing: tracking * role(geometry)!.fontSize!,
     leadingDistribution: TextLeadingDistribution.even,
   );
-  TextStyle sans(TextStyle? Function(TextTheme) role, [FontWeight? weight]) =>
-      role(base)!.copyWith(
-        fontFamily: HlFont.sans,
-        fontWeight: weight,
-        leadingDistribution: TextLeadingDistribution.even,
-      );
+  TextStyle sans(
+    TextStyle? Function(TextTheme) role, [
+    FontWeight? weight,
+    double? size,
+  ]) => role(base)!.copyWith(
+    fontFamily: HlFont.sans,
+    fontWeight: weight,
+    fontSize: size,
+    leadingDistribution: TextLeadingDistribution.even,
+  );
   return base.copyWith(
     displayLarge: display((t) => t.displayLarge, FontWeight.w800, -0.04),
     displayMedium: display((t) => t.displayMedium, FontWeight.w800, -0.04),
@@ -99,10 +109,10 @@ TextTheme _textTheme(TextTheme base, TextTheme geometry) {
     titleSmall: display((t) => t.titleSmall, FontWeight.w700, 0),
     bodyLarge: sans((t) => t.bodyLarge),
     bodyMedium: sans((t) => t.bodyMedium),
-    bodySmall: sans((t) => t.bodySmall),
+    bodySmall: sans((t) => t.bodySmall, null, captionSize),
     labelLarge: sans((t) => t.labelLarge, FontWeight.w600),
-    labelMedium: sans((t) => t.labelMedium, FontWeight.w600),
-    labelSmall: sans((t) => t.labelSmall, FontWeight.w600),
+    labelMedium: sans((t) => t.labelMedium, FontWeight.w600, captionSize),
+    labelSmall: sans((t) => t.labelSmall, FontWeight.w600, captionSize),
   );
 }
 
@@ -235,6 +245,7 @@ ThemeData appTheme(Brightness brightness) {
         borderRadius: BorderRadius.vertical(top: Radius.circular(HlRadius.l)),
       ),
       dragHandleColor: t.textMuted,
+      modalBarrierColor: sheetBarrier,
     ),
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,

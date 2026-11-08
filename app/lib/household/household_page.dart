@@ -156,22 +156,25 @@ class _HouseholdViewState() extends State<_HouseholdView> {
   /// What the user may do to [member]: the owner names and un-names
   /// admins and removes anyone; an admin removes members. Nobody acts on
   /// themselves (that is leaving) or on the owner.
-  List<_MemberAction> _actionsFor(HouseholdMember member) => switch ((
-    widget.household.role,
-    member.role,
-  )) {
-    _ when member.userId == widget.userId => const [],
-    (HouseholdRole.owner, HouseholdRole.member) => const [
-      _MemberAction.makeAdmin,
-      _MemberAction.remove,
-    ],
-    (HouseholdRole.owner, HouseholdRole.admin) => const [
-      _MemberAction.removeAdmin,
-      _MemberAction.remove,
-    ],
-    (HouseholdRole.admin, HouseholdRole.member) => const [_MemberAction.remove],
-    _ => const [],
-  };
+  /// What the user may do to [member], by [mine]: the user's role as the
+  /// members list just read it, which is newer than the session's after an
+  /// owner made them admin on another device.
+  List<_MemberAction> _actionsFor(HouseholdMember member, HouseholdRole mine) =>
+      switch ((mine, member.role)) {
+        _ when member.userId == widget.userId => const [],
+        (HouseholdRole.owner, HouseholdRole.member) => const [
+          _MemberAction.makeAdmin,
+          _MemberAction.remove,
+        ],
+        (HouseholdRole.owner, HouseholdRole.admin) => const [
+          _MemberAction.removeAdmin,
+          _MemberAction.remove,
+        ],
+        (HouseholdRole.admin, HouseholdRole.member) => const [
+          _MemberAction.remove,
+        ],
+        _ => const [],
+      };
 
   Future<void> _act(HouseholdMember member, _MemberAction action) async {
     final invites = context.read<InviteRepository>();
@@ -231,9 +234,13 @@ class _HouseholdViewState() extends State<_HouseholdView> {
         false;
   }
 
-  Widget _member(AppLocalizations l10n, HouseholdMember member) {
+  Widget _member(
+    AppLocalizations l10n,
+    HouseholdMember member,
+    HouseholdRole mine,
+  ) {
     final name = _memberName(l10n, member);
-    final actions = _actionsFor(member);
+    final actions = _actionsFor(member, mine);
     final role = switch (member.role) {
       HouseholdRole.owner => l10n.householdRoleOwner,
       HouseholdRole.admin => l10n.householdRoleAdmin,
@@ -298,7 +305,18 @@ class _HouseholdViewState() extends State<_HouseholdView> {
           builder: (context, snapshot) => switch (snapshot) {
             AsyncSnapshot(:final data?) => Column(
               key: const ValueKey('household-members'),
-              children: [for (final member in data) _member(l10n, member)],
+              children: [
+                for (final member in data)
+                  _member(
+                    l10n,
+                    member,
+                    data
+                            .where((m) => m.userId == widget.userId)
+                            .firstOrNull
+                            ?.role ??
+                        widget.household.role,
+                  ),
+              ],
             ),
             AsyncSnapshot(hasError: true) => ListTile(
               key: const ValueKey('household-members-failed'),

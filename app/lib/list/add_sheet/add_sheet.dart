@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:family_groceries/design/hex_border.dart';
+import 'package:family_groceries/app/theme.dart';
 import 'package:family_groceries/design/motion.dart';
+import 'package:family_groceries/design/tactile.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/add_sheet/add_sheet_cubit.dart';
@@ -39,11 +40,15 @@ const _nameLeading = 1.2;
 const _detailSize = 13.0;
 const _detailLeading = 1.3;
 
+/// The close button's and the Enter hex's size: a 44 px face on its edge,
+/// as big as it looks, wide enough that the icon sits between the tips.
+const _hexKey = Size(52, HlSize.target);
+
 /// A suggestion row's height at [scaler], its name and details one line
-/// each: 16 px padding, the 2 px gap and the border around the two lines.
+/// each: 11 px padding, the 2 px gap and the border around the two lines.
 double _rowExtent(TextScaler scaler) => math.max(
   _rowHeight,
-  19 +
+  14 +
       scaler.scale(_nameSize) * _nameLeading +
       scaler.scale(_detailSize) * _detailLeading,
 );
@@ -175,7 +180,7 @@ class _AddSheetState() extends State<AddSheet> {
                           opacity: open ? 1 : 0,
                           duration: hlMotion(context, _sheetDuration),
                           curve: open ? HlEasing.standard : HlEasing.exit,
-                          child: const ColoredBox(color: Color(0x66000000)),
+                          child: const ColoredBox(color: sheetBarrier),
                         ),
                       ),
                     ),
@@ -450,6 +455,7 @@ class const _CloseButton({required final VoidCallback onClose})
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final t = HummlistColors.of(Theme.of(context).brightness);
     return FocusTraversalOrder(
       order: const NumericFocusOrder(4),
       // A tap on a web semantics button node takes the add field's text
@@ -463,8 +469,24 @@ class const _CloseButton({required final VoidCallback onClose})
           key: const ValueKey('add-sheet-close'),
           tooltip: l10n.close,
           onPressed: onClose,
-          style: IconButton.styleFrom(visualDensity: VisualDensity.standard),
-          icon: const Icon(Icons.close),
+          // A tactile hex like the chips beside it (job 148).
+          style:
+              tactileButtonStyle(
+                colors: (_) => TactileColors(
+                  face: t.surfaceRaised,
+                  contour: t.border,
+                  edge: t.surfaceEdge,
+                  focus: t.accent,
+                ),
+                foreground: WidgetStatePropertyAll(t.text),
+                textStyle: const TextStyle(),
+              ).copyWith(
+                visualDensity: VisualDensity.standard,
+                minimumSize: const WidgetStatePropertyAll(_hexKey),
+                maximumSize: const WidgetStatePropertyAll(_hexKey),
+                padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+              ),
+          icon: const Icon(Icons.close, size: 22),
         ),
       ),
     );
@@ -516,7 +538,8 @@ class const _SuggestionRow({
           onTap: onTap,
           child: Container(
             constraints: const BoxConstraints(minHeight: _rowHeight),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            // The 48 px Enter hex, this and the border make the 60 px row.
+            padding: const EdgeInsets.fromLTRB(16, 6, 16, 5),
             decoration: BoxDecoration(
               border: Border(bottom: BorderSide(color: scheme.outlineVariant)),
             ),
@@ -599,18 +622,31 @@ class const _SuggestionRow({
                 ?(ownStore == null
                     ? null
                     : StoreBadge(ownStore!, height: 24, maxWidth: 120)),
+                // The key Enter presses: a hex face on its edge, the size
+                // of the close button.
                 if (first)
-                  Container(
-                    width: 36,
-                    height: 28,
-                    alignment: Alignment.center,
-                    decoration: ShapeDecoration(
-                      shape: HexBorder(side: BorderSide(color: t.textMuted)),
-                    ),
-                    child: Icon(
-                      Icons.keyboard_return,
-                      size: 16,
-                      color: t.textMuted,
+                  SizedBox.fromSize(
+                    size: _hexKey,
+                    child: TactileFace(
+                      states: const {},
+                      colors: TactileColors(
+                        face: t.surfaceRaised,
+                        contour: t.border,
+                        edge: t.surfaceEdge,
+                        focus: t.accent,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          bottom: raisedFaces ? HlDepth.edge : 0,
+                        ),
+                        child: Center(
+                          child: Icon(
+                            Icons.keyboard_return,
+                            size: 20,
+                            color: t.text,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
               ],

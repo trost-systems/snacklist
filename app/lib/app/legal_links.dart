@@ -36,17 +36,22 @@ class const LegalFooter({super.key}) extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final language = Localizations.localeOf(context).languageCode;
-    final style = Theme.of(context).textTheme.bodySmall;
+    final style = Theme.of(context).textTheme.bodyMedium;
     Widget link(String key, String label, Uri url) => LegalLink(
       key: ValueKey(key),
       url: url,
       builder: (context, open) => TextButton(
         onPressed: open,
-        child: Text(label, style: style),
+        child: Text(
+          label,
+          style: style?.copyWith(decoration: TextDecoration.underline),
+        ),
       ),
     );
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    // Wraps on a narrow phone with large text instead of running off it.
+    return Wrap(
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         link('legal-imprint', l10n.imprint, imprintUrl(language)),
         ExcludeSemantics(child: Text('·', style: style)),

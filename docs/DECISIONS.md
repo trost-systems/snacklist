@@ -10247,6 +10247,150 @@ Job 170 review 2, Must fix 1. Supersedes #321 (all of its commits are in this PR
    `grant=refresh_token`. The runbook names `nothing_added` and refresh rows and tells you to
    tick Zahnpasta off first. No feature file changes, since nothing users see changed.
 
+## Job 154: hill-climb hc-design-v2 (app and web, frozen rubric, blind council), 2026-11-07
+
+1. **No separate site repo.** The brief names a "hummlist-site repo"; the site lives in `site/` of
+   this repo. Two branches and PRs here: `job/154-hc-design-v2-app` (only `app/`) and
+   `job/154-hc-design-v2-web` (only `site/public/*.css`), each with its own attempt log.
+2. **Judging stays outside the repo.** Rubric, prompts, the council runner, the screenshot capture
+   and the guards live in the job's ops directory. The repo gets the attempt logs
+   `docs/hillclimb/hc-design-v2-{app,web}.md` (numbers only) and the code and golden changes.
+3. **App screenshots come from the golden render path** with a harness-private test file that is
+   copied in for one run and removed. It loads Noto Color Emoji as the fallback a device's system
+   provides (flutter_tester runs with `--use-test-fonts`, so a glyph no named font has draws as a
+   box) and drops the debug banner a release build does not show, through a private copy of
+   `pumpMore` with `hcTheme`. Found by the first smoke council (category icons as boxes, banner,
+   the test's own "open" button behind the edit sheet); fixed before the freeze.
+4. **Known harness gap, kept frozen:** More, settings and stores are pumped without the shell, so
+   the pill tab bar is missing in those shots; judges note it under consistency/layout. It is the
+   same in both versions of every pairwise comparison, so it does not bias keeps; it lowers the
+   absolute app score by an unknown amount.
+5. **Text 150 % on the web** is the browser's default font size raised from 16 to 24 px (CDP
+   `Page.setFontSizes`), the reader setting rem-based CSS follows. A full-page screenshot resets
+   it, so those tiles are viewport screenshots after scrolling; the capture asserts the root font
+   size before shooting.
+6. **Keep floor** is the best kept state's absolute minimum minus the band (app band 1, web 0.5),
+   where the baseline's reference is the median of its three runs.
+7. **crawl.mjs and contrast.mjs in the web guard run under `/tmp/fg-hc-measure.lock`**, not the
+   e2e lock: they are short page loads like the capture, and the e2e lock was held by another
+   job's 40-minute run. The CI site gate still runs them.
+8. **Per-step commits.** Each kept step is its own commit on the branch (brief). Before the
+   final push `scripts/push-pr.sh` squashes the PR into the one commit main takes; the per-step
+   history stays on the pushed branch `job/154-hc-design-v2-{app,web}-steps`.
+9. **The 615xx port block is not used**: no Supabase stack is needed (goldens and a static site
+   build), and job 150 had announced the same block.
+10. **Hypothesis a4 dropped unmeasured.** Judges said list rows scroll under an unbacked status
+    bar. The list already paints a surface strip over the top inset and login sits in a SafeArea;
+    the rows look cut because the harness draws no clock. Fidelity gap of the frozen harness,
+    not an app defect, so no change was made.
+11. **Step a9 kept with a semantics fix made after the measurement.** The error icon moved field
+    errors from `errorText` to an error widget, which drops the message from the text field's own
+    semantics hint (a screen reader focusing the field no longer heard it). Each field now sets
+    `Semantics(hint:)` itself, as `InputDecorator` does for `errorText`; all 44 harness shots
+    rendered byte-identical before and after the fix. The first CI run then failed
+    `feedback.spec.ts` AC4: a hint that came and went with the error gave the field a new
+    semantics node (id 4 -> 5 in a widget test), and on the web a new input that dropped the
+    typed text. The hint is now `error ?? ''`, so the node stays (a feedback sheet test pins it).
+12. **Step a11 kept on a 3-1 aspect vote** (accessibility, iconography, consistency for the
+    candidate; hierarchy for the baseline: the hex keys add weight to every store header). The
+    frozen rule keeps it; the trade-off is in the log for the lead.
+13. **Web w4/w5 attribution.** The w4 delegate halved one padding line after w4 was measured and
+    before it was committed; w5's measurement was the first to include it. The final tree is
+    measured as a whole either way. Later delegates write a done marker that the runner waits for.
+14. **The web branch was rebased onto main after #290** (landing store chips; `waitlist.css`
+    conflict resolved to the hex tiles, keeping main's 320 px reason). One absolute run of the
+    rebased head (7, mean 7.33) became the pairwise reference for the later steps.
+15. **App renders are not re-entrant per worktree.** `render-app.sh` copies its test file into
+    the repo outside the capture lock, so two parallel renders of one worktree delete each
+    other's file; such runs fail with score 0 (no wrong score). Final runs were made one after
+    another.
+16. **Review 0 fixes after the council (no re-climb).** The web set only looks at 390 px with
+    150 % text, so two kept steps clipped on narrower phones at 175-200 % text: the hero chip
+    (w12: one-line hex wider than the hero) and the empty-state headings (w2: an auto grid track
+    as wide as "Neuigkeiten"). The chip falls back to main's wrapping pill below 16em of
+    viewport, the empty state uses a `minmax(0, 1fr)` track and lets its words hyphenate, and
+    the hex label tracking from w11 applies from 720 px only (it pushed CTA labels into the
+    points). The web guard gained an overflow probe (8 pages x 320-414 px x 100-200 % text,
+    no regression against the base build); it fails the reviewed head with 9 regressions and
+    passes the fix (12 combinations with problems against main's 40). A blind pairwise and an
+    absolute run of the fixed site are in the attempt log. App: the login validators are pure
+    again (the hint errors are computed in `_runWithForm`); no pixel changed.
+17. **Rebased onto #296** (name dialogs fit their content, Anpassen without a frame). The name
+    dialog keeps #296's scrollable layout with this PR's error icon and stable hint; this PR's
+    hint test moved to `name_dialog_error_test.dart` beside #296's layout test; the goldens
+    both PRs touch were regenerated on the merged code. The council measured the tree before
+    #296, so the merged screens were not re-judged.
+
+## Job 154b: app design climb on harness v3 (min-aspect targeting), 2026-11-07
+
+1. **Base.** The branch is #300's app commit (job 154) rebased onto main f2afee4e: the more and
+   sync goldens re-rendered (main added rows and the sync indicator after 154), and the onboarding
+   test "an empty name is refused before any call" finds its problem line offstage: the iconed
+   field error (154) and the longer store list (Baumarkt) push it out of the lazy list once the
+   name field takes focus back; the line is still built under the button.
+2. **Harness v3** (ops directory, the v2 harness untouched): the shots draw an iOS status bar over
+   the top inset, and More, settings, stores and store details go through the app's own routes
+   inside the shell with its tab pill. New baseline (3 absolute runs 5, 5, 6, band 1, floor 4;
+   A-vs-A 27/27 tie). v3 numbers do not compare with v2's.
+3. **Keep floor never goes down**: baseline median minus the band, raised to a kept step's minimum
+   minus the band when that is higher (4, then 5 from b4). v2 used best minus band, which could
+   fall after a keep at the floor.
+4. **The guard's 16-file cap counts the change, not the goldens** regenerated after a keep
+   (re-frozen; the guard is not a scoring input, every scoring input's hash is unchanged).
+5. **Targets.** Each brief carried the lowest aspect and every judge's one-line reason for it, no
+   other scores. b4 took Layout, tied lowest with Accessibility, after b3's Accessibility change
+   (list overline contrast 3.9:1 to 7.1:1) went unseen in the pairwise. b8 (icons, settings
+   groups, a two-row page bar) lost layout and accessibility to the taller bar; b9 kept its other
+   two parts.
+6. **Calls kept out of steps.** Rounded cards next to hex rows (DESIGN.md specifies radius-18
+   cards), the Google/Apple pill buttons (brand rules), the tab the pill marks on Stores (it
+   belongs to the List tab), `_Header` / Anpassen and the sync indicator. b7's
+   delegate dropped the add sheet's chip icons; reverted before measuring (job 149: the add
+   sheet keeps them).
+7. **b5 fix after the measure**: the pinned header's fade sits under `IgnorePointer` (a painted
+   `BoxDecoration` hit-tests opaque and would have taken taps meant for rows under the bar);
+   all 44 shots byte-identical to the measured ones.
+8. **b6 changes a design token's use**: `HlSticker.shadow` in dark is the light offsets in the dark
+   contour colour, not the night token (near-black plus a glow, invisible on the dark page and a
+   second depth style). DESIGN.md says so. b6 had pinned the top bar's new-adds capsule („1 neu
+   von Lea“) to the old night shadow; review 1 found it flat beside Anpassen in dark, a second
+   depth style in the same bar. Fixed after the climb: the capsule uses `HlSticker.shadow` like
+   main did (light unchanged), and a list screen test pins its dark edge (hard, contour colour;
+   it fails with the old pin). No harness shot shows fresh partner adds, so no score changes.
+9. **b9 trade-off**: colour and contrast 3-0 for the baseline (the dark row icons in the lavender
+   border colour are dimmer), consistency and iconography 3-0 for the candidate; kept by the rule.
+10. **A105 came after the prompt.** Peter granted the `_Header` / Anpassen and empty-state copy
+    waiver at 21:34:34 CET; the climb's prompt was built at 21:34:14 and never had it, so all
+    rules were kept. Anpassen overlapping a store header at 150 % and the empty-state copy are the
+    first targets of a next climb, after the guard's `_Header` check is removed and the harness
+    refrozen.
+11. **The headline gain equals the band.** Min-aspect 5 -> 6 (band 1); per-aspect medians: lowest
+    6 -> 6, five aspects 6 -> 7. The blind pairwise of baseline against final (6-0-3) carries it.
+
+## Job 154c: land the app design climb (#320), 2026-11-08
+
+Peter's go (A107): review #320 and merge it on a review PASS and `ci-ok`.
+
+1. **Rebase only touched appended docs.** Main had moved by #324 and #325 since the climb's
+   base (#317 and #318 were already under it). The conflicts were appended sections in
+   DECISIONS.md and DONE_SUMMARY.md and the theme line in FEATURES-FOR-WRITERS.md; both sides
+   kept. No app code conflicted; sync indicator and voice code are not in the diff.
+2. **No harness to strip.** The climb's harness, prompts and judge shots never entered the repo
+   (they live in the ops job dir). The repo keeps the hc logs, done docs and the before, after
+   and pairs images under `docs/screenshots/154/` and `154b/`, as earlier climbs did.
+3. **Turning the phone kept nothing on the login screen.** `StatusBarBackdrop` returned its bare
+   child without a top inset and wrapped it in a Stack with one, so the inset changing (iPhone
+   landscape has none) rebuilt the login body: typed email, open form and errors were gone. It
+   now always keeps the Stack and leaves out only the overlay. Found by the merge review;
+   `login_screen_test.dart` turns the phone and fails on the old code.
+4. **Edit sheet fields keep focus across the reflow.** Marke and Menge move between one row and
+   two with the width; global keys carry the fields (and the focused one's keyboard) across.
+   `edit_item_sheet_layout_test.dart` fails on the old code.
+5. **The store name beats the tint line.** The climb's 52 px fold key cut „Ohne Laden“ to
+   „Ohne Lad…“ at 150 % on a 375 px phone (main showed it whole). The fold key stays as wide as
+   the add sheet's keys; the line between badge and count may now shrink to nothing instead of
+   keeping 12 px. `store_header_test.dart` checks DE and EN; DE fails on the old code.
+
 ## Job 169b: several households per user, wave 1, 2026-11-08
 
 Peter's calls (2026-11-08, on [`docs/households/PLAN.md`](households/PLAN.md)): HH3 in three
@@ -10293,6 +10437,44 @@ switch drops the user's other cached lists.
 9. **`households.kind` lands here**, shared with job 168's "who do you shop with" step
    (`partner | family | flat | club | solo`, nullable).
 
+## Job 169b: the invite loop, wave 2, 2026-11-08
+
+Contract [`docs/households/W2.md`](households/W2.md). Peter (2026-11-08): reusable group links
+(30 days, 50 joins, revocable, admins only); admins remove members, revoke the group link and
+make a new one; invites stay links the user shares (N-18).
+
+1. **One active group link per household, idempotent create.** Creating while one is open
+   answers the open one; after a revoke, expiry or the 50th join a new code. Two places to manage
+   a link would mean two links forwarded around a club.
+2. **Uses are counted under the invite's row lock**, with a check `use_count between 0 and
+   max_uses` as the last guard. The two-connection tests race the 50th join (49 taken: one
+   joins, one gets `invalid_invite`; 48 taken, three racers: two join). They fail without the
+   condition in the update.
+3. **The static join page** (`app/web/join/`, a Vercel rewrite before the web app) shows who
+   invites to what without loading Flutter, which is what a link opened in a messenger's
+   in-app browser needs. It calls `preview_invite_public`, the only new function `anon` may
+   call. It shows the inviter's first name only when they set a display name (the default name
+   is the email's local part), the household name and kind, member and open-item counts and
+   Premium; never item names. Store buttons and the Smart App Banner stay off until a listing is
+   public (`storeListings` in `join.js`).
+4. **Rate limits without raw IPs.** Per client (30/hour) and per code (60/hour), keyed by a
+   salted SHA-256 of `X-Real-IP` (the hosted header the client can't forge) or the code, fixed
+   hourly windows, past hours deleted on the next call. The salt is generated in the database at
+   migration time and never leaves it.
+5. **Sign-in started from an invite returns to `/?invite=<code>`**, not `/join/<code>`: on the
+   web that path is now the static page, and on phones it is claimed by the apps.
+6. **Roles: Hauptadmin (owner), Admin, member.** "Hauptadmin" is gender-neutral, short and ranks
+   above Admin. The owner names admins; owner and admins remove members; an admin can't remove
+   the owner or another admin. Ownership passes to the earliest admin, else the earliest member,
+   when the owner leaves, is removed or deletes the account.
+7. **"Wer ist beigetreten" lists current members only**, and leaving or a removal deletes the
+   user's join record for that household (Legal draft #328, question 3). The export lists the
+   user's own join records.
+8. **Store bridges without an SDK.** Android reads the Play Install Referrer once on the first
+   start and keeps only `invite=<code>` (dated, so it lapses after 7 days). "Einladung einfügen"
+   reads the clipboard only on that tap. No fingerprinting, no paid deep-link service.
+9. **Admins send `actor_role: admin`** on list events; the `alexa` function keeps reporting an
+   admin as `member` (its telemetry allow-list predates roles).
 ## Job 169b: club features, wave 3, 2026-11-08
 
 Contract [`docs/households/W3.md`](households/W3.md). Peter (Q-HH5): club features in the build,

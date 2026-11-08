@@ -172,3 +172,23 @@ class const HexBorder({
   @override
   int get hashCode => Object.hash(orientation, side);
 }
+
+/// What a label keeps between its line box and a horizontal hex's outline:
+/// the contour and [HlSpace.s1].
+const hexLabelClearance = HlBorder.width + HlSpace.s1;
+
+/// How far a line of [style] text, centred in a horizontal hex, has to start
+/// in from the hex's tips to keep [hexLabelClearance] off its slanted sides.
+/// Those reach [HlHex.tip] times the line's height in at the line's top and
+/// bottom, whatever the hex's height, so the inset grows with the text
+/// scale.
+double hexLabelInset(TextStyle style, TextScaler scaler) {
+  final line = TextPainter(
+    text: TextSpan(text: ' ', style: style),
+    textScaler: scaler,
+    textDirection: TextDirection.ltr,
+  )..layout();
+  final height = line.height;
+  line.dispose();
+  return HlHex.tip * height + hexLabelClearance;
+}

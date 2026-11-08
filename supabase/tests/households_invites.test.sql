@@ -214,6 +214,10 @@ select results_eq($$ select use_count, used_at is null, used_by is null from pub
 select results_eq($$ select household_id, user_id from public.invite_uses where invite_id = (select id from g3) $$,
   $$ values (pg_temp.hid('Familie Brandt'), '00000000-0000-0000-0000-000000169f11'::uuid) $$,
   'the join is a row in invite_uses');
+select pg_temp.login(:j1);
+select is(jsonb_array_length(public.export_my_data() -> 'invite_uses'), 1,
+  'her export lists the invite she joined through');
+select pg_temp.logout();
 select is(pg_temp.join_as(:j1, (select code from g3)), 'member', 'the same link again: already a member');
 select pg_temp.logout();
 select is((select use_count from public.invites where id = (select id from g3)), 1, 'and no use is counted');
@@ -321,11 +325,8 @@ select is((select h.name from public.household_members m join public.households 
   where m.user_id = :j1 and m.is_default), 'Bei Jana', 'her default moved to her other household');
 select isnt((select revoked_at from public.personal_access_tokens where id = (select id from jana_token)), null,
   'her key for the household ended');
-select is((select count(*)::int from public.invite_uses where user_id = :j1), 1,
-  'the join record stays (the household saw her join)');
-select pg_temp.login(:j1);
-select is(jsonb_array_length(public.export_my_data() -> 'invite_uses'), 1,
-  'her export lists the invite she joined through');
+select is((select count(*)::int from public.invite_uses where user_id = :j1), 0,
+  'her join record goes with the membership');
 select pg_temp.login(:max);
 select is((select count(*)::int from public.invite_joins((select id from g3)) where user_id = :j1), 0,
   'and who-joined lists only current members');
@@ -505,8 +506,12 @@ select throws_ok(
      select id, household_id, '00000000-0000-0000-0000-000000169f01' from p_open $$,
   '42501', null, 'invite_uses are written by joins only'
 );
-select is((select count(*)::int from public.invite_uses where household_id = pg_temp.hid('Familie Brandt')), 6,
-  'members read their household''s invite_uses');
+select results_eq(
+  $$ select count(*)::int, count(m.user_id)::int from public.invite_uses u
+     left join public.household_members m on (m.household_id, m.user_id) = (u.household_id, u.user_id)
+     where u.household_id = pg_temp.hid('Familie Brandt') $$,
+  $$ values (3, 3) $$,
+  'members read their household''s invite_uses, all of current members (leavers'' rows went)');
 
 select * from finish();
 rollback;

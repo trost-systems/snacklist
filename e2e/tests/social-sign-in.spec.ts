@@ -60,11 +60,11 @@ for (const [name, button] of [['google', google], ['apple', apple]] as const) {
 }
 
 test('an invite link survives the provider redirect', async ({ page }) => {
-  await page.goto('/join/ABCD2345');
+  await page.goto('/?invite=ABCD2345');
   await expect(page).toHaveURL(/\/login\?invite=ABCD2345$/);
   const origin = new URL(page.url()).origin;
   const url = await authorizeUrl(page, apple(page));
-  expect(url.searchParams.get('redirect_to')).toBe(`${origin}/join/ABCD2345`);
+  expect(url.searchParams.get('redirect_to')).toBe(`${origin}/?invite=ABCD2345`);
 });
 
 test('a first provider sign-in goes through household onboarding', async ({ page }) => {

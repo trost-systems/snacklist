@@ -224,9 +224,22 @@ quarter into its line and struck rows, one wrapped.
 - `PointyHex` (`pointy_hex.dart`): the empty list's cart and More's icon
   hexes.
 - `HlSticker` (`sticker.dart`): the site's `.sticker`, raised face, 2 px
-  contour, the hard `HlShadow` sticker shadow in light, the night shadow in
-  dark; for the welcome choices, the Premium card (Zugänge and the Premium
-  page) and drag pills. Theme cards and snackbars carry the contour only.
+  contour, the hard `HlShadow` sticker shadow in light and the same hard
+  offsets in the dark contour colour in dark (job 154b: the night token's
+  near-black edge vanished on the dark page); for the welcome choices, the
+  Premium card (Zugänge and the Premium page), More's and the settings'
+  groups and drag pills. Theme cards and snackbars carry the contour only.
+- `HlGroup`, `HlRowHex` (`group_card.dart`): a section's rows in an inset
+  sticker group with hairlines between them (More, Einstellungen), and the
+  small pointy hex before a group row, glyph and outline in the border colour.
+- `StatusBarBackdrop` (`status_bar_backdrop.dart`), `BottomScrollEdge`
+  (`bottom_scroll_edge.dart`) and the list's pinned header: scroll edges.
+  Content scrolled under the status bar and the floating top bar, or running
+  on under the floating add field and tab pill, fades into the page surface;
+  nothing is drawn while nothing runs under them, and they take no taps.
+- Small text has one 13 px caption tier (`captionSize` in `fonts.dart`): the
+  theme's `bodySmall`, `labelMedium`, `labelSmall`, the section overlines
+  (tracked 0.08 em) and the field error captions.
 - `HexPill`, `HexStep` (`hex_pill.dart`): settings rows (store layout,
   categories, Läden) as hex pills on a 4 px edge, lifted with `sticker-l`
   while dragged; the walk-order number a 32 px pointy honey hex.

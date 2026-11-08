@@ -101,11 +101,21 @@ void main() {
 
   test('Vercel serves both files as JSON, not as the app', () {
     final vercel = jsonDecode(File('../vercel.json').readAsStringSync()) as Map;
+    final rewrites = (vercel['rewrites']! as List).cast<Map<String, Object?>>();
     final rewrite =
-        ((vercel['rewrites']! as List).single as Map)['source']! as String;
+        rewrites.singleWhere(
+              (r) => r['destination'] == '/index.html',
+            )['source']!
+            as String;
     final spa = RegExp('^$rewrite\$');
-    // Without the app every link opens the web app.
-    for (final link in appLinks) {
+    // Without the app an invite link opens the static join page (job 169b),
+    // which Vercel rewrites before the web app.
+    expect(
+      rewrites.indexWhere((r) => r['destination'] == '/join/index.html'),
+      lessThan(rewrites.indexWhere((r) => r['destination'] == '/index.html')),
+    );
+    // Every other link opens the web app.
+    for (final link in appLinks.where((l) => !l.path.startsWith('/join'))) {
       final path = link.prefix
           ? '${link.path}4f9c2e1a-7b3d-4c8e-9a6f-2d1e0b5c8a7f'
           : link.path;

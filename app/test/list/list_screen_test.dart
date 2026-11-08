@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:family_groceries/app/router.dart';
+import 'package:family_groceries/app/theme.dart';
+import 'package:family_groceries/design/sticker.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/add_sheet/suggestion.dart';
@@ -40,6 +42,7 @@ void main() {
     void Function(FakeRepository repo)? seed,
     bool keepCache = false,
     bool settle = true,
+    ThemeData? theme,
   }) async {
     if (!keepCache) {
       repo = FakeRepository();
@@ -53,6 +56,7 @@ void main() {
     );
     await tester.pumpWidget(
       MaterialApp.router(
+        theme: theme,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         locale: const Locale('de'),
@@ -1383,6 +1387,29 @@ void main() {
       expect(indicator(), findsOneWidget);
       same('a partner add, offline');
       await tester.pump(const Duration(seconds: 4));
+    });
+
+    testWidgets('in dark, the new-adds capsule has the one sticker edge: '
+        'hard, in the contour colour', (tester) async {
+      phone(tester);
+      await pumpList(
+        tester,
+        theme: appTheme(Brightness.dark),
+        seed: (repo) => repo.remoteAdd('Brot'),
+      );
+      repo.emitItem!(repo.remoteAdd('Tee'));
+      await tester.pump(const Duration(seconds: 4));
+      final status = find.byKey(const ValueKey('list-status'));
+      expect(status, findsOneWidget);
+      final box = tester.widget<DecoratedBox>(
+        find.descendant(of: status, matching: find.byType(DecoratedBox)).first,
+      );
+      final shadows = (box.decoration as ShapeDecoration).shadows!;
+      expect(shadows, HlSticker.shadow(Brightness.dark, StickerDepth.s));
+      for (final s in shadows) {
+        expect(s.blurRadius, 0, reason: 'no glow: one hard 3D edge');
+        expect(s.color, HummlistColors.dark.border);
+      }
     });
 
     testWidgets('Anpassen stands alone; new adds get their own capsule '

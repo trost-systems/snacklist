@@ -7,6 +7,7 @@ import 'package:family_groceries/app/legal_links.dart';
 import 'package:family_groceries/app/notices.dart';
 import 'package:family_groceries/app/router.dart';
 import 'package:family_groceries/app/shell.dart';
+import 'package:family_groceries/design/group_card.dart';
 import 'package:family_groceries/design/hex_switch.dart';
 import 'package:family_groceries/design/pointy_hex.dart';
 import 'package:family_groceries/design/section_label.dart';
@@ -293,7 +294,7 @@ class _MoreListState() extends State<_MoreList> {
                     l10n.legal,
                     padding: const EdgeInsets.fromLTRB(20, HlSpace.s5, 20, 0),
                   ),
-                _Group(
+                HlGroup(
                   top: legal ? HlSpace.s2 : HlSpace.s5,
                   children: [
                     for (final item in items)
@@ -436,38 +437,6 @@ Future<void> _openStoreListing(BuildContext context) async {
   }
 }
 
-/// A section's rows in an inset group: the 2 px contour, the small sticker
-/// shadow, hairlines between the rows.
-class const _Group({
-  required final List<Widget> children,
-  final double top = HlSpace.s5,
-}) extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final t = HummlistColors.of(Theme.of(context).brightness);
-    return Padding(
-      padding: EdgeInsets.fromLTRB(HlSpace.s4, top, HlSpace.s4, 0),
-      child: HlSticker(
-        depth: StickerDepth.s,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(HlRadius.m - HlBorder.width),
-          child: Material(
-            type: MaterialType.transparency,
-            child: Column(
-              children: [
-                for (final (i, child) in children.indexed) ...[
-                  if (i > 0) Divider(height: 1, indent: 60, color: t.divider),
-                  child,
-                ],
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 enum _Trailing() {
   /// Opens a page in the app.
   chevron,
@@ -491,15 +460,14 @@ class const _Row(
       key: ValueKey(item.key),
       minTileHeight: 52,
       contentPadding: const EdgeInsets.symmetric(horizontal: HlSpace.s3),
-      leading: PointyHex(
+      leading: HlRowHex(
+        item.icon,
         face: switch (item.tint) {
           _Tint.honey => t.honeySoft,
           _Tint.cobalt => t.accentSoft,
           _Tint.mint => t.mintSoft,
           _Tint.plain => t.surfaceSunken,
         },
-        size: 34,
-        child: Icon(item.icon, size: 18, color: t.text),
       ),
       title: Text(label),
       trailing: switch (trailing) {

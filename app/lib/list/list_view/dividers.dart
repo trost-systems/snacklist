@@ -1,3 +1,5 @@
+import 'package:family_groceries/design/section_label.dart';
+import 'package:family_groceries/design/tactile.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/category_names.dart';
@@ -63,7 +65,7 @@ class const _Head({
   @override
   Widget build(BuildContext context) => Container(
     constraints: const BoxConstraints(minHeight: 52),
-    padding: const EdgeInsets.fromLTRB(18, 8, 14, 8),
+    padding: const EdgeInsets.fromLTRB(18, 2, 10, 2),
     child: _row(context),
   );
 
@@ -71,9 +73,8 @@ class const _Head({
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     final store = section.store;
-    final tint = store == null
-        ? scheme.outline
-        : HummlistColors.of(scheme.brightness).brand;
+    final t = HummlistColors.of(scheme.brightness);
+    final tint = store == null ? scheme.outline : t.brand;
     final reduce = MediaQuery.disableAnimationsOf(context);
     return LayoutBuilder(
       builder: (context, outer) => Row(
@@ -85,11 +86,12 @@ class const _Head({
                 spacing: 10,
                 children: [
                   // The badge is the store's name; "no store" gets a neutral
-                  // one of the same shape.
+                  // one of the same shape. The name comes before the line,
+                  // which may shrink to nothing at large text.
                   StoreBadge(
                     store ?? Store(id: '', name: name, sortOrder: 0),
                     height: 32,
-                    maxWidth: (constraints.maxWidth - 22).clamp(0, 1e9),
+                    maxWidth: (constraints.maxWidth - 10).clamp(0, 1e9),
                   ),
                   Expanded(
                     child: Container(
@@ -133,14 +135,31 @@ class const _Head({
               ),
             ),
           ),
-          AnimatedRotation(
-            turns: folded ? -0.25 : 0,
-            duration: reduce ? Duration.zero : HlDuration.short,
-            curve: HlEasing.standard,
-            child: Icon(
-              Icons.expand_more,
-              size: 22,
-              color: scheme.onSurfaceVariant,
+          // The fold key: a raised hex the size of a target, like the add
+          // sheet's keys, so the control reads as one. The whole row taps.
+          SizedBox.fromSize(
+            size: const Size(52, HlSize.target),
+            child: TactileFace(
+              states: const {},
+              colors: TactileColors(
+                face: t.surfaceRaised,
+                contour: t.border,
+                edge: t.surfaceEdge,
+                focus: t.accent,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  bottom: raisedFaces ? HlDepth.edge : 0,
+                ),
+                child: Center(
+                  child: AnimatedRotation(
+                    turns: folded ? -0.25 : 0,
+                    duration: reduce ? Duration.zero : HlDuration.short,
+                    curve: HlEasing.standard,
+                    child: Icon(Icons.expand_more, size: 24, color: t.text),
+                  ),
+                ),
+              ),
             ),
           ),
         ],
@@ -249,12 +268,7 @@ class const _Line({required final String label}) extends StatelessWidget {
                 label.toUpperCase().replaceAll('ß', 'SS'),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 11 * 0.12,
-                  color: faded,
-                ),
+                style: HlSectionLabel.overline(faded),
               ),
             ),
             Expanded(child: Container(height: 1, color: scheme.outlineVariant)),

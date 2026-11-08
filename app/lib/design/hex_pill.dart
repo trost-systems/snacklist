@@ -104,18 +104,23 @@ class const _Lifted({required super.child}) extends InheritedWidget {
 }
 
 /// A pill's name, in the display face the site's stores scene sets it in.
+/// A name on two lines at large text grows the pill and keeps [HlSpace.s2]
+/// off its flat sides.
 class const PillTitle(final String text, {super.key}) extends StatelessWidget {
   @override
-  Widget build(BuildContext context) => Text(
-    text,
-    maxLines: 2,
-    overflow: TextOverflow.ellipsis,
-    style: TextStyle(
-      fontFamily: HlFont.display,
-      fontSize: 17,
-      fontWeight: FontWeight.w700,
-      height: 1.15,
-      color: HummlistColors.of(Theme.of(context).brightness).text,
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: HlSpace.s2),
+    child: Text(
+      text,
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(
+        fontFamily: HlFont.display,
+        fontSize: 17,
+        fontWeight: FontWeight.w700,
+        height: 1.15,
+        color: HummlistColors.of(Theme.of(context).brightness).text,
+      ),
     ),
   );
 }

@@ -293,6 +293,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get householdNameDefault => 'Our household';
 
   @override
+  String get householdNameHintFurther => 'e.g. Parents, flat, club';
+
+  @override
   String get createHousehold => 'Create a household';
 
   @override

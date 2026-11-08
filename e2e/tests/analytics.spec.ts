@@ -22,6 +22,7 @@ import {
   tick,
   typeInto, createHousehold, skipInvite, confirmJoin,
   openEmailSignIn,
+  invitePath,
 } from './helpers';
 
 // Job 19: analytics to PostHog EU, asked for right after the first sign-in (Peter, 2026-10-27).
@@ -338,7 +339,7 @@ test('an invite link survives sign-in and consent, ends on joining, and counts a
   const context = await browser.newContext();
   const collector = await fakeCollector(context);
   const page = await context.newPage();
-  await page.goto(`/join/${code}`);
+  await page.goto(invitePath(code));
   await expect(page).toHaveURL(new RegExp(`/login\\?invite=${code}$`));
   await openEmailSignIn(page);
   await typeInto(page.getByRole('textbox', { name: 'E-Mail' }), newEmail('consent-member'));

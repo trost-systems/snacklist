@@ -128,8 +128,15 @@ class const StoresScreen({super.key}) extends StatelessWidget {
             padding: EdgeInsets.only(
               bottom: fabClearance + MediaQuery.paddingOf(context).bottom,
             ),
+            // HexPill.margin adds s1: s4 to the first row, twice the gap
+            // between rows, so the intro reads as its own group.
             header: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              padding: const EdgeInsets.fromLTRB(
+                HlSpace.s4,
+                HlSpace.s3,
+                HlSpace.s4,
+                HlSpace.s3,
+              ),
               child: Text(
                 stores.isEmpty ? l10n.storesEmpty : l10n.storesHint,
                 key: stores.isEmpty ? const ValueKey('stores-empty') : null,

@@ -85,6 +85,11 @@ class _EditItemSheetState() extends State<_EditItemSheet> {
   late final _name = TextEditingController(text: widget.item.name);
   late final _brand = TextEditingController(text: widget.item.brand);
   late final _quantity = TextEditingController(text: widget.item.quantity);
+
+  // The fields move between one row and two as the width changes (turning
+  // the phone); global keys carry their focus across.
+  final _brandField = GlobalKey();
+  final _quantityField = GlobalKey();
   late final _properties = TextEditingController(text: widget.item.properties);
   late final _claimAmount = TextEditingController(
     text: widget.myClaim?.quantity,
@@ -216,11 +221,10 @@ class _EditItemSheetState() extends State<_EditItemSheet> {
                       bold: true,
                       onSubmitted: _save,
                     ),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      spacing: 10,
-                      children: [
-                        Expanded(
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final brand = KeyedSubtree(
+                          key: _brandField,
                           child: _Field(
                             fieldKey: 'edit-brand',
                             label: l10n.fieldBrand,
@@ -229,9 +233,9 @@ class _EditItemSheetState() extends State<_EditItemSheet> {
                             maxLength: 60,
                             onSubmitted: _save,
                           ),
-                        ),
-                        SizedBox(
-                          width: 72,
+                        );
+                        final quantity = KeyedSubtree(
+                          key: _quantityField,
                           child: _Field(
                             fieldKey: 'edit-quantity',
                             label: l10n.itemQuantity,
@@ -240,8 +244,8 @@ class _EditItemSheetState() extends State<_EditItemSheet> {
                             narrow: true,
                             onSubmitted: _save,
                           ),
-                        ),
-                        ValueListenableBuilder(
+                        );
+                        final steppers = ValueListenableBuilder(
                           valueListenable: _quantity,
                           builder: (context, value, _) {
                             final text = value.text;
@@ -252,7 +256,7 @@ class _EditItemSheetState() extends State<_EditItemSheet> {
                                 stepQuantity(text, up: false) != null;
                             return Row(
                               mainAxisSize: MainAxisSize.min,
-                              spacing: 4,
+                              spacing: _stepperGap,
                               children: [
                                 _Stepper(
                                   key: const ValueKey('edit-quantity-minus'),
@@ -271,8 +275,38 @@ class _EditItemSheetState() extends State<_EditItemSheet> {
                               ],
                             );
                           },
-                        ),
-                      ],
+                        );
+                        if (_fitsOneRow(
+                          context,
+                          constraints.maxWidth,
+                          l10n.itemQuantity,
+                        )) {
+                          return Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            spacing: _rowGap,
+                            children: [
+                              Expanded(child: brand),
+                              SizedBox(width: _quantityWidth, child: quantity),
+                              steppers,
+                            ],
+                          );
+                        }
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          spacing: _rowGap,
+                          children: [
+                            brand,
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              spacing: _rowGap,
+                              children: [
+                                Expanded(child: quantity),
+                                steppers,
+                              ],
+                            ),
+                          ],
+                        );
+                      },
                     ),
                     _Field(
                       fieldKey: 'edit-properties',
@@ -292,7 +326,12 @@ class _EditItemSheetState() extends State<_EditItemSheet> {
                   ),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
+                  padding: const EdgeInsets.fromLTRB(
+                    HlSpace.s4,
+                    HlSpace.s2,
+                    HlSpace.s4,
+                    10,
+                  ),
                   child: FoldoutChips(
                     catalog: _catalog,
                     storeId: _storeId,
@@ -339,10 +378,10 @@ class _EditItemSheetState() extends State<_EditItemSheet> {
                 ),
               Padding(
                 padding: EdgeInsets.fromLTRB(
-                  12,
+                  HlSpace.s4,
                   10,
-                  12,
-                  16 + math.max(0, media.padding.bottom - keyboard),
+                  HlSpace.s4,
+                  HlSpace.s4 + math.max(0, media.padding.bottom - keyboard),
                 ),
                 // Large text stacks Fertig over Abbrechen.
                 child: OverflowBar(
@@ -454,6 +493,39 @@ class const _ClaimArea({
   }
 }
 
+const _rowGap = 10.0;
+const _quantityWidth = 72.0;
+const _stepperWidth = 56.0;
+const _stepperGap = 4.0;
+
+/// Room a brand needs, in ems of its scaled 18 px text: Weihenstephan
+/// takes 7.8 in Inter, caret included.
+const _brandEms = 8;
+
+/// Whether Marke, Menge and its steppers fit one row of [width] at the
+/// user's text size: Menge's label within its 72 px, and a brand like
+/// Weihenstephan unclipped. Otherwise Marke goes above Menge. The steppers
+/// count even while hidden, so typing never moves the fields.
+bool _fitsOneRow(BuildContext context, double width, String quantityLabel) {
+  final scaler = MediaQuery.textScalerOf(context);
+  final label = TextPainter(
+    text: TextSpan(
+      text: quantityLabel,
+      style: DefaultTextStyle.of(context).style.merge(LabeledField.labelStyle),
+    ),
+    textDirection: Directionality.of(context),
+    textScaler: scaler,
+    maxLines: 1,
+  )..layout();
+  final labelFits = label.width <= _quantityWidth - hexFieldInset;
+  label.dispose();
+  final brandWidth =
+      width - _quantityWidth - 2 * _stepperWidth - _stepperGap - 2 * _rowGap;
+  final brandFits =
+      brandWidth - 2 * hexFieldInset >= scaler.scale(18) * _brandEms;
+  return labelFits && brandFits;
+}
+
 /// A 48 px field with its label above it.
 class const _Field({
   required final String fieldKey,
@@ -519,8 +591,8 @@ class const _Stepper({
     onPressed: onPressed,
     style: OutlinedButton.styleFrom(
       visualDensity: VisualDensity.standard,
-      fixedSize: const Size(56, HlSize.target),
-      minimumSize: const Size(56, HlSize.target),
+      fixedSize: const Size(_stepperWidth, HlSize.target),
+      minimumSize: const Size(_stepperWidth, HlSize.target),
       padding: EdgeInsets.zero,
       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
     ),

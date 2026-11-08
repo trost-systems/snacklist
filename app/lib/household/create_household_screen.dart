@@ -44,8 +44,12 @@ class const CreateHouseholdScreen({
 }
 
 class _CreateHouseholdScreenState() extends State<CreateHouseholdScreen> {
+  /// Onboarding prefills the usual first name; a further household starts
+  /// empty, since "Unser Haushalt" is most likely taken by the first.
   late final _name = TextEditingController(
-    text: AppLocalizations.of(context).householdNameDefault,
+    text: widget.from == HouseholdOrigin.switcher
+        ? ''
+        : AppLocalizations.of(context).householdNameDefault,
   );
 
   /// The stores to create, in the order picked.
@@ -135,6 +139,7 @@ class _CreateHouseholdScreenState() extends State<CreateHouseholdScreen> {
     final theme = Theme.of(context);
     final t = HummlistColors.of(theme.brightness);
     final problem = _problem;
+    final nameError = _invalidName ? l10n.householdNameInvalid : null;
     final own = [
       for (final s in _stores)
         if (!popularStores.contains(s)) s,
@@ -148,17 +153,24 @@ class _CreateHouseholdScreenState() extends State<CreateHouseholdScreen> {
       children: [
         LabeledField(
           label: l10n.householdName,
-          field: TextField(
-            key: const ValueKey('household-name'),
-            controller: _name,
-            focusNode: _nameFocus,
-            enabled: !_busy,
-            maxLength: maxHouseholdName,
-            textCapitalization: TextCapitalization.sentences,
-            decoration: InputDecoration(
-              errorText: _invalidName ? l10n.householdNameInvalid : null,
+          field: Semantics(
+            hint: nameError ?? '',
+            child: TextField(
+              key: const ValueKey('household-name'),
+              controller: _name,
+              focusNode: _nameFocus,
+              autofocus: widget.from == HouseholdOrigin.switcher,
+              enabled: !_busy,
+              maxLength: maxHouseholdName,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: InputDecoration(
+                error: nameError == null ? null : FieldError(nameError),
+                hintText: widget.from == HouseholdOrigin.switcher
+                    ? l10n.householdNameHintFurther
+                    : null,
+              ),
+              onSubmitted: (_) => unawaited(_create()),
             ),
-            onSubmitted: (_) => unawaited(_create()),
           ),
         ),
         const SizedBox(height: 16),

@@ -35,6 +35,18 @@ revoke all on public.invite_uses from public, anon, authenticated;
 grant select on public.invite_uses to authenticated;
 create policy invite_uses_select on public.invite_uses for select to authenticated
   using (public.is_household_member(household_id));
+
+-- Leaving or a removal ends the record of how the user joined that household (Legal draft #328,
+-- question 3): "Wer ist beigetreten" and the export show current memberships only.
+create function public.invite_uses_end_with_membership() returns trigger
+language plpgsql security definer set search_path = '' as $$
+begin
+  delete from public.invite_uses u where u.household_id = old.household_id and u.user_id = old.user_id;
+  return null;
+end $$;
+revoke execute on function public.invite_uses_end_with_membership() from public, anon, authenticated;
+create trigger invite_uses_end_with_membership after delete on public.household_members
+  for each row execute function public.invite_uses_end_with_membership();
 alter publication supabase_realtime add table public.invite_uses;
 
 comment on table public.invite_uses is
