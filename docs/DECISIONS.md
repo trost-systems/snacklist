@@ -10436,3 +10436,42 @@ switch drops the user's other cached lists.
    (CLAUDE.md, lint rules). It caught the feedback trigger's old read when run on the old file.
 9. **`households.kind` lands here**, shared with job 168's "who do you shop with" step
    (`partner | family | flat | club | solo`, nullable).
+
+## Job 169b: the invite loop, wave 2, 2026-11-08
+
+Contract [`docs/households/W2.md`](households/W2.md). Peter (2026-11-08): reusable group links
+(30 days, 50 joins, revocable, admins only); admins remove members, revoke the group link and
+make a new one; invites stay links the user shares (N-18).
+
+1. **One active group link per household, idempotent create.** Creating while one is open
+   answers the open one; after a revoke, expiry or the 50th join a new code. Two places to manage
+   a link would mean two links forwarded around a club.
+2. **Uses are counted under the invite's row lock**, with a check `use_count between 0 and
+   max_uses` as the last guard. The two-connection tests race the 50th join (49 taken: one
+   joins, one gets `invalid_invite`; 48 taken, three racers: two join). They fail without the
+   condition in the update.
+3. **The static join page** (`app/web/join/`, a Vercel rewrite before the web app) shows who
+   invites to what without loading Flutter, which is what a link opened in a messenger's
+   in-app browser needs. It calls `preview_invite_public`, the only new function `anon` may
+   call. It shows the inviter's first name only when they set a display name (the default name
+   is the email's local part), the household name and kind, member and open-item counts and
+   Premium; never item names. Store buttons and the Smart App Banner stay off until a listing is
+   public (`storeListings` in `join.js`).
+4. **Rate limits without raw IPs.** Per client (30/hour) and per code (60/hour), keyed by a
+   salted SHA-256 of `X-Real-IP` (the hosted header the client can't forge) or the code, fixed
+   hourly windows, past hours deleted on the next call. The salt is generated in the database at
+   migration time and never leaves it.
+5. **Sign-in started from an invite returns to `/?invite=<code>`**, not `/join/<code>`: on the
+   web that path is now the static page, and on phones it is claimed by the apps.
+6. **Roles: Hauptadmin (owner), Admin, member.** "Hauptadmin" is gender-neutral, short and ranks
+   above Admin. The owner names admins; owner and admins remove members; an admin can't remove
+   the owner or another admin. Ownership passes to the earliest admin, else the earliest member,
+   when the owner leaves, is removed or deletes the account.
+7. **"Wer ist beigetreten" lists current members only**, and leaving or a removal deletes the
+   user's join record for that household (Legal draft #328, question 3). The export lists the
+   user's own join records.
+8. **Store bridges without an SDK.** Android reads the Play Install Referrer once on the first
+   start and keeps only `invite=<code>` (dated, so it lapses after 7 days). "Einladung einfügen"
+   reads the clipboard only on that tap. No fingerprinting, no paid deep-link service.
+9. **Admins send `actor_role: admin`** on list events; the `alexa` function keeps reporting an
+   admin as `member` (its telemetry allow-list predates roles).
