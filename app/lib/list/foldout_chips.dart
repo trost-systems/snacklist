@@ -165,7 +165,7 @@ class _FoldoutChipsState() extends State<FoldoutChips> {
             ),
             _Fold.category => _Options([
               for (final c in w.catalog.categories)
-                _Option(
+                OptionChip(
                   key: ValueKey('category-option-${c.id}'),
                   label: categoryName(c, l10n),
                   selected: c.id == w.categoryId,
@@ -367,7 +367,7 @@ class _StoreOptionsState() extends State<_StoreOptions> {
             runSpacing: 6,
             children: [
               if (query.isEmpty)
-                _Option(
+                OptionChip(
                   key: const ValueKey('store-option-none'),
                   leading: const Icon(Icons.storefront_outlined, size: 22),
                   label: w.noStoreLabel,
@@ -376,14 +376,14 @@ class _StoreOptionsState() extends State<_StoreOptions> {
                 ),
               for (final s in w.catalog.stores)
                 if (nameKey(s.name).contains(query))
-                  _Option(
+                  OptionChip(
                     key: ValueKey('store-option-${s.id}'),
                     label: s.name,
                     selected: s.id == w.storeId,
                     onTap: () => w.onPick(s.id),
                   ),
               if (w.onCreate != null && naming == null)
-                _Option(
+                OptionChip(
                   key: const ValueKey('store-option-new'),
                   focusNode: _newOption,
                   leading: const Icon(Icons.add, size: 22),
@@ -461,7 +461,10 @@ class const _Options(final List<Widget> options) extends StatelessWidget {
   );
 }
 
-class const _Option({
+/// A pick among options: honey with the navy contour when [selected], a
+/// sunken hex otherwise (the store and category options, the edit sheet's
+/// lists).
+class const OptionChip({
   required final String label,
   required final bool selected,
   required final VoidCallback onTap,

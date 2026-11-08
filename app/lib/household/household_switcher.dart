@@ -109,12 +109,14 @@ class const HouseholdChip({
     );
   }
 
-  /// The shown list's open items now, pending changes included; null until
-  /// it loaded.
+  /// The shown household's open items now, on every list, pending changes
+  /// included; null until it loaded.
   static int? _openNow(BuildContext context) {
     final state = context.read<ListCubit>().state;
     return state.loaded
-        ? state.items.values.where((i) => i.status == ItemStatus.active).length
+        ? state.allItems.values
+              .where((i) => i.status == ItemStatus.active)
+              .length
         : null;
   }
 }

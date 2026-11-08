@@ -39,6 +39,10 @@ class const ItemRow({
   /// Only a screen reader's action deletes from the row; everyone else
   /// deletes in the edit sheet.
   required final ValueChanged<Item> onDelete,
+
+  /// Who brings it (job 169b L), "Mia bringt 2 · Du bringst"; null for no
+  /// one. A line of its own under the details.
+  final String? claims,
   super.key,
 }) extends StatefulWidget {
   @override
@@ -131,6 +135,7 @@ class _ItemRowState()
       item.name,
       if (details.isNotEmpty) details,
       ?item.quantity,
+      ?widget.claims,
       if (widget.fresh) l10n.newItem,
     ].join('\n');
     return Semantics(
@@ -295,6 +300,21 @@ class const _Tile({
                             fontWeight: FontWeight.w500,
                             color: Color.lerp(
                               scheme.onSurfaceVariant,
+                              hl.textMuted,
+                              drawn,
+                            ),
+                          ),
+                        ),
+                      if (row.claims case final claims?)
+                        Text(
+                          claims,
+                          key: ValueKey('claims-${item.id}'),
+                          style: TextStyle(
+                            fontSize: _detailSize,
+                            height: 1.3,
+                            fontWeight: FontWeight.w700,
+                            color: Color.lerp(
+                              scheme.primary,
                               hl.textMuted,
                               drawn,
                             ),

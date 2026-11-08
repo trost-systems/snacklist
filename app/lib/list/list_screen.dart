@@ -21,6 +21,7 @@ import 'package:family_groceries/list/dictation_button.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_link.dart';
 import 'package:family_groceries/list/list_scope.dart';
+import 'package:family_groceries/list/list_tabs.dart';
 import 'package:family_groceries/list/list_view/shopping_list_view.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/sync_indicator.dart';
@@ -413,6 +414,9 @@ class _ShoppingListState() extends State<_ShoppingList> {
   @override
   Widget build(BuildContext context) {
     final open = context.select<AddSheetCubit, bool>((c) => c.state.open);
+    final tabs = context.select<ListCubit, bool>(
+      (c) => ListTabs.shownFor(c.state.catalog.lists),
+    );
     return ReviewPromptTrigger(
       cubit: context.read<ListCubit>(),
       listening: _listening,
@@ -485,13 +489,14 @@ class _ShoppingListState() extends State<_ShoppingList> {
                     child: SyncIndicator(
                       rowTop: _Header._gap,
                       rowHeight: _Header.height,
-                      cardTop: _Header.extent,
+                      cardTop: _Header.extentFor(tabs: tabs),
                       pillInset: _chipWidth,
                       child: ShoppingListView(
                         onInteract: _leaveField,
                         header: _Header(
                           chipWidth: _chipWidth,
                           anpassenWidth: _anpassenWidth,
+                          tabs: tabs,
                         ),
                       ),
                     ),
@@ -801,10 +806,12 @@ const _composeHeight = 52.0;
 /// Anpassen is a raised button on its own, with no frame around it (job
 /// 152); the new adds sit in their own small capsule beside it, only while
 /// there are any. The sync indicator's
-/// pill sits right of the household chip (job 161).
+/// pill sits right of the household chip (job 161). With [tabs], the
+/// household's lists follow below the bar (job 169b K).
 class const _Header({
   required final ValueNotifier<double> chipWidth,
   required final ValueNotifier<double> anpassenWidth,
+  required final bool tabs,
 }) extends StatelessWidget implements PreferredSizeWidget {
   /// The bar's height: the tab pill's.
   static const height = 52.0;
@@ -816,8 +823,12 @@ class const _Header({
   /// bar, its shadow and a gap.
   static const extent = _gap + height + HlSpace.s2;
 
+  /// [extent], with the list tabs and their gap when [tabs].
+  static double extentFor({required bool tabs}) =>
+      extent + (tabs ? ListTabs.height + HlSpace.s2 : 0);
+
   @override
-  Size get preferredSize => const Size.fromHeight(extent);
+  Size get preferredSize => Size.fromHeight(extentFor(tabs: tabs));
 
   @override
   Widget build(BuildContext context) {
@@ -848,65 +859,21 @@ class const _Header({
                 side + HlSpace.s4,
                 extent - _gap - height,
               ),
-              child: SizedBox(
-                height: height,
-                child: MediaQuery.withClampedTextScaling(
-                  // Large text still fits the 52 high bar.
-                  maxScaleFactor: SyncPillSpace.maxTextScale,
-                  child: ListenableBuilder(
-                    listenable: Listenable.merge([chipWidth, anpassenWidth]),
-                    builder: (context, _) => Row(
-                      children: [
-                        HouseholdChip(
-                          maxWidth: HouseholdChip.widest(
-                            row,
-                            anpassen: anpassenWidth.value,
-                            trouble: state.trouble != null,
-                          ),
-                          onWidth: (width) => chipWidth.value = width,
-                        ),
-                        SyncPillSpace(row: row - chipWidth.value),
-                        const SizedBox(width: HlSpace.s2),
-                        const Expanded(
-                          child: Align(
-                            alignment: AlignmentDirectional.centerEnd,
-                            child: _Status(),
-                          ),
-                        ),
-                        const SizedBox(width: HlSpace.s2),
-                        // On the web the rows under the button keep their
-                        // tappable semantics elements, which take a browser
-                        // click before the framework sees it; the opaque node
-                        // blocks them. Rows beside it stay tappable: they show
-                        // in full.
-                        Semantics(
-                          container: true,
-                          hitTestBehavior: SemanticsHitTestBehavior.opaque,
-                          // Large text shrinks the label rather than the bar.
-                          child: MeasuredWidth(
-                            onWidth: (width) => anpassenWidth.value = width,
-                            child: ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 160),
-                              child: OutlinedButton(
-                                key: const ValueKey('list-edit'),
-                                // Desktop's compact density would shrink it
-                                // under 48 px.
-                                style: OutlinedButton.styleFrom(
-                                  visualDensity: VisualDensity.standard,
-                                ),
-                                onPressed: () => context.go(editPath),
-                                child: FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  child: Text(l10n.listEdit),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                spacing: HlSpace.s2,
+                children: [
+                  _bar(context, l10n, state, row),
+                  if (tabs)
+                    MediaQuery.withClampedTextScaling(
+                      // Large text still fits the 32 high tab hex.
+                      maxScaleFactor: SyncPillSpace.maxTextScale,
+                      child: const SizedBox(
+                        height: ListTabs.height,
+                        child: ListTabs(),
+                      ),
                     ),
-                  ),
-                ),
+                ],
               ),
             );
           },
@@ -914,6 +881,72 @@ class const _Header({
       ],
     );
   }
+
+  Widget _bar(
+    BuildContext context,
+    AppLocalizations l10n,
+    ListState state,
+    double row,
+  ) => SizedBox(
+    height: height,
+    child: MediaQuery.withClampedTextScaling(
+      // Large text still fits the 52 high bar.
+      maxScaleFactor: SyncPillSpace.maxTextScale,
+      child: ListenableBuilder(
+        listenable: Listenable.merge([chipWidth, anpassenWidth]),
+        builder: (context, _) => Row(
+          children: [
+            HouseholdChip(
+              maxWidth: HouseholdChip.widest(
+                row,
+                anpassen: anpassenWidth.value,
+                trouble: state.trouble != null,
+              ),
+              onWidth: (width) => chipWidth.value = width,
+            ),
+            SyncPillSpace(row: row - chipWidth.value),
+            const SizedBox(width: HlSpace.s2),
+            const Expanded(
+              child: Align(
+                alignment: AlignmentDirectional.centerEnd,
+                child: _Status(),
+              ),
+            ),
+            const SizedBox(width: HlSpace.s2),
+            // On the web the rows under the button keep their
+            // tappable semantics elements, which take a browser
+            // click before the framework sees it; the opaque node
+            // blocks them. Rows beside it stay tappable: they show
+            // in full.
+            Semantics(
+              container: true,
+              hitTestBehavior: SemanticsHitTestBehavior.opaque,
+              // Large text shrinks the label rather than the bar.
+              child: MeasuredWidth(
+                onWidth: (width) => anpassenWidth.value = width,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 160),
+                  child: OutlinedButton(
+                    key: const ValueKey('list-edit'),
+                    // Desktop's compact density would shrink it
+                    // under 48 px.
+                    style: OutlinedButton.styleFrom(
+                      visualDensity: VisualDensity.standard,
+                    ),
+                    onPressed: () => context.go(editPath),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(l10n.listEdit),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
 }
 
 /// The partner's new adds in a small raised capsule beside Anpassen;
