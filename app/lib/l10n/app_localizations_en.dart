@@ -1707,6 +1707,16 @@ class AppLocalizationsEn extends AppLocalizations {
       'Use a token to build your own automations on the MCP server that manage your list. For programs without MCP, use the API below.';
 
   @override
+  String accessKeysHousehold(String household) {
+    return 'A new token works in “$household”, the household open now.';
+  }
+
+  @override
+  String accessKeysHouseholdWithApi(String household) {
+    return 'New tokens and API keys work in “$household”, the household open now.';
+  }
+
+  @override
   String lastActiveOn(DateTime date) {
     final intl.DateFormat dateDateFormat = intl.DateFormat.yMd(localeName);
     final String dateString = dateDateFormat.format(date);

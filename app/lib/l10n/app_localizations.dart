@@ -2870,6 +2870,18 @@ abstract class AppLocalizations {
   /// **'Mit einem Token baust du eigene Automationen am MCP-Server, die eure Liste pflegen. Für Programme ohne MCP gibt es unten die API.'**
   String get accessTokensHintWithApi;
 
+  /// Job 169b: Zugänge, under the token hint when the user is in several households: the household a new token acts in
+  ///
+  /// In de, this message translates to:
+  /// **'Ein neuer Token gilt für „{household}“, den Haushalt, der gerade offen ist.'**
+  String accessKeysHousehold(String household);
+
+  /// Job 169b: as accessKeysHousehold while the public-api flag is on
+  ///
+  /// In de, this message translates to:
+  /// **'Neue Token und API-Schlüssel gelten für „{household}“, den Haushalt, der gerade offen ist.'**
+  String accessKeysHouseholdWithApi(String household);
+
   /// Zugänge, connected app row and details: the newest token refresh of the app (job 80)
   ///
   /// In de, this message translates to:
