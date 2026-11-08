@@ -58,7 +58,7 @@ void main() {
             body: Center(
               child: TextButton(
                 onPressed: () async {
-                  result = await showEditItemSheet(
+                  final edit = await showEditItemSheet(
                     context,
                     item: item ?? milk,
                     catalog: catalog,
@@ -67,6 +67,7 @@ void main() {
                         (name) async =>
                             Store(id: 'new', name: name, sortOrder: 30),
                   );
+                  result = edit?.changes;
                   closed = true;
                 },
                 child: const Text('open'),

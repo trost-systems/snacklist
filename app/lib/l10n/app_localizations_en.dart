@@ -2025,4 +2025,91 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get householdNotOwner => 'Only the household\'s owner names admins.';
+
+  @override
+  String get listsTitle => 'Lists';
+
+  @override
+  String get listNew => 'New list';
+
+  @override
+  String get listNameLabel => 'List name';
+
+  @override
+  String listAdded(String name) {
+    return 'List “$name” added';
+  }
+
+  @override
+  String get listRenameTitle => 'Rename list';
+
+  @override
+  String listActions(String name) {
+    return 'Actions for “$name”';
+  }
+
+  @override
+  String get listMoveUp => 'Move up';
+
+  @override
+  String get listMoveDown => 'Move down';
+
+  @override
+  String listDeleteTitle(String name) {
+    return 'Delete “$name”?';
+  }
+
+  @override
+  String listDeleteBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'The $count open items on it are deleted with it.',
+      one: 'The 1 open item on it is deleted with it.',
+      zero: 'Nothing is open on this list.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get listsNeedConnection =>
+      'Lists can only be added, renamed, sorted or deleted with a connection.';
+
+  @override
+  String onListAlready(String name, String list) {
+    return '“$name” is already on “$list”.';
+  }
+
+  @override
+  String get editList => 'List';
+
+  @override
+  String get claimMine => 'I\'ll bring it';
+
+  @override
+  String get claimAmount => 'How much?';
+
+  @override
+  String get claimAmountHint => 'e.g. 2';
+
+  @override
+  String claimBy(String name) {
+    return '$name brings';
+  }
+
+  @override
+  String claimByAmount(String name, String amount) {
+    return '$name brings $amount';
+  }
+
+  @override
+  String get claimYou => 'You bring';
+
+  @override
+  String claimYouAmount(String amount) {
+    return 'You bring $amount';
+  }
+
+  @override
+  String get claimSomeone => 'Someone';
 }

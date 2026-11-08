@@ -95,6 +95,10 @@ class const Catalog({
   final List<Store> stores = const [],
   final List<StoreCategory> layout = const [],
   final List<Member> members = const [],
+
+  /// The household's lists in their order (job 169b K); empty from a server
+  /// or a device copy without lists, which shows every item as one list.
+  final List<HouseholdList> lists = const [],
 }) {
   factory fromJson(Map<String, Object?> json) => Catalog(
     categories: [
@@ -113,6 +117,10 @@ class const Catalog({
       for (final row in json['members']! as List<Object?>)
         Member.fromJson(row! as Map<String, Object?>),
     ],
+    lists: [
+      for (final row in json['lists']! as List<Object?>)
+        HouseholdList.fromJson(row! as Map<String, Object?>),
+    ],
   );
 
   Map<String, Object?> toJson() => {
@@ -120,7 +128,42 @@ class const Catalog({
     'stores': [for (final s in stores) s.toJson()],
     'layout': [for (final row in layout) row.toJson()],
     'members': [for (final m in members) m.toJson()],
+    'lists': [for (final l in lists) l.toJson()],
   };
+
+  HouseholdList? list(String? id) => lists.where((l) => l.id == id).firstOrNull;
+
+  /// [list] added after the others.
+  Catalog withList(HouseholdList list) => _withLists([...lists, list]);
+
+  Catalog withListName(String listId, String name) => _withLists([
+    for (final l in lists)
+      if (l.id == listId)
+        HouseholdList(id: l.id, name: name, position: l.position)
+      else
+        l,
+  ]);
+
+  Catalog withoutList(String listId) =>
+      _withLists([...lists.where((l) => l.id != listId)]);
+
+  /// The list order is the position in [ids].
+  Catalog withListOrder(List<String> ids) {
+    final byId = {for (final l in lists) l.id: l};
+    return _withLists([
+      for (final (i, id) in ids.indexed)
+        if (byId[id] case final l?)
+          HouseholdList(id: l.id, name: l.name, position: i),
+    ]);
+  }
+
+  Catalog _withLists(List<HouseholdList> lists) => Catalog(
+    categories: categories,
+    stores: stores,
+    layout: layout,
+    members: members,
+    lists: lists,
+  );
 
   Member? member(String? id) => members.where((m) => m.id == id).firstOrNull;
 
@@ -141,6 +184,7 @@ class const Catalog({
     stores: [...stores, store],
     layout: layout,
     members: members,
+    lists: lists,
   );
 
   /// A chain store given another name stops being its chain, as
@@ -164,6 +208,7 @@ class const Catalog({
     ],
     layout: layout,
     members: members,
+    lists: lists,
   );
 
   Catalog withoutStore(String storeId) => Catalog(
@@ -171,6 +216,7 @@ class const Catalog({
     stores: [...stores.where((s) => s.id != storeId)],
     layout: [...layout.where((row) => row.storeId != storeId)],
     members: members,
+    lists: lists,
   );
 
   /// The store order is the position in [ids].
@@ -190,6 +236,7 @@ class const Catalog({
       ],
       layout: layout,
       members: members,
+      lists: lists,
     );
   }
 
@@ -210,6 +257,7 @@ class const Catalog({
       stores: stores,
       layout: layout,
       members: members,
+      lists: lists,
     );
   }
 
@@ -229,6 +277,7 @@ class const Catalog({
     stores: stores,
     layout: layout,
     members: members,
+    lists: lists,
   );
 
   Catalog withStoreLayout(
@@ -249,7 +298,105 @@ class const Catalog({
         ),
     ],
     members: members,
+    lists: lists,
   );
+}
+
+/// Longest list name the server takes (`lists.name`, 1 to 60).
+const maxListNameLength = 60;
+
+/// One of a household's lists (job 169b K): "Wocheneinkauf" next to
+/// "Baumarkt". Stores, categories and their order are the household's, not
+/// the list's.
+@immutable
+class const HouseholdList({
+  required final String id,
+  required final String name,
+  required final int position,
+}) {
+  factory fromJson(Map<String, Object?> json) => HouseholdList(
+    id: json['id']! as String,
+    name: json['name']! as String,
+    position: json['position']! as int,
+  );
+
+  Map<String, Object?> toJson() => {
+    'id': id,
+    'name': name,
+    'position': position,
+  };
+}
+
+/// A member's "Ich bringe das" on an open item (job 169b L), with the
+/// amount they bring, if they named one. One per item and member.
+@immutable
+class const Claim({
+  required final String itemId,
+  required final String userId,
+  required final DateTime createdAt,
+  final String? quantity,
+}) {
+  factory fromJson(Map<String, Object?> json) => Claim(
+    itemId: json['item_id']! as String,
+    userId: json['user_id']! as String,
+    quantity: json['quantity'] as String?,
+    createdAt: DateTime.parse(json['created_at']! as String),
+  );
+
+  Map<String, Object?> toJson() => {
+    'item_id': itemId,
+    'user_id': userId,
+    'quantity': quantity,
+    'created_at': createdAt.toIso8601String(),
+  };
+
+  ClaimKey get key => (itemId, userId);
+}
+
+/// A claim's identity: the item and the member.
+typedef ClaimKey = (String itemId, String userId);
+
+/// The claims the list shows, by item id, oldest first: the server's, with
+/// the pending claim ops folded on top. A tick or a delete ends an item's
+/// claims, as the server's trigger does; only [items] that are open keep
+/// theirs.
+Map<String, List<Claim>> visibleClaims(
+  Map<ClaimKey, Claim> server,
+  Iterable<ItemOp> pending,
+  Map<String, Item> items,
+) {
+  final view = Map.of(server);
+  for (final op in pending) {
+    switch (op) {
+      case ClaimItem(:final userId, :final quantity, :final at):
+        view[(op.itemId, userId)] = Claim(
+          itemId: op.itemId,
+          userId: userId,
+          quantity: quantity,
+          createdAt: view[(op.itemId, userId)]?.createdAt ?? at,
+        );
+      case UnclaimItem(:final userId):
+        view.remove((op.itemId, userId));
+      case SetStatus(status: ItemStatus.bought) || DeleteItem():
+        view.removeWhere((key, _) => key.$1 == op.itemId);
+      case MergeItems(:final otherId):
+        view.removeWhere((key, _) => key.$1 == otherId);
+      default:
+    }
+  }
+  final byItem = <String, List<Claim>>{};
+  for (final claim in view.values) {
+    if (items[claim.itemId]?.status == ItemStatus.active) {
+      (byItem[claim.itemId] ??= []).add(claim);
+    }
+  }
+  for (final claims in byItem.values) {
+    claims.sort((a, b) {
+      final byCreated = a.createdAt.compareTo(b.createdAt);
+      return byCreated != 0 ? byCreated : a.userId.compareTo(b.userId);
+    });
+  }
+  return byItem;
 }
 
 /// A household member as the list names them.
@@ -336,6 +483,11 @@ class const Item({
   /// it ("Karotten" and "Möhren" give "mohr"). Null until the server confirms
   /// the add; the duplicate hint matches on it (job 32b).
   final String? canonicalKey,
+
+  /// The list it is on (job 169b K). Null in a device copy from before
+  /// lists, and for an add queued then: it is on the household's first
+  /// list, where the server puts an add without one.
+  final String? listId,
 }) {
   factory fromJson(Map<String, Object?> json) => Item(
     id: json['id']! as String,
@@ -357,6 +509,7 @@ class const Item({
     addedBy: json['added_by'] as String?,
     categorizedVia: json['categorized_via'] as String?,
     canonicalKey: json['canonical_key'] as String?,
+    listId: json['list_id'] as String?,
   );
 
   /// The same keys as a server row, so [Item.fromJson] reads it back.
@@ -376,6 +529,7 @@ class const Item({
     'added_by': addedBy,
     'categorized_via': categorizedVia,
     'canonical_key': canonicalKey,
+    'list_id': listId,
   };
 
   Item copyWith({
@@ -388,6 +542,7 @@ class const Item({
     double? Function()? sortKey,
     ItemStatus? status,
     DateTime? Function()? boughtAt,
+    String? listId,
   }) => Item(
     id: id,
     name: name ?? this.name,
@@ -404,7 +559,11 @@ class const Item({
     addedBy: addedBy,
     categorizedVia: categorizedVia,
     canonicalKey: canonicalKey,
+    listId: listId ?? this.listId,
   );
+
+  /// The list it is on, where [firstList] is the household's first list.
+  String? listOn(String? firstList) => listId ?? firstList;
 
   /// Added by another member (not by [userId], and not still unconfirmed).
   bool isFromPartner(String userId) => addedBy != null && addedBy != userId;
@@ -624,6 +783,14 @@ sealed class const ItemOp(final String itemId) {
         kept: Item.fromJson(json['kept']! as Map<String, Object?>),
         merged: Item.fromJson(json['merged']! as Map<String, Object?>),
       ),
+      'list' => MoveToList(id, listId: json['list_id']! as String),
+      'claim' => ClaimItem(
+        id,
+        userId: json['user_id']! as String,
+        quantity: json['quantity'] as String?,
+        at: DateTime.parse(json['at']! as String),
+      ),
+      'unclaim' => UnclaimItem(id, userId: json['user_id']! as String),
       final op => throw FormatException('unknown op', op),
     };
   }
@@ -666,6 +833,14 @@ sealed class const ItemOp(final String itemId) {
         categoryId: categoryId,
         storeId: storeId,
       ),
+      MoveToList(:final listId) => MoveToList(kept, listId: listId),
+      ClaimItem(:final userId, :final quantity, :final at) => ClaimItem(
+        kept,
+        userId: userId,
+        quantity: quantity,
+        at: at,
+      ),
+      UnclaimItem(:final userId) => UnclaimItem(kept, userId: userId),
       PlaceItem(
         :final anchorId,
         :final edge,
@@ -765,6 +940,14 @@ sealed class const ItemOp(final String itemId) {
           'sort_key': sortKey,
         },
       DeleteItem() => {'op': 'delete'},
+      MoveToList(:final listId) => {'op': 'list', 'list_id': listId},
+      ClaimItem(:final userId, :final quantity, :final at) => {
+        'op': 'claim',
+        'user_id': userId,
+        'quantity': quantity,
+        'at': at.toIso8601String(),
+      },
+      UnclaimItem(:final userId) => {'op': 'unclaim', 'user_id': userId},
       MergeItems(
         :final mergeId,
         :final otherId,
@@ -887,6 +1070,35 @@ final class const PlaceItem(
 final class const DeleteItem(super.itemId) extends ItemOp {
   @override
   Item? apply(Item? current) => null;
+}
+
+/// Onto the household's list [listId] (job 169b K), keeping its store,
+/// category and place: an `items.list_id` update.
+final class const MoveToList(super.itemId, {required final String listId})
+    extends ItemOp {
+  @override
+  Item? apply(Item? current) => current?.copyWith(listId: listId);
+}
+
+/// [userId]'s "Ich bringe das" on the item (job 169b L), with the amount
+/// they bring or none: `claim_item`, which replaces their earlier claim.
+/// [at] is when they said so, for the order until the server answers.
+/// Claims are not part of the item ([visibleClaims] folds this op).
+final class const ClaimItem(
+  super.itemId, {
+  required final String userId,
+  required final DateTime at,
+  final String? quantity,
+}) extends ItemOp {
+  @override
+  Item? apply(Item? current) => current;
+}
+
+/// Takes [userId]'s claim back: `unclaim_item`.
+final class const UnclaimItem(super.itemId, {required final String userId})
+    extends ItemOp {
+  @override
+  Item? apply(Item? current) => current;
 }
 
 /// Folds the open item [otherId] into the open item [itemId] with

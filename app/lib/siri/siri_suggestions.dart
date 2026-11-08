@@ -7,11 +7,11 @@ import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// The items Siri offers for "Add `<item>` to Hummlist": the household's
-/// usuals first, then what is on the list, then what was bought last; each
+/// usuals first, then what is on its lists, then what was bought last; each
 /// item once (by name, and by `canonical_key` where the server set one), at
 /// most [maxSiriSuggestions].
 List<SiriSuggestion> siriSuggestions(ListState state) {
-  final items = state.items.values;
+  final items = state.allItems.values;
   final active = [
     for (final item in items)
       if (item.status == ItemStatus.active) item,

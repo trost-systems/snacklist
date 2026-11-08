@@ -3343,6 +3343,132 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Admins ernennt nur, wer den Haushalt angelegt hat.'**
   String get householdNotOwner;
+
+  /// Job 169b K: household page section and the list tabs' group label
+  ///
+  /// In de, this message translates to:
+  /// **'Listen'**
+  String get listsTitle;
+
+  /// Job 169b K: the tabs' + button, the household page's add row and the name dialog's title
+  ///
+  /// In de, this message translates to:
+  /// **'Neue Liste'**
+  String get listNew;
+
+  /// Job 169b K: label of the name field when adding or renaming a list
+  ///
+  /// In de, this message translates to:
+  /// **'Name der Liste'**
+  String get listNameLabel;
+
+  /// Job 169b K: screen reader announcement after adding a list
+  ///
+  /// In de, this message translates to:
+  /// **'Liste „{name}“ angelegt'**
+  String listAdded(String name);
+
+  /// Job 169b K: rename dialog title
+  ///
+  /// In de, this message translates to:
+  /// **'Liste umbenennen'**
+  String get listRenameTitle;
+
+  /// Job 169b K: household page, tooltip of a list's menu
+  ///
+  /// In de, this message translates to:
+  /// **'Aktionen für „{name}“'**
+  String listActions(String name);
+
+  /// Job 169b K: list menu, move the list one up
+  ///
+  /// In de, this message translates to:
+  /// **'Nach oben'**
+  String get listMoveUp;
+
+  /// Job 169b K: list menu, move the list one down
+  ///
+  /// In de, this message translates to:
+  /// **'Nach unten'**
+  String get listMoveDown;
+
+  /// Job 169b K: delete confirmation title
+  ///
+  /// In de, this message translates to:
+  /// **'„{name}“ löschen?'**
+  String listDeleteTitle(String name);
+
+  /// Job 169b K: delete confirmation, how many open items go with the list
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =0{Auf der Liste ist nichts offen.} =1{Der 1 offene Artikel darauf wird mit gelöscht.} other{Die {count} offenen Artikel darauf werden mit gelöscht.}}'**
+  String listDeleteBody(int count);
+
+  /// Job 169b K: list add/rename/move/delete while offline
+  ///
+  /// In de, this message translates to:
+  /// **'Listen lassen sich nur mit Verbindung anlegen, umbenennen, sortieren oder löschen.'**
+  String get listsNeedConnection;
+
+  /// Job 169b K: an item moved to a list where it is open already stays
+  ///
+  /// In de, this message translates to:
+  /// **'„{name}“ steht schon auf „{list}“.'**
+  String onListAlready(String name, String list);
+
+  /// Job 169b K: edit sheet, label over the list picker
+  ///
+  /// In de, this message translates to:
+  /// **'Liste'**
+  String get editList;
+
+  /// Job 169b L: edit sheet checkbox, the user says they bring the item
+  ///
+  /// In de, this message translates to:
+  /// **'Ich bringe das'**
+  String get claimMine;
+
+  /// Job 169b L: edit sheet, label of the optional amount the user brings
+  ///
+  /// In de, this message translates to:
+  /// **'Wie viel?'**
+  String get claimAmount;
+
+  /// Job 169b L: edit sheet, example in the amount field
+  ///
+  /// In de, this message translates to:
+  /// **'z. B. 2'**
+  String get claimAmountHint;
+
+  /// Job 169b L: row line, a member brings the item
+  ///
+  /// In de, this message translates to:
+  /// **'{name} bringt'**
+  String claimBy(String name);
+
+  /// Job 169b L: row line, a member brings an amount
+  ///
+  /// In de, this message translates to:
+  /// **'{name} bringt {amount}'**
+  String claimByAmount(String name, String amount);
+
+  /// Job 169b L: row line, the user brings the item
+  ///
+  /// In de, this message translates to:
+  /// **'Du bringst'**
+  String get claimYou;
+
+  /// Job 169b L: row line, the user brings an amount
+  ///
+  /// In de, this message translates to:
+  /// **'Du bringst {amount}'**
+  String claimYouAmount(String amount);
+
+  /// Job 169b L: row line, a claimant the list cannot name yet
+  ///
+  /// In de, this message translates to:
+  /// **'Jemand'**
+  String get claimSomeone;
 }
 
 class _AppLocalizationsDelegate

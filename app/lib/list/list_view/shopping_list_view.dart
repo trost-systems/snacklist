@@ -5,6 +5,7 @@ import 'package:family_groceries/app/notices.dart';
 import 'package:family_groceries/app/router.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
+import 'package:family_groceries/list/claims.dart';
 import 'package:family_groceries/list/edit_item_sheet.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_link.dart';
@@ -331,14 +332,35 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
   Future<void> _edit(Item item) async {
     widget.onInteract?.call();
     final cubit = _cubit;
-    final changes = await showEditItemSheet(
+    final state = cubit.state;
+    final claims = state.claims[item.id] ?? const <Claim>[];
+    final edit = await showEditItemSheet(
       context,
       item: item,
-      catalog: cubit.state.catalog,
+      catalog: state.catalog,
       onCreateStore: cubit.addStore,
+      listId: item.listOn(state.catalog.lists.firstOrNull?.id),
+      myClaim: claims.where((c) => c.userId == cubit.userId).firstOrNull,
+      othersBring: claimLine(
+        AppLocalizations.of(context),
+        [...claims.where((c) => c.userId != cubit.userId)],
+        state.catalog,
+        cubit.userId,
+      ),
     );
-    if (changes != null) {
-      cubit.edit(item.id, changes);
+    if (edit == null) {
+      return;
+    }
+    cubit.edit(item.id, edit.changes);
+    switch (edit.claim) {
+      case Claimed(:final quantity):
+        cubit.claim(item.id, quantity: quantity);
+      case Unclaimed():
+        cubit.unclaim(item.id);
+      case null:
+    }
+    if (edit.listId case final listId?) {
+      cubit.moveToList(item.id, listId);
     }
   }
 
@@ -395,8 +417,13 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
     bool folded(StoreSection s) => state.prefs.folded.contains(s.key);
     final columns = columnsOf(shown, columnCount, _weightIn(state));
     final fresh = context.read<ListCubit>().fresh;
+    final claims = state.claims;
+    final l10n = AppLocalizations.of(context);
+    final userId = context.read<ListCubit>().userId;
+    String? claimsOf(Item item) =>
+        claimLine(l10n, claims[item.id] ?? const [], state.catalog, userId);
     SliverList column(List<StoreSection> run) {
-      final entries = _entries(run, state, folded, fresh);
+      final entries = _entries(run, state, folded, fresh, claimsOf);
       final index = {for (final (i, e) in entries.indexed) e.key: i};
       return SliverList.builder(
         itemCount: entries.length,
@@ -432,7 +459,6 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
               ],
             ],
           );
-    final l10n = AppLocalizations.of(context);
     return CustomScrollView(
       key: _viewport,
       controller: _scroll,
@@ -539,6 +565,7 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
     ListState state,
     bool Function(StoreSection) folded,
     Set<String> fresh,
+    String? Function(Item item) claimsOf,
   ) {
     final entries = <Widget>[];
     for (final (i, section) in run.indexed) {
@@ -584,6 +611,7 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
               category: category,
               leaving: _leaving,
               fresh: fresh.contains(item.id),
+              claims: claimsOf(item),
               last: j == block.items.length - 1,
               onVisible: (visible) => _freshVisible(item.id, visible: visible),
               onTick: _tick,

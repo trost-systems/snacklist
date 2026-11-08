@@ -145,7 +145,11 @@ void main() {
       jsonDecode(v1) as Map<String, Object?>,
     );
     expect(loaded.pending.map((op) => op.runtimeType), [AddItem, SetStatus]);
-    expect(loaded.toJson()['version'], 3, reason: 'upgraded through v2');
+    expect(
+      loaded.toJson()['version'],
+      ListSnapshot.version,
+      reason: 'upgraded through v2',
+    );
     expect(loaded.server.single.addedBy, isNull);
     expect(loaded.server.single.sortKey, isNull);
     expect(loaded.catalog.members, isEmpty);

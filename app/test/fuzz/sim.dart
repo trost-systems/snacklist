@@ -149,6 +149,8 @@ final class SimRepository(final Device device) extends SupabaseListRepository {
   Future<void> Function() watch({
     required void Function(Item item) onItem,
     required void Function(String id, DateTime at) onItemDeleted,
+    required void Function(Claim claim) onClaim,
+    required void Function(ClaimKey key) onClaimDeleted,
     required void Function() onCatalogChanged,
     required void Function(ConnectionStatus status) onStatus,
   }) {
@@ -231,14 +233,15 @@ final class Device(
   final _movedOntoCopy = <ItemOp>[];
 
   /// Each op moved away from an item with a refused rename: the item was
-  /// folded into its copy on the server.
+  /// folded into its copy on the server, or deleted before the fold (the
+  /// merge then answers that it is gone, and the op went to the copy).
   void checkMoved() {
     final mergedIds = {
       for (final merge in backend.merges.values)
         (merge['merged_row']! as Map)['id'],
     };
     for (final op in _movedOntoCopy) {
-      if (!mergedIds.contains(op.itemId)) {
+      if (!mergedIds.contains(op.itemId) && !backend.wasDeleted(op.itemId)) {
         fail('c$slot lost an op without an answer: ${_describe(op)}');
       }
     }

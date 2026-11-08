@@ -115,6 +115,9 @@ Future<FakeRepository> _pumpShell(
 
   /// The household's invites and members; Peter and Lea by default.
   FakeInvites? invites,
+
+  /// Sets the server up further (lists, claims) before the app starts.
+  void Function(FakeRepository repo)? seed,
 }) async {
   tester.view
     ..devicePixelRatio = 1
@@ -148,6 +151,7 @@ Future<FakeRepository> _pumpShell(
   ]) {
     repo.rows[item.id] = item;
   }
+  seed?.call(repo);
   final router = GoRouter(
     initialLocation: initialLocation,
     routes: [
@@ -662,6 +666,94 @@ void main() {
       await expectLater(
         find.byType(MaterialApp),
         matchesGoldenFile('goldens/invite-sheet-$mode.png'),
+      );
+    });
+
+    // Job 169b K and L: a club's lists as tabs, the party list shown, who
+    // brings what under the items.
+    void party(FakeRepository repo, {bool many = false}) {
+      repo
+        ..members = const [
+          Member(id: 'peter', displayName: 'Peter'),
+          Member(id: 'lea', displayName: 'Lea'),
+          Member(id: 'mia', displayName: 'Mia'),
+          Member(id: 'tom', displayName: 'Tom'),
+        ]
+        ..lists = [
+          const HouseholdList(id: 'weekly', name: 'Vereinsheim', position: 0),
+          const HouseholdList(id: 'party', name: 'Sommerfest', position: 1),
+          const HouseholdList(id: 'diy', name: 'Baumarkt', position: 2),
+          if (many) ...const [
+            HouseholdList(id: 'grill', name: 'Grillabend', position: 3),
+            HouseholdList(id: 'xmas', name: 'Weihnachtsfeier', position: 4),
+          ],
+        ];
+      for (final item in [
+        _item('p1', 'Kuchen', 'lidl', 'other', quantity: '3'),
+        _item('p2', 'Grillwürste', 'lidl', 'chilled', quantity: '40'),
+        _item('p3', 'Apfelschorle', 'lidl', 'other', quantity: '2 Kisten'),
+        _item('p4', 'Servietten', 'dm', 'other'),
+      ]) {
+        repo.rows[item.id] = item.copyWith(listId: 'party');
+      }
+      final at = DateTime.utc(2026, 11, 1, 12);
+      for (final (item, user, quantity) in [
+        ('p1', 'mia', '2'),
+        ('p1', 'peter', '1'),
+        ('p2', 'tom', null),
+      ]) {
+        repo.claims[(item, user)] = Claim(
+          itemId: item,
+          userId: user,
+          quantity: quantity,
+          createdAt: at,
+        );
+      }
+    }
+
+    Future<void> showParty(WidgetTester tester) async {
+      await tester.tap(find.byKey(const ValueKey('list-tab-party')));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('list with tabs, $mode', (tester) async {
+      await _pumpShell(tester, brightness, seed: party);
+      await showParty(tester);
+      await expectLater(
+        find.byType(MaterialApp),
+        matchesGoldenFile('goldens/list-tabs-$mode.png'),
+      );
+    });
+
+    testWidgets('list with tabs, compact, $mode', (tester) async {
+      await _pumpShell(
+        tester,
+        brightness,
+        size: _compact,
+        seed: (repo) => party(repo, many: true),
+      );
+      await showParty(tester);
+      await expectLater(
+        find.byType(MaterialApp),
+        matchesGoldenFile('goldens/list-tabs-compact-$mode.png'),
+      );
+    });
+
+    testWidgets('household page lists, $mode', (tester) async {
+      await _pumpShell(
+        tester,
+        brightness,
+        initialLocation: householdPath,
+        seed: party,
+      );
+      await tester.drag(
+        find.byKey(const ValueKey('household-page')),
+        const Offset(0, -300),
+      );
+      await tester.pumpAndSettle();
+      await expectLater(
+        find.byType(MaterialApp),
+        matchesGoldenFile('goldens/household-lists-$mode.png'),
       );
     });
 

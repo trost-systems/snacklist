@@ -125,6 +125,27 @@ What Hummlist does today, in plain words, with the exact button and screen label
 
 **Last verified.** Branch job/169b-w2-app (job 169b W2), 2026-11-08 (CET): from code and widget tests only, **not driven** (invite sheet, group link, roles, removing, paste, install referrer). Branch job/169b-app (job 169b), 2026-11-08 (CET): from code and widget tests only, **not driven** (switcher, household page, joining without leaving). Unverified until driven on the web build. Before: main 8ad168f5, 2026-11-08 (CET), driven on the web build (verify-hummlist): a new invite with its code, revoking it. Recipe: [household-invites.md](./household-invites.md).
 
+## Several lists and „Ich bringe“
+
+**What it does.** A household can keep more than one list, for example „Wocheneinkauf“ and „Baumarkt“, or a club's „Vereinsheim“ and „Sommerfest“. Each item is on one list; stores, categories and their order are shared by all of a household's lists. With two or more lists, tabs under the household's name switch between them, and new items go to the list shown. For a party or a family gathering, members say what they bring: „Ich bringe das“ (EN: "I'll bring it"), with an amount if they like, and the list shows „Mia bringt 2 · Tom bringt 1“ under the item, „Du bringst“ (EN: "You bring") for your own. Ticking an item off ends what was promised for it.
+
+**How to get there.**
+1. New list: tab „Mehr“ (EN: "More"), the household's row, „Neue Liste“ (EN: "New list") under „Listen“ (EN: "Lists"); with two or more lists also the „+“ at the end of the tabs.
+2. Switch lists: tap a tab under the household's name. The phone remembers which list it showed.
+3. Move an item to another list: press and hold it, pick the list under „Liste“ (EN: "List") in the sheet, „Fertig“ (EN: "Done").
+4. Say you bring it: press and hold the item, tick „Ich bringe das“, optionally enter „Wie viel?“ (EN: "How much?"), „Fertig“. Untick it the same way to take it back.
+5. Rename, reorder or delete a list: „Listen“ on the household page, the menu next to a list: „Umbenennen“, „Nach oben“, „Nach unten“, „Löschen“ (EN: "Rename", "Move up", "Move down", "Delete").
+
+**Never claim.**
+- That stores, categories or their order can differ between lists of one household.
+- That deleting a list keeps its items: its items are deleted with it (the dialog says how many open ones). The last list cannot be deleted.
+- That Siri, Alexa or voice add to a chosen list: they add to the first list of the default household.
+- That an AI assistant can say „Ich bringe das“ for someone: claims are a person's promise, made in the app.
+- That lists can be changed offline: adding, renaming, reordering and deleting lists needs a connection (moving items and „Ich bringe das“ work offline).
+- That older app versions show the lists: they show every list's items as one list until updated.
+
+**Last verified.** Branch job/169b-w3-app (job 169b W3), 2026-11-08 (CET): from code, widget tests and goldens only, **not driven** (the W3 server was not there yet). Recipe: [lists-and-claims.md](./lists-and-claims.md).
+
 ## Links into the app
 
 **What it does.** In the web app at app.hummlist.com and in the test apps from 6 Nov on (see the first Never-claim below), a link to app.hummlist.com opens that screen of Hummlist: in the iPhone or Android app when it is installed, otherwise in the browser. A link can open the list, the add field, one store's part of the list, the More tab and its pages (for example „Einladungen“ / "Invites" or „Einstellungen“ / "Settings"), or an invite. Someone who is signed out signs in first and then lands on the linked screen; a new account sets up its household first.

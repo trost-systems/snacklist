@@ -101,6 +101,11 @@ class _ScopeState() extends State<_Scope> {
         NeedsConnection() => l10n.reorderNeedsConnection,
         StoreNameTaken(:final name) => l10n.storeNameTaken(name),
         StoreNeedsConnection() => l10n.storesNeedConnection,
+        ListsNeedConnection() => l10n.listsNeedConnection,
+        OnListAlready(:final name, :final listName) => l10n.onListAlready(
+          name,
+          listName,
+        ),
         MergeRefused(:final name) => l10n.mergeRefused(name),
         RenameTaken(:final name) => l10n.alreadyOnList(name),
       };

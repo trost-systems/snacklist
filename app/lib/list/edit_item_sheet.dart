@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:family_groceries/design/field_border.dart';
+import 'package:family_groceries/design/hex_checkbox.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/entry.dart';
@@ -9,14 +10,42 @@ import 'package:family_groceries/list/model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// What the user changed, never empty; null when they cancel, dismiss, or
-/// save without a change.
-Future<ItemChanges?> showEditItemSheet(
+/// What the user changed in the edit sheet, never nothing: the item's
+/// columns, its list (job 169b K) and their "Ich bringe das" (job 169b L).
+@immutable
+class const ItemEdit({
+  final ItemChanges changes = const ItemChanges(),
+
+  /// The list it goes to; null when it stays.
+  final String? listId,
+
+  /// Null when the user's claim stays as it was.
+  final ClaimChange? claim,
+}) {
+  bool get isEmpty => changes.isEmpty && listId == null && claim == null;
+}
+
+/// The user's claim, said or taken back in the edit sheet.
+sealed class const ClaimChange();
+
+/// "Ich bringe das", with the amount or none.
+final class const Claimed([final String? quantity]) extends ClaimChange;
+
+final class const Unclaimed() extends ClaimChange;
+
+/// What the user changed; null when they cancel, dismiss, or save without
+/// a change. With two or more lists in [catalog] the sheet offers them,
+/// [listId] picked. [myClaim] is the user's own claim on the item, if any;
+/// [othersBring] says who else brings it.
+Future<ItemEdit?> showEditItemSheet(
   BuildContext context, {
   required Item item,
   required Catalog catalog,
   required Future<Store?> Function(String name) onCreateStore,
-}) => showModalBottomSheet<ItemChanges>(
+  String? listId,
+  Claim? myClaim,
+  String? othersBring,
+}) => showModalBottomSheet<ItemEdit>(
   context: context,
   // Over the whole app, tabs included: the sheet stands on the bottom edge.
   useRootNavigator: true,
@@ -34,6 +63,9 @@ Future<ItemChanges?> showEditItemSheet(
     item: item,
     catalog: catalog,
     onCreateStore: onCreateStore,
+    listId: listId,
+    myClaim: myClaim,
+    othersBring: othersBring,
   ),
 );
 
@@ -41,6 +73,9 @@ class const _EditItemSheet({
   required final Item item,
   required final Catalog catalog,
   required final Future<Store?> Function(String name) onCreateStore,
+  required final String? listId,
+  required final Claim? myClaim,
+  required final String? othersBring,
 }) extends StatefulWidget {
   @override
   State<_EditItemSheet> createState() => _EditItemSheetState();
@@ -51,6 +86,11 @@ class _EditItemSheetState() extends State<_EditItemSheet> {
   late final _brand = TextEditingController(text: widget.item.brand);
   late final _quantity = TextEditingController(text: widget.item.quantity);
   late final _properties = TextEditingController(text: widget.item.properties);
+  late final _claimAmount = TextEditingController(
+    text: widget.myClaim?.quantity,
+  );
+  late var _claiming = widget.myClaim != null;
+  late String? _listId = widget.listId;
 
   /// A store that is gone from the catalog shows, and compares, as none.
   late final String? _originalStore = widget.catalog
@@ -76,6 +116,7 @@ class _EditItemSheetState() extends State<_EditItemSheet> {
     _brand.dispose();
     _quantity.dispose();
     _properties.dispose();
+    _claimAmount.dispose();
     super.dispose();
   }
 
@@ -96,12 +137,29 @@ class _EditItemSheetState() extends State<_EditItemSheet> {
     );
   }
 
+  /// The claim as the user left it, if it differs from [_EditItemSheet.
+  /// myClaim].
+  ClaimChange? _claim() {
+    final amount = _claimAmount.text.trim();
+    final quantity = amount.isEmpty ? null : amount;
+    return switch ((widget.myClaim, _claiming)) {
+      (null, false) => null,
+      (_?, false) => const Unclaimed(),
+      (final mine?, true) when mine.quantity == quantity => null,
+      (_, true) => Claimed(quantity),
+    };
+  }
+
   void _save() {
     if (_name.text.trim().isEmpty) {
       return;
     }
-    final changes = _changes();
-    Navigator.of(context).pop(changes.isEmpty ? null : changes);
+    final edit = ItemEdit(
+      changes: _changes(),
+      listId: _listId == widget.listId ? null : _listId,
+      claim: _claim(),
+    );
+    Navigator.of(context).pop(edit.isEmpty ? null : edit);
   }
 
   void _step({required bool up}) {
@@ -250,6 +308,35 @@ class _EditItemSheetState() extends State<_EditItemSheet> {
                   ),
                 ),
               ),
+              if (widget.catalog.lists.length > 1)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  child: LabeledField(
+                    label: l10n.editList,
+                    field: Wrap(
+                      key: const ValueKey('edit-list'),
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        for (final list in widget.catalog.lists)
+                          OptionChip(
+                            key: ValueKey('edit-list-${list.id}'),
+                            label: list.name,
+                            selected: list.id == _listId,
+                            onTap: () => setState(() => _listId = list.id),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              if (widget.item.status == ItemStatus.active)
+                _ClaimArea(
+                  claiming: _claiming,
+                  amount: _claimAmount,
+                  othersBring: widget.othersBring,
+                  onClaiming: (on) => setState(() => _claiming = on),
+                  onSubmitted: _save,
+                ),
               Padding(
                 padding: EdgeInsets.fromLTRB(
                   12,
@@ -304,6 +391,64 @@ class _EditItemSheetState() extends State<_EditItemSheet> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// "Ich bringe das" with who else brings it under it, and once ticked, how
+/// much the user brings (optional).
+class const _ClaimArea({
+  required final bool claiming,
+  required final TextEditingController amount,
+  required final String? othersBring,
+  required final ValueChanged<bool> onClaiming,
+  required final VoidCallback onSubmitted,
+}) extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 4, 16, 0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Expanded(
+            child: HexCheckboxListTile(
+              key: const ValueKey('edit-claim'),
+              contentPadding: const EdgeInsetsDirectional.only(
+                start: 4,
+                end: 8,
+              ),
+              value: claiming,
+              onChanged: onClaiming,
+              title: Text(l10n.claimMine),
+              subtitle: switch (othersBring) {
+                final others? => Text(
+                  others,
+                  key: const ValueKey('edit-claim-others'),
+                ),
+                null => null,
+              },
+            ),
+          ),
+          if (claiming)
+            SizedBox(
+              width: 112,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: _Field(
+                  fieldKey: 'edit-claim-amount',
+                  label: l10n.claimAmount,
+                  hint: l10n.claimAmountHint,
+                  controller: amount,
+                  maxLength: 40,
+                  narrow: true,
+                  onSubmitted: onSubmitted,
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
