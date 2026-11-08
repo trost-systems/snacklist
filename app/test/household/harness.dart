@@ -9,6 +9,7 @@ import 'package:family_groceries/household/invite_partner_screen.dart';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/invite_share.dart';
 import 'package:family_groceries/household/invites_page.dart';
+import 'package:family_groceries/household/join_request_waiting.dart';
 import 'package:family_groceries/household/join_screen.dart';
 import 'package:family_groceries/household/paste_invite.dart';
 import 'package:family_groceries/household/pending_invite.dart';
@@ -200,6 +201,52 @@ class FakeInvites() implements InviteRepository {
   /// The user's archived households (job 43).
   final archivedNow = <ArchivedHousehold>[];
 
+  /// Join requests waiting, by household (job 169b W3 M).
+  final requestLists = <String, List<PendingJoin>>{};
+
+  /// Each approval switch turned: household and value.
+  final approvals = <(String, bool)>[];
+
+  /// Each decision: request and whether it lets them in.
+  final decisions = <(String, bool)>[];
+
+  /// The sections watching join requests, by household: call one to say a
+  /// request came or went.
+  final requestWatchers = <String, void Function()>{};
+
+  @override
+  Future<void> setJoinApproval(String householdId, {required bool on}) async {
+    approvals.add((householdId, on));
+    await _answer();
+  }
+
+  @override
+  Future<List<PendingJoin>> joinRequests(String householdId) async {
+    await _answer();
+    return [...?requestLists[householdId]];
+  }
+
+  @override
+  Future<void> decideJoinRequest(
+    String requestId, {
+    required bool approve,
+  }) async {
+    decisions.add((requestId, approve));
+    await _answer();
+    for (final requests in requestLists.values) {
+      requests.removeWhere((r) => r.id == requestId);
+    }
+  }
+
+  @override
+  Future<void> Function() watchJoinRequests(
+    String householdId,
+    void Function() onChange,
+  ) {
+    requestWatchers[householdId] = onChange;
+    return () async => requestWatchers.remove(householdId);
+  }
+
   @override
   Future<List<ArchivedHousehold>> archived() async {
     await _answer();
@@ -228,6 +275,11 @@ class TestSession(super.initialState)
     extends Cubit<Session>
     implements SessionCubit {
   final joins = <(String, JoinMethod)>[];
+
+  /// The next [join] makes a request for this household instead (job 169b
+  /// W3 M).
+  Household? requestNext;
+  final withdrawn = <String>[];
   final unarchived = <String>[];
 
   /// Each create: the name and the stores, joined with ", ", and where.
@@ -252,9 +304,16 @@ class TestSession(super.initialState)
   @override
   Stream<Household> get removals => removedFrom.stream;
 
+  /// What [joinDecisions] tells.
+  final decidedOn = StreamController<JoinDecision>.broadcast();
+
+  @override
+  Stream<JoinDecision> get joinDecisions => decidedOn.stream;
+
   @override
   Future<void> close() async {
     await removedFrom.close();
+    await decidedOn.close();
     await super.close();
   }
 
@@ -285,10 +344,39 @@ class TestSession(super.initialState)
   }
 
   @override
-  Future<void> join(String code, {JoinMethod method = JoinMethod.code}) async {
+  Future<JoinAnswer> join(
+    String code, {
+    JoinMethod method = JoinMethod.code,
+  }) async {
     joins.add((code, method));
     await _answer();
+    if (requestNext case final asked?) {
+      requestNext = null;
+      final request = JoinRequest(
+        id: 'request-${asked.id}',
+        householdId: asked.id,
+        householdName: asked.name,
+      );
+      emit(switch (state) {
+        InHousehold(:final userId, :final household, :final households) =>
+          InHousehold(userId, household, households, requests: [request]),
+        _ => NeedsHousehold('peter', requests: [request]),
+      });
+      return JoinRequested(asked.id);
+    }
     _show(const Household(id: 'other', name: 'Trost'));
+    return const Joined('other');
+  }
+
+  @override
+  Future<void> withdrawJoinRequest(String householdId) async {
+    withdrawn.add(householdId);
+    await _answer();
+    emit(switch (state) {
+      InHousehold(:final userId, :final household, :final households) =>
+        InHousehold(userId, household, households),
+      _ => const NeedsHousehold('peter'),
+    });
   }
 
   @override
@@ -505,6 +593,10 @@ Future<Onboarding> pumpOnboarding(
           GoRoute(
             path: 'invite',
             builder: (_, _) => const InvitePartnerScreen(),
+          ),
+          GoRoute(
+            path: 'waiting',
+            builder: (_, _) => const PendingJoinScreen(),
           ),
         ],
       ),

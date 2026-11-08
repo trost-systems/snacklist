@@ -16,6 +16,7 @@ import 'package:family_groceries/home_widget/home_widget_sync.dart';
 import 'package:family_groceries/home_widget/widget_launch.dart';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/invite_share.dart';
+import 'package:family_groceries/household/join_decision_notices.dart';
 import 'package:family_groceries/household/pending_invite.dart';
 import 'package:family_groceries/household/removed_notice.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
@@ -252,12 +253,14 @@ class _AppState() extends State<App> {
           builder: (context, child) => NoticesHost(
             popups: _popups,
             child: RemovedNotices(
-              child: BlocBuilder<SessionCubit, Session>(
-                builder: (context, session) => session is SessionLoading
-                    ? const Scaffold(
-                        body: Center(child: CircularProgressIndicator()),
-                      )
-                    : child!,
+              child: JoinDecisionNotices(
+                child: BlocBuilder<SessionCubit, Session>(
+                  builder: (context, session) => session is SessionLoading
+                      ? const Scaffold(
+                          body: Center(child: CircularProgressIndicator()),
+                        )
+                      : child!,
+                ),
               ),
             ),
           ),

@@ -39,7 +39,12 @@ void main() {
       ..invites['ABCD2345'] = _other;
     sink = NativePostHog()..install();
     analytics = await loadedAnalytics(MemoryAnalyticsStore());
-    cubit = SessionCubit(db, MemorySessionCache(), analytics: analytics);
+    cubit = SessionCubit(
+      db,
+      MemorySessionCache(),
+      analytics: analytics,
+      watchJoinRequests: (_, _) => () async {},
+    );
     await cubit.refresh();
     await analytics.decide(granted: true);
   });
@@ -101,6 +106,22 @@ void main() {
       ['onboarding', 'switcher'],
     );
     expect(props(events.last)['household_id'], isNot(_home));
+  });
+
+  test('a join the household confirms sends join_requested only', () async {
+    await cubit.createHousehold('Zuhause');
+    db.approval.add(_other);
+    await cubit.join('ABCD2345');
+    final events = await sent();
+    expect(events.map((e) => e['event']), [
+      'household_created',
+      'join_requested',
+    ]);
+    expect(
+      props(events.last)['household_id'],
+      _home,
+      reason: 'the user is not in the household asked to join',
+    );
   });
 
   test('a switch sends household_switched in the household shown', () async {

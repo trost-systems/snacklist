@@ -2025,4 +2025,68 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get householdNotOwner => 'Only the household\'s owner names admins.';
+
+  @override
+  String joinRequestSent(String name) {
+    return 'Request sent: an admin of “$name” will let you in.';
+  }
+
+  @override
+  String get joinRequestWithdraw => 'Withdraw request';
+
+  @override
+  String get joinRequestToList => 'To the list';
+
+  @override
+  String get joinRequestCreateOwn => 'Create your own household';
+
+  @override
+  String joinApprovedNotice(String name) {
+    return 'You\'re now in “$name”.';
+  }
+
+  @override
+  String joinDeclinedNotice(String name) {
+    return 'Your request to join “$name” wasn\'t accepted.';
+  }
+
+  @override
+  String get joinRequestPending => 'Request pending';
+
+  @override
+  String joinRequestWithdrawFor(String name) {
+    return 'Withdraw your request for “$name”?';
+  }
+
+  @override
+  String get joinApprovalToggle => 'Confirm new members';
+
+  @override
+  String get joinApprovalHint => 'New people wait until an admin lets them in.';
+
+  @override
+  String get joinRequestsTitle => 'Join requests';
+
+  @override
+  String joinRequestsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count open requests',
+      one: '1 open request',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get joinRequestsNone => 'No open requests.';
+
+  @override
+  String get joinRequestsFailed => 'Couldn\'t load the requests.';
+
+  @override
+  String get joinRequestApprove => 'Let in';
+
+  @override
+  String get joinRequestDecline => 'Decline';
 }

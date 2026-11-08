@@ -7,6 +7,10 @@ void main() {
   const household = InHousehold('u', Household(id: 'h', name: 'H'), [
     Household(id: 'h', name: 'H'),
   ]);
+  const waiting = NeedsHousehold(
+    'u',
+    requests: [JoinRequest(id: 'r', householdId: 'c', householdName: 'C')],
+  );
   const consent = '/oauth/consent?authorization_id=abc';
   const next = 'next=%2Foauth%2Fconsent%3Fauthorization_id%3Dabc';
   const cases = <(Session, String, String?)>[
@@ -24,6 +28,15 @@ void main() {
     (NeedsHousehold('u'), '/join', null),
     (NeedsHousehold('u'), '/welcome/invite', '/welcome'),
     (NeedsHousehold('u'), '/more/invites', '/welcome?next=%2Fmore%2Finvites'),
+    // Job 169b W3 M: a join request waits instead of Step 1, and creating
+    // a household instead stays open.
+    (waiting, '/', '/welcome/waiting'),
+    (waiting, '/welcome', '/welcome/waiting'),
+    (waiting, '/welcome/waiting', null),
+    (waiting, '/welcome/create', null),
+    (waiting, '/join/ABCD2345', null),
+    (NeedsHousehold('u'), '/welcome/waiting', '/welcome'),
+    (household, '/welcome/waiting', '/'),
     (household, '/welcome/create', '/welcome/invite'),
     (household, '/welcome/invite', null),
     (household, '/join', null),

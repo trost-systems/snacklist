@@ -40,6 +40,9 @@ class FakeHouseholds(final FakeAuth fakeAuth)
 
   /// `my_households` fails: the reload after an RPC.
   var failReads = false;
+
+  /// RPCs this server does not have yet (an older deploy): 404.
+  final missing = <String>{};
   final _requests = <(String, String), String>{};
   var _n = 0;
 
@@ -70,6 +73,24 @@ class FakeHouseholds(final FakeAuth fakeAuth)
     }
   }
 
+  /// Households that confirm joins (job 169b W3 M), and the join requests
+  /// waiting: request id to who asked which household.
+  final approval = <String>{};
+  final requests = <String, ({String user, String household})>{};
+
+  /// An owner or admin decides on [requestId] (`decide_join_request`):
+  /// approved, its user becomes a member.
+  void decide(String requestId, {required bool approve}) {
+    final request = requests.remove(requestId)!;
+    if (approve) {
+      member(
+        request.user,
+        request.household,
+        households[request.household]!.name,
+      );
+    }
+  }
+
   /// Households of a kind (job 168) and with Premium.
   final kinds = <String, String>{};
   final premium = <String>{};
@@ -89,6 +110,13 @@ class FakeHouseholds(final FakeAuth fakeAuth)
         dropNextAnswer = false;
         _answer(request.method, path, request.url, body);
         throw http.ClientException('connection lost', request.url);
+      }
+      if (missing.contains(path.replaceFirst('rpc/', ''))) {
+        return _json(
+          {'message': 'not found', 'code': 'PGRST202'},
+          404,
+          request,
+        );
       }
       if (failReads && path == 'rpc/my_households') {
         return _json({'message': 'timeout'}, 503, request);
@@ -145,6 +173,7 @@ class FakeHouseholds(final FakeAuth fakeAuth)
               'member_count': households[id]!.members.length,
               'open_count': households[id]!.open,
               'premium': premium.contains(id),
+              'join_approval': approval.contains(id),
               'joined_at': '2026-11-08T10:00:00Z',
             },
         ];
@@ -186,8 +215,34 @@ class FakeHouseholds(final FakeAuth fakeAuth)
         if (mine.contains(id)) {
           return {'status': 'member', 'household_id': id};
         }
+        if (approval.contains(id)) {
+          if (!requests.values.any(
+            (r) => r.user == _user && r.household == id,
+          )) {
+            requests['r${++_n}'] = (user: _user, household: id);
+          }
+          return {'status': 'requested', 'household_id': id};
+        }
         member(_user, id, households[id]?.name ?? 'Eingeladen');
         return {'status': 'joined', 'household_id': id};
+      case ('POST', 'rpc/my_join_requests'):
+        return [
+          for (final MapEntry(key: id, value: r) in requests.entries)
+            if (r.user == _user)
+              {
+                'id': id,
+                'household_id': r.household,
+                'household_name': households[r.household]!.name,
+                'created_at': '2026-11-08T10:00:00Z',
+              },
+        ];
+      case ('POST', 'rpc/cancel_join_request'):
+        final id = body['p_request'];
+        if (requests[id]?.user != _user) {
+          throw const _Refused('not_found');
+        }
+        requests.remove(id);
+        return null;
       case ('POST', 'rpc/leave_household'):
         final id = household();
         mine.remove(id);

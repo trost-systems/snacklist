@@ -3343,6 +3343,102 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Admins ernennt nur, wer den Haushalt angelegt hat.'**
   String get householdNotOwner;
+
+  /// Job 169b W3 M: the joiner's waiting screen after accept_invite answered requested
+  ///
+  /// In de, this message translates to:
+  /// **'Anfrage gesendet: Ein Admin von „{name}“ bestätigt deinen Beitritt.'**
+  String joinRequestSent(String name);
+
+  /// Job 169b W3 M: waiting screen
+  ///
+  /// In de, this message translates to:
+  /// **'Anfrage zurückziehen'**
+  String get joinRequestWithdraw;
+
+  /// Job 169b W3 M: waiting screen, for someone in a household already
+  ///
+  /// In de, this message translates to:
+  /// **'Zur Liste'**
+  String get joinRequestToList;
+
+  /// Job 169b W3 M: waiting screen without a household: create one instead of waiting
+  ///
+  /// In de, this message translates to:
+  /// **'Eigenen Haushalt anlegen'**
+  String get joinRequestCreateOwn;
+
+  /// Job 169b W3 M: an admin approved the user's join request; the household shows
+  ///
+  /// In de, this message translates to:
+  /// **'Du bist jetzt in „{name}“.'**
+  String joinApprovedNotice(String name);
+
+  /// Job 169b W3 M: an admin declined the user's join request
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Anfrage für „{name}“ wurde nicht angenommen.'**
+  String joinDeclinedNotice(String name);
+
+  /// Job 169b W3 M: switcher, a household the user asked to join
+  ///
+  /// In de, this message translates to:
+  /// **'Anfrage offen'**
+  String get joinRequestPending;
+
+  /// Job 169b W3 M: switcher, dialog title after tapping a pending request's row
+  ///
+  /// In de, this message translates to:
+  /// **'Anfrage für „{name}“ zurückziehen?'**
+  String joinRequestWithdrawFor(String name);
+
+  /// Job 169b W3 M: household page switch (owner and admins)
+  ///
+  /// In de, this message translates to:
+  /// **'Beitritte bestätigen'**
+  String get joinApprovalToggle;
+
+  /// Job 169b W3 M: one line under the switch
+  ///
+  /// In de, this message translates to:
+  /// **'Neue Leute warten, bis ein Admin sie aufnimmt.'**
+  String get joinApprovalHint;
+
+  /// Job 169b W3 M: household page section (owner and admins)
+  ///
+  /// In de, this message translates to:
+  /// **'Beitrittsanfragen'**
+  String get joinRequestsTitle;
+
+  /// Job 169b W3 M: screen reader label of the count badge
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 offene Anfrage} other{{count} offene Anfragen}}'**
+  String joinRequestsCount(int count);
+
+  /// Job 169b W3 M: household page, approval on and nobody waiting
+  ///
+  /// In de, this message translates to:
+  /// **'Keine offenen Anfragen.'**
+  String get joinRequestsNone;
+
+  /// Job 169b W3 M: household page, the requests did not load
+  ///
+  /// In de, this message translates to:
+  /// **'Anfragen konnten nicht geladen werden.'**
+  String get joinRequestsFailed;
+
+  /// Job 169b W3 M: household page, let a requester in
+  ///
+  /// In de, this message translates to:
+  /// **'Aufnehmen'**
+  String get joinRequestApprove;
+
+  /// Job 169b W3 M: household page, turn a requester away
+  ///
+  /// In de, this message translates to:
+  /// **'Ablehnen'**
+  String get joinRequestDecline;
 }
 
 class _AppLocalizationsDelegate

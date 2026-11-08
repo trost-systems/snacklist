@@ -2047,4 +2047,69 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get householdNotOwner =>
       'Admins ernennt nur, wer den Haushalt angelegt hat.';
+
+  @override
+  String joinRequestSent(String name) {
+    return 'Anfrage gesendet: Ein Admin von „$name“ bestätigt deinen Beitritt.';
+  }
+
+  @override
+  String get joinRequestWithdraw => 'Anfrage zurückziehen';
+
+  @override
+  String get joinRequestToList => 'Zur Liste';
+
+  @override
+  String get joinRequestCreateOwn => 'Eigenen Haushalt anlegen';
+
+  @override
+  String joinApprovedNotice(String name) {
+    return 'Du bist jetzt in „$name“.';
+  }
+
+  @override
+  String joinDeclinedNotice(String name) {
+    return 'Deine Anfrage für „$name“ wurde nicht angenommen.';
+  }
+
+  @override
+  String get joinRequestPending => 'Anfrage offen';
+
+  @override
+  String joinRequestWithdrawFor(String name) {
+    return 'Anfrage für „$name“ zurückziehen?';
+  }
+
+  @override
+  String get joinApprovalToggle => 'Beitritte bestätigen';
+
+  @override
+  String get joinApprovalHint =>
+      'Neue Leute warten, bis ein Admin sie aufnimmt.';
+
+  @override
+  String get joinRequestsTitle => 'Beitrittsanfragen';
+
+  @override
+  String joinRequestsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count offene Anfragen',
+      one: '1 offene Anfrage',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get joinRequestsNone => 'Keine offenen Anfragen.';
+
+  @override
+  String get joinRequestsFailed => 'Anfragen konnten nicht geladen werden.';
+
+  @override
+  String get joinRequestApprove => 'Aufnehmen';
+
+  @override
+  String get joinRequestDecline => 'Ablehnen';
 }

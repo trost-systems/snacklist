@@ -105,6 +105,11 @@ final eventCatalog = <String, Map<String, PropertyRule>>{
   },
   // Job 169b W2: an owner or admin removed a member. Nothing else: not who.
   'member_removed': const {},
+  // Job 169b W3 M: an invite made a join request (the household confirms
+  // joins); an owner or admin decided on one. Never who asked or the
+  // household's name.
+  'join_requested': const {},
+  'join_request_decided': const {'approved': IsBool()},
   'item_added': {
     'source': _namesOf(AddSource.values),
     'actor_role': _roles,
