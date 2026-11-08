@@ -45,6 +45,10 @@ const welcomePath = '/welcome';
 const createHouseholdPath = '/welcome/create';
 const invitePartnerPath = '/welcome/invite';
 
+/// The switcher's "Neuer Haushalt" (job 169b): the create step for one
+/// more household, then Step 3 for it.
+const newHouseholdPath = '/households/new';
+
 /// The join screen for a typed code: onboarding's "Einladung annehmen" and
 /// More's "Anderem Haushalt beitreten".
 const joinCodePath = '/join';
@@ -67,6 +71,10 @@ const accountPath = '/more/account';
 
 /// More's Einladungen: invite the partner, the open invites, revoke one.
 const invitesPath = '/more/invites';
+
+/// More's Haushalt (job 169b): the shown household's name, members, the
+/// default for Siri, Alexa & KI, and leaving it.
+const householdPath = '/more/household';
 
 /// More's Hummlist Premium: the purchase of either plan, its restore and
 /// the household's premium status. The path and its screen name stay
@@ -102,6 +110,7 @@ const screenNames = {
   'access',
   'account',
   'invites',
+  'household',
   'lifetime',
   'settings',
   'language',
@@ -110,6 +119,7 @@ const screenNames = {
   'welcome',
   'onboarding_create',
   'onboarding_invite',
+  'new_household',
   'analytics_consent',
   'oauth_consent',
   'join',
@@ -127,6 +137,7 @@ String screenNameOf(Uri location) => switch (location.path) {
   accessPath => 'access',
   accountPath => 'account',
   invitesPath => 'invites',
+  householdPath => 'household',
   premiumPath => 'lifetime',
   appSettingsPath => 'settings',
   languagePath => 'language',
@@ -138,6 +149,7 @@ String screenNameOf(Uri location) => switch (location.path) {
   welcomePath => 'welcome',
   createHouseholdPath => 'onboarding_create',
   invitePartnerPath => 'onboarding_invite',
+  newHouseholdPath => 'new_household',
   analyticsConsentPath => 'analytics_consent',
   consentPath => 'oauth_consent',
   moreJoinPath => 'join',
@@ -154,6 +166,7 @@ bool inMoreTab(Uri location) => const {
   accessPath,
   accountPath,
   invitesPath,
+  householdPath,
   premiumPath,
   appSettingsPath,
   languagePath,
@@ -198,8 +211,8 @@ const _beforeHousehold = {welcomePath, createHouseholdPath, joinCodePath};
 ///
 /// Without a household: Step 1 ([welcomePath]), or the join screen at once
 /// for an invite. In one: the list and its Anpassen pages, the More tab,
-/// Step 3 right after creating ([invitePartnerPath]), or the join screen
-/// for an invite (which warns before switching).
+/// Step 3 right after creating ([invitePartnerPath]), creating one more
+/// ([newHouseholdPath]), or the join screen for an invite.
 String? authRedirect(
   Session session,
   Uri uri, {
@@ -245,6 +258,7 @@ String? authRedirect(
     InHousehold() when uri.path == createHouseholdPath => invitePartnerPath,
     InHousehold()
         when uri.path == invitePartnerPath ||
+            uri.path == newHouseholdPath ||
             uri.path == joinCodePath ||
             inMoreTab(uri) ||
             inListTab(uri) =>
@@ -363,6 +377,7 @@ List<RouteBase> moreTabRoutes() => [
         ('access', MorePage.access),
         ('account', MorePage.account),
         ('invites', MorePage.invites),
+        ('household', MorePage.household),
         ('lifetime', MorePage.premium),
         ('usage-data', MorePage.usageData),
       ])
@@ -393,11 +408,14 @@ List<RouteBase> moreTabRoutes() => [
   ),
 ];
 
-/// Every route of the app; [repository] overrides the Supabase list
-/// repository, for tests.
-List<RouteBase> appRoutes({ListRepository? repository}) => [
+/// Every route of the app; [repositories] overrides the Supabase list
+/// repository per household, for tests.
+List<RouteBase> appRoutes({
+  ListRepository Function(String householdId)? repositories,
+}) => [
   StatefulShellRoute.indexedStack(
-    builder: (_, _, shell) => AppShell(shell: shell, repository: repository),
+    builder: (_, _, shell) =>
+        AppShell(shell: shell, repositories: repositories),
     branches: [
       StatefulShellBranch(routes: listTabRoutes()),
       StatefulShellBranch(routes: moreTabRoutes()),
@@ -433,6 +451,11 @@ List<RouteBase> appRoutes({ListRepository? repository}) => [
   // `next`) is redirected again; the App shows a spinner while loading.
   for (final path in const [listLinkPath, addPath, '/stores/:id'])
     GoRoute(path: path, builder: (_, _) => const SizedBox.shrink()),
+  GoRoute(
+    path: newHouseholdPath,
+    builder: (_, _) =>
+        const CreateHouseholdScreen(from: HouseholdOrigin.switcher),
+  ),
   GoRoute(path: joinCodePath, builder: (_, _) => const JoinScreen()),
   GoRoute(
     path: '/join/:code',

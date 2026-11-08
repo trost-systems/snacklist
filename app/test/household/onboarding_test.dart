@@ -456,28 +456,37 @@ void main() {
     });
   });
 
-  group('already in a household', () {
-    const inHome = InHousehold('peter', home);
+  group('joining from a household adds it (job 169b)', () {
+    const inHome = InHousehold('peter', home, [home]);
 
-    testWidgets('a link warns; Cancel is the prominent answer and moves '
-        'nobody', (tester) async {
+    testWidgets('a link shows no move warning; Join is the main answer', (
+      tester,
+    ) async {
       final o = await pumpOnboarding(
         tester,
         location: '/join/ABCD2345',
         session: inHome,
       );
-      expect(find.text('Du bist schon in einem Haushalt'), findsOneWidget);
+      expect(find.text('Haushalt beitreten'), findsWidgets);
+      expect(find.textContaining('verlässt'), findsNothing);
+      expect(find.textContaining('gelöscht'), findsNothing);
       expect(
-        find.text(
-          'Du bist das einzige Mitglied von „Zuhause“. Trittst du bei, wird '
-          '„Zuhause“ mit seiner Liste gelöscht.',
-        ),
+        find.widgetWithText(FilledButton, 'Haushalt beitreten'),
         findsOneWidget,
       );
-      expect(find.widgetWithText(FilledButton, 'Abbrechen'), findsOneWidget);
-      expect(
-        find.widgetWithText(OutlinedButton, 'Haushalt beitreten'),
-        findsOneWidget,
+      await tapKey(tester, 'join-confirm');
+      expect(o.session.joins, [('ABCD2345', JoinMethod.link)]);
+      expect(location(o), '/');
+      final state = o.session.state as InHousehold;
+      expect(state.household.id, 'other', reason: 'the joined one shows');
+      expect([for (final h in state.households) h.id], ['home', 'other']);
+    });
+
+    testWidgets('Cancel moves nobody and answers the link', (tester) async {
+      final o = await pumpOnboarding(
+        tester,
+        location: '/join/ABCD2345',
+        session: inHome,
       );
       await tapKey(tester, 'join-cancel');
       expect(o.session.joins, isEmpty);
@@ -485,49 +494,37 @@ void main() {
       expect(location(o), '/');
     });
 
-    testWidgets('with others in it, the warning says they keep the list', (
-      tester,
-    ) async {
-      final invites = FakeInvites()..members = 2;
-      await pumpOnboarding(
-        tester,
-        location: '/join/ABCD2345',
-        session: inHome,
-        invites: invites,
-      );
-      expect(
-        find.text(
-          'Trittst du bei, verlässt du „Zuhause“. Die anderen Mitglieder '
-          'behalten die Liste.',
-        ),
-        findsOneWidget,
-      );
-    });
-
-    testWidgets('switching takes the explicit Join', (tester) async {
-      final o = await pumpOnboarding(
-        tester,
-        location: '/join/ABCD2345',
-        session: inHome,
-      );
-      await tapKey(tester, 'join-confirm');
-      expect(o.session.joins, [('ABCD2345', JoinMethod.link)]);
-      expect(location(o), '/');
-    });
-
-    testWidgets("a link of one's own household lands on the list", (
-      tester,
-    ) async {
+    testWidgets("a link of one of the user's households shows it on the "
+        'list (job 169b)', (tester) async {
       final invites = FakeInvites()..own.add('ABCD2345');
       final o = await pumpOnboarding(
         tester,
         location: '/join/ABCD2345',
-        session: inHome,
+        session: const InHousehold('peter', home, [
+          home,
+          Household(id: 'other', name: 'Familie Trost'),
+        ]),
         invites: invites,
       );
       expect(location(o), '/');
-      expect(o.session.joins, isEmpty);
+      expect((o.session.state as InHousehold).household.id, 'other');
       expect(o.pending.code, isNull);
+    });
+
+    testWidgets('joining asks nothing about a yearly plan: nothing is left', (
+      tester,
+    ) async {
+      final o = await pumpOnboarding(
+        tester,
+        location: '/join/ABCD2345',
+        session: inHome,
+        premium: FakePremiumServer(
+          mine: const MyYearlyPlan(subscriber: true, renewing: true),
+        ),
+      );
+      await tapKey(tester, 'join-confirm');
+      expect(key('premium-billing-continues'), findsNothing);
+      expect(o.session.joins, [('ABCD2345', JoinMethod.link)]);
     });
 
     testWidgets('in English', (tester) async {
@@ -537,23 +534,13 @@ void main() {
         session: inHome,
         locale: const Locale('en'),
       );
-      expect(find.text("You're already in a household"), findsOneWidget);
+      expect(find.text('Join a household'), findsWidgets);
       expect(find.text('Cancel'), findsOneWidget);
     });
   });
 
   group('Hummlist Lifetime at the join (job 43)', () {
-    const inHome = InHousehold('peter', home);
-    Future<void> showJoinButtons(
-      WidgetTester tester, [
-      String last = 'join-confirm',
-    ]) => tester.scrollUntilVisible(
-      key(last),
-      200,
-      scrollable: find
-          .descendant(of: key('join-screen'), matching: find.byType(Scrollable))
-          .first,
-    );
+    const inHome = InHousehold('peter', home, [home]);
     FakeInvites says(JoinLifetime lifetime) =>
         FakeInvites()..lifetime['ABCD2345'] = lifetime;
 
@@ -612,102 +599,6 @@ void main() {
       expect(key('join-target-unlocked'), findsNothing);
     });
 
-    testWidgets('(b) the last member of an unlocked household is warned: '
-        'deleted, not refunded; never stopped', (tester) async {
-      final o = await pumpOnboarding(
-        tester,
-        location: '/join/ABCD2345',
-        session: inHome,
-        invites: says(const JoinLifetime(leavesUnlocked: true)),
-      );
-      expect(
-        find.text(
-          '„Zuhause“ hat Hummlist Lifetime. Du bist das letzte Mitglied: '
-          'Trittst du bei, wird der Haushalt gelöscht. Hummlist Lifetime '
-          'endet mit ihm, denn ein Kauf gehört zu seinem Haushalt und zieht '
-          'nicht mit um.',
-        ),
-        findsOneWidget,
-      );
-      expect(key('join-archive-offer'), findsNothing, reason: 'flag off');
-      await showJoinButtons(tester);
-      await tapKey(tester, 'join-lifetime-refund-help');
-      expect(key('refund-help'), findsOneWidget);
-      Navigator.of(tester.element(key('refund-help'))).pop();
-      await tester.pumpAndSettle();
-      expect(find.widgetWithText(FilledButton, 'Abbrechen'), findsOneWidget);
-      expect(
-        find.widgetWithText(OutlinedButton, 'Trotzdem beitreten'),
-        findsOneWidget,
-      );
-      await tapKey(tester, 'join-confirm');
-      expect(o.session.joins, [('ABCD2345', JoinMethod.link)]);
-      expect(o.session.archivingJoins, isEmpty);
-    });
-
-    testWidgets('(b) with archiving: archive and join keeps the household', (
-      tester,
-    ) async {
-      final o = await pumpOnboarding(
-        tester,
-        location: '/join/ABCD2345',
-        session: inHome,
-        invites: says(const JoinLifetime(leavesUnlocked: true)),
-        archiveOffered: true,
-      );
-      expect(
-        find.textContaining('Archiviere den Haushalt, statt ihn zu löschen'),
-        findsOneWidget,
-      );
-      expect(
-        find.textContaining(
-          'Aktivierst du ihn nicht innerhalb von 24 Monaten wieder, wird er '
-          'gelöscht.',
-        ),
-        findsOneWidget,
-      );
-      expect(key('join-lifetime-ends'), findsNothing);
-      expect(
-        find.textContaining('mit seiner Liste gelöscht'),
-        findsNothing,
-        reason: 'no contradicting "deleted" line above the archive offer',
-      );
-      await showJoinButtons(tester, 'join-delete');
-      expect(find.widgetWithText(FilledButton, 'Abbrechen'), findsOneWidget);
-      await tapKey(tester, 'join-archive');
-      expect(o.session.joins, [('ABCD2345', JoinMethod.link)]);
-      expect(o.session.archivingJoins, ['ABCD2345']);
-    });
-
-    testWidgets('(b) declining the archive asks once more, then deletes', (
-      tester,
-    ) async {
-      final o = await pumpOnboarding(
-        tester,
-        location: '/join/ABCD2345',
-        session: inHome,
-        invites: says(const JoinLifetime(leavesUnlocked: true)),
-        archiveOffered: true,
-      );
-      await showJoinButtons(tester, 'join-delete');
-      await tapKey(tester, 'join-delete');
-      expect(key('join-delete-dialog'), findsOneWidget);
-      expect(find.text('„Zuhause“ löschen?'), findsOneWidget);
-      expect(
-        find.textContaining('Hummlist Lifetime endet mit ihm, denn'),
-        findsOneWidget,
-      );
-      expect(find.textContaining('nicht erstattet'), findsNothing);
-      expect(key('join-delete-refund-help'), findsOneWidget);
-      await tester.tap(find.text('Abbrechen').last);
-      await tester.pumpAndSettle();
-      expect(o.session.joins, isEmpty, reason: 'cancelled');
-      await tapKey(tester, 'join-delete');
-      await tapKey(tester, 'join-delete-confirm');
-      expect(o.session.joins, [('ABCD2345', JoinMethod.link)]);
-      expect(o.session.archivingJoins, isEmpty);
-    });
-
     testWidgets('in English', (tester) async {
       await pumpOnboarding(
         tester,
@@ -715,11 +606,7 @@ void main() {
         session: inHome,
         locale: const Locale('en'),
         invites: says(
-          const JoinLifetime(
-            targetUnlocked: true,
-            leavesUnlocked: true,
-            recentPurchase: true,
-          ),
+          const JoinLifetime(targetUnlocked: true, recentPurchase: true),
         ),
       );
       expect(
@@ -729,7 +616,6 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(find.textContaining("You're its last member"), findsOneWidget);
       await tester.scrollUntilVisible(
         key('join-confirm'),
         200,
@@ -740,7 +626,6 @@ void main() {
             )
             .first,
       );
-      expect(find.text('Join anyway'), findsOneWidget);
       expect(
         find.text('Bought Hummlist Lifetime recently? How to request a refund'),
         findsOneWidget,
@@ -749,7 +634,7 @@ void main() {
   });
 
   group('Step 3: invite the partner', () {
-    const inHome = InHousehold('peter', home);
+    const inHome = InHousehold('peter', home, [home]);
 
     testWidgets('makes one invite, opens the share sheet with link and code', (
       tester,
@@ -844,7 +729,7 @@ void main() {
   });
 
   group("More's Einladungen", () {
-    const inHome = InHousehold('peter', home);
+    const inHome = InHousehold('peter', home, [home]);
 
     testWidgets('lists open invites; revoking one removes it', (tester) async {
       final invites = FakeInvites();
@@ -882,157 +767,6 @@ void main() {
       expect(o.invites.created, hasLength(1));
       final events = await sentEvents(tester, o);
       expect((events.single['properties']! as Map)['context'], 'settings');
-    });
-  });
-
-  group('a yearly plan keeps being billed when leaving (H-85)', () {
-    const inHome = InHousehold('peter', home);
-    Future<void> showJoinButtons(WidgetTester tester, String last) =>
-        tester.scrollUntilVisible(
-          key(last),
-          200,
-          scrollable: find
-              .descendant(
-                of: key('join-screen'),
-                matching: find.byType(Scrollable),
-              )
-              .first,
-        );
-    const subscriber = MyYearlyPlan(subscriber: true, renewing: true);
-    FakeInvites lastOfUnlocked() =>
-        FakeInvites()
-          ..lifetime['ABCD2345'] = const JoinLifetime(leavesUnlocked: true);
-
-    testWidgets('leaving: the subscriber hears so, then joins', (tester) async {
-      final o = await pumpOnboarding(
-        tester,
-        location: '/join/ABCD2345',
-        session: inHome,
-        premium: FakePremiumServer(mine: subscriber),
-      );
-      await showJoinButtons(tester, 'join-confirm');
-      await tapKey(tester, 'join-confirm');
-      expect(key('premium-billing-continues'), findsOneWidget);
-      expect(
-        find.textContaining('Löschen oder Verlassen kündigt es nicht.'),
-        findsOneWidget,
-      );
-      expect(o.session.joins, isEmpty);
-      await tapKey(tester, 'premium-billing-continue');
-      expect(o.session.joins, [('ABCD2345', JoinMethod.link)]);
-    });
-
-    testWidgets('leaving: Abo verwalten stays', (tester) async {
-      final o = await pumpOnboarding(
-        tester,
-        location: '/join/ABCD2345',
-        session: inHome,
-        premium: FakePremiumServer(mine: subscriber),
-      );
-      await showJoinButtons(tester, 'join-confirm');
-      await tapKey(tester, 'join-confirm');
-      await tapKey(tester, 'premium-billing-manage');
-      expect(o.session.joins, isEmpty);
-    });
-
-    testWidgets('archiving: the subscriber hears so first', (tester) async {
-      final o = await pumpOnboarding(
-        tester,
-        location: '/join/ABCD2345',
-        session: inHome,
-        invites: lastOfUnlocked(),
-        archiveOffered: true,
-        premium: FakePremiumServer(mine: subscriber),
-      );
-      await showJoinButtons(tester, 'join-delete');
-      await tapKey(tester, 'join-archive');
-      expect(key('premium-billing-continues'), findsOneWidget);
-      await tapKey(tester, 'premium-billing-continue');
-      expect(o.session.archivingJoins, ['ABCD2345']);
-    });
-
-    testWidgets('deleting: after the delete question, the billing one', (
-      tester,
-    ) async {
-      final o = await pumpOnboarding(
-        tester,
-        location: '/join/ABCD2345',
-        session: inHome,
-        invites: lastOfUnlocked(),
-        archiveOffered: true,
-        premium: FakePremiumServer(mine: subscriber),
-      );
-      await showJoinButtons(tester, 'join-delete');
-      await tapKey(tester, 'join-delete');
-      await tapKey(tester, 'join-delete-confirm');
-      expect(key('premium-billing-continues'), findsOneWidget);
-      expect(o.session.joins, isEmpty);
-      await tapKey(tester, 'premium-billing-continue');
-      expect(o.session.joins, [('ABCD2345', JoinMethod.link)]);
-      expect(o.session.archivingJoins, isEmpty);
-    });
-
-    testWidgets('another member of a billed household: the short line', (
-      tester,
-    ) async {
-      final o = await pumpOnboarding(
-        tester,
-        location: '/join/ABCD2345',
-        session: inHome,
-        premium: FakePremiumServer(
-          mine: const MyYearlyPlan(householdBilled: true),
-        ),
-      );
-      await showJoinButtons(tester, 'join-confirm');
-      await tapKey(tester, 'join-confirm');
-      expect(key('premium-billing-other'), findsOneWidget);
-      expect(
-        find.text(
-          'Ein Jahresabo für diesen Haushalt läuft weiter, bis es gekündigt '
-          'wird.',
-        ),
-        findsOneWidget,
-      );
-      await tapKey(tester, 'premium-billing-cancel');
-      expect(o.session.joins, isEmpty);
-    });
-
-    testWidgets('in English', (tester) async {
-      await pumpOnboarding(
-        tester,
-        location: '/join/ABCD2345',
-        session: inHome,
-        locale: const Locale('en'),
-        premium: FakePremiumServer(mine: subscriber),
-      );
-      await showJoinButtons(tester, 'join-confirm');
-      await tapKey(tester, 'join-confirm');
-      expect(
-        find.text(
-          'Your Hummlist Premium yearly plan keeps running and is billed to '
-          'your Apple or Google account until you cancel it. Deleting or '
-          "leaving doesn't cancel it.",
-        ),
-        findsOneWidget,
-      );
-      expect(find.text('Manage subscription'), findsOneWidget);
-      expect(find.text('Continue anyway'), findsOneWidget);
-    });
-
-    testWidgets('no yearly plan: joins at once; without a household nothing '
-        'is asked', (tester) async {
-      final o = await pumpOnboarding(
-        tester,
-        location: '/join/ABCD2345',
-        session: inHome,
-      );
-      await showJoinButtons(tester, 'join-confirm');
-      await tapKey(tester, 'join-confirm');
-      expect(o.session.joins, [('ABCD2345', JoinMethod.link)]);
-      final fresh = await pumpOnboarding(tester, location: '/join/ABCD2345');
-      await showJoinButtons(tester, 'join-confirm');
-      await tapKey(tester, 'join-confirm');
-      expect(fresh.premium.calls, isEmpty);
     });
   });
 }

@@ -228,7 +228,7 @@ const defaultDeps: Deps = {
     createMcpHandler(() =>
       buildServer(
         auth,
-        () => requirePremium(auth, 'mcp'),
+        (householdId) => requirePremium({ userId: auth.userId, householdId }, 'mcp'),
         langOf(req.headers.get('accept-language')),
       )
     ).fetch(req),

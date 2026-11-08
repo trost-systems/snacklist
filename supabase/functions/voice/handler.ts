@@ -7,6 +7,9 @@
 // Job 51: "lang": "en" answers in English (native Siri), "mode": "read" reads the open items, and
 // a request that names a lang gets `outcome` in every JSON answer, which the native client
 // branches on. Requests without lang (the Shortcut recipe) get the answers they always got.
+// Job 169b: the app's session may name the household it shows ("household": id); it must be a
+// member. Without it the default household, as older apps get; Siri and token callers always act
+// in their credential's household.
 import { AuthError, type Via } from '../_shared/auth.ts';
 import { corsHeaders, json, preflight } from '../_shared/http.ts';
 import type { RequirePremium } from '../_shared/premium.ts';
@@ -61,6 +64,8 @@ export interface Deps<C extends Caller = Caller> {
    * caller but the app's own session (in-app dictation is part of the free app).
    */
   requirePremium: RequirePremium;
+  /** Whether the caller is a member of the household a session request names (job 169b). */
+  isMember(caller: C, householdId: string): Promise<boolean>;
   /** `addVariants`: the yes to a question, held items are added as said (items.ts). */
   addItems(caller: C, items: ParsedItem[], options?: { addVariants?: boolean }): Promise<Added[]>;
   /** Splits brand, details and store off each item as add_item does, for mode parse. */
@@ -173,6 +178,8 @@ interface Body {
   ask: boolean;
   /** Q79: this is the yes to that question (`"confirmed": true`). */
   confirmed: boolean;
+  /** Job 169b: the household the app shows, for session callers; null: the default. */
+  household: string | null;
 }
 
 const modes = ['add', 'parse', 'read'] as const;
@@ -190,13 +197,15 @@ async function readBody(req: Request): Promise<Body> {
     split: false,
     ask: false,
     confirmed: false,
+    household: null,
   } as const;
   if (!(req.headers.get('content-type') ?? '').includes('json')) return { ...plain, text: raw };
   try {
     const parsed: unknown = JSON.parse(raw);
     if (typeof parsed === 'string') return { ...plain, text: parsed };
-    const { text, mode, lang, split, ask, confirmed } = (parsed ?? {}) as {
+    const { text, mode, lang, split, ask, confirmed, household } = (parsed ?? {}) as {
       text?: unknown;
+      household?: unknown;
       mode?: unknown;
       lang?: unknown;
       split?: unknown;
@@ -212,6 +221,7 @@ async function readBody(req: Request): Promise<Body> {
       split: split === true,
       ask: tagged && ask === true,
       confirmed: tagged && confirmed === true,
+      household: typeof household === 'string' ? household : null,
     };
   } catch {
     return { ...plain, text: null };
@@ -321,6 +331,16 @@ export function createHandler<C extends Caller>(deps: Deps<C>) {
     }
 
     facts.via = caller.via ?? '-';
+    if (caller.via === 'session' && body.household !== null) {
+      try {
+        if (!await deps.isMember(caller, body.household)) return fail('no_household');
+      } catch (e) {
+        console.error('voice: the membership check failed', errorShape(e));
+        deps.report?.(e);
+        return fail('server');
+      }
+      caller = { ...caller, householdId: body.household.toLowerCase() };
+    }
     const source = caller.via && sources[caller.via];
     const track = async (event: VoiceEvent['event'], reason: Outcome, count: number) => {
       facts.count = count;

@@ -82,7 +82,7 @@ void main() {
   }
 
   test('signing in to a household creates and stores a credential', () async {
-    await go(const InHousehold('u1', household));
+    await go(const InHousehold('u1', household, [household]));
 
     expect(server.creates, [null]);
     expect(
@@ -105,7 +105,7 @@ void main() {
     );
     server.active.add('old');
 
-    await go(const InHousehold('u1', household));
+    await go(const InHousehold('u1', household, [household]));
 
     expect(server.creates, isEmpty);
     expect(channel.stores, isEmpty);
@@ -118,7 +118,7 @@ void main() {
       sessionId: 'session-1',
     );
 
-    await go(const InHousehold('u1', household));
+    await go(const InHousehold('u1', household, [household]));
 
     expect(server.creates, ['old']);
     expect(channel.entry?.id, 'siri-1');
@@ -132,7 +132,7 @@ void main() {
     );
     server.active.add('old');
 
-    await go(const InHousehold('u1', household));
+    await go(const InHousehold('u1', household, [household]));
 
     expect(server.creates, ['old']);
     expect(server.active, {'siri-1'});
@@ -147,16 +147,20 @@ void main() {
     );
     server.active.add('theirs');
 
-    await go(const InHousehold('u1', household));
+    await go(const InHousehold('u1', household, [household]));
 
     expect(server.creates, [null]);
     expect(channel.entry?.userId, 'u1');
   });
 
   test('repeated states in the household mint one credential', () async {
-    await go(const InHousehold('u1', household));
-    await go(const InHousehold('u1', Household(id: 'h1', name: 'Neu')));
-    await go(const InHousehold('u1', household));
+    await go(const InHousehold('u1', household, [household]));
+    await go(
+      const InHousehold('u1', Household(id: 'h1', name: 'Neu'), [
+        Household(id: 'h1', name: 'Neu'),
+      ]),
+    );
+    await go(const InHousehold('u1', household, [household]));
 
     expect(server.creates, [null]);
     expect(channel.stores, hasLength(1));
@@ -164,17 +168,21 @@ void main() {
 
   test('a lost answer is retried at the next state', () async {
     server.offline = true;
-    await go(const InHousehold('u1', household));
+    await go(const InHousehold('u1', household, [household]));
     expect(channel.entry, isNull);
 
     server.offline = false;
-    await go(const InHousehold('u1', Household(id: 'h1', name: 'Neu')));
+    await go(
+      const InHousehold('u1', Household(id: 'h1', name: 'Neu'), [
+        Household(id: 'h1', name: 'Neu'),
+      ]),
+    );
     expect(server.creates, [null]);
     expect(channel.entry?.id, 'siri-1');
   });
 
   test('signing out clears the keychain and the names', () async {
-    await go(const InHousehold('u1', household));
+    await go(const InHousehold('u1', household, [household]));
     await go(const SignedOut());
 
     expect(channel.entry, isNull);
@@ -183,7 +191,7 @@ void main() {
   });
 
   test("signing out first revokes this iPhone's row", () async {
-    await go(const InHousehold('u1', household));
+    await go(const InHousehold('u1', household, [household]));
     expect(server.active, {'siri-1'});
 
     await credentials.signingOut();
@@ -194,7 +202,7 @@ void main() {
   });
 
   test('an offline sign-out still clears the keychain', () async {
-    await go(const InHousehold('u1', household));
+    await go(const InHousehold('u1', household, [household]));
     server.offline = true;
 
     await credentials.signingOut();
@@ -205,17 +213,17 @@ void main() {
   });
 
   test('leaving the household clears the keychain', () async {
-    await go(const InHousehold('u1', household));
+    await go(const InHousehold('u1', household, [household]));
     await go(const NeedsHousehold('u1'));
 
     expect(channel.entry, isNull);
   });
 
   test('a sign-in after a sign-out mints a new credential', () async {
-    await go(const InHousehold('u1', household));
+    await go(const InHousehold('u1', household, [household]));
     await go(const SignedOut());
     server.sessionId = 'session-2';
-    await go(const InHousehold('u1', household));
+    await go(const InHousehold('u1', household, [household]));
 
     expect(server.creates, [null, null]);
     expect(channel.entry?.sessionId, 'session-2');
@@ -223,14 +231,14 @@ void main() {
 
   test('without a session id nothing is created', () async {
     server.sessionId = null;
-    await go(const InHousehold('u1', household));
+    await go(const InHousehold('u1', household, [household]));
 
     expect(server.creates, isEmpty);
   });
 
   test('without the Swift side nothing is created', () async {
     channel.missing = true;
-    await go(const InHousehold('u1', household));
+    await go(const InHousehold('u1', household, [household]));
     channel.missing = false;
     await go(const NeedsHousehold('u1'));
 

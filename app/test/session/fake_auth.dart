@@ -70,22 +70,42 @@ class FakeClient(final FakeAuth fakeAuth, {final void Function()? onQuery})
     onQuery?.call();
     throw const SocketException('offline');
   }
+
+  @override
+  PostgrestFilterBuilder<T> rpc<T>(
+    String fn, {
+    Map<String, dynamic>? params,
+    Object? get,
+  }) {
+    onQuery?.call();
+    throw const SocketException('offline');
+  }
 }
 
 /// The device cache, in memory; [households] is its contents.
 class MemorySessionCache() implements SessionCache {
-  final households = <String, Household>{};
+  final households = <String, ({List<Household> households, String? shown})>{};
   var forgotten = 0;
 
-  @override
-  Future<Household?> household(String userId) async => households[userId];
+  /// Caches [household] as the user's only one, shown.
+  void only(String userId, Household household) =>
+      households[userId] = (households: [household], shown: household.id);
 
   @override
-  Future<void> remember(String userId, Household? household) async {
-    if (household == null) {
-      households.remove(userId);
+  Future<({List<Household> households, String? shown})?> householdsOf(
+    String userId,
+  ) async => households[userId];
+
+  @override
+  Future<void> remember(
+    String userId, {
+    required List<Household> households,
+    String? shown,
+  }) async {
+    if (households.isEmpty) {
+      this.households.remove(userId);
     } else {
-      households[userId] = household;
+      this.households[userId] = (households: households, shown: shown);
     }
   }
 

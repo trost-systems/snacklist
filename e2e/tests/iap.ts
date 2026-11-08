@@ -74,9 +74,12 @@ export async function rcEvent(
   return { status: res.status, body: await functionJson(res) };
 }
 
-/** What the app sends right after RevenueCat's purchase sheet, as [email], for their household. */
-export async function claim(email: string, transactionId: string) {
-  const householdId = await householdOf(email);
+/**
+ * What the app sends right after RevenueCat's purchase sheet, as [email], for [householdId]: their
+ * default household unless named (job 169b: the one shown when buying).
+ */
+export async function claim(email: string, transactionId: string, householdId?: string) {
+  householdId ??= await householdOf(email);
   const api = await apiAs(email);
   const { data } = await api.auth.getSession();
   const res = await fetch(`${functionsUrl}/purchases/claim`, {
@@ -87,10 +90,14 @@ export async function claim(email: string, transactionId: string) {
   return { status: res.status, body: await functionJson(res) };
 }
 
-/** [email] buys Hummlist Lifetime for their household: the claim, then RevenueCat's webhook. */
-export async function buy(email: string, transactionId: string): Promise<string> {
-  expect((await claim(email, transactionId)).status, 'the claim is accepted').toBe(200);
-  const res = await rcEvent('NON_RENEWING_PURCHASE', await householdOf(email), transactionId);
+/**
+ * [email] buys Hummlist Lifetime for [household] (their default unless named): the claim, then
+ * RevenueCat's webhook.
+ */
+export async function buy(email: string, transactionId: string, household?: string): Promise<string> {
+  household ??= await householdOf(email);
+  expect((await claim(email, transactionId, household)).status, 'the claim is accepted').toBe(200);
+  const res = await rcEvent('NON_RENEWING_PURCHASE', household, transactionId);
   expect(res.status, JSON.stringify(res.body)).toBe(200);
   return res.body.status;
 }
@@ -106,11 +113,15 @@ export async function subscribe(email: string, transactionId: string, expiresInD
   return res.body.status;
 }
 
-/** RevenueCat reports [transactionId] for [email]'s current household again (a restore, a replay). */
-export async function report(email: string, transactionId: string): Promise<string> {
-  return (await rcEvent('NON_RENEWING_PURCHASE', await householdOf(email), transactionId)).body.status;
+/**
+ * RevenueCat reports [transactionId] for [household] (else [email]'s default household) again: a
+ * restore, a replay.
+ */
+export async function report(email: string, transactionId: string, household?: string): Promise<string> {
+  return (await rcEvent('NON_RENEWING_PURCHASE', household ?? await householdOf(email), transactionId)).body.status;
 }
 
+/** [email]'s default household, read as old store builds read it (job 169b: the one row RLS shows). */
 export async function householdOf(email: string): Promise<string> {
   const api = await apiAs(email);
   const { data: user } = await api.auth.getUser();

@@ -59,6 +59,7 @@ async function siri(h: Household, body: Record<string, unknown>) {
         via: body.lang ? 'siri' : 'pat',
       }),
     requirePremium: () => Promise.resolve('open'),
+    isMember: () => Promise.resolve(false),
     addItems: add(h),
     splitItems: (auth, parsed) =>
       asUser(auth.userId, (tx) => splitItems(tx, auth.householdId, parsed)),

@@ -596,6 +596,12 @@ abstract class AppLocalizations {
   /// **'Unser Haushalt'**
   String get householdNameDefault;
 
+  /// Hint in the empty name field when creating a further household from the switcher (job 169b).
+  ///
+  /// In de, this message translates to:
+  /// **'z. B. Eltern, WG, Verein'**
+  String get householdNameHintFurther;
+
   /// No description provided for @createHousehold.
   ///
   /// In de, this message translates to:
@@ -625,12 +631,6 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Dieser Code ist ungültig oder abgelaufen.'**
   String get invalidInvite;
-
-  /// No description provided for @switchHouseholdWarning.
-  ///
-  /// In de, this message translates to:
-  /// **'Du verlässt deinen aktuellen Haushalt. Bist du der letzte, wird er mit seiner Liste gelöscht.'**
-  String get switchHouseholdWarning;
 
   /// No description provided for @genericError.
   ///
@@ -2090,24 +2090,6 @@ abstract class AppLocalizations {
   /// **'Zu viele Versuche. Bitte später noch einmal.'**
   String get tooManyAttempts;
 
-  /// No description provided for @alreadyInHousehold.
-  ///
-  /// In de, this message translates to:
-  /// **'Du bist schon in einem Haushalt'**
-  String get alreadyInHousehold;
-
-  /// No description provided for @switchHouseholdAlone.
-  ///
-  /// In de, this message translates to:
-  /// **'Du bist das einzige Mitglied von „{household}“. Trittst du bei, wird „{household}“ mit seiner Liste gelöscht.'**
-  String switchHouseholdAlone(String household);
-
-  /// No description provided for @switchHouseholdShared.
-  ///
-  /// In de, this message translates to:
-  /// **'Trittst du bei, verlässt du „{household}“. Die anderen Mitglieder behalten die Liste.'**
-  String switchHouseholdShared(String household);
-
   /// No description provided for @inviteCheck.
   ///
   /// In de, this message translates to:
@@ -2414,47 +2396,11 @@ abstract class AppLocalizations {
   /// **'Du hast Hummlist Lifetime vor Kurzem gekauft? So forderst du den Kauf zurück'**
   String get joinRefundLink;
 
-  /// No description provided for @joinLifetimeEnds.
-  ///
-  /// In de, this message translates to:
-  /// **'„{household}“ hat Hummlist Lifetime. Du bist das letzte Mitglied: Trittst du bei, wird der Haushalt gelöscht. Hummlist Lifetime endet mit ihm, denn ein Kauf gehört zu seinem Haushalt und zieht nicht mit um.'**
-  String joinLifetimeEnds(String household);
-
-  /// Join, after the warning that the current household's Hummlist Lifetime ends
-  ///
-  /// In de, this message translates to:
-  /// **'Trotzdem beitreten'**
-  String get joinAnyway;
-
   /// No description provided for @joinLifetimeRefundLink.
   ///
   /// In de, this message translates to:
   /// **'Erstattung bei Apple oder Google anfragen'**
   String get joinLifetimeRefundLink;
-
-  /// No description provided for @joinArchiveOffer.
-  ///
-  /// In de, this message translates to:
-  /// **'„{household}“ hat Hummlist Lifetime. Du bist das letzte Mitglied. Archiviere den Haushalt, statt ihn zu löschen: Liste und Hummlist Lifetime bleiben erhalten, und du kannst ihn später unter „Mehr“ wieder aktivieren. Aktivierst du ihn nicht innerhalb von 24 Monaten wieder, wird er gelöscht.'**
-  String joinArchiveOffer(String household);
-
-  /// No description provided for @joinArchive.
-  ///
-  /// In de, this message translates to:
-  /// **'Archivieren und beitreten'**
-  String get joinArchive;
-
-  /// No description provided for @joinDelete.
-  ///
-  /// In de, this message translates to:
-  /// **'Löschen und beitreten'**
-  String get joinDelete;
-
-  /// No description provided for @joinDeleteTitle.
-  ///
-  /// In de, this message translates to:
-  /// **'„{household}“ löschen?'**
-  String joinDeleteTitle(String household);
 
   /// No description provided for @archivedTitle.
   ///
@@ -2495,14 +2441,8 @@ abstract class AppLocalizations {
   /// No description provided for @archivedRestoreBody.
   ///
   /// In de, this message translates to:
-  /// **'Du wechselst in „{household}“ und bist dort wieder Mitglied.'**
+  /// **'Du bist wieder Mitglied von „{household}“. Deine anderen Haushalte bleiben.'**
   String archivedRestoreBody(String household);
-
-  /// No description provided for @archivedRestoreArchivesCurrent.
-  ///
-  /// In de, this message translates to:
-  /// **'Du bist das letzte Mitglied von „{household}“. Weil er Hummlist Lifetime hat, wird er archiviert, nicht gelöscht.'**
-  String archivedRestoreArchivesCurrent(String household);
 
   /// More: the Premium page and its row; the product name, the same in every language
   ///
@@ -2930,6 +2870,18 @@ abstract class AppLocalizations {
   /// **'Mit einem Token baust du eigene Automationen am MCP-Server, die eure Liste pflegen. Für Programme ohne MCP gibt es unten die API.'**
   String get accessTokensHintWithApi;
 
+  /// Job 169b: Zugänge, under the token hint when the user is in several households: the household a new token acts in
+  ///
+  /// In de, this message translates to:
+  /// **'Ein neuer Token gilt für „{household}“, den Haushalt, der gerade offen ist.'**
+  String accessKeysHousehold(String household);
+
+  /// Job 169b: as accessKeysHousehold while the public-api flag is on
+  ///
+  /// In de, this message translates to:
+  /// **'Neue Token und API-Schlüssel gelten für „{household}“, den Haushalt, der gerade offen ist.'**
+  String accessKeysHouseholdWithApi(String household);
+
   /// Zugänge, connected app row and details: the newest token refresh of the app (job 80)
   ///
   /// In de, this message translates to:
@@ -3013,6 +2965,186 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Tipp ausblenden'**
   String get tipDismiss;
+
+  /// Job 169b: create_household or accept_invite refused, the user is in 10 households
+  ///
+  /// In de, this message translates to:
+  /// **'Du bist schon in 10 Haushalten. Verlasse einen, bevor du einen neuen anlegst oder beitrittst.'**
+  String get tooManyHouseholds;
+
+  /// Job 169b: screen reader hint of the household name chip top left of the list, which opens the switcher sheet
+  ///
+  /// In de, this message translates to:
+  /// **'Haushalt wechseln'**
+  String get householdSwitch;
+
+  /// Job 169b: title of the switcher sheet
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Haushalte'**
+  String get householdsTitle;
+
+  /// Job 169b: switcher row, how many members a household has
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Mitglied} other{{count} Mitglieder}}'**
+  String householdMembers(int count);
+
+  /// Job 169b: switcher row, how many items are not ticked yet
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =0{nichts offen} =1{1 offen} other{{count} offen}}'**
+  String householdOpenItems(int count);
+
+  /// Job 169b: screen reader label of the check on the switcher row of the household shown now
+  ///
+  /// In de, this message translates to:
+  /// **'Angezeigt'**
+  String get householdCurrent;
+
+  /// Job 169b: switcher sheet row and the title of the create page opened from it
+  ///
+  /// In de, this message translates to:
+  /// **'Neuer Haushalt'**
+  String get newHousehold;
+
+  /// Job 169b: switcher sheet row that opens the join screen
+  ///
+  /// In de, this message translates to:
+  /// **'Mit Code beitreten'**
+  String get joinWithCode;
+
+  /// Job 169b: switcher sheet footer naming the default household; tap opens the picker
+  ///
+  /// In de, this message translates to:
+  /// **'Siri, Alexa & KI nutzen: {household}'**
+  String voiceDefaultRow(String household);
+
+  /// Job 169b: default household picker title and the switch on the household page
+  ///
+  /// In de, this message translates to:
+  /// **'Standard für Siri, Alexa & KI'**
+  String get voiceDefaultTitle;
+
+  /// Job 169b: under the default picker's title
+  ///
+  /// In de, this message translates to:
+  /// **'Was du Siri, Alexa oder einem KI-Assistenten sagst, landet in diesem Haushalt.'**
+  String get voiceDefaultBody;
+
+  /// Job 169b: household page, under the default switch while it is on
+  ///
+  /// In de, this message translates to:
+  /// **'Siri, Alexa und KI-Assistenten nutzen diesen Haushalt.'**
+  String get voiceDefaultOn;
+
+  /// Job 169b: household page, under the default switch while another household is the default
+  ///
+  /// In de, this message translates to:
+  /// **'Siri, Alexa und KI-Assistenten nutzen gerade „{household}“.'**
+  String voiceDefaultOff(String household);
+
+  /// Job 169b: title of the household page under More
+  ///
+  /// In de, this message translates to:
+  /// **'Haushalt'**
+  String get householdPageTitle;
+
+  /// Job 169b: household page, the button beside the name
+  ///
+  /// In de, this message translates to:
+  /// **'Umbenennen'**
+  String get householdRename;
+
+  /// Job 169b: rename dialog title
+  ///
+  /// In de, this message translates to:
+  /// **'Haushalt umbenennen'**
+  String get householdRenameTitle;
+
+  /// Job 169b: household page section label
+  ///
+  /// In de, this message translates to:
+  /// **'Mitglieder'**
+  String get householdMembersTitle;
+
+  /// Job 169b: the user's own row in the members list
+  ///
+  /// In de, this message translates to:
+  /// **'{name} (du)'**
+  String householdMemberYou(String name);
+
+  /// Job 169b: a member without a display name
+  ///
+  /// In de, this message translates to:
+  /// **'Ohne Namen'**
+  String get householdMemberUnnamed;
+
+  /// Job 169b: household page, members list failed to load
+  ///
+  /// In de, this message translates to:
+  /// **'Die Mitglieder konnten nicht geladen werden.'**
+  String get householdMembersFailed;
+
+  /// Job 169b: household page button and the leave dialog's confirm button
+  ///
+  /// In de, this message translates to:
+  /// **'Haushalt verlassen'**
+  String get leaveHousehold;
+
+  /// Job 169b: leave dialog title
+  ///
+  /// In de, this message translates to:
+  /// **'„{household}“ verlassen?'**
+  String leaveTitle(String household);
+
+  /// Job 169b: leave dialog body when others stay
+  ///
+  /// In de, this message translates to:
+  /// **'Die anderen Mitglieder behalten die Liste. Zurück kommst du nur mit einer neuen Einladung.'**
+  String get leaveShared;
+
+  /// Job 169b: leave dialog body for the last member
+  ///
+  /// In de, this message translates to:
+  /// **'Du bist das letzte Mitglied. Der Haushalt wird mit Liste, Verlauf, Kategorien und Geschäften gelöscht.'**
+  String get leaveLast;
+
+  /// Job 169b: leave dialog, last member of a household with Lifetime, archive off
+  ///
+  /// In de, this message translates to:
+  /// **'„{household}“ hat Hummlist Lifetime. Du bist das letzte Mitglied: Verlässt du ihn, wird der Haushalt gelöscht. Hummlist Lifetime endet mit ihm, denn ein Kauf gehört zu seinem Haushalt.'**
+  String leaveLifetimeEnds(String household);
+
+  /// Job 169b: leave dialog, last member of a household with Lifetime, archive on
+  ///
+  /// In de, this message translates to:
+  /// **'„{household}“ hat Hummlist Lifetime. Du bist das letzte Mitglied. Archiviere den Haushalt, statt ihn zu löschen: Liste und Hummlist Lifetime bleiben erhalten, und du kannst ihn später unter „Mehr“ wieder aktivieren. Aktivierst du ihn nicht innerhalb von 24 Monaten wieder, wird er gelöscht.'**
+  String leaveArchiveOffer(String household);
+
+  /// Job 169b: leave dialog button that archives the household
+  ///
+  /// In de, this message translates to:
+  /// **'Archivieren und verlassen'**
+  String get leaveArchive;
+
+  /// Job 169b: leave dialog button that deletes the household with its Lifetime
+  ///
+  /// In de, this message translates to:
+  /// **'Löschen und verlassen'**
+  String get leaveDelete;
+
+  /// Job 169b: OAuth consent for a user with several households; the default is the one MCP acts in (changed in the switcher)
+  ///
+  /// In de, this message translates to:
+  /// **'Arbeitet in deinem Standard-Haushalt „{name}“. Nennst du einen anderen deiner Haushalte, auch dort.'**
+  String consentDefaultHousehold(String name);
+
+  /// Job 169b: household page button that makes the shown household the default for Siri, Alexa and AI
+  ///
+  /// In de, this message translates to:
+  /// **'Als Standard nutzen'**
+  String get voiceDefaultMake;
 }
 
 class _AppLocalizationsDelegate

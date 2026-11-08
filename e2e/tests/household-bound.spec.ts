@@ -1,5 +1,8 @@
 import { type Browser, expect, type Page, test } from './fixtures';
-import { adminClient, apiAs, newEmail, nextFrames, openEmailSignIn, openMore, openPremium, openTab, password, screenshot, signUpWithHousehold, typeInto } from './helpers';
+import {
+  adminClient, apiAs, createHousehold, householdChip, newEmail, nextFrames, openEmailSignIn, openMore, openPremium, openTab, password,
+  screenshot, signUp, signUpWithHousehold, skipInvite, switchHousehold, typeInto,
+} from './helpers';
 import { archiveSwitchOn, buy, householdOf, report } from './iap';
 
 // Job 43: Hummlist Lifetime is household-bound (docs/PURCHASES.md, model A). Purchases are signed
@@ -28,13 +31,33 @@ async function inviteCode(email: string): Promise<string> {
   return (Array.isArray(data) ? data[0] : data).code;
 }
 
-test('joining an unlocked household: nothing to buy, the warning, the refund help; the purchase stays behind', async ({ browser }) => {
+/**
+ * Leaves the [shown] household from More's household page (job 169b), as its last member with
+ * Hummlist Lifetime: the dialog offers the archive (the e2e build's HOUSEHOLD_ARCHIVE), and
+ * [choice] answers it. Ends on the list of another household.
+ */
+async function leaveLastWithLifetime(page: Page, shown: string, choice: 'Löschen und verlassen' | 'Archivieren und verlassen', shot: string) {
+  await openMore(page, shown);
+  await expect(page).toHaveURL(/\/more\/household$/);
+  await page.getByRole('button', { name: 'Haushalt verlassen', exact: true }).click();
+  await expect(page.getByText(/Archiviere den Haushalt, statt ihn zu löschen/)).toBeVisible();
+  await screenshot(page, shot);
+  await page.getByRole('button', { name: choice, exact: true }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(householdChip(page, shown)).toHaveCount(0);
+}
+
+test('joining an unlocked household: nothing to buy, the refund help; the purchase stays behind', async ({ browser }) => {
   const annaEmail = newEmail('iap43-anna');
   const benEmail = newEmail('iap43-ben');
   const anna = await newPage(browser);
   const ben = await newPage(browser);
-  await signUpWithHousehold(anna, annaEmail);
+  await signUp(anna, annaEmail);
+  await createHousehold(anna, { name: 'Familie Anna' });
+  await skipInvite(anna);
   await signUpWithHousehold(ben, benEmail);
+  const annaHousehold = await householdOf(annaEmail);
+  const benHousehold = await householdOf(benEmail);
 
   // Both bought, each in their own household (Ben recently, so the refund help applies).
   const annaTx = `4300${Date.now()}`;
@@ -42,11 +65,11 @@ test('joining an unlocked household: nothing to buy, the warning, the refund hel
   expect(await buy(annaEmail, annaTx)).toBe('granted');
   expect(await buy(benEmail, benTx)).toBe('granted');
 
-  // Ben opens Anna's invite link as the last member of his unlocked household.
+  // Ben opens Anna's invite link as the last member of his unlocked household. Joining adds a
+  // household (job 169b), so the join screen no longer offers to archive or delete his own.
   await ben.goto(`/join/${await inviteCode(annaEmail)}`);
   await expect(ben.getByText('Dieser Haushalt hat Hummlist Lifetime. Du musst nichts kaufen.')).toBeVisible();
-  // The e2e build offers archiving (HOUSEHOLD_ARCHIVE, off in releases).
-  await expect(ben.getByText(/Archiviere den Haushalt, statt ihn zu löschen/)).toBeVisible();
+  await expect(ben.getByText(/Archiviere den Haushalt/), 'nothing about his own household').toHaveCount(0);
   const refundLink = ben.getByRole('button', { name: /vor Kurzem gekauft\? So forderst du den Kauf zurück/ });
   await expect(refundLink).toBeVisible();
   await screenshot(ben, 'job43-join-unlocked-de-390');
@@ -62,21 +85,26 @@ test('joining an unlocked household: nothing to buy, the warning, the refund hel
   await screenshot(ben, 'job43-refund-help-de-390');
   await ben.keyboard.press('Escape');
   await expect(ben.getByText('Kauf zurückfordern', { exact: true })).toHaveCount(0);
-
-  // Ben declines the archive: one more warning (deleted with its Lifetime), then it never blocks.
-  await ben.getByRole('button', { name: 'Löschen und beitreten', exact: true }).click();
-  await expect(ben.getByText(/Hummlist Lifetime endet mit ihm, denn ein Kauf gehört zu seinem Haushalt/)).toBeVisible();
-  await screenshot(ben, 'job43-join-delete-confirm-de-390');
-  await ben.getByRole('button', { name: 'Löschen und beitreten', exact: true }).last().click();
+  await ben.getByRole('button', { name: 'Haushalt beitreten', exact: true }).click();
   await expect(ben).toHaveURL(/\/$/);
-
-  // Ben's purchase stayed with his deleted household: it unlocks nothing anywhere else, ever.
-  expect(await report(benEmail, benTx), 'restore after the household is gone').toBe('used_elsewhere');
+  await expect(householdChip(ben, 'Familie Anna')).toBeVisible();
 
   // In Anna's household, a member who did not buy sees it unlocked, with no Buy.
   await openPremium(ben);
   await expect(unlocked(ben)).toBeVisible();
   await expect(buyButton(ben)).toHaveCount(0);
+  // Ben's purchase stays with his household: it unlocks nothing in Anna's.
+  expect(await report(benEmail, benTx, annaHousehold), 'his purchase reported for Anna\'s household').toBe('used_elsewhere');
+
+  // Ben leaves his own household from its page and deletes it rather than archive it.
+  await openTab(ben, 'Liste');
+  await switchHousehold(ben, 'Familie Anna', 'Unser Haushalt');
+  await leaveLastWithLifetime(ben, 'Unser Haushalt', 'Löschen und verlassen', 'job43-leave-delete-de-390');
+  await expect(householdChip(ben, 'Familie Anna'), 'on to his other household').toBeVisible();
+  const { count } = await adminClient().from('households').select('*', { count: 'exact', head: true }).eq('id', benHousehold);
+  expect(count, 'his household is deleted').toBe(0);
+  // His purchase went with it: it unlocks nothing anywhere else, ever.
+  expect(await report(benEmail, benTx), 'restore after the household is gone').toBe('used_elsewhere');
 });
 
 test('a joiner into a locked household is told nothing; a household bought twice says so', async ({ browser }) => {
@@ -86,6 +114,7 @@ test('a joiner into a locked household is told nothing; a household bought twice
   const dirk = await newPage(browser);
   await signUpWithHousehold(cara, caraEmail);
   await signUpWithHousehold(dirk, dirkEmail);
+  const caraHousehold = await householdOf(caraEmail);
 
   await dirk.goto(`/join/${await inviteCode(caraEmail)}`);
   await expect(dirk.getByRole('button', { name: 'Haushalt beitreten', exact: true })).toBeVisible();
@@ -97,8 +126,9 @@ test('a joiner into a locked household is told nothing; a household bought twice
   await openPremium(cara);
   expect(await buy(caraEmail, `4302${Date.now()}`)).toBe('granted');
   await expect(unlocked(cara)).toBeVisible({ timeout: 10_000 });
-  // Dirk bought too on his phone before he saw it (two phones, Ask to Buy): flagged for the refund help.
-  expect(await buy(dirkEmail, `4303${Date.now()}`)).toBe('granted');
+  // Dirk bought too on his phone, in Cara's household, before he saw it (two phones, Ask to Buy):
+  // flagged for the refund help.
+  expect(await buy(dirkEmail, `4303${Date.now()}`, caraHousehold)).toBe('granted');
   await expect(cara.getByText(BOUGHT_TWICE)).toBeVisible({ timeout: 10_000 });
   await screenshot(cara, 'job43-bought-twice-de-390');
 });
@@ -108,19 +138,25 @@ test('the last member archives an unlocked household, its purchase stays its own
   const caraEmail = newEmail('iap43-cara2');
   const frank = await newPage(browser);
   await signUpWithHousehold(frank, frankEmail);
-  await signUpWithHousehold(await newPage(browser), caraEmail);
+  const cara = await newPage(browser);
+  await signUp(cara, caraEmail);
+  await createHousehold(cara, { name: 'Familie Cara' });
+  await skipInvite(cara);
   const frankHousehold = await householdOf(frankEmail);
+  const caraHousehold = await householdOf(caraEmail);
   const frankTx = `4304${Date.now()}`;
   expect(await buy(frankEmail, frankTx)).toBe('granted');
 
+  // Job 169b: Frank joins Cara's household beside his own, then leaves his own from its page.
   await frank.goto(`/join/${await inviteCode(caraEmail)}`);
-  await expect(frank.getByText(/Archiviere den Haushalt, statt ihn zu löschen/)).toBeVisible();
-  await screenshot(frank, 'job43-join-archive-offer-de-390');
-  await frank.getByRole('button', { name: 'Archivieren und beitreten', exact: true }).click();
-  await expect(frank).toHaveURL(/\/$/);
+  await frank.getByRole('button', { name: 'Haushalt beitreten', exact: true }).click();
+  await expect(householdChip(frank, 'Familie Cara')).toBeVisible();
+  await switchHousehold(frank, 'Familie Cara', 'Unser Haushalt');
+  await leaveLastWithLifetime(frank, 'Unser Haushalt', 'Archivieren und verlassen', 'job43-leave-archive-offer-de-390');
+  await expect(householdChip(frank, 'Familie Cara')).toBeVisible();
 
   // In Cara's household the purchase restores nothing: it belongs to the archived one.
-  expect(await report(frankEmail, frankTx)).toBe('used_elsewhere');
+  expect(await report(frankEmail, frankTx, caraHousehold)).toBe('used_elsewhere');
   await openPremium(frank);
   await expect(unlocked(frank), 'Cara\'s household has no Lifetime').toHaveCount(0);
 
@@ -137,10 +173,14 @@ test('the last member archives an unlocked household, its purchase stays its own
   await screenshot(frank, 'job47-archived-deletes-de-390');
   await frank.getByRole('button', { name: 'Wieder aktivieren', exact: true }).click();
   await frank.getByRole('button', { name: 'Wieder aktivieren', exact: true }).last().click();
-  await expect.poll(() => householdOf(frankEmail)).toBe(frankHousehold);
+  // Job 169b: it comes back beside Cara's household, which Frank keeps, and shows.
+  await expect.poll(async () => ((await (await apiAs(frankEmail)).rpc('my_households')).data ?? []).map((h: { id: string }) => h.id).sort())
+    .toEqual([frankHousehold, caraHousehold].sort());
+  // The app shows it before the Premium page reloads (the server answering is not enough).
+  await expect(householdChip(frank, 'Unser Haushalt')).toBeVisible();
   await openPremium(frank);
   await expect(unlocked(frank), 'back in his household, the unlock is back').toBeVisible({ timeout: 10_000 });
-  expect(await report(frankEmail, frankTx)).toBe('restored');
+  expect(await report(frankEmail, frankTx, frankHousehold)).toBe('restored');
 });
 
 test('the web says nothing about buying before sales start, also in English', async ({ browser }) => {

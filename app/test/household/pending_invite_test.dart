@@ -99,9 +99,12 @@ void main() {
     test('a signed-out start (which forgets) keeps it', () async {
       final at = DateTime.utc(2026, 10, 30, 12, 5);
       await cache.savePendingInvite((code: 'ABCD2345', at: at));
-      await cache.remember('u', const Household(id: 'h', name: 'H'));
+      await cache.remember(
+        'u',
+        households: const [Household(id: 'h', name: 'H')],
+      );
       await cache.forget();
-      expect(await cache.household('u'), isNull);
+      expect(await cache.householdsOf('u'), isNull);
       expect(await cache.pendingInvite(), (code: 'ABCD2345', at: at));
     });
 

@@ -188,35 +188,33 @@ class SupabaseListRepository(
           .select('store_id, category_id, sort_order, hidden')
           .eq('household_id', householdId),
     );
-    final memberIds = _sent(
-      _client.rest
-          .from('household_members')
-          .select('user_id, role')
-          .eq('household_id', householdId),
-    );
-    // No foreign key to join on; RLS returns everyone the user shares a
-    // household with, and the member ids pick this one's.
-    final profiles = _sent(
-      _client.rest.from('profiles').select('id, display_name'),
+    // Names and roles of this household's members only (job 169b): a
+    // user in a club next to their family loads the family's members.
+    final members = _sent(
+      _client
+          .rpc<List<dynamic>>(
+            'household_members_of',
+            params: {'p_household': householdId},
+          )
+          .then((rows) => rows.whereType<Map<String, dynamic>>().toList()),
     );
     // Not a record `.wait`: its ParallelWaitError would hide whether the
     // server answered. Future.wait throws the first error once all settled.
-    await Future.wait([categories, stores, layout, memberIds, profiles]);
-    final roles = {
-      for (final row in await memberIds)
-        row['user_id']! as String: row['role'] as String?,
-    };
+    await Future.wait([categories, stores, layout, members]);
     return Catalog(
       categories: (await categories).map(Category.fromJson).toList(),
       stores: (await stores).map(Store.fromJson).toList(),
       layout: (await layout).map(StoreCategory.fromJson).toList(),
       members: [
-        for (final member in (await profiles).map(Member.fromJson))
-          if (roles.containsKey(member.id))
+        for (final row in await members)
+          if (row case {'user_id': final String id})
             Member(
-              id: member.id,
-              displayName: member.displayName,
-              role: roles[member.id],
+              id: id,
+              displayName: switch (row['display_name']) {
+                final String name => name,
+                _ => '',
+              },
+              role: row['role'] as String?,
             ),
       ],
     );
@@ -505,7 +503,14 @@ class SupabaseListRepository(
     try {
       final response = await _client.functions.invoke(
         'voice',
-        body: {'text': text, 'mode': 'parse', 'split': true},
+        // The shown household, so stores and categories are this list's
+        // (job 169b); without it the server parses for the default.
+        body: {
+          'text': text,
+          'mode': 'parse',
+          'split': true,
+          'household': householdId,
+        },
       );
       final items = switch (response.data) {
         {'items': final List<Object?> items} => items,

@@ -98,6 +98,7 @@ void main() {
   const household = InHousehold(
     'peter',
     Household(id: 'home', name: 'Zuhause'),
+    [Household(id: 'home', name: 'Zuhause')],
   );
 
   /// Unmounts the app and lets the list's timers run out.

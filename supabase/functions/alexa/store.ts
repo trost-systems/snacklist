@@ -68,11 +68,12 @@ export async function analyticsSubject(sql: Sql, userId: string): Promise<Analyt
       household_size: number;
     }[]
   >`
-    select a.install_id, a.consent, a.consent_text_version, a.internal, m.household_id, m.role,
+    select a.install_id, a.consent, a.consent_text_version, a.internal, m.household_id,
+           case when m.role = 'owner' then 'owner' when m.role is not null then 'member' end as role,
            (select count(*)::int from public.household_members o
             where o.household_id = m.household_id) as household_size
     from public.analytics_consents a
-    left join public.household_members m on m.user_id = a.user_id
+    left join public.household_members m on m.user_id = a.user_id and m.is_default
     where a.user_id = ${userId}::uuid
     order by a.decided_at desc, a.install_id
     limit 1`;

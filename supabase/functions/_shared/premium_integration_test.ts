@@ -72,6 +72,7 @@ function voice(m: Member, telemetry: Telemetry) {
     authenticate: () =>
       Promise.resolve({ userId: m.userId, householdId: m.householdId, via: 'pat' as const }),
     requirePremium: requirePremiumWith(telemetry),
+    isMember: () => Promise.resolve(false),
     addItems: (auth, parsed) => asUser(auth.userId, (tx) => addItems(tx, auth.householdId, parsed)),
     splitItems: (auth, parsed) =>
       asUser(auth.userId, (tx) => splitItems(tx, auth.householdId, parsed)),
@@ -124,7 +125,9 @@ function mcp(m: Member, telemetry: Telemetry) {
   const gate = requirePremiumWith(telemetry);
   const auth = { userId: m.userId, householdId: m.householdId, via: 'pat' as const };
   return async (name: string) => {
-    const res = await createMcpHandler(() => buildServer(auth, () => gate(auth, 'mcp'))).fetch(
+    const res = await createMcpHandler(() =>
+      buildServer(auth, (householdId) => gate({ userId: auth.userId, householdId }, 'mcp'))
+    ).fetch(
       new Request('http://edge/mcp', {
         method: 'POST',
         headers: {

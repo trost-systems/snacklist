@@ -2,9 +2,9 @@
 // the request's locale picks the language, voices.ts).
 // Every request is verified first (verify.ts); a refused one answers 400 and touches nothing.
 // The linked account is the Supabase OAuth access token Alexa got through account linking; its
-// user's CURRENT household (household_members, read per request) is the one written to, never
-// anything from the request. Adds go through the Siri path (voice/parse.ts, voice/items.ts), so
-// items are split, categorized and deduplicated exactly as in the app.
+// user's default household (household_members.is_default, read per request) is the one written
+// to, never anything from the request. Adds go through the Siri path (voice/parse.ts,
+// voice/items.ts), so items are split, categorized and deduplicated exactly as in the app.
 import { AuthError } from '../_shared/auth.ts';
 import { json } from '../_shared/http.ts';
 import type { Added } from '../voice/handler.ts';

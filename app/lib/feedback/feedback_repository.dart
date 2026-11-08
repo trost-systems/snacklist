@@ -90,6 +90,7 @@ class SupabaseFeedbackRepository(
             'locale': context.locale,
             'screen': context.screen,
             'is_internal': context.isInternal,
+            'household_id': ?context.householdId,
           })
           .timeout(timeout);
     } on PostgrestException {

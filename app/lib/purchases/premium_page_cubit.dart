@@ -143,7 +143,9 @@ class PremiumPageCubit(
 
   Future<void> _readMine() async {
     try {
-      final mine = await _server.myYearlyPlan();
+      final mine = await _server.myYearlyPlan(
+        household: _entitlements.householdId,
+      );
       if (!isClosed) {
         emit(state.copyWith(mine: mine));
       }

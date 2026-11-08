@@ -79,10 +79,9 @@ void main() {
     });
   }
 
-  testWidgets('bring one back: the current, unlocked household of one is '
-      'archived in turn', (tester) async {
+  testWidgets('bring one back: it joins the other households, nothing is '
+      'left (job 169b)', (tester) async {
     final invites = FakeInvites()
-      ..members = 1
       ..archivedNow.add(
         ArchivedHousehold(
           id: 'old',
@@ -106,11 +105,12 @@ void main() {
     expect(find.text('„Altbau“ wieder aktivieren?'), findsOneWidget);
     expect(
       find.text(
-        'Du bist das letzte Mitglied von „Zuhause“. Weil er Hummlist '
-        'Lifetime hat, wird er archiviert, nicht gelöscht.',
+        'Du bist wieder Mitglied von „Altbau“. Deine anderen Haushalte '
+        'bleiben.',
       ),
       findsOneWidget,
     );
+    expect(find.textContaining('„Zuhause“'), findsNothing);
     await tester.tap(key('archived-restore-confirm'));
     await tester.pumpAndSettle();
     verify(() => more.session.unarchive('old')).called(1);
@@ -119,7 +119,6 @@ void main() {
 
   testWidgets('cancel brings nothing back', (tester) async {
     final invites = FakeInvites()
-      ..members = 2
       ..archivedNow.add(
         ArchivedHousehold(
           id: 'old',
@@ -133,13 +132,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(key('archived-restore'));
     await tester.pumpAndSettle();
-    expect(
-      find.text(
-        'Trittst du bei, verlässt du „Zuhause“. Die anderen Mitglieder '
-        'behalten die Liste.',
-      ),
-      findsOneWidget,
-    );
+    expect(key('archived-restore-dialog'), findsOneWidget);
     await tester.tap(find.text('Abbrechen'));
     await tester.pumpAndSettle();
     verifyNever(() => more.session.unarchive(any()));

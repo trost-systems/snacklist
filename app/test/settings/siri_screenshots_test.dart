@@ -94,7 +94,7 @@ void main() {
                 appBar: AppBar(
                   title: Text(AppLocalizations.of(context).accessTitle),
                 ),
-                body: AccessScreen(repository: repo, siri: siri),
+                body: AccessScreen(repositories: (_) => repo, siri: siri),
               ),
             ),
           ),

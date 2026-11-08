@@ -16,6 +16,7 @@ function world(overrides: Partial<Deps> = {}) {
         : Promise.reject(new AuthError('invalid_token', 'test'));
     },
     requirePremium: () => Promise.resolve('open'),
+    isMember: () => Promise.resolve(false),
     splitItems: (_caller, items) =>
       Promise.resolve(
         items.map((i) => ({

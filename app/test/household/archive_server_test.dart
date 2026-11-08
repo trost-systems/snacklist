@@ -78,16 +78,16 @@ void main() {
     expect(archived.last.deletesAt, isNull, reason: 'a server before job 47');
   });
 
-  test('the archive offer on joining names the 24 months', () {
+  test('the archive offer on leaving names the 24 months', () {
     expect(
-      de.joinArchiveOffer('Zuhause'),
+      de.leaveArchiveOffer('Zuhause'),
       endsWith(
         'Aktivierst du ihn nicht innerhalb von 24 Monaten wieder, wird er '
         'gelöscht.',
       ),
     );
     expect(
-      en.joinArchiveOffer('Home'),
+      en.leaveArchiveOffer('Home'),
       endsWith("If you don't bring it back within 24 months, it is deleted."),
     );
   });
@@ -181,7 +181,6 @@ void main() {
         isA<InviteOpen>()
             .having((p) => p.name, 'name', 'Familie Brandt')
             .having((p) => p.lifetime.targetUnlocked, 'target', isTrue)
-            .having((p) => p.lifetime.leavesUnlocked, 'leaves', isFalse)
             .having((p) => p.lifetime.recentPurchase, 'recent', isTrue),
       );
     });
@@ -191,7 +190,6 @@ void main() {
           .preview('ABCD2345');
       final lifetime = (preview as InviteOpen).lifetime;
       expect(lifetime.targetUnlocked, isFalse);
-      expect(lifetime.leavesUnlocked, isFalse);
       expect(lifetime.recentPurchase, isFalse);
     });
 
@@ -228,15 +226,27 @@ void main() {
       );
     });
 
-    test('the member count counts the household’s members', () async {
+    test('the members come from household_members_of (job 169b)', () async {
       final repo = server(
         (_) => [
-          {'user_id': 'peter'},
-          {'user_id': 'lea'},
+          {'user_id': 'peter', 'display_name': 'Peter', 'role': 'owner'},
+          {'user_id': 'lea', 'display_name': null, 'role': 'member'},
         ],
       );
-      expect(await repo.memberCount('home'), 2);
-      expect(sent.single.url.queryParameters['household_id'], 'eq.home');
+      final members = await repo.members('home');
+      expect(sent.single.url.path, endsWith('/rpc/household_members_of'));
+      expect(params(sent.single), {'p_household': 'home'});
+      expect(
+        [for (final m in members) (m.userId, m.displayName, m.role)],
+        [('peter', 'Peter', 'owner'), ('lea', '', 'member')],
+      );
+    });
+
+    test('leaves_unlocked asks about the given household', () async {
+      final repo = server((_) => true);
+      expect(await repo.leavesUnlocked('club'), isTrue);
+      expect(sent.single.url.path, endsWith('/rpc/leaves_unlocked'));
+      expect(params(sent.single), {'p_household': 'club'});
     });
 
     test('archived households keep their lock and deletion date', () async {

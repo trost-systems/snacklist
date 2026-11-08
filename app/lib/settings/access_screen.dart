@@ -13,6 +13,7 @@ import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/purchases/entitlements.dart';
 import 'package:family_groceries/purchases/premium_features_card.dart';
 import 'package:family_groceries/purchases/purchase_cubit.dart';
+import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/settings/access_cubit.dart';
 import 'package:family_groceries/settings/access_repository.dart';
 import 'package:family_groceries/settings/integration_lock.dart';
@@ -31,8 +32,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class const AccessScreen({
   super.key,
 
-  /// Overrides the Supabase repository, for tests.
-  final AccessRepository? repository,
+  /// Overrides the Supabase repository for a household (null: the
+  /// default), for tests.
+  final AccessRepository Function(String? household)? repositories,
 
   /// Overrides the platform's Siri channel (iOS only), for tests.
   final SiriChannel? siri,
@@ -42,10 +44,23 @@ class const AccessScreen({
     final siri =
         this.siri ??
         siriChannelFor(web: kIsWeb, platform: defaultTargetPlatform);
+    // New tokens and API keys are bound to the household shown (job 169b):
+    // a switch makes a new cubit for the new one.
+    final household = context.select<SessionCubit?, String?>(
+      (session) => switch (session?.state) {
+        InHousehold(:final household) => household.id,
+        _ => null,
+      },
+    );
     return BlocProvider(
+      key: ValueKey(household),
       create: (_) {
         final cubit = AccessCubit(
-          repository ?? SupabaseAccessRepository(Supabase.instance.client),
+          repositories?.call(household) ??
+              SupabaseAccessRepository(
+                Supabase.instance.client,
+                household: household,
+              ),
           siri: siri,
         );
         unawaited(cubit.load());
@@ -95,6 +110,15 @@ class const _Access({required final bool onIphone}) extends StatelessWidget {
     );
     final access = _accessOf(context);
     final paused = access is IntegrationsLocked;
+    // With several households, the one new keys act in (job 169b).
+    final shownOfSeveral = context.select<SessionCubit?, String?>(
+      (session) => switch (session?.state) {
+        InHousehold(:final household, :final households)
+            when households.length > 1 =>
+          household.name,
+        _ => null,
+      },
+    );
     return Align(
       alignment: Alignment.topCenter,
       child: ConstrainedBox(
@@ -153,6 +177,19 @@ class const _Access({required final bool onIphone}) extends StatelessWidget {
                 ),
               ),
             ),
+            if (shownOfSeveral case final household?)
+              Padding(
+                key: const ValueKey('access-keys-household'),
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+                child: Text(
+                  apiOffered
+                      ? l10n.accessKeysHouseholdWithApi(household)
+                      : l10n.accessKeysHousehold(household),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
             ..._section(
               context,
               switch (state.tokens) {

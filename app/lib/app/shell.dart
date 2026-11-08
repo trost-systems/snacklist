@@ -100,8 +100,8 @@ class const AppShell({
   required final StatefulNavigationShell shell,
   super.key,
 
-  /// Overrides the Supabase list repository, for tests.
-  final ListRepository? repository,
+  /// Overrides the Supabase list repository per household, for tests.
+  final ListRepository Function(String householdId)? repositories,
 }) extends StatefulWidget {
   @override
   State<AppShell> createState() => _AppShellState();
@@ -133,7 +133,7 @@ class _AppShellState() extends State<AppShell> {
     final l10n = AppLocalizations.of(context);
     final index = widget.shell.currentIndex;
     return ListScope(
-      repository: widget.repository,
+      repositories: widget.repositories,
       child: SheetOpen(
         notifier: _sheetOpen,
         child: LayoutBuilder(

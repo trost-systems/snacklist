@@ -14,39 +14,168 @@ import 'package:family_groceries/siri/siri_suggestions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide Session;
 
 /// The household's list above both tabs: the List tab shows it and its
 /// Anpassen pages manage its categories and stores; it keeps syncing while
 /// More is open. A new household gets a new list.
+///
+/// Job 169b: a household switched away from keeps its list open until the
+/// changes queued in it reached the server, and a start opens the list of
+/// every other household that left changes queued on this device, until
+/// they are sent. One list per household owns its queue (DECISIONS 169b).
 class const ListScope({
   required final Widget child,
   super.key,
 
-  /// Overrides the Supabase repository, for tests.
-  final ListRepository? repository,
-}) extends StatelessWidget {
+  /// Overrides the Supabase repository per household, for tests.
+  final ListRepository Function(String householdId)? repositories,
+}) extends StatefulWidget {
+  @override
+  State<ListScope> createState() => _ListScopeState();
+}
+
+class _ListScopeState() extends State<ListScope> {
+  /// The open lists by household: the shown one and hidden ones whose
+  /// queue is not sent yet.
+  final _lists = <String, ListCubit>{};
+
+  /// A hidden list's wait for its queue to empty.
+  final _sending = <String, StreamSubscription<ListState>>{};
+  late final StreamSubscription<Session> _sessions;
+  late Session _session;
+  String? _userId;
+
+  @override
+  void initState() {
+    super.initState();
+    final sessions = context.read<SessionCubit>();
+    _follow(sessions.state);
+    _sessions = sessions.stream.listen((session) {
+      if (mounted) {
+        setState(() => _follow(session));
+      }
+    });
+  }
+
+  void _follow(Session session) {
+    _session = session;
+    if (session case InHousehold(
+      :final userId,
+      household: Household(id: final shown),
+      :final households,
+    )) {
+      if (userId != _userId) {
+        [..._lists.keys].forEach(_close);
+        _userId = userId;
+        unawaited(_sendLeftQueues(userId, households));
+      }
+      unawaited(_sending.remove(shown)?.cancel());
+      _lists.putIfAbsent(shown, () => _open(userId, shown));
+      for (final id in [..._lists.keys]) {
+        if (id == shown) {
+          continue;
+        }
+        if (households.any((h) => h.id == id)) {
+          _closeOnceSent(id);
+        } else {
+          _close(id);
+        }
+      }
+    }
+  }
+
+  ListCubit _open(String userId, String householdId) => ListCubit(
+    widget.repositories?.call(householdId) ??
+        SupabaseListRepository(Supabase.instance.client, householdId),
+    context.read<DeviceCache>().list(userId, householdId),
+    userId: userId,
+    analytics: context.read<Analytics>(),
+    network: context.read<NetworkWatch?>()?.watch(),
+  )..start();
+
+  /// Closes the hidden list of [id] once its queue reached the server. Until
+  /// then it retries like the shown one: offline, or with the server failing.
+  void _closeOnceSent(String id) {
+    final list = _lists[id];
+    if (list == null || _sending.containsKey(id)) {
+      return;
+    }
+    // Resynced: the cached queue is loaded and was tried once.
+    bool sent(ListState state) => state.resynced && state.pending.isEmpty;
+    if (sent(list.state)) {
+      _close(id);
+      return;
+    }
+    _sending[id] = list.stream.listen((state) {
+      if (sent(state)) {
+        _close(id);
+      }
+    });
+  }
+
+  void _close(String id) {
+    unawaited(_sending.remove(id)?.cancel());
+    unawaited(_lists.remove(id)?.close());
+  }
+
+  /// A start, or another user: opens the list of each other household that
+  /// has changes queued on this device, so they are sent without the user
+  /// opening it.
+  Future<void> _sendLeftQueues(
+    String userId,
+    List<Household> households,
+  ) async {
+    final cache = context.read<DeviceCache>();
+    for (final Household(:id) in households) {
+      final queued = (await cache.list(userId, id).load())?.pending ?? const [];
+      final still = switch (_session) {
+        InHousehold(:final households) => households.any((h) => h.id == id),
+        _ => false,
+      };
+      if (queued.isEmpty ||
+          !mounted ||
+          !still ||
+          _userId != userId ||
+          _lists.containsKey(id)) {
+        continue;
+      }
+      _lists[id] = _open(userId, id);
+      _closeOnceSent(id);
+    }
+  }
+
+  @override
+  void dispose() {
+    unawaited(_sessions.cancel());
+    [..._lists.keys].forEach(_close);
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final session = context.watch<SessionCubit>().state;
+    final session = _session;
     if (session is! InHousehold) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     final household = session.household;
-    return BlocProvider(
+    return BlocProvider.value(
       key: ValueKey(household.id),
-      create: (context) => ListCubit(
-        repository ??
-            SupabaseListRepository(Supabase.instance.client, household.id),
-        context.read<DeviceCache>().list(session.userId, household.id),
-        userId: session.userId,
-        analytics: context.read<Analytics>(),
-        network: context.read<NetworkWatch?>()?.watch(),
-      )..start(),
-      child: _Scope(householdId: household.id, child: child),
+      value: _lists[household.id]!,
+      child: _Scope(householdId: household.id, child: widget.child),
     );
   }
 }
+
+/// Whether the list of [householdId] gives Siri its item names: only the
+/// default household's, since Siri adds there (job 169b). Another
+/// household's list leaves Siri the names it learnt from the default.
+bool teachesSiri(Session session, String householdId) => switch (session) {
+  InHousehold(:final households) => households.any(
+    (h) => h.id == householdId && h.isDefault,
+  ),
+  _ => false,
+};
 
 /// Where the List tab tells refused writes while it shows; elsewhere
 /// [ListScope] tells them in the app's messenger, above the tabs.
@@ -79,7 +208,11 @@ class _ScopeState() extends State<_Scope> {
     super.initState();
     final cubit = context.read<ListCubit>();
     if (siriChannelFor(web: kIsWeb, platform: defaultTargetPlatform)
-        case final siri?) {
+        case final siri?
+        when teachesSiri(
+          context.read<SessionCubit>().state,
+          widget.householdId,
+        )) {
       _siri = SiriSuggestions(siri, cubit);
     }
     _homeWidgets = context.read<HomeWidgetSync?>()?.followList(

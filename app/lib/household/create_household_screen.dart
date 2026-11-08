@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:family_groceries/app/router.dart';
 import 'package:family_groceries/design/field_border.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/household/invite_repository.dart';
@@ -11,6 +12,7 @@ import 'package:family_groceries/list/store_name_field.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 /// The longest household name, in characters (code points, as Postgres'
 /// char_length counts them).
@@ -29,14 +31,25 @@ bool validHouseholdName(String name) {
 /// created it the router moves on to Step 3, inviting the partner. A
 /// second tap while creating does nothing; a retry after a lost answer
 /// finds the household and goes on (no second one).
-class const CreateHouseholdScreen({super.key}) extends StatefulWidget {
+///
+/// From the switcher ([HouseholdOrigin.switcher], job 169b) it creates one
+/// more household beside the user's others, shows it, and goes on to Step 3
+/// for it.
+class const CreateHouseholdScreen({
+  super.key,
+  final HouseholdOrigin from = HouseholdOrigin.onboarding,
+}) extends StatefulWidget {
   @override
   State<CreateHouseholdScreen> createState() => _CreateHouseholdScreenState();
 }
 
 class _CreateHouseholdScreenState() extends State<CreateHouseholdScreen> {
+  /// Onboarding prefills the usual first name; a further household starts
+  /// empty, since "Unser Haushalt" is most likely taken by the first.
   late final _name = TextEditingController(
-    text: AppLocalizations.of(context).householdNameDefault,
+    text: widget.from == HouseholdOrigin.switcher
+        ? ''
+        : AppLocalizations.of(context).householdNameDefault,
   );
 
   /// The stores to create, in the order picked.
@@ -100,7 +113,15 @@ class _CreateHouseholdScreenState() extends State<CreateHouseholdScreen> {
       _problem = null;
     });
     try {
-      await session.createHousehold(name, stores: skip ? const [] : _stores);
+      await session.createHousehold(
+        name,
+        stores: skip ? const [] : _stores,
+        from: widget.from,
+      );
+      // Onboarding's router moves on by itself once there is a household.
+      if (widget.from == HouseholdOrigin.switcher && mounted) {
+        context.go(invitePartnerPath);
+      }
     } on HouseholdError catch (e) {
       if (mounted) {
         setState(() => _problem = e.problem);
@@ -124,7 +145,9 @@ class _CreateHouseholdScreenState() extends State<CreateHouseholdScreen> {
         if (!popularStores.contains(s)) s,
     ];
     return OnboardingPage(
-      title: l10n.createHousehold,
+      title: widget.from == HouseholdOrigin.switcher
+          ? l10n.newHousehold
+          : l10n.createHousehold,
       listKey: const ValueKey('create-household-screen'),
       onBack: _busy ? null : () => leaveStep(context),
       children: [
@@ -136,11 +159,15 @@ class _CreateHouseholdScreenState() extends State<CreateHouseholdScreen> {
               key: const ValueKey('household-name'),
               controller: _name,
               focusNode: _nameFocus,
+              autofocus: widget.from == HouseholdOrigin.switcher,
               enabled: !_busy,
               maxLength: maxHouseholdName,
               textCapitalization: TextCapitalization.sentences,
               decoration: InputDecoration(
                 error: nameError == null ? null : FieldError(nameError),
+                hintText: widget.from == HouseholdOrigin.switcher
+                    ? l10n.householdNameHintFurther
+                    : null,
               ),
               onSubmitted: (_) => unawaited(_create()),
             ),

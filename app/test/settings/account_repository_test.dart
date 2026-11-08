@@ -7,6 +7,7 @@ import 'package:http/http.dart' show ClientException;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../session/fake_auth.dart';
+import '../session/fake_households.dart';
 
 /// Records what the app sends to an edge function and answers with
 /// [answer].
@@ -94,6 +95,39 @@ void main() {
         }, expected);
       });
     }
+  });
+
+  test('the fate names each household: kept for others, or deleted '
+      '(job 169b)', () async {
+    final auth = FakeAuth()..user = userWith(const []);
+    addTearDown(auth.close);
+    final server = FakeHouseholds(auth)
+      ..member('peter', 'home', 'Zuhause')
+      ..member('lea', 'home', 'Zuhause')
+      ..member('peter', 'club', 'Sommerfest')
+      ..unlocked.add('club');
+    final fate = await SupabaseAccountRepository(server).fate();
+    expect(fate.households, hasLength(2));
+    expect(
+      fate.households.first,
+      isA<FateKept>().having((f) => f.householdName, 'name', 'Zuhause').having(
+        (f) => f.otherMemberNames,
+        'others',
+        ['Lea'],
+      ),
+    );
+    expect(
+      fate.households.last,
+      isA<FateDeleted>()
+          .having((f) => f.householdName, 'name', 'Sommerfest')
+          .having((f) => f.unlocked, 'unlocked', isTrue),
+    );
+    expect(fate.endsPremium, isTrue);
+    expect(
+      server.calls.where((c) => c.startsWith('household_members')),
+      isEmpty,
+      reason: 'no direct household_members read',
+    );
   });
 
   test('unknown Apple answers fall back to the manual hint', () {

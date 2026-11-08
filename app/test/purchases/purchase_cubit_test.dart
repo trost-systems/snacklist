@@ -11,7 +11,9 @@ import 'package:flutter_test/flutter_test.dart';
 import '../household/harness.dart' show TestSession;
 import 'fakes.dart';
 
-const home = InHousehold('peter', Household(id: 'home', name: 'Zuhause'));
+const home = InHousehold('peter', Household(id: 'home', name: 'Zuhause'), [
+  Household(id: 'home', name: 'Zuhause'),
+]);
 
 /// The cubit as the app has it, answers settled.
 Future<TestPurchases> started({

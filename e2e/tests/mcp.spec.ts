@@ -81,7 +81,7 @@ test('MCP over OAuth 2.1: discovery, registration, consent with PKCE, then tools
   expect(client.getServerVersion()?.name).toBe('hummlist');
   const { tools } = await client.listTools();
   expect(tools.map((t) => t.name).sort()).toEqual(
-    ['add_items', 'list_categories', 'list_items', 'list_stores', 'move_item', 'tick_items'],
+    ['add_items', 'list_categories', 'list_households', 'list_items', 'list_stores', 'move_item', 'tick_items'],
   );
 
   const added = await call<{ added: Item[]; alreadyOnList: Item[] }>(client, 'add_items', {

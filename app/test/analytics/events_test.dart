@@ -6,6 +6,7 @@ void main() {
     expect(eventCatalog.keys.toSet(), {
       'first_open',
       'household_created',
+      'household_switched',
       'invite_accepted',
       'invite_sent',
       'item_added',
@@ -29,6 +30,9 @@ void main() {
     ('household_created', {'default_stores': false}),
     ('household_created', {'store_count': 0}),
     ('household_created', {'store_count': 4}),
+    ('household_created', {'store_count': 2, 'context': 'onboarding'}),
+    ('household_created', {'context': 'switcher'}),
+    ('household_switched', {}),
     ('invite_accepted', {'method': 'link'}),
     ('invite_sent', {'channel': 'share_sheet', 'context': 'onboarding'}),
     ('invite_sent', {'channel': 'copy_link', 'context': 'settings'}),
@@ -99,6 +103,9 @@ void main() {
     ('household_created', {'default_stores': 'yes'}, 'stores as text'),
     ('household_created', {'store_count': 'REWE'}, 'a store name'),
     ('household_created', {'store_count': 51}, 'over 50 stores'),
+    ('household_created', {'context': 'settings'}, 'a context not built'),
+    ('household_switched', {'household': 'Zuhause'}, 'the household name'),
+    ('household_switched', {'from': 'h1', 'to': 'h2'}, 'household ids'),
     ('invite_sent', {'code': 'ABCD2345'}, 'the code'),
     (
       'invite_sent',

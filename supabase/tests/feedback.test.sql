@@ -1,7 +1,7 @@
 -- Job 21: public.feedback (docs/FEEDBACK.md). Insert-only for the sender, checks, the household
 -- and is_internal set by the database, idempotent ids, the 12-month purge and its cron job.
 begin;
-select plan(51);
+select plan(52);
 
 create function pg_temp.login(uid uuid) returns void language plpgsql as $$
 begin
@@ -62,11 +62,17 @@ select throws_ok(
      values (gen_random_uuid(), '00000000-0000-0000-0000-0000000000b1', 'Im Namen von Ben', '0.1.0', '1', 'web',
        'Chrome on macOS', 'de', 'list') $$,
   '42501', null, 'a note in another user''s name is refused');
-select throws_ok(
+-- Job 169b: the app names the household it shows; one the sender is not in becomes their default.
+select lives_ok(
   $$ insert into public.feedback (id, household_id, message, app_version, build, platform, os_version, locale, screen)
-     values (gen_random_uuid(), (select id from hb), 'Fremder Haushalt', '0.1.0', '1', 'web', 'Chrome on macOS',
-       'de', 'list') $$,
-  '42501', null, 'the client cannot pick a household');
+     values ('10000000-0000-4000-8000-0000000001b9', (select id from hb), 'Fremder Haushalt', '0.1.0', '1', 'web',
+       'Chrome on macOS', 'de', 'list') $$,
+  'the client may name a household');
+select pg_temp.as_postgres();
+select is((select household_id from public.feedback where id = '10000000-0000-4000-8000-0000000001b9'),
+  (select id from ha), 'a household the sender is not in is replaced by their default');
+delete from public.feedback where id = '10000000-0000-4000-8000-0000000001b9';
+select pg_temp.login('00000000-0000-0000-0000-0000000000a1');
 select throws_ok(
   $$ insert into public.feedback (id, created_at, message, app_version, build, platform, os_version, locale, screen)
      values (gen_random_uuid(), now() - interval '2 years', 'Alt', '0.1.0', '1', 'web', 'Chrome on macOS', 'de',

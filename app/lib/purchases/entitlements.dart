@@ -200,6 +200,9 @@ class Entitlements(
 
   late final StreamSubscription<Session> _sessions;
   String? _householdId;
+
+  /// The household whose rows these are: the one the session shows.
+  String? get householdId => _householdId;
   Future<void> Function()? _unwatch;
   Timer? _nextEnd;
 
