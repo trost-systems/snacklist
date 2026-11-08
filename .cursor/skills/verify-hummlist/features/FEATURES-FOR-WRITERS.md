@@ -106,23 +106,24 @@ What Hummlist does today, in plain words, with the exact button and screen label
 
 ## Household and invites
 
-**What it does.** One household shares one shopping list, and one person can be in several households, for example at home and with their parents (up to 10). The household's name sits top left of the list; a tap shows all your households and switches between them. A member invites a partner with an 8-character code and a link; each invite is valid for 7 days and works for one person. The partner types the code or opens the link and joins; their other households stay. A member can revoke open invites at any time. Each household has a page to rename it, see its members, make it the default for Siri, Alexa & AI, and leave it.
+**What it does.** One household shares one shopping list, and one person can be in several households, for example at home and with their parents (up to 10). The household's name sits top left of the list; a tap shows all your households and switches between them. Any member invites one person with an 8-character code and a link; such an invite is valid for 7 days and works once. The household's creator and its admins can also make a group link with a QR code for up to 50 people, valid for 30 days, and see who joined with it. The share text fits who shops together (partner, family, flat share, club) and always carries the link and the code; the person shares it, Hummlist sends nothing. Whoever gets it types the code, opens the link, or pastes it with „Einladung einfügen“ after installing; their other households stay. A household with Premium says that Premium covers everyone in it. Each household has a page to rename it, see its members and their roles, remove members (creator and admins), name admins (creator), make it the default for Siri, Alexa & AI, and leave it.
 
 **How to get there.**
 1. Switch: tap the household's name top left of the list. „Deine Haushalte“ (EN: "Your households") lists them with members and open items; tap one. „Neuer Haushalt“ (EN: "New household") creates one more, „Mit Code beitreten“ (EN: "Join with a code") joins one.
-2. Invite: tab „Mehr“ (EN: "More"), row „Partner einladen“ (EN: "Invite your partner"), then „Neue Einladung“ (EN: "New invite"). In the iPhone and Android apps the share sheet opens right away. Otherwise share it with „Teilen“ (EN: "Share") where the browser offers it, or copy it with „Link kopieren“ / „Code kopieren“ (EN: "Copy link" / "Copy code").
+2. Invite: in „Deine Haushalte“ the person-plus button on a household's row, or „Leute einladen“ (EN: "Invite people") on the household page, or tab „Mehr“ (EN: "More"), row „Partner einladen“ (EN: "Invite your partner"); then „Neue Einladung“ (EN: "New invite") for one person or „Gruppenlink erstellen“ (EN: "Create group link") for a group. In the iPhone and Android apps the share sheet opens right away. Otherwise share it with „Teilen“ (EN: "Share") where the browser offers it, or copy it with „Link kopieren“ / „Code kopieren“ (EN: "Copy link" / "Copy code").
 3. To join: „Anderem Haushalt beitreten“ (EN: "Join another household") in „Mehr“, enter the code, „Weiter“ (EN: "Continue"), then „Haushalt beitreten“ (EN: "Join household"). Or open the invite link.
 4. The household page: tab „Mehr“, the row with the household's name. „Umbenennen“ (EN: "Rename"), „Mitglieder“ (EN: "Members"), „Als Standard nutzen“ (EN: "Make default"), „Haushalt verlassen“ (EN: "Leave household").
 5. To revoke: on the invites page tap „Widerrufen“ (EN: "Revoke") on an invite.
 
 **Never claim.**
-- Removing a member or member roles: they don't exist yet.
+- That Hummlist sends invites by e-mail or message: the user shares them.
+- That a group link works for more than 50 people or longer than 30 days, or that members (not admins) can make one.
 - That Siri, Alexa or an AI assistant follows the household shown in the app: they use the default household („Siri, Alexa & KI nutzen: …“).
 - An archive for households: it is off in the released apps.
-- Invites that stay valid longer than 7 days or work for several people.
+- Person invites that stay valid longer than 7 days or work for several people.
 - Purchases or Premium tied to joining: Premium is not on sale yet. Premium belongs to one household, not to the person.
 
-**Last verified.** Branch job/169b-app (job 169b), 2026-11-08 (CET): from code and widget tests only, **not driven** (switcher, household page, joining without leaving). Unverified until driven on the web build. Before: main 8ad168f5, 2026-11-08 (CET), driven on the web build (verify-hummlist): a new invite with its code, revoking it. Recipe: [household-invites.md](./household-invites.md).
+**Last verified.** Branch job/169b-w2-app (job 169b W2), 2026-11-08 (CET): from code and widget tests only, **not driven** (invite sheet, group link, roles, removing, paste, install referrer). Branch job/169b-app (job 169b), 2026-11-08 (CET): from code and widget tests only, **not driven** (switcher, household page, joining without leaving). Unverified until driven on the web build. Before: main 8ad168f5, 2026-11-08 (CET), driven on the web build (verify-hummlist): a new invite with its code, revoking it. Recipe: [household-invites.md](./household-invites.md).
 
 ## Links into the app
 
