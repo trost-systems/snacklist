@@ -280,14 +280,28 @@ class const GroupLinkSection({
     final state = context.watch<InvitesCubit>().state;
     final cubit = context.read<InvitesCubit>();
     final busy = state.busy || state.invites == null;
-    Widget renew({required bool confirm}) => OutlinedButton.icon(
-      key: const ValueKey('invite-group-renew'),
-      icon: const Icon(Icons.refresh),
-      label: Text(l10n.inviteGroupRenew),
-      onPressed: busy
-          ? null
-          : () => unawaited(_renew(context, cubit, confirm: confirm)),
-    );
+    // Beside the active link a quiet text button; for a full or revoked
+    // one the way on.
+    Widget renew({required bool confirm}) {
+      void onPressed() => unawaited(_renew(context, cubit, confirm: confirm));
+      const key = ValueKey('invite-group-renew');
+      const icon = Icon(Icons.refresh);
+      final label = Text(l10n.inviteGroupRenew);
+      return confirm
+          ? TextButton.icon(
+              key: key,
+              icon: icon,
+              label: label,
+              onPressed: busy ? null : onPressed,
+            )
+          : OutlinedButton.icon(
+              key: key,
+              icon: icon,
+              label: label,
+              onPressed: busy ? null : onPressed,
+            );
+    }
+
     return Column(
       key: const ValueKey('invite-group'),
       crossAxisAlignment: CrossAxisAlignment.stretch,

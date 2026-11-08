@@ -122,7 +122,7 @@ class JoinCubit(
       await _session.join(
         code,
         method: link != null && normalizeInviteCode(link!) == code
-            ? JoinMethod.link
+            ? pendingInvite?.methodOf(code) ?? JoinMethod.link
             : JoinMethod.code,
       );
       pendingInvite?.clear();

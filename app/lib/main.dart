@@ -13,6 +13,7 @@ import 'package:family_groceries/design/fonts.dart';
 import 'package:family_groceries/feedback/feedback_repository.dart';
 import 'package:family_groceries/home_widget/home_widget_sync.dart';
 import 'package:family_groceries/home_widget/widget_launch.dart';
+import 'package:family_groceries/household/install_referrer.dart';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/pending_invite.dart';
 import 'package:family_groceries/list/item_icons_remote.dart';
@@ -125,6 +126,14 @@ Future<void> _main(WidgetsBinding Function() binding) async {
   final language = AppLanguage.byCode(await cache.language());
   final theme = themeModeOf(await cache.theme());
   final pendingInvite = await PendingInvite.load(cache);
+  // Not awaited: the store may take seconds; the code waits for sign-in.
+  unawaited(
+    takeInstallReferrer(
+      cache,
+      pendingInvite,
+      android: !kIsWeb && defaultTargetPlatform == TargetPlatform.android,
+    ),
+  );
   final siri = switch (siriChannelFor(
     web: kIsWeb,
     platform: defaultTargetPlatform,

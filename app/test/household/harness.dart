@@ -10,6 +10,7 @@ import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/invite_share.dart';
 import 'package:family_groceries/household/invites_page.dart';
 import 'package:family_groceries/household/join_screen.dart';
+import 'package:family_groceries/household/paste_invite.dart';
 import 'package:family_groceries/household/pending_invite.dart';
 import 'package:family_groceries/household/welcome_screen.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
@@ -472,7 +473,17 @@ Future<Onboarding> pumpOnboarding(
     },
     routes: [
       GoRoute(path: listPath, builder: (_, _) => const Text('LIST')),
-      GoRoute(path: loginPath, builder: (_, _) => const Text('LOGIN')),
+      GoRoute(
+        path: loginPath,
+        builder: (_, state) => Scaffold(
+          body: Column(
+            children: [
+              const Text('LOGIN'),
+              PasteInvite(waiting: state.uri.queryParameters['invite']),
+            ],
+          ),
+        ),
+      ),
       GoRoute(path: consentPath, builder: (_, _) => const Text('CONSENT')),
       GoRoute(
         path: invitesPath,
