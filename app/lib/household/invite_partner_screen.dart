@@ -54,6 +54,8 @@ class const _InvitePartnerView(final Household household)
         ),
         const SizedBox(height: 16),
         Text(l10n.invitePartnerBody, textAlign: TextAlign.center),
+        const SizedBox(height: 8),
+        const InviteJoinPageHint(textAlign: TextAlign.center),
         const SizedBox(height: 24),
         if (invite != null)
           InviteCard(

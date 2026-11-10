@@ -2141,6 +2141,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get invitePersonBody => 'Ein Link für eine Person, 7 Tage gültig.';
 
   @override
+  String get inviteJoinPageHint =>
+      'Wer den Link hat, sieht auf der Beitrittsseite deinen Vornamen (aus deinem Anzeigenamen), den Namen und die Art des Haushalts und die Zahl der Mitglieder. Gib den Link nur an Personen weiter, die du einladen willst.';
+
+  @override
   String get inviteGroupTitle => 'Gruppenlink';
 
   @override

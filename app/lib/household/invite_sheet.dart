@@ -154,8 +154,8 @@ class _InvitesScopeState() extends State<InvitesScope> {
 }
 
 /// Everything the invite sheet offers for [household]: that Premium covers
-/// everyone (moment 5), a person invite (any member), and the group link
-/// with who joined (owner and admins).
+/// everyone (moment 5), what the join page shows, a person invite (any
+/// member), and the group link with who joined (owner and admins).
 class const InvitePanel({
   required final Household household,
   required final InviteContext origin,
@@ -174,6 +174,8 @@ class const InvitePanel({
           const SizedBox(height: HlSpace.s4),
           const _PremiumNote(),
         ],
+        const SizedBox(height: HlSpace.s3),
+        const InviteJoinPageHint(),
         PersonInviteSection(household: household, origin: origin),
         if (household.role.manages) ...[
           GroupLinkSection(household: household, origin: origin),

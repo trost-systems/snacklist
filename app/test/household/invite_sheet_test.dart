@@ -95,6 +95,26 @@ void main() {
     );
   });
 
+  testWidgets('says what the join page shows, as plain text above the '
+      'controls (Legal N-112)', (tester) async {
+    await _openSheet(tester, _home(role: HouseholdRole.admin));
+    final hint = find.text(joinPageHintDe);
+    expect(hint.hitTestable(), findsOneWidget);
+    expect(
+      find.ancestor(of: hint, matching: find.byType(ButtonStyleButton)),
+      findsNothing,
+    );
+    expect(
+      tester.getTopLeft(hint).dy,
+      lessThan(tester.getTopLeft(_key('invite-new')).dy),
+    );
+  });
+
+  testWidgets('the join page hint in English', (tester) async {
+    await _openSheet(tester, _home(), locale: const Locale('en'));
+    expect(find.text(joinPageHintEn).hitTestable(), findsOneWidget);
+  });
+
   testWidgets('with Premium it says that Premium covers everyone', (
     tester,
   ) async {

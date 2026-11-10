@@ -406,6 +406,7 @@ void main() {
       expect(o.session.origins, [HouseholdOrigin.switcher]);
       expect(location(o), invitePartnerPath);
       expect(key('invite-partner-screen'), findsOneWidget);
+      expect(find.text(joinPageHintDe).hitTestable(), findsOneWidget);
       await tapKey(tester, 'invite-later');
       expect(location(o), '/');
       expect(o.onboarding.state, isNull);
@@ -493,6 +494,7 @@ void main() {
         locale: const Locale('en'),
       );
       expect(find.text('Invite your partner'), findsWidgets);
+      expect(find.text(joinPageHintEn).hitTestable(), findsOneWidget);
       expect(find.text('Later'), findsOneWidget);
       await tapKey(tester, 'invite-partner');
       expect(
@@ -517,14 +519,16 @@ void main() {
         invites: invites,
       );
       final [first, second] = invites.created;
+      expect(find.text(joinPageHintDe).hitTestable(), findsOneWidget);
       expect(find.bySemanticsLabel('Code ${first.code}'), findsOneWidget);
       expect(find.bySemanticsLabel('Code ${second.code}'), findsOneWidget);
-      await tester.tap(
-        find.descendant(
-          of: key('invite-${first.code}'),
-          matching: key('invite-revoke'),
-        ),
+      final revoke = find.descendant(
+        of: key('invite-${first.code}'),
+        matching: key('invite-revoke'),
       );
+      await scrollTo(tester, revoke);
+      await tester.pumpAndSettle();
+      await tester.tap(revoke);
       await tester.pumpAndSettle();
       expect(o.invites.revoked, [first.id]);
       expect(find.bySemanticsLabel('Code ${first.code}'), findsNothing);

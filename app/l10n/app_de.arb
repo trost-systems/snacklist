@@ -947,6 +947,8 @@
   "invitePersonTitle": "Für eine Person",
   "@invitePersonTitle": {"description": "Job 169b W2: section of the invite sheet for a one-person invite"},
   "invitePersonBody": "Ein Link für eine Person, 7 Tage gültig.",
+  "inviteJoinPageHint": "Wer den Link hat, sieht auf der Beitrittsseite deinen Vornamen (aus deinem Anzeigenamen), den Namen und die Art des Haushalts und die Zahl der Mitglieder. Gib den Link nur an Personen weiter, die du einladen willst.",
+  "@inviteJoinPageHint": {"description": "Job 178 (Legal N-112): plain text on every surface that makes or shares an invite (invite sheet, Einladungen, onboarding invite steps): what the public join page shows. Wording from Legal, 2026-11-10; change only with Legal"},
   "inviteGroupTitle": "Gruppenlink",
   "@inviteGroupTitle": {"description": "Job 169b W2: section of the invite sheet for the reusable group link (owner and admins)"},
   "inviteGroupBody": "Für bis zu 50 Leute, 30 Tage gültig. Zeig den QR-Code oder teil den Link.",

@@ -758,6 +758,7 @@
   "invitePremiumShared": "Premium covers everyone in the household.",
   "invitePersonTitle": "For one person",
   "invitePersonBody": "A link for one person, valid for 7 days.",
+  "inviteJoinPageHint": "Anyone with the link sees your first name (from your display name), the household's name and kind and the number of members on the join page. Only share the link with people you want to invite.",
   "inviteGroupTitle": "Group link",
   "inviteGroupBody": "For up to 50 people, valid for 30 days. Show the QR code or share the link.",
   "inviteGroupCreate": "Create group link",

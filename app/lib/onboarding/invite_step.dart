@@ -154,6 +154,8 @@ class const _InviteStepView(final Household household) extends StatelessWidget {
             style: theme.textTheme.titleSmall,
           ),
         ],
+        const SizedBox(height: HlSpace.s2),
+        const InviteJoinPageHint(textAlign: TextAlign.center),
         const SizedBox(height: HlSpace.s5),
         for (final invite in state.invites) ...[
           InviteCard(

@@ -544,6 +544,7 @@ void main() {
     testWidgets('several invites, each with its own code; one accepted '
         'while open shows as joined', (tester) async {
       final o = await atInvite(tester);
+      expect(find.text(joinPageHintDe).hitTestable(), findsOneWidget);
       await tapKey(tester, 'invite-partner');
       expect(o.sharer.shared, hasLength(1));
       await tapKey(tester, 'invite-another');

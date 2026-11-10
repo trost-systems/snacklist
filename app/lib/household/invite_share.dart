@@ -4,6 +4,7 @@ import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/app/environment.dart';
 import 'package:family_groceries/app/notices.dart';
 import 'package:family_groceries/app/router.dart';
+import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/web_share.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
@@ -100,6 +101,27 @@ String inviteShareText(
   ),
   null => l10n.inviteShareTextCodeOnly(code),
 };
+
+/// What anyone with an invite link sees on the public join page (Legal
+/// N-112): plain muted text beside the controls that make or share one,
+/// never inside a pill or button.
+class const InviteJoinPageHint({
+  final TextAlign textAlign = TextAlign.start,
+  super.key,
+}) extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Text(
+      AppLocalizations.of(context).inviteJoinPageHint,
+      key: const ValueKey('invite-join-page-hint'),
+      textAlign: textAlign,
+      style: theme.textTheme.bodySmall?.copyWith(
+        color: SnacklistColors.of(theme.brightness).textMuted,
+      ),
+    );
+  }
+}
 
 /// One invite: its code and link, how long it is valid, and the ways to
 /// hand it out. Each way is one `invite_sent`; the code and the link never

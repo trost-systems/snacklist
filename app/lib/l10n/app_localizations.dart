@@ -3506,6 +3506,12 @@ abstract class AppLocalizations {
   /// **'Ein Link für eine Person, 7 Tage gültig.'**
   String get invitePersonBody;
 
+  /// Job 178 (Legal N-112): plain text on every surface that makes or shares an invite (invite sheet, Einladungen, onboarding invite steps): what the public join page shows. Wording from Legal, 2026-11-10; change only with Legal
+  ///
+  /// In de, this message translates to:
+  /// **'Wer den Link hat, sieht auf der Beitrittsseite deinen Vornamen (aus deinem Anzeigenamen), den Namen und die Art des Haushalts und die Zahl der Mitglieder. Gib den Link nur an Personen weiter, die du einladen willst.'**
+  String get inviteJoinPageHint;
+
   /// Job 169b W2: section of the invite sheet for the reusable group link (owner and admins)
   ///
   /// In de, this message translates to:

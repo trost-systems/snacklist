@@ -705,6 +705,25 @@ void main() {
       );
     });
 
+    // Job 178 (Legal N-112): the join page hint above the controls at
+    // 358 px, the sheet scrolled to its top.
+    testWidgets('invite sheet, compact, $mode', (tester) async {
+      await _pumpShell(
+        tester,
+        brightness,
+        size: _compact,
+        households: owned,
+        invites: crew(),
+        initialLocation: householdPath,
+      );
+      await tester.tap(find.byKey(const ValueKey('household-invite')));
+      await tester.pumpAndSettle();
+      await expectLater(
+        find.byType(MaterialApp),
+        matchesGoldenFile('goldens/invite-sheet-compact-$mode.png'),
+      );
+    });
+
     // Job 169b K and L: a club's lists as tabs, the party list shown, who
     // brings what under the items.
     void party(FakeRepository repo, {bool many = false}) {
