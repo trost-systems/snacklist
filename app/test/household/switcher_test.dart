@@ -9,6 +9,7 @@ import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/invite_share.dart';
 import 'package:family_groceries/household/join_decision_notices.dart';
+import 'package:family_groceries/household/removed_notice.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_screen.dart';
@@ -164,7 +165,7 @@ Future<_Shell> _pumpShell(
           routerConfig: router,
           builder: (context, child) => NoticesHost(
             popups: popups,
-            child: JoinDecisionNotices(child: child!),
+            child: RemovedNotices(child: JoinDecisionNotices(child: child!)),
           ),
         ),
       ),
@@ -600,5 +601,64 @@ void main() {
         expect(find.text(text), findsOneWidget);
       });
     }
+  });
+  group('removed by someone else (Legal N-114)', () {
+    for (final (locale, text) in const [
+      (
+        'de',
+        'Du wurdest aus dem Haushalt „Sommerfest“ entfernt. 30 Tage lang '
+            'kommst du über alte Einladungen nicht zurück. Beitreten kannst '
+            'du in dieser Zeit nur über eine neue Einladung vom Hauptadmin '
+            'oder einem Admin.',
+      ),
+      (
+        'en',
+        'You were removed from the household “Sommerfest”. For 30 days, old '
+            "invites won't let you back in. In that time you can only rejoin "
+            'through a new invite from the owner or an admin.',
+      ),
+    ]) {
+      for (final size in const [Size(358, 780), Size(390, 844)]) {
+        testWidgets('the 30-day rule is told, $locale, ${size.width} px', (
+          tester,
+        ) async {
+          final s = await _pumpShell(
+            tester,
+            locale: Locale(locale),
+            size: size,
+          );
+          s.session.lost.add((name: _club.name, removed: true));
+          await tester.pump();
+          await tester.pump(const Duration(milliseconds: 500));
+          expect(find.text(text), findsOneWidget);
+          final shown = tester.getRect(find.text(text));
+          expect(shown.top, greaterThanOrEqualTo(0));
+          expect(shown.bottom, lessThanOrEqualTo(size.height));
+          for (var i = 0; i < 12; i++) {
+            await tester.pump(const Duration(seconds: 1));
+          }
+          expect(find.text(text), findsOneWidget, reason: 'still readable');
+          for (var i = 0; i < 4; i++) {
+            await tester.pump(const Duration(seconds: 1));
+          }
+          await tester.pumpAndSettle();
+          expect(find.text(text), findsNothing);
+        });
+      }
+    }
+
+    testWidgets('a household gone otherwise is told without the 30 days', (
+      tester,
+    ) async {
+      final s = await _pumpShell(tester);
+      s.session.lost.add((name: _club.name, removed: false));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(
+        find.text('Du bist nicht mehr Mitglied von „Sommerfest“.'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('30 Tage'), findsNothing);
+    });
   });
 }

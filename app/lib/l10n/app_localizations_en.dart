@@ -2239,6 +2239,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String householdRemovedNotice(String name) {
+    return 'You were removed from the household “$name”. For 30 days, old invites won\'t let you back in. In that time you can only rejoin through a new invite from the owner or an admin.';
+  }
+
+  @override
+  String householdGoneNotice(String name) {
     return 'You\'re no longer a member of “$name”.';
   }
 

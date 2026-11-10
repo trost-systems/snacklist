@@ -395,12 +395,11 @@ class TestSession(super.initialState)
   @override
   PendingInvite? get pendingInvite => null;
 
-  /// What [removals] tells: add a household to say someone removed the
-  /// user from it.
-  final removedFrom = StreamController<Household>.broadcast();
+  /// What [lostHouseholds] tells.
+  final lost = StreamController<LostHousehold>.broadcast();
 
   @override
-  Stream<Household> get removals => removedFrom.stream;
+  Stream<LostHousehold> get lostHouseholds => lost.stream;
 
   /// What [joinDecisions] tells.
   final decidedOn = StreamController<JoinDecision>.broadcast();
@@ -410,7 +409,7 @@ class TestSession(super.initialState)
 
   @override
   Future<void> close() async {
-    await removedFrom.close();
+    await lost.close();
     await decidedOn.close();
     await super.close();
   }

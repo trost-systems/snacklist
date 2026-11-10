@@ -3674,11 +3674,17 @@ abstract class AppLocalizations {
   /// **'Entfernen'**
   String get memberRemoveConfirm;
 
-  /// Job 169b W2: shown when a refresh finds that someone removed the user from a household
+  /// Job 169b W2: shown once per device for each removal of the last 30 days the server reports (my_household_removals), also right after signing in. Wording from Legal (job 178, N-114, 2026-11-10): the 30-day rule; change only with Legal
+  ///
+  /// In de, this message translates to:
+  /// **'Du wurdest aus dem Haushalt „{name}“ entfernt. 30 Tage lang kommst du über alte Einladungen nicht zurück. Beitreten kannst du in dieser Zeit nur über eine neue Einladung vom Hauptadmin oder einem Admin.'**
+  String householdRemovedNotice(String name);
+
+  /// Job 178: shown when a refresh finds a household gone that nobody removed the user from in the last 30 days (left on another device, a removal long ago). Never the 30-day rule: it does not apply
   ///
   /// In de, this message translates to:
   /// **'Du bist nicht mehr Mitglied von „{name}“.'**
-  String householdRemovedNotice(String name);
+  String householdGoneNotice(String name);
 
   /// No description provided for @householdNotAdmin.
   ///

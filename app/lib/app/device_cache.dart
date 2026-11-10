@@ -94,6 +94,11 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
   /// JSON list per user, for when a user can have several households.
   static const _laterKindsPrefix = 'onboarding.later.';
 
+  /// The household removals each user was told about on this device (Legal
+  /// N-114), a JSON list of keys. Not under [forget]'s prefixes: signing in
+  /// again tells none twice.
+  static const _toldRemovalsPrefix = 'removals.told.';
+
   static String _householdKey(String userId) => '$_householdPrefix$userId';
 
   static String _listKey(String userId, String householdId) =>
@@ -401,6 +406,30 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
           k.startsWith(_seenPrefix) ||
           k.startsWith(_prefsPrefix),
     ),
+  );
+
+  @override
+  Future<Set<String>> toldRemovals(String userId) async {
+    try {
+      return switch (jsonDecode(
+        await _prefs.getString('$_toldRemovalsPrefix$userId') ?? '[]',
+      )) {
+        final List<Object?> keys => keys.whereType<String>().toSet(),
+        _ => const {},
+      };
+    } on Object {
+      return const {};
+    }
+  }
+
+  @override
+  Future<void> rememberToldRemovals(String userId, Set<String> keys) => _write(
+    () => keys.isEmpty
+        ? _prefs.remove('$_toldRemovalsPrefix$userId')
+        : _prefs.setString(
+            '$_toldRemovalsPrefix$userId',
+            jsonEncode([...keys]),
+          ),
   );
 
   Future<void> _removeWhere(bool Function(String key) test) async {

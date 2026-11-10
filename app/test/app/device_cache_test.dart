@@ -204,6 +204,16 @@ void main() {
     expect(await cache.hintLog('lea'), isNull);
   });
 
+  test('told removals are kept per user and survive sign-outs', () async {
+    expect(await cache.toldRemovals('peter'), isEmpty);
+    await cache.rememberToldRemovals('peter', {'club 2026-11-10T19:00:01Z'});
+    await cache.forget();
+    expect(await cache.toldRemovals('peter'), {'club 2026-11-10T19:00:01Z'});
+    expect(await cache.toldRemovals('lea'), isEmpty);
+    await cache.rememberToldRemovals('peter', {});
+    expect(await cache.toldRemovals('peter'), isEmpty);
+  });
+
   test("job 80's dismissed tips come back as the hint log's", () async {
     await SharedPreferencesAsync().setString(
       'tips.peter',

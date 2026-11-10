@@ -6,7 +6,7 @@
 // join-page.spec.ts covers the page's states with a faked answer.
 import { type Browser, expect, type Locator, type Page, test } from './fixtures';
 import {
-  addField, adminClient, anonClient, apiAs, confirmJoin, createHousehold, firstOf, householdChip, invitePath, itemRow,
+  addField, adminClient, anonClient, answerConsent, apiAs, confirmJoin, createHousehold, firstOf, householdChip, invitePath, itemRow,
   must, newEmail, openEmailSignIn, openHouseholds, openJoinLink, openMore, openTab, password, screenshot, signUp, signUpHere,
   skipInvite, typeInto,
 } from './helpers';
@@ -337,10 +337,22 @@ test('roles: the owner makes an admin, the admin removes a member, whose open ap
   await expect(memberRow(anna, 'Ben Kurz')).toHaveCount(0);
 
   // Ben's open app finds out when it comes back to the front: the notice, and his own household.
+  const removedNotice = 'Du wurdest aus dem Haushalt „Verein Grün“ entfernt. 30 Tage lang kommst du über alte Einladungen nicht zurück. Beitreten kannst du in dieser Zeit nur über eine neue Einladung vom Hauptadmin oder einem Admin.';
   await backAndFront(ben);
-  await expect(snack(ben, 'Du bist nicht mehr Mitglied von „Verein Grün“.')).toBeVisible({ timeout: 15_000 });
+  await expect(snack(ben, removedNotice)).toBeVisible({ timeout: 15_000 });
   await expect(householdChip(ben, 'Bens WG')).toBeVisible();
   await expect(addField(ben)).toBeVisible();
+
+  // A device that never knew the club tells him too, at sign-in (my_household_removals).
+  const benPhone = await newPage(browser);
+  await benPhone.goto('/login');
+  await openEmailSignIn(benPhone);
+  await typeInto(benPhone.getByRole('textbox', { name: 'E-Mail' }), benEmail);
+  await typeInto(benPhone.getByRole('textbox', { name: 'Passwort' }), password);
+  await benPhone.getByRole('button', { name: 'Anmelden', exact: true }).click();
+  await answerConsent(benPhone);
+  await expect(snack(benPhone, removedNotice)).toBeVisible({ timeout: 15_000 });
+  await expect(householdChip(benPhone, 'Bens WG')).toBeVisible();
 
   // The group link still in the club's chat doesn't take him back; a new invite from the owner
   // or an admin does (a plain member's would not, pgTAP).

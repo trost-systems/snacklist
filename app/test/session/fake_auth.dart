@@ -87,6 +87,9 @@ class MemorySessionCache() implements SessionCache {
   final households = <String, ({List<Household> households, String? shown})>{};
   var forgotten = 0;
 
+  /// Each user's told removals, which [forget] keeps.
+  final toldRemovalsOf = <String, Set<String>>{};
+
   /// Caches [household] as the user's only one, shown.
   void only(String userId, Household household) =>
       households[userId] = (households: [household], shown: household.id);
@@ -114,6 +117,14 @@ class MemorySessionCache() implements SessionCache {
     households.clear();
     forgotten++;
   }
+
+  @override
+  Future<Set<String>> toldRemovals(String userId) async =>
+      toldRemovalsOf[userId] ?? const {};
+
+  @override
+  Future<void> rememberToldRemovals(String userId, Set<String> keys) async =>
+      toldRemovalsOf[userId] = keys;
 }
 
 /// A provider dialog that answers with [result] or throws [error].

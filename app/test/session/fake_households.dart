@@ -62,12 +62,27 @@ class FakeHouseholds(final FakeAuth fakeAuth)
         .add(userId);
     memberships.putIfAbsent(userId, () => []).add(id);
     defaults.putIfAbsent(userId, () => id);
+    removals[userId]?.remove(id);
   }
 
-  /// Another member removed [userId] from [id] (`remove_member`): their
-  /// default moves to their oldest other membership, as the server's
-  /// trigger does.
+  /// Each user's removals of the last 30 days (`my_household_removals`):
+  /// household to when.
+  final removals = <String, Map<String, String>>{};
+  var _removed = 0;
+
+  /// Another member removed [userId] from [id] (`remove_member`), which the
+  /// server records.
   void removedBySomeone(String userId, String id) {
+    leftElsewhere(userId, id);
+    final second = (++_removed).toString().padLeft(2, '0');
+    removals.putIfAbsent(userId, () => {})[id] =
+        '2026-11-10T19:00:$second.123456+00:00';
+  }
+
+  /// [userId] left [id] on another device, or long enough ago that the
+  /// server no longer has the removal: their default moves to their oldest
+  /// other membership, as the server's trigger does.
+  void leftElsewhere(String userId, String id) {
     memberships[userId]?.remove(id);
     households[id]?.members.remove(userId);
     if (defaults[userId] == id) {
@@ -245,6 +260,16 @@ class FakeHouseholds(final FakeAuth fakeAuth)
         }
         member(_user, id, households[id]?.name ?? 'Eingeladen');
         return {'status': 'joined', 'household_id': id};
+      case ('POST', 'rpc/my_household_removals'):
+        return [
+          for (final MapEntry(key: id, value: at)
+              in (removals[_user] ?? const <String, String>{}).entries)
+            {
+              'household_id': id,
+              'household_name': households[id]!.name,
+              'removed_at': at,
+            },
+        ];
       case ('POST', 'rpc/my_join_requests'):
         return [
           for (final MapEntry(key: id, value: r) in requests.entries)
