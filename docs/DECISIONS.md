@@ -11057,3 +11057,45 @@ main before the rename) keeps a Hummlist hotfix build possible.
   rate function returns no row. Before, it would have thrown.
 - **Writers' copy stays brand-free.** The never-claim line in FEATURES-FOR-WRITERS says "the
   well-known assistants", not two product names, because main's copy names no assistant.
+
+## Job 178: one Snacklist privacy publication set from #326 and #328, 2026-11-10
+
+Source: Legal Review `/workspace/legal/reviews/2026-11-09-snacklist.md` (sha256 `ce384725…`,
+checked 10 November 2026, N-108 to N-125). The build first used an earlier output of the same
+Legal run found on hz (sha256 `466daa35…`); the two differ in one redline, N-123 ("Verein, nur
+ich oder Andere", "…und wird nicht auf unseren Servern gespeichert"), which now follows the
+canonical file. Every redline is checked against the canonical file. Peter chose V2 A (first
+name plus hint) and V3 A (no referrer) on 10 November, 20:21.
+
+1. **One branch, commits per decision.** The PRs are combined on main 96e7669c with the Snacklist
+   rename applied by script (main's policy equals the PR bases renamed, checked file by file),
+   then Legal's redlines are applied by a script that reads each new text from the review by
+   line, so they are byte-identical. N-111 (no Play Install Referrer, Peter's V3 open) and N-112
+   (first-name hint, V2 open) are their own commits, so either can be dropped if Peter picks
+   the other option. The PR is pushed as these commits, not squashed by push-pr.sh, because
+   the brief asks for droppable commits; it lands squashed later.
+2. **Referrer: the dependency goes too.** Besides the first-start read, `play_install_referrer`,
+   `JoinMethod.referrer` and the join page's `&referrer=invite%3D<code>` are removed, so no code
+   path reads the referrer and Google no longer gets the invite code in the store link.
+3. **Stand is `[PETER: TODO-PUBLICATION-DATE]`.** The site build's existing `[PETER:` placeholder
+   check fails a production build on it and only warns in previews, so the set cannot be
+   published by accident before the date is set. The `updated:` frontmatter stays at the live
+   7 November until then.
+4. **SHOULD items built, policy text with them.** N-113 (hourly pg_cron purge of the join-page
+   check values), N-114 (the removed notice in Legal's words), N-115 (an AFTER DELETE trigger on
+   `household_members` nulls the leaver's ids in that household's content, like account
+   deletion) each carry their policy sentence in the same commit. N-117: `household_archive` is
+   off in production (read-only query, changed 2026-10-31); §14 is unchanged.
+5. **Consent text 2026-11-11, and only it counts (N-125).** The in-app notice names examples of
+   the usage data (wording drafted, listed in the PR for Legal). The server now counts a yes for
+   its own events only under 2026-11-11, not 2026-11-10 or Hummlist's 2026-11-01: §9 promises to
+   send nothing after a notice that names new data until the user answers again. Cost: Hummlist
+   internal builds send no server events any more.
+6. **Club AVV/DPA stay drafts (N-120).** `draft: true`, unlinked; a production build has no
+   `/avv` or `/en/dpa` (checked with the date filled in on a copy).
+7. **The removed notice needs the server's word (review finding).** Legal's 30-day text shows
+   only for a removal `my_household_removals()` reports (the caller's own `household_removals`
+   rows of the last 30 days), once per removal per device, also after signing in on a new device.
+   A household that disappears without such a record (left on another device, an old removal)
+   gets the neutral „Du bist nicht mehr Mitglied von …“ again. The leave trigger (N-115) skips a
+   household with no members left, so archiving keeps the last member's ids.
