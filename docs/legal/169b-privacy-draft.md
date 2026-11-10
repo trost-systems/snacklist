@@ -1,6 +1,8 @@
 # Privacy policy draft for job 169b (several households, invite loop)
 
-Status: DRAFT for Legal. The texts are `site/content/legal/datenschutz.md` (binding) and
+Status: superseded by the Legal Review of 10 November 2026 (N-108 to N-125, job 178): the
+Install Referrer (row 5, question 4) is dropped (N-111), the club AVV/DPA stays an unpublished
+draft (N-120). Original status: DRAFT for Legal. The texts are `site/content/legal/datenschutz.md` (binding) and
 `site/content/legal/privacy.md` (translation). Facts come from the branches `job/169b-households-p2`
 (PR #327, wave 1), `job/169b-w2` (wave 2, PR #332 at `bb37668e`) and `job/169b-w3` (wave 3, PR #333 at
 `a09c8701`), contracts in
