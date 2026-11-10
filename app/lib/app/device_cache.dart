@@ -67,11 +67,6 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
   /// forgets) must keep the link that is about to be signed in for.
   static const _pendingInviteKey = 'invite.pending';
 
-  /// Set once the Play Store's install referrer was read (job 169b W2): it
-  /// is read on the first start only. Not under [forget]'s prefixes: it
-  /// belongs to the install.
-  static const _installReferrerKey = 'invite.referrer_read';
-
   /// The List tab's dismissed tips per user (job 80), a JSON list of tip
   /// ids: read once into [_hintsPrefix]'s log.
   static const _tipsPrefix = 'tips.';
@@ -239,19 +234,6 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
       null => _prefs.remove(_pendingInviteKey),
     },
   );
-
-  @override
-  Future<bool> installReferrerRead() async {
-    try {
-      return await _prefs.getBool(_installReferrerKey) ?? false;
-    } on Object {
-      return false;
-    }
-  }
-
-  @override
-  Future<void> saveInstallReferrerRead() =>
-      _write(() => _prefs.setBool(_installReferrerKey, true));
 
   /// The log, or job 80's dismissed tips as `{"dismissed": [ids]}` for a
   /// user who has none yet.

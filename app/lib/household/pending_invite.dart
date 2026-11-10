@@ -11,12 +11,6 @@ abstract interface class PendingInviteStore() {
 
   /// Null drops it.
   Future<void> savePendingInvite(KeptInvite? invite);
-
-  /// The Play Store's install referrer was read on this install (job 169b
-  /// W2): it is read once, never again.
-  Future<bool> installReferrerRead();
-
-  Future<void> saveInstallReferrerRead();
 }
 
 /// An invite code as the server compares it: upper case, letters and
@@ -48,19 +42,6 @@ String? inviteCodeIn(String text) {
       (_writtenCode.hasMatch(trimmed) ? trimmed : null);
   final code = candidate == null ? null : normalizeInviteCode(candidate);
   return code != null && _codePattern.hasMatch(code) ? code : null;
-}
-
-/// The invite code in the Play Store's install referrer, the query string
-/// the join page put into the store link (`referrer=invite%3D<code>`).
-/// Reads only `invite`; null when there is no valid code.
-String? inviteInReferrer(String? referrer) {
-  for (final pair in (referrer ?? '').split('&')) {
-    if (pair.split('=') case ['invite', final value]) {
-      final code = normalizeInviteCode(value);
-      return _codePattern.hasMatch(code) ? code : null;
-    }
-  }
-  return null;
 }
 
 /// The invite of a `/join/<code>` link the user opened, kept on the device
@@ -96,7 +77,7 @@ class PendingInvite(
     _ => null,
   };
 
-  /// How [code] reached the app: a link, the install referrer or a paste.
+  /// How [code] reached the app: a link or a paste.
   /// [JoinMethod.link] for any other code.
   JoinMethod methodOf(String code) => switch (_invite) {
     (code: final kept, at: _, :final via)
@@ -114,16 +95,15 @@ class PendingInvite(
   /// Keeps [code] from a link, or from where [via] says. A code the
   /// server could never have made is not kept (the join screen still says
   /// it is invalid), nor one answered already. The same code again keeps
-  /// its first time and way. [at] is when the user got it, now unless
-  /// given (the install referrer's click), so an old one lapses.
-  void remember(String code, {JoinMethod via = JoinMethod.link, DateTime? at}) {
+  /// its first time and way.
+  void remember(String code, {JoinMethod via = JoinMethod.link}) {
     final normalized = normalizeInviteCode(code);
     if (!_codePattern.hasMatch(normalized) ||
         _answered.contains(normalized) ||
         this.code == normalized) {
       return;
     }
-    _invite = (code: normalized, at: at ?? now(), via: via);
+    _invite = (code: normalized, at: now(), via: via);
     unawaited(_store.savePendingInvite(_invite));
   }
 

@@ -52,18 +52,6 @@ void main() {
     expect(o.session.joins, [('ABCD2345', JoinMethod.paste)]);
   });
 
-  testWidgets('a code from the install referrer joins as referrer', (
-    tester,
-  ) async {
-    final o = await pumpOnboarding(tester, location: '/welcome');
-    o.pending.remember('ABCD2345', via: JoinMethod.referrer);
-    o.router.go('/');
-    await tester.pumpAndSettle();
-    expect(_location(o), '/join/ABCD2345');
-    await tapKey(tester, 'join-confirm');
-    expect(o.session.joins, [('ABCD2345', JoinMethod.referrer)]);
-  });
-
   testWidgets('a bare code with its dash works too', (tester) async {
     _clipboard(tester, ' abcd-2345 ');
     final o = await pumpOnboarding(tester, location: '/welcome');

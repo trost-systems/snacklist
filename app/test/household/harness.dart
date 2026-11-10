@@ -587,19 +587,12 @@ class TestSession(super.initialState)
 
 class MemoryPendingStore() implements PendingInviteStore {
   KeptInvite? saved;
-  var referrerRead = false;
 
   @override
   Future<KeptInvite?> pendingInvite() async => saved;
 
   @override
   Future<void> savePendingInvite(KeptInvite? invite) async => saved = invite;
-
-  @override
-  Future<bool> installReferrerRead() async => referrerRead;
-
-  @override
-  Future<void> saveInstallReferrerRead() async => referrerRead = true;
 }
 
 typedef Onboarding = ({

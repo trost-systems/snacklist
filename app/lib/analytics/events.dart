@@ -42,13 +42,11 @@ enum ReorderScope(final String wire) {
 }
 
 /// How a join reached the app: `link` when the code came from an invite
-/// link (`/join/<code>` or `?invite=`), `code` when it was typed,
-/// `referrer` from the Play Store's install referrer (job 169b W2), `paste`
+/// link (`/join/<code>` or `?invite=`), `code` when it was typed, `paste`
 /// from the start screens' "Einladung einfügen".
 enum JoinMethod() {
   link,
   code,
-  referrer,
   paste,
 }
 

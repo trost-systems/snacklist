@@ -51,7 +51,6 @@ void main() {
     ('invite_sent', {'channel': 'copy_link', 'context': 'settings'}),
     ('invite_sent', {'channel': 'copy_code', 'context': 'onboarding'}),
     ('invite_accepted', {'method': 'code'}),
-    ('invite_accepted', {'method': 'referrer'}),
     ('invite_accepted', {'method': 'paste'}),
     (
       'invite_sent',

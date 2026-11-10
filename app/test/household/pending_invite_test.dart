@@ -22,7 +22,7 @@ void main() {
     expect(store.saved, (code: 'ABCD2345', at: clock, via: JoinMethod.link));
   });
 
-  test('a pasted or referred code keeps its way until it is answered', () {
+  test('a pasted code keeps its way until it is answered', () {
     final pending = PendingInvite(MemoryPendingStore(), now: now)
       ..remember('ABCD2345', via: JoinMethod.paste)
       ..remember('ABCD2345');
@@ -30,16 +30,6 @@ void main() {
     expect(pending.methodOf('WXYZ6789'), JoinMethod.link);
     pending.clear();
     expect(pending.methodOf('ABCD2345'), JoinMethod.link);
-  });
-
-  test("a referrer's code lapses 7 days after the store click", () {
-    final pending = PendingInvite(MemoryPendingStore(), now: now)
-      ..remember(
-        'ABCD2345',
-        via: JoinMethod.referrer,
-        at: clock.subtract(const Duration(days: 8)),
-      );
-    expect(pending.code, isNull);
   });
 
   group('a pasted text', () {
@@ -67,23 +57,6 @@ void main() {
     ]) {
       test('${text.trim().isEmpty ? '(empty)' : text} -> $code', () {
         expect(inviteCodeIn(text), code);
-      });
-    }
-  });
-
-  group('an install referrer', () {
-    for (final (referrer, code) in [
-      ('invite=ABCD2345', 'ABCD2345'),
-      ('utm_source=join&invite=abcd-2345', 'ABCD2345'),
-      ('invite%3DABCD2345', null),
-      ('utm_source=google-play&utm_medium=organic', null),
-      ('invite=IIII0000', null),
-      ('invite=%E0%A4%A', null),
-      ('', null),
-      (null, null),
-    ]) {
-      test('$referrer -> $code', () {
-        expect(inviteInReferrer(referrer), code);
       });
     }
   });
@@ -197,13 +170,6 @@ void main() {
         '{"code":"ABCD2345","at":"2026-10-30T12:05:00.000Z"}',
       );
       expect((await cache.pendingInvite())?.via, JoinMethod.link);
-    });
-
-    test('the install referrer is read once per install', () async {
-      expect(await cache.installReferrerRead(), isFalse);
-      await cache.saveInstallReferrerRead();
-      await cache.forget();
-      expect(await cache.installReferrerRead(), isTrue);
     });
 
     test('an unreadable value counts as none', () async {

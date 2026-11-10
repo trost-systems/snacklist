@@ -143,14 +143,14 @@ function render(t, code, preview) {
     byId('code-hint').textContent = t.codeHint;
     byId('copy').querySelector('.face').textContent = t.copy;
   }
-  if (code && usable) renderStores(t, code);
+  if (code && usable) renderStores(t);
 }
 
-function renderStores(t, code) {
+function renderStores(t) {
   const links = [];
   if (storeListings.appStore) links.push([t.appStore, `https://apps.apple.com/app/id${appStoreId}`]);
   if (storeListings.googlePlay) {
-    links.push([t.googlePlay, `https://play.google.com/store/apps/details?id=${playPackage}&referrer=invite%3D${code}`]);
+    links.push([t.googlePlay, `https://play.google.com/store/apps/details?id=${playPackage}`]);
   }
   if (links.length === 0) return;
   byId('stores-label').textContent = t.stores;
