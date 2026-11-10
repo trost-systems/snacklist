@@ -6,6 +6,7 @@
 import { assert, assertEquals } from '@std/assert';
 import postgres from 'postgres';
 import { AuthError } from '../_shared/auth.ts';
+import { CONSENT_TEXT_VERSION } from '../_shared/consent_version.ts';
 import { asUser, serviceDb } from '../_shared/db.ts';
 import { telemetryFor } from '../_shared/telemetry.ts';
 import { productionDeps } from './deps.ts';
@@ -208,7 +209,11 @@ Deno.test({
       assertEquals(await analyticsSubject(sql, peter.userId), null, 'no answer: nothing');
       const phone = crypto.randomUUID();
       const laptop = crypto.randomUUID();
-      const record = (install: string, consent: boolean, version: string | null = '2026-11-10') =>
+      const record = (
+        install: string,
+        consent: boolean,
+        version: string | null = CONSENT_TEXT_VERSION,
+      ) =>
         asUser(
           peter.userId,
           (tx) =>
@@ -224,13 +229,11 @@ Deno.test({
         (tx) => tx`select public.record_analytics_consent(${phone}::uuid, true)`,
       );
       assertEquals(await analyticsSubject(sql, peter.userId), null, 'a yes from an older build');
-      // Job 174: Hummlist builds show the same text under the old name until Snacklist replaces them.
+      // Job 178 (Legal N-125): the notice names new data, so earlier texts no longer count.
       await record(phone, true, '2026-11-01');
-      assertEquals(
-        (await analyticsSubject(sql, peter.userId))?.installId,
-        phone,
-        "Hummlist's text",
-      );
+      assertEquals(await analyticsSubject(sql, peter.userId), null, "Hummlist's text");
+      await record(phone, true, '2026-11-10');
+      assertEquals(await analyticsSubject(sql, peter.userId), null, 'the text before job 178');
       await record(phone, true);
       assertEquals(await analyticsSubject(sql, peter.userId), {
         installId: phone,

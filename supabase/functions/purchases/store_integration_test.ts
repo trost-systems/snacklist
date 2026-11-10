@@ -8,6 +8,7 @@
 // SUPABASE_DB_URL; without them this is skipped.
 import { assertEquals, assertRejects } from '@std/assert';
 import postgres from 'postgres';
+import { CONSENT_TEXT_VERSION } from '../_shared/consent_version.ts';
 import { asUser } from '../_shared/db.ts';
 import { telemetryFor } from '../_shared/telemetry.ts';
 import { productionDeps } from './deps.ts';
@@ -48,7 +49,7 @@ async function withHouseholds(
       const [i] = await tx<
         { code: string }[]
       >`select code from public.create_invite(${home}::uuid)`;
-      await tx`select public.record_analytics_consent(${crypto.randomUUID()}::uuid, true, false, true, '2026-11-01')`;
+      await tx`select public.record_analytics_consent(${crypto.randomUUID()}::uuid, true, false, true, ${CONSENT_TEXT_VERSION})`;
       return i.code;
     });
     const joined = await asUser(

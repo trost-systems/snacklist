@@ -9,6 +9,7 @@ import { assert, assertEquals, assertFalse } from '@std/assert';
 import postgres from 'postgres';
 import { createMcpHandler } from '@modelcontextprotocol/server';
 import { sha256Hex } from './auth.ts';
+import { CONSENT_TEXT_VERSION } from './consent_version.ts';
 import { asUser } from './db.ts';
 import { requirePremiumWith } from './premium.ts';
 import { Telemetry } from './telemetry.ts';
@@ -39,7 +40,7 @@ async function withHousehold(lock: boolean, work: (m: Member, sql: postgres.Sql)
     await sql`insert into auth.users (id, email) values (${userId}, ${`${userId}@fg-test.invalid`})`;
     const householdId = await asUser(userId, async (tx) => {
       const [row] = await tx<{ id: string }[]>`select id from public.create_household('50')`;
-      await tx`select public.record_analytics_consent(${install}::uuid, true, false, true, '2026-11-01')`;
+      await tx`select public.record_analytics_consent(${install}::uuid, true, false, true, ${CONSENT_TEXT_VERSION})`;
       return row.id;
     });
     await sql`update public.app_switches set enabled = ${lock} where key = 'integration_lock'`;

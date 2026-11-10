@@ -104,11 +104,14 @@ Our guarantees sit on top of it (DECISIONS Job 44):
 - Peter approved the wording (DE and EN, the legal review's version) on 2026-10-30; job 33b
   removed the "ENTWURF" mark from the screen and from More. Version 2026-11-01 is Legal's
   12:55 text with the buttons „Erlauben“ / „Nicht erlauben“ ("Allow" / "Don't allow"), equal
-  weight, none pre-selected (approved by Peter 2026-11-01). The current text, version
-  2026-11-10, is the same text with Snacklist for Hummlist (job 174).
+  weight, none pre-selected (approved by Peter 2026-11-01). Version 2026-11-10 is the
+  same text with Snacklist for Hummlist (job 174). The current text, version 2026-11-11, adds
+  examples of the usage data (items, households, setup, which tips are shown), since the app sends
+  household and setup events and tip ids: the policy promises a new ask when the notice covers new
+  data (job 178, Legal N-125).
 - **Consent text version** (Legal Review 2026-11-01, addendum 12:35; EDPB Guidelines 05/2020
   Rn. 108, 110): every decision is stored with the version of the text it was given under,
-  `consentTextVersion` in `app/lib/analytics/consent_version.dart` (now `2026-11-10`). On the
+  `consentTextVersion` in `app/lib/analytics/consent_version.dart` (now `2026-11-11`). On the
   device it is `analytics.consent_text_version` next to `analytics.consent`; on the server
   `analytics_consents.consent_text_version` (`record_analytics_consent(p_install, p_consent,
   p_internal, p_answered, p_text_version)`). Each version's exact DE and EN text is kept in
@@ -121,8 +124,9 @@ Our guarantees sit on top of it (DECISIONS Job 44):
   starts the SDK, with a new install id. A no stays a no whatever its version. The server does
   the same for its events (`analyticsSubject` in `supabase/functions/alexa/store.ts`): only a
   newest answer that is a yes to a current version counts (`CURRENT_CONSENT_TEXT_VERSIONS` in
-  `supabase/functions/_shared/consent_version.ts`: 2026-11-10, and 2026-11-01, which Hummlist
-  builds show until Snacklist replaces them), so a yes an older build recorded
+  `supabase/functions/_shared/consent_version.ts`: only 2026-11-11, since the policy promises to
+  send nothing after a notice that names new data until the user answers again; job 178, Legal
+  N-125), so a yes an older build recorded
   (the four-argument `record_analytics_consent`, kept for those builds, stores no version) sends
   nothing. Changing the text means a new version: a new file in `docs/consent/`, the new date in
   both constants, and everyone is asked again.

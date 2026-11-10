@@ -10,4 +10,4 @@
 /// `supabase/functions/_shared/consent_version.ts`
 /// (`test/analytics/consent_version_test.dart` checks both match). Legal Review 2026-11-01,
 /// addendum 12:35.
-const consentTextVersion = '2026-11-10';
+const consentTextVersion = '2026-11-11';
