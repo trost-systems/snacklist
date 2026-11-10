@@ -39,6 +39,13 @@ it either completes or deletes nothing.
 | Local device data (cached list, household, session) | Cleared on the device that deletes |
 | Snacklist Lifetime purchases (`purchases.user_id`, `entitlements.granted_by`, job 25) | The link to the account is removed (set to null). The purchase row stays without it, and the household keeps its unlock (see "What stays") |
 
+Leaving a household, or being removed from it, unlinks the user from that
+household's content in the same way (Legal N-115, trigger
+`household_members_forget_user`): their id goes from its items, history,
+lists, merges, invites, join decisions and `households.created_by`. Their
+other households keep it. The last member leaving keeps their id: the household
+is deleted with its content, or archived for them to bring back as it was.
+
 ## What happens to the household
 
 - **Other members remain** (for example, Peter deletes and Lea stays). The
