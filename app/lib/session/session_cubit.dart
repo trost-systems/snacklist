@@ -131,11 +131,12 @@ class const JoinRequest({
 /// the session shows the household already.
 typedef JoinDecision = ({String household, bool approved});
 
-/// A household the user is no longer in. `removed`: an owner or admin
+/// A household `userId` is no longer in. `removal`: an owner or admin
 /// removed them in the last 30 days, while old invites can't bring them
-/// back (Legal N-114); else it went another way, such as leaving on
-/// another device.
-typedef LostHousehold = ({String name, bool removed});
+/// back (Legal N-114), by `_Removal.key`, which [SessionCubit.removalsTold]
+/// takes once the user saw it; null: it went another way, such as leaving
+/// on another device.
+typedef LostHousehold = ({String userId, String name, String? removal});
 
 /// One of the user's removals as `my_household_removals()` answers it;
 /// `key` tells this removal from an earlier one of the same household.
@@ -334,10 +335,14 @@ class SessionCubit(
   /// tell one once.
   final _toldRemovals = <String>{};
 
+  /// The last write of the told removals, see [_editTold].
+  Future<void> _toldWrites = Future.value();
+
   /// Each household the user is no longer in that a refresh finds (job
   /// 169b W2): gone since the last one without this device leaving it, or
   /// a removal of the last 30 days not told on this device yet, also right
-  /// after signing in. The session already shows another one.
+  /// after signing in. The session already shows another one. A removal
+  /// counts as told once [removalsTold] says so.
   Stream<LostHousehold> get lostHouseholds => _lost.stream;
 
   /// Join requests this device withdrew: gone after the next refresh, but
@@ -517,19 +522,18 @@ class SessionCubit(
     final lost = <LostHousehold>[
       for (final h in gone)
         if (!(removals?.any((r) => r.householdId == h.id) ?? false))
-          (name: h.name, removed: false),
+          (userId: userId, name: h.name, removal: null),
       for (final r in removals ?? const <_Removal>[])
         if (!told.contains(r.key) && _toldRemovals.add(r.key))
-          (name: r.name, removed: true),
+          (userId: userId, name: r.name, removal: r.key),
     ];
     // Shown before the write: a switch during it must not be undone.
     emit(next);
     lost.forEach(_lost.add);
     if (removals != null) {
       final current = {for (final r in removals) r.key};
-      if (!setEquals(current, told)) {
-        await _cache.rememberToldRemovals(userId, current);
-      }
+      // The server forgets a removal after 30 days, and so does the device.
+      await _editTold(userId, (told) => told.intersection(current));
     }
     await _cache.remember(
       userId,
@@ -543,6 +547,26 @@ class SessionCubit(
       _decisions.add((household: d.household, approved: d.approved));
     }
   }
+
+  /// [userId] saw the notices of the removals [keys] (told by
+  /// [lostHouseholds]): this device does not tell them again, also after a
+  /// restart. Not before: a notice held behind the analytics consent and
+  /// lost to an app kill shows on the next start.
+  Future<void> removalsTold(String userId, Iterable<String> keys) =>
+      _editTold(userId, (told) => {...told, ...keys});
+
+  /// One edit of the told removals after the other: a prune by [refresh]
+  /// and [removalsTold] both read and write the whole set.
+  Future<void> _editTold(
+    String userId,
+    Set<String> Function(Set<String> told) edit,
+  ) => _toldWrites = _toldWrites.then((_) async {
+    final told = await _cache.toldRemovals(userId);
+    final next = edit(told);
+    if (!setEquals(next, told)) {
+      await _cache.rememberToldRemovals(userId, next);
+    }
+  });
 
   /// The user's pending join requests, or null when the server did not
   /// say.

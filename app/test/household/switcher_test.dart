@@ -165,7 +165,10 @@ Future<_Shell> _pumpShell(
           routerConfig: router,
           builder: (context, child) => NoticesHost(
             popups: popups,
-            child: RemovedNotices(child: JoinDecisionNotices(child: child!)),
+            child: RemovedNotices(
+              router: router,
+              child: JoinDecisionNotices(child: child!),
+            ),
           ),
         ),
       ),
@@ -627,10 +630,17 @@ void main() {
             locale: Locale(locale),
             size: size,
           );
-          s.session.lost.add((name: _club.name, removed: true));
+          s.session.lost.add((
+            userId: 'peter',
+            name: _club.name,
+            removal: 'club 1',
+          ));
           await tester.pump();
           await tester.pump(const Duration(milliseconds: 500));
           expect(find.text(text), findsOneWidget);
+          expect(s.session.toldRemovals, [
+            ['club 1'],
+          ], reason: 'shown, so told');
           final shown = tester.getRect(find.text(text));
           expect(shown.top, greaterThanOrEqualTo(0));
           expect(shown.bottom, lessThanOrEqualTo(size.height));
@@ -651,7 +661,7 @@ void main() {
       tester,
     ) async {
       final s = await _pumpShell(tester);
-      s.session.lost.add((name: _club.name, removed: false));
+      s.session.lost.add((userId: 'peter', name: _club.name, removal: null));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
       expect(

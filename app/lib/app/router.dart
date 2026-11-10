@@ -233,6 +233,18 @@ bool inListTab(Uri location) {
   return segments.firstOrNull == 'edit' && segments.length <= 2;
 }
 
+/// Where the user lives, past every gate before it (sign-in, the analytics
+/// consent, the guided start, a join, an OAuth consent, a new household's
+/// setup): the list and More tabs, and without a household the welcome and
+/// waiting screens. Notices no tap asked for wait for these (Legal N-114):
+/// on a gate they would cover its answers and run out while it is read.
+bool atHome(Uri location) =>
+    location.path == listPath ||
+    inListTab(location) ||
+    inMoreTab(location) ||
+    location.path == welcomePath ||
+    location.path == joinWaitingPath;
+
 /// The invite code in [uri]: a `/join/<code>` link's or one carried as
 /// `?invite=`.
 String? inviteIn(Uri uri) {

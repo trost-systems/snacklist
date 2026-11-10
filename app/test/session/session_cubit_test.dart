@@ -182,14 +182,19 @@ void main() {
     });
 
     group('no longer in a household (job 169b W2, Legal N-114)', () {
-      late List<LostHousehold> told;
+      late List<LostHousehold> lost;
+
+      /// What [lost] told: the household and whether it was a removal.
+      List<(String, bool)> told() => [
+        for (final l in lost) (l.name, l.removal != null),
+      ];
 
       setUp(() {
-        told = [];
-        cubit.lostHouseholds.listen(told.add);
+        lost = [];
+        cubit.lostHouseholds.listen(lost.add);
       });
 
-      const removedFromClub = (name: 'Sommerfest', removed: true);
+      const removedFromClub = ('Sommerfest', true);
 
       test('removed from the household shown: the default shows, and the '
           '30 days are told', () async {
@@ -200,7 +205,7 @@ void main() {
         await cubit.refresh();
         await pumpEventQueue();
         expect(cubit.state, _shows('home', households: ['home']));
-        expect(told, [removedFromClub]);
+        expect(told(), [removedFromClub]);
       });
 
       test('removed from another household: the one shown stays', () async {
@@ -209,7 +214,7 @@ void main() {
         await cubit.refresh();
         await pumpEventQueue();
         expect(cubit.state, _shows('home', households: ['home']));
-        expect(told, [removedFromClub]);
+        expect(told(), [removedFromClub]);
       });
 
       test('removed from the last one: onboarding, and it is told', () async {
@@ -220,10 +225,7 @@ void main() {
         await cubit.refresh();
         await pumpEventQueue();
         expect(cubit.state, isA<NeedsHousehold>());
-        expect(
-          told,
-          unorderedEquals([removedFromClub, (name: 'Zuhause', removed: true)]),
-        );
+        expect(told(), unorderedEquals([removedFromClub, ('Zuhause', true)]));
       });
 
       test('a removal is told once, however often the app reloads', () async {
@@ -232,14 +234,16 @@ void main() {
         await Future.wait([cubit.refresh(), cubit.refresh()]);
         await cubit.refresh();
         await pumpEventQueue();
-        expect(told, [removedFromClub]);
+        expect(told(), [removedFromClub]);
       });
 
-      test('and once per device: not again after a restart or a sign-out '
-          'and in again', () async {
+      test('and once per device once seen: not again after a restart or a '
+          'sign-out and in again', () async {
         await cubit.refresh();
         server.removedBySomeone('peter', 'club');
         await cubit.refresh();
+        await pumpEventQueue();
+        await cubit.removalsTold('peter', [?lost.single.removal]);
         await cubit.close();
         final restarted = SessionCubit(server, cache);
         addTearDown(restarted.close);
@@ -253,8 +257,57 @@ void main() {
         await pumpEventQueue();
         expect(cache.forgotten, 1, reason: 'the sign-out forgot the cache');
         expect(restarted.state, _shows('home'));
-        expect(told, [removedFromClub]);
+        expect(told(), [removedFromClub]);
         expect(toldAfter, isEmpty);
+      });
+
+      test('not seen before a restart (held behind the analytics consent, '
+          'then the app was killed): told again', () async {
+        server.removedBySomeone('peter', 'club');
+        _signIn(auth);
+        await pumpEventQueue();
+        expect(told(), [removedFromClub]);
+        expect(
+          cache.toldRemovalsOf['peter'] ?? const <String>{},
+          isEmpty,
+          reason: 'only the notice shown marks it told',
+        );
+        await cubit.close();
+        final restarted = SessionCubit(server, cache);
+        addTearDown(restarted.close);
+        final toldAfter = <LostHousehold>[];
+        restarted.lostHouseholds.listen(toldAfter.add);
+        _signIn(auth);
+        await pumpEventQueue();
+        expect([for (final l in toldAfter) l.name], ['Sommerfest']);
+        await restarted.removalsTold('peter', [?toldAfter.single.removal]);
+        expect(cache.toldRemovalsOf['peter'], hasLength(1));
+      });
+
+      test('a removal the server forgot (30 days on) leaves the device '
+          'too', () async {
+        await cubit.refresh();
+        server.removedBySomeone('peter', 'club');
+        await cubit.refresh();
+        await pumpEventQueue();
+        await cubit.removalsTold('peter', [?lost.single.removal]);
+        expect(cache.toldRemovalsOf['peter'], hasLength(1));
+        server.removals['peter']?.clear();
+        await cubit.refresh();
+        expect(cache.toldRemovalsOf['peter'] ?? const <String>{}, isEmpty);
+      });
+
+      test('two notices seen at once are both kept', () async {
+        await cubit.refresh();
+        server
+          ..removedBySomeone('peter', 'club')
+          ..removedBySomeone('peter', 'home');
+        await cubit.refresh();
+        await pumpEventQueue();
+        await Future.wait([
+          for (final l in lost) cubit.removalsTold('peter', [?l.removal]),
+        ]);
+        expect(cache.toldRemovalsOf['peter'], hasLength(2));
       });
 
       test('signing in on a new device tells a removal of the last 30 '
@@ -263,7 +316,7 @@ void main() {
         _signIn(auth);
         await pumpEventQueue();
         expect(cubit.state, _shows('home', households: ['home']));
-        expect(told, [removedFromClub]);
+        expect(told(), [removedFromClub]);
       });
 
       test('removed again after rejoining: told again', () async {
@@ -275,7 +328,7 @@ void main() {
           ..removedBySomeone('peter', 'club');
         await cubit.refresh();
         await pumpEventQueue();
-        expect(told, [removedFromClub, removedFromClub]);
+        expect(told(), [removedFromClub, removedFromClub]);
       });
 
       test('left on another device: told, without the 30 days', () async {
@@ -284,7 +337,7 @@ void main() {
         await cubit.refresh();
         await pumpEventQueue();
         expect(cubit.state, _shows('home', households: ['home']));
-        expect(told, [(name: 'Sommerfest', removed: false)]);
+        expect(told(), [('Sommerfest', false)]);
       });
 
       test('a server without my_household_removals: told without the '
@@ -295,7 +348,7 @@ void main() {
         await cubit.refresh();
         await pumpEventQueue();
         expect(cubit.state, _shows('home', households: ['home']));
-        expect(told, [(name: 'Sommerfest', removed: false)]);
+        expect(told(), [('Sommerfest', false)]);
       });
 
       test('the default moves on the server: the new default shows', () async {
@@ -311,7 +364,7 @@ void main() {
         await cubit.refresh();
         await cubit.leave('club');
         await pumpEventQueue();
-        expect(told, isEmpty);
+        expect(told(), isEmpty);
       });
     });
 

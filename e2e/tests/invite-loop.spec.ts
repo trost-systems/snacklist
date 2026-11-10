@@ -343,13 +343,19 @@ test('roles: the owner makes an admin, the admin removes a member, whose open ap
   await expect(householdChip(ben, 'Bens WG')).toBeVisible();
   await expect(addField(ben)).toBeVisible();
 
-  // A device that never knew the club tells him too, at sign-in (my_household_removals).
+  // A device that never knew the club tells him too, at sign-in (my_household_removals), but only
+  // once he has answered the analytics consent asked first: there it would cover the answers and
+  // run out (15 s) while he reads (review 1 of job 178).
   const benPhone = await newPage(browser);
   await benPhone.goto('/login');
   await openEmailSignIn(benPhone);
   await typeInto(benPhone.getByRole('textbox', { name: 'E-Mail' }), benEmail);
   await typeInto(benPhone.getByRole('textbox', { name: 'Passwort' }), password);
   await benPhone.getByRole('button', { name: 'Anmelden', exact: true }).click();
+  await expect(benPhone).toHaveURL(/\/analytics-consent(\?|$)/);
+  await expect(benPhone.getByRole('heading', { name: 'Nutzungsdaten', exact: true })).toBeVisible();
+  await benPhone.waitForTimeout(16_000);
+  await expect(snack(benPhone, removedNotice), 'held behind the consent').toHaveCount(0);
   await answerConsent(benPhone);
   await expect(snack(benPhone, removedNotice)).toBeVisible({ timeout: 15_000 });
   await expect(householdChip(benPhone, 'Bens WG')).toBeVisible();

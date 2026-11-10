@@ -401,6 +401,13 @@ class TestSession(super.initialState)
   @override
   Stream<LostHousehold> get lostHouseholds => lost.stream;
 
+  /// Each [removalsTold] call's keys.
+  final toldRemovals = <List<String>>[];
+
+  @override
+  Future<void> removalsTold(String userId, Iterable<String> keys) async =>
+      toldRemovals.add([...keys]);
+
   /// What [joinDecisions] tells.
   final decidedOn = StreamController<JoinDecision>.broadcast();
 
