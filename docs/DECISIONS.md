@@ -13127,3 +13127,29 @@ nothing changes and nothing new is requested.
   "Lidl 6"`, `switch "Rewe 8 1 …"`). Each is a container now; „War geplant“ is one node with the
   button and its toggled state (web: `switch "War geplant"` with `aria-checked`; Flutter web has
   no `aria-pressed`). The Free card's heading and the ended card got the same fix.
+
+## Job 221: a gate's script runs android and ios only when it is theirs, 2026-11-14
+
+- **`scripts/gates/` left the "runs everything" list (`scripts/ci-changes.sh`).** Decision 11.7
+  ran every gate for a change to any gate script. The ios job is the slowest in CI (median 28:45
+  running in the 12 green `main` runs before this job, 11:36 to 32:54), and no other gate's script
+  can change what `android.sh` and `ios.sh` do: they source only `scripts/lib.sh`, which still runs
+  everything. A gate script is code, so the heavy gates run; `fastlane.sh` and `emails.sh` turn on
+  their own switch; `android.sh` and `ios.sh` were in the native rule already (job 111).
+- **Measured on the 120 PRs merged from 7 to 14 November** (`gh pr list --state merged`, the rule
+  before and after applied to each file list): 25 ran the native gates before, 19 after. The 6
+  spared PRs changed `lint.sh` or `db.sh`. Their 14 CI runs with an ios job took 326 macOS runner
+  minutes, and in 10 of them `ci-ok` waited for ios after every other job had ended, 79 minutes
+  in all. That was with e2e in two shards; with four the other jobs end earlier.
+- **The ios gate's two checks of the built app joined the native rule.**
+  `scripts/siri-vocabulary.py` and `scripts/app-shortcuts-bundle.py` run against the built
+  `Runner.app` only in the ios gate. A PR that changed only one of them ran the lint gate's
+  tests of it and no build. No merged PR of that week did so.
+- **`scripts/ci-changes-test.sh` in the lint gate.** The filter had no test (job 27 checked
+  eight cases by hand). The test holds the table of paths, and reads from `ci.yml` which switch
+  each gate's job runs on: a change to `scripts/gates/<gate>.sh` must turn that switch on, so a
+  gate that gets a switch of its own cannot be skipped for a change to itself. Seven mutants
+  of the filter each fail it.
+- **Not changed:** `.github/actions/` still runs everything (2 of the 120 PRs). The ios job uses
+  none of the composite actions today, but a rule per action would have to follow `ci.yml` by
+  hand.
