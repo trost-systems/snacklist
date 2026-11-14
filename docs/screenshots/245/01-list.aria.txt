@@ -1,0 +1,49 @@
+- button "Brandt family"
+- button "Edit"
+- group:
+  - button "No store, 15 items" [expanded]
+  - heading "Fruit & veg" [level=2]
+  - checkbox "Bananas 6":
+    - button "Price for Bananas"
+  - checkbox "Apples 1 kg":
+    - button "Price for Apples"
+  - heading "Bread & bakery" [level=2]
+  - checkbox "Bread":
+    - button "Price for Bread"
+  - heading "Chilled" [level=2]
+  - checkbox "Milk 2":
+    - button "Price for Milk"
+  - checkbox "Butter":
+    - button "Price for Butter"
+  - heading "Pantry" [level=2]
+  - checkbox "Pasta":
+    - button "Price for Pasta"
+  - checkbox "Rice":
+    - button "Price for Rice"
+  - heading "Sweets & snacks" [level=2]
+  - checkbox "Cookies":
+    - button "Price for Cookies"
+  - heading "Drinks" [level=2]
+  - checkbox "Apple juice":
+    - button "Price for Apple juice"
+  - checkbox "Sparkling water":
+    - button "Price for Sparkling water"
+  - heading "Frozen" [level=2]
+  - checkbox "Ice cream":
+    - button "Price for Ice cream"
+  - heading "Household" [level=2]
+  - checkbox "Trash bags":
+    - button "Price for Trash bags"
+  - checkbox "Dish soap":
+    - button "Price for Dish soap"
+  - heading "👶 Drugstore" [level=2]
+  - checkbox "Toothpaste":
+    - button "Price for Toothpaste"
+  - checkbox "Shower gel":
+    - button "Price for Shower gel"
+- text: Shopping total €0.00, 0 priced, 15 open
+- textbox "What do you need?"
+- tablist:
+  - tab "List" [selected]
+  - tab "History"
+  - tab "More"

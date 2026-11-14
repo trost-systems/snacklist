@@ -1,0 +1,12 @@
+- button "Back"
+- heading "Invites" [level=2]
+- group:
+  - group "Anyone with the link sees on the join page your first name (from your display name, if you have set one), the household's name, the number of members and open items, and whether the household has Snacklist Premium. Only share the link with people you want to invite. A link for one person, valid for 7 days. For up to 50 people, valid for 30 days. Show the QR code or share the link.":
+    - heading "For one person" [level=2]
+    - button "New invite"
+    - heading "Group link" [level=2]
+    - button "Create group link"
+- tablist:
+  - tab "List"
+  - tab "History"
+  - tab "More" [selected]

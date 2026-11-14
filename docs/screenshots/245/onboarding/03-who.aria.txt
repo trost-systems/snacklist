@@ -1,0 +1,14 @@
+- heading "Step 2 of 7" [level=2]
+- button "Leave setup"
+- group:
+  - heading "Who do you shop with?" [level=2]
+  - text: Pick all that apply. We use this for the name, the invite and your first tips.
+  - checkbox "Partner" [checked]
+  - checkbox "Family"
+  - checkbox "Flatmates"
+  - checkbox "Club or team" [checked]
+  - checkbox "Just me"
+  - checkbox "Other"
+  - text: We'll start with “Partner” and keep the others for later.
+  - button "Continue"
+  - button "Skip"

@@ -1,0 +1,9 @@
+- region "Dialog":
+  - button "Dismiss"
+  - group:
+    - heading "Your households" [level=2]
+    - button "Brandt family 3 members · 15 open Shown":
+      - button "Invite people to Brandt family"
+    - button "New household"
+    - button "Join with a code"
+    - 'button "Siri, Alexa & AI use: Brandt family"'

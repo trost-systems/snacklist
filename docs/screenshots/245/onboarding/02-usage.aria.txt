@@ -1,0 +1,9 @@
+- heading "Step 1 of 7" [level=2]
+- button "Leave setup"
+- group:
+  - heading "May Snacklist collect usage data?" [level=2]
+  - group "Snacklist (run by Peter Trost) wants to see which features are used, find bugs, measure whether Snacklist pays for itself and switch new features on step by step. For that, Snacklist stores a random ID on this device and uses it to send pseudonymous usage data (for example about items, households and setup, which tips you see and how you use Siri), error reports, your household's ID and technical details of your device or browser to our service provider PostHog (servers in the EU). List contents, names and e-mail addresses are never sent. You can withdraw any time under More → Usage data. More in the .":
+    - link "privacy policy":
+      - /url: https://snacklist.app/en/privacy
+  - button "Don't allow"
+  - button "Allow"

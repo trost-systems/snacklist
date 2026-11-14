@@ -40,15 +40,16 @@ struct HomeWidget: Widget {
 }
 
 extension ListSnapshot {
+  /// The widget gallery's example list, in the phone's language.
   static let sample = ListSnapshot.ready(
     open: 9,
     items: [
-      ListItem(name: "Hafermilch", quantity: "2 l", store: "Rewe"),
-      ListItem(name: "Äpfel", quantity: "1 kg", store: "Rewe"),
-      ListItem(name: "Zahnpasta", quantity: nil, store: "dm-drogerie markt"),
-      ListItem(name: "Brot", quantity: nil, store: "Bäckerei Schneider am Marktplatz"),
-      ListItem(name: "Basilikum", quantity: "1 Topf", store: nil),
-      ListItem(name: "Kaffeebohnen", quantity: "500 g", store: nil),
+      ListItem(name: String(localized: "Oat milk"), quantity: "2 l", store: "Rewe"),
+      ListItem(name: String(localized: "Apples"), quantity: "1 kg", store: "Rewe"),
+      ListItem(name: String(localized: "Toothpaste"), quantity: nil, store: "dm-drogerie markt"),
+      ListItem(name: String(localized: "Bread"), quantity: nil, store: String(localized: "Schneider's Bakery on Market Square")),
+      ListItem(name: String(localized: "Basil"), quantity: String(localized: "1 pot"), store: nil),
+      ListItem(name: String(localized: "Coffee beans"), quantity: "500 g", store: nil),
     ])
 }
 

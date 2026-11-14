@@ -44,8 +44,8 @@ void main() {
       expect(mailLocaleOf(const Locale('en', 'US')), 'en');
     });
 
-    test('anything else is German, as the app is', () {
-      expect(mailLocaleOf(const Locale('fr')), 'de');
+    test('anything else is English, as the app is', () {
+      expect(mailLocaleOf(const Locale('fr')), 'en');
     });
 
     test('sign-up data carries it under mail_locale', () {

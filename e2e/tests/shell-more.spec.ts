@@ -256,7 +256,7 @@ test.describe('with an English browser', () => {
     await expect(page).toHaveURL(/\/start$/);
     await expect(page.getByRole('button', { name: 'Get started' })).toBeVisible();
     await expectNoGerman(page, 'first screen', german);
-    await page.getByRole('button', { name: 'Already have an account? Log in' }).click();
+    await page.getByRole('button', { name: 'Already have an account? Sign in' }).click();
     await expect(page).toHaveURL(/\/login$/);
     await expect(page.getByRole('button', { name: 'Continue with email' })).toBeVisible();
     await expectNoGerman(page, 'login', german);
@@ -341,7 +341,7 @@ test.describe('with an English browser', () => {
     await expectNoGerman(page, 'settings', german);
     await page.getByRole('button', { name: /^Language Device \(English\)/ }).click();
     // The row's line, what the device gives, is part of the radio's name.
-    await expect(page.getByRole('radio', { name: 'Device Currently English', exact: true })).toBeChecked();
+    await expect(page.getByRole('radio', { name: 'Device language Currently English', exact: true })).toBeChecked();
     await expectNoGerman(page, 'language list', german);
   });
 });

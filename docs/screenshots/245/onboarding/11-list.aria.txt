@@ -1,0 +1,21 @@
+- button "Our household"
+- button "Edit"
+- group:
+  - heading "First steps 2 of 3" [level=2]
+  - button "Hide first steps"
+  - text: List started, done Invite your partner, done Go shopping once Tap to tick off · Hold to edit
+  - button "No store, 3 items" [expanded]
+  - heading "Fruit & veg" [level=2]
+  - checkbox "cucumbers 2":
+    - button "Price for cucumbers"
+  - heading "Chilled" [level=2]
+  - checkbox "Milk":
+    - button "Price for Milk"
+  - checkbox "Eggs":
+    - button "Price for Eggs"
+- text: Shopping total €0.00, 0 priced, 3 open
+- textbox "What do you need?"
+- tablist:
+  - tab "List" [selected]
+  - tab "History"
+  - tab "More"

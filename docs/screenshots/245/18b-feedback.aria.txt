@@ -1,0 +1,13 @@
+- region "Dialog":
+  - group "Send feedback":
+    - group:
+      - heading "Send feedback" [level=2]
+      - button "Close"
+      - textbox "Your message What did you notice?"
+      - text: Type (optional)
+      - checkbox "Bug"
+      - checkbox "Idea"
+      - checkbox "Other"
+      - checkbox "Peter may contact me about this"
+      - text: "Included: App version, device, language and current screen. No list items."
+      - button "Send" [disabled]
