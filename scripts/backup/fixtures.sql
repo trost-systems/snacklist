@@ -199,10 +199,25 @@ insert into public.household_removals (household_id, user_id)
 select (select id from fx where key = 'home'), id from auth.users where email = 'carl@backup.test';
 
 -- Job 199: Lea logged a trip to the Supermarkt.
+create temp table peter as select id from auth.users where email = 'peter@backup.test';
+grant select on peter to authenticated;
 select pg_temp.login('lea@backup.test');
 select public.save_trip((select id from fx where key = 'home'), gen_random_uuid(),
   (select id from public.stores where name = 'Supermarkt'), current_date,
   '[{"name": "Milch", "quantity": "2"}, {"name": "Brot"}]');
+-- Job 234: and shopped there in trip mode: Milch was on the list, Peter added Eier on the way.
+select public.save_trip_session((select id from fx where key = 'home'), jsonb_build_object(
+  'id', gen_random_uuid(), 'started_at', now() - interval '30 minutes', 'ended_at', now(),
+  'active_seconds', 1500, 'end_reason', 'user', 'source', 'ask', 'currency', 'EUR',
+  'shopped_on', current_date::text,
+  'pauses', jsonb_build_array(jsonb_build_object('from', now() - interval '20 minutes',
+    'to', now() - interval '15 minutes', 'auto', false)),
+  'lines', jsonb_build_array(
+    jsonb_build_object('key', 'milch', 'name', 'Milch', 'planned', true, 'bought', true, 'quantity', '2',
+      'store_id', (select id from public.stores where name = 'Supermarkt'), 'store_name', 'Supermarkt',
+      'planned_cents', 258, 'paid_cents', 278),
+    jsonb_build_object('key', 'eier', 'name', 'Eier', 'planned', false, 'bought', true, 'by_other', true,
+      'added_by', (select id from peter)))), true);
 reset role;
 
 -- Job 94: an MCP client known by its Client ID Metadata Document URL.

@@ -2932,4 +2932,248 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get switcherOpenInvitesTitle => 'Offene Einladungen';
+
+  @override
+  String get shopAskTitle => 'Kaufst du gerade ein?';
+
+  @override
+  String get shopAskBody =>
+      'Dann läuft eine Uhr mit, und am Ende siehst du, was geplant war und was dazukam.';
+
+  @override
+  String get shopAskYes => 'Ja, Einkauf starten';
+
+  @override
+  String get shopAskNo => 'Nein, nur abgehakt';
+
+  @override
+  String get shopAskMistake => 'Aus Versehen abgehakt?';
+
+  @override
+  String get shopAskTakeBack => 'Zurücknehmen';
+
+  @override
+  String get shopRunning => 'Einkauf läuft';
+
+  @override
+  String get shopPaused => 'Pausiert';
+
+  @override
+  String shopAutoPaused(String time) {
+    return 'Pause · seit $time nichts abgehakt';
+  }
+
+  @override
+  String get shopPause => 'Pause';
+
+  @override
+  String get shopResume => 'Weiter';
+
+  @override
+  String get shopEnd => 'Beenden';
+
+  @override
+  String shopEndAt(String time) {
+    return 'Beenden um $time';
+  }
+
+  @override
+  String shopClockLabel(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: 'seit $minutes Minuten',
+      one: 'seit 1 Minute',
+      zero: 'seit weniger als einer Minute',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shopAutoEndedTitle => 'Einkauf automatisch beendet';
+
+  @override
+  String shopAutoEndedBody(String time) {
+    return '4 Stunden lang wurde nichts abgehakt. Er endet beim letzten Abhaken um $time.';
+  }
+
+  @override
+  String get shopKeepGoing => 'Doch weiter';
+
+  @override
+  String get shopShowSummary => 'Übersicht ansehen';
+
+  @override
+  String get shopSummaryTitle => 'Geplant und gekauft';
+
+  @override
+  String shopSummaryWhen(String day, String from, String to) {
+    return '$day, $from bis $to';
+  }
+
+  @override
+  String shopMinutes(int minutes) {
+    return '$minutes Min.';
+  }
+
+  @override
+  String get shopUnderAMinute => 'Unter 1 Min.';
+
+  @override
+  String shopHoursMinutes(int hours, int minutes) {
+    return '$hours Std. $minutes Min.';
+  }
+
+  @override
+  String shopShoppedFor(String duration) {
+    return '$duration eingekauft';
+  }
+
+  @override
+  String shopLede(int bought, int planned) {
+    return '$bought von $planned von der Liste gekauft';
+  }
+
+  @override
+  String shopLedeExtra(int count) {
+    return '$count zusätzlich';
+  }
+
+  @override
+  String shopLedeNoList(int count) {
+    return 'Ohne Liste losgegangen · $count gekauft';
+  }
+
+  @override
+  String shopAutoEndHint(String time) {
+    return 'Beendet beim letzten Abhaken um $time, automatisch.';
+  }
+
+  @override
+  String get shopPlannedSection => 'Beim Start auf der Liste';
+
+  @override
+  String get shopExtraSection => 'Seit dem Start dazugekommen';
+
+  @override
+  String get shopPlannedEmpty => 'Die Liste war leer.';
+
+  @override
+  String get shopExtraEmpty => 'Nichts. Alles stand auf der Liste.';
+
+  @override
+  String get shopNotBought => 'nicht gekauft';
+
+  @override
+  String get shopBought => 'gekauft';
+
+  @override
+  String shopBy(String name) {
+    return 'von $name';
+  }
+
+  @override
+  String get shopMarkPlanned => 'War geplant';
+
+  @override
+  String get shopMarkPlannedHint =>
+      '„War geplant“ zählt einen Artikel zur Liste, wenn er abgesprochen war, aber nicht draufstand.';
+
+  @override
+  String shopPlannedPrice(String amount) {
+    return 'geplant $amount';
+  }
+
+  @override
+  String shopMore(String amount) {
+    return '$amount mehr';
+  }
+
+  @override
+  String shopLess(String amount) {
+    return '$amount weniger';
+  }
+
+  @override
+  String get shopAsPlanned => 'wie geplant';
+
+  @override
+  String get shopPaid => 'Bezahlt';
+
+  @override
+  String get shopPaidTotal => 'Insgesamt bezahlt';
+
+  @override
+  String shopCompared(String amount, String difference) {
+    return 'Geplant $amount · $difference';
+  }
+
+  @override
+  String shopComparedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'bei $count Artikeln',
+      one: 'bei 1 Artikel',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String shopWithoutPrice(int count) {
+    return '$count ohne Preis';
+  }
+
+  @override
+  String shopWithoutPlan(int count) {
+    return '$count ohne geplanten Preis';
+  }
+
+  @override
+  String get shopTotalsNote =>
+      'Bezahlt zählt nur Artikel mit Preis. Der Unterschied vergleicht nur Artikel mit geplantem und bezahltem Preis.';
+
+  @override
+  String get shopKeepShopping => 'Weiter einkaufen';
+
+  @override
+  String get shopNotSaved => 'Der Einkauf ist noch nicht gespeichert.';
+
+  @override
+  String shopTicked(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Artikel abgehakt',
+      one: '1 Artikel abgehakt',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shopLockedTitle => 'Was war geplant, was kam dazu?';
+
+  @override
+  String get shopLockedBody =>
+      'Snacklist Premium zeigt nach jedem Einkauf, was auf der Liste stand und was unterwegs dazukam, auch von anderen im Haushalt.';
+
+  @override
+  String get shopLockedButton => 'Snacklist Premium ansehen';
+
+  @override
+  String get shopLoadFailed => 'Die Übersicht konnte nicht geladen werden.';
+
+  @override
+  String get shopStartByHand => 'Einkauf starten';
+
+  @override
+  String get shopStartByHandHint =>
+      'Die Uhr läuft ab jetzt, die Liste, wie sie jetzt ist, gilt als geplant.';
+
+  @override
+  String get shopByOther => 'von jemand anderem';
+
+  @override
+  String get shopMarkFailed =>
+      '„War geplant“ konnte nicht gespeichert werden. Versuch es noch mal.';
 }

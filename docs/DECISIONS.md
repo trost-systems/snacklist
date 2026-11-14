@@ -13005,3 +13005,125 @@ and the household sheet are today's.
    element's DOM focus in a timer after the frame, which would come after an earlier request.
 3. **Typing clears the error**, as on the guided start's name step, so the two name fields behave
    the same.
+
+## Job 234: trip mode behind `trip-mode`, 2026-11-14
+
+Peter's pick on job 217's prototypes (t864u, 14 Nov 2026): TM2's question sheet on every tick,
+TM1's slim strip, TM1's summary page with a section per store, TM2's Premium card without blur,
+TM4's per-store rounds deferred. Everything sits behind the new PostHog flag `trip-mode`
+(`releases/flags.json`, rollout off; the lead targets it to internal installs). With it off
+nothing changes and nothing new is requested.
+
+- **The question comes on every own tick while no trip runs (Peter).** „Nein, nur abgehakt“
+  remembers nothing, so the next tick asks again; closing the sheet any other way (scrim, back,
+  drag) counts as „Nein“. „Zurücknehmen“ puts the item back as the tick's undo (`readd` inside
+  the undo window), so no add is counted. A partner's ticks never ask. TQ3 (how long „Nein“
+  holds) is answered by Peter's "each time".
+- **The trip starts at the tick that raised the question.** The snapshot (the planned part) is
+  the shown list's open items just before that tick, the ticked one included, each with its price
+  as it was then. Mehr › „Einkauf starten“ starts one by hand (TQ15: Mehr only, nothing new on
+  the list); its snapshot is the list as it is.
+- **The running trip lives on the device (TQ1, not built server-side).** One per signed-in user
+  in `DeviceCache` (`trip.<userId>`, forgotten on sign-out), with the household and list it
+  belongs to. Another household's list neither asks nor shows the strip while it runs. The
+  server learns of a trip when it ends. A server-side running trip (Lea sees „Peter kauft gerade
+  ein“, her app stops asking) stays open for Peter (NEEDS_PETER).
+- **Long-running rule: TM2's timings, every proposed or automatic end at the last tick.**
+  RECOMMENDATION.md's 2-hour nudge has no better justification than TM2's numbers, and Peter
+  asked for TM2's unless it did. 45 minutes after the last sign of life (the start, the last
+  tick by anyone on the trip's list, a „Weiter“) the trip pauses itself; the strip then says
+  „Pause · seit 10:06 nichts abgehakt“ and Beenden becomes „Beenden um 10:06“, ending at the last
+  tick. A tick during that pause ends the pause at the tick (a pause the user started stays
+  until „Weiter“). 4 hours after the last sign of life, paused or not, the trip ends itself at
+  the last tick (a trip with no tick at its start) and the list shows „Einkauf automatisch
+  beendet“ with „Doch weiter“ and „Übersicht ansehen“. The rule runs every 30 s while the app is
+  open, on resume and at start, but only after the list has resynced, so a stale device copy
+  cannot end a trip at an old tick. No push notification (TQ4).
+- **Ticks during a pause count (TQ5)** as bought on the trip, as in all five prototypes.
+- **Two shoppers (TQ2).** Every member's ticks between start and end count as bought on the
+  trip, and count as its sign of life. Lea's app still asks her on her own ticks; her „Ja“
+  starts her own trip on her device. Open for Peter.
+- **„Weiter einkaufen“ / „Doch weiter“ (TQ12)** reopen the same trip; the gap since the end
+  becomes a pause, and the next end saves the same trip again. They are offered as long as the
+  summary page opened by the end, or the auto-end card, is on screen; no timer.
+- **Summary per store (Peter).** One section per store of the trip's lines (household store
+  order, then deleted stores by the name they had, then „Ohne Laden“), each with „Beim Start auf
+  der Liste“ and „Seit dem Start dazugekommen“. Items someone else wrote on the list after the
+  start are extras with „von Lea“ (PB2a), also when nobody bought them (TQ6: shown, as in the
+  prototypes). „War geplant“ moves a bought extra into the planned part (Premium only, also on
+  the server). An item ticked before the start and bought again during the trip shows as an
+  extra (TQ7, accepted).
+- **Planned price, paid price and what is counted.** Prices exist once per item (job 190), so
+  the trip compares two moments of the same price. Planned = the item's price at the start, of
+  any day (last time's price included), at the quantity then. Paid = the price at the end of a
+  bought item when it was saved on the trip's day or later, at the quantity then (PW1: the scale
+  weight). So a price typed at home that morning and left unchanged counts as paid, as it does
+  in job 190's list total; last time's price left unchanged is no paid price. Only prices in the
+  household currency count. Per store and overall: „Bezahlt“ sums the paid lines; „Geplant …“
+  and the difference („2,45 € mehr“, „weniger“, „wie geplant“) compare only lines with both
+  prices and say over how many; „2 ohne Preis“ counts bought items without a paid price (not in
+  Bezahlt); „1 ohne geplanten Preis“ counts paid items without a planned one (in Bezahlt, not in
+  the difference). Items not bought never count. One note under the overall total says so. With
+  `prices-and-trip-total` off no amount shows anywhere.
+- **Free (PB3a): TM2's card, no blur.** A member without Premium sees the date, times, stores,
+  the duration and „N Artikel abgehakt“, then the card „Was war geplant, was kam dazu?“. Its
+  button „Snacklist Premium ansehen“ shows exactly when More lists Premium (`premiumListed`, as
+  job 199's lock row), so nothing is offered before sales start. The server withholds the lines
+  without Premium (`trip_session`, `save_trip_session` answer `lines: null`), the rule
+  `household_has_premium or user_has_premium` as in `trip_history`; the stopwatch is free
+  (TQ8).
+- **One record with the grocery log (TQ9, TQ10).** A finished trip is a row of
+  `public.trip_sessions`; with `grocery-log` on, its save also writes one `public.trips` row per
+  store it bought from, linked by `trips.session_id`, with an id derived from the session and
+  the store so a re-save updates the same rows. A two-store trip is two log entries that open
+  one summary. Their Verlauf tiles open the summary page, the same page as at the end. Without
+  `grocery-log` no log rows are written. While a trip runs the list hides job 199's „Einkauf bei
+  Lidl eintragen?“ cards; an end clears the pending ones (the trip logged them).
+- **Server.** `save_trip_session` (idempotent upsert by the app's id; validates every line in one
+  function), `trip_session`, `mark_trip_line_planned` (Premium), `delete_trip_session`;
+  `delete_trip` deletes a session with its last log entry. Not in realtime, the API or MCP.
+  `household_member_forget_user` also forgets the leaving member in sessions (`started_by`,
+  every line's `added_by`), a trigger on `auth.users` covers a deleted account whose household
+  stays, and `export_my_data` has `trip_sessions_started` (TQ13; `docs/PRIVACY_DATA_MAP.md`).
+- **Analytics (TQ13).** `shop_started` (`source`: `ask`, `manual`), until now reserved and unsent;
+  `shop_asked` (`answer`: `yes`, `no`, `take_back`); `shop_ended` (`reason`: `user`, `auto`;
+  `minutes` in buckets). Nothing about items, stores, names or prices.
+- **Clock slack of 2 minutes (review 0).** Ticks carry the server's `bought_at`, the trip's start
+  and end the device clock. A tick counts on the trip within 2 minutes on either side
+  (`tickSlack`, one check in `rules.dart` for the summary and the long-running rule), and the item
+  whose tick started the trip always counts as bought. A tick up to 2 minutes before a „Ja“ can
+  therefore count; that is closer to the truth than losing the starting tick to a fast clock.
+- **A save the server refuses for good is dropped (review 0).** Lines are capped at the server's
+  400 (bought lines first, then planned, then the rest). An answer of invalid input (22023) ends
+  the retries; the page says the trip was not saved, with no button that cannot work. Other
+  failures retry on resume and with „Erneut versuchen“.
+- **„Einkauf löschen“ on the summary (review 0).** A trip-mode entry in Verlauf opens the summary,
+  not job 199's sheet, so the summary carries the delete (also for Free: it is the household's
+  data). It deletes the session and all its Verlauf entries for everyone.
+- **Legal GL-2: no trip question and no log card for a pharmacy (review 0, lead notes 1 and 2).**
+  `Store.isPharmacy` (`app/lib/list/model.dart`) matches the store's name or seed key, in any
+  case, against apotheke, pharmacy, pharmacie, farmacia, apteka and eczane: „APOTHEKE am Markt“
+  and „Shop-Apotheke“ are pharmacies, dm, Rossmann and Müller are not. „DocMorris“ alone stays
+  out, because lead note 2 limits the scope to that word list (NEEDS_LEAD asks whether to widen
+  it). A pharmacy item's tick asks nothing (`TripCubit._ticked`), and a pharmacy's section offers
+  no „Einkauf eintragen?“ card (`TripTicks.settle`). A pharmacy item ticked during a trip the
+  user started still counts on that trip: the user chose to shop with the stopwatch (N-167:
+  manual logging stays the user's choice).
+- **A trip's end takes its ticks out of job 199's cards (review 0).** Every item bought on the
+  trip leaves the device's pending ticks (`TripTicks.forgetting`), also at a store whose section
+  still had open items, so a later card never logs them a second time. Ticks before the trip
+  (a „Nein“) stay and can still be logged.
+- **The duration rounds to the nearest minute (review 0)**, as the header's times do; under half
+  a minute reads „Unter 1 Min.“.
+- **Not built:** TM4's per-store rounds (deferred by Peter), a server-side running trip, a
+  notification for a forgotten trip, a silent end beyond the 4-hour rule.
+- **The slack before the start only for items open then (review 1).** The journey ticked Äpfel
+  („Nein, nur abgehakt“), then Bananen („Ja“) 20 s later, and the summary counted Äpfel as bought
+  on the trip. A tick in the slack before the start now counts only for an item in the start
+  snapshot or added after the start (`boughtOnTrip`); an item there but not open had been ticked
+  before the trip. Ticks after the start and the starting item count as before.
+- **Screen readers on the summary (review 1).** The store title, the counts, the „War geplant“
+  hint and its toggle had no node of their own and merged into their section's (web: `banner
+  "Lidl 6"`, `switch "Rewe 8 1 …"`). Each is a container now; „War geplant“ is one node with the
+  button and its toggled state (web: `switch "War geplant"` with `aria-checked`; Flutter web has
+  no `aria-pressed`). The Free card's heading and the ended card got the same fix.

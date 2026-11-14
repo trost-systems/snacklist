@@ -1708,7 +1708,10 @@ merge; these are the steps to see it and the one open legal question.
    app. The next green `main` build after this merge carries the code to
    TestFlight (`release.yml`). Lea's install sees it too if it is internal; for you alone, add a
    second condition on the install's distinct id instead (PostHog → Activity, your events).
-2. **Legal: drugstore lines in a manual purchase log (Art. 9).** The log stores what a household
+2. **Answered by Legal (N-167 ADJUST+DEFER, 14 Nov 2026; no Peter decision needed): manual
+   logging of a pharmacy trip stays the user's choice. GL-2 (job 234): pharmacy stores raise no
+   trip question and no „Einkauf eintragen?“ card (`Store.isPharmacy`).** Original question:
+   **Legal: drugstore lines in a manual purchase log (Art. 9).** The log stores what a household
    member typed or ticked, for example "Schwangerschaftstest" or "Insulin-Pen-Nadeln" bought at dm,
    with the day and the store. N-127 treats pharmacy lines on receipts as Art. 9 health data and
    asks for explicit consent and a pharmacy discard. Question for Legal: does a log the user
@@ -1960,3 +1963,30 @@ has the database password). Details and evidence: `docs/done/220-security-harden
    not. If the owner's rows still name `anon` or `authenticated`, tell the next job: a new table
    would again start with every privilege granted, and only its own `revoke` (the convention)
    would close it.
+
+## Job 234: trip mode, flag targeting and open questions (2026-11-14)
+
+Trip mode is merged behind the PostHog flag `trip-mode` (off for everyone). To see it on
+TestFlight:
+
+1. PostHog → Feature flags → `trip-mode` (the lead creates it): release condition
+   `is_internal = true` (the person property job 199 added for flags), or "`distinct_id` equals
+   <your install id>" (More → long press on the version → „Installations-ID kopieren“).
+   Everyone else stays off.
+2. The summary's lines (planned, extra, prices) need Premium; the stopwatch, the question and
+   the Free card work without. The prices in the summary need `prices-and-trip-total` on too, the
+   Verlauf entries `grocery-log`. Keep all three internal until Legal's N-163 to N-168 land.
+
+Open questions, answered for now as in DECISIONS "Job 234" (say if any should change):
+
+- **TQ1, where a running trip lives.** On the device only. A server-side trip would let Lea see
+  „Peter kauft gerade ein“ and stop her app asking.
+- **TQ2, two shoppers.** Lea's ticks during Peter's trip count as bought on his trip; her own
+  ticks still ask her.
+- **TQ4, a forgotten trip.** It pauses itself after 45 minutes and ends at the last tick after 4
+  hours (TM2's timings). No notification.
+- **TQ6, others' additions nobody bought.** Shown under „Seit dem Start dazugekommen“ as „nicht
+  gekauft · von Lea“.
+- **TQ7, early own additions.** Not treated as planned; „War geplant“ fixes them.
+- **TQ11, the strip and the price total.** The strip sits above the list total; it does not
+  carry the total.

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:family_groceries/analytics/analytics.dart';
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/app/device_cache.dart';
 import 'package:family_groceries/app/network.dart';
 import 'package:family_groceries/app/notices.dart';
@@ -13,6 +14,9 @@ import 'package:family_groceries/log/trip_repository.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/siri/siri_channel.dart';
 import 'package:family_groceries/siri/siri_suggestions.dart';
+import 'package:family_groceries/trip/model.dart';
+import 'package:family_groceries/trip/trip_cubit.dart';
+import 'package:family_groceries/trip/trip_repository.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
@@ -21,7 +25,8 @@ import 'package:supabase_flutter/supabase_flutter.dart' hide Session;
 /// The household's list above the tabs: the List tab shows it and its
 /// Anpassen pages manage its categories and stores; it keeps syncing while
 /// More is open. A new household gets a new list. Next to it, the
-/// household's logged trips ([TripRepository], job 199).
+/// household's logged trips ([TripRepository], job 199) and its trip-mode
+/// trips ([TripSessionRepository], job 234).
 ///
 /// Job 169b: a household switched away from keeps its list open until the
 /// changes queued in it reached the server, and a start opens the list of
@@ -36,6 +41,9 @@ class const ListScope({
 
   /// Overrides the Supabase trips per household, for tests.
   final TripRepository Function(String householdId)? trips,
+
+  /// Overrides the Supabase trip-mode trips per household, for tests.
+  final TripSessionRepository Function(String householdId)? tripSessions,
 }) extends StatefulWidget {
   @override
   State<ListScope> createState() => _ListScopeState();
@@ -219,10 +227,25 @@ class _ListScopeState() extends State<ListScope> implements ListHolds {
       child: BlocProvider.value(
         key: ValueKey(household.id),
         value: _lists[household.id]!,
-        child: RepositoryProvider<TripRepository>(
-          create: (_) =>
-              widget.trips?.call(household.id) ??
-              SupabaseTripRepository(Supabase.instance.client, household.id),
+        child: MultiRepositoryProvider(
+          providers: [
+            RepositoryProvider<TripRepository>(
+              create: (_) =>
+                  widget.trips?.call(household.id) ??
+                  SupabaseTripRepository(
+                    Supabase.instance.client,
+                    household.id,
+                  ),
+            ),
+            RepositoryProvider<TripSessionRepository>(
+              create: (_) =>
+                  widget.tripSessions?.call(household.id) ??
+                  SupabaseTripSessionRepository(
+                    Supabase.instance.client,
+                    household.id,
+                  ),
+            ),
+          ],
           child: _Scope(householdId: household.id, child: widget.child),
         ),
       ),
@@ -284,6 +307,10 @@ class _ScopeState() extends State<_Scope> {
   SiriSuggestions? _siri;
   StreamSubscription<ListState>? _homeWidgets;
 
+  /// Trip mode (job 234): asks after own ticks, runs the user's trip.
+  late final TripCubit _trips;
+  StreamSubscription<Map<String, bool>>? _flags;
+
   @override
   void initState() {
     super.initState();
@@ -300,9 +327,32 @@ class _ScopeState() extends State<_Scope> {
       widget.householdId,
       cubit,
     );
+    final flags = context.read<Flags?>();
+    bool flag(String key) => flags?.isOn(key) ?? false;
+    _trips = TripCubit(
+      cubit,
+      _LazyTripSessions(() => context.read<TripSessionRepository>()),
+      context.read<DeviceCache>(),
+      userId: cubit.userId,
+      householdId: widget.householdId,
+      enabled: () => flag(tripModeFlag),
+      logs: () => flag(groceryLogFlag),
+      analytics: context.read<Analytics>(),
+    );
+    unawaited(_trips.start());
+    var tripMode = flag(tripModeFlag);
+    _flags = flags?.stream.listen((_) {
+      if (!tripMode && flag(tripModeFlag)) {
+        unawaited(_trips.check());
+      }
+      tripMode = flag(tripModeFlag);
+    });
     _lifecycle = AppLifecycleListener(
       onHide: cubit.hidden,
-      onResume: () => unawaited(cubit.resumed()),
+      onResume: () async {
+        await cubit.resumed();
+        await _trips.check();
+      },
     );
     _rejections = cubit.rejections.listen((rejection) {
       if (!mounted) {
@@ -323,10 +373,35 @@ class _ScopeState() extends State<_Scope> {
     unawaited(_rejections.cancel());
     unawaited(_siri?.close());
     unawaited(_homeWidgets?.cancel());
+    unawaited(_flags?.cancel());
+    unawaited(_trips.close());
     super.dispose();
   }
 
   @override
-  Widget build(BuildContext context) =>
-      RepositoryProvider.value(value: _notices, child: widget.child);
+  Widget build(BuildContext context) => RepositoryProvider.value(
+    value: _notices,
+    child: BlocProvider.value(value: _trips, child: widget.child),
+  );
+}
+
+/// The household's [TripSessionRepository], looked up at its first call:
+/// with the flag `trip-mode` off the trip cubit never makes one.
+class _LazyTripSessions(final TripSessionRepository Function() _find)
+    implements TripSessionRepository {
+  late final _repo = _find();
+
+  @override
+  Future<FinishedTrip> save(FinishedTrip trip, {required bool log}) =>
+      _repo.save(trip, log: log);
+
+  @override
+  Future<FinishedTrip> fetch(String id) => _repo.fetch(id);
+
+  @override
+  Future<void> markPlanned(String id, String key, {required bool planned}) =>
+      _repo.markPlanned(id, key, planned: planned);
+
+  @override
+  Future<void> delete(String id) => _repo.delete(id);
 }

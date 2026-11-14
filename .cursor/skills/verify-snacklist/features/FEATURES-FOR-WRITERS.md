@@ -476,6 +476,27 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 
 **Last verified.** 14 November 2026, code version 97b2907e, in the web app (German and English).
 
+## Trip mode (behind a flag, not public)
+
+**What it does.** Not public yet: it is switched on only for internal test installs (feature flag `trip-mode`). With it on, ticking an item off asks „Kaufst du gerade ein?“ (EN "Are you shopping right now?"). „Ja, Einkauf starten“ (EN "Yes, start a trip") starts a trip; „Nein, nur abgehakt“ (EN "No, just ticked off") only ticks the item, and the next tick asks again; „Zurücknehmen“ (EN "Put it back") under „Aus Versehen abgehakt?“ (EN "Ticked off by mistake?") puts the item back. Items of a pharmacy (a store named Apotheke or pharmacy) never ask. A trip can also be started under „Mehr“ › „Einkauf starten“ (EN "More" › "Start a trip"). While a trip runs, a dark bar above the add field shows a stopwatch, „Einkauf läuft“ (EN "Trip running"), a pause button („Pause“ / „Weiter“, EN "Pause" / "Resume") and „Beenden“ (EN "End"). When nothing has been ticked off for 45 minutes the trip pauses itself and says since when („Pause · seit 14:01 nichts abgehakt“, EN "Paused · nothing ticked since 14:01"); „Beenden um 14:01“ (EN "End at 14:01") then ends it at the last tick. After 4 hours without a tick it ends itself at the last tick and the list shows „Einkauf automatisch beendet“ (EN "Trip ended automatically") with „Doch weiter“ (EN "Keep going") and „Übersicht ansehen“ (EN "See summary"). At the end the summary „Geplant und gekauft“ (EN "Planned and bought") shows how long the trip took („25 Min. eingekauft“, EN "Shopped for 25 min"), how much of the list was bought („4 von 14 von der Liste gekauft · 1 zusätzlich“, EN "4 of 14 from the list bought · 1 extra") and, for each store, what was on the list at the start (bought or „nicht gekauft“, EN "not bought") and what came in since, including what someone else in the household added („von Noah“, EN "added by Noah"). An extra can be marked „War geplant“ (EN "Was planned"). In test installs that also show prices, each item shows what was paid and what was planned („1,80 € · geplant 1,50 € · 0,30 € mehr“), each store ends in „Bezahlt“ (EN "Paid") and the page in „Insgesamt bezahlt“ (EN "Paid in total"); items without a price are counted, not guessed. With the history („Verlauf“) also switched on, the trip shows there as one entry per store, and tapping one opens the same summary. The summary can delete the trip for everyone („Einkauf löschen“, EN "Delete trip"), with its history entries. Without Snacklist Premium the summary shows only the time, the stores and how many items were ticked off, and a card „Was war geplant, was kam dazu?“ (EN "What was planned, what came on top?") says that Premium shows the rest.
+
+**How to get there.**
+1. Only on a test install with the flag on: tick an item off on „Liste“ (EN "List"), then „Ja, Einkauf starten“ (EN "Yes, start a trip").
+2. Or „Mehr“ › „Einkauf starten“ (EN "More" › "Start a trip").
+3. „Beenden“ (EN "End") on the dark bar for the summary; later from „Verlauf“ (EN "History").
+
+**Never claim.**
+- That trip mode is available to users: it is behind a flag, rollout off.
+- That the summary's planned-and-bought view or the amounts can be bought: Premium is not on sale.
+- That it tracks location, receipts, or prices it was not given: amounts come only from prices typed on the list.
+- That a partner sees the running trip or its stopwatch (the trip runs on the phone that started it; the household sees the saved result).
+- That it works with Siri, Alexa, AI assistants or the Snacklist API (it doesn't).
+- That the question comes only once: it comes after every tick while no trip runs.
+
+**Unverified.** The iPhone and Android apps (driven on the web build only); that a tick after the trip paused itself ends that pause (from the code, not driven); the button „Snacklist Premium ansehen“ on the locked card (not shown on the local stack; widget tests only); with the flag off nothing of this shows (widget tests only).
+
+**Last verified.** branch job/234-trip-mode-impl 3bf4394f, 2026-11-14 (CET), driven on the web build with the flags `trip-mode`, `grocery-log` and `prices-and-trip-total` on (verify-snacklist `journeys/trip-mode.mjs`, German, English with dark, 358 px): every step passed, including no question and no log card for a pharmacy (GL-2), „War geplant“, „Einkauf löschen“ from the history, „Doch weiter“, and the store names as headings for screen readers. Recipe: [trip-mode.md](./trip-mode.md).
+
 # Settings, help and account
 
 ## Decluttered list (behind a flag, not public)

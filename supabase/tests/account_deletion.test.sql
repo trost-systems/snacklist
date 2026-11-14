@@ -49,7 +49,17 @@ language sql as $$
   union all select 'lists', count(*)::int from public.lists where household_id = p_household
   union all select 'item_claims', count(*)::int from public.item_claims where household_id = p_household
   union all select 'join_requests', count(*)::int from public.join_requests where household_id = p_household
-  union all select 'trips', count(*)::int from public.trips where household_id = p_household;
+  union all select 'trips', count(*)::int from public.trips where household_id = p_household
+  union all select 'trip_sessions', count(*)::int from public.trip_sessions where household_id = p_household;
+$$;
+
+-- A finished trip-mode trip (job 234) as the app saves it, with one bought line.
+create function pg_temp.session(p_name text, p_added_by uuid default null) returns jsonb language sql as $$
+  select jsonb_build_object('id', gen_random_uuid(), 'started_at', '2026-11-14T09:00:00Z',
+    'ended_at', '2026-11-14T09:20:00Z', 'active_seconds', 1200, 'end_reason', 'user', 'source', 'manual',
+    'currency', 'EUR', 'shopped_on', current_date::text, 'pauses', '[]'::jsonb,
+    'lines', jsonb_build_array(jsonb_build_object('key', 'k', 'name', p_name, 'planned', false, 'bought', true,
+      'by_other', p_added_by is not null, 'added_by', p_added_by)))
 $$;
 
 select is(
@@ -236,6 +246,8 @@ set category_id = (select id from public.categories where household_id = (select
 where name = 'Brot';
 -- Job 199: Carl logged a trip.
 select public.save_trip((select id from h), gen_random_uuid(), null, current_date, '[{"name": "Brot"}]');
+-- Job 234: and shopped in trip mode.
+select public.save_trip_session((select id from h), pg_temp.session('Brot'), false);
 select pg_temp.as_postgres();
 -- Job 25 (as of job 43, through RevenueCat): Carl bought Snacklist Lifetime for the household.
 select public.purchase_claim('00000000-0000-0000-0000-0000000000c1', (select id from h), 'apple', '2000000000002501');
@@ -299,9 +311,11 @@ select public.join_household((select code from inv_e));
 insert into public.items (household_id, name) select id, 'Fridas Geheimnis' from he;
 select public.claim_item((select id from public.items where name = 'Fridas Geheimnis'), '2');
 select public.save_trip((select id from he), gen_random_uuid(), null, current_date, '[{"name": "Fridas Geheimnis"}]');
+select public.save_trip_session((select id from he), pg_temp.session('Fridas Geheimnis'), false);
 select pg_temp.login('00000000-0000-0000-0000-0000000000e1');
 select public.claim_item((select id from public.items where name = 'Äpfel'), null);
 select public.save_trip((select id from he), gen_random_uuid(), null, current_date, '[{"name": "Äpfel", "quantity": "1 kg"}]');
+select public.save_trip_session((select id from he), pg_temp.session('Kuchen', '00000000-0000-0000-0000-0000000000f1'), false);
 select pg_temp.as_postgres();
 insert into auth.oauth_clients (id, registration_type, redirect_uris, grant_types, client_name, client_type, token_endpoint_auth_method)
 values ('00000000-0000-0000-0000-00000000c11e', 'dynamic', 'https://claude.ai/cb', 'authorization_code', 'Claude', 'public', 'none');
@@ -316,7 +330,8 @@ select is(
   (select array_agg(k order by k) from export, jsonb_object_keys(doc) k),
   array['access_tokens', 'account', 'alexa_links', 'analytics_decisions', 'archived_households', 'connected_apps', 'exported_at',
         'feedback', 'format', 'history', 'household', 'household_removals', 'households', 'invite_uses', 'invites_created', 'item_claims',
-        'items_added', 'join_requests', 'lists_created', 'profile', 'purchases', 'trips_logged', 'version'],
+        'items_added', 'join_requests', 'lists_created', 'profile', 'purchases', 'trip_sessions_started', 'trips_logged',
+        'version'],
   'the export has the documented sections'
 );
 select is(
@@ -368,7 +383,14 @@ select is(
     -- Job 199: his trip, not Frida's.
     'trips_logged', jsonb_build_array(jsonb_build_object('household_id', (select id from he), 'store_name', null,
       'shopped_on', current_date, 'items', jsonb_build_array(jsonb_build_object('name', 'Äpfel', 'quantity', '1 kg')),
-      'created_at', now()))
+      'created_at', now())),
+    -- Job 234: the trip he started, without Frida's id on the line she added; not hers.
+    'trip_sessions_started', jsonb_build_array(jsonb_build_object('household_id', (select id from he),
+      'started_at', '2026-11-14T09:00:00+00:00', 'ended_at', '2026-11-14T09:20:00+00:00', 'active_seconds', 1200,
+      'end_reason', 'user', 'source', 'manual', 'currency', 'EUR', 'shopped_on', current_date, 'pauses', '[]'::jsonb,
+      'bought', 1, 'stores', jsonb_build_array(null), 'created_at', now(),
+      'lines', jsonb_build_array(jsonb_build_object('name', 'Kuchen', 'planned', false, 'bought', true, 'quantity', null,
+        'store_name', null, 'marked_planned', false, 'by_other', true, 'planned_cents', null, 'paid_cents', null))))
   ),
   'the export holds the user''s own data and nothing of the other member''s'
 );

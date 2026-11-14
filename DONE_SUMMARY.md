@@ -858,3 +858,32 @@ Baseline first (`docs/hillclimb/fable-improvement-2026-11.md`, "Job 219"; 399 tr
 Fable review PASS on each (`claude-fable-5-2`, 38 rounds in all). Changelog `none`. No flag; nothing for Peter. CI's failure rates after the fixes need a week of runs and are not claimed. The job's own tests make the lint gate 23 to 30 s slower on the runner. `docs/NEEDS_LEAD.md` has ten points for the lead, first the wait at the merge lock (17.6 h over 13 turns).
 
 Details: [docs/done/219-verify-skill-tooling.md](docs/done/219-verify-skill-tooling.md)
+
+## Job 234: trip mode behind `trip-mode` (2026-11-14)
+
+Built from Peter's pick t864u (PR #454, https://github.com/trost-systems/snacklist/pull/454).
+
+- **The question.** TM2's sheet „Kaufst du gerade ein?“ appears on every own tick while no trip
+  runs, with „Zurücknehmen“.
+- **The strip.** TM1's slim strip holds the stopwatch, Pause and Beenden. After 45 min without a
+  tick the trip pauses itself; after 4 h it ends itself, always at the last tick.
+- **The summary.** TM1's page has a section per store: planned vs paid per item, store totals,
+  the overall total, the difference, and „ohne Preis“ counts. The same page opens from the trip's
+  Verlauf entries.
+- **Free.** TM2's card shows without blur.
+- **Server.** `public.trip_sessions` with one Verlauf entry per store.
+
+Flags: `trip-mode` is new (off; the lead creates it internal-only). The amounts need
+`prices-and-trip-total` and the Verlauf entries `grocery-log`; none of them is widened. Ships in
+the next green main build on TestFlight once merged; Peter's install needs `trip-mode` on (steps
+in `docs/NEEDS_PETER.md` "Job 234").
+
+Legal GL-2: pharmacies get no question and no log card: `Store.isPharmacy`
+(`app/lib/list/model.dart:70`), used at `app/lib/trip/trip_cubit.dart:301` and
+`app/lib/log/trip_prompts.dart:76`. Review 0 also fixed a double log through job 199's card. Ships
+in the next green main build after the merge (TestFlight), behind `trip-mode`.
+
+Verified: `drive.sh trip-mode` PASS in de, en, dark and 358 px, plus a 1100 px rail check. The
+unit, widget and pgTAP tests pass, and so does `ci-ok`. TQ1 to TQ15, decided or left open:
+`docs/done/234-trip-mode-impl.md`, `docs/DECISIONS.md` "Job 234". Details:
+[docs/done/234-trip-mode-impl.md](docs/done/234-trip-mode-impl.md)

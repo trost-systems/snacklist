@@ -116,6 +116,15 @@ void main() {
     expect(await cache.list('peter', 'home').load(), isNull);
   });
 
+  test("signing out forgets each user's trip (job 234)", () async {
+    await cache.saveKeptTrips('peter', '{"running":null}');
+    await cache.saveKeptTrips('lea', '{"running":null}');
+    expect(await cache.keptTrips('peter'), '{"running":null}');
+    await cache.forget();
+    expect(await cache.keptTrips('peter'), isNull);
+    expect(await cache.keptTrips('lea'), isNull);
+  });
+
   test('signing out forgets every user', () async {
     await cache.remember('peter', households: [home], shown: home.id);
     await cache.remember('lea', households: [home], shown: home.id);

@@ -34,6 +34,8 @@ void main() {
       'checklist_step_done',
       'checklist_dismissed',
       'shop_started',
+      'shop_asked',
+      'shop_ended',
       'price_entered',
       'trip_total_viewed',
       'scan_started',
@@ -101,6 +103,7 @@ void main() {
     ('paywall_viewed', {'entry_point': 'more'}),
     ('paywall_viewed', {'entry_point': 'integrations'}),
     ('paywall_viewed', {'entry_point': 'history'}),
+    ('paywall_viewed', {'entry_point': 'trip'}),
     (
       'feedback_submitted',
       {
@@ -136,6 +139,16 @@ void main() {
   ];
   const allowed195 = <(String, Map<String, Object>)>[
     ('shop_started', {}),
+    ('shop_started', {'source': 'ask'}),
+    ('shop_started', {'source': 'manual'}),
+    ('shop_asked', {'answer': 'yes'}),
+    ('shop_asked', {'answer': 'no'}),
+    ('shop_asked', {'answer': 'take_back'}),
+    ('shop_ended', {'reason': 'user', 'minutes': 'lt15'}),
+    ('shop_ended', {'reason': 'auto', 'minutes': '15to30'}),
+    ('shop_ended', {'reason': 'user', 'minutes': '30to60'}),
+    ('shop_ended', {'reason': 'user', 'minutes': '60to120'}),
+    ('shop_ended', {'reason': 'auto', 'minutes': 'gt120'}),
     ('price_entered', {'confirmed': false}),
     ('price_entered', {'confirmed': true}),
     ('trip_total_viewed', {'final': false}),
@@ -231,6 +244,15 @@ void main() {
     ('checklist_dismissed', {'open_steps': 4}, 'more steps than there are'),
     ('shop_started', {'store': 'Lidl'}, 'the store name'),
     ('shop_started', {'store_id': 's1'}, 'a store id'),
+    ('shop_started', {'source': 'siri'}, 'a source the app has not'),
+    ('shop_asked', {'answer': 'Ja, Einkauf starten'}, 'the button text'),
+    ('shop_asked', {'item': 'Milch'}, 'the ticked item'),
+    ('shop_ended', {'minutes': 25}, 'the exact minutes'),
+    ('shop_ended', {'minutes': '25'}, 'minutes as text'),
+    ('shop_ended', {'reason': 'timeout'}, 'a reason the app has not'),
+    ('shop_ended', {'stores': 'Lidl, Rewe'}, 'the stores'),
+    ('shop_ended', {'paid_cents': 2345}, 'the amount paid'),
+    ('shop_ended', {'items': 6}, 'the item count'),
     ('price_entered', {'price': 1.99}, 'the price'),
     ('price_entered', {'price_cents': 199}, 'the price in cents'),
     ('price_entered', {'confirmed': 'yes'}, 'confirmed as text'),
@@ -255,6 +277,27 @@ void main() {
       expect(() => checkEvent(event, properties), throwsA(isA<RefusedEvent>()));
     });
   }
+
+  test("a trip's minutes go out as their bucket (job 234)", () {
+    expect(
+      [
+        for (final m in [0, 14, 15, 29, 30, 59, 60, 119, 120, 600])
+          ShopMinutes.of(Duration(minutes: m)).wire,
+      ],
+      [
+        'lt15',
+        'lt15',
+        '15to30',
+        '15to30',
+        '30to60',
+        '30to60',
+        '60to120',
+        '60to120',
+        'gt120',
+        'gt120',
+      ],
+    );
+  });
 
   test('a refusal never repeats the value', () {
     try {

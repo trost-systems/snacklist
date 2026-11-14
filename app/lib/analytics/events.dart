@@ -19,6 +19,9 @@ import 'package:family_groceries/session/session_cubit.dart'
     show HouseholdOrigin;
 import 'package:family_groceries/tips/checklist.dart';
 import 'package:family_groceries/tips/hints.dart' show HintId;
+import 'package:family_groceries/trip/model.dart'
+    as shop
+    show TripEnd, TripSource;
 
 /// Where an added item came from, as the app knows it.
 enum AddSource() {
@@ -53,6 +56,32 @@ enum JoinMethod() {
   link,
   code,
   paste,
+}
+
+/// The answer to „Kaufst du gerade ein?“ after a tick (job 234); [wire]
+/// is what is sent.
+enum ShopAnswer(final String wire) {
+  yes('yes'),
+  no('no'),
+  takeBack('take_back'),
+}
+
+/// How long a trip ran on its stopwatch, coarsely: never the minutes.
+enum ShopMinutes(final String wire) {
+  lt15('lt15'),
+  from15to30('15to30'),
+  from30to60('30to60'),
+  from60to120('60to120'),
+  gt120('gt120');
+
+  /// The bucket [active] falls in.
+  static ShopMinutes of(Duration active) => switch (active.inMinutes) {
+    < 15 => lt15,
+    < 30 => from15to30,
+    < 60 => from30to60,
+    < 120 => from60to120,
+    _ => gt120,
+  };
 }
 
 /// One allowed property: a check its value must pass.
@@ -153,10 +182,10 @@ final eventCatalog = <String, Map<String, PropertyRule>>{
     'household_size': _householdSize,
   },
   // Job 50 (Spec #4 AC7): the Premium page offered a plan with its price,
-  // once per visit, from More, the integration settings or the history's
-  // locked row (job 199). Never a price.
+  // once per visit, from More, the integration settings, the history's
+  // locked row (job 199) or a trip summary's card (job 234). Never a price.
   'paywall_viewed': const {
-    'entry_point': OneOf({'more', 'integrations', 'history'}),
+    'entry_point': OneOf({'more', 'integrations', 'history', 'trip'}),
   },
   // Job 155: the app asked the store for its rating prompt (the store may
   // not show it and never says). Nothing else: no gate, no counts.
@@ -195,7 +224,17 @@ final eventCatalog = <String, Map<String, PropertyRule>>{
   // Job 195 (F2): a shopping trip began, a price was entered or a remembered
   // one confirmed, the running or final trip total was shown. Job 190's
   // flagged prices send the last two. Never a store name, a price or a total.
-  'shop_started': const {},
+  // Job 234's trip mode sends shop_started (asked after a tick, or by hand),
+  // the answer to the question, and the end with its reason and a duration
+  // bucket. Never an item, a store, a name or a price.
+  'shop_started': {'source': _namesOf(shop.TripSource.values)},
+  'shop_asked': {
+    'answer': OneOf({for (final a in ShopAnswer.values) a.wire}),
+  },
+  'shop_ended': {
+    'reason': _namesOf(shop.TripEnd.values),
+    'minutes': OneOf({for (final m in ShopMinutes.values) m.wire}),
+  },
   'price_entered': const {'confirmed': IsBool()},
   'trip_total_viewed': const {'final': IsBool()},
   // Job 195 (F3): a barcode scan began; the Open Food Facts lookup for a
