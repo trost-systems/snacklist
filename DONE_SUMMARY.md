@@ -887,3 +887,34 @@ Verified: `drive.sh trip-mode` PASS in de, en, dark and 358 px, plus a 1100 px r
 unit, widget and pgTAP tests pass, and so does `ci-ok`. TQ1 to TQ15, decided or left open:
 `docs/done/234-trip-mode-impl.md`, `docs/DECISIONS.md` "Job 234". Details:
 [docs/done/234-trip-mode-impl.md](docs/done/234-trip-mode-impl.md)
+
+## Job 237: per-store subtotals, the ST3 summary block behind `list-declutter` (2026-11-14)
+
+PR https://github.com/trost-systems/snacklist/pull/457. Merge SHA: (after the land).
+
+**What was built.** Peter's ST3 pick (t874u) from job 230. With `list-declutter` and `prices-and-trip-total` on, one block replaces job 229's total row, after the open items and before „Zuletzt verwendet“. It has a line per store, „Ohne Laden“ as a line of its own, and „Gesamt“. A tap on a store line scrolls to its section. With one group there is only the total.
+
+Peter's answers:
+- ST-Q1: a sum with an unpriced item reads as a floor, „mind. 32,08 €“.
+- ST-Q2: while a trip runs on the shown list (`trip-mode`), the block splits bought from open. Otherwise it counts open items only.
+- ST-Q3: „Ohne Laden“ gets its own line.
+- ST-Q4: a price per kg on the planned weight reads „≈ 1,51 €“, and so does every sum holding it.
+
+ST-Q5 to Q7 follow the prototype's recommendation. During a trip a fully bought store stays, marked „alles gekauft“. The code is in `app/lib/list/subtotals.dart` (rules) and `app/lib/list/list_view/summary_block.dart` (widget). The decisions are in `docs/DECISIONS.md`, "Job 237". The "weighed" rule is the lead's call there: without a stored flag, a per-kg price typed per kg on an open item counts as an estimate.
+
+**How to verify.** `VH_DEFINES="FLAGS_ON=list-declutter,prices-and-trip-total,trip-mode" .cursor/skills/verify-snacklist/helpers/launch.sh`, then `node .cursor/skills/verify-snacklist/journeys/list-summary.mjs <dir> [--lang en] [--dark] [--scale 1.6 --compact]`. In the app, scroll to the end of the list.
+
+**Test results.**
+- The web build in German light and English dark, at 100 % on 390 px and 160 % on 358 px: all four journeys PASS. Shots are in `docs/screenshots/237/`.
+- `app/test/list/summary_block_test.dart` (18 tests) and `app/test/list/subtotals_test.dart` (10 tests) pass. They cover the floor, the trip split on and off, trip-mode off, a trip on another list, „Ohne Laden“, the estimate, a single store, the jump (also into a folded section), English, 160 % without overflow, and flag off unchanged.
+- Each rule was broken in the code on purpose (no floor, ticked items counted, no estimate, store lines always, no jump, no list check, „0,00 € offen“, other currency as unpriced). A test failed each time.
+- `list_declutter_test.dart`, the trip tests and the full `flutter test` suite pass. The suite failed once on an ARB parity entry for „≈“, which is fixed.
+- Opus review 0 (independent subagent) found nothing must-fix. All eight smaller findings are fixed.
+
+**Privacy.** The privacy policy wording is not affected. There are no new data, events, properties or requests; the block only shows prices already on the list. S1 prices stay behind internal flags.
+
+**TestFlight.** The next green main build after the merge carries it. Peter's account needs `list-declutter` and `prices-and-trip-total` on. For the bought/open split it also needs `trip-mode`. All three are internal only, off for everyone else.
+
+**Missing or blocked.**
+- #454 (job 234, trip mode) had passed review but was never merged, and 237 needs its trip API. After asking on the BOARD (no answer within 20 min), 237 landed it for 234 under the merge lock. It was squashed onto main with the keep-both resolution of its conflicts with #448, and its migration was renamed to `20261114181718_trip_mode.sql`, since the old name sorted before main's newest. No SQL function overlaps with 229's migration. It merged as a0cd3c73. 234's own DONE_SUMMARY still says "(after the land)".
+- Seen in #454, not fixed here: its trip strip breaks „Einkauf läuft“ inside the word at 160 % on 358 px. This is reported on the BOARD.

@@ -4,6 +4,7 @@ import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/app/router.dart';
 import 'package:family_groceries/list/list_view/item_row.dart';
 import 'package:family_groceries/list/list_view/price_views.dart';
+import 'package:family_groceries/list/list_view/summary_block.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/pricing.dart';
 import 'package:family_groceries/tips/hint_views.dart';
@@ -267,7 +268,7 @@ void main() {
       tester,
     ) async {
       await pumpList(tester, flags: priced, seed: seed);
-      final total = find.byType(TotalBar);
+      final total = find.byType(SummaryBlock);
       expect(total, findsOneWidget);
       final rect = tester.getRect(total);
       for (var i = 0; i < 3; i++) {
@@ -287,7 +288,11 @@ void main() {
         reason: 'not a bar over the add field',
       );
       expect(find.text('Einkaufssumme'), findsOneWidget);
-      expect(tester.widget<Text>(key('total-amount')).data, '1,19 €');
+      // Three Artikel without a price: a floor (job 237).
+      expect(
+        tester.widget<Text>(key('total-amount')).textSpan?.toPlainText(),
+        'mind. 1,19\u00a0€',
+      );
 
       // It scrolls with the list.
       final before = rect.top;
@@ -374,7 +379,7 @@ void main() {
         expect(tester.getSize(switcher).height, greaterThanOrEqualTo(48));
         expect(tester.getRect(key('list-edit')).right, lessThanOrEqualTo(358));
         await tester.scrollUntilVisible(
-          find.byType(TotalBar),
+          find.byType(SummaryBlock),
           100,
           scrollable: find.byType(Scrollable).first,
         );

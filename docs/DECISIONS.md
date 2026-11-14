@@ -13127,3 +13127,61 @@ nothing changes and nothing new is requested.
   "Lidl 6"`, `switch "Rewe 8 1 …"`). Each is a container now; „War geplant“ is one node with the
   button and its toggled state (web: `switch "War geplant"` with `aria-checked`; Flutter web has
   no `aria-pressed`). The Free card's heading and the ended card got the same fix.
+
+## Job 237: per-store subtotals, ST3 summary block behind `list-declutter`, 2026-11-14
+
+Peter picked ST3 `summary-block` from job 230 (t874u) and answered ST-Q1 to ST-Q4. The block
+replaces job 229's total row when `list-declutter` and `prices-and-trip-total` are both on; with
+`list-declutter` off the list is unchanged (the bar at the bottom, „Summe <Laden>“ at each
+section's end). The rules are pure in `app/lib/list/subtotals.dart` (`Sum`, `StoreTally`,
+`Summary`, `summaryOf`); the widget is `app/lib/list/list_view/summary_block.dart`.
+
+- **What counts (ST-Q2, Peter).** Without a running trip, only the open items of the shown list.
+  While the user's trip runs on the shown list (job 234's `Running`, flag `trip-mode`), the items
+  bought on it count too (`boughtOnTrip`, the same test the trip summary uses), apart from the open
+  ones. A trip on another list of the household does not split the shown one. With `trip-mode`
+  off there is never a split. This changes job 190's „open or ticked“ rule only behind
+  `list-declutter`.
+- **Floor (ST-Q1, Peter).** An item without a price in the household's currency today makes every
+  sum holding it a floor: „mind. 32,08 €“ / "at least €32.08", per store and for Gesamt. A price
+  typed today in an earlier currency is left out of the sum and of „ohne Preis“, as job 190's bar
+  does (its chip shows a price), but it makes the sum a floor too (review 0).
+- **Estimate (ST-Q4, Peter): what „weighed“ means without a new column.** PW1 (job 190) writes
+  the scale weight into `items.quantity` on save, so the app cannot tell a weight typed at the
+  scale from the planned one the editor prefilled. Lead's call here: a line is an estimate while
+  its price is per kg or l, typed per kg or l (`price_basis = unit`), and the item is open. The
+  label's total (`price_basis = line`) is a weighed line, and a ticked item is in the cart. So a
+  shopper who types the €/kg price and the real weight sees „≈“ until the tick, which comes
+  right after. A `price_weighed` column would make this exact but needs a migration, a new
+  `SetPrice` field, `export_my_data` (which job 234 also redefines) and old apps writing it: not
+  worth it for an internal flag. The row's price chip, the store line and Gesamt all read „≈“
+  then; with a floor too „mind. ≈ …“. Screen readers hear „etwa“ / "about" and „mindestens“.
+- **Ohne Laden (ST-Q3, Peter).** A line of its own, last, like a store. Items of a store gone
+  from the catalog count there, as the list shows them.
+- **One group, one row.** Lines show only with two groups or more („Ohne Laden“ counts as one);
+  otherwise the block is job 229's row („Einkaufssumme“ with the counts and the sum).
+- **A store bought in full stays (job 230's rule) only during a trip.** Without a trip nothing
+  ticked counts, so a store with nothing open has nothing to sum and leaves with its section;
+  the lines still add up to Gesamt. During a trip it stays with a check, „alles gekauft“ and its
+  bought sum, and is not a button (no section to jump to).
+- **The split's wording.** Gesamt always says „0,95 € gekauft · ≈ 11,79 € offen“ during a trip
+  (then „· 1 ohne Preis“). A store line says it only when the store has both bought and open
+  items; with nothing bought there, „0,00 € gekauft · 3,60 € offen“ would repeat its own amount.
+  Without a trip Gesamt keeps the app's „6 mit Preis · 1 offen“ (ST-Q6 unanswered: the
+  prototype's recommendation, keep the existing wording); store lines say „1 ohne Preis“ as the
+  prototype. The prototype's „3 Läden ·“ prefix is left out: the store lines stand right above.
+- **ST-Q5 / ST-Q7 (unanswered, prototype's recommendation).** Dividers show only the count (they
+  already did); no section-end „Summe“ line under ST3; no jump back from a section to the block.
+- **Layout from the web drive.** An amount takes only the width it needs, at most 55 % of the
+  line, so a long store name wraps in the rest. Gesamt shows „mind. ≈“ small and muted before
+  the large figure, and its sub-line runs under the whole row: beside the amount it was squeezed
+  to five lines at 160 % on 358 px.
+- **The price editor's „Summe danach“** uses the block's Gesamt with the flag on, so the two
+  agree; without the flag it is job 190's bar total as before.
+- **Review 0 (Opus, independent).** Nothing must-fix. Taken: the other-currency rule above; an
+  open part with items but no price shows only the count („0,95 € gekauft · 1 ohne Preis“, not
+  „0,00 € offen“); „EINKAUFSSUMME“ is a heading for screen readers; tests for a trip on another
+  list, a fully bought store not being a button, a jump into a folded section, and a ticked
+  weighed item losing its „≈“.
+- **Seen, not fixed here:** at 160 % on 358 px job 234's trip strip breaks „Einkauf läuft“ inside
+  the word („Einkau / f läuft“). Job 234's PR (#454) is still open; reported on the BOARD.

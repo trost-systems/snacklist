@@ -501,7 +501,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 
 ## Decluttered list (behind a flag, not public)
 
-**What it does.** Not public yet: it is switched on only for internal test installs (feature flag `list-declutter`). With it on, the list's top shows one button with the household's name small above the list's name, instead of the household button and a row of list tabs. The top stays put and is see-through: the list scrolls on under it. With prices on, the shopping total is the last line of the open items instead of a bar above the add field. The button opens the household's own page: its lists (tap one to show it), „Einladen“ (EN "Invite") and a row like „3 Mitglieder · 1 Einladung offen“ (EN "3 members · 1 open invite") that opens the members, where you invite, revoke an open invite or (as owner or admin) remove someone. „‹ Haushalte“ (EN "‹ Households") goes to all households, where a tap opens that household's page. Press and hold a list or a household and drag it to change the order; each person keeps their own order of households.
+**What it does.** Not public yet: it is switched on only for internal test installs (feature flag `list-declutter`). With it on, the list's top shows one button with the household's name small above the list's name, instead of the household button and a row of list tabs. The top stays put and is see-through: the list scrolls on under it. With prices on, the shopping total is a block after the open items instead of a bar above the add field: a line per store with its sum (tap one to jump to that store), „Ohne Laden“ (EN "No store") as a line of its own, then „Gesamt“ (EN "Total"). With one store it is just the total. Sums count what is still on the list; while a shopping trip runs they also count what was bought on it, split into „gekauft“ and „offen“ (EN "bought", "open"), and a store bought in full stays with „alles gekauft“ (EN "all bought"). With items still without a price a sum reads „mind. 32,08 €“ (EN "at least €32.08"); a price per kilo on the planned weight reads „≈ 1,51 €“ until the item is ticked or its label price is typed. The button opens the household's own page: its lists (tap one to show it), „Einladen“ (EN "Invite") and a row like „3 Mitglieder · 1 Einladung offen“ (EN "3 members · 1 open invite") that opens the members, where you invite, revoke an open invite or (as owner or admin) remove someone. „‹ Haushalte“ (EN "‹ Households") goes to all households, where a tap opens that household's page. Press and hold a list or a household and drag it to change the order; each person keeps their own order of households.
 
 **How to get there.**
 1. Only on a test install with the flag on: tab „Liste“, the button top left.
@@ -511,10 +511,11 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 
 **Never claim.**
 - That the new look is available to users: it is behind a flag, rollout off.
+- That the totals are exact while they read „mind.“ or „≈“, or that ticked items count when no trip runs.
 - That the order of households is shared: it is each person's own; the order of lists is the household's.
 - That lists can be reordered offline, or that the bottom bar changed: the add field and the three tabs are as before.
 
-**Last verified.** branch job/229-list-declutter-impl, 2026-11-14 (CET), driven on the web build with the flag on, German light and English dark, 100 % and 130 % text (`journeys/list-declutter.mjs`, PASS). Recipe: [list-declutter.md](./list-declutter.md).
+**Last verified.** branch job/229-list-declutter-impl, 2026-11-14 (CET), driven on the web build with the flag on, German light and English dark, 100 % and 130 % text (`journeys/list-declutter.mjs`, PASS). The totals block: branch job/237-store-subtotals-st3-impl, 2026-11-14 (CET), German light and English dark, 100 % and 160 % text (`journeys/list-summary.mjs`, PASS). Recipe: [list-declutter.md](./list-declutter.md).
 
 ## Theme: System, light, dark
 
