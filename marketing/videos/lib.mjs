@@ -41,21 +41,28 @@ export const unit = (fmt) => FORMATS[fmt].width / FORMATS[fmt].shown.width;
  * A phone: navy body, 2 px contour, sticker shadow (site/scenes/scenes.css .phone), and the
  * real app footage inside its screen. `fadeTop` ([from, to] in u from the phone's top) dissolves a cropped phone's head into the
  * ground, so no screen edge sits above content that is really mid-list. `box` is the phone in u; `appTop` is the logical app y at
- * the screen's top edge. Returns the html and a mapper from logical app points to stage u.
+ * the screen's top edge. `pans` ([{ at, dur, appTop }] on the composition clock) move the view
+ * to another app y, as a camera following the story; the tweens come back with the html. Returns
+ * the html, the tweens and a mapper from logical app points (at a time, for pans) to stage u.
  */
-export function phone({ id, box, appTop, src, start, duration, mediaStart, z = 2, quiet = false, fadeTop = null }) {
+export function phone({ id, box, appTop, src, start, duration, mediaStart, z = 2, quiet = false, fadeTop = null, pans = [] }) {
   const pad = 12; // 10 px body + 2 px contour, as in scenes.css
   const screen = { x: box.x + pad, y: box.y + pad, w: box.w - 2 * pad, h: box.h - 2 * pad };
   const k = screen.w / APP.width;
   const html = `
   <div class="phone${quiet ? ' phone--quiet' : ''}" id="${id}" data-layout-allow-overflow style="left:calc(${box.x} * var(--u));top:calc(${box.y} * var(--u));width:calc(${box.w} * var(--u));height:calc(${box.h} * var(--u));z-index:${z}${fadeTop ? `;--fade:linear-gradient(to bottom, transparent calc(${fadeTop[0]} * var(--u)), #000 calc(${fadeTop[1]} * var(--u)));-webkit-mask-image:var(--fade);mask-image:var(--fade)` : ''}">
     <div class="screen">
-      <video id="${id}-v" class="clip" src="${src}" muted playsinline data-start="${start}" data-duration="${duration}" data-media-start="${mediaStart}" data-track-index="${z}"
-        style="left:0;top:calc(${-appTop * k} * var(--u));width:calc(${APP.width * k} * var(--u));height:calc(${APP.height * k} * var(--u))"></video>
+      <div class="pan" id="${id}-pan" style="--pan:0">
+        <video id="${id}-v" class="clip" src="${src}" muted playsinline data-start="${start}" data-duration="${duration}" data-media-start="${mediaStart}" data-track-index="${z}"
+          style="left:0;top:calc(${-appTop * k} * var(--u));width:calc(${APP.width * k} * var(--u));height:calc(${APP.height * k} * var(--u))"></video>
+      </div>
     </div>
   </div>`;
-  const at = (x, y) => ({ x: screen.x + x * k, y: screen.y + (y - appTop) * k });
-  return { html, at, k, screen };
+  const tweens = pans.map((p) => `tl.to('#${id}-pan', { '--pan': ${((appTop - p.appTop) * k).toFixed(3)}, duration: ${p.dur}, ease: 'power2.inOut' }, ${frames(p.at)});`);
+  /** The app y at the screen's top at time t (linear through a pan; taps never fall inside one). */
+  const topAt = (t) => pans.reduce((top, p) => (t <= p.at ? top : t >= p.at + p.dur ? p.appTop : top + (p.appTop - top) * ((t - p.at) / p.dur)), appTop);
+  const at = (x, y, t = 0) => ({ x: screen.x + x * k, y: screen.y + (y - topAt(t)) * k });
+  return { html, tweens, at, k, screen };
 }
 
 /** A touch dot for each press/release pair of one client, timed on the composition clock. */
@@ -68,7 +75,7 @@ export function touches({ id, events, client, toStage, toTime, from, to }) {
     const t0 = toTime(p.t);
     const t1 = toTime(r?.t ?? p.t + 100);
     if (t0 < from || t1 > to) return;
-    const { x, y } = toStage(p.x, p.y);
+    const { x, y } = toStage(p.x, p.y, t0);
     const did = `${id}-${i}`;
     const start = frames(Math.max(0, t0 - 0.12));
     const end = frames(t1 + 0.32);

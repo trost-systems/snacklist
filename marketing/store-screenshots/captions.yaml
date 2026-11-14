@@ -1,0 +1,172 @@
+# Every word the store files show besides the app's own (docs/STORE_SCREENSHOTS.md, job 215).
+#
+#   <locale>:
+#     shots:               one entry per shot id of sets.mjs, here in store order
+#       <id>:
+#         status:          draft | approved (approved only after Peter and Legal)
+#         h: [line 1, line 2]   the headline, always two lines
+#         s:               the subline
+#         alt:             the store's alt text, at most 140 characters
+#         sticker:         words drawn on the shot's sticker (voice: the spoken sentence; assist:
+#                          the request, the reply and the items the assistant adds)
+#         may_name:        words this shot names in every variant (api: MCP and API, Peter's call;
+#                          Legal checks every caption before upload)
+#         premium:         api only: the label --premium-label puts on the frame once MCP and the
+#                          API are paid (Apple 2.3.2; no price, 2.3.7)
+#         variants:        voice and assist only: neutral (the default), named, named_siri. A
+#                          variant replaces s and alt, and may replace them per store (play:, or
+#                          the name of the variant Play shows instead).
+#     feature: { status, tagline, alt }    the Play feature graphic
+#
+# The words a sticker shows are what the capture really sends: the voice sentence goes to the
+# local voice function, the assist items to the local mcp function.
+# Siri and Alexa may appear only in a named variant, MCP only there or on a shot that may name it,
+# API only on a shot that may name it; Siri never on Play, and never "Works with Alexa" (Amazon's
+# device programme). Named variants wait for Legal; Alexa waits for the skill's certification
+# (docs/store/store-captions-assistants.md).
+
+de-DE:
+  shots:
+    list:
+      status: draft
+      h: [Eine Liste., Für alle.]
+      s: Für Partner, Familie oder WG. Ohne Werbung.
+      alt: Gemeinsame Einkaufsliste nach Läden; zwei neue Einträge von Anna sind gelb markiert.
+    sync:
+      status: draft
+      h: [Du schreibst., Anna sieht’s.]
+      s: Sofort bei allen auf der Liste.
+      alt: Jonas trägt Kaffee ein, und auf Annas Liste erscheint er sofort gelb markiert im Supermarkt.
+    add:
+      status: draft
+      h: ["Kurz getippt,", "schon drauf."]
+      s: Mit Menge und Vorschlägen aus euren Einkäufen.
+      alt: Beim Tippen von „3 Jogh“ schlägt Snacklist „Joghurt · 3“ aus früheren Einkäufen vor.
+    order:
+      status: draft
+      h: ["Dein Laden,", "dein Weg."]
+      s: Halten und ziehen. Jeder Laden hat seine Reihenfolge.
+      alt: Die Kategorien im Supermarkt werden per Halten und Ziehen in die eigene Reihenfolge gebracht.
+    voice:
+      status: draft
+      h: ["Gesagt,", "notiert."]
+      sticker:
+        said: Bananen, Butter und Haferflocken
+      variants:
+        neutral:
+          s: Per Sprachassistent auf die Liste.
+          alt: Jonas sagt „Bananen, Butter und Haferflocken“, und auf Annas Liste erscheinen die drei gelb markiert.
+        named:
+          s: Funktioniert mit Siri und dem Snacklist-Skill für Amazon Alexa.
+          alt: Jonas sagt Siri „Bananen, Butter und Haferflocken“, und auf Annas Liste erscheinen die drei gelb markiert.
+          play:
+            s: Mit dem Snacklist-Skill für Amazon Alexa auf die Liste sprechen.
+            alt: Jonas sagt dem Snacklist-Skill für Amazon Alexa „Bananen, Butter und Haferflocken“; bei Anna erscheinen die drei gelb markiert.
+        named_siri:
+          s: "Funktioniert mit Siri: Artikel per Sprache auf die Liste."
+          alt: Jonas sagt Siri „Bananen, Butter und Haferflocken“, und auf Annas Liste erscheinen die drei gelb markiert.
+          play: neutral
+    assist:
+      status: draft
+      h: [Läuft auch, von selbst.]
+      sticker:
+        ask: Wir machen Apfelpfannkuchen. Setz die Zutaten auf unsere Liste.
+        reply: Steht auf eurer Liste
+        items: [Äpfel, Eier, Mehl]
+      variants:
+        neutral:
+          s: KI-Assistenten schreiben mit.
+          alt: Ein KI-Assistent setzt Äpfel, Eier und Mehl auf die Liste; bei Anna erscheinen sie sofort gelb markiert.
+        named:
+          s: Verbinde deinen KI-Assistenten über MCP.
+          alt: Ein KI-Assistent setzt über MCP Äpfel, Eier und Mehl auf die Liste; bei Anna erscheinen sie sofort gelb markiert.
+    api:
+      status: draft
+      h: ["Für Bastler:", MCP und API.]
+      s: Verbinde KI-Assistenten über MCP und eigene Automationen über die API.
+      alt: Der Bildschirm Zugänge mit der Adresse des MCP-Servers und dem API-Bereich, noch ohne API-Schlüssel.
+      may_name: [MCP, API]
+      premium: Mit Snacklist Premium
+    invite:
+      status: draft
+      h: [Alle dabei., Viele Listen.]
+      s: Lade alle ein. So viele Listen, wie ihr wollt.
+      alt: Haushaltsseite mit Anna und Jonas, „Leute einladen“ und eigenen Listen für Wocheneinkauf, Baumarkt und Geburtstag.
+  feature:
+    # Peter chose this wording (FG2) as the site's hero tagline on 2026-11-01 (job 65 brief,
+    # site/content/landing/copy.yml hero.title); as a store caption Legal has not seen it.
+    status: draft
+    tagline: Gemeinsam einkaufen, ohne Werbung.
+    alt: Gemeinsame Einkaufsliste ohne Werbung; zwei neue Einträge von Anna sind gelb markiert.
+
+en-US:
+  shots:
+    list:
+      status: draft
+      h: [One list., For everyone.]
+      s: For couples, families and roommates. No ads.
+      alt: A shared shopping list by store; the two items Anna just added are highlighted in yellow.
+    sync:
+      status: draft
+      h: [You add it., Anna sees it.]
+      s: On everyone’s list right away.
+      alt: Jonas adds coffee, and it shows up on Anna’s list right away, highlighted in the Supermarket.
+    add:
+      status: draft
+      h: ["Type a little,", "and it’s on."]
+      s: With amounts and suggestions from your past shops.
+      alt: Typing “2 Coff” makes Snacklist suggest “Coffee · 2” from past shops.
+    order:
+      status: draft
+      h: ["Your store,", "your way."]
+      s: Hold and drag. Every store keeps its own order.
+      alt: The Supermarket’s categories are put in your own walking order by holding and dragging.
+    voice:
+      status: draft
+      h: ["Say it,", "it’s on."]
+      sticker:
+        said: Bananas, Butter and Oats
+      variants:
+        neutral:
+          s: Add items with your voice assistant.
+          alt: Jonas says “Bananas, Butter and Oats”, and all three show up highlighted on Anna’s list.
+        named:
+          s: Works with Siri and the Snacklist skill for Amazon Alexa.
+          alt: Jonas tells Siri “Bananas, Butter and Oats”, and all three show up highlighted on Anna’s list.
+          play:
+            s: Add items with the Snacklist skill for Amazon Alexa.
+            alt: With the Snacklist skill for Amazon Alexa, Jonas adds “Bananas, Butter and Oats”; all three show up highlighted on Anna’s list.
+        named_siri:
+          s: "Works with Siri: add items by voice."
+          alt: Jonas tells Siri “Bananas, Butter and Oats”, and all three show up highlighted on Anna’s list.
+          play: neutral
+    assist:
+      status: draft
+      h: ["Works on", "its own, too."]
+      sticker:
+        ask: We’re making apple pancakes. Put what we need on our list.
+        reply: On your list now
+        items: [Apples, Eggs, Flour]
+      variants:
+        neutral:
+          s: AI assistants add to your list too.
+          alt: An AI assistant puts apples, eggs and flour on the list; they show up highlighted on Anna’s phone right away.
+        named:
+          s: Connect your AI assistant via MCP.
+          alt: An AI assistant puts apples, eggs and flour on the list via MCP; they show up highlighted on Anna’s phone right away.
+    api:
+      status: draft
+      h: ["For tinkerers:", MCP and API.]
+      s: Connect AI assistants via MCP and your own automations via the API.
+      alt: The Access screen with the MCP server address and the API section, with no API key yet.
+      may_name: [MCP, API]
+      premium: With Snacklist Premium
+    invite:
+      status: draft
+      h: [Everyone in., Many lists.]
+      s: Invite everyone. As many lists as you want.
+      alt: The household page with Anna and Jonas, “Invite people” and separate lists for Weekly shop, Hardware and Birthday.
+  feature:
+    status: draft
+    tagline: Shop together, no ads.
+    alt: A shared shopping list without ads; the two items Anna just added are highlighted in yellow.

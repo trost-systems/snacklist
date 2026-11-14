@@ -1,0 +1,69 @@
+# Job 215: the Play and App Store screenshots, the Play feature graphic and icon, from the real web
+# build against a local stack with the demo household „Unser Haushalt“ (scripts/store-screenshots.sh,
+# docs/STORE_SCREENSHOTS.md). Uploads the set as an artifact; nothing goes to any store. By hand only.
+name: Store screenshots
+run-name: "store screenshots ${{ inputs.locale }} ${{ inputs.store }} ${{ inputs.assistants }}${{ inputs.premium_label && ' premium-label' || '' }} on ${{ github.ref_name }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      locale:
+        type: choice
+        options: [all, de-DE, en-US]
+        default: all
+      store:
+        type: choice
+        options: [all, play, appstore]
+        default: all
+      assistants:
+        description: Voice and assist captions; named and named_siri wait for Legal (docs/STORE_SCREENSHOTS.md)
+        type: choice
+        options: [neutral, named, named_siri]
+        default: neutral
+      premium_label:
+        description: „Mit Snacklist Premium“ on the api shot, only once MCP and the API are paid (Apple 2.3.2)
+        type: boolean
+        default: false
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ inputs.locale }}-${{ inputs.store }}-${{ inputs.assistants }}-${{ inputs.premium_label }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+# Same values as ci.yml.
+env:
+  FLUTTER_VERSION: 3.50.0
+  SUPABASE_CLI_VERSION: 2.121.0
+  SUPABASE_INTERNAL_IMAGE_REGISTRY: docker.io
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: ./.github/actions/e2e-setup
+        with:
+          supabase-cli-version: ${{ env.SUPABASE_CLI_VERSION }}
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          ffmpeg: 'true'
+      - run: scripts/store-screenshots.sh --locale "$LOCALE" --store "$STORE" --assistants "$ASSISTANTS" ${PREMIUM_LABEL:+--premium-label}
+        env:
+          LOCALE: ${{ inputs.locale }}
+          STORE: ${{ inputs.store }}
+          ASSISTANTS: ${{ inputs.assistants }}
+          PREMIUM_LABEL: ${{ inputs.premium_label && '1' || '' }}
+      - name: Summary
+        if: ${{ !cancelled() }}
+        run: cat marketing/store-screenshots/out/summary.md >>"$GITHUB_STEP_SUMMARY" || true
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !cancelled() }}
+        with:
+          name: store-screenshots-${{ github.sha }}-${{ inputs.assistants }}${{ inputs.premium_label && '-premium-label' || '' }}
+          path: |
+            marketing/store-screenshots/out/
+            !marketing/store-screenshots/out/runs.txt
+            !marketing/store-screenshots/out/raw/
+          if-no-files-found: error

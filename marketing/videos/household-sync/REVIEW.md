@@ -1,9 +1,10 @@
 # Review: household-sync
 
-Mia, Noah and Ida (the fictional Brandt family) on three real app instances filmed on one clock.
-Mia adds an item; it arrives on Noah's and Ida's phones at the measured latency, with the app's own
-"1 neu von Mia Brandt" note and highlighted row; Noah ticks it off and it leaves all three lists.
-11.9 to 12.5 s (job 146).
+Anna and Jonas (the demo household „Unser Haushalt“) on two real app instances filmed on one
+clock. Anna adds an item; it arrives on Jonas's phone at the measured latency, under the household
+name, with the app's own „1 neu von Anna“ note and highlighted row; Jonas ticks it off and it
+leaves both lists. 11.2 to 11.8 s (job 215). The sections up to job 150 describe the earlier takes
+with three members of the Brandt family.
 
 ## Hand-over notes (snacklist-ui-craft)
 
@@ -70,6 +71,26 @@ Filmed again from main 02cc9da8 (job 148's floating top bar and hex Anpassen) wi
 microphone in the add field: the Linux capture build now starts with `FG_DICTATION`
 (`test_driver/main_marionette.dart`), so the field looks as on a phone. Same shots and timing.
 
+## Re-take (job 215, 2026-11-14)
+
+Filmed again from main 789ffd6a with the demo household „Unser Haushalt“ (EN "Our Home"): two
+phones, Anna and Jonas, instead of the Brandt family's three (`demo-haushalt.yaml`,
+`demo-household-en.yaml`; four generic stores, no retailer, no Premium, no price).
+
+- Eier (Eggs) were bought at the Wochenmarkt (Farmers market) five weeks back, so the item lands
+  in the first store, right under the household name. Jonas's phone shows his screen top:
+  „Unser Haushalt“, the „1 neu von Anna“ note in place of the store chip, and the honey row.
+- Anna closes her sheet with its close button (a tap on the list above it was off camera), and
+  her view pans to the top of her list (0.6 s) while Jonas's row is still honey, then back to the
+  add field after the tick. The poster is that moment: the household name and Eier on both phones.
+- Wide: the phones no longer overlap (job 65 addendum item 5); Jonas's phone sits 9 u left of
+  Anna's, Anna runs off the top, bottom and right edge. Compact keeps the deck: Jonas's band
+  stands in front of the foot of Anna's phone, below her add field.
+- Checked: ffprobe of all eight web files (11.2 to 11.8 s), first, middle and last frame of every
+  cut and all four posters; seam SSIM 0.9961 to 0.9972. Only Anna, Jonas, „Unser Haushalt“/"Our
+  Home" and the four generic stores appear. Sync measured 0.67 to 1.21 s (Marionette polls); the
+  text alternatives say „gleich darauf“ / "right after".
+
 ## Kept warnings (hyperframes check)
 
 - `line_unread` on the last caption and on an avatar initial: the loop's first caption again, and
@@ -81,28 +102,28 @@ microphone in the add field: the Linux capture build now starts with `FG_DICTATI
 <!-- report -->
 | Cut | File | Codec | Size | fps | Duration | Bytes | Audio |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| de-wide | master (render) | h264 yuv420p | 1920x1080 | 30/1 | 11.90 s | 1064 KB | none |
-| de-wide | household-sync-de-wide.mp4 | h264 yuv420p | 1920x1080 | 30/1 | 11.90 s | 493 KB | none |
-| de-wide | household-sync-de-wide.webm | vp9 yuv420p | 1920x1080 | 30/1 | 11.90 s | 458 KB | none |
-| de-compact | master (render) | h264 yuv420p | 1080x1350 | 30/1 | 11.90 s | 699 KB | none |
-| de-compact | household-sync-de-compact.mp4 | h264 yuv420p | 1080x1350 | 30/1 | 11.90 s | 345 KB | none |
-| de-compact | household-sync-de-compact.webm | vp9 yuv420p | 1080x1350 | 30/1 | 11.90 s | 372 KB | none |
-| en-wide | master (render) | h264 yuv420p | 1920x1080 | 30/1 | 11.53 s | 995 KB | none |
-| en-wide | household-sync-en-wide.mp4 | h264 yuv420p | 1920x1080 | 30/1 | 11.53 s | 450 KB | none |
-| en-wide | household-sync-en-wide.webm | vp9 yuv420p | 1920x1080 | 30/1 | 11.53 s | 426 KB | none |
-| en-compact | master (render) | h264 yuv420p | 1080x1350 | 30/1 | 11.53 s | 646 KB | none |
-| en-compact | household-sync-en-compact.mp4 | h264 yuv420p | 1080x1350 | 30/1 | 11.53 s | 316 KB | none |
-| en-compact | household-sync-en-compact.webm | vp9 yuv420p | 1080x1350 | 30/1 | 11.53 s | 337 KB | none |
+| de-wide | master (render) | h264 yuv420p | 1920x1080 | 30/1 | 11.83 s | 1861 KB | none |
+| de-wide | household-sync-de-wide.mp4 | h264 yuv420p | 1920x1080 | 30/1 | 11.83 s | 840 KB | none |
+| de-wide | household-sync-de-wide.webm | vp9 yuv420p | 1920x1080 | 30/1 | 11.83 s | 668 KB | none |
+| de-compact | master (render) | h264 yuv420p | 1080x1350 | 30/1 | 11.83 s | 1184 KB | none |
+| de-compact | household-sync-de-compact.mp4 | h264 yuv420p | 1080x1350 | 30/1 | 11.83 s | 547 KB | none |
+| de-compact | household-sync-de-compact.webm | vp9 yuv420p | 1080x1350 | 30/1 | 11.83 s | 535 KB | none |
+| en-wide | master (render) | h264 yuv420p | 1920x1080 | 30/1 | 11.23 s | 1823 KB | none |
+| en-wide | household-sync-en-wide.mp4 | h264 yuv420p | 1920x1080 | 30/1 | 11.23 s | 861 KB | none |
+| en-wide | household-sync-en-wide.webm | vp9 yuv420p | 1920x1080 | 30/1 | 11.23 s | 676 KB | none |
+| en-compact | master (render) | h264 yuv420p | 1080x1350 | 30/1 | 11.23 s | 1165 KB | none |
+| en-compact | household-sync-en-compact.mp4 | h264 yuv420p | 1080x1350 | 30/1 | 11.23 s | 525 KB | none |
+| en-compact | household-sync-en-compact.webm | vp9 yuv420p | 1080x1350 | 30/1 | 11.23 s | 544 KB | none |
 
 | Cut | Seam SSIM (first vs last frame) | Poster | Poster at |
 | --- | --- | --- | --- |
-| de-wide | 0.9966 | household-sync-de-wide.webp, 49 KB | 6.27 s |
-| de-compact | 0.9971 | household-sync-de-compact.webp, 41 KB | 6.27 s |
-| en-wide | 0.9965 | household-sync-en-wide.webp, 46 KB | 6.17 s |
-| en-compact | 0.9972 | household-sync-en-compact.webp, 39 KB | 6.17 s |
+| de-wide | 0.9961 | household-sync-de-wide.webp, 48 KB | 6.40 s |
+| de-compact | 0.9972 | household-sync-de-compact.webp, 36 KB | 6.40 s |
+| en-wide | 0.9961 | household-sync-en-wide.webp, 47 KB | 5.80 s |
+| en-compact | 0.9972 | household-sync-en-compact.webp, 36 KB | 5.80 s |
 
 Measured in the takes (Marionette polls, so an upper bound for the app side):
 
-- DE: addToNoahMs 667 ms, addToIdaMs 661 ms, tickToMiaMs 1489 ms, tickToIdaMs 1481 ms
-- EN: addToNoahMs 694 ms, addToIdaMs 691 ms, tickToMiaMs 1310 ms, tickToIdaMs 1290 ms
+- DE: addToJonasMs 1210 ms, tickToAnnaMs 1304 ms
+- EN: addToJonasMs 673 ms, tickToAnnaMs 1235 ms
 <!-- /report -->

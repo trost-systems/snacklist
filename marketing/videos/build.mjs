@@ -140,7 +140,7 @@ const sources = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap((e) =
   ['footage', 'out', 'node_modules', 'build.mjs'].includes(e.name) ? []
     : e.isDirectory() ? sources(join(dir, e.name))
     : /\.(mjs|ts|json|css|md)$/.test(e.name) && e.name !== 'package-lock.json' ? [join(dir, e.name)] : []);
-brandGate([...sources(here), join(repo, 'test/fixtures/scenarios/demo-familie.yaml'), join(repo, 'test/fixtures/scenarios/demo-family-en.yaml')]);
+brandGate([...sources(here), ...['demo-familie', 'demo-family-en', 'demo-haushalt', 'demo-household-en'].map((n) => join(repo, `test/fixtures/scenarios/${n}.yaml`))]);
 
 for (const video of videos.length ? videos : VIDEOS) {
   const scene = await import(join(here, video, 'scene.mjs'));

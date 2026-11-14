@@ -35,8 +35,10 @@ async function fgJson(args: string[]) {
   return doc;
 }
 
+const stateDir = Deno.env.get('FG_STATE_DIR') ?? `${Deno.env.get('HOME')}/.cache/fg/${prefix}`;
+// fg's own stack, or the one FG_STACK_WORKDIR names (a caller's, as in scripts/lib.sh fg_on_repo_stack).
 const stack = JSON.parse(new TextDecoder().decode((await new Deno.Command('supabase', {
-  args: ['status', '-o', 'json', '--workdir', `${Deno.env.get('FG_STATE_DIR') ?? `${Deno.env.get('HOME')}/.cache/fg/${prefix}`}/stack`],
+  args: ['status', '-o', 'json', '--workdir', Deno.env.get('FG_STACK_WORKDIR') ?? `${stateDir}/stack`],
   stdout: 'piped', stderr: 'null',
 }).output()).stdout).replace(/^[^{]*/, ''));
 Deno.env.set('CAPTURE_API_URL', stack.API_URL);
@@ -46,7 +48,7 @@ const scenario = shot.scenario[lang];
 const run: string = (await fgJson(['seed', scenario])).run;
 console.error(`[take] ${video} ${lang}: seeded ${scenario} as ${run}`);
 const manifest = JSON.parse(
-  await Deno.readTextFile(`${Deno.env.get('FG_STATE_DIR') ?? `${Deno.env.get('HOME')}/.cache/fg/${prefix}`}/runs/${run}.json`),
+  await Deno.readTextFile(`${stateDir}/runs/${run}.json`),
 );
 
 const clients: d.Client[] = [];

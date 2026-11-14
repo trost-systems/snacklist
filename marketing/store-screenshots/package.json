@@ -1,0 +1,9 @@
+{
+  "name": "snacklist-store-screenshots",
+  "private": true,
+  "description": "Play and App Store screenshots, feature graphic and icon of the real Snacklist web build (scripts/store-screenshots.sh, docs/STORE_SCREENSHOTS.md). Playwright and supabase-js come from e2e/.",
+  "type": "module",
+  "devDependencies": {
+    "yaml": "2.9.1"
+  }
+}
