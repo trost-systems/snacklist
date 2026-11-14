@@ -2,7 +2,7 @@
 -- trip_session (Free sees no lines), mark_trip_line_planned (Premium), delete_trip_session and
 -- delete_trip, and what happens to sessions when a member leaves, an account or the household goes.
 begin;
-select plan(62);
+select plan(67);
 
 create function pg_temp.login(uid uuid) returns void language plpgsql as $$
 begin
@@ -130,6 +130,42 @@ select results_eq(
 select ok((public.trip_history((select id from home), current_date) -> 'trips')
   @> jsonb_build_array(jsonb_build_object('session_id', :s1::uuid)),
   'trip_history names the session of each entry');
+
+-- Job 246, Legal GL-2: nothing bought at a pharmacy is logged or kept, whether the line's store
+-- is the household's pharmacy, a pharmacy by seed key under another name, or a gone one by name.
+-- A drugstore is no pharmacy. Logging a pharmacy trip by hand still works.
+select pg_temp.logout();
+insert into public.stores (household_id, name, seed_key, sort_order)
+select id, x.name, x.seed, x.o from home, (values ('APOTHEKE am Markt', null, 30), ('Ecke', 'apotheke', 31),
+  ('Drogerie', 'dm', 32)) x (name, seed, o);
+create temp table apo as select s.id from public.stores s join home h on s.household_id = h.id where s.name = 'APOTHEKE am Markt';
+create temp table ecke as select s.id from public.stores s join home h on s.household_id = h.id where s.name = 'Ecke';
+create temp table drogerie as select s.id from public.stores s join home h on s.household_id = h.id where s.name = 'Drogerie';
+grant select on apo, ecke, drogerie to authenticated;
+select pg_temp.login(:lea);
+create temp table pharmacy_trip as select public.save_trip_session((select id from home),
+  pg_temp.trip('00000000-0000-0000-0000-000000234c05', jsonb_build_array(
+    pg_temp.line('p1', 'Ibuprofen', false, true, (select id from apo), 'APOTHEKE am Markt', null, null, 599),
+    pg_temp.line('p2', 'Hustensaft', true, true, (select id from ecke), 'Ecke', null, 800, 800),
+    pg_temp.line('p3', 'Nasenspray', true, false, null, 'Shop-Apotheke', null, 450, null),
+    pg_temp.line('p4', 'Butter', true, true, (select id from lidl), 'Lidl', null, 199, 219),
+    pg_temp.line('p5', 'Zahnpasta', false, true, (select id from drogerie), 'Drogerie', null, null, 95))), true) as s;
+select is((select jsonb_agg(store_name order by store_name) from pg_temp.trips()
+           where session_id = '00000000-0000-0000-0000-000000234c05'),
+  '["Drogerie", "Lidl"]'::jsonb, 'a trip with pharmacy lines logs only the other stores');
+select is((select jsonb_agg(e ->> 'key' order by e ->> 'key') from pg_temp.sessions(), jsonb_array_elements(lines) e
+           where id = '00000000-0000-0000-0000-000000234c05'),
+  '["p4", "p5"]'::jsonb, 'and the session keeps no pharmacy line, bought or not');
+select is((select s -> 'stores' from pharmacy_trip), '["Lidl", "Drogerie"]'::jsonb,
+  'the answer names no pharmacy');
+select is((select (public.save_trip((select id from home), '00000000-0000-0000-0000-000000246d01'::uuid,
+    (select id from apo), current_date, '[{"name": "Ibuprofen"}]')).store_name),
+  'APOTHEKE am Markt', 'a pharmacy trip logged by hand is saved');
+select is((select items from pg_temp.trips() where id = '00000000-0000-0000-0000-000000246d01'),
+  jsonb_build_array(jsonb_build_object('name', 'Ibuprofen', 'quantity', null,
+    'canonical_key', public.canonical_key('Ibuprofen'))), 'with what was bought there');
+select public.delete_trip_session('00000000-0000-0000-0000-000000234c05');
+select public.delete_trip('00000000-0000-0000-0000-000000246d01');
 
 -- A re-save after "Weiter einkaufen": Käse not bought after all, Brot bought at Lidl.
 select public.save_trip_session((select id from home), pg_temp.trip(:s1,
