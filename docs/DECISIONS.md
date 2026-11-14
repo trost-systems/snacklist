@@ -13145,7 +13145,9 @@ section's end). The rules are pure in `app/lib/list/subtotals.dart` (`Sum`, `Sto
 - **Floor (ST-Q1, Peter).** An item without a price in the household's currency today makes every
   sum holding it a floor: „mind. 32,08 €“ / "at least €32.08", per store and for Gesamt. A price
   typed today in an earlier currency is left out of the sum and of „ohne Preis“, as job 190's bar
-  does (its chip shows a price), but it makes the sum a floor too (review 0).
+  does (its chip shows a price), but it makes the sum a floor too (review 0). Only a price in
+  another currency counts so: a price per kg or l on a quantity without a weight („3“, kept by
+  job 190 after a quantity edit) sums nothing and counts as „ohne Preis“ (review 1).
 - **Estimate (ST-Q4, Peter): what „weighed“ means without a new column.** PW1 (job 190) writes
   the scale weight into `items.quantity` on save, so the app cannot tell a weight typed at the
   scale from the planned one the editor prefilled. Job 237's own call, not confirmed by the lead
