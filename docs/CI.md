@@ -172,15 +172,28 @@ The `changes` job (`scripts/ci-changes.sh`) reads the PR's changed files:
   `site` and `site-agent` run. Both site gates always run because the guides
   are Markdown.
 - `android` and `ios` run when `app/ios/`, `app/android/` or `app/pubspec.*`
-  changed. They compile the app's Swift and Kotlin and the plugin registrant
-  generated from pubspec. A Dart change in `app/lib/` is compiled by the
-  flutter, web-prod and e2e gates already.
-- `fastlane` runs when `app/fastlane/` or `app/Gemfile*` changed.
+  changed, or their own gate scripts, or the two checks the ios gate runs on
+  the built app (`scripts/siri-vocabulary.py`,
+  `scripts/app-shortcuts-bundle.py`). They compile the app's Swift and Kotlin
+  and the plugin registrant generated from pubspec. A Dart change in
+  `app/lib/` is compiled by the flutter, web-prod and e2e gates already.
+- `fastlane` runs when `app/fastlane/`, `app/Gemfile*` or its gate script
+  changed.
 - `emails` runs when `emails/`, `supabase/templates/`, `supabase/config.toml`,
-  `design/tokens/` or `site/public/email/` changed.
+  `design/tokens/`, `site/public/email/` or its gate script changed.
 - A change to `ci.yml`, `.github/actions/`, `scripts/ci-changes.sh`,
-  `scripts/lib.sh`, `scripts/gates/` or `scripts/e2e-summary.sh` runs
-  everything, and so does a push to `main` or a manual run.
+  `scripts/lib.sh` or `scripts/e2e-summary.sh` runs everything, and so does
+  a push to `main` or a manual run.
+- A gate's own script (`scripts/gates/<gate>.sh`) is code: it runs the heavy
+  gates and its own job, but `android` and `ios` only when it is theirs.
+  Until job 221 any gate script ran everything: of the 120 PRs merged from
+  7 to 14 November 2026, 25 ran the native gates, 12 for a native path and
+  13 for the CI definition, and 6 of those 13 had changed no more of it
+  than `lint.sh` or `db.sh`. Their 14 runs with an ios job spent 326 macOS
+  runner minutes, and in 10 of them `ci-ok` waited for ios alone, 79 min in
+  all (with e2e in two shards). `scripts/ci-changes-test.sh` (lint gate)
+  holds the table of paths, and checks for every gate that a change to its
+  script turns on the switch its job runs on.
 - `e2e.yml` and `scripts/ci-e2e.sh` (On-demand e2e) count like
   documentation: ci.yml doesn't run them, and the `lint` gate (actionlint,
   shellcheck, `check-gates.sh`) checks them.
@@ -308,8 +321,8 @@ intervals while scrolling a 200-item list (DECISIONS job 28, 7).
    (green first attempts, 7 to 13 November; job 219's baseline). A land that
    gives up starts again with a new turn at the merge lock and, when main
    moved meanwhile, a new push and a new CI run. The ios job runs when a PR
-   changes the native projects, the pubspec, `scripts/gates/`,
-   `scripts/lib.sh` or the CI definition (the list is
+   changes the native projects, the pubspec, `scripts/gates/android.sh` or
+   `ios.sh`, `scripts/lib.sh` or the CI definition (the list is
    `scripts/ci-changes.sh`): land those with `MERGE_WAIT_MINUTES=45`.
    The wait sleeps 20 s between its looks at `ci-ok`. A signal that ends
    only that sleep (a kill by name elsewhere on the machine, job 219) is
