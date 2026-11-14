@@ -226,7 +226,7 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
   void _jump(String key) {
     final state = _cubit.state;
     final section = shownSections(sectionsOf(state.items.values, state.catalog))
-        .where((s) => s.key == key && s.count > 0)
+        .where((s) => s.key == key)
         .firstOrNull;
     if (section != null) {
       unawaited(_reveal(section));

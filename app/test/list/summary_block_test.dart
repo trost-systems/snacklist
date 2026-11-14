@@ -481,9 +481,13 @@ void main() {
         matching: find.text(_market),
       );
       expect(name, findsOneWidget);
+      // Not clipped: as tall as its text wrapped at its width.
+      final paragraph = tester.renderObject<RenderParagraph>(name);
       expect(
-        tester.renderObject<RenderParagraph>(name).didExceedMaxLines,
-        isFalse,
+        paragraph.size.height,
+        greaterThanOrEqualTo(
+          paragraph.getMaxIntrinsicHeight(paragraph.size.width) - 0.5,
+        ),
       );
       for (final k in [
         'subtotal-amount-market',
@@ -492,10 +496,13 @@ void main() {
       ]) {
         final rect = tester.getRect(key(k));
         expect(rect.right, lessThanOrEqualTo(358), reason: k);
+        final amount = tester.renderObject<RenderParagraph>(key(k));
         expect(
-          tester.renderObject<RenderParagraph>(key(k)).didExceedMaxLines,
-          isFalse,
-          reason: k,
+          amount.size.height,
+          greaterThanOrEqualTo(
+            amount.getMaxIntrinsicHeight(amount.size.width) - 0.5,
+          ),
+          reason: '$k not clipped',
         );
       }
       expect(

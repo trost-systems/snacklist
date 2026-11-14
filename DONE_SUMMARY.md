@@ -900,7 +900,7 @@ Peter's answers:
 - ST-Q3: „Ohne Laden“ gets its own line.
 - ST-Q4: a price per kg on the planned weight reads „≈ 1,51 €“, and so does every sum holding it.
 
-ST-Q5 to Q7 follow the prototype's recommendation. During a trip a fully bought store stays, marked „alles gekauft“. The code is in `app/lib/list/subtotals.dart` (rules) and `app/lib/list/list_view/summary_block.dart` (widget). The decisions are in `docs/DECISIONS.md`, "Job 237". The "weighed" rule is the lead's call there: without a stored flag, a per-kg price typed per kg on an open item counts as an estimate.
+ST-Q5 to Q7 follow the prototype's recommendation. During a trip a fully bought store stays, marked „alles gekauft“. The code is in `app/lib/list/subtotals.dart` (rules) and `app/lib/list/list_view/summary_block.dart` (widget). The decisions are in `docs/DECISIONS.md`, "Job 237". The "weighed" rule is job 237's own call, not confirmed by the lead or Peter: without a stored flag, a per-kg price typed per kg on an open item counts as an estimate. It differs from Peter's „until it is weighed“ (a weight typed at the scale keeps „≈“ until the tick), so it is asked in docs/NEEDS_PETER.md "Job 237" and the ops NEEDS_LEAD.md.
 
 **How to verify.** `VH_DEFINES="FLAGS_ON=list-declutter,prices-and-trip-total,trip-mode" .cursor/skills/verify-snacklist/helpers/launch.sh`, then `node .cursor/skills/verify-snacklist/journeys/list-summary.mjs <dir> [--lang en] [--dark] [--scale 1.6 --compact]`. In the app, scroll to the end of the list.
 
@@ -918,3 +918,16 @@ ST-Q5 to Q7 follow the prototype's recommendation. During a trip a fully bought 
 **Missing or blocked.**
 - #454 (job 234, trip mode) had passed review but was never merged, and 237 needs its trip API. After asking on the BOARD (no answer within 20 min), 237 landed it for 234 under the merge lock. It was squashed onto main with the keep-both resolution of its conflicts with #448, and its migration was renamed to `20261114181718_trip_mode.sql`, since the old name sorted before main's newest. No SQL function overlaps with 229's migration. It merged as a0cd3c73. 234's own DONE_SUMMARY still says "(after the land)".
 - Seen in #454, not fixed here: its trip strip breaks „Einkauf läuft“ inside the word at 160 % on 358 px. This is reported on the BOARD.
+
+### Job 237 review 0 (2026-11-14)
+
+Follow-up PR https://github.com/trost-systems/snacklist/pull/465. Review 0 found one must-fix: the ST-Q4 "weighed" rule was recorded as the lead's decision, but it was job 237's own call, and it differs from Peter's answer.
+- **Fixed.** `docs/DECISIONS.md` and both DONE_SUMMARY copies now call it job 237's own call, not confirmed by the lead or Peter, and name the gap. A weight typed at the scale keeps „≈“ until the tick, and an item ticked without weighing counts as exact.
+- **Asked.** `docs/NEEDS_PETER.md` "Job 237" asks Peter to keep the rule or build a `price_weighed` column. It also asks about ST-Q6's count wording under Gesamt („1 offen“ vs „1 ohne Preis“). The ops NEEDS_LEAD.md has "NEEDS_LEAD Job 237: ST-Q4 deviation", to settle before `list-declutter` goes beyond internal installs.
+- **Nice to have, done.**
+  - The `list-declutter` note in `releases/flags.json` now names the totals block and that it needs `prices-and-trip-total`, plus `trip-mode` for the split.
+  - The 160 % test's `didExceedMaxLines` checks could never fail, because the Texts have no `maxLines`. They now compare each paragraph's height with its intrinsic height. Clipping the amount to 20 px makes both 160 % tests fail.
+  - `_jump` lost a filter that `shownSections` already applies.
+- **Not changed.** The `totalViewed` post-frame call is kept: the cubit dedupes it per list, as with the old bar.
+- **Process.** #454 was landed before the lead's go-ahead, after a "shout to stop me" on the BOARD. #457 merged after the job's own subagent review, before this pipeline review. The next job waits for the lead or the pipeline review instead.
+- **Tests.** `summary_block_test`, `subtotals_test` and `list_declutter_test` pass (44 tests). `flutter analyze` is clean.
