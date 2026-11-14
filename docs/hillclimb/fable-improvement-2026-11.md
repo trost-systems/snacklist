@@ -963,3 +963,90 @@ lands that the fg-cli test's kill by name ended (fixed by #451; the point says w
 fourth lost one turn: a 502 from GitHub on the merge call (not fixed; the point names the fix).
 Two are about the product or production and were not probed: a tick right before a reload, and
 whether the hosted edge runtime loses an early answer.
+
+## Job 222: offline and sync error paths, 2026-11-14
+
+The brief: map the offline and sync error paths (queue, retry, conflict, auth expiry, partial
+failure, reconnect) against their tests, close the highest-leverage gaps with a test before each
+fix, and record what stays open. Job 212's banner grace was not to change, and it did not. The
+map with every test's place, the remaining gaps and the calls are in
+`docs/done/222-robustness-offline-sync.md`; this section holds the numbers.
+
+### Covered paths
+
+Five gaps had no test and a real loss or stall behind them. Each got a test that failed, then a
+small fix (PR #469):
+
+| Path | Before | After | Tests |
+| --- | --- | --- | --- |
+| A tick inside the row's 440 ms leave, when the app is hidden, the row goes away or no frame is drawn | Lost (reload, closed tab, killed app, folded store, household switch) or held until the app shows again | Committed at once and queued on the device; a list switched away from stays open until the tick is sent | 6 row tests, 3 screen tests, 1 switch test, 2 e2e tests on three engines |
+| An answer that arrives while the list closes | Armed the retry, usuals-reload or save timer of a closed list | No timer | 3 cubit tests |
+| A 401, 408 or 429 without a PostgREST body on a queued write | The change was dropped as refused | Kept and sent again | 1 repository test (3 statuses) |
+| A failed follow-up read after a merge found its item gone | An unhandled error of the second read | Trouble, asked again | 1 repository test |
+| A start whose read was passed by a newer reload that failed | Never asked again: stale households, or the loading screen until a restart | Asked every 3 s until the answer shows | 6 session tests |
+
+The paths that were covered already (the queue offline and across restarts, refusals, 5xx, an
+expired token, conflicts, overlapping resyncs, the realtime join gap and reconnects, the start
+grace) are listed with their tests in the done file. They were read and run, not changed.
+
+### Measured before and after
+
+- **The lost tick, e2e** (`e2e/tests/tick-leave.spec.ts`: click a row, reload or close the tab
+  at once, expect the item ticked on the device and `bought` on the server). One hold of the e2e
+  lock on the shared box, local stack, the release web build, 14 November 22:07 to 22:24 CET:
+
+  | `app/lib` | Chromium | Firefox | WebKit | Passed |
+  | --- | --- | --- | --- | ---: |
+  | main `3344381d`, `--repeat-each=3` | 0 of 6 | 0 of 6 | 3 of 6 | 3 of 18 |
+  | the branch, `--repeat-each=5` | 10 of 10 | 10 of 10 | 10 of 10 | 30 of 30 |
+
+  WebKit's three passes on main are the closed-tab test: WebKit's close takes longer than the
+  row's leave, so that case shows nothing there. The load average was 7 to 13 during main's
+  run and 5 to 7 during the branch's; the failures on main are the row back on the list after
+  the reload, not timeouts. An earlier run on main is not counted (the spec polled for a
+  status name the server does not use and failed before the click). The branch run predates
+  the list hold for a household switch, which is not on the spec's path.
+- **Sync fuzz** (`tool/hillclimb/hc-sync/measure.sh`, seeds 1 to 1000, one run each on the same
+  box): main's `app/lib` 0 failures in 92.1 s, the branch 0 failures in 93.0 s. No change; the
+  fuzz drives the cubit directly, so none of the five paths is in its model. The 0.9 s is
+  inside one run's noise (one run each, no distribution).
+- **Unit and widget tests:** `flutter test test/list test/fuzz` on main `a0cd3c73` 886 passed,
+  2 skipped; the whole suite on the final tree 3152 passed, 98 skipped, in 2 min 17 s. The job added 23
+  tests (item row 6, list screen 3, household switch 1, list cubit 3, repository 2, session 6,
+  e2e 2).
+- **Mutation check:** 13 mutants of the fixes, each failed 1 to 4 tests (the table in the done
+  file). Two survived the first run (the save timer of a closing list, the signed-in check of
+  the start's retry) and got a test each. One clause is not pinned: `!isClosed` in the start's
+  retry condition.
+- **Flakes:** none seen in this job's own runs (the 30 e2e runs, the fuzz, the unit suites).
+  CI flakes of the land: CIFLAKES.
+- **Not measured:** how often users lost a tick this way (no event tells a lost tick from one
+  never made); the CI trace of job 219's point 4 was not reproduced; a body-less 401, 408 or
+  429 was not driven through the web build; a phone was not used.
+
+### Remaining gaps
+
+Open and untested, in the done file with their reasons: a write or a start read that never
+answers (no timeout; job 122's reordering finding stands), a forced sign-out dropping the queue
+(intended, a product call), realtime channels other than the list's after a server `phx_close`,
+delete winning over a replayed add, the fuzz fake's omissions (JWT expiry, catalog edits,
+`place_item` and `move_item`, single dropped events, four devices), a resume resubscribing a
+down channel at once, flight mode on a real phone, and the stack-pause stress pass. The first
+four are in `docs/NEEDS_LEAD.md`, "Job 222".
+
+### Cost
+
+- **Wall time:** the build ran 20:13 to 20:45 and from 21:54 CET on 14 November
+  (WALLTIME). A first start at 05:18 stopped after 2 s at the usage limit, and the 20:45 stop
+  was the limit again: 14 h 56 min and 1 h 10 min queued or blocked, not worked.
+- **Tokens,** from the usage fields of the job's transcripts, each message id counted once,
+  every message on `claude-fable-5-2`, read at TOKENTIME CET: TOKENS. These are lower bounds
+  (the stream omits some output counts), and the two mapping delegates and the review are in
+  them only as far as their transcripts sit in the job's folder.
+- **Gates,** locally through `scripts/verify.sh`, one run each: gitleaks 14 s, lint 150 s,
+  flutter 173 s. A first flutter gate run failed after 14 s on seven analyzer findings in the
+  job's own lines (escaped quotes, an unneeded `unawaited`), fixed with `dart fix`. The e2e
+  gate ran only for the one spec, in the lock hold below.
+- **CI:** CIRUN.
+- **The e2e lock:** one hold of 27 min for the three runs (21:57 to 22:24), of which the first
+  9 min bought nothing (the spec's wrong status name).

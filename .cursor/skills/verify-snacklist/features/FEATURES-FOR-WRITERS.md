@@ -254,7 +254,7 @@ On Android the phone's back button goes one screen back, as the arrow in the tit
 
 ## Ticking items, "Zuletzt verwendet" and undo
 
-**What it does.** Tapping an item on the list ticks it off: a line strikes through it, the row turns mint and slides away in under half a second, without a message. There is no check box to tap; the whole row is the target. At the bottom of the list, „Zuletzt verwendet“ keeps up to 20 recently ticked items of that list, each one only once, and leaves out anything that is back on the list; tapping one puts it back where it was. With nothing typed, the add bar also suggests recently used items under the same name, „Zuletzt verwendet“ (EN: "Recently used"). Ticking an item off is how it leaves the list. An item added by mistake can be undone with „Rückgängig“.
+**What it does.** Tapping an item on the list ticks it off: a line strikes through it, the row turns mint and slides away in under half a second, without a message. The tick counts from the tap: closing the app or the browser tab right after it does not lose it. There is no check box to tap; the whole row is the target. At the bottom of the list, „Zuletzt verwendet“ keeps up to 20 recently ticked items of that list, each one only once, and leaves out anything that is back on the list; tapping one puts it back where it was. With nothing typed, the add bar also suggests recently used items under the same name, „Zuletzt verwendet“ (EN: "Recently used"). Ticking an item off is how it leaves the list. An item added by mistake can be undone with „Rückgängig“.
 
 **How to get there.**
 1. Open the list and tap an item to tick it.
@@ -269,9 +269,9 @@ On Android the phone's back button goes one screen back, as the arrow in the tit
 - That the edit sheet deletes an item; it has no delete button. Tick the item off instead.
 - That ticked items vanish after a fixed time or can be counted past 20 there.
 
-**Unverified.** Whether ticked items are ever removed from the section by age: no cleanup job was found in the code, but it was not run.
+**Unverified.** Whether ticked items are ever removed from the section by age: no cleanup job was found in the code, but it was not run. That a tick survives closing the app right after the tap is checked in the browser (reload, closed tab) and by widget tests for a phone going to the background; it was not tried on a phone.
 
-**Last verified.** 14 November 2026, code version 97b2907e, in the web app (German and English).
+**Last verified.** 14 November 2026, code version 97b2907e, in the web app (German and English); the tick kept on a reload or a closed tab on 14 November 2026, branch job/222-robustness-offline-sync on main 3344381d, in the web app on Chromium, WebKit and Firefox (job 222).
 
 ## Edit an item
 

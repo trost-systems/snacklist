@@ -3,10 +3,14 @@
 // the first household again.
 import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/app/device_cache.dart';
+import 'package:family_groceries/app/localizations.dart';
+import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/entry.dart';
 import 'package:family_groceries/list/list_cache.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_scope.dart';
+import 'package:family_groceries/list/list_screen.dart';
+import 'package:family_groceries/list/list_view/item_row.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -36,7 +40,12 @@ Future<DeviceCache> _device() async {
   return cache;
 }
 
-Future<_World> _pump(WidgetTester tester, {required Household shown}) async {
+Future<_World> _pump(
+  WidgetTester tester, {
+  required Household shown,
+  Widget child = const SizedBox(),
+  void Function(Map<String, FakeRepository> servers)? seed,
+}) async {
   final cache = await _device();
   final analytics = Analytics.off(cache);
   addTearDown(analytics.close);
@@ -45,6 +54,7 @@ Future<_World> _pump(WidgetTester tester, {required Household shown}) async {
   );
   addTearDown(session.close);
   final servers = {'home': FakeRepository(), 'club': FakeRepository()};
+  seed?.call(servers);
   await tester.pumpWidget(
     RepositoryProvider.value(
       value: cache,
@@ -54,10 +64,10 @@ Future<_World> _pump(WidgetTester tester, {required Household shown}) async {
           BlocProvider.value(value: analytics),
         ],
         child: MaterialApp(
-          home: ListScope(
-            repositories: (id) => servers[id]!,
-            child: const SizedBox(),
-          ),
+          localizationsDelegates: appLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('de'),
+          home: ListScope(repositories: (id) => servers[id]!, child: child),
         ),
       ),
     ),
@@ -97,6 +107,46 @@ void main() {
 
     expect(_names(home), ['Brot']);
     expect(_names(w.servers['club']!), isEmpty);
+    expect(home.unwatches, 1, reason: "Zuhause's list closed once sent");
+    expect((await w.cache.list('peter', 'home').load())?.pending, isEmpty);
+  });
+
+  testWidgets('a tick whose row still closes when the user switches to '
+      'Sommerfest is queued in Zuhause and sent once online, and '
+      "Zuhause's list closes (job 222)", (tester) async {
+    final w = await _pump(
+      tester,
+      shown: _home,
+      child: const ShoppingList(),
+      seed: (servers) => servers['home']!
+        ..remoteAdd('Erbsen', categoryId: 'produce')
+        ..remoteAdd('Bohnen', categoryId: 'produce'),
+    );
+    final home = w.servers['home']!;
+    List<String> bought() => [
+      for (final row in home.rows.values)
+        if (row.status == ItemStatus.bought) row.name,
+    ];
+    await tester.tap(
+      find.byWidgetPredicate((w) => w is ItemRow && w.item.name == 'Bohnen'),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(home.sent, isEmpty, reason: 'the row still closes');
+
+    home.online = false;
+    await w.session.switchTo('club');
+    await tester.pumpAndSettle();
+    expect(bought(), isEmpty);
+    expect(home.unwatches, 0, reason: 'open while the tick is queued');
+    expect((await w.cache.list('peter', 'home').load())?.pending, [
+      isA<SetStatus>().having((op) => op.status, 'status', ItemStatus.bought),
+    ]);
+
+    home.online = true;
+    await tester.pump(const Duration(seconds: 4));
+    await tester.pumpAndSettle();
+    expect(bought(), ['Bohnen']);
     expect(home.unwatches, 1, reason: "Zuhause's list closed once sent");
     expect((await w.cache.list('peter', 'home').load())?.pending, isEmpty);
   });

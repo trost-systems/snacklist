@@ -2304,3 +2304,34 @@ brief; the numbers are in `docs/hillclimb/fable-improvement-2026-11.md`, "Job 21
     their own here. The fix would be small: when the merge call fails, read the PR's state, and
     call once more if it is still open and its head unchanged (`--match-head-commit` keeps a second
     call from merging anything else).
+
+## Job 222: offline and sync gaps that need a decision (2026-11-14)
+
+Status: open, the lead's call. Nothing here blocks the job's PR. The map and the reasons are in
+`docs/done/222-robustness-offline-sync.md`.
+
+1. **A write that never answers stalls the queue (server change).** Item writes have no HTTP
+   timeout, and job 122 showed that one alone reorders last-write-wins writes. The safe fix is
+   a stale-write guard on the server (a per-item op sequence or time check in `put_item` and the
+   update path, a migration), then a timeout in `ListRepository`. Not built: a migration on the
+   write path is more than a robustness test job should land between jobs 202 to 217.
+2. **A forced sign-out drops queued changes (product).** A token refresh the server refuses
+   signs the user out; sign-out forgets the device's data, queued adds and ticks included,
+   without a word. Job 122 recorded it as intended. The options: keep the queue per user id and
+   replay it when the same user signs in again, or say so on the sign-in screen. A user who
+   signs out by hand with unsent changes is not warned either.
+3. **Realtime channels other than the list's never rejoin after a server `phx_close`
+   (purchases, household).** Read from the code and the library (`realtime_client` 2.13.2), not
+   reproduced. Entitlements and invites re-read on a rejoin but a closed channel does not
+   rejoin; the own and the household's join-request channels re-read nothing. Resume refreshes
+   and the invites panel's 5 s poll hide most of it. Worst case: an owner with the approval
+   section open misses a request until the section is rebuilt. The list's channel has its own
+   resubscribe loop (`ListCubit`); the fix would give the four the same, in files jobs on
+   purchases and the household own.
+4. **A start read that never answers is never asked again.** `SessionCubit._load` has no
+   timeout (the reason is in `docs/DECISIONS.md`, "Job 222"). If the lead wants one, it has to
+   keep the slow answer: a timeout that only arms a second read and takes whichever answers.
+5. **Job 219's point 4 (a tick right before the page goes away) is fixed** for the window it
+   names: a row's tick now commits when the page is hidden, and `e2e/tests/tick-leave.spec.ts`
+   drives a reload and a closed tab right after the click on three engines (3 of 18 passed on
+   main, 30 of 30 on the branch). The CI trace of that point was not reproduced.

@@ -13188,3 +13188,50 @@ section's end). The rules are pure in `app/lib/list/subtotals.dart` (`Sum`, `Sto
   weighed item losing its „≈“.
 - **Seen, not fixed here:** at 160 % on 358 px job 234's trip strip breaks „Einkauf läuft“ inside
   the word („Einkau / f läuft“). Job 234's PR (#454) is still open; reported on the BOARD.
+
+## Job 222: offline and sync error paths, 2026-11-14
+
+- **Scope by loss.** The map (`docs/done/222-robustness-offline-sync.md`) ranks untested paths
+  by what a user loses. Fixed: the five where something the user did was lost or the app stalled
+  (a tick inside the row's leave, a closing list's timers, a gateway's 401/408/429, a merge's
+  failed follow-up read, a start read passed by a failed reload). Left: paths that need a
+  product or server decision, and cosmetic ones.
+- **The tick commits early; it does not move to the tap.** A row still commits its tick when it
+  has closed. It commits before that when the app is hidden or the row goes away, and by a
+  wall-clock timer, not by the animation's end. Ticking at the tap and animating apart would
+  give the same guarantee, but the row would have to keep showing an item the list already
+  counts as bought (dividers, counts and "Zuletzt verwendet" move under it): a design change,
+  and this job ships no UI change.
+- **Hidden means commit.** `onHide` fires for a phone going to the background, a page reload, a
+  closed tab and another tab in front. All of them commit: after a hide no frame may ever come.
+  The cost is a tick that commits up to 440 ms early when a user switches tabs mid-leave, which
+  nobody sees.
+- **A row that goes away ticks the list it was built on.** The tick of a disposed row runs in a
+  microtask after the tree is torn down, on the `ListCubit` the row had, also when the screen
+  shows another household by then.
+- **The shown list is held until its rows are gone.** `ListScope` closed a list switched away
+  from at once when nothing was queued, so the tick above came to a closing or closed list (a
+  test through `ListScope` lost it). The list's scope now holds it with job 229's `ListHolds`
+  and lets go in a microtask after the rows' own: the list then closes as any hidden one, once
+  its queue is sent. A list closed for good (sign-out, a household left) still takes no tick:
+  its writes could not be sent.
+- **401, 408 and 429 without a PostgREST body are trouble.** With a body the database or
+  PostgREST looked at the request, and its code decides as before (a 401 with PGRST301/303 was
+  trouble already). Without one a proxy answered: the session or key was not accepted, the
+  request took too long, or the client was throttled. None says the change is wrong, and
+  dropping it loses a user's edit, so the op stays queued under "Sync gestört". Other body-less
+  4xx (400, 403, 404, 409) still refuse: a retry cannot change them. A 401 that never goes
+  away ends in gotrue's sign-out, as an expired session does.
+- **No timeout on the start's read.** A 15 s timeout whose retry starts a new numbered reload
+  would drop the slow answer that is still coming, and on a network slower than the timeout
+  would never show one. The platform's HTTP timeout bounds a dead socket. Labelled as a gap.
+- **No timeout on item writes** (job 122's decision stands): a timed-out write that still lands
+  reorders last-write-wins writes. It waits for a stale-write guard on the server
+  (`docs/NEEDS_LEAD.md`).
+- **A forced sign-out still drops the queue** (job 122's decision stands). A tick less than
+  440 ms before a sign-out goes with it.
+- **The new e2e spec runs on all three engines** (`tick-leave` in WebKit's and Firefox's
+  `testMatch`): page teardown is engine code, and the fix rests on it. WebKit's closed-tab case
+  passes without the fix (its close is slower than the row); it stays for the other two.
+- **Changelog `fixed`.** A user could have noticed: tick the last item, pocket the phone, and
+  the item is back.
