@@ -13220,3 +13220,49 @@ Two gaps jobs 243 and 244 found between the privacy text sent to Legal and the c
 - **Proof.** Job 243's probe, rerun before and after:
   `/workspace/hummlist/research/legal-review/job-246/` (`price-retention-probe.{before,after}.out`,
   plus a merge and a trip stored before the migration and checked after it, `existing-*.out`).
+
+## Job 245: English for the beta, 2026-11-14
+
+Peter (Nov 14 21:10): "The beta must be english + german". The Dart UI already went through the
+ARB files; what an English phone still met in German sat around it.
+
+1. **Fallback is English.** `resolveLocale` walks the device's preferred languages and takes the
+   first de or en; with neither it now answers en (was de). A French phone reads English; a French
+   phone that lists German further down reads German, since its owner put German there. The mail
+   language and the web invite page (`app/web/join/join.js`, which looked at the first language
+   only) follow the same rule. `preferred-supported-locales: [de]` stays: the app's
+   `localeListResolutionCallback` decides, so the list order never forces German.
+2. **Native and web text outside the ARB files.** The iOS microphone and speech-recognition
+   prompts had German only (Info.plist); they now come from `InfoPlist.strings` in en, de and
+   Base. The iOS widget gallery's example list is localized. The web build sets `<html lang>` to
+   the language shown (`document_language.dart`; index.html starts with `de`, so English screen
+   readers read with German pronunciation before). index.html's and the manifest's description is
+   bilingual, the join page's loading heading and noscript text follow the language.
+   `delete-account.html` is the English twin of `konto-loeschen.html` (Play's deletion page);
+   each links the other. The privacy policy still links the German page: changing legal text is
+   Legal's call (NEEDS_LEAD).
+3. **„Baumarkt“ was the one German store chip.** It is a store type, not a chain, so the chip is
+   offered in the UI language (`storeHardware`: „Baumarkt“ / "Hardware store"); `add_store`
+   already maps both names to the hardware store. A German household's existing „Baumarkt“ shows
+   as typed to an English member, like any store name. A guided start begun in German and resumed
+   in English shows the picked „Baumarkt“ as an own chip next to an unpicked "Hardware store";
+   picking both would make a second, plain store. Left as is: it needs a language switch in the
+   middle of the guided start.
+4. **English copy.** A review of all 828 English values against the German found no German left;
+   55 values were reworded where a native speaker would notice (German ellipsis spacing "Loading
+   …", "Log in" next to "Sign in", "walking route", "what came on top", "Let in", "Bring back",
+   "Together", "Total {store}" …). Left alone on purpose: texts with a legal or pricing review
+   behind them (`storesDisclaimer`, `premiumHeroTitle`, `premiumLifetimeValue`, `imprint`, the
+   consent and Premium terms) and `dictationTooMany`, which the voice and Alexa functions repeat
+   word for word. UK spellings left in other strings ("cancelled", "neighbours", "flat") are a
+   follow-up for Legal-free copy. The in-session review caught `checklistShop` reading "Finish a
+   shopping trip", which named the trip feature for a single tick: it is "Go shopping once" now.
+5. **Guards.** `app/test/l10n/no_german_in_lib_test.dart` fails on a German string literal in
+   `app/lib` (umlauts and common German words), with an allow-list of data word lists and single
+   literals, each with its reason; a planted `'Zurück zur Liste'` fails it. The verify-snacklist
+   journey `english-sweep.mjs` drives 27 English screens on `demo-family-en` and scans each ARIA
+   snapshot; with `accessTitle` set to „Zugänge“ it failed on 3 screens, as built it passes.
+6. **Not changed (behavior, not text):** in-app dictation listens in German (`de_DE`) and splits
+   with the German parser whatever the app language; English dictation needs the native offline
+   check per language and is a feature of its own. The catalogue suggestions, the old Siri
+   Shortcut recipe's answers, the MCP tool texts and `export_my_data`'s category names stay German.

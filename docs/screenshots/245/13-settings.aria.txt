@@ -1,0 +1,15 @@
+- button "Back"
+- heading "Settings" [level=2]
+- group:
+  - heading "Appearance" [level=2]
+  - group "Appearance":
+    - radiogroup:
+      - radio "System" [checked]
+      - radio "Light"
+      - radio "Dark"
+  - heading "Language" [level=2]
+  - button "Language Device language (English)"
+- tablist:
+  - tab "List"
+  - tab "History"
+  - tab "More" [selected]

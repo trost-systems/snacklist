@@ -1,0 +1,8 @@
+- button "Back"
+- heading "Usage data" [level=2]
+- group:
+  - switch "Send usage data and error reports Pseudonymous, to PostHog (servers in the EU), never list contents. Applies to this device. Turning it off deletes the ID on this device."
+- tablist:
+  - tab "List"
+  - tab "History"
+  - tab "More" [selected]

@@ -1,0 +1,10 @@
+- region "Dialog":
+  - button "Dismiss"
+  - group:
+    - text: Bananas ticked off
+    - heading "Are you shopping right now?" [level=2]
+    - text: Snacklist times your trip, and at the end you see what was planned and what you added.
+    - button "Yes, start a trip"
+    - button "No, just tick it off"
+    - text: Ticked off by mistake?
+    - button "Untick"

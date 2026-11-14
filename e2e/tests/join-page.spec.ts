@@ -91,6 +91,21 @@ test('EN, dark: the invite in English', async ({ browser, baseURL }) => {
   await screenshot(page, 'join-page-en-dark');
 });
 
+test('a browser in neither language reads English; German further down its list reads German', async ({ browser, baseURL }) => {
+  for (const [languages, lang, heading] of [
+    [['fr-FR', 'fr'], 'en', 'Peter invites you to “Familie Brandt”'],
+    [['fr-FR', 'de-CH'], 'de', 'Peter lädt dich zu „Familie Brandt“ ein'],
+  ] as const) {
+    const context = await browser.newContext({ locale: languages[0], baseURL: baseURL ?? '' });
+    await context.addInitScript((list) => Object.defineProperty(navigator, 'languages', { get: () => list }), [...languages]);
+    const page = await context.newPage();
+    await joinPage(page, okAnswer);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(heading);
+    await expect(page.locator('html')).toHaveAttribute('lang', lang);
+    await context.close();
+  }
+});
+
 test('copy puts the bare code on the clipboard and says so', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await joinPage(page, okAnswer);

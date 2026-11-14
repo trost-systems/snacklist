@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/app/device_cache.dart';
+import 'package:family_groceries/app/document_language.dart';
 import 'package:family_groceries/app/environment.dart';
 import 'package:family_groceries/app/language.dart';
 import 'package:family_groceries/app/localizations.dart';
@@ -317,22 +318,25 @@ class _AppState() extends State<App> {
           localeListResolutionCallback: (preferred, _) =>
               resolveLocale(preferred, null),
           routerConfig: _router,
-          builder: (context, child) => NoticesHost(
-            popups: _popups,
-            child: RemovedNotices(
-              router: _router,
-              child: JoinDecisionNotices(
+          builder: (context, child) {
+            setDocumentLanguage(Localizations.localeOf(context).languageCode);
+            return NoticesHost(
+              popups: _popups,
+              child: RemovedNotices(
                 router: _router,
-                child: BlocBuilder<SessionCubit, Session>(
-                  builder: (context, session) => session is SessionLoading
-                      ? const Scaffold(
-                          body: Center(child: CircularProgressIndicator()),
-                        )
-                      : child!,
+                child: JoinDecisionNotices(
+                  router: _router,
+                  child: BlocBuilder<SessionCubit, Session>(
+                    builder: (context, session) => session is SessionLoading
+                        ? const Scaffold(
+                            body: Center(child: CircularProgressIndicator()),
+                          )
+                        : child!,
+                  ),
                 ),
               ),
-            ),
-          ),
+            );
+          },
         ),
       ),
     ),

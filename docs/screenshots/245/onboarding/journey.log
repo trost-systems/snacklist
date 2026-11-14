@@ -1,0 +1,12 @@
+[22:10:55.920Z] ok: a reload resumes at the stores with REWE still ticked
+[22:10:59.283Z] ok: no account on the server before the account step
+[22:11:01.824Z] ok: one household ([{"id":"1038e870-c55b-4874-ba69-16b655f412f2","name":"Our household","kind":"partner"}])
+[22:11:01.824Z] ok: its kind is the first pick, partner
+[22:11:01.826Z] ok: its stores are REWE, dm, in the order picked
+[22:11:01.830Z] items [{"name":"Milk","quantity":null,"categories":{"name":"Kühlregal"}},{"name":"Eggs","quantity":null,"categories":{"name":"Kühlregal"}},{"name":"cucumbers","quantity":"2","categories":{"name":"Obst & Gemüse"}}]
+[22:11:01.830Z] ok: the three items are on its list, each in a category
+[22:11:03.641Z] ok: two invites, two codes (VZ4KHCCK, KWHJFUF6)
+[22:11:07.404Z] the second user joined through the second link
+[22:11:08.258Z] ok: the first page marks the invite joined without a reload
+[22:11:10.373Z] ok: no page errors ()
+[22:11:10.477Z] PASS

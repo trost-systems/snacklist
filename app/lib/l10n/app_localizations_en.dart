@@ -19,10 +19,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addButton => 'Add';
 
   @override
-  String get emptyList => 'The list is empty. Type below what you need.';
+  String get emptyList => 'Your list is empty. Type what you need below.';
 
   @override
-  String get sortingItem => 'Sorting …';
+  String get sortingItem => 'Sorting…';
 
   @override
   String get recentlyUsed => 'Recently used';
@@ -65,7 +65,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dictationStop => 'Stop dictation';
 
   @override
-  String get dictationListening => 'Listening …';
+  String get dictationListening => 'Listening…';
 
   @override
   String get dictationUnavailable =>
@@ -193,7 +193,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String syncFailed(String name) {
-    return 'Change refused: $name';
+    return 'Change rejected: $name';
   }
 
   @override
@@ -207,7 +207,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inviteBody =>
-      'Enter this code in the app or share the link. The invite is valid for 7 days and for one person.';
+      'Enter this code in the app or share the link. The invite works for one person and is valid for 7 days.';
 
   @override
   String get inviteCodeLabel => 'Code';
@@ -313,7 +313,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get loading => 'Loading …';
+  String get loading => 'Loading…';
 
   @override
   String get consentTitle => 'Allow access?';
@@ -622,7 +622,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get collapseSection => 'Collapse';
 
   @override
-  String get listHint => 'Tap ticks off · Hold to edit';
+  String get listHint => 'Tap to tick off · Hold to edit';
 
   @override
   String get reorderNeedsConnection => 'Reordering needs a connection.';
@@ -827,7 +827,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get suggestionBrand => 'Other brand';
 
   @override
-  String get suggestionCatalog => 'From the catalogue';
+  String get suggestionCatalog => 'From the catalog';
 
   @override
   String get suggestionDue => 'Due again';
@@ -879,7 +879,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get storesHint =>
-      'Drag the stores into the order they have on the list. Tap a store to rename it and order its categories.';
+      'Drag the stores into the order you want on the list. Tap a store to rename it and order its categories.';
 
   @override
   String dragStore(String store) {
@@ -937,7 +937,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get storesEmpty =>
-      'No stores yet. Add one and the list sorts your items along its walking route.';
+      'No stores yet. Add one and the list sorts your items in the order you walk through it.';
 
   @override
   String storeDeleteBody(int count) {
@@ -946,9 +946,9 @@ class AppLocalizationsEn extends AppLocalizations {
       locale: localeName,
       other: '$count open items move to “No store”.',
       one: '1 open item moves to “No store”.',
-      zero: 'No open items are in this store.',
+      zero: 'This store has no open items.',
     );
-    return '$_temp0 Its walking route goes too.';
+    return '$_temp0 Its aisle order goes too.';
   }
 
   @override
@@ -970,7 +970,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get language => 'Language';
 
   @override
-  String get languageSystem => 'Device';
+  String get languageSystem => 'Device language';
 
   @override
   String languageSystemNow(String language) {
@@ -979,7 +979,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String languageSystemPicked(String language) {
-    return 'Device ($language)';
+    return 'Device language ($language)';
   }
 
   @override
@@ -1139,7 +1139,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get feedbackCategoryOther => 'Other';
 
   @override
-  String get feedbackCategories => 'Kind (optional)';
+  String get feedbackCategories => 'Type (optional)';
 
   @override
   String get feedbackContact => 'Peter may contact me about this';
@@ -1149,7 +1149,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'App version, device, language and current screen. No list items.';
 
   @override
-  String get feedbackAttachedTitle => 'Sent along:';
+  String get feedbackAttachedTitle => 'Included:';
 
   @override
   String get feedbackSend => 'Send';
@@ -1158,7 +1158,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get feedbackRetry => 'Retry';
 
   @override
-  String get feedbackSending => 'Sending …';
+  String get feedbackSending => 'Sending…';
 
   @override
   String get feedbackThanks => 'Thanks!';
@@ -1168,7 +1168,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String feedbackTooLong(int max) {
-    return '$max characters at most';
+    return 'Up to $max characters';
   }
 
   @override
@@ -1181,13 +1181,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingCreateHint =>
-      'A new list; you invite your partner next.';
+      'Start a new list, then invite your partner.';
 
   @override
   String get onboardingJoin => 'Join with an invite';
 
   @override
-  String get onboardingJoinHint => 'You got a link or a code.';
+  String get onboardingJoinHint => 'You\'ve received a link or a code.';
 
   @override
   String get householdNameInvalid => 'Enter a name of 1 to 80 characters.';
@@ -1201,6 +1201,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get storeAddOwn => 'Add your own store';
+
+  @override
+  String get storeHardware => 'Hardware store';
 
   @override
   String get storesDisclaimer =>
@@ -1228,11 +1231,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inviteCheck => 'Continue';
 
   @override
-  String get invitePreview => 'Invite to the household';
+  String get invitePreview => 'Household invitation';
 
   @override
   String get invitePartnerBody =>
-      'Share the link or the code with the person you shop with. The invite is valid for 7 days and for one person.';
+      'Share the link or the code with the person you shop with. The invite works for one person and is valid for 7 days.';
 
   @override
   String get later => 'Later';
@@ -1251,7 +1254,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get startGo => 'Get started';
 
   @override
-  String get startLogIn => 'Already have an account? Log in';
+  String get startLogIn => 'Already have an account? Sign in';
 
   @override
   String get loginNew => 'New to Snacklist? Get started';
@@ -1281,7 +1284,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'What you\'ve entered so far stays saved on this device.';
 
   @override
-  String get onboardingExitLogIn => 'Log in instead';
+  String get onboardingExitLogIn => 'Sign in instead';
 
   @override
   String get onboardingExitDiscard => 'Discard progress';
@@ -1312,7 +1315,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get whoBody =>
-      'Pick all that apply. This sets the name, the invite and your first tips.';
+      'Pick all that apply. We use this for the name, the invite and your first tips.';
 
   @override
   String get kindPartner => 'Partner';
@@ -1411,10 +1414,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountStepBody =>
-      'Almost done. With an account we save your list, and you can invite someone.';
+      'Almost done. Create an account to save your list and invite someone.';
 
   @override
-  String get setupBusy => 'Setting up your household …';
+  String get setupBusy => 'Setting up your household…';
 
   @override
   String get inviteStepPartner => 'Invite your partner';
@@ -1433,7 +1436,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inviteStepBody =>
-      'Share the link with the person you shop with. Each invite is valid for 7 days and for one person.';
+      'Share the link with the person you shop with. Each invite works for one person and is valid for 7 days.';
 
   @override
   String get inviteStepBodyClub =>
@@ -1540,7 +1543,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Snacklist Lifetime is unlocked as soon as the purchase is approved. This can take a while.';
 
   @override
-  String get lifetimeUnlocking => 'Unlocking …';
+  String get lifetimeUnlocking => 'Unlocking…';
 
   @override
   String get lifetimeUnlockDelayed =>
@@ -1578,7 +1581,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lifetimeChecking =>
-      'Checking whether your household has Snacklist Lifetime already …';
+      'Checking whether your household has Snacklist Lifetime already…';
 
   @override
   String get lifetimeRefundLink =>
@@ -1641,11 +1644,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get archivedRestore => 'Bring back';
+  String get archivedRestore => 'Restore';
 
   @override
   String archivedRestoreTitle(String household) {
-    return 'Bring back “$household”?';
+    return 'Restore “$household”?';
   }
 
   @override
@@ -1711,7 +1714,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumChecking =>
-      'Checking whether your household already has Snacklist Premium …';
+      'Checking whether your household already has Snacklist Premium…';
 
   @override
   String get premiumYearlyTitle => 'Yearly';
@@ -2027,7 +2030,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String voiceDefaultOff(String household) {
-    return 'Siri, Alexa and AI assistants use “$household” now.';
+    return 'Siri, Alexa and AI assistants now use “$household”.';
   }
 
   @override
@@ -2048,7 +2051,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get householdMemberUnnamed => 'No name';
+  String get householdMemberUnnamed => 'Unnamed';
 
   @override
   String get householdMembersFailed => 'The members could not be loaded.';
@@ -2263,7 +2266,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get invitePasteWaiting => 'Invite saved. Sign in to join.';
 
   @override
-  String get householdNotOwner => 'Only the household\'s owner names admins.';
+  String get householdNotOwner =>
+      'Only the household\'s owner can make people admins.';
 
   @override
   String get listsTitle => 'Lists';
@@ -2306,8 +2310,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'The $count open items on it are deleted with it.',
-      one: 'The 1 open item on it is deleted with it.',
+      other: 'The $count open items on it will be deleted too.',
+      one: 'The 1 open item on it will be deleted too.',
       zero: 'Nothing is open on this list.',
     );
     return '$_temp0';
@@ -2336,20 +2340,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String claimBy(String name) {
-    return '$name brings';
+    return '$name\'s bringing it';
   }
 
   @override
   String claimByAmount(String name, String amount) {
-    return '$name brings $amount';
+    return '$name\'s bringing $amount';
   }
 
   @override
-  String get claimYou => 'You bring';
+  String get claimYou => 'You\'re bringing it';
 
   @override
   String claimYouAmount(String amount) {
-    return 'You bring $amount';
+    return 'You\'re bringing $amount';
   }
 
   @override
@@ -2357,7 +2361,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String joinRequestSent(String name) {
-    return 'Request sent: an admin of “$name” will let you in.';
+    return 'Request sent. An admin of “$name” needs to approve it.';
   }
 
   @override
@@ -2368,7 +2372,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get joinRequestWithdraw => 'Withdraw request';
 
   @override
-  String get joinRequestToList => 'To the list';
+  String get joinRequestToList => 'Go to the list';
 
   @override
   String get joinRequestCreateOwn => 'Create your own household';
@@ -2418,7 +2422,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get joinRequestsFailed => 'Couldn\'t load the requests.';
 
   @override
-  String get joinRequestApprove => 'Let in';
+  String get joinRequestApprove => 'Approve';
 
   @override
   String get joinRequestInviteFull =>
@@ -2485,7 +2489,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hintOwnHouseholdBody =>
-      'Someone else created this household. Create one of your own too, just for you for example.';
+      'Someone else created this household. You can create your own too, for example just for you.';
 
   @override
   String get hintSecondHouseholdTitle => 'Another list?';
@@ -2542,14 +2546,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get checklistShop => 'Do one shop';
+  String get checklistShop => 'Go shopping once';
 
   @override
   String get checklistAssistant => 'Connect an AI assistant';
 
   @override
   String get checklistAssistantBody =>
-      'More → Access. It puts things on your list.';
+      'Under More → Access. It can add things to your list.';
 
   @override
   String get checklistOpen => 'Open';
@@ -2815,7 +2819,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String priceTogether(String amount) {
-    return 'Together $amount';
+    return 'Altogether $amount';
   }
 
   @override
@@ -2825,7 +2829,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String priceTotalAfter(String amount) {
-    return 'Total after $amount';
+    return 'New total $amount';
   }
 
   @override
@@ -2876,7 +2880,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String storeSubtotal(String store, String amount) {
-    return 'Total $store $amount';
+    return '$store total $amount';
   }
 
   @override
@@ -2922,22 +2926,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shopAskBody =>
-      'Then a clock runs along, and at the end you see what was planned and what came on top.';
+      'Snacklist times your trip, and at the end you see what was planned and what you added.';
 
   @override
   String get shopAskYes => 'Yes, start a trip';
 
   @override
-  String get shopAskNo => 'No, just ticked off';
+  String get shopAskNo => 'No, just tick it off';
 
   @override
   String get shopAskMistake => 'Ticked off by mistake?';
 
   @override
-  String get shopAskTakeBack => 'Put it back';
+  String get shopAskTakeBack => 'Untick';
 
   @override
-  String get shopRunning => 'Trip running';
+  String get shopRunning => 'Trip in progress';
 
   @override
   String get shopPaused => 'Paused';
@@ -2978,7 +2982,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String shopAutoEndedBody(String time) {
-    return 'Nothing was ticked off for 4 hours. It ends at the last tick, at $time.';
+    return 'Nothing was ticked off for 4 hours, so the trip ended at your last tick, at $time.';
   }
 
   @override
@@ -3015,7 +3019,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String shopLede(int bought, int planned) {
-    return '$bought of $planned from the list bought';
+    return 'Bought $bought of $planned from the list';
   }
 
   @override
@@ -3025,7 +3029,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String shopLedeNoList(int count) {
-    return 'Went without a list · $count bought';
+    return 'No list · $count bought';
   }
 
   @override
@@ -3135,11 +3139,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get shopLockedTitle => 'What was planned, what came on top?';
+  String get shopLockedTitle => 'What was planned, what did you add?';
 
   @override
   String get shopLockedBody =>
-      'After every trip, Snacklist Premium shows what was on the list and what came on top on the way, also from others in the household.';
+      'After every trip, Snacklist Premium shows what was on the list and what got added along the way, also by others in the household.';
 
   @override
   String get shopLockedButton => 'See Snacklist Premium';

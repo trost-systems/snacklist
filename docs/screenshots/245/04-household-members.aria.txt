@@ -1,0 +1,29 @@
+- button "Back"
+- heading "Household" [level=2]
+- group:
+  - heading "Household name" [level=2]
+  - group "Brandt family":
+    - button "Rename"
+  - heading "Members" [level=2]
+  - text: Mia Brandt (you) Owner
+  - group "Ida Brandt":
+    - button "Options for Ida Brandt"
+  - group "Noah Brandt":
+    - button "Options for Noah Brandt"
+  - button "Invite people"
+  - heading "Lists" [level=2]
+  - group "Shopping list 15 open":
+    - button "Actions for “Shopping list”"
+  - button "New list"
+  - button "EUR · € For prices and the shopping total, for everyone in the household":
+    - heading "Currency" [level=2]
+  - heading "Join requests" [level=2]
+  - switch "Confirm new members"
+  - text: New people wait until an admin lets them in.
+  - heading "Default for Siri, Alexa & AI" [level=2]
+  - text: Siri, Alexa and AI assistants use this household.
+  - button "Leave household"
+- tablist:
+  - tab "List"
+  - tab "History"
+  - tab "More" [selected]

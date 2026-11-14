@@ -1,0 +1,9 @@
+- button "Back"
+- heading "Step 3 of 7" [level=2]
+- button "Leave setup"
+- group:
+  - heading "What should your household be called?" [level=2]
+  - text: Everyone you invite sees this name. You can change it later.
+  - textbox "Household name"
+  - text: 67 characters remaining
+  - button "Continue"

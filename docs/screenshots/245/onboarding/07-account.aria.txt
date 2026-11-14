@@ -1,0 +1,12 @@
+- button "Back"
+- heading "Step 6 of 7" [level=2]
+- button "Leave setup"
+- group:
+  - heading "Create your account Almost done. Create an account to save your list and invite someone." [level=2]
+  - button "Sign in with Google"
+  - button "Sign in with Apple"
+  - button "Continue with email"
+- link "Imprint":
+  - /url: https://snacklist.app/en/imprint
+- link "Privacy":
+  - /url: https://snacklist.app/en/privacy

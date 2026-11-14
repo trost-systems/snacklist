@@ -1,0 +1,11 @@
+- group:
+  - text: Snacklist
+  - button "Sign in with Google"
+  - button "Sign in with Apple"
+  - button "Continue with email"
+  - button "New to Snacklist? Get started"
+  - button "Paste invite"
+- link "Imprint":
+  - /url: https://snacklist.app/en/imprint
+- link "Privacy":
+  - /url: https://snacklist.app/en/privacy

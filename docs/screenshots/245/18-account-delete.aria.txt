@@ -1,0 +1,8 @@
+- alertdialog:
+  - region "Alert":
+    - text: Delete account?
+    - group:
+      - text: Your account, profile, access tokens and connected apps will be deleted for good. This can't be undone. The household “Brandt family” stays with Ida Brandt and Noah Brandt, list and all. Your items stay there, but without your name. To keep a copy first, use “Export my data” under Account.
+      - textbox "Type DELETE to confirm"
+    - button "Cancel"
+    - button "Delete for good" [disabled]

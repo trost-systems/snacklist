@@ -952,3 +952,7 @@ true in code before the Legal GO request.
 Flags: none new. TestFlight: the next green main build. Peter sees the trip part with `trip-mode`
 on for his account only. `trip-mode` still stays off for testers until Legal settles Gap B
 (the session's times and prices, NEEDS_LEAD "Job 244: code gaps").
+
+## Job 245: English for the beta (2026-11-14)
+
+[docs/done/245-english-beta-localization.md](docs/done/245-english-beta-localization.md): English fallback for devices in neither language, English iOS permission prompts, the Hardware store chip, the web shell's language, 55 English copy fixes, a German-literal test and the English sweep journey (27 screens, 0 German).

@@ -1,0 +1,11 @@
+- button "Back"
+- heading "Tips" [level=2]
+- group:
+  - text: Shop together Invite someone to use the list together.
+  - button "Invite"
+  - text: Edit an item Press and hold an item to change its quantity, brand, store and more. Type the amount too Write “2 cucumbers” or “milk 2 l” and Snacklist picks up the amount. Sorted like your store Here you can sort the categories in the order you walk through the store. Another store? Here you can add more stores you shop at. Even better with AI & automation Let your AI assistant manage your list, or use the API to build automations.
+  - button "Manage access"
+- tablist:
+  - tab "List"
+  - tab "History"
+  - tab "More" [selected]

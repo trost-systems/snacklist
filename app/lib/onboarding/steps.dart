@@ -351,7 +351,8 @@ class _StoresStepState() extends State<_StoresStep> {
   /// stays picked.
   Future<bool> _addOwn(String name) async {
     final key = nameKey(name);
-    final offered = popularStores.where((p) => nameKey(p) == key);
+    final offered = popularStores(AppLocalizations.of(context))
+        .where((p) => nameKey(p) == key);
     context.read<OnboardingCubit>().update(
       (d) => d.stores.any((s) => nameKey(s) == key)
           ? d
@@ -376,7 +377,7 @@ class _StoresStepState() extends State<_StoresStep> {
     final onboarding = context.read<OnboardingCubit>();
     final own = [
       for (final s in stores)
-        if (!popularStores.contains(s)) s,
+        if (!popularStores(l10n).contains(s)) s,
     ];
     return OnboardingStepPage(
       step: OnboardingStep.stores,
@@ -390,7 +391,7 @@ class _StoresStepState() extends State<_StoresStep> {
           spacing: HlSpace.s2,
           runSpacing: HlSpace.s2,
           children: [
-            for (final store in [...popularStores, ...own])
+            for (final store in [...popularStores(l10n), ...own])
               FilterChip(
                 key: ValueKey('onboarding-store-$store'),
                 label: Text(store),

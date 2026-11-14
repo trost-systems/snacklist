@@ -85,7 +85,8 @@ class _CreateHouseholdScreenState() extends State<CreateHouseholdScreen> {
   /// stays picked.
   Future<bool> _addOwn(String name) async {
     final key = nameKey(name);
-    final offered = popularStores.where((p) => nameKey(p) == key);
+    final offered = popularStores(AppLocalizations.of(context))
+        .where((p) => nameKey(p) == key);
     setState(() {
       if (!_stores.any((s) => nameKey(s) == key)) {
         _stores = [
@@ -154,7 +155,7 @@ class _CreateHouseholdScreenState() extends State<CreateHouseholdScreen> {
     final nameError = _invalidName ? l10n.householdNameInvalid : null;
     final own = [
       for (final s in _stores)
-        if (!popularStores.contains(s)) s,
+        if (!popularStores(l10n).contains(s)) s,
     ];
     return OnboardingPage(
       title: widget.from == HouseholdOrigin.switcher
@@ -202,7 +203,7 @@ class _CreateHouseholdScreenState() extends State<CreateHouseholdScreen> {
           spacing: 8,
           runSpacing: 8,
           children: [
-            for (final store in [...popularStores, ...own])
+            for (final store in [...popularStores(l10n), ...own])
               FilterChip(
                 key: ValueKey('onboarding-store-$store'),
                 label: Text(store),

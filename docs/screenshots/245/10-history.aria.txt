@@ -1,0 +1,28 @@
+- heading "History" [level=2]
+- button "Show by store"
+- button "Log a trip"
+- group:
+  - button "Previous month"
+  - heading "November 2026" [level=2]
+  - button "Next month" [disabled]
+  - button "Sunday, November 1"
+  - button "Monday, November 2"
+  - button "Tuesday, November 3"
+  - button "Wednesday, November 4"
+  - button "Thursday, November 5"
+  - button "Friday, November 6"
+  - button "Saturday, November 7"
+  - button "Sunday, November 8"
+  - button "Monday, November 9"
+  - button "Tuesday, November 10"
+  - button "Wednesday, November 11"
+  - button "Thursday, November 12"
+  - button "Friday, November 13"
+  - button "Saturday, November 14, 1 trip"
+  - text: Sunday, November 15 Monday, November 16 Tuesday, November 17 Wednesday, November 18 Thursday, November 19 Friday, November 20 Saturday, November 21 Sunday, November 22 Monday, November 23 Tuesday, November 24 Wednesday, November 25 Thursday, November 26 Friday, November 27 Saturday, November 28 Sunday, November 29 Monday, November 30
+  - heading "This week" [level=2]
+  - button "No store · Today Bananas, Milk 2 items"
+- tablist:
+  - tab "List"
+  - tab "History" [selected]
+  - tab "More"
