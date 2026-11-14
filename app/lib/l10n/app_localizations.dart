@@ -5065,6 +5065,66 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'„War geplant“ konnte nicht gespeichert werden. Versuch es noch mal.'**
   String get shopMarkFailed;
+
+  /// Job 237 (flag list-declutter, ST3): the list's summary block above „Zuletzt verwendet“, its last line
+  ///
+  /// In de, this message translates to:
+  /// **'Gesamt'**
+  String get subtotalsTotal;
+
+  /// Job 237 (flag list-declutter, ST3): the list's summary block above „Zuletzt verwendet“: a line's items without a price
+  ///
+  /// In de, this message translates to:
+  /// **'{count} ohne Preis'**
+  String subtotalsUnpriced(int count);
+
+  /// Job 237 (flag list-declutter, ST3): the list's summary block above „Zuletzt verwendet“: a store whose items were all bought on the running trip
+  ///
+  /// In de, this message translates to:
+  /// **'alles gekauft'**
+  String get subtotalsAllBought;
+
+  /// Job 237 (flag list-declutter, ST3): the list's summary block above „Zuletzt verwendet“, while a trip runs: what was bought on it
+  ///
+  /// In de, this message translates to:
+  /// **'{amount} gekauft'**
+  String subtotalsBought(String amount);
+
+  /// Job 237 (flag list-declutter, ST3): the list's summary block above „Zuletzt verwendet“, while a trip runs: what is still open
+  ///
+  /// In de, this message translates to:
+  /// **'{amount} offen'**
+  String subtotalsOpen(String amount);
+
+  /// Job 237 (flag list-declutter, ST3): the list's summary block above „Zuletzt verwendet“: screen reader hint of a store line, which scrolls to its section
+  ///
+  /// In de, this message translates to:
+  /// **'Zum Laden in der Liste'**
+  String get subtotalsJump;
+
+  /// Job 237: a sum with items without a price, e.g. „mind. 32,08 €“
+  ///
+  /// In de, this message translates to:
+  /// **'mind. {amount}'**
+  String moneyAtLeast(String amount);
+
+  /// Job 237: moneyAtLeast for screen readers
+  ///
+  /// In de, this message translates to:
+  /// **'mindestens {amount}'**
+  String moneyAtLeastSpoken(String amount);
+
+  /// Job 237: a price per kg or l on the planned weight, or a sum holding one, e.g. „≈ 1,51 €“
+  ///
+  /// In de, this message translates to:
+  /// **'≈ {amount}'**
+  String moneyEstimate(String amount);
+
+  /// Job 237: moneyEstimate for screen readers
+  ///
+  /// In de, this message translates to:
+  /// **'etwa {amount}'**
+  String moneyEstimateSpoken(String amount);
 }
 
 class _AppLocalizationsDelegate

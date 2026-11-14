@@ -16,7 +16,9 @@ import 'package:family_groceries/list/list_view/item_row.dart';
 import 'package:family_groceries/list/list_view/leaving_rows.dart';
 import 'package:family_groceries/list/list_view/price_views.dart';
 import 'package:family_groceries/list/list_view/sections.dart';
+import 'package:family_groceries/list/list_view/summary_block.dart';
 import 'package:family_groceries/list/model.dart';
+import 'package:family_groceries/list/subtotals.dart';
 import 'package:family_groceries/log/trip_prompt_card.dart';
 import 'package:family_groceries/tips/hint_views.dart';
 import 'package:family_groceries/trip/trip_on_list.dart';
@@ -217,6 +219,17 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
         return;
       }
       position.jumpTo(to);
+    }
+  }
+
+  /// A store line of the summary block: its section, unfolded, at the top.
+  void _jump(String key) {
+    final state = _cubit.state;
+    final section = shownSections(sectionsOf(state.items.values, state.catalog))
+        .where((s) => s.key == key && s.count > 0)
+        .firstOrNull;
+    if (section != null) {
+      unawaited(_reveal(section));
     }
   }
 
@@ -466,6 +479,14 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
     final declutter = context.select<Flags?, bool>(
       (flags) => flags?.isOn(listDeclutterFlag) ?? false,
     );
+    final summary = declutter && prices
+        ? summaryOf(
+            state.items.values,
+            state.catalog,
+            now: context.read<ListCubit>().now,
+            trip: runningOn(context, state.shownList?.id),
+          )
+        : null;
     SliverList column(List<StoreSection> run) {
       final entries = _entries(
         run,
@@ -474,6 +495,7 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
         fresh,
         claimsOf,
         prices: prices,
+        summary: summary,
       );
       final index = {for (final (i, e) in entries.indexed) e.key: i};
       return SliverList.builder(
@@ -555,9 +577,16 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
               const SliverToBoxAdapter(child: TripEndedSlot()),
               const SliverToBoxAdapter(child: SizedBox(height: 4)),
               body,
-              // Without the flag the screen shows it in a bar at the bottom.
-              if (declutter && prices && state.items.isNotEmpty)
-                const SliverToBoxAdapter(child: TotalBar(inList: true)),
+              // Without the flag the screen shows the total in a bar at the
+              // bottom and each store's at its section's end.
+              if (summary != null && summary.stores.isNotEmpty)
+                SliverToBoxAdapter(
+                  child: SummaryBlock(
+                    summary: summary,
+                    currency: state.catalog.currency,
+                    onJump: _jump,
+                  ),
+                ),
               if (used.isNotEmpty)
                 SliverToBoxAdapter(
                   child: Padding(
@@ -642,10 +671,14 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
     Set<String> fresh,
     String? Function(Item item) claimsOf, {
     required bool prices,
+
+    /// The summary block's, with `list-declutter`: no section sums then.
+    required Summary? summary,
   }) {
     final cubit = context.read<ListCubit>();
     final now = cubit.now;
     final trip = prices ? cubit.trip : null;
+    final total = summary?.total.cents ?? trip?.cents;
     final entries = <Widget>[];
     for (final (i, section) in run.indexed) {
       final isFolded = folded(section);
@@ -697,16 +730,17 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
                   ? PriceChip(
                       item: item,
                       now: now,
+                      estimate: summary != null && plannedWeight(item),
                       onTap: () => _togglePrice(item),
                     )
                   : null,
-              pricePanel: trip != null && _pricing.value == item.id
+              pricePanel: total != null && _pricing.value == item.id
                   ? _placed(
                       PricePanel(
                         item: item,
                         currency: state.catalog.currency,
                         now: now,
-                        trip: trip,
+                        total: total,
                         household: state.allItems.values,
                         onSave: (price, quantity) {
                           cubit.setPrice(
@@ -724,7 +758,10 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
           );
         }
       }
-      if (trip?.byStore[section.store?.id] case final cents?) {
+      final sectionSum = summary == null
+          ? trip?.byStore[section.store?.id]
+          : null;
+      if (sectionSum case final cents?) {
         entries.add(
           StoreSubtotal(
             key: ValueKey('subtotal-${section.key}'),

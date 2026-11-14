@@ -3159,4 +3159,48 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shopMarkFailed => '“Was planned” couldn\'t be saved. Try again.';
+
+  @override
+  String get subtotalsTotal => 'Total';
+
+  @override
+  String subtotalsUnpriced(int count) {
+    return '$count unpriced';
+  }
+
+  @override
+  String get subtotalsAllBought => 'all bought';
+
+  @override
+  String subtotalsBought(String amount) {
+    return '$amount bought';
+  }
+
+  @override
+  String subtotalsOpen(String amount) {
+    return '$amount open';
+  }
+
+  @override
+  String get subtotalsJump => 'Go to the store in the list';
+
+  @override
+  String moneyAtLeast(String amount) {
+    return 'at least $amount';
+  }
+
+  @override
+  String moneyAtLeastSpoken(String amount) {
+    return 'at least $amount';
+  }
+
+  @override
+  String moneyEstimate(String amount) {
+    return '≈ $amount';
+  }
+
+  @override
+  String moneyEstimateSpoken(String amount) {
+    return 'about $amount';
+  }
 }

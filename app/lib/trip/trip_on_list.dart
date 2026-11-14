@@ -7,6 +7,7 @@ import 'package:family_groceries/list/list_view/shopping_list_view.dart';
 import 'package:family_groceries/log/trip_prompts.dart';
 import 'package:family_groceries/trip/ask_sheet.dart';
 import 'package:family_groceries/trip/ended_card.dart';
+import 'package:family_groceries/trip/model.dart' show RunningTrip;
 import 'package:family_groceries/trip/rules.dart';
 import 'package:family_groceries/trip/trip_cubit.dart';
 import 'package:family_groceries/trip/trip_strip.dart';
@@ -146,6 +147,21 @@ bool tripRunning(BuildContext context) {
     (trips) => trips?.state is Running,
   );
   return on && running;
+}
+
+/// The user's trip running on [listId] (one without a list on any), with
+/// `trip-mode` on: the summary block splits bought and open (job 237).
+RunningTrip? runningOn(BuildContext context, String? listId) {
+  final on = _tripMode(context);
+  final trip = context.select<TripCubit?, RunningTrip?>(
+    (trips) => switch (trips?.state) {
+      Running(:final trip) => trip,
+      _ => null,
+    },
+  );
+  return on && trip != null && (trip.listId == null || trip.listId == listId)
+      ? trip
+      : null;
 }
 
 /// The list's card after the long-running rule ended the trip.

@@ -1088,5 +1088,22 @@
   "shopStartByHand": "Start a trip",
   "shopStartByHandHint": "The clock runs from now; the list as it is now counts as planned.",
   "shopByOther": "added by someone else",
-  "shopMarkFailed": "“Was planned” couldn't be saved. Try again."
+  "shopMarkFailed": "“Was planned” couldn't be saved. Try again.",
+  "subtotalsTotal": "Total",
+  "subtotalsUnpriced": "{count} unpriced",
+  "@subtotalsUnpriced": {"placeholders": {"count": {"type": "int"}}},
+  "subtotalsAllBought": "all bought",
+  "subtotalsBought": "{amount} bought",
+  "@subtotalsBought": {"placeholders": {"amount": {"type": "String"}}},
+  "subtotalsOpen": "{amount} open",
+  "@subtotalsOpen": {"placeholders": {"amount": {"type": "String"}}},
+  "subtotalsJump": "Go to the store in the list",
+  "moneyAtLeast": "at least {amount}",
+  "@moneyAtLeast": {"placeholders": {"amount": {"type": "String"}}},
+  "moneyAtLeastSpoken": "at least {amount}",
+  "@moneyAtLeastSpoken": {"placeholders": {"amount": {"type": "String"}}},
+  "moneyEstimate": "≈ {amount}",
+  "@moneyEstimate": {"placeholders": {"amount": {"type": "String"}}},
+  "moneyEstimateSpoken": "about {amount}",
+  "@moneyEstimateSpoken": {"placeholders": {"amount": {"type": "String"}}}
 }

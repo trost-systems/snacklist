@@ -17,6 +17,7 @@ const sameInBothLanguages = {
   'inviteLinkLabel': '"Link" is English too',
   'householdRoleAdmin': '"Admin" is the German role name too (job 169b W2)',
   'shopPause': '"Pause" is the German word too (job 234 strip)',
+  'moneyEstimate': 'only the sign ≈ before the amount (job 237)',
   'tokenHint': 'only an ellipsis and the token hint',
   'tokenName': '"Name" is English too',
   'apiHeader': '"API" is the word in both (job 73)',

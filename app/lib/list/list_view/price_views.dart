@@ -31,6 +31,9 @@ class const PriceChip({
   required final Item item,
   required final DateTime now,
   required final VoidCallback onTap,
+
+  /// Marks the line „≈“: its weight is the planned one (job 237).
+  final bool estimate = false,
   super.key,
 }) extends StatelessWidget {
   static const height = 32.0;
@@ -41,13 +44,20 @@ class const PriceChip({
     final t = SnacklistColors.of(Theme.of(context).brightness);
     final price = item.currentPrice(now);
     final line = price == null ? null : item.lineCentsNow;
-    final amount = price == null || line == null
+    final money = price == null || line == null
         ? null
         : formatMoney(
             line,
             currency: price.currency,
             locale: moneyLocale(context),
           );
+    final (amount, spoken) = switch (money) {
+      final m? when estimate => (
+        l10n.moneyEstimate(m),
+        l10n.moneyEstimateSpoken(m),
+      ),
+      _ => (money, money),
+    };
     final label = TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.w800,
@@ -57,9 +67,9 @@ class const PriceChip({
     return Semantics(
       container: true,
       button: true,
-      label: amount == null
+      label: spoken == null
           ? l10n.priceChipEmpty(item.name)
-          : l10n.priceChipSet(item.name, amount),
+          : l10n.priceChipSet(item.name, spoken),
       onTap: onTap,
       excludeSemantics: true,
       child: GestureDetector(
@@ -112,8 +122,8 @@ class const PricePanel({
   required final String currency,
   required final DateTime now,
 
-  /// The list's total as saved.
-  required final TripTotal trip,
+  /// The list's total as shown, in cents.
+  required final int total,
 
   /// The household's items, for last time's price.
   required final Iterable<Item> household,
@@ -394,7 +404,7 @@ class _PricePanelState() extends State<PricePanel> with WidgetsBindingObserver {
           _money(microsToCents(split.unitMicros)),
           perLabel(l10n, _per),
         ),
-      l10n.priceTotalAfter(_money(widget.trip.cents - before + split.line)),
+      l10n.priceTotalAfter(_money(widget.total - before + split.line)),
       if (change != null)
         switch (change.trend) {
           Trend.dearer => l10n.priceDearer(_money(change.cents)),
@@ -711,11 +721,9 @@ class const _UnitMenu({
 
 /// The list's running total under the list (job 190): "Einkaufssumme",
 /// how many items have a price and how many open ones have none, and the
-/// sum in the household's currency. [inList], it is a row of the list after
-/// the open items, on the list's own surface (job 229, flag
-/// `list-declutter`).
-class const TotalBar({final bool inList = false, super.key})
-    extends StatelessWidget {
+/// sum in the household's currency. With `list-declutter` the list's
+/// `SummaryBlock` shows it instead (jobs 229, 237).
+class const TotalBar({super.key}) extends StatelessWidget {
   static const height = 56.0;
 
   @override
@@ -743,16 +751,12 @@ class const TotalBar({final bool inList = false, super.key})
       excludeSemantics: true,
       child: Container(
         constraints: const BoxConstraints(minHeight: TotalBar.height),
-        // In the list: inset as the rows' text, the line as wide as theirs.
-        margin: inList
-            ? const EdgeInsets.fromLTRB(HlSpace.s4, HlSpace.s3, HlSpace.s4, 0)
-            : null,
-        padding: EdgeInsets.symmetric(
-          horizontal: inList ? HlSpace.s1 : HlSpace.s4,
+        padding: const EdgeInsets.symmetric(
+          horizontal: HlSpace.s4,
           vertical: HlSpace.s1,
         ),
         decoration: BoxDecoration(
-          color: inList ? null : t.surfaceRaised,
+          color: t.surfaceRaised,
           border: Border(
             top: BorderSide(color: t.border, width: HlBorder.width),
           ),

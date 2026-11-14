@@ -3176,4 +3176,48 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get shopMarkFailed =>
       '„War geplant“ konnte nicht gespeichert werden. Versuch es noch mal.';
+
+  @override
+  String get subtotalsTotal => 'Gesamt';
+
+  @override
+  String subtotalsUnpriced(int count) {
+    return '$count ohne Preis';
+  }
+
+  @override
+  String get subtotalsAllBought => 'alles gekauft';
+
+  @override
+  String subtotalsBought(String amount) {
+    return '$amount gekauft';
+  }
+
+  @override
+  String subtotalsOpen(String amount) {
+    return '$amount offen';
+  }
+
+  @override
+  String get subtotalsJump => 'Zum Laden in der Liste';
+
+  @override
+  String moneyAtLeast(String amount) {
+    return 'mind. $amount';
+  }
+
+  @override
+  String moneyAtLeastSpoken(String amount) {
+    return 'mindestens $amount';
+  }
+
+  @override
+  String moneyEstimate(String amount) {
+    return '≈ $amount';
+  }
+
+  @override
+  String moneyEstimateSpoken(String amount) {
+    return 'etwa $amount';
+  }
 }
