@@ -142,6 +142,20 @@ void main() {
     expect(s.total.floor, isTrue);
   });
 
+  test('a price per kg on a quantity without a weight sums nothing and '
+      'counts as „ohne Preis“', () {
+    final apples = _item(
+      'Äpfel',
+      store: 'lidl',
+      cents: 299,
+      per: PricePer.kg,
+      quantity: '3',
+    );
+    expect(apples.lineCentsNow, isNull);
+    final s = summary([apples, _item('Milch', store: 'lidl', cents: 119)]);
+    expect(s.total, const Sum(cents: 119, priced: 1, unpriced: 1));
+  });
+
   test('a price per kg typed per kg on an open item is an estimate, and so '
       'is every sum holding it', () {
     final bananas = _item(
