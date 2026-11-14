@@ -48,6 +48,29 @@ void main() {
     expect(await cache.list('lea', 'home').load(), isNull);
   });
 
+  test('a later save replaces the list, changed rows included', () async {
+    await cache.remember('peter', households: [home], shown: home.id);
+    await cache.list('peter', 'home').save(snapshot);
+    final ticked = ListSnapshot(
+      catalog: const Catalog(),
+      server: [
+        snapshot.server.single.copyWith(status: ItemStatus.bought),
+        Item(
+          id: 'bread',
+          name: 'Brot',
+          status: ItemStatus.active,
+          createdAt: DateTime.utc(2026, 10, 23),
+          updatedAt: DateTime.utc(2026, 10, 23),
+        ),
+      ],
+      pending: const [],
+    );
+    await cache.list('peter', 'home').save(ticked);
+    final back = await cache.list('peter', 'home').load();
+    expect(back?.toJson(), ticked.toJson());
+    expect(back?.server.first.status, ItemStatus.bought);
+  });
+
   test('each household keeps its list across switches (job 169b)', () async {
     await cache.remember('peter', households: [home, work], shown: 'home');
     await cache.list('peter', 'home').save(snapshot);

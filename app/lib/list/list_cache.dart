@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:family_groceries/list/model.dart';
 import 'package:flutter/foundation.dart' show immutable;
 
@@ -115,6 +117,24 @@ class const ListSnapshot({
     'usuals': [for (final u in usuals) u.toJson()],
     'claims': [for (final c in claims) c.toJson()],
   };
+
+  /// [toJson] as JSON text, character for character what `jsonEncode` makes
+  /// of it. An item's text stays with the [Item], whose fields never change,
+  /// so the save after a tick encodes the changed row and not every row
+  /// again (job 221). The catalog's lists could change in place, so it is
+  /// encoded each time.
+  String encode() =>
+      '{"version":$version'
+      ',"catalog":${jsonEncode(catalog.toJson())}'
+      ',"server":[${server.map(_itemText).join(',')}]'
+      ',"pending":${jsonEncode([for (final op in pending) op.toJson()])}'
+      ',"usuals":${jsonEncode([for (final u in usuals) u.toJson()])}'
+      ',"claims":${jsonEncode([for (final c in claims) c.toJson()])}}';
+
+  static final _itemTexts = Expando<String>();
+
+  static String _itemText(Item item) =>
+      _itemTexts[item] ??= jsonEncode(item.toJson());
 }
 
 /// The device's copy of one household's list for one user. [load] and

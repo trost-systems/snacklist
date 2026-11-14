@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:family_groceries/list/list_cache.dart';
 import 'package:family_groceries/list/model.dart';
+import 'package:family_groceries/list/pricing.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -124,6 +125,64 @@ void main() {
       [for (final u in back.usuals) (u.name, u.quantity, u.due)],
       [('Gurken', '2', true), ('Brot', null, false)],
     );
+  });
+
+  group('encode', () {
+    final odd = Item(
+      id: 'odd',
+      name: 'Crème "fraîche" \\ 🧀\n\tgroß',
+      status: ItemStatus.active,
+      createdAt: at,
+      updatedAt: at,
+      listId: 'l1',
+      price: Price(
+        unitMicros: 1990000,
+        basis: PriceBasis.unit,
+        per: PricePer.kg,
+        currency: 'EUR',
+        pricedAt: at,
+      ),
+    );
+    final full = ListSnapshot(
+      catalog: snapshot.catalog,
+      server: [milk, odd, bread],
+      pending: snapshot.pending,
+      usuals: snapshot.usuals,
+      claims: [
+        Claim(id: 'c1', itemId: 'milk', userId: 'lea', createdAt: at),
+        Claim(itemId: 'odd', userId: 'peter', quantity: '2', createdAt: at),
+      ],
+    );
+
+    test('is the text jsonEncode makes of toJson', () {
+      const empty = ListSnapshot(catalog: Catalog(), server: [], pending: []);
+      for (final s in [full, snapshot, empty]) {
+        expect(s.encode(), jsonEncode(s.toJson()));
+      }
+      expect(roundTrip(full).encode(), full.encode());
+    });
+
+    test('follows an item that changed and leaves the others', () {
+      final before = full.encode();
+      final ticked = odd.copyWith(
+        status: ItemStatus.bought,
+        boughtAt: () => at,
+      );
+      final after = ListSnapshot(
+        catalog: full.catalog,
+        server: [milk, ticked, bread],
+        pending: [SetStatus('odd', ItemStatus.bought, at)],
+        usuals: full.usuals,
+        claims: full.claims,
+      );
+      expect(after.encode(), jsonEncode(after.toJson()));
+      expect(after.encode(), isNot(before));
+      expect(
+        full.encode(),
+        before,
+        reason: 'the snapshot before still has the open item',
+      );
+    });
   });
 
   test('a version 1 snapshot loads with its queued ops', () {
