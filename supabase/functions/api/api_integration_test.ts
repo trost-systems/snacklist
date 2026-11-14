@@ -6,6 +6,7 @@ import postgres from 'postgres';
 import { sha256Hex } from '../_shared/auth.ts';
 import { asUser, databaseUrl } from '../_shared/db.ts';
 import { handle } from './handler.ts';
+import { routes } from './routes.ts';
 
 const enabled = Deno.env.get('FG_DB_TEST') === '1';
 
@@ -22,21 +23,32 @@ function admin() {
   return postgres(databaseUrl(), { max: 2, prepare: false });
 }
 
-/** An API key minted the way the app does: the member's own session, no OAuth client. */
-async function mint(sql: postgres.Sql, member: Member, scopes: string[]) {
-  const claims = JSON.stringify({
-    sub: member.userId,
-    role: 'authenticated',
-    session_id: crypto.randomUUID(),
-  });
+type Claims = { role: 'authenticated' | 'anon'; sub?: string; [claim: string]: unknown };
+
+/** create_api_token as a caller with [claims]; [household]: the three-argument form. */
+async function mintAs(sql: postgres.Sql, claims: Claims, scopes: string[], household?: string) {
   return await sql.begin(async (tx) => {
-    await tx`select set_config('role', 'authenticated', true),
-                    set_config('request.jwt.claims', ${claims}, true)`;
-    const [row] = await tx<{ id: string; token: string }[]>`
-      select id, token from public.create_api_token('test', ${scopes})`;
+    await tx`select set_config('role', ${claims.role}, true),
+                    set_config('request.jwt.claims', ${JSON.stringify(claims)}, true)`;
+    const [row] = household === undefined
+      ? await tx<{ id: string; token: string }[]>`
+        select id, token from public.create_api_token('test', ${scopes})`
+      : await tx<{ id: string; token: string }[]>`
+        select id, token from public.create_api_token('test', ${scopes}, ${household})`;
     return row;
   }) as { id: string; token: string };
 }
+
+/** The claims of the app's own session: a session id, no OAuth client. */
+const appSession = (member: Member): Claims => ({
+  sub: member.userId,
+  role: 'authenticated',
+  session_id: crypto.randomUUID(),
+});
+
+/** An API key minted the way the app does: the member's own session, no OAuth client. */
+const mint = (sql: postgres.Sql, member: Member, scopes: string[], household?: string) =>
+  mintAs(sql, appSession(member), scopes, household);
 
 function api(
   token: string,
@@ -516,4 +528,297 @@ test('switched off, no key can be made and a key from before gets 404 until it i
     const on = await api(key.token, 'GET', '/items');
     assertEquals(on.status, 200, 'the same key works once the API is on');
     assertEquals((await on.json()).data.map((i: Item) => i.name), ['Tee']);
+  }));
+
+test('a read key reads on every route and changes nothing; a read-write key does both', () =>
+  withMembers(async (sql, [mine]) => {
+    const writer = await mint(sql, mine, ['read', 'write']);
+    const reader = await mint(sql, mine, ['read']);
+    const added = await api(writer.token, 'POST', '/items', {
+      body: { items: [{ name: 'Milch' }] },
+    });
+    const [milk] = (await added.json()).data.added as Item[];
+    assertExists(milk);
+    const bodies: Record<string, unknown> = {
+      addItems: { items: [{ name: 'Brot' }] },
+      moveItem: { store: null },
+    };
+    const call = (token: string, route: (typeof routes)[number]) =>
+      api(token, route.method, route.path.replace('/v1', '').replace('{id}', milk.id), {
+        body: bodies[route.operation],
+      });
+    const state = () =>
+      sql`select id, name, status, store_id, category_id, updated_at from public.items
+          where household_id = ${mine.householdId} order by id`;
+
+    const before = await state();
+    for (const route of routes) {
+      const res = await call(reader.token, route);
+      const where = `${route.method} ${route.path}`;
+      if (route.scope === 'read') {
+        assertEquals(res.status, 200, where);
+        await res.body?.cancel();
+      } else {
+        assertEquals(res.status, 403, where);
+        const error = (await res.json()).error;
+        assertEquals([error.code, error.details], ['insufficient_scope', { required: 'write' }]);
+      }
+    }
+    assertEquals(await state(), before, 'the read key changed nothing');
+
+    for (const route of routes) {
+      const res = await call(writer.token, route);
+      assert(res.ok, `${route.method} ${route.path} with a read-write key: ${res.status}`);
+      await res.body?.cancel();
+    }
+  }));
+
+test('a member of two households: a key acts in the household it was made for, until they leave it', () =>
+  withMembers(async (sql, [mine, theirs]) => {
+    await sql`insert into public.household_members (household_id, user_id, role)
+              values (${theirs.householdId}, ${mine.userId}, 'member')`;
+    const key = await mint(sql, mine, ['read', 'write'], mine.householdId);
+    const theirKey = await mint(sql, theirs, ['read', 'write']);
+    const own = await api(key.token, 'POST', '/items', { body: { items: [{ name: 'Eigenes' }] } });
+    const [ownItem] = (await own.json()).data.added as Item[];
+    const there = await api(theirKey.token, 'POST', '/items', {
+      body: { items: [{ name: 'Fremdkäse', store: 'dm' }] },
+    });
+    const [foreign] = (await there.json()).data.added as Item[];
+    assertExists(ownItem);
+    assertExists(foreign);
+    const theirIds = async (table: 'lists' | 'stores' | 'categories') => {
+      const [row] = await sql<{ id: string }[]>`
+        select id from public.${sql(table)} where household_id = ${theirs.householdId} limit 1`;
+      assertExists(row);
+      return row.id;
+    };
+    const [list, store, category] = [
+      await theirIds('lists'),
+      await theirIds('stores'),
+      await theirIds('categories'),
+    ];
+
+    for (
+      const [method, path, body, status, code] of [
+        ['GET', `/items/${foreign.id}`, undefined, 404, 'item_not_found'],
+        ['POST', `/items/${foreign.id}/tick`, undefined, 404, 'item_not_found'],
+        ['PATCH', `/items/${foreign.id}`, { store: null }, 404, 'item_not_found'],
+        ['POST', '/items', { list, items: [{ name: 'Eindringling' }] }, 422, 'list_not_found'],
+        ['POST', '/items', { items: [{ name: 'Eindringling', store }] }, 422, 'store_not_found'],
+        [
+          'POST',
+          '/items',
+          { items: [{ name: 'Eindringling', category }] },
+          422,
+          'category_not_found',
+        ],
+        ['GET', `/items?list=${list}`, undefined, 422, 'list_not_found'],
+        ['GET', `/items?store=${store}`, undefined, 422, 'store_not_found'],
+        ['PATCH', `/items/${ownItem.id}`, { store }, 422, 'store_not_found'],
+        ['PATCH', `/items/${ownItem.id}`, { category }, 422, 'category_not_found'],
+      ] as const
+    ) {
+      const res = await api(key.token, method, path, { body });
+      const where = `${method} ${path} ${JSON.stringify(body ?? null)}`;
+      assertEquals(res.status, status, where);
+      assertEquals((await res.json()).error.code, code, where);
+    }
+    const listed = await (await api(key.token, 'GET', '/items')).json();
+    assertEquals(listed.data.map((i: Item) => i.name), ['Eigenes'], 'its own household only');
+    const untouched = await sql<{ name: string; status: string; store: string | null }[]>`
+      select i.name, i.status, s.name as store from public.items i
+      left join public.stores s on s.id = i.store_id where i.household_id = ${theirs.householdId}`;
+    assertEquals(
+      untouched.map((r) => ({ ...r })),
+      [{ name: 'Fremdkäse', status: 'active', store: 'dm' }],
+      'the other household is as it was',
+    );
+
+    const second = await mint(sql, mine, ['read'], theirs.householdId);
+    const viaSecond = await (await api(second.token, 'GET', '/items')).json();
+    assertEquals(
+      viaSecond.data.map((i: Item) => i.name),
+      ['Fremdkäse'],
+      'a key made for the second household reads that one',
+    );
+    await asUser(mine.userId, (tx) => tx`select public.leave_household(${theirs.householdId})`);
+    const left = await api(second.token, 'GET', '/items');
+    assertEquals(left.status, 401, 'leaving a household ends the keys made for it');
+    assertEquals((await left.json()).error.code, 'invalid_token');
+    const stays = await api(key.token, 'GET', '/items');
+    assertEquals(stays.status, 200, "the key for the member's other household goes on");
+    await stays.body?.cancel();
+  }));
+
+test("only an API key opens the API, and only the app's own session of a member makes one", () =>
+  withMembers(async (sql, [mine, theirs]) => {
+    const session = appSession(mine);
+    const key = await mint(sql, mine, ['read', 'write']);
+    const pat = await sql.begin(async (tx) => {
+      await tx`select set_config('role', 'authenticated', true),
+                      set_config('request.jwt.claims', ${JSON.stringify(session)}, true)`;
+      const [row] = await tx<{ token: string }[]>`
+        select token from public.create_personal_access_token('test')`;
+      return row;
+    });
+    assertExists(pat);
+    const withPat = await api(pat.token, 'GET', '/items');
+    assertEquals(withPat.status, 401, 'an access token for MCP or Siri is not an API key');
+    assertEquals((await withPat.json()).error.code, 'invalid_token');
+    const asAccessToken = await sql`
+      select from public.authenticate_access_token(${await sha256Hex(key.token)})`;
+    assertEquals(asAccessToken.length, 0, 'and an API key is not an access token');
+    for (const authorization of [`Basic ${key.token}`, key.token]) {
+      const res = await api('', 'GET', `/items?access_token=${key.token}`, {
+        headers: { authorization },
+      });
+      assertEquals(res.status, 401, 'the key counts only as a Bearer token');
+      assertEquals((await res.json()).error.code, 'missing_token');
+    }
+
+    const refused = async (
+      claims: Claims,
+      scopes: string[],
+      expected: [code: string, message: string],
+      household?: string,
+    ) => {
+      const error = await assertRejects(() =>
+        mintAs(sql, claims, scopes, household)
+      ) as postgres.PostgresError;
+      assertEquals([error.code, error.message], expected, JSON.stringify({ claims, scopes }));
+    };
+    await refused(session, ['write'], ['22023', 'invalid_scopes']);
+    await refused(session, [], ['22023', 'invalid_scopes']);
+    await refused(session, ['read', 'admin'], ['22023', 'invalid_scopes']);
+    await refused({ ...session, client_id: crypto.randomUUID() }, ['read'], [
+      '42501',
+      'session_required',
+    ]);
+    await refused({ sub: mine.userId, role: 'authenticated' }, ['read'], [
+      '42501',
+      'session_required',
+    ]);
+    await refused(session, ['read'], ['42501', 'not_a_member'], theirs.householdId);
+    await refused({ role: 'anon' }, ['read'], [
+      '42501',
+      'permission denied for function create_api_token',
+    ]);
+    const [keys] = await sql<{ n: number }[]>`
+      select count(*)::int as n from public.personal_access_tokens
+      where kind = 'api' and user_id in (${mine.userId}, ${theirs.userId})`;
+    assertEquals(keys?.n, 1, 'no refused call left a key');
+  }));
+
+/** A cursor as the API encodes one. */
+const cursorOf = (value: unknown) =>
+  btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(value))))
+    .replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/, '');
+
+test('pages meet exactly whatever the sort keys; input Postgres cannot read is 400, not a failure', () =>
+  withMembers(async (sql, [mine]) => {
+    const key = await mint(sql, mine, ['read', 'write']);
+    // Keys a household gets by sorting by hand: more digits than Postgres prints by default,
+    // two that print alike, one that prints rounded up past the next item's.
+    const keys = {
+      Drittel: '0.3',
+      Summe: '0.30000000000000004',
+      Anfang: '1024',
+      Mitte: '100352.0009765625',
+      Ende: '100352.0029296875',
+      Danach: '100352.0029296876',
+    };
+    await api(key.token, 'POST', '/items', {
+      body: { items: Object.keys(keys).map((name) => ({ name })) },
+    });
+    for (const [name, sortKey] of Object.entries(keys)) {
+      await sql`
+        update public.items set sort_key = ${sortKey}::float8, category_id = (
+          select id from public.categories where household_id = ${mine.householdId}
+          order by sort_order limit 1)
+        where household_id = ${mine.householdId} and name = ${name}`;
+    }
+
+    const seen: string[] = [];
+    let cursor: string | null = null;
+    do {
+      await refill(sql, key.id);
+      const query: string = cursor ? `?limit=1&cursor=${cursor}` : '?limit=1';
+      const page = await (await api(key.token, 'GET', `/items${query}`)).json();
+      seen.push(...page.data.map((i: Item) => i.name));
+      cursor = page.nextCursor;
+    } while (cursor && seen.length <= Object.keys(keys).length);
+    assertEquals(seen, Object.keys(keys), 'one item a page: each once, in order, and it ends');
+
+    const first = await (await api(key.token, 'GET', '/items?limit=1')).json();
+    const real = JSON.parse(new TextDecoder().decode(
+      Uint8Array.from(
+        atob(first.nextCursor.replaceAll('-', '+').replaceAll('_', '/')),
+        (c) => c.charCodeAt(0),
+      ),
+    ));
+    const continued = async (k: unknown[]) => {
+      await refill(sql, key.id);
+      const res = await api(key.token, 'GET', `/items?cursor=${cursorOf({ ...real, k })}`);
+      const body = await res.json();
+      return `${res.status} ${body.error?.code ?? 'ok'}`;
+    };
+    const [rank, category, sortKey, addedAt, id] = real.k as [
+      number,
+      string,
+      string,
+      string,
+      string,
+    ];
+    for (
+      const k of [
+        [2 ** 31, category, sortKey, addedAt, id],
+        [rank, 'a\u0000b', sortKey, addedAt, id],
+        [rank, category, '1e999', addedAt, id],
+        [rank, category, '1e-400', addedAt, id],
+        [rank, category, '9'.repeat(400), addedAt, id],
+        [rank, category, sortKey, '2026-02-30T08:00:00+00:00', id],
+        [rank, category, sortKey, '2026-11-02T08:00:00+16:00', id],
+        [rank, category, sortKey, '0000-01-01T00:00:00+00:00', id],
+      ]
+    ) {
+      assertEquals(await continued(k), '400 invalid_cursor', JSON.stringify(k));
+    }
+    // The outermost values a cursor may hold are ones Postgres reads.
+    for (
+      const k of [
+        [-(2 ** 31), category, sortKey, addedAt, id],
+        [2 ** 31 - 1, category, sortKey, addedAt, id],
+        [rank, category, '-Infinity', addedAt, id],
+        [rank, category, 'NaN', addedAt, id],
+        [rank, category, '5e-324', addedAt, id],
+        [rank, category, '1.7976931348623157e+308', addedAt, id],
+        [rank, category, sortKey, '0001-01-01T00:00:00+15:59', id],
+        [rank, category, sortKey, '9999-12-31T23:59:59.999999-15:59', id],
+      ]
+    ) {
+      assertEquals(await continued(k), '200 ok', JSON.stringify(k));
+    }
+
+    for (
+      const [path, body] of [
+        ['/items', { items: [{ name: 'a\u0000b' }] }],
+        ['/items', { items: [{ name: 'Tee', brand: 'a\u0000b' }] }],
+        ['/items', { items: [{ name: 'Tee', properties: '\u0000' }] }],
+        ['/items', { items: [{ name: 'Tee', quantity: '1\u0000' }] }],
+        ['/items', { items: [{ name: 'Tee', store: 'd\u0000m' }] }],
+        ['/items', { list: 'a\u0000', items: [{ name: 'Tee' }] }],
+      ] as const
+    ) {
+      await refill(sql, key.id);
+      const res = await api(key.token, 'POST', path, { body });
+      assertEquals(res.status, 400, JSON.stringify(body));
+      assertEquals((await res.json()).error.code, 'validation_failed');
+    }
+    const byQuery = await api(key.token, 'GET', '/items?store=d%00m');
+    assertEquals(byQuery.status, 400);
+    await byQuery.body?.cancel();
+    const names = await sql<{ name: string }[]>`
+      select name from public.items where household_id = ${mine.householdId} and name = 'Tee'`;
+    assertEquals(names.length, 0, 'nothing was added');
   }));

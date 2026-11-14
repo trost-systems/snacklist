@@ -249,8 +249,9 @@ paths:
       tags: [catalog]
       summary: The household's lists in their order
       description: >-
-        A household has one or more lists (for example "Wocheneinkauf" and "Baumarkt"). The first
-        (lowest sortOrder) is where an add without list goes. Requires the read scope.
+        A household has one or more lists (for example "Wocheneinkauf" and "Baumarkt"). An add
+        without list goes to the key owner's default list (chosen in the app, else the first, the
+        lowest sortOrder). Requires the read scope.
       responses:
         '200': { $ref: '#/components/responses/Catalog' }
         '400': { $ref: '#/components/responses/BadRequest' }

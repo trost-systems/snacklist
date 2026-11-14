@@ -952,3 +952,27 @@ true in code before the Legal GO request.
 Flags: none new. TestFlight: the next green main build. Peter sees the trip part with `trip-mode`
 on for his account only. `trip-mode` still stays off for testers until Legal settles Gap B
 (the session's times and prices, NEEDS_LEAD "Job 244: code gaps").
+
+## Job 241: public API review and hardening (2026-11-14)
+
+The public REST API (`supabase/functions/api`, behind `app_switches.public_api` and the PostHog
+flag `public-api`) was reviewed before it is switched on: key creation and storage, scopes on
+every route, isolation between households, the Premium lock, rate limits, idempotency, cursors,
+input validation, error texts, CORS, revocation, the key cap, logging, the off gate, abuse cost,
+the docs, and that trips and prices are not exposed. The report with severities is on the ops
+side only (`jobs/241-public-api-fable-review/out/PUBLIC_API_REVIEW.md`), since the repo is
+public.
+
+PR [#468](https://github.com/trost-systems/snacklist/pull/468), public API hardening:
+
+- **Cursors** keep the exact list position, so pages meet without a repeat whatever the sort
+  keys. The cursor format is unchanged.
+- **Validation.** A cursor passes only with values in the form the API gives out, and text
+  fields refuse U+0000. Both answer 400.
+- **Tests.** The scope on every route, a member of two households, which credentials open the
+  API and who can make a key, paging over close sort keys, input the database cannot read.
+- **Docs.** `docs/API.md` and the OpenAPI text say where an add without `list` goes.
+
+Nothing users see changes: the API is still off. The production switch and the PostHog flag are
+untouched; the lead switches them after the verdict (NEEDS_LEAD "Job 241: public API review
+ready"). Reasons: `docs/DECISIONS.md` "Job 241".

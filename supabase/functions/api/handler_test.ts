@@ -400,6 +400,79 @@ Deno.test('a broken cursor is 400 invalid_cursor before anything runs', async ()
   await rejected(call(`/items?cursor=${encodeURIComponent(injected)}`), 400, 'invalid_cursor');
 });
 
+Deno.test('a cursor passes only with a position the database can compare', async () => {
+  const withPosition = (k: unknown[]) =>
+    call(`/items?cursor=${
+      encodeURIComponent(
+        btoa(
+          String.fromCharCode(
+            ...new TextEncoder().encode(JSON.stringify({ v: 1, f: [null, null], k })),
+          ),
+        ),
+      )
+    }`);
+  const at = '2026-11-02T08:00:00.123456+00:00';
+  for (
+    const k of [
+      [10, 'Kühlregal', '1024', at, ID],
+      [10, 'Kühlregal', '100352.0009765625', at, ID],
+      [10, 'Kühlregal', 'Infinity', at, ID],
+      [-3, 'Kühlregal', '-1e+21', '2024-02-29T23:59:59-11:30', ID],
+    ]
+  ) {
+    const deps = fake();
+    assertEquals((await handle(withPosition(k), deps)).status, 200, JSON.stringify(k));
+    assertEquals(deps.executed.length, 1);
+  }
+  for (
+    const k of [
+      [2 ** 31, 'Kühlregal', '1024', at, ID],
+      [1.5, 'Kühlregal', '1024', at, ID],
+      [10, 'Kühl\u0000regal', '1024', at, ID],
+      [10, 'Kühlregal', "1'; drop table items; --", at, ID],
+      [10, 'Kühlregal', '1e999', at, ID],
+      [10, 'Kühlregal', '1e-400', at, ID],
+      [10, 'Kühlregal', '1024.0', at, ID],
+      [10, 'Kühlregal', '', at, ID],
+      [10, 'Kühlregal', '1024', '2026-02-30T08:00:00+00:00', ID],
+      [10, 'Kühlregal', '1024', '2026-13-02T08:00:00+00:00', ID],
+      [10, 'Kühlregal', '1024', '2026-11-02T24:00:00+00:00', ID],
+      [10, 'Kühlregal', '1024', '0000-01-01T00:00:00+00:00', ID],
+      [10, 'Kühlregal', '1024', '2026-11-02T08:00:00+16:00', ID],
+      [10, 'Kühlregal', '1024', '2026-11-02T08:00:00Z', ID],
+    ]
+  ) {
+    await rejected(withPosition(k), 400, 'invalid_cursor');
+  }
+});
+
+Deno.test('text with U+0000, which the database cannot store, is 400 validation_failed', async () => {
+  const name = await rejected(
+    post(JSON.stringify({ items: [{ name: 'Mi\u0000lch' }] })),
+    400,
+    'validation_failed',
+  );
+  assertEquals((name.details?.issues as { path: string }[])[0]?.path, 'body.items.0.name');
+  for (const field of ['quantity', 'brand', 'properties', 'category', 'store']) {
+    await rejected(
+      post(JSON.stringify({ items: [{ name: 'Milch', [field]: 'a\u0000b' }] })),
+      400,
+      'validation_failed',
+    );
+  }
+  await rejected(
+    post(JSON.stringify({ list: '\u0000', items: [{ name: 'Milch' }] })),
+    400,
+    'validation_failed',
+  );
+  await rejected(call('/items?store=d%00m'), 400, 'validation_failed');
+  await rejected(
+    call(`/items/${ID}`, { method: 'PATCH', body: JSON.stringify({ category: 'a\u0000' }) }),
+    400,
+    'validation_failed',
+  );
+});
+
 Deno.test('Idempotency-Key: printable ASCII, 1 to 255; the same request hashes the same', async () => {
   const body = JSON.stringify({ items: [{ name: 'Milch', quantity: '2' }] });
   await rejected(

@@ -1,6 +1,7 @@
 // The shopping-list operations behind the MCP tools and the API. Every function runs as the
-// signed-in user (asUser), so RLS confines it to the caller's household; household_id filters
-// only narrow the query plan. A household has one or more lists (job 169b W3): the tools act in
+// signed-in user (asUser), so RLS confines it to the caller's households; the household_id filters
+// keep it to the one the key or session acts for (a user can be in several, job 169b), and narrow
+// the query plan. A household has one or more lists (job 169b W3): the tools act in
 // the list a `list` reference names, else in the caller's default list there (job 207,
 // public.default_list: their choice, else the first list), where Siri and Alexa act too.
 import { oneRow, type Tx } from './db.ts';
@@ -295,8 +296,9 @@ export async function resolveFilter(
 
 /**
  * An open item's place in the aisle order, the key a page continues after. sortKey and addedAt
- * are Postgres text, so the comparison sees the exact float and microseconds (they go in as text:
+ * are text, so the comparison sees the exact float and microseconds (they go in as text:
  * postgres.js would pass a timestamptz parameter through Date, which keeps milliseconds only).
+ * sortKey is the shortest decimal that reads back as the same float8, 'Infinity' for none.
  */
 export type Position = {
   rank: number;
@@ -322,10 +324,10 @@ export async function openItems(
 ): Promise<OpenItem[]> {
   const { storeId, categoryId, listId } = filter;
   const { after, limit } = page;
-  const rows = await tx<(ApiItem & { rank: number; sortKey: string })[]>`
+  const rows = await tx<(ApiItem & { rank: number; sortKeyBits: string })[]>`
     select ${apiColumns(tx)},
            coalesce(o.sort_order, c.sort_order) as rank,
-           coalesce(i.sort_key, 'Infinity'::float8)::text as "sortKey"
+           encode(float8send(coalesce(i.sort_key, 'Infinity'::float8)), 'hex') as "sortKeyBits"
     from public.items i
     join public.categories c on c.id = i.category_id
     left join public.stores s on s.id = i.store_id
@@ -346,10 +348,27 @@ export async function openItems(
     order by coalesce(o.sort_order, c.sort_order), c.name,
              coalesce(i.sort_key, 'Infinity'::float8), i.created_at, i.id
     ${limit === null ? tx`` : tx`limit ${limit}`}`;
-  return rows.map(({ rank, sortKey, ...item }) => ({
+  return rows.map(({ rank, sortKeyBits, ...item }) => ({
     ...item,
-    position: { rank, category: item.category, sortKey, addedAt: item.addedAt, id: item.id },
+    position: {
+      rank,
+      category: item.category,
+      sortKey: exactDecimal(sortKeyBits),
+      addedAt: item.addedAt,
+      id: item.id,
+    },
   }));
+}
+
+/**
+ * A float8 from its bytes in hex, as the shortest decimal that reads back as the same number.
+ * Postgres' own text keeps 15 digits (extra_float_digits is 0 here), fewer than some sort keys
+ * have: a page that continued after such a text began with its own last item again.
+ */
+function exactDecimal(hex: string): string {
+  const bytes = new DataView(new ArrayBuffer(8));
+  bytes.setBigUint64(0, BigInt(`0x${hex}`));
+  return String(bytes.getFloat64(0));
 }
 
 /** The open items of one list, the one [filter] names or the default list. */
