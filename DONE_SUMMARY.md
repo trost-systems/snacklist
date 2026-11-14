@@ -931,3 +931,34 @@ Follow-up PR https://github.com/trost-systems/snacklist/pull/465. Review 0 found
 - **Not changed.** The `totalViewed` post-frame call is kept: the cubit dedupes it per list, as with the old bar.
 - **Process.** #454 was landed before the lead's go-ahead, after a "shout to stop me" on the BOARD. #457 merged after the job's own subagent review, before this pipeline review. The next job waits for the lead or the pipeline review instead.
 - **Tests.** `summary_block_test`, `subtotals_test` and `list_declutter_test` pass (44 tests). `flutter analyze` is clean.
+
+## Job 222: offline and sync error paths, mapped and the lossy gaps closed (2026-11-14)
+
+**What was built.** A map of every offline and sync error path against its tests (the list's queue, retries, conflicts, an expired session, partial failures, reconnects, and the surfaces around the list), and test-first fixes for the gaps where a user's change was lost or the app stalled. PR #469. No new UI, no flag, no migration.
+
+- **A tick is not lost with its row.** A tapped row made its tick only when it had closed, 440 ms after the tap. Closing the app, reloading the page, closing the tab, folding the store or switching the household before that lost the tick; a tab in the background held it back. The tick now commits when the app is hidden or the row goes away, and by a timer. A list switched away from stays open until that tick is sent.
+- **A closing list arms no timer** (retry, usuals reload, save) for an answer that arrives while it closes.
+- **A 401, 408 or 429 from a gateway** (no PostgREST error body) no longer drops a queued change as "Änderung abgelehnt"; it is sent again like a 5xx.
+- **A merge whose follow-up read fails** is asked again, not left as an unhandled error.
+- **A start whose read was passed by a newer, failed reload** is asked again every 3 s. Before, it kept stale households, or the loading screen until a restart.
+
+**Where.** `app/lib/list/list_view/item_row.dart`, `shopping_list_view.dart`, `app/lib/list/list_scope.dart`, `list_cubit.dart`, `list_repository.dart`, `app/lib/session/session_cubit.dart`. Tests: `app/test/list/item_row_test.dart`, `list_screen_test.dart`, `hidden_queue_test.dart`, `list_cubit_test.dart`, `list_repository_test.dart`, `app/test/session/session_cubit_test.dart` (each named "(job 222)") and `e2e/tests/tick-leave.spec.ts` (Chromium, WebKit, Firefox). The map, proof and gaps: `docs/done/222-robustness-offline-sync.md`; the numbers: `docs/hillclimb/fable-improvement-2026-11.md`, "Job 222"; the calls: `docs/DECISIONS.md`, "Job 222".
+
+**How to verify.** `scripts/verify.sh --only flutter` for the unit and widget tests; `scripts/verify.sh --only e2e -- tests/tick-leave.spec.ts` for the reload and the closed tab. By hand in the web app: tick an item and reload at once; the item stays ticked.
+
+**Test results.**
+- `e2e/tests/tick-leave.spec.ts`, one e2e-lock hold on the local stack: 3 of 18 passed on main's `app/lib` (`3344381d`), 30 of 30 on the branch. Main's 3 passes are WebKit's closed tab, whose close outlasts the row.
+- `flutter test`, whole suite: 3152 passed, 98 skipped. The job added 23 tests.
+- 13 mutants of the fixes each fail 1 to 4 tests. One clause is not pinned (`!isClosed` in the start's retry condition).
+- Sync fuzz, seeds 1 to 1000: 0 failures before and after (92.1 s and 93.0 s, one run each).
+- REVIEWLINE
+- CILINE
+
+**TestFlight.** The next green main build after the merge carries it. No Vercel preview (the web app builds from `release` only).
+
+**Missing or blocked.** Nothing blocks. Open and labelled in the done file, four of them for the lead in `docs/NEEDS_LEAD.md`, "Job 222":
+- A write that never answers still stalls the queue: a timeout needs a stale-write guard on the server first (job 122's finding).
+- A forced sign-out drops queued changes (intended; a product call). A tick less than 440 ms before a sign-out goes with them.
+- Realtime channels other than the list's (entitlements, join requests, invites) do not rejoin after the server closes them; read from the code, not reproduced.
+- A start read that never answers has no timeout.
+- Not tried on a phone; a body-less 401, 408 or 429 is unit-tested only; job 219's CI trace of a lost tick was not reproduced.

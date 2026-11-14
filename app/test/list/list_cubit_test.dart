@@ -1983,6 +1983,79 @@ void main() {
         async.flushMicrotasks();
       });
     });
+
+    for (final answered in [true, false]) {
+      final what = answered ? 'answered' : 'that failed';
+      test('a write $what while the list closes starts no refresh and no '
+          'retry: a closed list keeps no timer (job 222)', () {
+        fakeAsync((async) {
+          final closing = ListCubit(repo, MemoryListCache(), userId: 'peter')
+            ..start();
+          async.elapse(Duration.zero);
+          final id = (closing.addEntry(parseEntry('Brot')) as Added).item.id;
+          async.elapse(const Duration(seconds: 2));
+          final usuals = repo.usualsCalls;
+          final fetches = repo.itemFetches;
+
+          repo.gate = Completer();
+          final channel = Completer<void>();
+          repo.unwatchGates.add(channel);
+          closing.tick(id);
+          unawaited(closing.close());
+          async.flushMicrotasks();
+          repo.online = answered;
+          repo.gate!.complete();
+          async.flushMicrotasks();
+          expect(
+            repo.rows[id]!.status,
+            answered ? ItemStatus.bought : ItemStatus.active,
+          );
+          channel.complete();
+          async.flushMicrotasks();
+          expect(closing.isClosed, isTrue);
+
+          expect(async.pendingTimers, isEmpty);
+          async.elapse(const Duration(seconds: 4));
+          expect(repo.usualsCalls, usuals);
+          expect(repo.itemFetches, fetches);
+        });
+      });
+    }
+
+    test("a reload answered while the list closes, with a partner's add, "
+        'starts no save and no refresh (job 222)', () {
+      fakeAsync((async) {
+        final closing = ListCubit(repo, MemoryListCache(), userId: 'peter')
+          ..start();
+        async.elapse(const Duration(seconds: 2));
+
+        repo
+          ..remoteAdd('Tee')
+          ..itemsGate = Completer();
+        unawaited(closing.resync());
+        async.flushMicrotasks();
+        final channel = Completer<void>();
+        repo.unwatchGates.add(channel);
+        unawaited(closing.close());
+        async.flushMicrotasks();
+        repo.itemsGate!.complete();
+        async.flushMicrotasks();
+        expect(
+          [for (final i in closing.state.items.values) i.name],
+          ['Tee'],
+          reason: 'the answer still shows',
+        );
+        channel.complete();
+        async.flushMicrotasks();
+        expect(closing.isClosed, isTrue);
+
+        expect(async.pendingTimers, isEmpty);
+        // The reload read the usuals itself.
+        final usuals = repo.usualsCalls;
+        async.elapse(const Duration(seconds: 4));
+        expect(repo.usualsCalls, usuals);
+      });
+    });
   });
 
   group('duplicate hint (job 32b)', () {

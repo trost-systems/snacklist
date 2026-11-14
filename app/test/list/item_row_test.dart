@@ -37,6 +37,7 @@ void main() {
     List<Item> items, {
     double width = 390,
     Locale locale = const Locale('de'),
+    bool tickers = true,
   }) => tester.pumpWidget(
     MaterialApp(
       theme: appTheme(Brightness.light),
@@ -47,24 +48,27 @@ void main() {
         body: Center(
           child: SizedBox(
             width: width,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (final item in items)
-                  ItemRow(
-                    key: ValueKey(item.id),
-                    item: item,
-                    category: null,
-                    leaving: leaving,
-                    fresh: false,
-                    last: item == items.last,
-                    onVisible: (_) {},
-                    onTick: ticked.add,
-                    onEdit: (_) {},
-                    onDelete: (_) {},
-                  ),
-                const SizedBox(key: ValueKey('below'), height: 10),
-              ],
+            child: TickerMode(
+              enabled: tickers,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (final item in items)
+                    ItemRow(
+                      key: ValueKey(item.id),
+                      item: item,
+                      category: null,
+                      leaving: leaving,
+                      fresh: false,
+                      last: item == items.last,
+                      onVisible: (_) {},
+                      onTick: ticked.add,
+                      onEdit: (_) {},
+                      onDelete: (_) {},
+                    ),
+                  const SizedBox(key: ValueKey('below'), height: 10),
+                ],
+              ),
             ),
           ),
         ),
@@ -188,6 +192,98 @@ void main() {
     expect(ticked.map((i) => i.name), ['Milch']);
     expect(tester.getSize(row('Milch')).height, height);
     expect(tester.hasRunningAnimations, isFalse);
+  });
+
+  group('a tick is not lost with its row (job 222):', () {
+    void reducedMotion(WidgetTester tester) {
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(disableAnimations: true);
+      addTearDown(
+        tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+      );
+    }
+
+    void hide(WidgetTester tester) => tester.binding
+      ..handleAppLifecycleStateChanged(AppLifecycleState.inactive)
+      ..handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+
+    void show(WidgetTester tester) => tester.binding
+      ..handleAppLifecycleStateChanged(AppLifecycleState.inactive)
+      ..handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+
+    for (final reduced in [false, true]) {
+      final motion = reduced ? 'reduced motion' : 'motion';
+      testWidgets('a row that goes away while it leaves commits its tick '
+          'then, once ($motion)', (tester) async {
+        if (reduced) {
+          reducedMotion(tester);
+        }
+        await pumpRows(tester, [_item('Milch'), _item('Brot')]);
+        await tester.tap(row('Milch'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
+        expect(ticked, isEmpty);
+
+        // Scrolled out of the lazy list, its store folded, the list closed.
+        await pumpRows(tester, [_item('Brot')]);
+        await tester.pump();
+        expect(ticked.map((i) => i.name), ['Milch']);
+
+        await tester.pump(rowLeaveDuration);
+        expect(ticked, hasLength(1), reason: 'once');
+      });
+
+      testWidgets('the app going to the background commits the tick at '
+          'once: no frame comes there ($motion)', (tester) async {
+        if (reduced) {
+          reducedMotion(tester);
+        }
+        await pumpRows(tester, [_item('Milch'), _item('Brot')]);
+        await tester.tap(row('Milch'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
+        expect(ticked, isEmpty);
+
+        hide(tester);
+        expect(ticked.map((i) => i.name), ['Milch']);
+
+        show(tester);
+        await tester.pumpAndSettle();
+        await tester.pump(rowLeaveDuration);
+        expect(ticked, hasLength(1), reason: 'once');
+      });
+    }
+
+    testWidgets('a hidden app commits no tick that was not made', (
+      tester,
+    ) async {
+      await pumpRows(tester, [_item('Milch'), _item('Brot')]);
+      hide(tester);
+      expect(ticked, isEmpty);
+      show(tester);
+      await tester.tap(row('Milch'));
+      await tester.pumpAndSettle();
+      expect(ticked.map((i) => i.name), ['Milch']);
+      hide(tester);
+      expect(ticked, hasLength(1), reason: 'committed already');
+      show(tester);
+    });
+
+    testWidgets('the tick comes on time while the row draws no frames '
+        '(another tab in front)', (tester) async {
+      await pumpRows(tester, [_item('Milch'), _item('Brot')]);
+      await tester.tap(row('Milch'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      await pumpRows(tester, [_item('Milch'), _item('Brot')], tickers: false);
+      await tester.pump(rowLeaveDuration);
+      expect(ticked.map((i) => i.name), ['Milch']);
+
+      await pumpRows(tester, [_item('Milch'), _item('Brot')]);
+      await tester.pumpAndSettle();
+      expect(ticked, hasLength(1), reason: 'once');
+    });
   });
 
   testWidgets('the line is as wide as the name with its quantity, not the '

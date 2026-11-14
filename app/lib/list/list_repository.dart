@@ -137,14 +137,15 @@ final class const ServerTrouble(final String message) implements Exception {
 
 /// Whether [e] is the server's trouble rather than a refusal of this
 /// request: a JWT (PGRST3xx) or database connection (PGRST0xx) error, a
-/// 5xx status (the code when the body is no PostgREST error), or a
-/// transient SQLSTATE: connection (08), serialization (40001), deadlock
-/// (40P01), resources (53), operator intervention such as a statement
-/// timeout (57), system (58) or internal (XX).
+/// status (the code when the body is no PostgREST error) of 5xx or of a
+/// gateway that did not look at the request (401 for the session or key,
+/// 408, 429), or a transient SQLSTATE: connection (08), serialization
+/// (40001), deadlock (40P01), resources (53), operator intervention such as
+/// a statement timeout (57), system (58) or internal (XX).
 bool _isTrouble(PostgrestException e) {
   final code = e.code ?? '';
   if (code.length == 3) {
-    return code.startsWith('5');
+    return code.startsWith('5') || const ['401', '408', '429'].contains(code);
   }
   return code.startsWith('PGRST0') ||
       code.startsWith('PGRST3') ||
@@ -510,8 +511,10 @@ class SupabaseListRepository(
       };
     } on PostgrestException catch (e) {
       if (e.code == 'P0002') {
-        final (k, m) = await (_fetchItem(kept), _fetchItem(merged)).wait;
-        return {kept: k, merged: m};
+        // Not a record `.wait`: its ParallelWaitError would hide the
+        // server's trouble, and the list would call itself offline.
+        final rows = await Future.wait([_fetchItem(kept), _fetchItem(merged)]);
+        return {kept: rows[0], merged: rows[1]};
       }
       rethrow;
     }

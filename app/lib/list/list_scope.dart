@@ -311,9 +311,15 @@ class _ScopeState() extends State<_Scope> {
   late final TripCubit _trips;
   StreamSubscription<Map<String, bool>>? _flags;
 
+  /// Holds the shown list until its rows are gone (job 222): a row that
+  /// went away while it closed ticks right after its end, and a list
+  /// switched away from with nothing queued would be closed by then.
+  late final ListHolds _holds;
+
   @override
   void initState() {
     super.initState();
+    _holds = context.read<ListHolds>()..hold(widget.householdId);
     final cubit = context.read<ListCubit>();
     if (siriChannelFor(web: kIsWeb, platform: defaultTargetPlatform)
         case final siri?
@@ -375,6 +381,11 @@ class _ScopeState() extends State<_Scope> {
     unawaited(_homeWidgets?.cancel());
     unawaited(_flags?.cancel());
     unawaited(_trips.close());
+    // After the rows' ticks: they ended before this, and tick in a
+    // microtask of their own.
+    final holds = _holds;
+    final householdId = widget.householdId;
+    scheduleMicrotask(() => holds.release(householdId));
     super.dispose();
   }
 

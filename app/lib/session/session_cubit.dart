@@ -411,12 +411,15 @@ class SessionCubit(
     }
     try {
       await refresh();
-      // A reload dropped by a sign-out meanwhile loaded nothing.
-      if (_client.auth.currentUser?.id == userId) {
-        _loadedFor = userId;
-      }
     } on Object {
-      // Offline: ask until the server answers.
+      // Offline: asked again below.
+    }
+    // Asks until the server's answer shows: this read failed, or a newer
+    // one passed it (its answer was dropped) and failed itself. Not after a
+    // sign-out meanwhile.
+    if (_loadedFor != userId &&
+        !isClosed &&
+        _client.auth.currentUser?.id == userId) {
       _retry?.cancel();
       _retry = Timer(const Duration(seconds: 3), () {
         if (!isClosed && _client.auth.currentUser?.id == userId) {
@@ -535,6 +538,7 @@ class SessionCubit(
     ];
     // Shown before the write: a switch during it must not be undone.
     emit(next);
+    _loadedFor = userId;
     lost.forEach(_lost.add);
     if (removals != null) {
       final current = {for (final r in removals) r.key};

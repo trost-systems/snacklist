@@ -123,6 +123,29 @@ void main() {
       );
     });
 
+    test("a gateway's 401, 408 or 429 refuses no change: it is asked "
+        'again (job 222)', () async {
+      for (final status in [401, 408, 429]) {
+        await expectLater(
+          plain(status, 'gateway').send(add),
+          throwsA(isA<ServerTrouble>()),
+          reason: '$status, no JSON',
+        );
+        await expectLater(
+          answering(status, {'message': 'gateway'}).send(add),
+          throwsA(isA<ServerTrouble>()),
+          reason: '$status, JSON without a code',
+        );
+      }
+      for (final status in [400, 403, 404, 409, 413, 422]) {
+        await expectLater(
+          plain(status, 'no').send(add),
+          throwsA(isA<RejectedOp>()),
+          reason: '$status',
+        );
+      }
+    });
+
     test('reads map the same way, and a refused read stays an error, not '
         'trouble', () async {
       final down = plain(503, 'Service Unavailable');
@@ -1167,6 +1190,18 @@ void main() {
           expect(rows.keys, unorderedEquals(['keep', 'other']));
         },
       );
+
+      test('a merge with an item gone whose rows the server cannot give '
+          '(503) is trouble, asked again (job 222)', () async {
+        final repo = server(
+          (r) => r.method == 'POST'
+              ? (404, {'code': 'P0002', 'message': 'gone'})
+              : r.url.queryParameters['id'] == 'eq.keep'
+              ? (200, [row('keep')])
+              : (503, {'code': 'PGRST002', 'message': 'schema cache'}),
+        );
+        await expectLater(repo.send(merge), throwsA(isA<ServerTrouble>()));
+      });
 
       test('a merge answer of another shape is a rejection', () async {
         final repo = server((_) => (200, {'unexpected': true}));

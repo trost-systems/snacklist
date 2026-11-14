@@ -371,6 +371,65 @@ void main() {
     expect(find.byType(SnackBar), findsNothing, reason: 'it is back in place');
   });
 
+  group("a tick within the row's leave is not lost (job 222):", () {
+    Future<void> tickBohnen(WidgetTester tester) async {
+      await pumpList(
+        tester,
+        seed: (repo) => repo
+          ..remoteAdd('Erbsen', categoryId: 'produce')
+          ..remoteAdd('Bohnen', categoryId: 'produce'),
+      );
+      await tester.tap(row('Bohnen'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(itemNamed('Bohnen').status, ItemStatus.active);
+      expect(cache.saved!.pending, isEmpty);
+    }
+
+    testWidgets('the app goes to the background: the tick is queued on the '
+        'device and sent at once', (tester) async {
+      await tickBohnen(tester);
+      repo.gate = Completer<void>();
+      tester.binding
+        ..handleAppLifecycleStateChanged(AppLifecycleState.inactive)
+        ..handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+      expect(cache.saved!.pending, [
+        isA<SetStatus>().having((op) => op.status, 'status', ItemStatus.bought),
+      ], reason: 'saved before the app may be gone');
+      repo.gate!.complete();
+      // No frame: a hidden app draws none.
+      await tester.idle();
+      expect(itemNamed('Bohnen').status, ItemStatus.bought);
+
+      tester.binding
+        ..handleAppLifecycleStateChanged(AppLifecycleState.inactive)
+        ..handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      expect(row('Bohnen'), findsNothing);
+      expect(repo.sent.whereType<SetStatus>(), hasLength(1), reason: 'once');
+    });
+
+    testWidgets('the list goes away: the tick still reaches its list', (
+      tester,
+    ) async {
+      await tickBohnen(tester);
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpAndSettle();
+      expect(itemNamed('Bohnen').status, ItemStatus.bought);
+      expect(repo.sent.whereType<SetStatus>(), hasLength(1), reason: 'once');
+    });
+
+    testWidgets('its store is folded: the tick is made', (tester) async {
+      await tickBohnen(tester);
+      await tester.tap(find.bySemanticsLabel(RegExp('^Ohne Laden')));
+      await tester.pump();
+      await tester.pump();
+      expect(itemNamed('Bohnen').status, ItemStatus.bought);
+      await tester.pumpAndSettle();
+      expect(repo.sent.whereType<SetStatus>(), hasLength(1), reason: 'once');
+    });
+  });
+
   testWidgets('the last row of a category takes its divider along as it '
       'closes; put back, the divider is whole again', (tester) async {
     await pumpList(

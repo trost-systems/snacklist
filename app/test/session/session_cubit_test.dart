@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'dart:convert';
 
+import 'package:fake_async/fake_async.dart';
 import 'package:family_groceries/household/household_kind.dart';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/session/session_cubit.dart';
@@ -749,6 +750,169 @@ void main() {
         server.calls.singleWhere((c) => c.contains('unarchive')),
         contains('"p_mode":"add"'),
       );
+    });
+  });
+
+  group("a start asks until the server's households show (job 222):", () {
+    const retry = Duration(seconds: 3);
+
+    /// Under fake time, signed out of the group's server at the end.
+    void started(
+      void Function(FakeAsync async, FakeHouseholds server, SessionCubit cubit)
+      body,
+    ) => fakeAsync((async) {
+      final server = FakeHouseholds(auth)
+        ..member('peter', 'home', 'Zuhause')
+        ..member('peter', 'club', 'Sommerfest');
+      final cubit = SessionCubit(server, cache);
+      body(async, server, cubit);
+      unawaited(cubit.close());
+      async.flushMicrotasks();
+      expect(async.pendingTimers, isEmpty);
+    });
+
+    test('a read that failed is sent again after 3 s, and again', () {
+      started((async, server, cubit) {
+        server.failReads = true;
+        _signIn(auth);
+        async.flushMicrotasks();
+        expect(cubit.state, isA<SessionLoading>());
+        async.elapse(retry);
+        expect(cubit.state, isA<SessionLoading>());
+        server.failReads = false;
+        async.elapse(retry - const Duration(milliseconds: 1));
+        expect(cubit.state, isA<SessionLoading>());
+        async.elapse(const Duration(milliseconds: 1));
+        expect(cubit.state, _shows('home', households: ['home', 'club']));
+        final reads = server.calls.length;
+        async.elapse(retry * 3);
+        expect(server.calls, hasLength(reads), reason: 'answered: no more');
+      });
+    });
+
+    test('a first read overtaken by a second one that failed is sent '
+        'again: its own answer was dropped as the older one', () {
+      started((async, server, cubit) {
+        final hold = server.holdReads = Completer<void>();
+        _signIn(auth);
+        async.flushMicrotasks();
+        expect(server.calls.last, startsWith('rpc/my_households'));
+        // The session's token refreshed meanwhile: the same user again.
+        server
+          ..holdReads = null
+          ..failReads = true;
+        _signIn(auth);
+        async.flushMicrotasks();
+        server.failReads = false;
+        hold.complete();
+        async.flushMicrotasks();
+        expect(cubit.state, isA<SessionLoading>());
+
+        async.elapse(retry);
+        expect(cubit.state, _shows('home', households: ['home', 'club']));
+      });
+    });
+
+    test("the same with the device's households showing: a reload on "
+        "coming back failed, the start's answer was dropped", () {
+      started((async, server, cubit) {
+        cache.only('peter', _home);
+        final hold = server.holdReads = Completer<void>();
+        _signIn(auth);
+        async.flushMicrotasks();
+        expect(cubit.state, _shows('home', households: ['home']));
+        server
+          ..holdReads = null
+          ..failReads = true;
+        unawaited(cubit.refresh().catchError((Object _) {}));
+        async.flushMicrotasks();
+        server.failReads = false;
+        hold.complete();
+        async.flushMicrotasks();
+        expect(cubit.state, _shows('home', households: ['home']));
+
+        async.elapse(retry);
+        expect(cubit.state, _shows('home', households: ['home', 'club']));
+      });
+    });
+
+    test('a first read overtaken by a second one that answered is not '
+        'sent again', () {
+      started((async, server, cubit) {
+        final hold = server.holdReads = Completer<void>();
+        _signIn(auth);
+        async.flushMicrotasks();
+        server.holdReads = null;
+        _signIn(auth);
+        async.flushMicrotasks();
+        expect(cubit.state, _shows('home', households: ['home', 'club']));
+        hold.complete();
+        async.flushMicrotasks();
+        final reads = server.calls.length;
+        async.elapse(retry * 3);
+        expect(server.calls, hasLength(reads));
+      });
+    });
+
+    test('signed out while the read was out: nothing is sent again', () {
+      started((async, server, cubit) {
+        server.failReads = true;
+        _signIn(auth);
+        async.flushMicrotasks();
+        unawaited(auth.signOut());
+        async.flushMicrotasks();
+        final reads = server.calls.length;
+        async.elapse(retry * 3);
+        expect(cubit.state, isA<SignedOut>());
+        expect(server.calls, hasLength(reads));
+      });
+    });
+
+    test("another account signed in while the first one's read was out: "
+        'that read coming back ends no asking for theirs', () {
+      started((async, server, cubit) {
+        const lea = User(
+          id: 'lea',
+          appMetadata: {},
+          userMetadata: {},
+          aud: 'authenticated',
+          createdAt: '2026-10-22T12:00:00Z',
+        );
+        server.member('lea', 'flat', 'WG');
+        final hold = server.holdReads = Completer<void>();
+        _signIn(auth);
+        async.flushMicrotasks();
+        unawaited(auth.signOut());
+        async.flushMicrotasks();
+        server
+          ..holdReads = null
+          ..failReads = true;
+        auth
+          ..user = lea
+          ..states.add(
+            AuthState(
+              AuthChangeEvent.signedIn,
+              auth_types.Session(
+                accessToken: 'jwt',
+                tokenType: 'bearer',
+                user: lea,
+              ),
+            ),
+          );
+        async.flushMicrotasks();
+        server.failReads = false;
+        hold.complete();
+        async.flushMicrotasks();
+        expect(cubit.state, isNot(isA<InHousehold>()));
+
+        async.elapse(retry);
+        expect(
+          cubit.state,
+          isA<InHousehold>()
+              .having((s) => s.userId, 'user', 'lea')
+              .having((s) => s.household.id, 'shown', 'flat'),
+        );
+      });
     });
   });
 

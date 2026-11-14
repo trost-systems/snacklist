@@ -337,13 +337,16 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
   }
 
   /// No snackbar: a tap on the item under "Zuletzt verwendet" undoes a
-  /// tick (job 29b).
-  void _tick(Item item) {
-    widget.onInteract?.call();
-    if (_pricing.value == item.id) {
-      _pricing.value = null;
+  /// tick (job 29b). A row that went away while it closed ticks here after
+  /// its end, maybe after this view's: [cubit] is the list it was built on.
+  void _tick(ListCubit cubit, Item item) {
+    if (mounted) {
+      widget.onInteract?.call();
+      if (_pricing.value == item.id) {
+        _pricing.value = null;
+      }
     }
-    _cubit.tick(item.id);
+    cubit.tick(item.id);
   }
 
   /// Opens the price editor of [item], or closes it when it is open.
@@ -723,7 +726,7 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
               claims: claimsOf(item),
               last: j == block.items.length - 1,
               onVisible: (visible) => _freshVisible(item.id, visible: visible),
-              onTick: _tick,
+              onTick: (item) => _tick(cubit, item),
               onEdit: (item) => unawaited(_edit(item)),
               onDelete: _delete,
               priceChip: prices
