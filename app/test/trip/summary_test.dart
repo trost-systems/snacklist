@@ -11,8 +11,9 @@ DateTime at(int minutes) => start.add(Duration(minutes: minutes));
 
 const lidl = Store(id: 'lidl', name: 'Lidl', sortOrder: 20);
 const rewe = Store(id: 'rewe', name: 'Rewe', sortOrder: 10);
+const apotheke = Store(id: 'apo', name: 'Apotheke am Markt', sortOrder: 30);
 const catalog = Catalog(
-  stores: [lidl, rewe],
+  stores: [lidl, rewe, apotheke],
   lists: [HouseholdList(id: 'home', name: 'Zuhause', position: 0)],
 );
 
@@ -111,6 +112,23 @@ void main() {
       expect(t.active, const Duration(minutes: 25));
       expect(t.day, DateTime(2026, 11, 14));
       expect(t.currency, 'EUR');
+    });
+
+    test('Legal GL-2: no line of a pharmacy, planned, bought or new', () {
+      final drops = item('drops', store: 'apo', price: price(4.5, morning));
+      final milk = item('milk', store: 'lidl');
+      final t = finish(
+        [drops, milk],
+        [
+          item('drops', store: 'apo', bought: at(5), price: price(4.5, at(5))),
+          item('milk', store: 'lidl', bought: at(10)),
+          item('plaster', store: 'apo', bought: at(12), created: at(11)),
+          item('cream', store: 'apo', created: at(13)),
+        ],
+      );
+      expect([for (final l in t.lines!) l.key], ['milk']);
+      expect(t.bought, 1);
+      expect(t.stores, ['Lidl']);
     });
 
     test('a deleted item keeps its snapshot and is not bought', () {

@@ -1,7 +1,7 @@
 -- Job 32b: the duplicate hint's similar_items, merge_items (one transaction, merge rule) and
 -- unmerge_items (both rows back exactly), and that both stay inside the household.
 begin;
-select plan(48);
+select plan(58);
 
 create function pg_temp.login(uid uuid) returns void language plpgsql as $$
 begin
@@ -175,6 +175,45 @@ select throws_ok($$ select public.merge_items(gen_random_uuid(), '10000000-0000-
   '22001', null, 'a merged quantity too long for the column is refused');
 select is((select count(*)::int from public.items where id = '10000000-0000-4000-8000-000000000002'), 1,
   'and both items stay');
+
+-- Job 246: a merge keeps no price. Both rows priced, merged, then undone.
+update public.items set quantity = null where id in ('10000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000002');
+update public.items set price_unit_micros = case id when '10000000-0000-4000-8000-000000000001' then 1290000 else 990000 end,
+  price_basis = 'unit', price_per = 'piece', price_currency = 'EUR', priced_at = now()
+where id in ('10000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000002');
+do $$ begin perform public.merge_items('20000000-0000-4000-8000-000000000246', '10000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000002'); end $$;
+select is((select merged_row ->> 'name' from public.item_merges where id = '20000000-0000-4000-8000-000000000246'),
+  'Karotten', 'the merge is stored, with the merged-in row');
+select is(
+  (select count(*)::int from public.item_merges m, jsonb_object_keys(m.kept_before || m.merged_row || m.kept_after) k
+   where m.id = '20000000-0000-4000-8000-000000000246' and (k like 'price%' or k = 'priced_at')), 0,
+  'a merge stores neither row''s price');
+select is((select price_unit_micros from public.items where id = '10000000-0000-4000-8000-000000000001'), 1290000::bigint,
+  'the kept item keeps its own price');
+update public.items set price_unit_micros = null, price_basis = null, price_per = null, price_currency = null, priced_at = null
+where id = '10000000-0000-4000-8000-000000000001';
+select is((select count(*)::int from public.item_merges where to_jsonb(item_merges)::text ~ '(1290000|990000)'), 0,
+  'with the kept item''s price cleared, no merge holds either price');
+do $$ begin perform public.unmerge_items('20000000-0000-4000-8000-000000000246'); end $$;
+select is(
+  (select (price_unit_micros, price_basis, price_per, price_currency, priced_at) is null
+   from public.items where id = '10000000-0000-4000-8000-000000000002'), true,
+  'the undo brings the merged-in item back without a price');
+select is((select name from public.items where id = '10000000-0000-4000-8000-000000000002'), 'Karotten',
+  'and with the rest of its row');
+
+-- Job 246: merges go after 30 days, every household's, daily.
+select pg_temp.login('00000000-0000-0000-0000-0000000000a1');
+select throws_ok($$ select public.purge_item_merges() $$, '42501', null, 'members cannot run the purge');
+reset role;
+update public.item_merges set created_at = now() - interval '30 days 1 minute' where id = '20000000-0000-4000-8000-000000000246';
+create temp table newer as select id from public.item_merges where created_at > now() - interval '30 days';
+select is(public.purge_item_merges(), 1, 'the purge deletes the merge older than 30 days');
+select set_eq('select id from public.item_merges', 'select id from newer', 'and keeps the newer ones');
+select results_eq(
+  $$ select schedule, command, active from cron.job where jobname = 'purge-item-merges' $$,
+  $$ values ('53 3 * * *'::text, 'select public.purge_item_merges()'::text, true) $$,
+  'the purge runs daily at 03:53 UTC');
 
 -- RLS: Bob's household and Peter's do not mix.
 select pg_temp.login('00000000-0000-0000-0000-0000000000b1');

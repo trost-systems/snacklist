@@ -18,7 +18,7 @@ const maxTripLines = 400;
 /// (`ListState.allItems`); [catalog] gives the stores, the lists and the
 /// currency; [userId] is who ends it. [previous] is the same trip's last
 /// end ("Weiter einkaufen", then Beenden again): its „War geplant“ marks
-/// carry over.
+/// carry over. Lines of a pharmacy ([Store.isPharmacy]) are left out.
 FinishedTrip finishTrip(
   RunningTrip trip, {
   required Map<String, Item> items,
@@ -100,7 +100,12 @@ FinishedTrip finishTrip(
       ),
   ];
 
-  final lines = _capped([...planned, ...extras]);
+  // Legal GL-2: what a pharmacy sells is logged only by hand, so the trip
+  // keeps none of its lines (save_trip_session drops them too).
+  final lines = _capped([
+    for (final l in [...planned, ...extras])
+      if (!(stores[l.storeId]?.isPharmacy ?? false)) l,
+  ]);
   final boughtLines = lines.where((l) => l.bought);
   final ordered = [...catalog.stores]
     ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));

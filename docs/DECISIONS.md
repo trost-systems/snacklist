@@ -13188,3 +13188,35 @@ section's end). The rules are pure in `app/lib/list/subtotals.dart` (`Sum`, `Sto
   weighed item losing its „≈“.
 - **Seen, not fixed here:** at 160 % on 358 px job 234's trip strip breaks „Einkauf läuft“ inside
   the word („Einkau / f läuft“). Job 234's PR (#454) is still open; reported on the BOARD.
+
+## Job 246: no prices in merges, no pharmacy in trip mode (Legal P-2, GL-2)
+
+Two gaps jobs 243 and 244 found between the privacy text sent to Legal and the code
+(`NEEDS_LEAD` "Job 243: send to Legal", "Job 244: code gaps"). The lead picked the fixes.
+
+- **A merge stores no price (option i).** `merge_items` stored both rows whole in `item_merges`,
+  so a price outlived its clearing (the kept row's `kept_before`) and the item's deletion (the
+  merged-in row's `merged_row`). `20261114213000_item_merges_without_prices.sql` stores both rows
+  without the five price columns (`item_row_without_price`) and strips the rows already stored.
+  Undo brings the merged-in item back without its price; the kept item's own price is untouched
+  by a merge and its undo, so nothing a user sees changes there. Option (ii) (clearing snapshot
+  keys on every price change, deleting on item delete) needed triggers on `items` for a value
+  undo never used.
+- **Merges go after 30 days, daily.** Before, only the household's next merge deleted its old
+  merges, so a household that never merged again kept them. `purge_item_merges` runs at 03:53
+  UTC by pg_cron (`purge-item-merges`), like the other purges; the prune inside `merge_items` is
+  gone, the daily job covers it.
+- **Trip mode keeps nothing of a pharmacy.** Job 234 kept a pharmacy item ticked on a trip the
+  user started, and `save_trip_session` logged a trips row for the pharmacy. GL-2 allows logging
+  a pharmacy only by hand, so this replaces job 234's call: `finishTrip` leaves pharmacy lines
+  out of the trip, and `20261114213100_trip_mode_skips_pharmacies.sql` drops them again in
+  `save_trip_session` (old apps), before the session is stored, so neither the session's lines
+  (prices, who added) nor the log rows hold them. The lines are dropped once, before the `bought`
+  CTE, instead of a second filter inside it: the CTE reads the stored lines. A line counts as a
+  pharmacy's by the household's store (its name and seed key now) or by the store name it
+  carries, so a renamed store and a deleted one are both caught. The migration also strips the
+  sessions and deletes the automatic log rows already stored. `save_trip` (logging by hand)
+  is unchanged and tested.
+- **Proof.** Job 243's probe, rerun before and after:
+  `/workspace/hummlist/research/legal-review/job-246/` (`price-retention-probe.{before,after}.out`,
+  plus a merge and a trip stored before the migration and checked after it, `existing-*.out`).

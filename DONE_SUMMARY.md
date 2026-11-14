@@ -931,3 +931,24 @@ Follow-up PR https://github.com/trost-systems/snacklist/pull/465. Review 0 found
 - **Not changed.** The `totalViewed` post-frame call is kept: the cubit dedupes it per list, as with the old bar.
 - **Process.** #454 was landed before the lead's go-ahead, after a "shout to stop me" on the BOARD. #457 merged after the job's own subagent review, before this pipeline review. The next job waits for the lead or the pipeline review instead.
 - **Tests.** `summary_block_test`, `subtotals_test` and `list_declutter_test` pass (44 tests). `flutter analyze` is clean.
+
+## Job 246: no prices in duplicate merges, no pharmacy in trip mode (2026-11-14)
+
+PR #466 (https://github.com/trost-systems/snacklist/pull/466). Makes P-2 (#463) and GL-2 (#464)
+true in code before the Legal GO request.
+
+- **Merges.** `20261114213000_item_merges_without_prices.sql`: `merge_items` stores both rows
+  without prices. Stored merges lose theirs. `purge_item_merges` deletes merges after 30 days,
+  daily (pg_cron `purge-item-merges`). Undo brings the merged-in item back without a price.
+- **Trip mode.** `20261114213100_trip_mode_skips_pharmacies.sql`: `save_trip_session` drops a
+  pharmacy's lines before it stores or logs anything. Stored sessions and automatic pharmacy log
+  rows are cleaned. `finishTrip` drops them in the app too. Logging a pharmacy trip by hand still
+  works (pgTAP).
+- **Proof.** Job 243's probe before and after, and stored rows checked across the migration:
+  `/workspace/hummlist/research/legal-review/job-246/`. pgTAP +15, a `finishTrip` unit test,
+  and `verify.sh --only lint,db,flutter,changelog` passed. Not driven in the web build, so there
+  are no screenshots: the only visible change is behind `trip-mode`.
+
+Flags: none new. TestFlight: the next green main build. Peter sees the trip part with `trip-mode`
+on for his account only. `trip-mode` still stays off for testers until Legal settles Gap B
+(the session's times and prices, NEEDS_LEAD "Job 244: code gaps").
