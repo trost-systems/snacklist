@@ -216,6 +216,33 @@ void main() {
     expect(text(tester, 'total-amount'), 'mind. ≈ 1,51$_nbsp€');
   });
 
+  testWidgets('a price per kg on „3“ (no weight): the line says „1 ohne '
+      'Preis“, Gesamt counts it open', (tester) async {
+    await pumpList(
+      tester,
+      flags: _flags,
+      seed: (repo) => repo
+        ..remoteAdd('Milch', storeId: 'lidl', price: _price(119))
+        ..remoteAdd(
+          'Äpfel',
+          storeId: 'lidl',
+          quantity: '3',
+          price: _price(299, per: PricePer.kg),
+        )
+        ..remoteAdd('Seife', storeId: 'dm', price: _price(95)),
+    );
+    await toBlock(tester);
+    expect(text(tester, 'subtotal-amount-lidl'), 'mind. 1,19$_nbsp€');
+    expect(
+      find.descendant(
+        of: key('subtotal-lidl'),
+        matching: find.text('1 ohne Preis'),
+      ),
+      findsOneWidget,
+    );
+    expect(text(tester, 'total-counts'), '2 mit Preis · 1 offen');
+  });
+
   group('no trip', () {
     testWidgets('a tick takes the item out of the sums (Nein, nur '
         'abgehakt)', (tester) async {
@@ -468,6 +495,10 @@ void main() {
           );
         },
       );
+      // During a trip the counts under Gesamt are at their longest.
+      await tick(tester, 'Seife');
+      await tester.tap(key('trip-ask-yes'));
+      await tester.pumpAndSettle();
       await toBlock(tester);
       await tester.scrollUntilVisible(
         key('total-bar'),
@@ -481,29 +512,27 @@ void main() {
         matching: find.text(_market),
       );
       expect(name, findsOneWidget);
-      // Not clipped: as tall as its text wrapped at its width.
-      final paragraph = tester.renderObject<RenderParagraph>(name);
-      expect(
-        paragraph.size.height,
-        greaterThanOrEqualTo(
-          paragraph.getMaxIntrinsicHeight(paragraph.size.width) - 0.5,
-        ),
-      );
+      // Shown whole: no line cut by maxLines or an ellipsis, and as tall as
+      // its text wrapped at its width.
+      void whole(Finder finder, String what) {
+        final p = tester.renderObject<RenderParagraph>(finder);
+        expect(p.didExceedMaxLines, isFalse, reason: '$what cut');
+        expect(
+          p.size.height,
+          greaterThanOrEqualTo(p.getMaxIntrinsicHeight(p.size.width) - 0.5),
+          reason: '$what clipped',
+        );
+      }
+
+      whole(name, 'the market name');
+      whole(key('total-counts'), 'the counts under Gesamt');
       for (final k in [
         'subtotal-amount-market',
         'subtotal-amount-lidl',
         'total-amount',
       ]) {
-        final rect = tester.getRect(key(k));
-        expect(rect.right, lessThanOrEqualTo(358), reason: k);
-        final amount = tester.renderObject<RenderParagraph>(key(k));
-        expect(
-          amount.size.height,
-          greaterThanOrEqualTo(
-            amount.getMaxIntrinsicHeight(amount.size.width) - 0.5,
-          ),
-          reason: '$k not clipped',
-        );
+        expect(tester.getRect(key(k)).right, lessThanOrEqualTo(358), reason: k);
+        whole(key(k), k);
       }
       expect(
         tester.getSize(key('subtotal-dm')).height,
