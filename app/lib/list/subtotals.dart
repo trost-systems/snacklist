@@ -34,7 +34,11 @@ class const Sum({
           priced: 1,
           estimate: plannedWeight(item),
         ),
-        null when item.currentPrice(now) != null => const Sum(foreign: 1),
+        // Priced today in another currency: left out, but not unpriced. A
+        // price per kg on a quantity without a weight sums nothing either:
+        // that one counts as unpriced.
+        null when (item.currentPrice(now)?.currency ?? currency) != currency =>
+          const Sum(foreign: 1),
         null => const Sum(unpriced: 1),
       };
 

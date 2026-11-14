@@ -379,6 +379,7 @@ class const _TotalLine({
             ),
             Text(
               details().join(' · '),
+              key: const ValueKey('total-counts'),
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,

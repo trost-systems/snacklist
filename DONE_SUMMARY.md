@@ -931,3 +931,18 @@ Follow-up PR https://github.com/trost-systems/snacklist/pull/465. Review 0 found
 - **Not changed.** The `totalViewed` post-frame call is kept: the cubit dedupes it per list, as with the old bar.
 - **Process.** #454 was landed before the lead's go-ahead, after a "shout to stop me" on the BOARD. #457 merged after the job's own subagent review, before this pipeline review. The next job waits for the lead or the pipeline review instead.
 - **Tests.** `summary_block_test`, `subtotals_test` and `list_declutter_test` pass (44 tests). `flutter analyze` is clean.
+
+### Job 237 review 1 (2026-11-14)
+
+Follow-up PR: see below. Review 1 found two must-fixes.
+- **Fixed: a per-kg price on a quantity without a weight counted as "another currency".**
+  - What went wrong: `Sum.of` sent every item whose line sums to nothing, but which has a price today, to `foreign`. That included „3× Äpfel“ at 2,99 €/kg, a quantity edit that job 190 keeps. The store line then showed „mind. …“ without „1 ohne Preis“, and Gesamt read „0 offen“.
+  - The fix: only a price in another currency counts as foreign now. Everything else without a summed line is „ohne Preis“.
+  - Tests: a new pure test, and a widget test for the line („1 ohne Preis“) and the counts under Gesamt („2 mit Preis · 1 offen“). Both fail with the old rule.
+- **Fixed: the 160 % test's clipping check.**
+  - What went wrong: review 0's "real clipping check" compared heights only, so an ellipsized one-line name passed.
+  - The fix: the test now asserts `didExceedMaxLines == false` and height ≥ intrinsic height on the market name, the counts under Gesamt (now keyed `total-counts`) and the three amounts. It also runs during a trip, where the counts line is longest.
+  - Reviewer's mutants: `maxLines: 1` with an ellipsis on the store name (M2), or on the Gesamt counts line (M3), each fails both 160 % tests ("the counts under Gesamt cut"). Clipping from an ancestor box is still not pinned.
+- **TestFlight.** release.yml ran green on 3344381d, the block, at 20:50 UTC (run 43639623684). The fixes from #465 and this round ship with the next green main build.
+- **Not checked by the job.** Nobody has confirmed that Peter's PostHog person has `list-declutter`, `prices-and-trip-total` and `trip-mode` on: the runner's PostHog key has no read scope. This is in the ops NEEDS_LEAD.md "Job 237: flags for Peter".
+- **Tests.** `summary_block_test`, `subtotals_test` and `list_declutter_test` pass (46 tests). `flutter analyze` is clean.
