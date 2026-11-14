@@ -273,15 +273,16 @@ demo.pause:
   status: draft
   source: "New: label of the demo videos' pause button."
 demo.add-tick:
-  de: "Video ohne Ton: Ins Eingabefeld der Snacklist-App tippt jemand „Honig“ und „Marmelade“, beide landen unter Vorrat & Konserven. Danach hakt je ein Tipp sie wieder ab."
-  en: "Silent video: someone types “Honey” and “Jam” into the Snacklist app’s input field, and both land under Pantry. Then one tap each ticks them off again."
+  de: "Video ohne Ton: Im Haushalt „Unser Haushalt“ tippt Anna „Honig“ und „Marmelade“ ins Eingabefeld der Snacklist-App. Beide landen beim Wochenmarkt unter Vorrat & Konserven, oben in der Liste. Danach hakt je ein Tipp sie wieder ab."
+  en: "Silent video: in the household “Our Home”, Anna types “Honey” and “Jam” into the Snacklist app’s input field. Both land at the Farmers market under Pantry, at the top of the list. Then one tap each ticks them off again."
   status: draft
-  source: "Job 54: text alternative of the add-tick video; matches its take (marketing/videos/capture/shots.ts)."
+  source: "Job 54: text alternative of the add-tick video; job 215 re-filmed it with the demo household „Unser Haushalt“ (marketing/videos/capture/shots.ts)."
 demo.household-sync:
-  de: "Video ohne Ton: drei Handys der Familie Brandt. Mia setzt Eier auf die Liste, keine Sekunde später stehen sie bei Noah und Ida, mit dem Hinweis „1 neu von Mia Brandt“. Noah hakt sie ab, und sie verschwinden bei allen."
-  en: "Silent video: three phones of the Brandt family. Mia puts eggs on the list; less than a second later they are on Noah’s and Ida’s phones, with the note “1 new from Mia Brandt”. Noah ticks them off, and they disappear for everyone."
+  de: "Video ohne Ton: zwei Handys im Haushalt „Unser Haushalt“. Anna setzt Eier auf die Liste, gleich darauf stehen sie bei Jonas beim Wochenmarkt, mit dem Hinweis „1 neu von Anna“. Jonas hakt sie ab, und sie verschwinden bei beiden."
+  en: "Silent video: two phones in the household “Our Home”. Anna puts eggs on the list; right after, they are on Jonas’s phone at the Farmers market, with the note “1 new from Anna”. Jonas ticks them off, and they disappear for both."
   status: draft
-  source: "Job 54: text alternative of the household-sync video; job 146 re-filmed it after the UI changes; under a second is the measured sync time of the takes (0.58 to 0.80 s)."
+  source: "Job 54: text alternative of the household-sync video; job 215 re-filmed it with the demo household „Unser Haushalt“ (Anna and Jonas) instead of the Brandt family."
+
 demo.voice-add:
   de: "Video ohne Ton: Mia tippt auf das Mikrofon im Eingabefeld der Snacklist-App und sagt „Pizza, Orangensaft und zwei Packungen Fischstäbchen“. Die Wörter erscheinen im Feld, während sie spricht. Sie tippt auf Stopp, und gleich darauf stehen Orangensaft unter Getränke und Pizza und 2 Packungen Fischstäbchen unter Tiefkühl. Im Laden hakt sie alle drei ab."
   en: "Silent video: Mia taps the microphone in the Snacklist app’s input field and says, in German, “Pizza, Orangensaft und zwei Packungen Fischstäbchen” (pizza, orange juice and two packs of fish fingers). The words appear in the field as she speaks. She taps stop, and right after, Orangensaft is under Drinks and Pizza and 2 Packungen Fischstäbchen under Frozen. In the store she ticks all three off."

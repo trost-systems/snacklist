@@ -8,7 +8,7 @@ the WebP stills that `film-all.mjs` writes to `site/public/media/`.
 ## Re-film
 
 ```sh
-node site/scenes/film-all.mjs            # all 32 stills, then one contact sheet per scene
+node site/scenes/film-all.mjs            # hero and mcp-chat (16 stills), then one contact sheet per scene
 node site/scenes/film-all.mjs hero       # one scene
 node site/scenes/film-all.mjs --serve    # only serve, to look at http://127.0.0.1:57610/scenes/hero.html?lang=en
 ```
@@ -32,7 +32,9 @@ The compact design switches at `max-width: 400px` inside each scene. Dark comes 
 
 All four are stills. `hero` stays a still on the page. The three video slots (`add-tick`,
 `household-sync`, `mcp-chat`) get job 54's real app footage; these are their placeholder
-posters, so nothing here loops.
+posters, so nothing here loops. `add-tick` and `household-sync` take their posters from their
+videos since job 215 (`marketing/videos/remake.sh`), so `film-all.mjs` no longer films them;
+`emails/scripts/demo-screen.tsx` still shoots `add-tick.html`.
 
 ## Plan per scene
 
@@ -52,13 +54,12 @@ posters, so nothing here loops.
 
 ### household-sync (wide 576 x 324, compact 358 x 448)
 - Where: the "one household, live sync" video slot, as its poster.
-- Focal object: Noah's phone, where he just added Eier.
-- Action: the same row lands on Mia's phone, which straddles Noah's.
-- Payoff: the row in mint on Mia's phone under "1 neu von Noah", the members Mia, Noah, Ida in their colours.
+- Focal object: Jonas's phone, where he just added Eier.
+- Action: the same row lands on Anna's phone, which straddles Jonas's.
+- Payoff: the row in mint on Anna's phone under "1 neu von Jonas", the members Anna and Jonas of „Unser Haushalt“ in their colours.
 - Left out: a third phone, arrows or dotted flight lines, store sections beyond one.
 
-Members keep one colour everywhere: Mia tomato, Noah honey, Ida cobalt (navy letters on tomato
-and honey, white on cobalt). Item emoji are the ones `app/lib/list/list_view/item_icon.dart`
+Members keep one colour everywhere: Anna tomato, Jonas honey (navy letters). Item emoji are the ones `app/lib/list/list_view/item_icon.dart`
 picks; store names are text in Snacklist colours only.
 
 ### mcp-chat (wide 576 x 324, compact 358 x 448)
@@ -79,7 +80,7 @@ dark), frames `/tmp/s53/scenes/<scene>-<locale>-<size>[-dark].png` at 2x. Every 
 29 to 50 KB at quality 90.
 
 ### hero
-Plan: the list screen on one phone; Mia added Hafermilch; it sits honey-tinted in the list with the sync sticker; no tabs, status bar or second satellite.
+Plan: the list screen on one phone; Anna added Hafermilch; it sits honey-tinted in the list with the sync sticker; no tabs, status bar or second satellite.
 Layout: Block with gutters on the cobalt ground, gutter 72 (sides and top), phone off the bottom with the add field whole and 44 px of list under it (19 px at compact); sticker straddles the top-left corner, rotated -3°. Compact 358: phone 24 px from the sides, the Wochenmarkt, Bäckerei and Drogerie stores dropped, sticker stacked centred over the phone's top edge.
 Beats: still, stays a still on the page.
 Captured: 500 and 358, light and dark, de and en. No reduced-motion or seam film (nothing moves).
@@ -95,11 +96,11 @@ Review: half a row on the top crop → removed, the crop starts at the category 
 Not checked: how job 54's video frames line up with this poster.
 
 ### household-sync
-Plan: Noah's phone leads, the same Eier row arrives on Mia's phone in mint under "1 neu von Noah" (the app's `newItemsFrom`); no third phone, no flight lines.
-Layout: Phone pair; gutter 48; Mia's phone is narrower with the smaller sticker shadow, overlaps Noah's bezel only, and its arriving row sits on the exact line of Noah's row (measured 146 / 146). Compact 358: Mia's phone stacked over the lower half of Noah's, its top edge between two of his rows.
+Plan: Jonas's phone leads, the same Eier row arrives on Anna's phone in mint under "1 neu von Jonas" (the app's `newItemsFrom`); no third phone, no flight lines.
+Layout: Phone pair; gutter 48; Anna's phone is narrower with the smaller sticker shadow, overlaps Jonas's bezel only, and its arriving row sits on the exact line of Jonas's row (measured 146 / 146). Compact 358: Anna's phone stacked over the lower half of Jonas's, its top edge between two of his rows.
 Beats: poster only.
 Captured: 576 and 358, light and dark, de and en.
-Review: phone corners tangent → Noah's phone moved up 16 px so the corners part clearly. A check box cut by the front phone in compact → front phone now covers that row's check box whole. Mia's avatar beside "von Noah" → the avatar is now Noah's N. Nothing shows Noah adding → stands, the poster's point is the arrival; the video shows the add.
+Review: phone corners tangent → Jonas's phone moved up 16 px so the corners part clearly. A check box cut by the front phone in compact → front phone now covers that row's check box whole. Anna's avatar beside "von Jonas" → the avatar is now Jonas's J. Nothing shows Jonas adding → stands, the poster's point is the arrival; the video shows the add.
 Not checked: real sync latency (a still has none).
 
 ### mcp-chat

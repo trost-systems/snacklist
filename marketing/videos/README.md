@@ -13,21 +13,21 @@ the snacklist-ui-craft skill (`.claude/skills/snacklist-ui-craft/`).
 ## Make them again
 
 Needs the verify-family-groceries toolchain on a Linux host with Docker (`scripts/fg`, Xvfb,
-ffmpeg, Deno, Node 22+), xdotool, and `npm ci` here (HyperFrames and GSAP, pinned).
+ffmpeg, Deno, Node 22+), xdotool, and the Flutter version CI uses (`FLUTTER_DIR`, else
+`~/flutter-<version>`, else `~/flutter`).
 
 ```bash
-export FG_PORT_PREFIX=577 FG_PROJECT_ID=family-groceries-54 FG_SURFACE=linux
-export FG_EXTRA_PATH="$PWD/.cursor/skills/verify-family-groceries/linux-build"   # without a local CMake
-scripts/fg up --only stack                       # local Supabase on 577xx
-(cd app && flutter build linux --profile -t test_driver/main_marionette.dart \
-  --dart-define=SUPABASE_URL=http://127.0.0.1:57721 --dart-define=SUPABASE_PUBLISHABLE_KEY=<local key> \
-  --dart-define=FAKE_STORE=ok)                    # the key from `supabase status`; never commit it
-
-for v in add-tick household-sync mcp-chat voice-add; do for l in de en; do
-  deno run -A marketing/videos/capture/take.ts $v $l   # one take: seed, film, tear down
-done; done
-cd marketing/videos && npm ci && node build.mjs  # projects, check, render, encode, review
+FG_PORT_PREFIX=577 FG_PROJECT_ID=family-groceries-54 marketing/videos/remake.sh   # add-tick household-sync
+FG_PORT_PREFIX=577 FG_PROJECT_ID=family-groceries-54 marketing/videos/remake.sh voice-add mcp-chat
 ```
+
+`remake.sh [video ...]` (default `add-tick household-sync`) starts fg's stack on the port block
+(`fg up --only stack`; with `FG_STACK_WORKDIR` set it uses that running stack instead), builds
+the Linux profile bundle with the stack's URL and key when `app/` or the stack changed (in the
+linux-build container where CMake is missing), takes every named video in German and English
+(`capture/take.ts`: seed, film, tear down) and runs `node build.mjs` for them.
+`scripts/store-screenshots.sh --videos` calls it for add-tick and household-sync. One run of
+both videos took 18 min 43 s on the Hetzner runner (job 215): the Linux build was cached, the four takes took about 2 min, the eight renders and review sets the rest.
 
 `build.mjs` takes video names and `--lang`, `--format`, `--step project,check,render,encode,review`
 to redo a part. A copy change in `copy.json` needs only `node build.mjs` (no new take); a change
@@ -59,9 +59,15 @@ in the app or its design needs new takes.
 
 ## The test data
 
-- `add-tick`, `household-sync`, `voice-add`: `test/fixtures/scenarios/demo-familie.yaml` and
-  `demo-family-en.yaml`, the fictional Brandt family (Mia, Noah, Ida) with no store tags, so no
-  retailer shows.
+- `add-tick`, `household-sync`: `test/fixtures/scenarios/demo-haushalt.yaml` and
+  `demo-household-en.yaml`, the fictional demo household „Unser Haushalt“ ("Our Home" in English)
+  with Anna and Jonas and four generic stores: Wochenmarkt, Bäckerei, Supermarkt, Drogerie
+  (Farmers market, Bakery, Supermarket, Drugstore), no retailer (Legal N-23). A purchase five
+  weeks back sends the videos' items (Honig, Marmelade, Eier) to the Wochenmarkt, the first store,
+  so they land just under the household name. Job 215 replaced the Brandt family here; the scenes
+  pan the view from the add field to the top of the list and back (`pans` in `lib.mjs` `phone`).
+- `voice-add`: `demo-familie.yaml` and `demo-family-en.yaml`, the fictional Brandt family (Mia)
+  with no store tags.
 - `mcp-chat`: `solo-long-list.yaml`, Sam in "Sams Wohnung". The take signs Sam in over the auth
   API, creates a personal access token with the app's own RPC, keeps it in memory only, and calls
   the local `mcp` function; the fixture teardown deletes token and user.

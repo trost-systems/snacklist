@@ -13220,3 +13220,101 @@ Two gaps jobs 243 and 244 found between the privacy text sent to Legal and the c
 - **Proof.** Job 243's probe, rerun before and after:
   `/workspace/hummlist/research/legal-review/job-246/` (`price-retention-probe.{before,after}.out`,
   plus a merge and a trip stored before the migration and checked after it, `existing-*.out`).
+
+## Job 215: store screenshots and demo videos in Snacklist naming (2026-11-14)
+
+Redo of job 65's closed PR #190 with the frame Peter picked in job 214
+(`jobs/214-store-frames-redo/NEEDS_LEAD`, t868u and t869u). Guide: `docs/STORE_SCREENSHOTS.md`.
+
+1. **Waited for the pick.** The queue started the job at 00:09 because job 214 was done, but the
+   brief made Peter's frame label a gate. The job stopped without building and started again
+   at 13:22, after the pick was recorded.
+2. **Seven shots, not six.** Peter dropped „Tipp. Erledigt.“ and „Komm mit auf die Liste“, added
+   a voice caption and an AI assistants caption, and kept an invite caption. „Komm mit auf die
+   Liste“ was the invite shot's headline, so the tick shot became voice and the invite shot got
+   new words. The two new shots make seven: list, sync, add, order, voice, assist, invite. Play
+   takes up to 8, the App Store up to 10.
+3. **One code path for the frame, built from 214's kit.** `design/store-frames/` (job 214, PR
+   #425, not for merge) held the FR2 frame and the capture method. It moved into
+   `marketing/store-screenshots/` as a registry (`sets.mjs`: five sets, their sizes, viewports
+   and shots) that both capture and compose read. Job 65's old pipeline served for the sizes,
+   the checks, `compare.mjs` and the workflow. Each set is drawn as one strip and cut, so the
+   cobalt band runs on from shot to shot.
+4. **The invite shot is the household page.** It shows the members, „Leute einladen“ and three
+   lists, and no code or link (Peter: no link or code in the caption). The card ends after the
+   lists, because the iPhone and iPad crops reached the app's own line „Siri, Alexa und
+   KI-Assistenten nutzen diesen Haushalt“.
+5. **Voice and assist show what really arrives.** Jonas's items reach Anna's list through the
+   local `voice` function (the Siri Shortcut's endpoint) and the local `mcp` function, each with
+   his own access token, and capture checks in the database that the honey rows are exactly the sticker's
+   items, added by Jonas. The headline „Gesagt, notiert.“ avoids „einfach“, because Siri needs a
+   Shortcut the user sets up.
+6. **Neutral captions by default.** Following the research (`docs/store/store-captions-assistants.md`):
+   - `named` says „Funktioniert mit Siri und Amazon Alexa.“ on the App Store and Alexa only on
+     Play (no Siri on an Android listing).
+   - `named_api` adds the API, which is switched off (flag `public-api`), so no default run uses it.
+   - The neutral assist line drops „Automationen“, because it implies the API.
+7. **Tablets without words** (spec D4-B), at real tablet viewports under 840 dp, so no More page
+   opens beside the More list.
+8. **Feature graphic without name or logo** (Peter t869u). The card shows the full app width, so
+   the English „2 new from Anna“ is not cut. Its check covers the centre zone (x 432 to 592,
+   y 170 to 330) for the card as well as the text.
+9. **Videos with two phones.** `household-sync` shows Anna and Jonas, as job 65 had it. A short pan
+   from the household name to the add field keeps „Unser Haushalt“ in every poster. Compact
+   household-sync layers Jonas's phone over the bottom of Anna's, below her add field. A layout
+   without the overlap would cut a phone short.
+10. **Tool fixes on the way.** fg copies the auth email templates into its workdir, because
+    `supabase start` refused the symlinked ones. The linux-build wrapper takes the gates' Flutter
+    (`flutter_dir`), not `~/flutter`. The video driver taps through the guided start's
+    „Anmelden“.
+11. **Compared with the approved v2 set.** `jobs/65-store-screenshots/v2-contact-sheet.png` and
+    the spec were available. The scenes match the spec's P1, P2 (the sticker form of D3), P4, P5
+    and the household „Unser Haushalt“ with generic stores. P3 (tick) and P6 (invite page with a
+    code) gave way to Peter's new captions. The v2 frame (cobalt background, centred captions)
+    gave way to FR2.
+12. **Review 0.** The feature graphic's tagline was marked `approved`. Peter chose the wording
+    as the site's hero tagline on 2026-11-01, but Legal has not seen it as a store caption.
+    It is `draft` now, like every other caption. Two smaller points stay as they are:
+    - The feature card bleeds off the right edge, as in FR2, which Peter picked. Its outer
+      buttons („Anpassen“, „4 Artikel“) reach x 1015. What the graphic says sits inside the
+      key area: the tagline, „Unser Haushalt“, „2 neu von Anna“ and the honey rows.
+    - The re-filmed videos weigh 0.5 to 1.1 MB per file, up from 0.3 to 0.5 MB. That is still
+      under the 1.5 to 3 MB that `site/public/media/README.md` allows, so the
+      encoder settings stay as they are.
+    Two neutral runs were compared on all 62 files (the builder's runs), and the review's run
+    matched the named run in the 50 files the variants share.
+13. **Review 1 and the two addenda of 14 November evening.**
+    - **Invite caption.** The lead (20:05) and Peter (20:15) both want no number. The lead also
+      calls „so viele Listen, wie ihr braucht“ untrue with the 50-list cap. The default is the
+      lead's true wording, „Lade alle ein. Mehrere Listen für jeden Anlass.“, which states no
+      number and no unlimited claim. Peter confirms (NEEDS_LEAD).
+    - **The API frame is the real Zugänge screen.** Peter asked for it.
+      - It runs on a second release build with `FLAGS_ON=public-api` and the production
+        `SUPABASE_URL`, so the app prints its production hosts: `https://mcp.snacklist.app` and
+        the project's `…supabase.co/functions/v1/api/v1`. The API has no shorter address.
+      - Playwright answers every request for the production host from the local stack, and the
+        run fails if one is left unanswered. 294 requests and 6 websockets per run, none
+        reached production.
+      - The crop leaves out the app's MCP hint, which names AI products, and the screen check
+        fails on those names, on a local address and on a key-like string.
+      - It is shot 7 of 8 on phone, iPhone and iPad, and named in every variant. The neutral
+        rule was for Siri and Alexa, and Peter asked for MCP and the API by name.
+    - **No Premium label by default.** MCP and the API are free today, so the stores require no
+      mark now. Once they are paid, App Store guideline 2.3.2 requires one; Play has no such
+      rule that the research found. `--premium-label` adds „Mit Snacklist Premium“ with no
+      price (2.3.7).
+    - **Named voice captions now follow the research.** The skill is named „Snacklist-Skill für
+      Amazon Alexa“, never "Works with Alexa", and Siri is not named on Play. `named_siri` names
+      Siri alone on the App Store, which the research finds usable now.
+    - **Age rating 4+.** No asset of this job showed alcohol or tobacco. The `mcp-chat` video's
+      seed list `solo-long-list` held „Bier“, though it never came into frame; it is now
+      „Limonade“. Re-filming showed the published `mcp-chat` cuts still read „Hummlist“ in the
+      chat card, because they were rendered before the rename, so `mcp-chat` was re-filmed too.
+14. **Review 2 and Peter's invite decision (t883u, 20:20).**
+    - The invite subline is Peter's: „Lade alle ein. So viele Listen, wie ihr wollt.“ / "Invite
+      everyone. As many lists as you want." It shows no number, as he asked; the lead's wording in
+      item 13 is superseded. The 50-list cap stays a fact for Legal, not a frame.
+    - Item 6's `named_api` is superseded: the variant is gone, and the API is named on the api
+      shot (item 13).
+    - Item 12's "62 files" is superseded: with the api shot the set has 68 files, and two neutral
+      runs matched in 68 of 68.

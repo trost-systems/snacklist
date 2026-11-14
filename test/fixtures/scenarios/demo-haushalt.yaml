@@ -1,0 +1,58 @@
+# yaml-language-server: $schema=../scenario.schema.json
+name: demo-haushalt
+summary: The demo household „Unser Haushalt“ (Anna and Jonas) of the snacklist.app demo videos add-tick and household-sync (job 215), in German; four generic stores and no retailer (Legal N-23), eight weeks of weekly shops so „Wieder fällig“ has rows.
+goodFor:
+  - filming the demo videos (marketing/videos/capture)
+  - a list in store sections with generic store names only
+  - live sync between two members (anna, jonas)
+users:
+  - { handle: anna, name: Anna }
+  - { handle: jonas, name: Jonas }
+households:
+  - name: Unser Haushalt
+    members: [anna, jonas]
+    stores:
+      - name: Wochenmarkt
+      - name: Bäckerei
+      - name: Supermarkt
+      - name: Drogerie
+    items:
+      - { name: Äpfel, quantity: "1 kg", properties: Elstar, store: Wochenmarkt, category: Obst & Gemüse, by: anna, at: "-3h" }
+      - { name: Tomaten, quantity: "500 g", store: Wochenmarkt, category: Obst & Gemüse, by: jonas, at: "-3h" }
+      - { name: Brötchen, quantity: "6", store: Bäckerei, category: Brot & Backwaren, by: jonas, at: "-160m" }
+      - { name: Bauernbrot, store: Bäckerei, category: Brot & Backwaren, by: anna, at: "-150m" }
+      - { name: Vollmilch, quantity: "2", store: Supermarkt, category: Kühlregal, by: anna, at: "-140m" }
+      - { name: Butter, store: Supermarkt, category: Kühlregal, by: jonas, at: "-130m" }
+      - { name: Joghurt, quantity: "4", store: Supermarkt, category: Kühlregal, by: anna, at: "-120m" }
+      - { name: Nudeln, store: Supermarkt, category: Vorrat & Konserven, by: jonas, at: "-110m" }
+      - { name: Kaffee, store: Supermarkt, category: Vorrat & Konserven, by: anna, at: "-100m" }
+      - { name: Mineralwasser, quantity: "6", store: Supermarkt, category: Getränke, by: jonas, at: "-90m" }
+      - { name: Zahnpasta, store: Drogerie, category: Haushalt, by: anna, at: "-80m" }
+      - { name: Spülmittel, store: Drogerie, category: Haushalt, by: jonas, at: "-70m" }
+    history:
+      # The weekly shop; the last one 9 days ago, so these are due again (gap 7 days).
+      - at: "-9d 17:30"
+        by: anna
+        store: Supermarkt
+        every: 7d
+        times: 8
+        items: [Hafermilch, Bananen, Käse, Haferflocken]
+      # Saturday market, two days ago: usuals, not due yet.
+      - at: "-2d 10:00"
+        by: jonas
+        store: Wochenmarkt
+        every: 7d
+        times: 8
+        items: [Gurken, Karotten]
+      # Bought once, five weeks ago: item→store memory sends the demo videos' adds to the
+      # Wochenmarkt, the first store, so the new rows land just under the household name; too old for
+      # the recently used rows, never due.
+      - at: "-35d 10:00"
+        by: anna
+        store: Wochenmarkt
+        items: [Honig, Marmelade, Eier]
+expect:
+  due:
+    home: [Hafermilch, Bananen, Käse, Haferflocken]
+  notDue:
+    home: [Gurken, Karotten]

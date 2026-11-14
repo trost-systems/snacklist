@@ -44,6 +44,7 @@ scripts/fg sync household-3-mid-shop --clients 3 \
 | `edge-cases` | A German and an English user; a 120-character name, a 40-character quantity, emoji, umlauts, quotes, near-duplicates (Milch and Milch laktosefrei; a second open Milch would be skipped) | Text layout, near-duplicates, quantity display, an `en` user |
 | `pending-invite` | A one-person household with one open, one expired and one revoked invite code; a second user without a household | Joining by code or `/join/<code>` (the seed prints the open code), invalid-invite errors, a member arriving live |
 | `h-list-walk` | Two members, Drogerie, Supermarkt and Wochenmarkt (in that order) with their own layouts, 14 items with brands, properties and a set walk order inside each group, two without a store | Design H's list (store sections, category dividers, Marke · Eigenschaften rows), drag and drop against a known order, store reordering, the edit sheet prefilled |
+| `store-screenshots`, `store-screenshots-en` | „Unser Haushalt“ / „Our Home“ with Anna and Jonas, the generic stores Wochenmarkt, Bäckerei, Supermarkt, Drogerie (English: Farmers market, Bakery, Supermarket, Drugstore) with walk orders, 8 open items, four weekly Supermarkt trips | The store screenshots (`scripts/store-screenshots.sh`, docs/STORE_SCREENSHOTS.md): suggestions from past trips (Joghurt), item→store memory for the voice and assistant adds; no retailer on screen (Legal N-23) |
 
 `fg scenario show <name>` prints the resolved plan: every user, item and
 trip with absolute times, and the counts the seed checks.

@@ -3,13 +3,17 @@
 # has clang, CMake and the GTK headers, and every other flutter command runs on the host. The bundle
 # it writes runs on any host with the GTK 3 runtime.
 set -euo pipefail
-real="$HOME/flutter/bin/flutter"
-if [[ ${1:-} != build || ${2:-} != linux ]]; then exec "$real" "$@"; fi
 here="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 repo="$(git -C "$here" rev-parse --show-toplevel)"
+# The SDK the gates use (FLUTTER_DIR, else CI's version beside ~/flutter, else ~/flutter).
+# shellcheck source=../../../../scripts/lib.sh
+source "$repo/scripts/lib.sh"
+sdk="$(flutter_dir)"
+real="$sdk/bin/flutter"
+if [[ ${1:-} != build || ${2:-} != linux ]]; then exec "$real" "$@"; fi
 # The tag follows the Dockerfile, so an edited Dockerfile builds a new image instead of reusing the old one.
 image="fg-linux-build:$(sha256sum "$here/Dockerfile" | cut -c1-12)"
 docker image inspect "$image" >/dev/null 2>&1 || docker build -q -t "$image" "$here" >&2
 pub="${PUB_CACHE:-$HOME/.pub-cache}"
 exec docker run --rm --network host --user "$(id -u):$(id -g)" -e HOME=/tmp/home -e PUB_CACHE="$pub" \
-  -v "$HOME/flutter:$HOME/flutter" -v "$pub:$pub" -v "$repo:$repo" -w "$PWD" "$image" "$real" "$@"
+  -v "$sdk:$sdk" -v "$pub:$pub" -v "$repo:$repo" -w "$PWD" "$image" "$real" "$@"

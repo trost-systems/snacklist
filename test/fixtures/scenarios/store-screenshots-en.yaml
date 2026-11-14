@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=../scenario.schema.json
+name: store-screenshots-en
+summary: The English store-screenshot household „Our Home“ with Anna and Jonas, its list in four generic stores (Legal N-23), for the en-US store screenshots (scripts/store-screenshots.sh, job 215).
+goodFor:
+  - en-US store screenshots (marketing/store-screenshots/capture.mjs)
+  - an English list grouped by store with category headings
+  - suggestions from past trips (Yogurt) and items that land in the Supermarket from item→store memory
+users:
+  - { handle: anna, name: Anna, locale: en }
+  - { handle: jonas, name: Jonas, locale: en }
+households:
+  - name: Our Home
+    members: [anna, jonas]
+    stores:
+      - name: Farmers market
+        layout: [Obst & Gemüse, Brot & Backwaren]
+      - name: Bakery
+        layout: [Brot & Backwaren]
+      - name: Supermarket
+        layout: [Obst & Gemüse, Kühlregal, Brot & Backwaren, Vorrat & Konserven, Getränke, Haushalt]
+      - name: Drugstore
+        layout: [👶 Drogerie, Haushalt]
+    history:
+      - at: -3d
+        by: jonas
+        store: Supermarket
+        every: 7d
+        times: 4
+        items: [{ name: Yogurt, quantity: "3" }, Oats, Coffee, Bananas, Butter, Apples, Eggs, Flour]
+    items:
+      - { name: Cucumbers, quantity: "2", store: Farmers market, by: anna, at: -128m }
+      - { name: Tomatoes, store: Farmers market, by: anna, at: -127m }
+      - { name: Bread rolls, quantity: "4", store: Bakery, category: Brot & Backwaren, by: anna, at: -126m }
+      - { name: Milk, quantity: "2 l", properties: "low fat", store: Supermarket, by: anna, at: -125m }
+      - { name: Pasta, store: Supermarket, by: anna, at: -124m }
+      - { name: Apple juice, store: Supermarket, by: anna, at: -123m }
+      - { name: Dish soap, store: Supermarket, by: anna, at: -122m }
+      - { name: Toothpaste, store: Drugstore, by: anna, at: -121m }

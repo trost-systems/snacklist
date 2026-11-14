@@ -94,71 +94,67 @@ const now = () => performance.timeOrigin + performance.now();
 
 export const shots: Record<string, Shot> = {
   'add-tick': {
-    scenario: { de: 'demo-familie', en: 'demo-family-en' },
-    members: ['mia'],
+    scenario: { de: 'demo-haushalt', en: 'demo-household-en' },
+    members: ['anna'],
     async film(s, c, lang) {
-      const mia = member(c, 'mia');
+      const anna = member(c, 'anna');
       const [first, second] = items.addTick[lang];
       await sleep(1500);
-      s.mark('mia', 'open');
-      await s.tap(mia, { key: 'add-item-field' }, { dx: 262 });
-      await find(mia, { key: 'add-sheet-close' });
+      s.mark('anna', 'open');
+      await s.tap(anna, { key: 'add-item-field' }, { dx: 262 });
+      await find(anna, { key: 'add-sheet-close' });
       await sleep(450);
-      await s.type(mia, first, 110);
+      await s.type(anna, first, 110);
       await sleep(500);
-      await s.key(mia, 'Return');
+      await s.key(anna, 'Return');
       await sleep(900);
-      await s.type(mia, second, 110);
+      await s.type(anna, second, 110);
       await sleep(500);
-      await s.key(mia, 'Return');
+      await s.key(anna, 'Return');
       await sleep(1000);
-      s.mark('mia', 'close');
-      await s.tap(mia, { key: 'add-sheet-close' });
-      await gone(mia, { key: 'add-sheet-close' });
+      s.mark('anna', 'close');
+      await s.tap(anna, { key: 'add-sheet-close' });
+      await gone(anna, { key: 'add-sheet-close' });
       await sleep(1300);
-      s.mark('mia', 'tick');
-      await s.tap(mia, { text: first }, { dx: 210 });
+      s.mark('anna', 'tick');
+      await s.tap(anna, { text: first }, { dx: 210 });
       await sleep(900);
-      await s.tap(mia, { text: second }, { dx: 210 });
+      await s.tap(anna, { text: second }, { dx: 210 });
       await sleep(8000);
-      s.mark('mia', 'end');
+      s.mark('anna', 'end');
     },
   },
   'household-sync': {
-    scenario: { de: 'demo-familie', en: 'demo-family-en' },
-    members: ['mia', 'noah', 'ida'],
-    async prepare(s, c, lang) {
-      const noah = member(c, 'noah');
-      const ida = member(c, 'ida');
-      // Noah and Ida look at the chilled section, where the new item lands under Butter, with the
-      // pantry header right below so the new row sits high on their screens.
-      for (const c of [noah, ida]) await s.scrollUntil(c, { text: lang === 'de' ? 'Nudeln' : 'Pasta' }, 112);
-    },
+    scenario: { de: 'demo-haushalt', en: 'demo-household-en' },
+    members: ['anna', 'jonas'],
     async film(s, c, lang) {
-      const mia = member(c, 'mia');
-      const noah = member(c, 'noah');
-      const ida = member(c, 'ida');
+      const anna = member(c, 'anna');
+      const jonas = member(c, 'jonas');
       const item = items.sync[lang];
       await sleep(1500);
-      await s.tap(mia, { key: 'add-item-field' }, { dx: 262 });
-      await find(mia, { key: 'add-sheet-close' });
+      await s.tap(anna, { key: 'add-item-field' }, { dx: 262 });
+      await find(anna, { key: 'add-sheet-close' });
       await sleep(450);
-      await s.type(mia, item, 120);
+      await s.type(anna, item, 120);
       await sleep(450);
-      await s.key(mia, 'Return');
+      await s.key(anna, 'Return');
       const added = now();
-      const [toNoah, toIda] = await Promise.all([until(s, noah, item, added), until(s, ida, item, added)]);
-      await sleep(1200);
-      // Mia closes the sheet the way a phone user does, by tapping the list above it.
-      await s.tap(mia, { x: 200, y: 470 });
-      await gone(mia, { key: 'add-sheet-close' });
+      const toJonas = await until(s, jonas, item, added);
+      // Jonas's row stays honey for about 2.5 s: the sheet closes and the view reaches the top of
+      // Anna's list while it is still fresh (the poster).
+      await sleep(300);
+      // Anna closes the sheet with its close button, which stays in every crop (a tap on the list
+      // above the sheet would be off camera).
+      s.mark('anna', 'close');
+      await s.tap(anna, { key: 'add-sheet-close' });
+      await gone(anna, { key: 'add-sheet-close' });
       await sleep(1600);
-      await s.tap(noah, { text: item }, { dx: 118 });
+      await s.tap(jonas, { text: item }, { dx: 118 });
       const ticked = now();
-      const [goneMia, goneIda] = await Promise.all([until(s, mia, item, ticked, true), until(s, ida, item, ticked, true)]);
+      const goneAnna = await until(s, anna, item, ticked, true);
       await sleep(3000);
-      s.mark('mia', 'end');
-      return { addToNoahMs: toNoah, addToIdaMs: toIda, tickToMiaMs: goneMia, tickToIdaMs: goneIda };
+      s.mark('anna', 'end');
+      return { addToJonasMs: toJonas, tickToAnnaMs: goneAnna };
     },
   },
   'voice-add': {

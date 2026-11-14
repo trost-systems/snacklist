@@ -2,7 +2,10 @@
 // Tables from the review sets (build.mjs --step review): ffprobe of every file, the seam, the
 // poster and the measured latencies. Writes them into each <video>/REVIEW.md between the
 // "<!-- report -->" markers, and prints the whole set (for the PR body) to stdout.
+//
+//   node report.mjs [video ...]     default: all four
 
+import process from 'node:process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -29,7 +32,8 @@ function table(video) {
 }
 
 const all = [];
-for (const video of VIDEOS) {
+const named = process.argv.slice(2);
+for (const video of named.length ? named : VIDEOS) {
   const t = table(video);
   all.push(`### ${video}\n\n${t}\n`);
   const file = join(here, video, 'REVIEW.md');
