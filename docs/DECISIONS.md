@@ -13148,11 +13148,14 @@ section's end). The rules are pure in `app/lib/list/subtotals.dart` (`Sum`, `Sto
   does (its chip shows a price), but it makes the sum a floor too (review 0).
 - **Estimate (ST-Q4, Peter): what „weighed“ means without a new column.** PW1 (job 190) writes
   the scale weight into `items.quantity` on save, so the app cannot tell a weight typed at the
-  scale from the planned one the editor prefilled. Lead's call here: a line is an estimate while
+  scale from the planned one the editor prefilled. Job 237's own call, not confirmed by the lead
+  or Peter (asked in NEEDS_PETER "Job 237", review 0): a line is an estimate while
   its price is per kg or l, typed per kg or l (`price_basis = unit`), and the item is open. The
   label's total (`price_basis = line`) is a weighed line, and a ticked item is in the cart. So a
   shopper who types the €/kg price and the real weight sees „≈“ until the tick, which comes
-  right after. A `price_weighed` column would make this exact but needs a migration, a new
+  right after. This differs from Peter's „until it is weighed“: a weight typed at the scale
+  keeps „≈“ until the tick, and an item ticked without weighing counts as exact. A
+  `price_weighed` column would make this exact but needs a migration, a new
   `SetPrice` field, `export_my_data` (which job 234 also redefines) and old apps writing it: not
   worth it for an internal flag. The row's price chip, the store line and Gesamt all read „≈“
   then; with a floor too „mind. ≈ …“. Screen readers hear „etwa“ / "about" and „mindestens“.

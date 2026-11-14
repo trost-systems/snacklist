@@ -1990,3 +1990,10 @@ Open questions, answered for now as in DECISIONS "Job 234" (say if any should ch
 - **TQ7, early own additions.** Not treated as planned; „War geplant“ fixes them.
 - **TQ11, the strip and the price total.** The strip sits above the list total; it does not
   carry the total.
+
+## Job 237: the totals block, two answers before `list-declutter` widens (2026-11-14)
+
+The totals block (ST3) is on main behind `list-declutter`; it needs `prices-and-trip-total` on too, and `trip-mode` for the bought/open split.
+
+1. **ST-Q4, „≈ until it is weighed“: the build differs from your answer.** The app does not store whether a weight came from the scale: saving a price writes the weight into the quantity either way. Job 237 decided on its own: a price per kg or l typed per kg or l reads „≈“ while the item is open; the label's total („Gesamt“ in the price editor) or a tick makes it exact. So a weight you type at the scale still shows „≈“ until you tick the item, and an item ticked without weighing counts as exact. Making it exact needs a new `price_weighed` column (a migration, the price write, the data export). Answer: keep the current rule, or build the column.
+2. **ST-Q6, count wording under Gesamt.** Without a trip Gesamt says „6 mit Preis · 1 offen“ while the store line above says „1 ohne Preis“ for the same item, and a fully priced list reads „2 mit Preis · 0 offen“ although 2 items are open. During a trip Gesamt already says „ohne Preis“. Answer: keep „offen“, or say „1 ohne Preis“ under Gesamt too.
