@@ -49,7 +49,7 @@ def session():
                 "aud": "authenticated",
                 "email": "probe@example.invalid",
                 "app_metadata": {},
-                "user_metadata": {},
+                "user_metadata": {"mail_locale": "de"},
                 "created_at": "2026-01-01T00:00:00Z",
             },
         }

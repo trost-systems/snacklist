@@ -13188,3 +13188,54 @@ section's end). The rules are pure in `app/lib/list/subtotals.dart` (`Sum`, `Sto
   weighed item losing its „≈“.
 - **Seen, not fixed here:** at 160 % on 358 px job 234's trip strip breaks „Einkauf läuft“ inside
   the word („Einkau / f läuft“). Job 234's PR (#454) is still open; reported on the BOARD.
+
+## Job 221: the save after a tick encodes one row, 2026-11-14
+
+- **Where the list's CPU time goes, measured without rendering.** `hc-list-cpu`
+  (`tool/hillclimb/hc-list-cpu/measure.sh`, probe `app/test_driver/list_bench_probe.dart`) runs
+  the list's in-memory work in a Linux profile (AOT) build on the hc-ui-perf household: 300 open
+  items, 10 stores. What one build of the list derives (sections, recently used, claims) takes
+  about 0.2 ms (0.18 to 0.75 over 20 launches): not hot. The save is: `ListCubit` saves the
+  snapshot when an op is queued and again when the server acknowledges it (240 saves for 120
+  ticks and unticks), and each save built the whole list's JSON, 199,393 characters, on the UI
+  isolate.
+- **`ListSnapshot.encode()` keeps each item's JSON text with the `Item`.** An `Item` has only
+  final scalar fields, so its text cannot go stale; a tick makes one new `Item` and the save
+  encodes that one. The catalog is encoded every time, because its lists could be changed in
+  place (nothing does today) and it is 7 % of the text. The text is character for character what
+  `jsonEncode(toJson())` gives (tested against it, with quotes, a backslash, control characters,
+  an emoji, a price and claims), so what the device holds, when it is saved and what an older
+  build reads back are unchanged. `_PrefsListCache` asks for the text only after it knows the
+  household is still the user's.
+- **Measured: the synchronous part of a tick, 3.73 ms before and 1.10 ms after.** `main`'s
+  `app/lib` (3344381d) with the probe against this change's binary, five alternating pairs of
+  launches, x86 on the shared box at load 6 to 14: 3.73 ms (3.29 to 7.71) and 1.10 ms (1.02 to
+  1.47); the untick 3.69 ms and 1.00 ms. Both made 240 saves of 199,393 characters.
+- **The same inside one binary** (`LIST_BENCH_ENCODE=whole` encodes as before), five alternating
+  pairs: 4.86 ms (4.07 to 5.92) and 1.11 ms (0.82 to 1.31) at load 4 to 11, and on the final
+  tree at load 6 to 22: 6.87 ms (4.44 to 8.10) and 1.19 ms (0.99 to 1.33). The old way runs
+  slower in the new binary than in `main`'s own; why is not traced, so the first comparison is
+  the one to quote.
+- **What a save still costs** (three launches of a probe with the parts timed apart, load 10 to
+  11): the catalog 0.15 to 0.16 ms, the usuals 0.06 to 0.07 ms, joining the 300 kept texts 0.02
+  to 0.03 ms, and putting the parts into the one string the store takes 0.46 to 0.53 ms. The
+  catalog holds an emoji and the items none, so the joined items have one byte per character
+  and the whole text two; that the last step's cost is this widening copy is inferred, not
+  traced.
+- **Not measured:** a phone (slower cores, so the saved time is likely larger there: a guess),
+  and `shared_preferences`' own write of the 199,000 characters, which this change leaves as it
+  was. The texts stay in memory with their items: about the size of one saved list (inferred).
+- **Not done:** the queue under its own key, so that a tick writes a few hundred characters. It
+  changes what is saved where (two keys that must agree after a crash), which is job 222's
+  ground; an isolate would copy the list to encode it and does not exist on the web.
+- **The hill-climb harnesses run on `main` again.** Since job 169b the app reads its households
+  and members through rpc and items carry a list; both fakes (`hc-size-start`, `hc-ui-perf`)
+  answered neither, so the probes never got to the list. They answer them now, write a request
+  log with `FAKE_SUPABASE_LOG=<file>`, and the measure scripts take `FLUTTER_DIR` and only the
+  result line of the harness output. `ui_perf_probe.dart` scrolls a store divider into reach
+  before it taps it. Startup on `main` a0cd3c73 with the repaired harness, three runs of 15
+  launches at load 6 to 7: first frame 267, 288 and 346 ms, list shown 312, 338 and 440 ms,
+  interactive 368, 401 and 536 ms, against job 100's baseline of 292, 400 and 445 ms
+  (`docs/hillclimb/hc-size-start.md`). Two runs are under it and the third, at the highest load,
+  above: no regression measured since, and no gap found to climb. The frame-time score needs a
+  load under 3.5 (job 108) and the box stood at 10 to 15: not measured.
