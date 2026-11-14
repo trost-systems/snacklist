@@ -11,6 +11,10 @@ const groceryLogFlag = 'grocery-log';
 /// the household's currency (job 190). Free for everyone.
 const pricesFlag = 'prices-and-trip-total';
 
+/// The flag that turns on trip mode: the question on a tick, the trip strip
+/// with its stopwatch and the trip's summary (job 234).
+const tripModeFlag = 'trip-mode';
+
 /// The flag that shows which list Siri, Alexa and AI assistants add to when
 /// no list is named, next to the household they use (job 207).
 const defaultListFlag = 'default-list-voice-target';

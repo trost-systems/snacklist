@@ -28,6 +28,8 @@ import 'package:family_groceries/onboarding/steps.dart';
 import 'package:family_groceries/purchases/premium_page_cubit.dart';
 import 'package:family_groceries/session/login_screen.dart';
 import 'package:family_groceries/session/session_cubit.dart';
+import 'package:family_groceries/trip/summary_page.dart';
+import 'package:family_groceries/trip/trip_repository.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -97,6 +99,17 @@ const morePath = '/more';
 /// `grocery-log` is on; otherwise the path goes to the list.
 const historyPath = '/history';
 
+/// A trip-mode trip's summary (job 234): in the List tab after its end or
+/// from the list's card, in Verlauf from one of its entries.
+String tripSummaryPath(String id) => '/trip/$id';
+String historyTripPath(String id) => '$historyPath/trip/$id';
+
+/// Whether [location] is a trip summary, in either tab.
+bool inTripSummary(Uri location) => switch (location.pathSegments) {
+  ['trip', _] || ['history', 'trip', _] => true,
+  _ => false,
+};
+
 /// More's Zugänge: the MCP server, tokens and connected apps.
 const accessPath = '/more/access';
 
@@ -150,6 +163,7 @@ const screenNames = {
   'stores',
   'more',
   'history',
+  'trip_summary',
   'access',
   'account',
   'invites',
@@ -194,6 +208,7 @@ String _screenNameOfPath(Uri location) => switch (location.path) {
   _ when location.pathSegments.firstOrNull == 'edit' => 'stores',
   morePath => 'more',
   historyPath => 'history',
+  _ when inTripSummary(location) => 'trip_summary',
   accessPath => 'access',
   accountPath => 'account',
   invitesPath => 'invites',
@@ -252,6 +267,7 @@ bool inListTab(Uri location) {
 bool atHome(Uri location) =>
     location.path == listPath ||
     location.path == historyPath ||
+    inTripSummary(location) ||
     inListTab(location) ||
     inMoreTab(location) ||
     location.path == welcomePath ||
@@ -397,6 +413,7 @@ String? authRedirect(
             uri.path == joinCodePath ||
             inMoreTab(uri) ||
             inListTab(uri) ||
+            inTripSummary(uri) ||
             uri.path == historyPath =>
       uri.toString(),
     // Where the list would open: a link (`next`) went first and stays.
@@ -496,6 +513,11 @@ List<RouteBase> listTabRoutes() => [
     builder: (_, _) => const ListScreen(),
     routes: [
       GoRoute(
+        path: 'trip/:id',
+        redirect: _withTripMode,
+        builder: (_, state) => TripSummaryPage(id: state.pathParameters['id']!),
+      ),
+      GoRoute(
         path: editPath.substring(1),
         builder: (_, _) => const StoresScreen(),
         routes: [
@@ -564,18 +586,35 @@ List<RouteBase> historyTabRoutes() => [
     redirect: (context, _) =>
         context.read<Flags?>()?.isOn(groceryLogFlag) ?? false ? null : listPath,
     builder: (_, _) => const HistoryScreen(),
+    routes: [
+      GoRoute(
+        path: 'trip/:id',
+        redirect: _withTripMode,
+        builder: (_, state) => TripSummaryPage(id: state.pathParameters['id']!),
+      ),
+    ],
   ),
 ];
 
-/// Every route of the app; [repositories] and [trips] override the
-/// Supabase list repository and trips per household, for tests.
+/// A trip summary's link with the flag `trip-mode` off is the list.
+String? _withTripMode(BuildContext context, GoRouterState _) =>
+    context.read<Flags?>()?.isOn(tripModeFlag) ?? false ? null : listPath;
+
+/// Every route of the app; [repositories], [trips] and [tripSessions]
+/// override the Supabase list repository and trips per household, for
+/// tests.
 List<RouteBase> appRoutes({
   ListRepository Function(String householdId)? repositories,
   TripRepository Function(String householdId)? trips,
+  TripSessionRepository Function(String householdId)? tripSessions,
 }) => [
   StatefulShellRoute.indexedStack(
-    builder: (_, _, shell) =>
-        AppShell(shell: shell, repositories: repositories, trips: trips),
+    builder: (_, _, shell) => AppShell(
+      shell: shell,
+      repositories: repositories,
+      trips: trips,
+      tripSessions: tripSessions,
+    ),
     // The shell's tabs keep these branch indices; Verlauf shows between
     // Liste and Mehr (`_Destination`).
     branches: [

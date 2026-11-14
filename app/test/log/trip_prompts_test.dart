@@ -10,6 +10,7 @@ const catalog = Catalog(
   stores: [
     Store(id: 'lidl', name: 'Lidl', sortOrder: 20),
     Store(id: 'rewe', name: 'Rewe', sortOrder: 10),
+    Store(id: 'apo', name: 'APOTHEKE am Markt', sortOrder: 30),
   ],
   lists: [
     HouseholdList(id: 'home', name: 'Zuhause', position: 0),
@@ -126,6 +127,29 @@ void main() {
   test('an item of a deleted store counts as no store', () {
     final gone = item('gone', store: 'edeka');
     expect(shown(tickAll([gone], [gone])), ['null: gone']);
+  });
+
+  test('Legal GL-2: a pharmacy ticked off offers no card', () {
+    final aspirin = item('aspirin', store: 'apo');
+    expect(shown(tickAll([aspirin, soap], [aspirin, soap])), ['lidl: soap']);
+  });
+
+  test("a trip's end forgets what it logged; earlier ticks stay", () {
+    final ticks = tickAll(
+      [milk, bread, soap],
+      [milk, soap],
+    ).forgetting({'soap'});
+    expect(ticks.ticked.keys, ['rewe']);
+    expect(shown(ticks), isEmpty, reason: 'bread is still open at rewe');
+    expect(
+      shown(
+        ticks
+            .settle(listOf([bought(milk), bought(bread), bought(soap)]))
+            .tick(bread, catalog)
+            .settle(listOf([bought(milk), bought(bread), bought(soap)])),
+      ),
+      ['rewe: milk, bread'],
+    );
   });
 
   test('nothing changed: the same value', () {

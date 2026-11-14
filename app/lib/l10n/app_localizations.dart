@@ -4711,6 +4711,360 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Offene Einladungen'**
   String get switcherOpenInvitesTitle;
+
+  /// Job 234 trip mode: the sheet after an own tick while no trip runs
+  ///
+  /// In de, this message translates to:
+  /// **'Kaufst du gerade ein?'**
+  String get shopAskTitle;
+
+  /// No description provided for @shopAskBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Dann läuft eine Uhr mit, und am Ende siehst du, was geplant war und was dazukam.'**
+  String get shopAskBody;
+
+  /// No description provided for @shopAskYes.
+  ///
+  /// In de, this message translates to:
+  /// **'Ja, Einkauf starten'**
+  String get shopAskYes;
+
+  /// No description provided for @shopAskNo.
+  ///
+  /// In de, this message translates to:
+  /// **'Nein, nur abgehakt'**
+  String get shopAskNo;
+
+  /// Job 234: above the take-back link in the sheet
+  ///
+  /// In de, this message translates to:
+  /// **'Aus Versehen abgehakt?'**
+  String get shopAskMistake;
+
+  /// No description provided for @shopAskTakeBack.
+  ///
+  /// In de, this message translates to:
+  /// **'Zurücknehmen'**
+  String get shopAskTakeBack;
+
+  /// Job 234: the running trip's strip
+  ///
+  /// In de, this message translates to:
+  /// **'Einkauf läuft'**
+  String get shopRunning;
+
+  /// No description provided for @shopPaused.
+  ///
+  /// In de, this message translates to:
+  /// **'Pausiert'**
+  String get shopPaused;
+
+  /// Job 234: the strip after 45 minutes without a tick; time is the last tick, HH:MM
+  ///
+  /// In de, this message translates to:
+  /// **'Pause · seit {time} nichts abgehakt'**
+  String shopAutoPaused(String time);
+
+  /// No description provided for @shopPause.
+  ///
+  /// In de, this message translates to:
+  /// **'Pause'**
+  String get shopPause;
+
+  /// No description provided for @shopResume.
+  ///
+  /// In de, this message translates to:
+  /// **'Weiter'**
+  String get shopResume;
+
+  /// No description provided for @shopEnd.
+  ///
+  /// In de, this message translates to:
+  /// **'Beenden'**
+  String get shopEnd;
+
+  /// Job 234: auto-paused, ends the trip at the last tick
+  ///
+  /// In de, this message translates to:
+  /// **'Beenden um {time}'**
+  String shopEndAt(String time);
+
+  /// Job 234: the stopwatch for screen readers, read per minute
+  ///
+  /// In de, this message translates to:
+  /// **'{minutes, plural, =0{seit weniger als einer Minute} =1{seit 1 Minute} other{seit {minutes} Minuten}}'**
+  String shopClockLabel(int minutes);
+
+  /// Job 234: the list's card after the 4-hour rule ended a trip
+  ///
+  /// In de, this message translates to:
+  /// **'Einkauf automatisch beendet'**
+  String get shopAutoEndedTitle;
+
+  /// No description provided for @shopAutoEndedBody.
+  ///
+  /// In de, this message translates to:
+  /// **'4 Stunden lang wurde nichts abgehakt. Er endet beim letzten Abhaken um {time}.'**
+  String shopAutoEndedBody(String time);
+
+  /// No description provided for @shopKeepGoing.
+  ///
+  /// In de, this message translates to:
+  /// **'Doch weiter'**
+  String get shopKeepGoing;
+
+  /// No description provided for @shopShowSummary.
+  ///
+  /// In de, this message translates to:
+  /// **'Übersicht ansehen'**
+  String get shopShowSummary;
+
+  /// Job 234: the trip summary page's title
+  ///
+  /// In de, this message translates to:
+  /// **'Geplant und gekauft'**
+  String get shopSummaryTitle;
+
+  /// Job 234: summary head, the trip's day and times
+  ///
+  /// In de, this message translates to:
+  /// **'{day}, {from} bis {to}'**
+  String shopSummaryWhen(String day, String from, String to);
+
+  /// No description provided for @shopMinutes.
+  ///
+  /// In de, this message translates to:
+  /// **'{minutes} Min.'**
+  String shopMinutes(int minutes);
+
+  /// Job 234: a trip shorter than half a minute, before shopShoppedFor's „eingekauft“
+  ///
+  /// In de, this message translates to:
+  /// **'Unter 1 Min.'**
+  String get shopUnderAMinute;
+
+  /// No description provided for @shopHoursMinutes.
+  ///
+  /// In de, this message translates to:
+  /// **'{hours} Std. {minutes} Min.'**
+  String shopHoursMinutes(int hours, int minutes);
+
+  /// Job 234: summary title; duration is shopMinutes or shopHoursMinutes
+  ///
+  /// In de, this message translates to:
+  /// **'{duration} eingekauft'**
+  String shopShoppedFor(String duration);
+
+  /// No description provided for @shopLede.
+  ///
+  /// In de, this message translates to:
+  /// **'{bought} von {planned} von der Liste gekauft'**
+  String shopLede(int bought, int planned);
+
+  /// No description provided for @shopLedeExtra.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} zusätzlich'**
+  String shopLedeExtra(int count);
+
+  /// No description provided for @shopLedeNoList.
+  ///
+  /// In de, this message translates to:
+  /// **'Ohne Liste losgegangen · {count} gekauft'**
+  String shopLedeNoList(int count);
+
+  /// No description provided for @shopAutoEndHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Beendet beim letzten Abhaken um {time}, automatisch.'**
+  String shopAutoEndHint(String time);
+
+  /// No description provided for @shopPlannedSection.
+  ///
+  /// In de, this message translates to:
+  /// **'Beim Start auf der Liste'**
+  String get shopPlannedSection;
+
+  /// No description provided for @shopExtraSection.
+  ///
+  /// In de, this message translates to:
+  /// **'Seit dem Start dazugekommen'**
+  String get shopExtraSection;
+
+  /// No description provided for @shopPlannedEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Liste war leer.'**
+  String get shopPlannedEmpty;
+
+  /// No description provided for @shopExtraEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Nichts. Alles stand auf der Liste.'**
+  String get shopExtraEmpty;
+
+  /// No description provided for @shopNotBought.
+  ///
+  /// In de, this message translates to:
+  /// **'nicht gekauft'**
+  String get shopNotBought;
+
+  /// Job 234: a summary row's state for screen readers
+  ///
+  /// In de, this message translates to:
+  /// **'gekauft'**
+  String get shopBought;
+
+  /// Job 234: an extra another member wrote onto the list
+  ///
+  /// In de, this message translates to:
+  /// **'von {name}'**
+  String shopBy(String name);
+
+  /// No description provided for @shopMarkPlanned.
+  ///
+  /// In de, this message translates to:
+  /// **'War geplant'**
+  String get shopMarkPlanned;
+
+  /// No description provided for @shopMarkPlannedHint.
+  ///
+  /// In de, this message translates to:
+  /// **'„War geplant“ zählt einen Artikel zur Liste, wenn er abgesprochen war, aber nicht draufstand.'**
+  String get shopMarkPlannedHint;
+
+  /// No description provided for @shopPlannedPrice.
+  ///
+  /// In de, this message translates to:
+  /// **'geplant {amount}'**
+  String shopPlannedPrice(String amount);
+
+  /// No description provided for @shopMore.
+  ///
+  /// In de, this message translates to:
+  /// **'{amount} mehr'**
+  String shopMore(String amount);
+
+  /// No description provided for @shopLess.
+  ///
+  /// In de, this message translates to:
+  /// **'{amount} weniger'**
+  String shopLess(String amount);
+
+  /// No description provided for @shopAsPlanned.
+  ///
+  /// In de, this message translates to:
+  /// **'wie geplant'**
+  String get shopAsPlanned;
+
+  /// No description provided for @shopPaid.
+  ///
+  /// In de, this message translates to:
+  /// **'Bezahlt'**
+  String get shopPaid;
+
+  /// No description provided for @shopPaidTotal.
+  ///
+  /// In de, this message translates to:
+  /// **'Insgesamt bezahlt'**
+  String get shopPaidTotal;
+
+  /// Job 234: under a paid total; difference is shopMore, shopLess or shopAsPlanned
+  ///
+  /// In de, this message translates to:
+  /// **'Geplant {amount} · {difference}'**
+  String shopCompared(String amount, String difference);
+
+  /// No description provided for @shopComparedCount.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{bei 1 Artikel} other{bei {count} Artikeln}}'**
+  String shopComparedCount(int count);
+
+  /// No description provided for @shopWithoutPrice.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} ohne Preis'**
+  String shopWithoutPrice(int count);
+
+  /// No description provided for @shopWithoutPlan.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} ohne geplanten Preis'**
+  String shopWithoutPlan(int count);
+
+  /// No description provided for @shopTotalsNote.
+  ///
+  /// In de, this message translates to:
+  /// **'Bezahlt zählt nur Artikel mit Preis. Der Unterschied vergleicht nur Artikel mit geplantem und bezahltem Preis.'**
+  String get shopTotalsNote;
+
+  /// No description provided for @shopKeepShopping.
+  ///
+  /// In de, this message translates to:
+  /// **'Weiter einkaufen'**
+  String get shopKeepShopping;
+
+  /// No description provided for @shopNotSaved.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Einkauf ist noch nicht gespeichert.'**
+  String get shopNotSaved;
+
+  /// Job 234: Free summary, how many items were ticked off
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Artikel abgehakt} other{{count} Artikel abgehakt}}'**
+  String shopTicked(int count);
+
+  /// No description provided for @shopLockedTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Was war geplant, was kam dazu?'**
+  String get shopLockedTitle;
+
+  /// No description provided for @shopLockedBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Snacklist Premium zeigt nach jedem Einkauf, was auf der Liste stand und was unterwegs dazukam, auch von anderen im Haushalt.'**
+  String get shopLockedBody;
+
+  /// No description provided for @shopLockedButton.
+  ///
+  /// In de, this message translates to:
+  /// **'Snacklist Premium ansehen'**
+  String get shopLockedButton;
+
+  /// No description provided for @shopLoadFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Übersicht konnte nicht geladen werden.'**
+  String get shopLoadFailed;
+
+  /// Job 234: Mehr's row, shown while no trip runs
+  ///
+  /// In de, this message translates to:
+  /// **'Einkauf starten'**
+  String get shopStartByHand;
+
+  /// No description provided for @shopStartByHandHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Uhr läuft ab jetzt, die Liste, wie sie jetzt ist, gilt als geplant.'**
+  String get shopStartByHandHint;
+
+  /// Job 234: an extra from a member who left the household
+  ///
+  /// In de, this message translates to:
+  /// **'von jemand anderem'**
+  String get shopByOther;
+
+  /// Job 234: snackbar when marking a summary row failed
+  ///
+  /// In de, this message translates to:
+  /// **'„War geplant“ konnte nicht gespeichert werden. Versuch es noch mal.'**
+  String get shopMarkFailed;
 }
 
 class _AppLocalizationsDelegate

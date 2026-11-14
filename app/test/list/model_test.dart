@@ -29,6 +29,28 @@ Item item(
 Duration minutes(int n) => Duration(minutes: n);
 
 void main() {
+  test('Legal GL-2: pharmacies by name or seed key, in any case; drugstores '
+      'are not', () {
+    Store store(String name, {String? seed}) =>
+        Store(id: name, name: name, sortOrder: 0, seedKey: seed);
+    for (final name in [
+      'Apotheke',
+      'APOTHEKE am Markt',
+      'Shop-Apotheke',
+      'Boots Pharmacy',
+      'Pharmacie du Centre',
+      'Farmacia Roma',
+      'Apteka',
+      'Eczane',
+    ]) {
+      expect(store(name).isPharmacy, isTrue, reason: name);
+    }
+    expect(store('Ecke', seed: 'apotheke').isPharmacy, isTrue);
+    for (final name in ['dm', 'Rossmann', 'Lidl', 'Müller', 'DocMorris']) {
+      expect(store(name).isPharmacy, isFalse, reason: name);
+    }
+  });
+
   const categories = [
     Category(id: 'b', name: 'B', sortOrder: 20),
     Category(id: 'a', name: 'A', sortOrder: 10),

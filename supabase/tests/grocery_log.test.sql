@@ -49,7 +49,7 @@ grant select on home, away, lidl, aldi to authenticated;
 -- Saving and editing.
 select pg_temp.login(:lea);
 select is(
-  (select to_jsonb(t) - '{created_at,updated_at,id,household_id,store_id,logged_by}'::text[]
+  (select to_jsonb(t) - '{created_at,updated_at,id,household_id,store_id,logged_by,session_id}'::text[]
    from public.save_trip((select id from home), :trip, (select id from lidl), current_date - 1,
      '[{"name": "  Möhren ", "quantity": "1 kg"}, {"name": "Milch", "quantity": " "}]') t),
   jsonb_build_object('store_name', 'Lidl', 'shopped_on', current_date - 1, 'items', jsonb_build_array(

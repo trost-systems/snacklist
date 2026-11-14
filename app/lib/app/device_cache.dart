@@ -104,6 +104,10 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
   /// device.
   static const _logViewKey = 'log.view';
 
+  /// The trip running on this device and its ends not yet saved (job 234),
+  /// one JSON value per user (`KeptTrips`); forgotten on sign-out.
+  static const _tripPrefix = 'trip.';
+
   static String _householdKey(String userId) => '$_householdPrefix$userId';
 
   static String _listKey(String userId, String householdId) =>
@@ -137,6 +141,16 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
     () => name == null
         ? _prefs.remove(_themeKey)
         : _prefs.setString(_themeKey, name),
+  );
+
+  /// [userId]'s kept trips as saved, or null.
+  Future<String?> keptTrips(String userId) =>
+      _readString('$_tripPrefix$userId');
+
+  Future<void> saveKeptTrips(String userId, String? json) => _write(
+    () => json == null
+        ? _prefs.remove('$_tripPrefix$userId')
+        : _prefs.setString('$_tripPrefix$userId', json),
   );
 
   /// The grocery log's view as saved, or null.
@@ -415,7 +429,8 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
           k.startsWith(_householdPrefix) ||
           k.startsWith(_listPrefix) ||
           k.startsWith(_seenPrefix) ||
-          k.startsWith(_prefsPrefix),
+          k.startsWith(_prefsPrefix) ||
+          k.startsWith(_tripPrefix),
     ),
   );
 

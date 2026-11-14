@@ -1,5 +1,5 @@
 begin;
-select plan(113);
+select plan(123);
 
 create function pg_temp.login(uid uuid) returns void language plpgsql as $$
 begin
@@ -397,6 +397,42 @@ select throws_ok($$ insert into public.trips (id, household_id, shopped_on, item
 set local role postgres;
 select is((select items #>> '{0,name}' from public.trips where id = 'f1990000-0000-4000-8000-0000000000a1'), 'Milch',
   'Alice''s trip is untouched');
+
+-- Job 234: trip-mode sessions stay inside the household.
+create temp table alice_session as select jsonb_build_object('id', 'f2340000-0000-4000-8000-0000000000a1',
+  'list_id', null, 'started_at', '2026-11-14T09:00:00Z', 'ended_at', '2026-11-14T09:20:00Z',
+  'active_seconds', 1200, 'end_reason', 'user', 'source', 'manual', 'currency', 'EUR',
+  'shopped_on', current_date::text, 'pauses', '[]'::jsonb,
+  'lines', jsonb_build_array(jsonb_build_object('key', 'k', 'name', 'Milch', 'planned', true, 'bought', true,
+    'store_id', (select id from alice_store), 'store_name', 'Supermarkt'))) as t;
+grant select on alice_session to authenticated;
+select pg_temp.login('00000000-0000-0000-0000-0000000000a1');
+select public.save_trip_session((select id from ha), (select t from alice_session), true);
+select pg_temp.login('00000000-0000-0000-0000-0000000000b1');
+select throws_ok($$ select public.trip_session((select id from ha), 'f2340000-0000-4000-8000-0000000000a1') $$,
+  '42501', 'not_a_member', 'trip sessions of another household are invisible');
+select throws_ok($$ select public.trip_session((select id from hb), 'f2340000-0000-4000-8000-0000000000a1') $$,
+  'P0002', 'trip_not_found', 'also under the own household');
+select throws_ok($$ select from public.trip_sessions $$, '42501', null, 'trip sessions are read through trip_session only');
+select throws_ok($$ select public.save_trip_session((select id from ha), (select t from alice_session), true) $$,
+  '42501', 'not_a_member', 'saving a session in another household is refused');
+select throws_ok($$ select public.save_trip_session((select id from hb), (select t from alice_session), true) $$,
+  '22023', 'other_household', 'saving over another household''s session id is refused');
+select throws_ok($$ select public.mark_trip_line_planned('f2340000-0000-4000-8000-0000000000a1', 'k', true) $$,
+  '42501', 'not_a_member', 'marking another household''s line is refused');
+select throws_ok($$ select public.delete_trip_session('f2340000-0000-4000-8000-0000000000a1') $$,
+  '42501', 'not_a_member', 'deleting another household''s session is refused');
+select throws_ok($$ insert into public.trip_sessions (id, household_id, started_at, ended_at, active_seconds,
+    end_reason, source, currency, shopped_on)
+  select gen_random_uuid(), id, now(), now(), 0, 'user', 'manual', 'EUR', current_date from hb $$,
+  '42501', null, 'trip sessions are written by save_trip_session only, even in the own household');
+select public.save_trip_session((select id from hb),
+  (select t || '{"id": "f2340000-0000-4000-8000-0000000000b1"}' from alice_session), true);
+set local role postgres;
+select is((select (store_id, store_name)::text from public.trips where session_id = 'f2340000-0000-4000-8000-0000000000b1'),
+  (null::uuid, 'Supermarkt')::text, 'a line at another household''s store logs no store id');
+select is((select (household_id, started_by)::text from public.trip_sessions where id = 'f2340000-0000-4000-8000-0000000000a1'),
+  ((select id from ha), '00000000-0000-0000-0000-0000000000a1'::uuid)::text, 'Alice''s session is untouched');
 
 -- Realtime sends a delete's replica identity (the primary key) to every subscriber of the table,
 -- without RLS or filters. No published table may key its rows by a person.

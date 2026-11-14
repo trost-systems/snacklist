@@ -11,6 +11,7 @@ import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/list_repository.dart';
 import 'package:family_groceries/list/list_scope.dart';
 import 'package:family_groceries/log/trip_repository.dart';
+import 'package:family_groceries/trip/trip_repository.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -130,6 +131,9 @@ class const AppShell({
 
   /// Overrides the Supabase trips per household, for tests.
   final TripRepository Function(String householdId)? trips,
+
+  /// Overrides the Supabase trip-mode trips per household, for tests.
+  final TripSessionRepository Function(String householdId)? tripSessions,
 }) extends StatefulWidget {
   @override
   State<AppShell> createState() => _AppShellState();
@@ -173,6 +177,7 @@ class _AppShellState() extends State<AppShell> {
     return ListScope(
       repositories: widget.repositories,
       trips: widget.trips,
+      tripSessions: widget.tripSessions,
       child: SheetOpen(
         notifier: _sheetOpen,
         child: LayoutBuilder(

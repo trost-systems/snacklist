@@ -16,6 +16,7 @@ const sameInBothLanguages = {
   'themeSystem': '"System" is the word in both (job 57 theme control)',
   'inviteLinkLabel': '"Link" is English too',
   'householdRoleAdmin': '"Admin" is the German role name too (job 169b W2)',
+  'shopPause': '"Pause" is the German word too (job 234 strip)',
   'tokenHint': 'only an ellipsis and the token hint',
   'tokenName': '"Name" is English too',
   'apiHeader': '"API" is the word in both (job 73)',

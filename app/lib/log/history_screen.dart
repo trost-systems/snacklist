@@ -1,7 +1,9 @@
 import 'dart:async';
 
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/app/device_cache.dart';
-import 'package:family_groceries/app/router.dart' show premiumPath;
+import 'package:family_groceries/app/router.dart'
+    show historyTripPath, premiumPath;
 import 'package:family_groceries/design/group_card.dart';
 import 'package:family_groceries/design/section_label.dart';
 import 'package:family_groceries/design/tokens.g.dart';
@@ -95,7 +97,15 @@ class _HistoryState() extends State<_History> {
     StorePick store = const NotPicked(),
     DateTime? day,
   }) async {
+    // A trip-mode trip's entry shows its summary (job 234), at its own
+    // address. Back from it, didChangeDependencies reads the trips again
+    // (the page can delete the trip).
     final log = context.read<LogCubit>();
+    if (trip?.sessionId case final session?
+        when context.read<Flags?>()?.isOn(tripModeFlag) ?? false) {
+      context.go(historyTripPath(session));
+      return;
+    }
     await showTripSheet(
       context,
       source: TripSource.manual,

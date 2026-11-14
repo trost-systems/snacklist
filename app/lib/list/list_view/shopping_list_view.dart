@@ -19,6 +19,7 @@ import 'package:family_groceries/list/list_view/sections.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/log/trip_prompt_card.dart';
 import 'package:family_groceries/tips/hint_views.dart';
+import 'package:family_groceries/trip/trip_on_list.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/rendering.dart' show RenderAbstractViewport;
 import 'package:flutter/semantics.dart';
@@ -548,7 +549,10 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
           sliver: SliverMainAxisGroup(
             slivers: [
               const SliverToBoxAdapter(child: ListHints()),
-              const SliverToBoxAdapter(child: TripPromptCards()),
+              // Job 199's prompts wait while a trip runs (job 234).
+              if (!tripRunning(context))
+                const SliverToBoxAdapter(child: TripPromptCards()),
+              const SliverToBoxAdapter(child: TripEndedSlot()),
               const SliverToBoxAdapter(child: SizedBox(height: 4)),
               body,
               // Without the flag the screen shows it in a bar at the bottom.

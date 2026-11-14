@@ -62,6 +62,25 @@ class const Store({
     'sort_order': sortOrder,
     'seed_key': seedKey,
   };
+
+  /// Legal GL-2 (N-167): a pharmacy by its name or seed key, in any case.
+  /// Its ticks raise no trip question and no "Einkauf eintragen?" card, so
+  /// what is bought there is only logged when the user chooses to.
+  /// Drugstores (dm, Rossmann) are not pharmacies.
+  bool get isPharmacy {
+    final words = '$name ${seedKey ?? ''}'.toLowerCase();
+    return pharmacyWords.any(words.contains);
+  }
+
+  /// The words that mark a pharmacy (Legal GL-2, lead note 2 of job 234).
+  static const pharmacyWords = [
+    'apotheke',
+    'pharmacy',
+    'pharmacie',
+    'farmacia',
+    'apteka',
+    'eczane',
+  ];
 }
 
 /// Where a category sits in one store's walking order, and whether the store

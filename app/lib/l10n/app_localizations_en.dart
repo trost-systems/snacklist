@@ -2916,4 +2916,247 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get switcherOpenInvitesTitle => 'Open invites';
+
+  @override
+  String get shopAskTitle => 'Are you shopping right now?';
+
+  @override
+  String get shopAskBody =>
+      'Then a clock runs along, and at the end you see what was planned and what came on top.';
+
+  @override
+  String get shopAskYes => 'Yes, start a trip';
+
+  @override
+  String get shopAskNo => 'No, just ticked off';
+
+  @override
+  String get shopAskMistake => 'Ticked off by mistake?';
+
+  @override
+  String get shopAskTakeBack => 'Put it back';
+
+  @override
+  String get shopRunning => 'Trip running';
+
+  @override
+  String get shopPaused => 'Paused';
+
+  @override
+  String shopAutoPaused(String time) {
+    return 'Paused · nothing ticked since $time';
+  }
+
+  @override
+  String get shopPause => 'Pause';
+
+  @override
+  String get shopResume => 'Resume';
+
+  @override
+  String get shopEnd => 'End';
+
+  @override
+  String shopEndAt(String time) {
+    return 'End at $time';
+  }
+
+  @override
+  String shopClockLabel(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: 'for $minutes minutes',
+      one: 'for 1 minute',
+      zero: 'for less than a minute',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shopAutoEndedTitle => 'Trip ended automatically';
+
+  @override
+  String shopAutoEndedBody(String time) {
+    return 'Nothing was ticked off for 4 hours. It ends at the last tick, at $time.';
+  }
+
+  @override
+  String get shopKeepGoing => 'Keep going';
+
+  @override
+  String get shopShowSummary => 'See summary';
+
+  @override
+  String get shopSummaryTitle => 'Planned and bought';
+
+  @override
+  String shopSummaryWhen(String day, String from, String to) {
+    return '$day, $from to $to';
+  }
+
+  @override
+  String shopMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String get shopUnderAMinute => 'under 1 min';
+
+  @override
+  String shopHoursMinutes(int hours, int minutes) {
+    return '$hours h $minutes min';
+  }
+
+  @override
+  String shopShoppedFor(String duration) {
+    return 'Shopped for $duration';
+  }
+
+  @override
+  String shopLede(int bought, int planned) {
+    return '$bought of $planned from the list bought';
+  }
+
+  @override
+  String shopLedeExtra(int count) {
+    return '$count extra';
+  }
+
+  @override
+  String shopLedeNoList(int count) {
+    return 'Went without a list · $count bought';
+  }
+
+  @override
+  String shopAutoEndHint(String time) {
+    return 'Ended at the last tick at $time, automatically.';
+  }
+
+  @override
+  String get shopPlannedSection => 'On the list at the start';
+
+  @override
+  String get shopExtraSection => 'Added since the start';
+
+  @override
+  String get shopPlannedEmpty => 'The list was empty.';
+
+  @override
+  String get shopExtraEmpty => 'Nothing. Everything was on the list.';
+
+  @override
+  String get shopNotBought => 'not bought';
+
+  @override
+  String get shopBought => 'bought';
+
+  @override
+  String shopBy(String name) {
+    return 'added by $name';
+  }
+
+  @override
+  String get shopMarkPlanned => 'Was planned';
+
+  @override
+  String get shopMarkPlannedHint =>
+      '“Was planned” counts an item as on the list when it was agreed but not written down.';
+
+  @override
+  String shopPlannedPrice(String amount) {
+    return 'planned $amount';
+  }
+
+  @override
+  String shopMore(String amount) {
+    return '$amount more';
+  }
+
+  @override
+  String shopLess(String amount) {
+    return '$amount less';
+  }
+
+  @override
+  String get shopAsPlanned => 'as planned';
+
+  @override
+  String get shopPaid => 'Paid';
+
+  @override
+  String get shopPaidTotal => 'Paid in total';
+
+  @override
+  String shopCompared(String amount, String difference) {
+    return 'Planned $amount · $difference';
+  }
+
+  @override
+  String shopComparedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'for $count items',
+      one: 'for 1 item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String shopWithoutPrice(int count) {
+    return '$count without a price';
+  }
+
+  @override
+  String shopWithoutPlan(int count) {
+    return '$count without a planned price';
+  }
+
+  @override
+  String get shopTotalsNote =>
+      'Paid counts only items with a price. The difference compares only items with a planned and a paid price.';
+
+  @override
+  String get shopKeepShopping => 'Keep shopping';
+
+  @override
+  String get shopNotSaved => 'The trip isn\'t saved yet.';
+
+  @override
+  String shopTicked(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items ticked off',
+      one: '1 item ticked off',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shopLockedTitle => 'What was planned, what came on top?';
+
+  @override
+  String get shopLockedBody =>
+      'After every trip, Snacklist Premium shows what was on the list and what came on top on the way, also from others in the household.';
+
+  @override
+  String get shopLockedButton => 'See Snacklist Premium';
+
+  @override
+  String get shopLoadFailed => 'The summary couldn\'t be loaded.';
+
+  @override
+  String get shopStartByHand => 'Start a trip';
+
+  @override
+  String get shopStartByHandHint =>
+      'The clock runs from now; the list as it is now counts as planned.';
+
+  @override
+  String get shopByOther => 'added by someone else';
+
+  @override
+  String get shopMarkFailed => '“Was planned” couldn\'t be saved. Try again.';
 }

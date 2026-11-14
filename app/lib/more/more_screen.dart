@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:family_groceries/analytics/analytics.dart';
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/app/environment.dart';
 import 'package:family_groceries/app/guides.dart';
 import 'package:family_groceries/app/legal_links.dart';
@@ -30,6 +31,7 @@ import 'package:family_groceries/settings/access_screen.dart';
 import 'package:family_groceries/settings/account_screen.dart';
 import 'package:family_groceries/settings/settings_screen.dart';
 import 'package:family_groceries/tips/tips_page.dart';
+import 'package:family_groceries/trip/trip_cubit.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -197,6 +199,7 @@ class const _Page(final MorePage page, final PaywallEntry paywallEntry)
 /// household, cobalt for connections, mint for you and your data, the
 /// sunken surface for the rest.
 enum _Item(final IconData icon, final String key, final _Tint tint) {
+  startTrip(Icons.shopping_cart_outlined, 'more-start-trip', _Tint.honey),
   account(Icons.manage_accounts_outlined, 'menu-account', _Tint.mint),
   premium(Icons.favorite_outline, 'more-lifetime', _Tint.honey),
   household(Icons.home_outlined, 'more-household', _Tint.honey),
@@ -219,6 +222,7 @@ enum _Item(final IconData icon, final String key, final _Tint tint) {
   /// group, so the imprint is one tap from the tab (DDG §5); sign-out
   /// stands alone at the end.
   static const groups = <List<_Item>>[
+    [startTrip],
     [account, premium],
     [household, invite, archived],
     [access],
@@ -262,6 +266,17 @@ class _MoreListState() extends State<_MoreList> {
     final noSale = context.select<PurchaseCubit, NoSale?>(
       (c) => c.state.noSale,
     );
+    // Job 234: by hand, only while no trip runs for the user.
+    final tripMode = context.select<Flags?, bool>(
+      (flags) => flags?.isOn(tripModeFlag) ?? false,
+    );
+    final noTrip = context.select<TripCubit?, bool>(
+      (trips) => switch (trips?.state) {
+        NoTrip() || Ended() => true,
+        _ => false,
+      },
+    );
+    final canStartTrip = tripMode && noTrip;
     return FutureBuilder(
       future: _offer,
       builder: (context, offer) {
@@ -272,6 +287,7 @@ class _MoreListState() extends State<_MoreList> {
           noSale: noSale,
         );
         bool shown(_Item item) => switch (item) {
+          _Item.startTrip => canStartTrip,
           _Item.premium => premium,
           _Item.household || _Item.invite => household != null,
           _Item.archived => widget.showArchived,
@@ -318,6 +334,16 @@ class _MoreListState() extends State<_MoreList> {
     void go(String path) => context.go(path);
     void web(Uri url) => unawaited(openLegalPage(url));
     return switch (item) {
+      _Item.startTrip => _Row(
+        item,
+        label: l10n.shopStartByHand,
+        subtitle: l10n.shopStartByHandHint,
+        trailing: _Trailing.none,
+        onTap: () {
+          context.read<TripCubit>().startByHand();
+          go(listPath);
+        },
+      ),
       _Item.account => _Row(
         item,
         label: l10n.account,
@@ -449,6 +475,7 @@ class const _Row(
   final _Item item, {
   required final String label,
   required final VoidCallback onTap,
+  final String? subtitle,
   final bool selected = false,
   final _Trailing trailing = _Trailing.chevron,
 }) extends StatelessWidget {
@@ -469,6 +496,10 @@ class const _Row(
         },
       ),
       title: Text(label),
+      subtitle: switch (subtitle) {
+        final text? => Text(text),
+        null => null,
+      },
       trailing: switch (trailing) {
         _Trailing.chevron => const Icon(Icons.chevron_right),
         _Trailing.external => const Icon(Icons.open_in_new, size: 18),

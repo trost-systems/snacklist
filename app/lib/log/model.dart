@@ -41,6 +41,10 @@ class const Trip({
   /// "Ohne Laden".
   final String? storeName,
   final String? loggedBy,
+
+  /// The trip-mode trip it came from (job 234); its entry opens that
+  /// trip's summary.
+  final String? sessionId,
 }) {
   factory fromJson(Map<String, Object?> json) => Trip(
     id: json['id']! as String,
@@ -52,6 +56,7 @@ class const Trip({
         TripItem.fromJson(item! as Map<String, Object?>),
     ],
     loggedBy: json['logged_by'] as String?,
+    sessionId: json['session_id'] as String?,
     createdAt: DateTime.parse(json['created_at']! as String).toLocal(),
   );
 }

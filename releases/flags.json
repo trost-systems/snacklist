@@ -19,6 +19,10 @@
     "list-declutter": {
       "rollout": "off",
       "note": "the decluttered list (one switcher for household and list in a see-through header, the total as a row of the list, the switcher sheet with a page per household and its members) shows only while the PostHog flag list-declutter is on (job 229)"
+    },
+    "trip-mode": {
+      "rollout": "off",
+      "note": "trip mode (the question on a tick, the trip strip with its stopwatch, pause and end, and the trip's summary per store) shows only while the PostHog flag trip-mode is on (job 234); the lead targets it to internal installs"
     }
   },
   "holds": {

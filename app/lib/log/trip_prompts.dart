@@ -70,9 +70,16 @@ class const TripTicks({
         kept[store] = bought;
       }
     }
+    // Legal GL-2: a pharmacy's section offers no card.
+    final pharmacies = {
+      for (final s in list.catalog.stores)
+        if (s.isPharmacy) s.id,
+    };
     final shownPrompts = {
       for (final store in kept.keys)
-        if (offered.contains(store) || !open.contains(store)) store,
+        if (!pharmacies.contains(store) &&
+            (offered.contains(store) || !open.contains(store)))
+          store,
     };
     changed |=
         shownPrompts.length != offered.length ||
@@ -80,6 +87,25 @@ class const TripTicks({
     return changed
         ? TripTicks(listId: listId, ticked: kept, offered: shownPrompts)
         : this;
+  }
+
+  /// The items [ids] were logged elsewhere (a trip's end): their ticks go,
+  /// and a store left with none loses its prompt.
+  TripTicks forgetting(Set<String> ids) {
+    final kept = <String?, Map<String, Item>>{
+      for (final MapEntry(key: store, value: items) in ticked.entries)
+        if ({
+              for (final MapEntry(:key, :value) in items.entries)
+                if (!ids.contains(key)) key: value,
+            }
+            case final left when left.isNotEmpty)
+          store: left,
+    };
+    return TripTicks(
+      listId: listId,
+      ticked: kept,
+      offered: offered.intersection(kept.keys.toSet()),
+    );
   }
 
   /// [storeId]'s prompt was logged or put off: it goes, with its ticks.
@@ -129,6 +155,15 @@ class TripPrompts(final ListCubit _list) extends Cubit<TripTicks> {
 
   /// The prompts the list shows now.
   List<TripPrompt> get prompts => state.prompts(_list.state.catalog);
+
+  /// A trip logged the items [ids]: no card offers them again.
+  void forget(Set<String> ids) {
+    [
+      for (final MapEntry(:key, :value) in state.ticked.entries)
+        if (value.keys.every(ids.contains)) key,
+    ].forEach(_ids.remove);
+    emit(state.forgetting(ids));
+  }
 
   /// [storeId]'s prompt was logged, or put off with Später.
   void dismiss(String? storeId) {

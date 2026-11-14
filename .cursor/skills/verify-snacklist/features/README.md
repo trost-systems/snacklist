@@ -76,6 +76,7 @@ The list
 - [offline](./offline.md): what works without a connection, what waits, and the messages.
 - [grocery-log](./grocery-log.md): behind the flag `grocery-log` (not public): the „Verlauf“ tab with trips by date under a month calendar with store dots, or by store, one toggle; „Einkauf eintragen“ by hand; the list's card after a store's section is ticked off; Free sees 4 weeks.
 - [list-declutter](./list-declutter.md): behind the flag `list-declutter` (off): one switcher for household and list in a see-through header, the total as a row of the list, and the household sheet with a page per household (its lists, „Einladen“, the members row) and a members page; long-press reorder of lists and households.
+- [trip-mode](./trip-mode.md): behind the flag `trip-mode` (not public): „Kaufst du gerade ein?“ after a tick, the running trip's strip with stopwatch, pause and „Beenden“, its own pause after 45 min and end after 4 h at the last tick, the summary „Geplant und gekauft“ per store with planned and paid prices (Premium; Free sees a locked card), Verlauf trips per store, Mehr › „Einkauf starten“.
 
 Settings, help and account
 
