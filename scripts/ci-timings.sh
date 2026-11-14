@@ -2,7 +2,7 @@
 # Wall-clock of recent CI runs, from the run's start to each job's end (first attempt only,
 # so a manual rerun doesn't count). Prints one TSV row per run, then the median and range of
 # ci-ok and of every job, and with --steps the median of every step of one job (`e2e` takes the
-# steps of both shards, `e2e (1)` those of one).
+# steps of every shard, `e2e (1)` those of one).
 #
 # Usage: scripts/ci-timings.sh [--limit N] [--branch B] [--since ISO-DATE] [--until ISO-DATE] [--steps JOB]
 set -euo pipefail

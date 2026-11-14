@@ -139,8 +139,12 @@ of these is missing or a check command is written into `ci.yml` or
 `verify.sh` directly. It also fails when any job in any workflow has no
 `timeout-minutes`.
 
-In CI the e2e job runs as two shards (`--shard=1/2`, `--shard=2/2`), each on
-its own runner with its own stack, because Playwright is the longest step.
+In CI the e2e job runs as four shards (`--shard=1/4` to `--shard=4/4`), each
+on its own runner with its own stack, because Playwright is the longest step
+(Measurements, job 221, below). The matrix in `ci.yml` is the one place that
+sets the count: the job passes Playwright `strategy.job-total`, and
+`check-gates.sh` fails when it does not or when `e2e.yml`'s full suite runs
+in another number of shards.
 Each shard starts the Supabase stack in the background before installing
 Flutter and Playwright; the gate's `supabase_up` (`scripts/lib.sh`) waits on
 the same per-project lock and reuses the stack. CI pulls the Supabase images
@@ -196,7 +200,7 @@ the way to run e2e where Docker is not allowed (the Mac runner), and it takes
 that load off the box. It needs only `gh` (logged in), `git` and `jq`.
 
 ```bash
-scripts/ci-e2e.sh                                  # full suite, 2 shards, db gate, fg sync smoke
+scripts/ci-e2e.sh                                  # full suite, 4 shards, db gate, fg sync smoke
 scripts/ci-e2e.sh --spec tests/stores.spec.ts      # one spec: 1 shard, no sync smoke
 scripts/ci-e2e.sh --spec '-g "drag"' --no-db       # by title, without the db gate
 scripts/ci-e2e.sh --spec tests/list.spec.ts --download /tmp/pw   # also fetch report, traces, screenshots
@@ -216,8 +220,8 @@ scripts/ci-e2e.sh --ref job/42-foo --shards 2 --sync-smoke
   1 when the run failed or was cancelled or no test ran, 2 on a usage
   problem. If a run fails, `gh run view <id> --log-failed` says why.
 - Inputs of `e2e.yml` (also in the Actions tab, **Run workflow**): `spec`
-  (Playwright arguments; empty is the full suite), `shards` (`auto` is 2 for
-  the full suite and 1 with a spec), `db` (default on: `scripts/gates/db.sh`
+  (Playwright arguments; empty is the full suite), `shards` (1 to 6; `auto`
+  is 4 for the full suite, as in `ci.yml`, and 1 with a spec), `db` (default on: `scripts/gates/db.sh`
   in its own job), `sync_smoke` (`auto` runs the fg sync smoke test on shard
   1 for the full suite only). A sharded spec run passes an empty shard
   (`--pass-with-no-tests`); the script then checks that some test ran.
@@ -454,7 +458,7 @@ Renovate app installed on Peter's account.
 `scripts/ci-timings.sh` prints per-job end times of recent successful runs,
 counted from the run's start, and their median and range. With
 `--steps <job>` it adds the median step durations of one job (`e2e` takes
-both shards' steps, `e2e (1)` one shard's). Use it before and after a CI
+every shard's steps, `e2e (1)` one shard's). Use it before and after a CI
 change.
 `scripts/ci-ios-phases.sh <run-id>...` splits each ios job of those runs
 (every attempt) into the phases of `scripts/gates/ios.sh`: config, build,
