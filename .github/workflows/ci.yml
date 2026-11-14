@@ -232,7 +232,9 @@ jobs:
           cache: true
       - run: scripts/gates/web-prod.sh
 
-  # Playwright is the critical path, so the suite runs as two shards, each with its own stack.
+  # Playwright is the critical path, so the suite runs as four shards, each with its own stack
+  # (job 221, docs/CI.md). The matrix alone sets the count: Playwright gets it as
+  # strategy.job-total, so no test is left out when the list changes.
   # Job 27: the steps before and after the gate are composite actions that the on-demand e2e.yml
   # runs too (docs/CI.md, On-demand e2e).
   e2e:
@@ -243,7 +245,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2]
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       # Job 18: the fg sync smoke test (shard 1) stacks the client videos with ffmpeg.
@@ -252,7 +254,7 @@ jobs:
           supabase-cli-version: ${{ env.SUPABASE_CLI_VERSION }}
           flutter-version: ${{ env.FLUTTER_VERSION }}
           ffmpeg: ${{ matrix.shard == 1 }}
-      - run: scripts/gates/e2e.sh --shard=${{ matrix.shard }}/2
+      - run: scripts/gates/e2e.sh --shard=${{ matrix.shard }}/${{ strategy.job-total }}
         env:
           SCREENSHOT_DIR: ${{ github.workspace }}/e2e/screenshots
       - if: ${{ !cancelled() }}

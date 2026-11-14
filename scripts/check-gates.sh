@@ -72,6 +72,18 @@ for job in db e2e; do
   job_block "$E2E" "$job" | grep -q "scripts/gates/$job.sh" || problems+=("$E2E job '$job' does not run scripts/gates/$job.sh")
 done
 
+# Job 221: ci.yml's e2e job gives Playwright the matrix's own size, since a count written beside
+# the list could fall behind it and leave tests unrun, and the on-demand full suite runs in as
+# many shards.
+# shellcheck disable=SC2016 # the workflow's own expression, as written in ci.yml
+shard_arg='--shard=${{ matrix.shard }}/${{ strategy.job-total }}'
+job_block "$CI" e2e | grep -qF -- "run: scripts/gates/e2e.sh $shard_arg" \
+  || problems+=("ci.yml job 'e2e' must run scripts/gates/e2e.sh $shard_arg")
+ci_shards="$(job_block "$CI" e2e | sed -n 's/^        shard: \[\(.*\)\]$/\1/p' | tr -d ' ')"
+e2e_shards="$(sed -n 's/^.*else total=\([0-9]*\); fi$/\1/p' "$E2E")"
+[[ -n $e2e_shards && $ci_shards == "$(seq -s, 1 "$e2e_shards")" ]] \
+  || problems+=("ci.yml's e2e shards are [$ci_shards], but $E2E runs the full suite in '$e2e_shards' (its plan step's 'else total=')")
+
 if [[ ${#problems[@]} -gt 0 ]]; then
   printf 'check-gates: %s\n' "${problems[@]}" >&2
   exit 1
