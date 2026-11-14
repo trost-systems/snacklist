@@ -25,7 +25,8 @@ Price _price(int cents) => Price(
   basis: PriceBasis.unit,
   per: PricePer.piece,
   currency: 'EUR',
-  pricedAt: DateTime(2026, 11, 14),
+  // The list reads the device's clock, and a price counts on its day only.
+  pricedAt: DateTime.now(),
 );
 
 /// Job 229, flag `list-declutter`: the list's header without list tabs, one
