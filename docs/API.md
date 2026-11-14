@@ -8,7 +8,7 @@ that its paths match the function's route table.
 
 The API and the MCP tools run the same code: `supabase/functions/_shared/list.ts` adds, lists,
 ticks and moves items for both, through the same database functions the app and Siri use
-(`public.add_item`, `public.move_item`, `public.classify_item`). A change there reaches both.
+(`public.add_list_item`, `public.move_item`, `public.classify_item`). A change there reaches both.
 
 - Function: `supabase/functions/api/` (`index.ts`, `handler.ts`, `routes.ts`, `limits.ts`).
 - Database: `supabase/migrations/20261102130000_public_api.sql` (API keys, rate counters,
@@ -98,8 +98,9 @@ An **item** (an entry on the list):
 | `listId` | uuid | The list it is on (`GET /v1/lists`) |
 
 A **category**, a **store** and a **list**: `{ "id", "name", "sortOrder" }`. A household has one
-or more lists (e.g. `Wocheneinkauf` and `Baumarkt`); the first, the lowest `sortOrder`, is where an
-add without `list` goes, as Siri and Alexa add.
+or more lists (e.g. `Wocheneinkauf` and `Baumarkt`); an add without `list` goes to the key owner's
+default list (chosen in the app, else the first, the lowest `sortOrder`), where Siri and Alexa add
+too.
 
 Fields are camelCase, like the MCP tools' results.
 

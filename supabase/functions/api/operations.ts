@@ -61,8 +61,11 @@ function idOf(raw: Raw): string {
 const noQuery = z.object({}).strict();
 const noBody = z.object({}).strict();
 
+/** Text as Postgres stores it: any character but U+0000. */
+const storedText = z.string().refine((s) => !s.includes('\u0000'), 'Must not contain U+0000');
+
 /** A store, category or list, by id or name. */
-const ref = z.string().trim().min(1).max(60);
+const ref = storedText.trim().min(1).max(60);
 
 const listQuery = z.object({
   store: ref.optional(),
@@ -74,10 +77,10 @@ const listQuery = z.object({
 }).strict();
 
 const newItem = z.object({
-  name: z.string().trim().min(1).max(120),
-  quantity: z.string().trim().min(1).max(40).nullish(),
-  brand: z.string().trim().max(60).nullish(),
-  properties: z.string().trim().max(120).nullish(),
+  name: storedText.trim().min(1).max(120),
+  quantity: storedText.trim().min(1).max(40).nullish(),
+  brand: storedText.trim().max(60).nullish(),
+  properties: storedText.trim().max(120).nullish(),
   category: ref.nullish(),
   store: ref.nullish(),
 }).strict();
@@ -98,15 +101,28 @@ const moveBody = z.object({ category: ref.optional(), store: ref.nullable().opti
  */
 type Cursor = { filter: [string | null, string | null, string | null]; after: Position };
 
+const MOMENT = /^(?!0000)\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?[+-](0\d|1[0-5]):[0-5]\d$/;
+
+/** A date and time that exist: the pattern alone lets a month 13 or a February 30 through. */
+function isMoment(text: string): boolean {
+  const local = text.slice(0, 19);
+  const at = Date.parse(`${local}Z`);
+  return MOMENT.test(text) && !Number.isNaN(at) && new Date(at).toISOString().startsWith(local);
+}
+
+/**
+ * A position exactly as openItems gives it out, so that every value is one Postgres can compare:
+ * an int4, text, a float8 in its shortest decimal, a timestamptz, a uuid.
+ */
 const cursorShape = z.object({
   v: z.literal(1),
   f: z.tuple([z.string().regex(UUID).nullable(), z.string().regex(UUID).nullable()]),
   l: z.string().regex(UUID).nullable().optional(),
   k: z.tuple([
-    z.number().int(),
-    z.string().max(200),
-    z.string().regex(/^(-?[0-9]+(\.[0-9]+)?(e[+-]?[0-9]+)?|-?Infinity)$/),
-    z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?[+-]\d{2}:\d{2}$/),
+    z.int32(),
+    storedText.max(200),
+    z.string().max(32).refine((s) => String(Number(s)) === s),
+    z.string().refine(isMoment),
     z.string().regex(UUID),
   ]),
 }).strict();

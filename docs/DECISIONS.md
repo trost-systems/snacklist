@@ -13220,3 +13220,32 @@ Two gaps jobs 243 and 244 found between the privacy text sent to Legal and the c
 - **Proof.** Job 243's probe, rerun before and after:
   `/workspace/hummlist/research/legal-review/job-246/` (`price-retention-probe.{before,after}.out`,
   plus a merge and a trip stored before the migration and checked after it, `existing-*.out`).
+
+## Job 241: public API review and hardening, 2026-11-14
+
+- **The findings stay out of the repo.** The review's report with severities is in the job's
+  `out/` folder on the ops side, as the brief asks: the repo is public and the API is not on yet.
+  This section and the PR name only what changed.
+- **A cursor carries the exact list position.** Postgres prints a float8 with 15 digits here
+  (`extra_float_digits` is 0), fewer than some sort keys have, so a page could begin with the
+  last item of the page before. `openItems` now reads the key's bytes (`float8send`) and writes
+  the shortest decimal that reads back as the same number. The cursor format stays `v: 1`. No
+  cursor from before the change is in use: the API was never on.
+- **Not a transaction-local `extra_float_digits`.** It would have been one line, but it is hidden
+  session state that every later query in the transaction inherits, and a pooler may ignore it
+  as a startup parameter. The bytes say what the column holds, whatever the setting.
+- **Input Postgres cannot read is refused at the boundary.** A cursor passes only with values in
+  the form `openItems` gives out (an int4, a float8 in its shortest decimal, a timestamp that
+  exists, uuids), and no text field of the API takes U+0000. The alternative, answering 400 for
+  every database data exception (class 22), would also hide a server bug behind a client error.
+- **One Low item fixed with the Medium one.** The brief sends Low items to the list only. The
+  stricter validation sits in the same schema as the cursor fix and removes the server errors
+  the review saw a client cause, so it went into the same PR. The other Low items are listed in
+  the report and in NEEDS_LEAD.
+- **Tests added as attack cases** (`api/api_integration_test.ts`, `api/handler_test.ts`): the
+  scope on every route of `routes.ts`, a member of two households, which credentials open the
+  API and who can make a key, paging over close sort keys, and input the database cannot read.
+- **Docs.** `docs/API.md` and the OpenAPI text named the wrong default list for an add without
+  `list` (it is the key owner's default list, as for Siri and Alexa) and an old function name.
+- **Not done here.** `app_switches.public_api` in production and the PostHog flag `public-api`
+  are untouched; the lead switches them after the verdict.
