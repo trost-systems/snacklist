@@ -5,6 +5,7 @@ import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/analytics/events.dart';
 import 'package:family_groceries/app/network.dart';
 import 'package:family_groceries/list/add_sheet/suggestion.dart';
+import 'package:family_groceries/list/dictation.dart';
 import 'package:family_groceries/list/entry.dart';
 import 'package:family_groceries/list/list_cache.dart';
 import 'package:family_groceries/list/list_repository.dart';
@@ -682,14 +683,16 @@ class ListCubit(
   AddResult addUsual(Usual usual) =>
       addEntry(Entry(usual.name, usual.quantity), source: AddSource.suggestion);
 
-  /// Splits a dictated sentence on the server and adds each entry.
+  /// Splits a sentence dictated in [language] on the server and adds each
+  /// entry.
   /// Throws when the server can't be reached; nothing is added then.
   /// `truncated`: the sentence held more items than the server takes at
   /// once; only the first ones were added.
   Future<({List<AddResult> results, bool truncated})> addSpoken(
     String text,
+    SpokenLanguage language,
   ) async {
-    final (:entries, :truncated) = await _repo.splitSpoken(text);
+    final (:entries, :truncated) = await _repo.splitSpoken(text, language);
     return (
       results: [
         for (final entry in entries)

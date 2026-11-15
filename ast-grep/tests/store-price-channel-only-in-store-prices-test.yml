@@ -7,7 +7,7 @@ valid:
     }
   # Another of the app's channels.
   - |
-    const offlineGerman = MethodChannel('familygroceries/speech');
+    const offlineSpeech = MethodChannel('familygroceries/speech');
   # Named in a comment only.
   - |
     /// AppDelegate.swift answers familygroceries/store_prices.

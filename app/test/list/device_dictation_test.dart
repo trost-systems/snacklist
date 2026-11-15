@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:ui' show Locale;
 
 import 'package:fake_async/fake_async.dart';
 import 'package:family_groceries/list/dictation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
@@ -51,61 +53,155 @@ class _Recognizer() extends SpeechToTextPlatform {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   late _Recognizer recognizer;
+  late List<Object?> asked;
+
+  /// The native check answers [answer] and records the locales it got.
+  void offlineSpeech(Object? answer) => TestDefaultBinaryMessengerBinding
+      .instance
+      .defaultBinaryMessenger
+      .setMockMethodCallHandler(DeviceDictation.offlineSpeech, (call) async {
+        if (call.method != 'offlineSpeech') {
+          throw MissingPluginException();
+        }
+        asked.add((call.arguments as Map<Object?, Object?>)['locales']);
+        return answer;
+      });
+
+  const installedDe = {'status': 'installed', 'locale': 'de_DE'};
+
+  DeviceDictation onDevice(List<Locale> deviceLocales) => DeviceDictation(
+    speech: SpeechToText.withMethodChannel(),
+    deviceLocales: () => deviceLocales,
+  );
+
   late DeviceDictation dictation;
 
-  void offlineGerman({required bool installed}) =>
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(
-            DeviceDictation.offlineGerman,
-            (call) async => call.method == 'offlineGerman' ? installed : null,
-          );
-
   setUp(() {
+    asked = [];
     recognizer = _Recognizer();
     SpeechToTextPlatform.instance = recognizer;
-    dictation = DeviceDictation(speech: SpeechToText.withMethodChannel());
+    dictation = onDevice(const [Locale('de', 'DE')]);
   });
 
-  test('listens in German on the device only', () async {
-    offlineGerman(installed: true);
-    expect(await dictation.prepare(), isNull);
-
+  Future<SpeechListenOptions> listened(DeviceDictation dictation) async {
     final dictated = dictation.listen(onWords: (_) {});
     await pumpEventQueue();
     recognizer.says('Milch und Brot');
-
     expect(
       await dictated,
       isA<Heard>().having((h) => h.text, 'text', 'Milch und Brot'),
     );
-    final options = recognizer.listened.single!;
+    return recognizer.listened.single!;
+  }
+
+  test('a German app listens in German on the device only', () async {
+    offlineSpeech(installedDe);
+    expect(await dictation.prepare(SpokenLanguage.de), isNull);
+    expect(asked, [
+      ['de_DE'],
+    ]);
+
+    final options = await listened(dictation);
     expect(options.onDevice, isTrue);
     expect(options.localeId, 'de_DE');
   });
 
-  test('without offline German it never starts listening', () async {
-    offlineGerman(installed: false);
-    expect(await dictation.prepare(), DictationProblem.noOfflineGerman);
+  test('a German app on an English device still listens in German', () async {
+    offlineSpeech(installedDe);
+    final dictation = onDevice(const [Locale('en', 'GB')]);
+    expect(await dictation.prepare(SpokenLanguage.de), isNull);
+    expect(asked, [
+      ['de_DE'],
+    ]);
+    expect((await listened(dictation)).localeId, 'de_DE');
+  });
+
+  test("an English app asks for the device's English first and listens in "
+      'the locale the check found', () async {
+    offlineSpeech({'status': 'installed', 'locale': 'en-GB'});
+    final dictation = onDevice(const [
+      Locale('de', 'DE'),
+      Locale('en', 'GB'),
+      Locale('en'),
+      Locale('en', 'US'),
+    ]);
+    expect(await dictation.prepare(SpokenLanguage.en), isNull);
+    expect(asked, [
+      ['en_GB', 'en_US'],
+    ]);
+
+    final options = await listened(dictation);
+    expect(options.onDevice, isTrue);
+    expect(options.localeId, 'en-GB');
+  });
+
+  test('an English app on a device without English asks for en_US', () async {
+    offlineSpeech({'status': 'installed', 'locale': 'en_US'});
+    final dictation = onDevice(const [Locale('de', 'AT')]);
+    expect(await dictation.prepare(SpokenLanguage.en), isNull);
+    expect(asked, [
+      ['en_US'],
+    ]);
+    expect((await listened(dictation)).localeId, 'en_US');
+  });
+
+  test('a language Android is downloading says so and never listens', () async {
+    offlineSpeech({'status': 'downloading'});
+    expect(
+      await dictation.prepare(SpokenLanguage.de),
+      DictationProblem.offlineSpeechDownloading,
+    );
     expect(recognizer.listened, isEmpty);
   });
 
-  test('a platform without the check counts as no offline German', () async {
+  for (final (name, answer) in <(String, Object?)>[
+    ('missing', {'status': 'missing'}),
+    ('null', null),
+    ('installed without a locale', {'status': 'installed'}),
+    ('the old yes', true),
+  ]) {
+    test('a check answering $name is no offline speech', () async {
+      offlineSpeech(answer);
+      expect(
+        await dictation.prepare(SpokenLanguage.en),
+        DictationProblem.noOfflineSpeech,
+      );
+      expect(recognizer.listened, isEmpty);
+    });
+  }
+
+  test('a platform without the check counts as no offline speech', () async {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(DeviceDictation.offlineGerman, null);
-    expect(await dictation.prepare(), DictationProblem.noOfflineGerman);
+        .setMockMethodCallHandler(DeviceDictation.offlineSpeech, null);
+    expect(
+      await dictation.prepare(SpokenLanguage.de),
+      DictationProblem.noOfflineSpeech,
+    );
   });
 
-  test('a check that never answers counts as no offline German', () {
+  test('a check that throws counts as no offline speech', () async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+          DeviceDictation.offlineSpeech,
+          (call) async => throw PlatformException(code: 'boom'),
+        );
+    expect(
+      await dictation.prepare(SpokenLanguage.de),
+      DictationProblem.noOfflineSpeech,
+    );
+  });
+
+  test('a check that never answers counts as no offline speech', () {
     fakeAsync((async) {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(
-            DeviceDictation.offlineGerman,
+            DeviceDictation.offlineSpeech,
             (call) => Completer<Object?>().future,
           );
       DictationProblem? problem;
-      unawaited(dictation.prepare().then((p) => problem = p));
+      unawaited(dictation.prepare(SpokenLanguage.de).then((p) => problem = p));
       async.elapse(const Duration(seconds: 6));
-      expect(problem, DictationProblem.noOfflineGerman);
+      expect(problem, DictationProblem.noOfflineSpeech);
       expect(recognizer.listened, isEmpty);
     });
   });
@@ -115,10 +211,10 @@ void main() {
     'error_language_unavailable',
   ]) {
     test(
-      'the on-device recognizer reporting $error is no offline German',
+      'the on-device recognizer reporting $error is no offline speech',
       () async {
-        offlineGerman(installed: true);
-        await dictation.prepare();
+        offlineSpeech(installedDe);
+        await dictation.prepare(SpokenLanguage.de);
         final dictated = dictation.listen(onWords: (_) {});
         await pumpEventQueue();
         recognizer.fails(error);
@@ -128,7 +224,7 @@ void main() {
           isA<Refused>().having(
             (r) => r.problem,
             'problem',
-            DictationProblem.noOfflineGerman,
+            DictationProblem.noOfflineSpeech,
           ),
         );
       },
@@ -136,8 +232,8 @@ void main() {
   }
 
   test('other recognizer errors end with nothing heard', () async {
-    offlineGerman(installed: true);
-    await dictation.prepare();
+    offlineSpeech(installedDe);
+    await dictation.prepare(SpokenLanguage.de);
     final dictated = dictation.listen(onWords: (_) {});
     await pumpEventQueue();
     recognizer.fails('error_no_match');

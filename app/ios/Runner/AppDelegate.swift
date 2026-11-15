@@ -40,7 +40,10 @@ import UIKit
 }
 
 /// Answers lib/list/dictation.dart's check: speech_to_text reports a device
-/// without on-device German only once listening has started.
+/// without on-device recognition in the app's language only once listening
+/// has started. Gets the candidate locales, best first (en_GB, en_US), and
+/// answers the first one Siri recognizes on the device as "installed", else
+/// "missing".
 final class OfflineSpeech: NSObject, FlutterPlugin {
   static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(
@@ -49,11 +52,16 @@ final class OfflineSpeech: NSObject, FlutterPlugin {
   }
 
   func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-    guard call.method == "offlineGerman" else {
+    guard call.method == "offlineSpeech",
+      let locales = (call.arguments as? [String: Any])?["locales"] as? [String]
+    else {
       result(FlutterMethodNotImplemented)
       return
     }
-    result(SFSpeechRecognizer(locale: Locale(identifier: "de_DE"))?.supportsOnDeviceRecognition ?? false)
+    let ready = locales.first {
+      SFSpeechRecognizer(locale: Locale(identifier: $0))?.supportsOnDeviceRecognition == true
+    }
+    result(ready.map { ["status": "installed", "locale": $0] } ?? ["status": "missing"])
   }
 }
 

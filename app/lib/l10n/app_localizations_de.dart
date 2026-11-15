@@ -72,8 +72,12 @@ class AppLocalizationsDe extends AppLocalizations {
       'Spracheingabe ist nicht verfügbar. Erlaube Mikrofon und Spracherkennung in den Einstellungen.';
 
   @override
-  String get dictationNoOfflineGerman =>
+  String get dictationNoOfflineSpeech =>
       'Diktieren geht nur offline, damit deine Stimme auf dem Gerät bleibt. Dafür fehlt hier die deutsche Offline-Spracherkennung. Lade sie in den Systemeinstellungen herunter oder tippe den Eintrag ein.';
+
+  @override
+  String get dictationOfflineSpeechDownloading =>
+      'Diktieren geht nur offline, damit deine Stimme auf dem Gerät bleibt. Snacklist hat Android gebeten, die deutsche Offline-Spracherkennung herunterzuladen. Versuch es noch einmal, sobald sie installiert ist, oder tippe den Eintrag ein.';
 
   @override
   String get dictationNothingHeard => 'Ich habe nichts gehört.';

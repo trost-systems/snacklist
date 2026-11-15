@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:fake_async/fake_async.dart';
 import 'package:family_groceries/app/network.dart';
+import 'package:family_groceries/list/dictation.dart';
 import 'package:family_groceries/list/entry.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_repository.dart';
@@ -1613,7 +1614,7 @@ void main() {
   });
 
   test('a dictated add leaves the category to the server', () async {
-    await cubit.addSpoken('Milch und Brot');
+    await cubit.addSpoken('Milch und Brot', SpokenLanguage.de);
     await settle();
     expect(
       [for (final op in repo.sent.cast<AddItem>()) op.autoCategory],

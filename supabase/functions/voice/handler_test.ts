@@ -294,6 +294,29 @@ Deno.test('parse mode with split: a failing split answers the items as heard, re
   assertEquals(reported.length, 1);
 });
 
+Deno.test('job 256: the app dictating in English gets the English split', async () => {
+  const { handle } = fakeDeps();
+  for (
+    const [text, lang, items] of [
+      ['Milch, zwei Bananen und Brot', 'de', [
+        { name: 'Milch', quantity: null },
+        { name: 'Bananen', quantity: '2' },
+        { name: 'Brot', quantity: null },
+      ]],
+      ['milk, two bananas and bread', 'en', [
+        { name: 'milk', quantity: null },
+        { name: 'bananas', quantity: '2' },
+        { name: 'bread', quantity: null },
+      ]],
+      ['add eggs', 'en', [{ name: 'eggs', quantity: null }]],
+    ] as const
+  ) {
+    const res = await handle(post({ text, mode: 'parse', split: true, lang }));
+    assertEquals(res.status, 200, text);
+    assertEquals<readonly ParsedItem[]>(heard(await res.json()), items, text);
+  }
+});
+
 Deno.test('parse mode, the in-app dictation, reads a count said after the item', async () => {
   const { handle } = fakeDeps();
   for (

@@ -26,7 +26,10 @@ Future<void> main() async {
     SpeechToTextPlatform.instance = ScriptedSpeech(script.split('|'));
     // The scripted recognizer is on the device: no audio leaves it.
     ListScreen.dictation = DeviceDictation(
-      offlineGermanCheck: () async => true,
+      offlineCheck: (locales) async => {
+        'status': 'installed',
+        'locale': locales.first,
+      },
     );
   }
   // A binding started outside the app's zone fails the launch instead of
