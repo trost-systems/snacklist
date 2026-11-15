@@ -52,6 +52,17 @@ export const rounds = [
   },
 ];
 
+// Rounds of other features, each in its own folder beside this one (`docs/design/<folder>/`, and beside the
+// overview in the preview build). The overview lists them with the rounds above, newest first; they own no views here.
+export const linked = [
+  {
+    href: '../feedback-experience/',
+    blurb: { en: 'Five ways to send Peter feedback, from shake to “report this”.', de: 'Fünf Wege, Peter Feedback zu schicken, vom Schütteln bis „Melden“.' },
+    date: { en: 'Nov 15', de: '15. Nov.' },
+    title: { en: 'Feedback experience (FB1–FB5)', de: 'Feedback-Erlebnis (FB1–FB5)' },
+  },
+];
+
 // Every view a round page shows: its sets, its recommendation, its phones, and `every` (all its phones, for the shoot scripts).
 export const viewsOf = (round) => new Set([...Object.keys(round.sets), round.rec.view, 'every', ...Object.values(round.sets).flat()]);
 

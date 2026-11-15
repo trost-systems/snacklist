@@ -1,4 +1,4 @@
-import { rounds, roundOf } from './rounds.js';
+import { rounds, linked, roundOf } from './rounds.js';
 
 // Links to the one shared page (`/#/st`, `/#/ST3`, `/#/rec1`) go on to the page that now holds that view.
 const forward = () => {
@@ -21,7 +21,7 @@ document.title = t.title;
 const app = document.getElementById('app');
 if (app && !home)
   app.innerHTML = `<h1>${t.title}</h1><p class="note">${t.intro}</p>
-  <ul class="rounds">${rounds
-    .map((r) => `<li><a href="${r.path}/${location.search}"><b>${esc(r.title[lang])}</b><span class="date">${r.date[lang]}</span></a><p>${esc(r.blurb[lang])}</p></li>`)
+  <ul class="rounds">${[...linked, ...rounds]
+    .map((r) => `<li><a href="${r.href ?? `${r.path}/`}${location.search}"><b>${esc(r.title[lang])}</b><span class="date">${r.date[lang]}</span></a><p>${esc(r.blurb[lang])}</p></li>`)
     .join('')}</ul>
   <p class="note"><a href="${t.otherQ}">${t.other}</a></p>`;

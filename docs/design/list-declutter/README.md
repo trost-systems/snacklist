@@ -2,7 +2,7 @@
 
 A throwaway HTML sandbox for one decision: how to give the list more room on the List tab. Nothing here ships. The app is unchanged.
 
-Each round has its own page, with only that round's sets, phones, recommendation and data (job 238). `index.html` is the overview: it lists the rounds newest first and forwards old links (`/#/st`, `/#/ST3`, `/#/rec1`) to the page that now holds the view. `rounds.js` is the registry of rounds (path, title, the "what you're comparing" line, sets, recommendation, data); a new round is one entry there plus a `<path>/index.html` like `st/index.html`, never new buttons on an older round's page. `#/every` (all of one round's phones, for the shoot scripts) exists on each round page only; the overview leaves it alone.
+Each round has its own page, with only that round's sets, phones, recommendation and data (job 238). `index.html` is the overview: it lists the rounds newest first and forwards old links (`/#/st`, `/#/ST3`, `/#/rec1`) to the page that now holds the view. `rounds.js` is the registry of rounds (path, title, the "what you're comparing" line, sets, recommendation, data), plus `linked`: rounds of other features in their own folder beside this one (job 260's `../feedback-experience/`), listed on the overview only; a new round is one entry there plus a `<path>/index.html` like `st/index.html`, never new buttons on an older round's page. `#/every` (all of one round's phones, for the shoot scripts) exists on each round page only; the overview leaves it alone.
 
 - `st/`: per-store subtotals (job 230, Nov 14). Views `#/st`, `#/recst`, `#/ST1` … `#/ST5`, `#/today`, `#/R2`.
 - `ss-bb/`: switcher sheet and bottom area (job 227, Nov 13). Views `#/ss`, `#/bb`, `#/ld4`, `#/rec`, one label such as `#/BB4`.
@@ -28,7 +28,7 @@ Round 1 (today, LD1 to LD5) is `round1/`.
 - `icons.js`: the app's Material glyphs, generated from Flutter's `MaterialIcons-Regular.otf`.
 - `RECOMMENDATION.md`, `RECOMMENDATION.de.md`: round 2's pick, the counts and the open questions (LQ-R1 to LQ-R6). Round 1's are `RECOMMENDATION-R1*.md` (LQ-D1 to LQ-D8).
 - `shoot-st.mjs`: the ST set's checks (above).
-- `shoot-pages.mjs <sandbox-url> <out>`: the overview (three rounds, newest first, English and `?lang=de`), every old link landing on its round's page with the query kept, each page's title, comparing line and way back, and that each page has only its own buttons. It exits 1 on any miss.
+- `shoot-pages.mjs <sandbox-url> <out>`: the overview (three rounds and the linked feedback round, newest first, English and `?lang=de`), every old link landing on its round's page with the query kept, each page's title, comparing line and way back, and that each page has only its own buttons. It exits 1 on any miss.
 - `shoot.mjs <sandbox-url> <out>`: rounds 1 and 2, screenshots, the items-visible table (`items-visible.tsv`), the bottom heights (`bottom-height.tsv`) and the checks (sheets, list management, tabs, 48 px targets, keyboard, header layer, total row, trip, touch, overflow at 100, 130 and 160 % text, no page errors). It exits 1 on any miss.
 - `build.sh <dir>`: copies the sandbox into one static folder for the Vercel preview.
 
