@@ -3285,4 +3285,17 @@ class AppLocalizationsDe extends AppLocalizations {
   String voiceDefaultListBody(String household) {
     return 'Was du sagst, ohne eine Liste zu nennen, landet in „$household“ auf dieser Liste.';
   }
+
+  @override
+  String get inviteQrPerson => 'QR-Code dieser Einladung';
+
+  @override
+  String get openAppTitle => 'In der App geht’s schneller';
+
+  @override
+  String get openAppBody =>
+      'Sie öffnet direkt deine Liste und du bleibst angemeldet.';
+
+  @override
+  String get openAppAction => 'Öffnen';
 }

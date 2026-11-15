@@ -1128,5 +1128,9 @@
   "@voiceDefaultHouseholdName": {"placeholders": {"household": {"type": "String"}}},
   "voiceDefaultBack": "Siri, Alexa & AI",
   "voiceDefaultListBody": "What you say without naming a list goes onto this list in “{household}”.",
-  "@voiceDefaultListBody": {"placeholders": {"household": {"type": "String"}}}
+  "@voiceDefaultListBody": {"placeholders": {"household": {"type": "String"}}},
+  "inviteQrPerson": "QR code for this invite",
+  "openAppTitle": "Snacklist is quicker in the app",
+  "openAppBody": "It opens straight to your list and keeps you signed in.",
+  "openAppAction": "Open"
 }

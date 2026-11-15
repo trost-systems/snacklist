@@ -1,11 +1,13 @@
 import 'dart:async';
 
 import 'package:family_groceries/analytics/analytics.dart';
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/app/environment.dart';
 import 'package:family_groceries/app/notices.dart';
 import 'package:family_groceries/app/router.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/household/invite_repository.dart';
+import 'package:family_groceries/household/invite_sheet.dart';
 import 'package:family_groceries/household/web_share.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/session/session_cubit.dart';
@@ -123,9 +125,9 @@ class const InviteJoinPageHint({
   }
 }
 
-/// One invite: its code and link, how long it is valid, and the ways to
-/// hand it out. Each way is one `invite_sent`; the code and the link never
-/// go to analytics.
+/// One invite: its code and link, how long it is valid, with JH2 its QR
+/// code (JH-Q7), and the ways to hand it out. Each way is one
+/// `invite_sent`; the code and the link never go to analytics.
 class const InviteCard({
   required final Invite invite,
   required final Household household,
@@ -146,6 +148,9 @@ class const InviteCard({
     final sharer = context.read<InviteSharer>();
     final link = inviteLink(invite.code);
     final until = invite.expiresAt.toLocal();
+    final qr = context.select<Flags?, bool>(
+      (f) => f?.isOn(joinHouseholdJh2Flag) ?? false,
+    );
     return Card.outlined(
       key: ValueKey('invite-${invite.code}'),
       margin: EdgeInsets.zero,
@@ -198,6 +203,16 @@ class const InviteCard({
                 style: theme.textTheme.bodySmall,
               ),
             ),
+            if (qr && joinedBy == null) ...[
+              const SizedBox(height: 16),
+              // Without APP_URL (a local build) the code stands in.
+              Center(
+                child: InviteQr(
+                  link ?? invite.code,
+                  semanticLabel: l10n.inviteQrPerson,
+                ),
+              ),
+            ],
             const SizedBox(height: 16),
             if (joinedBy case final name?)
               Semantics(

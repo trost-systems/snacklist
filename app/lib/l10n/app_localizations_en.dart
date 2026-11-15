@@ -3262,4 +3262,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String voiceDefaultListBody(String household) {
     return 'What you say without naming a list goes onto this list in “$household”.';
   }
+
+  @override
+  String get inviteQrPerson => 'QR code for this invite';
+
+  @override
+  String get openAppTitle => 'Snacklist is quicker in the app';
+
+  @override
+  String get openAppBody =>
+      'It opens straight to your list and keeps you signed in.';
+
+  @override
+  String get openAppAction => 'Open';
 }

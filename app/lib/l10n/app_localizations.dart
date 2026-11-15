@@ -5257,6 +5257,30 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Was du sagst, ohne eine Liste zu nennen, landet in „{household}“ auf dieser Liste.'**
   String voiceDefaultListBody(String household);
+
+  /// Job 271 (JH-Q7): screen-reader label of a one-person invite's QR code, its link
+  ///
+  /// In de, this message translates to:
+  /// **'QR-Code dieser Einladung'**
+  String get inviteQrPerson;
+
+  /// Job 271: title of the web app's card in a phone's browser that opens the installed app (copy option 1, a placeholder)
+  ///
+  /// In de, this message translates to:
+  /// **'In der App geht’s schneller'**
+  String get openAppTitle;
+
+  /// Job 271: body of the web app's open-the-app card
+  ///
+  /// In de, this message translates to:
+  /// **'Sie öffnet direkt deine Liste und du bleibst angemeldet.'**
+  String get openAppBody;
+
+  /// Job 271: the open-the-app card's button; opens the installed app (never „App holen“)
+  ///
+  /// In de, this message translates to:
+  /// **'Öffnen'**
+  String get openAppAction;
 }
 
 class _AppLocalizationsDelegate
