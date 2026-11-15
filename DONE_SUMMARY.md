@@ -1265,3 +1265,85 @@ Details: [docs/done/215-store-screenshots-redo.md](docs/done/215-store-screensho
 **Missing.** A real-device run of the recognizers and of Android's download prompt: `out/DEVICE_TEST.md` in the job's ops dir. Privacy policy and landing copy still say German: NEEDS_LEAD "Job 256". Splitting without commas or "and" ("milk two bananas") stays one item in both languages (DECISIONS).
 
 **Ships.** The next green main build to TestFlight and Play internal. No flag targeting needed.
+
+## Job 263: join and create household onboarding prototypes (2026-11-15)
+
+Draft PR https://github.com/trost-systems/snacklist/pull/494 (**DO NOT MERGE**, the reference). Research plus two prototype rounds; nothing in the app changed. Changelog: none.
+
+**Preview (protected, preview target, `family-groceries-design`).** https://family-groceries-design-1bw5qriqe-peter-trost.vercel.app (deployment `dpl_4tvZ7KLHTb4Y36Yk96kJisBvsPtC`, READY; all 50 files match the build's SHA-1s; the bare URL redirects to SSO, protection and domains unchanged). Pages: `/household-onboarding/join/` (JH) and `/household-onboarding/create/` (CH); `/` is #414's overview, which lists both (and job 260's round). `?lang=de` for German. **The share link is not minted:** this runner has no Vercel connector; NEEDS_LEAD asks the lead to mint the 23-hour link. Superseded, don't share: `gli15gm8n`, `dkmr1efoh`, `ffvcb1h0u`, `9uv1bk0q0`.
+
+**What was built.** `docs/design/household-onboarding/`: `RESEARCH.md` (Stage 1, sources with fetch dates; also in the job's `out/`), `join/` and `create/` pages on one engine where every option is data (screens, step tags, paths per scenario), `verify.mjs`, `build.sh`, `tools/tables.mjs`. #414's overview got a link-only commit (`a2b0dbbc`, two `linked` entries on top of job 260's).
+
+### Round JH: a new user joins a household
+
+- **Today**: link → sign-in (“Invite saved”, no word of who invites) → usage data → join screen with only the household's name; without the app, the web join page and a list in the browser; “Paste invite” bridges a copied code.
+- **JH1**: a deep-link service (Branch or AppsFlyer OneLink) carries the invite through the store; matched after “I was invited” (Legal N-111).
+- **JH2**: join in the browser first, get the app afterwards; the membership is on the account.
+- **JH3**: two doors on the start screen; after installing, tap the link again; the code is the fallback; nothing read from the device.
+- **JH4**: an App Clip joins before installing; the app starts signed in.
+- **JH5**: first name only, a guest account, save it later; the join page copies the invite for a Paste button; a clear approval wait.
+
+| Option | Taps / screens to the first shared list | Taps / screens to the shared list in the app | “Paste invite” | Manual “I have an invite” | Not installed (deferred link) | First list in | Approval wait | Consent | Privacy exposure | Build effort | Existing service |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| **Today** Today (main) | **6 / 5** (5–11 / 4–8) | **14 / 11** (5–14 / 4–12) | kept, on start and sign-in | “Paste invite” on start and sign-in; “Join with an invite” after sign-in | none: web join stays in the browser; Paste invite if the code was copied | app (installed) or browser | “Request sent”; first button “Create your own household” | full screen before the join, again per install | low: nothing new | 0 (live) | none |
+| **JH1** The store remembers the invite (deep-link service) | **7 / 5** (4–9 / 3–8) | **7 / 5** (4–9 / 3–8) | gone | “I have a code” in the start screen’s invite card | the service matches the install to the tap, after “I was invited” (iOS by IP and device type; Android by store referrer) | app | “Mia will let you in”, list opens by itself, no “create your own” | card on the first list | high: new US-parented processor gets IP, user agent, device data at click and first start | 7 days + DPA, Legal | Branch or AppsFlyer OneLink |
+| **JH2** Join in the browser, then get the app | **4 / 3** (4–11 / 3–10) | **10 / 7** (4–11 / 3–10) | gone | “Join with an invite” on Welcome, after sign-in only | not needed: she joins on the web; the membership is on her account | browser (app installed: app) | kind wait; “Get the app” offered while waiting | card on the list; asked again in the app (per install) | low: nothing new | 4 days | none (today’s web app) |
+| **JH3** Two doors: tap the link again, or type the code | **9 / 7** (5–10 / 4–9) | **9 / 7** (5–10 / 4–9) | gone | “Join a household”, an equal second door on the start screen (code or QR) | the join page says “get the app, then tap the link again”; the code is the fallback | app | kind wait, says what Mia sees | sheet over the first list (1 tap) | low: nothing read from the device | 4 days (scanner later, JH-Q8) | none |
+| **JH4** App Clip: join before installing | **4 / 4** (4–9 / 3–8) | **7 / 6** (4–9 / 3–8) | gone | “I have an invite code” under the start buttons | iOS: the App Clip joins and hands the session to the app; Android: web join | App Clip, then app | kind wait inside the clip | none in the clip; card in the app | low: Apple only (already the store) | 15 days (second iOS target, Flutter in a clip) | Apple App Clips |
+| **JH5** Name first, account later; a clear wait | **6 / 5** (2–7 / 2–7) | **6 / 5** (2–7 / 2–7) | gone; a system Paste button on the first start | “Type a code” in the first start’s invite card | the join page’s store button copies the invite; the app’s Paste button reads it on her tap | app | wait shows what Mia sees, offers a notification | card on the list, after “Keep your access” | medium: a guest account without email; clipboard read on her tap | 10 days (guest accounts, invite check, upgrade; JH-Q10) | Supabase anonymous sign-ins |
+
+Bold: Invite link, Not installed, Off; in brackets the range over all 12 scenarios.
+
+**Recommendation: JH5**, runner-up **JH3**. JH5 is the fewest taps to the shared list in the app in all 12 scenarios (2 with the app, 6 without) on our own stack, reading the clipboard only on the user's Paste tap; it wins mostly by moving the sign-in after the join and costs guest accounts (about 10 days, JH-Q10). From a link or QR without the app, JH2 (browser) and JH4 (App Clip) reach a first list sooner (4 taps). JH3 is the choice without guest accounts: nothing read, no new service, about 4 days, at 5 taps with the app and 9 without.
+
+1. **JH-Q1** Remove “Paste invite” from the start and sign-in screens? Default: yes. The “Join a household” door (a code field) and, on a first start, JH5's “Coming from an invite?” card with the system Paste button replace it; “Join with an invite” stays on Welcome.
+2. **JH-Q2** Which button leads on the join page when the app is missing? Default: “Get the app” once the store listings are public (`storeListings` in `app/web/join/join.js`); until then “Join in the browser” stays the main button.
+3. **JH-Q3** Add a deep-link service (JH1) for installs that lose the link? Default: no. Revisit if, on iOS, more than 30 % of join-page opens are not followed by a join within 24 hours, counted from our own join records with no new event.
+4. **JH-Q4** Bring back the Android install referrer, read only after a tap on “I was invited”? Default: no. Ask Legal only if Android shows the same loss.
+5. **JH-Q5** Ask usage data after the join instead of before it? Default: yes, with today’s wording and two equal buttons. Legal confirms that the order change needs no new text.
+6. **JH-Q6** On the approval wait, drop “Create your own household” as the main button? Default: yes. The wait says what Mia sees and that the list opens by itself; “Start my own list instead” moves to a text button on the landing.
+7. **JH-Q7** Show a QR code for one-person invites too (today only group links have one)? Default: yes, on the invite card.
+8. **JH-Q8** Build a QR scanner into the “Join a household” screen? Default: not in the first version. The phone’s camera opens the link already; the button in the prototype shows where it would go.
+9. **JH-Q9** May the app’s own landing show the join page’s facts (first name, household, counts, Premium) before sign-in? Default: yes, the same `preview_invite_public` answer and nothing more. Legal confirms that N-112 / N-151b cover the in-app copy.
+10. **JH-Q10** Build guest accounts (Supabase anonymous sign-ins) for JH5? Default: yes, only for joining by invite, and no captcha (Supabase's captcha providers would be a new processor). A guest gets the `authenticated` role, so today every function open to signed-in users would be open to it; the build adds three things. A `before-user-created` auth hook refuses an anonymous sign-up whose metadata carries no valid invite code, and the app joins right after. The functions that create households, lists, API tokens, Siri credentials, OAuth devices or purchases refuse a session with `is_anonymous` until the account is saved. Failed codes are limited per network (the salted `X-Real-IP` hash the join page uses), not only per user, since each guest is a new user. A “Keep your access” card links Apple, Google or email; a guest who never saves is deleted with the household's normal rules. About 10 days. If no, JH3.
+11. **JH-Q11** May the join page's “Get the app” copy the invite to the clipboard (JH5)? Default: yes, on that tap only, with the line “The button copies your invite” under it; the app reads it only on the user's Paste tap.
+
+### Round CH: a new user creates a household
+
+- **Today**: Get started, usage, who, name, stores, need, account, setup, invite step, list; later invites from the switcher sheet's invite page (job 242).
+- **CH1**: today three steps shorter; the invite step shows a ready invite with Share, Copy code and a QR.
+- **CH2**: the account, then the list; inviting from First steps.
+- **CH3**: the list first on a guest account; the account when sharing.
+- **CH4**: invite first, QR on screen, before the list.
+- **CH5**: today's steps with two doors on the start screen; stores and items on one screen.
+
+| Option | Taps / screens to the first list | Taps / screens to an invite shared | Questions before the list | Where the invite lives | QR | Consent | For someone invited | Build effort | Existing service |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| **Today** Today (main): the guided start | **9 / 9** (9 / 9) | **11 / 11** (11–12 / 11–12) | 5 (usage, who, name, stores, need) | invite step before the list; later the switcher sheet’s invite page | group link only, from the switcher | step 1, before the account | “Paste invite” under “Sign in” | 0 (live) | none |
+| **CH1** Today, three steps shorter | **6 / 6** (6 / 6) | **8 / 8** (6–8 / 6–8) | 2 (who, name) | invite step before the list, invite made already | “Show QR code” on the invite step (person invite) | card on the list | “I have an invite” text button | 3 days | none |
+| **CH2** The account, then the list | **3 / 3** (3 / 3) | **7 / 7** (5–7 / 5–7) | 0 | First steps card on the list → switcher invite page | group link on the invite page | card on the list | “I have an invite” text button | 3 days | none |
+| **CH3** The list first, the account when you share | **1 / 1** (1 / 1) | **7 / 6** (5–7 / 4–6) | 0 | “Invite” in the list header → account → invite page | group link on the invite page | card on the list | “Join a household” door | 12 days (JH5’s guest accounts plus limits for guests without a code) | Supabase anonymous sign-ins |
+| **CH4** Invite first, by QR or link | **6 / 5** (6 / 5) | **8 / 7** (6–8 / 5–7) | 1 (who, a pick needed) | full invite screen before the list, QR shown | on screen at once (person invite) | card on the list | “I have an invite” text button | 3 days | none |
+| **CH5** Today’s steps with two doors | **7 / 7** (7 / 7) | **9 / 9** (9–10 / 9–10) | 3 (who, name, stores and items) | invite step before the list; later the switcher sheet | group link only, from the switcher | card on the list | two equal doors, and “Join their household” on step 1 | 3 days | none |
+
+Bold: Share link; in brackets the range over link · QR · code.
+
+**Recommendation: CH1**, runner-up **CH2**. CH1 is lighter than today everywhere (6 taps to the list instead of 9, 8 to a shared link instead of 11, 6 to a QR instead of 12) and keeps the invite step. CH2 has no questions (3 taps) at the cost of generic invite text.
+
+1. **CH-Q1** Drop the usage step, the stores step and “What do you need right now?” from the guided start? Default: yes. Stores and first items become First steps rows; usage data is a card on the list with two equal buttons.
+2. **CH-Q2** Make the invite as soon as the invite step opens (CH1), instead of on a tap? Default: yes. An unused invite expires after 7 days like today; the step’s “Later” leaves it unused.
+3. **CH-Q3** Put the two doors (“Get started”, “Join a household”) on the start screen with CH1? Default: yes, the same door as JH3.
+4. **CH-Q4** Keep “Skip” on the who step? Default: yes; the invite text falls back to today’s generic one.
+5. **CH-Q5** Show a QR code on a one-person invite card? Default: yes (same as JH-Q7). It works once; a second scanner sees “This invite no longer works”.
+6. **CH-Q6** Guest accounts for a list before any account (CH3)? Default: not now. If guest accounts are built for JH5 (JH-Q10), most of CH3’s cost is paid, but not all: CH3’s guests come without an invite code, so the sign-up check JH5 relies on doesn’t apply and abuse limits (or a captcha) come back. Revisit then, if the account step shows as the main drop-off.
+
+**How to verify.** From the repo root `node docs/design/household-onboarding/verify.mjs` (about 4 minutes): it walks every option, scenario and goal with real clicks and checks the walked taps against the tables, the page and the Markdown, the required steps, landing privacy (no item before the join; Mia and the household named), the questions and defaults, and every storyboard phone in EN/DE, light/dark, 100/200 % for text sticking out, spilling or sitting under the home indicator; it takes 96 screenshots. For the preview: `build.sh /tmp/dist <#414>/docs/design/list-declutter <260>/docs/design/feedback-experience`, then `verify.mjs /tmp/dist` (also clicks overview → round → back).
+
+**Test results.** `verify.mjs`: all checks passed (5233 on the repo, 5245 on the preview build). Planted bugs made it fail (an item name on a landing, a button that no longer leads on, a hand-edited table cell; the first-list badge on the wrong frame is now pinned too). #414's `shoot-pages.mjs`: all checks passed with six overview entries, on the sandbox and the build. `scripts/verify.sh --only lint,gitleaks`: passed.
+
+**Reviews (Opus, independent, `out/REVIEW-0..3.md`).** Review 0 FIX: JH3 missed two taps (the modal usage-data sheet, reopening WhatsApp), which moved the JH pick from JH3 to JH5; the consent card now shows today's text; clipboard wording; 200 % layout, with new checks for text under the home bar and spilling text. Review 1 FIX: JH5's claim scoped to the list in the app; no captcha (a new processor). Review 2 FIX: what guest accounts need on our backend (before-user-created hook with a valid code, signed-in functions closed to guests, per-network limits; 10 days); JH-Q1 matched the one-code-entry bullet. Review 3 FIX: two stale copies of the estimate (PR table, CH3 now 12 days); fixed and checked by grep, tables check and verify, without a fifth round. Every round confirmed the hard constraints (no email to an invitee, landings show only the allowed facts, no list items before the join, mock data).
+
+**Screenshots.** `docs/screenshots/263/` (overviews, Today, the picks in EN light and DE dark 200 %, phone views, Peter's “Paste invite” screenshot), embedded in #494.
+
+**Not done here.** Minting the share link (no connector on this runner). No production change; the picks go to a Feature job after Peter chooses.
+
