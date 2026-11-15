@@ -1,0 +1,57 @@
+diff --git a/site/content/legal/datenschutz.md b/site/content/legal/datenschutz.md
+index c4486bed..9d7794c2 100644
+--- a/site/content/legal/datenschutz.md
++++ b/site/content/legal/datenschutz.md
+@@ -4,12 +4,12 @@ description: "Datenschutzerklärung von Snacklist: welche Daten die App und die
+ locale: de
+ path: /datenschutz
+ translation_key: privacy
+-updated: 2026-11-14
++updated: 2026-11-15
+ ---
+ 
+ # Datenschutzerklärung
+ 
+-Stand: 14. November 2026
++Stand: 15. November 2026
+ 
+ Hier steht, welche personenbezogenen Daten Snacklist verarbeitet, wozu, auf welcher Rechtsgrundlage, an wen sie gehen und welche Rechte du hast. Snacklist ist eine Einkaufslisten-App für Haushalte für iPhone, Android und Browser (app.snacklist.app) mit der Website snacklist.app.
+ 
+@@ -75,7 +75,7 @@ Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Erfüllung des Nutzungsvertrags).
+ 
+ ## 5. Einkaufsliste und Haushalt
+ 
+-Du kannst Mitglied in mehreren Haushalten sein. Wir speichern, was du in Snacklist eingibst: Haushaltsname, mit wem ihr einkauft (die Art des Haushalts: Partner·in, Familie, WG, Verein oder Team, nur ich oder Andere), falls du es bei der Einrichtung oder später angibst, Mitglieder, ihre Rolle und wann sie beigetreten sind, Einladungen, Listen (Name, Reihenfolge, wer sie angelegt hat und wann), Einträge (Artikelname, Menge, Liste, wer ihn hinzugefügt und gekauft hat, Zeitpunkte), einen Änderungsverlauf (welcher Eintrag geändert wurde, von wem, ob er hinzugefügt, abgehakt, wiederhergestellt, geändert oder gelöscht wurde, und wann) sowie, was Snacklist für deinen Haushalt lernt (Kategorien, Läden, Marken). Was du bei „Andere“ selbst eintippst, bleibt auf deinem Gerät und wird nicht auf unseren Servern gespeichert. Ein Haushalt kann mehrere Listen haben. Löscht ein Mitglied eine Liste, löschen wir ihre Einträge mit. Alle Mitglieder eines Haushalts sehen seine Listen und die Anzeigenamen und Rollen der anderen Mitglieder. Den Änderungsverlauf zeigt die App derzeit auf keinem Bildschirm an (der Reiter „Verlauf“ zeigt eure Einkäufe, siehe oben), aber die Mitglieder des Haushalts können darauf zugreifen. Wir nutzen ihn für Vorschläge, und die Änderungen, die du gemacht hast, sind in deinem Export deiner Kontodaten enthalten. Die Mitglieder eines Haushalts sehen nicht, in welchen anderen Haushalten du bist. Einen deiner Haushalte wählst du als Standard; bis du einen anderen wählst, ist das dein erster Haushalt. Im Standardhaushalt arbeiten Siri, Alexa und KI-Assistenten (Abschnitt 7).
++Du kannst Mitglied in mehreren Haushalten sein. Wir speichern, was du in Snacklist eingibst: Haushaltsname, mit wem ihr einkauft (die Art des Haushalts: Partner·in, Familie, WG, Verein oder Team, nur ich oder Andere), falls du es bei der Einrichtung oder später angibst, Mitglieder, ihre Rolle und wann sie beigetreten sind, Einladungen, Listen (Name, Reihenfolge, wer sie angelegt hat und wann), Einträge (Artikelname, Menge, Liste, wer ihn hinzugefügt und gekauft hat, Zeitpunkte), einen Änderungsverlauf (welcher Eintrag geändert wurde, von wem, ob er hinzugefügt, abgehakt, wiederhergestellt, geändert oder gelöscht wurde, und wann) sowie, was Snacklist für deinen Haushalt lernt (Kategorien, Läden, Marken). Was du bei „Andere“ selbst eintippst, bleibt auf deinem Gerät und wird nicht auf unseren Servern gespeichert. Ein Haushalt kann mehrere Listen haben. Löscht ein Mitglied eine Liste, löschen wir ihre Einträge mit. Alle Mitglieder eines Haushalts sehen seine Listen und die Anzeigenamen und Rollen der anderen Mitglieder. Den Änderungsverlauf zeigt die App derzeit auf keinem Bildschirm an (der Reiter „Verlauf“ zeigt eure Einkäufe, siehe unten), aber die Mitglieder des Haushalts können darauf zugreifen. Wir nutzen ihn für Vorschläge, und die Änderungen, die du gemacht hast, sind in deinem Export deiner Kontodaten enthalten. Die Mitglieder eines Haushalts sehen nicht, in welchen anderen Haushalten du bist. Einen deiner Haushalte wählst du als Standard; bis du einen anderen wählst, ist das dein erster Haushalt. Im Standardhaushalt arbeiten Siri, Alexa und KI-Assistenten (Abschnitt 7).
+ 
+ Preise und Einkäufe: Zu einem Eintrag kannst du einen Preis angeben. Wir speichern ihn beim Eintrag mit Einheit, Währung und Zeitpunkt, nicht aber, wer ihn eingegeben hat, dazu die Währung des Haushalts (anfangs Euro). Alle Mitglieder des Haushalts sehen die Preise, die Summe der Liste und die Summe je Laden. Im Reiter „Verlauf“ kannst du Einkäufe eintragen; jeder Laden ist ein eigener Einkauf. Wir speichern dazu den Laden (mit seinem Namen zu diesem Zeitpunkt), den Tag, eine Kopie der abgehakten Einträge (Name und Menge, ohne Preis) und wer den Einkauf eingetragen hat. Startest du einen Einkauf in der App, speichern wir für diesen Einkauf außerdem Beginn, Ende, Pausen und Dauer, wer ihn gestartet hat und je Eintrag Name, Menge, Laden, ob er geplant war und gekauft wurde, den geplanten und den bezahlten Preis, ob ein anderes Mitglied ihn abgehakt hat und wer ihn hinzugefügt hat. Alle Mitglieder des Haushalts sehen die Einkäufe und können sie löschen; selbst eingetragene Einkäufe können sie auch ändern. Ohne Snacklist Premium zeigt die App die Einkäufe der letzten 4 Wochen und von gestarteten Einkäufen nur eine Zusammenfassung; ältere Einkäufe und die Einträge bleiben gespeichert und sind mit Premium sichtbar. Was auf der Liste steht, steht so auch im Verlauf, zum Beispiel Drogerie- oder Apothekenartikel; bei Läden, deren Name sie als Apotheke ausweist, schlägt die App nicht vor, einen Einkauf einzutragen, und übernimmt ihre Einträge nicht in gestartete Einkäufe. Wir werten Einkäufe nicht aus und geben sie an niemanden außer den Mitgliedern des Haushalts weiter. Preise beim Eintrag speichern wir, bis ein Mitglied den Preis oder den Eintrag löscht, Einkäufe (bei gestarteten Einkäufen mit ihren Preisen), bis ein Mitglied sie löscht, jeweils längstens bis zur Löschung des Haushalts.
+ 
+diff --git a/site/content/legal/privacy.md b/site/content/legal/privacy.md
+index bf03194c..74395b58 100644
+--- a/site/content/legal/privacy.md
++++ b/site/content/legal/privacy.md
+@@ -4,13 +4,13 @@ description: "Privacy policy of Snacklist: which data the app and the website pr
+ locale: en
+ path: /en/privacy
+ translation_key: privacy
+-updated: 2026-11-14
++updated: 2026-11-15
+ ---
+ 
+ # Privacy policy
+ 
+ This is a translation. The [German version](/datenschutz) is authoritative.
+-Last updated: 14 November 2026
++Last updated: 15 November 2026
+ 
+ This page explains which personal data Snacklist processes, why, on what legal basis, who receives it and what rights you have. Snacklist is a shopping-list app for households on iPhone, Android and in the browser (app.snacklist.app), with the website snacklist.app.
+ 
+@@ -57,7 +57,7 @@ Legal basis: Art. 6(1)(b) GDPR (performance of the user agreement).
+ 
+ ## 5. Shopping list and household
+ 
+-You can be a member of several households. We store what you enter in Snacklist: the household name, who you shop with (the kind of household: partner, family, flat share, club or team, just me or other) if you say so during setup or later, members, their roles and when they joined, invitations, lists (name, order, who created them and when), items (item name, quantity, list, who added and bought it, timestamps), a change history (which item was changed, by whom, whether it was added, ticked off, restored, edited or deleted, and when), and what Snacklist learns for your household (categories, stores, brands). What you type yourself under "Other" stays on your device and is not stored on our servers. A household can have several lists. If a member deletes a list, we delete its items with it. All members of a household see its lists and the other members' display names and roles. The app does not currently show the change history on any screen (the "History" tab shows your trips, see above), but the members of the household can access it. We use it for suggestions, and the changes you made are included in your account data export. The members of a household don't see which other households you are in. You choose one of your households as your default; until you choose another, it is your first household. Siri, Alexa and AI assistants work in your default household (section 7).
++You can be a member of several households. We store what you enter in Snacklist: the household name, who you shop with (the kind of household: partner, family, flat share, club or team, just me or other) if you say so during setup or later, members, their roles and when they joined, invitations, lists (name, order, who created them and when), items (item name, quantity, list, who added and bought it, timestamps), a change history (which item was changed, by whom, whether it was added, ticked off, restored, edited or deleted, and when), and what Snacklist learns for your household (categories, stores, brands). What you type yourself under "Other" stays on your device and is not stored on our servers. A household can have several lists. If a member deletes a list, we delete its items with it. All members of a household see its lists and the other members' display names and roles. The app does not currently show the change history on any screen (the "History" tab shows your trips, see below), but the members of the household can access it. We use it for suggestions, and the changes you made are included in your account data export. The members of a household don't see which other households you are in. You choose one of your households as your default; until you choose another, it is your first household. Siri, Alexa and AI assistants work in your default household (section 7).
+ 
+ Prices and trips: You can add a price to an item. We store it with the item, with unit, currency and time, but not who entered it, plus the household's currency (euro to start with). All members of the household see the prices, the list's total and the total per store. In the "History" tab you can log shopping trips; each store is its own trip. For each trip we store the store (with its name at that time), the day, a copy of the ticked items (name and quantity, no price) and who logged it. If you start a trip in the app, we also store its start, end, pauses and duration, who started it and, for each item, its name, quantity, store, whether it was planned and bought, the planned and the paid price, whether another member ticked it and who added it. All members of the household see the trips and can delete them; trips logged by hand can also be edited. Without Snacklist Premium the app shows the trips of the last 4 weeks and only a summary of started trips; older trips and the items stay stored and are visible with Premium. Whatever is on the list ends up in the history the same way, for example drugstore or pharmacy items; for stores whose name marks them as a pharmacy, the app does not suggest logging a trip and leaves their items out of started trips. We do not analyse trips and share them with no one but the members of the household. We keep prices on items until a member deletes the price or the item, and trips (for started trips, with their prices) until a member deletes them, in each case at most until the household is deleted.
+ 

@@ -1164,3 +1164,11 @@ is fixed and pinned by tests that fail without the fix.
 **Missing.** Nothing is blocked. Known and left as is: after a save the row shows its list line
 a moment later (the pick loads again), and a list deleted while the list step is open ends in a
 snackbar.
+
+## Job 249: Legal GO corrections on #464
+
+**Built.** In `site/content/legal/datenschutz.md` and `privacy.md`: C-1 ("siehe unten" / "see below"), C-2 (body date 15 November 2026) and addendum 1 (frontmatter `updated: 2026-11-15`). The diff of the two files against the GO head 8b44d0b1 is these 6 changed lines and nothing else.
+
+**Evidence.** `research/legal-review/pr-464/a347064a48956a39fcc4ec6aba45ec9b13eeaf03/` (DELTA.md, DELTA.diff, MERGED.md template with the new hashes), mirrored to `/workspace/hummlist/research/legal-review/pr-464/`. Code head a347064a, ci-ok green, run 43685313627. sha256: datenschutz.md 8765759c72895b3326c915072a552822081bfbf2dda14309b4fc783924cef4fd, privacy.md 90820004ce623013cf9844c15a442c4095cfd30e8ab3aa46deccfa983f021dd7.
+
+**Not done on purpose.** Not merged, flags untouched. The MERGED.md merged SHA and at-merge hash checks are filled in at merge. The PR body still says the notes are not in the repo; it can't be edited after push-pr, so this is noted in NEEDS_LEAD.
