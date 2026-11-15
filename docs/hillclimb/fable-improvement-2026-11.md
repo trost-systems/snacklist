@@ -963,3 +963,256 @@ lands that the fg-cli test's kill by name ended (fixed by #451; the point says w
 fourth lost one turn: a 502 from GitHub on the merge call (not fixed; the point names the fix).
 Two are about the product or production and were not probed: a tick right before a reload, and
 whether the hosted edge runtime loses an early answer.
+
+## Job 221: CI wait and list CPU, measured, 2026-11-15
+
+The brief: baseline the CI and build wall time, the app's startup and the list's in-memory work
+with real commands, and land small changes that make the loop or the app faster, each with a
+measured before and after. No check weakened, no behaviour changed, no closed climb redone
+without a measured gap. The scripts, the raw tables, the review reports and the mutant scripts
+are in the job's research folder (`research/221-perf-iteration-hillclimbs/`, out of tree); the
+paths below are relative to it.
+
+### Baseline
+
+Measured on 14 November 2026, before this job changed anything.
+
+**CI** (`scripts/ci-timings.sh --limit 12 --branch main --steps e2e`: the 12 green `main` runs
+created on 14 November from 12:07 to 17:53 UTC; `baseline/ci-timings-main-before.txt`). Running
+time of a job, the queue not counted:
+
+| Job | Median | Range |
+| --- | ---: | --- |
+| ios | 28:45 | 11:36-32:54 |
+| e2e (2) | 19:53 | 18:19-24:24 |
+| e2e (1) | 17:19 | 14:55-18:21 |
+| flutter | 5:14 | 4:27-6:25 |
+| android | 3:34 | 3:08-4:17 |
+| db | 3:23 | 3:10-3:34 |
+| lint | 2:40 | 2:13-3:04 |
+| web-prod | 1:59 | 1:39-2:20 |
+| each of the other nine gates | under 1:05 | |
+
+`ci-ok` turned green 29:17 after a run's start (20:08-33:28). All 12 runs had the ios job, since
+a push to `main` runs every gate. In 9 of the 12 the ios job ended last. In the other 3 `e2e (2)`
+did (ios ended 22:36, 11:49 and 12:57 after the run's creation there, and `ci-ok` came after
+23:40, 20:17 and 20:08). So two things set the wait: the ios job in most runs that have it, and
+the slower e2e shard in the rest and in every run without ios. #460's texts say that a run with
+the ios job "still waits for it" (`docs/DECISIONS.md`, and `docs/CI.md` until this record's PR
+corrected it there); that held in 9 of these 12 runs.
+
+Which of the two a PR waits for, by the filter's rule (`scripts/ci-changes.sh` of 14 November
+applied to the full file list of each of the 136 PRs merged from 7 November to 14 November 19:13
+UTC, `baseline/v3/`; a replay of the rule, not a count of what ran): 74 run e2e without the
+native gates, 32 run the native gates (14 for a native path, 18 for the CI definition), and 30
+changed only documentation and run no e2e.
+
+The ios job's phases in 8 of the 12 runs (`baseline/ios-phases-main-before.txt`): build 2.3 to
+5.2 min, simulator boot 1.6 to 8.9, tests 0.8 to 4.2, the StoreKit boot 1.2 to 6.3 and its tests
+3.1 to 8.7. The two runs that took 11 and 12 minutes were faster than each of the other six in
+the build, both boots and the StoreKit tests (not in setup, and one of them not in the tests
+phase), so the spread looks like the runner's and not one step's (inferred from those two runs;
+not traced).
+
+**Startup** (job 100's harness `tool/hillclimb/hc-size-start/measure.sh`, repaired by #470, on
+`main` a0cd3c73; Linux profile build, three runs of 15 launches at load 6 to 7): first frame 267,
+288 and 346 ms, list interactive 368, 401 and 536 ms. Job 100 measured 292 and 445 ms with a
+noise band of 0.128. No gap outside the spread, so nothing changed there.
+
+**The list's in-memory work** (the new harness `tool/hillclimb/hc-list-cpu/measure.sh`, Linux
+profile build, the hc-ui-perf household of 300 open items in 10 stores):
+
+- What one build of the list derives: about 0.2 ms (0.18 to 0.75 over 20 launches of the
+  branch's probe binaries; 0.18 to 0.30 in the `main` binary's seven launches). Not hot.
+- One tick and the text of its save: 4.54 ms on the UI isolate (the table below). `ListCubit`
+  saves when an op is queued and again when the server acknowledges it, and each save built
+  the whole list's JSON.
+
+**Frame times** (job 108's harness `tool/hillclimb/hc-ui-perf/measure.sh`, repaired by #470): two
+runs on `main` scored 133 and 161 against job 108's 7.479, at load 10 to 15. Job 108 started a
+measurement only below load 3.5 and repeated one that ended above 6, so they are no verdict, and
+the size of the gap is not explained.
+The probe now scrolls a store divider into reach before it taps it, so its sections flow can
+hold scroll frames that job 108's did not.
+
+Not measured in the baseline: the local gates' times (job 219's baseline above has one reading
+per gate, and `scripts/verify.sh --history` collects one per run since #420), a phone, the web
+build's startup, and the Android download size (job 100's other number).
+
+### What landed
+
+Four PRs, one commit each. Each has a `claude-fable-5-2` review that ended in PASS and `ci-ok`
+green on the merged head. A fifth, docs only, carries this section.
+
+| PR | Merged as | Change | Evidence it rests on |
+| --- | --- | --- | --- |
+| #472 | `88d0fbdc` | the declutter total test prices its item today (`pricedAt: DateTime.now()`) | from 15 November 00:00 on the test failed on untouched `main` 46f0ae0d (one run of the file on the runner, 15 of 16 tests passing) and in 8 of 8 runs of the file on #470's branch: its price was dated 14 November, and a price counts on its calendar day only |
+| #462 | `f96c2ecf` | a PR that changes only another gate's script runs neither android and ios nor fastlane and emails; `scripts/siri-vocabulary.py` and `scripts/app-shortcuts-bundle.py` join the native rule; the filter reads the range with `--no-renames`; the filter's first test, `scripts/ci-changes-test.sh`, in the lint gate | `android.sh`, `ios.sh`, `fastlane.sh` and `emails.sh` source only `scripts/lib.sh`; 10 of the 136 PRs ran the ios job for a change to `db.sh`, `lint.sh`, `functions.sh` or `site-agent.sh` |
+| #460 | `07e1ad35` | CI runs the e2e suite in four shards (`ci.yml`, and `e2e.yml` for an on-demand full suite; `scripts/ci-e2e.sh --shards 1..6`); `scripts/check-gates.sh` holds the lines the count travels on; `scripts/ci-timings.sh --steps` prints a true median | 74 of the 136 PRs wait for the slowest e2e shard |
+| #470 | `6877ea5a` | the save after a tick, an add or an edit encodes the changed row, not every row (`ListSnapshot.encode()` keeps each item's JSON text with its `Item`); the device cache asks for the text after its household check; the harness `hc-list-cpu`; `hc-size-start` and `hc-ui-perf` run on `main` again | on `main` the save's text was 4.3 of the 4.5 ms that a tick and its save's text took on the UI isolate (the probe's per-save counter, 4,317 µs in the median of the seven launches) |
+
+Looked at and left alone, with the reason:
+
+- **Shards packed by test duration.** Replayed from five `main` runs, the slowest of four takes
+  457 s against 513 s. One real shard moved by 3 minutes between two runs of the same commit,
+  and a planner needs a durations file kept current. Not built.
+- **Six shards.** 385 s in the replay, about 2 minutes under four, for two more stacks per run.
+  No real run, and the 20 jobs that run at once come closer. `scripts/ci-e2e.sh --shards 6`
+  can measure it.
+- **The ios job's phases.** The spread is across all phases of a run (above), and jobs 118, 127
+  and 164 already worked on the steps. No change tried; the point is with the lead.
+- **Startup and what a list build derives.** No measured gap (above).
+- **Frame times.** No valid run at the runner's load.
+- **Other Playwright worker counts than 2.** Not measured.
+
+### Before and after
+
+| What | Before | After | How measured |
+| --- | --- | --- | --- |
+| The slowest e2e shard's job, running time | 19:53 (18:19-24:24, 12 `main` runs with two shards) | 14:55, 12:33, 14:25, 11:35 and 12:51 (five runs with four shards) | `ci-timings.sh` before; after, the jobs' start and end in #460's CI runs 43632050929, 43664324552 and 43667672579, its on-demand run 43640061280 and #470's CI run 43669960494 (`record/ci/run-jobs.txt`) |
+| Linux runner time of all e2e shards per run | 37:12 (the two medians) | 46:28, 44:01, 47:16, 41:59 and 44:17 | the same runs |
+| `ci-ok` after a run's creation, for a PR without the native gates | 21:24 and 23:48 (#470's first run 43645275754 and #472's run 43654001792, two shards) | 13:49 (#470 rebased, four shards, run 43669960494) | this job's three such runs (`record/ci/ci-ok.tsv`); one run after, so no median |
+| The same for a run with the ios job | 29:17 (20:08-33:28, the 12 `main` runs) | 28:37, 24:43 and 28:50 (#460's three CI runs) | the ios job ended last in all three, 8 to 17 minutes after the last shard, so these three gained nothing; in 3 of the 12 runs before, `e2e (2)` ended after ios, so a run with a fast ios job does gain |
+| Tests the shards run | 271 | 271 in each of the five runs, none failed, flaky or retried | the first two runs' `playwright-results.json`; Playwright's summary lines in all five runs' job logs |
+| PRs for which the filter turns android and ios on | 32 of 136 | 22 of 136 | the script before and after on each PR's full file list |
+| The same for fastlane, and for emails | 28 of 136 each | 15 of 136 each | the same |
+| The same for the heavy gates | 106 of 136 | 106 of 136 | the same |
+| A file moved from `app/ios/` to `docs/` | neither heavy nor native gates | both | `scripts/ci-changes-test.sh`; a depth-2 fetch of a merge ref in review 2 |
+| UI-isolate time of one tick and its save's text | 4.54 ms (3.83-5.87) | 1.11 ms (0.99-1.48) | seven alternating pairs of launches, `main` 46f0ae0d against the branch, 40 timed ticks per launch after 20 warm-up rounds, load 3 to 14 (`runtime/listbench-main2-vs-final2.jsonl`) |
+| The same for an untick | 4.32 ms (3.66-6.25) | 1.01 ms (0.97-1.22) | the same |
+| The first save after a load or a resync (every row a new `Item`) | 2.86 ms (2.60-4.46) | 3.41 ms (2.98-6.67) | the same seven launches of the new binary, whole encode against kept texts |
+| `list_declutter_test.dart` from 15 November | 15 of 16 tests pass | 16 of 16 | `flutter test test/list/list_declutter_test.dart` on `main` 46f0ae0d (one run) and on #472's branch, where the flutter gate then passed |
+
+What the ten spared PRs cost when they ran (measured from their CI runs,
+`baseline/v3/spared-runs.tsv`): their 27 runs with a finished ios job took 627 macOS runner
+minutes, and in 23 of them `ci-ok` waited for ios after every other job had ended, 186 minutes
+in all. For the files each of those runs had changed, the new rule leaves ios off.
+
+What the changes cost:
+
+- Four shards take 5 to 10 more Linux runner minutes per run (4:47 to 10:04: the five runs
+  above against the two medians before; #460's text says 7 to 9, from the first two), and a run
+  has four stacks that can fail to start instead of two.
+- The first save after a load or a resync is 0.4 to 3.6 ms slower per launch (the row above). A
+  start with a saved list that reaches the server pays it at least twice. `docs/DECISIONS.md`,
+  "Job 221: the save after a tick", says when.
+- The kept texts stay in memory with their items, about the size of one saved list (inferred,
+  not measured).
+- `scripts/ci-changes-test.sh` adds its run to the lint gate (not timed apart).
+
+Not measured, and why:
+
+- A median of `ci-ok`'s time for a PR that runs e2e without the native gates under four shards.
+  There is one run, #470's (13:49). Four of the five runs of four shards are #460's own, and a
+  change to `ci.yml` runs the ios job. The PRs after the merge give the median:
+  `scripts/ci-timings.sh --limit 12 --steps e2e`.
+- How long two more jobs per run wait at 20 jobs at once, GitHub's documented limit for the Free
+  plan (the organisation's plan was not read). In the week before, 20 ran at once for 492
+  seconds in all and 18 or more for 2,815 seconds, a lower bound from first attempts.
+- How often one of four stacks fails to start. Five green runs say nothing about a rate.
+- How often a land's `merge-pr.sh --wait` ran out because of an ios job the new rule spares.
+- A phone, the web build (where an `Expando` is a JavaScript `WeakMap`), frame times, and where
+  the saved milliseconds fall against a frame.
+- `shared_preferences`' own write of the text, and the household read every save makes first.
+
+### A test that failed by date
+
+Found while #470 was verified after midnight: `scripts/verify.sh --only lint,flutter` failed on
+#470's branch in a test the branch does not touch, and the test's file then failed the same way
+on untouched `main` 46f0ae0d. `app/test/list/list_declutter_test.dart` priced its item with
+`pricedAt: DateTime(2026, 11, 14)`, the day #448 wrote it. A price counts only on its calendar
+day (`Price.isCurrent`), and the list reads the device's clock, which the test cannot set
+through `ListScope`. So the test passed on 14 November only: on the runner (CET) it failed from
+00:00, in CI (UTC) from 01:00 CET. In CI the flutter job of #467's run 43656223668 (job 245)
+failed in it at 00:07 UTC. #472 prices the item with `DateTime.now()`, as
+`summary_block_test.dart` does. Its review ran the test under several time zones and found no
+other test in `app/test` that fails by date (a search, not exhaustive). Left open: a run that
+crosses midnight between the test's two clock reads, and a clock seam for `ListScope` so that a
+list test can pin the day (with the lead).
+
+A heads-up went to the board at 00:29 CET, before the first CI run could fail. At 01:16 job 245
+reported the red gate too and was fixing the same line in #467; #472 merged at 01:23, and the board
+line said so.
+
+### Cost
+
+Measured where a counter exists; anything else is labelled.
+
+- **Lead time.** The worker first started on 14 November at 05:18 CET and stopped after 2 s on the
+  usage limit. Work began at 20:07 CET; the fourth PR merged at 04:25 CET on 15 November, 8.3 h
+  later, and this record's PR came after it. For 1.2 h of it (20:45 to 21:54) the job was stopped by
+  the usage limit again; a subagent that was measuring the runtime baseline ended with it, and the
+  main thread redid that part.
+- **Tokens, run 1** (20:07 to 20:45; the CLI's result line): 77 turns, 35.7 min by its count,
+  input 136, output 82,648, cache read 8,009,734, cache creation 354,607; 6.69 USD at the CLI's
+  prices.
+- **Tokens, both runs** (the session transcripts up to 04:25 CET on 15 November, before this
+  record's review; a lower bound, since a transcript holds one count per message): the main thread
+  448 messages, input 890, output 441,567, cache read 50,869,835, cache creation 1,679,956; the 17
+  subagents 553 messages, input 1,104, output 647,245, cache read 50,394,446, cache creation
+  2,279,983. Read by `UNTIL=2026-11-15T03:25:00.000Z scripts/tokens.py`, which leaves out later
+  messages so that the reading can be repeated.
+- **Models.** The main thread and 16 of the 17 subagents ran on `claude-fable-5-2`. One did
+  not: the first subagent, a read-only `Explore` agent that summarized the closed hill-climbs'
+  notes (11 messages in 72 s at 20:08 CET), ran on `claude-opus-5-5`, the model that agent type
+  carries. It wrote no code and reviewed nothing. Its summary named the harnesses and the
+  closed climbs' numbers; the numbers this record cites from jobs 100 and 108 were read again
+  in the documents themselves. Every later subagent was started without a type that carries a
+  model. Each states its model in the first line of its report, but for the second, which ended
+  on the usage limit without a report; its transcript shows `claude-fable-5-2`.
+- **Reviews.** 15 rounds of `claude-fable-5-2` over the four PRs, 9 FAIL and 6 PASS: #460 5
+  (FAIL, FAIL, PASS, FAIL, PASS), #462 4 (three FAIL, PASS), #470 5 (FAIL, PASS, FAIL, FAIL,
+  PASS), #472 1 (PASS). A PR whose text changed after a PASS got a fresh round. This record's
+  own review is in its PR and not counted here. What the FAILs found:
+  - Counts cut by a `gh` default, twice: `gh pr list --json files` stops at 100 files per PR
+    (9 of 120 lists were cut), and `gh pr list` orders by creation, so "merged from 7 to 14
+    November" missed #231 and 15 more. The sample is now taken by merge date (136 PRs).
+  - A check that passed for forms it did not read: the filter's test let a job ask the filter
+    in nine other valid forms, and `check-gates.sh` did not hold `e2e.yml`'s shard list. Both
+    got lines and mutants.
+  - A number that was not what its label said: a `main` binary built from an older commit, a
+    "median" that was the upper middle of 12, a `ci-ok` time that was the ios job's running
+    time, a week's concurrency read over two weeks of job 219's table, and "95 of 120 PRs
+    gain" where 29 of them run no e2e.
+  - A limit scoped wrongly: the 20 jobs at once count the ios job too, which made the week's
+    time at the limit 492 s and not 35 s.
+  - Sentences about the cold save that the code contradicted: "never the cost of a tap", then
+    "twice" where a start makes up to three resyncs.
+- **Mutants.** 77 over the three PRs with code (17 for #460, 28 for #462, 32 for #470), each
+  failing its test or check. The scripts are in the research folder (`scripts/mutants*.sh`),
+  not tests in the repository.
+- **CI.** Nine green CI runs on the four PRs, one cancelled after 28 s by the next push,
+  and one on-demand e2e run; each a first attempt, none rerun (`record/ci/ci-ok.tsv`). `ci-ok`
+  after the run's creation: #460 28:37, 24:43 and 28:50; #462 24:53, 30:43 and 27:06; #470
+  21:24 and 13:49; #472 23:48. Two of the nine were the second run of a land, because `main`
+  had moved while the land waited for the lock (below). The record PR's own runs are not
+  counted. Local gates (`scripts/verify.sh`, the verify ledger's rows of the four PRs'
+  branches): lint 122 to 218 s in 12 runs, flutter 139 to 253 s in five (139 s is the run that
+  failed by date). No e2e ran on the runner: the shards were measured in CI, where they run.
+- **Flakes seen.** None in the ten finished runs: no test was retried or marked flaky in
+  any shard's Playwright summary, and no job was rerun. The flutter gate's failure after
+  midnight was no flake (above). On the board, job 245 reported one failure of
+  `onboarding.spec` AC10 in a run of #467 (two shards, before #460 was on `main`); not this
+  job's run and not looked into here.
+- **Not measured:** the price of run 2, and the job's share of the runner's load.
+
+The lands (times CET, 15 November). Queued is when the land had pushed and asked for the lock.
+Each first waited the 30 minutes `merge-lock` gives the Mac's lock, which did not answer all
+night, and then for the Hetzner lock:
+
+| PR | Queued | Lock held | Merged | Waited | Held | What happened |
+| --- | --- | --- | --- | ---: | ---: | --- |
+| #472 | 00:52:54 | about 01:23 (not logged) | 01:23:06 | 30 min | under 1 min | `ci-ok` was green and `main` had not moved |
+| #462 | 01:23:39 | 02:14:07 | 02:41:32 | 50:28 | 27:25 | `main` had moved (#473): a second push and a whole CI run inside the hold |
+| #460 | 02:42:04 | 03:24:47 | 03:53:59 | 42:43 | 29:12 | `main` had moved (#474): the same |
+| #470 | 03:54:54 | 04:25:15 | 04:25:22 | 30:21 | 0:07 | `ci-ok` was green and `main` had not moved |
+
+The four lands took 3 h 32 min one after the other, 2 h of it the four waits for the Mac.
+
+### For the lead
+
+Seven points are in `docs/NEEDS_LEAD.md`, "Job 221: what the perf job measured and left open":
+the four shards read again after a week, the ios job's time, a clock for list tests, the mutants
+as a test in the lint gate, the whole list's text written on every tick (with job 222), the
+slower first save after a resync, and the 30 minutes every land waits for the Mac (job 219's
+point, with this night's numbers). The model deviation is there too.

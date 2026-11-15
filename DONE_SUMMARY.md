@@ -1063,3 +1063,34 @@ PR https://github.com/trost-systems/snacklist/pull/474. Peter found two bugs on 
 ## Job 245: English for the beta (2026-11-14)
 
 [docs/done/245-english-beta-localization.md](docs/done/245-english-beta-localization.md): English fallback for devices in neither language, English iOS permission prompts, the Hardware store chip, the web shell's language, 55 English copy fixes, a German-literal test and the English sweep journey (27 screens, 0 German).
+
+## Job 221: CI wait and list CPU, measured (2026-11-15)
+
+Four PRs, one commit each, and a fifth with the record:
+
+- [#460](https://github.com/trost-systems/snacklist/pull/460) (`07e1ad35`): CI runs the e2e suite
+  in four shards. The slowest shard's job ran 11:35 to 14:55 in five runs, against a median of
+  19:53 with two shards (12 `main` runs). For the one PR without the ios job that has run both
+  ways (#470), `ci-ok` came after 13:49 against 21:24. It costs 5 to 10 more Linux runner
+  minutes per run. The same 271 tests run.
+- [#462](https://github.com/trost-systems/snacklist/pull/462) (`f96c2ecf`): a PR that changes only
+  another gate's script no longer runs the android, ios, fastlane and emails jobs. 10 of the 136
+  PRs merged in the week before ran the ios job for such a change: 627 macOS runner minutes in
+  27 runs. The filter (`scripts/ci-changes.sh`) has its first test.
+- [#470](https://github.com/trost-systems/snacklist/pull/470) (`6877ea5a`): the save after a tick
+  encodes the changed row, not every row. One tick and its save's text take 1.11 ms on the UI
+  isolate against 4.54 ms (Linux profile build, 300 items). What the device holds is unchanged.
+  The first save after a load or a resync is 0.4 to 3.6 ms slower. Ships with the next green
+  main build.
+- [#472](https://github.com/trost-systems/snacklist/pull/472) (`88d0fbdc`): a list test carried the
+  date it was written on, so it failed from 15 November 00:00 on (seen on `main`, on #470's
+  branch and in #467's CI run). It prices its item today now.
+
+Startup and what a list build derives were measured and left alone: no gap against job 100, and
+0.2 ms per build. Frame times have no valid run at the runner's load. Nothing users see changes;
+no flag, no migration, nothing to deploy.
+
+Not measured yet: a median of `ci-ok`'s time under four shards for a PR without the ios job (one run
+so far), the queue at GitHub's 20 jobs at once, a phone. Seven points are in `docs/NEEDS_LEAD.md`,
+"Job 221". Numbers, cost and the lands: `docs/hillclimb/fable-improvement-2026-11.md`, "Job 221";
+`docs/done/221-perf-iteration-hillclimbs.md`.
