@@ -66,7 +66,7 @@ The list
 - [usuals](./usuals.md): „Wieder fällig“ suggestions for items the household buys regularly.
 - [dictation](./dictation.md): the microphone in the add bar (iOS and Android apps only).
 - [tick-and-undo](./tick-and-undo.md): a tap ticks an item off, „Zuletzt verwendet“ and putting items back, which actions have an undo.
-- [edit-item](./edit-item.md): the edit sheet (name, brand, details, quantity, store, category), deleting with undo.
+- [edit-item](./edit-item.md): the edit sheet (name, brand, details, quantity, store, category, list, „Ich bringe das“), merging a rename onto an open item; no delete (ticking removes).
 - [tips](./tips.md): the dismissible tip card at the top of the List tab, one tip at a time from a typed queue (job 80).
 - [classifier](./classifier.md): the automatic category for every new item, learning from moves, spelling variants and synonyms.
 - [categories](./categories.md): Liste → „Anpassen“ → „Ohne Laden“ (and every store's details): add, rename, delete, reorder; the 11 seeded categories.

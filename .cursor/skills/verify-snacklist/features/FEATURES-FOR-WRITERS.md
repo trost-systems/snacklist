@@ -15,7 +15,7 @@ What Snacklist does today, in plain words, with the exact button and screen labe
 
 The app is called Snacklist. It used to be called Hummlist. The app, its Siri phrases, the site and the help pages say Snacklist. The site is at snacklist.app and the web app at app.snacklist.app. hummlist.com redirects to snacklist.app, and app.hummlist.com still shows the web app for old links. The Alexa skill (its name and „Alexa, sag Snacklist, …“), the mail addresses (support@snacklist.app, hello@snacklist.app) and the AI assistants' address https://mcp.snacklist.app say Snacklist too. Those three were checked in our documents, not in use. Never write the old addresses in new copy. Never write „Humm“ or „Snack“ alone as the name.
 
-**Last verified.** 14 November 2026, code version 97b2907e, in the web app (German).
+**Last verified.** 15 November 2026, code version 377f1a0f, in the web app (German).
 
 ## Never claim (everywhere)
 
@@ -28,7 +28,7 @@ The app is called Snacklist. It used to be called Hummlist. The app, its Siri ph
 - The Home Screen widget as available. It is built for iPhone and Android, but its announcement waits for a test on real phones (see "Home Screen widget").
 - Apple Watch, Google Assistant, Android voice assistants, push notifications, recipes, meal plans or price tracking. None exist.
 - That the microphone (dictation) works in the browser. It is in the iPhone and Android apps only.
-- Real people's names or lists. Clips and screenshots use the fictional Brandt family.
+- Real people's names or lists. Clips and screenshots use fictional households: the landing videos of adding and ticking off and of two phones in sync, and the store screenshots, show „Unser Haushalt“ (EN: "Our Home") with Anna and Jonas; the voice video and the how-to clips show the Brandt family (Mia); the AI chat video shows Sam in „Sams Wohnung“.
 - AI products or their makers (ChatGPT, OpenAI, Claude, Anthropic) as examples, claims or praise. Write „KI-Assistenten, die MCP unterstützen“ / "AI assistants that support MCP". Only setup instructions (the Claude guide, the app's help text for AI assistants) and the trademark notice in the imprint name them. This is a legal rule, and an automatic check refuses these names on the site and in the app's texts.
 - Alexa as „sie“ / "she". Name the skill „Snacklist-Skill für Amazon Alexa“ / "Snacklist skill for Amazon Alexa". This is a legal rule too.
 - Anything the sections below mark as not announced or not switched on yet (Premium, Siri without setup, the Alexa skill's certification, the Home Screen widget, connections only for Premium).
@@ -39,7 +39,7 @@ The app is called Snacklist. It used to be called Hummlist. The app, its Siri ph
 
 **What it does.** snacklist.app keeps its landing page, but its buttons say „Auf die Warteliste“ (EN: "Join the waitlist") instead of opening the browser version. They lead to a short form: the email (ideally the one of the Apple ID or Google account) and iPhone or Android. Snacklist then sends a confirmation mail; the person is on the list only after tapping „E-Mail bestätigen“ in it and agreeing on the page that opens, where they can also tick that they want one email when the app launches. An AI assistant may fill in the form for someone, but only the person's own click on that page counts. Confirmed people are invited to the beta in weekly groups, by hand. Every mail has a link that deletes the entry at once. The hero badge says „Beta im November“ (EN: "Beta in November"), and above the form a short note „Von Peter“ (EN: "From Peter") says why he builds Snacklist: one list he shares with his wife, which AI assistants can add to, tick off and read through MCP; in the beta people test it with them and say what's missing. Later stages are built but off: „Zur Beta anmelden“ (EN: "Join the beta"), and at launch App Store and Google Play badges with a QR code; the badge and the note leave at launch.
 
-**On the landing page.** Besides the waitlist, the page shows how the app works. The stores card has three buttons under „Tippe auf einen Laden:“ (EN: "Tap a store:"): „Drogerie“, „Getränkemarkt“ and „Supermarkt“ (EN: "Drugstore", "Drinks store", "Supermarket"). A tap re-orders the first five category stops below to that kind of store's route, using the app's own category names. Four short silent videos show the real app: typing two items and ticking them off, three phones of one family staying in sync, adding by voice („Pizza, Orangensaft und zwei Packungen Fischstäbchen“), and an AI chat putting items on the list and ticking them off. Each video has a written description.
+**On the landing page.** Besides the waitlist, the page shows how the app works. The stores card has three buttons under „Tippe auf einen Laden:“ (EN: "Tap a store:"): „Drogerie“, „Getränkemarkt“ and „Supermarkt“ (EN: "Drugstore", "Drinks store", "Supermarket"). A tap re-orders the first five category stops below to that kind of store's route, using the app's own category names. Four short silent videos show the real app: typing two items and ticking them off and two phones of one household staying in sync (both in „Unser Haushalt“ with Anna and Jonas, EN: "Our Home"), adding by voice („Pizza, Orangensaft und zwei Packungen Fischstäbchen“), and an AI chat putting items on the list and ticking them off. Each video has a written description.
 
 **How to get there.**
 1. snacklist.app (opens /de or /en by browser language).
@@ -52,7 +52,7 @@ The app is called Snacklist. It used to be called Hummlist. The app, its Siri ph
 - That the browser version is open to new users, or that an assistant can sign someone up without their confirmation.
 - That launch news can be chosen in the form (only on the confirmation page).
 
-**Last verified.** 14 November 2026, code version 97b2907e, on a local copy of the site.
+**Last verified.** 15 November 2026, code version 377f1a0f, on a local copy of the site (the form, the confirmation and the unsubscribe pages).
 
 ## Sign-up and sign-in
 
@@ -76,7 +76,7 @@ The app is called Snacklist. It used to be called Hummlist. The app, its Siri ph
 - That users need an email and password account: Google or Apple is enough.
 - A "Forgot password" button or password reset in the app: there is none. Someone who forgot the password uses „Anmeldelink per E-Mail senden“ (EN: "Email me a sign-in link").
 
-**Last verified.** 14 November 2026, code version 95316b50, in the web app (German).
+**Last verified.** 15 November 2026, code version 377f1a0f, in the web app (German).
 
 ## Usage-data question (analytics consent)
 
@@ -95,7 +95,7 @@ The app is called Snacklist. It used to be called Hummlist. The app, its Siri ph
 
 **Note.** Every released app and the web app (app.snacklist.app, app.hummlist.com) ask this question (checked 2026-11-01; app.snacklist.app since 2026-11-10).
 
-**Last verified.** 14 November 2026, code version cc54c7f0, in the web app (German and English).
+**Last verified.** 15 November 2026, code version c3ea4261, in the web app (German): the question in the guided start, its text naming Siri, and the stored answer.
 
 ## Getting started: the guided start
 
@@ -120,7 +120,7 @@ On Android the phone's back button goes one screen back, as the arrow in the tit
 - A referral or "how did you hear about us" question: there is none.
 - That the answers sync before the account exists: they stay on this one device until the sign-in.
 
-**Last verified.** 14 November 2026, code version 97b2907e, in the web app (German and English); Android's back on 14 November 2026 by widget tests (job 236).
+**Last verified.** 15 November 2026, code version 377f1a0f, in the web app (German; English with the dark theme on c3ea4261). Android's back button by the app's automatic tests.
 
 ## Household and invites
 
@@ -146,7 +146,7 @@ On Android the phone's back button goes one screen back, as the arrow in the tit
 - Purchases or Premium tied to joining: Premium is not on sale yet. Don't write whom it will cover. The app now ties a purchase to the person who buys it (not on sale), and the copy for that waits for Peter and the legal review.
 - That members can approve joins: only the owner and admins can. Or that older app versions handle a request: they show an error until updated.
 
-**Last verified.** 14 November 2026, branch job/231-review0-reduced-motion on main 51a44a34, in the web app (German and English, with and without reduced motion).
+**Last verified.** 15 November 2026, code versions 07e1ad35 and c3ea4261, in the web app (German and English, with and without reduced motion).
 
 ## Several lists and „Ich bringe“
 
@@ -168,7 +168,7 @@ On Android the phone's back button goes one screen back, as the arrow in the tit
 - That lists can be changed offline: adding, renaming, reordering and deleting lists needs a connection (moving items and „Ich bringe das“ work offline).
 - That older app versions show the lists: they show every list's items as one list until updated.
 
-**Last verified.** 14 November 2026, code version 97b2907e, in the web app (German).
+**Last verified.** 15 November 2026, code version 377f1a0f, in the web app (German).
 
 ## Links into the app
 
@@ -191,7 +191,7 @@ On Android the phone's back button goes one screen back, as the arrow in the tit
 - That a link keeps working after the app was closed during sign-in on the phone: it then opens the list.
 - That a new user who opens a link never gets the invite step: it comes the next time they open the list.
 
-**Last verified.** 14 November 2026, code version 97b2907e, in the web app (German).
+**Last verified.** 15 November 2026, code version c3ea4261, in the web app (German).
 
 # The list
 
@@ -211,7 +211,7 @@ On Android the phone's back button goes one screen back, as the arrow in the tit
 - That the cursor jumps into the field on phones when the app opens (only on desktop and web).
 - That an item already on the list can be added twice to that list; Snacklist says „<name> steht schon auf der Liste“ (EN: "<name> is already on the list"). A household with several lists can have the same item open on two of them. Two people adding the same item at the same moment also end up with one.
 
-**Last verified.** 14 November 2026, code version 97b2907e, in the web app (German and English).
+**Last verified.** 15 November 2026, code version 377f1a0f, in the web app (German; English on c3ea4261).
 
 ## Due again
 
@@ -228,7 +228,7 @@ On Android the phone's back button goes one screen back, as the arrow in the tit
 - That it predicts quantities by season or guesses new items; it only repeats what the household bought.
 - That an item stays due until it is bought: it drops out after about four times its usual time between purchases.
 
-**Last verified.** 14 November 2026, code version 97b2907e, in the web app (German).
+**Last verified.** 15 November 2026, code version c3ea4261, in the web app (German).
 
 ## Dictation
 
@@ -250,7 +250,7 @@ On Android the phone's back button goes one screen back, as the arrow in the tit
 
 **Shown on snacklist.app.** The landing page's "In der App" / "In the app" card has a video of it: the real app with a scripted recognizer, „Pizza, Orangensaft und zwei Packungen Fischstäbchen“ landing under Getränke and Tiefkühl. The English video shows the same German sentence, because the app listens in German.
 
-**Last verified.** 14 November 2026, code version 97b2907e, from the code (dictation only exists on iPhone and Android).
+**Last verified.** 15 November 2026, code version c3ea4261: no microphone in the web app, the rest from the code (dictation only exists on iPhone and Android).
 
 ## Ticking items, "Zuletzt verwendet" and undo
 
@@ -271,7 +271,7 @@ On Android the phone's back button goes one screen back, as the arrow in the tit
 
 **Unverified.** Whether ticked items are ever removed from the section by age: no cleanup job was found in the code, but it was not run.
 
-**Last verified.** 14 November 2026, code version 97b2907e, in the web app (German and English).
+**Last verified.** 15 November 2026, code version 377f1a0f, in the web app (German; English on 07e1ad35).
 
 ## Edit an item
 
@@ -295,7 +295,7 @@ Each field's name sits above its field; what is typed sits in the middle of the 
 - That holding and dragging moves an item on the list; nothing on the list drags. Holding opens this sheet.
 - That renaming to another word for the same thing („Semmeln“ while „Brötchen“ is on the list) or to an item with a brand merges them; Snacklist only points it out („Brötchen steht schon auf der Liste“ with „Zusammenführen“), as when adding.
 
-**Last verified.** 14 November 2026, code version 97b2907e, in the web app (German).
+**Last verified.** 15 November 2026, code version 377f1a0f, in the web app (German).
 
 ## Tips on the list
 
@@ -320,7 +320,7 @@ Each step ticks itself off when it happens; „Einladen“ (EN: "Invite") and �
 - That Snacklist sees a placed widget everywhere.
 - A tip that offers a second household: those tips are built but switched off; a second household is made from the household switcher („Neuer Haushalt“).
 
-**Last verified.** 14 November 2026, code version 97b2907e, in the web app (German and English).
+**Last verified.** 15 November 2026, code versions 07e1ad35 and c3ea4261, in the web app (German and English).
 
 ## Automatic category
 
@@ -339,7 +339,7 @@ Each step ticks itself off when it happens; „Einladen“ (EN: "Invite") and �
 
 **Offline.** An item added without a connection shows under „Wird einsortiert …“ (EN: "Sorting…") until the connection is back, then moves under its category. Online, items arrive already sorted.
 
-**Last verified.** 14 November 2026, code version 97b2907e, in the web app (German).
+**Last verified.** 15 November 2026, code version c3ea4261, in the web app (German).
 
 ## Categories
 
@@ -367,7 +367,7 @@ The starting categories, in order: Obst & Gemüse, Brot & Backwaren, Kühlregal,
 
 **Unverified.** Whether there is a limit on the number of categories: none found in the app.
 
-**Last verified.** 14 November 2026, code version 97b2907e, in the web app (German).
+**Last verified.** 15 November 2026, code version 377f1a0f, in the web app (German).
 
 ## Stores, walk order and the sections of the list
 
@@ -390,15 +390,15 @@ The starting categories, in order: Obst & Gemüse, Brot & Backwaren, Kühlregal,
 
 **Note.** The onboarding skip hint says „Du kannst sie später unter Liste → Anpassen anlegen.“ / "You can add them later under List → Edit."
 
-**Last verified.** 14 November 2026, code version 97b2907e, in the web app (German).
+**Last verified.** 15 November 2026, code version 07e1ad35, in the web app (German).
 
 ## Prices and the shopping total (built, not switched on yet)
 
-**Status.** Built, but not switched on for anyone yet. Users don't see it. Peter switches it on when it is ready. Do not announce it yet. When it is announced: it is free for everyone, not part of Snacklist Premium.
+**Status.** Built, but not switched on for users yet. Only our own test installs have it, and they also have the decluttered list, so they see the totals as a block at the end of the list instead of the per-store sums and the bar described here (see „Decluttered list“). Peter switches it on when it is ready. Do not announce it yet. When it is announced: it is free for everyone, not part of Snacklist Premium.
 
 **What it does.** While shopping, you can note what each item costs right on the list, and see what the trip adds up to. Each row has a small price tag at its end: „+ Preis“ (EN "+ Price") until you enter one, then the amount for that line, for example „2,38 €“ for two milks at 1,19 €. Entering a price does not tick the item off; it stays on the list until you tap it as usual, and you can tick items without a price. Each store on the list ends with its own sum, „Summe Lidl 2,38 €“ (EN "Lidl total €2.38"), and a bar under the list shows „Einkaufssumme“ (EN "Shopping total") for the whole list across all stores, with how many items have a price and how many open ones still have none: „2 mit Preis · 1 offen“ (EN "2 priced · 1 open"). Everyone in the household sees the prices and the sums change live, within a couple of seconds.
 
-You can type the price per piece or the total for the line: „pro Stück“ or „Gesamt“ (EN "per item" or "Total"). The app keeps the price per piece: if you typed 1,38 € „Gesamt“ for 2 yoghurts and later change it to 3, the line becomes 2,07 €. For loose fruit and vegetables, a planned weight on the list („846 g Bananen“) opens the price as „pro kg“; type the price per kg or, with „Gesamt“, the price on the scale's label, and the weighed amount („1,02 kg“) replaces the planned one. Units are „Stück“, „kg“ and „l“ (EN "Item", "kg", "l"); a screen reader hears the unit menu as „Einheit: Stück“ (EN "Unit: Item"). For counted items a „−“/„+“ next to the price changes how many you take, and only the count changes: „2 x 500 g“ becomes „3 x 500 g“. An amount like „1,5“, „1/2“ or „Bund“, or a weight priced per piece, gets no „−“/„+“ and stays as typed. Under the price the app shows the other value and the new total („Zusammen 2,38 € · Summe danach 2,38 €“), and, once the same item had a price on an earlier day, whether it got dearer („0,30 € teurer als zuletzt“). Only numbers go into the price field; letters are ignored. A price per item can be between −9.999,00 and 9.999,00, so also 0 or negative (a bottle deposit). Outside that range the app says „Zwischen {min} und {max} pro Artikel.“ (EN "Between {min} and {max} per item."), with the two limits in the household's currency. A weight can be up to 50 kg or 50 l. Prices count toward the total on the day they were entered; the next day the item offers „+ Preis“ again.
+You can type the price per piece or the total for the line: „pro Stück“ or „Gesamt“ (EN "per item" or "Total"). The app keeps the price per piece: if you typed 1,38 € „Gesamt“ for 2 yoghurts and later change it to 3, the line becomes 2,07 €. For loose fruit and vegetables, a planned weight on the list („846 g Bananen“) opens the price as „pro kg“; type the price per kg or, with „Gesamt“, the price on the scale's label, and the weighed amount („1,02 kg“) replaces the planned one. Units are „Stück“, „kg“ and „l“ (EN "Item", "kg", "l"); a screen reader hears the unit menu as „Einheit: Stück“ (EN "Unit: Item"). For counted items a „−“/„+“ next to the price changes how many you take, and only the count changes: „2 x 500 g“ becomes „3 x 500 g“. An amount like „1,5“, „1/2“ or „Bund“, or a weight priced per piece, gets no „−“/„+“ and stays as typed. Under the price the app shows the other value and the new total („Zusammen 2,38 € · Summe danach 2,38 €“), and, once the same item had a price on an earlier day, whether it got dearer („0,30 € teurer als zuletzt“). Only numbers go into the price field; letters are ignored. A price per item can be between −9.999,00 and 9.999,00, so also 0 or negative (a bottle deposit). Outside that range the app says „Zwischen … und … pro Artikel.“ (EN "Between … and … per item."), with the two limits filled in, in the household's currency. A weight can be up to 50 kg or 50 l. Prices count toward the total on the day they were entered; the next day the item offers „+ Preis“ again.
 
 The household picks its currency under „Währung“ (EN "Currency"): euro by default, 15 currencies such as CHF, GBP or USD. Anyone in the household can change it, for everyone.
 
@@ -409,14 +409,14 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 4. Currency: „Mehr“ (EN "More") → your household → „Währung“ → pick one.
 
 **Never claim.**
-- That it is available today, or part of Snacklist Premium. It is not switched on for anyone yet, and free once released.
-- Receipt scanning, shelf-label scanning, photos, spending history or charts, budgets, or a summary at the end of a trip. None exist.
+- That it is available today, or part of Snacklist Premium. It is not switched on for users yet (test installs only), and free once released.
+- Receipt scanning, shelf-label scanning, photos, spending history or charts, or budgets. None exist. A trip summary with what was paid exists only in test installs (see „Trip mode“); don't announce it.
 - That the app knows shop prices or offers, compares stores, or fills in prices by itself. Only what the household types is shown.
 - That the currency follows the phone's country. It is euro until someone in the household changes it.
 - That a price entered in one currency is converted after a currency change. It keeps its own currency on its row and leaves the total until entered again.
 - Prices in Siri, Alexa, AI assistants or the API. They are only in the app.
 
-**Last verified.** 14 November 2026, code version 97b2907e, in the web app (German).
+**Last verified.** 15 November 2026, code version c3ea4261, in the web app (German), as test installs see it.
 
 ## Live sync between household members
 
@@ -432,11 +432,11 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 - Push notifications for a partner's changes.
 - That the list updates with the app fully closed in the background.
 
-**Last verified.** 14 November 2026, code version 97b2907e, in the web app (German).
+**Last verified.** 15 November 2026, code version c3ea4261, in the web app (German).
 
 ## Working offline
 
-**What it does.** The shopping list keeps working without a connection: adding, ticking off, putting back and editing items all show up immediately and are sent automatically once the phone is back online. The app also opens offline and shows the last list it had. A dark card at the top of the list says "Offline" as soon as the phone loses its connection (flight mode, Wi-Fi off), with no tap needed (right after the app starts or comes back to the front, it first waits up to 10 seconds for the server, see step 4), and goes away on its own a moment after the connection is back, when changes from others in the household arrive again right away; it folds into a small "Offline" pill after about 3 s or as soon as the user scrolls. When the server has trouble instead, and the app's own retry a few seconds later fails too, a yellow "Sync gestört" (EN "Sync failing") card says the changes are saved on the phone; a tap tries again, and once it works the card simply goes away. A single hiccup that the retry gets past shows nothing. Nothing shows while everything is in sync. Suggestions while typing still work offline, from items the household used before, even with a typo or part of a word, and the empty field still shows what is due again. A few settings-type actions (reordering stores or categories, adding, renaming or deleting a store, creating or joining a household, exporting data, deleting the account, sending feedback) need a connection and say so, also while the dialog or sheet they were started from is still open. Changes to categories made offline are not saved: the app says so and puts them back. If someone else added the same item while you were offline, your add becomes theirs when it syncs (no second row), and what you did to it offline, like ticking it off, goes to theirs. Amounts typed offline are read the same way as online, also as words („zwei Gurken“, "two apples"). Brand and details typed offline („Windeln Pampers Größe 3“) are sorted out when the add syncs, as for an online add. Someone in several households can switch to another one while offline: what they changed in the first is still sent once the phone is back online, without opening it again.
+**What it does.** The shopping list keeps working without a connection: adding, ticking off, putting back and editing items all show up immediately and are sent automatically once the phone is back online. The app also opens offline and shows the last list it had. A dark card at the top of the list says „Offline“ as soon as the phone loses its connection (flight mode, Wi-Fi off), with no tap needed (right after the app starts or comes back to the front, it first waits up to 10 seconds for the server, see step 4), and goes away on its own a moment after the connection is back, when changes from others in the household arrive again right away; it folds into a small „Offline“ pill after about 3 s or as soon as the user scrolls. When the server has trouble instead, and the app's own retry a few seconds later fails too, a yellow „Sync gestört“ (EN: "Sync failing") card says the changes are saved on the phone; a tap tries again, and once it works the card simply goes away. A single hiccup that the retry gets past shows nothing. Nothing shows while everything is in sync. Suggestions while typing still work offline, from items the household used before, even with a typo or part of a word, and the empty field still shows what is due again. A few settings-type actions (reordering stores or categories, adding, renaming or deleting a store, adding, renaming, reordering or deleting a list, creating or joining a household, exporting data, deleting the account, sending feedback) need a connection and say so, also while the dialog or sheet they were started from is still open. Changes to categories made offline are not saved: the app says so and puts them back. If someone else added the same item while you were offline, your add becomes theirs when it syncs (no second row), and what you did to it offline, like ticking it off, goes to theirs. Amounts typed offline are read the same way as online, also as words („zwei Gurken“, "two apples"). Brand and details typed offline („Windeln Pampers Größe 3“) are sorted out when the add syncs, as for an online add. Someone in several households can switch to another one while offline: what they changed in the first is still sent once the phone is back online, without opening it again.
 
 **How to get there.**
 1. Open „Liste“ (EN: "List") and use it as usual with the connection off.
@@ -447,16 +447,16 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 **Never claim.**
 - That a partner sees offline changes before they sync.
 - A "back online" or "synced" message: the indicator just goes away (screen readers hear „Synchronisiert“ after a tapped retry only).
-- That reordering stores or categories, adding or changing stores or categories, feedback or account actions work offline.
+- That reordering stores or categories, adding or changing stores, categories or lists, feedback or account actions work offline.
 - Offline voice dictation to a server: dictation stays on the device, but splitting text into items needs a connection.
 
 **Unverified.** Offline sign-in, and a first start offline before the list was ever synced (not covered by the automatic tests or read in detail).
 
-**Last verified.** 14 November 2026, code version 95316b50, in the web app (German).
+**Last verified.** 15 November 2026, code versions 07e1ad35 and c3ea4261, in the web app (German).
 
 ## Grocery log: „Verlauf“ (not switched on yet)
 
-**What it does.** Not public yet. Only our own test installs have it. With it on, a third tab „Verlauf“ (EN "History") sits between „Liste“ and „Mehr“. It is the household's record of shopping trips: one trip is one visit to one store on one day, with what was bought. It opens as a journal by date, „Diese Woche“, „Letzte Woche“, then by month (EN "This week", "Last week"), under a month calendar. A day with trips shows small overlapping dots, one per trip in the store's colour: Lidl twice and Rewe once is three dots. Three is the most a day shows, even with five trips. Tap a past day to see only its trips („Einkäufe am 11. November“, EN "Trips on November 11"), and tap the X to see all again. One button at the top switches to a view by store („Nach Laden anzeigen“, EN "Show by store") and back („Nach Datum anzeigen“, EN "Show by date"); the phone or browser remembers the choice. To record a trip by hand, tap „Eintragen“ (EN "Log"): pick the store or „Ohne Laden“ (EN "No store"), „Heute“, „Gestern“ or „Anderer Tag“ (EN "Today", "Yesterday", "Other day"), type what you bought with an optional amount, „Speichern“ (EN "Save"). Tap a trip to change it or „Einkauf löschen“ (EN "Delete trip") for everyone. On the list, after you tick off the last open item of a store, a card asks „Einkauf bei Lidl eintragen?“ (EN "Log your trip to Lidl?"): „Eintragen“ (EN "Log") opens the same form already filled in with the store, today and the ticked items; „Später“ (EN "Later") puts it away. Several stores in one outing give one card and one trip per store. A trip keeps the items as they were saved, so later changes on the list don't change it. Without Snacklist Premium (your own, or one the household has), the history shows the last 4 weeks; older trips are kept, shown as locked („Ältere Einkäufe siehst du mit Snacklist Premium“, EN "See older trips with Snacklist Premium"), and appear with Premium. The locked row names Premium and the count, nothing about buying it. Logging is unlimited for everyone.
+**What it does.** Not public yet. Only our own test installs have it. With it on, a third tab „Verlauf“ (EN "History") sits between „Liste“ and „Mehr“. It is the household's record of shopping trips: one trip is one visit to one store on one day, with what was bought. It opens as a journal by date, „Diese Woche“, „Letzte Woche“, then by month (EN "This week", "Last week"), under a month calendar. A day with trips shows small overlapping dots, one per trip in the store's colour: Lidl twice and Rewe once is three dots. Three is the most a day shows, even with five trips. Tap a past day to see only its trips („Einkäufe am 11. November“, EN "Trips on November 11"), and tap the X to see all again. One button at the top switches to a view by store („Nach Laden anzeigen“, EN "Show by store") and back („Nach Datum anzeigen“, EN "Show by date"); the phone or browser remembers the choice. To record a trip by hand, tap „Eintragen“ (EN "Log"): pick the store or „Ohne Laden“ (EN "No store"), „Heute“, „Gestern“ or „Anderer Tag“ (EN "Today", "Yesterday", "Other day"), type what you bought with an optional amount, „Speichern“ (EN "Save"). Tap a trip to change it or „Einkauf löschen“ (EN "Delete trip") for everyone. On the list, after you tick off the last open item of a store, a card asks „Einkauf bei Lidl eintragen?“ (EN "Log your trip to Lidl?"): „Eintragen“ (EN "Log") opens the same form already filled in with the store, today and the ticked items; „Später“ (EN "Later") puts it away. Several stores in one outing give one card and one trip per store. A pharmacy never gets a card. While a shopping trip runs (see „Trip mode“), the cards wait. A trip keeps the items as they were saved, so later changes on the list don't change it. Without Snacklist Premium (your own, or one the household has), the history shows the last 4 weeks; older trips are kept, shown as locked („Ältere Einkäufe siehst du mit Snacklist Premium“, EN "See older trips with Snacklist Premium"), and appear with Premium. The locked row names Premium and the count, nothing about buying it. Logging is unlimited for everyone.
 
 **How to get there.**
 1. Only on a test install that has it: tab „Verlauf“ (EN "History").
@@ -464,8 +464,8 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 3. On „Liste“ (EN "List"): tick off everything for one store, then „Eintragen“ (EN "Log") on the card.
 
 **Never claim.**
-- That the grocery log is available to users: it is not switched on for anyone yet.
-- Prices, totals, receipts, spending or budgets: none of them are part of it.
+- That the grocery log is available to users: it is not switched on for users yet (test installs only).
+- Prices, totals, receipts, spending or budgets: „Verlauf“ shows none of them. (In test installs that also have trip mode, a trip saved by it opens that trip's summary, which can show what was paid.)
 - That the whole history is free, or that it needs Premium today (Premium is not on sale); don't describe the 4-week window in public copy until the grocery log is switched on.
 - That a partner's trip appears live (it shows the next time the tab is opened).
 - That the card shows after a partner's ticks, after the first tick, or when the app is closed (it shows on the phone that ticked the store's last item, until logged or put off).
@@ -474,11 +474,11 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 
 **Unverified.** The iPhone and Android apps (only checked in the web app). The Premium view of older trips, and the tap from the locked row to the Premium page. Both need Premium on sale or a purchase, so only the automatic tests cover them.
 
-**Last verified.** 14 November 2026, code version 97b2907e, in the web app (German and English).
+**Last verified.** 15 November 2026, code version 377f1a0f, in the web app (German and English), as test installs see it, with and without trip mode.
 
 ## Trip mode (behind a flag, not public)
 
-**What it does.** Not public yet: it is switched on only for internal test installs (feature flag `trip-mode`). With it on, ticking an item off asks „Kaufst du gerade ein?“ (EN "Are you shopping right now?"). „Ja, Einkauf starten“ (EN "Yes, start a trip") starts a trip; „Nein, nur abgehakt“ (EN "No, just tick it off") only ticks the item, and the next tick asks again; „Zurücknehmen“ (EN "Untick") under „Aus Versehen abgehakt?“ (EN "Ticked off by mistake?") puts the item back. Items of a pharmacy (a store named Apotheke or pharmacy) never ask, and a trip leaves them out: they are not in its summary, its history entries or what it saves. A pharmacy trip can still be added to „Verlauf“ by hand. A trip can also be started under „Mehr“ › „Einkauf starten“ (EN "More" › "Start a trip"). While a trip runs, a dark bar above the add field shows a stopwatch, „Einkauf läuft“ (EN "Trip in progress"), a pause button („Pause“ / „Weiter“, EN "Pause" / "Resume") and „Beenden“ (EN "End"). When nothing has been ticked off for 45 minutes the trip pauses itself and says since when („Pause · seit 14:01 nichts abgehakt“, EN "Paused · nothing ticked since 14:01"); „Beenden um 14:01“ (EN "End at 14:01") then ends it at the last tick. After 4 hours without a tick it ends itself at the last tick and the list shows „Einkauf automatisch beendet“ (EN "Trip ended automatically") with „Doch weiter“ (EN "Keep going") and „Übersicht ansehen“ (EN "See summary"). At the end the summary „Geplant und gekauft“ (EN "Planned and bought") shows how long the trip took („25 Min. eingekauft“, EN "Shopped for 25 min"), how much of the list was bought („4 von 14 von der Liste gekauft · 1 zusätzlich“, EN "Bought 4 of 14 from the list · 1 extra") and, for each store, what was on the list at the start (bought or „nicht gekauft“, EN "not bought") and what came in since, including what someone else in the household added („von Noah“, EN "added by Noah"). An extra can be marked „War geplant“ (EN "Was planned"). In test installs that also show prices, each item shows what was paid and what was planned („1,80 € · geplant 1,50 € · 0,30 € mehr“), each store ends in „Bezahlt“ (EN "Paid") and the page in „Insgesamt bezahlt“ (EN "Paid in total"); items without a price are counted, not guessed. With the history („Verlauf“) also switched on, the trip shows there as one entry per store, and tapping one opens the same summary. The summary can delete the trip for everyone („Einkauf löschen“, EN "Delete trip"), with its history entries. Without Snacklist Premium the summary shows only the time, the stores and how many items were ticked off, and a card „Was war geplant, was kam dazu?“ (EN "What was planned, what did you add?") says that Premium shows the rest.
+**What it does.** Not public yet: it is switched on only for our own test installs. With it on, ticking an item off asks „Kaufst du gerade ein?“ (EN "Are you shopping right now?"). „Ja, Einkauf starten“ (EN "Yes, start a trip") starts a trip; „Nein, nur abgehakt“ (EN "No, just tick it off") only ticks the item, and the next tick asks again; „Zurücknehmen“ (EN "Untick") under „Aus Versehen abgehakt?“ (EN "Ticked off by mistake?") puts the item back. Items of a pharmacy (a store named Apotheke, pharmacy or DocMorris, for example) never ask, and a trip leaves them out: they are not in its summary, its history entries or what it saves. A pharmacy trip can still be added to „Verlauf“ by hand. A trip can also be started under „Mehr“ › „Einkauf starten“ (EN "More" › "Start a trip"). While a trip runs, a dark bar above the add field shows a stopwatch, „Einkauf läuft“ (EN "Trip in progress"), a pause button („Pause“ / „Weiter“, EN "Pause" / "Resume") and „Beenden“ (EN "End"). When nothing has been ticked off for 45 minutes the trip pauses itself and says since when („Pause · seit 14:01 nichts abgehakt“, EN "Paused · nothing ticked since 14:01"); „Beenden um 14:01“ (EN "End at 14:01") then ends it at the last tick. After 4 hours without a tick it ends itself at the last tick and the list shows „Einkauf automatisch beendet“ (EN "Trip ended automatically") with „Doch weiter“ (EN "Keep going") and „Übersicht ansehen“ (EN "See summary"). At the end the summary „Geplant und gekauft“ (EN "Planned and bought") shows how long the trip took („25 Min. eingekauft“, EN "Shopped for 25 min"), how much of the list was bought („4 von 14 von der Liste gekauft · 1 zusätzlich“, EN "Bought 4 of 14 from the list · 1 extra") and, for each store, what was on the list at the start (bought or „nicht gekauft“, EN "not bought") and what came in since, including what someone else in the household added („von Noah Brandt“, EN "added by Noah Brandt"; „von jemand anderem“, EN "added by someone else", for someone who has left). An extra can be marked „War geplant“ (EN "Was planned"). In test installs that also show prices, each item shows what was paid and what was planned („1,80 € · geplant 1,50 € · 0,30 € mehr“), each store ends in „Bezahlt“ (EN "Paid") and the page in „Insgesamt bezahlt“ (EN "Paid in total"); items without a price are counted, not guessed. With the history („Verlauf“) also switched on, the trip shows there as one entry per store, and tapping one opens the same summary. The summary can delete the trip for everyone („Einkauf löschen“, EN "Delete trip"), with its history entries. Without Snacklist Premium the summary shows only the time, the stores and how many items were ticked off, and a card „Was war geplant, was kam dazu?“ (EN "What was planned, what did you add?") says that Premium shows the rest.
 
 **How to get there.**
 1. Only on a test install with the flag on: tick an item off on „Liste“ (EN "List"), then „Ja, Einkauf starten“ (EN "Yes, start a trip").
@@ -486,36 +486,36 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 3. „Beenden“ (EN "End") on the dark bar for the summary; later from „Verlauf“ (EN "History").
 
 **Never claim.**
-- That trip mode is available to users: it is behind a flag, rollout off.
+- That trip mode is available to users: only test installs have it.
 - That the summary's planned-and-bought view or the amounts can be bought: Premium is not on sale.
 - That it tracks location, receipts, or prices it was not given: amounts come only from prices typed on the list.
 - That a partner sees the running trip or its stopwatch (the trip runs on the phone that started it; the household sees the saved result).
 - That it works with Siri, Alexa, AI assistants or the Snacklist API (it doesn't).
 - That the question comes only once: it comes after every tick while no trip runs.
 
-**Unverified.** The iPhone and Android apps (driven on the web build only); that a tick after the trip paused itself ends that pause (from the code, not driven); the button „Snacklist Premium ansehen“ on the locked card (not shown on the local stack; widget tests only); with the flag off nothing of this shows (widget tests only).
+**Unverified.** The iPhone and Android apps (driven on the web build only); that a tick after the trip paused itself ends that pause (from the code, not driven); the button „Snacklist Premium ansehen“ on the locked card (not shown on our test copy; automatic tests only).
 
-**Last verified.** branch job/234-trip-mode-impl 3bf4394f, 2026-11-14 (CET), driven on the web build with the flags `trip-mode`, `grocery-log` and `prices-and-trip-total` on (verify-snacklist `journeys/trip-mode.mjs`, German, English with dark, 358 px): every step passed, including no question and no log card for a pharmacy (GL-2), „War geplant“, „Einkauf löschen“ from the history, „Doch weiter“, and the store names as headings for screen readers. Pharmacy items left out of the trip (job 246): branch job/246-price-retention-pharmacy-trip on main a0cd3c73, 2026-11-14, from the app's and the database's automatic tests, not driven. Recipe: [trip-mode.md](./trip-mode.md).
-
-# Settings, help and account
+**Last verified.** 15 November 2026, code version 377f1a0f, in the web app (German; English with the dark theme and a small phone on c3ea4261), as test installs see it, including no question and no history card for a pharmacy or DocMorris.
 
 ## Decluttered list (behind a flag, not public)
 
-**What it does.** Not public yet: it is switched on only for internal test installs (feature flag `list-declutter`). With it on, the list's top shows one button with the household's name small above the list's name, instead of the household button and a row of list tabs. The top stays put and is see-through: the list scrolls on under it, and stays in full view behind the input and the tab bar at the bottom too. With prices on, the shopping total is a block after the open items instead of a bar above the add field: a line per store with its sum (tap one to jump to that store), „Ohne Laden“ (EN "No store") as a line of its own, then „Gesamt“ (EN "Total"). With one store it is just the total. Sums count what is still on the list; while a shopping trip runs they also count what was bought on it, split into „gekauft“ and „offen“ (EN "bought", "open"), and a store bought in full stays with „alles gekauft“ (EN "all bought"). With items still without a price a sum reads „mind. 32,08 €“ (EN "at least €32.08"); a price per kilo on the planned weight reads „≈ 1,51 €“ until the item is ticked or its label price is typed. The button opens the household's own page: its lists (tap one to show it), „Einladen“ (EN "Invite") and a row like „3 Mitglieder · 1 Einladung offen“ (EN "3 members · 1 open invite") that opens the members, where you revoke an open invite or (as owner or admin) remove someone. Inviting („Einladen“, „Leute einladen“, EN "Invite", "Invite people") opens as a page in the same sheet, with back to the members; ✕ closes the sheet from any page. Under „Gesamt“ the counts read „6 mit Preis · 1 ohne Preis“ (EN "6 with price · 1 without price"). „‹ Haushalte“ (EN "‹ Households") goes to all households, where a tap opens that household's page. Press and hold a list or a household and drag it to change the order; each person keeps their own order of households. On „Deine Haushalte“ one row says who Siri, Alexa and AI assistants add to: „Siri, Alexa & KI nutzen:“ (EN "Siri, Alexa & AI use:") with the household and, below it, its list, each name in full on its own line, also at very large text. A tap picks the household, then that household's list, inside the same sheet; „‹“ goes back a step without saving, and picking the list saves both.
+**What it does.** Not public yet: it is switched on only for our own test installs. With it on, the list's top shows one button with the household's name small above the list's name, instead of the household button and a row of list tabs. The top stays put and is see-through: the list scrolls on under it, and stays in full view behind the input and the tab bar at the bottom too. With prices on, the shopping total is a block after the open items instead of a bar above the add field: a line per store with its sum (tap one to jump to that store), „Ohne Laden“ (EN "No store") as a line of its own, then „Gesamt“ (EN "Total"). With one store it is just the total. Sums count what is still on the list; while a shopping trip runs they also count what was bought on it, split into „gekauft“ and „offen“ (EN "bought", "open"), and a store bought in full stays with „alles gekauft“ (EN "all bought"). With items still without a price a sum reads „mind. 32,08 €“ (EN "at least €32.08"); a price per kilo on the planned weight reads „≈ 1,51 €“ until the item is ticked or its label price is typed. The button opens the household's own page: its lists (tap one to show it), „Einladen“ (EN "Invite") and a row like „3 Mitglieder · 1 Einladung offen“ (EN "3 members · 1 open invite") that opens the members, where you revoke an open invite or (as owner or admin) remove someone. Inviting („Einladen“, „Leute einladen“, EN "Invite", "Invite people") opens as a page in the same sheet, with back to the members; ✕ closes the sheet from any page. Under „Gesamt“ the counts read „6 mit Preis · 1 ohne Preis“ (EN "6 with price · 1 without price"). The back arrow „Haushalte“ (EN "Households") at the top of the sheet goes to all households, where a tap opens that household's page. Press and hold a list or a household and drag it to change the order; each person keeps their own order of households. On „Deine Haushalte“ one row says who Siri, Alexa and AI assistants add to: „Siri, Alexa & KI nutzen:“ (EN "Siri, Alexa & AI add to:") with the household after a house icon and, below it, its list after a checklist icon, each name in full on its own line, also at very large text. A tap picks the household, then that household's list, inside the same sheet; the back arrow at the top goes back a step without saving, and picking the list saves both.
 
 **How to get there.**
 1. Only on a test install with the flag on: tab „Liste“, the button top left.
-2. Another household: in that sheet „‹ Haushalte“, then the household, then one of its lists.
+2. Another household: in that sheet the back arrow „Haushalte“ (EN "Households"), then the household, then one of its lists.
 3. Members: the members row under the household's name.
 4. Reorder: press and hold a list or a household in the sheet, drag up or down.
 
 **Never claim.**
-- That the new look is available to users: it is behind a flag, rollout off.
+- That the new look is available to users: only test installs have it.
 - That the totals are exact while they read „mind.“ or „≈“, or that ticked items count when no trip runs.
 - That the order of households is shared: it is each person's own; the order of lists is the household's.
-- That lists can be reordered offline, or that the bottom bar changed: the add field and the three tabs are as before.
+- That lists can be reordered offline, or that the bottom bar changed: the add field and the tabs are as before.
 
-**Last verified.** branch job/229-list-declutter-impl, 2026-11-14 (CET), driven on the web build with the flag on, German light and English dark, 100 % and 130 % text (`journeys/list-declutter.mjs`, PASS). The totals block: branch job/237-store-subtotals-st3-impl, 2026-11-14 (CET), German light and English dark, 100 % and 160 % text (`journeys/list-summary.mjs`, PASS). The clear top and bottom, invite as a page of the sheet and the Gesamt counts: branch job/242-declutter-sheet-transparency, 2026-11-15 (CET), German light and English dark (`journeys/list-declutter.mjs`, `journeys/list-summary.mjs`, PASS). The one row for Siri, Alexa & KI with its household and list steps: branch job/248-voice-default-picker, 2026-11-15 (CET), German light and English dark at 100 %, German and English at 200 % on a 320 px phone (`journeys/voice-default.mjs`, PASS). Recipe: [list-declutter.md](./list-declutter.md).
+**Last verified.** 15 November 2026, code version 377f1a0f, in the web app (German, English with the dark theme, larger text), as test installs see it; the totals block on c3ea4261.
+
+# Settings, help and account
 
 ## Theme: System, light, dark
 
@@ -530,7 +530,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 - A scheduled or automatic day/night switch beyond „System“.
 - The old label „Wie Gerät“ for the theme (it is „System“ since 2026-11-01).
 
-**Last verified.** 14 November 2026, code version 97b2907e, in the web app (German).
+**Last verified.** 15 November 2026, code version c3ea4261, in the web app (German).
 
 ## App language
 
@@ -546,7 +546,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 - That Alexa or AI assistants answer in the app's language: Alexa answers in the language of the Alexa device (German or English), AI assistants get German answers.
 - That everything is English once the app is set to English: suggestions from the catalogue („Aus dem Katalog“, EN: "From the catalog") stay German words, and the Siri Shortcut answers in German. (The sign-in emails follow the app language: German or English.)
 
-**Last verified.** 14 November 2026, job 245 (before merge), in the web app (English, 27 screens and the guided start).
+**Last verified.** 15 November 2026, code version c3ea4261, in the web app (English, 27 screens; a French browser gets English; the switch in Einstellungen).
 
 ## Feedback
 
@@ -563,13 +563,13 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 - That list contents are sent.
 - That users can read their sent notes back in the app (they come back only in their own data export, Konto → „Meine Daten exportieren“, EN "Export my data").
 
-**Unverified.** How quickly or by what channel Peter sees notes (not in the app).
+**Note.** Peter reads the notes himself. A daily email summary of new notes to him is built but not switched on. Don't promise how fast a note is read.
 
-**Last verified.** 14 November 2026, code version 97b2907e, in the web app (German).
+**Last verified.** 15 November 2026, code version 377f1a0f, in the web app (German).
 
 ## The More tab, help and legal pages
 
-**What it does.** The app has two tabs, List and More. On phones they sit in a small pill that floats at the bottom of the screen; the list scrolls on behind it. More is a short list of grouped rows, each one line with an icon, in this order: „Konto“ (EN: "Account") and, for a household that has Premium (a free unlock in the beta or for testers) or once Premium is on sale, „Snacklist Premium“; the household's name (it opens the household's page), „Partner einladen“ (EN: "Invite your partner"); „Zugänge“ (EN: "Access"); „Einstellungen“ (EN: "Settings") and „Nutzungsdaten“ (EN: "Usage data"); „Tipps“ (EN: "Tips"), „Feedback senden“ (EN: "Send feedback"), in the iPhone and Android apps „Snacklist bewerten“ (EN: "Rate Snacklist"), and „Hilfe & Kontakt“ (EN: "Help & contact"); then a group with „Impressum“ (EN: "Imprint"), „Datenschutzerklärung“ (EN: "Privacy policy"), „Nutzungsbedingungen (EULA)“ (EN: "Terms of Use (EULA)") and „Lizenzen“ (EN: "Licenses"); then „Abmelden“ (EN: "Sign out") on its own, looking like any other row, and the app version at the bottom. Categories and stores are under the list's „Anpassen“. „Nutzungsdaten“ opens a page with just the usage-data switch. Help, imprint and privacy policy open pages on snacklist.app in the browser; the terms open Apple's standard terms on iPhone and, until Snacklist has its own, the help page elsewhere. The imprint is two taps from the list: „Mehr“, then „Impressum“.
+**What it does.** The app has two tabs, List and More (test installs with the shopping history have a third, see „Verlauf“). On phones they sit in a small pill that floats at the bottom of the screen; the list scrolls on behind it. More is a short list of grouped rows, each one line with an icon, in this order: „Konto“ (EN: "Account") and, for a household that has Premium (a free unlock in the beta or for testers) or once Premium is on sale, „Snacklist Premium“; the household's name (it opens the household's page), „Partner einladen“ (EN: "Invite your partner"); „Zugänge“ (EN: "Access"); „Einstellungen“ (EN: "Settings") and „Nutzungsdaten“ (EN: "Usage data"); „Tipps“ (EN: "Tips"), „Feedback senden“ (EN: "Send feedback"), in the iPhone and Android apps „Snacklist bewerten“ (EN: "Rate Snacklist"), and „Hilfe & Kontakt“ (EN: "Help & contact"); then a group with „Impressum“ (EN: "Imprint"), „Datenschutzerklärung“ (EN: "Privacy policy"), „Nutzungsbedingungen (EULA)“ (EN: "Terms of Use (EULA)") and „Lizenzen“ (EN: "Licenses"); then „Abmelden“ (EN: "Sign out") on its own, looking like any other row, and the app version at the bottom. Categories and stores are under the list's „Anpassen“. „Nutzungsdaten“ opens a page with just the usage-data switch. Help, imprint and privacy policy open pages on snacklist.app in the browser; the terms open Apple's standard terms on iPhone and, until Snacklist has its own, the help page elsewhere. The imprint is two taps from the list: „Mehr“, then „Impressum“.
 
 **How to get there.**
 1. Tap „Mehr“ (EN: "More") in the pill at the bottom (on wide screens: the rail on the left).
@@ -588,7 +588,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 - That „Rechtliches“ (EN: "Legal") is a page of its own or a heading on More: its entries are plain rows on More, in a group without a heading like every other group.
 - Terms of use of Snacklist's own: the terms row shows Apple's standard terms on iPhone and the help page elsewhere.
 
-**Last verified.** 14 November 2026, code version 97b2907e, in the web app (German).
+**Last verified.** 15 November 2026, code version c3ea4261, in the web app (German).
 
 ## Rating Snacklist in the store
 
@@ -606,7 +606,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 
 **Unverified.** The rating window on a real phone (no phone was available), and the store page opening on a real phone.
 
-**Last verified.** 14 November 2026, code version 97b2907e, in the web app; the store's rating dialog needs a store install and was not checked.
+**Last verified.** 15 November 2026, code version 07e1ad35, in the web app; the store's rating dialog needs a store install and was not checked.
 
 ## Account: data export and deletion
 
@@ -626,7 +626,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 
 **Unverified.** Apple sign-in revocation on iPhone (no iOS surface to test).
 
-**Last verified.** 14 November 2026, code version 97b2907e, in the web app (German).
+**Last verified.** 15 November 2026, code version 07e1ad35, in the web app (German); the export's contents on c3ea4261.
 
 # Connections and Premium
 
@@ -657,7 +657,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 
 **Not switched on yet: the Snacklist API.** Built but switched off for everyone: the app hides it and the server refuses its keys and requests. When it is on, Zugänge gets a section „API“ with an address, a link „API-Dokumentation“ and the button „API-Schlüssel erstellen“ (EN "Create API key"): the user names the key, picks „Nur lesen“ or „Lesen und schreiben“ (EN "Read only", "Read and write") and copies it once. Scripts and automations then read and change the list over HTTP. Do not announce it until Snacklist Launch says so. Never claim it today, nor a short address like api.snacklist.app (none exists).
 
-**Last verified.** 14 November 2026, code version 97b2907e, in the web app (German).
+**Last verified.** 15 November 2026, code version 07e1ad35, in the web app (German).
 
 ## Siri
 
@@ -677,10 +677,11 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 - That English sentences are split correctly through the Shortcut (German only).
 - That it needs Premium, now or after the public launch. Siri is free for everyone and stays free, like the Alexa skill. Peter approved this.
 - That the voice microphone in the app works on the web (iOS and Android apps only).
+- That Siri ticks items off, or works with the new Siri of Apple Intelligence. Neither is built.
 
 **Unverified.** Real Siri voice on a device; the Shortcut on current iOS versions. Siri without setup in German: the phone tests of a test version on 3 Nov 2026 sent „Füge … zur Hummliste hinzu“ to Reminders or answered „Hummlist unterstützt das nicht“ (the app was still called Hummlist then). The fix (sentences that name Snacklist first or as the object, like „Etwas auf Snacklist setzen“ and „Snacklist, was steht drauf?“; any item in „Füge Zahnpasta zu Snacklist hinzu“; Siri asks once to be allowed for Snacklist) waits for the next German device test. Never write „Einkaufsliste“ as a Snacklist Siri sentence: Siri gives it to Reminders. Built since, not yet tried on a device: Siri says the name „Snacklist“ and no longer takes a name ending in „Liste“ for it, more German sentences („Füge etwas zu meiner Snacklist hinzu“, „Zeig meine Snacklist“), the household's own words for an item („Möhren“ for „Karotten“), and on an error Siri answers instead of opening the app. The iPhone app needs iOS 17 or newer.
 
-**Last verified.** 14 November 2026, code version 95316b50, from the server's answers (Siri itself needs an iPhone).
+**Last verified.** 15 November 2026, code version c3ea4261, from the server's answers (Siri itself needs an iPhone).
 
 ## Home Screen widget (not announced yet)
 
@@ -701,7 +702,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 
 **Unverified.** Everything on a real device: the look in light and dark, both sizes, the taps.
 
-**Last verified.** 14 November 2026, code version 97b2907e, from the app's code and its automatic tests (the widget only exists on iPhone and Android).
+**Last verified.** 15 November 2026, code version c3ea4261, from the app's code and its automatic tests (the widget only exists on iPhone and Android).
 
 ## Alexa skill (beta)
 
@@ -727,7 +728,7 @@ Since 10 November 2026 the skill is called Snacklist, with the invocation „sna
 
 **Unverified.** Real Alexa voice, the Alexa app screens and the beta invitation flow (no device or Amazon account here).
 
-**Last verified.** 14 November 2026, code version 97b2907e, from the server's answers (Alexa itself needs an Echo or the Alexa app). The named lists: code version 95316b50, checked by the team on 13 November 2026 on a test copy on our own computer.
+**Last verified.** 15 November 2026, code version c3ea4261, from the server's answers (Alexa itself needs an Echo or the Alexa app). The named lists: code version 95316b50, checked by the team on 13 November 2026 on a test copy on our own computer.
 
 ## Snacklist Premium (not on sale yet)
 
@@ -744,9 +745,10 @@ Since 10 November 2026 the skill is called Snacklist, with the invocation „sna
 - That there is a free trial.
 - The line „Einer kauft. Alle haben es.“ (EN "One buys. Everyone has it.") in the web app. It never shows there, also not once sales start. It is only in the iPhone and Android apps.
 - That Mehr shows Snacklist Premium to everyone (it does once Premium is on sale).
+- That Premium unlocks a comparison of planned and bought items after shopping, or older shopping trips. Both are built for test installs only and are not announced.
 
 **When it goes on sale.** Nothing changes for users until Peter says go. Ask Peter for the launch copy's source; don't write it from this section.
 
 **Unverified.** Real store purchases (no store test account was available). Whether the usage data ever records a visit to the buy page in the released app (it should not).
 
-**Last verified.** 14 November 2026, code version 97b2907e, in the web app (German).
+**Last verified.** 15 November 2026, code version 07e1ad35, in the web app (German).

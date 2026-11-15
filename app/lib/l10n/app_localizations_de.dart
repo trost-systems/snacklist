@@ -3233,6 +3233,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get voiceDefaultLabel => 'Siri, Alexa & KI nutzen:';
 
   @override
+  String voiceDefaultHouseholdName(String household) {
+    return 'Haushalt: $household';
+  }
+
+  @override
   String get voiceDefaultBack => 'Siri, Alexa & KI';
 
   @override

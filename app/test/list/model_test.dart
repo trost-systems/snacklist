@@ -42,11 +42,12 @@ void main() {
       'Farmacia Roma',
       'Apteka',
       'Eczane',
+      'DocMorris',
     ]) {
       expect(store(name).isPharmacy, isTrue, reason: name);
     }
     expect(store('Ecke', seed: 'apotheke').isPharmacy, isTrue);
-    for (final name in ['dm', 'Rossmann', 'Lidl', 'Müller', 'DocMorris']) {
+    for (final name in ['dm', 'Rossmann', 'Lidl', 'Müller']) {
       expect(store(name).isPharmacy, isFalse, reason: name);
     }
   });

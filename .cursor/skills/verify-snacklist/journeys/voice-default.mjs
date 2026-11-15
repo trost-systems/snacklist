@@ -119,7 +119,8 @@ try {
   await page.waitForTimeout(800);
   const after = (await voiceRow().ariaSnapshot());
   log(`row after: ${after}`);
-  assert(after.includes(otherName) && after.includes(longList), 'the row names the new household and list');
+  const heard = [L('voiceDefaultHouseholdName', { household: otherName }), L('defaultListRow', { list: longList })];
+  assert(heard.every((part) => after.includes(part)), `the row names the new household and list as ${JSON.stringify(heard)}`);
   await shot('04-saved');
   if (errors.length) throw new Error(`page errors: ${errors.join('; ')}`);
 } catch (error) {

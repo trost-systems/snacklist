@@ -1,7 +1,9 @@
 # Review: add-tick
 
-Mia types two items into the real add sheet, closes it, the rows sit in their category, and she
-ticks both off again. One take per language, one phone, 11.0 to 11.8 s.
+Anna of „Unser Haushalt“ types two items into the real add sheet, closes it, the view follows
+them to the top of the list where they sit in the Wochenmarkt, and she ticks both off again. One
+take per language, one phone, 12.1 to 12.5 s (job 215). The sections up to job 150 describe the
+earlier takes with Mia of the Brandt family.
 
 ## Hand-over notes (snacklist-ui-craft)
 
@@ -59,6 +61,25 @@ Filmed again from main 02cc9da8 (job 148's floating top bar and hex Anpassen) wi
 microphone in the add field: the Linux capture build now starts with `FG_DICTATION`
 (`test_driver/main_marionette.dart`), so the field looks as on a phone. Same shots and timing.
 
+## Re-take (job 215, 2026-11-14)
+
+Filmed again from main 789ffd6a with the demo household „Unser Haushalt“ (EN "Our Home"), Anna
+alone (`demo-haushalt.yaml`, `demo-household-en.yaml`): four generic stores, no retailer, no
+Premium, no price.
+
+- Honig and Marmelade (Honey, Jam) were bought at the Wochenmarkt (Farmers market) five weeks
+  back, so the app's item→store memory puts them in the first store, under the household name.
+- The add field sits at the bottom of the screen and the household name at the top, too far
+  apart for one legible crop. The view now pans (`pans` in `lib.mjs` `phone`, 0.7 s): from the
+  add field up to the top of the list when the sheet closes, and back down after the second
+  tick. The poster is the top of the list: „Unser Haushalt“, the Wochenmarkt and both new rows.
+- The capture signs in through the guided start's „Anmelden“ (job 168b) before the login form.
+- Wide: phone narrowed to 333 u (k 0.75) so the household name and both new rows fit one crop;
+  the caption column moved left to 381 u.
+- Checked: ffprobe of all eight web files (sizes, codecs, 30 fps, no audio, `+faststart`, 12.1
+  to 12.5 s); first, middle and last frame of every cut and all four posters; seam SSIM 0.9967
+  to 0.9971. Only Anna, „Unser Haushalt“/"Our Home" and the four generic stores appear.
+
 ## Kept warnings (hyperframes check)
 
 - `line_unread` on the last caption: it is the first caption again (loop seam), on screen for
@@ -71,23 +92,23 @@ microphone in the add field: the Linux capture build now starts with `FG_DICTATI
 <!-- report -->
 | Cut | File | Codec | Size | fps | Duration | Bytes | Audio |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| de-wide | master (render) | h264 yuv420p | 1920x1080 | 30/1 | 11.20 s | 1425 KB | none |
-| de-wide | add-tick-de-wide.mp4 | h264 yuv420p | 1920x1080 | 30/1 | 11.20 s | 492 KB | none |
-| de-wide | add-tick-de-wide.webm | vp9 yuv420p | 1920x1080 | 30/1 | 11.20 s | 419 KB | none |
-| de-compact | master (render) | h264 yuv420p | 1080x1350 | 30/1 | 11.20 s | 1026 KB | none |
-| de-compact | add-tick-de-compact.mp4 | h264 yuv420p | 1080x1350 | 30/1 | 11.20 s | 389 KB | none |
-| de-compact | add-tick-de-compact.webm | vp9 yuv420p | 1080x1350 | 30/1 | 11.20 s | 388 KB | none |
-| en-wide | master (render) | h264 yuv420p | 1920x1080 | 30/1 | 11.20 s | 1182 KB | none |
-| en-wide | add-tick-en-wide.mp4 | h264 yuv420p | 1920x1080 | 30/1 | 11.20 s | 421 KB | none |
-| en-wide | add-tick-en-wide.webm | vp9 yuv420p | 1920x1080 | 30/1 | 11.20 s | 361 KB | none |
-| en-compact | master (render) | h264 yuv420p | 1080x1350 | 30/1 | 11.20 s | 853 KB | none |
-| en-compact | add-tick-en-compact.mp4 | h264 yuv420p | 1080x1350 | 30/1 | 11.20 s | 339 KB | none |
-| en-compact | add-tick-en-compact.webm | vp9 yuv420p | 1080x1350 | 30/1 | 11.20 s | 322 KB | none |
+| de-wide | master (render) | h264 yuv420p | 1920x1080 | 30/1 | 12.50 s | 2735 KB | none |
+| de-wide | add-tick-de-wide.mp4 | h264 yuv420p | 1920x1080 | 30/1 | 12.50 s | 1046 KB | none |
+| de-wide | add-tick-de-wide.webm | vp9 yuv420p | 1920x1080 | 30/1 | 12.50 s | 689 KB | none |
+| de-compact | master (render) | h264 yuv420p | 1080x1350 | 30/1 | 12.50 s | 2323 KB | none |
+| de-compact | add-tick-de-compact.mp4 | h264 yuv420p | 1080x1350 | 30/1 | 12.50 s | 872 KB | none |
+| de-compact | add-tick-de-compact.webm | vp9 yuv420p | 1080x1350 | 30/1 | 12.50 s | 723 KB | none |
+| en-wide | master (render) | h264 yuv420p | 1920x1080 | 30/1 | 12.10 s | 2402 KB | none |
+| en-wide | add-tick-en-wide.mp4 | h264 yuv420p | 1920x1080 | 30/1 | 12.10 s | 885 KB | none |
+| en-wide | add-tick-en-wide.webm | vp9 yuv420p | 1920x1080 | 30/1 | 12.10 s | 638 KB | none |
+| en-compact | master (render) | h264 yuv420p | 1080x1350 | 30/1 | 12.10 s | 2128 KB | none |
+| en-compact | add-tick-en-compact.mp4 | h264 yuv420p | 1080x1350 | 30/1 | 12.10 s | 788 KB | none |
+| en-compact | add-tick-en-compact.webm | vp9 yuv420p | 1080x1350 | 30/1 | 12.10 s | 687 KB | none |
 
 | Cut | Seam SSIM (first vs last frame) | Poster | Poster at |
 | --- | --- | --- | --- |
-| de-wide | 0.9969 | add-tick-de-wide.webp, 30 KB | 7.47 s |
-| de-compact | 0.9971 | add-tick-de-compact.webp, 30 KB | 7.47 s |
-| en-wide | 0.9968 | add-tick-en-wide.webp, 28 KB | 7.27 s |
-| en-compact | 0.9970 | add-tick-en-compact.webp, 27 KB | 7.27 s |
+| de-wide | 0.9970 | add-tick-de-wide.webp, 30 KB | 7.83 s |
+| de-compact | 0.9967 | add-tick-de-compact.webp, 34 KB | 7.83 s |
+| en-wide | 0.9971 | add-tick-en-wide.webp, 26 KB | 7.47 s |
+| en-compact | 0.9968 | add-tick-en-compact.webp, 29 KB | 7.47 s |
 <!-- /report -->

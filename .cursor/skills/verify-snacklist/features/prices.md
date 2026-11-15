@@ -1,6 +1,6 @@
 # Prices, store subtotals and the shopping total
 
-Behind the PostHog flag `prices-and-trip-total` (rollout off in `releases/flags.json`), every row on the list carries a small hex chip at its end: „+ Preis“ / "+ Price" without a price, else the line's total („2,38 €“). A tap on the chip opens a price editor under the row; a tap on the rest of the row still ticks it. Saving a price never ticks the item, and ticking never asks for one. Each store section ends with „Summe <Laden> <Betrag>“ / "Total <store> <amount>", and a bar under the list shows „Einkaufssumme“ / "Shopping total" with „N mit Preis · M offen“ / "N priced · M open" and the sum of the shown list, all stores together. The household page gets „Währung“ / "Currency" (default EUR); any member changes it, for everyone. Prices, subtotals, the total and the currency reach the other members live. It is Free: no Premium check anywhere.
+Behind the PostHog flag `prices-and-trip-total` (rollout off in `releases/flags.json`; on for internal testers, who also have `list-declutter`, so they see list-declutter `ld-total` instead of `pr-subtotal` and `pr-total`), every row on the list carries a small hex chip at its end: „+ Preis“ / "+ Price" without a price, else the line's total („2,38 €“). A tap on the chip opens a price editor under the row; a tap on the rest of the row still ticks it. Saving a price never ticks the item, and ticking never asks for one. Each store section ends with „Summe <Laden> <Betrag>“ / "Total <store> <amount>", and a bar under the list shows „Einkaufssumme“ / "Shopping total" with „N mit Preis · M offen“ / "N priced · M open" and the sum of the shown list, all stores together. The household page gets „Währung“ / "Currency" (default EUR); any member changes it, for everyone. Prices, subtotals, the total and the currency reach the other members live. It is Free: no Premium check anywhere.
 
 ## Sub-features
 
@@ -13,8 +13,8 @@ Behind the PostHog flag `prices-and-trip-total` (rollout off in `releases/flags.
 - `pr-limits` a line from −9.999,00 to 9.999,00 in the household currency; 0 and negative (deposit returns) are allowed. Weight and volume over 0 and up to 50 kg or 50 l. Messages: „Gib einen Preis ein.“, „Zwischen -9.999,00 € und 9.999,00 € pro Artikel.“ (above and below), „Gib das Gewicht ein.“, „Das Gewicht muss über 0 g liegen.“, „Höchstens 50 kg.“ (and the „Menge“ versions for litres).
 - `pr-last-time` when the same thing (same item or another spelling of it) had a price on an earlier day, the editor's line adds „0,30 € teurer als zuletzt“ / „billiger als zuletzt“ / „Wie zuletzt“ ("more than last time", "less than last time", "Same as last time").
 - `pr-today` a price counts for the total on the day it was entered (the device's calendar day). From the next day the chip shows „+ Preis“ again, and the old price is only last time's.
-- `pr-subtotal` each store section with a priced item ends with „Summe <Laden> <Betrag>“, also „Summe Ohne Laden …“.
-- `pr-total` the bar under the list, one screen-reader text „Einkaufssumme <Betrag>, <N> mit Preis, <M> offen“. It sums the shown list's items with today's price in the household currency, open and ticked ones; „offen“ counts open items without one. With several lists each tab has its own total. The bar shows only while the list has items.
+- `pr-subtotal` (only with `list-declutter` off) each store section with a priced item ends with „Summe <Laden> <Betrag>“, also „Summe Ohne Laden …“.
+- `pr-total` (only with `list-declutter` off) the bar under the list, one screen-reader text „Einkaufssumme <Betrag>, <N> mit Preis, <M> offen“. It sums the shown list's items with today's price in the household currency, open and ticked ones; „offen“ counts open items without one. With several lists each tab has its own total. The bar shows only while the list has items.
 - `pr-currency` household page „Währung“: a row „EUR · €“ with „Für Preise und die Einkaufssumme, für alle im Haushalt“; a tap opens „Währung wählen“ with 15 codes (EUR, CHF, GBP, USD, PLN, CZK, SEK, DKK, NOK, HUF, RON, BGN, TRY, CAD, AUD). Amounts are written the way the app's language writes them („1,50 CHF“). A price typed before a change keeps its own currency on its row and leaves the total until it is entered again.
 - `pr-live` another member sees a saved price, the subtotals, the total and a currency change within a couple of seconds, without a reload.
 - `pr-flag-off` without the flag: no chip, no editor, no subtotal lines, no total bar, no „Währung“.
@@ -22,7 +22,7 @@ Behind the PostHog flag `prices-and-trip-total` (rollout off in `releases/flags.
 ## How to get to it (user POV)
 
 - List tab: the chip at a row's end („+ Preis“ / "+ Price", or the amount).
-- The total bar right above the add bar, „Einkaufssumme“ / "Shopping total".
+- The total bar right above the add bar, „Einkaufssumme“ / "Shopping total" (with `list-declutter` off; with it on, the summary block after the last section, list-declutter `ld-total`).
 - „Mehr“ / "More" → the household („Unser Haushalt“, or its name) → section „Währung“ / "Currency".
 
 ## Driving it with Playwright
@@ -46,6 +46,8 @@ Preconditions:
 
 ## Gotchas
 
+- A duplicate merge keeps no price: its „Rückgängig“ brings the merged-in item back without one, and the stored merge keeps no price columns (quick-add `qa-dedupe-hint`, job 246).
+- With `list-declutter` on, a per-kg or per-l price typed per unit on an open item reads „≈ <Betrag>“ on the chip („Preis für <Name>: etwa <Betrag>, ändern“), and a per-kg price on a quantity without a weight sums nothing and counts as „ohne Preis“ in the block (job 237 review, list-declutter `ld-total`). The bar of `pr-total` (declutter off) counts such an item neither „mit Preis“ nor „offen“ (driven 2026-11-15 on c3ea4261: „3“ Gurken at 2,99 €/kg left „4 mit Preis, 11 offen“ as it was).
 - Flags load only after an analytics yes. A spec or journey that declines (the helpers' default) never sees the feature, and `isOn` stays false without an error.
 - `reveal`, `tick` and `listArea` measure from the add field, which is hidden while the editor is open: close the editor before using them.
 - Ticking still works with the chip there: click the row's middle (`itemRow(...).click()`), not its end.

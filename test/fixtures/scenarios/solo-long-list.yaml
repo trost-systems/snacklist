@@ -73,7 +73,7 @@ households:
       - { name: Mineralwasser, quantity: "2 Kisten", store: Supermarkt }
       - Apfelsaft
       - Orangensaft
-      - Bier
+      - Limonade
       - Kaffee
       - Tee
       # Tiefkühl

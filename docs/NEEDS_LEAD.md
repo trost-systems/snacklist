@@ -2354,3 +2354,49 @@ One deviation from the brief's model rule: the job's first subagent, a read-only
 that summarized the closed hill-climbs' notes, ran on `claude-opus-5-5`, the model that agent
 type carries (11 messages, 72 s). It wrote no code and reviewed nothing. Every build step and
 every review round ran on `claude-fable-5-2`.
+
+## Job 215: store screenshots, for Peter and Legal before any upload (2026-11-14)
+
+Status: open. Nothing was uploaded. Every caption is `draft` in
+`marketing/store-screenshots/captions.yaml`.
+
+1. **Contact sheets** (de-DE, en-US) and the feature graphic are in `docs/screenshots/215/` and the
+   PR body. The workflow "Store screenshots" makes the full set as an artifact once it is on main.
+2. **Legal checks the wording**, the named variants first. Alexa may be named only once the
+   skill is certified and live. Siri is named only on the App Store, as „Funktioniert mit Siri“,
+   with no logo and no "Hey Siri" (`docs/store/store-captions-assistants.md`).
+3. **(Superseded by "Job 215 update" items 2 and 3: the api shot and `--premium-label`.)** **Decide before launch: MCP and Premium.** Once AI assistants need Premium, Apple 2.3.2
+   requires the screenshot to say the feature needs a purchase, and the brief forbids Premium in
+   frames. Either add a note like „Mit Abo“ or drop the assist shot.
+4. **(Superseded: `named_api` is gone; the API is named on the api shot, "Job 215 update" item 2.)** **API caption** (`named_api`): only after the `public-api` flag is on and the API is announced.
+5. **Invite caption**: Peter's wording, without a number (see the updates below).
+6. **en-US** captions are drafts written in English. They need a native read.
+
+## Job 215 update: review 1 and the evening addenda (2026-11-14)
+
+Status: open for Peter and Legal. Nothing is uploaded and every caption is `draft`.
+
+1. **(Superseded: Peter decided at 20:20, t883u; his wording „Lade alle ein. So viele Listen, wie ihr wollt.“ is in every invite frame.)** **Invite caption.** The lead and Peter disagree. The lead's true wording is the default:
+   „Lade alle ein. Mehrere Listen für jeden Anlass.“ / "Invite everyone. Separate lists for
+   everything." Peter's „so viele Listen, wie ihr wollt“ runs into the 50-list cap. Peter
+   confirms the default or picks other words without a number.
+2. **The MCP and API frame is built**: the real Zugänge screen with production hosts and no key
+   (shot 7 of 8). It shows the project's `…supabase.co` API address, because the API has no
+   shorter one.
+3. **Premium label.** MCP and the API are free today, so the default has no label. Once they are
+   paid, App Store 2.3.2 requires one: render with `--premium-label` („Mit Snacklist Premium“,
+   no price).
+4. **Siri and Alexa variants** follow the research. `named` names the Snacklist skill for
+   Amazon Alexa and waits for the skill's certification. `named_siri` names Siri alone on the
+   App Store. Legal picks one in the 15 November batch.
+5. **Age rating 4+.** Checked: no alcohol or tobacco in any frame, video or seed. The one „Bier“
+   in the `mcp-chat` seed is now „Limonade“.
+
+## NEEDS_LEAD Job 252 follow-up: captions for Legal's final check
+
+Status: open. Nothing was uploaded. Store frames follow Legal N-187 to N-195 (#458, `docs/DECISIONS.md` "Job 252").
+
+1. **Play has 7 phone frames, not 8.** The MCP and API frame is gone: its screen showed the API section, an MCP hint naming AI brands and the Siri section. The chat frame is the AI-assistants frame. Peter and Lead should hear this before upload.
+2. **Legal's final check** of every caption: `docs/screenshots/215/CAPTIONS.md`. Open there: the feature-graphic tagline („Gemeinsam einkaufen, ohne Werbung.“ / "Shop together, no ads."), and „So viele Listen, wie ihr wollt“ against the 50-list cap.
+3. **1 Dec release (N-193):** when `integration-lock` goes on, render with `scripts/store-screenshots.sh --premium-label` before uploading the AI frame, so both stores carry „Mit Snacklist Premium“ / "With Snacklist Premium".
+4. The old frames in `docs/screenshots/215/` (Alexa, Siri-and-Alexa, API) are deleted; the contact sheets there are the new set.

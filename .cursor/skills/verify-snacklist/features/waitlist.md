@@ -21,7 +21,7 @@ snacklist.app/de and /en keep their landing page (hummlist.com redirects here, S
 1. Open snacklist.app (redirects to /de or /en by browser language).
 2. Header or hero button „Auf die Warteliste“ / "Join the waitlist": it scrolls to the form in the closing block.
 3. Fill „E-Mail-Adresse“ / "Email address", pick „iPhone“ or „Android“, press „Auf die Warteliste“ / "Join the waitlist".
-4. In the mail: „E-Mail bestätigen“ / "Confirm email", then on the page optionally tick „Schreibt mir auch, wenn die App offiziell startet“ and press „E-Mail bestätigen“.
+4. In the mail: „E-Mail bestätigen“ / "Confirm email", then on the page optionally tick „Schreibt mir auch, wenn die App offiziell startet (eine E-Mail, freiwillig).“ and press „E-Mail bestätigen“.
 5. In any mail: „Eintrag sofort löschen“ / "Delete this sign-up now" (confirmation mail) or „Abmelden“ / "Unsubscribe" (later mails), then the button on the page.
 
 ## Driving it with Playwright

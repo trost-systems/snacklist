@@ -1172,3 +1172,46 @@ snackbar.
 **Evidence.** `research/legal-review/pr-464/a347064a48956a39fcc4ec6aba45ec9b13eeaf03/` (DELTA.md, DELTA.diff, MERGED.md template with the new hashes), mirrored to `/workspace/hummlist/research/legal-review/pr-464/`. Code head a347064a, ci-ok green, run 43685313627. sha256: datenschutz.md 8765759c72895b3326c915072a552822081bfbf2dda14309b4fc783924cef4fd, privacy.md 90820004ce623013cf9844c15a442c4095cfd30e8ab3aa46deccfa983f021dd7.
 
 **Not done on purpose.** Not merged, flags untouched. The MERGED.md merged SHA and at-merge hash checks are filled in at merge. The PR body still says the notes are not in the repo; it can't be edited after push-pr, so this is noted in NEEDS_LEAD.
+### Job 248 review 0 fix (2026-11-15)
+
+PR https://github.com/trost-systems/snacklist/pull/478. Review 0 had one must-fix: the row's two
+names were in the same style, so a wrapped household name could read as the list.
+
+- **Each line has an icon.** A house icon now starts the household line and a checklist icon the
+  list line. The icons are glyphs inside the text, so the names still wrap at full width at
+  200 %.
+- **Screen readers.** They hear „Siri, Alexa & KI nutzen: Haushalt: … Liste: …“ ("Siri, Alexa & AI
+  add to: Household: … List: …").
+- **From the nice-to-haves.** A household with one list names it too, when
+  `default-list-voice-target` is on. The English label is "Siri, Alexa & AI add to:".
+- **Verified.**
+  - 17 widget tests in the job 248 group. New: the icon on each line, a household with one list,
+    and the English accessible name.
+  - The goldens are regenerated.
+  - `scripts/verify.sh --only lint,flutter` passed.
+  - The web journey `voice-default.mjs` passed for DE 100 %, EN dark 100 %, DE 200 % and EN
+    200 %. It now asserts the accessible name with „Haushalt:“ / „Liste:“.
+  - The screenshots in `docs/screenshots/248/` are refreshed, and the job's `out/web-r0/` has the
+    shots from this round.
+
+## Job 215: store screenshots and demo videos, redone for Snacklist (2026-11-14)
+
+`scripts/store-screenshots.sh` films the real web build with „Unser Haushalt“ (Anna, Jonas,
+generic stores). It writes the Play and App Store screenshots in Peter's frame: FR2 Großschrift
+with a cobalt Wabenband running through each set. There are eight shots. They include the new voice and
+AI-assistant captions in neutral and named variants, and the real MCP and API screen, with a
+Premium label ready for when MCP is paid. It also writes the feature graphic
+without a logo and the icon. Two runs are byte-identical, and the set comes as a by-hand
+workflow artifact. `add-tick` and `household-sync` on the site are re-filmed with the same
+household, and `mcp-chat` is re-filmed because it still showed the old name. No asset or seed
+shows alcohol or tobacco (age rating 4+). Nothing was uploaded and every caption is a draft for Legal (`docs/NEEDS_LEAD.md`
+"Job 215").
+
+Details: [docs/done/215-store-screenshots-redo.md](docs/done/215-store-screenshots-redo.md)
+
+## Job 252: store captions follow Legal N-187 to N-195 (2026-11-15)
+
+- **Built (#458, merged):** one caption set in `marketing/store-screenshots/captions.yaml`; „Funktioniert mit Siri“ / "Works with Siri" on the App Store voice frame only; no Alexa, API, automations, free, named AI assistant, alcohol or tobacco. `captions.mjs` fails a run on any of them. The api frame is dropped (the chat frame is the AI-assistants frame), so each set has 7 frames; the `--assistants` variants and the production-URL second build are deleted.
+- **Review 0 follow-up (this PR):** the stale evidence is removed from `docs/screenshots/215/` (Alexa, Siri-and-Alexa and API frames, old contact sheets) and replaced by the new contact sheets, voice frames, feature graphic and `CAPTIONS.md`. `docs/done/215-store-screenshots-redo.md` now describes the 7-frame set. `docs/NEEDS_LEAD.md` "Job 252 follow-up" flags the 7-frame deviation, Legal's open points and the `--premium-label` reminder for 1 Dec.
+- **Verify:** full run, 62 files, all checks pass; `captionProblems()` returns `[]` and rejects Alexa, Claude, Free, API, Bier, Hey Siri, "50 Listen", ™ and Siri on Play. `ci-ok` was green on #458.
+- **Not done (review nice-to-haves):** an OCR check of the final PNGs and a pixel test for Siri's weight; the text check covers every word compose draws.
