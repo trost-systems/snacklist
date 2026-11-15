@@ -183,6 +183,7 @@ void main() {
     (500, {'error': 'internal'}),
     (503, {'error': 'storage_failed'}),
     (401, {'msg': 'Invalid JWT'}),
+    (403, {'error': 'session_required'}),
   ]) {
     test("a $status is a plain refusal, not the screenshot's, and sends no "
         'row', () async {

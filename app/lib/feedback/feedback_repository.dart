@@ -105,9 +105,12 @@ class SupabaseFeedbackRepository(
       throw switch (e) {
         // No answer: no connection, the request never left.
         FunctionsFetchException() => const FeedbackOffline(),
-        // The quota, the size or the type.
-        FunctionException(status: final status && (403 || 413 || 415)) =>
-          FeedbackScreenshotRefused('upload_$status'),
+        // The quota (by its code: a 403 also means a refused token), the
+        // size or the type (a gateway may answer those without JSON).
+        FunctionException(status: 403, details: {'error': 'quota'}) ||
+        FunctionException(
+          status: 413 || 415,
+        ) => FeedbackScreenshotRefused('upload_${e.status}'),
         FunctionException(:final status) => FeedbackRefused('upload_$status'),
       };
     } on Object {

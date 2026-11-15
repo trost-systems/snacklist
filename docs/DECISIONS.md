@@ -14691,3 +14691,20 @@ as before. The reference prototype is #494 (not merged).
     realtime refresh opens the list once approved, so the new text says both. Without a household
     the filled „Eigenen Haushalt anlegen“ goes; „Lieber eigene Liste anlegen“ is a text button
     below „Anfrage zurückziehen“.
+
+## Job 267 review 1: the annotator e2e waits for a still frame (2026-11-15)
+
+1. **The e2e draws only once the annotator stops moving.** "flag on: a screenshot from More…"
+   started its pen stroke as soon as "Fertig" showed, while BetterFeedback was still animating the
+   frame in. The stroke then landed at varying spots in the PNG, and the test, which maps screen
+   points to the PNG from that stroke, looked for the text mark in the wrong place: 2 of 4 runs
+   failed on hz. The canvas is outside the semantics tree, so the condition is visual: two
+   screenshots of the frame, 100 ms apart, must be identical before drawing. There is no fixed sleep.
+2. **A 403 counts as a refused screenshot only with the code `quota`.** 413 and 415 still count by
+   status alone, since a gateway may answer them without JSON. A 403 `session_required` (an API or MCP
+   token, which the app never sends) is a plain refusal.
+3. **Correction to "Job 267 review 0", point 6.** The internal flag limits who sees the screenshot UI,
+   not who can call the upload route: any signed-in account can. The damage is bounded at 250 × 2 MiB,
+   and notes still send without their image. But about 25 accounts naming 10 uploads each could block
+   screenshots for everyone for 12 months. A per-user cap on kept images belongs before the flag goes
+   wider (NEEDS_LEAD "Job 267 review 1").

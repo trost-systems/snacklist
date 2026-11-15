@@ -363,6 +363,22 @@ async function tomatoPixels(page: Page, png: Uint8Array): Promise<Array<[number,
   }
 }
 
+/** Waits until [clip] renders the same twice in a row, a few frames apart. */
+async function untilStill(page: Page, clip: { x: number; y: number; width: number; height: number }): Promise<void> {
+  let last: Buffer = Buffer.alloc(0);
+  await expect
+    .poll(
+      async () => {
+        const shot = await page.screenshot({ clip, animations: 'allow' });
+        const same = shot.equals(last);
+        last = shot;
+        return same;
+      },
+      { message: 'the annotator frame stops moving', intervals: [100], timeout: 10_000 },
+    )
+    .toBe(true);
+}
+
 test('flag on: a screenshot from More is marked up, uploaded and named by the row', async ({ browser }) => {
   const context = await browser.newContext({ viewport: phone });
   await fakeCollector(context, { flags: { 'feedback-fb2': true } });
@@ -377,6 +393,9 @@ test('flag on: a screenshot from More is marked up, uploaded and named by the ro
   await page.getByRole('button', { name: 'Bildschirmfoto hinzufügen' }).click();
   const done = page.getByRole('button', { name: 'Fertig', exact: true });
   await expect(done).toBeVisible();
+  // BetterFeedback still animates the frame in after Fertig shows (review 1: strokes drawn then
+  // landed at varying PNG spots). Draw once the canvas looks the same over a few frames.
+  await untilStill(page, { x: 0, y: 0, width: phone.width, height: 500 });
   // A level pen stroke across the frozen screen: it maps screen points to the PNG's below.
   const pen = { y: 210, from: 80, to: 200 };
   await page.mouse.move(pen.from, pen.y);
