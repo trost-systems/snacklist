@@ -137,11 +137,12 @@ select ok((public.trip_history((select id from home), current_date) -> 'trips')
 select pg_temp.logout();
 insert into public.stores (household_id, name, seed_key, sort_order)
 select id, x.name, x.seed, x.o from home, (values ('APOTHEKE am Markt', null, 30), ('Ecke', 'apotheke', 31),
-  ('Drogerie', 'dm', 32)) x (name, seed, o);
+  ('Drogerie', 'dm', 32), ('DocMorris', null, 33)) x (name, seed, o);
 create temp table apo as select s.id from public.stores s join home h on s.household_id = h.id where s.name = 'APOTHEKE am Markt';
 create temp table ecke as select s.id from public.stores s join home h on s.household_id = h.id where s.name = 'Ecke';
 create temp table drogerie as select s.id from public.stores s join home h on s.household_id = h.id where s.name = 'Drogerie';
-grant select on apo, ecke, drogerie to authenticated;
+create temp table docmorris as select s.id from public.stores s join home h on s.household_id = h.id where s.name = 'DocMorris';
+grant select on apo, ecke, drogerie, docmorris to authenticated;
 select pg_temp.login(:lea);
 create temp table pharmacy_trip as select public.save_trip_session((select id from home),
   pg_temp.trip('00000000-0000-0000-0000-000000234c05', jsonb_build_array(
@@ -149,7 +150,8 @@ create temp table pharmacy_trip as select public.save_trip_session((select id fr
     pg_temp.line('p2', 'Hustensaft', true, true, (select id from ecke), 'Ecke', null, 800, 800),
     pg_temp.line('p3', 'Nasenspray', true, false, null, 'Shop-Apotheke', null, 450, null),
     pg_temp.line('p4', 'Butter', true, true, (select id from lidl), 'Lidl', null, 199, 219),
-    pg_temp.line('p5', 'Zahnpasta', false, true, (select id from drogerie), 'Drogerie', null, null, 95))), true) as s;
+    pg_temp.line('p5', 'Zahnpasta', false, true, (select id from drogerie), 'Drogerie', null, null, 95),
+    pg_temp.line('p6', 'Vitamin D', true, true, (select id from docmorris), 'DocMorris', null, 1299, 1299))), true) as s;
 select is((select jsonb_agg(store_name order by store_name) from pg_temp.trips()
            where session_id = '00000000-0000-0000-0000-000000234c05'),
   '["Drogerie", "Lidl"]'::jsonb, 'a trip with pharmacy lines logs only the other stores');
