@@ -30,3 +30,5 @@ python3 -m http.server 8771 --directory docs/design/h-satz-final/h-dist
 ## Feature prototypes
 
 - **Grocery log (job 198):** [`grocery-log/`](grocery-log/), five interactive approaches behind one switcher, plus [`RECOMMENDATION.md`](grocery-log/RECOMMENDATION.md). Serve the repo root (`python3 -m http.server 4198 --bind 127.0.0.1`) and open `/docs/design/grocery-log/index.html`.
+
+- **Feedback experience (job 260):** [`feedback-experience/`](feedback-experience/README.md): research, Today and five end-to-end feedback flows (FB1–FB5) with storyboards, a comparison table and [`RECOMMENDATION.md`](feedback-experience/RECOMMENDATION.md) (FB3, runner-up FB2). `verify.mjs` drives and screenshots every flow. Draft PR only; the preview is built by `build.sh` together with #414's overview.

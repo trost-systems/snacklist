@@ -1,0 +1,7 @@
+option	taps (bug,error,idea)	debug signals	exposure points	build days	existing service
+today	3,3,3	2,2,2	4	0	0
+FB1	2,2,2	3,3,3	7	3	0
+FB2	4,4,3	7,7,2	8	7	0
+FB3	6,2,3	5,8,1	6	5	0
+FB4	4,4,4	2,2,2	4	9	0
+FB5	3,3,3	2,7,2	7	6	1
