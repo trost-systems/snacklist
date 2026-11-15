@@ -29,6 +29,7 @@ Preconditions:
 
 - Unverified on devices until Peter's test (docs/NEEDS_PETER.md, job 63). Describe the widget as coming, never as released.
 - The widget follows the phone's light or dark mode, not the app's theme setting.
-- The widget shows the household the app shows and only the list whose tab was shown last, not the default household and not every list.
+- The widget shows the household the app shows and only the list shown last (its tab, or the switcher's pick with `list-declutter` on), not the default household and not every list.
+- The app writes the widget's copy (the count and the first six open items with quantity and store) on the phone whether or not a widget is placed; the privacy policy says so since the 2026-11-14 text.
 - A partner's adds appear in the widget after Snacklist was open on this phone again; there is no background refresh.
 - No ticking from the widget.

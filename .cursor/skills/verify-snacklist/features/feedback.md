@@ -45,4 +45,4 @@ Preconditions:
 - The e2e build and this skill's build both point analytics at a fake collector (posthog.invalid); feedback itself goes to Supabase.
 - Rows older than 12 months are deleted by the server (migration); that is not visible in the app.
 - The sender cannot read notes back in the app, but Konto → „Meine Daten exportieren“ (EN "Export my data") includes their own notes (section `feedback` of the export).
-- Whether Peter actually gets a notification of a new note is not in the app: unverified (outside app code).
+- Peter reads the notes himself (`docs/FEEDBACK.md`). A daily mail digest of new notes to him is built (job 225) but ships off (`app_switches.feedback_digest`) until Legal's GO; nothing about it shows in the app.
