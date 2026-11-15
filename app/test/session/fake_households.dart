@@ -46,6 +46,10 @@ class FakeHouseholds(final FakeAuth fakeAuth)
   /// it completes: a reload that started before a change answers after it.
   Completer<void>? holdReads;
 
+  /// While set, a `reorder_households` reaches the server only when this
+  /// completes (a slow request), and is answered or refused then.
+  Completer<void>? holdReorder;
+
   /// RPCs this server does not have yet (an older deploy): 404.
   final missing = <String>{};
   final _requests = <(String, String), String>{};
@@ -133,6 +137,9 @@ class FakeHouseholds(final FakeAuth fakeAuth)
         dropNextAnswer = false;
         _answer(request.method, path, request.url, body);
         throw http.ClientException('connection lost', request.url);
+      }
+      if (holdReorder case final hold? when path == 'rpc/reorder_households') {
+        await hold.future;
       }
       if (missing.contains(path.replaceFirst('rpc/', ''))) {
         return _json(

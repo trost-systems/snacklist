@@ -2400,3 +2400,82 @@ Status: open. Nothing was uploaded. Store frames follow Legal N-187 to N-195 (#4
 2. **Legal's final check** of every caption: `docs/screenshots/215/CAPTIONS.md`. Open there: the feature-graphic tagline („Gemeinsam einkaufen, ohne Werbung.“ / "Shop together, no ads."), and „So viele Listen, wie ihr wollt“ against the 50-list cap.
 3. **1 Dec release (N-193):** when `integration-lock` goes on, render with `scripts/store-screenshots.sh --premium-label` before uploading the AI frame, so both stores carry „Mit Snacklist Premium“ / "With Snacklist Premium".
 4. The old frames in `docs/screenshots/215/` (Alexa, Siri-and-Alexa, API) are deleted; the contact sheets there are the new set.
+
+## Job 222: offline and sync gaps that need a decision (2026-11-14)
+
+Status: open, the lead's call. Nothing here blocks the job's PR. The map and the reasons are in
+`docs/done/222-robustness-offline-sync.md`.
+
+1. **A write that never answers stalls the queue (server change).** Item writes have no HTTP
+   timeout, and job 122 showed that one alone reorders last-write-wins writes. The safe fix is
+   a stale-write guard on the server (a per-item op sequence or time check in `put_item` and the
+   update path, a migration), then a timeout in `ListRepository`. Not built: a migration on the
+   write path is more than a robustness test job should land between jobs 202 to 217.
+2. **A forced sign-out drops queued changes (product).** A token refresh the server refuses
+   signs the user out; sign-out forgets the device's data, queued adds and ticks included,
+   without a word. Job 122 recorded it as intended. The options: keep the queue per user id and
+   replay it when the same user signs in again, or say so on the sign-in screen. A user who
+   signs out by hand with unsent changes is not warned either.
+3. **Realtime channels other than the list's never rejoin after a server `phx_close`
+   (purchases, household).** Read from the code and the library (`realtime_client` 2.13.2), not
+   reproduced. Entitlements and invites re-read on a rejoin but a closed channel does not
+   rejoin; the own and the household's join-request channels re-read nothing. Resume refreshes
+   and the invites panel's 5 s poll hide most of it. Worst case: an owner with the approval
+   section open misses a request until the section is rebuilt. The list's channel has its own
+   resubscribe loop (`ListCubit`); the fix would give the four the same, in files jobs on
+   purchases and the household own.
+4. **A start read that never answers has no timeout** (`SessionCubit._load`), on main and on
+   this branch. Until one of the start's reads came back, a failed read is sent again after
+   3 s whatever is out. After a dropped answer the asking does not pass the newest read while
+   that is out (the reason is in `docs/DECISIONS.md`, "Job 222"), so a newest read that hangs
+   holds it, and an order change on its way holds it until it ends (each request ends 15 s
+   after it was sent at the latest, two are sent one behind the other, and each one's
+   write to the device comes first: the households at 31.0 s after two order changes that
+   never answer, measured); main asked nothing at all in that state. If the lead wants a timeout, it has to
+   keep the slow answer: one that only arms a second read and takes whichever answers. Four
+   more calls the lead may want to look at, all measured in the done file ("The start
+   against main"). The asking goes on every 3 s without backoff for as long as no answer
+   shows and is written to the device (up to 41 more reads than main in 120 s when the
+   server never gives a usable answer). One hand-built row where main shows another account's households sooner
+   (9.0 s against 15.4 s) is the price of two rows where main never shows them. A read that
+   fails after its account signed out arms no timer any more: in two generated rows of
+   13,278, with the same account back within 3 s, main shows or keeps the households 3.1 to
+   3.9 s sooner, and in four it shows them 0.1 to 3.0 s later. And four defects of main are
+   left as found, for a job of their own:
+   - A second account's late answer can show to the first account when it signs in again
+     over it (one row of 6022 on both versions).
+   - A households read answered while an order change is on its way shows the old order
+     again and writes it to the device, until the order change's own reload answers. After
+     a start read that failed, main's 3 s timer sends such a read: in 11 of 33 hand rows
+     the old order was back for 1.2 to 11.2 s, the same on main and on this branch (an
+     order change that takes 5 s or more, or never answers). An auth event after a failed
+     start read does the same (23 of review 7's 25 rows, 0.6 to 13.1 s, the same on both),
+     and so does a resume's reload, also after a dropped answer (5 of 5 rows, 0.6 to
+     13.1 s, the same on both). The switcher's reload was not driven. After a dropped
+     answer, where main read nothing, this branch holds its own asking at both doors, the
+     3 s timer and an auth event, until the order change ended (no old order in the 53
+     rows driven, as on main); it holds nothing else. Every order change on its way
+     counts, another account's too: an account signed in over one whose order change
+     never answers reads at 17.0 s (main: never). One way to fix the defect, not tried:
+     `_refresh` drops an answer read while an order change was on its way, whoever asked.
+   - Two order changes refused one behind the other leave the first one's order on screen
+     and on the device: the second's refusal puts back the order it found, which is the
+     first's (`reorderHouseholds`, job 229). In review 7's row B main ends with it at 60 s
+     while the server has the old order. This branch shows it for 2.8 s there, then its
+     read brings the server's order; that row has a dropped start answer, and without one
+     this branch does what main does (read from the code, not driven).
+   - After the account's deletion the deleted-account notice can be replaced before the
+     user saw it: an order change that was on its way and is answered as accepted after
+     the deletion reloads, finds nobody signed in and shows `SignedOut` without the
+     notice (2 of the job's 24 rows, at 8.2 s, the same on main and here; a fake server
+     that still accepts it, and a device sign-out of 5 s; a faster one was not driven).
+
+   Not a defect of the app, though earlier text of this job said so: a failed write of the
+   told removals would fail every later reload (`_toldWrites`), but the app's store
+   (`DeviceCache`) drops every write error, so the session cubit never sees one (review 6,
+   measured with the app's store over preferences that throw). It is a property of the
+   `SessionCache` interface that only a store that throws reaches.
+5. **Job 219's point 4 (a tick right before the page goes away) is fixed** for the window it
+   names: a row's tick now commits when the page is hidden, and `e2e/tests/tick-leave.spec.ts`
+   drives a reload and a closed tab right after the click on three engines (3 of 18 passed on
+   main, 30 of 30 on the branch). The CI trace of that point was not reproduced.

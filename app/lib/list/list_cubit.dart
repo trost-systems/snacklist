@@ -1923,6 +1923,9 @@ class ListCubit(
   }
 
   void _retryLater() {
+    if (_closing) {
+      return;
+    }
     _retry ??= Timer(const Duration(seconds: 3), () {
       _retry = null;
       _round++;
@@ -1935,7 +1938,9 @@ class ListCubit(
   /// Saves what a restart needs: a change to the queue at once, since the
   /// app may be killed right after a tap, and server churn once it settles.
   /// Not on close: the list closes on sign-out and household switches, which
-  /// drop the cache.
+  /// drop the cache. A list that is closing still saves its queue (a write
+  /// answered then, a tick made as its row went away), but arms no timer:
+  /// [close] has cancelled them.
   @override
   void onChange(Change<ListState> change) {
     super.onChange(change);
@@ -1944,7 +1949,8 @@ class ListCubit(
     if (_tripTicked.isNotEmpty && !_hasOpenItem(next.items)) {
       _tripTicked.clear();
     }
-    if (!identical(next.server, before.server) &&
+    if (!_closing &&
+        !identical(next.server, before.server) &&
         !setEquals(_activeNames(next.server), _activeNames(before.server))) {
       _usualsReload?.cancel();
       _usualsReload = Timer(
@@ -1961,10 +1967,11 @@ class ListCubit(
     if (queued) {
       _save?.cancel();
       _saveNow(next);
-    } else if (!identical(next.catalog, before.catalog) ||
-        !identical(next.server, before.server) ||
-        !identical(next.usuals, before.usuals) ||
-        !identical(next.claimRows, before.claimRows)) {
+    } else if (!_closing &&
+        (!identical(next.catalog, before.catalog) ||
+            !identical(next.server, before.server) ||
+            !identical(next.usuals, before.usuals) ||
+            !identical(next.claimRows, before.claimRows))) {
       _save?.cancel();
       _save = Timer(const Duration(milliseconds: 300), () => _saveNow(state));
     }

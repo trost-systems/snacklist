@@ -60,10 +60,10 @@ export default defineConfig({
     // (the mouse wheel does not scroll a mobile WebKit page).
     { name: 'iphone', testMatch: /iphone\.spec\.ts/, use: { ...devices['iPhone 15'] } },
     // Job 33c: no request to Google in every engine. Job 201: each engine runs the wasm app.
-    { name: 'webkit', testMatch: /(perf|no-google|wasm-boot)\.spec\.ts/, use: { ...devices['Desktop Safari'] } },
+    { name: 'webkit', testMatch: /(perf|no-google|wasm-boot|tick-leave)\.spec\.ts/, use: { ...devices['Desktop Safari'] } },
     {
       name: 'firefox',
-      testMatch: /(perf|no-google|wasm-boot)\.spec\.ts/,
+      testMatch: /(perf|no-google|wasm-boot|tick-leave)\.spec\.ts/,
       use: {
         ...devices['Desktop Firefox'],
         viewport: { width: 480, height: 900 },

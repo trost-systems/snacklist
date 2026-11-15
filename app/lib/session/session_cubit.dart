@@ -308,16 +308,26 @@ class SessionCubit(
 
   /// The user whose household the server last confirmed.
   String? _loadedFor;
+
+  /// The user whose start read came back but was passed by a newer reload,
+  /// so its answer was dropped (see [_waitsFor]).
+  String? _passedFor;
   Timer? _retry;
 
   /// Counts [refresh]es: only the newest one's answer is shown, so a reload
   /// that started before a change can't undo it.
   var _reloads = 0;
 
+  /// The newest [refresh]'s number while it is still out.
+  int? _reading;
+
   /// The last household order sent: the next waits for it, so the server
   /// ends with the order shown.
   Future<void> _reorderSent = Future.value();
   var _reorders = 0;
+
+  /// Order changes shown here that the server has not answered yet.
+  var _reordering = 0;
 
   /// A household a change asked to show (a create, a join, an unarchive)
   /// until a reload shows it: a reload that failed leaves it to the next.
@@ -372,6 +382,10 @@ class SessionCubit(
   ({String code, JoinMethod method})? _unansweredJoin;
 
   Future<void> _load(String? userId) async {
+    // Signed out, or another account signed in over this one.
+    if (_passedFor != userId) {
+      _passedFor = null;
+    }
     if (userId == null) {
       // A reload still out for the old user must not show their household.
       _reloads++;
@@ -390,7 +404,7 @@ class SessionCubit(
       await _cache.forget();
       return;
     }
-    if (_loadedFor == userId) {
+    if (_loadedFor == userId || _waitsFor(userId)) {
       return;
     }
     // The device's households open the list at once and the server's answer
@@ -409,21 +423,57 @@ class SessionCubit(
         }
       }
     }
+    var failed = false;
     try {
       await refresh();
-      // A reload dropped by a sign-out meanwhile loaded nothing.
-      if (_client.auth.currentUser?.id == userId) {
-        _loadedFor = userId;
-      }
     } on Object {
-      // Offline: ask until the server answers.
-      _retry?.cancel();
-      _retry = Timer(const Duration(seconds: 3), () {
-        if (!isClosed && _client.auth.currentUser?.id == userId) {
-          unawaited(_load(userId));
-        }
-      });
+      failed = true;
     }
+    // This read failed, its answer was not kept on the device, or a newer
+    // reload passed it and it was dropped.
+    if (_loadedFor != userId) {
+      _askAgain(userId, passed: !failed);
+    }
+  }
+
+  /// Whether [userId]'s start waits: one of its reads came back and was
+  /// passed by a reload ([_passedFor]), and the newest reload is still out
+  /// or an order change is on its way. The reload's answer may be the one,
+  /// and a new read would drop it as the older one, on a slow network every
+  /// time. A read sent during an order change would answer the old order
+  /// and show it again. An older reload is not waited for: its answer is
+  /// dropped in any case. Until a start read came back, nothing is waited
+  /// for: a read that failed is sent again whatever else is out. Nor once
+  /// the answer is kept: the asking is over.
+  bool _waitsFor(String userId) =>
+      _loadedFor != userId &&
+      _passedFor == userId &&
+      (_reading == _reloads || _reordering > 0);
+
+  /// Asks for [userId]'s households again in 3 s, until an answer shows and
+  /// is kept on the device, or they sign out; while the start waits
+  /// ([_waitsFor]), it looks again 3 s later. [passed]: the read came back,
+  /// but a newer reload had passed it.
+  void _askAgain(String userId, {bool passed = false}) {
+    // Another account's asking, started meanwhile, goes on.
+    if (isClosed || _client.auth.currentUser?.id != userId) {
+      return;
+    }
+    if (passed) {
+      _passedFor = userId;
+    }
+    _retry?.cancel();
+    _retry = Timer(const Duration(seconds: 3), () {
+      // Not for an account that signed in over this one meanwhile.
+      if (isClosed || _client.auth.currentUser?.id != userId) {
+        return;
+      }
+      if (_waitsFor(userId)) {
+        _askAgain(userId);
+      } else {
+        unawaited(_load(userId));
+      }
+    });
   }
 
   /// Reads the user's households (`my_households()`) and shows [show], or
@@ -437,7 +487,17 @@ class SessionCubit(
     }
     // Counted first: a reload that answers while this one is still keeping
     // [show] on the device is older and must not undo it.
-    final reload = ++_reloads;
+    final reload = _reading = ++_reloads;
+    try {
+      await _refresh(userId, reload, show);
+    } finally {
+      if (_reading == reload) {
+        _reading = null;
+      }
+    }
+  }
+
+  Future<void> _refresh(String userId, int reload, String? show) async {
     if (show != null) {
       _toShow = show;
       // Kept on the device before the server answers: a reload of the page
@@ -549,6 +609,17 @@ class SessionCubit(
         _ => null,
       },
     );
+    // Shown and kept on the device: a start that still asked has its answer,
+    // whichever reload brought it. Not while the write runs (a read wanted
+    // meanwhile is sent). And not once they signed out or another account
+    // signed in during it, until their households show again: when they
+    // are back, that is the answer read for that sign-in.
+    if (state
+        case NeedsHousehold(userId: final user) ||
+            InHousehold(userId: final user)
+        when user == userId && _client.auth.currentUser?.id == userId) {
+      _loadedFor = userId;
+    }
     for (final d in decided) {
       _decisions.add((household: d.household, approved: d.approved));
     }
@@ -651,37 +722,42 @@ class SessionCubit(
       // A reload out now answers the old order.
       _reloads++;
       final reorder = ++_reorders;
-      emit(InHousehold(userId, household, ordered, requests: requests));
-      await _cache.remember(userId, households: ordered, shown: household.id);
-      final sent = _reorderSent.then(
-        (_) => householdCall(
-          () => _client.rpc<void>(
-            'reorder_households',
-            params: {'p_households': _ids(ordered)},
-          ),
-        ),
-      );
-      _reorderSent = sent.then((_) {}, onError: (Object _) {});
+      _reordering++;
       try {
-        await sent;
-        // The reload the order discarded: counts and names stay fresh.
-        if (reorder == _reorders) {
-          unawaited(refresh().catchError((Object _) {}));
+        emit(InHousehold(userId, household, ordered, requests: requests));
+        await _cache.remember(userId, households: ordered, shown: household.id);
+        final sent = _reorderSent.then(
+          (_) => householdCall(
+            () => _client.rpc<void>(
+              'reorder_households',
+              params: {'p_households': _ids(ordered)},
+            ),
+          ),
+        );
+        _reorderSent = sent.then((_) {}, onError: (Object _) {});
+        try {
+          await sent;
+          // The reload the order discarded: counts and names stay fresh.
+          if (reorder == _reorders) {
+            unawaited(refresh().catchError((Object _) {}));
+          }
+        } on HouseholdError {
+          if (state
+              case InHousehold(
+                userId: final user,
+                household: final shown,
+                households: final now,
+                requests: final waiting,
+              )
+              when user == userId) {
+            final back = _inOrder(now, _ids(households));
+            emit(InHousehold(userId, shown, back, requests: waiting));
+            await _cache.remember(userId, households: back, shown: shown.id);
+          }
+          rethrow;
         }
-      } on HouseholdError {
-        if (state
-            case InHousehold(
-              userId: final user,
-              household: final shown,
-              households: final now,
-              requests: final waiting,
-            )
-            when user == userId) {
-          final back = _inOrder(now, _ids(households));
-          emit(InHousehold(userId, shown, back, requests: waiting));
-          await _cache.remember(userId, households: back, shown: shown.id);
-        }
-        rethrow;
+      } finally {
+        _reordering--;
       }
     }
   }
@@ -1042,6 +1118,8 @@ class SessionCubit(
   Future<void> accountDeleted(AccountDeletedNotice notice) async {
     _reloads++;
     _loadedFor = null;
+    // The start's wait ends with its asking.
+    _passedFor = null;
     _retry?.cancel();
     pendingInvite?.signedOut();
     _toShow = null;

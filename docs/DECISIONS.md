@@ -13869,3 +13869,311 @@ Redo of job 65's closed PR #190 with the frame Peter picked in job 214
   20261115110000, which also drops its lines from stored sessions and log rows). Matching stays
   case-insensitive substring. The model test moved DocMorris from the drugstore list to the
   pharmacy list, and the pgTAP trip gets a DocMorris line that must not be kept or logged.
+
+## Job 222: offline and sync error paths, 2026-11-14
+
+- **Scope by loss.** The map (`docs/done/222-robustness-offline-sync.md`) ranks untested paths
+  by what a user loses. Fixed: the five where something the user did was lost or the app stalled
+  (a tick inside the row's leave, a closing list's timers, a gateway's 401/408/429, a merge's
+  failed follow-up read, a start read passed by a newer reload). Left: paths that need a
+  product or server decision, and cosmetic ones.
+- **The tick commits early; it does not move to the tap.** A row still commits its tick at the
+  end of its animation, as on main. It commits before that when the app is hidden or the row
+  goes away. Ticking at the tap and animating apart would
+  give the same guarantee, but the row would have to keep showing an item the list already
+  counts as bought (dividers, counts and "Zuletzt verwendet" move under it): a design change,
+  and this job ships no UI change.
+- **A row that draws no frames commits after twice the close.** The first version replaced the
+  animation's end by a timer at 440 ms from the tap. The animation starts with the next frame,
+  so a late first frame (a busy device) committed the tick with the row still closing: the list
+  moved under a row that was not gone (review 1, nice to have 8). The animation's end is back;
+  the timer is the fallback for a row that never draws, at twice the close (880 ms), which a
+  drawing row never reaches. With reduced motion there is no animation and the timer is the
+  commit, as before.
+- **Hidden means commit.** `onHide` fires for a phone going to the background, a page reload, a
+  closed tab and another tab in front. All of them commit: after a hide no frame may ever come.
+  The cost is a tick that commits up to 440 ms early when a user switches tabs mid-leave, which
+  nobody sees.
+- **A row that goes away ticks the list it was built on.** The tick of a disposed row runs in a
+  microtask after the tree is torn down, on the `ListCubit` the row had, also when the screen
+  shows another household by then.
+- **The shown list is held until its rows are gone.** `ListScope` closed a list switched away
+  from at once when nothing was queued, so the tick above came to a closing or closed list (a
+  test through `ListScope` lost it). The list's scope now holds it with job 229's `ListHolds`
+  and lets go in a microtask after the rows' own: the list then closes as any hidden one, once
+  its queue is sent. A list closed for good (sign-out, a household left) still takes no tick:
+  its writes could not be sent.
+- **401, 408 and 429 without a PostgREST body are trouble.** With a body the database or
+  PostgREST looked at the request, and its code decides as before (a 401 with PGRST301/303 was
+  trouble already). Without one a proxy answered: the session or key was not accepted, the
+  request took too long, or the client was throttled. None says the change is wrong, and
+  dropping it loses a user's edit, so the op stays queued under "Sync gestört". Other body-less
+  4xx (400, 403, 404, 409) still refuse: a retry cannot change them. Inferred, not tested: a
+  401 that never goes away ends in gotrue's sign-out (its refresh is refused), as an expired
+  session does. A gateway that answers 401 or 429 for long is asked every 3 s, the queue's
+  retry as for a 5xx: no backoff, no `Retry-After`. Labelled as a gap.
+- **The start's retry waits for a reload that is still out** (review 1, must fix 1). The first
+  version armed the 3 s retry whenever `_load`'s own read came back without the answer shown. A
+  newer reload still out was then passed by the retry's read and its answer dropped as the
+  older one: with reads slower than 3 s and one more auth event, never an answer. From the
+  second version on the retry looks again 3 s later while a reload is out (which reload, and
+  after what, is settled in the two entries below). The signed-in user is checked when the timer is armed and when it starts a
+  read: a timer left over when another account signed in without a sign-out reads nothing for
+  that account (main's retry checked there too; the rewrite had lost it for a commit, and a
+  test pins it now).
+- **The retry waits for the newest reload only** (review 2, nice to have 1). The second version
+  counted the reads out and waited for any of them. An older read's answer is dropped in any
+  case, so waiting for it buys nothing, and it cost a row where main was better: a first
+  read that never answers and a second one that failed were asked again after 3 s on main and
+  never in the second version. `refresh` now keeps the newest reload's number while it is out
+  (`_reading`), and the retry waits while that is the newest.
+- **Only a dropped answer waits; a failed read is asked again after 3 s as on main** (review
+  3, must fix). The third version still waited after a failed start read when a newer reload
+  was out. Main did not: it asked again 3 s after the failure whatever else was out. With
+  that reload hanging or slow the third version showed the households never or late (9 of
+  the reviewer's 54 rows; the second version too, so "one row" above was wrong when it was
+  written). The fourth version let the retry know what had armed it: a failed read never
+  waited, a dropped answer waited for the newest reload. The three reviewers' 114 probe rows
+  gave 104 equal, 10 better, none worse than main. This entry then said that a failed read
+  kept main's rule to the letter and that no wait after a dropped answer could be worse than
+  main. Both were arguments, and both were wrong (the next entry). The cost that stays is
+  one read in a row review 3 measured: a failed start read and a reload that started 0.1 s
+  before the retry. The third version waited for that reload (households at 7.9 s, two
+  reads); main and the final rule send a third read that drops it (8.0 s, three reads).
+- **The rule goes by what the start has seen, not by which read armed the timer** (review 4,
+  must fix). On main a dropped answer ended the asking for good, so the newest reload's
+  answer showed whatever came next. In the fourth version a later failed read of the start,
+  or an auth event, still sent a read, and that read passed the newest reload. Review 4's
+  direct rows: main showed the households at 8.0 s and 2.75 s, the fourth version was
+  still loading at 120 s and at 2.75 s, and 18 of its 1222 rows were worse than
+  main. The cubit now remembers that a start read came back and was dropped (`_passedFor`).
+  From then on a read is sent only while the newest reload is not out, by the timer and by
+  an auth event alike. Before that nothing is waited for: a failed read is sent again after
+  3 s and an auth event reads, as on main. Measured on 7244 generated and hand rows by time
+  (two seeds): one row where main shows the households sooner, the next entry's.
+- **The asking of the signed-in account survives another account's late failure: a measured
+  trade.** Main's `catch` cancelled the 3 s timer whoever had armed it, so a read of the
+  first account that failed after another account had signed in over it ended that
+  account's asking. Four hand rows: main never shows the second account's households in
+  two, shows them at the same time in one, and shows them 6.4 s sooner in one (9.0 s
+  against 15.4 s: another read of theirs was out, and the head's timer sent a read that
+  passed it). The head with main's cancel put back was measured too (13,278 rows; its
+  times or reads differ from the head's in 33, and in all 33 it equals main): no row where
+  main is sooner in the 7244 rows of probes 5 and 6, the two "never" rows back, in probe 9
+  two rows where the device then never keeps the households and one where it keeps them
+  4.4 s later, and 26 rows with the same times where the head sends more reads (in 22 of
+  them the households never show or are never kept on either, and the head asks on for
+  the account signed in). Never showing or keeping the households is the worse outcome, so the asking
+  stays. The slower row is listed as a gap.
+- **The start is answered once an answer shows and its write to the device went through,
+  whichever reload brought it.** `refresh` shows an answer and then writes it to the
+  device. On main a write that threw made the start's `refresh` throw, so the start read
+  again after 3 s, and the device had the households once a write worked. That is the
+  `SessionCache` interface; the app's store never throws (the entry on failed writes
+  below). Four versions got this wrong, each in its own way:
+  - The fifth marked the user as loaded where the answer showed, so a failed write ended
+    the asking. No probe showed it, because no fake failed a write; reading main's `catch`
+    line by line did.
+  - The sixth set the mark at the show and took it back when the write failed. While the
+    write ran the mark stood: a timer that fired, a start read that failed or a token
+    refresh inside that window gave up for good (review 5, with a device store whose
+    writes take time).
+  - The seventh set the mark after the write, for the newest reload's answer only. A
+    reload sent during the write of the start's own answer made that answer an older one;
+    when the reload failed, the start asked every 3 s with the households shown and kept
+    (41 reads in 120 s against main's 2; the job's probe 10).
+  - The eighth counted the start's own answers too. One step later the same fault was
+    still there (a reload's answer, kept after a newer reload was sent, which then
+    failed), and whether an answer counted depended on what was sent during a write of a
+    few milliseconds.
+  The rule that stays asks one thing: do the account's households show, and did the write
+  to the device return without an error? It is checked once, after the write, by
+  whichever reload gets there. A rule
+  whose result depends on what happens inside a write window of milliseconds was an
+  artifact each time. No probe row has main sooner by this rule (the three rows where
+  main is sooner belong to the entry above and to the next but one). Where main read every
+  3 s after another reload's answer had shown and been kept, the head stops: fewer reads
+  at the same times in 574 rows of probes 5, 6, 9 and 10 (1 to 40 fewer; five of the 574
+  are the next but one entry's).
+- **An answer written after a sign-out or an account change does not count for the same
+  account when it is back, while their households do not show again.** The mark is set
+  only while the account's own households show (`NeedsHousehold` or `InHousehold` with
+  its user id) and it is the one signed in. A sign-out or another account's sign-in takes
+  the shown state away, so an earlier sign-in's answer, written later, marks nothing
+  until the new sign-in's answer shows. On main the earlier sign-in's read, coming back
+  after the account was signed in again, marked it as loaded, and the new sign-in's own
+  read, when it failed, was never sent again. Two tests, red on main. The limit (review
+  6, nice to have 1): once the new sign-in's answer shows, an older write that ends
+  after it sets the mark, on main and on the head alike (its rows are equal on both).
+- **A read that fails after its account signed out arms no timer: a measured trade.**
+  Main's `catch` armed the 3 s timer then too. It read nothing when it fired, unless the
+  same account was signed in again within those 3 s; then it sent one more read for the
+  new sign-in, next to that sign-in's own. The head with main's timer put back was
+  measured on probes 5, 6, 7, 9 and 10 (13,278 rows): its times or reads differ from the
+  head's in 11 rows, and in all 11 it equals main. Of the 11, the head shows the households sooner in five (0.1 to
+  4.0 s), later in one (3.9 s), keeps them on the device later in one of the five
+  (3.1 s), and sends fewer reads in five. In four of the rows main's extra read passed the
+  new sign-in's own read while it was out, the fault this job fixes; the row where main is
+  sooner is one where the extra read moved the later ones nearer to the moment the server
+  came back (read from the rows' sent lists). Not put back: the timer belongs to a sign-in
+  that ended. Listed as a gap with its rows. Main's whole `catch` put back (this timer,
+  the cancel of the cross-account entry above, and the timer main arms for an account another
+  one signed in over) differs from the head in those 11 and 33 rows and no other, and
+  equals main in all 44; no row then has main sooner.
+- **Left as found on main: a second account's late answer.** Review 5's probe showed an
+  answer for a second account showing after the first signed in again over it
+  (`_refresh` drops by reload number only). It is on main, not on the path of this fix,
+  and a fix would need its own comparison. Listed as a gap.
+- **A write that fails is the interface's case, not the app's** (review 6, must fix 2).
+  The job's files said a failed device write is read again after 3 s "as on main" and
+  handed the told removals' write chain (`_toldWrites`, which stays failed after one
+  failed write) to the lead as a defect of main. Review 6 read one file further: the
+  app's only store, `DeviceCache`, drops every write error (`device_cache.dart:468-474`),
+  on main too. With the app's store over preferences that refuse every write a start
+  sends 1 read in 120 s on both; with the tests' store that throws, 41. No code change:
+  the cubit keeps main's handling of a store that throws, and the tests pin it against
+  the interface. The files now say which store each sentence is about, and the
+  told-removals chain is no longer handed on as a defect. A write that takes time is the
+  app's case too, so the mark after the write stays.
+- **After a dropped answer the asking's timer sends no read while an order change is on
+  its way** (review 6, must fix 1; the tenth version). An order change counts the reloads
+  up before its request, so a start read still out is dropped as the old order. Main
+  asked nothing after that. The ninth version's timer read 3 s later, and with an order
+  change slower than that the answer put the old order back on screen and on the device
+  (1.2 to 11.2 s in 11 of 33 rows of the job's grid; main: none). Settled in the code,
+  not in a sentence: showing an order the user just changed is a visible step back that
+  main did not have. The timer now looks again 3 s later while an order change is on its
+  way (`_reordering`). The grid again: no dropped-answer row shows the old order, and no
+  row has main sooner; in the 18 rows where the server refuses or never answers the
+  order change the head reads within 3 s of the later of its end and the dropped answer,
+  where main never read again (review 7: "within 3 s of its end", as this entry said,
+  was false in the 7 rows where the order change ended before the answer came back).
+  The price against the ninth version: the server's households show 1.2 to 12.0 s later
+  in those 11 rows (never later than on main).
+- **The wait is one rule, asked at every door to the read** (review 7, must fix; the
+  eleventh version). The tenth version put the order change into the timer only. An
+  auth event goes through `_load`, whose guard did not look at it: after a dropped
+  answer a token refresh or a retryable auth error read while the order change was
+  out, and the old order came back for 0.1 to 6.1 s in eight of the reviewer's rows
+  (main: none). It was review 6's must-fix through the other door, so it is settled the
+  same way, in the code. The rule is `_waitsFor`: the account is not loaded, one of its
+  answers was dropped, and the newest reload is out or an order change is on its way.
+  The timer and `_load`'s guard both ask it. The reviewer's 62 rows on five trees: after
+  a dropped answer and an auth event no row shows the old order, as on main (15 rows);
+  where the order change is refused or never answers the households show at 10.0 and
+  16.0 s, on main never. A reload the app sends itself (`refresh` from a resume or the
+  switcher) is not held, as on main: the resume rows equal main's, old order included.
+- **The wait is forgotten wherever main forgets its mark.** Main clears `_loadedFor` at
+  a sign-out and at an account deletion. The eleventh version's first commit
+  (`42b6429a`) cleared the wait at a sign-out and an account change only. After a
+  deletion the timer is cancelled, so with a device sign-out that is slow or throws, an
+  auth event found the wait still standing and an order change on its way and sent no
+  read, where main reads. Found by checking the wait's invariant (while it stands, a
+  timer is armed or a start read is out) at each place that cancels the timer. That
+  check did not cover a return that neither arms nor cancels: the timer firing with
+  nobody signed in and no signed-out event after it (review 8's rows P; equal to main
+  or better in each, no code, listed as a gap). One line
+  (`592009a5`), one test red on `42b6429a` and green on main, 24 rows equal to main.
+- **The wait for an order change starts with a dropped answer; until then a failed
+  read's timer reads as on main.** After a start read that failed, main's timer reads
+  while an order change is on its way, and the old order shows again (11 of the grid's
+  33 failed-read rows, 1.2 to 11.2 s, the same on main and on the head). Holding that
+  timer too would be a second change against main, in a state where main did read, and
+  the last rounds showed what an unmeasured change against main costs. One test pins
+  main's behaviour there. Once an answer was dropped the wait stands, so a later failed
+  read's timer waits too (review 7's row C: the head equals main in what shows, with 4
+  reads against 3). The defect itself (any read answered while an order change is on
+  its way shows the old order) is main's and is handed to the lead. `_reordering` is not
+  kept per account: another account's order change holds the asking until it ends,
+  where main asked nothing (review 7's rows D and H: the households at 17.0 and 18.0 s,
+  on main never). "For the call's 15 s at the most", as this entry said, was no bound:
+  each request ends 15 s after it was sent, two order changes are sent one behind the
+  other, and each one's device write comes first (rows B and E: 31.0 s after two that
+  never answer, main never; 20.2 s with a device write of 20 s, as on main).
+- **No code for two rows review 6 measured outside the rule** (nice to have 2 and 4). An
+  auth stream error during the start answer's device write: the head reads again 3 s
+  later and shows the households, main stays signed out; the session is still there.
+  The account deleted while the start read is out, with a fake sign-out that takes 5 s
+  or throws: after a dropped answer the head reads again where main keeps the notice;
+  the auth library removes the session at once, so the app does not reach it unless
+  forgetting the device's data takes more than 3 s. Both rows were run again on the head
+  and on main and are listed as gaps with their numbers.
+- **Review 8's five surviving mutants get a test each, also where no commit ever failed
+  it.** Review 8 passed the eleventh version and left five of its own mutants alive, each
+  changing what a user sees: an order change holding the wait only while no read is out, a
+  start read that
+  fails while an order change is already on its way taken for a dropped answer, a
+  deleted account keeping the wait when no order change is out, a sign-out or another
+  account's sign-in keeping the dropped answer while an order change is on its way. Two
+  of the five tests are red on an earlier commit of this branch; the other three pass on
+  main and on every earlier commit, so only their mutants show that they hold anything
+  (each of the five mutants fails exactly its one test). No code changed. Its two
+  measured windows outside the rule (an auth stream error after a dropped answer; the
+  timer firing with nobody signed in and no signed-out event after it) are equal to main
+  or better in every row and got a gap entry each, not code: both need the auth client
+  to do something the job could not show it does.
+- **Review 9's eight surviving mutants get a test each, and no tenth review.** Review 9
+  passed the head with review 8's five tests and left eight of its own 13 mutants
+  alive. Two show that a test which fails a mutant of the shared waiting rule pins its
+  two callers only together: with the rule dropped at the auth event alone, or at the
+  timer alone, every test passed. Each caller has its own test now. The other six are
+  review 8's rows with more on its way: a second order change, an older reload still
+  out, a device slow to forget the session. One of the eight tests is red on main
+  (after a dropped answer and a refused order change main never reads again), three
+  are red on an earlier commit of this branch, and four pass on main and on every
+  earlier commit, held only by their mutants (each of the eight mutants fails exactly
+  its one test). No code changed. Three sentences review 9 found stronger than their
+  rows are reworded. The job did not ask for a tenth review: the round changed tests
+  and sentences only, the eight tests are checked by the eight mutants and against
+  fourteen `app/lib` trees, and the files say that no reviewer read them.
+- **A household switch during the device write changes nothing** (review 6, nice to have
+  3): the mark asks whether the account's households show, not whether the very answer
+  still shows. A test pins it; the reviewer's surviving mutant fails it now.
+- **A retry rewrite is compared with the old code by state, by time and by failure.** Ten
+  versions of this retry, and the eleventh's first commit, were each worse than main
+  somewhere. Reviewers' probes found seven (the first four, the sixth, the ninth and the
+  tenth), the job's own probe one, and reading main's code three;
+  the tests found none, because they were written from the new rule. What each round
+  missed, for later jobs: (1) the old code's rule lives in its state too, here the loaded
+  mark that ended the asking, so keeping the `catch` unchanged did not keep the rule; (2)
+  a probe that hands out answers by position shifts every later answer when one version
+  sends one more read, so answers go by the time a read is sent; (3) one seed is not
+  enough, the cross-account row showed in the second seed's 6000 rows only; (4) list
+  every `await` of the old code that can throw and make the fakes fail each one; (5) a
+  fake whose writes take no time hides every window between two awaits, so the fakes take
+  time too, and each window is compared with main; (6) list every timer the old code arms,
+  also the ones that look like they do nothing; (7) rows a generator rarely hits get hand
+  rows; (8) a rule whose result depends on what falls into a window of milliseconds is
+  not the rule yet; (9) "equal or better" is written only next to the count that shows
+  it; (10) a probe records what shows, not only that something shows: nine probes timed
+  "households show" and none could see an old order; every optimistic change with a
+  request on its way is a window the asking is measured in; (11) a sentence about a store
+  or a client is checked against the implementation the app builds, not against the
+  interface the tests fake; (12) a wait goes into the one rule that every door to the
+  read asks, and the doors are listed (here the timer, an auth event, the app's own
+  reloads) with a row each: the tenth version fixed the door the reviewer had driven;
+  (13) state that stands in for the old code's mark is cleared at every place the old
+  mark is cleared.
+- **The retry's timer checks that the cubit is open when it fires,** as main's did. A read
+  that fails while `close()` is still awaiting arms the timer after `close()` cancelled the
+  last one; without the check it read again on a closed cubit. A test pins it in real time
+  (closing does not end under fake time).
+- **No timeout on the start's read.** A 15 s timeout whose retry starts a new numbered reload
+  would drop the slow answer that is still coming, and on a network slower than the timeout
+  would never show one: the same fault as above. What ends a dead connection is the platform's
+  (the browser's fetch, the OS's TCP limits; `dart:io` sets no response timeout of its own):
+  inferred, not measured. Labelled as a gap.
+- **No timeout on item writes** (job 122's decision stands): a timed-out write that still lands
+  reorders last-write-wins writes. It waits for a stale-write guard on the server
+  (`docs/NEEDS_LEAD.md`).
+- **A forced sign-out still drops the queue** (job 122's decision stands). A tick less than
+  440 ms before a sign-out goes with it.
+- **A merge's failed follow-up read is "Sync gestört", not offline.** On main the two reads'
+  record `.wait` threw a `ParallelWaitError`, which the cubit takes for no connection; the op
+  stayed queued either way. `Future.wait` passes the 503 on, and the repository maps it like
+  any other.
+- **The new e2e spec runs on all three engines** (`tick-leave` in WebKit's and Firefox's
+  `testMatch`): page teardown is engine code, and the fix rests on it. WebKit's closed-tab case
+  passes without the fix (its close is slower than the row); it stays for the other two.
+- **Changelog `fixed`.** A user could have noticed: tick the last item, pocket the phone, and
+  the item is back.
