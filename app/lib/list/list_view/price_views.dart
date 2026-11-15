@@ -80,9 +80,7 @@ class const PriceChip({
           child: Container(
             key: ValueKey('price-chip-${item.id}'),
             height: height,
-            padding: const EdgeInsets.symmetric(
-              horizontal: HlHex.tip * height + HlSpace.s1,
-            ),
+            padding: EdgeInsets.symmetric(horizontal: hexTextInset(height)),
             alignment: Alignment.center,
             decoration: ShapeDecoration(
               color: amount == null ? t.surface : t.surfaceRaised,

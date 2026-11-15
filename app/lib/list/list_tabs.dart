@@ -109,8 +109,8 @@ class _ListTabsState() extends State<ListTabs> {
               height: ListTabs.height,
               child: Padding(
                 // Clear of the track's tips.
-                padding: const EdgeInsets.symmetric(
-                  horizontal: HlHex.tip * ListTabs.height,
+                padding: EdgeInsets.symmetric(
+                  horizontal: hexTextInset(ListTabs.height),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,

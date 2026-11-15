@@ -26,13 +26,13 @@ const _height = 44.0;
 /// so the face alone stays a 44 px target.
 const _chipHeight = HlSize.target;
 
-/// Room from the edge of a hex [height] tall to a label in [style]: the
-/// tip's depth, so the content starts where the flat sides do, and more at
-/// large text, where a tall line would reach into the tips.
+/// Room from the edge of a hex [height] tall to a label in [style]:
+/// [hexTextInset], and more at large text, where a tall line would reach
+/// into the tips.
 EdgeInsets _hexPadding(BuildContext context, TextStyle style, double height) =>
     EdgeInsets.symmetric(
       horizontal: math.max(
-        HlHex.tip * height,
+        hexTextInset(height),
         hexLabelInset(style, MediaQuery.textScalerOf(context)),
       ),
     );
