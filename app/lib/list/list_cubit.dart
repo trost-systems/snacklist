@@ -362,6 +362,10 @@ class ListCubit(
   /// only then, and only then may a save before the first load replace it.
   var _cacheRead = false;
 
+  /// The ticks whose rows still close, by item: saved with the queue from
+  /// the tap on ([willTick]), enqueued when the row has closed ([tick]).
+  final _promised = <String, SetStatus>{};
+
   Stream<Rejected> get rejections => _rejections.stream;
 
   /// A new add of something already open under another spelling, once its
@@ -774,6 +778,18 @@ class ListCubit(
         .join(','),
   ].join('|');
 
+  /// The tap that ticks [id], while its row still closes: [tick] follows
+  /// when it has closed. The tick is saved with the queue here already,
+  /// since the page may be gone before the row is (a closing Firefox tab
+  /// ends the running script and runs no `await` after it, job 222).
+  void willTick(String id) {
+    _promised[id] = SetStatus(id, ItemStatus.bought, _clock());
+    if (state.loaded || _cacheRead) {
+      _save?.cancel();
+      _saveNow(state);
+    }
+  }
+
   void tick(String id) {
     final before = state.allItems[id];
     final active = before?.status == ItemStatus.active;
@@ -782,7 +798,9 @@ class ListCubit(
       _tripTicked.add(id);
     }
     final ticked = _tripTicked.length;
-    _enqueue(SetStatus(id, ItemStatus.bought, _clock()));
+    _enqueue(
+      _promised.remove(id) ?? SetStatus(id, ItemStatus.bought, _clock()),
+    );
     if (before != null && active) {
       _track('item_ticked', _actor());
       _tell(OwnItemTicked(before));
@@ -1983,12 +2001,14 @@ class ListCubit(
     }
   }
 
+  /// With the ticks whose rows still close ([willTick]), so no later save
+  /// takes one off the device again.
   void _saveNow(ListState state) => unawaited(
     _cache.save(
       ListSnapshot(
         catalog: state.catalog,
         server: [...state.server.values],
-        pending: state.pending,
+        pending: [...state.pending, ..._promised.values],
         usuals: state.usuals,
         claims: [...state.claimRows.values],
       ),

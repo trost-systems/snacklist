@@ -34,6 +34,10 @@ class const ItemRow({
   /// The last row of its block has no rule under it.
   required final bool last,
   required final ValueChanged<bool> onVisible,
+
+  /// The tap that ticks, at once. [onTick] follows when the row has closed,
+  /// or before that when the row or the app goes away first.
+  required final ValueChanged<Item> onTickStart,
   required final ValueChanged<Item> onTick,
   required final ValueChanged<Item> onEdit,
 
@@ -97,6 +101,7 @@ class _ItemRowState()
     }
     final item = widget.item;
     final onTick = widget.onTick;
+    widget.onTickStart(item);
     unawaited(
       SemanticsService.sendAnnouncement(
         View.of(context),

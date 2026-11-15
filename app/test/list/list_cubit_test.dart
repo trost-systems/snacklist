@@ -1406,6 +1406,80 @@ void main() {
     expect(cache.saved!.pending, isEmpty);
   });
 
+  group('a tick whose row still closes (job 222):', () {
+    late String bread;
+
+    Matcher theTick() => isA<SetStatus>()
+        .having((op) => op.itemId, 'item', bread)
+        .having((op) => op.status, 'status', ItemStatus.bought);
+
+    setUp(() async {
+      bread = (cubit.addEntry(parseEntry('Brot')) as Added).item.id;
+      await settle();
+      repo.sent.clear();
+    });
+
+    test('it is on the device from the tap on; the list shows no tick yet '
+        'and sends none', () async {
+      cubit.willTick(bread);
+      expect(cache.saved!.pending, [theTick()]);
+      await settle();
+      expect(cubit.state.pending, isEmpty);
+      expect(cubit.state.items[bread]!.status, ItemStatus.active);
+      expect(repo.sent, isEmpty);
+    });
+
+    test('a later save keeps it there: of another op, of its answer, of '
+        "a partner's add", () async {
+      cubit.willTick(bread);
+      repo.gate = Completer();
+      cubit.addEntry(parseEntry('Käse'));
+      expect(cache.saved!.pending, [isA<AddItem>(), theTick()]);
+
+      repo.gate!.complete();
+      await settle();
+      expect(cache.saved!.pending, [theTick()]);
+
+      repo.emitItem!(repo.remoteAdd('Tee'));
+      // Longer than the cubit's save debounce.
+      await elapse(const Duration(milliseconds: 400));
+      expect([for (final i in cache.saved!.server) i.name], contains('Tee'));
+      expect(cache.saved!.pending, [theTick()]);
+    });
+
+    test('the closed row queues that tick: one op, sent once, then off the '
+        'device', () async {
+      cubit.willTick(bread);
+      final promised = cache.saved!.pending.single;
+      repo.gate = Completer();
+      cubit.tick(bread);
+      expect(cubit.state.pending, [same(promised)]);
+      expect(cache.saved!.pending, [same(promised)]);
+
+      repo.gate!.complete();
+      await settle();
+      expect(repo.sent, [same(promised)]);
+      expect(repo.rows[bread]!.status, ItemStatus.bought);
+      expect(cache.saved!.pending, isEmpty);
+
+      repo.emitItem!(repo.remoteAdd('Tee'));
+      await elapse(const Duration(milliseconds: 400));
+      expect(cache.saved!.pending, isEmpty, reason: 'no tick left over');
+    });
+
+    test('the app is gone before the row has closed: the next start shows '
+        'the tick and sends it, once', () async {
+      cubit.willTick(bread);
+      await cubit.close();
+      cubit = ListCubit(repo, cache, userId: 'peter')..start();
+      await settle();
+      expect(cubit.state.items[bread]!.status, ItemStatus.bought);
+      expect(repo.sent, [theTick()]);
+      expect(repo.rows[bread]!.status, ItemStatus.bought);
+      expect(cache.saved!.pending, isEmpty);
+    });
+  });
+
   test('a delete can be undone with the same id', () async {
     final item = (cubit.addEntry(parseEntry('Milch')) as Added).item;
     await settle();

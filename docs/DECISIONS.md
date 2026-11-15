@@ -14485,3 +14485,85 @@ Peter's calls on job 260's feedback round (t958u, 15 Nov 2026) plus the lead's t
 13. **The text typed onto a screenshot is not read by screen readers.** It sits inside the package's
     area, which is excluded from semantics so its covered column is not read out. The tools, undo,
     Fertig and X are labelled. Marking up a picture is visual work, so this was accepted.
+
+## Job 222 review 1: the tick is on the device from the tap on, 2026-11-15
+
+- **What was wrong.** After #469 a tick made less than 440 ms before its tab closed was still
+  lost on Firefox now and then: 4 of 108 closed-tab runs in CI (review 1's five on-demand runs),
+  and two `ci.yml` runs of other jobs' PRs went red on this job's own test (43714179620,
+  43716669387). #469 saved such a tick when the row closed or the page was hidden. For a closing
+  Firefox tab both can be too late.
+- **Cause, measured.** A closing Firefox tab ends the script that runs when the page goes,
+  without unwinding it (no `finally`), and then fires `pagehide` and `visibilitychange`. A bare
+  page showed that in 6 of 6 runs; with Firefox's `dom.abort_script_on_child_shutdown` off, 6 of
+  6 logs end at `beforeunload` instead. A script that already runs when the close is asked for
+  is waited for. In the app's trace the ended script was the frame of the row's end. The hidden
+  row's commit then ran to its end, the save asked the device's store for the households (the
+  guard in `_PrefsListCache._store`), and nothing the app awaited ran after that: no write. With
+  the row's end held for 400 ms so that the close lands in it, 11 of 11 such runs lost the tick
+  and 17 of 17 runs whose page hid before the row's end kept it (repeats 12 to 39 of
+  `e2e-trace2-nocancel.log`; Firefox's `dom.ipc.cancel_content_js_when_navigating` was off in
+  that run, so that pref is not what ends the script). The first traced loss, on the build with
+  marks only, was the commit at the row's end itself: it queued the tick and called the save,
+  and none of the save's own marks came after that call returned (the page's `pagehide` and the
+  scope's hide did). No error and no `catch` showed in any of the 81 traced runs, so review 1's
+  guess of a failing storage read is ruled out for them.
+- **Cause, inferred.** Dart's microtask loop (`schedule_microtask.dart` in the SDK) marks itself
+  as running and clears the mark in a `finally`, and it asks the browser for a next run only
+  when the mark is off and its queue was empty. A script ended inside the loop, or before a
+  scheduled run of it, leaves that state wrong, so no `await` continues on that page again. This
+  fits every trace; nobody stepped through it. Not known: which script the four CI losses ended
+  in (the same signature is assumed: no item write, the row back), and why the app's page takes
+  so much longer from `beforeunload` to `pagehide` than a bare page: 21 to 682 ms, median 340,
+  in the 40 runs with marks only, against under 50 ms in the 18 bare-page runs with default
+  settings that logged both events.
+- **Call: the list saves the tick at the tap and ticks at the row's end, as before.** `ItemRow`
+  tells of the tap (`onTickStart`), `ListCubit.willTick` keeps the op and saves the queue with
+  it at once, every later save includes it, and `tick` queues that same op when the row has
+  closed, was hidden or went away. A start that finds the op shows the item ticked and sends it.
+  The list's state and the row do not change at the tap, so nothing on screen does. The save
+  is called in the tap's own task, 440 ms before the row's end, and needs nothing from the
+  page's end (read from the code; the fixed build carried no trace marks).
+- **Why not tick the list at the tap** (review 1's other option, "considered and left" in
+  #469). The reason stands: dividers, counts and "Zuletzt verwendet" would move under a row that
+  still closes, which is a design change. Saving at the tap gives the same head start without
+  it. The done doc's sentence that the early commits "give the same guarantee" was wrong for a
+  closing Firefox tab and is corrected there.
+- **Why not a write without `await` at the hide.** On web `localStorage.setItem` is synchronous,
+  and the hidden row's commit ran to its end in every trace, so a direct write there would have
+  saved those runs. It would be a web-only path around `DeviceCache`'s guard (a list closing
+  after sign-out must not write back), phones have no synchronous store, and a page that dies
+  without a hide is still lost. The save at the tap has none of these.
+- **The new test makes the page busy; it does not sweep waits.** Review 1 suggested closing 400
+  to 500 ms after the tap. Such a close loses the tick only when it lands inside a frame, which
+  is the 3.7 % again, and it puts a wait before the close. `tick-leave.spec.ts` has a third test
+  instead: from `beforeunload` on, the page's next microtask is busy for 1.5 s. On the code
+  before, that lost the tick in every run on all three engines; with the fix in none (numbers in
+  `docs/hillclimb/fable-improvement-2026-11.md`). Why Chromium and WebKit lose it there nobody
+  traced; a guess is that they do not wait for a busy page either. The closed-tab test
+  stays as it was: no wait, no retry, Firefox included. Its failure message now says whether the
+  device held a queued tick before the next start.
+- **What can still lose a tick.** A page or app that dies inside the tap's own task, before the
+  write: on web the write follows in microtasks, on iOS and Android it crosses a platform
+  channel (not measured, no phone here). A sign-out within the row's 440 ms forgets the tick
+  with the rest of the device's data, by design.
+- **A kill with no hide event at all, probed once on web.** Chromium's renderer crashed by
+  `Page.crash` right after the tap (seen 176 to 447 ms after the click began), the list opened
+  in a new tab: 4 of 4 ticks lost before the fix (main `2c682684` with the trace marks), 8 of 8
+  kept with it. A one-off probe, not a test in the repo (`Page.crash` exists in Chromium
+  only); one lock hold, 18:13 to 18:16 CET, load 3.6 to 5.6. A killed phone app was not
+  driven.
+- **Cost.** A tick saves the list twice now, at the tap and when the row has closed, instead of
+  once. #470 measured 1.11 ms of UI-isolate time for one tick and its save's text on x86 at 300
+  items; the second save and the store's own write are not measured (NEEDS_LEAD, "A tick still
+  writes the whole list's text").
+- **Analytics.** `item_ticked` is still tracked when the list ticks (`tick`), not at the tap. A
+  tick that only the next start sends (the page died before the row's end) is not counted;
+  none is counted twice. Before this fix such a tick was lost altogether.
+- **Not pinned by a test.** `willTick` before the list has loaded and before the cache was
+  read (it then saves nothing), its cancel of a waiting save, two rows that close at once, and
+  a promised tick on a list closed by a household switch (read from the code: it stays on the
+  device and goes out at that list's next start). The spec's note was seen to say "no" in all
+  16 failures before the fix; its "yes" was not seen in a failure.
+- **Not done.** A log in `device_cache.dart`'s two `catch` blocks (review 1, nice to have 3):
+  the traces showed no caught error, and the spec's message now tells a lost save apart.
