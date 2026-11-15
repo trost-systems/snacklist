@@ -56,7 +56,7 @@ export function captionProblems() {
         const where = `${locale} ${id} (${store})`;
         if (id !== 'feature' && (!Array.isArray(c.h) || c.h.length !== 2 || !c.s)) problems.push(`${where}: needs h as two lines and s`);
         if (!c.alt || c.alt.length > ALT_MAX) problems.push(`${where}: alt text missing or over ${ALT_MAX} characters`);
-        if (!['draft', 'approved'].includes(c.status)) problems.push(`${where}: status must be draft or approved`);
+        if (!['draft', 'approved', 'blocked'].includes(c.status)) problems.push(`${where}: status must be draft, approved or blocked`);
         for (const t of strings({ h: c.h, s: c.s, alt: c.alt, tagline: c.tagline })) problems.push(...textProblems(t, { store }).map((p) => `${where}: "${t}" ${p}`));
         if (c.premium) problems.push(...textProblems(c.premium, { store, premium: true }).map((p) => `${where} premium label: "${c.premium}" ${p}`));
         if (c.sticker && Object.values(c.sticker).some((v) => v === null || v === undefined)) problems.push(`${where}: a sticker key without a value (quote text with commas)`);
@@ -68,12 +68,12 @@ export function captionProblems() {
 }
 
 /**
- * The words of a locale's shots for one store: a shot's `appstore:` fields replace its own on the
- * App Store set only (Siri, N-195). `feature` holds the feature graphic's words.
+ * The words of a locale's shots for one store: a shot's `appstore:` (Siri, N-195) or `play:` fields replace its own
+ * on that store's set only. `feature` holds the feature graphic's words.
  */
 export function captionsFor(locale, { store }) {
   const out = {};
-  for (const [id, { appstore, ...base }] of Object.entries(all[locale].shots)) out[id] = { ...base, ...(store === 'appstore' ? appstore : {}) };
+  for (const [id, { appstore, play, ...base }] of Object.entries(all[locale].shots)) out[id] = { ...base, ...(store === 'appstore' ? appstore : play) };
   out.feature = { ...all[locale].feature };
   return out;
 }

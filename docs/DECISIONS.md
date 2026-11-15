@@ -14188,3 +14188,10 @@ Redo of job 65's closed PR #190 with the frame Peter picked in job 214
 - **No flag.** No voice or dictation gating exists (flags.json, `flags.dart`); this only adds a language, so it ships ungated.
 - **Not changed: splitting without commas.** Android's recognizer writes no commas, so "milk two bananas and bread" gives two items ("milk two bananas", "bread"). German has the same limit today ("Milch zwei Gurken und Brot"). Splitting at a mid-sentence number would change Siri's, Alexa's and German results and break names such as "diapers size 4" or „Drei Glocken Nudeln“, so it stays out of this job. The device script tells the tester to say "and".
 - **Proof.** Linux app with the scripted recognizer on the job's stack: English "milk, two bananas and bread" gave milk, bananas 2 and bread in their categories ("Added: milk, 2 bananas, bread."), "add eggs" gave eggs, and German „Milch und zwei Gurken“ gave „Hinzugefügt: Milch, 2 Gurken.“; the edge log read `session parse en` twice and `session parse de` (docs/screenshots/256/). The real recognizers need a device (`out/DEVICE_TEST.md` in the job's ops dir).
+
+## Job 255: store caption accuracy fixes
+PM calls: Play voice caption „Per Sprachbefehl auf die Liste.“, assist headline „Sag’s dem Assistenten.“, feature graphic tagline unchanged (already „Gemeinsam einkaufen, ohne Werbung.“). Invite subline kept (Peter's wording; no in/IC.txt). The Play voice frame has no real-device German capture, so it is marked BLOCKED (status `blocked` via `play:` override) rather than faked.
+
+## Job 255: store caption accuracy fixes
+
+PM calls: Play voice caption „Per Sprachbefehl auf die Liste.“, assist headline „Sag’s dem Assistenten.“. The feature graphic tagline already was „Gemeinsam einkaufen, ohne Werbung.“. Invite subline kept (Peter's wording; no in/IC.txt). No real-device German capture exists for the Play voice frame, so it is marked BLOCKED (`status: blocked`, `play:` override), not faked.
