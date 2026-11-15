@@ -2,7 +2,7 @@
 
 A throwaway HTML sandbox for two decisions: how a new user who was invited joins a household (round JH) and how a new user creates one (round CH), now that “Paste invite” should go. Nothing here ships; the app is unchanged. Mock data only (the fictional Brandt family of the demo videos).
 
-- `join/`: round JH, Today and JH1 to JH5. `join/RECOMMENDATION.md` (and `.de.md`): the pick (JH3), the runner-up (JH2) and JH-Q1 to JH-Q9.
+- `join/`: round JH, Today and JH1 to JH5. `join/RECOMMENDATION.md` (and `.de.md`): the pick (JH5), the runner-up (JH3) and JH-Q1 to JH-Q11.
 - `create/`: round CH, Today and CH1 to CH5. `create/RECOMMENDATION.md` (and `.de.md`): the pick (CH1), the runner-up (CH2) and CH-Q1 to CH-Q6.
 - `RESEARCH.md`: Stage 1, how comparable apps onboard invited people, deferred deep links, universal links, QR, codes, web join, consent order, and what follows for Snacklist (sources with fetch dates).
 

@@ -28,7 +28,7 @@ Bold: Share link; in brackets the range over link · QR · code.
 
 ## Together with the join round
 
-CH1 and JH3 share one start screen: “Get started” (CH1’s three steps) and “Join a household” (JH3’s code door), with “Sign in” under them. “Paste invite” goes.
+CH1 and the join pick share one start screen: “Get started” (CH1’s three steps), “Join a household” (the door JH5 takes from JH3), and on a first start JH5’s “Coming from an invite?” card; “Sign in” under them. “Paste invite” goes.
 
 ## Open questions
 
@@ -37,4 +37,4 @@ CH1 and JH3 share one start screen: “Get started” (CH1’s three steps) and 
 3. **CH-Q3** Put the two doors (“Get started”, “Join a household”) on the start screen with CH1? Default: yes, the same door as JH3.
 4. **CH-Q4** Keep “Skip” on the who step? Default: yes; the invite text falls back to today’s generic one.
 5. **CH-Q5** Show a QR code on a one-person invite card? Default: yes (same as JH-Q7). It works once; a second scanner sees “This invite no longer works”.
-6. **CH-Q6** Guest accounts for a list before any account (CH3)? Default: no; revisit together with JH5 if the account step shows as the main drop-off.
+6. **CH-Q6** Guest accounts for a list before any account (CH3)? Default: not now. If guest accounts are built for JH5 (JH-Q10), CH3’s main cost is paid; revisit then, if the account step shows as the main drop-off.

@@ -30,7 +30,7 @@ const common = {
 const commonMeta = {
   msg: { step: 'entry', cap: en('Mia’s invite in WhatsApp: the link and the code, shared by Mia from her phone.', 'Mias Einladung in WhatsApp: Link und Code, von Mia selbst geteilt.') },
   'msg-again': { step: 'entry', scr: 'msg', cap: en('Back in the chat, the same link again. Now that the app is there, it opens the app.', 'Zurück im Chat, derselbe Link noch mal. Jetzt, wo die App da ist, öffnet er die App.') },
-  'msg-code': { step: 'entry', cap: en('Mia sent only the code (or said it out loud).', 'Mia hat nur den Code geschickt (oder gesagt).') },
+  'msg-code': { step: 'entry', cap: en('Mia typed only the code into a message (or said it out loud).', 'Mia hat nur den Code in eine Nachricht getippt (oder gesagt).') },
   'cam-again': { step: 'entry', scr: 'cam', cap: en('After installing, the camera on Mia’s QR code again: now the link opens the app.', 'Nach der Installation die Kamera noch einmal auf Mias QR-Code: Jetzt öffnet der Link die App.') },
   cam: { step: 'entry', cap: en('Mia shows the QR code on her phone; Ida points her camera at it. The camera offers the link.', 'Mia zeigt den QR-Code auf ihrem Handy; Ida hält die Kamera drauf. Die Kamera bietet den Link an.') },
   home: { step: 'entry', cap: en('The home screen.', 'Der Home-Bildschirm.') },
@@ -335,8 +335,9 @@ const jh3 = {
     acct: (c) => accountOver(c, landingStd(c)),
     apple: (c) => appleOver(c, landingStd(c)),
     wait: (c) => kindWait(c, { mid: `<div class="sticker"><b>${c.lang === 'de' ? 'Während du wartest' : 'While you wait'}</b><p class="small muted">${c.lang === 'de' ? 'Mia sieht deinen Namen und dass du beitreten willst. Sonst nichts.' : 'Mia sees your name and that you want to join. Nothing else.'}</p></div>` }),
-    list: (c) => consentSheet(c, listIn(c)),
-    'list-approved': (c) => consentSheet(c, listIn(c, { snack: c.T.joinApprovedNotice(M(c).household) })),
+    consent: (c) => consentSheet(c, listIn(c)),
+    'consent-approved': (c) => consentSheet(c, listIn(c, { snack: c.T.joinApprovedNotice(M(c).household) })),
+    list: (c) => listIn(c),
   },
   meta: {
     ...commonMeta,
@@ -348,11 +349,12 @@ const jh3 = {
     acct: { step: 'account', cap: en('Account sheet over the landing.', 'Konto-Blatt über der Landeseite.') },
     apple: { step: 'account', scr: 'acct', cap: en('Sign in with Apple.', 'Mit Apple anmelden.') },
     wait: { step: 'wait', cap: en('Approval on: what Mia sees, and that the list opens by itself.', 'Bestätigung an: Was Mia sieht, und dass sich die Liste von selbst öffnet.') },
-    list: { step: ['list', 'consent'], cap: en('The shared list, with usage data as a sheet over it; either answer closes it.', 'Die gemeinsame Liste, Nutzungsdaten als Blatt darüber; jede Antwort schließt es.') },
-    'list-approved': { step: ['list', 'consent'], scr: 'list', cap: en('Approved: the list, usage data over it.', 'Bestätigt: die Liste, Nutzungsdaten darüber.') },
+    consent: { step: ['list', 'consent'], cap: en('Joined: usage data as a sheet over the shared list, with today’s text; either answer closes it.', 'Beigetreten: Nutzungsdaten als Blatt über der gemeinsamen Liste, mit dem heutigen Text; jede Antwort schließt es.') },
+    'consent-approved': { step: ['list', 'consent'], scr: 'consent', cap: en('Approved: usage data over the list.', 'Bestätigt: Nutzungsdaten über der Liste.') },
+    list: { step: 'list', cap: en('The shared list, “You’re in”, once usage data is answered.', 'Die gemeinsame Liste, „Du bist drin“, sobald Nutzungsdaten beantwortet sind.') },
   },
   paths: (sc) => {
-    const ok = sc.approval === 'on' ? [st('wait'), wait('list-approved')] : [st('list')];
+    const ok = sc.approval === 'on' ? [st('wait'), wait('consent-approved'), st('list', 'tap', 'decline')] : [st('consent'), st('list', 'tap', 'decline')];
     const join = [st('acct', 'tap', 'join'), st('apple', 'tap', 'apple'), ...ok];
     const viaCode = [st('code', 'tap', 'door'), typed('code-typed'), st('landing'), ...join];
     let list;
@@ -366,8 +368,8 @@ const jh3 = {
       const by = sc.entry === 'qr' ? 'primary' : 'link';
       if (sc.app === 'installed') list = [entry, st('landing', 'tap', by), ...join];
       else if (sc.entry === 'qr')
-        list = [entry, st('web-jh3', 'tap', by), st('store-get', 'tap', 'get-app'), st('store-open'), auto('cam-again', en('Point the camera at Mia’s QR code again', 'Kamera noch einmal auf Mias QR-Code halten')), st('landing', 'tap', 'primary'), ...join];
-      else list = [entry, st('web-jh3', 'tap', by), st('store-get', 'tap', 'get-app'), st('store-open'), auto('msg-again', en('Back to the chat', 'Zurück in den Chat')), st('landing', 'tap', 'link'), ...join];
+        list = [entry, st('web-jh3', 'tap', by), st('store-get', 'tap', 'get-app'), st('store-open'), st('cam-again', 'tap', 'outside', undefined, en('Open the camera, point it at Mia’s QR code again', 'Kamera öffnen, noch einmal auf Mias QR-Code halten')), st('landing', 'tap', 'primary'), ...join];
+      else list = [entry, st('web-jh3', 'tap', by), st('store-get', 'tap', 'get-app'), st('store-open'), st('msg-again', 'tap', 'outside', undefined, en('Open WhatsApp again', 'WhatsApp wieder öffnen')), st('landing', 'tap', 'link'), ...join];
     }
     return { list, app: list };
   },
@@ -571,7 +573,7 @@ export const round = {
     deferred: en2('Not installed (deferred link)', 'Nicht installiert (verzögerter Link)'), privacy: en2('Privacy exposure', 'Datenschutz-Exposition'), leaves: en2('What leaves the device', 'Was das Gerät verlässt'),
     build: en2('Build effort (estimate)', 'Bauaufwand (Schätzung)'), service: en2('Existing service', 'Fertiger Dienst'), risks: en2('Risks and open points', 'Risiken und offene Punkte'),
   },
-  rec: { pick: 'JH3', runnerUp: 'JH2', file: 'RECOMMENDATION' },
+  rec: { pick: 'JH5', runnerUp: 'JH3', file: 'RECOMMENDATION' },
   page: {
     en: {
       title: 'Joining a household (JH1–JH5)', back: 'All prototype rounds', overview: 'Overview', rec: 'Recommendation', light: 'Light', dark: 'Dark', text: 'Text',
@@ -584,6 +586,7 @@ export const round = {
       factsTitle: 'The six steps, the hand-off and the effort', tryIt: 'Try it', reset: 'Start again', tapHint: 'Tap the outlined control in the phone.',
       soFar: (n) => `${n} ${n === 1 ? 'tap' : 'taps'} so far`, doneAfter: (n, s) => `Done: ${n} ${n === 1 ? 'tap' : 'taps'}, ${s} steps.`,
       goalNow: (g, t, s) => `${g}: ${t} taps, ${s} screens on this path.`,
+      partTitle: (g, n) => `${g}: from step ${n}, where the paths part`,
     },
     de: {
       title: 'Einem Haushalt beitreten (JH1–JH5)', back: 'Alle Prototyp-Runden', overview: 'Überblick', rec: 'Empfehlung', light: 'Hell', dark: 'Dunkel', text: 'Text',
@@ -596,6 +599,7 @@ export const round = {
       factsTitle: 'Die sechs Schritte, die Übergabe und der Aufwand', tryIt: 'Ausprobieren', reset: 'Neu starten', tapHint: 'Tippe im Handy auf das umrandete Element.',
       soFar: (n) => `bisher ${n} ${n === 1 ? 'Tipp' : 'Tipps'}`, doneAfter: (n, s) => `Fertig: ${n} ${n === 1 ? 'Tipp' : 'Tipps'}, ${s} Schritte.`,
       goalNow: (g, t, s) => `${g}: ${t} Tipps, ${s} Bildschirme auf diesem Weg.`,
+      partTitle: (g, n) => `${g}: ab Schritt ${n}, wo sich die Wege trennen`,
     },
   },
 };
@@ -640,9 +644,9 @@ jh3.facts = ({
   deferred: en('the join page says “get the app, then tap the link again”; the code is the fallback', 'die Beitrittsseite sagt „App laden, dann Link noch einmal antippen“; der Code ist der Ausweg'),
   firstList: en('app', 'App'),
   approval: en('kind wait, says what Mia sees', 'freundliches Warten, sagt, was Mia sieht'),
-  consent: en('sheet over the first list', 'Blatt über der ersten Liste'),
+  consent: en('sheet over the first list (1 tap)', 'Blatt über der ersten Liste (1 Tipp)'),
   privacy: en('low: nothing read from the device', 'niedrig: nichts wird vom Gerät gelesen'),
-  build: en('4 days', '4 Tage'),
+  build: en('4 days (scanner later, JH-Q8)', '4 Tage (Scanner später, JH-Q8)'),
   service: en('none', 'keiner'),
 });
 jh4.facts = ({
@@ -717,14 +721,14 @@ jh3.detail = {
   entry: en('Link or QR; a code via “Join a household”, which also scans a QR.', 'Link oder QR; ein Code über „Einem Haushalt beitreten“, das auch QR scannt.'),
   landing: en('In the app: Mia, household, counts. Not installed: the join page with two numbered steps.', 'In der App: Mia, Haushalt, Zahlen. Ohne App: die Beitrittsseite mit zwei nummerierten Schritten.'),
   account: en('A sheet over the landing (Apple, Google, email; Imprint, Privacy).', 'Ein Blatt über der Landeseite (Apple, Google, E-Mail; Impressum, Datenschutz).'),
-  consent: en('A sheet over the first list; either answer closes it. The list is visible behind it.', 'Ein Blatt über der ersten Liste; jede Antwort schließt es. Die Liste ist dahinter sichtbar.'),
+  consent: en('A sheet over the first list with today’s text; either answer closes it (counted as a tap).', 'Ein Blatt über der ersten Liste mit dem heutigen Text; jede Antwort schließt es (als Tipp gezählt).'),
   approval: en('Off: the list. On: the wait says what Mia sees (her name and the wish to join) and that the list opens by itself.', 'Aus: die Liste. An: Das Warten sagt, was Mia sieht (ihren Namen und den Beitrittswunsch), und dass sich die Liste von selbst öffnet.'),
-  firstList: en('The list with “You’re in” under the usage-data sheet.', 'Die Liste mit „Du bist drin“ unter dem Nutzungsdaten-Blatt.'),
+  firstList: en('The list with “You’re in”, once the usage-data sheet is answered.', 'Die Liste mit „Du bist drin“, sobald das Nutzungsdaten-Blatt beantwortet ist.'),
   manual: en('“Join a household”, the second of two equal doors on the start screen.', '„Einem Haushalt beitreten“, die zweite von zwei gleichwertigen Türen auf dem Startbildschirm.'),
   deferred: en('No carry-over. The page says: get the app, then tap the link in the chat again (now a universal link). A QR scan goes through the door instead.', 'Keine Übergabe. Die Seite sagt: App laden, dann den Link im Chat noch einmal antippen (jetzt ein Universal Link). Ein QR-Scan geht stattdessen über die Tür.'),
   privacy: en('Low.', 'Niedrig.'),
   leaves: en('Nothing new; nothing is read from the device.', 'Nichts Neues; nichts wird vom Gerät gelesen.'),
-  build: en('About 4 days: two doors, code screen with scanner, landing, account sheet, join page steps.', 'Etwa 4 Tage: zwei Türen, Codeschirm mit Scanner, Landeseite, Konto-Blatt, Schritte auf der Beitrittsseite.'),
+  build: en('About 4 days: two doors, code screen, landing, account sheet, join page steps. The QR scanner shown on the code screen is extra (JH-Q8).', 'Etwa 4 Tage: zwei Türen, Codeschirm, Landeseite, Konto-Blatt, Schritte auf der Beitrittsseite. Der QR-Scanner auf dem Codeschirm kommt extra (JH-Q8).'),
   service: en('None.', 'Keiner.'),
   risks: en('Some users won’t go back to the chat; the code and the second door catch them. The in-app QR scanner adds a camera prompt.', 'Manche gehen nicht zurück in den Chat; Code und zweite Tür fangen sie auf. Der QR-Scanner in der App bringt eine Kamera-Nachfrage.'),
 };

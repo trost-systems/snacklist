@@ -95,9 +95,9 @@ export const firstSteps = (c, { joined, invite } = {}) =>
   ${invite ? `<div class="fs-row"><span class="phex xs"></span><span class="grow"><b>${c.T.checklistInviteFamily}</b><small class="muted">${c.T.checklistInviteBody}</small></span>${btn(c, c.T.hintInviteAction, { by: 'fs-invite', wide: false })}</div>` : ''}
   <div class="fs-row"><span class="phex xs"></span><span class="grow"><b>${c.T.checklistShop}</b><small class="muted">${c.T.listHint}</small></span></div></div>`;
 
-// A card on the list (new): analytics asked after the join, equal buttons, never in front of the list.
+// A card on the list (new place, today's words): analytics asked after the join, equal buttons, never in front of the list.
 export const consentCard = (c) =>
-  `<div class="sticker consent-card" data-consent-card><b>${c.T.analyticsConsentTitle}</b><p class="small muted">${c.lang === 'de' ? 'Hilft uns, Snacklist zu verbessern. Keine Listeninhalte, Namen oder E-Mail-Adressen.' : 'Helps us improve Snacklist. Never list contents, names or e-mail addresses.'} <a>${c.lang === 'de' ? 'Was genau?' : 'What exactly?'}</a></p><div class="row2">${btn(c, c.T.analyticsDecline, { by: 'decline' })}${btn(c, c.T.analyticsAccept, { by: 'accept' })}</div></div>`;
+  `<div class="sticker consent-card" data-consent-card><b>${c.T.analyticsConsentTitle}</b><p class="small">${esc(c.T.analyticsConsentBody)} <a>${c.T.analyticsConsentPrivacyLink}</a>.</p><div class="row2">${btn(c, c.T.analyticsDecline, { by: 'decline' })}${btn(c, c.T.analyticsAccept, { by: 'accept' })}</div></div>`;
 
 // The switcher sheet's household page and its invite page (job 242: invite is a page inside the sheet).
 export const switcherSheet = (c, under) =>

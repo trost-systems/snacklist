@@ -55,12 +55,21 @@ const caption = (o, path, i) => {
   return `<figcaption><span class="steps">${stepTags(o, path[i].s)}</span><span>${esc(L(m.cap))}</span>${viaText(o, path[i + 1])}</figcaption>`;
 };
 
-// One storyboard: the longest goal's path; a frame where a shorter goal is reached carries its badge.
-const storyboard = (o) => {
-  const path = pathOf(o, lastGoal);
-  return `<div class="story" data-testid="story" data-goal="${lastGoal}">${path
+// One storyboard per goal path: the last goal's in full; a goal reached on that path gets a badge on its frame,
+// a goal whose path parts from it gets its own storyboard from the step where they part.
+const sameStep = (a, b) => a && b && a.s === b.s && a.via === b.via && a.by === b.by;
+const partsAt = (o, key) => {
+  const p = pathOf(o, key), main = pathOf(o, lastGoal);
+  const i = p.findIndex((st, k) => !sameStep(st, main[k]));
+  return i < 0 ? null : i;
+};
+const storyboard = (o, goal = lastGoal, from = 0) => {
+  const path = pathOf(o, goal);
+  return `<div class="story" data-testid="story" data-goal="${goal}" data-from="${from}">${path
     .map((st, i) => {
-      const reached = goals.filter(({ key }) => pathOf(o, key).length - 1 === i);
+      if (i < from) return '';
+      const onMain = ({ key }) => goal === lastGoal && partsAt(o, key) === null && pathOf(o, key).length - 1 === i;
+      const reached = goals.filter((g) => onMain(g) || (g.key === goal && i === path.length - 1));
       const badge = reached.length ? `<span class="tag goal-badge" data-goal-end="${reached.map((g) => g.key).join(' ')}">${ic('flag_outlined', 'xs')} ${esc(reached.map((g) => L(g.label)).join(' = '))}</span>` : '';
       return `<figure data-i="${i}" data-frame-state="${st.s}">${caption(o, path, i)}${badge}${phone(o, path, i)}</figure>`;
     })
@@ -161,7 +170,10 @@ const optionView = (o) => {
   <details class="facts-box" ${matchMedia('(max-width: 440px)').matches ? '' : 'open'}><summary>${W().factsTitle}</summary><dl class="facts">${round.detail
     .map((k) => `<dt>${esc(L(round.detailNames[k]))}</dt><dd data-detail="${k}">${esc(L(o.detail[k]))}</dd>`)
     .join('')}</dl></details></section>
-  ${storyboard(o)}${tryPane(o)}`;
+  ${storyboard(o)}${goals
+    .filter(({ key }) => partsAt(o, key) !== null)
+    .map(({ key, label: gl }) => `<h3 class="goal-h">${esc(W().partTitle(L(gl), partsAt(o, key) + 1))}</h3>${storyboard(o, key, partsAt(o, key))}`)
+    .join('')}${tryPane(o)}`;
 };
 
 const markHits = () => {
@@ -183,6 +195,13 @@ const markHits = () => {
     }
     const hit = nextState?.via === 'tap' ? p.querySelector(`[data-go="${nextState.s}"]`) : null;
     hit?.classList.add('next');
+    // At large text the control can sit below the fold: scroll the phone's own scroller so it shows.
+    const sc = hit?.closest('.scroll, .sheet-body, .web, .store, .chat-body');
+    if (sc) {
+      const k = p.getBoundingClientRect().width / 390 || 1;
+      const hr = hit.getBoundingClientRect(), sr = sc.getBoundingClientRect();
+      if (hr.bottom > sr.bottom || hr.top < sr.top) sc.scrollTop += (hr.top - sr.top - sr.height / 2 + hr.height / 2) / k;
+    }
     // A tap step without its own label is named after the control it hits.
     const what = fig?.querySelector?.('figcaption .what');
     if (hit && what && !what.textContent) what.textContent = (hit.getAttribute('aria-label') || hit.textContent).replace(/\s+/g, ' ').trim().slice(0, 48);

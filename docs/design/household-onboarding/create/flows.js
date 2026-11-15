@@ -500,6 +500,7 @@ export const round = {
       factsTitle: 'The path, inviting, consent and effort', tryIt: 'Try it', reset: 'Start again', tapHint: 'Tap the outlined control in the phone.',
       soFar: (n) => `${n} ${n === 1 ? 'tap' : 'taps'} so far`, doneAfter: (n, s) => `Done: ${n} ${n === 1 ? 'tap' : 'taps'}, ${s} steps.`,
       goalNow: (g, t, s) => `${g}: ${t} taps, ${s} screens on this path.`,
+      partTitle: (g, n) => `${g}: from step ${n}, where the paths part`,
     },
     de: {
       title: 'Einen Haushalt anlegen (CH1–CH5)', back: 'Alle Prototyp-Runden', overview: 'Überblick', rec: 'Empfehlung', light: 'Hell', dark: 'Dunkel', text: 'Text',
@@ -512,6 +513,7 @@ export const round = {
       factsTitle: 'Der Weg, Einladen, Einwilligung und Aufwand', tryIt: 'Ausprobieren', reset: 'Neu starten', tapHint: 'Tippe im Handy auf das umrandete Element.',
       soFar: (n) => `bisher ${n} ${n === 1 ? 'Tipp' : 'Tipps'}`, doneAfter: (n, s) => `Fertig: ${n} ${n === 1 ? 'Tipp' : 'Tipps'}, ${s} Schritte.`,
       goalNow: (g, t, s) => `${g}: ${t} Tipps, ${s} Bildschirme auf diesem Weg.`,
+      partTitle: (g, n) => `${g}: ab Schritt ${n}, wo sich die Wege trennen`,
     },
   },
 };

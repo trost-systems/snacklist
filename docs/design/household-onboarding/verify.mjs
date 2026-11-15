@@ -109,7 +109,7 @@ for (const roundId of ['join', 'create']) {
       }
 
       // 2. The storyboard for this scenario: privacy of the landings, captions, the table row.
-      const frames = await p.$$eval('.story figure', (fs) => fs.map((f) => ({ s: f.dataset.frameState, text: f.querySelector('.phone').innerText })));
+      const frames = await p.$$eval(`.story[data-goal="${lastGoal}"] figure`, (fs) => fs.map((f) => ({ s: f.dataset.frameState, text: f.querySelector('.phone').innerText })));
       const path = o.paths(sc)[lastGoal];
       ok(frames.length === path.length, `${roundId} ${o.id} ${scenKey(sc)}: storyboard has ${frames.length} frames, path ${path.length}`);
       if (roundId === 'join') {
@@ -120,6 +120,12 @@ for (const roundId of ['join', 'create']) {
           if (stepsOf(o, path[i].s).includes('landing') && !/join$/.test(f.s))
             ok(f.text.includes(mock.en.household) && (o.id === 'today' && f.s === 'join' ? true : f.text.includes('Mia')), `${roundId} ${o.id}: landing ${f.s} does not name Mia and the household`);
         });
+      }
+      const badges = await p.$$eval('.goal-badge', (bs) => bs.map((b) => ({ goals: b.dataset.goalEnd.split(' '), s: b.closest('figure').dataset.frameState })));
+      for (const { key } of round.goals) {
+        const end = o.paths(sc)[key].at(-1).s;
+        const on = badges.filter((b) => b.goals.includes(key));
+        ok(on.length >= 1 && on.every((b) => b.s === end), `${roundId} ${o.id} ${scenKey(sc)}: “${key}” badge on ${on.map((b) => b.s)}, path ends on ${end}`);
       }
       for (const { key } of round.goals) {
         const m = measure(o, o.paths(sc)[key]);
@@ -180,6 +186,36 @@ for (const roundId of ['join', 'create']) {
             }),
           );
           ok(!sticks.length, `${roundId} ${o.id} ${lang} ${theme} ${ts}%: sticks out of the phone: ${sticks.slice(0, 3).join('; ')}`);
+          const spills = await shot.$$eval('.story .phone', (phones) =>
+            phones.flatMap((ph) =>
+              [...ph.querySelectorAll('.tact, .tbtn, p, .mrow, .fs-row, .sticker, .lfield, .item, .card, h1')]
+                .filter((el) => getComputedStyle(el).overflowY === 'visible' && el.scrollHeight > el.clientHeight + 2)
+                .map((el) => `${ph.dataset.state}: ${el.className || el.tagName} “${el.innerText.slice(0, 30)}”`),
+            ),
+          );
+          const underBar = await shot.$$eval('.story .phone', (phones) =>
+            phones.flatMap((ph) => {
+              const bar = ph.querySelector('.homeind i')?.getBoundingClientRect();
+              if (!bar || !bar.width) return [];
+              return [...ph.querySelectorAll('*')]
+                .filter((el) => [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim()) && !el.closest('.homeind'))
+                .filter((el) => {
+                  let r = el.getBoundingClientRect();
+                  let top = r.top, bottom = r.bottom;
+                  for (let a = el.parentElement; a && a !== ph; a = a.parentElement)
+                    if (getComputedStyle(a).overflowY !== 'visible') {
+                      const ar = a.getBoundingClientRect();
+                      top = Math.max(top, ar.top);
+                      bottom = Math.min(bottom, ar.bottom);
+                    }
+                  if (getComputedStyle(el).visibility === 'hidden' || bottom <= top) return false;
+                  return top < bar.bottom && bottom > bar.top && r.left < bar.right && r.right > bar.left;
+                })
+                .map((el) => `${ph.dataset.state}: “${el.textContent.trim().slice(0, 30)}”`);
+            }),
+          );
+          ok(!underBar.length, `${roundId} ${o.id} ${lang} ${theme} ${ts}%: text under the home indicator: ${underBar.slice(0, 3).join('; ')}`);
+          ok(!spills.length, `${roundId} ${o.id} ${lang} ${theme} ${ts}%: text spills out of its box: ${spills.slice(0, 3).join('; ')}`);
           await shot.screenshot({ path: `${out}/${roundId}-${o.id}-${lang}-${theme}-${ts}.png`, fullPage: true });
         }
   await shot.goto(`${url}#/`);

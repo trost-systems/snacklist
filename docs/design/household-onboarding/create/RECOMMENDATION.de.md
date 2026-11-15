@@ -28,7 +28,7 @@ Fett: Link teilen; in Klammern der Bereich über Link · QR · Code.
 
 ## Zusammen mit der Beitritts-Runde
 
-CH1 und JH3 teilen einen Startbildschirm: „Los geht’s“ (die drei Schritte aus CH1) und „Einem Haushalt beitreten“ (die Code-Tür aus JH3), darunter „Anmelden“. „Einladung einfügen“ entfällt.
+CH1 und die Beitritts-Empfehlung teilen einen Startbildschirm: „Los geht’s“ (die drei Schritte aus CH1), „Einem Haushalt beitreten“ (die Tür, die JH5 aus JH3 übernimmt) und beim ersten Start die Karte „Kommst du von einer Einladung?“ aus JH5; darunter „Anmelden“. „Einladung einfügen“ entfällt.
 
 ## Offene Fragen
 
@@ -37,4 +37,4 @@ CH1 und JH3 teilen einen Startbildschirm: „Los geht’s“ (die drei Schritte 
 3. **CH-Q3** Mit CH1 die zwei Türen („Los geht’s“, „Einem Haushalt beitreten“) auf den Startbildschirm? Standard: ja, dieselbe Tür wie in JH3.
 4. **CH-Q4** „Überspringen“ bei „Mit wem“ behalten? Standard: ja; der Einladungstext fällt auf den heutigen allgemeinen zurück.
 5. **CH-Q5** Auf der Karte einer Einladung für eine Person einen QR-Code zeigen? Standard: ja (wie JH-Q7). Er wirkt einmal; wer als Zweites scannt, sieht „Diese Einladung gilt nicht mehr“.
-6. **CH-Q6** Gastkonten für eine Liste vor jedem Konto (CH3)? Standard: nein; zusammen mit JH5 neu prüfen, falls der Kontoschritt der größte Abbruch ist.
+6. **CH-Q6** Gastkonten für eine Liste vor jedem Konto (CH3)? Standard: jetzt nicht. Werden Gastkonten für JH5 gebaut (JH-Q10), ist der Hauptaufwand von CH3 bezahlt; dann neu prüfen, falls der Kontoschritt der größte Abbruch ist.

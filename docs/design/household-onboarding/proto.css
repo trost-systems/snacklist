@@ -424,3 +424,24 @@ figcaption .steps { display: flex; flex-wrap: wrap; gap: 4px 10px; }
 .card > span:last-child { display: flex; flex-wrap: wrap; gap: 6px; }
 .chips.flat { padding: 0; }
 .spinner { width: 40px; height: 40px; border-radius: 50%; border: 4px solid var(--hl-color-divider); border-top-color: var(--hl-color-brand); }
+.sheet-body, .pg, .stack, .sticker, .wj, .os-rows { grid-auto-rows: max-content; }
+
+/* Review 0: the phone's content stops above the home indicator; share-sheet labels keep their width; the mic sits beside the hint. */
+.phone > .scroll, .phone > .camera, .phone > .home, .phone > .store, .phone > .safari, .clipbar ~ .scroll { margin-bottom: var(--safe); }
+.phone .safari .addr { padding-bottom: 8px; }
+.phone .chat-compose { padding-bottom: 8px; margin-bottom: var(--safe); }
+.phone .kbd { padding-bottom: 8px; margin-bottom: var(--safe); }
+.sheet { padding-bottom: var(--safe); }
+.sheet-body { padding-bottom: 12px; }
+.overlay-store, .share .os-rows { padding-bottom: 0; margin-bottom: 0; }
+.clip.sheet { padding-bottom: var(--safe); }
+.share .apps { flex-wrap: wrap; }
+.app-ic { width: 76px; min-width: 0; }
+.app-ic span { max-width: 76px; text-align: center; overflow-wrap: anywhere; line-height: 1.15; }
+.addfield { position: relative; }
+.addfield > .in { padding-right: 52px; }
+.addfield > .icon { right: 20px; top: 50%; transform: translateY(-50%); }
+.table-wrap { scrollbar-width: auto; }
+table.cmp { font-size: 13px; }
+table.cmp th { font-size: 11px; }
+@media (max-width: 440px) { .phone > .scroll, .phone > .camera, .phone > .home, .phone > .store, .phone > .safari, .phone .chat-compose, .phone .kbd { margin-bottom: 0; } }

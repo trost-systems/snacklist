@@ -107,7 +107,7 @@ export const T = {
       stores: 'Get the app', appStore: 'Download on the App Store',
     },
     shareInvite: (link, code) => `Our family shopping list “Brandt family” is on Snacklist now. Join us: https://${link} · Code: ${code}`,
-    shareCodeOnly: (code) => `Snacklist code for our list: ${code}`,
+    shareCodeOnly: (code) => `Hi Ida! Get Snacklist and join our list with this code: ${code}`,
     shareOther: (link, code) => `Join our Snacklist household: https://${link} · Code: ${code}`,
     // System chrome (iOS), not the app.
     os: {
@@ -187,7 +187,7 @@ export const T = {
       stores: 'App laden', appStore: 'Im App Store laden',
     },
     shareInvite: (link, code) => `Unsere Familien-Einkaufsliste „Familie Brandt“ ist jetzt in Snacklist. Komm dazu: https://${link} · Code: ${code}`,
-    shareCodeOnly: (code) => `Snacklist-Code für unsere Liste: ${code}`,
+    shareCodeOnly: (code) => `Hallo Ida! Hol dir Snacklist und tritt mit diesem Code unserer Liste bei: ${code}`,
     shareOther: (link, code) => `Komm in unseren Snacklist-Haushalt: https://${link} · Code: ${code}`,
     os: {
       today: 'Heute', messages: 'WhatsApp', typeMsg: 'Nachricht', appleTitle: 'Mit Apple anmelden', appleBody: (m) => `Erstelle einen Account für Snacklist mit deinem Apple Account „${m}“.`, appleName: 'Name', appleEmail: 'E-Mail', appleHide: 'E-Mail-Adresse verbergen', appleShare: 'E-Mail-Adresse teilen', appleContinue: 'Fortfahren',
