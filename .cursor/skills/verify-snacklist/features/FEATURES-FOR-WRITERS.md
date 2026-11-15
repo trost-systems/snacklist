@@ -232,7 +232,7 @@ On Android the phone's back button goes one screen back, as the arrow in the tit
 
 ## Dictation
 
-**What it does.** In the iPhone and Android apps, a microphone next to the add bar lets people speak what they need. Snacklist listens in German, on the phone only, so the voice never goes to a server. The words appear as they are spoken, the latest always in view, and, when the person pauses, Snacklist splits the sentence into separate items ("Milch, zwei Gurken und Klopapier") and adds them. An amount said after the item counts too: „Gurken zwei“ adds 2 Gurken. Brand and details are read out as when typing: „Windeln Pampers Größe 3“ adds Windeln with the brand Pampers and the detail Größe 3. A product name that starts with a number stays whole, as when typing: „Drei Glocken Nudeln“ is one item, while „drei Äpfel“ adds 3 Äpfel. It then shows a short message with what it added. One sentence takes up to 30 items; with more, the first 30 are added and the message asks to say the rest again.
+**What it does.** In the iPhone and Android apps, a microphone next to the add bar lets people speak what they need. Snacklist listens in the app's language, German or English, on the phone only, so the voice never goes to a server. The words appear as they are spoken, the latest always in view, and, when the person pauses, Snacklist splits the sentence into separate items ("Milch, zwei Gurken und Klopapier", in English "milk, two bananas and bread") and adds them. An amount said after the item counts too: „Gurken zwei“ adds 2 Gurken. Brand and details are read out as when typing: „Windeln Pampers Größe 3“ adds Windeln with the brand Pampers and the detail Größe 3. A product name that starts with a number stays whole, as when typing: „Drei Glocken Nudeln“ is one item, while „drei Äpfel“ adds 3 Äpfel. It then shows a short message with what it added. One sentence takes up to 30 items; with more, the first 30 are added and the message asks to say the rest again.
 
 **How to get there.**
 1. Open the Snacklist app on an iPhone or Android phone, on the „Liste“ (EN: "List") tab.
@@ -243,14 +243,15 @@ On Android the phone's back button goes one screen back, as the arrow in the tit
 **Never claim.**
 - That dictation works in the web app or on a computer; there is no microphone button there.
 - That the voice is sent to a server or stored; recognition happens on the device.
-- That it understands languages other than German.
-- That it works on phones without German offline speech data; the app then asks to download it or to type instead.
+- That it understands languages other than German and English, or a language other than the app's (an English app listens in English only).
+- That it works on phones without offline speech data for that language; the app then asks to download it or to type instead (on newer Android phones it asks Android to download it).
+- That a pause separates items: people say "and" (or „und“) between them.
 
-**Unverified.** Behaviour on real devices (permission prompts, recognizer) was read from code, not run.
+**Unverified.** Behaviour on real devices (permission prompts, recognizer, English recognition) was read from code, not run. English splitting was run in the app with a scripted recognizer.
 
-**Shown on snacklist.app.** The landing page's "In der App" / "In the app" card has a video of it: the real app with a scripted recognizer, „Pizza, Orangensaft und zwei Packungen Fischstäbchen“ landing under Getränke and Tiefkühl. The English video shows the same German sentence, because the app listens in German.
+**Shown on snacklist.app.** The landing page's "In der App" / "In the app" card has a video of it: the real app with a scripted recognizer, „Pizza, Orangensaft und zwei Packungen Fischstäbchen“ landing under Getränke and Tiefkühl. The English video still shows the German sentence; it was filmed before the app listened in English.
 
-**Last verified.** 15 November 2026, code version c3ea4261: no microphone in the web app, the rest from the code (dictation only exists on iPhone and Android).
+**Last verified.** 15 November 2026, job 256 (branch on c8a90ce1): English and German dictation driven in the Linux app with a scripted recognizer; no microphone in the web app; real devices from the code.
 
 ## Ticking items, "Zuletzt verwendet" and undo
 

@@ -5,6 +5,9 @@ import { parseEnglish, spokenEnglish } from './parse_en.ts';
 /** Sentence -> items as read back ("2 cucumbers"). */
 const cases: [string, string[]][] = [
   ['milk, eggs and bread', ['milk', 'eggs', 'bread']],
+  // Job 256: English in-app dictation on Android sends these.
+  ['milk, two bananas and bread', ['milk', '2 bananas', 'bread']],
+  ['add eggs', ['eggs']],
   ['milk, eggs, and bread', ['milk', 'eggs', 'bread']],
   ['Milk, eggs and bread.', ['Milk', 'eggs', 'bread']],
   ['two cucumbers and a pack of eggs', ['2 cucumbers', '1 pack of eggs']],

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/list/add_sheet/add_sheet_cubit.dart';
 import 'package:family_groceries/list/add_sheet/suggestion.dart';
+import 'package:family_groceries/list/dictation.dart';
 import 'package:family_groceries/list/entry.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/model.dart';
@@ -161,7 +162,7 @@ void main() {
   group('adds', () {
     test('each add says where it came from', () async {
       cubit.addEntry(parseEntry('Milch'));
-      await cubit.addSpoken('Gurken und Tomaten');
+      await cubit.addSpoken('Gurken und Tomaten', SpokenLanguage.de);
       cubit.addUsual(const Usual(name: 'Eier', due: true));
       await settle();
       final events = await sent();

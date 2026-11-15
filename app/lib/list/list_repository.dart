@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:family_groceries/list/add_sheet/suggestion.dart';
+import 'package:family_groceries/list/dictation.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -85,11 +86,11 @@ abstract interface class ListRepository() {
     Set<String> hiddenIds,
   );
 
-  /// Splits a dictated sentence into entries with the server's German
-  /// splitter (the voice endpoint Siri uses), brand and details split off
-  /// as for a typed add; empty when it found nothing. `truncated`: it heard
+  /// Splits a sentence dictated in [language] into entries with the server's
+  /// splitter for it (the voice endpoint Siri uses), brand and details split
+  /// off as for a typed add; empty when it found nothing. `truncated`: it heard
   /// more than the 30 items one sentence takes, and only those came back.
-  Future<SpokenSplit> splitSpoken(String text);
+  Future<SpokenSplit> splitSpoken(String text, SpokenLanguage language);
 
   /// Live changes for the household; returns a function that unsubscribes.
   /// [onItemDeleted] gets the delete's commit time. A new or changed list of
@@ -611,7 +612,7 @@ class SupabaseListRepository(
   };
 
   @override
-  Future<SpokenSplit> splitSpoken(String text) async {
+  Future<SpokenSplit> splitSpoken(String text, SpokenLanguage language) async {
     try {
       final response = await _client.functions.invoke(
         'voice',
@@ -622,6 +623,7 @@ class SupabaseListRepository(
           'mode': 'parse',
           'split': true,
           'household': householdId,
+          'lang': language.code,
         },
       );
       final items = switch (response.data) {

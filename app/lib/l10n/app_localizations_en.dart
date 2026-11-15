@@ -72,8 +72,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'Voice input isn\'t available. Allow microphone and speech recognition in Settings.';
 
   @override
-  String get dictationNoOfflineGerman =>
-      'Dictation only works offline, so your voice stays on the device. This device is missing German offline speech recognition. Download it in the system settings or type the item instead.';
+  String get dictationNoOfflineSpeech =>
+      'Dictation only works offline, so your voice stays on the device. This device is missing English offline speech recognition. Download it in the system settings or type the item instead.';
+
+  @override
+  String get dictationOfflineSpeechDownloading =>
+      'Dictation only works offline, so your voice stays on the device. Snacklist asked Android to download English offline speech recognition. Try again once it\'s installed, or type the item instead.';
 
   @override
   String get dictationNothingHeard => 'I didn\'t hear anything.';

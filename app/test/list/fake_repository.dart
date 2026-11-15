@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:family_groceries/list/add_sheet/suggestion.dart';
+import 'package:family_groceries/list/dictation.dart';
 import 'package:family_groceries/list/entry.dart';
 import 'package:family_groceries/list/list_repository.dart';
 import 'package:family_groceries/list/model.dart';
@@ -688,11 +689,15 @@ class FakeRepository() implements ListRepository {
     };
   }
 
+  /// The language of each [splitSpoken] call, in order.
+  final spokenLanguages = <SpokenLanguage>[];
+
   /// Stands in for the server's splitter: splits on commas and "und", then
   /// reads each part as [parse] does; at most 30, as the server.
   @override
-  Future<SpokenSplit> splitSpoken(String text) async {
+  Future<SpokenSplit> splitSpoken(String text, SpokenLanguage language) async {
     _ensureOnline();
+    spokenLanguages.add(language);
     final entries = [
       for (final part in text.split(RegExp(r',|\bund\b')))
         if (parseEntry(part) case Entry(:final name, :final quantity)

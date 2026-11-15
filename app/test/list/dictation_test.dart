@@ -17,8 +17,14 @@ import 'memory_cache.dart';
 class FakeDictation({final DictationProblem? problem}) implements Dictation {
   final finish = Completer<Dictated>();
 
+  /// The language of each [prepare].
+  final prepared = <SpokenLanguage>[];
+
   @override
-  Future<DictationProblem?> prepare() async => problem;
+  Future<DictationProblem?> prepare(SpokenLanguage language) async {
+    prepared.add(language);
+    return problem;
+  }
 
   @override
   Future<Dictated> listen({
@@ -43,7 +49,7 @@ class SpeakingDictation() implements Dictation {
   var _said = '';
 
   @override
-  Future<DictationProblem?> prepare() async => null;
+  Future<DictationProblem?> prepare(SpokenLanguage language) async => null;
 
   @override
   Future<Dictated> listen({
@@ -61,7 +67,11 @@ class SpeakingDictation() implements Dictation {
 void main() {
   late FakeRepository repo;
 
-  Future<void> pumpList(WidgetTester tester, Dictation? dictation) async {
+  Future<void> pumpList(
+    WidgetTester tester,
+    Dictation? dictation, {
+    Locale locale = const Locale('de'),
+  }) async {
     // A phone: the microphone is a phone feature.
     tester.view
       ..devicePixelRatio = 3
@@ -72,7 +82,7 @@ void main() {
       MaterialApp(
         localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        locale: const Locale('de'),
+        locale: locale,
         home: BlocProvider(
           create: (_) =>
               ListCubit(repo, MemoryListCache(), userId: 'peter')..start(),
@@ -128,6 +138,22 @@ void main() {
     expect(fieldText(tester), isEmpty);
     expect(find.byTooltip('Diktieren'), findsOneWidget);
     expect(tester.widget<TextField>(addField()).focusNode!.hasFocus, isTrue);
+    expect(dictation.prepared, [SpokenLanguage.de]);
+    expect(repo.spokenLanguages, [SpokenLanguage.de]);
+  });
+
+  testWidgets('in the English app the user dictates in English and the '
+      'server splits English (job 256)', (tester) async {
+    final dictation = FakeDictation();
+    await pumpList(tester, dictation, locale: const Locale('en'));
+    await tester.tap(find.byTooltip('Dictate'));
+    await tester.pump();
+    dictation.finish.complete(Heard('Milk, 2 cucumbers'));
+    await tester.pumpAndSettle();
+
+    expect(dictation.prepared, [SpokenLanguage.en]);
+    expect(repo.spokenLanguages, [SpokenLanguage.en]);
+    expect(repo.rows.values.map((i) => i.name), ['Milk', 'cucumbers']);
   });
 
   testWidgets('while the user speaks, the field shows the latest words', (
@@ -259,31 +285,51 @@ void main() {
     expect(find.byTooltip('Diktieren'), findsOneWidget);
   });
 
-  testWidgets('without offline German the microphone says why and stays off', (
-    tester,
-  ) async {
-    await pumpList(
-      tester,
-      FakeDictation(problem: DictationProblem.noOfflineGerman),
-    );
-    await tester.tap(find.byTooltip('Diktieren'));
-    await tester.pumpAndSettle();
+  // Each app language names its own offline speech recognition.
+  for (final (locale, dictate, listening, missing, downloading) in [
+    (
+      const Locale('de'),
+      'Diktieren',
+      'Ich höre zu …',
+      'Dafür fehlt hier die deutsche Offline-Spracherkennung.',
+      'Snacklist hat Android gebeten, die deutsche Offline-Spracherkennung '
+          'herunterzuladen.',
+    ),
+    (
+      const Locale('en'),
+      'Dictate',
+      'Listening…',
+      'This device is missing English offline speech recognition.',
+      'Snacklist asked Android to download English offline speech '
+          'recognition.',
+    ),
+  ]) {
+    for (final (problem, says) in [
+      (DictationProblem.noOfflineSpeech, missing),
+      (DictationProblem.offlineSpeechDownloading, downloading),
+    ]) {
+      testWidgets('${problem.name} in the ${locale.languageCode} app: the '
+          'microphone says why and stays off', (tester) async {
+        await pumpList(tester, FakeDictation(problem: problem), locale: locale);
+        await tester.tap(find.byTooltip(dictate));
+        await tester.pumpAndSettle();
 
-    expect(find.textContaining('deutsche Offline-Spracherkennung'), findsOne);
-    expect(find.text('Ich höre zu …'), findsNothing);
-    expect(find.byTooltip('Diktieren'), findsOneWidget);
-  });
+        expect(find.textContaining(says), findsOne);
+        expect(find.text(listening), findsNothing);
+        expect(find.byTooltip(dictate), findsOneWidget);
+      });
+    }
 
-  testWidgets('a recognizer that finds no German model mid-way says why', (
-    tester,
-  ) async {
-    final dictation = FakeDictation();
-    await pumpList(tester, dictation);
-    await tester.tap(find.byTooltip('Diktieren'));
-    dictation.finish.complete(Refused(DictationProblem.noOfflineGerman));
-    await tester.pumpAndSettle();
+    testWidgets('a recognizer that finds no ${locale.languageCode} model '
+        'mid-way says why', (tester) async {
+      final dictation = FakeDictation();
+      await pumpList(tester, dictation, locale: locale);
+      await tester.tap(find.byTooltip(dictate));
+      dictation.finish.complete(Refused(DictationProblem.noOfflineSpeech));
+      await tester.pumpAndSettle();
 
-    expect(find.textContaining('deutsche Offline-Spracherkennung'), findsOne);
-    expect(repo.rows, isEmpty);
-  });
+      expect(find.textContaining(missing), findsOne);
+      expect(repo.rows, isEmpty);
+    });
+  }
 }

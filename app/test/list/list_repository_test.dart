@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:family_groceries/list/add_sheet/suggestion.dart';
+import 'package:family_groceries/list/dictation.dart';
 import 'package:family_groceries/list/list_repository.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/pricing.dart';
@@ -264,6 +265,7 @@ void main() {
     });
     final (:entries, :truncated) = await repo.splitSpoken(
       'Windeln Pampers Größe 3 Big Pack',
+      SpokenLanguage.de,
     );
     expect(truncated, isFalse);
     expect(
@@ -304,6 +306,7 @@ void main() {
       });
       final (:entries, truncated: _) = await repo.splitSpoken(
         'Pizza und Orangensaft',
+        SpokenLanguage.de,
       );
       expect(entries.map((e) => (e.name, e.categoryId)), [
         ('Pizza', 'frozen'),
@@ -312,33 +315,42 @@ void main() {
     },
   );
 
-  test('dictation asks the voice function for the split, in the shown '
-      'household (job 169b)', () async {
-    Object? sent;
-    final repo = SupabaseListRepository(
-      SupabaseClient(
-        'http://127.0.0.1:1',
-        'sb_publishable_test',
-        httpClient: MockClient((request) async {
-          sent = jsonDecode(request.body);
-          return http.Response(
-            jsonEncode({'items': <Object>[], 'truncated': false}),
-            200,
-            headers: {'content-type': 'application/json'},
-            request: request,
-          );
-        }),
-      ),
-      'household-b',
+  for (final (language, lang) in [
+    (SpokenLanguage.de, 'de'),
+    (SpokenLanguage.en, 'en'),
+  ]) {
+    test(
+      'dictation asks the voice function for the split, in the shown '
+      'household (job 169b) and the spoken language ($lang, job 256)',
+      () async {
+        Object? sent;
+        final repo = SupabaseListRepository(
+          SupabaseClient(
+            'http://127.0.0.1:1',
+            'sb_publishable_test',
+            httpClient: MockClient((request) async {
+              sent = jsonDecode(request.body);
+              return http.Response(
+                jsonEncode({'items': <Object>[], 'truncated': false}),
+                200,
+                headers: {'content-type': 'application/json'},
+                request: request,
+              );
+            }),
+          ),
+          'household-b',
+        );
+        await repo.splitSpoken('Milch', language);
+        expect(sent, {
+          'text': 'Milch',
+          'mode': 'parse',
+          'split': true,
+          'household': 'household-b',
+          'lang': lang,
+        });
+      },
     );
-    await repo.splitSpoken('Milch');
-    expect(sent, {
-      'text': 'Milch',
-      'mode': 'parse',
-      'split': true,
-      'household': 'household-b',
-    });
-  });
+  }
 
   test('a dictated list cut at 30 items says so (job 111)', () async {
     final repo = answering(200, {
@@ -354,7 +366,10 @@ void main() {
       ],
       'truncated': true,
     });
-    final (:entries, :truncated) = await repo.splitSpoken('Ding 0, …');
+    final (:entries, :truncated) = await repo.splitSpoken(
+      'Ding 0, …',
+      SpokenLanguage.de,
+    );
     expect(entries, hasLength(30));
     expect(truncated, isTrue);
   });
@@ -462,7 +477,10 @@ void main() {
       ],
       'truncated': false,
     });
-    final (:entries, truncated: _) = await repo.splitSpoken('Milch');
+    final (:entries, truncated: _) = await repo.splitSpoken(
+      'Milch',
+      SpokenLanguage.de,
+    );
     expect(entries.map((e) => (e.name, e.brand)), [('Milch', null)]);
   });
 
@@ -1289,6 +1307,7 @@ void main() {
         );
         final (:entries, :truncated) = await repo.splitSpoken(
           'zwei Liter Milch und Brot',
+          SpokenLanguage.de,
         );
         expect(route(sent.single), 'POST /functions/v1/voice');
         expect(params(sent.single), {
@@ -1296,6 +1315,7 @@ void main() {
           'mode': 'parse',
           'split': true,
           'household': 'household',
+          'lang': 'de',
         });
         expect(
           [for (final e in entries) (e.name, e.quantity)],
@@ -1310,7 +1330,7 @@ void main() {
           (422, {'error': 'nothing'}),
         ]) {
           final (:entries, :truncated) = await server((_) => (status, body))
-              .splitSpoken('ähm');
+              .splitSpoken('ähm', SpokenLanguage.de);
           expect(entries, isEmpty, reason: '$status');
           expect(truncated, isFalse, reason: '$status');
         }
@@ -1318,11 +1338,13 @@ void main() {
 
       test('fails when the endpoint does', () async {
         await expectLater(
-          server((_) => (500, {'error': 'boom'})).splitSpoken('Milch'),
+          server((_) => (500, {'error': 'boom'}))
+              .splitSpoken('Milch', SpokenLanguage.de),
           throwsA(isA<ServerTrouble>()),
         );
         await expectLater(
-          server((_) => (400, {'error': 'bad'})).splitSpoken('Milch'),
+          server((_) => (400, {'error': 'bad'}))
+              .splitSpoken('Milch', SpokenLanguage.de),
           throwsA(isA<FunctionException>()),
         );
       });

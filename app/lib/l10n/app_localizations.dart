@@ -200,11 +200,17 @@ abstract class AppLocalizations {
   /// **'Spracheingabe ist nicht verfügbar. Erlaube Mikrofon und Spracherkennung in den Einstellungen.'**
   String get dictationUnavailable;
 
-  /// No description provided for @dictationNoOfflineGerman.
+  /// The device can't recognize speech offline in the app's language. Dictation listens in the app's language, so each translation names its own language (job 256).
   ///
   /// In de, this message translates to:
   /// **'Diktieren geht nur offline, damit deine Stimme auf dem Gerät bleibt. Dafür fehlt hier die deutsche Offline-Spracherkennung. Lade sie in den Systemeinstellungen herunter oder tippe den Eintrag ein.'**
-  String get dictationNoOfflineGerman;
+  String get dictationNoOfflineSpeech;
+
+  /// Android lacks offline speech recognition in the app's language and was asked to download it (or is downloading it). Dictation listens in the app's language, so each translation names its own language (job 256).
+  ///
+  /// In de, this message translates to:
+  /// **'Diktieren geht nur offline, damit deine Stimme auf dem Gerät bleibt. Snacklist hat Android gebeten, die deutsche Offline-Spracherkennung herunterzuladen. Versuch es noch einmal, sobald sie installiert ist, oder tippe den Eintrag ein.'**
+  String get dictationOfflineSpeechDownloading;
 
   /// No description provided for @dictationNothingHeard.
   ///

@@ -24,7 +24,12 @@ class MainActivity : FlutterActivity() {
         super.configureFlutterEngine(flutterEngine)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "familygroceries/speech")
             .setMethodCallHandler { call, result ->
-                if (call.method == "offlineGerman") offlineGerman(result::success) else result.notImplemented()
+                val locales = call.argument<List<String>>("locales")
+                if (call.method == "offlineSpeech" && !locales.isNullOrEmpty()) {
+                    offlineSpeech(locales, result::success)
+                } else {
+                    result.notImplemented()
+                }
             }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "familygroceries/posthog")
             .setMethodCallHandler { call, result ->
@@ -66,34 +71,67 @@ class MainActivity : FlutterActivity() {
 
     /**
      * Whether speech_to_text's onDevice listening gets the on-device recognizer
-     * (otherwise it silently uses the network one) and that recognizer has German.
+     * (otherwise it silently uses the network one) and that recognizer has the
+     * app's language. [locales] are lib/list/dictation.dart's candidates, best
+     * first and all of one language (en_GB, en_US). Answers "installed" with the
+     * locale to listen in, "downloading" once Android is fetching the language
+     * (asked to here when it can), else "missing".
      */
-    private fun offlineGerman(answer: (Boolean) -> Unit) {
+    private fun offlineSpeech(locales: List<String>, answer: (Map<String, String>) -> Unit) {
+        val missing = mapOf("status" to "missing")
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
             !SpeechRecognizer.isOnDeviceRecognitionAvailable(this)
         ) {
-            answer(false)
+            answer(missing)
             return
         }
-        // Android 12 can't list on-device languages. Without German, listening
-        // fails with ERROR_LANGUAGE_UNAVAILABLE, which the app explains the same way.
+        // Android 12 can't list on-device languages. Without the language,
+        // listening fails with ERROR_LANGUAGE_UNAVAILABLE, which the app
+        // explains the same way.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            answer(true)
+            answer(mapOf("status" to "installed", "locale" to locales.first()))
             return
         }
+        // Recognizers name languages as BCP 47 tags (en-GB), the app as locale
+        // ids (en_GB).
+        fun tag(locale: String) = locale.replace('_', '-').lowercase()
+        val wanted = locales.map(::tag)
+        val language = wanted.first().substringBefore('-')
+        fun sameLanguage(candidate: String) = tag(candidate).substringBefore('-') == language
+        // The best candidate the recognizer lists, as the recognizer names it.
+        fun firstWanted(listed: List<String>) =
+            wanted.firstNotNullOfOrNull { w -> listed.firstOrNull { tag(it) == w } }
         val recognizer = SpeechRecognizer.createOnDeviceSpeechRecognizer(this)
         recognizer.checkRecognitionSupport(
             Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH),
             mainExecutor,
             object : RecognitionSupportCallback {
                 override fun onSupportResult(support: RecognitionSupport) {
-                    recognizer.destroy()
-                    answer(support.installedOnDeviceLanguages.any { it.startsWith("de") })
+                    val installed = support.installedOnDeviceLanguages
+                    val supported = support.supportedOnDeviceLanguages
+                    val ready = firstWanted(installed) ?: installed.firstOrNull(::sameLanguage)
+                    val download = firstWanted(supported) ?: supported.firstOrNull(::sameLanguage)
+                    val reply = when {
+                        ready != null -> mapOf("status" to "installed", "locale" to ready)
+                        support.pendingOnDeviceLanguages.any(::sameLanguage) -> mapOf("status" to "downloading")
+                        download != null -> {
+                            recognizer.triggerModelDownload(
+                                Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+                                    .putExtra(RecognizerIntent.EXTRA_LANGUAGE, download),
+                            )
+                            mapOf("status" to "downloading")
+                        }
+                        else -> missing
+                    }
+                    // triggerModelDownload only queues its request on the main
+                    // looper; destroying now would drop it, so destroy after it.
+                    mainExecutor.execute(recognizer::destroy)
+                    answer(reply)
                 }
 
                 override fun onError(error: Int) {
                     recognizer.destroy()
-                    answer(false)
+                    answer(missing)
                 }
             },
         )

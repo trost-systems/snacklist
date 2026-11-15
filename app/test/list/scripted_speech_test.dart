@@ -18,7 +18,10 @@ void main() {
     SpeechToTextPlatform.instance = ScriptedSpeech(sentences);
     return DeviceDictation(
       speech: SpeechToText.withMethodChannel(),
-      offlineGermanCheck: () async => true,
+      offlineCheck: (locales) async => {
+        'status': 'installed',
+        'locale': locales.first,
+      },
     );
   }
 
@@ -29,7 +32,7 @@ void main() {
       final words = <String>[];
       Dictated? dictated;
       unawaited(
-        mic.prepare().then((problem) async {
+        mic.prepare(SpokenLanguage.de).then((problem) async {
           expect(problem, isNull);
           dictated = await mic.listen(onWords: words.add);
         }),
@@ -49,7 +52,7 @@ void main() {
       final mic = dictation(['Milch']);
       final results = <Dictated>[];
       Future<void> session() async {
-        await mic.prepare();
+        await mic.prepare(SpokenLanguage.de);
         results.add(await mic.listen(onWords: (_) {}));
       }
 

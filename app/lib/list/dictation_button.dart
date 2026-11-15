@@ -41,7 +41,8 @@ class _DictationButtonState() extends State<DictationButton> {
     }
     final l10n = AppLocalizations.of(context);
     final cubit = context.read<ListCubit>();
-    if (await dictation.prepare() case final problem?) {
+    final language = SpokenLanguage.of(Localizations.localeOf(context));
+    if (await dictation.prepare(language) case final problem?) {
       if (mounted) {
         widget.onMessage(_problem(l10n, problem));
       }
@@ -67,7 +68,7 @@ class _DictationButtonState() extends State<DictationButton> {
         return;
     }
     try {
-      final (:results, :truncated) = await cubit.addSpoken(text);
+      final (:results, :truncated) = await cubit.addSpoken(text, language);
       if (!mounted) {
         return;
       }
@@ -93,7 +94,9 @@ class _DictationButtonState() extends State<DictationButton> {
   static String _problem(AppLocalizations l10n, DictationProblem problem) =>
       switch (problem) {
         DictationProblem.unavailable => l10n.dictationUnavailable,
-        DictationProblem.noOfflineGerman => l10n.dictationNoOfflineGerman,
+        DictationProblem.noOfflineSpeech => l10n.dictationNoOfflineSpeech,
+        DictationProblem.offlineSpeechDownloading =>
+          l10n.dictationOfflineSpeechDownloading,
       };
 
   static String _summary(AppLocalizations l10n, List<AddResult> results) {
