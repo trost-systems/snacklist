@@ -21,7 +21,7 @@ The List tab has one slot at the top of the list (job 168b, H2 trigger hints; be
   | `invite-partner` | „Gemeinsam einkaufen“ + „Einladen“ | the user owns a household (not solo) with one member, 3 open items, a day after their first start | a second member | card | all |
   | `edit-long-press` | „Artikel bearbeiten“ | 5 open items | an edit saved | card | all |
   | `quick-add-amounts` | „Menge gleich mittippen“ | 5 typed adds without an amount | an add with an amount | card | all |
-  | `store-order` | „Sortiert wie dein Laden“ | first own trip done, the household has a store | a category reorder | under „Anpassen“ | all |
+  | `store-order` | „Sortiert wie dein Laden“ | one of the user's own ticks emptied the list once (a trip-mode end does not count), the household has a store | a category reorder | under „Anpassen“ | all |
   | `add-store` | „Noch ein Laden?“ | 3 active days, no store | a store in the household | under „Anpassen“ | all |
   | `dictation` | „Sag einfach, was fehlt“ | 10 typed adds | an add by dictation | above the add field | iOS, Android |
   | `ai-assistant` | „Noch besser mit KI & Automatisierung“ + „Zugriffe verwalten“ | a club, or 7 active days on the web or a computer | an AI app, MCP token or API key | card | all |
@@ -54,4 +54,4 @@ Preconditions: `signIn` from helpers/lib.mjs dismisses the checklist („Erste S
 - A hint appears 10 s after the start and pushes the list down; let it settle before clicking a row by position, or dismiss the checklist in that session (no hint follows it).
 - Which checklist items are done is per user and device, across all the user's households (the usage log `hints.<user>`): a tick in one household shows „Einmal einkaufen“ done in another on the same device. A fresh browser shows the card again on an old household. Only the X is per household.
 - `siri` and `second-household` have no use the app can see; they retire on X, their button or three showings. `second-household` and `own-household` stay hidden while `HintHost.addHousehold` is unset in `main.dart` (still so after job 169b; DECISIONS job 168c #5).
-- A Siri Shortcut's personal token counts as an assistant for `ai-assistant` and the club item (the app cannot tell an MCP token from a Shortcut's).
+- A Siri Shortcut's personal token counts as an assistant for `ai-assistant` and the club item (the app cannot tell an MCP token from a Shortcut's); the credential of Siri without setup does not.

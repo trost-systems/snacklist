@@ -95,6 +95,10 @@ const prompted = ['Butter', 'Nudeln', 'Reis'];
   const { error } = await api.from('items').update({ status: 'active', bought_by: null, bought_at: null, store_id: lidl })
     .eq('household_id', household).in('name', prompted);
   if (error) throw error;
+  // Only these three may be open at Lidl, or ticking them never empties it (trip-mode.mjs puts the seeded items over Lidl and Rewe).
+  const { error: off } = await api.from('items').update({ store_id: null })
+    .eq('household_id', household).eq('store_id', lidl).eq('status', 'active').not('name', 'in', `(${prompted.join(',')})`);
+  if (off) throw off;
 }
 const seeded = await history();
 log(`seeded ${seeds.length} trips (today ${today}; 3 on ${threeDay}, 5 on ${fiveDay}, 1 on ${oldDay}); trip_history: premium=${seeded.premium} since=${seeded.since} locked=${seeded.locked} trips=${seeded.trips.length}`);
@@ -338,6 +342,12 @@ try {
     for (const [i, item] of prompted.entries()) {
       await reveal(page, itemRow(page, item));
       await itemRow(page, item).click();
+      // A build with trip-mode on too (as internal testers have it) asks „Kaufst du gerade ein?“ after a tick.
+      const justTicked = page.getByRole('button', { name: L('shopAskNo'), exact: true });
+      if (await justTicked.waitFor({ timeout: 2_000 }).then(() => true, () => false)) {
+        await justTicked.click();
+        log(`answered „${L('shopAskNo')}“ after ticking ${item} (trip-mode on)`);
+      }
       await until(async () => (await itemRow(page, item).count()) === 0, `${item} ticked off`);
       if (i < prompted.length - 1) {
         await page.waitForTimeout(800);
