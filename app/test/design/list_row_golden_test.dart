@@ -70,6 +70,7 @@ void main() {
                     fresh: item == _rows.first,
                     last: item == _rows.last,
                     onVisible: (_) {},
+                    onTickStart: (_) {},
                     onTick: (_) {},
                     onEdit: (_) {},
                     onDelete: (_) {},

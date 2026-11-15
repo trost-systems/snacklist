@@ -1232,7 +1232,7 @@ small fix (PR #469):
 
 | Path | Before | After | Tests |
 | --- | --- | --- | --- |
-| A tick inside the row's 440 ms leave, when the app is hidden, the row goes away or no frame is drawn | Lost (reload, closed tab, killed app, folded store, household switch) or held until the app shows again | Committed at once and queued on the device (880 ms after the tap when no frame is drawn); a list switched away from stays open until the tick is sent. A row that draws commits at its animation's end, as before | 9 row tests, 3 screen tests, 1 switch test, 2 e2e tests on three engines |
+| A tick inside the row's 440 ms leave, when the app is hidden, the row goes away or no frame is drawn | Lost (reload, closed tab, killed app, folded store, household switch) or held until the app shows again | Committed at once and queued on the device (880 ms after the tap when no frame is drawn); a list switched away from stays open until the tick is sent. A row that draws commits at its animation's end, as before. Of the kills, #469 covered only those with a hide event before them, and a closing Firefox tab not always ("Job 222 review 1 fix" below, which saves the tick at the tap: a crashed Chromium renderer then kept it in 8 of 8 probe runs; a killed phone app was not driven) | 9 row tests, 3 screen tests, 1 switch test, 2 e2e tests on three engines |
 | An answer that arrives while the list closes | Armed the retry, usuals-reload or save timer of a closed list | No timer | 3 cubit tests |
 | A 401, 408 or 429 without a PostgREST body on a queued write | The change was dropped as refused | Kept and sent again | 1 repository test (3 statuses) |
 | A failed follow-up read after a merge found its item gone | Shown as offline while the server answered (the op stayed queued) | "Sync gestört", asked again like any 5xx | 1 repository test |
@@ -1600,6 +1600,116 @@ the start read, the sign-out, the channels and the old order shown again are in
 ## Job 222 review 0 fix, 2026-11-15
 
 - **What.** The harness review of #469 (verdict FIX) had one must-fix: `tick-leave.spec.ts` on CI's WebKit ran at 33 to 50 s of a 60 s timeout (measured, five runs), with no retry behind a timeout. PR #490 gives both tests `test.slow` on WebKit.
-- **Before and after (measured).** Share of the timeout used on CI's WebKit: 55 to 83 % before, 20 to 21 % after (35.8 to 38.5 s of 180 s, six samples in run 43713288298). The test's time itself is unchanged; the margin is what moved. No flake was seen before or after, so no flake rate is claimed.
-- **Cost (measured).** Wall time 13:10 to 13:30 CET up to the PR, before the land. One local e2e run (176 s with the web build, lock free), one on-demand CI e2e job (6 min 47 s), gitleaks 12 s, lint 135 s. Tokens for everything after the count of 11:24 (the land's wait, its records and this fix up to 13:29): 107,553 output, 518,338 cache-write, 16,815,536 cache-read, 312 input, all on `claude-fable-5-2`. Two in-job review rounds after the PR, each a fresh read-only subagent. Round 1 (2 min 48 s, 87,441 tokens, 23 tool calls): every number true to the evidence, three sentences of the records to bound, FIX. Round 2 (1 min 52 s, 73,379 tokens, 15 tool calls): PASS.
+- **Before and after (measured).** Share of the timeout used on CI's WebKit: 55 to 83 % before, 20 to 21 % after (35.8 to 38.5 s of 180 s, six samples in run 43713288298). The test's time itself is unchanged; the margin is what moved. No flake was seen in the job's own runs before or after, so no flake rate was claimed. That was wrong for main: the closed-tab test failed on Firefox in 4 of 108 CI runs, see "Job 222 review 1 fix" below.
+- **Cost (measured).** Wall time 13:10 to 13:30 CET up to the PR, before the land. One local e2e run (176 s with the web build, lock free), one on-demand CI e2e job (6 min 47 s), gitleaks 12 s, lint 135 s. Tokens for everything after the count of 11:24 (the land's wait, its records and this fix up to 13:29): 107,553 output, 518,338 cache-write, 16,815,536 cache-read, 312 input, all on `claude-fable-5-2`. (Recounted in review 1's round: that sum took in the harness's review-0 session, whose transcript lies in the same folder, 70,760 output, 367,038 cache-write and 9,987,358 cache-read; the job's own share was 36,793 output, 151,300 cache-write and 6,828,178 cache-read.) Two in-job review rounds after the PR, each a fresh read-only subagent. Round 1 (2 min 48 s, 87,441 tokens, 23 tool calls): every number true to the evidence, three sentences of the records to bound, FIX. Round 2 (1 min 52 s, 73,379 tokens, 15 tool calls): PASS.
 - **Not measured here.** The land's CI run and the tokens after 13:29 (the review round's fixes and the land). Both go into the ops copy of DONE_SUMMARY after the land.
+
+## Job 222 review 1 fix: the Firefox closed-tab loss, 2026-11-15
+
+The flake this job caused. `[firefox] tick-leave.spec.ts › a tick is kept when the tab closes
+while its row still closes` (new with #469) failed on main now and then, and each failure was a
+real lost tick, not a fault of the test. The review-0 section above said no flake was seen; that
+held for the job's own runs only and is corrected there.
+
+### Rate before (measured)
+
+| Where | Closed-tab runs | Lost | By |
+| --- | --- | --- | --- |
+| `ci.yml` runs since #469 that hold the spec | 21 runs | 2 runs red on this test: 43714179620 (#491, store captions only) and 43716669387 (job 257's PR, attempts 1 and 2) | review 1 |
+| On-demand CI, Firefox, no retry: 43719717243 (main), 43719717146, 43720538392, 43720538062 (job 257's branches, same app code), 43721817135 (main) | 108 | 4 (3.7 %); main alone 1 of 48 | review 1 |
+| Reviewer's box, Firefox, unloaded | 24 | 0 | review 1 |
+| Reviewer's box, Firefox on two cores (`taskset -c 0-1`) | 103 | 4 (3.9 %) | review 1 |
+| This box, Firefox on two cores, main with trace marks | 41 | 1 (the first run) | this job |
+| The same with Firefox's `dom.ipc.cancel_content_js_when_navigating` off (repeats 0 to 11 of that run; from repeat 12 on it served the widened build under "Cause") | 12 | 0 | this job |
+
+The job's 53 runs were made for the trace, not for a rate: they do not contradict 3.7 %.
+
+### Cause
+
+Measured: a closing Firefox tab ends the script that runs when the page goes and runs none of
+the app's `await`s after it, so a tick that was saved only at the row's end or at the hide was
+never written. Inferred: the state of Dart's microtask loop after such an end. Not known: the
+exact script in the four CI losses (the same cause is assumed), and why the app's page takes
+21 to 682 ms (median 340, 40 runs with marks only) from `beforeunload` to `pagehide` where a
+bare page takes under 50 ms (18 runs). The widened build (the row's end held for 400 ms, so the
+close lands in it) lost 11 of 11 ticks whose close did, and kept 17 of 17 others, in repeats 12
+to 39 of the run with the pref off. The trace, the bare-page runs and the calls are in
+`docs/DECISIONS.md`, "Job 222 review 1".
+
+### The fix and its test
+
+The list saves the tick with its queue at the tap (`ListCubit.willTick`); the list still ticks
+when the row has closed. No change on screen. The new e2e test closes the tab into a page that
+is busy from `beforeunload` on, so every run hits the window the 3.7 % hit by chance.
+
+| Test, local stack, release wasm build, no retry | Before the fix | With the fix |
+| --- | --- | --- |
+| Busy close, Firefox on two cores | 8 of 8 lost | 28 of 28 kept (8, then 20 in the spec's run) |
+| Busy close, Chromium | 4 of 4 lost | 3 of 3 kept |
+| Busy close, WebKit | 4 of 4 lost | 3 of 3 kept |
+| Closed tab, Firefox on two cores | 1 of 41 lost (above) | 20 of 20 kept |
+| Reload, Firefox on two cores | not run again | 20 of 20 kept |
+| Closed tab and reload, Chromium and WebKit | not run again | 3 of 3 kept each, per engine |
+| One-off probe, not in the repo: Chromium's renderer crashed (`Page.crash`) right after the tap, so no hide event at all | 4 of 4 lost | 8 of 8 kept |
+
+"Before" is main with trace marks (`r1mark` calls, no change of behaviour intended; a mark is a
+synchronous `localStorage` write, which may shift timing). One hold of the e2e lock, 17:03 to
+17:27 CET, load 3.6 to 12.3; the crash probe ran in a later one, 18:13 to 18:16, load 3.6 to
+5.6. Every failure before the fix reads "a queued tick in its cache before the start: no",
+the new note in the spec's message. The 20 kept closed tabs alone could not show that a 3.7 %
+loss is gone (20 such runs stay green by chance in 47 of 100 cases): the busy close, which
+lost every tick before, and the CI runs below carry the proof.
+
+Unit tests that fail without the fix, each proved by a mutant (five mutants, all killed, run by
+hand): the tap saves the tick before any frame, later saves keep it, the closed row queues that
+same op once, a start after a kill shows and sends it once, the row tells of the tap at the tap
+(pointer and screen reader).
+
+### Rate after, in CI (measured)
+
+Four on-demand runs of `e2e.yml` on the branch at `39bef93`, Firefox, no retry, each the
+closed-tab test and the busy-close test 36 times (`tests/tick-leave.spec.ts --project=firefox
+--repeat-each=36 --retries=0 -g "tab closes"`). The filter leaves the reload test out, a
+precaution against the 30 minute cap that was not measured: by these runs' times all 108 tests
+might have fit. For the reload test with the fix, CI's evidence is the PR's own `ci.yml` runs
+(their config allows one retry, and their reports were not read for it), next to 20 of 20
+locally at no retry.
+
+| Run | Closed tab | Busy close | Lost | Playwright's time |
+| --- | --- | --- | --- | --- |
+| 43738297692 | 36 | 36 | 0 | 14.4 min |
+| 43740065370 | 36 | 36 | 0 | 10.3 min |
+| 43740065518 | 36 | 36 | 0 | 12.3 min |
+| 43740065532 | 36 | 36 | 0 | 11.2 min |
+| Sum | 144 | 144 | 0 | |
+
+Before: 4 lost of 108 closed tabs (3.7 %). After: 0 of 144. If the rate were still 3.7 %, 144
+runs would all pass in 0.4 % of cases. The counts are read from each run's
+`playwright-results.json` (every result `passed` at retry 0, none flaky). Two things differ
+from review 1's runs: the busy-close test runs in place of the reload test, and the first
+three dispatches (43738276300, 43738283749, 43738290587) were cancelled within 10 s by
+`e2e.yml`'s concurrency group, which keeps one run per branch and spec text, before any test
+ran. They were dispatched again with the same arguments in another order, which is another
+group: a way around that rule, taken on purpose, since the proof needs the same run four
+times. The 0.4 % assumes that the neighbouring test does not move the rate (inferred: review 1
+found the losses at test index 10, 34, 38, 65 and 66, so a cold worker is not the cause). What
+lands after `39bef93` changes records and comments in the spec only, no line of app or test
+code.
+
+### Cost of this round (measured unless labelled)
+
+- Wall time: 16:11 to about 19:00 CET on 15 November (estimate for the end; the land's own
+  times are in the ops DONE_SUMMARY).
+- e2e lock holds on the shared box: 16:20:52 to 16:21:55, 16:26:51 to 16:57:10 (the traces),
+  16:57:10 to 16:57:48, 17:03:53 to 17:27:54 (before and after) and 18:13:38 to 18:16:29 (the
+  crash probe): 59 minutes held. Waits for the lock: 44 minutes and 5 minutes behind job 267,
+  13 minutes behind the job's own trace hold, 1 minute behind job 253's review.
+- CI: four on-demand runs of 13.5 to 17.9 minutes each (job time), three cancelled within
+  10 s, and the PR's `ci.yml` runs.
+- Tokens, from the transcripts of the job's session and its subagents (the two in-job review
+  rounds) from 16:11:44 to 18:45:42 CET, each message counted once: 315,170 output, 1,236,406
+  cache-write, 30,029,169 cache-read and 548 input (lower bounds, as for the count of 11:24
+  above). The harness's review-1 session, 14:39 to 16:11 CET, lies in the same folder and is
+  not in this sum (164,802 output, 559,353 cache-write, 12,578,909 cache-read). Not counted:
+  the third in-job review round, the land and its records. Model `claude-fable-5-2` for every
+  message of the window.

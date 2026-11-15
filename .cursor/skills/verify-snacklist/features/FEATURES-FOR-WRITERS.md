@@ -271,9 +271,9 @@ On Android the phone's back button goes one screen back, as the arrow in the tit
 - That the edit sheet deletes an item; it has no delete button. Tick the item off instead.
 - That ticked items vanish after a fixed time or can be counted past 20 there.
 
-**Unverified.** Whether ticked items are ever removed from the section by age: no cleanup job was found in the code, but it was not run. That a tick survives closing the app right after the tap is checked in the browser (reload, closed tab) and by widget tests for a phone going to the background; it was not tried on a phone.
+**Unverified.** Whether ticked items are ever removed from the section by age: no cleanup job was found in the code, but it was not run. That a tick survives closing the app right after the tap is checked in the browser (reload, closed tab, a tab closed while the page is busy) and by the app's automatic tests for a phone going to the background or the app being killed; it was not tried on a phone.
 
-**Last verified.** 15 November 2026, code version 377f1a0f, in the web app (German; English on 07e1ad35); the tick kept on a reload or a closed tab on 14 November 2026, branch job/222-robustness-offline-sync on main 3344381d, in the web app on Chromium, WebKit and Firefox (job 222).
+**Last verified.** 15 November 2026, code version 377f1a0f, in the web app (German; English on 07e1ad35); the tick kept on a reload or a closed tab on 15 November 2026, branch job/222-review1-tick-save on main 2c682684, in the web app on Chromium, WebKit and Firefox (job 222; the app saves the tick on the device at the tap since that day; before it, in the automatic test runs, Firefox lost about 1 in 27 ticks made right before its tab closed).
 
 ## Edit an item
 

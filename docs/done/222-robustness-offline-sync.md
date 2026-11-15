@@ -16,7 +16,9 @@ Each fix has a test that fails without it (the mutation table under Proof).
   added (`app/lib/list/list_view/item_row.dart:68-136`, `shopping_list_view.dart:342`):
   - **The app is hidden** (phone to the background, page reloaded, tab closed, another tab in
     front): the tick commits at once (`AppLifecycleListener(onHide:)`). The list queues it on
-    the device in the same turn, so a reload or a restart sends it.
+    the device in the same turn, so a reload or a restart sends it. (Not always, review 1
+    found: the write follows an `await`, which a closing Firefox tab may never run. Since the
+    review 1 fix the tick is saved at the tap; see "Review 1" at the end.)
   - **The row goes away** (its store is folded, the column count changes, the lazy list drops
     it, the user switches to another household): the tick commits right after the row's end,
     on the list the row was built on.
@@ -1090,7 +1092,8 @@ changes and the replaced deleted-account notice are in `docs/NEEDS_LEAD.md`, "Jo
 - **Job 219's CI trace** (`docs/NEEDS_LEAD.md`, job 219, point 4: WebKit, a reload right
   after the row was gone from the page, no write before or after). Read from the code, that is
   the case fixed here: the row is gone from the page before its tick commits. A committed tick
-  is written to the device in the same turn, the path the new spec drives at the reload. The
+  is written to the device in the same turn (after an `await`, so not on every closing page:
+  "Review 1" below), the path the new spec drives at the reload. The
   CI trace itself was not reproduced, so that it was this and nothing else is inferred.
 - **No e2e for a body-less 401, 408 or 429** in the repo: unit-tested at the repository only.
   Review 0 drove them through the web build with its own spec, which is not in the repo (the
@@ -1110,7 +1113,10 @@ changes and the replaced deleted-account notice are in `docs/NEEDS_LEAD.md`, "Jo
 - Job 212's banner grace, the banner's look and copy, and every timeout.
 - "Tick at the tap, animate apart" was considered and left: it changes what the row shows
   while it leaves (the dividers and "Zuletzt verwendet" move under it), which is a design
-  change. The commit-early paths give the same guarantee with the row unchanged.
+  change. The commit-early paths keep the row unchanged and cover a hide the page lives
+  through. They do not give the same guarantee: a closing Firefox tab can end the page before
+  their save is written (review 1, 4 of 108 CI runs). The review 1 fix saves the tick at the
+  tap and still ticks the list at the row's end ("Review 1" below).
 - Voice, Siri, trip-mode UI, legal and store metadata (the brief's stay-off list).
 
 ## Review 0 (15 November 2026)
@@ -1124,3 +1130,69 @@ on-demand CI run 43713288298 (the spec three times per browser): 18 of 18 passed
 shows a timeout of 180000 ms on WebKit and 60000 ms on Chromium and Firefox, and WebKit took
 35.8 to 38.5 s. The closed-tab test now says in a comment that on WebKit it is no proof of the
 fix. Two lines under "Remaining gaps" come from the review.
+
+## Review 1 (15 November 2026)
+
+The harness review of #469 and #490 (verdict FIX) found the one flake this job caused, and
+behind it a real loss.
+
+- **The failure.** `[firefox] tick-leave.spec.ts › a tick is kept when the tab closes while its
+  row still closes` lost the tick in 4 of 108 runs in CI (3.7 %, five on-demand runs with no
+  retry; main alone 1 of 48) and turned two `ci.yml` runs of other jobs' PRs red (43714179620,
+  43716669387). On the reviewer's box: 0 of 24 unloaded, 4 of 103 on two cores. All measured by
+  review 1. The records had said "No flake was seen", which was true of the job's own runs
+  only; the hill-climb doc is corrected.
+- **Why the save was not written.** Measured: a closing Firefox tab ends the script that runs
+  when the page goes, without its `finally`, and then fires `pagehide` and `visibilitychange`
+  (a bare page, 6 of 6). After that the app runs nothing it awaited. The tick's save waited on
+  one `await` (the device's household list, read before every write of the list), so it was
+  never written, whether the tick had been committed by the row's end just before or by the
+  hide just after. With the row's end held for 400 ms so the close lands in it: 11 of 11 lost,
+  and 17 of 17 kept when the page hid before the row's end (28 runs of one session, with
+  Firefox's `dom.ipc.cancel_content_js_when_navigating` off, which therefore is not what ends
+  the script). No error was caught in any of the 81 traced runs. Inferred from the SDK's
+  source: Dart's microtask loop is left marked as running, or with a run scheduled that never
+  comes, so it never starts again on that page. Not known: the script the four CI losses
+  ended in (the same cause is assumed), and why the app's page takes 21 to 682 ms (median 340,
+  40 runs) from `beforeunload` to `pagehide` where a bare page takes under 50 ms (18 runs).
+- **The fix.** The list saves the tick with its queue at the tap (`ListCubit.willTick`, told by
+  the row's new `onTickStart`), keeps it in every later save, and queues that same op when the
+  row has closed, was hidden or went away (`tick`, unchanged for the screen). A start that
+  finds the saved tick shows the item ticked and sends it once. Nothing on screen changes. The
+  early commits of #469 stay: they are what ticks the list when the row or the app goes.
+- **Tests that fail without it.** Unit: four cubit tests (on the device from the tap on, kept
+  by later saves, one op sent once, shown and sent after a kill), three row tests (the tap
+  tells at once: with motion, with reduced motion, by screen reader), and the screen test of a
+  tapped row. Five mutants
+  of the fix, all killed (run by hand). e2e: a third test in `tick-leave.spec.ts`, "a tick is
+  kept when the tab closes into a busy frame", whose page is busy for 1.5 s from `beforeunload`
+  on. Before the fix (main `2c682684` with the trace marks) it lost the tick in 8 of 8 runs on
+  Firefox and 4 of 4 each on Chromium and WebKit; with it, in none of 28, 3 and 3. The
+  closed-tab test is unchanged but for its message, which now says whether the device held a
+  queued tick before the next start.
+- **Rate after, local (measured).** Firefox on two cores, release wasm build, no retry: 20 of
+  20 closed tabs kept, 20 of 20 reloads, 28 of 28 busy closes. Chromium and WebKit: 9 of 9 each
+  (the three tests three times). Twenty closed tabs cannot show that a 3.7 % loss is gone; the
+  busy closes and the CI runs do.
+- **Rate after, CI (measured).** Four on-demand Firefox runs on `39bef93`, no retry, each the
+  closed-tab test and the busy-close test 36 times: 43738297692, 43740065370, 43740065518 and
+  43740065532, 72 of 72 passed in each. 0 of 144 closed tabs lost, against 4 of 108 before; at
+  3.7 % that would happen by chance in 0.4 % of cases. Three first dispatches were cancelled
+  by the workflow's concurrency group before any test ran and were sent again with the
+  arguments in another order
+  (`docs/hillclimb/fable-improvement-2026-11.md`, "Rate after, in CI").
+- **What can still lose a tick.** A page or an app that dies inside the tap's own task, before
+  the write (on phones the write crosses a platform channel; not measured). A sign-out inside
+  the row's 440 ms, by design.
+- **A kill with no hide event (one-off probe, web only).** Chromium's renderer crashed right
+  after the tap: 4 of 4 ticks lost before the fix, 8 of 8 kept with it. A killed phone app was
+  not driven.
+- **Not counted, not pinned.** `item_ticked` is tracked when the list ticks, so a tick that
+  only the next start sends is not counted (never twice). No test holds `willTick` on a list
+  that has neither loaded nor read its cache, two rows closing at once, or a promised tick on
+  a list closed by a household switch (`docs/DECISIONS.md`, "Job 222 review 1").
+- **Review 1's nice-to-haves.** Taken: the "same guarantee" sentence under "Not changed" (1),
+  the kills in the hill-climb table (2), the spec's message (3, first half), the feature file's
+  line on what the web hide rests on (4). Left: the debug log in `device_cache.dart`'s `catch`
+  blocks (3, second half; no caught error showed in the traces) and review 0's three (5), which
+  stay with the lead.

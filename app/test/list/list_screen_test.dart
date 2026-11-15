@@ -380,10 +380,13 @@ void main() {
           ..remoteAdd('Bohnen', categoryId: 'produce'),
       );
       await tester.tap(row('Bohnen'));
+      expect(cache.saved!.pending, [
+        isA<SetStatus>().having((op) => op.status, 'status', ItemStatus.bought),
+      ], reason: 'on the device from the tap on: the page may go any time');
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
       expect(itemNamed('Bohnen').status, ItemStatus.active);
-      expect(cache.saved!.pending, isEmpty);
+      expect(repo.sent, isEmpty, reason: 'the row still closes');
     }
 
     testWidgets('the app goes to the background: the tick is queued on the '
@@ -395,7 +398,7 @@ void main() {
         ..handleAppLifecycleStateChanged(AppLifecycleState.hidden);
       expect(cache.saved!.pending, [
         isA<SetStatus>().having((op) => op.status, 'status', ItemStatus.bought),
-      ], reason: 'saved before the app may be gone');
+      ], reason: 'the one tick, queued now');
       repo.gate!.complete();
       // No frame: a hidden app draws none.
       await tester.idle();

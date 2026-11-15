@@ -24,10 +24,12 @@ Item _item(String name, {String? quantity}) {
 }
 
 void main() {
+  late List<Item> started;
   late List<Item> ticked;
   late LeavingRows leaving;
 
   setUp(() {
+    started = [];
     ticked = [];
     leaving = LeavingRows();
   });
@@ -63,6 +65,7 @@ void main() {
                       fresh: false,
                       last: item == items.last,
                       onVisible: (_) {},
+                      onTickStart: started.add,
                       onTick: ticked.add,
                       onEdit: (_) {},
                       onDelete: (_) {},
@@ -203,6 +206,39 @@ void main() {
         tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
       );
     }
+
+    for (final reduced in [false, true]) {
+      final motion = reduced ? 'reduced motion' : 'motion';
+      testWidgets('the tap tells of the tick at once, before any frame, and '
+          'once ($motion)', (tester) async {
+        if (reduced) {
+          reducedMotion(tester);
+        }
+        await pumpRows(tester, [_item('Milch'), _item('Brot')]);
+        await tester.tap(row('Milch'));
+        expect(started.map((i) => i.name), ['Milch']);
+        expect(ticked, isEmpty, reason: 'the row is seen first');
+
+        await tester.pump();
+        await tester.tap(row('Milch'), warnIfMissed: false);
+        await tester.pumpAndSettle();
+        await tester.pump(rowLeaveDuration);
+        expect(started, hasLength(1), reason: 'once');
+        expect(ticked.map((i) => i.name), ['Milch']);
+      });
+    }
+
+    testWidgets("a screen reader's tap tells of the tick at once too", (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await pumpRows(tester, [_item('Milch')]);
+      tester.semantics.tap(find.semantics.byLabel('Milch'));
+      expect(started.map((i) => i.name), ['Milch']);
+      await tester.pumpAndSettle();
+      expect(ticked, hasLength(1));
+      handle.dispose();
+    });
 
     void hide(WidgetTester tester) => tester.binding
       ..handleAppLifecycleStateChanged(AppLifecycleState.inactive)
