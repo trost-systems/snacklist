@@ -226,7 +226,13 @@ export class Session {
 
 /** Signs in through the real login screen; not filmed, so the fields are filled by Marionette. */
 export async function login(c: Client): Promise<void> {
-  await find(c, { key: 'login-email' }, 60_000);
+  // Signed out, the app opens on the guided start (job 168b); its „Anmelden“ opens the form.
+  const first = await until('the start or login screen', async () =>
+    (await elements(c)).find((e) => e.key === 'start-log-in' || e.key === 'login-email')?.key, 60_000);
+  if (first === 'start-log-in') {
+    await run(['marionette', '--uri', c.vmUri, 'tap', '--key', 'start-log-in']);
+    await find(c, { key: 'login-email' }, 15_000);
+  }
   await run(['marionette', '--uri', c.vmUri, 'enter-text', '--key', 'login-email', '--input', c.email]);
   await run(['marionette', '--uri', c.vmUri, 'enter-text', '--key', 'login-password', '--input', c.password]);
   await run(['marionette', '--uri', c.vmUri, 'tap', '--type', 'FilledButton']);

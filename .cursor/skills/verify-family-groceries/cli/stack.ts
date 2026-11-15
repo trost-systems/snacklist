@@ -13,7 +13,7 @@ export function rewriteConfig(toml: string, prefix: string, projectId: string): 
 /**
  * Supabase runs from a generated workdir so parallel agents never edit the
  * tracked config.toml: only the ports and project id differ; migrations,
- * functions and tests are symlinks into the checkout.
+ * functions and tests are symlinks into the checkout, the email templates a copy.
  */
 export async function writeWorkdir(ctx: Ctx, inst: Instance): Promise<void> {
   const target = `${inst.workdir}/supabase`;
@@ -27,6 +27,9 @@ export async function writeWorkdir(ctx: Ctx, inst: Instance): Promise<void> {
     for (const dir of ['migrations', 'functions', 'tests']) {
       await mustRun(ctx.sh, ['ln', '-sfn', `${inst.repo}/supabase/${dir}`, `${target}/${dir}`]);
     }
+    // supabase start refuses an auth email template that resolves outside the workdir.
+    await mustRun(ctx.sh, ['rm', '-rf', `${target}/templates`]);
+    await mustRun(ctx.sh, ['cp', '-r', `${inst.repo}/supabase/templates`, `${target}/templates`]);
     const seed = `${inst.repo}/supabase/seed.sql`;
     if (await ctx.sh.exists(seed)) await mustRun(ctx.sh, ['ln', '-sfn', seed, `${target}/seed.sql`]);
   });
