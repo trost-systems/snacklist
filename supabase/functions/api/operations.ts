@@ -233,14 +233,19 @@ export const operations: Record<Operation, Parse> = {
         ...existing,
         ...similar.flatMap((s) => s.onList),
       ]);
-      const pick = (ids: string[]) => ids.map((id) => rows.find((r) => r.id === id));
+      const byId = new Map(rows.map((r) => [r.id, r]));
+      const pick = (ids: string[]) => ids.map((id) => byId.get(id));
       return {
         status: added.length > 0 ? 201 : 200,
         body: {
           data: {
             added: pick(added),
             alreadyOnList: pick(existing),
-            similarOnList: similar.map((s) => ({ itemId: s.added, onList: pick(s.onList) })),
+            similarOnList: similar.map((s) => ({
+              itemId: s.added,
+              onList: pick(s.onList),
+              total: s.total,
+            })),
           },
         },
       };

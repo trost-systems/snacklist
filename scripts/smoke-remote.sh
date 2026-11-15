@@ -96,6 +96,43 @@ else
   fail "purchases claim without a session: want 401; $(got purchases_claim)"
 fi
 
+# Job 241: the public API (docs/API.md). Without a key it answers 404 while app_switches.public_api
+# is off, 401 once it is on. SMOKE_PUBLIC_API=1, for the day it is switched on, wants the 401 and
+# then sends unknown keys, each from another made-up address in X-Forwarded-For and X-Real-IP,
+# until the 429: they must count as one address, 20 per 10 minutes (the gateway's X-Real-IP).
+# That part writes this address's failure count: its unknown keys get 429 for up to 10 minutes.
+request api "$fn/api/v1/items"
+api_error="$(jq -r '.error.code // empty' "$work/api.body" 2>/dev/null)"
+if [[ ${SMOKE_PUBLIC_API:-} == 1 ]]; then
+  if [[ $(status api) == 401 && $api_error == missing_token ]]; then
+    pass 'api without a key: 401 missing_token (switched on)'
+  else
+    fail "api without a key: want 401 missing_token, is app_switches.public_api on?; $(got api)"
+  fi
+  throttled=0
+  for n in $(seq 1 25); do
+    unknown="fgp_$(head -c 48 /dev/urandom | base64 | tr -d '\n=' | tr '+/' '-_' | head -c 43)"
+    forged="198.51.100.$((RANDOM % 254 + 1))"
+    curl -sS --max-time 15 -o "$work/api_unknown.body" -w '%{http_code}' "$fn/api/v1/items" \
+      -H "authorization: Bearer $unknown" -H "x-forwarded-for: $forged" -H "x-real-ip: $forged" \
+      >"$work/api_unknown.status" 2>"$work/api_unknown.err" || true
+    if [[ $(status api_unknown) == 429 ]]; then
+      throttled=$n
+      break
+    fi
+    [[ $(status api_unknown) == 401 ]] || break
+  done
+  if ((throttled > 0 && throttled <= 21)) && jq -e '.error.code == "auth_throttled"' "$work/api_unknown.body" >/dev/null 2>&1; then
+    pass "api with unknown keys from made-up addresses: 429 auth_throttled at request $throttled"
+  else
+    fail "api with unknown keys from made-up addresses: want 401s, then 429 auth_throttled by request 21; request $n $(got api_unknown)"
+  fi
+elif [[ $(status api) == 404 && $api_error == not_found ]] || [[ $(status api) == 401 && $api_error == missing_token ]]; then
+  pass "api without a key: $(status api) $api_error"
+else
+  fail "api without a key: want 404 not_found (switched off) or 401 missing_token; $(got api)"
+fi
+
 if ((failures > 0)); then
   echo "$failures check(s) failed against $fn"
   exit 1

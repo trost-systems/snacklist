@@ -1,5 +1,6 @@
 import { sha256Hex } from '../_shared/auth.ts';
 import { assert, assertEquals, assertExists, assertFalse } from '@std/assert';
+import { OutOfTime } from '../_shared/db.ts';
 import { ToolError } from '../_shared/list.ts';
 import {
   type Begin,
@@ -514,7 +515,7 @@ Deno.test('Idempotency-Key: printable ASCII, 1 to 255; the same request hashes t
   assertEquals(deps.executed[4]?.idempotency, null, 'a GET takes no key');
 });
 
-Deno.test('list errors map to their codes; a unique violation is 409; the rest 500', async () => {
+Deno.test('list errors map to their codes; a unique violation is 409, out of time 503; the rest 500', async () => {
   const cases: [Error, number, string][] = [
     [new ToolError('x', 'not_found', 'item', [], ID), 404, 'item_not_found'],
     [new ToolError('x', 'not_found', 'store', ['dm', 'Lidl'], 'Rewe'), 422, 'store_not_found'],
@@ -534,6 +535,12 @@ Deno.test('list errors map to their codes; a unique violation is 409; the rest 5
       'unavailable',
     ],
     [Object.assign(new Error('closed'), { code: 'CONNECTION_CLOSED' }), 503, 'unavailable'],
+    [new OutOfTime(), 503, 'timeout'],
+    [
+      Object.assign(new Error('cancelled'), { name: 'PostgresError', code: '57014' }),
+      503,
+      'timeout',
+    ],
     [new TypeError('boom'), 500, 'internal_error'],
   ];
   for (const [thrown, status, code] of cases) {

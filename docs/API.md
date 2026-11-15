@@ -160,14 +160,18 @@ the app. Without `store`, the item gets the store it was last bought in, an own 
 
 ```json
 { "data": { "added": [ …items ], "alreadyOnList": [ …items ],
-            "similarOnList": [ { "itemId": "…", "onList": [ …items ] } ] } }
+            "similarOnList": [ { "itemId": "…", "onList": [ …items ], "total": 1 } ] } }
 ```
 
 `201` when something was added, else `200`. An item already on that list is not added twice and
 comes back under `alreadyOnList`. A spelling variant or synonym of an open item ("Karotten" next to
-"Möhren") is added and reported under `similarOnList` (`itemId`: the new item). Nothing is merged.
+"Möhren") is added and reported under `similarOnList`: `itemId` is the new item, `onList` the
+similar open items, at most three (the oldest first), and `total` how many there are. Nothing is
+merged.
 Items are added in order in one transaction: an unknown `store`, `category` or `list` anywhere fails
-the whole batch with `422` and adds nothing.
+the whole batch with `422` and adds nothing. So does a batch whose adds take longer than 5 seconds
+together (`503 timeout`). Each add looks through the list's open items, so on a list with many
+hundreds of them send fewer items per request.
 
 ### POST /v1/items/{id}/tick, POST /v1/items/{id}/untick
 
@@ -234,6 +238,7 @@ optional.
 | 429 | `rate_limited` | Over a rate limit (`Retry-After`) |
 | 429 | `auth_throttled` | Too many unknown keys from this address (`Retry-After`); valid keys still work |
 | 500 | `internal_error` | Our fault; retry later (`X-Request-Id` helps us find it) |
+| 503 | `timeout` | The request took too long and was stopped; nothing was changed. For `POST /v1/items`, send fewer items at once; send one request at a time |
 | 503 | `unavailable` | The database or the Premium check is not answering; retry later (`Retry-After`) |
 
 ## Limits
@@ -247,6 +252,9 @@ arguments, so that file is the one place to change them.
 | Per household | 1000 requests a day (UTC) | All the household's keys together |
 | Unknown keys per address | 20 per 10 minutes | Every key we have never issued; then `429 auth_throttled` for unknown keys from that address. A missing key, a revoked or otherwise ended key and a valid key never count and are never blocked, so an integration still polling with a revoked key does not block others behind the same address |
 | Batch | 50 items per `POST /v1/items` | |
+| Similar items | 3 per added item in `similarOnList` | `total` counts them all |
+| Time | 5 seconds for the adds of one `POST /v1/items`, 8 seconds for any one database statement | `503 timeout`, nothing changed |
+| At once | One request per member: requests with one member's keys wait for each other | One that waited 5 seconds gets `503 timeout` |
 | Body | 64 KiB | `413` |
 | Page size | 1 to 100, default 50 | |
 | Idempotency keys | kept 24 hours | |
@@ -259,7 +267,7 @@ Every response says where the caller stands:
 - `X-RateLimit-Remaining`: requests left in it after this one.
 - `X-RateLimit-Reset`: seconds until it is full again (the bucket refilled, the next UTC day, the
   failure window over).
-- `Retry-After` (on `429` and `503`): seconds until the next request can succeed.
+- `Retry-After` (on `429` and `503 unavailable`): seconds until the next request can succeed.
 
 A refused request (`429`) does not count against the limits. Every other authenticated request
 does, errors included: a `400`, `403` or `404` uses up a request like a `200`. `X-Request-Id` (a UUID) comes with every response;
@@ -289,6 +297,10 @@ it with a deprecation notice in this document and in a `Deprecation` header.
   never the id or a query value), status, duration, the key's id. Never a body, a name, a header
   value or an address. Errors go to the functions' error tracking with the template words only
   (`_shared/telemetry.ts`).
+- The gateway in front of the function keeps its own access log: each request's URL with its query
+  string, so a `store` or `category` filter and a cursor (which carries the filter) appear there.
+  Send the key in the `Authorization` header only; in a URL it is refused and would stay in that
+  log.
 
 ## Examples
 

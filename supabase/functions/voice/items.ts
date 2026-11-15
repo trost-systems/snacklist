@@ -1,5 +1,5 @@
 import type { Tx } from '../_shared/db.ts';
-import { listOf } from '../_shared/list.ts';
+import { listOf, SIMILAR_SHOWN } from '../_shared/list.ts';
 import type { Added, SplitItem } from './handler.ts';
 import type { ParsedItem } from './parse.ts';
 
@@ -35,7 +35,8 @@ const variant = (row: Row) =>
  * duplicate check) in one transaction. The splitter already read each amount, so the spoken
  * quantity goes in as the explicit one; brand and properties come from the parser. A new item
  * whose spelling variant or synonym is already open ("Karotten" with "Möhren") is still added
- * and names it in `similarOnList` (`public.similar_items`, job 32b); nothing is merged. A plain
+ * and names the oldest SIMILAR_SHOWN of them in `similarOnList` (`public.similar_items`, job 32b);
+ * nothing is merged. A plain
  * name said while the same name, singular or plural, is open with a brand or a note ("Butter"
  * with "Butter Weihenstephan", "Tomate" with "Tomaten Bio") is held: nothing is added,
  * the open item is reported as already on the list with the request under `held`, so the caller
@@ -74,7 +75,7 @@ export async function addItems(
     const held = open && variant(open) ? item : null;
     const similar = alreadyOnList || addVariants ? [] : await tx<{ name: string }[]>`
       select concat_ws(' ', name, brand, replace(properties, ', ', ' ')) as name
-      from public.similar_items(${row.id})`;
+      from public.similar_items(${row.id}) order by created_at, id limit ${SIMILAR_SHOWN}`;
     added.push({ ...row, alreadyOnList, similarOnList: similar.map((s) => s.name), held });
   }
   return added.map(({ id: _, ...rest }) => rest);

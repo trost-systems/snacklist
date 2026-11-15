@@ -4,7 +4,7 @@
 // the query plan. A household has one or more lists (job 169b W3): the tools act in
 // the list a `list` reference names, else in the caller's default list there (job 207,
 // public.default_list: their choice, else the first list), where Siri and Alexa act too.
-import { oneRow, type Tx } from './db.ts';
+import { oneRow, OutOfTime, type Tx } from './db.ts';
 
 export type ToolErrorReason = 'not_found' | 'ambiguous' | 'invalid';
 
@@ -407,11 +407,20 @@ export type NewItem = {
 /** A blank optional field is not given: the parsed value stays. */
 const given = (value: string | undefined) => value?.trim() || null;
 
-/** What an add did, by item id: the new items, the ones already open, similar open ones. */
+/** Similar open items an add names per new item. */
+export const SIMILAR_SHOWN = 3;
+
+/** How long the adds of one request may take together. */
+export const ADD_BUDGET_MS = 5000;
+
+/**
+ * What an add did, by item id: the new items, the ones already open, and per new item the first
+ * SIMILAR_SHOWN similar open ones, with how many there are in `total`.
+ */
 export type Added = {
   added: string[];
   existing: string[];
-  similar: { added: string; onList: string[] }[];
+  similar: { added: string; onList: string[]; total: number }[];
 };
 
 /**
@@ -423,14 +432,19 @@ export type Added = {
  * store replaces the parsed one. An explicit category is applied as an update, so the classifier
  * learns it like a correction in the app. A new item whose spelling variant or synonym is already
  * open ("Karotten" with "Möhren", public.similar_items) is still added and reported under
- * `similar` with the open items; nothing is merged (job 32b).
+ * `similar` with the oldest of the open items; nothing is merged (job 32b). Past [until] (on
+ * performance.now()'s clock) it throws OutOfTime instead of starting the next step.
  */
 export async function addItemIds(
   tx: Tx,
   household: string,
   wanted: readonly NewItem[],
   list?: string | undefined,
+  until: number = performance.now() + ADD_BUDGET_MS,
 ): Promise<Added> {
+  const inTime = () => {
+    if (performance.now() > until) throw new OutOfTime();
+  };
   const target = await listOf(tx, household, list);
   const [cats, shops, active] = await Promise.all([
     categories(tx, household),
@@ -441,6 +455,7 @@ export async function addItemIds(
   const added: string[] = [];
   const existing: string[] = [];
   for (const item of wanted) {
+    inTime();
     const category = item.category ? resolve(cats, item.category, 'category').id : null;
     const store = item.store ? resolve(shops, item.store, 'store').id : null;
     const [row] = await tx<{ id: string; category_id: string }[]>`
@@ -458,12 +473,24 @@ export async function addItemIds(
       await tx`update public.items set category_id = ${category} where id = ${row.id}`;
     }
   }
-  const similar: { added: string; onList: string[] }[] = [];
-  for (const id of added) {
-    const open = await tx<{ id: string }[]>`select id from public.similar_items(${id})`;
-    if (open.length) similar.push({ added: id, onList: open.map((o) => o.id) });
+  inTime();
+  const near = await tx<{ added: string; id: string; total: number }[]>`
+    select a.id as added, s.id, s.total
+    from unnest(${added}::uuid[]) with ordinality as a (id, position)
+    cross join lateral (
+      select o.id, count(*) over ()::int as total,
+             row_number() over (order by o.created_at, o.id) as rank
+      from public.similar_items(a.id) o
+    ) s
+    where s.rank <= ${SIMILAR_SHOWN}
+    order by a.position, s.rank`;
+  const similar = new Map<string, { added: string; onList: string[]; total: number }>();
+  for (const row of near) {
+    const entry = similar.get(row.added) ?? { added: row.added, onList: [], total: row.total };
+    entry.onList.push(row.id);
+    similar.set(row.added, entry);
   }
-  return { added, existing, similar };
+  return { added, existing, similar: [...similar.values()] };
 }
 
 /** addItemIds for the MCP tools: the items, and the new item's name under similarOnList. */
@@ -475,20 +502,25 @@ export async function addItems(
 ): Promise<{
   added: (Item | undefined)[];
   alreadyOnList: (Item | undefined)[];
-  similarOnList: { added: string; onList: (Item | undefined)[] }[];
+  similarOnList: { added: string; onList: (Item | undefined)[]; total: number }[];
 }> {
   const { added, existing, similar } = await addItemIds(tx, household, wanted, list);
   const rows = await itemsById(tx, [...added, ...existing, ...similar.flatMap((s) => s.onList)]);
-  const pick = (ids: string[]) => ids.map((id) => rows.find((r) => r.id === id));
+  const byId = new Map(rows.map((r) => [r.id, r]));
+  const pick = (ids: string[]) => ids.map((id) => byId.get(id));
   const nameOf = (id: string) => {
-    const row = rows.find((r) => r.id === id);
+    const row = byId.get(id);
     if (!row) throw new Error(`added item ${id} not read back`);
     return row.name;
   };
   return {
     added: pick(added),
     alreadyOnList: pick(existing),
-    similarOnList: similar.map((s) => ({ added: nameOf(s.added), onList: pick(s.onList) })),
+    similarOnList: similar.map((s) => ({
+      added: nameOf(s.added),
+      onList: pick(s.onList),
+      total: s.total,
+    })),
   };
 }
 

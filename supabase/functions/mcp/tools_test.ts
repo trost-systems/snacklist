@@ -4,6 +4,7 @@
 import { assert, assertEquals, assertFalse } from '@std/assert';
 import { createMcpHandler } from '@modelcontextprotocol/server';
 import type { Auth } from '../_shared/auth.ts';
+import { OutOfTime } from '../_shared/db.ts';
 import type { Access } from '../_shared/premium.ts';
 import { mcpTools, telemetryFor, withTelemetry } from '../_shared/telemetry.ts';
 import {
@@ -14,6 +15,7 @@ import {
   premiumRequired,
   type ReportCall,
   reportToolCalls,
+  tookTooLong,
 } from './tools.ts';
 
 const auth: Auth = { userId: 'u', householdId: 'h', via: 'pat' };
@@ -210,6 +212,30 @@ Deno.test('the check fails: no premium answer (an error, like any database failu
   assertFalse(text.includes('Premium'));
   assert(text.includes('error') || text.includes('isError'));
   assertEquals(s.reports, [{ tool: 'list_items', household: 'h', reason: 'server' }]);
+});
+
+Deno.test('a call that ran out of its time is a tool error saying so, not a server failure', async () => {
+  const cancelled = Object.assign(new Error('cancelled'), { name: 'PostgresError', code: '57014' });
+  for (
+    const [thrown, lang, text] of [
+      [new OutOfTime(), undefined, tookTooLong.de],
+      [cancelled, 'en', tookTooLong.en],
+    ] as const
+  ) {
+    const s = serve(() => Promise.reject(thrown));
+    const res = await s.handle(rpc('tools/call', {
+      name: 'add_items',
+      arguments: {
+        items: [{ name: 'Milch' }],
+      },
+    }, lang));
+    assertEquals(res.status, 200);
+    const { result, error } = await message(res);
+    assertEquals(error, undefined, 'a tool result, not a JSON-RPC error');
+    assertEquals(result.isError, true);
+    assertEquals(result.content, [{ type: 'text', text }]);
+    assertEquals(s.reports, [{ tool: 'add_items', household: 'h', reason: 'tool_error' }]);
+  }
 });
 
 Deno.test('langOf: English only when preferred over German', () => {

@@ -5,7 +5,7 @@ A spoken sentence such as "Milch, zwei Gurken und Klopapier" becomes separate li
 ## Sub-features
 
 - `voice-add` adds the items of a sentence and answers with JSON: `speech`, `items` (name, brand, properties, quantity, category, `alreadyOnList`, `similarOnList`) and `truncated`.
-- `voice-similar` (job 32b) adds an item even when a spelling variant or synonym is open, lists that one in `similarOnList` and names that one in the "Schon auf der Liste:" sentence, after any exact duplicates and each name once (job 68): "Hinzugefügt: Karotten. Schon auf der Liste: Möhren." (EN "Added Karotten to Snacklist. Already on the list: Möhren."). Merging is the app's job (`features/quick-add.md`, `qa-dedupe-hint`).
+- `voice-similar` (job 32b) adds an item even when a spelling variant or synonym is open, lists that one in `similarOnList` and names that one in the "Schon auf der Liste:" sentence, after any exact duplicates and each name once (job 68): "Hinzugefügt: Karotten. Schon auf der Liste: Möhren." (EN "Added Karotten to Snacklist. Already on the list: Möhren."). An item lists at most three similar open items, the oldest. Merging is the app's job (`features/quick-add.md`, `qa-dedupe-hint`).
 - `voice-siri-text` answers with the spoken sentence only (`?format=text`, `text/plain`), which the Shortcut reads aloud.
 - `voice-duplicate` names items already on the list ("Schon auf der Liste: Milch.") and adds nothing for them.
 - `voice-errors` answers every failure with a German sentence and a status: 401 bad or revoked token, 403 no household, 400 no text, 405 not POST, 413 too long, 422 nothing understood.

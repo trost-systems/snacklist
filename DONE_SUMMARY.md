@@ -991,3 +991,30 @@ Follow-up PR https://github.com/trost-systems/snacklist/pull/471. Review 1 found
 - **TestFlight.** release.yml ran green on 3344381d, the block, at 20:50 UTC (run 43639623684). The fixes from #465 and this round ship with the next green main build.
 - **Not checked by the job.** Nobody has confirmed that Peter's PostHog person has `list-declutter`, `prices-and-trip-total` and `trip-mode` on: the runner's PostHog key has no read scope. This is in the ops NEEDS_LEAD.md "Job 237: flags for Peter".
 - **Tests.** `summary_block_test`, `subtotals_test` and `list_declutter_test` pass (46 tests). `flutter analyze` is clean.
+
+## Job 241 review 0: public API hardening, bounded add answers (2026-11-15)
+
+The fix round after review 0. One PR, public API hardening with bounded add answers
+(https://github.com/trost-systems/snacklist/pull/473):
+
+- **Add answers.** An add names at most three similar open items per added item, the oldest,
+  with `total` saying how many there are (`POST /v1/items`, MCP `add_items`; voice names three).
+- **Time.** The adds of one batch have 5 seconds, and every statement a function runs as the
+  user has the 8 seconds the app's own requests have. Out of time answers `503 timeout` (API) or
+  a tool error (MCP), and nothing was added.
+- **Tests.** Integration tests for the answer's size and time against a long list, the three
+  oldest with their number through the API, MCP and voice, the budget and the statement limit;
+  unit tests for the two answers. The two-household test also pins `counts`. Unit tests for the
+  turn (order, the wait, a failure ends it) and two integration tests: one user's requests at
+  once, another user's answered meanwhile, through `asUser` and through the API's handler.
+- **One at a time.** Requests of one user run one after another in a function's worker (API,
+  MCP, voice, Alexa); one that waited 5 seconds ends as out of time.
+- **Smoke test.** `scripts/smoke-remote.sh` checks `api` without a key after every deploy;
+  `SMOKE_PUBLIC_API=1 scripts/smoke-remote.sh` is the check for the day the API is switched on
+  (`docs/DEPLOY.md`, "Smoke test").
+- **Docs.** `docs/API.md`, `docs/api/openapi.yaml`, `docs/MCP.md`, `docs/DEPLOY.md`, the feature
+  files for voice, Siri and the hosted backend.
+
+The API is still off. The production switch and the PostHog flag are untouched. The report and
+the verdict are on the ops side (`jobs/241-public-api-fable-review/out/PUBLIC_API_REVIEW.md`,
+NEEDS_LEAD "Job 241: public API review ready"). Reasons: `docs/DECISIONS.md` "Job 241 review 0".

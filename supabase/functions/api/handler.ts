@@ -2,11 +2,11 @@
 // the Premium gate, strict input, then the operation as the key's member, idempotent for POSTs.
 // Every answer carries X-Request-Id and, once the limits are known, X-RateLimit-*.
 import { PAT_PREFIX, sha256Hex } from '../_shared/auth.ts';
-import { asUser, asUserWithin, oneRow, serviceDb } from '../_shared/db.ts';
+import { asUser, asUserWithin, inTurn, oneRow, ranOutOfTime, serviceDb } from '../_shared/db.ts';
 import { ToolError } from '../_shared/list.ts';
 import { type Access, requirePremiumWith } from '../_shared/premium.ts';
 import { userEvents } from '../_shared/user_events.ts';
-import { ApiError, internalError, noSuchEndpoint, unavailable } from './errors.ts';
+import { ApiError, internalError, noSuchEndpoint, timedOut, unavailable } from './errors.ts';
 import {
   AUTH_FAILURE_WINDOW_SECONDS,
   AUTH_FAILURES,
@@ -377,6 +377,7 @@ function asApiError(e: unknown, deps: Deps): ApiError {
   if (fromPostgres && code === '23505') {
     return new ApiError(409, 'conflict', "The change clashes with the list's current state.");
   }
+  if (ranOutOfTime(e)) return timedOut();
   deps.report(e);
   if (
     (fromPostgres && typeof code === 'string' && UNAVAILABLE_STATES.test(code)) ||
@@ -489,7 +490,12 @@ const defaultDeps: Deps = {
   used: (key, scope) => sendEvent(key.userId, key.householdId, 'api_key_used', { scope }),
   execute: async (execution) => {
     const { idempotency } = execution;
-    if (idempotency) return await executeIdempotent({ ...execution, idempotency });
+    if (idempotency) {
+      return await inTurn(
+        execution.key.userId,
+        () => executeIdempotent({ ...execution, idempotency }),
+      );
+    }
     const result = await asUser(
       execution.key.userId,
       (tx) => execution.run(tx, execution.key.householdId),
