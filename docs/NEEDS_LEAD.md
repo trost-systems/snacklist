@@ -2391,3 +2391,12 @@ Status: open for Peter and Legal. Nothing is uploaded and every caption is `draf
    App Store. Legal picks one in the 15 November batch.
 5. **Age rating 4+.** Checked: no alcohol or tobacco in any frame, video or seed. The one „Bier“
    in the `mcp-chat` seed is now „Limonade“.
+
+## NEEDS_LEAD Job 252 follow-up: captions for Legal's final check
+
+Status: open. Nothing was uploaded. Store frames follow Legal N-187 to N-195 (#458, `docs/DECISIONS.md` "Job 252").
+
+1. **Play has 7 phone frames, not 8.** The MCP and API frame is gone: its screen showed the API section, an MCP hint naming AI brands and the Siri section. The chat frame is the AI-assistants frame. Peter and Lead should hear this before upload.
+2. **Legal's final check** of every caption: `docs/screenshots/215/CAPTIONS.md`. Open there: the feature-graphic tagline („Gemeinsam einkaufen, ohne Werbung.“ / "Shop together, no ads."), and „So viele Listen, wie ihr wollt“ against the 50-list cap.
+3. **1 Dec release (N-193):** when `integration-lock` goes on, render with `scripts/store-screenshots.sh --premium-label` before uploading the AI frame, so both stores carry „Mit Snacklist Premium“ / "With Snacklist Premium".
+4. The old frames in `docs/screenshots/215/` (Alexa, Siri-and-Alexa, API) are deleted; the contact sheets there are the new set.

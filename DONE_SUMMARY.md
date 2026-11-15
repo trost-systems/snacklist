@@ -1201,3 +1201,10 @@ shows alcohol or tobacco (age rating 4+). Nothing was uploaded and every caption
 "Job 215").
 
 Details: [docs/done/215-store-screenshots-redo.md](docs/done/215-store-screenshots-redo.md)
+
+## Job 252: store captions follow Legal N-187 to N-195 (2026-11-15)
+
+- **Built (#458, merged):** one caption set in `marketing/store-screenshots/captions.yaml`; „Funktioniert mit Siri“ / "Works with Siri" on the App Store voice frame only; no Alexa, API, automations, free, named AI assistant, alcohol or tobacco. `captions.mjs` fails a run on any of them. The api frame is dropped (the chat frame is the AI-assistants frame), so each set has 7 frames; the `--assistants` variants and the production-URL second build are deleted.
+- **Review 0 follow-up (this PR):** the stale evidence is removed from `docs/screenshots/215/` (Alexa, Siri-and-Alexa and API frames, old contact sheets) and replaced by the new contact sheets, voice frames, feature graphic and `CAPTIONS.md`. `docs/done/215-store-screenshots-redo.md` now describes the 7-frame set. `docs/NEEDS_LEAD.md` "Job 252 follow-up" flags the 7-frame deviation, Legal's open points and the `--premium-label` reminder for 1 Dec.
+- **Verify:** full run, 62 files, all checks pass; `captionProblems()` returns `[]` and rejects Alexa, Claude, Free, API, Bier, Hey Siri, "50 Listen", ™ and Siri on Play. `ci-ok` was green on #458.
+- **Not done (review nice-to-haves):** an OCR check of the final PNGs and a pixel test for Siri's weight; the text check covers every word compose draws.
