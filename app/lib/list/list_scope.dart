@@ -269,6 +269,7 @@ String rejectionText(AppLocalizations l10n, Rejected rejection) =>
       ItemRejected(:final itemName) => l10n.syncFailed(itemName),
       NameTaken(:final name) => l10n.categoryNameTaken(name),
       CatalogRejected() => l10n.catalogSaveFailed,
+      TooManyLists() => l10n.tooManyLists,
       NeedsConnection() => l10n.reorderNeedsConnection,
       StoreNameTaken(:final name) => l10n.storeNameTaken(name),
       StoreNeedsConnection() => l10n.storesNeedConnection,

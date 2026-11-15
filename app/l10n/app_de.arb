@@ -206,6 +206,7 @@
   "categoryNameTaken": "Eine Kategorie „{name}“ gibt es schon.",
   "@categoryNameTaken": {"placeholders": {"name": {"type": "String"}}},
   "catalogSaveFailed": "Die Änderung konnte nicht gespeichert werden.",
+  "tooManyLists": "Hier passen höchstens 50 Listen rein.",
   "storeLayoutHint": "Ordne die Kategorien so, wie du durch den Laden gehst. Tippe auf eine Kategorie, um sie umzubenennen.",
   "newItemsFrom": "{count} neu von {name}",
   "@newItemsFrom": {"placeholders": {"count": {"type": "int"}, "name": {"type": "String"}}},

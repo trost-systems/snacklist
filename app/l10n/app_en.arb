@@ -195,6 +195,7 @@
   "categoryNameTaken": "A category named “{name}” already exists.",
   "@categoryNameTaken": {"placeholders": {"name": {"type": "String"}}},
   "catalogSaveFailed": "The change could not be saved.",
+  "tooManyLists": "A household can have up to 50 lists.",
   "storeLayoutHint": "Order the categories the way you walk through the store. Tap a category to rename it.",
   "newItemsFrom": "{count} new from {name}",
   "@newItemsFrom": {"placeholders": {"count": {"type": "int"}, "name": {"type": "String"}}},
