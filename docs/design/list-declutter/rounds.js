@@ -56,6 +56,18 @@ export const rounds = [
 // overview in the preview build). The overview lists them with the rounds above, newest first; they own no views here.
 export const linked = [
   {
+    href: '../household-onboarding/join/',
+    blurb: { en: 'Five ways for an invited new user to join a household, from link to code.', de: 'Fünf Wege, wie Eingeladene einem Haushalt beitreten, vom Link bis zum Code.' },
+    date: { en: 'Nov 15', de: '15. Nov.' },
+    title: { en: 'Joining a household (JH1–JH5)', de: 'Einem Haushalt beitreten (JH1–JH5)' },
+  },
+  {
+    href: '../household-onboarding/create/',
+    blurb: { en: 'Five ways to create a household and invite someone.', de: 'Fünf Wege, einen Haushalt anzulegen und jemanden einzuladen.' },
+    date: { en: 'Nov 15', de: '15. Nov.' },
+    title: { en: 'Creating a household (CH1–CH5)', de: 'Einen Haushalt anlegen (CH1–CH5)' },
+  },
+  {
     href: '../feedback-experience/',
     blurb: { en: 'Five ways to send Peter feedback, from shake to “report this”.', de: 'Fünf Wege, Peter Feedback zu schicken, vom Schütteln bis „Melden“.' },
     date: { en: 'Nov 15', de: '15. Nov.' },

@@ -42,15 +42,15 @@ const en = await overview('');
 check(en.lang === 'en' && en.h1 === 'List screen prototypes', `overview opens in English (${en.lang}, ${en.h1})`);
 check(
   JSON.stringify(en.links.map((l) => l.text)) ===
-    JSON.stringify(['Feedback experience (FB1–FB5) Nov 15', 'Per-store subtotals (ST1–ST5) Nov 14', 'Switcher sheet + bottom area (SS/BB) Nov 13', 'List declutter round 1 (LD1–LD5) Nov 13']),
-  `overview lists the four rounds, newest first (${en.links.map((l) => l.text).join(' | ')})`,
+    JSON.stringify(['Joining a household (JH1–JH5) Nov 15', 'Creating a household (CH1–CH5) Nov 15', 'Feedback experience (FB1–FB5) Nov 15', 'Per-store subtotals (ST1–ST5) Nov 14', 'Switcher sheet + bottom area (SS/BB) Nov 13', 'List declutter round 1 (LD1–LD5) Nov 13']),
+  `overview lists the six rounds, newest first (${en.links.map((l) => l.text).join(' | ')})`,
 );
-check(en.lines.length === 4 && en.lines.every((n) => n === 1), `overview: each round's description is one line (${en.lines})`);
+check(en.lines.length === 6 && en.lines.every((n) => n === 1), `overview: each round's description is one line (${en.lines})`);
 check(en.dateBelow.every(Boolean), `overview: each date sits under its title (${en.dateBelow})`);
-check(JSON.stringify(en.links.map((l) => l.href)) === JSON.stringify(['../feedback-experience/', 'st/', 'ss-bb/', 'round1/']), `overview links (${en.links.map((l) => l.href)})`);
+check(JSON.stringify(en.links.map((l) => l.href)) === JSON.stringify(['../household-onboarding/join/', '../household-onboarding/create/', '../feedback-experience/', 'st/', 'ss-bb/', 'round1/']), `overview links (${en.links.map((l) => l.href)})`);
 await page.screenshot({ path: `${out}/overview-en.png`, fullPage: true });
 const de = await overview('?lang=de');
-check(de.lang === 'de' && de.links[0].text.startsWith('Feedback-Erlebnis') && de.links[1].text.startsWith('Summen je Laden') && de.links.every((l) => l.href.endsWith('/?lang=de')), `overview ?lang=de: German, links keep lang (${de.links.map((l) => l.href)})`);
+check(de.lang === 'de' && de.links[0].text.startsWith('Einem Haushalt beitreten') && de.links[2].text.startsWith('Feedback-Erlebnis') && de.links[3].text.startsWith('Summen je Laden') && de.links.every((l) => l.href.endsWith('/?lang=de')), `overview ?lang=de: German, links keep lang (${de.links.map((l) => l.href)})`);
 await page.screenshot({ path: `${out}/overview-de.png`, fullPage: true });
 
 // Every hash of the old shared page lands on the round that holds it, keeping the query.
