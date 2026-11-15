@@ -1059,3 +1059,7 @@ PR https://github.com/trost-systems/snacklist/pull/474. Peter found two bugs on 
 - **TestFlight.** The fix ships with the next green main build after the merge. The flag is
   `list-declutter`, with `prices-and-trip-total` for the totals. Both are on for `is_internal`
   persons only (lead, 14 Nov 23:17), so Peter's account sees the change.
+
+## Job 245: English for the beta (2026-11-14)
+
+[docs/done/245-english-beta-localization.md](docs/done/245-english-beta-localization.md): English fallback for devices in neither language, English iOS permission prompts, the Hardware store chip, the web shell's language, 55 English copy fixes, a German-literal test and the English sweep journey (27 screens, 0 German).

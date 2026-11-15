@@ -4,7 +4,7 @@ import 'dart:ui';
 import 'package:family_groceries/app/device_cache.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-/// The languages the app speaks. Anything else falls back to German.
+/// The languages the app speaks. Anything else falls back to [fallback].
 ///
 /// A new language is a value here plus its `app_<code>.arb`. [nativeName]
 /// is the language's name in itself, which the language list shows in
@@ -12,6 +12,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 enum AppLanguage(final String code, final String nativeName) {
   de('de', 'Deutsch'),
   en('en', 'English');
+
+  /// For a device that prefers none of [values]: a French or Polish phone
+  /// reads English sooner than German.
+  static const fallback = en;
 
   static AppLanguage? byCode(String? code) =>
       values.where((l) => l.code == code).firstOrNull;
@@ -28,7 +32,7 @@ class LanguageCubit(final DeviceCache _cache, super.initialState)
 }
 
 /// German or English by the device's preferred languages, in order;
-/// German when it prefers neither.
+/// [AppLanguage.fallback] when it prefers neither.
 Locale resolveLocale(List<Locale>? preferred, AppLanguage? picked) {
   if (picked != null) {
     return Locale(picked.code);
@@ -38,5 +42,5 @@ Locale resolveLocale(List<Locale>? preferred, AppLanguage? picked) {
       return Locale(language.code);
     }
   }
-  return Locale(AppLanguage.de.code);
+  return Locale(AppLanguage.fallback.code);
 }

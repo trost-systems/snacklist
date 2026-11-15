@@ -365,7 +365,7 @@ void main() {
     );
     expect(find.text('Make default'), findsOneWidget);
     expect(
-      find.text('Siri, Alexa and AI assistants use “Zuhause” now.'),
+      find.text('Siri, Alexa and AI assistants now use “Zuhause”.'),
       findsOneWidget,
     );
     expect(find.text('Peter (you)'), findsOneWidget);

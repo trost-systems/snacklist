@@ -1,0 +1,15 @@
+- button "Back"
+- heading "Planned and bought" [level=2]
+- button "Delete trip"
+- group:
+  - text: Sat, Nov 14, 23:10 to 23:10
+  - heading "Shopped for under 1 min" [level=2]
+  - text: 2 items ticked off
+  - heading "What was planned, what did you add?" [level=2]
+  - text: After every trip, Snacklist Premium shows what was on the list and what got added along the way, also by others in the household.
+  - button "Keep shopping"
+  - button "Done"
+- tablist:
+  - tab "List" [selected]
+  - tab "History"
+  - tab "More"

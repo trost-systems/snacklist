@@ -1,0 +1,7 @@
+- button "Back"
+- heading "Snacklist Premium" [level=2]
+- group: Snacklist Premium covers your whole household, including everyone who joins later. Connect AI assistants that support MCP to your list
+- tablist:
+  - tab "List"
+  - tab "History"
+  - tab "More" [selected]

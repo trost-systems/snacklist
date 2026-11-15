@@ -14,7 +14,7 @@ Mehr → „Feedback senden“ opens a sheet for a free-text note to Peter. The 
 - `fb-fail` „Nicht gesendet. Prüfe die Verbindung und versuch es noch einmal.“ with the note kept and „Erneut senden“; a retry of an unchanged note stores one row, an edited note counts as a new one (editing clears the error and the button reads „Senden“ again).
 - `fb-draft` an unsent note survives closing the sheet; a sent note, or another account signing in, starts blank.
 
-EN labels: "Send feedback", "Close", "Your message", "What did you notice?", "Kind (optional)", "Bug", "Idea", "Other", "Peter may contact me about this", "Sent along: App version, device, language and current screen. No list items.", "{count} / 2000", "{max} characters at most" ("2000 characters at most"), "Send", "Sending …", "Thanks!", "Not sent. Check your connection and try again.", "Retry".
+EN labels: "Send feedback", "Close", "Your message", "What did you notice?", "Type (optional)", "Bug", "Idea", "Other", "Peter may contact me about this", "Included: App version, device, language and current screen. No list items.", "{count} / 2000", "Up to {max} characters" ("Up to 2000 characters"), "Send", "Sending…", "Thanks!", "Not sent. Check your connection and try again.", "Retry".
 
 ## How to get to it (user POV)
 

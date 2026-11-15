@@ -259,7 +259,9 @@ void main() {
         locale: const Locale('en'),
       );
       expect(
-        find.text('Request sent: an admin of “Sommerfest” will let you in.'),
+        find.text(
+          'Request sent. An admin of “Sommerfest” needs to approve it.',
+        ),
         findsOneWidget,
       );
       expect(find.text('Withdraw request'), findsOneWidget);

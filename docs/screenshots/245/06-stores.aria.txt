@@ -1,0 +1,11 @@
+- button "Back"
+- heading "Stores" [level=2]
+- group:
+  - text: No stores yet. Add one and the list sorts your items in the order you walk through it.
+  - button "No store"
+  - text: Categories for items without a store
+- button "Add store"
+- tablist:
+  - tab "List" [selected]
+  - tab "History"
+  - tab "More"

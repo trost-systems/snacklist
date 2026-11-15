@@ -1217,6 +1217,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get storeAddOwn => 'Eigenen Laden hinzufügen';
 
   @override
+  String get storeHardware => 'Baumarkt';
+
+  @override
   String get storesDisclaimer =>
       'Ladennamen wie dm, Lidl oder EDEKA verwenden wir nur, damit du erkennst, für welchen Laden eine Liste gedacht ist. Die Namen und Marken gehören den jeweiligen Unternehmen. Snacklist ist ein unabhängiges Angebot und steht in keiner Verbindung zu diesen Unternehmen. Sie unterstützen oder empfehlen Snacklist nicht.';
 

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:family_groceries/household/household_kind.dart';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/popular_stores.dart';
+import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/onboarding/draft.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -269,7 +270,9 @@ void main() {
         location: '/start/stores',
         draft: const OnboardingDraft(step: OnboardingStep.stores),
       );
-      for (final store in popularStores) {
+      for (final store in popularStores(
+        lookupAppLocalizations(const Locale('de')),
+      )) {
         expect(chipSelected(tester, 'onboarding-store-$store'), isFalse);
       }
       expect(key('stores-disclaimer'), findsOneWidget);
@@ -725,13 +728,27 @@ void main() {
         locale: const Locale('en'),
       );
       expect(find.text('Get started'), findsOneWidget);
-      expect(find.text('Already have an account? Log in'), findsOneWidget);
+      expect(find.text('Already have an account? Sign in'), findsOneWidget);
       await tapKey(tester, 'start-go');
       expect(find.text('Who do you shop with?'), findsOneWidget);
       await tapKey(tester, 'onboarding-kind-club');
       await tapKey(tester, 'onboarding-next');
       expect(find.widgetWithText(TextField, 'Our club'), findsOneWidget);
       expect(location(o), '/start/name');
+    });
+
+    testWidgets('the hardware store chip is in English and picks that name', (
+      tester,
+    ) async {
+      final o = await pumpOnboarding(
+        tester,
+        location: '/start/stores',
+        draft: const OnboardingDraft(step: OnboardingStep.stores),
+        locale: const Locale('en'),
+      );
+      expect(key('onboarding-store-Baumarkt'), findsNothing);
+      await tapKey(tester, 'onboarding-store-Hardware store');
+      expect(o.onboarding.state?.stores, ['Hardware store']);
     });
   });
 }

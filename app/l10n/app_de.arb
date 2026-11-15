@@ -502,6 +502,8 @@
   "@onboardingStoresHint": {"description": "onboarding: hint above the store choices"},
   "storeAddOwn": "Eigenen Laden hinzufügen",
   "@storeAddOwn": {"description": "onboarding: the row that opens a field for a store not in the list"},
+  "storeHardware": "Baumarkt",
+  "@storeHardware": {"description": "The hardware store offered as a store to pick (onboarding, new household). Not a chain: the name the store gets."},
   "storesDisclaimer": "Ladennamen wie dm, Lidl oder EDEKA verwenden wir nur, damit du erkennst, für welchen Laden eine Liste gedacht ist. Die Namen und Marken gehören den jeweiligen Unternehmen. Snacklist ist ein unabhängiges Angebot und steht in keiner Verbindung zu diesen Unternehmen. Sie unterstützen oder empfehlen Snacklist nicht.",
   "@storesDisclaimer": {"description": "Legal Review L-7 (N-23), approved by Peter 2026-11-01 (L1): character for character; the onboarding store step (job 78: no longer on the stores screen)"},
   "skipStores": "Überspringen",

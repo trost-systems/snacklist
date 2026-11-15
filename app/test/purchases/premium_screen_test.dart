@@ -676,7 +676,7 @@ void main() {
     await tester.tap(key('premium-buy-lifetime'));
     store.held.single.complete(const Bought());
     await tester.pump();
-    expect(find.text('Unlocking …'), findsOneWidget);
+    expect(find.text('Unlocking…'), findsOneWidget);
     await tester.pump(unlockWait);
     expect(find.textContaining('takes longer than usual'), findsOneWidget);
     expect(

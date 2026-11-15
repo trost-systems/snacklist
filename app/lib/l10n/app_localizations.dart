@@ -2042,6 +2042,12 @@ abstract class AppLocalizations {
   /// **'Eigenen Laden hinzufügen'**
   String get storeAddOwn;
 
+  /// The hardware store offered as a store to pick (onboarding, new household). Not a chain: the name the store gets.
+  ///
+  /// In de, this message translates to:
+  /// **'Baumarkt'**
+  String get storeHardware;
+
   /// Legal Review L-7 (N-23), approved by Peter 2026-11-01 (L1): character for character; the onboarding store step (job 78: no longer on the stores screen)
   ///
   /// In de, this message translates to:

@@ -1,0 +1,22 @@
+- button "Back"
+- heading "Step 4 of 7" [level=2]
+- button "Leave setup"
+- group:
+  - heading "Where do you shop?" [level=2]
+  - text: Pick the stores you shop at. Your list shows them in this order.
+  - checkbox "EDEKA"
+  - checkbox "REWE" [checked]
+  - checkbox "Lidl"
+  - checkbox "Aldi Süd"
+  - checkbox "Aldi Nord"
+  - checkbox "Kaufland"
+  - checkbox "Netto"
+  - checkbox "Penny"
+  - checkbox "dm" [checked]
+  - checkbox "Rossmann"
+  - checkbox "Hardware store"
+  - button "Add your own store"
+  - text: We use shop names such as dm, Lidl or EDEKA only so you can see which shop a list is for. The names and trade marks belong to their owners. Snacklist is independent and isn't affiliated with, sponsored or endorsed by these companies.
+  - button "Continue"
+  - button "Skip"
+  - text: Start without stores. You can add them later under List → Edit.

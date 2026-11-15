@@ -1,0 +1,12 @@
+- group "Add":
+  - 'button "Store: automatic"'
+  - 'button "Category: automatic, Other"'
+  - button "Close"
+  - group:
+    - button "Chee, As typed"
+    - button "Cheddar, From the catalog"
+    - button "Cherrytomate, From the catalog"
+- text: Shopping total €0.00, 0 priced, 15 open
+- textbox "What do you need?": Chee
+- button "Clear"
+- text: Tap to add · ↵ takes the first suggestion

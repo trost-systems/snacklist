@@ -1,0 +1,28 @@
+- button "Back"
+- heading "Step 5 of 7" [level=2]
+- button "Leave setup"
+- group:
+  - heading "What do you need right now?" [level=2]
+  - text: Tap what should go on the list, or type it below.
+  - checkbox "Milk" [checked]
+  - checkbox "Bread"
+  - checkbox "Eggs" [checked]
+  - checkbox "Butter"
+  - checkbox "Cheese"
+  - checkbox "Bananas"
+  - checkbox "Apples"
+  - checkbox "Tomatoes"
+  - checkbox "Pasta"
+  - checkbox "Coffee"
+  - checkbox "Yogurt"
+  - checkbox "Toilet paper"
+  - textbox "Anything else? e.g. 2 cucumbers"
+  - button "Add"
+  - text: On your list (3)
+  - checkbox "Milk":
+    - button "Remove Milk"
+  - checkbox "Eggs":
+    - button "Remove Eggs"
+  - checkbox "2 cucumbers":
+    - button "Remove 2 cucumbers"
+  - button "Continue with 3 items"
