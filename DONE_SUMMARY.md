@@ -1278,3 +1278,36 @@ PR https://github.com/trost-systems/snacklist/pull/490. Review 0 of job 222 (the
 - **Nice-to-haves left.** The probe harness in the repo (1), a state table for `SessionCubit`'s start (2) and a short top section for the done doc (4). Each is its own change to code or to a long record and none is needed for the fix. They are in the ops `NEEDS_LEAD.md` ("Job 222 review 0").
 - **In-job review.** Round 1 (a fresh subagent, read-only) recomputed every number from the evidence files (the two JSON reports, review 0, the CI log) and found them true, and asked for three sentences of these records to be bounded to their evidence: FIX. Round 2 (another fresh one) confirmed the rewording: PASS, no must-fix. Both ran on `claude-fable-5-2`.
 - **The land's CI run** goes into the job's DONE_SUMMARY copy in the ops folder after the land: this file is part of the commit it tests.
+
+## Job 253: public API hardening, checks before locks (2026-11-15)
+
+- **What refuses someone outside a household now comes before the call's first lock** on what
+  is the household's. 13 functions the app's roles may call, and joining by a code, read whether
+  the caller may ask before they take a row or an advisory lock, and check again under the lock
+  where they go on. Migration `20261115130000_checks_before_locks.sql` (`create or replace`,
+  and one new function the API roles cannot call); the deploy is the migration alone. Error
+  codes, messages and answers are unchanged, and so is the app.
+- **The functions.** `set_member_role`, `leave_household` (through `leave_household_as`),
+  `remove_member`, `claim_item`, `merge_items`, `unmerge_items`, `revoke_invite`, `delete_trip`,
+  `delete_trip_session`, `mark_trip_line_planned`, `save_trip`, `save_trip_session` and
+  `lock_household_items`, which the app's role now takes only as a member of the household.
+  Joining: `claim_invite` answers a decline within the day, the household cap and a request
+  that is open already before the household's row lock (`accept_invite`, `join_household`).
+  The last one waits on the asker's own memberships lock for an admin's decision in flight, so
+  a second tap during an approval still answers `member`.
+- **Tests, all in the db gate.** `supabase/tests/refusals_take_no_locks.test.sql` (51 tests, by
+  the rows' `xmax`); two more tests in `_shared/key_checks_integration_test.ts` (10); the sweep
+  `_shared/outsiders_integration_test.ts`: every function and table the API roles reach, called
+  from outside a household whose rows and advisory locks are all held (about 124 000 calls,
+  about 40 seconds); and `_shared/checks_under_lock_integration_test.ts` (27 cases): a call
+  that waits for the lock while what its first check saw is taken away ends as it would have
+  after the change.
+- **Measured on the local stack.** The db gate passes: 64 pgTAP files with 2930 tests, 153
+  integration tests. 46 mutants (each of the 13 functions as on main, 24 smaller changes in
+  them, 9 in `claim_invite`) each fail at least one of the four tests. Joining answers and
+  leaves the same as on main in 2160 scenarios. Mutants and scenarios are run by hand, ops
+  side.
+- **Docs.** `docs/DECISIONS.md` "Job 253" (with "Not pinned by a test").
+- **Not done.** `app_switches.public_api`, `integration_lock` and the PostHog flag are
+  untouched. The report and the verdict are on the ops side (NEEDS_LEAD "Job 241: public API
+  review ready").

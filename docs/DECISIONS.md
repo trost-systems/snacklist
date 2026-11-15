@@ -14223,3 +14223,149 @@ PM calls: Play voice caption „Per Sprachbefehl auf die Liste.“, assist headl
   e2e; only the rows are hidden.
 - **Hints.** The invite hint and checklist step open the sheet's invite page from the list
   tab with the flag on. From the Tipps page (no list scope there) they go to the list tab.
+
+## Job 253: checks before locks, 2026-11-15
+
+- **The rule.** What refuses someone outside a household comes before the call's first lock on
+  what is the household's. A function that takes a row or an advisory lock of a household first
+  reads whether the caller may ask, and ends there if not. `remove_member` already worked this
+  way for the caller's own role (job 169). Migration `20261115130000_checks_before_locks.sql`,
+  `create or replace` only: 13 functions and joining by a code. This deploy is the migration
+  alone.
+- **Why.** The key check and the Premium gate ask for the household's row without waiting (job
+  241 review 1), and that entry names who holds the row: the household's own changes. A call
+  that is refused anyway has no reason to hold it, or any other row the household's members
+  wait for.
+- **The check runs twice.** Without the lock it is a first answer. The functions that go on
+  check again once they hold the row, as before: a role can change between the two.
+  `set_member_role`, `remove_member`, `unmerge_items`, `revoke_invite`, `delete_trip`,
+  `delete_trip_session`, `mark_trip_line_planned` and `claim_invite` run their checks in two
+  rounds, the second one locked. `leave_household_as`, `claim_item`, `merge_items`, `save_trip`
+  and `save_trip_session` read first and then run the locked code they had.
+- **A plain member and an admin are refused before the lock too.** `set_member_role` is the
+  owner's, `remove_member` an admin's, a group invite is an admin's to revoke. The target's
+  checks (not a member, the owner, another admin, oneself) moved in front of the lock as well,
+  so a role change that cannot happen holds nothing.
+- **A member can still be told no under a lock.** `mark_trip_line_planned` answers
+  `premium_required` with the trip's row held, `save_trip` answers `store_not_found`,
+  `day_in_future` and `no_items` with it held, and `save_trip` and `save_trip_session` take the
+  caller's own memberships lock before `not_a_member`. Read from the functions, not measured.
+  These are the household's own calls on its own rows, or the caller's own lock.
+- **`lock_household_items` is for members.** The lock that puts a household's adds in a row is
+  granted to the app's role, since the items triggers run as the writer. Called by that role, it
+  now takes the lock only for a member of the household. The other roles (the functions, the
+  migrations) take it as before. Someone outside the household is refused all the same, and no
+  longer waits: an insert by `items_before_write`, before this trigger; an update that moves an
+  own item in, and a call without a user, by the row policies after it. One write now goes
+  without the lock: that of a member who is removed between the statement's snapshot and the
+  trigger. It ends as on main, where it waited and then went through as well, since the
+  duplicate check reads under the row policies and a removed member sees no rows (the reviewer
+  measured both).
+- **Joining by a code.** `claim_invite` took the household's row `for share` and the guest's
+  memberships lock, and then answered a decline within the day, the household cap, or a request
+  that was open already. These three are now answered before the lock. A first request and a join
+  write to the household and take it as before. A request that is open already is answered under
+  the asker's own memberships lock, the only lock that answer takes: an admin who decides the
+  request right now holds it, so a second tap waits for the decision and answers `member` or
+  `declined_recently`, as on main. The first version of this change answered without it and said
+  `requested` next to an approval; the gate's older test for that tap caught it. The cap is
+  `refuse_household_over_cap`'s question, asked when the request or the membership goes in; to
+  answer it earlier the function asks it itself, and for that has to know whether the join adds a
+  household or replaces the default one (which leaves that one first and has room). Hence a
+  second form, `claim_invite(text, boolean)`, not callable by the API roles, which both
+  `accept_invite` forms call. The one-argument form stays, as the replacing join: nothing calls
+  it any more and the API roles may not, but a dropped function is a compat finding. Under the
+  lock the trigger still asks. Answers and rows are main's in 2160 scenarios (below).
+- **The answers stay.** Every refusal keeps its error code and message. Where two refusals
+  apply to one call, their order is the one the function had.
+- **Looked at, not changed.** `cancel_join_request` and `unarchive_household` lock rows they
+  select by the caller's own id. `decide_join_request`, `create_invite` and `create_list` check
+  first. `decide_join_request` then takes the guest's memberships lock with the household's row
+  held `for share`, so it waits for a call of that guest's own, for as long as that one call
+  takes; the key check does not wait for a share lock (the reviewer measured it). The tables
+  the sweep holds no row of (below) are written by three functions the API roles may call, each
+  under the caller's own id (read from their sources).
+- **Tests, four kinds.**
+  - `supabase/tests/refusals_take_no_locks.test.sql`, 51 tests. A row lock leaves its
+    transaction's id in the row's `xmax`, also when the call failed. Each call runs in its own
+    subtransaction, and each group ends with the call that does lock, which moves the mark.
+    Unmoved: the household's row after the refusals of `set_member_role`, `leave_household` and
+    `remove_member` for an outsider, a plain member and an admin, and after what the owner asks
+    for and cannot have; an invite's row after `revoke_invite` from outside and from a plain
+    member; the household's row after a join that is declined, capped or asked a second time;
+    an item's row after an outsider's `claim_item`. `lock_household_items` takes no lock for an
+    outsider and takes it for a member and for the server's roles. At the cap, a join that
+    replaces the default household still goes through.
+  - `_shared/key_checks_integration_test.ts`, two more tests (10). With the rows of both
+    households held on a side connection, ten calls from outside and from a plain member are
+    answered within a second. And while four connections ask for a household's roles and to
+    leave it from outside, the key checks of that household all end `ok`: at least 400 of them,
+    and as many more as it takes until 400 of those calls have ended, so the test does not
+    depend on the machine's speed.
+  - `_shared/outsiders_integration_test.ts`, the sweep. It fills two households until each of
+    their tables holds a row, and holds every row that names an id of the first one and every
+    advisory lock on those ids on a side connection. Then it calls every function the API roles
+    may execute and writes to every table they may write, as the second one's owner and signed
+    out, with the ids of both households, the words the functions take and the first one's
+    invite code in every argument position (about 124 000 calls on this schema, about 40
+    seconds in the db gate). No call may ask for a held lock, except the three that take the
+    invite code, and those only with it. A new function is swept without a line in the test.
+    The test fails by name on what it could not see: a table that references households
+    without a row in the fixture, a table without a held row that is not on its list (29 today,
+    none of them writable by the API roles), an advisory lock written another way than
+    `hashtext('name:' || id::text)` or `hashtextextended` of the same with seed 0, a call that
+    is none (no such function, a wrong type), and a function every call of which ends on its
+    arguments (one today, `assert_category_permutation`, which reads only).
+  - `_shared/checks_under_lock_integration_test.ts`, 27 cases. A side connection holds the
+    lock a call waits for. Once `pg_stat_activity` shows the call waiting, so without timing,
+    it takes away what the first check saw (the caller's or the other one's membership, the
+    caller's or the other one's role, the household's open door, the guest's standing, the
+    request that was open, being the household's last member) and commits. The call then ends
+    as it would have after the change, and a refused call leaves the rows as they were. The 12
+    functions that check again (`lock_household_items` asks once) and the join. `remove_member`
+    has a case for each of its role answers under the locks: the other one is an admin now, is
+    the owner now, the caller is a plain member now. The last member's leave next to a join
+    keeps the household, which is `leave_household_as`'s lock on the household's row, main's
+    and kept.
+- **Joining answers as on main.** `scenarios.sql` on the ops side builds 2160 cases (the
+  household asks or not, nine kinds of invite, twenty kinds of guest, six calls), makes the call
+  and reads the answer and what it left: memberships, requests, the invite's uses, removals,
+  attempts. Main's functions and these give the same 2160 lines. Run by hand, not in a gate;
+  the older pgTAP files for invites and approval are the gate's part of it. The table makes one
+  call at a time, so it does not see what a call answers while another one decides: that is
+  the cases under the lock and the older tests of two calls at once
+  (`_shared/households_integration_test.ts`).
+- **Mutants.** 46 changed bodies were run against these four tests on the local stack, and
+  each fails at least one. Each of the 13 functions put back to main's body fails the sweep,
+  which names it. 20 smaller ones in the 13 (a check dropped before or under the lock, one of
+  two rows not looked at, the locks in the other order) and 9 in `claim_invite` (an answer
+  moved back under the lock, a check dropped under it, the repeated request answered without
+  the asker's lock) fail the pgTAP file, the sweep, the key checks or the cases under the
+  lock. One survived its first run: `unmerge_items` without the check under the lock, which
+  matters for a merge that is undone already (nothing is written, the item rows are returned).
+  It has its case now. The second in-house review ran 37 of its own, and four that passed
+  have their cases now: `remove_member` with one of its three role answers asked before the
+  locks only, and `leave_household_as` without its lock on the household's row. Its other
+  survivors are under "Not pinned" or change nothing a caller can reach. Run by hand; lists
+  and logs are on the ops side.
+- **Not pinned by a test:** the hosted database and its pooler; that sign-in, refresh, asking
+  for a recovery mail and asking for an e-mail change in GoTrue answer while the user's row is
+  held `for key share`, the lock `purchase_take_call`, `alexa_take_adds` and `alexa_remember`
+  ask for without waiting (measured once on the local stack, by hand; using the recovery mail's
+  link and confirming a new e-mail address were not run);
+  `other_household` under the lock in `save_trip` and `save_trip_session`, which only answers
+  when another household saves a trip under the very id the caller sends in the same moment (the
+  answer before the lock is tested); that a household's own role change or leave holds the row
+  "for a few milliseconds" and that "the retry is answered" (job 241's text, read from the code:
+  one short transaction each); a caller who passes the check and then is slow; the member's
+  refusals under a lock named above. The sweep's limits: it passes ids, a fixed set of words and
+  one invite code, so a function that reaches a lock only with another text, while its other
+  calls end elsewhere, is not seen; and a function that locks a row of one of the 29 unheld
+  tables by an id the caller passes is not seen either.
+- **Decided without asking.** The brief named two functions. The sweep named 13, the in-house
+  review the join, and all are changed here: one rule is easier to keep than a list of
+  exceptions, and the sweep can only stay in the gate if it passes. The owner's own role
+  changes still hold their household's row for the length of the change; that is the
+  household's own doing and stays as job 241 wrote it.
+- **Not done here.** `app_switches.public_api`, `integration_lock` and the PostHog flag stay
+  untouched. They wait for this migration to be live.
