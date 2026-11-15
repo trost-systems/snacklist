@@ -49,6 +49,6 @@ const sampleContext = FeedbackContext(
   platform: 'android',
   osVersion: 'Android 14 (SDK 34)',
   locale: 'de',
-  screen: 'list',
+  entryPoint: FeedbackEntryPoint.settings,
   isInternal: false,
 );

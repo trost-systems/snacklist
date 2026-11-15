@@ -3,6 +3,14 @@ import 'package:family_groceries/analytics/setup.dart';
 import 'package:flutter/foundation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+/// Where the form was opened from. [settings] is More's row, which attaches
+/// no screen name (job 259). [shake] is for the shake entry (job 138): it
+/// attaches the live screen and says so in the form.
+enum FeedbackEntryPoint() {
+  settings,
+  shake,
+}
+
 /// What a note carries besides the text (docs/FEEDBACK.md): enough to
 /// reproduce a problem, nothing from the list. Each field fits the
 /// database's check on `public.feedback`.
@@ -24,8 +32,8 @@ class const FeedbackContext({
   /// The app's language: `de` or `en`.
   required final String locale,
 
-  /// A name from `screenNames`.
-  required final String screen,
+  /// Where the form was opened from.
+  required final FeedbackEntryPoint entryPoint,
 
   /// The analytics rules (internal.dart); the database adds test accounts.
   required final bool isInternal,
@@ -34,6 +42,10 @@ class const FeedbackContext({
   /// keeps it if the sender is a member, else files the note under their
   /// default household.
   final String? householdId,
+
+  /// A name from `screenNames`; null when the entry point attaches none
+  /// (More's row: the form is not about any screen, job 259).
+  final String? screen,
 });
 
 /// The build and device facts of [FeedbackContext], read once.

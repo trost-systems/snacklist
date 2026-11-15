@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:family_groceries/app/language.dart';
 import 'package:family_groceries/design/hex_checkbox.dart';
+import 'package:family_groceries/feedback/feedback_context.dart';
 import 'package:family_groceries/feedback/feedback_repository.dart';
+import 'package:family_groceries/feedback/feedback_sheet.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -65,11 +67,11 @@ void main() {
     }
     expect(
       find.textContaining(
-        'App-Version, Gerät, Sprache und aktueller Bildschirm. '
-        'Keine Listeneinträge.',
+        'App-Version, Gerät und Sprache. Keine Listeneinträge.',
       ),
       findsOneWidget,
     );
+    expect(find.textContaining('Bildschirm'), findsNothing);
     expect(enabled(tester, 'feedback-send'), isFalse, reason: 'nothing typed');
     final contact = tester.widget<HexCheckboxListTile>(key('feedback-contact'));
     expect(contact.value, isFalse, reason: 'off by default');
@@ -98,11 +100,10 @@ void main() {
       expect(find.text(text), findsWidgets, reason: text);
     }
     expect(
-      find.textContaining(
-        'App version, device, language and current screen. No list items.',
-      ),
+      find.textContaining('App version, device and language. No list items.'),
       findsOneWidget,
     );
+    expect(find.textContaining('screen'), findsNothing);
     more.feedback.failNext = 1;
     await tester.enterText(key('feedback-message'), 'Offline note');
     await tester.pump();
@@ -137,10 +138,33 @@ void main() {
         context.platform,
         context.osVersion,
         context.locale,
-        context.screen,
       ],
-      ['1.2.3', '45', 'android', 'Android 14 (SDK 34)', 'de', 'list'],
+      ['1.2.3', '45', 'android', 'Android 14 (SDK 34)', 'de'],
     );
+    expect(context.entryPoint, FeedbackEntryPoint.settings);
+    expect(context.screen, isNull, reason: 'More attaches no screen');
+  });
+
+  testWidgets('the shake entry names the live screen and sends it', (
+    tester,
+  ) async {
+    final more = await pumpMore(tester, language: AppLanguage.en);
+    more.screens.visit(Uri.parse('/'));
+    final context = tester.element(key('more-screen'));
+    unawaited(showFeedbackSheet(context, entryPoint: FeedbackEntryPoint.shake));
+    await tester.pumpAndSettle();
+    expect(
+      find.textContaining(
+        'App version, device, language and current screen. No list items.',
+      ),
+      findsOneWidget,
+    );
+    await tester.enterText(key('feedback-message'), 'Geschüttelt');
+    await tester.pump();
+    await tapKey(tester, 'feedback-send');
+    final sentContext = more.feedback.rows.values.single.context;
+    expect(sentContext.entryPoint, FeedbackEntryPoint.shake);
+    expect(sentContext.screen, 'list');
   });
 
   testWidgets('category and contact go along', (tester) async {

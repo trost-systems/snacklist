@@ -68,7 +68,6 @@ void main() {
       'platform': 'android',
       'os_version': 'Android 14 (SDK 34)',
       'locale': 'de',
-      'screen': 'list',
       'is_internal': false,
     });
   });
@@ -86,7 +85,7 @@ void main() {
           platform: 'android',
           osVersion: 'Android 14 (SDK 34)',
           locale: 'de',
-          screen: 'list',
+          entryPoint: FeedbackEntryPoint.settings,
           isInternal: false,
           householdId: 'club',
         ),

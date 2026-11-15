@@ -123,8 +123,8 @@ class FeedbackCubit(
     if (_tracked.add(id)) {
       analytics?.track('feedback_submitted', {
         'category': sending.category?.name ?? 'none',
-        'entry_point': FeedbackEntryPoint.settings.name,
-        'screen': context.screen,
+        'entry_point': context.entryPoint.name,
+        'screen': ?context.screen,
         'contact_ok': sending.contactOk,
       });
     }
@@ -157,10 +157,4 @@ class FeedbackCubit(
     _id = _newId();
     emit(const FeedbackState());
   }
-}
-
-/// Where the form was opened from. Only More's row exists (Peter,
-/// 2026-10-27: no shake); the property keeps the room for more.
-enum FeedbackEntryPoint() {
-  settings,
 }

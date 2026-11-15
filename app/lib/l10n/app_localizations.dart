@@ -1955,8 +1955,14 @@ abstract class AppLocalizations {
   /// Feedback form: what is sent along with the note
   ///
   /// In de, this message translates to:
-  /// **'App-Version, Gerät, Sprache und aktueller Bildschirm. Keine Listeneinträge.'**
+  /// **'App-Version, Gerät und Sprache. Keine Listeneinträge.'**
   String get feedbackAttached;
+
+  /// Feedback form opened by shaking the phone: what is sent along, including the screen's name
+  ///
+  /// In de, this message translates to:
+  /// **'App-Version, Gerät, Sprache und aktueller Bildschirm. Keine Listeneinträge.'**
+  String get feedbackAttachedWithScreen;
 
   /// Feedback form: before the attached line
   ///

@@ -29,7 +29,7 @@ const thanks = (page: Page, text = 'Danke!') =>
   page.locator('[id^="flt-semantic-node-"]').getByText(text, { exact: true }).first();
 const failedText = 'Nicht gesendet. Prüfe die Verbindung und versuch es noch einmal.';
 
-type Row = Record<string, unknown> & { message: string; screen: string; household_id: string | null };
+type Row = Record<string, unknown> & { message: string; screen: string | null; household_id: string | null };
 
 async function userIdOf(email: string): Promise<string> {
   const { data, error } = await (await apiAs(email)).auth.getUser();
@@ -55,7 +55,7 @@ async function openFeedback(page: Page, row = 'Feedback senden', more = 'Mehr', 
   await expect(page.getByRole('group', { name: row, exact: true })).toBeVisible();
 }
 
-test('a note from More after the list: one row, screen list, the context, no list data (AC1-3, 6, 8, 9, 11)', async ({ browser }) => {
+test('a note from More after the list: one row, no screen, the context, no list data (AC1-3, 6, 8, 9, 11)', async ({ browser }) => {
   const context = await browser.newContext({ viewport: phone });
   const collector = await fakeCollector(context);
   const page = await context.newPage();
@@ -67,7 +67,7 @@ test('a note from More after the list: one row, screen list, the context, no lis
   await addItem(page, 'Geheimzutat Kardamom');
 
   await openFeedback(page, 'Feedback senden', 'Mehr', 'job21-more-entry-de');
-  await expect(page.getByText('App-Version, Gerät, Sprache und aktueller Bildschirm. Keine Listeneinträge.', { exact: false }))
+  await expect(page.getByText('App-Version, Gerät und Sprache. Keine Listeneinträge.', { exact: false }))
     .toBeVisible();
   await expect(sendButton(page)).toBeDisabled();
   await screenshot(page, 'job21-form-empty-de');
@@ -94,7 +94,7 @@ test('a note from More after the list: one row, screen list, the context, no lis
     contact_ok: false,
     platform: 'web',
     locale: 'de',
-    screen: 'list',
+    screen: null,
     // AC11: an @example.test account is a test account.
     is_internal: true,
   });
@@ -143,7 +143,6 @@ test('with analytics consent: one feedback_submitted, without the text (AC8)', a
   expect(event.properties).toMatchObject({
     category: 'idea',
     entry_point: 'settings',
-    screen: 'list',
     contact_ok: true,
     is_internal: true,
   });
@@ -292,7 +291,7 @@ test.describe('in English', () => {
       await expect(page.getByRole('checkbox', { name: text, exact: true })).toBeVisible();
     }
     await expect(page.getByRole('checkbox', { name: 'Peter may contact me about this' })).toBeVisible();
-    await expect(page.getByText('App version, device, language and current screen. No list items.', { exact: false }))
+    await expect(page.getByText('App version, device and language. No list items.', { exact: false }))
       .toBeVisible();
     await typeInto(messageField(page, 'Your message'), 'The list jumps when I tick an item.');
     await screenshot(page, 'job21-form-filled-en');
@@ -306,12 +305,12 @@ test.describe('in English', () => {
     await screenshot(page, 'job21-thanks-en');
     const userId = await userIdOf(email);
     await expect.poll(async () => (await rowsOf(userId)).length).toBe(1);
-    expect((await rowsOf(userId))[0]).toMatchObject({ locale: 'en', screen: 'list' });
+    expect((await rowsOf(userId))[0]).toMatchObject({ locale: 'en', screen: null });
     await context.close();
   });
 });
 
-test('wide: feedback beside an open More page names that page (1366x1024)', async ({ browser }) => {
+test('wide: feedback beside an open More page sends no screen (1366x1024)', async ({ browser }) => {
   const context = await browser.newContext({ viewport: { width: 1366, height: 1024 } });
   const page = await context.newPage();
   const email = newEmail('feedback-wide');
@@ -329,6 +328,6 @@ test('wide: feedback beside an open More page names that page (1366x1024)', asyn
   await expect(thanks(page)).toBeVisible();
   const userId = await userIdOf(email);
   await expect.poll(async () => (await rowsOf(userId)).length).toBe(1);
-  expect(firstOf(await rowsOf(userId), 'feedback row').screen).toBe('account');
+  expect(firstOf(await rowsOf(userId), 'feedback row').screen).toBeNull();
   await context.close();
 });

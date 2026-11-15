@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:family_groceries/analytics/analytics.dart';
+import 'package:family_groceries/feedback/feedback_context.dart';
 import 'package:family_groceries/feedback/feedback_cubit.dart';
 import 'package:family_groceries/feedback/feedback_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -188,12 +189,33 @@ void main() {
     final properties = events.single['properties']! as Map<String, Object?>;
     expect(properties['category'], 'idea');
     expect(properties['entry_point'], 'settings');
-    expect(properties['screen'], 'list');
+    expect(properties, isNot(contains('screen')));
     expect(properties['contact_ok'], true);
     expect(
       '${events.single}',
       allOf(isNot(contains('Geheimer')), isNot(contains('Hafermilch'))),
     );
+  });
+
+  test('a shake note: entry point shake and its screen in the event', () async {
+    await start();
+    cubit.edit('Wackel');
+    await cubit.send(
+      const FeedbackContext(
+        appVersion: '1.2.3',
+        build: '45',
+        platform: 'android',
+        osVersion: 'Android 14 (SDK 34)',
+        locale: 'de',
+        entryPoint: FeedbackEntryPoint.shake,
+        screen: 'list',
+        isInternal: false,
+      ),
+    );
+    final properties =
+        (await sent()).single['properties']! as Map<String, Object?>;
+    expect(properties['entry_point'], 'shake');
+    expect(properties['screen'], 'list');
   });
 
   test('no category is "none"; a picked one can be unpicked', () async {
