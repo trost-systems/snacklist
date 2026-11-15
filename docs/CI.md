@@ -533,33 +533,44 @@ on the runner, and on a slow runner nearly every test is 1.3-1.5× slower.
 The e2e jobs' running time (the queue not counted), full suite of 271 tests.
 Before: `scripts/ci-timings.sh --limit 12 --branch main --steps e2e` over
 the 12 latest green `main` runs on 14 November (12:07 to 17:53 UTC), median
-and range. After: two runs of the commit that introduced four shards, one
-from CI and one from `scripts/ci-e2e.sh`.
+and range. After: five runs with four shards. Two of the commit that
+introduced them (one from CI, one from `scripts/ci-e2e.sh`), two more CI
+runs of that PR on its way to `main`, and the CI run of #470, which has no
+ios job.
 
 | e2e | n | Slowest shard's job | Its gate step | All shards, runner time |
 | --- | --- | --- | --- | --- |
 | Two shards | 12 | 19:53 (18:19-24:24) | 17:51 | 37:12 (the two medians) |
 | Four shards, CI run 43632050929 | 1 | 14:55 | 13:10 | 46:28 |
 | Four shards, on-demand run 43640061280 | 1 | 12:33 | 10:58 | 44:01 |
+| Four shards, CI run 43664324552 | 1 | 14:25 | 12:29 | 47:16 |
+| Four shards, CI run 43667672579 | 1 | 11:35 | 9:24 | 41:59 |
+| Four shards, CI run 43669960494 (#470) | 1 | 12:51 | 11:11 | 44:17 |
 
-No test failed or was retried in either run of four. Playwright's `--shard`
+No test failed or was retried in any of the five runs. Playwright's `--shard`
 gives each shard 67 tests in file order (the 3 integration-lock tests run
 after shard 1's), not equal time: the shards' Playwright time was 6:23, 5:19,
 7:43 and 11:10 in the first run and 6:36, 4:39, 9:05 and 8:04 in the second.
-One shard's time moved by 3 minutes between the two runs: in the first,
+One shard's time moved by 3 minutes between those two runs: in the first,
 shard 4's tests took 24 % longer than the same tests' medians in five `main`
 runs (one observation; the cause was not traced).
 
 What a PR waits for since then:
 
 - A change that runs e2e without the native gates waits for the slowest e2e
-  shard. Its job ran 12:33 and 14:55 so far, against 19:53 in the median
-  before (18:19-24:24). By the filter's rule (`scripts/ci-changes.sh` of
+  shard. Its job ran 11:35 to 14:55 in the five runs, against 19:53 in the
+  median before (18:19-24:24). #470 is the one such PR that ran both ways:
+  `ci-ok` came 13:49 after the run's creation with four shards (run
+  43669960494) and 21:24 with two (run 43645275754), one run each. By the
+  filter's rule (`scripts/ci-changes.sh` of
   14 November, applied to each PR's full file list) that is 74 of the 136
   PRs merged from 7 November to 14 November 19:13 UTC; 30 more changed
   only documentation and run no e2e.
 - A change that runs the native gates (the other 32: 14 for `app/ios/`,
   `app/android/`, the pubspec or the two gates' scripts, 18 for the CI
-  definition) still waits for the ios job, which ran 28:45 in the median of
-  the same 12 runs (11:36-32:54). In CI run 43632050929 `ci-ok` came 28:37
-  after the run's start, 4 s after ios ended.
+  definition) still waits for the ios job in most runs. It ran 28:45 in the
+  median of the same 12 runs (11:36-32:54) and ended last in 9 of them. In
+  the other 3 `e2e (2)` did (ios ended 22:36, 11:49 and 12:57 after the
+  run's creation there), so a run with a fast ios job gains from four
+  shards too. In CI run 43632050929 `ci-ok` came 28:37 after the run's
+  start, 4 s after ios ended.

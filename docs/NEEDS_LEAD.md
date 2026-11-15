@@ -2304,3 +2304,53 @@ brief; the numbers are in `docs/hillclimb/fable-improvement-2026-11.md`, "Job 21
     their own here. The fix would be small: when the merge call fails, read the PR's state, and
     call once more if it is still open and its head unchanged (`--match-head-commit` keeps a second
     call from merging anything else).
+
+## Job 221: what the perf job measured and left open (2026-11-15)
+
+Status: open, the lead's call. No browser step. The numbers are in
+`docs/hillclimb/fable-improvement-2026-11.md`, "Job 221".
+
+1. **Read the four shards again after a week.** One PR that runs e2e without the native gates
+   has run with four shards: `ci-ok` came 13:49 after the run's creation, against 21:24 for the
+   same PR with two (#470). One run is no median. Read `scripts/ci-timings.sh --limit 12 --steps
+   e2e` on such PRs, and the queue time of their jobs.
+   GitHub documents 20 jobs at once for the Free plan, the ios job counted (the organisation's
+   plan was not read), and the week before had 20 at once for 492 seconds. If jobs now wait in
+   the queue, three shards is the list in `ci.yml` and the `auto` count in `e2e.yml`;
+   `scripts/check-gates.sh` says when the two differ. Also unknown: how often one of four stacks
+   fails to start.
+2. **The ios job sets the wait of most runs that have it, and its time is the runner's.** It
+   ended last in 9 of 12 `main` runs: 28:45 in the median, 11:36 to 32:54. The two fast runs
+   were faster in the build, both boots and the StoreKit tests. Nothing was tried. A larger
+   macOS runner costs money and is Peter's call.
+3. **A list test cannot set the day.** `ListScope` passes no clock to `ListCubit`, so a widget
+   test of the list reads the device's clock. #472 fixed the one test that failed by date with
+   `DateTime.now()`, which leaves a run that crosses midnight between two clock reads. A clock
+   parameter on `ListScope` (and through `appRoutes`) would let such tests pin the day. Not
+   done here: it changes `app/lib` for tests only.
+4. **The mutants are not in the repository.** 77 mutants prove what `scripts/check-gates.sh`,
+   `scripts/ci-changes-test.sh` and #470's tests hold. They are scripts in the job's research
+   folder. A `scripts/check-gates-test.sh` in the lint gate, like `scripts/e2e-gate-test.sh`,
+   would keep the first set true after later edits.
+5. **A tick still writes the whole list's text.** #470 took the encoding of unchanged rows out
+   of a save (4.54 to 1.11 ms per tick on x86, 300 items). The text itself, 199,393 characters
+   for that list, still goes to `shared_preferences` on every save, which is not measured. The
+   pending ops under their own key would make a tick's write a few hundred characters. It
+   changes what is saved where (two keys that must agree after a crash), so it belongs with
+   the offline-sync work (job 222).
+6. **The first save after a resync got slower, and a start makes up to three resyncs.** 3.41
+   against 2.86 ms on x86 at 300 items. A phone is not measured, and no test holds how many
+   saves a start makes. If a phone shows it, the place to look is the three resyncs of a start
+   (its own, the channel's join, the server's Postgres listener), each of which shows new rows.
+7. **A land still waits 30 minutes for a Mac that does not answer, and `main` moves in that
+   time.** Job 219's point 1 above, with one more night of numbers. All four lands of this job
+   first waited the full 30 minutes `merge-lock` gives the Mac's lock: 2 h of the 3 h 32 min
+   the four lands took. #462 and #460 had `ci-ok` green before they held the Hetzner lock;
+   `main` had moved by then (#473, #474), so each ran CI a second time inside the hold (27 and
+   29 minutes held). The change job 219 names (remember for some minutes that the Mac lock was
+   unavailable) is in `~/groceries-ops/bin/merge-lock` and so still not a job's to make.
+
+One deviation from the brief's model rule: the job's first subagent, a read-only `Explore` agent
+that summarized the closed hill-climbs' notes, ran on `claude-opus-5-5`, the model that agent
+type carries (11 messages, 72 s). It wrote no code and reviewed nothing. Every build step and
+every review round ran on `claude-fable-5-2`.

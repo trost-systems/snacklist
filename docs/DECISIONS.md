@@ -13592,3 +13592,12 @@ ARB files; what an English phone still met in German sat around it.
    with the German parser whatever the app language; English dictation needs the native offline
    check per language and is a feature of its own. The catalogue suggestions, the old Siri
    Shortcut recipe's answers, the MCP tool texts and `export_my_data`'s category names stay German.
+
+## Job 221: a run with the ios job does not always wait for it, 2026-11-15
+
+A correction to "Job 221: e2e in four shards" above, which says that with the ios job in the run
+`ci-ok` still waits for it. In 9 of the 12 baseline `main` runs the ios job ended last; in the
+other 3 `e2e (2)` did (ios ended 22:36, 11:49 and 12:57 after the run's creation, `ci-ok` came
+after 23:40, 20:17 and 20:08). So a run with a fast ios job gains from four shards too. #460's
+own three CI runs did not: ios ended 8 to 17 minutes after the last shard in each. `docs/CI.md`
+says it this way now. Found by the review of the job's record (#476).
