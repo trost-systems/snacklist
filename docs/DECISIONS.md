@@ -14708,3 +14708,27 @@ as before. The reference prototype is #494 (not merged).
    and notes still send without their image. But about 25 accounts naming 10 uploads each could block
    screenshots for everyone for 12 months. A per-user cap on kept images belongs before the flag goes
    wider (NEEDS_LEAD "Job 267 review 1").
+
+## Job 273: add feedback (AF) and reload indicator (RI) prototype rounds (2026-11-16)
+
+Draft PR #508 (never merged). Throwaway HTML in `docs/design/add-sheet/`; the app is unchanged.
+
+1. **One folder, two round pages.** `add-sheet/add-feedback/` and `add-sheet/reload-indicator/` share one
+   sandbox phone (list, add sheet, field, tabs) like job 263's `household-onboarding/join` and `create`.
+   Each page has only its own controls. The overview on #414 got a link-only commit.
+2. **Today follows main's code, not the brief's wording.** The note names a store whenever the tapped
+   row carries one: history rows (`guess_store`), and typed and catalog rows (`parse_item`'s store).
+   Only rows built on the device have none. It never names the section. Review 0 caught the first
+   version, which gave typed rows no store.
+3. **RI is compared against a control row.** RI1 to RI3 sit on job 272's base (live typed row, four
+   kept row slots). A "272 base, no indicator" phone shows what that base does alone, so the
+   indicator columns compare indicators. Today stays main. The fix for the jump at the reply is 272's,
+   not an indicator's.
+4. **Largest text is 200 %.** As in job 263. The app clamps only some chrome (tab labels at 1.5).
+5. **The AF pick moved from AF5 to AF3.** Review 0 showed AF5's lead came from a richer row chip and
+   a demo capped at four suggestions. AF3 got the same "store · section" chip. With seven
+   suggestions, AF5's half sheet costs three rows while typing, and from 130 % text it becomes AF3
+   anyway (AF-Q3).
+6. **Hex content stays centred, labels wrap as one run of text.** verify's `offCentre` and
+   `readingOrder` probes fail on a chip whose text is more than 2 px off centre, or whose pieces sit
+   side by side when it wraps.

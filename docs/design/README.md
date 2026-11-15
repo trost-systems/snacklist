@@ -30,3 +30,5 @@ python3 -m http.server 8771 --directory docs/design/h-satz-final/h-dist
 ## Feature prototypes
 
 - **Grocery log (job 198):** [`grocery-log/`](grocery-log/), five interactive approaches behind one switcher, plus [`RECOMMENDATION.md`](grocery-log/RECOMMENDATION.md). Serve the repo root (`python3 -m http.server 4198 --bind 127.0.0.1`) and open `/docs/design/grocery-log/index.html`.
+
+- **Add sheet (job 273):** [`add-sheet/`](add-sheet/README.md): two rounds on the add sheet with Today and the options as live phones, measured by `verify.mjs`: what was added to which store and section, and finding or fixing it after the close (AF1–AF5, [`add-feedback/RECOMMENDATION.md`](add-sheet/add-feedback/RECOMMENDATION.md), AF3, runner-up AF5), and a reload indicator while suggestions load (RI1–RI3, [`reload-indicator/RECOMMENDATION.md`](add-sheet/reload-indicator/RECOMMENDATION.md), RI2, runner-up RI1). Draft PR only; the preview is built by `build.sh` together with #414’s overview.

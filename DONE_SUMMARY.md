@@ -1447,3 +1447,32 @@ PR https://github.com/trost-systems/snacklist/pull/490. Review 0 of job 222 (the
   - The keyboard over the text field on phones: there is no device here. Check it on TestFlight with
     the internal flag.
   - Checking the stored bytes beyond the PNG signature: only the dashboard opens the files.
+
+## Job 273: add feedback (AF1–AF5) and reload indicator (RI1–RI3) prototypes (2026-11-16)
+
+Draft PR https://github.com/trost-systems/snacklist/pull/508 (**DO NOT MERGE**, the reference).
+Two prototype rounds, and nothing in the app changed. Changelog: none.
+
+**Preview.** It is protected, on the preview target of `family-groceries-design`. Deployment
+`dpl_98McLUtc3QvNMxY7Y5aPFvQTZr8s` is READY. All 68 files match the build's SHA-1s, the bare URLs
+answer 302, and protection and bypass are unchanged.
+- Overview: https://family-groceries-design-kdsdiisp1-peter-trost.vercel.app/
+- AF: https://family-groceries-design-kdsdiisp1-peter-trost.vercel.app/add-sheet/add-feedback/
+- RI: https://family-groceries-design-kdsdiisp1-peter-trost.vercel.app/add-sheet/reload-indicator/
+- `?lang=de` gives German.
+- **The share link is not minted**, because this runner has no Vercel connector. NEEDS_LEAD asks the
+  lead to mint it.
+
+**Rounds, tables, picks and open questions.** The PR body and
+`docs/design/add-sheet/{add-feedback,reload-indicator}/RECOMMENDATION.md` (and `.de.md`) hold them.
+The job copy of this file has them in full.
+- **AF pick: AF3 Confirm in place**, runner-up AF5 Split view.
+- **RI pick: RI2 Progress line**, runner-up RI1 Dim stale rows.
+
+**Verify.** Run `node docs/design/add-sheet/verify.mjs` from the repo root. It printed `all checks
+passed (1695)`, and on the preview build `(1703)`. #414's `shoot-pages.mjs` passed on the build, and
+`scripts/lint.sh` passed. Two Opus reviews (FIX, then FIX) had their must-fixes fixed, each with a
+check proven by a planted bug.
+
+**Not done here.** The share link (lead). Production changes go to a Feature job after Peter picks.
+Job 272 owns the stable rows.
