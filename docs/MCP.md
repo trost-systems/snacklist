@@ -147,7 +147,9 @@ Results are JSON text. Every item in a result carries `id`, `name`,
 `brand`, `properties`, `quantity`, `category` and `store`; `brand` and
 `properties` are `null` when the item has none. Errors that the assistant can fix (unknown or
 ambiguous names) come back as tool errors (`isError: true`) with a German
-message that lists the valid options.
+message that lists the valid options. A call that arrives while its household is being changed
+(a member leaves, a role changes, an account is deleted) and would write the Premium check's record
+ends with a tool error that says nothing was changed and to try again (`busyNow` in `tools.ts`).
 
 **Integration lock (job 50, off).** With the server switch `integration_lock` on, a household
 without Snacklist Premium can still discover the server, run OAuth, `initialize` and `tools/list`,

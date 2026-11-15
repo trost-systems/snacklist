@@ -57,6 +57,15 @@ export function ranOutOfTime(e: unknown): boolean {
   return name === 'PostgresError' && code === '57014';
 }
 
+/**
+ * Whether [e] is a statement that did not get a row's lock (lock_not_available): the key, the
+ * household or the account is being deleted or changed by another transaction right now.
+ */
+export function rowBusy(e: unknown): boolean {
+  const { name, code } = (e ?? {}) as { name?: unknown; code?: unknown };
+  return name === 'PostgresError' && code === '55P03';
+}
+
 /** How long a request waits for its caller's earlier requests in this worker. */
 export const TURN_WAIT_MS = 5000;
 
@@ -189,10 +198,11 @@ export async function appleSubject(userId: string): Promise<string | null> {
 
 export type HouseholdFate = 'kept' | 'deleted' | 'none';
 
-/** Deletes the user for good; see public.delete_account. */
+/** Deletes the user for good, in the user's turn (inTurn); see public.delete_account. */
 export async function deleteAccount(userId: string): Promise<HouseholdFate> {
-  const rows = await db()<{ fate: HouseholdFate }[]>`
-    select public.delete_account(${userId}::uuid) as fate`;
+  const rows = await inTurn(userId, () =>
+    db()<{ fate: HouseholdFate }[]>`
+      select public.delete_account(${userId}::uuid) as fate`);
   return oneRow(rows, 'delete_account').fate;
 }
 

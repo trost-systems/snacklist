@@ -1,7 +1,7 @@
 // The handler's dependencies in production: the database, the shared auth and telemetry. Kept out
 // of index.ts so the database integration test runs the same wiring.
 import { authenticateSession, AuthError } from '../_shared/auth.ts';
-import { serviceDb } from '../_shared/db.ts';
+import { inTurn, serviceDb } from '../_shared/db.ts';
 import { sendPurchaseEvent } from '../_shared/purchases.ts';
 import type { Telemetry } from '../_shared/telemetry.ts';
 import { analyticsSubject } from '../alexa/store.ts';
@@ -68,7 +68,12 @@ export function productionDeps(
     },
     claim: async (userId, householdId, store, transactionId) => {
       try {
-        return await claim(serviceDb(), userId, householdId, store, transactionId);
+        // In the user's turn: a claim waits for the household's row, and one user's claims that
+        // wait together hold one connection.
+        return await inTurn(
+          userId,
+          () => claim(serviceDb(), userId, householdId, store, transactionId),
+        );
       } catch (e) {
         // purchase_claim's not_a_member: no member of that household when buying.
         if ((e as { code?: string }).code === '42501') {

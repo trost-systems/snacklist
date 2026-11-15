@@ -2,6 +2,7 @@
 // purchase_record, purchase_claim, purchase_revoke and purchase_reinstate.
 import { assert, assertEquals, assertRejects } from '@std/assert';
 import { AuthError } from '../_shared/auth.ts';
+import { OutOfTime } from '../_shared/db.ts';
 import type { PurchaseEvent } from '../_shared/purchases.ts';
 import type { Subject } from '../_shared/telemetry.ts';
 import { createHandler, type Deps, type Ledger, maxBodyBytes, routes } from './handler.ts';
@@ -650,6 +651,27 @@ Deno.test('the claim is rate limited', async () => {
     { error: 'rate_limited' },
   );
   assertEquals(w.books.claims.size, 0);
+});
+
+Deno.test('the claim is 503 busy for an account being deleted and for claims still waiting', async () => {
+  const busy = Object.assign(new Error('lock'), { name: 'PostgresError', code: '55P03' });
+  for (
+    const overrides of [
+      { takeCall: () => Promise.reject(busy) },
+      { claim: () => Promise.reject(new OutOfTime()) },
+    ] satisfies Partial<Deps>[]
+  ) {
+    const w = world(overrides);
+    await expect(
+      await w.handle('/claim', { store: 'google', householdId: HOME, transactionId: 'GPA.1' }, {
+        authorization: 'Bearer peter',
+      }),
+      503,
+      { error: 'busy' },
+    );
+    assertEquals(w.books.claims.size, 0);
+    assertEquals(w.sent, []);
+  }
 });
 
 Deno.test('the claim works while the webhook is not configured', async () => {

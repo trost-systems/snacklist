@@ -100,7 +100,8 @@ fi
 # is off, 401 once it is on. SMOKE_PUBLIC_API=1, for the day it is switched on, wants the 401 and
 # then sends unknown keys, each from another made-up address in X-Forwarded-For and X-Real-IP,
 # until the 429: they must count as one address, 20 per 10 minutes (the gateway's X-Real-IP).
-# That part writes this address's failure count: its unknown keys get 429 for up to 10 minutes.
+# That part writes this address's failure count: its unknown keys get 429 for up to 10 minutes,
+# so a second run within those minutes fails at its first request.
 request api "$fn/api/v1/items"
 api_error="$(jq -r '.error.code // empty' "$work/api.body" 2>/dev/null)"
 if [[ ${SMOKE_PUBLIC_API:-} == 1 ]]; then
@@ -122,7 +123,9 @@ if [[ ${SMOKE_PUBLIC_API:-} == 1 ]]; then
     fi
     [[ $(status api_unknown) == 401 ]] || break
   done
-  if ((throttled > 0 && throttled <= 21)) && jq -e '.error.code == "auth_throttled"' "$work/api_unknown.body" >/dev/null 2>&1; then
+  if ((throttled == 1)); then
+    fail 'api with unknown keys from made-up addresses: 429 at the first request, so this address is still counted from an earlier run and the check shows nothing; run it again in 10 minutes'
+  elif ((throttled > 1 && throttled <= 21)) && jq -e '.error.code == "auth_throttled"' "$work/api_unknown.body" >/dev/null 2>&1; then
     pass "api with unknown keys from made-up addresses: 429 auth_throttled at request $throttled"
   else
     fail "api with unknown keys from made-up addresses: want 401s, then 429 auth_throttled by request 21; request $n $(got api_unknown)"

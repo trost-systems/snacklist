@@ -109,6 +109,32 @@ test('a batch past its time stops between two adds and leaves the list as it was
     assertEquals(inTime.added.length, 3);
   }));
 
+test('an add past its time after its last item does not look for similar items', () =>
+  withVarieties(2, async (userId, householdId) => {
+    await assertRejects(
+      () =>
+        asUser(userId, async (tx) => {
+          const clock = performance.now;
+          const started = clock.call(performance);
+          let asked = 0;
+          performance.now = () => started + (asked++ === 0 ? 0 : 60_000);
+          try {
+            return await addItemIds(
+              tx,
+              householdId,
+              [{ name: 'Milch' }],
+              undefined,
+              started + 1000,
+            );
+          } finally {
+            performance.now = clock;
+          }
+        }),
+      OutOfTime,
+    );
+    assertEquals(await openNames(userId, householdId), [1, 2].map(variety), 'rolled back');
+  }));
+
 test('a transaction as the caller carries the statement limit; a statement over it ran out of time', () =>
   withVarieties(0, async (userId) => {
     const shown = await asUser(userId, async (tx) => {

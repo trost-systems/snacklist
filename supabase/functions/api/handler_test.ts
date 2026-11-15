@@ -277,6 +277,32 @@ Deno.test('a failing Premium check is 503 unavailable, never locked or open', as
   assertEquals(deps.executed, []);
 });
 
+Deno.test('a key or household that is being changed is 503 unavailable, and no failure to report', async () => {
+  const busy = Object.assign(new Error('lock'), { name: 'PostgresError', code: '55P03' });
+  for (const at of ['begin', 'premium'] as const) {
+    const reported: unknown[] = [];
+    const deps: Deps = {
+      ...fake(),
+      [at]: () => Promise.reject(busy),
+      report: (e) => reported.push(e),
+    };
+    const res = await handle(call('/items'), deps);
+    assertEquals(res.status, 503, at);
+    assertEquals((await errorOf(res)).code, 'unavailable');
+    assertEquals(res.headers.get('retry-after'), '5');
+    assertEquals(reported, [], at);
+  }
+  const reported: unknown[] = [];
+  const down = new Error('down');
+  await handle(call('/items'), { ...fake({ premium: 'throws' }), report: (e) => reported.push(e) });
+  await handle(call('/items'), {
+    ...fake(),
+    begin: () => Promise.reject(down),
+    report: (e) => reported.push(e),
+  });
+  assertEquals(reported.length, 2, 'any other failure is reported');
+});
+
 async function rejected(req: Request, status: number, code: string) {
   const deps = fake();
   const res = await handle(req, deps);

@@ -5,7 +5,7 @@ import type { Auth } from '../_shared/auth.ts';
 import type { Access } from '../_shared/premium.ts';
 import type { McpTool } from '../_shared/telemetry.ts';
 import type { UserEvent } from '../_shared/user_events.ts';
-import { asUser, ranOutOfTime, type Tx } from '../_shared/db.ts';
+import { asUser, ranOutOfTime, rowBusy, type Tx } from '../_shared/db.ts';
 import {
   addItems,
   categories,
@@ -46,6 +46,12 @@ export const tookTooLong: Record<Lang, string> = {
     'weniger Einträgen auf einmal und einem Aufruf nach dem anderen.',
   en: 'That took too long and was stopped. Nothing was changed. Try fewer items at once, and ' +
     'one call at a time.',
+};
+
+/** The tool error for a call that met a household that is being changed right now (rowBusy). */
+export const busyNow: Record<Lang, string> = {
+  de: 'Das geht in diesem Moment nicht. Es wurde nichts geändert. Versuch es gleich noch einmal.',
+  en: 'That is not possible at this moment. Nothing was changed. Try again in a moment.',
 };
 
 /**
@@ -136,9 +142,11 @@ function run(
       return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
     } catch (e) {
       const slow = ranOutOfTime(e);
+      const busy = rowBusy(e);
       const toolError = e instanceof ToolError;
-      await done(h, toolError || slow ? 'tool_error' : 'server');
+      await done(h, toolError || slow || busy ? 'tool_error' : 'server');
       if (slow) return { isError: true, content: [{ type: 'text', text: tookTooLong[lang] }] };
+      if (busy) return { isError: true, content: [{ type: 'text', text: busyNow[lang] }] };
       if (!toolError) throw e;
       return { isError: true, content: [{ type: 'text', text: e.message }] };
     }

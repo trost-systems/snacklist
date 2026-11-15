@@ -246,6 +246,10 @@ async function cleanUp(user: User | undefined, documentUrls: string[], dcrClient
       returning auth_client_id`;
     const ids = [...mapped.map((r) => r.auth_client_id), ...dcrClients];
     if (ids.length) await sql`delete from auth.oauth_clients where id = any(${ids}::uuid[])`;
+    // The hosts' hourly counts go too: a third run of this file within the hour would be refused.
+    const counted = documentUrls.map((url) => new URL(url).host)
+      .flatMap((host) => [`new:${host}`, `fetch:${host}`]);
+    await sql`delete from public.oauth_cimd_rate where key = any(${counted})`;
     if (user) {
       await sql`delete from public.households where id = ${user.householdId}`;
       await sql`delete from auth.users where id = ${user.id}`;
