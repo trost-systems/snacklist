@@ -1427,3 +1427,23 @@ PR https://github.com/trost-systems/snacklist/pull/490. Review 0 of job 222 (the
 - **Not proven.** The card's links on a real iPhone or Android phone, and native paste through a
   phone's long-press menu. Decisions in `docs/DECISIONS.md`, "Job 271"; the Legal list for JH-Q9 is
   the job's NEEDS_LEAD.
+
+## Job 267 review 1 fix: the annotator e2e waits for a still frame (2026-11-15)
+
+- **Must-fix (flaky e2e).** "flag on: a screenshot from More…" drew its pen stroke while
+  BetterFeedback was still animating the frame in, then mapped screen points to the PNG from that
+  stroke. It failed 2 of 4 runs on hz. It now draws only once two screenshots of the frame, 100 ms
+  apart, are identical. That is a visual condition, because the canvas is outside the semantics tree.
+  - Local: `scripts/verify.sh --only e2e -- feedback.spec.ts -g "screenshot from More" --repeat-each 10
+    --retries 0` passed 10 of 10.
+  - CI: `scripts/ci-e2e.sh --spec '… --repeat-each 10 --retries 0'` passed 10 of 10, run 43761621182.
+- **Nice-to-haves taken.**
+  - A 403 counts as a refused screenshot only with the code `quota`; a 403 `session_required` is a
+    plain refusal (repository test).
+  - The legal note now quotes main's current §10, after #501 removed the screen sentence.
+  - DECISIONS "Job 267 review 1" corrects review 0's reasoning: the flag does not limit who can call
+    the upload route. A per-user cap on kept images belongs before the flag goes wider (NEEDS_LEAD).
+- **Not taken.**
+  - The keyboard over the text field on phones: there is no device here. Check it on TestFlight with
+    the internal flag.
+  - Checking the stored bytes beyond the PNG signature: only the dashboard opens the files.
