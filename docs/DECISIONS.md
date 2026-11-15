@@ -14203,3 +14203,7 @@ PM calls: Play voice caption „Per Sprachbefehl auf die Liste.“, assist headl
 - **Why not a longer timeout for the whole WebKit project.** `perf.spec.ts` runs there too and has its own budget. A project-wide timeout would also hide a new slow spec. The line per test is what the two sibling specs do.
 - **Proof.** Run 43713288298 (on-demand e2e, the spec three times per browser): the JSON report shows 180000 ms for WebKit and 60000 ms for the others, 18 of 18 passed, WebKit 35.8 to 38.5 s.
 - **Left from the review's nice-to-haves.** The probe harness in the repo, a state table for `SessionCubit`'s start and a shorter done doc: separate changes, named in DONE_SUMMARY.
+
+## Job 255b: store caption follow-up (review 0 of #484)
+
+#484 missed addenda 1 and 3. Invite subline now follows Peter's IC2 (in/IC.txt): „Lade alle ein. Mehrere Listen für jeden Anlass.“ / "Invite everyone. Separate lists for every occasion." The de-DE Play voice frame is `blocked` (no real-device German capture), the en-US one `on-hold` until job 256's English dictation is verified on a device; neither is faked. Held frames render as `*.BLOCKED.png` / `*.ON-HOLD.png` so a folder upload skips them. This supersedes the two job 255 paragraphs above (they say no in/IC.txt).

@@ -56,7 +56,7 @@ export function captionProblems() {
         const where = `${locale} ${id} (${store})`;
         if (id !== 'feature' && (!Array.isArray(c.h) || c.h.length !== 2 || !c.s)) problems.push(`${where}: needs h as two lines and s`);
         if (!c.alt || c.alt.length > ALT_MAX) problems.push(`${where}: alt text missing or over ${ALT_MAX} characters`);
-        if (!['draft', 'approved', 'blocked'].includes(c.status)) problems.push(`${where}: status must be draft, approved or blocked`);
+        if (!['draft', 'approved', 'blocked', 'on-hold'].includes(c.status)) problems.push(`${where}: status must be draft, approved, blocked or on-hold`);
         for (const t of strings({ h: c.h, s: c.s, alt: c.alt, tagline: c.tagline })) problems.push(...textProblems(t, { store }).map((p) => `${where}: "${t}" ${p}`));
         if (c.premium) problems.push(...textProblems(c.premium, { store, premium: true }).map((p) => `${where} premium label: "${c.premium}" ${p}`));
         if (c.sticker && Object.values(c.sticker).some((v) => v === null || v === undefined)) problems.push(`${where}: a sticker key without a value (quote text with commas)`);
