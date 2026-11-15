@@ -139,8 +139,14 @@ of these is missing or a check command is written into `ci.yml` or
 `verify.sh` directly. It also fails when any job in any workflow has no
 `timeout-minutes`.
 
-In CI the e2e job runs as two shards (`--shard=1/2`, `--shard=2/2`), each on
-its own runner with its own stack, because Playwright is the longest step.
+In CI the e2e job runs as four shards (`--shard=1/4` to `--shard=4/4`), each
+on its own runner with its own stack, because Playwright is the longest step
+(Measurements, job 221, below). The matrix in `ci.yml` is the one place that
+sets the count: the job passes Playwright `strategy.job-total`, and
+`check-gates.sh` fails when it does not, when the matrix has a second key,
+when `e2e.yml`'s `auto` count for the full suite differs from that list, or
+when that workflow's shard list and Playwright's count no longer both come
+from its plan step's one `$total`.
 Each shard starts the Supabase stack in the background before installing
 Flutter and Playwright; the gate's `supabase_up` (`scripts/lib.sh`) waits on
 the same per-project lock and reuses the stack. CI pulls the Supabase images
@@ -214,7 +220,7 @@ the way to run e2e where Docker is not allowed (the Mac runner), and it takes
 that load off the box. It needs only `gh` (logged in), `git` and `jq`.
 
 ```bash
-scripts/ci-e2e.sh                                  # full suite, 2 shards, db gate, fg sync smoke
+scripts/ci-e2e.sh                                  # full suite, 4 shards, db gate, fg sync smoke
 scripts/ci-e2e.sh --spec tests/stores.spec.ts      # one spec: 1 shard, no sync smoke
 scripts/ci-e2e.sh --spec '-g "drag"' --no-db       # by title, without the db gate
 scripts/ci-e2e.sh --spec tests/list.spec.ts --download /tmp/pw   # also fetch report, traces, screenshots
@@ -234,11 +240,12 @@ scripts/ci-e2e.sh --ref job/42-foo --shards 2 --sync-smoke
   1 when the run failed or was cancelled or no test ran, 2 on a usage
   problem. If a run fails, `gh run view <id> --log-failed` says why.
 - Inputs of `e2e.yml` (also in the Actions tab, **Run workflow**): `spec`
-  (Playwright arguments; empty is the full suite), `shards` (`auto` is 2 for
-  the full suite and 1 with a spec), `db` (default on: `scripts/gates/db.sh`
-  in its own job), `sync_smoke` (`auto` runs the fg sync smoke test on shard
-  1 for the full suite only). A sharded spec run passes an empty shard
-  (`--pass-with-no-tests`); the script then checks that some test ran.
+  (Playwright arguments; empty is the full suite), `shards` (1 to 6; `auto`
+  is 4 for the full suite, as in `ci.yml`, and 1 with a spec), `db` (default
+  on: `scripts/gates/db.sh` in its own job), `sync_smoke` (`auto` runs the
+  fg sync smoke test on shard 1 for the full suite only). A sharded spec run
+  passes an empty shard (`--pass-with-no-tests`); the script then checks
+  that some test ran.
 - One run per branch and spec: a second dispatch with the same spec cancels
   the first (`concurrency`). Different specs run side by side.
 - Artifacts, per shard and attempt: `playwright-<shard>-attempt<n>` (HTML
@@ -473,7 +480,7 @@ Renovate app installed on Peter's account.
 `scripts/ci-timings.sh` prints per-job end times of recent successful runs,
 counted from the run's start, and their median and range. With
 `--steps <job>` it adds the median step durations of one job (`e2e` takes
-both shards' steps, `e2e (1)` one shard's). Use it before and after a CI
+every shard's steps, `e2e (1)` one shard's). Use it before and after a CI
 change.
 `scripts/ci-ios-phases.sh <run-id>...` splits each ios job of those runs
 (every attempt) into the phases of `scripts/gates/ios.sh`: config, build,
@@ -520,3 +527,39 @@ pushed, and the merge waited for a second full run on identical content.
 
 Playwright itself is the noise: a full run takes ~2.9 m or ~3.8 m depending
 on the runner, and on a slow runner nearly every test is 1.3-1.5× slower.
+
+## Measurements (job 221, November 2026)
+
+The e2e jobs' running time (the queue not counted), full suite of 271 tests.
+Before: `scripts/ci-timings.sh --limit 12 --branch main --steps e2e` over
+the 12 latest green `main` runs on 14 November (12:07 to 17:53 UTC), median
+and range. After: two runs of the commit that introduced four shards, one
+from CI and one from `scripts/ci-e2e.sh`.
+
+| e2e | n | Slowest shard's job | Its gate step | All shards, runner time |
+| --- | --- | --- | --- | --- |
+| Two shards | 12 | 19:53 (18:19-24:24) | 17:51 | 37:12 (the two medians) |
+| Four shards, CI run 43632050929 | 1 | 14:55 | 13:10 | 46:28 |
+| Four shards, on-demand run 43640061280 | 1 | 12:33 | 10:58 | 44:01 |
+
+No test failed or was retried in either run of four. Playwright's `--shard`
+gives each shard 67 tests in file order (the 3 integration-lock tests run
+after shard 1's), not equal time: the shards' Playwright time was 6:23, 5:19,
+7:43 and 11:10 in the first run and 6:36, 4:39, 9:05 and 8:04 in the second.
+One shard's time moved by 3 minutes between the two runs: in the first,
+shard 4's tests took 24 % longer than the same tests' medians in five `main`
+runs (one observation; the cause was not traced).
+
+What a PR waits for since then:
+
+- A change that runs e2e without the native gates waits for the slowest e2e
+  shard. Its job ran 12:33 and 14:55 so far, against 19:53 in the median
+  before (18:19-24:24). By the filter's rule (`scripts/ci-changes.sh` of
+  14 November, applied to each PR's full file list) that is 74 of the 136
+  PRs merged from 7 November to 14 November 19:13 UTC; 30 more changed
+  only documentation and run no e2e.
+- A change that runs the native gates (the other 32: 14 for `app/ios/`,
+  `app/android/`, the pubspec or the two gates' scripts, 18 for the CI
+  definition) still waits for the ios job, which ran 28:45 in the median of
+  the same 12 runs (11:36-32:54). In CI run 43632050929 `ci-ok` came 28:37
+  after the run's start, 4 s after ios ended.

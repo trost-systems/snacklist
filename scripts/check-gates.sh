@@ -72,6 +72,34 @@ for job in db e2e; do
   job_block "$E2E" "$job" | grep -q "scripts/gates/$job.sh" || problems+=("$E2E job '$job' does not run scripts/gates/$job.sh")
 done
 
+# Job 221: ci.yml's e2e job gives Playwright the matrix's own size, since a count written beside
+# the list could fall behind it and leave tests unrun. The shard list is the matrix's only key (a
+# second one would multiply job-total), and the on-demand full suite runs in as many shards.
+# shellcheck disable=SC2016 # the workflows' own expressions, as written there
+shard_arg='--shard=${{ matrix.shard }}/${{ strategy.job-total }}'
+job_block "$CI" e2e | grep -qxF -- "      - run: scripts/gates/e2e.sh $shard_arg" \
+  || problems+=("ci.yml job 'e2e' must run scripts/gates/e2e.sh $shard_arg and nothing after it")
+matrix="$(job_block "$CI" e2e | sed -n '/^      matrix:$/,/^ \{0,6\}[^ ]/{/^ \{8\}/p;}')"
+ci_shards="$(sed -n 's/^        shard: \[\([0-9, ]*\)\]$/\1/p' <<<"$matrix" | tr -d ' ')"
+[[ -n $ci_shards && $(wc -l <<<"$matrix") -eq 1 ]] \
+  || problems+=("ci.yml job 'e2e': the matrix must be the one line 'shard: [1, 2, ...]', it is: $matrix")
+e2e_shards="$(sed -n 's/^.*else total=\([0-9]*\); fi$/\1/p' "$E2E")"
+[[ -n $e2e_shards && $ci_shards == "$(seq -s, 1 "$e2e_shards")" ]] \
+  || problems+=("ci.yml's e2e shards are [$ci_shards], but $E2E runs the full suite in '$e2e_shards' (its plan step's 'else total=')")
+# There the list and the count both come from the plan step's one $total: each line on the way.
+while IFS=: read -r job line; do
+  job_block "$E2E" "$job" | grep -qxF -- "$line" || problems+=("$E2E job '$job' must keep the line '$line': the shard list and Playwright's count both come from the plan step's \$total")
+done <<'LINES'
+plan:            echo "total=$total"
+plan:            echo "shards=$(seq -s, 1 "$total" | sed 's/.*/[&]/')"
+plan:      shards: ${{ steps.plan.outputs.shards }}
+plan:      total: ${{ steps.plan.outputs.total }}
+e2e:        shard: ${{ fromJSON(needs.plan.outputs.shards) }}
+e2e:          SHARD: ${{ matrix.shard }}
+e2e:          TOTAL: ${{ needs.plan.outputs.total }}
+e2e:            args+=("--shard=$SHARD/$TOTAL")
+LINES
+
 if [[ ${#problems[@]} -gt 0 ]]; then
   printf 'check-gates: %s\n' "${problems[@]}" >&2
   exit 1
