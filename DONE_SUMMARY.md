@@ -1278,3 +1278,65 @@ PR https://github.com/trost-systems/snacklist/pull/490. Review 0 of job 222 (the
 - **Nice-to-haves left.** The probe harness in the repo (1), a state table for `SessionCubit`'s start (2) and a short top section for the done doc (4). Each is its own change to code or to a long record and none is needed for the fix. They are in the ops `NEEDS_LEAD.md` ("Job 222 review 0").
 - **In-job review.** Round 1 (a fresh subagent, read-only) recomputed every number from the evidence files (the two JSON reports, review 0, the CI log) and found them true, and asked for three sentences of these records to be bounded to their evidence: FIX. Round 2 (another fresh one) confirmed the rewording: PASS, no must-fix. Both ran on `claude-fable-5-2`.
 - **The land's CI run** goes into the job's DONE_SUMMARY copy in the ops folder after the land: this file is part of the commit it tests.
+
+## Job 260: feedback experience research and prototypes FB1–FB5 (2026-11-15)
+
+Draft PR https://github.com/trost-systems/snacklist/pull/492 (head: see PR). **DO NOT MERGE**: it is the reference for this round. The app is unchanged, and #281 (shake) stays on hold until Peter picks (SH2).
+
+**Preview (protected, preview target, project family-groceries-design).** The URL is https://family-groceries-design-rb99oxen9-peter-trost.vercel.app/feedback-experience/ (deployment `dpl_Btw3FwFXGvXHafWzbcKmgAHDiWo4`, READY). All 33 deployed files match the build's SHA-1s. The bare URL redirects to SSO (302), and protection and domains are unchanged. **The share link is not minted:** this runner has no Vercel connector, so the lead mints the 23-hour link (NEEDS_LEAD "Job 260"). The root of the same deployment is #414's overview, which lists this round first. Superseded, don't share: `o24du4g4w` (`dpl_8UHGgCBm4xsZ8cGPFDL2gqNLhcAd`), `j6bnwimbk` (`dpl_E2P3euP9DHDzwJGbnwHGGaxgg8hr`), `lgixgh29j` (`dpl_GXceKbtBrN6KCNznzrjsXswmMtUh`) and `q4f1t9jv1` (`dpl_D3S2Se3aYrh6MfaE2sXRxE8rDfzj`).
+
+**Where.** `docs/design/feedback-experience/` holds the page, `flows.js` (six state machines), `verify.mjs`, `build.sh`, `RESEARCH.md` (Stage 1, cited with fetch dates) and `RECOMMENDATION.md`/`.de.md`. Screenshots are in `docs/screenshots/260/`. #414's branch got one link-only commit (c3669220): `rounds.js` `linked`, `overview.js`, and `shoot-pages.mjs` now expects four entries. Old links are unchanged.
+
+**The options** (each with its own shake decision):
+
+- **Today:** More → Send feedback, a fixed "Included" line, "Thanks!". No shake.
+- **FB1, More + shake, with a preview:** #281 done right. Shake is on by default, and every attached field shows its value with a switch.
+- **FB2, Shake, then mark it on a screenshot:** shake asks first. The app draws the screenshot with every name and emoji from the list blacked out, with a highlight tool, one row that can be revealed, the steps and the switches.
+- **FB3, Report this, where it happens:** "Tell Peter" after the user moves an item to another category, "Report" on the real "Change rejected" snackbar, and a question on the paywall. Shake works only near an error, never for offline alone.
+- **FB4, Feedback with replies and status:** a hub in More with status, Peter's replies and +1 on Peter's ideas. Shake is opt-in.
+- **FB5, Ask at the right moment:** a crash prompt, notes linked to Sentry EU error reports, and a PostHog EU survey. Shake is off.
+
+| Option | Taps (wrong category · change rejected · idea) | Debug points of 14 | Privacy exposure | Build (estimate) | Existing service | User hears back |
+| --- | --- | --- | --- | --- | --- | --- |
+| Today | 3 · 3 · 3 | 2 · 2 · 2 | low (4) | live | none | by mail, if ticked |
+| FB1 | 2 · 2 · 2 | 3 · 3 · 3 | medium (7) | 3 days | none | by mail, if ticked |
+| FB2 | 4 · 4 · 3 | 7 · 7 · 2 | medium (8) | 7 days | none | by mail, if ticked |
+| FB3 | 6 · 2 · 3 | 5 · 8 · 1 | medium (6), names the item | 5 days | none | by mail, if ticked |
+| FB4 | 4 · 4 · 4 | 2 · 2 · 2 | low (4) | 9 days | none | in the app |
+| FB5 | 3 · 3 · 3 | 2 · 7 · 2 | medium (7) | 6 days | PostHog EU + Sentry EU | by mail, if ticked |
+
+Taps are measured by verify.mjs in the same three situations for every option. Debug points are weighted out of 14.
+
+**Recommendation: FB3, runner-up FB2.** FB3 sends the exact case for the bugs Snacklist mostly gets (5 and 8 of 14 points), with no new processor or images, in about 5 days. It is the only option that names the item by default, behind a chip the user can remove, which Legal has to confirm (FB-Q2). FB2 debugs best (7 points) but costs 7 days and adds images and step logs.
+
+**Open questions (defaults in RECOMMENDATION.md):**
+
+- FB-Q1: shake contextual only.
+- FB-Q2: the item chip is on by default if Legal agrees.
+- FB-Q3: today's fields only, no device model.
+- FB-Q4: no Shake SDK.
+- FB-Q5: the digest goes on after Legal GO, with Workspace's AI off and Resend's US storage in the policy.
+- FB-Q6: no in-app replies yet.
+- FB-Q7: the paywall entry, behind its flag.
+- FB-Q8: empty messages allowed for context reports, and rejections carry the op and server code.
+- FB-Q9: job 259's rule.
+- FB-Q10: when FB3's new snackbar shows.
+
+**How to verify.** Run `bash docs/design/feedback-experience/build.sh /tmp/fb-dist <#414 checkout>/docs/design/list-declutter`, serve that folder on 127.0.0.1, then run `node docs/design/feedback-experience/verify.mjs http://127.0.0.1:<port>/feedback-experience/ /tmp/fb-shots`.
+
+**Results.**
+
+- `verify.mjs` on the deployed build: `all checks passed`. Measured taps: today 3/3/3, FB1 2/2/2, FB2 4/4/3, FB3 6/2/3, FB4 4/4/4, FB5 3/3/3. It took 64 screenshots.
+- #414's `shoot-pages.mjs` on the same build: `all checks passed`.
+- `scripts/verify.sh --only gitleaks,lint`: passed.
+- Opus review 0 found 13 must-fixes, and all were fixed. Review 1 confirmed them and found 4 more, which are also fixed (`jobs/260-…/review.0.md`, `review.1.md`).
+
+**External review 0 fix (2026-11-15 14:40).** Review 0 (external, 14:18) had one must-fix: the snackbars were a dark inverse bar, not the app's SnackBarThemeData card. They now use surface-raised, a 2 px edge contour at radius m, text-colour titleSmall and a brand action, and verify.mjs fails any snackbar off those tokens (proved: the old style gives exit 1 with 73 misses). Nice-to-haves also done: More gets Access and "Rate Snacklist"; FB-Q2 says what tapping "Tell Peter" consents to and what FB3 scores without the chip; the digest counts only kept chips; FB4's hub and Peter's ideas table agree; page titles wrap at 200 %. The preview is built from #414 at c3669220, because #414's newer head links job 263's folders, which are not in this deployment. `verify.mjs` on the new build: `all checks passed`.
+
+**External review 1 fix (2026-11-15 14:55).** External review 1 (14:33) had two must-fixes. (1) The German list chrome now uses the app's own words: "Anpassen", "Ohne Laden", "9 Artikel", "Vorrat & Konserven" (also in FB3's chip) and the total as "0,00 €". The ARB check also turned up "Einkauf starten"'s hint, which used a semicolon where the app has a comma. model.js `arbOf` maps every chrome string to its ARB key, and verify.mjs renders the ARB (placeholders, plurals) and fails on any drift, category names included. (2) Snackbars sit right above the tab bar on More and above the add band on the list, as in the app, and float above the bottom inset elsewhere. verify.mjs fails any snackbar more than 16 px above what is below it. Both checks fail on the old state: "Bearbeiten" gives exit 1, and the old 170 px position gives 64 misses. `verify.mjs` on the new build: `all checks passed`.
+
+**Not done or blocked.**
+
+- The share link waits on the lead's connector.
+- Job 259 is still queued, so Today matches main as is.
+- No production change: by design, the pick replaces #281 in a later build job.
