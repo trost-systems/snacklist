@@ -1194,3 +1194,6 @@ Status: not started. #464 is still OPEN and DIRTY (merge conflicts), so the brie
 - NEEDS_LEAD entry written (~/groceries-ops/NEEDS_LEAD.md): lead must land or unblock #464; N-177 is due 21 Nov.
 - Pre-staged `~/groceries-ops/jobs/250-pr452-rebase-legal-s16/check-expected.sh <worktree>`: diffs the rebased privacy.md and datenschutz.md against in/pr452-expected/ and prints sha256.
 - Remaining after #464 merges: rebase #452 (keep both sides), apply N-184 to N-186 (L-5, N-170 price part) word for word, run the check script (report any mismatch), ci-ok green, notes under research/legal-review/pr-452/<sha>/ mirrored to /workspace/hummlist/research/legal-review/, no merge, no flags, then NEEDS_LEAD "Job 250: send #452 hash-bound GO request to Legal".
+
+## Job 250: #452 rebased on #464, Legal §16 (N-184 to N-186)
+Head 7d5e3acf0ee34c9e246d7818d5473ce099932d8b, hashes and ci-ok run in NEEDS_LEAD and research/legal-review/pr-452/7d5e3acf0ee34c9e246d7818d5473ce099932d8b/NOTES.md. Not merged. No app change, so no TestFlight or flag action.
