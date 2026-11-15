@@ -871,6 +871,87 @@ void main() {
     expect([for (final l in s.home.lists) l.name], hasLength(3));
   });
 
+  group('household controls moved from More (job 258)', () {
+    testWidgets('rename: an empty name is refused, a new one saved', (
+      tester,
+    ) async {
+      final s = await _pump(tester);
+      await _open(tester);
+      await tester.tap(_key('switcher-rename'));
+      await tester.pumpAndSettle();
+      await tester.enterText(_key('household-rename-field'), '   ');
+      await tester.tap(_key('household-rename-save'));
+      await tester.pumpAndSettle();
+      expect(_key('household-rename-dialog'), findsOneWidget);
+      expect(s.session.renames, isEmpty);
+      await tester.enterText(_key('household-rename-field'), 'Wohnung ');
+      await tester.tap(_key('household-rename-save'));
+      await tester.pumpAndSettle();
+      expect(s.session.renames, [('home', 'Wohnung')]);
+    });
+
+    testWidgets('leave: cancel leaves nothing, confirm leaves and closes the '
+        'sheet', (tester) async {
+      final s = await _pump(tester);
+      await _open(tester);
+      await tester.ensureVisible(_key('switcher-leave'));
+      await tester.tap(_key('switcher-leave'));
+      await tester.pumpAndSettle();
+      expect(_key('household-leave-dialog'), findsOneWidget);
+      await tester.tap(_key('household-leave-cancel'));
+      await tester.pumpAndSettle();
+      expect(s.session.leaves, isEmpty);
+      expect(_key('switcher-sheet'), findsOneWidget);
+
+      await tester.ensureVisible(_key('switcher-leave'));
+      await tester.tap(_key('switcher-leave'));
+      await tester.pumpAndSettle();
+      await tester.tap(_key('household-leave-confirm'));
+      await tester.pumpAndSettle();
+      expect(s.session.leaves, [('home', false)]);
+      expect(_key('switcher-sheet'), findsNothing);
+    });
+
+    testWidgets('leave: a double tap opens one dialog', (tester) async {
+      await _pump(tester);
+      await _open(tester);
+      await tester.ensureVisible(_key('switcher-leave'));
+      await tester.tap(_key('switcher-leave'));
+      await tester.tap(_key('switcher-leave'), warnIfMissed: false);
+      await tester.pumpAndSettle();
+      expect(_key('household-leave-dialog'), findsOneWidget);
+    });
+
+    testWidgets('join approval: owner sees the switch, a plain member '
+        'does not', (tester) async {
+      await _pump(tester);
+      await _open(tester);
+      await tester.ensureVisible(_key('join-approval-switch'));
+      expect(_key('join-approval-switch'), findsOneWidget);
+      await _back(tester);
+      await tester.tap(_key('household-row-club'));
+      await tester.pumpAndSettle();
+      expect(_key('join-approval-switch'), findsNothing);
+    });
+
+    testWidgets('currency: shown with the prices flag, any member picks', (
+      tester,
+    ) async {
+      await _pump(tester, flags: const {pricesFlag});
+      await _open(tester);
+      await tester.ensureVisible(_key('household-currency'));
+      await tester.tap(_key('household-currency'));
+      await tester.pumpAndSettle();
+      expect(_key('currency-picker'), findsOneWidget);
+    });
+
+    testWidgets('currency: hidden without the prices flag', (tester) async {
+      await _pump(tester);
+      await _open(tester);
+      expect(_key('household-currency'), findsNothing);
+    });
+  });
+
   testWidgets('a long page scrolls inside the sheet', (tester) async {
     await _pump(
       tester,
@@ -1453,6 +1534,31 @@ void main() {
           await expectLater(screen, matchesGoldenFile('$shot-4-saved.png'));
         });
       }
+    }
+  });
+
+  group('screenshots (job 258)', () {
+    for (final locale in const [Locale('de'), Locale('en')]) {
+      final shot = 'goldens/switcher-household-${locale.languageCode}';
+      testWidgets('$shot: the household page with the moved controls', (
+        tester,
+      ) async {
+        await _pump(
+          tester,
+          insets: (top: 47.0, bottom: 34.0),
+          locale: locale,
+          flags: const {pricesFlag},
+        );
+        await _open(tester);
+        final screen = find.byType(MaterialApp);
+        await expectLater(screen, matchesGoldenFile('$shot-top.png'));
+        await tester.dragFrom(
+          tester.getCenter(_key('switcher-household-name')),
+          const Offset(0, -2000),
+        );
+        await tester.pumpAndSettle();
+        await expectLater(screen, matchesGoldenFile('$shot-end.png'));
+      });
     }
   });
 

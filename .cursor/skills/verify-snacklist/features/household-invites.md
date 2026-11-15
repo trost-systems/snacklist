@@ -33,6 +33,7 @@ One household shares one list, and a person can be in several households (job 16
 ## How to get to it (user POV)
 
 - Right after creating a household: the guided start's invite step (see onboarding).
+- Job 258: with the flag `list-declutter` on, the household page of the switcher sheet (top-left in the list tab) also has the pencil next to the name (rename dialog), „Währung“ (with the prices flag), „Beitritte bestätigen“ with the waiting requests (owner and admins) and „Haushalt verlassen“ (same dialogs as the More page; a successful leave closes the sheet). More has no household or „Partner einladen“ row then; the invite hints open the sheet's invite page from the list tab.
 - Later: tab „Mehr“ / "More", row „Partner einladen“ / "Invite your partner" (second group, or third with the flag `trip-mode` on, where „Einkauf starten“ comes first; one line; since job 85 no section heading and no household name), page „Einladungen“.
 - Joining: „Mit Code beitreten“ in the household sheet (tap the household's name top left of the list); or an invite link; or, signed in without a household, „Einladung annehmen“ on „Willkommen bei Snacklist“.
 - Household name: the chip on the list; renamed on the household page (More → the household's name). Switching: tap the chip.

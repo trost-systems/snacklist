@@ -20,8 +20,9 @@ import 'package:material_ui/material_ui.dart';
 /// `list-declutter`): today's household sheet as its first page, a page per
 /// household with its lists, one with its members and one to invite people
 /// (job 242). It opens on the shown household's page, never taller than the
-/// room below the status bar. Needs the [ListScope] above [context].
-Future<void> showSwitcherSheet(BuildContext context) {
+/// room below the status bar, or on [initial] (job 258: where the invite
+/// hints lead). Needs the [ListScope] above [context].
+Future<void> showSwitcherSheet(BuildContext context, {SwitcherPage? initial}) {
   // Fresh counts while the sheet opens; offline it shows the last ones.
   unawaited(context.read<SessionCubit>().refresh().catchError((Object _) {}));
   final holds = context.read<ListHolds>();
@@ -33,7 +34,7 @@ Future<void> showSwitcherSheet(BuildContext context) {
     showDragHandle: true,
     builder: (_) => RepositoryProvider<ListHolds>.value(
       value: holds,
-      child: const SwitcherSheet(),
+      child: SwitcherSheet(initial: initial),
     ),
   );
 }
@@ -76,7 +77,8 @@ final class const VoiceListsPage(
   final List<HouseholdList> lists,
 ) extends SwitcherPage;
 
-class const SwitcherSheet({super.key}) extends StatefulWidget {
+class const SwitcherSheet({final SwitcherPage? initial, super.key})
+    extends StatefulWidget {
   @override
   State<SwitcherSheet> createState() => _SwitcherSheetState();
 }
@@ -89,10 +91,12 @@ class _SwitcherSheetState() extends State<SwitcherSheet> {
   String? _shownId;
   ListCubit? _shownList;
 
-  late SwitcherPage _page = switch (context.read<SessionCubit>().state) {
-    InHousehold(:final household) => HouseholdListsPage(household.id),
-    _ => const HouseholdsPage(),
-  };
+  late SwitcherPage _page =
+      widget.initial ??
+      switch (context.read<SessionCubit>().state) {
+        InHousehold(:final household) => HouseholdListsPage(household.id),
+        _ => const HouseholdsPage(),
+      };
 
   @override
   void initState() {

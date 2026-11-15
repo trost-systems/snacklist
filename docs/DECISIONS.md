@@ -14207,3 +14207,19 @@ PM calls: Play voice caption „Per Sprachbefehl auf die Liste.“, assist headl
 ## Job 255b: store caption follow-up (review 0 of #484)
 
 #484 missed addenda 1 and 3. Invite subline now follows Peter's IC2 (in/IC.txt): „Lade alle ein. Mehrere Listen für jeden Anlass.“ / "Invite everyone. Separate lists for every occasion." The de-DE Play voice frame is `blocked` (no real-device German capture), the en-US one `on-hold` until job 256's English dictation is verified on a device; neither is faked. Held frames render as `*.BLOCKED.png` / `*.ON-HOLD.png` so a folder upload skips them. This supersedes the two job 255 paragraphs above (they say no in/IC.txt).
+
+## Job 258: household controls into the switcher sheet, then out of More
+
+- **Inventory first.** More's household page held rename, members (with role actions and
+  removal), „Leute einladen“, lists, currency, „Beitritte bestätigen“ with waiting requests, the
+  Siri/Alexa/KI default household and list, and „Haushalt verlassen“; „Partner einladen“ opened
+  the invite panel. The sheet already had members, role actions, invites, lists and the voice
+  default pages. Moved into the sheet's household page: rename, currency, join approval, leave.
+- **One implementation.** Rename and leave moved to `household_actions.dart`; More's page (flag
+  off) and the sheet call the same dialogs and confirms. A successful leave closes the sheet.
+- **Flag on = no household rows in More.** `list-declutter` hides the household and invite
+  rows; „Archivierte Haushalte“ stays. Flag off is unchanged.
+- **Routes kept.** `/more/household` and `/more/invites` stay for flag off, old links and
+  e2e; only the rows are hidden.
+- **Hints.** The invite hint and checklist step open the sheet's invite page from the list
+  tab with the flag on. From the Tipps page (no list scope there) they go to the list tab.

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:family_groceries/analytics/analytics.dart';
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/app/notices.dart';
 import 'package:family_groceries/app/router.dart';
 import 'package:family_groceries/design/motion.dart';
@@ -8,9 +9,11 @@ import 'package:family_groceries/design/pointy_hex.dart';
 import 'package:family_groceries/design/sticker.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/household/household_kind.dart';
+import 'package:family_groceries/household/switcher_sheet.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/add_sheet/add_sheet_cubit.dart';
 import 'package:family_groceries/list/list_cubit.dart';
+import 'package:family_groceries/list/list_scope.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/tips/checklist.dart';
@@ -238,12 +241,32 @@ void actOnHint(BuildContext context, Hint hint) {
 /// Opens what [action] is about.
 void openHintAction(BuildContext context, HintAction action) =>
     switch (action) {
-      HintAction.invite => context.go(invitesPath),
+      HintAction.invite => openInvite(context),
       HintAction.access => context.go(accessPath),
       HintAction.addHousehold => context.read<HintHost?>()?.addHousehold?.call(
         context,
       ),
     };
+
+/// Where "invite" leads: with the decluttered list (job 258) the switcher
+/// sheet's invite page, from the List tab where the sheet's scope is; More's
+/// Einladungen without it. More has no sheet, so a tap there goes to the
+/// List tab, whose hint opens it.
+void openInvite(BuildContext context) {
+  final declutter = context.read<Flags?>()?.isOn(listDeclutterFlag) ?? false;
+  if (!declutter) {
+    context.go(invitesPath);
+    return;
+  }
+  final session = context.read<SessionCubit>().state;
+  if (session is InHousehold && context.read<ListHolds?>() != null) {
+    unawaited(
+      showSwitcherSheet(context, initial: InvitePage(session.household.id)),
+    );
+  } else {
+    context.go(listPath);
+  }
+}
 
 /// One hint as a flat card: icon, title, text, its button if it has one,
 /// and an X that hides it for good. Flat: only the X and the button are
@@ -556,7 +579,7 @@ class const ChecklistCard({
                   action: switch (step) {
                     ChecklistStep.invite => (
                       l10n.hintInviteAction,
-                      () => context.go(invitesPath),
+                      () => openInvite(context),
                     ),
                     ChecklistStep.assistant => (
                       l10n.checklistOpen,

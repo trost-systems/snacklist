@@ -267,6 +267,11 @@ class _MoreListState() extends State<_MoreList> {
       (c) => c.state.noSale,
     );
     // Job 234: by hand, only while no trip runs for the user.
+    // Job 258: with the decluttered list the household sits in the list
+    // tab's switcher sheet, so More has no household rows.
+    final declutter = context.select<Flags?, bool>(
+      (flags) => flags?.isOn(listDeclutterFlag) ?? false,
+    );
     final tripMode = context.select<Flags?, bool>(
       (flags) => flags?.isOn(tripModeFlag) ?? false,
     );
@@ -289,7 +294,7 @@ class _MoreListState() extends State<_MoreList> {
         bool shown(_Item item) => switch (item) {
           _Item.startTrip => canStartTrip,
           _Item.premium => premium,
-          _Item.household || _Item.invite => household != null,
+          _Item.household || _Item.invite => household != null && !declutter,
           _Item.archived => widget.showArchived,
           _Item.help => widget.showHelp,
           _Item.rate => storeListingShown(
