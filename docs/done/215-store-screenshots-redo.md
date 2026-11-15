@@ -1,31 +1,34 @@
 # Job 215: store screenshots and demo videos, redone for Snacklist
 
+> Updated by job 252 (Legal caption rules N-187 to N-195): this note describes the set as it
+> stands now, 7 shots and 62 files. The `--assistants` variants, the Alexa and Siri-on-Play
+> captions and the api shot are gone (`docs/DECISIONS.md`, "Job 252"); the review addenda at the
+> end are history.
+
 Redo of job 65's closed PR #190, in the frame Peter picked in job 214: FR2 Großschrift with
-FR1's Wabenband in cobalt. Nothing was uploaded to any store and nothing was merged.
+FR1's Wabenband in cobalt. Nothing was uploaded to any store.
 
 ## What was built
 
-- **One command:** `scripts/store-screenshots.sh [--locale de-DE|en-US|all] [--store play|appstore|all] [--assistants neutral|named|named_siri] [--premium-label] [--compose-only] [--videos] [--keep]`.
-  `--premium-label` puts „Mit Snacklist Premium“ on the api shot. `--compose-only` frames the
-  last run's captures in `out/raw` again (another variant or caption) without a stack.
+- **One command:** `scripts/store-screenshots.sh [--locale de-DE|en-US|all] [--store play|appstore|all] [--premium-label] [--compose-only] [--videos] [--keep]`.
+  `--premium-label` puts „Mit Snacklist Premium“ on the assist shot (off until the `integration-lock` release). `--compose-only` frames the
+  last run's captures in `out/raw` again (another label or caption) without a stack.
   It films the real Snacklist release web build against a local stack with „Unser Haushalt“
-  (Anna, Jonas, Wochenmarkt, Bäckerei, Supermarkt, Drogerie) and writes 68 files for both
+  (Anna, Jonas, Wochenmarkt, Bäckerei, Supermarkt, Drogerie) and writes 62 files for both
   locales into `marketing/store-screenshots/out/`:
-  - Play phone 1080 × 1920, 8 shots.
+  - Play phone 1080 × 1920, 7 shots.
   - Play 7-inch tablet 1440 × 2560 and 10-inch tablet 1800 × 3200, 4 shots each, no text.
-  - App Store 6.9-inch iPhone 1320 × 2868 and 13-inch iPad 2064 × 2752, 8 shots each.
+  - App Store 6.9-inch iPhone 1320 × 2868 and 13-inch iPad 2064 × 2752, 7 shots each.
   - Play feature graphic 1024 × 500 (no name or logo) and icon 512 × 512.
   - All 24-bit RGB without alpha.
-- **Shots:** list, sync, add, order, voice, assist, api, invite. Voice and assist items arrive
-  through the local `voice` and `mcp` functions with Jonas's token. The api shot is the real
-  Zugänge screen of a `FLAGS_ON=public-api` build that shows the production hosts, with every
-  request answered by the local stack.
-- **Words:** all in `captions.yaml`, de-DE and en-US, every caption `draft`. Voice and assist
-  have a `neutral` variant (the default), `named` and `named_siri`. `--premium-label` puts
-  „Mit Snacklist Premium“ on the api shot.
+- **Shots:** list, sync, add, order, voice, assist, invite. Voice and assist items arrive
+  through the local `voice` and `mcp` functions with Jonas's token.
+- **Words:** all in `captions.yaml`, de-DE and en-US, every caption `draft`: neutral captions,
+  Siri („Funktioniert mit Siri“) on the App Store voice frame only, no Alexa, API or named AI
+  assistant. `--premium-label` is for the `integration-lock` release.
 - **Checks that fail a run:** size and store rule, alpha, 8 MB, text share over 20 % (Play),
   forbidden words (Premium, price, kostenlos, rankings, retailer chains, AI brands, Hummlist, a
-  split "Snacklist", assistant names outside named variants), honey rows not matching the
+  split "Snacklist", Alexa, API, automations, MCP, Hey Siri, trademark signs, alcohol, tobacco, Siri on Play), honey rows not matching the
   sticker, the feature graphic's centre zone. `compare.mjs` compares two runs.
 - **Workflow:** `.github/workflows/store-screenshots.yml`, workflow_dispatch only. It uploads the
   set as an artifact.
@@ -42,15 +45,13 @@ FR1's Wabenband in cobalt. Nothing was uploaded to any store and nothing was mer
 scripts/store-screenshots.sh                       # about 12 min, plus waiting for /tmp/fg-e2e.lock
 cp marketing/store-screenshots/out/manifest.json /tmp/a.json
 scripts/store-screenshots.sh && node marketing/store-screenshots/compare.mjs /tmp/a.json
-scripts/store-screenshots.sh --assistants named
 FG_PORT_PREFIX=<block> marketing/videos/remake.sh  # Linux host with Docker and Xvfb, about 19 min
 ```
 
 ## Results
 
-- **Full run:** 716 to 757 s on the Hetzner runner. 68 files, all checks pass.
-- **Determinism:** two neutral runs matched in 68 of 68 files (62 of 62 before the api shot). The named run differs in exactly the
-  12 voice and assist frames that carry text.
+- **Full run:** 716 to 757 s on the Hetzner runner. 62 files, all checks pass (job 252 rerun, about 13 min).
+- **Determinism:** two runs matched in job 215 (then 68 files, with the api shot); job 252's set was rendered once.
 - **Videos:** 16 files and 4 VTT files. 11.2 to 12.5 s, seam SSIM 0.996 to 0.997, posters
   27 to 48 KB, H.264 and VP9, no audio.
 - **Gates:** `scripts/verify.sh --only gitleaks,lint,site,fg-cli` passed. actionlint passes on the
@@ -60,18 +61,16 @@ FG_PORT_PREFIX=<block> marketing/videos/remake.sh  # Linux host with Docker and 
 
 `docs/screenshots/215/`:
 
-- both contact sheets;
-- the de-DE Play phone strip;
-- the feature graphic;
-- the named voice and assist frames;
+- both contact sheets (job 252 set, 7 shots);
+- the Play and App Store voice frames (Siri only on the App Store one);
+- the feature graphic and `CAPTIONS.md` (every caption per frame);
 - the video posters.
 
 ## Open
 
-- Legal and Peter, before any upload: `docs/NEEDS_LEAD.md` "Job 215". The points are the named
-  captions, MCP once it is paid (Apple 2.3.2), the API flag, the 50-list limit and an English
-  read.
-- The workflow can be started only once it is on main.
+- Legal and Peter, before any upload: `docs/NEEDS_LEAD.md` "Job 252": the exact captions in
+  `docs/screenshots/215/CAPTIONS.md`, the feature-graphic tagline, „wie ihr wollt“ against the
+  50-list cap, and the Premium label for 1 Dec.
 - The household-sync compact cut layers Jonas's phone over the bottom of Anna's (DECISIONS job
   215, item 9).
 
