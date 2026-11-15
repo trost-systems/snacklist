@@ -34,13 +34,14 @@ Future<void> showInviteSheet(
 }) => showModalBottomSheet<void>(
   context: context,
   isScrollControlled: true,
+  useSafeArea: true,
   useRootNavigator: true,
   showDragHandle: true,
   builder: (_) => InviteSheet(household: household, origin: from),
 );
 
 /// The invite sheet's content: its title, the household's name and
-/// [InvitePanel].
+/// [InvitePanel]. Also the switcher sheet's invite page (job 242).
 class const InviteSheet({
   required final Household household,
   required final InviteContext origin,

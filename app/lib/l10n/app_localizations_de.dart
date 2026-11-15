@@ -3186,6 +3186,11 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String subtotalsPriced(int count) {
+    return '$count mit Preis';
+  }
+
+  @override
   String get subtotalsAllBought => 'alles gekauft';
 
   @override

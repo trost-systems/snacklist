@@ -544,6 +544,7 @@ class _ShoppingListState() extends State<_ShoppingList> {
                             Semantics(
                               sortKey: const OrdinalSortKey(1),
                               child: BottomScrollEdge(
+                                clear: declutter,
                                 child: ShoppingListView(
                                   onInteract: _leaveField,
                                   pricing: _pricing,
@@ -713,6 +714,7 @@ class const _AddBar({
     // The hex is the container's, never the field's: an InputBorder on the
     // field changes its padding when focused (DECISIONS, Job 52 item 7).
     final compose = Container(
+      key: const ValueKey('add-bar-hex'),
       height: _composeHeight,
       // The text starts clear of the tip; the buttons' own padding keeps
       // their icons clear of the other one.

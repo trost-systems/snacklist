@@ -138,6 +138,35 @@ try {
   await page.waitForTimeout(800);
   await shot('05-sheet-members');
 
+  // Job 242: „Leute einladen“ is a page of the same sheet, back leads to the members.
+  // In German the barrier and the drag handle are „Schließen“ too: the ✕ is
+  // the small one at the right.
+  const closeButton = async () => {
+    const all = page.getByRole('button', { name: L('close'), exact: true });
+    let found = null;
+    for (let i = 0; i < await all.count(); i++) {
+      const box = await all.nth(i).boundingBox();
+      if (box && box.width < 100 && box.x > (found?.box.x ?? 195)) found = { box, at: all.nth(i) };
+    }
+    return found?.at ?? null;
+  };
+  await page.getByRole('button', { name: L('inviteSheetTitle'), exact: true }).click();
+  await page.getByRole('button', { name: L('newInvite'), exact: true }).waitFor({ timeout: 10_000 });
+  await page.waitForTimeout(800);
+  const backToMembers = page.getByRole('button', { name: L('switcherBack', { page: L('householdMembersTitle') }), exact: true });
+  assert((await backToMembers.count()) === 1, 'the invite page goes back to the members');
+  assert((await closeButton()) !== null, 'the sheet has Schließen');
+  await shot('05b-sheet-invite');
+  await page.mouse.move(195, 600);
+  await page.mouse.wheel(0, 4000);
+  await page.waitForTimeout(800);
+  const closeBox = await (await closeButton())?.boundingBox();
+  assert(closeBox && closeBox.y >= 0, `Schließen stays in view after scrolling the invite page (${JSON.stringify(closeBox)})`);
+  await shot('05c-sheet-invite-end');
+  await backToMembers.click();
+  await page.getByRole('heading', { name: L('householdMembersTitle') }).or(page.getByText(L('householdMembersTitle'), { exact: true })).first().waitFor({ timeout: 10_000 });
+  await page.waitForTimeout(500);
+
   await page.getByRole('button', { name: new RegExp(`^${L('switcherBack', { page: '' }).trim()}`) }).first().click();
   await invite.waitFor({ timeout: 10_000 });
   await page.getByRole('button', { name: new RegExp(`^${L('switcherBack', { page: '' }).trim()}`) }).first().click();

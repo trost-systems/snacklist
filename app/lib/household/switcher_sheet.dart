@@ -17,8 +17,9 @@ import 'package:material_ui/material_ui.dart';
 
 /// The switcher sheet of the decluttered list (job 229, flag
 /// `list-declutter`): today's household sheet as its first page, a page per
-/// household with its lists, and one with its members. It opens on the
-/// shown household's page. Needs the [ListScope] above [context].
+/// household with its lists, one with its members and one to invite people
+/// (job 242). It opens on the shown household's page, never taller than the
+/// room below the status bar. Needs the [ListScope] above [context].
 Future<void> showSwitcherSheet(BuildContext context) {
   // Fresh counts while the sheet opens; offline it shows the last ones.
   unawaited(context.read<SessionCubit>().refresh().catchError((Object _) {}));
@@ -26,6 +27,7 @@ Future<void> showSwitcherSheet(BuildContext context) {
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
+    useSafeArea: true,
     useRootNavigator: true,
     showDragHandle: true,
     builder: (_) => RepositoryProvider<ListHolds>.value(
@@ -42,6 +44,7 @@ sealed class const SwitcherPage() {
     HouseholdsPage() => null,
     HouseholdListsPage() => const HouseholdsPage(),
     MembersPage(:final householdId) => HouseholdListsPage(householdId),
+    InvitePage(:final householdId) => MembersPage(householdId),
   };
 }
 
@@ -54,6 +57,9 @@ final class const HouseholdListsPage(final String householdId)
 
 /// A household's members and its open person invites.
 final class const MembersPage(final String householdId) extends SwitcherPage;
+
+/// "Leute einladen" for a household: person invites and the group link.
+final class const InvitePage(final String householdId) extends SwitcherPage;
 
 class const SwitcherSheet({super.key}) extends StatefulWidget {
   @override
@@ -98,16 +104,27 @@ class _SwitcherSheetState() extends State<SwitcherSheet> {
     if (session is! InHousehold) {
       return const SizedBox.shrink();
     }
+    final l10n = AppLocalizations.of(context);
+    Household? householdOf(String id) =>
+        session.households.where((h) => h.id == id).firstOrNull;
     // A household left or removed meanwhile: the households show.
     final page = switch (_page) {
-      HouseholdListsPage(:final householdId) || MembersPage(:final householdId)
-          when !session.households.any((h) => h.id == householdId) =>
-        const HouseholdsPage(),
+      HouseholdListsPage(:final householdId) ||
+      MembersPage(:final householdId) ||
+      InvitePage(
+        :final householdId,
+      ) when householdOf(householdId) == null => const HouseholdsPage(),
       final page => page,
     };
+    final backTo = switch (page) {
+      HouseholdsPage() => null,
+      HouseholdListsPage() => l10n.switcherHouseholds,
+      MembersPage(:final householdId) => householdOf(householdId)?.name,
+      InvitePage() => l10n.householdMembersTitle,
+    };
     final duration = hlMotion(context, HlDuration.short);
-    // The system back goes a page back; a tap beside the sheet, Escape or
-    // a drag down closes it from any page.
+    // The system back goes a page back; a tap beside the sheet, Escape, a
+    // drag down or ✕ closes it from any page.
     final view = BackButtonListener(
       onBackButtonPressed: () async {
         if (page.back case final back?) {
@@ -118,32 +135,67 @@ class _SwitcherSheetState() extends State<SwitcherSheet> {
       },
       child: SafeArea(
         key: const ValueKey('switcher-sheet'),
-        child: AnimatedSize(
-          duration: duration,
-          alignment: Alignment.topCenter,
-          child: AnimatedSwitcher(
-            duration: duration,
-            layoutBuilder: _topAligned,
-            child: switch (page) {
-              HouseholdsPage() => _HouseholdsView(
-                key: const ValueKey('switcher-households'),
-                session: session,
-                held: _shownId,
-                open: (id) => _go(HouseholdListsPage(id)),
-              ),
-              HouseholdListsPage(:final householdId) ||
-              MembersPage(:final householdId) => SwitcherHousehold(
-                key: ValueKey('switcher-household-$householdId'),
-                userId: session.userId,
-                household: session.households.firstWhere(
-                  (h) => h.id == householdId,
+        // Back and Schließen stay put while a long page scrolls under them.
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: switch ((page.back, backTo)) {
+                    (final back?, final label?) => SwitcherBackRow(
+                      label,
+                      onBack: () => _go(back),
+                    ),
+                    _ => const SizedBox.shrink(),
+                  },
                 ),
-                shown: session.household.id == householdId,
-                members: page is MembersPage,
-                go: _go,
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(end: HlSpace.s2),
+                  child: IconButton(
+                    key: const ValueKey('switcher-close'),
+                    style: IconButton.styleFrom(
+                      visualDensity: VisualDensity.standard,
+                    ),
+                    tooltip: l10n.close,
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ),
+              ],
+            ),
+            Flexible(
+              child: AnimatedSize(
+                duration: duration,
+                alignment: Alignment.topCenter,
+                child: AnimatedSwitcher(
+                  duration: duration,
+                  layoutBuilder: _topAligned,
+                  child: switch (page) {
+                    HouseholdsPage() => _HouseholdsView(
+                      key: const ValueKey('switcher-households'),
+                      session: session,
+                      held: _shownId,
+                      open: (id) => _go(HouseholdListsPage(id)),
+                    ),
+                    HouseholdListsPage(:final householdId) ||
+                    MembersPage(:final householdId) ||
+                    InvitePage(:final householdId) => SwitcherHousehold(
+                      key: ValueKey('switcher-household-$householdId'),
+                      userId: session.userId,
+                      household: session.households.firstWhere(
+                        (h) => h.id == householdId,
+                      ),
+                      shown: session.household.id == householdId,
+                      page: page,
+                      go: _go,
+                    ),
+                  },
+                ),
               ),
-            },
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -295,7 +347,7 @@ Widget liftedRow(Widget child, int index, Animation<double> animation) =>
       child: child,
     );
 
-/// "‹ Haushalte" and "‹ Zuhause": back to [label]'s page.
+/// "‹ Haushalte", "‹ Zuhause" and "‹ Mitglieder": back to [label]'s page.
 class const SwitcherBackRow(
   final String label, {
   required final VoidCallback onBack,

@@ -23,18 +23,20 @@ import 'package:family_groceries/session/session_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// One household's two pages of the switcher sheet (job 229): its lists
-/// ([HouseholdListsPage]) and, with [members], its members
-/// ([MembersPage]). Holds the household's list ([ListHolds]) and its
-/// invites while either page shows, so going between them reloads
-/// nothing.
+/// One household's pages of the switcher sheet (job 229): its lists
+/// ([HouseholdListsPage]), its members ([MembersPage]) and "Leute
+/// einladen" ([InvitePage], job 242). Holds the household's list
+/// ([ListHolds]) and its invites while one of them shows, so going between
+/// them reloads nothing.
 class const SwitcherHousehold({
   required final String userId,
   required final Household household,
 
   /// It is the household the list shows.
   required final bool shown,
-  required final bool members,
+
+  /// One of this household's pages.
+  required final SwitcherPage page,
   required final ValueChanged<SwitcherPage> go,
   super.key,
 }) extends StatefulWidget {
@@ -84,18 +86,17 @@ class _SwitcherHouseholdState() extends State<SwitcherHousehold> {
     super.dispose();
   }
 
-  /// "Einladen" and "Leute einladen": the invite sheet; the open invites
-  /// count again once it closes.
-  Future<void> _invite() async {
-    await showInviteSheet(
-      context,
-      widget.household,
-      from: InviteContext.switcher,
-    );
-    if (!_invites.isClosed) {
-      await _invites.reload();
+  @override
+  void didUpdateWidget(SwitcherHousehold oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // The invite page has its own (InvitesScope): the open invites count
+    // again once it goes.
+    if (oldWidget.page is InvitePage && widget.page is! InvitePage) {
+      unawaited(_invites.reload());
     }
   }
+
+  void _invite() => widget.go(InvitePage(widget.household.id));
 
   @override
   Widget build(BuildContext context) => MultiBlocProvider(
@@ -109,28 +110,33 @@ class _SwitcherHouseholdState() extends State<SwitcherHousehold> {
         alignment: Alignment.topCenter,
         children: [...previous, ?current],
       ),
-      child: widget.members
-          ? _MembersView(
-              key: const ValueKey('switcher-members-page'),
-              userId: widget.userId,
-              household: widget.household,
-              back: () => widget.go(HouseholdListsPage(widget.household.id)),
-              invite: () => unawaited(_invite()),
-            )
-          : _ListsView(
-              key: const ValueKey('switcher-lists-page'),
-              household: widget.household,
-              shown: widget.shown,
-              go: widget.go,
-              invite: () => unawaited(_invite()),
-            ),
+      child: switch (widget.page) {
+        MembersPage() => _MembersView(
+          key: const ValueKey('switcher-members-page'),
+          userId: widget.userId,
+          household: widget.household,
+          invite: _invite,
+        ),
+        InvitePage() => InviteSheet(
+          key: const ValueKey('switcher-invite-page'),
+          household: widget.household,
+          origin: InviteContext.switcher,
+        ),
+        HouseholdsPage() || HouseholdListsPage() => _ListsView(
+          key: const ValueKey('switcher-lists-page'),
+          household: widget.household,
+          shown: widget.shown,
+          go: widget.go,
+          invite: _invite,
+        ),
+      },
     ),
   );
 }
 
-/// The household's page: back to the households, its name with
-/// "Einladen", the members row, its lists (long-press then drag orders
-/// them) and "Neue Liste". A tap on a list shows it, in this household.
+/// The household's page: its name with "Einladen", the members row, its
+/// lists (long-press then drag orders them) and "Neue Liste". A tap on a
+/// list shows it, in this household.
 class const _ListsView({
   required final Household household,
   required final bool shown,
@@ -172,10 +178,6 @@ class const _ListsView({
       slivers: [
         SliverList.list(
           children: [
-            SwitcherBackRow(
-              l10n.switcherHouseholds,
-              onBack: () => go(const HouseholdsPage()),
-            ),
             Padding(
               padding: const EdgeInsetsDirectional.fromSTEB(
                 24,
@@ -331,13 +333,12 @@ enum _ListAction() {
   delete,
 }
 
-/// The members page: back to the household, its members with what the user
-/// may do to them ([MemberTiles]), "Leute einladen", and the open person
-/// invites, each withdrawn with "Widerrufen".
+/// The members page: its members with what the user may do to them
+/// ([MemberTiles]), "Leute einladen", and the open person invites, each
+/// withdrawn with "Widerrufen".
 class const _MembersView({
   required final String userId,
   required final Household household,
-  required final VoidCallback back,
   required final VoidCallback invite,
   super.key,
 }) extends StatefulWidget {
@@ -374,7 +375,6 @@ class _MembersViewState() extends State<_MembersView> {
       shrinkWrap: true,
       padding: const EdgeInsets.only(bottom: HlSpace.s3),
       children: [
-        SwitcherBackRow(household.name, onBack: widget.back),
         HouseholdSheetTitle(l10n.householdMembersTitle),
         FutureBuilder(
           future: _members,
