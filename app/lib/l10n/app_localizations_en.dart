@@ -2783,31 +2783,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String tripPromptAt(String store) {
-    return 'Log your trip to $store?';
-  }
-
-  @override
-  String get tripPrompt => 'Log your trip?';
-
-  @override
-  String tripPromptTicked(int count, String names) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count items',
-      one: '1 item',
-    );
-    return '$_temp0 ticked off: $names';
-  }
-
-  @override
-  String get tripPromptLog => 'Log';
-
-  @override
-  String get tripLogged => 'Trip logged';
-
-  @override
   String get priceAdd => 'Price';
 
   @override

@@ -136,7 +136,8 @@ enum TripSource() {
   /// The history's "Einkauf eintragen".
   manual,
 
-  /// The list's card after a store's section was ticked off.
+  /// The list's card after a store's section was ticked off (removed in
+  /// job 264; kept for the wire and old events).
   prompt,
 }
 

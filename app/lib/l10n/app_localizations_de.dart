@@ -2805,25 +2805,6 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String tripPromptAt(String store) {
-    return 'Einkauf bei $store eintragen?';
-  }
-
-  @override
-  String get tripPrompt => 'Einkauf eintragen?';
-
-  @override
-  String tripPromptTicked(int count, String names) {
-    return '$count Artikel abgehakt: $names';
-  }
-
-  @override
-  String get tripPromptLog => 'Eintragen';
-
-  @override
-  String get tripLogged => 'Einkauf eingetragen';
-
-  @override
   String get priceAdd => 'Preis';
 
   @override

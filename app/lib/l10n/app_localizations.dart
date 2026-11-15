@@ -4538,36 +4538,6 @@ abstract class AppLocalizations {
   /// **'{names} und {count} mehr'**
   String tripSummaryMore(String names, int count);
 
-  /// List: the card offered once all of a store's items are ticked off; opens the trip sheet with them
-  ///
-  /// In de, this message translates to:
-  /// **'Einkauf bei {store} eintragen?'**
-  String tripPromptAt(String store);
-
-  /// List: the card offered once all items without a store are ticked off
-  ///
-  /// In de, this message translates to:
-  /// **'Einkauf eintragen?'**
-  String get tripPrompt;
-
-  /// List, trip card: how many items this device ticked off at the store, then their names (up to three, then and N more)
-  ///
-  /// In de, this message translates to:
-  /// **'{count} Artikel abgehakt: {names}'**
-  String tripPromptTicked(int count, String names);
-
-  /// List, trip card: the button that opens the trip sheet with the ticked items
-  ///
-  /// In de, this message translates to:
-  /// **'Eintragen'**
-  String get tripPromptLog;
-
-  /// Snackbar: the trip from the list's card was saved to the history
-  ///
-  /// In de, this message translates to:
-  /// **'Einkauf eingetragen'**
-  String get tripLogged;
-
   /// Job 190: ghost chip on a row without today's price, after a plus icon
   ///
   /// In de, this message translates to:

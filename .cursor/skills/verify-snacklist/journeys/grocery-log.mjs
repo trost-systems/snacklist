@@ -4,8 +4,7 @@
 // them), then proves gl-calendar (a 3-trip and a 5-trip day), gl-day-filter, gl-journal,
 // gl-view-toggle with its persistence over a reload, gl-store-timeline, gl-free-window (a 40-day-old
 // trip locked for a Free member), gl-sheet (add by hand, edit, delete, checked through
-// trip_history) and gl-prompt (the card only after a store's last open item is ticked, Eintragen,
-// the prefilled sheet, saved). With --compact only the 358 px checks run.
+// trip_history) and gl-no-card (no inline card after a store's last open item is ticked). With --compact only the 358 px checks run.
 //
 //   node journeys/grocery-log.mjs <evidence dir> [--lang de|en] [--dark] [--compact]
 import { createHash } from 'node:crypto';
@@ -333,48 +332,22 @@ try {
     await until(async () => (await edit.count()) === 0 && (await page.getByRole('heading', { name: L('historyThisWeek') }).count()) === 1, 'the journal back');
     check((await tile('Joghurt').count()) === 0, 'the deleted trip is gone from the journal');
 
-    // gl-prompt
+    // gl-no-card: ticking a store's last open item shows no inline card (job 264)
     await openTab(page, L, 'tabList');
-    const card = L('tripPromptAt', { store: 'Lidl' });
-    const cardShown = async () => (await aria()).includes(card);
-    await reveal(page, itemRow(page, prompted[0]));
-    await shot('13-list-lidl-section');
-    for (const [i, item] of prompted.entries()) {
+    const logCard = /eintragen\?|Log your trip/;
+    for (const item of prompted) {
       await reveal(page, itemRow(page, item));
       await itemRow(page, item).click();
       // A build with trip-mode on too (as internal testers have it) asks „Kaufst du gerade ein?“ after a tick.
       const justTicked = page.getByRole('button', { name: L('shopAskNo'), exact: true });
       if (await justTicked.waitFor({ timeout: 2_000 }).then(() => true, () => false)) {
         await justTicked.click();
-        log(`answered „${L('shopAskNo')}“ after ticking ${item} (trip-mode on)`);
       }
       await until(async () => (await itemRow(page, item).count()) === 0, `${item} ticked off`);
-      if (i < prompted.length - 1) {
-        await page.waitForTimeout(800);
-        check(!(await cardShown()), `no card after ticking ${item} (${prompted.length - 1 - i} open at Lidl)`);
-        if (i === 0) await shot('14-after-first-tick-no-card');
-      }
     }
-    await page.mouse.move(page.viewportSize().width / 2, page.viewportSize().height / 2);
-    await page.mouse.wheel(0, -5000);
-    await until(cardShown, `„${card}“ after the last Lidl item`);
-    await shot('15-prompt-card');
-    await button(L('tripPromptLog')).click();
-    const prefilled = sheet(L('tripAdd'));
-    await prefilled.waitFor({ timeout: 5_000 });
-    for (const item of prompted) check((await prefilled.getByRole('button', { name: L('tripRemoveItem', { name: item }) }).count()) === 1, `the sheet is prefilled with ${item}`);
-    // A picked chip is aria-current on the web.
-    check((await prefilled.getByRole('button', { name: 'Lidl', exact: true }).getAttribute('aria-current')) === 'true', 'Lidl is the picked store');
-    check((await prefilled.getByRole('button', { name: L('dayToday'), exact: true }).getAttribute('aria-current')) === 'true', 'today is the picked day');
-    await shot('16-prompt-sheet');
-    await prefilled.getByRole('button', { name: L('save'), exact: true }).click();
-    await prefilled.waitFor({ state: 'detached', timeout: 10_000 });
-    await until(async () => (await aria()).includes(L('tripLogged')), `„${L('tripLogged')}“`, 5_000);
-    check(!(await cardShown()), 'the card is gone after saving');
-    await shot('17-logged-snackbar');
-    const logged = (await history()).trips.find((t) => t.store_id === lidl && t.shopped_on === today && t.items.some((i) => i.name === 'Butter'));
-    log(`trip_history: ${JSON.stringify(logged)}`);
-    check(logged?.items.map((i) => i.name).sort().join() === [...prompted].sort().join(), 'the prompt saved one Lidl trip today with Butter, Nudeln and Reis');
+    await page.waitForTimeout(800);
+    check(!logCard.test(await aria()), 'no inline log card after ticking the last open Lidl item');
+    await shot('13-no-card-after-last-tick');
     if (errors.length) throw new Error(`page errors: ${errors.join('; ')}`);
   }
 } catch (error) {

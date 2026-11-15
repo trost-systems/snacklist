@@ -14567,3 +14567,20 @@ Peter's calls on job 260's feedback round (t958u, 15 Nov 2026) plus the lead's t
   16 failures before the fix; its "yes" was not seen in a failure.
 - **Not done.** A log in `device_cache.dart`'s two `catch` blocks (review 1, nice to have 3):
   the traces showed no caught error, and the spec's message now tells a lost save apart.
+
+## Job 264: the inline "Log your trip" card is removed, one trip prompt per tick (2026-11-15)
+
+1. **Trip logging happens only through trip mode.** Peter, 15 Nov 2026 (t952u, t953u): the list showed
+   job 199's card ("Log your trip to dm?") and trip mode's ask sheet at once. The 14 Nov pick (t864u, job 234)
+   stands: TM2's ask sheet on a tick while no trip runs, TM1's slim strip while one runs, TM1's summary.
+   This supersedes job 199's post-shop prompt (t830u H2/H3).
+2. **Removed:** `TripPromptCards`, the `TripPrompts` cubit and `TripTicks`, their provider in `list_screen.dart`,
+   the `forget(...)` call in `trip_on_list.dart`, the strings `tripPrompt*` and `tripLogged`, and their tests.
+   `TripSource.prompt` stays in the enum: it is a wire and analytics value of trips already logged.
+3. **The pharmacy rule (Legal GL-2 / N-167) already lives where the ask uses it**: `TripCubit._ticked`
+   (`trip_cubit.dart`), tested in `list_trip_widget_test.dart`. Nothing to move.
+4. **Kept:** the history (G1/G2, calendar dots, manual "Einkauf eintragen", edit, delete), trips written by trip mode,
+   tables, migrations, export, deletion, retention. No flag or rollout changed. With `trip-mode` off a tick shows no
+   trip prompt.
+5. Pins: `list_trip_widget_test.dart` (one prompt with both flags on, none with trip-mode off, none on later ticks
+   of a running trip). Screenshots: `out/264/`.

@@ -64,7 +64,7 @@ class const Store({
   };
 
   /// Legal GL-2 (N-167): a pharmacy by its name or seed key, in any case.
-  /// Its ticks raise no trip question and no "Einkauf eintragen?" card, so
+  /// Its ticks raise no trip question, so
   /// what is bought there is only logged when the user chooses to.
   /// Drugstores (dm, Rossmann) are not pharmacies.
   bool get isPharmacy {

@@ -237,6 +237,31 @@ void main() {
     expect(shop.sessions.saved, isEmpty);
   });
 
+  testWidgets(
+    'grocery-log and trip-mode on: ticking the last dm item shows only the '
+    'ask sheet, no inline log card',
+    (tester) async {
+      await pumpList(tester, flags: const {tripModeFlag, groceryLogFlag});
+      await tick(tester, 'Seife');
+      expect(asked, findsOneWidget);
+      expect(find.textContaining('eintragen'), findsNothing);
+      expect(key('trip-prompt-dm'), findsNothing);
+      await answer(tester, 'trip-ask-no');
+      expect(asked, findsNothing);
+      expect(find.textContaining('eintragen'), findsNothing);
+    },
+  );
+
+  testWidgets('grocery-log on, trip-mode off: a tick shows no trip prompt', (
+    tester,
+  ) async {
+    await pumpList(tester, flags: const {groceryLogFlag});
+    await tick(tester, 'Seife');
+    expect(asked, findsNothing);
+    expect(find.textContaining('eintragen'), findsNothing);
+    expect(key('trip-prompt-dm'), findsNothing);
+  });
+
   testWidgets('every tick asks, also right after Nein', (tester) async {
     final shop = await pumpList(tester);
     await tick(tester, 'Milch');
@@ -462,8 +487,9 @@ void main() {
     expect(strip, findsOneWidget);
   });
 
-  testWidgets("a running trip holds job 199's cards back, its end clears "
-      'them', (tester) async {
+  testWidgets('a running trip shows the strip and no prompt on later ticks', (
+    tester,
+  ) async {
     await pumpList(
       tester,
       flags: const {tripModeFlag, groceryLogFlag},
@@ -472,42 +498,10 @@ void main() {
         ..remoteAdd('Seife', storeId: 'dm'),
     );
     await startByTick(tester, 'Milch');
-    expect(key('trip-prompt-lidl'), findsNothing);
-    await tester.tap(key('trip-strip-end'));
-    await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(key('trip-summary-done'), 200);
-    await tester.tap(key('trip-summary-done'));
-    await tester.pumpAndSettle();
-    expect(key('trip-prompt-lidl'), findsNothing);
-  });
-
-  testWidgets("a trip's ticks are not offered again by job 199's card, also "
-      'at a store that still had open items', (tester) async {
-    await pumpList(
-      tester,
-      flags: const {tripModeFlag, groceryLogFlag},
-      seed: (repo) => repo
-        ..remoteAdd('Reis', storeId: 'lidl')
-        ..remoteAdd('Butter', storeId: 'lidl')
-        ..remoteAdd('Nudeln', storeId: 'lidl')
-        ..remoteAdd('Seife', storeId: 'dm'),
-    );
-    await tick(tester, 'Reis');
-    await answer(tester, 'trip-ask-no');
-    await startByTick(tester, 'Seife');
-    await tick(tester, 'Butter');
-    await tester.tap(key('trip-strip-end'));
-    await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(key('trip-summary-done'), 200);
-    await tester.tap(key('trip-summary-done'));
-    await tester.pumpAndSettle();
-    expect(key('trip-prompt-dm'), findsNothing, reason: 'the trip logged it');
-    await tick(tester, 'Nudeln');
-    await answer(tester, 'trip-ask-no');
-    expect(key('trip-prompt-lidl'), findsOneWidget);
-    expect(find.textContaining('Butter'), findsNothing, reason: 'logged');
-    expect(find.textContaining('Reis'), findsOneWidget);
-    expect(find.textContaining('Nudeln'), findsOneWidget);
+    await tick(tester, 'Seife');
+    expect(strip, findsOneWidget);
+    expect(asked, findsNothing);
+    expect(find.textContaining('eintragen'), findsNothing);
   });
 
   testWidgets('a Verlauf entry of a trip opens the same summary', (

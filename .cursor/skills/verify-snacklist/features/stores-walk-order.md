@@ -60,5 +60,5 @@ Preconditions:
 - Hidden flags for dm's food categories are stored but change nothing on the list: an item in Obst & Gemüse tagged to dm still shows. unverified (no UI to set hidden; read from code only).
 - Fold state and the dismissed „Erste Schritte“ card are per device (browser storage); a fresh browser context shows the card again.
 - The e2e build sets some defines (`app/config/e2e.json`: LEGAL_DRAFTS, HOUSEHOLD_ARCHIVE, INTEGRATION_LOCK) and no PostHog flags; store behaviour is the same in both builds.
-- A store whose name holds apotheke, pharmacy, pharmacie, farmacia, apteka, eczane or docmorris counts as a pharmacy: with the internal flags it raises no trip question and no „Einkauf eintragen?“ card and stays out of trips (trip-mode `tm-pharmacy`, grocery-log). dm and Rossmann are not pharmacies.
+- A store whose name holds apotheke, pharmacy, pharmacie, farmacia, apteka, eczane or docmorris counts as a pharmacy: with the internal flags it raises no trip question and stays out of trips (trip-mode `tm-pharmacy`, grocery-log). dm and Rossmann are not pharmacies.
 - A hold on a divider does nothing, „Ohne Laden“ included; its categories open from Liste → „Anpassen“ → „Ohne Laden“ (`/edit/none`).
