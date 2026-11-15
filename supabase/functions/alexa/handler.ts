@@ -113,21 +113,32 @@ const addIntentOf = (envelope: Envelope): AddIntent => {
   return list ? { name: intent.name, list } : { name: intent.name };
 };
 
+/** Amazon forbids one slot name with two types, so AddToListIntent's phrase is `itemphrase`. */
+const itemsSlotName = (intentName: string | undefined) =>
+  intentName === 'AddToListIntent' ? 'itemphrase' : 'items';
+
+const itemsSlotOf = (
+  intent: { name?: string; slots?: Record<string, { value?: string } | undefined> } | undefined,
+) => intent?.slots?.[itemsSlotName(intent?.name)];
+
 /** The intent a dialog directive updates: the items slot as given, the list slot kept. */
-const updatedIntent = ({ name, list }: AddIntent, items: string | undefined) => ({
-  name,
-  confirmationStatus: 'NONE',
-  slots: {
-    items: {
-      name: 'items',
-      ...(items !== undefined && { value: items }),
-      confirmationStatus: 'NONE',
+const updatedIntent = ({ name, list }: AddIntent, items: string | undefined) => {
+  const slotName = itemsSlotName(name);
+  return {
+    name,
+    confirmationStatus: 'NONE',
+    slots: {
+      [slotName]: {
+        name: slotName,
+        ...(items !== undefined && { value: items }),
+        confirmationStatus: 'NONE',
+      },
+      ...(name === 'AddToListIntent' && {
+        list: { name: 'list', ...(list && { value: list }), confirmationStatus: 'NONE' },
+      }),
     },
-    ...(name === 'AddToListIntent' && {
-      list: { name: 'list', ...(list && { value: list }), confirmationStatus: 'NONE' },
-    }),
-  },
-});
+  };
+};
 
 /** `invalid_token:expired`, `user_deleted`: closed words, never the token or the message. */
 const linkReason = (e: AuthError) => e.detail ? `${e.reason}:${e.detail}` : e.reason;
@@ -146,7 +157,7 @@ function alexaResponse(reply: Reply): Response {
   if (reply.elicit) {
     response.directives = [{
       type: 'Dialog.ElicitSlot',
-      slotToElicit: 'items',
+      slotToElicit: itemsSlotName(intent.name),
       updatedIntent: updatedIntent(intent, undefined),
     }];
   }
@@ -193,7 +204,7 @@ export function requestLine(
 ): string {
   const request = envelope?.request;
   const linked = Boolean(envelope && (accessTokenOf(envelope) ?? request?.body?.accessToken));
-  const slot = request?.intent?.slots?.items;
+  const slot = itemsSlotOf(request?.intent);
   const words = slot?.value?.trim() ? slot.value.trim().split(/\s+/).length : 0;
   const details = [
     `rid=${word(request?.requestId?.split('.').at(-1)?.slice(-12))}`,
@@ -264,7 +275,7 @@ export function createHandler(deps: Deps) {
   async function addItems(envelope: Envelope): Promise<Reply> {
     const voice = speechFor(envelope.request.locale);
     const { speech } = voice;
-    const text = envelope.request.intent?.slots?.items?.value?.trim() ?? '';
+    const text = itemsSlotOf(envelope.request.intent)?.value?.trim() ?? '';
     if (text.length > maxTextLength) return { speech: speech.tooLong, end: true, kind: 'too-long' };
     const heard = text ? voice.parse(text, maxItems + 1) : [];
     if (heard.length === 0) {
