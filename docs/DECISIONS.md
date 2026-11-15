@@ -13461,3 +13461,88 @@ answers to job 237's two questions, are below.
 - **`scripts/ci-timings.sh --steps` prints a median now.** For an even number of runs it printed
   the upper of the two middle values: 18:13 for the two-shard gate step, whose median over the
   12 runs is 17:51.
+
+## Job 221: the save after a tick encodes one row, 2026-11-14
+
+- **Where the list's CPU time goes, measured without rendering.** `hc-list-cpu`
+  (`tool/hillclimb/hc-list-cpu/measure.sh`, probe `app/test_driver/list_bench_probe.dart`) runs
+  the list's in-memory work in a Linux profile (AOT) build on the hc-ui-perf household: 300 open
+  items, 10 stores. What one build of the list derives (sections, recently used, claims) takes
+  about 0.2 ms (0.18 to 0.75 over 20 launches): not hot. The save is: `ListCubit` saves the
+  snapshot when an op is queued and again when the server acknowledges it (240 saves for 120
+  ticks and unticks), and each save built the whole list's JSON, about 199,000 characters, on
+  the UI isolate.
+- **`ListSnapshot.encode()` keeps each item's JSON text with the `Item`.** An `Item` has only
+  final fields of values that cannot change (strings, numbers, an enum, `DateTime`s and a
+  `Price` of the same), so its text cannot go stale; a tick makes one new `Item` and the save
+  encodes that one. A local `DateTime` is written in the device's zone, without a conversion
+  to UTC: the kept rows hold the server's UTC times, and an item with the device's clock lives
+  in the queue, which is encoded on every save. The catalog is encoded every time, because its
+  lists could be changed in place (nothing does today) and it is 7 % of the text. The text is
+  character for character what `jsonEncode(toJson())` gives (tested against it, with quotes, a
+  backslash, control characters, an emoji, a price and claims; and after a change of each of
+  the 21 columns an item is saved with, the id included), so what the device holds, when it is
+  saved and what an older build reads back are unchanged.
+  `_PrefsListCache` asks for the text only after it knows the household is still the user's
+  (tested: a skipped save encodes nothing). An error while building the map is now caught like
+  any failed write (`DeviceCache._write`); `toJson()` used to run inside `save()`, outside that
+  catch, and nothing in it throws.
+- **Measured: the UI-isolate time of a tick and its save's text, 4.54 ms before and 1.11 ms
+  after.** `origin/main` at 46f0ae0d (its `app/lib` untouched; the probe added, with one line
+  in it that gives `ListSnapshot` an `encode()` of `jsonEncode(toJson())` so that it compiles)
+  against this change rebased onto it, seven alternating pairs of launches on one fixture
+  file, x86 on the shared box at load 3 to 14: 4.54 ms (3.83 to 5.87) and 1.11 ms (0.99 to
+  1.48); the untick 4.32 ms (3.66 to 6.25) and 1.01 ms (0.97 to 1.22). Each binary made 240
+  saves, the last 199,393 characters in both.
+- **What that number is.** The probe's cache makes the save's text inside `save()`, so the tick
+  and its text are timed together. The app does not run them in one go: on `main` the device
+  cache built the map (`toJson()`, 0.63 to 1.10 ms in these launches) inside `save()` and the
+  text after its household read; now both come after that read. The number is UI-isolate work
+  saved per tick. Where it falls against a frame is not measured.
+- **How steady it is.** An earlier set of five pairs, with a `main` binary built from a0cd3c73
+  (the probe and the harness repairs on top), gave 3.73 ms (3.29 to 7.71) and 1.10 ms (1.02 to
+  1.47) at load 6 to 14. Inside one binary (`LIST_BENCH_ENCODE=whole` encodes as before), five
+  alternating pairs: 4.86 ms (4.07 to 5.92) and 1.11 ms (0.82 to 1.31) at load 4 to 11, and
+  again at load 6 to 22: 6.87 ms (4.44 to 8.10) and 1.19 ms (0.99 to 1.33). The old way moved
+  between 3.7 and 6.9 ms over the four sets and the new way stayed at 1.0 to 1.2 ms; what
+  moves the old way (load is the guess) is not traced.
+- **The first save after a load costs more than before.** After a load or a resync (start,
+  resume, reconnect) every row is a new `Item`, so that save encodes them all and keeps the
+  texts: 3.41 ms (2.98 to 6.67) against 2.86 ms (2.60 to 4.46) for the whole encode in the same
+  seven launches of the new binary, 0.4 to 3.6 ms more per launch. After a resync alone that
+  save runs once the list has been quiet for 300 ms. A tap pays it only when it comes before
+  that (a tick saves at once): that tap then costs more than on `main`, by the difference
+  above. A start with a saved list that reaches the server pays it at least twice: at once for
+  the device's copy (the load sets the queue), and again after its resyncs, whose rows are new
+  `Item`s once more. A start makes up to three (its own, one when the channel joins, one when
+  the server's Postgres listener runs), and each answer that is shown after the list was quiet
+  for 300 ms gets its own save (the usuals answer after each one restarts that wait). How far
+  apart they land in the app is not measured, and no test holds the count.
+- **What a save still costs** (three launches of a probe variant with the parts timed apart,
+  load 10 to 11; the variant is not in the tree): the catalog 0.15 to 0.16 ms, the usuals 0.06
+  to 0.07 ms, joining the 300 kept texts 0.02 to 0.03 ms, and putting the parts into the one
+  string the store takes 0.46 to 0.53 ms. The catalog holds an emoji and the items none, so the
+  joined items have one byte per character and the whole text two; that the last step's cost
+  is this widening copy is inferred, not traced.
+- **Not measured:** a phone (slower cores, so the saved time is likely larger there: a guess);
+  `shared_preferences`' own write of the 199,000 characters and the household read every save
+  makes first (`householdsOf`: a prefs read and a `jsonDecode`), both left as they were; the
+  web build, where an `Expando` is a JavaScript `WeakMap`. The texts stay in memory with their
+  items: about the size of one saved list (inferred).
+- **Not done:** the queue under its own key, so that a tick writes a few hundred characters. It
+  changes what is saved where (two keys that must agree after a crash), which is job 222's
+  ground; an isolate would copy the list to encode it and does not exist on the web.
+- **The hill-climb harnesses run on `main` again.** Since job 169b the app reads its households
+  and members through rpc and items carry a list; both fakes (`hc-size-start`, `hc-ui-perf`)
+  answered neither, so the probes never got to the list. They answer them now, write a request
+  log with `FAKE_SUPABASE_LOG=<file>`, and the measure scripts take `FLUTTER_DIR` and only the
+  result line of the harness output. `ui_perf_probe.dart` scrolls a store divider into reach
+  before it taps it. Startup on `main` a0cd3c73 with the repaired harness, three runs of 15
+  launches at load 6 to 7: first frame 267, 288 and 346 ms, list shown 312, 338 and 440 ms,
+  interactive 368, 401 and 536 ms, against job 100's baseline of 292, 400 and 445 ms
+  (`docs/hillclimb/hc-size-start.md`). Two runs are under it and the third, at the highest load,
+  above: no regression measured since, and no gap found to climb.
+- **Frame times: run, and void.** Two runs of `hc-ui-perf` on `main` scored 133 and 161 against
+  job 108's 7.479, at load 10 to 15. Job 108's rule voids a run above load 3.5, so they say
+  nothing about a regression; the size of the gap is not explained. The probe's sections flow
+  can also hold the frames of the new scroll into reach, which job 108's did not.

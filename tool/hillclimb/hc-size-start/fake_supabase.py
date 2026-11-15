@@ -7,12 +7,15 @@ socket answers 404, so the list runs offline-marked, as on a flaky start.
 """
 
 import json
+import os
 import sys
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
 USER = "00000000-0000-4000-8000-000000000001"
 HOUSEHOLD = "00000000-0000-4000-8000-0000000000aa"
+LIST = "00000000-0000-4000-8000-0000000000bb"
 CATEGORIES = ["Obst & Gemüse", "Brot & Backwaren", "Milchprodukte", "Fleisch & Fisch", "Getränke", "Haushalt"]
 NAMES = [
     "Äpfel", "Bananen", "Tomaten", "Gurke", "Brötchen", "Vollkornbrot", "Milch", "Joghurt",
@@ -44,6 +47,7 @@ def item(i, name, status="active"):
         "added_by": USER,
         "categorized_via": "seed",
         "canonical_key": name.lower(),
+        "list_id": LIST,
     }
 
 
@@ -56,7 +60,32 @@ TABLES = {
     "store_category_order": [],
     "profiles": [{"id": USER, "display_name": "Peter"}],
     "entitlements": [],
+    "user_entitlements": [],
+    "item_claims": [],
+    "lists": [{"id": LIST, "name": "Einkaufsliste", "position": 0, "seed_key": "main"}],
+    "households": [{"currency": "EUR"}],
 }
+# What the app reads through rpc since job 169b (several households per user); any other rpc
+# answers [].
+RPCS = {
+    "my_households": [
+        {
+            "id": HOUSEHOLD,
+            "name": "Zuhause",
+            "is_default": True,
+            "member_count": 1,
+            "open_count": len(ITEMS),
+            "kind": "family",
+            "role": "owner",
+            "premium": False,
+            "join_approval": False,
+        }
+    ],
+    "household_members_of": [{"user_id": USER, "display_name": "Peter", "role": "owner"}],
+}
+
+
+LOG = os.environ.get("FAKE_SUPABASE_LOG")
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -64,6 +93,13 @@ class Handler(BaseHTTPRequestHandler):
 
     def log_message(self, *_):
         pass
+
+    def log_request(self, code="-", size="-"):
+        # FAKE_SUPABASE_LOG=<file>: one line per answer (wall-clock µs, method, path, status), so
+        # a call the app makes that this fake does not know shows up instead of failing silently.
+        if LOG:
+            with open(LOG, "a") as log:
+                log.write(f"{time.time_ns() // 1000} {self.command} {self.path} {int(code)}\n")
 
     def _send(self, status, body):
         data = json.dumps(body).encode()
@@ -101,7 +137,11 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         self.rfile.read(int(self.headers.get("Content-Length") or 0))
-        self._send(200, [])
+        self._send(200, RPCS.get(urlparse(self.path).path.removeprefix("/rest/v1/rpc/"), []))
+
+    def do_PUT(self):
+        self.rfile.read(int(self.headers.get("Content-Length") or 0))
+        self._send(404, {"message": "not here"})
 
     def do_PATCH(self):
         body = json.loads(self.rfile.read(int(self.headers.get("Content-Length") or 0)) or b"{}")
@@ -114,6 +154,12 @@ class Server(ThreadingHTTPServer):
     # The app opens about eight connections at once; with the default backlog of 5 the kernel
     # drops a SYN now and then, and the client resends it a second later.
     request_queue_size = 128
+
+    def handle_error(self, request, client_address):
+        # The probe exits with connections open; that reset is no error. Its traceback would
+        # also land in measure.sh's JSON (xvfb-run sends stderr to stdout).
+        if not isinstance(sys.exc_info()[1], ConnectionError):
+            super().handle_error(request, client_address)
 
 
 if __name__ == "__main__":

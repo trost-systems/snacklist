@@ -12,7 +12,8 @@ here="$(cd "$(dirname "$0")" && pwd)"
 root="$(cd "$here/../../.." && pwd)"
 runs="${1:-15}"
 port=60081
-export PATH="$HOME/flutter/bin:$PATH"
+# CI's SDK when it sits next to the default one (scripts/lib.sh does the same).
+export PATH="${FLUTTER_DIR:-$HOME/flutter}/bin:$PATH"
 export ANDROID_HOME="${ANDROID_HOME:-$HOME/android-sdk}" ANDROID_SDK_ROOT="${ANDROID_HOME:-$HOME/android-sdk}"
 if [[ -z ${JAVA_HOME:-} ]]; then
   JAVA_HOME="$(ls -d "$HOME"/opt/jdk-17* | head -1)"
@@ -52,7 +53,7 @@ flutter build linux --profile -t test_driver/startup_probe.dart \
 
 echo "measure: $runs launches under /tmp/fg-hc-measure.lock" >&2
 start="$(flock /tmp/fg-hc-measure.lock xvfb-run -a -s "-screen 0 1280x800x24" \
-  python3 "$here/startup.py" build/linux/x64/profile/bundle "$port" "$runs")"
+  python3 "$here/startup.py" build/linux/x64/profile/bundle "$port" "$runs" | grep '^{' | tail -1)"
 
 python3 - "$here/baseline.json" "$download" "$aab_bytes" "$start" "$runs" \
   "$(git -C "$root" rev-parse --short HEAD)$(git -C "$root" diff --quiet HEAD -- app || echo -dirty)" <<'EOF'
