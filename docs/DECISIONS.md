@@ -14195,3 +14195,16 @@ PM calls: Play voice caption „Per Sprachbefehl auf die Liste.“, assist headl
 ## Job 255: store caption accuracy fixes
 
 PM calls: Play voice caption „Per Sprachbefehl auf die Liste.“, assist headline „Sag’s dem Assistenten.“. The feature graphic tagline already was „Gemeinsam einkaufen, ohne Werbung.“. Invite subline kept (Peter's wording; no in/IC.txt). No real-device German capture exists for the Play voice frame, so it is marked BLOCKED (`status: blocked`, `play:` override), not faked.
+
+## Job 263: join and create household onboarding prototypes (2026-11-15)
+
+Peter asked to revisit “Paste invite” and to prototype how a new user joins a household they were invited to, and how one creates their own (t951u). This job ships no app change: research, a sandbox in `docs/design/household-onboarding/` and a draft PR that is never merged.
+
+1. **Two rounds, one engine.** `join/` (JH) and `create/` (CH) are two pages on one `proto.js`; each option is data (`screens`, `meta`, `paths(scenario)`). Reason: the tables, the side-by-side strips, the storyboards and the Try-it phone all come from the same paths, so they can't disagree.
+2. **Taps are measured, not typed.** `metrics.js` counts taps and screens from the paths; `verify.mjs` walks every option, scenario and goal (6 × 12 × 2 for JH, 6 × 3 × 2 for CH) with real clicks and fails if the walk differs from the table, the page or the Markdown (`tools/tables.mjs` writes those). Rules: a tap is 1, “open the App Store and search” 2, copying from a chat 2; typing, waiting and switching apps 0; Sign in with Apple; Skip wherever offered.
+3. **Measured on an iPhone.** iOS has no deferred deep link, so it is the case that decides; Android differences are in each option's details.
+4. **The Android install referrer stays out.** Job 178 removed it on Legal N-111 (an automatic read on every first start needs consent under § 25 TDDDG). Stage 1's draft said it still existed; corrected. Any new device read in these flows starts from the user's tap (JH1's “I was invited”, JH5's system Paste button).
+5. **JH1 uses a real vendor class.** Branch or AppsFlyer OneLink; Firebase Dynamic Links is shut down. It is the option that leans on an existing deep-link service; JH2, JH3 and JH5 stay on today's stack (JH5 adds Supabase anonymous sign-ins), JH4 uses Apple App Clips.
+6. **No terms step.** The app has no terms to accept today; account steps keep Imprint and Privacy links. The public join page's facts (first name, household, counts, Premium) are the only things a landing shows; `verify.mjs` checks that no screen before the join shows an item name.
+7. **Recommendation: JH3, runner-up JH2; CH1, runner-up CH2.** Questions JH-Q1 to JH-Q9 and CH-Q1 to CH-Q6, each with a default, in the RECOMMENDATION files.
+8. **Overview link.** #414's `rounds.js` gets two `linked` entries (`../household-onboarding/join/`, `/create/`), on top of job 260's; its `shoot-pages.mjs` expects six. `build.sh` builds the preview with #414's overview at the root and job 260's round beside it, so every overview link resolves.
