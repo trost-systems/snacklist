@@ -49,7 +49,8 @@ export async function sweepFeedbackScreenshots(
   return removed;
 }
 
-function pgCode(e: unknown): string {
+/** A Postgres error's SQLSTATE for logs, else "unknown": never its message. */
+export function pgCode(e: unknown): string {
   const { code } = (e ?? {}) as { code?: unknown };
   return typeof code === 'string' && /^[0-9A-Z]{5}$/.test(code) ? code : 'unknown';
 }

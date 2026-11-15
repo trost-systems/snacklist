@@ -38,7 +38,7 @@ final class const FeedbackOffline() extends FeedbackError;
 /// The server answered with an error.
 final class const FeedbackRefused(final String code) extends FeedbackError;
 
-/// Storage turned the screenshot down (job 267: the day's or the bucket's
+/// The screenshot was turned down (job 267: the day's or the bucket's
 /// quota, its size or type): sending without it works.
 final class const FeedbackScreenshotRefused(final String code)
     extends FeedbackError;
@@ -87,43 +87,37 @@ class SupabaseFeedbackRepository(
 
   static const _duplicate = '23505';
 
-  /// The private bucket (docs/FEEDBACK.md): clients may only add to their
-  /// own folder.
-  static const bucket = 'feedback-screenshots';
-
-  /// Uploads [png] as `<user id>/<note id>.png` and returns that name. An
-  /// object of that name is already there only from this user's own
-  /// earlier try of this note: uploaded.
+  /// Has the `feedback-screenshots` function store [png] as
+  /// `<user id>/<note id>.png` and returns that name. Only the function
+  /// stores, under the quotas (docs/FEEDBACK.md); an image already there
+  /// is this user's own earlier try of this note: uploaded.
   Future<String> _upload(String id, Uint8List png) async {
-    final userId = _client.auth.currentUser?.id;
-    if (userId == null) {
-      throw const FeedbackRefused('signed_out');
-    }
-    final name = '$userId/$id.png';
+    final FunctionResponse response;
     try {
-      await _client.storage
-          .from(bucket)
-          .uploadBinary(
-            name,
-            png,
-            fileOptions: const FileOptions(contentType: 'image/png'),
+      response = await _client.functions
+          .invoke(
+            'feedback-screenshots/upload/$id',
+            headers: const {'Content-Type': 'image/png'},
+            body: png,
           )
           .timeout(timeout);
-    } on StorageException catch (e) {
-      if (e.statusCode == '409' || e.error == 'Duplicate') {
-        return name;
-      }
-      // Without an answer storage_client names the client error's type.
-      throw switch (int.tryParse(e.statusCode ?? '')) {
-        final status? when const {403, 413, 415}.contains(status) =>
-          FeedbackScreenshotRefused('storage_$status'),
-        final status? => FeedbackRefused('storage_$status'),
-        null => const FeedbackOffline(),
+    } on FunctionException catch (e) {
+      throw switch (e) {
+        // No answer: no connection, the request never left.
+        FunctionsFetchException() => const FeedbackOffline(),
+        // The quota, the size or the type.
+        FunctionException(status: final status && (403 || 413 || 415)) =>
+          FeedbackScreenshotRefused('upload_$status'),
+        FunctionException(:final status) => FeedbackRefused('upload_$status'),
       };
     } on Object {
+      // A timeout.
       throw const FeedbackOffline();
     }
-    return name;
+    return switch (response.data) {
+      {'name': final String name} => name,
+      _ => throw const FeedbackRefused('upload_bad_response'),
+    };
   }
 
   Future<void> _insert(FeedbackSubmission note, String? screenshot) async {

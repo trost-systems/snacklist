@@ -52,7 +52,7 @@ class const HexSegmented<T>({
           .copyWith(fontWeight: FontWeight.w800),
     );
     final inset = hexLabelInset(style, scaler);
-    double widthOf(HexSegment<T> segment) {
+    double labelWidth(HexSegment<T> segment) {
       final text = TextPainter(
         text: TextSpan(text: segment.label, style: style),
         textScaler: scaler,
@@ -61,10 +61,15 @@ class const HexSegmented<T>({
       )..layout();
       final width = text.width;
       text.dispose();
-      return width + (segment.icon == null ? 0 : _iconSize + _iconGap);
+      return width;
     }
 
-    final widest = segments.map(widthOf).reduce(math.max);
+    final labels = segments.map(labelWidth).toList();
+    final widestLabel = labels.reduce(math.max);
+    final widest = [
+      for (final (i, segment) in segments.indexed)
+        labels[i] + (segment.icon == null ? 0 : _iconSize + _iconGap),
+    ].reduce(math.max);
     return Semantics(
       container: true,
       label: label,
@@ -140,6 +145,12 @@ class const HexSegmented<T>({
                               enabled: enabled,
                               slide: slide,
                               inset: inset,
+                              labelWidth:
+                                  widestLabel + 2 * inset >
+                                      (constraints.maxWidth - 2 * along) /
+                                          segments.length
+                                  ? widestLabel
+                                  : null,
                               icon:
                                   widest + 2 * inset <=
                                   (constraints.maxWidth - 2 * along) /
@@ -167,6 +178,10 @@ class const _Segment<T>({
 
   /// Room between the label and the segment's tips.
   required final double inset,
+
+  /// The widest label's width when it does not fit: every label then
+  /// shrinks by the same factor. Null when they fit.
+  required final double? labelWidth,
 
   /// Whether the segment shows its icon: all of them or none.
   required final bool icon,
@@ -243,7 +258,15 @@ class _SegmentState<T>() extends State<_Segment<T>> {
                           Flexible(
                             child: FittedBox(
                               fit: BoxFit.scaleDown,
-                              child: Text(segment.label, maxLines: 1),
+                              child: SizedBox(
+                                width: widget.labelWidth,
+                                child: Text(
+                                  segment.label,
+                                  maxLines: 1,
+                                  softWrap: false,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
                             ),
                           ),
                         ],

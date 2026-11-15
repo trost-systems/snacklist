@@ -73,6 +73,10 @@ class _AnnotatorState() extends State<Annotator> {
   final _typing = TextEditingController();
   final _typingFocus = FocusNode();
 
+  /// Ties the field being typed in, which lies above BetterFeedback, to
+  /// [_typingAt] on the scaled-down canvas.
+  final _typingLink = LayerLink();
+
   Uint8List? _result;
   FeedbackController? _controller;
 
@@ -276,7 +280,7 @@ class _AnnotatorState() extends State<Annotator> {
           WidgetsBinding.instance.addPostFrameCallback(
             (_) => _start(controller),
           );
-          return _layer(l10n, t);
+          return _layer(t);
         },
       ),
     );
@@ -295,8 +299,42 @@ class _AnnotatorState() extends State<Annotator> {
             canvas: _canvas,
             color: t.surfaceSunken,
             sheetHeight: sheetHeight,
+            // Its covered column, and the canvas with nothing to read.
             child: ExcludeSemantics(child: feedback),
           ),
+          // Outside the excluded subtree: the web types through the field's
+          // semantics node.
+          if (_typingAt case final at?)
+            Positioned(
+              left: 0,
+              top: 0,
+              width: math.max(120, media.size.width - at.dx),
+              child: CompositedTransformFollower(
+                link: _typingLink,
+                showWhenUnlinked: false,
+                child: Material(
+                  type: MaterialType.transparency,
+                  child: TextField(
+                    key: const ValueKey('annotator-text'),
+                    autofillHints: null,
+                    controller: _typing,
+                    focusNode: _typingFocus,
+                    style: _words(t),
+                    cursorColor: t.tomato,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => _commitText(),
+                    // The app's field contour would frame the words.
+                    decoration:
+                        InputDecoration.collapsed(
+                          hintText: l10n.feedbackAnnotateTextHint,
+                        ).copyWith(
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                        ),
+                  ),
+                ),
+              ),
+            ),
           Positioned(
             left: 0,
             right: 0,
@@ -312,14 +350,8 @@ class _AnnotatorState() extends State<Annotator> {
   /// The screenshot, our marks and the gestures that make them; what
   /// BetterFeedback captures. Its scaling applies to the gestures too, so
   /// their positions are the screenshot's own.
-  Widget _layer(AppLocalizations l10n, SnacklistColors t) {
-    final words = TextStyle(
-      fontFamily: HlFont.sans,
-      fontSize: 18,
-      fontWeight: FontWeight.w700,
-      color: t.tomato,
-      backgroundColor: t.surface.withValues(alpha: 0.85),
-    );
+  Widget _layer(SnacklistColors t) {
+    final words = _words(t);
     return KeyedSubtree(
       key: const ValueKey('annotator-canvas'),
       child: Stack(
@@ -348,33 +380,27 @@ class _AnnotatorState() extends State<Annotator> {
                 top: at.dy,
                 child: Text(text, style: words),
               ),
+          // Where the field being typed in shows, scaled down with this.
           if (_typingAt case final at?)
             Positioned(
               left: at.dx,
               top: at.dy,
-              width: math.max(120, MediaQuery.sizeOf(context).width - at.dx),
-              child: Material(
-                type: MaterialType.transparency,
-                child: TextField(
-                  key: const ValueKey('annotator-text'),
-                  autofillHints: null,
-                  controller: _typing,
-                  focusNode: _typingFocus,
-                  style: words,
-                  cursorColor: t.tomato,
-                  textInputAction: TextInputAction.done,
-                  onSubmitted: (_) => _commitText(),
-                  decoration: InputDecoration.collapsed(
-                    hintText: l10n.feedbackAnnotateTextHint,
-                  ),
-                ),
-              ),
+              child: CompositedTransformTarget(link: _typingLink),
             ),
         ],
       ),
     );
   }
 }
+
+/// A text mark's style, in the screenshot's own coordinates.
+TextStyle _words(SnacklistColors t) => TextStyle(
+  fontFamily: HlFont.sans,
+  fontSize: 18,
+  fontWeight: FontWeight.w700,
+  color: t.tomato,
+  backgroundColor: t.surface.withValues(alpha: 0.85),
+);
 
 /// Shows BetterFeedback with [canvas], the screenshot, centred and its tool
 /// column (see [Annotator]) covered with [color], the background, which
@@ -538,6 +564,10 @@ class const _Tools({
                     IconButton(
                       key: const ValueKey('annotator-close'),
                       tooltip: l10n.close,
+                      constraints: const BoxConstraints.tightFor(
+                        width: HlSize.target,
+                        height: HlSize.target,
+                      ),
                       onPressed: onClose,
                       icon: const Icon(Icons.close),
                     ),
@@ -553,6 +583,7 @@ class const _Tools({
                       key: const ValueKey('annotator-done'),
                       style: FilledButton.styleFrom(
                         minimumSize: const Size(96, 52),
+                        visualDensity: VisualDensity.standard,
                         padding: const EdgeInsets.symmetric(
                           horizontal: HlSpace.s5,
                         ),
@@ -601,6 +632,10 @@ class const _Tools({
                     IconButton(
                       key: const ValueKey('annotator-undo'),
                       tooltip: l10n.feedbackAnnotateUndo,
+                      constraints: const BoxConstraints.tightFor(
+                        width: HlSize.target,
+                        height: HlSize.target,
+                      ),
                       onPressed: canUndo ? onUndo : null,
                       icon: const Icon(Icons.undo),
                     ),

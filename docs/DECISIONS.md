@@ -14584,3 +14584,43 @@ Peter's calls on job 260's feedback round (t958u, 15 Nov 2026) plus the lead's t
    trip prompt.
 5. Pins: `list_trip_widget_test.dart` (one prompt with both flags on, none with trip-mode off, none on later ticks
    of a running trip). Screenshots: `out/264/`.
+
+## Job 267 review 0: screenshots only through the function, text on the web (2026-11-15)
+
+Review 0 of #499 found two must-fixes, live on main since b5dfba00. This follow-up closes both.
+
+1. **Clients get no Storage policy on `feedback-screenshots`.** A signed upload URL bypassed the
+   quotas: Storage checks the insert policy once, in a test insert it rolls back, and the later PUT
+   runs as the storage superuser. The review stored 300 images against a cap of 250. The insert
+   policy is dropped, so neither a direct upload nor `upload/sign` works for a client. A regression
+   test mints signed URLs past the quota and expects refusals; with the old policy put back it fails.
+2. **Uploads go through `POST /functions/v1/feedback-screenshots/upload/<note id>`.** The route takes
+   the app's own session only (API and MCP tokens are refused, as for account deletion), a lowercase
+   uuid, a PNG signature and at most 2 MiB. `public.feedback_screenshot_admit` takes a
+   transaction-scoped advisory lock (`'storage_buckets:' || bucket`, the form job 253's outsiders
+   sweep accepts) and answers `exists`, `quota` or `new`. The function holds that transaction until
+   the Storage API has stored the file, so parallel uploads serialize: 15 at once for one user store
+   exactly 10, and three users racing at 240 stop at exactly 250. The lock waits at most 12 s and the
+   put 10 s, both under the app's 15 s. `exists` answers 200, so a retry or a lost answer converges.
+   The old quota helper is revoked from `authenticated` and left unused (squawk forbids dropping a
+   function).
+3. **The delete trigger queues only names that exist in Storage**, so notes naming images that were
+   never uploaded cannot fill the sweep's batches.
+4. **The text field being typed in lives outside `ExcludeSemantics`.** The web build types through a
+   field's semantics node, so the field inside the excluded package subtree took no input. It now
+   sits in our own Stack, tied to the tap point on the scaled canvas with a
+   `CompositedTransformFollower`. Committed text still paints inside the captured canvas. The e2e
+   types a text mark on the web build and finds its pixels in the uploaded PNG.
+5. **Smaller fixes from the review.** The annotator's ✕, Rückgängig and Fertig are at least 48 px.
+   `HexSegmented` shrinks every label by the same factor when the widest does not fit, and leaves
+   them alone when they do: at 160 % "Rechteck" no longer shrinks alone. The preview image has no
+   unnamed semantics node. The feature file no longer says the flag needs analytics consent.
+6. **Not taken, with reasons.**
+   - A per-user cap on kept images, and an alert near the bucket cap: the internal flag keeps the
+     audience to testers, and the note still sends without its image.
+   - A pg_cron sweep instead of Keepalive: it needs the vault secret and a function URL set up by
+     hand, like the digest. Keepalive's own re-enable step covers the 60-day pause.
+   - A localized screen-name label: the form shows exactly what is sent.
+   - The capture cost on the More tap: it needs a phone measurement.
+   - Dropping `feedback`: the lead's addendum 1 asked for it, and NEEDS_LEAD already asks.
+   - `screenshot: false` in analytics with the flag off: documented in ANALYTICS.md.
