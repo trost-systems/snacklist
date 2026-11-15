@@ -35,6 +35,8 @@ it either completes or deletes nothing.
 | OAuth grants for connected apps (`auth.oauth_consents`, `auth.oauth_authorizations`) and their sessions | Deleted. Connected MCP clients lose access at once. |
 | Authorship of history (`item_events.actor`) | Removed (set to null) in every household |
 | "Added by" and "bought by" on items (`items.added_by`, `items.bought_by`) | Removed (set to null) |
+| Feedback notes (`feedback`) | Deleted |
+| Feedback screenshots (Storage bucket `feedback-screenshots`, job 267) | Deleted right after the transaction, every image in the account's folder, also uploads that never got a note: the account function removes them through the Storage API before it answers. If that fails, the next daily sweep removes them, so within a day (`docs/FEEDBACK.md`, "Screenshots") |
 | Sign in with Apple tokens at Apple | Revoked when possible (see below) |
 | Local device data (cached list, household, session) | Cleared on the device that deletes |
 | Snacklist Lifetime purchases (`purchases.user_id`, `entitlements.granted_by`, job 25) | The link to the account is removed (set to null). The purchase row stays without it, and the household keeps its unlock (see "What stays") |
@@ -126,6 +128,7 @@ own data:
 | `history` | your entries in the item history (`added`, `bought` and so on), with item name, category and time |
 | `access_tokens` | name, last four characters, created, last used and revoked times. The export never includes the token or its hash. |
 | `connected_apps` | the OAuth apps you allowed, with their scopes and grant times |
+| `feedback` | your feedback notes with their context fields, and since job 267 the object name of an attached screenshot (not the image) |
 | `purchases` | the Snacklist Lifetime purchases your account verified: store, product, the store's transaction id, environment, purchase and refund times, price, currency, country, and the household it unlocks (job 25) |
 
 Other members' names and data are not part of the export. Only a session
@@ -140,6 +143,9 @@ in the app itself can call the export, never an MCP OAuth token.
   (`POST /functions/v1/account/delete`). It accepts only the app's own
   session JWT and refuses personal access tokens and OAuth client tokens
   with 403.
+- After a successful deletion the function runs the feedback screenshot sweep
+  (`supabase/functions/_shared/feedback_screenshots.ts`) for at most 5 seconds. Its
+  result never changes the answer, which old app builds parse.
 - Retrying is safe. A second call after a successful deletion whose
   response got lost still answers 200.
 - The app retries a deletion once, after one second, when the edge

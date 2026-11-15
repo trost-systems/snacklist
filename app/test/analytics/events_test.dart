@@ -122,6 +122,16 @@ void main() {
         'contact_ok': false,
       },
     ),
+    (
+      'feedback_submitted',
+      {
+        'category': 'bug',
+        'entry_point': 'shake',
+        'screen': 'stores',
+        'contact_ok': false,
+        'screenshot': true,
+      },
+    ),
   ];
   final allowed32a = <(String, Map<String, Object>)>[
     for (final via in categorizedVia) ('item_categorized', {'via': via}),
@@ -228,6 +238,11 @@ void main() {
     ('feedback_submitted', {'message': 'Der Haken hängt'}, 'the note'),
     ('feedback_submitted', {'category': 'Bug'}, 'a label as category'),
     ('feedback_submitted', {'entry_point': 'tap'}, 'an entry not built'),
+    (
+      'feedback_submitted',
+      {'screenshot': 'u1/n1.png'},
+      "the screenshot's name, not whether one went",
+    ),
     ('feedback_submitted', {'screen': '/join/ABCD2345'}, 'a path as screen'),
     ('feedback_submitted', {'screen': 'Milch'}, 'an item as screen'),
     ('feedback_submitted', {'contact_ok': 'yes'}, 'contact as text'),

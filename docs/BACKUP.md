@@ -180,7 +180,8 @@ Sign in to the app. Everyone signs in again (see below).
 - **OAuth consents and authorizations** of the MCP server: MCP clients
   (Claude) connect again. Personal access tokens are in the backup and keep
   working.
-- **Storage objects** (the app stores none) and anything else outside
+- **Storage objects** (feedback screenshots since job 267: restored notes keep the name of an
+  image that is gone) and anything else outside
   `public`, `auth.users` and `auth.identities`, such as the auth audit log.
 - **Project settings**: edge function secrets, auth URLs and providers,
   the database password, Vercel's environment variables. They live in the

@@ -1,6 +1,6 @@
 # Feedback
 
-Mehr → "Feedback senden" (`more-feedback`) opens a sheet where the user writes a short note (1 to 2,000 characters), optionally picks Bug, Idee or Sonstiges and ticks "Peter darf mich dazu kontaktieren", and sends it. The note goes into `public.feedback` with the app version, build, platform, OS version, app language (no screen name since job 259), and nothing from the list. Clients can only insert; reading is for the service role (`docs/FEEDBACK.md`). On success the sheet closes and "Danke!" shows; on a failure the note stays with "Erneut senden".
+Mehr → "Feedback senden" (`more-feedback`) opens a sheet where the user writes a short note (1 to 2,000 characters), optionally picks Bug, Idee or Sonstiges and ticks "Snacklist Support darf mich dazu kontaktieren", and sends it. The note goes into `public.feedback` with the app version, build, platform, OS version, app language (no screen name since job 259), and nothing from the list. Clients can only insert; reading is for the service role (`docs/FEEDBACK.md`). On success the sheet closes and "Danke!" shows; on a failure the note stays with "Erneut senden".
 
 ## Sub-features
 
@@ -10,6 +10,7 @@ Mehr → "Feedback senden" (`more-feedback`) opens a sheet where the user writes
 - `fb-limits` from 1,800 characters `feedback-counter` shows "N / 2000"; over 2,000 the field says "Höchstens 2000 Zeichen" and Send is disabled. Blank notes can't be sent.
 - `fb-retry` without a connection `feedback-error` ("Nicht gesendet. …") shows, the note stays, and `feedback-retry` ("Erneut senden") replaces Send. Closing (`feedback-close`) keeps the note for the next open.
 - `fb-screen` the row's `screen` is null (More's row attaches none).
+- `fb-fb2` with the PostHog flag `feedback-fb2` (job 267): the form from More offers `feedback-add-screenshot` once the More tab was entered by its tab (the screen left is pictured); it opens the annotator (`annotator-canvas`, tools `annotator-tool-pen` / `-rectangle` / `-text`, `annotator-undo` for the last mark of any tool, `annotator-close` ✕ without a picture, `annotator-done`). After „Fertig“ the form shows `feedback-send-screenshot` (switch „Bildschirmfoto“) and `feedback-screenshot-preview`; the PNG is uploaded to the private bucket `feedback-screenshots` as `<uid>/<note id>.png` before the row, whose `screenshot` column names it. A shake (iOS and Android only) shows `shake-sheet` („Problem mit diesem Bildschirm melden?“, `shake-with-screenshot`, `shake-without`, `shake-close`), then the form with `feedback-send-screen` („Bildschirmname“ and the live screen's name). Einstellungen shows `settings-shake` („Schütteln für Feedback“) on phones with the flag on.
 
 ## How to get to it (user POV)
 
@@ -39,5 +40,6 @@ Preconditions: the baseline from `features/README.md`; peter signed in on the li
 
 - The sheet covers the tabs: close it (`feedback-close` or `fg back`) before `fg tap --key tab-list`.
 - The note is kept when the sheet is closed without sending; a recipe that expects a blank form sends first or types over it: `fg type --key feedback-message --input <text>` replaces the field's text.
-- `screen` is null from More's row; only the shake entry (job 138, unmerged) takes the live screen.
+- `screen` is null from More's row; only the shake entry (job 267, flag `feedback-fb2`, iOS and Android) takes the live screen. Linux has no accelerometer: the shake flow is covered by `app/test/feedback/fb2_test.dart`, not drivable with fg.
+- With the flag on, check an upload with `fg db query "select screenshot from feedback order by created_at desc limit 1"` and `select name from storage.objects where bucket_id = 'feedback-screenshots'`.
 - The server deletes notes 12 months after `created_at` (pg_cron `purge-old-feedback`); nothing in the app shows it.

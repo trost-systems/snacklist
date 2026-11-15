@@ -1,19 +1,24 @@
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/app/language.dart';
 import 'package:family_groceries/app/router.dart';
 import 'package:family_groceries/app/theme.dart';
 import 'package:family_groceries/design/group_card.dart';
 import 'package:family_groceries/design/hex_radio.dart';
 import 'package:family_groceries/design/hex_segmented.dart';
+import 'package:family_groceries/design/hex_switch.dart';
 import 'package:family_groceries/design/section_label.dart';
 import 'package:family_groceries/design/tokens.g.dart';
+import 'package:family_groceries/feedback/shake.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// More's Einstellungen (`/more/settings`): the theme as one segmented
-/// control, System, Hell or Dunkel; and the language, a row that opens
-/// [LanguageScreen]. Both are kept on the device and apply at once.
+/// control, System, Hell or Dunkel; the language, a row that opens
+/// [LanguageScreen]; on phones with the `feedback-fb2` flag, whether a
+/// shake opens feedback (job 267). All are kept on the device and apply at
+/// once.
 class const SettingsScreen({super.key}) extends StatelessWidget {
   /// A section overline over its group, at the group's inset.
   static const _labelPadding = EdgeInsets.fromLTRB(20, HlSpace.s5, 20, 0);
@@ -23,6 +28,10 @@ class const SettingsScreen({super.key}) extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final theme = context.watch<ThemeCubit>();
     final t = SnacklistColors.of(Theme.of(context).brightness);
+    final shake = context.watch<ShakeSetting?>();
+    final fb2 = context.select<Flags?, bool>(
+      (flags) => flags?.isOn(feedbackFb2Flag) ?? false,
+    );
     return ListView(
       key: const ValueKey('settings-screen'),
       padding: const EdgeInsets.only(bottom: HlSpace.s5),
@@ -85,6 +94,23 @@ class const SettingsScreen({super.key}) extends StatelessWidget {
             ),
           ],
         ),
+        if (shake != null && fb2 && shakeHere) ...[
+          HlSectionLabel(l10n.settingsFeedback, padding: _labelPadding),
+          HlGroup(
+            top: HlSpace.s2,
+            children: [
+              HexSwitchTile(
+                key: const ValueKey('settings-shake'),
+                leading: HlRowHex(Icons.vibration, face: t.surfaceSunken),
+                title: Text(l10n.shakeToFeedback),
+                subtitle: Text(l10n.shakeToFeedbackHint),
+                isThreeLine: true,
+                value: shake.state,
+                onChanged: (on) => shake.set(on: on),
+              ),
+            ],
+          ),
+        ],
       ],
     );
   }

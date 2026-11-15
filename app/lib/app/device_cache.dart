@@ -106,6 +106,11 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
   /// device.
   static const _logViewKey = 'log.view';
 
+  /// Whether a shake opens feedback (job 267), `false` once switched off
+  /// under Einstellungen; absent is on. Kept across sign-outs: it belongs
+  /// to the device.
+  static const _shakeKey = 'feedback.shake';
+
   /// The trip running on this device and its ends not yet saved (job 234),
   /// one JSON value per user (`KeptTrips`); forgotten on sign-out.
   static const _tripPrefix = 'trip.';
@@ -157,6 +162,18 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
 
   /// The grocery log's view as saved, or null.
   Future<String?> logView() => _readString(_logViewKey);
+
+  /// Whether a shake opens feedback; on unless switched off.
+  Future<bool> shakeToFeedback() async {
+    try {
+      return await _prefs.getBool(_shakeKey) ?? true;
+    } on Object {
+      return true;
+    }
+  }
+
+  Future<void> saveShakeToFeedback({required bool on}) =>
+      _write(() => _prefs.setBool(_shakeKey, on));
 
   Future<void> saveLogView(String name) =>
       _write(() => _prefs.setString(_logViewKey, name));

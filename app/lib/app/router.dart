@@ -33,6 +33,7 @@ import 'package:family_groceries/trip/trip_repository.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sensors_plus/sensors_plus.dart';
 
 const listPath = '/';
 
@@ -601,12 +602,13 @@ String? _withTripMode(BuildContext context, GoRouterState _) =>
     context.read<Flags?>()?.isOn(tripModeFlag) ?? false ? null : listPath;
 
 /// Every route of the app; [repositories], [trips] and [tripSessions]
-/// override the Supabase list repository and trips per household, for
-/// tests.
+/// override the Supabase list repository and trips per household, and
+/// [shakeSamples] the accelerometer, for tests.
 List<RouteBase> appRoutes({
   ListRepository Function(String householdId)? repositories,
   TripRepository Function(String householdId)? trips,
   TripSessionRepository Function(String householdId)? tripSessions,
+  Stream<AccelerometerEvent>? shakeSamples,
 }) => [
   StatefulShellRoute.indexedStack(
     builder: (_, _, shell) => AppShell(
@@ -614,6 +616,7 @@ List<RouteBase> appRoutes({
       repositories: repositories,
       trips: trips,
       tripSessions: tripSessions,
+      shakeSamples: shakeSamples,
     ),
     // The shell's tabs keep these branch indices; Verlauf shows between
     // Liste and Mehr (`_Destination`).

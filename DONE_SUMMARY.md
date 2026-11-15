@@ -1311,3 +1311,49 @@ PR https://github.com/trost-systems/snacklist/pull/490. Review 0 of job 222 (the
 - **Not done.** `app_switches.public_api`, `integration_lock` and the PostHog flag are
   untouched. The report and the verdict are on the ops side (NEEDS_LEAD "Job 241: public API
   review ready").
+
+## Job 267: FB2, feedback by shake or from More with an annotated screenshot (2026-11-15)
+
+- **PR** https://github.com/trost-systems/snacklist/pull/499, behind the PostHog flag
+  `feedback-fb2` (`releases/flags.json`, rollout off). The changelog item carries
+  `flag: feedback-fb2`. TestFlight: the next green main build after the merge. For Peter's account
+  to see it, the lead creates `feedback-fb2` in PostHog as internal-only (Peter and internal testers
+  on, everyone else off). The flag stays internal until the policy text is live.
+- **What it does.** On iOS and Android a shake opens a bottom sheet, "Mit Bildschirmfoto" /
+  "Ohne Bildschirmfoto" (X or a tap outside closes it). "With" opens an annotator on the screen as it
+  was at the shake: pen, rectangle, text, one undo. Then comes the form, with switches for the screen
+  name and the screenshot (preview included). More → "Feedback senden" stays one row, sends no
+  screen name, and offers "Bildschirmfoto hinzufügen" with the screen from before More. Settings has
+  "Schütteln für Feedback". The contact switch says "Snacklist Support …" for everyone.
+- **Storage.** A private bucket `feedback-screenshots` holds `<user>/<note>.png` and
+  `feedback.screenshot` names it. Clients may insert only (10 a day each, 250 in the bucket at most).
+  The function `feedback-screenshots` (`POST /sweep`, run by the daily Keepalive and right after an
+  account deletion) removes the picture of every deleted note, uploads without a note after 24 h,
+  and deleted accounts' uploads at once. The export lists the file name. docs/FEEDBACK.md,
+  "Screenshots".
+- **Packages.** `feedback` 3.2.0, pinned (the lead's addendum 1; `visual_feedback` 0.0.1 was probed and
+  dropped). Its own control column could not be hidden, and its "navigate" mode left pen marks out
+  of the PNG. So our layer draws pen, rectangle and text, and the package frames and captures
+  (DECISIONS "Job 267", 1). Also `sensors_plus` ^7.1.1, with #281's detector.
+- **Job 259 and #281.** Built on #493 (259) while it was open, then rebased onto main once it had
+  landed (7ae0a02f), so nothing overlaps. #281 is closed as superseded after the merge, not merged.
+- **Verified.**
+  - The full `flutter test` passes.
+  - The FB2 tests: flag on and off, shake → sheet → annotator → form, More with no screen name, the
+    text required, the screenshot previewed and not sent when off, every mark in the PNG's pixels,
+    upload before insert, no "Peter", the paywall unchanged.
+  - pgTAP `feedback_screenshots.test.sql` (49).
+  - `sweep_integration_test.ts` against the real local Storage API.
+  - The e2e `feedback.spec.ts` with a real upload.
+  - Review screenshots in `docs/screenshots/267/` (each screen in de light, en dark and de 130 %).
+  - `scripts/verify.sh`: see the job's DONE_SUMMARY copy for the final run.
+- **Reviews.** An in-job Opus review, read-only and run against the local stack, found no must-fix in
+  the code; one doc sentence was wrong. Its nice-to-haves were all taken, each with a test that
+  failed first: deleted accounts' uploads swept at once, lower quotas plus a bucket cap, a retry at a
+  cap answering Duplicate, account deletion immune to a throwing sweep, the pre-More picture cloned,
+  no accelerometer while inactive, and "Keine Listeneinträge" kept when no picture goes along.
+- **Legal.** No legal page changed. `~/groceries-ops/jobs/267-feedback-fb2/out/LEGAL-NOTE.md` has the
+  current §10 text, proposed DE/EN wording, open points, and the strings that still name Peter Trost.
+  NEEDS_LEAD "Job 267" points to it.
+- **Not done.** Nobody has shaken a real device with this build (the shake is tested on fake sensor
+  samples), and the iOS motion purpose string has not been seen on a phone.

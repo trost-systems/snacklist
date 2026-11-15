@@ -117,7 +117,8 @@ port = 54324
 # sender_name = "Admin"
 
 [storage]
-enabled = false
+# Job 267: the private bucket feedback-screenshots (docs/FEEDBACK.md, "Screenshots").
+enabled = true
 # The maximum file size allowed (e.g. "5MB", "500KB").
 file_size_limit = "50MiB"
 
@@ -531,6 +532,12 @@ verify_jwt = false
 import_map = "./functions/deno.json"
 # pg_cron calls it through pg_net with x-feedback-digest-secret (docs/FEEDBACK.md, "Daily digest"),
 # and the watch workflow reads /status without any key.
+verify_jwt = false
+
+[functions.feedback-screenshots]
+import_map = "./functions/deno.json"
+# The daily Keepalive and anyone may run the sweep: it removes only what the database says is due
+# (docs/FEEDBACK.md, "Screenshots").
 verify_jwt = false
 
 [functions.voice]

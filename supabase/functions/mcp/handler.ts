@@ -10,6 +10,7 @@ import {
   authenticate,
   AuthError,
   discoverIssuer,
+  secretKeyFromEnv,
   sha256Hex,
   supabaseUrl,
 } from '../_shared/auth.ts';
@@ -21,7 +22,6 @@ import {
   LIMITS,
   lookupClient,
   resolveClient,
-  secretKeyFromEnv,
   supabaseClientAdmin,
   withinLimits,
 } from './cimd_clients.ts';

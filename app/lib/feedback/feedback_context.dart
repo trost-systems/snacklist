@@ -44,9 +44,23 @@ class const FeedbackContext({
   final String? householdId,
 
   /// A name from `screenNames`; null when the entry point attaches none
-  /// (More's row: the form is not about any screen, job 259).
+  /// (More's row: the form is not about any screen, job 259) or the user
+  /// switched it off (job 267).
   final String? screen,
-});
+}) {
+  /// This context with [screen] as its screen.
+  FeedbackContext withScreen(String? screen) => FeedbackContext(
+    appVersion: appVersion,
+    build: build,
+    platform: platform,
+    osVersion: osVersion,
+    locale: locale,
+    entryPoint: entryPoint,
+    isInternal: isInternal,
+    householdId: householdId,
+    screen: screen,
+  );
+}
 
 /// The build and device facts of [FeedbackContext], read once.
 @immutable

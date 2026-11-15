@@ -1160,15 +1160,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get feedbackCategories => 'Art (optional)';
 
   @override
-  String get feedbackContact => 'Peter darf mich dazu kontaktieren';
+  String get feedbackContact => 'Snacklist Support darf mich dazu kontaktieren';
 
   @override
   String get feedbackAttached =>
       'App-Version, Gerät und Sprache. Keine Listeneinträge.';
-
-  @override
-  String get feedbackAttachedWithScreen =>
-      'App-Version, Gerät, Sprache und aktueller Bildschirm. Keine Listeneinträge.';
 
   @override
   String get feedbackAttachedTitle => 'Wird mitgeschickt:';
@@ -1190,6 +1186,10 @@ class AppLocalizationsDe extends AppLocalizations {
       'Nicht gesendet. Prüfe die Verbindung und versuch es noch einmal.';
 
   @override
+  String get feedbackScreenshotRefused =>
+      'Das Bildschirmfoto wurde nicht angenommen. Schalte es aus, dann geht deine Nachricht ohne Bild.';
+
+  @override
   String feedbackTooLong(int max) {
     return 'Höchstens $max Zeichen';
   }
@@ -1201,6 +1201,73 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get feedbackClose => 'Schließen';
+
+  @override
+  String get feedbackAttachedBasics => 'App-Version, Gerät und Sprache.';
+
+  @override
+  String get feedbackScreenName => 'Bildschirmname';
+
+  @override
+  String get feedbackScreenshot => 'Bildschirmfoto';
+
+  @override
+  String get feedbackScreenshotNote =>
+      'Zeigt alles, was auf dem Bildschirm war, auch Listeneinträge, die du nicht übermalt hast.';
+
+  @override
+  String get feedbackScreenshotPreview => 'Vorschau des Bildschirmfotos';
+
+  @override
+  String get feedbackAddScreenshot => 'Bildschirmfoto hinzufügen';
+
+  @override
+  String get feedbackShakeTitle => 'Problem mit diesem Bildschirm melden?';
+
+  @override
+  String get feedbackShakeWithScreenshot => 'Mit Bildschirmfoto';
+
+  @override
+  String get feedbackShakeWithout => 'Ohne Bildschirmfoto';
+
+  @override
+  String get feedbackShakeOffHint =>
+      'Schütteln ausschalten: Mehr › Einstellungen';
+
+  @override
+  String get feedbackAnnotateHint =>
+      'Markiere, was nicht stimmt. Übermale, was niemand sehen soll.';
+
+  @override
+  String get feedbackToolPen => 'Stift';
+
+  @override
+  String get feedbackToolRectangle => 'Rechteck';
+
+  @override
+  String get feedbackToolText => 'Text';
+
+  @override
+  String get feedbackAnnotateTools => 'Werkzeug';
+
+  @override
+  String get feedbackAnnotateUndo => 'Rückgängig';
+
+  @override
+  String get feedbackAnnotateTextHint => 'Text eingeben';
+
+  @override
+  String get feedbackAnnotateDone => 'Fertig';
+
+  @override
+  String get settingsFeedback => 'Feedback';
+
+  @override
+  String get shakeToFeedback => 'Schütteln für Feedback';
+
+  @override
+  String get shakeToFeedbackHint =>
+      'Schüttle das Handy, um ein Problem mit dem Bildschirm zu melden.';
 
   @override
   String get onboardingCreateHint =>

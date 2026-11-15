@@ -14,7 +14,8 @@ import {
 } from '@modelcontextprotocol/client';
 import { serviceDb } from '../_shared/db.ts';
 import { CimdError, type ClientIdUrl, parseClientMetadata } from './cimd.ts';
-import { resolveClient, secretKeyFromEnv, supabaseClientAdmin } from './cimd_clients.ts';
+import { secretKeyFromEnv } from '../_shared/auth.ts';
+import { resolveClient, supabaseClientAdmin } from './cimd_clients.ts';
 import { handle, productionDeps } from './handler.ts';
 
 const enabled = Deno.env.get('FG_DB_TEST') === '1';

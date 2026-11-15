@@ -1,12 +1,16 @@
 import { assertEquals } from '@std/assert';
 import { AuthError } from '../_shared/auth.ts';
 import type { HouseholdFate } from '../_shared/db.ts';
-import { createHandler, type Deps } from './handler.ts';
+import { AFTER_DELETION_MS, createHandler, type Deps } from './handler.ts';
 
 const USER = 'u-1';
 
 /** A fake backend: "Bearer session" is a live session, "Bearer gone" a deleted user's. */
-function fakeDeps(overrides: Partial<Deps> = {}, fate: HouseholdFate = 'kept') {
+function fakeDeps(
+  overrides: Partial<Deps> = {},
+  fate: HouseholdFate = 'kept',
+  afterDeletionMs: number = AFTER_DELETION_MS,
+) {
   const deleted: string[] = [];
   const revoked: { code: string | null; subject: string }[] = [];
   const deps: Deps = {
@@ -31,7 +35,7 @@ function fakeDeps(overrides: Partial<Deps> = {}, fate: HouseholdFate = 'kept') {
     },
     ...overrides,
   };
-  return { handle: createHandler(deps), deleted, revoked };
+  return { handle: createHandler(deps, afterDeletionMs), deleted, revoked };
 }
 
 const call = (
@@ -151,4 +155,52 @@ Deno.test('only POST /account/delete deletes; other methods and paths do not', a
   const preflight = await handle(call({ method: 'OPTIONS' }));
   assertEquals(preflight.status, 204);
   assertEquals(deleted, []);
+});
+
+Deno.test('the screenshot sweep runs after a deletion and never changes the answer', async () => {
+  const outcomes: [string, () => Promise<unknown>][] = [
+    ['succeeds', () => Promise.resolve(3)],
+    ['fails', () => Promise.reject(new Error('storage down'))],
+    ['hangs', () => new Promise(() => {})],
+    // index.ts reads the secret key and URL before its first await: a missing one throws here.
+    ['throws before any await', () => {
+      throw new Error('SUPABASE_SECRET_KEY is not set');
+    }],
+  ];
+  for (const [name, sweep] of outcomes) {
+    const order: string[] = [];
+    const { handle } = fakeDeps(
+      {
+        deleteAccount: () => {
+          order.push('delete');
+          return Promise.resolve('kept');
+        },
+        afterDeletion: () => {
+          order.push('sweep');
+          return sweep();
+        },
+      },
+      'kept',
+      20,
+    );
+    const res = await handle(call({ token: 'session' }));
+    assertEquals(res.status, 200, name);
+    assertEquals(await res.json(), { deleted: true, household: 'kept', apple: 'not_linked' }, name);
+    assertEquals(order, ['delete', 'sweep'], name);
+  }
+});
+
+Deno.test('a failed deletion runs no sweep', async () => {
+  let swept = false;
+  const { handle } = fakeDeps({
+    deleteAccount: () => Promise.reject(new Error('boom')),
+    afterDeletion: () => {
+      swept = true;
+      return Promise.resolve();
+    },
+  });
+  const res = await handle(call({ token: 'session' }));
+  assertEquals(res.status, 500);
+  await res.body?.cancel();
+  assertEquals(swept, false);
 });

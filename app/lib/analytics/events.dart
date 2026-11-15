@@ -247,11 +247,13 @@ final eventCatalog = <String, Map<String, PropertyRule>>{
   // ticked off. Never the store, the day or the items.
   'trip_logged': {'source': _namesOf(TripSource.values)},
   // Job 21: after the server took a note, once per note. Never its text.
+  // Job 267: whether a screenshot went along, never the image or its name.
   'feedback_submitted': {
     'category': const OneOf({'bug', 'idea', 'other', 'none'}),
     'entry_point': const OneOf({'settings', 'shake'}),
     'screen': const OneOf(screenNames),
     'contact_ok': const IsBool(),
+    'screenshot': const IsBool(),
   },
 };
 

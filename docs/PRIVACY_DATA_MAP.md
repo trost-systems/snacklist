@@ -72,7 +72,9 @@ interest.
 
 | Data | Where | Purpose | Basis | Kept | Processor / region | Deletion | Source |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Message (max 2000), category, contact OK, app version, build, platform, OS version, locale, screen name (null for notes from More since job 259; only old builds and a shake entry send it), user id, household id, internal flag | `public.feedback` | Bug reports and ideas | (b)/(f) | 12 months (`purge-old-feedback`, daily 03:17) | Supabase EU | Daily purge; cascades with the account | `20261030070000_feedback.sql` |
+| Message (max 2000), category, contact OK, app version, build, platform, OS version, locale, screen name (null for notes from More since job 259; only old builds and a shake entry send it), screenshot object name (job 267), user id, household id, internal flag | `public.feedback` | Bug reports and ideas | (b)/(f) | 12 months (`purge-old-feedback`, daily 03:17) | Supabase EU | Daily purge; cascades with the account | `20261030070000_feedback.sql` |
+| Annotated screenshot (job 267, flag `feedback-fb2`, opt-in per note): a PNG of the app's screen as the sender painted over it. It can show list entries and household names the sender did not cover | Storage bucket `feedback-screenshots` (private; clients upload only, the service role reads), `<user id>/<note id>.png` | Bug reports | (b)/(f) | With its note: 12 months. Removed through the Storage API by the `feedback-screenshots` sweep (daily, Keepalive) or right after an account deletion (every image in the account's folder, with or without a note); otherwise an upload without a note after one to two days | Supabase EU (Frankfurt) | Queued when the note is deleted (`feedback_screenshot_removals`), then removed; never in a mail, the digest or a backup | `20261115160000_feedback_screenshots.sql` |
+| Feedback screenshot removal queue (job 267): object names, which start with the user id, and when the note was deleted | `public.feedback_screenshot_removals` (service only) | Removing the image with its note | (b) | Until the next sweep, at most a day | Supabase EU | Emptied by the sweep | `20261115160000_feedback_screenshots.sql` |
 | Support email (support@snacklist.app) | Google Workspace mailbox | Answering requests | (b)/(f) | 6 months after the request is closed (policy §10) | Google Cloud EMEA Limited (policy §10) | Manual | `site/content/legal/impressum.md` |
 
 ## Analytics and error tracking (job 19, consent)
@@ -186,7 +188,8 @@ merchant of record); Snacklist gets no payment data and no store account name or
   (`20261108144412_households_join_approval.sql`), since job 199 trips_logged (the trips the
   user logged: store name, day, items with quantities, created; `20261113070349_grocery_log.sql`),
   since job 190 the item prices and the household currency
-  (`20261113094500_prices_and_currency.sql`).
+  (`20261113094500_prices_and_currency.sql`), since job 267 each feedback note's `screenshot`
+  name (`20261115160000_feedback_screenshots.sql`; the image itself is not in the export).
 
 ## Not collected
 
@@ -196,14 +199,17 @@ The web app's posthog-js sets no cookie and no localStorage key (job 44, memory 
 
 ## Differences to the privacy policy (`site/content/legal/datenschutz.md`)
 
-Three open. Item prices and the household currency (job 190, flag `prices-and-trip-total`, off)
+Four open. Item prices and the household currency (job 190, flag `prices-and-trip-total`, off)
 are not in section 5's list of what an entry holds ("Einträge (Artikelname, Menge, Liste, …)");
 before the flag goes on it needs "Preis mit Einheit und Währung und wann er eingetragen wurde"
 and the household's currency. The in-app purchase (job 25) is in the draft section 5a, not yet in the policy; Snacklist
 sells nothing until it is (NEEDS_PETER Job 25). And job 44 (PostHog SDK) adds device and app
 properties, flag requests, native crash reports and SDK files on the device that the policy and
 the consent text do not name yet; the sentences for the Legal Review are in NEEDS_LEAD "Job 44"
-(legal texts unchanged). Otherwise none (Alexa is in the policy since job 33f; 33g removed the AI
+(legal texts unchanged). Feedback screenshots (job 267, flag `feedback-fb2`, internal only) are
+not in section 10, which lists what a note stores; the proposed wording is in the job's
+LEGAL-NOTE (NEEDS_LEAD "Job 267"), and the flag stays internal until it is in the policy.
+Otherwise none (Alexa is in the policy since job 33f; 33g removed the AI
 support assistant). Not named in the policy, both short-lived: the `invite_attempts` rate-limit
 rows (deleted after about a day) and the function error logs.
 

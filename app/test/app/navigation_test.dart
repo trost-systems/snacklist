@@ -83,7 +83,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(key('store-details'), findsOneWidget);
     expect(more.router.state.uri.path, '/edit/lidl');
-    expect(more.screens.feedbackScreen, 'stores');
+    expect(more.screens.current, 'stores');
 
     await back(tester);
     expect(key('stores-screen'), findsOneWidget);

@@ -552,22 +552,24 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 
 ## Feedback
 
-**What it does.** Users can send Peter a short note from inside the app: a bug, an idea or anything else, up to 2000 characters. They can optionally say Peter may contact them. The app attaches its version, device type and language, but never anything from the shopping list. If there is no connection the note stays in the form and can be sent again.
+**What it does.** Users can send Snacklist Support a short note from inside the app: a bug, an idea or anything else, up to 2000 characters. They can optionally say Snacklist Support may contact them. The app attaches its version, device type and language, but never anything from the shopping list. If there is no connection the note stays in the form and can be sent again.
 
 **How to get there.**
 1. „Mehr“ (EN: "More") → „Feedback senden“ (EN: "Send feedback").
-2. Write in „Deine Nachricht“ (EN: "Your message"), optionally pick „Bug“, „Idee“ or „Sonstiges“ (EN: "Bug", "Idea", "Other") and tick „Peter darf mich dazu kontaktieren“ (EN: "Peter may contact me about this").
+2. Write in „Deine Nachricht“ (EN: "Your message"), optionally pick „Bug“, „Idee“ or „Sonstiges“ (EN: "Bug", "Idea", "Other") and tick „Snacklist Support darf mich dazu kontaktieren“ (EN: "Snacklist Support may contact me about this").
 3. Tap „Senden“ (EN: "Send"); the app answers „Danke!“ (EN: "Thanks!").
 
+**Being built, not for users yet (test flag `feedback-fb2`, job 267).** On iPhone and Android a shake asks „Problem mit diesem Bildschirm melden?“ (EN: "Report a problem with this screen?") with „Mit Bildschirmfoto“ / „Ohne Bildschirmfoto“ (EN: "With screenshot" / "Without screenshot"). With a screenshot the user marks it up with a pen, rectangles and text before the form opens; the form then shows the picture and switches for „Bildschirmname“ (EN: "Screen name", only after a shake) and „Bildschirmfoto“ (EN: "Screenshot"). From More the form offers „Bildschirmfoto hinzufügen“ (EN: "Add screenshot") for the screen shown before More. Einstellungen gets „Schütteln für Feedback“ (EN: "Shake to send feedback"). Do not write about any of this until the flag is on for everyone and the privacy policy covers screenshots.
+
 **Never claim.**
-- Shake-to-report, feedback from the list screen, or screenshots/attachments.
-- A reply is guaranteed; contact only happens if the box is ticked and Peter chooses to.
-- That list contents are sent.
+- Shake-to-report, feedback from the list screen, or screenshots/attachments (they exist only behind the test flag above).
+- A reply is guaranteed; contact only happens if the box is ticked and Snacklist Support chooses to.
+- That list contents are sent (a screenshot, once released, shows whatever was on screen; the user decides and can paint over it).
 - That users can read their sent notes back in the app (they come back only in their own data export, Konto → „Meine Daten exportieren“, EN "Export my data").
 
-**Note.** Peter reads the notes himself. A daily email summary of new notes to him is built but not switched on. Don't promise how fast a note is read.
+**Note.** Snacklist Support (Peter) reads the notes. A daily email summary of new notes is built but not switched on. Don't promise how fast a note is read.
 
-**Last verified.** 15 November 2026, code version 377f1a0f, in the web app (German).
+**Last verified.** 15 November 2026, code version 544d78a4 plus job 267's app changes, in widget tests and the web e2e (German and English).
 
 ## The More tab, help and legal pages
 

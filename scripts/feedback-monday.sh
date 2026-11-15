@@ -71,6 +71,9 @@ update public.feedback f
 set created_at = ((date_trunc('week', now() at time zone 'Europe/Berlin') - interval '1 week') + s.at)
   at time zone 'Europe/Berlin'
 from seed s where s.id = f.id;
+-- Job 267: one note carries a screenshot.
+update public.feedback set screenshot = user_id || '/' || id || '.png'
+where id = '00000000-0000-4000-8000-0000000fb002';
 SQL
 
 run() { # name, extra psql args...
@@ -93,6 +96,9 @@ grep -q 'Vorletzte Woche\|Schon diese Woche' <<<"$notes" && fail "a note outside
 order="$(run notes -At -F '|' | cut -d'|' -f4 | head -3 | tr '\n' '|')"
 [[ $order == "Beim Abhaken springt die Liste nach oben.|Die App stürzt ab, wenn ich offline etwas lösche.|Could the list remember my usual Saturday shop?|" ]] \
   || fail "external notes are not in created_at order: $order"
+shots="$(run notes -At -F '|' | cut -d'|' -f6 | head -3 | tr '\n' '|')"
+[[ $shots == "|00000000-0000-4000-8000-00000000fe01/00000000-0000-4000-8000-0000000fb002.png||" ]] \
+  || fail "the screenshot column: got $shots"
 got_counts="$(run counts -At -F ' ' | tr '\n' ';')"
 want_counts="external category bug 1;external category idea 1;external category none 1;external platform android 2;external platform web 1;internal category other 1;internal platform ios 1;"
 [[ $got_counts == "$want_counts" ]] || fail "counts: got $got_counts, want $want_counts"
@@ -100,4 +106,4 @@ contact="$(block contact | sql -At -v feedback_id=00000000-0000-4000-8000-000000
 [[ $contact == "max.beta@snacklist-tester.de" ]] || fail "the contact lookup answered '$contact'"
 no_contact="$(block contact | sql -At -v feedback_id=00000000-0000-4000-8000-0000000fb003 -f -)"
 [[ -z $no_contact ]] || fail "the contact lookup answered for a note without contact_ok"
-echo "feedback-monday: PASS: notes, counts and the contact lookup as docs/FEEDBACK.md has them" >&2
+echo "feedback-monday: PASS: notes (with the screenshot name), counts and the contact lookup as docs/FEEDBACK.md has them" >&2

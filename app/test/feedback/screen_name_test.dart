@@ -65,32 +65,14 @@ void main() {
       return tracker;
     }
 
-    test('list, then More: the list (AC3)', () {
-      expect(visited(['/', '/more']).feedbackScreen, 'list');
+    test('the screen on show, More included', () {
+      expect(visited(['/']).current, 'list');
+      expect(visited(['/', '/more']).current, 'more');
+      expect(visited(['/', '/more', '/more/account']).current, 'account');
     });
 
-    test('More pages in between do not count', () {
-      expect(
-        visited(['/', '/more', '/more/account', '/more']).feedbackScreen,
-        'list',
-      );
-      expect(
-        visited(['/', '/more', '/more/access', '/more']).feedbackScreen,
-        'list',
-      );
-    });
-
-    test('opened beside a More page (wide): that page', () {
-      expect(visited(['/', '/more/account']).feedbackScreen, 'account');
-    });
-
-    test('a join link before More: join, without the code', () {
-      expect(visited(['/join/ABCD2345', '/', '/more']).feedbackScreen, 'list');
-      expect(visited(['/join/ABCD2345', '/more']).feedbackScreen, 'join');
-    });
-
-    test('straight to More (a reload there): more', () {
-      expect(visited(['/more']).feedbackScreen, 'more');
+    test('a join link: join, without the code', () {
+      expect(visited(['/join/ABCD2345']).current, 'join');
     });
   });
 }

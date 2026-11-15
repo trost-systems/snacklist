@@ -190,19 +190,3 @@ export function supabaseClientAdmin(
     },
   };
 }
-
-/** The project's secret key: the new-style default secret key, else the legacy service role key. */
-export function secretKeyFromEnv(): string {
-  const keys = Deno.env.get('SUPABASE_SECRET_KEYS');
-  if (keys) {
-    try {
-      const parsed = JSON.parse(keys) as Record<string, string>;
-      if (parsed.default) return parsed.default;
-    } catch {
-      // Not JSON: fall through to the service role key.
-    }
-  }
-  const legacy = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-  if (!legacy) throw new Error('neither SUPABASE_SECRET_KEYS nor SUPABASE_SERVICE_ROLE_KEY set');
-  return legacy;
-}

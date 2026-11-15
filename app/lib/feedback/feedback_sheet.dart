@@ -1,16 +1,21 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:family_groceries/analytics/analytics.dart';
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/app/notices.dart';
 import 'package:family_groceries/design/field_border.dart';
 import 'package:family_groceries/design/hex_checkbox.dart';
+import 'package:family_groceries/design/hex_switch.dart';
 import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/tokens.g.dart';
+import 'package:family_groceries/feedback/annotator.dart';
 import 'package:family_groceries/feedback/feedback_context.dart';
 import 'package:family_groceries/feedback/feedback_cubit.dart';
 import 'package:family_groceries/feedback/feedback_repository.dart';
-import 'package:family_groceries/feedback/screen_tracker.dart';
+import 'package:family_groceries/feedback/screen_capture.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -20,11 +25,14 @@ import 'package:material_ui/material_ui.dart';
 const _counterFrom = 1800;
 
 /// Opens the feedback form over the whole app (More's row, or the shake
-/// entry with [entryPoint] `shake`). The note waiting in [FeedbackCubit]
+/// entry with [entryPoint] `shake`, the [screen] it was made on and the
+/// marked-up [screenshot], job 267). The note waiting in [FeedbackCubit]
 /// comes back; after a send the form closes and says thanks.
 Future<void> showFeedbackSheet(
   BuildContext context, {
   FeedbackEntryPoint entryPoint = FeedbackEntryPoint.settings,
+  String? screen,
+  Uint8List? screenshot,
 }) async {
   final cubit = context.read<FeedbackCubit>();
   final session = context.read<SessionCubit>().state;
@@ -33,12 +41,9 @@ Future<void> showFeedbackSheet(
       InHousehold(:final userId) || NeedsHousehold(:final userId) => userId,
       _ => null,
     },
+    screen: screen,
+    screenshot: screenshot,
   );
-  // Taken now: a shake reports the screen it was made on; More's row none.
-  final screen = switch (entryPoint) {
-    FeedbackEntryPoint.settings => null,
-    FeedbackEntryPoint.shake => context.read<ScreenTracker>().feedbackScreen,
-  };
   final messenger = Notices.of(context);
   final l10n = AppLocalizations.of(context);
   final sent = await showModalBottomSheet<bool>(
@@ -55,7 +60,7 @@ Future<void> showFeedbackSheet(
     ),
     builder: (_) => BlocProvider.value(
       value: cubit,
-      child: FeedbackForm(entryPoint: entryPoint, screen: screen),
+      child: FeedbackForm(entryPoint: entryPoint),
     ),
   );
   if (sent ?? false) {
@@ -72,7 +77,6 @@ Future<void> showFeedbackSheet(
 /// Send (Retry after a failure). Pops `true` once the note arrived.
 class const FeedbackForm({
   required final FeedbackEntryPoint entryPoint,
-  required final String? screen,
   super.key,
 }) extends StatefulWidget {
   @override
@@ -112,7 +116,6 @@ class _FeedbackFormState() extends State<FeedbackForm> {
         osVersion: facts.osVersion,
         locale: locale,
         entryPoint: widget.entryPoint,
-        screen: widget.screen,
         isInternal: analytics.internalNow,
         householdId: householdId,
       ),
@@ -122,19 +125,33 @@ class _FeedbackFormState() extends State<FeedbackForm> {
     }
   }
 
+  /// Marks up the screen shown before More and attaches it.
+  Future<void> _addScreenshot(ui.Image image) async {
+    final cubit = context.read<FeedbackCubit>();
+    final png = await annotateScreenshot(context, image);
+    if (png != null) {
+      cubit.attach(png);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
-    final attached = switch (widget.entryPoint) {
-      FeedbackEntryPoint.settings => l10n.feedbackAttached,
-      FeedbackEntryPoint.shake => l10n.feedbackAttachedWithScreen,
-    };
     final media = MediaQuery.of(context);
     final keyboard = media.viewInsets.bottom;
     final state = context.watch<FeedbackCubit>().state;
+    // "No list items" holds unless a screenshot goes along: it can show
+    // them. A screen name shows none.
+    final attached = state.screenshot != null && state.sendScreenshot
+        ? l10n.feedbackAttachedBasics
+        : l10n.feedbackAttached;
+    final fb2 = context.select<Flags?, bool>(
+      (flags) => flags?.isOn(feedbackFb2Flag) ?? false,
+    );
     final sending = state.status == FeedbackStatus.sending;
-    final failed = state.status == FeedbackStatus.failed;
+    final refused = state.status == FeedbackStatus.screenshotRefused;
+    final failed = refused || state.status == FeedbackStatus.failed;
     final tooLong = state.tooLong
         ? l10n.feedbackTooLong(maxFeedbackLength)
         : null;
@@ -288,13 +305,75 @@ class _FeedbackFormState() extends State<FeedbackForm> {
                   ),
                 ),
               ),
+              if (state.screen case final screen?)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(4, 4, 8, 0),
+                  child: HexSwitchTile(
+                    key: const ValueKey('feedback-send-screen'),
+                    title: Text(l10n.feedbackScreenName),
+                    subtitle: Text(screen),
+                    value: state.sendScreen,
+                    onChanged: sending
+                        ? null
+                        : (on) => context.read<FeedbackCubit>().setSendScreen(
+                            on: on,
+                          ),
+                  ),
+                ),
+              if (state.screenshot case final png?) ...[
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(4, 4, 8, 0),
+                  child: HexSwitchTile(
+                    key: const ValueKey('feedback-send-screenshot'),
+                    title: Text(l10n.feedbackScreenshot),
+                    subtitle: Text(l10n.feedbackScreenshotNote),
+                    isThreeLine: true,
+                    value: state.sendScreenshot,
+                    onChanged: sending
+                        ? null
+                        : (on) => context
+                              .read<FeedbackCubit>()
+                              .setSendScreenshot(on: on),
+                  ),
+                ),
+                _Preview(png: png, sent: state.sendScreenshot),
+              ] else if (fb2 &&
+                  widget.entryPoint == FeedbackEntryPoint.settings &&
+                  context.read<ScreenCapture?>()?.beforeMore != null)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+                  child: Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: OutlinedButton.icon(
+                      key: const ValueKey('feedback-add-screenshot'),
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(48, 48),
+                      ),
+                      onPressed: sending
+                          ? null
+                          : () {
+                              // Read now: leaving More disposes it.
+                              final shot = context
+                                  .read<ScreenCapture?>()
+                                  ?.beforeMore;
+                              if (shot != null) {
+                                unawaited(_addScreenshot(shot));
+                              }
+                            },
+                      icon: const Icon(Icons.screenshot_outlined),
+                      label: Text(l10n.feedbackAddScreenshot),
+                    ),
+                  ),
+                ),
               if (failed)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
                   child: Semantics(
                     liveRegion: true,
                     child: Text(
-                      l10n.feedbackFailed,
+                      refused
+                          ? l10n.feedbackScreenshotRefused
+                          : l10n.feedbackFailed,
                       key: const ValueKey('feedback-error'),
                       style: TextStyle(color: scheme.error),
                     ),
@@ -337,6 +416,44 @@ class _FeedbackFormState() extends State<FeedbackForm> {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The screenshot exactly as it would be stored; faded while switched off.
+class const _Preview({required final Uint8List png, required final bool sent})
+    extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final t = SnacklistColors.of(Theme.of(context).brightness);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
+      child: Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: AnimatedOpacity(
+          opacity: sent ? 1 : 0.35,
+          duration: hlMotion(context, HlDuration.short),
+          child: Semantics(
+            image: true,
+            label: l10n.feedbackScreenshotPreview,
+            child: Container(
+              key: const ValueKey('feedback-screenshot-preview'),
+              constraints: const BoxConstraints(maxHeight: 200, maxWidth: 200),
+              decoration: BoxDecoration(
+                border: Border.all(color: t.border),
+                borderRadius: BorderRadius.circular(HlRadius.s),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Image.memory(
+                png,
+                fit: BoxFit.contain,
+                gaplessPlayback: true,
+              ),
+            ),
           ),
         ),
       ),
