@@ -551,7 +551,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 
 ## Feedback
 
-**What it does.** Users can send Peter a short note from inside the app: a bug, an idea or anything else, up to 2000 characters. They can optionally say Peter may contact them. The app attaches its version, device type, language and the screen the user came from, but never anything from the shopping list. If there is no connection the note stays in the form and can be sent again.
+**What it does.** Users can send Peter a short note from inside the app: a bug, an idea or anything else, up to 2000 characters. They can optionally say Peter may contact them. The app attaches its version, device type and language, but never anything from the shopping list. If there is no connection the note stays in the form and can be sent again.
 
 **How to get there.**
 1. „Mehr“ (EN: "More") → „Feedback senden“ (EN: "Send feedback").

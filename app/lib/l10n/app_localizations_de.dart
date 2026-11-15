@@ -1164,6 +1164,10 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get feedbackAttached =>
+      'App-Version, Gerät und Sprache. Keine Listeneinträge.';
+
+  @override
+  String get feedbackAttachedWithScreen =>
       'App-Version, Gerät, Sprache und aktueller Bildschirm. Keine Listeneinträge.';
 
   @override

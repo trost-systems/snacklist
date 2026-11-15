@@ -88,7 +88,7 @@ class SupabaseFeedbackRepository(
             'platform': context.platform,
             'os_version': context.osVersion,
             'locale': context.locale,
-            'screen': context.screen,
+            'screen': ?context.screen,
             'is_internal': context.isInternal,
             'household_id': ?context.householdId,
           })

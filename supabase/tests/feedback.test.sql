@@ -1,7 +1,7 @@
 -- Job 21: public.feedback (docs/FEEDBACK.md). Insert-only for the sender, checks, the household
 -- and is_internal set by the database, idempotent ids, the 12-month purge and its cron job.
 begin;
-select plan(52);
+select plan(55);
 
 create function pg_temp.login(uid uuid) returns void language plpgsql as $$
 begin
@@ -116,6 +116,15 @@ select results_eq(
   'Ben''s note: his household, the category and the contact flag');
 
 -- AC4: empty, blank and too long notes are refused by the database.
+select pg_temp.login('00000000-0000-0000-0000-0000000000a1');
+-- Job 259: More's row sends no screen; an old app's name still passes, a malformed one does not.
+select lives_ok($$ select pg_temp.send('10000000-0000-4000-8000-0000000002a1', 'Ohne Bildschirm', '{"screen": null}') $$,
+  'a note without a screen is accepted');
+select throws_ok($$ select pg_temp.send(gen_random_uuid(), 'Falsch', '{"screen": "Not/A Name"}') $$, '23514', null,
+  'a malformed screen name is still refused');
+select pg_temp.as_postgres();
+select is((select screen from public.feedback where id = '10000000-0000-4000-8000-0000000002a1'), null::text,
+  'the accepted note stores no screen');
 select pg_temp.login('00000000-0000-0000-0000-0000000000a1');
 select throws_ok($$ select pg_temp.send(gen_random_uuid(), '') $$, '23514', null, 'an empty note is refused');
 select throws_ok($$ select pg_temp.send(gen_random_uuid(), '     ') $$, '23514', null, 'only spaces are refused');

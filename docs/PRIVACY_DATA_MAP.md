@@ -72,7 +72,7 @@ interest.
 
 | Data | Where | Purpose | Basis | Kept | Processor / region | Deletion | Source |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Message (max 2000), category, contact OK, app version, build, platform, OS version, locale, screen name, user id, household id, internal flag | `public.feedback` | Bug reports and ideas | (b)/(f) | 12 months (`purge-old-feedback`, daily 03:17) | Supabase EU | Daily purge; cascades with the account | `20261030070000_feedback.sql` |
+| Message (max 2000), category, contact OK, app version, build, platform, OS version, locale, screen name (null for notes from More since job 259; only old builds and a shake entry send it), user id, household id, internal flag | `public.feedback` | Bug reports and ideas | (b)/(f) | 12 months (`purge-old-feedback`, daily 03:17) | Supabase EU | Daily purge; cascades with the account | `20261030070000_feedback.sql` |
 | Support email (support@snacklist.app) | Google Workspace mailbox | Answering requests | (b)/(f) | 6 months after the request is closed (policy §10) | Google Cloud EMEA Limited (policy §10) | Manual | `site/content/legal/impressum.md` |
 
 ## Analytics and error tracking (job 19, consent)

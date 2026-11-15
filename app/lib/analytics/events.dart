@@ -249,7 +249,7 @@ final eventCatalog = <String, Map<String, PropertyRule>>{
   // Job 21: after the server took a note, once per note. Never its text.
   'feedback_submitted': {
     'category': const OneOf({'bug', 'idea', 'other', 'none'}),
-    'entry_point': const OneOf({'settings'}),
+    'entry_point': const OneOf({'settings', 'shake'}),
     'screen': const OneOf(screenNames),
     'contact_ok': const IsBool(),
   },

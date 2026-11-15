@@ -19,10 +19,13 @@ import 'package:material_ui/material_ui.dart';
 /// From this many characters on, the form shows how many are used.
 const _counterFrom = 1800;
 
-/// Opens the feedback form over the whole app (More's row). The note
-/// waiting in [FeedbackCubit] comes back; after a send the form closes and
-/// says thanks.
-Future<void> showFeedbackSheet(BuildContext context) async {
+/// Opens the feedback form over the whole app (More's row, or the shake
+/// entry with [entryPoint] `shake`). The note waiting in [FeedbackCubit]
+/// comes back; after a send the form closes and says thanks.
+Future<void> showFeedbackSheet(
+  BuildContext context, {
+  FeedbackEntryPoint entryPoint = FeedbackEntryPoint.settings,
+}) async {
   final cubit = context.read<FeedbackCubit>();
   final session = context.read<SessionCubit>().state;
   cubit.open(
@@ -31,8 +34,11 @@ Future<void> showFeedbackSheet(BuildContext context) async {
       _ => null,
     },
   );
-  // Taken now: the form reports the screen the user came from.
-  final screen = context.read<ScreenTracker>().feedbackScreen;
+  // Taken now: a shake reports the screen it was made on; More's row none.
+  final screen = switch (entryPoint) {
+    FeedbackEntryPoint.settings => null,
+    FeedbackEntryPoint.shake => context.read<ScreenTracker>().feedbackScreen,
+  };
   final messenger = Notices.of(context);
   final l10n = AppLocalizations.of(context);
   final sent = await showModalBottomSheet<bool>(
@@ -49,7 +55,7 @@ Future<void> showFeedbackSheet(BuildContext context) async {
     ),
     builder: (_) => BlocProvider.value(
       value: cubit,
-      child: FeedbackForm(screen: screen),
+      child: FeedbackForm(entryPoint: entryPoint, screen: screen),
     ),
   );
   if (sent ?? false) {
@@ -64,8 +70,11 @@ Future<void> showFeedbackSheet(BuildContext context) async {
 
 /// The form: the note, the optional kind and contact, what is attached,
 /// Send (Retry after a failure). Pops `true` once the note arrived.
-class const FeedbackForm({required final String screen, super.key})
-    extends StatefulWidget {
+class const FeedbackForm({
+  required final FeedbackEntryPoint entryPoint,
+  required final String? screen,
+  super.key,
+}) extends StatefulWidget {
   @override
   State<FeedbackForm> createState() => _FeedbackFormState();
 }
@@ -102,6 +111,7 @@ class _FeedbackFormState() extends State<FeedbackForm> {
         platform: facts.platform,
         osVersion: facts.osVersion,
         locale: locale,
+        entryPoint: widget.entryPoint,
         screen: widget.screen,
         isInternal: analytics.internalNow,
         householdId: householdId,
@@ -116,6 +126,10 @@ class _FeedbackFormState() extends State<FeedbackForm> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
+    final attached = switch (widget.entryPoint) {
+      FeedbackEntryPoint.settings => l10n.feedbackAttached,
+      FeedbackEntryPoint.shake => l10n.feedbackAttachedWithScreen,
+    };
     final media = MediaQuery.of(context);
     final keyboard = media.viewInsets.bottom;
     final state = context.watch<FeedbackCubit>().state;
@@ -266,7 +280,7 @@ class _FeedbackFormState() extends State<FeedbackForm> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
                 child: Text(
-                  '${l10n.feedbackAttachedTitle} ${l10n.feedbackAttached}',
+                  '${l10n.feedbackAttachedTitle} $attached',
                   key: const ValueKey('feedback-attached'),
                   style: TextStyle(
                     fontSize: 13,
