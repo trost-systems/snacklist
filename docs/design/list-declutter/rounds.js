@@ -56,6 +56,18 @@ export const rounds = [
 // overview in the preview build). The overview lists them with the rounds above, newest first; they own no views here.
 export const linked = [
   {
+    href: '../add-sheet/add-feedback/',
+    blurb: { en: 'Five ways to show what was added where, and to find or fix it.', de: 'Fünf Wege zu zeigen, was wo gelandet ist, und es zu finden oder zu ändern.' },
+    date: { en: 'Nov 15', de: '15. Nov.' },
+    title: { en: 'Add feedback (AF1–AF5)', de: 'Rückmeldung beim Hinzufügen (AF1–AF5)' },
+  },
+  {
+    href: '../add-sheet/reload-indicator/',
+    blurb: { en: 'Three ways to show suggestions still loading, with nothing jumping.', de: 'Drei Wege zu zeigen, dass Vorschläge noch laden, ohne dass etwas springt.' },
+    date: { en: 'Nov 15', de: '15. Nov.' },
+    title: { en: 'Reload indicator (RI1–RI3)', de: 'Ladeanzeige für Vorschläge (RI1–RI3)' },
+  },
+  {
     href: '../household-onboarding/join/',
     blurb: { en: 'Five ways for an invited new user to join a household, from link to code.', de: 'Fünf Wege, wie Eingeladene einem Haushalt beitreten, vom Link bis zum Code.' },
     date: { en: 'Nov 15', de: '15. Nov.' },
