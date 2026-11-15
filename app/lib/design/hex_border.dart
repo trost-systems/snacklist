@@ -173,6 +173,11 @@ class const HexBorder({
   int get hashCode => Object.hash(orientation, side);
 }
 
+/// The room a horizontal hex [height] tall leaves between its tip and its
+/// text: where the top and bottom straight edges end, plus [HlSpace.s1].
+/// Chips, tabs, pills and buttons share it; the list switcher keeps its own.
+double hexTextInset(double height) => HlHex.tip * height + HlSpace.s1;
+
 /// What a label keeps between its line box and a horizontal hex's outline:
 /// the contour and [HlSpace.s1].
 const hexLabelClearance = HlBorder.width + HlSpace.s1;

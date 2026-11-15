@@ -195,9 +195,7 @@ ThemeData appTheme(Brightness brightness) {
         textStyle: label,
         shape: const HexBorder(),
         minimumSize: const Size(48, HlSize.target),
-        padding: const EdgeInsets.symmetric(
-          horizontal: HlHex.tip * HlSize.target,
-        ),
+        padding: EdgeInsets.symmetric(horizontal: hexTextInset(HlSize.target)),
       ),
     ),
     chipTheme: ChipThemeData(

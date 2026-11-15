@@ -100,6 +100,12 @@ void main() {
     }
   });
 
+  test('text starts s1 past where the straight edges end', () {
+    expect(hexTextInset(48), closeTo(0.2887 * 48 + 4, 0.001));
+    expect(hexTextInset(44), closeTo(0.2887 * 44 + 4, 0.001));
+    expect(hexTextInset(32), closeTo(0.2887 * 32 + 4, 0.001));
+  });
+
   testWidgets("a store's category pills keep their titles off the tips", (
     tester,
   ) async {

@@ -691,8 +691,15 @@ void main() {
       final anpassen = tester.getRect(edit());
       final first = tester.getRect(find.text('Äpfel'));
       void same(String reason) {
-        expect(tester.getRect(edit()), anpassen, reason: reason);
-        expect(tester.getRect(find.text('Äpfel')), first, reason: reason);
+        for (final (now, was) in [
+          (tester.getRect(edit()), anpassen),
+          (tester.getRect(find.text('Äpfel')), first),
+        ]) {
+          expect(now.left, closeTo(was.left, 0.001), reason: reason);
+          expect(now.top, closeTo(was.top, 0.001), reason: reason);
+          expect(now.right, closeTo(was.right, 0.001), reason: reason);
+          expect(now.bottom, closeTo(was.bottom, 0.001), reason: reason);
+        }
       }
 
       await goOffline(tester);

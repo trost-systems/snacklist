@@ -257,10 +257,9 @@ ButtonStyle tactileButtonStyle({
   shape: const WidgetStatePropertyAll(_RoomForFocus()),
   textStyle: WidgetStatePropertyAll(textStyle),
   minimumSize: const WidgetStatePropertyAll(Size(64, HlSize.target)),
-  padding: const WidgetStatePropertyAll(
+  padding: WidgetStatePropertyAll(
     EdgeInsets.symmetric(
-      // Text stays between the tips: the safe area is the flat middle.
-      horizontal: HlHex.tip * HlSize.target + HlSpace.s3,
+      horizontal: hexTextInset(HlSize.target),
       vertical: HlSpace.s2,
     ),
   ),
