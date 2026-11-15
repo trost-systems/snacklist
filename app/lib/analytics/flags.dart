@@ -30,6 +30,13 @@ const listDeclutterFlag = 'list-declutter';
 /// up a screenshot, the form sends it, and Einstellungen' shake switch.
 const feedbackFb2Flag = 'feedback-fb2';
 
+/// The flag that turns on JH2, joining a household in the browser first
+/// (job 271): the start screen's two buttons, „Bestehendem Haushalt
+/// beitreten“ on the name step, the sign-in sheet for an invite, joining
+/// from a link without asking again, the approval wait's new words, the QR
+/// code on a person's invite and the web app's „Öffnen“ card on phones.
+const joinHouseholdJh2Flag = 'join-household-jh2';
+
 /// PostHog feature flags, the app's runtime toggles (job 44,
 /// docs/ANALYTICS.md "Feature flags"). Read a toggle with [isOn] wherever it
 /// matters; nothing else in the app reads PostHog flags.

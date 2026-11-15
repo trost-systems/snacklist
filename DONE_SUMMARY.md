@@ -1401,3 +1401,29 @@ PR https://github.com/trost-systems/snacklist/pull/490. Review 0 of job 222 (the
   - `scripts/verify.sh` gates: see the job's DONE_SUMMARY copy.
 - **Legal note** updated: pictures reach the bucket only through the server, and the screen-name example
   is the real id (`list`).
+
+## Job 271: JH2, join a household in the browser first, behind `join-household-jh2` (2026-11-15)
+
+- **PR** https://github.com/trost-systems/snacklist/pull/504. Flag `join-household-jh2`
+  (`releases/flags.json` rollout `off`; the lead creates it in PostHog and keeps it off until
+  Legal's GO on JH-Q9). Off, every screen is as before. Ships to TestFlight with the next green main
+  build; Peter sees it only once the flag targets his account.
+- **Built.** Start screen with „Los geht's“ and „Schon ein Konto“ only, no „Einladung einfügen“
+  (also not on the sign-in or Willkommen). „Bestehendem Haushalt beitreten“ on the name step opens
+  the code step `/start/join` (`OnboardingStep.join`): 8 boxes over one real text field (native
+  paste, no paste button), lookup at the 8th character via `preview_invite_public`, the preview
+  card with per-field switches (`invitePreviewFields`, all on), one line for dead codes, Join hands
+  over to the existing join path. Invite links: a sheet „Konto erstellen“ / „Anmelden“ over the
+  sign-in, today's full-screen consent for a new install, then the household's list; the join
+  screen joins a link without asking. Approval wait with the new text and „Lieber eigene Liste
+  anlegen“ as a text button. QR on a person invite. The web app's „Öffnen“ card in phone browsers
+  with Peter's copy („Snacklist funktioniert in der App besser.“ / "Snacklist works better in the
+  app."), custom scheme on iOS, intent on Android, store hops only once the listings are public.
+- **Proof.** `e2e/tests/join-jh2.spec.ts` (6 tests on the local stack: link with a new and an
+  existing account, consent order, typed and pasted codes, dead code, flag off, the phone card);
+  widget tests and goldens (DE light, EN dark, 130 %; 160 % at 358 px without overflow);
+  `scripts/verify.sh` gates gitleaks, lint, site, emails, db, functions, fg-cli, flutter, web-prod
+  passed locally; the full e2e and the rest on CI. Screenshots in `docs/screenshots/271/`.
+- **Not proven.** The card's links on a real iPhone or Android phone, and native paste through a
+  phone's long-press menu. Decisions in `docs/DECISIONS.md`, "Job 271"; the Legal list for JH-Q9 is
+  the job's NEEDS_LEAD.

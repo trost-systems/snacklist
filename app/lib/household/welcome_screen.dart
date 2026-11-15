@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/app/router.dart';
 import 'package:family_groceries/design/brand_block.dart';
 import 'package:family_groceries/design/sticker.dart';
@@ -52,8 +53,13 @@ class const WelcomeScreen({super.key}) extends StatelessWidget {
           hint: l10n.onboardingJoinHint,
           onTap: () => context.go(_keepNext(context, joinCodePath)),
         ),
-        const SizedBox(height: 12),
-        const Align(child: PasteInvite()),
+        // JH2 (job 271, JH-Q1) has no Einladung einfügen.
+        if (!context.select<Flags?, bool>(
+          (f) => f?.isOn(joinHouseholdJh2Flag) ?? false,
+        )) ...[
+          const SizedBox(height: 12),
+          const Align(child: PasteInvite()),
+        ],
         const SizedBox(height: 32),
         Align(
           child: TextButton(

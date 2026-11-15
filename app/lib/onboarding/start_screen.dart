@@ -1,4 +1,5 @@
 import 'package:family_groceries/analytics/analytics.dart';
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/app/legal_links.dart';
 import 'package:family_groceries/app/router.dart';
 import 'package:family_groceries/design/brand_block.dart';
@@ -12,14 +13,18 @@ import 'package:material_ui/material_ui.dart';
 /// The first screen signed out (job 168b): the hex mark and wordmark, what
 /// Snacklist is, „Los geht's“ into the guided start (the usage-data question
 /// first, unless this install answered it), „Schon ein Konto? Anmelden“
-/// and „Einladung einfügen“ for a join link copied before the install. The
-/// router moves on once the draft exists.
+/// and „Einladung einfügen“ for a join link copied before the install. With
+/// JH2 (job 271) only „Los geht's“ and „Schon ein Konto“: joining is the
+/// name step's. The router moves on once the draft exists.
 class const StartScreen({super.key}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final t = SnacklistColors.of(theme.brightness);
+    final jh2 = context.select<Flags?, bool>(
+      (f) => f?.isOn(joinHouseholdJh2Flag) ?? false,
+    );
     return Scaffold(
       body: SafeArea(
         bottom: false,
@@ -64,12 +69,16 @@ class const StartScreen({super.key}) extends StatelessWidget {
                       TextButton(
                         key: const ValueKey('start-log-in'),
                         onPressed: () => goToSignIn(context),
-                        child: Text(l10n.startLogIn),
+                        child: Text(
+                          jh2 ? l10n.jh2StartHaveAccount : l10n.startLogIn,
+                        ),
                       ),
-                      const SizedBox(height: HlSpace.s2),
-                      // Job 169b W2: a join link the store did not carry
-                      // over, pasted before the sign-in.
-                      const Align(child: PasteInvite()),
+                      if (!jh2) ...[
+                        const SizedBox(height: HlSpace.s2),
+                        // Job 169b W2: a join link the store did not carry
+                        // over, pasted before the sign-in.
+                        const Align(child: PasteInvite()),
+                      ],
                     ],
                   ),
                 ),

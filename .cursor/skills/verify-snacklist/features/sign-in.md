@@ -20,6 +20,11 @@ Signed out, Snacklist opens on the start screen of the guided start (`/start`, f
 - `deleted-notice` right after an account deletion, a card above the sign-in methods: „Dein Konto wurde gelöscht.“ / "Your account was deleted."; when an Apple grant could not be revoked, also „Falls du dich mit Apple angemeldet hattest: Entferne „Snacklist“ auf deinem iPhone unter Einstellungen › [dein Name] › Anmelden & Sicherheit › Mit Apple anmelden.“ / "If you signed in with Apple, remove “Snacklist” on your iPhone under Settings › [your name] › Sign-In & Security › Sign in with Apple." (`e2e/tests/account.spec.ts`).
 - `sign-out` More tab, „Abmelden“ / "Sign out"; also the logout icon (tooltip „Abmelden“) in the app bar of the first-run screens (analytics question, „Willkommen bei Snacklist“, the join request's waiting screen) and „Abmelden“ in the guided start's leave dialog when signed in. A sign-out ends on the login screen, not the start screen.
 
+## With the flag `join-household-jh2` (job 271)
+
+- `jh2-intent` for an invite, a sheet asks „Konto erstellen“ or „Anmelden“ before the methods (household-invites `jh2-invite-sheet`). „Konto erstellen“ opens the email form with „Registrieren“ first and filled; „Anmelden“ keeps today's order. No „Einladung einfügen“ under the form.
+
+
 ## How to get to it (user POV)
 
 - Open Snacklist signed out: the start screen; tap „Schon ein Konto? Anmelden“ / "Already have an account? Sign in". Or open `/login` directly. A link to a screen (`/more/invites`) or an invite link opens the login screen at once.

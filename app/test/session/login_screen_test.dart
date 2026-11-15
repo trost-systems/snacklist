@@ -1,3 +1,4 @@
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/app/localizations.dart';
 import 'package:family_groceries/design/field_border.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
@@ -34,6 +35,8 @@ void main() {
     Locale locale = const Locale('de'),
     Size size = const Size(390, 844),
     SupabaseClient Function(FakeAuth auth)? client,
+    String? invite,
+    Flags? flags,
   }) async {
     tester.view
       ..devicePixelRatio = 1
@@ -55,13 +58,16 @@ void main() {
     await tester.pumpWidget(
       RepositoryProvider.value(
         value: SocialSignIn(auth, flows: flows, native: native),
-        child: BlocProvider.value(
-          value: session,
+        child: MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: session),
+            BlocProvider.value(value: flags ?? Flags()),
+          ],
           child: MaterialApp(
             localizationsDelegates: appLocalizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             locale: locale,
-            home: const LoginScreen(),
+            home: LoginScreen(invite: invite),
           ),
         ),
       ),
@@ -459,6 +465,103 @@ void main() {
       await fillIn(tester);
       await tester.pumpWidget(const SizedBox());
       expect(finishes(tester), [false]);
+    });
+  });
+
+  group('JH2 invite sheet (job 271)', () {
+    Flags jh2() => Flags(forced: {joinHouseholdJh2Flag});
+    Finder sheet() => find.byKey(const ValueKey('invite-sign-in-sheet'));
+
+    testWidgets('asks first whether the invited person has an account', (
+      tester,
+    ) async {
+      await pumpLogin(tester, invite: 'ABCD2345', flags: jh2());
+      expect(sheet(), findsOneWidget);
+      expect(find.text('Du bist in einen Haushalt eingeladen'), findsOneWidget);
+      expect(find.text('Hast du schon ein Snacklist-Konto?'), findsOneWidget);
+      expect(
+        find.widgetWithText(FilledButton, 'Konto erstellen'),
+        findsOneWidget,
+      );
+      expect(find.widgetWithText(OutlinedButton, 'Anmelden'), findsOneWidget);
+    });
+
+    testWidgets('Konto erstellen opens the email form with sign-up first', (
+      tester,
+    ) async {
+      await pumpLogin(tester, invite: 'ABCD2345', flags: jh2());
+      await tester.tap(find.byKey(const ValueKey('invite-sheet-create')));
+      await tester.pumpAndSettle();
+      expect(sheet(), findsNothing);
+      expect(find.byKey(const ValueKey('login-email')), findsOneWidget);
+      final signUp = find.widgetWithText(FilledButton, 'Registrieren');
+      final signIn = find.widgetWithText(OutlinedButton, 'Anmelden');
+      expect(signUp, findsOneWidget);
+      expect(signIn, findsOneWidget);
+      expect(
+        tester.getTopLeft(signUp).dy,
+        lessThan(tester.getTopLeft(signIn).dy),
+      );
+      expect(google(), findsOneWidget);
+      expect(apple(), findsOneWidget);
+      // Once per visit.
+      await tester.pumpAndSettle();
+      expect(sheet(), findsNothing);
+    });
+
+    for (final (how, act) in [
+      (
+        'Anmelden',
+        (WidgetTester tester) =>
+            tester.tap(find.byKey(const ValueKey('invite-sheet-sign-in'))),
+      ),
+      (
+        'a dismissal',
+        (WidgetTester tester) => tester.tapAt(const Offset(195, 40)),
+      ),
+    ]) {
+      testWidgets('$how leaves the sign-in as it is', (tester) async {
+        await pumpLogin(tester, invite: 'ABCD2345', flags: jh2());
+        await act(tester);
+        await tester.pumpAndSettle();
+        expect(sheet(), findsNothing);
+        expect(find.byKey(const ValueKey('login-email')), findsNothing);
+        expect(find.byKey(const ValueKey('sign-in-email')), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('invite-paste-waiting')),
+          findsOneWidget,
+        );
+      });
+    }
+
+    testWidgets('shows when the flag arrives after the first frame', (
+      tester,
+    ) async {
+      final flags = Flags();
+      addTearDown(flags.close);
+      await pumpLogin(tester, invite: 'ABCD2345', flags: flags);
+      expect(sheet(), findsNothing);
+      flags.replace({joinHouseholdJh2Flag: true});
+      await tester.pumpAndSettle();
+      expect(sheet(), findsOneWidget);
+    });
+
+    testWidgets('no sheet without an invite, and no paste button', (
+      tester,
+    ) async {
+      await pumpLogin(tester, flags: jh2());
+      expect(sheet(), findsNothing);
+      expect(find.byKey(const ValueKey('invite-paste')), findsNothing);
+      expect(find.byKey(const ValueKey('login-new')), findsOneWidget);
+    });
+
+    testWidgets('with the flag off: no sheet, the paste button stays', (
+      tester,
+    ) async {
+      await pumpLogin(tester, invite: 'ABCD2345');
+      expect(sheet(), findsNothing);
+      await pumpLogin(tester);
+      expect(find.byKey(const ValueKey('invite-paste')), findsOneWidget);
     });
   });
 }

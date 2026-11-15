@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/app/router.dart';
 import 'package:family_groceries/design/pointy_hex.dart';
 import 'package:family_groceries/design/tokens.g.dart';
@@ -66,11 +67,27 @@ class _JoinRequestWaitingState() extends State<JoinRequestWaiting> {
     }
   }
 
+  /// The guided start from „Mit wem“, as on Willkommen: off the join
+  /// screen's address, the router resumes the draft.
+  void _ownHousehold() {
+    context.read<OnboardingCubit>().start(
+      askUsage: false,
+      ownHouseholdFor: switch (context.read<SessionCubit>().state) {
+        NeedsHousehold(:final userId) => userId,
+        _ => null,
+      },
+    );
+    goToStart(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final t = SnacklistColors.of(theme.brightness);
+    final jh2 = context.select<Flags?, bool>(
+      (f) => f?.isOn(joinHouseholdJh2Flag) ?? false,
+    );
     final session = context.watch<SessionCubit>();
     final inHousehold = session.state is InHousehold;
     final problem = _problem;
@@ -106,7 +123,9 @@ class _JoinRequestWaitingState() extends State<JoinRequestWaiting> {
           Semantics(
             liveRegion: true,
             child: Text(
-              l10n.joinRequestSent(widget.householdName),
+              jh2
+                  ? l10n.jh2JoinRequestWaiting(widget.householdName)
+                  : l10n.joinRequestSent(widget.householdName),
               key: const ValueKey('join-request-sent'),
               textAlign: TextAlign.center,
               style: theme.textTheme.titleMedium,
@@ -118,34 +137,32 @@ class _JoinRequestWaitingState() extends State<JoinRequestWaiting> {
               key: const ValueKey('join-request-problem'),
             ),
           const SizedBox(height: HlSpace.s6),
-          FilledButton(
-            key: const ValueKey('join-request-go-on'),
-            onPressed: inHousehold
-                ? () => leaveStep(context)
-                // The guided start from „Mit wem“, as on Willkommen: off
-                // the join screen's address, the router resumes the draft.
-                : () {
-                    context.read<OnboardingCubit>().start(
-                      askUsage: false,
-                      ownHouseholdFor: switch (context
-                          .read<SessionCubit>()
-                          .state) {
-                        NeedsHousehold(:final userId) => userId,
-                        _ => null,
-                      },
-                    );
-                    goToStart(context);
-                  },
-            child: Text(
-              inHousehold ? l10n.joinRequestToList : l10n.joinRequestCreateOwn,
+          if (inHousehold)
+            FilledButton(
+              key: const ValueKey('join-request-go-on'),
+              onPressed: () => leaveStep(context),
+              child: Text(l10n.joinRequestToList),
+            )
+          else if (!jh2)
+            FilledButton(
+              key: const ValueKey('join-request-go-on'),
+              onPressed: _ownHousehold,
+              child: Text(l10n.joinRequestCreateOwn),
             ),
-          ),
           const SizedBox(height: HlSpace.s2),
           TextButton(
             key: const ValueKey('join-request-withdraw'),
             onPressed: _busy ? null : () => unawaited(_withdraw()),
             child: Text(l10n.joinRequestWithdraw),
           ),
+          // JH2 (job 271, JH-Q6): waiting is the way; starting an own list
+          // is the quiet alternative.
+          if (jh2 && !inHousehold)
+            TextButton(
+              key: const ValueKey('join-request-go-on'),
+              onPressed: _ownHousehold,
+              child: Text(l10n.jh2JoinRequestOwnList),
+            ),
         ],
       ),
     );

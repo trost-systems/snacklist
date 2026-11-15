@@ -3285,4 +3285,94 @@ class AppLocalizationsDe extends AppLocalizations {
   String voiceDefaultListBody(String household) {
     return 'Was du sagst, ohne eine Liste zu nennen, landet in „$household“ auf dieser Liste.';
   }
+
+  @override
+  String get jh2StartHaveAccount => 'Schon ein Konto';
+
+  @override
+  String get jh2JoinExisting => 'Bestehendem Haushalt beitreten';
+
+  @override
+  String get jh2JoinCodeHeading => 'Gib deinen Einladungscode ein';
+
+  @override
+  String get jh2JoinCodeHelp =>
+      'Die 8 Zeichen aus der Einladung. Sobald alle drin sind, siehst du den Haushalt.';
+
+  @override
+  String get jh2JoinCodeJoin => 'Beitreten';
+
+  @override
+  String jh2InvitedBy(String inviter, String household) {
+    return '$inviter lädt dich zu „$household“ ein';
+  }
+
+  @override
+  String jh2InvitedTo(String household) {
+    return 'Du bist zu „$household“ eingeladen';
+  }
+
+  @override
+  String jh2InvitedByInviter(String inviter) {
+    return '$inviter lädt dich in einen Haushalt ein';
+  }
+
+  @override
+  String get jh2InvitedToHousehold => 'Du bist in einen Haushalt eingeladen';
+
+  @override
+  String jh2PreviewMembers(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Mitglieder',
+      one: '1 Mitglied',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String jh2PreviewOpenItems(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count offene Einträge',
+      one: '1 offener Eintrag',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get jh2PreviewPremium => 'Premium gilt für alle im Haushalt';
+
+  @override
+  String get jh2CodeUnavailable =>
+      'Diese Einladung gilt nicht mehr. Bitte um eine neue Einladung.';
+
+  @override
+  String get jh2CodeRateLimited =>
+      'Gerade zu viele Versuche. Versuch es später noch einmal.';
+
+  @override
+  String get jh2InviteSheetBody => 'Hast du schon ein Snacklist-Konto?';
+
+  @override
+  String get jh2InviteSheetCreate => 'Konto erstellen';
+
+  @override
+  String jh2JoinRequestWaiting(String name) {
+    return 'Deine Anfrage liegt bei „$name“. Ein Admin sieht dort deinen Namen und lässt dich rein. Deine Liste öffnet sich von selbst, sobald das passiert.';
+  }
+
+  @override
+  String get jh2JoinRequestOwnList => 'Lieber eigene Liste anlegen';
+
+  @override
+  String get inviteQrPerson => 'QR-Code dieser Einladung';
+
+  @override
+  String get openAppText => 'Snacklist funktioniert in der App besser.';
+
+  @override
+  String get openAppAction => 'Öffnen';
 }

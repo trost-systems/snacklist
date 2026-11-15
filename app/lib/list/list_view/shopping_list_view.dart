@@ -4,6 +4,7 @@ import 'dart:ui' show SemanticsHitTestBehavior;
 
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/app/notices.dart';
+import 'package:family_groceries/app/open_app.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/claims.dart';
@@ -572,6 +573,7 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
           padding: EdgeInsets.symmetric(horizontal: side),
           sliver: SliverMainAxisGroup(
             slivers: [
+              const SliverToBoxAdapter(child: OpenAppSlot()),
               const SliverToBoxAdapter(child: ListHints()),
               const SliverToBoxAdapter(child: TripEndedSlot()),
               const SliverToBoxAdapter(child: SizedBox(height: 4)),
