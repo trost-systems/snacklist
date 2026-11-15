@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:family_groceries/list/list_cache.dart';
 import 'package:family_groceries/list/model.dart';
+import 'package:family_groceries/list/pricing.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -124,6 +125,112 @@ void main() {
       [for (final u in back.usuals) (u.name, u.quantity, u.due)],
       [('Gurken', '2', true), ('Brot', null, false)],
     );
+  });
+
+  group('encode', () {
+    final odd = Item(
+      id: 'odd',
+      name: 'Crème "fraîche" \\ 🧀\n\tgroß',
+      status: ItemStatus.active,
+      createdAt: at,
+      updatedAt: at,
+      listId: 'l1',
+      price: Price(
+        unitMicros: 1990000,
+        basis: PriceBasis.unit,
+        per: PricePer.kg,
+        currency: 'EUR',
+        pricedAt: at,
+      ),
+    );
+    final full = ListSnapshot(
+      catalog: snapshot.catalog,
+      server: [milk, odd, bread],
+      pending: snapshot.pending,
+      usuals: snapshot.usuals,
+      claims: [
+        Claim(id: 'c1', itemId: 'milk', userId: 'lea', createdAt: at),
+        Claim(itemId: 'odd', userId: 'peter', quantity: '2', createdAt: at),
+      ],
+    );
+
+    test('is the text jsonEncode makes of toJson', () {
+      const empty = ListSnapshot(catalog: Catalog(), server: [], pending: []);
+      for (final s in [full, snapshot, empty]) {
+        expect(s.encode(), jsonEncode(s.toJson()));
+      }
+      expect(roundTrip(full).encode(), full.encode());
+    });
+
+    test('follows an item that changed and leaves the others', () {
+      final before = full.encode();
+      final ticked = odd.copyWith(
+        status: ItemStatus.bought,
+        boughtAt: () => at,
+      );
+      final after = ListSnapshot(
+        catalog: full.catalog,
+        server: [milk, ticked, bread],
+        pending: [SetStatus('odd', ItemStatus.bought, at)],
+        usuals: full.usuals,
+        claims: full.claims,
+      );
+      expect(after.encode(), jsonEncode(after.toJson()));
+      expect(after.encode(), isNot(before));
+      expect(
+        full.encode(),
+        before,
+        reason: 'the snapshot before still has the open item',
+      );
+    });
+
+    test('follows a change of every field', () {
+      full.encode();
+      final price = Price(
+        unitMicros: 2490000,
+        basis: PriceBasis.unit,
+        per: PricePer.kg,
+        currency: 'EUR',
+        pricedAt: at,
+      );
+      for (final changed in [
+        odd.copyWith(name: 'Schmand'),
+        odd.copyWith(quantity: () => '2 Becher'),
+        odd.copyWith(brand: () => 'Weihenstephan'),
+        odd.copyWith(properties: () => 'laktosefrei'),
+        odd.copyWith(categoryId: 'dairy'),
+        odd.copyWith(storeId: () => 's1'),
+        odd.copyWith(sortKey: () => 1.5),
+        odd.copyWith(listId: 'l2'),
+        odd.copyWith(price: () => price),
+        odd.copyWith(price: () => null),
+        odd.copyWith(status: ItemStatus.bought),
+        odd.copyWith(boughtAt: () => at.add(const Duration(minutes: 5))),
+        // What only the server sets, another row with the same content, and
+        // the price's other columns: as a resync delivers the row.
+        for (final MapEntry(:key, :value) in {
+          'created_at': '2026-10-22T12:00:01.000Z',
+          'updated_at': '2026-10-22T12:00:02.000Z',
+          'added_by': 'lea',
+          'categorized_via': 'fuzzy',
+          'canonical_key': 'creme',
+          'id': 'even',
+          'price_basis': 'line',
+          'price_per': 'l',
+          'price_currency': 'CHF',
+          'priced_at': '2026-10-22T12:00:03.000Z',
+        }.entries)
+          Item.fromJson({...odd.toJson(), key: value}),
+      ]) {
+        expect(changed.toJson(), isNot(odd.toJson()));
+        final after = ListSnapshot(
+          catalog: full.catalog,
+          server: [milk, changed, bread],
+          pending: full.pending,
+        );
+        expect(after.encode(), jsonEncode(after.toJson()));
+      }
+    });
   });
 
   test('a version 1 snapshot loads with its queued ops', () {

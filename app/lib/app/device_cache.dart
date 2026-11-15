@@ -485,23 +485,27 @@ class _PrefsListCache(
 
   @override
   Future<void> save(ListSnapshot snapshot) =>
-      _store(DeviceCache._listKey(_userId, _householdId), snapshot.toJson());
+      _store(DeviceCache._listKey(_userId, _householdId), snapshot.encode);
 
   @override
   Future<SeenMark?> loadSeen() =>
       _read(DeviceCache._seenKey(_userId, _householdId), SeenMark.fromJson);
 
   @override
-  Future<void> saveSeen(SeenMark mark) =>
-      _store(DeviceCache._seenKey(_userId, _householdId), mark.toJson());
+  Future<void> saveSeen(SeenMark mark) => _store(
+    DeviceCache._seenKey(_userId, _householdId),
+    () => jsonEncode(mark.toJson()),
+  );
 
   @override
   Future<ListPrefs?> loadPrefs() =>
       _read(DeviceCache._prefsKey(_userId, _householdId), ListPrefs.fromJson);
 
   @override
-  Future<void> savePrefs(ListPrefs prefs) =>
-      _store(DeviceCache._prefsKey(_userId, _householdId), prefs.toJson());
+  Future<void> savePrefs(ListPrefs prefs) => _store(
+    DeviceCache._prefsKey(_userId, _householdId),
+    () => jsonEncode(prefs.toJson()),
+  );
 
   Future<T?> _read<T>(
     String key,
@@ -520,11 +524,11 @@ class _PrefsListCache(
   /// Skipped once the user signed out or left the household, so a list
   /// closing late cannot write its state back. A household switched away
   /// from keeps its list.
-  Future<void> _store(String key, Map<String, Object?> json) =>
+  Future<void> _store(String key, String Function() json) =>
       _device._write(() async {
         final cached = await _device.householdsOf(_userId);
         if (cached?.households.any((h) => h.id == _householdId) ?? false) {
-          await _device._prefs.setString(key, jsonEncode(json));
+          await _device._prefs.setString(key, json());
         }
       });
 }

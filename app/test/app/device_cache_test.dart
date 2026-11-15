@@ -48,6 +48,44 @@ void main() {
     expect(await cache.list('lea', 'home').load(), isNull);
   });
 
+  test('a later save replaces the list, changed rows included', () async {
+    await cache.remember('peter', households: [home], shown: home.id);
+    await cache.list('peter', 'home').save(snapshot);
+    final ticked = ListSnapshot(
+      catalog: const Catalog(),
+      server: [
+        snapshot.server.single.copyWith(status: ItemStatus.bought),
+        Item(
+          id: 'bread',
+          name: 'Brot',
+          status: ItemStatus.active,
+          createdAt: DateTime.utc(2026, 10, 23),
+          updatedAt: DateTime.utc(2026, 10, 23),
+        ),
+      ],
+      pending: const [],
+    );
+    await cache.list('peter', 'home').save(ticked);
+    final back = await cache.list('peter', 'home').load();
+    expect(back?.toJson(), ticked.toJson());
+    expect(back?.server.first.status, ItemStatus.bought);
+  });
+
+  test('a save that is skipped does not encode the list', () async {
+    await cache.remember('peter', households: [home], shown: home.id);
+    final counted = _CountedSnapshot(
+      catalog: snapshot.catalog,
+      server: snapshot.server,
+      pending: snapshot.pending,
+    );
+    _encodes = 0;
+    await cache.list('peter', 'work').save(counted);
+    expect(await cache.list('peter', 'work').load(), isNull);
+    expect(_encodes, 0);
+    await cache.list('peter', 'home').save(counted);
+    expect(_encodes, 1);
+  });
+
   test('each household keeps its list across switches (job 169b)', () async {
     await cache.remember('peter', households: [home, work], shown: 'home');
     await cache.list('peter', 'home').save(snapshot);
@@ -176,6 +214,28 @@ void main() {
     });
   });
 
+  test('list prefs are kept per user and household', () async {
+    const prefs = ListPrefs(
+      folded: {'s1', noStoreKey},
+      hintDismissed: true,
+      shownList: 'l2',
+    );
+    await cache.remember('peter', households: [home], shown: home.id);
+    expect(await cache.list('peter', 'home').loadPrefs(), isNull);
+    await cache.list('peter', 'home').savePrefs(prefs);
+    expect(
+      (await cache.list('peter', 'home').loadPrefs())?.toJson(),
+      prefs.toJson(),
+    );
+    expect(await cache.list('lea', 'home').loadPrefs(), isNull);
+    await cache.list('peter', 'work').savePrefs(prefs);
+    expect(
+      await cache.list('peter', 'work').loadPrefs(),
+      isNull,
+      reason: 'not a household of the user',
+    );
+  });
+
   test('analytics state is per install and survives sign-outs', () async {
     expect(await cache.installId(), isNull);
     expect(await cache.consent(), isNull);
@@ -284,4 +344,18 @@ void main() {
     await cache.forget();
     expect(await cache.reviewState(), '{"items_added":3}');
   });
+}
+
+var _encodes = 0;
+
+class const _CountedSnapshot({
+  required super.catalog,
+  required super.server,
+  required super.pending,
+}) extends ListSnapshot {
+  @override
+  String encode() {
+    _encodes++;
+    return super.encode();
+  }
 }

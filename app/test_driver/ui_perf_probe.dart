@@ -201,10 +201,11 @@ Future<int> _sections() async {
   await _settle();
   var taps = 0;
   for (var i = 0; i < 10; i++) {
-    final divider = _dividers().firstWhere(
-      (d) => !(d.widget as StoreDivider).folded && _fullyVisible(d),
+    await _tap(
+      await _inReach(
+        () => _dividers().firstWhere((d) => !(d.widget as StoreDivider).folded),
+      ),
     );
-    await _tap(divider);
     taps++;
     await _settle();
     await _tap(_find((e) => e.widget is EditableText)!);
@@ -215,10 +216,11 @@ Future<int> _sections() async {
   // The folded dividers stand together at the top; the lowest opens first,
   // so the rest stay on screen.
   while (_list().prefs.folded.isNotEmpty) {
-    final divider = _dividers().lastWhere(
-      (d) => (d.widget as StoreDivider).folded && _fullyVisible(d),
+    await _tap(
+      await _inReach(
+        () => _dividers().lastWhere((d) => (d.widget as StoreDivider).folded),
+      ),
     );
-    await _tap(divider);
     taps++;
     await _settle();
   }
@@ -291,6 +293,25 @@ bool _fullyVisible(Element e) {
       _top(e) + _size(e).height <= top + viewport.size.height;
 }
 
+/// Whether a tap on [e]'s centre reaches it: on screen, under nothing.
+bool _reaches(Element e) {
+  final result = HitTestResult();
+  WidgetsBinding.instance.hitTestInView(result, _centre(e), _view().viewId);
+  return result.path.any((entry) => entry.target == e.renderObject);
+}
+
+/// The element [pick] finds, scrolled to the middle of the list when a tap
+/// would not reach it: the list runs under the header and the add field.
+Future<Element> _inReach(Element Function() pick) async {
+  final found = pick();
+  if (_reaches(found)) {
+    return found;
+  }
+  await Scrollable.ensureVisible(found, alignment: 0.5);
+  await _settle();
+  return pick();
+}
+
 FlutterView _view() => WidgetsBinding.instance.platformDispatcher.implicitView!;
 
 var _pointer = 100;
@@ -303,7 +324,11 @@ Future<void> _tap(Element target, {Offset? at}) async {
   final result = HitTestResult();
   WidgetsBinding.instance.hitTestInView(result, at, _view().viewId);
   if (!result.path.any((entry) => entry.target == target.renderObject)) {
-    throw StateError('a tap at $at misses ${target.widget}');
+    // Profile builds print an Offset as "Instance of 'Offset'".
+    throw StateError(
+      'a tap at ${at.dx},${at.dy} misses ${target.widget.runtimeType}: '
+      '${result.path.firstOrNull?.target.runtimeType} is on top',
+    );
   }
   final pointer = ++_pointer;
   GestureBinding.instance.handlePointerEvent(

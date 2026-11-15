@@ -12,7 +12,8 @@ here="$(cd "$(dirname "$0")" && pwd)"
 root="$(cd "$here/../../.." && pwd)"
 runs="${1:-3}"
 port=60881
-export PATH="$HOME/flutter/bin:$PATH"
+# CI's SDK when it sits next to the default one (scripts/lib.sh does the same).
+export PATH="${FLUTTER_DIR:-$HOME/flutter}/bin:$PATH"
 
 cd "$root/app"
 flutter pub get >/dev/null
@@ -26,7 +27,8 @@ flutter build linux --profile -t test_driver/ui_perf_probe.dart \
 
 echo "measure: 1 warm-up and $runs launches under /tmp/fg-hc-measure.lock" >&2
 runs_json="$(flock /tmp/fg-hc-measure.lock xvfb-run -a -s "-screen 0 1280x1024x24" \
-  python3 "$here/frames.py" build/linux/x64/profile/bundle "$port" "$runs" "$root/test/fixtures/scenarios")"
+  python3 "$here/frames.py" build/linux/x64/profile/bundle "$port" "$runs" "$root/test/fixtures/scenarios" |
+  tee /dev/stderr | grep '^\[' | tail -1)"
 
 python3 - "$runs_json" \
   "$(git -C "$root" rev-parse --short HEAD)$(git -C "$root" diff --quiet HEAD -- app || echo -dirty)" <<'EOF'
