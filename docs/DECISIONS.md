@@ -13403,3 +13403,61 @@ answers to job 237's two questions, are below.
   ohne Preis“. The English store-line wording changed with it, from "1 unpriced" to "1 without
   price", as Peter wrote it. The bar under the list without `list-declutter` keeps its „N mit
   Preis · M offen“. The Job 237 entry left docs/NEEDS_PETER.md.
+
+## Job 221: e2e in four shards, 2026-11-14
+
+- **Four shards, split by Playwright's own `--shard`.** A PR that runs e2e without the native
+  gates waited for the slower of two e2e shards: its job ran 19:53 in the median (18:19 to
+  24:24) of the 12 green `main` runs created on 14 November from 12:07 to 17:53 UTC. With four,
+  the slowest job ran 14:55 (CI run 43632050929) and 12:33 (on-demand run 43640061280 of the
+  same commit), 5 to 7 minutes less. No test failed or was retried in either. The table is in
+  `docs/CI.md` (Measurements, job 221).
+- **The price is 7 to 9 Linux runner minutes per run** (37:12 for two shards, 44:01 and 46:28 for
+  four): every shard's job spends 3.3 to 4.9 minutes beside Playwright's own time, on its own
+  stack and web build (the 4.9 are shard 1's, which also runs the integration-lock tests and the
+  sync smoke). The repository is public, so the minutes cost nothing; the limit is how many
+  jobs run at once, the ios job counted: 20 in the measured peak, which is the "total
+  concurrent jobs" GitHub documents for the Free plan (the organisation's plan was not read).
+  In the runs created from 7 November 18:48 to 13 November 19:15 UTC (job 219's
+  `ci-jobs.tsv`: 5,592 jobs of `ci.yml`'s first attempts, 5,436 of them on Linux, so a lower
+  bound) 20 ran at once for 492 seconds in all, 18 or more for 2,815 seconds and 16 or more
+  for 5,220 seconds, and never 21. A Linux job waited 3 s in the median (p99 46 s). With two
+  more jobs per run, at least the times at 18 or more can reach the limit, where a job waits
+  in the queue, and those at 16 or more when two runs overlap. How much that adds is not
+  measured.
+- **Four stacks per run, four chances that one fails to start.** Each shard pulls the images,
+  starts its own stack and builds the web app, so a run has twice the setup steps that can fail
+  for a reason outside the tests. Both runs of four were green; two runs say nothing about a
+  rate. Not measured.
+- **Why four and not six.** Replaying the test durations of five `main` runs (their
+  `playwright-results.json`, 2 workers) the slowest shard's Playwright time is 991 s with two
+  shards (883 to 1175), 699 s with three, 513 s with four (472 to 633), 429 s with five and 385 s
+  with six (355 to 486). Six would save about 2 more minutes for two more runners per run and
+  is not measured on real runs. `e2e.yml` takes up to six for an on-demand run
+  (`scripts/ci-e2e.sh --shards 6`).
+- **Not built: shards packed by test duration.** Simulated on the same five runs (whole spec
+  files, longest first, planned from the other runs' durations), the slowest of four shards takes
+  457 s (406 to 508) instead of 513 s: about a minute. One shard moved by more than that between
+  the two real runs: shard 4's Playwright time was 11:10 in the first and 8:04 in the second (in
+  the first, its tests took 24 % longer than their medians in the five `main` runs; the cause
+  was not traced). A planner would also need a durations file kept current and a guard that no
+  test falls out of every shard. `--shard` cannot lose a test.
+- **Two workers per shard stay.** Other values are not measured here.
+- **One place sets the count.** The matrix in `ci.yml`; the job passes `strategy.job-total` to
+  Playwright. `scripts/check-gates.sh` fails when the gate's line is not exactly that, when the
+  matrix has another key beside the shard list (it would multiply `job-total`), when `e2e.yml`'s
+  `auto` count for the full suite differs from that list, or when `e2e.yml`'s shard list and
+  Playwright's count no longer both come from its plan step's one `$total`: the check holds the
+  eight lines on that way, each exactly. Seventeen mutants of the two files each fail it; they
+  are a script in the job's research directory, not a test in the repository. Not held: a
+  second line or a step `if:` added beside a held one, an edit of a line that is not held, and
+  the dispatch input's default.
+- **With the ios job in the run, `ci-ok` still waits for it** (28:45 running in the median of
+  the 12 runs; `ci-ok` 28:37 after the start of CI run 43632050929). Four shards change the wait
+  of the PRs that run e2e without the native gates: by the filter's rule, 74 of the 136 merged
+  from 7 November to 14 November 19:13 UTC (32 run the native gates, 30 changed only
+  documentation and run no e2e). That is `scripts/ci-changes.sh` of 14 November applied to each
+  PR's full file list, sampled by merge date; it is not a count of what ran.
+- **`scripts/ci-timings.sh --steps` prints a median now.** For an even number of runs it printed
+  the upper of the two middle values: 18:13 for the two-shard gate step, whose median over the
+  12 runs is 17:51.

@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # Runs the Supabase + Playwright e2e (and the db gate) on GitHub Actions for a pushed branch, via
 # .github/workflows/e2e.yml, waits for it and prints the result (docs/CI.md, On-demand e2e).
-# Usage: scripts/ci-e2e.sh [--ref <branch>] [--spec "<playwright args>"] [--shards 1|2] [--no-db]
+# Usage: scripts/ci-e2e.sh [--ref <branch>] [--spec "<playwright args>"] [--shards 1..6] [--no-db]
 #                          [--sync-smoke | --no-sync-smoke] [--download <dir>]
 #   --ref        the branch to test (default: the current one). It must be pushed: the checked
 #                out branch must be origin/<ref>'s commit, another local branch must not have
 #                commits origin lacks, so the run tests what you have.
 #   --spec       Playwright arguments, e.g. tests/stores.spec.ts or '-g "drag"' (default: the
 #                full suite). One shard and no fg sync smoke test unless you ask for them.
-#   --shards     1 or 2 (default: 2 for the full suite, 1 with --spec)
+#   --shards     1 to 6 (default: 4 for the full suite, as in ci.yml, and 1 with --spec)
 #   --no-db      skip the db gate (pgTAP, classifier sweep, db lint, backup drill, fixtures)
 #   --download   also download the run's artifacts (report, traces, screenshots) into <dir>
 # Exits 0 when the run passed, 1 when it failed, was cancelled or ran no test, 2 on a usage or
@@ -23,7 +23,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --ref) ref="${2:?--ref needs a branch}"; shift 2 ;;
     --spec) spec="${2?--spec needs Playwright arguments}"; shift 2 ;;
-    --shards) shards="${2:?--shards needs 1 or 2}"; shift 2 ;;
+    --shards) shards="${2:?--shards needs a number from 1 to 6}"; shift 2 ;;
     --no-db) db=false; shift ;;
     --sync-smoke) sync=true; shift ;;
     --no-sync-smoke) sync=false; shift ;;
@@ -32,7 +32,7 @@ while [[ $# -gt 0 ]]; do
     *) die "unknown argument: $1 (see --help)" ;;
   esac
 done
-[[ $shards == auto || $shards == 1 || $shards == 2 ]] || die "--shards is 1 or 2, not '$shards'"
+[[ $shards =~ ^(auto|[1-6])$ ]] || die "--shards is a number from 1 to 6, not '$shards'"
 for tool in gh git jq; do command -v "$tool" >/dev/null || die "$tool is not on PATH"; done
 
 repo="${FG_CI_REPO:-$(gh repo view --json nameWithOwner --jq .nameWithOwner)}"
