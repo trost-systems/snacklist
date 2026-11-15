@@ -8,7 +8,7 @@
 
 - Peter asked for a create flow no heavier than today with an easy hand-off to inviting. CH1, CH2 and CH4 are all lighter; CH1 keeps the invite step that the earlier onboarding research calls the commitment step (`docs/onboarding/research/best-practice.md`), and makes it one tap to share.
 - The QR is where today is heaviest: a person invite has none, so showing one means Later, the switcher, Invite and a group link (12 taps). CH1 and CH4 put a QR on the invite step.
-- CH3 (1 tap to a list) needs guest accounts, the same new account type as JH5, about 8 days. Not worth it for the create path alone.
+- CH3 (1 tap to a list) needs guest accounts, the same new account type as JH5, plus limits for guests without an invite code: about 12 days. Not worth it for the create path alone.
 - CH5 keeps most of today’s weight (7 taps); its two doors are worth taking into CH1 anyway (JH3’s door).
 
 ## Comparison
@@ -19,7 +19,7 @@
 | **Today** Today (main): the guided start | **9 / 9** (9 / 9) | **11 / 11** (11–12 / 11–12) | 5 (usage, who, name, stores, need) | invite step before the list; later the switcher sheet’s invite page | group link only, from the switcher | step 1, before the account | “Paste invite” under “Sign in” | 0 (live) | none |
 | **CH1** Today, three steps shorter | **6 / 6** (6 / 6) | **8 / 8** (6–8 / 6–8) | 2 (who, name) | invite step before the list, invite made already | “Show QR code” on the invite step (person invite) | card on the list | “I have an invite” text button | 3 days | none |
 | **CH2** The account, then the list | **3 / 3** (3 / 3) | **7 / 7** (5–7 / 5–7) | 0 | First steps card on the list → switcher invite page | group link on the invite page | card on the list | “I have an invite” text button | 3 days | none |
-| **CH3** The list first, the account when you share | **1 / 1** (1 / 1) | **7 / 6** (5–7 / 4–6) | 0 | “Invite” in the list header → account → invite page | group link on the invite page | card on the list | “Join a household” door | 8 days (guest accounts, upgrade) | Supabase anonymous sign-ins |
+| **CH3** The list first, the account when you share | **1 / 1** (1 / 1) | **7 / 6** (5–7 / 4–6) | 0 | “Invite” in the list header → account → invite page | group link on the invite page | card on the list | “Join a household” door | 12 days (JH5’s guest accounts plus limits for guests without a code) | Supabase anonymous sign-ins |
 | **CH4** Invite first, by QR or link | **6 / 5** (6 / 5) | **8 / 7** (6–8 / 5–7) | 1 (who, a pick needed) | full invite screen before the list, QR shown | on screen at once (person invite) | card on the list | “I have an invite” text button | 3 days | none |
 | **CH5** Today’s steps with two doors | **7 / 7** (7 / 7) | **9 / 9** (9–10 / 9–10) | 3 (who, name, stores and items) | invite step before the list; later the switcher sheet | group link only, from the switcher | card on the list | two equal doors, and “Join their household” on step 1 | 3 days | none |
 

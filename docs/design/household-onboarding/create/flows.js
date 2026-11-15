@@ -389,7 +389,7 @@ ch3.facts = {
   qr: en('group link on the invite page', 'Gruppenlink auf der Einladungsseite'),
   consent: en('card on the list', 'Karte auf der Liste'),
   guard: en('“Join a household” door', 'Tür „Einem Haushalt beitreten“'),
-  build: en('8 days (guest accounts, upgrade)', '8 Tage (Gastkonten, Upgrade)'),
+  build: en('12 days (JH5’s guest accounts plus limits for guests without a code)', '12 Tage (Gastkonten aus JH5 plus Grenzen für Gäste ohne Code)'),
   service: en('Supabase anonymous sign-ins', 'Anonyme Supabase-Anmeldung'),
 };
 ch4.facts = {
@@ -440,7 +440,7 @@ D(ch3, {
   invite: en('“Invite” in the header asks for the account first, then opens the invite page.', '„Einladen“ oben fragt erst nach dem Konto und öffnet dann die Einladungsseite.'),
   consent: en('A card on the list.', 'Eine Karte auf der Liste.'),
   guard: en('“Join a household” door next to “Start a list”.', 'Tür „Einem Haushalt beitreten“ neben „Liste starten“.'),
-  build: en('About 8 days: guest accounts (shared with JH5), the upgrade, abuse limits.', 'Etwa 8 Tage: Gastkonten (wie JH5), das Upgrade, Missbrauchsgrenzen.'),
+  build: en('About 12 days: JH5’s guest accounts (10 days, JH-Q10), plus limits for guests that arrive without an invite code, which JH5’s sign-up check doesn’t cover (CH-Q6).', 'Etwa 12 Tage: die Gastkonten aus JH5 (10 Tage, JH-Q10), plus Grenzen für Gäste ohne Einladungscode, die die Prüfung bei der Anmeldung aus JH5 nicht abdeckt (CH-Q6).'),
   risks: en('A guest list is lost with the phone until an account exists; guests need deletion and export too.', 'Eine Gastliste geht mit dem Handy verloren, bis es ein Konto gibt; auch Gäste brauchen Löschung und Export.'),
 });
 D(ch4, {
