@@ -13862,3 +13862,10 @@ Redo of job 65's closed PR #190 with the frame Peter picked in job 214
   Listen, wie du brauchst“ to the 50-list cap. The cap itself is shown nowhere. Legal may still rule
   on „wie ihr wollt“.
 - `out/CAPTIONS.md` (compose) lists every caption per frame, set and locale.
+
+## Job 251: DocMorris in the pharmacy names
+
+- **Decision.** `docmorris` joins `Store.pharmacyWords` and `is_pharmacy_store` (new migration
+  20261115110000, which also drops its lines from stored sessions and log rows). Matching stays
+  case-insensitive substring. The model test moved DocMorris from the drugstore list to the
+  pharmacy list, and the pgTAP trip gets a DocMorris line that must not be kept or logged.

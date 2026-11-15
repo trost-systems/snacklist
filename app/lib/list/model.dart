@@ -80,6 +80,7 @@ class const Store({
     'farmacia',
     'apteka',
     'eczane',
+    'docmorris',
   ];
 }
 
