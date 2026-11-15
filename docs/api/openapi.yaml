@@ -84,11 +84,12 @@ paths:
       description: >-
         Names are split like everywhere in Snacklist ("2 Gurken" is Gurken, quantity 2). An item
         already on the list is not added again (alreadyOnList); a spelling variant or synonym of
-        an open item is added and reported (similarOnList). The items go to the list given by
+        an open item is added and reported (similarOnList, at most three open items per added
+        item). The items go to the list given by
         list, else to the key owner's default list (chosen in the app, else the household's first
         list; where Siri and Alexa add too); "already on the list" means on that list. One
-        transaction: an unknown store, category or list fails the whole batch. Requires the write
-        scope.
+        transaction: an unknown store, category or list fails the whole batch, and so does a batch
+        whose adds take longer than 5 seconds together (503 timeout). Requires the write scope.
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
@@ -362,10 +363,15 @@ components:
               items:
                 type: object
                 additionalProperties: false
-                required: [itemId, onList]
+                required: [itemId, onList, total]
                 properties:
                   itemId: { type: string, format: uuid, description: The item just added. }
-                  onList: { type: array, items: { $ref: '#/components/schemas/Item' } }
+                  onList:
+                    type: array
+                    maxItems: 3
+                    description: The similar open items, the oldest first.
+                    items: { $ref: '#/components/schemas/Item' }
+                  total: { type: integer, minimum: 1, description: How many similar open items there are. }
     Counts:
       type: object
       additionalProperties: false
@@ -419,6 +425,7 @@ components:
                 - rate_limited
                 - auth_throttled
                 - internal_error
+                - timeout
                 - unavailable
             message: { type: string, description: English text for a developer; may change. }
             details: { type: object }
@@ -447,7 +454,10 @@ components:
               data: { type: array, items: { $ref: '#/components/schemas/Named' } }
               nextCursor: { type: 'null' }
     Error:
-      description: An error. A 503 unavailable carries Retry-After.
+      description: >-
+        An error. A 503 unavailable carries Retry-After. A 503 timeout is a request that took too
+        long, or waited 5 seconds for earlier requests with the same member's keys; nothing was
+        changed.
       headers:
         Retry-After: { $ref: '#/components/headers/RetryAfter' }
       content:

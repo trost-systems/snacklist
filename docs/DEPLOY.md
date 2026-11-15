@@ -219,13 +219,16 @@ VERCEL_GIT_COMMIT_REF=main VERCEL_GIT_COMMIT_SHA=<sha> VERCEL_GIT_PREVIOUS_SHA=<
 
 `scripts/smoke-remote.sh [project URL]` checks a deployed project. It
 sends no credentials, writes nothing and prints `PASS` or `FAIL` per
-check. It exits 1 if any check fails.
+check. It exits 1 if any check fails. The one exception is the opt-in
+`SMOKE_PUBLIC_API=1` part in the table.
 
 | Check | Passes when |
 | --- | --- |
 | `GET /functions/v1/health` | 200 and `{"ok": true, "database": true}`: the function read from Postgres. |
 | `POST /functions/v1/voice` with a made-up bearer token | 401 and `WWW-Authenticate: Bearer`. |
 | `scripts/mcp-smoke.sh <project>/functions/v1/mcp` | Its discovery checks pass: 401 without a token and with a made-up one, both pointing at the metadata on the same host; the metadata names the endpoint as `resource`; the authorization server's metadata has the authorize, token and registration endpoints. `initialize` + `tools/list` report `SKIP` (no token in CI; set `MCP_SMOKE_TOKEN` to run them). |
+| `GET /functions/v1/api/v1/items` without a key | 404 `not_found` while `app_switches.public_api` is off, 401 `missing_token` once it is on ([`API.md`](API.md)). |
+| The same with `SMOKE_PUBLIC_API=1`, for the day the API is switched on | 401 `missing_token`; then unknown keys, each with another made-up address in `X-Forwarded-For` and `X-Real-IP`, get 401 until a 429 `auth_throttled` by request 21: the limit counts the gateway's address, not a header the client sets. This part writes the caller's failure count: unknown keys from that address get 429 for up to 10 minutes, valid keys go on working. |
 
 The public MCP URL `https://mcp.snacklist.app` (also `https://mcp.hummlist.com`) is a Vercel proxy in front of
 the same function ([`MCP.md`](MCP.md#public-url-mcpsnacklistapp)). It needs no
@@ -237,6 +240,7 @@ Run it from any machine with `curl` and `jq`:
 ```bash
 scripts/smoke-remote.sh                                  # production
 scripts/smoke-remote.sh http://127.0.0.1:54321           # local stack
+SMOKE_PUBLIC_API=1 scripts/smoke-remote.sh               # production, once the public API is on
 ```
 
 ## Roll back edge functions

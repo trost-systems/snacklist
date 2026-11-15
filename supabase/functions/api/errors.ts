@@ -26,6 +26,7 @@ export type ErrorCode =
   | 'rate_limited'
   | 'auth_throttled'
   | 'internal_error'
+  | 'timeout'
   | 'unavailable';
 
 /** A request the API answers with an error; thrown anywhere, answered by the handler. */
@@ -60,6 +61,13 @@ export const unavailable = (): ApiError =>
     'The service is not answering right now. Retry later.',
     undefined,
     { 'retry-after': '5' },
+  );
+
+export const timedOut = (): ApiError =>
+  new ApiError(
+    503,
+    'timeout',
+    'The request took too long and was stopped. Nothing was changed. Send fewer items at once, and one request at a time.',
   );
 
 export const internalError = (): ApiError =>

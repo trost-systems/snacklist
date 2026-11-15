@@ -5,6 +5,7 @@ import { assert, assertEquals, assertExists, assertFalse, assertRejects } from '
 import postgres from 'postgres';
 import { sha256Hex } from '../_shared/auth.ts';
 import { asUser, databaseUrl } from '../_shared/db.ts';
+import { ADD_BUDGET_MS, SIMILAR_SHOWN } from '../_shared/list.ts';
 import { handle } from './handler.ts';
 import { routes } from './routes.ts';
 
@@ -626,6 +627,7 @@ test('a member of two households: a key acts in the household it was made for, u
     }
     const listed = await (await api(key.token, 'GET', '/items')).json();
     assertEquals(listed.data.map((i: Item) => i.name), ['Eigenes'], 'its own household only');
+    assertEquals(listed.counts, { open: 1, checkedLast24h: 0 }, 'counts of that household only');
     const untouched = await sql<{ name: string; status: string; store: string | null }[]>`
       select i.name, i.status, s.name as store from public.items i
       left join public.stores s on s.id = i.store_id where i.household_id = ${theirs.householdId}`;
@@ -821,4 +823,143 @@ test('pages meet exactly whatever the sort keys; input Postgres cannot read is 4
     const names = await sql<{ name: string }[]>`
       select name from public.items where household_id = ${mine.householdId} and name = 'Tee'`;
     assertEquals(names.length, 0, 'nothing was added');
+  }));
+
+type Similar = { itemId: string; onList: Item[]; total: number };
+
+/** Names that differ only in a number inside the word: one product for the duplicate hint. */
+const variety = (n: number) => `Sorte${n}x`;
+
+/** Open items [from]..[to] of `variety` on the member's list, the lowest number the oldest. */
+async function seedVarieties(sql: postgres.Sql, member: Member, from: number, to: number) {
+  await sql`
+    insert into public.items (household_id, list_id, name, created_at)
+    select ${member.householdId}, public.first_list(${member.householdId}), 'Sorte' || g || 'x',
+           now() - interval '1 day' + g * interval '1 second'
+    from generate_series(${from}::int, ${to}::int) g`;
+  const [keys] = await sql<{ n: number }[]>`
+    select count(distinct canonical_key)::int as n from public.items
+    where household_id = ${member.householdId}`;
+  assertEquals(keys?.n, 1, 'the varieties share one canonical key');
+}
+
+test('an add names at most three similar open items per added item, oldest first, with their number', () =>
+  withMembers(async (sql, [mine]) => {
+    const key = await mint(sql, mine, ['read', 'write']);
+    await seedVarieties(sql, mine, 1, 12);
+    const res = await api(key.token, 'POST', '/items', {
+      body: { items: [{ name: variety(101) }, { name: variety(102) }, { name: 'Zahnseide' }] },
+    });
+    assertEquals(res.status, 201);
+    const { added, similarOnList } = (await res.json()).data as {
+      added: Item[];
+      similarOnList: Similar[];
+    };
+    assertEquals(added.map((i) => i.name), [variety(101), variety(102), 'Zahnseide']);
+    assertEquals(
+      similarOnList.map((s) => [s.itemId, s.onList.map((i) => i.name), s.total]),
+      [added[0], added[1]].map((i) => [i?.id, [1, 2, 3].map(variety), 13]),
+      'the three oldest of the twelve seeded and the other added one',
+    );
+    assertEquals(SIMILAR_SHOWN, 3);
+  }));
+
+test('an add answers within its size and time whatever is on the list', () =>
+  withMembers(async (sql, [mine]) => {
+    const key = await mint(sql, mine, ['read', 'write']);
+    const batch = (from: number) => ({
+      items: Array.from({ length: 50 }, (_, i) => ({ name: variety(from + i) })),
+    });
+    const post = async (from: number) => {
+      const started = performance.now();
+      const res = await api(key.token, 'POST', '/items', { body: batch(from) });
+      const text = await res.text();
+      return { status: res.status, text, ms: performance.now() - started };
+    };
+    const openItems = async () => {
+      const [row] = await sql<{ n: number }[]>`
+        select count(*)::int as n from public.items where household_id = ${mine.householdId}`;
+      return row?.n;
+    };
+
+    const first = await post(1);
+    assertEquals(first.status, 201);
+    await seedVarieties(sql, mine, 51, 1000);
+    const later = await post(1001);
+
+    assert(
+      later.ms <= ADD_BUDGET_MS + 4000,
+      `${Math.round(later.ms)} ms against a long list (${
+        Math.round(first.ms)
+      } ms against an empty one)`,
+    );
+    assert(
+      later.text.length <= first.text.length * 1.2,
+      `${later.text.length} bytes against a long list, ${first.text.length} against an empty one`,
+    );
+    if (later.status === 201) {
+      const { added, similarOnList } = JSON.parse(later.text).data as {
+        added: Item[];
+        similarOnList: Similar[];
+      };
+      assertEquals(added.length, 50);
+      for (const s of similarOnList) {
+        assertEquals([s.onList.length, s.total], [SIMILAR_SHOWN, 1049]);
+      }
+      assertEquals(await openItems(), 1050);
+    } else {
+      assertEquals(later.status, 503, later.text);
+      assertEquals(JSON.parse(later.text).error.code, 'timeout');
+      assertEquals(await openItems(), 1000, 'stopped for its time, the add changed nothing');
+    }
+  }));
+
+test("one member's requests at once hold one connection; another household is answered meanwhile", () =>
+  withMembers(async (sql, [loud, quiet]) => {
+    const loudKey = await mint(sql, loud, ['read', 'write']);
+    const quietKey = await mint(sql, quiet, ['read']);
+    const names = ['Milch', 'Brot', 'Butter', 'Salz', 'Mehl', 'Reis'];
+    let taken = () => {};
+    const locked = new Promise<void>((resolve) => {
+      taken = resolve;
+    });
+    let release = () => {};
+    const released = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const holder = admin();
+    const holding = holder.begin(async (tx) => {
+      await tx`select public.lock_household_items(${loud.householdId})`;
+      taken();
+      await released;
+    });
+    await locked;
+
+    const adds = names.map((name, i) =>
+      api(loudKey.token, 'POST', '/items', {
+        body: { items: [{ name }] },
+        headers: i % 2 === 0 ? { 'idempotency-key': `at-once-${i}` } : {},
+      })
+    );
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      const answered = await Promise.race([
+        api(quietKey.token, 'GET', '/items').then((res) => res.status),
+        new Promise<string>((resolve) => {
+          timer = setTimeout(() => resolve('still waiting for a connection after 3 s'), 3000);
+        }),
+      ]);
+      assertEquals(answered, 200, "the other household's read while the adds wait");
+    } finally {
+      clearTimeout(timer);
+      release();
+      await holding;
+      await Promise.allSettled(adds);
+      await holder.end();
+    }
+
+    assertEquals((await Promise.all(adds)).map((res) => res.status), names.map(() => 201));
+    const open = await sql<{ name: string }[]>`
+      select name from public.items where household_id = ${loud.householdId} order by name`;
+    assertEquals(open.map((r) => r.name), names.toSorted());
   }));

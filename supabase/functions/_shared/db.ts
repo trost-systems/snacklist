@@ -37,19 +37,80 @@ function db(): Sql {
 /** The service connection, for credential and bookkeeping tables no client may touch. */
 export const serviceDb = (): Sql => db();
 
+/**
+ * How long one statement of a request may run: the limit the role authenticated carries for the
+ * app's own requests. A role switch inside a transaction does not apply it, so it is set here.
+ */
+export const STATEMENT_TIMEOUT = '8s';
+
+/** A request that ran out of its time. Thrown before or between two steps: nothing is kept. */
+export class OutOfTime extends Error {
+  constructor() {
+    super('the request ran out of its time');
+  }
+}
+
+/** Whether [e] ended a request for its time: OutOfTime, or a statement at STATEMENT_TIMEOUT. */
+export function ranOutOfTime(e: unknown): boolean {
+  if (e instanceof OutOfTime) return true;
+  const { name, code } = (e ?? {}) as { name?: unknown; code?: unknown };
+  return name === 'PostgresError' && code === '57014';
+}
+
+/** How long a request waits for its caller's earlier requests in this worker. */
+export const TURN_WAIT_MS = 5000;
+
+const turns = new Map<string, Promise<void>>();
+
+/**
+ * Runs `work` once the earlier work of the same `caller` in this worker has ended, in the order
+ * of arrival: however many requests one caller sends at once, they hold one of the pool's
+ * connections, and the others stay free for everyone else. A request that waited `waitMs` gives
+ * up as OutOfTime without running.
+ */
+export async function inTurn<T>(
+  caller: string,
+  work: () => Promise<T>,
+  waitMs: number = TURN_WAIT_MS,
+): Promise<T> {
+  const earlier = turns.get(caller) ?? Promise.resolve();
+  let ended = () => {};
+  const mine = new Promise<void>((resolve) => {
+    ended = resolve;
+  });
+  const queue = earlier.then(() => mine);
+  turns.set(caller, queue);
+  void queue.then(() => {
+    if (turns.get(caller) === queue) turns.delete(caller);
+  });
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const late = new Promise<false>((resolve) => {
+    timer = setTimeout(() => resolve(false), waitMs);
+  });
+  try {
+    if (!await Promise.race([earlier.then(() => true), late])) throw new OutOfTime();
+    return await work();
+  } finally {
+    clearTimeout(timer);
+    ended();
+  }
+}
+
 /** Makes the rest of transaction [tx] run as `userId` (role authenticated), under RLS. */
 async function becomeUser(tx: Tx, userId: string): Promise<void> {
   const claims = JSON.stringify({ sub: userId, role: 'authenticated' });
   await tx`select set_config('role', 'authenticated', true),
-                  set_config('request.jwt.claims', ${claims}, true)`;
+                  set_config('request.jwt.claims', ${claims}, true),
+                  set_config('statement_timeout', ${STATEMENT_TIMEOUT}, true)`;
 }
 
-/** Runs `work` in one transaction as `userId`, under RLS. */
+/** Runs `work` in one transaction as `userId`, under RLS, in the user's turn (inTurn). */
 export async function asUser<T>(userId: string, work: (tx: Tx) => Promise<T>): Promise<T> {
-  const result = await db().begin(async (tx) => {
-    await becomeUser(tx, userId);
-    return await work(tx);
-  });
+  const result = await inTurn(userId, () =>
+    db().begin(async (tx) => {
+      await becomeUser(tx, userId);
+      return await work(tx);
+    }));
   return result as T;
 }
 

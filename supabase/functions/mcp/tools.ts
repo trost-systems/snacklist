@@ -5,7 +5,7 @@ import type { Auth } from '../_shared/auth.ts';
 import type { Access } from '../_shared/premium.ts';
 import type { McpTool } from '../_shared/telemetry.ts';
 import type { UserEvent } from '../_shared/user_events.ts';
-import { asUser, type Tx } from '../_shared/db.ts';
+import { asUser, ranOutOfTime, type Tx } from '../_shared/db.ts';
 import {
   addItems,
   categories,
@@ -39,6 +39,14 @@ const CACHE_HINTS = {
   'tools/list': { ttlMs: 3_600_000, cacheScope: 'private' },
   'server/discover': { ttlMs: 3_600_000, cacheScope: 'private' },
 } as const;
+
+/** The tool error for a call that ran out of its time (ranOutOfTime); it rolled back. */
+export const tookTooLong: Record<Lang, string> = {
+  de: 'Das hat zu lange gedauert und wurde abgebrochen. Es wurde nichts geändert. Versuch es mit ' +
+    'weniger Einträgen auf einmal und einem Aufruf nach dem anderen.',
+  en: 'That took too long and was stopped. Nothing was changed. Try fewer items at once, and ' +
+    'one call at a time.',
+};
 
 /**
  * Job 50: what a tool call of a household without Snacklist Premium gets while the lock is on. A
@@ -127,8 +135,10 @@ function run(
       await done(h, 'done');
       return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
     } catch (e) {
+      const slow = ranOutOfTime(e);
       const toolError = e instanceof ToolError;
-      await done(h, toolError ? 'tool_error' : 'server');
+      await done(h, toolError || slow ? 'tool_error' : 'server');
+      if (slow) return { isError: true, content: [{ type: 'text', text: tookTooLong[lang] }] };
       if (!toolError) throw e;
       return { isError: true, content: [{ type: 'text', text: e.message }] };
     }
@@ -295,8 +305,9 @@ export function buildServer(
         '= "2 Gurken"; eine andere Größe oder Marke ist ein anderer Eintrag), wird nicht doppelt ' +
         'angelegt und unter "alreadyOnList" gemeldet. Steht schon eine andere Schreibweise oder ein ' +
         'Synonym auf der Liste ("Karotten" und "Möhren"), wird der Eintrag trotzdem angelegt und unter ' +
-        '"similarOnList" gemeldet (added: der neue Name, onList: die offenen Einträge); sag dem Nutzer ' +
-        'dann, dass etwas Ähnliches schon auf der Liste steht. Zusammengeführt wird nichts.',
+        '"similarOnList" gemeldet (added: der neue Name, onList: höchstens drei der offenen ' +
+        'Einträge, total: wie viele es sind); sag dem Nutzer dann, dass etwas Ähnliches schon auf ' +
+        'der Liste steht. Zusammengeführt wird nichts.',
       inputSchema: z.object({
         items: z.array(z.object({
           name: z.string().min(1).max(120).describe('Was gekauft werden soll, z. B. "Milch"'),

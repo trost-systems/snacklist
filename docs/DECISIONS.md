@@ -13251,3 +13251,43 @@ Two gaps jobs 243 and 244 found between the privacy text sent to Legal and the c
   `list` (it is the key owner's default list, as for Siri and Alexa) and an old function name.
 - **Not done here.** `app_switches.public_api` in production and the PostHog flag `public-api`
   are untouched; the lead switches them after the verdict.
+
+## Job 241 review 0: bounded add answers, 2026-11-15
+
+- **What changed.** An add (`POST /v1/items`, the MCP tool `add_items`, voice) names at most
+  three similar open items per added item, the oldest, and the API and MCP say how many there
+  are (`total`). The adds of one batch have 5 seconds (`ADD_BUDGET_MS`), and every transaction a
+  function runs as the user carries the 8 second statement limit the role `authenticated` has
+  for the app's own requests (`becomeUser`). Out of time is `503 timeout` in the API and a tool
+  error in MCP; the transaction rolls back, so nothing was added.
+- **Three, with a count, not ids only.** A client that shows "already on the list" needs a name,
+  and three names fit a sentence; `total` says when there are more. The API has no users yet, so
+  `total` is required there. MCP and voice answers keep their shape: MCP gains the field, voice
+  still answers a list of names.
+- **A budget between the adds, not a transaction timeout.** Postgres 17 has
+  `transaction_timeout`, but it ends the session, and how the hosted pooler hands such a
+  connection back cannot be tested from here. The check between two adds is plain code with a
+  test (`_shared/add_bounds_integration_test.ts`).
+- **The statement limit comes with the role switch.** A `set role` inside a transaction does not
+  apply the role's own settings, so the functions' transactions had no limit while the same
+  user's requests through PostgREST have 8 seconds. It now holds for MCP, voice and Alexa too.
+  No statement of theirs comes near it in the gates.
+- **One caller, one connection.** Transactions as one user now run one after another in a
+  worker (`inTurn` in `_shared/db.ts`, used by `asUser` and the API's idempotent path), so
+  requests one caller sends at once take one of the worker's connections. A request that waited
+  5 seconds gives up with the same answer as one out of time. The turn is per user and in memory
+  because the pool is per worker; a database lock would itself hold a connection while it
+  waits. It holds for MCP, voice and Alexa too.
+- **Not in this PR: a faster add.** `add_list_item` compares the new name with every open item
+  of the list, so an add takes longer on a longer list, up to the budget. Making that flat means
+  a stored or indexed name key on `items` and touches the path Siri, Alexa and MCP use today. It
+  is proposed to the lead with measurements, as is a cap on open items per list (a product
+  decision).
+- **Docs.** `docs/API.md` (answer, limits, `503 timeout`, the gateway's access log in "Privacy
+  and logs"), `docs/api/openapi.yaml`, `docs/MCP.md`, the `add_items` description, the voice and
+  Siri feature files.
+- **The smoke test knows the API.** `scripts/smoke-remote.sh` checks that `api` answers without a
+  key (404 while off, 401 once on). `SMOKE_PUBLIC_API=1` is the check for the day it is switched
+  on: unknown keys from made-up addresses must run into the limit of one address. It is opt-in
+  because it writes the caller's failure count, and the deploy's smoke test writes nothing.
+- **Not done here.** The production switch and the PostHog flag stay untouched.
