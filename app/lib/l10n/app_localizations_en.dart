@@ -3214,7 +3214,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get voiceDefaultLabel => 'Siri, Alexa & AI use:';
+  String get voiceDefaultLabel => 'Siri, Alexa & AI add to:';
+
+  @override
+  String voiceDefaultHouseholdName(String household) {
+    return 'Household: $household';
+  }
 
   @override
   String get voiceDefaultBack => 'Siri, Alexa & AI';

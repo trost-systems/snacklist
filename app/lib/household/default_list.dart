@@ -15,7 +15,8 @@ import 'package:material_ui/material_ui.dart';
 /// list is named (job 207), the user's own pick: [builder] makes the row
 /// naming it, and a tap on that row opens a menu of the household's lists
 /// to pick another. Nothing with the flag `default-list-voice-target` off,
-/// with fewer than two lists, or until the server named the pick.
+/// with fewer than two lists (one too with [single]), or until the server
+/// named the pick.
 class const DefaultListPicker({
   required final String householdId,
   required final Widget Function(
@@ -28,6 +29,9 @@ class const DefaultListPicker({
   /// The household's lists as its list shows them, so renames and deletes
   /// show at once; null asks the server.
   final List<HouseholdList>? lists,
+
+  /// Also a household's only list.
+  final bool single = false,
   super.key,
 }) extends StatelessWidget {
   @override
@@ -35,10 +39,17 @@ class const DefaultListPicker({
     final on = context.select<Flags?, bool>(
       (flags) => flags?.isOn(defaultListFlag) ?? false,
     );
-    if (!on || (lists != null && lists!.length < 2)) {
+    final least = single ? 1 : 2;
+    if (!on || (lists != null && lists!.length < least)) {
       return const SizedBox.shrink();
     }
-    return _Picker(householdId, lists, builder, key: ValueKey(householdId));
+    return _Picker(
+      householdId,
+      lists,
+      builder,
+      least: least,
+      key: ValueKey(householdId),
+    );
   }
 }
 
@@ -47,6 +58,7 @@ class const _Picker(
   final List<HouseholdList>? lists,
   final Widget Function(BuildContext context, String list, VoidCallback pick)
   builder, {
+  required final int least,
   super.key,
 }) extends StatefulWidget {
   @override
@@ -160,7 +172,7 @@ class _PickerState() extends State<_Picker> {
   Widget build(BuildContext context) {
     final lists = _lists;
     final pick = _pick;
-    if (lists.length < 2 || pick == null) {
+    if (lists.length < widget.least || pick == null) {
       return const SizedBox.shrink();
     }
     // Until the server is asked again, a deleted pick shows as what it

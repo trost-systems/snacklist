@@ -13720,3 +13720,25 @@ says it this way now. Found by the review of the job's record (#476).
 - **Left as is.** After a save, the households page loads the pick again, so the row shows its
   list line a moment later. The list step keeps the lists it loaded: a list deleted meanwhile
   ends in the server's refusal and a snackbar.
+
+## Job 248 review 0: the voice row tells the household from the list, 2026-11-15
+
+- **Must-fix: two names in one style.** The row stacked the household's and the list's names in the
+  same style. Once a name wrapped, „Ferienwohnung Ostsee / Familie Brandt / Wocheneinkauf für das /
+  ganze Wochenende“ could read as household „Ferienwohnung Ostsee“ with list „Familie Brandt…“.
+  Screen readers heard the names run together.
+- **Fix: icons and a label for each line.** Each line now starts with its icon: a house before the
+  household, a checklist before the list. The icon is a glyph from the icon font inside the text,
+  not a `WidgetSpan`, for two reasons. The name still wraps under it at the full width (150 % and
+  up). The line also stays plain text, so it merges into the tile's label, whereas a `WidgetSpan`
+  split the paragraph into child semantics nodes that the tile did not merge. Each name's span
+  carries a `semanticsLabel`, „Haushalt: …“ / „Liste: …“ ("Household:", "List:", reusing
+  `defaultListRow`). At 200 % a long first word moves to the next line, and the icon then stands
+  above the name like a caption. A no-break space would have forced mid-word breaks again.
+- **Taken from the nice-to-haves.** With `default-list-voice-target` on, a household with one list
+  names that list too (`DefaultListPicker(single: true)`), so the row reads the same in every
+  household. The list step still needs two lists. The English label is "Siri, Alexa & AI add to:".
+  The old sheet's "Siri, Alexa & AI use: …" row is left as it is.
+- **Left as they are.** The save order, web browser back inside the sheet, and the fading page's
+  accessibility nodes for about 180 ms are unchanged. The reasons are in the review and in the
+  entry above.
