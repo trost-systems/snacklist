@@ -1441,5 +1441,11 @@
   "moneyEstimate": "≈ {amount}",
   "@moneyEstimate": {"description": "Job 237: a price per kg or l on the planned weight, or a sum holding one, e.g. „≈ 1,51 €“", "placeholders": {"amount": {"type": "String"}}},
   "moneyEstimateSpoken": "etwa {amount}",
-  "@moneyEstimateSpoken": {"description": "Job 237: moneyEstimate for screen readers", "placeholders": {"amount": {"type": "String"}}}
+  "@moneyEstimateSpoken": {"description": "Job 237: moneyEstimate for screen readers", "placeholders": {"amount": {"type": "String"}}},
+  "voiceDefaultLabel": "Siri, Alexa & KI nutzen:",
+  "@voiceDefaultLabel": {"description": "Job 248: the switcher sheet's row for Siri, Alexa and AI, first line; the default household and its list follow on their own lines; a tap opens the household step"},
+  "voiceDefaultBack": "Siri, Alexa & KI",
+  "@voiceDefaultBack": {"description": "Job 248: back row of the switcher sheet's list step for Siri, Alexa and AI: back to its household step"},
+  "voiceDefaultListBody": "Was du sagst, ohne eine Liste zu nennen, landet in „{household}“ auf dieser Liste.",
+  "@voiceDefaultListBody": {"description": "Job 248: under the title of the switcher sheet's list step for Siri, Alexa and AI", "placeholders": {"household": {"type": "String"}}}
 }

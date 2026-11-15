@@ -3212,4 +3212,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String moneyEstimateSpoken(String amount) {
     return 'about $amount';
   }
+
+  @override
+  String get voiceDefaultLabel => 'Siri, Alexa & AI use:';
+
+  @override
+  String get voiceDefaultBack => 'Siri, Alexa & AI';
+
+  @override
+  String voiceDefaultListBody(String household) {
+    return 'What you say without naming a list goes onto this list in “$household”.';
+  }
 }

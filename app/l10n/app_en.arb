@@ -1108,5 +1108,9 @@
   "moneyEstimate": "≈ {amount}",
   "@moneyEstimate": {"placeholders": {"amount": {"type": "String"}}},
   "moneyEstimateSpoken": "about {amount}",
-  "@moneyEstimateSpoken": {"placeholders": {"amount": {"type": "String"}}}
+  "@moneyEstimateSpoken": {"placeholders": {"amount": {"type": "String"}}},
+  "voiceDefaultLabel": "Siri, Alexa & AI use:",
+  "voiceDefaultBack": "Siri, Alexa & AI",
+  "voiceDefaultListBody": "What you say without naming a list goes onto this list in “{household}”.",
+  "@voiceDefaultListBody": {"placeholders": {"household": {"type": "String"}}}
 }

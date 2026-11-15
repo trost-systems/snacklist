@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:ui' show Tristate;
 
 import 'package:family_groceries/analytics/analytics.dart';
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/app/device_cache.dart';
 import 'package:family_groceries/app/language.dart';
 import 'package:family_groceries/app/localizations.dart';
@@ -19,6 +21,7 @@ import 'package:family_groceries/more/more_screen.dart';
 import 'package:family_groceries/purchases/premium_server.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:flutter/gestures.dart' show kLongPressTimeout;
+import 'package:flutter/rendering.dart' show RenderParagraph;
 import 'package:flutter/semantics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -85,6 +88,9 @@ Future<_Shell> _pump(
   List<Household> households = const [_home, _club],
   List<JoinRequest> requests = const [],
   List<HouseholdList> homeLists = const [_weekly, _drugstore, _party],
+
+  /// The PostHog flags on.
+  Set<String> flags = const {},
 }) async {
   tester.view
     ..devicePixelRatio = 1
@@ -102,6 +108,9 @@ Future<_Shell> _pump(
   final session = TestSession(
     InHousehold('peter', households.first, households, requests: requests),
   );
+  session.householdLists
+    ..['home'] = homeLists
+    ..['club'] = const [_drinks, _food];
   addTearDown(session.close);
   final at = DateTime.utc(2026, 11, 8, 12);
   Item item(String id, String name, String list) => Item(
@@ -181,6 +190,7 @@ Future<_Shell> _pump(
           BlocProvider.value(value: Analytics.off(cache)),
           BlocProvider.value(value: purchases.entitlements),
           BlocProvider.value(value: purchases.purchases),
+          BlocProvider(create: (_) => Flags(forced: flags)),
         ],
         child: MaterialApp.router(
           debugShowCheckedModeBanner: false,
@@ -264,6 +274,40 @@ Future<void> _back(WidgetTester tester) async {
 Future<void> _systemBack(WidgetTester tester) async {
   await tester.binding.handlePopRoute();
   await tester.pumpAndSettle();
+}
+
+/// The switcher sheet on its first page, the households.
+Future<void> _openHouseholds(WidgetTester tester) async {
+  await _open(tester);
+  await _back(tester);
+}
+
+/// [text] in the row for Siri, Alexa & KI.
+Finder _inVoiceRow(String text) => find.descendant(
+  of: _key('household-default-row'),
+  matching: find.text(text),
+);
+
+/// The voice row's list line: the list's name, nothing else.
+String? _voiceList(WidgetTester tester) => switch (find
+    .byKey(const ValueKey('household-default-list-name'))
+    .evaluate()
+    .firstOrNull
+    ?.widget) {
+  final Text text => text.data,
+  _ => null,
+};
+
+/// [text] laid out whole: every line it needs, none cut.
+void _unclipped(WidgetTester tester, Finder text) {
+  final paragraph = tester.renderObject<RenderParagraph>(text);
+  expect(paragraph.didExceedMaxLines, isFalse);
+  expect(
+    paragraph.size.height,
+    greaterThanOrEqualTo(
+      paragraph.getMaxIntrinsicHeight(paragraph.size.width) - 0.01,
+    ),
+  );
 }
 
 void main() {
@@ -845,6 +889,400 @@ void main() {
     expect(_key('name-dialog-field'), findsOneWidget);
   });
 
+  group('Siri, Alexa & KI (job 248)', () {
+    const voice = {defaultListFlag};
+
+    testWidgets('one row names the label, the default household and its '
+        'list', (tester) async {
+      final semantics = tester.ensureSemantics();
+      final s = await _pump(tester, flags: voice);
+      await _openHouseholds(tester);
+      expect(_inVoiceRow('Siri, Alexa & KI nutzen:'), findsOneWidget);
+      expect(_inVoiceRow('Zuhause'), findsOneWidget);
+      expect(_voiceList(tester), 'Wocheneinkauf');
+      expect(_key('household-default-list-row'), findsNothing);
+      expect(
+        tester.getSemantics(_key('household-default-row')).label,
+        matches(
+          RegExp(r'^Siri, Alexa & KI nutzen:\s+Zuhause\s+Wocheneinkauf$'),
+        ),
+      );
+      semantics.dispose();
+      expect(s.session.defaults, isEmpty);
+    });
+
+    testWidgets('with the list flag off the row names no list', (tester) async {
+      await _pump(tester);
+      await _openHouseholds(tester);
+      expect(_inVoiceRow('Zuhause'), findsOneWidget);
+      expect(_voiceList(tester), isNull);
+      expect(_key('household-default-list-row'), findsNothing);
+    });
+
+    testWidgets('household, then its list: both saved, the row names them', (
+      tester,
+    ) async {
+      final s = await _pump(tester, flags: voice);
+      await _openHouseholds(tester);
+      await tester.tap(_key('household-default-row'));
+      await tester.pumpAndSettle();
+      expect(find.text('Standard für Siri, Alexa & KI'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: _key('switcher-back'),
+          matching: find.text('Haushalte'),
+        ),
+        findsOneWidget,
+      );
+      expect(_rowTitles(tester, 'voice-household-'), ['Zuhause', 'Sommerfest']);
+      expect(
+        find.descendant(
+          of: _key('voice-household-home'),
+          matching: _key('voice-current'),
+        ),
+        findsOneWidget,
+        reason: 'the default is checked',
+      );
+
+      await tester.tap(_key('voice-household-club'));
+      await tester.pumpAndSettle();
+      expect(find.text('Liste für Siri, Alexa & KI'), findsOneWidget);
+      expect(
+        find.text(
+          'Was du sagst, ohne eine Liste zu nennen, landet in „Sommerfest“ '
+          'auf dieser Liste.',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: _key('switcher-back'),
+          matching: find.text('Siri, Alexa & KI'),
+        ),
+        findsOneWidget,
+      );
+      expect(_rowTitles(tester, 'voice-list-'), ['Getränke', 'Essen']);
+      expect(
+        find.descendant(
+          of: _key('voice-list-drinks'),
+          matching: _key('voice-current'),
+        ),
+        findsOneWidget,
+        reason: "Sommerfest's pick so far",
+      );
+      expect(s.session.defaults, isEmpty, reason: 'nothing saved yet');
+
+      await tester.tap(_key('voice-list-food'));
+      await tester.pumpAndSettle();
+      expect(_key('switcher-households'), findsOneWidget);
+      expect(s.session.listPicks, ['food']);
+      expect(s.session.defaults, ['club']);
+      expect(_inVoiceRow('Sommerfest'), findsOneWidget);
+      expect(_voiceList(tester), 'Essen');
+    });
+
+    testWidgets('back from the lists goes to the households step and saves '
+        'nothing, with the back row and the system back', (tester) async {
+      final s = await _pump(tester, flags: voice);
+      await _openHouseholds(tester);
+      await tester.tap(_key('household-default-row'));
+      await tester.pumpAndSettle();
+      await tester.tap(_key('voice-household-club'));
+      await tester.pumpAndSettle();
+      await _back(tester);
+      expect(_key('switcher-voice-households'), findsOneWidget);
+
+      await tester.tap(_key('voice-household-club'));
+      await tester.pumpAndSettle();
+      expect(_key('switcher-voice-lists-club'), findsOneWidget);
+      await _systemBack(tester);
+      expect(_key('switcher-voice-households'), findsOneWidget);
+      await _systemBack(tester);
+      expect(_key('switcher-households'), findsOneWidget);
+      expect(_inVoiceRow('Zuhause'), findsOneWidget);
+      expect(s.session.defaults, isEmpty);
+      expect(s.session.listPicks, isEmpty);
+    });
+
+    testWidgets('another list of the default household: the row names it, '
+        'the household is not saved again', (tester) async {
+      final s = await _pump(tester, flags: voice);
+      await _openHouseholds(tester);
+      await tester.tap(_key('household-default-row'));
+      await tester.pumpAndSettle();
+      await tester.tap(_key('voice-household-home'));
+      await tester.pumpAndSettle();
+      expect(_rowTitles(tester, 'voice-list-'), [
+        'Wocheneinkauf',
+        'Drogerie',
+        'Grillen',
+      ]);
+      await tester.tap(_key('voice-list-dm'));
+      await tester.pumpAndSettle();
+      expect(_key('switcher-households'), findsOneWidget);
+      expect(_inVoiceRow('Zuhause'), findsOneWidget);
+      expect(_voiceList(tester), 'Drogerie');
+      expect(s.session.listPicks, ['dm']);
+      expect(s.session.defaults, isEmpty);
+    });
+
+    testWidgets('with the list flag off a household is saved at once', (
+      tester,
+    ) async {
+      final s = await _pump(tester);
+      await _openHouseholds(tester);
+      await tester.tap(_key('household-default-row'));
+      await tester.pumpAndSettle();
+      await tester.tap(_key('voice-household-club'));
+      await tester.pumpAndSettle();
+      expect(_key('switcher-households'), findsOneWidget);
+      expect(s.session.defaults, ['club']);
+      expect(s.session.listPicks, isEmpty);
+      expect(_inVoiceRow('Sommerfest'), findsOneWidget);
+    });
+
+    testWidgets('a refused list pick is told; the list step stays', (
+      tester,
+    ) async {
+      final s = await _pump(tester, flags: voice);
+      await _openHouseholds(tester);
+      await tester.tap(_key('household-default-row'));
+      await tester.pumpAndSettle();
+      await tester.tap(_key('voice-household-club'));
+      await tester.pumpAndSettle();
+      s.session.fail = HouseholdProblem.offline;
+      await tester.tap(_key('voice-list-food'));
+      await tester.pumpAndSettle();
+      expect(find.byType(SnackBar), findsOneWidget);
+      expect(_key('switcher-voice-lists-club'), findsOneWidget);
+      expect(s.session.defaults, isEmpty, reason: 'the list failed first');
+
+      // The snackbar covers Essen.
+      await tester.tap(_key('voice-list-drinks'));
+      await tester.pumpAndSettle();
+      expect(s.session.listPicks, ['food', 'drinks']);
+      expect(s.session.defaults, ['club'], reason: 'a second tap saves');
+    });
+
+    testWidgets('picking the default household again saves no household', (
+      tester,
+    ) async {
+      final s = await _pump(tester);
+      await _openHouseholds(tester);
+      await tester.tap(_key('household-default-row'));
+      await tester.pumpAndSettle();
+      await tester.tap(_key('voice-household-home'));
+      await tester.pumpAndSettle();
+      expect(_key('switcher-households'), findsOneWidget);
+      expect(s.session.defaults, isEmpty);
+    });
+
+    testWidgets('the default reads as selected to screen readers', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      await _pump(tester, flags: voice);
+      await _openHouseholds(tester);
+      await tester.tap(_key('household-default-row'));
+      await tester.pumpAndSettle();
+      bool selected(String key) =>
+          tester.getSemantics(_key(key)).flagsCollection.isSelected ==
+          Tristate.isTrue;
+      expect(selected('voice-household-home'), isTrue);
+      expect(selected('voice-household-club'), isFalse);
+      semantics.dispose();
+    });
+
+    testWidgets('a refused lists load is told; the household step stays and '
+        'a second tap goes on', (tester) async {
+      final s = await _pump(tester, flags: voice);
+      await _openHouseholds(tester);
+      await tester.tap(_key('household-default-row'));
+      await tester.pumpAndSettle();
+      s.session.fail = HouseholdProblem.offline;
+      await tester.tap(_key('voice-household-club'));
+      await tester.pumpAndSettle();
+      expect(find.byType(SnackBar), findsOneWidget);
+      expect(_key('switcher-voice-households'), findsOneWidget);
+      // The snackbar covers Sommerfest.
+      await tester.tap(_key('voice-household-home'));
+      await tester.pumpAndSettle();
+      expect(_key('switcher-voice-lists-home'), findsOneWidget);
+      expect(s.session.defaults, isEmpty);
+    });
+
+    testWidgets('a spinner shows on the household while its lists load', (
+      tester,
+    ) async {
+      final s = await _pump(tester, flags: voice);
+      await _openHouseholds(tester);
+      await tester.tap(_key('household-default-row'));
+      await tester.pumpAndSettle();
+      final hold = s.session.hold = Completer<void>();
+      await tester.tap(_key('voice-household-club'));
+      await tester.pump();
+      expect(
+        find.descendant(
+          of: _key('voice-household-club'),
+          matching: find.byType(CircularProgressIndicator),
+        ),
+        findsOneWidget,
+      );
+      s.session.hold = null;
+      hold.complete();
+      await tester.pumpAndSettle();
+      expect(_key('switcher-voice-lists-club'), findsOneWidget);
+    });
+
+    testWidgets('back right after a household opened its lists: the '
+        'household step still takes taps', (tester) async {
+      await _pump(tester, flags: voice);
+      await _openHouseholds(tester);
+      await tester.tap(_key('household-default-row'));
+      await tester.pumpAndSettle();
+      await tester.tap(_key('voice-household-club'));
+      await tester.pump(const Duration(milliseconds: 20));
+      await tester.tap(_key('switcher-back'));
+      await tester.pumpAndSettle();
+      expect(_key('switcher-voice-households'), findsOneWidget);
+      await tester.tap(_key('voice-household-home'));
+      await tester.pumpAndSettle();
+      expect(_key('switcher-voice-lists-home'), findsOneWidget);
+    });
+
+    testWidgets('back and into the step again while a household loads: the '
+        'old answer goes nowhere, the step takes taps', (tester) async {
+      final s = await _pump(tester, flags: voice);
+      await _openHouseholds(tester);
+      await tester.tap(_key('household-default-row'));
+      await tester.pumpAndSettle();
+      final hold = s.session.hold = Completer<void>();
+      await tester.tap(_key('voice-household-club'));
+      await tester.pump();
+      await tester.tap(_key('switcher-back'));
+      await tester.pump(const Duration(milliseconds: 30));
+      // Mid-animation the row may be off its hit area: call its tap.
+      tester
+          .widget<ListTile>(_key('household-default-row').first)
+          .onTap
+          ?.call();
+      await tester.pump(const Duration(milliseconds: 30));
+      s.session.hold = null;
+      hold.complete();
+      await tester.pumpAndSettle();
+      expect(_key('switcher-voice-households'), findsOneWidget);
+      expect(_key('switcher-voice-lists-club'), findsNothing);
+      await tester.tap(_key('voice-household-home'));
+      await tester.pumpAndSettle();
+      expect(_key('switcher-voice-lists-home'), findsOneWidget);
+    });
+
+    testWidgets('an answer after the user went back does not move the sheet', (
+      tester,
+    ) async {
+      final s = await _pump(tester, flags: voice);
+      await _openHouseholds(tester);
+      await tester.tap(_key('household-default-row'));
+      await tester.pumpAndSettle();
+      final hold = s.session.hold = Completer<void>();
+      await tester.tap(_key('voice-household-club'));
+      await tester.pump();
+      await tester.tap(_key('switcher-back'));
+      await tester.pump(const Duration(milliseconds: 50));
+      s.session.hold = null;
+      hold.complete();
+      await tester.pumpAndSettle();
+      expect(_key('switcher-households'), findsOneWidget);
+      expect(_key('switcher-voice-lists-club'), findsNothing);
+
+      await tester.tap(_key('household-default-row'));
+      await tester.pumpAndSettle();
+      await tester.tap(_key('voice-household-club'));
+      await tester.pumpAndSettle();
+      final save = s.session.hold = Completer<void>();
+      await tester.tap(_key('voice-list-food'));
+      await tester.pump();
+      await tester.tap(_key('switcher-back'));
+      await tester.pump(const Duration(milliseconds: 50));
+      s.session.hold = null;
+      save.complete();
+      await tester.pumpAndSettle();
+      expect(
+        _key('switcher-voice-households'),
+        findsOneWidget,
+        reason: 'the save lands, the sheet stays where the user went',
+      );
+      expect(s.session.listPicks, ['food']);
+      expect(s.session.defaults, ['club']);
+    });
+
+    testWidgets('200 % text on 320 x 568: long names wrap, none cut', (
+      tester,
+    ) async {
+      const household = 'Ferienwohnung Ostsee Familie Brandt';
+      const list = 'Wocheneinkauf für das ganze Wochenende';
+      final s = await _pump(
+        tester,
+        size: const Size(320, 568),
+        textScale: 2,
+        flags: voice,
+        homeLists: const [
+          HouseholdList(id: 'long', name: list, position: 0),
+          _drugstore,
+        ],
+      );
+      await s.session.rename('home', household);
+      await tester.pumpAndSettle();
+      await _openHouseholds(tester);
+      final row = _key('household-default-row');
+      await tester.scrollUntilVisible(
+        row,
+        100,
+        scrollable: find
+            .descendant(
+              of: _key('switcher-households'),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      _unclipped(tester, _inVoiceRow('Siri, Alexa & KI nutzen:'));
+      _unclipped(tester, _inVoiceRow(household));
+      _unclipped(tester, _inVoiceRow(list));
+
+      Future<void> reach(String page, String key) async {
+        await tester.scrollUntilVisible(
+          _key(key),
+          100,
+          scrollable: find
+              .descendant(of: _key(page), matching: find.byType(Scrollable))
+              .first,
+        );
+        await tester.pumpAndSettle();
+      }
+
+      await tester.tap(row);
+      await tester.pumpAndSettle();
+      await reach('switcher-voice-households', 'voice-household-home');
+      _unclipped(
+        tester,
+        find.descendant(
+          of: _key('voice-household-home'),
+          matching: find.text(household),
+        ),
+      );
+      await tester.tap(_key('voice-household-home'));
+      await tester.pumpAndSettle();
+      await reach('switcher-voice-lists-home', 'voice-list-long');
+      _unclipped(
+        tester,
+        find.descendant(of: _key('voice-list-long'), matching: find.text(list)),
+      );
+      expect(tester.takeException(), isNull);
+    });
+  });
+
   for (final (scale, brightness, locale) in const [
     (1.3, Brightness.light, Locale('de')),
     (1.6, Brightness.dark, Locale('en')),
@@ -877,6 +1315,91 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  group('screenshots (job 248)', () {
+    for (final scale in const [1.0, 2.0]) {
+      for (final (locale, brightness) in const [
+        (Locale('de'), Brightness.light),
+        (Locale('en'), Brightness.dark),
+      ]) {
+        final shot =
+            'goldens/switcher-voice-${locale.languageCode}-${(scale * 100).round()}';
+        testWidgets('$shot: the row, the household step, the list step', (
+          tester,
+        ) async {
+          final s = await _pump(
+            tester,
+            size: const Size(320, 568),
+            insets: (top: 20, bottom: 0),
+            textScale: scale,
+            brightness: brightness,
+            locale: locale,
+            flags: const {defaultListFlag},
+            homeLists: const [
+              HouseholdList(
+                id: 'long',
+                name: 'Wocheneinkauf für das ganze Wochenende',
+                position: 0,
+              ),
+              _drugstore,
+            ],
+          );
+          await s.session.rename('home', 'Ferienwohnung Ostsee Familie Brandt');
+          await tester.pumpAndSettle();
+          await _openHouseholds(tester);
+          await tester.scrollUntilVisible(
+            _key('household-default-row'),
+            100,
+            scrollable: find
+                .descendant(
+                  of: _key('switcher-households'),
+                  matching: find.byType(Scrollable),
+                )
+                .first,
+          );
+          await tester.pumpAndSettle();
+          final screen = find.byType(MaterialApp);
+          await expectLater(screen, matchesGoldenFile('$shot-1-row.png'));
+          Future<void> reach(String page, String key) async {
+            await tester.scrollUntilVisible(
+              _key(key),
+              100,
+              scrollable: find
+                  .descendant(of: _key(page), matching: find.byType(Scrollable))
+                  .first,
+            );
+            await tester.pumpAndSettle();
+          }
+
+          await tester.tap(_key('household-default-row'));
+          await tester.pumpAndSettle();
+          await reach('switcher-voice-households', 'voice-household-club');
+          await expectLater(
+            screen,
+            matchesGoldenFile('$shot-2-households.png'),
+          );
+          await tester.tap(_key('voice-household-club'));
+          await tester.pumpAndSettle();
+          await reach('switcher-voice-lists-club', 'voice-list-food');
+          await expectLater(screen, matchesGoldenFile('$shot-3-lists.png'));
+          await tester.tap(_key('voice-list-food'));
+          await tester.pumpAndSettle();
+          await tester.scrollUntilVisible(
+            _key('household-default-row'),
+            100,
+            scrollable: find
+                .descendant(
+                  of: _key('switcher-households'),
+                  matching: find.byType(Scrollable),
+                )
+                .first,
+          );
+          await tester.pumpAndSettle();
+          await expectLater(screen, matchesGoldenFile('$shot-4-saved.png'));
+        });
+      }
+    }
+  });
 
   group('screenshots (job 242)', () {
     for (final (name, size, insets) in const [

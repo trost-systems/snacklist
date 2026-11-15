@@ -13678,3 +13678,45 @@ says it this way now. Found by the review of the job's record (#476).
   `SMOKE_PUBLIC_API=1` fails with a hint when its first request is already limited (a second
   run within 10 minutes), since that shows nothing about the headers.
 - **Not done here.** The production switch and the PostHog flag stay untouched.
+
+## Job 248: Siri, Alexa & KI as one row with in-sheet pickers, 2026-11-15
+
+- **Where it applies.** The change is only in the switcher sheet, behind `list-declutter`
+  (Peter's spec, no prototype round). Without the flag, the household sheet keeps its two rows,
+  „Siri, Alexa & KI nutzen: …“ with its dialog and „Liste: …“ with its menu. The server calls and
+  the data are the same: `set_default_household`, `set_default_list` and `default_list`.
+- **Two new sheet pages, not a dialog.** `VoiceHouseholdsPage` (back: Haushalte) and
+  `VoiceListsPage(household, lists)` (back: the household step) are variants of the sealed
+  `SwitcherPage`. The household pages (lists, members, invite) now share a sealed
+  `HouseholdPage`, so `SwitcherHousehold` cannot be handed a voice page.
+- **When the list step shows.** It follows the existing rule for when a list choice exists: the
+  flag `default-list-voice-target` is on and the household has two lists or more. Otherwise a tap
+  on a household saves it at once and goes back. The row names the list under the same rule,
+  through `DefaultListPicker`. A household with one list shows no list line, as the old
+  „Liste:“ row didn't either.
+- **Every row taps through, also the checked one.** The current default household opens its
+  lists, so a user can change only the list. A tap on the already-picked list saves too, because
+  after a household change that list may be new for the voice target.
+- **Save order.** The list is saved first, then the household when it changed. A list pick in a
+  household that is not the default is harmless if the second call fails: the step stays, says
+  why, and a second tap saves both.
+- **Large text.** The hex and the chevron sit beside the label line only. Below 150 % text the
+  names align with the label; from 150 % on they take the row's full width. At 200 % on 320 px
+  the first version broke „Ferienwohnung“ and „Wocheneinkauf“ in the middle of the word. No
+  name has an ellipsis: a cut name could name the wrong household or list. The 200 % widget test
+  pins that nothing is cut (`didExceedMaxLines` false, full intrinsic height). Only the goldens
+  `app/test/household/goldens/switcher-voice-*` (320 × 568, 100 % and 200 %, DE and EN) pin the
+  full width: a mid-word break cuts nothing.
+- **Answers that come late (review 0).** The household step waits for the household's lists
+  before it goes on, and the list step waits for the save. The sheet's page change runs 180 ms,
+  and the page being left stays mounted under the same key while it fades out. A late answer
+  could therefore move the sheet after the user had gone back. A quick back also brought the
+  step back with its rows still ignoring taps. Now every page change counts a visit, and a voice
+  page goes on only from the visit it was built for (`_goFrom`), and each visit gets its own
+  subtree key, so a quick back and forth builds a fresh step instead of reusing the one fading
+  out (review 1). The rows wait in a `finally`,
+  and the tapped row shows a spinner meanwhile. A save that lands after a back still counts,
+  because the user tapped it.
+- **Left as is.** After a save, the households page loads the pick again, so the row shows its
+  list line a moment later. The list step keeps the lists it loaded: a list deleted meanwhile
+  ends in the server's refusal and a snackbar.

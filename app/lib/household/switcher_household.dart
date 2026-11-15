@@ -36,7 +36,7 @@ class const SwitcherHousehold({
   required final bool shown,
 
   /// One of this household's pages.
-  required final SwitcherPage page,
+  required final HouseholdPage page,
   required final ValueChanged<SwitcherPage> go,
   super.key,
 }) extends StatefulWidget {
@@ -122,7 +122,7 @@ class _SwitcherHouseholdState() extends State<SwitcherHousehold> {
           household: widget.household,
           origin: InviteContext.switcher,
         ),
-        HouseholdsPage() || HouseholdListsPage() => _ListsView(
+        HouseholdListsPage() => _ListsView(
           key: const ValueKey('switcher-lists-page'),
           household: widget.household,
           shown: widget.shown,

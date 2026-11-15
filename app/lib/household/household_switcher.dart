@@ -265,8 +265,13 @@ Widget householdTile(
 /// What the households sheet shows below the households: the join requests
 /// waiting (greyed), "Neuer Haushalt", "Mit Code beitreten", and the
 /// default household and list for Siri, Alexa & KI. The switcher sheet's
-/// first page (job 229) has them too.
-List<Widget> householdSheetTail(BuildContext context, InHousehold session) {
+/// first page (job 229) has them too, there as one row naming both that
+/// opens [voiceDefault] (job 248).
+List<Widget> householdSheetTail(
+  BuildContext context,
+  InHousehold session, {
+  VoidCallback? voiceDefault,
+}) {
   final l10n = AppLocalizations.of(context);
   final theme = Theme.of(context);
   final t = SnacklistColors.of(theme.brightness);
@@ -316,35 +321,93 @@ List<Widget> householdSheetTail(BuildContext context, InHousehold session) {
       onTap: () => go(joinCodePath),
     ),
     Divider(height: HlSpace.s4, indent: 72, color: t.divider),
-    ListTile(
-      key: const ValueKey('household-default-row'),
-      leading: sheetHex(
-        context,
-        Icons.record_voice_over_outlined,
-        t.accentSoft,
-      ),
-      title: Text(
-        l10n.voiceDefaultRow(session.defaultHousehold.name),
-        style: theme.textTheme.bodyMedium,
-      ),
-      trailing: const Icon(Icons.chevron_right),
-      onTap: () => unawaited(showDefaultPicker(context)),
-    ),
-    DefaultListPicker(
-      householdId: session.defaultHousehold.id,
-      builder: (context, list, pick) => ListTile(
-        key: const ValueKey('household-default-list-row'),
-        leading: sheetHex(context, Icons.checklist, t.accentSoft),
-        title: Text(
-          l10n.defaultListRow(list),
-          style: theme.textTheme.bodyMedium,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+    if (voiceDefault case final open?)
+      ListTile(
+        key: const ValueKey('household-default-row'),
+        // The hex and the chevron sit beside the label only: the names
+        // below get the row's width, which large text needs, else a long
+        // word breaks mid-word.
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              spacing: HlSpace.s4,
+              children: [
+                sheetHex(
+                  context,
+                  Icons.record_voice_over_outlined,
+                  t.accentSoft,
+                ),
+                Expanded(
+                  child: Text(
+                    l10n.voiceDefaultLabel,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: t.textMuted,
+                    ),
+                  ),
+                ),
+                const Icon(Icons.chevron_right),
+              ],
+            ),
+            Padding(
+              // Under the label at normal sizes; from 150 % on, from the
+              // row's start.
+              padding: EdgeInsetsDirectional.only(
+                start: MediaQuery.textScalerOf(context).scale(1) < 1.5
+                    ? 34 * PointyHex.aspect + HlSpace.s4
+                    : 0,
+              ),
+              // No ellipsis, unlike the household rows: a cut name could
+              // name the wrong household or list.
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(session.defaultHousehold.name),
+                  DefaultListPicker(
+                    householdId: session.defaultHousehold.id,
+                    builder: (context, list, _) => Text(
+                      list,
+                      key: const ValueKey('household-default-list-name'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-        trailing: const Icon(Icons.expand_more),
-        onTap: pick,
+        onTap: open,
+      )
+    else ...[
+      ListTile(
+        key: const ValueKey('household-default-row'),
+        leading: sheetHex(
+          context,
+          Icons.record_voice_over_outlined,
+          t.accentSoft,
+        ),
+        title: Text(
+          l10n.voiceDefaultRow(session.defaultHousehold.name),
+          style: theme.textTheme.bodyMedium,
+        ),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => unawaited(showDefaultPicker(context)),
       ),
-    ),
+      DefaultListPicker(
+        householdId: session.defaultHousehold.id,
+        builder: (context, list, pick) => ListTile(
+          key: const ValueKey('household-default-list-row'),
+          leading: sheetHex(context, Icons.checklist, t.accentSoft),
+          title: Text(
+            l10n.defaultListRow(list),
+            style: theme.textTheme.bodyMedium,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          trailing: const Icon(Icons.expand_more),
+          onTap: pick,
+        ),
+      ),
+    ],
   ];
 }
 
