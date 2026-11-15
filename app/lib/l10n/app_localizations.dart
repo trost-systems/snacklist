@@ -5137,6 +5137,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'etwa {amount}'**
   String moneyEstimateSpoken(String amount);
+
+  /// Job 248: the switcher sheet's row for Siri, Alexa and AI, first line; the default household and its list follow on their own lines; a tap opens the household step
+  ///
+  /// In de, this message translates to:
+  /// **'Siri, Alexa & KI nutzen:'**
+  String get voiceDefaultLabel;
+
+  /// Job 248: back row of the switcher sheet's list step for Siri, Alexa and AI: back to its household step
+  ///
+  /// In de, this message translates to:
+  /// **'Siri, Alexa & KI'**
+  String get voiceDefaultBack;
+
+  /// Job 248: under the title of the switcher sheet's list step for Siri, Alexa and AI
+  ///
+  /// In de, this message translates to:
+  /// **'Was du sagst, ohne eine Liste zu nennen, landet in „{household}“ auf dieser Liste.'**
+  String voiceDefaultListBody(String household);
 }
 
 class _AppLocalizationsDelegate

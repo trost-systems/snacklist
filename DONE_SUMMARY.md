@@ -1126,3 +1126,41 @@ so far), the queue at GitHub's 20 jobs at once, a phone. Seven points are in `do
   bullet on turns now says what the tests pin; `docs/API.md` and the OpenAPI text for the 503.
 - **Not done.** `app_switches.public_api` in production and the PostHog flag are untouched. The
   report and the verdict are on the ops side (NEEDS_LEAD "Job 241: public API review ready").
+
+## Job 248: Siri, Alexa & KI as one row with in-sheet pickers (2026-11-15)
+
+PR https://github.com/trost-systems/snacklist/pull/475.
+**What.** In the decluttered switcher sheet (flag `list-declutter`), „Deine Haushalte“ shows one row
+for Siri, Alexa & KI instead of two. It holds the label „Siri, Alexa & KI nutzen:“ („Siri, Alexa &
+AI use:“), then the default household and, below it, its list, each on its own line. No name is
+cut, also at 200 % text on a 320 px phone. A tap opens the household step inside the sheet, with
+„‹ Haushalte“. A household opens its lists with „‹ Siri, Alexa & KI“, and back from there saves
+nothing. A list saves the list and the household and returns to „Deine Haushalte“, which names
+both. The list step needs the flag `default-list-voice-target` and two lists or more, the same
+rule as before. Otherwise a household saves at once. Without `list-declutter` nothing changed.
+
+**Where.** `app/lib/household/voice_default_pages.dart` (the two steps),
+`app/lib/household/switcher_sheet.dart` (`VoiceHouseholdsPage`, `VoiceListsPage`, the visit
+guard `_goFrom`), `app/lib/household/household_switcher.dart` (`householdSheetTail(…,
+voiceDefault:)`), and the strings `voiceDefaultLabel`, `voiceDefaultBack` and
+`voiceDefaultListBody` (DE, EN). Decisions are in docs/DECISIONS.md, „Job 248“.
+
+**How to verify.** `flutter test test/household/switcher_sheet_test.dart --plain-name 'job 248'`
+runs 15 behaviour tests and 4 golden runs (16 images, 320 × 568, 100 % and 200 %, DE and EN). On the
+web build: `VH_DEFINES="FLAGS_ON=list-declutter,default-list-voice-target"
+.cursor/skills/verify-snacklist/helpers/launch.sh`, then `node
+.cursor/skills/verify-snacklist/journeys/voice-default.mjs <dir> [--lang en] [--dark] [--scale 2]`.
+
+**Results.** `scripts/verify.sh --only lint,flutter` passed. The web journey passed for DE light
+100 %, EN dark 100 %, DE 200 % and EN 200 %, with server checks that back saves nothing and a pick
+saves both. Screenshots are in `docs/screenshots/248/`. Review 0 found one must-fix: a back
+within the 180 ms page change left the step ignoring taps, and a late answer moved the sheet. It
+is fixed and pinned by tests that fail without the fix.
+
+**On TestFlight.** It ships in the next green main build after the merge, behind `list-declutter`
+(rollout off). Peter's account and the internal testers need `list-declutter` and
+`default-list-voice-target` on in PostHog to see the list step. Everyone else keeps the flag off.
+
+**Missing.** Nothing is blocked. Known and left as is: after a save the row shows its list line
+a moment later (the pick loads again), and a list deleted while the list step is open ends in a
+snackbar.

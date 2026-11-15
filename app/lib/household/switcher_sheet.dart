@@ -6,6 +6,7 @@ import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/household/household_switcher.dart';
 import 'package:family_groceries/household/member_tiles.dart';
 import 'package:family_groceries/household/switcher_household.dart';
+import 'package:family_groceries/household/voice_default_pages.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_scope.dart';
@@ -45,21 +46,35 @@ sealed class const SwitcherPage() {
     HouseholdListsPage() => const HouseholdsPage(),
     MembersPage(:final householdId) => HouseholdListsPage(householdId),
     InvitePage(:final householdId) => MembersPage(householdId),
+    VoiceHouseholdsPage() => const HouseholdsPage(),
+    VoiceListsPage() => const VoiceHouseholdsPage(),
   };
 }
 
 /// The user's households, as the household sheet shows them.
 final class const HouseholdsPage() extends SwitcherPage;
 
+/// A page of one household, which [SwitcherHousehold] shows.
+sealed class const HouseholdPage(final String householdId) extends SwitcherPage;
+
 /// A household's name, its members row and its lists.
-final class const HouseholdListsPage(final String householdId)
-    extends SwitcherPage;
+final class const HouseholdListsPage(super.householdId) extends HouseholdPage;
 
 /// A household's members and its open person invites.
-final class const MembersPage(final String householdId) extends SwitcherPage;
+final class const MembersPage(super.householdId) extends HouseholdPage;
 
 /// "Leute einladen" for a household: person invites and the group link.
-final class const InvitePage(final String householdId) extends SwitcherPage;
+final class const InvitePage(super.householdId) extends HouseholdPage;
+
+/// The household Siri, Alexa and AI assistants use (job 248).
+final class const VoiceHouseholdsPage() extends SwitcherPage;
+
+/// The list they add to in [householdId], one of its [lists], when no list
+/// is named; picking one saves it and the household (job 248).
+final class const VoiceListsPage(
+  final String householdId,
+  final List<HouseholdList> lists,
+) extends SwitcherPage;
 
 class const SwitcherSheet({super.key}) extends StatefulWidget {
   @override
@@ -96,7 +111,22 @@ class _SwitcherSheetState() extends State<SwitcherSheet> {
     super.dispose();
   }
 
-  void _go(SwitcherPage page) => setState(() => _page = page);
+  /// Counts page changes.
+  var _visit = 0;
+
+  void _go(SwitcherPage page) => setState(() {
+    _page = page;
+    _visit++;
+  });
+
+  /// [_go] for a page that goes on after an answer: only while it is still
+  /// the page shown. One left meanwhile, also one still fading out, goes
+  /// nowhere.
+  ValueChanged<SwitcherPage> _goFrom(int visit) => (page) {
+    if (mounted && visit == _visit) {
+      _go(page);
+    }
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -109,11 +139,9 @@ class _SwitcherSheetState() extends State<SwitcherSheet> {
         session.households.where((h) => h.id == id).firstOrNull;
     // A household left or removed meanwhile: the households show.
     final page = switch (_page) {
-      HouseholdListsPage(:final householdId) ||
-      MembersPage(:final householdId) ||
-      InvitePage(
-        :final householdId,
-      ) when householdOf(householdId) == null => const HouseholdsPage(),
+      HouseholdPage(:final householdId) || VoiceListsPage(:final householdId)
+          when householdOf(householdId) == null =>
+        const HouseholdsPage(),
       final page => page,
     };
     final backTo = switch (page) {
@@ -121,6 +149,8 @@ class _SwitcherSheetState() extends State<SwitcherSheet> {
       HouseholdListsPage() => l10n.switcherHouseholds,
       MembersPage(:final householdId) => householdOf(householdId)?.name,
       InvitePage() => l10n.householdMembersTitle,
+      VoiceHouseholdsPage() => l10n.switcherHouseholds,
+      VoiceListsPage() => l10n.voiceDefaultBack,
     };
     final duration = hlMotion(context, HlDuration.short);
     // The system back goes a page back; a tap beside the sheet, Escape, a
@@ -178,10 +208,31 @@ class _SwitcherSheetState() extends State<SwitcherSheet> {
                       session: session,
                       held: _shownId,
                       open: (id) => _go(HouseholdListsPage(id)),
+                      voiceDefault: () => _go(const VoiceHouseholdsPage()),
                     ),
-                    HouseholdListsPage(:final householdId) ||
-                    MembersPage(:final householdId) ||
-                    InvitePage(:final householdId) => SwitcherHousehold(
+                    // A visit of its own: back and forth within the page
+                    // change gets a fresh step, not the one fading out.
+                    VoiceHouseholdsPage() => KeyedSubtree(
+                      key: ValueKey(('voice', _visit)),
+                      child: VoiceHouseholdsView(
+                        key: const ValueKey('switcher-voice-households'),
+                        session: session,
+                        go: _goFrom(_visit),
+                      ),
+                    ),
+                    VoiceListsPage(:final householdId, :final lists) =>
+                      KeyedSubtree(
+                        key: ValueKey(('voice', _visit)),
+                        child: VoiceListsView(
+                          key: ValueKey('switcher-voice-lists-$householdId'),
+                          household: session.households.firstWhere(
+                            (h) => h.id == householdId,
+                          ),
+                          lists: lists,
+                          go: _goFrom(_visit),
+                        ),
+                      ),
+                    HouseholdPage(:final householdId) => SwitcherHousehold(
                       key: ValueKey('switcher-household-$householdId'),
                       userId: session.userId,
                       household: session.households.firstWhere(
@@ -221,6 +272,9 @@ class const _HouseholdsView({
   /// server's last answer: shown when the sheet opened.
   required final String? held,
   required final ValueChanged<String> open,
+
+  /// Opens the pages for Siri, Alexa and AI.
+  required final VoidCallback voiceDefault,
   super.key,
 }) extends StatelessWidget {
   @override
@@ -288,7 +342,13 @@ class const _HouseholdsView({
             );
           },
         ),
-        SliverList.list(children: householdSheetTail(context, session)),
+        SliverList.list(
+          children: householdSheetTail(
+            context,
+            session,
+            voiceDefault: voiceDefault,
+          ),
+        ),
         const SliverPadding(padding: EdgeInsets.only(bottom: HlSpace.s3)),
       ],
     );

@@ -3228,4 +3228,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String moneyEstimateSpoken(String amount) {
     return 'etwa $amount';
   }
+
+  @override
+  String get voiceDefaultLabel => 'Siri, Alexa & KI nutzen:';
+
+  @override
+  String get voiceDefaultBack => 'Siri, Alexa & KI';
+
+  @override
+  String voiceDefaultListBody(String household) {
+    return 'Was du sagst, ohne eine Liste zu nennen, landet in „$household“ auf dieser Liste.';
+  }
 }
