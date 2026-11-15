@@ -207,7 +207,7 @@ if (built) {
       ok((await link.count()) === 1, `overview ${lang}: no link to ${roundId}`);
       await link.click();
       await p.waitForSelector('[data-testid="back"]');
-      ok((await p.locator('h1').innerText()).startsWith(title[lang]), `overview ${lang} → ${roundId}: wrong page`);
+      ok((await p.locator('.page-head h1').innerText()).startsWith(title[lang]), `overview ${lang} → ${roundId}: wrong page`);
       await p.click('[data-testid="back"]');
       await p.waitForSelector('ul.rounds');
       ok((await p.locator(`a[href^="../household-onboarding/${roundId}/"]`).count()) === 1, `${roundId} ${lang}: back link does not reach the overview`);
@@ -217,7 +217,7 @@ if (built) {
 
 await browser.close();
 server?.close();
-for (const f of fails.slice(0, 60)) console.log(`FAIL ${f}`);
+for (const f of fails) console.log(`FAIL ${f}`);
 console.log(`${checks} checks, ${fails.length} failed`);
 if (fails.length) process.exit(1);
 console.log('all checks passed');
