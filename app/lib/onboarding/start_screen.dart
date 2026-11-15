@@ -66,6 +66,7 @@ class const StartScreen({super.key}) extends StatelessWidget {
                         onPressed: () => goToSignIn(context),
                         child: Text(l10n.startLogIn),
                       ),
+                      const SizedBox(height: HlSpace.s2),
                       // Job 169b W2: a join link the store did not carry
                       // over, pasted before the sign-in.
                       const Align(child: PasteInvite()),

@@ -181,8 +181,6 @@ test('the X: sign in instead keeps the draft for later; discard starts over with
   await expect(page, 'the draft resumes').toHaveURL(/\/start\/stores$/);
 
   await leave(page, 'Fortschritt verwerfen');
-  await expect(page.getByText('Fortschritt verwerfen?')).toBeVisible();
-  await page.getByRole('button', { name: 'Verwerfen', exact: true }).click();
   await expect(page).toHaveURL(/\/start$/);
   await page.reload();
   await expect(page, 'nothing kept on the device').toHaveURL(/\/start$/);

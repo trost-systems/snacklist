@@ -1318,24 +1318,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get onboardingExitStay => 'Weiter einrichten';
 
   @override
-  String get onboardingDiscardTitle => 'Fortschritt verwerfen?';
-
-  @override
-  String onboardingDiscardBody(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: ' und $count Artikel',
-      one: ' und 1 Artikel',
-      zero: '',
-    );
-    return 'Deine Antworten$_temp0 werden von diesem Gerät gelöscht.';
-  }
-
-  @override
-  String get onboardingDiscard => 'Verwerfen';
-
-  @override
   String get whoTitle => 'Mit wem kaufst du ein?';
 
   @override

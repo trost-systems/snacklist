@@ -575,7 +575,7 @@ void main() {
       expect(location(o), '/start/stores');
     });
 
-    testWidgets('discarding asks first; Abbrechen keeps everything', (
+    testWidgets('discarding clears the draft at once, no second dialog', (
       tester,
     ) async {
       final o = await pumpOnboarding(
@@ -586,19 +586,8 @@ void main() {
       );
       await tapKey(tester, 'onboarding-exit');
       await tapKey(tester, 'onboarding-exit-discard');
-      expect(
-        find.text(
-          'Deine Antworten und 2 Artikel werden von diesem Gerät gelöscht.',
-        ),
-        findsOneWidget,
-      );
-      await tester.tap(find.text('Abbrechen'));
-      await tester.pumpAndSettle();
-      expect(o.onboarding.state, isNotNull);
-      expect(location(o), '/start/need');
-      await tapKey(tester, 'onboarding-exit');
-      await tapKey(tester, 'onboarding-exit-discard');
-      await tapKey(tester, 'onboarding-discard-confirm');
+      expect(key('onboarding-exit-dialog'), findsNothing);
+      expect(find.byType(AlertDialog), findsNothing);
       expect(o.onboarding.state, isNull);
       expect(location(o), '/start');
       await tester.runAsync(() => o.onboarding.saved);
@@ -617,7 +606,6 @@ void main() {
       expect(key('onboarding-exit-sign-in'), findsNothing);
       expect(key('onboarding-exit-sign-out'), findsOneWidget);
       await tapKey(tester, 'onboarding-exit-discard');
-      await tapKey(tester, 'onboarding-discard-confirm');
       expect(location(o), '/welcome');
     });
   });

@@ -2222,24 +2222,6 @@ abstract class AppLocalizations {
   /// **'Weiter einrichten'**
   String get onboardingExitStay;
 
-  /// Guided start: confirmation before dropping the progress
-  ///
-  /// In de, this message translates to:
-  /// **'Fortschritt verwerfen?'**
-  String get onboardingDiscardTitle;
-
-  /// Guided start: what discarding deletes; count is the number of items entered
-  ///
-  /// In de, this message translates to:
-  /// **'Deine Antworten{count, plural, =0{} =1{ und 1 Artikel} other{ und {count} Artikel}} werden von diesem Gerät gelöscht.'**
-  String onboardingDiscardBody(int count);
-
-  /// Guided start: confirm discarding
-  ///
-  /// In de, this message translates to:
-  /// **'Verwerfen'**
-  String get onboardingDiscard;
-
   /// Guided start, step who: title
   ///
   /// In de, this message translates to:
