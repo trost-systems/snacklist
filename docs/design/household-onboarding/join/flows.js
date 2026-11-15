@@ -668,7 +668,7 @@ jh5.facts = ({
   approval: en('wait shows what Mia sees, offers a notification', 'Warten zeigt, was Mia sieht, bietet Bescheid an'),
   consent: en('card on the list, after “Keep your access”', 'Karte auf der Liste, nach „Zugang sichern“'),
   privacy: en('medium: a guest account without email; clipboard read on her tap', 'mittel: Gastkonto ohne E-Mail; Zwischenablage auf ihren Tipp'),
-  build: en('8 days (anonymous sign-in, upgrade, abuse limits)', '8 Tage (anonyme Anmeldung, Upgrade, Missbrauchsgrenzen)'),
+  build: en('10 days (guest accounts, invite check, upgrade; JH-Q10)', '10 Tage (Gastkonten, Code-Prüfung, Upgrade; JH-Q10)'),
   service: en('Supabase anonymous sign-ins', 'Anonyme Supabase-Anmeldung'),
 });
 
@@ -758,7 +758,7 @@ jh5.detail = {
   deferred: en('The join page’s store button copies the invite (her tap). In the app, the system Paste button reads it on her tap (no iOS prompt).', 'Der Store-Knopf der Beitrittsseite kopiert die Einladung (ihr Tipp). In der App liest der System-Einsetzen-Knopf sie auf ihren Tipp (keine iOS-Nachfrage).'),
   privacy: en('Medium.', 'Mittel.'),
   leaves: en('Her first name and the code to our server; nothing to a third party. The clipboard is read only on her Paste tap.', 'Ihr Vorname und der Code an unseren Server; nichts an Dritte. Die Zwischenablage nur auf ihren Einsetzen-Tipp.'),
-  build: en('About 8 days: anonymous sign-in, linking it to Apple/Google/email, abuse limits (a guest needs a valid code; per-IP limits; no captcha), the paste card (a native Paste control), the wait.', 'Etwa 8 Tage: anonyme Anmeldung, Verknüpfung mit Apple/Google/E-Mail, Missbrauchsgrenzen (ein Gast braucht einen gültigen Code; Grenzen je IP; kein Captcha), die Einsetzen-Karte (ein nativer Knopf), das Warten.'),
+  build: en('About 10 days: anonymous sign-in with a before-user-created hook that needs a valid invite code, the signed-in functions closed to guests, failed-code limits per network and code, linking to Apple/Google/email, the paste card (a native Paste control), the wait. No captcha (JH-Q10).', 'Etwa 10 Tage: anonyme Anmeldung mit einem Hook before-user-created, der einen gültigen Einladungscode verlangt, die Funktionen für Angemeldete für Gäste geschlossen, Grenzen für Fehlversuche je Netz und Code, Verknüpfung mit Apple/Google/E-Mail, die Einsetzen-Karte (ein nativer Knopf), das Warten. Kein Captcha (JH-Q10).'),
   service: en('Supabase anonymous sign-ins (our stack).', 'Anonyme Supabase-Anmeldung (unser Stack).'),
   risks: en('A guest who never saves loses access with the phone. Anonymous accounts need abuse limits. Account deletion and export must cover guests.', 'Wer nie sichert, verliert den Zugang mit dem Handy. Anonyme Konten brauchen Missbrauchsgrenzen. Kontolöschung und Export müssen Gäste abdecken.'),
 };
