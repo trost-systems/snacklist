@@ -19,7 +19,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node
 import { join, relative } from 'node:path';
 import process from 'node:process';
 import { chromium, repo } from '../../.claude/skills/verify-snacklist/helpers/lib.mjs';
-import { captionProblems, captionsFor, textProblems } from './captions.mjs';
+import { captionProblems, captionsDoc, captionsFor, textProblems } from './captions.mjs';
 import { C, avatar, band, crop, cutBelow, esc, hexIcon, page, pixelAt, url, windowFor } from './kit.mjs';
 import { FEATURE_GRAPHIC, ICON, LOCALES, SETS, layout, plan, sizeProblems } from './sets.mjs';
 
@@ -317,12 +317,7 @@ writeFileSync(join(OUT, 'summary.md'), `${[
   '', drafts.length ? `Draft captions: ${drafts.join(', ')}` : 'Every caption is approved.',
   '', failures.length ? `Checks FAILED:\n${failures.map((f) => `- ${f}`).join('\n')}` : 'All checks pass.',
 ].join('\n')}\n`);
-const captionRows = manifest.files.filter((f) => f.caption).map((f) => `| ${f.locale} | ${f.set} | ${f.shot ?? f.set.replace('play-', '')} | ${f.caption} | ${f.alt ?? ''} | ${{ blocked: 'BLOCKED: needs a real-device German capture', 'on-hold': 'ON HOLD: until English dictation is verified on a real device' }[f.status] ?? f.status ?? ''} |`);
-writeFileSync(join(OUT, 'CAPTIONS.md'), `${[
-  '# Every caption per frame and locale', '',
-  'Siri appears on the App Store voice frame only; no Alexa, API, automations, free, AI brand, alcohol or tobacco anywhere (Legal N-187 to N-195, job 252).', '',
-  '| Locale | Set | Frame | Caption (headline / subline) | Alt text | Status |', '| --- | --- | --- | --- | --- | --- |', ...captionRows,
-].join('\n')}\n`);
+writeFileSync(join(OUT, 'CAPTIONS.md'), captionsDoc({ locales, stores, premiumLabel }));
 if (failures.length) {
   console.error(`checks failed:\n${failures.join('\n')}`);
   process.exit(1);

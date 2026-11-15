@@ -3,7 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parse } from 'yaml';
-import { LOCALES, SHOTS } from './sets.mjs';
+import { LOCALES, SETS, SHOTS, plan } from './sets.mjs';
 
 const FILE = join(import.meta.dirname, 'captions.yaml');
 const ALT_MAX = 140;
@@ -76,4 +76,33 @@ export function captionsFor(locale, { store }) {
   for (const [id, { appstore, play, ...base }] of Object.entries(all[locale].shots)) out[id] = { ...base, ...(store === 'appstore' ? appstore : play) };
   out.feature = { ...all[locale].feature };
   return out;
+}
+
+const HELD = {
+  'de-DE': { blocked: 'BLOCKED: needs a real-device German capture' },
+  'en-US': { blocked: 'BLOCKED: needs a real-device English test after #487' },
+};
+
+/** CAPTIONS.md: every caption, alt and held note per locale, set and frame, straight from captions.yaml. */
+export function captionsDoc({ locales, stores, premiumLabel = false }) {
+  const rows = [];
+  for (const locale of locales) {
+    const byStore = Object.fromEntries(stores.map((store) => [store, captionsFor(locale, { store })]));
+    for (const { set, shot } of plan({ locales: [locale], stores })) {
+      const s = SETS[set];
+      const c = byStore[s.store][shot];
+      const caption = s.text ? [...c.h, c.s, ...(premiumLabel && c.premium ? [c.premium] : [])].join(' / ') : '(no text, spec D4-B)';
+      rows.push([locale, set, shot, caption, c.alt ?? '', HELD[locale]?.[c.status] ?? c.status ?? '']);
+    }
+    if (stores.includes('play')) {
+      const f = byStore.play.feature;
+      rows.push([locale, 'play-feature-graphic', 'feature-graphic', f.tagline, f.alt ?? '', f.status ?? '']);
+    }
+  }
+  return `${[
+    '# Every caption per frame and locale', '',
+    'Siri appears on the App Store voice frame only; no Alexa, API, automations, free, AI brand, alcohol or tobacco anywhere (Legal N-187 to N-195, job 252).', '',
+    '| Locale | Set | Frame | Caption (headline / subline) | Alt text | Status |', '| --- | --- | --- | --- | --- | --- |',
+    ...rows.map((r) => `| ${r.join(' | ')} |`),
+  ].join('\n')}\n`;
 }

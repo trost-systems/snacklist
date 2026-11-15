@@ -11,8 +11,8 @@
 #         sticker:         words drawn on the shot's sticker (voice: the spoken sentence; assist:
 #                          the request, the reply and the items the assistant adds)
 #         play:            replaces fields on the Play set only; status: blocked or on-hold keeps a frame
-#                          out of the upload (blocked: no real-device capture yet; on-hold: waits for
-#                          English dictation to be verified on a real device, job 256)
+#                          out of the upload (blocked: waits for a real-device capture, de-DE: German capture,
+#                          en-US: English test after #487; on-hold: waits for something else)
 #         appstore:        replaces s and alt on the App Store set only (voice: Siri, N-189, N-195)
 #         premium:         the label --premium-label puts on the frame once AI assistants are paid
 #                          (Apple 2.3.2, N-193; no price, 2.3.7)
@@ -110,7 +110,7 @@ en-US:
       sticker:
         said: Bananas, Butter and Oats
       play:
-        status: on-hold
+        status: blocked
       appstore:
         s: Works with Siri
         alt: Jonas tells Siri “Bananas, Butter and Oats”, and all three show up highlighted on Anna’s list.
@@ -127,7 +127,7 @@ en-US:
     invite:
       status: draft
       h: [Everyone in., Many lists.]
-      s: Invite everyone. Separate lists for every occasion.
+      s: Separate lists for every occasion.
       alt: The household page with Anna and Jonas, “Invite people” and separate lists for Weekly shop, Hardware and Birthday.
   feature:
     status: draft
