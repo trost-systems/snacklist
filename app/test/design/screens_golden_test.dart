@@ -27,6 +27,8 @@ import 'package:family_groceries/list/name_dialog.dart';
 import 'package:family_groceries/list/sync_indicator.dart';
 import 'package:family_groceries/more/app_update.dart';
 import 'package:family_groceries/more/more_screen.dart';
+import 'package:family_groceries/onboarding/onboarding_cubit.dart';
+import 'package:family_groceries/onboarding/start_screen.dart';
 import 'package:family_groceries/purchases/premium_server.dart';
 import 'package:family_groceries/session/login_screen.dart';
 import 'package:family_groceries/session/session_cubit.dart';
@@ -43,7 +45,8 @@ import 'package:supabase_flutter/supabase_flutter.dart'
     show AuthChangeEvent, AuthState;
 
 import '../analytics/fakes.dart' show MemoryAnalyticsStore, loadedAnalytics;
-import '../household/harness.dart' show FakeInvites, FakeSharer;
+import '../household/harness.dart'
+    show FakeInvites, FakeSharer, MemoryOnboardingStore;
 import '../list/fake_repository.dart';
 import '../more/more_harness.dart';
 import '../purchases/fakes.dart';
@@ -274,6 +277,48 @@ Future<void> _pumpLogin(WidgetTester tester, Brightness brightness) async {
       ),
       precacheImage(const AssetImage('assets/google_g.png'), context),
     ]),
+  );
+  await tester.pumpAndSettle();
+}
+
+/// The signed-out start screen with "Already have an account?" and the
+/// paste-invite button below the primary action.
+Future<void> _pumpStart(
+  WidgetTester tester,
+  Brightness brightness, {
+  String lang = 'de',
+  double textScale = 1,
+}) async {
+  tester.view
+    ..devicePixelRatio = 1
+    ..physicalSize = _phone;
+  addTearDown(tester.view.reset);
+  final onboarding = OnboardingCubit(MemoryOnboardingStore());
+  addTearDown(onboarding.close);
+  await tester.pumpWidget(
+    BlocProvider.value(
+      value: onboarding,
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: appTheme(brightness),
+        localizationsDelegates: appLocalizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: Locale(lang),
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: TextScaler.linear(textScale)),
+          child: child!,
+        ),
+        home: const StartScreen(),
+      ),
+    ),
+  );
+  final context = tester.element(find.byType(StartScreen));
+  await tester.runAsync(
+    () => precacheImage(
+      AssetImage('assets/brand/mark-${brightness.name}.png'),
+      context,
+    ),
   );
   await tester.pumpAndSettle();
 }
@@ -514,6 +559,14 @@ void main() {
 
   for (final brightness in Brightness.values) {
     final mode = brightness.name;
+
+    testWidgets('start, $mode', (tester) async {
+      await _pumpStart(tester, brightness);
+      await expectLater(
+        find.byType(MaterialApp),
+        matchesGoldenFile('goldens/start-$mode.png'),
+      );
+    });
 
     // Job 57 T2: every single-line field is a hex.
     testWidgets('login, $mode', (tester) async {
@@ -1054,4 +1107,26 @@ void main() {
       });
     }
   }
+
+  group('paste invite sits apart from the row above it', () {
+    for (final lang in ['de', 'en']) {
+      for (final scale in [1.0, 2.0]) {
+        testWidgets('start, $lang, text x$scale', (tester) async {
+          await _pumpStart(
+            tester,
+            Brightness.light,
+            lang: lang,
+            textScale: scale,
+          );
+          final above = tester.getRect(
+            find.byKey(const ValueKey('start-log-in')),
+          );
+          final paste = tester.getRect(
+            find.byKey(const ValueKey('invite-paste')),
+          );
+          expect(paste.top - above.bottom, greaterThanOrEqualTo(HlSpace.s2));
+        });
+      }
+    }
+  });
 }

@@ -64,12 +64,14 @@ class const LoginScreen({
       // it never takes the form's height (a phone turned sideways).
       footer: Column(
         children: [
-          if (invite == null && next == null)
+          if (invite == null && next == null) ...[
             TextButton(
               key: const ValueKey('login-new'),
               onPressed: () => goToStart(context),
               child: Text(l10n.loginNew),
             ),
+            const SizedBox(height: HlSpace.s2),
+          ],
           PasteInvite(waiting: invite),
         ],
       ),

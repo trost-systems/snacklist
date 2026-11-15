@@ -99,7 +99,7 @@ enum _Leave() {
 
 /// The X on every step of the guided start: leave it to sign in instead
 /// (signed out; the progress stays on the device), sign out (signed in),
-/// or drop the progress after a confirmation.
+/// or drop the progress.
 class const OnboardingExitButton({super.key}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => IconButton(
@@ -160,32 +160,7 @@ class const OnboardingExitButton({super.key}) extends StatelessWidget {
       case _Leave.signOut:
         await session.signOut();
       case _Leave.discard:
-        final count = onboarding.state?.items.length ?? 0;
-        final sure = await showDialog<bool>(
-          context: context,
-          builder: (dialog) => AlertDialog(
-            key: const ValueKey('onboarding-discard-dialog'),
-            title: Text(l10n.onboardingDiscardTitle),
-            content: Text(l10n.onboardingDiscardBody(count)),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialog, false),
-                child: Text(l10n.cancel),
-              ),
-              TextButton(
-                key: const ValueKey('onboarding-discard-confirm'),
-                style: TextButton.styleFrom(
-                  foregroundColor: Theme.of(dialog).colorScheme.error,
-                ),
-                onPressed: () => Navigator.pop(dialog, true),
-                child: Text(l10n.onboardingDiscard),
-              ),
-            ],
-          ),
-        );
-        if (sure ?? false) {
-          onboarding.discard();
-        }
+        onboarding.discard();
       case null:
         break;
     }

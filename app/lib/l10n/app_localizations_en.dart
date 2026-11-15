@@ -1304,24 +1304,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingExitStay => 'Continue setup';
 
   @override
-  String get onboardingDiscardTitle => 'Discard progress?';
-
-  @override
-  String onboardingDiscardBody(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: ' and $count items',
-      one: ' and 1 item',
-      zero: '',
-    );
-    return 'Your answers$_temp0 will be deleted from this device.';
-  }
-
-  @override
-  String get onboardingDiscard => 'Discard';
-
-  @override
   String get whoTitle => 'Who do you shop with?';
 
   @override
