@@ -1,0 +1,525 @@
+{
+ "table": {
+  "en": {
+   "cols": [
+    "Option",
+    "Item + store + section identifiable while open 100 % / 200 % (worst of 4 scenarios)",
+    "Three adds: identifiable while open 100 % / 200 %",
+    "Find after the close",
+    "Fix store: open / after (taps)",
+    "Fix section: open / after (taps)",
+    "Correction sticks next time",
+    "Extra height vs Today (open, 100 %)",
+    "Text cut, spilling or overlapping at 200 %: option / main’s chrome",
+    "Whole rows after the close 100 % / 200 % (item among them)",
+    "Suggestion rows in view while typing 100 % / 200 % (of)",
+    "Suggestion rows in view right after an add 100 % / 200 % (fewest, scenario)"
+   ],
+   "rows": [
+    [
+     "Today",
+     "name only (en first) / name only (en first)",
+     "0/3 / 0/3",
+     "scroll 137 px",
+     "— / 4",
+     "— / 4",
+     "yes",
+     "309 px",
+     "0 / 28",
+     "7 (no) / 7 (no)",
+     "7 / 5 (7)",
+     "3 (One known item) / 1 (Long names)"
+    ],
+    [
+     "AF1 Show me on close",
+     "yes / yes",
+     "1/3 / 1/3",
+     "0 taps (already shows)",
+     "2 / 4",
+     "2 / 4",
+     "yes",
+     "+44 px",
+     "0 / 28",
+     "6 (yes) / 6 (yes)",
+     "7 / 5 (7)",
+     "3 (One known item) / 1 (Long names)"
+    ],
+    [
+     "AF2 Added tray",
+     "yes / name only (en long)",
+     "3/3 / 1/3",
+     "1 tap (Show) for 5 s, then scroll 137 px",
+     "2 / 4",
+     "2 / 4",
+     "yes",
+     "+20 px",
+     "0 / 28",
+     "7 (no, “Rewe 6 items” half under it) / 6 (no, “🥣Natural yoghurt” half under it)",
+     "7 / 3 (7)",
+     "3 (One known item) / 2 (Three adds, two stores)"
+    ],
+    [
+     "AF3 Confirm in place",
+     "yes / yes",
+     "1/3 / 1/3",
+     "0 taps (already shows)",
+     "2 / 2",
+     "2 / 2",
+     "yes",
+     "+37 px",
+     "0 / 28",
+     "6 (yes) / 6 (yes)",
+     "7 / 3 (7)",
+     "3 (One known item) / 1 (Long names)"
+    ],
+    [
+     "AF4 Toast with Show and Change",
+     "yes / yes",
+     "0/3 / 0/3",
+     "1 tap (Show) for 6 s, then scroll 137 px",
+     "2 / 2 for 6 s, then 4",
+     "2 / 2 for 6 s, then 4",
+     "yes",
+     "+13 px",
+     "0 / 28",
+     "6 (no, “🥣Natural yoghurt” half under it) / 4 (no, “🥛2× Whole milk” half under it)",
+     "7 / 3 (7)",
+     "3 (One known item) / 1 (Long names)"
+    ],
+    [
+     "AF5 Split view",
+     "yes / yes",
+     "1/3 / 1/3",
+     "0 taps (already shows)",
+     "2 / 2",
+     "2 / 2",
+     "yes",
+     "+0 px",
+     "0 / 28",
+     "6 (yes) / 6 (yes)",
+     "4 / 3 (7)",
+     "2 (Long names) / 1 (Long names)"
+    ]
+   ]
+  },
+  "de": {
+   "cols": [
+    "Variante",
+    "Artikel + Laden + Kategorie offen erkennbar 100 % / 200 % (schlechtestes von 4 Szenarien)",
+    "Drei hinzu: erkennbar (offen) 100 % / 200 %",
+    "Finden nach dem Schließen",
+    "Laden ändern: offen / danach (Tipps)",
+    "Kategorie ändern: offen / danach (Tipps)",
+    "Korrektur gilt beim nächsten Mal",
+    "Mehr Höhe als heute (offen, 100 %)",
+    "Text abgeschnitten, übergelaufen oder überlappt bei 200 %: Variante / Chrome wie main",
+    "Ganze Zeilen nach dem Schließen 100 % / 200 % (Artikel dabei)",
+    "Vorschlagszeilen beim Tippen 100 % / 200 % (von)",
+    "Vorschlagszeilen direkt nach dem Hinzufügen 100 % / 200 % (wenigste, Szenario)"
+   ],
+   "rows": [
+    [
+     "Heute",
+     "nur Name (en first) / nur Name (en first)",
+     "0/3 / 0/3",
+     "scrollen, 137 px",
+     "— / 4",
+     "— / 4",
+     "ja",
+     "309 px",
+     "0 / 28",
+     "7 (nein) / 7 (nein)",
+     "7 / 5 (7)",
+     "3 (Ein bekannter Artikel) / 1 (Lange Namen)"
+    ],
+    [
+     "AF1 Beim Schließen zeigen",
+     "ja / ja",
+     "1/3 / 1/3",
+     "0 Tipps (schon sichtbar)",
+     "2 / 4",
+     "2 / 4",
+     "ja",
+     "+44 px",
+     "0 / 28",
+     "6 (ja) / 6 (ja)",
+     "7 / 5 (7)",
+     "3 (Ein bekannter Artikel) / 1 (Lange Namen)"
+    ],
+    [
+     "AF2 Ablage „Hinzugefügt“",
+     "ja / nur Name (en long)",
+     "3/3 / 1/3",
+     "1 Tipp (Zeigen) für 5 s, dann scrollen, 137 px",
+     "2 / 4",
+     "2 / 4",
+     "ja",
+     "+20 px",
+     "0 / 28",
+     "7 (nein, „Rewe 6 items“ halb darunter) / 6 (nein, „🥣Natural yoghurt“ halb darunter)",
+     "7 / 3 (7)",
+     "3 (Ein bekannter Artikel) / 2 (Drei hinzu, zwei Läden)"
+    ],
+    [
+     "AF3 Bestätigung an Ort und Stelle",
+     "ja / ja",
+     "1/3 / 1/3",
+     "0 Tipps (schon sichtbar)",
+     "2 / 2",
+     "2 / 2",
+     "ja",
+     "+37 px",
+     "0 / 28",
+     "6 (ja) / 6 (ja)",
+     "7 / 3 (7)",
+     "3 (Ein bekannter Artikel) / 1 (Lange Namen)"
+    ],
+    [
+     "AF4 Hinweis mit Zeigen und Ändern",
+     "ja / ja",
+     "0/3 / 0/3",
+     "1 Tipp (Zeigen) für 6 s, dann scrollen, 137 px",
+     "2 / 2 für 6 s, dann 4",
+     "2 / 2 für 6 s, dann 4",
+     "ja",
+     "+13 px",
+     "0 / 28",
+     "6 (nein, „🥣Natural yoghurt“ halb darunter) / 4 (nein, „🥛2× Whole milk“ halb darunter)",
+     "7 / 3 (7)",
+     "3 (Ein bekannter Artikel) / 1 (Lange Namen)"
+    ],
+    [
+     "AF5 Geteilte Ansicht",
+     "ja / ja",
+     "1/3 / 1/3",
+     "0 Tipps (schon sichtbar)",
+     "2 / 2",
+     "2 / 2",
+     "ja",
+     "+0 px",
+     "0 / 28",
+     "6 (ja) / 6 (ja)",
+     "4 / 3 (7)",
+     "2 (Lange Namen) / 1 (Lange Namen)"
+    ]
+   ]
+  }
+ },
+ "raw": {
+  "today": {
+   "id100": {
+    "v": "name",
+    "at": "en first"
+   },
+   "id200": {
+    "v": "name",
+    "at": "en first"
+   },
+   "height": 309,
+   "rows100": {
+    "n": 7,
+    "has": false,
+    "half": []
+   },
+   "sugg100": {
+    "n": 7,
+    "of": 7
+   },
+   "rows200": {
+    "n": 7,
+    "has": false,
+    "half": []
+   },
+   "sugg200": {
+    "n": 5,
+    "of": 7
+   },
+   "find": {
+    "scroll": 137
+   },
+   "fix_open_store": null,
+   "fix_open_cat": null,
+   "fix_after_store": 4,
+   "fix_after_cat": 4,
+   "sticks": true,
+   "several100": "0/3",
+   "several200": "0/3",
+   "overflow": 0,
+   "chrome": 28,
+   "afterAdd100": {
+    "n": 3,
+    "at": "one"
+   },
+   "afterAdd200": {
+    "n": 1,
+    "at": "long"
+   }
+  },
+  "AF1": {
+   "id100": {
+    "v": "yes",
+    "at": "en one"
+   },
+   "id200": {
+    "v": "yes",
+    "at": "en one"
+   },
+   "height": 353,
+   "rows100": {
+    "n": 6,
+    "has": true,
+    "half": []
+   },
+   "sugg100": {
+    "n": 7,
+    "of": 7
+   },
+   "rows200": {
+    "n": 6,
+    "has": true,
+    "half": []
+   },
+   "sugg200": {
+    "n": 5,
+    "of": 7
+   },
+   "find": {
+    "taps": 0
+   },
+   "fix_open_store": 2,
+   "fix_open_cat": 2,
+   "fix_after_store": 4,
+   "fix_after_cat": 4,
+   "sticks": true,
+   "several100": "1/3",
+   "several200": "1/3",
+   "overflow": 0,
+   "chrome": 28,
+   "afterAdd100": {
+    "n": 3,
+    "at": "one"
+   },
+   "afterAdd200": {
+    "n": 1,
+    "at": "long"
+   }
+  },
+  "AF2": {
+   "id100": {
+    "v": "yes",
+    "at": "en one"
+   },
+   "id200": {
+    "v": "name",
+    "at": "en long"
+   },
+   "height": 329,
+   "rows100": {
+    "n": 7,
+    "has": false,
+    "half": [
+     "Rewe 6 items"
+    ]
+   },
+   "sugg100": {
+    "n": 7,
+    "of": 7
+   },
+   "rows200": {
+    "n": 6,
+    "has": false,
+    "half": [
+     "🥣Natural yoghurt",
+     "Rewe 6 items"
+    ]
+   },
+   "sugg200": {
+    "n": 3,
+    "of": 7
+   },
+   "find": {
+    "taps": 1
+   },
+   "findLate": {
+    "scroll": 137
+   },
+   "fix_open_store": 2,
+   "fix_open_cat": 2,
+   "fix_after_store": 4,
+   "fix_after_cat": 4,
+   "fix_late_store": 4,
+   "fix_late_cat": 4,
+   "sticks": true,
+   "several100": "3/3",
+   "several200": "1/3",
+   "overflow": 0,
+   "chrome": 28,
+   "afterAdd100": {
+    "n": 3,
+    "at": "one"
+   },
+   "afterAdd200": {
+    "n": 2,
+    "at": "several"
+   }
+  },
+  "AF3": {
+   "id100": {
+    "v": "yes",
+    "at": "en one"
+   },
+   "id200": {
+    "v": "yes",
+    "at": "en one"
+   },
+   "height": 346,
+   "rows100": {
+    "n": 6,
+    "has": true,
+    "half": []
+   },
+   "sugg100": {
+    "n": 7,
+    "of": 7
+   },
+   "rows200": {
+    "n": 6,
+    "has": true,
+    "half": []
+   },
+   "sugg200": {
+    "n": 3,
+    "of": 7
+   },
+   "find": {
+    "taps": 0
+   },
+   "fix_open_store": 2,
+   "fix_open_cat": 2,
+   "fix_after_store": 2,
+   "fix_after_cat": 2,
+   "sticks": true,
+   "several100": "1/3",
+   "several200": "1/3",
+   "overflow": 0,
+   "chrome": 28,
+   "afterAdd100": {
+    "n": 3,
+    "at": "one"
+   },
+   "afterAdd200": {
+    "n": 1,
+    "at": "long"
+   }
+  },
+  "AF4": {
+   "id100": {
+    "v": "yes",
+    "at": "en one"
+   },
+   "id200": {
+    "v": "yes",
+    "at": "en one"
+   },
+   "height": 322,
+   "rows100": {
+    "n": 6,
+    "has": false,
+    "half": [
+     "🥣Natural yoghurt",
+     "Rewe 6 items"
+    ]
+   },
+   "sugg100": {
+    "n": 7,
+    "of": 7
+   },
+   "rows200": {
+    "n": 4,
+    "has": false,
+    "half": [
+     "🥛2× Whole milk",
+     "Rewe 6 items"
+    ]
+   },
+   "sugg200": {
+    "n": 3,
+    "of": 7
+   },
+   "find": {
+    "taps": 1
+   },
+   "findLate": {
+    "scroll": 137
+   },
+   "fix_open_store": 2,
+   "fix_open_cat": 2,
+   "fix_after_store": 2,
+   "fix_after_cat": 2,
+   "fix_late_store": 4,
+   "fix_late_cat": 4,
+   "sticks": true,
+   "several100": "0/3",
+   "several200": "0/3",
+   "overflow": 0,
+   "chrome": 28,
+   "afterAdd100": {
+    "n": 3,
+    "at": "one"
+   },
+   "afterAdd200": {
+    "n": 1,
+    "at": "long"
+   }
+  },
+  "AF5": {
+   "id100": {
+    "v": "yes",
+    "at": "en one"
+   },
+   "id200": {
+    "v": "yes",
+    "at": "en one"
+   },
+   "height": 309,
+   "rows100": {
+    "n": 6,
+    "has": true,
+    "half": []
+   },
+   "sugg100": {
+    "n": 4,
+    "of": 7
+   },
+   "rows200": {
+    "n": 6,
+    "has": true,
+    "half": []
+   },
+   "sugg200": {
+    "n": 3,
+    "of": 7
+   },
+   "find": {
+    "taps": 0
+   },
+   "fix_open_store": 2,
+   "fix_open_cat": 2,
+   "fix_after_store": 2,
+   "fix_after_cat": 2,
+   "sticks": true,
+   "several100": "1/3",
+   "several200": "1/3",
+   "overflow": 0,
+   "chrome": 28,
+   "afterAdd100": {
+    "n": 2,
+    "at": "long"
+   },
+   "afterAdd200": {
+    "n": 1,
+    "at": "long"
+   }
+  }
+ }
+}

@@ -1,0 +1,495 @@
+{
+ "table": {
+  "en": {
+   "cols": [
+    "Option",
+    "Indicator during the whole load (ms to visible)",
+    "Gone in the first frame with the reply’s rows",
+    "Sheet height while loading / at the reply",
+    "Row moved while loading",
+    "Row under the finger swaps at the reply",
+    "Typed row shows the text",
+    "Tap while loading takes the row shown",
+    "Obviousness, the least: pixels the indicator changes by ≥ 3:1 (median), + pixels changed less",
+    "Text cut, spilling or overlapping at 200 % (main’s chrome included)",
+    "Reduced motion: stands still"
+   ],
+   "rows": [
+    [
+     "Today",
+     "no",
+     "—",
+     "0 px / +307 px (DE 200 %)",
+     "0 px",
+     "yes (EN 100 %, EN 200 %)",
+     "no",
+     "yes in EN 100 %, EN 200 %; no second row in DE 100 %, DE 200 %",
+     "no indicator",
+     "2",
+     "—"
+    ],
+    [
+     "272 base, no indicator",
+     "no",
+     "—",
+     "0 px / +34 px (DE 200 %)",
+     "0 px",
+     "no",
+     "yes",
+     "yes in EN 100 %, EN 200 %; no second row in DE 100 %, DE 200 %",
+     "no indicator",
+     "2",
+     "—"
+    ],
+    [
+     "RI1 Dim stale rows",
+     "no in DE 100 %, DE 200 %, else yes (≤ 1 frame)",
+     "yes",
+     "0 px / +34 px (DE 200 %)",
+     "0 px",
+     "no",
+     "yes",
+     "yes in EN 100 %, EN 200 %; no second row in DE 100 %, DE 200 %",
+     "0 px² + 0 px² (DE 100 %, DE 200 %)",
+     "2",
+     "yes"
+    ],
+    [
+     "RI2 Progress line",
+     "yes (≤ 1 frame)",
+     "yes",
+     "0 px / +34 px (DE 200 %)",
+     "0 px",
+     "no",
+     "yes",
+     "yes in EN 100 %, EN 200 %; no second row in DE 100 %, DE 200 %",
+     "312 px² (8.9:1) + 468 px²",
+     "2",
+     "yes"
+    ],
+    [
+     "RI3 Spinner in the field",
+     "yes (≤ 1 frame)",
+     "yes",
+     "0 px / +34 px (DE 200 %)",
+     "0 px",
+     "no",
+     "yes",
+     "yes in EN 100 %, EN 200 %; no second row in DE 100 %, DE 200 %",
+     "68 px² (5.8:1) + 76 px² (EN 200 %, DE 100 %)",
+     "2",
+     "yes"
+    ]
+   ]
+  },
+  "de": {
+   "cols": [
+    "Variante",
+    "Anzeige während des ganzen Ladens (ms bis sichtbar)",
+    "Weg im ersten Frame mit den Zeilen der Antwort",
+    "Blatthöhe beim Laden / bei der Antwort",
+    "Zeile bewegt beim Laden",
+    "Zeile unter dem Finger wechselt bei der Antwort",
+    "Getippte Zeile zeigt den Text",
+    "Tipp beim Laden nimmt die gezeigte Zeile",
+    "Deutlichkeit, die geringste: Pixel, die die Anzeige um ≥ 3:1 ändert (Median), + schwächer geänderte",
+    "Text abgeschnitten, übergelaufen oder überlappt bei 200 % (Chrome wie main eingeschlossen)",
+    "Reduzierte Bewegung: steht still"
+   ],
+   "rows": [
+    [
+     "Heute",
+     "nein",
+     "—",
+     "0 px / +307 px (DE 200 %)",
+     "0 px",
+     "ja (EN 100 %, EN 200 %)",
+     "nein",
+     "ja bei EN 100 %, EN 200 %; keine zweite Zeile bei DE 100 %, DE 200 %",
+     "keine Anzeige",
+     "2",
+     "—"
+    ],
+    [
+     "Basis 272, ohne Anzeige",
+     "nein",
+     "—",
+     "0 px / +34 px (DE 200 %)",
+     "0 px",
+     "nein",
+     "ja",
+     "ja bei EN 100 %, EN 200 %; keine zweite Zeile bei DE 100 %, DE 200 %",
+     "keine Anzeige",
+     "2",
+     "—"
+    ],
+    [
+     "RI1 Alte Zeilen abblenden",
+     "nein bei DE 100 %, DE 200 %, sonst ja (≤ 1 Frame)",
+     "ja",
+     "0 px / +34 px (DE 200 %)",
+     "0 px",
+     "nein",
+     "ja",
+     "ja bei EN 100 %, EN 200 %; keine zweite Zeile bei DE 100 %, DE 200 %",
+     "0 px² + 0 px² (DE 100 %, DE 200 %)",
+     "2",
+     "ja"
+    ],
+    [
+     "RI2 Ladelinie",
+     "ja (≤ 1 Frame)",
+     "ja",
+     "0 px / +34 px (DE 200 %)",
+     "0 px",
+     "nein",
+     "ja",
+     "ja bei EN 100 %, EN 200 %; keine zweite Zeile bei DE 100 %, DE 200 %",
+     "312 px² (8,9:1) + 468 px²",
+     "2",
+     "ja"
+    ],
+    [
+     "RI3 Ladesymbol im Feld",
+     "ja (≤ 1 Frame)",
+     "ja",
+     "0 px / +34 px (DE 200 %)",
+     "0 px",
+     "nein",
+     "ja",
+     "ja bei EN 100 %, EN 200 %; keine zweite Zeile bei DE 100 %, DE 200 %",
+     "68 px² (5,8:1) + 76 px² (EN 200 %, DE 100 %)",
+     "2",
+     "ja"
+    ]
+   ]
+  }
+ },
+ "raw": {
+  "today": {
+   "per": {
+    "en 100": {
+     "whole": false,
+     "toVisible": null,
+     "goneInReply": null,
+     "hLoading": 0,
+     "hReply": 60,
+     "moved": 0,
+     "swapAtReply": true,
+     "typedLive": false,
+     "mark": null,
+     "tapOk": true
+    },
+    "en 200": {
+     "whole": false,
+     "toVisible": null,
+     "goneInReply": null,
+     "hLoading": 0,
+     "hReply": 91,
+     "moved": 0,
+     "swapAtReply": true,
+     "typedLive": false,
+     "mark": null,
+     "tapOk": true
+    },
+    "de 100": {
+     "whole": false,
+     "toVisible": null,
+     "goneInReply": null,
+     "hLoading": 0,
+     "hReply": 180,
+     "moved": 0,
+     "swapAtReply": false,
+     "typedLive": false,
+     "mark": null,
+     "tapOk": null
+    },
+    "de 200": {
+     "whole": false,
+     "toVisible": null,
+     "goneInReply": null,
+     "hLoading": 0,
+     "hReply": 307,
+     "moved": 0,
+     "swapAtReply": false,
+     "typedLive": false,
+     "mark": null,
+     "tapOk": null
+    }
+   },
+   "overflow": 2
+  },
+  "base": {
+   "per": {
+    "en 100": {
+     "whole": false,
+     "toVisible": null,
+     "goneInReply": null,
+     "hLoading": 0,
+     "hReply": 0,
+     "moved": 0,
+     "swapAtReply": false,
+     "typedLive": true,
+     "mark": null,
+     "tapOk": true
+    },
+    "en 200": {
+     "whole": false,
+     "toVisible": null,
+     "goneInReply": null,
+     "hLoading": 0,
+     "hReply": 0,
+     "moved": 0,
+     "swapAtReply": false,
+     "typedLive": true,
+     "mark": null,
+     "tapOk": true
+    },
+    "de 100": {
+     "whole": false,
+     "toVisible": null,
+     "goneInReply": null,
+     "hLoading": 0,
+     "hReply": 0,
+     "moved": 0,
+     "swapAtReply": false,
+     "typedLive": true,
+     "mark": null,
+     "tapOk": null
+    },
+    "de 200": {
+     "whole": false,
+     "toVisible": null,
+     "goneInReply": null,
+     "hLoading": 0,
+     "hReply": 34,
+     "moved": 0,
+     "swapAtReply": false,
+     "typedLive": true,
+     "mark": null,
+     "tapOk": null
+    }
+   },
+   "overflow": 2
+  },
+  "RI1": {
+   "per": {
+    "en 100": {
+     "whole": true,
+     "toVisible": 0,
+     "goneInReply": true,
+     "hLoading": 0,
+     "hReply": 0,
+     "moved": 0,
+     "swapAtReply": false,
+     "typedLive": true,
+     "mark": {
+      "strong": 599,
+      "weak": 3383,
+      "median": 4.4
+     },
+     "tapOk": true,
+     "still": true
+    },
+    "en 200": {
+     "whole": true,
+     "toVisible": 0,
+     "goneInReply": true,
+     "hLoading": 0,
+     "hReply": 0,
+     "moved": 0,
+     "swapAtReply": false,
+     "typedLive": true,
+     "mark": {
+      "strong": 3005,
+      "weak": 7027,
+      "median": 4.4
+     },
+     "tapOk": true,
+     "still": true
+    },
+    "de 100": {
+     "whole": false,
+     "toVisible": null,
+     "goneInReply": true,
+     "hLoading": 0,
+     "hReply": 0,
+     "moved": 0,
+     "swapAtReply": false,
+     "typedLive": true,
+     "mark": {
+      "strong": 0,
+      "weak": 0,
+      "median": null
+     },
+     "tapOk": null,
+     "still": true
+    },
+    "de 200": {
+     "whole": false,
+     "toVisible": null,
+     "goneInReply": true,
+     "hLoading": 0,
+     "hReply": 34,
+     "moved": 0,
+     "swapAtReply": false,
+     "typedLive": true,
+     "mark": {
+      "strong": 0,
+      "weak": 0,
+      "median": null
+     },
+     "tapOk": null,
+     "still": true
+    }
+   },
+   "overflow": 2
+  },
+  "RI2": {
+   "per": {
+    "en 100": {
+     "whole": true,
+     "toVisible": 0,
+     "goneInReply": true,
+     "hLoading": 0,
+     "hReply": 0,
+     "moved": 0,
+     "swapAtReply": false,
+     "typedLive": true,
+     "mark": {
+      "strong": 312,
+      "weak": 468,
+      "median": 8.9
+     },
+     "tapOk": true,
+     "still": true
+    },
+    "en 200": {
+     "whole": true,
+     "toVisible": 0,
+     "goneInReply": true,
+     "hLoading": 0,
+     "hReply": 0,
+     "moved": 0,
+     "swapAtReply": false,
+     "typedLive": true,
+     "mark": {
+      "strong": 312,
+      "weak": 468,
+      "median": 8.9
+     },
+     "tapOk": true,
+     "still": true
+    },
+    "de 100": {
+     "whole": true,
+     "toVisible": 0,
+     "goneInReply": true,
+     "hLoading": 0,
+     "hReply": 0,
+     "moved": 0,
+     "swapAtReply": false,
+     "typedLive": true,
+     "mark": {
+      "strong": 312,
+      "weak": 468,
+      "median": 8.9
+     },
+     "tapOk": null,
+     "still": true
+    },
+    "de 200": {
+     "whole": true,
+     "toVisible": 0,
+     "goneInReply": true,
+     "hLoading": 0,
+     "hReply": 34,
+     "moved": 0,
+     "swapAtReply": false,
+     "typedLive": true,
+     "mark": {
+      "strong": 312,
+      "weak": 468,
+      "median": 8.9
+     },
+     "tapOk": null,
+     "still": true
+    }
+   },
+   "overflow": 2
+  },
+  "RI3": {
+   "per": {
+    "en 100": {
+     "whole": true,
+     "toVisible": 0,
+     "goneInReply": true,
+     "hLoading": 0,
+     "hReply": 0,
+     "moved": 0,
+     "swapAtReply": false,
+     "typedLive": true,
+     "mark": {
+      "strong": 68,
+      "weak": 128,
+      "median": 5.8
+     },
+     "tapOk": true,
+     "still": true
+    },
+    "en 200": {
+     "whole": true,
+     "toVisible": 0,
+     "goneInReply": true,
+     "hLoading": 0,
+     "hReply": 0,
+     "moved": 0,
+     "swapAtReply": false,
+     "typedLive": true,
+     "mark": {
+      "strong": 68,
+      "weak": 76,
+      "median": 5.8
+     },
+     "tapOk": true,
+     "still": true
+    },
+    "de 100": {
+     "whole": true,
+     "toVisible": 0,
+     "goneInReply": true,
+     "hLoading": 0,
+     "hReply": 0,
+     "moved": 0,
+     "swapAtReply": false,
+     "typedLive": true,
+     "mark": {
+      "strong": 68,
+      "weak": 76,
+      "median": 5.8
+     },
+     "tapOk": null,
+     "still": true
+    },
+    "de 200": {
+     "whole": true,
+     "toVisible": 0,
+     "goneInReply": true,
+     "hLoading": 0,
+     "hReply": 34,
+     "moved": 0,
+     "swapAtReply": false,
+     "typedLive": true,
+     "mark": {
+      "strong": 68,
+      "weak": 139,
+      "median": 5.8
+     },
+     "tapOk": null,
+     "still": true
+    }
+   },
+   "overflow": 2
+  }
+ }
+}
