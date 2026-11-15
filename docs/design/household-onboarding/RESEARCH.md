@@ -47,7 +47,7 @@ sees before creating an account.
 
 | App | Entry | Before sign-up | Account step | Skips owner's setup | Approval | First screen |
 | --- | --- | --- | --- | --- | --- | --- |
-| Bring! | Invite by email address from the list ("Invite Friends", long press on a list); link sharing documented for templates, not lists | not verified | Account first | not verified | not verified | The invitation shows inside the app after opening [S1] |
+| Bring! (not verified: search summary only) | Invite by email address from the list ("Invite Friends", long press on a list); link sharing documented for templates, not lists | not verified | Account first | not verified | not verified | The invitation shows inside the app after opening [S1] |
 | OurGroceries | Same email address entered on each device; a confirmation email per phone (third-party listing) | n/a | Email is the identity; anonymous without one | n/a (no household object) | Confirmation email click | The shared list [S2, S3] |
 | AnyList | Email invite from the list | Email with an app link | Invitee registers with the same email that got the invite; until then the list is not shared [S4] | n/a | None | Shared list |
 | Splitwise | Add by email or phone, or "Invite via link" in group settings | Not described for new users; the help page assumes logging into an existing account after opening the link [S5] | Account needed | Yes (group exists) | None found | The group, added to the account |

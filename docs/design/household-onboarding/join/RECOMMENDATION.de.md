@@ -1,12 +1,12 @@
 # Einem Haushalt beitreten: Empfehlung (JH1–JH5)
 
-**Empfehlung: JH5, erst der Name, Konto später.** Es sind die wenigsten Tipps in jedem der 12 Szenarien: 2 mit installierter App (Link antippen, Vornamen tippen, Beitreten), 6 ohne, 4 bis 7 mit getipptem Code. Es braucht keinen neuen Dienst (anonyme Supabase-Anmeldungen gehören zu unserem Stack), vom Gerät wird nur die Zwischenablage auf ihren eigenen Einsetzen-Tipp gelesen (wie heute „Einladung einfügen“), und das Warten sagt Ida, was Mia sieht. Der Preis ist eine neue Kontoart: etwa 8 Tage für Gastkonten, späteres Sichern, Missbrauchsgrenzen, Löschung und Export.
+**Empfehlung: JH5, erst der Name, Konto später.** Es sind die wenigsten Tipps bis zur gemeinsamen Liste in der App, in jedem der 12 Szenarien: 2 mit installierter App (Link antippen, Vornamen tippen, Beitreten), 6 ohne, 4 bis 7 mit getipptem Code. Zwei Varianten erreichen ohne App früher eine erste Liste, an einem kleineren Ort: JH2 im Browser und JH4 in einem App Clip (je 4 Tipps). JH5 gewinnt vor allem, weil die Anmeldung zu einer Karte „Zugang sichern“ nach dem Beitritt wandert. Es braucht keinen neuen Dienst (anonyme Supabase-Anmeldungen gehören zu unserem Stack), vom Gerät wird nur die Zwischenablage auf ihren eigenen Einsetzen-Tipp gelesen (wie heute „Einladung einfügen“), und das Warten sagt Ida, was Mia sieht. Der Preis ist eine neue Kontoart: etwa 8 Tage für Gastkonten, späteres Sichern, Missbrauchsgrenzen, Löschung und Export.
 
-**Zweite Wahl: JH3, zwei Türen.** Falls Peter keine Gastkonten will: Eine gleichwertige Tür „Einem Haushalt beitreten“ ersetzt „Einladung einfügen“, die Landeseite nennt Mia und den Haushalt vor jedem Konto, und nichts wird vom Gerät gelesen oder an einen neuen Dienst geschickt, in etwa 4 Tagen. Es kostet Tipps: 5 mit App und 9 ohne (nach der Installation zurück in den Chat ist 1, das Nutzungsdaten-Blatt über der Liste beantworten ist 1), gegenüber 2 und 6 bei JH5.
+**Zweite Wahl: JH3, zwei Türen.** Falls Peter keine Gastkonten will: Eine gleichwertige Tür „Einem Haushalt beitreten“ ersetzt „Einladung einfügen“, die Landeseite nennt Mia und den Haushalt vor jedem Konto, und nichts wird vom Gerät gelesen oder an einen neuen Dienst geschickt, in etwa 4 Tagen. Es kostet Tipps: 5 mit App und 9 ohne (nach der Installation zurück in den Chat ist 1, das Nutzungsdaten-Blatt über der Liste beantworten ist 1), gegenüber 2 und 6 bei JH5; mit Nutzungsdaten als Karte wie bei den anderen wären es 4 und 8.
 
 ## Warum
 
-- Heute erreicht eine eingeladene Person eine Liste nur im Browser (6 Tipps) und die Liste in der App erst nach 14. Jede Variante zeigt Mia und den Haushalt vor dem Konto; die heutige App nicht.
+- Eine eingeladene Person hat die App oft noch nicht (eine Annahme; heute misst das nichts). Heute erreicht sie eine Liste nur im Browser (6 Tipps) und die Liste in der App erst nach 14. Jede Variante zeigt Mia und den Haushalt vor dem Konto; die heutige App nicht.
 - Tipps bis zur gemeinsamen Liste in der App, Link ohne App: JH5 6, JH1 7, JH4 7, JH3 9, JH2 10 (4 bis zur Liste im Browser), Heute 14. Mit App: JH5 2, JH1, JH2 und JH4 4, JH3 und Heute 5.
 - Der Deep-Link-Dienst aus JH1 spart gegenüber JH3 ohne App 2 Tipps, bringt aber einen neuen Auftragsverarbeiter mit US-Mutter und einen Geräte-Abgleich, den Legal N-111 ohne vorherigen Tipp ausschließt; seine Zahlen enthalten diesen Tipp schon. JH5 ist ohne ihn 1 Tipp besser.
 - JH4 (App Clip) liegt bei den Tipps gleichauf mit JH1, ist aber nur iOS, braucht ein zweites iOS-Target mit Flutter im Clip und etwa 15 Tage.
@@ -32,6 +32,8 @@ Fett: Einladungslink, Nicht installiert, Aus; in Klammern der Bereich über alle
 
 - Aus JH3: „Einem Haushalt beitreten“ als sichtbare zweite Tür auf dem Startbildschirm, für alle mit Code und ohne Link.
 - Aus JH2: Die Beitrittsseite behält „Im Browser beitreten“ als Textknopf für alle, die keine App wollen.
+- Ein Code-Einstieg, nicht zwei: Die Tür öffnet denselben Codeschirm wie „Code eintippen“ aus JH5, also behält der Startbildschirm die Tür und die Einsetzen-Karte beim ersten Start und lässt „Code eintippen“ weg.
+- Ohne App brauchen die 6 Tipps von JH5 den App-Store-Knopf der Beitrittsseite, der erst erscheint, wenn die Store-Einträge öffentlich sind (JH-Q2). Bis dahin geht der Weg über „Im Browser beitreten“ oder einen getippten Code.
 
 ## Offene Fragen
 
@@ -44,5 +46,5 @@ Fett: Einladungslink, Nicht installiert, Aus; in Klammern der Bereich über alle
 7. **JH-Q7** Auch für Einladungen für eine Person einen QR-Code zeigen (heute nur Gruppenlinks)? Standard: ja, auf der Einladungskarte.
 8. **JH-Q8** Einen QR-Scanner in „Einem Haushalt beitreten“ einbauen? Standard: nicht in der ersten Version. Die Kamera öffnet den Link schon; der Knopf im Prototyp zeigt, wo er hinkäme.
 9. **JH-Q9** Darf die Landeseite in der App die Angaben der Beitrittsseite (Vorname, Haushalt, Zahlen, Premium) vor der Anmeldung zeigen? Standard: ja, dieselbe Antwort von `preview_invite_public` und nicht mehr. Legal bestätigt, dass N-112 / N-151b die Anzeige in der App abdecken.
-10. **JH-Q10** Gastkonten (anonyme Supabase-Anmeldung) für JH5 bauen? Standard: ja, nur für den Beitritt per Einladung, mit Captcha beim Anlegen und einer Karte „Zugang sichern“, die Apple, Google oder E-Mail verknüpft; ein nie gesichertes Gastkonto fällt unter die normalen Regeln des Haushalts. Falls nein: JH3.
+10. **JH-Q10** Gastkonten (anonyme Supabase-Anmeldung) für JH5 bauen? Standard: ja, nur für den Beitritt per Einladung: Ein Gastkonto entsteht nur zusammen mit einem gültigen Einladungscode (ein Gast kann nichts, bis ein gültiger Code ihn beitreten lässt, und der Beitritt per Code ist schon begrenzt), und Supabase begrenzt anonyme Anmeldungen je IP; kein Captcha, also kein neuer Auftragsverarbeiter. Eine Karte „Zugang sichern“ verknüpft Apple, Google oder E-Mail; ein nie gesichertes Gastkonto fällt unter die normalen Regeln des Haushalts. Falls nein: JH3.
 11. **JH-Q11** Darf „App laden“ auf der Beitrittsseite die Einladung in die Zwischenablage kopieren (JH5)? Standard: ja, nur auf diesen Tipp, mit der Zeile „Der Knopf kopiert deine Einladung“ darunter; die App liest sie nur auf den Einsetzen-Tipp.

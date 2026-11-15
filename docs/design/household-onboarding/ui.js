@@ -138,7 +138,7 @@ export const invitePage = (c, under, { group } = {}) =>
 // The system share sheet; picking WhatsApp opens the chat with the text filled in.
 export const shareSheet = (c, under) =>
   `${under}<div class="scrim"></div><div class="sheet os-sheet share"><div class="os-top"><b>${c.T.os.shareSheetTitle}</b><button class="ibtn" aria-label="Close" ${act(c, 'close')}>${ic('close', 'sm')}</button></div>
-  <div class="apps"><button class="app-ic wa" ${act(c, 'whatsapp')}><i>💬</i><span>WhatsApp</span></button><button class="app-ic msg"><i>✉️</i><span>Messages</span></button><button class="app-ic"><i>📧</i><span>Mail</span></button><button class="app-ic"><i>⋯</i><span>More</span></button></div>
+  <div class="apps"><button class="app-ic wa" ${act(c, 'whatsapp')}><i>💬</i><span>WhatsApp</span></button><button class="app-ic msg"><i>✉️</i><span>${c.lang === 'de' ? 'Nachrichten' : 'Messages'}</span></button><button class="app-ic"><i>📧</i><span>Mail</span></button><button class="app-ic"><i>⋯</i><span>${c.lang === 'de' ? 'Mehr' : 'More'}</span></button></div>
   <div class="os-rows"><div><b>${c.T.os.copy}</b>${ic('content_copy', 'sm')}</div></div></div>`;
 
 // A messenger chat (WhatsApp-like). `from`: who wrote the invite; `mine`: the user is sending it.

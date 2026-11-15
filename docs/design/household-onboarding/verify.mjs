@@ -152,7 +152,8 @@ for (const roundId of ['join', 'create']) {
     await p.waitForSelector('[data-testid="rec"] h2');
     const rec = await p.locator('[data-testid="rec"]').innerText();
     const prefix = roundId === 'join' ? 'JH' : 'CH';
-    const qs = [...rec.matchAll(new RegExp(`${prefix}-Q(\\d+)`, 'g'))].map((x) => Number(x[1]));
+    const qItems = (await p.locator('[data-testid="rec"] ol > li').allInnerTexts()).filter((t) => t.startsWith(`${prefix}-Q`));
+    const qs = qItems.map((t) => Number(t.match(new RegExp(`^${prefix}-Q(\\d+)`))[1]));
     ok(qs.length >= 3 && qs.every((n, i) => n === i + 1), `${roundId} ${lang}: questions not numbered ${prefix}-Q1… in order (${qs})`);
     const items = await p.locator('[data-testid="rec"] ol > li').allInnerTexts();
     const dflt = lang === 'de' ? 'Standard:' : 'Default:';

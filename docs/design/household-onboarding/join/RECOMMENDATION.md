@@ -1,12 +1,12 @@
 # Joining a household: recommendation (JH1–JH5)
 
-**Pick: JH5, name first, account later.** It is the fewest taps in every one of the 12 scenarios: 2 with the app installed (tap the link, type a first name, Join), 6 without it, 4 to 7 with a typed code. It needs no new service (Supabase anonymous sign-ins are part of our stack), nothing is read from the device except the clipboard on her own Paste tap (as “Paste invite” does today), and the wait tells Ida what Mia sees. The cost is a new kind of account: about 8 days for guest accounts, saving them later, abuse limits, deletion and export.
+**Pick: JH5, name first, account later.** It is the fewest taps to the shared list in the app in every one of the 12 scenarios: 2 with the app installed (tap the link, type a first name, Join), 6 without it, 4 to 7 with a typed code. Two options reach a first list sooner without the app, in a smaller place: JH2 in the browser and JH4 in an App Clip (4 taps each). JH5 wins mostly by moving the sign-in to a “Keep your access” card after the join. It needs no new service (Supabase anonymous sign-ins are part of our stack), nothing is read from the device except the clipboard on her own Paste tap (as “Paste invite” does today), and the wait tells Ida what Mia sees. The cost is a new kind of account: about 8 days for guest accounts, saving them later, abuse limits, deletion and export.
 
-**Runner-up: JH3, two doors.** If Peter doesn't want guest accounts: an equal “Join a household” door replaces “Paste invite”, the landing names Mia and the household before any account, and nothing is read from the device or sent to a new service, in about 4 days. It costs taps: 5 with the app and 9 without (going back to the chat after installing is 1, answering the usage-data sheet over the list is 1), against JH5's 2 and 6.
+**Runner-up: JH3, two doors.** If Peter doesn't want guest accounts: an equal “Join a household” door replaces “Paste invite”, the landing names Mia and the household before any account, and nothing is read from the device or sent to a new service, in about 4 days. It costs taps: 5 with the app and 9 without (going back to the chat after installing is 1, answering the usage-data sheet over the list is 1), against JH5's 2 and 6; with usage data as a card, like the other options, it would be 4 and 8.
 
 ## Why
 
-- Today a referred user reaches a list only in the browser (6 taps), and the list in the app only after 14. Every option shows Mia and the household before the account; today's app does not.
+- A referred user often does not have the app yet (an assumption; nothing measures it today). Today such a user reaches a list only in the browser (6 taps), and the list in the app only after 14. Every option shows Mia and the household before the account; today's app does not.
 - Taps to the shared list in the app, link without the app: JH5 6, JH1 7, JH4 7, JH3 9, JH2 10 (4 to the list in the browser), Today 14. With the app: JH5 2, JH1, JH2 and JH4 4, JH3 and Today 5.
 - JH1's deep-link service saves JH3 2 taps without the app but adds a new US-parented processor and device matching that Legal N-111 rules out without a tap first; its numbers already include that tap. JH5 is 1 tap better without it.
 - JH4 (App Clip) matches JH1 on taps but is iOS only, needs a second iOS target with Flutter in the clip, and about 15 days.
@@ -32,6 +32,8 @@ Bold: Invite link, Not installed, Off; in brackets the range over all 12 scenari
 
 - From JH3: “Join a household” as a visible second door on the start screen, for someone who has a code and no link.
 - From JH2: the join page keeps “Join in the browser” as a text button for people who don't want the app.
+- One code entry, not two: the door opens the same code screen as JH5's “Type a code”, so the start screen keeps the door and the first-start Paste card and drops “Type a code”.
+- Without the app, JH5's 6 taps need the join page's App Store button, which shows once the store listings are public (JH-Q2). Until then the path goes through “Join in the browser” or a typed code.
 
 ## Open questions
 
@@ -44,5 +46,5 @@ Bold: Invite link, Not installed, Off; in brackets the range over all 12 scenari
 7. **JH-Q7** Show a QR code for one-person invites too (today only group links have one)? Default: yes, on the invite card.
 8. **JH-Q8** Build a QR scanner into the “Join a household” screen? Default: not in the first version. The phone’s camera opens the link already; the button in the prototype shows where it would go.
 9. **JH-Q9** May the app’s own landing show the join page’s facts (first name, household, counts, Premium) before sign-in? Default: yes, the same `preview_invite_public` answer and nothing more. Legal confirms that N-112 / N-151b cover the in-app copy.
-10. **JH-Q10** Build guest accounts (Supabase anonymous sign-ins) for JH5? Default: yes, only for joining by invite, with a captcha on creation, and a “Keep your access” card that links Apple, Google or email; a guest who never saves is deleted with the household's normal rules. If no, JH3.
+10. **JH-Q10** Build guest accounts (Supabase anonymous sign-ins) for JH5? Default: yes, only for joining by invite: a guest account is made only together with a valid invite code (a guest can do nothing until a valid code joins it, and joining by code is already rate-limited) and Supabase's per-IP limit on anonymous sign-ins applies; no captcha, so no new processor. A “Keep your access” card links Apple, Google or email; a guest who never saves is deleted with the household's normal rules. If no, JH3.
 11. **JH-Q11** May the join page's “Get the app” copy the invite to the clipboard (JH5)? Default: yes, on that tap only, with the line “The button copies your invite” under it; the app reads it only on the user's Paste tap.

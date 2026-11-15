@@ -445,3 +445,4 @@ figcaption .steps { display: flex; flex-wrap: wrap; gap: 4px 10px; }
 table.cmp { font-size: 13px; }
 table.cmp th { font-size: 11px; }
 @media (max-width: 440px) { .phone > .scroll, .phone > .camera, .phone > .home, .phone > .store, .phone > .safari, .phone .chat-compose, .phone .kbd { margin-bottom: 0; } }
+.app-ic span { overflow-wrap: normal; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }

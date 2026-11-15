@@ -758,7 +758,7 @@ jh5.detail = {
   deferred: en('The join page’s store button copies the invite (her tap). In the app, the system Paste button reads it on her tap (no iOS prompt).', 'Der Store-Knopf der Beitrittsseite kopiert die Einladung (ihr Tipp). In der App liest der System-Einsetzen-Knopf sie auf ihren Tipp (keine iOS-Nachfrage).'),
   privacy: en('Medium.', 'Mittel.'),
   leaves: en('Her first name and the code to our server; nothing to a third party. The clipboard is read only on her Paste tap.', 'Ihr Vorname und der Code an unseren Server; nichts an Dritte. Die Zwischenablage nur auf ihren Einsetzen-Tipp.'),
-  build: en('About 8 days: anonymous sign-in, linking it to Apple/Google/email, abuse limits (captcha), the paste card (a native Paste control), the wait.', 'Etwa 8 Tage: anonyme Anmeldung, Verknüpfung mit Apple/Google/E-Mail, Missbrauchsgrenzen (Captcha), die Einsetzen-Karte (ein nativer Knopf), das Warten.'),
+  build: en('About 8 days: anonymous sign-in, linking it to Apple/Google/email, abuse limits (a guest needs a valid code; per-IP limits; no captcha), the paste card (a native Paste control), the wait.', 'Etwa 8 Tage: anonyme Anmeldung, Verknüpfung mit Apple/Google/E-Mail, Missbrauchsgrenzen (ein Gast braucht einen gültigen Code; Grenzen je IP; kein Captcha), die Einsetzen-Karte (ein nativer Knopf), das Warten.'),
   service: en('Supabase anonymous sign-ins (our stack).', 'Anonyme Supabase-Anmeldung (unser Stack).'),
   risks: en('A guest who never saves loses access with the phone. Anonymous accounts need abuse limits. Account deletion and export must cover guests.', 'Wer nie sichert, verliert den Zugang mit dem Handy. Anonyme Konten brauchen Missbrauchsgrenzen. Kontolöschung und Export müssen Gäste abdecken.'),
 };
