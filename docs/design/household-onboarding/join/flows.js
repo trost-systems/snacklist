@@ -128,8 +128,8 @@ today.screens.home = (c) => u.homeScreen(c, { snacklist: c.scen.app === 'install
 
 const joinLabel = (c) => (c.lang === 'de' ? `„${M(c).household}“ beitreten` : `Join “${M(c).household}”`);
 const notYou = (c) => btn(c, c.lang === 'de' ? 'Lieber eine eigene Liste anlegen' : 'Start my own list instead', { kind: 'text' });
-const youreIn = (c, extra = '') =>
-  `<div class="sticker welcome-card"><b>${c.lang === 'de' ? `Du bist in „${M(c).household}“` : `You’re in “${M(c).household}”`}</b><p class="small muted">${c.lang === 'de' ? 'Mia und Noah sehen jetzt, was du hinzufügst.' : 'Mia and Noah now see what you add.'}</p>${extra}</div>`;
+const youreIn = (c) =>
+  u.rowBanner(c, c.lang === 'de' ? `<b>Du bist in „${M(c).household}“.</b> Mia und Noah sehen, was du hinzufügst.` : `<b>You’re in “${M(c).household}”.</b> Mia and Noah see what you add.`, { tone: 'mint' });
 const landingStd = (c, o = {}) =>
   u.landing(c, { actions: `${btn(c, joinLabel(c), { kind: 'primary', by: 'join' })}${o.more ?? ''}${notYou(c)}`, ...o });
 const kindWait = (c, o = {}) =>
@@ -138,7 +138,8 @@ const kindWait = (c, o = {}) =>
   <p class="body center-t">${c.lang === 'de' ? `„${M(c).household}“ bestätigt neue Mitglieder. Mia hat deine Anfrage gerade bekommen.` : `“${M(c).household}” confirms new members. Mia just got your request.`}</p>
   <p class="body center-t muted">${c.lang === 'de' ? 'Die Liste öffnet sich hier von selbst, sobald sie zustimmt.' : 'The list opens right here as soon as she says yes.'}</p>
   ${o.mid ?? ''}<div class="stack">${o.actions ?? ''}${btn(c, c.T.joinRequestWithdraw, { kind: 'text' })}</div></div></div>`;
-const listIn = (c, o = {}) => u.listScreen(c, { top: `${o.welcome === false ? '' : youreIn(c, o.welcomeExtra)}${o.consent ? u.consentCard(c) : ''}${o.more ?? ''}`, snack: o.snack, overlay: o.overlay });
+// The first list: one row on top (“You’re in”, or an offer), the shared items, then usage data under the first category.
+const listIn = (c, o = {}) => u.listScreen(c, { top: `${o.welcome === false ? '' : youreIn(c)}${o.more ?? ''}`, afterFirst: o.consent ? u.consentCard(c) : '', snack: o.snack, overlay: o.overlay });
 const codeScreen = (c, { typed, paste, title, scan } = {}) =>
   `${u.statusBar()}${u.appBar(c, { title: title ?? (c.lang === 'de' ? 'Haushalt beitreten' : 'Join a household'), back: true })}<div class="scroll"><div class="pg">
   <p class="body">${c.lang === 'de' ? 'Gib den Code aus der Einladung ein. Er hat 8 Zeichen, zum Beispiel K7QM-4XPA.' : 'Enter the code from the invite. It has 8 characters, like K7QM-4XPA.'}</p>
@@ -219,7 +220,10 @@ const webJoinJH2 = (c, o = {}) =>
     ...o,
   });
 const getAppCard = (c) =>
-  `<div class="sticker app-card"><b>${c.lang === 'de' ? 'Snacklist als App' : 'Snacklist as an app'}</b><p class="small muted">${c.lang === 'de' ? 'Mit Siri, Widgets und schneller. Melde dich dort mit Apple an, die Liste ist schon da.' : 'With Siri, widgets, and faster. Sign in there with Apple; the list is already there.'}</p>${btn(c, c.T.web.appStore, { kind: 'primary', by: 'get-app', icon: 'download' })}</div>`;
+  u.rowBanner(c, c.lang === 'de' ? '<b>Du bist drin.</b> Die App hat dieselbe Liste.' : '<b>You’re in.</b> The app has the same list.', { action: c.lang === 'de' ? 'App laden' : 'Get the app', by: 'get-app', tone: 'mint', icon: 'check' });
+// The wait keeps the full card: there is no list behind it yet.
+const getAppWait = (c) =>
+  `<div class="sticker app-card"><b>${c.lang === 'de' ? 'Snacklist als App' : 'Snacklist as an app'}</b><p class="small muted">${c.lang === 'de' ? 'Mit Siri, Widgets und schneller. Melde dich dort mit Apple an, die Liste ist schon da.' : 'With Siri, widgets, and faster. Sign in there with Apple; the list is already there.'}</p>${btn(c, c.T.web.appStore, { kind: 'primary', icon: 'download' })}</div>`;
 const jh2 = {
   id: 'JH2',
   name: en('Join in the browser, then get the app', 'Im Browser beitreten, dann die App holen'),
@@ -234,9 +238,9 @@ const jh2 = {
     'web-land': (c) => webJoinJH2(c),
     'web-acct': (c) => accountOver(c, webJoinJH2(c)),
     'web-apple': (c) => appleOver(c, webJoinJH2(c)),
-    'web-wait': (c) => u.webApp(c, kindWait(c, { mid: getAppCard(c) }).replace(u.statusBar(), '')),
-    'web-list': (c) => u.webApp(c, `<div class="web-list">${listIn(c, { consent: true, more: getAppCard(c) }).replace(u.statusBar(), '')}</div>`),
-    'web-list-approved': (c) => u.webApp(c, `<div class="web-list">${listIn(c, { consent: true, more: getAppCard(c), snack: c.T.joinApprovedNotice(M(c).household) }).replace(u.statusBar(), '')}</div>`),
+    'web-wait': (c) => u.webApp(c, kindWait(c, { mid: getAppWait(c) }).replace(u.statusBar(), '')),
+    'web-list': (c) => u.webApp(c, `<div class="web-list">${listIn(c, { consent: true, welcome: false, more: getAppCard(c) }).replace(u.statusBar(), '')}</div>`),
+    'web-list-approved': (c) => u.webApp(c, `<div class="web-list">${listIn(c, { consent: true, welcome: false, more: getAppCard(c), snack: c.T.joinApprovedNotice(M(c).household) }).replace(u.statusBar(), '')}</div>`),
     'start-jh2': (c) => u.startScreen(c, { paste: false }),
     'login-jh2': (c) => u.loginScreen(c, { paste: false }),
     join: (c) => u.joinScreen(c),
@@ -261,7 +265,7 @@ const jh2 = {
     'web-acct': { step: 'account', cap: en('An account in the browser: Apple, Google or email.', 'Ein Konto im Browser: Apple, Google oder E-Mail.') },
     'web-apple': { step: 'account', scr: 'web-acct', cap: en('Sign in with Apple, on the web.', 'Mit Apple anmelden, im Web.') },
     'web-wait': { step: 'wait', cap: en('Approval on: the wait, with the app offered meanwhile.', 'Bestätigung an: das Warten, mit der App als Angebot für die Zeit.') },
-    'web-list': { step: ['list', 'consent'], cap: en('The shared list in the browser: “You’re in”, usage data as a card, “Get the app”.', 'Die gemeinsame Liste im Browser: „Du bist drin“, Nutzungsdaten als Karte, „App laden“.') },
+    'web-list': { step: ['list', 'consent'], cap: en('The shared list in the browser: “You’re in”, usage data under the first category, “Get the app”.', 'Die gemeinsame Liste im Browser: „Du bist drin“, Nutzungsdaten unter der ersten Kategorie, „App laden“.') },
     'web-list-approved': { step: ['list', 'consent'], scr: 'web-list', cap: en('Approved: the list opens in the browser.', 'Bestätigt: Die Liste öffnet sich im Browser.') },
     'start-jh2': { step: 'entry', cap: en('The installed app’s start screen, without “Paste invite”.', 'Der Startbildschirm der App, ohne „Einladung einfügen“.') },
     'login-jh2': { step: 'account', cap: en('Sign in with the account from the browser.', 'Anmelden mit dem Konto aus dem Browser.') },
@@ -271,7 +275,7 @@ const jh2 = {
     acct: { step: 'account', cap: en('Account sheet over the landing.', 'Konto-Blatt über der Landeseite.') },
     apple: { step: 'account', scr: 'acct', cap: en('Sign in with Apple.', 'Mit Apple anmelden.') },
     wait: { step: 'wait', cap: en('Approval on: a kind wait.', 'Bestätigung an: freundliches Warten.') },
-    list: { step: ['list', 'consent'], cap: en('The shared list, usage data as a card.', 'Die gemeinsame Liste, Nutzungsdaten als Karte.') },
+    list: { step: ['list', 'consent'], cap: en('The shared list, usage data under the first category.', 'Die gemeinsame Liste, Nutzungsdaten unter der ersten Kategorie.') },
     'list-approved': { step: ['list', 'consent'], scr: 'list', cap: en('Approved.', 'Bestätigt.') },
     consent: { step: 'consent', cap: en('A code typed by hand goes the long way: account first, usage data, then “Join with an invite”.', 'Ein getippter Code geht den langen Weg: erst Konto, Nutzungsdaten, dann „Einladung annehmen“.') },
     welcome: { step: 'entry', cap: en('“Welcome to Snacklist”: the only place to type a code.', '„Willkommen bei Snacklist“: der einzige Ort, einen Code zu tippen.') },
@@ -383,7 +387,7 @@ const clipFrame = (c, inner) => `<div class="clipbar">${ic('shopping_cart', 'xs'
 const clipLanding = (c) =>
   clipFrame(c, u.landing(c, { actions: `${btn(c, `<span class="apple"></span>${c.lang === 'de' ? `Mit Apple beitreten` : `Join with Apple`}`, { kind: 'primary', by: 'apple' })}${notYou(c)}`, body: c.lang === 'de' ? 'Tritt direkt hier bei. Die App kannst du später laden, die Liste kommt mit.' : 'Join right here. Get the app later; the list comes along.' }).replace(u.statusBar(), u.statusBar()));
 const fullAppCard = (c) =>
-  `<div class="sticker app-card"><b>${c.lang === 'de' ? 'Behalte die Liste auf dem Handy' : 'Keep the list on your phone'}</b><p class="small muted">${c.lang === 'de' ? 'Das App Clip verschwindet nach einiger Zeit. Mit der App bleibt alles, du bist schon angemeldet.' : 'The App Clip goes away after a while. The app keeps everything, and you’re already signed in.'}</p>${btn(c, c.T.os.clipFull, { kind: 'primary', by: 'get-app', icon: 'download' })}</div>`;
+  u.rowBanner(c, c.lang === 'de' ? '<b>Du bist drin.</b> Behalte die Liste in der App.' : '<b>You’re in.</b> Keep the list in the app.', { action: c.T.os.clipFull, by: 'get-app', tone: 'mint', icon: 'check' });
 const jh4 = {
   id: 'JH4',
   name: en('App Clip: join before installing', 'App Clip: beitreten, bevor etwas installiert ist'),
@@ -399,10 +403,10 @@ const jh4 = {
     'clip-landing': (c) => clipLanding(c),
     'clip-apple': (c) => appleOver(c, clipLanding(c)),
     'clip-wait': (c) => clipFrame(c, kindWait(c)),
-    'clip-list': (c) => clipFrame(c, listIn(c, { more: fullAppCard(c) })),
-    'clip-list-approved': (c) => clipFrame(c, listIn(c, { more: fullAppCard(c), snack: c.T.joinApprovedNotice(M(c).household) })),
-    'clip-store': (c) => `${clipFrame(c, listIn(c, { more: fullAppCard(c) }))}<div class="scrim"></div><div class="sheet os-sheet overlay-store"><div class="clip-row"><span class="mark store-mark"><i>${ic('shopping_cart')}</i></span><div class="grow"><b>Snacklist</b><small class="muted">${c.T.os.storeSub}</small></div><button class="os-btn small" ${act(c)}>${c.T.os.storeGet}</button></div></div>`,
-    'clip-store-open': (c) => `${clipFrame(c, listIn(c, { more: fullAppCard(c) }))}<div class="scrim"></div><div class="sheet os-sheet overlay-store"><div class="clip-row"><span class="mark store-mark"><i>${ic('shopping_cart')}</i></span><div class="grow"><b>Snacklist</b><small class="muted">${c.T.os.storeSub}</small></div><button class="os-btn small" ${act(c)}>${c.T.os.storeOpen}</button></div></div>`,
+    'clip-list': (c) => clipFrame(c, listIn(c, { welcome: false, more: fullAppCard(c) })),
+    'clip-list-approved': (c) => clipFrame(c, listIn(c, { welcome: false, more: fullAppCard(c), snack: c.T.joinApprovedNotice(M(c).household) })),
+    'clip-store': (c) => `${clipFrame(c, listIn(c, { welcome: false, more: fullAppCard(c) }))}<div class="scrim"></div><div class="sheet os-sheet overlay-store"><div class="clip-row"><span class="mark store-mark"><i>${ic('shopping_cart')}</i></span><div class="grow"><b>Snacklist</b><small class="muted">${c.T.os.storeSub}</small></div><button class="os-btn small" ${act(c)}>${c.T.os.storeGet}</button></div></div>`,
+    'clip-store-open': (c) => `${clipFrame(c, listIn(c, { welcome: false, more: fullAppCard(c) }))}<div class="scrim"></div><div class="sheet os-sheet overlay-store"><div class="clip-row"><span class="mark store-mark"><i>${ic('shopping_cart')}</i></span><div class="grow"><b>Snacklist</b><small class="muted">${c.T.os.storeSub}</small></div><button class="os-btn small" ${act(c)}>${c.T.os.storeOpen}</button></div></div>`,
     'app-list': (c) => listIn(c, { consent: true, welcome: false }),
     'start-jh4': (c) => u.startScreen(c, { paste: false, extra: btn(c, c.lang === 'de' ? 'Ich habe einen Einladungscode' : 'I have an invite code', { kind: 'text', by: 'code', icon: 'key_outlined' }) }),
     code: (c) => codeScreen(c),
@@ -432,7 +436,7 @@ const jh4 = {
     acct: { step: 'account', cap: en('Account sheet.', 'Konto-Blatt.') },
     apple: { step: 'account', scr: 'acct', cap: en('Sign in with Apple.', 'Mit Apple anmelden.') },
     wait: { step: 'wait', cap: en('Approval on: a kind wait.', 'Bestätigung an: freundliches Warten.') },
-    list: { step: ['list', 'consent'], cap: en('The shared list, usage data as a card.', 'Die gemeinsame Liste, Nutzungsdaten als Karte.') },
+    list: { step: ['list', 'consent'], cap: en('The shared list, usage data under the first category.', 'Die gemeinsame Liste, Nutzungsdaten unter der ersten Kategorie.') },
     'list-approved': { step: ['list', 'consent'], scr: 'list', cap: en('Approved.', 'Bestätigt.') },
   },
   paths: (sc) => {
@@ -470,7 +474,7 @@ const landingJH5 = (c, typedName) =>
     foot: `<p class="small muted center-t">${c.lang === 'de' ? 'Ohne Konto, ohne Passwort. Sichern kannst du es später mit Apple, Google oder E-Mail.' : 'No account, no password. Save it later with Apple, Google or email.'} ${u.legalLine(c)}</p>`,
   }) + (typedName ? '' : u.keyboard(c));
 const saveCard = (c) =>
-  `<div class="sticker app-card"><b>${c.lang === 'de' ? 'Zugang sichern' : 'Keep your access'}</b><p class="small muted">${c.lang === 'de' ? 'Damit die Liste auch auf einem neuen Handy da ist.' : 'So the list is there on a new phone too.'}</p><div class="row2">${btn(c, `<span class="apple"></span>Apple`, { by: 'save' })}${btn(c, 'Google')}</div></div>`;
+  u.rowBanner(c, c.lang === 'de' ? 'Zugang sichern, für ein neues Handy.' : 'Keep your access on a new phone.', { action: c.lang === 'de' ? 'Sichern' : 'Save', by: 'save', tone: 'honey', icon: 'lock_outline' });
 const startJH5 = (c) =>
   u.startScreen(c, {
     paste: false,
@@ -504,19 +508,19 @@ const jh5 = {
     landing: (c) => landingJH5(c, false),
     'landing-named': (c) => landingJH5(c, true),
     wait: (c) => waitJH5(c),
-    list: (c) => listIn(c, { more: `${saveCard(c)}${u.consentCard(c)}` }),
-    'list-approved': (c) => listIn(c, { more: `${saveCard(c)}${u.consentCard(c)}`, snack: c.T.joinApprovedNotice(M(c).household) }),
+    list: (c) => listIn(c, { more: saveCard(c), consent: true }),
+    'list-approved': (c) => listIn(c, { more: saveCard(c), consent: true, snack: c.T.joinApprovedNotice(M(c).household) }),
   },
   meta: {
     ...commonMeta,
     'web-jh5': { step: 'landing', cap: en('Not installed: the join page’s store button also copies the invite (her tap, no prompt).', 'Ohne App: Der Store-Knopf der Beitrittsseite kopiert auch die Einladung (ihr Tipp, keine Nachfrage).') },
-    'start-jh5': { step: 'entry', cap: en('First start: “Coming from an invite?” with the system Paste button (reads the clipboard only on that tap, no iOS prompt).', 'Erster Start: „Kommst du von einer Einladung?“ mit dem System-Einsetzen-Knopf (liest die Zwischenablage nur auf diesen Tipp, ohne iOS-Nachfrage).') },
+    'start-jh5': { step: 'entry', cap: en('First start: “Coming from an invite?” with a Paste button that reads the clipboard only on that tap. Planned as iOS’s UIPasteControl, which skips the “Allow Paste” alert; not verified that Flutter can show it (a platform view). Without it, iOS shows the alert: 1 more tap (JH-Q12).', 'Erster Start: „Kommst du von einer Einladung?“ mit einem Einsetzen-Knopf, der die Zwischenablage nur auf diesen Tipp liest. Geplant als UIPasteControl von iOS, das die Nachfrage „Einsetzen erlauben“ auslässt; nicht geprüft, ob Flutter es zeigen kann (eine Platform View). Ohne es zeigt iOS die Nachfrage: 1 Tipp mehr (JH-Q12).') },
     code: { step: 'entry', cap: en('“Type a code”: the code field.', '„Code eintippen“: das Codefeld.') },
     'code-typed': { step: 'entry', scr: 'code', cap: en('Code typed.', 'Code getippt.') },
     landing: { step: 'landing', cap: en('The invite: Mia, household, counts, and one field, her first name for Mia.', 'Die Einladung: Mia, Haushalt, Zahlen und ein Feld, ihr Vorname für Mia.') },
     'landing-named': { step: ['landing', 'account'], scr: 'landing', cap: en('Name typed. “Join” creates a guest account (no password). Imprint and Privacy under it.', 'Name getippt. „Beitreten“ legt ein Gastkonto an (ohne Passwort). Impressum und Datenschutz darunter.') },
     wait: { step: 'wait', cap: en('Approval on: “Mia will let you in”, what Mia sees, and an offer to notify (asked only on that tap).', 'Bestätigung an: „Mia lässt dich gleich rein“, was Mia sieht, und Bescheid auf Wunsch (nur auf diesen Tipp gefragt).') },
-    list: { step: ['list', 'consent'], cap: en('The shared list. Cards: save the account (Apple, Google), then usage data.', 'Die gemeinsame Liste. Karten: Konto sichern (Apple, Google), dann Nutzungsdaten.') },
+    list: { step: ['list', 'consent'], cap: en('The shared list: “You’re in” and “Keep your access” as one-line rows, the items, usage data under the first category.', 'Die gemeinsame Liste: „Du bist drin“ und „Zugang sichern“ als einzeilige Zeilen, die Einträge, Nutzungsdaten unter der ersten Kategorie.') },
     'list-approved': { step: ['list', 'consent'], scr: 'list', cap: en('Approved: the list opens by itself.', 'Bestätigt: Die Liste öffnet sich von selbst.') },
   },
   paths: (sc) => {
@@ -661,7 +665,7 @@ jh4.facts = ({
   service: en('Apple App Clips', 'Apple App Clips'),
 });
 jh5.facts = ({
-  paste: en('gone; a system Paste button on the first start', 'entfällt; ein System-Einsetzen-Knopf beim ersten Start'),
+  paste: en('gone; a Paste button on the first start (iOS UIPasteControl, unverified in Flutter)', 'entfällt; ein Einsetzen-Knopf beim ersten Start (iOS-UIPasteControl, in Flutter nicht geprüft)'),
   manual: en('“Type a code” in the first start’s invite card', '„Code eintippen“ in der Einladungskarte beim ersten Start'),
   deferred: en('the join page’s store button copies the invite; the app’s Paste button reads it on her tap', 'der Store-Knopf der Beitrittsseite kopiert die Einladung; der Einsetzen-Knopf der App liest sie auf ihren Tipp'),
   firstList: en('app', 'App'),
@@ -755,10 +759,10 @@ jh5.detail = {
   approval: en('On: “Mia will let you in”, what Mia sees, “Tell me when I’m in” (notification prompt only on that tap).', 'An: „Mia lässt dich gleich rein“, was Mia sieht, „Sag mir Bescheid, wenn ich drin bin“ (Mitteilungs-Nachfrage nur auf diesen Tipp).'),
   firstList: en('The list with “You’re in”, “Keep your access” and the usage-data card.', 'Die Liste mit „Du bist drin“, „Zugang sichern“ und der Nutzungsdaten-Karte.'),
   manual: en('“Type a code” in the first start’s invite card.', '„Code eintippen“ in der Einladungskarte beim ersten Start.'),
-  deferred: en('The join page’s store button copies the invite (her tap). In the app, the system Paste button reads it on her tap (no iOS prompt).', 'Der Store-Knopf der Beitrittsseite kopiert die Einladung (ihr Tipp). In der App liest der System-Einsetzen-Knopf sie auf ihren Tipp (keine iOS-Nachfrage).'),
+  deferred: en('The join page’s store button copies the invite (her tap). In the app, the Paste button reads it on her tap. Without iOS’s alert only as a native UIPasteControl (not verified in Flutter; otherwise the alert is 1 more tap, JH-Q12). Android shows a short “pasted” notice, no alert; the web asks for clipboard permission.', 'Der Store-Knopf der Beitrittsseite kopiert die Einladung (ihr Tipp). In der App liest der Einsetzen-Knopf sie auf ihren Tipp. Ohne iOS-Nachfrage nur als natives UIPasteControl (in Flutter nicht geprüft; sonst ist die Nachfrage 1 Tipp mehr, JH-Q12). Android zeigt einen kurzen Hinweis „eingefügt“, keine Nachfrage; das Web fragt nach der Berechtigung für die Zwischenablage.'),
   privacy: en('Medium.', 'Mittel.'),
   leaves: en('Her first name and the code to our server; nothing to a third party. The clipboard is read only on her Paste tap.', 'Ihr Vorname und der Code an unseren Server; nichts an Dritte. Die Zwischenablage nur auf ihren Einsetzen-Tipp.'),
-  build: en('About 10 days: anonymous sign-in with a before-user-created hook that needs a valid invite code, the signed-in functions closed to guests, failed-code limits per network, linking to Apple/Google/email, the paste card (a native Paste control), the wait. No captcha (JH-Q10).', 'Etwa 10 Tage: anonyme Anmeldung mit einem Hook before-user-created, der einen gültigen Einladungscode verlangt, die Funktionen für Angemeldete für Gäste geschlossen, Grenzen für Fehlversuche je Netz, Verknüpfung mit Apple/Google/E-Mail, die Einsetzen-Karte (ein nativer Knopf), das Warten. Kein Captcha (JH-Q10).'),
+  build: en('About 10 days: anonymous sign-in with a before-user-created hook that needs a valid invite code, the signed-in functions closed to guests, failed-code limits per network, linking to Apple/Google/email, the paste card as a native UIPasteControl in a platform view (not verified in Flutter, JH-Q12), the wait. No captcha (JH-Q10).', 'Etwa 10 Tage: anonyme Anmeldung mit einem Hook before-user-created, der einen gültigen Einladungscode verlangt, die Funktionen für Angemeldete für Gäste geschlossen, Grenzen für Fehlversuche je Netz, Verknüpfung mit Apple/Google/E-Mail, die Einsetzen-Karte als natives UIPasteControl in einer Platform View (in Flutter nicht geprüft, JH-Q12), das Warten. Kein Captcha (JH-Q10).'),
   service: en('Supabase anonymous sign-ins (our stack).', 'Anonyme Supabase-Anmeldung (unser Stack).'),
   risks: en('A guest who never saves loses access with the phone. Guests need the three measures in JH-Q10 (code check at sign-up, signed-in functions closed, per-network limits). Account deletion and export must cover guests. Not verified: that the before-user-created hook runs for anonymous sign-ins on our plan.', 'Wer nie sichert, verliert den Zugang mit dem Handy. Gäste brauchen die drei Maßnahmen aus JH-Q10 (Code-Prüfung bei der Anmeldung, Funktionen für Angemeldete geschlossen, Grenzen je Netz). Kontolöschung und Export müssen Gäste abdecken. Nicht geprüft: dass der Hook before-user-created auf unserem Tarif auch bei anonymer Anmeldung läuft.'),
 };

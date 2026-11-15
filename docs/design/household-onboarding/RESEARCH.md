@@ -47,7 +47,7 @@ sees before creating an account.
 
 | App | Entry | Before sign-up | Account step | Skips owner's setup | Approval | First screen |
 | --- | --- | --- | --- | --- | --- | --- |
-| Bring! (not verified: search summary only) | Invite by email address from the list ("Invite Friends", long press on a list); link sharing documented for templates, not lists | not verified | Account first | not verified | not verified | The invitation shows inside the app after opening [S1] |
+| Bring! | Invite by email address (verified: Bring!'s help page says the invite goes to the email address the other person uses with Bring!, and works only in the app) from the list ("Invite Friends", long press on a list); link sharing documented for templates, not lists | not verified | Account first | not verified | not verified | The invitation shows inside the app after opening [S1] |
 | OurGroceries | Same email address entered on each device; a confirmation email per phone (third-party listing) | n/a | Email is the identity; anonymous without one | n/a (no household object) | Confirmation email click | The shared list [S2, S3] |
 | AnyList | Email invite from the list | Email with an app link | Invitee registers with the same email that got the invite; until then the list is not shared [S4] | n/a | None | Shared list |
 | Splitwise | Add by email or phone, or "Invite via link" in group settings | Not described for new users; the help page assumes logging into an existing account after opening the link [S5] | Account needed | Yes (group exists) | None found | The group, added to the account |
@@ -358,7 +358,7 @@ fallbacks above (re-open the link, typed code, web join) make it a small loss, b
 
 ## Sources (all fetched 2026-11-15)
 
-- S1 https://www.getbring.com/help-center-main-categories/items-lists (search summary only; the page was not opened) fetched 2026-11-15
+- S1 https://www.getbring.com/help-center-main-categories/items-lists fetched 2026-11-15 (page read)
 - S2 https://www.ourgroceries.com/user-guide fetched 2026-11-15 (via earlier research file and search)
 - S3 https://alternativeto.net/software/ourgroceries/about (search snippet) fetched 2026-11-15
 - S4 https://help.anylist.com/articles/share-list/ fetched 2026-11-15

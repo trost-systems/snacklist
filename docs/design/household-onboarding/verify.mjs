@@ -194,6 +194,46 @@ for (const roundId of ['join', 'create']) {
                 .map((el) => `${ph.dataset.state}: ${el.className || el.tagName} “${el.innerText.slice(0, 30)}”`),
             ),
           );
+          // The first list must show the shared list: whole item rows between the list's top and the add bar.
+          const firstLists = await shot.$$eval('.story figure', (figs) =>
+            figs
+              .filter((f) => f.querySelector('.goal-badge') && f.querySelector('.phone .bottom'))
+              .map((f) => {
+                const ph = f.querySelector('.phone');
+                const sc = ph.querySelector('.bottom').parentElement.querySelector(':scope > .scroll') ?? ph.querySelector('.scroll');
+                const top = sc.getBoundingClientRect().top, bandTop = ph.querySelector('.bottom').getBoundingClientRect().top;
+                const covered = !!ph.querySelector('.scrim');
+                const n = [...sc.querySelectorAll('.item')].filter((it) => {
+                  const r = it.getBoundingClientRect();
+                  return r.top >= top - 1 && r.bottom <= bandTop + 1;
+                }).length;
+                return { s: ph.dataset.state, n, covered };
+              }),
+          );
+          if (roundId === 'join')
+            for (const fl of firstLists.filter((x) => !x.covered)) {
+              const need = ts === '100' ? 3 : 1;
+              ok(fl.n >= need, `${roundId} ${o.id} ${lang} ${theme} ${ts}%: first list ${fl.s} shows ${fl.n} shared items above the add bar, needs ${need}`);
+            }
+          // No control of the list may sit under the add bar or the tabs (it couldn't be tapped there).
+          const hidden = await shot.$$eval('.story .phone', (phones) =>
+            phones.flatMap((ph) => {
+              const band = ph.querySelector(':scope > .bottom, .web-list > .bottom');
+              if (!band || ph.querySelector('.scrim')) return [];
+              const b = band.getBoundingClientRect();
+              const sc = band.parentElement.querySelector(':scope > .scroll');
+              if (!sc) return [];
+              const sr = sc.getBoundingClientRect();
+              return [...sc.querySelectorAll('button, a, .tact')]
+                .filter((el) => {
+                  const r = el.getBoundingClientRect();
+                  // Only the part of the list the bar actually covers: a control clipped at the list's edge is just scrolled out.
+                  return r.height && sr.bottom > b.top + 1 && r.bottom > b.top + 1 && r.top < Math.min(b.bottom, sr.bottom);
+                })
+                .map((el) => `${ph.dataset.state}: “${el.textContent.trim().slice(0, 24)}”`);
+            }),
+          );
+          ok(!hidden.length, `${roundId} ${o.id} ${lang} ${theme} ${ts}%: control under the add bar: ${hidden.slice(0, 3).join('; ')}`);
           const underBar = await shot.$$eval('.story .phone', (phones) =>
             phones.flatMap((ph) => {
               const bar = ph.querySelector('.homeind i')?.getBoundingClientRect();

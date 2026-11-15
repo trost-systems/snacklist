@@ -32,7 +32,7 @@ CH1 and the join pick share one start screen: “Get started” (CH1’s three s
 
 ## Open questions
 
-1. **CH-Q1** Drop the usage step, the stores step and “What do you need right now?” from the guided start? Default: yes. Stores and first items become First steps rows; usage data is a card on the list with two equal buttons.
+1. **CH-Q1** Drop the usage step, the stores step and “What do you need right now?” from the guided start? Default: yes. Stores and first items become First steps rows; usage data is a short card on the list with two equal buttons (new short copy for Legal, as in JH-Q5).
 2. **CH-Q2** Make the invite as soon as the invite step opens (CH1), instead of on a tap? Default: yes. An unused invite expires after 7 days like today; the step’s “Later” leaves it unused.
 3. **CH-Q3** Put the two doors (“Get started”, “Join a household”) on the start screen with CH1? Default: yes, the same door as JH3.
 4. **CH-Q4** Keep “Skip” on the who step? Default: yes; the invite text falls back to today’s generic one.

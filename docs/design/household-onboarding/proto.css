@@ -446,3 +446,18 @@ table.cmp { font-size: 13px; }
 table.cmp th { font-size: 11px; }
 @media (max-width: 440px) { .phone > .scroll, .phone > .camera, .phone > .home, .phone > .store, .phone > .safari, .phone .chat-compose, .phone .kbd { margin-bottom: 0; } }
 .app-ic span { overflow-wrap: normal; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+
+/* External review 0: the first list shows the shared items. One-line rows on top, usage data under the first category. */
+.row-banner { display: flex; align-items: center; gap: 10px; margin: 2px 14px 6px; padding: 6px 8px 6px 12px; min-height: 44px; border: 2px solid var(--hl-color-edge); border-radius: 14px; font-size: calc(13.5px * var(--ts, 1)); line-height: 1.3; background: var(--hl-color-surface-raised); }
+.row-banner.mint { background: var(--hl-color-mint-soft); }
+.row-banner.honey { background: var(--hl-color-honey-soft); }
+.row-banner .tact { --h: 40px; }
+.row-banner .tact > span { font-size: calc(13.5px * var(--ts, 1)); padding-left: 14px; padding-right: 14px; }
+.consent-mini { margin: 6px 14px 8px; padding: 10px 12px; border: 2px solid var(--hl-color-edge); border-radius: 16px; background: var(--hl-color-surface-raised); display: grid; gap: 6px; grid-auto-rows: max-content; }
+.consent-mini .cm-q { display: flex; gap: 8px; align-items: center; font-size: calc(14.5px * var(--ts, 1)); }
+.consent-mini .tact { --h: 40px; }
+.consent-mini .tact > span { font-size: calc(14px * var(--ts, 1)); }
+/* The list ends at the add bar: nothing of it sits under the bar (in the app it scrolls up from behind it). */
+.phone .bottom, .web-list .bottom { position: relative; flex: none; background: var(--hl-color-surface); }
+.phone > .scroll.list-scroll, .web-list > .scroll.list-scroll, .scroll.list-scroll { margin-bottom: 0; }
+.list-scroll > .endpad { height: 16px; }

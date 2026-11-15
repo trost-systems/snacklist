@@ -79,11 +79,12 @@ const tabs = (c) => `<div class="nav"><div class="pill-wrap"><nav class="pill-na
 export const listScreen = (c, o = {}) => {
   const hh = o.household ?? M(c).household;
   const cats = o.items === 'own' ? [[c.lang === 'de' ? 'Ohne Kategorie' : 'Uncategorized', ownItems[c.lang]]] : o.items === 'none' ? [] : list[c.lang];
+  // `o.afterFirst` sits under the first category, so the shared items lead and a card never hides them.
   const rows = cats
-    .map(([cat, items]) => `<div class="cat"><span>${cat}</span><i></i></div>${items.map(([e, n, qty]) => `<div class="item"><span class="emoji">${e}</span><span class="iname">${qty ? `<span class="qty">${qty}</span> ` : ''}${esc(n)}</span></div>`).join('')}`)
+    .map(([cat, items], i) => `<div class="cat"><span>${cat}</span><i></i></div>${items.map(([e, n, qty]) => `<div class="item"><span class="emoji">${e}</span><span class="iname">${qty ? `<span class="qty">${qty}</span> ` : ''}${esc(n)}</span></div>`).join('')}${i === 0 ? (o.afterFirst ?? '') : ''}`)
     .join('');
   return `${statusBar()}<div class="hdr"><button class="tact switch" ${act(c, 'switcher')}><span><span class="sw-txt"><small>${esc(hh)}</small><b>${c.T.listName}</b></span>${ic('unfold_more', 'sm')}</span></button><span class="grow"></span>${o.headerExtra ?? ''}<button class="tact"><span>${c.T.listEdit}</span></button></div>
-  <div class="scroll">${o.top ?? ''}${rows || `<p class="body muted pad">${c.lang === 'de' ? 'Die Liste ist leer. Tippe unten ein, was fehlt.' : 'Your list is empty. Type what you need below.'}</p>`}<div class="endpad"></div></div>
+  <div class="scroll list-scroll">${o.top ?? ''}${rows || `<p class="body muted pad">${c.lang === 'de' ? 'Die Liste ist leer. Tippe unten ein, was fehlt.' : 'Your list is empty. Type what you need below.'}</p>`}<div class="endpad"></div></div>
   ${o.snack ? `<div class="snack"><span class="grow">${o.snack}</span></div>` : ''}
   <div class="bottom"><div class="addbar"><div class="addfield"><span class="in">${c.T.addFieldHint}</span>${ic('mic')}</div></div>${tabs(c)}</div>${o.overlay ?? ''}`;
 };
@@ -95,9 +96,13 @@ export const firstSteps = (c, { joined, invite } = {}) =>
   ${invite ? `<div class="fs-row"><span class="phex xs"></span><span class="grow"><b>${c.T.checklistInviteFamily}</b><small class="muted">${c.T.checklistInviteBody}</small></span>${btn(c, c.T.hintInviteAction, { by: 'fs-invite', wide: false })}</div>` : ''}
   <div class="fs-row"><span class="phex xs"></span><span class="grow"><b>${c.T.checklistShop}</b><small class="muted">${c.T.listHint}</small></span></div></div>`;
 
-// A card on the list (new place, today's words): analytics asked after the join, equal buttons, never in front of the list.
+// Usage data on the list (new place, new short form): the question, one line and two equal buttons; “What is sent”
+// opens today's full text (analyticsConsentBody). The short form is new copy for Legal and a new consent version (JH-Q5).
 export const consentCard = (c) =>
-  `<div class="sticker consent-card" data-consent-card><b>${c.T.analyticsConsentTitle}</b><p class="small">${esc(c.T.analyticsConsentBody)} <a>${c.T.analyticsConsentPrivacyLink}</a>.</p><div class="row2">${btn(c, c.T.analyticsDecline, { by: 'decline' })}${btn(c, c.T.analyticsAccept, { by: 'accept' })}</div></div>`;
+  `<div class="consent-mini" data-consent-card><div class="cm-q">${ic('query_stats_outlined', 'sm brandc')}<b>${c.T.analyticsConsentTitle}</b></div><p class="small muted">${c.lang === 'de' ? 'Pseudonym an PostHog (EU), nie Listeninhalte oder Namen.' : 'Pseudonymous, to PostHog (EU); never list contents or names.'} <a>${c.lang === 'de' ? 'Was gesendet wird' : 'What is sent'}</a></p><div class="row2">${btn(c, c.T.analyticsDecline, { by: 'decline' })}${btn(c, c.T.analyticsAccept, { by: 'accept' })}</div></div>`;
+// A one-line row on the list: text and at most one small action.
+export const rowBanner = (c, text, { action, by, tone = '', icon = 'check' } = {}) =>
+  `<div class="row-banner ${tone}">${ic(icon, 'sm')}<span class="grow">${text}</span>${action ? btn(c, action, { by, wide: false }) : ''}</div>`;
 
 // The switcher sheet's household page and its invite page (job 242: invite is a page inside the sheet).
 export const switcherSheet = (c, under) =>

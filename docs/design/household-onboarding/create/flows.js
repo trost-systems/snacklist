@@ -161,7 +161,7 @@ const ch1 = {
     setup: { step: 'setup', cap: en('Setting up.', 'Einrichten.') },
     invite: { step: 'invite', cap: en('Step 4: the invite is already made: code, link, Share, “Show QR code”.', 'Schritt 4: Die Einladung ist schon da: Code, Link, Teilen, „QR-Code zeigen“.') },
     'invite-qr': { step: 'shared', cap: en('The QR, big enough for a camera across the table.', 'Der QR, groß genug für eine Kamera über den Tisch.') },
-    list: { step: ['list', 'consent'], cap: en('The list: First steps (stores, first items) and usage data as a card.', 'Die Liste: Erste Schritte (Läden, erste Artikel) und Nutzungsdaten als Karte.') },
+    list: { step: ['list', 'consent'], cap: en('The list: First steps (stores, first items) and usage data as a short card.', 'Die Liste: Erste Schritte (Läden, erste Artikel) und Nutzungsdaten als kurze Karte.') },
   }),
   paths: (sc) => {
     const toInvite = [st('start', 'start'), st('who', 'tap', 'go'), st('name', 'tap', 'skip'), st('account'), st('apple', 'tap', 'apple'), st('setup'), auto('invite', setupDone)];
@@ -200,7 +200,7 @@ const ch2 = {
     account: { step: 'account', cap: en('The account first: “Your list is ready right after.”', 'Zuerst das Konto: „Danach ist deine Liste sofort da.“') },
     apple: { step: 'account', scr: 'account', cap: en('Sign in with Apple.', 'Mit Apple anmelden.') },
     setup: { step: 'setup', cap: en('Setting up “Our household”.', '„Unser Haushalt“ wird eingerichtet.') },
-    list: { step: ['list', 'consent'], cap: en('The list with First steps: “Invite your family” first. Usage data as a card.', 'Die Liste mit Erste Schritte: zuerst „Familie einladen“. Nutzungsdaten als Karte.') },
+    list: { step: ['list', 'consent'], cap: en('The list with First steps: “Invite your family” first. Usage data as a short card.', 'Die Liste mit Erste Schritte: zuerst „Familie einladen“. Nutzungsdaten als kurze Karte.') },
     'invite-page': { step: 'invite', cap: en('The invite page in the switcher sheet (job 242).', 'Die Einladungsseite im Umschalter-Blatt (Job 242).') },
     'invite-qr': { step: 'shared', cap: en('Group link: the QR to show.', 'Gruppenlink: der QR zum Zeigen.') },
     card: { step: 'invite', scr: 'invite-page', cap: en('The new invite’s card.', 'Die Karte der neuen Einladung.') },
@@ -294,7 +294,7 @@ const ch4 = {
     setup: { step: 'setup', cap: en('Setting up “Our family”.', '„Unsere Familie“ wird eingerichtet.') },
     invite: { step: 'invite', cap: en('Step 3: the QR is on screen at once, with Share and Copy code.', 'Schritt 3: Der QR ist sofort zu sehen, mit Teilen und Code kopieren.') },
     'invite-qr': { step: 'shared', cap: en('The QR, big, for a camera across the table.', 'Der QR, groß, für eine Kamera über den Tisch.') },
-    list: { step: ['list', 'consent'], cap: en('The list: First steps and usage data as a card.', 'Die Liste: Erste Schritte und Nutzungsdaten als Karte.') },
+    list: { step: ['list', 'consent'], cap: en('The list: First steps and usage data as a short card.', 'Die Liste: Erste Schritte und Nutzungsdaten als kurze Karte.') },
   }),
   paths: (sc) => {
     const toInvite = [st('start', 'start'), st('who', 'tap', 'go'), st('who-picked', 'tap', 'chip'), st('account'), st('apple', 'tap', 'apple'), st('setup'), auto('invite', setupDone)];
@@ -344,7 +344,7 @@ const ch5 = {
     setup: { step: 'setup', cap: en('Setting up.', 'Einrichten.') },
     invite: { step: 'invite', cap: en('Step 5: today’s invite step.', 'Schritt 5: der heutige Einladungsschritt.') },
     card: { step: 'invite', scr: 'invite', cap: en('The invite card.', 'Die Einladungskarte.') },
-    list: { step: ['list', 'consent'], cap: en('The list, usage data as a card.', 'Die Liste, Nutzungsdaten als Karte.') },
+    list: { step: ['list', 'consent'], cap: en('The list, usage data as a short card.', 'Die Liste, Nutzungsdaten als kurze Karte.') },
     switcher: { step: 'invite', cap: en('Later: the switcher sheet.', 'Später: das Umschalter-Blatt.') },
     'invite-page': { step: 'invite', cap: en('The invite page (job 242).', 'Die Einladungsseite (Job 242).') },
     'invite-qr': { step: 'shared', cap: en('Group link: the QR.', 'Gruppenlink: der QR.') },

@@ -32,7 +32,7 @@ CH1 und die Beitritts-Empfehlung teilen einen Startbildschirm: „Los geht’s�
 
 ## Offene Fragen
 
-1. **CH-Q1** Nutzungsschritt, Läden und „Was fehlt gerade?“ aus dem geführten Start streichen? Standard: ja. Läden und erste Artikel werden Zeilen in Erste Schritte; Nutzungsdaten sind eine Karte auf der Liste mit zwei gleichen Knöpfen.
+1. **CH-Q1** Nutzungsschritt, Läden und „Was fehlt gerade?“ aus dem geführten Start streichen? Standard: ja. Läden und erste Artikel werden Zeilen in Erste Schritte; Nutzungsdaten sind eine kurze Karte auf der Liste mit zwei gleichen Knöpfen (neuer kurzer Text für Legal, wie JH-Q5).
 2. **CH-Q2** Die Einladung schon beim Öffnen des Einladungsschritts erstellen (CH1) statt auf einen Tipp? Standard: ja. Eine ungenutzte Einladung läuft wie heute nach 7 Tagen ab; „Später“ lässt sie ungenutzt.
 3. **CH-Q3** Mit CH1 die zwei Türen („Los geht’s“, „Einem Haushalt beitreten“) auf den Startbildschirm? Standard: ja, dieselbe Tür wie in JH3.
 4. **CH-Q4** „Überspringen“ bei „Mit wem“ behalten? Standard: ja; der Einladungstext fällt auf den heutigen allgemeinen zurück.
