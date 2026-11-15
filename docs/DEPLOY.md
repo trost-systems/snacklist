@@ -13,7 +13,10 @@ Every push to `main` that touches `supabase/**`,
 (`.github/workflows/supabase-deploy.yml`):
 
 1. Migrations, through the Management API (`supabase/deploy/migrate.ts`).
-2. Edge functions, bundled by Supabase (`supabase functions deploy --use-api`).
+2. Edge functions, bundled by Supabase (`supabase functions deploy --use-api`). It deploys
+   every directory under `supabase/functions/` except `_shared`, so a new function needs no list
+   entry, only its `[functions.<name>]` section in `supabase/config.toml` (the shared import map,
+   checked by `supabase/deploy/config_test.ts`, and `verify_jwt`).
 3. Smoke test, `scripts/smoke-remote.sh` (see below). The step retries
    for about half a minute while the new version rolls out, then fails the run.
 
@@ -313,6 +316,10 @@ that failed, or comments on it if it is already open. The
 next green run closes it. GitHub mails a scheduled run's failure only to
 whoever last edited its cron line (the bot account), so the issue is the
 signal for Peter: watch the repository's issues.
+
+A second step posts to `feedback-screenshots/sweep`, which removes the screenshots of deleted
+feedback notes and uploads that never got a note (`docs/FEEDBACK.md`, "Screenshots"). It needs
+no secret. The step fails on anything but 200 with `{"removed": n}`, and the issue names it.
 
 GitHub disables scheduled workflows in a public repository after 60 days
 without repository activity, and never turns them back on by itself.

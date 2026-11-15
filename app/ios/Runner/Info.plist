@@ -91,6 +91,8 @@
 	</array>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Snacklist braucht das Mikrofon, damit du Einträge diktieren kannst.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>Schüttle das Handy, um ein Problem mit dem Bildschirm zu melden, auf dem du gerade bist.</string>
 	<key>NSSiriUsageDescription</key>
 	<string>Mit Siri setzt du Einträge auf deine Snacklist und lässt sie dir vorlesen.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>

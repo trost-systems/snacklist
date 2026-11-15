@@ -11,3 +11,5 @@
 /* The permission prompts for dictation in the add field. */
 "NSMicrophoneUsageDescription" = "Snacklist needs the microphone so you can dictate items.";
 "NSSpeechRecognitionUsageDescription" = "Snacklist turns your speech into text so you can dictate items.";
+/* Job 267: sensors_plus links CoreMotion; reading the accelerometer for the shake shows no prompt. */
+"NSMotionUsageDescription" = "Shake your phone to report a problem with the screen you are on.";

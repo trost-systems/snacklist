@@ -13,7 +13,9 @@ import 'package:family_groceries/app/theme.dart';
 import 'package:family_groceries/feedback/feedback_context.dart';
 import 'package:family_groceries/feedback/feedback_cubit.dart';
 import 'package:family_groceries/feedback/feedback_repository.dart';
+import 'package:family_groceries/feedback/screen_capture.dart';
 import 'package:family_groceries/feedback/screen_tracker.dart';
+import 'package:family_groceries/feedback/shake.dart';
 import 'package:family_groceries/home_widget/home_widget_sync.dart';
 import 'package:family_groceries/home_widget/widget_launch.dart';
 import 'package:family_groceries/household/invite_repository.dart';
@@ -152,6 +154,8 @@ class _AppState() extends State<App> {
   final _light = appTheme(Brightness.light);
   final _dark = appTheme(Brightness.dark);
   final _screens = ScreenTracker();
+  final _capture = ScreenCapture();
+  late final _shake = ShakeSetting(widget.cache);
   late final _feedback = FeedbackCubit(
     widget.feedback,
     analytics: widget.analytics,
@@ -231,6 +235,7 @@ class _AppState() extends State<App> {
     final configuration = _router.routerDelegate.currentConfiguration;
     if (configuration.isNotEmpty) {
       _screens.visit(configuration.uri);
+      _capture.visit(configuration.uri);
     }
   }
 
@@ -252,6 +257,8 @@ class _AppState() extends State<App> {
     _listLinks.dispose();
     unawaited(_language.close());
     unawaited(_feedback.close());
+    unawaited(_shake.close());
+    _capture.dispose();
     unawaited(_theme.close());
     unawaited(_integrationLock.close());
     if (widget.itemIcons == null) {
@@ -274,6 +281,7 @@ class _AppState() extends State<App> {
       ),
       RepositoryProvider.value(value: widget.account),
       RepositoryProvider.value(value: _screens),
+      RepositoryProvider.value(value: _capture),
       RepositoryProvider.value(value: _device),
       RepositoryProvider.value(value: widget.invites),
       RepositoryProvider.value(value: widget.pendingInvite),
@@ -299,6 +307,7 @@ class _AppState() extends State<App> {
         BlocProvider.value(value: widget.analytics.flags),
         BlocProvider.value(value: _language),
         BlocProvider.value(value: _feedback),
+        BlocProvider.value(value: _shake),
         BlocProvider.value(value: _theme),
         BlocProvider.value(value: _integrationLock),
         BlocProvider.value(value: _itemIcons),
@@ -320,18 +329,21 @@ class _AppState() extends State<App> {
           routerConfig: _router,
           builder: (context, child) {
             setDocumentLanguage(Localizations.localeOf(context).languageCode);
-            return NoticesHost(
-              popups: _popups,
-              child: RemovedNotices(
-                router: _router,
-                child: JoinDecisionNotices(
+            // What a feedback screenshot shows: the app, popups included.
+            return _capture.wrap(
+              NoticesHost(
+                popups: _popups,
+                child: RemovedNotices(
                   router: _router,
-                  child: BlocBuilder<SessionCubit, Session>(
-                    builder: (context, session) => session is SessionLoading
-                        ? const Scaffold(
-                            body: Center(child: CircularProgressIndicator()),
-                          )
-                        : child!,
+                  child: JoinDecisionNotices(
+                    router: _router,
+                    child: BlocBuilder<SessionCubit, Session>(
+                      builder: (context, session) => session is SessionLoading
+                          ? const Scaffold(
+                              body: Center(child: CircularProgressIndicator()),
+                            )
+                          : child!,
+                    ),
                   ),
                 ),
               ),

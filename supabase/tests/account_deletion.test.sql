@@ -363,7 +363,7 @@ select is(
     'feedback', jsonb_build_array(jsonb_build_object('created_at', now(), 'message', 'Bitte dunkles Design',
       'category', 'idea', 'contact_ok', true, 'screen', 'list', 'platform', 'ios', 'app_version', '0.1.0',
       'build', '7', 'os_version', 'iOS 18.1', 'locale', 'de', 'household_id', (select id from he),
-      'is_internal', true)),
+      'is_internal', true, 'screenshot', null)),
     'connected_apps', jsonb_build_array(jsonb_build_object('client_name', 'Claude', 'scopes', 'openid email',
       'granted_at', now(), 'revoked_at', null, 'device', null)),
     'analytics_decisions', '[]'::jsonb,

@@ -14408,3 +14408,80 @@ PM calls: Play voice caption „Per Sprachbefehl auf die Liste.“, assist headl
   so a release condition on them, or a negative one such as `is_internal` is not `true`, would
   reach installs without consent by property, which §18 L2 forbids. `docs/ANALYTICS.md` states
   the rule: for them only an unconditional 0 % or 100 % condition.
+
+## Job 267: FB2, shake and menu with an annotated screenshot, behind `feedback-fb2` (2026-11-15)
+
+Peter's calls on job 260's feedback round (t958u, 15 Nov 2026) plus the lead's two addenda (15:05,
+15:06). This replaces shake-to-feedback PR #281 (SH2). Overview: [FEEDBACK.md](FEEDBACK.md),
+"Screenshots".
+
+1. **The annotator stands on the `feedback` package, 3.2.0, pinned, but draws every mark itself.**
+   First choice was `visual_feedback` 0.0.1 (it has rectangle and text tools). A probe showed it fit,
+   apart from needing Flutter's in-framework MaterialLocalizations. The lead's addendum 1 ruled it out
+   as a supply-chain risk (0.0.1, unverified uploader, about 400 downloads). `feedback` has freehand
+   only, and in practice its freehand could not be kept. Its control column (close, a
+   "navigate"/"draw" toggle, undo, clear, colour) cannot be switched off. In its navigate mode it
+   removes the pen layer, so a user who tapped "Ansehen" and then "Fertig" sent a picture without
+   their pen marks (a test reproduced it). It also showed a second undo next to ours. So
+   `BetterFeedback` now gives the framing, the shrink animation and the PNG capture. Pen, rectangle
+   and text are one list of marks, painted by our own layer inside its captured area, with one undo,
+   and its column is covered and takes no taps. This is not a package switch and needs no package
+   internals. Its source makes no network calls, and its `dart:js` import sits behind a
+   `dart.library.html` conditional, so the `--wasm` build compiles. Its own text field, sending and
+   localizations are not used. Since the package now adds little, dropping it for our own
+   RepaintBoundary capture would be a small follow-up (NEEDS_LEAD).
+2. **The shake sheet is a bottom sheet with two answers**, "Mit Bildschirmfoto" and "Ohne
+   Bildschirmfoto", and closes with its X or a tap outside (addendum 2, Peter t960u). An accidental
+   shake in the shop costs one tap. A line under the buttons says where to switch shaking off.
+3. **Shake** reuses #281's detector and quiet rules: three swings over 2.7 g within 800 ms, then a
+   1.5 s pause. It only listens on iOS and Android, only inside the signed-in shell (never sign-in or
+   onboarding), and never while a dialog or sheet is open (the annotator is a popup too). It sends no
+   haptic, and the sensor is released while the app is in the background. Settings → "Schütteln für
+   Feedback" turns it off (DeviceCache, on by default). None of #281's extra context fields ship
+   (theme, orientation, text scale, online, entitlement, device model), and none of its legal-page
+   edits.
+4. **The screenshot is the live screen at the moment of the shake**: one RepaintBoundary around the
+   app, read after the current frame, at most 1.5x and 1400 px on the long side so the PNG stays
+   under the bucket's 2 MiB. From More, the shell takes the same picture when the More tab is
+   tapped (flag on only) and drops it when the user leaves More. A tap on the More tab therefore
+   waits one frame before switching. Reaching More any other way offers no "Bildschirmfoto
+   hinzufügen". The picture stays in memory only, and nothing is uploaded unless the user sends with
+   the switch on.
+5. **Attachments belong to the opening, the text to the draft.** Every opening sets the screen name
+   (shake only) and the screenshot. The typed note survives closing the form, as before. The form lists
+   version, device and language as fixed, then the switches "Bildschirmname" (shake only, with the
+   raw name that is sent, such as `list`) and "Bildschirmfoto", with a preview of the exact PNG and the
+   line that it shows whatever was on screen, list entries included. Nothing is blacked out
+   automatically (Peter: the prototype's redaction renderer is brittle).
+6. **Storage: a private bucket `feedback-screenshots`** in the project (Frankfurt), PNG only, 2 MiB.
+   The object name is `<user id>/<note id>.png`, and `feedback.screenshot` names it, checked against
+   the row's own ids. Clients may only insert into their own folder: at most 10 a day each, and none while the bucket holds 250 pictures (about 500 MiB, half the free plan). A re-upload of a name that exists always passes the quota and gets the duplicate answer, so a retry keeps working. They may not select,
+   list, sign, update, upsert or delete. The app uploads first and then inserts the row. A repeated
+   upload answers HTTP 400 with `statusCode: "409"` / `Duplicate` in the body, and the app counts
+   that as uploaded.
+7. **Deleting goes through the Storage API.** SQL cannot remove the file: `storage.protect_delete`
+   refuses, and with that switch off Supabase would leave the file behind. A statement-level trigger
+   queues the name of every deleted note's picture (12-month purge, account cascade, Peter by hand).
+   The `feedback-screenshots` function's `POST /sweep` removes queued names and uploads with no note
+   after 24 h, at most 500 per call. The daily Keepalive workflow calls it, and the account function
+   runs it right after a deletion (best effort, at most 5 s, its answer unchanged). The sweep needs
+   no key. It deletes only what the database says is due, so a caller can only make it happen
+   sooner. A note that arrives more than 24 h after its upload (a long offline retry) loses its
+   picture: accepted.
+8. **The contact switch says "Snacklist Support darf mich dazu kontaktieren"** / "Snacklist Support may
+   contact me about this", for everyone, flag on or off. Peter's naming rule names this very string,
+   and the stored field is unchanged. Legal-approved strings that name Peter Trost (the analytics
+   consent, §10) are untouched and listed in the job's LEGAL-NOTE.
+9. **No digest, no new mailer.** The note stays a row in `public.feedback`. Job 225's digest stays off,
+   and a picture never goes into a mail.
+10. **Export lists the file name, not the picture.** `export_my_data` gains `screenshot` per note. SQL
+    cannot read Storage, and the user saw the picture before sending. Legal decides whether Art. 15
+    needs more.
+11. **Job 259 overlap.** This branch was built on #493 (More sends no screen name) and rebased onto main
+    once #493 landed; nothing of 259 is redone here.
+12. **A refused screenshot gets its own message.** When Storage turns the picture down (a quota, too
+    big, not a PNG: 403, 413, 415), the form says so and that switching it off sends the note,
+    instead of the connection message. Retry alone would fail every time.
+13. **The text typed onto a screenshot is not read by screen readers.** It sits inside the package's
+    area, which is excluded from semantics so its covered column is not read out. The tools, undo,
+    Fertig and X are labelled. Marking up a picture is visual work, so this was accepted.

@@ -56,7 +56,7 @@ void main() {
       tester.getSemantics(key('tab-history')).flagsCollection.isSelected,
       Tristate.isTrue,
     );
-    expect(app.screens.feedbackScreen, 'history');
+    expect(app.screens.current, 'history');
 
     // Mehr and back keeps the tabs' own branches.
     await tester.tap(key('tab-more'));

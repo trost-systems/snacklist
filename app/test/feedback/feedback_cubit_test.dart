@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/feedback/feedback_context.dart';
@@ -197,26 +198,126 @@ void main() {
     );
   });
 
-  test('a shake note: entry point shake and its screen in the event', () async {
+  const shakeContext = FeedbackContext(
+    appVersion: '1.2.3',
+    build: '45',
+    platform: 'android',
+    osVersion: 'Android 14 (SDK 34)',
+    locale: 'de',
+    entryPoint: FeedbackEntryPoint.shake,
+    isInternal: false,
+  );
+  final png = Uint8List.fromList([0x89, 0x50, 0x4e, 0x47]);
+
+  test('a shake note: entry point shake and its screen in the note and the '
+      'event', () async {
     await start();
-    cubit.edit('Wackel');
-    await cubit.send(
-      const FeedbackContext(
-        appVersion: '1.2.3',
-        build: '45',
-        platform: 'android',
-        osVersion: 'Android 14 (SDK 34)',
-        locale: 'de',
-        entryPoint: FeedbackEntryPoint.shake,
-        screen: 'list',
-        isInternal: false,
-      ),
-    );
+    cubit
+      ..open(userId: 'max', screen: 'list')
+      ..edit('Wackel');
+    await cubit.send(shakeContext);
+    expect(repo.rows.values.single.context.screen, 'list');
     final properties =
         (await sent()).single['properties']! as Map<String, Object?>;
     expect(properties['entry_point'], 'shake');
     expect(properties['screen'], 'list');
+    expect(properties['screenshot'], false);
   });
+
+  test('the screen name switched off goes neither to the note nor the '
+      'event', () async {
+    await start();
+    cubit
+      ..open(userId: 'max', screen: 'stores')
+      ..edit('Ohne Namen')
+      ..setSendScreen(on: false);
+    await cubit.send(shakeContext);
+    expect(repo.rows.values.single.context.screen, isNull);
+    final properties =
+        (await sent()).single['properties']! as Map<String, Object?>;
+    expect(properties, isNot(contains('screen')));
+  });
+
+  test('an attached screenshot goes along; switched off it does not', () async {
+    await start();
+    cubit
+      ..open(userId: 'max', screen: 'list', screenshot: png)
+      ..edit('Mit Bild');
+    expect(cubit.state.sendScreenshot, isTrue, reason: 'on when attached');
+    await cubit.send(shakeContext);
+    expect(repo.rows.values.single.screenshot, png);
+    expect(((await sent()).single['properties']! as Map)['screenshot'], true);
+
+    cubit
+      ..open(userId: 'max', screen: 'list', screenshot: png)
+      ..edit('Ohne Bild')
+      ..setSendScreenshot(on: false);
+    await cubit.send(shakeContext);
+    expect(repo.calls.last.screenshot, isNull);
+    expect(((await sent()).last['properties']! as Map)['screenshot'], false);
+  });
+
+  test(
+    "More's row: no screen; a screenshot attached later goes along",
+    () async {
+      await start();
+      cubit
+        ..open(userId: 'max')
+        ..edit('Aus dem Menü');
+      expect(cubit.state.screen, isNull);
+      expect(cubit.state.screenshot, isNull);
+      cubit.attach(png);
+      await cubit.send(sampleContext);
+      expect(repo.calls.single.screenshot, png);
+      expect(repo.calls.single.context.screen, isNull);
+    },
+  );
+
+  test('attachments belong to one opening; the text stays', () async {
+    await start();
+    cubit
+      ..open(userId: 'max', screen: 'stores', screenshot: png)
+      ..edit('Halb geschrieben')
+      ..open(userId: 'max');
+    expect(cubit.state.message, 'Halb geschrieben');
+    expect(cubit.state.screen, isNull);
+    expect(cubit.state.screenshot, isNull);
+  });
+
+  test('switching the screenshot after a failure makes a new note', () async {
+    await start();
+    cubit
+      ..open(userId: 'max', screenshot: png)
+      ..edit('Bild hakt');
+    repo.failNext = 1;
+    await cubit.send(sampleContext);
+    final first = cubit.id;
+    cubit.setSendScreenshot(on: false);
+    expect(cubit.id, isNot(first));
+    expect(await cubit.send(sampleContext), isTrue);
+    expect(repo.rows.values.single.screenshot, isNull);
+  });
+
+  test(
+    'a refused screenshot says so; switched off, the note goes without it',
+    () async {
+      await start();
+      cubit
+        ..open(userId: 'max', screenshot: png)
+        ..edit('Bild zu groß');
+      repo
+        ..failNext = 1
+        ..error = const FeedbackScreenshotRefused('storage_403');
+      expect(await cubit.send(sampleContext), isFalse);
+      expect(cubit.state.status, FeedbackStatus.screenshotRefused);
+      final first = cubit.id;
+      cubit.setSendScreenshot(on: false);
+      expect(cubit.state.status, FeedbackStatus.editing);
+      expect(cubit.id, isNot(first));
+      expect(await cubit.send(sampleContext), isTrue);
+      expect(repo.rows.values.single.screenshot, isNull);
+    },
+  );
 
   test('no category is "none"; a picked one can be unpicked', () async {
     await start();

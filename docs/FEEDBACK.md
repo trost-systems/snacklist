@@ -7,6 +7,10 @@ dashboard (his GDPR rule of 2026-11-01, Legal N-174): no bot, connector or agent
 notes. The one routine is the daily digest (below, off until Legal's GO), which mails new notes
 to him alone.
 
+Since job 267 (FB2, behind the PostHog flag `feedback-fb2`) a note can carry one annotated
+screenshot. The image lives in a private Storage bucket next to the table; see "Screenshots"
+below.
+
 ## What is stored
 
 One row per note (`supabase/migrations/20261030070000_feedback.sql`; every column has a
@@ -26,11 +30,17 @@ One row per note (`supabase/migrations/20261030070000_feedback.sql`; every colum
 | `os_version` | `Android 14 (SDK 34)`, `iOS 18.1`; on the web only the browser family and OS (`Safari on iOS`), never the user agent. |
 | `locale` | The app's language when sending (`de`, `en`). |
 | `screen` | Null for a note written from More's row (job 259: the form is about no screen, so none is sent). Notes from before job 259, and the shake entry (job 138, not shipped), carry the screen the note is about, a fixed name: the last screen before the More tab (`list` almost always) or the live one. Never a path, an invite code or an item. The names are `screenNames` in `app/lib/app/router.dart`. |
+| `screenshot` | Null without a screenshot. Otherwise the image's object name in the bucket `feedback-screenshots`: `<user_id>/<id>.png`. The database refuses any other name, so a note can only name its sender's image for this note. |
 | `is_internal` | Peter's household (the `ANALYTICS_INTERNAL_HOUSEHOLDS` define), a debug, profile or preview build, an install marked internal under More, or a test account. The database forces it for test accounts (`.test`, `.invalid`, `.example`, `.localhost`, `example.com/.net/.org`), whatever the app says. |
 
 Nothing from the list is attached: no item, category or store names, no household name. The
-form says so ("App-Version, Gerät und Sprache. Keine Listeneinträge."). An entry that attaches the live screen (the shake, if it ships) says "App-Version, Gerät, Sprache und aktueller Bildschirm. Keine Listeneinträge." instead.
-No screenshots, no device model, no e-mail.
+form says so ("App-Version, Gerät und Sprache. Keine Listeneinträge."). With the flag
+`feedback-fb2` (job 267) the screen name and a screenshot follow that line as switches. A screen
+name shows no list item, so the line stays as it is; only while a screenshot is attached and
+switched on does it shorten to "App-Version, Gerät und Sprache."
+No device model, no e-mail. The one exception is a screenshot the sender chose to attach: it
+shows whatever was on screen, list entries included, except what they painted over. Nothing is
+blacked out automatically.
 
 ## Who can read it
 
@@ -41,7 +51,10 @@ No screenshots, no device model, no e-mail.
 - **Peter** reads with the service role, by hand: the dashboard's Table Editor
   (`public.feedback`) or SQL editor, project `jdwqrallbpdbshrdhenk`. Once switched on, the
   daily digest mails him the new notes.
-- **The sender** gets their own notes in "Meine Daten exportieren" (section `feedback`).
+- **The sender** gets their own notes in "Meine Daten exportieren" (section `feedback`, with
+  each note's `screenshot` name).
+- **Screenshots**: clients may only upload them, never read them back, their own included. Peter
+  opens them in the dashboard (see "Screenshots").
 
 ## Retention
 
@@ -50,6 +63,10 @@ No screenshots, no device model, no e-mail.
   may run it.
 - Deleting an account deletes the user's notes at once (`on delete cascade`). A deleted
   household leaves its members' notes, without the household id.
+- A note's screenshot goes with the note, whichever way the note is deleted (the purge, the
+  account, by hand). An account deletion takes every image in the account's folder, uploads that
+  never got a note included: the account function removes them right after the deletion, and if
+  that fails, the next daily sweep does (see "Screenshots").
 - The encrypted nightly backups (docs/BACKUP.md) keep a deleted note for up to 90 more days.
 
 Check the schedule: `select jobname, schedule, command, active from cron.job;` and its runs:
@@ -76,6 +93,7 @@ select case when f.is_internal then 'internal' else 'external' end as audience,
        coalesce(f.category, 'none') as category,
        f.message,
        f.screen,
+       f.screenshot,
        f.platform,
        f.app_version || ' (' || f.build || ')' as app_version,
        f.os_version,
@@ -126,6 +144,88 @@ In the dashboard's SQL editor, replace `:'feedback_id'` with the note's id in qu
 `scripts/feedback-monday.sh` (run by the db gate) seeds fake notes on the local stack, runs the
 three blocks above exactly as written here and checks the result, so this page and the queries
 can't drift apart. Its output on fake data is in the PR of job 21.
+
+## Screenshots
+
+Job 267. From the shake sheet or the form, the sender can attach the current screen, painted
+over in the app's annotator. The app uploads the PNG, then inserts the note naming it.
+
+**Where.** The private Storage bucket `feedback-screenshots` of the same Supabase project (EU,
+Frankfurt), created by `supabase/migrations/20261115160000_feedback_screenshots.sql`. It takes
+PNG only, at most 2 MiB per image. The object name is `<user_id>/<note id>.png`, and
+`public.feedback.screenshot` holds the same name.
+
+**Who can do what.**
+
+- A signed-in user may upload into their own folder only, with a lowercase UUID as the name and
+  `.png` (storage policy `feedback_screenshots_insert_own`).
+- Two quotas keep one account from filling the free plan's 1 GB of Storage
+  (`public.feedback_screenshot_quota_left(name)`): at most 10 uploads per user in any 24 hours,
+  and no upload at all while the bucket holds 250 images or more (at most 2 MiB each, so about
+  500 MiB at worst). Two uploads at the same moment can both pass the last free place; the quotas
+  are against abuse, not a contract.
+- Over a quota the Storage API refuses the upload (403; too big or not a PNG: 413 or 415), and the
+  form says "Das Bildschirmfoto wurde nicht angenommen. Schalte es aus, dann geht deine Nachricht
+  ohne Bild." The text, category and screenshot stay. With the screenshot switched off the note
+  sends.
+- Nobody but the service role reads, lists, signs, overwrites or removes an image: there is no
+  other policy. A second upload of the same name answers "already exists" (409, `Duplicate`),
+  which the app takes as its own earlier try. That holds at a quota too: a name the user already
+  uploaded passes the quotas and reaches the unique key.
+- Signed out: nothing.
+
+**Raising the quotas.** Both numbers live in `public.feedback_screenshot_quota_left(text)`. Write
+a new migration that runs `create or replace function public.feedback_screenshot_quota_left(p_name
+text)` with the body of `20261115160000_feedback_screenshots.sql` and the new numbers (`< 10` per
+user, `< 250` for the bucket), then land it like any migration (docs/DEPLOY.md). Before raising
+the bucket cap, check the project's Storage use in the dashboard (Settings, Usage): the cap times
+2 MiB has to fit next to everything else in the plan's Storage.
+
+**How Peter views an image.** In the dashboard (project `jdwqrallbpdbshrdhenk`), open
+**Storage**, then the bucket `feedback-screenshots`, then the folder named by the note's
+`user_id`, then the file named by the note's `id`. The preview shows the image; **Download**
+saves it. The note's `screenshot` column has the full path. Do not share a link from **Get URL**:
+a signed URL opens the image for anyone who has it until it expires.
+
+**Deletion.** SQL cannot delete a stored file (`storage.protect_delete` refuses it, and a
+deleted row would leave the file behind), so the Storage API does:
+
+1. Any delete of a note with a screenshot (the 12-month purge, an account deletion, Peter by
+   hand) queues the name in `public.feedback_screenshot_removals` (trigger
+   `feedback_queue_screenshot_removal`).
+2. The sweep lists what is due (`public.feedback_screenshots_due`): the queue, then uploads that
+   no note names and that are either older than 24 hours (the app's upload succeeded but its note
+   never arrived) or in the folder of an account that no longer exists, whatever their age. It
+   removes at most 500 names per run through the Storage API with the project's secret key, then
+   drops them from the queue (`public.feedback_screenshots_removed`). A name whose file is
+   already gone just leaves the queue, so a repeated or interrupted run does no harm.
+3. The sweep runs in the `account` function right after a successful deletion (best effort,
+   at most 5 seconds; the answer to the app does not change), and daily in **Keepalive**
+   (`.github/workflows/keepalive.yml`, 05:23 UTC), which posts to
+   `POST /functions/v1/feedback-screenshots/sweep`. The route takes no key: it only removes what
+   the database says is due. It answers `{"removed": n}`, or 503 with `storage_failed` or
+   `db_error`. Its logs say `feedback-screenshots: removed 3` or `storage_failed 500`, never a
+   name (each starts with a user id).
+
+So an image outlives its note by at most a day, and an orphan upload by at most two. When an
+account is deleted, all of its images (with a note or without) are due at once: the account
+function's sweep removes them before it answers, and only if that sweep fails do they wait for
+the next daily one. If the
+sweep step of Keepalive fails, the Keepalive issue says so; look at the function's logs in the
+dashboard (Edge Functions, `feedback-screenshots`). Queued names wait until a sweep succeeds:
+
+```sql
+select count(*), min(queued_at) from public.feedback_screenshot_removals;
+```
+
+The nightly backups (docs/BACKUP.md) hold the notes and the queue, not the images.
+
+Tests: `supabase/tests/feedback_screenshots.test.sql` (bucket, policy, quota, name check, queue,
+due list, privileges, export), `supabase/functions/_shared/feedback_screenshots_test.ts` and
+`feedback-screenshots/handler_test.ts` (the sweep and its route), and
+`feedback-screenshots/sweep_integration_test.ts` in the db gate (the real Storage API: uploads,
+refused reads, both quotas, a retry at a quota, and the sweep after a deleted note, an account
+deletion with and without notes and an old orphan).
 
 ## Daily digest (off until Legal GO)
 

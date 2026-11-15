@@ -19,6 +19,12 @@ export interface Deps {
   appleSubject(userId: string): Promise<string | null>;
   revokeApple(grant: { code: string | null; subject: string }): Promise<AppleRevocation>;
   deleteAccount(userId: string): Promise<HouseholdFate>;
+  /**
+   * Best effort after a deletion: removes the screenshots of the notes the deletion took with it
+   * (docs/FEEDBACK.md). Its failure or slowness never changes the answer; the daily sweep catches
+   * up.
+   */
+  afterDeletion?(): Promise<unknown>;
   /** Error tracking for a failure answered with 500 (telemetry.ts); scrubbed there. */
   report?(error: unknown): void;
 }
@@ -29,6 +35,22 @@ const failures = {
   bad_request: [400, 'Der Inhalt ist kein gültiges JSON {"apple_authorization_code"?: string}.'],
   server: [500, 'Das Konto konnte nicht gelöscht werden. Bitte versuch es gleich noch einmal.'],
 } as const satisfies Record<string, readonly [number, string]>;
+
+/** How long a deletion's answer waits for afterDeletion. */
+export const AFTER_DELETION_MS = 5000;
+
+async function bestEffort(work: () => Promise<unknown>, ms: number): Promise<void> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const late = new Promise<void>((resolve) => {
+    timer = setTimeout(resolve, ms);
+  });
+  try {
+    // Through then(): a work that throws before returning its promise is caught here too.
+    await Promise.race([Promise.resolve().then(work).then(() => {}, () => {}), late]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 const fail = (error: keyof typeof failures | AuthError) => {
   if (error instanceof AuthError) {
@@ -56,7 +78,10 @@ async function readBody(req: Request): Promise<{ appleCode: string | null } | nu
   }
 }
 
-export function createHandler(deps: Deps): (req: Request) => Promise<Response> {
+export function createHandler(
+  deps: Deps,
+  afterDeletionMs: number = AFTER_DELETION_MS,
+): (req: Request) => Promise<Response> {
   return async (req: Request): Promise<Response> => {
     const early = preflight(req);
     if (early) return early;
@@ -94,6 +119,7 @@ export function createHandler(deps: Deps): (req: Request) => Promise<Response> {
       const apple: AppleFate = subject
         ? await deps.revokeApple({ code: body.appleCode, subject })
         : 'not_linked';
+      if (deps.afterDeletion) await bestEffort(deps.afterDeletion, afterDeletionMs);
       return json({ deleted: true, household, apple } satisfies Deleted);
     } catch (e) {
       console.error('account: deletion failed', e);

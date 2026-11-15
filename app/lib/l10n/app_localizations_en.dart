@@ -1149,15 +1149,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get feedbackCategories => 'Type (optional)';
 
   @override
-  String get feedbackContact => 'Peter may contact me about this';
+  String get feedbackContact => 'Snacklist Support may contact me about this';
 
   @override
   String get feedbackAttached =>
       'App version, device and language. No list items.';
-
-  @override
-  String get feedbackAttachedWithScreen =>
-      'App version, device, language and current screen. No list items.';
 
   @override
   String get feedbackAttachedTitle => 'Included:';
@@ -1178,6 +1174,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get feedbackFailed => 'Not sent. Check your connection and try again.';
 
   @override
+  String get feedbackScreenshotRefused =>
+      'The screenshot wasn\'t accepted. Switch it off to send your message without it.';
+
+  @override
   String feedbackTooLong(int max) {
     return 'Up to $max characters';
   }
@@ -1189,6 +1189,72 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get feedbackClose => 'Close';
+
+  @override
+  String get feedbackAttachedBasics => 'App version, device and language.';
+
+  @override
+  String get feedbackScreenName => 'Screen name';
+
+  @override
+  String get feedbackScreenshot => 'Screenshot';
+
+  @override
+  String get feedbackScreenshotNote =>
+      'Shows everything that was on screen, including list items you didn\'t paint over.';
+
+  @override
+  String get feedbackScreenshotPreview => 'Screenshot preview';
+
+  @override
+  String get feedbackAddScreenshot => 'Add screenshot';
+
+  @override
+  String get feedbackShakeTitle => 'Report a problem with this screen?';
+
+  @override
+  String get feedbackShakeWithScreenshot => 'With screenshot';
+
+  @override
+  String get feedbackShakeWithout => 'Without screenshot';
+
+  @override
+  String get feedbackShakeOffHint => 'Turn shaking off: More › Settings';
+
+  @override
+  String get feedbackAnnotateHint =>
+      'Mark what\'s wrong. Paint over anything nobody should see.';
+
+  @override
+  String get feedbackToolPen => 'Pen';
+
+  @override
+  String get feedbackToolRectangle => 'Rectangle';
+
+  @override
+  String get feedbackToolText => 'Text';
+
+  @override
+  String get feedbackAnnotateTools => 'Tool';
+
+  @override
+  String get feedbackAnnotateUndo => 'Undo';
+
+  @override
+  String get feedbackAnnotateTextHint => 'Type here';
+
+  @override
+  String get feedbackAnnotateDone => 'Done';
+
+  @override
+  String get settingsFeedback => 'Feedback';
+
+  @override
+  String get shakeToFeedback => 'Shake to send feedback';
+
+  @override
+  String get shakeToFeedbackHint =>
+      'Shake your phone to report a problem with the screen.';
 
   @override
   String get onboardingCreateHint =>

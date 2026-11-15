@@ -128,7 +128,7 @@ test('with analytics consent: one feedback_submitted, without the text (AC8)', a
   await openFeedback(page);
   await typeInto(messageField(page), 'Idee: Hafermilch als Favorit merken');
   await page.getByRole('checkbox', { name: 'Idee', exact: true }).click();
-  await page.getByRole('checkbox', { name: 'Peter darf mich dazu kontaktieren' }).click();
+  await page.getByRole('checkbox', { name: 'Snacklist Support darf mich dazu kontaktieren' }).click();
   await sendButton(page).click();
   await expect(thanks(page)).toBeVisible();
 
@@ -291,7 +291,7 @@ test.describe('in English', () => {
     for (const text of ['Bug', 'Idea', 'Other']) {
       await expect(page.getByRole('checkbox', { name: text, exact: true })).toBeVisible();
     }
-    await expect(page.getByRole('checkbox', { name: 'Peter may contact me about this' })).toBeVisible();
+    await expect(page.getByRole('checkbox', { name: 'Snacklist Support may contact me about this' })).toBeVisible();
     await expect(page.getByText('App version, device and language. No list items.', { exact: false }))
       .toBeVisible();
     await typeInto(messageField(page, 'Your message'), 'The list jumps when I tick an item.');
@@ -330,5 +330,46 @@ test('wide: feedback beside an open More page sends no screen (1366x1024)', asyn
   const userId = await userIdOf(email);
   await expect.poll(async () => (await rowsOf(userId)).length).toBe(1);
   expect(firstOf(await rowsOf(userId), 'feedback row').screen).toBeNull();
+  await context.close();
+});
+
+// Job 267 (flag feedback-fb2): from More the screen before More can be marked up and sent along; it
+// lands in the private bucket under the sender's folder, and the row names it.
+test('flag on: a screenshot from More is marked up, uploaded and named by the row', async ({ browser }) => {
+  const context = await browser.newContext({ viewport: phone });
+  await fakeCollector(context, { flags: { 'feedback-fb2': true } });
+  const page = await context.newPage();
+  const email = newEmail('feedback-shot');
+  await signUp(page, email, '/', { consent: 'accept' });
+  await createHousehold(page);
+  await skipInvite(page);
+  await addItem(page, 'Hafermilch');
+  await openFeedback(page);
+  await expect(page.getByText('Bildschirmname', { exact: true }), 'More sends no screen name').toHaveCount(0);
+  await page.getByRole('button', { name: 'Bildschirmfoto hinzufügen' }).click();
+  const done = page.getByRole('button', { name: 'Fertig', exact: true });
+  await expect(done).toBeVisible();
+  // A pen stroke across the frozen screen.
+  await page.mouse.move(80, 200);
+  await page.mouse.down();
+  for (const x of [110, 140, 170, 200]) await page.mouse.move(x, 210, { steps: 3 });
+  await page.mouse.up();
+  await screenshot(page, 'job267-annotator-web-de');
+  await done.click();
+  await expect(page.getByRole('img', { name: 'Vorschau des Bildschirmfotos' })).toBeVisible({ timeout: 15_000 });
+  await typeInto(messageField(page), 'Mit Bildschirmfoto aus dem Menü');
+  await screenshot(page, 'job267-form-with-screenshot-web-de');
+  await sendButton(page).click();
+  await expect(thanks(page)).toBeVisible({ timeout: 15_000 });
+
+  const userId = await userIdOf(email);
+  await expect.poll(async () => (await rowsOf(userId)).length).toBe(1);
+  const row = firstOf(await rowsOf(userId), 'feedback row');
+  expect(row.screen).toBeNull();
+  expect(row.screenshot).toBe(`${userId}/${String(row.id)}.png`);
+  const { data, error } = await adminClient().storage.from('feedback-screenshots').download(String(row.screenshot));
+  if (error) throw error;
+  const bytes = new Uint8Array(await data.arrayBuffer());
+  expect([...bytes.slice(0, 4)], 'a PNG').toEqual([0x89, 0x50, 0x4e, 0x47]);
   await context.close();
 });

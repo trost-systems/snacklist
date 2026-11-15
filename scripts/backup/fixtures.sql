@@ -89,6 +89,14 @@ select public.add_items((select id from fx where key = 'other'), array['Bier', '
 insert into public.feedback (id, message, app_version, build, platform, os_version, locale, screen)
 values (gen_random_uuid(), 'Gibt es das auch auf Englisch?', '0.1.0', '42', 'web', 'Safari on iOS', 'en', 'more');
 reset role;
+-- Job 267: two notes with a screenshot; one is deleted by hand, so its image waits in the
+-- removal queue (service connection only).
+insert into public.feedback (id, user_id, message, app_version, build, platform, os_version, locale, screenshot)
+select n.id, u.id, n.message, '1.0.0', '50', 'ios', 'iOS 18.1', 'de', u.id || '/' || n.id || '.png'
+from auth.users u, (values ('5e1f2a3b-4c5d-4e6f-8a7b-0c1d2e3f4a5b'::uuid, 'Siehe Bild'),
+  ('6f2a3b4c-5d6e-4f70-8b8c-1d2e3f4a5b6c'::uuid, 'Doch nicht')) n (id, message)
+where u.email = 'carl@backup.test';
+delete from public.feedback where id = '6f2a3b4c-5d6e-4f70-8b8c-1d2e3f4a5b6c';
 
 -- Job 31: the app records each install's analytics answer; the alexa function's link map and
 -- rate limit (service connection only).

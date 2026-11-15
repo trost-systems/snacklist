@@ -1949,7 +1949,7 @@ abstract class AppLocalizations {
   /// Feedback form: checkbox, off by default
   ///
   /// In de, this message translates to:
-  /// **'Peter darf mich dazu kontaktieren'**
+  /// **'Snacklist Support darf mich dazu kontaktieren'**
   String get feedbackContact;
 
   /// Feedback form: what is sent along with the note
@@ -1957,12 +1957,6 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'App-Version, Gerät und Sprache. Keine Listeneinträge.'**
   String get feedbackAttached;
-
-  /// Feedback form opened by shaking the phone: what is sent along, including the screen's name
-  ///
-  /// In de, this message translates to:
-  /// **'App-Version, Gerät, Sprache und aktueller Bildschirm. Keine Listeneinträge.'**
-  String get feedbackAttachedWithScreen;
 
   /// Feedback form: before the attached line
   ///
@@ -2000,6 +1994,12 @@ abstract class AppLocalizations {
   /// **'Nicht gesendet. Prüfe die Verbindung und versuch es noch einmal.'**
   String get feedbackFailed;
 
+  /// Job 267 (flag feedback-fb2): Feedback form, error when storage turned the screenshot down (a daily or overall limit, its size or type); switching the screenshot off sends the note
+  ///
+  /// In de, this message translates to:
+  /// **'Das Bildschirmfoto wurde nicht angenommen. Schalte es aus, dann geht deine Nachricht ohne Bild.'**
+  String get feedbackScreenshotRefused;
+
   /// Feedback form: the note is too long
   ///
   /// In de, this message translates to:
@@ -2017,6 +2017,132 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Schließen'**
   String get feedbackClose;
+
+  /// Feedback form with the feedback-fb2 flag (job 267), while a screenshot is attached and switched on: the facts always sent, without "no list items" (the screenshot can show some); screen name and screenshot follow as switches
+  ///
+  /// In de, this message translates to:
+  /// **'App-Version, Gerät und Sprache.'**
+  String get feedbackAttachedBasics;
+
+  /// Feedback form opened by shaking (job 267): switch that sends the name of the screen (only its name, no picture); the name follows on the next line
+  ///
+  /// In de, this message translates to:
+  /// **'Bildschirmname'**
+  String get feedbackScreenName;
+
+  /// Feedback form (job 267): switch that sends the marked-up screenshot shown below it
+  ///
+  /// In de, this message translates to:
+  /// **'Bildschirmfoto'**
+  String get feedbackScreenshot;
+
+  /// Feedback form (job 267): under the screenshot switch; the screenshot is not redacted automatically
+  ///
+  /// In de, this message translates to:
+  /// **'Zeigt alles, was auf dem Bildschirm war, auch Listeneinträge, die du nicht übermalt hast.'**
+  String get feedbackScreenshotNote;
+
+  /// Feedback form (job 267): screen-reader label of the screenshot preview
+  ///
+  /// In de, this message translates to:
+  /// **'Vorschau des Bildschirmfotos'**
+  String get feedbackScreenshotPreview;
+
+  /// Feedback form from More (job 267): marks up the screen shown before More and attaches it
+  ///
+  /// In de, this message translates to:
+  /// **'Bildschirmfoto hinzufügen'**
+  String get feedbackAddScreenshot;
+
+  /// Bottom sheet after shaking the phone (job 267): title
+  ///
+  /// In de, this message translates to:
+  /// **'Problem mit diesem Bildschirm melden?'**
+  String get feedbackShakeTitle;
+
+  /// Shake sheet (job 267): opens the screenshot to mark up, then the feedback form
+  ///
+  /// In de, this message translates to:
+  /// **'Mit Bildschirmfoto'**
+  String get feedbackShakeWithScreenshot;
+
+  /// Shake sheet (job 267): opens the feedback form without a picture
+  ///
+  /// In de, this message translates to:
+  /// **'Ohne Bildschirmfoto'**
+  String get feedbackShakeWithout;
+
+  /// Shake sheet (job 267): small line at the bottom, where the shake switch is
+  ///
+  /// In de, this message translates to:
+  /// **'Schütteln ausschalten: Mehr › Einstellungen'**
+  String get feedbackShakeOffHint;
+
+  /// Screenshot markup (job 267): hint above the tools
+  ///
+  /// In de, this message translates to:
+  /// **'Markiere, was nicht stimmt. Übermale, was niemand sehen soll.'**
+  String get feedbackAnnotateHint;
+
+  /// Screenshot markup (job 267): free drawing tool
+  ///
+  /// In de, this message translates to:
+  /// **'Stift'**
+  String get feedbackToolPen;
+
+  /// Screenshot markup (job 267): rectangle tool
+  ///
+  /// In de, this message translates to:
+  /// **'Rechteck'**
+  String get feedbackToolRectangle;
+
+  /// Screenshot markup (job 267): text tool
+  ///
+  /// In de, this message translates to:
+  /// **'Text'**
+  String get feedbackToolText;
+
+  /// Screenshot markup (job 267): screen-reader name of the pen / rectangle / text control
+  ///
+  /// In de, this message translates to:
+  /// **'Werkzeug'**
+  String get feedbackAnnotateTools;
+
+  /// Screenshot markup (job 267): removes the last rectangle or text
+  ///
+  /// In de, this message translates to:
+  /// **'Rückgängig'**
+  String get feedbackAnnotateUndo;
+
+  /// Screenshot markup (job 267): hint in the text placed on the screenshot
+  ///
+  /// In de, this message translates to:
+  /// **'Text eingeben'**
+  String get feedbackAnnotateTextHint;
+
+  /// Screenshot markup (job 267): attaches the marked-up screenshot and opens the form
+  ///
+  /// In de, this message translates to:
+  /// **'Fertig'**
+  String get feedbackAnnotateDone;
+
+  /// Settings (job 267): section label above the shake switch
+  ///
+  /// In de, this message translates to:
+  /// **'Feedback'**
+  String get settingsFeedback;
+
+  /// Settings (job 267, iOS and Android): switch, on by default
+  ///
+  /// In de, this message translates to:
+  /// **'Schütteln für Feedback'**
+  String get shakeToFeedback;
+
+  /// Settings (job 267): under the shake switch
+  ///
+  /// In de, this message translates to:
+  /// **'Schüttle das Handy, um ein Problem mit dem Bildschirm zu melden.'**
+  String get shakeToFeedbackHint;
 
   /// No description provided for @onboardingCreateHint.
   ///

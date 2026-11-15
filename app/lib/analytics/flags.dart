@@ -25,6 +25,11 @@ const defaultListFlag = 'default-list-voice-target';
 /// list, and the switcher sheet with a page per household and its members.
 const listDeclutterFlag = 'list-declutter';
 
+/// The flag that turns on feedback with a screenshot (job 267, FB2): a
+/// shake on iOS and Android asks to report the screen, the annotator marks
+/// up a screenshot, the form sends it, and Einstellungen' shake switch.
+const feedbackFb2Flag = 'feedback-fb2';
+
 /// PostHog feature flags, the app's runtime toggles (job 44,
 /// docs/ANALYTICS.md "Feature flags"). Read a toggle with [isOn] wherever it
 /// matters; nothing else in the app reads PostHog flags.

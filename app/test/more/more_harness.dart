@@ -11,7 +11,9 @@ import 'package:family_groceries/app/router.dart';
 import 'package:family_groceries/app/theme.dart';
 import 'package:family_groceries/feedback/feedback_context.dart';
 import 'package:family_groceries/feedback/feedback_cubit.dart';
+import 'package:family_groceries/feedback/screen_capture.dart';
 import 'package:family_groceries/feedback/screen_tracker.dart';
+import 'package:family_groceries/feedback/shake.dart';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/invite_share.dart';
 import 'package:family_groceries/household/pending_invite.dart';
@@ -35,6 +37,7 @@ import 'package:http/testing.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:sensors_plus/sensors_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
@@ -124,6 +127,8 @@ typedef More = ({
   Analytics analytics,
   FakeFeedbackRepository feedback,
   ScreenTracker screens,
+  ScreenCapture capture,
+  ShakeSetting shake,
   TestPurchases purchases,
   FakeSession session,
 });
@@ -188,6 +193,10 @@ Future<More> pumpMore(
 
   /// The store's rating prompt and listing.
   FakeStoreReview? storeReview,
+
+  /// The accelerometer of `app`'s shell; none by default (tests have no
+  /// sensors plugin).
+  Stream<AccelerometerEvent> shakeSamples = const Stream.empty(),
 }) async {
   tester.view
     ..devicePixelRatio = 1
@@ -239,13 +248,17 @@ Future<More> pumpMore(
   final feedbackCubit = FeedbackCubit(feedback, analytics: shownAnalytics);
   addTearDown(feedbackCubit.close);
   final screens = ScreenTracker();
+  final capture = ScreenCapture();
+  addTearDown(capture.dispose);
+  final shake = ShakeSetting(cache);
+  addTearDown(shake.close);
   final popups = Popups();
   final router = GoRouter(
     initialLocation: location,
     observers: [popups],
     redirect: app ? (_, state) => authRedirect(session.state, state.uri) : null,
     routes: app
-        ? appRoutes(repositories: (_) => repo)
+        ? appRoutes(repositories: (_) => repo, shakeSamples: shakeSamples)
         : [
             // As in the app, the list sits above the tabs (AppShell's
             // ListScope).
@@ -267,8 +280,13 @@ Future<More> pumpMore(
           ],
   );
   addTearDown(router.dispose);
-  // As App does: the tracker follows the router.
-  void visit() => screens.visit(router.routerDelegate.currentConfiguration.uri);
+  // As App does: the tracker and the capture follow the router.
+  void visit() {
+    final uri = router.routerDelegate.currentConfiguration.uri;
+    screens.visit(uri);
+    capture.visit(uri);
+  }
+
   router.routerDelegate.addListener(visit);
   addTearDown(() => router.routerDelegate.removeListener(visit));
   await tester.pumpWidget(
@@ -279,6 +297,7 @@ Future<More> pumpMore(
           value: FakeAccountRepository(),
         ),
         RepositoryProvider.value(value: screens),
+        RepositoryProvider.value(value: capture),
         RepositoryProvider<FeedbackDevice>.value(value: FakeFeedbackDevice()),
         RepositoryProvider<InviteRepository>.value(
           value: invites ?? FakeInvites(),
@@ -300,6 +319,7 @@ Future<More> pumpMore(
           BlocProvider.value(value: themeCubit),
           BlocProvider.value(value: shownAnalytics),
           BlocProvider.value(value: feedbackCubit),
+          BlocProvider.value(value: shake),
           BlocProvider.value(value: purchases.entitlements),
           BlocProvider.value(value: purchases.purchases),
           BlocProvider.value(value: lock),
@@ -319,7 +339,8 @@ Future<More> pumpMore(
             localeListResolutionCallback: (preferred, _) =>
                 resolveLocale(preferred, null),
             routerConfig: router,
-            builder: (_, child) => NoticesHost(popups: popups, child: child!),
+            builder: (_, child) =>
+                capture.wrap(NoticesHost(popups: popups, child: child!)),
           ),
         ),
       ),
@@ -335,6 +356,8 @@ Future<More> pumpMore(
     analytics: shownAnalytics,
     feedback: feedback,
     screens: screens,
+    capture: capture,
+    shake: shake,
     purchases: purchases,
     session: session,
   );

@@ -60,7 +60,7 @@ void main() {
       'Bug',
       'Idee',
       'Sonstiges',
-      'Peter darf mich dazu kontaktieren',
+      'Snacklist Support darf mich dazu kontaktieren',
       'Senden',
     ]) {
       expect(find.text(text), findsOneWidget, reason: text);
@@ -94,7 +94,7 @@ void main() {
       'Bug',
       'Idea',
       'Other',
-      'Peter may contact me about this',
+      'Snacklist Support may contact me about this',
       'Send',
     ]) {
       expect(find.text(text), findsWidgets, reason: text);
@@ -145,20 +145,26 @@ void main() {
     expect(context.screen, isNull, reason: 'More attaches no screen');
   });
 
-  testWidgets('the shake entry names the live screen and sends it', (
+  testWidgets('the shake entry offers the screen name and sends it', (
     tester,
   ) async {
     final more = await pumpMore(tester, language: AppLanguage.en);
-    more.screens.visit(Uri.parse('/'));
     final context = tester.element(key('more-screen'));
-    unawaited(showFeedbackSheet(context, entryPoint: FeedbackEntryPoint.shake));
+    unawaited(
+      showFeedbackSheet(
+        context,
+        entryPoint: FeedbackEntryPoint.shake,
+        screen: 'list',
+      ),
+    );
     await tester.pumpAndSettle();
     expect(
-      find.textContaining(
-        'App version, device, language and current screen. No list items.',
-      ),
+      find.textContaining('App version, device and language. No list items.'),
       findsOneWidget,
+      reason: 'a screen name shows no list item',
     );
+    expect(find.text('Screen name'), findsOneWidget);
+    expect(find.text('list'), findsOneWidget);
     await tester.enterText(key('feedback-message'), 'Geschüttelt');
     await tester.pump();
     await tapKey(tester, 'feedback-send');

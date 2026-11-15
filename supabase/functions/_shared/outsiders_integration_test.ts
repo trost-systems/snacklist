@@ -92,6 +92,7 @@ const NO_ROW = [
   'classifier_synonyms',
   'classifier_terms',
   'feedback_digest_state',
+  'feedback_screenshot_removals',
   'invite_attempts',
   'invite_preview_rate',
   'invite_preview_salt',
