@@ -103,6 +103,12 @@ class MemorySessionCache() implements SessionCache {
   final households = <String, ({List<Household> households, String? shown})>{};
   var forgotten = 0;
 
+  /// How many of the next [remember]s fail (a full or broken store).
+  var failWrites = 0;
+
+  /// A [remember] waits for this before it writes or fails.
+  Completer<void>? holdWrites;
+
   /// Each user's told removals, which [forget] keeps.
   final toldRemovalsOf = <String, Set<String>>{};
 
@@ -121,6 +127,13 @@ class MemorySessionCache() implements SessionCache {
     required List<Household> households,
     String? shown,
   }) async {
+    if (holdWrites case final hold?) {
+      await hold.future;
+    }
+    if (failWrites > 0) {
+      failWrites--;
+      throw StateError('device store full');
+    }
     if (households.isEmpty) {
       this.households.remove(userId);
     } else {

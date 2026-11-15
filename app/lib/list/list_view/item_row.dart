@@ -64,18 +64,27 @@ class _ItemRowState()
   /// [rowLeaveDuration].
   /// Null until the row is ticked.
   AnimationController? _leave;
-  Timer? _still;
+
+  /// The tick of a leaving row, until it is committed: when the row has
+  /// closed, or before that when the row or the app goes away first.
+  VoidCallback? _pending;
+  Timer? _closed;
+  AppLifecycleListener? _lifecycle;
 
   @override
   void dispose() {
     if (_leave != null) {
-      // Not while the tree is being torn down: the dividers listen.
+      // Not while the tree is being torn down: the dividers listen, and
+      // the tick changes the list.
       final leaving = widget.leaving;
       final id = widget.item.id;
-      scheduleMicrotask(() => leaving.left(id));
+      final pending = _take();
+      scheduleMicrotask(() {
+        leaving.left(id);
+        pending?.call();
+      });
     }
     _leave?.dispose();
-    _still?.cancel();
     super.dispose();
   }
 
@@ -87,6 +96,7 @@ class _ItemRowState()
       return;
     }
     final item = widget.item;
+    final onTick = widget.onTick;
     unawaited(
       SemanticsService.sendAnnouncement(
         View.of(context),
@@ -96,19 +106,33 @@ class _ItemRowState()
     );
     final leave = AnimationController(vsync: this, duration: rowLeaveDuration);
     setState(() => _leave = leave);
-    void commit() {
-      if (mounted) {
-        widget.onTick(item);
-      }
-    }
-
-    if (MediaQuery.disableAnimationsOf(context)) {
+    final reduced = MediaQuery.disableAnimationsOf(context);
+    _pending = () => onTick(item);
+    // A hidden app draws no frames, and may never come back.
+    _lifecycle = AppLifecycleListener(onHide: _commit);
+    if (reduced) {
       leave.value = _struck;
-      _still = Timer(HlDuration.medium, commit);
+      _closed = Timer(HlDuration.medium, _commit);
     } else {
       widget.leaving.leave(item.id);
-      unawaited(leave.forward().whenComplete(commit));
+      unawaited(leave.forward().whenComplete(_commit));
+      // A row that draws no frames (another tab in front) never closes, and
+      // would keep its tick until it is shown again. Later than the close,
+      // which starts with the next frame.
+      _closed = Timer(rowLeaveDuration * 2, _commit);
     }
+  }
+
+  void _commit() => _take()?.call();
+
+  /// The tick still to commit, which is no longer pending then.
+  VoidCallback? _take() {
+    final pending = _pending;
+    _pending = null;
+    _closed?.cancel();
+    _lifecycle?.dispose();
+    _lifecycle = null;
+    return pending;
   }
 
   @override

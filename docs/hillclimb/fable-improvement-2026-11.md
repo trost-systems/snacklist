@@ -1216,3 +1216,383 @@ the four shards read again after a week, the ios job's time, a clock for list te
 as a test in the lint gate, the whole list's text written on every tick (with job 222), the
 slower first save after a resync, and the 30 minutes every land waits for the Mac (job 219's
 point, with this night's numbers). The model deviation is there too.
+
+## Job 222: offline and sync error paths, 2026-11-14
+
+The brief: map the offline and sync error paths (queue, retry, conflict, auth expiry, partial
+failure, reconnect) against their tests, close the highest-leverage gaps with a test before each
+fix, and record what stays open. Job 212's banner grace was not to change, and it did not. The
+map with every test's place, the remaining gaps and the calls are in
+`docs/done/222-robustness-offline-sync.md`; this section holds the numbers.
+
+### Covered paths
+
+Five gaps had no test and a real loss or stall behind them. Each got a test that failed, then a
+small fix (PR #469):
+
+| Path | Before | After | Tests |
+| --- | --- | --- | --- |
+| A tick inside the row's 440 ms leave, when the app is hidden, the row goes away or no frame is drawn | Lost (reload, closed tab, killed app, folded store, household switch) or held until the app shows again | Committed at once and queued on the device (880 ms after the tap when no frame is drawn); a list switched away from stays open until the tick is sent. A row that draws commits at its animation's end, as before | 9 row tests, 3 screen tests, 1 switch test, 2 e2e tests on three engines |
+| An answer that arrives while the list closes | Armed the retry, usuals-reload or save timer of a closed list | No timer | 3 cubit tests |
+| A 401, 408 or 429 without a PostgREST body on a queued write | The change was dropped as refused | Kept and sent again | 1 repository test (3 statuses) |
+| A failed follow-up read after a merge found its item gone | Shown as offline while the server answered (the op stayed queued) | "Sync gestört", asked again like any 5xx | 1 repository test |
+| A start whose read was passed by a newer reload | Never asked again when that reload failed: stale households, or the loading screen until a restart | Asked again every 3 s until an answer shows and its write to the device went through (the app's store drops a failed write's error, so there: until the write returned). After a dropped answer (where main stopped asking) the newest reload, while it is out, is not passed, and neither the asking's timer nor an auth event sends a read while an order change is on its way. Besides the fix, four more differences from main, each measured below | 56 session tests |
+
+The paths that were covered already (the queue offline and across restarts, refusals, 5xx, an
+expired token, conflicts, overlapping resyncs, the realtime join gap and reconnects, the start
+grace) are listed with their tests in the done file. They were read and run, not changed.
+
+### Measured before and after
+
+- **The lost tick, e2e** (`e2e/tests/tick-leave.spec.ts`: click a row, reload or close the tab
+  at once, expect the item ticked on the device and `bought` on the server). One hold of the e2e
+  lock on the shared box, local stack, the release web build, 14 November 22:07 to 22:24 CET:
+
+  | `app/lib` | Chromium | Firefox | WebKit | Passed |
+  | --- | --- | --- | --- | ---: |
+  | main `3344381d`, `--repeat-each=3` | 0 of 6 | 0 of 6 | 3 of 6 | 3 of 18 |
+  | the branch, `--repeat-each=5` | 10 of 10 | 10 of 10 | 10 of 10 | 30 of 30 |
+
+  WebKit's three passes on main are the closed-tab test: WebKit's close takes longer than the
+  row's leave, so that case shows nothing there. The load average was 7 to 13 during main's
+  run and 5 to 7 during the branch's; the failures on main are the row back on the list after
+  the reload, not timeouts. An earlier run on main is not counted (the spec polled for a
+  status name the server does not use and failed before the click). The branch run predates
+  the list hold for a household switch and review 1's fixes, which are not on the spec's
+  path. Run again with `conventions.spec.ts` at 23:40 (load average 6 to 7), on the tree of
+  `94574c39` (the commits after it are not on the spec's path): 35 of 35 passed, 30 of them
+  this spec on the three engines.
+- **Sync fuzz** (`tool/hillclimb/hc-sync/measure.sh`, seeds 1 to 1000, one run each on the same
+  box): main's `app/lib` 0 failures in 92.1 s, the branch 0 failures in 93.0 s. No change; the
+  fuzz drives the cubit directly, so none of the five paths is in its model. The 0.9 s is
+  inside one run's noise (one run each, no distribution).
+- **Unit and widget tests:** `flutter test test/list test/fuzz` on main `a0cd3c73` 886 passed, 2
+  skipped. The whole suite on the eleventh version with review 9's eight tests and main
+  `c8a90ce1` merged in, through the flutter gate, 15 November 11:19, load average 1.7 at
+  the start: 3277 passed, 98 skipped, none failed, in 1 min 48 s. Before the eight tests,
+  with main `377f1a0f`, at 10:30, load average 0.6: 3269 passed, 98 skipped, in
+  1 min 35 s. Before review 8's five tests, with main
+  `0c4eb818`, at 09:33, load average 0.2: 3264 passed, 98 skipped, in 1 min 32 s. On the tenth version with main `5c09754b`, at 08:23, load average
+  2.8: 3257 passed, 98 skipped, in 1 min 32 s. On `67249a83` (main `c3ea4261` merged in) at 08:20, load average 0.14:
+  3255 passed, 98 skipped, in 1 min 34 s. The ninth version with the same main at 07:01, load average
+  0.64: 3251 passed, 98 skipped, in 1 min 35 s.
+  On the merged head `a4f5efde` (main `683990d8` merged in) at 06:01, load average 4.8: 3232
+  passed, 98 skipped, in 1 min 46 s. Before the merges, `e5462c15` on main `88d0fbdc` at 05:27
+  (load average 0.66): 3197 passed, 98 skipped, in 1 min 31 s. Earlier heads that day: 3181 passed at 03:28 (2 min 44 s), 3168 at 01:36. At
+  00:50, on the base before #472, it had 3162 passed, 98 skipped and one failure, main's and
+  by date: `list_declutter_test.dart` priced an item on 14 November, and a price counts on
+  its own day only (job 221's PR #472 fixed the test). On 14 November the suite was green:
+  3161 passed, 98 skipped on the second pushed head in the reviewer's run; the first pushed
+  head 3152 passed in 2 min 17 s, and in 3 min 15 s in the reviewer's run (the box's load,
+  not the code). The job added 89 tests (item row 9, list screen 3, household switch 1,
+  list cubit 3, repository 2, session 69, e2e 2).
+- **Failing first:** of the 87 Dart tests, run at the head `781db370` against main's
+  `app/lib` (`0c4eb818`), 34 fail and 53 pass (the 79 before review 9: 33 and 46; the 74
+  before review 8: 33 and 41 against
+  `5c09754b`; the tenth version's 67 tests: 31 and 36
+  against `c3ea4261`; the ninth's 63: 30 and 33 against `88d0fbdc` and again against
+  `683990d8`). Of the 53, 33 pin a fault an earlier commit of this branch had (each red
+  on that commit) and 20 guard what main already did. Three of the 34 are red on main for
+  a 3 s timer that main arms after a sign-out, a close or an account change; it reads
+  only if the account it was armed for is signed in again when it fires (the fourth
+  difference below). Against the twelve earlier `app/lib` trees 28, 28, 27, 25, 22, 21,
+  19, 17, 16, 12, 5 and 3 of the 87 fail (`3176c80b`, `94574c39`, `cf0502ff`, `bb6775e8`,
+  `b243599f`, `f5cfb2d2`, `5d21dc45`, `e60c7585`, `e3c7b247`, `659c6a93`, `67249a83`,
+  `42b6429a`), none at the head.
+- **Mutation check:** 88 mutants of the fixes, each failed 1 to 35 tests (the table in the done
+  file; run on `781db370`. The 80 before review 9 ran on `5c29dae4`, 1 to 31 tests each, the 75 before review 8 on `592009a5`, 1 to 30 tests each. The tenth version's 67 ran on `67249a83`, the ninth's 61 on `e5462c15` and again, with the same counts, on the merged head `a4f5efde`). The first pushed head had 13; two survived their first run there (the save timer of a
+  closing list, the signed-in check of the start's retry) and got a test each. Review 1's own
+  30 mutants found two more unpinned lines (the row's listener never ended, the closed check
+  of the start's retry), review 2's 40 two unpinned behaviours (an only-inactive app commits
+  nothing, a closing list saves its queue), review 3's 19 three survivors (the retry waiting
+  for a reload that is out but no longer the newest, in two forms; a row committing when the
+  app comes back). Of review 4's 10, six survived by its table (its summary line says
+  five); the done file lists them. Of review 5's 12, nine survived: one was the must-fix's
+  own candidate, four are pinned since, three went with the sixth version's rule, and one
+  is not pinned (a failed write of the told removals; listed as a gap). Of review 6's 12,
+  three survived: two equivalent, and one pinned since (the mark only while the very
+  answer still shows). Of review 7's 13, nine survived: three change nothing that shows
+  by its reading, one was the must-fix's own candidate, and five are pinned since (four
+  tests). All others are pinned since.
+- **Review 1 (Fable 5.2, a fresh agent in a shared clone): FIX, two must-fixes, both real.**
+  The start's retry of the first version passed a slower reload that was still out and dropped
+  its answer: in the reviewer's probe, with reads slower than 3 s and a second auth event, the
+  households never showed (22 to 37 reads in 120 s). With the fix the same probe shows them in
+  two reads in every row (reads of 3.5 s and 3.2 s: at 6.7 s; of 8 s: at 11.2 s). And `ci-ok`
+  was red on the first pushed head (below).
+- **Review 2: PASS on `5fd39cd1`, no must-fix, ten nice-to-haves.** One was a row where the
+  second version was worse than main: a first read that never answers and a second one that
+  failed. Main asked again 3 s after the failure and showed the households at 4.0 s; the
+  second version waited for the read that never answers. The third version waited only for
+  the newest reload. In the reviewer's 24-row probe that changed six rows, all to main's
+  4.0 s: two from never, four from 63.0 s or 23.0 s.
+- **Review 3: FIX on the third version (local, not pushed), one must-fix.** The reviewer's 54
+  new rows against main: 38 equal, 7 better, 9 worse, on the pushed second version too. The
+  nine have a start read that failed and a newer reload still out. Main asked again 3 s after
+  the failure; the second and third versions waited for the reload. Five rows never showed
+  the households (main: 3.0 s to 5.0 s), four showed them at 4.0 s to 24.0 s (main: 3.0 s to
+  5.0 s). The fourth version: a failed read is asked again after 3 s whatever is out, and
+  only a dropped answer waits for the newest reload.
+- **Review 4: FIX on the fourth version (local, not pushed), one must-fix.** Against the
+  three reviewers' 114 rows the fourth version was 104 equal, 10 better, none worse, and
+  the job's files said it could not be worse. The reviewer's fourth probe (1222 rows)
+  found 18 rows where main showed the households sooner, and two direct rows with the
+  repo's own fakes confirmed two classes: after a dropped answer main asked nothing more,
+  so the newest reload's answer showed; the fourth version's later failed read, or an auth
+  event, sent a read that passed it (main 8.0 s and 2.75 s; the fourth version still
+  loading at 120 s and at 2.75 s). The rule now goes by what the start has seen.
+- **Two more differences, found by the job after review 4.** Comparing by the time a read
+  is sent and with a second seed showed one row where main was sooner (another account
+  over the first, whose read fails late): kept, a measured trade. Reading main's `catch`
+  line by line showed that the fifth version ended the asking when the device write after
+  a shown answer failed, where main read again after 3 s: fixed, and three hand rows give
+  main's reads exactly.
+- **Review 5: FIX on the sixth version (local, not pushed), one must-fix.** The sixth
+  version marked the user as loaded where the answer shows and took the mark back when the
+  device write failed. The reviewer's probe 9 gave the device store writes that take time:
+  while a write ran the mark stood, so a timer that fired, a start read that failed or a
+  token refresh in that window gave up for good. In its five direct rows (a write of 0 to
+  0.5 s that fails) the device never kept the households; main kept them 3 s later. The
+  mark is set after the write now.
+- **Three more faults and two more differences, found by the job after review 5.** The
+  seventh version (the mark after the write, for the newest reload's answer only) asked
+  every 3 s with the households shown and kept when a reload sent during the write failed
+  (41 reads in 120 s against main's 2; the job's probe 10). The eighth (the start's own
+  answers too) had the same fault one reload later and counted an answer kept after a
+  sign-out; both were found by reading each window between two awaits against main, and
+  no probe row shows them (tests do). The rule that stays does not ask which reload
+  brought the answer. Reading main's timers the same way found the fourth and fifth
+  differences below.
+- **The final rule against main** (ten probes under fake time; main's `app/lib` `88d0fbdc`
+  against the ninth version's, `bd3d8506` (the table's numbers); run again on
+  the merged head `a4f5efde` against main `683990d8`, every printed row the same on both
+  sides). "Equal" is the
+  same times and the same number of reads. Probes 1 to 8 time when the server's households
+  first show within 120 s; probes 9 and 10 also when the device has kept them, with a
+  device store whose writes take time and fail until a set moment (a store that throws:
+  the tests' store; the app's `DeviceCache` drops a failed write's error, so only the
+  rows with slow writes that work are the app's case). The tenth
+  version (`67249a83`) and the eleventh (`592009a5`) print the ninth's rows line for line
+  in all ten probes and both direct runs: their order changes are answered at once, so
+  only the order-change rows below tell the three apart.
+
+  | Probe | Rows | Equal | Same times, head fewer reads | Same times, head more reads | Head sooner, or main never | Main sooner |
+  | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+  | 1: review 1's (reads slower than the retry, a second auth event or reload) | 36 | 36 | 0 | 0 | 0 | 0 |
+  | 2: review 2's (a first read that is slow or never answers, a second that fails) | 24 | 20 | 0 | 0 | 4 | 0 |
+  | 3: review 3's (failed and dropped start reads, reorders, leaves, account changes) | 54 | 48 | 0 | 0 | 6 | 0 |
+  | 4: review 4's (22 by hand, 1200 generated), answers by position | 1222 | 1031 | 72 | 66 | 51 | 2 |
+  | 5: the same rows, answers by the time a read is sent | 1222 | 1035 | 69 | 73 | 45 | 0 |
+  | 6: as 5 with another seed, 6000 generated | 6022 | 5072 | 354 | 368 | 227 | 1 |
+  | 7: another account over the first, whose read fails late (4 by hand) | 4 | 0 | 0 | 1 | 2 | 1 |
+  | 8: the device write after a shown answer fails (3 by hand) | 3 | 3 | 0 | 0 | 0 | 0 |
+  | 9: review 5's (18 by hand, 3000 generated), device writes that take time and fail | 3018 | 2649 | 76 | 191 | 102 | 0 |
+  | 10: as 9 with another seed (12 by hand, 3000 generated) | 3012 | 2668 | 75 | 163 | 104 | 2 |
+
+  - Probe 4's two "main sooner" rows come from answers by position: one more read moves
+    every later answer. By time (probe 5) the head is sooner in one and neither shows the
+    households in the other.
+  - More reads (73 and 368 rows in probes 5 and 6): in 68 and 348 neither version shows the
+    households, and the head goes on asking every 3 s where main stopped after a dropped
+    answer (up to 41 more reads in 120 s; the most in such a row is 51 on both). In the
+    other 5 and 20 the time is the same with 1 to 3 more reads. In probes 9 and 10 (191
+    and 163 rows): the device keeps nothing on either version in 165 and 146 (1 to 39 more
+    reads); in the other 26 and 17 the times are the same with 1 to 17 more.
+  - Fewer reads (69, 354, 76 and 75 rows): main read every 3 s after another reload's
+    answer had shown; the head sends 1 to 40 fewer in probes 5 and 6, 1 to 3 fewer in
+    probes 9 and 10.
+  - Head sooner in probes 5 and 6 (45 and 227 rows): main never shows the households in 43
+    and 211; in the other 2 and 16 the head is 0.5 to 7.5 s sooner. Never shown: 231
+    against main's 274, and 1251 against 1462.
+  - Head sooner in probes 9 and 10 (102 and 104 rows): the device keeps the households on
+    the head and never on main in 81 and 85, sooner in 19 and 16 (0.5 to 53.8 s); the
+    other 2 and 3 show them sooner or where main never does. Never kept: 615 against
+    main's 697, and 627 against 712.
+  - Main sooner, three rows of 13,274 by time (probes 5, 6, 9 and 10). One is the
+    cross-account trade (the third difference): 9.0 s against 15.4 s. In probe 7 around
+    it main never shows the households in two rows, is sooner in one and equal in time in
+    one. With main's cancel put back the head's times or reads change in 33 rows, and in
+    all 33 it then equals main: this row and its hand copy, the two "never" rows of probe 7, two rows
+    of probe 9 where the device then never keeps the households and one where it keeps
+    them 4.4 s later, and 26 rows with the same times and fewer reads (in 22 of them the
+    households are never shown or never kept on either version, and the head asks on, 1
+    to 38 more reads).
+    Two are the fourth difference (a read that failed after its account
+    signed out, the same account back within 3 s of the failure): shown at 11.1 s against
+    15.0 s in one; kept at 12.1 s against 15.2 s in the other, where the head shows them
+    4.0 s sooner. With main's timer put back the head equals main in those two, in four
+    rows where the head shows the households sooner (0.1 to 3.0 s) and in five where it
+    sends fewer reads. With main's whole `catch` put back (both, and the timer main arms
+    for an account another one signed in over) the head changes in those 33 and 11 rows
+    and no other, and equals main in all 44; the 1,810 rows where it then still differs
+    from main (the first and second differences) have none where main is sooner.
+  - Probe 8: 2, 4 and 41 reads in 120 s on main and on the head; the fifth version sent
+    one read and left nothing on the device.
+  - Review 4's two direct rows and review 5's five: the head equals main in all seven.
+  - An order change on its way (review 6; 66 hand rows on the head `592009a5`, main
+    `5c09754b` and the ninth version; the head's rows are the tenth version's line for
+    line: the start's read dropped or failed, the order change at 0.2 s or 3 s taking 0
+    to 8 s, accepted or refused, or never answering).
+    Old order shown again after a dropped answer: 0 of 33 rows on the head, 0 on main, 11
+    on the ninth version (1.2 to 11.2 s). The server's households never show: 0 rows on
+    the head, 18 on main (the order changes refused or never answered; the head reads
+    within 3 s of the later of their end and the dropped answer, at 4.0 to 18.0 s; in 7
+    of the 18 that is 3.5 to 6.8 s after the order change's end, counted from its start
+    plus its request time, or plus 15 s when it never answers). After a failed read
+    the head and main are the same in time, the old order shown again in the same 11
+    rows for the same 1.2 to 11.2 s (main's defect, kept); the head sends one read fewer
+    in 11 rows. No row has main sooner. Against the ninth version the head shows the
+    server's households 1.2 to 12.0 s later in the 11 rows where the ninth showed the
+    old order.
+  - An auth event, a resume, two order changes or a second account while an order change
+    is on its way (review 7's 62 hand rows, run by the job on the head, main, the ninth
+    and the tenth version and `42b6429a`). After a dropped answer and a token refresh or
+    a retryable auth error (15 rows): no old order on the head or on main; on the tenth
+    version in 14 rows for 0.1 to 13.1 s (8 of them with an accepted order change, 0.1
+    to 6.1 s: review 7's must-fix). In the six of those rows whose order change is
+    refused or never answered the head shows the server's households at 10.0 s and
+    16.0 s, main never; the same in the two such rows with no event. A resume's reload after a dropped answer shows the old order in
+    5 of 5 rows for 0.6 to 13.1 s, the same on main and on the head (main's defect,
+    kept). After a failed start read (25 rows) the head equals main in the old order's
+    time (23 rows, 0.6 to 13.1 s) and in when the households show; main sends one read
+    more in 7. The other 12 rows (two order changes one behind the other, an order
+    change started after the dropped answer, one whose device write takes 20 s, one
+    that changes nothing, another account or the same account back while one is out):
+    the head equals main in time in the 5 where main shows the households (10.0 to
+    20.2 s; one more read in one) and shows them at 4.0 to 31.0 s in the 7 where main
+    never does; no row shows the old order after its drag on the head or on main. In no
+    row of the 62 is the head later than main; in 15 main never shows the households
+    and the head does (6, 2 and 7). All 310 runs end with no timer left.
+  - The account deleted after a dropped answer, an order change still on its way (24
+    hand rows of the job's, after review 7: a device sign-out that takes 5 s or throws,
+    an auth event before it ends or none). The head prints main's row in all 24;
+    `42b6429a` held the auth event's read in the 16 rows that have one, because the
+    deletion left the wait in place (`592009a5` forgets it there, as main forgets its
+    mark).
+  - Review 6's other direct rows, the same on the ninth, the tenth and the eleventh
+    version: the app's
+    store over preferences that refuse every write (1 read in 120 s, the same on main; 41
+    with the tests' store that throws); an older write ending after a newer answer shows
+    (4 rows, the same on main); an auth stream error (4 rows: 3 equal to main, in 1 the
+    head reads again and shows the households where main stays signed out); the account
+    deleted with a fake sign-out that is slow or throws (12 rows: 8 equal to main, in 4
+    the head reads again after a dropped answer: 2 reads against 1 in three, 7 against
+    1 in 20 s in the one where the sign-out throws and the reads fail).
+  - Rows that end with a 3 s timer armed: 147 against main's 70, 746 against 395, 339
+    against 247, and 350 against 268 (probes 5, 6, 9, 10). Never more than one timer at a
+    time and no read after a sign-out on either.
+  - Limits: fake time; a row's later reads follow one script (one way until a set moment,
+    another after it); the device fails or delays a write in probes 8, 9 and 10 only, and
+    never a write of the told removals; no probe row shows the eighth version's two
+    faults; the generators rarely hit account changes with a late failure, and may miss
+    other cases as rarely hit.
+  - Review 6 (on `659c6a93`, the ninth version): FIX, two must-fixes. The ninth version's
+    timer read while an order change was on its way and the old order came back on screen
+    (fixed: the tenth version, the grid above), and the files claimed a failed device
+    write was asked again, which only the tests' store shows (the app's store drops the
+    error; the sentences corrected). Four nice-to-haves, each a sentence, a gap line with
+    its measured rows, or a test.
+  - Review 7 (on `03b409a8`, the tenth version): FIX, one must-fix. The tenth version
+    held the 3 s timer while an order change was on its way, but not the read an auth
+    event sends, so after a dropped answer a token refresh put the old order back on
+    screen (0.1 to 6.1 s in eight of the reviewer's rows; main: none), and four files
+    said the branch stopped its own asking from doing that. Fixed: the wait is one rule
+    that both doors ask (the eleventh version, the 62 rows above). Five nice-to-haves,
+    all taken: two sentences recomputed from the rows ("15 s at the most", "within 3 s
+    of the order change's end"), five surviving mutants of its own pinned (four tests),
+    a stale `flutter test` line, two gap lines now measured.
+  - Review 8 (on `89d28391`, the eleventh version with main `0c4eb818` merged in): PASS,
+    no must-fix. Five nice-to-haves, all taken: a count (15 rows, not 13, where main
+    never shows the households and the head does), five surviving mutants of its own 16
+    pinned by five tests (80 mutants now), two ranges stamped one 100 ms step early
+    (0.0 to 3.0 s and 3.5 to 6.8 s), and two windows it measured that are in the gap
+    list now (an auth stream error after a dropped answer; a wait left with no timer
+    behind it), no row worse than main in either.
+  - Review 9 (on `504f6c6a`, review 8's five tests and main `377f1a0f` merged in): PASS,
+    no must-fix. Five nice-to-haves, all taken: eight of its own 13 mutants survived (the
+    wait at an auth event and at the timer each on its own, and review 8's rows with a
+    second order change, an older reload or a device slow to forget the session) and
+    are pinned by eight tests (88 mutants now; one of the eight tests is red on main,
+    three pin an earlier commit, four guard), and three sentences were stronger than
+    their rows and are reworded. Its 16 own rows: 13 equal to main, 3 where main never
+    shows the third household and the head does (at 10.0 s twice and 19.0 s). The
+    eight tests were not reviewed again: they are checked by their mutants and against
+    main's and the earlier trees' `app/lib`.
+- **Failures and flakes:** one failure, the job's own: the first pushed head `3176c80b` failed
+  `e2e (1)` with 1 failed and 136 passed. The new spec imported from `@playwright/test`, which
+  `conventions.spec.ts` refuses; only the one spec had been run locally. Not a flake. The
+  spec's own six runs passed in that CI run on Chromium, WebKit and Firefox. No flake was
+  seen in the job's own runs (the e2e runs above, the fuzz, the unit suites). The second
+  pushed head's CI run was green at its first attempt. Flakes of the land's own run, if
+  any, are in the job's DONE_SUMMARY copy in the ops folder with that run's numbers.
+- **Not measured:** how often users lost a tick this way (no event tells a lost tick from one
+  never made); the CI trace of job 219's point 4 was not reproduced; a body-less 401, 408 or
+  429 was not driven through the web build; a phone was not used.
+
+### Remaining gaps
+
+Open and untested, in the done file with their reasons: a write or a start read that never
+answers (no timeout; job 122's reordering finding stands), a forced sign-out dropping the queue
+(intended, a product call), realtime channels other than the list's after a server `phx_close`,
+a gateway's lasting 401 or 429 asked every 3 s without backoff (read from the code), a
+start whose reads keep failing asked every 3 s without backoff (as on main, now also after a
+dropped answer), three measured rows where main shows or keeps the households sooner (one
+after another account's late failure, two after a sign-out with the same account back within
+3 s), a second account's late answer showing to the first when it signs in again over it (on
+main too), a read answered while an order change is on its way showing the old order again
+(on main too, after a failed start read and after a resume's reload, measured; after a
+dropped answer this job holds its own asking at the timer and at an auth event, measured,
+and does not hold a reload the app sends itself), another account's order change holding
+the asking after a dropped answer (17.0 s and 18.0 s in two rows where main never shows
+the households), an auth stream error
+during the start answer's device write and an account deleted with a slow device sign-out
+(one more read than main, measured), an auth stream error after a dropped answer and a
+wait left with no timer after the timer found nobody signed in (review 8's rows N and P:
+no row worse than main, no test), a device write that fails (the app's store drops the
+error, so the cubit's handling of one is pinned against the tests' store only), two edges of the early commit (a row gone without the rest of its animation
+after a hide, a first frame later than 440 ms), delete winning over a replayed add, the fuzz fake's omissions (JWT expiry, catalog edits,
+`place_item` and `move_item`, single dropped events, four devices), a resume resubscribing a
+down channel at once, flight mode on a real phone, and the stack-pause stress pass. The write,
+the start read, the sign-out, the channels and the old order shown again are in
+`docs/NEEDS_LEAD.md`, "Job 222".
+
+### Cost
+
+- **Wall time:** the build ran 20:13 to 20:45 and from 21:54 CET on 14 November
+  (to the last commit before the land at 11:27 on 15 November: 32 min and 13 h 33 min, with no pause over 15 min in the transcripts; the land's wait for CI comes after it). A first start at 05:18 stopped after 2 s at the usage limit, and the 20:45 stop
+  was the limit again: 14 h 56 min and 1 h 10 min queued or blocked, not worked.
+- **Tokens,** from the usage fields of the job's transcripts, each message id counted once,
+  every one of the 1,848 model messages on `claude-fable-5-2` (five more are the harness's own, with no model and no tokens), read at 11:24 CET on 15 November: 3,696 input, 2,086,310 output, 8,854,255 cache-write and 193,677,422 cache-read tokens. These are lower bounds
+  (the stream omits some output counts), and the two mapping delegates and the review are in
+  them only as far as their transcripts sit in the job's folder.
+- **Gates,** locally through `scripts/verify.sh`, one run each: gitleaks 14 s, lint 150 s,
+  flutter 173 s. A first flutter gate run failed after 14 s on seven analyzer findings in the
+  job's own lines (escaped quotes, an unneeded `unawaited`), fixed with `dart fix`. The e2e
+  gate ran only for the one spec, in the lock hold below. After review 1: gitleaks 13 s,
+  flutter 146 s, lint 126 s, and the e2e gate for the two specs 551 s. On the final code
+  (`e5462c15`): flutter 133 s. On the merged head: gitleaks 12 s, lint 121 s (on the docs
+  before the merge), flutter 151 s; with main `c3ea4261` merged in, flutter 136 s. On the tenth version (`67249a83`, 08:17 on
+  15 November): gitleaks 13 s, lint 124 s, flutter 138 s; with main `5c09754b` merged in,
+  flutter 135 s. On the eleventh version with main `0c4eb818` merged in (09:31): gitleaks
+  12 s, lint 125 s, flutter 137 s. With review 8's five tests and main `377f1a0f` merged in
+  (10:30): gitleaks 13 s, lint 124 s, flutter 134 s. With review 9's eight tests and main
+  `c8a90ce1` merged in (11:19, load average 1.7 rising to 7.6): gitleaks 13 s, lint 130 s,
+  flutter 146 s.
+- **Review:** round 1 took about 28 min and 114,582 tokens of the reviewer's own (its report's
+  count; 58 tool calls). Round 2 took 34.5 min (2,071 s) and 129,642 tokens (70 tool calls).
+  Round 3 took 26.4 min (1,583 s) and 124,304 tokens (60 tool calls). Round 4 took 27.9 min
+  (1,674 s) and 131,414 tokens (61 tool calls), round 5 40.1 min (2,406 s) and 90,739
+  tokens (86 tool calls), round 6 37.0 min (2,219 s) and 89,949 tokens (112 tool calls); a
+  first start of round 6 was cut off by the usage limit and is not counted. Round 7 took 21.3 min (1,278 s) and 63,645 tokens (54 tool calls), round 8
+  33.6 min (2,019 s) and 90,226 tokens (108 tool calls), round 9 17.0 min (1,022 s) and
+  122,750 tokens (61 tool calls).
+- **CI:** run 43645262887 on the first pushed head `3176c80b`, 22:54 to 23:19 CET, 24 min
+  26 s: red (`e2e (1)`, the job's own conventions failure above); `e2e (2)` 23 min 57 s,
+  `e2e (1)` 14 min 35 s, flutter 5 min 3 s, lint 2 min 59 s, db 3 min 22 s; ios and android
+  skipped. Run 43650812055 on the second pushed head `5fd39cd1`, 23:58 to 00:22 CET, 24 min
+  46 s: green (`e2e (2)` 24 min 25 s, `e2e (1)` 15 min 20 s, flutter 5 min 19 s, lint
+  2 min 44 s, db 3 min 2 s; ios and android skipped). The land's own run, on the final
+  head, cannot be in this file, which is part of that commit: it is in the job's
+  DONE_SUMMARY copy in the ops folder.
+- **The e2e lock:** one hold of 27 min for the three runs (21:57 to 22:24), of which the first
+  9 min bought nothing (the spec's wrong status name). A second hold of 9 min at 23:40 for the run after review 1.
