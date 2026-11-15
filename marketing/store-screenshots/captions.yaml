@@ -10,8 +10,9 @@
 #         alt:             the store's alt text, at most 140 characters
 #         sticker:         words drawn on the shot's sticker (voice: the spoken sentence; assist:
 #                          the request, the reply and the items the assistant adds)
-#         play:            replaces fields on the Play set only; status: blocked keeps a frame out of the
-#                          upload until it is filmed on a real device (voice: dictation is de_DE only)
+#         play:            replaces fields on the Play set only; status: blocked or on-hold keeps a frame
+#                          out of the upload (blocked: no real-device capture yet; on-hold: waits for
+#                          English dictation to be verified on a real device, job 256)
 #         appstore:        replaces s and alt on the App Store set only (voice: Siri, N-189, N-195)
 #         premium:         the label --premium-label puts on the frame once AI assistants are paid
 #                          (Apple 2.3.2, N-193; no price, 2.3.7)
@@ -70,7 +71,7 @@ de-DE:
     invite:
       status: draft
       h: [Alle dabei., Viele Listen.]
-      s: Lade alle ein. So viele Listen, wie ihr wollt.
+      s: Lade alle ein. Mehrere Listen für jeden Anlass.
       alt: Haushaltsseite mit Anna und Jonas, „Leute einladen“ und eigenen Listen für Wocheneinkauf, Baumarkt und Geburtstag.
   feature:
     # Peter chose this wording (FG2) as the site's hero tagline on 2026-11-01 (job 65 brief,
@@ -109,8 +110,7 @@ en-US:
       sticker:
         said: Bananas, Butter and Oats
       play:
-        status: blocked
-        alt: Jonas says “Bananen, Butter und Haferflocken” by voice, and all three show up highlighted on Anna’s list.
+        status: on-hold
       appstore:
         s: Works with Siri
         alt: Jonas tells Siri “Bananas, Butter and Oats”, and all three show up highlighted on Anna’s list.
@@ -127,7 +127,7 @@ en-US:
     invite:
       status: draft
       h: [Everyone in., Many lists.]
-      s: Invite everyone. As many lists as you want.
+      s: Invite everyone. Separate lists for every occasion.
       alt: The household page with Anna and Jonas, “Invite people” and separate lists for Weekly shop, Hardware and Birthday.
   feature:
     status: draft

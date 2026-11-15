@@ -246,7 +246,8 @@ try {
       const meta = JSON.parse(readFileSync(join(rawDir, 'meta.json'), 'utf8'));
       if (!meta[shot]) throw new Error(`no capture of ${shot} in ${relative(OUT, rawDir)}`);
       const words = byStore[s.store];
-      const file = join(OUT, locale, set, `${n}-${shot}.png`);
+      const held = ['blocked', 'on-hold'].includes(words[shot].status) ? `.${words[shot].status.toUpperCase()}` : '';
+      const file = join(OUT, locale, set, `${n}-${shot}${held}.png`);
       // A subline on two lines pushes the sticker into the headline block: give the sticker
       // more room above the card, 50 u at a time.
       let found;
@@ -316,7 +317,7 @@ writeFileSync(join(OUT, 'summary.md'), `${[
   '', drafts.length ? `Draft captions: ${drafts.join(', ')}` : 'Every caption is approved.',
   '', failures.length ? `Checks FAILED:\n${failures.map((f) => `- ${f}`).join('\n')}` : 'All checks pass.',
 ].join('\n')}\n`);
-const captionRows = manifest.files.filter((f) => f.caption).map((f) => `| ${f.locale} | ${f.set} | ${f.shot ?? f.set.replace('play-', '')} | ${f.caption} | ${f.alt ?? ''} | ${f.status === 'blocked' ? 'BLOCKED: needs a real-device German capture' : (f.status ?? '')} |`);
+const captionRows = manifest.files.filter((f) => f.caption).map((f) => `| ${f.locale} | ${f.set} | ${f.shot ?? f.set.replace('play-', '')} | ${f.caption} | ${f.alt ?? ''} | ${{ blocked: 'BLOCKED: needs a real-device German capture', 'on-hold': 'ON HOLD: until English dictation is verified on a real device' }[f.status] ?? f.status ?? ''} |`);
 writeFileSync(join(OUT, 'CAPTIONS.md'), `${[
   '# Every caption per frame and locale', '',
   'Siri appears on the App Store voice frame only; no Alexa, API, automations, free, AI brand, alcohol or tobacco anywhere (Legal N-187 to N-195, job 252).', '',

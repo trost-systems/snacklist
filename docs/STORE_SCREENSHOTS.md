@@ -84,7 +84,7 @@ The scenarios are `test/fixtures/scenarios/store-screenshots.yaml` and
 
 `marketing/store-screenshots/captions.yaml` holds every word the files show besides the app's own:
 per locale and shot the headline (`h`, two lines), the subline (`s`), the alt text (`alt`, at most
-140 characters) and a `status` (`draft`, `approved` or `blocked`), plus the sticker words and the feature
+140 characters) and a `status` (`draft`, `approved`, `blocked` or `on-hold`), plus the sticker words and the feature
 graphic's tagline. The voice sentence and the assistant's items there are also what the capture
 sends to the functions.
 
@@ -95,9 +95,10 @@ Legal's caption rules (N-187 to N-195, job 252) hold for every frame, both store
   AI assistants." (assist headline „Sag’s dem Assistenten.“ / "Ask an assistant.", job 255) No assistant, maker or logo is named (N-191), and neither is MCP or the API.
 - Siri: only the plain „Funktioniert mit Siri“ / "Works with Siri", and only on the App Store set
   (`appstore:` in `captions.yaml`). No Siri icon, no „Hey Siri“, no ™ or ®, no „einfach“ (N-189),
-  never on Play (N-195), where the voice frame says the neutral line. That frame is `status: blocked`
-  (`play:` in `captions.yaml`): dictation is de_DE only, so its demo must be a real-device German
-  capture (en-US too, with the German sentence); until one exists it stays out of the upload (job 255).
+  never on Play (N-195), where the voice frame says the neutral line. The de-DE Play frame is `status: blocked` (`play:` in `captions.yaml`): German dictation
+  needs a real-device German capture, and none exists. The en-US Play frame is `status: on-hold`
+  until English dictation (job 256) is verified on a real device. Held frames are rendered as
+  `<n>-voice.BLOCKED.png` / `.ON-HOLD.png` so a folder upload cannot pick them up (job 255).
 - No Alexa caption (N-187) until the skill is live in the Alexa Skill Store for the locale.
 - No „kostenlos“ / "free" (N-190), no price, no „API“ or „Automationen“ (N-194), no list cap and
   no alcohol or tobacco (age 4+).
