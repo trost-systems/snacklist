@@ -362,11 +362,22 @@ List<Widget> householdSheetTail(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(session.defaultHousehold.name),
+                  _voiceName(
+                    context,
+                    Icons.home_outlined,
+                    session.defaultHousehold.name,
+                    l10n.voiceDefaultHouseholdName(
+                      session.defaultHousehold.name,
+                    ),
+                  ),
                   DefaultListPicker(
                     householdId: session.defaultHousehold.id,
-                    builder: (context, list, _) => Text(
+                    single: true,
+                    builder: (context, list, _) => _voiceName(
+                      context,
+                      Icons.checklist,
                       list,
+                      l10n.defaultListRow(list),
                       key: const ValueKey('household-default-list-name'),
                     ),
                   ),
@@ -409,6 +420,42 @@ List<Widget> householdSheetTail(
       ),
     ],
   ];
+}
+
+/// A name in the row for Siri, Alexa & KI: [icon] tells the household
+/// from the list where names wrap, and screen readers hear [label]. The
+/// icon is a glyph of the text, so the name wraps under it at full width
+/// and the line merges into the row's semantics.
+Widget _voiceName(
+  BuildContext context,
+  IconData icon,
+  String name,
+  String label, {
+  Key? key,
+}) {
+  final t = SnacklistColors.of(Theme.of(context).brightness);
+  return Text.rich(
+    key: key,
+    TextSpan(
+      children: [
+        TextSpan(
+          text: String.fromCharCode(icon.codePoint),
+          semanticsLabel: '',
+          // An icon draws inside its box: a bit larger to match the
+          // letters, on the line's own height.
+          style: TextStyle(
+            fontFamily: icon.fontFamily,
+            package: icon.fontPackage,
+            fontSize:
+                (Theme.of(context).textTheme.bodyLarge?.fontSize ?? 16) * 1.2,
+            height: 1,
+            color: t.textMuted,
+          ),
+        ),
+        TextSpan(text: ' $name', semanticsLabel: label),
+      ],
+    ),
+  );
 }
 
 /// Asks whether to withdraw [request], and does.

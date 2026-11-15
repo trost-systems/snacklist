@@ -282,10 +282,18 @@ Future<void> _openHouseholds(WidgetTester tester) async {
   await _back(tester);
 }
 
+/// What [text] shows, without its leading icon glyph.
+String _shown(Text text) =>
+    (text.data ??
+            text.textSpan?.toPlainText(includeSemanticsLabels: false) ??
+            '')
+        .replaceFirst(RegExp(r'^[\u{E000}-\u{F8FF}]', unicode: true), '')
+        .trim();
+
 /// [text] in the row for Siri, Alexa & KI.
 Finder _inVoiceRow(String text) => find.descendant(
   of: _key('household-default-row'),
-  matching: find.text(text),
+  matching: find.byWidgetPredicate((w) => w is Text && _shown(w) == text),
 );
 
 /// The voice row's list line: the list's name, nothing else.
@@ -294,7 +302,7 @@ String? _voiceList(WidgetTester tester) => switch (find
     .evaluate()
     .firstOrNull
     ?.widget) {
-  final Text text => text.data,
+  final Text text => _shown(text),
   _ => null,
 };
 
@@ -904,11 +912,58 @@ void main() {
       expect(
         tester.getSemantics(_key('household-default-row')).label,
         matches(
-          RegExp(r'^Siri, Alexa & KI nutzen:\s+Zuhause\s+Wocheneinkauf$'),
+          RegExp(
+            r'^Siri, Alexa & KI nutzen:\s+Haushalt: Zuhause\s+Liste: Wocheneinkauf$',
+          ),
         ),
       );
       semantics.dispose();
       expect(s.session.defaults, isEmpty);
+    });
+
+    testWidgets('a home marks the household and a checklist the list, also '
+        'when the household has one list', (tester) async {
+      await _pump(tester, flags: voice, homeLists: const [_weekly]);
+      await _openHouseholds(tester);
+      String line(String name) => find
+          .descendant(
+            of: _key('household-default-row'),
+            matching: find.byWidgetPredicate(
+              (w) => w is Text && _shown(w) == name,
+            ),
+          )
+          .evaluate()
+          .map(
+            (e) => (e.widget as Text).textSpan!.toPlainText(
+              includeSemanticsLabels: false,
+            ),
+          )
+          .single;
+      expect(
+        line('Zuhause'),
+        '${String.fromCharCode(Icons.home_outlined.codePoint)} Zuhause',
+      );
+      expect(
+        line('Wocheneinkauf'),
+        '${String.fromCharCode(Icons.checklist.codePoint)} Wocheneinkauf',
+      );
+    });
+
+    testWidgets('in English the row reads "add to" and names household and '
+        'list', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await _pump(tester, flags: voice, locale: const Locale('en'));
+      await _openHouseholds(tester);
+      expect(
+        tester.getSemantics(_key('household-default-row')).label,
+        matches(
+          RegExp(
+            r'^Siri, Alexa & AI add to:\s+Household: Zuhause\s+List: '
+            r'Wocheneinkauf$',
+          ),
+        ),
+      );
+      semantics.dispose();
     });
 
     testWidgets('with the list flag off the row names no list', (tester) async {

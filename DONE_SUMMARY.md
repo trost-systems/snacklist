@@ -1164,3 +1164,25 @@ is fixed and pinned by tests that fail without the fix.
 **Missing.** Nothing is blocked. Known and left as is: after a save the row shows its list line
 a moment later (the pick loads again), and a list deleted while the list step is open ends in a
 snackbar.
+
+### Job 248 review 0 fix (2026-11-15)
+
+PR https://github.com/trost-systems/snacklist/pull/478. Review 0 had one must-fix: the row's two
+names were in the same style, so a wrapped household name could read as the list.
+
+- **Each line has an icon.** A house icon now starts the household line and a checklist icon the
+  list line. The icons are glyphs inside the text, so the names still wrap at full width at
+  200 %.
+- **Screen readers.** They hear „Siri, Alexa & KI nutzen: Haushalt: … Liste: …“ ("Siri, Alexa & AI
+  add to: Household: … List: …").
+- **From the nice-to-haves.** A household with one list names it too, when
+  `default-list-voice-target` is on. The English label is "Siri, Alexa & AI add to:".
+- **Verified.**
+  - 17 widget tests in the job 248 group. New: the icon on each line, a household with one list,
+    and the English accessible name.
+  - The goldens are regenerated.
+  - `scripts/verify.sh --only lint,flutter` passed.
+  - The web journey `voice-default.mjs` passed for DE 100 %, EN dark 100 %, DE 200 % and EN
+    200 %. It now asserts the accessible name with „Haushalt:“ / „Liste:“.
+  - The screenshots in `docs/screenshots/248/` are refreshed, and the job's `out/web-r0/` has the
+    shots from this round.

@@ -5144,6 +5144,12 @@ abstract class AppLocalizations {
   /// **'Siri, Alexa & KI nutzen:'**
   String get voiceDefaultLabel;
 
+  /// Job 248 review: what screen readers hear for the household line of the switcher sheet's row for Siri, Alexa and AI (the list line reads defaultListRow)
+  ///
+  /// In de, this message translates to:
+  /// **'Haushalt: {household}'**
+  String voiceDefaultHouseholdName(String household);
+
   /// Job 248: back row of the switcher sheet's list step for Siri, Alexa and AI: back to its household step
   ///
   /// In de, this message translates to:
