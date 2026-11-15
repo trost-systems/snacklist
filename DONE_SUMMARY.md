@@ -1265,3 +1265,16 @@ Details: [docs/done/215-store-screenshots-redo.md](docs/done/215-store-screensho
 **Missing.** A real-device run of the recognizers and of Android's download prompt: `out/DEVICE_TEST.md` in the job's ops dir. Privacy policy and landing copy still say German: NEEDS_LEAD "Job 256". Splitting without commas or "and" ("milk two bananas") stays one item in both languages (DECISIONS).
 
 **Ships.** The next green main build to TestFlight and Play internal. No flag targeting needed.
+
+## Job 222 review 0 fix (2026-11-15)
+
+PR https://github.com/trost-systems/snacklist/pull/490. Review 0 of job 222 (the harness review of #469, verdict FIX) had one must-fix: `e2e/tests/tick-leave.spec.ts` ran close to its timeout on CI's WebKit, with no retry behind a timeout. Test and docs only; users see no change.
+
+- **The fix.** Both tests call `test.slow(browserName === 'webkit')`, as `wasm-boot.spec.ts` and `no-google.spec.ts` do. On WebKit the timeout is 180 s instead of 60 s. The WebKit run keeps its steps and assertions.
+- **Before (measured).** 33 to 50 s of 60 s on CI's WebKit in five runs (four read by the reviewer, 49.7 s in the job's run 43650812055), 59.2 s for the reload test on the reviewer's loaded box.
+- **After (measured).** On-demand e2e run 43713288298 on GitHub, the spec three times per browser: 18 of 18 passed, 0 flaky. The JSON report gives WebKit a timeout of 180000 ms and Chromium and Firefox 60000 ms. WebKit took 35.8 to 38.5 s, 20 to 21 % of its timeout. Local run on the job's stack: 6 of 6, the same timeouts in the report, WebKit 15.4 s and 16.7 s. `scripts/verify.sh --only gitleaks,lint` passed.
+- **Not measured.** How much slower a slow CI WebKit runner gets. The 180 s is the room the sibling WebKit specs have, not a bound derived from a worst case.
+- **Nice-to-haves taken.** A comment at the closed-tab test: on WebKit it passes on the code before #469 too, so it proves nothing there (3). Two lines under remaining gaps in `docs/done/222-robustness-offline-sync.md`: `item_ticked` is still sent for a tick in the instant after sign-out (5, inferred by the reviewer, not driven), and the body-less 401, 408 and 429 were driven through the web build by the reviewer's own spec, which is not in the repo.
+- **Nice-to-haves left.** The probe harness in the repo (1), a state table for `SessionCubit`'s start (2) and a short top section for the done doc (4). Each is its own change to code or to a long record and none is needed for the fix. They are in the ops `NEEDS_LEAD.md` ("Job 222 review 0").
+- **In-job review.** Round 1 (a fresh subagent, read-only) recomputed every number from the evidence files (the two JSON reports, review 0, the CI log) and found them true, and asked for three sentences of these records to be bounded to their evidence: FIX. Round 2 (another fresh one) confirmed the rewording: PASS, no must-fix. Both ran on `claude-fable-5-2`.
+- **The land's CI run** goes into the job's DONE_SUMMARY copy in the ops folder after the land: this file is part of the commit it tests.

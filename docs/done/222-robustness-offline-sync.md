@@ -1092,7 +1092,13 @@ changes and the replaced deleted-account notice are in `docs/NEEDS_LEAD.md`, "Jo
   the case fixed here: the row is gone from the page before its tick commits. A committed tick
   is written to the device in the same turn, the path the new spec drives at the reload. The
   CI trace itself was not reproduced, so that it was this and nothing else is inferred.
-- **No e2e for a body-less 401, 408 or 429**: unit-tested at the repository only.
+- **No e2e for a body-less 401, 408 or 429** in the repo: unit-tested at the repository only.
+  Review 0 drove them through the web build with its own spec, which is not in the repo (the
+  reviewer's measurement: head 4 of 4, main's code fails the three, a 403 stays a refusal).
+- **A tick in the instant after sign-out still sends `item_ticked`,** although the device then
+  refuses to store the queue. Inferred by review 0 from the code (`ListCubit.tick` tracks
+  before anything asks whether the queue was kept); the window is one microtask and nobody
+  drove it.
 - From earlier jobs, still open and untested: delete wins over a replayed add (job 99), the
   fuzz fake's omissions (job 99), resume resubscribing a down channel at once and catalog
   changes during a grace (job 212), flight mode on a real phone (job 166), the stack-pause
@@ -1106,3 +1112,15 @@ changes and the replaced deleted-account notice are in `docs/NEEDS_LEAD.md`, "Jo
   while it leaves (the dividers and "Zuletzt verwendet" move under it), which is a design
   change. The commit-early paths give the same guarantee with the row unchanged.
 - Voice, Siri, trip-mode UI, legal and store metadata (the brief's stay-off list).
+
+## Review 0 (15 November 2026)
+
+The harness review of #469 says every number it reran came out as written. Its one must-fix was
+the new spec's margin on WebKit: 33 to 48 s of a 60 s timeout in the four CI runs it read (49.7
+s in the job's earlier run 43650812055), 59.2 s for the reload test on the reviewer's loaded
+box, and a timeout is not retried. PR #490 gives both tests `test.slow(browserName ===
+'webkit')`, as `wasm-boot.spec.ts` and `no-google.spec.ts` have. Measured after, in the
+on-demand CI run 43713288298 (the spec three times per browser): 18 of 18 passed, the report
+shows a timeout of 180000 ms on WebKit and 60000 ms on Chromium and Firefox, and WebKit took
+35.8 to 38.5 s. The closed-tab test now says in a comment that on WebKit it is no proof of the
+fix. Two lines under "Remaining gaps" come from the review.

@@ -21,7 +21,10 @@ async function listWith(page: Page, email: string): Promise<void> {
   await expect.poll(() => status(email, 'Brot'), { message: 'the server has the add' }).toBe('active');
 }
 
-test('a tick is kept when the page reloads while its row still closes', async ({ page }) => {
+test('a tick is kept when the page reloads while its row still closes', async ({ page, browserName }) => {
+  // A CI runner's WebKit draws in software, a frame every 200 ms or so: each step takes a second.
+  // These two took 33 to 50 s of their 60 in CI; the reload test took 59 s on a loaded box (job 222).
+  test.slow(browserName === 'webkit');
   const email = newEmail('tick-reload');
   await listWith(page, email);
 
@@ -32,7 +35,11 @@ test('a tick is kept when the page reloads while its row still closes', async ({
   await expect.poll(() => status(email, 'Brot'), { message: 'the server took the tick' }).toBe('bought');
 });
 
-test('a tick is kept when the tab closes while its row still closes', async ({ page, context }) => {
+// On WebKit this test is no proof of the fix: it passes on the code before it too (3 of 3 in review
+// 0). Its close seems to outlast the row's 440 ms; nobody measured that. Chromium and Firefox fail
+// there; so does the reload test in all three.
+test('a tick is kept when the tab closes while its row still closes', async ({ page, context, browserName }) => {
+  test.slow(browserName === 'webkit');
   const email = newEmail('tick-close');
   await listWith(page, email);
 
