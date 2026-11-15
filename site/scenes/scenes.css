@@ -178,19 +178,14 @@ p {
   line-height: 1;
 }
 
-.av--mia {
+.av--tomato {
   --face: var(--hl-color-tomato);
   color: var(--hl-color-on-tomato);
 }
 
-.av--noah {
+.av--honey {
   --face: var(--hl-color-honey);
   color: var(--hl-color-on-honey);
-}
-
-.av--ida {
-  --face: var(--hl-color-cobalt);
-  color: var(--hl-color-on-cobalt);
 }
 
 .avs {

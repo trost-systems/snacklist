@@ -4,7 +4,7 @@
     "de": "Eintippen, Enter,\nsteht drauf.",
     "en": "Type it, press enter,\nit’s on.",
     "status": "draft",
-    "source": "New: caption of the add-tick video while Mia adds two items (job 54)."
+    "source": "New: caption of the add-tick video while Anna adds two items (job 54; Anna of „Unser Haushalt“ since job 215)."
   },
   "add-tick.tick": {
     "de": "Im Laden:\nantippen, abgehakt.",
@@ -13,40 +13,34 @@
     "source": "New: caption of the add-tick video while the items are ticked off (job 54)."
   },
   "household-sync.add": {
-    "de": "Mia setzt Eier auf die Liste.",
-    "en": "Mia puts eggs on the list.",
+    "de": "Anna setzt Eier auf die Liste.",
+    "en": "Anna puts eggs on the list.",
     "status": "draft",
-    "source": "New: household-sync video, Mia adds an item (job 54). Mia, Noah, Ida are the fictional Brandt family of the homepage."
+    "source": "household-sync video, Anna adds an item. Anna and Jonas are the fictional demo household „Unser Haushalt“ (en: \"Our Home\"), job 215."
   },
   "household-sync.arrive": {
-    "de": "Noah und Ida sehen es sofort.",
-    "en": "Noah and Ida see it right away.",
+    "de": "Jonas sieht es sofort.",
+    "en": "Jonas sees it right away.",
     "status": "draft",
-    "source": "New: household-sync video, the item arrives on the other phones (job 54)."
+    "source": "household-sync video, the item arrives on Jonas’s phone (job 215)."
   },
   "household-sync.tick": {
-    "de": "Noah hakt ab, weg bei allen.",
-    "en": "Noah ticks it off, gone for everyone.",
+    "de": "Jonas hakt ab, weg bei beiden.",
+    "en": "Jonas ticks it off, gone for both.",
     "status": "draft",
-    "source": "New: household-sync video, Noah ticks it off (job 54)."
+    "source": "household-sync video, Jonas ticks it off and it leaves both lists (job 215)."
   },
-  "household-sync.member.mia": {
-    "de": "Mia",
-    "en": "Mia",
+  "household-sync.member.anna": {
+    "de": "Anna",
+    "en": "Anna",
     "status": "draft",
-    "source": "Name tag on Mia’s phone; fictional member, as in the hero."
+    "source": "Name tag on Anna’s phone; fictional member of „Unser Haushalt“ (job 215)."
   },
-  "household-sync.member.noah": {
-    "de": "Noah",
-    "en": "Noah",
+  "household-sync.member.jonas": {
+    "de": "Jonas",
+    "en": "Jonas",
     "status": "draft",
-    "source": "Name tag on Noah’s phone; fictional member."
-  },
-  "household-sync.member.ida": {
-    "de": "Ida",
-    "en": "Ida",
-    "status": "draft",
-    "source": "Name tag on Ida’s phone; fictional member."
+    "source": "Name tag on Jonas’s phone; fictional member of „Unser Haushalt“ (job 215)."
   },
   "mcp-chat.caption": {
     "de": "Jeder KI-Assistent mit MCP.",

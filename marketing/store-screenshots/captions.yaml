@@ -1,0 +1,128 @@
+# Every word the store files show besides the app's own (docs/STORE_SCREENSHOTS.md, job 215, Legal
+# caption rules N-187 to N-195, job 252).
+#
+#   <locale>:
+#     shots:               one entry per shot id of sets.mjs, here in store order
+#       <id>:
+#         status:          draft | approved (approved only after Peter and Legal)
+#         h: [line 1, line 2]   the headline, always two lines
+#         s:               the subline
+#         alt:             the store's alt text, at most 140 characters
+#         sticker:         words drawn on the shot's sticker (voice: the spoken sentence; assist:
+#                          the request, the reply and the items the assistant adds)
+#         appstore:        replaces s and alt on the App Store set only (voice: Siri, N-189, N-195)
+#         premium:         the label --premium-label puts on the frame once AI assistants are paid
+#                          (Apple 2.3.2, N-193; no price, 2.3.7)
+#     feature: { status, tagline, alt }    the Play feature graphic
+#
+# The words a sticker shows are what the capture really sends: the voice sentence goes to the
+# local voice function, the assist items to the local mcp function.
+# Never in a caption: Alexa (N-187), an AI brand (N-191), API or Automationen (N-194), kostenlos or
+# free (N-190), a price, Siri on Play (N-195), Hey Siri, einfach, no setup, a trademark sign
+# (N-189), alcohol or tobacco (age 4+), the 50-list cap. captions.mjs enforces it.
+
+de-DE:
+  shots:
+    list:
+      status: draft
+      h: [Eine Liste., Für alle.]
+      s: Für Partner, Familie oder WG. Ohne Werbung.
+      alt: Gemeinsame Einkaufsliste nach Läden; zwei neue Einträge von Anna sind gelb markiert.
+    sync:
+      status: draft
+      h: [Du schreibst., Anna sieht’s.]
+      s: Sofort bei allen auf der Liste.
+      alt: Jonas trägt Kaffee ein, und auf Annas Liste erscheint er sofort gelb markiert im Supermarkt.
+    add:
+      status: draft
+      h: ["Kurz getippt,", "schon drauf."]
+      s: Mit Menge und Vorschlägen aus euren Einkäufen.
+      alt: Beim Tippen von „3 Jogh“ schlägt Snacklist „Joghurt · 3“ aus früheren Einkäufen vor.
+    order:
+      status: draft
+      h: ["Dein Laden,", "dein Weg."]
+      s: Halten und ziehen. Jeder Laden hat seine Reihenfolge.
+      alt: Die Kategorien im Supermarkt werden per Halten und Ziehen in die eigene Reihenfolge gebracht.
+    voice:
+      status: draft
+      h: ["Gesagt,", "notiert."]
+      s: Per Sprachassistent auf die Liste.
+      alt: Jonas sagt „Bananen, Butter und Haferflocken“, und auf Annas Liste erscheinen die drei gelb markiert.
+      sticker:
+        said: Bananen, Butter und Haferflocken
+      appstore:
+        s: Funktioniert mit Siri
+        alt: Jonas sagt Siri „Bananen, Butter und Haferflocken“, und auf Annas Liste erscheinen die drei gelb markiert.
+    assist:
+      status: draft
+      h: [Läuft auch, von selbst.]
+      s: Mit KI-Assistenten auf die Liste.
+      alt: Ein KI-Assistent setzt Äpfel, Eier und Mehl auf die Liste; bei Anna erscheinen sie sofort gelb markiert.
+      sticker:
+        ask: Wir machen Apfelpfannkuchen. Setz die Zutaten auf unsere Liste.
+        reply: Steht auf eurer Liste
+        items: [Äpfel, Eier, Mehl]
+      premium: Mit Snacklist Premium
+    invite:
+      status: draft
+      h: [Alle dabei., Viele Listen.]
+      s: Lade alle ein. So viele Listen, wie ihr wollt.
+      alt: Haushaltsseite mit Anna und Jonas, „Leute einladen“ und eigenen Listen für Wocheneinkauf, Baumarkt und Geburtstag.
+  feature:
+    # Peter chose this wording (FG2) as the site's hero tagline on 2026-11-01 (job 65 brief,
+    # site/content/landing/copy.yml hero.title); as a store caption Legal has not seen it.
+    status: draft
+    tagline: Gemeinsam einkaufen, ohne Werbung.
+    alt: Gemeinsame Einkaufsliste ohne Werbung; zwei neue Einträge von Anna sind gelb markiert.
+
+en-US:
+  shots:
+    list:
+      status: draft
+      h: [One list., For everyone.]
+      s: For couples, families and roommates. No ads.
+      alt: A shared shopping list by store; the two items Anna just added are highlighted in yellow.
+    sync:
+      status: draft
+      h: [You add it., Anna sees it.]
+      s: On everyone’s list right away.
+      alt: Jonas adds coffee, and it shows up on Anna’s list right away, highlighted in the Supermarket.
+    add:
+      status: draft
+      h: ["Type a little,", "and it’s on."]
+      s: With amounts and suggestions from your past shops.
+      alt: Typing “2 Coff” makes Snacklist suggest “Coffee · 2” from past shops.
+    order:
+      status: draft
+      h: ["Your store,", "your way."]
+      s: Hold and drag. Every store keeps its own order.
+      alt: The Supermarket’s categories are put in your own walking order by holding and dragging.
+    voice:
+      status: draft
+      h: ["Say it,", "it’s on."]
+      s: Add items with your voice assistant.
+      alt: Jonas says “Bananas, Butter and Oats”, and all three show up highlighted on Anna’s list.
+      sticker:
+        said: Bananas, Butter and Oats
+      appstore:
+        s: Works with Siri
+        alt: Jonas tells Siri “Bananas, Butter and Oats”, and all three show up highlighted on Anna’s list.
+    assist:
+      status: draft
+      h: ["Works on", "its own, too."]
+      s: Add to your list with AI assistants.
+      alt: An AI assistant puts apples, eggs and flour on the list; they show up highlighted on Anna’s phone right away.
+      sticker:
+        ask: We’re making apple pancakes. Put what we need on our list.
+        reply: On your list now
+        items: [Apples, Eggs, Flour]
+      premium: With Snacklist Premium
+    invite:
+      status: draft
+      h: [Everyone in., Many lists.]
+      s: Invite everyone. As many lists as you want.
+      alt: The household page with Anna and Jonas, “Invite people” and separate lists for Weekly shop, Hardware and Birthday.
+  feature:
+    status: draft
+    tagline: Shop together, no ads.
+    alt: A shared shopping list without ads; the two items Anna just added are highlighted in yellow.

@@ -36,6 +36,9 @@ reasons are in [`docs/DECISIONS.md`](docs/DECISIONS.md).
   `scripts/smoke-remote.sh`; its `ref` input rolls functions back.
   `keepalive.yml` reads through `health` daily so the free project doesn't
   pause. Runbook: `docs/DEPLOY.md`.
+- `marketing/`: `store-screenshots/` (`scripts/store-screenshots.sh`: the Play and App Store
+  screenshots, feature graphic and icon from the real web build, words in `captions.yaml`,
+  `docs/STORE_SCREENSHOTS.md`) and `videos/` (the site's demo loops, `marketing/videos/README.md`).
 - `site/`: the public site on snacklist.app (hummlist.com redirects there)
   (landing pages `/de` and `/en`, guides, changelog, legal pages), its own Vercel project (Root Directory
   `site`), static HTML from Markdown and `site/content/landing/copy.yml`;

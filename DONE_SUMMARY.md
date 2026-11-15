@@ -1186,3 +1186,18 @@ names were in the same style, so a wrapped household name could read as the list
     200 %. It now asserts the accessible name with „Haushalt:“ / „Liste:“.
   - The screenshots in `docs/screenshots/248/` are refreshed, and the job's `out/web-r0/` has the
     shots from this round.
+
+## Job 215: store screenshots and demo videos, redone for Snacklist (2026-11-14)
+
+`scripts/store-screenshots.sh` films the real web build with „Unser Haushalt“ (Anna, Jonas,
+generic stores). It writes the Play and App Store screenshots in Peter's frame: FR2 Großschrift
+with a cobalt Wabenband running through each set. There are eight shots. They include the new voice and
+AI-assistant captions in neutral and named variants, and the real MCP and API screen, with a
+Premium label ready for when MCP is paid. It also writes the feature graphic
+without a logo and the icon. Two runs are byte-identical, and the set comes as a by-hand
+workflow artifact. `add-tick` and `household-sync` on the site are re-filmed with the same
+household, and `mcp-chat` is re-filmed because it still showed the old name. No asset or seed
+shows alcohol or tobacco (age rating 4+). Nothing was uploaded and every caption is a draft for Legal (`docs/NEEDS_LEAD.md`
+"Job 215").
+
+Details: [docs/done/215-store-screenshots-redo.md](docs/done/215-store-screenshots-redo.md)

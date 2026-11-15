@@ -73,6 +73,13 @@ body {
   display: block;
 }
 
+/* A camera pan (lib.mjs phone pans): moves the footage inside the screen, never the phone. */
+.pan {
+  position: absolute;
+  inset: 0;
+  transform: translateY(calc(var(--pan) * var(--u)));
+}
+
 .touch-host {
   position: absolute;
   width: 0;
