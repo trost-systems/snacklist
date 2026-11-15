@@ -1,3 +1,4 @@
+import 'package:family_groceries/analytics/posthog_client.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// The flag that offers the public REST API: its keys under Zugänge (job
@@ -28,11 +29,12 @@ const listDeclutterFlag = 'list-declutter';
 /// docs/ANALYTICS.md "Feature flags"). Read a toggle with [isOn] wherever it
 /// matters; nothing else in the app reads PostHog flags.
 ///
-/// Every flag is off until PostHog turned it on for this install: before
-/// the analytics yes (the SDK does not run, so no flag request is made),
-/// after a no, in a build without a project key, and offline until a first
-/// answer. Later the SDK serves the values it last received, also offline.
-/// Changelog and release holds stay in `releases/flags.json`, not here.
+/// After the analytics yes PostHog evaluates flags for this install (the
+/// SDK, which serves the values it last received, also offline). Without
+/// one, every install shares one evaluation ([sharedFlagsId]), cached on the
+/// device without an id. Every flag is off until a first answer, and in a
+/// build without a project key. Changelog and release holds stay in
+/// `releases/flags.json`, not here.
 class Flags({
   /// On whatever PostHog serves: the `FLAGS_ON` define of a build that
   /// cannot reach PostHog.
@@ -45,7 +47,4 @@ class Flags({
 
   /// The values PostHog served; `Analytics` only.
   void replace(Map<String, bool> values) => emit(Map.unmodifiable(values));
-
-  /// Every flag back to off; `Analytics` only.
-  void clear() => emit(const {});
 }

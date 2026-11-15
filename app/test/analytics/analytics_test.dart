@@ -10,14 +10,19 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late NativePostHog native;
+  late FlagsServer server;
   late MemoryAnalyticsStore store;
   late Analytics analytics;
 
   setUp(() async {
     native = NativePostHog()..install();
+    server = FlagsServer();
     store = MemoryAnalyticsStore();
-    analytics = await loadedAnalytics(store);
+    analytics = await loadedAnalytics(store, server: server);
   });
+
+  /// The bodies of the flag requests made without the SDK.
+  List<Object?> sharedRequests() => [for (final r in server.requests) r.body];
 
   tearDown(() => analytics.close());
 
@@ -27,13 +32,16 @@ void main() {
       expect(analytics.asksConsent, isTrue);
     });
 
-    test('before the decision the SDK is not even set up', () async {
+    test('before the decision the SDK is not even set up; only the shared '
+        'flags are asked for', () async {
       analytics
         ..setUser(customer)
         ..track('item_ticked')
         ..captureException(StateError('boom'), StackTrace.current);
       await analytics.flush();
-      expect(native.calls, isEmpty, reason: 'no setup, no flags, no event');
+      await pumpEventQueue();
+      expect(native.calls, isEmpty, reason: 'no setup, no event');
+      expect(sharedRequests(), [sharedFlagsBody]);
     });
 
     test('yes sets the SDK up and sends one first_open per install', () async {
@@ -62,10 +70,12 @@ void main() {
         ..track('item_added', {'source': 'typed'})
         ..captureException(StateError('boom'), null);
       await analytics.flush();
-      final again = await loadedAnalytics(store);
+      final again = await loadedAnalytics(store, server: server);
       again.setUser(customer);
       await again.flush();
+      await pumpEventQueue();
       expect(native.calls, isEmpty);
+      expect(sharedRequests(), List.filled(3, sharedFlagsBody));
       expect(store.decided, isFalse);
       expect(again.asksConsent, isFalse);
       await again.close();
@@ -192,18 +202,22 @@ void main() {
       ('an older version', '2026-10-30'),
       ('an unknown version', '2027-01-01'),
     ]) {
-      test('a yes with $label is asked again and sends nothing', () async {
+      test('a yes with $label is asked again and sends only the shared flag '
+          'request', () async {
         final older = storedYes(version);
-        final a = await loadedAnalytics(older);
+        final own = FlagsServer();
+        final a = await loadedAnalytics(older, server: own);
         a
           ..setUser(customer)
           ..track('item_ticked')
           ..captureException(StateError('boom'), StackTrace.current);
         await a.flush();
+        await pumpEventQueue();
         expect(a.state.consent, isNull);
         expect(a.asksConsent, isTrue);
         expect(a.flags.isOn('new-thing'), isFalse);
-        expect(native.calls, isEmpty, reason: 'no setup, no /flags, no event');
+        expect(native.calls, isEmpty, reason: 'no setup, no event');
+        expect([for (final r in own.requests) r.body], [sharedFlagsBody]);
         expect(native.forgotten, ['phc_unit_test'], reason: 'as on a no');
         expect(older.id, isNull);
         expect(older.firstOpen, isNull);
@@ -247,14 +261,17 @@ void main() {
       await a.close();
     });
 
-    test('a no is stored with the version and sends nothing', () async {
+    test('a no is stored with the version and sends only shared flag '
+        'requests', () async {
       analytics.setUser(customer);
       await analytics.decide(granted: false);
       analytics.track('item_ticked');
       await analytics.flush();
+      await pumpEventQueue();
       expect(store.decided, isFalse);
       expect(store.textVersion, consentTextVersion);
       expect(native.calls, isEmpty);
+      expect(sharedRequests(), List.filled(2, sharedFlagsBody));
     });
 
     test('a no an older build stored stays a no', () async {

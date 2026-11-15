@@ -3,6 +3,7 @@ import {
   addField,
   addSheet,
   answerConsent,
+  expectOnlyNoConsentFlags,
   fakeCollector,
   itemRow,
   must,
@@ -29,7 +30,7 @@ test('no request leaves for Google: login, sign-in, a list in many scripts, the 
   test.slow(browserName === 'webkit');
   const email = newEmail('no-google');
   await householdWithItems(email, items);
-  await fakeCollector(context);
+  const collector = await fakeCollector(context);
 
   const requests: URL[] = [];
   // WebKit also reports data: and blob: URLs, which never reach the network.
@@ -50,7 +51,9 @@ test('no request leaves for Google: login, sign-in, a list in many scripts, the 
   await typeInto(page.getByRole('textbox', { name: 'Passwort' }), password);
   await page.getByRole('button', { name: 'Anmelden', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Nutzungsdaten', exact: true })).toBeVisible();
-  expect(requests.filter((url) => url.host === posthog).map(String), 'PostHog before consent').toEqual([]);
+  expect(requests.filter((url) => url.host === posthog && url.pathname !== '/flags/').map(String), 'PostHog before consent')
+    .toEqual([]);
+  expectOnlyNoConsentFlags(collector, 'PostHog before consent');
   await answerConsent(page, 'accept');
 
   for (const name of items) await expect(itemRow(page, name)).toBeVisible({ timeout: 30_000 });

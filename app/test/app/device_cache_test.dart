@@ -264,6 +264,27 @@ void main() {
     expect(await cache.internalInstall(), isTrue);
   });
 
+  test('the shared flags are kept across sign-outs and the deletion of the '
+      'install id; a corrupt value reads as none', () async {
+    expect(await cache.sharedFlags(), isEmpty);
+    await cache.saveSharedFlags({'grocery-log': true, 'trip-mode': false});
+    await cache.remember('peter', households: [home], shown: home.id);
+    await cache.forget();
+    await cache.forgetInstallId();
+    expect(await cache.sharedFlags(), {
+      'grocery-log': true,
+      'trip-mode': false,
+    });
+
+    final prefs = SharedPreferencesAsync();
+    await prefs.setString('analytics.shared_flags', '{"a": true, "b": 1}');
+    expect(await cache.sharedFlags(), {'a': true});
+    for (final corrupt in ['[true]', 'not json', '"x"']) {
+      await prefs.setString('analytics.shared_flags', corrupt);
+      expect(await cache.sharedFlags(), isEmpty, reason: corrupt);
+    }
+  });
+
   test('the hint log is kept per user and survives sign-outs', () async {
     expect(await cache.hintLog('peter'), isNull);
     await cache.saveHintLog('peter', '{"active_days": 2}');

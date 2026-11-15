@@ -4,6 +4,7 @@ import {
   adminClient,
   apiAs,
   type Collector,
+  expectOnlyNoConsentFlags,
   fakeCollector,
   firstOf,
   must,
@@ -111,7 +112,7 @@ test('a note from More after the list: one row, no screen, the context, no list 
 
   // AC8, declined consent (signUp declines): no event, the row is saved anyway.
   await page.waitForTimeout(7_000);
-  expect(collector.requests, 'nothing went to the collector').toEqual([]);
+  expectOnlyNoConsentFlags(collector, 'declined: no event');
   await context.close();
 });
 

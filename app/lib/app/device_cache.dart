@@ -54,13 +54,15 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
 
   /// Analytics (job 19): the install id, the consent decision and the
   /// version of the consent text it was given under, the install id
-  /// `first_open` went out for, and the internal-install mark. Kept across
+  /// `first_open` went out for, the internal-install mark, and the flags
+  /// served without consent (JSON `{key: bool}`, job 257). Kept across
   /// sign-outs: the decision is per install, not per account.
   static const _installIdKey = 'analytics.install_id';
   static const _consentKey = 'analytics.consent';
   static const _consentVersionKey = 'analytics.consent_text_version';
   static const _firstOpenKey = 'analytics.first_open';
   static const _internalKey = 'analytics.internal';
+  static const _sharedFlagsKey = 'analytics.shared_flags';
 
   /// The invite link the user opened and has not answered yet (job 22):
   /// `{code, at}`. Not under [forget]'s prefixes: a signed-out start (which
@@ -220,6 +222,27 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
   @override
   Future<void> saveInternalInstall({required bool internal}) =>
       _write(() => _prefs.setBool(_internalKey, internal));
+
+  @override
+  Future<Map<String, bool>> sharedFlags() async {
+    try {
+      return switch (jsonDecode(
+        await _prefs.getString(_sharedFlagsKey) ?? '',
+      )) {
+        final Map<String, Object?> values => {
+          for (final MapEntry(:key, :value) in values.entries)
+            if (value is bool) key: value,
+        },
+        _ => const {},
+      };
+    } on Object {
+      return const {};
+    }
+  }
+
+  @override
+  Future<void> saveSharedFlags(Map<String, bool> values) =>
+      _write(() => _prefs.setString(_sharedFlagsKey, jsonEncode(values)));
 
   @override
   Future<KeptInvite?> pendingInvite() async =>

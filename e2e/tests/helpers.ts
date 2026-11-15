@@ -519,10 +519,10 @@ export interface Captured {
 /**
  * Answers the e2e build's PostHog host (app/config/e2e.json, a .invalid host) in [context] the way
  * PostHog does for posthog-js (job 44): events (`/e/`, `/batch/`, one or a list, JSON or
- * `data=<base64>`), and flags (`/flags/`) as [flags] says, all off by default; remote config is
- * refused as the app's CSP refuses it in production. It keeps every
- * request: nothing leaves the machine. Any request to a real PostHog host fails the spec through
- * [Collector.leaks].
+ * `data=<base64>`), and flags (`/flags/`, posthog-js' after a yes and the app's own without consent,
+ * job 257) as [flags] says, all off by default; remote config is refused as the app's CSP refuses
+ * it in production. It keeps every request: nothing leaves the machine. Any request to a real
+ * PostHog host fails the spec through [Collector.leaks].
  */
 export async function fakeCollector(
   context: BrowserContext,
@@ -533,6 +533,7 @@ export async function fakeCollector(
     events: [] as Captured[],
     leaks: [] as string[],
     bodies: [] as string[],
+    flags: [] as unknown[],
   };
   await context.route('https://posthog.invalid/**', async (route) => {
     const request = route.request();
@@ -549,6 +550,7 @@ export async function fakeCollector(
       const raw = request.postData() ?? '';
       collector.bodies.push(raw);
       if (path.startsWith('/flags')) {
+        collector.flags.push(decodeBody(raw));
         body = JSON.stringify({
           flags: Object.fromEntries(Object.entries(flags).map(([key, enabled]) => [key, { key, enabled }])),
           featureFlags: flags,
@@ -576,18 +578,66 @@ export async function fakeCollector(
   return collector;
 }
 
-/** The events in one capture request body: JSON or `data=<base64 JSON>`, one event or a list. */
-function decodeEvents(raw: string): Captured[] {
+/** A request body posthog-js or the app sent: JSON or `data=<base64 JSON>`. */
+function decodeBody(raw: string): unknown {
   const text = raw.startsWith('data=')
     ? Buffer.from(decodeURIComponent(raw.slice(5)), 'base64').toString('utf8')
     : raw;
-  const parsed = JSON.parse(text) as Captured | Captured[] | { batch: Captured[] };
+  return JSON.parse(text);
+}
+
+/** The events in one capture request body: one event or a list. */
+function decodeEvents(raw: string): Captured[] {
+  const parsed = decodeBody(raw) as Captured | Captured[] | { batch: Captured[] };
   if (Array.isArray(parsed)) return parsed;
   if ('batch' in parsed) return parsed.batch;
   return [parsed];
 }
 
-export type Collector = { requests: string[]; events: Captured[]; leaks: string[]; bodies: string[] };
+/**
+ * What the collector received: each request as `METHOD /path`, the events, requests to a real
+ * PostHog host, every POST body as sent, and the decoded body of each `/flags/` request.
+ */
+export type Collector = { requests: string[]; events: Captured[]; leaks: string[]; bodies: string[]; flags: unknown[] };
+
+/** How much [collector] had received, for [expectOnlyNoConsentFlags]' `since`. */
+export const collectorMark = (collector: Collector): { requests: number; events: number; flags: number } =>
+  ({ requests: collector.requests.length, events: collector.events.length, flags: collector.flags.length });
+
+/**
+ * Without analytics consent the app asks PostHog for flags under one id all such installs share
+ * (Legal §18 FL1', app/lib/analytics/posthog_client.dart `sharedFlags`): this body, nothing else.
+ */
+const noConsentFlags = {
+  token: 'phc_e2e_fake_collector',
+  'distinct_id': 'no-consent',
+  'person_properties': { platform: 'web', 'app_version': expect.stringMatching(/^\d/) },
+  'geoip_disable': true,
+};
+
+/**
+ * Asserts that [collector] received, after [since], nothing but the app's flag requests without
+ * consent: no event, no other path, each `/flags/` body exactly the no-consent one. A CORS preflight
+ * (`OPTIONS /flags/`) carries no data.
+ */
+export function expectOnlyNoConsentFlags(
+  collector: Collector,
+  message: string,
+  since = { requests: 0, events: 0, flags: 0 },
+): void {
+  expect(collector.events.slice(since.events), `${message}: no event`).toEqual([]);
+  expect(
+    collector.requests.slice(since.requests).filter((r) => !/^(POST|OPTIONS) \/flags\/$/.test(r)),
+    `${message}: no request but /flags/`,
+  ).toEqual([]);
+  for (const body of collector.flags.slice(since.flags)) {
+    expect(body, `${message}: the no-consent flag request`).toEqual(noConsentFlags);
+  }
+}
+
+/** Whether [collector] got a flag request for the install [installId] (posthog-js, after a yes). */
+export const askedFlagsFor = (collector: Collector, installId: string): boolean =>
+  collector.flags.some((body) => (body as { 'distinct_id'?: unknown })['distinct_id'] === installId);
 
 /** The names of what [collector] received, in order. */
 export const eventNames = (collector: Collector): string[] => collector.events.map((e) => e.event);

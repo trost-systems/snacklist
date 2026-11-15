@@ -29,7 +29,7 @@ Behind the PostHog flag `prices-and-trip-total` (rollout off in `releases/flags.
 
 Preconditions:
 
-- A build with the flag on. The e2e build gets flags only from the fake PostHog collector, after an analytics yes: `fakeCollector(context, { flags: { 'prices-and-trip-total': true } })` before `newPage()`, then `signUp(page, email, '/', { consent: 'accept' })`. The verify-snacklist build: `VH_DEFINES="FLAGS_ON=prices-and-trip-total" helpers/launch.sh` (SKILL.md, "Launch").
+- A build with the flag on. The e2e build gets flags only from the fake PostHog collector: `fakeCollector(context, { flags: { 'prices-and-trip-total': true } })` before `newPage()`, then `signUp(page, email, '/', { consent: 'accept' })` (a decline gets the same flags through the no-consent request, job 257: spec "declined analytics, the flag served on: a price chip"). The verify-snacklist build: `VH_DEFINES="FLAGS_ON=prices-and-trip-total" helpers/launch.sh` (SKILL.md, "Launch").
 - For subtotals the household needs two stores (`createHousehold(page, { stores: ['Lidl', 'dm'] })`, or `add_store` for the seeded household) and items moved with `setStore` (`e2e/tests/catalog.ts`).
 
 - **Chip.** `page.getByRole('button', { name: /^Preis für Milch(: .*)?$/ })`. Its amount uses a no-break space before the sign: match money with `\s` (`/^Preis für Milch: 2,38\s€, ändern$/`).
@@ -48,7 +48,7 @@ Preconditions:
 
 - A duplicate merge keeps no price: its „Rückgängig“ brings the merged-in item back without one, and the stored merge keeps no price columns (quick-add `qa-dedupe-hint`, job 246).
 - With `list-declutter` on, a per-kg or per-l price typed per unit on an open item reads „≈ <Betrag>“ on the chip („Preis für <Name>: etwa <Betrag>, ändern“), and a per-kg price on a quantity without a weight sums nothing and counts as „ohne Preis“ in the block (job 237 review, list-declutter `ld-total`). The bar of `pr-total` (declutter off) counts such an item neither „mit Preis“ nor „offen“ (driven 2026-11-15 on c3ea4261: „3“ Gurken at 2,99 €/kg left „4 mit Preis, 11 offen“ as it was).
-- Flags load only after an analytics yes. A spec or journey that declines (the helpers' default) never sees the feature, and `isOn` stays false without an error.
+- Since job 257 a declined install gets flags too, the ones PostHog serves the shared id `no-consent` (privacy-consent `shared-flags`): a collector serving the flag on shows prices after a decline as well. In production that is only a flag at 100 %; percentage and `is_internal` rollouts never reach a declined install.
 - `reveal`, `tick` and `listArea` measure from the add field, which is hidden while the editor is open: close the editor before using them.
 - Ticking still works with the chip there: click the row's middle (`itemRow(...).click()`), not its end.
 - The chip names a price in its own currency; after a currency change an old price stays „1,19 €“ on its row while the total, in the new currency, leaves it out; the item counts neither as „mit Preis“ nor as „offen“.

@@ -49,7 +49,8 @@ Our guarantees sit on top of it (DECISIONS Job 44):
 - **No yes, no SDK.** `Posthog().setup()` runs only once this install said yes; a no calls
   `close()`. The SDKs' own opt-out does not stop their remote-config and flag requests, so it
   is not used as the gate. Before the yes nothing at all is requested or stored by PostHog's
-  code; on the web `posthog/array.js` is not even fetched. `AUTO_INIT` is false in the Android
+  code; on the web `posthog/array.js` is not even fetched. The one request without a yes is the
+  app's own flag request under the shared id (see "Feature flags"), plain HTTP from Dart. `AUTO_INIT` is false in the Android
   manifest and the iOS Info.plist.
 - **Two allow-list checks.** `track` checks every event against `eventCatalog`; the SDK's
   `beforeSend` (`Analytics._admit`) checks it and the context again, drops it if analytics is
@@ -63,7 +64,7 @@ Our guarantees sit on top of it (DECISIONS Job 44):
 | Part | Where |
 | --- | --- |
 | Consent gate, install id, context, the SDK's `beforeSend` | `app/lib/analytics/analytics.dart` (`Analytics`, a cubit) |
-| The SDK: setup, capture, flags, super properties | `app/lib/analytics/posthog_client.dart` (`PostHogClient`) |
+| The SDK: setup, capture, flags, super properties; the flag request without consent | `app/lib/analytics/posthog_client.dart` (`PostHogClient`, `sharedFlags`, `sharedFlagsId`) |
 | posthog-js on the web: loading, `init`, `before_send` | `app/lib/analytics/posthog_platform_web.dart` (`loadPostHogJs`), the pinned build in `app/web/posthog/` |
 | Deleting the native SDK's files at an off | `app/lib/analytics/posthog_platform_io.dart` (`forgetPostHogState`), Android: `MainActivity.forgetPostHog` (`familygroceries/posthog`) |
 | Event catalog and allow-list | `app/lib/analytics/events.dart` (`eventCatalog`, `checkEvent`, `contextKeys`, `webEventKeys`) |
@@ -79,8 +80,10 @@ Our guarantees sit on top of it (DECISIONS Job 44):
 
 ## Consent
 
-- **Opted out by default.** Nothing is captured, queued or sent until the user says yes on this
-  install. A "no" is stored too and never asked again.
+- **Opted out by default.** No event and no error is captured, queued or sent until the user
+  says yes on this install. A "no" is stored too and never asked again. Without a yes the app
+  only asks PostHog for flags under one id every such install shares, which carries nothing
+  about the install (see "Feature flags", Legal §18 FL1').
 - **When it is asked:** right after the first sign-in on an install, before onboarding (create or
   join a household) and before the list (Peter, 2026-10-27). The router's only gate,
   `authRedirect`, sends a signed-in user to `/analytics-consent` while the install has not
@@ -121,7 +124,7 @@ Our guarantees sit on top of it (DECISIONS Job 44):
   strings against the current file and the functions' `CONSENT_TEXT_VERSION` against the app's.
   **A yes with no version or an older one counts as no decision**: at the start the app deletes
   it, the install id, the `first_open` mark and the SDK's data on the device, as on a no, sends
-  nothing (no events, no errors, no `/flags`) and shows the consent screen again; only a new yes
+  no events and no errors (flags only under the shared id) and shows the consent screen again; only a new yes
   starts the SDK, with a new install id. A no stays a no whatever its version. The server does
   the same for its events (`analyticsSubject` in `supabase/functions/alexa/store.ts`): only a
   newest answer that is a yes to a current version counts (`CURRENT_CONSENT_TEXT_VERSIONS` in
@@ -368,16 +371,42 @@ call (`docs/NEEDS_PETER.md`, job 195); unlike `internal.sql` it drops only the e
 Runtime toggles are PostHog feature flags, read in one place: `Analytics.flags.isOn('<key>')`
 (`Flags`, a cubit, so a widget can `select` it). Nothing else in the app reads PostHog flags.
 
-- **Off unless PostHog said on.** `isOn` is false for an unknown key, before the yes (the SDK
-  does not run, so no flag request is made), after a no (every flag back to off at once), in a
-  build without a project key (CI, fg, local debug), and offline until a first answer. After
-  the first answer the SDK serves what it received last, also offline and at the next start
-  (native SDKs keep it on disk; posthog-js asks again at every page load).
-- **Only installs that said yes to the current consent text get flags.** The flag request
-  carries the install id, so a rollout through a flag never reaches users who declined, nor an
-  install whose yes was given under an older text (no `/flags` until the new yes; Peter kept the
-  flag lookups on 2026-11-01 instead of PR #164, which stays unmerged). A change that must reach everyone
-  ships without a flag.
+- **Off unless PostHog said on.** `isOn` is false for an unknown key, in a build without a
+  project key (CI, fg, local debug), and offline until a first answer.
+- **Two modes, chosen by the consent** (job 257, Legal §18 FL1', Art. 6(1)(f) GDPR):
+  - *With a yes to the current consent text*: the SDK evaluates flags for this install, its
+    distinct id the install id, as before. After the first answer it serves what it received
+    last, also offline and at the next start (native SDKs keep it on disk; posthog-js asks again
+    at every page load). Until the SDK has an answer the shared values stay.
+  - *Without one* (not asked yet, a no, a yes under an older text): one plain HTTP POST from
+    Dart, the same on iOS, Android and web, to `<host>/flags/?v=2` (`PostHogClient.sharedFlags`)
+    with exactly `{"token": <project key>, "distinct_id": "no-consent", "person_properties":
+    {"platform", "app_version"}, "geoip_disable": true}`: one fixed id for every install
+    without consent (`sharedFlagsId`), no install or device id, no cookies, no events (no
+    `$feature_flag_called`), no person profile (flag requests make none), no session recording
+    or experiments, no GeoIP lookup. PostHog still sees the IP address and, on the web, the
+    browser's User-Agent header (a page cannot change it; iOS and Android send `Dart/x (dart:io)`),
+    and keeps them with the id in technical logs, with no published period (Legal §19 N-196,
+    N-197; policy §9 says so). Not the SDK, since it keeps anonymous and device ids on
+    the device and sends them (`$anon_distinct_id`, `$device_id`) with its flag requests. It
+    asks at every start without a yes and right after a no. The answer's on/off values, and
+    nothing else, are cached in `analytics.shared_flags` (a JSON object of booleans), shown at
+    once at the next start or no, so features work offline. An answer that is not 200, has
+    `errorsWhileComputingFlags` or a `quotaLimited` list naming `feature_flags` (PostHog then
+    serves everything off) keeps the cache; an answer that comes after a yes or a newer request
+    is dropped.
+  - A no switches to the shared values at once (the cache, then a fresh answer) and deletes the
+    install id as before; a yes keeps them until the SDK's arrive.
+- **What reaches users without consent.** Every one of them is the same id to PostHog, so a
+  flag reaches them only at 0 % or 100 %: a percentage rollout hashes the one shared id and puts
+  all of them on the same side, and conditions on person properties (`is_internal`,
+  `distinct_id`) never match them.
+- **Rule for whoever edits flags in PostHog (Legal §18 L2).** Without consent there is no person
+  or property targeting. `platform` and `app_version` go as `person_properties`, so a release
+  condition on them would target installs without consent by property; a negative condition
+  (`is_internal` is not `true`) would match `no-consent` too. A flag meant for everyone gets one
+  unconditional condition at 0 % or 100 %; internal-only flags use `is_internal = true`, which
+  never matches `no-consent`.
 - **Forcing a flag locally.** `--dart-define=FLAGS_ON=public-api` (comma-separated keys,
   `Environment.flagsOn`) turns flags on whatever PostHog serves, only in a build whose
   `POSTHOG_HOST` is not PostHog EU (local, fg, e2e and verify-snacklist builds); store and
@@ -388,8 +417,8 @@ Runtime toggles are PostHog feature flags, read in one place: `Analytics.flags.i
   ("Installations-ID kopieren", `Analytics.flagInstallId`); the id leaves the device only when
   the user copies it.
 - **Reading a flag sends nothing** (`sendFeatureFlagEvent` off, no `$feature_flag_called`).
-  Flags are read with `getAllFeatureFlags()` after the SDK starts and whenever it reports new
-  ones.
+  After a yes flags are read with `getAllFeatureFlags()` after the SDK starts and whenever it
+  reports new ones.
 - **Keys and rollouts live in PostHog** (project 319492); the Lead creates them. The app reads
   `public-api` (the API keys under Zugänge, job 73), `grocery-log` (the Verlauf tab, job 199),
   `prices-and-trip-total` (prices and the trip total, job 190), `default-list-voice-target`
@@ -529,8 +558,9 @@ that function, after RevenueCat confirmed the purchase:
 - `e2e/tests/analytics.spec.ts` drives the web build against the local stack with a fake
   collector on the PostHog host that speaks posthog-js' wire format (`/e/`, `/flags/`; remote
   config refused as the CSP refuses it): sign-in → consent → onboarding or list (with
-  screenshots), zero requests and posthog-js not even fetched before consent and after
-  declining, nothing after switching off, one event per action, only allow-listed keys, no
+  screenshots), before consent, after declining and after switching off only the no-consent
+  flag request (`expectOnlyNoConsentFlags` in `e2e/tests/helpers.ts`) and posthog-js not even
+  fetched, one event per action, only allow-listed keys, no
   PostHog cookie or storage, no list text or invite code in any request. Every other spec
   answers the consent through `signUp` or `answerConsent` (declined).
 - Native: fg's Linux app with `FG_POSTHOG_HOST` against `cli/posthog_collector.ts`

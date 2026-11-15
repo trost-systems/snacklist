@@ -1,6 +1,6 @@
-import { mkdirSync, rmSync, writeFileSync, existsSync } from 'node:fs';
+import { mkdirSync, readFileSync, rmSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { test as base, type TestInfo } from '@playwright/test';
+import { test as base, type BrowserContext, type TestInfo } from '@playwright/test';
 
 export * from '@playwright/test';
 
@@ -13,8 +13,26 @@ const hostStallMs = 2_000;
 /** Where a failed attempt the host paused leaves its mark, so its retry may run. */
 const stallMark = (testInfo: TestInfo) => join(testInfo.project.outputDir, '.host-stalls', testInfo.testId);
 
+/** The e2e build's PostHog host (app/config/e2e.json), a `.invalid` host no request reaches. */
+const posthogHost = (JSON.parse(readFileSync(new URL('../../app/config/e2e.json', import.meta.url), 'utf8')) as {
+  POSTHOG_HOST: string;
+}).POSTHOG_HOST;
+
+/** Answers the app's flag request without consent (Legal §18 FL1') with no flags, as PostHog would. */
+async function quietPostHog(context: BrowserContext): Promise<void> {
+  await context.route(`${posthogHost}/**`, (route) => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': 'content-type' },
+    body: '{"flags":{}}',
+  }));
+}
+
 /**
- * Playwright's `test`, plus three auto fixtures:
+ * Playwright's `test`, plus four auto fixtures:
+ * - quietPostHog answers the e2e PostHog host in every context a test opens. Every start asks it
+ *   for flags, also without consent, and an unanswered request is a console error that specs
+ *   watching the console fail on. `fakeCollector`, routed later, takes precedence.
  * - closeContexts closes every browser context a test opened. Specs open their own contexts (one
  *   per user), and the browser outlives the test, so without this each test leaves its Flutter
  *   apps running and later tests boot into a crowded browser.
@@ -24,7 +42,16 @@ const stallMark = (testInfo: TestInfo) => join(testInfo.project.outputDir, '.hos
  * - stallRetry lets the config's one retry run only after such a pause. A failure without one is
  *   the test's or the app's, and its retry fails at once instead of hiding it.
  */
-export const test = base.extend<{ stallRetry: void; hostStall: void; closeContexts: void }>({
+export const test = base.extend<{ quietPostHog: void; stallRetry: void; hostStall: void; closeContexts: void }>({
+  quietPostHog: [
+    async ({ browser }, use) => {
+      const onContext = (context: BrowserContext) => void quietPostHog(context).catch(() => {});
+      browser.on('context', onContext);
+      await use();
+      browser.off('context', onContext);
+    },
+    { auto: true },
+  ],
   stallRetry: [
     // deno-lint-ignore no-empty-pattern -- Playwright reads fixture dependencies from this pattern; {} means none
     async ({}, use, testInfo) => {
