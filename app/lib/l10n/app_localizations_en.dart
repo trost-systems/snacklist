@@ -3262,4 +3262,94 @@ class AppLocalizationsEn extends AppLocalizations {
   String voiceDefaultListBody(String household) {
     return 'What you say without naming a list goes onto this list in “$household”.';
   }
+
+  @override
+  String get jh2StartHaveAccount => 'Already have an account';
+
+  @override
+  String get jh2JoinExisting => 'Join existing household';
+
+  @override
+  String get jh2JoinCodeHeading => 'Enter your invite code';
+
+  @override
+  String get jh2JoinCodeHelp =>
+      'The 8 characters from your invite. Once they\'re all in, you\'ll see the household.';
+
+  @override
+  String get jh2JoinCodeJoin => 'Join';
+
+  @override
+  String jh2InvitedBy(String inviter, String household) {
+    return '$inviter invites you to “$household”';
+  }
+
+  @override
+  String jh2InvitedTo(String household) {
+    return 'You’re invited to “$household”';
+  }
+
+  @override
+  String jh2InvitedByInviter(String inviter) {
+    return '$inviter invites you to a household';
+  }
+
+  @override
+  String get jh2InvitedToHousehold => 'You’re invited to a household';
+
+  @override
+  String jh2PreviewMembers(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count members',
+      one: '1 member',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String jh2PreviewOpenItems(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count open items',
+      one: '1 open item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get jh2PreviewPremium => 'Premium covers everyone in the household';
+
+  @override
+  String get jh2CodeUnavailable =>
+      'This invite no longer works. Ask for a new invite.';
+
+  @override
+  String get jh2CodeRateLimited =>
+      'Too many tries right now. Try again in a while.';
+
+  @override
+  String get jh2InviteSheetBody => 'Do you already have a Snacklist account?';
+
+  @override
+  String get jh2InviteSheetCreate => 'Create account';
+
+  @override
+  String jh2JoinRequestWaiting(String name) {
+    return 'Your request is with “$name”. An admin sees your name there and lets you in. Your list opens by itself as soon as they do.';
+  }
+
+  @override
+  String get jh2JoinRequestOwnList => 'Start my own list instead';
+
+  @override
+  String get inviteQrPerson => 'QR code for this invite';
+
+  @override
+  String get openAppText => 'Snacklist works better in the app.';
+
+  @override
+  String get openAppAction => 'Open';
 }

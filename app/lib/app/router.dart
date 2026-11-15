@@ -181,6 +181,7 @@ const screenNames = {
   'onboarding_usage',
   'onboarding_who',
   'onboarding_name',
+  'onboarding_join',
   'onboarding_stores',
   'onboarding_need',
   'onboarding_account',

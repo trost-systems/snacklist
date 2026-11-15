@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/app/environment.dart';
 import 'package:family_groceries/app/legal_links.dart';
 import 'package:family_groceries/app/notices.dart';
@@ -29,11 +30,43 @@ class const LoginScreen({
   /// A consent URL or an app link's location to return to after sign-in,
   /// already vetted by the router.
   final String? next,
-}) extends StatelessWidget {
+}) extends StatefulWidget {
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState() extends State<LoginScreen> {
+  /// What the invite sheet chose; today's sign-in without one.
+  var _intent = SignInIntent.signIn;
+
+  /// The invite sheet shows once per visit, also when the flag comes on
+  /// after the first frame (flags arrive after the start).
+  var _askedIntent = false;
+
+  void _askIntent() {
+    _askedIntent = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) {
+        return;
+      }
+      final intent = await showInviteSignInSheet(context);
+      if (mounted && intent != null) {
+        setState(() => _intent = intent);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final invite = this.invite;
+    final invite = widget.invite;
+    final next = widget.next;
     final l10n = AppLocalizations.of(context);
+    final jh2 = context.select<Flags?, bool>(
+      (f) => f?.isOn(joinHouseholdJh2Flag) ?? false,
+    );
+    if (jh2 && invite != null && !_askedIntent) {
+      _askIntent();
+    }
     final deleted = switch (context.watch<SessionCubit>().state) {
       SignedOut(:final deleted) => deleted,
       _ => null,
@@ -58,6 +91,7 @@ class const LoginScreen({
               ? signInReturnPath
               : Uri(path: '/', queryParameters: {'invite': invite}).toString(),
       },
+      intent: _intent,
       header: const BrandBlock(),
       // Job 168b: back to the guided start (resumed if under way); not for
       // an invite or a link, which want this account. Inside the form, so
@@ -72,7 +106,9 @@ class const LoginScreen({
             ),
             const SizedBox(height: HlSpace.s2),
           ],
-          PasteInvite(waiting: invite),
+          // JH2 (job 271) has no Einladung einfügen; the line that an
+          // invite waits stays.
+          if (!jh2 || invite != null) PasteInvite(waiting: invite),
         ],
       ),
     );
@@ -109,6 +145,59 @@ class const LoginScreen({
   }
 }
 
+/// What the user wants from the sign-in: an account they have (today's
+/// sign-in) or a new one (job 271: the email form open, sign-up first).
+enum SignInIntent() {
+  signIn,
+  create,
+}
+
+/// JH2's sheet over the sign-in for an invite (job 271): „Du bist in einen
+/// Haushalt eingeladen“ and whether the user has an account. Null when
+/// dismissed.
+Future<SignInIntent?> showInviteSignInSheet(BuildContext context) =>
+    showModalBottomSheet<SignInIntent>(
+      context: context,
+      useRootNavigator: true,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (sheet) {
+        final l10n = AppLocalizations.of(sheet);
+        final theme = Theme.of(sheet);
+        return SingleChildScrollView(
+          key: const ValueKey('invite-sign-in-sheet'),
+          padding: const EdgeInsets.all(HlSpace.s5),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Semantics(
+                header: true,
+                child: Text(
+                  l10n.jh2InvitedToHousehold,
+                  style: theme.textTheme.titleLarge,
+                ),
+              ),
+              const SizedBox(height: HlSpace.s2),
+              Text(l10n.jh2InviteSheetBody),
+              const SizedBox(height: HlSpace.s5),
+              FilledButton(
+                key: const ValueKey('invite-sheet-create'),
+                onPressed: () => Navigator.pop(sheet, SignInIntent.create),
+                child: Text(l10n.jh2InviteSheetCreate),
+              ),
+              const SizedBox(height: HlSpace.s2),
+              OutlinedButton(
+                key: const ValueKey('invite-sheet-sign-in'),
+                onPressed: () => Navigator.pop(sheet, SignInIntent.signIn),
+                child: Text(l10n.signIn),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
 /// Every sign-in method: Google, Apple, email and password, magic link.
 /// Where a build offers Google or Apple, the email form waits behind
 /// „Weiter mit E-Mail“: most people sign in with an account they already
@@ -125,6 +214,9 @@ class const SignInPanel({
 
   /// Shown below the methods, inside the scrolling form.
   final Widget? footer,
+
+  /// [SignInIntent.create]: the email form open, sign-up the first button.
+  final SignInIntent intent = SignInIntent.signIn,
   super.key,
 }) extends StatefulWidget {
   @override
@@ -156,7 +248,17 @@ class _SignInPanelState() extends State<SignInPanel> {
       !_passwordRequired || (v ?? '').length >= 6
       ? null
       : AppLocalizations.of(context).passwordTooShort;
-  late var _emailOpen = context.read<SocialSignIn>().flows.isEmpty;
+  late var _emailOpen =
+      widget.intent == SignInIntent.create ||
+      context.read<SocialSignIn>().flows.isEmpty;
+
+  @override
+  void didUpdateWidget(SignInPanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.intent == SignInIntent.create) {
+      _emailOpen = true;
+    }
+  }
 
   @override
   void initState() {
@@ -250,6 +352,19 @@ class _SignInPanelState() extends State<SignInPanel> {
     return null;
   });
 
+  Future<void> _signUp(Map<String, Object?> mailData) {
+    final l10n = AppLocalizations.of(context);
+    return _runWithForm(() async {
+      final res = await _auth.signUp(
+        email: _email.text.trim(),
+        password: _password.text,
+        emailRedirectTo: _redirectTo,
+        data: mailData,
+      );
+      return res.session == null ? l10n.signUpCheckEmail : null;
+    });
+  }
+
   Future<void> _social(SocialProvider provider) {
     // The provider's sheet or page takes over; an open keyboard would wait
     // under it and still be there after a cancel.
@@ -270,6 +385,8 @@ class _SignInPanelState() extends State<SignInPanel> {
     // The first mail's language (supabase/templates/).
     final mailData = mailLocaleData(Localizations.localeOf(context));
     final flows = context.read<SocialSignIn>().flows;
+    final signIn = _busy ? null : () => unawaited(_signIn());
+    final signUp = _busy ? null : () => unawaited(_signUp(mailData));
     return BlocListener<SessionCubit, Session>(
       listenWhen: (_, session) =>
           session is NeedsHousehold || session is InHousehold,
@@ -359,29 +476,18 @@ class _SignInPanelState() extends State<SignInPanel> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                FilledButton(
-                  onPressed: _busy ? null : () => unawaited(_signIn()),
-                  child: Text(l10n.signIn),
-                ),
-                const SizedBox(height: 8),
-                OutlinedButton(
-                  onPressed: _busy
-                      ? null
-                      : () => unawaited(
-                          _runWithForm(() async {
-                            final res = await _auth.signUp(
-                              email: _email.text.trim(),
-                              password: _password.text,
-                              emailRedirectTo: _redirectTo,
-                              data: mailData,
-                            );
-                            return res.session == null
-                                ? l10n.signUpCheckEmail
-                                : null;
-                          }),
-                        ),
-                  child: Text(l10n.signUp),
-                ),
+                ...switch (widget.intent) {
+                  SignInIntent.signIn => [
+                    FilledButton(onPressed: signIn, child: Text(l10n.signIn)),
+                    const SizedBox(height: 8),
+                    OutlinedButton(onPressed: signUp, child: Text(l10n.signUp)),
+                  ],
+                  SignInIntent.create => [
+                    FilledButton(onPressed: signUp, child: Text(l10n.signUp)),
+                    const SizedBox(height: 8),
+                    OutlinedButton(onPressed: signIn, child: Text(l10n.signIn)),
+                  ],
+                },
                 const SizedBox(height: 8),
                 TextButton(
                   onPressed: _busy

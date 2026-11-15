@@ -5257,6 +5257,132 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Was du sagst, ohne eine Liste zu nennen, landet in „{household}“ auf dieser Liste.'**
   String voiceDefaultListBody(String household);
+
+  /// Job 271 JH2: the start screen's second button, to the sign-in
+  ///
+  /// In de, this message translates to:
+  /// **'Schon ein Konto'**
+  String get jh2StartHaveAccount;
+
+  /// Job 271 JH2: the household-name step's second button, to the code step
+  ///
+  /// In de, this message translates to:
+  /// **'Bestehendem Haushalt beitreten'**
+  String get jh2JoinExisting;
+
+  /// Job 271 JH2: heading of the guided start's code step
+  ///
+  /// In de, this message translates to:
+  /// **'Gib deinen Einladungscode ein'**
+  String get jh2JoinCodeHeading;
+
+  /// Job 271 JH2: the line under the code step's heading
+  ///
+  /// In de, this message translates to:
+  /// **'Die 8 Zeichen aus der Einladung. Sobald alle drin sind, siehst du den Haushalt.'**
+  String get jh2JoinCodeHelp;
+
+  /// Job 271 JH2: the code step's button, on once the household shows
+  ///
+  /// In de, this message translates to:
+  /// **'Beitreten'**
+  String get jh2JoinCodeJoin;
+
+  /// Job 271 JH2: the code step's preview title, as the join page's
+  ///
+  /// In de, this message translates to:
+  /// **'{inviter} lädt dich zu „{household}“ ein'**
+  String jh2InvitedBy(String inviter, String household);
+
+  /// Job 271 JH2: the preview title without the inviter's name
+  ///
+  /// In de, this message translates to:
+  /// **'Du bist zu „{household}“ eingeladen'**
+  String jh2InvitedTo(String household);
+
+  /// Job 271 JH2: the preview title without the household's name
+  ///
+  /// In de, this message translates to:
+  /// **'{inviter} lädt dich in einen Haushalt ein'**
+  String jh2InvitedByInviter(String inviter);
+
+  /// Job 271 JH2: the invite sign-in sheet's heading, and the preview title without either name
+  ///
+  /// In de, this message translates to:
+  /// **'Du bist in einen Haushalt eingeladen'**
+  String get jh2InvitedToHousehold;
+
+  /// Job 271 JH2: the preview's member count, as the join page's
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Mitglied} other{{count} Mitglieder}}'**
+  String jh2PreviewMembers(int count);
+
+  /// Job 271 JH2: the preview's open-item count, as the join page's
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 offener Eintrag} other{{count} offene Einträge}}'**
+  String jh2PreviewOpenItems(int count);
+
+  /// Job 271 JH2: the preview's line when the household has Premium
+  ///
+  /// In de, this message translates to:
+  /// **'Premium gilt für alle im Haushalt'**
+  String get jh2PreviewPremium;
+
+  /// Job 271 JH2: the code step for any code that leads nowhere (made up, expired, revoked, used, full): one answer for all
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Einladung gilt nicht mehr. Bitte um eine neue Einladung.'**
+  String get jh2CodeUnavailable;
+
+  /// Job 271 JH2: the code step when the lookup is rate-limited
+  ///
+  /// In de, this message translates to:
+  /// **'Gerade zu viele Versuche. Versuch es später noch einmal.'**
+  String get jh2CodeRateLimited;
+
+  /// Job 271 JH2: the invite sign-in sheet's line
+  ///
+  /// In de, this message translates to:
+  /// **'Hast du schon ein Snacklist-Konto?'**
+  String get jh2InviteSheetBody;
+
+  /// Job 271 JH2: the invite sign-in sheet's first button: the email form with sign-up first
+  ///
+  /// In de, this message translates to:
+  /// **'Konto erstellen'**
+  String get jh2InviteSheetCreate;
+
+  /// Job 271 JH2: the joiner's wait for an admin's approval
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Anfrage liegt bei „{name}“. Ein Admin sieht dort deinen Namen und lässt dich rein. Deine Liste öffnet sich von selbst, sobald das passiert.'**
+  String jh2JoinRequestWaiting(String name);
+
+  /// Job 271 JH2: the wait's text button without a household: the guided start instead of waiting
+  ///
+  /// In de, this message translates to:
+  /// **'Lieber eigene Liste anlegen'**
+  String get jh2JoinRequestOwnList;
+
+  /// Job 271 (JH-Q7): screen-reader label of a one-person invite's QR code, its link
+  ///
+  /// In de, this message translates to:
+  /// **'QR-Code dieser Einladung'**
+  String get inviteQrPerson;
+
+  /// Job 271: the only text of the web app's card in a phone's browser that opens the installed app (Peter's copy, addendum 1)
+  ///
+  /// In de, this message translates to:
+  /// **'Snacklist funktioniert in der App besser.'**
+  String get openAppText;
+
+  /// Job 271: the open-the-app card's button; opens the installed app (never „App holen“)
+  ///
+  /// In de, this message translates to:
+  /// **'Öffnen'**
+  String get openAppAction;
 }
 
 class _AppLocalizationsDelegate

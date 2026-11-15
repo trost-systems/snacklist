@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/design/field_border.dart';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/join_cubit.dart';
@@ -7,6 +8,7 @@ import 'package:family_groceries/household/join_request_waiting.dart';
 import 'package:family_groceries/household/onboarding_page.dart';
 import 'package:family_groceries/household/pending_invite.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
+import 'package:family_groceries/onboarding/onboarding_cubit.dart';
 import 'package:family_groceries/purchases/refund_help.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -30,6 +32,8 @@ class const JoinScreen({
       context.read<SessionCubit>(),
       pendingInvite: context.read<PendingInvite>(),
       link: link,
+      flags: context.read<Flags?>(),
+      onboarding: context.read<OnboardingCubit?>(),
     ),
     child: _JoinView(link: link),
   );
@@ -164,12 +168,15 @@ class _JoinViewState() extends State<_JoinView> {
               const SizedBox(height: 16),
               const Center(child: CircularProgressIndicator()),
             ],
-            const SizedBox(height: 24),
-            FilledButton(
-              key: ValueKey(previewed ? 'join-confirm' : 'invite-check'),
-              onPressed: join,
-              child: Text(previewed ? l10n.joinHousehold : l10n.inviteCheck),
-            ),
+            // JH2 joins a link without asking: no Join while it does.
+            if (!cubit.joiningLink) ...[
+              const SizedBox(height: 24),
+              FilledButton(
+                key: ValueKey(previewed ? 'join-confirm' : 'invite-check'),
+                onPressed: join,
+                child: Text(previewed ? l10n.joinHousehold : l10n.inviteCheck),
+              ),
+            ],
             const SizedBox(height: 8),
             TextButton(
               key: const ValueKey('join-cancel'),

@@ -14624,3 +14624,70 @@ Review 0 of #499 found two must-fixes, live on main since b5dfba00. This follow-
    - The capture cost on the More tap: it needs a phone measurement.
    - Dropping `feedback`: the lead's addendum 1 asked for it, and NEEDS_LEAD already asks.
    - `screenshot: false` in analytics with the flag off: documented in ANALYTICS.md.
+
+## Job 271: JH2, join a household in the browser first, behind `join-household-jh2` (2026-11-15)
+
+Peter's pick on job 263's join round (t971u, 15 Nov 2026): JH2, with his own decisions on the start
+screen, the household-name step, the invite link and the web card. Everything sits behind the
+PostHog flag `join-household-jh2` (`releases/flags.json` rollout `off`); with it off every screen is
+as before. The reference prototype is #494 (not merged).
+
+1. **The code step is a guided-start step, `OnboardingStep.join`, inserted after `name`.** The
+   guided start's screens move by changing the draft, and `authRedirect` sends a signed-out user with
+   a draft to the draft's step whatever the address. A route outside the draft would be redirected
+   away. Inserting is safe because steps are stored by name; `join` is before the account, so it
+   works signed out, and it is not counted in „Schritt N von 7“. Screen name `onboarding_join`.
+2. **One join path for typed codes and links.** „Beitreten“ on the code step keeps the code like an
+   opened link (`PendingInvite.remember(via: code)`) and drops the draft; the router then signs in
+   first or opens `/join/<code>`, whose `JoinScreen` joins without asking (JH-Q6). Joining from the
+   code step itself would race the router: `session.join` shows the new household before it
+   returns, and with the draft still there `authRedirect` sends an `InHousehold` user to the setup
+   step, which puts the draft's stores and items into the joined household. A code typed again after
+   being answered once is kept again (`via: code` clears it from the answered set).
+3. **The lookup reuses `preview_invite_public`.** No new API, no migration. The app collapses
+   `invalid` and `full` into one line („Diese Einladung gilt nicht mehr …“) so a typed code tells
+   nothing about whether it existed; the RPC itself still answers `full` for a full group link, as
+   the join page always did (NEEDS_LEAD lists it for Legal). Rate-limited gets its own line, which
+   says nothing about the code; offline gets the connection line and „Erneut versuchen“.
+4. **The segmented field is one real `TextField` under eight drawn boxes.** Native paste (long
+   press menu, keyboard), IMEs, screen readers and Playwright's `typeInto` work as in any field. An
+   input formatter keeps only what a code can be and takes a pasted link or whole shared message.
+5. **Per-field switches are a const in code** (`invitePreviewFields` in `join_code_screen.dart`:
+   inviter, household, members, open items, Premium; all on, the join page's set). Turning one off
+   is a one-line change and a release; a remote switch would be one more production flag for a
+   decision Legal makes once. The switches change what the app shows, not what the RPC returns.
+6. **The invite sheet sits over the sign-in, not on the static join page.** The join page is static
+   HTML without PostHog, so it cannot read the flag, and adding flag evaluation there would add a
+   processor call to a page Legal reviewed. The page keeps its preview and „Im Browser beitreten“;
+   the Flutter app's `/login?invite=` shows the sheet. It listens to the flags, since they arrive
+   after the start. „Konto erstellen“ opens the email form with sign-up first; Google and Apple are
+   untouched (existing auth only).
+7. **The sheet names no household.** The person saw it on the join page a moment before, and a
+   second `preview_invite_public` call would spend the client's 30 lookups an hour. In the app (a
+   universal link) the join screen names it right after sign-in.
+8. **A link's join drops an unfinished guided start first.** `JoinCubit` discards a draft that is not
+   set up yet right before `accept_invite`, for the race in item 2. A failed auto-join therefore
+   loses that draft too; the user is on the join screen with the reason and can start again.
+   Left as it was: a signed-in user in a household with an unfinished draft goes through setup
+   before an invite link's join (`authRedirect` orders setup first and reads no flags; that order is
+   older than this job).
+9. **The web „Öffnen“ card opens the app by its custom scheme on iOS and an intent on Android.**
+   Safari opens no universal link to the page's own domain, so `com.snacklist.app://open/list`
+   (Info.plist registers the scheme; go_router reads only the path, `/list`; supabase_flutter
+   ignores links without `code`, `access_token` or an error). Android: `intent://app.snacklist.app/
+   list#Intent;scheme=https;package=com.snacklist.app;…` through the verified App Links filter.
+   Store hops only once `storeListings` in `join.js` is public (`store_listings.dart` mirrors it, a
+   test holds the two together); without them Chrome would go to Play for an unlisted package, so
+   the fallback is the page itself. Not driven on a phone (none here): on iOS without the app Safari
+   shows its "address is invalid" alert. The card shows on every page load in a phone browser,
+   closes until the next load, stores nothing and copies nothing (JH-Q11).
+10. **The card's copy is Peter's (addendum 1, 21:13):** „Snacklist funktioniert in der App besser.“ /
+    "Snacklist works better in the app." and „Öffnen“ / "Open", no other text. It replaced the three
+    options the brief first asked for, so the PR proposes none.
+11. **QR on a person invite, until someone joined with it.** A used person invite cannot be used
+    again, so its QR would only lead to „gilt nicht mehr“. „Code kopieren“ stays the one copy
+    control.
+12. **Approval wait.** Admins see the requester's display name (or „Unbenannt“) and the session's
+    realtime refresh opens the list once approved, so the new text says both. Without a household
+    the filled „Eigenen Haushalt anlegen“ goes; „Lieber eigene Liste anlegen“ is a text button
+    below „Anfrage zurückziehen“.

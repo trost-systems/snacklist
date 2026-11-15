@@ -81,6 +81,64 @@ class const JoinLifetime({
 /// The user is in that household already: nothing to join.
 final class const InviteMember(final String name) extends InvitePreview;
 
+/// What a typed code leads to before signing in (`preview_invite_public`,
+/// the public join page's answer, job 271): the same facts the join page
+/// shows, or nothing.
+sealed class const PublicInvite();
+
+/// An open invite: the facts the join page shows (Legal N-112, N-151b).
+final class const PublicInviteOpen({
+  required final String household,
+
+  /// The inviter's first name; null when their profile has none of its own.
+  required final String? inviter,
+  required final int members,
+  required final int openItems,
+  required final bool premium,
+}) extends PublicInvite;
+
+/// Made up, expired, revoked, used or full: one answer for all, so a
+/// guessed code tells nothing.
+final class const PublicInviteUnavailable() extends PublicInvite;
+
+/// Too many lookups from this client or of this code in the hour.
+final class const PublicInviteRateLimited() extends PublicInvite;
+
+/// The answer of `preview_invite_public` as a [PublicInvite], read like the
+/// join page's `parsePreview`; an answer of another shape is
+/// [HouseholdProblem.other], which the user can retry.
+PublicInvite parsePublicInvite(Object? body) {
+  final row = body is List ? body.firstOrNull : body;
+  int? count(Object? n) => n is int && n >= 0 ? n : null;
+  switch (row) {
+    case {
+      'status': 'ok',
+      'household': final String household,
+      'members': final Object? members,
+      'open_items': final Object? openItems,
+    }:
+      final memberCount = count(members);
+      final itemCount = count(openItems);
+      if (memberCount != null && itemCount != null) {
+        return PublicInviteOpen(
+          household: household,
+          inviter: switch (row['inviter']) {
+            final String name when name.trim().isNotEmpty => name.trim(),
+            _ => null,
+          },
+          members: memberCount,
+          openItems: itemCount,
+          premium: row['premium'] == true,
+        );
+      }
+    case {'status': 'invalid' || 'full'}:
+      return const PublicInviteUnavailable();
+    case {'status': 'rate_limited'}:
+      return const PublicInviteRateLimited();
+  }
+  throw const HouseholdError(HouseholdProblem.other);
+}
+
 /// A member of a household, as `household_members_of` answers.
 @immutable
 class const HouseholdMember({
@@ -218,6 +276,10 @@ abstract interface class InviteRepository() {
 
   Future<InvitePreview> preview(String code);
 
+  /// What [code] leads to, signed in or not, as the public join page shows
+  /// it (`preview_invite_public`, rate-limited per client and per code).
+  Future<PublicInvite> previewPublic(String code);
+
   /// The members of [householdId], oldest first (`household_members_of`).
   Future<List<HouseholdMember>> members(String householdId);
 
@@ -354,6 +416,16 @@ class SupabaseInviteRepository(final SupabaseClient _client)
       _ => throw const HouseholdError(HouseholdProblem.other),
     };
   });
+
+  @override
+  Future<PublicInvite> previewPublic(String code) => householdCall(
+    () async => parsePublicInvite(
+      await _client.rpc<Object?>(
+        'preview_invite_public',
+        params: {'p_code': code},
+      ),
+    ),
+  );
 
   @override
   Future<List<HouseholdMember>> members(String householdId) =>

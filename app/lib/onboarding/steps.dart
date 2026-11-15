@@ -1,11 +1,13 @@
 import 'dart:async';
 
 import 'package:family_groceries/analytics/consent_screen.dart';
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/app/legal_links.dart';
 import 'package:family_groceries/design/field_border.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/household/household_kind.dart';
 import 'package:family_groceries/household/invite_repository.dart';
+import 'package:family_groceries/household/join_code_screen.dart';
 import 'package:family_groceries/household/onboarding_page.dart';
 import 'package:family_groceries/household/popular_stores.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
@@ -39,6 +41,7 @@ Widget onboardingStepScreen(OnboardingStep step) => _SignedInBackStays(
     OnboardingStep.usage => const _UsageStep(),
     OnboardingStep.who => const _WhoStep(),
     OnboardingStep.name => const _NameStep(),
+    OnboardingStep.join => const JoinCodeScreen(),
     OnboardingStep.stores => const _StoresStep(),
     OnboardingStep.need => const _NeedStep(),
     OnboardingStep.account => const _AccountStep(),
@@ -320,6 +323,18 @@ class _NameStepState() extends State<_NameStep> {
         ),
         const SizedBox(height: HlSpace.s5),
         _NextAndSkip(nextLabel: l10n.onboardingNext, onNext: _next),
+        if (context.select<Flags?, bool>(
+          (f) => f?.isOn(joinHouseholdJh2Flag) ?? false,
+        )) ...[
+          const SizedBox(height: HlSpace.s2),
+          OutlinedButton(
+            key: const ValueKey('onboarding-join-existing'),
+            // The name typed so far stays in the draft for the way back.
+            onPressed: () =>
+                context.read<OnboardingCubit>().at(OnboardingStep.join),
+            child: Text(l10n.jh2JoinExisting, textAlign: TextAlign.center),
+          ),
+        ],
       ],
     );
   }

@@ -30,6 +30,15 @@ One household shares one list, and a person can be in several households (job 16
 - `premium-on-join` the join screen mentions Snacklist Lifetime when the target has it (since job 169b nothing is left, so no warning about the old household). Premium is not on sale yet (hold `premium-launch`), so a normal user sees none of this.
 - `archive` „Archivierte Haushalte“ / "Archived households" in More and „Archivieren und verlassen“ / "Archive and leave" on the household page: off in production (see Gotchas).
 
+## With the flag `join-household-jh2` (job 271, JH2)
+
+- `jh2-invite-sheet` signed out on `/login?invite=<code>` (an invite link, the join page's „Im Browser beitreten“, or „Beitreten“ on the code step) a sheet (`invite-sign-in-sheet`) asks first: „Du bist in einen Haushalt eingeladen“ / "You're invited to a household", „Hast du schon ein Snacklist-Konto?“ / "Do you already have a Snacklist account?", „Konto erstellen“ / "Create account" (`invite-sheet-create`: the email form opens with „Registrieren“ as the filled first button) and „Anmelden“ / "Sign in" (`invite-sheet-sign-in`: today's sign-in). Dismissed, the sign-in stays as before. Google and Apple stay as they are.
+- `jh2-auto-join` the join screen for a link (`/join/<code>`, also a remembered invite after sign-in) joins as soon as the preview is in: no „Haushalt beitreten“ tap, the button is hidden while it joins. A new account answers today's full-screen usage question (`/analytics-consent`) first, then lands on the household's list; an existing account lands there without the guided start, the household added beside its others. An unfinished guided start on the device is dropped before the join. A code typed into the join screen's field still needs the tap.
+- `jh2-approval-wait` with join approval on, the wait says „Deine Anfrage liegt bei „<Haushalt>“. Ein Admin sieht dort deinen Namen und lässt dich rein. Deine Liste öffnet sich von selbst, sobald das passiert.“; without a household there is no filled „Eigenen Haushalt anlegen“: „Anfrage zurückziehen“, then the text button „Lieber eigene Liste anlegen“ / "Start my own list instead" (`join-request-go-on`).
+- `jh2-qr` a person invite's card (invite step, „Einladungen“, the invite sheet) shows the link's QR code („QR-Code dieser Einladung“ / "QR code for this invite") until someone joined with it. „Code kopieren“ under the code stays the one copy button.
+- `jh2-open-card` the web app on a phone's browser (iPhone, iPod, Android with `Mobile`; no tablets, no desktop) shows a card at the top of the list on every page load (`open-app-card`): „Snacklist funktioniert in der App besser.“ / "Snacklist works better in the app." (Peter's copy, no other text), „Öffnen“ / "Open" (`open-app-open`) and an X „Schließen“ (`open-app-close`, until the next load). „Öffnen“: iOS `com.snacklist.app://open/list`, then the App Store after 1.5 s only once the listing is public; Android an `intent://app.snacklist.app/list` with the Play listing as fallback only once public. Nothing goes to the clipboard.
+
+
 ## How to get to it (user POV)
 
 - Right after creating a household: the guided start's invite step (see onboarding).

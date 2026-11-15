@@ -585,4 +585,74 @@ void main() {
       expect(authRedirect(household, Uri.parse(path)), isNull, reason: path);
     }
   });
+
+  group('JH2 (job 271)', () {
+    const atJoin = OnboardingDraft(step: OnboardingStep.join);
+    const code = 'ABCD2345';
+
+    test('the join step is a step before the account', () {
+      expect(OnboardingStep.join.beforeAccount, isTrue);
+      expect(
+        authRedirect(const SignedOut(), Uri.parse('/'), draft: atJoin),
+        '/start/join',
+      );
+      expect(
+        authRedirect(const NeedsHousehold('u'), Uri.parse('/'), draft: atJoin),
+        '/start/join',
+      );
+      expect(screenNameOf(Uri.parse('/start/join')), 'onboarding_join');
+    });
+
+    test('Join on the step: the code kept and the draft gone, signed out '
+        'signs in first, signed in joins', () {
+      expect(
+        authRedirect(
+          const SignedOut(),
+          Uri.parse('/start/join'),
+          pendingInvite: code,
+        ),
+        '/login?invite=$code',
+      );
+      expect(
+        authRedirect(
+          const NeedsHousehold('u'),
+          Uri.parse('/start/join'),
+          pendingInvite: code,
+        ),
+        '/join/$code',
+      );
+    });
+
+    test('a new account from a link: the full-screen consent, then the '
+        'join', () {
+      expect(
+        authRedirect(const SignedOut(), Uri.parse('/join/$code')),
+        '/login?invite=$code',
+      );
+      final consent = authRedirect(
+        const NeedsHousehold('u'),
+        Uri.parse('/?invite=$code'),
+        askConsent: true,
+        pendingInvite: code,
+      );
+      expect(consent, '/analytics-consent?invite=$code');
+      expect(
+        authRedirect(
+          const NeedsHousehold('u'),
+          Uri.parse(consent!),
+          pendingInvite: code,
+        ),
+        '/join/$code',
+      );
+    });
+
+    test('an existing account from a link joins, never the guided start', () {
+      for (final from in ['/?invite=$code', '/', '/login?invite=$code']) {
+        expect(
+          authRedirect(household, Uri.parse(from), pendingInvite: code),
+          '/join/$code',
+        );
+      }
+    });
+  });
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/analytics/events.dart';
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/app/localizations.dart';
 import 'package:family_groceries/app/router.dart';
 import 'package:family_groceries/household/create_household_screen.dart';
@@ -196,6 +197,32 @@ class FakeInvites() implements InviteRepository {
     return own.contains(code)
         ? InviteMember(name)
         : InviteOpen(name, lifetime: lifetime[code] ?? const JoinLifetime());
+  }
+
+  /// What `preview_invite_public` answers, by code; without one, an open
+  /// invite for each of [households] and unavailable for anything else.
+  final publicAnswers = <String, PublicInvite>{};
+
+  /// The codes `preview_invite_public` was asked about.
+  final publicPreviews = <String>[];
+
+  @override
+  Future<PublicInvite> previewPublic(String code) async {
+    publicPreviews.add(code);
+    await _answer();
+    if (publicAnswers[code] case final answer?) {
+      return answer;
+    }
+    return switch (households[code]) {
+      final name? => PublicInviteOpen(
+        household: name,
+        inviter: 'Peter',
+        members: 2,
+        openItems: 5,
+        premium: false,
+      ),
+      null => const PublicInviteUnavailable(),
+    };
   }
 
   @override
@@ -707,6 +734,9 @@ Future<Onboarding> pumpOnboarding(
 
   /// The guided start's server calls; a fresh fake by default.
   FakeOnboardingBackend? backend,
+
+  /// The PostHog flags; all off by default.
+  Flags? flags,
 }) async {
   tester.view
     ..devicePixelRatio = 1
@@ -858,6 +888,7 @@ Future<Onboarding> pumpOnboarding(
           BlocProvider.value(value: onboarding),
           BlocProvider.value(value: analytics),
           BlocProvider.value(value: rows),
+          BlocProvider.value(value: flags ?? Flags()),
         ],
         child: MaterialApp.router(
           localizationsDelegates: appLocalizationsDelegates,

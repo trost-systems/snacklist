@@ -3,12 +3,14 @@ import 'package:flutter/foundation.dart';
 
 /// The steps of the guided start (job 168b), in order. Each has its own
 /// screen; [setup] is the moment after sign-in when the draft becomes the
-/// household, and [invite] the first step with an account. Stored by name:
-/// never rename one.
+/// household, and [invite] the first step with an account. [join] is the
+/// name step's way out to an existing household (job 271), no step of the
+/// progress. Stored by name: never rename one.
 enum OnboardingStep() {
   usage,
   who,
   name,
+  join,
   stores,
   need,
   account,

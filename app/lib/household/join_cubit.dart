@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:family_groceries/analytics/events.dart';
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/pending_invite.dart';
+import 'package:family_groceries/onboarding/onboarding_cubit.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -63,13 +65,55 @@ class const JoinState({
 /// link the user came with; it is checked at once. A refused code keeps
 /// the field as typed, says why (one answer for made-up, expired, revoked
 /// and used codes; the rate limit; no connection) and can be retried.
+///
+/// With JH2 on ([flags], job 271) the [link]'s household is joined as soon
+/// as it is previewed, without asking again (JH-Q6), also when the flag
+/// comes on after the preview. A guided start not set up yet is dropped
+/// first ([onboarding]): its setup must not run into that household.
 class JoinCubit(
   final InviteRepository _invites,
   final SessionCubit _session, {
   final PendingInvite? pendingInvite,
   final String? link,
+  final Flags? flags,
+  final OnboardingCubit? onboarding,
 }) extends Cubit<JoinState> {
-  this : super(const JoinState());
+  this : super(const JoinState()) {
+    _flagChanges = flags?.stream.listen((_) => unawaited(_joinLink()));
+  }
+
+  StreamSubscription<Object?>? _flagChanges;
+
+  /// The link was joined (or tried) without asking: once.
+  var _linkJoined = false;
+
+  /// Joining the link without asking, right now.
+  bool get joiningLink => _autoJoining && state.phase == JoinPhase.joining;
+
+  /// The join without asking is under way (not a retry by tap after it).
+  var _autoJoining = false;
+
+  Future<void> _joinLink() async {
+    final link = this.link;
+    if (_linkJoined ||
+        link == null ||
+        !(flags?.isOn(joinHouseholdJh2Flag) ?? false) ||
+        state.phase != JoinPhase.previewed ||
+        state.problem != null ||
+        _checked != normalizeInviteCode(link)) {
+      return;
+    }
+    _linkJoined = true;
+    if (onboarding?.state case final draft? when !draft.created) {
+      onboarding?.discard();
+    }
+    _autoJoining = true;
+    try {
+      await join();
+    } finally {
+      _autoJoining = false;
+    }
+  }
 
   /// The code that was looked at last, so a join uses what was confirmed.
   String? _checked;
@@ -99,6 +143,7 @@ class JoinCubit(
               lifetime: lifetime,
             ),
           );
+          await _joinLink();
         case InviteMember(:final name):
           // A link to one of their households: nothing to join, but it
           // shows. accept_invite answers its id (status member) and uses
@@ -161,6 +206,12 @@ class JoinCubit(
       link != null && normalizeInviteCode(link!) == code
       ? pendingInvite?.methodOf(code) ?? JoinMethod.link
       : JoinMethod.code;
+
+  @override
+  Future<void> close() {
+    unawaited(_flagChanges?.cancel());
+    return super.close();
+  }
 
   @override
   void emit(JoinState state) {
