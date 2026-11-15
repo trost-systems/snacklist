@@ -1018,3 +1018,44 @@ The fix round after review 0. One PR, public API hardening with bounded add answ
 The API is still off. The production switch and the PostHog flag are untouched. The report and
 the verdict are on the ops side (`jobs/241-public-api-fable-review/out/PUBLIC_API_REVIEW.md`,
 NEEDS_LEAD "Job 241: public API review ready"). Reasons: `docs/DECISIONS.md` "Job 241 review 0".
+
+## Job 242: declutter fixes before Beta App Review (2026-11-15)
+
+PR https://github.com/trost-systems/snacklist/pull/474. Peter found two bugs on TestFlight build
+1325 with `list-declutter` on. Both are fixed, and Peter's answers ST-Q4 and ST-Q6 are applied.
+
+- **The invite sheet could not be closed.**
+  - Cause: every scroll-controlled sheet opened without `useSafeArea`. The invite panel with a
+    group link is taller than a phone, so the sheet ran up under the status bar, drag handle
+    included.
+  - Fix: invite is now a page of the switcher sheet (`InvitePage`), with „‹ Mitglieder“ back to
+    the members. Back and a ✕ „Schließen“ sit in a row that does not scroll.
+  - Fix: `useSafeArea: true` is on all seven sheets that lacked it. The new lint
+    `sheet-below-status-bar` fails a sheet without it.
+- **The top bar and the bottom area were opaque.**
+  - Top: the frosted header (72 % surface, blur, edge line) is a clear layer. The buttons keep
+    their own faces. Only the status bar gets a scrim once rows pass under it.
+  - Bottom: with the flag on, `BottomScrollEdge` no longer paints its 97 % fade. It stays in
+    the tree, so a late flag does not reset the scroll position.
+  - The list ends with the bottom area as padding, so the last row and the Einkaufssumme block
+    end above the add field.
+- **ST-Q4 = W1.** The rule is unchanged, with no `price_weighed` column. **ST-Q6 = C2.** Gesamt
+  without a trip reads „6 mit Preis · 1 ohne Preis“ (EN "6 with price · 1 without price"). It
+  never says „offen“ and leaves out a part with 0. The Job 237 entry left NEEDS_PETER.
+- **How to verify.**
+  - Widget tests: `app/test/household/switcher_sheet_test.dart` on iPhone 390×844 (47/34
+    insets), iPhone SE and 358×640 at 130 %.
+  - `app/test/list/list_declutter_test.dart` measures pixel contrast behind the bar and the
+    bottom controls: main reads 0.03, the fix 0.88. It also checks the end of the list above
+    the add field (DE and EN) and the late flag. `summary_block_test.dart` covers the wording.
+  - Goldens (iPhone and 358 px, DE dark and EN light): `app/test/list/goldens/declutter-*.png`
+    and `app/test/household/goldens/switcher-invite-*.png`.
+  - Web build (verify-snacklist): `journeys/list-declutter.mjs` and `journeys/list-summary.mjs`
+    pass. The screenshots are in `docs/screenshots/242/`.
+- **Tests.** `scripts/verify.sh --only gitleaks,lint,flutter,changelog,fg-cli` passed. An
+  independent review found no must-fix. Its one real find, the scroll reset on a late flag,
+  is fixed and tested.
+- **Not driven.** No real iPhone. The status bar insets are faked in widget tests and goldens.
+- **TestFlight.** The fix ships with the next green main build after the merge. The flag is
+  `list-declutter`, with `prices-and-trip-total` for the totals. Both are on for `is_internal`
+  persons only (lead, 14 Nov 23:17), so Peter's account sees the change.

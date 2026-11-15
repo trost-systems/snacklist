@@ -5078,6 +5078,12 @@ abstract class AppLocalizations {
   /// **'{count} ohne Preis'**
   String subtotalsUnpriced(int count);
 
+  /// Job 242 (flag list-declutter, Peter's ST-Q6 answer): the summary block's Gesamt without a trip, how many items have a price; next to subtotalsUnpriced
+  ///
+  /// In de, this message translates to:
+  /// **'{count} mit Preis'**
+  String subtotalsPriced(int count);
+
   /// Job 237 (flag list-declutter, ST3): the list's summary block above „Zuletzt verwendet“: a store whose items were all bought on the running trip
   ///
   /// In de, this message translates to:

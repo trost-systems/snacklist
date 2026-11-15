@@ -1,0 +1,28 @@
+id: sheet-below-status-bar
+snapshots:
+  "Future<void> f(BuildContext c) => showModalBottomSheet<void>(\n  context: c,\n  isScrollControlled: true,\n  useRootNavigator: true,\n  showDragHandle: true,\n  builder: (_) => const Sheet(),\n);\n":
+    labels:
+    - source: |-
+        showModalBottomSheet<void>(
+          context: c,
+          isScrollControlled: true,
+          useRootNavigator: true,
+          showDragHandle: true,
+          builder: (_) => const Sheet(),
+        )
+      style: primary
+      start: 34
+      end: 188
+  "Future<void> f(BuildContext c) async {\n  final r = await showModalBottomSheet<int>(\n    context: c,\n    isScrollControlled: true,\n    useSafeArea: false,\n    useRootNavigator: true,\n    builder: (_) => const Sheet(),\n  );\n}\n":
+    labels:
+    - source: |-
+        showModalBottomSheet<int>(
+            context: c,
+            isScrollControlled: true,
+            useSafeArea: false,
+            useRootNavigator: true,
+            builder: (_) => const Sheet(),
+          )
+      style: primary
+      start: 57
+      end: 220

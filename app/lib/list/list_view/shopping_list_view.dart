@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
-import 'dart:ui' show ImageFilter, SemanticsHitTestBehavior;
+import 'dart:ui' show SemanticsHitTestBehavior;
 
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/app/notices.dart';
@@ -563,7 +563,7 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
             delegate: _PinnedHeader(
               header,
               MediaQuery.paddingOf(context).top + header.preferredSize.height,
-              glass: declutter,
+              clear: declutter,
             ),
           ),
         SliverPadding(
@@ -780,10 +780,10 @@ class _PinnedHeader(
   final Widget child,
   final double extent, {
 
-  /// The see-through header of job 229 instead of the fade.
-  required final bool glass,
+  /// The see-through header of jobs 229 and 242 instead of the fade.
+  required final bool clear,
 }) extends SliverPersistentHeaderDelegate {
-  /// How far the list scrolls before the glass shows its edge line.
+  /// How far the list scrolls before the status bar gets its scrim.
   static const _lifted = 4.0;
 
   @override
@@ -798,8 +798,8 @@ class _PinnedHeader(
   /// no taps: they reach the bar or the rows as before.
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlaps) {
-    if (glass) {
-      return _glass(context, lifted: shrinkOffset > _lifted);
+    if (clear) {
+      return _clear(context, lifted: shrinkOffset > _lifted);
     }
     final strength = shrinkOffset / extent;
     final top = MediaQuery.paddingOf(context).top;
@@ -834,32 +834,40 @@ class _PinnedHeader(
     );
   }
 
-  /// One frosted layer from the screen's top edge to the bar's end, the
-  /// status bar included: the rows scroll on under it, blurred, and an edge
-  /// line shows once they do ([lifted]). The whole layer takes taps, so a
-  /// near miss beside a button never acts on a row under it.
-  Widget _glass(BuildContext context, {required bool lifted}) {
-    final t = SnacklistColors.of(Theme.of(context).brightness);
+  /// One clear layer from the screen's top edge to the bar's end, the
+  /// status bar included: the rows scroll on under it in full, and the
+  /// bar's buttons carry their own faces (Peter, job 242). Only the status
+  /// bar gets a scrim once rows pass under it ([lifted]), so the clock
+  /// stays readable. The whole layer takes taps, so a near miss beside a
+  /// button never acts on a row under it.
+  Widget _clear(BuildContext context, {required bool lifted}) {
+    final surface = Theme.of(context).scaffoldBackgroundColor;
+    final top = MediaQuery.paddingOf(context).top;
     return Stack(
       fit: StackFit.expand,
       children: [
-        ClipRect(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
-            child: DecoratedBox(
-              key: const ValueKey('list-header-glass'),
-              decoration: BoxDecoration(
-                color: t.surface.withValues(alpha: 0.72),
-                border: lifted
-                    ? Border(
-                        bottom: BorderSide(
-                          color: t.border,
-                          width: HlBorder.width,
-                        ),
-                      )
-                    : null,
-              ),
-            ),
+        Align(
+          key: const ValueKey('list-header-layer'),
+          alignment: Alignment.topCenter,
+          child: SizedBox(
+            height: top,
+            width: double.infinity,
+            child: lifted
+                ? DecoratedBox(
+                    key: const ValueKey('list-status-bar-scrim'),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          for (final alpha in const [0.92, 0.8, 0.0])
+                            surface.withValues(alpha: alpha),
+                        ],
+                        stops: const [0, 0.6, 1],
+                      ),
+                    ),
+                  )
+                : null,
           ),
         ),
         // On the web the rows under the layer keep their tappable semantics
@@ -879,5 +887,5 @@ class _PinnedHeader(
   bool shouldRebuild(_PinnedHeader oldDelegate) =>
       oldDelegate.child != child ||
       oldDelegate.extent != extent ||
-      oldDelegate.glass != glass;
+      oldDelegate.clear != clear;
 }

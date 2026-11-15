@@ -3165,7 +3165,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String subtotalsUnpriced(int count) {
-    return '$count unpriced';
+    return '$count without price';
+  }
+
+  @override
+  String subtotalsPriced(int count) {
+    return '$count with price';
   }
 
   @override

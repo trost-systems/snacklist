@@ -36,6 +36,12 @@ import 'harness.dart';
 
 Finder _key(String k) => find.byKey(ValueKey(k));
 
+/// "Leute einladen" as a page of the switcher sheet.
+final _invitePage = find.descendant(
+  of: _key('switcher-sheet'),
+  matching: _key('invite-sheet'),
+);
+
 const _home = Household(
   id: 'home',
   name: 'Zuhause',
@@ -70,6 +76,9 @@ typedef _Shell = ({
 Future<_Shell> _pump(
   WidgetTester tester, {
   Size size = const Size(390, 844),
+
+  /// The status bar and the home indicator, as on an iPhone.
+  ({double top, double bottom}) insets = (top: 0, bottom: 0),
   double textScale = 1,
   Brightness brightness = Brightness.light,
   Locale locale = const Locale('de'),
@@ -79,7 +88,9 @@ Future<_Shell> _pump(
 }) async {
   tester.view
     ..devicePixelRatio = 1
-    ..physicalSize = size;
+    ..physicalSize = size
+    ..padding = FakeViewPadding(top: insets.top, bottom: insets.bottom)
+    ..viewPadding = FakeViewPadding(top: insets.top, bottom: insets.bottom);
   addTearDown(tester.view.reset);
   tester.platformDispatcher.textScaleFactorTestValue = textScale;
   addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
@@ -172,6 +183,7 @@ Future<_Shell> _pump(
           BlocProvider.value(value: purchases.purchases),
         ],
         child: MaterialApp.router(
+          debugShowCheckedModeBanner: false,
           localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           theme: appTheme(brightness),
@@ -580,9 +592,8 @@ void main() {
     handle.dispose();
   });
 
-  testWidgets('Einladen opens the invite sheet of that household', (
-    tester,
-  ) async {
+  testWidgets('Einladen opens the invite page of that household in the '
+      'sheet; back reaches its members with the new invite', (tester) async {
     final s = await _pump(tester);
     await _open(tester);
     await _back(tester);
@@ -590,25 +601,24 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(_key('switcher-invite'));
     await tester.pumpAndSettle();
-    expect(_key('invite-sheet'), findsOneWidget);
+    expect(_invitePage, findsOneWidget);
+    expect(find.byType(BottomSheet), findsOneWidget, reason: 'no 2nd sheet');
     expect(
-      find.descendant(
-        of: _key('invite-sheet'),
-        matching: find.text('Sommerfest'),
-      ),
+      find.descendant(of: _invitePage, matching: find.text('Sommerfest')),
       findsOneWidget,
     );
     await tester.tap(_key('invite-new'));
     await tester.pumpAndSettle();
     expect(s.invites.created, hasLength(1));
-    // The invite sheet closes; the members row counts the new invite.
-    Navigator.of(tester.element(_key('invite-sheet'))).pop();
-    await tester.pumpAndSettle();
+    await _back(tester);
+    expect(_key('switcher-members-page'), findsOneWidget);
+    expect(find.text('OFFENE EINLADUNGEN'), findsOneWidget);
+    await _back(tester);
     expect(find.text('12 Mitglieder · 1 Einladung offen'), findsOneWidget);
   });
 
   testWidgets('members page: open invites are withdrawn; Leute einladen '
-      'opens the invite sheet', (tester) async {
+      'opens the invite page, back returns', (tester) async {
     final s = await _pump(tester);
     final invite = await s.invites.create('home');
     await s.invites.create('home');
@@ -629,7 +639,95 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(_key('switcher-members-invite'));
     await tester.pumpAndSettle();
-    expect(_key('invite-sheet'), findsOneWidget);
+    expect(_invitePage, findsOneWidget);
+    expect(find.byType(BottomSheet), findsOneWidget, reason: 'no 2nd sheet');
+    expect(
+      tester
+          .widget<Text>(
+            find.descendant(
+              of: _key('switcher-back'),
+              matching: find.byType(Text),
+            ),
+          )
+          .data,
+      'Mitglieder',
+    );
+    await _systemBack(tester);
+    expect(_key('switcher-members-page'), findsOneWidget);
+    expect(_invitePage, findsNothing);
+  });
+
+  for (final (name, size, insets, scale) in const [
+    ('iPhone', Size(390, 844), (top: 47.0, bottom: 34.0), 1.0),
+    ('iPhone SE', Size(375, 667), (top: 20.0, bottom: 0.0), 1.0),
+    ('358 px at 130 % text', Size(358, 640), (top: 24.0, bottom: 0.0), 1.3),
+  ]) {
+    testWidgets('$name: the invite page stays below the status bar with the '
+        'drag handle and Schließen; it scrolls inside the sheet', (
+      tester,
+    ) async {
+      final s = await _pump(
+        tester,
+        size: size,
+        insets: insets,
+        textScale: scale,
+      );
+      // As on Peter's phone: the group link's card with its QR code.
+      await s.invites.create('home', kind: InviteKind.group);
+      await _open(tester);
+      await tester.tap(_key('switcher-members'));
+      await tester.pumpAndSettle();
+      await tester.tap(_key('switcher-members-invite'));
+      await tester.pumpAndSettle();
+      final sheet = tester.getRect(find.byType(BottomSheet));
+      expect(sheet.top, greaterThanOrEqualTo(insets.top), reason: '$sheet');
+      expect(sheet.bottom, size.height);
+      final close = _key('switcher-close');
+      expect(close.hitTestable(), findsOneWidget);
+      expect(tester.getRect(close).top, greaterThan(insets.top));
+      expect(_key('switcher-back').hitTestable(), findsOneWidget);
+      // The group link's last action, below the fold on every phone.
+      final renew = _key('invite-group-renew');
+      expect(renew.hitTestable(), findsNothing);
+      await tester.scrollUntilVisible(
+        renew,
+        200,
+        scrollable: find
+            .descendant(of: _invitePage, matching: find.byType(Scrollable))
+            .first,
+      );
+      await tester.ensureVisible(renew);
+      await tester.pumpAndSettle();
+      expect(renew.hitTestable(), findsOneWidget);
+      expect(
+        tester.getRect(renew).bottom,
+        lessThanOrEqualTo(size.height - insets.bottom),
+      );
+      expect(tester.getRect(close).top, greaterThan(insets.top));
+      expect(tester.takeException(), isNull);
+
+      await tester.tap(close);
+      await tester.pumpAndSettle();
+      expect(find.byType(BottomSheet), findsNothing);
+    });
+  }
+
+  testWidgets('Schließen closes the sheet from every page', (tester) async {
+    await _pump(tester);
+    for (final open in [
+      <String>[],
+      ['switcher-members'],
+      ['switcher-members', 'switcher-members-invite'],
+    ]) {
+      await _open(tester);
+      for (final k in open) {
+        await tester.tap(_key(k));
+        await tester.pumpAndSettle();
+      }
+      await tester.tap(_key('switcher-close'));
+      await tester.pumpAndSettle();
+      expect(find.byType(BottomSheet), findsNothing, reason: '$open');
+    }
   });
 
   testWidgets('the owner removes a member after confirming', (tester) async {
@@ -779,4 +877,52 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  group('screenshots (job 242)', () {
+    for (final (name, size, insets) in const [
+      ('iphone', Size(390, 844), (top: 47.0, bottom: 34.0)),
+      ('compact', Size(358, 640), (top: 20.0, bottom: 0.0)),
+    ]) {
+      for (final (locale, brightness) in const [
+        (Locale('de'), Brightness.dark),
+        (Locale('en'), Brightness.light),
+      ]) {
+        final shot = 'goldens/switcher-invite-$name-${locale.languageCode}';
+        testWidgets('$shot: the invite page, top and scrolled to its end', (
+          tester,
+        ) async {
+          final s = await _pump(
+            tester,
+            size: size,
+            insets: insets,
+            brightness: brightness,
+            locale: locale,
+          );
+          // „gültig bis“ shows local time: the same on CI (UTC) and here.
+          s.invites.created.add(
+            Invite(
+              id: 'group',
+              code: 'GRUPPE42',
+              expiresAt: DateTime(2026, 12, 8, 10, 30).toUtc(),
+              kind: InviteKind.group,
+              maxUses: 50,
+            ),
+          );
+          await _open(tester);
+          await tester.tap(_key('switcher-members'));
+          await tester.pumpAndSettle();
+          await tester.tap(_key('switcher-members-invite'));
+          await tester.pumpAndSettle();
+          final screen = find.byType(MaterialApp);
+          await expectLater(screen, matchesGoldenFile('$shot-top.png'));
+          await tester.dragFrom(
+            tester.getCenter(_invitePage),
+            const Offset(0, -2000),
+          );
+          await tester.pumpAndSettle();
+          await expectLater(screen, matchesGoldenFile('$shot-end.png'));
+        });
+      }
+    }
+  });
 }

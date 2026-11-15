@@ -135,6 +135,7 @@ Future<void> showHouseholdSheet(BuildContext context, {int? openNow}) {
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
+    useSafeArea: true,
     useRootNavigator: true,
     showDragHandle: true,
     builder: (_) => HouseholdSheet(openNow: openNow),

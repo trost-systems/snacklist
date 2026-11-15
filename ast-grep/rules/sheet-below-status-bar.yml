@@ -1,0 +1,16 @@
+# A scroll-controlled sheet may grow to the screen's full height. Without useSafeArea it then runs
+# under the status bar, drag handle included, and can no longer be closed: the switcher's invite
+# sheet on TestFlight build 1325 (job 242).
+id: sheet-below-status-bar
+language: dart
+severity: error
+files:
+  - app/lib/**
+rule:
+  kind: call_expression
+  all:
+    - regex: '^showModalBottomSheet\s*[<(]'
+    - regex: 'isScrollControlled:\s*true'
+    - not:
+        regex: 'useSafeArea:\s*true'
+message: 'A scroll-controlled sheet needs useSafeArea: true: grown to full height it would run under the status bar with its drag handle, and could not be closed (job 242)'

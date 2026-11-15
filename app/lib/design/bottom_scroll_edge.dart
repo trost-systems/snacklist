@@ -13,6 +13,11 @@ class const BottomScrollEdge({
 
   /// The fade above the bottom padding.
   final double fade = HlSpace.s4,
+
+  /// Draws nothing: the rows show in full behind the floating controls
+  /// (the decluttered list, job 242). The child keeps its place in the tree
+  /// either way, so a flag arriving late never resets its scroll.
+  final bool clear = false,
   super.key,
 }) extends StatefulWidget {
   @override
@@ -52,7 +57,7 @@ class _BottomScrollEdgeState() extends State<BottomScrollEdge> {
           fit: StackFit.passthrough,
           children: [
             widget.child,
-            if (bottom > 0)
+            if (bottom > 0 && !widget.clear)
               Positioned(
                 left: 0,
                 right: 0,

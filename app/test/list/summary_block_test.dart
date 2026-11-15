@@ -103,7 +103,8 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Gesamt'), findsOneWidget);
-    expect(find.text('4 mit Preis · 1 offen'), findsOneWidget);
+    // Peter's ST-Q6 answer: the store line's „ohne Preis“, never „offen“.
+    expect(text(tester, 'total-counts'), '4 mit Preis · 1 ohne Preis');
     final lines = [
       for (final k in ['subtotal-dm', 'subtotal-lidl', 'subtotal-none'])
         tester.getRect(key(k)),
@@ -134,6 +135,28 @@ void main() {
     await toBlock(tester);
     expect(text(tester, 'subtotal-amount-lidl'), '1,19$_nbsp€');
     expect(text(tester, 'total-amount'), '2,14$_nbsp€');
+    expect(text(tester, 'total-counts'), '2 mit Preis', reason: 'no „0 …“');
+    expect(find.textContaining('offen'), findsNothing);
+  });
+
+  testWidgets('no price at all: Gesamt says only how many have none', (
+    tester,
+  ) async {
+    await pumpList(
+      tester,
+      flags: _flags,
+      seed: (repo) => repo
+        ..remoteAdd('Seife', storeId: 'dm')
+        ..remoteAdd('Milch', storeId: 'lidl')
+        ..remoteAdd('Brot', storeId: 'lidl'),
+    );
+    await toBlock(tester);
+    expect(text(tester, 'total-counts'), '3 ohne Preis');
+    expect(find.textContaining('offen'), findsNothing);
+    expect(
+      tester.getSemantics(key('total-bar')).label,
+      isNot(contains('0 mit Preis')),
+    );
   });
 
   testWidgets('one store: no store lines, only the total', (tester) async {
@@ -217,7 +240,7 @@ void main() {
   });
 
   testWidgets('a price per kg on „3“ (no weight): the line says „1 ohne '
-      'Preis“, Gesamt counts it open', (tester) async {
+      'Preis“, Gesamt counts it without price', (tester) async {
     await pumpList(
       tester,
       flags: _flags,
@@ -240,7 +263,7 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(text(tester, 'total-counts'), '2 mit Preis · 1 offen');
+    expect(text(tester, 'total-counts'), '2 mit Preis · 1 ohne Preis');
   });
 
   group('no trip', () {
@@ -463,7 +486,31 @@ void main() {
     expect(text(tester, 'subtotal-amount-lidl'), 'at least €3.68');
     expect(text(tester, 'total-amount'), 'at least €7.63');
     expect(find.textContaining('all bought'), findsOneWidget);
-    expect(find.text('€0.95 bought · €6.68 open · 1 unpriced'), findsOneWidget);
+    expect(
+      find.text('€0.95 bought · €6.68 open · 1 without price'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('English, no trip: Gesamt counts with and without price', (
+    tester,
+  ) async {
+    await pumpList(
+      tester,
+      flags: _flags,
+      seed: _seed,
+      locale: const Locale('en'),
+    );
+    await toBlock(tester);
+    expect(
+      find.descendant(
+        of: key('subtotal-lidl'),
+        matching: find.text('1 without price'),
+      ),
+      findsOneWidget,
+    );
+    expect(text(tester, 'total-counts'), '4 with price · 1 without price');
+    expect(find.textContaining('open'), findsNothing);
   });
 
   for (final (locale, brightness) in const [

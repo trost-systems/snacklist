@@ -13,6 +13,7 @@ Future<void> showArchivedHouseholds(BuildContext context) =>
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       useRootNavigator: true,
       showDragHandle: true,
       builder: (_) => const ArchivedHouseholds(),

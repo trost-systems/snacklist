@@ -22,6 +22,7 @@ Future<AskAnswer> showTripAsk(
       context: context,
       useRootNavigator: true,
       isScrollControlled: true,
+      useSafeArea: true,
       showDragHandle: true,
       builder: (_) => TripAskSheet(itemName: itemName),
     ) ??

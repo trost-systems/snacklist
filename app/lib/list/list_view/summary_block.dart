@@ -323,8 +323,9 @@ class const _TotalLine({
     final t = SnacklistColors.of(Theme.of(context).brightness);
     final total = summary.total;
     final title = summary.perStore ? l10n.subtotalsTotal : l10n.tripTotal;
-    // Without a trip the app's count wording (ST-Q6); with one „offen“
-    // names the open amount, so the count says „ohne Preis“.
+    // Without a trip the store lines' „ohne Preis“ (Peter's ST-Q6 answer,
+    // job 242), never „offen“ or a zero count; with one „offen“ names the
+    // open amount.
     List<String> details({bool spoken = false}) => summary.split
         ? _details(
             context,
@@ -335,7 +336,10 @@ class const _TotalLine({
             split: true,
             spoken: spoken,
           )
-        : [l10n.tripCounts(total.priced, total.unpriced)];
+        : [
+            if (total.priced > 0) l10n.subtotalsPriced(total.priced),
+            if (total.unpriced > 0) l10n.subtotalsUnpriced(total.unpriced),
+          ];
     return Semantics(
       key: const ValueKey('total-bar'),
       container: true,
@@ -377,16 +381,17 @@ class const _TotalLine({
                 ),
               ),
             ),
-            Text(
-              details().join(' · '),
-              key: const ValueKey('total-counts'),
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: t.textMuted,
-                fontFeatures: _figures,
+            if (details() case final shown when shown.isNotEmpty)
+              Text(
+                shown.join(' · '),
+                key: const ValueKey('total-counts'),
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: t.textMuted,
+                  fontFeatures: _figures,
+                ),
               ),
-            ),
           ],
         ),
       ),

@@ -627,6 +627,7 @@ class const _AppTile({
         useRootNavigator: true,
         showDragHandle: true,
         isScrollControlled: true,
+        useSafeArea: true,
         builder: (_) => BlocProvider.value(
           value: context.read<AccessCubit>(),
           child: _AppDetails(app: app, paused: paused),

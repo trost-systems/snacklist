@@ -1422,6 +1422,8 @@
   "@subtotalsTotal": {"description": "Job 237 (flag list-declutter, ST3): the list's summary block above „Zuletzt verwendet“, its last line"},
   "subtotalsUnpriced": "{count} ohne Preis",
   "@subtotalsUnpriced": {"description": "Job 237 (flag list-declutter, ST3): the list's summary block above „Zuletzt verwendet“: a line's items without a price", "placeholders": {"count": {"type": "int"}}},
+  "subtotalsPriced": "{count} mit Preis",
+  "@subtotalsPriced": {"description": "Job 242 (flag list-declutter, Peter's ST-Q6 answer): the summary block's Gesamt without a trip, how many items have a price; next to subtotalsUnpriced", "placeholders": {"count": {"type": "int"}}},
   "subtotalsAllBought": "alles gekauft",
   "@subtotalsAllBought": {"description": "Job 237 (flag list-declutter, ST3): the list's summary block above „Zuletzt verwendet“: a store whose items were all bought on the running trip"},
   "subtotalsBought": "{amount} gekauft",

@@ -343,6 +343,7 @@ class const _TabBand({
                           duration: short,
                           child: Center(
                             child: _Pill(
+                              key: const ValueKey('tab-pill'),
                               shown: shown,
                               branch: branch,
                               onSelect: onSelect,
@@ -387,6 +388,7 @@ class const _Pill({
   required final List<_Destination> shown,
   required final int branch,
   required final ValueChanged<_Destination> onSelect,
+  super.key,
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {

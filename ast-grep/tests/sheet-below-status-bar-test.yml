@@ -1,0 +1,36 @@
+id: sheet-below-status-bar
+valid:
+  - |
+    Future<void> f(BuildContext c) => showModalBottomSheet<void>(
+      context: c,
+      isScrollControlled: true,
+      useSafeArea: true,
+      useRootNavigator: true,
+      builder: (_) => const Sheet(),
+    );
+  # Not scroll-controlled: Material caps it at 9/16 of the screen.
+  - |
+    Future<void> f(BuildContext c) => showModalBottomSheet<void>(
+      context: c,
+      useRootNavigator: true,
+      builder: (_) => const Sheet(),
+    );
+invalid:
+  - |
+    Future<void> f(BuildContext c) => showModalBottomSheet<void>(
+      context: c,
+      isScrollControlled: true,
+      useRootNavigator: true,
+      showDragHandle: true,
+      builder: (_) => const Sheet(),
+    );
+  - |
+    Future<void> f(BuildContext c) async {
+      final r = await showModalBottomSheet<int>(
+        context: c,
+        isScrollControlled: true,
+        useSafeArea: false,
+        useRootNavigator: true,
+        builder: (_) => const Sheet(),
+      );
+    }

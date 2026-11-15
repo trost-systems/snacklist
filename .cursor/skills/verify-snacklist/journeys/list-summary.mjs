@@ -118,7 +118,8 @@ try {
     `dm, ${money(95)}`,
     `${market}, ${money(360)}`,
     `${L('noStore')}, ${money(300)}`,
-    `${L('subtotalsTotal')}, ${atLeast(about(money(1274)))}, ${L('tripCounts', { priced: '6', open: '1' })}`,
+    // Peter's ST-Q6 answer (job 242): the store lines' „ohne Preis“, never „offen“.
+    `${L('subtotalsTotal')}, ${atLeast(about(money(1274)))}, ${L('subtotalsPriced', { count: '6' })}, ${unpriced(1)}`,
   ];
   for (const text of expected) check(block.includes(flat(text)), `the block reads „${flat(text)}“`);
   check(!block.includes(flat(L('storeSubtotal', { store: 'Lidl', amount: money(519) }))), 'no „Summe Lidl“ at the section end');

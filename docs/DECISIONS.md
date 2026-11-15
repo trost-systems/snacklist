@@ -13349,3 +13349,57 @@ Two gaps jobs 243 and 244 found between the privacy text sent to Legal and the c
 - **Not changed:** `.github/actions/` still runs everything (4 of the 136 PRs). The ios job uses
   none of the composite actions today, but a rule per action would have to follow `ci.yml` by
   hand.
+
+## Job 242: declutter fixes before Beta App Review, 2026-11-15
+
+Peter found two bugs on TestFlight build 1325 with `list-declutter` on. Both fixes, and Peter's
+answers to job 237's two questions, are below.
+
+- **The invite sheet ran under the status bar.** Every sheet that may grow to full height
+  (`isScrollControlled: true`) opened without `useSafeArea`, so the sheet's top, drag handle
+  included, could sit under the status bar. The invite panel with a group link is taller than a
+  phone, so on top of the switcher sheet it filled the screen and could not be closed. The fix
+  is `useSafeArea: true` on the seven such sheets that lacked it, not only the two in the
+  report, and a lint (`sheet-below-status-bar`) that fails a new one without it.
+- **Invite is a page of the switcher sheet.** „Einladen“ on the household's page and „Leute
+  einladen“ on the members page open a fourth page, `InvitePage`, in the same sheet: no sheet on
+  a sheet. Its back row reads „‹ Mitglieder“ from both entries, as Peter asked. From „Einladen“
+  that means back lands on the members page, not the household page. The members page lists
+  the invite just made, so that is a sensible place to land. The page is the invite sheet's own
+  content (`InviteSheet`), with its own `InvitesScope` that polls while it shows. The household's
+  `InvitesCubit` reloads when the page goes, so the members row and the open invites count the
+  new one.
+- **Back and ✕ stay above the pages.** The back row moved out of each page into one row of the
+  sheet, with a ✕ „Schließen“ at its end. That row does not scroll, so on a long page (invite at
+  130 % text on a 358 px phone) back and close stay in reach. The households page has the ✕ alone.
+- **The header is clear, not frosted.** Peter wants to see the list behind the bar. The frosted
+  layer (72 % surface, 14 px blur, an edge line once scrolled) is gone. The switcher, Anpassen,
+  the new-adds capsule and the sync pill all carry their own faces, so they stay legible. The
+  layer still takes every tap, so a near miss beside a button never ticks a row under it. The
+  status bar gets a scrim once rows pass under it: the page colour from 92 % at the top to 0 at
+  the status bar's lower edge. Without the scrim, row text would run through the clock. The
+  scrim does not reach the buttons. Peter's brief allows a gradient where contrast needs one.
+- **The bottom is clear too.** `BottomScrollEdge` painted the page colour at 97 % over the whole
+  bottom area (the add field and the tab pill), which hid the rows and the summary block there.
+  With the flag on it draws nothing (`clear`), but it stays around the list: swapping the
+  wrapper made Flutter rebuild the list, so a flag arriving from PostHog after a cold start
+  reset the scroll to the top (the reviewer's find, pinned by a test). Without the flag,
+  nothing changes. The list already ends with the bottom area's height as padding, so its last
+  row, the summary block and „Zuletzt verwendet“ scroll clear above the add field (tested on
+  390 and 358 px, DE and EN).
+- **Review nice-to-haves left as they are.** In German the drag handle and the barrier are also
+  named „Schließen“ (Material's own label), beside the ✕; the ✕ keeps the app's „Schließen“.
+  The lint matches the literal `isScrollControlled: true`; no sheet passes it as a variable.
+- **How the tests see transparency.** `list_declutter_test.dart` captures the screen and
+  measures the luminance range of the pixels beside the bar's buttons and around the add field
+  and the pill, with rows whose names run under the gap. Main's frosted layer and fade measure
+  0.03 to 0.04, the clear layers 0.88 (both brightnesses, 390 and 358 px).
+- **ST-Q4 = W1 (Peter, 14 Nov 21:58).** The current rule stays: a price per kg or l typed per kg
+  or l reads „≈“ while the item is open, and the label's total or a tick makes it exact. No
+  `price_weighed` column.
+- **ST-Q6 = C2 (Peter, 14 Nov 21:58).** Without a trip, Gesamt now uses the store lines' wording:
+  „6 mit Preis · 1 ohne Preis“ (EN "6 with price · 1 without price"), never „offen“. A part
+  with 0 is left out, so a fully priced list reads „2 mit Preis“ and a list without prices „3
+  ohne Preis“. The English store-line wording changed with it, from "1 unpriced" to "1 without
+  price", as Peter wrote it. The bar under the list without `list-declutter` keeps its „N mit
+  Preis · M offen“. The Job 237 entry left docs/NEEDS_PETER.md.
