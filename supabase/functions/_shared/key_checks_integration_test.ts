@@ -464,6 +464,121 @@ test('a key check and the gate that wait for a lock all the same end after two s
     }
   }));
 
+/** What [call] ends with for [member]: 'ok', or the refusal's name. */
+const outcome = (member: Member, call: (tx: postgres.TransactionSql) => Promise<unknown>) =>
+  asUser(member.userId, call).then(() => 'ok', (e) => String(e.message));
+
+test("a call that is refused does not wait for the household's rows", () =>
+  withMembers(async (sql, [mine, other]) => {
+    const [milk] = await sql<{ id: string; list_id: string }[]>`
+      select id, list_id from public.items where household_id = ${mine.householdId}`;
+    assertExists(milk);
+    // The other one's household row too: what its owner asks for and cannot have holds nothing.
+    const held: Held = async (tx) => {
+      await membersRows(mine)(tx);
+      await tx`select public.lock_memberships(${mine.userId}::uuid)`;
+      await tx`select from public.households where id = ${other.householdId} for no key update`;
+    };
+    const answers = async (
+      who: Member,
+      calls: Record<string, (tx: postgres.TransactionSql) => Promise<unknown>>,
+    ) => {
+      const got: Record<string, string> = {};
+      for (const [name, call] of Object.entries(calls)) {
+        got[name] = quick(await whileHeld(held, () => outcome(who, call)), name);
+      }
+      return got;
+    };
+
+    assertEquals(
+      await answers(other, {
+        set_member_role: (tx) =>
+          tx`select public.set_member_role(${mine.householdId}, ${mine.userId}, 'admin')`,
+        leave_household: (tx) => tx`select public.leave_household(${mine.householdId})`,
+        remove_member: (tx) => tx`select public.remove_member(${mine.householdId}, ${mine.userId})`,
+        'remove_member, from their own household': (tx) =>
+          tx`select public.remove_member(${other.householdId}, ${mine.userId})`,
+        'set_member_role, in their own household': (tx) =>
+          tx`select public.set_member_role(${other.householdId}, ${mine.userId}, 'admin')`,
+        claim_item: (tx) => tx`select public.claim_item(${milk.id}, null)`,
+        lock_household_items: (tx) => tx`select public.lock_household_items(${mine.householdId})`,
+        'an add': (tx) =>
+          tx`insert into public.items (household_id, list_id, name)
+             values (${mine.householdId}, ${milk.list_id}, 'Brot')`,
+      }),
+      {
+        set_member_role: 'not_member',
+        leave_household: 'not_member',
+        remove_member: 'not_member',
+        'remove_member, from their own household': 'not_member',
+        'set_member_role, in their own household': 'not_member',
+        claim_item: 'not_a_member',
+        lock_household_items: 'ok',
+        'an add': 'not_a_member',
+      },
+      'someone outside the household',
+    );
+
+    await sql`insert into public.household_members (household_id, user_id, role)
+              values (${mine.householdId}, ${other.userId}, 'member')`;
+    assertEquals(
+      await answers(other, {
+        set_member_role: (tx) =>
+          tx`select public.set_member_role(${mine.householdId}, ${mine.userId}, 'admin')`,
+        remove_member: (tx) => tx`select public.remove_member(${mine.householdId}, ${mine.userId})`,
+      }),
+      { set_member_role: 'not_owner', remove_member: 'not_admin' },
+      'a plain member',
+    );
+  }));
+
+test("a household's key checks are answered while someone outside it asks for its roles and to leave it", () =>
+  withMembers(async (sql, [mine, other]) => {
+    const key = await mint(sql, mine);
+    const hash = await sha256Hex(key.token);
+    const callers = connect(4);
+    try {
+      let checking = true;
+      let outside = 0;
+      const ends: Record<string, number> = {};
+      const keepCalling = async (call: (tx: postgres.TransactionSql) => Promise<unknown>) => {
+        while (checking) {
+          const end = await callers.begin(async (tx) => {
+            await tx`select set_config('role', 'authenticated', true),
+                            set_config('request.jwt.claims', ${
+              JSON.stringify(session(other))
+            }, true)`;
+            await call(tx);
+          }).then(() => 'ok', (e) => String(e.message));
+          ends[end] = (ends[end] ?? 0) + 1;
+          outside++;
+        }
+      };
+      const role = (tx: postgres.TransactionSql) =>
+        tx`select public.set_member_role(${mine.householdId}, ${mine.userId}, 'admin')`;
+      const leave = (tx: postgres.TransactionSql) =>
+        tx`select public.leave_household(${mine.householdId})`;
+      const calling = [role, leave, role, leave].map(keepCalling);
+
+      // At least 400 checks, and as many more as it takes for 400 calls from outside to end.
+      const checks: Record<string, number> = {};
+      for (let n = 0; n < 400 || outside < 400; n++) {
+        const end = await sql<{ outcome: string }[]>`
+          select outcome from public.api_begin(${hash}::text, 'key-checks-test', 1000000, 1000000,
+            1000000, ${AUTH_FAILURES}, ${AUTH_FAILURE_WINDOW_SECONDS})`
+          .then(([row]) => row?.outcome ?? 'none', (e) => String(e.code));
+        checks[end] = (checks[end] ?? 0) + 1;
+      }
+      checking = false;
+      await Promise.all(calling);
+
+      assertEquals(Object.keys(checks), ['ok']);
+      assertEquals(Object.keys(ends), ['not_member']);
+    } finally {
+      await callers.end();
+    }
+  }));
+
 test('the allowances and the Alexa link end at once while the account is being deleted', () =>
   withMembers(async (sql, [mine, theirs]) => {
     const pool = serviceDb();
