@@ -9,6 +9,7 @@ import type { Access } from '../_shared/premium.ts';
 import { mcpTools, telemetryFor, withTelemetry } from '../_shared/telemetry.ts';
 import {
   buildServer,
+  busyNow,
   type CallReason,
   type Gate,
   langOf,
@@ -235,6 +236,23 @@ Deno.test('a call that ran out of its time is a tool error saying so, not a serv
     assertEquals(result.isError, true);
     assertEquals(result.content, [{ type: 'text', text }]);
     assertEquals(s.reports, [{ tool: 'add_items', household: 'h', reason: 'tool_error' }]);
+  }
+});
+
+Deno.test('a call that met a household being changed is a tool error saying so', async () => {
+  const busy = Object.assign(new Error('could not obtain lock on row in relation "households"'), {
+    name: 'PostgresError',
+    code: '55P03',
+  });
+  for (const [lang, text] of [[undefined, busyNow.de], ['en', busyNow.en]] as const) {
+    const s = serve(() => Promise.reject(busy));
+    const res = await s.handle(rpc('tools/call', { name: 'list_items', arguments: {} }, lang));
+    assertEquals(res.status, 200);
+    const { result, error } = await message(res);
+    assertEquals(error, undefined, 'a tool result, not a JSON-RPC error');
+    assertEquals(result.isError, true);
+    assertEquals(result.content, [{ type: 'text', text }], 'no text from the database');
+    assertEquals(s.reports, [{ tool: 'list_items', household: 'h', reason: 'tool_error' }]);
   }
 });
 

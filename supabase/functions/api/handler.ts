@@ -2,7 +2,15 @@
 // the Premium gate, strict input, then the operation as the key's member, idempotent for POSTs.
 // Every answer carries X-Request-Id and, once the limits are known, X-RateLimit-*.
 import { PAT_PREFIX, sha256Hex } from '../_shared/auth.ts';
-import { asUser, asUserWithin, inTurn, oneRow, ranOutOfTime, serviceDb } from '../_shared/db.ts';
+import {
+  asUser,
+  asUserWithin,
+  inTurn,
+  oneRow,
+  ranOutOfTime,
+  rowBusy,
+  serviceDb,
+} from '../_shared/db.ts';
 import { ToolError } from '../_shared/list.ts';
 import { type Access, requirePremiumWith } from '../_shared/premium.ts';
 import { userEvents } from '../_shared/user_events.ts';
@@ -97,7 +105,7 @@ async function serve(req: Request, deps: Deps, trace: Trace): Promise<Reply> {
   try {
     begun = await deps.begin(await tokenHash(req), await ipHash(req));
   } catch (e) {
-    deps.report(e);
+    if (!rowBusy(e)) deps.report(e);
     return errorReply(unavailable());
   }
   // Switched off, the API looks absent: an unknown path's answer, no limits, nothing traced.
@@ -159,7 +167,7 @@ async function authorized(
   try {
     access = await deps.premium(key);
   } catch (e) {
-    deps.report(e);
+    if (!rowBusy(e)) deps.report(e);
     throw unavailable();
   }
   if (access === 'locked') {

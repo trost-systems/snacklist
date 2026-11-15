@@ -239,7 +239,7 @@ optional.
 | 429 | `auth_throttled` | Too many unknown keys from this address (`Retry-After`); valid keys still work |
 | 500 | `internal_error` | Our fault; retry later (`X-Request-Id` helps us find it) |
 | 503 | `timeout` | The request took too long and was stopped; nothing was changed. For `POST /v1/items`, send fewer items at once; send one request at a time |
-| 503 | `unavailable` | The database or the Premium check is not answering; retry later (`Retry-After`) |
+| 503 | `unavailable` | The database or the Premium check is not answering, or the household or the key is being changed at this moment (a member leaves, a role changes, an account is deleted); nothing was changed, retry later (`Retry-After`) |
 
 ## Limits
 

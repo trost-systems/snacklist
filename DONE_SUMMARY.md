@@ -1094,3 +1094,35 @@ Not measured yet: a median of `ci-ok`'s time under four shards for a PR without 
 so far), the queue at GitHub's 20 jobs at once, a phone. Seven points are in `docs/NEEDS_LEAD.md`,
 "Job 221". Numbers, cost and the lands: `docs/hillclimb/fable-improvement-2026-11.md`, "Job 221";
 `docs/done/221-perf-iteration-hillclimbs.md`.
+
+## Job 241 review 1: public API hardening, key checks without waiting (2026-11-15)
+
+- **Authentication no longer waits on the key's row.** `api_begin` and
+  `authenticate_access_token` decide by reading; `last_used_at` is written when the row is free.
+  Migration `20261115100000_key_checks_without_waiting.sql` (`create or replace` only, seven
+  functions), so this deploy is a migration and the functions.
+- **Nor on a key, household or account that is being deleted.** `api_begin`, `integration_gate`,
+  `purchase_take_call`, `alexa_take_adds` and `alexa_remember` ask for the referenced row's share
+  lock without waiting, on every call, and end at once without it: `503 unavailable` in the API
+  (no failure reported), a tool error in MCP ("nothing was changed, try again"), `503 busy` for
+  a purchase claim. A request that meets its household's own change (a leave, a removal, a role
+  change) at that moment gets the same answer, and the retry is answered. `api_begin` and
+  `integration_gate` wait two seconds at most for any other lock.
+- **Purchase claims and account deletions run in the caller's turn**, like the user's other
+  transactions. `create_api_token` counts a user's keys one call at a time (ten holds for calls
+  that arrive together).
+- **Tests.** `_shared/key_checks_integration_test.ts`, 8 tests, with a held key row, a real
+  household delete and a real account deletion in progress. Three unit tests for the answers.
+  Measured on the local stack: 36 mutants, each fails at least one test, none survives. Seven
+  of them are the old function bodies: the old `authenticate_access_token` fails 4 of the 8
+  tests, the old `api_begin` 5, the old `integration_gate` 2, the other four 1 each. The fix's
+  first form (share locks only before a first write) fails the test with the real delete.
+  The add's time check before the similar query is pinned; the "at once" test is deterministic
+  for the idempotent path (12 of 12 runs fail with that path outside the turn). The CIMD test
+  file passes more than twice an hour.
+- **Smoke.** `SMOKE_PUBLIC_API=1` fails with a hint on a second run within 10 minutes
+  (`docs/DEPLOY.md`).
+- **Docs.** `docs/DECISIONS.md` "Job 241 review 1" (with "Not pinned by a test"); the review 0
+  bullet on turns now says what the tests pin; `docs/API.md` and the OpenAPI text for the 503.
+- **Not done.** `app_switches.public_api` in production and the PostHog flag are untouched. The
+  report and the verdict are on the ops side (NEEDS_LEAD "Job 241: public API review ready").

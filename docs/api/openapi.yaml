@@ -455,7 +455,8 @@ components:
               nextCursor: { type: 'null' }
     Error:
       description: >-
-        An error. A 503 unavailable carries Retry-After. A 503 timeout is a request that took too
+        An error. A 503 unavailable carries Retry-After; it is also the answer while the household
+        or the key is being changed at that moment. A 503 timeout is a request that took too
         long, or waited 5 seconds for earlier requests with the same member's keys; nothing was
         changed.
       headers:

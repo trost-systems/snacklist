@@ -19,6 +19,7 @@
 //   POST /purchases/test/event  local stack only: a RevenueCat event, processed like the webhook's
 // Refusals are logged by reason and event type only: never a transaction id, user or household.
 import { AuthError } from '../_shared/auth.ts';
+import { ranOutOfTime, rowBusy } from '../_shared/db.ts';
 import { json, preflight } from '../_shared/http.ts';
 import type { AppStore, PurchaseEvent } from '../_shared/purchases.ts';
 import type { Subject } from '../_shared/telemetry.ts';
@@ -286,13 +287,15 @@ export function createHandler(deps: Deps): (req: Request) => Promise<Response> {
       ? b.householdId
       : null;
     if (!store || !transactionId || !householdId) return badRequest();
-    if (!await deps.takeCall(who.userId)) return json({ error: 'rate_limited' }, { status: 429 });
     let c: Claim;
     try {
+      if (!await deps.takeCall(who.userId)) return json({ error: 'rate_limited' }, { status: 429 });
       c = await deps.claim(who.userId, householdId, store, transactionId);
     } catch (e) {
       // No member of that household when buying.
       if (e instanceof AuthError) return json({ error: e.reason }, { status: e.status });
+      // The account is being deleted, or the caller's earlier claims are still waiting.
+      if (rowBusy(e) || ranOutOfTime(e)) return json({ error: 'busy' }, { status: 503 });
       throw e;
     }
     if (c.completed) {

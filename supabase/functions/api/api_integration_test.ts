@@ -919,47 +919,50 @@ test("one member's requests at once hold one connection; another household is an
     const loudKey = await mint(sql, loud, ['read', 'write']);
     const quietKey = await mint(sql, quiet, ['read']);
     const names = ['Milch', 'Brot', 'Butter', 'Salz', 'Mehl', 'Reis'];
-    let taken = () => {};
-    const locked = new Promise<void>((resolve) => {
-      taken = resolve;
-    });
-    let release = () => {};
-    const released = new Promise<void>((resolve) => {
-      release = resolve;
-    });
-    const holder = admin();
-    const holding = holder.begin(async (tx) => {
-      await tx`select public.lock_household_items(${loud.householdId})`;
-      taken();
-      await released;
-    });
-    await locked;
+    // Once all with an Idempotency-Key and once all without: the two ways an add runs.
+    for (const idempotent of [true, false]) {
+      let taken = () => {};
+      const locked = new Promise<void>((resolve) => {
+        taken = resolve;
+      });
+      let release = () => {};
+      const released = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      const holder = admin();
+      const holding = holder.begin(async (tx) => {
+        await tx`select public.lock_household_items(${loud.householdId})`;
+        taken();
+        await released;
+      });
+      await locked;
 
-    const adds = names.map((name, i) =>
-      api(loudKey.token, 'POST', '/items', {
-        body: { items: [{ name }] },
-        headers: i % 2 === 0 ? { 'idempotency-key': `at-once-${i}` } : {},
-      })
-    );
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    try {
-      const answered = await Promise.race([
-        api(quietKey.token, 'GET', '/items').then((res) => res.status),
-        new Promise<string>((resolve) => {
-          timer = setTimeout(() => resolve('still waiting for a connection after 3 s'), 3000);
-        }),
-      ]);
-      assertEquals(answered, 200, "the other household's read while the adds wait");
-    } finally {
-      clearTimeout(timer);
-      release();
-      await holding;
-      await Promise.allSettled(adds);
-      await holder.end();
+      const adds = names.map((name, i) =>
+        api(loudKey.token, 'POST', '/items', {
+          body: { items: [{ name }] },
+          headers: idempotent ? { 'idempotency-key': `at-once-${i}` } : {},
+        })
+      );
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      try {
+        const answered = await Promise.race([
+          api(quietKey.token, 'GET', '/items').then((res) => res.status),
+          new Promise<string>((resolve) => {
+            timer = setTimeout(() => resolve('still waiting for a connection after 3 s'), 3000);
+          }),
+        ]);
+        assertEquals(answered, 200, "the other household's read while the adds wait");
+      } finally {
+        clearTimeout(timer);
+        release();
+        await holding;
+        await Promise.allSettled(adds);
+        await holder.end();
+      }
+
+      assertEquals((await Promise.all(adds)).map((res) => res.status), names.map(() => 201));
+      const open = await sql<{ name: string }[]>`
+        delete from public.items where household_id = ${loud.householdId} returning name`;
+      assertEquals(open.map((r) => r.name).toSorted(), names.toSorted());
     }
-
-    assertEquals((await Promise.all(adds)).map((res) => res.status), names.map(() => 201));
-    const open = await sql<{ name: string }[]>`
-      select name from public.items where household_id = ${loud.householdId} order by name`;
-    assertEquals(open.map((r) => r.name), names.toSorted());
   }));

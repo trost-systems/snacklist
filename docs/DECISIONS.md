@@ -13272,12 +13272,14 @@ Two gaps jobs 243 and 244 found between the privacy text sent to Legal and the c
   apply the role's own settings, so the functions' transactions had no limit while the same
   user's requests through PostgREST have 8 seconds. It now holds for MCP, voice and Alexa too.
   No statement of theirs comes near it in the gates.
-- **One caller, one connection.** Transactions as one user now run one after another in a
-  worker (`inTurn` in `_shared/db.ts`, used by `asUser` and the API's idempotent path), so
-  requests one caller sends at once take one of the worker's connections. A request that waited
-  5 seconds gives up with the same answer as one out of time. The turn is per user and in memory
-  because the pool is per worker; a database lock would itself hold a connection while it
-  waits. It holds for MCP, voice and Alexa too.
+- **One caller's transactions, one connection.** Transactions as one user now run one after
+  another in a worker (`inTurn` in `_shared/db.ts`, used by `asUser` and the API's idempotent
+  path), so what one caller's requests do as that user (reads, adds, changes) takes one of the
+  worker's connections at a time. What a request does before its turn (the key or token check,
+  the Premium gate) is not in the turn; "Job 241 review 1" below says what that may wait for.
+  A request that waited 5 seconds gives up with the same answer as one out of time. The turn is
+  per user and in memory because the pool is per worker; a database lock would itself hold a
+  connection while it waits. It holds for MCP, voice and Alexa too.
 - **Not in this PR: a faster add.** `add_list_item` compares the new name with every open item
   of the list, so an add takes longer on a longer list, up to the budget. Making that flat means
   a stored or indexed name key on `items` and touches the path Siri, Alexa and MCP use today. It
@@ -13601,3 +13603,78 @@ other 3 `e2e (2)` did (ios ended 22:36, 11:49 and 12:57 after the run's creation
 after 23:40, 20:17 and 20:08). So a run with a fast ios job gains from four shards too. #460's
 own three CI runs did not: ios ended 8 to 17 minutes after the last shard in each. `docs/CI.md`
 says it this way now. Found by the review of the job's record (#476).
+
+## Job 241 review 1: key checks without waiting, 2026-11-15
+
+- **What changed.** Authentication no longer waits on the key's row. `api_begin` and
+  `authenticate_access_token` decide by reading and write `last_used_at` only when the row is
+  free at that moment (`skip locked`). Migration `20261115100000_key_checks_without_waiting.sql`,
+  `create or replace` only; the deploy of this PR is the migration and the functions.
+- **Why.** The key check runs before the caller's turn, on the functions' shared connections.
+  A statement there must not wait for a row another transaction holds, or the wait takes a
+  connection that other households' requests need. The test is
+  `_shared/key_checks_integration_test.ts`: a side connection holds the rows, and the key check,
+  the Premium gate and the other lookups a request runs before its turn (the list is in the
+  test) must answer within a second, another household's request through the handler included.
+- **"Zuletzt benutzt" may miss a request.** One that came while the row was busy does not write
+  it; the next one does. Waiting for the row was the price of an exact value, and nothing reads
+  the value but the key list.
+- **A revoke counts once it is committed.** The check reads the committed row. The app's revoke
+  is one statement, so nothing changes for it.
+- **Before a row that references a key, a household or a user: its share lock, without
+  waiting.** `api_begin` writes the key's bucket and the household's day, `integration_gate` the
+  household's report row, `purchase_take_call`, `alexa_take_adds` and `alexa_remember` rows of
+  the user. Postgres makes such a write wait while the referenced row is being deleted (an
+  account deletion, a household that ends), for as long as the delete runs. Each of the five now
+  asks for the referenced row's share lock first (`for key share nowait`) and ends at once
+  without it.
+- **On every call, not only before a first write.** The first form of this fix asked only when
+  the bucket, day or report row was missing. A delete in progress may have removed that row
+  already, and then the next request is a first write again: the test that runs a real household
+  delete and a real `delete_account` showed a two-second wait there, and the allowance of a
+  purchase claim waiting for the whole deletion. Each lock costs one index read.
+- **What the caller gets.** The API answers `503 unavailable` with `Retry-After` and reports no
+  failure (`rowBusy` in `_shared/db.ts`); an MCP tool answers a tool error that says nothing was
+  changed and to try again; the purchase claim answers `503 busy`; Alexa says it did not work.
+  Voice never meets it: its key check asks for no such lock, and its gate writes nothing.
+- **A household's own changes can answer so for a moment.** A leave, a removal, a role change,
+  an unarchive and the account deletion of a member that keeps the household hold the
+  household's row for themselves for a few milliseconds. An API request or a locked MCP call of
+  that household at that moment gets the 503 or the tool error, and the retry is answered. The
+  alternative, waiting for those, is the wait this change removes; a retry in the function would
+  hold the request open without knowing which of the two it met.
+- **Two seconds as a belt.** With the share locks held, the bucket, day and report rows are only
+  ever held by another such call. `api_begin` and `integration_gate` still carry
+  `lock_timeout = '2s'`, per lock wait, for a holder nobody thought of.
+- **Purchase claims and account deletions go in the caller's turn** (`inTurn`), as the user's
+  other transactions do: both wait for the household's row, and several of one user waiting
+  together now hold one connection. A claim that waited five seconds for its turn answers
+  `503 busy`. Neither got a statement timeout: a deletion must not fail because the account is
+  big, and the account function's connections serve nothing else.
+- **Ten keys, also for calls that arrive together.** `create_api_token` counts under a per-user
+  advisory lock; the count and the insert were two statements.
+- **Looked at, not changed.** The other statements the functions run on the shared connection
+  outside a turn read, or write tables no client role can write (the OAuth client cache, the
+  purchases webhook's own tables, the Alexa ask table). The RevenueCat webhook and the
+  promotional reconcile wait for the household's row when they record a purchase; both are
+  signed or behind the ops secret, and the webhook retries. Alexa's unlink event waits for a
+  deletion of the linked account; Amazon signs it. The turn is per user: it bounds what one
+  account holds, not what several accounts hold together.
+- **Tests.** `_shared/key_checks_integration_test.ts`, 8 tests: the held key row (the check,
+  requests through the handler, what runs before the turn), a real household delete and a real
+  `delete_account` in progress (stopped at a row the test holds, then rolled back), the two
+  seconds, the turn for claims and deletions, the ten keys. Unit tests for the three answers
+  (`api/handler_test.ts`, `mcp/tools_test.ts`, `purchases/handler_test.ts`). Each of the seven
+  functions put back to its old body fails a test, as do the first form of the fix (two
+  functions) and 27 single changes to the new functions and to the handlers.
+- **Not pinned by a test:** that a share lock is granted while another transaction waits for the
+  row (read from the Postgres lock rules), the hosted pooler, the Alexa answers for a busy
+  account, and the order in which a delete reaches the referencing tables on a database restored
+  from a dump (the reason the household's lock is taken on every call, not derived from that
+  order).
+- **Tests that came with it.** The add's time check before the similar query has its own test,
+  the "at once" test runs once with an `Idempotency-Key` on every request and once without, and
+  the CIMD test file clears its hosts' hourly counts, so it passes more than twice an hour.
+  `SMOKE_PUBLIC_API=1` fails with a hint when its first request is already limited (a second
+  run within 10 minutes), since that shows nothing about the headers.
+- **Not done here.** The production switch and the PostHog flag stay untouched.
