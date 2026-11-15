@@ -1064,6 +1064,12 @@ abstract class AppLocalizations {
   /// **'Die Änderung konnte nicht gespeichert werden.'**
   String get catalogSaveFailed;
 
+  /// No description provided for @tooManyLists.
+  ///
+  /// In de, this message translates to:
+  /// **'Hier passen höchstens 50 Listen rein.'**
+  String get tooManyLists;
+
   /// No description provided for @storeLayoutHint.
   ///
   /// In de, this message translates to:

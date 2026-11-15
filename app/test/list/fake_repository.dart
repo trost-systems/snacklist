@@ -76,6 +76,7 @@ class FakeRepository() implements ListRepository {
   final catalogCalls = <String>[];
   var online = true;
   var reject = false;
+  var rejectMessage = 'denied';
   var sendTrouble = false;
   var fetchTrouble = false;
   var _clock = DateTime.utc(2026, 10, 22, 12);
@@ -206,7 +207,7 @@ class FakeRepository() implements ListRepository {
     _ensureOnline();
     if (reject) {
       reject = false;
-      throw const RejectedOp('denied');
+      throw RejectedOp(rejectMessage);
     }
     catalogCalls.add(call);
   }

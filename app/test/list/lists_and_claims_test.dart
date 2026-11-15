@@ -233,6 +233,22 @@ void main() {
       await sub.cancel();
     });
 
+    test('a refused list says why: the cap, or the generic message', () async {
+      final told = <Rejected>[];
+      final sub = cubit.rejections.listen(told.add);
+      repo
+        ..reject = true
+        ..rejectMessage = 'too_many_lists';
+      expect(await cubit.createList('Grillen'), isNull);
+      repo
+        ..reject = true
+        ..rejectMessage = 'denied';
+      expect(await cubit.createList('Garten'), isNull);
+      await settle();
+      expect(told, [isA<TooManyLists>(), isA<CatalogRejected>()]);
+      await sub.cancel();
+    });
+
     test('the last list is not deleted', () async {
       repo.lists = const [_weekly];
       await cubit.resync();

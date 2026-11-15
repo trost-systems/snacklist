@@ -588,6 +588,9 @@ class AppLocalizationsDe extends AppLocalizations {
       'Die Änderung konnte nicht gespeichert werden.';
 
   @override
+  String get tooManyLists => 'Hier passen höchstens 50 Listen rein.';
+
+  @override
   String get storeLayoutHint =>
       'Ordne die Kategorien so, wie du durch den Laden gehst. Tippe auf eine Kategorie, um sie umzubenennen.';
 

@@ -150,6 +150,9 @@ final class const RenameTaken(final String name) extends Rejected;
 /// A category or layout change did not save; the catalog was reloaded.
 final class const CatalogRejected() extends Rejected;
 
+/// A list could not be added: the household has the most lists it may.
+final class const TooManyLists() extends Rejected;
+
 /// A store or category order change made offline; nothing changed.
 final class const NeedsConnection() extends Rejected;
 
@@ -1484,11 +1487,11 @@ class ListCubit(
       if (optimistic != null && identical(state.catalog, optimistic)) {
         emit(state.copyWith(catalog: before));
       }
-      _report(
-        e is RejectedOp && e.nameTaken && taken != null
-            ? taken
-            : const CatalogRejected(),
-      );
+      _report(switch (e) {
+        RejectedOp(nameTaken: true) when taken != null => taken,
+        RejectedOp(message: 'too_many_lists') => const TooManyLists(),
+        _ => const CatalogRejected(),
+      });
     }
     await _reloadCatalog();
     return saved;

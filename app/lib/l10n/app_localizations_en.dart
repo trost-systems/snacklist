@@ -581,6 +581,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get catalogSaveFailed => 'The change could not be saved.';
 
   @override
+  String get tooManyLists => 'A household can have up to 50 lists.';
+
+  @override
   String get storeLayoutHint =>
       'Order the categories the way you walk through the store. Tap a category to rename it.';
 
