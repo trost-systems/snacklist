@@ -8,3 +8,6 @@
 /* How Siri says the app name. */
 "CFBundleSpokenName" = "Snacklist";
 "NSSiriUsageDescription" = "Siri adds items to your Snacklist and reads it to you.";
+/* The permission prompts for dictation in the add field. */
+"NSMicrophoneUsageDescription" = "Snacklist needs the microphone so you can dictate items.";
+"NSSpeechRecognitionUsageDescription" = "Snacklist turns your speech into text so you can dictate items.";

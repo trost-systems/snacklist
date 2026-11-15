@@ -1,0 +1,6 @@
+- button "Back"
+- heading "Join a household" [level=2]
+- group:
+  - textbox "Invite code"
+  - button "Continue"
+  - button "Cancel"

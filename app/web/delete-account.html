@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Snacklist: Delete your account and data</title>
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.5;
+           max-width: 42rem; margin: 2rem auto; padding: 0 1rem; color: #1c1b1f; }
+    h1 { font-size: 1.6rem; }
+    h2 { font-size: 1.2rem; margin-top: 2rem; }
+    h3 { font-size: 1rem; margin-top: 1.5rem; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { text-align: left; vertical-align: top; padding: .4rem .5rem; border-bottom: 1px solid #ddd; }
+  </style>
+</head>
+<body>
+  <h1>Snacklist: Delete your account and data</h1>
+  <p lang="de"><a href="/konto-loeschen.html">Deutsch</a></p>
+  <p>Snacklist is the shared shopping list by Peter Trost. This page explains how to delete your
+    account and your data, what gets deleted, and what stays.</p>
+
+  <h2>How to delete your account in the app</h2>
+  <ol>
+    <li>Open Snacklist (iPhone, Android, or in the browser) and sign in.</li>
+    <li>Tap <strong>More</strong>, then <strong>Account</strong>.</li>
+    <li>Tap <strong>Delete account</strong>. The app shows you what happens to your shared
+      household.</li>
+    <li>Type <strong>DELETE</strong> to confirm and tap <strong>Delete for good</strong>. If you
+      signed in with Apple, you confirm once more with Apple on your iPhone.</li>
+  </ol>
+  <p>Without the app, you can do this in the browser. Open
+    <a href="https://app.snacklist.app/">app.snacklist.app</a>,
+    sign in with the same account, and follow the same steps. You don't need to install
+    anything.</p>
+  <p>The deletion happens right away and cannot be undone. Before that, you can save a copy of
+    your data as a JSON file under <strong>Account › Export my data</strong>.</p>
+
+  <h2>What gets deleted</h2>
+  <ul>
+    <li>Your account: email address, password, sign-ins with Google or Apple, and all
+      sessions.</li>
+    <li>Your profile (display name) and your household membership.</li>
+    <li>Your access tokens (Siri, AI assistants) and the permissions for connected apps.</li>
+    <li>The link between your name and items and the history.</li>
+    <li>The link between your Snacklist Lifetime purchases and your account. The unlock stays with the household.</li>
+    <li>If you signed in with Apple on your iPhone, the app revokes the sign-in with Apple.</li>
+  </ul>
+
+  <h2>What happens to your shared household</h2>
+  <table>
+    <tr><th>Situation</th><th>Result</th></tr>
+    <tr><td>There are other members</td>
+      <td>The household stays for them, with the whole list, the history, the categories, and
+        the stores. Items and history entries you added stay for the other members (with the
+        item name, but without your name).</td></tr>
+    <tr><td>You are the last member</td>
+      <td>The household is deleted with all items, the history, the categories, the stores, the
+        open invites, and any Snacklist Lifetime unlock. The unlock cannot be moved to another household (for refunds, see <a href="https://snacklist.app/en/support">Help</a>). Households you archived are deleted too.</td></tr>
+  </table>
+
+  <h2>What stays, and for how long</h2>
+  <ul>
+    <li>Technical logs from our provider Supabase (for example, the time and IP address of
+      requests) are kept for at most 1 day. Then they are deleted automatically.</li>
+    <li>Encrypted backups of the database are made every night and deleted automatically after
+      90 days. Until then, your data may still be in them. We use them only to restore service
+      after a failure. If we restore one, we delete your account again.</li>
+    <li>For our accounting, we keep the statements from Apple and Google for eight years. For each purchase, they contain the order number, country, product, and amount. Google's also contain the device model. They contain no name. A purchase stays with the household, without a link to your account. If the household is deleted, we delete the purchase after 30 days and keep only a checksum (privacy policy, section 5a).</li>
+    <li>If you signed in with Apple in the browser or on Android, also remove Snacklist in your
+      Apple ID settings (iPhone: Settings › your name › Sign-In &amp; Security › Sign in with
+      Apple).</li>
+  </ul>
+
+  <h2 id="einzelne-daten">Delete some of your data without deleting your account</h2>
+  <p>You can delete some of your data right in the app, without deleting your account.</p>
+
+  <h3>Items and history</h3>
+  <ol>
+    <li>On the list, tap an item to check it off. It disappears from the list for everyone in
+      the household and then shows under <strong>Recently used</strong>.</li>
+    <li>With a screen reader (VoiceOver, TalkBack), each item on the list offers the action
+      <strong>Delete</strong>. The item disappears for everyone in the household. Right after
+      that, you can still take it back with <strong>Undo</strong>.</li>
+  </ol>
+  <p>Items under <strong>Recently used</strong> can only be put back on the list. You can't
+    delete them one by one. You can't delete the history in the app. The history records when
+    an item was added, bought, changed, or deleted, with the item name. The
+    <strong>Bought before</strong> suggestions come from it too. It is deleted with the
+    household when the last member deletes their account. We delete single items and history
+    entries on request (see below).</p>
+
+  <h3>Access for Siri and AI assistants</h3>
+  <ol>
+    <li>Tap <strong>More</strong>, then <strong>Access</strong>.</li>
+    <li>Under <strong>Siri</strong> and <strong>Access tokens</strong>, tap the trash icon next
+      to the access and confirm with <strong>Revoke</strong>. Apps that use it lose access right
+      away. On your own iPhone, Snacklist sets up Siri again the next time it starts.</li>
+    <li>Under <strong>Connected apps</strong> (for example, an AI assistant), tap the disconnect
+      icon and confirm with <strong>Disconnect</strong>. The app loses access to your list right
+      away.</li>
+  </ol>
+
+  <h3>Usage data</h3>
+  <ol>
+    <li>Tap <strong>More</strong> and scroll to <strong>Usage data</strong>.</li>
+    <li>Turn off <strong>Send usage data and error reports</strong>.</li>
+  </ol>
+  <p>Snacklist then stops analytics right away. On this device, it deletes the random ID and
+    any usage data not yet sent. The setting applies per device.</p>
+
+  <p>We delete everything else on request, for example feedback from the app or usage data
+    that is already at PostHog. Write to
+    <a href="mailto:support@snacklist.app?subject=Snacklist%3A%20Delete%20data">support@snacklist.app</a>
+    with your account's email address and tell us what to delete. We do this within 30 days
+    and confirm it to you by email.</p>
+
+  <h2>Can't get into the app anymore?</h2>
+  <p>If you can't sign in anymore, write to
+    <a href="mailto:support@snacklist.app?subject=Snacklist%3A%20Delete%20account">support@snacklist.app</a>
+    with your account's email address. We then delete the account within 30 days and confirm
+    the deletion to you by email.</p>
+
+  <p>For more on which data Snacklist processes and what rights you have, see the
+    <a href="https://snacklist.app/en/privacy">privacy policy</a>.</p>
+</body>
+</html>

@@ -15,6 +15,7 @@ const codePattern = /^[A-HJ-NP-Z2-9]{8}$/;
 const texts = {
   de: {
     title: 'Einladung · Snacklist',
+    loading: 'Einladung wird geladen …',
     invitedBy: (inviter, household) => `${inviter} lädt dich zu „${household}“ ein`,
     invited: (household) => `Du bist zu „${household}“ eingeladen`,
     members: (n) => (n === 1 ? '1 Mitglied' : `${n} Mitglieder`),
@@ -38,6 +39,7 @@ const texts = {
   },
   en: {
     title: 'Invite · Snacklist',
+    loading: 'Loading the invite…',
     invitedBy: (inviter, household) => `${inviter} invites you to “${household}”`,
     invited: (household) => `You’re invited to “${household}”`,
     members: (n) => (n === 1 ? '1 member' : `${n} members`),
@@ -61,10 +63,14 @@ const texts = {
   },
 };
 
-/** German unless the browser's first language is English (the app's fallback is German too). */
+/** The browser's first German or English language, else English, as the app picks. */
 function language() {
-  const first = (navigator.languages?.[0] ?? navigator.language ?? '').toLowerCase();
-  return first.startsWith('en') ? 'en' : 'de';
+  const preferred = navigator.languages?.length ? navigator.languages : [navigator.language ?? ''];
+  for (const tag of preferred) {
+    const code = tag.toLowerCase().split('-')[0];
+    if (code === 'de' || code === 'en') return code;
+  }
+  return 'en';
 }
 
 /**
@@ -225,6 +231,7 @@ async function main() {
   const t = texts[lang];
   document.documentElement.lang = lang;
   document.title = t.title;
+  document.getElementById('title').textContent = t.loading;
   addSmartAppBanner(code);
   wireCopy(t, code ?? '');
   render(t, code, code ? await fetchPreview(code) : { status: 'invalid' });

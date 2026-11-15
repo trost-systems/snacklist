@@ -16,10 +16,10 @@ Map<String, Object?> mailLocaleData(Locale appLocale) => {
   mailLocaleKey: mailLocaleOf(appLocale),
 };
 
-/// `de` or `en` for the language the app shows; German for anything else,
-/// as the app itself falls back to German.
+/// `de` or `en` for the language the app shows; the app's fallback for
+/// anything else.
 String mailLocaleOf(Locale appLocale) =>
-    (AppLanguage.byCode(appLocale.languageCode) ?? AppLanguage.de).code;
+    (AppLanguage.byCode(appLocale.languageCode) ?? AppLanguage.fallback).code;
 
 /// The locale to save for a user whose metadata is [metadata] while the
 /// app shows [appLocale]; null when it is saved already.

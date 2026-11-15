@@ -1,0 +1,22 @@
+- heading "More" [level=2]
+- group:
+  - button "Start a trip The clock runs from now; the list as it is now counts as planned."
+  - button "Account"
+  - button "Brandt family"
+  - button "Invite your partner"
+  - button "Access"
+  - button "Settings"
+  - button "Usage data"
+  - button "Tips"
+  - button "Send feedback"
+  - button "Help & contact"
+  - button "Imprint"
+  - button "Privacy policy"
+  - button "Terms of Use (EULA)"
+  - button "Licenses"
+  - button "Sign out"
+  - text: Version 0.1.0 (1)
+- tablist:
+  - tab "List"
+  - tab "History"
+  - tab "More" [selected]

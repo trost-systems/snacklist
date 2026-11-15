@@ -33,6 +33,23 @@
         }
       }
     },
+    "1 pot": {
+      "comment": "The widget gallery's example list.",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 Topf"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 pot"
+          }
+        }
+      }
+    },
     "Add": {
       "localizations": {
         "de": {
@@ -65,6 +82,91 @@
         }
       }
     },
+    "Apples": {
+      "comment": "The widget gallery's example list.",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Äpfel"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apples"
+          }
+        }
+      }
+    },
+    "Basil": {
+      "comment": "The widget gallery's example list.",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Basilikum"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Basil"
+          }
+        }
+      }
+    },
+    "Bread": {
+      "comment": "The widget gallery's example list.",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Brot"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bread"
+          }
+        }
+      }
+    },
+    "Coffee beans": {
+      "comment": "The widget gallery's example list.",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kaffeebohnen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coffee beans"
+          }
+        }
+      }
+    },
+    "Oat milk": {
+      "comment": "The widget gallery's example list.",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hafermilch"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oat milk"
+          }
+        }
+      }
+    },
     "Open Snacklist to see your list": {
       "localizations": {
         "de": {
@@ -77,6 +179,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Open Snacklist to see your list"
+          }
+        }
+      }
+    },
+    "Schneider's Bakery on Market Square": {
+      "comment": "The widget gallery's example list.",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bäckerei Schneider am Marktplatz"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schneider's Bakery on Market Square"
           }
         }
       }
@@ -109,6 +228,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sign in to Snacklist"
+          }
+        }
+      }
+    },
+    "Toothpaste": {
+      "comment": "The widget gallery's example list.",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zahnpasta"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toothpaste"
           }
         }
       }

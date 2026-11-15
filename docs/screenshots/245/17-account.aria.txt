@@ -1,0 +1,11 @@
+- button "Back"
+- heading "Account" [level=2]
+- group:
+  - group "mia.fx-1114-2309-c375@fg-test.invalid":
+    - button "Copy email address"
+  - button "Export my data Everything stored about you, as a JSON file."
+  - button "Delete account"
+- tablist:
+  - tab "List"
+  - tab "History"
+  - tab "More" [selected]

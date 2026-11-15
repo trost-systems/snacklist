@@ -1,0 +1,15 @@
+- button "Back"
+- heading "Access" [level=2]
+- group:
+  - heading "MCP server" [level=2]
+  - group "http://127.0.0.1:63121/functions/v1/mcp For Claude, ChatGPT and other AI assistants. Connect by signing in (OAuth) or with an access token.":
+    - button "Copy"
+  - heading "Access tokens" [level=2]
+  - text: Use a token to build your own automations that manage your list, like a script or an assistant on the MCP server. No active token.
+  - button "Create token"
+  - heading "Connected apps" [level=2]
+  - text: No apps connected yet.
+- tablist:
+  - tab "List"
+  - tab "History"
+  - tab "More" [selected]

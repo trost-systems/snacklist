@@ -274,7 +274,10 @@ void main() {
       expect(await more.cache.language(), isNull);
       await tester.tap(find.byType(BackButton));
       await tester.pumpAndSettle();
-      expect(subtitle(tester, 'settings-language'), 'Device (English)');
+      expect(
+        subtitle(tester, 'settings-language'),
+        'Device language (English)',
+      );
 
       await tapKey(tester, 'settings-language');
       await tapKey(tester, 'language-en');
@@ -282,13 +285,24 @@ void main() {
       expect(await more.cache.language(), 'en');
     });
 
-    testWidgets('a device in neither language follows as German', (
+    testWidgets('a device in neither language follows as English', (
       tester,
     ) async {
       await pumpMore(
         tester,
         location: '/more/settings/language',
         device: const [Locale('fr', 'FR')],
+      );
+      expect(find.text('Currently English'), findsOneWidget);
+    });
+
+    testWidgets('a device with German below its first language reads German', (
+      tester,
+    ) async {
+      await pumpMore(
+        tester,
+        location: '/more/settings/language',
+        device: const [Locale('fr', 'FR'), Locale('de', 'CH')],
       );
       expect(find.text('Gerade Deutsch'), findsOneWidget);
     });

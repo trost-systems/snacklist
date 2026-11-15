@@ -1,0 +1,11 @@
+- button "Back"
+- heading "Language" [level=2]
+- radiogroup:
+  - group:
+    - radio "Device language Currently English" [checked]
+    - radio "Deutsch"
+    - radio "English"
+- tablist:
+  - tab "List"
+  - tab "History"
+  - tab "More" [selected]

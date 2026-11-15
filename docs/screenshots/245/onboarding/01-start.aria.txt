@@ -1,0 +1,9 @@
+- group:
+  - text: Snacklist Your shopping list. Live on every phone. Welcome! In two minutes your shared list is ready, with everything you need right now.
+  - button "Get started"
+  - button "Already have an account? Sign in"
+  - button "Paste invite"
+- link "Imprint":
+  - /url: https://snacklist.app/en/imprint
+- link "Privacy":
+  - /url: https://snacklist.app/en/privacy

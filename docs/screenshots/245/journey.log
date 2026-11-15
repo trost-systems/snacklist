@@ -1,0 +1,30 @@
+[22:10:04.780Z] ok 00-start
+[22:10:06.064Z] ok 00-login
+[22:10:11.486Z] ok 01-list
+[22:10:13.263Z] ok 02-add-sheet
+[22:10:14.909Z] ok 03-household-sheet
+[22:10:16.349Z] ok 04-household-members
+[22:10:17.642Z] ok 05-invites
+[22:10:18.758Z] ok 05-invite-sheet
+[22:10:20.064Z] ok 06-stores
+[22:10:23.443Z] ok 07-trip-question
+[22:10:25.423Z] ok 08-trip-strip
+[22:10:26.616Z] ok 09-trip-summary
+[22:10:28.823Z] ok 10-history
+[22:10:30.135Z] ok 11-more
+[22:10:31.271Z] ok 12-more-bottom
+[22:10:32.538Z] ok 13-settings
+[22:10:33.723Z] ok 14-language
+[22:10:35.031Z] ok 15-premium
+[22:10:35.873Z] ok 16-premium-bottom
+[22:10:37.114Z] ok 17-account
+[22:10:38.457Z] ok 18-account-delete
+[22:10:40.445Z] ok 18b-feedback
+[22:10:41.827Z] ok 19-access
+[22:10:43.133Z] ok 20-tips
+[22:10:44.364Z] ok 21-usage-data
+[22:10:45.759Z] ok 22-new-household
+[22:10:46.634Z] ok 23-new-household-stores
+[22:10:47.843Z] ok 24-join
+[22:10:47.972Z] screens with German: 0
+[22:10:47.972Z] PASS
