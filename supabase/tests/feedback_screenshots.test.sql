@@ -1,9 +1,11 @@
--- Job 267: feedback screenshots (docs/FEEDBACK.md, "Screenshots"). The bucket, the upload-only
--- storage policy with its own-folder name, its 10-a-day and 250-in-the-bucket quotas and its
--- pass for a retried name, feedback.screenshot, the removal queue its deletes fill, the sweep's
--- due list (queue, then orphans older than a day or without an account) and the export. The Storage API itself is driven by feedback-screenshots/sweep_integration_test.ts.
+-- Job 267 and its review 0: feedback screenshots (docs/FEEDBACK.md, "Screenshots"). The bucket,
+-- no client upload (no storage policy), the function's check (its lock, 10 a day, 250 in the
+-- bucket, a stored name passes) and who may run it, feedback.screenshot, the removal queue its
+-- deletes fill (stored names only), the sweep's due list (queue, then orphans older than a day or
+-- without an account) and the export. The function and the Storage API are driven by
+-- feedback-screenshots/screenshots_integration_test.ts.
 begin;
-select plan(49);
+select plan(51);
 
 create function pg_temp.login(uid uuid) returns void language plpgsql as $$
 begin
@@ -23,12 +25,16 @@ begin
   perform set_config('request.jwt.claims', '', true);
 end $$;
 
--- An upload as the Storage API writes its row: as the signed-in user, under RLS.
+-- An object as the Storage API writes its row: a client under RLS, or the function's secret key.
 create function pg_temp.upload(p_name text, p_bucket text default 'feedback-screenshots') returns void
 language sql as $$
   insert into storage.objects (bucket_id, name, owner_id) values (p_bucket, p_name, auth.uid()::text)
 $$;
 grant execute on function pg_temp.upload(text, text) to authenticated, anon;
+
+create function pg_temp.admit(p_user uuid, p_id uuid) returns text language sql as $$
+  select public.feedback_screenshot_admit(p_user, p_id)
+$$;
 
 create function pg_temp.note(p_id uuid, p_screenshot text) returns void language sql as $$
   insert into public.feedback (id, message, app_version, build, platform, os_version, locale, screenshot)
@@ -47,34 +53,42 @@ select results_eq(
   $$ values (false, 2097152::bigint, array['image/png']) $$,
   'the bucket is private, takes up to 2 MiB and only PNG');
 
--- Uploads: only into one's own folder, with the app's name shape.
+-- Clients store nothing: no policy lets them, not even into their own folder with the app's name
+-- shape (a signed upload URL tests the same insert).
 select pg_temp.login('00000000-0000-0000-0000-0000000267a1');
-select lives_ok($$ select pg_temp.upload('00000000-0000-0000-0000-0000000267a1/10000000-0000-4000-8000-000000000001.png') $$,
-  'a user uploads into their own folder');
-select throws_ok($$ select pg_temp.upload('00000000-0000-0000-0000-0000000267b1/10000000-0000-4000-8000-000000000002.png') $$,
-  '42501', null, 'not into another user''s folder');
-select throws_ok($$ select pg_temp.upload('10000000-0000-4000-8000-000000000003.png') $$,
-  '42501', null, 'not outside a folder');
-select throws_ok($$ select pg_temp.upload('00000000-0000-0000-0000-0000000267a1/x/10000000-0000-4000-8000-000000000004.png') $$,
-  '42501', null, 'not into a subfolder');
-select throws_ok($$ select pg_temp.upload('00000000-0000-0000-0000-0000000267a1/10000000-0000-4000-8000-000000000005.jpg') $$,
-  '42501', null, 'not under another extension');
-select throws_ok($$ select pg_temp.upload('00000000-0000-0000-0000-0000000267a1/10000000-0000-4000-8000-00000000000A.png') $$,
-  '42501', null, 'not with an uppercase id');
-select throws_ok($$ select pg_temp.upload('00000000-0000-0000-0000-0000000267a1/notes.png') $$,
-  '42501', null, 'not with a name that is no id');
-select pg_temp.as_postgres();
-insert into storage.buckets (id, name, public) values ('other-267', 'other-267', false);
-select pg_temp.login('00000000-0000-0000-0000-0000000267a1');
-select throws_ok($$ select pg_temp.upload('00000000-0000-0000-0000-0000000267a1/10000000-0000-4000-8000-000000000006.png', 'other-267') $$,
-  '42501', null, 'not into another bucket');
+select throws_ok($$ select pg_temp.upload('00000000-0000-0000-0000-0000000267a1/10000000-0000-4000-8000-000000000001.png') $$,
+  '42501', null, 'a signed-in user uploads nothing, not into their own folder');
 select pg_temp.anon();
 select throws_ok($$ select pg_temp.upload('00000000-0000-0000-0000-0000000267a1/10000000-0000-4000-8000-000000000007.png') $$,
   '42501', null, 'anon uploads nothing');
+select pg_temp.as_postgres();
+select ok(not exists (select from pg_policies where schemaname = 'storage' and tablename = 'objects'
+                        and (qual like '%feedback-screenshots%' or with_check like '%feedback-screenshots%')),
+  'no storage policy names the bucket');
+select ok(not has_function_privilege(r, 'public.feedback_screenshot_quota_left(text)', 'execute'),
+  r || ' cannot ask the old quota helper whether the bucket is full')
+from unnest(array['anon', 'authenticated']) r;
+select ok(not has_function_privilege(r, 'public.feedback_screenshot_admit(uuid, uuid)', 'execute'),
+  r || ' cannot run the function''s quota check')
+from unnest(array['anon', 'authenticated', 'service_role']) r;
+
+-- The function's check, as its connection runs it: the lock first, then the quotas.
+select is(pg_temp.admit('00000000-0000-0000-0000-0000000267a1', '10000000-0000-4000-8000-000000000001'), 'new',
+  'a first image may be stored');
+select ok(exists (select from pg_locks where locktype = 'advisory' and pid = pg_backend_pid() and granted),
+  'the check holds the bucket''s lock until the transaction ends');
+select pg_temp.upload('00000000-0000-0000-0000-0000000267a1/10000000-0000-4000-8000-000000000001.png');
+select is(pg_temp.admit('00000000-0000-0000-0000-0000000267a1', '10000000-0000-4000-8000-000000000001'), 'exists',
+  'a stored name is there already');
+insert into storage.buckets (id, name, public) values ('other-267', 'other-267', false);
+select pg_temp.upload('00000000-0000-0000-0000-0000000267a1/10000000-0000-4000-8000-000000000006.png', 'other-267');
+select is(pg_temp.admit('00000000-0000-0000-0000-0000000267a1', '10000000-0000-4000-8000-000000000006'), 'new',
+  'the same name in another bucket is another object');
 
 -- No reading back, overwriting or removing, not even one's own.
 select pg_temp.login('00000000-0000-0000-0000-0000000267a1');
-select is((select count(*)::int from storage.objects), 0, 'the uploader sees no object, not even their own');
+select is((select count(*)::int from storage.objects where bucket_id = 'feedback-screenshots'), 0,
+  'the uploader sees no object, not even their own');
 select is((select count(*)::int from storage.buckets where id = 'feedback-screenshots'), 0, 'nor the bucket');
 update storage.objects set name = name || '.x';
 select pg_temp.as_postgres();
@@ -82,27 +96,25 @@ select is((select count(*)::int from storage.objects
            where name = '00000000-0000-0000-0000-0000000267a1/10000000-0000-4000-8000-000000000001.png'), 1,
   'an update as the uploader changes nothing');
 
--- The quota: 10 uploads per user in any 24 hours.
-select pg_temp.login('00000000-0000-0000-0000-0000000267a1');
-select lives_ok($$ select pg_temp.upload(format('00000000-0000-0000-0000-0000000267a1/20000000-0000-4000-8000-%s.png',
-  lpad(n::text, 12, '0'))) from generate_series(2, 10) n $$, 'the 2nd to the 10th upload of the day pass');
-select throws_ok($$ select pg_temp.upload('00000000-0000-0000-0000-0000000267a1/20000000-0000-4000-8000-000000000021.png') $$,
-  '42501', null, 'the 11th is refused');
-select throws_ok($$ select pg_temp.upload('00000000-0000-0000-0000-0000000267a1/20000000-0000-4000-8000-000000000005.png') $$,
-  '23505', null, 'a retry of an uploaded name at the quota reaches the unique key (the API''s Duplicate)');
-select pg_temp.login('00000000-0000-0000-0000-0000000267b1');
-select lives_ok($$ select pg_temp.upload('00000000-0000-0000-0000-0000000267b1/30000000-0000-4000-8000-000000000001.png') $$,
+-- The quota: 10 per user in any 24 hours.
+select pg_temp.upload(format('00000000-0000-0000-0000-0000000267a1/20000000-0000-4000-8000-%s.png', lpad(n::text, 12, '0')))
+from generate_series(2, 9) n;
+select is(pg_temp.admit('00000000-0000-0000-0000-0000000267a1', '20000000-0000-4000-8000-000000000010'), 'new',
+  'the 10th of the day may be stored');
+select pg_temp.upload('00000000-0000-0000-0000-0000000267a1/20000000-0000-4000-8000-000000000010.png');
+select is(pg_temp.admit('00000000-0000-0000-0000-0000000267a1', '20000000-0000-4000-8000-000000000021'), 'quota',
+  'the 11th is refused');
+select is(pg_temp.admit('00000000-0000-0000-0000-0000000267a1', '20000000-0000-4000-8000-000000000005'), 'exists',
+  'a retry of a stored name at the quota is still there');
+select is(pg_temp.admit('00000000-0000-0000-0000-0000000267b1', '30000000-0000-4000-8000-000000000001'), 'new',
   'another user''s quota is their own');
-select pg_temp.as_postgres();
+select pg_temp.upload('00000000-0000-0000-0000-0000000267b1/30000000-0000-4000-8000-000000000001.png');
 update storage.objects set created_at = now() - interval '24 hours 1 minute'
 where name = '00000000-0000-0000-0000-0000000267a1/20000000-0000-4000-8000-000000000002.png';
-select pg_temp.login('00000000-0000-0000-0000-0000000267a1');
-select lives_ok($$ select pg_temp.upload('00000000-0000-0000-0000-0000000267a1/20000000-0000-4000-8000-000000000022.png') $$,
+select is(pg_temp.admit('00000000-0000-0000-0000-0000000267a1', '20000000-0000-4000-8000-000000000022'), 'new',
   'an upload older than 24 hours no longer counts');
-select throws_ok($$ select pg_temp.upload('00000000-0000-0000-0000-0000000267b1/30000000-0000-4000-8000-000000000001.png') $$,
-  '42501', null, 'another user''s existing name is still refused');
-select ok(not has_function_privilege('anon', 'public.feedback_screenshot_quota_left(text)', 'execute'),
-  'anon cannot run the quota helper');
+select pg_temp.upload('00000000-0000-0000-0000-0000000267a1/20000000-0000-4000-8000-000000000022.png');
+select pg_temp.login('00000000-0000-0000-0000-0000000267a1');
 
 -- feedback.screenshot names exactly the sender's object for this note.
 select lives_ok($$ select pg_temp.note('10000000-0000-4000-8000-000000000001',
@@ -140,13 +152,19 @@ values ('10000000-0000-4000-8000-000000000001', '00000000-0000-0000-0000-0000000
   'iOS', 'de', '00000000-0000-0000-0000-0000000267a1/10000000-0000-4000-8000-000000000001.png');
 delete from public.feedback where id = '10000000-0000-4000-8000-000000000001';
 select is((select count(*)::int from public.feedback_screenshot_removals), 1, 'a name is queued once');
+insert into public.feedback (id, user_id, message, app_version, build, platform, os_version, locale, screenshot)
+values ('10000000-0000-4000-8000-00000000000c', '00000000-0000-0000-0000-0000000267a1', 'Ohne Datei', '1', '1', 'ios',
+  'iOS', 'de', '00000000-0000-0000-0000-0000000267a1/10000000-0000-4000-8000-00000000000c.png');
+delete from public.feedback where id = '10000000-0000-4000-8000-00000000000c';
+select is((select count(*)::int from public.feedback_screenshot_removals), 1,
+  'a note naming an image that was never stored queues nothing');
 
 -- The purge and the account deletion queue theirs too.
 select pg_temp.login('00000000-0000-0000-0000-0000000267b1');
 select pg_temp.note('30000000-0000-4000-8000-000000000001',
   '00000000-0000-0000-0000-0000000267b1/30000000-0000-4000-8000-000000000001.png');
-select pg_temp.upload('00000000-0000-0000-0000-0000000267b1/30000000-0000-4000-8000-000000000002.png');
 select pg_temp.as_postgres();
+select pg_temp.upload('00000000-0000-0000-0000-0000000267b1/30000000-0000-4000-8000-000000000002.png');
 insert into public.feedback (id, user_id, message, app_version, build, platform, os_version, locale, screenshot)
 values ('20000000-0000-4000-8000-000000000003', '00000000-0000-0000-0000-0000000267a1', 'Alt', '1', '1', 'ios', 'iOS',
   'de', '00000000-0000-0000-0000-0000000267a1/20000000-0000-4000-8000-000000000003.png');
@@ -191,18 +209,17 @@ select is(public.feedback_screenshots_removed(array[
 select is(public.feedback_screenshots_removed(array[
   '00000000-0000-0000-0000-0000000267b1/30000000-0000-4000-8000-000000000001.png']), 0, 'a second time is a no-op');
 
--- The bucket-wide cap: no upload while the bucket holds 250 images, whoever uploads.
+-- The bucket-wide cap: nothing new while the bucket holds 250 images, whoever uploads.
 insert into storage.objects (bucket_id, name)
 select 'feedback-screenshots', format('00000000-0000-0000-0000-0000000267a1/%s.png', gen_random_uuid())
 from generate_series(1, 249 - (select count(*) from storage.objects where bucket_id = 'feedback-screenshots'));
-select pg_temp.login('00000000-0000-0000-0000-0000000267c1');
-select lives_ok($$ select pg_temp.upload('00000000-0000-0000-0000-0000000267c1/40000000-0000-4000-8000-000000000001.png') $$,
-  'the 250th image in the bucket passes');
-select throws_ok($$ select pg_temp.upload('00000000-0000-0000-0000-0000000267c1/40000000-0000-4000-8000-000000000002.png') $$,
-  '42501', null, 'at 250 images the bucket refuses the next, with the user''s own quota left');
-select throws_ok($$ select pg_temp.upload('00000000-0000-0000-0000-0000000267c1/40000000-0000-4000-8000-000000000001.png') $$,
-  '23505', null, 'a retry at the bucket cap still reaches the unique key');
-select pg_temp.as_postgres();
+select is(pg_temp.admit('00000000-0000-0000-0000-0000000267c1', '40000000-0000-4000-8000-000000000001'), 'new',
+  'the 250th image in the bucket may be stored');
+select pg_temp.upload('00000000-0000-0000-0000-0000000267c1/40000000-0000-4000-8000-000000000001.png');
+select is(pg_temp.admit('00000000-0000-0000-0000-0000000267c1', '40000000-0000-4000-8000-000000000002'), 'quota',
+  'at 250 images the bucket refuses the next, with the user''s own quota left');
+select is(pg_temp.admit('00000000-0000-0000-0000-0000000267c1', '40000000-0000-4000-8000-000000000001'), 'exists',
+  'a retry at the bucket cap is still there');
 
 -- Only the owner (the function's connection) runs the sweep's SQL or reads the queue.
 select ok(not has_function_privilege(r, 'public.feedback_screenshots_due(integer)', 'execute'),

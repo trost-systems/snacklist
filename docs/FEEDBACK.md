@@ -53,8 +53,9 @@ blacked out automatically.
   daily digest mails him the new notes.
 - **The sender** gets their own notes in "Meine Daten exportieren" (section `feedback`, with
   each note's `screenshot` name).
-- **Screenshots**: clients may only upload them, never read them back, their own included. Peter
-  opens them in the dashboard (see "Screenshots").
+- **Screenshots**: clients may only send them to the `feedback-screenshots` function, which
+  stores them; they never read them back, their own included. Peter opens them in the dashboard
+  (see "Screenshots").
 
 ## Retention
 
@@ -148,38 +149,56 @@ can't drift apart. Its output on fake data is in the PR of job 21.
 ## Screenshots
 
 Job 267. From the shake sheet or the form, the sender can attach the current screen, painted
-over in the app's annotator. The app uploads the PNG, then inserts the note naming it.
+over in the app's annotator. The app sends the PNG to the `feedback-screenshots` function,
+which stores it, then inserts the note naming it.
 
 **Where.** The private Storage bucket `feedback-screenshots` of the same Supabase project (EU,
-Frankfurt), created by `supabase/migrations/20261115160000_feedback_screenshots.sql`. It takes
+Frankfurt), created by `supabase/migrations/20261115160000_feedback_screenshots.sql`; since
+`20261115200000_feedback_screenshot_upload_function.sql` only the function stores into it. It takes
 PNG only, at most 2 MiB per image. The object name is `<user_id>/<note id>.png`, and
 `public.feedback.screenshot` holds the same name.
 
 **Who can do what.**
 
-- A signed-in user may upload into their own folder only, with a lowercase UUID as the name and
-  `.png` (storage policy `feedback_screenshots_insert_own`).
-- Two quotas keep one account from filling the free plan's 1 GB of Storage
-  (`public.feedback_screenshot_quota_left(name)`): at most 10 uploads per user in any 24 hours,
-  and no upload at all while the bucket holds 250 images or more (at most 2 MiB each, so about
-  500 MiB at worst). Two uploads at the same moment can both pass the last free place; the quotas
-  are against abuse, not a contract.
-- Over a quota the Storage API refuses the upload (403; too big or not a PNG: 413 or 415), and the
-  form says "Das Bildschirmfoto wurde nicht angenommen. Schalte es aus, dann geht deine Nachricht
-  ohne Bild." The text, category and screenshot stay. With the screenshot switched off the note
-  sends.
-- Nobody but the service role reads, lists, signs, overwrites or removes an image: there is no
-  other policy. A second upload of the same name answers "already exists" (409, `Duplicate`),
-  which the app takes as its own earlier try. That holds at a quota too: a name the user already
-  uploaded passes the quotas and reaches the unique key.
+- Clients have no Storage policy on the bucket. Neither a direct upload nor a signed upload URL
+  works for them (signing checks the same insert policy). Review 0 of job 267 found that with a
+  client insert policy, `POST /storage/v1/object/upload/sign/...` checked the policy once when
+  it signed and then stored as the storage superuser, past both quotas; that way is closed.
+- A signed-in user stores an image only through
+  `POST /functions/v1/feedback-screenshots/upload/<note id>`, with the app's own session token
+  (`Authorization: Bearer`) and the PNG bytes as the body. API keys, MCP and Siri tokens get 403
+  `session_required`, like account deletion. The function names the object
+  `<user id>/<note id>.png` itself, so it lands in the sender's folder only.
+- The function checks the id (a lowercase UUID, else 400 `bad_request`; an empty body too), the
+  size (at most 2 MiB, else 413 `too_large`) and the PNG signature (else 415 `not_png`). Then, in
+  one transaction of its service connection, `public.feedback_screenshot_admit(user, id)` takes
+  a transaction-scoped advisory lock for the bucket and checks the two quotas. These keep one
+  account from filling the free plan's 1 GB of Storage: at most 10 images per user in any 24
+  hours, and none at all while the bucket holds 250 images or more (at most 2 MiB each, so about
+  500 MiB at worst). While the lock is held, the function stores the image through the Storage
+  API with the secret key (`x-upsert: false`), then commits. So parallel uploads run one after the
+  other and cannot overshoot either quota.
+- A name the user stored already answers 200 with its name, at a quota too: the app's retry
+  after a lost answer succeeds.
+- Answers: 200 `{"name": "<user id>/<note id>.png"}`; 401 without a valid session; 403
+  `{"error": "quota"}`; 503 `storage_failed` or `db_error`. Its logs say
+  `feedback-screenshots: upload stored`, `exists`, `quota` or the refusal's code, never a name or
+  a user id.
+- Over a quota, too big or not a PNG, the form says "Das Bildschirmfoto wurde nicht angenommen.
+  Schalte es aus, dann geht deine Nachricht ohne Bild." The text, category and screenshot stay.
+  With the screenshot switched off the note sends. App builds from before the function route
+  (internal, behind the flag) upload directly and get that message too.
+- Nobody but the service role reads, lists, signs, overwrites or removes an image.
+  `public.feedback_screenshot_quota_left`, the old policy's check, is no longer callable by
+  clients and no longer used.
 - Signed out: nothing.
 
-**Raising the quotas.** Both numbers live in `public.feedback_screenshot_quota_left(text)`. Write
-a new migration that runs `create or replace function public.feedback_screenshot_quota_left(p_name
-text)` with the body of `20261115160000_feedback_screenshots.sql` and the new numbers (`< 10` per
-user, `< 250` for the bucket), then land it like any migration (docs/DEPLOY.md). Before raising
-the bucket cap, check the project's Storage use in the dashboard (Settings, Usage): the cap times
-2 MiB has to fit next to everything else in the plan's Storage.
+**Raising the quotas.** Both numbers live in `public.feedback_screenshot_admit(uuid, uuid)`. Write
+a new migration that runs `create or replace function public.feedback_screenshot_admit(p_user
+uuid, p_id uuid)` with the body of `20261115200000_feedback_screenshot_upload_function.sql` and
+the new numbers (`>= 10` per user, `>= 250` for the bucket), then land it like any migration
+(docs/DEPLOY.md). Before raising the bucket cap, check the project's Storage use in the dashboard
+(Settings, Usage): the cap times 2 MiB has to fit next to everything else in the plan's Storage.
 
 **How Peter views an image.** In the dashboard (project `jdwqrallbpdbshrdhenk`), open
 **Storage**, then the bucket `feedback-screenshots`, then the folder named by the note's
@@ -192,7 +211,9 @@ deleted row would leave the file behind), so the Storage API does:
 
 1. Any delete of a note with a screenshot (the 12-month purge, an account deletion, Peter by
    hand) queues the name in `public.feedback_screenshot_removals` (trigger
-   `feedback_queue_screenshot_removal`).
+   `feedback_queue_screenshot_removal`), if the image is stored. A note may name an image that
+   never arrived; queuing only stored names keeps such notes from crowding real removals out of
+   a sweep's 500.
 2. The sweep lists what is due (`public.feedback_screenshots_due`): the queue, then uploads that
    no note names and that are either older than 24 hours (the app's upload succeeded but its note
    never arrived) or in the folder of an account that no longer exists, whatever their age. It
@@ -220,12 +241,15 @@ select count(*), min(queued_at) from public.feedback_screenshot_removals;
 
 The nightly backups (docs/BACKUP.md) hold the notes and the queue, not the images.
 
-Tests: `supabase/tests/feedback_screenshots.test.sql` (bucket, policy, quota, name check, queue,
-due list, privileges, export), `supabase/functions/_shared/feedback_screenshots_test.ts` and
-`feedback-screenshots/handler_test.ts` (the sweep and its route), and
-`feedback-screenshots/sweep_integration_test.ts` in the db gate (the real Storage API: uploads,
-refused reads, both quotas, a retry at a quota, and the sweep after a deleted note, an account
-deletion with and without notes and an old orphan).
+Tests: `supabase/tests/feedback_screenshots.test.sql` (bucket, no client upload, the function's
+check with its lock and quotas, who may run it, name check, queue, due list, privileges,
+export), `supabase/functions/_shared/feedback_screenshots_test.ts` and
+`feedback-screenshots/handler_test.ts` (the upload and sweep routes, their answers and log
+lines), and `feedback-screenshots/screenshots_integration_test.ts` in the db gate (the real
+function and Storage API: no direct or signed client upload, also past the quota; the upload
+route's refusals; both quotas, also under 15 parallel uploads; a retry at a quota; refused reads;
+and the sweep after a deleted note, an account deletion with and without notes and an old
+orphan).
 
 ## Daily digest (off until Legal GO)
 

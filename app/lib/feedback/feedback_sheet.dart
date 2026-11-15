@@ -452,6 +452,8 @@ class const _Preview({required final Uint8List png, required final bool sent})
                 png,
                 fit: BoxFit.contain,
                 gaplessPlayback: true,
+                // Named once, by the Semantics around it.
+                excludeFromSemantics: true,
               ),
             ),
           ),

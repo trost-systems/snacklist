@@ -1369,3 +1369,35 @@ PR https://github.com/trost-systems/snacklist/pull/490. Review 0 of job 222 (the
 - **Records corrected.** `docs/hillclimb/fable-improvement-2026-11.md` (the "No flake" sentence, the kills in the table, a section with the rate before and after and this round's cost), `docs/done/222-robustness-offline-sync.md` ("Review 1"), `docs/DECISIONS.md` ("Job 222 review 1"), the feature files.
 - **Review 1's nice-to-haves.** Taken: the "same guarantee" sentence (1), which kills are covered (2), the spec's message says whether the device held a queued tick (3, first half), what the web hide rests on (4). Left: a debug log in `device_cache.dart`'s `catch` blocks (3, second half; no caught error showed in the traces) and review 0's three (5), with the lead.
 - **In-job review.** Round 1 (a fresh subagent, read-only, `claude-fable-5-2`) held the code and tests and asked for three corrections (two of numbers and their sources in the records, one of a spec comment): FIX. They are made. Round 2 (another fresh one) recomputed the numbers, found them true and asked for one correction, the round's token count, which had taken in the harness reviewer's session: FIX, made. The last round's verdict and the land's CI run are in the job's DONE_SUMMARY copy in the ops folder: this file is part of the commit they judge.
+
+## Job 267 review 0 fix: screenshots only through the function, text on the web (2026-11-15)
+
+- **PR** https://github.com/trost-systems/snacklist/pull/502, a follow-up to #499, which was merged and
+  deployed when review 0 arrived. Still behind the flag `feedback-fb2`.
+- **Must-fix 1, quota bypass.** The client insert policy on `feedback-screenshots` is gone: a signed
+  upload URL was checked once and then stored as the storage superuser, past both quotas. Uploads
+  now go through `POST /functions/v1/feedback-screenshots/upload/<note id>`, which accepts the app's
+  session only, checks the PNG signature and the 2 MiB limit, and applies the quotas under an
+  advisory lock held until Storage has the file. On the local stack, against the real Storage API:
+  direct uploads and signing answer 403, 15 parallel uploads stored exactly 10, the bucket stopped at
+  exactly 250 under a race, and a retry at the quota got 200. The regression test that mints signed
+  URLs fails with the old policy put back.
+- **Must-fix 2, Text tool on the web.** The field being typed in now sits outside `ExcludeSemantics`,
+  tied to the canvas. The e2e types a text mark on the web build and finds it in the uploaded PNG
+  (`docs/screenshots/267/5-annotator-web-text-de.png`).
+- **Also taken.**
+  - 48 px annotator targets.
+  - Equal label scaling in `HexSegmented`; the settings goldens are unchanged.
+  - No unnamed image node in the preview.
+  - The delete trigger queues only stored images.
+  - The quota helper is no longer callable by clients.
+  - The feature file is corrected.
+  - Reasons for the nice-to-haves not taken are in DECISIONS "Job 267 review 0", point 6.
+- **Verified.**
+  - The full `flutter test` passes.
+  - pgTAP `feedback_screenshots` (51).
+  - The integration suite (154), with the new `screenshots_integration_test.ts`.
+  - `feedback.spec.ts` e2e: 9 passed.
+  - `scripts/verify.sh` gates: see the job's DONE_SUMMARY copy.
+- **Legal note** updated: pictures reach the bucket only through the server, and the screen-name example
+  is the real id (`list`).

@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer';
 import { expect, type Page, test } from './fixtures';
 import {
   addItem,
@@ -335,6 +336,33 @@ test('wide: feedback beside an open More page sends no screen (1366x1024)', asyn
 
 // Job 267 (flag feedback-fb2): from More the screen before More can be marked up and sent along; it
 // lands in the private bucket under the sender's folder, and the row names it.
+/** The tomato pixels ([x, y]) of [png], the annotator's marks. Decoded in a blank page, out of reach of the app's CSP. */
+async function tomatoPixels(page: Page, png: Uint8Array): Promise<Array<[number, number]>> {
+  const probe = await must(page.context().browser(), 'browser').newPage();
+  try {
+    return await probe.evaluate(async (base64) => {
+      const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+      const image = await createImageBitmap(new Blob([bytes], { type: 'image/png' }));
+      const canvas = new OffscreenCanvas(image.width, image.height);
+      const context = canvas.getContext('2d');
+      if (context === null) throw new Error('no 2d context');
+      context.drawImage(image, 0, 0);
+      const { data } = context.getImageData(0, 0, image.width, image.height);
+      const hits: Array<[number, number]> = [];
+      for (let i = 0; i + 2 < data.length; i += 4) {
+        const [r, g, b] = [data[i] ?? 0, data[i + 1] ?? 0, data[i + 2] ?? 0];
+        // SnacklistColors.light.tomato, 0xFFFF5B3A.
+        if (Math.abs(r - 0xff) < 40 && Math.abs(g - 0x5b) < 40 && Math.abs(b - 0x3a) < 40) {
+          hits.push([(i / 4) % image.width, Math.floor(i / 4 / image.width)]);
+        }
+      }
+      return hits;
+    }, Buffer.from(png).toString('base64'));
+  } finally {
+    await probe.close();
+  }
+}
+
 test('flag on: a screenshot from More is marked up, uploaded and named by the row', async ({ browser }) => {
   const context = await browser.newContext({ viewport: phone });
   await fakeCollector(context, { flags: { 'feedback-fb2': true } });
@@ -349,17 +377,32 @@ test('flag on: a screenshot from More is marked up, uploaded and named by the ro
   await page.getByRole('button', { name: 'Bildschirmfoto hinzufügen' }).click();
   const done = page.getByRole('button', { name: 'Fertig', exact: true });
   await expect(done).toBeVisible();
-  // A pen stroke across the frozen screen.
-  await page.mouse.move(80, 200);
+  // A level pen stroke across the frozen screen: it maps screen points to the PNG's below.
+  const pen = { y: 210, from: 80, to: 200 };
+  await page.mouse.move(pen.from, pen.y);
   await page.mouse.down();
-  for (const x of [110, 140, 170, 200]) await page.mouse.move(x, 210, { steps: 3 });
+  for (const x of [110, 140, 170, pen.to]) await page.mouse.move(x, pen.y, { steps: 3 });
   await page.mouse.up();
+  // A text mark further down (review 0: the web typed nothing into it).
+  const words = { x: 90, y: 400 };
+  const textTool = page.getByRole('radio', { name: 'Text', exact: true });
+  await textTool.click();
+  // Picked, the picture takes taps instead of strokes from the next frame on.
+  await expect(textTool).toBeChecked();
+  await page.mouse.click(words.x, words.y);
+  // Named by its hint while empty; the annotator's only textbox (the form lies under its route).
+  await expect(page.getByRole('textbox', { name: 'Text eingeben' })).toBeFocused();
+  await typeInto(page.getByRole('textbox'), 'Hier hakt es');
   await screenshot(page, 'job267-annotator-web-de');
   await done.click();
   await expect(page.getByRole('img', { name: 'Vorschau des Bildschirmfotos' })).toBeVisible({ timeout: 15_000 });
   await typeInto(messageField(page), 'Mit Bildschirmfoto aus dem Menü');
   await screenshot(page, 'job267-form-with-screenshot-web-de');
+  const upload = page.waitForResponse(
+    (r) => r.url().includes('/functions/v1/feedback-screenshots/upload/') && r.request().method() === 'POST',
+  );
   await sendButton(page).click();
+  expect((await upload).status(), 'stored through the function, not Storage').toBe(200);
   await expect(thanks(page)).toBeVisible({ timeout: 15_000 });
 
   const userId = await userIdOf(email);
@@ -367,9 +410,30 @@ test('flag on: a screenshot from More is marked up, uploaded and named by the ro
   const row = firstOf(await rowsOf(userId), 'feedback row');
   expect(row.screen).toBeNull();
   expect(row.screenshot).toBe(`${userId}/${String(row.id)}.png`);
+  expect((await upload).url()).toContain(`/functions/v1/feedback-screenshots/upload/${String(row.id)}`);
   const { data, error } = await adminClient().storage.from('feedback-screenshots').download(String(row.screenshot));
   if (error) throw error;
   const bytes = new Uint8Array(await data.arrayBuffer());
   expect([...bytes.slice(0, 4)], 'a PNG').toEqual([0x89, 0x50, 0x4e, 0x47]);
+
+  // The pen stroke is the tomato row with the widest span; its ends and row give the PNG's scale
+  // and offset for screen points.
+  const hits = await tomatoPixels(page, bytes);
+  const rows = new Map<number, { min: number; max: number }>();
+  for (const [x, y] of hits) {
+    const span = rows.get(y) ?? { min: x, max: x };
+    rows.set(y, { min: Math.min(span.min, x), max: Math.max(span.max, x) });
+  }
+  const [penRow, penSpan] = must(
+    [...rows].sort(([, a], [, b]) => b.max - b.min - (a.max - a.min))[0],
+    'a pen stroke in the PNG',
+  );
+  const scale = (penSpan.max - penSpan.min) / (pen.to - pen.from);
+  const left = penSpan.min + (words.x - pen.from) * scale;
+  const top = penRow + (words.y - pen.y) * scale;
+  const inWords = hits.filter(
+    ([x, y]) => x >= left - 6 * scale && x <= left + 90 * scale && y >= top - 6 * scale && y <= top + 25 * scale,
+  );
+  expect(inWords.length, `the text mark's pixels near (${Math.round(left)}, ${Math.round(top)})`).toBeGreaterThan(50);
   await context.close();
 });

@@ -65,8 +65,9 @@ void main() {
 
   /// [repository] signed in as [userId], as the app only sends then.
   Future<SupabaseFeedbackRepository> signedIn(
-    FutureOr<http.Response> Function(http.Request request) answer,
-  ) async {
+    FutureOr<http.Response> Function(http.Request request) answer, {
+    Duration timeout = const Duration(seconds: 15),
+  }) async {
     requests = [];
     final client = SupabaseClient(
       'http://localhost:54321',
@@ -100,7 +101,7 @@ void main() {
         },
       }),
     );
-    return SupabaseFeedbackRepository(client);
+    return SupabaseFeedbackRepository(client, timeout: timeout);
   }
 
   final png = Uint8List.fromList([0x89, 0x50, 0x4e, 0x47, 1, 2, 3]);
@@ -112,28 +113,32 @@ void main() {
     context: note.context,
     screenshot: shot,
   );
-  bool isUpload(http.Request r) => r.url.path.startsWith('/storage/');
+  bool isUpload(http.Request r) => r.url.path.startsWith('/functions/');
+  http.Response json(Object body, int status) => http.Response(
+    jsonEncode(body),
+    status,
+    headers: {'content-type': 'application/json'},
+  );
+  final stored = '$userId/${note.id}.png';
 
-  test("a screenshot is uploaded under the sender's folder, then the row "
-      'names it', () async {
-    final repo = await signedIn((_) => http.Response('{"Key": "x"}', 200));
+  test('the function stores the screenshot with the session, then the row '
+      'names what it stored', () async {
+    final repo = await signedIn(
+      (r) => isUpload(r) ? json({'name': stored}, 200) : http.Response('', 201),
+    );
     await repo.submit(withShot(png));
     expect(requests, hasLength(2));
     final (upload, insert) = (requests.first, requests.last);
     expect(upload.method, 'POST');
     expect(
       upload.url.path,
-      '/storage/v1/object/feedback-screenshots/$userId/${note.id}.png',
+      '/functions/v1/feedback-screenshots/upload/${note.id}',
     );
-    expect(upload.headers['x-upsert'], 'false');
-    final part = latin1.decode(upload.bodyBytes);
-    expect(part.toLowerCase(), contains('content-type: image/png'));
-    expect(part, contains(latin1.decode(png)));
+    expect(upload.headers['Authorization'], 'Bearer $_jwt');
+    expect(upload.headers['Content-Type'], 'image/png');
+    expect(upload.bodyBytes, png);
     expect(insert.url.path, '/rest/v1/feedback');
-    expect(
-      jsonDecode(insert.body),
-      containsPair('screenshot', '$userId/${note.id}.png'),
-    );
+    expect(jsonDecode(insert.body), containsPair('screenshot', stored));
   });
 
   test('without a screenshot nothing is uploaded and no column sent', () async {
@@ -146,82 +151,74 @@ void main() {
     );
   });
 
-  test(
-    'an upload that is already there (a retry) counts as uploaded',
-    () async {
-      final repo = await signedIn(
-        (r) => isUpload(r)
-            ? http.Response(
-                jsonEncode({
-                  'statusCode': '409',
-                  'error': 'Duplicate',
-                  'message': 'The resource already exists',
-                }),
-                400,
-                headers: {'content-type': 'application/json'},
-              )
-            : http.Response('', 201),
-      );
-      await repo.submit(withShot(png));
-      expect(requests.last.url.path, '/rest/v1/feedback');
-      expect(
-        jsonDecode(requests.last.body),
-        containsPair('screenshot', '$userId/${note.id}.png'),
-      );
-    },
-  );
+  for (final (status, error) in [
+    (403, 'quota'),
+    (413, 'too_large'),
+    (415, 'not_png'),
+  ]) {
+    test(
+      'a $status ($error) refuses the screenshot and sends no row',
+      () async {
+        final repo = await signedIn(
+          (r) => isUpload(r)
+              ? json({'error': error}, status)
+              : http.Response('', 201),
+        );
+        await expectLater(
+          repo.submit(withShot(png)),
+          throwsA(
+            isA<FeedbackScreenshotRefused>().having(
+              (e) => e.code,
+              'code',
+              'upload_$status',
+            ),
+          ),
+        );
+        expect(requests.where((r) => !isUpload(r)), isEmpty);
+      },
+    );
+  }
 
-  test(
-    'a refused upload sends no row; the screenshot is what was refused',
-    () async {
+  for (final (status, body) in [
+    (500, {'error': 'internal'}),
+    (503, {'error': 'storage_failed'}),
+    (401, {'msg': 'Invalid JWT'}),
+  ]) {
+    test("a $status is a plain refusal, not the screenshot's, and sends no "
+        'row', () async {
       final repo = await signedIn(
-        (r) => isUpload(r)
-            ? http.Response(
-                jsonEncode({
-                  'statusCode': '403',
-                  'error': 'Unauthorized',
-                  'message': 'new row violates row-level security policy',
-                }),
-                400,
-                headers: {'content-type': 'application/json'},
-              )
-            : http.Response('', 201),
+        (r) => isUpload(r) ? json(body, status) : http.Response('', 201),
       );
       await expectLater(
         repo.submit(withShot(png)),
         throwsA(
-          isA<FeedbackScreenshotRefused>().having(
+          isA<FeedbackRefused>().having(
             (e) => e.code,
             'code',
-            'storage_403',
+            'upload_$status',
           ),
         ),
       );
       expect(requests.where((r) => !isUpload(r)), isEmpty);
-    },
-  );
+    });
+  }
 
-  test(
-    "a storage server error is a plain refusal, not the screenshot's",
-    () async {
-      final repo = await signedIn(
-        (r) => isUpload(r)
-            ? http.Response(
-                jsonEncode({'statusCode': '500', 'error': 'internal'}),
-                500,
-                headers: {'content-type': 'application/json'},
-              )
-            : http.Response('', 201),
-      );
-      await expectLater(
-        repo.submit(withShot(png)),
-        throwsA(
-          isA<FeedbackRefused>().having((e) => e.code, 'code', 'storage_500'),
+  test('a 200 without the name is a refusal and sends no row', () async {
+    final repo = await signedIn(
+      (r) => isUpload(r) ? json({'ok': true}, 200) : http.Response('', 201),
+    );
+    await expectLater(
+      repo.submit(withShot(png)),
+      throwsA(
+        isA<FeedbackRefused>().having(
+          (e) => e.code,
+          'code',
+          'upload_bad_response',
         ),
-      );
-      expect(requests.where((r) => !isUpload(r)), isEmpty);
-    },
-  );
+      ),
+    );
+    expect(requests.where((r) => !isUpload(r)), isEmpty);
+  });
 
   test('an upload without a connection is offline, and sends no row', () async {
     final repo = await signedIn((r) {
@@ -236,6 +233,22 @@ void main() {
     );
     expect(requests.where((r) => !isUpload(r)), isEmpty);
   });
+
+  test(
+    'an upload without an answer in time is offline, and sends no row',
+    () async {
+      final never = Completer<http.Response>();
+      final repo = await signedIn(
+        (r) => isUpload(r) ? never.future : http.Response('', 201),
+        timeout: const Duration(milliseconds: 50),
+      );
+      await expectLater(
+        repo.submit(withShot(png)),
+        throwsA(isA<FeedbackOffline>()),
+      );
+      expect(requests.where((r) => !isUpload(r)), isEmpty);
+    },
+  );
 
   test('one insert into feedback with the note and its context only', () async {
     await repository((_) => http.Response('', 201)).submit(note);

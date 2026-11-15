@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+import 'dart:ui' show Tristate;
 
 import 'package:family_groceries/app/localizations.dart';
 import 'package:family_groceries/app/theme.dart';
@@ -9,6 +10,8 @@ import 'package:family_groceries/feedback/annotator.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+
+import '../design/fonts.dart';
 
 Finder key(String k) => find.byKey(ValueKey(k));
 
@@ -185,6 +188,44 @@ void main() {
     );
   });
 
+  testWidgets('the field being typed in is a focused text field for screen '
+      'readers and the web, where the user tapped, as large as its mark', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    final (:result, size: _) = await open(tester);
+    await tester.tap(key('annotator-tool-text'));
+    await tester.pumpAndSettle();
+    final tapped = at(tester, const Offset(0.2, 0.3));
+    await tester.tapAt(tapped);
+    await tester.pumpAndSettle();
+    // The web build types through this node; inside excluded semantics
+    // there is none and typing does nothing (review 0, must-fix 2).
+    final node = tester.getSemantics(
+      find.descendant(
+        of: key('annotator-text'),
+        matching: find.byType(EditableText),
+      ),
+    );
+    expect(node.flagsCollection.isTextField, isTrue);
+    expect(node.flagsCollection.isFocused, Tristate.isTrue);
+    final field = tester.getRect(key('annotator-text'));
+    expect(field.topLeft.dx, closeTo(tapped.dx, 1));
+    expect(field.topLeft.dy, closeTo(tapped.dy, 1));
+
+    await tester.enterText(key('annotator-text'), 'Hier');
+    final typing = tester.getRect(find.text('Hier'));
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+    expect(
+      tester.getRect(find.text('Hier')).height,
+      closeTo(typing.height, 1),
+      reason: 'typed and committed text show at one scale',
+    );
+    expect(await done(tester, result), isNotNull);
+    semantics.dispose();
+  });
+
   testWidgets('a pen stroke stays in the PNG whatever the user taps before '
       'Fertig', (tester) async {
     // Every control the user can reach but Fertig and the ones that take
@@ -277,6 +318,25 @@ void main() {
     expect(await result, isNull);
     expect(key('annotator-canvas'), findsNothing);
   });
+
+  testWidgets('✕, undo and Fertig are 48 px targets, and at 160 % text the '
+      'tools keep one label size', (tester) async {
+    // Label widths need the app's own fonts, not the test font's boxes.
+    await tester.runAsync(loadAppFonts);
+    tester.platformDispatcher.textScaleFactorTestValue = 1.6;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    await open(tester);
+    for (final k in ['annotator-close', 'annotator-undo', 'annotator-done']) {
+      final size = tester.getSize(key(k));
+      expect(size.width, greaterThanOrEqualTo(48), reason: k);
+      expect(size.height, greaterThanOrEqualTo(48), reason: k);
+    }
+    final labels = [
+      for (final word in ['Stift', 'Rechteck', 'Text'])
+        tester.getRect(find.text(word)).height,
+    ];
+    expect(labels.toSet(), hasLength(1), reason: 'no label shrinks: $labels');
+  }, variant: TargetPlatformVariant.all());
 
   testWidgets('one set of tools, every word from the ARB, in English too', (
     tester,

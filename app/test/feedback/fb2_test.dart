@@ -53,6 +53,21 @@ void main() {
       expect(key('annotator-canvas'), findsOneWidget);
       await markUpAndFinish(tester);
       expect(key('feedback-screenshot-preview'), findsOneWidget);
+      final semantics = tester.ensureSemantics();
+      await tester.pump();
+      expect(
+        tester
+            .getSemantics(
+              find.descendant(
+                of: key('feedback-screenshot-preview'),
+                matching: find.byType(RawImage),
+              ),
+            )
+            .label,
+        'Vorschau des Bildschirmfotos',
+        reason: 'one named image, no unnamed one inside it',
+      );
+      semantics.dispose();
       expect(find.text('Bildschirmfoto'), findsOneWidget);
       expect(
         find.textContaining('Keine Listeneinträge.'),
