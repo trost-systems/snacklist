@@ -1186,3 +1186,11 @@ names were in the same style, so a wrapped household name could read as the list
     200 %. It now asserts the accessible name with „Haushalt:“ / „Liste:“.
   - The screenshots in `docs/screenshots/248/` are refreshed, and the job's `out/web-r0/` has the
     shots from this round.
+
+## Job 250: rebase #452 and apply Legal section 16 (BLOCKED)
+
+Status: not started. #464 is still OPEN and DIRTY (merge conflicts), so the brief's start condition is not met. Nothing is rebased, applied, hashed or pushed.
+- Polled #464 for 2 h+ (background cap reached), plus further 540 s foreground rounds after review 0: still OPEN.
+- NEEDS_LEAD entry written (~/groceries-ops/NEEDS_LEAD.md): lead must land or unblock #464; N-177 is due 21 Nov.
+- Pre-staged `~/groceries-ops/jobs/250-pr452-rebase-legal-s16/check-expected.sh <worktree>`: diffs the rebased privacy.md and datenschutz.md against in/pr452-expected/ and prints sha256.
+- Remaining after #464 merges: rebase #452 (keep both sides), apply N-184 to N-186 (L-5, N-170 price part) word for word, run the check script (report any mismatch), ci-ok green, notes under research/legal-review/pr-452/<sha>/ mirrored to /workspace/hummlist/research/legal-review/, no merge, no flags, then NEEDS_LEAD "Job 250: send #452 hash-bound GO request to Legal".
