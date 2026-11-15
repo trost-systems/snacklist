@@ -10,6 +10,8 @@
 #         alt:             the store's alt text, at most 140 characters
 #         sticker:         words drawn on the shot's sticker (voice: the spoken sentence; assist:
 #                          the request, the reply and the items the assistant adds)
+#         play:            replaces fields on the Play set only; status: blocked keeps a frame out of the
+#                          upload until it is filmed on a real device (voice: dictation is de_DE only)
 #         appstore:        replaces s and alt on the App Store set only (voice: Siri, N-189, N-195)
 #         premium:         the label --premium-label puts on the frame once AI assistants are paid
 #                          (Apple 2.3.2, N-193; no price, 2.3.7)
@@ -46,16 +48,18 @@ de-DE:
     voice:
       status: draft
       h: ["Gesagt,", "notiert."]
-      s: Per Sprachassistent auf die Liste.
+      s: Per Sprachbefehl auf die Liste.
       alt: Jonas sagt „Bananen, Butter und Haferflocken“, und auf Annas Liste erscheinen die drei gelb markiert.
       sticker:
         said: Bananen, Butter und Haferflocken
+      play:
+        status: blocked
       appstore:
         s: Funktioniert mit Siri
         alt: Jonas sagt Siri „Bananen, Butter und Haferflocken“, und auf Annas Liste erscheinen die drei gelb markiert.
     assist:
       status: draft
-      h: [Läuft auch, von selbst.]
+      h: [Sag’s dem, Assistenten.]
       s: Mit KI-Assistenten auf die Liste.
       alt: Ein KI-Assistent setzt Äpfel, Eier und Mehl auf die Liste; bei Anna erscheinen sie sofort gelb markiert.
       sticker:
@@ -100,16 +104,19 @@ en-US:
     voice:
       status: draft
       h: ["Say it,", "it’s on."]
-      s: Add items with your voice assistant.
+      s: Add items by voice.
       alt: Jonas says “Bananas, Butter and Oats”, and all three show up highlighted on Anna’s list.
       sticker:
         said: Bananas, Butter and Oats
+      play:
+        status: blocked
+        alt: Jonas says “Bananen, Butter und Haferflocken” by voice, and all three show up highlighted on Anna’s list.
       appstore:
         s: Works with Siri
         alt: Jonas tells Siri “Bananas, Butter and Oats”, and all three show up highlighted on Anna’s list.
     assist:
       status: draft
-      h: ["Works on", "its own, too."]
+      h: ["Ask an", "assistant."]
       s: Add to your list with AI assistants.
       alt: An AI assistant puts apples, eggs and flour on the list; they show up highlighted on Anna’s phone right away.
       sticker:

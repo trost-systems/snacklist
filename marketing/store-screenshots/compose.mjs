@@ -316,11 +316,11 @@ writeFileSync(join(OUT, 'summary.md'), `${[
   '', drafts.length ? `Draft captions: ${drafts.join(', ')}` : 'Every caption is approved.',
   '', failures.length ? `Checks FAILED:\n${failures.map((f) => `- ${f}`).join('\n')}` : 'All checks pass.',
 ].join('\n')}\n`);
-const captionRows = manifest.files.filter((f) => f.caption).map((f) => `| ${f.locale} | ${f.set} | ${f.shot ?? f.set.replace('play-', '')} | ${f.caption} | ${f.alt ?? ''} |`);
+const captionRows = manifest.files.filter((f) => f.caption).map((f) => `| ${f.locale} | ${f.set} | ${f.shot ?? f.set.replace('play-', '')} | ${f.caption} | ${f.alt ?? ''} | ${f.status === 'blocked' ? 'BLOCKED: needs a real-device German capture' : (f.status ?? '')} |`);
 writeFileSync(join(OUT, 'CAPTIONS.md'), `${[
   '# Every caption per frame and locale', '',
   'Siri appears on the App Store voice frame only; no Alexa, API, automations, free, AI brand, alcohol or tobacco anywhere (Legal N-187 to N-195, job 252).', '',
-  '| Locale | Set | Frame | Caption (headline / subline) | Alt text |', '| --- | --- | --- | --- | --- |', ...captionRows,
+  '| Locale | Set | Frame | Caption (headline / subline) | Alt text | Status |', '| --- | --- | --- | --- | --- | --- |', ...captionRows,
 ].join('\n')}\n`);
 if (failures.length) {
   console.error(`checks failed:\n${failures.join('\n')}`);
