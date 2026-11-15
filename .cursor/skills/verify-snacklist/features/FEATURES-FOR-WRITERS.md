@@ -80,7 +80,7 @@ The app is called Snacklist. It used to be called Hummlist. The app, its Siri ph
 
 ## Usage-data question (analytics consent)
 
-**What it does.** Snacklist asks once per device whether it may collect usage data. Someone new meets the question as the first step after „Los geht's“, before any account; someone who signs in without the guided start meets it right after the first sign-in. A no sends nothing to our analytics service (PostHog). Snacklist only notes the no with the account, so Siri and Alexa send no usage data for that person either. A yes sends pseudonymous usage data (for example about items, households and setup, which tips you see and how you use Siri) and error reports to the analytics service, on servers in the EU. This starts at the sign-in. Nothing is sent before there is an account. Both answers are equally prominent, and the user can change the answer any time under More → Nutzungsdaten. Anyone who said yes to an earlier wording of the question is asked again with the current text, and nothing is sent until they answer; that includes people who said yes in the Hummlist app, since the text now names Snacklist, everyone who said yes before the text named these examples, and everyone who said yes before it named Siri. A no stays a no.
+**What it does.** Snacklist asks once per device whether it may collect usage data. Someone new meets the question as the first step after „Los geht's“, before any account; someone who signs in without the guided start meets it right after the first sign-in. A no sends no usage data and no error reports to our analytics service (PostHog), and Snacklist keeps no analytics ID on the device. Snacklist only notes the no with the account, so Siri and Alexa send no usage data for that person either. Without a yes the app still asks PostHog which features are switched on: the same question for every device without a yes, carrying only the platform (iPhone, Android, web) and the app version, so a feature switched on for everyone reaches them too. PostHog also sees the device's IP address, and in the web app the browser identifier (browser, operating system, versions), and keeps them in technical logs to answer, to protect its service and to find errors; PostHog publishes no period for these logs (privacy policy §9). A yes sends pseudonymous usage data (for example about items, households and setup, which tips you see and how you use Siri) and error reports to the analytics service, on servers in the EU. This starts at the sign-in. No usage data is sent before there is an account. Both answers are equally prominent, and the user can change the answer any time under More → Nutzungsdaten. Anyone who said yes to an earlier wording of the question is asked again with the current text, and no usage data is sent until they answer; that includes people who said yes in the Hummlist app, since the text now names Snacklist, everyone who said yes before the text named these examples, and everyone who said yes before it named Siri. A no stays a no.
 
 **How to get there.**
 1. On a new device, tap „Los geht's“ (EN: "Get started") on the first screen, or sign in for the first time: the question „Darf Snacklist Nutzungsdaten erfassen?“ (EN: "May Snacklist collect usage data?") appears.
@@ -90,12 +90,13 @@ The app is called Snacklist. It used to be called Hummlist. The app, its Siri ph
 **Never claim.**
 - That list contents, names or email addresses are collected: the text says they are never sent.
 - That a no limits any feature: the app works the same.
+- That a no means the app never contacts PostHog: it still asks which features are on, without any ID.
 - That Snacklist uses advertising or sells data: nothing in the app says so.
 - Quote the legal text exactly; do not paraphrase it. Point to the privacy policy for details.
 
 **Note.** Every released app and the web app (app.snacklist.app, app.hummlist.com) ask this question (checked 2026-11-01; app.snacklist.app since 2026-11-10).
 
-**Last verified.** 15 November 2026, code version c3ea4261, in the web app (German): the question in the guided start, its text naming Siri, and the stored answer.
+**Last verified.** 15 November 2026, code version c3ea4261, in the web app (German): the question in the guided start, its text naming Siri, and the stored answer. The feature question without a yes: 15 November 2026, code version b0d496cf, in the web app (German): one question before any answer and one after „Nicht erlauben“, both under the shared id, and after the no only the answer, its text version and the feature values kept, no installation id; switching off after a yes asks again under the shared id (the e2e on CI).
 
 ## Getting started: the guided start
 

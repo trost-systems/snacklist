@@ -3,10 +3,13 @@ import {
   addField,
   addItem,
   answerConsent,
+  askedFlagsFor,
   boxOf,
   type Collector,
+  collectorMark,
   createInviteCode,
   eventNames,
+  expectOnlyNoConsentFlags,
   fakeCollector,
   firstOf,
   itemRow,
@@ -33,10 +36,11 @@ import {
 /** Long enough for posthog-js' 3 s flush to have happened, had it anything to send. */
 const flushWindow = 7_000;
 
-async function quietFor(page: Page, collector: Collector, before: number) {
+/** Waits out a flush, then asserts that only no-consent flag requests came [since]. */
+async function quietFor(page: Page, collector: Collector, since = collectorMark(collector)) {
   // The app sends on a timer; the only way to see that it sent nothing is to wait it out.
   await page.waitForTimeout(flushWindow);
-  expect(collector.requests.length, `requests: ${collector.requests.join(', ')}`).toBe(before);
+  expectOnlyNoConsentFlags(collector, `requests: ${collector.requests.join(', ')}`, since);
 }
 
 /** Wheels the page until [target] is on screen above the tab bar. */
@@ -170,7 +174,8 @@ test('sign-in, then consent, then onboarding; declining sends nothing, ever', as
   expect((await popup).url(), 'the policy opens in a new tab').toBe('https://snacklist.app/datenschutz');
   await (await popup).close();
   await expect(page, 'still asking').toHaveURL(/\/analytics-consent$/);
-  expect(collector.requests, 'the login screen sent nothing').toEqual([]);
+  expectOnlyNoConsentFlags(collector, 'the login screen');
+  expect(collector.flags.length, 'the login screen asked for the shared flags').toBeGreaterThan(0);
   expect(await storedInstallId(page), 'no install id before the answer').toBeNull();
   expect(await posthogJsLoaded(page), 'posthog-js is not even fetched before the answer').toBe(false);
 
@@ -182,7 +187,7 @@ test('sign-in, then consent, then onboarding; declining sends nothing, ever', as
   await skipInvite(page);
   await addItem(page, 'Hafermilch');
   await tick(page, 'Hafermilch');
-  await quietFor(page, collector, 0);
+  await quietFor(page, collector, { requests: 0, events: 0, flags: 0 });
   expect(await posthogJsLoaded(page), 'nor after a no').toBe(false);
 
   // The switch under More → Nutzungsdaten shows the decision.
@@ -263,14 +268,19 @@ test('accepting sends first_open once, then one event per action, no list text; 
   const toggle = await analyticsSwitch(page);
   await expect(toggle).toBeChecked();
   await screenshot(page, 'analytics-04-more-switch-on');
+  const atOff = collectorMark(collector);
   await toggle.click();
   await expect(toggle).not.toBeChecked();
   await expect.poll(() => storedInstallId(page), { message: 'off deletes the install id' }).toBeNull();
   await screenshot(page, 'analytics-05-more-switch-off');
-  const before = collector.requests.length;
+  const before = collectorMark(collector);
   await openTab(page, 'Liste');
   await tick(page, 'Käse');
   await quietFor(page, collector, before);
+  await expect.poll(() => collector.flags.at(-1), { message: 'off switches to the shared flags' })
+    .toMatchObject({ 'distinct_id': 'no-consent' });
+  expect(collector.flags.slice(atOff.flags), 'no flag request with the install id after the off')
+    .not.toContainEqual(expect.objectContaining({ 'distinct_id': installId }));
   expect(collector.leaks).toEqual([]);
   const log = await context.newPage();
   await showLog(log, 'Accepted; household, 3 adds, 3 ticks (one undone), reload; then switched off and ticked.\n' +
@@ -386,7 +396,7 @@ test('a member with a household is asked once on a new install, then goes to the
   await typeInto(page.getByRole('textbox', { name: 'Passwort' }), password);
   await page.getByRole('button', { name: 'Anmelden', exact: true }).click();
   await expect(addField(page)).toBeFocused();
-  expect(collector.requests).toEqual([]);
+  expectOnlyNoConsentFlags(collector, 'declined, signed out and in');
 });
 
 test('an internal device sends a test error, scrubbed, to error tracking', async ({ browser }) => {
@@ -450,24 +460,25 @@ function storedTextVersion(page: Page): Promise<{ key: string; raw: string } | n
 
 // Legal Review 2026-11-01, addendum 12:35: a yes counts only for the consent text it was given
 // under. A yes an older build stored (no version) or one under an older text is no decision: the
-// app asks again and sends nothing to PostHog before the new yes, no event and no /flags lookup.
+// app asks again and sends PostHog nothing but the no-consent flag request before the new yes.
 for (const [label, outdate] of [
   ['without a version (an older build)', (_raw: string) => null],
   ['under the 2026-10-30 text', (raw: string) => raw.replace('2026-11-14', '2026-10-30')],
   ['under the 2026-11-11 text, before it named Siri', (raw: string) => raw.replace('2026-11-14', '2026-11-11')],
 ] as const) {
-  test(`a yes ${label} is asked again; nothing goes to PostHog before the new yes`, async ({ browser }) => {
+  test(`a yes ${label} is asked again; only no-consent flags before the new yes`, async ({ browser }) => {
     const context = await browser.newContext();
     const collector = await fakeCollector(context);
     const page = await context.newPage();
     await signUp(page, newEmail('consent-version'), '/', { consent: 'accept' });
     await expect(page).toHaveURL(/\/welcome$/);
     await expect.poll(() => storedInstallId(page)).toMatch(/^[0-9a-f-]{36}$/);
+    const installId = await storedInstallId(page) ?? '';
     const stored = await storedTextVersion(page);
     expect(stored?.raw, 'the yes is stored with the current version').toContain('2026-11-14');
     if (stored === null) throw new Error('no stored consent text version');
     await received(collector, ['first_open']);
-    expect(collector.requests.some((r) => r.startsWith('POST /flags')), 'a current yes asks for flags')
+    await expect.poll(() => askedFlagsFor(collector, installId), { message: 'a current yes asks for the install\'s flags' })
       .toBe(true);
 
     // What an older build (or the older text) left: the yes stays, the version goes or ages.
@@ -478,13 +489,15 @@ for (const [label, outdate] of [
     }, { key: stored.key, raw: outdated });
     collector.requests.length = 0;
     collector.events.length = 0;
+    collector.flags.length = 0;
     await page.reload();
 
     await expect(page, 'asked again').toHaveURL(/\/analytics-consent$/);
     await expect(page.getByRole('button', { name: 'Erlauben', exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Nicht erlauben', exact: true })).toBeVisible();
-    await quietFor(page, collector, 0);
-    expect(collector.requests, 'no event, no /flags').toEqual([]);
+    await quietFor(page, collector, { requests: 0, events: 0, flags: 0 });
+    expect(collector.flags.length, 'the shared flags instead').toBeGreaterThan(0);
+    expect(askedFlagsFor(collector, installId), 'nothing for the old install id').toBe(false);
     expect(await posthogJsLoaded(page), 'posthog-js is not even fetched').toBe(false);
     expect(await storedInstallId(page), 'the old install id is gone, as on a no').toBeNull();
     expect(collector.leaks).toEqual([]);
@@ -492,8 +505,10 @@ for (const [label, outdate] of [
     await answerConsent(page, 'accept');
     await expect.poll(() => storedTextVersion(page).then((v) => v?.raw)).toContain('2026-11-14');
     await received(collector, ['first_open']);
-    await expect.poll(() => collector.requests.some((r) => r.startsWith('POST /flags')),
-      { message: 'flags work again after the new yes' }).toBe(true);
+    const newId = await storedInstallId(page) ?? '';
+    expect(newId, 'a new install id').not.toBe(installId);
+    await expect.poll(() => askedFlagsFor(collector, newId),
+      { message: 'the new install\'s flags after the new yes' }).toBe(true);
     expect(collector.leaks).toEqual([]);
     await context.close();
   });

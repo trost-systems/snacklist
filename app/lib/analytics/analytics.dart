@@ -17,9 +17,10 @@ class const AnalyticsState({
   final bool loaded = false,
 
   /// Null: not asked yet, or a yes under an older consent text
-  /// ([consentTextVersion]). True: a yes to the current text; events,
-  /// errors and flag lookups are sent while signed in. False: nothing is
-  /// sent.
+  /// ([consentTextVersion]). True: a yes to the current text; events and
+  /// errors are sent while signed in, flags are this install's. Otherwise
+  /// nothing is sent and flags are the ones all installs without consent
+  /// share ([sharedFlagsId]).
   final bool? consent,
 
   /// Marked internal under More: every event says `is_internal`.
@@ -27,9 +28,10 @@ class const AnalyticsState({
 });
 
 /// What analytics keeps on the device, per install (not per account): the
-/// pseudonymous install id, the consent decision and whether `first_open`
-/// went out for this install id. The install id and the `first_open` mark
-/// exist only while the consent is yes (TDDDG §25).
+/// pseudonymous install id, the consent decision, whether `first_open`
+/// went out for this install id, and the flags served without consent. The
+/// install id and the `first_open` mark exist only while the consent is yes
+/// (TDDDG §25).
 abstract interface class AnalyticsStore() {
   Future<String?> installId();
 
@@ -60,6 +62,12 @@ abstract interface class AnalyticsStore() {
   Future<bool> internalInstall();
 
   Future<void> saveInternalInstall({required bool internal});
+
+  /// The flags last served without consent ([PostHogClient.sharedFlags]),
+  /// for an offline start; empty if none.
+  Future<Map<String, bool>> sharedFlags();
+
+  Future<void> saveSharedFlags(Map<String, bool> values);
 }
 
 /// Who is signed in, as analytics needs it. The e-mail only decides
@@ -105,11 +113,12 @@ class const AnalyticsConfig({
 /// Product analytics, error tracking and feature flags for PostHog EU, on
 /// the posthog_flutter SDK (docs/ANALYTICS.md).
 ///
-/// The SDK is set up only after a yes on this install and stopped by a no,
-/// so before the yes nothing at all goes to PostHog, flag requests
-/// included. Events and errors also need someone signed in. Every Dart-side
-/// event passes [checkEvent] and [checkContext] twice: here, and in the
-/// SDK's `beforeSend` ([_admit]), which also scrubs error reports.
+/// The SDK is set up only after a yes on this install and stopped by a no.
+/// Without a current yes the one request is for the flags every install
+/// without consent shares ([PostHogClient.sharedFlags], Legal §18 FL1').
+/// Events and errors also need someone signed in. Every Dart-side event
+/// passes [checkEvent] and [checkContext] twice: here, and in the SDK's
+/// `beforeSend` ([_admit]), which also scrubs error reports.
 class Analytics(
   final PostHogClient? _posthog,
   final AnalyticsStore _store,
@@ -130,8 +139,11 @@ class Analytics(
     ),
   );
 
-  /// The runtime toggles PostHog serves this install, all off until then.
+  /// The runtime toggles PostHog serves, all off until a first answer.
   late final flags = Flags(forced: _config.forcedFlags);
+
+  /// Counts shared flag requests: only the newest one's answer counts.
+  var _sharedRequest = 0;
 
   String? _installId;
   AnalyticsUser? _user;
@@ -196,7 +208,8 @@ class Analytics(
 
   /// Reads the decision; after a yes it starts the SDK with the install id
   /// in the background. Without a yes no install id is kept, and one stored
-  /// by an older build is deleted. A yes under an older consent text (or
+  /// by an older build is deleted; the shared flags are cached ones at once,
+  /// then PostHog's. A yes under an older consent text (or
   /// none, from a build before [consentTextVersion]) is no decision: it is
   /// deleted with the install id and the SDK's data on the device, as on a
   /// no, and the consent screen asks again. Call once before the first
@@ -233,6 +246,8 @@ class Analytics(
     );
     if (consent == true) {
       unawaited(_serially(() => _start(fresh: false)));
+    } else {
+      await _loadSharedFlags();
     }
   }
 
@@ -252,8 +267,9 @@ class Analytics(
 
   /// The user's answer on the consent screen or the More toggle. Yes starts
   /// the SDK with a new install id (unless it runs already) and sends
-  /// `first_open` once per install id; no stops the SDK and deletes the
-  /// install id, so a later yes starts with a new one.
+  /// `first_open` once per install id; the shared flags show until the
+  /// SDK's arrive. No stops the SDK and deletes the install id, so a later
+  /// yes starts with a new one, and switches to the shared flags.
   Future<void> decide({required bool granted}) async {
     _textVersion = consentTextVersion;
     emit(_with(consent: granted));
@@ -262,9 +278,11 @@ class Analytics(
       _syncConsent(answered: true, installId: _installId);
       _installId = null;
       _firstOpenFor = null;
-      flags.clear();
       await _store.saveConsent(granted: false, textVersion: consentTextVersion);
       await _store.forgetInstallId();
+      // Not behind the SDK's stop, which waits for a start in progress: the
+      // SDK's own flags no longer land once the consent is not yes.
+      await _loadSharedFlags();
       await _serially(_stop);
       return;
     }
@@ -340,7 +358,6 @@ class Analytics(
     }
     _running = false;
     _flagsInternal = null;
-    flags.clear();
     try {
       await _posthog?.stop();
     } on Object catch (e) {
@@ -363,12 +380,40 @@ class Analytics(
     }
     try {
       final values = await posthog.flags();
-      if (_running) {
+      // Empty: no answer yet, so the shared flags stay until one comes.
+      if (_running && state.consent == true && values.isNotEmpty) {
         flags.replace(values);
       }
     } on Object catch (e) {
       debugPrint('analytics: flags not read: ${e.runtimeType}');
     }
+  }
+
+  /// Without a current yes: the flags all installs without consent share,
+  /// the cached ones at once, then in the background PostHog's, which a
+  /// yes or a newer request in between discards.
+  Future<void> _loadSharedFlags() async {
+    final posthog = _posthog;
+    if (posthog == null || state.consent == true) {
+      return;
+    }
+    final request = ++_sharedRequest;
+    bool current() =>
+        request == _sharedRequest && state.consent != true && !flags.isClosed;
+    final cached = await _store.sharedFlags();
+    if (current()) {
+      flags.replace(cached);
+    }
+    unawaited(() async {
+      final served = await posthog.sharedFlags(
+        platform: _config.platform,
+        appVersion: _config.appVersion,
+      );
+      if (served != null && current()) {
+        flags.replace(served);
+        await _store.saveSharedFlags(served);
+      }
+    }());
   }
 
   /// More's switch for test devices: every event then says internal.

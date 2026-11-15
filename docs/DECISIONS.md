@@ -14369,3 +14369,42 @@ PM calls: Play voice caption „Per Sprachbefehl auf die Liste.“, assist headl
   household's own doing and stays as job 241 wrote it.
 - **Not done here.** `app_switches.public_api`, `integration_lock` and the PostHog flag stay
   untouched. They wait for this migration to be live.
+
+## Job 257: flags without analytics consent (FL1', Legal §18, N-164)
+
+- **One plain request, not the SDK.** Without a yes the app asks PostHog EU for flags with one
+  `POST /flags/?v=2` from Dart (`PostHogClient.sharedFlags`), the same on iOS, Android and web.
+  The posthog_flutter SDK cannot do this call: on iOS and Android it keeps its own anonymous and
+  device ids on the device and sends them with every flag request, which §18 L1 forbids. The body
+  is the project token, the distinct id `no-consent` (shared by every install without a yes),
+  `person_properties` with only `platform` and `app_version`, and `geoip_disable: true`. No SDK
+  runs, so nothing is captured and no `$feature_flag_called` or person profile can arise.
+- **Platform and app version go as `person_properties`.** §18 L2 allows only these two as
+  properties; /flags has no other place for them. They make no person (/flags never writes
+  persons). Person targeting (`distinct_id`, `is_internal`) never matches the shared id, so
+  internal-only flags stay off without consent. Percentage rollouts hash the one shared id, so
+  every install without consent lands on the same side: in practice 0 % or 100 %, as §18 says.
+- **Cache.** The last usable answer is kept under `analytics.shared_flags` (flag keys and
+  booleans, no id) and shown at once at the next start and offline. An answer with
+  `errorsWhileComputingFlags` or `quotaLimited: feature_flags` is no answer: PostHog then serves
+  everything off, and a quota hiccup must not switch features off for everyone.
+- **Switching.** The mode follows the consent: yes is identified (today's SDK path), anything else
+  shared. A no stops the SDK, deletes the install id and the SDK's data as before, shows the
+  cached shared values at once and asks again; a yes keeps the shared values showing until the
+  SDK's identified flags replace them. A shared answer that arrives after a yes is dropped.
+- **Policy.** Legal §19 (Addendum 2) is the final text: §18 L3 plus N-196 (PostHog keeps the
+  request data in technical logs, no published period), N-197 (the web app's User-Agent) and
+  N-198 (the §9 heading no longer puts the feature query under „nur mit Einwilligung“). Both
+  files are copied byte for byte from Legal's expected files, not retyped. The storage item sits
+  in §3 (Web-App), the only local-storage list; §19 accepted that. N-199 (asking PostHog for the
+  log period) waits for Peter's yes; nobody contacts PostHog before it.
+- **flags.json unchanged in rollout.** The brief's §3 asked for `full` on `prices-and-trip-total`,
+  `trip-mode` and `grocery-log`. Addendum 1 (Peter t952u, 2026-11-15 13:33) overrides it: Peter
+  rolled the three back to `is_internal = true` only in PostHog, so they stay `off` (internal
+  installs only) and their notes say so. Users without consent see no change until a flag goes to
+  100 %; hence the changelog says `none`. They stay internal-only until the policy is live (§19).
+  Nothing merges before PM's product check (§19's GO conditions).
+- **Flag conditions without consent.** `platform` and `app_version` travel as `person_properties`,
+  so a release condition on them, or a negative one such as `is_internal` is not `true`, would
+  reach installs without consent by property, which §18 L2 forbids. `docs/ANALYTICS.md` states
+  the rule: for them only an unconditional 0 % or 100 % condition.

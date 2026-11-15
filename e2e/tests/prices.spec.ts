@@ -5,7 +5,7 @@
 import { type Browser, type Locator, type Page, expect, test } from './fixtures';
 import { setStore, storeOf } from './catalog';
 import {
-  addItem, createInviteCode, editField, expectFieldValue, fakeCollector, itemRow, joinWithCode, newEmail, openEdit,
+  addItem, type ConsentChoice, createInviteCode, editField, expectFieldValue, fakeCollector, itemRow, joinWithCode, newEmail, openEdit,
   openMore, openTab, saveEdit, screenshot, signUp, createHousehold, skipInvite, typeInto, wheelTo,
   within,
 } from './helpers';
@@ -40,12 +40,19 @@ const editorLine = (page: Page, line: RegExp): Locator =>
 
 const priceField = (page: Page): Locator => page.getByRole('textbox', { name: 'Preis', exact: true });
 
-/** A signed-in page in its own context whose PostHog flags say [flagOn] for prices, analytics allowed. */
-async function member(browser: Browser, email: string, { flagOn = true } = {}): Promise<Page> {
+/**
+ * A signed-in page in its own context whose PostHog flags say [flagOn] for prices, analytics
+ * allowed unless [consent] says decline.
+ */
+async function member(
+  browser: Browser,
+  email: string,
+  { flagOn = true, consent = 'accept' }: { flagOn?: boolean; consent?: ConsentChoice } = {},
+): Promise<Page> {
   const context = await browser.newContext();
   await fakeCollector(context, { flags: { [flag]: flagOn } });
   const page = await context.newPage();
-  await signUp(page, email, '/', { consent: 'accept' });
+  await signUp(page, email, '/', { consent });
   return page;
 }
 
@@ -69,6 +76,19 @@ test('without the flag a row has no price chip and the list no total', async ({ 
   await expect(page).toHaveURL(/\/more\/household$/);
   await expect(page.getByText('Währung', { exact: true }), 'no currency on the household page').toHaveCount(0);
 });
+
+// Legal §18 FL1' (job 257): an install that declined analytics gets the flags PostHog serves the
+// one id all such installs share, so a flag released to 100 % reaches it too.
+for (const flagOn of [true, false]) {
+  test(`declined analytics, the flag served ${flagOn ? 'on' : 'off'}: ${flagOn ? 'a' : 'no'} price chip`, async ({ browser }) => {
+    const page = await member(browser, newEmail('prices-declined'), { flagOn, consent: 'decline' });
+    await createHousehold(page);
+    await skipInvite(page);
+    await addItem(page, 'Milch');
+    await expect(itemRow(page, 'Milch')).toBeVisible();
+    await expect(priceChip(page, 'Milch')).toHaveCount(flagOn ? 1 : 0);
+  });
+}
 
 test('a price does not tick the item; the household sees prices, store subtotals and the total live', async ({ browser }) => {
   const peter = await member(browser, newEmail('prices-peter'));

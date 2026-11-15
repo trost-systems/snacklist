@@ -31,6 +31,7 @@ void main() {
   setUpAll(fakeSupabase);
 
   late NativePostHog sink;
+  late FlagsServer server;
   late Analytics analytics;
   late DeviceCache cache;
 
@@ -49,7 +50,8 @@ void main() {
         InMemorySharedPreferencesAsync.withData({...stored});
     cache = DeviceCache(SharedPreferencesAsync());
     sink = NativePostHog()..install();
-    analytics = Analytics(testClient(), cache, releaseConfig);
+    server = FlagsServer()..served = {'shared-thing': true};
+    analytics = Analytics(testClient(server), cache, releaseConfig);
     await analytics.load();
     analytics.setUser(const AnalyticsUser(email: 'neu@gmail.com'));
     final session = FakeSession();
@@ -207,7 +209,8 @@ void main() {
     });
   }
 
-  testWidgets('no goes on to onboarding and sends nothing', (tester) async {
+  testWidgets('no goes on to onboarding, sends only shared flag requests '
+      'and keeps no id', (tester) async {
     await pumpApp(tester, const NeedsHousehold('u'));
     await reach(tester, decline);
     await tester.tap(decline);
@@ -217,7 +220,25 @@ void main() {
     expect(await cache.installId(), isNull);
     analytics.track('household_created');
     await analytics.flush();
-    expect(sink.events, isEmpty);
+    await tester.pumpAndSettle();
+    expect(sink.calls, isEmpty);
+    expect(
+      [for (final r in server.requests) r.body],
+      [sharedFlagsBody, sharedFlagsBody],
+    );
+    expect(analytics.flags.isOn('shared-thing'), isTrue);
+    final kept = await SharedPreferencesAsync().getAll();
+    expect(
+      {
+        for (final MapEntry(:key, :value) in kept.entries)
+          if (key.startsWith('analytics.')) key: value,
+      },
+      {
+        'analytics.consent': false,
+        'analytics.consent_text_version': consentTextVersion,
+        'analytics.shared_flags': '{"shared-thing":true}',
+      },
+    );
   });
 
   testWidgets('both answers are the same size: declining is as easy', (
@@ -230,14 +251,14 @@ void main() {
 
   // Legal Review 2026-11-01, 12:35: a yes counts only for the text it was
   // given under. One an older build stored (no version) or one under an
-  // older text is no decision: asked again, and nothing goes to PostHog
-  // before the new answer, no flag lookup either.
+  // older text is no decision: asked again, and before the new answer only
+  // the shared flag request goes to PostHog.
   const kept = '0b9f8e3c-1d2a-4c5b-8e7f-123456789abc';
   for (final (label, version) in [
     ('no version (an older build)', null),
     ('the 2026-10-30 text', '2026-10-30'),
   ]) {
-    testWidgets('a yes under $label is asked again, nothing sent before', (
+    testWidgets('a yes under $label is asked again, only shared flags before', (
       tester,
     ) async {
       await pumpApp(
@@ -254,7 +275,8 @@ void main() {
       expect(welcome, findsNothing);
       analytics.track('household_created');
       await analytics.flush();
-      expect(sink.calls, isEmpty, reason: 'no setup, no /flags, no event');
+      expect(sink.calls, isEmpty, reason: 'no setup, no event');
+      expect([for (final r in server.requests) r.body], [sharedFlagsBody]);
       expect(sink.forgotten, ['phc_unit_test'], reason: 'as on a no');
       expect(await cache.installId(), isNull);
       expect(await cache.consent(), isNull);

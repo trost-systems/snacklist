@@ -7,7 +7,7 @@ import { expect, test, type Browser, type Page } from './fixtures';
 import process from 'node:process';
 import {
   addField, addItem, adminClient, answerConsent, apiAs, type Collector, confirmJoin, createHousehold, createInviteCode,
-  cutOff, eventNames, fakeCollector, firstOf, inviteCodeLabel, invitePreview, itemRow, joinWithCode, latestLinkFor, must, newEmail, openMore, password,
+  cutOff, eventNames, expectOnlyNoConsentFlags, fakeCollector, firstOf, inviteCodeLabel, invitePreview, itemRow, joinWithCode, latestLinkFor, must, newEmail, openMore, password,
   screenshot, shownInviteCodes, signUp, signUpWithHousehold, skipInvite, typeInto, viaFakeProvider, within,
   invitePath, openEmailSignIn, openJoinLink, signUpHere,
 } from './helpers';
@@ -228,7 +228,7 @@ test('AC12: declined, onboarding works the same and sends nothing', async ({ bro
   await page.goto(invitePath(code));
   await confirmJoin(page, 'Familie Trost');
   await page.waitForTimeout(6_000);
-  expect(collector.requests).toEqual([]);
+  expectOnlyNoConsentFlags(collector, 'declined onboarding');
 });
 
 test('AC6: an invite link survives sign-in when the location loses it (password)', async ({ page }) => {
