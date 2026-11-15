@@ -13291,3 +13291,61 @@ Two gaps jobs 243 and 244 found between the privacy text sent to Legal and the c
   on: unknown keys from made-up addresses must run into the limit of one address. It is opt-in
   because it writes the caller's failure count, and the deploy's smoke test writes nothing.
 - **Not done here.** The production switch and the PostHog flag stay untouched.
+
+## Job 221: a gate's script runs android and ios only when it is theirs, 2026-11-14
+
+- **`scripts/gates/` left the "runs everything" list (`scripts/ci-changes.sh`).** Decision 11.7
+  ran every gate for a change to any gate script. The ios job is the slowest in CI (median 28:45
+  running in the 12 green `main` runs before this job, 11:36 to 32:54), and no other gate's script
+  can change what `android.sh` and `ios.sh` do: they source only `scripts/lib.sh`, which still runs
+  everything. A gate script is code, so the heavy gates run; `fastlane.sh` and `emails.sh` turn on
+  their own switch; `android.sh` and `ios.sh` were in the native rule already (job 111).
+- **Measured on the 136 PRs merged from 7 November to 14 November, 19:13 UTC** (the script
+  before and after, run on each PR's full file list; the PRs taken by merge date, since
+  `gh pr list` orders by creation and its `files` stop at 100): the rule before turns the native
+  gates on for 32 (14 for a native path, 18 for the CI definition), the rule after for 22. The
+  10 spared PRs (#231, #308, #327, #330, #333, #364, #406, #437, #438, #440) changed `db.sh`,
+  `lint.sh`, `functions.sh` or `site-agent.sh`. Their 27 CI runs with a finished ios job (two of
+  them on 4 November, before that week) took 627 macOS runner minutes, and in 23 of them `ci-ok`
+  waited for ios after every other job had ended, 186 minutes in all. That was with e2e in two
+  shards. For the files each of those runs had changed, the new rule leaves ios off. Ten more
+  ios jobs of those PRs were cancelled after 58 minutes in all; they are not in the 627.
+  The fastlane and emails switches, by the rule as it stood before this change (the emails
+  switch is from 10 November, #362): on for 28 PRs each, 15 after.
+- **The ios gate's two checks of the built app joined the native rule.**
+  `scripts/siri-vocabulary.py` and `scripts/app-shortcuts-bundle.py` run against the built
+  `Runner.app` only in the ios gate. A PR that changed only one of them ran the lint gate's
+  tests of it and no build. No merged PR of that week did so.
+- **`scripts/ci-changes-test.sh` in the lint gate.** The filter had no test (job 27 checked
+  eight cases by hand). The test holds the table of paths, and reads from `ci.yml` which switch
+  each gate's job runs on: a change to `scripts/gates/<gate>.sh` must turn that switch on. It
+  reads two lines of the job, `needs: changes` and its own
+  `if: needs.changes.outputs.<switch> == 'true'`, and fails when the job says `needs` in any
+  other line (a second needed job, whose skip would skip this one; a step's `if:`, the job's
+  `env:`, `${{ }}`, a second clause), holds a YAML merge, or has an `if:` that is an alias or
+  has its condition on the following lines. A comment does not end the job for it. It also
+  holds the four lines of the `changes` job that hand the filter's answers on under their own
+  names. A job that never says `needs` does not ask the filter (`changelog`). Review 3 found
+  the forms the one-line reading had let through (a needed second job, a comment indented
+  less than the job's keys, an alias, a crossed output).
+- **What a gate runs from `scripts/` is in its rule, by test.** The premise of this change is
+  that `android.sh`, `ios.sh`, `fastlane.sh` and `emails.sh` run nothing from `scripts/` that
+  another gate could change under them. The test reads every gate script for
+  `$REPO_ROOT/scripts/<file>` outside comments and asks that a change to that file turns on
+  at least the switch the gate's job runs on. For the four gates with a switch of their own
+  that is today the ios gate's two Python checks. `scripts/lib.sh`, which they all source,
+  runs everything. Twenty-eight mutants of the filter, of `ci.yml`, of `ios.sh` and of `db.sh`
+  each fail the test.
+- **Not pinned by the test:** a script a gate runs by another spelling than
+  `$REPO_ROOT/scripts/<file>`, what the composite actions run, and the steps of the `changes`
+  job (its call of the filter, and that nothing else writes the outputs). The test reads
+  `ci.yml` as lines in the file's block layout, not as YAML, and does not read the `changes`
+  job's own `if:` or `needs:`; its cases add or move a file, none modifies one (review 4's
+  surviving mutants, each a `ci.yml` or a filter nobody writes by accident).
+- **A moved file counts where it was.** `git diff --name-only` names only where a renamed file
+  went: a Swift file moved from `app/ios/` to `docs/` ran neither the heavy nor the native
+  gates. The filter now reads the range with `--no-renames`. None of the 113 renames in the 136
+  PRs moved a file out of a rule's paths; the case is in the test.
+- **Not changed:** `.github/actions/` still runs everything (4 of the 136 PRs). The ios job uses
+  none of the composite actions today, but a rule per action would have to follow `ci.yml` by
+  hand.
