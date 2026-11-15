@@ -1,3 +1,4 @@
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/app/router.dart';
 import 'package:family_groceries/design/hex_switch.dart';
 import 'package:family_groceries/design/section_label.dart';
@@ -95,6 +96,33 @@ void main() {
       tester.getRect(key('more-archived')).top,
       greaterThan(tester.getRect(key('more-invite')).top),
     );
+  });
+
+  testWidgets('with the decluttered list More has no household rows', (
+    tester,
+  ) async {
+    await pumpMore(
+      tester,
+      size: tall,
+      flags: const {listDeclutterFlag},
+      routes: [
+        GoRoute(
+          path: morePath,
+          builder: (_, _) => const MoreScreen(showArchived: true),
+        ),
+      ],
+    );
+    expect(key('more-household'), findsNothing);
+    expect(key('more-invite'), findsNothing);
+    expect(key('more-archived'), findsOneWidget, reason: 'stays in More');
+    expect(key('more-access'), findsOneWidget);
+    expect(find.text('Partner einladen'), findsNothing);
+  });
+
+  testWidgets('without the flag More keeps the household rows', (tester) async {
+    await pumpMore(tester, size: tall);
+    expect(key('more-household'), findsOneWidget);
+    expect(key('more-invite'), findsOneWidget);
   });
 
   testWidgets('German labels in menu order', (tester) async {

@@ -1,14 +1,18 @@
 import 'dart:async';
 
+import 'package:family_groceries/app/environment.dart';
 import 'package:family_groceries/app/notices.dart';
 import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/section_label.dart';
 import 'package:family_groceries/design/tokens.g.dart';
+import 'package:family_groceries/household/currency_section.dart';
+import 'package:family_groceries/household/household_actions.dart';
 import 'package:family_groceries/household/household_switcher.dart';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/invite_share.dart';
 import 'package:family_groceries/household/invite_sheet.dart';
 import 'package:family_groceries/household/invites_cubit.dart';
+import 'package:family_groceries/household/join_approval_section.dart';
 import 'package:family_groceries/household/lists_section.dart';
 import 'package:family_groceries/household/member_tiles.dart';
 import 'package:family_groceries/household/onboarding_page.dart';
@@ -96,6 +100,31 @@ class _SwitcherHouseholdState() extends State<SwitcherHousehold> {
     }
   }
 
+  /// Set while leaving is being asked: a second tap opens no second dialog.
+  var _asking = false;
+
+  Future<void> _leave() async {
+    if (_asking) {
+      return;
+    }
+    _asking = true;
+    final navigator = Navigator.of(context);
+    try {
+      final left = await leaveHousehold(
+        context,
+        userId: widget.userId,
+        household: widget.household,
+        archiveOffered: Environment.householdArchive,
+        run: (call) => tellRefusal(context, call),
+      );
+      if (left) {
+        navigator.pop();
+      }
+    } finally {
+      _asking = false;
+    }
+  }
+
   void _invite() => widget.go(InvitePage(widget.household.id));
 
   @override
@@ -125,6 +154,7 @@ class _SwitcherHouseholdState() extends State<SwitcherHousehold> {
         HouseholdListsPage() => _ListsView(
           key: const ValueKey('switcher-lists-page'),
           household: widget.household,
+          leave: _leave,
           shown: widget.shown,
           go: widget.go,
           invite: _invite,
@@ -139,6 +169,7 @@ class _SwitcherHouseholdState() extends State<SwitcherHousehold> {
 /// list shows it, in this household.
 class const _ListsView({
   required final Household household,
+  required final Future<void> Function() leave,
   required final bool shown,
   required final ValueChanged<SwitcherPage> go,
   required final VoidCallback invite,
@@ -209,6 +240,18 @@ class const _ListsView({
                           ),
                         ),
                       ],
+                    ),
+                  ),
+                  IconButton(
+                    key: const ValueKey('switcher-rename'),
+                    tooltip: l10n.householdRenameTitle,
+                    icon: const Icon(Icons.edit_outlined),
+                    onPressed: () => unawaited(
+                      renameHousehold(
+                        context,
+                        household,
+                        run: (call) => tellRefusal(context, call),
+                      ),
                     ),
                   ),
                   OutlinedButton.icon(
@@ -319,6 +362,17 @@ class const _ListsView({
               leading: sheetHex(context, Icons.add, t.surfaceSunken),
               title: Text(l10n.listNew),
               onTap: () => unawaited(addList(context)),
+            ),
+            const CurrencySection(),
+            JoinApprovalSection(household: household),
+            const SizedBox(height: HlSpace.s3),
+            ListTile(
+              key: const ValueKey('switcher-leave'),
+              leading: const Icon(Icons.logout),
+              iconColor: theme.colorScheme.error,
+              textColor: theme.colorScheme.error,
+              title: Text(l10n.leaveHousehold),
+              onTap: () => unawaited(leave()),
             ),
             const SizedBox(height: HlSpace.s3),
           ],
