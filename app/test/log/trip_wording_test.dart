@@ -15,6 +15,5 @@ void main() {
       for (final k in log)
         if (shop.hasMatch('${en[k]}')) k: en[k],
     }, isEmpty);
-    expect(en['tripPromptAt'], 'Log your trip to {store}?');
   });
 }

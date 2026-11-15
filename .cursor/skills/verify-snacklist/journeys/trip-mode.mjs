@@ -184,7 +184,6 @@ try {
   await tick('Aspirin');
   await page.waitForTimeout(1500);
   check(!(await sheetUp()), 'no question on ticking Aspirin at „APOTHEKE am Markt“ (GL-2)');
-  check(!(await aria()).includes(L('tripPromptAt', { store: 'APOTHEKE am Markt' })), 'no log card for the pharmacy (GL-2)');
 
   // tm-strip
   const planned = active();

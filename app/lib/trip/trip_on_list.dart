@@ -4,11 +4,9 @@ import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/app/router.dart' show tripSummaryPath;
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_view/shopping_list_view.dart';
-import 'package:family_groceries/log/trip_prompts.dart';
 import 'package:family_groceries/trip/ask_sheet.dart';
 import 'package:family_groceries/trip/ended_card.dart';
 import 'package:family_groceries/trip/model.dart' show RunningTrip;
-import 'package:family_groceries/trip/rules.dart';
 import 'package:family_groceries/trip/trip_cubit.dart';
 import 'package:family_groceries/trip/trip_strip.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -16,8 +14,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Trip mode's part of the list (job 234): the question after an own tick,
-/// the summary after Beenden, and the end of job 199's trip prompts, which
-/// the trip logged. Without a [TripCubit] above it, [child] alone.
+/// the summary after Beenden. Without a [TripCubit] above it, [child] alone.
 class const TripOnList({required final Widget child, super.key})
     extends StatefulWidget {
   @override
@@ -49,14 +46,7 @@ class _TripOnListState() extends State<TripOnList> {
             _ => true,
           }:
         unawaited(_ask(trips, next));
-      case Ended(:final trip, :final from, :final auto) when was is! Ended:
-        // The trip logged what it bought: job 199's cards must not offer it
-        // again, also in a store whose section still had open items.
-        final items = context.read<ListCubit>().state.allItems.values;
-        context.read<TripPrompts?>()?.forget({
-          for (final item in items)
-            if (boughtOnTrip(from, item, end: trip.endedAt)) item.id,
-        });
+      case Ended(:final trip, :final auto) when was is! Ended:
         if (!auto) {
           context.go(tripSummaryPath(trip.id));
         }
@@ -138,15 +128,6 @@ class const TripStripSlot({required final bool hidden, super.key})
       },
     );
   }
-}
-
-/// Whether a trip runs here: job 199's prompts wait for its end.
-bool tripRunning(BuildContext context) {
-  final on = _tripMode(context);
-  final running = context.select<TripCubit?, bool>(
-    (trips) => trips?.state is Running,
-  );
-  return on && running;
 }
 
 /// The user's trip running on [listId] (one without a list on any), with
