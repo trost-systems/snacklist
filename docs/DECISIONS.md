@@ -14195,3 +14195,11 @@ PM calls: Play voice caption „Per Sprachbefehl auf die Liste.“, assist headl
 ## Job 255: store caption accuracy fixes
 
 PM calls: Play voice caption „Per Sprachbefehl auf die Liste.“, assist headline „Sag’s dem Assistenten.“. The feature graphic tagline already was „Gemeinsam einkaufen, ohne Werbung.“. Invite subline kept (Peter's wording; no in/IC.txt). No real-device German capture exists for the Play voice frame, so it is marked BLOCKED (`status: blocked`, `play:` override), not faked.
+
+## Job 222 review 0: the WebKit run of tick-leave gets the slow timeout, 2026-11-15
+
+- **Call.** `tick-leave.spec.ts` calls `test.slow(browserName === 'webkit')` in both tests (PR #490). Review 0 measured them at 33 to 48 s of 60 s on CI's WebKit, and the job's own run 43650812055 has 49.7 s. A timeout gets no retry.
+- **Why this and not a faster test.** The time is read as WebKit's software drawing on the runner (sign-up, two adds, a reload), the cost the sibling specs' comment names; this job did not measure where the seconds go. The review asked not to shorten or drop the WebKit run. Chromium and Firefox keep 60 s: they take 8 to 14 s.
+- **Why not a longer timeout for the whole WebKit project.** `perf.spec.ts` runs there too and has its own budget. A project-wide timeout would also hide a new slow spec. The line per test is what the two sibling specs do.
+- **Proof.** Run 43713288298 (on-demand e2e, the spec three times per browser): the JSON report shows 180000 ms for WebKit and 60000 ms for the others, 18 of 18 passed, WebKit 35.8 to 38.5 s.
+- **Left from the review's nice-to-haves.** The probe harness in the repo, a state table for `SessionCubit`'s start and a shorter done doc: separate changes, named in DONE_SUMMARY.

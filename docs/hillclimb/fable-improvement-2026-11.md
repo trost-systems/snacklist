@@ -1596,3 +1596,10 @@ the start read, the sign-out, the channels and the old order shown again are in
   DONE_SUMMARY copy in the ops folder.
 - **The e2e lock:** one hold of 27 min for the three runs (21:57 to 22:24), of which the first
   9 min bought nothing (the spec's wrong status name). A second hold of 9 min at 23:40 for the run after review 1.
+
+## Job 222 review 0 fix, 2026-11-15
+
+- **What.** The harness review of #469 (verdict FIX) had one must-fix: `tick-leave.spec.ts` on CI's WebKit ran at 33 to 50 s of a 60 s timeout (measured, five runs), with no retry behind a timeout. PR #490 gives both tests `test.slow` on WebKit.
+- **Before and after (measured).** Share of the timeout used on CI's WebKit: 55 to 83 % before, 20 to 21 % after (35.8 to 38.5 s of 180 s, six samples in run 43713288298). The test's time itself is unchanged; the margin is what moved. No flake was seen before or after, so no flake rate is claimed.
+- **Cost (measured).** Wall time 13:10 to 13:30 CET up to the PR, before the land. One local e2e run (176 s with the web build, lock free), one on-demand CI e2e job (6 min 47 s), gitleaks 12 s, lint 135 s. Tokens for everything after the count of 11:24 (the land's wait, its records and this fix up to 13:29): 107,553 output, 518,338 cache-write, 16,815,536 cache-read, 312 input, all on `claude-fable-5-2`. Two in-job review rounds after the PR, each a fresh read-only subagent. Round 1 (2 min 48 s, 87,441 tokens, 23 tool calls): every number true to the evidence, three sentences of the records to bound, FIX. Round 2 (1 min 52 s, 73,379 tokens, 15 tool calls): PASS.
+- **Not measured here.** The land's CI run and the tokens after 13:29 (the review round's fixes and the land). Both go into the ops copy of DONE_SUMMARY after the land.
