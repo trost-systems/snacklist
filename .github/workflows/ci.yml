@@ -34,8 +34,8 @@ env:
   SUPABASE_INTERNAL_IMAGE_REGISTRY: docker.io
 
 jobs:
-  # Which gates this change needs (scripts/ci-changes.sh): docs-only changes skip the heavy
-  # gates, android/ios need app/, fastlane needs app/fastlane or the Gemfile.
+  # Which gates this change needs (scripts/ci-changes.sh lists the paths): docs-only changes
+  # skip the heavy gates; android and ios, fastlane, and emails each run only for their own.
   changes:
     runs-on: ubuntu-latest
     timeout-minutes: 5
