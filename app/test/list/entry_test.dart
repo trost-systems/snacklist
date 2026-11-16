@@ -1,7 +1,7 @@
 import 'dart:io';
 
+import 'package:family_groceries/list/catalog/catalog_index.g.dart';
 import 'package:family_groceries/list/entry.dart';
-import 'package:family_groceries/list/number_words.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:family_groceries/analytics/events.dart';
 import 'package:family_groceries/list/add_sheet/suggestion.dart';
+import 'package:family_groceries/list/catalog/catalog_index.dart';
 import 'package:family_groceries/list/category_guess.dart';
 import 'package:family_groceries/list/entry.dart';
 import 'package:family_groceries/list/list_cubit.dart';
@@ -53,13 +54,20 @@ class AddSheetCubit(
   final ListCubit _list, {
   Duration debounce = const Duration(milliseconds: 120),
   bool Function() stableRows = _off,
+  CatalogIndex Function() catalogIndex = _bundled,
 }) extends Cubit<AddSheetState> {
   this : super(const AddSheetState());
 
   static bool _off() => false;
 
+  static CatalogIndex _bundled() => CatalogIndex.bundled;
+
   final _debounce = debounce;
   final _stableRows = stableRows;
+
+  /// The catalog the device parses and guesses with: the bundled one with
+  /// the server's latest changes.
+  final _catalogIndex = catalogIndex;
 
   /// Whether the flag `input-stable-rows` is on now.
   bool get stableRows => _stableRows();
@@ -356,6 +364,7 @@ class AddSheetCubit(
   /// after a name the household has bought or has on the list.
   Entry _parse(String key) => parseEntry(
     key,
+    catalogIndex: _catalogIndex(),
     history: [
       for (final usual in _list.state.usuals) usual.name,
       for (final item in _list.state.items.values) item.name,
@@ -404,6 +413,7 @@ class AddSheetCubit(
             entry.name,
             catalog: _list.state.catalog,
             known: _householdCategories(),
+            index: _catalogIndex(),
           ),
           deviceParsed: entry.deviceParsed,
         ),

@@ -6,7 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 /// against, never shown as UI text.
 const germanDataFiles = {
   'lib/list/entry.dart': 'item parsing: amounts, sizes, umlaut folding',
-  'lib/list/number_words.dart': 'item parsing: German number and unit words',
+  'lib/list/catalog/catalog_index.g.dart':
+      "the classifier's catalog, the item parser's number and unit words",
   'lib/list/quantity.dart': 'quantity merge: German unit words',
   'lib/list/pricing.dart': 'price parsing: unit words',
   'lib/list/model.dart': 'umlaut folding for the dedupe key',

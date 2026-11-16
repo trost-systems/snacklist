@@ -5,7 +5,8 @@
 # Spaghetti", "Seven Up"). The `unit` rows are the units an amount can have („zwei Liter Milch“,
 # „ein Kopf Salat“, „Hack 500 g“), in public.item_units()'s order. public.item_number_words(),
 # public.item_number_names() and public.item_units() on the server and
-# app/lib/list/number_words.dart in the app hold this table; app/test/list/entry_test.dart and
+# app/lib/list/catalog/catalog_index.g.dart (supabase/classifier/client_catalog.sh) in the app hold
+# this table; app/test/list/entry_test.dart and
 # supabase/functions/_shared/number_words_integration_test.ts fail when either drifts from it.
 # Tab-separated, lowercase. kind is `count` (text, value, lang), `name` or `unit` (text only).
 # kind	text	value	lang
