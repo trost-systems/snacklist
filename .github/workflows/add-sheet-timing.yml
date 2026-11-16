@@ -1,8 +1,8 @@
 # Job 274: keystroke to stable rows in the add sheet, measured in a profile build on an Android
 # emulator (x86_64, KVM), with the flags off, `input-stable-rows` only and `on-device-catalog` on
-# (app/integration_test/add_sheet_timing_test.dart). A measurement, not a gate: it runs on a push
-# to a `timing/**` branch or by hand, never on a PR, and ci-ok does not need it. The table goes to
-# the job summary; the samples are the artifact `add-sheet-timing`.
+# (app/test_driver/add_sheet_timing_probe.dart). A measurement, not a gate: it runs on a push to a
+# `timing/**` branch or by hand, never on a PR, and ci-ok does not need it. The table goes to the
+# job summary; the samples are the artifact `add-sheet-timing`.
 name: Add sheet timing
 
 on:
@@ -50,11 +50,10 @@ jobs:
           sudo udevadm trigger --name-match=kvm
       - name: Runner
         run: nproc && grep -m1 'model name' /proc/cpuinfo && free -m
-      # The APK flutter drive installs (--use-application-binary).
       - working-directory: app
         run: |
           flutter build apk --profile --target-platform android-x64 --dart-define=ADD_SHEET_TIMING=true \
-            --target=integration_test/add_sheet_timing_test.dart
+            --target=test_driver/add_sheet_timing_probe.dart
       - uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         with:
           api-level: 34
@@ -68,22 +67,22 @@ jobs:
           working-directory: app
           script: |
             adb shell getprop ro.product.cpu.abi; adb shell nproc; adb shell getprop ro.build.version.sdk; adb shell wm size; adb shell wm density
-            flutter drive --profile --dart-define=ADD_SHEET_TIMING=true --driver=test_driver/integration_test.dart --target=integration_test/add_sheet_timing_test.dart --use-application-binary=build/app/outputs/flutter-apk/app-profile.apk > build/add-sheet-timing.log 2>&1; status=$?; cat build/add-sheet-timing.log; exit $status
+            timeout 2700 flutter run --profile -d emulator-5554 --use-application-binary=build/app/outputs/flutter-apk/app-profile.apk < /dev/null > build/add-sheet-timing.log 2>&1; grep -v timing-sample build/add-sheet-timing.log; grep -q timing-table build/add-sheet-timing.log && ! grep -q timing-error build/add-sheet-timing.log
       - name: Summary
         if: always()
         working-directory: app
         run: |
-          file=build/integration_response_data.json
-          if [ -f "$file" ]; then
-            jq -r .table "$file" | tee -a "$GITHUB_STEP_SUMMARY"
-          else
-            echo "No $file: the test did not finish." | tee -a "$GITHUB_STEP_SUMMARY"
-          fi
+          log=build/add-sheet-timing.log
+          sed -n 's/.*\[timing-table\] \{0,1\}//p' "$log" | tee build/add-sheet-timing.md >> "$GITHUB_STEP_SUMMARY"
+          { echo 'mode,gap_ms,line,len,log_ms,rank_ms,frame_ms,build_ms,raster_ms,skew_ms'
+            sed -n 's/.*\[timing-sample\] //p' "$log"; } > build/add-sheet-timing.csv
+          [ -s build/add-sheet-timing.md ] || echo 'No table: the probe did not finish.' | tee -a "$GITHUB_STEP_SUMMARY"
       - if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: add-sheet-timing
           path: |
-            app/build/integration_response_data.json
             app/build/add-sheet-timing.log
+            app/build/add-sheet-timing.md
+            app/build/add-sheet-timing.csv
           if-no-files-found: ignore
