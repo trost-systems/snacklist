@@ -100,6 +100,8 @@ class const ShoppingList({
             // open counts from the next key.
             stableRows: () =>
                 context.read<Flags?>()?.isOn(inputStableRowsFlag) ?? false,
+            onDeviceCatalog: () =>
+                context.read<Flags?>()?.isOn(onDeviceCatalogFlag) ?? false,
             catalogIndex: () =>
                 context.read<CatalogCubit?>()?.state ?? CatalogIndex.bundled,
           ),

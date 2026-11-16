@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:family_groceries/analytics/events.dart';
 import 'package:family_groceries/list/add_sheet/suggestion.dart';
 import 'package:family_groceries/list/catalog/catalog_index.dart';
+import 'package:family_groceries/list/catalog/household_index.dart';
+import 'package:family_groceries/list/catalog/suggest_entries.dart';
 import 'package:family_groceries/list/category_guess.dart';
 import 'package:family_groceries/list/entry.dart';
 import 'package:family_groceries/list/list_cubit.dart';
@@ -50,10 +52,16 @@ class const AddSheetState({
 /// guess, and the server's answer only enriches them and adds its own
 /// below ([mergeRows]). Off: the previous text's rows stay until the
 /// server answers.
+///
+/// [deviceRanked], the flag `on-device-catalog` (job 274): the rows
+/// every key shows are [suggestEntries]'s, the server's ranking on the
+/// device, and they answer the text ([AddSheetState.fresh]) at once. It
+/// implies [stableRows].
 class AddSheetCubit(
   final ListCubit _list, {
   Duration debounce = const Duration(milliseconds: 120),
   bool Function() stableRows = _off,
+  bool Function() onDeviceCatalog = _off,
   CatalogIndex Function() catalogIndex = _bundled,
 }) extends Cubit<AddSheetState> {
   this : super(const AddSheetState());
@@ -64,16 +72,18 @@ class AddSheetCubit(
 
   final _debounce = debounce;
   final _stableRows = stableRows;
+  final _onDeviceCatalog = onDeviceCatalog;
 
   /// The catalog the device parses and guesses with: the bundled one with
   /// the server's latest changes.
   final _catalogIndex = catalogIndex;
 
-  /// Whether the flag `input-stable-rows` is on now.
-  bool get stableRows => _stableRows();
+  /// Whether rows stay put while typing now: the flag `input-stable-rows`
+  /// or [deviceRanked].
+  bool get stableRows => deviceRanked || _stableRows();
 
-  /// Whether the rows are ranked on the device: not yet.
-  bool get deviceRanked => false;
+  /// Whether the flag `on-device-catalog` is on now.
+  bool get deviceRanked => _onDeviceCatalog();
 
   /// What the timing log reads; the field starts it with [key].
   final clock = AddSheetClock();
@@ -91,6 +101,15 @@ class AddSheetCubit(
     if (!state.open) {
       _forget();
       emit(const AddSheetState(open: true));
+      if (deviceRanked) {
+        // The ranking's lookups are built on its first call (~20 ms):
+        // here, not on the first key.
+        Timer.run(() {
+          if (!isClosed) {
+            _ranked('milch');
+          }
+        });
+      }
     }
   }
 
@@ -130,7 +149,9 @@ class AddSheetCubit(
     final ranking = Stopwatch()..start();
     final rows =
         known ??
-        (stableRows
+        (deviceRanked
+            ? _ranked(key)
+            : stableRows
             ? _local(key)
             : state.suggestions.isEmpty
             ? _offline(key)
@@ -144,7 +165,7 @@ class AddSheetCubit(
         text: text,
         added: () => null,
         suggestions: rows,
-        answered: known == null ? null : key,
+        answered: known != null || deviceRanked ? key : null,
       ),
     );
     if (known == null) {
@@ -162,7 +183,7 @@ class AddSheetCubit(
     final entry = suggestion.entry;
     final store = state.store;
     final result =
-        _openWithSameWords(entry) ??
+        _openWithSameWords(suggestion) ??
         _list.addParsed(
           ParsedEntry(
             name: entry.name,
@@ -192,12 +213,24 @@ class AddSheetCubit(
   /// reading of the line ("Weihenstephan Milch") after the server answers,
   /// where the server's own reading splits off the brand. The open item
   /// with the same words, in any order and field, is the one already on
-  /// the list, as the server's reading would have found it.
-  AlreadyOnList? _openWithSameWords(ParsedEntry entry) {
-    if (!stableRows || !entry.deviceParsed) {
+  /// the list, as the server's reading would have found it. The device's
+  /// ranking ([deviceRanked]) splits off a brand the household taught
+  /// only once its index holds it.
+  AlreadyOnList? _openWithSameWords(Suggestion suggestion) {
+    final entry = suggestion.entry;
+    final typed = switch (suggestion.source) {
+      _ when !stableRows => null,
+      _ when entry.deviceParsed => _words([entry.name]),
+      SuggestionSource.typed when deviceRanked => _words([
+        entry.name,
+        ?entry.brand,
+        ?entry.properties,
+      ]),
+      _ => null,
+    };
+    if (typed == null) {
       return null;
     }
-    final typed = _words([entry.name]);
     for (final item in _list.state.items.values) {
       if (item.status == ItemStatus.active &&
           listEquals(
@@ -230,7 +263,7 @@ class AddSheetCubit(
     _typing?.cancel();
     final rows = await _fetch(key).timeout(
       const Duration(seconds: 3),
-      onTimeout: () => stableRows ? _local(key) : _offline(key),
+      onTimeout: () => stableRows ? _device(key) : _offline(key),
     );
     if (isClosed || !state.open || state.text.trim() != key || rows.isEmpty) {
       return null;
@@ -336,16 +369,17 @@ class AddSheetCubit(
       rows = await _list.suggest(key);
       if (stableRows) {
         // On top of the rows shown for [key], as the user sees them.
-        rows = mergeRows(
-          state.text.trim() == key ? state.suggestions : _local(key),
-          rows,
-        );
+        rows = mergeRows(_shownFor(key), rows);
       }
       if (epoch == _epoch) {
         _cache[key] = rows;
       }
     } on Object {
-      rows = stableRows ? _local(key) : _offline(key);
+      rows = deviceRanked
+          ? _shownFor(key)
+          : stableRows
+          ? _local(key)
+          : _offline(key);
     }
     if (_loading?.$1 == key) {
       _loading = null;
@@ -439,6 +473,65 @@ class AddSheetCubit(
         ),
       ),
   ];
+
+  /// The rows shown for [key], or the device's when another text is shown.
+  List<Suggestion> _shownFor(String key) =>
+      state.text.trim() == key ? state.suggestions : _device(key);
+
+  /// What every key shows while rows stay put.
+  List<Suggestion> _device(String key) =>
+      deviceRanked ? _ranked(key) : _local(key);
+
+  /// public.suggest_entries' rows for [key], ranked on the device. Their
+  /// brand and details are split as the server splits them, so they are not
+  /// [ParsedEntry.deviceParsed]: an add sends them as they are, and the
+  /// server guesses the store as for any row without one.
+  List<Suggestion> _ranked(String key) {
+    final list = _list.state;
+    return suggestEntries(
+      key,
+      catalog: _catalogIndex(),
+      household: list.householdIndex,
+      categories: list.catalog,
+      known: _householdCategories(),
+      pending: _pending(),
+    );
+  }
+
+  /// The list's items of the last year that the household index does not
+  /// hold as they are now: added, bought or changed since it was fetched.
+  List<HistoryRow> _pending() {
+    final list = _list.state;
+    if (_unindexed case (final of, final rows) when identical(of, list)) {
+      return rows;
+    }
+    final indexed = {
+      for (final row in list.householdIndex.history) _historyKey(row): row.at,
+    };
+    final yearAgo = DateTime.now().subtract(const Duration(days: 365));
+    final rows =
+        <HistoryRow>[
+          for (final item in list.allItems.values)
+            if (item.updatedAt.isAfter(yearAgo))
+              (
+                name: item.name,
+                brand: item.brand,
+                properties: item.properties,
+                quantity: item.quantity,
+                normalizedName: normalizeItemName(item.name),
+                at: item.boughtAt ?? item.updatedAt,
+              ),
+        ]..removeWhere(
+          (row) => indexed[_historyKey(row)]?.isBefore(row.at) == false,
+        );
+    _unindexed = (list, rows);
+    return rows;
+  }
+
+  (ListState, List<HistoryRow>)? _unindexed;
+
+  static String _historyKey(HistoryRow row) =>
+      '${row.name}\u0000${row.brand}\u0000${row.properties}';
 
   /// [householdCategories] of the list as it is now, made again only after
   /// the list changed: typing reads it on every key.
