@@ -33,9 +33,27 @@ class const AddSheetState({
   /// open; and the merge once taken, with its undo.
   final DedupeHint? hint,
   final Merge? merge,
+
+  /// The items added since the sheet opened, in order (flag
+  /// `add-feedback-list`): the list behind the sheet shows them last.
+  final List<String> session = const [],
+
+  /// The rows answer an earlier text and wait for those of [text]: they
+  /// may still change (shown dimmed with the flag `add-feedback-list`).
+  final bool carried = false,
+
+  /// What the user changed in the details of the item just added and that
+  /// is not saved yet (flag `add-feedback-list`).
+  final ItemChanges unsaved = const ItemChanges(),
+
+  /// The server is asked for the rows of [text] and has not answered.
+  final bool fetching = false,
 }) {
   /// Whether [suggestions] answer what is typed now.
   bool get fresh => answered.isNotEmpty && answered == text.trim();
+
+  /// The server's rows for what is typed are on the way.
+  bool get loading => text.trim().isNotEmpty && !fresh;
 }
 
 /// The add sheet: what is typed, the rows the server suggests for it, the
@@ -53,6 +71,8 @@ class AddSheetCubit(
   final ListCubit _list, {
   Duration debounce = const Duration(milliseconds: 120),
   bool Function() stableRows = _off,
+  bool Function() addFeedback = _off,
+  Duration detailsPause = const Duration(milliseconds: 500),
 }) extends Cubit<AddSheetState> {
   this : super(const AddSheetState());
 
@@ -60,9 +80,14 @@ class AddSheetCubit(
 
   final _debounce = debounce;
   final _stableRows = stableRows;
+  final _addFeedback = addFeedback;
+  final _detailsPause = detailsPause;
 
   /// Whether the flag `input-stable-rows` is on now.
   bool get stableRows => _stableRows();
+
+  /// Whether the flag `add-feedback-list` is on now.
+  bool get addFeedback => _addFeedback();
 
   final _cache = <String, List<Suggestion>>{};
   Timer? _typing;
@@ -75,15 +100,17 @@ class AddSheetCubit(
   /// settled yet.
   void show() {
     if (!state.open) {
+      saveDetails();
       _forget();
       emit(const AddSheetState(open: true));
     }
   }
 
   /// The content stays until [settled], so it is there while the sheet
-  /// shrinks away.
+  /// shrinks away. The details typed last are saved first.
   void dismiss() {
     if (state.open) {
+      saveDetails();
       emit(_with(open: false));
     }
   }
@@ -91,13 +118,94 @@ class AddSheetCubit(
   /// The sheet finished closing: start blank next time.
   void settled() {
     if (!state.open) {
+      // Typed into the details while the sheet slid away.
+      saveDetails();
       _typing?.cancel();
       emit(const AddSheetState());
     }
   }
 
+  /// The item whose details the sheet shows instead of rows: the one just
+  /// added, until the next letter (flag `add-feedback-list`).
+  Item? get detailsItem {
+    if (!addFeedback || state.text.trim().isNotEmpty) {
+      return null;
+    }
+    if (state.added case Added(:final item)) {
+      final live = _list.state.items[item.id];
+      if (live != null && live.status == ItemStatus.active) {
+        return state.unsaved.apply(live);
+      }
+    }
+    return null;
+  }
+
+  Timer? _details;
+
+  /// The user changed [changes] in the item's details: a tap or pick saves
+  /// [now], typing after a pause, the next letter typed in the input or the
+  /// sheet closing, whichever comes first.
+  void editDetails(ItemChanges changes, {bool now = false}) {
+    if (state.added is! Added) {
+      return;
+    }
+    emit(_with(unsaved: _then(state.unsaved, changes)));
+    _details?.cancel();
+    if (now) {
+      saveDetails();
+    } else {
+      _details = Timer(_detailsPause, saveDetails);
+    }
+  }
+
+  /// Writes the details not saved yet, as the edit sheet writes its
+  /// changes; only what differs from the item as the list has it now.
+  void saveDetails() {
+    _details?.cancel();
+    final unsaved = state.unsaved;
+    if (unsaved.isEmpty || isClosed) {
+      return;
+    }
+    if (state.added case Added(:final item)) {
+      final live = _list.state.items[item.id];
+      if (live != null && live.status == ItemStatus.active) {
+        _list.edit(item.id, _against(unsaved, live));
+      }
+    }
+    emit(_with(unsaved: const ItemChanges()));
+  }
+
+  /// [later] over [earlier], field by field.
+  static ItemChanges _then(ItemChanges earlier, ItemChanges later) =>
+      ItemChanges(
+        name: later.name ?? earlier.name,
+        quantity: later.quantity ?? earlier.quantity,
+        brand: later.brand ?? earlier.brand,
+        properties: later.properties ?? earlier.properties,
+        categoryId: later.categoryId ?? earlier.categoryId,
+        storeId: later.storeId ?? earlier.storeId,
+      );
+
+  /// [changes] without what [item] holds already.
+  static ItemChanges _against(ItemChanges changes, Item item) {
+    SetTo<String?>? differs(SetTo<String?>? change, String? now) =>
+        change == null || change.value == now ? null : change;
+    return ItemChanges(
+      name: changes.name == item.name ? null : changes.name,
+      quantity: differs(changes.quantity, item.quantity),
+      brand: differs(changes.brand, item.brand),
+      properties: differs(changes.properties, item.properties),
+      categoryId: changes.categoryId == item.categoryId
+          ? null
+          : changes.categoryId,
+      storeId: differs(changes.storeId, item.storeId),
+    );
+  }
+
   void type(String text) {
     _typing?.cancel();
+    // The next item's first letter: the last one's details are done.
+    saveDetails();
     final key = text.trim();
     if (key.isEmpty) {
       emit(_with(text: text, added: () => null, suggestions: const []));
@@ -117,6 +225,7 @@ class AddSheetCubit(
                 ? _offline(key)
                 : _withTyped(state.suggestions, key)),
         answered: known == null ? null : key,
+        carried: known == null && !stableRows && state.suggestions.isNotEmpty,
       ),
     );
     if (known == null) {
@@ -131,6 +240,7 @@ class AddSheetCubit(
   /// Adds [suggestion] with the chips' picks, then clears the input for the
   /// next item. The picks start over with it.
   AddResult take(Suggestion suggestion) {
+    saveDetails();
     final entry = suggestion.entry;
     final store = state.store;
     final result =
@@ -155,7 +265,16 @@ class AddSheetCubit(
       // An add can change what the server suggests next (store memory,
       // history), so answers from before it are not reused.
       _forget();
-      emit(AddSheetState(open: state.open, added: result));
+      emit(
+        AddSheetState(
+          open: state.open,
+          added: result,
+          session: [
+            ...state.session,
+            if (result case Added(:final item)) item.id,
+          ],
+        ),
+      );
     }
     return result;
   }
@@ -213,8 +332,9 @@ class AddSheetCubit(
   /// Removes what was just added.
   void undo() {
     if (state.added case Added(:final item)) {
+      _details?.cancel();
       _list.delete(item.id);
-      emit(_with(added: () => null));
+      emit(_with(added: () => null, unsaved: const ItemChanges()));
     }
   }
 
@@ -285,6 +405,9 @@ class AddSheetCubit(
   }
 
   Future<List<Suggestion>> _fetch(String key) {
+    if (!isClosed && state.text.trim() == key && !state.fetching) {
+      emit(_with(fetching: true));
+    }
     if (_loading case (final text, final future) when text == key) {
       return future;
     }
@@ -323,7 +446,14 @@ class AddSheetCubit(
       _loading = null;
     }
     if (!isClosed && state.text.trim() == key) {
-      emit(_with(suggestions: rows, answered: key));
+      emit(
+        _with(
+          suggestions: rows,
+          answered: key,
+          carried: false,
+          fetching: false,
+        ),
+      );
     }
     return rows;
   }
@@ -434,6 +564,9 @@ class AddSheetCubit(
     AddResult? Function()? added,
     DedupeHint? Function()? hint,
     Merge? Function()? merge,
+    bool? carried,
+    ItemChanges? unsaved,
+    bool? fetching,
   }) => AddSheetState(
     open: open ?? state.open,
     text: text ?? state.text,
@@ -444,11 +577,17 @@ class AddSheetCubit(
     added: added == null ? state.added : added(),
     hint: hint == null ? (added == null ? state.hint : null) : hint(),
     merge: merge == null ? (added == null ? state.merge : null) : merge(),
+    session: state.session,
+    carried: carried ?? (suggestions == null && state.carried),
+    unsaved: unsaved ?? state.unsaved,
+    // A new text waits for its own request.
+    fetching: fetching ?? (text == null && state.fetching),
   );
 
   @override
   Future<void> close() {
     _typing?.cancel();
+    saveDetails();
     return super.close();
   }
 }

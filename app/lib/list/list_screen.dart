@@ -98,6 +98,8 @@ class const ShoppingList({
             // open counts from the next key.
             stableRows: () =>
                 context.read<Flags?>()?.isOn(inputStableRowsFlag) ?? false,
+            addFeedback: () =>
+                context.read<Flags?>()?.isOn(addFeedbackListFlag) ?? false,
           ),
         ),
       ],
@@ -143,6 +145,9 @@ class _ShoppingListState() extends State<_ShoppingList> {
   /// The bar's room for the partner's new adds, null until laid out:
   /// narrower than their line, it shows below the household chip instead.
   final _statusRoom = ValueNotifier<double?>(null);
+
+  /// The open add sheet's height: the list behind it ends above it.
+  final _sheetExtent = ValueNotifier<double>(0);
 
   /// The add bar around the input: it holds focus between a tap in the
   /// sheet and the input's refocus, and after a close, and takes Escape
@@ -256,6 +261,7 @@ class _ShoppingListState() extends State<_ShoppingList> {
     _chipWidth.dispose();
     _anpassenWidth.dispose();
     _statusRoom.dispose();
+    _sheetExtent.dispose();
     _links?.changes.removeListener(_linked);
     _sheetOpen?.removeListener(_followShell);
     if (_addSheetRequest?.listTab == _openRequested) {
@@ -464,6 +470,12 @@ class _ShoppingListState() extends State<_ShoppingList> {
     final hasItems = context.select<ListCubit, bool>(
       (c) => c.state.items.isNotEmpty,
     );
+    final addFeedback = context.select<Flags?, bool>(
+      (flags) => flags?.isOn(addFeedbackListFlag) ?? false,
+    );
+    final session = context.select<AddSheetCubit, List<String>?>(
+      (c) => addFeedback ? c.state.session : null,
+    );
     return ReviewPromptTrigger(
       cubit: context.read<ListCubit>(),
       listening: _listening,
@@ -554,6 +566,12 @@ class _ShoppingListState() extends State<_ShoppingList> {
                                 child: ShoppingListView(
                                   onInteract: _leaveField,
                                   pricing: _pricing,
+                                  behindSheet: session != null && open
+                                      ? BehindSheet(
+                                          added: session,
+                                          sheetExtent: _sheetExtent,
+                                        )
+                                      : null,
                                   header: _Header(
                                     chipWidth: _chipWidth,
                                     anpassenWidth: _anpassenWidth,
@@ -597,6 +615,7 @@ class _ShoppingListState() extends State<_ShoppingList> {
                         onTake: _take,
                         onClose: _close,
                         onPicked: _refocusAfterTap,
+                        extent: _sheetExtent,
                       ),
                     ),
                   ),

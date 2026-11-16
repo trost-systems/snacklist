@@ -3457,4 +3457,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get openAppAction => 'Open';
+
+  @override
+  String get justAdded => 'Just added';
+
+  @override
+  String get suggestionsLoading => 'Loading suggestions';
+
+  @override
+  String get suggestionStale => 'older suggestion, still loading';
 }

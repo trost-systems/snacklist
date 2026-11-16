@@ -1503,3 +1503,14 @@ The „Einkaufssumme“ bar (`list-declutter` off) now counts an item priced per
 as „offen“, the way the declutter block counts it as „ohne Preis“. Both go through `Sum.of`.
 Details, tests and the web drive are in `docs/done/277.md`. Screenshots are in
 `docs/screenshots/277/`.
+
+## Job 276: adds land in the list behind the sheet, the add's details, RI1 + RI2 (2026-11-16)
+
+Behind the new PostHog flag `add-feedback-list` (rollout off). While the add sheet is open, the
+list behind it drops its headings and ends in „Gerade hinzugefügt“ with each add, just above the
+sheet. Closing glides it back into stores and categories in 300 ms (reduced motion: at once).
+After an add, the sheet shows the item's Menge, Marke and Eigenschaften (the edit sheet's fields)
+and binds its chips to the item. These save on a tap, after 500 ms, on the next letter or on close.
+RI2 is a thin line above the field from 150 ms into a suggestions request; RI1 dims rows that answer an
+earlier text (only without `input-stable-rows`). Details, tests and evidence: `docs/done/276.md`.
+TestFlight: the next green main build; turn the flag on for Peter and internal testers only.

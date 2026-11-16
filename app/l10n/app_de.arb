@@ -1571,5 +1571,11 @@
   "openAppText": "Snacklist funktioniert in der App besser.",
   "@openAppText": {"description": "Job 271: the only text of the web app's card in a phone's browser that opens the installed app (Peter's copy, addendum 1)"},
   "openAppAction": "Öffnen",
-  "@openAppAction": {"description": "Job 271: the open-the-app card's button; opens the installed app (never „App holen“)"}
+  "@openAppAction": {"description": "Job 271: the open-the-app card's button; opens the installed app (never „App holen“)"},
+  "justAdded": "Gerade hinzugefügt",
+  "@justAdded": {"description": "Job 276: the heading of the list's section with the items added while the add sheet is open"},
+  "suggestionsLoading": "Vorschläge laden",
+  "@suggestionsLoading": {"description": "Job 276: the screen-reader name of the thin line above the add field while suggestions load"},
+  "suggestionStale": "älterer Vorschlag, lädt noch",
+  "@suggestionStale": {"description": "Job 276: read after a dimmed suggestion row that still answers an older text"}
 }

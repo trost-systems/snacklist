@@ -5527,6 +5527,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Öffnen'**
   String get openAppAction;
+
+  /// Job 276: the heading of the list's section with the items added while the add sheet is open
+  ///
+  /// In de, this message translates to:
+  /// **'Gerade hinzugefügt'**
+  String get justAdded;
+
+  /// Job 276: the screen-reader name of the thin line above the add field while suggestions load
+  ///
+  /// In de, this message translates to:
+  /// **'Vorschläge laden'**
+  String get suggestionsLoading;
+
+  /// Job 276: read after a dimmed suggestion row that still answers an older text
+  ///
+  /// In de, this message translates to:
+  /// **'älterer Vorschlag, lädt noch'**
+  String get suggestionStale;
 }
 
 class _AppLocalizationsDelegate
