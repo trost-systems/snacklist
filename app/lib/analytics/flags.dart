@@ -50,6 +50,15 @@ const joinHouseholdJh2Flag = 'join-household-jh2';
 /// category.
 const inputStableRowsFlag = 'input-stable-rows';
 
+/// The flag that shows each add land in the list (job 276): while the add
+/// sheet is open the list behind it drops its store and category headings
+/// and ends in „Gerade hinzugefügt“ with this opening's adds, and slides
+/// back into its stores and categories when the sheet closes. After an add
+/// the sheet shows the item's details until the next letter, and while the
+/// server's suggestions load a thin line runs above the field and rows that
+/// answer an older text are dimmed.
+const addFeedbackListFlag = 'add-feedback-list';
+
 /// PostHog feature flags, the app's runtime toggles (job 44,
 /// docs/ANALYTICS.md "Feature flags"). Read a toggle with [isOn] wherever it
 /// matters; nothing else in the app reads PostHog flags.

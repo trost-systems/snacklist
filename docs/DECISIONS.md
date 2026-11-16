@@ -14856,3 +14856,87 @@ store builds send none of the new parameters.
 - **The bar keeps its scope.** It still sums ticked items with a price and counts only open items
   as „offen“, as job 190 defined it. Only the per-item classification is shared.
 - No flag: a bug fix, and the bar is still behind `prices-and-trip-total`.
+
+## Job 276: adds land in the list behind the sheet, the add's details, RI1 + RI2, behind `add-feedback-list` (2026-11-16)
+
+Peter picked the Bring-style list feedback (t990u, replaces AF1–AF5 of job 273), inline details
+after an add (addendum 1, t991u) and RI1 + RI2 (addendum 2, t992u). Everything is behind the new
+PostHog flag `add-feedback-list` (rollout off). Off, nothing changes: the list view wraps nothing,
+the sheet's rows and room are as before, no timer or line runs.
+
+1. **One state: what this opening added.** `AddSheetState.session` holds the ids added since the
+   sheet opened, in order, cleared on the next opening. The list behind the sheet reads it; an
+   undone add simply drops out (its item is no longer active). "Already on the list" adds nothing.
+2. **The list behind the sheet is the same list, re-cut.** `ShoppingListView(behindSheet:)`: the
+   rows of the unfolded sections in walk order without store or category headings, then the
+   session's rows (also from a folded section) under „Gerade hinzugefügt“ / "Just added". The rows
+   are the grouped view's own widgets (`_flatEntries` filters `_entries`), so nothing is forked.
+   The summary block, „Zuletzt verwendet“ and the empty-list text sit out. One column, over the
+   sheet's, also on wide screens. Its end is padded by the sheet's height (`AddSheet(extent:)`,
+   measured after layout), so scrolled to the end the last add stands right above the sheet; the
+   list scrolls there on opening and after every add. The list's header scrolls away meanwhile
+   instead of staying pinned: above an open sheet and a phone keyboard there are only about 80 px.
+3. **The transition is a paint-only glide, 300 ms, `HlEasing.standard`.** `list_view/glide.dart`:
+   every row and heading is a `Glide` keyed like its row. At the switch (both ways) the view notes
+   where each glide was painted, then paints each between that spot and its place in the new
+   layout; one that was not on screen fades in. Only paint moves, no row is laid out again per
+   frame, and the scroll jump that goes with the switch (to the end on opening, back to where the
+   list was on closing) is absorbed because the start is fixed and the end is read per frame.
+   Reduced motion: no glide, the new layout at once. Closing restores the scroll offset from
+   before the opening rather than chasing the adds: several adds go to several stores, and the
+   user's place in the list is what they come back to.
+4. **No row under a finger moves.** The glide runs only on the list behind the scrim (no fingers)
+   and as the sheet closes; the sheet's rows keep job 272's hold.
+5. **The sheet keeps one height while open** (flag on): the rows, the notes and the details always
+   take the room of the first opening's three rows and scroll inside it. Before, typing grew the
+   sheet up to the top of the screen; with the list as feedback that would hide it, and addendum 1
+   asks for no jump between details and suggestions. Fewer rows show at once while typing; they
+   scroll.
+6. **The details are the edit sheet's fields, not a fork.** `ItemDetailFields` (Marke, Menge with
+   its steppers, Eigenschaften) moved out of the edit sheet, which uses it unchanged;
+   `fieldValue` is the shared reading of a field. The add sheet shows it with `compact: true`
+   (Menge first, Marke beside it) under the existing „✓ Hinzugefügt …“ note, which keeps its
+   Rückgängig. Store and category are the sheet's own chips, bound to the added item meanwhile
+   (a pick saves at once): a second pair of chips in the details would sit right under the first.
+   The name is left out; list and „Ich bringe das“ stay in the edit sheet (rarely needed right
+   after an add, and the room is three rows). Shown only for an add (`Added`), not for "already on
+   the list".
+7. **Saving, all in `AddSheetCubit`.** The details keep only what the user touched
+   (`state.unsaved`, an `ItemChanges`), never a copy of the item: a category or store the server
+   sets after the add is not overwritten by an earlier value. `editDetails(now:)`: a stepper or a
+   chip saves at once; typing after 500 ms; `type()` with the next letter, `take()`, `dismiss()`
+   and `close()` save first. A save sends only what differs from the item as the list has it now,
+   through `ListCubit.edit`, the edit sheet's path (idempotent `EditItem` ops). Undo drops the
+   unsaved changes with the item.
+8. **RI1 dims what may still change.** `AddSheetState.carried` marks rows that answer an earlier
+   text while the server's answer for this one is on the way: only without `input-stable-rows`,
+   where the previous answer stays up. Rows made on the device (job 272's rows, or the first
+   offline rows) are never dimmed, as Peter asked; with 272 on, RI1 therefore never shows and RI2
+   carries the feedback (job 273's RI-Q6). Dimmed rows are 55 % strong, still take a tap, and
+   screen readers hear „älterer Vorschlag, lädt noch“.
+9. **RI2 is a 2 px line on the sheet's bottom edge**, right above the field, from 150 ms after the
+   server's rows became due (`loadLineDelay`) until they land, so a quick answer never flashes it.
+   Indeterminate `LinearProgressIndicator`; reduced motion shows a still line. Screen readers get
+   „Vorschläge laden“. "Due" includes the 120 ms typing pause.
+10. **No new analytics events, no new tag, snackbar or undo.**
+
+### Job 276 in-job review (Opus): fixes before landing
+
+1. **Details typed while the sheet slides away are saved**: `settled()` and `show()` save first,
+   like `dismiss()` (test "typing while the sheet slides away is saved").
+2. **RI2 counts from the request, not the keystroke**: `AddSheetState.fetching` is set when the
+   server is asked (after the 120 ms typing pause, also for Enter's wait) and cleared by its
+   answer or the next key; the line shows 150 ms into it.
+3. **A glide started mid-glide starts where the row is painted** (`snapshot()` reads
+   `paintShift`), so a close within 300 ms of the opening does not jump.
+4. **The end stays pinned**: a partner's add or tick while the sheet is open re-pins the end, and
+   the jump to the end looks again until the lazily built list's estimate settles (3 tries).
+5. **The header keeps its state**: it stays one pinned sliver whose minimum height is 0 behind the
+   sheet, instead of switching between a pinned and a scrolling sliver.
+6. **Rows are always wrapped in `Glide`** (it paints as its child without a `GlideScope`), so a
+   flag turned on at runtime does not rebuild every row; the `CurvedAnimation` is disposed; the
+   list screen selects the session only with the flag on.
+7. **Accepted**: during the 300 ms glide, taps and semantics use the layout positions, not the
+   painted ones (the list sits behind the closing scrim, and screen readers see the final rows).
+   A details save counts as an item edit in the device's tips log (`item_edited` retires the
+   „Halten zum Bearbeiten“ tip): it is an edit. No analytics event is sent.

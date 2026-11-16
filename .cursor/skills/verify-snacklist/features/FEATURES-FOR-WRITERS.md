@@ -212,8 +212,9 @@ On Android the phone's back button goes one screen back, as the arrow in the tit
 - That the cursor jumps into the field on phones when the app opens (only on desktop and web).
 - That an item already on the list can be added twice to that list; Snacklist says „<name> steht schon auf der Liste“ (EN: "<name> is already on the list"). A household with several lists can have the same item open on two of them. Two people adding the same item at the same moment also end up with one.
 - That suggestions stay put while typing, or that a new grocery lands in the household's usual store for its kind: both are built but switched on for nobody yet (flag `input-stable-rows`).
+- That each add shows up in the list behind the sheet under „Gerade hinzugefügt“, that the sheet shows an item's amount, brand and details right after it is added, or that a line shows while suggestions load: built but switched on for nobody yet (flag `add-feedback-list`).
 
-**Last verified.** 15 November 2026, code version 377f1a0f, in the web app (German; English on c3ea4261). The flag `input-stable-rows` (job 272) was checked in widget and database tests only, not driven.
+**Last verified.** 15 November 2026, code version 377f1a0f, in the web app (German; English on c3ea4261). The flag `input-stable-rows` (job 272) was checked in widget and database tests only, not driven. The flag `add-feedback-list` (job 276) was driven on 16 November 2026 on the web app in German (`journeys/add-feedback-list.mjs`, `journeys/add-feedback-glide.mjs`), with `input-stable-rows` on.
 
 ## Due again
 

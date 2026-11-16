@@ -1186,5 +1186,8 @@
   "jh2JoinRequestOwnList": "Start my own list instead",
   "inviteQrPerson": "QR code for this invite",
   "openAppText": "Snacklist works better in the app.",
-  "openAppAction": "Open"
+  "openAppAction": "Open",
+  "justAdded": "Just added",
+  "suggestionsLoading": "Loading suggestions",
+  "suggestionStale": "older suggestion, still loading"
 }

@@ -3481,4 +3481,13 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get openAppAction => 'Öffnen';
+
+  @override
+  String get justAdded => 'Gerade hinzugefügt';
+
+  @override
+  String get suggestionsLoading => 'Vorschläge laden';
+
+  @override
+  String get suggestionStale => 'älterer Vorschlag, lädt noch';
 }

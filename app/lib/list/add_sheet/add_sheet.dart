@@ -8,6 +8,7 @@ import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/add_sheet/add_sheet_cubit.dart';
 import 'package:family_groceries/list/add_sheet/suggestion.dart';
+import 'package:family_groceries/list/edit_item_sheet.dart';
 import 'package:family_groceries/list/foldout_chips.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_view/item_icon.dart';
@@ -17,6 +18,7 @@ import 'package:family_groceries/list/list_view/shopping_list_view.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/store_badge.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -104,6 +106,10 @@ class const AddSheet({
 
   /// Folds, picks and Undo inside the sheet hand focus back to the input.
   required final VoidCallback onPicked,
+
+  /// Takes the open sheet's height, the add bar not included: the list
+  /// behind it keeps its last rows above it (flag `add-feedback-list`).
+  final ValueNotifier<double>? extent,
   super.key,
 }) extends StatefulWidget {
   @override
@@ -207,13 +213,17 @@ class _AddSheetState() extends State<AddSheet> {
           final bar = media.padding.bottom;
           final max = constraints.maxHeight - bar - media.padding.top - _topGap;
           final content = _shown || open
-              ? _Content(
-                  maxHeight: max < 0 ? 0 : max,
-                  onTake: widget.onTake,
-                  onClose: widget.onClose,
-                  onPicked: widget.onPicked,
+              ? _ReportHeight(
+                  to: open ? widget.extent : null,
+                  child: _Content(
+                    maxHeight: max < 0 ? 0 : max,
+                    onTake: widget.onTake,
+                    onClose: widget.onClose,
+                    onPicked: widget.onPicked,
+                  ),
                 )
               : null;
+          final cubit = context.read<AddSheetCubit>();
           return Stack(
             children: [
               // A tap target for the pointer only: Schließen and Escape
@@ -244,6 +254,15 @@ class _AddSheetState() extends State<AddSheet> {
                 bottom: bar,
                 child: _Surface(open: open, still: still, child: content),
               ),
+              // RI2 (flag `add-feedback-list`): on the sheet's bottom edge,
+              // right above the field the user types in.
+              if (open && cubit.addFeedback)
+                PositionedDirectional(
+                  start: frame.side,
+                  width: frame.columnWidth,
+                  bottom: bar,
+                  child: _LoadLine(loading: sheet.fetching),
+                ),
             ],
           );
         },
@@ -353,8 +372,17 @@ class _ContentState() extends State<_Content> {
     final rowKeys = _rowKeys(rows, byContent: cubit.stableRows);
     final first = rows.firstOrNull?.entry;
     final pickedStore = sheet.store;
-    final storeId = pickedStore == null ? first?.storeId : pickedStore.value;
-    final categoryId = sheet.category ?? first?.categoryId;
+    // Flag `add-feedback-list`: right after an add the chips and the rows'
+    // room show that item's details, until the next letter.
+    final details = cubit.detailsItem;
+    final storeId = details != null
+        ? catalog.store(details.storeId ?? '')?.id
+        : pickedStore == null
+        ? first?.storeId
+        : pickedStore.value;
+    final categoryId = details != null
+        ? details.categoryId
+        : sheet.category ?? first?.categoryId;
     final fixed = <Widget>[
       FocusTraversalOrder(
         order: const NumericFocusOrder(3),
@@ -372,22 +400,37 @@ class _ContentState() extends State<_Content> {
                   storeId: storeId,
                   categoryId: categoryId,
                   storeLabel: l10n.noStore,
-                  storeAuto: pickedStore == null,
-                  categoryAuto: sheet.category == null,
+                  storeAuto: details == null && pickedStore == null,
+                  categoryAuto: details == null && sheet.category == null,
                   categoryLabel: l10n.categoryAuto,
                   storeChanged:
+                      details == null &&
                       pickedStore != null &&
                       pickedStore.value != first?.storeId,
                   categoryChanged:
+                      details == null &&
                       sheet.category != null &&
                       sheet.category != first?.categoryId,
                   onCreateStore: list.addStore,
                   onStore: (id) {
-                    context.read<AddSheetCubit>().pickStore(id);
+                    final sheet = context.read<AddSheetCubit>();
+                    if (details != null) {
+                      sheet.editDetails(
+                        ItemChanges(storeId: SetTo(id)),
+                        now: true,
+                      );
+                    } else {
+                      sheet.pickStore(id);
+                    }
                     onPicked();
                   },
                   onCategory: (id) {
-                    context.read<AddSheetCubit>().pickCategory(id);
+                    final sheet = context.read<AddSheetCubit>();
+                    if (details != null) {
+                      sheet.editDetails(ItemChanges(categoryId: id), now: true);
+                    } else {
+                      sheet.pickCategory(id);
+                    }
                     onPicked();
                   },
                   trailing: _CloseButton(onClose: onClose),
@@ -433,10 +476,14 @@ class _ContentState() extends State<_Content> {
           },
         ),
     ];
+    // RI1 (flag `add-feedback-list`): rows that answer an earlier text may
+    // still change until the server's answer for this one lands.
+    final stale = cubit.addFeedback && sheet.carried && sheet.loading;
     final suggestions = <Widget>[
       for (final (i, row) in rows.indexed)
         _SuggestionRow(
           key: rowKeys[i],
+          stale: stale,
           suggestion: row,
           // Enter takes nothing before anything is typed.
           first: i == 0 && sheet.text.trim().isNotEmpty,
@@ -461,7 +508,24 @@ class _ContentState() extends State<_Content> {
           ),
         ),
     ];
-    final rowWidgets = [...notes, ...suggestions];
+    final rowWidgets = [
+      ...notes,
+      if (details != null)
+        _AddedDetails(
+          key: ValueKey('added-details-${details.id}'),
+          item: details,
+          onDone: onPicked,
+        )
+      else
+        ...suggestions,
+    ];
+    // Flag `add-feedback-list`: from the first letter or add on, the rows,
+    // the details or the notes always take the room of the first opening's
+    // rows, so the sheet doesn't jump when one gives way to the other, and
+    // the list behind it keeps a steady view.
+    final steady =
+        cubit.addFeedback &&
+        (sheet.text.trim().isNotEmpty || sheet.added != null);
     // Before typing, a note (the last add, a duplicate hint or merge) sits
     // above the capped rows, so it never pushes them out of view.
     final firstOpen = sheet.text.trim().isEmpty;
@@ -489,21 +553,27 @@ class _ContentState() extends State<_Content> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     ...fixed,
-                    if (firstOpen) ...notes,
+                    if (firstOpen && !steady) ...notes,
                     Flexible(
                       child: FocusTraversalOrder(
                         order: const NumericFocusOrder(2),
                         child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxHeight: firstOpen
-                                ? _firstOpenRows * _rowExtent(scaler)
-                                : double.infinity,
-                          ),
+                          constraints: steady
+                              ? BoxConstraints.tightFor(
+                                  height: _firstOpenRows * _rowExtent(scaler),
+                                )
+                              : BoxConstraints(
+                                  maxHeight: firstOpen
+                                      ? _firstOpenRows * _rowExtent(scaler)
+                                      : double.infinity,
+                                ),
                           child: ListView(
                             key: const ValueKey('add-suggestions'),
                             shrinkWrap: true,
                             padding: EdgeInsets.zero,
-                            children: firstOpen ? suggestions : rowWidgets,
+                            children: firstOpen && !steady
+                                ? suggestions
+                                : rowWidgets,
                           ),
                         ),
                       ),
@@ -602,6 +672,9 @@ class const _CloseButton({required final VoidCallback onClose})
 /// the first row is bold. The first row is what Enter takes.
 class const _SuggestionRow({
   required final Suggestion suggestion,
+
+  /// Dimmed: it answers an earlier text and may still change (RI1).
+  required final bool stale,
   required final bool first,
   required final ParsedEntry? base,
   required final Catalog catalog,
@@ -637,6 +710,7 @@ class const _SuggestionRow({
     return Semantics(
       button: true,
       label: label,
+      hint: stale ? l10n.suggestionStale : null,
       excludeSemantics: true,
       onTap: onTap,
       // A Listener paints nothing and adds no semantics node.
@@ -646,126 +720,132 @@ class const _SuggestionRow({
         onPointerCancel: onPointerUp,
         child: Material(
           color: first ? scheme.secondaryContainer : Colors.transparent,
-          child: InkWell(
-            onTap: onTap,
-            child: Container(
-              constraints: const BoxConstraints(minHeight: _rowHeight),
-              // The 48 px Enter hex, this and the border make the 60 px row.
-              padding: const EdgeInsets.fromLTRB(16, 6, 16, 5),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: scheme.outlineVariant),
+          // Still takes a tap: what it shows is what it adds.
+          child: AnimatedOpacity(
+            key: const ValueKey('suggestion-stale'),
+            opacity: stale ? _staleOpacity : 1,
+            duration: hlMotion(context, HlDuration.short),
+            child: InkWell(
+              onTap: onTap,
+              child: Container(
+                constraints: const BoxConstraints(minHeight: _rowHeight),
+                // The 48 px Enter hex, this and the border make the 60 px row.
+                padding: const EdgeInsets.fromLTRB(16, 6, 16, 5),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: scheme.outlineVariant),
+                  ),
                 ),
-              ),
-              child: Row(
-                spacing: 12,
-                children: [
-                  SizedBox(
-                    width: 24,
-                    child:
-                        suggestion.source == SuggestionSource.due &&
-                            category == null
-                        ? const Text(
-                            '🔁',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontFamilyFallback: emojiFontFallback,
-                            ),
-                          )
-                        : ItemIcon(entry.name, size: 20),
-                  ),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      spacing: 2,
-                      children: [
-                        Text.rich(
-                          TextSpan(
-                            children: [
-                              TextSpan(text: entry.name),
-                              // The Menge after the name, as typed at either
-                              // end: "Karotten · 2".
-                              if (quantityLabel(quantity) != null)
-                                TextSpan(
-                                  text: ' · ${quantity!.trim()}',
-                                  style: TextStyle(
-                                    color: scheme.primary,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                            ],
-                          ),
-                          style: TextStyle(
-                            fontSize: _nameSize,
-                            height: _nameLeading,
-                            fontWeight: FontWeight.w600,
-                            color: scheme.onSurface,
-                          ),
-                        ),
-                        Text.rich(
-                          TextSpan(
-                            children: [
-                              TextSpan(text: source),
-                              for (final part in parts) ...[
-                                const TextSpan(text: ' · '),
-                                TextSpan(
-                                  text: part,
-                                  style:
-                                      !first &&
-                                          !baseParts.contains(
-                                            part.toLowerCase(),
-                                          )
-                                      ? TextStyle(
-                                          fontWeight: FontWeight.w700,
-                                          color: scheme.primary,
-                                        )
-                                      : null,
-                                ),
-                              ],
-                            ],
-                          ),
-                          style: TextStyle(
-                            fontSize: _detailSize,
-                            height: _detailLeading,
-                            fontWeight: FontWeight.w500,
-                            color: t.textMuted,
-                          ),
-                        ),
-                      ],
+                child: Row(
+                  spacing: 12,
+                  children: [
+                    SizedBox(
+                      width: 24,
+                      child:
+                          suggestion.source == SuggestionSource.due &&
+                              category == null
+                          ? const Text(
+                              '🔁',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontFamilyFallback: emojiFontFallback,
+                              ),
+                            )
+                          : ItemIcon(entry.name, size: 20),
                     ),
-                  ),
-                  ?(ownStore == null
-                      ? null
-                      : StoreBadge(ownStore!, height: 24, maxWidth: 120)),
-                  // The key Enter presses: a hex face on its edge, the size
-                  // of the close button.
-                  if (first)
-                    SizedBox.fromSize(
-                      size: _hexKey,
-                      child: TactileFace(
-                        states: const {},
-                        colors: TactileColors(
-                          face: t.surfaceRaised,
-                          contour: t.border,
-                          edge: t.surfaceEdge,
-                          focus: t.accent,
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.only(
-                            bottom: raisedFaces ? HlDepth.edge : 0,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing: 2,
+                        children: [
+                          Text.rich(
+                            TextSpan(
+                              children: [
+                                TextSpan(text: entry.name),
+                                // The Menge after the name, as typed at either
+                                // end: "Karotten · 2".
+                                if (quantityLabel(quantity) != null)
+                                  TextSpan(
+                                    text: ' · ${quantity!.trim()}',
+                                    style: TextStyle(
+                                      color: scheme.primary,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            style: TextStyle(
+                              fontSize: _nameSize,
+                              height: _nameLeading,
+                              fontWeight: FontWeight.w600,
+                              color: scheme.onSurface,
+                            ),
                           ),
-                          child: Center(
-                            child: Icon(
-                              Icons.keyboard_return,
-                              size: 20,
-                              color: t.text,
+                          Text.rich(
+                            TextSpan(
+                              children: [
+                                TextSpan(text: source),
+                                for (final part in parts) ...[
+                                  const TextSpan(text: ' · '),
+                                  TextSpan(
+                                    text: part,
+                                    style:
+                                        !first &&
+                                            !baseParts.contains(
+                                              part.toLowerCase(),
+                                            )
+                                        ? TextStyle(
+                                            fontWeight: FontWeight.w700,
+                                            color: scheme.primary,
+                                          )
+                                        : null,
+                                  ),
+                                ],
+                              ],
+                            ),
+                            style: TextStyle(
+                              fontSize: _detailSize,
+                              height: _detailLeading,
+                              fontWeight: FontWeight.w500,
+                              color: t.textMuted,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    ?(ownStore == null
+                        ? null
+                        : StoreBadge(ownStore!, height: 24, maxWidth: 120)),
+                    // The key Enter presses: a hex face on its edge, the size
+                    // of the close button.
+                    if (first)
+                      SizedBox.fromSize(
+                        size: _hexKey,
+                        child: TactileFace(
+                          states: const {},
+                          colors: TactileColors(
+                            face: t.surfaceRaised,
+                            contour: t.border,
+                            edge: t.surfaceEdge,
+                            focus: t.accent,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                              bottom: raisedFaces ? HlDepth.edge : 0,
+                            ),
+                            child: Center(
+                              child: Icon(
+                                Icons.keyboard_return,
+                                size: 20,
+                                color: t.text,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -926,3 +1006,189 @@ List<String> splitProperties(String? properties) => [
   for (final part in (properties ?? '').split(RegExp(r',\s+|\s*[·;]\s*')))
     if (part.trim().isNotEmpty) part.trim(),
 ];
+
+/// A row that may still change shows at this strength (RI1).
+const _staleOpacity = 0.55;
+
+/// How long a request for rows may take before the load line shows: a
+/// quick answer never flashes it (RI2).
+const loadLineDelay = Duration(milliseconds: 150);
+
+/// RI2: a thin looping line while the server is asked for the rows of
+/// what is typed, from [loadLineDelay] on. With reduced motion it stands
+/// still.
+class const _LoadLine({required final bool loading}) extends StatefulWidget {
+  @override
+  State<_LoadLine> createState() => _LoadLineState();
+}
+
+class _LoadLineState() extends State<_LoadLine> {
+  Timer? _delay;
+  var _shown = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _follow();
+  }
+
+  @override
+  void didUpdateWidget(_LoadLine oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.loading != widget.loading) {
+      _follow();
+    }
+  }
+
+  void _follow() {
+    _delay?.cancel();
+    if (!widget.loading) {
+      _shown = false;
+      return;
+    }
+    _delay = Timer(loadLineDelay, () {
+      if (mounted) {
+        setState(() => _shown = true);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _delay?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_shown) {
+      return const SizedBox.shrink();
+    }
+    final scheme = Theme.of(context).colorScheme;
+    final label = AppLocalizations.of(context).suggestionsLoading;
+    return KeyedSubtree(
+      key: const ValueKey('add-sheet-loading'),
+      child: MediaQuery.disableAnimationsOf(context)
+          ? Semantics(
+              container: true,
+              role: SemanticsRole.loadingSpinner,
+              label: label,
+              child: SizedBox(
+                height: 2,
+                child: ColoredBox(color: scheme.primary.withValues(alpha: 0.6)),
+              ),
+            )
+          : LinearProgressIndicator(
+              semanticsLabel: label,
+              minHeight: 2,
+              color: scheme.primary,
+              backgroundColor: Colors.transparent,
+            ),
+    );
+  }
+}
+
+/// Tells [to] its child's height after each layout that changed it.
+class const _ReportHeight({
+  required final ValueNotifier<double>? to,
+  required super.child,
+}) extends SingleChildRenderObjectWidget {
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderReportHeight(to);
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderReportHeight renderObject,
+  ) => renderObject.to = to;
+}
+
+class _RenderReportHeight(ValueNotifier<double>? to) extends RenderProxyBox {
+  var to = to;
+
+  @override
+  void performLayout() {
+    super.performLayout();
+    final notifier = to;
+    final height = size.height;
+    if (notifier != null && notifier.value != height) {
+      // Not during layout: the list behind the sheet builds on it.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (attached && to == notifier) {
+          notifier.value = height;
+        }
+      });
+    }
+  }
+}
+
+/// The details of the item just added in place of the rows (flag
+/// `add-feedback-list`): the edit sheet's fields under the name, which was
+/// just picked; its store and category are the sheet's chips meanwhile.
+/// A stepper saves at once, typing after a pause, the next letter in the
+/// input or the sheet's closing (AddSheetCubit.editDetails).
+class const _AddedDetails({
+  required final Item item,
+  required final VoidCallback onDone,
+  super.key,
+}) extends StatefulWidget {
+  @override
+  State<_AddedDetails> createState() => _AddedDetailsState();
+}
+
+class _AddedDetailsState() extends State<_AddedDetails> {
+  late final _brand = TextEditingController(text: widget.item.brand);
+  late final _quantity = TextEditingController(text: widget.item.quantity);
+  late final _properties = TextEditingController(text: widget.item.properties);
+
+  @override
+  void initState() {
+    super.initState();
+    _follow(_brand, (value) => ItemChanges(brand: SetTo(value)));
+    _follow(_quantity, (value) => ItemChanges(quantity: SetTo(value)));
+    _follow(_properties, (value) => ItemChanges(properties: SetTo(value)));
+  }
+
+  /// Hands [field]'s text to the sheet whenever it changes; a move of the
+  /// caret alone is no change.
+  void _follow(
+    TextEditingController field,
+    ItemChanges Function(String? value) change,
+  ) {
+    var text = field.text;
+    field.addListener(() {
+      if (field.text != text) {
+        text = field.text;
+        context.read<AddSheetCubit>().editDetails(
+          change(fieldValue(field.text)),
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _brand.dispose();
+    _quantity.dispose();
+    _properties.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+    child: ItemDetailFields(
+      keyPrefix: 'added',
+      compact: true,
+      brand: _brand,
+      quantity: _quantity,
+      properties: _properties,
+      onStep: context.read<AddSheetCubit>().saveDetails,
+      onSubmitted: () {
+        context.read<AddSheetCubit>().saveDetails();
+        widget.onDone();
+      },
+    ),
+  );
+}

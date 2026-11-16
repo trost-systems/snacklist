@@ -39,6 +39,10 @@
     "input-stable-rows": {
       "rollout": "off",
       "note": "the add sheet's rows stay put while typing (made on the device on every key with a category guess, the server's rows merged in below without moving them, none changes under a finger) and a new grocery without a remembered store goes to the store the household uses most for its category, only while the PostHog flag input-stable-rows is on (job 272)"
+    },
+    "add-feedback-list": {
+      "rollout": "off",
+      "note": "while the add sheet is open the list behind it shows its items without store and category headings and ends in a Just added section with each add, and slides back into stores and categories when the sheet closes; after an add the sheet shows the item's details (amount, brand, details, store, category) until the next letter; a thin line above the field while suggestions load, older ones dimmed; only while the PostHog flag add-feedback-list is on (job 276)"
     }
   },
   "holds": {

@@ -86,11 +86,6 @@ class _EditItemSheetState() extends State<_EditItemSheet> {
   late final _name = TextEditingController(text: widget.item.name);
   late final _brand = TextEditingController(text: widget.item.brand);
   late final _quantity = TextEditingController(text: widget.item.quantity);
-
-  // The fields move between one row and two as the width changes (turning
-  // the phone); global keys carry their focus across.
-  final _brandField = GlobalKey();
-  final _quantityField = GlobalKey();
   late final _properties = TextEditingController(text: widget.item.properties);
   late final _claimAmount = TextEditingController(
     text: widget.myClaim?.quantity,
@@ -129,15 +124,14 @@ class _EditItemSheetState() extends State<_EditItemSheet> {
   /// What differs from the item, trimmed; an empty field is null.
   ItemChanges _changes() {
     final item = widget.item;
-    String? orNull(String text) => text.trim().isEmpty ? null : text.trim();
     SetTo<String?>? changed(String? now, String? before) =>
         now == before ? null : SetTo(now);
     final name = _name.text.trim();
     return ItemChanges(
       name: name == item.name ? null : name,
-      quantity: changed(orNull(_quantity.text), item.quantity),
-      brand: changed(orNull(_brand.text), item.brand),
-      properties: changed(orNull(_properties.text), item.properties),
+      quantity: changed(fieldValue(_quantity.text), item.quantity),
+      brand: changed(fieldValue(_brand.text), item.brand),
+      properties: changed(fieldValue(_properties.text), item.properties),
       categoryId: _categoryId == item.categoryId ? null : _categoryId,
       storeId: changed(_storeId, _originalStore),
     );
@@ -166,12 +160,6 @@ class _EditItemSheetState() extends State<_EditItemSheet> {
       claim: _claim(),
     );
     Navigator.of(context).pop(edit.isEmpty ? null : edit);
-  }
-
-  void _step({required bool up}) {
-    if (stepQuantity(_quantity.text, up: up) case final next?) {
-      _quantity.text = next;
-    }
   }
 
   @override
@@ -222,99 +210,10 @@ class _EditItemSheetState() extends State<_EditItemSheet> {
                       bold: true,
                       onSubmitted: _save,
                     ),
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        final brand = KeyedSubtree(
-                          key: _brandField,
-                          child: _Field(
-                            fieldKey: 'edit-brand',
-                            label: l10n.fieldBrand,
-                            hint: l10n.brandNone,
-                            controller: _brand,
-                            maxLength: 60,
-                            onSubmitted: _save,
-                          ),
-                        );
-                        final quantity = KeyedSubtree(
-                          key: _quantityField,
-                          child: _Field(
-                            fieldKey: 'edit-quantity',
-                            label: l10n.itemQuantity,
-                            controller: _quantity,
-                            maxLength: 40,
-                            narrow: true,
-                            onSubmitted: _save,
-                          ),
-                        );
-                        final steppers = ValueListenableBuilder(
-                          valueListenable: _quantity,
-                          builder: (context, value, _) {
-                            final text = value.text;
-                            if (stepQuantity(text, up: true) == null) {
-                              return const SizedBox.shrink();
-                            }
-                            final canLower =
-                                stepQuantity(text, up: false) != null;
-                            return Row(
-                              mainAxisSize: MainAxisSize.min,
-                              spacing: _stepperGap,
-                              children: [
-                                _Stepper(
-                                  key: const ValueKey('edit-quantity-minus'),
-                                  icon: Icons.remove,
-                                  label: l10n.quantityMinus,
-                                  onPressed: canLower
-                                      ? () => _step(up: false)
-                                      : null,
-                                ),
-                                _Stepper(
-                                  key: const ValueKey('edit-quantity-plus'),
-                                  icon: Icons.add,
-                                  label: l10n.quantityPlus,
-                                  onPressed: () => _step(up: true),
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                        if (_fitsOneRow(
-                          context,
-                          constraints.maxWidth,
-                          l10n.itemQuantity,
-                        )) {
-                          return Row(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            spacing: _rowGap,
-                            children: [
-                              Expanded(child: brand),
-                              SizedBox(width: _quantityWidth, child: quantity),
-                              steppers,
-                            ],
-                          );
-                        }
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          spacing: _rowGap,
-                          children: [
-                            brand,
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              spacing: _rowGap,
-                              children: [
-                                Expanded(child: quantity),
-                                steppers,
-                              ],
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                    _Field(
-                      fieldKey: 'edit-properties',
-                      label: l10n.fieldProperties,
-                      hint: l10n.propertiesExample,
-                      controller: _properties,
-                      maxLength: 120,
+                    ItemDetailFields(
+                      brand: _brand,
+                      quantity: _quantity,
+                      properties: _properties,
                       onSubmitted: _save,
                     ),
                   ],
@@ -436,6 +335,161 @@ class _EditItemSheetState() extends State<_EditItemSheet> {
   }
 }
 
+/// The value an item's text field stands for: trimmed, an empty field is
+/// none. The edit sheet and the add sheet's details read their fields so.
+String? fieldValue(String text) => text.trim().isEmpty ? null : text.trim();
+
+/// Marke, Menge with its steppers, and Eigenschaften: the edit sheet's
+/// fields under the name, also the add sheet's details of the item just
+/// added (job 276). [onStep] follows a stepper's change of [quantity].
+class const ItemDetailFields({
+  required final TextEditingController brand,
+  required final TextEditingController quantity,
+  required final TextEditingController properties,
+  required final VoidCallback onSubmitted,
+  final VoidCallback? onStep,
+
+  /// Starts the fields' keys: `edit-brand`, `edit-quantity`, ….
+  final String keyPrefix = 'edit',
+
+  /// Menge first, then Marke beside it in what is left, on one row
+  /// whenever Menge's label fits: the add sheet's details have the room of
+  /// three rows.
+  final bool compact = false,
+  super.key,
+}) extends StatefulWidget {
+  @override
+  State<ItemDetailFields> createState() => _ItemDetailFieldsState();
+}
+
+class _ItemDetailFieldsState() extends State<ItemDetailFields> {
+  // The fields move between one row and two as the width changes (turning
+  // the phone); global keys carry their focus across.
+  final _brandField = GlobalKey();
+  final _quantityField = GlobalKey();
+
+  void _step({required bool up}) {
+    if (stepQuantity(widget.quantity.text, up: up) case final next?) {
+      widget.quantity.text = next;
+      widget.onStep?.call();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final ItemDetailFields(
+      :brand,
+      :quantity,
+      :properties,
+      :onSubmitted,
+      :keyPrefix,
+      :compact,
+    ) = widget;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: 10,
+      children: [
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final brandField = KeyedSubtree(
+              key: _brandField,
+              child: _Field(
+                fieldKey: '$keyPrefix-brand',
+                label: l10n.fieldBrand,
+                hint: l10n.brandNone,
+                controller: brand,
+                maxLength: 60,
+                onSubmitted: onSubmitted,
+              ),
+            );
+            final quantityField = KeyedSubtree(
+              key: _quantityField,
+              child: _Field(
+                fieldKey: '$keyPrefix-quantity',
+                label: l10n.itemQuantity,
+                controller: quantity,
+                maxLength: 40,
+                narrow: true,
+                onSubmitted: onSubmitted,
+              ),
+            );
+            final steppers = ValueListenableBuilder(
+              valueListenable: quantity,
+              builder: (context, value, _) {
+                final text = value.text;
+                if (stepQuantity(text, up: true) == null) {
+                  return const SizedBox.shrink();
+                }
+                final canLower = stepQuantity(text, up: false) != null;
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: _stepperGap,
+                  children: [
+                    _Stepper(
+                      key: ValueKey('$keyPrefix-quantity-minus'),
+                      icon: Icons.remove,
+                      label: l10n.quantityMinus,
+                      onPressed: canLower ? () => _step(up: false) : null,
+                    ),
+                    _Stepper(
+                      key: ValueKey('$keyPrefix-quantity-plus'),
+                      icon: Icons.add,
+                      label: l10n.quantityPlus,
+                      onPressed: () => _step(up: true),
+                    ),
+                  ],
+                );
+              },
+            );
+            if (_fitsOneRow(
+              context,
+              constraints.maxWidth,
+              l10n.itemQuantity,
+              brandEms: compact ? _compactBrandEms : _brandEms,
+            )) {
+              final menge = SizedBox(
+                width: _quantityWidth,
+                child: quantityField,
+              );
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                spacing: _rowGap,
+                children: compact
+                    ? [menge, steppers, Expanded(child: brandField)]
+                    : [Expanded(child: brandField), menge, steppers],
+              );
+            }
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              spacing: _rowGap,
+              children: [
+                brandField,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  spacing: _rowGap,
+                  children: [
+                    Expanded(child: quantityField),
+                    steppers,
+                  ],
+                ),
+              ],
+            );
+          },
+        ),
+        _Field(
+          fieldKey: '$keyPrefix-properties',
+          label: l10n.fieldProperties,
+          hint: l10n.propertiesExample,
+          controller: properties,
+          maxLength: 120,
+          onSubmitted: onSubmitted,
+        ),
+      ],
+    );
+  }
+}
+
 /// "Ich bringe das" with who else brings it under it, and once ticked, how
 /// much the user brings (optional).
 class const _ClaimArea({
@@ -503,11 +557,20 @@ const _stepperGap = 4.0;
 /// takes 7.8 in Inter, caret included.
 const _brandEms = 8;
 
+/// The compact row's least room for a brand: Bärenmarke, which scrolls in
+/// its field beyond that.
+const _compactBrandEms = 5;
+
 /// Whether Marke, Menge and its steppers fit one row of [width] at the
 /// user's text size: Menge's label within its 72 px, and a brand like
 /// Weihenstephan unclipped. Otherwise Marke goes above Menge. The steppers
 /// count even while hidden, so typing never moves the fields.
-bool _fitsOneRow(BuildContext context, double width, String quantityLabel) {
+bool _fitsOneRow(
+  BuildContext context,
+  double width,
+  String quantityLabel, {
+  required int brandEms,
+}) {
   final scaler = MediaQuery.textScalerOf(context);
   final label = TextPainter(
     text: TextSpan(
@@ -523,7 +586,7 @@ bool _fitsOneRow(BuildContext context, double width, String quantityLabel) {
   final brandWidth =
       width - _quantityWidth - 2 * _stepperWidth - _stepperGap - 2 * _rowGap;
   final brandFits =
-      brandWidth - 2 * hexFieldInset >= scaler.scale(18) * _brandEms;
+      brandWidth - 2 * hexFieldInset >= scaler.scale(18) * brandEms;
   return labelFits && brandFits;
 }
 

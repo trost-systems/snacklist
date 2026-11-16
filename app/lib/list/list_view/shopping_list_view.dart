@@ -5,6 +5,8 @@ import 'dart:ui' show SemanticsHitTestBehavior;
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/app/notices.dart';
 import 'package:family_groceries/app/open_app.dart';
+import 'package:family_groceries/design/motion.dart';
+import 'package:family_groceries/design/section_label.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/claims.dart';
@@ -13,6 +15,7 @@ import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_link.dart';
 import 'package:family_groceries/list/list_view/dividers.dart';
 import 'package:family_groceries/list/list_view/explainer.dart';
+import 'package:family_groceries/list/list_view/glide.dart';
 import 'package:family_groceries/list/list_view/item_row.dart';
 import 'package:family_groceries/list/list_view/leaving_rows.dart';
 import 'package:family_groceries/list/list_view/price_views.dart';
@@ -22,7 +25,8 @@ import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/subtotals.dart';
 import 'package:family_groceries/tips/hint_views.dart';
 import 'package:family_groceries/trip/trip_on_list.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart'
+    show ValueListenable, immutable, kIsWeb, listEquals;
 import 'package:flutter/rendering.dart' show RenderAbstractViewport;
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
@@ -36,6 +40,20 @@ import 'package:material_ui/material_ui.dart';
 /// Where the list's columns sit: `side` from either edge, each
 /// `columnWidth` wide.
 typedef ListFrame = ({int columns, double side, double columnWidth});
+
+/// The list behind the open add sheet (flag `add-feedback-list`, job 276):
+/// its items in walk order without store or category headings, then the
+/// [added] ones under „Gerade hinzugefügt“, the last of them just above the
+/// sheet, [sheetExtent] tall.
+@immutable
+class const BehindSheet({
+  required final List<String> added,
+  required final ValueListenable<double> sheetExtent,
+});
+
+/// How long the list takes between its stores and categories and the flat
+/// list behind the add sheet.
+const glideDuration = Duration(milliseconds: 300);
 
 class const ShoppingListView({
   /// Called when the user acts on the list, so the add field can let go of
@@ -51,6 +69,10 @@ class const ShoppingListView({
   /// The item whose price editor is open (job 190), one at a time; the
   /// screen hides the add bar meanwhile.
   final ValueNotifier<String?>? pricing,
+
+  /// Set while the add sheet is open over the list, with the flag
+  /// `add-feedback-list`; the list glides into and out of it.
+  final BehindSheet? behindSheet,
   super.key,
 }) extends StatefulWidget {
   /// From this width the sections go in two columns, and in three from
@@ -101,8 +123,23 @@ class const ShoppingListView({
   State<ShoppingListView> createState() => _ShoppingListViewState();
 }
 
-class _ShoppingListViewState() extends State<ShoppingListView> {
+class _ShoppingListViewState()
+    extends State<ShoppingListView>
+    with SingleTickerProviderStateMixin {
   final _leaving = LeavingRows();
+  late final _glide = AnimationController(
+    vsync: this,
+    duration: glideDuration,
+    value: 1,
+  );
+  late final _glideCurve = CurvedAnimation(
+    parent: _glide,
+    curve: HlEasing.standard,
+  );
+  late final _glides = Glides()..progress = _glideCurve;
+
+  /// Where the list was scrolled when the sheet opened: it goes back there.
+  var _restOffset = 0.0;
   final _scroll = ScrollController();
   final _viewport = GlobalKey();
   late final AppLifecycleListener _lifecycle;
@@ -138,6 +175,78 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
     _links = context.read<ListLinks?>()?..changes.addListener(_linked);
     // A cold start's link came before this list was built.
     _linked();
+    widget.behindSheet?.sheetExtent.addListener(_toEnd);
+  }
+
+  @override
+  void didUpdateWidget(ShoppingListView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final before = oldWidget.behindSheet;
+    final behind = widget.behindSheet;
+    if (before?.sheetExtent != behind?.sheetExtent) {
+      before?.sheetExtent.removeListener(_toEnd);
+      behind?.sheetExtent.addListener(_toEnd);
+    }
+    if ((before == null) != (behind == null)) {
+      _glides.snapshot();
+      if (MediaQuery.disableAnimationsOf(context)) {
+        _glide.value = 1;
+      } else {
+        _glide.forward(from: 0);
+      }
+      if (behind != null) {
+        _restOffset = _scroll.hasClients ? _scroll.offset : 0;
+        _toEnd();
+      } else {
+        _toRest();
+      }
+    } else if (before != null &&
+        behind != null &&
+        !listEquals(before.added, behind.added)) {
+      _toEnd();
+    }
+  }
+
+  /// Behind the sheet: the list's end, the last add, just above it. The
+  /// rows glide meanwhile, so a jump doesn't show; after an add it scrolls.
+  /// The end of a lazily built list is an estimate until its last rows are
+  /// laid out, so it looks again after each move, a few frames at most.
+  void _toEnd([int tries = 3]) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted || widget.behindSheet == null || !_scroll.hasClients) {
+        return;
+      }
+      final position = _scroll.position;
+      final end = position.maxScrollExtent;
+      if ((end - position.pixels).abs() < 1) {
+        return;
+      }
+      if (_glide.isAnimating) {
+        position.jumpTo(end);
+      } else {
+        await hlScrollTo(context, position, end);
+      }
+      if (tries > 1) {
+        _toEnd(tries - 1);
+      }
+    });
+  }
+
+  /// The items the list behind the sheet was last kept at its end for: a
+  /// partner's add or tick there moves the end, which follows.
+  Map<String, Item>? _pinnedTo;
+
+  /// The sheet closed: back where the list was when it opened.
+  void _toRest() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || widget.behindSheet != null || !_scroll.hasClients) {
+        return;
+      }
+      final position = _scroll.position;
+      position.jumpTo(
+        _restOffset.clamp(position.minScrollExtent, position.maxScrollExtent),
+      );
+    });
   }
 
   void _pricingChanged() => setState(() {});
@@ -149,6 +258,9 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
       _pricing.dispose();
     }
     _links?.changes.removeListener(_linked);
+    widget.behindSheet?.sheetExtent.removeListener(_toEnd);
+    _glideCurve.dispose();
+    _glide.dispose();
     _cancelSeenTimers();
     _lifecycle.dispose();
     _scroll.dispose();
@@ -482,7 +594,19 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
     final declutter = context.select<Flags?, bool>(
       (flags) => flags?.isOn(listDeclutterFlag) ?? false,
     );
-    final summary = declutter && prices
+    final behind = widget.behindSheet;
+    if (behind == null) {
+      _pinnedTo = null;
+    } else if (!identical(_pinnedTo, state.items)) {
+      if (_pinnedTo != null) {
+        _toEnd();
+      }
+      _pinnedTo = state.items;
+    }
+    final glide = context.select<Flags?, bool>(
+      (flags) => flags?.isOn(addFeedbackListFlag) ?? false,
+    );
+    final summary = behind == null && declutter && prices
         ? summaryOf(
             state.items.values,
             state.catalog,
@@ -491,15 +615,25 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
           )
         : null;
     SliverList column(List<StoreSection> run) {
-      final entries = _entries(
-        run,
-        state,
-        folded,
-        fresh,
-        claimsOf,
-        prices: prices,
-        summary: summary,
-      );
+      final entries = behind != null
+          ? _flatEntries(
+              run,
+              state,
+              folded,
+              fresh,
+              claimsOf,
+              prices: prices,
+              added: behind.added,
+            )
+          : _entries(
+              run,
+              state,
+              folded,
+              fresh,
+              claimsOf,
+              prices: prices,
+              summary: summary,
+            );
       final index = {for (final (i, e) in entries.indexed) e.key: i};
       return SliverList.builder(
         itemCount: entries.length,
@@ -513,7 +647,15 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
     // Every store empty: no section shows, the empty list says so. Alone,
     // it is centred in the room above the add field; with recently used
     // items it stays on top, so their tile shows below it.
-    final body = shown.isEmpty && used.isNotEmpty
+    final body = behind != null
+        // One column over the sheet's, which stands in the first one.
+        ? SliverPadding(
+            padding: EdgeInsetsDirectional.only(
+              end: math.max(0, width - 2 * side - frame.columnWidth),
+            ),
+            sliver: column(shown),
+          )
+        : shown.isEmpty && used.isNotEmpty
         ? const SliverToBoxAdapter(child: EmptyList())
         : shown.isEmpty
         ? SliverLayoutBuilder(
@@ -556,7 +698,7 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
             ],
           );
     _closeOrphanedPrice();
-    return CustomScrollView(
+    final scrollView = CustomScrollView(
       key: _viewport,
       controller: _scroll,
       slivers: [
@@ -567,6 +709,9 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
               header,
               MediaQuery.paddingOf(context).top + header.preferredSize.height,
               clear: declutter,
+              // Behind the sheet it scrolls away with the list, leaving the
+              // little room above the sheet to the last adds.
+              collapsing: behind != null,
             ),
           ),
         SliverPadding(
@@ -580,7 +725,9 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
               body,
               // Without the flag the screen shows the total in a bar at the
               // bottom and each store's at its section's end.
-              if (summary != null && summary.stores.isNotEmpty)
+              if (behind == null &&
+                  summary != null &&
+                  summary.stores.isNotEmpty)
                 SliverToBoxAdapter(
                   child: SummaryBlock(
                     summary: summary,
@@ -588,7 +735,7 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
                     onJump: _jump,
                   ),
                 ),
-              if (used.isNotEmpty)
+              if (behind == null && used.isNotEmpty)
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.only(top: 20),
@@ -607,9 +754,21 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
         ),
         // The add field floats over the list's bottom edge (job 135) and
         // comes in as the bottom padding: the last row scrolls clear of it.
-        SliverToBoxAdapter(child: SizedBox(height: bottom)),
+        // Behind the sheet, the last add stops just above the sheet.
+        SliverToBoxAdapter(
+          child: switch (behind) {
+            null => SizedBox(height: bottom),
+            BehindSheet(:final sheetExtent) => ValueListenableBuilder(
+              valueListenable: sheetExtent,
+              builder: (context, extent, _) => SizedBox(
+                height: MediaQuery.paddingOf(context).bottom + extent + 4,
+              ),
+            ),
+          },
+        ),
       ],
     );
+    return glide ? GlideScope(glides: _glides, child: scrollView) : scrollView;
   }
 
   /// A recently used item as the list's own row, icon included, faded: a
@@ -665,6 +824,58 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
     return panel;
   }
 
+  /// The list behind the add sheet: [run]'s rows of unfolded sections in
+  /// walk order without headings, then those [added] since it opened, in
+  /// order, under „Gerade hinzugefügt“; one in a folded section too. The
+  /// rows are [_entries]' own, so they glide to their places and back.
+  List<Widget> _flatEntries(
+    List<StoreSection> run,
+    ListState state,
+    bool Function(StoreSection) folded,
+    Set<String> fresh,
+    String? Function(Item item) claimsOf, {
+    required bool prices,
+    required List<String> added,
+  }) {
+    final hidden = {
+      for (final section in run)
+        if (folded(section))
+          for (final block in section.blocks)
+            for (final item in block.items) item.id,
+    };
+    final adds = <String, Widget>{};
+    final rest = <Widget>[];
+    for (final entry in _entries(
+      run,
+      state,
+      (_) => false,
+      fresh,
+      claimsOf,
+      prices: prices,
+      summary: null,
+    )) {
+      if (entry.key case ValueKey<String>(:final value)
+          when state.items.containsKey(value)) {
+        if (added.contains(value)) {
+          adds[value] = entry;
+        } else if (!hidden.contains(value)) {
+          rest.add(entry);
+        }
+      }
+    }
+    const heading = ValueKey('just-added');
+    return [
+      ...rest,
+      if (adds.isNotEmpty)
+        Glide(
+          key: heading,
+          id: heading,
+          child: HlSectionLabel(AppLocalizations.of(context).justAdded),
+        ),
+      for (final id in added) ?adds[id],
+    ];
+  }
+
   /// The dividers and rows of [run], top to bottom.
   List<Widget> _entries(
     List<StoreSection> run,
@@ -677,6 +888,8 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
     /// The summary block's, with `list-declutter`: no section sums then.
     required Summary? summary,
   }) {
+    Widget glided(Key key, Widget child) =>
+        Glide(key: key, id: key, child: child);
     final cubit = context.read<ListCubit>();
     final now = cubit.now;
     final trip = prices ? cubit.trip : null;
@@ -684,21 +897,24 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
     final entries = <Widget>[];
     for (final (i, section) in run.indexed) {
       final isFolded = folded(section);
+      final storeKey = ValueKey('store-${section.key}');
       entries.add(
-        Padding(
-          key: ValueKey('store-${section.key}'),
-          padding: EdgeInsets.only(
-            top: i == 0
-                ? 0
-                : folded(run[i - 1])
-                ? 2
-                : 20,
-          ),
-          child: StoreDivider(
-            section: section,
-            folded: isFolded,
-            leaving: _leaving,
-            onToggle: () => context.read<ListCubit>().toggleFold(section.key),
+        glided(
+          storeKey,
+          Padding(
+            padding: EdgeInsets.only(
+              top: i == 0
+                  ? 0
+                  : folded(run[i - 1])
+                  ? 2
+                  : 20,
+            ),
+            child: StoreDivider(
+              section: section,
+              folded: isFolded,
+              leaving: _leaving,
+              onToggle: () => context.read<ListCubit>().toggleFold(section.key),
+            ),
           ),
         ),
       );
@@ -707,56 +923,56 @@ class _ShoppingListViewState() extends State<ShoppingListView> {
       }
       for (final block in section.blocks) {
         final category = block.category;
+        final categoryKey = ValueKey('category-${section.key}-${category?.id}');
         entries.add(
-          CategoryDivider(
-            key: ValueKey('category-${section.key}-${category?.id}'),
-            block: block,
-            leaving: _leaving,
-          ),
+          glided(categoryKey, CategoryDivider(block: block, leaving: _leaving)),
         );
         for (final (j, item) in block.items.indexed) {
           entries.add(
-            ItemRow(
-              key: ValueKey(item.id),
-              item: item,
-              category: category,
-              leaving: _leaving,
-              fresh: fresh.contains(item.id),
-              claims: claimsOf(item),
-              last: j == block.items.length - 1,
-              onVisible: (visible) => _freshVisible(item.id, visible: visible),
-              onTickStart: (item) => cubit.willTick(item.id),
-              onTick: (item) => _tick(cubit, item),
-              onEdit: (item) => unawaited(_edit(item)),
-              onDelete: _delete,
-              priceChip: prices
-                  ? PriceChip(
-                      item: item,
-                      now: now,
-                      estimate: summary != null && plannedWeight(item),
-                      onTap: () => _togglePrice(item),
-                    )
-                  : null,
-              pricePanel: total != null && _pricing.value == item.id
-                  ? _placed(
-                      PricePanel(
+            glided(
+              ValueKey(item.id),
+              ItemRow(
+                item: item,
+                category: category,
+                leaving: _leaving,
+                fresh: fresh.contains(item.id),
+                claims: claimsOf(item),
+                last: j == block.items.length - 1,
+                onVisible: (visible) =>
+                    _freshVisible(item.id, visible: visible),
+                onTickStart: (item) => cubit.willTick(item.id),
+                onTick: (item) => _tick(cubit, item),
+                onEdit: (item) => unawaited(_edit(item)),
+                onDelete: _delete,
+                priceChip: prices
+                    ? PriceChip(
                         item: item,
-                        currency: state.catalog.currency,
                         now: now,
-                        total: total,
-                        household: state.allItems.values,
-                        onSave: (price, quantity) {
-                          cubit.setPrice(
-                            item.id,
-                            price: price,
-                            quantity: quantity,
-                          );
-                          _closePrice();
-                        },
-                        onClose: _closePrice,
-                      ),
-                    )
-                  : null,
+                        estimate: summary != null && plannedWeight(item),
+                        onTap: () => _togglePrice(item),
+                      )
+                    : null,
+                pricePanel: total != null && _pricing.value == item.id
+                    ? _placed(
+                        PricePanel(
+                          item: item,
+                          currency: state.catalog.currency,
+                          now: now,
+                          total: total,
+                          household: state.allItems.values,
+                          onSave: (price, quantity) {
+                            cubit.setPrice(
+                              item.id,
+                              price: price,
+                              quantity: quantity,
+                            );
+                            _closePrice();
+                          },
+                          onClose: _closePrice,
+                        ),
+                      )
+                    : null,
+              ),
             ),
           );
         }
@@ -785,12 +1001,16 @@ class _PinnedHeader(
 
   /// The see-through header of jobs 229 and 242 instead of the fade.
   required final bool clear,
+
+  /// Scrolls away with the rows, still the same sliver so the bar keeps
+  /// its state (flag `add-feedback-list`, behind the add sheet).
+  final bool collapsing = false,
 }) extends SliverPersistentHeaderDelegate {
   /// How far the list scrolls before the status bar gets its scrim.
   static const _lifted = 4.0;
 
   @override
-  double get minExtent => extent;
+  double get minExtent => collapsing ? 0 : extent;
 
   @override
   double get maxExtent => extent;
@@ -801,6 +1021,17 @@ class _PinnedHeader(
   /// no taps: they reach the bar or the rows as before.
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlaps) {
+    if (collapsing) {
+      // At its full height, its top cut off as it scrolls away.
+      return ClipRect(
+        child: OverflowBox(
+          alignment: Alignment.bottomCenter,
+          minHeight: extent,
+          maxHeight: extent,
+          child: child,
+        ),
+      );
+    }
     if (clear) {
       return _clear(context, lifted: shrinkOffset > _lifted);
     }
@@ -890,5 +1121,6 @@ class _PinnedHeader(
   bool shouldRebuild(_PinnedHeader oldDelegate) =>
       oldDelegate.child != child ||
       oldDelegate.extent != extent ||
-      oldDelegate.clear != clear;
+      oldDelegate.clear != clear ||
+      oldDelegate.collapsing != collapsing;
 }
