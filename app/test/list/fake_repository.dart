@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:family_groceries/list/add_sheet/suggestion.dart';
+import 'package:family_groceries/list/catalog/household_index.dart';
 import 'package:family_groceries/list/dictation.dart';
 import 'package:family_groceries/list/entry.dart';
 import 'package:family_groceries/list/list_repository.dart';
@@ -66,6 +67,11 @@ class FakeRepository() implements ListRepository {
   var usuals = <Usual>[];
   var usualsFail = false;
   var usualsCalls = 0;
+
+  /// What suggest_index answers (null: a malformed answer), and how often
+  /// it was asked.
+  HouseholdIndex? householdIndex = HouseholdIndex.empty;
+  var householdIndexCalls = 0;
 
   /// When set, fetchUsuals waits for it, after the online check.
   Completer<void>? usualsGate;
@@ -360,6 +366,13 @@ class FakeRepository() implements ListRepository {
     _ensureFetchable();
     await itemsGate?.future;
     return rows.values.toList();
+  }
+
+  @override
+  Future<HouseholdIndex?> fetchSuggestIndex() async {
+    householdIndexCalls++;
+    _ensureOnline();
+    return householdIndex;
   }
 
   @override

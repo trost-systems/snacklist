@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:fake_async/fake_async.dart';
 import 'package:family_groceries/app/network.dart';
+import 'package:family_groceries/list/catalog/household_index.dart';
 import 'package:family_groceries/list/dictation.dart';
 import 'package:family_groceries/list/entry.dart';
 import 'package:family_groceries/list/list_cubit.dart';
@@ -1874,6 +1875,58 @@ void main() {
     cubit = ListCubit(repo, cache, userId: 'peter')..start();
     await settle();
   }
+
+  group("the household's index (on-device-catalog)", () {
+    const index = HouseholdIndex(unserved: ['paint'], known: ['kerzen']);
+
+    Future<void> startWith({required bool flag}) async {
+      await cubit.close();
+      cubit = ListCubit(
+        repo,
+        cache,
+        userId: 'peter',
+        grace: Duration.zero,
+        householdIndex: () => flag,
+      )..start();
+      await settle();
+    }
+
+    test('a resync fetches it only while the flag is on', () async {
+      repo.householdIndex = index;
+      await startWith(flag: false);
+      await cubit.resync();
+      await settle();
+      expect(repo.householdIndexCalls, 0);
+      expect(cubit.state.householdIndex, same(HouseholdIndex.empty));
+
+      await startWith(flag: true);
+      expect(repo.householdIndexCalls, greaterThan(0));
+      expect(cubit.state.householdIndex.known, ['kerzen']);
+    });
+
+    test('a failed or malformed answer keeps the one there is', () async {
+      repo.householdIndex = index;
+      await startWith(flag: true);
+      repo.householdIndex = null;
+      await cubit.resync();
+      await settle();
+      expect(cubit.state.householdIndex.unserved, ['paint']);
+      repo.online = false;
+      await cubit.resync();
+      await settle();
+      expect(cubit.state.householdIndex.unserved, ['paint']);
+    });
+
+    test('it is saved with the list and there offline', () async {
+      repo.householdIndex = index;
+      await startWith(flag: true);
+      await elapse(const Duration(milliseconds: 400));
+      repo.online = false;
+      await startWith(flag: true);
+      expect(cubit.state.connection, isNot(ConnectionStatus.online));
+      expect(cubit.state.householdIndex.known, ['kerzen']);
+    });
+  });
 
   group('who added what', () {
     test('rows carry who added them', () async {
