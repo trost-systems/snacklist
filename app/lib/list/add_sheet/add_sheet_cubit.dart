@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:family_groceries/analytics/events.dart';
 import 'package:family_groceries/list/add_sheet/suggestion.dart';
+import 'package:family_groceries/list/category_guess.dart';
 import 'package:family_groceries/list/entry.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/model.dart';
@@ -42,13 +43,27 @@ class const AddSheetState({
 /// short pause) and kept per text until the next add or opening. Without
 /// the server they are made up from the parse on the device and the
 /// household's usuals.
+///
+/// [stableRows], the flag `input-stable-rows` (job 272): every key shows
+/// the rows made on the device for what is typed now, with a category
+/// guess, and the server's answer only enriches them and adds its own
+/// below ([mergeRows]). Off: the previous text's rows stay until the
+/// server answers.
 class AddSheetCubit(
   final ListCubit _list, {
   Duration debounce = const Duration(milliseconds: 120),
+  bool Function() stableRows = _off,
 }) extends Cubit<AddSheetState> {
   this : super(const AddSheetState());
 
+  static bool _off() => false;
+
   final _debounce = debounce;
+  final _stableRows = stableRows;
+
+  /// Whether the flag `input-stable-rows` is on now.
+  bool get stableRows => _stableRows();
+
   final _cache = <String, List<Suggestion>>{};
   Timer? _typing;
   (String, Future<List<Suggestion>>)? _loading;
@@ -96,7 +111,9 @@ class AddSheetCubit(
         added: () => null,
         suggestions:
             known ??
-            (state.suggestions.isEmpty
+            (stableRows
+                ? _local(key)
+                : state.suggestions.isEmpty
                 ? _offline(key)
                 : _withTyped(state.suggestions, key)),
         answered: known == null ? null : key,
@@ -116,22 +133,24 @@ class AddSheetCubit(
   AddResult take(Suggestion suggestion) {
     final entry = suggestion.entry;
     final store = state.store;
-    final result = _list.addParsed(
-      ParsedEntry(
-        name: entry.name,
-        brand: entry.brand,
-        properties: entry.properties,
-        quantity: entry.quantity,
-        storeId: store == null ? entry.storeId : store.value,
-        categoryId: state.category ?? entry.categoryId,
-        deviceParsed: entry.deviceParsed,
-      ),
-      noStore: store != null && store.value == null,
-      autoCategory: state.category == null,
-      source: suggestion.source == SuggestionSource.typed
-          ? AddSource.typed
-          : AddSource.suggestion,
-    );
+    final result =
+        _openWithSameWords(entry) ??
+        _list.addParsed(
+          ParsedEntry(
+            name: entry.name,
+            brand: entry.brand,
+            properties: entry.properties,
+            quantity: entry.quantity,
+            storeId: store == null ? entry.storeId : store.value,
+            categoryId: state.category ?? entry.categoryId,
+            deviceParsed: entry.deviceParsed,
+          ),
+          noStore: store != null && store.value == null,
+          autoCategory: state.category == null,
+          source: suggestion.source == SuggestionSource.typed
+              ? AddSource.typed
+              : AddSource.suggestion,
+        );
     if (result is! NothingToAdd) {
       // An add can change what the server suggests next (store memory,
       // history), so answers from before it are not reused.
@@ -140,6 +159,34 @@ class AddSheetCubit(
     }
     return result;
   }
+
+  /// With the flag `input-stable-rows` the typed row keeps the device's
+  /// reading of the line ("Weihenstephan Milch") after the server answers,
+  /// where the server's own reading splits off the brand. The open item
+  /// with the same words, in any order and field, is the one already on
+  /// the list, as the server's reading would have found it.
+  AlreadyOnList? _openWithSameWords(ParsedEntry entry) {
+    if (!stableRows || !entry.deviceParsed) {
+      return null;
+    }
+    final typed = _words([entry.name]);
+    for (final item in _list.state.items.values) {
+      if (item.status == ItemStatus.active &&
+          listEquals(
+            _words([item.name, ?item.brand, ?item.properties]),
+            typed,
+          )) {
+        return AlreadyOnList(item);
+      }
+    }
+    return null;
+  }
+
+  static List<String> _words(List<String> fields) => [
+    for (final field in fields)
+      for (final word in foldName(field).split(RegExp(r'[\s,]+')))
+        if (word.isNotEmpty) word,
+  ]..sort();
 
   /// Enter: the first row for what is typed now, waiting for it if it is
   /// still loading. Null when nothing is typed, or the text changed or the
@@ -153,8 +200,10 @@ class AddSheetCubit(
       return take(state.suggestions.first);
     }
     _typing?.cancel();
-    final rows = await _fetch(key)
-        .timeout(const Duration(seconds: 3), onTimeout: () => _offline(key));
+    final rows = await _fetch(key).timeout(
+      const Duration(seconds: 3),
+      onTimeout: () => stableRows ? _local(key) : _offline(key),
+    );
     if (isClosed || !state.open || state.text.trim() != key || rows.isEmpty) {
       return null;
     }
@@ -257,11 +306,18 @@ class AddSheetCubit(
     List<Suggestion> rows;
     try {
       rows = await _list.suggest(key);
+      if (stableRows) {
+        // On top of the rows shown for [key], as the user sees them.
+        rows = mergeRows(
+          state.text.trim() == key ? state.suggestions : _local(key),
+          rows,
+        );
+      }
       if (epoch == _epoch) {
         _cache[key] = rows;
       }
     } on Object {
-      rows = _offline(key);
+      rows = stableRows ? _local(key) : _offline(key);
     }
     if (_loading?.$1 == key) {
       _loading = null;
@@ -334,6 +390,39 @@ class AddSheetCubit(
           suggestion,
     ];
   }
+
+  /// [_offline] with a category on each row ([guessCategory]): what every
+  /// key shows at once while the flag `input-stable-rows` is on.
+  List<Suggestion> _local(String key) => [
+    for (final Suggestion(:source, :entry) in _offline(key))
+      Suggestion(
+        source,
+        ParsedEntry(
+          name: entry.name,
+          quantity: entry.quantity,
+          categoryId: guessCategory(
+            entry.name,
+            catalog: _list.state.catalog,
+            known: _householdCategories(),
+          ),
+          deviceParsed: entry.deviceParsed,
+        ),
+      ),
+  ];
+
+  /// [householdCategories] of the list as it is now, made again only after
+  /// the list changed: typing reads it on every key.
+  Map<String, String> _householdCategories() {
+    final list = _list.state;
+    if (_known case (final of, final known) when identical(of, list)) {
+      return known;
+    }
+    final known = householdCategories(list.allItems.values);
+    _known = (list, known);
+    return known;
+  }
+
+  (ListState, Map<String, String>)? _known;
 
   AddSheetState _with({
     bool? open,

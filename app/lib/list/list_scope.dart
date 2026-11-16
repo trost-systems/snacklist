@@ -148,14 +148,21 @@ class _ListScopeState() extends State<ListScope> implements ListHolds {
     }
   }
 
-  ListCubit _open(String userId, String householdId) => ListCubit(
-    widget.repositories?.call(householdId) ??
-        SupabaseListRepository(Supabase.instance.client, householdId),
-    context.read<DeviceCache>().list(userId, householdId),
-    userId: userId,
-    analytics: context.read<Analytics>(),
-    network: context.read<NetworkWatch?>()?.watch(),
-  )..start();
+  ListCubit _open(String userId, String householdId) {
+    final flags = context.read<Flags?>();
+    return ListCubit(
+      widget.repositories?.call(householdId) ??
+          SupabaseListRepository(
+            Supabase.instance.client,
+            householdId,
+            categoryStore: () => flags?.isOn(inputStableRowsFlag) ?? false,
+          ),
+      context.read<DeviceCache>().list(userId, householdId),
+      userId: userId,
+      analytics: context.read<Analytics>(),
+      network: context.read<NetworkWatch?>()?.watch(),
+    )..start();
+  }
 
   /// Closes the hidden list of [id] once its queue reached the server. Until
   /// then it retries like the shown one: offline, or with the server failing.

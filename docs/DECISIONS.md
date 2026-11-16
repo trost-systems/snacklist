@@ -14708,3 +14708,78 @@ as before. The reference prototype is #494 (not merged).
    and notes still send without their image. But about 25 accounts naming 10 uploads each could block
    screenshots for everyone for 12 months. A per-user cap on kept images belongs before the flag goes
    wider (NEEDS_LEAD "Job 267 review 1").
+
+## Job 272: add-sheet rows that stay put (IN1) and the category's usual store (ST1), behind `input-stable-rows` (2026-11-15)
+
+Peter picked IN1 and leans ST1 (t977u). Everything is behind the PostHog flag `input-stable-rows`
+(rollout off). With it off, the sheet, the store guess and the server answers are as before; old
+store builds send none of the new parameters.
+
+1. **Rows are made on the device on every key.** The typed row is rebuilt from the field's text on
+   every key (`_local`: today's `_offline` plus a category guess), so a tap never adds an older
+   text. The server's answer goes through `mergeRows` (`add_sheet/suggestion.dart`): rows shown keep
+   their order and text. The typed slot takes the server's category and store; it becomes the
+   server's row only when that reads the same. Other server rows are appended, up to 8 rows in all.
+   The server's own reading of the typed line is not a second row: the add stays `deviceParsed`,
+   so `parse_item` splits brand and details on send, as offline adds always did.
+2. **No row changes under a finger.** A `Listener` over the sheet content holds the rows from
+   pointer down until a microtask after the last up. It has no paint and no semantics node. Rows are
+   keyed by `Suggestion.key` with the flag on and by index with it off. The release could be
+   synchronous (`setState` waits for the frame, the tap fires in the same dispatch); the microtask
+   is a margin, not load-bearing.
+3. **Category guess on the device** (`list/category_guess.dart`). The household's own category for
+   the same folded name comes first (items it has, cached per `ListState`). Then the lexicon, now
+   generated with each form's seed key (`client_lexicon.sh`, `lexicon_forms.dart` is a map). The
+   guess ports the exact path of `classifier_words` and `classify_item_detail` (no typos), DIY words
+   going to Haushalt when the household has no Baumarkt categories. It agrees on 1617 of 1617
+   dictionary terms and 344 of 345 sweep items (Briefmarken: the device leaves it unsorted, the
+   server says Sonstiges). The server still classifies on insert (`p_category` stays null).
+   With the flag on, the category chip shows the guess before the server answers; that is the
+   chip's existing look with earlier content, not a new treatment.
+4. **ST1 lives on the server, opted into per request.** `suggest_entries`, `parse_item` and
+   `put_item` gain `p_category_store boolean default false` (drop and create, one function per
+   signature, same grants). The app sends `true` only while the flag is on (`SupabaseListRepository`'s
+   `categoryStore`). `put_item` passes it to the triggers as the transaction-local setting
+   `family_groceries.category_store`. With it, `guess_store(..., true)` runs: memory, a recorded
+   "Ohne Laden", the brand's store, `category_usual_store`, then the dm and Baumarkt seeds.
+5. **"Most used" comes from store memory, not from `items.store_id`.** `category_usual_store` sums
+   `item_store_memory.times` over keys whose household items are in that category (ties: latest).
+   Memory is what members taught; and the add being inserted never counts itself, so
+   `items_learn_insert` can tell an automatic default from a pick. An automatic default is never
+   learned as the item's own store; a different pick still is.
+6. **"Ohne Laden" is a correction too.** New trigger-written table `item_store_cleared` (RLS read for
+   members, cross-household pgTAP case). Without it the default would come back after a user set an
+   item to no store, because that deletes its memory. A clear is recorded by a change to no store
+   and by an add with "Ohne Laden" (flag on). It is never deleted: memory is read first, so a store
+   taught later wins while it exists, and an undone lesson falls back to the clear. A store's
+   deletion records no clear (nobody chose "Ohne Laden").
+7. **Left as is.** An add with "Ohne Laden" deleted within 10 minutes keeps its clear (the table has
+   no undo columns): the next add of that item gets no store instead of the category's, until any
+   store is set for it. Deleting a store still drops all memory of its items' keys, as before
+   job 272 (changing it would change flag-off behaviour). Siri, Alexa, MCP and the API do not send
+   the flag, so their adds keep today's store guess.
+8. **Dev-only timing log.** `[add-sheet timing] stable=on|off len=<n> rows|answer|cached <ms> ms`
+   from `_AddSheetState._timeRows` (`add_sheet.dart`), only under `kDebugMode`, never the text. It
+   also prints in widget tests, which are debug builds.
+9. **Driven on the web release build** (`journeys/input-stable-rows.mjs`, server answers and writes
+   held back 2.5 s): flag off, typing „Kefir“ a key every 30 ms leaves „K, Wie getippt“ and a tap
+   adds „K“, unsorted; flag on, the row reads „Kefir“, the tap adds Kefir under Kühlregal before the
+   server has it, and the server files it at Wochenmarkt, where the household's other chilled
+   items are. A finger held on a row while the answer arrived kept the rows; the same answer
+   without a finger appended three catalogue rows below the typed one.
+10. **Review 0 (Opus, no must-fix).** Taken:
+    - A widget test pins the cubit's merge: an answer in another order keeps the shown rows.
+    - A device-read line whose words are an open item's name, brand and details ("Weihenstephan
+      Milch" with Milch, Weihenstephan open) answers "already on the list" as a server-read row
+      does (`AddSheetCubit.take`, flag on only).
+    - The hold covers the suggestion rows only (a `Listener` per row), not the chips or the field.
+
+    Left, with reasons:
+    - A default store becomes the item's memory when the item is ticked with it, like every other
+      store on a tick (`items_learn`): buying it there is a lesson.
+    - A clear is matched by the item's key only, not its canonical key („Ohne Laden“ for Karotten
+      does not cover Möhren). The default for a spelling variant is the lesser surprise.
+    - The device guess ignores categories merged into another (`absorbed_seed_keys` is not on the
+      device): such an add waits unsorted for the server, as with the flag off.
+    - With the flag on, `suggest_entries` was 3 to 6 ms slower at p95 in an own bench of the
+      worst case (every item in one category). The gate benches the flag-off call.

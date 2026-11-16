@@ -38,6 +38,7 @@ language sql as $$
   union all select 'item_events', count(*)::int from public.item_events where household_id = p_household
   union all select 'category_memory', count(*)::int from public.category_memory where household_id = p_household
   union all select 'item_store_memory', count(*)::int from public.item_store_memory where household_id = p_household
+  union all select 'item_store_cleared', count(*)::int from public.item_store_cleared where household_id = p_household
   union all select 'personal_access_tokens', count(*)::int from public.personal_access_tokens where household_id = p_household
   union all select 'household_brands', count(*)::int from public.household_brands where household_id = p_household
   union all select 'feedback', count(*)::int from public.feedback where household_id = p_household
@@ -257,6 +258,8 @@ select public.purchase_record('apple', '2000000000002501', '2000000000002501', r
 insert into public.integration_blocks (household_id, integration, reported_at) values ((select id from h), 'siri', now());
 -- Job 73: the household's API requests today.
 insert into public.api_household_days (household_id, day, requests) values ((select id from h), current_date, 3);
+-- Job 272: a store changed to none.
+insert into public.item_store_cleared (household_id, item_key) values ((select id from h), 'salz');
 -- Job 169b W2: a former member was removed from it.
 insert into public.household_removals (household_id, user_id)
 values ((select id from h), '00000000-0000-0000-0000-0000000000a2');

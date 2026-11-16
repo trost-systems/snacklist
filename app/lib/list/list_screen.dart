@@ -90,7 +90,17 @@ class const ShoppingList({
     final list = context.select<ListCubit, ListCubit>((cubit) => cubit);
     return MultiBlocProvider(
       key: ObjectKey(list),
-      providers: [BlocProvider(create: (_) => AddSheetCubit(list))],
+      providers: [
+        BlocProvider(
+          create: (context) => AddSheetCubit(
+            list,
+            // Read on every key: a flag PostHog turns while the sheet is
+            // open counts from the next key.
+            stableRows: () =>
+                context.read<Flags?>()?.isOn(inputStableRowsFlag) ?? false,
+          ),
+        ),
+      ],
       child: ProvideHints(
         list: list,
         // The list's snackbars float above the add bar, not above the tabs.

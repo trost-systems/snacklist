@@ -37,6 +37,13 @@ const feedbackFb2Flag = 'feedback-fb2';
 /// code on a person's invite and the web app's „Öffnen“ card on phones.
 const joinHouseholdJh2Flag = 'join-household-jh2';
 
+/// The flag that keeps the add sheet's rows still while typing (job 272,
+/// IN1 and ST1): rows made on the device on every key with a category
+/// guess, the server's rows merged in below them, no change under a finger,
+/// and a new grocery's store from what the household buys most for its
+/// category.
+const inputStableRowsFlag = 'input-stable-rows';
+
 /// PostHog feature flags, the app's runtime toggles (job 44,
 /// docs/ANALYTICS.md "Feature flags"). Read a toggle with [isOn] wherever it
 /// matters; nothing else in the app reads PostHog flags.

@@ -16,6 +16,7 @@ import 'package:family_groceries/list/list_view/item_row.dart'
 import 'package:family_groceries/list/list_view/shopping_list_view.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/store_badge.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -138,15 +139,65 @@ class _AddSheetState() extends State<AddSheet> {
     );
   }
 
+  /// Debug builds only: the time from a key to the frame with its first
+  /// rows, and to the frame with the server's answer, per text. Logs the
+  /// text's length, never the text.
+  final _keyWatch = Stopwatch();
+  var _timedText = '';
+  var _answerTimed = false;
+
+  void _timeRows(AddSheetState sheet, {required bool stable}) {
+    final text = sheet.text.trim();
+    if (text.isEmpty) {
+      _timedText = '';
+      return;
+    }
+    final String step;
+    if (text != _timedText) {
+      _timedText = text;
+      _keyWatch
+        ..reset()
+        ..start();
+      _answerTimed = sheet.fresh;
+      step = sheet.fresh ? 'cached' : 'rows';
+    } else if (sheet.fresh && !_answerTimed) {
+      _answerTimed = true;
+      step = 'answer';
+    } else {
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_timedText == text) {
+        debugPrint(
+          '[add-sheet timing] stable=${stable ? 'on' : 'off'} '
+          'len=${text.length} $step ${_keyWatch.elapsedMilliseconds} ms',
+        );
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final still = MediaQuery.disableAnimationsOf(context);
     final sheet = context.watch<AddSheetCubit>().state;
     final list = context.watch<ListCubit>().state;
     final open = sheet.open;
-    return BlocListener<AddSheetCubit, AddSheetState>(
-      listenWhen: (a, b) => a.open != b.open,
-      listener: (_, s) => _openChanged(s.open, still),
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<AddSheetCubit, AddSheetState>(
+          listenWhen: (a, b) => a.open != b.open,
+          listener: (_, s) => _openChanged(s.open, still),
+        ),
+        if (kDebugMode)
+          BlocListener<AddSheetCubit, AddSheetState>(
+            listenWhen: (a, b) =>
+                a.text != b.text ||
+                a.suggestions != b.suggestions ||
+                a.answered != b.answered,
+            listener: (context, s) =>
+                _timeRows(s, stable: context.read<AddSheetCubit>().stableRows),
+          ),
+      ],
       child: LayoutBuilder(
         builder: (context, constraints) {
           final media = MediaQuery.of(context);
@@ -255,15 +306,51 @@ class const _Content({
   required final ValueChanged<Suggestion> onTake,
   required final VoidCallback onClose,
   required final VoidCallback onPicked,
-}) extends StatelessWidget {
+}) extends StatefulWidget {
+  @override
+  State<_Content> createState() => _ContentState();
+}
+
+class _ContentState() extends State<_Content> {
+  /// The rows as last built, and those held while a finger is down on one
+  /// of them (flag `input-stable-rows`): a row never changes under a
+  /// finger, and its tap adds what was shown when it went down. A finger on
+  /// a chip or a note holds nothing.
+  var _built = const <Suggestion>[];
+  List<Suggestion>? _held;
+  final _pointers = <int>{};
+
+  void _down(PointerDownEvent event) {
+    if (context.read<AddSheetCubit>().stableRows) {
+      _pointers.add(event.pointer);
+      _held ??= _built;
+    }
+  }
+
+  /// Lets go after the pointer's up has reached the rows: the tap
+  /// recognizer fires in the arena sweep that follows this listener.
+  void _up(PointerEvent event) {
+    if (_pointers.remove(event.pointer) && _pointers.isEmpty) {
+      scheduleMicrotask(() {
+        if (mounted && _pointers.isEmpty && _held != null) {
+          setState(() => _held = null);
+        }
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final _Content(:maxHeight, :onTake, :onClose, :onPicked) = widget;
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
-    final sheet = context.watch<AddSheetCubit>().state;
+    final cubit = context.watch<AddSheetCubit>();
+    final sheet = cubit.state;
     final list = context.watch<ListCubit>();
     final catalog = list.state.catalog;
-    final rows = sheetRows(sheet, list);
+    final rows = _held ?? sheetRows(sheet, list);
+    _built = rows;
+    final rowKeys = _rowKeys(rows, byContent: cubit.stableRows);
     final first = rows.firstOrNull?.entry;
     final pickedStore = sheet.store;
     final storeId = pickedStore == null ? first?.storeId : pickedStore.value;
@@ -349,7 +436,7 @@ class const _Content({
     final suggestions = <Widget>[
       for (final (i, row) in rows.indexed)
         _SuggestionRow(
-          key: ValueKey('suggestion-$i'),
+          key: rowKeys[i],
           suggestion: row,
           // Enter takes nothing before anything is typed.
           first: i == 0 && sheet.text.trim().isNotEmpty,
@@ -361,6 +448,8 @@ class const _Content({
               ? catalog.store(row.entry.storeId ?? '')
               : null,
           onTap: () => onTake(row),
+          onPointerDown: _down,
+          onPointerUp: _up,
         ),
       if (rows.isEmpty && sheet.added == null)
         Padding(
@@ -425,6 +514,22 @@ class const _Content({
       ),
     );
   }
+}
+
+/// The rows' keys: by position, or, with the flag `input-stable-rows`, by
+/// what each row adds, so a row's element follows its content.
+List<Key> _rowKeys(List<Suggestion> rows, {required bool byContent}) {
+  final seen = <String, int>{};
+  return [
+    for (final (i, row) in rows.indexed)
+      if (!byContent)
+        ValueKey('suggestion-$i')
+      else
+        switch (seen.update(row.key, (n) => n + 1, ifAbsent: () => 0)) {
+          0 => ValueKey('suggestion-${row.key}'),
+          final n => ValueKey('suggestion-${row.key}#$n'),
+        },
+  ];
 }
 
 /// The sheet's grab handle, centred over the chips.
@@ -502,6 +607,8 @@ class const _SuggestionRow({
   required final Catalog catalog,
   required final Store? ownStore,
   required final VoidCallback onTap,
+  required final PointerDownEventListener onPointerDown,
+  required final ValueChanged<PointerEvent> onPointerUp,
   super.key,
 }) extends StatelessWidget {
   @override
@@ -532,124 +639,134 @@ class const _SuggestionRow({
       label: label,
       excludeSemantics: true,
       onTap: onTap,
-      child: Material(
-        color: first ? scheme.secondaryContainer : Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          child: Container(
-            constraints: const BoxConstraints(minHeight: _rowHeight),
-            // The 48 px Enter hex, this and the border make the 60 px row.
-            padding: const EdgeInsets.fromLTRB(16, 6, 16, 5),
-            decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color: scheme.outlineVariant)),
-            ),
-            child: Row(
-              spacing: 12,
-              children: [
-                SizedBox(
-                  width: 24,
-                  child:
-                      suggestion.source == SuggestionSource.due &&
-                          category == null
-                      ? const Text(
-                          '🔁',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontFamilyFallback: emojiFontFallback,
-                          ),
-                        )
-                      : ItemIcon(entry.name, size: 20),
+      // A Listener paints nothing and adds no semantics node.
+      child: Listener(
+        onPointerDown: onPointerDown,
+        onPointerUp: onPointerUp,
+        onPointerCancel: onPointerUp,
+        child: Material(
+          color: first ? scheme.secondaryContainer : Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            child: Container(
+              constraints: const BoxConstraints(minHeight: _rowHeight),
+              // The 48 px Enter hex, this and the border make the 60 px row.
+              padding: const EdgeInsets.fromLTRB(16, 6, 16, 5),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(color: scheme.outlineVariant),
                 ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    spacing: 2,
-                    children: [
-                      Text.rich(
-                        TextSpan(
-                          children: [
-                            TextSpan(text: entry.name),
-                            // The Menge after the name, as typed at either
-                            // end: "Karotten · 2".
-                            if (quantityLabel(quantity) != null)
-                              TextSpan(
-                                text: ' · ${quantity!.trim()}',
-                                style: TextStyle(
-                                  color: scheme.primary,
-                                  fontWeight: FontWeight.w900,
-                                ),
-                              ),
-                          ],
-                        ),
-                        style: TextStyle(
-                          fontSize: _nameSize,
-                          height: _nameLeading,
-                          fontWeight: FontWeight.w600,
-                          color: scheme.onSurface,
-                        ),
-                      ),
-                      Text.rich(
-                        TextSpan(
-                          children: [
-                            TextSpan(text: source),
-                            for (final part in parts) ...[
-                              const TextSpan(text: ' · '),
-                              TextSpan(
-                                text: part,
-                                style:
-                                    !first &&
-                                        !baseParts.contains(part.toLowerCase())
-                                    ? TextStyle(
-                                        fontWeight: FontWeight.w700,
-                                        color: scheme.primary,
-                                      )
-                                    : null,
-                              ),
-                            ],
-                          ],
-                        ),
-                        style: TextStyle(
-                          fontSize: _detailSize,
-                          height: _detailLeading,
-                          fontWeight: FontWeight.w500,
-                          color: t.textMuted,
-                        ),
-                      ),
-                    ],
+              ),
+              child: Row(
+                spacing: 12,
+                children: [
+                  SizedBox(
+                    width: 24,
+                    child:
+                        suggestion.source == SuggestionSource.due &&
+                            category == null
+                        ? const Text(
+                            '🔁',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontFamilyFallback: emojiFontFallback,
+                            ),
+                          )
+                        : ItemIcon(entry.name, size: 20),
                   ),
-                ),
-                ?(ownStore == null
-                    ? null
-                    : StoreBadge(ownStore!, height: 24, maxWidth: 120)),
-                // The key Enter presses: a hex face on its edge, the size
-                // of the close button.
-                if (first)
-                  SizedBox.fromSize(
-                    size: _hexKey,
-                    child: TactileFace(
-                      states: const {},
-                      colors: TactileColors(
-                        face: t.surfaceRaised,
-                        contour: t.border,
-                        edge: t.surfaceEdge,
-                        focus: t.accent,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                          bottom: raisedFaces ? HlDepth.edge : 0,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: 2,
+                      children: [
+                        Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(text: entry.name),
+                              // The Menge after the name, as typed at either
+                              // end: "Karotten · 2".
+                              if (quantityLabel(quantity) != null)
+                                TextSpan(
+                                  text: ' · ${quantity!.trim()}',
+                                  style: TextStyle(
+                                    color: scheme.primary,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                            ],
+                          ),
+                          style: TextStyle(
+                            fontSize: _nameSize,
+                            height: _nameLeading,
+                            fontWeight: FontWeight.w600,
+                            color: scheme.onSurface,
+                          ),
                         ),
-                        child: Center(
-                          child: Icon(
-                            Icons.keyboard_return,
-                            size: 20,
-                            color: t.text,
+                        Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(text: source),
+                              for (final part in parts) ...[
+                                const TextSpan(text: ' · '),
+                                TextSpan(
+                                  text: part,
+                                  style:
+                                      !first &&
+                                          !baseParts.contains(
+                                            part.toLowerCase(),
+                                          )
+                                      ? TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          color: scheme.primary,
+                                        )
+                                      : null,
+                                ),
+                              ],
+                            ],
+                          ),
+                          style: TextStyle(
+                            fontSize: _detailSize,
+                            height: _detailLeading,
+                            fontWeight: FontWeight.w500,
+                            color: t.textMuted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  ?(ownStore == null
+                      ? null
+                      : StoreBadge(ownStore!, height: 24, maxWidth: 120)),
+                  // The key Enter presses: a hex face on its edge, the size
+                  // of the close button.
+                  if (first)
+                    SizedBox.fromSize(
+                      size: _hexKey,
+                      child: TactileFace(
+                        states: const {},
+                        colors: TactileColors(
+                          face: t.surfaceRaised,
+                          contour: t.border,
+                          edge: t.surfaceEdge,
+                          focus: t.accent,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                            bottom: raisedFaces ? HlDepth.edge : 0,
+                          ),
+                          child: Center(
+                            child: Icon(
+                              Icons.keyboard_return,
+                              size: 20,
+                              color: t.text,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

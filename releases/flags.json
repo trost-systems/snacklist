@@ -31,6 +31,10 @@
     "join-household-jh2": {
       "rollout": "off",
       "note": "JH2, joining a household in the browser first (the start screen's two buttons without Einladung einfügen, Bestehendem Haushalt beitreten on the name step with the 8-character code and its preview, the sign-in sheet for an invite, joining from a link without asking again, the approval wait's new words, the QR code on a person's invite, the web app's Öffnen card on phones) shows only while the PostHog flag join-household-jh2 is on (job 271); off until Legal approves the typed-code preview (JH-Q9)"
+    },
+    "input-stable-rows": {
+      "rollout": "off",
+      "note": "the add sheet's rows stay put while typing (made on the device on every key with a category guess, the server's rows merged in below without moving them, none changes under a finger) and a new grocery without a remembered store goes to the store the household uses most for its category, only while the PostHog flag input-stable-rows is on (job 272)"
     }
   },
   "holds": {

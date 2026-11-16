@@ -1,5 +1,5 @@
 begin;
-select plan(123);
+select plan(125);
 
 create function pg_temp.login(uid uuid) returns void language plpgsql as $$
 begin
@@ -41,6 +41,10 @@ insert into public.items (id, household_id, name) select '32b00000-0000-4000-800
 insert into public.items (id, household_id, name) select '32b00000-0000-4000-8000-000000000002', id, 'Karotten' from ha;
 do $$ begin perform public.merge_items('32b00000-0000-4000-8000-0000000000a1',
   '32b00000-0000-4000-8000-000000000001', '32b00000-0000-4000-8000-000000000002'); end $$;
+
+-- Job 272: a store Alice changed to none.
+set local role postgres;
+insert into public.item_store_cleared (household_id, item_key) select id, 'salz' from ha;
 
 select pg_temp.login('00000000-0000-0000-0000-0000000000b1');
 create temp table hb as select id from public.create_household('Bob');
@@ -119,6 +123,11 @@ select is(
 -- Job 2: learned memories and the catalog RPCs.
 select is((select count(*)::int from public.category_memory), 0, 'category memories of another household are invisible');
 select is((select count(*)::int from public.item_store_memory), 0, 'store memories of another household are invisible');
+select is((select count(*)::int from public.item_store_cleared), 0, 'recorded store clears of another household are invisible');
+select throws_ok(
+  $$ insert into public.item_store_cleared (household_id, item_key) select id, 'brot' from hb $$,
+  '42501', null, 'recorded store clears cannot be written directly'
+);
 select throws_ok(
   $$ insert into public.category_memory (household_id, item_key, category_id) select id, 'x', (select id from alice_category) from ha $$,
   '42501', null, 'memories cannot be written directly'
