@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:family_groceries/list/catalog/catalog_index.dart';
@@ -22,8 +23,14 @@ final class _Store() implements CatalogStore {
   CachedCatalogDelta? cached;
   var saves = 0;
 
+  /// When set, the cache read waits for it.
+  Completer<void>? gate;
+
   @override
-  Future<CachedCatalogDelta?> cachedCatalogDelta() async => cached;
+  Future<CachedCatalogDelta?> cachedCatalogDelta() async {
+    await gate?.future;
+    return cached;
+  }
 
   @override
   Future<void> saveCachedCatalogDelta(CachedCatalogDelta cached) async {
@@ -159,4 +166,19 @@ void main() {
       expect(identical(cubit.state, _bundled), isTrue, reason: 'switched off');
     },
   );
+
+  test('signing in while a signed-out start still reads the cache checks '
+      'once', () async {
+    store
+      ..cached = cached(age: const Duration(days: 2))
+      ..gate = Completer<void>();
+    server.answer = () => _answer('00000000000000bb', 'quorpel');
+    final signedOut = loader.follow(on: true, signedIn: false);
+    final signedIn = loader.follow(on: true, signedIn: true);
+    final again = loader.follow(on: true, signedIn: true);
+    store.gate!.complete();
+    await Future.wait([signedOut, signedIn, again]);
+    expect(server.asked, [_bundled.version]);
+    expect(cubit.state.version, '00000000000000bb');
+  });
 }

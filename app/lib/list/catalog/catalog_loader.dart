@@ -61,6 +61,7 @@ final class CatalogLoader({
 
   late final _bundled = bundled ?? CatalogIndex.bundled;
   var _on = false;
+  var _signedIn = false;
   Future<void>? _running;
 
   /// Follows the flag and the session: on, the cached answer applies and
@@ -73,8 +74,20 @@ final class CatalogLoader({
       return Future.value();
     }
     _on = true;
-    return _running ??= _run(signedIn: signedIn)
-        .whenComplete(() => _running = null);
+    _signedIn = signedIn;
+    return _running ??= _runUntilSignedInRan().whenComplete(
+      () => _running = null,
+    );
+  }
+
+  /// A sign-in during a signed-out run runs once more: that run skipped
+  /// the check.
+  Future<void> _runUntilSignedInRan() async {
+    bool ran;
+    do {
+      ran = _signedIn;
+      await _run(signedIn: ran);
+    } while (!ran && _signedIn);
   }
 
   Future<void> _run({required bool signedIn}) async {
