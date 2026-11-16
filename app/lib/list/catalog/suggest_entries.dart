@@ -15,9 +15,15 @@ import 'package:family_groceries/list/model.dart';
 /// source, name, brand, details and Menge, from [catalog] and [household]
 /// plus [pending], what the device bought or added that the household
 /// index does not hold yet. Each row's category is [guessCategory]'s from
-/// [categories] (the household's) and [known] ([householdCategories]); the
-/// store is left to the server's answer. `supabase/tests/suggest_parity.json`
-/// is the table both sides pass.
+/// [categories] (the household's) and [known] ([householdCategories]).
+/// Each row's store is the one public.suggest_entries gives it with
+/// `p_category_store` = [categoryStore], from the household's store memory
+/// and stores in [household]; the category it reads is the guessed one.
+/// `supabase/tests/suggest_parity.json` is the table both sides pass.
+///
+/// [pending] rows add history, not store memory: the server learns a store
+/// from a change, a tick or a pick that differs from its guess, which a
+/// list row does not tell, so their stores wait for the next index.
 List<Suggestion> suggestEntries(
   String text, {
   required CatalogIndex catalog,
@@ -25,53 +31,78 @@ List<Suggestion> suggestEntries(
   required Catalog categories,
   required Map<String, String> known,
   Iterable<HistoryRow> pending = const [],
+  bool categoryStore = false,
   int limit = mergedRows,
-}) => [
-  for (final (source, entry) in suggestRows(
-    text,
-    catalog: catalog,
-    household: household,
-    pending: pending,
-    limit: limit,
-  ))
-    Suggestion(
-      source,
-      ParsedEntry(
-        name: entry.name,
-        brand: entry.brand,
-        properties: entry.properties,
-        quantity: entry.quantity,
-        categoryId: guessCategory(
-          entry.name,
-          catalog: categories,
-          known: known,
-          index: catalog,
+}) {
+  final context = _Context(catalog, household, pending);
+  final suggestions = <Suggestion>[];
+  for (final (:source, :entry, :storeSeed) in _rows(text, context, limit)) {
+    final categoryId = guessCategory(
+      entry.name,
+      catalog: categories,
+      known: known,
+      index: catalog,
+    );
+    final storeId =
+        source == SuggestionSource.history ||
+            source == SuggestionSource.brand ||
+            categoryStore
+        ? context.guessStore(
+            entry.name,
+            entry.brand,
+            categoryId,
+            categoryStore: categoryStore,
+          )
+        : context.parsedStore(entry.name, storeSeed, categoryId);
+    suggestions.add(
+      Suggestion(
+        source,
+        ParsedEntry(
+          name: entry.name,
+          brand: entry.brand,
+          properties: entry.properties,
+          quantity: entry.quantity,
+          categoryId: categoryId,
+          storeId: storeId,
         ),
       ),
-    ),
-];
+    );
+  }
+  return suggestions;
+}
 
-/// [suggestEntries] without categories: each row's source and its text.
+/// [suggestEntries] without categories and stores: each row's source and
+/// its text.
 List<(SuggestionSource, ParsedEntry)> suggestRows(
   String text, {
   required CatalogIndex catalog,
   required HouseholdIndex household,
   Iterable<HistoryRow> pending = const [],
   int limit = mergedRows,
-}) {
-  final rows = <(SuggestionSource, ParsedEntry)>[];
+}) => [
+  for (final (:source, :entry, storeSeed: _) in _rows(
+    text,
+    _Context(catalog, household, pending),
+    limit,
+  ))
+    (source, entry),
+];
+
+/// public.suggest_entries' rows for [text], after the caps and the dedupe.
+List<_Row> _rows(String text, _Context context, int limit) {
+  final rows = <_Row>[];
   if (_btrim(text).isEmpty) {
     return rows;
   }
-  final context = _Context(catalog, household, pending);
-  final typed = context.parse(text);
-  if (typed.name.isEmpty) {
+  final typed = context.read(text);
+  if (typed.entry.name.isEmpty) {
     return rows;
   }
   final taken = <SuggestionSource, int>{};
   final seen = <String>{};
   final left = limit.clamp(1, 20);
-  for (final (source, entry) in _candidates(text, typed, context)) {
+  for (final row in _candidates(text, typed, context)) {
+    final (:source, :entry, storeSeed: _) = row;
     if ((taken[source] ?? 0) >= _caps[source]!) {
       continue;
     }
@@ -79,13 +110,26 @@ List<(SuggestionSource, ParsedEntry)> suggestRows(
       continue;
     }
     taken[source] = (taken[source] ?? 0) + 1;
-    rows.add((source, entry));
+    rows.add(row);
     if (rows.length == left) {
       break;
     }
   }
   return rows;
 }
+
+/// A row of public.suggest_entries with the store seed of the global brand
+/// public.parse_item found in the text that made it (null for history and
+/// brand rows, whose store comes from public.guess_store).
+typedef _Row = ({
+  SuggestionSource source,
+  ParsedEntry entry,
+  String? storeSeed,
+});
+
+/// public.parse_item's reading: the entry and its global brand's store
+/// seed.
+typedef _Parsed = ({ParsedEntry entry, String? storeSeed});
 
 /// [text] as public.parse_item reads it, without its category and store:
 /// name, brand, details and Menge.
@@ -94,7 +138,7 @@ ParsedEntry parseItem(
   required CatalogIndex catalog,
   required HouseholdIndex household,
   Iterable<HistoryRow> pending = const [],
-}) => _Context(catalog, household, pending).parse(text);
+}) => _Context(catalog, household, pending).read(text).entry;
 
 /// How a normalized [name] matches the normalized [typed] text, as
 /// public.suggest_match: 0 the same, 1 it starts with it, 2 it holds it
@@ -262,11 +306,12 @@ final _whitespace = RegExp(r'\s');
 
 /// public.suggest_entries' candidates in its order (source, then rank),
 /// before the caps and the dedupe.
-Iterable<(SuggestionSource, ParsedEntry)> _candidates(
+Iterable<_Row> _candidates(
   String text,
-  ParsedEntry typed,
+  _Parsed parsed,
   _Context context,
 ) sync* {
+  final (entry: typed, :storeSeed) = parsed;
   final norm = normalizeItemName(typed.name);
   final parts = typed.properties?.split(', ') ?? const <String>[];
   // A size past PostgreSQL's integer fails the server's whole call; here
@@ -284,7 +329,7 @@ Iterable<(SuggestionSource, ParsedEntry)> _candidates(
       if (row.row.normalizedName == norm) row.row,
   ];
 
-  yield (SuggestionSource.typed, typed);
+  yield (source: SuggestionSource.typed, entry: typed, storeSeed: storeSeed);
 
   if (norm.length >= 2) {
     final ranked = [...history]
@@ -300,13 +345,14 @@ Iterable<(SuggestionSource, ParsedEntry)> _candidates(
       );
     for (final (:row, tier: _, sim: _) in ranked) {
       yield (
-        SuggestionSource.history,
-        ParsedEntry(
+        source: SuggestionSource.history,
+        entry: ParsedEntry(
           name: row.name,
           brand: row.brand,
           properties: row.properties,
           quantity: typed.quantity ?? row.quantity,
         ),
+        storeSeed: null,
       );
     }
   }
@@ -332,8 +378,9 @@ Iterable<(SuggestionSource, ParsedEntry)> _candidates(
   for (final (part, _) in rankedParts) {
     final pack = _isPackProperty(part);
     yield (
-      pack ? SuggestionSource.pack : SuggestionSource.variant,
-      ParsedEntry(
+      source: pack ? SuggestionSource.pack : SuggestionSource.variant,
+      storeSeed: storeSeed,
+      entry: ParsedEntry(
         name: typed.name,
         brand: typed.brand,
         properties: capText(
@@ -352,8 +399,9 @@ Iterable<(SuggestionSource, ParsedEntry)> _candidates(
     for (final next in [size + 1, size - 1]) {
       if (next >= 1 && next <= 8) {
         yield (
-          SuggestionSource.size,
-          ParsedEntry(
+          source: SuggestionSource.size,
+          storeSeed: storeSeed,
+          entry: ParsedEntry(
             name: typed.name,
             brand: typed.brand,
             properties: [
@@ -400,20 +448,25 @@ Iterable<(SuggestionSource, ParsedEntry)> _candidates(
     );
   for (final (brand, _, _) in rankedBrands) {
     yield (
-      SuggestionSource.brand,
-      ParsedEntry(
+      source: SuggestionSource.brand,
+      entry: ParsedEntry(
         name: typed.name,
         brand: brand,
         properties: typed.properties,
         quantity: typed.quantity,
       ),
+      storeSeed: null,
     );
   }
 
   for (final term in context.terms(lastKey, typed.name)) {
+    final (:entry, :storeSeed) = context.read(
+      trimmed.replaceFirst(_lastWord, initcap(term)),
+    );
     yield (
-      SuggestionSource.catalog,
-      context.parse(trimmed.replaceFirst(_lastWord, initcap(term))),
+      source: SuggestionSource.catalog,
+      entry: entry,
+      storeSeed: storeSeed,
     );
   }
 }
@@ -531,7 +584,7 @@ final class _Context(
   }
 
   /// public.parse_item(household, text) without category and store.
-  ParsedEntry parse(String input) {
+  _Parsed read(String input) {
     var text = _btrim(input).replaceAll(_spaces, ' ');
     for (final (pattern, replacement) in _halves) {
       text = text.replaceFirst(pattern, replacement);
@@ -575,7 +628,10 @@ final class _Context(
         .toList();
     final n = tokens.length;
     if (n == 0) {
-      return ParsedEntry(name: '', quantity: quantity);
+      return (
+        entry: ParsedEntry(name: '', quantity: quantity),
+        storeSeed: null,
+      );
     }
     final suffix = [
       for (final t in tokens) _trailingPunctuation.firstMatch(t)?[0] ?? '',
@@ -737,15 +793,61 @@ final class _Context(
       name = tokens.join(' ');
       properties.clear();
     }
-    return ParsedEntry(
-      name: capText(name, 120)!,
-      brand: capText(brand, 60),
-      properties: capText(switch (properties.join(', ')) {
-        '' => null,
-        final joined => joined,
-      }, 120),
-      quantity: capText(quantity, 40),
+    return (
+      entry: ParsedEntry(
+        name: capText(name, 120)!,
+        brand: capText(brand, 60),
+        properties: capText(switch (properties.join(', ')) {
+          '' => null,
+          final joined => joined,
+        }, 120),
+        quantity: capText(quantity, 40),
+      ),
+      storeSeed: global?.storeSeed,
     );
+  }
+
+  /// public.suggest_store: the store taught for [name]'s item key, else for
+  /// its canonical key, the newest lesson first.
+  String? suggestStore(String name) {
+    final key = itemKey(name);
+    return household.memoryByKey[key] ??
+        (household.index.memory.isEmpty
+            ? null
+            : household.memoryByCanonical[catalog.canonicalOfKey(key)]);
+  }
+
+  /// The store public.parse_item gives a line it read as [name] with
+  /// [storeSeed] in the household's [category], without
+  /// `p_category_store`: the taught one, the brand's, the category's
+  /// (public.category_store).
+  String? parsedStore(String name, String? storeSeed, String? category) =>
+      suggestStore(name) ??
+      household.storeBySeed[storeSeed] ??
+      household.seeded[category];
+
+  /// public.guess_store: the taught store; with [categoryStore] none for a
+  /// name last set to „Ohne Laden“; else the store of [brand], with
+  /// [categoryStore] the one the household uses most for [category], then
+  /// the category's own (dm, Baumarkt).
+  String? guessStore(
+    String name,
+    String? brand,
+    String? category, {
+    required bool categoryStore,
+  }) {
+    if (suggestStore(name) case final store?) {
+      return store;
+    }
+    if (categoryStore && household.cleared.contains(itemKey(name))) {
+      return null;
+    }
+    return household.storeBySeed[catalog
+            .index
+            .brands[brandKey(brand)]
+            ?.storeSeed] ??
+        (categoryStore ? household.usual[category] : null) ??
+        household.seeded[category];
   }
 }
 
@@ -1022,15 +1124,20 @@ final class _CatalogLookups._(final CatalogIndex index) {
     );
   }
 
-  /// public.lexicon_fuzzy(word, 2) answers a row: the nearest one-word
-  /// forms with the same first letter are all of one category.
-  bool _hasTypo(String word) {
+  /// public.lexicon_fuzzy(word, 2) answers a row.
+  bool _hasTypo(String word) => _fuzzy(word, 2) != null;
+
+  /// public.lexicon_fuzzy(word, max): of the one-word forms with [word]'s
+  /// first letter at most [max] edits away (fewer for short words; a swap
+  /// of two letters is one), the nearest, when they are all of one
+  /// category; the first of them in the database's order.
+  CatalogForm? _fuzzy(String word, int max) {
     final length = word.length;
     if (length < 5) {
-      return false;
+      return null;
     }
     var best = 3;
-    final categories = <String>{};
+    final nearest = <CatalogForm>[];
     for (final form
         in _formsByHead[word.substring(0, 1)] ?? const <CatalogForm>[]) {
       final f = form.form;
@@ -1038,13 +1145,16 @@ final class _CatalogLookups._(final CatalogIndex index) {
         continue;
       }
       final swap = f.length == length && _isSwap(word, f);
-      final allowed = math.min(f.length, length) >= 8
-          ? 2
-          : math.max(f.length, length) >= 6
-          ? 1
-          : 0;
+      final allowed = math.min(
+        max,
+        math.min(f.length, length) >= 8
+            ? 2
+            : math.max(f.length, length) >= 6
+            ? 1
+            : 0,
+      );
       final int distance;
-      if (swap) {
+      if (swap && max >= 1) {
         distance = 1;
       } else if (allowed > 0 && withinEdits(word, f, allowed)) {
         distance = withinEdits(word, f, 1) ? 1 : 2;
@@ -1053,15 +1163,91 @@ final class _CatalogLookups._(final CatalogIndex index) {
       }
       if (distance < best) {
         best = distance;
-        categories.clear();
+        nearest.clear();
       }
       if (distance == best) {
-        categories.add(form.category);
+        nearest.add(form);
       }
     }
-    return categories.length == 1;
+    if (nearest.map((f) => f.category).toSet().length != 1) {
+      return null;
+    }
+    return nearest.reduce((a, b) => collate(a.form, b.form) <= 0 ? a : b);
+  }
+
+  /// public.canonical_of_key: the key spelling variants, synonyms and
+  /// recognized typos of an item key share, per word of
+  /// public.classifier_words.
+  String canonicalOfKey(String key) {
+    if (_canonical.length >= 4096) {
+      _canonical.clear();
+    }
+    return _canonical[key] ??= _canonicalOfKey(key);
+  }
+
+  final _canonical = <String, String>{};
+
+  String _canonicalOfKey(String key) {
+    var words = foldKey(key).split(' ').where((w) => w.isNotEmpty).toList();
+    if (words.isEmpty) {
+      return '';
+    }
+    final forms = index.forms;
+    final phrases = <CatalogForm>[];
+    if (words.length > 1) {
+      final runs = [
+        for (var a = 0; a < words.length; a++)
+          for (var b = a + 2; b <= words.length; b++)
+            ?forms[words.sublist(a, b).join(' ')],
+      ]..sort((x, y) => y.form.length.compareTo(x.form.length));
+      var folded = ' ${words.join(' ')} ';
+      for (final phrase in runs) {
+        if (folded.contains(' ${phrase.form} ')) {
+          phrases.add(phrase);
+          folded = folded.replaceAll(
+            ' ${phrase.form} ',
+            ' #${phrases.length} ',
+          );
+        }
+      }
+      words = folded.trim().split(' ');
+    }
+    return [
+      for (final word in words)
+        if (_phraseToken.firstMatch(word) case final m?)
+          phrases[int.parse(m[1]!) - 1].canonical
+        else
+          _canonicalOfWord(word),
+    ].join(' ');
+  }
+
+  /// A word's canonical: a typo's form, else the word with the longest
+  /// form of 4+ letters it ends with (or itself) replaced by its
+  /// canonical, else the word.
+  String _canonicalOfWord(String word) {
+    CatalogForm? hit;
+    for (var i = 0; i < math.max(word.length - 3, 1); i++) {
+      if (index.forms[word.substring(i)] case final form?) {
+        hit = form;
+        break;
+      }
+    }
+    if (hit == null || word.length - hit.form.length >= 4) {
+      final fuzzy = _fuzzy(word, hit == null ? 2 : 1);
+      if (fuzzy != null &&
+          (hit == null ||
+              (fuzzy.form.length >= hit.form.length + 4 &&
+                  !fuzzy.form.endsWith(hit.form)))) {
+        return fuzzy.canonical;
+      }
+    }
+    return hit == null
+        ? word
+        : word.substring(0, word.length - hit.form.length) + hit.canonical;
   }
 }
+
+final _phraseToken = RegExp(r'^#(\d+)$');
 
 /// Whether swapping two neighbouring letters of [word] makes [form].
 bool _isSwap(String word, String form) {
@@ -1085,6 +1271,35 @@ final class _HouseholdLookups._(final HouseholdIndex index) {
   /// The learned brands by brand key.
   late final Map<String, String> brands = {
     for (final b in index.brands) b.key: b.brand,
+  };
+
+  /// The store taught for each item key, the newest.
+  late final Map<String, String> memoryByKey = _newest((m) => m.itemKey);
+
+  /// The store taught for each canonical key, the newest.
+  late final Map<String, String> memoryByCanonical = _newest(
+    (m) => m.canonicalKey,
+  );
+
+  Map<String, String> _newest(String? Function(StoreMemory m) keyOf) => {
+    for (final m in index.memory.reversed) ?keyOf(m): m.storeId,
+  };
+
+  late final Set<String> cleared = index.cleared.toSet();
+
+  /// The household's stores by seed key.
+  late final Map<String?, String> storeBySeed = {
+    for (final s in index.stores) s.seedKey: s.storeId,
+  };
+
+  /// public.category_usual_store by category.
+  late final Map<String?, String> usual = {
+    for (final c in index.categories) c.categoryId: ?c.usual,
+  };
+
+  /// public.category_store by category.
+  late final Map<String?, String> seeded = {
+    for (final c in index.categories) c.categoryId: ?c.seeded,
   };
 
   /// The normalized names of every item the household had.

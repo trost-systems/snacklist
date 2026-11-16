@@ -17,6 +17,7 @@ supabase/classifier/sweep.sh
 supabase/classifier/wordlist.sh
 supabase/classifier/latency.sh
 # Jobs 61, 274: the catalog the app bundles (classifier rows, brands, the parser's vocabulary) is current.
+# A migration that changes the catalog needs nothing more: a trigger snapshots the version it replaces.
 supabase/classifier/client_catalog.sh --check
 # Job 59: suggest_entries with fuzzy matching stays under 50 ms p95 on a 5000-item household.
 supabase/bench/suggest_latency.sh

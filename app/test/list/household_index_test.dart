@@ -12,8 +12,16 @@ const _answer = '''
   ],
   "brands": [["Hofgut", "hofgut"]],
   "unserved": ["paint", "tools"],
-  "known": ["butter", "aepfel"]
+  "known": ["butter", "aepfel"],
+  "memory": [["milch", "milch", "s-dm"], ["kaffe", null, "s-krume"]],
+  "cleared": ["brot"],
+  "stores": [["dm", "s-dm"]],
+  "categories": [["c-drugstore", null, "s-dm"], ["c-chilled", "s-krume", null]]
 }''';
+
+/// An index cached before job 274's review added the store keys.
+const _cachedBeforeStores = '''
+{"history": [], "brands": [], "unserved": [], "known": ["butter"]}''';
 
 void main() {
   test('the answer becomes typed rows', () {
@@ -30,6 +38,25 @@ void main() {
     expect(index.brands.single, (brand: 'Hofgut', key: 'hofgut'));
     expect(index.unserved, ['paint', 'tools']);
     expect(index.known, ['butter', 'aepfel']);
+    expect(index.memory, [
+      (itemKey: 'milch', canonicalKey: 'milch', storeId: 's-dm'),
+      (itemKey: 'kaffe', canonicalKey: null, storeId: 's-krume'),
+    ]);
+    expect(index.cleared, ['brot']);
+    expect(index.stores, [(seedKey: 'dm', storeId: 's-dm')]);
+    expect(index.categories, [
+      (categoryId: 'c-drugstore', usual: null, seeded: 's-dm'),
+      (categoryId: 'c-chilled', usual: 's-krume', seeded: null),
+    ]);
+  });
+
+  test('an index cached without the store keys reads them as empty', () {
+    final index = HouseholdIndex.fromJson(jsonDecode(_cachedBeforeStores))!;
+    expect(index.known, ['butter']);
+    expect(index.memory, isEmpty);
+    expect(index.cleared, isEmpty);
+    expect(index.stores, isEmpty);
+    expect(index.categories, isEmpty);
   });
 
   test('what it writes it reads back the same', () {
@@ -41,6 +68,10 @@ void main() {
     expect(again.brands, index.brands);
     expect(again.unserved, index.unserved);
     expect(again.known, index.known);
+    expect(again.memory, index.memory);
+    expect(again.cleared, index.cleared);
+    expect(again.stores, index.stores);
+    expect(again.categories, index.categories);
     expect(HouseholdIndex.fromJson(HouseholdIndex.empty.toJson()), isNotNull);
   });
 
@@ -71,6 +102,24 @@ void main() {
       answer()..['known'] = [1],
       answer()..['known'] = ['x' * 301],
       answer()..['known'] = List.filled(20001, 'milch'),
+      answer()..['memory'] = 'milch',
+      answer()
+        ..['memory'] = [
+          ['milch', 'milch'],
+        ],
+      answer()
+        ..['memory'] = [
+          ['milch', 'milch', ''],
+        ],
+      answer()..['cleared'] = [null],
+      answer()
+        ..['stores'] = [
+          ['dm', null],
+        ],
+      answer()
+        ..['categories'] = [
+          ['c', 1, null],
+        ],
     ].indexed) {
       expect(HouseholdIndex.fromJson(bad), isNull, reason: 'case $i');
     }

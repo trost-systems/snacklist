@@ -152,11 +152,19 @@ function values(type: string, household: Household, outsider: Outsider): string[
     uuid: all.map(uuid),
     'uuid[]': [`array[${all.map(uuid).join(', ')}]`],
     // A name, then the words the functions take (roles, kinds of invite, how to join, where to
-    // place an item) and the household's invite code.
+    // place an item, a catalog version) and the household's invite code.
     text: [
-      ...['Milch', 'admin', 'member', 'person', 'group', 'add', 'before', 'after'].map((t) =>
-        `'${t}'::text`
-      ),
+      ...[
+        'Milch',
+        'admin',
+        'member',
+        'person',
+        'group',
+        'add',
+        'before',
+        'after',
+        '0123456789abcdef',
+      ].map((t) => `'${t}'::text`),
       codeOf(household),
     ],
     'text[]': ["array['Milch']::text[]"],

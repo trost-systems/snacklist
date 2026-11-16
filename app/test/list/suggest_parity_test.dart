@@ -21,6 +21,9 @@ const _categoryExceptions = <String, String>{
   'Küchenücher|Küchenücher': _typo,
   'Küchetnücher|Küchetnücher': _typo,
   'Pizzaotmaten|Pizzaotmaten': _typo,
+  'Quarkbellchen|Quarkbellchen': _typo,
+  'Quarkbllchen|Quarkbllchen': _typo,
+  'Quarkäbllchen|Quarkäbllchen': _typo,
   'Pizzatematen|Pizzatematen': _typo,
   'Pizzatmaten|Pizzatmaten': _typo,
   'Schaumeucker|Schaumeucker': _typo,
@@ -41,6 +44,8 @@ const _categoryExceptions = <String, String>{
   'Nagelhärte|Nagelhärte': _partial,
   'Pizzatoma|Pizzatoma': _partial,
   'Plim|Plim': _partial,
+  'Quarkbäl|Quarkbäl': _partial,
+  'Quarkbäll|Quarkbäll': _partial,
   'Sham|Sham': _partial,
   'Thunfischsal|Thunfischsal': _partial,
   'Thunfischsala|Thunfischsala': _partial,
@@ -97,36 +102,77 @@ void main() {
   final known = {
     for (final MapEntry(:key, value: (_, seed)) in latest.entries) key: seed,
   };
-  final cases = [
-    for (final c in parity['cases']! as List<Object?>)
+  List<(String, List<Object?>)> casesOf(Object? json) => [
+    for (final c in json! as List<Object?>)
       if (c case [final String text, final List<Object?> rows]) (text, rows),
+  ];
+  final cases = casesOf(parity['cases']);
+  final pendingTable = parity['pending']! as Map<String, Object?>;
+  final pending = HouseholdIndex.fromJson({
+    'history': pendingTable['items'],
+    'brands': const <Object?>[],
+    'unserved': const <Object?>[],
+    'known': const <Object?>[],
+  })!.history;
+  final deltaTable = parity['delta']! as Map<String, Object?>;
+  final delta = CatalogIndex.bundled.apply(
+    parseCatalogDelta(deltaTable['answer'])!,
+  );
+
+  /// The three tables: the household as indexed; with items the index
+  /// has not seen yet; with a term the catalog gained since the build.
+  final tables = [
+    (
+      name: 'cases',
+      cases: cases,
+      catalog: CatalogIndex.bundled,
+      pending: <HistoryRow>[],
+    ),
+    (
+      name: 'pending',
+      cases: casesOf(pendingTable['cases']),
+      catalog: CatalogIndex.bundled,
+      pending: pending,
+    ),
+    (
+      name: 'delta',
+      cases: casesOf(deltaTable['cases']),
+      catalog: delta,
+      pending: <HistoryRow>[],
+    ),
   ];
 
   test('the device ranks every text as the server does', () {
     final differing = <String>[];
     var rows = 0;
-    for (final (text, expected) in cases) {
-      rows += expected.length;
-      final actual = [
-        for (final (source, e) in suggestRows(
-          text,
-          catalog: CatalogIndex.bundled,
-          household: household,
-        ))
-          [source.name, e.name, e.brand, e.properties, e.quantity],
-      ];
-      final server = [
-        for (final row in expected) (row! as List<Object?>).sublist(0, 5),
-      ];
-      if (jsonEncode(actual) != jsonEncode(server)) {
-        differing.add(
-          '${jsonEncode(text)}\n  server ${jsonEncode(server)}\n'
-          '  device ${jsonEncode(actual)}',
-        );
+    var texts = 0;
+    for (final table in tables) {
+      for (final (text, expected) in table.cases) {
+        texts++;
+        rows += expected.length;
+        final actual = [
+          for (final (source, e) in suggestRows(
+            text,
+            catalog: table.catalog,
+            household: household,
+            pending: table.pending,
+          ))
+            [source.name, e.name, e.brand, e.properties, e.quantity],
+        ];
+        final server = [
+          for (final row in expected) (row! as List<Object?>).sublist(0, 5),
+        ];
+        if (jsonEncode(actual) != jsonEncode(server)) {
+          differing.add(
+            '${table.name} ${jsonEncode(text)}\n'
+            '  server ${jsonEncode(server)}\n'
+            '  device ${jsonEncode(actual)}',
+          );
+        }
       }
     }
     // ignore: avoid_print -- the table's size, for the record
-    print('suggest parity: ${cases.length} texts, $rows rows');
+    print('suggest parity: $texts texts, $rows rows');
     expect(differing, isEmpty, reason: differing.take(30).join('\n'));
   });
 
@@ -174,4 +220,54 @@ void main() {
     );
     expect(differing, isEmpty, reason: differing.join('\n'));
   });
+
+  // The store reads the row's category (public.guess_store, the category's
+  // usual store and its dm or Baumarkt store), and the device reads its
+  // guess: a row whose guess is not the server's category may get another
+  // store. Every other row gets the server's.
+  for (final categoryStore in [false, true]) {
+    test('the device gives every row the server store, '
+        'p_category_store $categoryStore', () {
+      var agree = 0;
+      var rows = 0;
+      final byCategory = <String>[];
+      final differing = <String>[];
+      for (final table in tables) {
+        for (final (text, expected) in table.cases) {
+          final actual = suggestEntries(
+            text,
+            catalog: table.catalog,
+            household: household,
+            categories: categories,
+            known: known,
+            pending: table.pending,
+            categoryStore: categoryStore,
+          );
+          for (final (i, row) in expected.indexed) {
+            rows++;
+            final server = row! as List<Object?>;
+            final device = actual[i].entry;
+            final store = server[categoryStore ? 7 : 6];
+            final line =
+                '${table.name} ${jsonEncode(text)} ${device.name}: '
+                'server $store, device ${device.storeId}';
+            if (device.storeId == store) {
+              agree++;
+            } else if (device.categoryId != server[5]) {
+              byCategory.add(line);
+            } else {
+              differing.add(line);
+            }
+          }
+        }
+      }
+      // ignore: avoid_print -- the agreement, for the record
+      print(
+        'suggest parity stores (p_category_store $categoryStore): '
+        '$agree of $rows rows agree, ${byCategory.length} differ with the '
+        'category guess, ${differing.length} otherwise',
+      );
+      expect(differing, isEmpty, reason: differing.join('\n'));
+    });
+  }
 }

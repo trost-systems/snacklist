@@ -1,8 +1,9 @@
 -- Job 274: catalog_delta answers a device the changes from the catalog version it bundles: none
 -- when it is current, puts and drops from a known version, every row from an unknown one. Only
--- signed-in users may ask, and no client reads or writes the snapshots.
+-- signed-in users may ask, only with versions, and no client reads or writes the snapshots. A
+-- catalog change snapshots the version it replaces, once per transaction (review 0).
 begin;
-select plan(20);
+select plan(29);
 
 create function pg_temp.login(uid uuid) returns void language plpgsql as $$
 begin
@@ -21,12 +22,30 @@ select pg_temp.login('00000000-0000-0000-0000-000000274a01');
 select is(public.catalog_delta((select version from v0)),
   jsonb_build_object('version', (select version from v0), 'full', false),
   'a current device gets its own version and no changes');
+select throws_ok($$select public.catalog_delta('0123456789ABCDEF')$$, '22023', 'invalid_version',
+  'a base that is no version is refused');
+select throws_ok($$select public.catalog_delta(null)$$, '22023', 'invalid_version', 'and none');
+select throws_ok($$select public.catalog_delta(repeat('a', 10000))$$, '22023', 'invalid_version',
+  'and a long one');
+select throws_ok($$select public.catalog_delta('0123456789abcdef', 'x')$$, '22023', 'invalid_version',
+  'and a p_have that is no version');
 reset role;
+select is((select array_agg(s.version) from public.catalog_snapshots s where s.current), array[(select version from v0)],
+  'the answer marks the current version, so the next call reads its snapshot');
+
+-- As if no device had asked while v0 was live: no snapshot of it.
+delete from public.catalog_snapshots s where s.version = (select version from v0);
+create temp table before_change as select count(*) as n from public.catalog_snapshots;
 
 insert into public.classifier_terms (term, category) values ('zwurbel', 'produce');
 delete from public.classifier_terms where term = 'milch';
 insert into public.brands (brand, product) values ('Zwurbelhof', 'Zwurbel');
 delete from public.brands where key = 'tempo';
+
+select ok(exists (select from public.catalog_snapshots s where s.version = (select version from v0)),
+  'the first change snapshots the version it replaces');
+select is((select count(*) from public.catalog_snapshots), (select n + 1 from before_change),
+  'one snapshot for four statements: none of the versions in between');
 
 select pg_temp.login('00000000-0000-0000-0000-000000274a01');
 create temp table changed as select public.catalog_delta((select version from v0)) as d;
@@ -46,6 +65,15 @@ select is(d -> 'brands' -> 'drop', '["tempo"]'::jsonb, 'the deleted brand is dro
 select is(d -> 'forms', '{"put": [], "drop": []}'::jsonb, 'an unchanged table has no changes') from changed;
 select ok(exists (select from public.catalog_snapshots s where s.version = public.catalog_version()),
   'the call snapshots the new version');
+
+insert into public.classifier_terms (term, category) values ('zwurbelbrot', 'bakery');
+select ok(not exists (select from public.catalog_snapshots s where s.current),
+  'a later change in the same transaction unmarks the current version');
+select pg_temp.login('00000000-0000-0000-0000-000000274a01');
+select is(public.catalog_delta((select version from v0)) -> 'terms' -> 'put' -> 1 ->> 0, 'zwurbelbrot',
+  'and the next call answers the catalog as it is now');
+reset role;
+delete from public.classifier_terms where term = 'zwurbelbrot';
 
 select pg_temp.login('00000000-0000-0000-0000-000000274a01');
 create temp table unknown as select public.catalog_delta('0123456789abcdef') as d;
