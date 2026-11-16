@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:family_groceries/list/add_sheet/suggestion.dart';
+import 'package:family_groceries/list/catalog/household_index.dart';
 import 'package:family_groceries/list/dictation.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -39,6 +40,11 @@ abstract interface class ListRepository() {
   /// What the household buys again and again, best first, without what is
   /// on the list now.
   Future<List<Usual>> fetchUsuals();
+
+  /// What public.suggest_entries reads of the household, for the add
+  /// sheet's rows ranked on the device (job 274); null when the answer is
+  /// malformed.
+  Future<HouseholdIndex?> fetchSuggestIndex();
 
   /// Applies [op] on the server and returns the rows it touched, by id: the
   /// resulting row, or null when the item no longer exists. One row for most
@@ -451,6 +457,14 @@ class SupabaseListRepository(
       for (final row in rows) Usual.fromJson(row as Map<String, Object?>),
     ];
   }
+
+  @override
+  Future<HouseholdIndex?> fetchSuggestIndex() async => HouseholdIndex.fromJson(
+    await _client.rpc<Object?>(
+      'suggest_index',
+      params: {'p_household': householdId},
+    ),
+  );
 
   @override
   Future<Map<String, Item?>> send(ItemOp op) async => switch (op) {

@@ -770,6 +770,33 @@ void main() {
       },
     );
 
+    test("the household's index is suggest_index's answer", () async {
+      final answer = {
+        'history': [
+          ['Milch', null, null, '2', 'milch', '2026-11-15T08:00:00+00:00'],
+        ],
+        'brands': [
+          ['Lillydoo', 'lillydoo'],
+        ],
+        'unserved': ['paint'],
+        'known': ['kerzen'],
+      };
+      final repo = server((_) => (200, answer));
+      final index = await repo.fetchSuggestIndex();
+      expect(route(sent.single), 'POST /rest/v1/rpc/suggest_index');
+      expect(params(sent.single), {'p_household': 'household'});
+      expect(index?.history.single.name, 'Milch');
+      expect(index?.history.single.at, DateTime.utc(2026, 11, 15, 8));
+      expect(index?.brands.single.key, 'lillydoo');
+      expect(index?.unserved, ['paint']);
+      expect(index?.known, ['kerzen']);
+      expect(
+        await server((_) => (200, {'history': 1})).fetchSuggestIndex(),
+        isNull,
+        reason: 'a malformed answer',
+      );
+    });
+
     test('catalog edits call their function with the household', () async {
       final repo = server((_) => (200, null));
       final calls = <(Future<void> Function(), String, Object?)>[

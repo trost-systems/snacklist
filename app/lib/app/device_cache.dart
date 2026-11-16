@@ -4,6 +4,7 @@ import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/analytics/events.dart' show JoinMethod;
 import 'package:family_groceries/household/household_kind.dart';
 import 'package:family_groceries/household/pending_invite.dart';
+import 'package:family_groceries/list/catalog/catalog_loader.dart';
 import 'package:family_groceries/list/item_icons_remote.dart';
 import 'package:family_groceries/list/list_cache.dart';
 import 'package:family_groceries/list/model.dart';
@@ -26,6 +27,7 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
         PendingInviteStore,
         HintStore,
         ItemIconsStore,
+        CatalogStore,
         ReviewStore,
         OnboardingStore {
   /// On Linux, supabase_flutter's legacy SharedPreferences and
@@ -82,6 +84,11 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
   /// body, etag}` in one value, so a cut-off write leaves the old check.
   /// Not under [forget]'s prefixes: it belongs to the device.
   static const _itemIconsKey = 'itemicons.cache';
+
+  /// The catalog's last check (job 274): `{checked_at, base, body}` in one
+  /// value, like [_itemIconsKey]. Not under [forget]'s prefixes: the
+  /// catalog is global, not the user's.
+  static const _catalogKey = 'catalog.delta';
 
   /// The store rating prompt's counters (job 155), one JSON value. Not
   /// under [forget]'s prefixes: they count this install's use.
@@ -357,6 +364,39 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
         'checked_at': cached.checkedAt.toUtc().toIso8601String(),
         'body': cached.body,
         'etag': cached.etag,
+      }),
+    ),
+  );
+
+  @override
+  Future<CachedCatalogDelta?> cachedCatalogDelta() async {
+    try {
+      return switch (jsonDecode(await _prefs.getString(_catalogKey) ?? '')) {
+        {
+          'checked_at': final String checkedAt,
+          'base': final String base,
+          'body': final String? body,
+        } =>
+          CachedCatalogDelta(
+            checkedAt: DateTime.parse(checkedAt),
+            base: base,
+            body: body,
+          ),
+        _ => null,
+      };
+    } on Object {
+      return null;
+    }
+  }
+
+  @override
+  Future<void> saveCachedCatalogDelta(CachedCatalogDelta cached) => _write(
+    () => _prefs.setString(
+      _catalogKey,
+      jsonEncode({
+        'checked_at': cached.checkedAt.toUtc().toIso8601String(),
+        'base': cached.base,
+        'body': cached.body,
       }),
     ),
   );

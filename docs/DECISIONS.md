@@ -14845,6 +14845,94 @@ store builds send none of the new parameters.
 6. **The export includes `answered_at`.** pgTAP idea assertions filter to the test's own ideas,
    so they hold on a database that already lists some.
 
+## Job 274: the catalog on the device and the ranking in Dart (phase 1b), behind `on-device-catalog` (2026-11-16)
+
+Peter picked P1 (Nov 15, 21:47 CET): phase 1b of `suggestions-system-design.md` after job 272. Everything is
+behind the PostHog flag `on-device-catalog` (rollout off). With it off, the app makes none of the new calls
+and the add sheet behaves as on main, job 272's `input-stable-rows` path included.
+
+1. **The catalog index is generated Dart, not an asset.** `supabase/classifier/client_catalog.sh` writes
+   `app/lib/list/catalog/catalog_index.g.dart` from the stack: `classifier_terms`, `classifier_lexicon`,
+   `brands` and the parser's fixed vocabulary (`item_units`, `item_number_words`, `item_number_names`,
+   `item_descriptors`, the hardware seed keys). Const data is there in the first frame, with no asset load
+   and no async start. The db gate's `--check` fails when it differs from the migrations. It replaces
+   `lexicon_forms.dart`, `number_words.dart` and `client_lexicon.sh`; their callers read the index.
+   Text only: no image, URL or user data is in it (Peter's addendum). The app shows no item images
+   today (item icons are emoji from a text table), so there was no image cache to bound.
+2. **Version and deltas.** `public.catalog_version()` is a digest of the three tables' rows, so the
+   generator and the server agree by construction. `public.catalog_delta(p_base, p_have)` answers the
+   changes from the device's bundled version (put/drop per table) from a snapshot in
+   `public.catalog_snapshots` (global, RLS on, no client policy, written only by the security-definer
+   RPC, one row per catalog version), the full rows when there is no snapshot, or nothing when the device
+   already has the current version. The device always asks from its bundled version, so deltas never
+   build on each other, at most once a day, signed in, flag on, and keeps the last good answer in
+   `DeviceCache`. The parser's fixed vocabulary is not delta-updated: changing it is a migration plus an
+   app release (the `--check` and the parity test fail until the Dart side follows).
+3. **The household's side is `public.suggest_index`.** It answers what `suggest_entries` reads of a
+   household: its last year of items reduced to one row per name, brand and details (the latest), its
+   learned brands that are no ordinary word, the hardware seed keys it has no category for, and the
+   names of older items (`is_known_name`). Members only, same check as `suggest_entries`. Fetched on
+   resync while the flag is on and 2 s after acknowledged deletes (deletes are hard, so a deleted item
+   would otherwise stay offered), saved with the list cache; items the device has that the index does
+   not are folded in as history. 23.5 ms on the 5,000-item bench household (2,787 rows, about 244 KB).
+4. **The ranking is a port, held to one table.** `app/lib/list/catalog/suggest_entries.dart` ports
+   `suggest_entries` and `parse_item` (without category and store), `suggest_match`, pg_trgm's
+   `similarity`, `levenshtein_less_equal`, and the database's ICU sort order (`pg.dart`).
+   `supabase/tests/suggest_parity.json` holds 1,982 texts of a fixture household and the server's rows
+   for each. The db gate's `suggest_parity_integration_test.ts` fails when the server's rows differ from
+   the file, `app/test/list/suggest_parity_test.dart` when the device's do. So a change on either side
+   fails a gate until the other follows (`SUGGEST_PARITY_WRITE=1` rewrites the file after a deliberate
+   change). Rows: 5,943, differences: 0. Categories come from job 272's guess: 5,208 of 5,242 guessed rows
+   agree; the 34 others (typos the server corrects, half-typed words, a brand alone) are listed by name.
+5. **The server only enriches.** With the flag on, every key shows `suggestEntries` for the text typed
+   now, computed in `type()`; these rows answer the text (`fresh`), so Enter takes the first at once.
+   The server is still asked after the 120 ms pause and its answer goes through job 272's `mergeRows`:
+   shown rows keep their order and text and take the server's category and store. Offline, on an error,
+   or if the ranking ever throws, the device rows (or job 272's local rows) stay. The flag implies job
+   272's held rows and content keys. Device rows are not `deviceParsed`: the port splits brand and
+   details as the server does, so they are sent as shown.
+   With job 276's `add-feedback-list` on too, its load line and dimmed rows do not show: the device's
+   rows already answer the text typed now (`fresh`), and the server's answer only adds store and
+   category.
+6. **Left as is, with reasons.**
+   - A household brand learned since the last resync is not in the index: such a line is saved
+     unsplit („Gläserne Molkerei Milch“), and the open-item check matches it by its words.
+   - Sizes beyond a 32-bit integer: the server's call fails, the device offers no size rows.
+   - Lengths count UTF-16 units in Dart and characters in SQL: rows can differ for emoji input only.
+   - `catalog_delta` has no rate limit: each call costs about 20 ms and writes at most one row per
+     catalog version.
+   - The ranking copies the server's odd rows on purpose („Rote Be“ offers the brand „bebe“): parity
+     first; a ranking change goes into the SQL and the port together.
+7. **Timing.** The target is a key's rows in the same frame as the key (16 ms) on a mid-range
+   phone. No phone was measured here (hz has no device and no KVM); see NEEDS_PETER "Job 274".
+   - The dev-only `[add-sheet timing]` log from job 272 now starts its clock at the field's change,
+     adds `catalog=on|off` and the ranking's own time (`rank=`), and also prints in a profile or
+     release build made with `--dart-define=ADD_SHEET_TIMING=true` (no shipped build sets it).
+   - Web release build, headless Chromium on hz, demo household (about 17 history rows), 669 keys
+     with the flag on: the ranking p95 1.5 ms, at most 3.8 ms; key to the end of its rows' frame
+     p50 5 to 7 ms, p95 at most 10 ms. Painting is SwiftShader on the main thread here (50 to 70 ms
+     a frame, even idle), so the time to pixels says nothing about a phone.
+   - Android emulator on GitHub Actions (`.github/workflows/add-sheet-timing.yml`, push to
+     `timing/**`; API 34 x86_64, 2 vCPUs, software raster; a 2,000-row household; the base and head
+     APKs alternate on one emulator, 3 passes, about 828 keys each; run 43824800999). UI-thread work
+     per key, ranking plus the build of the key's frame, p50 / p95 in ms: flags off 1.6 / 5.8,
+     `input-stable-rows` 2.3 / 8.7, `on-device-catalog` 3.6 / 17.2 (6.9 / 36.0 before the perf
+     work below). The ranking alone 0.6 / 2.9. The worst is the second letter, 7.0 / 38.7, where
+     the sheet goes from one row to about eight; with the other flags that same build happens in the
+     frame of the server's answer instead (its build 2.5 / 9.6 with `input-stable-rows`).
+     Spikes of 30 to 80 ms also hit flags-off keys: the software rasterizer competes with the UI
+     thread for the 2 vCPUs.
+   - Perf work, each step measured as an A/B on the emulator: the ranking matches each distinct
+     history name and catalog key once per key without regex (it was a third of the key's time),
+     the category guess remembers each name's seed, and the sheet hands back the chips and rows
+     whose values did not change as the same widget, so typing no longer rebuilds them all (this
+     part also runs with the flags off; a reused row adds a row equal in every field).
+   - Left: building and laying out the new rows of a key that shows many new ones. Lighter rows
+     would mean replacing each row's Material and InkWell, which changes how rows look and react.
+   - The probe's first version used `integration_test`; its binding redraws nonstop and its frame
+     clock did not match Android's FrameTiming, so the probe is a plain profile entrypoint
+     (`app/test_driver/add_sheet_timing_probe.dart`, like `ui_perf_probe`).
+
 ## Job 277: the shopping total counts a per-kg item without a weight as open (2026-11-16)
 
 - **One rule for the bar and the block.** `tripTotal` (the „Einkaufssumme“ bar, `list-declutter`

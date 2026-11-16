@@ -1990,3 +1990,22 @@ Open questions, answered for now as in DECISIONS "Job 234" (say if any should ch
 - **TQ7, early own additions.** Not treated as planned; „War geplant“ fixes them.
 - **TQ11, the strip and the price total.** The strip sits above the list total; it does not
   carry the total.
+
+## Job 274: on-device catalog, flag targeting and a phone measurement (2026-11-16)
+
+The add sheet's rows ranked on the device are merged behind the PostHog flag `on-device-catalog`
+(off for everyone). To see them on TestFlight:
+
+1. PostHog → Feature flags → `on-device-catalog` (the lead creates it): release condition
+   `is_internal = true`, or "`distinct_id` equals <your install id>" (More → long press on the
+   version → „Installations-ID kopieren“). Everyone else stays off. It needs no other flag; it
+   brings job 272's rows that stay put with it.
+2. What to look for: type a word you bought before, letter by letter. From the second letter the
+   sheet shows its full rows at once (bought before, catalogue words, brands) and they do not move
+   when the server answers; offline they still come.
+
+A phone measurement (the 16 ms target) needs a device, which this runner does not have:
+`cd app && flutter run --profile --dart-define=ADD_SHEET_TIMING=true` on a mid-range Android or an
+iPhone, turn the flag on for that install, type, and read the `[add-sheet timing]` lines (they hold
+lengths and times only, never the text). `rows` is key to the frame with that text's rows, `rank=`
+the ranking's own time. The emulator's numbers are in DECISIONS "Job 274", point 7.

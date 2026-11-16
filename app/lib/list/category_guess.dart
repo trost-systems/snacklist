@@ -1,7 +1,8 @@
 import 'dart:math' as math;
 
+import 'package:family_groceries/list/catalog/catalog_index.dart';
+import 'package:family_groceries/list/catalog/catalog_index.g.dart';
 import 'package:family_groceries/list/entry.dart';
-import 'package:family_groceries/list/lexicon_forms.dart';
 import 'package:family_groceries/list/model.dart';
 
 /// Each name of [items], folded ([foldName]), with the category of the
@@ -23,20 +24,21 @@ Map<String, String> householdCategories(Iterable<Item> items) {
 
 /// The category the server will most likely give [name] on its insert, for
 /// a row made on the device (job 272): the household's own for that name
-/// ([known], from [householdCategories]), else the lexicon's
-/// ([lexiconSeed]). Null when neither knows it or the household has no
-/// such category; the item then waits unsorted for the server, which
-/// decides in any case.
+/// ([known], from [householdCategories]), else the lexicon's ([lexiconSeed]
+/// over [index]). Null when neither knows it or the household has no such
+/// category; the item then waits unsorted for the server, which decides in
+/// any case.
 String? guessCategory(
   String name, {
   required Catalog catalog,
   required Map<String, String> known,
+  required CatalogIndex index,
 }) {
   if (known[foldName(name)] case final id?
       when catalog.categories.any((c) => c.id == id)) {
     return id;
   }
-  final seed = lexiconSeed(name);
+  final seed = lexiconSeed(name, index);
   if (seed == null) {
     return null;
   }
@@ -45,32 +47,34 @@ String? guessCategory(
   // Without the Baumarkt's categories a DIY word goes to Haushalt, as in
   // public.classify_item_detail.
   return (withSeed(seed) ??
-          (_hardware.contains(seed) ? withSeed('household') : null))
+          (hardwareSeedKeys.contains(seed) ? withSeed('household') : null))
       ?.id;
 }
-
-/// public.hardware_categories' seed keys.
-const _hardware = {
-  'paint',
-  'plumbing',
-  'electrical',
-  'tools',
-  'fasteners',
-  'building',
-  'garden',
-};
 
 /// The seed key public.classify_item_detail gives [name] from its lexicon,
 /// without the household's memory and the typo paths: the dictionary's hit
 /// (public.dictionary_hit, here over the lexicon's folded forms) against
-/// the last word public.classifier_words recognizes.
-String? lexiconSeed(String name) {
+/// the last word public.classifier_words recognizes, both from [index].
+String? lexiconSeed(String name, CatalogIndex index) {
+  // The add sheet asks for every row on every key, mostly the same names.
+  final seeds = _seeds[index] ??= {};
+  if (seeds.length >= 4096) {
+    seeds.clear();
+  }
+  return seeds.containsKey(name)
+      ? seeds[name]
+      : (seeds[name] = _lexiconSeed(name, index));
+}
+
+final _seeds = Expando<Map<String, String?>>();
+
+String? _lexiconSeed(String name, CatalogIndex index) {
   final key = itemKey(name);
   if (key.isEmpty) {
     return null;
   }
-  final exact = _lastWordHit(foldKey(key).split(' '));
-  final dict = _dictionaryHit(key.split(' '));
+  final exact = _lastWordHit(foldKey(key).split(' '), index.forms);
+  final dict = _dictionaryHit(key.split(' '), index.forms);
   return switch ((dict, exact)) {
     ((tier: 2, :final len, seed: _), (len: final exactLen, :final seed)?)
         when exactLen > len =>
@@ -85,7 +89,10 @@ String? lexiconSeed(String name) {
 /// public.classifier_words without its fuzzy path: phrases first, longest
 /// first, then each word or the longest form of 4+ letters it ends with.
 /// The last word with a hit wins.
-({String seed, int len})? _lastWordHit(List<String> words) {
+({String seed, int len})? _lastWordHit(
+  List<String> words,
+  Map<String, CatalogForm> forms,
+) {
   var tokens = words;
   final phrases = <String>[];
   if (words.length > 1) {
@@ -94,7 +101,7 @@ String? lexiconSeed(String name) {
             for (var a = 0; a < words.length; a++)
               for (var b = a + 2; b <= words.length; b++)
                 words.sublist(a, b).join(' '),
-          ].where(lexiconForms.containsKey).toList()
+          ].where(forms.containsKey).toList()
           ..sort((x, y) => y.length.compareTo(x.length));
     var folded = ' ${words.join(' ')} ';
     for (final form in runs) {
@@ -113,9 +120,9 @@ String? lexiconSeed(String name) {
         : [
             for (var i = 0; i <= math.max(token.length - 4, 0); i++)
               token.substring(i),
-          ].where(lexiconForms.containsKey).firstOrNull;
+          ].where(forms.containsKey).firstOrNull;
     if (form != null) {
-      hit = (seed: lexiconForms[form]!, len: form.length);
+      hit = (seed: forms[form]!.category, len: form.length);
     }
   }
   return hit;
@@ -126,8 +133,11 @@ String? lexiconSeed(String name) {
 /// 3+ letters a word ends with (2), the longest a word starts with (1);
 /// within a tier the longest term, then the later word. The device has
 /// the terms folded only, so a part counts when its folding is a form.
-({int tier, String seed, int len})? _dictionaryHit(List<String> words) {
-  String? term(String part) => lexiconForms[foldKey(part)];
+({int tier, String seed, int len})? _dictionaryHit(
+  List<String> words,
+  Map<String, CatalogForm> forms,
+) {
+  String? term(String part) => forms[foldKey(part)]?.category;
   final hits = <({int tier, String seed, int len, int ord})>[
     for (var a = 0; a < words.length; a++)
       for (var b = a + 2; b <= words.length; b++)

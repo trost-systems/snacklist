@@ -161,6 +161,7 @@ class _ListScopeState() extends State<ListScope> implements ListHolds {
       userId: userId,
       analytics: context.read<Analytics>(),
       network: context.read<NetworkWatch?>()?.watch(),
+      householdIndex: () => flags?.isOn(onDeviceCatalogFlag) ?? false,
     )..start();
   }
 

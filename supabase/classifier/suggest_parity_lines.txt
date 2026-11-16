@@ -1,0 +1,220 @@
+# Lines a user types for supabase/tests/suggest_parity.json, one per line. ./suggest_parity.ts
+# adds the generated ones.
+Rote Be
+Rote Bete
+Rote Rote
+2 Weihenstephan Milch 1,5%
+Weihenstephan Milch
+Windeln Größe 4
+Windeln Größe 3
+Windeln Größe 8
+Windeln Größe 1
+Windeln Größe 04
+Pampers Größe 5
+Windeln Gr 4
+Windeln Gr.5
+Gr. 4 Windeln
+Größe 3
+Bio
+Milch laktosefrei
+Bio Eier
+Eier Bio
+Joghurt Erdbeere 4er Pack
+6x1,5l Wasser
+Wasser 6 x 1,5 l
+Klopapier 16 Rollen
+zwei Liter Milch
+ein halbes Brot
+ein halbes Kilo Hack
+anderthalb Liter Milch
+Spülmittel Pril 2x
+Persil Color
+Whiskas Lachs
+Nutella 2er Pack
+Nutella
+Tempo
+Drei Glocken Spaghetti
+Käse gerieben 200g
+Milch 3,5 % Fett
+Hackfleisch 500 g gemischt
+Äpfel 1 kg bio
+Kaffee ganze Bohne
+Tomaten, Gurke
+Eier; Milch
+Coca Cola Zero 1,5 l
+Hofgut Sonnenschein Eier
+Hofgut Sonnenschein
+Plimbel 3
+Plimbel
+Plimbel drei
+Grillkohle 2
+Glühwein zwei
+Karotten 2
+Büroklammern 100
+Milka Schokolade Vollmilch
+Schoko Milch
+Hafer Milch
+Ritter Sport
+Ritter Sport Nuss
+Toilettenpapier 3-lagig
+Papier 3 lagig
+Bier alkoholfrei 6er Pack
+Mineralwasser still
+Wasser medium
+Duschgel Duschdas
+2 kg Kartoffeln festkochend
+Kartoffeln vorwiegend festkochend
+500g Mehl
+Mehl 405
+Sahne 30%
+Joghurt 3,5%
+Lachs
+Mi
+M
+Wi
+Win
+Wind
+Milch Big Pack
+Milch 4er Pack
+Windeln Big Pack
+Windeln Größe 4 Big Pack
+Windeln Pampers Größe 4
+Pampers Baby Dry Größe 4
+Kerrygold
+Butter Kerrygold
+Butter irische
+Tchibo Kaffee
+Kaffee Tchibo ganze Bohne
+Spaghetti Barilla
+Barilla
+Barilla Spaghetti 2er Pack
+Spaghetti Vollkorn
+Joghurt Natur
+Joghurt Ehrmann
+Ehrmann
+Paprika rot
+Paprika gelb
+Paprika grün 3
+Paprika 3 Stück
+3 Paprika
+drei Paprika
+Trag Milch ein
+Milch ein
+1/2 Brot
+Milch,,
+MILCH
+milch
+mIlCh
+Milch  Weihenstephan
+Weihenstephan
+Berchtesgadener Land Milch
+Milch Berchtesgadener
+Oatly
+Oatly Barista
+Hafermilch Barista
+Haferm
+Hafermlich
+Feuchttücher
+Feuchttücher Sensitive
+Feuchtt
+Feuchttüch
+Klopapier 4-lagig
+Klopapier 3 lagig 8 Rollen
+Klopapier 16 rollen
+Toilettenpapier Hakle
+Hakle
+Mineralwasser Gerolsteiner
+Gerolsteiner
+Wasser still
+Cola Zero
+Coca-Cola
+Coca Cola
+Cola light
+Cola 1,5 l
+Cola 6x1,5l
+Cola 6 x 0,5 l
+Cola 2x
+Cola x2
+2x Cola 0,5 l
+Möhren 1 kg
+Möhren 500 g
+Moehren
+Mören
+Gurken zwei
+Gurke 2
+Tomaten passiert
+Tomaten gehackt
+Tomaten 2 Dosen
+2 Dosen Tomaten
+Eier 10er Pack
+Eier 6er
+Käse Bergbauer
+Bergbauer
+Bergbauer Käse gerieben
+Schokolade Vollmilch
+Schokolade Zartbitter
+Zahnpasta elmex
+elmex
+Elmex sensitive
+Shampoo
+Shampoo Kinder
+Duschgel
+Duschdas
+Hackfleisch
+Hack 500 g
+Hackfleisch gemischt 1 kg
+Bananen 6
+6 Bananen
+Bananen sechs
+Brot
+Brötchen 6
+Brötchen
+Broetchen
+Apfelsaft naturtrüb
+Apfelsaft
+Apfel
+Äpfel
+Aepfel
+Äpfel Bio
+Bio Äpfel
+Rote Beete
+Rote Bet
+Rote B
+Gelbe Rü
+Grüne Bo
+Frische Mil
+Vollkorn Spa
+Weiße Bo
+TK Erbsen
+Tiefkühl Pizza
+tk pizza
+Pizza tiefgekühlt
+Eis
+Eis Vanille
+Vanilleeis
+Pril
+Spülmittel
+Spuelmittel
+Spülmittel Pril
+Glühwein
+Grillkohle
+Farbe weiß
+Schrauben
+Schrauben 4x40
+Dübel 6 mm
+Hammer
+Akkuschrauber
+Pinsel
+Wandfarbe 10 l
+Wa
+Wan
+Wand
+Schr
+Schra
+Dü
+Dübe
+Ha
+Ham
+Hamm
+Pin
+Pins

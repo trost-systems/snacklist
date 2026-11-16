@@ -1497,6 +1497,12 @@ PR https://github.com/trost-systems/snacklist/pull/490. Review 0 of job 222 (the
   - No phone drive here, so the hub has only been seen on web and in goldens. Check it on
     TestFlight with the internal flag.
 
+## Job 274: the catalog on the device and the ranking in Dart (phase 1b), flag on-device-catalog
+
+The job's PR; flag `on-device-catalog` off. The add sheet's rows come from the device in the frame
+of the key and match the server's (1,982 texts, 0 differences); the server only enriches them.
+Details, timing and what is open: [docs/done/274.md](docs/done/274.md).
+
 ## Job 277: the shopping total counts a per-kg item without a weight (2026-11-16)
 
 The „Einkaufssumme“ bar (`list-declutter` off) now counts an item priced per kg without a weight

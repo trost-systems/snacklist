@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 
-import 'package:family_groceries/list/lexicon_forms.dart';
+import 'package:family_groceries/list/catalog/catalog_index.dart';
+import 'package:family_groceries/list/catalog/catalog_index.g.dart';
 import 'package:family_groceries/list/model.dart';
-import 'package:family_groceries/list/number_words.dart';
 import 'package:flutter/foundation.dart';
 
 @immutable
@@ -63,8 +63,10 @@ final _trailing = RegExp(
 
 // "Karotten x2" and "Karotten ×2": a count at the end, like "Karotten 2x".
 final _trailingCount = RegExp(r'^(.+?)\s+[x×](\d+)$', caseSensitive: false);
+// The article forms count only up front: "Trag Milch ein" is no Milch x1.
+const _articleNumberWords = {'ein', 'eine', 'einen', 'einer'};
 final _endWords = numberWords.keys.where(
-  (w) => !articleNumberWords.contains(w),
+  (w) => !_articleNumberWords.contains(w),
 );
 final _trailingBare = RegExp(
   r'^(.+)\s([1-9]\d?|'
@@ -89,9 +91,14 @@ const _sizeWords = {
 /// Milch ein"), is the quantity only when it does not follow a size or unit
 /// word and the rest is a word the dictionary knows or a name in [history]
 /// ("Karotten 2", not "Windeln Größe 4"); `supabase/tests/quantity_parse.tsv`
-/// is the table both sides pass. The full German sentence splitter is a
-/// server concern (voice endpoint).
-Entry parseEntry(String input, {Iterable<String> history = const []}) {
+/// is the table both sides pass. The dictionary is [catalogIndex]'s, else
+/// the bundled one. The full German sentence splitter is a server concern
+/// (voice endpoint).
+Entry parseEntry(
+  String input, {
+  Iterable<String> history = const [],
+  CatalogIndex? catalogIndex,
+}) {
   final text = _halves.fold(
     input.trim().replaceAll(RegExp(r'\s+'), ' '),
     (text, half) => text.replaceFirst(half.$1, half.$2),
@@ -110,7 +117,7 @@ Entry parseEntry(String input, {Iterable<String> history = const []}) {
   if (_trailingBare.firstMatch(text) case final m?
       when _count(m[2]!) <= 20 &&
           _countMayFollow(m[1]!.split(' ').last) &&
-          _known(m[1]!, history)) {
+          _known(m[1]!, history, catalogIndex ?? CatalogIndex.bundled)) {
     return Entry(m[1]!, '${_count(m[2]!)}');
   }
   return Entry(text, null);
@@ -128,7 +135,7 @@ bool _countMayFollow(String word) {
 
 /// Whether the dictionary knows a word of [name] (as public.classifier_words
 /// finds it, without typos) or the household bought [name] before.
-bool _known(String name, Iterable<String> history) {
+bool _known(String name, Iterable<String> history, CatalogIndex index) {
   final folded = foldName(name);
   if (history.any((h) => foldName(h) == folded)) {
     return true;
@@ -138,9 +145,9 @@ bool _known(String name, Iterable<String> history) {
   return words.any(
         (w) => [
           for (var i = 0; i <= math.max(w.length - 4, 0); i++) w.substring(i),
-        ].any(lexiconForms.containsKey),
+        ].any(index.forms.containsKey),
       ) ||
-      lexiconForms.keys.any((f) => f.contains(' ') && key.contains(' $f '));
+      index.phraseForms.any((f) => key.contains(' $f '));
 }
 
 /// [name] as public.fold_key(public.item_key(name)) writes it, for the
