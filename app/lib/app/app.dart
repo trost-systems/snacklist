@@ -24,6 +24,7 @@ import 'package:family_groceries/household/join_decision_notices.dart';
 import 'package:family_groceries/household/pending_invite.dart';
 import 'package:family_groceries/household/removed_notice.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
+import 'package:family_groceries/list/catalog/catalog_loader.dart';
 import 'package:family_groceries/list/list_link.dart';
 import 'package:family_groceries/list/list_view/item_icon.dart';
 import 'package:family_groceries/onboarding/onboarding_cubit.dart';
@@ -109,6 +110,10 @@ class const App({
   /// The item icon table, which `main` updates from the remote one; the
   /// bundled table by default.
   final ItemIconsCubit? itemIcons,
+
+  /// The catalog the add sheet parses and guesses with, which `main`
+  /// updates from the server's changes (job 274); none: the bundled one.
+  final CatalogCubit? catalog,
 
   /// What the List tab's hints may ask and open beyond the list (job 168b);
   /// none by default.
@@ -311,6 +316,8 @@ class _AppState() extends State<App> {
         BlocProvider.value(value: _theme),
         BlocProvider.value(value: _integrationLock),
         BlocProvider.value(value: _itemIcons),
+        if (widget.catalog case final catalog?)
+          BlocProvider.value(value: catalog),
       ],
       child: Builder(
         builder: (context) => MaterialApp.router(

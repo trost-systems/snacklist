@@ -1,4 +1,5 @@
 import 'package:family_groceries/app/device_cache.dart';
+import 'package:family_groceries/list/catalog/catalog_loader.dart';
 import 'package:family_groceries/list/item_icons_remote.dart';
 import 'package:family_groceries/list/list_cache.dart';
 import 'package:family_groceries/list/model.dart';
@@ -356,6 +357,27 @@ void main() {
     expect(await cache.cachedItemIcons(), isNull);
     await SharedPreferencesAsync().setString('itemicons.cache', 'not json');
     expect(await cache.cachedItemIcons(), isNull);
+  });
+
+  test('the catalog check is kept per device and survives sign-outs', () async {
+    expect(await cache.cachedCatalogDelta(), isNull);
+    final checkedAt = DateTime.utc(2026, 11, 16, 8);
+    await cache.saveCachedCatalogDelta(
+      CachedCatalogDelta(
+        checkedAt: checkedAt,
+        base: '0123456789abcdef',
+        body: '{"full":false}',
+      ),
+    );
+    await cache.remember('peter', households: const []);
+    await cache.forget();
+    final cached = await cache.cachedCatalogDelta();
+    expect(cached?.checkedAt, checkedAt);
+    expect(cached?.base, '0123456789abcdef');
+    expect(cached?.body, '{"full":false}');
+
+    await SharedPreferencesAsync().setString('catalog.delta', '{"base": 1}');
+    expect(await cache.cachedCatalogDelta(), isNull);
   });
 
   test('the rating prompt counters survive sign-outs', () async {

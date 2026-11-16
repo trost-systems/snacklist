@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:family_groceries/analytics/analytics.dart';
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/analytics/setup.dart';
 import 'package:family_groceries/app/app.dart';
 import 'package:family_groceries/app/device_cache.dart';
@@ -15,6 +16,7 @@ import 'package:family_groceries/home_widget/home_widget_sync.dart';
 import 'package:family_groceries/home_widget/widget_launch.dart';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/pending_invite.dart';
+import 'package:family_groceries/list/catalog/catalog_loader.dart';
 import 'package:family_groceries/list/item_icons_remote.dart';
 import 'package:family_groceries/list/list_view/item_icon.dart';
 import 'package:family_groceries/onboarding/onboarding_cubit.dart';
@@ -164,6 +166,7 @@ Future<void> _main(WidgetsBinding Function() binding) async {
     }
   });
   final itemIcons = ItemIconsCubit();
+  final catalog = CatalogCubit();
   if (kIsWeb) {
     warmItemIconFonts(itemIcons.state);
     itemIcons.stream.listen(warmItemIconFonts);
@@ -172,6 +175,7 @@ Future<void> _main(WidgetsBinding Function() binding) async {
     App(
       mailLanguage: MailLanguageSync(client.auth),
       itemIcons: itemIcons,
+      catalog: catalog,
       language: language,
       theme: theme,
       session: session,
@@ -221,4 +225,19 @@ Future<void> _main(WidgetsBinding Function() binding) async {
           : Uri.parse(Environment.itemIconsUrl),
     ).start().whenComplete(iconClient.close),
   );
+  // The catalog follows the server only while the flag is on (job 274).
+  final catalogLoader = CatalogLoader(
+    store: cache,
+    repository: SupabaseCatalogRepository(client),
+    cubit: catalog,
+  );
+  void followCatalog() => unawaited(
+    catalogLoader.follow(
+      on: analytics.flags.isOn(onDeviceCatalogFlag),
+      signedIn: session.state is NeedsHousehold || session.state is InHousehold,
+    ),
+  );
+  analytics.flags.stream.listen((_) => followCatalog());
+  session.stream.listen((_) => followCatalog());
+  followCatalog();
 }

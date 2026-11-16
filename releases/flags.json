@@ -35,6 +35,10 @@
     "input-stable-rows": {
       "rollout": "off",
       "note": "the add sheet's rows stay put while typing (made on the device on every key with a category guess, the server's rows merged in below without moving them, none changes under a finger) and a new grocery without a remembered store goes to the store the household uses most for its category, only while the PostHog flag input-stable-rows is on (job 272)"
+    },
+    "on-device-catalog": {
+      "rollout": "off",
+      "note": "the add sheet's rows ranked on the device in the same frame as the key (the bundled catalog with the server's daily changes, the household's suggest_index fetched on each resync), the server's answer only enriching them, only while the PostHog flag on-device-catalog is on (job 274)"
     }
   },
   "holds": {

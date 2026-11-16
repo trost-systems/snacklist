@@ -44,6 +44,11 @@ const joinHouseholdJh2Flag = 'join-household-jh2';
 /// category.
 const inputStableRowsFlag = 'input-stable-rows';
 
+/// The flag that ranks the add sheet's rows on the device (job 274): the
+/// catalog follows the server's changes once a day, the household's index
+/// comes with each resync, and every key shows the rows the server would.
+const onDeviceCatalogFlag = 'on-device-catalog';
+
 /// PostHog feature flags, the app's runtime toggles (job 44,
 /// docs/ANALYTICS.md "Feature flags"). Read a toggle with [isOn] wherever it
 /// matters; nothing else in the app reads PostHog flags.
