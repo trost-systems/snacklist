@@ -28,11 +28,13 @@ language sql immutable set search_path = '' as $$
   )
 $$;
 
--- {"version", "full": false} when p_base is current; else the changes per table
--- ({"put": [...], "drop": [...]}, rows as in catalog_rows) from p_base's snapshot, or with
--- "full": true every row when there is none. Each call snapshots the current version, so a later
--- catalog migration still answers devices on this one with changes only.
-create function public.catalog_delta(p_base text) returns jsonb
+-- {"version", "full": false} when p_base or p_have (the version the device has applied) is
+-- current; else the changes per table ({"put": [...], "drop": [...]}, rows as in catalog_rows)
+-- from p_base's snapshot, or with "full": true every row when there is none. Each call snapshots
+-- the current version, so a later catalog migration still answers devices on this one with
+-- changes only; p_have spares a device the full catalog every day when there is no snapshot of
+-- p_base.
+create function public.catalog_delta(p_base text, p_have text default null) returns jsonb
 language plpgsql security definer set search_path = '' as $$
 declare
   v_rows jsonb := public.catalog_rows();
@@ -42,7 +44,7 @@ begin
   insert into public.catalog_snapshots (version, terms, forms, brands)
   values (v_version, v_rows -> 'terms', v_rows -> 'forms', v_rows -> 'brands')
   on conflict (version) do nothing;
-  if p_base = v_version then
+  if v_version in (p_base, p_have) then
     return jsonb_build_object('version', v_version, 'full', false);
   end if;
   select * into v_base from public.catalog_snapshots s where s.version = p_base;
@@ -66,9 +68,9 @@ end $$;
 
 revoke execute on function
   public.catalog_changes(jsonb, jsonb),
-  public.catalog_delta(text)
+  public.catalog_delta(text, text)
 from public, anon, authenticated;
-grant execute on function public.catalog_delta(text) to authenticated, service_role;
+grant execute on function public.catalog_delta(text, text) to authenticated, service_role;
 grant execute on function public.catalog_changes(jsonb, jsonb) to service_role;
 
 -- The version the app bundles at this migration (client_catalog.sh) answers with changes from now.

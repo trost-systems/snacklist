@@ -42,10 +42,12 @@ final class _Store() implements CatalogStore {
 final class _Server() implements CatalogRepository {
   Object? Function() answer = () => null;
   final asked = <String>[];
+  final had = <String>[];
 
   @override
-  Future<Object?> catalogDelta(String base) async {
+  Future<Object?> catalogDelta(String base, {required String have}) async {
     asked.add(base);
+    had.add(have);
     return answer();
   }
 }
@@ -180,5 +182,35 @@ void main() {
     await Future.wait([signedOut, signedIn, again]);
     expect(server.asked, [_bundled.version]);
     expect(cubit.state.version, '00000000000000bb');
+  });
+
+  test('a check names the version applied; "you have it" keeps the cached '
+      'answer', () async {
+    store.cached = cached(age: const Duration(days: 2));
+    server.answer = () => {'version': '00000000000000aa', 'full': false};
+    await loader.follow(on: true, signedIn: true);
+    expect(server.had, ['00000000000000aa']);
+    expect(cubit.state.version, '00000000000000aa');
+    expect(cubit.state.terms.containsKey('zwurbel'), isTrue);
+    expect(store.cached?.checkedAt, _at);
+    expect(store.cached?.body, cached().body);
+  });
+
+  test('without a cached answer it names the bundled version', () async {
+    server.answer = () => {'version': _bundled.version, 'full': false};
+    await loader.follow(on: true, signedIn: true);
+    expect(server.had, [_bundled.version]);
+    expect(cubit.state.version, _bundled.version);
+  });
+
+  test('an answer without tables is never the bundled rows under another '
+      'version', () async {
+    store.cached = cached(age: const Duration(days: 2));
+    server.answer = () => {'version': '00000000000000cc', 'full': false};
+    await loader.follow(on: true, signedIn: true);
+    expect(cubit.state.version, '00000000000000aa');
+    expect(cubit.state.terms.containsKey('zwurbel'), isTrue);
+    expect(store.cached?.body, cached().body);
+    expect(store.cached?.checkedAt, _at);
   });
 }

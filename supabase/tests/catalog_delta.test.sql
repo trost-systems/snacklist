@@ -2,7 +2,7 @@
 -- when it is current, puts and drops from a known version, every row from an unknown one. Only
 -- signed-in users may ask, and no client reads or writes the snapshots.
 begin;
-select plan(17);
+select plan(20);
 
 create function pg_temp.login(uid uuid) returns void language plpgsql as $$
 begin
@@ -58,6 +58,18 @@ select is(
     (select count(*)::int from public.brands)],
   'every row of each table');
 select is(public.catalog_rows() -> 'terms', d -> 'terms' -> 'put', 'as catalog_rows lists them') from unknown;
+
+create temp table v1 as select public.catalog_version() as version;
+grant select on v1 to authenticated;
+select pg_temp.login('00000000-0000-0000-0000-000000274a01');
+select is(public.catalog_delta('0123456789abcdef', (select version from v1)),
+  jsonb_build_object('version', (select version from v1), 'full', false),
+  'a device that has the current version applied gets no rows, also from an unknown base');
+select is(public.catalog_delta('0123456789abcdef', (select version from v0)) -> 'full', 'true'::jsonb,
+  'one that has an older version applied gets the rows');
+select is(public.catalog_delta((select version from v0), null) -> 'terms' -> 'drop', '["milch"]'::jsonb,
+  'without p_have the changes come as before');
+reset role;
 
 set local role anon;
 select throws_ok($$select public.catalog_delta('0123456789abcdef')$$, '42501', null, 'signed out, no catalog');

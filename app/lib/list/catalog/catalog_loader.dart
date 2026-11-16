@@ -15,15 +15,16 @@ class CatalogCubit([CatalogIndex? index]) extends Cubit<CatalogIndex> {
 
 /// Asks the server for the catalog's changes.
 abstract interface class CatalogRepository() {
-  /// public.catalog_delta's answer for [base], unparsed.
-  Future<Object?> catalogDelta(String base);
+  /// public.catalog_delta's answer for [base], unparsed; [have] is the
+  /// version the device has applied.
+  Future<Object?> catalogDelta(String base, {required String have});
 }
 
 class SupabaseCatalogRepository(final SupabaseClient _client)
     implements CatalogRepository {
   @override
-  Future<Object?> catalogDelta(String base) =>
-      _client.rpc<Object?>('catalog_delta', params: {'p_base': base});
+  Future<Object?> catalogDelta(String base, {required String have}) => _client
+      .rpc<Object?>('catalog_delta', params: {'p_base': base, 'p_have': have});
 }
 
 /// What the device keeps of the last check: when the server last answered,
@@ -93,9 +94,11 @@ final class CatalogLoader({
   Future<void> _run({required bool signedIn}) async {
     final cached = await store.cachedCatalogDelta();
     final mine = cached?.base == _bundled.version ? cached : null;
-    if (mine?.body case final body?) {
-      _apply(parseCatalogDelta(_decode(body)));
-    }
+    final applied = switch (mine?.body) {
+      final body? => parseCatalogDelta(_decode(body)),
+      null => null,
+    };
+    _apply(applied);
     // A check time ahead of the clock (the clock was set back) is due too.
     final age = switch (mine) {
       final mine? => now().difference(mine.checkedAt),
@@ -106,15 +109,25 @@ final class CatalogLoader({
     }
     final Object? answer;
     try {
-      answer = await repository.catalogDelta(_bundled.version).timeout(timeout);
+      answer = await repository
+          .catalogDelta(
+            _bundled.version,
+            have: applied?.version ?? _bundled.version,
+          )
+          .timeout(timeout);
     } on Object {
       // Offline or refused: asked again at the next start.
       return;
     }
     final body = jsonEncode(answer);
-    final delta = body.length > catalogDeltaMaxBytes
+    final parsed = body.length > catalogDeltaMaxBytes
         ? null
         : parseCatalogDelta(answer);
+    // An answer without tables says the version the device has applied is
+    // current; it never means the bundled rows under another version.
+    final delta = parsed != null && _tableless(answer)
+        ? (parsed.version == _bundled.version ? parsed : null)
+        : parsed;
     // A bad answer is not asked for again on every start either.
     await store.saveCachedCatalogDelta(
       CachedCatalogDelta(
@@ -125,6 +138,12 @@ final class CatalogLoader({
     );
     _apply(delta);
   }
+
+  static bool _tableless(Object? answer) =>
+      answer is Map &&
+      !answer.containsKey('terms') &&
+      !answer.containsKey('forms') &&
+      !answer.containsKey('brands');
 
   void _apply(CatalogDelta? delta) {
     if (_on && delta != null && delta.version != cubit.state.version) {
