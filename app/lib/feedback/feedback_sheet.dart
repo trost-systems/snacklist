@@ -27,8 +27,9 @@ const _counterFrom = 1800;
 /// Opens the feedback form over the whole app (More's row, or the shake
 /// entry with [entryPoint] `shake`, the [screen] it was made on and the
 /// marked-up [screenshot], job 267). The note waiting in [FeedbackCubit]
-/// comes back; after a send the form closes and says thanks.
-Future<void> showFeedbackSheet(
+/// comes back; after a send the form closes and says thanks. True once
+/// the note arrived.
+Future<bool> showFeedbackSheet(
   BuildContext context, {
   FeedbackEntryPoint entryPoint = FeedbackEntryPoint.settings,
   String? screen,
@@ -71,6 +72,7 @@ Future<void> showFeedbackSheet(
       ),
     );
   }
+  return sent ?? false;
 }
 
 /// The form: the note, the optional kind and contact, what is attached,

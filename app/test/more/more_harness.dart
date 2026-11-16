@@ -11,6 +11,7 @@ import 'package:family_groceries/app/router.dart';
 import 'package:family_groceries/app/theme.dart';
 import 'package:family_groceries/feedback/feedback_context.dart';
 import 'package:family_groceries/feedback/feedback_cubit.dart';
+import 'package:family_groceries/feedback/feedback_inbox.dart';
 import 'package:family_groceries/feedback/screen_capture.dart';
 import 'package:family_groceries/feedback/screen_tracker.dart';
 import 'package:family_groceries/feedback/shake.dart';
@@ -194,9 +195,17 @@ Future<More> pumpMore(
   /// The store's rating prompt and listing.
   FakeStoreReview? storeReview,
 
+  /// The feedback server: the notes and ideas Feedback & Ideen reads (job
+  /// 268); an empty one by default.
+  FakeFeedbackRepository? feedback,
+
   /// The accelerometer of `app`'s shell; none by default (tests have no
   /// sensors plugin).
   Stream<AccelerometerEvent> shakeSamples = const Stream.empty(),
+
+  /// Session states after the first (Peter in Zuhause), e.g. a household
+  /// switch.
+  Stream<Session> sessions = const Stream.empty(),
 }) async {
   tester.view
     ..devicePixelRatio = 1
@@ -218,7 +227,7 @@ Future<More> pumpMore(
   final session = FakeSession();
   whenListen(
     session,
-    const Stream<Session>.empty(),
+    sessions,
     initialState: const InHousehold(
       'peter',
       Household(id: 'home', name: 'Zuhause'),
@@ -244,9 +253,11 @@ Future<More> pumpMore(
   addTearDown(lock.close);
   final repo = FakeRepository();
   seed?.call(repo);
-  final feedback = FakeFeedbackRepository();
-  final feedbackCubit = FeedbackCubit(feedback, analytics: shownAnalytics);
+  final server = feedback ?? FakeFeedbackRepository();
+  final feedbackCubit = FeedbackCubit(server, analytics: shownAnalytics);
   addTearDown(feedbackCubit.close);
+  final inbox = FeedbackInbox(server);
+  addTearDown(inbox.close);
   final screens = ScreenTracker();
   final capture = ScreenCapture();
   addTearDown(capture.dispose);
@@ -319,6 +330,7 @@ Future<More> pumpMore(
           BlocProvider.value(value: themeCubit),
           BlocProvider.value(value: shownAnalytics),
           BlocProvider.value(value: feedbackCubit),
+          BlocProvider.value(value: inbox),
           BlocProvider.value(value: shake),
           BlocProvider.value(value: purchases.entitlements),
           BlocProvider.value(value: purchases.purchases),
@@ -354,7 +366,7 @@ Future<More> pumpMore(
     theme: themeCubit,
     router: router,
     analytics: shownAnalytics,
-    feedback: feedback,
+    feedback: server,
     screens: screens,
     capture: capture,
     shake: shake,

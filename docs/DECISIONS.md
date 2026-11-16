@@ -14783,3 +14783,64 @@ store builds send none of the new parameters.
       device): such an add waits unsorted for the server, as with the flag off.
     - With the flag on, `suggest_entries` was 3 to 6 ms slower at p95 in an own bench of the
       worst case (every item in one category). The gate benches the flag-off call.
+
+## Job 268: FB4, Feedback & ideas with status, replies and household +1, behind `feedback-fb4` (2026-11-16)
+
+1. **One reply per note, on the note's row.** The spec's thread is the note, one reply and a
+   status (`reply`, `replied_at` on `public.feedback`, as in the prototype's Table Editor card).
+   A replies table would add a second household-less table, its own RLS and export, for a
+   conversation that continues by mail when the contact box is ticked. Peter overwrites the reply
+   to change it.
+2. **The database stamps the times.** Peter edits only `status`, `fixed_in` and `reply`; the
+   trigger `feedback_before_update` sets `answered_at` on any change of the three and `replied_at`
+   on a reply change, so the badge cannot miss an answer because a time was not typed.
+3. **Unread = `answered_at` after `seen_at`.** The badge counts notes with a new reply or a new
+   status since the sender last opened them; `feedback_mark_seen` (security definer, own answered
+   notes only) stamps `seen_at`. Clients get no update grant on `feedback`.
+4. **The sender reads a column subset.** `feedback_select_own` (`user_id = auth.uid()`) plus a
+   column grant of exactly what the hub shows. The household, device context, `contact_ok`,
+   `is_internal` and the screenshot name stay unreadable, also for the sender.
+5. **Votes are per household and carry no user id.** "The household +1s an idea": one row per
+   idea and household, toggled by any member through `vote_feedback_idea`. With no user id, not
+   even the household learns which member voted, and an account deletion leaves nothing personal
+   behind. Totals come from the security-definer `feedback_ideas(household)`; the ideas table is
+   unreadable for clients. The vote goes to the household the app shows.
+6. **Ideas are global and written by hand.** `feedback_ideas` has DE and EN titles, `considering`
+   or `planned`, a position and `listed`. No household id: they are Peter's list for everyone.
+7. **Entry points unchanged.** No shared contextual-entry framework exists on main, so More's row
+   (now the hub) and 267's shake stay the only doors; the hub's "An Snacklist Support schreiben"
+   opens 267's sheet with its fields and screenshot option. The paywall is untouched. 267's shake
+   default stays.
+8. **"Snacklist Support", never Peter.** Reply bubbles are signed "Snacklist Support"; "Peter
+   replied" became "Neue Antwort"/"New reply" and "Ideas Peter is weighing" "Ideen, die wir
+   abwägen"/"Ideas being considered". Widget tests and the e2e check the hub, compose and note
+   pages for "Peter" in DE and EN.
+9. **The flag is watched, not read once.** PostHog's flags can arrive after More is built, so the
+   row selects `feedback-fb4` and loads the inbox when the hub row appears (a widget test turns the
+   flag on after More shows). With the flag off nothing is read, and `/more/feedback` and
+   `/more/feedback/<id>` redirect to More.
+10. **"Fixed in" links the public changelog's version anchor** (`/<de|en>/changelog#v1-4-1`, the
+    site's `v${version.replaceAll('.', '-')}`). Production hides a version that is not public
+    yet, so Peter sets `fixed_in` once the release is public.
+11. **No new analytics events.** The screen names `feedback` and `feedback_note` join
+    `screenNames`; notes still report `feedback_submitted` from the form.
+12. **Legal.** `out/LEGAL-NOTE.md` in the job directory has the current §10 text, proposed DE/EN
+    additions and the remaining "Peter" hits in legal and consent text. Nothing under
+    `site/content/legal/` changed; the flag stays internal-only until the policy is live
+    (NEEDS_LEAD "Job 268").
+
+### Job 268 in-job review (Opus): fixes before landing
+
+1. **The inbox follows the session.** Branch pages outlive a household switch, so `InboxLoader`
+   reloads the hub and More's row when the shown user or household changes; a household change
+   drops the old household's ideas and ignores answers to its in-flight +1s. Without this, a +1
+   after a switch went to the household the user had left.
+2. **The badge refreshes on resume and on the More tab**, with no polling.
+3. **A second +1 tap while the first is in flight is ignored**, so the shown state always equals
+   the server's.
+4. **Connected apps (OAuth/MCP tokens) read no notes**: `feedback_select_own` also requires no
+   `client_id` claim, like `export_my_data`.
+5. **The badge says "Neuigkeit(en)"/"update(s)"**, since it counts status changes as well as
+   replies.
+6. **The export includes `answered_at`.** pgTAP idea assertions filter to the test's own ideas,
+   so they hold on a database that already lists some.

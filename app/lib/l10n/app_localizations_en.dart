@@ -1257,6 +1257,111 @@ class AppLocalizationsEn extends AppLocalizations {
       'Shake your phone to report a problem with the screen.';
 
   @override
+  String get feedbackHubRow => 'Feedback & ideas';
+
+  @override
+  String feedbackHubUnread(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count updates',
+      one: '1 update',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get feedbackWrite => 'Write to Snacklist Support';
+
+  @override
+  String get feedbackYourNotes => 'Your notes';
+
+  @override
+  String get feedbackNoNotes =>
+      'No notes yet. What you write shows up here, with its status and the reply.';
+
+  @override
+  String get feedbackLoadFailed => 'Couldn\'t load.';
+
+  @override
+  String get feedbackStatusSent => 'Sent';
+
+  @override
+  String get feedbackStatusRead => 'Read';
+
+  @override
+  String get feedbackStatusPlanned => 'Planned';
+
+  @override
+  String feedbackStatusFixedIn(String version) {
+    return 'Fixed in $version';
+  }
+
+  @override
+  String get feedbackStatusFixed => 'Fixed';
+
+  @override
+  String get feedbackNewReply => 'New reply';
+
+  @override
+  String get feedbackNewStatus => 'New status';
+
+  @override
+  String get feedbackIdeas => 'Ideas being considered';
+
+  @override
+  String get feedbackIdeaConsidering => 'Being considered';
+
+  @override
+  String feedbackVote(String title, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count votes',
+      one: '1 vote',
+    );
+    return '$title: +1, $_temp0';
+  }
+
+  @override
+  String get feedbackIdeasNote =>
+      'Snacklist Support writes the ideas. Others see only the count, never who voted.';
+
+  @override
+  String get feedbackVoteFailed => 'Your vote didn\'t go through. Try again.';
+
+  @override
+  String get feedbackNoteTitle => 'Your note';
+
+  @override
+  String feedbackWhen(DateTime date, DateTime time) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+    final intl.DateFormat timeDateFormat = intl.DateFormat.Hm(localeName);
+    final String timeString = timeDateFormat.format(time);
+
+    return '$dateString, $timeString';
+  }
+
+  @override
+  String feedbackWhenRead(String when) {
+    return '$when · read';
+  }
+
+  @override
+  String feedbackReplyFrom(String when) {
+    return 'Snacklist Support · $when';
+  }
+
+  @override
+  String feedbackWhatsNew(String version) {
+    return 'What\'s new in $version';
+  }
+
+  @override
+  String get feedbackNoteMissing => 'This note can\'t be found.';
+
+  @override
   String get onboardingCreateHint =>
       'Start a new list, then invite your partner.';
 

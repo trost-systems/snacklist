@@ -12,6 +12,7 @@ import 'package:family_groceries/app/router.dart';
 import 'package:family_groceries/app/theme.dart';
 import 'package:family_groceries/feedback/feedback_context.dart';
 import 'package:family_groceries/feedback/feedback_cubit.dart';
+import 'package:family_groceries/feedback/feedback_inbox.dart';
 import 'package:family_groceries/feedback/feedback_repository.dart';
 import 'package:family_groceries/feedback/screen_capture.dart';
 import 'package:family_groceries/feedback/screen_tracker.dart';
@@ -160,6 +161,7 @@ class _AppState() extends State<App> {
     widget.feedback,
     analytics: widget.analytics,
   );
+  late final _inbox = FeedbackInbox(widget.feedback);
   late final FeedbackDevice _device =
       widget.feedbackDevice ?? PluginFeedbackDevice();
   final _addSheetRequest = AddSheetRequest();
@@ -257,6 +259,7 @@ class _AppState() extends State<App> {
     _listLinks.dispose();
     unawaited(_language.close());
     unawaited(_feedback.close());
+    unawaited(_inbox.close());
     unawaited(_shake.close());
     _capture.dispose();
     unawaited(_theme.close());
@@ -307,6 +310,7 @@ class _AppState() extends State<App> {
         BlocProvider.value(value: widget.analytics.flags),
         BlocProvider.value(value: _language),
         BlocProvider.value(value: _feedback),
+        BlocProvider.value(value: _inbox),
         BlocProvider.value(value: _shake),
         BlocProvider.value(value: _theme),
         BlocProvider.value(value: _integrationLock),

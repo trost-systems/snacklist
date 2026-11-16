@@ -1451,3 +1451,48 @@ PR https://github.com/trost-systems/snacklist/pull/490. Review 0 of job 222 (the
 ## Job 272: add-sheet rows stay put (IN1) and a new grocery's usual store (ST1), flag input-stable-rows
 
 #506, merged as `7e9314f0`; flag `input-stable-rows` off. Details: [docs/done/272.md](docs/done/272.md).
+
+## Job 268: FB4, Feedback & ideas with status, replies and household +1 (2026-11-16)
+
+- **Where users get it.** PR #507, behind the PostHog flag `feedback-fb4` (`releases/flags.json`:
+  rollout off). It ships in the next green main build to TestFlight and Play internal. Peter sees it
+  once the lead creates `feedback-fb4` in PostHog with his account and the internal testers as the
+  only targets, off for everyone else. With the flag off, job 267's FB2 UI is unchanged.
+- **Built.**
+  - More's row becomes „Feedback & Ideen“ with a count of unopened answers. The count refreshes
+    when More opens, on resume and after a household switch.
+  - The hub `/more/feedback` has „An Snacklist Support schreiben“, which opens 267's form. Below it
+    are the user's notes with their status (Gesendet, Gelesen, Geplant, Behoben in <version>) and
+    the ideas being considered, with a +1 per household.
+  - The note page `/more/feedback/<id>` shows the message, the reply signed „Snacklist Support“ and
+    „Was ist neu in <version>“, which links to the public changelog.
+  - Data: migration `20261115210000_fb4_feedback_replies.sql`.
+    - New columns on `public.feedback`: status, fixed_in, reply, replied_at, answered_at, seen_at.
+      A trigger stamps the times.
+    - RLS lets only the sender read their own notes, and not through connected apps.
+    - `feedback_mark_seen`, `feedback_ideas(household)` (totals plus this household's vote) and
+      `vote_feedback_idea` (security definer).
+    - New tables `feedback_ideas` (Peter's) and `feedback_idea_votes` (one per idea and household,
+      no user id).
+    - Export and deletion are extended.
+  - Peter's by-hand workflow is in `docs/FEEDBACK.md`, „Replies and status“. No bot reads or
+    answers notes.
+- **Proof.**
+  - pgTAP `feedback_fb4.test.sql`, plus the `rls` and `account_deletion` cases.
+  - Widget tests `fb4_test.dart` and `feedback_inbox_test.dart`. They cover flag off and on, a late
+    flag, the badge, every status, compose, the thread, mark-seen, +1 with rollback, a household
+    switch, resume, DE/EN, light/dark, 130 % and 160 %, and no „Peter“.
+  - e2e `feedback-fb4.spec.ts` on the real web build passed 3×3 runs. It covers a note answered by
+    hand, the badge, the reply, the changelog href, `seen_at`, and votes across two households with
+    the PostgREST refusals.
+  - Gates lint, flutter, db and e2e passed locally. CI is the merge gate.
+  - Screenshots are in `docs/screenshots/268/`: goldens in DE light, EN dark and DE 130 %, plus web
+    shots.
+  - An in-job Opus review found no must-fix, and its should-fixes are fixed (DECISIONS „Job 268“).
+- **Open / blocked.**
+  - The privacy policy does not yet describe replies, status or votes. The job directory's
+    `out/LEGAL-NOTE.md` has the current §10, proposed DE/EN additions and the remaining „Peter“
+    hits in legal and consent text (NEEDS_LEAD „Job 268“). The flag stays internal until then.
+  - The lead creates the PostHog flag as internal-only.
+  - No phone drive here, so the hub has only been seen on web and in goldens. Check it on
+    TestFlight with the internal flag.

@@ -575,15 +575,17 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 
 **Being built, not for users yet (test flag `feedback-fb2`, job 267).** On iPhone and Android a shake asks „Problem mit diesem Bildschirm melden?“ (EN: "Report a problem with this screen?") with „Mit Bildschirmfoto“ / „Ohne Bildschirmfoto“ (EN: "With screenshot" / "Without screenshot"). With a screenshot the user marks it up with a pen, rectangles and text before the form opens; the form then shows the picture and switches for „Bildschirmname“ (EN: "Screen name", only after a shake) and „Bildschirmfoto“ (EN: "Screenshot"). From More the form offers „Bildschirmfoto hinzufügen“ (EN: "Add screenshot") for the screen shown before More. Einstellungen gets „Schütteln für Feedback“ (EN: "Shake to send feedback"). Do not write about any of this until the flag is on for everyone and the privacy policy covers screenshots.
 
+**Being built, not for users yet (test flag `feedback-fb4`, job 268).** More's row becomes „Feedback & Ideen“ (EN: "Feedback & ideas") and opens a page with „An Snacklist Support schreiben“ (EN: "Write to Snacklist Support", the same form), „Deine Notizen“ (EN: "Your notes": the user's own notes with their status „Gesendet“, „Gelesen“, „Geplant“ or „Behoben in 1.4.1“, EN "Sent", "Read", "Planned", "Fixed in 1.4.1") and „Ideen, die wir abwägen“ (EN: "Ideas being considered"), a short list of ideas Snacklist Support wrote that a household can give a +1; everyone sees only the count, never who voted. A note opens with Snacklist Support's reply when there is one and, for a fixed one, „Was ist neu in 1.4.1“ (EN: "What's new in 1.4.1") linking to the changelog. A count on the row says how many notes have news the user has not opened, a reply or a new status (screen readers: „2 Neuigkeiten“, EN "2 updates"). Replies and status are written by hand; nothing answers automatically. Do not write about any of this until the flag is on for everyone and the privacy policy covers replies, status and votes.
+
 **Never claim.**
 - Shake-to-report, feedback from the list screen, or screenshots/attachments (they exist only behind the test flag above).
 - A reply is guaranteed; contact only happens if the box is ticked and Snacklist Support chooses to.
 - That list contents are sent (a screenshot, once released, shows whatever was on screen; the user decides and can paint over it).
-- That users can read their sent notes back in the app (they come back only in their own data export, Konto → „Meine Daten exportieren“, EN "Export my data").
+- That users can read their sent notes back in the app, see a reply or vote on ideas (only behind the test flag `feedback-fb4`; today the notes come back only in their own data export, Konto → „Meine Daten exportieren“, EN "Export my data").
 
 **Note.** Snacklist Support (Peter) reads the notes. A daily email summary of new notes is built but not switched on. Don't promise how fast a note is read.
 
-**Last verified.** 15 November 2026, code version 544d78a4 plus job 267's app changes, in widget tests and the web e2e (German and English).
+**Last verified.** 15 November 2026, code version fd41324c plus job 268's app changes, in widget tests (German and English; the `feedback-fb4` page by widget tests only).
 
 ## The More tab, help and legal pages
 

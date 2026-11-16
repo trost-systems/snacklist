@@ -30,6 +30,12 @@ const listDeclutterFlag = 'list-declutter';
 /// up a screenshot, the form sends it, and Einstellungen' shake switch.
 const feedbackFb2Flag = 'feedback-fb2';
 
+/// The flag that turns on Feedback & ideas (job 268, FB4): More's row opens
+/// a page with the user's own notes, their status and Snacklist Support's
+/// replies, a badge for new answers, and the ideas the household can +1.
+/// Off, More's row opens the form as before.
+const feedbackFb4Flag = 'feedback-fb4';
+
 /// The flag that turns on JH2, joining a household in the browser first
 /// (job 271): the start screen's two buttons, „Bestehendem Haushalt
 /// beitreten“ on the name step, the sign-in sheet for an invite, joining

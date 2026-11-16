@@ -132,6 +132,14 @@ const premiumPath = '/more/lifetime';
 /// More's Tipps: every hint of the List tab, to read again (job 168b).
 const tipsPath = '/more/tips';
 
+/// More's Feedback & Ideen (job 268, flag `feedback-fb4`): the user's
+/// notes with status and replies, and the ideas to +1.
+const feedbackPath = '/more/feedback';
+
+/// One of the user's notes below [feedbackPath].
+String feedbackNotePath(String id) =>
+    '$feedbackPath/${Uri.encodeComponent(id)}';
+
 /// More's Einstellungen: theme and language.
 const appSettingsPath = '/more/settings';
 
@@ -174,6 +182,8 @@ const screenNames = {
   'language',
   'usage_data',
   'tips',
+  'feedback',
+  'feedback_note',
   'login',
   'welcome',
   'start',
@@ -220,6 +230,8 @@ String _screenNameOfPath(Uri location) => switch (location.path) {
   languagePath => 'language',
   usageDataPath => 'usage_data',
   tipsPath => 'tips',
+  feedbackPath => 'feedback',
+  _ when _isFeedbackNote(location) => 'feedback_note',
   settingsPath when location.queryParameters['section'] == 'account' =>
     'account',
   settingsPath => 'access',
@@ -238,21 +250,30 @@ String _screenNameOfPath(Uri location) => switch (location.path) {
 /// Whether [location] is in the More tab (More itself or one of its
 /// pages); the list is `/` itself, with its Anpassen pages below
 /// ([inListTab]). Signed in, any other shell path goes to the list.
-bool inMoreTab(Uri location) => const {
-  settingsPath,
-  morePath,
-  accessPath,
-  accountPath,
-  invitesPath,
-  householdPath,
-  premiumPath,
-  appSettingsPath,
-  languagePath,
-  usageDataPath,
-  tipsPath,
-  moreLegalPath,
-  moreJoinPath,
-}.contains(location.path);
+bool inMoreTab(Uri location) =>
+    _isFeedbackNote(location) ||
+    const {
+      settingsPath,
+      morePath,
+      accessPath,
+      accountPath,
+      invitesPath,
+      householdPath,
+      premiumPath,
+      appSettingsPath,
+      languagePath,
+      usageDataPath,
+      tipsPath,
+      feedbackPath,
+      moreLegalPath,
+      moreJoinPath,
+    }.contains(location.path);
+
+/// `/more/feedback/<id>`: one note ([feedbackNotePath]).
+bool _isFeedbackNote(Uri location) => switch (location.pathSegments) {
+  ['more', 'feedback', final id] => id.isNotEmpty,
+  _ => false,
+};
 
 /// Whether [location] is one of the List tab's Anpassen pages: the stores
 /// at [editPath], one store's details below it.
@@ -561,6 +582,21 @@ List<RouteBase> moreTabRoutes() => [
             paywallEntry: PaywallEntry.parse(state.uri.queryParameters['from']),
           ),
         ),
+      GoRoute(
+        path: 'feedback',
+        redirect: _withFeedbackHub,
+        builder: (_, _) => const MoreScreen(page: MorePage.feedback),
+        routes: [
+          GoRoute(
+            path: ':id',
+            redirect: _withFeedbackHub,
+            builder: (_, state) => MoreScreen(
+              page: MorePage.feedbackNote,
+              noteId: state.pathParameters['id'],
+            ),
+          ),
+        ],
+      ),
       GoRoute(path: 'join', redirect: (_, _) => joinCodePath),
       GoRoute(path: 'legal', redirect: (_, _) => morePath),
       GoRoute(
@@ -580,6 +616,10 @@ List<RouteBase> moreTabRoutes() => [
     redirect: (_, state) => legacySettingsRedirect(state.uri),
   ),
 ];
+
+/// Feedback & Ideen's pages; with the flag off, More.
+String? _withFeedbackHub(BuildContext context, GoRouterState _) =>
+    context.read<Flags?>()?.isOn(feedbackFb4Flag) ?? false ? null : morePath;
 
 /// The Verlauf tab's route; with the flag off it is the list.
 List<RouteBase> historyTabRoutes() => [

@@ -32,6 +32,9 @@ const sameInBothLanguages = {
   'syncOffline': '"Offline" is German too (job 161)',
   'priceUnitKg': 'the unit symbol kg (job 190)',
   'priceUnitLitre': 'the unit symbol l (job 190)',
+  'feedbackWhen':
+      'only the date and the time, formatted per language (job 268)',
+  'feedbackReplyFrom': 'the name Snacklist Support and a date (job 268)',
 };
 
 Map<String, Object?> readArb(String path) =>

@@ -54,7 +54,8 @@ grant select on ha, hb to authenticated, anon;
 select pg_temp.login('00000000-0000-0000-0000-0000000000a1');
 select lives_ok($$ select pg_temp.send('10000000-0000-4000-8000-000000000001', '  Der Haken reagiert spät.  ') $$,
   'a signed-in user inserts their own note');
-select throws_ok($$ select * from public.feedback $$, '42501', null, 'the sender cannot read it back');
+select throws_ok($$ select * from public.feedback $$, '42501', null,
+  'the sender cannot read every column back (job 268: feedback_fb4.test.sql)');
 select throws_ok($$ update public.feedback set message = 'x' $$, '42501', null, 'nor change it');
 select throws_ok($$ delete from public.feedback $$, '42501', null, 'nor delete it');
 select throws_ok(
