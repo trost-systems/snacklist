@@ -486,16 +486,23 @@ class AddSheetCubit(
   /// brand and details are split as the server splits them, so they are not
   /// [ParsedEntry.deviceParsed]: an add sends them as they are, and the
   /// server guesses the store as for any row without one.
+  ///
+  /// A port of SQL on an index the server updates: should it ever throw,
+  /// the key shows [_local]'s rows instead of failing.
   List<Suggestion> _ranked(String key) {
     final list = _list.state;
-    return suggestEntries(
-      key,
-      catalog: _catalogIndex(),
-      household: list.householdIndex,
-      categories: list.catalog,
-      known: _householdCategories(),
-      pending: _pending(),
-    );
+    try {
+      return suggestEntries(
+        key,
+        catalog: _catalogIndex(),
+        household: list.householdIndex,
+        categories: list.catalog,
+        known: _householdCategories(),
+        pending: _pending(),
+      );
+    } on Object {
+      return _local(key);
+    }
   }
 
   /// The list's items of the last year that the household index does not

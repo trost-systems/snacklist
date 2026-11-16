@@ -249,9 +249,11 @@ Iterable<(SuggestionSource, ParsedEntry)> _candidates(
 ) sync* {
   final norm = normalizeItemName(typed.name);
   final parts = typed.properties?.split(', ') ?? const <String>[];
+  // A size past PostgreSQL's integer fails the server's whole call; here
+  // it offers no size rows.
   final size = [
     for (final part in parts)
-      if (_sizePart.firstMatch(part) case final m?) int.parse(m[1]!),
+      if (_sizePart.firstMatch(part) case final m?) int.tryParse(m[1] ?? ''),
   ].firstOrNull;
   final trimmed = _btrim(text);
   final lastKey = itemKey(_lastWord.firstMatch(trimmed)?[0] ?? '');
@@ -543,7 +545,7 @@ final class _Context(
       if (_trailing.firstMatch(text) case final m?) {
         final count = numberWords[m[3]!.toLowerCase()]?.toString() ?? m[3]!;
         final rest = '${m[1] ?? ''}${m[2]}';
-        if (int.parse(count) <= 20 &&
+        if ((int.tryParse(count) ?? 21) <= 20 &&
             !_digit.hasMatch(m[2]!) &&
             !_sizeWord.hasMatch(
               m[2]!.replaceFirst(_trailingDots, '').toLowerCase(),

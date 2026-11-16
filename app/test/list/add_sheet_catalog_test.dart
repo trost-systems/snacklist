@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/app/localizations.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
+import 'package:family_groceries/list/add_sheet/add_sheet_cubit.dart';
 import 'package:family_groceries/list/add_sheet/suggestion.dart';
 import 'package:family_groceries/list/catalog/catalog_index.dart';
 import 'package:family_groceries/list/catalog/household_index.dart';
@@ -290,5 +291,26 @@ void main() {
         await tester.pumpAndSettle();
       });
     }
+  });
+
+  test('a ranking that throws shows the rows made without it', () {
+    final list = ListCubit(
+      FakeRepository()..categories = categories,
+      MemoryListCache(),
+      userId: 'peter',
+    );
+    addTearDown(list.close);
+    var reads = 0;
+    final sheet = AddSheetCubit(
+      list,
+      onDeviceCatalog: () => true,
+      // The ranking's read of the index throws; the fallback's does not.
+      catalogIndex: () => reads++ == 0
+          ? throw StateError('broken index')
+          : CatalogIndex.bundled,
+    );
+    addTearDown(sheet.close);
+    sheet.key('Windeln');
+    expect(sheet.state.suggestions.map((s) => s.entry.name), ['Windeln']);
   });
 }
