@@ -56,6 +56,12 @@ export const rounds = [
 // overview in the preview build). The overview lists them with the rounds above, newest first; they own no views here.
 export const linked = [
   {
+    href: '../report-entry/',
+    blurb: { en: 'Three ways into the in-app “Report content” form next to feedback (DSA, Legal N-226).', de: 'Drei Wege in das Formular „Inhalt melden“ neben Feedback (DSA, Legal N-226).' },
+    date: { en: 'Nov 16', de: '16. Nov.' },
+    title: { en: 'Report content entry (RC1–RC3)', de: 'Einstieg „Inhalt melden“ (RC1–RC3)' },
+  },
+  {
     href: '../add-sheet/add-feedback/',
     blurb: { en: 'Five ways to show what was added where, and to find or fix it.', de: 'Fünf Wege zu zeigen, was wo gelandet ist, und es zu finden oder zu ändern.' },
     date: { en: 'Nov 15', de: '15. Nov.' },
