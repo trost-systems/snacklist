@@ -327,8 +327,9 @@ class ListCubit(
   Timer? _save;
   Timer? _usualsReload;
 
-  /// After an acknowledged delete: the server's history no longer holds
-  /// the item (deletes are hard), so the household index is fetched again.
+  /// After a server row went (deletes are hard) or changed its store or
+  /// status, own or another member's: the index's history and store memory
+  /// read them, so it is fetched again once the changes settle.
   Timer? _indexReload;
 
   /// Bumped per household index fetch: only the latest one's answer counts.
@@ -1684,6 +1685,7 @@ class ListCubit(
   /// Like [_refreshUsuals]: a failure or a malformed answer keeps the
   /// index there is.
   Future<void> _refreshHouseholdIndex() async {
+    _indexReload?.cancel();
     final round = ++_indexRound;
     try {
       if (await _repo.fetchSuggestIndex() case final index?
@@ -1857,13 +1859,6 @@ class ListCubit(
         _hints.add(DedupeHint(renamed, onList));
       }
     }
-    if (op is DeleteItem && _householdIndex() && !_closing) {
-      _indexReload?.cancel();
-      _indexReload = Timer(
-        const Duration(seconds: 2),
-        () => unawaited(_refreshHouseholdIndex()),
-      );
-    }
     if (unsure) {
       unawaited(resync());
     }
@@ -2031,6 +2026,16 @@ class ListCubit(
         () => unawaited(_refreshUsuals()),
       );
     }
+    if (!_closing &&
+        !identical(next.server, before.server) &&
+        _householdIndex() &&
+        _touchesIndex(before.server, next.server)) {
+      _indexReload?.cancel();
+      _indexReload = Timer(
+        const Duration(seconds: 2),
+        () => unawaited(_refreshHouseholdIndex()),
+      );
+    }
     final queued = !identical(next.pending, before.pending);
     // Before the first load only the queue is worth saving: an op made
     // offline on a first start, with no cached list to lose.
@@ -2065,6 +2070,18 @@ class ListCubit(
       ),
     ),
   );
+
+  static bool _touchesIndex(Map<String, Item> before, Map<String, Item> next) {
+    for (final MapEntry(:key, value: was) in before.entries) {
+      final now = next[key];
+      if (now == null ||
+          now.storeId != was.storeId ||
+          now.status != was.status) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   static Set<String> _activeNames(Map<String, Item> server) => {
     for (final item in server.values)
