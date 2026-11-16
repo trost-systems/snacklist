@@ -32,6 +32,7 @@ Preconditions:
 
 ## Gotchas
 
+- With `feedback-fb4` on, the row before it is „Feedback & Ideen“, and `journeys/rate-snacklist.mjs` (which looks for „Feedback senden“ to check the order) fails: drive it on a build without that flag.
 - `unverified` on a device: no iPhone or Android device on the runner. The dialog itself is the store's; Apple shows it at most 3 times a year per app and never in TestFlight; Google shows it under its own quota. Snacklist logs "asked", never "shown".
 - Who can be asked today: nobody. iPhone release builds may ask, but every one is in TestFlight, where Apple never shows the dialog; Android asks only in a build with `--dart-define=STORE_RELEASE=true`, which only the future Play production build gets (docs/RELEASE.md, "Public releases").
 - The counters live on the device (no ids, no item names). Reinstalling starts them over.

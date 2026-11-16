@@ -15,7 +15,7 @@ Members of one household see each other's changes without reloading: an item one
 
 ## How to get to it (user POV)
 
-- No screen of its own: two members signed in to the same household (one invites with „Mehr“ → „Partner einladen“, the other joins with the link or code), both on „Liste“. The bar is the strip at the top of the list: the household chip with the household's name on the left, then the sync pill when there is one, „Anpassen“ / "Edit" on the right. The news line („1 neu von …“) sits in a small capsule just left of „Anpassen“, or right below the household chip where the bar has no room for it (a phone; below the list tabs with several lists; `news-subtitle`). With several lists, the news counts only adds on the list shown; an add on another list stays new until that list's tab is opened.
+- No screen of its own: two members signed in to the same household (one invites with „Mehr“ → „Partner einladen“, or with `list-declutter` on the switcher sheet's „Einladen“; the other joins with the link or code), both on „Liste“. The bar is the strip at the top of the list: the household chip with the household's name on the left, then the sync pill when there is one, „Anpassen“ / "Edit" on the right. The news line („1 neu von …“) sits in a small capsule just left of „Anpassen“, or right below the household chip where the bar has no room for it (a phone; below the list tabs with several lists; `news-subtitle`). With several lists, the news counts only adds on the list shown; an add on another list stays new until that list's tab is opened.
 
 ## Driving it with Playwright
 

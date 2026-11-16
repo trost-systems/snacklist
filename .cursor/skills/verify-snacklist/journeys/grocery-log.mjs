@@ -1,5 +1,5 @@
 // Feature grocery-log (job 199), behind the PostHog flag grocery-log: launch with
-// VH_DEFINES="FLAGS_ON=grocery-log". Entry points the Verlauf tab and the list's trip card.
+// VH_DEFINES="FLAGS_ON=grocery-log". Entry points the Verlauf tab and the list after a tick.
 // Seeds Lidl and Rewe and a known set of trips through save_trip (fixed ids, so a rerun upserts
 // them), then proves gl-calendar (a 3-trip and a 5-trip day), gl-day-filter, gl-journal,
 // gl-view-toggle with its persistence over a reload, gl-store-timeline, gl-free-window (a 40-day-old
@@ -9,7 +9,7 @@
 //   node journeys/grocery-log.mjs <evidence dir> [--lang de|en] [--dark] [--compact]
 import { createHash } from 'node:crypto';
 import process from 'node:process';
-import { apiAs, capture, instance, itemRow, logger, member, openApp, openTab, reveal, signIn, typeInto } from '../helpers/lib.mjs';
+import { accessibleName, apiAs, capture, instance, itemRow, logger, member, openApp, openTab, reveal, signIn, typeInto } from '../helpers/lib.mjs';
 
 const [dir, ...rest] = process.argv.slice(2);
 const lang = rest.includes('--lang') ? rest[rest.indexOf('--lang') + 1] : 'de';
@@ -39,6 +39,12 @@ const asDate = (wire) => new Date(`${wire}T12:00:00Z`);
 // DateFormat.MMMMEEEEd and MMMMd, as the calendar's labels and the filter heading use them.
 const longDay = (wire) => new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }).format(asDate(wire));
 const monthDay = (wire) => new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', timeZone: 'UTC' }).format(asDate(wire));
+// The journal's section for a day, as the app groups it: weeks start on Monday, older ones by month.
+const mondayOf = (wire) => asDate(wire).getTime() - ((asDate(wire).getUTCDay() + 6) % 7) * 864e5;
+const journalSection = (wire) => {
+  const weeks = Math.round((mondayOf(today) - mondayOf(wire)) / (7 * 864e5));
+  return weeks <= 0 ? L('historyThisWeek') : weeks === 1 ? L('historyLastWeek') : monthTitle(wire);
+};
 const plural = (template, count) => template
   .replace(/\{count, plural, =1\{([^}]*)\} other\{([^{}]*(?:\{count\}[^{}]*)*)\}\}/, (_, one, other) => (count === 1 ? one : other))
   .replaceAll('{count}', String(count));
@@ -127,19 +133,38 @@ const sheet = (title) => page.getByRole('group', { name: title, exact: true });
 const toStores = () => page.getByRole('button', { name: new RegExp(`^${escape(L('historyShowByStore'))}`) });
 const toDates = () => page.getByRole('button', { name: new RegExp(`^${escape(L('historyShowByDate'))}`) });
 const monthTitle = (wire) => new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(asDate(wire));
-const monthHeading = (wire) => page.getByRole('heading', { name: monthTitle(wire), exact: true });
+const monthButton = (key) => page.getByRole('button', { name: new RegExp(`^${escape(L(key))}`) });
+// The month the calendar shows: the heading level with its month buttons. The journal also titles its
+// sections older than last week by month, so a month's name alone can be either. null: no calendar built.
+async function calendarMonth() {
+  const prev = await monthButton('previousMonth').boundingBox().catch(() => null);
+  if (!prev) return null;
+  for (const heading of await page.getByRole('heading').all()) {
+    const b = await heading.boundingBox();
+    if (b && b.y < prev.y + prev.height && b.y + b.height > prev.y) return accessibleName(await heading.ariaSnapshot());
+  }
+  return null;
+}
+// A journal section shows: its heading once more than the calendar's own, when the calendar shows that month.
+const sectionShown = async (title) => {
+  const headings = (await aria()).split('\n').filter((line) => line.trim().startsWith(`- heading "${title}"`)).length;
+  return headings > ((await calendarMonth()) === title ? 1 : 0);
+};
 
 // The calendar reaches back at most a few months here: the seeds span 40 days.
+const monthsBack = [0, 1, 2, 3].map((k) => {
+  const [y, m] = today.split('-').map(Number);
+  return new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(Date.UTC(y, m - 1 - k, 15)));
+});
 async function showMonthOf(wire) {
-  const months = [0, 31, 62, 93].map((n) => daysAgo(n));
-  for (let i = 0; i < 4 && !(await monthHeading(wire).count()); i++) {
-    let shown = null;
-    for (const m of months) if (await monthHeading(m).count()) shown = m;
-    const key = shown && wire.slice(0, 7) > shown.slice(0, 7) ? 'nextMonth' : 'previousMonth';
-    await page.getByRole('button', { name: new RegExp(`^${escape(L(key))}`) }).click();
+  const want = monthTitle(wire);
+  for (let i = 0; i < 4; i++) {
+    const shown = await calendarMonth();
+    if (shown === want) return;
+    await monthButton(monthsBack.indexOf(shown) > monthsBack.indexOf(want) ? 'nextMonth' : 'previousMonth').click();
     await page.waitForTimeout(300);
   }
-  await monthHeading(wire).waitFor({ timeout: 5_000 });
+  await until(async () => (await calendarMonth()) === want, `the calendar on ${want}`, 5_000);
 }
 
 async function boxesApart(locators, what) {
@@ -165,7 +190,7 @@ try {
   check((await tabs.count()) === 3, `the flag shows three tabs: ${(await page.getByRole('tablist').ariaSnapshot()).replace(/\s*\n\s*/g, ' ')}`);
 
   await openTab(page, L, 'tabHistory');
-  await monthHeading(today).waitFor({ timeout: 15_000 });
+  await until(async () => (await calendarMonth()) === monthTitle(today), 'the calendar on this month', 15_000);
   if (await toDates().count()) await toDates().click();
   await toStores().waitFor({ timeout: 5_000 });
   await shot('01-journal-calendar');
@@ -206,11 +231,10 @@ try {
       check((await dayButton(future).count()) === 0, `tomorrow (${future}) is no button`);
     }
 
-    // gl-journal: sections this week, last week, the month.
-    const journal = await aria();
-    for (const heading of [L('historyThisWeek'), L('historyLastWeek')]) check(journal.includes(heading), `journal section „${heading}“`);
+    // gl-journal: a section per week or month the seeded trips fall in (on a Monday none is this week).
+    for (const heading of new Set([daysAgo(1), threeDay, fiveDay].map(journalSection))) check(await sectionShown(heading), `journal section „${heading}“`);
     await reveal(page, tile('Kürbis'));
-    check(await page.getByText(monthTitle(lastMonthDay), { exact: true }).or(page.getByRole('heading', { name: monthTitle(lastMonthDay) })).count() > 0, `journal section „${monthTitle(lastMonthDay)}“ above Kürbis`);
+    check(await sectionShown(journalSection(lastMonthDay)), `journal section „${journalSection(lastMonthDay)}“ above Kürbis`);
     await shot('02-journal-scrolled');
     const locked = plural(L('historyLockedCount'), 1);
     await until(async () => (await aria()).includes(L('historyLockedTitle')), 'the locked row at the end of the journal');
@@ -244,7 +268,7 @@ try {
     await toStores().click();
     await toDates().waitFor({ timeout: 5_000 });
     for (const store of ['Lidl', 'Rewe']) check((await page.getByRole('heading', { name: store, exact: true }).count()) === 1, `store timeline block „${store}“`);
-    check((await monthHeading(today).count()) === 0, 'no calendar in the store timeline');
+    check((await monthButton('previousMonth').count()) === 0, 'no calendar in the store timeline');
     await shot('05-store-timeline');
     await page.reload();
     await openTab(page, L, 'tabHistory').catch(() => {});
@@ -259,13 +283,18 @@ try {
     await toStores().waitFor({ timeout: 5_000 });
     log('toggled back to the journal');
 
-    // gl-free-window: the calendar's locked days.
-    await showMonthOf(oldDay);
-    const lockedDay = page.getByText(L('historyDayLocked', { date: longDay(oldDay) }), { exact: true });
-    check((await lockedDay.count()) === 1, `${oldDay} reads „${L('historyDayLocked', { date: longDay(oldDay) })}“`);
-    check((await dayButton(oldDay).count()) === 0, `${oldDay} is no button`);
+    // gl-free-window: the calendar's locked days. It goes back only to the window's first month (the
+    // 40-day-old trip is locked, so it does not count), which is the 40-day-old trip's month only late
+    // in a month: check the locked days that month has before the window's first day.
     const firstOpen = daysAgo(27);
-    if (firstOpen.slice(0, 7) === oldDay.slice(0, 7)) check((await dayButton(firstOpen).count()) === 1, `${firstOpen}, the window's first day, is a button`);
+    await showMonthOf(firstOpen);
+    check(await monthButton('previousMonth').isDisabled(), `the calendar goes back no further than ${monthTitle(firstOpen)}`);
+    check((await dayButton(firstOpen).count()) === 1, `${firstOpen}, the window's first day, is a button`);
+    for (const day of [daysAgo(28), oldDay].filter((d) => d.slice(0, 7) === firstOpen.slice(0, 7))) {
+      const locked = L('historyDayLocked', { date: longDay(day) });
+      check((await page.getByText(locked, { exact: true }).count()) === 1, `${day} reads „${locked}“`);
+      check((await dayButton(day).count()) === 0, `${day} is no button`);
+    }
     await shot('08-calendar-locked-month');
     await showMonthOf(today);
 
@@ -329,7 +358,7 @@ try {
     await until(async () => !(await history()).trips.some((t) => t.id === added.id), 'the trip gone from trip_history');
     log('trip_history no longer has the deleted trip');
     // The dialog and then the sheet hide the journal from the semantics tree until both are gone.
-    await until(async () => (await edit.count()) === 0 && (await page.getByRole('heading', { name: L('historyThisWeek') }).count()) === 1, 'the journal back');
+    await until(async () => (await edit.count()) === 0 && (await page.getByRole('heading', { name: journalSection(daysAgo(1)) }).count()) === 1, 'the journal back');
     check((await tile('Joghurt').count()) === 0, 'the deleted trip is gone from the journal');
 
     // gl-no-card: ticking a store's last open item shows no inline card (job 264)
@@ -346,6 +375,9 @@ try {
       await until(async () => (await itemRow(page, item).count()) === 0, `${item} ticked off`);
     }
     await page.waitForTimeout(800);
+    // The card stood at the top of the list, which a lazily built list drops once scrolled away.
+    await page.mouse.wheel(0, -5000);
+    await page.waitForTimeout(400);
     check(!logCard.test(await aria()), 'no inline log card after ticking the last open Lidl item');
     await shot('13-no-card-after-last-tick');
     if (errors.length) throw new Error(`page errors: ${errors.join('; ')}`);
