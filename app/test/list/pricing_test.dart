@@ -1,5 +1,6 @@
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/pricing.dart';
+import 'package:family_groceries/list/subtotals.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 

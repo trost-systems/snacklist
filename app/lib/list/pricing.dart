@@ -371,50 +371,6 @@ extension ItemPrice on Item {
       currentPrice(now)?.currency == currency ? lineCentsNow : null;
 }
 
-/// The shown list's running total in the household's currency: [cents]
-/// over [priced] items, [open] open items without today's price,
-/// and the same sum per store id ([byStore], null for no store).
-@immutable
-class const TripTotal({
-  required final int cents,
-  required final int priced,
-  required final int open,
-  final Map<String?, int> byStore = const {},
-});
-
-/// [items] are one list's (open and bought). [stores]: the household's
-/// store ids; an item of another store counts as without one, as the list
-/// shows it.
-TripTotal tripTotal(
-  Iterable<Item> items, {
-  required String currency,
-  required DateTime now,
-  Set<String>? stores,
-}) {
-  var cents = 0;
-  var priced = 0;
-  var open = 0;
-  final byStore = <String?, int>{};
-  for (final item in items) {
-    final line = item.summedCents(currency, now);
-    if (line == null) {
-      // Priced today in the household's earlier currency: not summed, but
-      // not missing a price either.
-      if (item.status == ItemStatus.active && item.currentPrice(now) == null) {
-        open++;
-      }
-      continue;
-    }
-    cents += line;
-    priced++;
-    final store = stores == null || stores.contains(item.storeId)
-        ? item.storeId
-        : null;
-    byStore[store] = (byStore[store] ?? 0) + line;
-  }
-  return TripTotal(cents: cents, priced: priced, open: open, byStore: byStore);
-}
-
 /// Last time's price of [item] for the comparison: the newest price from
 /// an earlier day in [currency] per [per], among the item itself and the
 /// household's other items ([items]) of the same thing (`canonical_key`,
