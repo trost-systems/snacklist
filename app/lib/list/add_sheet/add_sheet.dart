@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:family_groceries/app/environment.dart';
 import 'package:family_groceries/app/theme.dart';
 import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/tactile.dart';
@@ -17,7 +18,6 @@ import 'package:family_groceries/list/list_view/item_row.dart'
 import 'package:family_groceries/list/list_view/shopping_list_view.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/store_badge.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
@@ -145,42 +145,53 @@ class _AddSheetState() extends State<AddSheet> {
     );
   }
 
-  /// Debug builds only: the time from a key to the frame with its first
-  /// rows, and to the frame with the server's answer, per text. Logs the
-  /// text's length, never the text.
-  final _keyWatch = Stopwatch();
+  /// [Environment.addSheetTiming] only: the time from a key to the frame
+  /// with its first rows, and to the frame with the server's answer, per
+  /// text, and the device's time to make the rows. Logs the text's length,
+  /// never the text.
   var _timedText = '';
+  var _timedKey = '';
+  var _timedRows = const <Suggestion>[];
   var _answerTimed = false;
 
-  void _timeRows(AddSheetState sheet, {required bool stable}) {
+  void _timeRows(AddSheetState sheet, AddSheetCubit cubit) {
     final text = sheet.text.trim();
     if (text.isEmpty) {
       _timedText = '';
       return;
     }
+    final clock = cubit.clock;
     final String step;
     if (text != _timedText) {
       _timedText = text;
-      _keyWatch
-        ..reset()
-        ..start();
-      _answerTimed = sheet.fresh;
-      step = sheet.fresh ? 'cached' : 'rows';
-    } else if (sheet.fresh && !_answerTimed) {
+      final rank = clock.rank;
+      _answerTimed = rank == null;
+      step = rank == null ? 'cached' : 'rows rank=${_ms(rank)} ms';
+    } else if (sheet.text != _timedKey) {
+      // A space: the device's rows again, not the server's answer.
+      _timedKey = sheet.text;
+      _timedRows = sheet.suggestions;
+      return;
+    } else if (!_answerTimed && !identical(sheet.suggestions, _timedRows)) {
       _answerTimed = true;
       step = 'answer';
     } else {
       return;
     }
+    _timedKey = sheet.text;
+    _timedRows = sheet.suggestions;
+    final line =
+        '[add-sheet timing] stable=${cubit.stableRows ? 'on' : 'off'} '
+        'catalog=${cubit.deviceRanked ? 'on' : 'off'} '
+        'len=${text.length} $step';
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_timedText == text) {
-        debugPrint(
-          '[add-sheet timing] stable=${stable ? 'on' : 'off'} '
-          'len=${text.length} $step ${_keyWatch.elapsedMilliseconds} ms',
-        );
+        debugPrint('$line ${_ms(clock.sinceKey.elapsed)} ms');
       }
     });
   }
+
+  static String _ms(Duration d) => (d.inMicroseconds / 1000).toStringAsFixed(1);
 
   @override
   Widget build(BuildContext context) {
@@ -194,14 +205,14 @@ class _AddSheetState() extends State<AddSheet> {
           listenWhen: (a, b) => a.open != b.open,
           listener: (_, s) => _openChanged(s.open, still),
         ),
-        if (kDebugMode)
+        if (Environment.addSheetTiming)
           BlocListener<AddSheetCubit, AddSheetState>(
             listenWhen: (a, b) =>
                 a.text != b.text ||
                 a.suggestions != b.suggestions ||
                 a.answered != b.answered,
             listener: (context, s) =>
-                _timeRows(s, stable: context.read<AddSheetCubit>().stableRows),
+                _timeRows(s, context.read<AddSheetCubit>()),
           ),
       ],
       child: LayoutBuilder(
@@ -358,8 +369,73 @@ class _ContentState() extends State<_Content> {
     }
   }
 
+  /// The chips and rows of the last build, each with the values it was
+  /// made from. Typing rebuilt them all on every key; one made from the
+  /// same values is handed back as it is, and Flutter does not build an
+  /// identical widget again.
+  var _made = <Object, (Object, Widget)>{};
+  var _making = <Object, (Object, Widget)>{};
+
+  /// The widget made for [slot] from [from], [make]'s or the last build's.
+  Widget _reuse(Object slot, Object from, Widget Function() make) {
+    final made = switch (_made[slot]) {
+      (final last, final widget) when last == from => widget,
+      _ => make(),
+    };
+    _making[slot] = (from, made);
+    return made;
+  }
+
+  /// A [_SuggestionRow], the last build's when nothing it shows or adds
+  /// changed: its tap adds a row equal in every field.
+  Widget _row(
+    Key key,
+    Suggestion row, {
+    required bool stale,
+    required bool first,
+    required ParsedEntry? base,
+    required Catalog catalog,
+    required Store? ownStore,
+    required ValueChanged<Suggestion> onTake,
+  }) {
+    final Suggestion(:source, :entry) = row;
+    return _reuse(
+      key,
+      (
+        source,
+        entry.name,
+        entry.brand,
+        entry.properties,
+        entry.quantity,
+        entry.storeId,
+        entry.categoryId,
+        entry.deviceParsed,
+        stale,
+        first,
+        base?.brand,
+        base?.properties,
+        (catalog, ownStore, onTake),
+      ),
+      () => _SuggestionRow(
+        key: key,
+        suggestion: row,
+        stale: stale,
+        first: first,
+        base: base,
+        catalog: catalog,
+        ownStore: ownStore,
+        onTap: () => onTake(row),
+        onPointerDown: _down,
+        onPointerUp: _up,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final last = _made..clear();
+    _made = _making;
+    _making = last;
     final _Content(:maxHeight, :onTake, :onClose, :onPicked) = widget;
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
@@ -395,45 +471,65 @@ class _ContentState() extends State<_Content> {
               const _GrabHandle(),
               Padding(
                 padding: const EdgeInsets.fromLTRB(12, 18, 4, 10),
-                child: FoldoutChips(
-                  catalog: catalog,
-                  storeId: storeId,
-                  categoryId: categoryId,
-                  storeLabel: l10n.noStore,
-                  storeAuto: details == null && pickedStore == null,
-                  categoryAuto: details == null && sheet.category == null,
-                  categoryLabel: l10n.categoryAuto,
-                  storeChanged:
-                      details == null &&
-                      pickedStore != null &&
-                      pickedStore.value != first?.storeId,
-                  categoryChanged:
-                      details == null &&
-                      sheet.category != null &&
-                      sheet.category != first?.categoryId,
-                  onCreateStore: list.addStore,
-                  onStore: (id) {
-                    final sheet = context.read<AddSheetCubit>();
-                    if (details != null) {
-                      sheet.editDetails(
-                        ItemChanges(storeId: SetTo(id)),
-                        now: true,
-                      );
-                    } else {
-                      sheet.pickStore(id);
-                    }
-                    onPicked();
-                  },
-                  onCategory: (id) {
-                    final sheet = context.read<AddSheetCubit>();
-                    if (details != null) {
-                      sheet.editDetails(ItemChanges(categoryId: id), now: true);
-                    } else {
-                      sheet.pickCategory(id);
-                    }
-                    onPicked();
-                  },
-                  trailing: _CloseButton(onClose: onClose),
+                child: _reuse(
+                  #chips,
+                  (
+                    catalog,
+                    storeId,
+                    categoryId,
+                    pickedStore,
+                    sheet.category,
+                    first?.storeId,
+                    first?.categoryId,
+                    details,
+                    l10n,
+                    list,
+                    onPicked,
+                    onClose,
+                  ),
+                  () => FoldoutChips(
+                    catalog: catalog,
+                    storeId: storeId,
+                    categoryId: categoryId,
+                    storeLabel: l10n.noStore,
+                    storeAuto: details == null && pickedStore == null,
+                    categoryAuto: details == null && sheet.category == null,
+                    categoryLabel: l10n.categoryAuto,
+                    storeChanged:
+                        details == null &&
+                        pickedStore != null &&
+                        pickedStore.value != first?.storeId,
+                    categoryChanged:
+                        details == null &&
+                        sheet.category != null &&
+                        sheet.category != first?.categoryId,
+                    onCreateStore: list.addStore,
+                    onStore: (id) {
+                      final sheet = context.read<AddSheetCubit>();
+                      if (details != null) {
+                        sheet.editDetails(
+                          ItemChanges(storeId: SetTo(id)),
+                          now: true,
+                        );
+                      } else {
+                        sheet.pickStore(id);
+                      }
+                      onPicked();
+                    },
+                    onCategory: (id) {
+                      final sheet = context.read<AddSheetCubit>();
+                      if (details != null) {
+                        sheet.editDetails(
+                          ItemChanges(categoryId: id),
+                          now: true,
+                        );
+                      } else {
+                        sheet.pickCategory(id);
+                      }
+                      onPicked();
+                    },
+                    trailing: _CloseButton(onClose: onClose),
+                  ),
                 ),
               ),
             ],
@@ -481,10 +577,10 @@ class _ContentState() extends State<_Content> {
     final stale = cubit.addFeedback && sheet.carried && sheet.loading;
     final suggestions = <Widget>[
       for (final (i, row) in rows.indexed)
-        _SuggestionRow(
-          key: rowKeys[i],
+        _row(
+          rowKeys[i],
+          row,
           stale: stale,
-          suggestion: row,
           // Enter takes nothing before anything is typed.
           first: i == 0 && sheet.text.trim().isNotEmpty,
           base: first,
@@ -494,9 +590,7 @@ class _ContentState() extends State<_Content> {
           ownStore: pickedStore == null && row.entry.storeId != storeId
               ? catalog.store(row.entry.storeId ?? '')
               : null,
-          onTap: () => onTake(row),
-          onPointerDown: _down,
-          onPointerUp: _up,
+          onTake: onTake,
         ),
       if (rows.isEmpty && sheet.added == null)
         Padding(

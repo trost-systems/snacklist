@@ -226,9 +226,10 @@ On Android the phone's back button goes one screen back, as the arrow in the tit
 - That the cursor jumps into the field on phones when the app opens (only on desktop and web).
 - That an item already on the list can be added twice to that list; Snacklist says „<name> steht schon auf der Liste“ (EN: "<name> is already on the list"). A household with several lists can have the same item open on two of them. Two people adding the same item at the same moment also end up with one.
 - That suggestions stay put while typing, or that a new grocery lands in the household's usual store for its kind: both are built but switched on for nobody yet (flag `input-stable-rows`).
+- That every suggestion shows at once with each letter, also without a connection: the phone can make them itself (it carries the catalogue and the household's own list of past items), but this is switched on for nobody yet (flag `on-device-catalog`). Today the suggestions beyond what you typed come from the server, a moment after you stop typing.
 - That each add shows up in the list behind the sheet under „Gerade hinzugefügt“, that the sheet shows an item's amount, brand and details right after it is added, or that a line shows while suggestions load: built but switched on for nobody yet (flag `add-feedback-list`).
 
-**Last verified.** 16 November 2026, code version c2183ca6, in the web app (German and English), with the flag `input-stable-rows` off as users have it, and on as test installs see it. The flag `add-feedback-list` (job 276) was driven on 16 November 2026 on the web app in German (`journeys/add-feedback-list.mjs`, `journeys/add-feedback-glide.mjs`), with `input-stable-rows` on.
+**Last verified.** 16 November 2026, code version c2183ca6, in the web app (German and English), with the flag `input-stable-rows` off as users have it, and on as test installs see it. The flag `add-feedback-list` (job 276) was driven on 16 November 2026 on the web app in German (`journeys/add-feedback-list.mjs`, `journeys/add-feedback-glide.mjs`), with `input-stable-rows` on. The flag `on-device-catalog` (job 274): 16 November 2026, code version 9d3735ca, in the web app (German), with the server slowed down and cut off.
 
 ## Due again
 

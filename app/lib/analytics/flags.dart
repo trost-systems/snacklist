@@ -50,6 +50,11 @@ const joinHouseholdJh2Flag = 'join-household-jh2';
 /// category.
 const inputStableRowsFlag = 'input-stable-rows';
 
+/// The flag that ranks the add sheet's rows on the device (job 274): the
+/// catalog follows the server's changes once a day, the household's index
+/// comes with each resync, and every key shows the rows the server would.
+const onDeviceCatalogFlag = 'on-device-catalog';
+
 /// The flag that shows each add land in the list (job 276): while the add
 /// sheet is open the list behind it drops its store and category headings
 /// and ends in „Gerade hinzugefügt“ with this opening's adds, and slides

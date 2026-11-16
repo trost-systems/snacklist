@@ -91,6 +91,7 @@ const NO_ROW = [
   'api_token_buckets',
   'app_switches',
   'brands',
+  'catalog_snapshots',
   'classifier_lexicon',
   'classifier_synonyms',
   'classifier_terms',

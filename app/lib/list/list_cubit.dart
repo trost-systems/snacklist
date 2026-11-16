@@ -5,6 +5,7 @@ import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/analytics/events.dart';
 import 'package:family_groceries/app/network.dart';
 import 'package:family_groceries/list/add_sheet/suggestion.dart';
+import 'package:family_groceries/list/catalog/household_index.dart';
 import 'package:family_groceries/list/dictation.dart';
 import 'package:family_groceries/list/entry.dart';
 import 'package:family_groceries/list/list_cache.dart';
@@ -50,6 +51,11 @@ class const ListState({
 
   /// The "Ich bringe" claims as last confirmed by the server (job 169b L).
   final Map<ClaimKey, Claim> claimRows = const {},
+
+  /// What the add sheet ranks with on the device (job 274), as of the last
+  /// resync while the flag `on-device-catalog` was on; [allItems] count on
+  /// top of it.
+  final HouseholdIndex householdIndex = HouseholdIndex.empty,
 }) {
   /// Every list's items, pending ops folded in.
   Map<String, Item> get allItems => visibleItems(server, pending);
@@ -99,6 +105,7 @@ class const ListState({
     SeenMark? seen,
     ListPrefs? prefs,
     Map<ClaimKey, Claim>? claimRows,
+    HouseholdIndex? householdIndex,
   }) => ListState(
     catalog: catalog ?? this.catalog,
     server: server ?? this.server,
@@ -111,6 +118,7 @@ class const ListState({
     seen: seen ?? this.seen,
     prefs: prefs ?? this.prefs,
     claimRows: claimRows ?? this.claimRows,
+    householdIndex: householdIndex ?? this.householdIndex,
   );
 }
 
@@ -238,8 +246,16 @@ class ListCubit(
   /// [networkSettle] retries at once. Without it, or when it says up while
   /// the server is out of reach, the list's own requests tell.
   Stream<Network>? network,
+
+  /// Whether the flag `on-device-catalog` is on (job 274): a resync then
+  /// fetches the household's index too.
+  bool Function() householdIndex = _off,
 }) extends Cubit<ListState> {
   this : super(const ListState());
+
+  static bool _off() => false;
+
+  final _householdIndex = householdIndex;
 
   final DateTime Function() _clock = clock ?? DateTime.now;
   final _graceLength = grace;
@@ -310,6 +326,13 @@ class ListCubit(
   Timer? _catalogReload;
   Timer? _save;
   Timer? _usualsReload;
+
+  /// After an acknowledged delete: the server's history no longer holds
+  /// the item (deletes are hard), so the household index is fetched again.
+  Timer? _indexReload;
+
+  /// Bumped per household index fetch: only the latest one's answer counts.
+  var _indexRound = 0;
 
   /// The send loop in flight: a second flush joins it.
   Future<void>? _flushRun;
@@ -403,6 +426,7 @@ class ListCubit(
           loaded: true,
           usuals: cached.usuals,
           claimRows: {for (final c in cached.claims) c.key: c},
+          householdIndex: cached.householdIndex,
         ),
       );
     }
@@ -1639,6 +1663,9 @@ class ListCubit(
     }
     _usualsReload?.cancel();
     unawaited(_refreshUsuals());
+    if (_householdIndex()) {
+      unawaited(_refreshHouseholdIndex());
+    }
     if (unsure) {
       unawaited(resync());
     }
@@ -1649,6 +1676,20 @@ class ListCubit(
     try {
       final usuals = await _repo.fetchUsuals();
       emit(state.copyWith(usuals: usuals));
+    } on Object {
+      return;
+    }
+  }
+
+  /// Like [_refreshUsuals]: a failure or a malformed answer keeps the
+  /// index there is.
+  Future<void> _refreshHouseholdIndex() async {
+    final round = ++_indexRound;
+    try {
+      if (await _repo.fetchSuggestIndex() case final index?
+          when round == _indexRound) {
+        emit(state.copyWith(householdIndex: index));
+      }
     } on Object {
       return;
     }
@@ -1815,6 +1856,13 @@ class ListCubit(
       if (renamed != null && onList != null && !_hints.isClosed) {
         _hints.add(DedupeHint(renamed, onList));
       }
+    }
+    if (op is DeleteItem && _householdIndex() && !_closing) {
+      _indexReload?.cancel();
+      _indexReload = Timer(
+        const Duration(seconds: 2),
+        () => unawaited(_refreshHouseholdIndex()),
+      );
     }
     if (unsure) {
       unawaited(resync());
@@ -1996,7 +2044,8 @@ class ListCubit(
         (!identical(next.catalog, before.catalog) ||
             !identical(next.server, before.server) ||
             !identical(next.usuals, before.usuals) ||
-            !identical(next.claimRows, before.claimRows))) {
+            !identical(next.claimRows, before.claimRows) ||
+            !identical(next.householdIndex, before.householdIndex))) {
       _save?.cancel();
       _save = Timer(const Duration(milliseconds: 300), () => _saveNow(state));
     }
@@ -2012,6 +2061,7 @@ class ListCubit(
         pending: [...state.pending, ..._promised.values],
         usuals: state.usuals,
         claims: [...state.claimRows.values],
+        householdIndex: state.householdIndex,
       ),
     ),
   );
@@ -2039,6 +2089,7 @@ class ListCubit(
     _catalogReload?.cancel();
     _save?.cancel();
     _usualsReload?.cancel();
+    _indexReload?.cancel();
     await _network?.cancel();
     await _unwatch?.call();
     await _rejections.close();

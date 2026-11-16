@@ -20,6 +20,8 @@ import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/add_sheet/add_sheet.dart';
 import 'package:family_groceries/list/add_sheet/add_sheet_cubit.dart';
 import 'package:family_groceries/list/add_sheet/suggestion.dart';
+import 'package:family_groceries/list/catalog/catalog_index.dart';
+import 'package:family_groceries/list/catalog/catalog_loader.dart';
 import 'package:family_groceries/list/dictation.dart';
 import 'package:family_groceries/list/dictation_button.dart';
 import 'package:family_groceries/list/list_cubit.dart';
@@ -98,6 +100,10 @@ class const ShoppingList({
             // open counts from the next key.
             stableRows: () =>
                 context.read<Flags?>()?.isOn(inputStableRowsFlag) ?? false,
+            onDeviceCatalog: () =>
+                context.read<Flags?>()?.isOn(onDeviceCatalogFlag) ?? false,
+            catalogIndex: () =>
+                context.read<CatalogCubit?>()?.state ?? CatalogIndex.bundled,
             addFeedback: () =>
                 context.read<Flags?>()?.isOn(addFeedbackListFlag) ?? false,
           ),
@@ -821,7 +827,7 @@ class const _AddBar({
                         counterText: '',
                       ),
                       onTap: show,
-                      onChanged: cubit.type,
+                      onChanged: cubit.key,
                       // Keeps the soft keyboard up after submitting.
                       onEditingComplete: () {},
                       // On web every Enter, soft keyboards' too, reaches

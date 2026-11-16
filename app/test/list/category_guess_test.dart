@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:family_groceries/list/catalog/catalog_index.dart';
+import 'package:family_groceries/list/catalog/catalog_index.g.dart';
 import 'package:family_groceries/list/category_guess.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -60,15 +62,9 @@ Item _item(String name, String? categoryId, {DateTime? updatedAt}) => Item(
   return (1 - wrong.length / rows.length, wrong);
 }
 
-const _hardware = {
-  'paint',
-  'plumbing',
-  'electrical',
-  'tools',
-  'fasteners',
-  'building',
-  'garden',
-};
+final _index = CatalogIndex.bundled;
+
+String? _seed(String name) => lexiconSeed(name, _index);
 
 void main() {
   // Measured on job 272's lexicon: dictionary.tsv 1617 of 1617 seed keys,
@@ -77,7 +73,7 @@ void main() {
   test('every dictionary term gets its own seed key', () {
     final (agreement, wrong) = _agreement(
       _table('dictionary.tsv'),
-      lexiconSeed,
+      _seed,
       (seed) => seed,
     );
     expect(agreement, greaterThanOrEqualTo(0.99), reason: wrong.join('\n'));
@@ -87,10 +83,15 @@ void main() {
     test("$file sorts into the grocery household's categories", () {
       final (agreement, wrong) = _agreement(
         _table(file),
-        (name) => guessCategory(name, catalog: _groceries, known: const {}),
+        (name) => guessCategory(
+          name,
+          catalog: _groceries,
+          known: const {},
+          index: _index,
+        ),
         (seed) => switch (seed) {
           'other' => null,
-          _ when _hardware.contains(seed) => 'c-household',
+          _ when hardwareSeedKeys.contains(seed) => 'c-household',
           _ => 'c-$seed',
         },
       );
@@ -113,19 +114,30 @@ void main() {
           _item('Hafermilch', 'c-produce'),
           _item('Milch', null, updatedAt: _at.add(const Duration(days: 2))),
         ]),
+        index: _index,
       ),
       'c-sweets',
       reason: 'the latest item by that name with a category',
     );
     expect(
-      guessCategory('Milch', catalog: _groceries, known: const {}),
+      guessCategory(
+        'Milch',
+        catalog: _groceries,
+        known: const {},
+        index: _index,
+      ),
       'c-chilled',
     );
   });
 
   test("a DIY word goes to Haushalt without the Baumarkt's categories", () {
     expect(
-      guessCategory('Kabelbinder', catalog: _groceries, known: const {}),
+      guessCategory(
+        'Kabelbinder',
+        catalog: _groceries,
+        known: const {},
+        index: _index,
+      ),
       'c-household',
     );
     final hardware = Catalog(
@@ -140,28 +152,43 @@ void main() {
       ],
     );
     expect(
-      guessCategory('Kabelbinder', catalog: hardware, known: const {}),
+      guessCategory(
+        'Kabelbinder',
+        catalog: hardware,
+        known: const {},
+        index: _index,
+      ),
       'c-electrical',
     );
   });
 
   test('a word the lexicon does not know stays unsorted', () {
     expect(
-      guessCategory('Briefmarken', catalog: _groceries, known: const {}),
+      guessCategory(
+        'Briefmarken',
+        catalog: _groceries,
+        known: const {},
+        index: _index,
+      ),
       isNull,
     );
     expect(
-      guessCategory('Milch', catalog: const Catalog(), known: const {}),
+      guessCategory(
+        'Milch',
+        catalog: const Catalog(),
+        known: const {},
+        index: _index,
+      ),
       isNull,
       reason: 'no category of that seed in the household',
     );
   });
 
   test('amounts and frozen markers read as the server reads them', () {
-    expect(lexiconSeed('500 g Erbsen'), 'frozen');
-    expect(lexiconSeed('TK Spinat'), 'frozen');
-    expect(lexiconSeed('2 Liter Milch'), 'chilled');
-    expect(lexiconSeed('Kräutertee'), 'pantry');
-    expect(lexiconSeed('Fußcreme'), 'drugstore');
+    expect(_seed('500 g Erbsen'), 'frozen');
+    expect(_seed('TK Spinat'), 'frozen');
+    expect(_seed('2 Liter Milch'), 'chilled');
+    expect(_seed('Kräutertee'), 'pantry');
+    expect(_seed('Fußcreme'), 'drugstore');
   });
 }

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:family_groceries/list/catalog/household_index.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:flutter/foundation.dart' show immutable;
 
@@ -18,6 +19,10 @@ class const ListSnapshot({
 
   /// The "Ich bringe" claims on the household's open items (job 169b L).
   final List<Claim> claims = const [],
+
+  /// What the add sheet ranks with (job 274). Optional in the JSON, so a
+  /// copy from before and an older app reading this one both work.
+  final HouseholdIndex householdIndex = HouseholdIndex.empty,
 }) {
   /// Upgrades an older snapshot first, so its queued ops survive an app
   /// update. Throws on a version newer than [version] (the app was
@@ -49,6 +54,9 @@ class const ListSnapshot({
         for (final row in current['claims']! as List<Object?>)
           Claim.fromJson(row! as _Json),
       ],
+      householdIndex:
+          HouseholdIndex.fromJson(current['household_index']) ??
+          HouseholdIndex.empty,
     );
   }
 
@@ -116,6 +124,7 @@ class const ListSnapshot({
     'pending': [for (final op in pending) op.toJson()],
     'usuals': [for (final u in usuals) u.toJson()],
     'claims': [for (final c in claims) c.toJson()],
+    'household_index': householdIndex.toJson(),
   };
 
   /// [toJson] as JSON text, character for character what `jsonEncode` makes
@@ -129,9 +138,17 @@ class const ListSnapshot({
       ',"server":[${server.map(_itemText).join(',')}]'
       ',"pending":${jsonEncode([for (final op in pending) op.toJson()])}'
       ',"usuals":${jsonEncode([for (final u in usuals) u.toJson()])}'
-      ',"claims":${jsonEncode([for (final c in claims) c.toJson()])}}';
+      ',"claims":${jsonEncode([for (final c in claims) c.toJson()])}'
+      ',"household_index":${_indexText(householdIndex)}}';
 
   static final _itemTexts = Expando<String>();
+
+  /// Encoded once per index: it changes only with a resync, and its history
+  /// can be a few hundred KB.
+  static final _indexTexts = Expando<String>();
+
+  static String _indexText(HouseholdIndex index) =>
+      _indexTexts[index] ??= jsonEncode(index.toJson());
 
   static String _itemText(Item item) =>
       _itemTexts[item] ??= jsonEncode(item.toJson());

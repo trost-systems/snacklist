@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:family_groceries/list/catalog/household_index.dart';
 import 'package:family_groceries/list/list_cache.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/pricing.dart';
@@ -337,6 +338,44 @@ void main() {
     );
     expect(after['milk']!.name, 'Hafermilch');
     expect(after['bread']!.status, ItemStatus.bought);
+  });
+
+  test("the household's index survives encoding; a copy without one reads "
+      'as empty', () {
+    final index = HouseholdIndex.fromJson({
+      'history': [
+        [
+          'Milch',
+          'Weihenstephan',
+          '1,5 %',
+          '2',
+          'milch',
+          '2026-11-15T08:00:00Z',
+        ],
+      ],
+      'brands': [
+        ['Lillydoo', 'lillydoo'],
+      ],
+      'unserved': ['paint'],
+      'known': ['kerzen'],
+    })!;
+    final snapshot = ListSnapshot(
+      catalog: const Catalog(),
+      server: const [],
+      pending: const [],
+      householdIndex: index,
+    );
+    expect(snapshot.encode(), jsonEncode(snapshot.toJson()));
+    final back = ListSnapshot.fromJson(
+      jsonDecode(snapshot.encode()) as Map<String, Object?>,
+    );
+    expect(back.householdIndex.toJson(), index.toJson());
+
+    final before = snapshot.toJson()..remove('household_index');
+    expect(
+      ListSnapshot.fromJson(before).householdIndex,
+      same(HouseholdIndex.empty),
+    );
   });
 
   test('an unknown version or op is refused', () {

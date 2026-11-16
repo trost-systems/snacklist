@@ -16,8 +16,8 @@ scripts/feedback-monday.sh
 supabase/classifier/sweep.sh
 supabase/classifier/wordlist.sh
 supabase/classifier/latency.sh
-# Job 61: the app's copy of the classifier's word forms (offline trailing counts) is current.
-supabase/classifier/client_lexicon.sh --check
+# Jobs 61, 274: the catalog the app bundles (classifier rows, brands, the parser's vocabulary) is current.
+supabase/classifier/client_catalog.sh --check
 # Job 59: suggest_entries with fuzzy matching stays under 50 ms p95 on a 5000-item household.
 supabase/bench/suggest_latency.sh
 # The functions' code against this stack: every *_integration_test.ts under supabase/functions, each
