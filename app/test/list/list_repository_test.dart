@@ -550,8 +550,9 @@ void main() {
     /// A repository whose server answers each request with [answer]'s
     /// (status, body); the requests land in [sent].
     SupabaseListRepository server(
-      (int, Object?) Function(http.Request request) answer,
-    ) {
+      (int, Object?) Function(http.Request request) answer, {
+      bool Function()? categoryStore,
+    }) {
       sent = [];
       return SupabaseListRepository(
         SupabaseClient(
@@ -569,6 +570,7 @@ void main() {
           }),
         ),
         'household',
+        categoryStore: categoryStore ?? () => false,
       );
     }
 
@@ -933,6 +935,63 @@ void main() {
       ]);
       expect(rows.last.entry.brand, 'Weihenstephan');
     });
+
+    test(
+      "the flag input-stable-rows asks for the category's usual store "
+      'on suggestions, parses and adds; off, no call names it (job 272)',
+      () async {
+        var on = false;
+        final repo = server(
+          (r) => (
+            200,
+            switch (r.url.pathSegments.last) {
+              'put_item' => [row('i1')],
+              'parse_item' => [
+                {'name': 'Brot'},
+              ],
+              _ => [],
+            },
+          ),
+          categoryStore: () => on,
+        );
+        final add = AddItem(
+          Item(
+            id: 'i1',
+            name: 'Brot',
+            status: ItemStatus.active,
+            createdAt: DateTime.utc(2026, 11, 15),
+            updatedAt: DateTime.utc(2026, 11, 15),
+          ),
+        );
+        Map<String, Object?> asked() =>
+            params(sent.last)! as Map<String, Object?>;
+
+        await repo.suggest('Brot');
+        expect(asked(), {'p_household': 'household', 'p_text': 'Brot'});
+        await repo.send(add);
+        expect(asked().containsKey('p_category_store'), isFalse);
+        await repo.parse('Brot');
+        expect(asked(), {'p_household': 'household', 'p_text': 'Brot'});
+
+        on = true;
+        await repo.suggest('Brot');
+        expect(asked(), {
+          'p_household': 'household',
+          'p_text': 'Brot',
+          'p_category_store': true,
+        });
+        await repo.send(add);
+        expect(route(sent.last), 'POST /rest/v1/rpc/put_item');
+        expect(asked()['p_category_store'], isTrue);
+        await repo.parse('Brot');
+        expect(route(sent.last), 'POST /rest/v1/rpc/parse_item');
+        expect(asked(), {
+          'p_household': 'household',
+          'p_text': 'Brot',
+          'p_category_store': true,
+        });
+      },
+    );
 
     group('item ops', () {
       final at = DateTime.utc(2026, 10, 28, 9);

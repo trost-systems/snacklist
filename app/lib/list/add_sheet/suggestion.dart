@@ -51,3 +51,69 @@ class const Suggestion(final SuggestionSource source, final ParsedEntry entry) {
     foldName(entry.properties ?? ''),
   ].join('|');
 }
+
+/// The server's [server] rows for a text on top of the [local] ones the
+/// device showed for it (job 272): no shown row moves or changes its
+/// text. The typed row takes the server's category and store for what was
+/// typed, or the server's row itself when it reads the same; another shown
+/// row takes the category and store of the server's row for the same
+/// item, keeping its quantity. The server's other rows follow in its
+/// order, up to [mergedRows] in all; its own reading of the typed line only
+/// when none was shown.
+List<Suggestion> mergeRows(List<Suggestion> local, List<Suggestion> server) {
+  final serverTyped = server
+      .where((s) => s.source == SuggestionSource.typed)
+      .firstOrNull;
+  final byKey = <String, Suggestion>{};
+  for (final row in server) {
+    byKey.putIfAbsent(row.key, () => row);
+  }
+  final merged = <Suggestion>[];
+  final keys = <String>{};
+  void add(Suggestion row) {
+    if (keys.add(row.key)) {
+      merged.add(row);
+    }
+  }
+
+  for (final row in local) {
+    final typed = row.source == SuggestionSource.typed;
+    final match = typed ? serverTyped : byKey[row.key];
+    if (match == null) {
+      add(row);
+    } else if (typed &&
+        match.key == row.key &&
+        match.entry.quantity == row.entry.quantity) {
+      add(match);
+    } else {
+      add(
+        Suggestion(
+          row.source,
+          ParsedEntry(
+            name: row.entry.name,
+            brand: row.entry.brand,
+            properties: row.entry.properties,
+            quantity: row.entry.quantity,
+            storeId: match.entry.storeId ?? row.entry.storeId,
+            categoryId: match.entry.categoryId ?? row.entry.categoryId,
+            deviceParsed: row.entry.deviceParsed,
+          ),
+        ),
+      );
+    }
+  }
+  final typedShown = local.any((r) => r.source == SuggestionSource.typed);
+  for (final row in server) {
+    if (merged.length >= mergedRows) {
+      break;
+    }
+    if (!(typedShown && row.source == SuggestionSource.typed)) {
+      add(row);
+    }
+  }
+  return merged;
+}
+
+/// As many rows as `public.suggest_entries` answers by default: the
+/// server's rows fill up to it after the device's, which all stay.
+const mergedRows = 8;

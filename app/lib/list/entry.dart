@@ -138,14 +138,27 @@ bool _known(String name, Iterable<String> history) {
   return words.any(
         (w) => [
           for (var i = 0; i <= math.max(w.length - 4, 0); i++) w.substring(i),
-        ].any(lexiconForms.contains),
+        ].any(lexiconForms.containsKey),
       ) ||
-      lexiconForms.any((f) => f.contains(' ') && key.contains(' $f '));
+      lexiconForms.keys.any((f) => f.contains(' ') && key.contains(' $f '));
 }
 
 /// [name] as public.fold_key(public.item_key(name)) writes it, for the
 /// words without numbers: "Möhren" is "mohr", "carrots" "karot".
-String _lexiconKey(String name) {
+String _lexiconKey(String name) => foldKey(_itemKey(name, amounts: false));
+
+/// [name] as public.item_key writes it: plain lower-case letters, amounts
+/// with their units dropped, each word stemmed ("Möhren 500 g" is "mohr").
+String itemKey(String name) => _itemKey(name, amounts: true);
+
+final _amountWords = RegExp(
+  r'(^|[^a-z0-9])[0-9]+([.,][0-9]+)?\s*(x|kg|gr|g|ml|l|stk|stuck|pck|'
+  'packungen|packung|dosen|dose|flaschen|flasche|bund|becher|glaser|glas|'
+  'tuten|tute|beutel|netz|kisten|kiste|kasten|pfund|liter|kilo|gramm|'
+  'rollen|rolle|tafeln|tafel|stangen|stange|%)?(?![a-z])',
+);
+
+String _itemKey(String name, {required bool amounts}) {
   var v = name.toLowerCase();
   for (final (from, to) in const [
     ('ä', 'a'),
@@ -164,12 +177,20 @@ String _lexiconKey(String name) {
     }),
   );
   v = v.replaceAll('ae', 'a').replaceAll('oe', 'o').replaceAll('ue', 'u');
+  if (amounts) {
+    v = v.replaceAll(_amountWords, ' ');
+  }
   return v
       .split(RegExp('[^a-z]+'))
       .where((w) => w.isNotEmpty)
-      .map((w) => _foldWord(_stemWord(w)))
+      .map(_stemWord)
       .join(' ');
 }
+
+/// [key], an [itemKey], as public.fold_key writes it: doubled letters and
+/// spellings folded ("kaffee" is "kafe").
+String foldKey(String key) =>
+    key.split(' ').where((w) => w.isNotEmpty).map(_foldWord).join(' ');
 
 String _stemWord(String word) {
   var v = word;

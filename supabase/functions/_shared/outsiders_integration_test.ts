@@ -492,6 +492,12 @@ async function fill(
           store_id = public.add_store(${household}, 'Supermarkt'),
           brand = 'Hofbäckerei Kurz'
       where household_id = ${household} and name = 'Brot'`;
+    // A store changed to none is recorded (item_store_cleared, job 272).
+    await tx`insert into public.items (household_id, list_id, name, store_id)
+             select ${household}, public.first_list(${household}), 'Salz', id
+             from public.stores where household_id = ${household} and name = 'Supermarkt'`;
+    await tx`update public.items set store_id = null
+             where household_id = ${household} and name = 'Salz'`;
     await tx`
       select public.merge_items(gen_random_uuid(),
         (select id from public.items where household_id = ${household} and name = 'Möhren'),

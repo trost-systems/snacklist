@@ -211,8 +211,9 @@ On Android the phone's back button goes one screen back, as the arrow in the tit
 - That the microphone works in the browser (it is on iOS and Android only).
 - That the cursor jumps into the field on phones when the app opens (only on desktop and web).
 - That an item already on the list can be added twice to that list; Snacklist says „<name> steht schon auf der Liste“ (EN: "<name> is already on the list"). A household with several lists can have the same item open on two of them. Two people adding the same item at the same moment also end up with one.
+- That suggestions stay put while typing, or that a new grocery lands in the household's usual store for its kind: both are built but switched on for nobody yet (flag `input-stable-rows`).
 
-**Last verified.** 15 November 2026, code version 377f1a0f, in the web app (German; English on c3ea4261).
+**Last verified.** 15 November 2026, code version 377f1a0f, in the web app (German; English on c3ea4261). The flag `input-stable-rows` (job 272) was checked in widget and database tests only, not driven.
 
 ## Due again
 

@@ -184,10 +184,20 @@ Future<T> _refusable<T>(Future<T> Function() write) async {
   }
 }
 
+/// `categoryStore`, the flag `input-stable-rows` (job 272, ST1): a grocery
+/// without a remembered store gets the household's usual store for its
+/// category, in the suggested rows, the parse of an add typed on the device
+/// and on the add. Off: the parameter is not
+/// sent, and the server answers as before.
 class SupabaseListRepository(
   final SupabaseClient _client,
-  final String householdId,
-) implements ListRepository {
+  final String householdId, {
+  bool Function() categoryStore = _off,
+}) implements ListRepository {
+  static bool _off() => false;
+
+  final _categoryStore = categoryStore;
+
   static const _itemColumns =
       'id, name, quantity, brand, properties, category_id, store_id, '
       'sort_key, status, created_at, updated_at, bought_at, added_by, '
@@ -364,7 +374,11 @@ class SupabaseListRepository(
   Future<ParsedEntry> parse(String text) => _answered(() async {
     final Object? result = await _client.rpc<dynamic>(
       'parse_item',
-      params: {'p_household': householdId, 'p_text': text},
+      params: {
+        'p_household': householdId,
+        'p_text': text,
+        if (_categoryStore()) 'p_category_store': true,
+      },
     );
     return ParsedEntry.fromJson(_singleRow(result)!);
   });
@@ -373,7 +387,11 @@ class SupabaseListRepository(
   Future<List<Suggestion>> suggest(String text) async {
     final rows = await _client.rpc<List<dynamic>>(
       'suggest_entries',
-      params: {'p_household': householdId, 'p_text': text},
+      params: {
+        'p_household': householdId,
+        'p_text': text,
+        if (_categoryStore()) 'p_category_store': true,
+      },
     );
     return [
       for (final row in rows) Suggestion.fromJson(row as Map<String, Object?>),
@@ -478,6 +496,7 @@ class SupabaseListRepository(
           'p_sort_key': item.sortKey,
           'p_status': item.status.name,
           'p_no_store': noStore,
+          if (_categoryStore()) 'p_category_store': true,
           // None (an add queued before lists): the household's first list.
           'p_list': ?item.listId,
         },
