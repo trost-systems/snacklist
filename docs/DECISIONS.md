@@ -14844,3 +14844,15 @@ store builds send none of the new parameters.
    replies.
 6. **The export includes `answered_at`.** pgTAP idea assertions filter to the test's own ideas,
    so they hold on a database that already lists some.
+
+## Job 277: the shopping total counts a per-kg item without a weight as open (2026-11-16)
+
+- **One rule for the bar and the block.** `tripTotal` (the „Einkaufssumme“ bar, `list-declutter`
+  off) counted an item as open only when it had no price today, so a price per kg on „3“ Gurken
+  was neither „mit Preis“ nor „offen“. #471 had fixed this in the block's `Sum.of`. `tripTotal`
+  now classifies each item with `Sum.of` too, so the two cannot drift again.
+- **`TripTotal` and `tripTotal` moved from `pricing.dart` to `subtotals.dart`**, next to `Sum`.
+  Calling `Sum.of` from `pricing.dart` would have made the two files import each other.
+- **The bar keeps its scope.** It still sums ticked items with a price and counts only open items
+  as „offen“, as job 190 defined it. Only the per-item classification is shared.
+- No flag: a bug fix, and the bar is still behind `prices-and-trip-total`.

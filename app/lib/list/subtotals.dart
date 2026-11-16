@@ -174,3 +174,46 @@ Summary summaryOf(
     ],
   );
 }
+
+/// The shown list's running total in the household's currency: [cents]
+/// over [priced] items, [open] open items without a summed price (as
+/// [Sum.of] tells), and the same sum per store id ([byStore], null for no
+/// store).
+@immutable
+class const TripTotal({
+  required final int cents,
+  required final int priced,
+  required final int open,
+  final Map<String?, int> byStore = const {},
+});
+
+/// [items] are one list's (open and bought). [stores]: the household's
+/// store ids; an item of another store counts as without one, as the list
+/// shows it. Each item counts as in the block (job 277): a price per kg on
+/// a quantity without a weight is open, as an unpriced one.
+TripTotal tripTotal(
+  Iterable<Item> items, {
+  required String currency,
+  required DateTime now,
+  Set<String>? stores,
+}) {
+  var cents = 0;
+  var priced = 0;
+  var open = 0;
+  final byStore = <String?, int>{};
+  for (final item in items) {
+    switch (Sum.of(item, currency: currency, now: now)) {
+      case Sum(priced: > 0, cents: final line):
+        cents += line;
+        priced++;
+        final store = stores == null || stores.contains(item.storeId)
+            ? item.storeId
+            : null;
+        byStore[store] = (byStore[store] ?? 0) + line;
+      case Sum(unpriced: > 0) when item.status == ItemStatus.active:
+        open++;
+      case _:
+    }
+  }
+  return TripTotal(cents: cents, priced: priced, open: open, byStore: byStore);
+}

@@ -1496,3 +1496,10 @@ PR https://github.com/trost-systems/snacklist/pull/490. Review 0 of job 222 (the
   - The lead creates the PostHog flag as internal-only.
   - No phone drive here, so the hub has only been seen on web and in goldens. Check it on
     TestFlight with the internal flag.
+
+## Job 277: the shopping total counts a per-kg item without a weight (2026-11-16)
+
+The „Einkaufssumme“ bar (`list-declutter` off) now counts an item priced per kg without a weight
+as „offen“, the way the declutter block counts it as „ohne Preis“. Both go through `Sum.of`.
+Details, tests and the web drive are in `docs/done/277.md`. Screenshots are in
+`docs/screenshots/277/`.

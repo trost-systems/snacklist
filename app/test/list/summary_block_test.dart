@@ -266,6 +266,45 @@ void main() {
     expect(text(tester, 'total-counts'), '2 mit Preis · 1 ohne Preis');
   });
 
+  for (final declutter in [true, false]) {
+    testWidgets('a price per kg on „3“ (no weight) counts without a price, '
+        'list-declutter ${declutter ? 'on' : 'off'}', (tester) async {
+      await pumpList(
+        tester,
+        flags: declutter ? _flags : const {pricesFlag, tripModeFlag},
+        seed: (repo) => repo
+          ..remoteAdd(
+            'Gurken',
+            storeId: 'lidl',
+            quantity: '3',
+            price: _price(299, per: PricePer.kg),
+          )
+          ..remoteAdd(
+            'Kartoffeln',
+            storeId: 'lidl',
+            quantity: '1,5 kg',
+            price: _price(120, per: PricePer.kg),
+          )
+          ..remoteAdd(
+            'Milch',
+            storeId: 'dm',
+            quantity: '2',
+            price: _price(119),
+          ),
+      );
+      if (declutter) {
+        await toBlock(tester);
+        expect(text(tester, 'total-counts'), '2 mit Preis · 1 ohne Preis');
+        expect(text(tester, 'total-amount'), 'mind. ≈ 4,18$_nbsp€');
+      } else {
+        expect(
+          tester.getSemantics(key('total-bar')).label,
+          'Einkaufssumme 4,18$_nbsp€, 2 mit Preis, 1 offen',
+        );
+      }
+    });
+  }
+
   group('no trip', () {
     testWidgets('a tick takes the item out of the sums (Nein, nur '
         'abgehakt)', (tester) async {

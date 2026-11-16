@@ -12,6 +12,7 @@ import 'package:family_groceries/list/list_repository.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/pricing.dart';
 import 'package:family_groceries/list/quantity.dart';
+import 'package:family_groceries/list/subtotals.dart';
 import 'package:flutter/foundation.dart' show immutable, listEquals, setEquals;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';

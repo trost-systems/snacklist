@@ -156,6 +156,40 @@ void main() {
     expect(s.total, const Sum(cents: 119, priced: 1, unpriced: 1));
   });
 
+  test('the bar (list-declutter off) and the block (on) count a price per '
+      'kg without a weight alike: „ohne Preis“', () {
+    final items = [
+      _item(
+        'Gurken',
+        store: 'lidl',
+        cents: 299,
+        per: PricePer.kg,
+        quantity: '3',
+      ),
+      _item(
+        'Kartoffeln',
+        store: 'lidl',
+        cents: 120,
+        per: PricePer.kg,
+        quantity: '1,5 kg',
+      ),
+      _item('Milch', store: 'dm', cents: 119, quantity: '2'),
+    ];
+    final bar = tripTotal(
+      items,
+      currency: _catalog.currency,
+      now: _now,
+      stores: {for (final s in _catalog.stores) s.id},
+    );
+    final block = summary(items).total;
+    expect((bar.cents, bar.priced, bar.open), (180 + 238, 2, 1));
+    expect(
+      (block.cents, block.priced, block.unpriced),
+      (bar.cents, bar.priced, bar.open),
+    );
+    expect(bar.byStore, {'lidl': 180, 'dm': 238});
+  });
+
   test('a price per kg typed per kg on an open item is an estimate, and so '
       'is every sum holding it', () {
     final bananas = _item(
