@@ -160,6 +160,12 @@ abstract final class Environment() {
 
   /// Where native Siri's intents send what was said (job 51).
   static const voiceUrl = '$supabaseUrl/functions/v1/voice';
+
+  /// Prints the add sheet's `[add-sheet timing]` log (jobs 272 and 274) in
+  /// a profile or release build too, to measure it there; debug builds
+  /// always print it. No shipped build sets it.
+  static const addSheetTiming =
+      kDebugMode || bool.fromEnvironment('ADD_SHEET_TIMING');
 }
 
 /// Where this web app lives; it is always served at the domain root.

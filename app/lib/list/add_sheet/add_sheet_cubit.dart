@@ -72,6 +72,12 @@ class AddSheetCubit(
   /// Whether the flag `input-stable-rows` is on now.
   bool get stableRows => _stableRows();
 
+  /// Whether the rows are ranked on the device: not yet.
+  bool get deviceRanked => false;
+
+  /// What the timing log reads; the field starts it with [key].
+  final clock = AddSheetClock();
+
   final _cache = <String, List<Suggestion>>{};
   Timer? _typing;
   (String, Future<List<Suggestion>>)? _loading;
@@ -104,26 +110,40 @@ class AddSheetCubit(
     }
   }
 
+  /// A key in the field: [type] with the timing log's clock started.
+  void key(String text) {
+    clock.sinceKey
+      ..reset()
+      ..start();
+    type(text);
+  }
+
   void type(String text) {
     _typing?.cancel();
     final key = text.trim();
+    clock.rank = null;
     if (key.isEmpty) {
       emit(_with(text: text, added: () => null, suggestions: const []));
       return;
     }
     final known = _cache[key];
+    final ranking = Stopwatch()..start();
+    final rows =
+        known ??
+        (stableRows
+            ? _local(key)
+            : state.suggestions.isEmpty
+            ? _offline(key)
+            : _withTyped(state.suggestions, key));
+    if (known == null) {
+      clock.rank = ranking.elapsed;
+    }
     emit(
       _with(
         open: true,
         text: text,
         added: () => null,
-        suggestions:
-            known ??
-            (stableRows
-                ? _local(key)
-                : state.suggestions.isEmpty
-                ? _offline(key)
-                : _withTyped(state.suggestions, key)),
+        suggestions: rows,
         answered: known == null ? null : key,
       ),
     );
@@ -461,4 +481,14 @@ class AddSheetCubit(
     _typing?.cancel();
     return super.close();
   }
+}
+
+/// The dev-only `[add-sheet timing]` log's clock (jobs 272 and 274).
+final class AddSheetClock() {
+  /// Since the last key in the field, before the sheet saw it.
+  final sinceKey = Stopwatch();
+
+  /// How long the rows for the last text took to make on the device; null
+  /// when they came from the cache.
+  Duration? rank;
 }

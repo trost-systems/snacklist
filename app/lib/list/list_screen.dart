@@ -806,7 +806,7 @@ class const _AddBar({
                         counterText: '',
                       ),
                       onTap: show,
-                      onChanged: cubit.type,
+                      onChanged: cubit.key,
                       // Keeps the soft keyboard up after submitting.
                       onEditingComplete: () {},
                       // On web every Enter, soft keyboards' too, reaches
