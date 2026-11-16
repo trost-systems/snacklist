@@ -7,6 +7,8 @@ import 'package:family_groceries/list/catalog/suggest_entries.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'suggest_parity_stores.dart';
+
 /// Rows whose category the device guesses differently from the server,
 /// by text and row name, with the reason. Every other row the device
 /// guesses agrees, and an exception that agrees again fails the test.
@@ -224,7 +226,8 @@ void main() {
   // The store reads the row's category (public.guess_store, the category's
   // usual store and its dm or Baumarkt store), and the device reads its
   // guess: a row whose guess is not the server's category may get another
-  // store. Every other row gets the server's.
+  // store, and those rows are pinned in suggest_parity_stores.dart. Every
+  // other row gets the server's.
   for (final categoryStore in [false, true]) {
     test('the device gives every row the server store, '
         'p_category_store $categoryStore', () {
@@ -249,8 +252,7 @@ void main() {
             final device = actual[i].entry;
             final store = server[categoryStore ? 7 : 6];
             final line =
-                '${table.name} ${jsonEncode(text)} ${device.name}: '
-                'server $store, device ${device.storeId}';
+                '${table.name}|$text|${device.name}|$store|${device.storeId}';
             if (device.storeId == store) {
               agree++;
             } else if (device.categoryId != server[5]) {
@@ -267,7 +269,17 @@ void main() {
         '$agree of $rows rows agree, ${byCategory.length} differ with the '
         'category guess, ${differing.length} otherwise',
       );
-      expect(differing, isEmpty, reason: differing.join('\n'));
+      final pinned = {
+        ...storeExceptions,
+        if (categoryStore) ...categoryStoreExceptions,
+      };
+      expect([
+        for (final line in byCategory)
+          if (!pinned.contains(line)) 'not pinned: $line',
+        for (final line in pinned)
+          if (!byCategory.contains(line)) 'agrees now, unpin: $line',
+        for (final line in differing) 'same category: $line',
+      ], isEmpty);
     });
   }
 }

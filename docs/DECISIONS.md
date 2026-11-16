@@ -15068,3 +15068,25 @@ missing offline and popped in under a finger when the answer landed. Fixed here,
    as the backup restore does) leaves the mark on the old version; the restore brings the
    snapshots of the dump, so they agree. The parity test's server side now runs both modes and
    takes about 2 min instead of 54 s.
+
+## Job 274 review 1: the server's "no store" wins, the index follows store changes (2026-11-16)
+
+Review 1 of job 274 (VERDICT: FIX) reproduced a stale store: another member set „Quarkbällchen“ to
+no store, the server answered none, yet the row kept „Bäckerei Krume“ and a tap added the item there.
+Fixed here, with nice-to-have 2. Still behind `on-device-catalog`.
+
+1. **A matched row takes the server's store, null included.** `mergeRows` kept the device row's store
+   when the server's was null. Before review 0 device rows never had one, so this never mattered.
+   The row keeps its place and text; only its store badge may change. The category keeps `??`: a
+   null category from `suggest_entries` is no answer (`classify_item` falls back to Sonstiges), so
+   the device's guess stays. Flag off and `input-stable-rows` alone are unchanged: their device rows
+   carry no store.
+2. **The index is fetched again after store and status changes.** Any server row that goes or changes
+   its store (also to „Ohne Laden“) or status (a tick, a restore), own or heard over realtime, schedules
+   the debounced 2 s `suggest_index` fetch the deletes had (`ListCubit.onChange`, which replaces the
+   delete-only branch). A resync's own fetch cancels a pending one. Flag off: no call.
+3. **The store parity carve-out is pinned.** The 49 rows (139 with `p_category_store`) whose store
+   differs on a category miss are listed in `app/test/list/suggest_parity_stores.dart` with both
+   stores. A new one fails as "not pinned", one that agrees again as "unpin". Review 1's mutant (no
+   `suggestStore` in `parsedStore`) now fails on the 12 rows it pushed there. A deliberate ranking
+   change that rewrites `suggest_parity.json` updates that list too.

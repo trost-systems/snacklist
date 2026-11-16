@@ -57,7 +57,8 @@ class const Suggestion(final SuggestionSource source, final ParsedEntry entry) {
 /// text. The typed row takes the server's category and store for what was
 /// typed, or the server's row itself when it reads the same; another shown
 /// row takes the category and store of the server's row for the same
-/// item, keeping its quantity. The server's other rows follow in its
+/// item, keeping its quantity. The server's store wins also when it is
+/// none. The server's other rows follow in its
 /// order, up to [mergedRows] in all; its own reading of the typed line only
 /// when none was shown.
 List<Suggestion> mergeRows(List<Suggestion> local, List<Suggestion> server) {
@@ -94,7 +95,10 @@ List<Suggestion> mergeRows(List<Suggestion> local, List<Suggestion> server) {
             brand: row.entry.brand,
             properties: row.entry.properties,
             quantity: row.entry.quantity,
-            storeId: match.entry.storeId ?? row.entry.storeId,
+            // A null store is an answer (none, or „Ohne Laden“) and beats
+            // one the device's index learned before. A null category is
+            // none: classify_item falls back to Sonstiges.
+            storeId: match.entry.storeId,
             categoryId: match.entry.categoryId ?? row.entry.categoryId,
             deviceParsed: row.entry.deviceParsed,
           ),

@@ -125,6 +125,29 @@ void main() {
     );
   });
 
+  // Review 1 of job 274: the device's index can carry a store the
+  // household cleared since; the server's "none" is the answer.
+  test("a shown row takes the server's no store over the device's store", () {
+    expect(
+      _all(
+        mergeRows(
+          [
+            _typed('Quarkbä', storeId: 'krume', deviceParsed: true),
+            _history('Quarkbällchen', storeId: 'krume', categoryId: 'bakery'),
+          ],
+          [
+            _typed('Quarkbä', quantity: '1', categoryId: 'bakery'),
+            _history('Quarkbällchen', categoryId: 'bakery'),
+          ],
+        ),
+      ),
+      _all([
+        _typed('Quarkbä', categoryId: 'bakery', deviceParsed: true),
+        _history('Quarkbällchen', categoryId: 'bakery'),
+      ]),
+    );
+  });
+
   test("another shown row takes the server's fields but keeps its "
       'quantity', () {
     expect(

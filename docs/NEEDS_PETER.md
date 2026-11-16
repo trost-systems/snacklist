@@ -2009,3 +2009,12 @@ A phone measurement (the 16 ms target) needs a device, which this runner does no
 iPhone, turn the flag on for that install, type, and read the `[add-sheet timing]` lines (they hold
 lengths and times only, never the text). `rows` is key to the frame with that text's rows, `rank=`
 the ranking's own time. The emulator's numbers are in DECISIONS "Job 274", point 7.
+The latest numbers, on main with job 276's sheet code, show the target is not met yet:
+- Android emulator (run 43867414509), UI thread per key, p50 / p95: 6.1 / 29.3 ms with the flag on,
+  3.9 / 14.9 with `input-stable-rows` only. The second letter, where one row becomes about eight,
+  reaches p95 53.1 ms.
+- Web on the Hetzner box (review 1): key to rows p50 7.9 ms, p95 21.1 ms.
+- The ranking itself takes at most 1.2 ms on the web. The cost is building the sheet's frame.
+
+A phone tells whether this shows on real hardware. The lead has follow-up work queued: a
+side-by-side run to find the slowdown, and lighter rows for the second letter.

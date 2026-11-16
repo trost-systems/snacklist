@@ -1953,6 +1953,70 @@ void main() {
       );
     }
 
+    // The index's store memory and cleared keys learn from store changes
+    // and ticks, its history from ticks and restores: the device must not
+    // keep offering a store the household cleared (review 1 of job 274).
+    for (final flag in [true, false]) {
+      test(
+        'store and status changes, own or heard, refresh it '
+        '${flag ? 'once each, 2 s after the last' : 'never with the flag off'}',
+        () {
+          fakeAsync((async) {
+            final list = ListCubit(
+              repo,
+              MemoryListCache(),
+              userId: 'peter',
+              grace: Duration.zero,
+              householdIndex: () => flag,
+            )..start();
+            async.elapse(Duration.zero);
+            final id = (list.addEntry(parseEntry('Brot')) as Added).item.id;
+            async.elapse(const Duration(seconds: 5));
+            var calls = repo.householdIndexCalls;
+            void expectRefresh(String change, void Function() make) {
+              make();
+              async.elapse(const Duration(milliseconds: 1900));
+              expect(
+                repo.householdIndexCalls,
+                calls,
+                reason: '$change: debounced',
+              );
+              async.elapse(const Duration(seconds: 5));
+              expect(
+                repo.householdIndexCalls,
+                calls + (flag ? 1 : 0),
+                reason: change,
+              );
+              calls = repo.householdIndexCalls;
+            }
+
+            expectRefresh(
+              'a store',
+              () => list.edit(id, const ItemChanges(storeId: SetTo('aldi'))),
+            );
+            expectRefresh(
+              'no store',
+              () => list.edit(id, const ItemChanges(storeId: SetTo(null))),
+            );
+            expectRefresh('a tick', () => list.tick(id));
+            expectRefresh('a restore', () => list.untick(id));
+            expectRefresh(
+              "another member's store",
+              () => repo.emitItem!(
+                repo.rows[id] = repo.rows[id]!.copyWith(storeId: () => 'lidl'),
+              ),
+            );
+
+            list.edit(id, const ItemChanges(quantity: SetTo('2')));
+            async.elapse(const Duration(seconds: 5));
+            expect(repo.householdIndexCalls, calls, reason: 'a quantity');
+            unawaited(list.close());
+            async.flushMicrotasks();
+          });
+        },
+      );
+    }
+
     test('an older answer never replaces a newer one', () async {
       repo.householdIndex = index;
       await startWith(flag: true);

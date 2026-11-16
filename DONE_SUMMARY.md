@@ -1526,3 +1526,9 @@ TestFlight: the next green main build; turn the flag on for Peter and internal t
 Follow-up PR: device rows now carry the store `suggest_entries` gives them, offline too, and the
 parity table compares it. `catalog_delta` checks versions and snapshots outgoing ones. Details:
 [docs/done/274.md](docs/done/274.md), section "Review 0 fixes".
+
+## Job 274 review 1: the server's „no store“ wins, the index follows store changes
+
+Second follow-up PR: a matched row takes the server's store (none included), the household index
+refreshes after store and status changes, and the store parity exceptions are pinned. Details:
+[docs/done/274.md](docs/done/274.md), section "Review 1 fixes".

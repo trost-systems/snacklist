@@ -280,6 +280,40 @@ void main() {
       expect(label(tester, row), before, reason: 'the answer changes nothing');
     });
 
+    // Review 1: another member cleared the store since the index was
+    // fetched; the server's "no store" wins, on the row and in the add.
+    testWidgets("but takes the server's answer of no store", (tester) async {
+      await pumpList(tester, seed: stores);
+      final gate = repo.suggestGate = Completer<void>();
+      await open(tester);
+      await tester.enterText(field(), 'Quarkbä');
+      await tester.pump();
+      final row = quarkballs(tester);
+      expect(label(tester, row), endsWith(', Bäckerei Krume'));
+      repo.suggestions['Quarkbä'] = [
+        for (final r in ranked(tester, 'Quarkbä'))
+          Suggestion(
+            r.source,
+            ParsedEntry(
+              name: r.entry.name,
+              brand: r.entry.brand,
+              properties: r.entry.properties,
+              quantity: r.entry.quantity,
+              categoryId: r.entry.categoryId,
+            ),
+          ),
+      ];
+      await tester.pump(const Duration(milliseconds: 200));
+      gate.complete();
+      await tester.pumpAndSettle();
+      expect(shown(tester), contains(row.key), reason: 'the row stays');
+      expect(label(tester, row), isNot(contains('Bäckerei Krume')));
+      await tester.tap(rowFor(row));
+      await tester.pumpAndSettle();
+      final added = items(tester).single;
+      expect((added.name, added.storeId), ('Quarkbällchen', null));
+    });
+
     testWidgets('offline', (tester) async {
       await pumpList(tester, seed: stores);
       repo.online = false;
