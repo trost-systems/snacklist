@@ -44,10 +44,13 @@ blacked out automatically.
 
 ## Who can read it
 
-- **Clients** (the app, MCP, anyone with the publishable key) may only insert, only as
-  themselves (`user_id = auth.uid()`). No select, update or delete, not even of their own notes;
-  anon gets nothing. RLS policy `feedback_insert_own` plus column grants; proven in
-  `supabase/tests/feedback.test.sql`, `rls.test.sql` and `e2e/tests/rls.spec.ts`.
+- **Clients** (the app, MCP, anyone with the publishable key) may insert, only as themselves
+  (`user_id = auth.uid()`). Since job 268 the sender reads their own notes back, only the columns
+  the app shows (see "Replies and status"). No update or delete, not even of their own notes; no
+  member reads another's notes, their household partner's included; anon gets nothing. RLS
+  policies `feedback_insert_own` and `feedback_select_own` plus column grants; proven in
+  `supabase/tests/feedback.test.sql`, `feedback_fb4.test.sql`, `rls.test.sql` and
+  `e2e/tests/rls.spec.ts`.
 - **Peter** reads with the service role, by hand: the dashboard's Table Editor
   (`public.feedback`) or SQL editor, project `jdwqrallbpdbshrdhenk`. Once switched on, the
   daily digest mails him the new notes.
@@ -62,7 +65,8 @@ blacked out automatically.
 - A daily pg_cron job, `purge-old-feedback` (03:17 UTC), runs `public.purge_old_feedback()`,
   which deletes notes older than 12 months and returns how many. Only the service connection
   may run it.
-- Deleting an account deletes the user's notes at once (`on delete cascade`). A deleted
+- Deleting an account deletes the user's notes at once (`on delete cascade`), with Peter's
+  replies (job 268). A deleted
   household leaves its members' notes, without the household id.
 - A note's screenshot goes with the note, whichever way the note is deleted (the purge, the
   account, by hand). An account deletion takes every image in the account's folder, uploads that
@@ -250,6 +254,86 @@ function and Storage API: no direct or signed client upload, also past the quota
 route's refusals; both quotas, also under 15 parallel uploads; a retry at a quota; refused reads;
 and the sweep after a deleted note, an account deletion with and without notes and an old
 orphan).
+
+## Replies and status
+
+Job 268 (FB4, behind the PostHog flag `feedback-fb4`). The sender sees what became of a note
+under More, and a list of ideas being considered that their household can +1. Peter answers by
+hand; no bot, connector or agent reads or answers a note (his GDPR rule of 2026-11-01, Legal G4).
+Migration: `supabase/migrations/20261115210000_fb4_feedback_replies.sql`.
+
+**What is stored.** Six columns on `public.feedback`:
+
+| Column | What |
+| --- | --- |
+| `status` | `sent` (the default), `read`, `planned` or `fixed`. |
+| `fixed_in` | The app version that fixed it, `1.4.1` (three numbers), only with `fixed`. The app links that version's changelog, `snacklist.app/<de or en>/changelog#v1-4-1`. |
+| `reply` | Peter's reply, 1 to 4,000 characters, trimmed; null for none. |
+| `replied_at` | When the reply was last written; null without a reply. Set by the database. |
+| `answered_at` | When `status`, `fixed_in` or `reply` last changed. Set by the database. |
+| `seen_at` | When the sender last opened the note after an answer. Set by `feedback_mark_seen`. |
+
+A note counts as unread in the app while `answered_at` is later than `seen_at` (or `seen_at` is
+null). A new answer makes it unread again.
+
+**Who reads it.** Only the sender, through RLS (`feedback_select_own`: `user_id = auth.uid()`),
+in the app's own session: a token of an app connected over OAuth (MCP, `client_id` in the JWT)
+reads none, as it may act on the list but not on the account. And only `id`, `created_at`, `message`, `category`, `status`, `fixed_in`, `reply`, `replied_at`,
+`answered_at` and `seen_at`. The household, the device context, `contact_ok`, `is_internal` and
+the screenshot name stay unreadable for clients. A household partner sees none of another
+member's notes. Clients change none of these columns; `public.feedback_mark_seen(id)` stamps
+`seen_at` on the caller's own answered note and does nothing for anyone else's id, an unknown id
+or a note without an answer.
+
+**How Peter answers** (Table Editor, `public.feedback`, project `jdwqrallbpdbshrdhenk`):
+
+1. Find the note (sort by `created_at`; the SQL editor works too).
+2. Edit only `status`, `fixed_in` and `reply`. Leave the times alone: the trigger
+   `feedback_before_update` sets `answered_at` whenever one of the three changes, trims the reply
+   and sets `replied_at` (or clears it when the reply is removed).
+3. `fixed_in` needs `status` = `fixed` in the same save. To move a fixed note back to another
+   status, clear `fixed_in` in the same save. A blank reply is refused: clear the cell (null)
+   instead.
+
+Each save of one of the three columns notifies the sender in the app (the unread badge) the next
+time it loads. The app shows "Snacklist Support", never Peter's name.
+
+**Ideas.** `public.feedback_ideas` holds what the app lists, written by hand; clients read it
+only through `public.feedback_ideas(household)` and cannot read the table itself. To list one:
+
+```sql
+insert into public.feedback_ideas (title_de, title_en, status, position)
+values ('Rezepte speichern', 'Save recipes', 'considering', 10);
+```
+
+- `title_de`, `title_en`: 1 to 120 characters each.
+- `status`: `considering` (the default) or `planned`.
+- `position`: ascending order in the app; ties go oldest first.
+- `listed = false` hides an idea and refuses new votes on it; its votes stay. Deleting the row
+  deletes its votes.
+
+**Votes.** `public.feedback_idea_votes` keeps one row per idea and household: `idea_id`,
+`household_id`, `created_at`, and no user id, so nobody, the household included, learns which
+member voted. The app votes through `public.vote_feedback_idea(idea, household, on)`, which
+answers the idea's new total; repeating either direction changes nothing. A member reads their
+household's votes; `feedback_ideas(household)` answers each listed idea's total over all
+households and whether this household voted. Count them for an idea:
+
+```sql
+select i.title_en, count(v.*) from public.feedback_ideas i
+left join public.feedback_idea_votes v on v.idea_id = i.id
+group by i.id order by count(v.*) desc;
+```
+
+**Export and deletion.** "Meine Daten exportieren" lists each note's `status`, `fixed_in`,
+`reply`, `replied_at`, `answered_at` and `seen_at`, and a section `feedback_idea_votes` with the votes of every
+household the user is in (household id, the idea's titles, when). Replies go with their note:
+the 12-month purge, an account deletion and a deletion by hand take them. A deleted household
+takes its votes.
+
+Tests: `supabase/tests/feedback_fb4.test.sql` (reading back, refused columns and writes, the
+trigger, the checks, seen, ideas, votes, export, deletions), `rls.test.sql` (two households) and
+`account_deletion.test.sql` (export sections, household deletion).
 
 ## Daily digest (off until Legal GO)
 

@@ -2144,6 +2144,150 @@ abstract class AppLocalizations {
   /// **'Schüttle das Handy, um ein Problem mit dem Bildschirm zu melden.'**
   String get shakeToFeedbackHint;
 
+  /// More (flag feedback-fb4, job 268): the row that opens Feedback & ideas; also that page's title
+  ///
+  /// In de, this message translates to:
+  /// **'Feedback & Ideen'**
+  String get feedbackHubRow;
+
+  /// More (job 268): read with the Feedback & ideas row, for its badge: notes with a new reply or status since the user last opened them
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Neuigkeit} other{{count} Neuigkeiten}}'**
+  String feedbackHubUnread(int count);
+
+  /// Feedback & ideas (job 268): the button that opens the feedback form. Never a person's name
+  ///
+  /// In de, this message translates to:
+  /// **'An Snacklist Support schreiben'**
+  String get feedbackWrite;
+
+  /// Feedback & ideas (job 268): section title above the user's own notes
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Notizen'**
+  String get feedbackYourNotes;
+
+  /// Feedback & ideas (job 268): shown while the user has sent no note
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Notizen. Was du schreibst, steht danach hier, mit Status und Antwort.'**
+  String get feedbackNoNotes;
+
+  /// Feedback & ideas (job 268): the notes did not load; a retry button follows
+  ///
+  /// In de, this message translates to:
+  /// **'Konnte nicht geladen werden.'**
+  String get feedbackLoadFailed;
+
+  /// Feedback & ideas (job 268): status chip of a note nobody has opened yet
+  ///
+  /// In de, this message translates to:
+  /// **'Gesendet'**
+  String get feedbackStatusSent;
+
+  /// Feedback & ideas (job 268): status chip of a note Snacklist Support has read
+  ///
+  /// In de, this message translates to:
+  /// **'Gelesen'**
+  String get feedbackStatusRead;
+
+  /// Feedback & ideas (job 268): status chip of a planned note, and of a planned idea
+  ///
+  /// In de, this message translates to:
+  /// **'Geplant'**
+  String get feedbackStatusPlanned;
+
+  /// Feedback & ideas (job 268): status chip of a note fixed in an app version
+  ///
+  /// In de, this message translates to:
+  /// **'Behoben in {version}'**
+  String feedbackStatusFixedIn(String version);
+
+  /// Feedback & ideas (job 268): status chip of a fixed note without a version
+  ///
+  /// In de, this message translates to:
+  /// **'Behoben'**
+  String get feedbackStatusFixed;
+
+  /// Feedback & ideas (job 268): marker on a note with a reply the user has not opened
+  ///
+  /// In de, this message translates to:
+  /// **'Neue Antwort'**
+  String get feedbackNewReply;
+
+  /// Feedback & ideas (job 268): marker on a note whose status changed since the user opened it, without a reply
+  ///
+  /// In de, this message translates to:
+  /// **'Neuer Status'**
+  String get feedbackNewStatus;
+
+  /// Feedback & ideas (job 268): section title above the listed ideas. Never a person's name
+  ///
+  /// In de, this message translates to:
+  /// **'Ideen, die wir abwägen'**
+  String get feedbackIdeas;
+
+  /// Feedback & ideas (job 268): status of an idea that is still weighed
+  ///
+  /// In de, this message translates to:
+  /// **'Wird überlegt'**
+  String get feedbackIdeaConsidering;
+
+  /// Feedback & ideas (job 268): screen reader label of an idea's +1 toggle: the idea and every household's +1s, never who gave them
+  ///
+  /// In de, this message translates to:
+  /// **'{title}: +1, {count, plural, =1{1 Stimme} other{{count} Stimmen}}'**
+  String feedbackVote(String title, int count);
+
+  /// Feedback & ideas (job 268): under the ideas
+  ///
+  /// In de, this message translates to:
+  /// **'Ideen schreibt Snacklist Support. Andere sehen nur die Zahl, nie wer abgestimmt hat.'**
+  String get feedbackIdeasNote;
+
+  /// Feedback & ideas (job 268): snackbar after a +1 the server refused or never got; the +1 is undone
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Stimme ist nicht angekommen. Versuch es noch einmal.'**
+  String get feedbackVoteFailed;
+
+  /// Feedback & ideas (job 268): title of one note's page
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Notiz'**
+  String get feedbackNoteTitle;
+
+  /// Feedback & ideas (job 268): when a note was written or answered
+  ///
+  /// In de, this message translates to:
+  /// **'{date}, {time}'**
+  String feedbackWhen(DateTime date, DateTime time);
+
+  /// Feedback & ideas (job 268): under the user's own note once it was read. Never a person's name
+  ///
+  /// In de, this message translates to:
+  /// **'{when} · gelesen'**
+  String feedbackWhenRead(String when);
+
+  /// Feedback & ideas (job 268): under a reply. Never a person's name
+  ///
+  /// In de, this message translates to:
+  /// **'Snacklist Support · {when}'**
+  String feedbackReplyFrom(String when);
+
+  /// Feedback & ideas (job 268): link from a fixed note to the changelog entry of its version
+  ///
+  /// In de, this message translates to:
+  /// **'Was ist neu in {version}'**
+  String feedbackWhatsNew(String version);
+
+  /// Feedback & ideas (job 268): a note's page for an id that is not among the user's notes
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Notiz gibt es nicht.'**
+  String get feedbackNoteMissing;
+
   /// No description provided for @onboardingCreateHint.
   ///
   /// In de, this message translates to:

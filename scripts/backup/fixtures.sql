@@ -103,6 +103,19 @@ from auth.users u, (values ('5e1f2a3b-4c5d-4e6f-8a7b-0c1d2e3f4a5b'::uuid, 'Siehe
   ('6f2a3b4c-5d6e-4f70-8b8c-1d2e3f4a5b6c'::uuid, 'Doch nicht')) n (id, message)
 where u.email = 'carl@backup.test';
 delete from public.feedback where id = '6f2a3b4c-5d6e-4f70-8b8c-1d2e3f4a5b6c';
+-- Job 268: Peter answers Carl's note and lists two ideas; both households +1 one of them.
+update public.feedback set status = 'fixed', fixed_in = '1.0.1', reply = 'Danke, ist behoben.'
+  where id = '5e1f2a3b-4c5d-4e6f-8a7b-0c1d2e3f4a5b';
+insert into public.feedback_ideas (id, title_de, title_en, status, position) values
+  ('26800000-0000-4000-8000-0000000b0268', 'Rezepte speichern', 'Save recipes', 'considering', 1),
+  ('26800000-0000-4000-8000-0000000b0269', 'Dunkles Design', 'Dark mode', 'planned', 2);
+select pg_temp.login('carl@backup.test');
+select public.feedback_mark_seen('5e1f2a3b-4c5d-4e6f-8a7b-0c1d2e3f4a5b');
+select public.vote_feedback_idea('26800000-0000-4000-8000-0000000b0268', (select id from fx where key = 'other'), true);
+reset role;
+select pg_temp.login('lea@backup.test');
+select public.vote_feedback_idea('26800000-0000-4000-8000-0000000b0268', (select id from fx where key = 'home'), true);
+reset role;
 
 -- Job 31: the app records each install's analytics answer; the alexa function's link map and
 -- rate limit (service connection only).

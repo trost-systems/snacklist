@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/app/notices.dart';
-import 'package:family_groceries/design/hex_border.dart';
+import 'package:family_groceries/design/count_badge.dart';
 import 'package:family_groceries/design/hex_switch.dart';
 import 'package:family_groceries/design/section_label.dart';
 import 'package:family_groceries/design/tokens.g.dart';
@@ -164,8 +164,9 @@ class _JoinApprovalSectionState() extends State<JoinApprovalSection> {
         HlSectionLabel(
           l10n.joinRequestsTitle,
           badge: switch (requests?.length) {
-            final int n when n > 0 => _CountBadge(
+            final int n when n > 0 => HlCountBadge(
               n,
+              key: const ValueKey('join-requests-count'),
               label: l10n.joinRequestsCount(n),
             ),
             _ => null,
@@ -261,45 +262,6 @@ class _JoinApprovalSectionState() extends State<JoinApprovalSection> {
             child: Text(l10n.joinRequestApprove),
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// How many requests wait: a small lemon hex with the navy contour.
-class const _CountBadge(final int count, {required final String label})
-    extends StatelessWidget {
-  static const _height = 20.0;
-
-  @override
-  Widget build(BuildContext context) {
-    final t = SnacklistColors.of(Theme.of(context).brightness);
-    return Semantics(
-      container: true,
-      label: label,
-      excludeSemantics: true,
-      child: Container(
-        key: const ValueKey('join-requests-count'),
-        constraints: const BoxConstraints(minWidth: 30, minHeight: _height),
-        padding: const EdgeInsets.symmetric(
-          horizontal: HlHex.tip * _height + HlSpace.s1,
-        ),
-        alignment: Alignment.center,
-        decoration: ShapeDecoration(
-          color: t.honey,
-          shape: HexBorder(
-            side: BorderSide(color: t.edge, width: HlBorder.width),
-          ),
-        ),
-        child: Text(
-          '$count',
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w800,
-            height: 1,
-            color: t.onHoney,
-          ),
-        ),
       ),
     );
   }

@@ -43,3 +43,10 @@ const supportLinkShown = supportPagePublished || Environment.legalDrafts;
 Uri supportUrl(String languageCode) => Uri.parse(
   languageCode == 'de' ? '$guidesBaseUrl/support' : '$guidesBaseUrl/en/support',
 );
+
+/// The public changelog on snacklist.app at [version]'s entry (job 268),
+/// German or English: `1.4.1` is the anchor `v1-4-1`.
+Uri changelogUrl(String languageCode, String version) => Uri.parse(
+  '$guidesBaseUrl/${languageCode == 'de' ? 'de' : 'en'}/changelog'
+  '#v${version.replaceAll('.', '-')}',
+);

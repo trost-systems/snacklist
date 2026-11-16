@@ -24,6 +24,9 @@ const enabled = Deno.env.get('FG_DB_TEST') === '1';
 const LOCK_WAIT = '100ms';
 
 const ROLES = ['authenticated', 'anon'] as const;
+
+/** The English title of this run's ideas, which belong to no household and go at the end. */
+const IDEA = `outsiders ${crypto.randomUUID()}`;
 type Role = typeof ROLES[number];
 
 /**
@@ -75,7 +78,7 @@ const WITH_CODE: Record<Role, string[]> = {
 
 /**
  * Tables no row of which the side connection holds: the ones without an owner (switches, the
- * classifier's words, rate windows by a hash) and the ones keyed by a user or a key that only the
+ * classifier's words, the feedback ideas, rate windows by a hash) and the ones keyed by a user or a key that only the
  * server's roles write, where the fixture has no row. A function that locks one of them by an id
  * the caller passes is not seen here. A new table is held, or it is added with that in mind.
  */
@@ -92,6 +95,7 @@ const NO_ROW = [
   'classifier_synonyms',
   'classifier_terms',
   'feedback_digest_state',
+  'feedback_ideas',
   'feedback_screenshot_removals',
   'invite_attempts',
   'invite_preview_rate',
@@ -531,6 +535,10 @@ async function fill(
             values (${household}, 'premium', 'promotional', 'promotional')`;
   await sql`insert into public.purchase_claims (store, transaction_id, user_id, claimed_for)
             values ('apple', ${crypto.randomUUID()}, ${owner}, ${household})`;
+  await sql`with idea as (insert into public.feedback_ideas (title_de, title_en)
+                          values ('Rezepte', ${IDEA}) returning id)
+            insert into public.feedback_idea_votes (idea_id, household_id)
+            select id, ${household} from idea`;
 }
 
 async function withHousehold(
@@ -608,6 +616,7 @@ async function withHousehold(
         select household_id from public.household_members where user_id = ${user})`;
       await sql`delete from auth.users where id = ${user}`;
     }
+    await sql`delete from public.feedback_ideas where title_en = ${IDEA}`;
     await sql.end();
   }
 }

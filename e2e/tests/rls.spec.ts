@@ -57,7 +57,7 @@ test('a user from another household can neither see nor change the list', async 
   await eveApi.removeAllChannels();
 });
 
-test('feedback is insert-only: own note yes, another user_id no, no read, change or delete, anon nothing (job 21, AC5)', async () => {
+test('feedback: own note yes, another user_id no, only the sender reads it back, no change or delete, anon nothing (jobs 21 and 268)', async () => {
   const [annaEmail, benEmail] = [newEmail('fb-anna'), newEmail('fb-ben')];
   const admin = adminClient();
   for (const email of [annaEmail, benEmail]) {
@@ -80,13 +80,22 @@ test('feedback is insert-only: own note yes, another user_id no, no read, change
   expect(asBen.error?.code, 'in another user\'s name').toBe('42501');
 
   const read = await anna.from('feedback').select('*');
-  expect(read.error?.code, 'not even the sender reads it').toBe('42501');
+  expect(read.error?.code, 'the sender reads no context columns').toBe('42501');
+  const shown = 'id, message, status, reply, answered_at, seen_at';
+  const ownRead = await anna.from('feedback').select(shown);
+  expect(ownRead.data, 'the sender reads the shown columns of their own note (job 268)').toEqual([
+    { id: own.id, message: 'Notiz', status: 'sent', reply: null, answered_at: null, seen_at: null },
+  ]);
+  const seen = await anna.from('feedback').update({ seen_at: new Date().toISOString() }).eq('id', own.id);
+  expect(seen.error?.code, 'nor stamps seen_at by hand').toBe('42501');
   const update = await anna.from('feedback').update({ message: 'Geändert' }).eq('id', own.id);
   expect(update.error?.code, 'nor changes it').toBe('42501');
   const del = await anna.from('feedback').delete().eq('id', own.id);
   expect(del.error?.code, 'nor deletes it').toBe('42501');
   const benRead = await ben.from('feedback').select('*').eq('user_id', annaId);
   expect(benRead.error?.code, 'nor does anyone else').toBe('42501');
+  const benShown = await ben.from('feedback').select(shown).eq('id', own.id);
+  expect(benShown.data, 'nor any of Anna\'s note, by id').toEqual([]);
   const reused = await ben.from('feedback').insert(note({ id: own.id }));
   expect(reused.error?.code, 'Anna\'s id is not Ben\'s').toBe('23505');
 

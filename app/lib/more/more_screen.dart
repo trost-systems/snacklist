@@ -8,11 +8,14 @@ import 'package:family_groceries/app/legal_links.dart';
 import 'package:family_groceries/app/notices.dart';
 import 'package:family_groceries/app/router.dart';
 import 'package:family_groceries/app/shell.dart';
+import 'package:family_groceries/design/count_badge.dart';
 import 'package:family_groceries/design/group_card.dart';
 import 'package:family_groceries/design/hex_switch.dart';
 import 'package:family_groceries/design/pointy_hex.dart';
 import 'package:family_groceries/design/sticker.dart';
 import 'package:family_groceries/design/tokens.g.dart';
+import 'package:family_groceries/feedback/feedback_hub.dart';
+import 'package:family_groceries/feedback/feedback_inbox.dart';
 import 'package:family_groceries/feedback/feedback_sheet.dart';
 import 'package:family_groceries/household/archived_households.dart';
 import 'package:family_groceries/household/household_page.dart';
@@ -69,6 +72,12 @@ enum MorePage() {
 
   /// Every hint of the List tab (`/more/tips`).
   tips,
+
+  /// Feedback & Ideen (`/more/feedback`, job 268, flag `feedback-fb4`).
+  feedback,
+
+  /// One of the user's notes below [feedback] (`/more/feedback/<id>`).
+  feedbackNote,
 }
 
 /// The More tab (M-P2, job 85): the update card when there is one, inset
@@ -76,6 +85,9 @@ enum MorePage() {
 class const MoreScreen({
   super.key,
   final MorePage? page,
+
+  /// The note [MorePage.feedbackNote] shows.
+  final String? noteId,
 
   /// Shows "Hilfe & Kontakt"; tests pass false to see a release build.
   @visibleForTesting final bool showHelp = supportLinkShown,
@@ -130,6 +142,8 @@ class const MoreScreen({
                           BackButton(
                             onPressed: () => context.go(appSettingsPath),
                           ),
+                        if (shown == MorePage.feedbackNote)
+                          BackButton(onPressed: () => context.go(feedbackPath)),
                         // Large text wraps a long title in the narrow pane.
                         Flexible(
                           child: Text(
@@ -140,7 +154,7 @@ class const MoreScreen({
                       ],
                     ),
                   ),
-                  Expanded(child: _Page(shown, paywallEntry)),
+                  Expanded(child: _Page(shown, paywallEntry, noteId)),
                 ],
               ),
             ),
@@ -153,7 +167,7 @@ class const MoreScreen({
       // system's) pops to the list, also after a deep link.
       return Scaffold(
         appBar: AppBar(title: Text(_title(l10n, page))),
-        body: _Page(page, paywallEntry),
+        body: _Page(page, paywallEntry, noteId),
       );
     }
     return Scaffold(
@@ -176,11 +190,16 @@ class const MoreScreen({
     MorePage.language => l10n.language,
     MorePage.usageData => l10n.analyticsSection,
     MorePage.tips => l10n.hintsTitle,
+    MorePage.feedback => l10n.feedbackHubRow,
+    MorePage.feedbackNote => l10n.feedbackNoteTitle,
   };
 }
 
-class const _Page(final MorePage page, final PaywallEntry paywallEntry)
-    extends StatelessWidget {
+class const _Page(
+  final MorePage page,
+  final PaywallEntry paywallEntry,
+  final String? noteId,
+) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => switch (page) {
     MorePage.access => const AccessScreen(),
@@ -192,6 +211,8 @@ class const _Page(final MorePage page, final PaywallEntry paywallEntry)
     MorePage.language => const LanguageScreen(),
     MorePage.usageData => const _UsageDataPage(),
     MorePage.tips => const TipsPage(),
+    MorePage.feedback => const FeedbackHubPage(),
+    MorePage.feedbackNote => FeedbackNotePage(noteId ?? ''),
   };
 }
 
@@ -282,6 +303,9 @@ class _MoreListState() extends State<_MoreList> {
       },
     );
     final canStartTrip = tripMode && noTrip;
+    final feedbackHub = context.select<Flags?, bool>(
+      (flags) => flags?.isOn(feedbackFb4Flag) ?? false,
+    );
     return FutureBuilder(
       future: _offer,
       builder: (context, offer) {
@@ -318,7 +342,13 @@ class _MoreListState() extends State<_MoreList> {
                 HlGroup(
                   children: [
                     for (final item in items)
-                      _row(context, l10n, item, household),
+                      _row(
+                        context,
+                        l10n,
+                        item,
+                        household,
+                        feedbackHub: feedbackHub,
+                      ),
                   ],
                 ),
             const _Version(),
@@ -332,8 +362,9 @@ class _MoreListState() extends State<_MoreList> {
     BuildContext context,
     AppLocalizations l10n,
     _Item item,
-    Household? household,
-  ) {
+    Household? household, {
+    required bool feedbackHub,
+  }) {
     final selected = widget.selected;
     final lang = Localizations.localeOf(context).languageCode;
     void go(String path) => context.go(path);
@@ -402,6 +433,11 @@ class _MoreListState() extends State<_MoreList> {
         label: l10n.hintsTitle,
         selected: selected == MorePage.tips,
         onTap: () => go(tipsPath),
+      ),
+      _Item.feedback when feedbackHub => _FeedbackHubRow(
+        selected:
+            selected == MorePage.feedback || selected == MorePage.feedbackNote,
+        onTap: () => go(feedbackPath),
       ),
       _Item.feedback => _Row(
         item,
@@ -483,6 +519,15 @@ class const _Row(
   final String? subtitle,
   final bool selected = false,
   final _Trailing trailing = _Trailing.chevron,
+
+  /// Instead of the item's own glyph.
+  final IconData? icon,
+
+  /// Before the chevron: a count, silent (name it in [semanticsLabel]).
+  final Widget? badge,
+
+  /// What screen readers hear instead of [label].
+  final String? semanticsLabel,
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -492,7 +537,7 @@ class const _Row(
       minTileHeight: 52,
       contentPadding: const EdgeInsets.symmetric(horizontal: HlSpace.s3),
       leading: HlRowHex(
-        item.icon,
+        icon ?? item.icon,
         face: switch (item.tint) {
           _Tint.honey => t.honeySoft,
           _Tint.cobalt => t.accentSoft,
@@ -500,18 +545,55 @@ class const _Row(
           _Tint.plain => t.surfaceSunken,
         },
       ),
-      title: Text(label),
+      title: Text(label, semanticsLabel: semanticsLabel),
       subtitle: switch (subtitle) {
         final text? => Text(text),
         null => null,
       },
       trailing: switch (trailing) {
+        _Trailing.chevron when badge != null => Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: HlSpace.s2,
+          children: [?badge, const Icon(Icons.chevron_right)],
+        ),
         _Trailing.chevron => const Icon(Icons.chevron_right),
         _Trailing.external => const Icon(Icons.open_in_new, size: 18),
         _Trailing.none => null,
       },
       selected: selected,
       onTap: onTap,
+    );
+  }
+}
+
+/// Feedback & Ideen (flag `feedback-fb4`): its badge counts the notes with
+/// a reply or status the user has not opened yet.
+class const _FeedbackHubRow({
+  required final bool selected,
+  required final VoidCallback onTap,
+}) extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final unread = context.select<FeedbackInbox, int>((i) => i.state.unread);
+    final label = l10n.feedbackHubRow;
+    // More stays up all session: the badge follows the session and the
+    // app's resume.
+    return InboxLoader(
+      onResume: true,
+      child: _Row(
+        _Item.feedback,
+        label: label,
+        icon: Icons.forum_outlined,
+        selected: selected,
+        badge: unread > 0
+            ? HlCountBadge(unread, key: const ValueKey('more-feedback-badge'))
+            : null,
+        semanticsLabel: unread > 0
+            ? '$label, ${l10n.feedbackHubUnread(unread)}'
+            : null,
+        onTap: onTap,
+      ),
     );
   }
 }

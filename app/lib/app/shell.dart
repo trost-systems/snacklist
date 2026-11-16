@@ -8,6 +8,7 @@ import 'package:family_groceries/design/hex_border.dart';
 import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/sticker.dart';
 import 'package:family_groceries/design/tokens.g.dart';
+import 'package:family_groceries/feedback/feedback_inbox.dart';
 import 'package:family_groceries/feedback/screen_capture.dart';
 import 'package:family_groceries/feedback/shake.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
@@ -170,6 +171,11 @@ class _AppShellState() extends State<AppShell> {
       if (!mounted) {
         return;
       }
+    }
+    if (destination == _Destination.more &&
+        (context.read<Flags?>()?.isOn(feedbackFb4Flag) ?? false)) {
+      // More's badge: answers may have come in since More was last shown.
+      unawaited(refreshInbox(context));
     }
     // Tapping the current tab again goes back to its first page.
     widget.shell.goBranch(

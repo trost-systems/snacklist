@@ -51,7 +51,8 @@ language sql as $$
   union all select 'item_claims', count(*)::int from public.item_claims where household_id = p_household
   union all select 'join_requests', count(*)::int from public.join_requests where household_id = p_household
   union all select 'trips', count(*)::int from public.trips where household_id = p_household
-  union all select 'trip_sessions', count(*)::int from public.trip_sessions where household_id = p_household;
+  union all select 'trip_sessions', count(*)::int from public.trip_sessions where household_id = p_household
+  union all select 'feedback_idea_votes', count(*)::int from public.feedback_idea_votes where household_id = p_household;
 $$;
 
 -- A finished trip-mode trip (job 234) as the app saves it, with one bought line.
@@ -267,6 +268,9 @@ values ((select id from h), '00000000-0000-0000-0000-0000000000a2');
 insert into public.item_claims (item_id, household_id, user_id)
 select i.id, i.household_id, '00000000-0000-0000-0000-0000000000c1' from public.items i where i.name = 'Brot';
 insert into public.join_requests (household_id, user_id) values ((select id from h), '00000000-0000-0000-0000-0000000000d1');
+-- Job 268: the household +1'd an idea.
+insert into public.feedback_ideas (id, title_de, title_en) values ('26800000-0000-4000-8000-0000000000f1', 'Rezepte', 'Recipes');
+insert into public.feedback_idea_votes (idea_id, household_id) values ('26800000-0000-4000-8000-0000000000f1', (select id from h));
 select is(
   (select array_agg(tbl order by tbl) from pg_temp.household_rows((select id from h)) where n = 0),
   null, 'before: every household table has rows'
@@ -332,7 +336,7 @@ create temp table export as select public.export_my_data() as doc;
 select is(
   (select array_agg(k order by k) from export, jsonb_object_keys(doc) k),
   array['access_tokens', 'account', 'alexa_links', 'analytics_decisions', 'archived_households', 'connected_apps', 'exported_at',
-        'feedback', 'format', 'history', 'household', 'household_removals', 'households', 'invite_uses', 'invites_created', 'item_claims',
+        'feedback', 'feedback_idea_votes', 'format', 'history', 'household', 'household_removals', 'households', 'invite_uses', 'invites_created', 'item_claims',
         'items_added', 'join_requests', 'lists_created', 'profile', 'purchases', 'trip_sessions_started', 'trips_logged',
         'version'],
   'the export has the documented sections'
@@ -366,7 +370,10 @@ select is(
     'feedback', jsonb_build_array(jsonb_build_object('created_at', now(), 'message', 'Bitte dunkles Design',
       'category', 'idea', 'contact_ok', true, 'screen', 'list', 'platform', 'ios', 'app_version', '0.1.0',
       'build', '7', 'os_version', 'iOS 18.1', 'locale', 'de', 'household_id', (select id from he),
-      'is_internal', true, 'screenshot', null)),
+      'is_internal', true, 'screenshot', null, 'status', 'sent', 'fixed_in', null, 'reply', null, 'replied_at', null,
+      'answered_at', null, 'seen_at', null)),
+    -- Job 268: the Emil & Frida household +1'd no idea (feedback_fb4.test.sql covers a vote).
+    'feedback_idea_votes', '[]'::jsonb,
     'connected_apps', jsonb_build_array(jsonb_build_object('client_name', 'Claude', 'scopes', 'openid email',
       'granted_at', now(), 'revoked_at', null, 'device', null)),
     'analytics_decisions', '[]'::jsonb,

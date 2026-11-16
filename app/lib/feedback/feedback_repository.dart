@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:family_groceries/feedback/feedback_context.dart';
+import 'package:family_groceries/feedback/feedback_note.dart';
 import 'package:flutter/foundation.dart' show immutable;
 import 'package:flutter/services.dart' show Uint8List;
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -47,13 +48,29 @@ final class const FeedbackScreenshotRefused(final String code)
 /// the form takes a new one.
 final class const FeedbackIdTaken() extends FeedbackError;
 
-/// Sends notes; insert only, nothing is read back (docs/FEEDBACK.md). A
-/// screenshot goes to the private bucket first, then the row names it.
+/// Sends notes (docs/FEEDBACK.md); a screenshot goes to the private bucket
+/// first, then the row names it. Job 268 (FB4) reads the user's own notes
+/// back with their status and reply, and the listed ideas with their +1s.
 abstract interface class FeedbackRepository() {
   /// Completes once the server has the note; throws [FeedbackError]
   /// otherwise. Sending the same [FeedbackSubmission.id] again succeeds
   /// without a second row.
   Future<void> submit(FeedbackSubmission note);
+
+  /// The signed-in user's own notes, newest first, at most 50; throws
+  /// [FeedbackError].
+  Future<List<FeedbackNote>> notes();
+
+  /// Marks the user's own note [id] as opened since its last answer.
+  Future<void> markSeen(String id);
+
+  /// The listed ideas with every household's +1s and whether
+  /// [householdId] gave one.
+  Future<List<FeedbackIdea>> ideas(String householdId);
+
+  /// Gives (or takes back) [householdId]'s +1 on [ideaId]; the idea's new
+  /// total.
+  Future<int> vote(String ideaId, String householdId, {required bool on});
 }
 
 class SupabaseFeedbackRepository(
@@ -86,6 +103,69 @@ class SupabaseFeedbackRepository(
   }
 
   static const _duplicate = '23505';
+
+  @override
+  Future<List<FeedbackNote>> notes() async {
+    final rows = await _read(
+      _client.rest
+          .from('feedback')
+          .select(
+            'id, created_at, message, category, status, fixed_in, reply, '
+            'replied_at, answered_at, seen_at',
+          )
+          .order('created_at')
+          .limit(50),
+    );
+    return switch (rows) {
+      final List<Object?> rows => [for (final row in rows) parseNote(row)],
+      _ => throw const FeedbackRefused('bad_response'),
+    };
+  }
+
+  @override
+  Future<void> markSeen(String id) => _read(
+    _client.rest.rpc<Object?>('feedback_mark_seen', params: {'p_id': id}),
+  );
+
+  @override
+  Future<List<FeedbackIdea>> ideas(String householdId) async {
+    final rows = await _read(
+      _client.rest.rpc<Object?>(
+        'feedback_ideas',
+        params: {'p_household': householdId},
+      ),
+    );
+    return switch (rows) {
+      final List<Object?> rows => [for (final row in rows) parseIdea(row)],
+      _ => throw const FeedbackRefused('bad_response'),
+    };
+  }
+
+  @override
+  Future<int> vote(
+    String ideaId,
+    String householdId, {
+    required bool on,
+  }) async => switch (await _read(
+    _client.rest.rpc<Object?>(
+      'vote_feedback_idea',
+      params: {'p_idea': ideaId, 'p_household': householdId, 'p_on': on},
+    ),
+  )) {
+    final int total => total,
+    _ => throw const FeedbackRefused('bad_response'),
+  };
+
+  /// [request]'s answer, its failures as [FeedbackError]s.
+  Future<Object?> _read(Future<Object?> request) async {
+    try {
+      return await request.timeout(timeout);
+    } on PostgrestException catch (e) {
+      throw FeedbackRefused(e.code ?? 'unknown');
+    } on Object {
+      throw const FeedbackOffline();
+    }
+  }
 
   /// Has the `feedback-screenshots` function store [png] as
   /// `<user id>/<note id>.png` and returns that name. Only the function
