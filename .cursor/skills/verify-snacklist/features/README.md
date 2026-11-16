@@ -74,7 +74,7 @@ The list
 - [prices](./prices.md): behind the flag `prices-and-trip-total` (off): a price chip on each row and its editor (Gesamt or pro Stück/kg/l, the scale weight), „Summe <Laden>“ per store section, „Einkaufssumme“ under the list, the household's „Währung“; Free, live for the household.
 - [live-sync](./live-sync.md): members see each other's changes live; „N neu von <Name>“ and the sync icon.
 - [offline](./offline.md): what works without a connection, what waits, and the messages.
-- [grocery-log](./grocery-log.md): behind the flag `grocery-log` (not public): the „Verlauf“ tab with trips by date under a month calendar with store dots, or by store, one toggle; „Einkauf eintragen“ by hand; the list's card after a store's section is ticked off; Free sees 4 weeks.
+- [grocery-log](./grocery-log.md): behind the flag `grocery-log` (not public): the „Verlauf“ tab with trips by date under a month calendar with store dots, or by store, one toggle; „Einkauf eintragen“ by hand; Free sees 4 weeks.
 - [list-declutter](./list-declutter.md): behind the flag `list-declutter` (off): one switcher for household and list in a see-through header, the total as a row of the list, and the household sheet with a page per household (its lists, „Einladen“, the members row) and a members page; long-press reorder of lists and households.
 - [trip-mode](./trip-mode.md): behind the flag `trip-mode` (not public): „Kaufst du gerade ein?“ after a tick, the running trip's strip with stopwatch, pause and „Beenden“, its own pause after 45 min and end after 4 h at the last tick, the summary „Geplant und gekauft“ per store with planned and paid prices (Premium; Free sees a locked card), Verlauf trips per store, Mehr › „Einkauf starten“.
 
@@ -82,7 +82,7 @@ Settings, help and account
 
 - [theme](./theme.md): light, dark or device theme under Mehr → Einstellungen.
 - [language](./language.md): German, English or the device's language, and which texts stay German.
-- [feedback](./feedback.md): Mehr → „Feedback senden“.
+- [feedback](./feedback.md): Mehr → „Feedback senden“; behind the flags `feedback-fb2` (shake on phones, a marked-up screenshot) and `feedback-fb4` („Feedback & Ideen“: notes with status and replies, ideas with +1s), both off.
 - [rate-snacklist](./rate-snacklist.md): Mehr → „Snacklist bewerten“ (iPhone and Android apps) and the system rating dialog after a completed trip in public store builds. Evidence from before the sweep is filed under the old id `rate-hummlist`.
 - [more-help](./more-help.md): the tabs, every Mehr entry in order, help and contact, guides on snacklist.app (Siri, Alexa, Claude), the Nutzungsdaten page and the legal rows (imprint, privacy policy, terms, licenses), version.
 - [account-deletion](./account-deletion.md): Mehr → Konto: data export, account deletion, deleting single data without deleting the account.

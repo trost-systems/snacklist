@@ -86,7 +86,7 @@ for (const [name, p] of [['Bananen', price(0.25, yesterday)], ['Vollmilch', pric
   if (error) throw error;
 }
 const listId = sql(`select list_id from public.items where household_id = '${household}' and name = 'Bananen'`);
-// Legal GL-2: a pharmacy's item asks nothing and offers no log card.
+// Legal GL-2: a pharmacy's item asks nothing.
 const pharmacy = await storeId('APOTHEKE am Markt');
 sql(`delete from public.items where household_id = '${household}' and name = 'Aspirin'`);
 {

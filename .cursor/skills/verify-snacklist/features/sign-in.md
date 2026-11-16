@@ -4,7 +4,7 @@ Signed out, Snacklist opens on the start screen of the guided start (`/start`, f
 
 ## Sub-features
 
-- `start-sign-in` the start screen's „Schon ein Konto? Anmelden“ (`start-log-in`) opens `/login`; the guided start's X offers „Stattdessen anmelden“ / "Sign in instead" too, keeping the answers on the device.
+- `start-sign-in` the start screen's „Schon ein Konto? Anmelden“ (`start-log-in`; with `join-household-jh2` on it reads „Schon ein Konto“ / "Already have an account", onboarding `jh2-start`) opens `/login`; the guided start's X offers „Stattdessen anmelden“ / "Sign in instead" too, keeping the answers on the device.
 - `login-new` „Neu bei Snacklist? Los geht's“ (`login-new`) under the sign-in methods opens `/start`; with a guided start under way it resumes at its step. Absent with an invite (`?invite=`) or a link (`?next=`).
 - `password-sign-in` email + password; lands on the list, or on onboarding for an account without a household. On builds with an analytics key, a device's first sign-in shows the analytics question first (privacy-consent), unless the guided start asked it before the account. With a guided start under way, the sign-in finishes it: its items go on the list (onboarding, `existing-account`).
 - `sign-up` „Registrieren“ with the same two fields; on the hosted project the user must first confirm by the emailed link.
@@ -55,6 +55,7 @@ Preconditions:
 - **Wrong password.** Observable result: snackbar starting „Anmeldung fehlgeschlagen“, still on the login screen.
 - **Provider buttons.** The e2e build shows them, above „Weiter mit E-Mail“: `page.getByRole('button', { name: 'Mit Google anmelden' })` and `'Mit Apple anmelden'`. A click starts a redirect to `/auth/v1/authorize?provider=google|apple`; real provider round trips cannot run locally (the specs swap the provider for a fake OpenID issuer).
 - Covered by `e2e/tests/auth.spec.ts`, `e2e/tests/social-sign-in.spec.ts`, `e2e/tests/id-token.spec.ts` (token grant against the local stack), `e2e/tests/no-google.spec.ts` (no request to Google leaves the app), `app/test/onboarding/guided_start_test.dart` (the start screen and its „Anmelden“, the account step). Run via `scripts/verify.sh --only e2e -- tests/<file>`.
+- **JH2** (flag `join-household-jh2`, off for users): household-invites' JH2 bullet.
 
 ## Gotchas
 

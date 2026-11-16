@@ -16,7 +16,7 @@ Every new item gets a category without the user choosing one: the server looks a
 - `cl-household-only` learning is per household; another household with the same word still gets the default category.
 - `cl-delete-category` deleting a category moves its items and forgets what was learned for it; the move itself teaches nothing.
 - `cl-same-everywhere` the app, the MCP assistant connection, Siri and Alexa all add through the same server logic (categories and learned corrections apply the same).
-- `cl-store` a new item also gets a store: the one the household remembers for that name, else the store of a store's own brand (Balea → dm), else dm for drugstore items when the household has dm. The add sheet and the server add path (MCP, Siri, Alexa, dictation) guess the same way; "Windeln Größe 4" lands in dm.
+- `cl-store` a new item also gets a store: the one the household remembers for that name, else the store of a store's own brand (Balea → dm), else dm for drugstore items when the household has dm. The add sheet and the server add path (MCP, Siri, Alexa, dictation) guess the same way; "Windeln Größe 4" lands in dm. With `input-stable-rows` on (off for users), adds made in the app also try, after the brand and before dm, the store the household uses most for the item's category, and an item set to „Ohne Laden“ stays without one (stores-walk-order `sw-store-memory`).
 
 ## How to get to it (user POV)
 
