@@ -629,6 +629,8 @@ class AddSheetCubit(
         categories: list.catalog,
         known: _householdCategories(),
         pending: _pending(),
+        // The repository sends p_category_store with this flag too.
+        categoryStore: _stableRows(),
       );
     } on Object {
       return _local(key);

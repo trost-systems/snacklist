@@ -15028,3 +15028,43 @@ the sheet's rows and room are as before, no timer or line runs.
    painted ones (the list sits behind the closing scrim, and screen readers see the final rows).
    A details save counts as an item edit in the device's tips log (`item_edited` retires the
    „Halten zum Bearbeiten“ tip): it is an edit. No analytics event is sent.
+
+## Job 274 review 0: the store on device rows, catalog deltas for every released version (2026-11-16)
+
+Review 0 of job 274 (VERDICT: FIX) found that device rows carried no store, so a learned store was
+missing offline and popped in under a finger when the answer landed. Fixed here, with its nice-to-haves
+3, 4 and 6. Still behind `on-device-catalog`.
+
+1. **The store comes from the same data as the server's.** `suggest_index` also answers the household's
+   store memory (item key, canonical key, store; newest first, as `suggest_store` reads it), the item
+   keys set to „Ohne Laden“, the stores with a seed key, and per category `category_usual_store` and
+   `category_store`. `suggestEntries` ports `guess_store`, `suggest_store` (with `canonical_of_key`
+   and its typo path, `lexicon_fuzzy`) and `parse_item`'s store, and takes the same
+   `p_category_store` the repository sends (`input-stable-rows`). An index cached before these keys
+   reads them as empty. `suggest_index` is now security definer like `suggest_store`: through RLS
+   the items and memory scans cost a membership check per row (17 ms instead of 23 ms on the
+   5,000-item bench household with 400 memory keys; 15 ms before the store keys).
+2. **A store may differ only where the category guess does.** The store reads the row's category,
+   and the device reads job 272's guess. The parity fixture now has five stores, store lessons
+   taught through the items triggers (changes and ticks), a cleared item and dm brands, and every
+   row carries its store with `p_category_store` off and on. Of 6,196 rows, 49 (off) and 139 (on)
+   get another store, every one of them on a row whose category guess is not the server's; the
+   test fails on any other difference. Four mutants of the port (no cleared check, no canonical
+   fallback, no usual store, no brand store) each fail it.
+3. **Pending items add history, not store memory.** The server learns a store from a change, a tick
+   or a pick that differs from its guess; a list row does not say which happened (a default store
+   is deliberately not learned), so the device leaves the stores of items it has and the index
+   lacks to the next index. Their rows are held to the server in the fixture's `pending` table,
+   and a term added after the build in its `delta` table (`catalog_delta`'s answer applied).
+4. **Every released catalog version keeps its snapshot.** A statement trigger before any write to
+   `classifier_terms`, `classifier_lexicon` or `brands` snapshots the version in force, once per
+   transaction, so a big classifier migration stores one snapshot, not one per statement.
+5. **`catalog_delta` reads a marked snapshot.** `catalog_snapshots.current` marks the current
+   version; the trigger unmarks it, and the next call computes the rows once (under a table lock
+   that waits for the change's commit). Current: 7.3 ms to 0.04 ms a call, full: 8.6 ms to 1.7 ms.
+   A `p_base` or `p_have` that is not 16 hex digits is refused (`invalid_version`), so only a
+   version-shaped base gets the full catalog. No rate limit: the full answer is now a read.
+6. **Left.** A write to the three tables with triggers off (`session_replication_role = replica`,
+   as the backup restore does) leaves the mark on the old version; the restore brings the
+   snapshots of the dump, so they agree. The parity test's server side now runs both modes and
+   takes about 2 min instead of 54 s.

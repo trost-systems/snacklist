@@ -1520,3 +1520,9 @@ and binds its chips to the item. These save on a tap, after 500 ms, on the next 
 RI2 is a thin line above the field from 150 ms into a suggestions request; RI1 dims rows that answer an
 earlier text (only without `input-stable-rows`). Details, tests and evidence: `docs/done/276.md`.
 TestFlight: the next green main build; turn the flag on for Peter and internal testers only.
+
+## Job 274 review 0: the learned store on device rows, catalog snapshots
+
+Follow-up PR: device rows now carry the store `suggest_entries` gives them, offline too, and the
+parity table compares it. `catalog_delta` checks versions and snapshots outgoing ones. Details:
+[docs/done/274.md](docs/done/274.md), section "Review 0 fixes".

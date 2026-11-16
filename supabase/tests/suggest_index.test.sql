@@ -2,7 +2,7 @@
 -- learned brands, unserved hardware categories, older names), in the shape the device parses,
 -- and nothing of another household.
 begin;
-select plan(11);
+select plan(17);
 
 create function pg_temp.login(uid uuid) returns void language plpgsql as $$
 begin
@@ -39,6 +39,24 @@ insert into public.household_brands (household_id, brand_key, brand) values
   ((select id from ha), public.brand_key('Milch'), 'Milch'),
   ((select id from hb), public.brand_key('Geheimmarke'), 'Geheimmarke');
 
+-- Stores: dm (seed key dm), Krume (none). Memory as the items triggers would write it: Milch at
+-- Krume, then at dm; Brot cleared. Bert's household has its own.
+insert into public.stores (household_id, name, seed_key, sort_order) values
+  ((select id from ha), 'dm', 'dm', 10), ((select id from ha), 'Krume', null, 20),
+  ((select id from hb), 'Geheimladen', 'edeka', 10);
+insert into public.item_store_memory (household_id, item_key, store_id, times, updated_at) values
+  ((select id from ha), public.item_key('Milch'), (select id from public.stores where name = 'Krume'), 3, now() - interval '2 days'),
+  ((select id from ha), public.item_key('Milch'), (select id from public.stores where name = 'dm'), 1, now() - interval '1 day'),
+  ((select id from hb), public.item_key('Geheimtee'), (select id from public.stores where name = 'Geheimladen'), 1, now());
+insert into public.item_store_cleared (household_id, item_key) values
+  ((select id from ha), public.item_key('Brot')), ((select id from hb), public.item_key('Geheimbrot'));
+-- Past the triggers, so the history's times stay.
+set local session_replication_role = replica;
+update public.items set canonical_key = public.canonical_key(name),
+  category_id = (select c.id from public.categories c where c.household_id = items.household_id and c.seed_key = 'chilled')
+where household_id = (select id from ha) and name = 'Milch';
+set local session_replication_role = origin;
+
 select pg_temp.login('00000000-0000-0000-0000-000000274b01');
 create temp table ia as select public.suggest_index((select id from ha)) as x;
 reset role;
@@ -59,7 +77,27 @@ select is(x -> 'unserved', '["building", "electrical", "fasteners", "garden", "p
   'unserved: a grocery household has no hardware category') from ia;
 select is(x -> 'known', jsonb_build_array(public.normalize_item_name('Kerzen')),
   'known: the names older than the history') from ia;
-select is((select array_agg(k order by k) from jsonb_object_keys(x) k), array['brands', 'history', 'known', 'unserved'],
+select is(x -> 'memory', jsonb_build_array(
+    jsonb_build_array(public.item_key('Milch'), public.canonical_key('Milch'), (select id from public.stores where name = 'dm')),
+    jsonb_build_array(public.item_key('Milch'), public.canonical_key('Milch'), (select id from public.stores where name = 'Krume'))),
+  'memory: item key, canonical key and store, newest first, as suggest_store reads it') from ia;
+select is(x -> 'cleared', jsonb_build_array(public.item_key('Brot')), 'cleared: the item keys set to no store') from ia;
+select is(x -> 'stores', jsonb_build_array(jsonb_build_array('dm', (select id from public.stores where name = 'dm'))),
+  'stores: the ones with a seed key') from ia;
+select is(
+  (select jsonb_agg(jsonb_build_array(k.id, public.category_usual_store(k.household_id, k.id), public.category_store(k.household_id, k.id))
+     order by k.id::text collate "C")
+   from public.categories k
+   where k.household_id = (select id from ha)
+     and coalesce(public.category_usual_store(k.household_id, k.id), public.category_store(k.household_id, k.id)) is not null),
+  x -> 'categories',
+  'categories: category_usual_store and category_store of each category that has either') from ia;
+select is(x #> '{categories}' @> jsonb_build_array(jsonb_build_array(
+    (select c.id from public.categories c where c.household_id = (select id from ha) and c.seed_key = 'chilled'),
+    (select id from public.stores where name = 'Krume'), null)), true,
+  'the usual store has the most memory times (Krume 3, dm 1)') from ia;
+select is((select array_agg(k order by k) from jsonb_object_keys(x) k),
+  array['brands', 'categories', 'cleared', 'history', 'known', 'memory', 'stores', 'unserved'],
   'and nothing else') from ia;
 
 select pg_temp.login('00000000-0000-0000-0000-000000274b02');
@@ -72,6 +110,10 @@ select is(
 select is(x -> 'brands', jsonb_build_array(jsonb_build_array('Geheimmarke', public.brand_key('Geheimmarke'))),
   'and its own brands') from ib;
 select is(x -> 'known', '[]'::jsonb, 'and its own older names') from ib;
+select is(
+  jsonb_build_array(x #>> '{memory,0,0}', x -> 'cleared', x #>> '{stores,0,0}', jsonb_array_length(x -> 'memory')),
+  jsonb_build_array(public.item_key('Geheimtee'), jsonb_build_array(public.item_key('Geheimbrot')), 'edeka', 1),
+  'and its own store memory, cleared keys and stores') from ib;
 reset role;
 
 set local role anon;

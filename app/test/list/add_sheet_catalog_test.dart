@@ -241,6 +241,55 @@ void main() {
     ]);
   });
 
+  group("a history row shows its learned store before the server's answer", () {
+    // The fixture household bought Quarkbällchen at its Bäckerei Krume.
+    void stores(FakeRepository repo) => repo.stores = [
+      for (final (i, name) in [
+        'dm',
+        'Lidl',
+        'Edeka',
+        'Bäckerei Krume',
+        'Wochenmarkt',
+      ].indexed)
+        Store(id: name, name: name, sortOrder: i * 10),
+    ];
+
+    Suggestion quarkballs(WidgetTester tester) => ranked(
+      tester,
+      'Quarkbä',
+    ).singleWhere((r) => r.source == SuggestionSource.history);
+
+    testWidgets('with the server held back', (tester) async {
+      await pumpList(tester, seed: stores);
+      final gate = repo.suggestGate = Completer<void>();
+      await open(tester);
+      await tester.enterText(field(), 'Quarkbä');
+      await tester.pump();
+      final row = quarkballs(tester);
+      expect(row.entry.name, 'Quarkbällchen');
+      expect(label(tester, row), endsWith(', Bäckerei Krume'));
+      final before = label(tester, row);
+      repo.suggestions['Quarkbä'] = [
+        for (final r in ranked(tester, 'Quarkbä'))
+          Suggestion(r.source, r.entry),
+      ];
+      await tester.pump(const Duration(milliseconds: 200));
+      gate.complete();
+      await tester.pumpAndSettle();
+      expect(repo.suggestCalls, ['Quarkbä']);
+      expect(label(tester, row), before, reason: 'the answer changes nothing');
+    });
+
+    testWidgets('offline', (tester) async {
+      await pumpList(tester, seed: stores);
+      repo.online = false;
+      await open(tester);
+      await typeAndPause(tester, 'Quarkbä');
+      await tester.pump(const Duration(seconds: 1));
+      expect(label(tester, quarkballs(tester)), endsWith(', Bäckerei Krume'));
+    });
+  });
+
   testWidgets("Enter adds the device's first row without waiting for the "
       'server', (tester) async {
     await pumpList(tester);

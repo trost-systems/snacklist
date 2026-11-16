@@ -56,9 +56,87 @@ export const history: readonly HistoryItem[] = [
   ["Paprika", null, "rot", "3", 5.5],
   ["Paprika", null, "gelb", null, 17],
   ["Klopapier", null, "4-lagig", null, 1.5],
+  ["Quarkbällchen", null, null, null, 3.2],
+  // dm's own brands: their store is dm's.
+  ["Duschgel", "Balea", null, null, 35],
+  ["Gesichtscreme", "alverde", null, null, 42],
   // Older than a year: no history row, but a name public.is_known_name knows.
   ["Grillkohle", null, null, null, 380],
   ["Glühwein", "Zimtzauber", null, null, 400],
+];
+
+/** The household's stores, added in this order: add_store gives dm, Lidl and Edeka their seed keys. */
+export const stores = [
+  "dm",
+  "Lidl",
+  "Edeka",
+  "Bäckerei Krume",
+  "Wochenmarkt",
+] as const;
+
+/**
+ * What the household taught about stores, in this order, on every item of [history] by that name:
+ * a store set (items_learn remembers it), "tick" (the item set active and bought again at its store,
+ * which counts once more), or null, „Ohne Laden“ (the memory goes, item_store_cleared records it).
+ */
+export const storeLessons:
+  readonly (readonly [string, (typeof stores)[number] | "tick" | null])[] = [
+    ["Milch", "Edeka"],
+    ["Butter", "Edeka"],
+    ["Käse", "Edeka"],
+    ["Joghurt", "Lidl"],
+    ["Spaghetti", "Lidl"],
+    ["Brot", "Bäckerei Krume"],
+    ["Brötchen", "Bäckerei Krume"],
+    ["Quarkbällchen", "Bäckerei Krume"],
+    ["Äpfel", "Wochenmarkt"],
+    ["Bananen", "Wochenmarkt"],
+    ["Bananen", "tick"],
+    ["Bananen", "tick"],
+    ["Möhren", "Wochenmarkt"],
+    ["Gurke", "Lidl"],
+    ["Gurke", "Wochenmarkt"],
+    ["Shampoo", "dm"],
+    ["Shampoo", null],
+    ["Cola", "Edeka"],
+  ];
+
+/**
+ * Items the list holds that the household index has not seen yet (added or bought since it was
+ * fetched), with the texts typed after them: the device folds them into its history.
+ */
+export const pending: readonly HistoryItem[] = [
+  ["Haferflocken", null, "zart", null, 0.5],
+  ["Lachs", null, "Filet", "2", 0.2],
+  ["Milch", "Weihenstephan", "Bio", null, 0.1],
+  ["Zahnbürste", null, "weich", null, 0.3],
+];
+export const pendingTexts: readonly string[] = [
+  "Ha",
+  "Haf",
+  "Haferfl",
+  "La",
+  "Lac",
+  "Lachs",
+  "Mi",
+  "Mil",
+  "Milch",
+  "Milch Bio",
+  "Za",
+  "Zahnb",
+  "Zahnbürste",
+  "2 Lachs",
+  "Weihenstephan Milch",
+];
+
+/** A term added to the catalog after the app was built, and the texts typed for it. */
+export const deltaTerm = ["quarkkeulchen", "bakery"] as const;
+export const deltaTexts: readonly string[] = [
+  "Qu",
+  "Quarkk",
+  "Quarkkeul",
+  "Quarkkeulchen",
+  "2 Quarkkeulchen",
 ];
 
 /** Spaces around a line, which suggest_parity_lines.txt would not keep. */
