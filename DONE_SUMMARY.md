@@ -1447,3 +1447,7 @@ PR https://github.com/trost-systems/snacklist/pull/490. Review 0 of job 222 (the
   - The keyboard over the text field on phones: there is no device here. Check it on TestFlight with
     the internal flag.
   - Checking the stored bytes beyond the PNG signature: only the dashboard opens the files.
+
+## Job 272: add-sheet rows stay put (IN1) and a new grocery's usual store (ST1), flag input-stable-rows
+
+#506, merged as `7e9314f0`; flag `input-stable-rows` off. Details: [docs/done/272.md](docs/done/272.md).
