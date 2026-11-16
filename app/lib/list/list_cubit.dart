@@ -326,6 +326,13 @@ class ListCubit(
   Timer? _save;
   Timer? _usualsReload;
 
+  /// After an acknowledged delete: the server's history no longer holds
+  /// the item (deletes are hard), so the household index is fetched again.
+  Timer? _indexReload;
+
+  /// Bumped per household index fetch: only the latest one's answer counts.
+  var _indexRound = 0;
+
   /// The send loop in flight: a second flush joins it.
   Future<void>? _flushRun;
 
@@ -1676,8 +1683,10 @@ class ListCubit(
   /// Like [_refreshUsuals]: a failure or a malformed answer keeps the
   /// index there is.
   Future<void> _refreshHouseholdIndex() async {
+    final round = ++_indexRound;
     try {
-      if (await _repo.fetchSuggestIndex() case final index?) {
+      if (await _repo.fetchSuggestIndex() case final index?
+          when round == _indexRound) {
         emit(state.copyWith(householdIndex: index));
       }
     } on Object {
@@ -1846,6 +1855,13 @@ class ListCubit(
       if (renamed != null && onList != null && !_hints.isClosed) {
         _hints.add(DedupeHint(renamed, onList));
       }
+    }
+    if (op is DeleteItem && _householdIndex() && !_closing) {
+      _indexReload?.cancel();
+      _indexReload = Timer(
+        const Duration(seconds: 2),
+        () => unawaited(_refreshHouseholdIndex()),
+      );
     }
     if (unsure) {
       unawaited(resync());
@@ -2072,6 +2088,7 @@ class ListCubit(
     _catalogReload?.cancel();
     _save?.cancel();
     _usualsReload?.cancel();
+    _indexReload?.cancel();
     await _network?.cancel();
     await _unwatch?.call();
     await _rejections.close();

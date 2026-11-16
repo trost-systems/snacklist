@@ -73,6 +73,10 @@ class FakeRepository() implements ListRepository {
   HouseholdIndex? householdIndex = HouseholdIndex.empty;
   var householdIndexCalls = 0;
 
+  /// When set, fetchSuggestIndex answers what it held when asked once this
+  /// completes.
+  Completer<void>? indexGate;
+
   /// When set, fetchUsuals waits for it, after the online check.
   Completer<void>? usualsGate;
   final rows = <String, Item>{};
@@ -372,7 +376,9 @@ class FakeRepository() implements ListRepository {
   Future<HouseholdIndex?> fetchSuggestIndex() async {
     householdIndexCalls++;
     _ensureOnline();
-    return householdIndex;
+    final answer = householdIndex;
+    await indexGate?.future;
+    return answer;
   }
 
   @override

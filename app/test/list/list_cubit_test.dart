@@ -1917,6 +1917,60 @@ void main() {
       expect(cubit.state.householdIndex.unserved, ['paint']);
     });
 
+    // Deletes are hard: the server's history drops the item at once, and
+    // the device stops offering it without waiting for a resync.
+    for (final flag in [true, false]) {
+      test(
+        'deletes the server acknowledged refresh it '
+        '${flag ? 'once, 2 s after the last' : 'never with the flag off'}',
+        () {
+          fakeAsync((async) {
+            final list = ListCubit(
+              repo,
+              MemoryListCache(),
+              userId: 'peter',
+              grace: Duration.zero,
+              householdIndex: () => flag,
+            )..start();
+            async.elapse(Duration.zero);
+            final ids = [
+              for (final name in ['Brot', 'Eier'])
+                (list.addEntry(parseEntry(name)) as Added).item.id,
+            ];
+            async.elapse(const Duration(seconds: 5));
+            final before = repo.householdIndexCalls;
+            list.delete(ids[0]);
+            async.elapse(const Duration(seconds: 1));
+            list.delete(ids[1]);
+            async.elapse(const Duration(milliseconds: 1900));
+            expect(repo.householdIndexCalls, before, reason: 'debounced');
+            async.elapse(const Duration(seconds: 5));
+            expect(repo.householdIndexCalls, before + (flag ? 1 : 0));
+            unawaited(list.close());
+            async.flushMicrotasks();
+          });
+        },
+      );
+    }
+
+    test('an older answer never replaces a newer one', () async {
+      repo.householdIndex = index;
+      await startWith(flag: true);
+      final slow = repo.indexGate = Completer<void>();
+      repo.householdIndex = const HouseholdIndex(known: ['old']);
+      unawaited(cubit.resync());
+      await settle();
+      repo
+        ..indexGate = null
+        ..householdIndex = const HouseholdIndex(known: ['new']);
+      await cubit.resync();
+      await settle();
+      expect(cubit.state.householdIndex.known, ['new']);
+      slow.complete();
+      await settle();
+      expect(cubit.state.householdIndex.known, ['new']);
+    });
+
     test('it is saved with the list and there offline', () async {
       repo.householdIndex = index;
       await startWith(flag: true);
