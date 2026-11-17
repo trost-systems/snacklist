@@ -2,7 +2,7 @@
 -- and "Beere" both give the key "beer", "sage" and "Säge" give "sag", "rolls" and "Rolle" give
 -- "roll", "Schäufele" and "Schaufel" give "schaufel"; the typed spelling decides between them.
 begin;
-select plan(30);
+select plan(40);
 
 insert into auth.users (id, email) values ('00000000-0000-0000-0000-0000000282a1', 'hanna282@example.com');
 select set_config('role', 'authenticated', true);
@@ -51,6 +51,38 @@ select is((public.classify_item_detail((select id from h), 'beer')).canonical_ke
 select isnt((public.classify_item_detail((select id from h), 'sage')).canonical_key,
   (public.classify_item_detail((select id from h), 'Säge')).canonical_key, 'sage does not share Säge''s key');
 select is((public.classify_item_detail((select id from h), 'sage')).via, 'synonym', 'sage is found as a synonym');
+select isnt((public.classify_item_detail((select id from h), 'Schäufele')).canonical_key,
+  (public.classify_item_detail((select id from h), 'Schaufel')).canonical_key, 'Schäufele does not share Schaufel''s key');
+select is((public.classify_item_detail((select id from h), 'Schäuferle')).canonical_key,
+  (public.classify_item_detail((select id from h), 'Schäufele')).canonical_key, 'Schäuferle is Schäufele');
+select is(pg_temp.c('Schäuferla'), 'meat', 'and so is Schäuferla');
+select is(pg_temp.c('spring rolls'), 'frozen', 'spring rolls are Frühlingsrollen, not bread rolls');
+select is(pg_temp.c('cinnamon rolls'), 'bakery', 'cinnamon rolls are bread rolls');
+
+-- Review 0: one canonical reading. canonical_key(name), which renames, catalog backfills and the
+-- grocery log write, equals the classifier's for every dictionary term, synonym and homograph.
+select is(
+  (select count(*)::int from (
+     select n from (
+       select term as n from public.classifier_terms
+       union select variant from public.classifier_synonyms
+       union select unnest(array['beer', 'beers', 'Beeren', 'rolls', 'Rollen', 'sage', 'Säge', 'Saege',
+                                 'Schäufele', 'Schaufel', 'Schaufeln', 'Waldbeeren', 'craft beer'])
+     ) names
+     where public.canonical_key(n) is distinct from (public.classify_item_detail((select id from h), n)).canonical_key
+   ) x),
+  0, 'canonical_key(name) is the classifier''s canonical key'
+);
+insert into public.items (household_id, name) select id, 'Bier' from h;
+update public.items set name = 'beer' where household_id = (select id from h) and name = 'Bier';
+select is((select canonical_key from public.items where household_id = (select id from h) and name = 'beer'),
+  public.canonical_key('Bier'), 'Bier renamed to beer keeps Bier''s key');
+select isnt((select canonical_key from public.items where household_id = (select id from h) and name = 'beer'),
+  public.canonical_key('Beeren'), 'not Beeren''s');
+insert into public.items (household_id, name) select id, 'Schaufel' from h;
+select isnt((select canonical_key from public.items where household_id = (select id from h) and name = 'Schaufel'),
+  public.canonical_key('Schäufele'), 'a Schaufel on the list is not the Schäufele about to be added');
+select is(public.canonical_key('sage'), 'salbei', 'sage keeps Salbei''s key');
 
 -- The lexicon keeps one row per form, the dictionary term's, so readers without the typed text
 -- (stored memories, the app's bundled catalog) read the German word as before.

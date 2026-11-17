@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "revision": 3,
+  "revision": 4,
   "entries": {
     "=ajax": "🧴",
     "=axe": "🧴",
@@ -767,6 +767,8 @@
     "eau de parfum": "",
     "eau de toilette": "",
     "edamer": "🧀",
+    "egg roll": "",
+    "egg rolls": "",
     "egg salad": "",
     "eggplant": "🍆",
     "eggplants": "🍆",

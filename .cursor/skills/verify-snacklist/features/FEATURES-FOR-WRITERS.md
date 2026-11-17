@@ -343,7 +343,7 @@ Each step ticks itself off when it happens; „Einladen“ (EN: "Invite") and �
 
 ## Automatic category
 
-**What it does.** When an item is added, Snacklist sorts it into a category on its own, such as Kühlregal for Hafermilch, using a built-in German word list of about 1,350 terms plus common spelling variants, regional words, some English words and small typos. While you type, the add sheet already shows the category it will use. It also knows about 270 DIY words (Schrauben, Dübel, Glühbirne, Wandfarbe, Blumenerde …): with a Baumarkt they go to its categories and to that store, without one to „Haushalt“. Anything unknown goes to „Sonstiges“. Words that look alike once umlauts and endings are folded keep their own aisle: "beer" goes to „Getränke“ while „Beeren“ stay in „Obst & Gemüse“, "sage" to „Obst & Gemüse“ while a „Säge“ is a tool, and „Schäufele“ to „Fleisch/Wurst/Fisch“ while a „Schaufel“ is for the garden. If you move an item to another category, or pick another one before adding, the household remembers it and the same item lands there next time, also under another spelling of the same word (Karotten, Möhren), and also when you add it again right away on a slow connection. This works the same for items added in the app, by voice, through the AI-assistant connection, Siri and Alexa.
+**What it does.** When an item is added, Snacklist sorts it into a category on its own, such as Kühlregal for Hafermilch, using a built-in German word list of about 1,350 terms plus common spelling variants, regional words, some English words and small typos. While you type, the add sheet already shows the category it will use. It also knows about 270 DIY words (Schrauben, Dübel, Glühbirne, Wandfarbe, Blumenerde …): with a Baumarkt they go to its categories and to that store, without one to „Haushalt“. Anything unknown goes to „Sonstiges“. Words that look alike once umlauts and endings are folded keep their own aisle: "beer" goes to „Getränke“ while „Beeren“ stay in „Obst & Gemüse“, "sage" to „Obst & Gemüse“ while a „Säge“ is a tool, and „Schäufele“ to „Fleisch/Wurst/Fisch“ while a „Schaufel“ is for the garden; with a „Schaufel“ on the list, adding „Schäufele“ is not offered as the same item. If you move an item to another category, or pick another one before adding, the household remembers it and the same item lands there next time, also under another spelling of the same word (Karotten, Möhren), and also when you add it again right away on a slow connection. This works the same for items added in the app, by voice, through the AI-assistant connection, Siri and Alexa.
 
 **How to get there.**
 1. Type an item in the add bar on the „Liste“ tab and add it; it appears under its category.
@@ -358,7 +358,7 @@ Each step ticks itself off when it happens; „Einladen“ (EN: "Invite") and �
 
 **Offline.** An item added without a connection shows under „Wird einsortiert …“ (EN: "Sorting…") until the connection is back, then moves under its category. Online, items arrive already sorted.
 
-**Last verified.** 17 November 2026, job 282's branch on top of main 7f4f7ec0, in the web app (German): beer, sage, rolls, Schäufele and their German look-alikes. The rest 16 November 2026, code version c2183ca6.
+**Last verified.** 17 November 2026, job 282 (main fee19fdb and its review-0 follow-up), in the web app (German): beer, sage, rolls, Schäufele and their German look-alikes, and the duplicate hint between them. The rest 16 November 2026, code version c2183ca6.
 
 ## Categories
 
