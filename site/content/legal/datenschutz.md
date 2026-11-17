@@ -112,7 +112,7 @@ Speicherdauer: Die Angabe bei uns löschen wir, wenn die Freischaltung endet ode
 
 ## 6. Spracheingabe
 
-Wenn du in der App für iPhone oder Android einen Eintrag diktierst, wandelt die Spracherkennung deines Betriebssystems die Sprache in Text um. Das geschieht nur auf deinem Gerät: Kann das Gerät Deutsch nicht ohne Internet erkennen, bietet Snacklist die Spracheingabe nicht an. Im Browser gibt es keine Spracheingabe. Den erkannten Text schickt die App an unseren Server, der daraus Einträge macht; Audio erhalten wir nicht.
+Wenn du in der App für iPhone oder Android einen Eintrag diktierst, wandelt die Spracherkennung deines Betriebssystems die Sprache in Text um, und zwar in der Sprache, in der du die App nutzt (Deutsch oder Englisch). Das geschieht nur auf deinem Gerät: Kann das Gerät die Sprache der App nicht ohne Internet erkennen, bietet Snacklist die Spracheingabe nicht an. Unter Android ab Version 13 bittet die App Android in diesem Fall, die Offline-Spracherkennung für diese Sprache herunterzuladen; Android kann dich vorher um Zustimmung fragen. Dafür teilt die App Android nur die Sprache mit (zum Beispiel „de-DE“), nie Audio oder Inhalte deiner Liste. Den Download übernimmt der Anbieter der Spracherkennung deines Geräts nach seinen eigenen Bestimmungen (Abschnitt 12); an uns geht dabei nichts. Im Browser gibt es keine Spracheingabe. Den erkannten Text schickt die App mit der Sprache an unseren Server, der daraus Einträge macht; Audio erhalten wir nicht.
 Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.
 
 ## 7. Siri, Alexa und KI-Assistenten

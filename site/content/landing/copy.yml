@@ -179,10 +179,10 @@ voice.app.title:
   status: draft
   source: "New (job 150): card of the in-app dictation video."
 voice.app.body:
-  de: "In der iPhone- und Android-App tippst du auf das Mikrofon im Eingabefeld und sagst, was fehlt. Snacklist hört direkt auf dem Handy zu, auf Deutsch, und sortiert jedes Teil in seine Kategorie."
-  en: "In the iPhone and Android app, tap the microphone in the input field and say what you need. Snacklist listens right on your phone, in German, and sorts each item into its category."
+  de: "In der iPhone- und Android-App tippst du auf das Mikrofon im Eingabefeld und sagst, was fehlt. Snacklist hört direkt auf dem Handy zu, in der Sprache der App (Deutsch oder Englisch), und sortiert jedes Teil in seine Kategorie. Unter Android ab Version 13 kann die App Android bitten, die Offline-Spracherkennung dafür herunterzuladen."
+  en: "In the iPhone and Android app, tap the microphone in the input field and say what you need. Snacklist listens right on your phone, in the app's language (German or English), and sorts each item into its category. On Android 13 and later, the app can ask Android to download offline speech recognition for it."
   status: draft
-  source: "New (job 150), from FEATURES-FOR-WRITERS \"Dictation\": iPhone and Android app only, German, on the device; the splitting needs a connection. Replaces the Siri card's in-app sentence."
+  source: "New (job 150), from FEATURES-FOR-WRITERS \"Dictation\": iPhone and Android app only, on the device; the splitting needs a connection. Replaces the Siri card's in-app sentence. Job 284 (2026-11-17): app language (German or English) and the Android 13+ offline model download, to match privacy §6 (Legal N-250, after #487)."
 voice.ai.title:
   de: "Mit KI-Assistenten"
   en: "With AI assistants"

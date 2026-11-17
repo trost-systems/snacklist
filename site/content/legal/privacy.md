@@ -93,7 +93,7 @@ Retention: we delete the entry on our side when the unlock ends or we end it, at
 
 ## 6. Voice input
 
-When you dictate an item in the iPhone or Android app, your operating system's speech recognition turns speech into text. This happens only on your device: if the device cannot recognise German without the internet, Snacklist does not offer voice input. There is no voice input in the browser. The app sends the recognised text to our server, which turns it into items; we never receive audio.
+When you dictate an item in the iPhone or Android app, your operating system's speech recognition turns speech into text, in the language you use the app in (German or English). This happens only on your device: if the device cannot recognise the app's language without the internet, Snacklist does not offer voice input. On Android 13 and later, the app then asks Android to download offline speech recognition for that language; Android may ask you to approve this first. For this the app tells Android only the language (for example "en-US"), never audio or anything on your list. The download is done by the provider of your device's speech recognition under its own terms (section 12); nothing about it reaches us. There is no voice input in the browser. The app sends the recognised text with the language to our server, which turns it into items; we never receive audio.
 Legal basis: Art. 6(1)(b) GDPR.
 
 ## 7. Siri, Alexa and AI assistants
