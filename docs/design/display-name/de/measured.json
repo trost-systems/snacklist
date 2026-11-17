@@ -1,0 +1,40 @@
+{
+ "DE1": {
+  "taps": 4,
+  "screens": 4,
+  "visible100": true,
+  "visible200": true,
+  "visible310": true
+ },
+ "DE2": {
+  "taps": 4,
+  "screens": 4,
+  "visible100": true,
+  "visible200": true,
+  "visible310": false
+ },
+ "DE3": {
+  "taps": 3,
+  "screens": 2,
+  "visible100": true,
+  "visible200": true,
+  "visible310": true
+ },
+ "DE4": {
+  "taps": 4,
+  "screens": 4,
+  "visible100": true,
+  "visible200": false,
+  "visible310": false
+ },
+ "DE5": {
+  "taps": 4,
+  "screens": 4,
+  "visible100": true,
+  "visible200": true,
+  "visible310": false
+ },
+ "pushed100": 108,
+ "pushed200": 217,
+ "pushed310": 444
+}

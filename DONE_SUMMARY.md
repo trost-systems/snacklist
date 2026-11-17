@@ -1551,3 +1551,15 @@ only the listed words change, and there is no classifier flag. Details, evidence
 [docs/done/282.md](docs/done/282.md). Ships with the next green main build to TestFlight; no flag
 targeting needed.
 
+
+## Job 293: display name prototypes, rounds DN and DE
+
+Draft PR #531 (never merged), protected preview `dpl_2wt4ZzVtvWc1u3vYiN6U6mYdmw46`, `/display-name/`.
+The DN pick is DN3 (confirm after sign-in), runner-up DN4. The DE pick is DE1 (Account › Your name),
+runner-up DE2. Details: [docs/done/293.md](docs/done/293.md). The share link is minted by the lead.
+
+## Job 293 review 0: overview fits a phone, DN-Q4 corrected
+
+The overview no longer scrolls sideways at 390 px, and verify checks that. DN-Q4 now says the truth: today's trigger
+overwrites a confirmed provider name, so every name write goes through `updateUser` metadata. Added a 310 % pass (clean).
+New preview `dpl_2wt4ZzVtvWc1u3vYiN6U6mYdmw46`. Details: [docs/done/293.md](docs/done/293.md), "Review 0 fixes".

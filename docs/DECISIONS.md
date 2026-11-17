@@ -15145,3 +15145,46 @@ Catalog drafting (job 279, PR #510) found four words no catalog row could fix: "
    over the last one (grapefruit juice, cocoa butter). Fixing those moves many names, so they go to
    their own job with a flag decision (NEEDS_LEAD „Job 282“). Cinnamon rolls and fig rolls, from the
    same list, are fixed here.
+
+## Job 293: display name prototype rounds DN and DE (2026-11-17)
+
+Prototype only: no app, server or flag change. Draft PR, never merged. Calls made without asking, per the
+brief:
+
+1. **The premise in the brief was corrected from the code.** E-mail sign-ups do not get an empty name.
+   `handle_new_user` stores the e-mail's local part (“lea.brandt87”), the member list shows it, and only
+   the join page hides it (`preview_invite_public`). Invitees skip the guided start, so a step inside it never
+   reaches them. Every option covers the join path too.
+2. **Measured, not estimated.** `verify.mjs` walks each option with real clicks for five people,
+   creating and joining, in English and German at 100 % and 200 %. It counts taps (a field without
+   autofocus costs one) and screens against today, and checks every screen for spills, overlaps and
+   targets under 44 px. The planted `white-space: nowrap` spill was caught.
+3. **Picks.** DN3 (confirm after sign-in), runner-up DN4 (asked at the first invite or join). DE1 (Account ›
+   Your name), runner-up DE2 (own member tile). The reasons and DN-Q1..Q8 and DE-Q1..Q7 are in
+   `docs/design/display-name/{dn,de}/RECOMMENDATION.md`.
+4. **Preview.** It was deployed on `family-groceries-design` as a preview on top of job 278's tree. All 79
+   earlier files match `dpl_2GtB7AMTM27kSd5vjFfphnuhYsxb` byte for byte, and the new round is under
+   `/display-name/`. #414's root overview is not linked, because that would need a commit on another
+   job's branch; the round has its own overview. No Vercel connector here, so the lead mints the share
+   link (NEEDS_LEAD).
+
+## Job 293 review 0: the trigger does not protect a confirmed name; the overview fits a phone (2026-11-17)
+
+Review 0 (VERDICT: FIX) had two must-fixes, both fixed:
+
+1. **A confirmed Google or Apple name is not protected today.** `handle_user_metadata_update` replaces the
+   profile name whenever it equals the name derived from the old metadata. That covers the e-mail prefix
+   and also the old provider name, so DN3's “Yes, that's me” written straight to `profiles` would be
+   overwritten. In a scratch Postgres with the two real functions, a direct write was overwritten, and a
+   `display_name` metadata write survived a later Google name and still took a later change. DN-Q4's
+   default is now: every name write (DN3, DE1) goes through `updateUser(data: {display_name})`, which is
+   DE-Q8 too. The page's facts no longer say a chosen name is safe.
+2. **The overview scrolled sideways at 390 px.** The card grid's 320 px minimum made three tracks. It is now
+   `minmax(min(320px, 100%), 1fr)`, with `min-width: 0` on the page's sections. `verify.mjs` checks the overview
+   and both rounds in a 390 px mobile context (5 settings each). The old grid fails it: layout 1001 px.
+
+Nice-to-haves done too. A 310 % text size (iOS's largest) is in the pages and in verify. The prototype's rows,
+cards, footer and join page now break and wrap the way Flutter does, so every option is clean at 310 %. DE2 and
+DE5 lose their entry below the fold there, and DE3 pushes More down by 444 px. DN3's screen is now a counted
+step (“Step 7 of 8”). DN-Q2 names Flutter's counter, and the DE text names the report form prefill (job 281)
+and the mid-word break.

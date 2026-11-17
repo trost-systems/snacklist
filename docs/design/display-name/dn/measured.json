@@ -1,0 +1,540 @@
+{
+ "create": {
+  "email": {
+   "today": {
+    "taps": 11,
+    "screens": 8,
+    "typed": false,
+    "member": "lea.brandt87",
+    "join": null
+   },
+   "DN1": {
+    "taps": 12,
+    "screens": 9,
+    "typed": true,
+    "member": "Lea",
+    "join": "Lea"
+   },
+   "DN2": {
+    "taps": 12,
+    "screens": 8,
+    "typed": true,
+    "member": "Lea",
+    "join": "Lea"
+   },
+   "DN3": {
+    "taps": 12,
+    "screens": 9,
+    "typed": true,
+    "member": "Lea",
+    "join": "Lea"
+   },
+   "DN4": {
+    "taps": 12,
+    "screens": 9,
+    "typed": true,
+    "member": "Lea",
+    "join": "Lea"
+   },
+   "DN5": {
+    "taps": 12,
+    "screens": 9,
+    "typed": true,
+    "member": "Lea",
+    "join": "Lea"
+   }
+  },
+  "google": {
+   "today": {
+    "taps": 11,
+    "screens": 8,
+    "typed": false,
+    "member": "Lea Brandt",
+    "join": "Lea"
+   },
+   "DN1": {
+    "taps": 12,
+    "screens": 9,
+    "typed": true,
+    "member": "Lea",
+    "join": "Lea"
+   },
+   "DN2": {
+    "taps": 12,
+    "screens": 8,
+    "typed": true,
+    "member": "Lea",
+    "join": "Lea"
+   },
+   "DN3": {
+    "taps": 12,
+    "screens": 9,
+    "typed": false,
+    "member": "Lea Brandt",
+    "join": "Lea"
+   },
+   "DN4": {
+    "taps": 11,
+    "screens": 8,
+    "typed": false,
+    "member": "Lea Brandt",
+    "join": "Lea"
+   },
+   "DN5": {
+    "taps": 12,
+    "screens": 9,
+    "typed": true,
+    "member": "Lea",
+    "join": "Lea"
+   }
+  },
+  "appleHidden": {
+   "today": {
+    "taps": 11,
+    "screens": 8,
+    "typed": false,
+    "member": "x7k2pq9mzd",
+    "join": null
+   },
+   "DN1": {
+    "taps": 12,
+    "screens": 9,
+    "typed": true,
+    "member": "Lea",
+    "join": "Lea"
+   },
+   "DN2": {
+    "taps": 12,
+    "screens": 8,
+    "typed": true,
+    "member": "Lea",
+    "join": "Lea"
+   },
+   "DN3": {
+    "taps": 12,
+    "screens": 9,
+    "typed": true,
+    "member": "Lea",
+    "join": "Lea"
+   },
+   "DN4": {
+    "taps": 12,
+    "screens": 9,
+    "typed": true,
+    "member": "Lea",
+    "join": "Lea"
+   },
+   "DN5": {
+    "taps": 12,
+    "screens": 9,
+    "typed": true,
+    "member": "Lea",
+    "join": "Lea"
+   }
+  }
+ },
+ "join": {
+  "email": {
+   "today": {
+    "taps": 4,
+    "screens": 5,
+    "typed": false,
+    "member": "lea.brandt87",
+    "join": null
+   },
+   "DN1": {
+    "taps": 5,
+    "screens": 6,
+    "typed": true,
+    "member": "Lea",
+    "join": "Lea"
+   },
+   "DN2": {
+    "taps": 5,
+    "screens": 5,
+    "typed": true,
+    "member": "Lea",
+    "join": "Lea"
+   },
+   "DN3": {
+    "taps": 5,
+    "screens": 6,
+    "typed": true,
+    "member": "Lea",
+    "join": "Lea"
+   },
+   "DN4": {
+    "taps": 5,
+    "screens": 6,
+    "typed": true,
+    "member": "Lea",
+    "join": "Lea"
+   },
+   "DN5": {
+    "taps": 5,
+    "screens": 6,
+    "typed": true,
+    "member": "Lea",
+    "join": "Lea"
+   }
+  },
+  "google": {
+   "today": {
+    "taps": 4,
+    "screens": 5,
+    "typed": false,
+    "member": "Lea Brandt",
+    "join": "Lea"
+   },
+   "DN1": {
+    "taps": 5,
+    "screens": 6,
+    "typed": false,
+    "member": "Lea Brandt",
+    "join": "Lea"
+   },
+   "DN2": {
+    "taps": 4,
+    "screens": 5,
+    "typed": false,
+    "member": "Lea Brandt",
+    "join": "Lea"
+   },
+   "DN3": {
+    "taps": 5,
+    "screens": 6,
+    "typed": false,
+    "member": "Lea Brandt",
+    "join": "Lea"
+   },
+   "DN4": {
+    "taps": 4,
+    "screens": 5,
+    "typed": false,
+    "member": "Lea Brandt",
+    "join": "Lea"
+   },
+   "DN5": {
+    "taps": 5,
+    "screens": 6,
+    "typed": false,
+    "member": "Lea Brandt",
+    "join": "Lea"
+   }
+  },
+  "appleHidden": {
+   "today": {
+    "taps": 4,
+    "screens": 5,
+    "typed": false,
+    "member": "x7k2pq9mzd",
+    "join": null
+   },
+   "DN1": {
+    "taps": 5,
+    "screens": 6,
+    "typed": true,
+    "member": "Lea",
+    "join": "Lea"
+   },
+   "DN2": {
+    "taps": 5,
+    "screens": 5,
+    "typed": true,
+    "member": "Lea",
+    "join": "Lea"
+   },
+   "DN3": {
+    "taps": 5,
+    "screens": 6,
+    "typed": true,
+    "member": "Lea",
+    "join": "Lea"
+   },
+   "DN4": {
+    "taps": 5,
+    "screens": 6,
+    "typed": true,
+    "member": "Lea",
+    "join": "Lea"
+   },
+   "DN5": {
+    "taps": 5,
+    "screens": 6,
+    "typed": true,
+    "member": "Lea",
+    "join": "Lea"
+   }
+  }
+ },
+ "skip": {
+  "create": {
+   "email": {
+    "today": {
+     "taps": 11,
+     "screens": 8,
+     "typed": false,
+     "member": "lea.brandt87",
+     "join": null
+    },
+    "DN1": {
+     "taps": 12,
+     "screens": 9,
+     "typed": true,
+     "member": "Lea",
+     "join": "Lea"
+    },
+    "DN2": {
+     "taps": 11,
+     "screens": 8,
+     "typed": false,
+     "member": "lea.brandt87",
+     "join": null
+    },
+    "DN3": {
+     "taps": 12,
+     "screens": 9,
+     "typed": true,
+     "member": "Lea",
+     "join": "Lea"
+    },
+    "DN4": {
+     "taps": 12,
+     "screens": 9,
+     "typed": false,
+     "member": "lea.brandt87",
+     "join": null
+    },
+    "DN5": {
+     "taps": 12,
+     "screens": 9,
+     "typed": false,
+     "member": "lea.brandt87",
+     "join": null
+    }
+   },
+   "google": {
+    "today": {
+     "taps": 11,
+     "screens": 8,
+     "typed": false,
+     "member": "Lea Brandt",
+     "join": "Lea"
+    },
+    "DN1": {
+     "taps": 12,
+     "screens": 9,
+     "typed": true,
+     "member": "Lea",
+     "join": "Lea"
+    },
+    "DN2": {
+     "taps": 11,
+     "screens": 8,
+     "typed": false,
+     "member": "Lea Brandt",
+     "join": "Lea"
+    },
+    "DN3": {
+     "taps": 12,
+     "screens": 9,
+     "typed": false,
+     "member": "Lea Brandt",
+     "join": "Lea"
+    },
+    "DN4": {
+     "taps": 11,
+     "screens": 8,
+     "typed": false,
+     "member": "Lea Brandt",
+     "join": "Lea"
+    },
+    "DN5": {
+     "taps": 12,
+     "screens": 9,
+     "typed": false,
+     "member": "Lea Brandt",
+     "join": "Lea"
+    }
+   },
+   "appleHidden": {
+    "today": {
+     "taps": 11,
+     "screens": 8,
+     "typed": false,
+     "member": "x7k2pq9mzd",
+     "join": null
+    },
+    "DN1": {
+     "taps": 12,
+     "screens": 9,
+     "typed": true,
+     "member": "Lea",
+     "join": "Lea"
+    },
+    "DN2": {
+     "taps": 11,
+     "screens": 8,
+     "typed": false,
+     "member": "x7k2pq9mzd",
+     "join": null
+    },
+    "DN3": {
+     "taps": 12,
+     "screens": 9,
+     "typed": true,
+     "member": "Lea",
+     "join": "Lea"
+    },
+    "DN4": {
+     "taps": 12,
+     "screens": 9,
+     "typed": false,
+     "member": "x7k2pq9mzd",
+     "join": null
+    },
+    "DN5": {
+     "taps": 12,
+     "screens": 9,
+     "typed": false,
+     "member": "x7k2pq9mzd",
+     "join": null
+    }
+   }
+  },
+  "join": {
+   "email": {
+    "today": {
+     "taps": 4,
+     "screens": 5,
+     "typed": false,
+     "member": "lea.brandt87",
+     "join": null
+    },
+    "DN1": {
+     "taps": 5,
+     "screens": 6,
+     "typed": true,
+     "member": "Lea",
+     "join": "Lea"
+    },
+    "DN2": {
+     "taps": 4,
+     "screens": 5,
+     "typed": false,
+     "member": "lea.brandt87",
+     "join": null
+    },
+    "DN3": {
+     "taps": 5,
+     "screens": 6,
+     "typed": true,
+     "member": "Lea",
+     "join": "Lea"
+    },
+    "DN4": {
+     "taps": 5,
+     "screens": 6,
+     "typed": false,
+     "member": "lea.brandt87",
+     "join": null
+    },
+    "DN5": {
+     "taps": 5,
+     "screens": 6,
+     "typed": false,
+     "member": "lea.brandt87",
+     "join": null
+    }
+   },
+   "google": {
+    "today": {
+     "taps": 4,
+     "screens": 5,
+     "typed": false,
+     "member": "Lea Brandt",
+     "join": "Lea"
+    },
+    "DN1": {
+     "taps": 5,
+     "screens": 6,
+     "typed": false,
+     "member": "Lea Brandt",
+     "join": "Lea"
+    },
+    "DN2": {
+     "taps": 4,
+     "screens": 5,
+     "typed": false,
+     "member": "Lea Brandt",
+     "join": "Lea"
+    },
+    "DN3": {
+     "taps": 5,
+     "screens": 6,
+     "typed": false,
+     "member": "Lea Brandt",
+     "join": "Lea"
+    },
+    "DN4": {
+     "taps": 4,
+     "screens": 5,
+     "typed": false,
+     "member": "Lea Brandt",
+     "join": "Lea"
+    },
+    "DN5": {
+     "taps": 5,
+     "screens": 6,
+     "typed": false,
+     "member": "Lea Brandt",
+     "join": "Lea"
+    }
+   },
+   "appleHidden": {
+    "today": {
+     "taps": 4,
+     "screens": 5,
+     "typed": false,
+     "member": "x7k2pq9mzd",
+     "join": null
+    },
+    "DN1": {
+     "taps": 5,
+     "screens": 6,
+     "typed": true,
+     "member": "Lea",
+     "join": "Lea"
+    },
+    "DN2": {
+     "taps": 4,
+     "screens": 5,
+     "typed": false,
+     "member": "x7k2pq9mzd",
+     "join": null
+    },
+    "DN3": {
+     "taps": 5,
+     "screens": 6,
+     "typed": true,
+     "member": "Lea",
+     "join": "Lea"
+    },
+    "DN4": {
+     "taps": 5,
+     "screens": 6,
+     "typed": false,
+     "member": "x7k2pq9mzd",
+     "join": null
+    },
+    "DN5": {
+     "taps": 5,
+     "screens": 6,
+     "typed": false,
+     "member": "x7k2pq9mzd",
+     "join": null
+    }
+   }
+  }
+ }
+}
