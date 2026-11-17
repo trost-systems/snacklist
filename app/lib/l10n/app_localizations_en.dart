@@ -1201,7 +1201,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get feedbackScreenshotNote =>
-      'Shows everything that was on screen, including list items you didn\'t paint over.';
+      'Shows everything that was on screen, including items and names from your household. Cover anything we shouldn\'t see first.';
 
   @override
   String get feedbackScreenshotPreview => 'Screenshot preview';
@@ -2287,7 +2287,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inviteJoinPageHint =>
-      'Anyone with the link sees on the join page your first name (from your display name, if you have set one), the household\'s name, the number of members and open items, and whether the household has Snacklist Premium. Only share the link with people you want to invite.';
+      'Anyone with the link or code sees before joining your first name (from your display name, if you have set one), the household\'s name, the number of members and open items, and whether the household has Snacklist Premium. Only share the link or code with people you want to invite.';
 
   @override
   String get inviteGroupTitle => 'Group link';

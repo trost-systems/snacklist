@@ -2039,7 +2039,7 @@ abstract class AppLocalizations {
   /// Feedback form (job 267): under the screenshot switch; the screenshot is not redacted automatically
   ///
   /// In de, this message translates to:
-  /// **'Zeigt alles, was auf dem Bildschirm war, auch Listeneinträge, die du nicht übermalt hast.'**
+  /// **'Zeigt alles, was auf dem Bildschirm war, auch Einträge und Namen aus deinem Haushalt. Verdecke vorher, was wir nicht sehen sollen.'**
   String get feedbackScreenshotNote;
 
   /// Feedback form (job 267): screen-reader label of the screenshot preview
@@ -3779,7 +3779,7 @@ abstract class AppLocalizations {
   /// Job 178 (Legal N-112): plain text on every surface that makes or shares an invite (invite sheet, Einladungen, onboarding invite steps): what the public join page shows. Wording from Legal, 2026-11-10; N-151b wording from Legal, 2026-11-13 (job 216), names exactly what the page shows; change only with Legal
   ///
   /// In de, this message translates to:
-  /// **'Wer den Link hat, sieht auf der Beitrittsseite deinen Vornamen (aus deinem Anzeigenamen, falls du einen eingetragen hast), den Namen des Haushalts, die Zahl der Mitglieder und der offenen Einträge und ob der Haushalt Snacklist Premium hat. Gib den Link nur an Personen weiter, die du einladen willst.'**
+  /// **'Wer den Link oder Code hat, sieht vor dem Beitritt deinen Vornamen (aus deinem Anzeigenamen, falls du einen eingetragen hast), den Namen des Haushalts, die Zahl der Mitglieder und der offenen Einträge und ob der Haushalt Snacklist Premium hat. Gib Link und Code nur an Personen weiter, die du einladen willst.'**
   String get inviteJoinPageHint;
 
   /// Job 169b W2: section of the invite sheet for the reusable group link (owner and admins)

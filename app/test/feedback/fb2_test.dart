@@ -75,7 +75,9 @@ void main() {
         reason: 'the screenshot can show list items',
       );
       expect(
-        find.textContaining('auch Listeneinträge, die du nicht übermalt hast'),
+        find.textContaining(
+          'auch Einträge und Namen aus deinem Haushalt. Verdecke vorher',
+        ),
         findsOneWidget,
       );
       expect(

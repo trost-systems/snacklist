@@ -1559,3 +1559,9 @@ Privacy §6 (DE and EN) now has Legal's N-250 text word for word: dictation in t
 model. The landing card `voice.app.body` says the same in short. Policy and site copy only; the PR
 stays open for PM, then Legal's hash-bound GO. Hashes and head SHA: the job's NEEDS_LEAD entry.
 Details: [docs/done/284.md](docs/done/284.md).
+
+## Job 289: Legal's JH2 and FB4/FB2 texts
+
+Privacy policy §5, §8, §9, §10 (DE, EN) and the in-app strings `inviteJoinPageHint` and
+`feedbackScreenshotNote`, word for word from Legal's handoff. Policy hashes match Legal's expected
+values. No flag changed; FB2 still waits for C1 (job 290). Details: [docs/done/289.md](docs/done/289.md).
