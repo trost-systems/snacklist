@@ -1,0 +1,12 @@
+[19:54:25.026Z] ok   beer: list "Getränke", database "Getränke" (synonym), want "Getränke"
+[19:54:25.730Z] ok   Bier: list "Getränke", database "Getränke" (exact), want "Getränke"
+[19:54:27.097Z] ok   Beeren: list "Obst & Gemüse", database "Obst & Gemüse" (exact), want "Obst & Gemüse"
+[19:54:27.780Z] ok   rolls: list "Brot & Backwaren", database "Brot & Backwaren" (synonym), want "Brot & Backwaren"
+[19:54:30.210Z] ok   Rolle Küchenpapier: list "Haushalt", database "Haushalt" (exact), want "Haushalt"
+[19:54:36.834Z] ok   sage: list "Obst & Gemüse", database "Obst & Gemüse" (synonym), want "Obst & Gemüse"
+[19:54:37.428Z] ok   Salbei: list "Obst & Gemüse", database "Obst & Gemüse" (exact), want "Obst & Gemüse"
+[19:54:39.651Z] ok   Säge: list "Haushalt", database "Haushalt" (exact), want "Haushalt"
+[19:54:40.300Z] ok   Schäufele: list "Fleisch/Wurst/Fisch", database "Fleisch/Wurst/Fisch" (exact), want "Fleisch/Wurst/Fisch"
+[19:54:41.387Z] ok   Schaufel: list "Haushalt", database "Haushalt" (exact), want "Haushalt"
+[19:54:47.410Z] ok   Rohrnudeln: list "Brot & Backwaren", database "Brot & Backwaren" (exact), want "Brot & Backwaren"
+[19:54:49.395Z] PASS classifier-homographs (evidence: /tmp/282-ev2)

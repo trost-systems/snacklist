@@ -524,7 +524,7 @@ Kräuterpflanze	produce	word
 Kuchenschaufel	household	word
 Kohlenschaufel	household	word
 Rohrzucker	pantry	word
-Rohrnudeln	pantry	word
+Rohrnudeln	bakery	word
 Muttermilch	chilled	word
 Nagelhärter	drugstore	word
 Nagelöl	drugstore	word
@@ -597,3 +597,12 @@ Haferschleim	pantry	word
 Wechselrahmen	household	word
 Stahlnägel	fasteners	word
 Drahtstifte	fasteners	word
+# Job 282: words the stemmer folds onto another word (beer/Beere, sage/Säge, rolls/Rolle,
+# Schäufele/Schaufel); the typed spelling tells them apart.
+beer	drinks	variant
+rolls	bakery	variant
+sage	produce	variant
+Schäufele	meat	word
+Beeren	produce	word
+Säge	tools	word
+Schaufel	garden	word

@@ -15105,3 +15105,43 @@ Fixed here, with nice-to-have 2. Still behind `on-device-catalog`.
 3. New sha256: `63f146c5f7aa618e24e8fe4a96398a6a84d255fe9c276a1e738154f73356852a`.
    The stale copies (`research/store-captions/CAPTIONS-252.md`, old `docs/screenshots/215/CAPTIONS.md`)
    were not touched or used.
+
+## Job 282 (FX1): homographs in the classifier, no flag (2026-11-17)
+
+Catalog drafting (job 279, PR #510) found four words no catalog row could fix: "beer" went to produce
+(Beere), "rolls" to household (Rolle), "sage" to tools (Säge), „Schäufele“ to garden (Schaufel).
+
+1. **Root cause.** Not fuzzy or translation matching. `item_key` stems German endings (a final e,
+   a plural s) and folds umlauts, so beer/Beere give "beer", sage/Säge "sag", rolls/Rolle "roll",
+   Schäufele/Schaufel "schaufel". The lexicon keeps one row per folded form and `dictionary_hit`'s
+   whole-key rule picks the dictionary term, so a synonym row `beer → bier` would have filed
+   „Beeren“ under drinks instead (the lexicon prefers synonyms) or lost to the term.
+2. **Fix, general.** A lexicon form that words of different categories share lists each one's
+   spelling in `classifier_lexicon.homographs` (refresh_classifier_lexicon builds it).
+   `classifier_words(key, name)` reads the typed word with umlauts kept (`surface_word`: Saege is
+   Säge) and takes the homograph whose spelling ends it, plus at most an inflection; the longest
+   wins, so „Beeren“ is beere + n, not beer + en (`homograph_pick`). `classify_item_detail` lets that
+   reading beat the dictionary's hit on the same form. No other word changes: the shared form's own
+   row stays the dictionary term's, so readers without the typed text (memories, the app's bundled
+   catalog) are as before. Catalog rows: synonyms beer → bier, rolls → brötchen, sage → salbei;
+   terms schäufele (meat), rohrnudel (bakery; it was pantry through „nudel“).
+3. **No flag.** The brief asks for the classifier flag only if matching changes for the many; there
+   is no classifier flag in `releases/flags.json`, and it doesn't: classifying the 2,766 names of
+   wordlist.tsv, sweep.tsv, dictionary.tsv, synonyms.tsv, PR #510's draft rows and probe compounds
+   before and after, only beer, beers, rolls, sage, Schäufele and Rohrnudel(n) change.
+4. **Left, on purpose.** Household memory and the canonical key still come from the folded key, so
+   in one household a correction of „Schaufel“ also holds for „Schäufele“, and the duplicate hint
+   treats them as one item. Separating them needs a key that keeps umlauts and endings, for every
+   stored memory; two words of one shopping list rarely collide like this. The on-device guess
+   (`on-device-catalog`, `input-stable-rows`, both off) has no homographs in its bundled catalog: it
+   shows Beere's category for "beer" until the server answers. The catalog's `forms` rows have a
+   fixed shape old apps parse, so carrying homographs there is its own change.
+5. **Parity sample.** `suggest_parity.ts` samples dictionary terms evenly, so two new terms move the
+   sample and the pinned device/server exceptions (`suggest_parity_test.dart`,
+   `suggest_parity_stores.dart`). Rewritten from the test's own output; every accepted catalog draft
+   will do the same until the sample is chosen by term rather than by position.
+6. **Job 283's other matcher cases** (catalog/REVIEW-opus.md on #510) have other causes: fuzzy
+   matches that beat a compound (Kloßteig, Pinkel, Macadamiaöl) and phrases whose longest word wins
+   over the last one (grapefruit juice, cocoa butter). Fixing those moves many names, so they go to
+   their own job with a flag decision (NEEDS_LEAD „Job 282“). Cinnamon rolls and fig rolls, from the
+   same list, are fixed here.

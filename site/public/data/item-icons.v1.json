@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "revision": 2,
+  "revision": 3,
   "entries": {
     "=ajax": "🧴",
     "=axe": "🧴",
@@ -2296,6 +2296,8 @@
     "roggenbrot": "🍞",
     "roggenmehl": "🌾",
     "rohrfrei": "🧴",
+    "rohrnudel": "",
+    "rohrnudeln": "",
     "roll on": "🧴",
     "rollschuhe": "🛼",
     "romaine": "🥬",

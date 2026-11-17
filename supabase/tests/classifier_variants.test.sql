@@ -85,8 +85,9 @@ select results_eq(
 -- The lexicon is consistent with the dictionary and the synonyms.
 select is(
   (select count(*)::int from (
-     select public.fold_key(key) from public.classifier_terms group by 1 having count(distinct category) > 1) x),
-  0, 'no two dictionary terms of different categories fold to one form'
+     select public.fold_key(key) as form from public.classifier_terms group by 1 having count(distinct category) > 1) x
+   where not exists (select from public.classifier_lexicon l where l.form = x.form and l.homographs is not null)),
+  0, 'dictionary terms of different categories that fold to one form are its homographs (job 282)'
 );
 select is(
   (select count(*)::int from public.classifier_synonyms s
@@ -96,8 +97,10 @@ select is(
 select is(
   (select count(*)::int from public.classifier_terms t
    join public.classifier_lexicon l on l.form = public.fold_key(t.key)
-   where l.category <> t.category),
-  0, 'every term keeps its category in the lexicon'
+   where l.category <> t.category
+     and not exists (select from jsonb_array_elements(l.homographs) e
+                     where e ->> 'surface' = public.surface_word(t.term) and e ->> 'category' = t.category)),
+  0, 'every term keeps its category in the lexicon, as its row or one of its homographs'
 );
 
 -- AC5 and AC7: every add path stores the text as typed and classifies the same.
