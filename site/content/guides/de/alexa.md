@@ -9,7 +9,7 @@ updated: 2026-11-04
 
 # Snacklist per Alexa: Skill einrichten
 
-Mit dem **Snacklist**-Skill für Amazon Alexa setzt du Sachen per Sprache auf deine Snacklist, ohne die App zu öffnen. Der Skill ist noch im Beta-Test und noch nicht für alle verfügbar: Du brauchst eine Einladung. Danach läuft es so:
+Mit dem **Snacklist**-Skill für Amazon Alexa setzt du Sachen per Sprache auf deine Snacklist, ohne die App zu öffnen. Der Skill ist im Alexa Skill Store für alle verfügbar. Du aktivierst ihn und verknüpfst dein Konto, danach läuft es so:
 
 > **Du:** Alexa, sag Snacklist, füg Milch und Eier hinzu.
 > **Alexa:** Ich habe Milch und Eier auf die Snacklist gesetzt.
@@ -18,32 +18,21 @@ Alexa schickt deinen Satz an Snacklist. Snacklist teilt ihn in einzelne Einträg
 
 ## Was du brauchst
 
-- einen Einladungslink zum Beta-Test des Skills
 - ein Amazon-Konto, die Alexa-App auf deinem Handy und ein Alexa-Gerät, das auf Deutsch (oder Englisch) eingestellt ist
 - die Snacklist-App, in der du angemeldet bist und zu einem Haushalt gehörst
 - etwa fünf Minuten
 
-## Schritt 1: Einladung zum Beta-Test annehmen
-
-Amazon verschickt für den Beta-Test keine E-Mails. Den Einladungslink bekommst du von Peter. Schick ihm dafür die E-Mail-Adresse deines Amazon-Kontos.
-
-1. Öffne den Einladungslink auf deinem Handy.
-2. Melde dich mit dem Amazon-Konto an, mit dem du auch Alexa nutzt.
-3. Nimm die Bedingungen für den Beta-Test an.
-
-Nimm die Einladung bald an: Nach 30 Tagen ohne Zusage nimmt Amazon dich wieder aus dem Test.
-
-## Schritt 2: Skill aktivieren und Konto verknüpfen
+## Schritt 1: Skill aktivieren und Konto verknüpfen
 
 Alexa meldet sich mit deinem Snacklist-Konto an, nicht mit einem Token. Du musst nichts kopieren.
 
-1. Die Alexa-App öffnet die Seite des Skills **Snacklist**. Im Test trägt sein Symbol den Hinweis „dev“.
+1. Öffne die Alexa-App, such im Skill-Store nach **Snacklist** und öffne die Seite des Skills.
 2. Tippe auf **Zur Verwendung aktivieren**. Die Anmeldung von Snacklist öffnet sich gleich danach.
 3. Melde dich an, wenn Snacklist danach fragt, und zwar genauso wie in der App.
 4. Snacklist fragt „Zugriff erlauben?“ und zeigt, was „Amazon Alexa“ darf: Einträge deiner Einkaufsliste lesen, hinzufügen, abhaken und verschieben. Tippe auf **Erlauben**.
 5. Die Alexa-App zeigt an, dass dein Konto verknüpft ist.
 
-## Schritt 3: Ausprobieren
+## Schritt 2: Ausprobieren
 
 1. Sag zu deinem Alexa-Gerät: „Alexa, sag Snacklist, füg Milch und Eier hinzu“.
 2. Alexa antwortet „Ich habe Milch und Eier auf die Snacklist gesetzt.“, und die Einträge stehen in der App.
@@ -103,11 +92,11 @@ Statt „was auf der Liste steht“ geht auch „Alexa, frag Snacklist, was brau
 
 | Was passiert | Woran es liegt | Was hilft |
 | --- | --- | --- |
-| Alexa kennt den Skill „Snacklist“ nicht, oder du findest ihn nicht in der Alexa-App. | Du hast die Einladung zum Beta-Test noch nicht angenommen, oder sie ging an eine andere Adresse als die deines Amazon-Kontos. | Nimm die Einladung an (Schritt 1). Ist sie abgelaufen, frag Peter nach einem neuen Link. |
-| Alexa kennt den Skill nicht, obwohl du die Einladung angenommen hast. | Dein Alexa-Gerät ist auf eine Sprache eingestellt, die der Skill nicht kann. Er kann Deutsch (Deutschland) und Englisch (USA, Großbritannien, Australien, Kanada, Indien). | Stell die Sprache des Geräts auf Deutsch oder Englisch (USA, Großbritannien, Australien, Kanada oder Indien): Alexa-App → **Mehr** → **Einstellungen** → **Geräteeinstellungen** → dein Gerät → Zahnrad oben rechts → unter **Allgemein** auf **Sprache**. |
+| Alexa kennt den Skill „Snacklist“ nicht, oder du findest ihn nicht in der Alexa-App. | Du hast den Skill noch nicht aktiviert, oder dein Alexa-Gerät hängt an einem anderen Amazon-Konto als die Alexa-App. | Such in der Alexa-App im Skill-Store nach „Snacklist“ und aktiviere ihn (Schritt 1), mit dem Amazon-Konto, das dein Gerät nutzt. |
+| Alexa kennt den Skill nicht, obwohl du ihn aktiviert hast. | Dein Alexa-Gerät ist auf eine Sprache eingestellt, die der Skill nicht kann. Er kann Deutsch (Deutschland) und Englisch (USA, Großbritannien, Australien, Kanada, Indien). | Stell die Sprache des Geräts auf Deutsch oder Englisch (USA, Großbritannien, Australien, Kanada oder Indien): Alexa-App → **Mehr** → **Einstellungen** → **Geräteeinstellungen** → dein Gerät → Zahnrad oben rechts → unter **Allgemein** auf **Sprache**. |
 | Alexa sagt „Ich konnte keine Liste finden unter Snacklist“ oder setzt die Sache auf die Einkaufsliste der Alexa-App. | Im Satz fehlte „sag Snacklist“, zum Beispiel bei „Setz Milch auf die Snacklist“. Dann landet er in den Listen der Alexa-App. | Sag „Alexa, sag Snacklist, setz Milch drauf“ oder erst „Alexa, öffne Snacklist“ (siehe [Damit Alexa Snacklist erreicht](#snacklist-erreichen)). |
 | Alexa antwortet „Ich weiß nicht“ oder versteht einen anderen Namen. | Alexa hat „Snacklist“ nicht erkannt. | Sag den Namen deutlich in zwei Silben, „Snack-list“, oder fang mit „Alexa, öffne Snacklist“ an. |
-| „Bitte verknüpfe zuerst dein Snacklist-Konto in der Alexa-App. Ich habe dir dort eine Karte dazu geschickt.“ | Der Skill ist nicht oder nicht mehr mit deinem Snacklist-Konto verknüpft. | Tippe auf der Seite des Skills in der Alexa-App auf **Konto verknüpfen** und mach weiter wie in Schritt 2. |
+| „Bitte verknüpfe zuerst dein Snacklist-Konto in der Alexa-App. Ich habe dir dort eine Karte dazu geschickt.“ | Der Skill ist nicht oder nicht mehr mit deinem Snacklist-Konto verknüpft. | Tippe auf der Seite des Skills in der Alexa-App auf **Konto verknüpfen** und mach weiter wie in Schritt 1. |
 | „Du bist noch in keinem Haushalt …“ | Dein Snacklist-Konto gehört zu keinem Haushalt. | Leg in der App einen Haushalt an oder tritt einem bei. |
 | „Mehr als dreißig auf einmal gehen nicht …“ | Du hast mehr als 30 Sachen in einem Satz gesagt. Die ersten 30 stehen auf der Liste. | Sag den Rest noch einmal. |
 | „Das waren gerade sehr viele Sachen auf einmal …“ | In einer Minute gehen höchstens 30 Sachen auf die Liste. | Warte eine Minute und sag es noch einmal. |

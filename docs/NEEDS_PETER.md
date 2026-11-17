@@ -1035,7 +1035,7 @@ below are done the purchase flow is inert: the app says "not available yet", the
 1. Read `releases/changelog/1.0.0.override.md`. It holds the German and English texts for Play (500 characters max) and the App Store. The full text is also in `docs/done/40-changelog-flags.md`.
 2. Change the wording in a PR if you like. `node scripts/release/changelog.mjs drafts` checks the limits.
 3. To approve it, delete the first line (`status: draft — pending Peter's review`) in that PR. Until then, `record.mjs add` refuses to record 1.0.0 as a public release.
-4. When the Alexa skill is certified, set `"released": true` for `alexa-certification` in `releases/flags.json`. The next release draft then takes the held Alexa items.
+4. ~~When the Alexa skill is certified, set `"released": true` for `alexa-certification` in `releases/flags.json`. The next release draft then takes the held Alexa items.~~ **Done 2026-11-17 (job 294, #532):** the skill went live 2026-11-16 and the hold is released.
 
    **Answered by Peter 2026-10-31:** keep them; testers also get free grants that stay with their
    households (DECISIONS 43.12, 43.13).

@@ -11,12 +11,12 @@
     "en": "Butter Weihenstephan and Quark Ehrmann are already on the list. Should I add butter and quark anyway?"
   },
   "alexa.ask.one": {
-    "where": "Alexa skill (beta): yes/no question, one held item",
+    "where": "Alexa skill: yes/no question, one held item",
     "de": "Butter Weihenstephan steht schon auf der Snacklist. Soll ich Butter trotzdem dazuschreiben?",
     "en": "Butter Weihenstephan is already on Snacklist. Should I add butter anyway?"
   },
   "alexa.ask.many": {
-    "where": "Alexa skill (beta): yes/no question, several held items",
+    "where": "Alexa skill: yes/no question, several held items",
     "de": "Butter Weihenstephan und Quark Ehrmann stehen schon auf der Snacklist. Soll ich Butter und Quark trotzdem dazuschreiben?",
     "en": "Butter Weihenstephan and Quark Ehrmann are already on Snacklist. Should I add butter and quark anyway?"
   }

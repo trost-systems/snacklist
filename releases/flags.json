@@ -51,8 +51,8 @@
   },
   "holds": {
     "alexa-certification": {
-      "released": false,
-      "note": "the Alexa skill is in beta and not certified by Amazon yet",
+      "released": true,
+      "note": "the Alexa skill passed Amazon certification and has been live worldwide since 2026-11-16",
       "match": ["alexa"]
     },
     "premium-launch": {

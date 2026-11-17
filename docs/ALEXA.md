@@ -7,6 +7,9 @@ On an Echo set to English (en-US, en-GB, en-AU, en-CA, en-IN), "Alexa, ask snack
 and eggs" does the same in English (job 69). Certification readiness:
 [ALEXA_CERTIFICATION.md](ALEXA_CERTIFICATION.md).
 
+**Status (2026-11-17):** the Snacklist skill passed Amazon certification and has been live worldwide
+since 2026-11-16. The beta passages below describe the pre-launch setup and stay as history.
+
 | | |
 | --- | --- |
 | Skill name, invocation name | `Snacklist`, `snacklist` in all six locales (S4 rename; `skill_package_test.ts` fails on any Hummlist left in the package except the old host `app.hummlist.com` in the account-linking domains) |
@@ -389,14 +392,14 @@ a sample utterance of the de-DE model; `skill_package_test.ts` keeps the common 
 
 Deployed by job 31b (2026-10-30) to Peter's Amazon Developer account: skill
 `amzn1.ask.skill.fee316d1-e9c1-44a4-a06e-955fbda63a1b` (development stage, de-DE), account linking
-with the Supabase client "Amazon Alexa", development testing on, a beta test created and running
+with the Supabase client "Amazon Alexa", development testing on, a beta test created (pre-launch)
 with no testers. Status and smoke results: [done/31b-alexa-deploy.md](done/31b-alexa-deploy.md).
 The steps below are how it was done and how to redo it.
 
 Job 174 (2026-11-10) added a second skill, "Snacklist", with the id
 `amzn1.ask.skill.ad766331-e979-4a6e-95f1-30198b0a34cb`. It is in the development stage only, with
 the invocation „snacklist“ in all six locales, the same endpoint and the same account linking. Its
-beta test runs with Lea and Max. The hosted `ALEXA_SKILL_ID` is
+beta test ran with Lea and Max until the public launch. The hosted `ALEXA_SKILL_ID` is
 `amzn1.ask.skill.fee316d1-e9c1-44a4-a06e-955fbda63a1b,amzn1.ask.skill.ad766331-e979-4a6e-95f1-30198b0a34cb`,
 so the function takes requests from both skills. The scripts take one id in `ALEXA_SKILL_ID`; pass
 the skill you mean. Since S4, `alexa/skill-package/` holds Snacklist's name, invocation and
@@ -463,7 +466,7 @@ zuerst dein Snacklist-Konto …" with a LinkAccount card, and the function logs
 `alexa: LaunchRequest - de-DE linked=false -> link` ([Request log](#request-log)). A refused one
 logs `alexa: - - - linked=false -> refused <reason>` and answers 400.
 
-## Beta and certification
+## Beta and certification (pre-launch history; the skill is live since 2026-11-16)
 
 Both need Peter's yes first ([NEEDS_PETER.md](NEEDS_PETER.md), Job 31). Neither needs the other:
 beta testing runs without certification.

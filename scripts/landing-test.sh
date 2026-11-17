@@ -151,7 +151,7 @@ expect_refused() {
   before="$(git --git-dir="$tmp/origin.git" rev-parse "refs/heads/$(git symbolic-ref --short HEAD)")"
   if scripts/push-pr.sh >/dev/null 2>"$tmp/err"; then fail "$1: push-pr.sh pushed"; fi
   grep -qF -- "$2" "$tmp/err" || fail "$1: expected '$2' in: $(cat "$tmp/err")"
-  grep -qF -- "en: Add items by voice with Alexa." "$tmp/err" || fail "$1: no format example in: $(cat "$tmp/err")"
+  grep -qF -- "en: The list sorts itself after your shopping trip." "$tmp/err" || fail "$1: no format example in: $(cat "$tmp/err")"
   expect_eq "$1: nothing pushed" "$(git --git-dir="$tmp/origin.git" rev-parse "refs/heads/$(git symbolic-ref --short HEAD)")" "$before"
   [[ ! -e $tmp/pr/edited ]] || fail "$1: the PR description was edited"
 }

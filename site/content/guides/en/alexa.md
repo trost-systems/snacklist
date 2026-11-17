@@ -9,7 +9,7 @@ updated: 2026-11-04
 
 # Snacklist with Alexa: set up the skill
 
-With the **Snacklist** skill for Amazon Alexa you add things to your Snacklist by voice, without opening the app. The skill is still in a beta test and not available to everyone yet: you need an invitation. After that it works like this:
+With the **Snacklist** skill for Amazon Alexa you add things to your Snacklist by voice, without opening the app. The skill is available to everyone in the Alexa Skill Store. You enable it and link your account, then it works like this:
 
 > **You:** Alexa, ask Snacklist to add milk and eggs.
 > **Alexa:** I put milk and eggs on Snacklist.
@@ -18,32 +18,21 @@ Alexa sends your sentence to Snacklist. Snacklist splits it into separate items,
 
 ## What you need
 
-- an invitation link to the skill's beta test
 - an Amazon account, the Alexa app on your phone and an Alexa device set to English (or German)
 - the Snacklist app, signed in, in a household
 - about five minutes
 
-## Step 1: accept the beta invitation
-
-Amazon doesn't send emails for the beta test. You get the invitation link from Peter. Send him the email address of your Amazon account.
-
-1. Open the invitation link on your phone.
-2. Sign in with the Amazon account you use for Alexa.
-3. Accept the terms of the beta test.
-
-Accept it soon: after 30 days without an answer Amazon takes you out of the test.
-
-## Step 2: enable the skill and link your account
+## Step 1: enable the skill and link your account
 
 Alexa signs in with your Snacklist account, not with a token. There's nothing to copy.
 
-1. The Alexa app opens the page of the skill **Snacklist**. During the test its icon carries the note "dev".
+1. Open the Alexa app, search the skill store for **Snacklist** and open the skill's page.
 2. Tap **Enable to use**. The Snacklist sign-in opens right after.
 3. Sign in when Snacklist asks, the same way as in the app.
 4. Snacklist asks "Allow access?" and shows what "Amazon Alexa" may do: read, add, tick off and move items on your shopping list. Tap **Allow**.
 5. The Alexa app shows that your account is linked.
 
-## Step 3: try it
+## Step 2: try it
 
 1. Say to your Alexa device: "Alexa, ask Snacklist to add milk and eggs".
 2. Alexa answers "I put milk and eggs on Snacklist.", and the items are in the app.
@@ -86,10 +75,10 @@ Ask "Alexa, ask Snacklist what's on the list" and Alexa reads at most 10 open it
 
 | What happens | Why | What helps |
 | --- | --- | --- |
-| Alexa doesn't know the skill, although you accepted the invitation. | Your Alexa device is set to a language the skill doesn't support. It supports German (Germany) and English (US, UK, Australia, Canada, India). | Set the device language to one of these: Alexa app → **More** → **Settings** → **Device Settings** → your device → gear icon at the top right → under **General**, tap **Language**. |
+| Alexa doesn't know the skill, although you enabled it. | Your Alexa device is set to a language the skill doesn't support. It supports German (Germany) and English (US, UK, Australia, Canada, India). | Set the device language to one of these: Alexa app → **More** → **Settings** → **Device Settings** → your device → gear icon at the top right → under **General**, tap **Language**. |
 | Alexa can't find a list called Snacklist, or puts the item on the Alexa shopping list. | The sentence didn't contain "ask Snacklist", for example "Add milk to Snacklist". It went to the lists in the Alexa app. | Say "Alexa, ask Snacklist to add milk" or first "Alexa, open Snacklist" (see [How Alexa reaches Snacklist](#reach-snacklist)). |
 | Alexa doesn't know the name, or hears another name. | Alexa didn't recognize "Snacklist". | Say the name clearly as two syllables, "Snack-list", or start with "Alexa, open Snacklist". |
-| "Please link your Snacklist account in the Alexa app first." | The skill isn't, or is no longer, linked to your Snacklist account. | On the skill's page in the Alexa app tap **Link account** and continue as in step 2. |
+| "Please link your Snacklist account in the Alexa app first." | The skill isn't, or is no longer, linked to your Snacklist account. | On the skill's page in the Alexa app tap **Link account** and continue as in step 1. |
 | "You're not in a household yet …" | Your Snacklist account isn't in a household. | Create a household in the app or join one. |
 
 ## Turn Alexa off again

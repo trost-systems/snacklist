@@ -18,9 +18,8 @@ category, then one German and one English sentence.
 ```
 ## Changelog
 new
-de: Mit Alexa fügst du Artikel per Sprache hinzu: „Alexa, sag Snacklist, füg Milch hinzu“.
-en: Add items with Alexa: "Alexa, tell Snacklist to add milk".
-hold: alexa-certification
+de: Die Liste sortiert sich nach deinem Einkauf.
+en: The list sorts itself after your shopping trip.
 
 fixed
 de: Die Liste springt beim Abhaken nicht mehr nach oben.
@@ -30,8 +29,7 @@ en: The list no longer jumps to the top when you check off an item.
 If users see no change, the whole section is the single word `none`.
 
 An item may also have a `flag:` line, a `hold:` line, or both, when users
-don't get it yet ("Gated items" below). The Alexa item above has a hold,
-because the skill is not certified yet.
+don't get it yet ("Gated items" below).
 
 | Category | For |
 | --- | --- |
@@ -111,7 +109,7 @@ Commits without a section count as `none`. These are everything before job
 ## Gated items (job 40)
 
 Peter's rule: a feature that is behind a feature flag, or not ready for
-everyone (the Alexa skill is a beta and not certified), stays out of the
+everyone (an unlaunched feature such as Premium), stays out of the
 public changelog until everyone has it. Its item says why it waits:
 
 ```
@@ -123,14 +121,14 @@ flag: smart-sort
 
 - `flag: <key>`: the item ships behind the feature flag `<key>`.
 - `hold: <key>`: the item waits for something else, such as
-  `hold: alexa-certification`.
+  `hold: premium-launch`.
 
 [`releases/flags.json`](../releases/flags.json) says which gates are open:
 
 ```json
 {
   "flags": { "smart-sort": { "rollout": "partial", "note": "half the households" } },
-  "holds": { "alexa-certification": { "released": false, "note": "the Alexa skill is in beta and not certified by Amazon yet", "match": ["alexa"] } }
+  "holds": { "premium-launch": { "released": false, "note": "Premium is not on sale yet", "match": ["premium"] } }
 }
 ```
 

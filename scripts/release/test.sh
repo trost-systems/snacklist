@@ -450,8 +450,9 @@ if out="$(gate app/h.dart $'Title (#9)\n\n## Changelog\nnew\nde: A.\nen: B.\nfla
 expect_match "changelog gate: duplicate flag" "$out" 'two "flag:" lines'
 if out="$(gate app/i.dart $'Title (#9)\n\n## Changelog\nnew\nde: A.\nen: B.\nflag: big-lists' '')"; then fail "changelog gate: a flag missing from releases/flags.json must fail"; fi
 expect_match "changelog gate: unknown flag" "$out" 'flag "big-lists" is not in releases/flags.json'
-if out="$(gate app/j.dart $'Title (#9)\n\n## Changelog\nfixed\nde: Alexa hört besser zu.\nen: Listens better.' '')"; then fail "changelog gate: an Alexa item without its hold must fail"; fi
-expect_match "changelog gate: Alexa needs the hold" "$out" 'add the line "hold: alexa-certification"'
+if out="$(gate app/j.dart $'Title (#9)\n\n## Changelog\nfixed\nde: Premium ist da.\nen: Premium is here.' '')"; then fail "changelog gate: an item naming an unreleased hold's word must fail"; fi
+expect_match "changelog gate: Premium needs the hold" "$out" 'add the line "hold: premium-launch"'
+out="$(gate app/k.dart $'Title (#9)\n\n## Changelog\nfixed\nde: Alexa hört besser zu.\nen: Alexa listens better.' '')" || fail "changelog gate: an Alexa item needs no hold once it is released"$'\n'"$out"
 if out="$(gate app/d.dart 'wip' 'No section.')"; then fail "changelog gate: an app change without any section must fail"; fi
 expect_match "changelog gate: asks for the section" "$out" 'this PR changes the app or its backend: add a ## Changelog section'
 if out="$(gate supabase/functions/voice/parse.ts 'wip' 'No section.')"; then fail "changelog gate: a backend change without any section must fail"; fi
