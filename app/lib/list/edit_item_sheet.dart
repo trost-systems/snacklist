@@ -352,10 +352,11 @@ class const ItemDetailFields({
   /// Starts the fields' keys: `edit-brand`, `edit-quantity`, ….
   final String keyPrefix = 'edit',
 
-  /// Menge first, then Marke beside it in what is left, on one row
-  /// whenever Menge's label fits: the add sheet's details have the room of
-  /// three rows.
-  final bool compact = false,
+  /// Lays the fields out in one line instead (the add sheet's details, job
+  /// 288): Menge and its steppers, what [inLine] puts between them and the
+  /// rest (the store and category chips), then Marke and Eigenschaften. It
+  /// gets the controls before and after and returns the line.
+  final Widget Function(List<Widget> before, List<Widget> after)? inLine,
   super.key,
 }) extends StatefulWidget {
   @override
@@ -384,8 +385,11 @@ class _ItemDetailFieldsState() extends State<ItemDetailFields> {
       :properties,
       :onSubmitted,
       :keyPrefix,
-      :compact,
+      :inLine,
     ) = widget;
+    if (inLine != null) {
+      return _line(context, l10n, inLine);
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: 10,
@@ -442,12 +446,7 @@ class _ItemDetailFieldsState() extends State<ItemDetailFields> {
                 );
               },
             );
-            if (_fitsOneRow(
-              context,
-              constraints.maxWidth,
-              l10n.itemQuantity,
-              brandEms: compact ? _compactBrandEms : _brandEms,
-            )) {
+            if (_fitsOneRow(context, constraints.maxWidth, l10n.itemQuantity)) {
               final menge = SizedBox(
                 width: _quantityWidth,
                 child: quantityField,
@@ -455,9 +454,11 @@ class _ItemDetailFieldsState() extends State<ItemDetailFields> {
               return Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 spacing: _rowGap,
-                children: compact
-                    ? [menge, steppers, Expanded(child: brandField)]
-                    : [Expanded(child: brandField), menge, steppers],
+                children: [
+                  Expanded(child: brandField),
+                  menge,
+                  steppers,
+                ],
               );
             }
             return Column(
@@ -484,6 +485,91 @@ class _ItemDetailFieldsState() extends State<ItemDetailFields> {
           controller: properties,
           maxLength: 120,
           onSubmitted: onSubmitted,
+        ),
+      ],
+    );
+  }
+
+  Widget _line(
+    BuildContext context,
+    AppLocalizations l10n,
+    Widget Function(List<Widget> before, List<Widget> after) inLine,
+  ) {
+    final ItemDetailFields(
+      :brand,
+      :quantity,
+      :properties,
+      :onSubmitted,
+      :keyPrefix,
+    ) = widget;
+    final ems = MediaQuery.textScalerOf(context).scale(18);
+    final menge = SizedBox(
+      width: _quantityWidth,
+      child: _Field(
+        fieldKey: '$keyPrefix-quantity',
+        label: l10n.itemQuantity,
+        controller: quantity,
+        maxLength: 40,
+        narrow: true,
+        onSubmitted: onSubmitted,
+      ),
+    );
+    return inLine(
+      [
+        // One control with its steppers, so none leaves a gap while they
+        // are away.
+        ValueListenableBuilder(
+          valueListenable: quantity,
+          builder: (context, value, menge) => Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              menge!,
+              if (stepQuantity(value.text, up: true) != null) ...[
+                const SizedBox(width: _rowGap),
+                _Stepper(
+                  key: ValueKey('$keyPrefix-quantity-minus'),
+                  icon: Icons.remove,
+                  label: l10n.quantityMinus,
+                  onPressed: stepQuantity(value.text, up: false) != null
+                      ? () => _step(up: false)
+                      : null,
+                ),
+                const SizedBox(width: _stepperGap),
+                _Stepper(
+                  key: ValueKey('$keyPrefix-quantity-plus'),
+                  icon: Icons.add,
+                  label: l10n.quantityPlus,
+                  onPressed: () => _step(up: true),
+                ),
+              ],
+            ],
+          ),
+          child: menge,
+        ),
+      ],
+      [
+        SizedBox(
+          width: 2 * hexFieldInset + ems * _lineBrandEms,
+          child: _Field(
+            fieldKey: '$keyPrefix-brand',
+            label: l10n.fieldBrand,
+            hint: l10n.brandNone,
+            controller: brand,
+            maxLength: 60,
+            onSubmitted: onSubmitted,
+          ),
+        ),
+        SizedBox(
+          width: 2 * hexFieldInset + ems * _linePropertiesEms,
+          child: _Field(
+            fieldKey: '$keyPrefix-properties',
+            label: l10n.fieldProperties,
+            hint: l10n.propertiesExample,
+            controller: properties,
+            maxLength: 120,
+            onSubmitted: onSubmitted,
+          ),
         ),
       ],
     );
@@ -557,20 +643,17 @@ const _stepperGap = 4.0;
 /// takes 7.8 in Inter, caret included.
 const _brandEms = 8;
 
-/// The compact row's least room for a brand: Bärenmarke, which scrolls in
-/// its field beyond that.
-const _compactBrandEms = 5;
+/// Marke's and Eigenschaften's widths in the add sheet's line, in ems of
+/// their scaled 18 px text: Bärenmarke, and "e.g. organic, 1 l". Longer
+/// text scrolls in its field.
+const _lineBrandEms = 6;
+const _linePropertiesEms = 9;
 
 /// Whether Marke, Menge and its steppers fit one row of [width] at the
 /// user's text size: Menge's label within its 72 px, and a brand like
 /// Weihenstephan unclipped. Otherwise Marke goes above Menge. The steppers
 /// count even while hidden, so typing never moves the fields.
-bool _fitsOneRow(
-  BuildContext context,
-  double width,
-  String quantityLabel, {
-  required int brandEms,
-}) {
+bool _fitsOneRow(BuildContext context, double width, String quantityLabel) {
   final scaler = MediaQuery.textScalerOf(context);
   final label = TextPainter(
     text: TextSpan(
@@ -586,7 +669,7 @@ bool _fitsOneRow(
   final brandWidth =
       width - _quantityWidth - 2 * _stepperWidth - _stepperGap - 2 * _rowGap;
   final brandFits =
-      brandWidth - 2 * hexFieldInset >= scaler.scale(18) * brandEms;
+      brandWidth - 2 * hexFieldInset >= scaler.scale(18) * _brandEms;
   return labelFits && brandFits;
 }
 

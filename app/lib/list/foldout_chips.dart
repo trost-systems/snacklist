@@ -78,17 +78,65 @@ class const FoldoutChips({
   /// Outlines a chip whose value the user changed.
   final bool storeChanged = false,
   final bool categoryChanged = false,
+
+  /// Puts the chips in one horizontally scrolling line between other
+  /// controls instead of their own lines (the add sheet's details, job
+  /// 288); the options still fold out below, across the whole width.
+  final ChipLine? line,
   super.key,
 }) extends StatefulWidget {
   @override
   State<FoldoutChips> createState() => _FoldoutChipsState();
 }
 
+/// [FoldoutChips.line]: the chips between [before] and [after], aligned to
+/// their bottom edge, the line [side] in from either edge as it scrolls.
+@immutable
+class const ChipLine({
+  required final List<Widget> before,
+  required final List<Widget> after,
+  final double side = 0,
+});
+
 class _FoldoutChipsState() extends State<FoldoutChips> {
   late _Fold? _fold = widget.storesOpen ? _Fold.store : null;
 
-  void _toggle(_Fold fold) =>
-      setState(() => _fold = _fold == fold ? null : fold);
+  /// The chips, so an opened one can be scrolled to along the line.
+  final _chips = {for (final fold in _Fold.values) fold: GlobalKey()};
+
+  void _toggle(_Fold fold) {
+    setState(() => _fold = _fold == fold ? null : fold);
+    if (_fold != null && widget.line != null) {
+      // The line sits in a scrolling area of its own (the add sheet's
+      // details): it and the options below it come into view, and the line
+      // scrolls sideways to the opened chip, which a screen reader can open
+      // while it is out of view.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) {
+          return;
+        }
+        final duration = hlMotion(context, HlDuration.medium);
+        if (_chips[fold]?.currentContext case final chip?) {
+          if (chip.findRenderObject() case final box?) {
+            Scrollable.maybeOf(
+              chip,
+              axis: Axis.horizontal,
+            )?.position.ensureVisible(
+              box,
+              alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
+              duration: duration,
+              curve: HlEasing.standard,
+            );
+          }
+        }
+        Scrollable.ensureVisible(
+          context,
+          duration: duration,
+          curve: HlEasing.standard,
+        );
+      });
+    }
+  }
 
   void _pick(VoidCallback pick) {
     setState(() => _fold = null);
@@ -124,70 +172,93 @@ class _FoldoutChipsState() extends State<FoldoutChips> {
       null when w.categoryAuto => (l10n.chipCategoryShort, l10n.categoryAuto),
       null => (w.categoryLabel, w.categoryLabel),
     };
+    final chips = [
+      KeyedSubtree(
+        key: _chips[_Fold.store],
+        child: _Chip(
+          key: const ValueKey('chip-store'),
+          leading: w.chipIcons ? Icons.storefront_outlined : null,
+          label: storeText,
+          semanticsLabel: storeSemantics,
+          auto: w.storeAuto,
+          open: _fold == _Fold.store,
+          changed: w.storeChanged,
+          onTap: () => _toggle(_Fold.store),
+        ),
+      ),
+      KeyedSubtree(
+        key: _chips[_Fold.category],
+        child: _Chip(
+          key: const ValueKey('chip-category'),
+          leading: w.chipIcons ? Icons.category_outlined : null,
+          label: categoryText,
+          semanticsLabel: categorySemantics,
+          auto: w.categoryAuto,
+          open: _fold == _Fold.category,
+          changed: w.categoryChanged,
+          onTap: () => _toggle(_Fold.category),
+        ),
+      ),
+    ];
+    final line = w.line;
+    final folded = switch (_fold) {
+      null => const SizedBox(width: double.infinity),
+      _Fold.store => _StoreOptions(
+        catalog: w.catalog,
+        storeId: w.storeId,
+        noStoreLabel: w.storeLabel,
+        undecided: w.storeAuto,
+        onPick: (id) => _pick(() => w.onStore(id)),
+        onCreate: w.onCreateStore,
+      ),
+      _Fold.category => _Options([
+        for (final c in w.catalog.categories)
+          OptionChip(
+            key: ValueKey('category-option-${c.id}'),
+            label: categoryName(c, l10n),
+            selected: c.id == w.categoryId,
+            onTap: () => _pick(() => w.onCategory(c.id)),
+          ),
+      ]),
+    };
+    final options = AnimatedSize(
+      duration: hlMotion(context, HlDuration.medium),
+      curve: HlEasing.standard,
+      alignment: Alignment.topCenter,
+      child: folded,
+    );
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  _Chip(
-                    key: const ValueKey('chip-store'),
-                    leading: w.chipIcons ? Icons.storefront_outlined : null,
-                    label: storeText,
-                    semanticsLabel: storeSemantics,
-                    auto: w.storeAuto,
-                    open: _fold == _Fold.store,
-                    changed: w.storeChanged,
-                    onTap: () => _toggle(_Fold.store),
-                  ),
-                  _Chip(
-                    key: const ValueKey('chip-category'),
-                    leading: w.chipIcons ? Icons.category_outlined : null,
-                    label: categoryText,
-                    semanticsLabel: categorySemantics,
-                    auto: w.categoryAuto,
-                    open: _fold == _Fold.category,
-                    changed: w.categoryChanged,
-                    onTap: () => _toggle(_Fold.category),
-                  ),
-                ],
-              ),
+      children: switch (line) {
+        null => [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: Wrap(spacing: 8, runSpacing: 8, children: chips)),
+              ?w.trailing,
+            ],
+          ),
+          options,
+        ],
+        ChipLine(:final before, :final after, :final side) => [
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.symmetric(horizontal: side),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              spacing: 8,
+              children: [...before, ...chips, ...after],
             ),
-            ?w.trailing,
-          ],
-        ),
-        AnimatedSize(
-          duration: hlMotion(context, HlDuration.medium),
-          curve: HlEasing.standard,
-          alignment: Alignment.topCenter,
-          child: switch (_fold) {
-            null => const SizedBox(width: double.infinity),
-            _Fold.store => _StoreOptions(
-              catalog: w.catalog,
-              storeId: w.storeId,
-              noStoreLabel: w.storeLabel,
-              undecided: w.storeAuto,
-              onPick: (id) => _pick(() => w.onStore(id)),
-              onCreate: w.onCreateStore,
-            ),
-            _Fold.category => _Options([
-              for (final c in w.catalog.categories)
-                OptionChip(
-                  key: ValueKey('category-option-${c.id}'),
-                  label: categoryName(c, l10n),
-                  selected: c.id == w.categoryId,
-                  onTap: () => _pick(() => w.onCategory(c.id)),
-                ),
-            ]),
-          },
-        ),
-      ],
+          ),
+          // At their full height at once: the area scrolls them into view
+          // (see _toggle), which a growing size would stop short of.
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: side),
+            child: folded,
+          ),
+        ],
+      },
     );
   }
 }

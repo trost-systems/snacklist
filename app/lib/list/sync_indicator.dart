@@ -121,6 +121,10 @@ class const SyncIndicator({
   /// The width of what sits left of the pill in the bar, its gap
   /// included: the household chip (job 169b).
   final ValueListenable<double>? pillInset,
+
+  /// The top bar is away, behind the add sheet (flag `add-feedback-list`):
+  /// the shell fades out with it and comes back with it.
+  final bool barAway = false,
   super.key,
 }) extends StatefulWidget {
   /// How long the card stays open on its own.
@@ -431,10 +435,15 @@ class _SyncIndicatorState()
       ),
       // A leaving shell is out of the semantics tree and takes no taps.
       child: IgnorePointer(
-        ignoring: !shown,
+        ignoring: !shown || widget.barAway,
         child: ExcludeSemantics(
-          excluding: !shown,
-          child: Opacity(opacity: _shown.value * dip, child: shell),
+          excluding: !shown || widget.barAway,
+          child: AnimatedOpacity(
+            opacity: widget.barAway ? 0 : 1,
+            duration: hlMotion(context, glideDuration),
+            curve: HlEasing.standard,
+            child: Opacity(opacity: _shown.value * dip, child: shell),
+          ),
         ),
       ),
     );

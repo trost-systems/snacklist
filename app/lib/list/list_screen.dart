@@ -556,6 +556,7 @@ class _ShoppingListState() extends State<_ShoppingList> {
                       rowHeight: _Header.height,
                       cardTop: _Header.extentFor(tabs: tabs),
                       pillInset: _chipWidth,
+                      barAway: session != null && open,
                       // A screen reader reads the new adds below the chip
                       // before the list, not after its last row: one node, so
                       // the sync shell beside it doesn't split their order.
@@ -588,10 +589,19 @@ class _ShoppingListState() extends State<_ShoppingList> {
                                 ),
                               ),
                             ),
-                            _StatusBelow(
-                              room: _statusRoom,
-                              anpassenWidth: _anpassenWidth,
-                              tabs: tabs,
+                            // With the bar, behind the add sheet.
+                            IgnorePointer(
+                              ignoring: session != null && open,
+                              child: AnimatedOpacity(
+                                opacity: session != null && open ? 0 : 1,
+                                duration: hlMotion(context, glideDuration),
+                                curve: HlEasing.standard,
+                                child: _StatusBelow(
+                                  room: _statusRoom,
+                                  anpassenWidth: _anpassenWidth,
+                                  tabs: tabs,
+                                ),
+                              ),
                             ),
                           ],
                         ),

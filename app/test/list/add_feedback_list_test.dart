@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/app/localizations.dart';
+import 'package:family_groceries/app/open_app.dart';
+import 'package:family_groceries/household/household_switcher.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/add_sheet/add_sheet.dart';
 import 'package:family_groceries/list/add_sheet/suggestion.dart';
@@ -13,6 +15,7 @@ import 'package:family_groceries/list/list_view/glide.dart';
 import 'package:family_groceries/list/list_view/item_row.dart';
 import 'package:family_groceries/list/list_view/shopping_list_view.dart';
 import 'package:family_groceries/list/model.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -338,6 +341,189 @@ void main() {
       await tester.pump();
       expect(item(tester, 'Milch').properties, 'laktosefrei');
       await tester.pumpAndSettle();
+    });
+  });
+
+  // Job 288: the store and category are picked in the added item's
+  // details; the sheet has no chip row of its own.
+  group('the store and category', () {
+    Finder key(String key) => find.byKey(ValueKey(key));
+    double sheetHeight(WidgetTester tester) =>
+        tester.getSize(key('add-sheet-surface')).height;
+
+    testWidgets('are not at the top of the sheet, also while typing, and '
+        'the sheet keeps its height', (tester) async {
+      await pumpList(tester);
+      await open(tester);
+      expect(key('chip-store'), findsNothing);
+      expect(key('chip-category'), findsNothing);
+      expect(key('add-sheet-close'), findsOneWidget);
+      final first = sheetHeight(tester);
+
+      await tester.enterText(field(), 'Mil');
+      await tester.pumpAndSettle();
+      expect(key('chip-store'), findsNothing);
+      expect(key('chip-category'), findsNothing);
+      expect(sheetHeight(tester), first);
+    });
+
+    testWidgets("sit in the added item's details, in one scrolling line "
+        'with Menge', (tester) async {
+      await pumpList(tester);
+      await open(tester);
+      await add(tester, 'Milch');
+      final line = find.ancestor(
+        of: key('chip-store'),
+        matching: find.byWidgetPredicate(
+          (w) => w is Scrollable && w.axisDirection == AxisDirection.right,
+        ),
+      );
+      expect(line, findsOneWidget);
+      for (final inside in ['chip-category', 'added-quantity', 'added-brand']) {
+        expect(find.descendant(of: line, matching: key(inside)), findsOne);
+      }
+    });
+
+    testWidgets('picked in the details save at once', (tester) async {
+      await pumpList(tester);
+      await open(tester);
+      await add(tester, 'Milch');
+      expect(item(tester, 'Milch').storeId, isNot('dm'));
+
+      await tester.tap(key('chip-store'));
+      await tester.pumpAndSettle();
+      await tester.tap(key('store-option-dm'));
+      await tester.pump();
+      expect(item(tester, 'Milch').storeId, 'dm');
+      await tester.pumpAndSettle();
+
+      // Past the store's chip, at the line's end on a phone.
+      await tester.ensureVisible(key('chip-category'));
+      await tester.pumpAndSettle();
+      await tester.tap(key('chip-category'));
+      await tester.pumpAndSettle();
+      final option = key('category-option-other');
+      expect(
+        option.hitTestable(),
+        findsOneWidget,
+        reason: 'the options come into view',
+      );
+      await tester.tap(option);
+      await tester.pump();
+      expect(item(tester, 'Milch').categoryId, 'other');
+      expect(key('added-quantity'), findsOneWidget, reason: 'details stay');
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('a chip opened out of view, by a screen reader, scrolls '
+        'into view with its options', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await pumpList(tester);
+      await open(tester);
+      await add(tester, 'Milch');
+      final sheet = tester.getRect(
+        find.byKey(const ValueKey('add-sheet-surface')),
+      );
+      expect(
+        tester.getRect(key('chip-category')).right,
+        greaterThan(sheet.right),
+        reason: 'past the line end on a phone',
+      );
+
+      tester.semantics.tap(find.semantics.byLabel(RegExp('^Kategorie')));
+      await tester.pumpAndSettle();
+      final chip = tester.getRect(key('chip-category'));
+      expect(chip.right, lessThanOrEqualTo(sheet.right));
+      expect(chip.left, greaterThanOrEqualTo(sheet.left));
+      expect(key('category-option-other').hitTestable(), findsOneWidget);
+      semantics.dispose();
+    });
+
+    testWidgets('flag off: the chips stay at the top', (tester) async {
+      await pumpList(tester, feedback: false);
+      await open(tester);
+      expect(key('chip-store'), findsOneWidget);
+      expect(key('chip-category'), findsOneWidget);
+    });
+  });
+
+  group("the list's top bar while the sheet is open", () {
+    const statusBar = 47.0;
+    Finder edit() => find.byKey(const ValueKey('list-edit'));
+
+    /// How strongly [finder] is painted: its ancestors' opacities.
+    double shownOf(WidgetTester tester, Finder finder) {
+      var alpha = 1.0;
+      RenderObject? node = tester.renderObject(finder);
+      while (node != null) {
+        alpha *= switch (node) {
+          RenderAnimatedOpacity(:final opacity) => opacity.value,
+          RenderOpacity(:final opacity) => opacity,
+          _ => 1.0,
+        };
+        node = node.parent;
+      }
+      return alpha;
+    }
+
+    testWidgets("goes, and the list's top starts under the status bar", (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      await pumpList(tester);
+      expect(edit().hitTestable(), findsOneWidget);
+      // The first thing below the bar: the hints' slot, then the rows.
+      Finder listTop() => find.byType(OpenAppSlot, skipOffstage: false);
+      expect(
+        tester.getTopLeft(listTop()).dy,
+        greaterThan(statusBar + 50),
+        reason: 'below the bar',
+      );
+
+      await open(tester);
+      expect(shownOf(tester, edit()), 0);
+      expect(shownOf(tester, find.byType(HouseholdChip)), 0);
+      expect(edit().hitTestable(), findsNothing);
+      expect(find.semantics.byLabel('Anpassen'), findsNothing);
+      expect(
+        tester.getTopLeft(listTop()).dy,
+        moreOrLessEquals(statusBar),
+        reason: "the bar's room is the list's",
+      );
+      semantics.dispose();
+    });
+
+    testWidgets('comes back as the sheet closes, fading in', (tester) async {
+      await pumpList(tester);
+      await open(tester);
+      await close(tester);
+      await tester.pump();
+      await tester.pump(glideDuration ~/ 2);
+      expect(shownOf(tester, edit()), inExclusiveRange(0, 1));
+      await tester.pumpAndSettle();
+      expect(shownOf(tester, edit()), 1);
+      expect(edit().hitTestable(), findsOneWidget);
+    });
+
+    testWidgets('reduced motion: goes and comes back at once', (tester) async {
+      await pumpList(tester, still: true);
+      await tester.tap(field());
+      await tester.pump();
+      expect(shownOf(tester, edit()), 0);
+      await tester.pumpAndSettle();
+      await close(tester);
+      await tester.pump();
+      expect(shownOf(tester, edit()), 1);
+      await tester.pumpAndSettle();
+      expect(edit().hitTestable(), findsOneWidget);
+    });
+
+    testWidgets('flag off: stays', (tester) async {
+      await pumpList(tester, feedback: false);
+      final before = tester.getRect(edit());
+      await open(tester);
+      expect(shownOf(tester, edit()), 1);
+      expect(tester.getRect(edit()), before);
     });
   });
 
