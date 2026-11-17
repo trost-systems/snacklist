@@ -199,8 +199,10 @@ open and click tracking stay off in the domain settings.
 
 The confirmation mail is Legal's M-1/M-2 of 2026-11-04 word for word: it says an assistant may
 have entered the address and has no launch sentence. The footers are Legal's of 2026-11-02, except the iOS invite's: Legal's N-261 of 2026-11-17 (Q17)
-word for word, with the signed unsubscribe page as its link (`footerInvite` in `mail.ts`). The
-display name stays "Peter · Snacklist" (Legal's optional N-262 is not applied). The welcome and invite
+word for word, with the signed unsubscribe page as its link (`footerInvite` in `mail.ts`). The iOS
+invite's body, preheader and sender ("Peter von Snacklist" in German, "Peter from Snacklist" in
+English) are PM's draft of 2026-11-16 word for word (`iosInviteBody` in `mail.ts`); the other mails
+keep "Peter · Snacklist". Legal's optional N-262 is not applied. The welcome and invite
 mails are drafts for Snacklist Launch. All of it waits for Peter's approval; the PR
 is not merged before.
 

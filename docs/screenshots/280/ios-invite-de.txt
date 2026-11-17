@@ -1,17 +1,36 @@
-From: "Peter · Snacklist" <hello@snacklist.app>
+From: "Peter von Snacklist" <hello@snacklist.app>
 Reply-To: hello@snacklist.app
 To: <recipient>
 Subject: Deine Einladung zur Snacklist-Beta
 List-Unsubscribe: <https://snacklist.app/api/waitlist/unsubscribe?id={id}&s={sig}&l=de>
 List-Unsubscribe-Post: List-Unsubscribe=One-Click
-X-Preview-Recipients: 1
 
-Hi,
+Hallo,
 
-die Snacklist-Beta ist offen, und du bist dabei.
+du hast dich auf snacklist.app für die Warteliste eingetragen. Jetzt bist du bei der Beta dabei.
 
-Für dein iPhone kommt die Einladung von Apple: TestFlight schickt dir eine eigene E-Mail an diese Adresse. Installier zuerst die App TestFlight aus dem App Store und öffne dann die Einladung von Apple auf deinem iPhone.
+Ich bin Peter und baue Snacklist, eine Einkaufsliste für den ganzen Haushalt. Die gemeinsame Liste ist bei allen sofort aktuell, und es gibt keine Werbung.
 
+Auf dem iPhone testest du über TestFlight, Apples App für Testversionen. Die Einladung dazu schickt dir Apple in einer eigenen Mail an diese Adresse.
+
+So kommst du rein:
+
+1. TestFlight laden
+Lad dir „TestFlight“ aus dem App Store.
+
+2. Apples Mail öffnen
+Öffne die Einladungsmail von TestFlight auf deinem iPhone und tipp auf den Knopf darin. Dann installierst du Snacklist über TestFlight.
+
+3. Loslegen
+Öffne Snacklist und tipp auf „Los geht's“. Die App fragt dich, mit wem du einkaufst, und richtet den Haushalt mit dir ein. Am Ende legst du dein Konto an. Wer mit dir einkauft, braucht für die Beta eine eigene Einladung. Am einfachsten trägt sich die Person selbst auf snacklist.app in die Warteliste ein. Sobald Snacklist bei ihr installiert ist, kann sie deinem Haushalt beitreten.
+
+TestFlight im App Store: https://apps.apple.com/app/testflight/id899247664
+
+Keine Mail von Apple da? Schau auch im Spam-Ordner nach. Ist diese Adresse nicht die E-Mail deiner Apple-ID? Dann trag dich auf snacklist.app einfach noch mal mit der richtigen Adresse ein.
+
+Was dir auffällt, gut oder schlecht, kannst du direkt in der App schicken: Mehr › „Feedback senden“. Jede Rückmeldung hilft.
+
+Viel Spaß beim Testen,
 Peter
 
 --

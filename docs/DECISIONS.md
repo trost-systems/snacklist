@@ -15139,3 +15139,11 @@ Fixed here, with nice-to-have 2. Still behind `on-device-catalog`.
    "Peter · Snacklist". With no marker left, the placeholder guard no longer blocks a send. A send
    still needs `INVITE_SEND=1`, `BATCH_SIZE`, the dry run's token and the Resend key, and only
    Peter runs it.
+
+## Job 296: iOS invite uses PM's draft verbatim
+
+The iOS invite's body, preheaders ("Hallo," in German) and From names ("Peter von Snacklist" /
+"Peter from Snacklist") are PM's draft `ios-testflight-invite-snacklist-2026-11-16.md` word for
+word, with the existing N-261 footer. N-262 stays unapplied. The Android invite and the other
+waitlist mails keep their text and "Peter · Snacklist". The TestFlight store link is the one
+external link the mails now carry. The sender stays a dry run by default; nothing was sent.

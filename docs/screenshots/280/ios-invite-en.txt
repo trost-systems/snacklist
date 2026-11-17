@@ -1,17 +1,36 @@
-From: "Peter · Snacklist" <hello@snacklist.app>
+From: "Peter from Snacklist" <hello@snacklist.app>
 Reply-To: hello@snacklist.app
 To: <recipient>
 Subject: Your invite to the Snacklist beta
 List-Unsubscribe: <https://snacklist.app/api/waitlist/unsubscribe?id={id}&s={sig}&l=en>
 List-Unsubscribe-Post: List-Unsubscribe=One-Click
-X-Preview-Recipients: 1
 
 Hi,
 
-The Snacklist beta is open, and you're in.
+You signed up for the waitlist on snacklist.app. You're now in the beta.
 
-For your iPhone the invite comes from Apple: TestFlight sends you its own email at this address. Install the TestFlight app from the App Store first, then open the invite from Apple on your iPhone.
+I'm Peter, and I'm building Snacklist, a grocery list for your whole household. The shared list is up to date for everyone right away, and there are no ads.
 
+On iPhone, you test through TestFlight, Apple's app for test versions. Apple sends you the invite in a separate email to this address.
+
+Here's how to get in:
+
+1. Get TestFlight
+Download "TestFlight" from the App Store.
+
+2. Open Apple's email
+Open the TestFlight invite email on your iPhone and tap the button in it. Then install Snacklist in TestFlight.
+
+3. Get started
+Open Snacklist and tap "Get started". The app asks who you shop with and sets up the household with you. At the end you create your account. Anyone who shops with you needs their own beta invite. The easiest way is for them to join the waitlist on snacklist.app/en themselves. Once Snacklist is installed on their phone, they can join your household.
+
+TestFlight on the App Store: https://apps.apple.com/app/testflight/id899247664
+
+No email from Apple? Check your spam folder too. If this address isn't the email of your Apple ID, just sign up again on snacklist.app/en with the right one.
+
+Anything you notice, good or bad, you can send right in the app: More › "Send feedback". Every bit helps.
+
+Have fun testing,
 Peter
 
 --

@@ -210,7 +210,7 @@ Deno.test('the dry run renders every mail, writes redacted previews, and sends a
   ]);
   const de = files.get('/tmp/preview/ios-invite-de.txt') ?? '';
   assertEquals(de.split('\n').slice(0, 8), [
-    'From: "Peter · Snacklist" <hello@snacklist.app>',
+    'From: "Peter von Snacklist" <hello@snacklist.app>',
     'Reply-To: hello@snacklist.app',
     'To: <recipient>',
     'Subject: Deine Einladung zur Snacklist-Beta',
@@ -282,7 +282,12 @@ Deno.test('every mail has the sender, a signed unsubscribe link and RFC 8058 hea
     const id = key.replace('ios-invite/', '');
     const sig = await unsubscribeSig(HMAC, id);
     const l = mail.subject.startsWith('Deine') ? 'de' : 'en';
-    assertEquals(mail.from, '"Peter · Snacklist" <hello@snacklist.app>');
+    assertEquals(
+      mail.from,
+      l === 'de'
+        ? '"Peter von Snacklist" <hello@snacklist.app>'
+        : '"Peter from Snacklist" <hello@snacklist.app>',
+    );
     assertEquals(mail.replyTo, 'hello@snacklist.app');
     assertEquals(mail.headers, {
       'List-Unsubscribe':

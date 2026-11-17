@@ -104,6 +104,10 @@ type Segment = string | { text: string; url: string };
 type Paragraph = Segment[];
 
 const SENDER = '"Peter · Snacklist" <hello@snacklist.app>';
+const IOS_SENDER = {
+  de: '"Peter von Snacklist" <hello@snacklist.app>',
+  en: '"Peter from Snacklist" <hello@snacklist.app>',
+};
 const REPLY_TO = 'hello@snacklist.app';
 
 const escape = (s: string) =>
@@ -132,6 +136,7 @@ function render(
   body: Paragraph[],
   footer: Paragraph[],
   headers: Record<string, string> = {},
+  from: string = SENDER,
 ): Mail {
   const html = [
     '<!doctype html>',
@@ -151,7 +156,7 @@ function render(
   ].join('\n');
   const text = [...body.map(textParagraph), '--', ...footer.map(textParagraph)].join('\n\n') +
     '\n';
-  return { from: SENDER, replyTo: REPLY_TO, subject, html, text, headers };
+  return { from, replyTo: REPLY_TO, subject, html, text, headers };
 }
 
 const IMPRINT = {
@@ -365,38 +370,126 @@ export function welcomeMail(
   );
 }
 
+/** PM's iOS invite draft of 2026-11-16, word for word: greeting, three steps, store link. */
+function iosInviteBody(locale: Locale): { preheader: string; body: Paragraph[] } {
+  const testflight = 'https://apps.apple.com/app/testflight/id899247664';
+  const link = { text: testflight, url: testflight };
+  return locale === 'de'
+    ? {
+      preheader:
+        'Deine Einladung zur Beta ist da. Den Zugang über TestFlight schickt dir Apple in einer ' +
+        'eigenen Mail.',
+      body: [
+        ['Hallo,'],
+        [
+          'du hast dich auf snacklist.app für die Warteliste eingetragen. Jetzt bist du bei ' +
+          'der Beta dabei.',
+        ],
+        [
+          'Ich bin Peter und baue Snacklist, eine Einkaufsliste für den ganzen Haushalt. Die ' +
+          'gemeinsame Liste ist bei allen sofort aktuell, und es gibt keine Werbung.',
+        ],
+        [
+          'Auf dem iPhone testest du über TestFlight, Apples App für Testversionen. Die ' +
+          'Einladung dazu schickt dir Apple in einer eigenen Mail an diese Adresse.',
+        ],
+        ['So kommst du rein:'],
+        ['1. TestFlight laden\nLad dir „TestFlight“ aus dem App Store.'],
+        [
+          '2. Apples Mail öffnen\nÖffne die Einladungsmail von TestFlight auf deinem iPhone und ' +
+          'tipp auf den Knopf darin. Dann installierst du Snacklist über TestFlight.',
+        ],
+        [
+          "3. Loslegen\nÖffne Snacklist und tipp auf „Los geht's“. Die App fragt dich, mit wem " +
+          'du einkaufst, und richtet den Haushalt mit dir ein. Am Ende legst du dein Konto an. ' +
+          'Wer mit dir einkauft, braucht für die Beta eine eigene Einladung. Am einfachsten ' +
+          'trägt sich die Person selbst auf snacklist.app in die Warteliste ein. Sobald ' +
+          'Snacklist bei ihr installiert ist, kann sie deinem Haushalt beitreten.',
+        ],
+        ['TestFlight im App Store: ', link],
+        [
+          'Keine Mail von Apple da? Schau auch im Spam-Ordner nach. Ist diese Adresse nicht die ' +
+          'E-Mail deiner Apple-ID? Dann trag dich auf snacklist.app einfach noch mal mit der ' +
+          'richtigen Adresse ein.',
+        ],
+        [
+          'Was dir auffällt, gut oder schlecht, kannst du direkt in der App schicken: Mehr › ' +
+          '„Feedback senden“. Jede Rückmeldung hilft.',
+        ],
+        ['Viel Spaß beim Testen,\nPeter'],
+      ],
+    }
+    : {
+      preheader:
+        'Your beta invite is here. Apple sends your TestFlight access in a separate email.',
+      body: [
+        ['Hi,'],
+        ["You signed up for the waitlist on snacklist.app. You're now in the beta."],
+        [
+          "I'm Peter, and I'm building Snacklist, a grocery list for your whole household. The " +
+          'shared list is up to date for everyone right away, and there are no ads.',
+        ],
+        [
+          "On iPhone, you test through TestFlight, Apple's app for test versions. Apple sends " +
+          'you the invite in a separate email to this address.',
+        ],
+        ["Here's how to get in:"],
+        ['1. Get TestFlight\nDownload "TestFlight" from the App Store.'],
+        [
+          "2. Open Apple's email\nOpen the TestFlight invite email on your iPhone and tap the " +
+          'button in it. Then install Snacklist in TestFlight.',
+        ],
+        [
+          '3. Get started\nOpen Snacklist and tap "Get started". The app asks who you shop with ' +
+          'and sets up the household with you. At the end you create your account. Anyone who ' +
+          'shops with you needs their own beta invite. The easiest way is for them to join the ' +
+          'waitlist on snacklist.app/en themselves. Once Snacklist is installed on their phone, ' +
+          'they can join your household.',
+        ],
+        ['TestFlight on the App Store: ', link],
+        [
+          "No email from Apple? Check your spam folder too. If this address isn't the email of " +
+          'your Apple ID, just sign up again on snacklist.app/en with the right one.',
+        ],
+        [
+          'Anything you notice, good or bad, you can send right in the app: More › ' +
+          '"Send feedback". Every bit helps.',
+        ],
+        ['Have fun testing,\nPeter'],
+      ],
+    };
+}
+
 /** The beta invite: iOS from scripts/waitlist/ios-invite.ts, Android from invite.ts. */
 export function inviteMail(
   locale: Locale,
   m: { platform: Platform; unsubscribe: Unsubscribe },
 ): Mail {
-  const platformLine: Record<Locale, Record<Platform, Paragraph>> = {
-    de: {
-      ios: [
-        'Für dein iPhone kommt die Einladung von Apple: TestFlight schickt dir eine eigene ' +
-        'E-Mail an diese Adresse. Installier zuerst die App TestFlight aus dem App Store und ' +
-        'öffne dann die Einladung von Apple auf deinem iPhone.',
-      ],
-      android: [
-        'Für dein Android-Handy haben wir diese Adresse bei Google Play als Tester eingetragen. ' +
-        'Öffne auf dem Handy, angemeldet mit dem Google-Konto dieser Adresse, diesen Link und ' +
-        'tippe auf „Tester werden“: ',
-        { text: PLAY_TESTING_URL, url: PLAY_TESTING_URL },
-      ],
-    },
-    en: {
-      ios: [
-        'For your iPhone the invite comes from Apple: TestFlight sends you its own email at ' +
-        'this address. Install the TestFlight app from the App Store first, then open the ' +
-        'invite from Apple on your iPhone.',
-      ],
-      android: [
-        "For your Android phone we've added this address as a tester on Google Play. On your " +
-        'phone, signed in with the Google account of this address, open this link and tap ' +
-        '"Become a tester": ',
-        { text: PLAY_TESTING_URL, url: PLAY_TESTING_URL },
-      ],
-    },
+  if (m.platform === 'ios') {
+    const { preheader, body } = iosInviteBody(locale);
+    return render(
+      locale,
+      locale === 'de' ? 'Deine Einladung zur Snacklist-Beta' : 'Your invite to the Snacklist beta',
+      preheader,
+      body,
+      footerInvite(locale, m.unsubscribe.page),
+      oneClickHeaders(m.unsubscribe),
+      IOS_SENDER[locale],
+    );
+  }
+  const androidLine: Record<Locale, Paragraph> = {
+    de: [
+      'Für dein Android-Handy haben wir diese Adresse bei Google Play als Tester eingetragen. ' +
+      'Öffne auf dem Handy, angemeldet mit dem Google-Konto dieser Adresse, diesen Link und ' +
+      'tippe auf „Tester werden“: ',
+      { text: PLAY_TESTING_URL, url: PLAY_TESTING_URL },
+    ],
+    en: [
+      "For your Android phone we've added this address as a tester on Google Play. On your " +
+      'phone, signed in with the Google account of this address, open this link and tap ' +
+      '"Become a tester": ',
+      { text: PLAY_TESTING_URL, url: PLAY_TESTING_URL },
+    ],
   };
   const de = locale === 'de';
   return render(
@@ -410,12 +503,10 @@ export function inviteMail(
           ? 'die Snacklist-Beta ist offen, und du bist dabei.'
           : "The Snacklist beta is open, and you're in.",
       ],
-      platformLine[locale][m.platform],
+      androidLine[locale],
       ['Peter'],
     ],
-    m.platform === 'ios'
-      ? footerInvite(locale, m.unsubscribe.page)
-      : footerB(locale, m.unsubscribe.page),
+    footerB(locale, m.unsubscribe.page),
     oneClickHeaders(m.unsubscribe),
   );
 }
