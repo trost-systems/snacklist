@@ -15105,3 +15105,60 @@ Fixed here, with nice-to-have 2. Still behind `on-device-catalog`.
 3. New sha256: `63f146c5f7aa618e24e8fe4a96398a6a84d255fe9c276a1e738154f73356852a`.
    The stale copies (`research/store-captions/CAPTIONS-252.md`, old `docs/screenshots/215/CAPTIONS.md`)
    were not touched or used.
+
+## Job 280: the iOS beta invite sender (2026-11-16)
+
+1. **A new script, `scripts/waitlist/ios-invite.ts`, not a mode of `invite.ts`.** The brief's
+   rules (dry run by default, `INVITE_SEND=1`, `BATCH_SIZE`, a confirmation token, claim before
+   send) do not fit `invite.ts`'s ISO-week batches. `invite.ts --confirm` now skips iOS rows and no
+   longer writes `ios.csv`. Otherwise Peter's weekly command would still invite iPhone sign-ups
+   with footer (b) and without any of the guards.
+2. **The token is the first 16 hex characters of SHA-256 over the batch's row ids, `BATCH_SIZE`
+   and the rendered previews.** A send is refused when a sign-up joined or left the batch since
+   the dry run, or the mail text changed. The dry run is then the review of exactly what goes out.
+   Every real mail must equal its locale's preview with the link values redacted, or the run stops.
+3. **Sent state is `invite_sent_at`, claimed before the send** (`waitlist_invite_claim`, a
+   conditional update). It is released only when Resend answered with an error. With no answer,
+   the row stays claimed and the run stops. Reruns, two runs at once and crashes then never mail
+   anyone twice. The price is at worst one missed mail, which Resend's log shows under
+   `ios-invite/<id>`. Mail-then-mark, as in `invite.ts`, relies on Resend's 24 h idempotency
+   window, which the brief's "never double-sends" rules out.
+4. **The footer is a slot**: `⟦FOOTER: Legal Q17⟧` and the "Abmelden"/"Unsubscribe" link, with
+   no footer (b) and no imprint. The marker keeps the existing placeholder guard on, so no real
+   send goes out until Legal's text replaces `FOOTER_SLOT`. `INVITE_ALLOW_PLACEHOLDERS=1` works
+   only for test addresses. The body is the current draft. No Launch draft with
+   `[UNSUBSCRIBE_URL]` was found on this box, so the link goes where that slot stands, in the
+   footer.
+5. **No mailto in List-Unsubscribe.** The brief makes it optional. Nobody processes a mailto at
+   once, and the one-click POST must delete at once. Gmail and Yahoo need only the https URL with
+   List-Unsubscribe-Post.
+6. **The one-click path stays as it is** (`site/api/_waitlist.mjs`, the edge function's
+   `unsubscribe`). The new tests send a mail's own header URL through both, in-process and
+   against a local database (`ios-invite-proof.ts`).
+7. **Recipients are confirmed rows with platform `ios`.** The form asks iPhone or Android, so
+   `ios` is "iPhone" (an iPad user would pick iPhone too). Unsubscribing deletes the row, so "not
+   unsubscribed" needs no column. The waitlist has no partners or households.
+8. **Review 0: only a 4xx releases a claim.** The first version released the row on any error
+   status from Resend. A 5xx can come after Resend took the mail, and the idempotency key covers
+   only 24 h. So a later run could mail the same person twice (the reviewer reproduced it with a
+   502). Now only a 4xx other than 408 (timeout) and 409 (idempotency conflict) releases the row.
+   Anything else keeps the claim and stops the run. Also from the review: a send writes previews
+   only with `--preview-dir` (they piled up in `/tmp`), the pgTAP counts case starts from an empty
+   table, and `proof.txt` has no machine paths and covers the 502 case.
+9. **Review 2: Legal's N-261 footer in the iOS invite.** The DE and EN texts of the Legal batch of
+   2026-11-17 (§10) replace the `⟦FOOTER: Legal Q17⟧` slot word for word. `{UNSUBSCRIBE_URL}` is
+   the signed page link, and the headers stay. The plain text writes the links out as
+   `Abmelden <url>`, like the other mails. The footer's two blocks (why and how to stop, then sender
+   and links) are two paragraphs, and the sender and imprint lines are one paragraph with a line
+   break. N-262 (display name) is optional and not applied, so the From header stays
+   "Peter · Snacklist". With no marker left, the placeholder guard no longer blocks a send. A send
+   still needs `INVITE_SEND=1`, `BATCH_SIZE`, the dry run's token and the Resend key, and only
+   Peter runs it.
+
+## Job 296: iOS invite uses PM's draft verbatim
+
+The iOS invite's body, preheaders ("Hallo," in German) and From names ("Peter von Snacklist" /
+"Peter from Snacklist") are PM's draft `ios-testflight-invite-snacklist-2026-11-16.md` word for
+word, with the existing N-261 footer. N-262 stays unapplied. The Android invite and the other
+waitlist mails keep their text and "Peter · Snacklist". The TestFlight store link is the one
+external link the mails now carry. The sender stays a dry run by default; nothing was sent.

@@ -1,11 +1,12 @@
-// Invites one weekly waitlist batch to the beta (docs/WAITLIST.md "Invites"). Peter runs it on his
-// own machine; no agent runs --confirm.
+// Invites one weekly waitlist batch's Android sign-ups to the beta (docs/WAITLIST.md "Invites").
+// iOS sign-ups get theirs from ios-invite.ts. Peter runs it on his own machine; no agent runs
+// --confirm.
 //
 //   deno run -A scripts/waitlist/invite.ts --batch 2026-W47
 //       counts only: confirmed, already invited, to invite, per platform and locale
 //   deno run -A scripts/waitlist/invite.ts --batch 2026-W47 --confirm 2026-W47 [--export-dir <dir>]
-//       mails the invite to each uninvited row of the batch and records it; with --export-dir,
-//       writes ios.csv and android.csv of the rows invited now for TestFlight and Google Play
+//       mails the invite to each uninvited Android row of the batch and records it; with
+//       --export-dir, writes android.csv of the rows invited now for Google Play
 //
 // Env: SUPABASE_DB_URL; for --confirm also RESEND_API_KEY and WAITLIST_HMAC_SECRET (RESEND_API_URL,
 // WAITLIST_MAIL_ALLOW as for the edge function). It prints counts only, never an address, also not
@@ -127,6 +128,7 @@ async function invite(args: Args, deps: Deps): Promise<number> {
     `  total     : confirmed ${sum('confirmed')}, already invited ${sum('invited')}, to invite ` +
       `${sum('toInvite')}`,
   );
+  deps.print('  ios rows: --confirm leaves them to ios-invite.ts');
   if (!args.confirm) {
     deps.print(`dry run: nothing sent. To send: --batch ${batch} --confirm ${batch}`);
     return 0;
@@ -141,10 +143,11 @@ async function invite(args: Args, deps: Deps): Promise<number> {
     return 1;
   }
   const policy = { allow: deps.allow, allowPlaceholders: args.allowPlaceholders };
-  const draft = (['de', 'en'] as const).flatMap((locale) =>
-    (['ios', 'android'] as const).map((platform) =>
-      inviteMail(locale, { platform, unsubscribe: unsubscribeLinks(SITE_ORIGIN, locale, '', '') })
-    )
+  const draft = (['de', 'en'] as const).map((locale) =>
+    inviteMail(locale, {
+      platform: 'android',
+      unsubscribe: unsubscribeLinks(SITE_ORIGIN, locale, '', ''),
+    })
   ).some(hasPlaceholder);
   if (draft && !policy.allowPlaceholders) {
     deps.print('invite: refused, the invite mail still has ⟦…⟧ placeholders');
@@ -152,8 +155,9 @@ async function invite(args: Args, deps: Deps): Promise<number> {
   }
 
   const result = { sent: 0, skipped: 0, failed: 0 };
-  const invited: Record<Platform, string[]> = { ios: [], android: [] };
+  const invited: string[] = [];
   for (const row of await deps.store.rows(batch)) {
+    if (row.platform === 'ios') continue;
     const sig = await unsubscribeSig(deps.hmacSecret, row.id);
     const mail = inviteMail(row.locale, {
       platform: row.platform,
@@ -171,7 +175,7 @@ async function invite(args: Args, deps: Deps): Promise<number> {
       continue;
     }
     await deps.store.invited(row.id, deps.now());
-    invited[row.platform].push(row.email);
+    invited.push(row.email);
     result.sent++;
   }
   deps.print(
@@ -179,19 +183,9 @@ async function invite(args: Args, deps: Deps): Promise<number> {
       `failed ${result.failed}`,
   );
   if (args.exportDir) {
-    // TestFlight imports first name, last name, email; Google Play's email list one address a line.
-    await deps.writeFile(
-      `${args.exportDir}/ios.csv`,
-      invited.ios.map((e) => `,,${e}\n`).join(''),
-    );
-    await deps.writeFile(
-      `${args.exportDir}/android.csv`,
-      invited.android.map((e) => `${e}\n`).join(''),
-    );
-    deps.print(
-      `wrote ios.csv (${invited.ios.length}) and android.csv (${invited.android.length}) to ` +
-        args.exportDir,
-    );
+    // Google Play's email list: one address a line.
+    await deps.writeFile(`${args.exportDir}/android.csv`, invited.map((e) => `${e}\n`).join(''));
+    deps.print(`wrote android.csv (${invited.length}) to ${args.exportDir}`);
   }
   return result.failed ? 1 : 0;
 }

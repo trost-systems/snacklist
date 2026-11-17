@@ -112,18 +112,19 @@ Deno.test('the dry run prints counts only and reads no address', async () => {
     '  ios     de: confirmed 3, already invited 2, to invite 1',
     '  ios     en: confirmed 1, already invited 0, to invite 1',
     '  total     : confirmed 5, already invited 2, to invite 3',
+    '  ios rows: --confirm leaves them to ios-invite.ts',
     'dry run: nothing sent. To send: --batch 2026-W47 --confirm 2026-W47',
   ]);
   assertEquals(rowsRead(), 0);
   assertEquals(sent.length, 0);
 });
 
-Deno.test('--confirm sends the approved invite without --allow-placeholders', async () => {
+Deno.test('--confirm sends the approved Android invite without --allow-placeholders', async () => {
   const { deps, out, sent } = setup();
   assertEquals(await run(args(['--batch', BATCH, '--confirm', BATCH]), deps), 0);
-  assertEquals(sent.length, 2);
+  assertEquals(sent.length, 1);
   for (const { mail } of sent) assert(!mail.text.includes('⟦') && !mail.html.includes('⟦'));
-  assertEquals(out.at(-1), 'sent 2, skipped 1 (not allowed by WAITLIST_MAIL_ALLOW), failed 0');
+  assertEquals(out.at(-1), 'sent 1, skipped 0 (not allowed by WAITLIST_MAIL_ALLOW), failed 0');
 });
 
 Deno.test('--allow-placeholders works only for test addresses', async () => {
@@ -151,43 +152,34 @@ Deno.test('--confirm without the mail secrets sends nothing', async () => {
   }
 });
 
-Deno.test('--confirm mails each allowed row once, records it and exports the lists', async () => {
+Deno.test('--confirm mails each Android row once, records it and exports the list; iOS rows stay', async () => {
   const { deps, out, sent, marked, files } = setup();
   const code = await run(
-    args(['--batch', BATCH, '--confirm', BATCH, '--allow-placeholders', '--export-dir', '/out']),
+    args(['--batch', BATCH, '--confirm', BATCH, '--export-dir', '/out']),
     deps,
   );
   assertEquals(code, 0);
   assertEquals(sent.map((s) => [s.to, s.key]), [
-    ['test+ios@snacklist.app', `invite/${BATCH}/${ROWS[0].id}`],
     ['test+android@snacklist.app', `invite/${BATCH}/${ROWS[1].id}`],
   ]);
-  const [ios, android] = sent;
-  assertExists(ios);
+  const [android] = sent;
   assertExists(android);
-  assert(
-    ios.mail.text.includes('TestFlight') && ios.mail.from.includes('Peter · Snacklist'),
-  );
   assert(
     android.mail.text.includes('play.google.com') &&
       android.mail.from.includes('Peter · Snacklist'),
   );
   assertEquals(android.mail.headers?.['List-Unsubscribe-Post'], 'List-Unsubscribe=One-Click');
   assert(
-    ios.mail.headers?.['List-Unsubscribe']?.startsWith(
-      `<https://snacklist.app/api/waitlist/unsubscribe?id=${ROWS[0].id}&s=`,
+    android.mail.headers?.['List-Unsubscribe']?.startsWith(
+      `<https://snacklist.app/api/waitlist/unsubscribe?id=${ROWS[1].id}&s=`,
     ),
   );
-  assertEquals(
-    marked,
-    [ROWS[0].id, ROWS[1].id],
-    'the address outside the allow-list is not invited',
-  );
-  assertEquals(files.get('/out/ios.csv'), ',,test+ios@snacklist.app\n');
+  assertEquals(marked, [ROWS[1].id], 'iOS rows are left uninvited for ios-invite.ts');
+  assertEquals(files.get('/out/ios.csv'), undefined);
   assertEquals(files.get('/out/android.csv'), 'test+android@snacklist.app\n');
   assertEquals(out.slice(-2), [
-    'sent 2, skipped 1 (not allowed by WAITLIST_MAIL_ALLOW), failed 0',
-    'wrote ios.csv (1) and android.csv (1) to /out',
+    'sent 1, skipped 0 (not allowed by WAITLIST_MAIL_ALLOW), failed 0',
+    'wrote android.csv (1) to /out',
   ]);
   assertNoAddress(out);
 });
@@ -198,8 +190,8 @@ Deno.test('a failed send is counted, not recorded, and never printed with its ad
     await run(args(['--batch', BATCH, '--confirm', BATCH, '--allow-placeholders']), deps),
     1,
   );
-  assertEquals(marked, [ROWS[0].id]);
-  assertEquals(out.at(-1), 'sent 1, skipped 1 (not allowed by WAITLIST_MAIL_ALLOW), failed 1');
+  assertEquals(marked, []);
+  assertEquals(out.at(-1), 'sent 0, skipped 0 (not allowed by WAITLIST_MAIL_ALLOW), failed 1');
   assertNoAddress(out);
 });
 

@@ -31,7 +31,8 @@ const assertNoImagesOrTracking = (mail: Mail) => {
   for (const href of hrefs) {
     assert(
       href.startsWith('https://snacklist.app/') ||
-        href.startsWith('https://play.google.com/apps/testing/'),
+        href.startsWith('https://play.google.com/apps/testing/') ||
+        href === 'https://apps.apple.com/app/testflight/id899247664',
       `a direct link, no redirect: ${href}`,
     );
   }
@@ -195,7 +196,139 @@ Deno.test('the welcome mail: footer (b), one-click unsubscribe, the launch sente
   }
 });
 
-Deno.test('the invite mail has an iPhone and an Android line, footer (b) and one-click unsubscribe', () => {
+/** Legal's N-261 footers (batch of 2026-11-17), verbatim; {UNSUBSCRIBE_URL} is the page link. */
+const N261 = {
+  de: [
+    'Du bekommst diese E-Mail, weil du dich auf snacklist.app für die Warteliste der Snacklist-Beta eingetragen und deine Adresse bestätigt hast. Keine E-Mails mehr von uns? [Abmelden]({UNSUBSCRIBE_URL}) – ein Klick genügt, ohne Anmeldung, und wir löschen deine Eintragung. Damit widerrufst du deine Einwilligung und widersprichst der Nutzung deiner Adresse für diese E-Mails (Art. 21 DSGVO). Du kannst auch einfach auf diese E-Mail antworten oder an support@snacklist.app schreiben; Antworten liest Peter Trost selbst.',
+    'Absender: Snacklist · Peter Trost · Yalovastr. 5 · 72108 Rottenburg am Neckar · Deutschland',
+    'Impressum: https://snacklist.app/impressum · Datenschutz: https://snacklist.app/datenschutz (Abschnitt 2a)',
+  ],
+  en: [
+    "You're getting this email because you signed up for the Snacklist beta waitlist on snacklist.app and confirmed your address. No more emails from us? [Unsubscribe]({UNSUBSCRIBE_URL}) – one click, no sign-in, and we delete your sign-up. This withdraws your consent and objects to the use of your address for these emails (Art. 21 GDPR). You can also just reply to this email or write to support@snacklist.app; Peter Trost reads replies himself.",
+    'Sender: Snacklist · Peter Trost · Yalovastr. 5 · 72108 Rottenburg am Neckar · Germany',
+    'Imprint: https://snacklist.app/en/imprint · Privacy: https://snacklist.app/en/privacy (section 2a)',
+  ],
+};
+
+Deno.test("the iOS invite ends with Legal's N-261 footer word for word, links written out in the text", () => {
+  for (const locale of ['de', 'en'] as const) {
+    const links = locale === 'de' ? unsubscribe : unsubscribeEn;
+    const mail = inviteMail(locale, { platform: 'ios', unsubscribe: links });
+    const [why, sender, imprint] = N261[locale].map((line) =>
+      line.replace(/\[(Abmelden|Unsubscribe)\]\(\{UNSUBSCRIBE_URL\}\)/, `$1 <${links.page}>`)
+    );
+    assertEquals(
+      mail.text.slice(mail.text.indexOf('\n--\n') + 4),
+      `\n${why}\n\n${sender}\n${imprint}\n`,
+    );
+    const label = locale === 'de' ? 'Abmelden' : 'Unsubscribe';
+    const footerHtml = mail.html.slice(mail.html.indexOf('<hr'));
+    assert(
+      footerHtml.includes(
+        `<a href="${links.page.replaceAll('&', '&amp;')}" style="color:#1a6b3c">${label}</a> – `,
+      ),
+    );
+    const visible = footerHtml.replace(/<br>/g, '\n').replace(/<[^>]+>/g, '')
+      .replaceAll('&amp;', '&').trim();
+    assertEquals(
+      visible,
+      N261[locale].join('\n').replace(/\[(Abmelden|Unsubscribe)\]\(\{UNSUBSCRIBE_URL\}\)/, '$1'),
+      'the HTML shows the same words, the link on its label',
+    );
+    assertEquals(
+      mail.from,
+      IOS_DRAFT[locale].from,
+      'N-262 is not applied: the draft keeps its sender name',
+    );
+  }
+});
+
+/** PM's iOS invite draft of 2026-11-16 (plain-text twin, above the footer), verbatim. */
+const IOS_DRAFT = {
+  de: {
+    from: '"Peter von Snacklist" <hello@snacklist.app>',
+    preheader:
+      'Deine Einladung zur Beta ist da. Den Zugang über TestFlight schickt dir Apple in einer eigenen Mail.',
+    body: `Hallo,
+
+du hast dich auf snacklist.app für die Warteliste eingetragen. Jetzt bist du bei der Beta dabei.
+
+Ich bin Peter und baue Snacklist, eine Einkaufsliste für den ganzen Haushalt. Die gemeinsame Liste ist bei allen sofort aktuell, und es gibt keine Werbung.
+
+Auf dem iPhone testest du über TestFlight, Apples App für Testversionen. Die Einladung dazu schickt dir Apple in einer eigenen Mail an diese Adresse.
+
+So kommst du rein:
+
+1. TestFlight laden
+Lad dir „TestFlight“ aus dem App Store.
+
+2. Apples Mail öffnen
+Öffne die Einladungsmail von TestFlight auf deinem iPhone und tipp auf den Knopf darin. Dann installierst du Snacklist über TestFlight.
+
+3. Loslegen
+Öffne Snacklist und tipp auf „Los geht's“. Die App fragt dich, mit wem du einkaufst, und richtet den Haushalt mit dir ein. Am Ende legst du dein Konto an. Wer mit dir einkauft, braucht für die Beta eine eigene Einladung. Am einfachsten trägt sich die Person selbst auf snacklist.app in die Warteliste ein. Sobald Snacklist bei ihr installiert ist, kann sie deinem Haushalt beitreten.
+
+TestFlight im App Store: https://apps.apple.com/app/testflight/id899247664
+
+Keine Mail von Apple da? Schau auch im Spam-Ordner nach. Ist diese Adresse nicht die E-Mail deiner Apple-ID? Dann trag dich auf snacklist.app einfach noch mal mit der richtigen Adresse ein.
+
+Was dir auffällt, gut oder schlecht, kannst du direkt in der App schicken: Mehr › „Feedback senden“. Jede Rückmeldung hilft.
+
+Viel Spaß beim Testen,
+Peter
+
+`,
+  },
+  en: {
+    from: '"Peter from Snacklist" <hello@snacklist.app>',
+    preheader: 'Your beta invite is here. Apple sends your TestFlight access in a separate email.',
+    body: `Hi,
+
+You signed up for the waitlist on snacklist.app. You're now in the beta.
+
+I'm Peter, and I'm building Snacklist, a grocery list for your whole household. The shared list is up to date for everyone right away, and there are no ads.
+
+On iPhone, you test through TestFlight, Apple's app for test versions. Apple sends you the invite in a separate email to this address.
+
+Here's how to get in:
+
+1. Get TestFlight
+Download "TestFlight" from the App Store.
+
+2. Open Apple's email
+Open the TestFlight invite email on your iPhone and tap the button in it. Then install Snacklist in TestFlight.
+
+3. Get started
+Open Snacklist and tap "Get started". The app asks who you shop with and sets up the household with you. At the end you create your account. Anyone who shops with you needs their own beta invite. The easiest way is for them to join the waitlist on snacklist.app/en themselves. Once Snacklist is installed on their phone, they can join your household.
+
+TestFlight on the App Store: https://apps.apple.com/app/testflight/id899247664
+
+No email from Apple? Check your spam folder too. If this address isn't the email of your Apple ID, just sign up again on snacklist.app/en with the right one.
+
+Anything you notice, good or bad, you can send right in the app: More › "Send feedback". Every bit helps.
+
+Have fun testing,
+Peter
+
+`,
+  },
+};
+
+Deno.test("the iOS invite is PM's draft word for word, with the draft's preheader and sender", () => {
+  for (const locale of ['de', 'en'] as const) {
+    const mail = inviteMail(locale, {
+      platform: 'ios',
+      unsubscribe: locale === 'de' ? unsubscribe : unsubscribeEn,
+    });
+    const draft = IOS_DRAFT[locale];
+    assertEquals(mail.from, draft.from);
+    assertEquals(mail.text.slice(0, mail.text.indexOf('\n--\n')).trimEnd(), draft.body.trimEnd());
+    assert(mail.html.includes(`>${draft.preheader}</div>`));
+    assert(mail.html.includes('https://apps.apple.com/app/testflight/id899247664'));
+  }
+});
+
+Deno.test('the invite mail has an iPhone and an Android line, its footer and one-click unsubscribe', () => {
   const ios = inviteMail('de', { platform: 'ios', unsubscribe });
   const android = inviteMail('en', { platform: 'android', unsubscribe: unsubscribeEn });
   assert(ios.text.includes('TestFlight') && !ios.text.includes('play.google.com'));
@@ -281,7 +414,7 @@ Deno.test('From is the language-neutral Peter · Snacklist (U+00B7) for DE and E
     unsubscribe: unsubscribeEn,
   });
   const welcome = welcomeMail('en', { unsubscribe: unsubscribeEn, launchNews: false });
-  const invite = inviteMail('de', { platform: 'ios', unsubscribe });
+  const invite = inviteMail('de', { platform: 'android', unsubscribe });
   for (const mail of [de, en, welcome, invite]) {
     assertEquals(mail.from, from);
     assertEquals(mail.replyTo, 'hello@snacklist.app');

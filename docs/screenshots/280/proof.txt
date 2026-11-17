@@ -1,0 +1,78 @@
+seeded: iOS de and en confirmed, Android confirmed, iOS unconfirmed, iOS already invited
+
+1. dry run (no INVITE_SEND), BATCH_SIZE=10
+  | iOS invite: confirmed iPhone sign-ups without an invite, in their sign-up language
+  |   de: confirmed 2, already invited 1, to invite 1
+  |   en: confirmed 1, already invited 0, to invite 1
+  | batch: 2 (de 1, en 1), BATCH_SIZE 10; not allowed by WAITLIST_MAIL_ALLOW: 0
+  | previews (link values redacted): <out-dir>/ios-invite-{de,en}.{txt,html}
+  | dry run: nothing sent. To send this batch: INVITE_SEND=1 BATCH_SIZE=10 INVITE_CONFIRM=d4d09f3a2866efcb
+  | (exit 0)
+PASS: the dry run sent nothing to Resend
+PASS: the dry run marked no row
+
+2. send with the token (WAITLIST_MAIL_ALLOW unset: test addresses only)
+  | iOS invite: confirmed iPhone sign-ups without an invite, in their sign-up language
+  |   de: confirmed 2, already invited 1, to invite 1
+  |   en: confirmed 1, already invited 0, to invite 1
+  | batch: 2 (de 1, en 1), BATCH_SIZE 10; not allowed by WAITLIST_MAIL_ALLOW: 0
+  | sent 2, skipped 0 (not allowed by WAITLIST_MAIL_ALLOW), already invited by another run 0, refused by Resend 0 (left uninvited for a later run)
+  | (exit 0)
+PASS: two mails, one per iPhone recipient
+PASS: each in its sign-up language; no Android, unconfirmed or invited row
+PASS: List-Unsubscribe (https), List-Unsubscribe-Post One-Click and an idempotency key on each
+PASS: both rows are marked invited
+
+3. the same send again
+  | iOS invite: confirmed iPhone sign-ups without an invite, in their sign-up language
+  |   de: confirmed 2, already invited 2, to invite 0
+  |   en: confirmed 1, already invited 1, to invite 0
+  | batch: 0 (de 0, en 0), BATCH_SIZE 10; not allowed by WAITLIST_MAIL_ALLOW: 0
+  | ios-invite: refused, INVITE_CONFIRM is not this batch's token (the recipients or the mail changed since that dry run); run the dry run again
+  | (exit 1)
+   and a fresh dry run
+  | iOS invite: confirmed iPhone sign-ups without an invite, in their sign-up language
+  |   de: confirmed 2, already invited 2, to invite 0
+  |   en: confirmed 1, already invited 1, to invite 0
+  | batch: 0 (de 0, en 0), BATCH_SIZE 10; not allowed by WAITLIST_MAIL_ALLOW: 0
+  | previews (link values redacted): <temp-dir>/ios-invite-{de,en}.{txt,html}
+  | dry run: nothing sent. To send this batch: INVITE_SEND=1 BATCH_SIZE=10 INVITE_CONFIRM=2c72acf66a9034c0
+  | (exit 0)
+PASS: no second mail
+PASS: no recipient left
+
+4. one-click POST of the German mail's List-Unsubscribe URL
+  | 200 {"status":"deleted"}
+PASS: the entry is deleted at once
+
+5. Resend answers 502 to the first send of a fresh batch
+  | iOS invite: confirmed iPhone sign-ups without an invite, in their sign-up language
+  |   de: confirmed 2, already invited 1, to invite 1
+  |   en: confirmed 1, already invited 0, to invite 1
+  | batch: 2 (de 1, en 1), BATCH_SIZE 10; not allowed by WAITLIST_MAIL_ALLOW: 0
+  | previews (link values redacted): <temp-dir>/ios-invite-{de,en}.{txt,html}
+  | dry run: nothing sent. To send this batch: INVITE_SEND=1 BATCH_SIZE=10 INVITE_CONFIRM=96f2d98a945f637f
+  | (exit 0)
+  | iOS invite: confirmed iPhone sign-ups without an invite, in their sign-up language
+  |   de: confirmed 2, already invited 1, to invite 1
+  |   en: confirmed 1, already invited 0, to invite 1
+  | batch: 2 (de 1, en 1), BATCH_SIZE 10; not allowed by WAITLIST_MAIL_ALLOW: 0
+  | sent 0, skipped 0 (not allowed by WAITLIST_MAIL_ALLOW), already invited by another run 0, refused by Resend 0 (left uninvited for a later run)
+  | ios-invite: stopped, one send got no clear answer from Resend (none, or 408, 409 or 5xx); its row stays marked invited (Resend log, idempotency key ios-invite/<id>)
+  | (exit 1)
+PASS: the run stops; the row stays marked
+   a fresh dry run and send
+  | iOS invite: confirmed iPhone sign-ups without an invite, in their sign-up language
+  |   de: confirmed 2, already invited 2, to invite 0
+  |   en: confirmed 1, already invited 0, to invite 1
+  | batch: 1 (de 0, en 1), BATCH_SIZE 10; not allowed by WAITLIST_MAIL_ALLOW: 0
+  | previews (link values redacted): <temp-dir>/ios-invite-{de,en}.{txt,html}
+  | dry run: nothing sent. To send this batch: INVITE_SEND=1 BATCH_SIZE=10 INVITE_CONFIRM=3e7dd24dde4eb0b1
+  | (exit 0)
+  | iOS invite: confirmed iPhone sign-ups without an invite, in their sign-up language
+  |   de: confirmed 2, already invited 2, to invite 0
+  |   en: confirmed 1, already invited 0, to invite 1
+  | batch: 1 (de 0, en 1), BATCH_SIZE 10; not allowed by WAITLIST_MAIL_ALLOW: 0
+  | sent 1, skipped 0 (not allowed by WAITLIST_MAIL_ALLOW), already invited by another run 0, refused by Resend 0 (left uninvited for a later run)
+  | (exit 0)
+PASS: the later run mails only the other row: nobody gets the invite twice

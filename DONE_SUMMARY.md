@@ -1539,3 +1539,14 @@ refreshes after store and status changes, and the store parity exceptions are pi
 stays `draft` (Play frame blocked, App Store frame waits for a real Siri capture). New sha256
 `63f146c5f7aa618e24e8fe4a96398a6a84d255fe9c276a1e738154f73356852a`. Nothing uploaded. The PR is left
 open for the lead. Details: [docs/done/287.md](docs/done/287.md).
+
+## Job 280: iOS beta invite sender, dry run by default (2026-11-16)
+
+`scripts/waitlist/ios-invite.ts` mails the beta invite to confirmed iPhone sign-ups, one Resend
+single send each, in their sign-up language, with the signed unsubscribe link and RFC 8058
+one-click headers. The dry run is the default: counts and redacted previews, nothing sent. A send
+needs `INVITE_SEND=1`, `BATCH_SIZE` and the dry run's token. Rows are claimed before their send,
+and released only on a 4xx refusal (review 0: a 5xx keeps the claim and stops the run), so no
+rerun mails anyone twice. The footer is Legal's N-261 text of 2026-11-17 word for word (review 2);
+the From header stays "Peter · Snacklist" (N-262 not applied). `invite.ts` is Android only now. Details:
+`docs/done/280.md`. Evidence: `docs/screenshots/280/`. Not merged, by the brief.

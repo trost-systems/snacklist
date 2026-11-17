@@ -1,0 +1,41 @@
+From: "Peter from Snacklist" <hello@snacklist.app>
+Reply-To: hello@snacklist.app
+To: <recipient>
+Subject: Your invite to the Snacklist beta
+List-Unsubscribe: <https://snacklist.app/api/waitlist/unsubscribe?id={id}&s={sig}&l=en>
+List-Unsubscribe-Post: List-Unsubscribe=One-Click
+
+Hi,
+
+You signed up for the waitlist on snacklist.app. You're now in the beta.
+
+I'm Peter, and I'm building Snacklist, a grocery list for your whole household. The shared list is up to date for everyone right away, and there are no ads.
+
+On iPhone, you test through TestFlight, Apple's app for test versions. Apple sends you the invite in a separate email to this address.
+
+Here's how to get in:
+
+1. Get TestFlight
+Download "TestFlight" from the App Store.
+
+2. Open Apple's email
+Open the TestFlight invite email on your iPhone and tap the button in it. Then install Snacklist in TestFlight.
+
+3. Get started
+Open Snacklist and tap "Get started". The app asks who you shop with and sets up the household with you. At the end you create your account. Anyone who shops with you needs their own beta invite. The easiest way is for them to join the waitlist on snacklist.app/en themselves. Once Snacklist is installed on their phone, they can join your household.
+
+TestFlight on the App Store: https://apps.apple.com/app/testflight/id899247664
+
+No email from Apple? Check your spam folder too. If this address isn't the email of your Apple ID, just sign up again on snacklist.app/en with the right one.
+
+Anything you notice, good or bad, you can send right in the app: More › "Send feedback". Every bit helps.
+
+Have fun testing,
+Peter
+
+--
+
+You're getting this email because you signed up for the Snacklist beta waitlist on snacklist.app and confirmed your address. No more emails from us? Unsubscribe <https://snacklist.app/en/waitlist/unsubscribe#id={id}&s={sig}> – one click, no sign-in, and we delete your sign-up. This withdraws your consent and objects to the use of your address for these emails (Art. 21 GDPR). You can also just reply to this email or write to support@snacklist.app; Peter Trost reads replies himself.
+
+Sender: Snacklist · Peter Trost · Yalovastr. 5 · 72108 Rottenburg am Neckar · Germany
+Imprint: https://snacklist.app/en/imprint · Privacy: https://snacklist.app/en/privacy (section 2a)

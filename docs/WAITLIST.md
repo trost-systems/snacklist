@@ -3,8 +3,9 @@
 snacklist.app (hummlist.com redirects there) keeps its landing page; only its calls to action
 change by stage, and none links the browser app. In the `waitlist` stage they lead to a sign-up form. A sign-up is double opt-in: the
 address counts only after its owner agrees on the confirmation page and presses the button there
-(Legal N-73: only the person's own click is consent, whoever filled in the form). Confirmed sign-ups collect into weekly batches, and Peter invites a batch by
-hand with `scripts/waitlist/invite.ts`. Nothing invites anyone automatically.
+(Legal N-73: only the person's own click is consent, whoever filled in the form). Peter invites
+by hand: iPhone sign-ups with `scripts/waitlist/ios-invite.ts`, Android ones in weekly batches with
+`scripts/waitlist/invite.ts`. Nothing invites anyone automatically.
 
 Privacy rule: no bot or agent reads waitlist rows. Tests use only addresses of the form
 `hello+<anything>@hummlist.com`, `test@snacklist.app` or `test+<anything>@snacklist.app`. Nothing
@@ -179,7 +180,9 @@ database functions are `security definer`, executable only by the service connec
 (the 4-argument one; the 2-argument one of the first migration is superseded), `waitlist_mailed`,
 `waitlist_unsubscribe`, `waitlist_rate_hit`, `waitlist_batch_counts`, `waitlist_batch_rows` and
 `purge_waitlist`; each takes the time as a parameter, so `supabase/tests/waitlist.test.sql` tests
-every period to the minute.
+every period to the minute. The iOS invite's (`*_waitlist_ios_invite.sql`, tested in
+`supabase/tests/waitlist_ios_invite.test.sql`) are `waitlist_ios_invite_counts`,
+`waitlist_ios_invite_rows`, `waitlist_invite_claim` and `waitlist_invite_release`.
 
 ## Mails
 
@@ -191,11 +194,16 @@ open and click tracking stay off in the domain settings.
 | --- | --- | --- | --- |
 | Confirmation (Legal M-1/M-2, `doi-mail-*-v2`) | sign-up | (a) with „Eintrag sofort löschen“ | no |
 | Welcome | after confirming | (b) | yes, one-click |
-| Beta invite | `scripts/waitlist/invite.ts --confirm` | (b) | yes, one-click |
+| Beta invite, iOS | `INVITE_SEND=1 scripts/waitlist/ios-invite.ts` | Legal's N-261 (2026-11-17) | yes, one-click |
+| Beta invite, Android | `scripts/waitlist/invite.ts --confirm` | (b) | yes, one-click |
 
 The confirmation mail is Legal's M-1/M-2 of 2026-11-04 word for word: it says an assistant may
-have entered the address and has no launch sentence. The footers are Legal's of 2026-11-02. The
-welcome and invite mails are drafts for Snacklist Launch. All of it waits for Peter's approval; the PR
+have entered the address and has no launch sentence. The footers are Legal's of 2026-11-02, except the iOS invite's: Legal's N-261 of 2026-11-17 (Q17)
+word for word, with the signed unsubscribe page as its link (`footerInvite` in `mail.ts`). The iOS
+invite's body, preheader and sender ("Peter von Snacklist" in German, "Peter from Snacklist" in
+English) are PM's draft of 2026-11-16 word for word (`iosInviteBody` in `mail.ts`); the other mails
+keep "Peter · Snacklist". Legal's optional N-262 is not applied. The welcome and invite
+mails are drafts for Snacklist Launch. All of it waits for Peter's approval; the PR
 is not merged before.
 
 Links: confirm `<origin>/de/warteliste/bestaetigen#t=<token>` (`/en/waitlist/confirm`),
@@ -204,15 +212,58 @@ values sit in the fragment, so they reach no server log (only the List-Unsubscri
 mails carries id and signature in its query, as RFC 8058 needs; no address), and opening a link changes nothing: the
 page sends them only when its button is pressed (mail scanners can't confirm or unsubscribe).
 
-## Invites (manual)
+## iOS invite (manual, job 280)
+
+`scripts/waitlist/ios-invite.ts` mails the beta invite to iPhone sign-ups. Recipients are the
+confirmed rows with platform `ios` and no `invite_sent_at`, earliest confirmation first, each in
+the locale of their sign-up. An unsubscribed sign-up is deleted, so it is never one. Android rows,
+unconfirmed rows and anyone outside the waitlist (partners, households) are not. Each recipient
+gets one Resend single send (`POST /emails`, idempotency key `ios-invite/<id>`): no audience, no
+broadcast, and Resend never holds the list. Each mail has the signed unsubscribe link of the
+welcome mail (`[UNSUBSCRIBE_URL]` of the draft: `/de/warteliste/abmelden#id=…&s=…` or
+`/en/waitlist/unsubscribe#…`), `List-Unsubscribe: <https://snacklist.app/api/waitlist/unsubscribe?id=…&s=…&l=…>`
+and `List-Unsubscribe-Post: List-Unsubscribe=One-Click`. No mailto: nobody reads one at once,
+and RFC 8058 needs only the https URL. A one-click POST deletes the row at once with no page; a
+GET of that URL still opens the unsubscribe page and deletes nothing.
+
+It runs on Peter's machine with `SUPABASE_DB_URL` and `WAITLIST_HMAC_SECRET`:
+
+1. Dry run, the default. `BATCH_SIZE=25 deno run -A scripts/waitlist/ios-invite.ts
+   [--preview-dir <dir>]` prints the counts per locale, renders every mail of the batch with
+   its real headers and signed links, writes one preview per locale with the link values as
+   `{id}` and `{sig}` (`ios-invite-de.txt`, `.html`, and the same for `en`; a new temp directory
+   without `--preview-dir`), and prints the batch's token. A send writes previews only with
+   `--preview-dir`. It sends and marks nothing. Every
+   mail must equal its preview but for the link values, or the run stops.
+2. Send. `INVITE_SEND=1 BATCH_SIZE=25 INVITE_CONFIRM=<token> RESEND_API_KEY=… deno run -A
+   scripts/waitlist/ios-invite.ts [--export-dir <dir>]`. The token is a hash of the batch's row
+   ids, the batch size and the rendered previews. If a sign-up joined or left the batch, or the
+   mail changed, since the dry run, the send is refused and needs a new dry run. It also refuses
+   without `BATCH_SIZE`, `INVITE_CONFIRM` or `RESEND_API_KEY`, and if the mail ever holds a `⟦…⟧`
+   marker again. `INVITE_ALLOW_PLACEHOLDERS=1` lets a marker through only while
+   `WAITLIST_MAIL_ALLOW` is unset (test addresses). `--export-dir` writes `ios.csv` (`,,<email>` for TestFlight's
+   import) of the rows invited by this run.
+
+Sent state: before each send the script claims the row (`waitlist_invite_claim` sets
+`invite_sent_at` only if it is still null). It unclaims the row (`waitlist_invite_release`) only
+when Resend refused the mail for sure: a 4xx other than 408 and 409. With no answer, a 5xx, a 408
+or a 409, the row stays claimed and the run stops: the mail may have gone out. So a rerun, a second run at the same time or a crash never
+mails anyone twice. At worst one recipient gets no mail; Resend's log shows it under the key
+`ios-invite/<id>`. After the send, `waitlist_mailed` sets `last_mail_at`. It prints counts only.
+
+`deno run -A scripts/waitlist/ios-invite-proof.ts <local db url> <dir>` runs the dry run, the send
+and a rerun as processes against a local stack, with a fake Resend on 127.0.0.1. It then posts
+one mail's one-click URL through the site function and the edge handler. It refuses any database
+but one on 127.0.0.1, and needs a waitlist with no other rows (`supabase db reset`).
+
+## Android invites (manual)
 
 `deno run -A scripts/waitlist/invite.ts --batch 2026-W47` prints, for that ISO week of
 `confirmed_at` (Europe/Berlin), only counts: confirmed, already invited, to invite, per platform
 and locale. `--confirm 2026-W47` (the batch id again) sends the invite mail to each uninvited
-row, sets `invite_sent_at` and `last_mail_at`, and with `--export-dir <dir>` writes `ios.csv` and
-`android.csv` for TestFlight and Google Play. The full call is
-`--batch 2026-W47 --confirm 2026-W47`. `ios.csv` has TestFlight's three columns with empty names
-(`,,<email>`), `android.csv` one address a line. It prints counts only. Peter runs it on his own
+Android row, sets `invite_sent_at` and `last_mail_at`, and with `--export-dir <dir>` writes
+`android.csv` (one address a line) for Google Play. It leaves the iOS rows to `ios-invite.ts`. The full call is
+`--batch 2026-W47 --confirm 2026-W47`. It prints counts only. Peter runs it on his own
 machine with `SUPABASE_DB_URL`, `RESEND_API_KEY` and `WAITLIST_HMAC_SECRET`; no agent runs
 `--confirm`. Each invite's Resend idempotency key is `invite/<batch>/<id>`, and the row is marked
 after its send, so a rerun after a crash sends no second invite within Resend's 24 h window. It
