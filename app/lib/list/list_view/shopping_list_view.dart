@@ -138,6 +138,11 @@ class _ShoppingListViewState()
   );
   late final _glides = Glides()..progress = _glideCurve;
 
+  /// The top bar's opacity while the sheet is open: it fades out as the
+  /// list glides behind the sheet, and in by [_glideCurve] as it glides
+  /// back.
+  late final _barAway = ReverseAnimation(_glideCurve);
+
   /// Where the list was scrolled when the sheet opened: it goes back there.
   var _restOffset = 0.0;
   final _scroll = ScrollController();
@@ -707,11 +712,13 @@ class _ShoppingListViewState()
             pinned: true,
             delegate: _PinnedHeader(
               header,
-              MediaQuery.paddingOf(context).top + header.preferredSize.height,
+              MediaQuery.paddingOf(context).top,
+              header.preferredSize.height,
               clear: declutter,
-              // Behind the sheet it scrolls away with the list, leaving the
-              // little room above the sheet to the last adds.
-              collapsing: behind != null,
+              // Behind the sheet its room goes to the list, up to the
+              // status bar (job 288).
+              away: behind != null,
+              shown: behind != null ? _barAway : _glideCurve,
             ),
           ),
         SliverPadding(
@@ -997,46 +1004,76 @@ class _ShoppingListViewState()
 
 class _PinnedHeader(
   final Widget child,
-  final double extent, {
+
+  /// The status bar's height.
+  final double top,
+
+  /// The bar's height below it.
+  final double height, {
 
   /// The see-through header of jobs 229 and 242 instead of the fade.
   required final bool clear,
 
-  /// Scrolls away with the rows, still the same sliver so the bar keeps
-  /// its state (flag `add-feedback-list`, behind the add sheet).
-  final bool collapsing = false,
+  /// The bar's opacity: it fades with the glide into and out of the list
+  /// behind the add sheet (flag `add-feedback-list`), 1 otherwise.
+  required final Animation<double> shown,
+
+  /// Behind the add sheet: only the status bar keeps its room, the bar
+  /// fades out over the rows, takes no taps and is out of the semantics
+  /// tree; still the same element, so it keeps its state.
+  final bool away = false,
 }) extends SliverPersistentHeaderDelegate {
   /// How far the list scrolls before the status bar gets its scrim.
   static const _lifted = 4.0;
 
-  @override
-  double get minExtent => collapsing ? 0 : extent;
+  double get extent => top + height;
 
   @override
-  double get maxExtent => extent;
+  double get minExtent => maxExtent;
+
+  // Never 0, also without a status bar (the web): a sliver with no room is
+  // not painted, the bar fading out over the rows included.
+  @override
+  double get maxExtent => away ? math.max(top, 1) : extent;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlaps) {
+    final surface = Theme.of(context).scaffoldBackgroundColor;
+    return Stack(
+      fit: StackFit.expand,
+      clipBehavior: Clip.none,
+      children: [
+        // The bar's own status bar fades with it: the rows never pass
+        // under the clock.
+        ColoredBox(color: away ? surface : Colors.transparent),
+        OverflowBox(
+          alignment: Alignment.topCenter,
+          minHeight: extent,
+          maxHeight: extent,
+          child: IgnorePointer(
+            ignoring: away,
+            child: ExcludeSemantics(
+              excluding: away,
+              child: FadeTransition(
+                opacity: shown,
+                child: _bar(context, shrinkOffset),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
   /// Rows scrolled up under the bar fade out over its whole height, the
   /// status bar included, behind the bar's buttons. It grows in as they
   /// scroll in, so an unscrolled list shows the bar alone. The fade takes
   /// no taps: they reach the bar or the rows as before.
-  @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlaps) {
-    if (collapsing) {
-      // At its full height, its top cut off as it scrolls away.
-      return ClipRect(
-        child: OverflowBox(
-          alignment: Alignment.bottomCenter,
-          minHeight: extent,
-          maxHeight: extent,
-          child: child,
-        ),
-      );
-    }
+  Widget _bar(BuildContext context, double shrinkOffset) {
     if (clear) {
       return _clear(context, lifted: shrinkOffset > _lifted);
     }
     final strength = shrinkOffset / extent;
-    final top = MediaQuery.paddingOf(context).top;
     final surface = Theme.of(context).scaffoldBackgroundColor;
     return Stack(
       fit: StackFit.expand,
@@ -1076,7 +1113,6 @@ class _PinnedHeader(
   /// button never acts on a row under it.
   Widget _clear(BuildContext context, {required bool lifted}) {
     final surface = Theme.of(context).scaffoldBackgroundColor;
-    final top = MediaQuery.paddingOf(context).top;
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -1120,7 +1156,9 @@ class _PinnedHeader(
   @override
   bool shouldRebuild(_PinnedHeader oldDelegate) =>
       oldDelegate.child != child ||
-      oldDelegate.extent != extent ||
+      oldDelegate.top != top ||
+      oldDelegate.height != height ||
       oldDelegate.clear != clear ||
-      oldDelegate.collapsing != collapsing;
+      oldDelegate.shown != shown ||
+      oldDelegate.away != away;
 }

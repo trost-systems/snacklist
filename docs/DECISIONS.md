@@ -15168,3 +15168,37 @@ each OLD occurs exactly once. The tests, goldens and feature-map lines that quot
 follow the new wording; FEATURES-FOR-WRITERS quotes neither, so it stays. The optional N-257 code
 change is left out and C1 is job 290, as the brief says. Policy hashes match Legal's §3.1 row for
 one PR on 17 Nov. Details: [docs/done/289.md](docs/done/289.md).
+
+## Job 288: store and category in the add's details, the top bar away while the sheet is open (2026-11-17)
+
+Peter's TestFlight feedback on `add-feedback-list` (Nov 17). Everything stays behind that flag; flag
+off is unchanged (every existing golden passes without an update).
+
+1. **No store or category chips at the top of the sheet in any state, not only the first.** Kept
+   while typing, they would come back with the first letter and the sheet would grow then. The header
+   keeps the grab handle and Schließen (same key, label and focus order), about 60 px instead of the
+   chips' 80.
+2. **Store and category sit in the details' one sideways line**: Menge with − and +, the store chip,
+   the category chip, Marke, Eigenschaften. Menge comes first because it is the most common change
+   after an add, and the store chip still shows whole on a 390 px phone; the category chip peeks in at
+   the edge, which tells the line scrolls. The chips drop their icons there to fit. A chip's options
+   fold out below the whole line, at full width; the details' area scrolls them into view, and the
+   line scrolls sideways to the opened chip (a screen reader can open one out of view). A pick saves
+   at once through `AddSheetCubit.editDetails(now: true)`, the path the header chips used in details
+   mode; „Neuer Laden“ works there too.
+3. **No persistent default for the next add.** The old chips set the store and category of the next
+   single add only: `take()` started the picks over after each add. Adding first and then picking in
+   the details gives the same item; nothing that lasted longer was lost.
+4. **The sheet keeps the three-row height from the moment it opens**, also before anything is typed
+   (276 held it from the first letter or add). With few suggestions the first state is taller than
+   before, but the sheet no longer changes height while open.
+5. **The list's top bar fades out over the 300 ms glide as the sheet opens and back in as it
+   closes** (reduced motion: at once). It covers the household or list switcher, „Anpassen“, the list
+   tabs, the sync pill and the partner's new-adds capsule. Its sliver keeps only the status bar's
+   height, painted solid so rows never run under the clock, and the list behind the sheet takes the
+   rest. The bar stays the same element, so it keeps its state. The sliver is at least 1 px tall: with
+   no status bar (the web) a zero-height sliver is not painted, and the bar would vanish instead of
+   fading.
+6. **`releases/flags.json` records `add-feedback-list` as `full`.** The brief says the flag is live
+   for all users in PostHog. The next release draft therefore picks up job 276's held changelog items
+   together with this one.

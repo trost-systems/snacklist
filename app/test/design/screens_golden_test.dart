@@ -6,6 +6,7 @@ import 'dart:ui' show SemanticsHitTestBehavior;
 
 import 'package:bloc_test/bloc_test.dart';
 import 'package:family_groceries/analytics/analytics.dart';
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/app/device_cache.dart';
 import 'package:family_groceries/app/language.dart';
 import 'package:family_groceries/app/localizations.dart';
@@ -124,12 +125,18 @@ Future<FakeRepository> _pumpShell(
 
   /// Sets the server up further (lists, claims) before the app starts.
   void Function(FakeRepository repo)? seed,
+
+  /// PostHog flags on, as a `FLAGS_ON` build has them.
+  Set<String> flags = const {},
+
+  /// The status bar's height.
+  double top = 0,
 }) async {
   tester.view
     ..devicePixelRatio = 1
     ..physicalSize = size
-    ..padding = FakeViewPadding(bottom: inset)
-    ..viewPadding = FakeViewPadding(bottom: inset);
+    ..padding = FakeViewPadding(top: top, bottom: inset)
+    ..viewPadding = FakeViewPadding(top: top, bottom: inset);
   addTearDown(tester.view.reset);
   SharedPreferencesAsyncPlatform.instance =
       InMemorySharedPreferencesAsync.empty();
@@ -215,6 +222,8 @@ Future<FakeRepository> _pumpShell(
           BlocProvider.value(value: Analytics.off(cache)),
           BlocProvider.value(value: purchases.entitlements),
           BlocProvider.value(value: purchases.purchases),
+          if (flags.isNotEmpty)
+            BlocProvider(create: (_) => Flags(forced: flags)),
         ],
         child: MaterialApp.router(
           debugShowCheckedModeBanner: false,
@@ -951,6 +960,44 @@ void main() {
       await expectLater(
         find.byType(MaterialApp),
         matchesGoldenFile('goldens/add-sheet-$mode.png'),
+      );
+    });
+
+    // Job 288, flag `add-feedback-list`: no chip row, the list's top bar
+    // away and its rows up to the status bar.
+    testWidgets('add sheet feedback, $mode', (tester) async {
+      await _pumpShell(
+        tester,
+        brightness,
+        flags: {addFeedbackListFlag},
+        top: 47,
+      );
+      await tester.tap(find.byKey(const ValueKey('add-item-field')));
+      await tester.pumpAndSettle();
+      await expectLater(
+        find.byType(MaterialApp),
+        matchesGoldenFile('goldens/add-sheet-feedback-$mode.png'),
+      );
+    });
+
+    // Job 288: the added item's details, store and category among them.
+    testWidgets('add sheet feedback details, $mode', (tester) async {
+      await _pumpShell(
+        tester,
+        brightness,
+        flags: {addFeedbackListFlag},
+        top: 47,
+      );
+      final field = find.byKey(const ValueKey('add-item-field'));
+      await tester.tap(field);
+      await tester.enterText(field, 'Joghurt');
+      await tester.pumpAndSettle();
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('added-quantity')), findsOneWidget);
+      await expectLater(
+        find.byType(MaterialApp),
+        matchesGoldenFile('goldens/add-sheet-feedback-details-$mode.png'),
       );
     });
 

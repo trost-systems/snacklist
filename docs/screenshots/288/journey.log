@@ -1,0 +1,15 @@
+[21:07:12.684Z] signed in as mia on http://127.0.0.1:59281
+[21:07:14.723Z] open, nothing added: no store or category chips in the sheet, only Schließen
+[21:07:14.932Z] open: the top bar's strip captured (8439 bytes); see 02b-top-bar-away.png
+[21:07:15.983Z] typed "Kefir" with the server held back 1500 ms: the line „Vorschläge laden“ shows
+[21:07:17.366Z] the answer landed: the line is gone
+[21:07:18.195Z] added "Kefir": the sheet shows its details (Menge, Marke, Eigenschaften)
+[21:07:20.751Z] made the store "Hofladen Sonnenhang" with „Neuer Laden“ in the details row: the item has it (true)
+[21:07:22.330Z] picked category "Haushalt" in the details row: saved (true)
+[21:07:23.407Z] Menge took the focus and the line scrolled back to it (x 16)
+[21:07:24.323Z] typed Menge "2": 200 ms later the server has quantity null
+[21:07:24.579Z] after the pause the server has quantity "2" (true)
+[21:07:29.484Z] closed: the top bar is back, Anpassen at y 10 as before the opening
+[21:07:29.492Z] typed Marke "Harry" and closed at once: the server has {"name":"Brot","quantity":null,"brand":"Harry","status":"active","store_id":null,"category_id":"dbb6d252-04a2-4acb-94d1-36562ec76710"}
+[21:07:29.869Z] closed: "Kefir" sits under the heading "Haushalt"
+[21:07:30.145Z] PASS add-feedback-list (evidence: /tmp/r288-ev-add-feedback-list)

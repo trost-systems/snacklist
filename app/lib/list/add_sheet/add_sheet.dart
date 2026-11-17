@@ -448,17 +448,11 @@ class _ContentState() extends State<_Content> {
     final rowKeys = _rowKeys(rows, byContent: cubit.stableRows);
     final first = rows.firstOrNull?.entry;
     final pickedStore = sheet.store;
-    // Flag `add-feedback-list`: right after an add the chips and the rows'
-    // room show that item's details, until the next letter.
+    // Flag `add-feedback-list`: right after an add the rows' room shows
+    // that item's details, until the next letter.
     final details = cubit.detailsItem;
-    final storeId = details != null
-        ? catalog.store(details.storeId ?? '')?.id
-        : pickedStore == null
-        ? first?.storeId
-        : pickedStore.value;
-    final categoryId = details != null
-        ? details.categoryId
-        : sheet.category ?? first?.categoryId;
+    final storeId = pickedStore == null ? first?.storeId : pickedStore.value;
+    final categoryId = sheet.category ?? first?.categoryId;
     final fixed = <Widget>[
       FocusTraversalOrder(
         order: const NumericFocusOrder(3),
@@ -469,69 +463,62 @@ class _ContentState() extends State<_Content> {
           child: Stack(
             children: [
               const _GrabHandle(),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(12, 18, 4, 10),
-                child: _reuse(
-                  #chips,
-                  (
-                    catalog,
-                    storeId,
-                    categoryId,
-                    pickedStore,
-                    sheet.category,
-                    first?.storeId,
-                    first?.categoryId,
-                    details,
-                    l10n,
-                    list,
-                    onPicked,
-                    onClose,
+              // Flag `add-feedback-list`: the store and category are picked
+              // in the added item's details (job 288), so the header keeps
+              // one height in every state.
+              if (cubit.addFeedback)
+                Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(12, 8, 8, 4),
+                  child: Align(
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: _CloseButton(onClose: onClose),
                   ),
-                  () => FoldoutChips(
-                    catalog: catalog,
-                    storeId: storeId,
-                    categoryId: categoryId,
-                    storeLabel: l10n.noStore,
-                    storeAuto: details == null && pickedStore == null,
-                    categoryAuto: details == null && sheet.category == null,
-                    categoryLabel: l10n.categoryAuto,
-                    storeChanged:
-                        details == null &&
-                        pickedStore != null &&
-                        pickedStore.value != first?.storeId,
-                    categoryChanged:
-                        details == null &&
-                        sheet.category != null &&
-                        sheet.category != first?.categoryId,
-                    onCreateStore: list.addStore,
-                    onStore: (id) {
-                      final sheet = context.read<AddSheetCubit>();
-                      if (details != null) {
-                        sheet.editDetails(
-                          ItemChanges(storeId: SetTo(id)),
-                          now: true,
-                        );
-                      } else {
-                        sheet.pickStore(id);
-                      }
-                      onPicked();
-                    },
-                    onCategory: (id) {
-                      final sheet = context.read<AddSheetCubit>();
-                      if (details != null) {
-                        sheet.editDetails(
-                          ItemChanges(categoryId: id),
-                          now: true,
-                        );
-                      } else {
-                        sheet.pickCategory(id);
-                      }
-                      onPicked();
-                    },
-                    trailing: _CloseButton(onClose: onClose),
+                )
+              else
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 18, 4, 10),
+                  child: _reuse(
+                    #chips,
+                    (
+                      catalog,
+                      storeId,
+                      categoryId,
+                      pickedStore,
+                      sheet.category,
+                      first?.storeId,
+                      first?.categoryId,
+                      l10n,
+                      list,
+                      onPicked,
+                      onClose,
+                    ),
+                    () => FoldoutChips(
+                      catalog: catalog,
+                      storeId: storeId,
+                      categoryId: categoryId,
+                      storeLabel: l10n.noStore,
+                      storeAuto: pickedStore == null,
+                      categoryAuto: sheet.category == null,
+                      categoryLabel: l10n.categoryAuto,
+                      storeChanged:
+                          pickedStore != null &&
+                          pickedStore.value != first?.storeId,
+                      categoryChanged:
+                          sheet.category != null &&
+                          sheet.category != first?.categoryId,
+                      onCreateStore: list.addStore,
+                      onStore: (id) {
+                        context.read<AddSheetCubit>().pickStore(id);
+                        onPicked();
+                      },
+                      onCategory: (id) {
+                        context.read<AddSheetCubit>().pickCategory(id);
+                        onPicked();
+                      },
+                      trailing: _CloseButton(onClose: onClose),
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
         ),
@@ -613,13 +600,10 @@ class _ContentState() extends State<_Content> {
       else
         ...suggestions,
     ];
-    // Flag `add-feedback-list`: from the first letter or add on, the rows,
-    // the details or the notes always take the room of the first opening's
-    // rows, so the sheet doesn't jump when one gives way to the other, and
-    // the list behind it keeps a steady view.
-    final steady =
-        cubit.addFeedback &&
-        (sheet.text.trim().isNotEmpty || sheet.added != null);
+    // Flag `add-feedback-list`: the rows, the details or the notes always
+    // take the room of three rows, so the sheet doesn't jump when one gives
+    // way to the other, and the list behind it keeps a steady view.
+    final steady = cubit.addFeedback;
     // Before typing, a note (the last add, a duplicate hint or merge) sits
     // above the capped rows, so it never pushes them out of view.
     final firstOpen = sheet.text.trim().isEmpty;
@@ -1270,19 +1254,45 @@ class _AddedDetailsState() extends State<_AddedDetails> {
   }
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
-    child: ItemDetailFields(
-      keyPrefix: 'added',
-      compact: true,
-      brand: _brand,
-      quantity: _quantity,
-      properties: _properties,
-      onStep: context.read<AddSheetCubit>().saveDetails,
-      onSubmitted: () {
-        context.read<AddSheetCubit>().saveDetails();
-        widget.onDone();
-      },
-    ),
-  );
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final list = context.watch<ListCubit>();
+    final catalog = list.state.catalog;
+    final sheet = context.read<AddSheetCubit>();
+    final item = widget.item;
+    return Padding(
+      padding: const EdgeInsets.only(top: 4, bottom: 12),
+      child: ItemDetailFields(
+        keyPrefix: 'added',
+        brand: _brand,
+        quantity: _quantity,
+        properties: _properties,
+        onStep: sheet.saveDetails,
+        onSubmitted: () {
+          sheet.saveDetails();
+          widget.onDone();
+        },
+        inLine: (before, after) => FoldoutChips(
+          catalog: catalog,
+          storeId: catalog.store(item.storeId ?? '')?.id,
+          categoryId: item.categoryId,
+          storeLabel: l10n.noStore,
+          categoryLabel: l10n.categoryAuto,
+          onCreateStore: list.addStore,
+          onStore: (id) {
+            sheet.editDetails(ItemChanges(storeId: SetTo(id)), now: true);
+            widget.onDone();
+          },
+          onCategory: (id) {
+            sheet.editDetails(ItemChanges(categoryId: id), now: true);
+            widget.onDone();
+          },
+          // Narrower, so the category's chip peeks in on a phone and
+          // tells that the line scrolls.
+          chipIcons: false,
+          line: ChipLine(before: before, after: after, side: 16),
+        ),
+      ),
+    );
+  }
 }

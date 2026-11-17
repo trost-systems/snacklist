@@ -1565,3 +1565,14 @@ Details: [docs/done/284.md](docs/done/284.md).
 Privacy policy §5, §8, §9, §10 (DE, EN) and the in-app strings `inviteJoinPageHint` and
 `feedbackScreenshotNote`, word for word from Legal's handoff. Policy hashes match Legal's expected
 values. No flag changed; FB2 still waits for C1 (job 290). Details: [docs/done/289.md](docs/done/289.md).
+
+## Job 288: store and category in the add's details, the top bar away while the sheet is open (2026-11-17)
+
+Peter's feedback on `add-feedback-list` (live for all users). With the flag on, the add sheet has no
+Store and Category chips at the top any more. They sit in the added item's details line (Menge, −, +,
+store, category, Marke, Eigenschaften, scrolling sideways), and each pick saves at once. The old chips
+only ever set the store and category of the next single add. Now you add first and then pick in the
+details, which gives the same item. The list's top bar (switcher, Anpassen, sync pill) fades out while
+the sheet is open, and the list behind it takes that room. It fades back with the close. Flag off is
+unchanged. Details, tests and evidence: `docs/done/288.md`, screenshots `docs/screenshots/288/`.
+TestFlight: the next green main build after the merge.
