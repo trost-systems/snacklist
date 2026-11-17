@@ -27,22 +27,22 @@
 de-DE:
   shots:
     list:
-      status: draft
+      status: approved
       h: [Eine Liste., Für alle.]
       s: Für Partner, Familie oder WG. Ohne Werbung.
       alt: Gemeinsame Einkaufsliste nach Läden; zwei neue Einträge von Anna sind gelb markiert.
     sync:
-      status: draft
+      status: approved
       h: [Du schreibst., Anna sieht’s.]
       s: Sofort bei allen auf der Liste.
       alt: Jonas trägt Kaffee ein, und auf Annas Liste erscheint er sofort gelb markiert im Supermarkt.
     add:
-      status: draft
+      status: approved
       h: ["Kurz getippt,", "schon drauf."]
       s: Mit Menge und Vorschlägen aus euren Einkäufen.
       alt: Beim Tippen von „3 Jogh“ schlägt Snacklist „Joghurt · 3“ aus früheren Einkäufen vor.
     order:
-      status: draft
+      status: approved
       h: ["Dein Laden,", "dein Weg."]
       s: Halten und ziehen. Jeder Laden hat seine Reihenfolge.
       alt: Die Kategorien im Supermarkt werden per Halten und Ziehen in die eigene Reihenfolge gebracht.
@@ -59,7 +59,7 @@ de-DE:
         s: Funktioniert mit Siri
         alt: Jonas sagt Siri „Bananen, Butter und Haferflocken“, und auf Annas Liste erscheinen die drei gelb markiert.
     assist:
-      status: draft
+      status: approved
       h: [Sag’s dem, Assistenten.]
       s: Mit KI-Assistenten auf die Liste.
       alt: Ein KI-Assistent setzt Äpfel, Eier und Mehl auf die Liste; bei Anna erscheinen sie sofort gelb markiert.
@@ -69,36 +69,36 @@ de-DE:
         items: [Äpfel, Eier, Mehl]
       premium: Mit Snacklist Premium
     invite:
-      status: draft
+      status: approved
       h: [Alle dabei., Viele Listen.]
       s: Lade alle ein. Mehrere Listen für jeden Anlass.
       alt: Haushaltsseite mit Anna und Jonas, „Leute einladen“ und eigenen Listen für Wocheneinkauf, Baumarkt und Geburtstag.
   feature:
     # Peter chose this wording (FG2) as the site's hero tagline on 2026-11-01 (job 65 brief,
     # site/content/landing/copy.yml hero.title); as a store caption Legal has not seen it.
-    status: draft
+    status: approved
     tagline: Gemeinsam einkaufen, ohne Werbung.
     alt: Gemeinsame Einkaufsliste ohne Werbung; zwei neue Einträge von Anna sind gelb markiert.
 
 en-US:
   shots:
     list:
-      status: draft
+      status: approved
       h: [One list., For everyone.]
       s: For couples, families and roommates. No ads.
       alt: A shared shopping list by store; the two items Anna just added are highlighted in yellow.
     sync:
-      status: draft
+      status: approved
       h: [You add it., Anna sees it.]
       s: On everyone’s list right away.
       alt: Jonas adds coffee, and it shows up on Anna’s list right away, highlighted in the Supermarket.
     add:
-      status: draft
+      status: approved
       h: ["Type a little,", "and it’s on."]
       s: With amounts and suggestions from your past shops.
       alt: Typing “2 Coff” makes Snacklist suggest “Coffee · 2” from past shops.
     order:
-      status: draft
+      status: approved
       h: ["Your store,", "your way."]
       s: Hold and drag. Every store keeps its own order.
       alt: The Supermarket’s categories are put in your own walking order by holding and dragging.
@@ -115,7 +115,7 @@ en-US:
         s: Works with Siri
         alt: Jonas tells Siri “Bananas, Butter and Oats”, and all three show up highlighted on Anna’s list.
     assist:
-      status: draft
+      status: approved
       h: ["Ask an", "assistant."]
       s: Add to your list with AI assistants.
       alt: An AI assistant puts apples, eggs and flour on the list; they show up highlighted on Anna’s phone right away.
@@ -125,11 +125,11 @@ en-US:
         items: [Apples, Eggs, Flour]
       premium: With Snacklist Premium
     invite:
-      status: draft
+      status: approved
       h: [Everyone in., Many lists.]
       s: Separate lists for every occasion.
       alt: The household page with Anna and Jonas, “Invite people” and separate lists for Weekly shop, Hardware and Birthday.
   feature:
-    status: draft
+    status: approved
     tagline: Shop together, no ads.
     alt: A shared shopping list without ads; the two items Anna just added are highlighted in yellow.

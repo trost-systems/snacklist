@@ -15090,3 +15090,18 @@ Fixed here, with nice-to-have 2. Still behind `on-device-catalog`.
    stores. A new one fails as "not pinned", one that agrees again as "unpin". Review 1's mutant (no
    `suggestStore` in `parsedStore`) now fails on the 12 rows it pushed there. A deliberate ranking
    change that rewrites `suggest_parity.json` updates that list too.
+
+## Job 287: store captions approved under Legal N-248 (2026-11-17)
+
+1. **Only `status:` lines changed.** Legal's GO (N-248) covers `captions.yaml` at sha256
+   `47337a22…f9329` and allows `draft` → `approved` as the only edit. 14 lines changed: the six
+   shots other than voice and the feature graphic, in de-DE and en-US. No wording, comment or
+   `play.status` moved.
+2. **The voice shot stays `draft` in both locales.** Its Play frame is `play.status: blocked`
+   (condition 1), and the App Store frame may show Siri only as a real-device capture (condition 2).
+   That frame takes the shot's top-level status (`captionsFor` has no `appstore.status`). Marking it
+   blocked would mean a new line, which N-248 does not allow. Keeping `draft` keeps the App Store
+   voice frame out of any approved upload until a real Siri capture exists and Legal sees the change.
+3. New sha256: `63f146c5f7aa618e24e8fe4a96398a6a84d255fe9c276a1e738154f73356852a`.
+   The stale copies (`research/store-captions/CAPTIONS-252.md`, old `docs/screenshots/215/CAPTIONS.md`)
+   were not touched or used.
