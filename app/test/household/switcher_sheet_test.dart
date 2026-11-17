@@ -282,12 +282,12 @@ Future<void> _openHouseholds(WidgetTester tester) async {
   await _back(tester);
 }
 
-/// What [text] shows, without its leading icon glyph.
+/// What [text] shows, without its leading icon placeholder.
 String _shown(Text text) =>
     (text.data ??
             text.textSpan?.toPlainText(includeSemanticsLabels: false) ??
             '')
-        .replaceFirst(RegExp(r'^[\u{E000}-\u{F8FF}]', unicode: true), '')
+        .replaceFirst(RegExp(r'^\uFFFC', unicode: true), '')
         .trim();
 
 /// [text] in the row for Siri, Alexa & KI.
@@ -1020,14 +1020,35 @@ void main() {
             ),
           )
           .single;
-      expect(
-        line('Zuhause'),
-        '${String.fromCharCode(Icons.home_outlined.codePoint)} Zuhause',
+      expect(line('Zuhause'), '\uFFFC Zuhause');
+      expect(line('Wocheneinkauf'), '\uFFFC Wocheneinkauf');
+    });
+
+    testWidgets('each name line has its icon centred on the text at 130 % '
+        'text', (tester) async {
+      await _pump(
+        tester,
+        flags: voice,
+        homeLists: const [_weekly],
+        textScale: 1.3,
       );
-      expect(
-        line('Wocheneinkauf'),
-        '${String.fromCharCode(Icons.checklist.codePoint)} Wocheneinkauf',
-      );
+      await _openHouseholds(tester);
+      for (final name in ['Zuhause', 'Wocheneinkauf']) {
+        final line = find.descendant(
+          of: _key('household-default-row'),
+          matching: find.byWidgetPredicate(
+            (w) => w is Text && _shown(w) == name,
+          ),
+        );
+        final icon = find.descendant(of: line, matching: find.byType(Icon));
+        final box = tester.getRect(line);
+        final centre = tester.getCenter(icon).dy;
+        expect(
+          (centre - box.center.dy).abs(),
+          lessThan(2),
+          reason: '$name: icon centre $centre, line ${box.center.dy}',
+        );
+      }
     });
 
     testWidgets('in English the row reads "add to" and names household and '
