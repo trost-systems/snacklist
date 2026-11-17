@@ -424,8 +424,9 @@ List<Widget> householdSheetTail(
 
 /// A name in the row for Siri, Alexa & KI: [icon] tells the household
 /// from the list where names wrap, and screen readers hear [label]. The
-/// icon is a glyph of the text, so the name wraps under it at full width
-/// and the line merges into the row's semantics.
+/// icon is a middle-aligned span of the text, centred on its line, so the
+/// name wraps under it at full width and the line merges into the row's
+/// semantics.
 Widget _voiceName(
   BuildContext context,
   IconData icon,
@@ -438,17 +439,14 @@ Widget _voiceName(
     key: key,
     TextSpan(
       children: [
-        TextSpan(
-          text: String.fromCharCode(icon.codePoint),
-          semanticsLabel: '',
-          // An icon draws inside its box: a bit larger to match the
-          // letters, on the line's own height.
-          style: TextStyle(
-            fontFamily: icon.fontFamily,
-            package: icon.fontPackage,
-            fontSize:
-                (Theme.of(context).textTheme.bodyLarge?.fontSize ?? 16) * 1.2,
-            height: 1,
+        WidgetSpan(
+          alignment: PlaceholderAlignment.middle,
+          child: Icon(
+            icon,
+            size:
+                (Theme.of(context).textTheme.bodyLarge?.fontSize ?? 16) *
+                1.2 *
+                MediaQuery.textScalerOf(context).scale(1).clamp(1, 1.3),
             color: t.textMuted,
           ),
         ),
