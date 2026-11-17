@@ -1551,3 +1551,11 @@ only the listed words change, and there is no classifier flag. Details, evidence
 [docs/done/282.md](docs/done/282.md). Ships with the next green main build to TestFlight; no flag
 targeting needed.
 
+
+## Job 284: privacy §6 and the landing dictation card for English dictation (N-250)
+
+Privacy §6 (DE and EN) now has Legal's N-250 text word for word: dictation in the app's language
+(German or English), on the device, and on Android 13+ a request to Android to download the offline
+model. The landing card `voice.app.body` says the same in short. Policy and site copy only; the PR
+stays open for PM, then Legal's hash-bound GO. Hashes and head SHA: the job's NEEDS_LEAD entry.
+Details: [docs/done/284.md](docs/done/284.md).

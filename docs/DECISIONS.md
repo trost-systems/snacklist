@@ -15145,3 +15145,18 @@ Catalog drafting (job 279, PR #510) found four words no catalog row could fix: "
    over the last one (grapefruit juice, cocoa butter). Fixing those moves many names, so they go to
    their own job with a flag decision (NEEDS_LEAD „Job 282“). Cinnamon rolls and fig rolls, from the
    same list, are fixed here.
+
+## Job 284: privacy §6 and the landing dictation card follow the app language (Legal N-250, 2026-11-17)
+
+1. **§6 is Legal's text, word for word.** `datenschutz.md` and `privacy.md` §6 take the DE/EN NEW
+   paragraphs of the 17 Nov batch report, section 4 (N-250), copied by a script that refuses unless
+   each OLD paragraph occurs exactly once. The legal-basis lines are unchanged. The date lines already
+   read 17 November 2026 (#452), the day of this PR, so they stay.
+2. **`voice.app.body` says only what §6 says.** The card keeps its first sentence and its category
+   claim, swaps "auf Deutsch"/"in German" for the app's language (German or English) and adds that on
+   Android 13 and later the app can ask Android to download offline speech recognition. The EN sentence
+   says "can", not "may": the landing test reads "may" as a month (`site/test/landing.test.mjs`), and
+   "can" matches the DE "kann". `site/COPY_NEEDED.md` is regenerated from the YAML.
+3. **`demo.voice-add` stays.** Its video was filmed in German, so the alt text's "says, in German" is
+   still true. Its source note ("The app listens in German in every language") is out of date since
+   #487 but no reader sees it, and changing it is outside N-250.
