@@ -1,0 +1,6 @@
+[22:18:55.362Z] ok   after "Schäufele": hint none, want none
+[22:18:57.473Z] renamed "Bier" to "beer" through the items table
+[22:19:02.072Z] ok   after "Beeren": hint none, want none
+[22:19:04.551Z] ok   after "Bier": hint "beer steht schon auf der Liste", want "beer steht schon …"
+[22:19:04.558Z] database: [{"name":"beer","canonical_key":"bier"},{"name":"Bier","canonical_key":"bier"},{"name":"Schaufel","canonical_key":"schaufel"},{"name":"Beeren","canonical_key":"beer"},{"name":"Schäufele","canonical_key":"schaufele"}]
+[22:19:04.611Z] PASS classifier-homographs-dup-hint (evidence: /tmp/282-ev3)

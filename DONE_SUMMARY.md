@@ -1551,3 +1551,11 @@ only the listed words change, and there is no classifier flag. Details, evidence
 [docs/done/282.md](docs/done/282.md). Ships with the next green main build to TestFlight; no flag
 targeting needed.
 
+## Job 282 review 0: the duplicate hint no longer joins homographs
+
+Follow-up PR to #523 (merged before review). `canonical_key(name)` now reads the typed spelling like
+the classifier, so a renamed "beer" is not Beeren for the duplicate hint, and Schäufele has a key of
+its own, not Schaufel's. Also: spring and egg rolls are Frühlingsrollen, Schäuferle/Schäuferla are
+Schäufele. Still no flag. Details: [docs/done/282.md](docs/done/282.md), section "Review 0 fixes".
+Ships with the next green main build to TestFlight.
+

@@ -15,8 +15,10 @@ insert into auth.users (id, email) values ('00000000-0000-0000-0000-000000274a01
 create temp table v0 as select public.catalog_version() as version;
 grant select on v0 to authenticated, anon;
 
-select ok(exists (select from public.catalog_snapshots s where s.version = (select version from v0)),
-  'the migration snapshots the current version');
+-- A catalog migration after job 274's leaves its new version without a snapshot until the first
+-- catalog_delta call or the next catalog change takes one (both below); no other version is marked.
+select ok(not exists (select from public.catalog_snapshots s where s.current and s.version <> (select version from v0)),
+  'no snapshot but the current version''s is marked current');
 
 select pg_temp.login('00000000-0000-0000-0000-000000274a01');
 select is(public.catalog_delta((select version from v0)),

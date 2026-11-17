@@ -15145,3 +15145,31 @@ Catalog drafting (job 279, PR #510) found four words no catalog row could fix: "
    over the last one (grapefruit juice, cocoa butter). Fixing those moves many names, so they go to
    their own job with a flag decision (NEEDS_LEAD „Job 282“). Cinnamon rolls and fig rolls, from the
    same list, are fixed here.
+
+## Job 282 review 0: one canonical reading, Schäufele's own key (2026-11-17)
+
+Review 0 (FIX) of #523, which was merged before it. Follow-up PR.
+
+1. **`canonical_key(name)` reads the typed spelling.** It went through the key alone
+   (`canonical_of_key(item_key(name))`), so wherever `items.canonical_key` is written outside
+   `classify_item_detail` (a rename in the items trigger, every catalog migration's backfill, the
+   grocery log), "beer" kept Beere's key and the duplicate hint offered to merge it into Beeren. It
+   now reads `classifier_words(item_key(name), name)`, the classifier's own reading; pgTAP pins the
+   equality for every dictionary term and synonym. `canonical_of_key` stays for memory rows, which
+   only keep the key. The migration backfills items whose key changes.
+2. **Schäufele gets its own canonical.** Dictionary terms of different categories on one form
+   shared its canonical, so Schäufele and Schaufel were one item for the duplicate hint. Now only the
+   first category (the form's own row) keeps it; the others take their spelling folded but not
+   stemmed ("schaufele"), and their synonyms follow (Schäuferle, Schäuferla). The main lexicon row
+   orders by category before canonical, so it stays the same row.
+3. **Nice-to-haves taken.** Synonyms spring rolls and egg rolls → frühlingsrolle (#523 had sent them
+   to bakery through "rolls"), schäuferle and schäuferla → schäufele; egg rolls get no 🥚 (icon
+   revision 4). `homograph_pick` compares spellings as text, no longer as a regex.
+4. **catalog_delta's first assertion.** "The migration snapshots the current version" held only
+   while job 274's migration was the last to change the catalog (#523's synonym rows happened to
+   leave the version unchanged). After any later catalog migration the new version has no snapshot
+   until the first `catalog_delta` call or the next change takes one, which the same test already
+   proves. The assertion now checks that no other version is marked current.
+5. **suggest bench.** The db gate's suggest_entries p95 was 52-59 ms under load 16-17 on hz; A/B
+   with #523's catalog gave the same (56.7/59.4 vs 59.3/56.1 ms), and `suggest_entries` doesn't call
+   the changed functions. Load noise; CI decides.
