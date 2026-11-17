@@ -92,7 +92,7 @@ Connections and Premium
 - [ai-assistants](./ai-assistants.md): connecting an AI assistant through MCP (https://mcp.snacklist.app), the consent page, Mehr → Zugänge with access tokens and connected apps.
 - [siri](./siri.md): the Siri Shortcut today, native Siri (built, announcement held), Siri keys.
 - [home-widgets](./home-widgets.md): the iPhone and Android Home Screen widget (built, announcement held).
-- [alexa](./alexa.md): the Alexa skill (beta, not certified): linking, adding and reading by voice.
+- [alexa](./alexa.md): the Alexa skill (live): linking, adding and reading by voice.
 - [premium](./premium.md): what users see of Snacklist Premium while it is not on sale.
 
 Clips of these features for emails and the site: the snacklist-howto-clips skill (`.cursor/skills/snacklist-howto-clips/`).

@@ -236,14 +236,14 @@ changelog_verdict() {
     cat >&2 <<'FORMAT'
 Format (docs/CHANGELOG.md): one item per paragraph, a category (new, improved or fixed) and one
 sentence per language, in user words; or the single word none when users see no change. An item
-users don't get yet adds "flag: <key>" (behind a feature flag) or "hold: <key>" (e.g. the
-uncertified Alexa skill), a key from releases/flags.json.
+users don't get yet adds "flag: <key>" (behind a feature flag) or "hold: <key>" (e.g. Premium
+before it is on sale), a key from releases/flags.json.
 
 ## Changelog
 new
-de: Mit Alexa fügst du Artikel per Sprache hinzu.
-en: Add items by voice with Alexa.
-hold: alexa-certification
+de: Die Liste sortiert sich nach deinem Einkauf.
+en: The list sorts itself after your shopping trip.
+flag: smart-sort
 
 fixed
 de: Die Liste springt beim Abhaken nicht mehr nach oben.

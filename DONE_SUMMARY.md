@@ -1627,3 +1627,15 @@ Replaced "German only" dictation copy (comparison page lines 28, 71, 114, `voice
 ## Job 283: Opus review of the #510 catalog draft
 
 - Job 283, Opus review of the 519 drafted catalog rows on PR #510 (496 ok, 9 fixed, 0 dropped, 14 doubtful as questions CD1 to CD15, 23 added), no row marked reviewed: [docs/done/283.md](docs/done/283.md)
+
+## Job 294: release the alexa-certification hold
+
+- `releases/flags.json`: hold `alexa-certification` is `released: true` (skill live worldwide since 2026-11-16). The changelog gate already honours `released`, so Alexa items need no hold line; the hold mechanism stays.
+- Stale beta/uncertified text fixed in docs/CHANGELOG.md, releases/README.md, the PR template, scripts/lib.sh's format hint, the verify-snacklist and verify-family-groceries Alexa feature files, FEATURES-FOR-WRITERS.md, docs/ALEXA.md (status note, beta sections kept as history) and the 1.0.0 override comment. Legal texts and in-app behaviour untouched.
+- Test: new `check` case that a released hold lets an Alexa item through; the fixture note no longer claims the skill is uncertified. `node --test scripts/release/changelog.test.mjs`: 45/45; `scripts/gates/changelog.sh` passes.
+- For the lead: `docs/store/store-captions-assistants.md` (Legal N-248) still assumes an invite-only beta; its conclusion may change now. Not edited.
+
+Review 1 fixes (job 294): `scripts/release/test.sh` now asserts the unreleased `premium-launch` hold still demands its line, and that an Alexa item passes without one; `scripts/release/test.sh` and the .mjs tests (45/45) pass. FEATURES-FOR-WRITERS.md's last Alexa certification lines and the releases/README.md wording are fixed. NEEDS_PETER step 4 and the store captions file are left as history / for the lead.
+
+Review 2 fixes (job 294, fixed in job 300): the Alexa guides (`site/content/guides/de|en/alexa.md`) no longer mention the beta, an invitation or Peter; they say to enable the skill from the Skill Store and link the account. FEATURES-FOR-WRITERS.md step 1 of "How to get there" says the same, and its "Never claim" list no longer says the skill is uncertified. "(beta)" is gone from the Alexa labels in `copy_needed.json` and `COPY_NEEDED.md`. NEEDS_PETER's job 31 "set released true" step is marked done, and the releases/README.md hold sentence is split in two. The lint failure was `scripts/landing-test.sh` still expecting the old Alexa format example that `scripts/lib.sh` no longer prints; it now expects the new one.
+- Legal follow-up for the lead: `docs/store/store-captions-assistants.md` (Legal N-248) still assumes an invite-only beta. Left unchanged on purpose.

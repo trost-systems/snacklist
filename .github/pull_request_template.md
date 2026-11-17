@@ -26,7 +26,7 @@ server internals. Add a fix only if a user could have noticed the bug. If nothin
 visible to users, write only: none
 
 Not everyone has it yet? Add "flag: <key>" when the item ships behind a feature flag, or
-"hold: <key>" when it waits for something else (the Alexa skill: hold: alexa-certification).
+"hold: <key>" when it waits for something else (a feature not launched yet: hold: premium-launch).
 The key must be in releases/flags.json; the item stays out of the public changelog until that
 file opens its gate.
 
@@ -40,7 +40,6 @@ Example:
 new
 de: Mit Alexa fügst du Artikel per Sprache hinzu: „Alexa, sag Snacklist, füg Milch hinzu“.
 en: Add items with Alexa: "Alexa, tell Snacklist to add milk".
-hold: alexa-certification
 
 fixed
 de: Die Liste springt beim Abhaken nicht mehr nach oben.

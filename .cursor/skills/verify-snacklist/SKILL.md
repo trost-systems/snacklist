@@ -13,7 +13,7 @@ Other surfaces:
 | --- | --- | --- |
 | iOS, Android apps | No simulators or emulators on the build boxes | The Linux desktop debug app through `scripts/fg` (verify-family-groceries skill, `FG_SURFACE=linux`). Native-only behavior (microphone, Siri intents, store purchases, keyboards) stays unverified |
 | Siri | Server side only | `POST /functions/v1/voice` with a Siri key, as `e2e/tests/voice.spec.ts` does (`features/siri.md`) |
-| Alexa (beta) | Server side only | Signed requests through `scripts/alexa-say.sh` and `e2e/tests/alexa-helpers.ts` (`features/alexa.md`) |
+| Alexa | Server side only | Signed requests through `scripts/alexa-say.sh` and `e2e/tests/alexa-helpers.ts` (`features/alexa.md`) |
 | MCP / AI assistants | Yes, over HTTP | Local `/functions/v1/mcp` with an access key or OAuth (`e2e/tests/mcp-helpers.ts`, `features/ai-assistants.md`) |
 
 Drive Siri, Alexa and MCP only against a local test household. Never against the hosted project or a real user's household.

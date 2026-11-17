@@ -18,7 +18,7 @@ A household member says "Alexa, sag Snacklist, füg Milch und Eier hinzu" and th
 - `alexa-locked` (job 50, off by default): with `app_switches.integration_lock` on, a linked household without Snacklist Premium hears for an add "Snacklist nimmt für euren Haushalt gerade keine Sprachbefehle an. Ich habe nichts hinzugefügt." (English: "Snacklist can't take voice requests for your household right now. I didn't add anything.") and for reading or launch the first sentence, with a card, session ended; nothing is added or read, the rate limit is untouched. Help, stop, linking and skill events stay free; the link stays and works again once the household has Premium. Drive with `scripts/alexa-say.sh` after `fg db query --write "update app_switches set enabled = true where key = 'integration_lock'"`; e2e: `e2e/tests/integration-lock.spec.ts`.
 ## How to get to it (user POV)
 
-- An Echo or the Alexa app, after the skill is enabled and linked (beta, docs/ALEXA.md): "Alexa, sag Snacklist, …", "Alexa, frag Snacklist, …", "Alexa, öffne Snacklist". Without one of these patterns ("Alexa, setz Milch auf die Snacklist") Alexa's own lists take the sentence (docs/ALEXA.md, "Invocation name and Alexa's own lists").
+- An Echo or the Alexa app, after the skill is enabled and linked (docs/ALEXA.md): "Alexa, sag Snacklist, …", "Alexa, frag Snacklist, …", "Alexa, öffne Snacklist". Without one of these patterns ("Alexa, setz Milch auf die Snacklist") Alexa's own lists take the sentence (docs/ALEXA.md, "Invocation name and Alexa's own lists").
 - Linking: Alexa app → Skills → Snacklist → Konto verknüpfen, which opens the app's consent page (web).
 - Locally there is no Alexa: `scripts/alexa-say.sh` sends the request Alexa would send, signed with the local test CA.
 

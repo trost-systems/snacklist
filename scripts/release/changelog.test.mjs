@@ -327,7 +327,7 @@ describe('gated items, pending.json and the override', () => {
     const data = {
       flags: { 'smart-lists': { rollout: 'partial', note: 'half the households' }, 'dark-mode': { rollout: 'full', note: '' } },
       holds: {
-        'alexa-certification': { released: false, note: 'the Alexa skill is in beta and not certified by Amazon yet', match: ['alexa'] },
+        'alexa-certification': { released: false, note: 'an example hold that is not released yet', match: ['alexa'] },
         'ios-widget': { released: true, note: '' },
       },
     };
@@ -401,7 +401,7 @@ describe('gated items, pending.json and the override', () => {
     assert.match(r.stderr, /flag "nope" is not in releases\/flags\.json/);
     r = check(note(item('fixed', 'Der Alexa-Skill antwortet schneller.', 'The skill answers faster.')));
     assert.equal(r.status, 1, 'German text mentions Alexa');
-    assert.match(r.stderr, /mentions "alexa": add the line "hold: alexa-certification" \(the Alexa skill is in beta and not certified by Amazon yet\)/);
+    assert.match(r.stderr, /mentions "alexa": add the line "hold: alexa-certification" \(an example hold that is not released yet\)/);
     r = check(note(`${item('new', alexa, 'Add items with Alexa.')}\nhold: alexa-certification`));
     assert.equal(r.status, 0, r.stderr);
     assert.match(r.stdout, /changelog: new \(hold: alexa-certification\): Add items with Alexa\./);
@@ -409,6 +409,13 @@ describe('gated items, pending.json and the override', () => {
       assert.equal(check(note(item('fixed', de, 'Faster.'))).status, 1, `${de}: matched at a word start`);
     }
     assert.equal(check(note(item('new', 'Die Lexa-Liste.', 'The Lexa list.'))).status, 0, 'not inside a word');
+  });
+
+  test('check: once the hold is released an Alexa item needs no hold line', () => {
+    flags({ 'alexa-certification': { released: true } });
+    const r = spawnSync('node', [cli, 'check'], { cwd: repo, input: note(item('new', alexa, 'Add items with Alexa.')), encoding: 'utf8' });
+    flags();
+    assert.equal(r.status, 0, r.stderr);
   });
 
   test('record keeps the held items in pending.json; once the flag is full the next draft takes them and they leave pending.json', () => {

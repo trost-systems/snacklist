@@ -100,9 +100,10 @@ are not in the store texts, and the site never shows them. Drafts from job 39 ha
 `flags.json` lists every feature flag (`rollout`: `full`, `partial` or `off`, and a `note`) and
 every hold (`released`: true or false, a `note`, and optional `match` words). An item with a
 `flag:` or `hold:` line in its PR note is public only when its flag is `full` and its hold
-released. While `alexa-certification` is not released, every item that mentions Alexa is held
-back. The file is edited by hand in a PR when a rollout changes ([`docs/CHANGELOG.md`](../docs/CHANGELOG.md),
-"Gated items").
+released. While a hold with `match` words is not released (today `premium-launch`), an item that
+mentions one of them is held back. `alexa-certification` is released, because the skill went
+live on 2026-11-16. The file is edited by hand in a PR when a rollout changes
+([`docs/CHANGELOG.md`](../docs/CHANGELOG.md), "Gated items").
 
 `flags.json` is only for the changelog and release holds. The app's runtime toggles are PostHog
 feature flags (job 44, [`docs/ANALYTICS.md`](../docs/ANALYTICS.md), "Feature flags"); a feature

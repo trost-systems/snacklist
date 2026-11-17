@@ -20,9 +20,9 @@ The app is called Snacklist. It used to be called Hummlist. The app, its Siri ph
 ## Never claim (everywhere)
 
 - That Snacklist Premium can be bought, or any price, plan, trial or discount. Premium is not on sale and nothing is locked behind it today.
-- That Siri, Alexa or AI assistants need Premium today. They don't: nothing is locked during the beta. After the public launch AI assistants become part of Snacklist Premium; Siri and the Alexa skill stay free for good. Never write that Siri or Alexa need Premium. Peter decided this.
+- That Siri, Alexa or AI assistants need Premium today. They don't: nothing is locked today. After the public launch AI assistants become part of Snacklist Premium; Siri and the Alexa skill stay free for good. Never write that Siri or Alexa need Premium. Peter decided this.
 - Siri without setup ("just say Hey Siri", no Shortcut) as available. It is built, but its announcement waits for Snacklist Launch. Today Siri works through a Shortcut the user sets up once, in German.
-- That the Alexa skill is launched, certified or in the Alexa Skill Store. It is a beta by invitation, in German and English.
+- That the Alexa skill needs Premium or an invitation. It passed Amazon certification and has been live in the Alexa Skill Store worldwide since 2026-11-16, in German and English.
 - Store logos or chain colours, official store layouts, prices, offers or opening hours. Store names are plain names; walking orders are researched defaults.
 - A code to type from an email for sign-in. Sign-in emails contain a link, and the only code in Snacklist is the 8-character household invite code.
 - The Home Screen widget as available. It is built for iPhone and Android, but its announcement waits for a test on real phones (see "Home Screen widget").
@@ -31,7 +31,7 @@ The app is called Snacklist. It used to be called Hummlist. The app, its Siri ph
 - Real people's names or lists. Clips and screenshots use fictional households: the landing videos of adding and ticking off and of two phones in sync, and the store screenshots, show „Unser Haushalt“ (EN: "Our Home") with Anna and Jonas; the voice video and the how-to clips show the Brandt family (Mia); the AI chat video shows Sam in „Sams Wohnung“.
 - AI products or their makers (ChatGPT, OpenAI, Claude, Anthropic) as examples, claims or praise. Write „KI-Assistenten, die MCP unterstützen“ / "AI assistants that support MCP". Only setup instructions (the Claude guide, the app's help text for AI assistants) and the trademark notice in the imprint name them. This is a legal rule, and an automatic check refuses these names on the site and in the app's texts.
 - Alexa as „sie“ / "she". Name the skill „Snacklist-Skill für Amazon Alexa“ / "Snacklist skill for Amazon Alexa". This is a legal rule too.
-- Anything the sections below mark as not announced or not switched on yet (Premium, Siri without setup, the Alexa skill's certification, the Home Screen widget, connections only for Premium).
+- Anything the sections below mark as not announced or not switched on yet (Premium, Siri without setup, the Home Screen widget, connections only for Premium).
 
 # Getting started
 
@@ -354,7 +354,7 @@ Each step ticks itself off when it happens; „Einladen“ (EN: "Invite") and �
 - That it understands every word, or any typo; very short words and unusual typos stay in „Sonstiges“ on purpose.
 - That it uses AI or learns across households; each household's corrections stay in that household.
 - That it works for every language; the word list is German, with a few English synonyms.
-- That Siri and Alexa are open to everyone: Siri without setup is not announced yet, and the Alexa skill is a beta, not certified.
+- That Siri and Alexa are open to everyone: Siri without setup is not announced yet, and the Alexa skill is live for everyone since 2026-11-16.
 
 **Offline.** An item added without a connection shows under „Wird einsortiert …“ (EN: "Sorting…") until the connection is back, then moves under its category. Online, items arrive already sorted.
 
@@ -726,29 +726,28 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 
 **Last verified.** 18 November 2026, code version 0ca5dcc9, from the app's code and its automatic tests (the widget only exists on iPhone and Android).
 
-## Alexa skill (beta)
+## Alexa skill
 
-**What it does.** With the Snacklist skill a household member can say „Alexa, sag Snacklist, füg Milch und Eier hinzu“; the items land on the shared list, sorted by category, and Alexa says „Ich habe Milch und Eier auf die Snacklist gesetzt.“ What is open already it names in one sentence: „Schon auf der Snacklist: Milch.“ Saying just „Butter“ while „Butter Weihenstephan“ (a brand) or „Bio Butter“ is open, Alexa asks whether to add another Butter; yes adds it, no adds nothing. With „Butter gesalzen“ open, plain „Butter“ is simply added. An amount said after the item counts too: „Zwiebeln drei“ adds 3 Zwiebeln. A product name that starts with a number stays whole: „Drei Glocken Nudeln“ is one item. „Alexa, frag Snacklist, was auf der Liste steht“ reads the open items (up to ten, then „und N weitere“; with eleven it reads all eleven). On an Alexa device set to English it understands "Alexa, ask Snacklist to add milk and eggs" and "Alexa, ask Snacklist what's on the list" and answers in English ("I put milk and eggs on Snacklist."). The skill is in beta and not yet certified by Amazon, so it is not for everyone.
+**What it does.** With the Snacklist skill a household member can say „Alexa, sag Snacklist, füg Milch und Eier hinzu“; the items land on the shared list, sorted by category, and Alexa says „Ich habe Milch und Eier auf die Snacklist gesetzt.“ What is open already it names in one sentence: „Schon auf der Snacklist: Milch.“ Saying just „Butter“ while „Butter Weihenstephan“ (a brand) or „Bio Butter“ is open, Alexa asks whether to add another Butter; yes adds it, no adds nothing. With „Butter gesalzen“ open, plain „Butter“ is simply added. An amount said after the item counts too: „Zwiebeln drei“ adds 3 Zwiebeln. A product name that starts with a number stays whole: „Drei Glocken Nudeln“ is one item. „Alexa, frag Snacklist, was auf der Liste steht“ reads the open items (up to ten, then „und N weitere“; with eleven it reads all eleven). On an Alexa device set to English it understands "Alexa, ask Snacklist to add milk and eggs" and "Alexa, ask Snacklist what's on the list" and answers in English ("I put milk and eggs on Snacklist."). The skill passed Amazon certification and has been live in the Alexa Skill Store worldwide since 2026-11-16.
 
-**Named lists** (checked on a test copy of Snacklist on our own computer, not yet with a real Alexa device; the skill's beta testers don't have it yet either). „Alexa, öffne Snacklist und füge Luftballons zur Geburtstag Liste hinzu“ puts Luftballons on the list Geburtstag: „Ich habe Luftballons auf die Liste Geburtstag gesetzt.“ Without a list name the items go to the person's default list; with several lists Alexa names the list used. An unknown or ambiguous name adds to the default list and Alexa says so („Eine Liste „Party“ habe ich nicht gefunden. Ich habe Konfetti auf die Liste Alltag gesetzt.“); Alexa never asks which list. Don't claim it before the Alexa skill is certified.
+**Named lists** (checked on a test copy of Snacklist on our own computer, not yet with a real Alexa device; not yet with a real device after the public launch either). „Alexa, öffne Snacklist und füge Luftballons zur Geburtstag Liste hinzu“ puts Luftballons on the list Geburtstag: „Ich habe Luftballons auf die Liste Geburtstag gesetzt.“ Without a list name the items go to the person's default list; with several lists Alexa names the list used. An unknown or ambiguous name adds to the default list and Alexa says so („Eine Liste „Party“ habe ich nicht gefunden. Ich habe Konfetti auf die Liste Alltag gesetzt.“); Alexa never asks which list. The skill is live, but claim named lists only once a real device has confirmed them.
 
 Since 10 November 2026 the skill is called Snacklist, with the invocation „snacklist“; the old Hummlist skill (invocation „humm list“) keeps answering for its testers for a while longer.
 
 **How to get there.**
-1. Ask for a beta invitation (the link comes from Peter, who needs the email address of your Amazon account); accept it.
-2. In the Alexa app open the skill „Snacklist“ and tap „Zur Verwendung aktivieren“.
-3. Sign in to Snacklist and tap „Erlauben“ on the page „Zugriff erlauben?“ (it names „Amazon Alexa“). The page then says „Verbunden“ (EN "Connected") until the Alexa app takes over.
-4. Say „Alexa, sag Snacklist, …“ (EN: "Alexa, ask Snacklist to …", "Alexa, tell Snacklist …", "Alexa, open Snacklist") (for example „… ich brauche Milch“, „… füge Milch hinzu“, „… setz Milch drauf“), „Alexa, frag Snacklist, …“ or „Alexa, öffne Snacklist“. If Alexa mishears the name, say „Alexa, öffne Snacklist“ first, then the items. To end it: Snacklist → „Mehr“ (EN: "More") → „Zugänge“ (EN: "Access") → „Amazon Alexa trennen“ (EN: "Disconnect Amazon Alexa") → „Trennen“, or disable the skill in the Alexa app. Disabling the skill also removes „Amazon Alexa“ from Zugänge. A connection nobody used for 12 months is removed, Zugänge entry included.
+1. In the Alexa app open the skill „Snacklist“ in the Skill Store and tap „Zur Verwendung aktivieren“.
+2. Sign in to Snacklist and tap „Erlauben“ on the page „Zugriff erlauben?“ (it names „Amazon Alexa“). The page then says „Verbunden“ (EN "Connected") until the Alexa app takes over.
+3. Say „Alexa, sag Snacklist, …“ (EN: "Alexa, ask Snacklist to …", "Alexa, tell Snacklist …", "Alexa, open Snacklist") (for example „… ich brauche Milch“, „… füge Milch hinzu“, „… setz Milch drauf“), „Alexa, frag Snacklist, …“ or „Alexa, öffne Snacklist“. If Alexa mishears the name, say „Alexa, öffne Snacklist“ first, then the items. To end it: Snacklist → „Mehr“ (EN: "More") → „Zugänge“ (EN: "Access") → „Amazon Alexa trennen“ (EN: "Disconnect Amazon Alexa") → „Trennen“, or disable the skill in the Alexa app. Disabling the skill also removes „Amazon Alexa“ from Zugänge. A connection nobody used for 12 months is removed, Zugänge entry included.
 
 **Never claim.**
-- That the skill is certified, in the public Alexa Skill Store, or available to everyone.
-- That it speaks any language besides German and English, or that everyone can find it in the Skill Store (it is listed for every country only once certified).
+- That the skill needs an invitation or is not yet in the Alexa Skill Store.
+- That it speaks any language besides German and English, or that it is listed in every country (it is live worldwide since 2026-11-16, but supports only the German and English locales).
 - That it needs Premium (it is free, also after Premium launches). Peter decided this.
 - That it works for ticking items off or moving them (add and read only).
 - That „Alexa, setz Milch auf die Snacklist“ (EN "Alexa, add milk to Snacklist") works: without „sag/frag/öffne Snacklist“ ("ask/tell/open Snacklist") Alexa's own lists take the sentence.
 - Exact deletion periods beyond what the privacy policy says (its wording waits for Peter's approval).
 
-**Unverified.** Real Alexa voice, the Alexa app screens and the beta invitation flow (no device or Amazon account here).
+**Unverified.** Real Alexa voice, the Alexa app screens and the linking flow (no device or Amazon account here).
 
 **Last verified.** 18 November 2026, code version 0ca5dcc9, from the server's answers (Alexa itself needs an Echo or the Alexa app). The named lists: code version 95316b50, checked by the team on 13 November 2026 on a test copy on our own computer.
 
