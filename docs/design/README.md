@@ -30,3 +30,4 @@ python3 -m http.server 8771 --directory docs/design/h-satz-final/h-dist
 ## Feature prototypes
 
 - **Grocery log (job 198):** [`grocery-log/`](grocery-log/), five interactive approaches behind one switcher, plus [`RECOMMENDATION.md`](grocery-log/RECOMMENDATION.md). Serve the repo root (`python3 -m http.server 4198 --bind 127.0.0.1`) and open `/docs/design/grocery-log/index.html`.
+- **Display name (job 293):** [`display-name/`](display-name/README.md), two rounds behind one overview: DN (asking for the name in onboarding, DN1 to DN5) and DE (changing it later, DE1 to DE5), each with a [`RECOMMENDATION.md`](display-name/dn/RECOMMENDATION.md). Run `node docs/design/display-name/verify.mjs` from the repo root.
