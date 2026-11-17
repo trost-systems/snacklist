@@ -15329,3 +15329,126 @@ Main's Release built with Xcode 26.6 and the iOS 26.5 SDK on `macos-26`.
    fastlane's `upload_to_testflight` succeed with no warning; fastlane does not print altool's
    upload warnings, and this runner has no App Store Connect API key. The text is in Apple's
    email or the build's page in App Store Connect (docs/NEEDS_PETER.md, Job 306).
+
+## Job 279: first catalog drafting run, S4 (2026-11-16)
+
+Legal's GO (suggestions review, Addendum A, N-215): drafts only from our own TSVs and general
+knowledge, no AI-set allergen, nutrition or health facts, brands as plain text, a person reviews
+every row. The run writes `catalog/drafts/2026-11-16-claude.tsv` and `catalog/REVIEW.md`; nothing in
+`supabase/classifier/*.tsv` changes, and the PR stays a draft for review.
+
+1. **"The catalog" is the classifier's dictionary and synonyms.** There is no other catalog yet
+   (the S-series catalog of concepts is a design, job 274 reads the same TSVs). The draft has one
+   schema for both: `kind` (`term` or `synonym`), the target file's two columns as `term` and
+   `value`, then `source` (`claude-draft`), `confidence` (`high`, `medium`, `low`), `review` and
+   `note`. Brands are out of scope (S6 and N-215 keep them plain text; the draft adds none).
+2. **Every row is probed, not guessed.** `supabase/classifier/probe_drafts.sh` loads a draft into the
+   classifier inside a rolled-back transaction on the local stack and classifies each row and the
+   regression set (every dictionary term, synonym, wordlist and sweep word) before and after. A row
+   stays only if it fixes a miss or a wrong aisle (`gap`), joins a variant to its canonical's key
+   (`key`), or is a canonical another row needs. Four drafting agents (fresh food; pantry, sweets,
+   drinks, frozen; household and drugstore; English) brainstormed two to three times their target
+   and kept the probe-clean rows, 581 in all; 506 of them plus 4 canonicals made the cut (the rarest dialect words went first). The final
+   file changes the aisle of no existing word.
+3. **Synonyms point at the narrowest canonical.** A synonym shares its canonical's key, which drives
+   the duplicate hint and the store memory. `walnuts → nuss` would have made walnuts and hazelnuts
+   one item, so the draft adds `walnuss`, `haselnuss`, `ahornsirup` and `müsliriegel` as terms and
+   points the English words at them.
+4. **Accepting is a script, not a hand edit.** `supabase/classifier/accept_drafts.ts` moves the rows
+   reviewed `accept` into the TSVs under a heading naming the draft, removes them from the draft,
+   leaves rejected rows there as a record, and writes the two loading migrations with the existing
+   generators. It writes nothing unless the catalog still parses (`parseDictionary`,
+   `parseSynonyms`). Its tests run in the functions gate, with a check that every waiting draft
+   parses. Proven on a scratch worktree: 5 accepted rows loaded through the generated migrations
+   classify as drafted, the rejected one stays `other`, and the "newest migration matches the TSV"
+   tests pass.
+5. **Words no row can fix go to the lead, not into this PR.** `beer` (→ produce via `beere`),
+   `rolls` (→ household via `rolle`), `sage` (→ tools via `säge`) and `schäufele` (→ garden via
+   `schaufel`) fold onto an existing term's key, so only a classifier change fixes them. This PR
+   changes no shipped behaviour, so it records them in `catalog/REVIEW.md` and NEEDS_LEAD.
+
+## Job 279 review 0: short English heads and the brand sentence (2026-11-16)
+
+1. **The probe's regression set now includes compounds.** `supabase/classifier/probe_compounds.txt`
+   holds 166 compounds built on the draft's short heads (baby oil, rubber duck, egg timer,
+   Dinkelmehl). The dictionary, synonyms, wordlist and sweep had almost no English phrases, so
+   `oil → öl` filed baby oil in pantry unseen. With the whole draft 69 compounds move; most are fixes.
+2. **Heads with measured false matches drop to medium and get paired rows.** `oil`, `egg`, `fruit`,
+   `cake`, `mint`, `pumpkin`, `fennel`, `herbs`, `soup` and `nutmeg` are medium, with the wrong
+   compounds in their notes and in REVIEW.md. Where the dictionary has the right word, a compound
+   row fixes it: baby, body, hair, massage and lamp oil, dried fruit, cake tin, pumpkin seeds
+   (+ `kürbiskerne`). `duck` is dropped (rubber duck, duck tape → meat). `dinkelmehl` (sweets via a
+   fuzzy match today) is added. REVIEW.md and the draft header say "no word in the regression set
+   changes aisle", not "no word".
+3. **The draft names its one brand.** `coke → cola` stays, as plain text (S6/N-215 allow it), and
+   REVIEW.md says so.
+4. **The `key` status now means the synonym shares its canonical's key after loading**; a synonym
+   that does not is `broken`. All 290 do.
+5. **Not done: an accept-everything check in CI.** It would fail every unrelated PR once main's
+   catalog gains a word the draft also drafts. The accept script already refuses such a row and
+   names its line, which is when the reviewer can act on it.
+
+## Job 279 review 1: the last accept must not break the functions gate (2026-11-16)
+
+1. **No drafts directory means no drafts.** REVIEW.md's last step deletes the draft once no row
+   waits, and git then drops `catalog/drafts/`. `waitingDrafts()` in `accept_drafts.ts` returns no
+   names when the directory is missing, and "every draft waiting for review parses" goes through it.
+   A test pins the missing-directory case; the suite passes 20/20 with and without the directory.
+   No test names the current draft file, so deleting it fails nothing.
+2. **The reviewer's compounds joined the probe list** (Plätzchendose, Plätzchenausstecher, fruit
+   gums, fruit knife, pumpkin pie, oil cloth, pumpkin seed oil, cooking oil; 169 in all, 76 move with
+   the draft). The wrong ones are in REVIEW.md's short-head table and the rows' notes; `plätzchen`
+   and `pretzel` stay high, because the word alone is far more common than those compounds.
+   Kirschknacker left the list: it is no product.
+3. **REVIEW.md says where a shared key shows**: the merge offer after an add, MCP, Siri and voice,
+   and the store memory, not the add sheet while typing.
+
+## Job 283: Opus review of the 2026-11-16 catalog draft (2026-11-17)
+
+- **Machine review, no human marker.** Legal N-215 asks for a person's review, so every `review` cell
+  stays empty. The outcome is in `catalog/REVIEW-opus.md`: 480 ok, 3 fixed, 0 dropped and 36 doubtful
+  of the 519 rows, plus 11 added rows.
+- **Fix a row instead of dropping it.** No row needed to go. A doubtful row is listed for the person
+  to decide, because rejecting it is one word in the draft.
+- **Added rows get their own source, `opus-review`.** The reviewer can then tell them from job 279's
+  `claude-draft` rows. `accept_drafts.ts` accepts any non-empty source.
+- **Pair rows for the wrong aisles a draft row causes,** as job 279 did (`baby oil` next to `oil`):
+  Thüringer Klöße, Nussknacker, mince pie(s), fabric conditioner, sanitary napkins, dog biscuits.
+- **A key means the same item.** Russ is not a Radler, so it became a term. Platzerl joins Plätzchen,
+  and Klöße joins Knödel.
+- **Matcher cases go to job 282.** The fuzzy and longest-word cases are listed in REVIEW-opus.md and
+  not worked around with more rows, except where a draft row made them worse.
+- **The probe set grows with the review's words.** `probe_compounds.txt` got 203 texts, so a person
+  can rerun the same check (`probe_drafts.sh`).
+
+## Job 283 review 0: the doubtful rows as questions (2026-11-17)
+
+- **One question per row, with an ID and a suggested answer.** Peter answers row by row:
+  `REVIEW-opus.md` CD1 to CD27. The counts are now 490 ok, 3 fixed, 0 dropped and 26 doubtful.
+  CD27 asks about the fixed `russ`, which goes back to low confidence.
+- **The short heads count as ok.** The review agrees with keeping them, so they are not questions.
+  Their wrong compounds stay listed in `REVIEW.md`.
+- **Infant food gets a question (CD24 to CD26).** These rows only set an aisle, but EU 609/2013
+  counts infant food as food for specific groups, and Legal ruled out diet products.
+- **Two more added rows:** `snap peas` and `mangetout` → `zuckerschoten`. The draft now has 532 rows.
+- **Rows that depend on another draft row are listed in REVIEW-opus.md.** Rejecting the canonical
+  alone makes `accept_drafts.ts` refuse the whole run.
+
+## Job 283 review 1: make the sure edits, keep questions for the unsure rows (2026-11-17)
+
+- **When the review is sure, it changes the row itself.** Six CD lines from review 0 suggested an
+  edit or a rejection. Those rows are now fixed:
+  - `dunkles`, `weinschorle`, `frizzante` and `apfelmost` are drinks terms, and `printen` is a
+    sweets term.
+  - `schampus` now joins `sekt`.
+  - `apfelmost` became a term rather than being dropped. Without any row it goes to pantry.
+  - `pistazienkerne` stays as drafted: main files Pistazien in sweets.
+- **The counts are now 496 ok, 9 fixed, 0 dropped and 14 doubtful.** The doubtful rows are CD1 to
+  CD15, and "yes" means accept the row as it stands.
+- **Fixed rows also get the source `opus-review`,** so the TSV alone shows which rows the review
+  changed.
+- **The review swept the English synonyms for their usual compounds** and added 10 rows: snow peas,
+  mangetout peas, Kaiserschoten, split peas, red pepper flakes, crushed red pepper, cake mix,
+  pancake mix, pancake syrup and dried figs. Strays that remain, all rare on a German list, are
+  listed in REVIEW-opus.md.
+- **All 14 rows that depend on another draft row are listed.**

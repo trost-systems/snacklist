@@ -1,0 +1,460 @@
+# Job 279 review 0: compounds a draft's short heads could catch, for probe_drafts.sh's regression set.
+# The dictionary, synonyms, wordlist and sweep hold few English phrases, so a short English synonym
+# (oil, duck, mint) could file "baby oil" or "rubber duck" in a food aisle unseen. One text per line;
+# the probe prints each whose aisle a draft changes, so a reviewer sees both fixes and new mistakes.
+baby oil
+hair oil
+body oil
+massage oil
+motor oil
+engine oil
+bike oil
+lamp oil
+olive oil
+coconut oil
+oil spray
+rubber duck
+duck tape
+duct tape
+peppermint
+peppermint tea
+mint tea
+mint chewing gum
+breath mints
+fruit fly trap
+fruit tea
+fruit bowl
+fruit juice
+fruit salad
+dried fruit
+cake tin
+cake candles
+candles for cake
+birthday candles
+cake mix
+pancake mix
+rice cakes
+egg cups
+egg timer
+egg noodles
+easter eggs
+chocolate eggs
+fig jam
+cod liver oil
+liver sausage
+kitchen foil
+foil trays
+rocket salad
+herb pots
+herbal tea
+soup bowls
+soup cubes
+bone broth
+mustard seeds
+cocoa butter
+cinnamon sticks
+cotton candy
+candy floss
+mixed sweets
+potato crisps
+sweet potato fries
+napkin rings
+sponge cake
+dish sponge
+candle holders
+tea lights
+pumpkin seeds
+pumpkin spice
+cherry tomatoes
+cherry juice
+plum tomatoes
+turkey breast
+lamb lettuce
+shrimp chips
+kale chips
+leek soup
+celery salt
+fennel seeds
+fennel tea
+basil pesto
+chive cream cheese
+thyme honey
+pea protein
+lentil soup
+almond milk
+walnut oil
+raisin bread
+peanut oil
+peanut flips
+coke zero
+pickle juice
+pretzel sticks
+cherry brandy
+yeast flakes
+nutmeg grinder
+Speiseöl
+Babyöl
+Lampenöl
+Motoröl
+Kettenöl
+Fahrradöl
+Gummiente
+Quietscheente
+Pfefferminze
+Pfefferminzbonbons
+Fruchtfliegenfalle
+Kuchenform
+Kuchengabeln
+Geburtstagskerzen
+Dinkelmehl
+Dinkelbrot
+Dinkelnudeln
+Dinkelflocken
+Speisewürze
+Brühwürze
+Grillanzünder
+Kaminanzünder
+Gasanzünder
+Stabfeuerzeug
+Hirschsalami
+Hirschhornsalz
+Bierknacker
+Salsasoße
+Misopaste
+Misosuppe
+Noriblätter
+Sushi Nori
+Germknödel
+Weizenkeime
+Apfelstrudel
+Topfenstrudel
+Kerbelsuppe
+Hummerkrabben
+Hummersuppe
+Austernpilze
+Austernsoße
+Karpfenfilet
+Oktopussalat
+Russisch Brot
+Kölsch Glas
+Akkuschrauber
+Akkuladegerät
+Duschgel
+Badeölkugeln
+Bartölpflege
+Peelinghandschuh
+Kluppenbeutel
+Nuggikette
+Nuckelflasche
+Schnullerkette
+Radiergummi
+Feuchttücher
+Gamba Pfanne
+Stelzenbraten
+Würstelsuppe
+Schokiriegel
+Grappaglas
+Sangriabowle
+Sorbetschale
+Kakaopulver
+Piment d Espelette
+Safranfäden
+Matcha Latte
+Matchapulver
+Chutneyglas
+Salsadip
+Plätzchenausstecher
+Plätzchendose
+fruit gums
+fruit knife
+pumpkin pie
+oil cloth
+pumpkin seed oil
+cooking oil
+# Job 283 (review of the draft): words that end in, or fold close to, a draft row's term.
+Nussknacker
+fabric conditioner
+air conditioner
+hair conditioner
+Ruß
+Gruß
+Russn
+Müllsack
+Sack
+Sakko
+Eichhörnchen
+Laugenhörnchen
+Hörnchennudeln
+Hörnchen
+wheat germ
+Austernsauce
+Austernpilze
+Hirse
+Hirschhornsalz
+Thüringer Klöße
+Semmelknödel
+Knödel
+Kloßteig
+Germknödel
+Pinsel
+Pinkel
+Hammer
+Dunkel
+Dunkelbier
+Dunkles Brot
+Helles Mehl
+Kartoffelpfannkuchen
+Berliner Pfannkuchen
+Pfannkuchen
+pancake
+cheesecake
+cupcakes
+eggs
+egg noodles
+eggnog
+olive oil
+sweet potato
+sweet potatoes
+sweetcorn relish
+fruit tea
+fruit juice
+grapefruit juice
+mint tea
+mint sauce
+fennel tea
+sugar snap peas
+chickpea flour
+cherry tomatoes
+cherries
+plum tomatoes
+figs
+fig rolls
+liver sausage
+lamb's lettuce
+turkey ham
+dog biscuits
+mince pies
+mincemeat
+cocoa butter
+cinnamon rolls
+cinnamon buns
+hot cross buns
+honey mustard
+coconut water
+almond milk
+peanut butter cups
+prawn crackers
+celery salt
+celeriac
+red lentils
+basil pesto
+coriander seeds
+sanitary napkins
+nail polish remover
+makeup sponges
+smoked trout
+sourdough starter
+rice cakes
+fish cakes
+fish sauce
+oyster sauce
+sake
+salsa verde
+salsa dip
+Sauerkappes
+Rotkabis
+Weißkabis
+Gewürz
+Würzmischung
+Grillwürze
+Maggi Würze
+Dinkelbrot
+Dinkelnudeln
+Dinkelflocken
+Pistazien
+Morcheln
+getrocknete Morcheln
+Maronen
+Maronenpüree
+Strudelteig
+TK Strudel
+Beeren
+TK Beerenmischung
+Hummerkrabben
+Krabben
+Steinbuttfilet
+Austern
+Karpfenfilet
+Schweinemedaillons
+Putenmedaillons
+Rindermedaillons
+Lachsmedaillons
+Kerbelkraut
+Radio
+Radieschen
+Sakepuder
+Weißwein
+Rotweinschorle
+Apfelschorle
+Schorle
+Frizzantino
+Gin
+Russisch Brot
+Platzerl
+Butterplätzchen
+Hundekuchen Leber
+Schweineohren
+Katzenmilch
+Anzünderwürfel
+Grillanzünder
+Peeling Handschuh
+Fußpeeling
+Medaillon
+Pulpo
+Kalmare
+Calamari
+Tintenfischringe
+Klopse
+Königsberger Klopse
+Fleischbällchen
+Frikadellen
+Buletten
+Karbonade
+Kassler
+Kotelett
+Wiener Würstel
+Schweinsstelze
+Ripperl
+Weggli
+Bürli
+Hörnli
+Gipfeli
+Nussgipfel
+Teigwaren
+Eierteigwaren
+Satsumas
+Clementinen
+Udon Nudeln
+Ramen Nudeln
+Instant Ramen
+Miso Suppe
+Misopaste
+Wasabi Nüsse
+Jalapeno
+Jalapenos
+Mixed Pickles
+Harissa Paste
+Guacamole Dip
+Aioli Dip
+Ginger Ale
+Ginger Beer
+Bitter Lemon
+Schampus
+Klöße halb und halb
+Kartoffelklöße
+Kloß
+Knödelbrot
+Briketts
+Grillbriketts
+Kohlebriketts
+Baumkuchenspitzen
+Magenbrot
+Macadamianüsse
+Macadamia Nüsse
+Macadamiaöl
+Pistazienkerne
+Kerbel
+Pinkel mit Grünkohl
+Knackwurst
+Knacker
+Thüringer
+Thüringer Rostbratwurst
+Krakauer
+Sauerteigbrot
+Sauerteig Starter
+Linsen
+Brühwürfel
+stock
+snow peas
+mangetout peas
+kaiserschoten
+split peas
+mushy peas
+black eyed peas
+pea soup
+frozen peas
+red pepper flakes
+crushed red pepper
+roasted red peppers
+red peppers
+green peppers
+green peppercorns
+red pepper paste
+pancake mix
+pancake syrup
+pancake batter
+cake mix
+digestive biscuits
+biscuit mix
+lamb chops
+lamb mince
+lamb's lettuce
+chicken liver
+liver pate
+cherry jam
+cherry juice
+cherry pie filling
+plum jam
+plum sauce
+fig jam
+dried figs
+turkey mince
+cod fillets
+soup mix
+egg whites
+egg replacer
+oil spray
+mint leaves
+herb butter
+fruit tea
+fruit yoghurt
+cake flour
+pumpkin puree
+fennel bulb
+nutmeg ground
+broth cubes
+mustard seeds
+cinnamon sugar
+cocoa powder
+yeast extract
+almond flour
+ground almonds
+peanut sauce
+walnut halves
+raisin bread
+crisp bread
+sweet chilli sauce
+candy canes
+coke zero
+iced tea powder
+ice cream
+spring roll wrappers
+garlic bread
+fries seasoning
+bin liners
+candle wax
+nappy bags
+wet wipes for babies
+razor
+cotton wool
+sun cream for kids
+hand cream tube
+nail polish remover
+baby food jars
+dunkles bier
+weinschorle
+printen
+frizzante
+apfelmost
+Most
+Süssmost

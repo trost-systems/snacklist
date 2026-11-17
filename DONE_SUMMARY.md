@@ -1619,3 +1619,11 @@ Buy hangs on first use and purchases carry over between runs. Details:
 ## Job 295: dictation copy follows the app language (PR #534)
 
 Replaced "German only" dictation copy (comparison page lines 28, 71, 114, `voice-add-en.vtt`, `voice-add.german` caption in `copy.json` and `COPY_NEEDED`), reworded source notes, added "Superseded by #487" notes to DECISIONS, NEEDS_LEAD and docs/done/245. Siri Shortcut lines and policy texts untouched. Wording is Engineering's own (PM_ANSWER.md pointed to a report not available here). Review 0 fixes: DECISIONS note moved to the end of item 6; wording source stated in the PR; re-film logged in NEEDS_LEAD. Verified: site gate builds. Not done: re-render of the voice-add EN video.
+
+## Job 279: first catalog drafting run (S4), draft PR waiting for review
+
+- Job 279, first catalog drafting run (S4): 519 Claude-drafted classifier rows in `catalog/drafts/` waiting for human review, the probe and accept scripts: [docs/done/279.md](docs/done/279.md)
+
+## Job 283: Opus review of the #510 catalog draft
+
+- Job 283, Opus review of the 519 drafted catalog rows on PR #510 (496 ok, 9 fixed, 0 dropped, 14 doubtful as questions CD1 to CD15, 23 added), no row marked reviewed: [docs/done/283.md](docs/done/283.md)
