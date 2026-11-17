@@ -1539,3 +1539,15 @@ refreshes after store and status changes, and the store parity exceptions are pi
 stays `draft` (Play frame blocked, App Store frame waits for a real Siri capture). New sha256
 `63f146c5f7aa618e24e8fe4a96398a6a84d255fe9c276a1e738154f73356852a`. Nothing uploaded. The PR is left
 open for the lead. Details: [docs/done/287.md](docs/done/287.md).
+
+## Job 282 (FX1): beer, rolls, sage and Schäufele in their own aisle, Rohrnudeln bakery
+
+The classifier now tells apart words that fold to one key once umlauts and endings are stripped:
+"beer" is drinks (not Beere), "rolls" bakery (not Rolle), "sage" produce (not Säge), „Schäufele“
+meat (not Schaufel); the German words stay where they were. Rohrnudeln moved from pantry to bakery
+in our dictionary. Root cause: `item_key`'s stemming, not fuzzy matching. The fix reads the typed
+spelling for those shared forms (`classifier_lexicon.homographs`). **No flag**: across 2,766 names
+only the listed words change, and there is no classifier flag. Details, evidence and what is left:
+[docs/done/282.md](docs/done/282.md). Ships with the next green main build to TestFlight; no flag
+targeting needed.
+

@@ -2,7 +2,7 @@
 // Do not edit; rerun the script after a classifier or item parser migration.
 
 /// public.catalog_version() of [catalogTerms], [catalogForms] and [catalogBrands].
-const catalogVersion = '772a6413e45444e3';
+const catalogVersion = '042ff983ddcb1523';
 
 /// public.classifier_terms: (term, key, category seed key).
 const catalogTerms = <(String, String, String)>[
@@ -1141,6 +1141,7 @@ const catalogTerms = <(String, String, String)>[
   ('roggenbrot', 'roggenbrot', 'bakery'),
   ('rohr', 'rohr', 'plumbing'),
   ('rohrfrei', 'rohrfrei', 'household'),
+  ('rohrnudel', 'rohrnudel', 'bakery'),
   ('rohrschelle', 'rohrschell', 'fasteners'),
   ('rolle', 'roll', 'household'),
   ('rollmops', 'rollmop', 'meat'),
@@ -1267,6 +1268,7 @@ const catalogTerms = <(String, String, String)>[
   ('schwarzer tee', 'schwarzer tee', 'pantry'),
   ('schwarztee', 'schwarzte', 'pantry'),
   ('schwein', 'schwein', 'meat'),
+  ('schäufele', 'schaufel', 'meat'),
   ('schüssel', 'schussel', 'household'),
   ('seelachs', 'seelach', 'meat'),
   ('seife', 'seif', 'drugstore'),
@@ -2860,6 +2862,7 @@ const catalogForms = <(String, String, String, bool)>[
   ('romanesko', 'romanesko', 'produce', false),
   ('romersalat', 'romersalat', 'produce', false),
   ('rorfrei', 'rorfrei', 'household', false),
+  ('rornudel', 'rornudel', 'bakery', false),
   ('rorschel', 'rorschel', 'fasteners', false),
   ('rosenkol', 'rosenkol', 'produce', false),
   ('rosenscher', 'rosenscher', 'garden', false),

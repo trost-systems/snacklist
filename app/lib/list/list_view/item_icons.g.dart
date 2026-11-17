@@ -1,7 +1,7 @@
 // GENERATED from tool/item_icons/*.tsv by tool/item_icons/build.mjs. Do not edit.
 
 /// The revision of [itemIconEntries]; a remote table applies only when newer.
-const itemIconsRevision = 2;
+const itemIconsRevision = 3;
 
 /// Folded item forms to their emoji, `''` for none: `=` marks a whole word.
 const itemIconEntries = <String, String>{
@@ -2299,6 +2299,8 @@ const itemIconEntries = <String, String>{
   'roggenbrot': '🍞',
   'roggenmehl': '🌾',
   'rohrfrei': '🧴',
+  'rohrnudel': '',
+  'rohrnudeln': '',
   'roll on': '🧴',
   'rollschuhe': '🛼',
   'romaine': '🥬',
