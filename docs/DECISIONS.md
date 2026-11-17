@@ -15160,3 +15160,11 @@ Catalog drafting (job 279, PR #510) found four words no catalog row could fix: "
 3. **`demo.voice-add` stays.** Its video was filmed in German, so the alt text's "says, in German" is
    still true. Its source note ("The app listens in German in every language") is out of date since
    #487 but no reader sees it, and changing it is outside N-250.
+
+## Job 289: Legal's JH2 and FB4/FB2 texts in one PR
+
+Applied Legal's handoff (N-264 to N-273) verbatim in one PR on `eefa6324`, by a script that asserts
+each OLD occurs exactly once. The tests, goldens and feature-map lines that quote the two ARB strings
+follow the new wording; FEATURES-FOR-WRITERS quotes neither, so it stays. The optional N-257 code
+change is left out and C1 is job 290, as the brief says. Policy hashes match Legal's §3.1 row for
+one PR on 17 Nov. Details: [docs/done/289.md](docs/done/289.md).

@@ -1213,7 +1213,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get feedbackScreenshotNote =>
-      'Zeigt alles, was auf dem Bildschirm war, auch Listeneinträge, die du nicht übermalt hast.';
+      'Zeigt alles, was auf dem Bildschirm war, auch Einträge und Namen aus deinem Haushalt. Verdecke vorher, was wir nicht sehen sollen.';
 
   @override
   String get feedbackScreenshotPreview => 'Vorschau des Bildschirmfotos';
@@ -2310,7 +2310,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get inviteJoinPageHint =>
-      'Wer den Link hat, sieht auf der Beitrittsseite deinen Vornamen (aus deinem Anzeigenamen, falls du einen eingetragen hast), den Namen des Haushalts, die Zahl der Mitglieder und der offenen Einträge und ob der Haushalt Snacklist Premium hat. Gib den Link nur an Personen weiter, die du einladen willst.';
+      'Wer den Link oder Code hat, sieht vor dem Beitritt deinen Vornamen (aus deinem Anzeigenamen, falls du einen eingetragen hast), den Namen des Haushalts, die Zahl der Mitglieder und der offenen Einträge und ob der Haushalt Snacklist Premium hat. Gib Link und Code nur an Personen weiter, die du einladen willst.';
 
   @override
   String get inviteGroupTitle => 'Gruppenlink';
