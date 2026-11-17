@@ -15090,3 +15090,45 @@ Fixed here, with nice-to-have 2. Still behind `on-device-catalog`.
    stores. A new one fails as "not pinned", one that agrees again as "unpin". Review 1's mutant (no
    `suggestStore` in `parsedStore`) now fails on the 12 rows it pushed there. A deliberate ranking
    change that rewrites `suggest_parity.json` updates that list too.
+
+## Job 278: report content entry prototypes (RC1–RC3), 2026-11-16
+
+Draft PR, never merged (the reference, like #508). Nothing in the app changes.
+
+1. **Three entry structures, one form.** RC1 a chooser sheet behind “Feedback & reports”, RC2 a
+   second button under “Write to Snacklist Support” in the hub (row “Feedback & ideas” with the
+   subtitle “Also: report content”), RC3 a “Report content” row of its own in More plus RC2’s hub button. The brief's
+   third example, a segmented top switch in the hub, was dropped: it would put a 5,000-character
+   form and the notes list behind one tab bar and hide the notes while reporting, and RC2 already
+   covers “inside the hub”. Separate More rows (RC3) cover the other end; RC3 keeps the hub button because N-226 places the choice next to “Write to Snacklist Support” (review 0).
+2. **FB4 on and off.** `feedback-fb4` is off for every user, and N-226 wants the entry with every
+   feedback flag either way, so every option has an FB4-off state (`?fb4=off`): RC1's first
+   choice becomes “Send feedback”, RC2's button moves to the top of the feedback sheet, RC3's row
+   sits under “Send feedback”.
+3. **Legal's copy word for word**, with one cut: B.4's screenshot label loses “in the app”
+   (it is the app). New strings (chooser and hub explanations, validation, the picker, the lines
+   under the confirmation) are marked “proto” in `copy.js`.
+4. **Where, from More.** Nothing is preselected when the form opens from More, so “Where is the
+   content?” opens a picker over the household's items, lists, household name and photos, with a
+   search and “Somewhere else” for free text. The picked item is shown for the user to check.
+5. **Validation after the first Send**, not a disabled button: the button names nothing, the
+   errors name each missing field. Over 5,000 characters the text stays and the counter turns red
+   (a hard cap would cut pasted text silently).
+6. **Pick RC2, runner-up RC3** (`docs/design/report-entry/RECOMMENDATION.md`): RC2 is NR1 as
+   Peter described it and N-226 as Legal worded it, costs feedback no tap, and is the only option
+   that offers reporting on the feedback screen with FB4 on and off.
+7. **Preview** on `family-groceries-design` as a preview deployment, with #414's overview at the
+   root and a link-only commit on #414 (`d741bd85`).
+8. **Review 0 (Opus, in-job) fixes.** Choosing another kind after child abuse material showed name
+   and e-mail hidden still; the form now hides them only for that kind. RC3 got RC2's hub button.
+   The “Where” help keeps B.4's app sentence once something is picked and asks to pick before
+   that (disclosed). verify.mjs now runs the form rules from More in every option with FB4 on and
+   off, compares the confirmation and every B.4 string word for word, checks the feedback form's
+   kinds exactly and vertical clipping; three planted bugs (the kind reset, a non-Legal
+   confirmation, an extra feedback kind) each failed 24 times.
+9. **Review 1 (Legal batch 17 Nov, N-260).** “Somewhere else” shows Legal’s new hint word for word
+   (DE „Beschreibe, wo er ist: Name des Haushalts und der Liste und der genaue Text des Eintrags.
+   Je genauer, desto schneller finden wir ihn.“, EN to match) as the help line above its
+   free-text field rather than as a placeholder, so it stays while the user types and at 200 %.
+   The page shows that state as its own form frame; verify.mjs compares the text with N-260's
+   strings and checks the field is required. The other two B.4 cuts stay.

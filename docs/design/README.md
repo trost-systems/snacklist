@@ -30,3 +30,4 @@ python3 -m http.server 8771 --directory docs/design/h-satz-final/h-dist
 ## Feature prototypes
 
 - **Grocery log (job 198):** [`grocery-log/`](grocery-log/), five interactive approaches behind one switcher, plus [`RECOMMENDATION.md`](grocery-log/RECOMMENDATION.md). Serve the repo root (`python3 -m http.server 4198 --bind 127.0.0.1`) and open `/docs/design/grocery-log/index.html`.
+- **Report content entry (job 278):** [`report-entry/`](report-entry/README.md), three ways into the in-app “Report content” form next to feedback (DSA, Legal N-226), plus [`RECOMMENDATION.md`](report-entry/RECOMMENDATION.md). Run `node docs/design/report-entry/verify.mjs` from the repo root.

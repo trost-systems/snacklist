@@ -1532,3 +1532,11 @@ parity table compares it. `catalog_delta` checks versions and snapshots outgoing
 Second follow-up PR: a matched row takes the server's store (none included), the household index
 refreshes after store and status changes, and the store parity exceptions are pinned. Details:
 [docs/done/274.md](docs/done/274.md), section "Review 1 fixes".
+
+## Job 278: report content entry prototypes (RC1–RC3), 2026-11-16
+
+Draft PR, never merge. Protected preview `dpl_2GtB7AMTM27kSd5vjFfphnuhYsxb`:
+https://family-groceries-design-p98lyoytn-peter-trost.vercel.app/report-entry/ (`?lang=de`, `?fb4=off`); the lead
+mints the share link. Pick RC2 (two buttons in the hub), runner-up RC3 (its own More row). Details: `docs/done/278.md`,
+`docs/design/report-entry/RECOMMENDATION.md`. Verify: `all checks passed (834)` on the repo, `(837)` on the build.
+Review 1 (N-260): “Somewhere else” shows Legal’s new hint word for word; redeployed (`dpl_2GtB7AMTM27kSd5vjFfphnuhYsxb`), share link to be minted by the lead (expires 23 h after minting).
