@@ -1532,3 +1532,10 @@ parity table compares it. `catalog_delta` checks versions and snapshots outgoing
 Second follow-up PR: a matched row takes the server's store (none included), the household index
 refreshes after store and status changes, and the store parity exceptions are pinned. Details:
 [docs/done/274.md](docs/done/274.md), section "Review 1 fixes".
+
+## Job 287: store captions approved (Legal N-248)
+
+`captions.yaml` goes from `draft` to `approved` on 14 `status:` lines, nothing else. The voice shot
+stays `draft` (Play frame blocked, App Store frame waits for a real Siri capture). New sha256
+`63f146c5f7aa618e24e8fe4a96398a6a84d255fe9c276a1e738154f73356852a`. Nothing uploaded. The PR is left
+open for the lead. Details: [docs/done/287.md](docs/done/287.md).
