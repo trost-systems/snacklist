@@ -1,0 +1,22 @@
+From: "Peter · Snacklist" <hello@snacklist.app>
+Reply-To: hello@snacklist.app
+To: <recipient>
+Subject: Your invite to the Snacklist beta
+List-Unsubscribe: <https://snacklist.app/api/waitlist/unsubscribe?id={id}&s={sig}&l=en>
+List-Unsubscribe-Post: List-Unsubscribe=One-Click
+X-Preview-Recipients: 1
+
+Hi,
+
+The Snacklist beta is open, and you're in.
+
+For your iPhone the invite comes from Apple: TestFlight sends you its own email at this address. Install the TestFlight app from the App Store first, then open the invite from Apple on your iPhone.
+
+Peter
+
+--
+
+You're getting this email because you signed up for the Snacklist beta waitlist on snacklist.app and confirmed your address. No more emails from us? Unsubscribe <https://snacklist.app/en/waitlist/unsubscribe#id={id}&s={sig}> – one click, no sign-in, and we delete your sign-up. This withdraws your consent and objects to the use of your address for these emails (Art. 21 GDPR). You can also just reply to this email or write to support@snacklist.app; Peter Trost reads replies himself.
+
+Sender: Snacklist · Peter Trost · Yalovastr. 5 · 72108 Rottenburg am Neckar · Germany
+Imprint: https://snacklist.app/en/imprint · Privacy: https://snacklist.app/en/privacy (section 2a)

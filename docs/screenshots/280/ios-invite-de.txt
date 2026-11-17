@@ -1,0 +1,22 @@
+From: "Peter · Snacklist" <hello@snacklist.app>
+Reply-To: hello@snacklist.app
+To: <recipient>
+Subject: Deine Einladung zur Snacklist-Beta
+List-Unsubscribe: <https://snacklist.app/api/waitlist/unsubscribe?id={id}&s={sig}&l=de>
+List-Unsubscribe-Post: List-Unsubscribe=One-Click
+X-Preview-Recipients: 1
+
+Hi,
+
+die Snacklist-Beta ist offen, und du bist dabei.
+
+Für dein iPhone kommt die Einladung von Apple: TestFlight schickt dir eine eigene E-Mail an diese Adresse. Installier zuerst die App TestFlight aus dem App Store und öffne dann die Einladung von Apple auf deinem iPhone.
+
+Peter
+
+--
+
+Du bekommst diese E-Mail, weil du dich auf snacklist.app für die Warteliste der Snacklist-Beta eingetragen und deine Adresse bestätigt hast. Keine E-Mails mehr von uns? Abmelden <https://snacklist.app/de/warteliste/abmelden#id={id}&s={sig}> – ein Klick genügt, ohne Anmeldung, und wir löschen deine Eintragung. Damit widerrufst du deine Einwilligung und widersprichst der Nutzung deiner Adresse für diese E-Mails (Art. 21 DSGVO). Du kannst auch einfach auf diese E-Mail antworten oder an support@snacklist.app schreiben; Antworten liest Peter Trost selbst.
+
+Absender: Snacklist · Peter Trost · Yalovastr. 5 · 72108 Rottenburg am Neckar · Deutschland
+Impressum: https://snacklist.app/impressum · Datenschutz: https://snacklist.app/datenschutz (Abschnitt 2a)

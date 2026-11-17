@@ -1,7 +1,7 @@
 // The waitlist's mails (docs/WAITLIST.md "Mails"): confirmation, welcome and beta invite, in German
 // and English, as HTML and plain text, with no images and no tracking. No template holds a ⟦…⟧
 // draft marker any more; refusal() still keeps a mail with one from going out.
-// No imports beyond this directory: scripts/waitlist/invite.ts renders the invite from here.
+// No imports beyond this directory: scripts/waitlist/ renders the invites from here.
 
 export type Locale = 'de' | 'en';
 export type Platform = 'ios' | 'android';
@@ -214,6 +214,49 @@ function footerB(locale: Locale, unsubscribe: string): Paragraph[] {
   ];
 }
 
+/** The iOS invite's footer: Legal's N-261 (batch of 2026-11-17, Q17), word for word. */
+function footerInvite(locale: Locale, unsubscribe: string): Paragraph[] {
+  const link = (url: string) => ({ text: url, url });
+  return locale === 'de'
+    ? [
+      [
+        'Du bekommst diese E-Mail, weil du dich auf snacklist.app für die Warteliste der ' +
+        'Snacklist-Beta eingetragen und deine Adresse bestätigt hast. Keine E-Mails mehr von uns? ',
+        { text: 'Abmelden', url: unsubscribe },
+        ' – ein Klick genügt, ohne Anmeldung, und wir löschen deine Eintragung. Damit widerrufst ' +
+        'du deine Einwilligung und widersprichst der Nutzung deiner Adresse für diese E-Mails ' +
+        '(Art. 21 DSGVO). Du kannst auch einfach auf diese E-Mail antworten oder an ' +
+        'support@snacklist.app schreiben; Antworten liest Peter Trost selbst.',
+      ],
+      [
+        'Absender: Snacklist · Peter Trost · Yalovastr. 5 · 72108 Rottenburg am Neckar · ' +
+        'Deutschland\nImpressum: ',
+        link('https://snacklist.app/impressum'),
+        ' · Datenschutz: ',
+        link('https://snacklist.app/datenschutz'),
+        ' (Abschnitt 2a)',
+      ],
+    ]
+    : [
+      [
+        "You're getting this email because you signed up for the Snacklist beta waitlist on " +
+        'snacklist.app and confirmed your address. No more emails from us? ',
+        { text: 'Unsubscribe', url: unsubscribe },
+        ' – one click, no sign-in, and we delete your sign-up. This withdraws your consent and ' +
+        'objects to the use of your address for these emails (Art. 21 GDPR). You can also just ' +
+        'reply to this email or write to support@snacklist.app; Peter Trost reads replies himself.',
+      ],
+      [
+        'Sender: Snacklist · Peter Trost · Yalovastr. 5 · 72108 Rottenburg am Neckar · ' +
+        'Germany\nImprint: ',
+        link('https://snacklist.app/en/imprint'),
+        ' · Privacy: ',
+        link('https://snacklist.app/en/privacy'),
+        ' (section 2a)',
+      ],
+    ];
+}
+
 const oneClickHeaders = (u: Unsubscribe) => ({
   'List-Unsubscribe': `<${u.oneClick}>`,
   'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
@@ -322,7 +365,7 @@ export function welcomeMail(
   );
 }
 
-/** The beta invite, sent by scripts/waitlist/invite.ts. */
+/** The beta invite: iOS from scripts/waitlist/ios-invite.ts, Android from invite.ts. */
 export function inviteMail(
   locale: Locale,
   m: { platform: Platform; unsubscribe: Unsubscribe },
@@ -370,7 +413,9 @@ export function inviteMail(
       platformLine[locale][m.platform],
       ['Peter'],
     ],
-    footerB(locale, m.unsubscribe.page),
+    m.platform === 'ios'
+      ? footerInvite(locale, m.unsubscribe.page)
+      : footerB(locale, m.unsubscribe.page),
     oneClickHeaders(m.unsubscribe),
   );
 }

@@ -1532,3 +1532,14 @@ parity table compares it. `catalog_delta` checks versions and snapshots outgoing
 Second follow-up PR: a matched row takes the server's store (none included), the household index
 refreshes after store and status changes, and the store parity exceptions are pinned. Details:
 [docs/done/274.md](docs/done/274.md), section "Review 1 fixes".
+
+## Job 280: iOS beta invite sender, dry run by default (2026-11-16)
+
+`scripts/waitlist/ios-invite.ts` mails the beta invite to confirmed iPhone sign-ups, one Resend
+single send each, in their sign-up language, with the signed unsubscribe link and RFC 8058
+one-click headers. The dry run is the default: counts and redacted previews, nothing sent. A send
+needs `INVITE_SEND=1`, `BATCH_SIZE` and the dry run's token. Rows are claimed before their send,
+and released only on a 4xx refusal (review 0: a 5xx keeps the claim and stops the run), so no
+rerun mails anyone twice. The footer is Legal's N-261 text of 2026-11-17 word for word (review 2);
+the From header stays "Peter · Snacklist" (N-262 not applied). `invite.ts` is Android only now. Details:
+`docs/done/280.md`. Evidence: `docs/screenshots/280/`. Not merged, by the brief.

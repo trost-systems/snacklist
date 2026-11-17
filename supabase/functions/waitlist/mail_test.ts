@@ -195,7 +195,54 @@ Deno.test('the welcome mail: footer (b), one-click unsubscribe, the launch sente
   }
 });
 
-Deno.test('the invite mail has an iPhone and an Android line, footer (b) and one-click unsubscribe', () => {
+/** Legal's N-261 footers (batch of 2026-11-17), verbatim; {UNSUBSCRIBE_URL} is the page link. */
+const N261 = {
+  de: [
+    'Du bekommst diese E-Mail, weil du dich auf snacklist.app für die Warteliste der Snacklist-Beta eingetragen und deine Adresse bestätigt hast. Keine E-Mails mehr von uns? [Abmelden]({UNSUBSCRIBE_URL}) – ein Klick genügt, ohne Anmeldung, und wir löschen deine Eintragung. Damit widerrufst du deine Einwilligung und widersprichst der Nutzung deiner Adresse für diese E-Mails (Art. 21 DSGVO). Du kannst auch einfach auf diese E-Mail antworten oder an support@snacklist.app schreiben; Antworten liest Peter Trost selbst.',
+    'Absender: Snacklist · Peter Trost · Yalovastr. 5 · 72108 Rottenburg am Neckar · Deutschland',
+    'Impressum: https://snacklist.app/impressum · Datenschutz: https://snacklist.app/datenschutz (Abschnitt 2a)',
+  ],
+  en: [
+    "You're getting this email because you signed up for the Snacklist beta waitlist on snacklist.app and confirmed your address. No more emails from us? [Unsubscribe]({UNSUBSCRIBE_URL}) – one click, no sign-in, and we delete your sign-up. This withdraws your consent and objects to the use of your address for these emails (Art. 21 GDPR). You can also just reply to this email or write to support@snacklist.app; Peter Trost reads replies himself.",
+    'Sender: Snacklist · Peter Trost · Yalovastr. 5 · 72108 Rottenburg am Neckar · Germany',
+    'Imprint: https://snacklist.app/en/imprint · Privacy: https://snacklist.app/en/privacy (section 2a)',
+  ],
+};
+
+Deno.test("the iOS invite ends with Legal's N-261 footer word for word, links written out in the text", () => {
+  for (const locale of ['de', 'en'] as const) {
+    const links = locale === 'de' ? unsubscribe : unsubscribeEn;
+    const mail = inviteMail(locale, { platform: 'ios', unsubscribe: links });
+    const [why, sender, imprint] = N261[locale].map((line) =>
+      line.replace(/\[(Abmelden|Unsubscribe)\]\(\{UNSUBSCRIBE_URL\}\)/, `$1 <${links.page}>`)
+    );
+    assertEquals(
+      mail.text.slice(mail.text.indexOf('\n--\n') + 4),
+      `\n${why}\n\n${sender}\n${imprint}\n`,
+    );
+    const label = locale === 'de' ? 'Abmelden' : 'Unsubscribe';
+    const footerHtml = mail.html.slice(mail.html.indexOf('<hr'));
+    assert(
+      footerHtml.includes(
+        `<a href="${links.page.replaceAll('&', '&amp;')}" style="color:#1a6b3c">${label}</a> – `,
+      ),
+    );
+    const visible = footerHtml.replace(/<br>/g, '\n').replace(/<[^>]+>/g, '')
+      .replaceAll('&amp;', '&').trim();
+    assertEquals(
+      visible,
+      N261[locale].join('\n').replace(/\[(Abmelden|Unsubscribe)\]\(\{UNSUBSCRIBE_URL\}\)/, '$1'),
+      'the HTML shows the same words, the link on its label',
+    );
+    assertEquals(
+      mail.from,
+      '"Peter \u00B7 Snacklist" <hello@snacklist.app>',
+      'N-262 is not applied: the display name stays',
+    );
+  }
+});
+
+Deno.test('the invite mail has an iPhone and an Android line, its footer and one-click unsubscribe', () => {
   const ios = inviteMail('de', { platform: 'ios', unsubscribe });
   const android = inviteMail('en', { platform: 'android', unsubscribe: unsubscribeEn });
   assert(ios.text.includes('TestFlight') && !ios.text.includes('play.google.com'));
