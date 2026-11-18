@@ -8,8 +8,12 @@ env:
   FLUTTER_VERSION: 3.50.0
 jobs:
   gate:
+    strategy:
+      fail-fast: false
+      matrix:
+        ref: ['../../Snacklist.storekit', '../Snacklist.storekit', 'Snacklist.storekit']
     runs-on: xcode-27
-    timeout-minutes: 60
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: ./.github/actions/xcode
@@ -18,22 +22,10 @@ jobs:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: false
-      - run: scripts/gates/ios.sh
-  storekit27:
-    runs-on: xcode-27
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: ./.github/actions/xcode
-      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
-        with:
-          channel: stable
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          cache: false
-      - run: scripts/ios-storekit-probe.sh --scheme-config 27.2
-      - if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: storekit-probe-27.2-scheme
-          path: /tmp/storekit-probe
-          if-no-files-found: ignore
+      - env:
+          REF: ${{ matrix.ref }}
+        run: |
+          sed -i '' "s|identifier = \"../../Snacklist.storekit\"|identifier = \"$REF\"|" app/ios/Runner.xcodeproj/xcshareddata/xcschemes/Runner.xcscheme
+          grep -A1 StoreKitConfigurationFileReference app/ios/Runner.xcodeproj/xcshareddata/xcschemes/Runner.xcscheme
+          scripts/gates/ios.sh
+          git diff --stat
