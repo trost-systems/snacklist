@@ -1669,3 +1669,10 @@ gates run on main only for native paths (R3). Every gate, native included, runs 
 UTC, and a red nightly keeps the issue "Nightly CI failed on main" open. Release ships as before; only its queue changed (a run after a nightly CI run queues alone).
 Before: main `ci-ok` median 24:11 (16:19 to 39:23, n=9). The after numbers (2 merges, a manual nightly run) can only exist after the merge; they follow in a docs PR. Details:
 `docs/done/308.md`.
+
+## Job 275: DSA notice-and-action, web part
+
+[docs/done/275-dsa-notice-web.md](docs/done/275-dsa-notice-web.md): the public report form on
+snacklist.app (`/inhalte-melden`, `/en/report`), its deny-all storage, confirmation and decision
+mails, the Impressum contact point, privacy §10 and `docs/MODERATION.md`. Waits for PM's check
+and Legal's hash GO before it merges.

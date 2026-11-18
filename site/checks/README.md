@@ -38,7 +38,7 @@ allowed:
   view;
 - a hex button's face sinks by its edge (`--hl-depth-edge`) on press.
 
-`contrast.mjs` covers the landing pages, a guide, the changelog, the privacy policy and, in a waitlist build, the confirm page: text through
+`contrast.mjs` covers the landing pages, a guide, the changelog, the privacy policy, the report form and, in a waitlist build, the confirm page: text through
 axe's color-contrast rule with the blocks' background images removed, and the pixels for nodes axe
 cannot decide (at least 4.5:1, large text 3:1). Non-text: each hex control's contour against its
 block and each focus ring against its surroundings (at least 3:1).

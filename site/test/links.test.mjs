@@ -82,11 +82,14 @@ const footer = (doc) => doc.querySelectorAll('footer nav a').map((a) => [a.text,
 
 const LEGAL_PATHS = ['/datenschutz', '/en/privacy', '/privacy', '/support', '/en/support'];
 
-test('with nothing published the footer links only the imprint', () => {
+// The DSA notice route is linked from every page, whatever else is published (job 275).
+const REPORT = { de: ['Inhalte melden', '/inhalte-melden'], en: ['Report content', '/en/report'] };
+
+test('with nothing published the footer links only the imprint and the report page', () => {
   const { outDir, page } = buildSite({ config: { privacyPublished: false, supportPublished: false } });
-  assert.deepEqual(footer(page('/de/anleitungen/siri-kurzbefehl')), [...SITE_LINKS.de, ['Impressum', '/impressum']]);
-  assert.deepEqual(footer(page('/en/guides')), [...SITE_LINKS.en, ['Imprint', '/en/imprint']]);
-  assert.deepEqual(footer(page('/de')), [...SITE_LINKS.de, ['Impressum', '/impressum']]);
+  assert.deepEqual(footer(page('/de/anleitungen/siri-kurzbefehl')), [...SITE_LINKS.de, ['Impressum', '/impressum'], REPORT.de]);
+  assert.deepEqual(footer(page('/en/guides')), [...SITE_LINKS.en, ['Imprint', '/en/imprint'], REPORT.en]);
+  assert.deepEqual(footer(page('/de')), [...SITE_LINKS.de, ['Impressum', '/impressum'], REPORT.de]);
   for (const route of htmlRoutes(outDir)) {
     const links = page(route).querySelectorAll('footer a').map((a) => a.getAttribute('href'));
     for (const path of LEGAL_PATHS) assert.ok(!links.includes(path), `${route} links ${path} in the footer`);
@@ -99,8 +102,8 @@ test('the published privacy policy is in the footer of every page, support is no
   for (const route of htmlRoutes(outDir).filter((r) => r !== '/' && r !== '/404')) {
     const locale = page(route).querySelector('html').getAttribute('lang');
     const expected = locale === 'de'
-      ? [...SITE_LINKS.de, ['Impressum', '/impressum'], ['Datenschutz', '/datenschutz']]
-      : [...SITE_LINKS.en, ['Imprint', '/en/imprint'], ['Privacy', '/en/privacy']];
+      ? [...SITE_LINKS.de, ['Impressum', '/impressum'], ['Datenschutz', '/datenschutz'], REPORT.de]
+      : [...SITE_LINKS.en, ['Imprint', '/en/imprint'], ['Privacy', '/en/privacy'], REPORT.en];
     assert.deepEqual(footer(page(route)), expected, route);
   }
 });
@@ -119,8 +122,8 @@ test('with support published and its page present the footer links it too', () =
     config: { privacyPublished: true, supportPublished: true },
     files: { 'legal/support.md': legal({ locale: 'de', path: '/support', key: 'support' }) },
   });
-  assert.deepEqual(footer(page('/de/anleitungen')), [...SITE_LINKS.de, ['Impressum', '/impressum'], ['Datenschutz', '/datenschutz'], ['Hilfe', '/support']]);
-  assert.deepEqual(footer(page('/en/guides')), [...SITE_LINKS.en, ['Imprint', '/en/imprint'], ['Privacy', '/en/privacy'], ['Support', '/en/support']]);
+  assert.deepEqual(footer(page('/de/anleitungen')), [...SITE_LINKS.de, ['Impressum', '/impressum'], ['Datenschutz', '/datenschutz'], REPORT.de, ['Hilfe', '/support']]);
+  assert.deepEqual(footer(page('/en/guides')), [...SITE_LINKS.en, ['Imprint', '/en/imprint'], ['Privacy', '/en/privacy'], REPORT.en, ['Support', '/en/support']]);
 });
 
 test('a published flag without its page fails the build on the broken link', () => {

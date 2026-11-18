@@ -142,7 +142,8 @@ export function markdownTwin(route, html, siteUrl) {
   const h1 = main.querySelector('h1');
   const title = h1.text.trim();
   h1.remove();
-  for (const el of main.querySelectorAll('svg, button, track, source, script, [aria-hidden="true"]')) el.remove();
+  // The report form (job 275) is controls and messages; the page's text around it stays.
+  for (const el of main.querySelectorAll('svg, button, track, source, script, [aria-hidden="true"], [data-report]')) el.remove();
   for (const video of main.querySelectorAll('video')) {
     const label = video.getAttribute('aria-label');
     video.replaceWith(label ? `<p>${escapeHtml(label)}</p>` : '');

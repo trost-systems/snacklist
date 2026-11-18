@@ -59,6 +59,7 @@ Getting started
 The website
 
 - [waitlist](./waitlist.md): snacklist.app's waitlist form, confirmation and unsubscribe pages, the FAQ and support page (live since 5 Nov; sign-ups need production settings).
+- [report-content](./report-content.md): snacklist.app's DSA report form (/inhalte-melden, /en/report), its confirmation mail and Peter's decision path (live with job 275, no flag).
 
 The list
 

@@ -4,8 +4,8 @@ The landing pages, guides, changelog and legal pages: static HTML from Markdown 
 `build.mjs` (markdown-it, gray-matter) writes `dist/`; it is its own Vercel project, separate from
 the app on app.snacklist.app. The JavaScript is `public/demo.js`, which starts and pauses the
 landing pages' demo videos, `public/stores.js`, which switches the stores card's route when a
-store button is pressed, and `public/waitlist.js`, the sign-up form and the pages behind the
-waitlist mails (below).
+store button is pressed, `public/waitlist.js`, the sign-up form and the pages behind the
+waitlist mails (below), and `public/report.js`, the report form (below).
 
 ```bash
 npm ci
@@ -215,7 +215,36 @@ cd checks && node crawl.mjs ../dist-history --pages /history,/en/history
   `/datenschutz#rechte` is the stores' privacy-choices URL.
 - `config.json`: `privacyPublished` shows the Datenschutz/Privacy footer links,
   `supportPublished` the Hilfe/Support one. Set a flag to `true` only together with its pages;
-  a footer link to a missing page fails the build. Impressum is always linked.
+  a footer link to a missing page fails the build. Impressum and the report page are always linked.
+
+## Report content
+
+`/inhalte-melden` and `/en/report` are the DSA notice route (job 275, Legal Addendum B): legal
+pages (`content/legal/inhalte-melden.md`, `report.md`) whose front matter `form:` holds every word
+of the report form. `report.mjs` checks that mapping (every key, no other, non-empty strings, the
+six reasons `hate`, `personal_rights`, `ip`, `csam`, `danger`, `other`, `{ref}` in `done`) and
+renders the form between the page's intro and its first `##` section; a missing or misspelled key
+fails the build with the file and the key. Strings are inline Markdown (links).
+
+- The browser's own validation explains a missing reason, field or box and a reason under 20
+  characters (`required`, `minlength`, `maxlength`, `type="email"`); `public/report.js` adds the
+  edge function's rules on top (trimmed text, code points, the address pattern) with
+  `form.ui.invalid` as the message, counts the reason's characters, folds name and e-mail away
+  behind `form.ui.show_contact` for child sexual abuse material (unless something is typed in
+  them), posts JSON to `/api/report` and shows `form.done` with the number from the answer, or
+  the `form.ui` message for 400, 429, any other status, or no connection. Without the script the
+  fields all show and the form posts to `/api/report`.
+- Only these two pages load `report.js` (a module) and `report.css` (on top of `waitlist.css`,
+  whose fields and tiles the form reuses). Their Markdown twins leave the form out.
+- `api/report.mjs` (code in `api/_report.mjs`) forwards the body to the `report` edge function:
+  `WAITLIST_UPSTREAM_URL` with its last segment `waitlist` replaced by `report`, with
+  `WAITLIST_PROXY_SECRET` and `x-region: eu-central-1`, no client address, and passes the answer
+  through. It answers `404` while either variable is unset or the URL doesn't end in `/waitlist`,
+  `405` to anything but `POST`, `403` unless the body is JSON from the site's own page
+  (`Sec-Fetch-Site: same-origin`, or a same-host Origin without fetch metadata), `400` to a body over 64 KiB or not a JSON object, `429` after 5
+  requests per client network (an IPv6 /64) in a rolling hour, held in the function instance's
+  memory only, and `503` when the edge function can't be reached or answers no JSON. It logs one
+  line, `report <status>`. `npm run preview` serves it like the waitlist functions (below).
 
 ## Drafts
 

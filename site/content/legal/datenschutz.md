@@ -4,12 +4,12 @@ description: "Datenschutzerklärung von Snacklist: welche Daten die App und die 
 locale: de
 path: /datenschutz
 translation_key: privacy
-updated: 2026-11-17
+updated: 2026-11-18
 ---
 
 # Datenschutzerklärung
 
-Stand: 17. November 2026
+Stand: 18. November 2026
 
 Hier steht, welche personenbezogenen Daten Snacklist verarbeitet, wozu, auf welcher Rechtsgrundlage, an wen sie gehen und welche Rechte du hast. Snacklist ist eine Einkaufslisten-App für Haushalte für iPhone, Android und Browser (app.snacklist.app) mit der Website snacklist.app.
 
@@ -25,7 +25,7 @@ Ein Datenschutzbeauftragter ist nicht benannt.
 
 ## 2. Website snacklist.app
 
-Die Website setzt keine Cookies, lädt keine Inhalte von anderen Servern und nutzt keine Analyse-Werkzeuge. Die Seiten werden als statische Dateien ausgeliefert. Nur das Formular der Warteliste schickt deine Angaben an unseren Server, eine Funktion bei Vercel (Abschnitt 2a). Die Verbindung nimmt der Vercel-Standort an, der dir am nächsten liegt. Vercel ist ein US-Unternehmen; ein Zugriff aus den USA ist möglich, die Übermittlung stützt sich auf das EU-US Data Privacy Framework und Standardvertragsklauseln (Abschnitt 13). Beim Aufruf verarbeitet unser Hosting-Anbieter Vercel Inc. (440 N Barranca Ave #4133, Covina, CA 91723, USA) technisch notwendige Daten: IP-Adresse, Zeitpunkt, aufgerufene Seite, Browser-Kennung. Das ist nötig, um die Seite auszuliefern und vor Angriffen zu schützen (Art. 6 Abs. 1 lit. f DSGVO; unser berechtigtes Interesse ist ein sicherer Betrieb). Speicherdauer der Server-Protokolle: höchstens 30 Tage.
+Die Website setzt keine Cookies, lädt keine Inhalte von anderen Servern und nutzt keine Analyse-Werkzeuge. Die Seiten werden als statische Dateien ausgeliefert. Nur das Formular der Warteliste (Abschnitt 2a) und das Formular [Inhalte melden](/inhalte-melden) (Abschnitt 10, „Meldungen rechtswidriger Inhalte“) schicken deine Angaben an unseren Server, je eine Funktion bei Vercel (/api/waitlist und /api/report). Die Verbindung nimmt der Vercel-Standort an, der dir am nächsten liegt. Vercel ist ein US-Unternehmen; ein Zugriff aus den USA ist möglich, die Übermittlung stützt sich auf das EU-US Data Privacy Framework und Standardvertragsklauseln (Abschnitt 13). Beim Aufruf verarbeitet unser Hosting-Anbieter Vercel Inc. (440 N Barranca Ave #4133, Covina, CA 91723, USA) technisch notwendige Daten: IP-Adresse, Zeitpunkt, aufgerufene Seite, Browser-Kennung. Das ist nötig, um die Seite auszuliefern und vor Angriffen zu schützen (Art. 6 Abs. 1 lit. f DSGVO; unser berechtigtes Interesse ist ein sicherer Betrieb). Speicherdauer der Server-Protokolle: höchstens 30 Tage.
 
 ## 2a. Warteliste für die Beta
 
@@ -170,6 +170,10 @@ Deine eigenen Rückmeldungen siehst du in der App unter Mehr › Feedback & Idee
 
 Unter Mehr › Feedback & Ideen stellen wir einige Ideen für Snacklist vor. Dein Haushalt kann jeder Idee ein +1 geben und es wieder zurücknehmen. Wir speichern die Idee, die Kennung deines Haushalts und den Zeitpunkt, aber nicht, welches Mitglied abgestimmt hat; in einem Haushalt mit nur einem Mitglied lässt sich die Stimme allerdings diesem Mitglied zuordnen. Die Mitglieder deines Haushalts sehen, welchen Ideen euer Haushalt ein +1 gegeben hat, alle anderen nur, wie viele Haushalte es insgesamt waren. Die Stimmen löschen wir mit deinem Haushalt oder wenn wir die Idee entfernen. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (unser berechtigtes Interesse daran, zu erfahren, welche Funktionen sich Haushalte wünschen).
 
+### Meldungen rechtswidriger Inhalte {#meldungen}
+
+Meldest du über das Formular auf snacklist.app/inhalte-melden oder in der App einen Inhalt, speichern wir die Art des Inhalts, wo er sich befindet (in der App die Kennung des Eintrags, der Liste oder des Fotos), deine Begründung, deine Bestätigung, dass deine Angaben richtig sind, einen Screenshot, falls du einen anhängst, den Zeitpunkt und, wenn du sie angibst, deinen Namen und deine E-Mail-Adresse; in der App zusätzlich deine Nutzerkennung. Wir speichern die Meldung bei Supabase (Server in Frankfurt am Main) und schicken dir die Eingangsbestätigung und unsere Entscheidung über Resend (Abschnitt 12). Lesen und bearbeiten kann Meldungen nur Peter Trost; andere Mitglieder des Haushalts sehen sie nicht. Wer den gemeldeten Inhalt eingestellt hat, erfährt deinen Namen nur, wenn das für die Entscheidung unbedingt nötig ist. Begründet eine Meldung den Verdacht einer Straftat, die Leben oder Sicherheit von Menschen gefährdet, geben wir die Angaben an das Bundeskriminalamt weiter (Art. 18 DSA, § 13 DDG). Rechtsgrundlage: Art. 6 Abs. 1 lit. c DSGVO in Verbindung mit Art. 16 bis 18 der Verordnung (EU) 2022/2065 (Digital Services Act). Für das Formular auf der Website verarbeitet unser Hoster Vercel deine IP-Adresse, um Missbrauch zu begrenzen (Abschnitt 2). Wir löschen Meldungen und unsere Entscheidung 12 Monate nach Abschluss des Falls, außer wir brauchen sie länger, weil ein Verfahren läuft.
+
 ## 11. Sicherungskopien
 
 Jede Nacht wird eine verschlüsselte Sicherungskopie der Datenbank erstellt und nach 90 Tagen automatisch gelöscht. Sie dient nur der Wiederherstellung nach einem Fehler. Speicherort: GitHub Inc., USA (als verschlüsselte Datei).
@@ -180,7 +184,7 @@ Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (Datensicherheit, Art. 32 DSGVO).
 Wir setzen folgende Dienstleister ein, die Daten in unserem Auftrag und nach unseren Weisungen verarbeiten (Art. 28 DSGVO):
 
 - Supabase Pte. Ltd., Singapur (Datenbank, Anmeldung, Auslösen der Anmelde-E-Mails, Server-Funktionen; die Datenbank liegt im Rechenzentrum Frankfurt am Main, die Server-Funktionen laufen am Standort, der dem Aufruf am nächsten liegt, auch außerhalb der EU; die Server-Funktion für Käufe läuft immer in Frankfurt am Main)
-- Plus Five Five, Inc. („Resend“), San Francisco, USA (Versand unserer E-Mails, darunter die Anmelde- und Bestätigungs-E-Mails und die Warteliste; versendet aus Irland, speichert E-Mails und Versandprotokolle in den USA und löscht sie nach 30 Tagen)
+- Plus Five Five, Inc. („Resend“), San Francisco, USA (Versand unserer E-Mails, darunter die Anmelde- und Bestätigungs-E-Mails, die Warteliste und die Eingangsbestätigungen und Entscheidungen zu Meldungen; versendet aus Irland, speichert E-Mails und Versandprotokolle in den USA und löscht sie nach 30 Tagen)
 - RevenueCat, Inc., Brandon (Florida), USA (kostenlose Freischaltung von Snacklist Premium für Tester und für die App-Prüfung (Abschnitt 5) und, sobald Snacklist Premium verkauft wird, Käufe in der App: Prüfung und Verwaltung der Freischaltung; Server bei Amazon Web Services in den USA)
 - Vercel Inc. (Hosting von snacklist.app, app.snacklist.app, mcp.snacklist.app; Domain und DNS)
 - PostHog Inc. (Nutzungsdaten, Fehlerberichte und Abfrage eingeschalteter Funktionen, Server in der EU; nur wie in Abschnitt 9 beschrieben)

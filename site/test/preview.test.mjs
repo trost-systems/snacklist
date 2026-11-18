@@ -109,14 +109,20 @@ test('every page and file carries the privacy headers, noindex included, and no 
   }
 });
 
-test('the landing pages load /demo.js, /stores.js and /waitlist.js, the mail-link pages /waitlist.js; no file in the build has an inline script but JSON-LD, or an external resource', () => {
+test('the landing pages load /demo.js, /stores.js and /waitlist.js, the mail-link pages /waitlist.js, the report pages /report.js; no file in the build has an inline script but JSON-LD, or an external resource', () => {
   const files = readdirSync(site.outDir, { recursive: true }).filter((f) => /\.(html|css)$/.test(f));
   assert.ok(files.length >= 9);
   for (const file of files) {
     const text = readFileSync(join(site.outDir, file), 'utf8').replace(/<script type="application\/ld\+json">[^<]*<\/script>/g, '');
     const scripts = [...text.matchAll(/<script[^>]*>/gi)].map((m) => m[0]);
     const waitlist = '<script src="/waitlist.js" defer>';
-    const want = ['de.html', 'en.html'].includes(file) ? ['<script src="/demo.js" defer>', '<script type="module" src="/stores.js">', waitlist] : /^(de\/warteliste|en\/waitlist)\//.test(file) ? [waitlist] : [];
+    const want = ['de.html', 'en.html'].includes(file)
+      ? ['<script src="/demo.js" defer>', '<script type="module" src="/stores.js">', waitlist]
+      : /^(de\/warteliste|en\/waitlist)\//.test(file)
+        ? [waitlist]
+        : ['inhalte-melden.html', 'en/report.html'].includes(file)
+          ? ['<script type="module" src="/report.js">']
+          : [];
     assert.deepEqual(scripts, want, file);
     assert.doesNotMatch(text, /<script[^>]*>[^<]/i, file);
     assert.doesNotMatch(text, /<iframe/i, file);

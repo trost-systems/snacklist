@@ -78,7 +78,7 @@ const WITH_CODE: Record<Role, string[]> = {
 
 /**
  * Tables no row of which the side connection holds: the ones without an owner (switches, the
- * classifier's words, the feedback ideas, rate windows by a hash) and the ones keyed by a user or a key that only the
+ * classifier's words, the feedback ideas, rate windows by a hash, the DSA reports no client role reaches) and the ones keyed by a user or a key that only the
  * server's roles write, where the fixture has no row. A function that locks one of them by an id
  * the caller passes is not seen here. A new table is held, or it is added with that in mind.
  */
@@ -95,6 +95,8 @@ const NO_ROW = [
   'classifier_lexicon',
   'classifier_synonyms',
   'classifier_terms',
+  'content_report_decisions',
+  'content_reports',
   'feedback_digest_state',
   'feedback_ideas',
   'feedback_screenshot_removals',
