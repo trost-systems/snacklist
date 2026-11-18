@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Which CI gates a change needs, as key=value lines for $GITHUB_OUTPUT:
 #   heavy     every gate but gitleaks and lint; false only when every file is documentation
-#   native    android and ios; only when the native projects or pubspec, these two gates or the
-#             checks the ios gate runs on the built app change. They compile the
+#   native    android, ios and ios-storekit; only when the native projects or pubspec, these
+#             gates, their iOS build (scripts/ios/build-for-testing.sh) or the checks the ios gate runs on the
+#             built app change. They compile the
 #             app's Swift and Kotlin and the plugin registrant from pubspec, and android runs
 #             the Kotlin's JVM unit tests; the Dart in app/lib
 #             is compiled by the flutter, web-prod and e2e gates already.
@@ -31,7 +32,7 @@ code="$(grep -vE '^docs/' <<<"$files" | grep -vE '^[^.].*\.md$|^\.github/.*\.md$
   | grep -vxE '\.github/workflows/e2e\.yml|scripts/ci-e2e\.sh' || true)"
 heavy=false native=false fastlane=false emails=false
 [[ -n $code ]] && heavy=true
-grep -qE '^app/(ios|android)/|^app/pubspec\.(yaml|lock)$|^scripts/gates/(android|ios)\.sh$|^scripts/(siri-vocabulary|app-shortcuts-bundle)\.py$' <<<"$files" && native=true
+grep -qE '^app/(ios|android)/|^app/pubspec\.(yaml|lock)$|^scripts/gates/(android|ios|ios-storekit)\.sh$|^scripts/ios/build-for-testing\.sh$|^scripts/(siri-vocabulary|app-shortcuts-bundle)\.py$' <<<"$files" && native=true
 grep -qE '^app/(fastlane/|Gemfile)|^scripts/gates/fastlane\.sh$' <<<"$files" && fastlane=true
 grep -qE '^(emails/|supabase/templates/|supabase/config\.toml$|design/tokens/|site/public/email/|scripts/gates/emails\.sh$)' <<<"$files" && emails=true
 printf 'heavy=%s\nnative=%s\nfastlane=%s\nemails=%s\n' "$heavy" "$native" "$fastlane" "$emails"

@@ -31,7 +31,9 @@ cat >"$tmp/bin/flutter" <<FLUTTER
 [[ \${1:-} != build ]] || echo "flutter build" >>"$tmp/calls"
 FLUTTER
 printf '#!/usr/bin/env bash\necho "npx $*" >>"%s/calls"\n' "$tmp" >"$tmp/bin/npx"
-chmod +x "$tmp/repo/e2e/sync-smoke.sh" "$tmp/repo/scripts/join-config.sh" "$tmp/bin/flutter" "$tmp/bin/npx"
+# shellcheck disable=SC2016 # the stub expands NODE_EXIT when it runs
+printf '#!/usr/bin/env bash\necho "node $*" >>"%s/calls"\nexit "${NODE_EXIT:-0}"\n' "$tmp" >"$tmp/bin/node"
+chmod +x "$tmp/repo/e2e/sync-smoke.sh" "$tmp/repo/scripts/join-config.sh" "$tmp/bin/flutter" "$tmp/bin/npx" "$tmp/bin/node"
 
 # Runs the gate; its exit status is in $status, what it called in $tmp/calls, its output in $tmp/out.
 run_gate() {
@@ -65,8 +67,15 @@ expect_calls $'flutter build\n'"npx playwright test tests/purchases.spec.ts" tes
 lock="npx playwright test tests/integration-lock.spec.ts"
 expect_calls $'flutter build\nnpx playwright test\n'"$lock"$'\nsync smoke' --
 expect_calls $'flutter build\nnpx playwright test\n'"$lock"$'\nsync smoke'
-expect_calls $'flutter build\nnpx playwright test --shard=1/2\n'"$lock"$'\nsync smoke' --shard=1/2
-expect_calls $'flutter build\n'"npx playwright test --shard=2/2" --shard=2/2
+# Job 304: a shard alone runs its part of the split by time; with a spec, Playwright's own --shard.
+expect_calls $'flutter build\nnode shards.mjs list 1/2 shard-tests.txt\nnpx playwright test --test-list shard-tests.txt\n'"$lock"$'\nsync smoke' --shard=1/2
+expect_calls $'flutter build\nnode shards.mjs list 2/2 shard-tests.txt\nnpx playwright test --test-list shard-tests.txt' --shard=2/2
+expect_calls $'flutter build\nnode shards.mjs list 3/4 shard-tests.txt\nnpx playwright test --test-list shard-tests.txt' -- --shard=3/4
+expect_calls $'flutter build\n'"npx playwright test tests/list.spec.ts --shard=2/2" tests/list.spec.ts --shard=2/2
+# A suite that a test list cannot name test by test (exit 3) runs Playwright's --shard; any other
+# failure of the plan stops the gate.
+NODE_EXIT=3 expect_calls $'flutter build\nnode shards.mjs list 2/2 shard-tests.txt\nnpx playwright test --shard=2/2' --shard=2/2
+NODE_EXIT=1 expect_stop $'supabase up\nflutter build\nnode shards.mjs list 2/2 shard-tests.txt' --shard=2/2
 expect_calls $'flutter build\n'"$lock" -- tests/integration-lock.spec.ts
 expect_calls $'flutter build\n'"$lock -g English --workers=1" tests/integration-lock.spec.ts -g English --workers=1
 

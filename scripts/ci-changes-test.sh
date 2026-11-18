@@ -115,7 +115,9 @@ for file in "$REPO_ROOT"/scripts/gates/*.sh; do
     [[ -z $path ]] || expect_at_least "$want" "$path"
   done < <(grep -vE '^ *#' "$file" | grep -oE 'REPO_ROOT/scripts/[A-Za-z0-9_./-]+' | sed 's|^REPO_ROOT/||' | sort -u)
 done
-[[ "$(asks_of ios)" == "    needs: changes"$'\n'"    if: needs.changes.outputs.native == 'true'" ]] || fail "the ios job no longer runs on the native switch"
+for job in ios ios-storekit; do
+  [[ "$(asks_of "$job")" == "    needs: changes"$'\n'"    if: needs.changes.outputs.native == 'true'" ]] || fail "the $job job no longer runs on the native switch"
+done
 
 # A file moved out of a native path is a change there.
 git checkout -q --detach "$base"

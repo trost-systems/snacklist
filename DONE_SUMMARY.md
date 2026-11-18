@@ -1584,3 +1584,15 @@ Main's green commit failed lint, flutter (8 goldens) and e2e (4) on a rerun beca
 rule (`runner-pinned`) keeps `-latest` labels out, and `resume()` in `scripts/e2e-stress.sh` also
 disables SC2329 for the newer shellcheck. The Release run's android failure was Maven Central's 429
 rate limit, transient. Details: [docs/done/302.md](docs/done/302.md).
+
+## Job 304: CI speed, e2e shards by time and StoreKit beside ios (2026-11-18)
+
+CI's e2e shards now split the suite by measured test time instead of test count. The StoreKit tests
+run in their own `ios-storekit` job next to `ios`, on the same switch, and `ci-ok` needs it. The e2e
+apt cache saves again when Ubuntu's packages change. Wall time to `ci-ok` on runs that ran every job
+went from 29.3 to 35.8 min (3 PR runs) to 24.1, 28.9, 16.4 and 31.5 min. In the 31.5 run both macOS
+jobs waited 14.8 min for a runner, and each native run now needs two. Run 2 lost about 15 min to an apt
+cache entry that this PR's first version wrote, now fixed and deleted. The ios job went from 28.7 to
+35.2 min to 16.0 to 20.0 min. The slowest shard's Playwright time went from 9.5 to 9.9 min to 7.6 to
+9.7 min. The shared web build was not done, because it saves no wall time. R3 is left to the lead.
+Details: [docs/done/304.md](docs/done/304.md).

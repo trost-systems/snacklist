@@ -27,7 +27,7 @@ source "$(dirname "$0")/lib.sh"
 GATES=(gitleaks lint changelog site site-agent emails db functions nexus fg-cli flutter web-prod fastlane e2e)
 # CI-only: iOS needs macOS, and a Gradle build takes more RAM than the shared box spares.
 # They still run on request with --only.
-CI_ONLY=(android ios)
+CI_ONLY=(android ios ios-storekit)
 # A gate that fails this many runs in a row on one branch is past patching: the p90 of such
 # streaks was 1 to 4 per gate over 199 jobs (docs/CI.md, "The local loop").
 STREAK=3

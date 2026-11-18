@@ -49,13 +49,19 @@ runs:
         printf 'Dir::Cache::Archives "%s/";\nAPT::Keep-Downloaded-Packages "true";\n' "$dir" \
           | sudo tee /etc/apt/apt.conf.d/99e2e-debs >/dev/null
         echo "dir=$dir" >>"$GITHUB_OUTPUT"
-        echo "key=e2e-debs-$ImageOS-$ImageVersion-${{ hashFiles('e2e/package-lock.json') }}-ffmpeg-${{ inputs.ffmpeg }}" >>"$GITHUB_OUTPUT"
+        echo "os-prefix=e2e-debs-$ImageOS-" >>"$GITHUB_OUTPUT"
+        echo "prefix=e2e-debs-$ImageOS-$ImageVersion-${{ hashFiles('e2e/package-lock.json') }}-ffmpeg-${{ inputs.ffmpeg }}-" >>"$GITHUB_OUTPUT"
+    # Job 304: the key ends in a hash of the packages it holds, so an entry that lacks Ubuntu's
+    # newer packages is saved again with them. With one key per image, a hit never saved, and
+    # every shard downloaded the updates (3.7 min from a slow mirror in run 44242102263).
     - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       id: debs-cache
       with:
         path: ${{ steps.debs.outputs.dir }}
-        key: ${{ steps.debs.outputs.key }}
-        restore-keys: e2e-debs-
+        key: ${{ steps.debs.outputs.prefix }}
+        restore-keys: |
+          ${{ steps.debs.outputs.prefix }}
+          ${{ steps.debs.outputs.os-prefix }}
     # The runner image already has the libraries headless Chromium needs. install-deps (apt:
     # fonts, xvfb) took 6 min on a slow mirror once, so it runs only when a launch fails.
     # WebKit (job 28: the iphone and webkit projects) and Firefox (job 33c) get the same treatment.
@@ -80,13 +86,24 @@ runs:
       if: inputs.ffmpeg == 'true'
       shell: bash
       run: sudo apt-get -o Acquire::Retries=5 update -qq && sudo apt-get -o Acquire::Retries=5 install -y -qq --no-install-recommends ffmpeg
-    # apt leaves root-owned files there (its lock), which the cache's tar could not read.
-    - name: Save the apt packages
-      if: steps.debs-cache.outputs.cache-hit != 'true'
+    # apt leaves root-owned files there (its lock), which the cache's tar could not read. Only the
+    # packages installed now stay: an entry restored from another image or before an update keeps
+    # no versions apt no longer wants.
+    - name: Name the apt packages
+      id: debs-after
       shell: bash
-      run: sudo chown -R "$(id -u):$(id -g)" "${{ steps.debs.outputs.dir }}"
-    - if: steps.debs-cache.outputs.cache-hit != 'true'
+      working-directory: ${{ steps.debs.outputs.dir }}
+      run: |
+        sudo chown -R "$(id -u):$(id -g)" .
+        shopt -s nullglob
+        for deb in *.deb; do
+          name="${deb%%_*}" version="$(cut -d_ -f2 <<<"$deb" | sed 's/%3a/:/')"
+          [[ "$(dpkg-query -W -f='${Version}' "$name" 2>/dev/null)" == "$version" ]] || rm -- "$deb"
+        done
+        packages="$(printf '%s\n' *.deb | sha256sum | cut -c1-16)"
+        echo "key=${{ steps.debs.outputs.prefix }}$packages" >>"$GITHUB_OUTPUT"
+    - if: steps.debs-after.outputs.key != steps.debs-cache.outputs.cache-matched-key
       uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ${{ steps.debs.outputs.dir }}
-        key: ${{ steps.debs.outputs.key }}
+        key: ${{ steps.debs-after.outputs.key }}

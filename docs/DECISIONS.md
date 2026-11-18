@@ -15224,3 +15224,46 @@ failed on 2 of the 3 runs on 26.04 (WebKit only) and on 1 run on 24.04.
 4. **The Release run's android failure is not part of this.** It ran on 24.04, and Maven Central
    answered 429 Too Many Requests for the Kotlin Gradle plugin. The store jobs restore no cache by
    design (job 220), so a rate limit there fails the run; a rerun of the failed job is the remedy.
+
+## Job 304: CI speed, e2e shards by time and StoreKit beside ios (2026-11-18)
+
+Peter picked R1 and R2 of the CI report (`lego-ci-report.md`, LR1). Code PRs wait for the slowest
+e2e shard. Native PRs and every push to main wait for the ios job. Measured on three green PR runs
+on 18 November: the shards' Playwright test seconds were about 850, 570, 1030 and 1080 (two
+workers, so about half that in wall time). On five green runs, the ios job took 23 to 35 min, and
+its StoreKit simulator boot and tests took 6 to 18 min of that (`scripts/ci-ios-phases.sh`).
+
+1. **Shards split by measured time, through `--test-list`.** Playwright 1.64 shards by test count
+   only (`PWTEST_SHARD_WEIGHTS` weights counts, not durations). Every shard plans the same greedy
+   split (`e2e/shards.mjs`, longest test first onto the shard that ends earliest) and runs its part
+   with `--test-list`. Test-level splitting, not file-level, because the long files (onboarding,
+   wasm-boot, tick-leave) take 2 to 5 min each. `--test-list` matches title paths as prefixes, so
+   the planner checks Playwright's own selection against its list before the run. No suite uses
+   serial mode outside integration-lock.spec.ts, which runs alone anyway. Four shards stay. The plan
+   for four shards estimates about 474 s each, against 570 to 600 s for today's slowest.
+2. **Durations are a checked-in file, not main's latest artifact.** Fetching an artifact at run time
+   needs a token and the network, and its result would change under a rerun. A stale file only
+   balances worse, never drops a test. `scripts/e2e-durations.sh` refreshes it.
+3. **No shared web build.** Each shard spends about 1.5 min on `flutter build web --wasm`, while its
+   stack is already up. A build job ahead of the shards would add its own setup (about 1 min) and
+   the build (1.5 min) to the critical path before any shard could start. The shards would then save
+   the 1.5 min build and keep their 1.5 to 2 min setup, so wall time stays the same or gets
+   slightly worse. Starting the shards early and having them wait for an artifact of the same run
+   means polling the API, which is not simple. The saving would be runner minutes only, so skipped.
+4. **The apt cache refreshes.** WebKit's system libraries are missing from the runner image, so
+   every shard runs `playwright install --with-deps webkit`. The cache key was one per image
+   version, so after the first save every hit skipped the save. Ubuntu's updated packages were then
+   downloaded on every run, and in run 44242102263 a slow mirror took 3.7 min of shard 4's setup.
+   The key now ends in a hash of the cached package names, so a run that downloaded something saves
+   a new entry. Only the packages installed at the end of the setup stay in it. A fallback entry
+   (another image version of the same OS) then drops what this image no longer installs. In the
+   first try, "newest version per package" kept ubuntu-26.04's packages over 24.04's, which apt
+   would then have downloaded on every run.
+5. **StoreKit tests in their own job (`ios-storekit`), not behind a path filter.** A filter would
+   skip them on main pushes that do not touch StoreKit, so main would lose coverage. The new job
+   runs on the same `native` switch as ios, and `ci-ok` needs it, so the tests gate exactly where
+   they ran before. It builds the app again (about 5 min of macOS runner time per native run). It
+   still boots its iOS 26.2 simulator after the build, because booting during a build made the
+   build 3 to 7 min slower (job 118). The build is shared code (`scripts/ios/build-for-testing.sh`),
+   which the native switch covers.
+6. **R3 not done** (native jobs on main only for native changes). The brief leaves it to the lead.

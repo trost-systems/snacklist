@@ -325,6 +325,23 @@ jobs:
           cache: true
       - run: scripts/gates/ios.sh
 
+  # Job 304: the StoreKit tests on their iOS 26.2 simulator, beside the ios job instead of after
+  # it. Each job builds the app (about 5 min); the simulator's first boot and the tests took 6 to
+  # 18 min of the ios job (docs/CI.md, The ios jobs).
+  ios-storekit:
+    needs: changes
+    if: needs.changes.outputs.native == 'true'
+    runs-on: macos-26
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+      - run: scripts/gates/ios-storekit.sh
+
   # Job 13: GitHub never turns a schedule back on that it disabled for 60 days of inactivity, so
   # every push to main re-enables the keepalive (docs/DEPLOY.md, Keepalive). Job 13b: and the
   # nightly backup (docs/BACKUP.md). Job 23: and the release, whose per-merge workflow_run
@@ -350,7 +367,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
   ci-ok:
-    needs: [changes, gitleaks, lint, changelog, db, functions, nexus, site, site-agent, emails, fg-cli, flutter, web-prod, e2e, fastlane, android, ios]
+    needs: [changes, gitleaks, lint, changelog, db, functions, nexus, site, site-agent, emails, fg-cli, flutter, web-prod, e2e, fastlane, android, ios, ios-storekit]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
