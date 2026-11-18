@@ -1667,8 +1667,9 @@ A push to main whose PR head had the same tree and parent and a green `ci-ok` sk
 gitleaks (`scripts/ci-main-reuse.sh`); any other push runs its commit's range like a PR, so native
 gates run on main only for native paths (R3). Every gate, native included, runs nightly at 01:17
 UTC, and a red nightly keeps the issue "Nightly CI failed on main" open. Release ships as before; only its queue changed (a run after a nightly CI run queues alone).
-Before: main `ci-ok` median 24:11 (16:19 to 39:23, n=9). The after numbers (2 merges, a manual nightly run) can only exist after the merge; they follow in a docs PR. Details:
-`docs/done/308.md`.
+Before: main `ci-ok` median 24:11 (16:19 to 39:23, n=9). After: merges #543, #514 and #545 `ci-ok` 0:52, 0:45 and 0:49, each `reuse=true`; the manual
+full run on main (all gates, native included) green in 18:16; Release uploaded build 1403 about 25.5 min after the merge.
+Details: `docs/done/308.md`.
 
 ## Job 275: DSA notice-and-action, web part
 
