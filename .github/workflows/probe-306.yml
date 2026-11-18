@@ -7,9 +7,13 @@ permissions:
 env:
   FLUTTER_VERSION: 3.50.0
 jobs:
-  absolute:
+  gate:
+    strategy:
+      fail-fast: false
+      matrix:
+        n: [1, 2, 3]
     runs-on: xcode-27
-    timeout-minutes: 50
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: ./.github/actions/xcode
@@ -18,40 +22,6 @@ jobs:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: false
-      - run: |
-          sed -i '' "s|identifier = \"../../Snacklist.storekit\"|identifier = \"$PWD/app/ios/Snacklist.storekit\"|" app/ios/Runner.xcodeproj/xcshareddata/xcschemes/Runner.xcscheme
-          grep -A1 StoreKitConfigurationFileReference app/ios/Runner.xcodeproj/xcshareddata/xcschemes/Runner.xcscheme
-          scripts/gates/ios.sh
-  warm:
-    runs-on: xcode-27
-    timeout-minutes: 50
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: ./.github/actions/xcode
-      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
-        with:
-          channel: stable
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          cache: false
-      - run: |
-          sed -i '' '/StoreKitConfigurationFileReference/,/\/StoreKitConfigurationFileReference/d' app/ios/Runner.xcodeproj/xcshareddata/xcschemes/Runner.xcscheme
-          grep -c StoreKitConfigurationFileReference app/ios/Runner.xcodeproj/xcshareddata/xcschemes/Runner.xcscheme || true
-          scripts/gates/ios.sh || echo "first run failed"
-          cd app
-          udid="$(xcrun simctl list devices booted -j | python3 -c 'import json,sys; print(next(d["udid"] for ds in json.load(sys.stdin)["devices"].values() for d in ds))')"
-          xcodebuild test-without-building -workspace ios/Runner.xcworkspace -scheme Runner -destination "id=$udid" -derivedDataPath build/ios/derived \
-            -only-testing:RunnerTests/LifetimeStoreKitTests -parallel-testing-enabled NO -test-timeouts-enabled YES 2>&1 | grep -E "Test Case .*(passed|failed|skipped)|exceeded"
-  download:
-    runs-on: xcode-27
-    timeout-minutes: 50
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: ./.github/actions/xcode
-      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
-        with:
-          channel: stable
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          cache: false
-      - run: |
-          sed -i '' '/StoreKitConfigurationFileReference/,/\/StoreKitConfigurationFileReference/d' app/ios/Runner.xcodeproj/xcshareddata/xcschemes/Runner.xcscheme
-          scripts/gates/ios-download.sh
+      - run: scripts/gates/ios.sh
+      - if: always()
+        run: python3 -c 'import json; print(json.dumps(json.load(open("/tmp/snacklist-storekit-tests.json")), indent=1))' | head -150

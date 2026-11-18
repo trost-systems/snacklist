@@ -43,8 +43,6 @@ run_tests() {
   local verdict=accepted
   grep -q "Test Case" "$out/$name.log" || verdict="unknown (no test ran)"
   grep -q "not installed for development" "$out/$name-sim.log" && verdict="refused (not installed for development)"
-  # iOS 27 logs no refusal: StoreKit switches to the sandbox's storefront and the purchase hangs (job 306).
-  grep -q "Storefront for testflight changed" "$out/$name-sim.log" && verdict="refused (answers from the sandbox storefront)"
   grep -q "Error saving configuration file" "$out/$name-sim.log" && verdict="$verdict, SKTestSession could not save"
   local tests
   tests="$(grep -E "Test Case .*(passed|failed|skipped)" "$out/$name.log" | sed -E "s/.*LifetimeStoreKitTests ([A-Za-z0-9]+)\]' ([a-z]+).*/\1 \2/" | paste -sd, -)"
