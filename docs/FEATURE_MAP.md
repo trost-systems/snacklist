@@ -7,7 +7,7 @@ This file points at the code-backed inventory: what Snacklist does today. The pr
 `.cursor/skills/verify-snacklist/features/` describes what Snacklist does today, one file per
 user-facing feature (index: its `README.md`). `FEATURES-FOR-WRITERS.md` in the same folder is
 the plain-language version with the exact German and English labels, a "never claim" list per
-feature and the commit each section was last verified on. Snacklist Launch and anyone writing
+feature and the commit each section was last verified on. Snacklist PM and anyone writing
 emails, site copy or instructions works from it.
 
 **Whenever user-facing behaviour changes, update the feature file and its section in

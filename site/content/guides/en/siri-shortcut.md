@@ -17,7 +17,7 @@ We'll update this page if that changes.
 
 ## Siri without setup {#without-setup since=1.0.0 once=native-siri}
 
-> Draft for Snacklist Launch: please review the text and phrases before launch.
+> Draft for Snacklist PM: please review the text and phrases before launch.
 
 With the current app you don't need a Shortcut. Once you're signed in to Snacklist and belong to a household, Siri knows Snacklist by itself, in English and in German. There's nothing to set up and no token to copy.
 

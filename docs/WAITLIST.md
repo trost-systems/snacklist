@@ -195,7 +195,7 @@ open and click tracking stay off in the domain settings.
 
 The confirmation mail is Legal's M-1/M-2 of 2026-11-04 word for word: it says an assistant may
 have entered the address and has no launch sentence. The footers are Legal's of 2026-11-02. The
-welcome and invite mails are drafts for Snacklist Launch. All of it waits for Peter's approval; the PR
+welcome and invite mails are drafts for Snacklist PM. All of it waits for Peter's approval; the PR
 is not merged before.
 
 Links: confirm `<origin>/de/warteliste/bestaetigen#t=<token>` (`/en/waitlist/confirm`),

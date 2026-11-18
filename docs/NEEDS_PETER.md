@@ -1090,7 +1090,7 @@ push to `main` goes live on snacklist.app.
    dark mode, on the phone and the desktop. The guides, the changelog and the legal pages now
    share the new header and footer; their texts are unchanged.
 2. **Copy is a draft.** `site/COPY_NEEDED.md` lists every new or changed string (DE and EN) for
-   Snacklist Launch. Approve them as they are, or have Launch change them in
+   Snacklist PM. Approve them as they are, or have PM change them in
    `site/content/landing/copy.yml`. The Siri card says „Bald“ / "Coming soon" until native Siri
    (job 51) is in the stores.
 3. **Merge** when you're happy: on the box, under the merge lock,

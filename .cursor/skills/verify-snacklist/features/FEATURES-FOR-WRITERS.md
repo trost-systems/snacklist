@@ -1,6 +1,6 @@
 # Snacklist features for writers
 
-What Snacklist does today, in plain words, with the exact button and screen labels in German and English. Snacklist Launch and anyone writing emails, site copy or instructions reads this file. The checks behind each section are the other files in this folder.
+What Snacklist does today, in plain words, with the exact button and screen labels in German and English. Snacklist PM and anyone writing emails, site copy or instructions reads this file. The checks behind each section are the other files in this folder.
 
 ## How to use this
 
@@ -21,7 +21,7 @@ The app is called Snacklist. It used to be called Hummlist. The app, its Siri ph
 
 - That Snacklist Premium can be bought, or any price, plan, trial or discount. Premium is not on sale and nothing is locked behind it today.
 - That Siri, Alexa or AI assistants need Premium today. They don't: nothing is locked today. After the public launch AI assistants become part of Snacklist Premium; Siri and the Alexa skill stay free for good. Never write that Siri or Alexa need Premium. Peter decided this.
-- Siri without setup ("just say Hey Siri", no Shortcut) as available. It is built, but its announcement waits for Snacklist Launch. Today Siri works through a Shortcut the user sets up once, in German.
+- Siri without setup ("just say Hey Siri", no Shortcut) as available. It is built, but its announcement waits for Snacklist PM. Today Siri works through a Shortcut the user sets up once, in German.
 - That the Alexa skill needs Premium or an invitation. It passed Amazon certification and has been live in the Alexa Skill Store worldwide since 2026-11-16, in German and English.
 - Store logos or chain colours, official store layouts, prices, offers or opening hours. Store names are plain names; walking orders are researched defaults.
 - A code to type from an email for sign-in. Sign-in emails contain a link, and the only code in Snacklist is the 8-character household invite code.
@@ -621,7 +621,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 - That list contents are sent (a screenshot, once released, shows whatever was on screen; the user decides and can paint over it).
 - That users can read their sent notes back in the app, see a reply or vote on ideas (only behind the test flag `feedback-fb4`; today the notes come back only in their own data export, Konto → „Meine Daten exportieren“, EN "Export my data").
 
-**Note.** Snacklist Support (Peter) reads the notes. A daily email summary of new notes is built but not switched on. Don't promise how fast a note is read.
+**Note.** Peter reads the notes. A daily email summary of new notes is built but not switched on. Don't promise how fast a note is read.
 
 **Last verified.** 18 November 2026, code version 0ca5dcc9, in the web app (German and English): the form from More as users have it, and with both test flags on the „Feedback & Ideen“ row and a screenshot added from More with its note „Zeigt alles, was auf dem Bildschirm war …“. The reply count, ideas and the note's page: 16 November 2026, code version c2183ca6. Shake by the app's automatic tests only. „Verdecken“ / "Cover": 17 November 2026, job 290's branch, in the web app (German and English, test flag on), the covered rows checked pixel by pixel in the stored picture.
 
@@ -713,13 +713,13 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 
 **The address in a browser.** Someone who opens https://mcp.snacklist.app in a browser gets a short page in German or English (by the browser's language): „Hier sprechen KI-Assistenten mit deiner Snacklist.“ (EN "This is where AI assistants talk to your Snacklist."), a note that the address is for AI assistants that support MCP, not for the browser, the address with a copy button, and links to the guides and snacklist.app. It names no assistant. Never claim it does anything itself: it only explains the address. Live on mcp.snacklist.app (checked 2026-11-07); assistants still connect at the same address.
 
-**Not switched on yet: the Snacklist API.** Built but switched off for everyone: the app hides it and the server refuses its keys and requests. When it is on, Zugänge gets a section „API“ with an address, a link „API-Dokumentation“ and the button „API-Schlüssel erstellen“ (EN "Create API key"): the user names the key, picks „Nur lesen“ or „Lesen und schreiben“ (EN "Read only", "Read and write") and copies it once. Scripts and automations then read and change the list over HTTP. Do not announce it until Snacklist Launch says so. Never claim it today, nor a short address like api.snacklist.app (none exists).
+**Not switched on yet: the Snacklist API.** Built but switched off for everyone: the app hides it and the server refuses its keys and requests. When it is on, Zugänge gets a section „API“ with an address, a link „API-Dokumentation“ and the button „API-Schlüssel erstellen“ (EN "Create API key"): the user names the key, picks „Nur lesen“ or „Lesen und schreiben“ (EN "Read only", "Read and write") and copies it once. Scripts and automations then read and change the list over HTTP. Do not announce it until Snacklist PM says so. Never claim it today, nor a short address like api.snacklist.app (none exists).
 
 **Last verified.** 18 November 2026, code version 0ca5dcc9, in the web app (German).
 
 ## Siri
 
-**What it does.** On an iPhone the user can add things to the Snacklist by voice: they say a sentence like „Milch, zwei Gurken und Klopapier“, Snacklist splits it into items, files each under a category and Siri reads back „Hinzugefügt: Milch, 2 Gurken, Klopapier.“ What is open already Siri names instead („Schon auf der Liste: Milch.“). When the user says just „Butter“ and „Butter Weihenstephan“ (a brand) or „Bio Butter“ is open, Siri without setup asks whether to add another Butter; the Shortcut adds nothing and says Butter Weihenstephan is already on the list. Another kind of the item, like „Butter gesalzen“ or „Milch laktosefrei“, is a different product: plain „Butter“ is added. Snacklist never changes or merges the open item. An amount said after the item counts too, as a word or digits: „Möhren zwei“ adds 2 Möhren, „Eier dreißig“ 30 Eier. A product name that starts with a number stays whole: „Drei Glocken Nudeln“ is one item. Today this works with a Shortcut the user sets up once (about five minutes, German only). Siri without any setup (iOS 17 and newer, German and English, also reads the list aloud) is built, but its announcement waits for Snacklist Launch. If the person leaves a household, Siri without setup keeps working with their next household and stops only when they leave their last one. A Shortcut stops working when its person leaves the household it was set up in.
+**What it does.** On an iPhone the user can add things to the Snacklist by voice: they say a sentence like „Milch, zwei Gurken und Klopapier“, Snacklist splits it into items, files each under a category and Siri reads back „Hinzugefügt: Milch, 2 Gurken, Klopapier.“ What is open already Siri names instead („Schon auf der Liste: Milch.“). When the user says just „Butter“ and „Butter Weihenstephan“ (a brand) or „Bio Butter“ is open, Siri without setup asks whether to add another Butter; the Shortcut adds nothing and says Butter Weihenstephan is already on the list. Another kind of the item, like „Butter gesalzen“ or „Milch laktosefrei“, is a different product: plain „Butter“ is added. Snacklist never changes or merges the open item. An amount said after the item counts too, as a word or digits: „Möhren zwei“ adds 2 Möhren, „Eier dreißig“ 30 Eier. A product name that starts with a number stays whole: „Drei Glocken Nudeln“ is one item. Today this works with a Shortcut the user sets up once (about five minutes, German only). Siri without any setup (iOS 17 and newer, German and English, also reads the list aloud) is built, but its announcement waits for Snacklist PM. If the person leaves a household, Siri without setup keeps working with their next household and stops only when they leave their last one. A Shortcut stops working when its person leaves the household it was set up in.
 
 **Named lists.** A sentence may name one of the household's lists: „Luftballons zur Geburtstag Liste“ puts Luftballons on Geburtstag and answers „Hinzugefügt zur Liste Geburtstag: Luftballons.“ (EN "balloons to the Birthday list" → "Added balloons to the Birthday list in Snacklist."). Without a list name the items go to the person's default list (a choice in the app that is not switched on yet, so today the household's first list); with several lists the answer always names the list used. A name that matches no list or several adds to the default list and says so: „Eine Liste „Party“ habe ich nicht gefunden. Hinzugefügt zur Liste Alltag: Kerzen.“ Siri never asks which list. Don't claim a dedicated Siri phrase for lists: the list is said in the sentence.
 
@@ -729,7 +729,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 3. Say „Hey Siri, Einkaufsliste“, then the items.
 
 **Never claim.**
-- That Siri works without setup as a released feature (not announced until Snacklist Launch).
+- That Siri works without setup as a released feature (not announced until Snacklist PM).
 - That leaving a household always ends Siri without setup: it ends only when the person leaves their last household. (A Shortcut does stop when its person leaves the household it was set up in.)
 - That it works on Apple Watch, AirPods or CarPlay (untested), or Android, or in the browser.
 - That English sentences are split correctly through the Shortcut (German only).

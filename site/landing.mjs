@@ -1,6 +1,6 @@
 // The landing pages /de and /en: copy from content/landing/copy.yml, illustrations and demo videos
 // from public/media/ (media/README.md names the files). Every string carries its copy id in
-// `data-copy-id`, so Snacklist Launch finds it in the page and in COPY_NEEDED.md.
+// `data-copy-id`, so Snacklist PM finds it in the page and in COPY_NEEDED.md.
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import yaml from 'js-yaml';

@@ -21,7 +21,7 @@ Owners:
 - **Lead** (snacklist-lead): repository PRs, repository variables and
   secrets, function secrets, SQL on the hosted project.
 - **Legal** (Legal Review): legal texts and their publication.
-- **Launch** (Snacklist Launch): user-facing copy that is still a placeholder.
+- **PM** (Snacklist PM): user-facing copy that is still a placeholder.
 
 ## Product prerequisites (Peter, 11 Nov 2026)
 
@@ -311,12 +311,12 @@ Premium items: job 49's ("Snacklist Premium gibt es jetzt jährlich oder als
 Lifetime …") and job 67's. Whoever owns the release checks the "What's new"
 texts against the 500-character limit (`node scripts/release/changelog.mjs drafts`).
 
-5.7 **Launch, Peter's yes**: the placeholder copy. Every `premium*` key
+5.7 **Snacklist PM, Peter's yes**: the placeholder copy. Every `premium*` key
 marked PLACEHOLDER in `app/l10n/app_de.arb` and `app_en.arb`, and the rename
 „Snacklist Lifetime“ → „Snacklist Premium“ in the older strings (S-11, about
 45 lines; for example `joinTargetUnlocked` "Dieser Haushalt hat Snacklist
 Lifetime" also shows for yearly and granted households). The guides on
-snacklist.app that call the integrations free. Launch can do this before 5.4.
+snacklist.app that call the integrations free. Snacklist PM can do this before 5.4.
 A sale with the placeholder copy is possible but not recommended.
 
 ## 6. The integration lock (after the sale is live)

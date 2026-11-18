@@ -42,7 +42,7 @@ export const yearly = {
   /** ISO 8601, as App Store Connect and StoreKit write it. No trial, no introductory offer. */
   period: 'P1Y',
   familySharable: false,
-  // Placeholder copy: Snacklist Launch writes the real store listing.
+  // Placeholder copy: Snacklist PM writes the real store listing.
   listings: [
     {
       apple: 'de-DE',

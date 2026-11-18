@@ -5242,7 +5242,7 @@ and the Apple DTS forum answers in threads 777854 and 759909.
     on data (`siri_add` with `source: shortcut`).
 17. **Not built:** an Apple Watch app (App Shortcuts from the iPhone "cannot be run on the Watch",
     WWDC23 10102), a tick-off intent, and a gradual rollout. The changelog item holds on
-    `native-siri` until Hummlist Launch.
+    `native-siri` until Snacklist PM (formerly Hummlist Launch).
 
 ## Job 52: the design system (6b Hex Frische, option 6's yellow) in the app, app icon #5, 2026-11-01
 
@@ -5509,7 +5509,7 @@ server switch `premium_offer` is seeded off.
     privacy policy. Apple's subscription page asks for name, duration, the full renewal price and
     restore on the sign-up screen; the "24 hours" wording is in Apple's Media Services Terms, not
     in the guideline (read 2026-11-01). All copy is placeholder (ARB descriptions say so) until
-    Legal Review K.13 / Hummlist Launch.
+    Legal Review K.13 / Snacklist PM (formerly Hummlist Launch).
 20. **Strings.** New keys for the Premium page; Legal Review's A2-2..A2-4 strings word for word.
     The 26 "Hummlist Lifetime" values (S-11) are unchanged: renaming them is a legal text change
     for Peter (NEEDS_LEAD). The page uses new `premium*` keys for its own copy (title, web note,
@@ -5666,7 +5666,7 @@ the go-live order.
    `en`, `status` (`draft` or `reused`) and `source`. A missing language, an unknown field or an
    unused id fails the build. Each string is rendered with `data-copy-id`, and
    `site/scripts/copy-needed.mjs` generates `site/COPY_NEEDED.md` from the YAML. A test fails while
-   it is stale, so the list for Hummlist Launch cannot drift from the page. Copy reused from the
+   it is stale, so the list for Snacklist PM cannot drift from the page. Copy reused from the
    6b prototype (DE only) counts as a draft, since its English is new; only strings already
    published word for word (the help page's „geschlossener Test für Familie und Freunde“, the
    privacy policy's „keine Werbung und verkauft keine Daten“)

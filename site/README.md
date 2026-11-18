@@ -26,7 +26,7 @@ production build. The browser checks (axe, contrast, Lighthouse, CSP crawl) live
 - `content/landing/copy.yml`: every string, with `de`, `en`, `status` (`draft` or `reused`) and
   `source`. A string missing in one language, an unknown field or an id the page doesn't use fails
   the build. In the page every string carries `data-copy-id="<id>"`. After a change run
-  `node scripts/copy-needed.mjs`, which writes `COPY_NEEDED.md` (the list for Snacklist Launch; a
+  `node scripts/copy-needed.mjs`, which writes `COPY_NEEDED.md` (the list for Snacklist PM; a
   test fails while it is stale).
 - `public/media/`: the illustrations' posters (light and dark, wide and compact) and the demo
   videos' files; `public/media/README.md` names them. A missing poster, a poster of the wrong
@@ -345,7 +345,7 @@ fragments, the API description, and at `launch` in `config/stage.ts` any noindex
 `node agent.mjs [dist]` runs the checks alone.
 
 Text that waits for Peter's approval in his own words starts with a marker: `⟦LAUNCH COPY⟧` and
-`⟦LAUNCH COPY FAQ⟧` (Snacklist Launch's copy), `⟦LEGAL W1⟧` (a retention period), `⟦LEGAL W2⟧` (consent
+`⟦LAUNCH COPY FAQ⟧` (Snacklist PM's copy), `⟦LEGAL W1⟧` (a retention period), `⟦LEGAL W2⟧` (consent
 and privacy policy) and `⟦LEGAL privacy.website⟧`. Preview builds show each as a lemon tag in the
 text; a production build fails while any page, `waitlist.js` or `waitlist.css` still contains `⟦`.
 Delete the marker when Peter has approved that text.
