@@ -15499,3 +15499,78 @@ list entry reliably, flattened into the PNG before upload.
 8. **To the lead, not fixed here** (`NEEDS_LEAD`): the dark theme's ink `#03050F` on the list's
    `#0B1024` hardly shows where a cover is, and item 6's margin drag. Legal named black or the
    app's dark grey for the fill, so changing it is their call too.
+
+## Job 297: the name after sign-in (DN3) and Konto › Dein Name (DE1), behind `display-name` (2026-11-17)
+
+Peter picked DN3 and DE1 (prototype job 293, PR #531). Every default of DN-Q1..Q8 and DE-Q1..Q7
+holds; the calls below are the ones the recommendations left to the build.
+
+1. **A chosen name has a mark of its own.** `profiles.display_name_chosen_at` (nullable). Before,
+   a name counted as chosen only when it differed from the derived one, so a confirmed Google name
+   (DN3's one tap saves the same text) would still follow a later Apple or Google name. The metadata
+   trigger now also requires `display_name_chosen_at is null`. pgTAP
+   `display_name_chosen.test.sql` pins it; with the old trigger body two of its cases fail.
+2. **One writer: `set_display_name(p_name)`.** It collapses runs of whitespace and control characters
+   to one space, trims, takes 1 to 80 characters (code points, as `char_length` and the app's
+   `runes` count) and stamps the choice. No app ever wrote `profiles` directly (`git log -S`), so
+   the column grant `update (display_name)` is revoked: every saved name is a chosen one, and RLS
+   stays as tight as before (the RPC writes only `auth.uid()`'s row).
+3. **`my_display_name()` answers `chosen` and `from_email`.** The e-mail-prefix rule (empty, or the
+   local part of the e-mail, cut to 80) is the one the join page already uses, now in one server
+   answer, so the app does not repeat it.
+4. **The gate sits in `authRedirect`, right after the analytics question.** A new user without a
+   household (`NeedsHousehold`) is sent to `/your-name` until the name is known to be chosen,
+   also while it is still being read, so a fast setup cannot slip past it. That places it after the
+   account and before the household setup for creators, and before the join screen for joiners
+   (the invite rides along, DN-Q6). In a household, only an unchosen e-mail-prefix name asks, once
+   per device, with „Jetzt nicht“ (kept in `DeviceCache` per user; DN-Q5). A Google or Apple user
+   already in a household is not asked.
+5. **Apple's name may come a moment late.** The app stores Apple's name with `updateUser` after
+   sign-in, so the name is read again on `userUpdated`; an untouched field takes the new prefill.
+6. **The public join page is unchanged.** It still hides a name equal to the e-mail's local part
+   even when chosen: that page answers anyone holding the link (Legal N-151), and showing such a
+   name there would show part of the address.
+7. **No analytics event (DN-Q8).** The new screen has the screen name `your_name` like every route,
+   which carries no text.
+8. **The data export is unchanged.** It keeps the profile's `display_name` and `created_at`. When
+   the name was chosen is a flag for the app, not something the user entered; adding it would mean
+   redefining `export_my_data`, which other open jobs change too.
+9. **English title: "What should we call you?"** The prototype's "How should we call you?" is
+   not idiomatic English. The German stays „Wie sollen wir dich nennen?“, Peter's words.
+10. **The page's title bar reads „Dein Name“, the question is the heading.** The long question in the
+    bar would be cut at 200 %. Konto's row is titled „Dein Name“ with the name (or „Namen
+    eintragen“) under it, so the row reads the same before and after a name exists.
+11. **Turn the flag on only after the migration is deployed.** Without `my_display_name` the read
+    fails and a new user waits at the step's retry. `supabase-deploy.yml` deploys it from main.
+12. **The name gate refreshes the router only when its answer changes.** At first the router also
+    refreshed on every name and flag emission. CI's e2e caught the cost: right after „Abmelden“ the
+    name cubit (and the flags) emit too, and a second redirect run at the old location `/more` saw
+    the session already signed out. `RedirectMemory`'s one-shot "just signed out" was gone by then,
+    so the run carried `/more` as a link: `/login?next=%2Fmore`. `RedirectMemory` deliberately
+    answers a later run at the same location differently (`/login`, then `/start`), so the fix is
+    upstream of it. `_AnswerListenable` notifies only when `askName` flips, and the redirect still
+    computes it fresh. With the flag off, the router refreshes on exactly what it did before.
+    `your_name_gate_test.dart` signs out on More in both orders and expects `/login`.
+13. **Review 0: the name step offers „Abmelden“ in its app bar,** like the analytics question, the
+    welcome and the join waiting screens. Without it, someone who signed in with the wrong Google or
+    Apple account could only get past the step by saving a name, which stamped that account as
+    chosen. The step shows the button for members too, since it costs nothing. Signing out there
+    lands on the sign-in. The name gate's refresh now gives no answer while signed out: its flip
+    from yes to no at sign-out was a second redirect run at `/your-name`, which sent the user to
+    `/start` instead (the same mechanism as item 12). An invite on the step's location still rides
+    into the sign-in, as it does from the analytics question: the likely reason to sign out there
+    is joining with the right account. `your_name_gate_test.dart` pins both cases.
+14. **Review 0: one length count everywhere.** `TextField.maxLength` counts grapheme clusters and
+    the server counts code points, so 78 letters and a family emoji read 79/80 while „Weiter“
+    stayed off. `DisplayNameLimit` refuses an edit past 80 code points. The counter can still read
+    below 80 at the limit for joined emoji; the button and the server agree.
+15. **Review 0: a name of only invisible characters is empty.** The app (`\p{Cf}`) and
+    `set_display_name` (soft hyphen, zero-width and bidi marks, word joiners, BOM, tags) refuse a
+    name made only of format characters. Joiners inside an emoji still count.
+16. **Review 0: Konto shows the row after a failed read,** with „Dein Name konnte nicht geladen
+    werden.“ and a tap that reads again, instead of hiding DE1.
+17. **Review 0, not changed: a member can meet the step mid-session.** That happens the first time
+    the flag reaches an install while its member is on the list. DN-Q5 says "at the next app start".
+    Holding the answer until a cold start would mean keeping state across the router's runs for a
+    one-time event per install, and the step can be postponed with one tap. The flag goes on for
+    everyone at once, so each e-mail-prefix member meets it once.

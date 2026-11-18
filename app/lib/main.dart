@@ -32,6 +32,7 @@ import 'package:family_groceries/session/mail_language.dart';
 import 'package:family_groceries/session/plugin_sign_in.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/session/social_sign_in.dart';
+import 'package:family_groceries/session/your_name.dart';
 import 'package:family_groceries/settings/access_repository.dart';
 import 'package:family_groceries/settings/account_repository.dart';
 import 'package:family_groceries/siri/siri_channel.dart';
@@ -197,6 +198,11 @@ Future<void> _main(WidgetsBinding Function() binding) async {
       feedback: SupabaseFeedbackRepository(client),
       invites: SupabaseInviteRepository(client),
       pendingInvite: pendingInvite,
+      yourName: YourNameCubit(
+        SupabaseNameRepository(client),
+        cache,
+        client.auth.onAuthStateChange,
+      ),
       onboarding: onboarding,
       onboardingBackend: SupabaseOnboardingBackend(client),
       homeWidgets: homeWidgets,

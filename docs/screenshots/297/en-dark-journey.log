@@ -1,0 +1,22 @@
+[23:10:01.140Z] ok: an e-mail sign-up sees an empty name field
+[23:10:01.142Z] ok: „Continue“ is off while the field is empty
+[23:10:01.143Z] ok: no „Jetzt nicht“ before a household exists
+[23:10:01.144Z] ok: the step offers „Sign out“, so a wrong account is not stuck
+[23:10:02.619Z] ok: the name is stored trimmed and collapsed, chosen (Lea 🌻|true)
+[23:10:07.002Z] ok: signing out from the step saves no name
+[23:10:12.001Z] ok: the provider name is prefilled
+[23:10:12.003Z] ok: „Yes, that's me“ is ready without typing
+[23:10:12.921Z] ok: one tap stores the provider name as chosen
+[23:10:13.042Z] ok: a later provider name does not replace the confirmed one
+[23:10:16.866Z] ok: the joiner lands on /your-name with the invite (http://127.0.0.1:62981/your-name?invite=3YHHGC5A)
+[23:10:18.838Z] ok: the owner sees the joiner by the chosen name
+[23:10:23.506Z] ok: the e-mail prefix is not prefilled
+[23:10:24.920Z] ok: „Jetzt nicht“ holds after a reload
+[23:10:26.812Z] ok: the row reads „Add your name“
+[23:10:27.183Z] ok: Save is off for an empty name
+[23:10:27.740Z] ok: Save is on for „Noah“
+[23:10:29.179Z] ok: the row shows the new name
+[23:10:29.224Z] ok: Konto saved „Noah“ as chosen
+[23:10:31.084Z] ok: at 200 % the sheet still shows Save
+[23:10:31.239Z] ok: no page errors ()
+[23:10:31.548Z] PASS

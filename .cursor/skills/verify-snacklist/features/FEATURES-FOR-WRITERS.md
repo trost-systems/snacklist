@@ -163,6 +163,26 @@ On Android the phone's back button goes one screen back, as the arrow in the tit
 
 **Last verified.** 16 November 2026, code version c2183ca6, in the web app (German, test flag on): the start screen, „Bestehendem Haushalt beitreten“ with the preview of a typed code, and the invite's question „Konto erstellen“ or „Anmelden“. English and dark from the app's automatic screen tests.
 
+## Your name (behind a flag, not public)
+
+**Being built, not for users yet (test flag `display-name`, job 297).** Do not write about any of this until the flag is on for everyone.
+
+**What it does.** Right after signing in (and the usage-data question), the app asks „Wie sollen wir dich nennen?“ (EN: "What should we call you?"): „Alle in deinem Haushalt sehen diesen Namen. Wen du einlädst, sieht deinen Vornamen. Du kannst ihn später ändern.“ Someone who signed in with Google or Apple finds their name already in the field and taps „Ja, das bin ich“ (EN: "Yes, that's me"). Someone who signed up with an e-mail address types a name; „Weiter“ (EN: "Continue") stays off until there is one, up to 80 characters, emoji welcome. Someone who signed in with the wrong account taps „Abmelden“ (EN: "Sign out") at the top instead. It comes before a new household is set up, and before „Haushalt beitreten“ (EN: "Join household") for someone joining by invite, so the household sees the name from the start. People already in a household whose name is still the first part of their e-mail address are asked once, with „Jetzt nicht“ (EN: "Not now"). The name can be changed any time under „Mehr“ › „Konto“ › „Dein Name“ (EN: "More" › "Account" › "Your name"); the row says „Namen eintragen“ (EN: "Add your name") while there is none. One name for all households. A name someone chose is never replaced by their Google or Apple name later.
+
+**How to get there.**
+1. Sign up or sign in: the question comes after the usage-data question.
+2. Later: „Mehr“ › „Konto“ › „Dein Name“.
+
+**Never claim.**
+- That the name step or the „Dein Name“ row exist for users: test flag only.
+- That others see a new name instantly or get told about it: they see it the next time their member list or list loads, without a notice.
+- A different name per household: it is one name everywhere.
+- That the invite page shows the full name: people with the link see the first name only.
+
+**Unverified.** The real Google and Apple sign-in sheets (the web app on the local test stack uses a name stored the way Google stores it); the iPhone and Android apps (driven in the web app only).
+
+**Last verified.** 18 November 2026, code version b2471b29, in the web app (German, light; English, dark; text at 200 % under Konto), test flag on: a new e-mail account, one that signs out from the question, a Google-style name, a joiner from an invite link, and a member asked once with „Jetzt nicht“ who then changed the name under Konto.
+
 ## Several lists and „Ich bringe“
 
 **What it does.** A household can keep more than one list, for example „Wocheneinkauf“ and „Baumarkt“, or a club's „Vereinsheim“ and „Sommerfest“. The first one is „Einkaufsliste“ (EN: "Shopping list") until it is renamed. Each item is on one list; stores, categories and their order are shared by all of a household's lists. With two or more lists, tabs under the household's name switch between them, and new items go to the list shown. For a party or a family gathering, members say what they bring: „Ich bringe das“ (EN: "I'll bring it"), with an amount if they like, and the list shows „Mia bringt 2 · Tom bringt 1“ under the item, „Du bringst“ (EN: "You're bringing it") for your own. Ticking an item off ends what was promised for it. A household holds up to 50 lists; for a 51st the app says „Hier passen höchstens 50 Listen rein.“ (EN: "A household can have up to 50 lists.").

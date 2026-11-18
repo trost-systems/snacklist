@@ -64,6 +64,13 @@ const onDeviceCatalogFlag = 'on-device-catalog';
 /// answer an older text are dimmed.
 const addFeedbackListFlag = 'add-feedback-list';
 
+/// The flag that asks for the user's name (job 297, DN3 and DE1): right
+/// after the sign-in a screen asks „Wie sollen wir dich nennen?“, prefilled
+/// with a Google or Apple name and required without one (once, with „Jetzt
+/// nicht“, for members whose name is still their e-mail's), and Konto gets
+/// a row to change it. Off, neither shows.
+const displayNameFlag = 'display-name';
+
 /// PostHog feature flags, the app's runtime toggles (job 44,
 /// docs/ANALYTICS.md "Feature flags"). Read a toggle with [isOn] wherever it
 /// matters; nothing else in the app reads PostHog flags.

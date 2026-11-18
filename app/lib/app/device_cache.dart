@@ -11,6 +11,7 @@ import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/onboarding/onboarding_cubit.dart';
 import 'package:family_groceries/review/review_counters.dart';
 import 'package:family_groceries/session/session_cubit.dart';
+import 'package:family_groceries/session/your_name.dart';
 import 'package:family_groceries/tips/usage_log.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_linux/shared_preferences_linux.dart';
@@ -29,7 +30,8 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
         ItemIconsStore,
         CatalogStore,
         ReviewStore,
-        OnboardingStore {
+        OnboardingStore,
+        NamePostponements {
   /// On Linux, supabase_flutter's legacy SharedPreferences and
   /// SharedPreferencesAsync each rewrite the whole file from their own copy,
   /// so sharing shared_preferences.json loses the session. The other
@@ -121,6 +123,11 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
   /// The trip running on this device and its ends not yet saved (job 234),
   /// one JSON value per user (`KeptTrips`); forgotten on sign-out.
   static const _tripPrefix = 'trip.';
+
+  /// The users who tapped „Jetzt nicht“ on the name step (job 297), one
+  /// `true` per user. Not under [forget]'s prefixes: the step asks once per
+  /// device, also after signing in again.
+  static const _namePostponedPrefix = 'name.postponed.';
 
   static String _householdKey(String userId) => '$_householdPrefix$userId';
 
@@ -513,6 +520,19 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
           k.startsWith(_tripPrefix),
     ),
   );
+
+  @override
+  Future<bool> postponedNameFor(String userId) async {
+    try {
+      return await _prefs.getBool('$_namePostponedPrefix$userId') ?? false;
+    } on Object {
+      return false;
+    }
+  }
+
+  @override
+  Future<void> savePostponedName(String userId) =>
+      _write(() => _prefs.setBool('$_namePostponedPrefix$userId', true));
 
   @override
   Future<Set<String>> toldRemovals(String userId) async {

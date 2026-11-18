@@ -38,6 +38,7 @@ import 'package:family_groceries/review/store_review.dart';
 import 'package:family_groceries/session/mail_language.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/session/social_sign_in.dart';
+import 'package:family_groceries/session/your_name.dart';
 import 'package:family_groceries/settings/account_repository.dart';
 import 'package:family_groceries/settings/integration_lock.dart';
 import 'package:family_groceries/tips/hint_host.dart';
@@ -76,6 +77,9 @@ class const App({
 
   /// The invite link waiting for an answer, loaded before the first frame.
   required final PendingInvite pendingInvite,
+
+  /// The signed-in user's name, which the name step asks for (job 297).
+  required final YourNameCubit yourName,
 
   /// The guided start's draft (job 168b), loaded before the first frame;
   /// none by default.
@@ -142,6 +146,7 @@ class _AppState() extends State<App> {
     _listLinks,
     _popups,
     _onboarding,
+    widget.yourName,
   );
   late final _onboarding =
       widget.onboarding ??
@@ -309,6 +314,7 @@ class _AppState() extends State<App> {
       providers: [
         BlocProvider.value(value: widget.session),
         BlocProvider.value(value: _onboarding),
+        BlocProvider.value(value: widget.yourName),
         BlocProvider.value(value: widget.entitlements),
         BlocProvider.value(value: widget.purchases),
         BlocProvider.value(value: widget.analytics),

@@ -25,6 +25,7 @@ import 'package:shared_preferences_platform_interface/shared_preferences_async_p
 import '../more/more_harness.dart';
 import '../purchases/fakes.dart';
 import '../session/fake_auth.dart';
+import '../session/fake_your_name.dart';
 
 /// Job 66: the real router hands `/add` and `/stores/<id>` to the list only
 /// once the user is in the household.
@@ -53,6 +54,7 @@ void main() {
       links,
       Popups(),
       OnboardingCubit(cache),
+      idleYourName(),
     );
     addTearDown(router.dispose);
     final auth = FakeAuth();

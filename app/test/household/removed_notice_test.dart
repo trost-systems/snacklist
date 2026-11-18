@@ -25,6 +25,7 @@ import '../analytics/fakes.dart';
 import '../more/more_harness.dart';
 import '../session/fake_auth.dart';
 import '../session/fake_households.dart';
+import '../session/fake_your_name.dart';
 
 const _peter = User(
   id: 'peter',
@@ -90,6 +91,7 @@ void main() {
       ListLinks(),
       popups,
       OnboardingCubit(cache),
+      idleYourName(),
     );
     addTearDown(router.dispose);
     addTearDown(session.close);

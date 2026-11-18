@@ -1192,5 +1192,17 @@
   "openAppAction": "Open",
   "justAdded": "Just added",
   "suggestionsLoading": "Loading suggestions",
-  "suggestionStale": "older suggestion, still loading"
+  "suggestionStale": "older suggestion, still loading",
+  "yourNameTitle": "What should we call you?",
+  "yourNameBody": "Everyone in your household sees this name. The people you invite see your first name. You can change it later.",
+  "yourNameLabel": "Your name",
+  "yourNameHint": "e.g. Lea",
+  "yourNameInvalid": "Enter a name of 1 to 80 characters.",
+  "yourNameConfirm": "Yes, that's me",
+  "yourNameNotNow": "Not now",
+  "yourNameLoadFailed": "Couldn't load your name.",
+  "yourNameOffline": "No internet connection. Your name was not saved.",
+  "yourNameAdd": "Add your name",
+  "yourNameEditBody": "Everyone in your household sees this name. People you invite see your first name.",
+  "yourNameSaved": "Name saved"
 }

@@ -1647,3 +1647,16 @@ flattened into the PNG before upload; the upload is pinned to eu-central-1 by th
 `forceFunctionRegion` query (review 0: the `x-region` header would fail CORS on the web). Test:
 `app/test/feedback/annotator_test.dart` "cover: the covered pixels of the exported PNG are the fill
 colour, none of the screenshot under it". Details: `docs/done/290-fb2-cover-tool.md`.
+
+## Job 297: the name after sign-in (DN3) and Konto › Dein Name (DE1), flag `display-name`
+
+Behind the new PostHog flag `display-name` (off), the app asks „Wie sollen wir dich nennen?“ right
+after sign-in. A Google or Apple name is prefilled and takes one tap. Without one the name is
+required. The step comes before the household setup for creators and before the join screen for
+joiners. Members whose name is still their e-mail prefix are asked once, with „Jetzt nicht“.
+Mehr › Konto › „Dein Name“ changes it. A chosen name is never overwritten by a later OAuth name:
+a new column, `set_display_name`, and pgTAP. The web build was driven in German light and English
+dark, 200 % included. Details: [docs/done/297.md](docs/done/297.md).
+Review 0 (2026-11-18). The name step got „Abmelden“, so a wrong account isn't stuck. The field and the
+server now count length the same way, names of only zero-width characters are refused, and Konto keeps
+its row with a retry after a failed read (docs/done/297.md).
