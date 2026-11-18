@@ -31,12 +31,12 @@ run_tests() {
   local udid=$1 name=$2
   local start; start="$(date '+%Y-%m-%d %H:%M:%S')"
   xcodebuild test-without-building -workspace ios/Runner.xcworkspace -scheme Runner \
-    -destination "id=$udid" -derivedDataPath "$derived" -only-testing:RunnerTests/LifetimeStoreKitTests \
+    -destination "id=$udid" -destination-timeout 300 -derivedDataPath "$derived" -only-testing:RunnerTests/LifetimeStoreKitTests \
     -parallel-testing-enabled NO -test-timeouts-enabled YES -resultBundlePath "$out/$name.xcresult" \
     >"$out/$name.log" 2>&1 &
   local pid=$!
-  for _ in $(seq 1 72); do kill -0 "$pid" 2>/dev/null || break; sleep 5; done
-  kill -0 "$pid" 2>/dev/null && { echo "$name: xcodebuild still running after 6 min, stopped"; kill "$pid"; }
+  for _ in $(seq 1 132); do kill -0 "$pid" 2>/dev/null || break; sleep 5; done
+  kill -0 "$pid" 2>/dev/null && { echo "$name: xcodebuild still running after 11 min, stopped"; kill "$pid"; }
   wait "$pid"
   xcrun simctl spawn "$udid" log show --start "$start" --style compact \
     --predicate 'process == "storekitd" OR category == "SKTestSession"' >"$out/$name-sim.log" 2>&1
@@ -51,10 +51,10 @@ run_tests() {
 
 log "phase build"
 first_udid="$(xcrun simctl list devices available -j | python3 -c '
-import json, sys
+import json, re, sys
 for r, ds in json.load(sys.stdin)["devices"].items():
     for d in ds:
-        if ".SimRuntime.iOS-" in r and d["name"].startswith("iPhone"):
+        if re.search(r"\.SimRuntime\.iOS-[0-9-]+$", r) and d["name"].startswith("iPhone"):
             print(d["udid"]); sys.exit()')"
 flutter build ios --config-only --simulator --debug
 xcodebuild build-for-testing -workspace ios/Runner.xcworkspace -scheme Runner -configuration Debug \

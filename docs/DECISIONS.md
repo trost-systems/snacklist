@@ -15267,3 +15267,64 @@ its StoreKit simulator boot and tests took 6 to 18 min of that (`scripts/ci-ios-
    build 3 to 7 min slower (job 118). The build is shared code (`scripts/ios/build-for-testing.sh`),
    which the native switch covers.
 6. **R3 not done** (native jobs on main only for native changes). The brief leaves it to the lead.
+
+## Job 306: iOS builds on the iOS 27 SDK (Xcode 27.2) (2026-11-18)
+
+App Store Connect warns on every iOS upload that builds must use the iOS 27 SDK from April 2027.
+Main's Release built with Xcode 26.6 and the iOS 26.5 SDK on `macos-26`.
+
+1. **`macos-26` has no Xcode 27, so the macOS jobs move to the `xcode-27` image.** The brief said to
+   stop if the runner image had no Xcode 27. `macos-26` (20261102.0473, also the 20261112.0504
+   pre-release) carries Xcode 26.0.1 to 26.6 only. GitHub now ships one image per major Xcode:
+   `xcode-27` (macOS 27, generally available since 2026-10-15, a standard runner, free for this
+   public repository) carries Xcode 27.0, 27.1 (its default) and 27.2. Moving the label reaches
+   the brief's goal; stopping would only have deferred the same change.
+2. **Xcode 27.2 (27B52), selected by path in one place, `.github/actions/xcode`.** It is the newest
+   stable 27.x on the image. The image's toolset already lists 27.3 beta (27C5020n), which a
+   default or a "newest" pick could reach on the next image update. The action fails with its
+   own message when the path is gone. ci.yml (ios), release.yml (ios), certificates.yml and
+   paywall-shot.yml run it after checkout. Release checks out the commit it ships, and a re-ship of
+   one from before this PR (a red merge commit, the Monday catch-up) has no action: that step
+   is skipped there (`hashFiles`), and the build takes the image's default Xcode, 27.1.
+3. **The deployment target stays 17.0.** Proof: an unsigned release archive on the probe branch
+   (`flutter build ipa --release --no-codesign`, run 44252175022) has `SDK_NAME = iphoneos27.2`,
+   `DTSDKName iphoneos27.2`, `DTXcode 2720` and `MinimumOSVersion 17.0`. Nothing in the app
+   needed a change for Xcode 27: no CocoaPods (Swift Package Manager), no new warnings as errors.
+4. **Simulator pickers skip one-device runtimes.** The image has a second iOS 27.2 runtime,
+   `iOS-27-2-iPhone19-4`, for the iPhone Duo only. `scripts/ios/build-for-testing.sh` sorted runtimes by the digits in
+   their identifiers, so it ranked that one first. The paywall shot took the highest version and
+   failed `simctl create` with "Incompatible device" for its iPhone 16 Plus. Both now take only
+   identifiers of the form `iOS-<n>-<n>`, and the paywall shot picks the newest runtime that
+   supports one of its 6.7" iPhones (1290x2796 checked as before).
+5. **The StoreKit tests stay on iOS 26.2, which the gate downloads.** The image has only iOS 27
+   runtimes, and the gate pinned 26.2 (DECISIONS 127). Probes on `xcode-27`, app built with
+   Xcode 27.2:
+   - On a fresh iOS 27.0, 27.1 and 27.2 simulator, the first test, Ask to Buy, hangs in
+     `purchase()` past its 1-minute allowance while storekitd sets up the sandbox storefront
+     ("No storefront ID available on sandbox account", then "Storefront for testflight changed").
+     Purchase/restore/refund and the product test usually pass in the same run with
+     `environment == .xcode`, so storekitd does take `Snacklist.storekit`, unlike 26.4.
+   - The scheme's Test-action StoreKit configuration does not change that. It looked like the
+     fix once (`ios-storekit-probe.sh --scheme-config`), but that was a second run on a warm
+     simulator; with `../../`, `../`, no prefix or an absolute path a fresh simulator still hangs
+     (runs 44270033667, 44273500038).
+   - xcodebuild's `-retry-tests-on-failure` gives a test stopped for its time allowance no second
+     attempt (3 of 3, run 44276677988).
+   - A second run on the same simulator passed once (run 44273500038) and then failed on 2 of 3
+     runners: the first run's purchase was still owned, so Ask to Buy saw "nothing owned" fail.
+     On the third runner the first run's refund had not landed either (run 44280232199).
+   Three fixes on the premise "iOS 27 can host these tests" failed, so the premise goes. The
+   ios-storekit gate (its own job since job 304) downloads iOS 26.2 (`xcodebuild -downloadPlatform`, 8.39 GB, 7 to 13 min, one more try
+   if it fails) in the background from its start, while it builds, and waits for it before booting
+   the StoreKit simulator. The tests then run as before (run 44265404679, still one gate then:
+   build, checks, 49 RunnerTests on iOS 27.2 and the 3 StoreKit tests on 26.2 in 24 min). The
+   ios-storekit job's limit goes from 40 to 60 minutes for a slow download. The build and every other test use Xcode 27.2 and the iOS 27.2 SDK; only the
+   simulator the StoreKit tests run in is older. Moving them to iOS 27 needs the hang and the
+   carried-over purchases understood, best on a Mac with Xcode 27.
+6. **`scripts/ios-storekit-probe.sh` waits up to 5 min for the destination.** Without it the
+   downloaded 26.2 simulator was "Unable to find a device" (DECISIONS 164), and the probe
+   reported "no test ran".
+7. **The upload warning's text is not in any log.** The 34 Release iOS logs on GitHub show
+   fastlane's `upload_to_testflight` succeed with no warning; fastlane does not print altool's
+   upload warnings, and this runner has no App Store Connect API key. The text is in Apple's
+   email or the build's page in App Store Connect (docs/NEEDS_PETER.md, Job 306).

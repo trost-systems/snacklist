@@ -5,12 +5,13 @@
 # Expects lib.sh sourced and the working directory app/.
 log "phase config"
 flutter build ios --config-only --simulator --debug
+# The newest iPhone, never on a one-device runtime such as Xcode 27's iOS-27-2-iPhone19-4 (job 306).
 udid="$(xcrun simctl list devices available -j | python3 -c '
 import json, re, sys
 devices = json.load(sys.stdin)["devices"]
 def version(runtime):
     return [int(n) for n in re.findall(r"\d+", runtime.rsplit("iOS", 1)[-1])]
-ios = sorted((r for r in devices if ".SimRuntime.iOS-" in r), key=version, reverse=True)
+ios = sorted((r for r in devices if re.search(r"\.SimRuntime\.iOS-[0-9-]+$", r)), key=version, reverse=True)
 print(next(d["udid"] for r in ios for d in devices[r] if d["name"].startswith("iPhone")))')"
 log "phase build"
 derived=build/ios/derived

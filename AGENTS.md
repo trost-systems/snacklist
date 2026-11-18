@@ -171,7 +171,8 @@ reasons are in [`docs/DECISIONS.md`](docs/DECISIONS.md).
      It gives up after 30 minutes. A run with the ios job can take longer:
      land a PR that changes the native projects, the pubspec, `scripts/gates/android.sh`,
      `ios.sh` or `ios-storekit.sh`, `scripts/ios/build-for-testing.sh`, the ios gate's two Python checks, `scripts/lib.sh` or the CI definition
-     (the list is `scripts/ci-changes.sh`) with `MERGE_WAIT_MINUTES=45`.
+     (the list is `scripts/ci-changes.sh`) with `MERGE_WAIT_MINUTES=70` (the ios-storekit job
+     downloads a simulator runtime, up to 60 minutes).
   If main moved since your push, merge-pr.sh says so: rerun
   `scripts/push-pr.sh` (one more rebase, push and CI run), then merge-pr.sh.
   The old way still works: merge-pr.sh on a multi-commit PR squashes,

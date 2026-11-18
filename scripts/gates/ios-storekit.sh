@@ -2,20 +2,21 @@
 # Job 304: RunnerTests' StoreKit tests (LifetimeStoreKitTests), in a job of their own beside the
 # ios gate's: their simulator's first boot and xcodebuild's wait for it took 6 to 18 of that
 # job's 23 to 35 min (scripts/ci-ios-phases.sh). The build is the ios gate's
-# (scripts/ios/build-for-testing.sh); the tests run on an iOS 26.2 simulator, whose storekitd still
-# gives the local test store to an ad-hoc signed build (DECISIONS 127). Needs macOS.
+# (scripts/ios/build-for-testing.sh); the tests run on an iOS 26.2 simulator, downloaded while it
+# builds, whose storekitd still gives the local test store to an ad-hoc signed build (DECISIONS 127,
+# job 306). Needs macOS.
 set -euo pipefail
 source "$(dirname "$0")/../lib.sh"
 require_ci_flutter
 cd "$REPO_ROOT/app"
-source "$REPO_ROOT/scripts/ios/build-for-testing.sh"
-
 # The StoreKit tests need storekitd to take Snacklist.storekit. From iOS 26.4 on it refuses that to
 # this ad-hoc signed build ("not installed for development"); iOS 26.2's still takes it, so they
 # run on a 26.2 simulator, and every one of them must pass (DECISIONS 127;
 # scripts/ios-storekit-probe.sh checks other runtimes).
+# GitHub's xcode-27 image has only iOS 27 runtimes. On a fresh one the first Ask to Buy purchase
+# hangs and purchases carry over into the next run (job 306), so the gate downloads 26.2
+# (8.4 GB, 7 to 13 min) while it builds.
 storekit_ios=26.2
-log "phase storekit_boot iOS $storekit_ios"
 storekit_runtime() {
   xcrun simctl list runtimes -j | python3 -c '
 import json, sys
@@ -25,8 +26,21 @@ for r in json.load(sys.stdin)["runtimes"]:
         name = next((n for n in ("iPhone 17 Pro", "iPhone 16 Pro", "iPhone 16") if n in iphones), list(iphones)[-1])
         print(r["identifier"], iphones[name]); break' "$storekit_ios"
 }
+storekit_download=/tmp/snacklist-storekit-runtime.log
+if [[ -z $(storekit_runtime) ]]; then
+  # One more try: a broken download should not fail the gate.
+  { xcodebuild -downloadPlatform iOS -buildVersion "$storekit_ios" ||
+    xcodebuild -downloadPlatform iOS -buildVersion "$storekit_ios"; } >"$storekit_download" 2>&1 &
+  storekit_download_pid=$!
+fi
+source "$REPO_ROOT/scripts/ios/build-for-testing.sh"
+
+if [[ -n ${storekit_download_pid:-} ]]; then
+  log "phase storekit_download"
+  wait "$storekit_download_pid" || { tail -c 2000 "$storekit_download" >&2; echo "ios-storekit: downloading the iOS $storekit_ios simulator runtime failed" >&2; exit 1; }
+fi
+log "phase storekit_boot iOS $storekit_ios"
 read -r runtime devicetype <<<"$(storekit_runtime)"
-# Downloading it here would cost several GB inside the job's 40 minutes: fail and say so.
 [[ -n ${runtime:-} ]] || { echo "ios-storekit: the runner image has no iOS $storekit_ios simulator runtime for the StoreKit tests; run scripts/ios-storekit-probe.sh on it to find a runtime whose storekitd takes Snacklist.storekit and set storekit_ios (DECISIONS 127)" >&2; exit 1; }
 storekit_udid="$(xcrun simctl create "Snacklist StoreKit" "$devicetype" "$runtime")"
 # Created and booted after the build: booting while it builds made the build 3 to 7 min slower on

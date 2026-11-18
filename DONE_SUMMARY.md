@@ -1605,3 +1605,13 @@ Details: [docs/done/304.md](docs/done/304.md).
 - Tests: onboarding, more, design goldens (Flutter 3.50, six More goldens regenerated) pass; site agent test updated for the new FAQ heading. Not driven in the web build.
 - Shipping: next green main build on TestFlight; no flag.
 - `invitePartnerBody` now speaks of "the people you shop with" (review 1, plural to match the new title).
+
+## Job 306: iOS builds on the iOS 27 SDK (2026-11-18)
+
+Every macOS job (CI's ios and ios-storekit, Release's ios, certificates, paywall shot) runs on GitHub's `xcode-27`
+image with Xcode 27.2 selected in `.github/actions/xcode`, so TestFlight builds use the iOS 27.2
+SDK; the minimum iOS stays 17.0. `macos-26` never got Xcode 27. The upload warning's wording is in
+no log (fastlane hides altool's warnings), so it could not be quoted. The ios-storekit gate keeps
+the StoreKit tests on iOS 26.2 and downloads that runtime while it builds: on iOS 27 simulators Ask to
+Buy hangs on first use and purchases carry over between runs. Details:
+[docs/done/306.md](docs/done/306.md).

@@ -362,7 +362,7 @@ light core and a dot of check remains
 | Web | `favicon.png`, `favicon.svg`, `icons/Icon-192.png`, `Icon-512.png`, the maskable pair, `icons/apple-touch-icon.png`; `manifest.json` colours |
 | Alexa | `alexa/skill-package/assets/images/de-DE_smallIconUri.png` (108 px) and `de-DE_largeIconUri.png` (512 px): the light icon full bleed, like the App Store icon. Should Amazon crop it to a circle, the art stays inside |
 
-`scripts/gates/ios.sh` (CI, macos-26) checks that the built app's
+`scripts/gates/ios.sh` (CI, xcode-27) checks that the built app's
 `Assets.car` holds the AppIcon in light, dark and tinted, the icon stacks
 compiled from `AppIcon.icon`, and the launch screen's colour and mark.
 

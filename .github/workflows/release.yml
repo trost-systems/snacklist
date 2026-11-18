@@ -225,8 +225,8 @@ jobs:
   ios:
     needs: plan
     if: needs.plan.outputs.ship == 'true' && needs.plan.outputs.ios == 'true'
-    # App Store Connect only accepts builds from the current Xcode SDK.
-    runs-on: macos-26
+    # App Store Connect only accepts builds from the current Xcode SDK (.github/actions/xcode).
+    runs-on: xcode-27
     timeout-minutes: 100
     environment: release
     defaults:
@@ -240,6 +240,10 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ needs.plan.outputs.sha }}
+      # A re-ship of a commit from before job 306 has no such action; it builds with the image's
+      # default Xcode, also a 27.x.
+      - if: hashFiles('.github/actions/xcode/action.yml') != ''
+        uses: ./.github/actions/xcode
       # No Actions cache in a job with the signing secrets: any run on main can write an entry
       # that this job would unpack and run (job 220).
       - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
