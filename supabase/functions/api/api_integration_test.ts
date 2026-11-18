@@ -464,8 +464,10 @@ test('limits: the burst runs out into 429, unknown keys from one address into au
       );
       await stranger.body?.cancel();
     } finally {
-      await sql`delete from public.api_auth_failures
-                where ip_hash in (${await sha256Hex(ip)}, ${await sha256Hex(quiet)})`;
+      const hashes = [await sha256Hex(ip), await sha256Hex(quiet)];
+      await sql`delete from public.api_auth_failures where ip_hash in (
+                  select encode(extensions.digest(s.salt || convert_to(a, 'UTF8'), 'sha256'), 'hex')
+                  from public.invite_preview_salt s, unnest(${hashes}::text[]) a)`;
     }
   }));
 

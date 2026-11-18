@@ -1701,3 +1701,11 @@ and Legal's hash GO before it merges.
 - Two duplicate e2e tests are removed, each with its reason.
 
 Details and evidence: `docs/done/309.md`.
+
+## Job 270: Legal's public API texts and consent text 2026-11-18 (2026-11-17)
+
+Legal's N-251 to N-255 (batch of 17 November 2026) and N-147b, word for word, on top of #452: the
+consent examples name connected apps, MCP and API keys (version 2026-11-18, everyone is asked
+again), §7 gets the API section with idempotency (24 h) and failure hashes (1 day), §9 gets
+`api_key_used`, and `api_begin` salts the failure hash (N-255). Not merged: PM, then Legal's
+hash-bound GO. `public_api` stays off. Hashes and details: [docs/done/270.md](docs/done/270.md).

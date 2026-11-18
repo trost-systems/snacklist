@@ -7,7 +7,8 @@ Rn. 108). The app stores the version with every decision (`consentTextVersion` i
 
 | Version | File | Stored as | Shown by |
 | --- | --- | --- | --- |
-| 2026-11-14 | [2026-11-14.md](2026-11-14.md) | `2026-11-14` | Snacklist (job 216): 2026-11-11 with Siri among the examples (Legal N-146) (current) |
+| 2026-11-18 | [2026-11-18.md](2026-11-18.md) | `2026-11-18` | Snacklist (job 270): 2026-11-14 with connected apps, MCP and API keys among the examples (Legal N-251) (current) |
+| 2026-11-14 | [2026-11-14.md](2026-11-14.md) | `2026-11-14` | Snacklist (job 216): 2026-11-11 with Siri among the examples (Legal N-146); the server stopped counting its yes with 2026-11-18 (N-251) |
 | 2026-11-11 | [2026-11-11.md](2026-11-11.md) | `2026-11-11` | Snacklist (job 178): 2026-11-10 with examples of the usage data; the server stopped counting its yes with 2026-11-14 (N-146) |
 | 2026-11-10 | [2026-11-10.md](2026-11-10.md) | `2026-11-10` | Snacklist (job 174): 2026-11-01 with the new name; the server stopped counting its yes with 2026-11-11 (N-125) |
 | 2026-11-01 | [2026-11-01.md](2026-11-01.md) | `2026-11-01` | Hummlist, from the release after PR "Consent text version and re-ask" on; the server stopped counting its yes with 2026-11-11 (N-125) |

@@ -334,10 +334,12 @@ async function tokenHash(req: Request): Promise<string | null> {
 }
 
 /**
- * SHA-256 of the caller's address, never the address itself. X-Real-IP is what the gateway saw:
- * hosted Supabase and the local Kong overwrite whatever a client sends in it, while hosted Supabase
- * passes X-Forwarded-For on exactly as the client wrote it (checked 2026-11-02, DECISIONS "Job
- * 73"). Without the header every caller shares one budget, so the throttle is never off.
+ * SHA-256 of the caller's address, never the address itself; api_begin salts it with the database's
+ * secret before it stores anything (N-255), so the stored key can't be reversed by hashing every IPv4
+ * address. X-Real-IP is what the gateway saw: hosted Supabase and the local Kong overwrite whatever
+ * a client sends in it, while hosted Supabase passes X-Forwarded-For on exactly as the client wrote
+ * it (checked 2026-11-02, DECISIONS "Job 73"). Without the header every caller shares one budget,
+ * so the throttle is never off.
  */
 async function ipHash(req: Request): Promise<string> {
   return await sha256Hex(req.headers.get('x-real-ip')?.trim() || 'no-address');

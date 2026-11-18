@@ -15827,3 +15827,34 @@ Peter picked NR1 (web form now, in-app entry later behind a flag). Calls made wi
    covers "link join, then live sync", so removing it loses that pairing. The suite has little
    duplication. The same flows appear in several specs but assert different things (the audit's
    rejected list is in DONE_SUMMARY.md).
+
+## Job 270: Legal's public API texts, consent text 2026-11-18, salted failure hash (2026-11-17)
+
+- **Applied word for word from Legal's batch of 17 November 2026, section 5.** N-251 (consent
+  examples name connected apps, MCP and API keys), N-252 (§7 „Schnittstelle für eigene Programme
+  (API)“ / "Interface for your own programs (API)") with the N-253 (idempotency, 24 h) and N-254
+  (rate counters and failure hashes, 1 day) paragraphs in place of its placeholders, and N-147b
+  (§9 `api_key_used`, from the N-145..N-155 redlines). A script took each OLD and NEW straight
+  from Legal's file and stopped unless the OLD occurred exactly once. Legal's N-252 NEW puts the
+  three API paragraphs on consecutive lines, as §7's „Rechtsgrundlage“ line already is; the
+  site's markdown-it renders each as its own line (`breaks: true`), and the file keeps Legal's
+  bytes.
+- **N-255 is done, with its optional policy words.** `api_begin` stores SHA-256(salt || the
+  function's SHA-256 of `X-Real-IP`) with the salt the invite preview already uses
+  (`invite_preview_salt`, made in the database, readable by no client), so the stored key can't
+  be reversed by hashing all IPv4 addresses. One salt, not a second table: the secret has the
+  same job and the same reader, and a new table would only add RLS, outsider and backup cases.
+  The salting runs only on the unknown-key path. Rows under the old unsalted hash stop matching
+  and go with the daily purge; with `public_api` off, production has none. Since the hash is now
+  salted, „mit einem geheimen Zusatzwert“ / "with a secret added value" went in as N-255 offers.
+- **Consent text 2026-11-18**, the version Legal and the lead named, bumped the way #429 bumped
+  2026-11-14: `consentTextVersion`, `CONSENT_TEXT_VERSION`, `docs/consent/2026-11-18.md`, the e2e
+  spec's stored version and a re-ask case for a yes under 2026-11-14. Everyone is asked again,
+  and the server counts only a yes under 2026-11-18.
+- **Not taken:** N-251's OPTIONAL append for N-153c („, auch wenn eine solche Verbindung gesperrt
+  ist“). `integration_lock` stays off (PX1), and N-153c is out of this job's scope, so the lock
+  needs its own consent version before it goes on. N-147a stays out: MCP capture is still off.
+- **Not merged.** PM checks the product side, then Legal gives a hash-bound GO. `public_api`, the
+  flags, `app_switches` and PostHog are untouched. The texts sit on #452 (eefa6324), which changed
+  the same §9 paragraph; Legal checked the anchors against #452's merge result. The date lines
+  stay 17 November 2026, #452's, which is today; if the merge slips, only they change.
