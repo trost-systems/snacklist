@@ -463,8 +463,9 @@ function storedTextVersion(page: Page): Promise<{ key: string; raw: string } | n
 // app asks again and sends PostHog nothing but the no-consent flag request before the new yes.
 for (const [label, outdate] of [
   ['without a version (an older build)', (_raw: string) => null],
-  ['under the 2026-10-30 text', (raw: string) => raw.replace('2026-11-14', '2026-10-30')],
-  ['under the 2026-11-11 text, before it named Siri', (raw: string) => raw.replace('2026-11-14', '2026-11-11')],
+  ['under the 2026-10-30 text', (raw: string) => raw.replace('2026-11-18', '2026-10-30')],
+  ['under the 2026-11-11 text, before it named Siri', (raw: string) => raw.replace('2026-11-18', '2026-11-11')],
+  ['under the 2026-11-14 text, before it named API keys', (raw: string) => raw.replace('2026-11-18', '2026-11-14')],
 ] as const) {
   test(`a yes ${label} is asked again; only no-consent flags before the new yes`, async ({ browser }) => {
     const context = await browser.newContext();
@@ -475,7 +476,7 @@ for (const [label, outdate] of [
     await expect.poll(() => storedInstallId(page)).toMatch(/^[0-9a-f-]{36}$/);
     const installId = await storedInstallId(page) ?? '';
     const stored = await storedTextVersion(page);
-    expect(stored?.raw, 'the yes is stored with the current version').toContain('2026-11-14');
+    expect(stored?.raw, 'the yes is stored with the current version').toContain('2026-11-18');
     if (stored === null) throw new Error('no stored consent text version');
     await received(collector, ['first_open']);
     await expect.poll(() => askedFlagsFor(collector, installId), { message: 'a current yes asks for the install\'s flags' })
@@ -503,7 +504,7 @@ for (const [label, outdate] of [
     expect(collector.leaks).toEqual([]);
 
     await answerConsent(page, 'accept');
-    await expect.poll(() => storedTextVersion(page).then((v) => v?.raw)).toContain('2026-11-14');
+    await expect.poll(() => storedTextVersion(page).then((v) => v?.raw)).toContain('2026-11-18');
     await received(collector, ['first_open']);
     const newId = await storedInstallId(page) ?? '';
     expect(newId, 'a new install id').not.toBe(installId);

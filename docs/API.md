@@ -287,8 +287,8 @@ it with a deprecation notice in this document and in a `Deprecation` header.
 - Per API key the database stores: the creator, the household, a name the user chose, the SHA-256
   hash, the last four characters, the scopes, when it was created, last used and revoked.
 - Rate counters: per key a fill level and a timestamp, per household a request count per UTC day,
-  per address that sent unknown keys (SHA-256 of the address the gateway saw, `X-Real-IP`, never
-  the address itself) a failure count; rows of ended windows go as new failures come. A daily job
+  per address that sent unknown keys (SHA-256 of the address the gateway saw, `X-Real-IP`, salted
+  in the database, never the address itself) a failure count; rows of ended windows go as new failures come. A daily job
   (`purge_api_rate`, pg_cron 03:41 UTC) deletes household days older than yesterday, failure rows
   and buckets older than a day, and idempotency records older than 24 hours.
 - Idempotency records hold the stored response for 24 hours, which contains item names; they are

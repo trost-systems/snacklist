@@ -3,7 +3,7 @@
 -- the key's bucket and the household's day, throttles an address after failed authentications,
 -- and reaches only the key's own household; MCP and Siri never take an API key.
 begin;
-select plan(67);
+select plan(68);
 
 -- The API is switched off after the migrations (public_api_switch.test.sql); these run with it on.
 update public.app_switches set enabled = true where key = 'public_api';
@@ -23,6 +23,12 @@ end $$;
 
 create function pg_temp.hash(token text) returns text language sql as $$
   select encode(extensions.digest(token, 'sha256'), 'hex');
+$$;
+
+-- How api_auth_failures keys an address (N-255): the function's SHA-256 salted in the database.
+create function pg_temp.ip_key(ip text) returns text language sql as $$
+  select encode(extensions.digest(
+    (select s.salt from public.invite_preview_salt s) || convert_to(pg_temp.hash(ip), 'UTF8'), 'sha256'), 'hex');
 $$;
 
 -- The limits of supabase/functions/api/limits.ts: burst 20 at 60 a minute, 1000 a day, 20
@@ -179,17 +185,19 @@ select results_eq(
 select is(pg_temp.outcome((select token from kb), 'ip-2'), 'ok',
   'a valid key from the blocked address still goes through');
 select is(pg_temp.outcome('fgp_wrong', 'ip-3'), 'invalid', 'another address is not blocked');
-select is((select failures from public.api_auth_failures where ip_hash = pg_temp.hash('ip-2')), 20,
+select is((select failures from public.api_auth_failures where ip_hash = pg_temp.ip_key('ip-2')), 20,
   'a blocked request counts no further failure');
+select is((select count(*)::int from public.api_auth_failures where ip_hash = pg_temp.hash('ip-2')), 0,
+  'the address is stored salted, never as its plain SHA-256 (N-255)');
 update public.api_auth_failures set window_start = window_start - interval '601 seconds'
-where ip_hash = pg_temp.hash('ip-2');
+where ip_hash = pg_temp.ip_key('ip-2');
 select is(pg_temp.outcome('fgp_wrong', 'ip-2'), 'invalid',
   'after the window the address is free, and a new failure starts a new window');
-select is((select failures from public.api_auth_failures where ip_hash = pg_temp.hash('ip-2')), 1,
+select is((select failures from public.api_auth_failures where ip_hash = pg_temp.ip_key('ip-2')), 1,
   'counted from one');
 select is((select outcome from public.api_begin(null, null, 20, 60, 1000, 20, 600)), 'invalid',
   'no key and no address: invalid, nothing to count');
-select is((select count(*)::int from public.api_auth_failures where ip_hash in (select pg_temp.hash(a) from unnest(array['ip-1', 'ip-2', 'ip-3', 'ip-4']) a)), 2,
+select is((select count(*)::int from public.api_auth_failures where ip_hash in (select pg_temp.ip_key(a) from unnest(array['ip-1', 'ip-2', 'ip-3', 'ip-4']) a)), 2,
   'only addresses that sent unknown keys are kept: an MCP token (ip-1) counted nothing');
 
 -- Keys that ended.
@@ -201,7 +209,7 @@ select is(
   (select array_agg(pg_temp.outcome((select token from kr), 'ip-5')) from generate_series(1, 30)),
   array_fill('invalid'::text, array[30]), 'an integration polling with a revoked key 30 times is never blocked'
 );
-select is((select count(*)::int from public.api_auth_failures where ip_hash in (pg_temp.hash('ip-4'), pg_temp.hash('ip-5'))), 0,
+select is((select count(*)::int from public.api_auth_failures where ip_hash in (pg_temp.ip_key('ip-4'), pg_temp.ip_key('ip-5'))), 0,
   'ended keys count nothing against their address');
 select is(pg_temp.outcome((select token from kb), 'ip-5'), 'ok', 'so a valid key from that address goes through');
 insert into public.api_auth_failures (ip_hash, window_start, failures)
@@ -250,12 +258,12 @@ values ((select id from kb), 'old', repeat('a', 64), 201, '{}', now() - interval
 insert into public.api_household_days (household_id, day, requests)
 values ((select id from hb), (now() at time zone 'utc')::date - 2, 5),
        ((select id from hb), (now() at time zone 'utc')::date - 1, 5);
-update public.api_auth_failures set window_start = now() - interval '25 hours' where ip_hash = pg_temp.hash('ip-2');
+update public.api_auth_failures set window_start = now() - interval '25 hours' where ip_hash = pg_temp.ip_key('ip-2');
 select ok(public.purge_api_rate() >= 3, 'the daily job deletes the old idempotency record, day and failure window');
 select results_eq(
   $$ select (select count(*)::int from public.api_idempotency where token_id = (select id from kb)),
             (select count(*)::int from public.api_household_days where household_id = (select id from hb)),
-            (select count(*)::int from public.api_auth_failures where ip_hash in (select pg_temp.hash(a) from unnest(array['ip-1', 'ip-2', 'ip-3', 'ip-4']) a)) $$,
+            (select count(*)::int from public.api_auth_failures where ip_hash in (select pg_temp.ip_key(a) from unnest(array['ip-1', 'ip-2', 'ip-3', 'ip-4']) a)) $$,
   $$ values (1, 2, 1) $$, 'and keeps yesterday, today and fresh records'
 );
 delete from public.personal_access_tokens where id = (select id from kb);

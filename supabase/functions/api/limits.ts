@@ -7,7 +7,7 @@ export const BURST = 20;
 export const PER_MINUTE = 60;
 /** Per household and UTC day, all its keys together. */
 export const PER_DAY = 1000;
-/** Failed authentications per address (SHA-256 of the IP) in one window... */
+/** Failed authentications per address (salted SHA-256 of the IP) in one window... */
 export const AUTH_FAILURES = 20;
 /** ...of this many seconds; then 429 auth_throttled without looking at the key. */
 export const AUTH_FAILURE_WINDOW_SECONDS = 600;
