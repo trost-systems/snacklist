@@ -4,7 +4,8 @@
 # last), the description's `## Changelog` section (job 39; "none" added when no app build
 # changes), MERGE_WAIT_MINUTES takes whole minutes only, merge-pr.sh waits for GitHub's record
 # of the PR to name the pushed head (job 218), and its wait for ci-ok goes on when a signal ends
-# only its sleep (job 219). Run by the lint gate.
+# only its sleep (job 219); push-pr.sh pushes nothing when scripts/push-checks.sh fails (here a
+# stub) and marks a draft PR ready only after its push (job 307). Run by the lint gate.
 set -euo pipefail
 source "$(dirname "$0")/lib.sh"
 
@@ -20,6 +21,11 @@ git init -q --bare -b main "$tmp/origin.git"
 git clone -q "$tmp/origin.git" "$tmp/work" 2>/dev/null
 mkdir -p "$tmp/work/scripts/release" "$tmp/work/site" "$tmp/bin" "$tmp/pr"
 cp "$REPO_ROOT"/scripts/{lib,push-pr,merge-pr}.sh "$tmp/work/scripts/"
+cat >"$tmp/work/scripts/push-checks.sh" <<'CHECKS'
+#!/usr/bin/env bash
+[[ ! -e $FAKE_PR/checks-fail ]] || { echo "lint.sh: a finding" >&2; exit 1; }
+CHECKS
+chmod +x "$tmp/work/scripts/push-checks.sh"
 cp "$REPO_ROOT"/scripts/release/{changelog.mjs,plan.sh} "$tmp/work/scripts/release/"
 cp "$REPO_ROOT"/site/releases.mjs "$tmp/work/site/"
 mkdir -p "$tmp/work/releases" && cp "$REPO_ROOT"/releases/flags.json "$tmp/work/releases/"
@@ -50,9 +56,13 @@ case "$1 $2" in
         fi ;;
       title) cat "$pr/title" ;;
       body) cat "$pr/body" ;;
+      isDraft) [[ -e $pr/draft ]] && echo true || echo false ;;
       *) echo "fake gh: no answer for $*" >&2; exit 1 ;;
     esac ;;
   "pr checks") cat "$pr/ci" ;;
+  "pr ready")
+    rm "$pr/draft"
+    git --git-dir="$FAKE_REMOTE" rev-parse "refs/heads/$branch" >"$pr/ready-at" ;;
   "pr edit")
     cp "${*: -1}" "$pr/body"
     echo edited >>"$pr/edited" ;;
@@ -138,6 +148,27 @@ fi
 grep -q "MODEL_CO_AUTHOR must look like 'Name <email>'" "$tmp/err" || fail "no MODEL_CO_AUTHOR error: $(cat "$tmp/err")"
 expect_eq "a bad MODEL_CO_AUTHOR pushes nothing" "$(git --git-dir="$tmp/origin.git" rev-parse refs/heads/p5)" "$before"
 
+# Job 307: the checks before the push, and a PR opened as a draft.
+open_pr k1
+before="$(git --git-dir="$tmp/origin.git" rev-parse refs/heads/k1)"
+touch "$tmp/pr/checks-fail"
+if scripts/push-pr.sh >/dev/null 2>"$tmp/err"; then fail "push-pr.sh pushed although a check failed"; fi
+grep -q 'lint.sh: a finding' "$tmp/err" || fail "the failed check's output is missing: $(cat "$tmp/err")"
+grep -q 'push-pr.sh: not pushing #7: the checks above failed' "$tmp/err" || fail "no refusal for a failed check: $(cat "$tmp/err")"
+expect_eq "a failed check pushes nothing" "$(git --git-dir="$tmp/origin.git" rev-parse refs/heads/k1)" "$before"
+PUSH_PR_SKIP_CHECKS=1 scripts/push-pr.sh >/dev/null || fail "PUSH_PR_SKIP_CHECKS=1 did not push"
+[[ "$(git --git-dir="$tmp/origin.git" rev-parse refs/heads/k1)" != "$before" ]] || fail "PUSH_PR_SKIP_CHECKS=1 pushed nothing"
+rm "$tmp/pr/checks-fail"
+open_pr k2
+touch "$tmp/pr/draft"
+scripts/push-pr.sh >/dev/null
+[[ ! -e $tmp/pr/draft ]] || fail "push-pr.sh left the draft PR a draft"
+expect_eq "push-pr.sh marks the draft ready after its push" "$(cat "$tmp/pr/ready-at")" \
+  "$(git --git-dir="$tmp/origin.git" rev-parse refs/heads/k2)"
+touch "$tmp/pr/draft"
+scripts/push-pr.sh >/dev/null
+[[ ! -e $tmp/pr/draft ]] || fail "push-pr.sh with nothing to push left the draft PR a draft"
+
 # Job 39: the changelog section. p1 above had none and only non-app files: "none" was added.
 expect_eq "push-pr.sh adds none once, also after a description edit" "$(body_of p1 | grep -c '^## Changelog$')" 1
 app_pr() {
@@ -196,6 +227,10 @@ for minutes in 0.5 abc -1 "1 2"; do
 done
 if out="$(MERGE_WAIT_MINUTES=0 scripts/merge-pr.sh --wait 7 2>&1)"; then fail "merged with ci-ok pending"; fi
 [[ $out == *"after 0 min; not merging"* ]] || fail "MERGE_WAIT_MINUTES=0 gave: $out"
+echo skipping >"$tmp/pr/ci"
+out="$(MERGE_WAIT_MINUTES=1 timeout 15 scripts/merge-pr.sh --wait 7 2>&1)" && status=0 || status=$?
+expect_eq "merge-pr.sh stops at once on a skipped ci-ok (a draft's opening run)" "$status" 1
+[[ $out == *"ci-ok was skipped on"*"no CI ran on it"* ]] || fail "a skipped ci-ok gave: $out"
 echo pass >"$tmp/pr/ci"
 cp "$tmp/pr/body" "$tmp/pr/body.pushed"
 printf 'Edited after the push.\r\n' >"$tmp/pr/body"

@@ -380,11 +380,23 @@ intervals while scrolling a 200-item list (DECISIONS job 28, 7).
 
 ## Landing a PR: one CI run
 
-1. Push the branch once (`git push -u origin HEAD`), then `gh pr create`.
+1. Push the branch once (`git push -u origin HEAD`), then `gh pr create --draft`.
+   On a PR opened as a draft, the `pull_request` run of its first push skips
+   every job, `ci-ok` included (each job's `if:` in `ci.yml`). Opened ready,
+   that run starts and is cancelled seconds later by step 2's push: 62 of the
+   138 PR runs cancelled in the week to 18 November were such first runs
+   (job 307). Pushes to a draft after it was opened run CI as usual.
 2. From then on, push with `scripts/push-pr.sh`. It rebases the branch onto
    `origin/main` and squashes it into the one commit `main` takes: subject
-   `<PR title> (#n)`, the noreply author, the trailers. Then it pushes with
-   `--force-with-lease`. It refuses `main`.
+   `<PR title> (#n)`, the noreply author, the trailers. Then it runs
+   `scripts/push-checks.sh` (below) and, when they pass, pushes with
+   `--force-with-lease` and marks a draft PR ready for review. Marking ready
+   starts no run: `ready_for_review` is not among the workflow's
+   `pull_request` types, and the pushed commit's run is already going. A
+   draft marked ready by hand without a push therefore has no `ci-ok` on its
+   head, only the skipped one of the opening run. merge-pr.sh stops at once on
+   a skipped `ci-ok` and says so: make a new commit (`git commit --amend
+   --no-edit`) and push it with push-pr.sh. It refuses `main`.
 3. `scripts/merge-pr.sh --wait <n>` waits for `ci-ok` on that commit and
    rebase-merges it. No second squash, no second push, no second CI run.
    `--dry-run` runs every check and stops before the merge. `--wait` gives
@@ -406,6 +418,39 @@ intervals while scrolling a 200-item list (DECISIONS job 28, 7).
    only that sleep (a kill by name elsewhere on the machine, job 219) is
    logged and the wait goes on. The 21st such sleep of one wait stops it
    with exit 1, a sleep that fails without a signal with the sleep's status.
+
+### Checks before the push (job 307)
+
+`scripts/push-checks.sh` runs the quick checks of the lint and flutter gates
+for what the branch changes against `origin/main`, every one that applies,
+and then names the ones that failed. push-pr.sh pushes nothing when one fails.
+`scripts/push-checks.sh --list` prints the checks without running them.
+
+| Check | When | What |
+| --- | --- | --- |
+| `lint.sh` | always | `scripts/lint.sh`: the schema check against main, ast-grep, the old-name check, brand names, workflow hardening |
+| `actionlint` | `.github/` changed | the workflows |
+| `shellcheck` | a script the lint gate checks changed | shellcheck on the changed ones (`shell_scripts` in `lib.sh`) |
+| `typescript-pack` | a TS or JS file, a `deno.json`, `deno.lock`, `package.json`, `package-lock.json`, `tsconfig*.json` or `.dvmrc` changed | `tool/lint/ts/strict.ts` |
+| `e2e-tsc` | `e2e/` changed | `tsc` over the e2e project |
+| `flutter` | `app/` changed | `scripts/gates/flutter.sh --no-tests`: lockfiles, l10n, format, analyze, for the app and the Widgetbook |
+
+Format, analyze and `tsc` read every file in their directory, CI only the
+committed ones. So `typescript-pack`, `e2e-tsc` and `flutter` first fail on
+untracked files in the directories they read (`e2e/`, `emails/`,
+`supabase/functions/`, `tool/`; `e2e/`; `app/`) and name them: an import of
+a file never added would pass here and fail in CI.
+
+In the week to 18 November, 29 of the 49 failed PR runs failed in the lint
+or flutter job. Of the 28 failed job logs still readable, these checks catch
+20: 8 schema checks (7 deleted migrations of main, 1 out of order), 3
+shellcheck, 2 TypeScript pack, 1 e2e `tsc`, 1 old product name, 2 format, 1 l10n and
+2 lockfiles. The other 8 were flutter tests (6) and the lint gate's script
+tests (2), which stay in CI and `verify.sh`.
+On hz a clean run takes 36 s for a branch without app changes and about 46 s
+with them; CI reports the same failures only after a run of about 20 minutes.
+`PUSH_PR_SKIP_CHECKS=1 scripts/push-pr.sh` pushes without them, for a
+machine where one cannot run (no Flutter of CI's version, say).
 
 The commit message is the PR as GitHub shows it: the title with ` (#n)` as
 the subject and the PR description as the body. Messages of the branch's

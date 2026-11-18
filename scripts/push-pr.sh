@@ -4,9 +4,12 @@
 # author and the trailers (MODEL_CO_AUTHOR="Name <email>" adds the model's co-author line). The CI
 # run on this push is then the one scripts/merge-pr.sh merges on, with no second squash and run.
 # Use it for every push once the PR exists, fix rounds included. Before that, push the branch
-# once with `git push -u origin HEAD` and open the PR with `gh pr create`.
+# once with `git push -u origin HEAD` and open the PR with `gh pr create --draft`: a draft's
+# first push runs no CI, and this marks the PR ready after its push.
 # The description needs a `## Changelog` section (docs/CHANGELOG.md); when it has none and the PR
 # changes nothing in the app builds (or is Dependabot's), this adds "## Changelog\nnone" to the PR first.
+# Before the push it runs scripts/push-checks.sh (lint.sh, and format and analyze where the branch
+# changes the app) and stops when one fails; PUSH_PR_SKIP_CHECKS=1 skips them.
 #
 # Usage: scripts/push-pr.sh
 #   A rebase conflict stops the script; resolve it, `git rebase --continue`, and rerun.
@@ -65,10 +68,27 @@ if [[ -n "$(landing_problem HEAD "$subject")" || "$(git log -1 --format=%B "$squ
   log "squashed $branch into $(git rev-parse --short HEAD): $subject"
 fi
 
+# Opened as a draft (step 1 in docs/CI.md), the PR ran no CI on its first push (ci.yml): the run
+# on the commit pushed here is its first. Marked ready only after that push, so that
+# ready_for_review, which starts no run, follows it.
+ready_pr() {
+  [[ "$(gh pr view "$pr" --json isDraft -q .isDraft)" == true ]] || return 0
+  gh pr ready "$pr" >/dev/null
+  log "marked #$pr ready for review"
+}
+
 remote="$(git rev-parse "origin/$branch")"
 if [[ "$(git rev-parse HEAD)" == "$remote" ]]; then
   log "origin/$branch is already $(git rev-parse --short HEAD); nothing to push"
+  ready_pr
   exit 0
 fi
+if [[ ${PUSH_PR_SKIP_CHECKS:-} == 1 ]]; then
+  log "PUSH_PR_SKIP_CHECKS=1: pushing without scripts/push-checks.sh"
+elif ! scripts/push-checks.sh; then
+  echo "push-pr.sh: not pushing #$pr: the checks above failed. Fix and commit, then rerun scripts/push-pr.sh. Only where a check cannot run (no Flutter of CI's version, say), PUSH_PR_SKIP_CHECKS=1 pushes anyway." >&2
+  exit 1
+fi
 git push -q --force-with-lease="$branch:$remote" origin "HEAD:refs/heads/$branch"
+ready_pr
 log "pushed $(git rev-parse --short HEAD) to #$pr; once ci-ok passes, scripts/merge-pr.sh $pr merges it"
