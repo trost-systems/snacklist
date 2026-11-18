@@ -79,9 +79,15 @@ ready_pr() {
 
 remote="$(git rev-parse "origin/$branch")"
 if [[ "$(git rev-parse HEAD)" == "$remote" ]]; then
-  log "origin/$branch is already $(git rev-parse --short HEAD); nothing to push"
-  ready_pr
-  exit 0
+  if [[ "$(gh pr view "$pr" --json isDraft -q .isDraft)" != true ]]; then
+    log "origin/$branch is already $(git rev-parse --short HEAD); nothing to push"
+    exit 0
+  fi
+  # Readied as it is, the draft's head would carry only the skipped ci-ok of its opening run: no
+  # gate ran on it, yet GitHub counts a skipped check as passed (review 0).
+  # One second past the head's own date, so the new commit's id differs even within one second.
+  GIT_COMMITTER_DATE="$(($(git log -1 --format=%ct) + 1)) +0000" git commit -q --amend --no-edit
+  log "#$pr is a draft whose head no CI run checked yet: pushing it again as $(git rev-parse --short HEAD)"
 fi
 if [[ ${PUSH_PR_SKIP_CHECKS:-} == 1 ]]; then
   log "PUSH_PR_SKIP_CHECKS=1: pushing without scripts/push-checks.sh"
