@@ -2028,3 +2028,22 @@ TestFlight builds from this job's merge on are built with Xcode 27.2 and the iOS
    TestFlight → the build) should no longer warn that builds need the iOS 27 SDK. The
    warning's exact wording is not in the Release logs (fastlane does not print altool's
    warnings), so the job could not quote it. If it is still there, send it to the lead.
+
+## Job 275: DSA report route, a test report and the first look (2026-11-16)
+
+The report form (`/inhalte-melden`, `/en/report`) goes live with the merge: it reuses the site's
+existing proxy secret and the edge functions' `RESEND_API_KEY`, so no new secret or setting is
+needed. `docs/MODERATION.md` is the runbook.
+
+1. **No BKA registration in advance** (Legal N-235, accepted by you on 16 Nov 2026). If a report
+   ever suggests a crime threatening someone's life or safety: call 110 if anyone is in immediate
+   danger, report by phone to the BKA (+49 611 55-35062, Kriminaldauerdienst outside working
+   hours), then register for the portal with Legal's draft e-mail in `docs/MODERATION.md`
+   ("Art. 18 runbook").
+2. **Send yourself one test report** after the merge's deploy, with your own address, on
+   snacklist.app/inhalte-melden: the page shows a number, the confirmation arrives from
+   no-reply@snacklist.app, and replying reaches support@snacklist.app. Then close it in the SQL
+   editor with `select public.content_report_decide('<number>', 'no_change', 'Testmeldung.');`
+   and try `scripts/moderation/notify.ts --decision <id>` without `--send` (MODERATION.md).
+3. **Look at new reports daily** in the Table Editor (`content_reports`): `danger` and `csam` the
+   same day, the rest within 7 days. Agents never read them.

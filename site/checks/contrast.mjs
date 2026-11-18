@@ -14,7 +14,7 @@ import { AXE_PATH, RUNS, VIEWPORTS, contrast, pageKit, parseArgs, parseRgb, runN
 const { dist, port, pages: only } = parseArgs({ port: 57621 });
 // The confirm page too (the unsubscribe page has the same parts).
 const WAITLIST = existsSync(join(dist, 'de/warteliste/bestaetigen.html')) ? ['/de/warteliste/bestaetigen'] : [];
-const PAGES = only ?? ['/de', '/en', '/de/anleitungen/siri-kurzbefehl', '/en/changelog', '/datenschutz', ...WAITLIST];
+const PAGES = only ?? ['/de', '/en', '/de/anleitungen/siri-kurzbefehl', '/en/changelog', '/datenschutz', '/inhalte-melden', ...WAITLIST];
 const { origin, close } = await serve(dist, port);
 const browser = await chromium.launch();
 const axeSource = readFileSync(AXE_PATH, 'utf8');

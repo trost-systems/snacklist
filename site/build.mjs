@@ -10,6 +10,7 @@ import { CATEGORIES, RecordError, compareVersions, draftFileNames, isVersion, pa
 import { CopyError, STAGES, STAGE_CTA, copyReader, readCopy, renderLanding } from './landing.mjs';
 import { HISTORY_ROUTES, HistoryCopyError, historyBody, t as historyText } from './history.mjs';
 import { ACTION_PAGES, actionPage, readConsent } from './waitlist.mjs';
+import { insertReportForm, reportForm, reportFormProblem } from './report.mjs';
 import { AgentError, agentHead, checkAgentSite, readPublicApi, readStage, readVercel, writeAgentFiles } from './agent.mjs';
 
 const SITE_DIR = dirname(fileURLToPath(import.meta.url));
@@ -25,6 +26,7 @@ export const LOCALES = {
     footer: {
       imprint: { label: 'Impressum', href: '/impressum' },
       privacy: { label: 'Datenschutz', href: '/datenschutz' },
+      report: { label: 'Inhalte melden', href: '/inhalte-melden' },
       support: { label: 'Hilfe', href: '/support' },
       changelog: { label: 'Neuigkeiten', href: '/de/changelog' },
       history: { label: historyText('history.footer', 'de'), href: HISTORY_ROUTES.de },
@@ -62,6 +64,7 @@ export const LOCALES = {
     footer: {
       imprint: { label: 'Imprint', href: '/en/imprint' },
       privacy: { label: 'Privacy', href: '/en/privacy' },
+      report: { label: 'Report content', href: '/en/report' },
       support: { label: 'Support', href: '/en/support' },
       changelog: { label: "What's new", href: '/en/changelog' },
       history: { label: historyText('history.footer', 'en'), href: HISTORY_ROUTES.en },
@@ -99,6 +102,8 @@ const SITE_NAME = 'Snacklist';
 const FOOTER_LINKS = [
   { key: 'imprint', shown: () => true },
   { key: 'privacy', shown: (config) => config.privacyPublished },
+  // The DSA notice route (Art. 16 DSA, job 275) must always be reachable.
+  { key: 'report', shown: () => true },
   { key: 'support', shown: (config) => config.supportPublished },
 ];
 
@@ -334,6 +339,11 @@ function loadPage(kindName, { file, expect }, contentDir, versions) {
   if (fm.draft !== undefined && typeof fm.draft !== 'boolean') fail(name, `frontmatter field "draft" must be true or false, got ${JSON.stringify(fm.draft)}`);
   if (fm.since !== undefined) checkSince(fm.since, name, kindName, 'frontmatter field');
   if (kindName === 'page' && !/^\/[a-z0-9/-]*[a-z0-9]$/.test(fm.path)) fail(name, `frontmatter field "path" must look like /some/path, got "${fm.path}"`);
+  if (fm.form !== undefined) {
+    if (kindName !== 'page') fail(name, 'frontmatter field "form" (the report form) is only allowed on legal pages');
+    const problem = reportFormProblem(fm.form);
+    if (problem) fail(name, `frontmatter field ${problem}`);
+  }
   const ui = LOCALES[fm.locale].ui;
   return {
     kind: kindName,
@@ -347,8 +357,16 @@ function loadPage(kindName, { file, expect }, contentDir, versions) {
     updated: fm.updated,
     // Why the page is not published: production leaves out a page with any notice.
     notices: [...(fm.draft === true ? [ui.draft] : []), ...(released(fm.since, versions) ? [] : [ui.unreleased(fm.since)])],
-    body: md.render(content, { file: name, kind: kindName, locale: fm.locale, versions, since: fm.since }),
+    report: fm.form !== undefined,
+    body: pageBody(content, fm, { file: name, kind: kindName, locale: fm.locale, versions, since: fm.since }),
   };
+}
+
+// A legal page with `form:` in its front matter gets the report form (job 275, report.mjs).
+function pageBody(content, fm, env) {
+  const body = md.render(content, env);
+  if (fm.form === undefined) return body;
+  return insertReportForm(body, reportForm(fm.form, { locale: fm.locale, inline: (text) => md.renderInline(text, env) }));
 }
 
 const escapeHtml = (s) =>
@@ -434,12 +452,15 @@ function renderPage(page, { config, groups, guidesByLocale, copy, stage }) {
   const waitlistPage = page.kind === 'waitlist';
   const noindex = page.notices.length > 0 || waitlistPage;
   const form = waitlistPage || (landing && stage !== 'launch');
+  const report = page.report === true;
   const assets = [
     landing && '<link rel="stylesheet" href="/landing.css">',
-    form && '<link rel="stylesheet" href="/waitlist.css">',
+    (form || report) && '<link rel="stylesheet" href="/waitlist.css">',
+    report && '<link rel="stylesheet" href="/report.css">',
     landing && '<script src="/demo.js" defer></script>',
     landing && '<script type="module" src="/stores.js"></script>',
     form && '<script src="/waitlist.js" defer></script>',
+    report && '<script type="module" src="/report.js"></script>',
   ].filter(Boolean).map((line) => `${line}\n`).join('');
   return `<!doctype html>
 <html lang="${page.locale}">
@@ -785,7 +806,7 @@ export function build({
   // A ⟦…⟧ marker stood for copy or legal text not written yet (job 82); none may ship in any build.
   const shipped = [
     ...rendered.map(({ page, html }) => ({ file: page.file, text: html })),
-    ...['waitlist.js', 'waitlist.css'].map((f) => ({ file: `public/${f}`, text: readFileSync(join(publicDir, f), 'utf8') })),
+    ...['waitlist.js', 'waitlist.css', 'report.js', 'report.css'].map((f) => ({ file: `public/${f}`, text: readFileSync(join(publicDir, f), 'utf8') })),
   ];
   const markers = shipped.flatMap(({ file, text }) => [...new Set(text.match(/⟦[^⟧]*⟧?/g) ?? [])].map((p) => `${file}: ${p}`));
   if (markers.length > 0) throw new BuildError(`placeholder markers left; replace them with the approved text:\n  ${markers.join('\n  ')}`);

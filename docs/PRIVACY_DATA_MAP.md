@@ -77,6 +77,15 @@ interest.
 | Feedback screenshot removal queue (job 267): object names, which start with the user id, and when the note was deleted | `public.feedback_screenshot_removals` (service only) | Removing the image with its note | (b) | Until the next sweep, at most a day | Supabase EU | Emptied by the sweep | `20261115160000_feedback_screenshots.sql` |
 | Support email (support@snacklist.app) | Google Workspace mailbox | Answering requests | (b)/(f) | 6 months after the request is closed (policy §10) | Google Cloud EMEA Limited (policy §10) | Manual | `site/content/legal/impressum.md` |
 
+## Reports of illegal content (job 275, DSA Art. 16)
+
+| Data | Where | Purpose | Basis | Kept | Processor / region | Deletion | Source |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Report from snacklist.app/inhalte-melden or /en/report: number, time, page language, kind of content, where it is, the reason (20 to 5,000 characters), the good-faith box, name and e-mail if given, when the confirmation went out | `public.content_reports` (RLS on, no policy; service connection only; not linked to a household, an account or feedback) | Handling notices of illegal content (Art. 16 to 18 DSA) | (c) | 12 months after the latest decision (`purge-content-reports`, daily 03:27 UTC), longer while `retain_until` is set for proceedings | Supabase EU (Frankfurt) | Daily purge; by hand | `supabase/migrations/*_content_reports.sql`, `docs/MODERATION.md` |
+| Decision log: time, outcome, ground, when the notifier was told | `public.content_report_decisions` (service only) | Art. 16(5), 17 and the decision record | (c) | With its report | Supabase EU (Frankfurt) | Cascades with the report | same |
+| Client IP of the form's request | Vercel function `/api/report` (fra1), in the function's memory only | At most 5 reports per network per hour | (c)/(f) | Up to an hour in memory, plus Vercel's request logs (policy §2) | Vercel | Forgotten when the hour passes or the instance ends; never forwarded or stored | `site/api/report.mjs` |
+| Confirmation and decision mails (to, subject, text with the number) | Resend | Art. 16(4) confirmation, 16(5) decision | (c) | Resend's 30 days | Resend, sent from Ireland | Resend's retention | `supabase/functions/report/mail.ts`, `scripts/moderation/notify.ts` |
+
 ## Analytics and error tracking (job 19, consent)
 
 | Data | Where | Purpose | Basis | Kept | Processor / region | Deletion | Source |
@@ -163,7 +172,7 @@ merchant of record); Snacklist gets no payment data and no store account name or
 | Vercel Inc. (app.snacklist.app, snacklist.app, app.hummlist.com, hummlist.com, mcp.snacklist.app, mcp.hummlist.com) | Processor | USA | EU-US Data Privacy Framework; SCCs in the DPA (Pro) |
 | PostHog Inc. (analytics, error tracking) | Processor | EU cloud, Frankfurt; US sub-processors possible (DPA 10.2) | DPF and SCCs (DPA 10.3, 10.4) |
 | GitHub (encrypted backups) | Processor | USA | DPF |
-| Plus Five Five, Inc. ("Resend"), San Francisco (the sign-in, confirmation and other auth mails through Auth SMTP, and the waitlist mails; Legal N-145) | Processor | Sent from Ireland; emails and delivery logs stored in the USA, deleted after 30 days | DPF; SCCs in the DPA |
+| Plus Five Five, Inc. ("Resend"), San Francisco (the sign-in, confirmation and other auth mails through Auth SMTP, the waitlist mails and the report confirmations and decisions; Legal N-145) | Processor | Sent from Ireland; emails and delivery logs stored in the USA, deleted after 30 days | DPF; SCCs in the DPA |
 | Google Cloud EMEA Limited, Dublin (Workspace, support mail) | Processor | EU/US | DPF; SCCs if Google stops relying on it |
 | Apple (App Store, TestFlight, Sign in with Apple), Google (Play, Google sign-in), Amazon (Alexa) | Independent controllers | | |
 

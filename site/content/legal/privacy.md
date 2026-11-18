@@ -4,13 +4,13 @@ description: "Privacy policy of Snacklist: which data the app and the website pr
 locale: en
 path: /en/privacy
 translation_key: privacy
-updated: 2026-11-17
+updated: 2026-11-18
 ---
 
 # Privacy policy
 
 This is a translation. The [German version](/datenschutz) is authoritative.
-Last updated: 17 November 2026
+Last updated: 18 November 2026
 
 This page explains which personal data Snacklist processes, why, on what legal basis, who receives it and what rights you have. Snacklist is a shopping-list app for households on iPhone, Android and in the browser (app.snacklist.app), with the website snacklist.app.
 
@@ -20,7 +20,7 @@ Peter Trost, Yalovastr. 5, 72108 Rottenburg am Neckar, Germany. E-mail: [support
 
 ## 2. Website snacklist.app
 
-The website sets no cookies, loads nothing from other servers and uses no analytics. The pages are served as static files. Only the waitlist form sends your details to our server, a function at Vercel (section 2a). The connection is received by the Vercel location nearest to you. Vercel is a US company; access from the USA is possible, and the transfer relies on the EU-US Data Privacy Framework and Standard Contractual Clauses (section 13). When you visit it, our host Vercel Inc. (440 N Barranca Ave #4133, Covina, CA 91723, USA) processes technically necessary data: IP address, time, page requested and browser identifier. This is needed to deliver the site and protect it from attacks (Art. 6(1)(f) GDPR; our legitimate interest is secure operation). Server logs are kept for at most 30 days.
+The website sets no cookies, loads nothing from other servers and uses no analytics. The pages are served as static files. Only the waitlist form (section 2a) and the [Report content](/en/report) form (section 10, "Reports of illegal content") send your details to our server, each a function at Vercel (/api/waitlist and /api/report). The connection is received by the Vercel location nearest to you. Vercel is a US company; access from the USA is possible, and the transfer relies on the EU-US Data Privacy Framework and Standard Contractual Clauses (section 13). When you visit it, our host Vercel Inc. (440 N Barranca Ave #4133, Covina, CA 91723, USA) processes technically necessary data: IP address, time, page requested and browser identifier. This is needed to deliver the site and protect it from attacks (Art. 6(1)(f) GDPR; our legitimate interest is secure operation). Server logs are kept for at most 30 days.
 
 ## 2a. Beta waitlist
 
@@ -151,6 +151,10 @@ You can read your own feedback in the app under More › Feedback & ideas. There
 
 Under More › Feedback & ideas we list a few ideas for Snacklist. Your household can give each idea one +1 and take it back. We store the idea, your household's ID and the time, but not which member voted; in a household with only one member, though, the vote can be linked to that member. Members of your household see which ideas your household gave a +1, everyone else only how many households did in total. We delete the votes with your household or when we remove the idea. Legal basis: Art. 6(1)(f) GDPR (our legitimate interest in learning which features households want).
 
+### Reports of illegal content {#reports}
+
+If you report content through the form at snacklist.app/en/report or in the app, we store the kind of content, where it is (in the app, the ID of the item, list or photo), your explanation, your confirmation that your details are accurate, a screenshot if you attach one, the time and, if you give them, your name and e-mail address; in the app also your user ID. We store the report at Supabase (servers in Frankfurt am Main) and send you the confirmation of receipt and our decision through Resend (section 12). Only Peter Trost can read and handle reports; other household members don't see them. The person who posted the reported content learns your name only if that is strictly necessary for the decision. If a report gives rise to a suspicion of a crime threatening people's life or safety, we pass the details to the Federal Criminal Police Office (Art. 18 DSA, § 13 DDG). Legal basis: Art. 6(1)(c) GDPR in conjunction with Art. 16 to 18 of Regulation (EU) 2022/2065 (Digital Services Act). For the form on the website, our host Vercel processes your IP address to limit abuse (section 2). We delete reports and our decision 12 months after the case is closed, unless we need them longer because proceedings are ongoing.
+
 ## 11. Backups
 
 An encrypted backup of the database is made every night and deleted automatically after 90 days. It is used only to recover from failures. Location: GitHub Inc., USA (as an encrypted file).
@@ -161,7 +165,7 @@ Legal basis: Art. 6(1)(f) GDPR (data security, Art. 32 GDPR).
 These service providers process data on our behalf and on our instructions (Art. 28 GDPR):
 
 - Supabase Pte. Ltd., Singapore (database, sign-in, triggering the sign-in e-mails, server functions; the database is in a data centre in Frankfurt am Main, the server functions run at the location nearest the request, including outside the EU; the server function for purchases always runs in Frankfurt am Main)
-- Plus Five Five, Inc. ("Resend"), San Francisco, USA (sending our emails, including the sign-in and confirmation emails and for the waitlist; sent from Ireland, stores emails and delivery logs in the USA and deletes them after 30 days)
+- Plus Five Five, Inc. ("Resend"), San Francisco, USA (sending our emails, including the sign-in and confirmation emails, the waitlist and the confirmations and decisions on reports; sent from Ireland, stores emails and delivery logs in the USA and deletes them after 30 days)
 - RevenueCat, Inc., Brandon (Florida), USA (free Snacklist Premium unlock for testers and for app review (section 5), and, once Snacklist Premium is sold, in-app purchases: checking and managing the unlock; servers at Amazon Web Services in the USA)
 - Vercel Inc. (hosting of snacklist.app, app.snacklist.app and mcp.snacklist.app; domain and DNS)
 - PostHog Inc. (usage data, error reports and feature switch requests, servers in the EU; only as described in section 9)

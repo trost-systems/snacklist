@@ -54,6 +54,22 @@ The app is called Snacklist. It used to be called Hummlist. The app, its Siri ph
 
 **Last verified.** 18 November 2026, code version 0ca5dcc9, on a local copy of the site (the form, the confirmation and the unsubscribe pages).
 
+## Reporting illegal content on snacklist.app
+
+**What it does.** snacklist.app has a form for reporting content in Snacklist that someone believes is illegal, for example an item, a list, a household name or a photo: snacklist.app/inhalte-melden (EN: snacklist.app/en/report), linked as „Inhalte melden“ (EN: "Report content") in the footer of every page of the site and from the Impressum. No account is needed. The form asks what it is about (six kinds, such as „Beleidigung, Bedrohung oder Hetze“ / "Insults, threats or hate"), where the content is, why it is illegal (at least 20 characters), and, recommended but optional, a name and e-mail address; a box confirms the report is made in good faith. After „Meldung senden“ (EN: "Send report") the page shows a number such as M-7K3Q-9XWD; with an e-mail address a confirmation mail follows. A person, Peter, reads and decides every report, with no automated decision. Reports about child sexual abuse material can be sent without a name or address. Below the form the same page states Snacklist's rules for content and how reports are handled.
+
+**How to get there.**
+1. Any page on snacklist.app, footer „Inhalte melden“ (EN: "Report content").
+2. Fill in the form, tick the good-faith box, „Meldung senden“ (EN: "Send report").
+
+**Never claim.**
+- That reports can be made in the app yet: the in-app entry is not built. (The Impressum names only the web form until the in-app entry ships.)
+- That reports are decided by AI, by a bot or automatically, or that other household members see a report.
+- A response time beyond the page's own: the same day for a threat to life or safety and for child sexual abuse material, usually within 7 days for everything else.
+- That Snacklist offers an internal complaint procedure or out-of-court dispute settlement under the DSA: it offers a second look on reply.
+
+**Last verified.** 16 November 2026, code version 6b8f7392, on a local copy of the site with the local database (both languages, a sent report and its confirmation mail).
+
 ## Sign-up and sign-in
 
 **What it does.** Someone new to Snacklist starts with „Los geht's“ (EN: "Get started") on the first screen and creates the account at the end of the guided start (see „Getting started“). A returning user taps „Schon ein Konto? Anmelden“ (EN: "Already have an account? Sign in") and signs in with Google or Apple, or with email: email and password, a new account with „Registrieren“ (EN: "Sign up"), or a sign-in link by email opened on the same device. Google and Apple come first; email is one more button below them, „Weiter mit E-Mail“ (EN: "Continue with email"). The keyboard opens only when the user taps a field. Below the sign-in, „Neu bei Snacklist? Los geht's“ (EN: "New to Snacklist? Get started") leads back to the guided start. Signing out is in the More tab and ends on the login screen. The login screen links the imprint and the privacy policy. Right after deleting the account, the login screen confirms „Dein Konto wurde gelöscht.“ (EN: "Your account was deleted.").

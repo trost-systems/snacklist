@@ -1,0 +1,164 @@
+/* The DSA notice form on /inhalte-melden and /en/report (job 275). Builds on waitlist.css: the
+   fields, hints, tiles, checkbox, status and spam trap are the waitlist's; this file adds the card
+   on a legal page, the list of six reasons, the text areas and their counter, and the CSAM note. */
+
+.rf-card {
+  --ring: var(--hl-color-accent);
+  --ring-gap: var(--hl-color-surface-raised);
+  margin-block: var(--hl-space-5) var(--hl-space-2);
+  padding: var(--hl-space-5) var(--hl-space-4);
+  border: var(--hl-border-width) solid var(--hl-color-ink);
+  border-radius: var(--hl-radius-l);
+  background: var(--hl-color-surface-raised);
+  box-shadow: var(--sticker);
+}
+
+.rf-card a:not(.hex) {
+  color: var(--hl-color-accent);
+}
+
+.rf-card p {
+  margin: 0;
+}
+
+.rf-form {
+  display: grid;
+  gap: var(--hl-space-5);
+}
+
+.rf-form[hidden] {
+  display: none;
+}
+
+/* "Pflicht" and "empfohlen": a small quiet tag after the label's words. */
+.rf-marker {
+  display: inline-block;
+  margin-inline-start: var(--hl-space-1);
+  padding: 0 var(--hl-space-2);
+  border: var(--hl-border-width-thin) solid var(--hl-color-text-muted);
+  border-radius: var(--hl-radius-full);
+  color: var(--hl-color-text-muted);
+  font-size: var(--hl-type-label-size);
+  font-weight: var(--hl-font-weight-bold);
+  line-height: 1.5;
+  vertical-align: 0.1em;
+  white-space: nowrap;
+}
+
+/* Six reasons, one per row: the words wrap beside the mark. */
+.rf-choices {
+  display: grid;
+  gap: var(--hl-space-2);
+}
+
+.rf-choice {
+  align-items: flex-start;
+  padding-block: var(--hl-space-3);
+  font-weight: var(--hl-font-weight-medium);
+  line-height: 1.35;
+}
+
+.rf-choice .wl-mark {
+  margin-top: 1px;
+}
+
+.rf-textarea {
+  display: block;
+  min-height: calc(3 * var(--hl-size-target));
+  resize: vertical;
+  line-height: var(--hl-type-body-line);
+}
+
+#rf-location {
+  min-height: calc(2 * var(--hl-size-target));
+}
+
+/* Phones: the counter right under the box, the help text below at full width; from 720 px the
+   counter sits at the help text's right. */
+.rf-under {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--hl-space-1);
+}
+
+.rf-under .rf-count {
+  text-align: end;
+}
+
+@media (min-width: 720px) {
+  .rf-under {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: var(--hl-space-3);
+  }
+}
+
+.rf-under .wl-hint {
+  flex: 1;
+}
+
+.rf-count {
+  flex: none;
+  color: var(--hl-color-text-muted);
+  font-size: var(--hl-type-label-size);
+  line-height: var(--hl-type-label-line);
+  font-variant-numeric: tabular-nums;
+}
+
+.rf-contact {
+  display: grid;
+  gap: var(--hl-space-5);
+}
+
+.rf-contact[hidden],
+.rf-note[hidden],
+.rf-show[hidden] {
+  display: none;
+}
+
+.rf-note {
+  padding: var(--hl-space-3) var(--hl-space-4);
+  border-radius: var(--hl-radius-m);
+  background: var(--hl-color-accent-soft);
+  color: var(--hl-color-on-accent-soft);
+  font-weight: var(--hl-font-weight-bold);
+}
+
+.rf-show {
+  margin-top: calc(-1 * var(--hl-space-3));
+}
+
+/* Looks like a link, is a button: it changes the form, it goes nowhere. */
+.rf-link {
+  min-height: var(--hl-size-target);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--hl-color-accent);
+  font: inherit;
+  font-weight: var(--hl-font-weight-bold);
+  text-align: start;
+  text-decoration: underline;
+  text-decoration-thickness: var(--hl-border-width);
+  text-underline-offset: 0.18em;
+  cursor: pointer;
+}
+
+.rf-check {
+  font-weight: var(--hl-font-weight-medium);
+}
+
+.rf-done p {
+  font-weight: var(--hl-font-weight-medium);
+}
+
+.rf-done strong {
+  font-weight: var(--hl-font-weight-heavy);
+  white-space: nowrap;
+}
+
+@media (min-width: 720px) {
+  .rf-card {
+    padding: var(--hl-space-6);
+  }
+}

@@ -1,7 +1,7 @@
 // Serves dist/ with the parts of vercel.json this site uses, so redirects and headers can be
 // checked locally: headers, redirects with `has` header conditions, rewrites to functions, cleanUrls,
 // trailingSlash false.
-// The site/api waitlist functions answer under /api/waitlist* with the env of this process.
+// The site/api functions (waitlist, report, get) answer under /api/* with the env of this process.
 import process from 'node:process';
 import { Buffer } from 'node:buffer';
 import { createServer } from 'node:http';
@@ -12,6 +12,7 @@ import * as signup from '../api/waitlist/index.mjs';
 import * as confirm from '../api/waitlist/confirm.mjs';
 import * as unsubscribe from '../api/waitlist/unsubscribe.mjs';
 import * as getApp from '../api/get.mjs';
+import * as report from '../api/report.mjs';
 
 const SITE_DIR = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -46,7 +47,7 @@ function matchesHas(req, has = []) {
   });
 }
 
-const FUNCTIONS = { '/api/waitlist': signup, '/api/waitlist/confirm': confirm, '/api/waitlist/unsubscribe': unsubscribe, '/api/get': getApp };
+const FUNCTIONS = { '/api/waitlist': signup, '/api/waitlist/confirm': confirm, '/api/waitlist/unsubscribe': unsubscribe, '/api/get': getApp, '/api/report': report };
 
 // Hands the request to a site/api function the way Vercel does, x-real-ip from the socket.
 async function callFunction(module, req, res) {

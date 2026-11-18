@@ -5,24 +5,25 @@ import { createHmac } from 'node:crypto';
 
 const BODY_LIMIT = 2048;
 
-const answer = (status, text, headers = {}) =>
+export const answer = (status, text, headers = {}) =>
   new Response(text, { status, headers: { 'content-type': 'application/json', 'cache-control': 'no-store', ...headers } });
-const json = (status, body, headers) => answer(status, JSON.stringify(body), headers);
+export const json = (status, body, headers) => answer(status, JSON.stringify(body), headers);
 const invalid = () => json(400, { error: 'invalid_request' });
 
-async function readText(request) {
-  if (Number(request.headers.get('content-length') ?? 0) > BODY_LIMIT) return null;
+// The body as text, or null once it passes `limit` bytes.
+export async function readText(request, limit = BODY_LIMIT) {
+  if (Number(request.headers.get('content-length') ?? 0) > limit) return null;
   const chunks = [];
   let size = 0;
   for await (const chunk of request.body ?? []) {
     size += chunk.byteLength;
-    if (size > BODY_LIMIT) return null;
+    if (size > limit) return null;
     chunks.push(chunk);
   }
   return new TextDecoder().decode(Buffer.concat(chunks));
 }
 
-function parseObject(text) {
+export function parseObject(text) {
   try {
     const value = JSON.parse(text);
     return typeof value === 'object' && value !== null && !Array.isArray(value) ? value : null;

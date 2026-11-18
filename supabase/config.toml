@@ -528,6 +528,11 @@ import_map = "./functions/deno.json"
 # Only the snacklist.app Vercel function calls it, with its shared secret (docs/WAITLIST.md).
 verify_jwt = false
 
+[functions.report]
+import_map = "./functions/deno.json"
+# DSA reports: only the snacklist.app Vercel function calls it, with the waitlist's secret (job 275).
+verify_jwt = false
+
 [functions.feedback-digest]
 import_map = "./functions/deno.json"
 # pg_cron calls it through pg_net with x-feedback-digest-secret (docs/FEEDBACK.md, "Daily digest"),

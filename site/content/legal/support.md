@@ -4,7 +4,7 @@ description: "Hilfe zu Snacklist: so erreichst du uns, und Antworten auf häufig
 locale: de
 path: /support
 translation_key: support
-updated: 2026-11-07
+updated: 2026-11-17
 draft: false
 ---
 
@@ -14,8 +14,9 @@ Snacklist ist eine gemeinsame Einkaufsliste für einen Haushalt. Was einer eintr
 
 ## So bekommst du Hilfe
 
-- **In der App:** Tippe auf **Mehr** und dann auf **Feedback senden**. Schreib, was passiert ist oder was dir fehlt. Mitgeschickt werden App-Version, Gerät, Sprache und der Bildschirm, auf dem du gerade bist, aber keine Listeneinträge. Das ist der schnellste Weg.
+- **In der App:** Tippe auf **Mehr** und dann auf **Feedback senden**. Schreib, was passiert ist oder was dir fehlt. Mitgeschickt werden App-Version, Gerät und Sprache, aber keine Listeneinträge. Das ist der schnellste Weg.
 - **Per E-Mail:** [support@snacklist.app](mailto:support@snacklist.app). Schreib bitte dazu, welches Gerät du nutzt (iPhone, Android oder Browser).
+- **Rechtswidrige Inhalte melden:** über das Formular [Inhalte melden](/inhalte-melden), auch ohne Konto.
 
 Wer für Snacklist verantwortlich ist, steht im [Impressum](/impressum). Wie Snacklist mit deinen Daten umgeht, steht in der [Datenschutzerklärung](/datenschutz).
 

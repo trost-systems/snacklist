@@ -1,0 +1,63 @@
+Job 275 local end-to-end proof, 2026-11-16 08:24 CET, stack family-groceries-275 (port block 577), made-up data only.
+
+## Browser (Playwright, 390 px) -> preview /api/report -> edge function report -> Postgres
+refs shown on screen: {"de":"M-KT23-DTGE","en":"M-A1Z8-NDRZ"}; no cookies; no request off the page origin
+
+## content_reports rows
+     ref     | source | locale | category | reason_len | reporter_name |   reporter_email    | good_faith | confirmed | closed 
+-------------+--------+--------+----------+------------+---------------+---------------------+------------+-----------+--------
+ M-KT23-DTGE | web    | de     | hate     |         76 | Anna Beispiel | anna.de@example.com | t          | t         | t
+ M-A1Z8-NDRZ | web    | en     | hate     |         76 | Anna Beispiel | anna.en@example.com | t          | t         | f
+(2 rows)
+
+## anon key over the REST API
+{"code":"42501","details":null,"hint":"Grant the required privileges to the current role with: GRANT SELECT ON public.content_reports TO anon;","message":"permission denied for table content_reports"}
+
+## Edge function log (fake Resend inside the stack)
+[Info] report: stored
+[Info] FAKE_RESEND POST /fake-resend/emails key=report-confirm/afaca859-8743-4b97-ad8b-bd4bd291b655 auth=Bearer <fake> {"from":"\"Snacklist Support\" <no-reply@snacklist.app>","to":["anna.de@example.com"],"reply_to":"support@snacklist.app","subject":"Deine Meldung an Snacklist ist eingegangen (M-KT23-DTGE)","text":"Hallo Anna Beispiel, danke für deine Meldung vom 16.11.2026, 08:24 Uhr (Nummer M-KT23-DTGE). Wir haben sie erhalten und prüfen sie selbst, ohne automatische Entscheidung. Sobald wir entschieden haben, schreiben wir dir, was wir getan haben und warum. Du musst nichts weiter tun. Wenn du etwas ergänzen willst, antworte einfach auf diese E-Mail.\n\n– Snacklist Support\n"}
+[Info] report: confirmation_sent
+[Info] report: stored
+[Info] FAKE_RESEND POST /fake-resend/emails key=report-confirm/bd1dc708-63f7-4a70-83ce-9196d922e6ae auth=Bearer <fake> {"from":"\"Snacklist Support\" <no-reply@snacklist.app>","to":["anna.en@example.com"],"reply_to":"support@snacklist.app","subject":"We've received your report to Snacklist (M-A1Z8-NDRZ)","text":"Hi Anna Beispiel, thanks for your report of 16 November 2026, 08:24 CET (number M-A1Z8-NDRZ). We've received it and review it ourselves, with no automated decision. Once we've decided, we'll write to tell you what we did and why. You don't need to do anything else. To add something, just reply to this e-mail.\n\n– Snacklist Support\n"}
+[Info] report: confirmation_sent
+
+## Decision logged and notify.ts dry run
+select public.content_report_decide('m-kt23-dtge', 'no_change', 'Wir konnten den Inhalt anhand deiner Angaben nicht finden') -> 1
+To: a***@e***.com
+Subject: Unsere Entscheidung zu deiner Meldung (M-KT23-DTGE)
+Idempotency-Key: report-decision/1
+
+Hallo Anna Beispiel, wir haben deine Meldung vom 16.11.2026 (M-KT23-DTGE) geprüft. Entscheidung: wir haben nichts geändert. Grund: Wir konnten den Inhalt anhand deiner Angaben nicht finden. Die Entscheidung hat ein Mensch getroffen, ohne automatische Mittel. Wenn du nicht einverstanden bist, antworte auf diese E-Mail, dann prüfen wir noch einmal. Du kannst außerdem die Zivilgerichte anrufen oder dich bei der Koordinierungsstelle für digitale Dienste der Bundesnetzagentur beschweren.
+
+– Snacklist Support
+
+dry run: nothing sent. To send: --decision 1 --send
+
+## Second run after the scroll fix (report.js centres the confirmation)
+refs: {"de":"M-H0QS-E2EQ","en":"M-8S01-CJBS"}; the confirmation box is fully inside the 390x844 viewport 1.5 s after sending (smooth scroll), chain-en-phone-done.png
+
+## Third run after the review fixes (fresh database, pgTAP content_reports.test.sql: PASS, 70 tests)
+refs: {"de":"M-XBZQ-2FXC","en":"M-YRJX-77WY"}, both stored and confirmed; the browser's own fetch passes the same-origin check.
+curl to /api/report with origin https://evil.example (text/plain): 403 {"error":"forbidden"}
+curl to /api/report with sec-fetch-site: cross-site: 403 {"error":"forbidden"}
+
+## Review 4 (Legal batch 17 Nov, N-241 to N-245), fresh database at 20261117192753_content_reports.sql
+pgTAP: 70 files, 3223 tests PASS; Deno DB integration suite 156 passed (incl. report_integration_test: 200 stored, the 201st 429 and stored nothing, every stored report with the address confirmed); supabase db lint clean.
+Browser chain refs: {"de":"M-RBX4-8P8Q","en":"M-1360-7ZDS"}, both confirmed. The 429 page text is Legal's N-242 text with the values kept (de/en-*-rate-limited.png).
+
+### N-244: a missed confirmation (made-up row stored 30 min ago, no confirmation_sent_at)
+$ notify.ts --confirmations
+1 report(s) with an address still owe their confirmation
+M-AGSN-MM1C  2026-11-17T19:07:35.497Z  t***@s***.app
+dry run: nothing sent. To send: --confirmations --send
+exit 0
+$ notify.ts --confirmations --send
+1 report(s) with an address still owe their confirmation
+M-AGSN-MM1C  2026-11-17T19:07:35.497Z  t***@s***.app
+M-AGSN-MM1C: sent; confirmation_sent_at recorded
+exit 0
+$ notify.ts --confirmations (again)
+0 report(s) with an address still owe their confirmation
+exit 0
+$ captured by the stand-in Resend
+report-confirm/317a79ed-872c-4c42-8384-aa586880aef1 | We've received your report to Snacklist (M-AGSN-MM1C) | "Snacklist Support" <no-reply@snacklist.app>

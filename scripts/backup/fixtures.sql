@@ -254,4 +254,14 @@ values ('https://client.backup.test/mcp.json', '00000000-0000-4000-8000-0000000b
 insert into public.oauth_cimd_rate (key, window_start, hits)
 values ('fetch:client.backup.test', date_trunc('hour', now()), 1);
 
+-- Job 275: a made-up DSA report with a logged decision (test address only).
+insert into public.content_reports (ref, source, locale, category, location, reason, reporter_name,
+  reporter_email, good_faith, confirmation_sent_at, closed_at)
+values ('M-BACK-0275', 'web', 'de', 'other', 'Haushalt Backup, Liste Test',
+  'Eine erfundene Meldung für die Sicherungsprobe.', 'Backup Test', 'test+report@snacklist.app', true,
+  now(), now());
+insert into public.content_report_decisions (report_id, decided_at, outcome, ground)
+values ((select id from public.content_reports where ref = 'M-BACK-0275'), now(), 'no_change',
+  'Testmeldung.');
+
 commit;

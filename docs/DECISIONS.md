@@ -15617,3 +15617,90 @@ Peter picked OC-A (OC1 with R3) of `openclaw-ci-fit.md` on 18 November 2026. CI 
    link after the merge, so the tested base can't be read back. The nightly run covers it.
    Caches: a reused push writes no cache entries, so after a key change PRs run cold until the
    nightly run has saved one (docs/CI.md).
+
+## Job 275: DSA notice-and-action, web part (2026-11-16)
+
+Legal Addendum B (N-226 to N-240) asked for a public report form before 1 Dec (§ 33(5) Nr. 8 DDG).
+Peter picked NR1 (web form now, in-app entry later behind a flag). Calls made without asking:
+
+1. **The waitlist's path, reused.** The form posts to `/api/report` on the site's own origin (a
+   Vercel function, fra1), which forwards to a new edge function `report` with the waitlist's
+   proxy secret and derives its URL from `WAITLIST_UPSTREAM_URL` (`…/waitlist` → `…/report`).
+   Both are set in production already (checked: `/api/waitlist` answers 405 to GET), so the form
+   is live with the merge and no new secret or dashboard step stands between it and 1 Dec. The
+   cost is a secret named for the waitlist doing double duty; a rename can come with the next
+   rotation. Posting from the page straight to supabase.co would have broken the privacy policy's
+   §2 ("loads nothing from other servers") and the CSP.
+2. **The IP limit lives in memory at Vercel.** Legal N-231 allows the IP "only in memory or in the
+   30-day server log", and §10 says Vercel processes it. So 5 reports per client network
+   (IPv6 /64) per rolling hour, in the warm function instance's memory, never forwarded or stored.
+   It is weak across cold starts, so the database adds limits that hold no IP: 30 web reports an
+   hour in total (more get 429 and the page points to support@), and at most 3 confirmation mails
+   per address a day, counted by submit time under the submit lock so a burst can't outrun it
+   (the report is still stored, only the mail is skipped).
+   A flood can block the form for an hour; the e-mail contact point stays open, and no limit
+   looks at content (no 16(6) disclosure needed).
+3. **Honeypot hits get a made-up number.** Like the waitlist: a bot learns nothing; a person whose
+   autofill fills the hidden field would lose the report, so the field is `autocomplete="off"`,
+   out of tab order and hidden from assistive tech.
+4. **Two tables, deny-all.** `content_reports` and `content_report_decisions`, RLS on with no
+   policy, revoked from anon and authenticated, functions granted to service_role only; no
+   household_id, no link to feedback, not in `export_my_data` (a web report belongs to no account;
+   the in-app job adds `user_id`, the export and the account-deletion rule). Retention per Legal's
+   §10 text: 12 months after the latest decision (`closed_at`), daily pg_cron
+   `purge-content-reports`, held by `retain_until` + `retain_reason` while proceedings run. A
+   report never decided is never purged, so the runbook says to decide spam too.
+5. **Decisions in SQL, mails by a script Peter runs.** Peter reads in the Table Editor, logs with
+   `content_report_decide(ref, outcome, ground)` and sends Legal's B.6a mail through Resend with
+   `scripts/moderation/notify.ts` (dry run by default, `--send`), so §10's "our decision through
+   Resend" is true. The B.6b statement of reasons has too many free parts to template in code; it
+   sits in `docs/MODERATION.md` and goes from support@ by hand.
+6. **Mails.** From `"Snacklist Support" <no-reply@snacklist.app>`, reply-to support@ (Legal B.4),
+   plain HTML and text, no links or images. Greeting and body stay one paragraph as Legal wrote
+   them ("Hallo Anna, danke …"); without a name the greeting is „Hallo,“ / "Hi," (NEEDS_LEAD).
+   Dates in Europe/Berlin: „16.11.2026, 14:05 Uhr“, "16 November 2026, 14:05 CET".
+7. **Form strings in the page's front matter.** Every word of the form sits in
+   `inhalte-melden.md` / `report.md` (`form:`), so each page is one file with one hash for Legal.
+   Validation uses the browser's own messages (required, minlength); the few status lines
+   (`form.ui.*`: sending, invalid, 429, 503, offline, the CSAM "add anyway" button, the honeypot
+   label) and the meta descriptions are ours and listed for Legal in NEEDS_LEAD.
+8. **CSAM.** Picking it shows Legal's note and folds name and e-mail behind a button („Name und
+   E-Mail-Adresse trotzdem angeben“), as N-228 asks ("hidden by default"); fields already typed
+   into stay visible so nothing is dropped silently. Without JavaScript all fields show and a
+   `<noscript>` line points to support@ (the form needs the script to send).
+9. **Legal's texts verbatim, even where they run ahead.** The Impressum names the in-app path
+   „Mehr › Feedback & Meldungen › Inhalt melden“, which doesn't exist yet; the help page keeps
+   „Feedback senden“. Not reworded (brief); raised in NEEDS_LEAD with a gated alternative.
+10. **Footer.** „Inhalte melden“ / "Report content" in every page's legal footer, always shown.
+11. **Only the site's own page may send (in-job review).** `/api/report` answers 403 unless the
+    body is JSON and `Sec-Fetch-Site` is `same-origin` (or, without fetch metadata, the Origin is
+    the site's own). Otherwise any web page could post through its visitors' browsers and use up
+    the hourly cap for everyone.
+12. **The mail greets by name only when it looks like a name (in-job review).** Anyone can type
+    anyone's address, so a "name" carrying a link or a message would go out under Snacklist's
+    sender. Letters, spaces, apostrophes, hyphens and an abbreviation's dot pass (up to 60);
+    anything else gets Legal's no-name form „Hallo,“ / "Hi,". The stored report keeps the name.
+13. **Art. 18 runbook is phone-first (review 0, brief ADDENDUM 1).** Peter accepted N-235 on
+    16 Nov 2026 (Legal Addendum B.1): no BKA portal registration in advance. Runbook step 3 now
+    reads Legal's B.1 words, "report by phone to the BKA (+49 611 55-35062, Kriminaldauerdienst
+    outside working hours), then register", and the registration draft moved into
+    `docs/MODERATION.md` as the step once a case arises. NEEDS_PETER no longer asks for it.
+14. **Privacy §2 names the report form (review 2, Lead + PM).** §2 said only the waitlist form
+    sends details to our Vercel function; it now names both forms and both functions
+    (`/api/waitlist`, `/api/report`), in DE and EN. Our wording, not Legal's: listed in NEEDS_LEAD
+    for the hash GO. The mail-cap wording and the Impressum's in-app path stay as they are until
+    Legal answers Q15/Q16.
+15. **Legal's batch of 17 Nov (review 4: N-241 to N-245) supersedes points 2 and 9.**
+    - No per-address mail cap: every stored report with an address gets its confirmation
+      (Art. 16(4) has no volume exception). `content_report_submit` lost `p_max_mails_per_address`.
+    - The global cap went from 30 to 200 web reports an hour, as a circuit breaker. It logs
+      `report: global_cap_hit` next to `report 429`, and the 429 text is Legal's (names support@).
+    - A failed confirmation is retried twice in the function (2 s, 8 s, same Resend key). What
+      still fails is durable in the table (`confirmation_sent_at` null), and
+      `notify.ts --confirmations [--send]` sends it. It is the first step of MODERATION.md's
+      daily routine. Both of Legal's options, since a retry inside `waitUntil` alone can't
+      survive a longer Resend outage.
+    - The Impressum names only the web form until the in-app entry ships. Privacy §12's Resend
+      line names the report mails. The eight legal files carry the date 17 Nov.
+    - The migration moved to `20261117192753_content_reports.sql`, because main gained newer
+      migrations.

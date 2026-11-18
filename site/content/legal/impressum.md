@@ -4,7 +4,7 @@ description: "Impressum von Snacklist: Anbieter, Anschrift und Kontakt."
 locale: de
 path: /impressum
 translation_key: imprint
-updated: 2026-11-04
+updated: 2026-11-17
 ---
 
 # Impressum
@@ -23,6 +23,12 @@ Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG: DE369514299
 ## Kontakt
 
 E-Mail: [support@snacklist.app](mailto:support@snacklist.app)
+
+## Kontaktstelle nach dem Digital Services Act {#dsa}
+
+Zentrale Kontaktstelle für Behörden der Mitgliedstaaten, die EU-Kommission und das Europäische Gremium für digitale Dienste (Art. 11 DSA) und für Nutzerinnen und Nutzer (Art. 12 DSA): [support@snacklist.app](mailto:support@snacklist.app). Du kannst uns auf Deutsch oder Englisch schreiben. Jede Nachricht liest und beantwortet ein Mensch.
+
+Rechtswidrige Inhalte in Snacklist meldest du am einfachsten über das Formular [Inhalte melden](/inhalte-melden), auch ohne Konto. Dort stehen auch unsere Regeln für Inhalte und wie wir mit Meldungen umgehen.
 
 ## Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV
 
