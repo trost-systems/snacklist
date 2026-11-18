@@ -7,47 +7,6 @@ permissions:
 env:
   FLUTTER_VERSION: 3.50.0
 jobs:
-  gate:
-    runs-on: xcode-27
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: ./.github/actions/xcode
-      - run: sw_vers; xcrun simctl list runtimes; xcrun simctl list devicetypes | grep iPhone
-      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
-        with:
-          channel: stable
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          cache: false
-      - run: scripts/gates/ios.sh
-  storekit:
-    runs-on: xcode-27
-    timeout-minutes: 90
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: ./.github/actions/xcode
-      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
-        with:
-          channel: stable
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          cache: false
-      - run: scripts/ios-storekit-probe.sh 27.2 27.1 27.0 26.2
-  archive:
-    runs-on: xcode-27
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: ./.github/actions/xcode
-      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
-        with:
-          channel: stable
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          cache: false
-      - working-directory: app
-        run: |
-          flutter build ipa --release --no-codesign -v 2>&1 | tee /tmp/ipa.log | grep -E 'iphoneos[0-9]|SDKROOT|warning:|error:|Built' | head -100
-          grep -m3 -o 'iPhoneOS[0-9.]*\.sdk' /tmp/ipa.log | sort -u
-          /usr/libexec/PlistBuddy -c 'Print :DTSDKName' -c 'Print :DTXcode' -c 'Print :DTPlatformVersion' -c 'Print :MinimumOSVersion' build/ios/archive/Runner.xcarchive/Products/Applications/Runner.app/Info.plist
   paywall:
     runs-on: xcode-27
     timeout-minutes: 30
