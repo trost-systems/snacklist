@@ -2110,7 +2110,7 @@ To close: close #78 and #79 with a link to the PR. If either one fails again wit
 - **English video hears German (your call).** The app's dictation listens in German in every
   language, so the English voice-add cut shows the German sentence with "Snacklist listens in
   German." (DECISIONS "Job 150" 3). The other way is English dictation in the app (its own job),
-  then a re-take with an English sentence.
+  then a re-take with an English sentence. (Superseded by #487: dictation follows the app language, German or English.)
 - **Copy.** New strings are drafts in `site/COPY_NEEDED.md` (voice.app.*, demo.voice-add,
   voice-add.*) for Snacklist Launch; voice.siri.now lost its in-app sentence to the new card.
 
@@ -2479,3 +2479,7 @@ Status: open, the lead's call. Nothing here blocks the job's PR. The map and the
    names: a row's tick now commits when the page is hidden, and `e2e/tests/tick-leave.spec.ts`
    drives a reload and a closed tab right after the click on three engines (3 of 18 passed on
    main, 30 of 30 on the branch). The CI trace of that point was not reproduced.
+
+## NEEDS_LEAD Job 295: re-film the voice-add English video (2026-11-17)
+
+`site/public/media/voice-add-en-*.mp4/.webm/.webp` still show the burned-in caption "Snacklist listens in German." while `voice-add-en.vtt` and `marketing/videos/copy.json` now say "Dictation follows the app language." Re-film with `marketing/videos` (README) so video and captions match. The caption wording (DE "Diktat folgt der App-Sprache.", EN "Dictation follows the app language.") is Engineering's own: PM's answer for job 295 gave no replacement text for it, so PM may want to confirm it.

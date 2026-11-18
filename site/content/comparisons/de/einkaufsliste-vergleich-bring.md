@@ -25,7 +25,7 @@ Die Angaben zu Bring! stammen aus einer datierten Quelle: dem Google-Play-Store-
 | Gemeinsame Liste | Eine Haushaltsliste, kostenlos, live auf jedem Gerät | „Gemeinsame Einkaufsliste kostenlos“; „Einkaufsliste kostenlos in Echtzeit teilen“ mit Haushalt, WG, Büro |
 | Werbung | Keine Werbung | Store-Label: „Enthält Werbung“ und „In-App-Käufe“ |
 | Dunkel- und Hellmodus | Ja (System, Hell oder Dunkel) | Dunkel- und Hellmodus |
-| Eintragen per Sprache | Mikrofon in der App, nur Deutsch | Per Sprachbefehl |
+| Eintragen per Sprache | Mikrofon in der App, auf Deutsch oder Englisch | Per Sprachbefehl |
 | Eintragen per Suche | Vorschläge beim Eintragen | Intelligente Suche mit Vorschlägen |
 | Mengen | Ja | Details und Mengen |
 
@@ -68,8 +68,7 @@ Wenn du Rezepte, Prospekte oder Kundenkarten in deiner Einkaufs-App haben willst
 
 - **Reihenfolge deines Ladens:** Snacklist sortiert deine Artikel automatisch in Kategorien und lernt aus deinen Korrekturen. Die Kategorien ziehst du einmal pro Laden in die Reihenfolge, in der du sie erreichst; die Reihenfolge gilt für den ganzen Haushalt. Optional gibt es deutsche Standard-Läden als Startpunkt, und eigene Läden legst du selbst an.
 - **Eine Liste für den Haushalt:** Alle sehen Änderungen live auf jedem Gerät. Jedes Haushaltsmitglied kann einladen: in der App unter Mehr > „Leute einladen“, mit einem 8-stelligen Code oder einem Link.
-- **Schnell eintragen:** Mengen und Vorschläge, dazu Einsprechen mit dem Mikrofon in der App, auf Deutsch.
-- **Anmelden:** mit Apple, Google oder E-Mail.
+- **Schnell eintragen:** Mengen und Vorschläge, dazu Einsprechen mit dem Mikrofon in der App, auf Deutsch oder Englisch.
 - **Datenschutz:** Nutzungsdaten werden nur mit deiner Einwilligung erfasst.
 - **Sprachen:** Deutsch und Englisch.
 - **Preis:** Die gemeinsame Einkaufsliste ist kostenlos, ohne Werbung. Extras wie die KI-Anbindung sollen nach dem öffentlichen Start zu Snacklist Premium gehören.
@@ -111,7 +110,7 @@ Nein, Snacklist hat keine Werbung. Der Store-Eintrag von Bring! nennt „Enthäl
 Die Beta startet am 15. November 2026 für Freunde und Familie. Auf snacklist.app kannst du dich auf die Warteliste setzen.
 
 **Kann ich mit beiden Apps per Sprache eintragen?**
-Ja. Bei Snacklist sprichst du über das Mikrofon in der App, nur auf Deutsch. Bring! nennt Eintragen per Sprachbefehl. (Quelle: Bring!-Store-Eintrag, Stand 04.11.2026)
+Ja. Bei Snacklist sprichst du über das Mikrofon in der App, in der Sprache der App (Deutsch oder Englisch). Bring! nennt Eintragen per Sprachbefehl. (Quelle: Bring!-Store-Eintrag, Stand 04.11.2026)
 
 **Kann ich Snacklist mit einem KI-Assistenten nutzen?**
 Ja, mit KI-Assistenten, die MCP unterstützen. Sie können deine offenen Artikel lesen, Artikel hinzufügen, abhaken und verschieben, aber nichts löschen oder umbenennen. In der Beta ist das für alle kostenlos. Nach dem öffentlichen Start sollen Extras wie die KI-Anbindung zu Snacklist Premium gehören, das dann kostenpflichtig ist.

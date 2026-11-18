@@ -9553,7 +9553,7 @@ phone apps always show; add an example of talking to the app.
 3. **English hears German.** The app listens in German (`de_DE`) whatever its language, and the
    site may not show what the app doesn't do. So the English cut is the English app hearing the
    same German sentence, with "Hummlist listens in German." under it; the rows land in German
-   among the English items. If English dictation comes, re-take with an English sentence.
+   among the English items. If English dictation comes, re-take with an English sentence. (Superseded by #487: dictation follows the app language, German or English.)
 4. **The sentence.** „Pizza, Orangensaft und zwei Packungen Fischstäbchen“: three items with
    icons, one with a quantity, landing in two neighbouring sections (Getränke, Tiefkühl) right
    above the add field, so one crop holds the microphone, the words and the payoff. The brief's
@@ -13594,6 +13594,7 @@ ARB files; what an English phone still met in German sat around it.
    with the German parser whatever the app language; English dictation needs the native offline
    check per language and is a feature of its own. The catalogue suggestions, the old Siri
    Shortcut recipe's answers, the MCP tool texts and `export_my_data`'s category names stay German.
+   Superseded by #487: dictation follows the app language, German or English.
 
 ## Job 221: a run with the ios job does not always wait for it, 2026-11-15
 

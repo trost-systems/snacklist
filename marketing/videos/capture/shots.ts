@@ -28,8 +28,8 @@ const items = {
   addTick: { de: ['Honig', 'Marmelade'], en: ['Honey', 'Jam'] },
   sync: { de: 'Eier', en: 'Eggs' },
   mcp: { de: ['Honig', 'Marmelade'], en: ['Honey', 'Jam'] },
-  // The app listens in German in either language (lib/list/dictation.dart), so the English take
-  // hears the German sentence too.
+  // Dictation follows the app language (German or English) since #487; this take is still a German
+  // example, so the English take hears the German sentence too.
   voice: {
     said: 'Pizza, Orangensaft und zwei Packungen Fischstäbchen',
     rows: ['Orangensaft', 'Pizza', 'Fischstäbchen'],

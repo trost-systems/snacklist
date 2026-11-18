@@ -103,10 +103,10 @@
     "source": "New: quotation marks around the spoken sentence (the take's own words, capture/shots.ts) in the voice-add video's speech caption."
   },
   "voice-add.german": {
-    "de": "Snacklist hört auf Deutsch zu.",
-    "en": "Snacklist listens in German.",
+    "de": "Diktat folgt der App-Sprache.",
+    "en": "Dictation follows the app language.",
     "status": "draft",
-    "source": "New: English voice-add video only, under the German sentence: in-app dictation listens in German in every app language (FEATURES-FOR-WRITERS, Dictation). German kept for symmetry, not shown."
+    "source": "New: English voice-add video only, under the German sentence: dictation follows the app language (German or English) since #487; this take is still a German example. German kept for symmetry, not shown. The key name `voice-add.german` is historical (scene.mjs reads it); the wording is Engineering's own, job 295."
   },
   "voice-add.tick": {
     "de": "Im Laden:\nantippen, abgehakt.",
