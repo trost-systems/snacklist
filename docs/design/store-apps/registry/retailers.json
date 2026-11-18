@@ -1,0 +1,1758 @@
+{
+  "version": 1,
+  "updated": "2026-11-18",
+  "chains": [
+    {
+      "chain": "lidl",
+      "name": "Lidl",
+      "countries": [
+        "DE",
+        "AT",
+        "CH",
+        "FR",
+        "NL",
+        "PL",
+        "IT",
+        "ES"
+      ]
+    },
+    {
+      "chain": "aldi-nord",
+      "name": "ALDI Nord",
+      "countries": [
+        "DE",
+        "FR",
+        "NL",
+        "ES"
+      ]
+    },
+    {
+      "chain": "aldi-sued",
+      "name": "ALDI SÜD",
+      "countries": [
+        "DE",
+        "AT",
+        "CH",
+        "IT"
+      ]
+    },
+    {
+      "chain": "edeka",
+      "name": "EDEKA",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "chain": "netto-md",
+      "name": "Netto Marken-Discount",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "chain": "rewe",
+      "name": "REWE",
+      "countries": [
+        "DE"
+      ]
+    },
+    {
+      "chain": "kaufland",
+      "name": "Kaufland",
+      "countries": [
+        "DE",
+        "PL"
+      ]
+    },
+    {
+      "chain": "penny",
+      "name": "PENNY",
+      "countries": [
+        "DE",
+        "AT"
+      ]
+    },
+    {
+      "chain": "dm",
+      "name": "dm",
+      "countries": [
+        "DE",
+        "AT"
+      ]
+    },
+    {
+      "chain": "rossmann",
+      "name": "Rossmann",
+      "countries": [
+        "DE",
+        "PL"
+      ]
+    },
+    {
+      "chain": "billa",
+      "name": "BILLA",
+      "countries": [
+        "AT"
+      ]
+    },
+    {
+      "chain": "spar-at",
+      "name": "SPAR Österreich",
+      "countries": [
+        "AT"
+      ]
+    },
+    {
+      "chain": "mpreis",
+      "name": "MPREIS",
+      "countries": [
+        "AT"
+      ]
+    },
+    {
+      "chain": "migros",
+      "name": "Migros",
+      "countries": [
+        "CH"
+      ]
+    },
+    {
+      "chain": "coop-ch",
+      "name": "Coop (Switzerland)",
+      "countries": [
+        "CH"
+      ]
+    },
+    {
+      "chain": "denner",
+      "name": "Denner",
+      "countries": [
+        "CH"
+      ]
+    },
+    {
+      "chain": "carrefour",
+      "name": "Carrefour",
+      "countries": [
+        "FR",
+        "PL",
+        "IT",
+        "ES"
+      ]
+    },
+    {
+      "chain": "leclerc",
+      "name": "E.Leclerc",
+      "countries": [
+        "FR"
+      ]
+    },
+    {
+      "chain": "intermarche",
+      "name": "Intermarché",
+      "countries": [
+        "FR"
+      ]
+    },
+    {
+      "chain": "auchan",
+      "name": "Auchan",
+      "countries": [
+        "FR",
+        "PL",
+        "ES"
+      ]
+    },
+    {
+      "chain": "monoprix",
+      "name": "Monoprix",
+      "countries": [
+        "FR"
+      ]
+    },
+    {
+      "chain": "super-u",
+      "name": "Super U",
+      "countries": [
+        "FR"
+      ]
+    },
+    {
+      "chain": "albert-heijn",
+      "name": "Albert Heijn",
+      "countries": [
+        "NL"
+      ]
+    },
+    {
+      "chain": "jumbo",
+      "name": "Jumbo",
+      "countries": [
+        "NL"
+      ]
+    },
+    {
+      "chain": "plus-nl",
+      "name": "PLUS",
+      "countries": [
+        "NL"
+      ]
+    },
+    {
+      "chain": "dirk",
+      "name": "Dirk",
+      "countries": [
+        "NL"
+      ]
+    },
+    {
+      "chain": "kruidvat",
+      "name": "Kruidvat",
+      "countries": [
+        "NL"
+      ]
+    },
+    {
+      "chain": "biedronka",
+      "name": "Biedronka",
+      "countries": [
+        "PL"
+      ]
+    },
+    {
+      "chain": "zabka",
+      "name": "Żabka",
+      "countries": [
+        "PL"
+      ]
+    },
+    {
+      "chain": "dino",
+      "name": "Dino",
+      "countries": [
+        "PL"
+      ]
+    },
+    {
+      "chain": "esselunga",
+      "name": "Esselunga",
+      "countries": [
+        "IT"
+      ]
+    },
+    {
+      "chain": "conad",
+      "name": "Conad",
+      "countries": [
+        "IT"
+      ]
+    },
+    {
+      "chain": "coop-it",
+      "name": "Coop (Italy)",
+      "countries": [
+        "IT"
+      ]
+    },
+    {
+      "chain": "eurospin",
+      "name": "Eurospin",
+      "countries": [
+        "IT"
+      ]
+    },
+    {
+      "chain": "mercadona",
+      "name": "Mercadona",
+      "countries": [
+        "ES"
+      ]
+    },
+    {
+      "chain": "dia",
+      "name": "DIA",
+      "countries": [
+        "ES"
+      ]
+    },
+    {
+      "chain": "eroski",
+      "name": "Eroski",
+      "countries": [
+        "ES"
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "chain": "lidl",
+      "name": "Lidl",
+      "country": "DE",
+      "app": {
+        "name": "Lidl Plus",
+        "android": "com.lidl.eci.lidlplus",
+        "ios": "1238611143",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=com.lidl.eci.lidlplus",
+          "ios": "itms-apps://apps.apple.com/app/id1238611143"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.lidl.de",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1238611143&country=de",
+        "https://play.google.com/store/apps/details?id=com.lidl.eci.lidlplus&hl=en&gl=DE",
+        "https://app-site-association.cdn-apple.com/a/v1/www.lidl.de",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.lidl.de&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "One Lidl Plus app for all countries (same iOS id and package everywhere). No universal link: the AASA claims only product, category, flyer, search and /prm/ paths, no home path."
+    },
+    {
+      "chain": "aldi-nord",
+      "name": "ALDI Nord",
+      "country": "DE",
+      "app": {
+        "name": "ALDI Nord",
+        "android": "de.aldiNord.android",
+        "ios": "543651999",
+        "universalLink": "https://www.aldi-nord.de/app-only/dashboard.html",
+        "storeFallback": {
+          "android": "market://details?id=de.aldiNord.android",
+          "ios": "itms-apps://apps.apple.com/app/id543651999"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.aldi-nord.de",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=543651999&country=de",
+        "https://play.google.com/store/apps/details?id=de.aldiNord.android&hl=en&gl=DE",
+        "https://app-site-association.cdn-apple.com/a/v1/www.aldi-nord.de",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.aldi-nord.de&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "ALDI Nord (ALDI Einkauf) app. /app-only/dashboard.html is claimed for the app and names its dashboard."
+    },
+    {
+      "chain": "aldi-sued",
+      "name": "ALDI SÜD",
+      "country": "DE",
+      "app": {
+        "name": "ALDI SÜD",
+        "android": "de.apptiv.business.android.aldi_de",
+        "ios": "379054402",
+        "universalLink": "https://www.aldi-sued.de/homescreen",
+        "storeFallback": {
+          "android": "market://details?id=de.apptiv.business.android.aldi_de",
+          "ios": "itms-apps://apps.apple.com/app/id379054402"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.aldi-sued.de",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=379054402&country=de",
+        "https://play.google.com/store/apps/details?id=de.apptiv.business.android.aldi_de&hl=en&gl=DE",
+        "https://app-site-association.cdn-apple.com/a/v1/www.aldi-sued.de",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.aldi-sued.de&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "ALDI SÜD (ALDI International Services) app; iOS bundle de.bjoerndemming.aldisued. /homescreen opens the app home."
+    },
+    {
+      "chain": "edeka",
+      "name": "EDEKA",
+      "country": "DE",
+      "app": {
+        "name": "EDEKA",
+        "android": "de.edeka.genuss",
+        "ios": "1272688648",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=de.edeka.genuss",
+          "ios": "itms-apps://apps.apple.com/app/id1272688648"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.edeka.de",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1272688648&country=de",
+        "https://play.google.com/store/apps/details?id=de.edeka.genuss&hl=en&gl=DE",
+        "https://app-site-association.cdn-apple.com/a/v1/www.edeka.de",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.edeka.de&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "No universal link: www.edeka.de has no apple-app-site-association on Apple's CDN and no asset links."
+    },
+    {
+      "chain": "netto-md",
+      "name": "Netto Marken-Discount",
+      "country": "DE",
+      "app": {
+        "name": "Netto",
+        "android": "com.valuephone.vpnetto",
+        "ios": "379404334",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=com.valuephone.vpnetto",
+          "ios": "itms-apps://apps.apple.com/app/id379404334"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.netto-online.de",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=379404334&country=de",
+        "https://play.google.com/store/apps/details?id=com.valuephone.vpnetto&hl=en&gl=DE",
+        "https://app-site-association.cdn-apple.com/a/v1/www.netto-online.de",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.netto-online.de&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "No universal link: www.netto-online.de has no AASA on Apple's CDN and no asset links."
+    },
+    {
+      "chain": "rewe",
+      "name": "REWE",
+      "country": "DE",
+      "app": {
+        "name": "REWE",
+        "android": "de.rewe.app.mobile",
+        "ios": "714121079",
+        "universalLink": "https://www.rewe.de/shop",
+        "storeFallback": {
+          "android": "market://details?id=de.rewe.app.mobile",
+          "ios": "itms-apps://apps.apple.com/app/id714121079"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.rewe.de",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=714121079&country=de",
+        "https://play.google.com/store/apps/details?id=de.rewe.app.mobile&hl=en&gl=DE",
+        "https://app-site-association.cdn-apple.com/a/v1/www.rewe.de",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.rewe.de&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "No home path in the AASA; /shop opens the app's shop section."
+    },
+    {
+      "chain": "kaufland",
+      "name": "Kaufland",
+      "country": "DE",
+      "app": {
+        "name": "Kaufland",
+        "android": "com.kaufland.Kaufland",
+        "ios": "1087780386",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=com.kaufland.Kaufland",
+          "ios": "itms-apps://apps.apple.com/app/id1087780386"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.kaufland.de",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1087780386&country=de",
+        "https://play.google.com/store/apps/details?id=com.kaufland.Kaufland&hl=en&gl=DE",
+        "https://app-site-association.cdn-apple.com/a/v1/www.kaufland.de",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.kaufland.de&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Same app as Kaufland PL. No universal link: the AASA claims only URLs carrying ivy_redirect=true (a redirect marker), no plain home path."
+    },
+    {
+      "chain": "penny",
+      "name": "PENNY",
+      "country": "DE",
+      "app": {
+        "name": "PENNY",
+        "android": "de.penny.app",
+        "ios": "1096204041",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=de.penny.app",
+          "ios": "itms-apps://apps.apple.com/app/id1096204041"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.penny.de",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1096204041&country=de",
+        "https://play.google.com/store/apps/details?id=de.penny.app&hl=en&gl=DE",
+        "https://app-site-association.cdn-apple.com/a/v1/www.penny.de",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.penny.de&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "PENNY Germany app; PENNY Austria is a different app. No universal link: the AASA claims /app/*, /angebote/ and /markt, none documented as the app home."
+    },
+    {
+      "chain": "dm",
+      "name": "dm",
+      "country": "DE",
+      "app": {
+        "name": "Mein dm",
+        "android": "de.dm.meindm.android",
+        "ios": "1186271926",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=de.dm.meindm.android",
+          "ios": "itms-apps://apps.apple.com/app/id1186271926"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.dm.de",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1186271926&country=de",
+        "https://play.google.com/store/apps/details?id=de.dm.meindm.android&hl=en&gl=DE",
+        "https://app-site-association.cdn-apple.com/a/v1/www.dm.de",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.dm.de&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Mein dm, the same app in DE and AT. No universal link: the AASA claims only /applink/* and /p/d/* (product pages)."
+    },
+    {
+      "chain": "rossmann",
+      "name": "Rossmann",
+      "country": "DE",
+      "app": {
+        "name": "Rossmann",
+        "android": "de.rossmann.app.android",
+        "ios": "1034309353",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=de.rossmann.app.android",
+          "ios": "itms-apps://apps.apple.com/app/id1034309353"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.rossmann.de",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1034309353&country=de",
+        "https://play.google.com/store/apps/details?id=de.rossmann.app.android&hl=en&gl=DE",
+        "https://app-site-association.cdn-apple.com/a/v1/www.rossmann.de",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.rossmann.de&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Rossmann Germany app; Rossmann PL is a different app. No universal link: the AASA lists three legacy paths without a leading slash and no asset links."
+    },
+    {
+      "chain": "lidl",
+      "name": "Lidl",
+      "country": "AT",
+      "app": {
+        "name": "Lidl Plus",
+        "android": "com.lidl.eci.lidlplus",
+        "ios": "1238611143",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=com.lidl.eci.lidlplus",
+          "ios": "itms-apps://apps.apple.com/app/id1238611143"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.lidl.at",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1238611143&country=at",
+        "https://play.google.com/store/apps/details?id=com.lidl.eci.lidlplus&hl=en&gl=AT",
+        "https://app-site-association.cdn-apple.com/a/v1/www.lidl.at",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.lidl.at&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Same Lidl Plus app as DE. www.lidl.at claims only /prm/* and has no asset links."
+    },
+    {
+      "chain": "aldi-sued",
+      "name": "Hofer",
+      "country": "AT",
+      "app": {
+        "name": "HOFER",
+        "android": "de.apptiv.business.android.aldi_at",
+        "ios": "395677652",
+        "universalLink": "https://www.hofer.at/homescreen",
+        "storeFallback": {
+          "android": "market://details?id=de.apptiv.business.android.aldi_at",
+          "ios": "itms-apps://apps.apple.com/app/id395677652"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.hofer.at",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=395677652&country=at",
+        "https://play.google.com/store/apps/details?id=de.apptiv.business.android.aldi_at&hl=en&gl=AT",
+        "https://app-site-association.cdn-apple.com/a/v1/www.hofer.at",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.hofer.at&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Hofer is ALDI SÜD in Austria with its own app (bundle com.aldisued.HoferAT), not the German ALDI SÜD app. \"Unser HOFER\" (com.hofer.unserhofer.android) is a separate app."
+    },
+    {
+      "chain": "billa",
+      "name": "BILLA",
+      "country": "AT",
+      "app": {
+        "name": "BILLA",
+        "android": "at.billa.service",
+        "ios": "378479081",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=at.billa.service",
+          "ios": "itms-apps://apps.apple.com/app/id378479081"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.billa.at",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=378479081&country=at",
+        "https://play.google.com/store/apps/details?id=at.billa.service&hl=en&gl=AT",
+        "https://app-site-association.cdn-apple.com/a/v1/www.billa.at",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.billa.at&relation=delegate_permission/common.handle_all_urls",
+        "https://www.billa.at/"
+      ],
+      "note": "billa.at links exactly this pair. Alternatives: Mein BILLA (at.billa.mapp), BILLA Scan & Go (iOS 1459386248), and the jö Bonus Club loyalty app (REWE group AT). No universal link: no AASA on www.billa.at."
+    },
+    {
+      "chain": "spar-at",
+      "name": "SPAR",
+      "country": "AT",
+      "app": {
+        "name": "SPAR",
+        "android": "at.spar.app",
+        "ios": "6448124258",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=at.spar.app",
+          "ios": "itms-apps://apps.apple.com/app/id6448124258"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.spar.at",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=6448124258&country=at",
+        "https://play.google.com/store/apps/details?id=at.spar.app&hl=en&gl=AT",
+        "https://app-site-association.cdn-apple.com/a/v1/www.spar.at",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.spar.at&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "SPAR Österreich's own app; SPAR Croatia (hr.spar.app) and Slovenia (si.spar.plus) are separate apps. No universal link: the AASA claims only /app/link/* and /produktwelt/app/*."
+    },
+    {
+      "chain": "penny",
+      "name": "PENNY",
+      "country": "AT",
+      "app": {
+        "name": "PENNY",
+        "android": "at.penny.app",
+        "ios": "1176990925",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=at.penny.app",
+          "ios": "itms-apps://apps.apple.com/app/id1176990925"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.penny.at",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1176990925&country=at",
+        "https://play.google.com/store/apps/details?id=at.penny.app&hl=en&gl=AT",
+        "https://app-site-association.cdn-apple.com/a/v1/www.penny.at",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.penny.at&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "PENNY Österreich, a different app from PENNY DE. No universal link: the AASA claims only /unser-penny/app-store/* and /unser-penny/app-direkt/*."
+    },
+    {
+      "chain": "dm",
+      "name": "dm",
+      "country": "AT",
+      "app": {
+        "name": "Mein dm",
+        "android": "de.dm.meindm.android",
+        "ios": "1186271926",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=de.dm.meindm.android",
+          "ios": "itms-apps://apps.apple.com/app/id1186271926"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.dm.at",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1186271926&country=at",
+        "https://play.google.com/store/apps/details?id=de.dm.meindm.android&hl=en&gl=AT",
+        "https://app-site-association.cdn-apple.com/a/v1/www.dm.at",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.dm.at&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Same Mein dm app as DE; www.dm.at lists the same appID and package. No home path claimed."
+    },
+    {
+      "chain": "mpreis",
+      "name": "MPREIS",
+      "country": "AT",
+      "app": {
+        "name": "MPREIS",
+        "android": "at.mpreis.app",
+        "ios": "6462646115",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=at.mpreis.app",
+          "ios": "itms-apps://apps.apple.com/app/id6462646115"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.mpreis.at",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=6462646115&country=at",
+        "https://play.google.com/store/apps/details?id=at.mpreis.app&hl=en&gl=AT",
+        "https://app-site-association.cdn-apple.com/a/v1/www.mpreis.at",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.mpreis.at&relation=delegate_permission/common.handle_all_urls",
+        "https://www.mpreis.at/"
+      ],
+      "note": "mpreis.at links exactly this pair. No universal link: no AASA on www.mpreis.at."
+    },
+    {
+      "chain": "migros",
+      "name": "Migros",
+      "country": "CH",
+      "app": {
+        "name": "Migros",
+        "android": "ch.migros.app",
+        "ios": "412845300",
+        "universalLink": "https://www.migros.ch/?universal_link=true",
+        "storeFallback": {
+          "android": "market://details?id=ch.migros.app",
+          "ios": "itms-apps://apps.apple.com/app/id412845300"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.migros.ch",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=412845300&country=ch",
+        "https://play.google.com/store/apps/details?id=ch.migros.app&hl=en&gl=CH",
+        "https://app-site-association.cdn-apple.com/a/v1/www.migros.ch",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.migros.ch&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "iOS bundle ch.migros.m-go, Android ch.migros.app. The AASA claims any path with universal_link=true, so the site root with that flag opens the app. It also claims /list/* (shopping lists)."
+    },
+    {
+      "chain": "coop-ch",
+      "name": "Coop",
+      "country": "CH",
+      "app": {
+        "name": "Coop",
+        "android": "ch.coop.coopapp",
+        "ios": "1459076427",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=ch.coop.coopapp",
+          "ios": "itms-apps://apps.apple.com/app/id1459076427"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.coop.ch",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1459076427&country=ch",
+        "https://play.google.com/store/apps/details?id=ch.coop.coopapp&hl=en&gl=CH",
+        "https://app-site-association.cdn-apple.com/a/v1/www.coop.ch",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.coop.ch&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Coop Switzerland (Coop Genossenschaft), unrelated to Coop Italia. Alternatives: Supercard (ch.coop.supercard), passabene. No universal link chosen: the AASA starts with a bare \"#*\" component, so whether the root is claimed depends on fragment matching."
+    },
+    {
+      "chain": "lidl",
+      "name": "Lidl",
+      "country": "CH",
+      "app": {
+        "name": "Lidl Plus",
+        "android": "com.lidl.eci.lidlplus",
+        "ios": "1238611143",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=com.lidl.eci.lidlplus",
+          "ios": "itms-apps://apps.apple.com/app/id1238611143"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.lidl.ch",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1238611143&country=ch",
+        "https://play.google.com/store/apps/details?id=com.lidl.eci.lidlplus&hl=en&gl=CH",
+        "https://app-site-association.cdn-apple.com/a/v1/www.lidl.ch",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.lidl.ch&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Same Lidl Plus app as DE. www.lidl.ch claims only /prm/* and has no asset links."
+    },
+    {
+      "chain": "aldi-sued",
+      "name": "ALDI SUISSE",
+      "country": "CH",
+      "app": {
+        "name": "ALDI SUISSE",
+        "android": "de.apptiv.business.android.aldi_ch",
+        "ios": "396867163",
+        "universalLink": "https://www.aldi-suisse.ch/de/homescreen",
+        "storeFallback": {
+          "android": "market://details?id=de.apptiv.business.android.aldi_ch",
+          "ios": "itms-apps://apps.apple.com/app/id396867163"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.aldi-suisse.ch",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=396867163&country=ch",
+        "https://play.google.com/store/apps/details?id=de.apptiv.business.android.aldi_ch&hl=en&gl=CH",
+        "https://app-site-association.cdn-apple.com/a/v1/www.aldi-suisse.ch",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.aldi-suisse.ch&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "ALDI SÜD group, own Swiss app (bundle com.aldisued.AldiSuisse). /de/, /fr/ and /it/homescreen are all claimed."
+    },
+    {
+      "chain": "denner",
+      "name": "Denner",
+      "country": "CH",
+      "app": {
+        "name": "Denner",
+        "android": "ch.denner",
+        "ios": "534175822",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=ch.denner",
+          "ios": "itms-apps://apps.apple.com/app/id534175822"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.denner.ch",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=534175822&country=ch",
+        "https://play.google.com/store/apps/details?id=ch.denner&hl=en&gl=CH",
+        "https://app-site-association.cdn-apple.com/a/v1/www.denner.ch",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.denner.ch&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Denner (Migros group) has its own app. No universal link: the AASA claims only /*/services/app/deeplink*."
+    },
+    {
+      "chain": "lidl",
+      "name": "Lidl",
+      "country": "FR",
+      "app": {
+        "name": "Lidl Plus",
+        "android": "com.lidl.eci.lidlplus",
+        "ios": "1238611143",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=com.lidl.eci.lidlplus",
+          "ios": "itms-apps://apps.apple.com/app/id1238611143"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.lidl.fr",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1238611143&country=fr",
+        "https://play.google.com/store/apps/details?id=com.lidl.eci.lidlplus&hl=en&gl=FR",
+        "https://app-site-association.cdn-apple.com/a/v1/www.lidl.fr",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.lidl.fr&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Same Lidl Plus app as DE. No home path claimed."
+    },
+    {
+      "chain": "carrefour",
+      "name": "Carrefour",
+      "country": "FR",
+      "app": {
+        "name": "Carrefour",
+        "android": "com.carrefour.fid.android",
+        "ios": "378305156",
+        "universalLink": "https://www.carrefour.fr/",
+        "storeFallback": {
+          "android": "market://details?id=com.carrefour.fid.android",
+          "ios": "itms-apps://apps.apple.com/app/id378305156"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.carrefour.fr",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=378305156&country=fr",
+        "https://play.google.com/store/apps/details?id=com.carrefour.fid.android&hl=en&gl=FR",
+        "https://app-site-association.cdn-apple.com/a/v1/www.carrefour.fr",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.carrefour.fr&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Carrefour & sa carte Club (Carrefour Groupe). Carrefour PL, IT and ES each have their own app. The AASA claims \"/\" for this app."
+    },
+    {
+      "chain": "leclerc",
+      "name": "E.Leclerc",
+      "country": "FR",
+      "app": {
+        "name": "E.Leclerc",
+        "android": "com.infomil.bill",
+        "ios": "756693888",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=com.infomil.bill",
+          "ios": "itms-apps://apps.apple.com/app/id756693888"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.e.leclerc",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=756693888&country=fr",
+        "https://play.google.com/store/apps/details?id=com.infomil.bill&hl=en&gl=FR",
+        "https://app-site-association.cdn-apple.com/a/v1/www.e.leclerc",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.e.leclerc&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Mon E.Leclerc (Infomil). Alternative: Leclerc DRIVE (com.infomil.leclercdrive, iOS 387709274). No universal link: no AASA on www.e.leclerc."
+    },
+    {
+      "chain": "intermarche",
+      "name": "Intermarché",
+      "country": "FR",
+      "app": {
+        "name": "Intermarché",
+        "android": "fr.stime.mcommerce",
+        "ios": "605305737",
+        "universalLink": "https://www.intermarche.com/accueil",
+        "storeFallback": {
+          "android": "market://details?id=fr.stime.mcommerce",
+          "ios": "itms-apps://apps.apple.com/app/id605305737"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.intermarche.com",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=605305737&country=fr",
+        "https://play.google.com/store/apps/details?id=fr.stime.mcommerce&hl=en&gl=FR",
+        "https://app-site-association.cdn-apple.com/a/v1/www.intermarche.com",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.intermarche.com&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Les Mousquetaires (STIME). /accueil is the home page and is claimed."
+    },
+    {
+      "chain": "auchan",
+      "name": "Auchan",
+      "country": "FR",
+      "app": {
+        "name": "Auchan",
+        "android": "com.auchan.android",
+        "ios": "393068659",
+        "universalLink": "https://www.auchan.fr/",
+        "storeFallback": {
+          "android": "market://details?id=com.auchan.android",
+          "ios": "itms-apps://apps.apple.com/app/id393068659"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.auchan.fr",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=393068659&country=fr",
+        "https://play.google.com/store/apps/details?id=com.auchan.android&hl=en&gl=FR",
+        "https://app-site-association.cdn-apple.com/a/v1/www.auchan.fr",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.auchan.fr&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Auchan France app; Auchan PL and Alcampo ES are different apps. The AASA claims \"*\" after a list of exclusions."
+    },
+    {
+      "chain": "aldi-nord",
+      "name": "ALDI",
+      "country": "FR",
+      "app": {
+        "name": "ALDI",
+        "android": "fr.aldi.android",
+        "ios": "579350544",
+        "universalLink": "https://www.aldi.fr/app-only/dashboard.html",
+        "storeFallback": {
+          "android": "market://details?id=fr.aldi.android",
+          "ios": "itms-apps://apps.apple.com/app/id579350544"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.aldi.fr",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=579350544&country=fr",
+        "https://play.google.com/store/apps/details?id=fr.aldi.android&hl=en&gl=FR",
+        "https://app-site-association.cdn-apple.com/a/v1/www.aldi.fr",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.aldi.fr&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "ALDI France belongs to ALDI Nord (seller ALDI Einkauf), not ALDI SÜD."
+    },
+    {
+      "chain": "monoprix",
+      "name": "Monoprix",
+      "country": "FR",
+      "app": {
+        "name": "Monoprix",
+        "android": "snapp.snappfid.monoprix",
+        "ios": "480953369",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=snapp.snappfid.monoprix",
+          "ios": "itms-apps://apps.apple.com/app/id480953369"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.monoprix.fr",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=480953369&country=fr",
+        "https://play.google.com/store/apps/details?id=snapp.snappfid.monoprix&hl=en&gl=FR",
+        "https://app-site-association.cdn-apple.com/a/v1/www.monoprix.fr",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.monoprix.fr&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "M' Monoprix (loyalty). Alternative: Monoprix.fr Courses (fr.monoprix.ocommerce). No universal link: Apple's CDN has no applinks for www.monoprix.fr and no asset links."
+    },
+    {
+      "chain": "super-u",
+      "name": "Super U",
+      "country": "FR",
+      "app": {
+        "name": "Courses U",
+        "android": "com.coursesu.app",
+        "ios": "557548411",
+        "universalLink": "https://www.coursesu.com/",
+        "storeFallback": {
+          "android": "market://details?id=com.coursesu.app",
+          "ios": "itms-apps://apps.apple.com/app/id557548411"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.coursesu.com",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=557548411&country=fr",
+        "https://play.google.com/store/apps/details?id=com.coursesu.app&hl=en&gl=FR",
+        "https://app-site-association.cdn-apple.com/a/v1/www.coursesu.com",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.coursesu.com&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Courses U (shopping and lists, Coopérative U). Alternative: Mon Magasin U loyalty app (fr.magasinsu.app, iOS 479847099), whose domain claims only /redirection/*. coursesu.com claims \"/*\"."
+    },
+    {
+      "chain": "albert-heijn",
+      "name": "Albert Heijn",
+      "country": "NL",
+      "app": {
+        "name": "Albert Heijn",
+        "android": "com.icemobile.albertheijn",
+        "ios": "327535329",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=com.icemobile.albertheijn",
+          "ios": "itms-apps://apps.apple.com/app/id327535329"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.ah.nl",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=327535329&country=nl",
+        "https://play.google.com/store/apps/details?id=com.icemobile.albertheijn&hl=en&gl=NL",
+        "https://app-site-association.cdn-apple.com/a/v1/www.ah.nl",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.ah.nl&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Appie app. No universal link chosen: the AASA claims about 150 section paths (bonus, favorieten, allerhande) but no home path."
+    },
+    {
+      "chain": "jumbo",
+      "name": "Jumbo",
+      "country": "NL",
+      "app": {
+        "name": "Jumbo",
+        "android": "com.icemobile.jumboclient",
+        "ios": "936150402",
+        "universalLink": "https://www.jumbo.com/lijstjes",
+        "storeFallback": {
+          "android": "market://details?id=com.icemobile.jumboclient",
+          "ios": "itms-apps://apps.apple.com/app/id936150402"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.jumbo.com",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=936150402&country=nl",
+        "https://play.google.com/store/apps/details?id=com.icemobile.jumboclient&hl=en&gl=NL",
+        "https://app-site-association.cdn-apple.com/a/v1/www.jumbo.com",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.jumbo.com&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "No home path in the AASA; /lijstjes* (lists) is claimed and opens the lists section."
+    },
+    {
+      "chain": "lidl",
+      "name": "Lidl",
+      "country": "NL",
+      "app": {
+        "name": "Lidl Plus",
+        "android": "com.lidl.eci.lidlplus",
+        "ios": "1238611143",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=com.lidl.eci.lidlplus",
+          "ios": "itms-apps://apps.apple.com/app/id1238611143"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.lidl.nl",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1238611143&country=nl",
+        "https://play.google.com/store/apps/details?id=com.lidl.eci.lidlplus&hl=en&gl=NL",
+        "https://app-site-association.cdn-apple.com/a/v1/www.lidl.nl",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.lidl.nl&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Same Lidl Plus app as DE. No home path claimed."
+    },
+    {
+      "chain": "aldi-nord",
+      "name": "ALDI",
+      "country": "NL",
+      "app": {
+        "name": "ALDI",
+        "android": "nl.aldi.android",
+        "ios": "587821440",
+        "universalLink": "https://www.aldi.nl/app-only/dashboard.html",
+        "storeFallback": {
+          "android": "market://details?id=nl.aldi.android",
+          "ios": "itms-apps://apps.apple.com/app/id587821440"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.aldi.nl",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=587821440&country=nl",
+        "https://play.google.com/store/apps/details?id=nl.aldi.android&hl=en&gl=NL",
+        "https://app-site-association.cdn-apple.com/a/v1/www.aldi.nl",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.aldi.nl&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "ALDI Nederland, ALDI Nord group. Alternative: ALDI voor jou (com.aldinetherlands.aldivoorjou.android)."
+    },
+    {
+      "chain": "plus-nl",
+      "name": "PLUS",
+      "country": "NL",
+      "app": {
+        "name": "PLUS",
+        "android": "com.mobgen.plus",
+        "ios": "1078649625",
+        "universalLink": "https://www.plus.nl/",
+        "storeFallback": {
+          "android": "market://details?id=com.mobgen.plus",
+          "ios": "itms-apps://apps.apple.com/app/id1078649625"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.plus.nl",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1078649625&country=nl",
+        "https://play.google.com/store/apps/details?id=com.mobgen.plus&hl=en&gl=NL",
+        "https://app-site-association.cdn-apple.com/a/v1/www.plus.nl",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.plus.nl&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "The AASA claims \"/\"."
+    },
+    {
+      "chain": "dirk",
+      "name": "Dirk",
+      "country": "NL",
+      "app": {
+        "name": "Dirk",
+        "android": "nl.dirk.app",
+        "ios": "6736762932",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=nl.dirk.app",
+          "ios": "itms-apps://apps.apple.com/app/id6736762932"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.dirk.nl",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=6736762932&country=nl",
+        "https://play.google.com/store/apps/details?id=nl.dirk.app&hl=en&gl=NL",
+        "https://app-site-association.cdn-apple.com/a/v1/www.dirk.nl",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.dirk.nl&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Asset links list nl.dirk.app on www.dirk.nl, but its AASA on Apple's CDN declares only an App Clip (appclips), no applinks, so no universal link."
+    },
+    {
+      "chain": "kruidvat",
+      "name": "Kruidvat",
+      "country": "NL",
+      "app": {
+        "name": "Kruidvat",
+        "android": "nl.kruidvat.voordeelkaart",
+        "ios": "531631058",
+        "universalLink": "https://www.kruidvat.nl/kruidvatapp",
+        "storeFallback": {
+          "android": "market://details?id=nl.kruidvat.voordeelkaart",
+          "ios": "itms-apps://apps.apple.com/app/id531631058"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.kruidvat.nl",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=531631058&country=nl",
+        "https://play.google.com/store/apps/details?id=nl.kruidvat.voordeelkaart&hl=en&gl=NL",
+        "https://app-site-association.cdn-apple.com/a/v1/www.kruidvat.nl",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.kruidvat.nl&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "No home path; /kruidvatapp is the app's own landing path and is claimed. Which screen it opens is unverified."
+    },
+    {
+      "chain": "lidl",
+      "name": "Lidl",
+      "country": "PL",
+      "app": {
+        "name": "Lidl Plus",
+        "android": "com.lidl.eci.lidlplus",
+        "ios": "1238611143",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=com.lidl.eci.lidlplus",
+          "ios": "itms-apps://apps.apple.com/app/id1238611143"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.lidl.pl",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1238611143&country=pl",
+        "https://play.google.com/store/apps/details?id=com.lidl.eci.lidlplus&hl=en&gl=PL",
+        "https://app-site-association.cdn-apple.com/a/v1/www.lidl.pl",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.lidl.pl&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Same Lidl Plus app as DE. No home path claimed."
+    },
+    {
+      "chain": "biedronka",
+      "name": "Biedronka",
+      "country": "PL",
+      "app": {
+        "name": "Biedronka",
+        "android": "pl.jmpolska.clos0.mojabiedronka",
+        "ios": "1586839342",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=pl.jmpolska.clos0.mojabiedronka",
+          "ios": "itms-apps://apps.apple.com/app/id1586839342"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.biedronka.pl",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1586839342&country=pl",
+        "https://play.google.com/store/apps/details?id=pl.jmpolska.clos0.mojabiedronka&hl=en&gl=PL",
+        "https://app-site-association.cdn-apple.com/a/v1/www.biedronka.pl",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.biedronka.pl&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Jeronimo Martins Polska. No universal link: no AASA on www.biedronka.pl."
+    },
+    {
+      "chain": "zabka",
+      "name": "Żabka",
+      "country": "PL",
+      "app": {
+        "name": "Żappka",
+        "android": "pl.zabka.apb2c",
+        "ios": "1444267322",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=pl.zabka.apb2c",
+          "ios": "itms-apps://apps.apple.com/app/id1444267322"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.zabka.pl",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1444267322&country=pl",
+        "https://play.google.com/store/apps/details?id=pl.zabka.apb2c&hl=en&gl=PL",
+        "https://app-site-association.cdn-apple.com/a/v1/www.zabka.pl",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.zabka.pl&relation=delegate_permission/common.handle_all_urls",
+        "https://www.zabka.pl/"
+      ],
+      "note": "Żappka; zabka.pl links pl.zabka.apb2c. Alternative: Żabka Jush delivery (pl.jush.app). No universal link: no AASA on www.zabka.pl."
+    },
+    {
+      "chain": "kaufland",
+      "name": "Kaufland",
+      "country": "PL",
+      "app": {
+        "name": "Kaufland",
+        "android": "com.kaufland.Kaufland",
+        "ios": "1087780386",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=com.kaufland.Kaufland",
+          "ios": "itms-apps://apps.apple.com/app/id1087780386"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.kaufland.pl",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1087780386&country=pl",
+        "https://play.google.com/store/apps/details?id=com.kaufland.Kaufland&hl=en&gl=PL",
+        "https://app-site-association.cdn-apple.com/a/v1/www.kaufland.pl",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.kaufland.pl&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Same Kaufland app as DE (www.kaufland.pl serves the same AASA and asset links). No plain home path claimed."
+    },
+    {
+      "chain": "carrefour",
+      "name": "Carrefour",
+      "country": "PL",
+      "app": {
+        "name": "Carrefour",
+        "android": "pl.carrefour.carrefourmobile",
+        "ios": "820980454",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=pl.carrefour.carrefourmobile",
+          "ios": "itms-apps://apps.apple.com/app/id820980454"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.carrefour.pl",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=820980454&country=pl",
+        "https://play.google.com/store/apps/details?id=pl.carrefour.carrefourmobile&hl=en&gl=PL",
+        "https://app-site-association.cdn-apple.com/a/v1/www.carrefour.pl",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.carrefour.pl&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Mój Carrefour (Carrefour Polska), not the French app. No universal link: no AASA on www.carrefour.pl."
+    },
+    {
+      "chain": "auchan",
+      "name": "Auchan",
+      "country": "PL",
+      "app": {
+        "name": "Auchan Zakupy Online",
+        "android": "com.auchan.mobile.android",
+        "ios": "6752720718",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=com.auchan.mobile.android",
+          "ios": "itms-apps://apps.apple.com/app/id6752720718"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.auchan.pl",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=6752720718&country=pl",
+        "https://play.google.com/store/apps/details?id=com.auchan.mobile.android&hl=en&gl=PL",
+        "https://app-site-association.cdn-apple.com/a/v1/www.auchan.pl",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.auchan.pl&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Auchan Polska online shop app. Alternative: \"Auchan Retail Shopping\" (iOS 1450287430, the same iOS app is \"Club Alcampo\" in ES; likely Android com.auchan.smi). No universal link: Apple's CDN has no applinks for www.auchan.pl."
+    },
+    {
+      "chain": "dino",
+      "name": "Dino",
+      "country": "PL",
+      "app": null,
+      "status": "no-app",
+      "verified": "2026-11-18",
+      "web": "www.marketdino.pl",
+      "sources": [
+        "https://itunes.apple.com/search?term=dino&country=pl&entity=software&limit=10",
+        "https://play.google.com/store/search?q=dino%20polska&c=apps&hl=en&gl=PL",
+        "https://www.marketdino.pl/"
+      ],
+      "note": "No Dino Polska app found: iTunes Search PL and Play search return none by Dino, marketdino.pl links no store, and www.marketdino.pl has no AASA or asset links (2026-11-18)."
+    },
+    {
+      "chain": "rossmann",
+      "name": "Rossmann",
+      "country": "PL",
+      "app": {
+        "name": "Rossmann PL",
+        "android": "pl.com.rossmann.centauros",
+        "ios": "791525539",
+        "universalLink": "https://www.rossmann.pl/",
+        "storeFallback": {
+          "android": "market://details?id=pl.com.rossmann.centauros",
+          "ios": "itms-apps://apps.apple.com/app/id791525539"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.rossmann.pl",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=791525539&country=pl",
+        "https://play.google.com/store/apps/details?id=pl.com.rossmann.centauros&hl=en&gl=PL",
+        "https://app-site-association.cdn-apple.com/a/v1/www.rossmann.pl",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.rossmann.pl&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Rossmann Poland's own app, not the German one. www.rossmann.pl claims \"/\" and lists the package in asset links."
+    },
+    {
+      "chain": "esselunga",
+      "name": "Esselunga",
+      "country": "IT",
+      "app": {
+        "name": "Esselunga",
+        "android": "it.esselunga.mobile",
+        "ios": "472618543",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=it.esselunga.mobile",
+          "ios": "itms-apps://apps.apple.com/app/id472618543"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.esselunga.it",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=472618543&country=it",
+        "https://play.google.com/store/apps/details?id=it.esselunga.mobile&hl=en&gl=IT",
+        "https://app-site-association.cdn-apple.com/a/v1/www.esselunga.it",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.esselunga.it&relation=delegate_permission/common.handle_all_urls",
+        "https://www.esselunga.it/"
+      ],
+      "note": "esselunga.it links both this app and Esselunga OnLine (it.esselunga.mobile.ecommerce, iOS 1276117735). No universal link: no AASA on www.esselunga.it."
+    },
+    {
+      "chain": "conad",
+      "name": "Conad",
+      "country": "IT",
+      "app": {
+        "name": "HeyConad",
+        "android": "it.conad.mobileapp",
+        "ios": "1462756725",
+        "universalLink": "https://www.conad.it/app-internal/home_page",
+        "storeFallback": {
+          "android": "market://details?id=it.conad.mobileapp",
+          "ios": "itms-apps://apps.apple.com/app/id1462756725"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.conad.it",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1462756725&country=it",
+        "https://play.google.com/store/apps/details?id=it.conad.mobileapp&hl=en&gl=IT",
+        "https://app-site-association.cdn-apple.com/a/v1/www.conad.it",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.conad.it&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "/app-internal/home_page is claimed and names the app home."
+    },
+    {
+      "chain": "coop-it",
+      "name": "Coop",
+      "country": "IT",
+      "app": {
+        "name": "Coop",
+        "android": "com.coopitalia.iCoopNew",
+        "ios": "1514101765",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=com.coopitalia.iCoopNew",
+          "ios": "itms-apps://apps.apple.com/app/id1514101765"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.e-coop.it",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1514101765&country=it",
+        "https://play.google.com/store/apps/details?id=com.coopitalia.iCoopNew&hl=en&gl=IT",
+        "https://app-site-association.cdn-apple.com/a/v1/www.e-coop.it",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.e-coop.it&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Coop Italia, unrelated to Coop Switzerland. Regional cooperatives (Unicoop Firenze) have more apps. No universal link: no AASA on www.e-coop.it."
+    },
+    {
+      "chain": "lidl",
+      "name": "Lidl",
+      "country": "IT",
+      "app": {
+        "name": "Lidl Plus",
+        "android": "com.lidl.eci.lidlplus",
+        "ios": "1238611143",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=com.lidl.eci.lidlplus",
+          "ios": "itms-apps://apps.apple.com/app/id1238611143"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.lidl.it",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1238611143&country=it",
+        "https://play.google.com/store/apps/details?id=com.lidl.eci.lidlplus&hl=en&gl=IT",
+        "https://app-site-association.cdn-apple.com/a/v1/www.lidl.it",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.lidl.it&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Same Lidl Plus app as DE. www.lidl.it claims only /prm/* and has no asset links."
+    },
+    {
+      "chain": "carrefour",
+      "name": "Carrefour",
+      "country": "IT",
+      "app": {
+        "name": "Carrefour Italia",
+        "android": "it.carrefour.mycarrefour",
+        "ios": "1496016087",
+        "universalLink": "https://www.carrefour.it/app-carrefour.html",
+        "storeFallback": {
+          "android": "market://details?id=it.carrefour.mycarrefour",
+          "ios": "itms-apps://apps.apple.com/app/id1496016087"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.carrefour.it",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1496016087&country=it",
+        "https://play.google.com/store/apps/details?id=it.carrefour.mycarrefour&hl=en&gl=IT",
+        "https://app-site-association.cdn-apple.com/a/v1/www.carrefour.it",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.carrefour.it&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Carrefour Italia (GS SpA), its own app. No home path; /app-carrefour.html is the app landing page and is claimed. Which screen it opens is unverified."
+    },
+    {
+      "chain": "eurospin",
+      "name": "Eurospin",
+      "country": "IT",
+      "app": {
+        "name": "Eurospin",
+        "android": "it.eurospin.mobileapp",
+        "ios": "1633038428",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=it.eurospin.mobileapp",
+          "ios": "itms-apps://apps.apple.com/app/id1633038428"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.eurospin.it",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1633038428&country=it",
+        "https://play.google.com/store/apps/details?id=it.eurospin.mobileapp&hl=en&gl=IT",
+        "https://app-site-association.cdn-apple.com/a/v1/www.eurospin.it",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.eurospin.it&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Eurospin Family. No universal link: the AASA Apple's CDN serves for www.eurospin.it is not valid JSON (trailing comma)."
+    },
+    {
+      "chain": "aldi-sued",
+      "name": "ALDI",
+      "country": "IT",
+      "app": {
+        "name": "ALDI Italia",
+        "android": "de.apptiv.business.android.aldi_it",
+        "ios": "1259906862",
+        "universalLink": "https://www.aldi.it/homescreen",
+        "storeFallback": {
+          "android": "market://details?id=de.apptiv.business.android.aldi_it",
+          "ios": "itms-apps://apps.apple.com/app/id1259906862"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.aldi.it",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1259906862&country=it",
+        "https://play.google.com/store/apps/details?id=de.apptiv.business.android.aldi_it&hl=en&gl=IT",
+        "https://app-site-association.cdn-apple.com/a/v1/www.aldi.it",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.aldi.it&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "ALDI Italia is ALDI SÜD (bundle com.aldisued.AldiIT), its own app."
+    },
+    {
+      "chain": "mercadona",
+      "name": "Mercadona",
+      "country": "ES",
+      "app": {
+        "name": "Mercadona",
+        "android": "es.mercadona.tienda",
+        "ios": "1368037685",
+        "universalLink": "https://tienda.mercadona.es/",
+        "storeFallback": {
+          "android": "market://details?id=es.mercadona.tienda",
+          "ios": "itms-apps://apps.apple.com/app/id1368037685"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "tienda.mercadona.es",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1368037685&country=es",
+        "https://play.google.com/store/apps/details?id=es.mercadona.tienda&hl=en&gl=ES",
+        "https://app-site-association.cdn-apple.com/a/v1/tienda.mercadona.es",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://tienda.mercadona.es&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Mercadona has one app, the online shop. tienda.mercadona.es claims \"*\" minus legal pages."
+    },
+    {
+      "chain": "carrefour",
+      "name": "Carrefour",
+      "country": "ES",
+      "app": {
+        "name": "Mi Carrefour",
+        "android": "com.munrodev.crfmobile",
+        "ios": "605788142",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=com.munrodev.crfmobile",
+          "ios": "itms-apps://apps.apple.com/app/id605788142"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.carrefour.es",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=605788142&country=es",
+        "https://play.google.com/store/apps/details?id=com.munrodev.crfmobile&hl=en&gl=ES",
+        "https://app-site-association.cdn-apple.com/a/v1/www.carrefour.es",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.carrefour.es&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Mi Carrefour (Centros Comerciales Carrefour), its own app; iOS bundle es.carrefour.crfmobile. No universal link: the AASA claims only /supermercado/* and a download path."
+    },
+    {
+      "chain": "lidl",
+      "name": "Lidl",
+      "country": "ES",
+      "app": {
+        "name": "Lidl Plus",
+        "android": "com.lidl.eci.lidlplus",
+        "ios": "1238611143",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=com.lidl.eci.lidlplus",
+          "ios": "itms-apps://apps.apple.com/app/id1238611143"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.lidl.es",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1238611143&country=es",
+        "https://play.google.com/store/apps/details?id=com.lidl.eci.lidlplus&hl=en&gl=ES",
+        "https://app-site-association.cdn-apple.com/a/v1/www.lidl.es",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.lidl.es&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Same Lidl Plus app as DE. No home path claimed."
+    },
+    {
+      "chain": "dia",
+      "name": "DIA",
+      "country": "ES",
+      "app": {
+        "name": "Dia",
+        "android": "es.dia",
+        "ios": "660175630",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=es.dia",
+          "ios": "itms-apps://apps.apple.com/app/id660175630"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.dia.es",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=660175630&country=es",
+        "https://play.google.com/store/apps/details?id=es.dia&hl=en&gl=ES",
+        "https://app-site-association.cdn-apple.com/a/v1/www.dia.es",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.dia.es&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "No universal link: the AASA claims product, category, order and search paths, no home path."
+    },
+    {
+      "chain": "eroski",
+      "name": "Eroski",
+      "country": "ES",
+      "app": {
+        "name": "EROSKI",
+        "android": "com.tempos21.eroskiclub.pro",
+        "ios": "1071407778",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=com.tempos21.eroskiclub.pro",
+          "ios": "itms-apps://apps.apple.com/app/id1071407778"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.eroski.es",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1071407778&country=es",
+        "https://play.google.com/store/apps/details?id=com.tempos21.eroskiclub.pro&hl=en&gl=ES",
+        "https://app-site-association.cdn-apple.com/a/v1/www.eroski.es",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.eroski.es&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "No universal link: no AASA on www.eroski.es."
+    },
+    {
+      "chain": "auchan",
+      "name": "Alcampo",
+      "country": "ES",
+      "app": {
+        "name": "Alcampo",
+        "android": "com.osp.alcampo",
+        "ios": "1639513224",
+        "universalLink": null,
+        "storeFallback": {
+          "android": "market://details?id=com.osp.alcampo",
+          "ios": "itms-apps://apps.apple.com/app/id1639513224"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.compraonline.alcampo.es",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1639513224&country=es",
+        "https://play.google.com/store/apps/details?id=com.osp.alcampo&hl=en&gl=ES",
+        "https://app-site-association.cdn-apple.com/a/v1/www.compraonline.alcampo.es",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.compraonline.alcampo.es&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Alcampo is Auchan in Spain. Alcampo Supermercado Online; the pair is confirmed by AASA and asset links on www.compraonline.alcampo.es. Alternative: Club Alcampo loyalty (iOS 1450287430, same iOS app as \"Auchan Retail Shopping\" in PL). No home path claimed."
+    },
+    {
+      "chain": "aldi-nord",
+      "name": "ALDI",
+      "country": "ES",
+      "app": {
+        "name": "ALDI",
+        "android": "es.aldi.android",
+        "ios": "669956906",
+        "universalLink": "https://www.aldi.es/app-only/dashboard.html",
+        "storeFallback": {
+          "android": "market://details?id=es.aldi.android",
+          "ios": "itms-apps://apps.apple.com/app/id669956906"
+        }
+      },
+      "status": "verified",
+      "verified": "2026-11-18",
+      "web": "www.aldi.es",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=669956906&country=es",
+        "https://play.google.com/store/apps/details?id=es.aldi.android&hl=en&gl=ES",
+        "https://app-site-association.cdn-apple.com/a/v1/www.aldi.es",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.aldi.es&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "ALDI Spain belongs to ALDI Nord (seller ALDI Einkauf), not ALDI SÜD. Alternative: Con ALDI (com.aldi.conaldi.android, ALDI Central de Compras)."
+    }
+  ]
+}

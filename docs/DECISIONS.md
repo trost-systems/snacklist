@@ -15858,3 +15858,31 @@ Peter picked NR1 (web form now, in-app entry later behind a flag). Calls made wi
   flags, `app_switches` and PostHog are untouched. The texts sit on #452 (eefa6324), which changed
   the same §9 paragraph; Legal checked the anchors against #452's merge result. The date lines
   stay 17 November 2026, #452's, which is today; if the merge slips, only they change.
+
+## Job 314: store app prototypes, rounds OS and SS (2026-11-18)
+
+Peter (t1059u): a prototype round for "Open store app" (DL1), plus how users pick stores so they can be recognised,
+in a way that scales across countries. Prototype only; nothing in the app changed. Sandbox: `docs/design/store-apps/`.
+
+1. **OS pick: OS1, a key in the store's header, with OS3's app card on the store's screen as its labelled twin.**
+   Runner-up: OS4, a menu from a visible key. The key costs no height and is one tap away; it shows only on stores
+   whose chain has an app. At 310 % it cuts all five store names (today three), so OS-Q4's default shows the
+   count as a number only above 200 %, which brings it to two (measured).
+2. **No hold.** OS4 was asked for as a long-press menu; job 171 (Peter) made a header hold do nothing, so it is
+   a visible key instead.
+3. **iOS opens the App Store page for 37 of the 58 registry entries.** Their domains claim no path that opens the
+   app's start screen (Lidl Plus, Mein dm, EDEKA and others), and DL1 allows no custom schemes, so the
+   fallback page, with its "Open" button, is the honest outcome. The prototype shows it per chain.
+4. **SS pick: SS2, type as today, matches offered, "Is this Lidl?" once**, with SS5's rules: ask existing stores
+   only where the chain has an app, and take the country from the phone's region per store, with no household
+   setting. Runner-up: SS5, lazy. SS3 (nearby) would send the location to a map service; that is a note for Legal.
+5. **Registry: chain and country (ISO 3166-1 alpha-2) as the key, the ids per country, in `retailers.json`.**
+   It is loaded by the deploy into a public, read-only `retailers` table, cached by the app, and checked by
+   `verify-registry.mjs` against Apple, Google, the AASA files and Digital Asset Links. It holds 58 verified
+   entries in DE, AT, CH, FR, NL, PL, IT and ES, plus Dino PL (no app found). No id is guessed. DeutschlandCard
+   and PAYBACK are left out.
+6. **Android without `<queries>` per package (SS-Q5).** Android's package-visibility docs say `startActivity`
+   needs no visibility; catch `ActivityNotFoundException`, then open the Play page. A new country then needs
+   no release. This differs from DL1's brief, so it is an open question, to be confirmed on a device.
+7. **Not merged.** Draft PR only, as for every prototype round. The preview stacks onto job 293's deployment
+   byte for byte (`build.sh --base`).
