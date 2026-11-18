@@ -165,9 +165,16 @@ scripts/push-pr.sh >/dev/null
 [[ ! -e $tmp/pr/draft ]] || fail "push-pr.sh left the draft PR a draft"
 expect_eq "push-pr.sh marks the draft ready after its push" "$(cat "$tmp/pr/ready-at")" \
   "$(git --git-dir="$tmp/origin.git" rev-parse refs/heads/k2)"
+before="$(git --git-dir="$tmp/origin.git" rev-parse refs/heads/k2)"
+scripts/push-pr.sh >/dev/null
+expect_eq "push-pr.sh with nothing to push pushes nothing" "$(git --git-dir="$tmp/origin.git" rev-parse refs/heads/k2)" "$before"
 touch "$tmp/pr/draft"
 scripts/push-pr.sh >/dev/null
-[[ ! -e $tmp/pr/draft ]] || fail "push-pr.sh with nothing to push left the draft PR a draft"
+after="$(git --git-dir="$tmp/origin.git" rev-parse refs/heads/k2)"
+[[ $after != "$before" ]] || fail "a draft whose head had no CI run was readied without a new push"
+expect_eq "the re-pushed draft head keeps its message" "$(git --git-dir="$tmp/origin.git" log -1 --format=%B "$after")" \
+  "$(git --git-dir="$tmp/origin.git" log -1 --format=%B "$before")"
+expect_eq "the draft is readied after that push" "$(cat "$tmp/pr/ready-at")" "$after"
 
 # Job 39: the changelog section. p1 above had none and only non-app files: "none" was added.
 expect_eq "push-pr.sh adds none once, also after a description edit" "$(body_of p1 | grep -c '^## Changelog$')" 1

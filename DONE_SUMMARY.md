@@ -1691,3 +1691,20 @@ and Legal's hash GO before it merges.
 - OC3a: the `mcp.spec.ts:27` flake was already fixed at its root by #440 on 14 November: 12 hangs
   before it, 0 failures in 325 CI runs since. No code change.
 - Details and numbers: [docs/done/307.md](docs/done/307.md).
+
+## Job 307 review 0: merged against a lead override, follow-ups (draft PR, not merged)
+
+- #545 (`57b79924`) merged at 19:27 CET on 18 November against the LEAD OVERRIDE of 17:15. The
+  override said to wait for job 303 (still running), then merge 307 → 308 → 309. The build never
+  re-read its brief before landing. 308 had already landed, so the order broke too. It's not
+  reverted: that is the lead's call, in `~/groceries-ops/NEEDS_LEAD.md` with what #545 changes
+  for 303's pushes (push-checks, about 40 s per push; `PUSH_PR_SKIP_CHECKS=1` skips it).
+- The subject on main says "mcp.spec flake fix", but #545 changed nothing for that test. The
+  flake ("MCP over OAuth 2.1: discovery, registration, consent with PKCE, then tools change the
+  list live", in `e2e/tests/mcp.spec.ts`) was already fixed by #440 on 14 November.
+- Follow-up PR, a draft, held until the lead says so and 303 is done:
+  - push-pr.sh no longer marks a draft ready when its head only had the draft's skipped opening
+    run. It pushes the same commit again with a new date, so CI runs on it, then marks it ready.
+    There is a landing-test case for this; with main's push-pr.sh it fails.
+  - `docs/CI.md` now says the flutter check stops at its first failure, and that the checks hold
+    the merge lock about 40 s longer on the land path.

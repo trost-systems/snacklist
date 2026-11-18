@@ -396,7 +396,9 @@ intervals while scrolling a 200-item list (DECISIONS job 28, 7).
    draft marked ready by hand without a push therefore has no `ci-ok` on its
    head, only the skipped one of the opening run. merge-pr.sh stops at once on
    a skipped `ci-ok` and says so: make a new commit (`git commit --amend
-   --no-edit`) and push it with push-pr.sh. It refuses `main`.
+   --no-edit`) and push it with push-pr.sh. push-pr.sh does that itself when
+   the PR is still a draft and its head is already pushed: it pushes the same
+   commit again with a new date, then marks it ready. It refuses `main`.
 3. `scripts/merge-pr.sh --wait <n>` waits for `ci-ok` on that commit and
    rebase-merges it. No second squash, no second push, no second CI run.
    `--dry-run` runs every check and stops before the merge. `--wait` gives
@@ -451,6 +453,13 @@ On hz a clean run takes 36 s for a branch without app changes and about 46 s
 with them; CI reports the same failures only after a run of about 20 minutes.
 `PUSH_PR_SKIP_CHECKS=1 scripts/push-pr.sh` pushes without them, for a
 machine where one cannot run (no Flutter of CI's version, say).
+
+The flutter check stops at its first failure, as the gate does: lockfile,
+then l10n, then format, then analyze. A branch with a format slip and an
+analyze finding therefore takes two rounds. On the land path
+(`merge-lock bash -c 'scripts/push-pr.sh && scripts/merge-pr.sh --wait <n>'`)
+the checks run inside the merge lock and hold it about 40 s longer, which is
+small next to the CI wait.
 
 The commit message is the PR as GitHub shows it: the title with ` (#n)` as
 the subject and the PR description as the body. Messages of the branch's
