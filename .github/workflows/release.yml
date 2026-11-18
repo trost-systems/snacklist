@@ -73,7 +73,7 @@ jobs:
       github.event_name != 'workflow_run'
       || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
           && github.event.workflow_run.head_repository.full_name == github.repository)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     environment: release
     permissions:
@@ -290,7 +290,7 @@ jobs:
   android:
     needs: plan
     if: needs.plan.outputs.ship == 'true' && needs.plan.outputs.android == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     environment: release
     permissions:
@@ -392,7 +392,7 @@ jobs:
       !cancelled() && needs.plan.outputs.ship == 'true' && needs.plan.outputs.upload == 'true'
       && !contains(needs.*.result, 'failure')
       && (needs.ios.result == 'success' || needs.android.outputs.uploaded == 'true')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions: {}
     steps:
@@ -416,7 +416,7 @@ jobs:
     name: Web production
     needs: [plan, uploaded]
     if: ${{ !cancelled() && needs.uploaded.result == 'success' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
       contents: write
@@ -443,7 +443,7 @@ jobs:
   report:
     needs: [plan, ios, android, uploaded, web]
     if: always() && needs.plan.result != 'skipped'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
       contents: read

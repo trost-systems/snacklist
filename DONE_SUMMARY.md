@@ -1576,3 +1576,11 @@ details, which gives the same item. The list's top bar (switcher, Anpassen, sync
 the sheet is open, and the list behind it takes that room. It fades back with the close. Flag off is
 unchanged. Details, tests and evidence: `docs/done/288.md`, screenshots `docs/screenshots/288/`.
 TestFlight: the next green main build after the merge.
+
+## Job 302: main's CI green again, runner images pinned (2026-11-18)
+
+Main's green commit failed lint, flutter (8 goldens) and e2e (4) on a rerun because GitHub moved
+`ubuntu-latest` to ubuntu-26.04 overnight. Every Linux job now runs on `ubuntu-24.04`, a new lint
+rule (`runner-pinned`) keeps `-latest` labels out, and `resume()` in `scripts/e2e-stress.sh` also
+disables SC2329 for the newer shellcheck. The Release run's android failure was Maven Central's 429
+rate limit, transient. Details: [docs/done/302.md](docs/done/302.md).

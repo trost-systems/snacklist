@@ -22,7 +22,7 @@ permissions:
 
 jobs:
   delete:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     # The environment is where this job's secrets can be limited to main; a scheduled run is no
     # deployment, so it leaves no deployment record.

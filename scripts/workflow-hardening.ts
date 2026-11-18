@@ -1,4 +1,4 @@
-// Four rules for .github/workflows/*.yml and .github/actions/*/action.yml (job 220):
+// Five rules for .github/workflows/*.yml and .github/actions/*/action.yml (job 220):
 // - action-pinned: a `uses:` that is not a local path names a full commit SHA, a `docker://` image
 //   its sha256 digest. A tag or branch can be moved to other code, which then runs with the job's
 //   token and secrets.
@@ -12,10 +12,14 @@
 // - no-cache-in-trusted-job: a job that reads a secret, is in an environment or holds a write
 //   permission restores no Actions cache. Any run on main can write an entry, which such a job
 //   would unpack and run next to its secrets and its token.
+// - runner-pinned: `runs-on:` names a numbered image (ubuntu-24.04), not a `-latest` label. GitHub
+//   moves `-latest` to a new image without a commit: ubuntu-latest became 26.04 on 2026-11-18, and
+//   main's own commit then failed lint (a newer shellcheck), goldens and WebKit e2e (job 302).
 // `secrets.GITHUB_TOKEN` is the run's own token and not a secret here. Every exception is an entry
 // (file, job, rule, reason, and what it covers: `secrets` for the secret rules, "*" for the whole
-// context, `actions` for the other two) in scripts/workflow-hardening.allow.json; an entry or a
-// listed secret or action that covers no finding any more is stale.
+// context, `actions` for the others: the action, or the label for runner-pinned) in
+// scripts/workflow-hardening.allow.json; an entry or a listed secret or action that covers no
+// finding any more is stale.
 // Usage: deno run --allow-read --config scripts/deno.json scripts/workflow-hardening.ts [repo-dir]
 import { parse } from '@std/yaml';
 
@@ -25,6 +29,7 @@ const RULES = [
   'secret-in-step',
   'secret-needs-environment',
   'no-cache-in-trusted-job',
+  'runner-pinned',
 ] as const;
 const SECRET_RULES: readonly string[] = ['secret-in-step', 'secret-needs-environment'];
 type Rule = (typeof RULES)[number];
@@ -182,6 +187,19 @@ function findingsIn(file: string, doc: Record<string, unknown>, local: LocalActi
             ? `Name the image by its digest: docker://image@sha256:<64 hex>`
             : `Name the full 40-hex commit SHA, with the version as a comment: ` +
               `owner/action@<sha> # v1.2.3`),
+      });
+    }
+
+    // A runner group's name is not an image.
+    const label = job !== null && first === 'runs-on' && second !== 'group';
+    if (label && /-latest$/i.test(text.trim())) {
+      findings.push({
+        file,
+        job,
+        rule: 'runner-pinned',
+        covers: [text.trim()],
+        message: `${at}: 'runs-on: ${text}' follows an image GitHub replaces without a commit. ` +
+          `Name the image's version, as ubuntu-24.04 or macos-26, and move to a new one in a PR`,
       });
     }
 
@@ -356,9 +374,14 @@ export function check(repoDir: string): string[] {
       !allowed.some((entry) => entry.covers.some((e) => same(e, item)))
     );
     if (open.length > 0) {
+      const what = SECRET_RULES.includes(finding.rule)
+        ? 'secret'
+        : finding.rule === 'runner-pinned'
+        ? 'label (under "actions")'
+        : 'action';
       problems.push(
         `${finding.message} (${finding.rule}; an exception needs an entry in ${ALLOW_FILE} with ` +
-          `its reason and the ${SECRET_RULES.includes(finding.rule) ? 'secret' : 'action'}).`,
+          `its reason and the ${what}).`,
       );
     }
   }

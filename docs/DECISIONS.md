@@ -15202,3 +15202,25 @@ off is unchanged (every existing golden passes without an update).
 6. **`releases/flags.json` records `add-feedback-list` as `full`.** The brief says the flag is live
    for all users in PostHog. The next release draft therefore picks up job 276's held changelog items
    together with this one.
+
+## Job 302: main's CI red on a rerun, pinned runner images (2026-11-18)
+
+Main's commit 0ca5dcc9 passed CI at 00:42 UTC (run 44209959308, attempt 1) and failed lint, flutter
+and e2e (4) on the reruns at 02:43 and 02:54. Nothing in the repository changed between them. The
+job logs' "Image:" line did: attempt 1 ran on ubuntu-24.04, attempt 3 on ubuntu-26.04, because
+GitHub moved `ubuntu-latest`. Across the last 30 CI runs, lint and flutter failed on every run on
+26.04 (3 of 3). On 24.04 flutter always passed and lint failed once, on a PR's own finding. e2e (4)
+failed on 2 of the 3 runs on 26.04 (WebKit only) and on 1 run on 24.04.
+
+1. **Pin every Linux job to `ubuntu-24.04`** instead of updating the repository to 26.04 under time
+   pressure. Moving to 26.04 is its own PR: it needs the goldens regenerated on that image and
+   the WebKit failures in e2e (4) understood. Why 26.04 renders 2 to 13 px differently was not
+   investigated (a guess: a system font or library the tester picks up).
+2. **A lint rule, `runner-pinned`** (`scripts/workflow-hardening.ts`), fails a `-latest` label, so
+   an image change only happens in a commit with CI on it.
+3. **`resume()` in `scripts/e2e-stress.sh` also disables SC2329.** shellcheck 0.11 (on 26.04)
+   reports a function only a trap calls as SC2329 instead of SC2317. Checked with 0.11 and 0.9
+   over the lint gate's file set, so the move to 26.04 keeps lint green.
+4. **The Release run's android failure is not part of this.** It ran on 24.04, and Maven Central
+   answered 429 Too Many Requests for the Kotlin Gradle plugin. The store jobs restore no cache by
+   design (job 220), so a rate limit there fails the run; a rerun of the failed job is the remedy.
