@@ -886,7 +886,7 @@ export async function wheelTo(page: Page, target: Locator): Promise<void> {
   throw new Error(`could not scroll ${target} into view`);
 }
 
-/** Opens an entry of the More tab by its title ("Partner einladen", "Zugänge", "Abmelden" …). */
+/** Opens an entry of the More tab by its title ("Leute einladen", "Zugänge", "Abmelden" …). */
 export async function openMore(page: Page, entry: string): Promise<void> {
   await openTab(page, 'Mehr');
   // The tab comes back to the page it was left on; a second tap goes to its first page, More's list.
@@ -929,11 +929,11 @@ export async function shownInviteCodes(page: Page): Promise<string[]> {
 }
 
 /**
- * Makes a new invite under More, Partner einladen (Einladungen, job 22), reads its code, then returns
+ * Makes a new invite under More, Leute einladen (Einladungen, job 22), reads its code, then returns
  * to the list.
  */
 export async function createInviteCode(page: Page): Promise<string> {
-  await openMore(page, 'Partner einladen');
+  await openMore(page, 'Leute einladen');
   await expect(page).toHaveURL(/\/more\/invites$/);
   // Since job 169b W2 the page has no empty text: the button shows once the invites are read.
   await expect(page.getByRole('button', { name: 'Neue Einladung' })).toBeEnabled();

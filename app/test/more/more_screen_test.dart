@@ -93,7 +93,7 @@ void main() {
     expect(find.text('Version 1.2.3 (45)'), findsOneWidget);
   });
 
-  testWidgets('Partner einladen opens Einladungen; back returns to More', (
+  testWidgets('Leute einladen opens Einladungen; back returns to More', (
     tester,
   ) async {
     final more = await pumpMore(tester);

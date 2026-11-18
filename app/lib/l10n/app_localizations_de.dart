@@ -202,7 +202,10 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get inviteMember => 'Partner einladen';
+  String get inviteMember => 'Leute einladen';
+
+  @override
+  String get inviteScreenTitle => 'Gemeinsam einkaufen';
 
   @override
   String get signOut => 'Abmelden';
@@ -1377,7 +1380,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get onboardingCreateHint =>
-      'Eine neue Liste, zu der du danach deinen Partner einlädst.';
+      'Eine neue Liste, zu der du danach Leute einlädst.';
 
   @override
   String get onboardingJoin => 'Einladung annehmen';
@@ -1433,7 +1436,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get invitePartnerBody =>
-      'Teile den Link oder den Code mit der Person, mit der du einkaufst. Die Einladung gilt 7 Tage und für eine Person.';
+      'Teile den Link oder den Code mit den Leuten, mit denen du einkaufst. Die Einladung gilt 7 Tage und für eine Person.';
 
   @override
   String get later => 'Später';

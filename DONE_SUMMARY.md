@@ -839,7 +839,7 @@ Peter's pick from job 227's round 2 (t861u), built in Flutter behind the new Pos
 
 Follow-up to #447 (already merged) for review 0's must-fix. Under reduced motion, the scroll back to the name field threw: an assert in debug and a `LateInitializationError` on release web, and the field was never focused. `hlScrollTo` (`app/lib/design/motion.dart`) now jumps when there is no motion. The create screen and the list tabs (`list_tabs.dart`, the same bug since before) use it, and a new ast-grep rule, `scroll-animation-through-hl-scroll-to`, stops the pattern. From the review's nice-to-haves: the field now gets the cursor after an empty submit on the web at 844 px too (focus is asked for after the frame's timers), typing clears the error, and the journey checks that typing lands.
 
-- Tests: new widget tests for the create screen with animations off (no exception, one error, field focused), for typing clearing the error, and for the list tabs at 358 px with animations off. All three fail on main and pass now; 1068 list and household tests pass. The rule flags both call sites on main.
+- Tests: onboarding, more, design goldens (Flutter 3.50, six More goldens regenerated) pass; site agent test updated for the new FAQ heading. Not driven in the web build.
 - Web build (`journeys/new-household-empty-name.mjs`, now with `--reduced-motion` and a typing check): 24 of 24 drives pass on the fix (de, en, 844 and 560 px, with and without reduced motion, three each; one run failed at the sign-in screen and passed on four reruns). On main at 844 px typing reaches nothing; at 560 px with reduced motion the error stays after typing.
 
 ## Job 219: verify.sh says what happened, two e2e flakes fixed at their cause, recipes (2026-11-14)
@@ -1596,3 +1596,12 @@ cache entry that this PR's first version wrote, now fixed and deleted. The ios j
 35.2 min to 16.0 to 20.0 min. The slowest shard's Playwright time went from 9.5 to 9.9 min to 7.6 to
 9.7 min. The shared web build was not done, because it saves no wall time. R3 is left to the lead.
 Details: [docs/done/304.md](docs/done/304.md).
+
+## Job 292: invite copy for any household
+
+- The invite screen (`InvitePartnerScreen`) is titled "Shop together" / "Gemeinsam einkaufen" (new key `inviteScreenTitle`; same text as `hintInviteTitle` on purpose, two different screens). Its button and the More row (`inviteMember`) read "Invite people" / "Leute einladen". `onboardingCreateHint` no longer says partner. Support pages (heading and body) and feature docs follow.
+- Kept on purpose: the "partner" household kind and its labels (`kindPartner`, `inviteStepPartner`, the `partner` case of `checklistInvite`, `inviteShareKind`, `whoSeveral` example); internal names (`invite-partner` key, `invitePartnerPath`).
+- NEEDS_LEAD: none (no Legal-provided string contained "partner"; the support pages under `legal/` were edited as ordinary copy).
+- Tests: onboarding, more, design goldens (Flutter 3.50, six More goldens regenerated) pass; site agent test updated for the new FAQ heading. Not driven in the web build.
+- Shipping: next green main build on TestFlight; no flag.
+- `invitePartnerBody` now speaks of "the people you shop with" (review 1, plural to match the new title).

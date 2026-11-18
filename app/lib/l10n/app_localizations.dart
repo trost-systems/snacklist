@@ -425,8 +425,14 @@ abstract class AppLocalizations {
   /// No description provided for @inviteMember.
   ///
   /// In de, this message translates to:
-  /// **'Partner einladen'**
+  /// **'Leute einladen'**
   String get inviteMember;
+
+  /// Invite screen (invite-partner route): title
+  ///
+  /// In de, this message translates to:
+  /// **'Gemeinsam einkaufen'**
+  String get inviteScreenTitle;
 
   /// No description provided for @signOut.
   ///
@@ -2291,7 +2297,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingCreateHint.
   ///
   /// In de, this message translates to:
-  /// **'Eine neue Liste, zu der du danach deinen Partner einlädst.'**
+  /// **'Eine neue Liste, zu der du danach Leute einlädst.'**
   String get onboardingCreateHint;
 
   /// No description provided for @onboardingJoin.
@@ -2387,7 +2393,7 @@ abstract class AppLocalizations {
   /// No description provided for @invitePartnerBody.
   ///
   /// In de, this message translates to:
-  /// **'Teile den Link oder den Code mit der Person, mit der du einkaufst. Die Einladung gilt 7 Tage und für eine Person.'**
+  /// **'Teile den Link oder den Code mit den Leuten, mit denen du einkaufst. Die Einladung gilt 7 Tage und für eine Person.'**
   String get invitePartnerBody;
 
   /// No description provided for @later.

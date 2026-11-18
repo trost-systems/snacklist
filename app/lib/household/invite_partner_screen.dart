@@ -44,7 +44,7 @@ class const _InvitePartnerView(final Household household)
     final invite = state.invites?.firstOrNull;
     final problem = state.problem;
     return OnboardingPage(
-      title: l10n.inviteMember,
+      title: l10n.inviteScreenTitle,
       listKey: const ValueKey('invite-partner-screen'),
       children: [
         Icon(

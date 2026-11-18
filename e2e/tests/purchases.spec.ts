@@ -123,7 +123,7 @@ test('More lists Premium only once the household has it (premium_offer off), liv
   await page.setViewportSize({ width: 390, height: 844 });
   await signUpWithHousehold(page, email);
   await page.getByRole('tab', { name: 'Mehr' }).click();
-  await expect(page.getByRole('button', { name: /^Partner einladen/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Leute einladen/ })).toBeVisible();
   await expect(lifetimeRow(page), 'not listed before the launch (job 64)').toHaveCount(0);
   await screenshot(page, 'job25-more-de-390');
   expect(await buy(email, `2001${Date.now()}`)).toBe('granted');

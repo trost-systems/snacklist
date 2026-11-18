@@ -67,7 +67,7 @@ Wenn du Rezepte, Prospekte oder Kundenkarten in deiner Einkaufs-App haben willst
 ## Was Snacklist ausmacht
 
 - **Reihenfolge deines Ladens:** Snacklist sortiert deine Artikel automatisch in Kategorien und lernt aus deinen Korrekturen. Die Kategorien ziehst du einmal pro Laden in die Reihenfolge, in der du sie erreichst; die Reihenfolge gilt für den ganzen Haushalt. Optional gibt es deutsche Standard-Läden als Startpunkt, und eigene Läden legst du selbst an.
-- **Eine Liste für den Haushalt:** Alle sehen Änderungen live auf jedem Gerät. Jedes Haushaltsmitglied kann einladen: in der App unter Mehr > „Partner einladen“, mit einem 8-stelligen Code oder einem Link.
+- **Eine Liste für den Haushalt:** Alle sehen Änderungen live auf jedem Gerät. Jedes Haushaltsmitglied kann einladen: in der App unter Mehr > „Leute einladen“, mit einem 8-stelligen Code oder einem Link.
 - **Schnell eintragen:** Mengen und Vorschläge, dazu Einsprechen mit dem Mikrofon in der App, auf Deutsch.
 - **Anmelden:** mit Apple, Google oder E-Mail.
 - **Datenschutz:** Nutzungsdaten werden nur mit deiner Einwilligung erfasst.

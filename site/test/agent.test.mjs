@@ -129,10 +129,10 @@ test('jsonld: support pages carry their FAQ, guides a TechArticle, landing pages
   const ld = (route) => base.page(route).querySelectorAll('script[type="application/ld+json"]').map((s) => JSON.parse(s.innerHTML));
   const [faq] = ld('/en/support');
   assert.equal(faq['@type'], 'FAQPage');
-  assert.deepEqual(faq.mainEntity.find((q) => q.name === 'How do I invite my partner?'), {
+  assert.deepEqual(faq.mainEntity.find((q) => q.name === 'How do I invite someone?'), {
     '@type': 'Question',
-    name: 'How do I invite my partner?',
-    acceptedAnswer: { '@type': 'Answer', text: 'Tap More, then Invite your partner. Share the link or the code. An invite is valid for one person. You can revoke open invites there too.' },
+    name: 'How do I invite someone?',
+    acceptedAnswer: { '@type': 'Answer', text: 'Tap More, then Invite people. Share the link or the code. An invite is valid for one person. You can revoke open invites there too.' },
   });
   assert.deepEqual(faq.mainEntity.map((q) => q.name), base.page('/en/support').querySelectorAll('main h3').map((h) => h.text));
   assert.deepEqual(ld('/de/anleitungen/alexa').map((d) => [d['@type'], d.dateModified, d.inLanguage]), [['TechArticle', '2026-11-04', 'de']]);

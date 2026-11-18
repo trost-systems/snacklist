@@ -22,10 +22,10 @@ test('More opens every entry; Nutzungsdaten is a page; the legal rows sit on Mor
   await screenshot(page, 'more-01-phone');
   // More is a lazy list taller than the window (job 21 added Feedback): wheel to what is below.
   await wheelTo(page, page.getByText(/^Version \d+\.\d+\.\d+/));
-  await wheelTo(page, page.getByRole('button', { name: /^Partner einladen/ }));
+  await wheelTo(page, page.getByRole('button', { name: /^Leute einladen/ }));
 
   // Job 22: Einladungen, a page below More: a new invite, its code, revoke.
-  await page.getByRole('button', { name: /^Partner einladen/ }).click();
+  await page.getByRole('button', { name: /^Leute einladen/ }).click();
   await expect(page).toHaveURL(/\/more\/invites$/);
   await page.getByRole('button', { name: 'Neue Einladung' }).click();
   await expect(inviteCodeLabel(page).first()).toBeVisible();
@@ -33,7 +33,7 @@ test('More opens every entry; Nutzungsdaten is a page; the legal rows sit on Mor
   await expect(page).toHaveURL(/\/more$/);
 
   // Job 206: joining is the list's household sheet's; More offers no join, and back (and Abbrechen) return to the list.
-  await expect(page.getByRole('button', { name: /^Partner einladen/ }), 'More is drawn').toBeVisible();
+  await expect(page.getByRole('button', { name: /^Leute einladen/ }), 'More is drawn').toBeVisible();
   await expect(page.getByRole('button', { name: /beitreten/ }), 'no join row on More').toHaveCount(0);
   await page.getByRole('tab', { name: 'Liste' }).click();
   for (const leave of ['Zurück', 'Abbrechen']) {

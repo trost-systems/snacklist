@@ -98,7 +98,7 @@ async function tour(page: Page, theme: 'light' | 'dark'): Promise<void> {
   await expect(editSheet(page)).toHaveCount(0);
 
   // Job 22: the invite dialog became More's Einladungen page.
-  await openMore(page, 'Partner einladen');
+  await openMore(page, 'Leute einladen');
   await page.getByRole('button', { name: 'Neue Einladung' }).click();
   await expect(inviteCodeLabel(page).first()).toBeVisible();
   await shot('04', 'invites');
