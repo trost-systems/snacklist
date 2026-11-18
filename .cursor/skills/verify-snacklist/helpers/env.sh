@@ -29,9 +29,16 @@ export FG_PORT_PREFIX="$VH_PREFIX" FG_PROJECT_ID="$VH_PROJECT_ID" FG_STACK_WORKD
 # What a production build gets (app/config/auth.json minus the hosted Google client and APP_URL),
 # with the e2e stand-in PostHog host so nothing reaches a real PostHog project.
 # VH_DEFINES adds space-separated NAME=value pairs, e.g. "FLAGS_ON=public-api INTEGRATION_LOCK=true".
+# FLAGS_ON always holds the flags releases/flags.json rolls out to everyone ("full"), because users
+# get them and this build reaches no PostHog; VH_FLAGS_FULL=0 leaves them out (the sheet a new
+# install sees before PostHog's first answer).
 vh_defines() {
-  local extra="" pair
-  for pair in ${VH_DEFINES:-}; do extra+="$(printf ',\n  "%s": "%s"' "${pair%%=*}" "${pair#*=}")"; done
+  local extra="" pair flags=""
+  [[ ${VH_FLAGS_FULL:-1} == 0 ]] || flags="$(vh_full_flags)"
+  for pair in ${VH_DEFINES:-}; do
+    if [[ ${pair%%=*} == FLAGS_ON ]]; then [[ -z ${pair#*=} ]] || flags="${flags:+$flags,}${pair#*=}"; else extra+="$(printf ',\n  "%s": "%s"' "${pair%%=*}" "${pair#*=}")"; fi
+  done
+  [[ -z $flags ]] || extra+="$(printf ',\n  "FLAGS_ON": "%s"' "$flags")"
   cat <<JSON
 {
   "GOOGLE_WEB_CLIENT_ID": "family-groceries-e2e",
@@ -46,6 +53,10 @@ JSON
 # and the Flutter version CI builds with (launch.sh refuses any other).
 vh_build_stamp() {
   { git -C "$REPO_ROOT" rev-parse HEAD:app; git -C "$REPO_ROOT" diff HEAD -- app; vh_defines; vh_flutter_version; } | sha256sum | cut -c1-16
+}
+
+vh_full_flags() {
+  node -e 'const f=require(process.argv[1]).flags;console.log(Object.keys(f).filter(k=>f[k].rollout==="full").join(","))' "$REPO_ROOT/releases/flags.json"
 }
 
 vh_flutter_version() { sed -n 's/^ *FLUTTER_VERSION: *//p' "$REPO_ROOT/.github/workflows/ci.yml" | head -1; }

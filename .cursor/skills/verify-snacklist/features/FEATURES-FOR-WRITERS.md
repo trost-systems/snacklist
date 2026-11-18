@@ -15,7 +15,7 @@ What Snacklist does today, in plain words, with the exact button and screen labe
 
 The app is called Snacklist. It used to be called Hummlist. The app, its Siri phrases, the site and the help pages say Snacklist. The site is at snacklist.app and the web app at app.snacklist.app. hummlist.com redirects to snacklist.app, and app.hummlist.com still shows the web app for old links. The Alexa skill (its name and „Alexa, sag Snacklist, …“), the mail addresses (support@snacklist.app, hello@snacklist.app) and the AI assistants' address https://mcp.snacklist.app say Snacklist too. Those three were checked in our documents, not in use. Never write the old addresses in new copy. Never write „Humm“ or „Snack“ alone as the name.
 
-**Last verified.** 16 November 2026, code version c2183ca6, in the web app (German).
+**Last verified.** 18 November 2026, code version 0ca5dcc9, in the web app (German).
 
 ## Never claim (everywhere)
 
@@ -52,7 +52,7 @@ The app is called Snacklist. It used to be called Hummlist. The app, its Siri ph
 - That the browser version is open to new users, or that an assistant can sign someone up without their confirmation.
 - That launch news can be chosen in the form (only on the confirmation page).
 
-**Last verified.** 16 November 2026, code version c2183ca6, on a local copy of the site (the form, the confirmation and the unsubscribe pages).
+**Last verified.** 18 November 2026, code version 0ca5dcc9, on a local copy of the site (the form, the confirmation and the unsubscribe pages).
 
 ## Sign-up and sign-in
 
@@ -76,7 +76,7 @@ The app is called Snacklist. It used to be called Hummlist. The app, its Siri ph
 - That users need an email and password account: Google or Apple is enough.
 - A "Forgot password" button or password reset in the app: there is none. Someone who forgot the password uses „Anmeldelink per E-Mail senden“ (EN: "Email me a sign-in link").
 
-**Last verified.** 16 November 2026, code version c2183ca6, in the web app (German).
+**Last verified.** 18 November 2026, code version 0ca5dcc9, in the web app (German).
 
 ## Usage-data question (analytics consent)
 
@@ -96,7 +96,7 @@ The app is called Snacklist. It used to be called Hummlist. The app, its Siri ph
 
 **Note.** Every released app and the web app (app.snacklist.app, app.hummlist.com) ask this question (checked 2026-11-01; app.snacklist.app since 2026-11-10).
 
-**Last verified.** 16 November 2026, code version c2183ca6, in the web app (German): the question in the guided start and the stored answer. The feature question without a yes: 15 November 2026, code version b0d496cf, in the web app (German): one question before any answer and one after „Nicht erlauben“, both under the shared id, and after the no only the answer, its text version and the feature values kept, no installation id; switching off after a yes asks again under the shared id (the e2e on CI).
+**Last verified.** 18 November 2026, code version 0ca5dcc9, in the web app (German): the question in the guided start and the stored answer. The feature question without a yes: 15 November 2026, code version b0d496cf, in the web app (German): one question before any answer and one after „Nicht erlauben“, both under the shared id, and after the no only the answer, its text version and the feature values kept, no installation id; switching off after a yes asks again under the shared id (the e2e on CI).
 
 ## Getting started: the guided start
 
@@ -121,11 +121,11 @@ On Android the phone's back button goes one screen back, as the arrow in the tit
 - A referral or "how did you hear about us" question: there is none.
 - That the answers sync before the account exists: they stay on this one device until the sign-in.
 
-**Last verified.** 16 November 2026, code version c2183ca6, in the web app (German; English with the dark theme), including discarding the answers with one tap. Android's back button by the app's automatic tests.
+**Last verified.** 18 November 2026, code version 0ca5dcc9, in the web app (German; English with the dark theme), including discarding the answers with one tap. Android's back button by the app's automatic tests.
 
 ## Household and invites
 
-**What it does.** One household shares one shopping list, and one person can be in several households, for example at home and with their parents (up to 20, on Free and on Premium; the app says so when someone in 20 tries to create or join another). The household's name sits top left of the list; a tap shows all your households and switches between them. Right after the guided start sets up a household, it offers invites: one link per person, as many as you like, and each invite shows „Mia ist beigetreten“ (EN: "Mia joined") as soon as that person joins, while the screen is open. For a club, where new members wait for approval, the invite screen shows no „beigetreten“; the request appears on the household page until an admin lets the person in. Later, any member invites one person with an 8-character code and a link; such an invite is valid for 7 days and works once. The household's creator and its admins can also make a group link with a QR code for up to 50 people, valid for 30 days, see who joined with it, revoke it and make a new one; when 50 have joined, the sheet says the link is full and offers a new one. The share text fits who shops together (partner, family, flat share, club) and always carries the link and the code; the person shares it, Snacklist sends nothing. Whoever gets it types the code, opens the link, or pastes it with „Einladung einfügen“ after installing; their other households stay. In a browser the link first shows a short page: who invites to which household („Peter lädt dich zu „Familie Brandt“ ein“), how many members and open items, the code, and „Im Browser beitreten“ (EN: "Join in the browser"); it shows no items and no email addresses. If the person who made the invite never set a name, or has left the household since, the page names nobody and just says „Du bist zu „Familie Brandt“ eingeladen“ (EN: "You’re invited to “Familie Brandt”"); the invite still works. Every screen that makes or shares an invite says, above its button, what that short page shows (your first name, if you set a display name, the household's name, the number of members and open items, and whether it has Premium) and to share the link only with people you want to invite. A household with Premium says that Premium covers everyone in it. Each household has a page to rename it, see its members and their roles, remove members (creator and admins), name admins (creator), make it the default for Siri, Alexa & AI, and leave it. Not switched on for anyone yet, so do not announce it: with two lists or more, the household page and the household list also say which list Siri, Alexa and AI add to when you don't name one („Liste für Siri, Alexa & KI“, EN "List for Siri, Alexa & AI"; in the household list „Liste: Wocheneinkauf“), and a tap picks another. Each member picks their own; showing another list in the app does not change it. Someone who was removed sees a notice in their app the next time it loads their households, naming the household and the 30-day rule; a phone or browser they sign in on later during those 30 days tells them once too, after the question about usage data, never over it. Someone who left a household on another device gets only „Du bist nicht mehr Mitglied von „{name}“.“ (EN: "You're no longer a member of “{name}”.") there, without the 30 days, which don't apply to them. They can't come back through an invite made before the removal, not even the group link still in the group chat; for the next 30 days only a new invite or a new group link from the household's creator or an admin lets them in again. A code or link of a household you are already in simply opens that household. The creator and admins can switch on „Beitritte bestätigen“ (EN: "Confirm new members"): then whoever uses an invite first sees „Anfrage gesendet: Ein Admin von „Verein Grün“ bestätigt deinen Beitritt.“ (EN: "Request sent. An admin of “Verein Grün” needs to approve it."), and an admin lets them in („Aufnehmen“, EN: "Approve") or declines („Ablehnen“, EN: "Decline") on the household page. If the link they used is full by then, the request waits and the page says to send a new link. After a decline the same person can ask that household again only after 24 hours; until then the app says so plainly. Once let in, the person's app switches to the household and says „Du bist jetzt in „Verein Grün“.“ (EN: "You're now in “Verein Grün”."). It is on from the start for households created as a club, off for all others.
+**What it does.** One household shares one shopping list, and one person can be in several households, for example at home and with their parents (up to 20, on Free and on Premium; the app says so when someone in 20 tries to create or join another). The household's name sits top left of the list; a tap shows all your households and switches between them. Right after the guided start sets up a household, it offers invites: one link per person, as many as you like, and each invite shows „Mia ist beigetreten“ (EN: "Mia joined") as soon as that person joins, while the screen is open. For a club, where new members wait for approval, the invite screen shows no „beigetreten“; the request appears on the household page until an admin lets the person in. Later, any member invites one person with an 8-character code and a link; such an invite is valid for 7 days and works once. The household's creator and its admins can also make a group link with a QR code for up to 50 people, valid for 30 days, see who joined with it, revoke it and make a new one; when 50 have joined, the sheet says the link is full and offers a new one. The share text fits who shops together (partner, family, flat share, club) and always carries the link and the code; the person shares it, Snacklist sends nothing. Whoever gets it types the code, opens the link, or pastes it with „Einladung einfügen“ after installing; their other households stay. In a browser the link first shows a short page: who invites to which household („Peter lädt dich zu „Familie Brandt“ ein“), how many members and open items, the code, and „Im Browser beitreten“ (EN: "Join in the browser"); it shows no items and no email addresses. If the person who made the invite never set a name, or has left the household since, the page names nobody and just says „Du bist zu „Familie Brandt“ eingeladen“ (EN: "You’re invited to “Familie Brandt”"); the invite still works. Every screen that makes or shares an invite says, above its button, what anyone with the link or code sees before joining (your first name, if you set a display name, the household's name, the number of members and open items, and whether it has Premium) and to share the link and code only with people you want to invite. A household with Premium says that Premium covers everyone in it. Each household has a page to rename it, see its members and their roles, remove members (creator and admins), name admins (creator), make it the default for Siri, Alexa & AI, and leave it. Not switched on for anyone yet, so do not announce it: with two lists or more, the household page and the household list also say which list Siri, Alexa and AI add to when you don't name one („Liste für Siri, Alexa & KI“, EN "List for Siri, Alexa & AI"; in the household list „Liste: Wocheneinkauf“), and a tap picks another. Each member picks their own; showing another list in the app does not change it. Someone who was removed sees a notice in their app the next time it loads their households, naming the household and the 30-day rule; a phone or browser they sign in on later during those 30 days tells them once too, after the question about usage data, never over it. Someone who left a household on another device gets only „Du bist nicht mehr Mitglied von „{name}“.“ (EN: "You're no longer a member of “{name}”.") there, without the 30 days, which don't apply to them. They can't come back through an invite made before the removal, not even the group link still in the group chat; for the next 30 days only a new invite or a new group link from the household's creator or an admin lets them in again. A code or link of a household you are already in simply opens that household. The creator and admins can switch on „Beitritte bestätigen“ (EN: "Confirm new members"): then whoever uses an invite first sees „Anfrage gesendet: Ein Admin von „Verein Grün“ bestätigt deinen Beitritt.“ (EN: "Request sent. An admin of “Verein Grün” needs to approve it."), and an admin lets them in („Aufnehmen“, EN: "Approve") or declines („Ablehnen“, EN: "Decline") on the household page. If the link they used is full by then, the request waits and the page says to send a new link. After a decline the same person can ask that household again only after 24 hours; until then the app says so plainly. Once let in, the person's app switches to the household and says „Du bist jetzt in „Verein Grün“.“ (EN: "You're now in “Verein Grün”."). It is on from the start for households created as a club, off for all others.
 
 **How to get there.**
 1. Right after the setup: the invite screen of the guided start. Its button names whom to invite, for example „Partner·in einladen“ or „Familie einladen“ (EN: "Invite your partner", "Invite your family"); „Weitere Einladung“ (EN: "Another invite") makes one more.
@@ -147,7 +147,7 @@ On Android the phone's back button goes one screen back, as the arrow in the tit
 - Purchases or Premium tied to joining: Premium is not on sale yet. Don't write whom it will cover. The app now ties a purchase to the person who buys it (not on sale), and the copy for that waits for Peter and the legal review.
 - That members can approve joins: only the owner and admins can. Or that older app versions handle a request: they show an error until updated.
 
-**Last verified.** 16 November 2026, code version c2183ca6, in the web app (German and English).
+**Last verified.** 18 November 2026, code version 0ca5dcc9, in the web app (German and English).
 
 ## Joining a household in the browser first (behind a flag, not public)
 
@@ -183,7 +183,7 @@ On Android the phone's back button goes one screen back, as the arrow in the tit
 - That lists can be changed offline: adding, renaming, reordering and deleting lists needs a connection (moving items and „Ich bringe das“ work offline).
 - That older app versions show the lists: they show every list's items as one list until updated.
 
-**Last verified.** 16 November 2026, code version c2183ca6, in the web app (German): a second list's tab, an item moved to it, „Ich bringe das“ seen live by another member, and a 51st list refused.
+**Last verified.** 16 November 2026, code version c2183ca6, in the web app (German): a second list's tab, an item moved to it, „Ich bringe das“ seen live by another member, and a 51st list refused. On 18 November 2026, code version 0ca5dcc9: a second list's tab and „Ich bringe das“ seen live by another member.
 
 ## Links into the app
 
@@ -217,7 +217,7 @@ On Android the phone's back button goes one screen back, as the arrow in the tit
 **How to get there.**
 1. Open Snacklist and stay on the „Liste“ (EN: "List") tab.
 2. Type into „Was brauchst du?“ (EN: "What do you need?") or tap anywhere on it.
-3. Press Enter for the first suggestion, or tap another row. The item shows up at once in the list behind the sheet, under „Gerade hinzugefügt“ (EN: "Just added"), and the sheet shows its details in one line you can swipe sideways: „Menge“ (EN: "Quantity") with − and +, the store, the category, „Marke“ (EN: "Brand") and „Eigenschaften“ (EN: "Details"). A tap on the store or the category opens its choices below the line; a pick is saved right away, typing a moment after you stop. The store choices also offer „Neuer Laden“ (EN: "New store"). The details make way for suggestions as soon as you type the next item. While the sheet is open, the bar at the top of the list (household and list, „Anpassen“) steps aside so more of the list shows; it comes back when the sheet closes. (In app versions without this, two chips at the top of the sheet choose the store and the category before you take a row.)
+3. Press Enter for the first suggestion, or tap another row. The item shows up at once in the list behind the sheet, under „Gerade hinzugefügt“ (EN: "Just added"), and the sheet shows its details in one line you can swipe sideways: „Menge“ (EN: "Qty") with − and +, the store, the category, „Marke“ (EN: "Brand") and „Eigenschaften“ (EN: "Details"). A tap on the store or the category opens its choices below the line; a pick is saved right away, typing a moment after you stop. The store choices also offer „Neuer Laden“ (EN: "New store"). The details make way for suggestions as soon as you type the next item. While the sheet is open, the bar at the top of the list (household and list, „Anpassen“) steps aside so more of the list shows; it comes back when the sheet closes. (In app versions without this, two chips at the top of the sheet choose the store and the category before you take a row.)
 4. Close with the ✕ at the top right („Schließen“, EN: "Close"), Escape, or a tap on the list behind. The sheet stays closed until you tap the field or type again, also when you close it right after an add. Closing while Enter still waits for its suggestions adds nothing.
 
 **Never claim.**
@@ -227,9 +227,9 @@ On Android the phone's back button goes one screen back, as the arrow in the tit
 - That an item already on the list can be added twice to that list; Snacklist says „<name> steht schon auf der Liste“ (EN: "<name> is already on the list"). A household with several lists can have the same item open on two of them. Two people adding the same item at the same moment also end up with one.
 - That suggestions stay put while typing, or that a new grocery lands in the household's usual store for its kind: both are built but switched on for nobody yet (flag `input-stable-rows`).
 - That every suggestion shows at once with each letter, also without a connection: the phone can make them itself (it carries the catalogue and the household's own list of past items, with the store each was last bought at), but this is switched on for nobody yet (flag `on-device-catalog`). Today the suggestions beyond what you typed come from the server, a moment after you stop typing.
-- That you can choose a store or category before adding an item in the current app: you pick them in the item's details right after it is added. A choice there is for that item only; the next item gets its own.
+- That you can choose a store or category before adding an item in the current app: you pick them in the item's details right after it is added. A choice there is for that item, and the household remembers it for that item's name: the next time it is added it lands in that store and category again. Other items are not affected.
 
-**Last verified.** 16 November 2026, code version c2183ca6, in the web app (German and English), with the flag `input-stable-rows` off as users have it, and on as test installs see it. The add sheet's details line with store and category, and the top bar stepping aside (flag `add-feedback-list`, on for everyone since 17 November 2026; job 288): 17 November 2026, in the web app (German). The rest of that flag (job 276) was driven on 16 November 2026 on the web app in German (`journeys/add-feedback-list.mjs`, `journeys/add-feedback-glide.mjs`), with `input-stable-rows` on. The flag `on-device-catalog` (job 274): 16 November 2026, code version 9d3735ca, in the web app (German), with the server slowed down and cut off.
+**Last verified.** 18 November 2026, code version 0ca5dcc9, in the web app (German and English) as users have it: the add sheet without chips at the top, the item's details after an add with store and category saved at once (and remembered for the next add of that name), the list behind the sheet with „Gerade hinzugefügt“, the top bar stepping aside and coming back. Also with the flag `input-stable-rows` on and off, the add sheet's older look (which a brand-new install can show for a moment before it learns which new features are on), and the flag `on-device-catalog` on and off, with the server slowed down and cut off.
 
 ## Due again
 
@@ -246,7 +246,7 @@ On Android the phone's back button goes one screen back, as the arrow in the tit
 - That it predicts quantities by season or guesses new items; it only repeats what the household bought.
 - That an item stays due until it is bought: it drops out after about four times its usual time between purchases.
 
-**Last verified.** 16 November 2026, code version c2183ca6, in the web app (German).
+**Last verified.** 18 November 2026, code version 0ca5dcc9, in the web app (German).
 
 ## Dictation
 
@@ -267,9 +267,9 @@ On Android the phone's back button goes one screen back, as the arrow in the tit
 
 **Unverified.** Behaviour on real devices (permission prompts, recognizer, English recognition) was read from code, not run. English splitting was run in the app with a scripted recognizer.
 
-**Shown on snacklist.app.** The landing page's "In der App" / "In the app" card has a video of it: the real app with a scripted recognizer, „Pizza, Orangensaft und zwei Packungen Fischstäbchen“ landing under Getränke and Tiefkühl. The English video still shows the German sentence; it was filmed before the app listened in English.
+**Shown on snacklist.app.** The landing page's "In der App" / "In the app" card has a video of it: the real app with a scripted recognizer, „Pizza, Orangensaft und zwei Packungen Fischstäbchen“ landing under Getränke and Tiefkühl. The English video still shows the German sentence; it was filmed before the app listened in English. Since 17 November 2026 the card's text says the app listens in the app's language (German or English) and that on Android 13 and later it can ask Android to download offline speech recognition.
 
-**Last verified.** 16 November 2026, code version c2183ca6: the server splitting an English and a German sentence, and no microphone in the web app. The app's English and German dictation with a scripted recognizer: 15 November 2026, in the Linux app, before it was merged. Real devices from the code.
+**Last verified.** 18 November 2026, code version 0ca5dcc9: the server splitting an English and a German sentence, and no microphone in the web app. The app's English and German dictation with a scripted recognizer: 15 November 2026, in the Linux app, before it was merged. Real devices from the code.
 
 ## Ticking items, "Zuletzt verwendet" and undo
 
@@ -290,7 +290,7 @@ On Android the phone's back button goes one screen back, as the arrow in the tit
 
 **Unverified.** Whether ticked items are ever removed from the section by age: no cleanup job was found in the code, but it was not run. That a tick survives closing the app right after the tap is checked in the browser (reload, closed tab, a tab closed while the page is busy) and by the app's automatic tests for a phone going to the background or the app being killed; it was not tried on a phone.
 
-**Last verified.** 16 November 2026, code version c2183ca6, in the web app (German and English), including a tick kept when the tab closes right after the tap. On Chromium, WebKit and Firefox by the automatic tests of 15 November 2026 (before the app saved the tick on the device at the tap, Firefox lost about 1 in 27 ticks made right before its tab closed).
+**Last verified.** 18 November 2026, code version 0ca5dcc9, in the web app (German and English), including a tick kept when the tab closes right after the tap. On Chromium, WebKit and Firefox by the automatic tests of 15 November 2026 (before the app saved the tick on the device at the tap, Firefox lost about 1 in 27 ticks made right before its tab closed).
 
 ## Edit an item
 
@@ -314,7 +314,7 @@ Each field's name sits above its field; what is typed sits in the middle of the 
 - That holding and dragging moves an item on the list; nothing on the list drags. Holding opens this sheet.
 - That renaming to another word for the same thing („Semmeln“ while „Brötchen“ is on the list) or to an item with a brand merges them; Snacklist only points it out („Brötchen steht schon auf der Liste“ with „Zusammenführen“), as when adding.
 
-**Last verified.** 16 November 2026, code version c2183ca6, in the web app (German and English).
+**Last verified.** 18 November 2026, code version 0ca5dcc9, in the web app (German and English).
 
 ## Tips on the list
 
@@ -339,16 +339,16 @@ Each step ticks itself off when it happens; „Einladen“ (EN: "Invite") and �
 - That Snacklist sees a placed widget everywhere.
 - A tip that offers a second household: those tips are built but switched off; a second household is made from the household switcher („Neuer Haushalt“).
 
-**Last verified.** 16 November 2026, code version c2183ca6, in the web app (German and English, dark).
+**Last verified.** 18 November 2026, code version 0ca5dcc9, in the web app (German and English, dark).
 
 ## Automatic category
 
-**What it does.** When an item is added, Snacklist sorts it into a category on its own, such as Kühlregal for Hafermilch, using a built-in German word list of about 1,350 terms plus common spelling variants, regional words, some English words and small typos. While you type, the add sheet already shows the category it will use. It also knows about 270 DIY words (Schrauben, Dübel, Glühbirne, Wandfarbe, Blumenerde …): with a Baumarkt they go to its categories and to that store, without one to „Haushalt“. Anything unknown goes to „Sonstiges“. Words that look alike once umlauts and endings are folded keep their own aisle: "beer" goes to „Getränke“ while „Beeren“ stay in „Obst & Gemüse“, "sage" to „Obst & Gemüse“ while a „Säge“ is a tool, and „Schäufele“ to „Fleisch/Wurst/Fisch“ while a „Schaufel“ is for the garden. If you move an item to another category, or pick another one before adding, the household remembers it and the same item lands there next time, also under another spelling of the same word (Karotten, Möhren), and also when you add it again right away on a slow connection. This works the same for items added in the app, by voice, through the AI-assistant connection, Siri and Alexa.
+**What it does.** When an item is added, Snacklist sorts it into a category on its own, such as Kühlregal for Hafermilch, using a built-in German word list of about 1,350 terms plus common spelling variants, regional words, some English words and small typos. Right after you add an item, the add sheet shows the category it used in the item's details. It also knows about 270 DIY words (Schrauben, Dübel, Glühbirne, Wandfarbe, Blumenerde …): with a Baumarkt they go to its categories and to that store, without one to „Haushalt“. Anything unknown goes to „Sonstiges“. Words that look alike once umlauts and endings are folded keep their own aisle: "beer" goes to „Getränke“ while „Beeren“ stay in „Obst & Gemüse“, "sage" to „Obst & Gemüse“ while a „Säge“ is a tool, and „Schäufele“ to „Fleisch/Wurst/Fisch“ while a „Schaufel“ is for the garden. If you move an item to another category, or pick another one right after adding, the household remembers it and the same item lands there next time, also under another spelling of the same word (Karotten, Möhren), and also when you add it again right away on a slow connection. This works the same for items added in the app, by voice, through the AI-assistant connection, Siri and Alexa.
 
 **How to get there.**
 1. Type an item in the add bar on the „Liste“ tab and add it; it appears under its category.
 2. To correct it, hold the item and tap the category chip (it shows the current category, such as „Kühlregal“), pick another one, tap „Fertig“ (EN: "Done").
-3. To choose before adding, tap the category chip in the add sheet (it shows the guess in grey with a small "A" for automatic, or „Kategorie“ / "Category" before you type).
+3. To choose right after adding, tap the category in the item's details under the „Hinzugefügt“ note (it shows the category used, such as „Kühlregal“) and pick another one; it is saved at once. (In app versions without this, a category chip in the add sheet chooses it before adding.)
 
 **Never claim.**
 - That it understands every word, or any typo; very short words and unusual typos stay in „Sonstiges“ on purpose.
@@ -358,7 +358,7 @@ Each step ticks itself off when it happens; „Einladen“ (EN: "Invite") and �
 
 **Offline.** An item added without a connection shows under „Wird einsortiert …“ (EN: "Sorting…") until the connection is back, then moves under its category. Online, items arrive already sorted.
 
-**Last verified.** 17 November 2026, job 282's branch on top of main 7f4f7ec0, in the web app (German): beer, sage, rolls, Schäufele and their German look-alikes. The rest 16 November 2026, code version c2183ca6.
+**Last verified.** 18 November 2026, code version 0ca5dcc9, in the web app (German): beer, sage, rolls, Schäufele and their German look-alikes, a category picked in the item's details right after adding, and the same words through Siri (English).
 
 ## Categories
 
@@ -386,7 +386,7 @@ The starting categories, in order: Obst & Gemüse, Brot & Backwaren, Kühlregal,
 
 **Unverified.** Whether there is a limit on the number of categories: none found in the app.
 
-**Last verified.** 16 November 2026, code version c2183ca6, in the web app (German).
+**Last verified.** 18 November 2026, code version 0ca5dcc9, in the web app (German).
 
 ## Stores, walk order and the sections of the list
 
@@ -397,7 +397,7 @@ The starting categories, in order: Obst & Gemüse, Brot & Backwaren, Kühlregal,
 2. To change a store's category order, open „Anpassen“ (step 4) and tap the store. Holding or right clicking a store's name or a category heading on the list does nothing.
 3. Hold an item (or right-click it), tap the store chip and pick a store to put it in that store.
 4. On the list, tap „Anpassen“ (EN: "Edit") top right: the stores in list order, „Ohne Laden“ (EN: "No store") last. Drag the handle to reorder, the trash icon deletes a store, „Laden hinzufügen“ (EN: "Add store") adds one; a name you have already, in any spelling of upper and lower case, keeps the window open with „Einen Laden „Lidl“ gibt es schon.“ (EN: "A store named “Lidl” already exists."). Tap a store to rename it (its name on top) and to order its categories.
-5. While adding or editing an item, open the store chip and tap „Neuer Laden“ (EN: "New store", the row with a plus), type the name and press Enter: the store is created and chosen for the item.
+5. Right after adding an item (in its details under the „Hinzugefügt“ note) or while editing one, open the store chip and tap „Neuer Laden“ (EN: "New store", the row with a plus), type the name and press Enter: the store is created and chosen for the item.
 
 **Never claim.**
 - Store logos, chain colours or official store maps. Store names appear as plain names in a small hexagonal label. The walking orders are researched defaults that can differ from a real shop.
@@ -409,7 +409,7 @@ The starting categories, in order: Obst & Gemüse, Brot & Backwaren, Kühlregal,
 
 **Note.** The onboarding skip hint says „Du kannst sie später unter Liste → Anpassen anlegen.“ / "You can add them later under List → Edit."
 
-**Last verified.** 16 November 2026, code version c2183ca6, in the web app (German).
+**Last verified.** 18 November 2026, code version 0ca5dcc9, in the web app (German).
 
 ## Prices and the shopping total (built, not switched on yet)
 
@@ -435,7 +435,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 - That a price entered in one currency is converted after a currency change. It keeps its own currency on its row and leaves the total until entered again.
 - Prices in Siri, Alexa, AI assistants or the API. They are only in the app.
 
-**Last verified.** 16 November 2026, code version c2183ca6, in the web app (German), as test installs see it. The bar's count for an item priced per kg without a weight: 16 November 2026, code version 60ca438e, in the web app (German).
+**Last verified.** 18 November 2026, code version 0ca5dcc9, in the web app (German), as test installs see it. The bar's count for an item priced per kg without a weight: 16 November 2026, code version 60ca438e, in the web app (German).
 
 ## Live sync between household members
 
@@ -444,14 +444,14 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 **How to get there.**
 1. Both people join the same household: one uses „Mehr“ (EN: "More") → „Partner einladen“ (EN: "Invite your partner"), the other opens the link or enters the code.
 2. Open „Liste“ (EN: "List"). Changes appear on its own.
-3. In the floating bar at the top of the list: „1 neu von Noah Brandt“ (EN: "1 new from Noah Brandt"); on a phone it shows right below the household's name, or below the list tabs when the household has several lists. While the phone is offline or syncing has trouble, a card under the bar says so and then folds into a small pill next to the household's name (see "Working offline"); nothing shows while changes are simply being sent.
+3. In the floating bar at the top of the list: „1 neu von Noah Brandt“ (EN: "1 new from Noah Brandt"); on a phone it shows right below the household's name, or below the list tabs when the household has several lists. While the phone is offline or syncing has trouble, a card under the bar says so and then folds into a small pill next to the household's name (see "Working offline"); nothing shows while changes are simply being sent. While the add field's sheet is open, this bar steps aside and comes back when the sheet closes.
 
 **Never claim.**
 - Sync with people outside the household, or with a read-only guest view.
 - Push notifications for a partner's changes.
 - That the list updates with the app fully closed in the background.
 
-**Last verified.** 16 November 2026, code version c2183ca6, in the web app (German).
+**Last verified.** 18 November 2026, code version 0ca5dcc9, in the web app (German).
 
 ## Working offline
 
@@ -459,7 +459,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 
 **How to get there.**
 1. Open „Liste“ (EN: "List") and use it as usual with the connection off.
-2. The card „Offline“ shows under the bar at the top of the list: „Änderungen werden synchronisiert, sobald du wieder online bist.“ (EN: "Your changes will sync once you're back online."). After about 3 s, or when you scroll or swipe it up, the card shrinks into the small „Offline“ pill next to the household's name, left of „Anpassen“ (EN: "Edit"); tap the pill to read the card again.
+2. The card „Offline“ shows under the bar at the top of the list: „Änderungen werden synchronisiert, sobald du wieder online bist.“ (EN: "Your changes will sync once you're back online."). After about 3 s, or when you scroll or swipe it up, the card shrinks into the small „Offline“ pill next to the household's name, left of „Anpassen“ (EN: "Edit"); tap the pill to read the card again. While the add field's sheet is open the card or pill steps aside with the bar at the top and comes back when the sheet closes.
 3. When the connection returns, the card or pill goes away on its own within a few seconds, with no tap and no message. If it says „Sync gestört“ (EN: "Sync failing") instead, tap it to try again.
 4. Opening the app or coming back to it: the card waits up to 10 s for the server before it says „Offline“, so a slow start shows no card. In flight mode it shows at once. If the server answers with errors (the connection itself is there), „Sync gestört“ can show sooner, within a few seconds.
 
@@ -471,7 +471,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 
 **Unverified.** Offline sign-in, and a first start offline before the list was ever synced (not covered by the automatic tests or read in detail).
 
-**Last verified.** 16 November 2026, code version c2183ca6, in the web app (German).
+**Last verified.** 18 November 2026, code version 0ca5dcc9, in the web app (German).
 
 ## Grocery log: „Verlauf“ (not switched on yet)
 
@@ -492,7 +492,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 
 **Unverified.** The iPhone and Android apps (only checked in the web app). The Premium view of older trips, and the tap from the locked row to the Premium page. Both need Premium on sale or a purchase, so only the automatic tests cover them.
 
-**Last verified.** 16 November 2026, code version c2183ca6, in the web app (German and English, a small phone), as test installs see it, with trip mode on, including no card on the list after a store's last item.
+**Last verified.** 18 November 2026, code version 0ca5dcc9, in the web app (German and English, a small phone), as test installs see it, with trip mode on, including no card on the list after a store's last item.
 
 ## Trip mode (behind a flag, not public)
 
@@ -513,7 +513,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 
 **Unverified.** The iPhone and Android apps (driven on the web build only); that a tick after the trip paused itself ends that pause (from the code, not driven); the button „Snacklist Premium ansehen“ on the locked card (not shown on our test copy; automatic tests only).
 
-**Last verified.** 16 November 2026, code version c2183ca6, in the web app (German; English with the dark theme; a small phone), as test installs see it, including no question for a pharmacy or DocMorris.
+**Last verified.** 18 November 2026, code version 0ca5dcc9, in the web app (German; English with the dark theme; a small phone), as test installs see it, including no question for a pharmacy or DocMorris.
 
 ## Decluttered list (behind a flag, not public)
 
@@ -531,7 +531,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 - That the order of households is shared: it is each person's own; the order of lists is the household's.
 - That lists can be reordered offline, or that the bottom bar changed: the add field and the tabs are as before.
 
-**Last verified.** 16 November 2026, code version c2183ca6, in the web app (German, English with the dark theme, larger text), as test installs see it, including the totals block, renaming the household from its page, and More without the household rows.
+**Last verified.** 18 November 2026, code version 0ca5dcc9, in the web app (German, English with the dark theme, larger text), as test installs see it, including the totals block, renaming the household from its page, and More without the household rows.
 
 # Settings, help and account
 
@@ -548,7 +548,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 - A scheduled or automatic day/night switch beyond „System“.
 - The old label „Wie Gerät“ for the theme (it is „System“ since 2026-11-01).
 
-**Last verified.** 16 November 2026, code version c2183ca6, in the web app (German).
+**Last verified.** 18 November 2026, code version 0ca5dcc9, in the web app (German).
 
 ## App language
 
@@ -564,7 +564,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 - That Alexa or AI assistants answer in the app's language: Alexa answers in the language of the Alexa device (German or English), AI assistants get German answers.
 - That everything is English once the app is set to English: suggestions from the catalogue („Aus dem Katalog“, EN: "From the catalog") stay German words, and the Siri Shortcut answers in German. (The sign-in emails follow the app language: German or English.)
 
-**Last verified.** 16 November 2026, code version c2183ca6, in the web app (English, 27 screens; the switch in Einstellungen). A French browser gets English: 15 November 2026, code version c3ea4261.
+**Last verified.** 18 November 2026, code version 0ca5dcc9, in the web app (English, 27 screens; the switch in Einstellungen). A French browser gets English: 15 November 2026, code version c3ea4261.
 
 ## Feedback
 
@@ -575,9 +575,9 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 2. Write in „Deine Nachricht“ (EN: "Your message"), optionally pick „Bug“, „Idee“ or „Sonstiges“ (EN: "Bug", "Idea", "Other") and tick „Snacklist Support darf mich dazu kontaktieren“ (EN: "Snacklist Support may contact me about this").
 3. Tap „Senden“ (EN: "Send"); the app answers „Danke!“ (EN: "Thanks!").
 
-**Being built, not for users yet (test flag `feedback-fb2`, job 267).** On iPhone and Android a shake asks „Problem mit diesem Bildschirm melden?“ (EN: "Report a problem with this screen?") with „Mit Bildschirmfoto“ / „Ohne Bildschirmfoto“ (EN: "With screenshot" / "Without screenshot"). With a screenshot the user marks it up with a pen, rectangles and text before the form opens; the form then shows the picture and switches for „Bildschirmname“ (EN: "Screen name", only after a shake) and „Bildschirmfoto“ (EN: "Screenshot"). From More the form offers „Bildschirmfoto hinzufügen“ (EN: "Add screenshot") for the screen shown before More. Einstellungen gets „Schütteln für Feedback“ (EN: "Shake to send feedback"). Do not write about any of this until the flag is on for everyone and the privacy policy covers screenshots.
+**Being built, not for users yet (test flag `feedback-fb2`, job 267).** On iPhone and Android a shake asks „Problem mit diesem Bildschirm melden?“ (EN: "Report a problem with this screen?") with „Mit Bildschirmfoto“ / „Ohne Bildschirmfoto“ (EN: "With screenshot" / "Without screenshot"). With a screenshot the user marks it up with a pen, rectangles and text before the form opens; the form then shows the picture and switches for „Bildschirmname“ (EN: "Screen name", only after a shake) and „Bildschirmfoto“ (EN: "Screenshot"). From More the form offers „Bildschirmfoto hinzufügen“ (EN: "Add screenshot") for the screen shown before More. Einstellungen gets „Schütteln für Feedback“ (EN: "Shake to send feedback"). The privacy policy covers screenshots and the shake's screen name since 17 November 2026. Do not write about any of this until the flag is on for everyone.
 
-**Being built, not for users yet (test flag `feedback-fb4`, job 268).** More's row becomes „Feedback & Ideen“ (EN: "Feedback & ideas") and opens a page with „An Snacklist Support schreiben“ (EN: "Write to Snacklist Support", the same form), „Deine Notizen“ (EN: "Your notes": the user's own notes with their status „Gesendet“, „Gelesen“, „Geplant“ or „Behoben in 1.4.1“, EN "Sent", "Read", "Planned", "Fixed in 1.4.1") and „Ideen, die wir abwägen“ (EN: "Ideas being considered"), a short list of ideas Snacklist Support wrote that a household can give a +1; everyone sees only the count, never who voted. A note opens with Snacklist Support's reply when there is one and, for a fixed one, „Was ist neu in 1.4.1“ (EN: "What's new in 1.4.1") linking to the changelog. A count on the row says how many notes have news the user has not opened, a reply or a new status (screen readers: „2 Neuigkeiten“, EN "2 updates"). Replies and status are written by hand; nothing answers automatically. Do not write about any of this until the flag is on for everyone and the privacy policy covers replies, status and votes.
+**Being built, not for users yet (test flag `feedback-fb4`, job 268).** More's row becomes „Feedback & Ideen“ (EN: "Feedback & ideas") and opens a page with „An Snacklist Support schreiben“ (EN: "Write to Snacklist Support", the same form), „Deine Notizen“ (EN: "Your notes": the user's own notes with their status „Gesendet“, „Gelesen“, „Geplant“ or „Behoben in 1.4.1“, EN "Sent", "Read", "Planned", "Fixed in 1.4.1") and „Ideen, die wir abwägen“ (EN: "Ideas being considered"), a short list of ideas Snacklist Support wrote that a household can give a +1; everyone sees only the count, never who voted. A note opens with Snacklist Support's reply when there is one and, for a fixed one, „Was ist neu in 1.4.1“ (EN: "What's new in 1.4.1") linking to the changelog. A count on the row says how many notes have news the user has not opened, a reply or a new status (screen readers: „2 Neuigkeiten“, EN "2 updates"). Replies and status are written by hand; nothing answers automatically. The privacy policy covers replies, status and votes since 17 November 2026. Do not write about any of this until the flag is on for everyone.
 
 **Never claim.**
 - Shake-to-report, feedback from the list screen, or screenshots/attachments (they exist only behind the test flag above).
@@ -587,7 +587,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 
 **Note.** Snacklist Support (Peter) reads the notes. A daily email summary of new notes is built but not switched on. Don't promise how fast a note is read.
 
-**Last verified.** 16 November 2026, code version c2183ca6, in the web app (German): the form from More as users have it, and with both test flags on a marked-up screenshot added from More, the „Feedback & Ideen“ page, a reply's count on the row, an idea, and the note's page. English and shake by the app's automatic tests only.
+**Last verified.** 18 November 2026, code version 0ca5dcc9, in the web app (German and English): the form from More as users have it, and with both test flags on the „Feedback & Ideen“ row and a screenshot added from More with its note „Zeigt alles, was auf dem Bildschirm war …“. The reply count, ideas and the note's page: 16 November 2026, code version c2183ca6. Shake by the app's automatic tests only.
 
 ## The More tab, help and legal pages
 
@@ -628,7 +628,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 
 **Unverified.** The rating window on a real phone (no phone was available), and the store page opening on a real phone.
 
-**Last verified.** 16 November 2026, code version c2183ca6, in the web app; the store's rating dialog needs a store install and was not checked.
+**Last verified.** 18 November 2026, code version 0ca5dcc9, in the web app; the store's rating dialog needs a store install and was not checked.
 
 ## Account: data export and deletion
 
@@ -648,7 +648,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 
 **Unverified.** Apple sign-in revocation on iPhone (no iOS surface to test).
 
-**Last verified.** 16 November 2026, code version c2183ca6, in the web app (German and English), including the export's contents.
+**Last verified.** 18 November 2026, code version 0ca5dcc9, in the web app (German and English), including the export's contents.
 
 # Connections and Premium
 
@@ -679,7 +679,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 
 **Not switched on yet: the Snacklist API.** Built but switched off for everyone: the app hides it and the server refuses its keys and requests. When it is on, Zugänge gets a section „API“ with an address, a link „API-Dokumentation“ and the button „API-Schlüssel erstellen“ (EN "Create API key"): the user names the key, picks „Nur lesen“ or „Lesen und schreiben“ (EN "Read only", "Read and write") and copies it once. Scripts and automations then read and change the list over HTTP. Do not announce it until Snacklist Launch says so. Never claim it today, nor a short address like api.snacklist.app (none exists).
 
-**Last verified.** 16 November 2026, code version c2183ca6, in the web app (German).
+**Last verified.** 18 November 2026, code version 0ca5dcc9, in the web app (German).
 
 ## Siri
 
@@ -703,7 +703,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 
 **Unverified.** Real Siri voice on a device; the Shortcut on current iOS versions. Siri without setup in German: the phone tests of a test version on 3 Nov 2026 sent „Füge … zur Hummliste hinzu“ to Reminders or answered „Hummlist unterstützt das nicht“ (the app was still called Hummlist then). The fix (sentences that name Snacklist first or as the object, like „Etwas auf Snacklist setzen“ and „Snacklist, was steht drauf?“; any item in „Füge Zahnpasta zu Snacklist hinzu“; Siri asks once to be allowed for Snacklist) waits for the next German device test. Never write „Einkaufsliste“ as a Snacklist Siri sentence: Siri gives it to Reminders. Built since, not yet tried on a device: Siri says the name „Snacklist“ and no longer takes a name ending in „Liste“ for it, more German sentences („Füge etwas zu meiner Snacklist hinzu“, „Zeig meine Snacklist“), the household's own words for an item („Möhren“ for „Karotten“), and on an error Siri answers instead of opening the app. The iPhone app needs iOS 17 or newer.
 
-**Last verified.** 16 November 2026, code version c2183ca6, from the server's answers (Siri itself needs an iPhone).
+**Last verified.** 18 November 2026, code version 0ca5dcc9, from the server's answers (Siri itself needs an iPhone).
 
 ## Home Screen widget (not announced yet)
 
@@ -724,7 +724,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 
 **Unverified.** Everything on a real device: the look in light and dark, both sizes, the taps.
 
-**Last verified.** 16 November 2026, code version c2183ca6, from the app's code and its automatic tests (the widget only exists on iPhone and Android).
+**Last verified.** 18 November 2026, code version 0ca5dcc9, from the app's code and its automatic tests (the widget only exists on iPhone and Android).
 
 ## Alexa skill (beta)
 
@@ -750,7 +750,7 @@ Since 10 November 2026 the skill is called Snacklist, with the invocation „sna
 
 **Unverified.** Real Alexa voice, the Alexa app screens and the beta invitation flow (no device or Amazon account here).
 
-**Last verified.** 16 November 2026, code version c2183ca6, from the server's answers (Alexa itself needs an Echo or the Alexa app). The named lists: code version 95316b50, checked by the team on 13 November 2026 on a test copy on our own computer.
+**Last verified.** 18 November 2026, code version 0ca5dcc9, from the server's answers (Alexa itself needs an Echo or the Alexa app). The named lists: code version 95316b50, checked by the team on 13 November 2026 on a test copy on our own computer.
 
 ## Snacklist Premium (not on sale yet)
 
@@ -773,4 +773,4 @@ Since 10 November 2026 the skill is called Snacklist, with the invocation „sna
 
 **Unverified.** Real store purchases (no store test account was available). Whether the usage data ever records a visit to the buy page in the released app (it should not).
 
-**Last verified.** 16 November 2026, code version c2183ca6, in the web app (German).
+**Last verified.** 18 November 2026, code version 0ca5dcc9, in the web app (German).

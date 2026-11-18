@@ -62,7 +62,7 @@ The website
 
 The list
 
-- [quick-add](./quick-add.md): the add bar and add sheet, suggestions and their sources, quantities, tap or Enter to add, store and category chips, the added note with undo, duplicates.
+- [quick-add](./quick-add.md): the add bar and add sheet, suggestions and their sources, quantities, tap or Enter to add, the added note with undo and the added item's details (amount, store, category, brand, details), the list behind the open sheet, duplicates.
 - [usuals](./usuals.md): „Wieder fällig“ suggestions for items the household buys regularly.
 - [dictation](./dictation.md): the microphone in the add bar (iOS and Android apps only).
 - [tick-and-undo](./tick-and-undo.md): a tap ticks an item off, „Zuletzt verwendet“ and putting items back, which actions have an undo.
