@@ -5557,6 +5557,78 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'älterer Vorschlag, lädt noch'**
   String get suggestionStale;
+
+  /// Job 297: the name step's heading after the sign-in
+  ///
+  /// In de, this message translates to:
+  /// **'Wie sollen wir dich nennen?'**
+  String get yourNameTitle;
+
+  /// Job 297: the name step's text under its heading
+  ///
+  /// In de, this message translates to:
+  /// **'Alle in deinem Haushalt sehen diesen Namen. Wen du einlädst, sieht deinen Vornamen. Du kannst ihn später ändern.'**
+  String get yourNameBody;
+
+  /// Job 297: the name field's label, the name step's title bar, Konto's row and the edit sheet's title
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Name'**
+  String get yourNameLabel;
+
+  /// Job 297: the empty name field's hint
+  ///
+  /// In de, this message translates to:
+  /// **'z. B. Lea'**
+  String get yourNameHint;
+
+  /// Job 297: under the name field when the name is empty or too long
+  ///
+  /// In de, this message translates to:
+  /// **'Gib einen Namen mit 1 bis 80 Zeichen ein.'**
+  String get yourNameInvalid;
+
+  /// Job 297: the name step's button while the field holds the Google or Apple name unchanged
+  ///
+  /// In de, this message translates to:
+  /// **'Ja, das bin ich'**
+  String get yourNameConfirm;
+
+  /// Job 297: the name step's button to skip it, only for members of a household
+  ///
+  /// In de, this message translates to:
+  /// **'Jetzt nicht'**
+  String get yourNameNotNow;
+
+  /// Job 297: the name step when reading the name failed; a retry button follows
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Name konnte nicht geladen werden.'**
+  String get yourNameLoadFailed;
+
+  /// Job 297: saving the name failed for lack of a connection
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Internetverbindung. Dein Name wurde nicht gespeichert.'**
+  String get yourNameOffline;
+
+  /// Job 297: Konto's name row while the name is still the e-mail address' first part
+  ///
+  /// In de, this message translates to:
+  /// **'Namen eintragen'**
+  String get yourNameAdd;
+
+  /// Job 297: the text of the sheet that changes the name
+  ///
+  /// In de, this message translates to:
+  /// **'Alle in deinem Haushalt sehen diesen Namen. Wen du einlädst, sieht deinen Vornamen.'**
+  String get yourNameEditBody;
+
+  /// Job 297: the notice after the sheet saved the name
+  ///
+  /// In de, this message translates to:
+  /// **'Name gespeichert'**
+  String get yourNameSaved;
 }
 
 class _AppLocalizationsDelegate

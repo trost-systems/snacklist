@@ -23,6 +23,7 @@ import 'package:url_launcher_platform_interface/url_launcher_platform_interface.
 
 import '../app/fake_launcher.dart';
 import '../more/more_harness.dart';
+import '../session/fake_your_name.dart';
 import 'fakes.dart';
 
 /// The real router and screens: sign-in, then the analytics consent, then
@@ -63,6 +64,7 @@ void main() {
       ListLinks(),
       Popups(),
       OnboardingCubit(cache),
+      idleYourName(),
     );
     addTearDown(router.dispose);
     addTearDown(analytics.close);

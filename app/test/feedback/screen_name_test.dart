@@ -32,6 +32,7 @@ void main() {
       '/login?invite=ABCD2345': 'login',
       '/welcome': 'welcome',
       '/analytics-consent': 'analytics_consent',
+      '/your-name?invite=ABCD2345': 'your_name',
       '/oauth/consent?authorization_id=abc': 'oauth_consent',
       '/join/ABCD2345': 'join',
       '/join/Milch%20und%20Brot': 'join',

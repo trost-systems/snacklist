@@ -655,4 +655,81 @@ void main() {
       }
     });
   });
+
+  // Job 297 (DN-Q6): the name step after the account and the analytics
+  // consent, before a household is set up or joined, and in one before the
+  // list. Once the name is chosen (askName false) the steps go on.
+  const nameStep = '/your-name';
+  const account = OnboardingDraft(step: OnboardingStep.account);
+  final naming = <(Session, String, OnboardingDraft?, bool, String?)>[
+    (const NeedsHousehold('u'), '/', null, true, nameStep),
+    (const NeedsHousehold('u'), '/welcome', null, true, nameStep),
+    (const NeedsHousehold('u'), nameStep, null, true, null),
+    (const NeedsHousehold('u'), nameStep, null, false, '/welcome'),
+    (
+      const NeedsHousehold('u'),
+      '/join/ABCD2345',
+      null,
+      true,
+      '$nameStep?invite=ABCD2345',
+    ),
+    (
+      const NeedsHousehold('u'),
+      '$nameStep?invite=ABCD2345',
+      null,
+      false,
+      '/join/ABCD2345',
+    ),
+    (const NeedsHousehold('u'), '/start/account', account, true, nameStep),
+    (const NeedsHousehold('u'), nameStep, account, false, '/start/setup'),
+    // A link rides along.
+    (
+      const NeedsHousehold('u'),
+      '/more/invites',
+      null,
+      true,
+      '$nameStep?next=%2Fmore%2Finvites',
+    ),
+    (
+      const NeedsHousehold('u'),
+      '$nameStep?next=%2Fmore%2Finvites',
+      null,
+      false,
+      '/welcome?next=%2Fmore%2Finvites',
+    ),
+    // An MCP authorization is not interrupted.
+    (const NeedsHousehold('u'), '/login?$next', null, true, '/welcome?$next'),
+    (household, '/', null, true, nameStep),
+    (household, '/more/account', null, true, nameStep),
+    (household, nameStep, null, true, null),
+    (household, nameStep, null, false, '/'),
+    (household, consent, null, true, null),
+    (const SignedOut(), nameStep, null, true, '/start'),
+  ];
+  for (final (session, from, draft, askName, to) in naming) {
+    test('asking the name ($askName): ${session.runtimeType} at $from '
+        '${draft == null ? '' : 'with a draft '}goes to ${to ?? 'stays'}', () {
+      expect(
+        authRedirect(session, Uri.parse(from), draft: draft, askName: askName),
+        to,
+      );
+    });
+  }
+
+  test('the analytics consent comes before the name', () {
+    for (final session in [const NeedsHousehold('u'), household]) {
+      expect(
+        authRedirect(session, Uri.parse('/'), askConsent: true, askName: true),
+        '/analytics-consent',
+      );
+      expect(
+        RedirectMemory().redirect(
+          session,
+          Uri.parse('/analytics-consent'),
+          askName: true,
+        ),
+        nameStep,
+      );
+    }
+  });
 }

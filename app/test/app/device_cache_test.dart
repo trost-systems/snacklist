@@ -305,6 +305,17 @@ void main() {
     expect(await cache.toldRemovals('peter'), isEmpty);
   });
 
+  test(
+    'a postponed name step is kept per user and survives sign-outs',
+    () async {
+      expect(await cache.postponedNameFor('lea'), isFalse);
+      await cache.savePostponedName('lea');
+      await cache.forget();
+      expect(await cache.postponedNameFor('lea'), isTrue);
+      expect(await cache.postponedNameFor('peter'), isFalse);
+    },
+  );
+
   test("job 80's dismissed tips come back as the hint log's", () async {
     await SharedPreferencesAsync().setString(
       'tips.peter',

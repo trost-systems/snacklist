@@ -3472,4 +3472,43 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get suggestionStale => 'older suggestion, still loading';
+
+  @override
+  String get yourNameTitle => 'What should we call you?';
+
+  @override
+  String get yourNameBody =>
+      'Everyone in your household sees this name. The people you invite see your first name. You can change it later.';
+
+  @override
+  String get yourNameLabel => 'Your name';
+
+  @override
+  String get yourNameHint => 'e.g. Lea';
+
+  @override
+  String get yourNameInvalid => 'Enter a name of 1 to 80 characters.';
+
+  @override
+  String get yourNameConfirm => 'Yes, that\'s me';
+
+  @override
+  String get yourNameNotNow => 'Not now';
+
+  @override
+  String get yourNameLoadFailed => 'Couldn\'t load your name.';
+
+  @override
+  String get yourNameOffline =>
+      'No internet connection. Your name was not saved.';
+
+  @override
+  String get yourNameAdd => 'Add your name';
+
+  @override
+  String get yourNameEditBody =>
+      'Everyone in your household sees this name. People you invite see your first name.';
+
+  @override
+  String get yourNameSaved => 'Name saved';
 }

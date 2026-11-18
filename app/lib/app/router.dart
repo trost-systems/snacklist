@@ -28,6 +28,8 @@ import 'package:family_groceries/onboarding/steps.dart';
 import 'package:family_groceries/purchases/premium_page_cubit.dart';
 import 'package:family_groceries/session/login_screen.dart';
 import 'package:family_groceries/session/session_cubit.dart';
+import 'package:family_groceries/session/your_name.dart';
+import 'package:family_groceries/session/your_name_screen.dart';
 import 'package:family_groceries/trip/summary_page.dart';
 import 'package:family_groceries/trip/trip_repository.dart';
 import 'package:flutter/widgets.dart';
@@ -93,6 +95,10 @@ const joinCodePath = '/join';
 /// The analytics consent (job 19), asked once per install right after the
 /// first sign-in. Not [consentPath], which is MCP's OAuth consent.
 const analyticsConsentPath = '/analytics-consent';
+
+/// „Wie sollen wir dich nennen?“ (job 297, flag `display-name`), right
+/// after the sign-in and the analytics consent ([asksName]).
+const yourNamePath = '/your-name';
 const consentPath = '/oauth/consent';
 const morePath = '/more';
 
@@ -199,6 +205,7 @@ const screenNames = {
   'onboarding_invite',
   'new_household',
   'analytics_consent',
+  'your_name',
   'oauth_consent',
   'join',
   'other',
@@ -241,6 +248,7 @@ String _screenNameOfPath(Uri location) => switch (location.path) {
   invitePartnerPath => 'onboarding_invite',
   newHouseholdPath => 'new_household',
   analyticsConsentPath => 'analytics_consent',
+  yourNamePath => 'your_name',
   consentPath => 'oauth_consent',
   joinWaitingPath => 'join',
   _ when location.pathSegments.firstOrNull == 'join' => 'join',
@@ -325,7 +333,10 @@ const _beforeHousehold = {welcomePath, joinCodePath, joinWaitingPath};
 /// this install has not decided on analytics yet. The guided start asks it
 /// as its first step; signed in, it comes first, before onboarding and
 /// before the list, except in a browser tab authorizing an MCP client
-/// (`next`), and the app asks the next time it is opened.
+/// (`next`), and the app asks the next time it is opened. [askName]
+/// ([asksName]) comes right after it, with the same exception: before a
+/// household is set up or joined (the invite and `next` ride along), and in
+/// one before the list.
 ///
 /// Without a household: a [draft] past its last question is set up
 /// ([OnboardingStep.setup]) and one before it resumed; otherwise
@@ -343,6 +354,7 @@ String? authRedirect(
   String? pendingNext,
   bool justSignedOut = false,
   OnboardingDraft? draft,
+  bool askName = false,
 }) {
   final invite = inviteIn(uri) ?? pendingInvite;
   final consent = uri.path == consentPath
@@ -395,6 +407,8 @@ String? authRedirect(
     SignedOut() => startPath,
     NeedsHousehold() || InHousehold() when askConsent && consent == null =>
       carry(analyticsConsentPath),
+    NeedsHousehold() ||
+    InHousehold() when askName && consent == null => carry(yourNamePath),
     NeedsHousehold() when invite != null => carry(joinPath(invite)),
     // An MCP authorization or a link (`next`) rides along the steps. A
     // draft leads a waiting join request: it is how the waiting screen's
@@ -498,6 +512,7 @@ class RedirectMemory() {
     bool askConsent = false,
     String? pendingInvite,
     OnboardingDraft? draft,
+    bool askName = false,
   }) {
     final justSignedOut =
         session is SignedOut &&
@@ -519,6 +534,7 @@ class RedirectMemory() {
       pendingNext: _next,
       justSignedOut: justSignedOut,
       draft: draft,
+      askName: askName,
     );
     // Signed in, the link is in the location now (or was the location).
     if (session is InHousehold) {
@@ -678,6 +694,7 @@ List<RouteBase> appRoutes({
     path: analyticsConsentPath,
     builder: (_, _) => const AnalyticsConsentScreen(),
   ),
+  GoRoute(path: yourNamePath, builder: (_, _) => const YourNameScreen()),
   GoRoute(
     path: welcomePath,
     builder: (_, _) => const WelcomeScreen(),
@@ -727,14 +744,28 @@ GoRouter buildRouter(
   ListLinks listLinks,
   Popups popups,
   OnboardingCubit onboarding,
+  YourNameCubit yourName,
 ) {
   final memory = RedirectMemory();
+  bool askName() =>
+      analytics.flags.isOn(displayNameFlag) &&
+      asksName(session.state, yourName.state);
   return GoRouter(
     observers: [popups],
     refreshListenable: Listenable.merge([
       _StreamListenable(session.stream),
       _StreamListenable(analytics.stream),
       _StreamListenable(onboarding.stream),
+      // Only when the answer changes: a run at the old location right after
+      // a sign-out (the name and flags change then too) would carry it as a
+      // link to the next sign-in.
+      // Signed out it has no answer: the session's own refresh carries the
+      // sign-out, and a second run at the gate would lose it as well.
+      _AnswerListenable(() => session.state is SignedOut ? null : askName(), [
+        analytics.flags.stream,
+        yourName.stream,
+        session.stream,
+      ]),
     ]),
     redirect: (context, state) {
       // A link's code is kept the moment it arrives, before sign-in.
@@ -747,6 +778,7 @@ GoRouter buildRouter(
         askConsent: analytics.asksConsent,
         pendingInvite: pendingInvite.code,
         draft: onboarding.state,
+        askName: askName(),
       );
       // Only once in the household: a sign-in or consent on the way would
       // fire it early.
@@ -759,6 +791,38 @@ GoRouter buildRouter(
     },
     routes: appRoutes(),
   );
+}
+
+/// Notifies when [answer] changes to another answer (null is none),
+/// rechecked on each event of the streams.
+class _AnswerListenable(
+  final bool? Function() answer,
+  List<Stream<Object?>> streams,
+) extends ChangeNotifier {
+  this {
+    _last = answer();
+    _subscriptions = [
+      for (final stream in streams)
+        stream.listen((_) {
+          final now = answer();
+          if (now != null && now != _last) {
+            _last = now;
+            notifyListeners();
+          }
+        }),
+    ];
+  }
+
+  late bool? _last;
+  late final List<StreamSubscription<Object?>> _subscriptions;
+
+  @override
+  void dispose() {
+    for (final subscription in _subscriptions) {
+      unawaited(subscription.cancel());
+    }
+    super.dispose();
+  }
 }
 
 class _StreamListenable(Stream<Object?> stream) extends ChangeNotifier {
