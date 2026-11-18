@@ -29,7 +29,7 @@ the same things.
 | `e2e` | Playwright against the release web build and the local stack | yes, under `/tmp/fg-e2e.lock` |
 | `android` | Debug APK build (the app's Kotlin) and its JVM unit tests (`WidgetPayloadTest`) | `--only android` |
 | `ios` | Simulator build (the app's Swift); the built app holds the app icon (light, dark, tinted, the Icon Composer stacks) and the launch screen's assets; RunnerTests but the StoreKit tests; macOS only | no |
-| `ios-storekit` | The same build; RunnerTests' StoreKit tests on an iOS 26.2 simulator (job 304); macOS only | no |
+| `ios-storekit` | The same build; RunnerTests' StoreKit tests on an iOS 26.2 simulator (job 304), downloaded while it builds (job 306); macOS only | no |
 
 `.github/workflows/widgetbook.yml` is not a gate: on pushes to `main` that touch
 `app/` and by hand it builds the Widgetbook for the web (`scripts/widgetbook.sh`)
@@ -352,7 +352,8 @@ intervals while scrolling a 200-item list (DECISIONS job 28, 7).
    changes the native projects, the pubspec, `scripts/gates/android.sh`,
    `ios.sh` or `ios-storekit.sh`, `scripts/ios/build-for-testing.sh`, the ios gate's two Python checks, `scripts/lib.sh` or the CI
    definition (the list is `scripts/ci-changes.sh`): land those with
-   `MERGE_WAIT_MINUTES=45`.
+   `MERGE_WAIT_MINUTES=70`. Since job 306 the ios-storekit gate downloads the
+   iOS 26.2 simulator runtime, and its job may take 60 minutes.
    The wait sleeps 20 s between its looks at `ci-ok`. A signal that ends
    only that sleep (a kill by name elsewhere on the machine, job 219) is
    logged and the wait goes on. The 21st such sleep of one wait stops it
@@ -485,8 +486,13 @@ tools and retries what is still downloaded.
 
 ## Runner images
 
-Every Linux job runs on `ubuntu-24.04`, the iOS jobs on `macos-26`, never on
-a `-latest` label (lint rule `runner-pinned`). GitHub moves `ubuntu-latest`
+Every Linux job runs on `ubuntu-24.04`, the iOS jobs on `xcode-27`, never on
+a `-latest` label (lint rule `runner-pinned`). GitHub's Xcode images carry one
+major Xcode each (`xcode-27` runs macOS 27); `macos-26` never got Xcode 27.
+Each macOS job selects one Xcode by path with `.github/actions/xcode`
+(27.2, job 306): App Store Connect takes builds from the iOS 27 SDK on, and
+the image's default Xcode moves with its updates. Bump it there to a newer
+stable 27.x from the image's Readme, never to a beta. GitHub moves `ubuntu-latest`
 to a new image without a commit of ours. On 2026-11-18 it became
 ubuntu-26.04, and a rerun of main's green commit failed three jobs: lint (the
 image's newer shellcheck reports SC2329), flutter (8 goldens 2 to 13 px off)

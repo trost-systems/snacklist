@@ -314,10 +314,11 @@ jobs:
   ios:
     needs: changes
     if: needs.changes.outputs.native == 'true'
-    runs-on: macos-26
+    runs-on: xcode-27
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: ./.github/actions/xcode
       - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           channel: stable
@@ -331,10 +332,12 @@ jobs:
   ios-storekit:
     needs: changes
     if: needs.changes.outputs.native == 'true'
-    runs-on: macos-26
-    timeout-minutes: 40
+    runs-on: xcode-27
+    # The iOS 26.2 runtime downloads while the gate builds (scripts/gates/ios-storekit.sh).
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: ./.github/actions/xcode
       - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           channel: stable

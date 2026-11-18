@@ -1,0 +1,17 @@
+# The Xcode every macOS job builds with (job 306): App Store Connect takes builds from the iOS 27
+# SDK on. The `xcode-27` runner image (macOS 27) holds several 27.x and a beta; its default
+# moves when GitHub updates the image, so the jobs select this one by path and fail if it is gone.
+# Move to a newer stable 27.x here (the image's Readme lists them), never to a beta.
+name: Xcode
+description: Selects the pinned Xcode and prints its version and iOS SDK
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        XCODE_APP: /Applications/Xcode_27.2.app
+      run: |
+        [[ -d $XCODE_APP ]] || { echo "::error::$XCODE_APP is not on this runner image; pick a stable Xcode 27.x from its Readme in .github/actions/xcode/action.yml"; exit 1; }
+        sudo xcode-select -s "$XCODE_APP"
+        xcodebuild -version
+        xcodebuild -showsdks | grep -E 'iphone(os|simulator)'

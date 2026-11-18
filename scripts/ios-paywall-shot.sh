@@ -19,15 +19,17 @@ mkdir -p "$marks"
 cd "$REPO_ROOT/app"
 flutter build ios --simulator --debug -t test_driver/paywall_review.dart
 
-runtime="$(xcrun simctl list runtimes available -j | python3 -c '
-import json, sys
-ios = [r for r in json.load(sys.stdin)["runtimes"] if r["platform"] == "iOS"]
-print(max(ios, key=lambda r: [int(n) for n in r["version"].split(".")])["identifier"])')"
-types="$(xcrun simctl list devicetypes -j)"
-for name in iPhone-16-Plus iPhone-15-Plus iPhone-15-Pro-Max iPhone-14-Pro-Max; do
-  type="com.apple.CoreSimulator.SimDeviceType.$name"
-  grep -q "\"$type\"" <<<"$types" && break
-done
+# The newest iOS runtime with a 6.7" iPhone, never a one-device runtime such as Xcode 27's
+# iOS-27-2-iPhone19-4 (job 306).
+read -r runtime type <<<"$(xcrun simctl list runtimes available -j | python3 -c '
+import json, re, sys
+ios = [r for r in json.load(sys.stdin)["runtimes"] if r["platform"] == "iOS" and re.search(r"\.iOS-[0-9-]+$", r["identifier"])]
+for r in sorted(ios, key=lambda r: [int(n) for n in r["version"].split(".")], reverse=True):
+    types = {t["identifier"] for t in r["supportedDeviceTypes"]}
+    for name in ("iPhone-16-Plus", "iPhone-15-Plus", "iPhone-15-Pro-Max", "iPhone-14-Pro-Max"):
+        if "com.apple.CoreSimulator.SimDeviceType." + name in types:
+            print(r["identifier"], "com.apple.CoreSimulator.SimDeviceType." + name); sys.exit()')"
+[[ -n ${type:-} ]] || die "no iOS runtime on this Mac runs a 6.7\" iPhone (1290x2796)"
 udid="$(xcrun simctl create "Snacklist paywall shot" "$type" "$runtime")"
 log "simulator $udid ($type, $runtime)"
 trap 'xcrun simctl shutdown "$udid" 2>/dev/null; xcrun simctl delete "$udid"' EXIT

@@ -44,7 +44,7 @@ jobs:
       && ((inputs.lane == 'certificates' && inputs.confirm == 'create')
           || (inputs.lane == 'renew_profile' && inputs.confirm == 'renew')
           || inputs.lane == 'profiles')
-    runs-on: macos-26
+    runs-on: xcode-27
     timeout-minutes: 30
     environment: release
     defaults:
@@ -75,6 +75,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
+      - uses: ./.github/actions/xcode
       # No Actions cache in a job with the signing secrets: any run on main can write an entry
       # that this job would unpack and run (job 220).
       - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0

@@ -2018,3 +2018,13 @@ The latest numbers, on main with job 276's sheet code, show the target is not me
 
 A phone tells whether this shows on real hardware. The lead has follow-up work queued: a
 side-by-side run to find the slowdown, and lighter rows for the second letter.
+
+## Job 306: the iOS 27 SDK warning
+
+TestFlight builds from this job's merge on are built with Xcode 27.2 and the iOS 27.2 SDK
+(`DTSDKName iphoneos27.2`, minimum iOS still 17.0). Nothing to set up.
+
+1. Optional check: after the next TestFlight build, App Store Connect (Apple's upload email, or
+   TestFlight → the build) should no longer warn that builds need the iOS 27 SDK. The
+   warning's exact wording is not in the Release logs (fastlane does not print altool's
+   warnings), so the job could not quote it. If it is still there, send it to the lead.

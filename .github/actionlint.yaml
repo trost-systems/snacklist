@@ -1,0 +1,5 @@
+# GitHub-hosted labels newer than actionlint's list (job 306: the Xcode 27 image, docs/CI.md
+# "Runner images").
+self-hosted-runner:
+  labels:
+    - xcode-27
