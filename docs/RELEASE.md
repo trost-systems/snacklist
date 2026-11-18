@@ -164,7 +164,9 @@ whichever run survives ships everything merged so far: three quick merges
 give one or two uploads, never an older commit after a newer one. CI on
 `main` runs per commit (`ci.yml` groups push runs by SHA), so an older
 commit's CI can finish after a newer one's; its run then finds the newer
-commit already shipped and skips.
+commit already shipped and skips. A run after a CI run that was no push (the
+nightly one, a dispatch) or not green ships nothing and queues in a group of its own, so it
+never replaces a pending run that would ship (job 308).
 
 ## Run it by hand
 

@@ -1660,3 +1660,12 @@ dark, 200 % included. Details: [docs/done/297.md](docs/done/297.md).
 Review 0 (2026-11-18). The name step got „Abmelden“, so a wrong account isn't stuck. The field and the
 server now count length the same way, names of only zero-width characters are refused, and Konto keeps
 its row with a retry after a failed read (docs/done/297.md).
+
+## Job 308: main reuses its PR's CI run, native gates nightly (2026-11-18)
+
+A push to main whose PR head had the same tree and parent and a green `ci-ok` skips every gate but
+gitleaks (`scripts/ci-main-reuse.sh`); any other push runs its commit's range like a PR, so native
+gates run on main only for native paths (R3). Every gate, native included, runs nightly at 01:17
+UTC, and a red nightly keeps the issue "Nightly CI failed on main" open. Release ships as before; only its queue changed (a run after a nightly CI run queues alone).
+Before: main `ci-ok` median 24:11 (16:19 to 39:23, n=9). The after numbers (2 merges, a manual nightly run) can only exist after the merge; they follow in a docs PR. Details:
+`docs/done/308.md`.

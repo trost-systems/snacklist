@@ -15574,3 +15574,46 @@ holds; the calls below are the ones the recommendations left to the build.
     Holding the answer until a cold start would mean keeping state across the router's runs for a
     one-time event per install, and the step can be postponed with one tap. The flag goes on for
     everyone at once, so each e-mail-prefix member meets it once.
+
+## Job 308: main reuses its PR's CI run, native gates nightly (OC1 + R3, 2026-11-18)
+
+Peter picked OC-A (OC1 with R3) of `openclaw-ci-fit.md` on 18 November 2026. CI and docs only.
+
+1. **Reuse needs the same tree, the same parent and a green `ci-ok` on the PR head.** The tree alone
+   is not enough: a PR run tests the head merged into the base of that moment. With the head's
+   parent equal to main's parent, that base can only have been this parent (main only moves
+   forward, and the head was pushed on it), so the tested tree is main's. The newest completed
+   `ci-ok` of GitHub Actions on the head counts, so a red rerun after a green one forbids reuse.
+   Checked against the API on main's last 5 merges (`scripts/ci-main-reuse.sh <sha>`): all reuse.
+2. **Every doubt runs the gates.** No PR, another tree or parent, a merge commit as head, `ci-ok`
+   not green, or any API error answers `reuse=false`. The script never fails the `changes` job.
+3. **A push that doesn't reuse runs its commit's range** (`scripts/ci-changes.sh HEAD^1 HEAD`), the
+   same rule as a PR: this is R3. Native gates run on `main` pushes only when the commit touched a
+   native path; before, every push ran them (median `ci-ok` 24:11, an ios job last in all 9 runs).
+4. **gitleaks still runs on every push**: it is 0:34 and scans the history, which on main includes
+   the rebase-merged commit GitHub made. lint, site and site-agent skip under reuse.
+5. **The nightly run is `schedule` at 01:17 UTC**, off the full hour (GitHub delays those), every
+   gate. A red nightly keeps one open issue "Nightly CI failed on main", like backup.yml; the next
+   green one closes it. A manual `gh workflow run ci.yml --ref main` runs the same jobs without the
+   issue. Release ignores both (`plan` takes push runs only), as it did for dispatched runs.
+6. **Release keeps its trigger and plan.** (Its queue changed, item 9.) It waits for the push run's conclusion, and a reused run concludes
+   `success`. Its iOS and Android jobs build and sign the app themselves, so a native break still
+   stops an upload without the ci.yml native gates.
+7. **`scripts/e2e-durations.sh` reads nightly runs first**: reused pushes upload no e2e results.
+8. **Accepted risk:** a flaky e2e test or a moved runner image now shows up overnight, not on the
+   merge. Last week main caught 6 e2e flakes and one image drift that way (openclaw report).
+9. **Review fixes (self-review before landing).** The test's `gh` stub answers only the three exact
+   requests (main's commit's PRs, the PR head, the head's `ci-ok`), so asking about the wrong
+   commit or check fails it; five mutations of the script fail the test. Main's nightly and
+   manual runs get a concurrency group per run, so a manual run no longer cancels the nightly one.
+   Release puts runs after a non-push CI run (they ship nothing) into a group of their own: the
+   nightly run's `workflow_run` would otherwise replace a pending Release run that ships. The same
+   holds after a red push run (review 2). A push of several commits that doesn't reuse runs every
+   gate, since `HEAD^1..HEAD` would miss the earlier ones (main has no branch protection).
+10. **Open risk, accepted:** a stacked PR whose `ci-ok` came from a run against another job's
+   branch, then retargeted to main by hand without a new push, would be reused. Its head's parent
+   must equal main's parent, which for a stacked head holds only after push-pr.sh rebased it onto
+   main, and that push starts a run against the base of that moment. Check runs lose their PR
+   link after the merge, so the tested base can't be read back. The nightly run covers it.
+   Caches: a reused push writes no cache entries, so after a key change PRs run cold until the
+   nightly run has saved one (docs/CI.md).

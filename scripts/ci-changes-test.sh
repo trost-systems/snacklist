@@ -92,6 +92,8 @@ for switch in $everything; do
   grep -qxF "      $switch: \${{ steps.filter.outputs.$switch }}" "$ci" \
     || fail "ci.yml's changes job no longer hands on the filter's '$switch' as its output '$switch'"
 done
+grep -qxF "      reuse: \${{ steps.filter.outputs.reuse }}" "$ci" \
+  || fail "ci.yml's changes job no longer hands on scripts/ci-main-reuse.sh's 'reuse' as its output 'reuse'"
 # A gate's script runs the heavy gates and its own job, and the native gates only when it is theirs.
 for file in "$REPO_ROOT"/scripts/gates/*.sh; do
   gate="$(basename "$file" .sh)"
@@ -99,6 +101,8 @@ for file in "$REPO_ROOT"/scripts/gates/*.sh; do
   asks="$(asks_of "$gate")"
   want=""
   [[ -z $asks ]] && want=heavy # the job does not ask the filter: changelog
+  # Job 308: runs for every change, but not on a push to main that reuses its PR's run.
+  [[ $asks == "    needs: changes"$'\n'"    if: needs.changes.outputs.reuse != 'true'" ]] && want=heavy
   for switch in $everything; do
     [[ $asks == "    needs: changes"$'\n'"    if: needs.changes.outputs.$switch == 'true'" ]] || continue
     want="heavy $switch"

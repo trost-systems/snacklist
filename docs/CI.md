@@ -1,7 +1,7 @@
 # CI
 
-`.github/workflows/ci.yml` runs on every PR, on every push to `main` and on
-demand (`gh workflow run ci.yml --ref <branch>`). `ci-ok` is the one check a
+`.github/workflows/ci.yml` runs on every PR, on every push to `main`, every
+night on `main` and on demand (`gh workflow run ci.yml --ref <branch>`). `ci-ok` is the one check a
 merge waits for (`scripts/merge-pr.sh`). For only the e2e and db gates on a
 branch, with a spec filter, use `scripts/ci-e2e.sh` (On-demand e2e, below).
 
@@ -205,7 +205,8 @@ The `changes` job (`scripts/ci-changes.sh`) reads the PR's changed files:
   `design/tokens/`, `site/public/email/` or its gate script changed.
 - A change to `ci.yml`, `.github/actions/`, `scripts/ci-changes.sh`,
   `scripts/lib.sh` or `scripts/e2e-summary.sh` runs everything, and so does
-  a push to `main` or a manual run.
+  the nightly run on `main` or a manual run. A push to `main` mostly runs
+  nothing ([Main and the nightly run](#main-and-the-nightly-run-job-308)).
 - A gate's own script (`scripts/gates/<gate>.sh`) is code: it runs the heavy
   gates and its own job, but `android`, `ios` and `ios-storekit` only when it is theirs.
   Until job 221 any gate script ran everything. That rule, applied to the
@@ -227,6 +228,53 @@ The `changes` job (`scripts/ci-changes.sh`) reads the PR's changed files:
 
 A skipped job counts as passed for `ci-ok`. A failed or cancelled one fails
 it.
+
+## Main and the nightly run (job 308)
+
+`scripts/push-pr.sh` and `scripts/merge-pr.sh` land a PR as one commit,
+rebase-merged onto the `main` it was pushed on. That commit on `main` has the
+PR head's tree and parent, so the PR's run already tested exactly what `main`
+now holds. Of the 40 merges before 18 November 2026 all did (openclaw
+report; `scripts/ci-main-reuse.sh` answers `reuse=true` for the last 8), and each push to
+`main` ran a median of 19 jobs again (`ci-ok` 24:11 median over the last 9,
+an ios job last in each).
+
+On a push to `main`, the `changes` job asks `scripts/ci-main-reuse.sh`:
+
+- **Reuse.** A merged PR into `main` has the commit, its head has the same
+  tree and the same single parent, and the newest `ci-ok` on that head
+  passed. Then only `changes`, `gitleaks`, `keepalive-schedule` and `ci-ok`
+  run; every other gate is skipped, and `ci-ok` passes in about a minute.
+- **Otherwise** (no PR, another tree or parent, `ci-ok` not green, an API
+  error), the push runs what its PR would have: `scripts/ci-changes.sh`
+  over `HEAD^..HEAD`. A commit that changed a native path runs `android`,
+  `ios` and `ios-storekit`; a commit that did not, does not. A push of
+  several commits at once runs every gate.
+
+Every night at 01:17 UTC (`schedule`) CI runs every gate on `main`'s tip,
+`android`, `ios` and `ios-storekit` included. That is where a flaky e2e test,
+a runner image that moved, or a native break that no PR's paths showed comes
+up. A red nightly run opens the issue "Nightly CI failed on main" (one open
+issue, commented on by each further red night) and the next green one closes
+it. On that issue: open the run, rerun the failed jobs; a failure that
+repeats is a bug on `main`, fixed by a PR like any other. Start a nightly run
+by hand with `gh workflow run ci.yml --ref main` (the same jobs, but no
+issue).
+
+The Release workflow ships as before: it starts when the push run on `main`
+concludes, and a reused run concludes `success` like a full one
+(`docs/RELEASE.md`). Its iOS and Android jobs build and sign the app
+themselves, so a native build break still stops the upload. A nightly run
+does not start a release (`plan` takes green push runs only), and its no-op
+Release run queues alone, like the one after a red push run, so neither
+replaces a pending one that ships.
+`scripts/e2e-durations.sh` reads the shards' times from the nightly runs
+first, since reused pushes have no e2e results. Caches: branch runs restore
+`main`'s entries, which a reused push no longer writes. After a cache key
+changes (a Flutter bump, a lockfile, a new NDK), PRs run cold until the next
+nightly run, or a manual run on `main`, has saved the new entry.
+A manual run on `main` has its own concurrency group per run, like the
+nightly one, so neither cancels the other.
 
 ## On-demand e2e (job 27)
 
@@ -550,7 +598,7 @@ What a PR waits for now:
   in the 5 full runs above. One real filtered run so far: Dependabot's npm
   PR (#33), `ci-ok` at 3:58.
 - A docs-only change waits about 30 s.
-- A change to the CI definition runs everything, like a push to `main`.
+- A change to the CI definition runs everything, like a push to `main` did then.
   After a cache key changes (a Flutter bump, a new NDK), the first run on
   `main` refills the Gradle and NDK cache. The first `main` run after this
   job's merge took 6:49, android 6:43 against ~2:45 once cached. Branch runs
