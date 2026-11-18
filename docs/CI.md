@@ -7,9 +7,35 @@ branch, with a spec filter, use `scripts/ci-e2e.sh` (On-demand e2e, below).
 
 ## Gates
 
-Each CI job installs its tools and runs one script in `scripts/gates/`.
-`scripts/verify.sh` runs the same scripts locally, so a local run and CI check
-the same things.
+Each gate is one script in `scripts/gates/`, and `scripts/verify.sh` runs the
+same scripts locally, so a local run and CI check the same things.
+
+### Jobs and gates (job 309)
+
+A CI job installs its tools and runs one gate, or several small ones. GitHub
+runs at most 20 of the repository's jobs at once, and a job that runs for 20 s
+still holds a runner for its setup, so the small gates share jobs:
+
+| Job | Gates | Runs when |
+| --- | --- | --- |
+| `lint` | `gitleaks`, `changelog` (pull requests only, not Dependabot), `lint` | always, but a reused `main` push (job 308) |
+| `deno` | `functions`, `nexus`, `fg-cli` | `heavy` |
+| `site` | `site`, `site-agent` | always, but a reused `main` push |
+| `db`, `e2e` (4 shards) | their own | `stack` |
+| `flutter`, `web-prod` | their own | `app` |
+| `emails`, `fastlane`, `android`, `ios`, `ios-storekit` | their own | their own switch |
+
+In a job of several gates each gate is its own step, and a gate after the first
+runs `if: ${{ !cancelled() ... }}`: a failed `gitleaks` still lets `lint`
+report its findings in the same run. The step's name in the run is
+`Run scripts/gates/<gate>.sh`. `scripts/check-gates.sh` (lint gate) fails
+unless exactly one ci.yml job runs each gate, once, that job is in `ci-ok`'s
+`needs`, and every gate after a job's first has that `if:`. It also refuses a
+second gate in a matrix job (the e2e shards would run it four times) and any
+`continue-on-error`. `scripts/ci-changes-test.sh` holds the table above, from
+job to switch, and fails when a job moves to another switch.
+A code PR started 17 jobs before (with `changes` and `ci-ok`), 20 with the
+native gates; now 12 and 15 (`docs/done/309.md`).
 
 | Gate | What it checks | Runs locally |
 | --- | --- | --- |
@@ -190,9 +216,28 @@ the sleeping phone).
 The `changes` job (`scripts/ci-changes.sh`) reads the PR's changed files:
 
 - Only `docs/` and Markdown changed (the verify skill's files under
-  `.cursor/` and `.claude/` count as code): only `gitleaks`, `lint`,
-  `site` and `site-agent` run. Both site gates always run because the guides
-  are Markdown.
+  `.cursor/` and `.claude/` count as code): only the `lint` and `site` jobs
+  run. The site job always runs because the guides are Markdown.
+- `heavy` (the `deno` job): any change that is not documentation.
+- `stack` (`db` and the e2e shards): any change but documentation and the
+  paths off the app: `site/`, `nexus/`, `marketing/`, `research/`,
+  `mcp-proxy/`, `tool/hotspots/` and `tool/hillclimb/` (job 309). A PR that
+  only changes those runs `lint`, `deno` and `site`.
+- `app` (`flutter` and `web-prod`): as `stack`, and off as well when the rest
+  is `supabase/`, `alexa/` or `e2e/`. A migration, a function or an e2e spec
+  runs db and e2e, not the Flutter build and tests. The exception is what the
+  Flutter tests read outside `app/`: the parity tables in `supabase/tests/`,
+  `supabase/classifier/`, two shared sources in `supabase/functions/_shared/`,
+  `docs/RELEASE.md`, `docs/consent/` and the guides in `site/content/guides/`.
+  These turn `app` on (and `heavy`), not `stack`. `scripts/ci-changes-test.sh`
+  finds every `'../...'` path literal in the Flutter tests and fails when one
+  of them does not turn `app` on; a path built from a variable root is not
+  seen, so write it as one literal.
+  `docs/hillclimb/`, which the nexus tests read, turns `heavy` on.
+  Every other path, `scripts/` included, runs everything.
+  The job 309 brief also asked to skip e2e for DB-only PRs. That rule was not
+  adopted. The e2e suite is the only test where the app, the migrated schema,
+  RLS and the edge functions run together (DECISIONS, job 309).
 - `android`, `ios` and `ios-storekit` run when `app/ios/`, `app/android/`
   or `app/pubspec.*` changed, or their own gate scripts, their iOS build
   (`scripts/ios/build-for-testing.sh`), or the two checks the ios gate runs on the built app (`scripts/siri-vocabulary.py`,
@@ -207,8 +252,8 @@ The `changes` job (`scripts/ci-changes.sh`) reads the PR's changed files:
   `scripts/lib.sh` or `scripts/e2e-summary.sh` runs everything, and so does
   the nightly run on `main` or a manual run. A push to `main` mostly runs
   nothing ([Main and the nightly run](#main-and-the-nightly-run-job-308)).
-- A gate's own script (`scripts/gates/<gate>.sh`) is code: it runs the heavy
-  gates and its own job, but `android`, `ios` and `ios-storekit` only when it is theirs.
+- A gate's own script (`scripts/gates/<gate>.sh`) is code: it runs the heavy,
+  stack and app gates and its own job, but `android`, `ios` and `ios-storekit` only when it is theirs.
   Until job 221 any gate script ran everything. That rule, applied to the
   full file lists of the 136 PRs merged from 7 November to 14 November
   2026, 19:13 UTC, turns the native gates on for 32: 14 for a native path
@@ -219,7 +264,7 @@ The `changes` job (`scripts/ci-changes.sh`) reads the PR's changed files:
   in all (with e2e in two shards). `scripts/ci-changes-test.sh` (lint gate)
   holds the table of paths, and checks for every gate that a change to its
   script, or to a script it runs as `$REPO_ROOT/scripts/<file>`, turns on
-  the switch its job runs on.
+  the switch of the job that runs it.
 - The filter reads the range with `--no-renames`: a file moved out of
   `app/ios/` counts as a change there, not only where it went.
 - `e2e.yml` and `scripts/ci-e2e.sh` (On-demand e2e) count like
@@ -243,8 +288,9 @@ On a push to `main`, the `changes` job asks `scripts/ci-main-reuse.sh`:
 
 - **Reuse.** A merged PR into `main` has the commit, its head has the same
   tree and the same single parent, and the newest `ci-ok` on that head
-  passed. Then only `changes`, `gitleaks`, `keepalive-schedule` and `ci-ok`
-  run; every other gate is skipped, and `ci-ok` passes in about a minute.
+  passed. Then only `changes`, `keepalive-schedule` and `ci-ok` run; every
+  gate is skipped (gitleaks too since job 309 moved it into the `lint` job:
+  the PR run scanned the same tree), and `ci-ok` passes in about a minute.
 - **Otherwise** (no PR, another tree or parent, `ci-ok` not green, an API
   error), the push runs what its PR would have: `scripts/ci-changes.sh`
   over `HEAD^..HEAD`. A commit that changed a native path runs `android`,
@@ -275,6 +321,25 @@ changes (a Flutter bump, a lockfile, a new NDK), PRs run cold until the next
 nightly run, or a manual run on `main`, has saved the new entry.
 A manual run on `main` has its own concurrency group per run, like the
 nightly one, so neither cancels the other.
+
+## The e2e budget (job 309)
+
+Every PR waits for the e2e shards, and the suite grew from 153 tests on
+1 November 2026 to 290 on 18 November. The lint gate runs `node
+e2e/budget.mjs`. It lists the suite as CI runs it (every project, without
+`@perf` and the separate integration-lock run) and adds each test's median
+seconds from `e2e/shard-durations.json`. A test without a measured duration
+counts as the median one. The gate fails when the count or the seconds exceed
+`e2e/budget.json`, and prints a warning from 98 % of either.
+
+- Test what one screen shows in a Flutter widget test (`app/test/`). Write an
+  e2e test for what needs the real stack, the browser or two clients.
+- A PR that needs more raises `e2e/budget.json` and says why in its
+  description.
+- Job 309 set the budget at 300 tests and 3,800 s. The suite then had 288
+  tests and about 3,650 s, after removing two duplicates (`DONE_SUMMARY.md`,
+  job 309). That leaves about a day and a half of November's growth (8 tests
+  a day) before a PR must decide.
 
 ## On-demand e2e (job 27)
 
@@ -607,6 +672,10 @@ counted from the run's start, and their median and range. With
 `--steps <job>` it adds the median step durations of one job (`e2e` takes
 every shard's steps, `e2e (1)` one shard's). Use it before and after a CI
 change.
+`scripts/ci-queue.sh [--since <date>]` lists finished pull_request runs: the
+jobs that ran, the longest wait of an e2e shard for a runner, and `ci-ok`'s
+end. It then counts the runs whose e2e waited more than 1 and 3 minutes
+(job 309).
 `scripts/ci-ios-phases.sh <run-id>...` splits each ios and ios-storekit job
 of those runs (every attempt) into the phases of `scripts/gates/ios.sh`
 (config, build, checks, boot, tests; DECISIONS, Job 118) and

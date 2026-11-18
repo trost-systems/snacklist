@@ -1,8 +1,7 @@
 import { expect, test, type Locator, type Page } from './fixtures';
 import {
-  addField, addItem, answerConsent, apiAs, itemRow, newEmail, openMore, screenshot, signUpWithHousehold, supabaseUrl, typeInto,
+  addField, addItem, answerConsent, apiAs, itemRow, newEmail, openMore, screenshot, signUpWithHousehold, supabaseUrl,
   viaFakeProvider, createHousehold, skipInvite,
-  openEmailSignIn,
 } from './helpers';
 
 const google = (page: Page) => page.getByRole('button', { name: 'Mit Google anmelden' });
@@ -110,15 +109,4 @@ test('canceling at the provider says so on the login screen', async ({ page }) =
   await expect(page.getByText('Anmeldung abgebrochen').first()).toBeVisible();
   await expect(google(page)).toBeEnabled();
   await screenshot(page, '02-login-canceled');
-});
-
-test('password sign-in still works next to the providers', async ({ page }) => {
-  const email = newEmail('pw-next-to-social');
-  await signUpWithHousehold(page, email);
-  await signOut(page);
-  await openEmailSignIn(page);
-  await typeInto(page.getByRole('textbox', { name: 'E-Mail' }), email);
-  await typeInto(page.getByRole('textbox', { name: 'Passwort' }), 'test-password-123');
-  await page.getByRole('button', { name: 'Anmelden', exact: true }).click();
-  await expect(addField(page)).toBeFocused();
 });

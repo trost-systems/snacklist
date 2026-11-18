@@ -5,7 +5,8 @@ import { fakeOidcPort, webPort as port, stack } from './stack';
 
 // Job 28: the timings in tests/perf.spec.ts take 4-5 minutes, so they run only when named:
 // `npx playwright test tests/perf.spec.ts`, or `scripts/ci-e2e.sh --spec tests/perf.spec.ts`.
-const timingsAsked = process.argv.some((arg) => /perf/.test(arg));
+// The arguments only: a checkout whose path names perf ran them too (job 309).
+const timingsAsked = process.argv.slice(2).some((arg) => /perf/.test(arg));
 // Job 33c: the e2e build's stand-in PostHog host, for the production CSP serve.mjs sends.
 // Job 50: the run of integration-lock.spec.ts alone (scripts/gates/e2e.sh).
 const lockRun = process.env.FG_E2E_INTEGRATION_LOCK === '1';

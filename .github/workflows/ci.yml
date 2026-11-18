@@ -1,7 +1,9 @@
 # Every gate a PR must pass. ci-ok is the single required check.
 # Structure (concurrency, SHA-pinned actions, ci-ok gate) follows trost-systems/emotely.
-# Each job installs tools and runs one scripts/gates/<job>.sh, the script scripts/verify.sh runs
-# locally too (scripts/check-gates.sh keeps it that way). Measurements: docs/CI.md.
+# Each job installs tools and runs scripts/gates/<gate>.sh, the scripts scripts/verify.sh runs
+# locally too: one gate per job, or several small ones in one job, since each job holds one of the
+# 20 runners GitHub gives us at once (job 309). scripts/check-gates.sh keeps every gate run by
+# exactly one job. Measurements: docs/CI.md.
 name: CI
 
 on:
@@ -42,13 +44,14 @@ env:
 
 jobs:
   # Which gates this change needs (scripts/ci-changes.sh lists the paths): docs-only changes
-  # skip the heavy gates; android and ios, fastlane, and emails each run only for their own.
+  # skip the heavy gates, site-only ones db and e2e too, server- and e2e-only ones flutter and
+  # web-prod (job 309); android and ios, fastlane, and emails each run only for their own.
   # Job 308: a push to main whose PR run tested the same tree runs none of them (reuse), any
   # other push runs what its PR would have; the nightly and a manual run run everything.
   # Job 307: a PR opened as a draft runs nothing. Its branch is not yet the one commit main
   # takes; scripts/push-pr.sh pushes that seconds later and marks the PR ready. Opened as a
   # draft, the run of the first push no longer starts only to be cancelled (62 runs a week).
-  # changes, gitleaks, changelog and ci-ok carry this condition; the other jobs need changes.
+  # changes and ci-ok carry this condition; the other jobs need changes.
   changes:
     if: github.event.action != 'opened' || !github.event.pull_request.draft
     runs-on: ubuntu-24.04
@@ -60,6 +63,8 @@ jobs:
     outputs:
       reuse: ${{ steps.filter.outputs.reuse }}
       heavy: ${{ steps.filter.outputs.heavy }}
+      stack: ${{ steps.filter.outputs.stack }}
+      app: ${{ steps.filter.outputs.app }}
       native: ${{ steps.filter.outputs.native }}
       fastlane: ${{ steps.filter.outputs.fastlane }}
       emails: ${{ steps.filter.outputs.emails }}
@@ -80,7 +85,7 @@ jobs:
               echo "$reuse" | tee -a "$GITHUB_OUTPUT"
               # A push of several commits (not merge-pr.sh's one) has no range here: all gates.
               if [ "$reuse" = reuse=true ]; then
-                printf 'heavy=false\nnative=false\nfastlane=false\nemails=false\n' | tee -a "$GITHUB_OUTPUT"
+                printf 'heavy=false\nstack=false\napp=false\nnative=false\nfastlane=false\nemails=false\n' | tee -a "$GITHUB_OUTPUT"
               elif [ "$BEFORE" = "$(git rev-parse HEAD^1)" ]; then
                 scripts/ci-changes.sh HEAD^1 HEAD | tee -a "$GITHUB_OUTPUT"
               else
@@ -90,29 +95,20 @@ jobs:
             *) scripts/ci-changes.sh | tee -a "$GITHUB_OUTPUT" ;;
           esac
 
-  gitleaks:
-    if: github.event.action != 'opened' || !github.event.pull_request.draft
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          fetch-depth: 0
-      # Job 113: pinned tools come from the cache, else scripts/ci/download.sh with retries.
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cache/fg-ci-tools
-          key: ci-tools-${{ runner.os }}-gitleaks-${{ env.GITLEAKS_VERSION }}
-      - run: scripts/ci/install-tools.sh gitleaks
-      - run: scripts/gates/gitleaks.sh
-
+  # Job 309: a job may run several gates (docs/CI.md, Jobs and gates). Each gate is its own step,
+  # and a later gate runs after an earlier one failed, so one run reports every failure.
+  # The lint job: gitleaks, the changelog (on pull requests) and lint. Job 308: not on a push to
+  # main that reuses its PR's run, which ran them on the same tree.
   lint:
     needs: changes
     if: needs.changes.outputs.reuse != 'true'
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
+      # gitleaks reads the full history; the changelog gate the PR head (HEAD^2).
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: 22
@@ -124,29 +120,24 @@ jobs:
         with:
           # tool/lint/ts/pack.ts lists every lint rule of exactly this Deno; bump both together.
           deno-version-file: .dvmrc
-      # actionlint for the workflows; ast-grep and squawk for scripts/lint.sh (job 12).
+      # Job 113: pinned tools come from the cache, else scripts/ci/download.sh with retries.
+      # gitleaks; actionlint for the workflows; ast-grep and squawk for scripts/lint.sh (job 12).
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/fg-ci-tools
-          key: ci-tools-${{ runner.os }}-actionlint-${{ env.ACTIONLINT_VERSION }}-ast-grep-${{ env.AST_GREP_VERSION }}-squawk-${{ env.SQUAWK_VERSION }}
-      - run: scripts/ci/install-tools.sh actionlint ast-grep squawk
-      - run: scripts/gates/lint.sh
-
-  # Job 39: the PR's `## Changelog` section (docs/CHANGELOG.md), on pull requests only. Dependabot
-  # PRs carry none and need none: their bumps are no user-visible change.
-  changelog:
-    if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' && !startsWith(github.head_ref, 'dependabot/') && (github.event.action != 'opened' || !github.event.pull_request.draft)
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          fetch-depth: 2
-      - run: scripts/gates/changelog.sh
+          key: ci-tools-${{ runner.os }}-gitleaks-${{ env.GITLEAKS_VERSION }}-actionlint-${{ env.ACTIONLINT_VERSION }}-ast-grep-${{ env.AST_GREP_VERSION }}-squawk-${{ env.SQUAWK_VERSION }}
+      - run: scripts/ci/install-tools.sh gitleaks actionlint ast-grep squawk
+      - run: scripts/gates/gitleaks.sh
+      # Job 39: the PR's `## Changelog` section (docs/CHANGELOG.md), on pull requests only.
+      # Dependabot PRs carry none and need none: their bumps are no user-visible change.
+      - if: ${{ !cancelled() && github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' && !startsWith(github.head_ref, 'dependabot/') }}
+        run: scripts/gates/changelog.sh
+      - if: ${{ !cancelled() }}
+        run: scripts/gates/lint.sh
 
   db:
     needs: changes
-    if: needs.changes.outputs.heavy == 'true'
+    if: needs.changes.outputs.stack == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -157,55 +148,34 @@ jobs:
           supabase-cli-version: ${{ env.SUPABASE_CLI_VERSION }}
       - run: scripts/gates/db.sh
 
-  functions:
+  # The Deno projects: the edge functions and their tooling, the ops dashboard (nexus/, job 156)
+  # and the fg verification CLI (job 05).
+  deno:
     needs: changes
     if: needs.changes.outputs.heavy == 'true'
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: ./.github/actions/deno
         with:
-          # The gate resolves frozen (job 220): the Deno that wrote the locks, not the newest 2.x.
+          # The gates resolve frozen (job 220): the Deno that wrote the locks, not the newest 2.x.
           deno-version-file: .dvmrc
       - run: scripts/gates/functions.sh
+      - if: ${{ !cancelled() }}
+        run: scripts/gates/nexus.sh
+      - if: ${{ !cancelled() }}
+        run: scripts/gates/fg-cli.sh
 
-  # The ops dashboard (nexus/, job 156): snapshot pipeline and page tests, the browser bundle.
-  nexus:
-    needs: changes
-    if: needs.changes.outputs.heavy == 'true'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: ./.github/actions/deno
-        with:
-          deno-version-file: .dvmrc
-      - run: scripts/gates/nexus.sh
-
-  # The guides site (site/, job 24a). Runs but on a reused main push: guide content is Markdown,
-  # which ci-changes.sh counts as documentation.
+  # The guides site (site/, job 24a), then snacklist.app for AI agents (job 93): the checks that
+  # need the network or a browser (the MCP probe, the served site, the waitlist form). Runs but on
+  # a reused main push (job 308): guide content is Markdown, which ci-changes.sh counts as
+  # documentation.
   site:
     needs: changes
     if: needs.changes.outputs.reuse != 'true'
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: site/package-lock.json
-      - run: scripts/gates/site.sh
-
-  # Job 93: snacklist.app for AI agents, the checks that need the network or a browser (the MCP
-  # probe, the served site, the waitlist form). Runs when site does.
-  site-agent:
-    needs: changes
-    if: needs.changes.outputs.reuse != 'true'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
@@ -215,7 +185,9 @@ jobs:
           cache-dependency-path: |
             site/package-lock.json
             site/checks/package-lock.json
-      - run: scripts/gates/site-agent.sh
+      - run: scripts/gates/site.sh
+      - if: ${{ !cancelled() }}
+        run: scripts/gates/site-agent.sh
 
   # Job 55: the Snacklist mails (emails/) and the Supabase templates built from them.
   emails:
@@ -232,21 +204,9 @@ jobs:
           cache-dependency-path: emails/package-lock.json
       - run: scripts/gates/emails.sh
 
-  fg-cli:
-    needs: changes
-    if: needs.changes.outputs.heavy == 'true'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: ./.github/actions/deno
-        with:
-          deno-version-file: .dvmrc
-      - run: scripts/gates/fg-cli.sh
-
   flutter:
     needs: changes
-    if: needs.changes.outputs.heavy == 'true'
+    if: needs.changes.outputs.app == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -260,7 +220,7 @@ jobs:
 
   web-prod:
     needs: changes
-    if: needs.changes.outputs.heavy == 'true'
+    if: needs.changes.outputs.app == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -280,7 +240,7 @@ jobs:
   # runs too (docs/CI.md, On-demand e2e).
   e2e:
     needs: changes
-    if: needs.changes.outputs.heavy == 'true'
+    if: needs.changes.outputs.stack == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     strategy:
@@ -410,7 +370,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
   ci-ok:
-    needs: [changes, gitleaks, lint, changelog, db, functions, nexus, site, site-agent, emails, fg-cli, flutter, web-prod, e2e, fastlane, android, ios, ios-storekit]
+    needs: [changes, lint, db, deno, site, emails, flutter, web-prod, e2e, fastlane, android, ios, ios-storekit]
     if: ${{ !cancelled() && (github.event.action != 'opened' || !github.event.pull_request.draft) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5

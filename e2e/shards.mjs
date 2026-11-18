@@ -10,6 +10,8 @@
 //   node shards.mjs show <total>   the planned shards' estimated times
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import process from 'node:process';
 
 // What shard 1 runs after its suite: integration-lock.spec.ts alone (31-33 s) and the fg sync
@@ -44,7 +46,7 @@ export function testsOf(report) {
   return tests;
 }
 
-const median = (values) => {
+export const median = (values) => {
   const sorted = [...values].sort((a, b) => a - b);
   const mid = Math.floor(sorted.length / 2);
   return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
@@ -111,9 +113,11 @@ export function plan(tests, durations, total) {
   return shards.map((s) => ({ tests: s.tests, estimate: Math.round(estimate(s)) }));
 }
 
-/** The suite as this checkout's config lists it (the stack must answer, as for a run). */
-function listSuite(extra = []) {
+/** The suite as this checkout's config lists it (the stack must answer, as for a run, or `env` name one). */
+export function listSuite(extra = [], env = process.env) {
   const out = execFileSync('npx', ['playwright', 'test', '--list', '--reporter=json', ...extra], {
+    cwd: new URL('.', import.meta.url),
+    env,
     encoding: 'utf8',
     maxBuffer: 1 << 26,
     stdio: ['ignore', 'pipe', 'inherit'],
@@ -123,7 +127,7 @@ function listSuite(extra = []) {
   return testsOf(report);
 }
 
-const readDurations = () => JSON.parse(readFileSync(DURATIONS, 'utf8'));
+export const readDurations = () => JSON.parse(readFileSync(DURATIONS, 'utf8'));
 
 function parseShard(arg) {
   const m = /^(\d+)\/(\d+)$/.exec(arg ?? '');
@@ -148,7 +152,7 @@ function main([command, ...args]) {
     const shard = plan(suite, readDurations(), total)[current - 1];
     writeFileSync(out, shard.tests.map((id) => `${id}\n`).join(''));
     // --test-list matches a title path as a prefix: what Playwright selects must be this list.
-    const selected = shard.tests.length ? listSuite(['--test-list', out]).map((t) => t.id) : [];
+    const selected = shard.tests.length ? listSuite(['--test-list', resolve(out)]).map((t) => t.id) : [];
     const want = new Set(shard.tests);
     if (selected.length !== want.size || !selected.every((id) => want.has(id))) {
       throw new Error(`the test list for shard ${current}/${total} selects ${selected.length} tests, not its ${want.size}`);
@@ -168,7 +172,7 @@ function main([command, ...args]) {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
     main(process.argv.slice(2));
   } catch (e) {
