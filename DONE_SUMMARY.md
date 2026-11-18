@@ -1709,3 +1709,13 @@ consent examples name connected apps, MCP and API keys (version 2026-11-18, ever
 again), §7 gets the API section with idempotency (24 h) and failure hashes (1 day), §9 gets
 `api_key_used`, and `api_begin` salts the failure hash (N-255). Not merged: PM, then Legal's
 hash-bound GO. `public_api` stays off. Hashes and details: [docs/done/270.md](docs/done/270.md).
+
+## Job 314: store app prototypes, rounds OS and SS (2026-11-18)
+
+This is a draft PR that must not be merged. It holds two prototype rounds; nothing in the app changed.
+- **OS ("Open <store> app"):** the pick is OS1, a key in the store's header (1 tap, +0 px), with the app card on the store's screen. The runner-up is OS4, a store menu.
+- **SS (recognising stores across countries):** the pick is SS2, type as today with matches offered and "Is this Lidl?" once, using SS5's rules. The runner-up is SS5.
+- **Data model proposal:** a registry keyed by chain and ISO country, in the repo as `retailers.json`, loaded into a public `retailers` table, with three nullable store columns. A new country needs no app release.
+- **Registry:** 58 verified entries in 8 countries, with no guessed ids.
+
+The preview is `dpl_DCsGpHfgWuk3zykuQLSewWqPMSWf` (the lead mints the share link). Details: [docs/done/314.md](docs/done/314.md).
