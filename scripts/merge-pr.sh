@@ -91,7 +91,7 @@ if [[ $wait == 1 ]]; then
   deadline=$((SECONDS + wait_minutes * 60))
   ended_sleeps=0
   log "waiting for ci-ok on $head (up to $wait_minutes min)"
-  while [[ $state != pass && $state != fail && $state != cancel ]]; do
+  while [[ $state != pass && $state != fail && $state != cancel && $state != skipping ]]; do
     if [[ $SECONDS -ge $deadline ]]; then
       echo "ci-ok is still '${state:-missing}' on $head after $wait_minutes min; not merging. Check the run, then rerun (release the merge lock meanwhile)" >&2
       exit 1
@@ -113,6 +113,11 @@ if [[ $wait == 1 ]]; then
     }
     state="$(ci_ok)"
   done
+fi
+# Skipped only in the run of a draft's opening push (ci.yml, job 307): no gate ran on this commit.
+if [[ $state == skipping ]]; then
+  echo "ci-ok was skipped on $head: no CI ran on it (the run of a PR opened as a draft). Make a new commit (git commit --amend --no-edit), push it with scripts/push-pr.sh, then rerun" >&2
+  exit 1
 fi
 if [[ $state != pass ]]; then
   echo "ci-ok is '${state:-pending or missing}' on $head; not merging" >&2

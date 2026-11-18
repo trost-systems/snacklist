@@ -161,11 +161,15 @@ reasons are in [`docs/DECISIONS.md`](docs/DECISIONS.md).
   `supabase/` or `alexa/`, and stops the others without one; the
   `changelog` gate checks the structure.
 - `main` takes one commit per PR with `ci-ok` green. To land a PR:
-  1. Push the branch once (`git push -u origin HEAD`) and `gh pr create`.
+  1. Push the branch once (`git push -u origin HEAD`) and `gh pr create --draft`.
+     A PR opened as a draft runs no CI; without `--draft` its first run is
+     cancelled seconds later by step 2's push.
   2. From then on push only with `scripts/push-pr.sh`, fix rounds included.
-     It rebases onto `origin/main` and pushes the one commit main takes
-     (subject `<PR title> (#n)`, noreply author, trailers). The pre-push
-     hook warns when a PR branch goes up as several commits.
+     It rebases onto `origin/main`, runs `scripts/push-checks.sh` (`lint.sh`,
+     and format, l10n and analyze where the app changed: under a minute) and
+     stops when one fails, then pushes the one commit main takes (subject
+     `<PR title> (#n)`, noreply author, trailers) and marks a draft ready.
+     The pre-push hook warns when a PR branch goes up as several commits.
   3. Under the merge lock: `scripts/merge-pr.sh --wait <n>` waits for
      `ci-ok` on that commit and rebase-merges it. One CI run per merge.
      It gives up after 30 minutes. A run with the ios job can take longer:

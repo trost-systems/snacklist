@@ -1676,3 +1676,18 @@ Before: main `ci-ok` median 24:11 (16:19 to 39:23, n=9). The after numbers (2 me
 snacklist.app (`/inhalte-melden`, `/en/report`), its deny-all storage, confirmation and decision
 mails, the Impressum contact point, privacy §10 and `docs/MODERATION.md`. Waits for PM's check
 and Legal's hash GO before it merges.
+
+## Job 307: checks before every push, no CI on a draft's first push, the mcp.spec flake (PR #545)
+
+- `scripts/push-pr.sh` now runs `scripts/push-checks.sh` before it pushes: `lint.sh` always, plus
+  actionlint, shellcheck, the TS pack, the e2e tsc, and the flutter gate without tests, each only
+  when its area changed. It pushes nothing when one fails. A clean run takes about 36 s on hz, or
+  46 s when the app changed; four planted slips from last week's failures were caught in 40 s.
+  These checks catch 20 of last week's 28 readable lint and flutter failures.
+- Of the 138 PR runs cancelled last week, 62 (365 runner-minutes) were a PR's first run, which
+  push-pr.sh's squash cancelled seconds later. PRs opened with `gh pr create --draft` now skip
+  every job on that run (#545's run 44342467552: 20 jobs skipped, 2 s), and push-pr.sh marks the
+  draft ready after its push. The other 65 were fix rounds, where cancelling is right.
+- OC3a: the `mcp.spec.ts:27` flake was already fixed at its root by #440 on 14 November: 12 hangs
+  before it, 0 failures in 325 CI runs since. No code change.
+- Details and numbers: [docs/done/307.md](docs/done/307.md).

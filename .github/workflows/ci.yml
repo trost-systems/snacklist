@@ -45,7 +45,12 @@ jobs:
   # skip the heavy gates; android and ios, fastlane, and emails each run only for their own.
   # Job 308: a push to main whose PR run tested the same tree runs none of them (reuse), any
   # other push runs what its PR would have; the nightly and a manual run run everything.
+  # Job 307: a PR opened as a draft runs nothing. Its branch is not yet the one commit main
+  # takes; scripts/push-pr.sh pushes that seconds later and marks the PR ready. Opened as a
+  # draft, the run of the first push no longer starts only to be cancelled (62 runs a week).
+  # changes, gitleaks, changelog and ci-ok carry this condition; the other jobs need changes.
   changes:
+    if: github.event.action != 'opened' || !github.event.pull_request.draft
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
@@ -86,6 +91,7 @@ jobs:
           esac
 
   gitleaks:
+    if: github.event.action != 'opened' || !github.event.pull_request.draft
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -129,7 +135,7 @@ jobs:
   # Job 39: the PR's `## Changelog` section (docs/CHANGELOG.md), on pull requests only. Dependabot
   # PRs carry none and need none: their bumps are no user-visible change.
   changelog:
-    if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' && !startsWith(github.head_ref, 'dependabot/')
+    if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' && !startsWith(github.head_ref, 'dependabot/') && (github.event.action != 'opened' || !github.event.pull_request.draft)
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -405,7 +411,7 @@ jobs:
 
   ci-ok:
     needs: [changes, gitleaks, lint, changelog, db, functions, nexus, site, site-agent, emails, fg-cli, flutter, web-prod, e2e, fastlane, android, ios, ios-storekit]
-    if: ${{ !cancelled() }}
+    if: ${{ !cancelled() && (github.event.action != 'opened' || !github.event.pull_request.draft) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions: {}

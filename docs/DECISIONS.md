@@ -15704,3 +15704,67 @@ Peter picked NR1 (web form now, in-app entry later behind a flag). Calls made wi
       line names the report mails. The eight legal files carry the date 17 Nov.
     - The migration moved to `20261117192753_content_reports.sql`, because main gained newer
       migrations.
+
+## Job 307: checks before every push, no CI on a draft's first push, the mcp.spec flake (2026-11-18)
+
+1. **push-pr.sh runs `scripts/push-checks.sh` before it pushes, and pushes nothing when a check
+   fails.** The checks are those of the lint and flutter gates that need neither tests nor a stack,
+   chosen by the changed paths (table in `docs/CI.md`, "Checks before the push"): `scripts/lint.sh`
+   always, `actionlint`, `shellcheck` on the changed scripts, the TypeScript pack, the e2e `tsc`,
+   and `scripts/gates/flutter.sh --no-tests` when `app/` changed. The flutter gate gained
+   `--no-tests` rather than a copy of its lockfile, l10n, format and analyze lines, so the two
+   can't drift; the shellcheck file list moved to `shell_scripts` in `lib.sh` for the same reason.
+   Evidence from the week to 18 November: 29 of 49 failed PR runs failed in lint or flutter; of
+   the 28 job logs still readable, 20 are failures these checks catch (8 schema checks, 7 of them a
+   deleted migration of main, 3 shellcheck, 2 TS pack, 1 e2e tsc, 1 old product name, 2 format, 1 l10n,
+   2 lockfiles). On hz a clean run takes 36 s without app changes and about 46 s with them; a run
+   with four of those slips planted failed all four by name in 40 s.
+2. **Left out of the checks: tests.** flutter test (3 min here), the lint gate's script tests and
+   e2e would make a push take minutes; they failed 8 of the 28 runs and stay in CI and `verify.sh`.
+   `scripts/lint.sh` runs on every push although it takes 34 s: its schema check compares with
+   main, and a stale base deletes main's migrations whatever the branch changed.
+3. **Untracked files fail the checks that would read them** (review 0). Format, analyze and `tsc`
+   read the directory, CI the commit: an import of a file never `git add`ed passed locally and
+   failed in CI. `flutter` and `e2e-tsc` first name untracked files in `app/` or `e2e/`.
+   **`PUSH_PR_SKIP_CHECKS=1` skips all checks.** A machine without a check's tool (Flutter of CI's
+   version, pinned ast-grep) could not push otherwise. push-pr.sh logs that it skipped them.
+4. **Why 138 PR runs were cancelled in a week.** Every cancelled run was superseded by a run on a
+   newer commit of the same branch (`cancel-in-progress`, group = the ref). Classified by the
+   cancelled commit against the next one: 43 were a PR's first run on its unsquashed commits,
+   cancelled seconds later by push-pr.sh's squash of the same tree (median 0.28 min, 165
+   runner-minutes); 19 more were first runs whose squash also rebased or added a fix (200
+   runner-minutes); 65 were fix rounds pushed while the run before was still going (median 9.7
+   min, 2,493 runner-minutes); 6 were re-pushes of the same tree after a description edit (51
+   runner-minutes); 5 commits were gone. The concurrency group works as meant: cancelling a run on
+   code that has since changed is right. The waste is the first run, which tests a commit that is
+   never landed.
+5. **A PR opened as a draft runs no CI on its opening push.** `changes`, the two jobs that
+   need nothing (gitleaks, changelog) and `ci-ok` skip when the event is `opened` and the PR is a
+   draft; every other job needs `changes` (lint, site and site-agent since job 308), so it skips too. AGENTS.md and docs/CI.md now say
+   `gh pr create --draft`, and push-pr.sh marks a draft ready after its push. `ready_for_review` is
+   not among the workflow's types, so that starts no second run. A skipped `ci-ok` on a draft can't
+   land anything: GitHub merges no draft, and merge-pr.sh needs `ci-ok` passed on the landing
+   commit. Proof: #545 opened as a draft got run 44342467552 with all 20 jobs skipped in 2 s.
+   The one way to a head with only that skipped `ci-ok` is a draft marked ready without a push
+   (by hand, or push-pr.sh with nothing to push). merge-pr.sh then stops at once and asks for a new
+   commit, instead of waiting out its 30 minutes for a pass that never comes (review 0).
+   Rejected: dropping `opened` from the types (Dependabot's PRs and PRs opened by hand would get no
+   CI), and predicting the PR number to push the landing commit first (parallel jobs race for it).
+6. **Not changed: fix rounds.** The 65 cancelled fix-round runs are an agent pushing again before
+   CI ended. The checks in 1 remove the share of them that a lint or format slip caused; the rest is
+   review and own findings, and cancelling the stale run is the cheapest answer to them.
+7. **OC3a, the `mcp.spec.ts:27` flake: already fixed at its root by #440 (job 219c, 14 November
+   10:46 UTC); no code change here.** A subagent read the e2e job logs of every CI and on-demand
+   e2e run from 8 to 18 November (996 runs). The test failed 12 times, all on shard 2 and all the
+   same hang: the SDK's first, tokenless POST to the mcp function at `client.connect()`
+   (`mcp.spec.ts:54`) got no answer until the 60 s test timeout. The stack logs of run 43566202026
+   show the edge runtime's `user body write aborted` 19 ms into that request and Kong's 499 when the
+   test was killed. That is the race job 219c measured and fixed in `withTelemetry`, which now
+   reads an unread request body before it answers. The last hang was at 06:31 UTC on 14 November,
+   before #440 landed. Since then the test (line 28 after #440's import) passed in all 325 CI runs
+   scanned, with no failure and no "no response headers" deadline error. At the 3.6 % rate measured
+   before, 0 of 325 has a chance of about 1 in 150,000. The OpenClaw report's "6 failures last week"
+   counted 11 to 18 November, and those 6 all fell before the fix. The three functions outside
+   `withTelemetry` (waitlist, feedback-digest, feedback-screenshots) were checked as well:
+   feedback-screenshots reads unread bodies itself, and the other two answer with a Content-Length,
+   which job 219c measured as never lost (0 of 100).

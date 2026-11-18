@@ -301,3 +301,10 @@ fg_on_repo_stack() {
   FG_STATE_DIR="$(mktemp -d)"
   export FG_PORT_PREFIX FG_PROJECT_ID FG_STACK_WORKDIR FG_STATE_DIR
 }
+
+# The shell scripts the lint gate runs shellcheck on, one per line, relative to the repository
+# root (scripts/push-checks.sh checks the changed ones).
+shell_scripts() {
+  (cd "$REPO_ROOT" && printf '%s\n' scripts/*.sh scripts/gates/*.sh scripts/backup/*.sh scripts/ci/*.sh \
+    scripts/release/*.sh scripts/checks/*.sh scripts/ios/*.sh nexus/scripts/*.sh scripts/fg .githooks/*)
+}
