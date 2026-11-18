@@ -1576,3 +1576,33 @@ details, which gives the same item. The list's top bar (switcher, Anpassen, sync
 the sheet is open, and the list behind it takes that room. It fades back with the close. Flag off is
 unchanged. Details, tests and evidence: `docs/done/288.md`, screenshots `docs/screenshots/288/`.
 TestFlight: the next green main build after the merge.
+
+## Job 299: land the beta batch
+
+Landed from the approved batch, in order:
+
+| PR | Result |
+| --- | --- |
+| #526 voice target icon align | merged as `02e1cec2` on main, 2026-11-18 00:54 CET |
+| #533 add sheet refine | merged as `0ca5dcc9` on main, 2026-11-18 01:42 CET |
+| #528 invite copy generic | not landed. Rebase had one conflict (two feature docs, both sides' wording kept via a word-level merge); CI then failed on lint and 8 golden tests, see below |
+| #534 dictation copy follow-up | not started, blocked behind #528's red CI |
+| #510 catalog drafting S4 | not started, same reason |
+
+**Why #528 stopped.** CI on the rebased head (`e653d794`) failed twice (once after `gh run rerun --failed`):
+- `lint`: shellcheck SC2329 (info) on `scripts/e2e-stress.sh` line 69, a file the PR does not touch. Re-running lint on main's own commit `0ca5dcc9` (CI run 44209959308, attempt 2) now fails the same way, though it passed at 00:42 UTC. So main is red for every PR; a likely cause is a changed runner image or shellcheck version.
+- `flutter`: 8 golden tests (list wide, add sheet wide, prices on the list, price editor with keyboard; light and dark), 13 px diffs. The same files pass locally (Flutter 3.47, also under `TZ=UTC`). Whether main's own commit fails them now is not known (the flutter job could not be rerun).
+- `e2e (4)` failed once as well.
+
+Nothing was changed in the PR beyond the conflict resolution. Line written to `~/groceries-ops/NEEDS_LEAD.md`.
+
+**Main's CI today (checked, not assumed).** I reran the whole CI run of main's own commit `0ca5dcc9` (run 44209959308, attempt 3, 02:5x UTC). It fails the same things #528 fails: `lint` (SC2329 on `scripts/e2e-stress.sh`), `flutter` (the same 8 goldens, 13 px diffs) and `e2e (4)`. Attempt 1 at 00:42 UTC was green. So none of these failures comes from #528, and the lead needs a fix for both the shellcheck finding and the 8 goldens (cause not found; the goldens pass on hz with Flutter 3.47, also under `TZ=UTC`).
+
+**Release did not ship #526 or #533.** The `Release` run on `0ca5dcc9` (44214167091, 01:13 UTC) failed in the `android` job: `Could not resolve all artifacts for configuration 'classpath'` / `Could not resolve org.jetbrains.kotlin:compose-compiler-gradle-plugin:2.4.10`. That is a dependency-resolution failure, probably transient; the 02:44 UTC rerun was skipped. Until a Release run goes green, TestFlight and Play have not received #526 or #533, so the "TestFlight: the next green main build" lines above are not yet true.
+
+**Final main.** `0ca5dcc9`. CI: green at 00:42 UTC, red when rerun (see above). Release: red.
+
+**Not attempted.** #534 and #510 were not pushed through `push-pr.sh`: ci-ok cannot go green while lint, flutter and e2e fail on main. Their last CI runs (before the drift) were green. #510 does not touch the pubspec, native projects, gates or CI definition, so the default merge wait is enough.
+
+**To finish.** After main's lint and goldens are fixed (add `SC2329` to the `shellcheck disable` above `resume()` in `scripts/e2e-stress.sh`; find the golden cause) and a Release run is retried, for each of 528, 534, 510 in this order:
+`~/groceries-ops/bin/merge-lock bash -c 'cd <worktree on the PR branch> && scripts/push-pr.sh && scripts/merge-pr.sh --wait <n>'`
