@@ -336,11 +336,16 @@ test('wide: feedback beside an open More page sends no screen (1366x1024)', asyn
 
 // Job 267 (flag feedback-fb2): from More the screen before More can be marked up and sent along; it
 // lands in the private bucket under the sender's folder, and the row names it.
-/** The tomato pixels ([x, y]) of [png], the annotator's marks. Decoded in a blank page, out of reach of the app's CSP. */
-async function tomatoPixels(page: Page, png: Uint8Array): Promise<Array<[number, number]>> {
+/** The pixels ([x, y]) of [png] less than [within] off [rgb] per channel. Decoded in a blank page, out of reach of the app's CSP. */
+async function pixelsNear(
+  page: Page,
+  png: Uint8Array,
+  rgb: [number, number, number],
+  within = 40,
+): Promise<Array<[number, number]>> {
   const probe = await must(page.context().browser(), 'browser').newPage();
   try {
-    return await probe.evaluate(async (base64) => {
+    return await probe.evaluate(async ([base64, [tr, tg, tb], within]) => {
       const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
       const image = await createImageBitmap(new Blob([bytes], { type: 'image/png' }));
       const canvas = new OffscreenCanvas(image.width, image.height);
@@ -351,13 +356,12 @@ async function tomatoPixels(page: Page, png: Uint8Array): Promise<Array<[number,
       const hits: Array<[number, number]> = [];
       for (let i = 0; i + 2 < data.length; i += 4) {
         const [r, g, b] = [data[i] ?? 0, data[i + 1] ?? 0, data[i + 2] ?? 0];
-        // SnacklistColors.light.tomato, 0xFFFF5B3A.
-        if (Math.abs(r - 0xff) < 40 && Math.abs(g - 0x5b) < 40 && Math.abs(b - 0x3a) < 40) {
+        if (Math.abs(r - tr) < within && Math.abs(g - tg) < within && Math.abs(b - tb) < within) {
           hits.push([(i / 4) % image.width, Math.floor(i / 4 / image.width)]);
         }
       }
       return hits;
-    }, Buffer.from(png).toString('base64'));
+    }, [Buffer.from(png).toString('base64'), rgb, within] as const);
   } finally {
     await probe.close();
   }
@@ -402,6 +406,19 @@ test('flag on: a screenshot from More is marked up, uploaded and named by the ro
   await page.mouse.down();
   for (const x of [110, 140, 170, pen.to]) await page.mouse.move(x, pen.y, { steps: 3 });
   await page.mouse.up();
+  // Job 290 (Legal C1): „Verdecken“ hides the list's first rows under an opaque box, dragged open
+  // up and to the left (review 1: a box anchored at its moving top-left shrank to the pointer).
+  const cover = { left: 60, top: 260, right: 250, bottom: 330 };
+  const coverTool = page.getByRole('radio', { name: 'Verdecken', exact: true });
+  await coverTool.click();
+  await expect(coverTool).toBeChecked();
+  await page.mouse.move(cover.right, cover.bottom);
+  await page.mouse.down();
+  for (const f of [0.25, 0.5, 0.75, 1]) {
+    const [x, y] = [cover.right - (cover.right - cover.left) * f, cover.bottom - (cover.bottom - cover.top) * f];
+    await page.mouse.move(x, y, { steps: 3 });
+  }
+  await page.mouse.up();
   // A text mark further down (review 0: the web typed nothing into it).
   const words = { x: 90, y: 400 };
   const textTool = page.getByRole('radio', { name: 'Text', exact: true });
@@ -437,7 +454,8 @@ test('flag on: a screenshot from More is marked up, uploaded and named by the ro
 
   // The pen stroke is the tomato row with the widest span; its ends and row give the PNG's scale
   // and offset for screen points.
-  const hits = await tomatoPixels(page, bytes);
+  // SnacklistColors.light.tomato, 0xFFFF5B3A.
+  const hits = await pixelsNear(page, bytes, [0xff, 0x5b, 0x3a]);
   const rows = new Map<number, { min: number; max: number }>();
   for (const [x, y] of hits) {
     const span = rows.get(y) ?? { min: x, max: x };
@@ -454,5 +472,20 @@ test('flag on: a screenshot from More is marked up, uploaded and named by the ro
     ([x, y]) => x >= left - 6 * scale && x <= left + 90 * scale && y >= top - 6 * scale && y <= top + 25 * scale,
   );
   expect(inWords.length, `the text mark's pixels near (${Math.round(left)}, ${Math.round(top)})`).toBeGreaterThan(50);
+  // Every PNG pixel inside the cover is exactly its ink, 0xFF0F1530: what lay under it was not
+  // uploaded.
+  // Six points in from the drag: the pen's round caps widen its span, so the mapping is a few
+  // pixels off at the far edge.
+  const inkAt = new Set((await pixelsNear(page, bytes, [0x0f, 0x15, 0x30], 1)).map(([x, y]) => `${x},${y}`));
+  const toPng = (x: number, y: number): [number, number] => [
+    Math.ceil(penSpan.min + (x - pen.from) * scale),
+    Math.ceil(penRow + (y - pen.y) * scale),
+  ];
+  const [x0, y0] = toPng(cover.left + 6, cover.top + 6);
+  const [x1, y1] = toPng(cover.right - 6, cover.bottom - 6);
+  const uncovered: string[] = [];
+  for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) if (!inkAt.has(`${x},${y}`)) uncovered.push(`${x},${y}`);
+  expect(x1 - x0, 'the cover spans the PNG').toBeGreaterThan(100);
+  expect(uncovered.slice(0, 5), `PNG pixels in (${x0}, ${y0})..(${x1}, ${y1}) that are not the cover's ink`).toEqual([]);
   await context.close();
 });

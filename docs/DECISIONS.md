@@ -15452,3 +15452,50 @@ every row. The run writes `catalog/drafts/2026-11-16-claude.tsv` and `catalog/RE
   pancake mix, pancake syrup and dried figs. Strays that remain, all rare on a German list, are
   listed in REVIEW-opus.md.
 - **All 14 rows that depend on another draft row are listed.**
+
+## Job 290: the annotator's opaque cover tool (Legal C1, N-267) (2026-11-17)
+
+Behind `feedback-fb2` (still off). Legal's condition C1 before the flag goes on: a tool that hides a
+list entry reliably, flattened into the PNG before upload.
+
+1. **A fourth tool, „Verdecken“ / "Cover", not a fill option on the rectangle.** Legal asked for
+   exactly these words, and a separate segment is one tap where a fill toggle would be two. Four
+   segments fit the 390 px screen and keep one label size at 160 % text (the annotator test).
+2. **Ink, square, no anti-aliasing.** The fill is the theme's `ink` token (near-black in both
+   themes, Legal: "black or the app's dark grey"). A rounded corner like the rectangle's would leave
+   pixels of the screen at the corners, and an anti-aliased edge a blend of them, so the cover is a
+   plain `drawRect` with `isAntiAlias = false`. Measured on the web build: 51 322 of 51 322 pixels
+   inside a cover were exactly `0F1530`, and the pixels right next to it the list's background.
+3. **Flattening is the existing capture.** Covers are marks on the layer BetterFeedback rasterises
+   (`RepaintBoundary.toImage`), and only that PNG goes to the cubit and the upload, so no new
+   export step is needed; the test reads the PNG the route pops with.
+4. **The annotator's hint says „Verdecke“**: „Markiere, was nicht stimmt. Verdecke, was niemand
+   sehen soll.“ / "Mark what's wrong. Cover anything nobody should see." It named painting over,
+   which the pen can't do reliably. The screenshot note (C2) is job 289's.
+5. **Upload pinned to Frankfurt (N-267 SHOULD), by the query only.** `functions.invoke(...,
+   queryParameters: {'forceFunctionRegion': 'eu-central-1'})` in `feedback_repository.dart`.
+   The first version passed `region:`, which also sends an `x-region` header. Review 0 showed that
+   production's preflight answer (`corsHeaders`) doesn't allow it, so Chromium blocked the upload
+   from another origin; local Kong allows any header, so neither e2e nor the drive saw it. The
+   query needs no preflight change and no functions deploy first. A unit test now checks every
+   header the upload sends against `corsHeaders` (it fails on `region:`). Production, probed from
+   hz: the preflight for the app's headers is 204, and a POST with the query reaches the function
+   (401 without a session) in eu-central-1. That hz's nearest region is Frankfurt anyway, so the
+   pin's effect is Supabase's documented behaviour, not something seen from here.
+6. **Left as it was: a drag that starts beside the scaled-down screenshot draws nothing**, for the
+   cover as for the rectangle (review 0). The user sees no box appear, so nothing is sent believed
+   covered; clamping such drags into the frame needs the gestures on the whole page and is a
+   follow-up, not part of C1.
+7. **The box spans from where the drag began, in every direction (review 1).** A cover or frame
+   used to rebuild itself as `Rect.fromPoints(rect.topLeft, at)`. `fromPoints` normalises the rect,
+   so once the pointer went left or up the "top-left" was the pointer, and the box shrank to it:
+   dragged from bottom-right to top-left over two rows, a 30x13 px box went out and both rows were
+   readable. The drag's start is now kept as `_anchor` beside `_drawing`, for the cover and the
+   rectangle (job 267's tool had the same bug). Legal's test now drags its box open from each of
+   the four corners in both themes, and a rectangle test drags up and to the left; with the old
+   anchor both fail. The e2e drags its cover up and to the left. Touch slop doesn't move the start:
+   the pan is the only recognizer in the arena, so it is accepted at pointer down with no pending
+   offset (`DragStartBehavior.down` changed no result and was left out).
+8. **To the lead, not fixed here** (`NEEDS_LEAD`): the dark theme's ink `#03050F` on the list's
+   `#0B1024` hardly shows where a cover is, and item 6's margin drag. Legal named black or the
+   app's dark grey for the fill, so changing it is their call too.

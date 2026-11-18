@@ -1239,7 +1239,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get feedbackAnnotateHint =>
-      'Markiere, was nicht stimmt. Übermale, was niemand sehen soll.';
+      'Markiere, was nicht stimmt. Verdecke, was niemand sehen soll.';
 
   @override
   String get feedbackToolPen => 'Stift';
@@ -1249,6 +1249,9 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get feedbackToolText => 'Text';
+
+  @override
+  String get feedbackToolCover => 'Verdecken';
 
   @override
   String get feedbackAnnotateTools => 'Werkzeug';

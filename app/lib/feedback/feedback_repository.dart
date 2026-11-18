@@ -179,6 +179,11 @@ class SupabaseFeedbackRepository(
             'feedback-screenshots/upload/$id',
             headers: const {'Content-Type': 'image/png'},
             body: png,
+            // Next to the database and the bucket, wherever the user is
+            // (Legal N-267): Supabase runs it nearest the caller otherwise.
+            // The query form only: `region:` adds an x-region header, which
+            // the functions' CORS preflight refuses on the web.
+            queryParameters: const {'forceFunctionRegion': 'eu-central-1'},
           )
           .timeout(timeout);
     } on FunctionException catch (e) {

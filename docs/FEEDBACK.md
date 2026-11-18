@@ -156,6 +156,28 @@ Job 267. From the shake sheet or the form, the sender can attach the current scr
 over in the app's annotator. The app sends the PNG to the `feedback-screenshots` function,
 which stores it, then inserts the note naming it.
 
+**Cover (Legal C1, N-267, job 290).** Next to pen, rectangle and text, the annotator has
+„Verdecken“ / "Cover": a box dragged open and filled with the theme's ink (`0xFF0F1530` light,
+`0xFF03050F` dark), fully opaque, square and painted without anti-aliasing. It is a mark on the
+annotator's own layer, which BetterFeedback rasterises into the PNG; the app keeps no other copy
+of the screen and uploads only that PNG, so nothing under a cover reaches the server. Undo takes
+a cover back like any mark, before Fertig. The box spans from where the drag began to the
+pointer, whichever way it goes (review 1 of job 290: it used to shrink when dragged up or left). Proven by `app/test/feedback/annotator_test.dart`,
+"cover: the covered pixels of the exported PNG are the fill colour, none of the screenshot under
+it" (every PNG pixel inside the cover is the ink, dragged open from each corner, in both themes), and on the web, through the
+upload, by `e2e/tests/feedback.spec.ts`, "flag on: a screenshot from More is marked up, uploaded
+and named by the row".
+
+**Region.** The app calls the function with `?forceFunctionRegion=eu-central-1`, so it runs in
+Frankfurt next to the database and the bucket wherever the user is; without it Supabase runs a
+function in the region nearest the caller. Only the query form: functions_client's `region:` also
+sends an `x-region` header, which `corsHeaders` (`supabase/functions/_shared/http.ts`) does not
+allow, so the web app's preflight fails and the browser never sends the upload (review 0 of job
+290, proven against production). Local Kong answers preflights itself and allows any header, so
+e2e can't see that; `app/test/feedback/feedback_repository_test.dart` checks every header the
+upload sends against `corsHeaders`. A header added to the app's function calls goes into
+`corsHeaders` first, deployed before the app ships.
+
 **Where.** The private Storage bucket `feedback-screenshots` of the same Supabase project (EU,
 Frankfurt), created by `supabase/migrations/20261115160000_feedback_screenshots.sql`; since
 `20261115200000_feedback_screenshot_upload_function.sql` only the function stores into it. It takes

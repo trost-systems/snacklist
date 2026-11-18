@@ -2087,7 +2087,7 @@ abstract class AppLocalizations {
   /// Screenshot markup (job 267): hint above the tools
   ///
   /// In de, this message translates to:
-  /// **'Markiere, was nicht stimmt. Übermale, was niemand sehen soll.'**
+  /// **'Markiere, was nicht stimmt. Verdecke, was niemand sehen soll.'**
   String get feedbackAnnotateHint;
 
   /// Screenshot markup (job 267): free drawing tool
@@ -2107,6 +2107,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Text'**
   String get feedbackToolText;
+
+  /// Screenshot markup (job 290, Legal C1): tool that paints a filled, opaque box over what nobody should see; flattened into the PNG before upload
+  ///
+  /// In de, this message translates to:
+  /// **'Verdecken'**
+  String get feedbackToolCover;
 
   /// Screenshot markup (job 267): screen-reader name of the pen / rectangle / text control
   ///

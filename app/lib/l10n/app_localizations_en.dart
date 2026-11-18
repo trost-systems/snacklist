@@ -1226,7 +1226,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get feedbackAnnotateHint =>
-      'Mark what\'s wrong. Paint over anything nobody should see.';
+      'Mark what\'s wrong. Cover anything nobody should see.';
 
   @override
   String get feedbackToolPen => 'Pen';
@@ -1236,6 +1236,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get feedbackToolText => 'Text';
+
+  @override
+  String get feedbackToolCover => 'Cover';
 
   @override
   String get feedbackAnnotateTools => 'Tool';
