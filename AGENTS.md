@@ -169,8 +169,8 @@ reasons are in [`docs/DECISIONS.md`](docs/DECISIONS.md).
   3. Under the merge lock: `scripts/merge-pr.sh --wait <n>` waits for
      `ci-ok` on that commit and rebase-merges it. One CI run per merge.
      It gives up after 30 minutes. A run with the ios job can take longer:
-     land a PR that changes the native projects, the pubspec, `scripts/gates/android.sh`
-     or `ios.sh`, the ios gate's two Python checks, `scripts/lib.sh` or the CI definition
+     land a PR that changes the native projects, the pubspec, `scripts/gates/android.sh`,
+     `ios.sh` or `ios-storekit.sh`, `scripts/ios/build-for-testing.sh`, the ios gate's two Python checks, `scripts/lib.sh` or the CI definition
      (the list is `scripts/ci-changes.sh`) with `MERGE_WAIT_MINUTES=45`.
   If main moved since your push, merge-pr.sh says so: rerun
   `scripts/push-pr.sh` (one more rebase, push and CI run), then merge-pr.sh.

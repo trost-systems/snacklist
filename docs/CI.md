@@ -28,7 +28,8 @@ the same things.
 | `fastlane` | The Gemfile.lock installs and the Fastfile parses | yes |
 | `e2e` | Playwright against the release web build and the local stack | yes, under `/tmp/fg-e2e.lock` |
 | `android` | Debug APK build (the app's Kotlin) and its JVM unit tests (`WidgetPayloadTest`) | `--only android` |
-| `ios` | Simulator build (the app's Swift); the built app holds the app icon (light, dark, tinted, the Icon Composer stacks) and the launch screen's assets; macOS only | no |
+| `ios` | Simulator build (the app's Swift); the built app holds the app icon (light, dark, tinted, the Icon Composer stacks) and the launch screen's assets; RunnerTests but the StoreKit tests; macOS only | no |
+| `ios-storekit` | The same build; RunnerTests' StoreKit tests on an iOS 26.2 simulator (job 304); macOS only | no |
 
 `.github/workflows/widgetbook.yml` is not a gate: on pushes to `main` that touch
 `app/` and by hand it builds the Widgetbook for the web (`scripts/widgetbook.sh`)
@@ -147,6 +148,21 @@ sets the count: the job passes Playwright `strategy.job-total`, and
 when `e2e.yml`'s `auto` count for the full suite differs from that list, or
 when that workflow's shard list and Playwright's count no longer both come
 from its plan step's one `$total`.
+A shard given only `--shard=i/n` runs its part of a split by measured time
+(job 304), not Playwright's equal count of tests in file order:
+`e2e/shards.mjs` lists the suite, puts the longest tests first onto the
+shard that would end earliest (shard 1 keeps about 65 s free for the
+integration-lock run and the fg sync smoke test after its suite, and
+Firefox's tests count as running one at a time), writes this shard's part to
+`e2e/shard-tests.txt` (in the `playwright-<shard>` artifact) and checks that
+Playwright's `--test-list` selects exactly that part. Every shard plans the
+same split from the same files, so each test runs in exactly one shard. The
+times are the medians of the last five green `main` runs in
+`e2e/shard-durations.json`; a test it lacks counts as the median one, so a
+stale file only balances worse. Refresh it with `scripts/e2e-durations.sh`
+and commit it when the shards' Playwright times drift apart
+(`node e2e/shards.mjs show 4` prints the planned estimates). A spec with
+`--shard` (`scripts/ci-e2e.sh --spec ... --shards n`) keeps Playwright's own.
 Each shard starts the Supabase stack in the background before installing
 Flutter and Playwright; the gate's `supabase_up` (`scripts/lib.sh`) waits on
 the same per-project lock and reuses the stack. CI pulls the Supabase images
@@ -177,9 +193,9 @@ The `changes` job (`scripts/ci-changes.sh`) reads the PR's changed files:
   `.cursor/` and `.claude/` count as code): only `gitleaks`, `lint`,
   `site` and `site-agent` run. Both site gates always run because the guides
   are Markdown.
-- `android` and `ios` run when `app/ios/`, `app/android/` or `app/pubspec.*`
-  changed, or their own gate scripts, or the two checks the ios gate runs on
-  the built app (`scripts/siri-vocabulary.py`,
+- `android`, `ios` and `ios-storekit` run when `app/ios/`, `app/android/`
+  or `app/pubspec.*` changed, or their own gate scripts, their iOS build
+  (`scripts/ios/build-for-testing.sh`), or the two checks the ios gate runs on the built app (`scripts/siri-vocabulary.py`,
   `scripts/app-shortcuts-bundle.py`). They compile the app's Swift and Kotlin
   and the plugin registrant generated from pubspec. A Dart change in
   `app/lib/` is compiled by the flutter, web-prod and e2e gates already.
@@ -191,7 +207,7 @@ The `changes` job (`scripts/ci-changes.sh`) reads the PR's changed files:
   `scripts/lib.sh` or `scripts/e2e-summary.sh` runs everything, and so does
   a push to `main` or a manual run.
 - A gate's own script (`scripts/gates/<gate>.sh`) is code: it runs the heavy
-  gates and its own job, but `android` and `ios` only when it is theirs.
+  gates and its own job, but `android`, `ios` and `ios-storekit` only when it is theirs.
   Until job 221 any gate script ran everything. That rule, applied to the
   full file lists of the 136 PRs merged from 7 November to 14 November
   2026, 19:13 UTC, turns the native gates on for 32: 14 for a native path
@@ -333,8 +349,8 @@ intervals while scrolling a 200-item list (DECISIONS job 28, 7).
    (green first attempts, 7 to 13 November; job 219's baseline). A land that
    gives up starts again with a new turn at the merge lock and, when main
    moved meanwhile, a new push and a new CI run. The ios job runs when a PR
-   changes the native projects, the pubspec, `scripts/gates/android.sh` or
-   `ios.sh`, the ios gate's two Python checks, `scripts/lib.sh` or the CI
+   changes the native projects, the pubspec, `scripts/gates/android.sh`,
+   `ios.sh` or `ios-storekit.sh`, `scripts/ios/build-for-testing.sh`, the ios gate's two Python checks, `scripts/lib.sh` or the CI
    definition (the list is `scripts/ci-changes.sh`): land those with
    `MERGE_WAIT_MINUTES=45`.
    The wait sleeps 20 s between its looks at `ci-ok`. A signal that ends
@@ -492,9 +508,11 @@ counted from the run's start, and their median and range. With
 `--steps <job>` it adds the median step durations of one job (`e2e` takes
 every shard's steps, `e2e (1)` one shard's). Use it before and after a CI
 change.
-`scripts/ci-ios-phases.sh <run-id>...` splits each ios job of those runs
-(every attempt) into the phases of `scripts/gates/ios.sh`: config, build,
-checks, boot, tests (DECISIONS, Job 118).
+`scripts/ci-ios-phases.sh <run-id>...` splits each ios and ios-storekit job
+of those runs (every attempt) into the phases of `scripts/gates/ios.sh`
+(config, build, checks, boot, tests; DECISIONS, Job 118) and
+`scripts/gates/ios-storekit.sh` (config, build, storekit_boot,
+storekit_tests; job 304).
 
 ```bash
 scripts/ci-timings.sh --limit 10 --steps e2e
@@ -584,3 +602,45 @@ What a PR waits for since then:
   run's creation there), so a run with a fast ios job gains from four
   shards too. In CI run 43632050929 `ci-ok` came 28:37 after the run's
   start, 4 s after ios ended.
+
+## Measurements (job 304, November 2026)
+
+Before: PR and `main` runs from 15 to 18 November that ran every job, with
+first attempts only. After: the three CI runs of #540, which also ran every
+job, because the PR changes the CI definition. Times are minutes from the
+run's creation (`ci-ok`), the job's own running time, and the Playwright
+line of each shard ("N passed (M m)").
+
+| Run | `ci-ok` | ios job | ios-storekit job | Slowest e2e job | Playwright per shard |
+| --- | --- | --- | --- | --- | --- |
+| Before, PR 44242102263 | 35.7 | 35.2 | none | (rerun) | 7.1, 4.8, 8.6, 9.5 |
+| Before, PR 44236144523 | 29.3 | 28.7 | none | 16.4 | 7.5, 4.4, 9.9, 9.6 |
+| Before, PR 44188358573 | 35.8 | 33.8 | none | 14.9 | |
+| Before, 7 green `main` runs | 24.2-38.5 | 23.8-35.5 | none | 15.1-17.3 | |
+| After, #540 run 44252828321 | 24.1 | 20.0 | 15.4 | 14.1 | 6.6, 7.5, 9.7, 9.6 |
+| After, #540 run 44255892833 | 28.9 | 17.8 | 21.6 | 28.5 (apt, below) | 6.5, 7.5, 7.6, 7.8 |
+| After, #540 run 44259795582 | 16.4 | 16.0 | 13.5 | 12.2 | 6.6, 7.6, 7.5, 7.6 |
+| After, #540 run 44262138767 | 31.5 (macOS queue) | 16.6 | 11.9 | 14.1 | 9.6, 7.4, 7.1, 7.7 |
+
+- **ios.** The StoreKit boot and tests (6 to 18 min before) left the ios job,
+  which now ends with RunnerTests (16 to 20 min in three runs, against 24 to 35
+  min). `ios-storekit` builds again and runs alongside it (13.5 to 21.6 min).
+  A native run now waits for whichever of the two ends later, not for their
+  sum. Two macOS jobs per native run instead of one also take two of the
+  account's macOS slots. In run 44262138767 both started 14.8 min after the
+  run's creation, while other jobs' macOS runs were going, so `ci-ok` came at
+  31.5 min although neither job ran longer than 16.6.
+- **e2e.** Each shard plans about 474 s of tests. In the old split, shard 4
+  held about 1210 s of test time (median durations) and shard 2 about 540 s.
+  Runners differ in speed: a whole shard's tests ran 0.86 to 1.28 times their
+  medians, the same factor for every test in that shard. That is why run
+  44252828321's shards 3 and 4 still took 9.6 to 9.7 min. A simulation (each
+  shard's median test time times one of the 16 observed factors, drawn at
+  random, 20,000 times) gives a slowest shard of 559 s at the median and 583 s at p90 with the new split,
+  against 618 s and 733 s with the old one: about 1 min at the median and
+  2.5 min at p90, not a flat 2 min.
+- **apt.** In run 44255892833, shards 1 to 3 spent 10 to 19 min installing
+  WebKit's packages. They had restored an entry that the PR's first
+  pruning version saved, which held ubuntu-26.04's package versions. That
+  entry was scoped to the PR, so main never saw it, and it is deleted. With
+  the fixed pruning, run 44259795582's shards spent 1.7 to 2.3 min in setup.

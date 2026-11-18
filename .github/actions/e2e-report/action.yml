@@ -9,7 +9,7 @@ inputs:
     description: The caller's job.status
     required: true
   artifact-name:
-    description: Name of the artifact with the report, test results, screenshots, sync evidence and, after a failure, the stack's logs
+    description: Name of the artifact with the report, the shard's test list, test results, screenshots, sync evidence and, after a failure, the stack's logs
     required: true
   results-name:
     description: Name of the small artifact with only the playwright-results*.json files (scripts/ci-e2e.sh reads them)
@@ -35,6 +35,7 @@ runs:
         path: |
           e2e/playwright-report
           e2e/playwright-report-integration-lock
+          e2e/shard-tests.txt
           e2e/test-results
           e2e/screenshots
           e2e/sync-evidence

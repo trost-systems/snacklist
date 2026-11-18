@@ -67,7 +67,20 @@ case " $* " in
     FG_E2E_INTEGRATION_LOCK=1 ${display[@]+"${display[@]}"} npx playwright test "$@"
     ;;
   *)
-    ${display[@]+"${display[@]}"} npx playwright test "$@"
+    # Job 304: a CI shard runs its part of a split by measured time (e2e/shards.mjs), not
+    # Playwright's equal test count; any other arguments go to Playwright as they are.
+    planned=0
+    if [[ $# -eq 1 && $1 =~ ^--shard=([0-9]+/[0-9]+)$ ]]; then
+      node shards.mjs list "${BASH_REMATCH[1]}" shard-tests.txt || planned=$?
+      [[ $planned == 0 || $planned == 3 ]] || exit "$planned"
+    else
+      planned=3
+    fi
+    if [[ $planned == 0 ]]; then
+      ${display[@]+"${display[@]}"} npx playwright test --test-list shard-tests.txt
+    else
+      ${display[@]+"${display[@]}"} npx playwright test "$@"
+    fi
     if [[ $# -eq 0 || "$*" == --shard=1/* ]]; then
       log "playwright: integration-lock.spec.ts alone"
       FG_E2E_INTEGRATION_LOCK=1 npx playwright test tests/integration-lock.spec.ts

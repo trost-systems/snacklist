@@ -34,7 +34,7 @@ first, last = stamp(lines[0]), stamp(lines[-1])
 
 # Since job 118 the gate logs "[ios] phase <name>"; before, the phases are found by the output
 # of flutter build ios, simctl and xcodebuild test.
-markers = [(m.group(1), stamp(l)) for l in lines if (m := re.search(r'\[ios\] phase (\w+( wait)?)', l))]
+markers = [(m.group(1), stamp(l)) for l in lines if (m := re.search(r'\[ios(?:-storekit)?\] phase (\w+( wait)?)', l))]
 if not markers:
     legacy = [
         ('pub+pods', r'Run scripts/gates/ios\.sh'),
@@ -50,7 +50,7 @@ if not markers:
         if hit:
             markers.append((name, stamp(hit)))
 end = next((stamp(l) for l in lines if re.search(r'\*\* TEST (SUCCEEDED|FAILED) \*\*', l)), last)
-step = next((stamp(l) for l in lines if re.search(r'Run scripts/gates/ios\.sh', l)), first)
+step = next((stamp(l) for l in lines if re.search(r'Run scripts/gates/ios(-storekit)?\.sh', l)), first)
 mins = lambda a, b: f'{(b - a).total_seconds() / 60:.1f}'
 phases = [('setup', first, step)]
 for i, (name, at) in enumerate(markers):
@@ -60,6 +60,6 @@ print(f'{job} {conclusion}: job {mins(first, last)} min |',
       ', '.join(f'{n} {mins(a, b)}' for n, a, b in phases))
 PY
     done < <(gh api "repos/$repo/actions/runs/$run/attempts/$attempt/jobs?per_page=50" \
-      -q '.jobs[] | select(.name | test("^ios( |$)")) | "\(.id) \(.started_at) \(.conclusion) \(.name)"')
+      -q '.jobs[] | select(.name | test("^ios(-storekit)?( |$)")) | "\(.id) \(.started_at) \(.conclusion) \(.name)"')
   done
 done

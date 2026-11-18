@@ -10,7 +10,7 @@ set -euo pipefail
 source "$(dirname "$0")/../lib.sh"
 cd "$REPO_ROOT"
 actionlint
-shellcheck scripts/*.sh scripts/gates/*.sh scripts/backup/*.sh scripts/ci/*.sh scripts/release/*.sh scripts/checks/*.sh nexus/scripts/*.sh scripts/fg .githooks/*
+shellcheck scripts/*.sh scripts/gates/*.sh scripts/backup/*.sh scripts/ci/*.sh scripts/release/*.sh scripts/checks/*.sh scripts/ios/*.sh nexus/scripts/*.sh scripts/fg .githooks/*
 (cd e2e && { [[ -d node_modules ]] || npm ci; } && npx tsc --noEmit -p .)
 # emails/ is a tsc project of the TypeScript pack below; its tsc needs the package installed.
 (cd emails && { [[ -d node_modules ]] || npm ci --no-audit --no-fund; })
@@ -31,6 +31,7 @@ scripts/release/test.sh
 # Node 22 before 22.18 strips the types of e2e/tests/deadline.ts only with the flag; later
 # versions take the flag too.
 node --experimental-strip-types --test e2e/deadline.test.mjs
+node --test e2e/shards.test.mjs
 scripts/lint.sh
 node design/tokens/build.mjs --check
 node design/app-icon/build.mjs --check
