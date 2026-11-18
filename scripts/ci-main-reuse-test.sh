@@ -65,6 +65,14 @@ reuse false merge-commit-head "$pulls" "{\"commit\": {\"tree\": {\"sha\": \"$tre
 reuse false no-pr '[]' "$same" "$green"
 reuse false open-pr "[{\"number\": 1, \"merged_at\": null, \"base\": {\"ref\": \"main\"}, \"head\": {\"sha\": \"$head\"}}]" "$same" "$green"
 reuse false pr-into-other-branch "[{\"number\": 1, \"merged_at\": \"2026-11-18T10:00:00Z\", \"base\": {\"ref\": \"release\"}, \"head\": {\"sha\": \"$head\"}}]" "$same" "$green"
+# Two PRs have the commit: only the one merged into main counts, wherever it is in the list.
+other=2222222222222222222222222222222222222222
+open_pr="{\"number\": 2, \"merged_at\": null, \"base\": {\"ref\": \"main\"}, \"head\": {\"sha\": \"$other\"}}"
+release_pr="{\"number\": 3, \"merged_at\": \"2026-11-18T09:00:00Z\", \"base\": {\"ref\": \"release\"}, \"head\": {\"sha\": \"$other\"}}"
+merged_pr="{\"number\": 1, \"merged_at\": \"2026-11-18T10:00:00Z\", \"base\": {\"ref\": \"main\"}, \"head\": {\"sha\": \"$head\"}}"
+reuse true open-pr-first "[$open_pr, $merged_pr]" "$same" "$green"
+reuse true merged-pr-first "[$merged_pr, $open_pr]" "$same" "$green"
+reuse true release-pr-first "[$release_pr, $merged_pr]" "$same" "$green"
 reuse false pulls-api-error - "$same" "$green"
 reuse false commit-api-error "$pulls" - "$green"
 reuse false checks-api-error "$pulls" "$same" -
