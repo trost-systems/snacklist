@@ -318,7 +318,7 @@ test('AC8: a member revokes an invite under More; its link and code stop at once
   await signUpWithHousehold(page, email);
   const code = await createInviteCode(page);
   const kept = await createInviteCode(page);
-  await openMore(page, 'Partner einladen');
+  await openMore(page, 'Leute einladen');
   await expect(inviteCodeLabel(page, code)).toBeVisible();
   await page.getByRole('button', { name: `Einladung ${code} widerrufen` }).click();
   await expect(inviteCodeLabel(page, code), 'gone from the list').toHaveCount(0);
@@ -501,10 +501,10 @@ for (const [lang, locale] of [['de', 'de-DE'], ['en', 'en-US']] as const) {
       const t = lang === 'de'
         ? { withEmail: 'Weiter mit E-Mail', email: 'E-Mail', password: 'Passwort', signUp: 'Registrieren', decline: 'Nicht erlauben', create: 'Haushalt erstellen',
           join: 'Einladung annehmen', skip: 'Überspringen', invite: 'Jemanden einladen', code: 'Einladungscode', next: 'Weiter', retry: 'Erneut versuchen',
-          later: 'Weiter zur Liste', more: 'Partner einladen', newInvite: 'Neue Einladung' }
+          later: 'Weiter zur Liste', more: 'Leute einladen', newInvite: 'Neue Einladung' }
         : { withEmail: 'Continue with email', email: 'Email', password: 'Password', signUp: 'Sign up', decline: "Don't allow", create: 'Create a household',
           join: 'Join with an invite', skip: 'Skip', invite: 'Invite someone', code: 'Invite code', next: 'Continue', retry: 'Try again',
-          later: 'Go to the list', more: 'Invite your partner', newInvite: 'New invite' };
+          later: 'Go to the list', more: 'Invite people', newInvite: 'New invite' };
       const shot = (page: Page, n: string, name: string) => screenshot(page, `job22-${lang}-${size}-${n}-${name}`);
       const page = await newPage(browser, { locale, viewport });
       await page.goto('/login');
@@ -590,7 +590,7 @@ test("a used invite disappears from More's invite list", async ({ browser }) => 
   const lea = await newPage(browser);
   await signUp(lea, newEmail('used-lea'), invitePath(code));
   await confirmJoin(lea);
-  await openMore(page, 'Partner einladen');
+  await openMore(page, 'Leute einladen');
   // Since job 169b W2 an empty list shows nothing: the open invite shows, the used one not.
   await expect(inviteCodeLabel(page, kept)).toBeVisible();
   await within(10_000, (timeout) => expect(inviteCodeLabel(page, code)).toHaveCount(0, { timeout }));

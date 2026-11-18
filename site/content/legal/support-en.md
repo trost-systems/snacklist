@@ -41,9 +41,9 @@ The invite only works with the email of your Apple ID (iPhone) or Google account
 
 Check your spam folder, and in Gmail the Promotions tab too. We send invites in waves. On iPhone, the TestFlight email comes from Apple, not from Snacklist. If it's still missing, write to [support@snacklist.app](mailto:support@snacklist.app).
 
-### How do I invite my partner?
+### How do I invite someone?
 
-Tap **More**, then **Invite your partner**. Share the link or the code. An invite is valid for one person. You can revoke open invites there too.
+Tap **More**, then **Invite people**. Share the link or the code. An invite is valid for one person. You can revoke open invites there too.
 
 ### How do I join a household with a code?
 

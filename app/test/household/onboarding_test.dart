@@ -406,6 +406,8 @@ void main() {
       expect(o.session.origins, [HouseholdOrigin.switcher]);
       expect(location(o), invitePartnerPath);
       expect(key('invite-partner-screen'), findsOneWidget);
+      expect(find.text('Gemeinsam einkaufen'), findsOneWidget);
+      expect(find.text('Leute einladen'), findsOneWidget);
       expect(find.text(joinPageHintDe).hitTestable(), findsOneWidget);
       await tapKey(tester, 'invite-later');
       expect(location(o), '/');
@@ -561,7 +563,8 @@ void main() {
         session: inHome,
         locale: const Locale('en'),
       );
-      expect(find.text('Invite your partner'), findsWidgets);
+      expect(find.text('Shop together'), findsOneWidget);
+      expect(find.text('Invite people'), findsOneWidget);
       expect(find.text(joinPageHintEn).hitTestable(), findsOneWidget);
       expect(find.text('Later'), findsOneWidget);
       await tapKey(tester, 'invite-partner');

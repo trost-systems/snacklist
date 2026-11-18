@@ -67,7 +67,7 @@ member="konto-$stamp@fg.test"
 members_before="$(sql "select count(*) from household_members m join households h on h.id = m.household_id where h.name = 'Familie Test'")"
 step "a throwaway member ($member) joins Familie Test and adds $item"
 sign_up "$member"
-# Job 22: More, Partner einladen is the Einladungen page; a new invite shows its code.
+# Job 22: More, Leute einladen is the Einladungen page; a new invite shows its code.
 open_more peter more-invite
 run wait --key invite-new --client peter >/dev/null
 run tap --key invite-new --client peter >/dev/null

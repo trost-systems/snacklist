@@ -116,7 +116,7 @@ void main() {
     expect(key('more-invite'), findsNothing);
     expect(key('more-archived'), findsOneWidget, reason: 'stays in More');
     expect(key('more-access'), findsOneWidget);
-    expect(find.text('Partner einladen'), findsNothing);
+    expect(find.text('Leute einladen'), findsNothing);
   });
 
   testWidgets('without the flag More keeps the household rows', (tester) async {
@@ -131,7 +131,7 @@ void main() {
     const labels = [
       'Konto',
       'Snacklist Premium',
-      'Partner einladen',
+      'Leute einladen',
       'Zugänge',
       'Einstellungen',
       'Tipps',
@@ -168,7 +168,7 @@ void main() {
     const labels = [
       'Account',
       'Snacklist Premium',
-      'Invite your partner',
+      'Invite people',
       'Access',
       'Settings',
       'Tips',

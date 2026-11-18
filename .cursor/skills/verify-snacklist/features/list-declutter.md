@@ -1,6 +1,6 @@
 # Decluttered list (behind a flag)
 
-Behind the PostHog flag `list-declutter` (rollout off, internal installs only; job 229, Peter's pick from job 227's round 2), the list screen loses its second header row and the household sheet gains a page per household. The household controls move there from More: with the flag on, More has no row for the household and no „Partner einladen“ / "Invite your partner" (job 258), and the invite tips open the sheet's invite page. `/more/household` and `/more/invites` still open the old pages by link. With the flag off everything is as in [lists-and-claims](./lists-and-claims.md) and [household-invites](./household-invites.md).
+Behind the PostHog flag `list-declutter` (rollout off, internal installs only; job 229, Peter's pick from job 227's round 2), the list screen loses its second header row and the household sheet gains a page per household. The household controls move there from More: with the flag on, More has no row for the household and no „Leute einladen“ / "Invite people" (job 258), and the invite tips open the sheet's invite page. `/more/household` and `/more/invites` still open the old pages by link. With the flag off everything is as in [lists-and-claims](./lists-and-claims.md) and [household-invites](./household-invites.md).
 
 ## Sub-features
 

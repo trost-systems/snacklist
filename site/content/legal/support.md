@@ -41,9 +41,9 @@ Die Einladung klappt nur mit der E-Mail deiner Apple-ID (iPhone) bzw. deines Goo
 
 Schau im Spam-Ordner nach und bei Gmail auch im Tab „Werbung“. Wir verschicken die Einladungen in Wellen. Auf dem iPhone kommt die TestFlight-Mail von Apple, nicht von Snacklist. Fehlt sie dann immer noch, schreib an [support@snacklist.app](mailto:support@snacklist.app).
 
-### Wie lade ich meinen Partner oder meine Partnerin ein?
+### Wie lade ich jemanden ein?
 
-Tippe auf **Mehr** und dann auf **Partner einladen**. Teile den Link oder den Code. Eine Einladung gilt für eine Person. Offene Einladungen kannst du dort auch widerrufen.
+Tippe auf **Mehr** und dann auf **Leute einladen**. Teile den Link oder den Code. Eine Einladung gilt für eine Person. Offene Einladungen kannst du dort auch widerrufen.
 
 ### Wie trete ich mit einem Code einem Haushalt bei?
 
