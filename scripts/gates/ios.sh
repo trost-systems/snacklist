@@ -88,20 +88,20 @@ sys.exit(0 if s.get("result") == "Passed" and s.get("passedTests", 0) > 0 else 1
 [[ -z ${status:-} ]] || exit "$status"
 
 # The StoreKit tests against StoreKit's local test store (Snacklist.storekit), on the same simulator.
-# On a fresh iOS 27 simulator the first Ask to Buy purchase hangs while storekitd sets up the
-# sandbox storefront; the same test passes once that is done, so each test gets a second try, these
-# tests only (job 306). Every one must pass, and a skip means storekitd refused the configuration,
-# as iOS 26.4 did to this ad-hoc signed build (DECISIONS 127).
-log "phase storekit_tests"
-storekit_result=/tmp/snacklist-storekit-tests.xcresult
-rm -rf "$storekit_result"
-xcodebuild test-without-building -workspace ios/Runner.xcworkspace -scheme Runner \
-  -destination "id=$udid" -derivedDataPath "$derived" -only-testing:RunnerTests/LifetimeStoreKitTests \
-  -parallel-testing-enabled NO -test-timeouts-enabled YES -retry-tests-on-failure -test-iterations 2 \
-  -resultBundlePath "$storekit_result" || status=$?
-[[ -d $storekit_result ]] || exit "${status:-1}"
-xcrun xcresulttool get test-results tests --path "$storekit_result" >/tmp/snacklist-storekit-tests.json
-python3 - <<'PY'
+# Every one must pass; a skip means storekitd refused the configuration, as iOS 26.4 did to this
+# ad-hoc signed build (DECISIONS 127). On a fresh iOS 27 simulator the first Ask to Buy purchase
+# hangs while storekitd sets up the sandbox storefront, and xcodebuild's own retry skips a test
+# that ran out of time; a second run on the same simulator passes, so a failed first run gets one
+# more (job 306).
+storekit_tests() { # run
+  local result=/tmp/snacklist-storekit-tests-$1.xcresult
+  rm -rf "$result"
+  xcodebuild test-without-building -workspace ios/Runner.xcworkspace -scheme Runner \
+    -destination "id=$udid" -derivedDataPath "$derived" -only-testing:RunnerTests/LifetimeStoreKitTests \
+    -parallel-testing-enabled NO -test-timeouts-enabled YES -resultBundlePath "$result" || true
+  [[ -d $result ]] || { echo "ios: StoreKit run $1 wrote no result bundle" >&2; return 1; }
+  xcrun xcresulttool get test-results tests --path "$result" >"/tmp/snacklist-storekit-tests-$1.json"
+  python3 - "/tmp/snacklist-storekit-tests-$1.json" "$1" <<'PY'
 import json, sys
 cases = []
 def walk(node):
@@ -109,16 +109,16 @@ def walk(node):
         cases.append(node)
     for child in node.get("children", []):
         walk(child)
-for node in json.load(open("/tmp/snacklist-storekit-tests.json"))["testNodes"]:
+for node in json.load(open(sys.argv[1]))["testNodes"]:
     walk(node)
-ok = True
 for case in cases:
-    tries = [c for c in case.get("children", []) if c.get("nodeType") == "Repetition"] or [case]
-    last = tries[-1].get("result")
-    ok = ok and last == "Passed"
-    why = "; ".join(c.get("name", "") for t in tries for c in t.get("children", []) if c.get("nodeType") == "Failure Message")
-    print("%s %s (%s)%s" % (last, case.get("nodeIdentifier"), ", ".join(t.get("result", "") for t in tries), ": " + why if why else ""))
-if len(cases) < 3 or not ok:
-    sys.exit("ios: every LifetimeStoreKitTests case must pass (a skip means storekitd refused Snacklist.storekit)")
+    why = "; ".join(c.get("name", "") for c in case.get("children", [])) if case.get("result") != "Passed" else ""
+    print("run %s: %s %s%s" % (sys.argv[2], case.get("result"), case.get("nodeIdentifier"), ": " + why if why else ""))
+sys.exit(0 if len(cases) >= 3 and all(c.get("result") == "Passed" for c in cases) else 1)
 PY
-exit "${status:-0}"
+}
+log "phase storekit_tests"
+if ! storekit_tests 1; then
+  log "phase storekit_tests_again"
+  storekit_tests 2 || { echo "ios: every LifetimeStoreKitTests case must pass (a skip means storekitd refused Snacklist.storekit)" >&2; exit 1; }
+fi

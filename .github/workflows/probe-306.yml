@@ -24,4 +24,4 @@ jobs:
           cache: false
       - run: scripts/gates/ios.sh
       - if: always()
-        run: python3 -c 'import json; print(json.dumps(json.load(open("/tmp/snacklist-storekit-tests.json")), indent=1))' | head -150
+        run: python3 -c 'import json; print(json.dumps(json.load(open("/tmp/snacklist-storekit-tests-1.json")), indent=1))' | head -150
