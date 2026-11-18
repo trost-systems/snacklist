@@ -9,7 +9,8 @@
 // after the close, and the added item's store and category are picked in its details row, each
 // saved at once.
 //
-//   launched with VH_DEFINES="FLAGS_ON=add-feedback-list,input-stable-rows"
+//   on a plain launch (add-feedback-list rolls out in full, so launch.sh turns it on), or with
+//   VH_DEFINES="FLAGS_ON=input-stable-rows"
 //   node journeys/add-feedback-list.mjs <evidence dir> [--lang de|en]
 import process from 'node:process';
 import { addField, addSheet, apiAs, capture, headingAbove, instance, itemRow, logger, member, nextFrames, openApp, reveal, signIn, typeInto } from '../helpers/lib.mjs';
@@ -104,7 +105,8 @@ try {
   await addSheet(page, L).getByRole('button', { name: new RegExp(`^${L('chipCategory', { name: '' }).trim()}|^${L('categoryAuto')}`) }).first().click();
   await page.waitForTimeout(400);
   await capture(page, dir, '04b-category-options');
-  await addSheet(page, L).getByRole('button', { name: category.name, exact: true }).click();
+  // The seeded category's stored name is German; the chip offers it under the app language's name.
+  await addSheet(page, L).getByRole('button', { name: L('categoryHousehold'), exact: true }).click();
   const categorySaved = await until('the category picked in the details', async () => (await stored(names[0]))?.category_id === category.id && true);
   log(`picked category "${category.name}" in the details row: saved (${categorySaved})`);
   await capture(page, dir, '04c-store-category-picked');
