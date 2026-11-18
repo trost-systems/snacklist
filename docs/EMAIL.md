@@ -2,12 +2,12 @@
 
 Every mail Snacklist sends is built from one React Email source in `emails/`, with the 6b tokens
 from `design/tokens/snacklist.tokens.json`. The same components make the Supabase Auth
-templates (`supabase/templates/`), the onboarding mails Snacklist Launch writes, and the service
+templates (`supabase/templates/`), the onboarding mails Snacklist PM writes, and the service
 notices. Job 55 built it, job 177 brought it to Snacklist and to AL4's German and English auth
 mails. Nothing of it is live yet (docs/NEEDS_PETER.md, "Job 177").
 
 - Component reference with props and examples: [`emails/README.md`](../emails/README.md).
-- What Launch still has to write: [`emails/COPY_NEEDED.md`](../emails/COPY_NEEDED.md).
+- What Snacklist PM still has to write: [`emails/COPY_NEEDED.md`](../emails/COPY_NEEDED.md).
 - Previews: [`docs/screenshots/177-mail-design-snacklist/`](screenshots/177-mail-design-snacklist/)
   (a selection); `npm run preview` renders all of them with one review page.
 
@@ -42,7 +42,7 @@ Previews render with Playwright's Chromium. Requests to `https://snacklist.app/`
 `site/public/`, so a preview shows the assets this branch ships before they are deployed; every
 other request is blocked.
 
-## How Launch writes a new mail
+## How Snacklist PM writes a new mail
 
 1. Pick the layout. Anything a reader asked for by signing up for tips is `OnboardingLayout` (it
    carries the unsubscribe footer). Anything the service must send (sign-in, account, a member
@@ -141,13 +141,13 @@ Other mails in the registry:
 
 | Id | Layout | Status |
 | --- | --- | --- |
-| `welcome-android-de`, `welcome-android-en` | Onboarding | Launch's tester welcome, word for word. Sendable once Peter approves the footer. |
-| `nudge-de`, `nudge-en` | Onboarding | Launch's day-3 nudge, word for word. |
+| `welcome-android-de`, `welcome-android-en` | Onboarding | Snacklist PM's tester welcome, word for word. Sendable once Peter approves the footer. |
+| `nudge-de`, `nudge-en` | Onboarding | Snacklist PM's day-3 nudge, word for word. |
 | `partner-joined-de`, `partner-joined-en` | Auth (transactional) | Legal N-14's sentence and one button (the English is job 177's translation). Subject and reason line are drafts; no sender. |
-| `account-deleted-de`, `account-deleted-en` | Auth (transactional) | Layout and Legal's reason line; body is a `Draft` for Launch; no sender. |
+| `account-deleted-de`, `account-deleted-en` | Auth (transactional) | Layout and Legal's reason line; body is a `Draft` for Snacklist PM; no sender. |
 | `catalog-de` | Onboarding | Every component once. Never sent. |
 
-The iPhone welcome drafts are not built: iOS is not installable yet ("not sendable yet" in Launch's
+The iPhone welcome drafts are not built: iOS is not installable yet ("not sendable yet" in Snacklist PM's
 draft README). Building them is copying `WelcomeAndroidDe` with the iOS wording.
 
 ## Clients
@@ -188,6 +188,6 @@ comes from the tokens.
 `npm run production` lists what blocks sending. Today:
 
 - The reason lines of every auth template except `magic_link` and of `partner-joined-*` (drafts
-  for Launch or Peter to confirm; Legal wrote the sign-in, deletion and E1 lines).
+  for Snacklist PM or Peter to confirm; Legal wrote the sign-in, deletion and E1 lines).
 - `account-deleted-*`'s body.
 - The demo unsubscribe link in the onboarding previews. A real send passes the reader's.

@@ -20,7 +20,7 @@ Siri schickt deinen Satz an Snacklist. Snacklist teilt ihn in einzelne Einträge
 
 ## Ohne Einrichtung: Siri kennt Snacklist {#ohne-einrichtung since=1.0.0 once=native-siri}
 
-> Entwurf für Snacklist Launch: Text und Sätze bitte vor dem Start prüfen.
+> Entwurf für Snacklist PM: Text und Sätze bitte vor dem Start prüfen.
 
 Mit der aktuellen App brauchst du keinen Kurzbefehl mehr. Sobald du in Snacklist angemeldet bist und zu einem Haushalt gehörst, versteht Siri Snacklist von selbst, auf Deutsch und auf Englisch. Du musst nichts einrichten und keinen Token kopieren.
 

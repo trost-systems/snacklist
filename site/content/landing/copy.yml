@@ -295,7 +295,7 @@ demo.mcp-chat:
   source: "Job 54: text alternative of the mcp-chat video; the results are the real MCP answers of the take."
 
 # The waitlist and the stage CTAs (job 82, docs/WAITLIST.md; the stage is site/config/stage.ts).
-# Texts from the V1 variant and the shared building blocks of Snacklist Launch (job 83 brief,
+# Texts from the V1 variant and the shared building blocks from job 83 (then Snacklist Launch, now Snacklist PM; brief,
 # 2026-11-02) and Legal Review's handoffs of 2026-11-02 and 2026-11-04. All drafts until Peter
 # approves them in his own words; the PR is not merged before that.
 

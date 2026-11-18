@@ -759,7 +759,7 @@ Apple requires `com.apple.developer.siri` for SiriKit Intents extensions, not fo
 
 No `NSSiriUsageDescription`: the app never calls `INPreferences.requestSiriAuthorization`.
 
-### 3. Placeholder copy for Snacklist Launch (Spec #5)
+### 3. Placeholder copy for Snacklist PM (Spec #5)
 
 - `premium_required` (voice, not reachable until job 50): de "Sprachbefehle sind Teil von
   Snacklist Premium. Du kannst es in der App freischalten. Ich habe nichts hinzugefügt." en "Voice
@@ -768,7 +768,7 @@ No `NSSiriUsageDescription`: the app never calls `INPreferences.requestSiriAutho
   (`app/ios/Runner/AppIntents`).
 - The guides' native Siri sections (`site/content/guides/de/siri-kurzbefehl.md` "Ohne
   Einrichtung", `en/siri-shortcut.md` "Siri without setup") carry a draft note. They show on
-  production from version 1.0.0. The EN guide's title still says "German only for now". Launch
+  production from version 1.0.0. The EN guide's title still says "German only for now". Snacklist PM
   rewrites it once native Siri is public.
 - The Zugänge card text (`siriWorksWithoutSetup`, `siriOldShortcutHint` in `app/l10n/app_*.arb`).
 
@@ -781,7 +781,7 @@ No `NSSiriUsageDescription`: the app never calls `INPreferences.requestSiriAutho
   Shortcuts system so that "Add milk to Snacklist" works. Apple states it "may extract anonymized
   App Shortcuts data such as localized phrases, display representation values … Machine learning
   models use this data" (https://developer.apple.com/documentation/appintents/app-shortcuts). The
-  display representation values are our item names. The privacy text should say so, or Launch
+  display representation values are our item names. The privacy text should say so, or Snacklist PM
   drops the one-shot phrase.
 - **Analytics.** `siri_add` and `siri_read` (docs/ANALYTICS.md) count Siri use per household under
   the existing consent. No text and no names.
@@ -961,7 +961,7 @@ Turning it on is Peter's go. Decisions: DECISIONS "Job 50". Behavior: docs/PURCH
 - The new service-only table `integration_blocks` (household, integration, last report time) is
   in docs/PRIVACY_DATA_MAP.md; it cascades with the household.
 
-### Snacklist Launch: placeholder copy
+### Snacklist PM: placeholder copy
 
 | Where | Key | Text (DE; EN in the same file) |
 | --- | --- | --- |
@@ -992,7 +992,7 @@ certifier hears only the premium answer. No Alexa console change was made.
 ### MCP and docs for clients
 
 `docs/MCP.md` has the engineering note. Client-facing texts that will need a premium note
-(Snacklist Launch, not edited here): the site guides under `site/content/guides/` about connecting
+(Snacklist PM, not edited here): the site guides under `site/content/guides/` about connecting
 Claude, ChatGPT, Codex, Siri and Alexa, and the app's own help links. `mcp-proxy/vercel.json`
 needed no change.
 
@@ -1021,7 +1021,7 @@ None new.
   reduced motion on (iOS: Settings › Accessibility › Motion), the cards show the still and a play
   button. Then approve together with job 53 (NEEDS_PETER "Job 53"); the videos go live only with
   53's merge.
-- **Launch copy.** Every word on screen is a draft: `site/COPY_NEEDED.md`, section "Demo videos:
+- **Snacklist PM copy.** Every word on screen is a draft: `site/COPY_NEEDED.md`, section "Demo videos:
   words on screen" (`marketing/videos/copy.json`), plus the rewritten text alternatives
   `demo.add-tick`, `demo.household-sync`, `demo.mcp-chat`. A copy change needs only
   `node marketing/videos/build.mjs` (no new filming).
@@ -1118,7 +1118,7 @@ German setting names differ between iOS versions, so the English ones are given.
 - Step 3 also opens the app, or step 2 shows English tiles: the phone does not use the German
   phrases. Do "Job 51" section 2 (the Siri capability and entitlement; Apple reads the
   alternative app names only with it, according to its documentation), then test again.
-- Everything works: tell the lead. The `native-siri` hold stays until Snacklist Launch.
+- Everything works: tell the lead. The `native-siri` hold stays until Snacklist PM.
 
 ## Job 72: Alexa data cleanup and fact answers for Legal Review (2026-11-02)
 
@@ -1245,7 +1245,7 @@ no dashboard, console or hosted database. Merging deploys the `api` function and
 4. **The integration-lock card's copy** names Siri, Alexa and AI assistants
    (`integrationPremiumTitle`, `integrationPremiumBody` in `app/l10n/app_*.arb`) and the held
    changelog item for `integration-lock` too. Neither mentions the API; the API section has its own
-   Premium line. Whether the card should name the API is copy for Snacklist Launch.
+   Premium line. Whether the card should name the API is copy for Snacklist PM.
 5. **The PostHog insight** "Locked integrations" (`analytics/queries/integration_blocked_weekly.sql`)
    gained an `api` column. If the insight in PostHog is a copy of the query, paste the new one.
 6. **A public domain** (`api.snacklist.app`, a Vercel rewrite like `mcp-proxy/`) needs Peter's OK;
@@ -1314,7 +1314,7 @@ own switch, `public.app_switches` key `public_api`, seeded **off** by
 The deploy of this migration (`supabase-deploy.yml` after the merge) is the only production change.
 Nothing else was switched.
 
-### Turning the API on (when Snacklist Launch says so)
+### Turning the API on (when Snacklist PM says so)
 
 1. Server: in the SQL editor of project `jdwqrallbpdbshrdhenk` (or the Management API's
    `database/query`, service role):
@@ -1777,7 +1777,7 @@ switch: it publishes the waitlist stage on snacklist.app. The secrets decide whe
 Per the lead (2026-11-04) PR #210 stays open: no merge before Peter approves the copy in his own
 words and Legal has reviewed. There are no placeholder markers any more (Addendum 10: none may be
 in the build, every build fails on one). Every text is the draft it would ship with: Legal's
-versioned texts byte for byte, Launch's drafts for the rest, listed in the PR description. Merging
+versioned texts byte for byte, Snacklist PM's drafts for the rest, listed in the PR description. Merging
 publishes the waitlist at once (Addendum 8: the stage file replaced the env switch).
 
 Region proof (Addendum 4): the preview is behind Vercel login, so `curl -si -X POST
@@ -1828,9 +1828,9 @@ period tested to the minute in `supabase/tests/waitlist.test.sql`.
 4. **Sender name:** "Peter · Snacklist" in German and English mails since #357 (2026-11-10);
    before, per language "Peter von Hummlist" and "Peter from Hummlist" (Legal handoff 2.5).
 5. **Welcome mail** goes out automatically right after confirming (consent text names it). It is
-   not an invite. Its text is a neutral draft (Launch's draft 5b was not in the brief), and with
+   not an invite. Its text is a neutral draft (the former Launch bot's draft 5b was not in the brief), and with
    the markers gone it would go out as written once `WAITLIST_MAIL_ALLOW=*`; the same holds for
-   the invite mail. Launch should approve both before.
+   the invite mail. Snacklist PM should approve both before.
 6. **Root `/`.** Live today it already redirects by language to `/de` or `/en` (307), the landing
    pages, not the browser app. Kept as it is (PM override 3).
 7. **Backups.** The backup drill dumps every public table, so encrypted backups hold waitlist
@@ -1852,7 +1852,7 @@ period tested to the minute in `supabase/tests/waitlist.test.sql`.
 13. **The beta stage needs its own texts before it is switched on.** Legal's form text v2 names
     the button „Auf die Warteliste“ / "Join the waitlist", but the beta stage's button is „Zur
     Beta anmelden“ / "Join the beta"; the form intro and the thanks say "once the beta starts".
-    Switching to `beta` needs a v3 form text from Legal and Launch's beta copy.
+    Switching to `beta` needs a v3 form text from Legal and Snacklist PM's beta copy.
 14. **L-1 sits in llms.txt's head, as a bold lead-in.** Legal wrote it as an `##` section, but
     llms.txt allows only link lists in `##` sections (job 93's check fails otherwise). The text is
     word for word; only „## Beta waitlist: signing up your human“ became
@@ -2112,7 +2112,7 @@ To close: close #78 and #79 with a link to the PR. If either one fails again wit
   German." (DECISIONS "Job 150" 3). The other way is English dictation in the app (its own job),
   then a re-take with an English sentence. (Superseded by #487: dictation follows the app language, German or English.)
 - **Copy.** New strings are drafts in `site/COPY_NEEDED.md` (voice.app.*, demo.voice-add,
-  voice-add.*) for Snacklist Launch; voice.siri.now lost its in-app sentence to the new card.
+  voice-add.*) for Snacklist PM; voice.siri.now lost its in-app sentence to the new card.
 
 
 ## Job 156: nexus.snacklist.app (ops dashboard), 2026-11-07

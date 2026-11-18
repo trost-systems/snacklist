@@ -1,5 +1,5 @@
 // The tester mails from "Snacklist Launch Copy", section 2, word for word (drafts in
-// docs/EMAIL.md, "Onboarding"). Launch edits the words here; the layout stays in the components.
+// docs/EMAIL.md, "Onboarding"). Snacklist PM edits the words here; the layout stays in the components.
 import type { ReactElement } from 'react';
 import { Greeting, Paragraph, PrimaryButton, Signature, Steps, TipBox, type UnsubscribeUrl } from '../components/index.ts';
 import { OnboardingLayout } from '../layouts.tsx';

@@ -1,4 +1,4 @@
-// Writes site/COPY_NEEDED.md, the landing copy for Snacklist Launch, from content/landing/copy.yml.
+// Writes site/COPY_NEEDED.md, the landing copy for Snacklist PM, from content/landing/copy.yml.
 // `--check` writes nothing and fails when the file is stale (the site tests run it).
 import process from 'node:process';
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -57,7 +57,7 @@ export function copyNeeded(
       .filter(([, e]) => e.status === status)
       .map(([id, e]) => `| \`${id}\` | ${SECTIONS[id.split('.')[0]] ?? id.split('.')[0]} | ${cell(e.de)} | ${cell(e.en)} | ${cell(e.source)} | ${status} |`);
   const head = '| Id | Page / section | DE | EN | Why / source | Status |\n| --- | --- | --- | --- | --- | --- |';
-  return `# Copy needed: landing pages (for Snacklist Launch)
+  return `# Copy needed: landing pages (for Snacklist PM)
 
 Generated from \`site/${SOURCE}\` by \`node site/scripts/copy-needed.mjs\`; edit the YAML, not this
 file. Every string on \`/de\` and \`/en\` carries its id in the page as \`data-copy-id="<id>"\`.

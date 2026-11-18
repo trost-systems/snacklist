@@ -117,7 +117,7 @@ reasons.
    unless cancelled at least 24 hours before the period ends, charged at confirmation and
    renewal, where to cancel); the cards are followed by Restore, the terms (Apple's standard EULA
    on iOS, a placeholder elsewhere) and the privacy policy. All copy is placeholder (K.13 /
-   Snacklist Launch).
+   Snacklist PM).
 4. **The tap starts the SDK.** Buy configures `purchases_flutter` with the household id as App
    User ID (`logIn(householdId)` instead when this app run configured it for another household),
    loads that plan's product by id (`getProducts`, `ProductCategory.subscription` for yearly,
@@ -617,7 +617,7 @@ function deployed before it never refuses, the voice function no longer asks, an
 credential's tile never shows as paused. A Shortcut's personal access token still shows as paused,
 since the same token also signs in MCP; on the voice function it stays free by design. OAuth
 tokens, which MCP and AI-assistant clients hold, get 401 from the voice function (job 213), so a
-locked client cannot add through it instead. All copy is a placeholder until Snacklist Launch.
+locked client cannot add through it instead. All copy is a placeholder until Snacklist PM.
 
 What it never does: delete, revoke or disconnect anything. A lapsed yearly plan (or a refund)
 locks again at read time; tokens, the Siri credential, the Alexa link, OAuth connections and the

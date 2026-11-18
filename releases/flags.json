@@ -5,23 +5,23 @@
       "note": "the Snacklist API keys under Mehr > Zugänge show only while the PostHog flag public-api is on (job 73)"
     },
     "grocery-log": {
-      "rollout": "off",
+      "rollout": "full",
       "note": "the Verlauf tab (the grocery log: logged trips by date and by store, Einkauf eintragen) shows only while the PostHog flag grocery-log is on (job 199); the lead targets it to internal installs"
     },
     "prices-and-trip-total": {
-      "rollout": "off",
+      "rollout": "full",
       "note": "prices on the list's rows, the list's total with per-store subtotals and the household's currency show only while the PostHog flag prices-and-trip-total is on (job 190); free for everyone; the lead targets it to internal installs"
     },
     "default-list-voice-target": {
-      "rollout": "off",
+      "rollout": "full",
       "note": "picking the list Siri, Alexa and AI add to when no list is named (household page and household sheet) shows only while the PostHog flag default-list-voice-target is on (job 207)"
     },
     "list-declutter": {
-      "rollout": "off",
+      "rollout": "full",
       "note": "the decluttered list (one switcher for household and list in a see-through header, with prices-and-trip-total also on, the totals block after the open items with a subtotal per store (job 237; the bought/open split needs trip-mode on too), the switcher sheet with a page per household and its members) shows only while the PostHog flag list-declutter is on (jobs 229, 237)"
     },
     "trip-mode": {
-      "rollout": "off",
+      "rollout": "full",
       "note": "trip mode (the question on a tick, the trip strip with its stopwatch, pause and end, and the trip's summary per store) shows only while the PostHog flag trip-mode is on (job 234); the lead targets it to internal installs"
     },
     "feedback-fb2": {
@@ -29,19 +29,19 @@
       "note": "feedback with a screenshot (shake on iOS and Android asks to report the screen, the screenshot is marked up and sent with the note, More's form can add one, the shake switch under Einstellungen) shows only while the PostHog flag feedback-fb2 is on (job 267); on at 100 % since 2026-11-18 20:07 CET (flag id 369540) after the Legal Review GO, with the policy texts and the cover tool"
     },
     "feedback-fb4": {
-      "rollout": "off",
+      "rollout": "full",
       "note": "Feedback & ideas (More's row opens a page with the user's own notes, their status Sent, Read, Planned or Fixed in <version>, Snacklist Support's replies, a badge for new answers, and listed ideas the household can +1) shows only while the PostHog flag feedback-fb4 is on (job 268); internal installs only until the privacy policy covers replies, status and votes"
     },
     "join-household-jh2": {
-      "rollout": "off",
+      "rollout": "full",
       "note": "JH2, joining a household in the browser first (the start screen's two buttons without Einladung einfügen, Bestehendem Haushalt beitreten on the name step with the 8-character code and its preview, the sign-in sheet for an invite, joining from a link without asking again, the approval wait's new words, the QR code on a person's invite, the web app's Öffnen card on phones) shows only while the PostHog flag join-household-jh2 is on (job 271); off until Legal approves the typed-code preview (JH-Q9)"
     },
     "input-stable-rows": {
-      "rollout": "off",
+      "rollout": "full",
       "note": "the add sheet's rows stay put while typing (made on the device on every key with a category guess, the server's rows merged in below without moving them, none changes under a finger) and a new grocery without a remembered store goes to the store the household uses most for its category, only while the PostHog flag input-stable-rows is on (job 272)"
     },
     "on-device-catalog": {
-      "rollout": "off",
+      "rollout": "full",
       "note": "the add sheet's rows ranked on the device in the same frame as the key (the bundled catalog with the server's daily changes, the household's suggest_index fetched on each resync), the server's answer only enriching them, only while the PostHog flag on-device-catalog is on (job 274)"
     },
     "add-feedback-list": {
@@ -66,7 +66,7 @@
     },
     "native-siri": {
       "released": false,
-      "note": "native Siri (no Shortcut setup) waits for Snacklist Launch and Peter's device test"
+      "note": "native Siri (no Shortcut setup) waits for Snacklist PM and Peter's device test"
     },
     "new-design": {
       "released": true,

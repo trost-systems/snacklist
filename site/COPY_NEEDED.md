@@ -1,4 +1,4 @@
-# Copy needed: landing pages (for Snacklist Launch)
+# Copy needed: landing pages (for Snacklist PM)
 
 Generated from `site/content/landing/copy.yml` by `node site/scripts/copy-needed.mjs`; edit the YAML, not this
 file. Every string on `/de` and `/en` carries its id in the page as `data-copy-id="<id>"`.

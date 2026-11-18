@@ -57,7 +57,7 @@ export const busyNow: Record<Lang, string> = {
 /**
  * Job 50: what a tool call of a household without Snacklist Premium gets while the lock is on. A
  * tool result, not a 401/403: the client keeps its token and needs no new sign-in once the
- * household unlocks. PLACEHOLDER copy (Spec #4); the final text comes from Snacklist Launch.
+ * household unlocks. PLACEHOLDER copy (Spec #4); the final text comes from Snacklist PM.
  */
 export const premiumRequired: Record<Lang, string> = {
   de:
