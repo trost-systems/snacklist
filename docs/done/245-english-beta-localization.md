@@ -60,7 +60,7 @@ Screenshots: `docs/screenshots/245/` (also `~/groceries-ops/jobs/245-english-bet
 ## Still German for an English user (not text the app writes, or behavior)
 
 - **In-app dictation** listens in German (`de_DE`) and splits with the German parser. English
-  dictation needs a per-language offline check in the native code: a feature, not a string.
+  dictation needs a per-language offline check in the native code: a feature, not a string. (Superseded by #487: dictation follows the app language, German or English.)
 - **Catalogue suggestions** in the add sheet („Aus dem Katalog“ rows) are German item names.
 - **Old Siri Shortcut recipe** answers in German (its requests carry no language); native Siri
   sends its language.

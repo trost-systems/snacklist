@@ -43,8 +43,9 @@ in the app or its design needs new takes.
 - Every app starts with `FG_DICTATION` set, which gives the Linux build the phone's microphone
   in the add field (`app/test_driver/main_marionette.dart`). A shot's `dictation` is the sentence
   it hears: `test_driver/scripted_speech.dart` stands where the iOS and Android recognizers stand
-  and reports it word by word; everything after it is the app's real dictation. The app listens
-  in German in every language, so `voice-add` hears the same German sentence in both takes.
+  and reports it word by word; everything after it is the app's real dictation. Dictation follows
+  the app language (German or English) since #487; this take is still a German example, so
+  `voice-add` hears the same German sentence in both takes.
 - `capture/shots.ts` is what each video films; `capture/take.ts` runs one take and writes
   `<video>/footage/<lang>/` (not committed): one `.mkv` per member, `events.json` (every input on
   the recording clock), `take.json` (clock offsets, measured latencies, the real MCP results).

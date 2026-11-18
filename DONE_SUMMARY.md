@@ -1615,3 +1615,7 @@ no log (fastlane hides altool's warnings), so it could not be quoted. The ios-st
 the StoreKit tests on iOS 26.2 and downloads that runtime while it builds: on iOS 27 simulators Ask to
 Buy hangs on first use and purchases carry over between runs. Details:
 [docs/done/306.md](docs/done/306.md).
+
+## Job 295: dictation copy follows the app language (PR #534)
+
+Replaced "German only" dictation copy (comparison page lines 28, 71, 114, `voice-add-en.vtt`, `voice-add.german` caption in `copy.json` and `COPY_NEEDED`), reworded source notes, added "Superseded by #487" notes to DECISIONS, NEEDS_LEAD and docs/done/245. Siri Shortcut lines and policy texts untouched. Wording is Engineering's own (PM_ANSWER.md pointed to a report not available here). Review 0 fixes: DECISIONS note moved to the end of item 6; wording source stated in the PR; re-film logged in NEEDS_LEAD. Verified: site gate builds. Not done: re-render of the voice-add EN video.

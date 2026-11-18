@@ -287,7 +287,7 @@ demo.voice-add:
   de: "Video ohne Ton: Mia tippt auf das Mikrofon im Eingabefeld der Snacklist-App und sagt „Pizza, Orangensaft und zwei Packungen Fischstäbchen“. Die Wörter erscheinen im Feld, während sie spricht. Sie tippt auf Stopp, und gleich darauf stehen Orangensaft unter Getränke und Pizza und 2 Packungen Fischstäbchen unter Tiefkühl. Im Laden hakt sie alle drei ab."
   en: "Silent video: Mia taps the microphone in the Snacklist app’s input field and says, in German, “Pizza, Orangensaft und zwei Packungen Fischstäbchen” (pizza, orange juice and two packs of fish fingers). The words appear in the field as she speaks. She taps stop, and right after, Orangensaft is under Drinks and Pizza and 2 Packungen Fischstäbchen under Frozen. In the store she ticks all three off."
   status: draft
-  source: "Job 150: text alternative of the voice-add video; matches its take (marketing/videos/capture/shots.ts). The app listens in German in every language."
+  source: "Job 150: text alternative of the voice-add video; matches its take (marketing/videos/capture/shots.ts). Dictation follows the app language (German or English) since #487; this take is still a German example."
 demo.mcp-chat:
   de: "Video ohne Ton: Ein KI-Chat bekommt „Schreib Honig und Marmelade auf“. Snacklist meldet beide unter Vorrat & Konserven, und sie erscheinen in der App. Per Sprache folgt „Hab beides gekauft, hak es ab“, und beide verschwinden wieder."
   en: "Silent video: an AI chat gets “Put honey and jam on the list”. Snacklist reports both under Pantry, and they appear in the app. By voice follows “Bought both, tick them off”, and both disappear again."
