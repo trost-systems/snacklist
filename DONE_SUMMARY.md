@@ -1715,3 +1715,7 @@ hash-bound GO. `public_api` stays off. Hashes and details: [docs/done/270.md](do
 Landed #528, #534, #510, #532, #530, #535, #514, #522 and #539 in order, one at a time, ci-ok green on each
 head; #524 stays held. Display-name migration applied; Legal's hashes recorded and matching. Merge shas, the
 hash table and the two rename-only migration changes: [docs/done/303.md](docs/done/303.md).
+
+### Job 303 review 0 follow-up
+
+Review 0 found `display-name` still `off` in `releases/flags.json` despite the lead's note (flag on at 100 %). Set to `full` in a docs-only PR; the done summary's flags, #524 and CI lines are corrected, and #514's date-line edit is flagged for Legal's confirmation. [docs/done/303.md](docs/done/303.md).
