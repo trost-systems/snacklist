@@ -1791,3 +1791,13 @@ undo now deletes through the new RPC `undo_add`, which takes the edits' lessons 
 keep them (spec). Migration `20261119070000_undo_added_details.sql`, pgTAP
 `undo_added_details.test.sql`, app tests for the op, journey
 `verify-snacklist/journeys/undo-added-details.mjs`. Details: `docs/done/315.md`.
+
+## Job 314: store app prototypes, rounds OS and SS (2026-11-18)
+
+This is a draft PR that must not be merged. It holds two prototype rounds; nothing in the app changed.
+- **OS ("Open <store> app"):** the pick is OS1, a key in the store's header (1 tap, +0 px), with the app card on the store's screen. The runner-up is OS4, a store menu.
+- **SS (recognising stores across countries):** the pick is SS2, type as today with matches offered and "Is this Lidl?" once, using SS5's rules. The runner-up is SS5.
+- **Data model proposal:** a registry keyed by chain and ISO country, in the repo as `retailers.json`, loaded into a public `retailers` table, with three nullable store columns. A new country needs no app release.
+- **Registry:** 58 verified entries in 8 countries, with no guessed ids.
+
+The preview is `dpl_DCsGpHfgWuk3zykuQLSewWqPMSWf` (the lead mints the share link). Details: [docs/done/314.md](docs/done/314.md).
