@@ -11,12 +11,13 @@
 #   emails    only when the mails' sources or outputs change: emails/, supabase/templates/,
 #             supabase/config.toml, the design tokens, the mail assets in site/public/email/
 #             or its gate
-# Without a range (a push to main, a manual run) and when the CI definition itself changes
+# Without a range (the nightly run, a manual run) and when the CI definition itself changes
 # (this script, ci.yml, the composite actions it uses, lib.sh, the e2e summary), everything
 # runs. A gate's own script is code: it runs the heavy gates, and its own gate where that has a
 # switch (job 221: of 136 merged PRs, 10 ran android and ios only for another gate's script).
 # The on-demand e2e (e2e.yml, scripts/ci-e2e.sh, job 27) is not part of ci.yml:
 # alone it needs only the lint gate (actionlint, shellcheck, check-gates), which always runs.
+# A push to main gets its commit's range, unless it reuses its PR's run (scripts/ci-main-reuse.sh).
 # Usage: scripts/ci-changes.sh [<base> <head>]
 set -euo pipefail
 

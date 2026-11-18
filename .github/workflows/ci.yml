@@ -8,10 +8,17 @@ on:
   pull_request:
   push:
     branches: [main]
+  # Job 308: every gate on main once a night, android, ios and ios-storekit included. A push to
+  # main reuses its PR's run when that tested the same tree (scripts/ci-main-reuse.sh), else it
+  # runs what its commit's range needs, like a PR (docs/CI.md, Main and the nightly run).
+  schedule:
+    - cron: '17 1 * * *'
   workflow_dispatch:
 
+# A PR's newer push cancels its older run. Main's runs never cancel each other: a push run is per
+# commit, a nightly or manual run per run, so a manual run cannot end a nightly one (job 308).
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name == 'push' && github.sha || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event_name == 'push' && github.sha || github.event_name == 'pull_request' && github.ref || github.run_id }}
   cancel-in-progress: true
 
 permissions:
@@ -36,10 +43,17 @@ env:
 jobs:
   # Which gates this change needs (scripts/ci-changes.sh lists the paths): docs-only changes
   # skip the heavy gates; android and ios, fastlane, and emails each run only for their own.
+  # Job 308: a push to main whose PR run tested the same tree runs none of them (reuse), any
+  # other push runs what its PR would have; the nightly and a manual run run everything.
   changes:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+      checks: read
     outputs:
+      reuse: ${{ steps.filter.outputs.reuse }}
       heavy: ${{ steps.filter.outputs.heavy }}
       native: ${{ steps.filter.outputs.native }}
       fastlane: ${{ steps.filter.outputs.fastlane }}
@@ -50,12 +64,26 @@ jobs:
           fetch-depth: 2
       # A pull_request checkout is the merge commit, whose first parent is the base.
       - id: filter
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BEFORE: ${{ github.event.before }}
         run: |
-          if [ "${{ github.event_name }}" = pull_request ]; then
-            scripts/ci-changes.sh HEAD^1 HEAD | tee -a "$GITHUB_OUTPUT"
-          else
-            scripts/ci-changes.sh | tee -a "$GITHUB_OUTPUT"
-          fi
+          case "${{ github.event_name }}" in
+            pull_request) scripts/ci-changes.sh HEAD^1 HEAD | tee -a "$GITHUB_OUTPUT" ;;
+            push)
+              reuse="$(scripts/ci-main-reuse.sh HEAD)"
+              echo "$reuse" | tee -a "$GITHUB_OUTPUT"
+              # A push of several commits (not merge-pr.sh's one) has no range here: all gates.
+              if [ "$reuse" = reuse=true ]; then
+                printf 'heavy=false\nnative=false\nfastlane=false\nemails=false\n' | tee -a "$GITHUB_OUTPUT"
+              elif [ "$BEFORE" = "$(git rev-parse HEAD^1)" ]; then
+                scripts/ci-changes.sh HEAD^1 HEAD | tee -a "$GITHUB_OUTPUT"
+              else
+                scripts/ci-changes.sh | tee -a "$GITHUB_OUTPUT"
+              fi
+              ;;
+            *) scripts/ci-changes.sh | tee -a "$GITHUB_OUTPUT" ;;
+          esac
 
   gitleaks:
     runs-on: ubuntu-24.04
@@ -73,6 +101,8 @@ jobs:
       - run: scripts/gates/gitleaks.sh
 
   lint:
+    needs: changes
+    if: needs.changes.outputs.reuse != 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -147,9 +177,11 @@ jobs:
           deno-version-file: .dvmrc
       - run: scripts/gates/nexus.sh
 
-  # The guides site (site/, job 24a). Always runs: guide content is Markdown, which
-  # ci-changes.sh counts as documentation.
+  # The guides site (site/, job 24a). Runs but on a reused main push: guide content is Markdown,
+  # which ci-changes.sh counts as documentation.
   site:
+    needs: changes
+    if: needs.changes.outputs.reuse != 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -162,8 +194,10 @@ jobs:
       - run: scripts/gates/site.sh
 
   # Job 93: snacklist.app for AI agents, the checks that need the network or a browser (the MCP
-  # probe, the served site, the waitlist form). Always runs, like site.
+  # probe, the served site, the waitlist form). Runs when site does.
   site-agent:
+    needs: changes
+    if: needs.changes.outputs.reuse != 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -378,3 +412,32 @@ jobs:
     steps:
       - if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
         run: exit 1
+
+  # Job 308: a red nightly run keeps one open issue, like backup.yml (scheduled runs mail whoever
+  # last edited the cron line); the next green nightly closes it.
+  nightly-report:
+    needs: [ci-ok]
+    if: ${{ !cancelled() && github.event_name == 'schedule' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      issues: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      ISSUE_TITLE: 'Nightly CI failed on main'
+      RESULT: ${{ needs.ci-ok.result }}
+    steps:
+      - run: |
+          run="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          open=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --limit 500 --json number,title \
+            --jq 'map(select(.title == env.ISSUE_TITLE))[0].number // empty')
+          if [ "$RESULT" = success ]; then
+            [ -z "$open" ] || gh issue close "$open" --repo "$GITHUB_REPOSITORY" --comment "Nightly run $run is green again."
+          else
+            body="Nightly run $run on $GITHUB_SHA failed: every gate ran on main, native ones included. docs/CI.md, section Main and the nightly run, says what to do."
+            if [ -n "$open" ]; then
+              gh issue comment "$open" --repo "$GITHUB_REPOSITORY" --body "$body"
+            else
+              gh issue create --repo "$GITHUB_REPOSITORY" --title "$ISSUE_TITLE" --body "$body"
+            fi
+          fi

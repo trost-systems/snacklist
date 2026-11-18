@@ -42,8 +42,13 @@ on:
 
 # One run at a time and never cancelled mid-upload. GitHub keeps one pending run and cancels an
 # older pending one when a newer arrives; that is fine, every run ships the newest green commit.
+# A run after a CI run that was no push (the nightly one, job 308, or a dispatch) or not green
+# ships nothing, so it queues alone and cannot push out a pending run that would ship.
 concurrency:
-  group: release
+  group: >-
+    ${{ github.event_name == 'workflow_run'
+        && (github.event.workflow_run.event != 'push' || github.event.workflow_run.conclusion != 'success')
+        && format('release-noop-{0}', github.run_id) || 'release' }}
   cancel-in-progress: false
 
 permissions:

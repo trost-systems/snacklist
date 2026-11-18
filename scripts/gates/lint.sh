@@ -19,6 +19,7 @@ shellcheck scripts/*.sh scripts/gates/*.sh scripts/backup/*.sh scripts/ci/*.sh s
 deno run --allow-all tool/lint/ts/strict.ts
 scripts/check-gates.sh
 scripts/ci-changes-test.sh
+scripts/ci-main-reuse-test.sh
 scripts/landing-test.sh
 scripts/merge-append-log-test.sh
 scripts/e2e-gate-test.sh
