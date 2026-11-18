@@ -15802,14 +15802,6 @@ Peter picked NR1 (web form now, in-app entry later behind a flag). Calls made wi
    on `app` (and `heavy`), not `stack`: a guide edit runs the Flutter tests, not db and e2e. The two
    `docs/` files were documentation before this job, so a PR changing only them ran no Flutter
    tests. `docs/hillclimb/`, which the nexus tests read, now turns `heavy` on for the same reason.
-9. **In-session review (no must-fix) and what it added.** A read-only reviewer found that no check
-   tied a job to its switch: db and e2e moved to `app` passed every test, and would skip a
-   migration-only PR. `ci-changes-test.sh` now holds the table from job to switch. `check-gates.sh`
-   refuses a second gate in a matrix job and any `continue-on-error`. `budget.mjs` and `shards.mjs`
-   recognise themselves as the main module in a path with a space (`pathToFileURL`), the listing
-   placeholders apply per key, and `playwright.config.ts` turns on the `@perf` tests only for its
-   arguments, not for a checkout path that contains "perf". `ci-changes.sh` reads non-ASCII names
-   unquoted (`core.quotePath=false`), which the native rule missed before.
 6. **The e2e budget (OC3b) counts tests and estimated seconds.** `e2e/budget.mjs` in the lint gate
    lists the suite as CI runs it and prices each test by `e2e/shard-durations.json`. The count
    alone would let slow tests in. The seconds alone would let a run of short tests grow the
@@ -15827,3 +15819,26 @@ Peter picked NR1 (web form now, in-app entry later behind a flag). Calls made wi
    covers "link join, then live sync", so removing it loses that pairing. The suite has little
    duplication. The same flows appear in several specs but assert different things (the audit's
    rejected list is in DONE_SUMMARY.md).
+9. **In-session review (no must-fix) and what it added.** A read-only reviewer found that no check
+   tied a job to its switch: db and e2e moved to `app` passed every test, and would skip a
+   migration-only PR. `ci-changes-test.sh` now holds the table from job to switch. `check-gates.sh`
+   refuses a second gate in a matrix job and any `continue-on-error`. `budget.mjs` and `shards.mjs`
+   recognise themselves as the main module in a path with a space (`pathToFileURL`), the listing
+   placeholders apply per key, and `playwright.config.ts` turns on the `@perf` tests only for its
+   arguments, not for a checkout path that contains "perf". `ci-changes.sh` reads non-ASCII names
+   unquoted (`core.quotePath=false`), which the native rule missed before.
+
+## Job 309 review 0: the merge broke the lead's hold; held follow-ups (2026-11-18)
+
+1. **#544 merged against the LEAD OVERRIDE.** The override said not to merge until 303 is done, in
+   the order 307, 308, 309. #544 merged at 20:19 CET while 303 was still running, before the
+   worker's review0. The lead decides whether it stays (`~/groceries-ops/NEEDS_LEAD.md`, job 309).
+2. **This PR is held.** It merges only after 303 is done and the lead agrees. It moves item 9
+   above to the end of its list, and the PR template asks about the e2e budget when a PR adds e2e
+   tests.
+3. **The warning stays at 98 %, not 95 %.** At 288 of 300 tests (96 %), every PR would warn from
+   the first day.
+4. **No lint for computed `File(` paths in the Flutter tests.** A path like
+   `File('$dir/$name')` is legitimate inside `app/`, and the only one that reaches outside,
+   `'../supabase/classifier/$file'`, is a literal the test already reads. Today a rule would only
+   produce exceptions. `ci-changes-test.sh` says to write such a path as one literal.
