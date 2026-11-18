@@ -1709,3 +1709,9 @@ consent examples name connected apps, MCP and API keys (version 2026-11-18, ever
 again), §7 gets the API section with idempotency (24 h) and failure hashes (1 day), §9 gets
 `api_key_used`, and `api_begin` salts the failure hash (N-255). Not merged: PM, then Legal's
 hash-bound GO. `public_api` stays off. Hashes and details: [docs/done/270.md](docs/done/270.md).
+
+## Job 303: land the beta batch 3 (2026-11-18)
+
+Landed #528, #534, #510, #532, #530, #535, #514, #522 and #539 in order, one at a time, ci-ok green on each
+head; #524 stays held. Display-name migration applied; Legal's hashes recorded and matching. Merge shas, the
+hash table and the two rename-only migration changes: [docs/done/303.md](docs/done/303.md).
