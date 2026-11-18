@@ -3,22 +3,45 @@
 # the simulator, which also validates the App Shortcut phrases. The built app carries the app icon
 # (light, dark, tinted, and the Icon Composer layered icon) and the launch screen's colour and mark
 # from design/app-icon/build.mjs. Then RunnerTests runs on the newest iPhone simulator installed,
-# and its StoreKit tests on an iOS 26.2 one, whose storekitd still gives the local test store to an
-# ad-hoc signed build (DECISIONS 127). Needs macOS.
+# and its StoreKit tests on an iOS 26.2 one, downloaded while it builds, whose storekitd still gives
+# the local test store to an ad-hoc signed build (DECISIONS 127, job 306). Needs macOS.
 # One build serves the checks and the tests: building twice (flutter build ios, then xcodebuild
 # test) let a slow runner hit the job's 40-minute limit (job 118, scripts/ci-ios-phases.sh).
 set -euo pipefail
 source "$(dirname "$0")/../lib.sh"
 require_ci_flutter
 cd "$REPO_ROOT/app"
+# The StoreKit tests need storekitd to take Snacklist.storekit. From iOS 26.4 on it refuses that to
+# this ad-hoc signed build ("not installed for development"); iOS 26.2's still takes it, so they
+# run on a 26.2 simulator, and every one of them must pass (DECISIONS 127;
+# scripts/ios-storekit-probe.sh checks other runtimes).
+# The xcode-27 image ships only iOS 27 runtimes, whose storekitd answers from the sandbox's US
+# storefront and never returns a purchase (job 306): the gate downloads 26.2 (8.4 GB, about 13 min)
+# while it builds.
+storekit_ios=26.2
+storekit_runtime() {
+  xcrun simctl list runtimes -j | python3 -c '
+import json, sys
+for r in json.load(sys.stdin)["runtimes"]:
+    if r["platform"] == "iOS" and r["isAvailable"] and r["version"].split(".")[:2] == sys.argv[1].split("."):
+        iphones = {t["name"]: t["identifier"] for t in r["supportedDeviceTypes"] if t["productFamily"] == "iPhone"}
+        name = next((n for n in ("iPhone 17 Pro", "iPhone 16 Pro", "iPhone 16") if n in iphones), list(iphones)[-1])
+        print(r["identifier"], iphones[name]); break' "$storekit_ios"
+}
+storekit_download=/tmp/snacklist-storekit-runtime.log
+if [[ -z $(storekit_runtime) ]]; then
+  xcodebuild -downloadPlatform iOS -buildVersion "$storekit_ios" >"$storekit_download" 2>&1 &
+  storekit_download_pid=$!
+fi
 log "phase config"
 flutter build ios --config-only --simulator --debug
+# The newest iPhone, never on a one-device runtime such as Xcode 27's iOS-27-2-iPhone19-4 (job 306).
 udid="$(xcrun simctl list devices available -j | python3 -c '
 import json, re, sys
 devices = json.load(sys.stdin)["devices"]
 def version(runtime):
     return [int(n) for n in re.findall(r"\d+", runtime.rsplit("iOS", 1)[-1])]
-ios = sorted((r for r in devices if ".SimRuntime.iOS-" in r), key=version, reverse=True)
+ios = sorted((r for r in devices if re.search(r"\.SimRuntime\.iOS-[0-9-]+$", r)), key=version, reverse=True)
 print(next(d["udid"] for r in ios for d in devices[r] if d["name"].startswith("iPhone")))')"
 log "phase build"
 derived=build/ios/derived
@@ -67,6 +90,12 @@ if missing:
 print('Assets.car has', ', '.join(want), 'and the AppIcon.icon stacks')
 PY
 
+# A runtime installed while xcodebuild tests can lose it its simulator, as a simulator created then
+# did (job 127): the download ends first.
+if [[ -n ${storekit_download_pid:-} ]]; then
+  log "phase storekit_download"
+  wait "$storekit_download_pid" || { tail -c 2000 "$storekit_download" >&2; echo "ios: downloading the iOS $storekit_ios simulator runtime failed" >&2; exit 1; }
+fi
 # Booting while it builds made the build 3 to 7 min slower on 3-core runners (job 118).
 log "phase boot $udid"
 xcrun simctl boot "$udid" 2>/dev/null || true
@@ -87,23 +116,8 @@ print("passed %s, failed %s, skipped %s" % (s.get("passedTests"), s.get("failedT
 sys.exit(0 if s.get("result") == "Passed" and s.get("passedTests", 0) > 0 else 1)'
 [[ -z ${status:-} ]] || exit "$status"
 
-# The StoreKit tests need storekitd to take Snacklist.storekit. From iOS 26.4 on it refuses that to
-# this ad-hoc signed build ("not installed for development"); iOS 26.2's still takes it, so they
-# run on a 26.2 simulator, and every one of them must pass (DECISIONS 127;
-# scripts/ios-storekit-probe.sh checks other runtimes).
-storekit_ios=26.2
 log "phase storekit_boot iOS $storekit_ios"
-storekit_runtime() {
-  xcrun simctl list runtimes -j | python3 -c '
-import json, sys
-for r in json.load(sys.stdin)["runtimes"]:
-    if r["platform"] == "iOS" and r["isAvailable"] and r["version"].split(".")[:2] == sys.argv[1].split("."):
-        iphones = {t["name"]: t["identifier"] for t in r["supportedDeviceTypes"] if t["productFamily"] == "iPhone"}
-        name = next((n for n in ("iPhone 17 Pro", "iPhone 16 Pro", "iPhone 16") if n in iphones), list(iphones)[-1])
-        print(r["identifier"], iphones[name]); break' "$storekit_ios"
-}
 read -r runtime devicetype <<<"$(storekit_runtime)"
-# Downloading it here would cost several GB inside the job's 40 minutes: fail and say so.
 [[ -n ${runtime:-} ]] || { echo "ios: the runner image has no iOS $storekit_ios simulator runtime for the StoreKit tests; run scripts/ios-storekit-probe.sh on it to find a runtime whose storekitd takes Snacklist.storekit and set storekit_ios (DECISIONS 127)" >&2; exit 1; }
 storekit_udid="$(xcrun simctl create "Snacklist StoreKit" "$devicetype" "$runtime")"
 # Created and booted after the main tests: xcodebuild there lost its own simulator ("Unable to find

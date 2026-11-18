@@ -31,18 +31,20 @@ run_tests() {
   local udid=$1 name=$2
   local start; start="$(date '+%Y-%m-%d %H:%M:%S')"
   xcodebuild test-without-building -workspace ios/Runner.xcworkspace -scheme Runner \
-    -destination "id=$udid" -derivedDataPath "$derived" -only-testing:RunnerTests/LifetimeStoreKitTests \
+    -destination "id=$udid" -destination-timeout 300 -derivedDataPath "$derived" -only-testing:RunnerTests/LifetimeStoreKitTests \
     -parallel-testing-enabled NO -test-timeouts-enabled YES -resultBundlePath "$out/$name.xcresult" \
     >"$out/$name.log" 2>&1 &
   local pid=$!
-  for _ in $(seq 1 72); do kill -0 "$pid" 2>/dev/null || break; sleep 5; done
-  kill -0 "$pid" 2>/dev/null && { echo "$name: xcodebuild still running after 6 min, stopped"; kill "$pid"; }
+  for _ in $(seq 1 132); do kill -0 "$pid" 2>/dev/null || break; sleep 5; done
+  kill -0 "$pid" 2>/dev/null && { echo "$name: xcodebuild still running after 11 min, stopped"; kill "$pid"; }
   wait "$pid"
   xcrun simctl spawn "$udid" log show --start "$start" --style compact \
     --predicate 'process == "storekitd" OR category == "SKTestSession"' >"$out/$name-sim.log" 2>&1
   local verdict=accepted
   grep -q "Test Case" "$out/$name.log" || verdict="unknown (no test ran)"
   grep -q "not installed for development" "$out/$name-sim.log" && verdict="refused (not installed for development)"
+  # iOS 27 logs no refusal: StoreKit switches to the sandbox's storefront and the purchase hangs (job 306).
+  grep -q "Storefront for testflight changed" "$out/$name-sim.log" && verdict="refused (answers from the sandbox storefront)"
   grep -q "Error saving configuration file" "$out/$name-sim.log" && verdict="$verdict, SKTestSession could not save"
   local tests
   tests="$(grep -E "Test Case .*(passed|failed|skipped)" "$out/$name.log" | sed -E "s/.*LifetimeStoreKitTests ([A-Za-z0-9]+)\]' ([a-z]+).*/\1 \2/" | paste -sd, -)"
