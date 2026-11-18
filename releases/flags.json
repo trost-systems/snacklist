@@ -25,8 +25,8 @@
       "note": "trip mode (the question on a tick, the trip strip with its stopwatch, pause and end, and the trip's summary per store) shows only while the PostHog flag trip-mode is on (job 234); the lead targets it to internal installs"
     },
     "feedback-fb2": {
-      "rollout": "off",
-      "note": "feedback with a screenshot (shake on iOS and Android asks to report the screen, the screenshot is marked up and sent with the note, More's form can add one, the shake switch under Einstellungen) shows only while the PostHog flag feedback-fb2 is on (job 267); internal installs only until the privacy policy covers screenshots"
+      "rollout": "full",
+      "note": "feedback with a screenshot (shake on iOS and Android asks to report the screen, the screenshot is marked up and sent with the note, More's form can add one, the shake switch under Einstellungen) shows only while the PostHog flag feedback-fb2 is on (job 267); on at 100 % since 2026-11-18 20:07 CET (flag id 369540) after the Legal Review GO, with the policy texts and the cover tool"
     },
     "feedback-fb4": {
       "rollout": "off",

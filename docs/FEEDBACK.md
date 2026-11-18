@@ -232,6 +232,25 @@ the new numbers (`>= 10` per user, `>= 250` for the bucket), then land it like a
 saves it. The note's `screenshot` column has the full path. Do not share a link from **Get URL**:
 a signed URL opens the image for anyone who has it until it expires.
 
+**A user asks for their data (Art. 15 GDPR, Legal N-270).** The in-app "Meine Daten exportieren"
+lists each note with the screenshot's file name, not the image (`export_my_data` cannot read
+Storage). When a user asks for their data and has sent screenshots, Peter adds the images to the
+answer, through the normal data-request path (the reply to the request, to the account's own
+email address only, after checking the sender is that account):
+
+1. Find the user id: **Authentication** in the dashboard, by the account's email.
+2. List their notes: `select id, created_at, screenshot from public.feedback where user_id =
+   '<user id>' and screenshot is not null;`. A screenshot's name is `<user id>/<note id>.png`.
+3. In **Storage**, bucket `feedback-screenshots`, open the folder `<user id>` and **Download**
+   each file named by a note. Files in the folder that no note names are uploads that never got
+   a note; the daily sweep removes them, so skip them or include them, they are the user's too.
+4. Send the PNGs with the export file, and note in the request's record that screenshots were
+   included. Do not use **Get URL** (a signed link opens for anyone who has it), and delete the
+   downloaded copies once sent. Never copy images into the repo or into a ticket.
+
+A user with no `screenshot` rows has none stored; say so in the answer. A note's text and
+status come with the in-app export as before.
+
 **Deletion.** SQL cannot delete a stored file (`storage.protect_delete` refuses it, and a
 deleted row would leave the file behind), so the Storage API does:
 
