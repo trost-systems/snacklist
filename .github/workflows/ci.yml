@@ -37,7 +37,7 @@ jobs:
   # Which gates this change needs (scripts/ci-changes.sh lists the paths): docs-only changes
   # skip the heavy gates; android and ios, fastlane, and emails each run only for their own.
   changes:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
       heavy: ${{ steps.filter.outputs.heavy }}
@@ -58,7 +58,7 @@ jobs:
           fi
 
   gitleaks:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -73,7 +73,7 @@ jobs:
       - run: scripts/gates/gitleaks.sh
 
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -100,7 +100,7 @@ jobs:
   # PRs carry none and need none: their bumps are no user-visible change.
   changelog:
     if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' && !startsWith(github.head_ref, 'dependabot/')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -111,7 +111,7 @@ jobs:
   db:
     needs: changes
     if: needs.changes.outputs.heavy == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -124,7 +124,7 @@ jobs:
   functions:
     needs: changes
     if: needs.changes.outputs.heavy == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -138,7 +138,7 @@ jobs:
   nexus:
     needs: changes
     if: needs.changes.outputs.heavy == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -150,7 +150,7 @@ jobs:
   # The guides site (site/, job 24a). Always runs: guide content is Markdown, which
   # ci-changes.sh counts as documentation.
   site:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -164,7 +164,7 @@ jobs:
   # Job 93: snacklist.app for AI agents, the checks that need the network or a browser (the MCP
   # probe, the served site, the waitlist form). Always runs, like site.
   site-agent:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -181,7 +181,7 @@ jobs:
   emails:
     needs: changes
     if: needs.changes.outputs.emails == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -195,7 +195,7 @@ jobs:
   fg-cli:
     needs: changes
     if: needs.changes.outputs.heavy == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -207,7 +207,7 @@ jobs:
   flutter:
     needs: changes
     if: needs.changes.outputs.heavy == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -221,7 +221,7 @@ jobs:
   web-prod:
     needs: changes
     if: needs.changes.outputs.heavy == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -241,7 +241,7 @@ jobs:
   e2e:
     needs: changes
     if: needs.changes.outputs.heavy == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -269,7 +269,7 @@ jobs:
   fastlane:
     needs: changes
     if: needs.changes.outputs.fastlane == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -284,7 +284,7 @@ jobs:
   android:
     needs: changes
     if: needs.changes.outputs.native == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -331,7 +331,7 @@ jobs:
   # trigger stops too while it is disabled (docs/RELEASE.md).
   keepalive-schedule:
     if: github.event_name == 'push'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
       actions: write
@@ -352,7 +352,7 @@ jobs:
   ci-ok:
     needs: [changes, gitleaks, lint, changelog, db, functions, nexus, site, site-agent, emails, fg-cli, flutter, web-prod, e2e, fastlane, android, ios]
     if: ${{ !cancelled() }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions: {}
     steps:

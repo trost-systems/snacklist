@@ -467,6 +467,16 @@ tools and retries what is still downloaded.
   come from Docker Hub (`SUPABASE_INTERNAL_IMAGE_REGISTRY`, DECISIONS job
   15b).
 
+## Runner images
+
+Every Linux job runs on `ubuntu-24.04`, the iOS jobs on `macos-26`, never on
+a `-latest` label (lint rule `runner-pinned`). GitHub moves `ubuntu-latest`
+to a new image without a commit of ours. On 2026-11-18 it became
+ubuntu-26.04, and a rerun of main's green commit failed three jobs: lint (the
+image's newer shellcheck reports SC2329), flutter (8 goldens 2 to 13 px off)
+and WebKit in e2e (4) (job 302). Move to a new image in its own PR, with the
+gates green on it and any golden update explained there.
+
 ## Dependencies
 
 `.github/dependabot.yml` opens grouped weekly PRs for GitHub Actions, pub

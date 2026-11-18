@@ -25,7 +25,7 @@ permissions:
   contents: read
 jobs:
   plan:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions: {}
     outputs:
       ios: \${{ steps.secrets.outputs.ios }}
@@ -35,7 +35,7 @@ jobs:
   ship:
     needs: plan
     if: needs.plan.outputs.ios == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment: release
     env:
       GH_TOKEN: \${{ github.token }}
@@ -85,6 +85,18 @@ Deno.test('an action by tag, branch or short SHA fails with file, job and the fi
     assert(problems[0]?.startsWith(`${WF}: job 'job': 'uses: ${ref}' is not pinned.`));
     assert(problems[0]?.includes('full 40-hex commit SHA'));
     assert(problems[0]?.includes('action-pinned'));
+  }
+});
+
+Deno.test('a -latest runner label fails, a numbered one passes', () => {
+  for (const runsOn of ['ubuntu-latest', '[ubuntu-latest]', '{ labels: [macos-latest] }']) {
+    const problems = problemsOf(workflow(`    runs-on: ${runsOn}\n    steps: []\n`));
+    assertEquals(problems.length, 1, runsOn);
+    assert(problems[0]?.startsWith(`${WF}: job 'job': 'runs-on: `), problems[0]);
+    assert(problems[0]?.includes('runner-pinned'));
+  }
+  for (const runsOn of ['ubuntu-24.04', 'macos-26', '${{ matrix.os }}', '{ group: big-latest }']) {
+    assertEquals(problemsOf(workflow(`    runs-on: ${runsOn}\n    steps: []\n`)), [], runsOn);
   }
 });
 

@@ -65,7 +65,7 @@ pause_once() {
   fi
 }
 
-# shellcheck disable=SC2317 # only the EXIT trap calls it
+# shellcheck disable=SC2317,SC2329 # only the EXIT trap calls it
 resume() {
   if [[ -n ${pauser:-} ]]; then kill "$pauser" 2>/dev/null || true; wait "$pauser" 2>/dev/null || true; fi
   local stopped=()
