@@ -7,9 +7,13 @@ permissions:
 env:
   FLUTTER_VERSION: 3.50.0
 jobs:
-  paywall:
+  storekit:
+    strategy:
+      fail-fast: false
+      matrix:
+        ios: ['27.2', '27.1', '27.0', '26.2']
     runs-on: xcode-27
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: ./.github/actions/xcode
@@ -18,12 +22,10 @@ jobs:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: false
-      - run: scripts/ios-paywall-shot.sh "$RUNNER_TEMP/paywall-ios-de.png"
+      - run: df -h /; scripts/ios-storekit-probe.sh ${{ matrix.ios }}
       - if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: paywall-ios-de
-          path: |
-            ${{ runner.temp }}/paywall-ios-de*.png
-            /tmp/snacklist-paywall-shot/ready-*
+          name: storekit-probe-${{ matrix.ios }}
+          path: /tmp/storekit-probe
           if-no-files-found: ignore
