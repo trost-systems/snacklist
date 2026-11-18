@@ -6,12 +6,13 @@ import { adminClient, apiAs, functionJson, functionsUrl } from './helpers';
 // events go to the real webhook with the local stand-in secret (scripts/iap-local-env.sh), and the
 // buyer's claim goes where the app sends it.
 
-const webhookAuth = (() => {
+// Read at the call, so that listing the suite (the e2e budget in the lint gate) needs no stack.
+function webhookAuth(): string {
   const env = readFileSync(new URL('../../supabase/functions/.env', import.meta.url), 'utf8');
   const line = env.split('\n').find((l) => l.startsWith('REVENUECAT_WEBHOOK_AUTH='));
   if (!line) throw new Error('supabase/functions/.env has no REVENUECAT_WEBHOOK_AUTH: run scripts/iap-local-env.sh');
   return line.slice('REVENUECAT_WEBHOOK_AUTH='.length).replace(/^"|"$/g, '');
-})();
+}
 
 export const yearlyId = 'com.snacklist.app.yearly';
 const day = 86_400_000;
@@ -26,7 +27,7 @@ export async function rcEvent(
   appUserId: string,
   transactionId: string,
   {
-    authorization = webhookAuth,
+    authorization = webhookAuth(),
     id = crypto.randomUUID(),
     productId = 'com.snacklist.app.lifetime',
     expiresInDays = 365,

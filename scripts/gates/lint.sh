@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Workflows (actionlint), shell scripts (shellcheck), the e2e TypeScript (tsc), the TypeScript lint
 # pack (tool/lint/ts), the gate wiring, the CI change filter, landing, push checks, append-log merge driver, e2e gate, verify.sh, Flutter SDK, Vercel ignore step, CI download, stack logs and release scripts' tests, the
-# e2e request deadline's test (e2e/deadline.test.mjs), the structural lints in scripts/lint.sh, and
+# e2e request deadline's test (e2e/deadline.test.mjs), the e2e budget (e2e/budget.mjs), the structural lints in scripts/lint.sh, and
 # the generated files against their source: the design tokens (design/tokens/build.mjs) and the
 # app icon and splash screens (design/app-icon/build.mjs), the Android widget's hex shapes
 # (design/widget/build.mjs) and the item icon table with its samples (tool/item_icons/build.mjs, its
@@ -35,6 +35,9 @@ scripts/release/test.sh
 # versions take the flag too.
 node --experimental-strip-types --test e2e/deadline.test.mjs
 node --test e2e/shards.test.mjs
+node --test e2e/budget.test.mjs
+# Job 309: the e2e suite's size against e2e/budget.json (docs/CI.md, The e2e budget).
+node e2e/budget.mjs
 scripts/lint.sh
 node design/tokens/build.mjs --check
 node design/app-icon/build.mjs --check

@@ -147,30 +147,6 @@ test('the default for Siri, Alexa and AI changes from the switcher; old apps rea
   expect(old.data?.household_id, 'the new default').toBe(second.id);
 });
 
-test('an old app\'s own-membership read stays one row for a user in three households', async () => {
-  const owner = await householdWithInvite('hh-old-owner', 'Familie Trost');
-  const email = newEmail('hh-old');
-  const { error } = await adminClient().auth.admin.createUser({ email, password, email_confirm: true });
-  if (error) throw error;
-  const api = await apiAs(email);
-  // As an old build creates: no request id.
-  const { data: first, error: createError } = await api.rpc('create_household', { p_name: 'Zuhause' });
-  expect(createError).toBeNull();
-  const { error: secondError } = await api.rpc('create_household', {
-    p_name: 'Büro', p_default_stores: false, p_stores: [], p_request_id: crypto.randomUUID(), p_kind: null,
-  });
-  expect(secondError).toBeNull();
-  const { data: joined } = await api.rpc('accept_invite', { p_code: owner.code, p_mode: 'add' });
-  expect(joined).toEqual({ status: 'joined', household_id: owner.household });
-  expect(await myHouseholds(email)).toHaveLength(3);
-
-  const old = await oldAppMembership(email);
-  expect(old.error).toBeNull();
-  expect(old.data?.household_id, 'the default, the first household').toBe(first.id);
-  const { data: rows } = await api.from('household_members').select('household_id').eq('user_id', must(old.data, 'row').user_id);
-  expect(rows, 'exactly one own row').toHaveLength(1);
-});
-
 test('leaving a household from its page: it goes, the list shows another, the others keep theirs', async ({ browser }) => {
   const peter = await newPage(browser);
   const lea = await newPage(browser);

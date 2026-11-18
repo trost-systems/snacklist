@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # CI and verify.sh run the same checks because both only call scripts/gates/<gate>.sh. This keeps
-# it that way: every gate has a ci.yml job of its name that runs it and is in ci-ok's needs, and
-# is listed in verify.sh; no check command is written into ci.yml or verify.sh directly. Every
+# it that way: exactly one ci.yml job runs each gate, once, and is in ci-ok's needs (a job may run
+# several gates, job 309; a gate after the first one runs `if: ${{ !cancelled() ... }}`, so one
+# failure does not hide the next), and every gate is listed in verify.sh; no check command is
+# written into ci.yml or verify.sh directly. Every
 # job in every workflow also sets timeout-minutes, and the on-demand e2e.yml sets up its db and
 # e2e jobs exactly like ci.yml's (job 27).
 set -euo pipefail
@@ -12,14 +14,34 @@ CI=.github/workflows/ci.yml
 problems=()
 needs="$(sed -n '/^  ci-ok:/,/^  [a-z]/s/^    needs: \[\(.*\)\]$/\1/p' "$CI" | tr -d ' ')"
 listed="$(sed -n 's/^\(GATES\|CI_ONLY\)=(\(.*\))$/\2/p' scripts/verify.sh | tr '\n' ' ')"
+# The lines of job <job> in workflow <wf>.
+job_block() {
+  sed -n "/^jobs:/,\$p" "$1" | sed -n "/^  $2:$/,/^  [a-zA-Z0-9_-]*:$/p" | sed '$!b;/^  [a-zA-Z0-9_-]*:$/d'
+}
+ci_jobs="$(sed -n '/^jobs:/,$s/^  \([a-zA-Z0-9_-]*\):$/\1/p' "$CI")"
 for file in scripts/gates/*.sh; do
   gate="$(basename "$file" .sh)"
   [[ -x $file && "$(git ls-files -s "$file" | cut -c1-6)" != 100644 ]] || problems+=("$file is not executable (chmod +x, git add)")
-  grep -q "^  $gate:$" "$CI" || problems+=("ci.yml has no job '$gate'")
-  [[ "$(sed -n "/^  $gate:$/,/^  [a-z]/p" "$CI" | grep -c "run: scripts/gates/$gate.sh")" == 1 ]] \
-    || problems+=("ci.yml job '$gate' does not run scripts/gates/$gate.sh once")
-  [[ ",$needs," == *",$gate,"* ]] || problems+=("ci-ok does not need '$gate'")
+  runs="^ *(- )?run: scripts/gates/$gate\.sh( |$)"
+  jobs=() count=0
+  for job in $ci_jobs; do
+    n="$(job_block "$CI" "$job" | grep -cE "$runs" || true)"
+    ((n == 0)) || { jobs+=("$job"); count=$((count + n)); }
+  done
+  if [[ ${#jobs[@]} != 1 || $count != 1 ]]; then
+    problems+=("ci.yml must run scripts/gates/$gate.sh in exactly one job, once; it runs it ${count}x in: ${jobs[*]:-no job}")
+  else
+    [[ ",$needs," == *",${jobs[0]},"* ]] || problems+=("ci-ok does not need '${jobs[0]}', which runs the $gate gate")
+  fi
   [[ " $listed " == *" $gate "* ]] || problems+=("verify.sh lists '$gate' in neither GATES nor CI_ONLY")
+done
+# In a job of several gates, a failed gate must not skip the ones after it.
+for job in $ci_jobs; do
+  while read -r step; do
+    problems+=("ci.yml job '$job': the step that runs $step follows another gate's, so it needs if: \${{ !cancelled() ... }}")
+  done < <(job_block "$CI" "$job" | awk '
+    /^ *(- )?run: scripts\/gates\// { if (gates++ && prev !~ /^ *- if: \$\{\{ !cancelled\(\)/) print $NF }
+    { prev = $0 }')
 done
 for word in $listed; do
   [[ -f scripts/gates/$word.sh ]] || problems+=("verify.sh lists '$word', which has no scripts/gates/$word.sh")
@@ -34,10 +56,15 @@ for pattern in 'flutter analyze' 'flutter test' 'flutter build' 'dart format' 'd
   done
 done
 
-# The lines of job <job> in workflow <wf>.
-job_block() {
-  sed -n "/^jobs:/,\$p" "$1" | sed -n "/^  $2:$/,/^  [a-zA-Z0-9_-]*:$/p" | sed '$!b;/^  [a-zA-Z0-9_-]*:$/d'
-}
+# A matrix job runs its steps once per entry: a gate there would run more than once (the e2e
+# shards), and a step that may fail without failing its job hides a gate from ci-ok.
+for job in $ci_jobs; do
+  block="$(job_block "$CI" "$job")"
+  if grep -qE '^    strategy:' <<<"$block" && (($(grep -cE '^ *(- )?run: scripts/gates/' <<<"$block") > 1)); then
+    problems+=("ci.yml job '$job' is a matrix, so it may run only its own gate; move the others to a job without a strategy")
+  fi
+done
+grep -qE '^\s*continue-on-error:' "$CI" && problems+=("ci.yml has continue-on-error, which lets a gate fail without failing ci-ok")
 
 # A hung job holds a runner (and a deploy or release slot) for GitHub's 6 h default.
 for wf in .github/workflows/*.yml; do

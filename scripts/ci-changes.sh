@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 # Which CI gates a change needs, as key=value lines for $GITHUB_OUTPUT:
-#   heavy     every gate but gitleaks and lint; false only when every file is documentation
+#   heavy     the deno job (functions, nexus, fg-cli); false only when every file is documentation
+#   stack     db and e2e, the gates on the local Supabase stack: off when every file is
+#             documentation or off the app (the public site, the ops dashboard, marketing,
+#             research, the MCP proxy's Vercel project, the hotspot and hill-climb tools)
+#   app       flutter and web-prod, which build and test app/: off, in addition, when the rest is
+#             the server or the e2e suite (supabase/, alexa/, e2e/); on for the server files,
+#             docs and guides the Flutter tests read (ci-changes-test.sh finds those in app/)
 #   native    android, ios and ios-storekit; only when the native projects or pubspec, these
 #             gates, their iOS build (scripts/ios/build-for-testing.sh) or the checks the ios gate runs on the
 #             built app change. They compile the
@@ -21,19 +27,33 @@
 # Usage: scripts/ci-changes.sh [<base> <head>]
 set -euo pipefail
 
-all() { printf 'heavy=true\nnative=true\nfastlane=true\nemails=true\n'; exit 0; }
+all() { printf 'heavy=true\nstack=true\napp=true\nnative=true\nfastlane=true\nemails=true\n'; exit 0; }
 [[ $# == 2 ]] || all
 # --no-renames: a file moved out of app/ios/ is a change there, and git would name only where it went.
-files="$(git diff --name-only --no-renames "$1" "$2")"
+# core.quotePath=false: git would quote a non-ASCII name ("app/ios/\303\244.swift"), which no rule matches.
+files="$(git -c core.quotePath=false diff --name-only --no-renames "$1" "$2")"
 [[ -n $files ]] || all
 grep -qE '^(\.github/workflows/ci\.yml|\.github/actions/|scripts/ci-changes\.sh|scripts/lib\.sh|scripts/e2e-summary\.sh)' <<<"$files" && all
 
+# What the Flutter tests read outside app/ (job 309): parity tables and sources shared with the
+# server, the release runbook and consent texts, the guides. Documentation or not, it is the app's.
+app_reads='^supabase/(classifier/|tests/[^/]*\.(tsv|json)$|functions/_shared/(consent_version|http)\.ts$)|^docs/(RELEASE\.md$|consent/)|^site/content/guides/'
+# Documentation the nexus tests read (the hill-climb docs on main).
+gate_reads='^docs/hillclimb/'
 # Documentation: docs/ and Markdown, except the verify skill's files, which its CLI reads.
-code="$(grep -vE '^docs/' <<<"$files" | grep -vE '^[^.].*\.md$|^\.github/.*\.md$' \
-  | grep -vxE '\.github/workflows/e2e\.yml|scripts/ci-e2e\.sh' || true)"
-heavy=false native=false fastlane=false emails=false
-[[ -n $code ]] && heavy=true
+code="$( (grep -vE '^docs/' <<<"$files" | grep -vE '^[^.].*\.md$|^\.github/.*\.md$' \
+  | grep -vxE '\.github/workflows/e2e\.yml|scripts/ci-e2e\.sh'; grep -E "$app_reads|$gate_reads" <<<"$files") | sort -u || true)"
+# Documentation that counts as code here (the two lists above) is off the stack too.
+off_app='^(site|nexus|marketing|research|mcp-proxy|docs)/|^tool/(hotspots|hillclimb)/'
+stack_only='^(supabase|alexa|e2e)/'
+heavy=false stack=false app=false native=false fastlane=false emails=false
+if [[ -n $code ]]; then
+  heavy=true
+  grep -qvE "$off_app" <<<"$code" && stack=true
+  grep -qvE "$off_app|$stack_only" <<<"$code" && stack=true app=true
+  grep -qE "$app_reads" <<<"$code" && app=true
+fi
 grep -qE '^app/(ios|android)/|^app/pubspec\.(yaml|lock)$|^scripts/gates/(android|ios|ios-storekit)\.sh$|^scripts/ios/build-for-testing\.sh$|^scripts/(siri-vocabulary|app-shortcuts-bundle)\.py$' <<<"$files" && native=true
 grep -qE '^app/(fastlane/|Gemfile)|^scripts/gates/fastlane\.sh$' <<<"$files" && fastlane=true
 grep -qE '^(emails/|supabase/templates/|supabase/config\.toml$|design/tokens/|site/public/email/|scripts/gates/emails\.sh$)' <<<"$files" && emails=true
-printf 'heavy=%s\nnative=%s\nfastlane=%s\nemails=%s\n' "$heavy" "$native" "$fastlane" "$emails"
+printf 'heavy=%s\nstack=%s\napp=%s\nnative=%s\nfastlane=%s\nemails=%s\n' "$heavy" "$stack" "$app" "$native" "$fastlane" "$emails"

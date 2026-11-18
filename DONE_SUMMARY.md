@@ -1691,3 +1691,12 @@ and Legal's hash GO before it merges.
 - OC3a: the `mcp.spec.ts:27` flake was already fixed at its root by #440 on 14 November: 12 hangs
   before it, 0 failures in 325 CI runs since. No code change.
 - Details and numbers: [docs/done/307.md](docs/done/307.md).
+
+## Job 309: fewer CI jobs, gates by what a PR touches, an e2e budget (2026-11-18)
+
+- A code PR now starts 12 CI jobs instead of 17. `lint` also runs gitleaks and changelog, a `deno` job runs functions, nexus and fg-cli, and `site` also runs site-agent.
+- `ci-changes.sh`'s new `stack` and `app` switches skip db, e2e, flutter and web-prod for site-only PRs, and flutter and web-prod for server- or e2e-only ones. Last week that would have affected 8 and 10 of 145 PRs.
+- The lint gate holds the e2e suite to a budget of 300 tests and 3,800 s. The suite is at 288 tests and about 3,650 s.
+- Two duplicate e2e tests are removed, each with its reason.
+
+Details and evidence: `docs/done/309.md`.
