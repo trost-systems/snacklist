@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:family_groceries/feedback/feedback_context.dart';
@@ -136,9 +137,35 @@ void main() {
     );
     expect(upload.headers['Authorization'], 'Bearer $_jwt');
     expect(upload.headers['Content-Type'], 'image/png');
+    expect(upload.url.queryParameters, {'forceFunctionRegion': 'eu-central-1'});
     expect(upload.bodyBytes, png);
     expect(insert.url.path, '/rest/v1/feedback');
     expect(jsonDecode(insert.body), containsPair('screenshot', stored));
+  });
+
+  test('the upload sends only headers the functions answer a CORS preflight '
+      'for, or the web app could not send it', () async {
+    // Local Kong answers preflights itself and allows any header, so e2e
+    // can't see this; production passes them to the function (review 0).
+    final cors = File('../supabase/functions/_shared/http.ts')
+        .readAsStringSync();
+    final allowed = RegExp("'access-control-allow-headers': '([^']*)'")
+        .firstMatch(cors)!
+        .group(1)!
+        .split(',')
+        .map((h) => h.trim().toLowerCase())
+        .toSet();
+    final repo = await signedIn(
+      (r) => isUpload(r) ? json({'name': stored}, 200) : http.Response('', 201),
+    );
+    await repo.submit(withShot(png));
+    final sent = requests.first.headers.keys.map((h) => h.toLowerCase());
+    expect(sent, isNotEmpty);
+    expect(
+      sent.where((h) => !allowed.contains(h)),
+      isEmpty,
+      reason: '$allowed',
+    );
   });
 
   test('without a screenshot nothing is uploaded and no column sent', () async {

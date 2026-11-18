@@ -16,17 +16,45 @@ import '../design/fonts.dart';
 Finder key(String k) => find.byKey(ValueKey(k));
 
 /// A plain white screen to mark up.
-Future<ui.Image> blankScreen(WidgetTester tester, Size size) async =>
-    (await tester.runAsync(() {
-      final recorder = ui.PictureRecorder();
-      Canvas(
-        recorder,
-      ).drawRect(Offset.zero & size, Paint()..color = const Color(0xFFFFFFFF));
-      return recorder.endRecording().toImage(
-        size.width.round(),
-        size.height.round(),
+void blank(Canvas canvas, Size size) => canvas.drawRect(
+  Offset.zero & size,
+  Paint()..color = const Color(0xFFFFFFFF),
+);
+
+/// The colours of [checkered]'s squares: a list entry nobody should see.
+const secret = [Color(0xFFE6194B), Color(0xFF3CB44B)];
+
+/// The side of [checkered]'s squares, in screen pixels.
+const square = 20.0;
+
+/// A screen of red and green squares, so every pixel is known.
+void checkered(Canvas canvas, Size size) {
+  for (var x = 0; x * square < size.width; x++) {
+    for (var y = 0; y * square < size.height; y++) {
+      canvas.drawRect(
+        Rect.fromLTWH(x * square, y * square, square, square),
+        Paint()..color = secret[(x + y) % 2],
       );
-    }))!;
+    }
+  }
+}
+
+/// The colour [checkered] paints at [p].
+Color checkeredAt(Offset p) =>
+    secret[((p.dx ~/ square) + (p.dy ~/ square)) % 2];
+
+Future<ui.Image> paintScreen(
+  WidgetTester tester,
+  Size size,
+  void Function(Canvas, Size) paint,
+) async => (await tester.runAsync(() {
+  final recorder = ui.PictureRecorder();
+  paint(Canvas(recorder), size);
+  return recorder.endRecording().toImage(
+    size.width.round(),
+    size.height.round(),
+  );
+}))!;
 
 /// The RGBA pixels of [png].
 Future<({int width, int height, ByteData pixels})> decode(
@@ -39,19 +67,21 @@ Future<({int width, int height, ByteData pixels})> decode(
   return (width: frame.width, height: frame.height, pixels: data!);
 }))!;
 
-/// Pumps the annotator over a page with [brightness] and opens it on a
-/// white screen; the value its route pops with lands in the record.
+/// Pumps the annotator over a page with [brightness] and opens it on the
+/// screen [screen] paints, white by default; the value its route pops with
+/// lands in the record.
 Future<({Future<Uint8List?> result, Size size})> open(
   WidgetTester tester, {
   Brightness brightness = Brightness.light,
   Locale locale = const Locale('de'),
+  void Function(Canvas, Size) screen = blank,
 }) async {
   tester.view
     ..devicePixelRatio = 1
     ..physicalSize = const Size(390, 844);
   addTearDown(tester.view.reset);
   final size = tester.view.physicalSize;
-  final image = await blankScreen(tester, size);
+  final image = await paintScreen(tester, size, screen);
   late Future<Uint8List?> result;
   await tester.pumpWidget(
     MaterialApp(
@@ -282,6 +312,126 @@ void main() {
     expect(tried, greaterThanOrEqualTo(3), reason: 'the tools were tapped');
   });
 
+  testWidgets('cover: the covered pixels of the exported PNG are the fill '
+      'colour, none of the screenshot under it', (tester) async {
+    // One box, dragged open from each of its corners to the opposite one.
+    const box = Rect.fromLTRB(0.2, 0.3, 0.7, 0.5);
+    final drags = [
+      (box.topLeft, box.bottomRight),
+      (box.bottomRight, box.topLeft),
+      (box.topRight, box.bottomLeft),
+      (box.bottomLeft, box.topRight),
+    ];
+    for (final brightness in Brightness.values) {
+      for (final (start, end) in drags) {
+        final what = '$brightness, from $start to $end';
+        final ink = SnacklistColors.of(brightness).ink;
+        final (:result, :size) = await open(
+          tester,
+          brightness: brightness,
+          screen: checkered,
+        );
+        await tester.tap(key('annotator-tool-cover'));
+        await tester.pumpAndSettle();
+        // A first move within the touch slop, then on to the far corner.
+        await drag(tester, [
+          for (final t in const [0.0, 0.03, 0.33, 0.66, 1.0])
+            Offset.lerp(start, end, t)!,
+        ]);
+        final png = await done(tester, result);
+        final (:width, :height, :pixels) = await decode(tester, png!);
+        final scale = width / size.width;
+        Color pixel(int x, int y) {
+          final i = (y * width + x) * 4;
+          return Color.fromARGB(
+            pixels.getUint8(i + 3),
+            pixels.getUint8(i),
+            pixels.getUint8(i + 1),
+            pixels.getUint8(i + 2),
+          );
+        }
+
+        // The drag's ends land within a pointer pixel of the fractions; one
+        // screen pixel in from them, every PNG pixel lies under the cover.
+        final covered = Rect.fromLTRB(
+          (box.left * size.width + 1) * scale,
+          (box.top * size.height + 1) * scale,
+          (box.right * size.width - 1) * scale,
+          (box.bottom * size.height - 1) * scale,
+        );
+        var count = 0;
+        for (var y = covered.top.ceil(); y < covered.bottom; y++) {
+          for (var x = covered.left.ceil(); x < covered.right; x++) {
+            final p = pixel(x, y);
+            if (p != ink) {
+              fail('$what: PNG pixel ($x, $y) is $p, not the cover $ink');
+            }
+            count++;
+          }
+        }
+        expect(
+          count,
+          greaterThan(0.9 * covered.width * covered.height),
+          reason: '$what: the whole cover was checked',
+        );
+        // Its edge is hard: the row above its first is the screenshot as it
+        // was (as 4 rows up, in the same square), not a blend with the ink.
+        final x = ((box.left + box.right) / 2 * size.width * scale).round();
+        var top = (box.top * size.height * scale).floor() - 4;
+        while (pixel(x, top) != ink) {
+          top++;
+        }
+        for (var x = covered.left.ceil(); x < covered.right; x++) {
+          expect(
+            pixel(x, top - 1),
+            pixel(x, top - 5),
+            reason: '$what: PNG pixel ($x, ${top - 1}) above the cover',
+          );
+        }
+        // Outside it the known squares made it into the PNG: what the cover
+        // hides was there to hide.
+        for (final f in const [Offset(0.1, 0.1), Offset(0.85, 0.7)]) {
+          final screen = Offset(f.dx * size.width, f.dy * size.height);
+          final centre = Offset(
+            (screen.dx ~/ square + 0.5) * square,
+            (screen.dy ~/ square + 0.5) * square,
+          );
+          expect(
+            pixel((centre.dx * scale).round(), (centre.dy * scale).round()),
+            checkeredAt(centre),
+            reason: '$what: the screenshot outside the cover at $f',
+          );
+        }
+      }
+    }
+  });
+
+  testWidgets('a rectangle dragged up and to the left frames all it was '
+      'dragged over', (tester) async {
+    final (:result, :size) = await open(tester);
+    await tester.tap(key('annotator-tool-rectangle'));
+    await tester.pumpAndSettle();
+    const start = Offset(0.6, 0.4);
+    const end = Offset(0.2, 0.2);
+    await drag(tester, [
+      for (final t in const [0.0, 0.03, 0.33, 0.66, 1.0])
+        Offset.lerp(start, end, t)!,
+    ]);
+    final png = await done(tester, result);
+    final (:width, height: _, :pixels) = await decode(tester, png!);
+    final scale = width / size.width;
+    Offset px(double x, double y) =>
+        Offset(x * size.width * scale, y * size.height * scale);
+    for (final (edge, at) in [
+      ('top', px(0.4, 0.2)),
+      ('bottom', px(0.4, 0.4)),
+      ('left', px(0.2, 0.3)),
+      ('right', px(0.6, 0.3)),
+    ]) {
+      expect(isTomato(pixels, width, at), isTrue, reason: '$edge edge');
+    }
+  });
+
   testWidgets('undo takes the last rectangle back', (tester) async {
     final (:result, :size) = await open(tester);
     await tester.tap(key('annotator-tool-rectangle'));
@@ -332,7 +482,7 @@ void main() {
       expect(size.height, greaterThanOrEqualTo(48), reason: k);
     }
     final labels = [
-      for (final word in ['Stift', 'Rechteck', 'Text'])
+      for (final word in ['Stift', 'Rechteck', 'Text', 'Verdecken'])
         tester.getRect(find.text(word)).height,
     ];
     expect(labels.toSet(), hasLength(1), reason: 'no label shrinks: $labels');
@@ -343,7 +493,7 @@ void main() {
   ) async {
     final semantics = tester.ensureSemantics();
     await open(tester, locale: const Locale('en'));
-    for (final word in ['Pen', 'Rectangle', 'Text', 'Done']) {
+    for (final word in ['Pen', 'Rectangle', 'Text', 'Cover', 'Done']) {
       expect(find.text(word).hitTestable(), findsOneWidget, reason: word);
       expect(find.bySemanticsLabel(word), findsOneWidget, reason: word);
     }

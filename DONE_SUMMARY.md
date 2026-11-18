@@ -1639,3 +1639,11 @@ Review 1 fixes (job 294): `scripts/release/test.sh` now asserts the unreleased `
 
 Review 2 fixes (job 294, fixed in job 300): the Alexa guides (`site/content/guides/de|en/alexa.md`) no longer mention the beta, an invitation or Peter; they say to enable the skill from the Skill Store and link the account. FEATURES-FOR-WRITERS.md step 1 of "How to get there" says the same, and its "Never claim" list no longer says the skill is uncertified. "(beta)" is gone from the Alexa labels in `copy_needed.json` and `COPY_NEEDED.md`. NEEDS_PETER's job 31 "set released true" step is marked done, and the releases/README.md hold sentence is split in two. The lint failure was `scripts/landing-test.sh` still expecting the old Alexa format example that `scripts/lib.sh` no longer prints; it now expects the new one.
 - Legal follow-up for the lead: `docs/store/store-captions-assistants.md` (Legal N-248) still assumes an invite-only beta. Left unchanged on purpose.
+
+## Job 290: the annotator's opaque cover tool, Legal C1 (2026-11-17)
+
+„Verdecken“ / "Cover" in the FB2 screenshot annotator (flag `feedback-fb2`, off): an opaque ink box
+flattened into the PNG before upload; the upload is pinned to eu-central-1 by the
+`forceFunctionRegion` query (review 0: the `x-region` header would fail CORS on the web). Test:
+`app/test/feedback/annotator_test.dart` "cover: the covered pixels of the exported PNG are the fill
+colour, none of the screenshot under it". Details: `docs/done/290-fb2-cover-tool.md`.

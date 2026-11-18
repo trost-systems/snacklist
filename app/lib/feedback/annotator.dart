@@ -14,7 +14,8 @@ import 'package:flutter/scheduler.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Opens the annotator on [image], the frozen screen: the user paints on it
-/// with a pen, rectangles and text (job 267). BetterFeedback shows it scaled
+/// with a pen, rectangles and text, and covers what nobody should see
+/// (job 267, job 290). BetterFeedback shows it scaled
 /// down and takes the PNG; the marks are our own layer on it. The PNG of
 /// what they marked, or null when they closed it.
 Future<Uint8List?> annotateScreenshot(BuildContext context, ui.Image image) =>
@@ -34,6 +35,9 @@ enum AnnotateTool() {
 
   /// A line of text where the user tapped.
   text,
+
+  /// A filled, opaque box dragged open over what nobody should see.
+  cover,
 }
 
 /// A mark on the screenshot, in its own coordinates. Undo takes the last
@@ -43,6 +47,10 @@ sealed class const _Mark();
 final class const _Stroke(final List<Offset> points) extends _Mark;
 
 final class const _Frame(final Rect rect) extends _Mark;
+
+/// Painted into the PNG's pixels, so the upload holds none of what lies
+/// under it (Legal condition C1, N-267).
+final class const _Cover(final Rect rect) extends _Mark;
 
 final class const _Words(final Offset at, final String text) extends _Mark;
 
@@ -67,6 +75,10 @@ class _AnnotatorState() extends State<Annotator> {
 
   /// The stroke being drawn or the frame being dragged open.
   _Mark? _drawing;
+
+  /// Where the drag began: a frame or cover spans from it to the pointer,
+  /// whichever way the pointer goes.
+  Offset? _anchor;
 
   /// Where the text being typed goes.
   Offset? _typingAt;
@@ -165,19 +177,22 @@ class _AnnotatorState() extends State<Annotator> {
 
   void _close() => _controller?.hide();
 
-  void _drawFrom(Offset at) => setState(
-    () => _drawing = switch (_tool) {
+  void _drawFrom(Offset at) => setState(() {
+    _anchor = at;
+    _drawing = switch (_tool) {
       AnnotateTool.pen => _Stroke([at]),
       AnnotateTool.rectangle => _Frame(Rect.fromPoints(at, at)),
+      AnnotateTool.cover => _Cover(Rect.fromPoints(at, at)),
       AnnotateTool.text => null,
-    },
-  );
+    };
+  });
 
   void _drawTo(Offset at) => setState(
-    () => _drawing = switch (_drawing) {
-      _Stroke(:final points) => _Stroke([...points, at]),
-      _Frame(:final rect) => _Frame(Rect.fromPoints(rect.topLeft, at)),
-      final other => other,
+    () => _drawing = switch ((_drawing, _anchor)) {
+      (_Stroke(:final points), _) => _Stroke([...points, at]),
+      (_Frame(), final anchor?) => _Frame(Rect.fromPoints(anchor, at)),
+      (_Cover(), final anchor?) => _Cover(Rect.fromPoints(anchor, at)),
+      (final other, _) => other,
     },
   );
 
@@ -187,9 +202,12 @@ class _AnnotatorState() extends State<Annotator> {
         _marks.add(stroke);
       case final _Frame frame when frame.rect.shortestSide > 4:
         _marks.add(frame);
+      case final _Cover cover when cover.rect.shortestSide > 4:
+        _marks.add(cover);
       case _:
     }
     _drawing = null;
+    _anchor = null;
   });
 
   void _typeAt(Offset at) {
@@ -359,7 +377,7 @@ class _AnnotatorState() extends State<Annotator> {
         fit: StackFit.expand,
         children: [
           RawImage(image: _image, fit: BoxFit.fill),
-          CustomPaint(painter: _Lines([..._marks, ?_drawing], t.tomato)),
+          CustomPaint(painter: _Lines([..._marks, ?_drawing], t.tomato, t.ink)),
           GestureDetector(
             behavior: HitTestBehavior.opaque,
             onPanStart: _tool == AnnotateTool.text
@@ -497,9 +515,12 @@ class _RenderFramed(
   }
 }
 
-/// The strokes and frames among [marks].
-class const _Lines(final List<_Mark> marks, final Color color)
-    extends CustomPainter {
+/// The strokes, frames and covers among [marks].
+class const _Lines(
+  final List<_Mark> marks,
+  final Color color,
+  final Color cover,
+) extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
@@ -519,6 +540,15 @@ class const _Lines(final List<_Mark> marks, final Color color)
             RRect.fromRectAndRadius(rect, const Radius.circular(6)),
             paint..strokeWidth = 4,
           );
+        // Square and not anti-aliased: no corner or edge lets through a
+        // blend of what lies under it.
+        case _Cover(:final rect):
+          canvas.drawRect(
+            rect,
+            Paint()
+              ..color = cover
+              ..isAntiAlias = false,
+          );
         case _Words():
       }
     }
@@ -526,11 +556,11 @@ class const _Lines(final List<_Mark> marks, final Color color)
 
   @override
   bool shouldRepaint(_Lines old) =>
-      !listEquals(old.marks, marks) || old.color != color;
+      !listEquals(old.marks, marks) || old.color != color || old.cover != cover;
 }
 
 /// Below the screenshot: ✕, what to do and Fertig, then Stift / Rechteck /
-/// Text and Undo.
+/// Text / Verdecken and Undo.
 class const _Tools({
   required final AnnotateTool tool,
   required final bool canUndo,
@@ -624,6 +654,12 @@ class const _Tools({
                             value: AnnotateTool.text,
                             label: l10n.feedbackToolText,
                             icon: Icons.title,
+                          ),
+                          HexSegment(
+                            key: const ValueKey('annotator-tool-cover'),
+                            value: AnnotateTool.cover,
+                            label: l10n.feedbackToolCover,
+                            icon: Icons.rectangle,
                           ),
                         ],
                       ),
