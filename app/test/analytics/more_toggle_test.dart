@@ -1,6 +1,7 @@
 import 'dart:ui' show Tristate;
 
 import 'package:family_groceries/analytics/analytics.dart';
+import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -52,6 +53,10 @@ void main() {
     expect(find.text('Nutzungsdaten'), findsNothing);
   });
 
+  final sheet = find.byKey(const ValueKey('analytics-consent-sheet'));
+  final accept = find.byKey(const ValueKey('analytics-consent-accept'));
+  final decline = find.byKey(const ValueKey('analytics-consent-decline'));
+
   testWidgets('the switch shows the decision; off stops sending at once', (
     tester,
   ) async {
@@ -62,6 +67,7 @@ void main() {
 
     await tester.tap(toggle);
     await tester.pumpAndSettle();
+    expect(sheet, findsNothing, reason: 'off asks nothing');
     expect(analytics.state.consent, isFalse);
     expect(on(tester), isFalse);
     expect(sink.methods.last, 'close', reason: 'off stops the SDK');
@@ -69,18 +75,128 @@ void main() {
     analytics.track('item_ticked');
     await analytics.flush();
     expect(sink.names, ['first_open']);
+  });
 
-    final before = sink.events.single['properties']! as Map;
-    await tester.tap(toggle);
-    await tester.pumpAndSettle();
-    expect(analytics.state.consent, isTrue);
-    await analytics.flush();
-    expect(sink.names, ['first_open', 'first_open']);
-    expect(
-      (sink.events.last['properties']! as Map)['install_id'],
-      allOf(store.id, isNot(before['install_id'])),
-      reason: 'on again: a new install id',
-    );
+  group('on asks the consent question first (Legal N-298)', () {
+    Future<(Analytics, NativePostHog)> declined() async {
+      final sink = NativePostHog()..install();
+      final analytics = await loadedAnalytics(store)
+        ..setUser(customer);
+      await analytics.decide(granted: false);
+      await analytics.flush();
+      return (analytics, sink);
+    }
+
+    Future<void> expectStillOff(
+      WidgetTester tester,
+      Analytics analytics,
+      NativePostHog sink,
+    ) async {
+      expect(sheet, findsNothing);
+      expect(analytics.state.consent, isFalse);
+      expect(on(tester), isFalse);
+      expect(store.id, isNull, reason: 'no install id');
+      analytics.track('item_ticked');
+      await analytics.flush();
+      expect(sink.names, isEmpty, reason: 'nothing sent');
+    }
+
+    testWidgets('the sheet has the approved words; yes only on Erlauben', (
+      tester,
+    ) async {
+      final (analytics, sink) = await declined();
+      await openUsageData(tester, analytics);
+      expect(on(tester), isFalse);
+
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      expect(sheet, findsOneWidget);
+      final l10n = await AppLocalizations.delegate.load(const Locale('de'));
+      expect(
+        find.descendant(
+          of: sheet,
+          matching: find.text(l10n.analyticsConsentTitle),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: sheet,
+          matching: find.byKey(const ValueKey('analytics-consent-privacy')),
+        ),
+        findsOneWidget,
+      );
+      expect(analytics.state.consent, isFalse, reason: 'not yet');
+      expect(on(tester), isFalse, reason: 'not yet');
+      expect(store.id, isNull, reason: 'no install id yet');
+
+      await tester.tap(accept);
+      await tester.pumpAndSettle();
+      expect(sheet, findsNothing);
+      expect(analytics.state.consent, isTrue);
+      expect(on(tester), isTrue);
+      expect(store.id, isNotNull, reason: 'a new install id');
+      await analytics.flush();
+      expect(sink.names, ['first_open']);
+    });
+
+    testWidgets('Nicht erlauben in the sheet leaves it off', (tester) async {
+      final (analytics, sink) = await declined();
+      await openUsageData(tester, analytics);
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      await tester.tap(decline);
+      await tester.pumpAndSettle();
+      await expectStillOff(tester, analytics, sink);
+    });
+
+    testWidgets('closing the sheet leaves it off', (tester) async {
+      final (analytics, sink) = await declined();
+      await openUsageData(tester, analytics);
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      expect(sheet, findsOneWidget);
+      await tester.tapAt(const Offset(195, 20));
+      await tester.pumpAndSettle();
+      await expectStillOff(tester, analytics, sink);
+    });
+
+    testWidgets('back closes the sheet and leaves it off', (tester) async {
+      final (analytics, sink) = await declined();
+      await openUsageData(tester, analytics);
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      expect(sheet, findsOneWidget);
+      final popped = await tester.binding.handlePopRoute();
+      expect(popped, isTrue);
+      await tester.pumpAndSettle();
+      await expectStillOff(tester, analytics, sink);
+      expect(
+        find.byKey(const ValueKey('more-usage-data-page')),
+        findsOneWidget,
+        reason: 'back closed only the sheet',
+      );
+    });
+
+    testWidgets('off, then on again: a new install id', (tester) async {
+      final (analytics, sink) = await consented();
+      await openUsageData(tester, analytics);
+      final before = sink.events.single['properties']! as Map;
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      expect(analytics.state.consent, isFalse);
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      await tester.tap(accept);
+      await tester.pumpAndSettle();
+      expect(analytics.state.consent, isTrue);
+      await analytics.flush();
+      expect(sink.names, ['first_open', 'first_open']);
+      expect(
+        (sink.events.last['properties']! as Map)['install_id'],
+        allOf(store.id, isNot(before['install_id'])),
+      );
+    });
   });
 
   testWidgets('a long press on the version marks the install internal', (

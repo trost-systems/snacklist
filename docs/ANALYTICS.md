@@ -92,7 +92,7 @@ Our guarantees sit on top of it (DECISIONS Job 44):
   asks the next time it is opened. Signed out, nothing is captured, not even errors: the login
   screen sends nothing.
 - **Per install**: a later sign-in on the same install (another account included) is not asked
-  again. More → Nutzungsdaten switches it. Off stops the SDK at once and deletes the install id,
+  again. More → Nutzungsdaten switches it; on asks the consent question first in a sheet and only „Erlauben“ says yes (Legal N-298, job 317). Off stops the SDK at once and deletes the install id,
   ours and the SDK's: after `close()` the app deletes the native SDK's files (ids, queue, flags;
   DECISIONS Job 44, item 3), and a start with a stored no deletes them again. Nothing captured
   before a yes is ever sent later; an event handed to the SDK just before the off is sent if

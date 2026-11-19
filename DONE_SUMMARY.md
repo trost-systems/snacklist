@@ -1791,3 +1791,11 @@ undo now deletes through the new RPC `undo_add`, which takes the edits' lessons 
 keep them (spec). Migration `20261119070000_undo_added_details.sql`, pgTAP
 `undo_added_details.test.sql`, app tests for the op, journey
 `verify-snacklist/journeys/undo-added-details.mjs`. Details: `docs/done/315.md`.
+
+## Job 317: in-app legal cleanup (Legal N-298, N-299, N-300, N-302)
+
+Switching analytics on under Mehr › Nutzungsdaten now asks the approved consent question in a
+sheet; only „Erlauben“ says yes, off stays one tap. The switch hint, the invite hint, the ideas
+note and the Lifetime line have Legal's texts word for word. Unit tests, an e2e on the web build
+(CI run 44607184526) and updated goldens prove it. Details and ARB hashes: `docs/done/317.md`.
+Waits for the lead's `in/LEGAL_GO_317` before merge.

@@ -1111,7 +1111,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get analyticsToggleHint =>
-      'Pseudonymous, to PostHog (servers in the EU), never list contents. Applies to this device. Turning it off deletes the ID on this device.';
+      'Applies to this device. Turning it off deletes the ID on this device.';
 
   @override
   String get internalInstall => 'Internal installation';
@@ -1330,8 +1330,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get feedbackIdeasNote =>
-      'Snacklist Support writes the ideas. Others see only the count, never who voted.';
+  String get feedbackIdeasNote => 'Snacklist Support writes the ideas.';
 
   @override
   String get feedbackVoteFailed => 'Your vote didn\'t go through. Try again.';
@@ -1899,7 +1898,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumOneTime => 'one-time';
 
   @override
-  String get premiumLifetimeValue => 'Pay once, for good.';
+  String get premiumLifetimeValue => 'Pay once, no subscription.';
 
   @override
   String get premiumYearlyTerms =>
@@ -2293,7 +2292,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inviteJoinPageHint =>
-      'Anyone with the link or code sees before joining your first name (from your display name, if you have set one), the household\'s name, the number of members and open items, and whether the household has Snacklist Premium. Only share the link or code with people you want to invite.';
+      'Anyone with the link or code sees your name, the household\'s name and a few numbers about it before joining. Only share them with people you want to invite.';
 
   @override
   String get inviteGroupTitle => 'Group link';

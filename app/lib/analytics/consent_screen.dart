@@ -48,14 +48,42 @@ class const AnalyticsConsentScreen({super.key}) extends StatelessWidget {
   }
 }
 
-/// The question itself, the same words on the consent screen and as the
-/// guided start's first step (job 168b): icon, title, text with the privacy
-/// link, and both answers, equally prominent.
-class const ConsentQuestion({super.key}) extends StatelessWidget {
+/// The question as a sheet, for switching analytics on under Mehr (Legal
+/// N-298): true only after „Erlauben“; „Nicht erlauben“ or closing the sheet is
+/// false and decides nothing.
+Future<bool> askAnalyticsConsent(BuildContext context) async =>
+    await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      useRootNavigator: true,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: SingleChildScrollView(
+          key: const ValueKey('analytics-consent-sheet'),
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+          child: ConsentQuestion(
+            onAnswer: (granted) => Navigator.pop(context, granted),
+          ),
+        ),
+      ),
+    ) ??
+    false;
+
+/// The question itself, the same words on the consent screen, as the guided
+/// start's first step (job 168b) and in [askAnalyticsConsent]: icon, title,
+/// text with the privacy link, and both answers, equally prominent. Without
+/// [onAnswer] an answer is the decision.
+class const ConsentQuestion({super.key, final ValueChanged<bool>? onAnswer})
+    extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    void answer(bool granted) => switch (onAnswer) {
+      final onAnswer? => onAnswer(granted),
+      null => unawaited(context.read<Analytics>().decide(granted: granted)),
+    };
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -113,14 +141,12 @@ class const ConsentQuestion({super.key}) extends StatelessWidget {
           builder: (context) {
             final decline = FilledButton.tonal(
               key: const ValueKey('analytics-consent-decline'),
-              onPressed: () =>
-                  unawaited(context.read<Analytics>().decide(granted: false)),
+              onPressed: () => answer(false),
               child: Text(l10n.analyticsDecline),
             );
             final accept = FilledButton.tonal(
               key: const ValueKey('analytics-consent-accept'),
-              onPressed: () =>
-                  unawaited(context.read<Analytics>().decide(granted: true)),
+              onPressed: () => answer(true),
               child: Text(l10n.analyticsAccept),
             );
             if (MediaQuery.sizeOf(context).width < 400) {

@@ -1874,10 +1874,10 @@ abstract class AppLocalizations {
   /// **'Nutzungsdaten und Fehlerberichte senden'**
   String get analyticsToggle;
 
-  /// More: below the analytics switch. Turning it off deletes the install id. approved by Peter 2026-10-30 (legal review H-03)
+  /// More: below the analytics switch. Turning it off deletes the install id. approved by Peter 2026-10-30 (legal review H-03); shortened by Legal N-298 (2026-11-19, job 317) once switching on asks the consent question first
   ///
   /// In de, this message translates to:
-  /// **'Pseudonym an PostHog (Server in der EU), ohne Listeninhalte. Gilt für dieses Gerät. Ausschalten löscht die Kennung auf diesem Gerät.'**
+  /// **'Gilt für dieses Gerät. Ausschalten löscht die Kennung auf diesem Gerät.'**
   String get analyticsToggleHint;
 
   /// More: shown under the version while this install is marked internal (its analytics are filtered out)
@@ -2252,10 +2252,10 @@ abstract class AppLocalizations {
   /// **'{title}: +1, {count, plural, =1{1 Stimme} other{{count} Stimmen}}'**
   String feedbackVote(String title, int count);
 
-  /// Feedback & ideas (job 268): under the ideas
+  /// Feedback & ideas (job 268): under the ideas. Who voted moved to the privacy policy §10 (Legal N-300, 2026-11-19, job 317)
   ///
   /// In de, this message translates to:
-  /// **'Ideen schreibt Snacklist Support. Andere sehen nur die Zahl, nie wer abgestimmt hat.'**
+  /// **'Ideen schreibt Snacklist Support.'**
   String get feedbackIdeasNote;
 
   /// Feedback & ideas (job 268): snackbar after a +1 the server refused or never got; the +1 is undone
@@ -3164,10 +3164,10 @@ abstract class AppLocalizations {
   /// **'einmalig'**
   String get premiumOneTime;
 
-  /// PLACEHOLDER (job 49): Snacklist Launch / Legal Review K.13 write the final copy (NEEDS_LEAD Job 49). Premium page: the line under the Lifetime tile. No amount and no ratio to the yearly price: the store sets both prices (Peter, t788u, 11 Nov 2026, supersedes Spec #4 AC9's three-years framing)
+  /// Wording from Legal N-302 (2026-11-19, job 317): no "für immer", Lifetime ends with the household. Premium page: the line under the Lifetime tile. No amount and no ratio to the yearly price: the store sets both prices (Peter, t788u, 11 Nov 2026, supersedes Spec #4 AC9's three-years framing)
   ///
   /// In de, this message translates to:
-  /// **'Einmal zahlen, für immer.'**
+  /// **'Einmal zahlen, kein Abo.'**
   String get premiumLifetimeValue;
 
   /// PLACEHOLDER (job 49): Snacklist Launch / Legal Review K.13 write the final copy (NEEDS_LEAD Job 49). Premium page: the subscription disclosures next to the yearly card and its Buy button (App Store Review Guidelines 3.1.2, Google Play)
@@ -3788,10 +3788,10 @@ abstract class AppLocalizations {
   /// **'Ein Link für eine Person, 7 Tage gültig.'**
   String get invitePersonBody;
 
-  /// Job 178 (Legal N-112): plain text on every surface that makes or shares an invite (invite sheet, Einladungen, onboarding invite steps): what the public join page shows. Wording from Legal, 2026-11-10; N-151b wording from Legal, 2026-11-13 (job 216), names exactly what the page shows; change only with Legal
+  /// Job 178 (Legal N-112): plain text on every surface that makes or shares an invite (invite sheet, Einladungen, onboarding invite steps): what the public join page shows. Wording from Legal, 2026-11-10; N-151b wording from Legal, 2026-11-13 (job 216), names exactly what the page shows; change only with Legal. Shortened by Legal N-299 (2026-11-19, job 317): the full list is in the privacy policy §5
   ///
   /// In de, this message translates to:
-  /// **'Wer den Link oder Code hat, sieht vor dem Beitritt deinen Vornamen (aus deinem Anzeigenamen, falls du einen eingetragen hast), den Namen des Haushalts, die Zahl der Mitglieder und der offenen Einträge und ob der Haushalt Snacklist Premium hat. Gib Link und Code nur an Personen weiter, die du einladen willst.'**
+  /// **'Wer Link oder Code hat, sieht vor dem Beitritt deinen Namen, den Namen des Haushalts und ein paar Zahlen dazu. Gib beides nur an Personen weiter, die du einladen willst.'**
   String get inviteJoinPageHint;
 
   /// Job 169b W2: section of the invite sheet for the reusable group link (owner and admins)

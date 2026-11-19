@@ -152,7 +152,7 @@ void main() {
     expect(key('premium-buy-yearly'), findsNothing);
     expect(enabled(tester, 'premium-buy-lifetime'), isTrue);
     expect(find.text('Lifetime kaufen'), findsOneWidget);
-    expect(find.text('Einmal zahlen, für immer.'), findsOneWidget);
+    expect(find.text('Einmal zahlen, kein Abo.'), findsOneWidget);
     expect(key('premium-terms-yearly'), findsNothing);
     expect(
       tester.getSemantics(key('premium-card-lifetime')),
@@ -862,7 +862,7 @@ void main() {
       );
       expect(find.textContaining('kann abweichen'), findsNothing);
       await pickLifetime(tester);
-      expect(find.text('Einmal zahlen, für immer.'), findsOneWidget);
+      expect(find.text('Einmal zahlen, kein Abo.'), findsOneWidget);
       expect(
         tester.widget<LegalLink>(key('premium-privacy')).url,
         Uri.parse('https://snacklist.app/datenschutz'),

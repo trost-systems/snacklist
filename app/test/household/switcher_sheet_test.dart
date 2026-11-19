@@ -740,7 +740,11 @@ void main() {
       expect(_key('switcher-back').hitTestable(), findsOneWidget);
       // The group link's last action, below the fold on every phone.
       final renew = _key('invite-group-renew');
-      expect(renew.hitTestable(), findsNothing);
+      expect(
+        tester.getRect(renew).bottom,
+        greaterThan(size.height - insets.bottom),
+      );
+      final before = tester.getRect(renew).top;
       await tester.scrollUntilVisible(
         renew,
         200,
@@ -751,6 +755,11 @@ void main() {
       await tester.ensureVisible(renew);
       await tester.pumpAndSettle();
       expect(renew.hitTestable(), findsOneWidget);
+      expect(
+        before - tester.getRect(renew).top,
+        greaterThan(0),
+        reason: 'the sheet scrolled',
+      );
       expect(
         tester.getRect(renew).bottom,
         lessThanOrEqualTo(size.height - insets.bottom),

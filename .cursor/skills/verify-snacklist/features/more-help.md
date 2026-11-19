@@ -16,7 +16,7 @@ The app has three tabs, „Liste“, „Verlauf“ and „Mehr“ (EN "List", "H
 - `licenses` „Lizenzen“ on More opens Flutter's license page, titled Snacklist with the version.
 - `version` last line „Version 0.x.y (build)“ (a local build reads „Version 0.1.0 (1)“).
 - `sign-out` „Abmelden“ ends the session and shows the login.
-- `analytics-switch` „Nutzungsdaten und Fehlerberichte senden“ switch on the Nutzungsdaten page (only where the build can send analytics).
+- `analytics-switch` „Nutzungsdaten und Fehlerberichte senden“ switch on the Nutzungsdaten page (only where the build can send analytics); on asks the consent question in a sheet first, off is one tap.
 - `internal-install` long press on the version line toggles an internal-install mark (testers only).
 
 More entries in order (groups top to bottom; rows: DE label, EN label; no hints; no group headings):
@@ -31,7 +31,7 @@ More entries in order (groups top to bottom; rows: DE label, EN label; no hints;
 7. „Abmelden“ / "Sign out", alone, plain like the other rows (job 137: not red).
 8. Version line „Version {version}“ (same in EN), version plus build number in brackets when there is a build number.
 
-The Nutzungsdaten page: only the switch „Nutzungsdaten und Fehlerberichte senden“ / "Send usage data and error reports" (its line below: „Pseudonym an PostHog (Server in der EU), ohne Listeninhalte. Gilt für dieses Gerät. Ausschalten löscht die Kennung auf diesem Gerät.“).
+The Nutzungsdaten page: only the switch „Nutzungsdaten und Fehlerberichte senden“ / "Send usage data and error reports" (its line below: „Gilt für dieses Gerät. Ausschalten löscht die Kennung auf diesem Gerät.“). Switching it on opens the consent question in a sheet first; only „Erlauben“ turns it on (privacy-consent `change-later`, Legal N-298, job 317). Switching it off is one tap.
 
 ## How to get to it (user POV)
 

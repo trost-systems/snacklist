@@ -222,13 +222,7 @@ void main() {
       expect(find.text('Liste in der Reihenfolge der Gänge'), findsOneWidget);
       expect(find.text('Wochenplan für Essen'), findsOneWidget);
       expect(find.text('Wird überlegt'), findsOneWidget);
-      expect(
-        find.text(
-          'Ideen schreibt Snacklist Support. Andere sehen nur die Zahl, nie '
-          'wer abgestimmt hat.',
-        ),
-        findsOneWidget,
-      );
+      expect(find.text('Ideen schreibt Snacklist Support.'), findsOneWidget);
       expectNoPeter(tester);
     });
 

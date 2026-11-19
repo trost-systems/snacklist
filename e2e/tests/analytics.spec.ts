@@ -200,6 +200,53 @@ test('sign-in, then consent, then onboarding; declining sends nothing, ever', as
   await screenshot(log, 'analytics-03-collector-declined');
 });
 
+test('after a no, the switch asks the consent question again; only Erlauben turns it on (Legal N-298)', async ({ browser }) => {
+  const context = await browser.newContext();
+  const collector = await fakeCollector(context);
+  const page = await context.newPage();
+  await signUp(page, newEmail('consent-switch'), '/', { consent: 'decline' });
+  await createHousehold(page);
+  await skipInvite(page);
+
+  const toggle = await analyticsSwitch(page);
+  await expect(toggle).not.toBeChecked();
+  await expect(toggle).toHaveAccessibleName(/Gilt für dieses Gerät\. Ausschalten löscht die Kennung auf diesem Gerät\.$/);
+  await expect(toggle).not.toHaveAccessibleName(/PostHog/);
+  const question = page.getByRole('heading', { name: 'Darf Snacklist Nutzungsdaten erfassen?' })
+    .or(page.getByText('Darf Snacklist Nutzungsdaten erfassen?'));
+  const allow = page.getByRole('button', { name: 'Erlauben', exact: true });
+  const decline = page.getByRole('button', { name: 'Nicht erlauben', exact: true });
+
+  await toggle.click();
+  await expect(question, 'on opens the consent question').toBeVisible();
+  await expect(page.getByRole('link', { name: 'Datenschutzerklärung', exact: true })).toBeVisible();
+  await screenshot(page, 'analytics-09-switch-asks');
+  await decline.click();
+  await expect(question).toBeHidden();
+  await expect(toggle, 'Nicht erlauben leaves it off').not.toBeChecked();
+  expect(await storedInstallId(page), 'no install id after Nicht erlauben').toBeNull();
+
+  await toggle.click();
+  await expect(question).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(question).toBeHidden();
+  await expect(toggle, 'closing the sheet leaves it off').not.toBeChecked();
+  expect(await storedInstallId(page), 'no install id after closing').toBeNull();
+  await quietFor(page, collector, { requests: 0, events: 0, flags: 0 });
+
+  await toggle.click();
+  await expect(question).toBeVisible();
+  await allow.click();
+  await expect(question).toBeHidden();
+  await expect(toggle, 'Erlauben turns it on').toBeChecked();
+  await expect.poll(() => storedInstallId(page), { message: 'the yes stores an install id' }).toMatch(/^[0-9a-f-]{36}$/);
+  await received(collector, ['first_open']);
+  await toggle.click();
+  await expect(toggle, 'off is one tap').not.toBeChecked();
+  await expect.poll(() => storedInstallId(page), { message: 'off deletes the install id' }).toBeNull();
+  expect(collector.leaks).toEqual([]);
+});
+
 test('accepting sends first_open once, then one event per action, no list text; off stops at once', async ({ browser }) => {
   const context = await browser.newContext();
   const collector = await fakeCollector(context);
