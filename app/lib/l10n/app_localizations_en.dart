@@ -2293,7 +2293,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inviteJoinPageHint =>
-      'Anyone with the link or code sees before joining your first name (from your display name, if you have set one), the household\'s name, the number of members and open items, and whether the household has Snacklist Premium. Only share the link or code with people you want to invite.';
+      'Anyone with the link or code sees before joining your name (your display name, if you have set one), the household\'s name, the number of members and open items, and whether the household has Snacklist Premium. Only share the link or code with people you want to invite.';
 
   @override
   String get inviteGroupTitle => 'Group link';
@@ -3478,7 +3478,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get yourNameBody =>
-      'Everyone in your household sees this name. The people you invite see your first name. You can change it later.';
+      'Everyone in your household and the people you invite see this name. You can change it later.';
 
   @override
   String get yourNameLabel => 'Your name';
@@ -3507,7 +3507,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get yourNameEditBody =>
-      'Everyone in your household sees this name. People you invite see your first name.';
+      'Everyone in your household and people you invite see this name.';
 
   @override
   String get yourNameSaved => 'Name saved';

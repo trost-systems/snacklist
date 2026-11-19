@@ -90,7 +90,8 @@ sealed class const PublicInvite();
 final class const PublicInviteOpen({
   required final String household,
 
-  /// The inviter's first name; null when their profile has none of its own.
+  /// The inviter's display name in full; null when their profile has no name
+  /// of its own.
   required final String? inviter,
   required final int members,
   required final int openItems,

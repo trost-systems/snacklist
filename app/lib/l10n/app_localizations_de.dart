@@ -2316,7 +2316,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get inviteJoinPageHint =>
-      'Wer den Link oder Code hat, sieht vor dem Beitritt deinen Vornamen (aus deinem Anzeigenamen, falls du einen eingetragen hast), den Namen des Haushalts, die Zahl der Mitglieder und der offenen Einträge und ob der Haushalt Snacklist Premium hat. Gib Link und Code nur an Personen weiter, die du einladen willst.';
+      'Wer den Link oder Code hat, sieht vor dem Beitritt deinen Namen (deinen Anzeigenamen, falls du einen eingetragen hast), den Namen des Haushalts, die Zahl der Mitglieder und der offenen Einträge und ob der Haushalt Snacklist Premium hat. Gib Link und Code nur an Personen weiter, die du einladen willst.';
 
   @override
   String get inviteGroupTitle => 'Gruppenlink';
@@ -3502,7 +3502,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get yourNameBody =>
-      'Alle in deinem Haushalt sehen diesen Namen. Wen du einlädst, sieht deinen Vornamen. Du kannst ihn später ändern.';
+      'Alle in deinem Haushalt und die Personen, die du einlädst, sehen diesen Namen. Du kannst ihn später ändern.';
 
   @override
   String get yourNameLabel => 'Dein Name';
@@ -3531,7 +3531,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get yourNameEditBody =>
-      'Alle in deinem Haushalt sehen diesen Namen. Wen du einlädst, sieht deinen Vornamen.';
+      'Alle in deinem Haushalt und die Personen, die du einlädst, sehen diesen Namen.';
 
   @override
   String get yourNameSaved => 'Name gespeichert';
