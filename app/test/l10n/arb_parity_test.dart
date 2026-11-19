@@ -28,6 +28,7 @@ const sameInBothLanguages = {
   'feedbackSection': '"Feedback" is German too',
   'feedbackCategoryBug': '"Bug" is what German testers say',
   'feedbackCounter': 'only numbers',
+  'reportCounter': 'only numbers (job 281)',
   'siriHeader': 'product name',
   'syncOffline': '"Offline" is German too (job 161)',
   'priceUnitKg': 'the unit symbol kg (job 190)',

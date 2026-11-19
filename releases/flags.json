@@ -51,6 +51,10 @@
     "display-name": {
       "rollout": "full",
       "note": "the name step after sign-in (Wie sollen wir dich nennen?, prefilled from Google or Apple, required before a household is created or joined, once with Jetzt nicht for members whose name is still their e-mail prefix) and Konto > Dein Name show only while the PostHog flag display-name is on (job 297)"
+    },
+    "report-content-entry": {
+      "rollout": "off",
+      "note": "reporting content in the app (More's feedback row says Also: report content; Feedback & ideas, or without FB4 the feedback form opened from More, has Report content, which opens the report form with Legal's B.4 texts, its picker of the household's items, lists and name or somewhere else, an optional covered screenshot with feedback-fb2, and the confirmation with the report's number) shows only while the PostHog flag report-content-entry is on (job 281); off until Legal's hash-bound GO on the B.3 to B.8 texts (N-226)"
     }
   },
   "holds": {

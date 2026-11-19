@@ -1719,3 +1719,44 @@ hash table and the two rename-only migration changes: [docs/done/303.md](docs/do
 ### Job 303 review 0 follow-up
 
 Review 0 found `display-name` still `off` in `releases/flags.json` despite the lead's note (flag on at 100 %). Set to `full` in a docs-only PR; the done summary's flags, #524 and CI lines are corrected, and #514's date-line edit is flagged for Legal's confirmation. [docs/done/303.md](docs/done/303.md).
+
+## Job 281: in-app "Report content", RC2 (flag report-content-entry)
+
+[docs/done/281.md](docs/done/281.md): More's feedback row says „Auch: Inhalte melden“, „Inhalt
+melden“ sits in Feedback & ideas (or on top of the feedback sheet without FB4) and opens Legal's
+B.4 form with a picker of the household's items and lists, prefilled e-mail, the optional covered
+screenshot (with FB2) and the number on the confirmation. It posts to #514's `report` function
+(`/report/app`, the user's session). Not merged: land #514 first; Legal's string GO in NEEDS_LEAD.
+Review 0: under CSAM the contact is hidden and empty and the report leaves no sender row;
+NEEDS_LEAD has the EMERGENCY-COPY section and the privacy points (N-227 export, §10 user ID).
+Review 1: a cleared name or e-mail stays cleared when the kind changes.
+
+## Job 311: #524 rebased onto main
+
+#524 (RC2, flag `report-content-entry`) now sits on main with #514, #530, #535 and the CI changes.
+Only RC2's commits moved; the app migration is `20261118210000_content_reports_app.sql`, after
+#514's. Copy changes vs 4fd6107, all forced by #530's cover tool (DECISIONS "Job 311"):
+- ARB: `reportToolCover` („Abdecken“ / "Cover") removed; the report's annotator uses main's
+  `feedbackToolCover` („Verdecken“ / "Cover"). DE label „Abdecken“ → „Verdecken“; EN unchanged.
+- The report's cover box is the ink colour (main's, Legal C1-tested) instead of the edge colour.
+- Docs: `report-content.md`, FEATURES-FOR-WRITERS (report section), verify-snacklist SKILL.md and
+  `docs/done/281.md` say „Verdecken“; FEATURES-FOR-WRITERS' "Last verified" line keeps main's date
+  plus RC2's in-app sentence.
+Then Legal's conditions (lead's LEAD_LEGAL_CONDITIONS, N-280 to N-291), copy changes vs 4fd6107:
+- `reportIntro` (N-282): DE „In akuter Gefahr ruf die Polizei unter 110 an.“ → „Dieses Formular ist
+  kein Notruf: Ist jemand in akuter Gefahr, ruf sofort den örtlichen Notruf an, in der EU die 112.“;
+  EN "If someone is in immediate danger, call the police (112 or 110 in Germany)." → "This form is
+  not an emergency service: if someone is in immediate danger, call your local emergency number now
+  (112 in the EU)." Same sentence in `site/content/legal/inhalte-melden.md` and `report.md`
+  (`updated: 2026-11-18`).
+- `reportEntryHint` (N-290): → „Nur wir lesen die Meldung, niemand in deinem Haushalt.“ / "Only we
+  read the report, nobody in your household."
+- `reportWhereChooseHelp` (N-291): „…, die Liste, den Haushaltsnamen oder das Foto.“ → „…, die Liste
+  oder den Haushaltsnamen.“ / "…, list, household name or photo." → "…, list or household name."
+- MODERATION.md (N-286 sentence, prune 02:20 UTC, the Frankfurt pin, notify.ts covers app reports),
+  PRIVACY_DATA_MAP (prune 02:20 UTC), the feature files (CSAM: no screenshot).
+Code: `report/app` pinned to Frankfurt (N-285); CSAM hides the screenshot row and drops an attached
+screenshot (N-287); sender prune cron `20 2 * * *` (N-284). Impressum, imprint, datenschutz,
+privacy, mail.ts, notify.ts and the support pages equal main. Legal's GO came at e2c13607 (19 Nov,
+02:12 CET); the landing rebase took main's flags.json plus `report-content-entry` "off" and fixed the
+migration name in PRIVACY_DATA_MAP, nothing else.

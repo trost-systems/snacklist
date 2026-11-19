@@ -306,6 +306,9 @@ class _MoreListState() extends State<_MoreList> {
     final feedbackHub = context.select<Flags?, bool>(
       (flags) => flags?.isOn(feedbackFb4Flag) ?? false,
     );
+    final report = context.select<Flags?, bool>(
+      (flags) => flags?.isOn(reportContentEntryFlag) ?? false,
+    );
     return FutureBuilder(
       future: _offer,
       builder: (context, offer) {
@@ -348,6 +351,7 @@ class _MoreListState() extends State<_MoreList> {
                         item,
                         household,
                         feedbackHub: feedbackHub,
+                        report: report,
                       ),
                   ],
                 ),
@@ -364,6 +368,9 @@ class _MoreListState() extends State<_MoreList> {
     _Item item,
     Household? household, {
     required bool feedbackHub,
+
+    /// The feedback row says reporting is there too (job 281).
+    required bool report,
   }) {
     final selected = widget.selected;
     final lang = Localizations.localeOf(context).languageCode;
@@ -435,6 +442,7 @@ class _MoreListState() extends State<_MoreList> {
         onTap: () => go(tipsPath),
       ),
       _Item.feedback when feedbackHub => _FeedbackHubRow(
+        subtitle: report ? l10n.reportEntryAlso : null,
         selected:
             selected == MorePage.feedback || selected == MorePage.feedbackNote,
         onTap: () => go(feedbackPath),
@@ -442,6 +450,7 @@ class _MoreListState() extends State<_MoreList> {
       _Item.feedback => _Row(
         item,
         label: l10n.feedbackRow,
+        subtitle: report ? l10n.reportEntryAlso : null,
         onTap: () => unawaited(showFeedbackSheet(context)),
       ),
       // The listing, never the store's prompt: Apple refuses apps that ask
@@ -571,6 +580,7 @@ class const _Row(
 class const _FeedbackHubRow({
   required final bool selected,
   required final VoidCallback onTap,
+  final String? subtitle,
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -584,6 +594,7 @@ class const _FeedbackHubRow({
       child: _Row(
         _Item.feedback,
         label: label,
+        subtitle: subtitle,
         icon: Icons.forum_outlined,
         selected: selected,
         badge: unread > 0

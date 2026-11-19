@@ -15858,3 +15858,99 @@ Peter picked NR1 (web form now, in-app entry later behind a flag). Calls made wi
   flags, `app_switches` and PostHog are untouched. The texts sit on #452 (eefa6324), which changed
   the same §9 paragraph; Legal checked the anchors against #452's merge result. The date lines
   stay 17 November 2026, #452's, which is today; if the merge slips, only they change.
+
+## Job 281: in-app "Report content", RC2 (flag report-content-entry) (2026-11-17)
+
+Peter picked RC2 from job 278's prototypes and answered RC-Q1 to RC-Q7 with the defaults. Legal's
+17 Nov batch (N-241, N-242, N-243, N-259, N-260) arrived during the job. Calls made without asking:
+
+1. **Stacked on #514, re-timestamped.** The app posts to #514's `report` function, so this branch
+   carries #514's commit. #514's migration sorted before main's newest, which fails the schema
+   check, so this branch's copy is `20261117195000_content_reports.sql`; #514 needs a new timestamp
+   before it lands anyway, and this branch then rebases onto it and drops its copy.
+2. **Its own route, the user's session.** `POST /functions/v1/report/app` with the app's own
+   session token (`authenticateSession`: no API key, MCP or Siri token), CORS for the web build,
+   no proxy secret. The web route is unchanged; both share the field parsing and the confirmation
+   path, so whatever job 275 builds for N-244 (re-sending failed confirmations) covers app reports.
+3. **No account link on the report.** A report row stores what it is about (`target_kind`,
+   `target_id`: household, list or item, or elsewhere), never the reporter's user id or household:
+   Peter needs the content, not the reporter's account. This departs from Legal N-227's "the
+   reporter's account export includes their own reports" (the export can't find them) and from
+   privacy §10's "in the app also your user ID"; both are raised with Legal (NEEDS_LEAD). The
+   per-user limit (5 an hour) counts in `content_report_app_senders`, whose row has the report's
+   exact time, so for up to a day (and in backups) a report can be matched to its sender.
+   A report about child sexual abuse material writes no sender row and isn't held by the per-user
+   limit (review 0, PM addendum: anonymous until Legal answers Q19); the overall cap holds it. No
+   foreign key to `auth.users`: a key-share lock there deadlocks `delete_account`. 200 app reports
+   an hour in total, as N-242 sets for the web; no per-address mail cap (N-241).
+4. **Screenshots in a table, not Storage.** `content_report_screenshots` holds the PNG (2 MiB at
+   most) and goes with its report through the purge's cascade; Storage objects can't be deleted from
+   SQL, and the volume is tiny. Peter exports one with psql (`docs/MODERATION.md`).
+5. **The cover tool exists for reports only.** RC-Q4 names "the annotator's cover tool"; FB2's
+   annotator had pen, rectangle and text. „Abdecken“ / "Cover" paints an opaque box and is the
+   first tool when the annotator opens for a report. FB2's feedback annotator is unchanged.
+6. **Name prefill.** The app never asks for a name: `profiles.display_name` is the provider's name
+   or the e-mail's local part. The form takes `full_name`, then `name`, from the auth user's
+   metadata (Google; Apple's first sign-in) and leaves the name empty otherwise (NEEDS_LEAD).
+7. **The form is a full page on the root navigator**, opened from the hub (FB4) or, closing the
+   sheet first, from the feedback sheet opened from More (not from a shake: that sheet is about the
+   screen shaken on). „Fertig“ pops back where it started. No route: reports need no deep link,
+   and auth gating stays in `authRedirect`.
+8. **The picker** lists the shown household's items (from the open ListCubit), its lists and its
+   name, then „Woanders“. No photos section: the app has no photos. The location text sent with
+   a picked target is English for the moderator (`item "Milch" in list "Wocheneinkauf", household
+   "Familie Brandt"`). Its glyph is outside the row's accessible name.
+9. **Legal's texts as built.** B.4 verbatim, with N-260's two cuts and its "Somewhere else" help;
+   the rate-limit failure is N-242's text without the link. The emergency sentence keeps 112/110
+   until Legal approves a generic one (NEEDS_LEAD). The Impressum's in-app path (N-243) is not added
+   here: it would name a path no user has while the flag is off; it goes in with the rollout.
+10. **No analytics event.** Nothing about a report leaves the function but the confirmation mail.
+11. **A retry after a lost answer can store a second report.** The function has no idempotency
+    key; a duplicate notice costs Peter one look, a lost one costs the reporter their notice.
+12. **In-job review fixes.** A box dragged up or left in the annotator collapsed to the last move
+    and was dropped; cover and rectangle now keep the drag's start (this fixes FB2's rectangle too,
+    which had the same bug). The form checks what the server checks (its e-mail rule, lengths in
+    code points), refuses a screenshot over 2 MiB with its own message (also the 413's), and can't
+    be closed while a report is sending, so a reporter never loses the number of a stored report.
+13. **Review 0.** Under child sexual abuse material, name and e-mail are hidden *and emptied*
+    (PM addendum 1.1, N-228): „Namen und E-Mail-Adresse angeben“ shows empty fields, and only what
+    the reporter types goes. Leaving it for another kind brings back what the fields held before
+    it (review 1: a cleared name or e-mail stays cleared; switching between two other kinds never
+    refills them). „Woanders“
+    sits under the picker's search field instead of after every item, so a long household doesn't
+    bury the one way to name content elsewhere.
+
+## Job 311: #524 rebased onto main after #514, #530, #535 and the CI changes (2026-11-18)
+
+1. **Only RC2's own commits moved.** #524 carried a pre-merge copy of #514. The rebase applied
+   92f65d8a..4fd6107 (RC2's commits) onto main, so #514's merged version (no per-address mail cap,
+   confirmation retries, N-241 to N-244) stays as main has it.
+2. **Migrations.** The branch's copy of #514's migration (`20261117195000_content_reports.sql`) is
+   gone; main's `20261118170825_content_reports.sql` is the one. The app migration sorted before
+   it and is now `20261118210000_content_reports_app.sql`, unchanged inside.
+3. **`handler.ts`.** Main's `LIMITS` (200 an hour, no `mailsPerAddress`) and `CONFIRM_RETRY_MS`
+   stay; RC2's `APP_LIMITS` and `/report/app` route sit beside them. The shared `confirmLater` no
+   longer logs `confirmation_limited`: no route caps mails per address any more. `app_test.ts`
+   passes a `sleep` for main's retries.
+4. **One cover tool.** #530 (job 290) gave every annotator the cover tool „Verdecken“ / "Cover"
+   (ink fill, no anti-aliasing, Legal C1's pixel test). RC2 had its own for reports only,
+   „Abdecken“ in `t.edge`. Two tools for one job would be wrong, so main's is the tool; the report
+   keeps what RC2 asked of it: the annotator opens with the cover tool picked and first, under
+   „Verdecke darauf, was nichts mit der Meldung zu tun hat.“ (`annotateScreenshot(forReport:)`).
+   The ARB key `reportToolCover` is dropped: the German label is now „Verdecken“ (was „Abdecken“),
+   English stays "Cover", and the box is ink instead of the edge colour. RC2's tests that a
+   feedback annotator has no cover tool and its up-left drag test (main has both directions) are
+   replaced by one that the feedback annotator keeps pen first and cover last.
+5. **Copy.** Every other ARB string, the legal pages and the site are as at 4fd6107; the feature
+   files name „Verdecken“ where they said „Abdecken“.
+6. **Legal's conditions on #524 (Legal Review N-280 to N-291, lead's LEAD_LEGAL_CONDITIONS).**
+   N-280: the legal pages, `mail.ts`, `notify.ts`, the support pages, the web path of `handler.ts`
+   and MODERATION's limits and daily steps are main's, byte for byte. The note also says "keep
+   main's 3-mail cap, 30/h"; main has neither (200 an hour, no per-address cap, N-241/N-242), so
+   main's code stays as it is. Taken: N-282 (the emergency sentence, app and both site pages,
+   `updated:` bumped), N-285 (`report/app` with `?forceFunctionRegion=eu-central-1`), N-287 (no
+   screenshot row under CSAM; picking CSAM drops an attached one, in the cubit so no path can send
+   one), N-286 (MODERATION: delete the saved file when closed; never save a CSAM screenshot),
+   N-284 (sender prune at 02:20 UTC, before the 02:30 backup; pgTAP pins it), N-290 and N-291
+   (entry hint; no "Foto" in the picker help). Deferred to the rollout PR: N-281 (Impressum's
+   in-app path) and N-283. Each new test fails with its fix taken out.

@@ -17,6 +17,7 @@ import 'package:family_groceries/feedback/feedback_cubit.dart';
 import 'package:family_groceries/feedback/feedback_repository.dart';
 import 'package:family_groceries/feedback/screen_capture.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
+import 'package:family_groceries/report/report_page.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
@@ -29,6 +30,10 @@ const _counterFrom = 1800;
 /// marked-up [screenshot], job 267). The note waiting in [FeedbackCubit]
 /// comes back; after a send the form closes and says thanks. True once
 /// the note arrived.
+///
+/// Opened from More without FB4's hub, the form starts with „Inhalt
+/// melden“ (job 281, flag `report-content-entry`): it closes the form and
+/// opens the report form.
 Future<bool> showFeedbackSheet(
   BuildContext context, {
   FeedbackEntryPoint entryPoint = FeedbackEntryPoint.settings,
@@ -47,6 +52,12 @@ Future<bool> showFeedbackSheet(
   );
   final messenger = Notices.of(context);
   final l10n = AppLocalizations.of(context);
+  final flags = context.read<Flags?>();
+  final offersReport =
+      entryPoint == FeedbackEntryPoint.settings &&
+      (flags?.isOn(reportContentEntryFlag) ?? false) &&
+      !(flags?.isOn(feedbackFb4Flag) ?? false);
+  var report = false;
   final sent = await showModalBottomSheet<bool>(
     context: context,
     useRootNavigator: true,
@@ -59,11 +70,23 @@ Future<bool> showFeedbackSheet(
       duration: hlMotion(context, HlDuration.medium),
       reverseDuration: hlMotion(context, HlDuration.short),
     ),
-    builder: (_) => BlocProvider.value(
+    builder: (sheet) => BlocProvider.value(
       value: cubit,
-      child: FeedbackForm(entryPoint: entryPoint),
+      child: FeedbackForm(
+        entryPoint: entryPoint,
+        onReport: offersReport
+            ? () {
+                report = true;
+                Navigator.of(sheet).pop(false);
+              }
+            : null,
+      ),
     ),
   );
+  if (report && context.mounted) {
+    await openReportForm(context);
+    return false;
+  }
   if (sent ?? false) {
     messenger.showSnackBar(
       SnackBar(
@@ -79,6 +102,9 @@ Future<bool> showFeedbackSheet(
 /// Send (Retry after a failure). Pops `true` once the note arrived.
 class const FeedbackForm({
   required final FeedbackEntryPoint entryPoint,
+
+  /// Shows „Inhalt melden“ on top, which calls this.
+  final VoidCallback? onReport,
   super.key,
 }) extends StatefulWidget {
   @override
@@ -209,6 +235,11 @@ class _FeedbackFormState() extends State<FeedbackForm> {
                   ],
                 ),
               ),
+              if (widget.onReport case final onReport?)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
+                  child: ReportEntry(onPressed: onReport),
+                ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
                 child: RoundedFields(

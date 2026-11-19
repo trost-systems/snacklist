@@ -62,13 +62,16 @@ The app is called Snacklist. It used to be called Hummlist. The app, its Siri ph
 1. Any page on snacklist.app, footer „Inhalte melden“ (EN: "Report content").
 2. Fill in the form, tick the good-faith box, „Meldung senden“ (EN: "Send report").
 
+**Being built, not for users yet (test flag `report-content-entry`, job 281).** In the app, More's feedback row gets a second line „Auch: Inhalte melden“ (EN: "Also: report content"). „Feedback & Ideen“ (EN: "Feedback & ideas", test flag `feedback-fb4`) has „Inhalt melden“ (EN: "Report content") right under „An Snacklist Support schreiben“; without that page the button sits at the top of „Feedback senden“ (EN: "Send feedback"). It opens the same form as the site, with Legal's words, but „Wo ist der Inhalt?“ (EN: "Where is the content?") is picked from a list of the household's items, lists and its name, or „Woanders“ (EN: "Somewhere else", right under the search) with the user's own words. Name and e-mail come filled in from the account (the name only when the account came with one, such as from Google) and can be changed. For „Darstellung sexuellen Kindesmissbrauchs“ (EN: "Child sexual abuse material") they are hidden and empty; „Namen und E-Mail-Adresse angeben“ (EN: "Add my name and e-mail address") shows them empty. With the screenshot test flag `feedback-fb2` on, „Screenshot anhängen (optional)“ (EN: "Attach screenshot (optional)") adds a picture of the screen before More, never on its own, with „Verdecken“ (EN: "Cover") picked first to black out what has nothing to do with the report; not for child sexual abuse material, where the screenshot row is gone and an attached one is dropped. After „Meldung senden“ the app shows „Meldung gesendet“ (EN: "Report sent") with the number and „Nummer kopieren“ (EN: "Copy number"). Do not write about the in-app entry until the flag is on for everyone.
+
 **Never claim.**
-- That reports can be made in the app yet: the in-app entry is not built. (The Impressum names only the web form until the in-app entry ships.)
+- That reports can be made in the app yet: the in-app entry is behind the test flag `report-content-entry`. (The Impressum's in-app path waits for that flag, Legal N-243.)
+- That a report shows up under „Deine Notizen“ or that the app shows its status: the status comes by e-mail only.
 - That reports are decided by AI, by a bot or automatically, or that other household members see a report.
 - A response time beyond the page's own: the same day for a threat to life or safety and for child sexual abuse material, usually within 7 days for everything else.
 - That Snacklist offers an internal complaint procedure or out-of-court dispute settlement under the DSA: it offers a second look on reply.
 
-**Last verified.** 16 November 2026, code version 6b8f7392, on a local copy of the site with the local database (both languages, a sent report and its confirmation mail).
+**Last verified.** 16 November 2026, code version 6b8f7392, on a local copy of the site with the local database (both languages, a sent report and its confirmation mail). The in-app entry: 17 November 2026, job 281's branch (PR head), in the web app with the test flag on (German and English, with and without `feedback-fb4`, a screenshot covered and stored). Rebased onto main and Legal's 18 November conditions (N-282, N-287, N-290, N-291) in widget tests: 18 November 2026, job 311.
 
 ## Sign-up and sign-in
 

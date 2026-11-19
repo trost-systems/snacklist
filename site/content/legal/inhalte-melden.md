@@ -4,7 +4,7 @@ description: "Rechtswidrige Inhalte in Snacklist melden, ohne Konto, und unsere 
 locale: de
 path: /inhalte-melden
 translation_key: report
-updated: 2026-11-17
+updated: 2026-11-18
 form:
   required: Pflicht
   recommended: empfohlen
@@ -46,7 +46,7 @@ form:
 
 # Inhalte melden
 
-Hier meldest du Inhalte in Snacklist, die du für rechtswidrig hältst, zum Beispiel einen Eintrag, eine Liste, einen Haushaltsnamen oder ein Foto. Für Fragen oder Fehler nutze bitte Feedback oder support@snacklist.app. In akuter Gefahr ruf die Polizei unter 110 an.
+Hier meldest du Inhalte in Snacklist, die du für rechtswidrig hältst, zum Beispiel einen Eintrag, eine Liste, einen Haushaltsnamen oder ein Foto. Für Fragen oder Fehler nutze bitte Feedback oder support@snacklist.app. Dieses Formular ist kein Notruf: Ist jemand in akuter Gefahr, ruf sofort den örtlichen Notruf an, in der EU die 112.
 
 ## Regeln für Inhalte und wie wir Meldungen bearbeiten {#regeln}
 
