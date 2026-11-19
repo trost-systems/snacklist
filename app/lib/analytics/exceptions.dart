@@ -1,8 +1,17 @@
 import 'dart:async';
 
-import 'package:family_groceries/household/invite_repository.dart';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+/// An exception of the app's own that names itself in error reports, so
+/// analytics needs no import of the feature that throws it.
+abstract interface class ReportedError() implements Exception {
+  /// The type's name; release web builds minify `runtimeType`.
+  String get typeName;
+
+  /// A code that says what went wrong, never a value the user typed.
+  String get code;
+}
 
 /// The error's type for `$exception_list`. Release web builds minify type
 /// names (`minified:hm`), so the common ones are named here.
@@ -25,7 +34,7 @@ String errorType(Object error) => switch (error) {
   PostgrestException() => 'PostgrestException',
   AuthException() => 'AuthException',
   FunctionException() => 'FunctionException',
-  HouseholdError() => 'HouseholdError',
+  ReportedError(:final typeName) => typeName,
   _ => _runtimeName(error),
 };
 
@@ -75,7 +84,7 @@ String? _codeOf(Object error) => switch (error) {
   PostgrestException(:final code) => code,
   AuthException(:final code, :final statusCode) => code ?? statusCode,
   FunctionException(:final status) => '$status',
-  HouseholdError(:final problem) => problem.name,
+  ReportedError(:final code) => code,
   _ => null,
 };
 

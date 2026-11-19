@@ -9,19 +9,9 @@
 /// docs/ANALYTICS.md.
 library;
 
-import 'package:family_groceries/household/invite_repository.dart'
-    show InviteKind;
-import 'package:family_groceries/household/invite_share.dart'
-    show InviteChannel, InviteContext;
-import 'package:family_groceries/log/model.dart' show TripSource;
+import 'package:family_groceries/core/screen_names.dart';
 import 'package:family_groceries/session/session_cubit.dart'
     show HouseholdOrigin;
-import 'package:family_groceries/shell/router.dart' show screenNames;
-import 'package:family_groceries/tips/checklist.dart';
-import 'package:family_groceries/tips/hints.dart' show HintId;
-import 'package:family_groceries/trip/model.dart'
-    as shop
-    show TripEnd, TripSource;
 
 /// Where an added item came from, as the app knows it.
 enum AddSource() {
@@ -110,7 +100,19 @@ const categorizedVia = {
 };
 
 const _roles = OneOf({'owner', 'admin', 'member'});
-final _hintIds = OneOf({for (final id in HintId.values) id.wire});
+const _hintIds = OneOf({
+  'edit-long-press',
+  'quick-add-amounts',
+  'dictation',
+  'siri',
+  'store-order',
+  'add-store',
+  'invite-partner',
+  'second-household',
+  'own-household',
+  'ai-assistant',
+  'home-widget',
+});
 const _householdSize = IntIn(1, 100);
 
 /// Event name to its allowed properties. An event not in here is refused;
@@ -134,9 +136,9 @@ final eventCatalog = <String, Map<String, PropertyRule>>{
   // copied). Never the code, the link or the household's name. Job 169b
   // W2: which kind of invite, and the invite sheet's places.
   'invite_sent': {
-    'channel': OneOf({for (final c in InviteChannel.values) c.wire}),
-    'context': _namesOf(InviteContext.values),
-    'kind': _namesOf(InviteKind.values),
+    'channel': const OneOf({'share_sheet', 'copy_link', 'copy_code'}),
+    'context': const OneOf({'onboarding', 'settings', 'switcher', 'household'}),
+    'kind': const OneOf({'person', 'group'}),
   },
   // Job 169b W2: an owner or admin removed a member. Nothing else: not who.
   'member_removed': const {},
@@ -215,10 +217,7 @@ final eventCatalog = <String, Map<String, PropertyRule>>{
   // Job 168b: an item of „Erste Schritte“ done (once per user), and the X
   // on the card with how many items were open.
   'checklist_step_done': {
-    'step': OneOf({
-      for (final s in ChecklistStep.values)
-        if (s != ChecklistStep.started) s.wire,
-    }),
+    'step': const OneOf({'invite', 'first_shop', 'assistant'}),
   },
   'checklist_dismissed': const {'open_steps': IntIn(0, 3)},
   // Job 195 (F2): a shopping trip began, a price was entered or a remembered
@@ -227,12 +226,14 @@ final eventCatalog = <String, Map<String, PropertyRule>>{
   // Job 234's trip mode sends shop_started (asked after a tick, or by hand),
   // the answer to the question, and the end with its reason and a duration
   // bucket. Never an item, a store, a name or a price.
-  'shop_started': {'source': _namesOf(shop.TripSource.values)},
+  'shop_started': const {
+    'source': OneOf({'ask', 'manual'}),
+  },
   'shop_asked': {
     'answer': OneOf({for (final a in ShopAnswer.values) a.wire}),
   },
   'shop_ended': {
-    'reason': _namesOf(shop.TripEnd.values),
+    'reason': const OneOf({'user', 'auto'}),
     'minutes': OneOf({for (final m in ShopMinutes.values) m.wire}),
   },
   'price_entered': const {'confirmed': IsBool()},
@@ -245,7 +246,9 @@ final eventCatalog = <String, Map<String, PropertyRule>>{
   // Job 199: a new trip was saved in the grocery log, from the history's
   // "Einkauf eintragen" or the list's card after a store's section was
   // ticked off. Never the store, the day or the items.
-  'trip_logged': {'source': _namesOf(TripSource.values)},
+  'trip_logged': const {
+    'source': OneOf({'manual', 'prompt'}),
+  },
   // Job 21: after the server took a note, once per note. Never its text.
   // Job 267: whether a screenshot went along, never the image or its name.
   'feedback_submitted': {

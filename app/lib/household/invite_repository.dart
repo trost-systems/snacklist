@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:family_groceries/analytics/exceptions.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -209,7 +210,7 @@ enum HouseholdProblem() {
 
 /// A household or invite call that failed; never carries the code.
 final class const HouseholdError(final HouseholdProblem problem)
-    implements Exception {
+    implements ReportedError {
   /// The server's status or Postgres message, e.g. `invalid_invite`.
   factory fromStatus(String status) => HouseholdError(switch (status) {
     'invalid_invite' => HouseholdProblem.invalidInvite,
@@ -225,6 +226,12 @@ final class const HouseholdError(final HouseholdProblem problem)
     'declined_recently' => HouseholdProblem.declinedRecently,
     _ => HouseholdProblem.other,
   });
+
+  @override
+  String get typeName => 'HouseholdError';
+
+  @override
+  String get code => problem.name;
 
   @override
   String toString() => 'HouseholdError(${problem.name})';
