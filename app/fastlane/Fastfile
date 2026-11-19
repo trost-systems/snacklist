@@ -419,14 +419,17 @@ platform :android do
   # The track's other releases stay as they are, so its testers keep their build until someone
   # rolls the draft out in Play Console; an older draft there is replaced. The release notes are
   # those of a release that already carries the version code (internal first), else none. The
-  # commit sends nothing for review. Afterwards a second edit reads the track back and is deleted.
+  # commit asks Play not to send changes for review; when Play answers that this app's changes are
+  # sent for review automatically, supply's rescue commits without that flag. The edit holds only
+  # a draft, which this commit neither sends for review nor rolls out. Afterwards a second edit
+  # reads the track back and is deleted.
   desc "Set an uploaded versionCode as the draft release of a closed testing track"
   lane :promote_draft do
     version_code = Integer(ENV.fetch("VERSION_CODE"), 10)
     track_name = ENV.fetch("PROMOTE_TRACK")
     UI.user_error!("PROMOTE_TRACK must be one of #{PROMOTE_TRACKS.join(', ')}, not #{track_name}") unless PROMOTE_TRACKS.include?(track_name)
 
-    client = play_client(changes_not_sent_for_review: true, rescue_changes_not_sent_for_review: false)
+    client = play_client(changes_not_sent_for_review: true)
     unless client.aab_version_codes.include?(version_code)
       client.abort_current_edit
       UI.user_error!("versionCode #{version_code} is not in Play's bundle library")

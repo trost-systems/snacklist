@@ -317,8 +317,11 @@ gh workflow run play-promote.yml -f version_code=1414 -f track=alpha
 gh workflow run play-promote.yml -f version_code=1414 -f commit=false   # validate only
 ```
 
-It never uploads a bundle, never touches production and sends nothing for
-review: the edit is committed with `changesNotSentForReview`. Alpha's other
+It never uploads a bundle, never touches production and creates only a draft,
+which the commit neither sends for review nor rolls out. The commit sets
+`changesNotSentForReview`; when Play answers "Changes are sent for review
+automatically", supply commits again without it, as release.yml's uploads
+always do. Alpha's other
 releases stay, so its testers keep their build until someone rolls the draft
 out in Play Console; an older draft is replaced. The release notes are copied
 from a release that already carries the versionCode (internal first), else the
