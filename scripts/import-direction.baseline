@@ -3,14 +3,6 @@
 # when you remove the import. Never add one: the lint gate refuses more lines for a pair of folders
 # than main has (a moved file may keep its line under the new path). The rules and the layer of
 # each folder: scripts/import-direction.ts.
-analytics/events.dart -> household/invite_repository.dart
-analytics/events.dart -> household/invite_share.dart
-analytics/events.dart -> log/model.dart
-analytics/events.dart -> shell/router.dart
-analytics/events.dart -> tips/checklist.dart
-analytics/events.dart -> tips/hints.dart
-analytics/events.dart -> trip/model.dart
-analytics/exceptions.dart -> household/invite_repository.dart
 core/device_cache.dart -> household/household_kind.dart
 core/device_cache.dart -> household/pending_invite.dart
 core/device_cache.dart -> list/catalog/catalog_loader.dart

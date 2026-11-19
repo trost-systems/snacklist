@@ -1,0 +1,41 @@
+/// The fixed screen names feedback and analytics report (job 21): a
+/// route's name, never its path, so an invite code or anything typed can't
+/// get in. Sheets (add, edit) report the route under them; the List tab's
+/// Anpassen pages are `stores`, never a store's id.
+const screenNames = {
+  'list',
+  'stores',
+  'more',
+  'history',
+  'trip_summary',
+  'access',
+  'account',
+  'invites',
+  'household',
+  'lifetime',
+  'settings',
+  'language',
+  'usage_data',
+  'tips',
+  'feedback',
+  'feedback_note',
+  'login',
+  'welcome',
+  'start',
+  // One per OnboardingStep, 'onboarding_<step>' (screenNameOf in shell/router.dart).
+  'onboarding_usage',
+  'onboarding_who',
+  'onboarding_name',
+  'onboarding_join',
+  'onboarding_stores',
+  'onboarding_need',
+  'onboarding_account',
+  'onboarding_setup',
+  'onboarding_invite',
+  'new_household',
+  'analytics_consent',
+  'your_name',
+  'oauth_consent',
+  'join',
+  'other',
+};

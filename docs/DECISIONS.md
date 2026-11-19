@@ -16000,3 +16000,20 @@ push-checks), with its tests in `scripts/import-direction_test.ts`.
    each pair of folders the file may not hold more lines than `origin/main`'s. Counting per pair
    rather than refusing every new line lets a file move or rename keep its old import, but no
    folder pair gets a new import.
+
+## Job 305: folder-level LEGO layers, step 3a: analytics imports no feature (2026-11-19)
+
+R10 of the LEGO report. `analytics/` is core, and imported `household`, `log`, `tips`, `trip` and
+the shell's router. Now it imports only core; the baseline lost its 8 `analytics/` lines.
+
+1. **The catalog spells out the values.** `eventCatalog` admitted the values of eight feature enums
+   (invite channel, place and kind, hint ids, checklist steps, trip sources and ends, logged-trip
+   sources) by reading the enums. It now lists the same strings itself, and
+   `test/analytics/catalog_vocabulary_test.dart` compares each set with its enum. Behaviour is the
+   same; the difference is that a value a feature adds is refused until the catalog admits it,
+   which is what an allow-list is for, and the test names the value to add.
+2. **`screenNames` moved to `core/screen_names.dart`.** Feedback and analytics report these names;
+   the router only maps paths to them, so it does not need the set.
+3. **`ReportedError`.** The error report named `HouseholdError` and its problem by type. Now
+   `analytics/exceptions.dart` has the interface `ReportedError` (`typeName`, `code`) and
+   `HouseholdError` implements it with the same strings.
