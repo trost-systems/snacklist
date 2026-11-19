@@ -5,6 +5,7 @@ import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/core/theme.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/list_cubit.dart';
+import 'package:family_groceries/list/list_parts.dart';
 import 'package:family_groceries/list/list_screen.dart';
 import 'package:family_groceries/list/list_view/item_row.dart';
 import 'package:family_groceries/list/model.dart';
@@ -14,6 +15,7 @@ import 'package:family_groceries/log/trip_repository.dart';
 import 'package:family_groceries/purchases/entitlements.dart';
 import 'package:family_groceries/purchases/premium_server.dart';
 import 'package:family_groceries/session/session_cubit.dart';
+import 'package:family_groceries/shell/list_parts.dart';
 import 'package:family_groceries/shell/router.dart';
 import 'package:family_groceries/trip/model.dart';
 import 'package:family_groceries/trip/summary_page.dart';
@@ -155,6 +157,8 @@ Future<Shop> pumpList(
   await tester.pumpWidget(
     MultiRepositoryProvider(
       providers: [
+        // The shell's parts, as ListScope provides them.
+        RepositoryProvider<ListParts>.value(value: const ShellListParts()),
         RepositoryProvider<TripRepository>.value(value: logTrips),
         RepositoryProvider<TripSessionRepository>.value(value: sessions),
         RepositoryProvider<Analytics>.value(value: Tracked()),

@@ -8,10 +8,12 @@ import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/home_widget/home_widget_sync.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/list_cubit.dart';
-import 'package:family_groceries/list/list_names.dart';
+import 'package:family_groceries/list/list_holds.dart';
+import 'package:family_groceries/list/list_parts.dart';
 import 'package:family_groceries/list/list_repository.dart';
 import 'package:family_groceries/log/trip_repository.dart';
 import 'package:family_groceries/session/session_cubit.dart';
+import 'package:family_groceries/shell/list_parts.dart';
 import 'package:family_groceries/siri/siri_channel.dart';
 import 'package:family_groceries/siri/siri_suggestions.dart';
 import 'package:family_groceries/trip/model.dart';
@@ -47,19 +49,6 @@ class const ListScope({
 }) extends StatefulWidget {
   @override
   State<ListScope> createState() => _ListScopeState();
-}
-
-/// Opens the list of a household that is not shown, for as long as it is
-/// held: the switcher sheet shows any household's lists (job 229). Each
-/// [hold] needs its [release].
-abstract interface class ListHolds() {
-  /// The list of [householdId], opened if it is not open.
-  ListCubit hold(String householdId);
-
-  /// Lets go of one [hold] of [householdId]: once none is left and it is
-  /// not shown, it closes as a list switched away from does, once its
-  /// queue reached the server.
-  void release(String householdId);
 }
 
 class _ListScopeState() extends State<ListScope> implements ListHolds {
@@ -237,6 +226,7 @@ class _ListScopeState() extends State<ListScope> implements ListHolds {
         value: _lists[household.id]!,
         child: MultiRepositoryProvider(
           providers: [
+            RepositoryProvider<ListParts>.value(value: const ShellListParts()),
             RepositoryProvider<TripRepository>(
               create: (_) =>
                   widget.trips?.call(household.id) ??
@@ -270,33 +260,6 @@ bool teachesSiri(Session session, String householdId) => switch (session) {
   ),
   _ => false,
 };
-
-/// What a refused write tells the user.
-String rejectionText(AppLocalizations l10n, Rejected rejection) =>
-    switch (rejection) {
-      ItemRejected(:final itemName) => l10n.syncFailed(itemName),
-      NameTaken(:final name) => l10n.categoryNameTaken(name),
-      CatalogRejected() => l10n.catalogSaveFailed,
-      TooManyLists() => l10n.tooManyLists,
-      NeedsConnection() => l10n.reorderNeedsConnection,
-      StoreNameTaken(:final name) => l10n.storeNameTaken(name),
-      StoreNeedsConnection() => l10n.storesNeedConnection,
-      ListsNeedConnection() => l10n.listsNeedConnection,
-      OnListAlready(:final name, :final list) => l10n.onListAlready(
-        name,
-        listName(list, l10n),
-      ),
-      MergeRefused(:final name) => l10n.mergeRefused(name),
-      RenameTaken(:final name) => l10n.alreadyOnList(name),
-    };
-
-/// Where the List tab tells refused writes while it shows; elsewhere
-/// [ListScope] tells them in the app's messenger, above the tabs.
-class RejectionNotices() {
-  /// Shows `text` in the List tab and returns true, or returns false when
-  /// the tab is not on screen.
-  bool Function(String text)? listTab;
-}
 
 /// Coming back to the app catches up on what changed meanwhile, a refused
 /// write is told wherever the user is, on iOS Siri learns the household's

@@ -9,8 +9,6 @@ library;
 import 'package:family_groceries/list/list_cache.dart' show noStoreKey;
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/pricing.dart';
-import 'package:family_groceries/trip/model.dart' show RunningTrip;
-import 'package:family_groceries/trip/rules.dart' show boughtOnTrip;
 import 'package:flutter/foundation.dart' show immutable;
 
 /// What some items add up to: [cents] over [priced] items, [unpriced]
@@ -127,14 +125,14 @@ class const Summary({
 }
 
 /// The block for one list's [items] (open and ticked) in [catalog]'s
-/// stores. Without [trip] only open items count; with it the items bought
-/// on it too, apart. An item of a store gone from [catalog] counts as
-/// without one, as the list shows it.
+/// stores. Without [onTrip] only open items count; with it the items it
+/// counts as bought on the running trip too, apart. An item of a store gone
+/// from [catalog] counts as without one, as the list shows it.
 Summary summaryOf(
   Iterable<Item> items,
   Catalog catalog, {
   required DateTime now,
-  RunningTrip? trip,
+  bool Function(Item item)? onTrip,
 }) {
   final currency = catalog.currency;
   final storeIds = {for (final s in catalog.stores) s.id};
@@ -145,7 +143,7 @@ Summary summaryOf(
     final storeId = storeIds.contains(item.storeId) ? item.storeId : null;
     final into = switch (item.status) {
       ItemStatus.active => open,
-      ItemStatus.bought when trip != null && boughtOnTrip(trip, item) => bought,
+      ItemStatus.bought when onTrip?.call(item) ?? false => bought,
       _ => null,
     };
     if (into == null) {
@@ -161,14 +159,14 @@ Summary summaryOf(
   final stores = [...catalog.stores]
     ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
   return Summary(
-    split: trip != null,
+    split: onTrip != null,
     stores: [
       for (final store in [...stores, null])
         if (open.containsKey(store?.id) || bought.containsKey(store?.id))
           StoreTally(
             store: store,
             open: open[store?.id] ?? Sum.zero,
-            bought: trip == null ? null : bought[store?.id] ?? Sum.zero,
+            bought: onTrip == null ? null : bought[store?.id] ?? Sum.zero,
             openCount: openCount[store?.id] ?? 0,
           ),
     ],

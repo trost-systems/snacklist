@@ -1766,3 +1766,18 @@ migration name in PRIVACY_DATA_MAP, nothing else.
 `play-promote.yml` and the lane `android promote_draft` put a versionCode Play already has on alpha
 as a draft release, nothing sent for review, production untouched. Details and how to verify:
 `docs/done/316-play-promote-alpha.md`; the run on 1414 is in the job's ops summary.
+
+## Job 305: folder-level LEGO layers (R8 to R10)
+
+[docs/done/305.md](docs/done/305.md) covers four pure refactors (#555 to #558, Changelog none):
+
+- `lib/app` became `lib/core` plus `lib/shell`.
+- The lint gate's `scripts/import-direction.ts` enforces core, feature and shell layers. Its
+  baseline started at 200 lines, only shrinks, and is 176 lines now.
+- Analytics imports no feature.
+- The list imports neither household nor trip. A `ListParts` interface is provided by the shell,
+  and `ListScope` moved to the shell.
+
+Tests went from 3788 to 3792 passing, and no golden changed. #558 was driven on the real build.
+R11 and R12 are not recommended now: a measured prototype of R11 (design as a workspace package)
+saves no CI time and has two traps that pass silently. The full numbers are in docs/done/305.md.

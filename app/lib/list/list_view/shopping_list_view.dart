@@ -13,6 +13,7 @@ import 'package:family_groceries/list/claims.dart';
 import 'package:family_groceries/list/edit_item_sheet.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_link.dart';
+import 'package:family_groceries/list/list_parts.dart';
 import 'package:family_groceries/list/list_view/dividers.dart';
 import 'package:family_groceries/list/list_view/explainer.dart';
 import 'package:family_groceries/list/list_view/glide.dart';
@@ -24,7 +25,6 @@ import 'package:family_groceries/list/list_view/summary_block.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/subtotals.dart';
 import 'package:family_groceries/tips/hint_views.dart';
-import 'package:family_groceries/trip/trip_on_list.dart';
 import 'package:flutter/foundation.dart'
     show ValueListenable, immutable, kIsWeb, listEquals;
 import 'package:flutter/rendering.dart' show RenderAbstractViewport;
@@ -616,7 +616,8 @@ class _ShoppingListViewState()
             state.items.values,
             state.catalog,
             now: context.read<ListCubit>().now,
-            trip: runningOn(context, state.shownList?.id),
+            onTrip: listParts(context)
+                .boughtOnTrip(context, state.shownList?.id),
           )
         : null;
     SliverList column(List<StoreSection> run) {
@@ -727,7 +728,7 @@ class _ShoppingListViewState()
             slivers: [
               const SliverToBoxAdapter(child: OpenAppSlot()),
               const SliverToBoxAdapter(child: ListHints()),
-              const SliverToBoxAdapter(child: TripEndedSlot()),
+              SliverToBoxAdapter(child: listParts(context).tripEnded()),
               const SliverToBoxAdapter(child: SizedBox(height: 4)),
               body,
               // Without the flag the screen shows the total in a bar at the
