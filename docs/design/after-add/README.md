@@ -3,7 +3,7 @@
 A throwaway HTML sandbox for one decision: how the add sheet looks after an item was added. It drops the close key, the "Just added" header, the "Added / Undo" row and the gap above the field, and it keeps every field in view while the keyboard is up. Nothing here ships, and the app is unchanged. It uses mock data only (the fictional Familie Brandt), makes no network calls, and shows store names as plain text (Legal N-292).
 
 - `index.html` is the overview. It links the round and shows its pick and runner-up.
-- `as/` is round AS. It shows today's replica and the options AS1 to AS5, each with a live phone and ten frames, followed by the measured table and the recommendation. The recommendation comes from `RECOMMENDATION.md` (in English) and `RECOMMENDATION.de.md` (in German), which give the pick (AS1), the runner-up (AS2) and AS-Q1 to AS-Q11.
+- `as/` is round AS. It shows today's replica and the options AS1 to AS5, each with a live phone and ten frames, followed by the measured table and the recommendation. The recommendation comes from `RECOMMENDATION.md` (in English) and `RECOMMENDATION.de.md` (in German), which give the pick (AS1), the runner-up (AS2) and AS-Q1 to AS-Q10.
 
 The controls set the language (`?lang=de`), the theme (`?theme=dark`), the text size (`?ts=200` or `?ts=310`) and the phone (`?device=android`, a 360 × 640 Android with Gboard; the default is a 390 × 844 iPhone with its keyboard).
 

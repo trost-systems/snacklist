@@ -38,22 +38,24 @@ Graft from AS2: sending an empty field also closes the sheet. It needs no new UI
 - **AS4**: the sheet is only 79 px, but the card on the list makes editing 247 px, so the space just moves from the sheet to the list. Editing would also happen in two places, the list for this item and the sheet for the next.
 - **AS5**: 2 taps for store and category is the best, but at 255 px it is the tallest after today. On the small Android it cuts a row and needs a swipe for "Chilled".
 
+## A mistaken add
+
+Undo goes away entirely (Peter, t1071u). To remove a mistaken add, close the sheet, tap the row and choose Delete. The store and category the app learned from it are not rolled back: the next add of that item is corrected in the sheet. Job 315's code stays as it is.
+
 ## Open questions (each with the default the build uses unless Peter says otherwise)
 
-1. **AS-Q1. A mistaken add, now that Undo is gone.** Peter's path is to close the sheet, tap the row, and choose Delete in the edit sheet. A plain delete keeps what the item's store and category picks taught, because SPEC's classifier rule needs that ("move to Y; delete and add again → Y"). Job 315 made only `undo_add` take those lessons back.
-   *Default:* the edit sheet's Delete sends `DeleteItem(undoAdd: true)` for an item the add sheet added, as long as its store and category were changed only in the add sheet (the app remembers those ids while it runs). A move in the edit sheet, a tick, or an app restart turns that item's delete into a plain delete. That keeps SPEC's test, which moves the item in the edit sheet. A pgTAP case and an e2e case pin both paths. The duplicate merge keeps its own Undo (AS-Q5).
-2. **AS-Q2. Brand.** *Default:* the after-add sheet has only Details. The edit sheet keeps Brand, an item that has a brand shows "brand, details" on the Details chip, and no data changes. Text typed into Details stays in Details, with no brand parsing.
-3. **AS-Q3. Closing without the X.** *Default:*
+1. **AS-Q1. Brand.** *Default:* the after-add sheet has only Details. The edit sheet keeps Brand, an item that has a brand shows "brand, details" on the Details chip, and no data changes. Text typed into Details stays in Details, with no brand parsing.
+2. **AS-Q2. Closing without the X.** *Default:*
    - a swipe down on the sheet, or a tap on the list above it;
    - Android's back key (first it hides the keyboard, then it closes the sheet);
    - sending an empty field (the graft from AS2).
 
    For screen readers, the grabber becomes a button labelled "Close" (the string the X uses today), so no new text is needed.
-4. **AS-Q4. The small Android.** With two adds behind the sheet, 43 px of list is left (the second item's category, "Bread & bakery", wraps the chips), and a tap needs 44 px. *Default:* accept it. On such a phone the sheet closes by a swipe or the back key.
-5. **AS-Q5. The duplicate note** ("Oat milk is already on the list", with Merge, and Undo after a merge). *Default:* it takes the chip line's place until it is answered or the next letter is typed. The merge keeps its Undo, because no row lets the user take a merge back.
-6. **AS-Q6. Typing the next item.** Up to three suggestions replace the chip line. The sheet grows while typing and shrinks again after the add. *Default:* let it grow. Today's fixed room for three rows was the gap Peter marked.
-7. **AS-Q7. A tap on one of the two rows behind the sheet.** *Default:* that item's fields come into the sheet, and the row turns honey. This is the way to fix the item before the last one without closing the sheet.
-8. **AS-Q8. Reopening the sheet.** *Default:* the list behind it starts empty again. The earlier adds are on the list once the sheet closes.
-9. **AS-Q9. Job 313's store picker** (chain type-ahead behind "New store", preferred app). *Default:* the fold-out under the store chip is the same component, so 313's change applies unchanged. AS1 changes only where the chip sits.
-10. **AS-Q10. The Details chip with nothing in it shows only its icon.** Its accessible label is "Details". *Default:* yes. In the first draft of AS1, the chips had the word and drop-down arrows, and they wrapped onto a second line on the iPhone. Without both, they fit on one line on both phones in English. A long category name still wraps the Details chip to a second line: "Bread & bakery" on both phones, and German "Getränke" on the 360 px Android. The sheet then grows by one line and no field is hidden.
-11. **AS-Q11. Rollout.** *Default:* a new flag `add-sheet-compact`, off, and on for Peter and the testers. It sits on top of `add-feedback-list`.
+3. **AS-Q3. The small Android.** With two adds behind the sheet, 43 px of list is left (the second item's category, "Bread & bakery", wraps the chips), and a tap needs 44 px. *Default:* accept it. On such a phone the sheet closes by a swipe or the back key. At 200 % text the rows behind the sheet slide partly under the status bar on both phones (one row in AS1, measured in frames 4 to 8), so there the sheet closes only by a swipe or the back key.
+4. **AS-Q4. The duplicate note** ("Oat milk is already on the list", with Merge, and Undo after a merge). *Default:* it takes the chip line's place until it is answered or the next letter is typed. The merge keeps its Undo, because no row lets the user take a merge back.
+5. **AS-Q5. Typing the next item.** Up to three suggestions replace the chip line. The sheet grows while typing and shrinks again after the add. *Default:* let it grow. Today's fixed room for three rows was the gap Peter marked.
+6. **AS-Q6. A tap on one of the two rows behind the sheet.** *Default:* that item's fields come into the sheet, and the row turns honey. This is the way to fix the item before the last one without closing the sheet.
+7. **AS-Q7. Reopening the sheet.** *Default:* the list behind it starts empty again. The earlier adds are on the list once the sheet closes.
+8. **AS-Q8. Job 313's store picker** (chain type-ahead behind "New store", preferred app). *Default:* the fold-out under the store chip is the same component, so 313's change applies unchanged. AS1 changes only where the chip sits.
+9. **AS-Q9. The Details chip with nothing in it shows only its icon.** Its accessible label is "Details". *Default:* yes. In the first draft of AS1, the chips had the word and drop-down arrows, and they wrapped onto a second line on the iPhone. Without both, they fit on one line on both phones in English. A long category name still wraps the Details chip to a second line: "Bread & bakery" on both phones, and German "Getränke" on the 360 px Android. The sheet then grows by one line and no field is hidden.
+10. **AS-Q10. Rollout.** *Default:* a new flag `add-sheet-compact`, off, and on for Peter and the testers. It sits on top of `add-feedback-list`.

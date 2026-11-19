@@ -16145,5 +16145,5 @@ internal metadata, not user copy.
 - **AS4 counts its card.** Its sheet is 79 px, but the card on the list makes editing 247 px. Counting only the sheet would have made AS4 look like the winner while it only moves the space.
 - **Text sizes go up to each phone's largest:** 310 % on the iPhone and 200 % on Android. German heights are quoted where they differ.
 - **Pick AS1 over AS5's two taps.** Peter's complaint was space. AS5 is the tallest option and pushes a row under the status bar on a 360 × 640 phone.
-- **The default for removing a mistaken add (AS-Q1).** Delete in the edit sheet uses `undo_add` only while the item's store and category were changed only in the add sheet. A plain delete has to keep an edit-sheet move, because SPEC's classifier test moves the item in the edit sheet.
+- **No rollback for a mistaken add.** Peter's update (t1071u, 22:02 CET) drops Undo entirely: the user closes the sheet, taps the row and deletes it, and the learned store and category are not rolled back, since the next add corrects them. Job 315's code stays untouched. The first build missed this update and proposed an `undo_add` path as AS-Q1; review 0 caught it, and the question was removed.
 - **The preview builds on the newest earlier preview.** It is `dpl_9keK9N842jnMATrkQj1vxVQmRUnz`, fetched byte for byte, so the earlier rounds' links keep working.

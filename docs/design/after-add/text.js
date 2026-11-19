@@ -41,7 +41,7 @@ const en = {
     AS2: { name: 'Field on top', what: 'The field is the sheet’s top line and the new item’s fields sit under it, nearest the thumb. Store and category share one chip that opens both lists, so both take three taps. Brand stays. Sending an empty field also closes the sheet.' },
     AS3: { name: 'Field grid', what: 'A fixed grid of two columns: quantity, store, category, brand and details, all in view, each one tap away. Options fold out under the grid. Brand stays. The tallest option.' },
     AS4: { name: 'Edit on the row', what: 'The sheet keeps only the field. The row just added opens into a card on the list right above the sheet, with the quantity, store, category and Details. The next add folds it back into a row. Brand goes into Details.' },
-    AS5: { name: 'One-tap rows', what: 'The store and category options are always out, as two rows that swipe sideways; the item’s own are honey. Quantity and Details share the top line. Store and category take two taps. Brand goes into Details.' },
+    AS5: { name: 'One-tap rows', what: 'The store and category options are always out, as two rows that swipe sideways; the item’s own are honey. Quantity and Details share the top line. Store and category take two taps. Brand goes into Details. Both rows run past the screen edge (REWE is cut on the iPhone too), so a store or category further along needs a swipe.' },
   },
   recFile: 'RECOMMENDATION.md',
 };
@@ -89,7 +89,7 @@ const de = {
     AS2: { name: 'Feld oben', what: 'Das Feld ist die oberste Zeile des Sheets, die Felder des neuen Artikels liegen darunter, nah am Daumen. Laden und Kategorie teilen sich einen Chip, der beide Listen öffnet: drei Tipps für beides. Die Marke bleibt. Ein leeres Feld abschicken schließt das Sheet auch.' },
     AS3: { name: 'Feldraster', what: 'Ein festes Raster mit zwei Spalten: Menge, Laden, Kategorie, Marke und Eigenschaften, alle sichtbar, jedes einen Tipp entfernt. Die Auswahl klappt unter dem Raster aus. Die Marke bleibt. Die höchste Option.' },
     AS4: { name: 'Auf der Zeile bearbeiten', what: 'Das Sheet behält nur das Feld. Die gerade hinzugefügte Zeile öffnet sich auf der Liste direkt über dem Sheet zu einer Karte, mit Menge, Laden, Kategorie und Eigenschaften. Der nächste Artikel klappt sie wieder zur Zeile. Die Marke kommt in die Eigenschaften.' },
-    AS5: { name: 'Ein-Tipp-Reihen', what: 'Läden und Kategorien liegen immer offen, als zwei Reihen, die seitlich wischen; die des Artikels sind honiggelb. Menge und Eigenschaften teilen sich die obere Zeile. Laden und Kategorie: zwei Tipps. Die Marke kommt in die Eigenschaften.' },
+    AS5: { name: 'Ein-Tipp-Reihen', what: 'Läden und Kategorien liegen immer offen, als zwei Reihen, die seitlich wischen; die des Artikels sind honiggelb. Menge und Eigenschaften teilen sich die obere Zeile. Laden und Kategorie: zwei Tipps. Die Marke kommt in die Eigenschaften. Beide Reihen laufen über den Rand (REWE ist auch auf dem iPhone abgeschnitten), ein Laden oder eine Kategorie weiter hinten braucht ein Wischen.' },
   },
   recFile: 'RECOMMENDATION.de.md',
 };

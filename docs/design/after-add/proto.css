@@ -200,3 +200,4 @@ th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; color
 .tight .qty > span { padding: 0 4px; }
 .tight .qty input { width: 1.6em; }
 .line.tight { gap: 6px; }
+.phone.closed .list { padding-bottom: 160px; }

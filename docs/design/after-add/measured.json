@@ -40,6 +40,7 @@
    "freeList": 164,
    "rowsCut": 0,
    "editHde": 131,
+   "rowsCut200": 1,
    "swipes": 0
   },
   "AS2": {
@@ -49,6 +50,7 @@
    "freeList": 106,
    "rowsCut": 0,
    "editHde": 187,
+   "rowsCut200": 1,
    "swipes": 0
   },
   "AS3": {
@@ -58,6 +60,7 @@
    "freeList": 102,
    "rowsCut": 0,
    "editHde": 243,
+   "rowsCut200": 2,
    "swipes": 0
   },
   "AS4": {
@@ -67,6 +70,7 @@
    "freeList": 158,
    "rowsCut": 0,
    "editHde": 247,
+   "rowsCut200": 1,
    "swipes": 0
   },
   "AS5": {
@@ -76,6 +80,7 @@
    "freeList": 90,
    "rowsCut": 0,
    "editHde": 255,
+   "rowsCut200": 1,
    "swipes": 0
   }
  },
@@ -119,6 +124,7 @@
    "freeList": 43,
    "rowsCut": 0,
    "editHde": 181,
+   "rowsCut200": 1,
    "swipes": 0
   },
   "AS2": {
@@ -128,6 +134,7 @@
    "freeList": 0,
    "rowsCut": 1,
    "editHde": 239,
+   "rowsCut200": 2,
    "swipes": 1
   },
   "AS3": {
@@ -137,6 +144,7 @@
    "freeList": 0,
    "rowsCut": 1,
    "editHde": 243,
+   "rowsCut200": 2,
    "swipes": 0
   },
   "AS4": {
@@ -146,6 +154,7 @@
    "freeList": 37,
    "rowsCut": 0,
    "editHde": 247,
+   "rowsCut200": 1,
    "swipes": 0
   },
   "AS5": {
@@ -155,6 +164,7 @@
    "freeList": 0,
    "rowsCut": 1,
    "editHde": 255,
+   "rowsCut200": 2,
    "swipes": 1
   }
  },

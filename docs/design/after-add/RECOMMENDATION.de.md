@@ -22,15 +22,16 @@ Aus AS2 übernommen: Ein leeres Feld abzuschicken schließt das Sheet auch.
 
 ## Offene Fragen
 
-Die Fragen AS-Q1 bis AS-Q11 stehen mit ihren Vorgaben in `RECOMMENDATION.md`:
-- AS-Q1: Ein versehentlich hinzugefügter Artikel. Löschen im Bearbeiten-Sheet nimmt Gelerntes nur zurück, wenn Laden und Kategorie nur im Sheet nach dem Hinzufügen geändert wurden.
-- AS-Q2: Marke
-- AS-Q3: Schließen ohne X
-- AS-Q4: Das kleine Android-Telefon
-- AS-Q5: Der Duplikat-Hinweis
-- AS-Q6: Das Tippen des nächsten Artikels
-- AS-Q7: Ein Tipp auf eine Zeile hinter dem Sheet
-- AS-Q8: Das Sheet erneut öffnen
-- AS-Q9: Die Ladenauswahl aus Job 313
-- AS-Q10: Der leere Eigenschaften-Chip zeigt nur sein Symbol
-- AS-Q11: Das Flag `add-sheet-compact`
+Rückgängig fällt ganz weg (Peter, t1071u). Einen versehentlich hinzugefügten Artikel entfernt man so: Sheet schließen, Zeile antippen, Löschen. Gelernter Laden und gelernte Kategorie werden nicht zurückgenommen; das nächste Hinzufügen korrigiert sie im Sheet.
+
+Die Fragen AS-Q1 bis AS-Q10 stehen mit ihren Vorgaben in `RECOMMENDATION.md`:
+- AS-Q1: Marke
+- AS-Q2: Schließen ohne X
+- AS-Q3: Das kleine Android-Telefon
+- AS-Q4: Der Duplikat-Hinweis
+- AS-Q5: Das Tippen des nächsten Artikels
+- AS-Q6: Ein Tipp auf eine Zeile hinter dem Sheet
+- AS-Q7: Das Sheet erneut öffnen
+- AS-Q8: Die Ladenauswahl aus Job 313
+- AS-Q9: Der leere Eigenschaften-Chip zeigt nur sein Symbol
+- AS-Q10: Das Flag `add-sheet-compact`

@@ -8,6 +8,8 @@ import { fileURLToPath } from 'node:url';
 import process from 'node:process';
 import { serve } from './tools/serve.mjs';
 import { storeCat, verdict } from './walk.js';
+import { icons } from './icons.js';
+import { copy } from './model.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const args = process.argv.slice(2);
@@ -27,6 +29,7 @@ const check = (ok, what) => {
 const { server, url } = await serve(root);
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 2000, height: 1200 } });
+page.setDefaultTimeout(5000);
 page.on('pageerror', (e) => failures.push(`page error: ${e.message}`));
 const ids = ['AS1', 'AS2', 'AS3', 'AS4', 'AS5'];
 const devices = ['ios', 'android'];
@@ -39,7 +42,7 @@ const open = async (q) => {
 
 // Per frame: rows behind the sheet, sheet height, fields in view, small targets, the gap above the field.
 const inspect = () =>
-  page.evaluate(() => {
+  page.evaluate((closePath) => {
     const out = {};
     for (const sec of document.querySelectorAll('section.option, section#today')) {
       const id = sec.id;
@@ -90,17 +93,21 @@ const inspect = () =>
           hidden,
           small,
           gapAbove,
-          x: ph.querySelectorAll('[data-x]').length,
+          // What is shown, not the prototype's own markers: the close glyph and the words on screen.
+          x: [...ph.querySelectorAll('svg path')].filter((pa) => pa.getAttribute('d') === closePath).length,
+          text: ph.innerText,
           undo: ph.querySelectorAll('[data-undo]').length,
           justAdded: ph.querySelectorAll('[data-just-added]').length,
         };
       });
     }
     return out;
-  });
+  }, icons.close);
 
 // Frame order in walk.js: open, added, picking, edited, details, typing, second, third, dismiss, closed.
 const ADDED = 1;
+// Today's words that no option may show: the header, the note and its action, the close key's name.
+const banned = ['en', 'de'].flatMap((l) => [copy[l].justAdded, copy[l].undo, copy[l].addedTo('', '').split(':')[0] + ':', copy[l].close]);
 const measured = { ios: { fits: {} }, android: { fits: {} }, pick: verdict.pick, runner: verdict.runner };
 for (const device of devices) {
   const sizes = sizesFor(device);
@@ -123,6 +130,8 @@ for (const device of devices) {
           check(fr.length === 10, `${tag} ${id}: 10 frames`);
           for (const f of fr) {
             check(f.x === 0 && f.undo === 0 && f.justAdded === 0, `${tag} ${id} frame ${f.i + 1}: no close key, Undo or Just added`);
+            const shown = banned.find((w) => f.text.toLowerCase().includes(w.toLowerCase()));
+            check(!shown, `${tag} ${id} frame ${f.i + 1}: shows "${shown}"`);
             if (f.state === 'open') {
               check(f.small.length === 0 || ts > 100, `${tag} ${id} frame ${f.i + 1}: targets under 44 px: ${f.small.join(', ')}`);
             }
@@ -133,6 +142,7 @@ for (const device of devices) {
           const a = fr[ADDED];
           const fits = a.hidden.length === 0 && a.overflow <= 1 && fr[3].hidden.length === 0 && fr[3].overflow <= 1;
           if (!fits && measured[device].fits[id].max >= ts) measured[device].fits[id] = { max: sizes[sizes.indexOf(ts) - 1] ?? 0, largest, firstMiss: `${ts}% ${lang}: ${[...a.hidden, ...fr[3].hidden].join(', ') || `sheet overflows ${Math.max(a.overflow, fr[3].overflow)} px`}` };
+          if (ts === 200) measured[device][id] = { ...measured[device][id], rowsCut200: Math.max(measured[device][id]?.rowsCut200 ?? 0, ...fr.slice(3, 8).map((f) => f.rowsCut)) };
           if (ts === 100) {
             check(fits, `${tag} ${id}: every field in view after an add (hidden: ${a.hidden.join(', ')}; overflow ${a.overflow})`);
             check(a.gapAbove !== null && a.gapAbove <= 16, `${tag} ${id}: no gap above the field (${a.gapAbove} px)`);
@@ -148,51 +158,55 @@ for (const device of devices) {
 // The live phones: the store and category taps as clicks, the options in view without a swipe, both ways to close.
 for (const device of devices) {
   for (const id of ids) {
-    await open(`device=${device}`);
-    const live = page.locator(`[data-live-phone="${id}"]`);
-    const field = live.locator('[data-input="text"]');
-    await field.fill('Oat');
-    await field.press('Enter');
-    check((await live.locator('.list.behind [data-row]').count()) === 1, `${device} ${id} live: the add shows one row`);
-    let swipes = 0;
-    for (const a of storeCat[id]) {
-      const target = live.locator(`[data-act="${a}"]`).first();
-      const inView = await target.evaluate((el) => {
-        const ph = el.closest('.phone').getBoundingClientRect();
-        const r = el.getBoundingClientRect();
-        return r.left >= ph.left && r.right <= ph.right;
-      });
-      if (!inView) {
-        swipes += 1;
-        await target.scrollIntoViewIfNeeded();
+    try {
+      await open(`device=${device}`);
+      const live = page.locator(`[data-live-phone="${id}"]`);
+      const field = live.locator('[data-input="text"]');
+      await field.fill('Oat');
+      await field.press('Enter');
+      check((await live.locator('.list.behind [data-row]').count()) === 1, `${device} ${id} live: the add shows one row`);
+      let swipes = 0;
+      for (const a of storeCat[id]) {
+        const target = live.locator(`[data-act="${a}"]`).first();
+        const inView = await target.evaluate((el) => {
+          const ph = el.closest('.phone').getBoundingClientRect();
+          const r = el.getBoundingClientRect();
+          return r.left >= ph.left && r.right <= ph.right;
+        });
+        if (!inView) {
+          swipes += 1;
+          await target.scrollIntoViewIfNeeded();
+        }
+        await target.click();
       }
-      await target.click();
+      check(Number(await live.getAttribute('data-taps')) === storeCat[id].length, `${device} ${id} live: store + category took ${storeCat[id].length} taps`);
+      const fieldsText = await live.locator('[data-sheet], [data-card]').first().innerText();
+      const cardText = id === 'AS4' ? await live.locator('[data-card]').innerText() : fieldsText;
+      check(/Lidl/.test(cardText) && /Chilled/.test(cardText), `${device} ${id} live: the fields show Lidl and Chilled`);
+      await field.fill('Br');
+      await field.press('Enter');
+      await live.locator('.list.behind [data-row]').first().click();
+      const cur = await live.locator('.list.behind [data-row].cur, [data-card] [data-row]').first().innerText();
+      check(/Oat milk/.test(cur), `${device} ${id} live: a tap on the earlier row edits it`);
+      measured[device][id].swipes = swipes;
+      const free = measured[device][id].freeList;
+      if (free >= 44) {
+        const listBox = await live.locator('.list.behind').boundingBox();
+        await page.mouse.click(listBox.x + listBox.width / 2, listBox.y + 22);
+        check((await live.locator('.phone').getAttribute('data-state')) === 'closed', `${device} ${id} live: a tap on the list above closes`);
+      }
+      await page.locator(`[data-reset="${id}"]`).click();
+      await live.locator('[data-input="text"]').fill('E');
+      await live.locator('[data-input="text"]').press('Enter');
+      const g = await live.locator('[data-grab]').boundingBox();
+      await page.mouse.move(g.x + g.width / 2, g.y + g.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(g.x + g.width / 2, g.y + 120, { steps: 5 });
+      await page.mouse.up();
+      check((await live.locator('.phone').getAttribute('data-state')) === 'closed', `${device} ${id} live: a swipe down on the grabber closes`);
+    } catch (e) {
+      check(false, `${device} ${id} live: the walk broke: ${String(e.message).split('\n')[0]}`);
     }
-    check(Number(await live.getAttribute('data-taps')) === storeCat[id].length, `${device} ${id} live: store + category took ${storeCat[id].length} taps`);
-    const fieldsText = await live.locator('[data-sheet], [data-card]').first().innerText();
-    const cardText = id === 'AS4' ? await live.locator('[data-card]').innerText() : fieldsText;
-    check(/Lidl/.test(cardText) && /Chilled/.test(cardText), `${device} ${id} live: the fields show Lidl and Chilled`);
-    await field.fill('Br');
-    await field.press('Enter');
-    await live.locator('.list.behind [data-row]').first().click();
-    const cur = await live.locator('.list.behind [data-row].cur, [data-card] [data-row]').first().innerText();
-    check(/Oat milk/.test(cur), `${device} ${id} live: a tap on the earlier row edits it`);
-    measured[device][id].swipes = swipes;
-    const free = measured[device][id].freeList;
-    if (free >= 44) {
-      const listBox = await live.locator('.list.behind').boundingBox();
-      await page.mouse.click(listBox.x + listBox.width / 2, listBox.y + 22);
-      check((await live.locator('.phone').getAttribute('data-state')) === 'closed', `${device} ${id} live: a tap on the list above closes`);
-    }
-    await page.locator(`[data-reset="${id}"]`).click();
-    await live.locator('[data-input="text"]').fill('E');
-    await live.locator('[data-input="text"]').press('Enter');
-    const g = await live.locator('[data-grab]').boundingBox();
-    await page.mouse.move(g.x + g.width / 2, g.y + g.height / 2);
-    await page.mouse.down();
-    await page.mouse.move(g.x + g.width / 2, g.y + 120, { steps: 5 });
-    await page.mouse.up();
-    check((await live.locator('.phone').getAttribute('data-state')) === 'closed', `${device} ${id} live: a swipe down on the grabber closes`);
   }
 }
 
