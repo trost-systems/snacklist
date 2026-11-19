@@ -10,7 +10,7 @@ Every new item lands in a category without the user choosing one, unless they pi
 - `cls-order` shows the dividers of "Ohne Laden" in route order (uppercase, without the emoji): Obst & Gemüse, Brot & Backwaren, Kühlregal, Fleisch/Wurst/Fisch, Vorrat & Konserven, Süßes & Snacks, Getränke, Tiefkühl, Haushalt, 👶 Drogerie, Sonstiges.
 - `cls-move` moves an item to another category through the edit sheet's category chip ("Fertig").
 - `cls-learn` puts a re-added item into the category it was last moved to, also when it is re-added before the move reached the server: the add sends no category unless one was picked, so the server classifies it after the move (job 126).
-- `cls-picked` learns a category picked on the add sheet's chip (`chip-category`) when it differs from the guess (`categorized_via` `picked`); the note's "Rückgängig" (`added-undo`) within 10 minutes removes the item and that lesson.
+- `cls-picked` learns a category picked on the add sheet's chip (`chip-category`) when it differs from the guess (`categorized_via` `picked`); the note's "Rückgängig" (`added-undo`) within 10 minutes removes the item and that lesson. With `add-feedback-list` the pick comes after the add, in the details, as an edit; "Rückgängig" deletes through `undo_add` and takes that edit's lesson back too (job 315), while any other delete keeps what an edit taught.
 - `cls-variants` puts a misspelling, a regional word or an English word with the word it means ("Karrotten", "Paradeiser", "Semmeln", "Schokolde", "toilet paper"); the name stays as typed (job 32a).
 - `cls-variant-learn` sends a word's spellings and synonyms where the household moved one of them ("Karrotten" moved to Getränke, then "Möhren" lands there), in that household only.
 

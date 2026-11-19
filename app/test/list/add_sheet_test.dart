@@ -618,7 +618,11 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('added-undo')));
       await tester.pumpAndSettle();
       expect(repo.rows, isEmpty);
-      expect(repo.sent.last, isA<DeleteItem>());
+      expect(
+        repo.sent.last,
+        isA<DeleteItem>().having((op) => op.undoAdd, 'undoAdd', isTrue),
+        reason: 'the undo also takes back what the details taught',
+      );
       expect(find.byKey(const ValueKey('added-note')), findsNothing);
     });
 

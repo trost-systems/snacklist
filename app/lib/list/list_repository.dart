@@ -602,6 +602,9 @@ class SupabaseListRepository(
       case UnclaimItem():
         await _client.rpc<void>('unclaim_item', params: {'p_item': op.itemId});
         return await _fetchItem(op.itemId);
+      case DeleteItem(undoAdd: true):
+        await _client.rpc<void>('undo_add', params: {'p_item': op.itemId});
+        return null;
       case DeleteItem():
         await items.delete().eq('id', op.itemId).select('id');
         return null;
