@@ -19,6 +19,8 @@
 #                                              the Play app?
 #   bundle exec fastlane android internal      upload the AAB to the internal
 #                                              track, or only validate it
+#   bundle exec fastlane android promote_draft an uploaded versionCode as the
+#                                              alpha track's draft release
 
 opt_out_usage
 
@@ -390,5 +392,71 @@ platform :android do
       skip_upload_images: true,
       skip_upload_screenshots: true
     )
+  end
+
+  def play_client(**options)
+    require "supply"
+    Supply.config = FastlaneCore::Configuration.create(Supply::Options.available_options,
+                                                       { json_key: play_json_key, package_name: APP_ID, **options })
+    client = Supply::Client.make_from_config(params: Supply.config)
+    client.begin_edit(package_name: APP_ID)
+    client
+  end
+
+  def describe_releases(track)
+    (track&.releases || []).map { |r| "#{r.status} #{r.version_codes&.join(',')} (#{r.name})" }.join("; ")
+  end
+
+  # Only closed testing: production and the open track stay with Play Console.
+  PROMOTE_TRACKS = %w[alpha].freeze
+
+  # Sets a bundle already in Play's library (VERSION_CODE) as the draft release of PROMOTE_TRACK.
+  # The track's other releases stay as they are, so its testers keep their build until someone
+  # rolls the draft out in Play Console; an older draft there is replaced. The release notes are
+  # those of a release that already carries the version code (internal first), else none. The
+  # commit sends nothing for review. Afterwards a second edit reads the track back and is deleted.
+  desc "Set an uploaded versionCode as the draft release of a closed testing track"
+  lane :promote_draft do
+    version_code = Integer(ENV.fetch("VERSION_CODE"), 10)
+    track_name = ENV.fetch("PROMOTE_TRACK")
+    UI.user_error!("PROMOTE_TRACK must be one of #{PROMOTE_TRACKS.join(', ')}, not #{track_name}") unless PROMOTE_TRACKS.include?(track_name)
+
+    client = play_client(changes_not_sent_for_review: true, rescue_changes_not_sent_for_review: false)
+    unless client.aab_version_codes.include?(version_code)
+      client.abort_current_edit
+      UI.user_error!("versionCode #{version_code} is not in Play's bundle library")
+    end
+    tracks = client.tracks
+    tracks.each { |t| UI.message("Before: #{t.track}: #{describe_releases(t)}") }
+    source = (tracks.sort_by { |t| t.track == "internal" ? 0 : 1 })
+             .flat_map { |t| t.releases || [] }
+             .find { |r| (r.version_codes || []).include?(version_code) }
+    UI.message(source ? "Release notes from the release #{source.name}" : "No release carries #{version_code}: no release notes")
+    draft = AndroidPublisher::TrackRelease.new(
+      name: source&.name,
+      status: Supply::ReleaseStatus::DRAFT,
+      version_codes: [version_code],
+      release_notes: source&.release_notes
+    )
+    track = tracks.find { |t| t.track == track_name } || AndroidPublisher::Track.new(track: track_name, releases: [])
+    track.releases = (track.releases || []).reject { |r| r.status == Supply::ReleaseStatus::DRAFT } + [draft]
+    client.update_track(track_name, track)
+    if ENV.fetch("PROMOTE_COMMIT", "false") == "true"
+      client.commit_current_edit!
+      UI.success("Committed: #{track_name} has versionCode #{version_code} as its draft release")
+    else
+      client.validate_current_edit!
+      client.abort_current_edit
+      UI.success("Validated only (PROMOTE_COMMIT is not true); nothing changed on Play")
+    end
+
+    check = play_client
+    after = check.tracks(track_name).first
+    check.abort_current_edit
+    UI.message("After: #{track_name}: #{describe_releases(after)}")
+    next unless ENV.fetch("PROMOTE_COMMIT", "false") == "true"
+
+    drafts = (after&.releases || []).select { |r| r.status == Supply::ReleaseStatus::DRAFT }
+    UI.user_error!("#{track_name} has no draft with versionCode #{version_code}") unless drafts.any? { |r| (r.version_codes || []).include?(version_code) }
   end
 end

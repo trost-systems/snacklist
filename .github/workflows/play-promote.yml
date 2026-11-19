@@ -1,0 +1,62 @@
+# Puts a bundle already on Play (its versionCode, e.g. a build release.yml uploaded to internal) on
+# the closed testing track as a DRAFT release. Nothing reaches testers or review until someone rolls
+# the draft out in Play Console; production is never touched. The lane is `android promote_draft`
+# (app/fastlane/Fastfile), docs/RELEASE.md section "Promote a build to closed testing".
+name: Play promote
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_code:
+        description: versionCode of a bundle already uploaded to Play
+        type: string
+        required: true
+      track:
+        description: Track that gets the draft release
+        type: choice
+        options: [alpha]
+        default: alpha
+      commit:
+        description: Commit the edit (off = validate only, nothing changes on Play)
+        type: boolean
+        default: true
+
+concurrency:
+  group: play-promote
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  promote:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    # The service account trusts only the release environment's OIDC token.
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        shell: bash
+        working-directory: app
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      # No Actions cache in a job that names an environment (job 220).
+      - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        with:
+          working-directory: app
+      - name: Install the gems from the lockfile
+        run: |
+          bundle config set --local deployment true
+          bundle install --jobs 4
+      - uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        with:
+          workload_identity_provider: projects/1023711338330/locations/global/workloadIdentityPools/github/providers/family-groceries
+          service_account: play-release@family-groceries-ci.iam.gserviceaccount.com
+      - run: bundle exec fastlane android promote_draft
+        env:
+          VERSION_CODE: ${{ inputs.version_code }}
+          PROMOTE_TRACK: ${{ inputs.track }}
+          PROMOTE_COMMIT: ${{ inputs.commit }}
