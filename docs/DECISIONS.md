@@ -16069,3 +16069,40 @@ strings, as supply does. The local stub had built tracks from Ruby objects with 
 never serialized them; it now parses Play-shaped JSON and serializes with the client's
 representation, and all four cases (notes copied or none, commit or validate) pass. The failed run
 committed nothing on Play.
+
+## Job 315: Rückgängig takes back the store and category picked in the added item's details (2026-11-19)
+
+1. **Root cause.** With `add-feedback-list` the store and category are picked after the add, in the
+   details, and reach the server as an update of the new item. `items_learn` (the update trigger)
+   learned them without the undo marks that `items_learn_insert` writes for a pick made with the
+   add, so `items_unlearn_delete` had nothing to take back when Rückgängig deleted the item.
+2. **The undo says what it is.** The first version took back an edit's lessons on any delete within
+   10 minutes of the add. CI's `classifier.spec.ts` and `voice.spec.ts` failed: the spec's
+   classifier test (docs/SPEC.md, "move to Y; delete and add again → Y") moves an item and deletes
+   it right away, and the move must stay learned. The server cannot tell the add sheet's edit from
+   the edit sheet's, so the add sheet's Rückgängig now deletes through `public.undo_add(p_item)`
+   (the `DeleteItem` op with `undoAdd`, sent as `undo_add` in the cached queue). Only that delete
+   takes back an edit's lessons. Every other delete, `items_learn_insert` and old app builds
+   behave as before.
+3. **Marks, not a snapshot table.** The brief preferred a snapshot taken before the detail edits.
+   A new table holding copies of the learned store and category memory would have needed a row in
+   `docs/PRIVACY_DATA_MAP.md`, which the brief routes to Legal. The memory tables get edit marks
+   (`edit_item`, `edit_by`, `edit_prev_at`, `edit_at`) next to the insert's undo marks, and put a
+   row back exactly (count and time). A second change of the same item adds to its own mark. A
+   change to „Ohne Laden“ deletes the name's store memory; those rows are kept in the name's
+   `item_store_cleared` row (`edit_stores`) and put back first. Separate columns keep the insert's
+   marks and the plain delete untouched: an edit bump leaves an insert mark stale as before, and
+   the undo restores it before the insert-mark step runs. The result is the state before the
+   first change after the add, as a snapshot would give.
+4. **What the undo keeps.** A lesson taught after the item's last change (another item, another
+   member) leaves the mark stale, so the undo keeps it. A tick in a store (status and store in one
+   update) is a buy and gets no mark. A stashed store deleted since is not put back. `undo_add` has
+   no time limit, for the insert's marks either (a plain delete keeps their 10 minutes): an undo
+   queued offline still applies when it is sent, and the marks' staleness check is what protects
+   later lessons. A mark is one per row: when another member's lesson lands on the same row between
+   two picks of this item, the undo takes back only the picks after it (a count, not the store
+   offered). The clear `items_learn_insert` records for an add with „Ohne Laden“ (flag-off chips)
+   stays as on main; the restored memory wins over it.
+5. **Server first.** A server without `undo_add` would refuse the op (PGRST202) and the item would
+   come back. `supabase-deploy.yml` deploys the migration from main before any web or store release
+   carries the app change, so there is no fallback to the plain delete.

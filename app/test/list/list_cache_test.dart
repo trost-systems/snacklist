@@ -79,6 +79,7 @@ void main() {
         sortKey: 768.25,
       ),
       const DeleteItem('milk'),
+      const DeleteItem('bread', undoAdd: true),
     ],
     usuals: const [
       Usual(name: 'Gurken', quantity: '2', due: true),
@@ -101,7 +102,12 @@ void main() {
       MoveItem,
       PlaceItem,
       DeleteItem,
+      DeleteItem,
     ]);
+    expect(
+      [for (final op in back.pending.whereType<DeleteItem>()) op.undoAdd],
+      [false, true],
+    );
     final edit = back.pending[3] as EditItem;
     expect(edit.changes.toColumns(), {
       'name': 'Hafermilch',

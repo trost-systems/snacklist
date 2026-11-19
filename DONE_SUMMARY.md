@@ -1781,3 +1781,13 @@ as a draft release, nothing sent for review, production untouched. Details and h
 Tests went from 3788 to 3792 passing, and no golden changed. #558 was driven on the real build.
 R11 and R12 are not recommended now: a measured prototype of R11 (design as a workspace package)
 saves no CI time and has two traps that pass silently. The full numbers are in docs/done/305.md.
+
+## Job 315: Rückgängig takes back the store and category picked after an add
+
+The add sheet's „Rückgängig“ now also forgets the store and category picked in the added item's
+details: the next add of the name is offered and stored as before. Root cause: those picks reach
+the server as an update, which learned them without the undo marks a pick with the add gets. The
+undo now deletes through the new RPC `undo_add`, which takes the edits' lessons back; other deletes
+keep them (spec). Migration `20261119070000_undo_added_details.sql`, pgTAP
+`undo_added_details.test.sql`, app tests for the op, journey
+`verify-snacklist/journeys/undo-added-details.mjs`. Details: `docs/done/315.md`.

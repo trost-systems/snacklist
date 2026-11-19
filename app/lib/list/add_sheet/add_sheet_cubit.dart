@@ -394,7 +394,7 @@ class AddSheetCubit(
   void undo() {
     if (state.added case Added(:final item)) {
       _details?.cancel();
-      _list.delete(item.id);
+      _list.undoAdd(item.id);
       emit(_with(added: () => null, unsaved: const ItemChanges()));
     }
   }
