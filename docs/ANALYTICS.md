@@ -70,7 +70,7 @@ Our guarantees sit on top of it (DECISIONS Job 44):
 | Event catalog and allow-list | `app/lib/analytics/events.dart` (`eventCatalog`, `checkEvent`, `contextKeys`, `webEventKeys`) |
 | `is_internal` rules | `app/lib/analytics/internal.dart` (`isInternal`) |
 | Error type names and the scrubber | `app/lib/analytics/exceptions.dart` (`errorType`, `scrubMessage`, `scrubException`) |
-| Uncaught-error hooks, start-up from the build defines | `app/lib/analytics/setup.dart` (`reportUncaughtErrors`, `startAnalytics`, `allowedHost`); defines in `app/lib/app/environment.dart` |
+| Uncaught-error hooks, start-up from the build defines | `app/lib/analytics/setup.dart` (`reportUncaughtErrors`, `startAnalytics`, `allowedHost`); defines in `app/lib/core/environment.dart` |
 | Feature flags | `app/lib/analytics/flags.dart` (`Flags`, read as `Analytics.flags`) |
 | Consent screen | `app/lib/analytics/consent_screen.dart`, route `/analytics-consent` |
 | More switch, internal install | `app/lib/more/more_screen.dart` (`more-analytics`, long press on `more-version`) |

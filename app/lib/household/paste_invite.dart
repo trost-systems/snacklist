@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:family_groceries/analytics/events.dart' show JoinMethod;
-import 'package:family_groceries/app/notices.dart';
-import 'package:family_groceries/app/router.dart';
+import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/household/pending_invite.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
+import 'package:family_groceries/shell/router.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';

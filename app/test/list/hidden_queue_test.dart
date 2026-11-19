@@ -2,8 +2,8 @@
 // user shows another, after a switch and after a restart, without opening
 // the first household again.
 import 'package:family_groceries/analytics/analytics.dart';
-import 'package:family_groceries/app/device_cache.dart';
-import 'package:family_groceries/app/localizations.dart';
+import 'package:family_groceries/core/device_cache.dart';
+import 'package:family_groceries/core/localizations.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/entry.dart';
 import 'package:family_groceries/list/list_cache.dart';

@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:family_groceries/app/localizations.dart';
+import 'package:family_groceries/core/localizations.dart';
 import 'package:family_groceries/design/sticker.dart';
 import 'package:family_groceries/household/household_kind.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';

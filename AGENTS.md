@@ -9,8 +9,10 @@ reasons are in [`docs/DECISIONS.md`](docs/DECISIONS.md).
 
 - `app/`: the Flutter app. `lib/list/` is the list feature (model, cubit,
   repository, screen), `lib/session/` auth and household state,
-  `lib/household/` onboarding and invites, `lib/app/` router, environment
-  and app shell. UI strings live in `app/l10n/app_de.arb` (German template).
+  `lib/household/` onboarding and invites, `lib/core/` what every folder
+  shares (environment, network, notices, device cache, theme), `lib/shell/`
+  the router, the tab shell and `app.dart`. UI strings live in
+  `app/l10n/app_de.arb` (German template).
 - `supabase/`: `config.toml` for the local stack, `migrations/`, pgTAP tests
   in `tests/`, Deno edge functions in `functions/` (`_shared/` for helpers).
 - `e2e/`: Playwright tests that drive the Flutter web build against the local
@@ -132,8 +134,8 @@ reasons are in [`docs/DECISIONS.md`](docs/DECISIONS.md).
   reason, `error` rules enforced by `tool/lint/ts/strict.ts` in the lint gate
   (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, no `!`, return
   types on exports). Narrow instead of asserting; `docs/hillclimb/hc-strictness.md`.
-- Build-time defines are read only in `app/lib/app/environment.dart`.
-- Auth gating happens only in `authRedirect` (`app/lib/app/router.dart`).
+- Build-time defines are read only in `app/lib/core/environment.dart`.
+- Auth gating happens only in `authRedirect` (`app/lib/shell/router.dart`).
 - Every household-owned table carries `household_id` and the RLS policy
   `is_household_member(household_id)`. A new table gets the same policy and a
   cross-household case in `supabase/tests/rls.test.sql`.
@@ -202,7 +204,7 @@ its reason, and the secrets or actions it covers, in `scripts/workflow-hardening
 
 | Rule | What fails | Why |
 | --- | --- | --- |
-| `no-from-environment` | `String/bool/int.fromEnvironment` outside `app/lib/app/environment.dart` | One inventory of build-time defines |
+| `no-from-environment` | `String/bool/int.fromEnvironment` outside `app/lib/core/environment.dart` | One inventory of build-time defines |
 | `dispose-after-dialog` | A local controller or FocusNode disposed after `await showDialog`/`showModalBottomSheet` (or a picker or pushed route), or in its `.then` | The route still animates out with it; the join dialog crashed (fixed in 1177b52) |
 | `shared-preferences-only-in-device-cache`, `device-cache-own-file` | A shared-preferences store outside `DeviceCache`, or one without its own Linux file | A second store on supabase's file signed Linux users out (c4ed2e4) |
 | `auth-navigation-only-in-router` | The `/login` or `/welcome` route named outside `router.dart` (path, `loginPath`, `goNamed('login')`) | Auth gating happens only in `authRedirect` |
@@ -217,7 +219,7 @@ its reason, and the secrets or actions it covers, in `scripts/workflow-hardening
 | `in-app-review-only-in-store-review` | Importing `package:in_app_review` anywhere in `app/` but `app/lib/review/store_review.dart` | One file holds the store's rating prompt and listing (`StoreReview`, job 155) |
 | `request-review-only-in-review-prompt` | A `.requestReview` call or tear-off in `app/lib` outside `app/lib/review/` | The prompt comes only after `ReviewPrompt`'s gates, never from a button (Apple refuses that); a button opens the listing |
 | `no-wall-time-wait-in-tests` | `Future.delayed` in `app/test` | It races the timers it waits for: after a stall the test resumes mid-reload (DECISIONS 18.17). Use `elapse()` or `fakeAsync` |
-| `snackbars-through-notices` | `ScaffoldMessenger.of`/`maybeOf` in `app/lib` outside `app/lib/app/notices.dart` | A page's messenger shows under an open dialog's or sheet's barrier (job 116). Use `Notices.of(context)` |
+| `snackbars-through-notices` | `ScaffoldMessenger.of`/`maybeOf` in `app/lib` outside `app/lib/core/notices.dart` | A page's messenger shows under an open dialog's or sheet's barrier (job 116). Use `Notices.of(context)` |
 | `localizations-through-app-list` | `AppLocalizations.localizationsDelegates` in `app/` outside the generated `lib/l10n/` | gen-l10n still lists the in-framework Material delegate; material_ui widgets then find no MaterialLocalizations (job 201). Use `appLocalizationsDelegates` |
 | `text-field-autofill-explicit` | A `TextField`, `TextFormField` or `CupertinoTextField` in `app/lib` without `autofillHints:` | Flutter 3.50 web keeps a hidden copy of each left autofill field, a second textbox of the same name for screen readers (job 201). `null` for none; a field with hints ends its autofill context before the next screen's field takes the input (job 226) |
 | `popups-on-root-navigator` | `showModalBottomSheet` without `useRootNavigator: true`, a dialog with `useRootNavigator: false` | `Notices` sees open popups on the root navigator only |

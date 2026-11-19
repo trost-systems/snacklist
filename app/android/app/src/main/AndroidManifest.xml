@@ -39,7 +39,7 @@
             </intent-filter>
             <!-- App Links (docs/DEEP_LINKS.md): these app.snacklist.app paths (and app.hummlist.com,
                  for old Hummlist invite links until R1) open the app,
-                 lib/app/deep_links.dart's table; app/web/.well-known/assetlinks.json
+                 lib/core/deep_links.dart's table; app/web/.well-known/assetlinks.json
                  verifies the domain. -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW"/>

@@ -1,5 +1,5 @@
 import 'package:family_groceries/analytics/events.dart';
-import 'package:family_groceries/app/device_cache.dart';
+import 'package:family_groceries/core/device_cache.dart';
 import 'package:family_groceries/household/pending_invite.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:family_groceries/analytics/flags.dart';
-import 'package:family_groceries/app/notices.dart';
+import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/household/onboarding_page.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/session/your_name.dart';

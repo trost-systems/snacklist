@@ -1,10 +1,9 @@
 import 'dart:async';
 
 import 'package:family_groceries/analytics/flags.dart';
-import 'package:family_groceries/app/environment.dart';
-import 'package:family_groceries/app/legal_links.dart';
-import 'package:family_groceries/app/notices.dart';
-import 'package:family_groceries/app/router.dart';
+import 'package:family_groceries/core/environment.dart';
+import 'package:family_groceries/core/legal_links.dart';
+import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/design/brand_block.dart';
 import 'package:family_groceries/design/field_border.dart';
 import 'package:family_groceries/design/status_bar_backdrop.dart';
@@ -15,6 +14,7 @@ import 'package:family_groceries/session/mail_language.dart';
 import 'package:family_groceries/session/provider_buttons.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/session/social_sign_in.dart';
+import 'package:family_groceries/shell/router.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

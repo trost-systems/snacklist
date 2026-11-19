@@ -20,7 +20,7 @@ export interface Target {
 /** Longest any single Supabase request may take before the command fails with api_timeout. */
 export const REQUEST_TIMEOUT_MS = 30_000;
 
-/** The production project; its URL and publishable key are public (app/lib/app/environment.dart). */
+/** The production project; its URL and publishable key are public (app/lib/core/environment.dart). */
 export const HOSTED = {
   ref: 'jdwqrallbpdbshrdhenk',
   url: 'https://jdwqrallbpdbshrdhenk.supabase.co',

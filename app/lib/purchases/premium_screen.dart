@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/analytics/flags.dart';
-import 'package:family_groceries/app/guides.dart';
-import 'package:family_groceries/app/legal_links.dart';
+import 'package:family_groceries/core/guides.dart';
+import 'package:family_groceries/core/legal_links.dart';
 import 'package:family_groceries/design/pointy_hex.dart';
 import 'package:family_groceries/design/sticker.dart';
 import 'package:family_groceries/design/tokens.g.dart';

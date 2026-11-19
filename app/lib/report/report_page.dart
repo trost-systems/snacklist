@@ -3,8 +3,8 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:family_groceries/analytics/flags.dart';
-import 'package:family_groceries/app/guides.dart';
-import 'package:family_groceries/app/legal_links.dart';
+import 'package:family_groceries/core/guides.dart';
+import 'package:family_groceries/core/legal_links.dart';
 import 'package:family_groceries/design/field_border.dart';
 import 'package:family_groceries/design/hex_checkbox.dart';
 import 'package:family_groceries/design/hex_radio.dart';

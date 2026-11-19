@@ -1,4 +1,4 @@
-import 'package:family_groceries/app/notices.dart';
+import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/list/entry.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_repository.dart';

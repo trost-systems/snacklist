@@ -63,7 +63,7 @@ PREMIUM_DEFINES = %w[REVENUECAT_PURCHASES REVENUECAT_APPLE_API_KEY REVENUECAT_GO
 FLAGS_JSON = File.expand_path("../../releases/flags.json", __dir__)
 
 # Each build define and the hold it follows: NATIVE_SIRI_LIVE (the iPhone's Siri hint,
-# app/lib/app/environment.dart) once native Siri is released.
+# app/lib/core/environment.dart) once native Siri is released.
 HOLD_DEFINES = { "NATIVE_SIRI_LIVE" => "native-siri" }.freeze
 
 def hold_defines

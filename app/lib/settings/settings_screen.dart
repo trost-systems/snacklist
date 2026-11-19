@@ -1,7 +1,6 @@
 import 'package:family_groceries/analytics/flags.dart';
-import 'package:family_groceries/app/language.dart';
-import 'package:family_groceries/app/router.dart';
-import 'package:family_groceries/app/theme.dart';
+import 'package:family_groceries/core/language.dart';
+import 'package:family_groceries/core/theme.dart';
 import 'package:family_groceries/design/group_card.dart';
 import 'package:family_groceries/design/hex_radio.dart';
 import 'package:family_groceries/design/hex_segmented.dart';
@@ -10,6 +9,7 @@ import 'package:family_groceries/design/section_label.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/feedback/shake.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
+import 'package:family_groceries/shell/router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';

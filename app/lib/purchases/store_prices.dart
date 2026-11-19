@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:family_groceries/app/environment.dart';
+import 'package:family_groceries/core/environment.dart';
 import 'package:family_groceries/purchases/purchase_repository.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';

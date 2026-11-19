@@ -1,9 +1,9 @@
 // Goldens of the Premium page as PW-P4 „Haushalt“ (job 87), light and dark,
 // with the real fonts. After a deliberate look change:
 //   flutter test --update-goldens test/design/premium_golden_test.dart
-import 'package:family_groceries/app/language.dart';
-import 'package:family_groceries/app/router.dart';
+import 'package:family_groceries/core/language.dart';
 import 'package:family_groceries/purchases/purchase_repository.dart';
+import 'package:family_groceries/shell/router.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 

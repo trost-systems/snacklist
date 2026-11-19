@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:family_groceries/analytics/analytics.dart';
-import 'package:family_groceries/app/guides.dart';
-import 'package:family_groceries/app/legal_links.dart';
+import 'package:family_groceries/core/guides.dart';
+import 'package:family_groceries/core/legal_links.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/session/session_cubit.dart';

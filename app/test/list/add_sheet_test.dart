@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:family_groceries/app/localizations.dart';
+import 'package:family_groceries/core/localizations.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/add_sheet/suggestion.dart';
 import 'package:family_groceries/list/list_cache.dart';

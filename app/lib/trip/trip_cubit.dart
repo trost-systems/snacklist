@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/analytics/events.dart'
     show ShopAnswer, ShopMinutes;
-import 'package:family_groceries/app/device_cache.dart';
+import 'package:family_groceries/core/device_cache.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/trip/model.dart';

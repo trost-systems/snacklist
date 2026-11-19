@@ -1,11 +1,11 @@
 import 'dart:io';
 
-import 'package:family_groceries/app/environment.dart';
-import 'package:family_groceries/app/guides.dart';
-import 'package:family_groceries/app/router.dart';
+import 'package:family_groceries/core/environment.dart';
+import 'package:family_groceries/core/guides.dart';
 import 'package:family_groceries/more/more_screen.dart';
 import 'package:family_groceries/purchases/purchase_repository.dart';
 import 'package:family_groceries/review/store_review.dart';
+import 'package:family_groceries/shell/router.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,7 +13,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:url_launcher_platform_interface/url_launcher_platform_interface.dart';
 
-import '../app/fake_launcher.dart';
+import '../core/fake_launcher.dart';
 import '../purchases/fakes.dart';
 import '../review/fakes.dart';
 import 'more_harness.dart';

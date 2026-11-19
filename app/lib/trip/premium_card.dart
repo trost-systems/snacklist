@@ -1,4 +1,3 @@
-import 'package:family_groceries/app/router.dart' show premiumPath;
 import 'package:family_groceries/design/pointy_hex.dart';
 import 'package:family_groceries/design/sticker.dart';
 import 'package:family_groceries/design/tokens.g.dart';
@@ -9,6 +8,7 @@ import 'package:family_groceries/purchases/premium_server.dart';
 import 'package:family_groceries/purchases/purchase_cubit.dart';
 import 'package:family_groceries/purchases/purchase_repository.dart'
     show NoSale;
+import 'package:family_groceries/shell/router.dart' show premiumPath;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';

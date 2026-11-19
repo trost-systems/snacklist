@@ -413,7 +413,7 @@ Federation (below). The workflow's `env` holds the non-secret identifiers:
 `BUILD_NUMBER_OFFSET`, `UPLOAD_CERT_SHA256`, the workload identity provider
 and the service account email.
 
-The build needs no Supabase defines: `app/lib/app/environment.dart` defaults
+The build needs no Supabase defines: `app/lib/core/environment.dart` defaults
 to the production URL and publishable key. Both platforms pass
 `--dart-define-from-file=config/auth.json`, the public Google and Apple
 sign-in client IDs and `APP_URL`.

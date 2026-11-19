@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:family_groceries/analytics/flags.dart';
-import 'package:family_groceries/app/router.dart';
+import 'package:family_groceries/shell/router.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:sensors_plus/sensors_plus.dart';

@@ -1,8 +1,8 @@
 import 'dart:ui' show Tristate;
 
 import 'package:family_groceries/analytics/flags.dart';
-import 'package:family_groceries/app/router.dart';
-import 'package:family_groceries/app/shell.dart';
+import 'package:family_groceries/shell/router.dart';
+import 'package:family_groceries/shell/shell.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';

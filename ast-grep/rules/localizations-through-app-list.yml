@@ -2,7 +2,7 @@
 # but gen-l10n still lists flutter_localizations' in-framework delegates in
 # AppLocalizations.localizationsDelegates. A MaterialApp given that list finds no
 # MaterialLocalizations for any material_ui widget: every TextField, AppBar and dialog throws.
-# appLocalizationsDelegates (app/lib/app/localizations.dart) lists the material_ui ones.
+# appLocalizationsDelegates (app/lib/core/localizations.dart) lists the material_ui ones.
 id: localizations-through-app-list
 language: dart
 severity: error
@@ -19,4 +19,4 @@ rule:
     - has:
         field: object
         regex: '^(?:\w+\s*\.\s*)?AppLocalizations$'
-message: 'AppLocalizations.localizationsDelegates carries the in-framework Material delegate, which material_ui widgets do not read: use appLocalizationsDelegates from package:family_groceries/app/localizations.dart'
+message: 'AppLocalizations.localizationsDelegates carries the in-framework Material delegate, which material_ui widgets do not read: use appLocalizationsDelegates from package:family_groceries/core/localizations.dart'

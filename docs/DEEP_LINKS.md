@@ -10,12 +10,12 @@ links (`/join/<code>`) came first in job 22.
 
 | | |
 | --- | --- |
-| Route table in code | [`app/lib/app/deep_links.dart`](../app/lib/app/deep_links.dart) (`appLinks`) |
-| Routing | [`app/lib/app/router.dart`](../app/lib/app/router.dart) (`authRedirect`, `buildRouter`) |
+| Route table in code | [`app/lib/core/deep_links.dart`](../app/lib/core/deep_links.dart) (`appLinks`) |
+| Routing | [`app/lib/shell/router.dart`](../app/lib/shell/router.dart) (`authRedirect`, `buildRouter`) |
 | iOS | [`app/ios/Runner/Runner.entitlements`](../app/ios/Runner/Runner.entitlements) (`applinks:app.snacklist.app` and `applinks:app.hummlist.com`), [`app/web/.well-known/apple-app-site-association`](../app/web/.well-known/apple-app-site-association) (`appIDs` lists `com.snacklist.app` and `com.hummlist.app`) |
 | Android | [`app/android/app/src/main/AndroidManifest.xml`](../app/android/app/src/main/AndroidManifest.xml) (the `autoVerify` filter, hosts `app.snacklist.app` and `app.hummlist.com`), [`app/web/.well-known/assetlinks.json`](../app/web/.well-known/assetlinks.json) (statements for `com.snacklist.app` and `com.hummlist.app`) |
 | Serving | [`vercel.json`](../vercel.json): `.well-known/` stays out of the SPA rewrite; the AASA is served as `application/json` |
-| Checks | [`app/test/app/deep_links_config_test.dart`](../app/test/app/deep_links_config_test.dart), [`app/test/app/router_test.dart`](../app/test/app/router_test.dart), [`scripts/gates/web-prod.sh`](../scripts/gates/web-prod.sh), [`e2e/tests/deep-links.spec.ts`](../e2e/tests/deep-links.spec.ts), [`e2e/web-smoke.mjs`](../e2e/web-smoke.mjs) on a deployed URL |
+| Checks | [`app/test/core/deep_links_config_test.dart`](../app/test/core/deep_links_config_test.dart), [`app/test/shell/router_test.dart`](../app/test/shell/router_test.dart), [`scripts/gates/web-prod.sh`](../scripts/gates/web-prod.sh), [`e2e/tests/deep-links.spec.ts`](../e2e/tests/deep-links.spec.ts), [`e2e/web-smoke.mjs`](../e2e/web-smoke.mjs) on a deployed URL |
 | Decisions | [DECISIONS.md](DECISIONS.md), "Job 66" |
 
 ## Route table
@@ -69,7 +69,7 @@ Not claimed, so they always stay in the browser:
 2. Add it to `appLinks` in `deep_links.dart`.
 3. Add it to the AASA `components` (`/x` exact, `/x/*` for a prefix) and to the manifest's
    verified filter (`android:path` or `android:pathPrefix`). `flutter test
-   test/app/deep_links_config_test.dart` tells you what is missing.
+   test/core/deep_links_config_test.dart` tells you what is missing.
 4. Add a row to `router_test.dart` and to the table above.
 
 Apple's CDN caches the AASA (up to a day or two); a new path opens the app once an iPhone has

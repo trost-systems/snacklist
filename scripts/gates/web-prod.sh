@@ -27,7 +27,7 @@ done
 
 # Job 22 and 66: universal links and App Links read these two from app.snacklist.app/.well-known/;
 # the build must copy them unchanged (vercel.json serves them as JSON), and Apple and Google
-# drop a file that does not parse (test/app/deep_links_config_test.dart checks the contents).
+# drop a file that does not parse (test/core/deep_links_config_test.dart checks the contents).
 for file in .well-known/apple-app-site-association .well-known/assetlinks.json; do
   cmp -s "web/$file" "$out/$file" || { echo "web-prod: $out/$file is missing or differs from web/$file" >&2; exit 1; }
   python3 -I -c 'import json, sys; json.load(open(sys.argv[1]))' "$out/$file" \
@@ -57,7 +57,7 @@ for file in join/index.html join/join.js join/join.css join/tokens.css join/conf
 done
 for name in supabaseUrl publishableKey; do
   value="$(sed -n "s/^export const $name = '\(.*\)';$/\1/p" "$out/join/config.js")"
-  if [[ -z $value ]] || ! grep -qF "'$value'" lib/app/environment.dart; then
+  if [[ -z $value ]] || ! grep -qF "'$value'" lib/core/environment.dart; then
     echo "web-prod: join/config.js $name '$value' is not environment.dart's default" >&2
     exit 1
   fi

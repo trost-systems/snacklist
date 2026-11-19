@@ -3,8 +3,8 @@ import 'dart:math' as math;
 import 'dart:ui' show SemanticsHitTestBehavior;
 
 import 'package:family_groceries/analytics/flags.dart';
-import 'package:family_groceries/app/notices.dart';
-import 'package:family_groceries/app/open_app.dart';
+import 'package:family_groceries/core/notices.dart';
+import 'package:family_groceries/core/open_app.dart';
 import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/section_label.dart';
 import 'package:family_groceries/design/tokens.g.dart';

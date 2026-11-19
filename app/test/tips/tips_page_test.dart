@@ -1,4 +1,4 @@
-import 'package:family_groceries/app/localizations.dart';
+import 'package:family_groceries/core/localizations.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/tips/hint_host.dart';
 import 'package:family_groceries/tips/hints.dart';

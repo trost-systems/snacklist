@@ -1,10 +1,10 @@
-import 'package:family_groceries/app/language.dart';
-import 'package:family_groceries/app/legal_links.dart';
-import 'package:family_groceries/app/router.dart';
+import 'package:family_groceries/core/language.dart';
+import 'package:family_groceries/core/legal_links.dart';
 import 'package:family_groceries/purchases/premium_server.dart';
 import 'package:family_groceries/purchases/purchase_cubit.dart';
 import 'package:family_groceries/purchases/purchase_repository.dart';
 import 'package:family_groceries/purchases/store_prices.dart';
+import 'package:family_groceries/shell/router.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';

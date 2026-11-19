@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:family_groceries/analytics/flags.dart';
-import 'package:family_groceries/app/router.dart' show tripSummaryPath;
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_view/shopping_list_view.dart';
+import 'package:family_groceries/shell/router.dart' show tripSummaryPath;
 import 'package:family_groceries/trip/ask_sheet.dart';
 import 'package:family_groceries/trip/ended_card.dart';
 import 'package:family_groceries/trip/model.dart' show RunningTrip;

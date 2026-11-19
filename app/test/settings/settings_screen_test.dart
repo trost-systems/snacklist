@@ -1,7 +1,7 @@
 import 'dart:ui' show CheckedState;
 
-import 'package:family_groceries/app/language.dart';
-import 'package:family_groceries/app/theme.dart';
+import 'package:family_groceries/core/language.dart';
+import 'package:family_groceries/core/theme.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 

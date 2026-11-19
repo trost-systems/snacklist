@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:fake_async/fake_async.dart';
-import 'package:family_groceries/app/network.dart';
+import 'package:family_groceries/core/network.dart';
 import 'package:family_groceries/list/catalog/household_index.dart';
 import 'package:family_groceries/list/dictation.dart';
 import 'package:family_groceries/list/entry.dart';

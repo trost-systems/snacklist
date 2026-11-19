@@ -2,8 +2,8 @@
 // compact width: a flat card with its button, the callout under Anpassen,
 // the „Erste Schritte“ card of a club. After a deliberate look change:
 //   flutter test --update-goldens test/design/hint_card_golden_test.dart
-import 'package:family_groceries/app/localizations.dart';
-import 'package:family_groceries/app/theme.dart';
+import 'package:family_groceries/core/localizations.dart';
+import 'package:family_groceries/core/theme.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/household/household_kind.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';

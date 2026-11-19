@@ -4,9 +4,8 @@
 // deliberate look change:
 //   flutter test --update-goldens test/design/prices_golden_test.dart
 import 'package:family_groceries/analytics/flags.dart';
-import 'package:family_groceries/app/localizations.dart';
-import 'package:family_groceries/app/router.dart';
-import 'package:family_groceries/app/theme.dart';
+import 'package:family_groceries/core/localizations.dart';
+import 'package:family_groceries/core/theme.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_screen.dart';
@@ -14,6 +13,7 @@ import 'package:family_groceries/list/list_view/item_row.dart';
 import 'package:family_groceries/list/list_view/price_views.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/pricing.dart';
+import 'package:family_groceries/shell/router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';

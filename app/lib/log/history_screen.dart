@@ -1,9 +1,7 @@
 import 'dart:async';
 
 import 'package:family_groceries/analytics/flags.dart';
-import 'package:family_groceries/app/device_cache.dart';
-import 'package:family_groceries/app/router.dart'
-    show historyTripPath, premiumPath;
+import 'package:family_groceries/core/device_cache.dart';
 import 'package:family_groceries/design/group_card.dart';
 import 'package:family_groceries/design/section_label.dart';
 import 'package:family_groceries/design/tokens.g.dart';
@@ -22,6 +20,8 @@ import 'package:family_groceries/purchases/purchase_cubit.dart';
 import 'package:family_groceries/purchases/purchase_repository.dart'
     show NoSale;
 import 'package:family_groceries/session/session_cubit.dart';
+import 'package:family_groceries/shell/router.dart'
+    show historyTripPath, premiumPath;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';

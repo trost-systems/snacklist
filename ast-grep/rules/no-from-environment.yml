@@ -1,4 +1,4 @@
-# Build-time defines are read in one file, app/lib/app/environment.dart
+# Build-time defines are read in one file, app/lib/core/environment.dart
 # (CLAUDE.md): `String.fromEnvironment`, `bool.fromEnvironment`,
 # `int.fromEnvironment` and `bool.hasEnvironment`, called, torn off or
 # `const`, through a `dart:core` import prefix or not. One inventory of
@@ -10,7 +10,7 @@ id: no-from-environment
 language: dart
 severity: error
 ignores:
-  - app/lib/app/environment.dart
+  - app/lib/core/environment.dart
 rule:
   pattern: $E
   any:
@@ -32,4 +32,4 @@ transform:
       source: $E
       replace: '(?s)\A.*?\b((?:String|bool|int)\s*\.\s*(?:from|has)Environment)\b.*\z'
       by: "$1"
-message: '"$READ" reads a --dart-define outside app/lib/app/environment.dart: add a field to Environment there and read that instead'
+message: '"$READ" reads a --dart-define outside app/lib/core/environment.dart: add a field to Environment there and read that instead'

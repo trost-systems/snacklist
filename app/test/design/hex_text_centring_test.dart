@@ -1,4 +1,4 @@
-import 'package:family_groceries/app/theme.dart';
+import 'package:family_groceries/core/theme.dart';
 import 'package:family_groceries/design/field_border.dart';
 import 'package:family_groceries/design/hex_pill.dart';
 import 'package:family_groceries/design/tactile.dart';

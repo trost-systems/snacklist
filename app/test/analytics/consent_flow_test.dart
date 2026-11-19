@@ -4,15 +4,15 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/analytics/consent_version.dart';
 import 'package:family_groceries/analytics/events.dart';
-import 'package:family_groceries/app/device_cache.dart';
-import 'package:family_groceries/app/localizations.dart';
-import 'package:family_groceries/app/notices.dart';
-import 'package:family_groceries/app/router.dart';
+import 'package:family_groceries/core/device_cache.dart';
+import 'package:family_groceries/core/localizations.dart';
+import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/household/pending_invite.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/list_link.dart';
 import 'package:family_groceries/onboarding/onboarding_cubit.dart';
 import 'package:family_groceries/session/session_cubit.dart';
+import 'package:family_groceries/shell/router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -21,7 +21,7 @@ import 'package:shared_preferences_platform_interface/in_memory_shared_preferenc
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 import 'package:url_launcher_platform_interface/url_launcher_platform_interface.dart';
 
-import '../app/fake_launcher.dart';
+import '../core/fake_launcher.dart';
 import '../more/more_harness.dart';
 import '../session/fake_your_name.dart';
 import 'fakes.dart';

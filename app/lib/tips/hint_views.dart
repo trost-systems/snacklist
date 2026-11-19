@@ -2,8 +2,7 @@ import 'dart:async';
 
 import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/analytics/flags.dart';
-import 'package:family_groceries/app/notices.dart';
-import 'package:family_groceries/app/router.dart';
+import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/pointy_hex.dart';
 import 'package:family_groceries/design/sticker.dart';
@@ -16,6 +15,7 @@ import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_scope.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/session/session_cubit.dart';
+import 'package:family_groceries/shell/router.dart';
 import 'package:family_groceries/tips/checklist.dart';
 import 'package:family_groceries/tips/hint_host.dart';
 import 'package:family_groceries/tips/hints.dart';

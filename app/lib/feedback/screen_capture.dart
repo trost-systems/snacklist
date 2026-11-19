@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
-import 'package:family_groceries/app/router.dart';
+import 'package:family_groceries/shell/router.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 

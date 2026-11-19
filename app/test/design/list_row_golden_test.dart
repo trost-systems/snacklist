@@ -2,8 +2,8 @@
 // row (honey), mid-strike and struck, a wrapped name struck on both lines,
 // light and dark, at the 358 px compact width. After a deliberate look change:
 //   flutter test --update-goldens test/design/list_row_golden_test.dart
-import 'package:family_groceries/app/localizations.dart';
-import 'package:family_groceries/app/theme.dart';
+import 'package:family_groceries/core/localizations.dart';
+import 'package:family_groceries/core/theme.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/list_view/item_row.dart';

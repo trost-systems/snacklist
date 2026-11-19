@@ -1,4 +1,4 @@
-# Notices (app/lib/app/notices.dart) learns that a dialog or sheet is open from an observer on the
+# Notices (app/lib/core/notices.dart) learns that a dialog or sheet is open from an observer on the
 # root navigator. A sheet on a tab's own navigator (showModalBottomSheet's default) or a dialog with
 # useRootNavigator: false goes unseen, and a refusal said while it is open shows under its barrier
 # again (job 116).

@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:family_groceries/app/environment.dart';
-import 'package:family_groceries/app/theme.dart';
+import 'package:family_groceries/core/environment.dart';
+import 'package:family_groceries/core/theme.dart';
 import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/tactile.dart';
 import 'package:family_groceries/design/tokens.g.dart';

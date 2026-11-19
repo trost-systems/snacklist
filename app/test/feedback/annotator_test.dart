@@ -3,8 +3,8 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'dart:ui' show Tristate;
 
-import 'package:family_groceries/app/localizations.dart';
-import 'package:family_groceries/app/theme.dart';
+import 'package:family_groceries/core/localizations.dart';
+import 'package:family_groceries/core/theme.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/feedback/annotator.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';

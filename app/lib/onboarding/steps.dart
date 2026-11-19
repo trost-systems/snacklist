@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:family_groceries/analytics/consent_screen.dart';
 import 'package:family_groceries/analytics/flags.dart';
-import 'package:family_groceries/app/legal_links.dart';
+import 'package:family_groceries/core/legal_links.dart';
 import 'package:family_groceries/design/field_border.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/household/household_kind.dart';

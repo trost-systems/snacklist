@@ -38,4 +38,4 @@ Preconditions: `launch.sh` with `VH_DEFINES="FLAGS_ON=display-name"` (on the Het
 - The real Google and Apple sheets cannot be driven locally; `full_name` in the sign-up metadata stands in for them (the profile trigger reads it the same way).
 - Without the migration (`my_display_name`) the step cannot read the name and shows the retry; the flag goes on only after the deploy.
 - The public join page (`/join/<code>`, static) still hides a name equal to the e-mail prefix, chosen or not (Legal N-151).
-- Covered by widget tests too: `app/test/session/your_name_screen_test.dart`, `your_name_gate_test.dart`, `your_name_test.dart`, `app/test/settings/account_name_test.dart` (200 % and dark included), router cases in `app/test/app/router_test.dart`.
+- Covered by widget tests too: `app/test/session/your_name_screen_test.dart`, `your_name_gate_test.dart`, `your_name_test.dart`, `app/test/settings/account_name_test.dart` (200 % and dark included), router cases in `app/test/shell/router_test.dart`.

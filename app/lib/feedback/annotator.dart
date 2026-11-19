@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
-import 'package:family_groceries/app/localizations.dart';
+import 'package:family_groceries/core/localizations.dart';
 import 'package:family_groceries/design/hex_segmented.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/feedback/screen_capture.dart';
