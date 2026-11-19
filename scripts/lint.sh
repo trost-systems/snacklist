@@ -61,6 +61,10 @@ deno run --frozen --allow-read scripts/pinned-deps.ts
 deno test -q --frozen --config scripts/deno.json --allow-read --allow-write scripts/pinned-deps_test.ts
 log "mcp.snacklist.app routes"
 deno test -q --config scripts/deno.json --allow-read scripts/mcp-proxy-routes_test.ts
+log "import direction"
+# Job 305: core, feature and shell folders in app/lib, with the baseline of older imports.
+deno run --allow-read --allow-run=git scripts/import-direction.ts "$base"
+deno test -q --config scripts/deno.json --allow-read --allow-write scripts/import-direction_test.ts
 
 log "schema check against $base"
 # The check before its unit tests: a bad migration fails the test over the repository's own
