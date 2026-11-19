@@ -1,5 +1,4 @@
-// Feature trip-mode (job 234), behind the PostHog flag trip-mode: launch with
-// VH_DEFINES="FLAGS_ON=trip-mode,grocery-log,prices-and-trip-total". Entry points: a tick on the
+// Feature trip-mode (job 234), on a plain launch (its flags roll out in full). Entry points: a tick on the
 // list (the question), Mehr › „Einkauf starten“, Verlauf's trip tiles, the list's ended card.
 // On demo-familie it puts the 15 seeded items back on the list split over Lidl and Rewe, prices
 // Bananen (yesterday), Vollmilch (today) and Nudeln (yesterday), deletes the household's earlier

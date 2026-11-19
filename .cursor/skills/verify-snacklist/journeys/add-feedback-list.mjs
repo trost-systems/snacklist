@@ -9,8 +9,7 @@
 // after the close, and the added item's store and category are picked in its details row, each
 // saved at once.
 //
-//   on a plain launch (add-feedback-list rolls out in full, so launch.sh turns it on), or with
-//   VH_DEFINES="FLAGS_ON=input-stable-rows"
+//   on a plain launch (the users' build: launch.sh turns on every full-rollout flag)
 //   node journeys/add-feedback-list.mjs <evidence dir> [--lang de|en]
 import process from 'node:process';
 import { addField, addSheet, apiAs, capture, headingAbove, instance, itemRow, logger, member, nextFrames, openApp, reveal, signIn, typeInto } from '../helpers/lib.mjs';

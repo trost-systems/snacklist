@@ -9,7 +9,7 @@
 // --se: an iPhone SE page (320×568, 253 px keyboard). Fails when the keyboard leaves the field
 // partly hidden.
 import process from 'node:process';
-import { apiAs, capture, instance, itemRow, logger, member, openApp, signIn } from '../helpers/lib.mjs';
+import { answerShopAsk, apiAs, capture, instance, itemRow, logger, member, openApp, signIn } from '../helpers/lib.mjs';
 
 const [dir, ...rest] = process.argv.slice(2);
 const lang = rest.includes('--lang') ? rest[rest.indexOf('--lang') + 1] : 'de';
@@ -52,6 +52,7 @@ try {
   await context.setOffline(true);
   const ticked = itemRow(page, partnerItem).first();
   await ticked.click();
+  await answerShopAsk(page, L, 'shopAskNo');
   await page.getByRole('button', { name: /^Offline:/ }).first().waitFor({ timeout: 20_000 }).catch(() => {});
   await page.waitForTimeout(800);
   log(`Anpassen box offline ${JSON.stringify(await edit.boundingBox())}`);

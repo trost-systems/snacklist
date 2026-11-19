@@ -6,7 +6,7 @@
 //   node journeys/household-cap.mjs <evidence dir> [--lang de|en]
 import process from 'node:process';
 import { execFileSync } from 'node:child_process';
-import { addField, apiAs, capture, instance, logger, member, openApp, signIn, typeInto } from '../helpers/lib.mjs';
+import { addField, apiAs, capture, householdButton, instance, logger, member, openApp, openHouseholds, signIn, typeInto } from '../helpers/lib.mjs';
 
 const [dir, ...rest] = process.argv.slice(2);
 const lang = rest.includes('--lang') ? rest[rest.indexOf('--lang') + 1] : 'de';
@@ -47,11 +47,12 @@ try {
   log(`signed in as ida (${lang}) on ${inst.webUrl}`);
 
   await page.goto(`/?invite=${invite.code}`);
+  // With join-household-jh2 (users' build) a link joins without the „Haushalt beitreten“ tap.
   const join = page.getByRole('button', { name: L('joinHousehold'), exact: true });
-  await join.waitFor({ timeout: 30_000 });
-  await capture(page, dir, '01-join-form');
-  await join.click();
   const refusal = page.locator('span', { hasText: L('tooManyHouseholds') });
+  await join.or(refusal).first().waitFor({ timeout: 30_000 });
+  await capture(page, dir, '01-join-form');
+  if (await join.count()) await join.click();
   await refusal.waitFor({ timeout: 15_000 });
   log(`join refused: "${await refusal.textContent()}"`);
   await capture(page, dir, '02-join-refused');
@@ -62,9 +63,8 @@ try {
   await page.getByRole('button', { name: L('cancel'), exact: true }).click();
   await addField(page, L).waitFor({ timeout: 30_000 });
   const shown = sql(`select name from public.households where id = '${ida.householdId}'`);
-  await page.getByRole('button', { name: new RegExp(`^${shown}(\\s|$)`) }).click();
+  await openHouseholds(page, L, shown);
   const newHousehold = page.getByRole('button', { name: L('newHousehold'), exact: true });
-  await page.getByRole('heading', { name: L('householdsTitle') }).waitFor({ timeout: 10_000 });
   await page.mouse.move(195, 500);
   for (let i = 0; i < 20 && !(await newHousehold.count() && (await newHousehold.boundingBox())?.y < 760); i++) {
     await page.mouse.wheel(0, 400);
@@ -86,10 +86,10 @@ try {
   sql(`delete from public.households where created_by = '${ida.id}' and name = '${fillerName(room)}'`);
   log(`setup: Ida is out of ${fillerName(room)}, now in ${count()}`);
   await page.goto(`/?invite=${invite.code}`);
-  await join.waitFor({ timeout: 30_000 });
-  await join.click();
+  await join.or(addField(page, L)).first().waitFor({ timeout: 30_000 });
+  if (await join.count()) await join.click();
   await addField(page, L).waitFor({ timeout: 30_000 });
-  await page.getByRole('button', { name: /^Nachbarn(\s|$)/ }).waitFor({ timeout: 15_000 });
+  await householdButton(page, 'Nachbarn').first().waitFor({ timeout: 15_000 });
   await capture(page, dir, '06-joined-at-19');
   log(`database after the join: Ida in ${count()} households`);
   if (count() !== 20) throw new Error(`Ida is in ${count()} households after joining at 19, not 20`);

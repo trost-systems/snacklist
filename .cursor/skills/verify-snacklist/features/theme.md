@@ -35,3 +35,4 @@ Preconditions:
 - The wide layout shows Einstellungen beside the More list; the same segments.
 - Since job 154b (PR #320) the segments and the „Sprache“ row each sit in a card (the same group card as Mehr's rows), under the overlines DARSTELLUNG and SPRACHE; roles and names are unchanged.
 - The section header „Darstellung“ is drawn in capitals („DARSTELLUNG“); its accessible name keeps normal case, so find it by role and name, not by visible text.
+- On iPhone and Android Einstellungen has a third section FEEDBACK with the switch „Schütteln für Feedback“ / "Shake to send feedback" (feedback `fb-shake`); the web build does not show it.

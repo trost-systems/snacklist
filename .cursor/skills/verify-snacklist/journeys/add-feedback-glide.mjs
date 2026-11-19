@@ -4,8 +4,7 @@
 // list gliding back into its stores and categories when the sheet closes. Writes
 // open-<ms>.png and close-<ms>.png and a contact strip per motion (needs ffmpeg).
 //
-//   on a plain launch (add-feedback-list rolls out in full, so launch.sh turns it on), or with
-//   VH_DEFINES="FLAGS_ON=input-stable-rows"
+//   on a plain launch (the users' build: launch.sh turns on every full-rollout flag)
 //   node journeys/add-feedback-glide.mjs <evidence dir> [--lang de|en]
 import { execFileSync } from 'node:child_process';
 import process from 'node:process';

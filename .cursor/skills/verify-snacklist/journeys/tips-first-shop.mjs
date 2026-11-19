@@ -5,7 +5,7 @@
 //
 //   node journeys/tips-first-shop.mjs <evidence dir> [--lang de|en]
 import process from 'node:process';
-import { apiAs, capture, instance, itemRow, logger, member, openApp, reveal, signIn, typeInto } from '../helpers/lib.mjs';
+import { answerShopAsk, apiAs, capture, instance, itemRow, logger, member, openApp, reveal, signIn, typeInto } from '../helpers/lib.mjs';
 
 const [dir, ...rest] = process.argv.slice(2);
 const lang = rest.includes('--lang') ? rest[rest.indexOf('--lang') + 1] : 'de';
@@ -51,6 +51,7 @@ try {
   await reveal(a.page, itemRow(a.page, ticked).first());
   await itemRow(a.page, ticked).first().click();
   await itemRow(a.page, ticked).waitFor({ state: 'detached', timeout: 10_000 });
+  await answerShopAsk(a.page, a.L, 'shopAskNo');
   await a.page.waitForTimeout(1_000);
   const afterTick = await openItems();
   const cardLeft = (await a.card.count()) === 0;

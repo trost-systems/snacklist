@@ -14,7 +14,7 @@ snacklist.app/de and /en keep their landing page (hummlist.com redirects here, S
 - `no-app-links` no page of the site links to or loads anything from app.snacklist.app or app.hummlist.com.
 - `support-faq` /support and /en/support: questions and answers plus support@snacklist.app.
 - `landing-stores` (#290) the stores card: under „Tippe auf einen Laden:“ / "Tap a store:" (the hint labels the button group) the hex buttons „Drogerie“, „Getränkemarkt“, „Supermarkt“ / "Drugstore", "Drinks store", "Supermarket" (`aria-pressed`; Getränkemarkt replaced Bäckerei) re-order the five category stops below, a list named after the pressed store, with the app's category names. Without JavaScript the Supermarkt route shows. The hero still draws Bäckerei among its stores.
-- `landing-videos` (#292, #301) four silent videos with written descriptions (the `aria-label`): typing „Honig“ and „Marmelade“ and ticking them off; three phones of the Brandt family in sync („1 neu von Mia Brandt“); adding by voice, „Pizza, Orangensaft und zwei Packungen Fischstäbchen“; an AI chat adding and ticking off. They show the floating add field and the tab pill.
+- `landing-videos` (#292, #301) four silent videos with written descriptions (the `aria-label`): typing „Honig“ and „Marmelade“ and ticking them off; two phones of „Unser Haushalt“ in sync (Anna adds eggs, Jonas sees „1 neu von Anna“ and ticks them off); Mia adding by voice, „Pizza, Orangensaft und zwei Packungen Fischstäbchen“; an AI chat adding and ticking off. They show the floating add field and the tab pill.
 
 ## How to get to it (user POV)
 

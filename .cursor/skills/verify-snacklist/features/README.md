@@ -49,44 +49,45 @@ Keep implementation details out of the map. Name only user paths, stable handles
 
 Getting started
 
-- [sign-in](./sign-in.md): email and password, sign-up with email confirmation, the sign-in link by email (no code), Google and Apple, sign-out.
-- [privacy-consent](./privacy-consent.md): the analytics question after the first sign-in on a device, its exact text, and changing it later under Mehr → Nutzungsdaten.
-- [onboarding](./onboarding.md): the guided start signed out („Los geht's“, „Mit wem“, name, stores, „Was fehlt gerade?“, the account last, several invites with a live „beigetreten“), kept on the device until the sign-up; „Willkommen bei Snacklist“ and joining with a code.
-- [household-invites](./household-invites.md): inviting by code or link (a person link: 7 days, one person; a group link: 30 days, up to 50 people, admins only), the join page, roles and removing members, join approval, joining, revoking, switching households.
-- [lists-and-claims](./lists-and-claims.md): several lists per household (tabs, moving items, the household page's „Listen“) and „Ich bringe das“ claims (job 169b K, L).
-- [app-links](./app-links.md): app.snacklist.app and app.hummlist.com links to the list, the add sheet, a store, More's pages and invites; they open the installed app or the web app and wait through sign-in.
+- [sign-in](./sign-in.md): email and password, sign-up with email confirmation, the sign-in link by email (no code), Google and Apple, the invite sheet „Konto erstellen“ or „Anmelden“, sign-out.
+- [privacy-consent](./privacy-consent.md): the usage-data question as the guided start's first step or after the first sign-in on a device, its exact text, and changing it later under Mehr → Nutzungsdaten.
+- [display-name](./display-name.md): the name step „Wie sollen wir dich nennen?“ after sign-in (required before a household is made or joined, once with „Jetzt nicht“ for an e-mail-prefix name) and Mehr › Konto › „Dein Name“.
+- [onboarding](./onboarding.md): the guided start signed out („Los geht's“, „Mit wem“, name or „Bestehendem Haushalt beitreten“ with a code, stores, „Was fehlt gerade?“, the account last, the name step, several invites with a live „beigetreten“), kept on the device until the sign-up; „Willkommen bei Snacklist“ and joining with a code.
+- [household-invites](./household-invites.md): inviting by code or link from the switcher sheet (a person link with QR code: 7 days, one person; a group link: 30 days, up to 50 people, admins only), the join page, a link that joins with no tap, roles and removing members, join approval, revoking, switching households.
+- [lists-and-claims](./lists-and-claims.md): several lists per household (switched and managed in the switcher sheet's „Listen“, moving items; tabs on the flag-off screen only) and „Ich bringe das“ claims (job 169b K, L).
+- [app-links](./app-links.md): app.snacklist.app and app.hummlist.com links to the list, the add sheet, a store, More's pages and invites; they open the installed app or the web app and wait through sign-in (and the name step for a new account).
 
 The website
 
 - [waitlist](./waitlist.md): snacklist.app's waitlist form, confirmation and unsubscribe pages, the FAQ and support page (live since 5 Nov; sign-ups need production settings).
-- [report-content](./report-content.md): snacklist.app's DSA report form (/inhalte-melden, /en/report), its confirmation mail and Peter's decision path (live with job 275, no flag).
+- [report-content](./report-content.md): snacklist.app's DSA report form (/inhalte-melden, /en/report), its confirmation mail and Peter's decision path (live, no flag); the in-app entry is built but off (flag `report-content-entry`).
 
 The list
 
-- [quick-add](./quick-add.md): the add bar and add sheet, suggestions and their sources, quantities, tap or Enter to add, the added note with undo and the added item's details (amount, store, category, brand, details), the list behind the open sheet, duplicates.
+- [quick-add](./quick-add.md): the add bar and add sheet, suggestions made on the device at each key and their sources, quantities, tap or Enter to add, the added note with undo and the added item's details (amount, store, category, brand, details), the list behind the open sheet, duplicates.
 - [usuals](./usuals.md): „Wieder fällig“ suggestions for items the household buys regularly.
 - [dictation](./dictation.md): the microphone in the add bar (iOS and Android apps only).
-- [tick-and-undo](./tick-and-undo.md): a tap ticks an item off, „Zuletzt verwendet“ and putting items back, which actions have an undo.
+- [tick-and-undo](./tick-and-undo.md): a tap ticks an item off, the question „Kaufst du gerade ein?“ after it („Zurücknehmen“), „Zuletzt verwendet“ and putting items back, which actions have an undo.
 - [edit-item](./edit-item.md): the edit sheet (name, brand, details, quantity, store, category, list, „Ich bringe das“), merging a rename onto an open item; no delete (ticking removes).
-- [tips](./tips.md): the dismissible tip card at the top of the List tab, one tip at a time from a typed queue (job 80).
+- [tips](./tips.md): the „Erste Schritte“ checklist at the top of the List tab, then at most one hint per app start (card or callout) chosen by what the user has done, and Mehr → „Tipps“.
 - [classifier](./classifier.md): the automatic category for every new item, learning from moves, spelling variants and synonyms.
 - [categories](./categories.md): Liste → „Anpassen“ → „Ohne Laden“ (and every store's details): add, rename, delete, reorder; the 11 seeded categories.
-- [stores-walk-order](./stores-walk-order.md): store sections and category dividers in walk order, nothing on the list drags, a tap on a store divider folds it (a hold does nothing), the stores screen under Liste → „Anpassen“ and a store's details (add, rename, delete, reorder), adding a store from the store chip, item→store memory.
-- [prices](./prices.md): behind the flag `prices-and-trip-total` (off): a price chip on each row and its editor (Gesamt or pro Stück/kg/l, the scale weight), „Summe <Laden>“ per store section, „Einkaufssumme“ under the list, the household's „Währung“; Free, live for the household.
-- [live-sync](./live-sync.md): members see each other's changes live; „N neu von <Name>“ and the sync icon.
+- [stores-walk-order](./stores-walk-order.md): store sections and category dividers in walk order, nothing on the list drags, a tap on a store divider folds it (a hold does nothing), the stores screen under Liste → „Anpassen“ and a store's details (add, rename, delete, reorder), adding a store from the store chip, item→store memory and the store by category for app adds.
+- [prices](./prices.md): a price chip on each row and its editor (Gesamt or pro Stück/kg/l, the scale weight), the sums in list-declutter's summary block (the „Summe <Laden>“ lines and „Einkaufssumme“ bar on the flag-off screen only), the household's „Währung“; Free, live for the household.
+- [live-sync](./live-sync.md): members see each other's changes live; „N neu von <Name>“ and the sync icon beside the switcher.
 - [offline](./offline.md): what works without a connection, what waits, and the messages.
-- [grocery-log](./grocery-log.md): behind the flag `grocery-log` (not public): the „Verlauf“ tab with trips by date under a month calendar with store dots, or by store, one toggle; „Einkauf eintragen“ by hand; Free sees 4 weeks.
-- [list-declutter](./list-declutter.md): behind the flag `list-declutter` (off): one switcher for household and list in a see-through header, the total as a row of the list, and the household sheet with a page per household (its lists, „Einladen“, the members row) and a members page; long-press reorder of lists and households.
-- [trip-mode](./trip-mode.md): behind the flag `trip-mode` (not public): „Kaufst du gerade ein?“ after a tick, the running trip's strip with stopwatch, pause and „Beenden“, its own pause after 45 min and end after 4 h at the last tick, the summary „Geplant und gekauft“ per store with planned and paid prices (Premium; Free sees a locked card), Verlauf trips per store, Mehr › „Einkauf starten“.
+- [grocery-log](./grocery-log.md): the „Verlauf“ tab with trips by date under a month calendar with store dots, or by store, one toggle; „Einkauf eintragen“ by hand; Free sees 4 weeks (Premium not on sale yet).
+- [list-declutter](./list-declutter.md): one switcher for household and list in a see-through header, the totals block after the last store, and the household sheet with a page per household (its lists, „Einladen“, the members row) and a members page; long-press reorder of lists and households.
+- [trip-mode](./trip-mode.md): „Kaufst du gerade ein?“ after a tick, the running trip's strip with stopwatch, pause and „Beenden“, its own pause after 45 min and end after 4 h at the last tick, the summary „Geplant und gekauft“ per store with planned and paid prices (Premium; Free sees a locked card), Verlauf trips per store, Mehr › „Einkauf starten“.
 
 Settings, help and account
 
 - [theme](./theme.md): light, dark or device theme under Mehr → Einstellungen.
 - [language](./language.md): German, English or the device's language, and which texts stay German.
-- [feedback](./feedback.md): Mehr → „Feedback senden“; behind the flags `feedback-fb2` (shake on phones, a marked-up screenshot) and `feedback-fb4` („Feedback & Ideen“: notes with status and replies, ideas with +1s), both off.
+- [feedback](./feedback.md): Mehr → „Feedback & Ideen“: write to Snacklist Support (with a marked-up, coverable screenshot), the user's notes with status and replies, ideas with +1s; shake on phones.
 - [rate-snacklist](./rate-snacklist.md): Mehr → „Snacklist bewerten“ (iPhone and Android apps) and the system rating dialog after a completed trip in public store builds. Evidence from before the sweep is filed under the old id `rate-hummlist`.
 - [more-help](./more-help.md): the tabs, every Mehr entry in order, help and contact, guides on snacklist.app (Siri, Alexa, Claude), the Nutzungsdaten page and the legal rows (imprint, privacy policy, terms, licenses), version.
-- [account-deletion](./account-deletion.md): Mehr → Konto: data export, account deletion, deleting single data without deleting the account.
+- [account-deletion](./account-deletion.md): Mehr → Konto: the name row, data export, account deletion, deleting single data without deleting the account.
 
 Connections and Premium
 
@@ -94,6 +95,6 @@ Connections and Premium
 - [siri](./siri.md): the Siri Shortcut today, native Siri (built, announcement held), Siri keys.
 - [home-widgets](./home-widgets.md): the iPhone and Android Home Screen widget (built, announcement held).
 - [alexa](./alexa.md): the Alexa skill (live): linking, adding and reading by voice.
-- [premium](./premium.md): what users see of Snacklist Premium while it is not on sale.
+- [premium](./premium.md): what users see of Snacklist Premium while it is not on sale, including the two locks Free households meet (older Verlauf trips, the trip summary's planned-and-added card).
 
 Clips of these features for emails and the site: the snacklist-howto-clips skill (`.cursor/skills/snacklist-howto-clips/`).

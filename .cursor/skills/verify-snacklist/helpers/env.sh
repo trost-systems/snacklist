@@ -31,10 +31,10 @@ export FG_PORT_PREFIX="$VH_PREFIX" FG_PROJECT_ID="$VH_PROJECT_ID" FG_STACK_WORKD
 # VH_DEFINES adds space-separated NAME=value pairs, e.g. "FLAGS_ON=public-api INTEGRATION_LOCK=true".
 # FLAGS_ON always holds the flags releases/flags.json rolls out to everyone ("full"), because users
 # get them and this build reaches no PostHog; VH_FLAGS_FULL=0 leaves them out (the sheet a new
-# install sees before PostHog's first answer).
+# install sees before PostHog's first answer), VH_FLAGS_OFF (comma-separated) leaves out only those.
 vh_defines() {
   local extra="" pair flags=""
-  [[ ${VH_FLAGS_FULL:-1} == 0 ]] || flags="$(vh_full_flags)"
+  if [[ ${VH_FLAGS_FULL:-1} != 0 ]]; then flags="$(vh_full_flags)" || return 1; fi
   for pair in ${VH_DEFINES:-}; do
     if [[ ${pair%%=*} == FLAGS_ON ]]; then [[ -z ${pair#*=} ]] || flags="${flags:+$flags,}${pair#*=}"; else extra+="$(printf ',\n  "%s": "%s"' "${pair%%=*}" "${pair#*=}")"; fi
   done
@@ -56,7 +56,7 @@ vh_build_stamp() {
 }
 
 vh_full_flags() {
-  node -e 'const f=require(process.argv[1]).flags;console.log(Object.keys(f).filter(k=>f[k].rollout==="full").join(","))' "$REPO_ROOT/releases/flags.json"
+  node -e 'const f=require(process.argv[1]).flags;const full=Object.keys(f).filter(k=>f[k].rollout==="full");const off=process.argv[2].split(",").map(s=>s.trim()).filter(Boolean);const bad=off.filter(k=>!full.includes(k));if(bad.length){console.error(`VH_FLAGS_OFF: not a full-rollout flag in releases/flags.json: ${bad.join(", ")}`);process.exit(1)}console.log(full.filter(k=>!off.includes(k)).join(","))' "$REPO_ROOT/releases/flags.json" "${VH_FLAGS_OFF:-}"
 }
 
 vh_flutter_version() { sed -n 's/^ *FLUTTER_VERSION: *//p' "$REPO_ROOT/.github/workflows/ci.yml" | head -1; }

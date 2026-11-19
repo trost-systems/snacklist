@@ -1,7 +1,8 @@
 // Feature language (job 245): the app in English on `demo-family-en`, screen by screen, with a
 // screenshot and an ARIA snapshot of each, and a scan of every snapshot for German words. Fails when
 // a screen shows German outside the data the household typed (and the store chains' own names).
-// Launch with VH_DEFINES="FLAGS_ON=trip-mode,grocery-log,prices-and-trip-total" for the trip steps.
+// Written for the flag-off screens: launch with VH_FLAGS_FULL=0
+// VH_DEFINES="FLAGS_ON=trip-mode,grocery-log,prices-and-trip-total".
 //
 //   node journeys/english-sweep.mjs <evidence dir> [--dark]
 import process from 'node:process';

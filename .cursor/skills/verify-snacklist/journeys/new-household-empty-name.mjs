@@ -8,7 +8,7 @@
 // A short --height puts the field out of view at the button; --reduced-motion jumps instead of
 // scrolling (an animation of zero length threw before job 231's review fix).
 import process from 'node:process';
-import { apiAs, capture, instance, logger, member, openApp, signIn } from '../helpers/lib.mjs';
+import { apiAs, capture, instance, logger, member, openApp, openHouseholds, signIn } from '../helpers/lib.mjs';
 
 const [dir, ...rest] = process.argv.slice(2);
 const opt = (name, def) => (rest.includes(`--${name}`) ? rest[rest.indexOf(`--${name}`) + 1] : def);
@@ -36,8 +36,7 @@ try {
   if (error) throw error;
   log(`signed in as ${user.handle} (${lang}${still ? ', reduced motion' : ''}), in ${before} households`);
 
-  await page.getByRole('button', { name: new RegExp(`^${shown.name}(\\s|$)`) }).click();
-  await page.getByRole('heading', { name: L('householdsTitle') }).waitFor({ timeout: 10_000 });
+  await openHouseholds(page, L, shown.name);
   const newHousehold = page.getByRole('button', { name: L('newHousehold'), exact: true });
   await page.mouse.move(195, height / 2);
   for (let i = 0; i < 20 && !(await newHousehold.count() && (await newHousehold.boundingBox())?.y < height - 84); i++) {

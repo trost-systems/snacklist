@@ -7,8 +7,7 @@
 // adds the row shown; with the server unreachable the rows still come. With --expect off the rows
 // before the answer are not the server's ranking (the old behaviour), after it they are.
 //
-//   launched with VH_DEFINES="FLAGS_ON=on-device-catalog ADD_SHEET_TIMING=true" (without the flag
-//   for --expect off)
+//   launched with VH_DEFINES="ADD_SHEET_TIMING=true" (plus VH_FLAGS_FULL=0 for --expect off)
 //   node journeys/on-device-catalog.mjs <evidence dir> [--expect on|off]
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
