@@ -16138,3 +16138,13 @@ in the edit's bundle list, which shows which bundles Play keeps. It deletes its 
 refuses the update, validate or commit. It names the draft `<source name> (<versionCode>)`, or the
 versionCode alone, so the draft and alpha's live "0.1.0" look different in Console. This is
 internal metadata, not user copy.
+
+## Job 319: after-add sheet prototypes (round AS)
+
+- **Today's height comes from a replica, calibrated to Peter's screenshot.** The replica measures 312 px, and so does the screenshot (sheet top at 197 px, keyboard at 509 px). All savings are against it.
+- **AS4 counts its card.** Its sheet is 79 px, but the card on the list makes editing 247 px. Counting only the sheet would have made AS4 look like the winner while it only moves the space.
+- **Text sizes go up to each phone's largest:** 310 % on the iPhone and 200 % on Android. German heights are quoted where they differ.
+- **Pick AS1 over AS5's two taps.** Peter's complaint was space. AS5 is the tallest option and pushes a row under the status bar on a 360 × 640 phone.
+- **No rollback for a mistaken add.** Peter's update (t1071u, 22:02 CET) drops Undo entirely: the user closes the sheet, taps the row and deletes it, and the learned store and category are not rolled back, since the next add corrects them. Job 315's code stays untouched. The first build missed this update and proposed an `undo_add` path as AS-Q1; review 0 caught it, and the question was removed.
+- **The preview builds on the newest earlier preview.** It is `dpl_9keK9N842jnMATrkQj1vxVQmRUnz`, fetched byte for byte, so the earlier rounds' links keep working.
+- **Open pickers are one sideways line (review 1).** The first version wrapped the options onto several lines. At large text they pushed options and the field under the keyboard, and the in-view check missed it because it looked only at frames with the pickers closed. Now every option shows each picker as one sideways line with the item's choice scrolled into view, as `FoldoutChips` does, and the check covers the open-picker frames. AS1 stays the pick: it is the only sheet option that keeps everything in view at 310 % with a picker open.
