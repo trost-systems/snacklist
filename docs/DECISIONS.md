@@ -15976,3 +15976,27 @@ R8 of the LEGO report (Peter picked LR1, 2026-11-18). Pure move, no behaviour ch
 4. **What is left for later steps.** `core/device_cache.dart` still imports seven feature folders
    and about 30 feature files import `shell/router.dart` for path constants; the import-direction
    check (step 2) records both in its baseline.
+
+## Job 305: folder-level LEGO layers, step 2: the import-direction check (2026-11-19)
+
+R9 of the LEGO report. `scripts/import-direction.ts` runs in `scripts/lint.sh` (the lint gate and
+push-checks), with its tests in `scripts/import-direction_test.ts`.
+
+1. **Layers.** Core: `core`, `design`, `l10n`, `analytics`, `session`. Shell: `shell`, `more` and
+   `main.dart`. Every other folder is a feature. Core imports only core; a feature imports core and
+   itself; the shell imports anything. `session` is core because nearly every folder reads the
+   signed-in user and household from it (the talk puts session in core too); its imports of
+   `household`, `list` and `onboarding` are in the baseline. `analytics` is core per R10; step 3
+   removes its feature imports. `more` is the shell's More tab: a menu of entry points into the
+   other features, which is what the shell is for, so its 30-odd imports of features are not
+   violations.
+2. **A Deno script, not ast-grep or Dart.** The rule is about pairs of files, which ast-grep does
+   not see, and the lint gate has Deno but no Flutter. `always_use_package_imports` and
+   `avoid_relative_lib_imports` (errors in `flutter_agent_lints`) keep imports in one form; the
+   script still resolves the relative URIs of conditional imports. `implementation_imports` and
+   `depend_on_referenced_packages`, which R9 asked for, were already errors in that pack.
+3. **Baseline only shrinks.** 200 imports broke a rule when the check came in. Each is a line in
+   `scripts/import-direction.baseline`. A line that no longer occurs fails (delete it), and for
+   each pair of folders the file may not hold more lines than `origin/main`'s. Counting per pair
+   rather than refusing every new line lets a file move or rename keep its old import, but no
+   folder pair gets a new import.
