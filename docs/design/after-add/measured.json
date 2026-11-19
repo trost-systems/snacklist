@@ -1,0 +1,163 @@
+{
+ "ios": {
+  "fits": {
+   "AS1": {
+    "max": 310,
+    "largest": 310
+   },
+   "AS2": {
+    "max": 310,
+    "largest": 310
+   },
+   "AS3": {
+    "max": 200,
+    "largest": 310,
+    "firstMiss": "310% en: input, input"
+   },
+   "AS4": {
+    "max": 310,
+    "largest": 310
+   },
+   "AS5": {
+    "max": 310,
+    "largest": 310
+   }
+  },
+  "today": {
+   "sheetH": 312,
+   "editH": 312,
+   "gapAbove": 65,
+   "hidden": [
+    "category",
+    "brand",
+    "details"
+   ]
+  },
+  "AS1": {
+   "sheetH": 131,
+   "editH": 131,
+   "gapAbove": 8,
+   "freeList": 164,
+   "rowsCut": 0,
+   "editHde": 131,
+   "swipes": 0
+  },
+  "AS2": {
+   "sheetH": 187,
+   "editH": 187,
+   "gapAbove": 11,
+   "freeList": 106,
+   "rowsCut": 0,
+   "editHde": 187,
+   "swipes": 0
+  },
+  "AS3": {
+   "sheetH": 243,
+   "editH": 243,
+   "gapAbove": 8,
+   "freeList": 102,
+   "rowsCut": 0,
+   "editHde": 243,
+   "swipes": 0
+  },
+  "AS4": {
+   "sheetH": 79,
+   "editH": 247,
+   "gapAbove": 11,
+   "freeList": 158,
+   "rowsCut": 0,
+   "editHde": 247,
+   "swipes": 0
+  },
+  "AS5": {
+   "sheetH": 255,
+   "editH": 255,
+   "gapAbove": 13,
+   "freeList": 90,
+   "rowsCut": 0,
+   "editHde": 255,
+   "swipes": 0
+  }
+ },
+ "android": {
+  "fits": {
+   "AS1": {
+    "max": 200,
+    "largest": 200
+   },
+   "AS2": {
+    "max": 200,
+    "largest": 200
+   },
+   "AS3": {
+    "max": 200,
+    "largest": 200
+   },
+   "AS4": {
+    "max": 200,
+    "largest": 200
+   },
+   "AS5": {
+    "max": 200,
+    "largest": 200
+   }
+  },
+  "today": {
+   "sheetH": 312,
+   "editH": 312,
+   "gapAbove": 65,
+   "hidden": [
+    "category",
+    "brand",
+    "details"
+   ]
+  },
+  "AS1": {
+   "sheetH": 131,
+   "editH": 131,
+   "gapAbove": 8,
+   "freeList": 43,
+   "rowsCut": 0,
+   "editHde": 181,
+   "swipes": 0
+  },
+  "AS2": {
+   "sheetH": 187,
+   "editH": 187,
+   "gapAbove": 11,
+   "freeList": 0,
+   "rowsCut": 1,
+   "editHde": 239,
+   "swipes": 1
+  },
+  "AS3": {
+   "sheetH": 243,
+   "editH": 243,
+   "gapAbove": 8,
+   "freeList": 0,
+   "rowsCut": 1,
+   "editHde": 243,
+   "swipes": 0
+  },
+  "AS4": {
+   "sheetH": 79,
+   "editH": 247,
+   "gapAbove": 11,
+   "freeList": 37,
+   "rowsCut": 0,
+   "editHde": 247,
+   "swipes": 0
+  },
+  "AS5": {
+   "sheetH": 255,
+   "editH": 255,
+   "gapAbove": 13,
+   "freeList": 0,
+   "rowsCut": 1,
+   "editHde": 255,
+   "swipes": 1
+  }
+ },
+ "pick": "AS1",
+ "runner": "AS2"
+}
