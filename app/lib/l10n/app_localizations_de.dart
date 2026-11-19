@@ -1122,7 +1122,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get analyticsToggleHint =>
-      'Pseudonym an PostHog (Server in der EU), ohne Listeninhalte. Gilt für dieses Gerät. Ausschalten löscht die Kennung auf diesem Gerät.';
+      'Gilt für dieses Gerät. Ausschalten löscht die Kennung auf diesem Gerät.';
 
   @override
   String get internalInstall => 'Interne Installation';
@@ -1343,8 +1343,7 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get feedbackIdeasNote =>
-      'Ideen schreibt Snacklist Support. Andere sehen nur die Zahl, nie wer abgestimmt hat.';
+  String get feedbackIdeasNote => 'Ideen schreibt Snacklist Support.';
 
   @override
   String get feedbackVoteFailed =>
@@ -1917,7 +1916,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get premiumOneTime => 'einmalig';
 
   @override
-  String get premiumLifetimeValue => 'Einmal zahlen, für immer.';
+  String get premiumLifetimeValue => 'Einmal zahlen, kein Abo.';
 
   @override
   String get premiumYearlyTerms =>
@@ -2316,7 +2315,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get inviteJoinPageHint =>
-      'Wer den Link oder Code hat, sieht vor dem Beitritt deinen Vornamen (aus deinem Anzeigenamen, falls du einen eingetragen hast), den Namen des Haushalts, die Zahl der Mitglieder und der offenen Einträge und ob der Haushalt Snacklist Premium hat. Gib Link und Code nur an Personen weiter, die du einladen willst.';
+      'Wer Link oder Code hat, sieht vor dem Beitritt deinen Namen, den Namen des Haushalts und ein paar Zahlen dazu. Gib beides nur an Personen weiter, die du einladen willst.';
 
   @override
   String get inviteGroupTitle => 'Gruppenlink';

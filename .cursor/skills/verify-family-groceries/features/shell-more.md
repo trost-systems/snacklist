@@ -22,7 +22,7 @@ The signed-in app has two tabs: "Liste" (the shopping list with the add bar) and
 - `sm-imprint` the imprint is two taps from the list: `tab-more`, then `more-imprint` (scrolled into view on a phone).
 - `sm-licenses` "Lizenzen" (`more-licenses`, last legal row, a chevron) opens Flutter's license page for "Snacklist" with the version; back returns to More.
 - `sm-version` shows "Version <version> (<build>)" at the bottom (`more-version`). A long press marks the device internal for analytics (`features/analytics.md`, `an-internal`); then "Interne Installation" (`more-internal`) and "Testfehler senden" (`more-test-error`) show below it.
-- `sm-analytics` the switch "Nutzungsdaten und Fehlerberichte senden" (`more-analytics`) on the Nutzungsdaten page, only in builds with a PostHog key (fg builds only with `FG_POSTHOG_HOST`; without one More has no Nutzungsdaten row): `features/analytics.md`, `an-switch`.
+- `sm-analytics` the switch "Nutzungsdaten und Fehlerberichte senden" (`more-analytics`) on the Nutzungsdaten page, only in builds with a PostHog key (fg builds only with `FG_POSTHOG_HOST`; without one More has no Nutzungsdaten row); switching on asks the consent question in a sheet first: `features/analytics.md`, `an-switch`.
 - `sm-wide` from 840 px: a NavigationRail instead of the pill, the add sheet as wide as the list column, and More in two panes (the list on the left, Zugänge or the picked page on the right, without a back arrow).
 
 ## How to get to it (user POV)

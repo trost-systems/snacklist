@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:family_groceries/analytics/analytics.dart';
+import 'package:family_groceries/analytics/consent_screen.dart';
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/environment.dart';
 import 'package:family_groceries/core/guides.dart';
@@ -757,7 +758,8 @@ String _versionOf(PackageInfo info) => info.buildNumber.isEmpty
     : '${info.version} (${info.buildNumber})';
 
 /// The analytics consent of this install (job 19): off stops sending at
-/// once and drops what waits.
+/// once and drops what waits. On asks the consent question first (Legal
+/// N-298): the switch's short hint names no purpose, so it cannot be the yes.
 class const _AnalyticsSwitch() extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -771,9 +773,16 @@ class const _AnalyticsSwitch() extends StatelessWidget {
       subtitle: Text(l10n.analyticsToggleHint),
       isThreeLine: true,
       value: consent,
-      onChanged: (on) =>
-          unawaited(context.read<Analytics>().decide(granted: on)),
+      onChanged: (on) => unawaited(_switch(context, on: on)),
     );
+  }
+
+  Future<void> _switch(BuildContext context, {required bool on}) async {
+    final analytics = context.read<Analytics>();
+    if (on && !await askAnalyticsConsent(context)) {
+      return;
+    }
+    await analytics.decide(granted: on);
   }
 }
 

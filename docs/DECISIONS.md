@@ -16138,3 +16138,28 @@ in the edit's bundle list, which shows which bundles Play keeps. It deletes its 
 refuses the update, validate or commit. It names the draft `<source name> (<versionCode>)`, or the
 versionCode alone, so the draft and alpha's live "0.1.0" look different in Console. This is
 internal metadata, not user copy.
+
+## Job 317: in-app legal cleanup (Legal Review 2026-11-19, N-298 to N-302)
+
+- N-298: switching analytics on under Mehr › Nutzungsdaten no longer grants consent. It opens
+  the consent question as a bottom sheet (`askAnalyticsConsent`, the same `ConsentQuestion`
+  widget and approved words as the consent screen and the guided start). Only „Erlauben“
+  decides yes. „Nicht erlauben“, a tap outside, Escape and system back decide nothing, so a
+  declined install keeps no install id and sends nothing. Off stays one tap. A sheet, not a
+  push of `/analytics-consent`: that route belongs to `authRedirect`'s first-run gate, and a
+  sheet keeps the Nutzungsdaten page under it. Only after that change does `analyticsToggleHint`
+  take Legal's shorter text, as N-298 requires.
+- No flag. The brief says to ship behind an existing flag where behaviour changes; no existing
+  flag covers the analytics switch, and a new one would keep the silent grant Legal flagged for
+  everyone outside its rollout. The change only adds a confirmation step before a yes.
+- N-299: #554 (job 312, „Vornamen“ → „Namen“) was still open, so this PR is based on main and
+  applies Legal's new `inviteJoinPageHint` word for word. That text says „deinen Namen“, which is
+  true on main too (a first name is a name). Whichever of #554 and this PR lands second takes this
+  PR's text for `inviteJoinPageHint`. The policy §5 #einladungen already lists the counts and
+  Premium status (datenschutz.md l.101), so no policy change.
+- N-300 and N-302: Legal's texts word for word. N-301 (`reportEntryHint`), the consent texts and
+  the B.4 report texts are untouched.
+- Tests: `switcher_sheet_test`'s iPhone case asserted that the group link's renew button was not
+  hit-testable before scrolling. With the shorter hint its centre now sits above the home
+  indicator while its bottom edge is still below the fold (scroll extent 156 px). The test now
+  asserts the bottom edge below the fold, which is what "it scrolls inside the sheet" needs.
