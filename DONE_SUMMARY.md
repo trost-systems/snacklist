@@ -1791,3 +1791,7 @@ undo now deletes through the new RPC `undo_add`, which takes the edits' lessons 
 keep them (spec). Migration `20261119070000_undo_added_details.sql`, pgTAP
 `undo_added_details.test.sql`, app tests for the op, journey
 `verify-snacklist/journeys/undo-added-details.mjs`. Details: `docs/done/315.md`.
+
+## Job 319: after-add sheet prototypes (round AS, draft PR, not merged)
+
+Five ways to edit the item just added without the close key, "Just added", "Added / Undo" or the gap above the field, with every field in view while the keyboard is up. They sit next to a replica of today's sheet, which takes 312 px. Pick: AS1 Chip row, 131 px. Runner-up: AS2 Field on top, 187 px. The open questions are AS-Q1 to AS-Q11. Sandbox: `docs/design/after-add/`. Details: `docs/done/319.md`.

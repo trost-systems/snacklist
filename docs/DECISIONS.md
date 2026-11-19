@@ -16138,3 +16138,12 @@ in the edit's bundle list, which shows which bundles Play keeps. It deletes its 
 refuses the update, validate or commit. It names the draft `<source name> (<versionCode>)`, or the
 versionCode alone, so the draft and alpha's live "0.1.0" look different in Console. This is
 internal metadata, not user copy.
+
+## Job 319: after-add sheet prototypes (round AS)
+
+- **Today's height comes from a replica, calibrated to Peter's screenshot.** The replica measures 312 px, and so does the screenshot (sheet top at 197 px, keyboard at 509 px). All savings are against it.
+- **AS4 counts its card.** Its sheet is 79 px, but the card on the list makes editing 247 px. Counting only the sheet would have made AS4 look like the winner while it only moves the space.
+- **Text sizes go up to each phone's largest:** 310 % on the iPhone and 200 % on Android. German heights are quoted where they differ.
+- **Pick AS1 over AS5's two taps.** Peter's complaint was space. AS5 is the tallest option and pushes a row under the status bar on a 360 × 640 phone.
+- **The default for removing a mistaken add (AS-Q1).** Delete in the edit sheet uses `undo_add` only while the item's store and category were changed only in the add sheet. A plain delete has to keep an edit-sheet move, because SPEC's classifier test moves the item in the edit sheet.
+- **The preview builds on the newest earlier preview.** It is `dpl_9keK9N842jnMATrkQj1vxVQmRUnz`, fetched byte for byte, so the earlier rounds' links keep working.
