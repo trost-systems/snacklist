@@ -9,6 +9,7 @@ export const storeCat = {
   AS5: ['store:lidl', 'cat:chilled'],
 };
 const openStore = { AS1: ['open:store'], AS2: ['open:where'], AS3: ['open:store'], AS4: ['open:store'], AS5: [] };
+const openCat = { AS1: ['open:cat'], AS2: ['open:where'], AS3: ['open:cat'], AS4: ['open:cat'], AS5: [] };
 const detailsActs = {
   AS1: ['open:details', 'details:Bio, 1 l'],
   AS2: ['brand:Hafergold', 'details:Bio, 1 l'],
@@ -31,6 +32,7 @@ export const frames = (id, lang) => {
     ['open', [], null],
     ['added', first, null],
     ['picking', [...first, ...openStore[id]], null],
+    ['pickingCat', [...first, ...openCat[id]], null],
     ['edited', edited, null],
     ['details', detailed, null],
     ['typing', second, null],

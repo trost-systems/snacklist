@@ -81,7 +81,7 @@ const md = (src) => {
   return out.join('');
 };
 
-const cell = (caption, html, small = '') => `<figure class="cell"><figcaption>${caption}${small ? `<small>${small}</small>` : ''}</figcaption>${html}</figure>`;
+const cell = (caption, html, small = '', key = '') => `<figure class="cell"${key ? ` data-frame="${key}"` : ''}><figcaption>${caption}${small ? `<small>${small}</small>` : ''}</figcaption>${html}</figure>`;
 
 // The live phone: click through it like the app. Typing in the field suggests; Enter adds the first row.
 const lives = new Map();
@@ -151,7 +151,7 @@ const optionSection = (id, m) => {
     <p>${o.what}</p>${metric}
     <div class="frames">
       <div class="live">${cell(W.liveCap, `<div data-live-phone="${id}"></div>`)}<button class="resetbtn" data-reset="${id}">${W.reset}</button><p class="hint">${W.liveHint}</p></div>
-      ${W.frameOrder.map(([k, cap, sub]) => cell(cap, st(k), typeof sub === 'function' ? sub(id) : sub)).join('')}
+      ${W.frameOrder.map(([k, cap, sub]) => cell(cap, st(k), typeof sub === 'function' ? sub(id) : sub, k)).join('')}
     </div></section>`;
 };
 
@@ -184,6 +184,7 @@ export const round = async () => {
     <section class="rec" id="rec">${md(await fetch(`../${W.recFile}`).then((r) => r.text()))}</section></main>`;
   for (const el of document.querySelectorAll('[data-live-phone]')) mountLive(el, el.dataset.livePhone);
   for (const b of document.querySelectorAll('[data-reset]')) b.addEventListener('click', () => lives.get(b.dataset.reset).reset());
+  await document.fonts.ready;
   settle(document);
   document.body.dataset.ready = '1';
 };

@@ -6,13 +6,14 @@
     "largest": 310
    },
    "AS2": {
-    "max": 310,
-    "largest": 310
+    "max": 200,
+    "largest": 310,
+    "firstMiss": "310% en: picking: options; pickingCat: options"
    },
    "AS3": {
     "max": 200,
     "largest": 310,
-    "firstMiss": "310% en: input, input"
+    "firstMiss": "310% en: added: input; edited: input; picking: options, input; pickingCat: options, input"
    },
    "AS4": {
     "max": 310,
@@ -60,7 +61,7 @@
    "freeList": 102,
    "rowsCut": 0,
    "editHde": 243,
-   "rowsCut200": 2,
+   "rowsCut200": 1,
    "swipes": 0
   },
   "AS4": {
@@ -95,8 +96,9 @@
     "largest": 200
    },
    "AS3": {
-    "max": 200,
-    "largest": 200
+    "max": 100,
+    "largest": 200,
+    "firstMiss": "200% en: picking: input; pickingCat: input"
    },
    "AS4": {
     "max": 200,
@@ -135,7 +137,7 @@
    "rowsCut": 1,
    "editHde": 239,
    "rowsCut200": 2,
-   "swipes": 1
+   "swipes": 0
   },
   "AS3": {
    "sheetH": 243,
@@ -165,7 +167,7 @@
    "rowsCut": 1,
    "editHde": 255,
    "rowsCut200": 2,
-   "swipes": 1
+   "swipes": 0
   }
  },
  "pick": "AS1",

@@ -60,6 +60,11 @@ const inspect = () =>
             return r.left < box.left - 0.5 || r.right > box.right + 0.5 || r.top < status.bottom - 0.5 || r.bottom > bottom + 0.5 || (sr && f.closest('[data-sheet]') && r.top < sr.top - 0.5);
           })
           .map((f) => f.dataset.field);
+        // In a sideways line the item's own option must be in view without a swipe.
+        for (const on of ph.querySelectorAll('[data-sheet] .nowrap .opt.on, [data-card] .nowrap .opt.on')) {
+          const r = on.getBoundingClientRect();
+          if (r.left < box.left - 0.5 || r.right > box.right + 0.5) hidden.push(`selected ${on.closest('[data-opts]').dataset.opts}`);
+        }
         const content = sheet ? [...sheet.children].reduce((h, c) => Math.max(h, c.getBoundingClientRect().bottom), 0) - sr.top : 0;
         const small = [...ph.querySelectorAll('[data-sheet] [data-act], [data-card] [data-act]')]
           .filter((b) => b.tagName === 'BUTTON' && !b.closest('.nowrap'))
@@ -81,6 +86,7 @@ const inspect = () =>
         }
         return {
           i,
+          key: ph.closest('figure').dataset.frame,
           state: ph.dataset.state,
           rows: ph.querySelectorAll('.list.behind [data-row]').length,
           // The list left above the sheet: room to tap it closed, and rows not cut by the status bar or the sheet.
@@ -105,7 +111,6 @@ const inspect = () =>
   }, icons.close);
 
 // Frame order in walk.js: open, added, picking, edited, details, typing, second, third, dismiss, closed.
-const ADDED = 1;
 // Today's words that no option may show: the header, the note and its action, the close key's name.
 const banned = ['en', 'de'].flatMap((l) => [copy[l].justAdded, copy[l].undo, copy[l].addedTo('', '').split(':')[0] + ':', copy[l].close]);
 const measured = { ios: { fits: {} }, android: { fits: {} }, pick: verdict.pick, runner: verdict.runner };
@@ -127,7 +132,8 @@ for (const device of devices) {
         }
         for (const id of ids) {
           const fr = r[id];
-          check(fr.length === 10, `${tag} ${id}: 10 frames`);
+          check(fr.length === 11, `${tag} ${id}: 11 frames`);
+          const F = Object.fromEntries(fr.map((f) => [f.key, f]));
           for (const f of fr) {
             check(f.x === 0 && f.undo === 0 && f.justAdded === 0, `${tag} ${id} frame ${f.i + 1}: no close key, Undo or Just added`);
             const shown = banned.find((w) => f.text.toLowerCase().includes(w.toLowerCase()));
@@ -136,23 +142,33 @@ for (const device of devices) {
               check(f.small.length === 0 || ts > 100, `${tag} ${id} frame ${f.i + 1}: targets under 44 px: ${f.small.join(', ')}`);
             }
           }
-          check(fr[0].rows === 0, `${tag} ${id}: the list behind is empty before the first add`);
-          check(fr[1].rows === 1 && fr[6].rows === 2 && fr[7].rows === 2, `${tag} ${id}: one row after the first add, then only the last two`);
-          check(fr[9].state === 'closed', `${tag} ${id}: the last frame is closed`);
-          const a = fr[ADDED];
-          const fits = a.hidden.length === 0 && a.overflow <= 1 && fr[3].hidden.length === 0 && fr[3].overflow <= 1;
-          if (!fits && measured[device].fits[id].max >= ts) measured[device].fits[id] = { max: sizes[sizes.indexOf(ts) - 1] ?? 0, largest, firstMiss: `${ts}% ${lang}: ${[...a.hidden, ...fr[3].hidden].join(', ') || `sheet overflows ${Math.max(a.overflow, fr[3].overflow)} px`}` };
-          if (ts === 200) measured[device][id] = { ...measured[device][id], rowsCut200: Math.max(measured[device][id]?.rowsCut200 ?? 0, ...fr.slice(3, 8).map((f) => f.rowsCut)) };
+          check(F.open.rows === 0, `${tag} ${id}: the list behind is empty before the first add`);
+          check(F.added.rows === 1 && F.second.rows === 2 && F.third.rows === 2, `${tag} ${id}: one row after the first add, then only the last two`);
+          check(F.closed.state === 'closed', `${tag} ${id}: the last frame is closed`);
+          const a = F.added;
+          // Closed pickers, and each picker open: the store's and the category's.
+          const shown = [F.added, F.edited, F.picking, F.pickingCat];
+          const fits = shown.every((f) => f.hidden.length === 0 && f.overflow <= 1);
+          if (!fits && measured[device].fits[id].max >= ts) {
+            const miss = shown.filter((f) => f.hidden.length || f.overflow > 1).map((f) => `${f.key}: ${f.hidden.join(', ') || `overflows ${f.overflow} px`}`);
+            measured[device].fits[id] = { max: sizes[sizes.indexOf(ts) - 1] ?? 0, largest, firstMiss: `${ts}% ${lang}: ${miss.join('; ')}` };
+          }
+          if (ts === 200) measured[device][id] = { ...measured[device][id], rowsCut200: Math.max(measured[device][id]?.rowsCut200 ?? 0, ...['edited', 'details', 'typing', 'second', 'third'].map((k) => F[k].rowsCut)) };
           if (ts === 100) {
-            check(fits, `${tag} ${id}: every field in view after an add (hidden: ${a.hidden.join(', ')}; overflow ${a.overflow})`);
+            check(fits, `${tag} ${id}: every field and open picker in view (${shown.map((f) => `${f.key}: ${f.hidden.join(', ')}`).join('; ')})`);
             check(a.gapAbove !== null && a.gapAbove <= 16, `${tag} ${id}: no gap above the field (${a.gapAbove} px)`);
-            if (lang === 'en' && theme === 'light') measured[device][id] = { ...measured[device][id], sheetH: a.sheetH, editH: a.editH, gapAbove: a.gapAbove, freeList: fr[6].freeList, rowsCut: fr[6].rowsCut };
+            if (lang === 'en' && theme === 'light') measured[device][id] = { ...measured[device][id], sheetH: a.sheetH, editH: a.editH, gapAbove: a.gapAbove, freeList: F.second.freeList, rowsCut: F.second.rowsCut };
             if (lang === 'de' && theme === 'light') measured[device][id] = { ...measured[device][id], editHde: a.editH };
           }
         }
       }
     }
   }
+}
+
+// The recommendation's claim for the pick.
+for (const device of devices) {
+  check(measured[device].fits[verdict.pick].max === measured[device].fits[verdict.pick].largest, `${device}: the pick ${verdict.pick} keeps every field and open picker in view at every text size (${measured[device].fits[verdict.pick].firstMiss ?? ''})`);
 }
 
 // The live phones: the store and category taps as clicks, the options in view without a swipe, both ways to close.

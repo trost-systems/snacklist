@@ -18,7 +18,7 @@ export const copy = {
     justAdded: 'Just added', // justAdded
     addedTo: (n, s) => `Added: ${n} → ${s}`, // addedTo
     price: 'Price', // priceAdd
-    list: 'List', more_: 'More', customise: 'Customise', items: 'items',
+    list: 'List', more_: 'More', customise: 'Edit', items: 'items', // listEdit
   },
   de: {
     hint: 'Was brauchst du?',
@@ -118,7 +118,15 @@ export const act = (s, a, lang) => {
     case 'take':
     case 'enter': {
       const pick = suggestions(s, lang)[verb === 'take' ? Number(arg) : 0];
-      if (!pick) return verb === 'enter' && !s.text.trim() ? { ...s, sheet: false, open: null } : s;
+      if (!pick && verb === 'enter' && !s.text.trim()) return { ...s, sheet: false, open: null };
+      if (!pick && verb === 'enter') {
+        // Free text: a new item, no store, a category the server would guess (pantry here).
+        const id = `n${s.seq}`;
+        const name = s.text.trim();
+        const item = { id, key: name, en: name, de: name, emoji: '⬡', cat: 'pantry', store: null, qty: '', details: '', brand: '' };
+        return { ...s, items: [...s.items, item], added: [...s.added, id], cur: id, text: '', open: null, seq: s.seq + 1 };
+      }
+      if (!pick) return s;
       const id = `n${s.seq}`;
       const item = { id, key: pick.key, en: pick.en, de: pick.de, emoji: pick.emoji, cat: pick.cat, store: pick.store, qty: '', details: '', brand: '' };
       return { ...s, items: [...s.items, item], added: [...s.added, id], cur: id, text: '', open: null, seq: s.seq + 1 };

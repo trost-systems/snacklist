@@ -51,7 +51,9 @@ const storeOpts = (item, env, { line = false } = {}) => {
 };
 const catOpts = (item, env, { line = false } = {}) =>
   `<div class="line${line ? ' nowrap' : ''}" data-opts="cat">${categories.map((c) => `<button class="opt${item.cat === c.id ? ' on' : ''}" data-act="cat:${c.id}"><span>${esc(c[env.lang])}</span></button>`).join('')}</div>`;
-const picker = (item, s, env) => (s.open === 'store' ? storeOpts(item, env) : s.open === 'cat' ? catOpts(item, env) : '');
+// An open picker is one sideways line, so it never pushes the field under the keyboard at large text.
+const picker = (item, s, env) =>
+  s.open === 'store' ? `<div data-field="options">${storeOpts(item, env, { line: true })}</div>` : s.open === 'cat' ? `<div data-field="options">${catOpts(item, env, { line: true })}</div>` : '';
 const input = (s, env) => {
   const focus = s.open !== 'details';
   return `<label class="hexfield${focus ? ' focus' : ''}" data-field="input"><span>${focus && !s.text ? '<i class="caret"></i>' : ''}
@@ -105,8 +107,8 @@ export const options = {
       const where = `${storeName(item.store, env.lang)} · ${catName(item.cat, env.lang)}`;
       return `<div class="sbody">${input(s, env)}
         <div class="line" data-fieldline>${qtyCtl(item, env)}<button class="tact grow${s.open === 'where' ? ' open' : ''}" data-field="store category" data-act="open:where"><span>${ic('storefront_outlined')}${esc(where)}${ic('arrow_drop_down')}</span></button></div>
-        ${s.open === 'where' ? `${storeOpts(item, env, { line: true })}${catOpts(item, env, { line: true })}` : ''}
-        <div class="grid2">${brandField(item, s, env)}${field('details', item.details, t(env.lang).details)}</div></div>`;
+        ${s.open === 'where' ? `<div data-field="options">${storeOpts(item, env, { line: true })}</div><div data-field="options">${catOpts(item, env, { line: true })}</div>` : ''}
+        ${s.open === 'where' ? '' : `<div class="grid2">${brandField(item, s, env)}${field('details', item.details, t(env.lang).details)}</div>`}</div>`;
     },
   },
   AS3: {
@@ -194,6 +196,16 @@ export const phone = (s, opt, env, { live = false, gesture = null } = {}) => {
 
 // After layout: the list behind ends at the sheet's top edge; a gesture mark sits on the grabber or the list.
 export const settle = (root) => {
+  // As FoldoutChips does: the item's own store or category is scrolled into view.
+  for (const line of root.querySelectorAll('.line.nowrap')) {
+    const on = line.querySelector('.opt.on');
+    if (!on) continue;
+    const lr = line.getBoundingClientRect();
+    const r = on.getBoundingClientRect();
+    // Only as far as needed, so the options before it stay in view too.
+    if (r.right > lr.right - 4) line.scrollLeft += r.right - lr.right + 12;
+    else if (r.left < lr.left + 4) line.scrollLeft += r.left - lr.left - 12;
+  }
   for (const ph of root.querySelectorAll('.phone')) {
     const sheet = ph.querySelector('[data-sheet]');
     if (!sheet) continue;
