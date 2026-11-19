@@ -16034,3 +16034,25 @@ the shell's router. Now it imports only core; the baseline lost its 8 `analytics
    (`skip_upload_changelogs`), so the draft usually has none. No new copy, nothing for Legal.
 5. **`commit` input (default on).** Off validates the edit and deletes it: a dry run, and a
    read-only second look at the tracks after a promote.
+
+## Job 305: folder-level LEGO layers, step 3b: list imports neither household nor trip (2026-11-19)
+
+The list feature imported `household/` (the chip, the switcher sheets) and `trip/` (the trip parts
+of the list, the trip cubit and repositories). Both features import `list/`, so each pair was a
+cycle. Now `list/` imports neither; behaviour and goldens are unchanged.
+
+1. **`ListScope` is wiring and lives in the shell.** It opens the lists, the trip cubit, Siri and
+   the Home Screen widgets for the shown household, so it moved to `shell/list_scope.dart`. What
+   other features read of it (`ListHolds`, `rejectionText`, `RejectionNotices`) stays in
+   `list/list_holds.dart`.
+2. **`ListParts` names what the list shows of other features.** `list/list_parts.dart` declares
+   the household and switcher sheets, the trip wrapper, strip and ended card, and the predicate
+   for items bought on the running trip. `ShellListParts` in `shell/list_parts.dart` implements
+   it, and `ListScope` provides it. Without it (tests, Widgetbook) the list shows none of these
+   parts and the chip opens nothing.
+3. **`HouseholdChip` moved to `list/household_chip.dart`.** Only the list screen shows it; it
+   opens the households sheet through `ListParts.openHouseholds`.
+4. **`summaryOf` takes a predicate.** `onTrip` replaces the `RunningTrip`, so subtotals need no
+   trip types; the shell builds it from `runningOn` and `boughtOnTrip`.
+5. **Baseline.** list->trip 7 to 0, list->household 3 to 0, household->list 25 to 23, list->siri
+   2 to 0, list->log 1 to 0, list->home_widget 2 to 1. No pair grew.

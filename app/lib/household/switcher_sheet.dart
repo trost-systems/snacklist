@@ -9,7 +9,7 @@ import 'package:family_groceries/household/switcher_household.dart';
 import 'package:family_groceries/household/voice_default_pages.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/list_cubit.dart';
-import 'package:family_groceries/list/list_scope.dart';
+import 'package:family_groceries/list/list_holds.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:flutter/semantics.dart';
@@ -21,7 +21,7 @@ import 'package:material_ui/material_ui.dart';
 /// household with its lists, one with its members and one to invite people
 /// (job 242). It opens on the shown household's page, never taller than the
 /// room below the status bar, or on [initial] (job 258: where the invite
-/// hints lead). Needs the [ListScope] above [context].
+/// hints lead). Needs the `ListScope` above [context].
 Future<void> showSwitcherSheet(BuildContext context, {SwitcherPage? initial}) {
   // Fresh counts while the sheet opens; offline it shows the last ones.
   unawaited(context.read<SessionCubit>().refresh().catchError((Object _) {}));

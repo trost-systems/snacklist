@@ -2,6 +2,7 @@ import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/pricing.dart';
 import 'package:family_groceries/list/subtotals.dart';
 import 'package:family_groceries/trip/model.dart';
+import 'package:family_groceries/trip/rules.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 final _now = DateTime(2026, 11, 14, 10);
@@ -51,8 +52,12 @@ RunningTrip _trip(DateTime startedAt) => RunningTrip(
 
 /// Job 237: what the summary block above „Zuletzt verwendet“ adds up.
 void main() {
-  Summary summary(Iterable<Item> items, {RunningTrip? trip}) =>
-      summaryOf(items, _catalog, now: _now, trip: trip);
+  Summary summary(Iterable<Item> items, {RunningTrip? trip}) => summaryOf(
+    items,
+    _catalog,
+    now: _now,
+    onTrip: trip == null ? null : (item) => boughtOnTrip(trip, item),
+  );
 
   test('without a trip only open items count: a ticked one drops out', () {
     final s = summary([

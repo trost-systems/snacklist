@@ -13,7 +13,6 @@ import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/sticker.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/home_widget/widget_launch.dart';
-import 'package:family_groceries/household/household_switcher.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/add_sheet/add_sheet.dart';
 import 'package:family_groceries/list/add_sheet/add_sheet_cubit.dart';
@@ -22,9 +21,11 @@ import 'package:family_groceries/list/catalog/catalog_index.dart';
 import 'package:family_groceries/list/catalog/catalog_loader.dart';
 import 'package:family_groceries/list/dictation.dart';
 import 'package:family_groceries/list/dictation_button.dart';
+import 'package:family_groceries/list/household_chip.dart';
 import 'package:family_groceries/list/list_cubit.dart';
+import 'package:family_groceries/list/list_holds.dart';
 import 'package:family_groceries/list/list_link.dart';
-import 'package:family_groceries/list/list_scope.dart';
+import 'package:family_groceries/list/list_parts.dart';
 import 'package:family_groceries/list/list_switcher_button.dart';
 import 'package:family_groceries/list/list_tabs.dart';
 import 'package:family_groceries/list/list_view/price_views.dart';
@@ -36,7 +37,6 @@ import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/shell/router.dart';
 import 'package:family_groceries/shell/shell.dart';
 import 'package:family_groceries/tips/hint_views.dart';
-import 'package:family_groceries/trip/trip_on_list.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/semantics.dart' show OrdinalSortKey;
 import 'package:flutter/services.dart';
@@ -114,7 +114,7 @@ class const ShoppingList({
         // The list's snackbars float above the add bar, not above the tabs.
         child: ScaffoldMessenger(
           // Job 234: the question after a tick, the summary after Beenden.
-          child: TripOnList(child: _ShoppingList(dictation: dictation)),
+          child: listParts(context).around(_ShoppingList(dictation: dictation)),
         ),
       ),
     );
@@ -656,7 +656,7 @@ class _ShoppingListState() extends State<_ShoppingList> {
                 children: [
                   // Job 234: the running trip, above the total and the
                   // field; away while typing or pricing.
-                  TripStripSlot(hidden: open || pricing != null),
+                  listParts(context).tripStrip(hidden: open || pricing != null),
                   // Decluttered, the total is a row of the list.
                   if (prices && hasItems && !declutter)
                     // In the add bar's place, it keeps clear of the shell's

@@ -2,22 +2,22 @@ import 'dart:async';
 
 import 'package:family_groceries/design/measured_width.dart';
 import 'package:family_groceries/design/tokens.g.dart';
-import 'package:family_groceries/household/household_switcher.dart';
-import 'package:family_groceries/household/switcher_sheet.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
+import 'package:family_groceries/list/household_chip.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_names.dart';
+import 'package:family_groceries/list/list_parts.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// The decluttered list's switcher (job 229, flag `list-declutter`), in the
 /// household chip's place: the household's name small over the shown list's,
-/// and an unfold icon, in one raised button that opens [showSwitcherSheet].
-/// Shown with one household and one list too. Its width follows the chip's
-/// rules ([HouseholdChip.widest]): as wide as the longer name, at most
-/// [maxWidth], with the bar's gap after it; [onWidth] hears the width it
-/// took, gap included.
+/// and an unfold icon, in one raised button that opens the switcher sheet
+/// ([ListParts.openSwitcher]). Shown with one household and one list too.
+/// Its width follows the chip's rules ([HouseholdChip.widest]): as wide as
+/// the longer name, at most [maxWidth], with the bar's gap after it;
+/// [onWidth] hears the width it took, gap included.
 class const ListSwitcherButton({
   required final double maxWidth,
   final ValueChanged<double>? onWidth,
@@ -59,7 +59,8 @@ class const ListSwitcherButton({
                 end: HlHex.tip * HlSize.target + HlSpace.s1,
               ),
             ),
-            onPressed: () => unawaited(showSwitcherSheet(context)),
+            onPressed: () =>
+                unawaited(listParts(context).openSwitcher(context)),
             child: Semantics(
               label: [?list, household].join(' · '),
               hint: l10n.listSwitch,

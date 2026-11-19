@@ -12,7 +12,7 @@ import 'package:family_groceries/household/switcher_sheet.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/add_sheet/add_sheet_cubit.dart';
 import 'package:family_groceries/list/list_cubit.dart';
-import 'package:family_groceries/list/list_scope.dart';
+import 'package:family_groceries/list/list_holds.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/shell/router.dart';
