@@ -325,8 +325,9 @@ always do. Alpha's other
 releases stay, so its testers keep their build until someone rolls the draft
 out in Play Console; an older draft is replaced. The release notes are copied
 from a release that already carries the versionCode (internal first), else the
-draft has none. A versionCode missing from Play's bundle library fails the
-run. The log lists every track before, and alpha read back afterwards from a
+draft has none. Play refuses a versionCode it does not have when the lane
+sets the track or at validate or commit; the commit is atomic, so a refused
+run changes nothing. The log lists every track before, and alpha read back afterwards from a
 second edit that is deleted; the run fails if alpha then has no draft with
 the versionCode. Like a release run, it works from `main` only (the `release`
 environment).
