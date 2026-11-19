@@ -16056,3 +16056,16 @@ cycle. Now `list/` imports neither; behaviour and goldens are unchanged.
    trip types; the shell builds it from `runningOn` and `boughtOnTrip`.
 5. **Baseline.** list->trip 7 to 0, list->household 3 to 0, household->list 25 to 23, list->siri
    2 to 0, list->log 1 to 0, list->home_widget 2 to 1. No pair grew.
+
+## Job 316: promote_draft fix after the first run
+
+The first run (Actions run 44476349113) found 1414 in Play's bundle library, then crashed before
+the commit: the draft passed `name: nil` and `release_notes: nil`, and the API client sends a field
+that is set, even to nil, which its serializer cannot render. The lane now leaves both unset when
+no release carries the versionCode. The Opus review of the fix found a second bug: Play sends a
+release's versionCodes as strings (int64), so the lane's Integer lookups never matched. Notes were
+never copied, and the read-back after a successful commit would have failed. `carries?` compares as
+strings, as supply does. The local stub had built tracks from Ruby objects with Integer codes and
+never serialized them; it now parses Play-shaped JSON and serializes with the client's
+representation, and all four cases (notes copied or none, commit or validate) pass. The failed run
+committed nothing on Play.

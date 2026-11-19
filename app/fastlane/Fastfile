@@ -407,6 +407,11 @@ platform :android do
     (track&.releases || []).map { |r| "#{r.status} #{r.version_codes&.join(',')} (#{r.name})" }.join("; ")
   end
 
+  # Play sends a release's versionCodes as strings (int64).
+  def carries?(release, version_code)
+    (release.version_codes || []).map(&:to_s).include?(version_code.to_s)
+  end
+
   # Only closed testing: production and the open track stay with Play Console.
   PROMOTE_TRACKS = %w[alpha].freeze
 
@@ -430,14 +435,11 @@ platform :android do
     tracks.each { |t| UI.message("Before: #{t.track}: #{describe_releases(t)}") }
     source = (tracks.sort_by { |t| t.track == "internal" ? 0 : 1 })
              .flat_map { |t| t.releases || [] }
-             .find { |r| (r.version_codes || []).include?(version_code) }
+             .find { |r| carries?(r, version_code) }
     UI.message(source ? "Release notes from the release #{source.name}" : "No release carries #{version_code}: no release notes")
-    draft = AndroidPublisher::TrackRelease.new(
-      name: source&.name,
-      status: Supply::ReleaseStatus::DRAFT,
-      version_codes: [version_code],
-      release_notes: source&.release_notes
-    )
+    # A field set to nil is sent and breaks the client's serializer; leave it unset instead.
+    copied = { name: source&.name, release_notes: source&.release_notes }.compact
+    draft = AndroidPublisher::TrackRelease.new(status: Supply::ReleaseStatus::DRAFT, version_codes: [version_code], **copied)
     track = tracks.find { |t| t.track == track_name } || AndroidPublisher::Track.new(track: track_name, releases: [])
     track.releases = (track.releases || []).reject { |r| r.status == Supply::ReleaseStatus::DRAFT } + [draft]
     client.update_track(track_name, track)
@@ -457,6 +459,6 @@ platform :android do
     next unless ENV.fetch("PROMOTE_COMMIT", "false") == "true"
 
     drafts = (after&.releases || []).select { |r| r.status == Supply::ReleaseStatus::DRAFT }
-    UI.user_error!("#{track_name} has no draft with versionCode #{version_code}") unless drafts.any? { |r| (r.version_codes || []).include?(version_code) }
+    UI.user_error!("#{track_name} has no draft with versionCode #{version_code}") unless drafts.any? { |r| carries?(r, version_code) }
   end
 end
