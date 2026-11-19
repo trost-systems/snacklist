@@ -16117,3 +16117,13 @@ live state and changes only alpha's draft, which a commit neither sends for revi
 alpha's other releases go back unchanged. release.yml's internal uploads commit without the flag
 every time, in this same Play state. So the lane keeps the flag and supply's default rescue, which
 retries without it only on that exact message and re-raises anything else.
+
+## Job 316: the bundle list only informs
+
+Runs 1 and 2 (07:01 and 07:59 UTC) found 1414 in the edit's bundle list (`edits.bundles.list`).
+Runs 44491494916 and 44491677858 (08:54, 08:55 UTC), after Release run 411 had uploaded 1421, did
+not, and the lane stopped there. The brief allows the fallback to 1415 only when Play rejects 1414;
+this was the lane's own pre-check of a list that changed between runs, not Play refusing the
+versionCode. The lane now logs the list (size, range, whether it names the versionCode) and lets
+Play decide, when the track is set or at validate or commit (atomic, so a refusal changes
+nothing). A validate-only run comes first.
