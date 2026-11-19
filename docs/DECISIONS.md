@@ -16127,3 +16127,14 @@ this was the lane's own pre-check of a list that changed between runs, not Play 
 versionCode. The lane now logs the list (size, range, whether it names the versionCode) and lets
 Play decide, when the track is set or at validate or commit (atomic, so a refusal changes
 nothing). A validate-only run comes first.
+
+## Job 316: review 0 follow-up
+
+docs/RELEASE.md now has `<versionCode>` in the example instead of 1414, which Play refuses. It adds
+the observation that Play's API stopped offering a superseded internal bundle within about an hour
+(observed, not documented by Google), says to run right after the release run with `commit=false`
+first, and gives Play Console's "Add from library" as the fallback. The lane logs every versionCode
+in the edit's bundle list, which shows which bundles Play keeps. It deletes its edit when Play
+refuses the update, validate or commit. It names the draft `<source name> (<versionCode>)`, or the
+versionCode alone, so the draft and alpha's live "0.1.0" look different in Console. This is
+internal metadata, not user copy.
