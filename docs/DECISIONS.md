@@ -16106,3 +16106,14 @@ committed nothing on Play.
 5. **Server first.** A server without `undo_add` would refuse the op (PGRST202) and the item would
    come back. `supabase-deploy.yml` deploys the migration from main before any web or store release
    carries the app change, so there is no fallback to the plain delete.
+
+## Job 316: promote_draft commits without changesNotSentForReview when Play asks
+
+The second run (Actions run 44483709293) reached the commit and Play refused it: "Changes are sent
+for review automatically. The query parameter changesNotSentForReview must not be set." Nothing was
+committed. Decision 3 above (no rescue) feared a retry without the flag could send other pending
+Console changes for review. That fear does not apply to what is sent: the edit starts from Play's
+live state and changes only alpha's draft, which a commit neither sends for review nor rolls out;
+alpha's other releases go back unchanged. release.yml's internal uploads commit without the flag
+every time, in this same Play state. So the lane keeps the flag and supply's default rescue, which
+retries without it only on that exact message and re-raises anything else.
