@@ -1,10 +1,9 @@
 import 'dart:async';
 
 import 'package:family_groceries/analytics/flags.dart';
-import 'package:family_groceries/app/guides.dart';
-import 'package:family_groceries/app/legal_links.dart';
-import 'package:family_groceries/app/notices.dart';
-import 'package:family_groceries/app/router.dart';
+import 'package:family_groceries/core/guides.dart';
+import 'package:family_groceries/core/legal_links.dart';
+import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/design/group_card.dart';
 import 'package:family_groceries/design/hex_border.dart';
 import 'package:family_groceries/design/section_label.dart';
@@ -15,6 +14,7 @@ import 'package:family_groceries/feedback/feedback_note.dart';
 import 'package:family_groceries/feedback/feedback_sheet.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/report/report_page.dart';
+import 'package:family_groceries/shell/router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';

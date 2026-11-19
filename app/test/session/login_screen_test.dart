@@ -1,5 +1,5 @@
 import 'package:family_groceries/analytics/flags.dart';
-import 'package:family_groceries/app/localizations.dart';
+import 'package:family_groceries/core/localizations.dart';
 import 'package:family_groceries/design/field_border.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/session/login_screen.dart';
@@ -14,7 +14,7 @@ import 'package:supabase_flutter/supabase_flutter.dart'
     show Session;
 import 'package:url_launcher_platform_interface/url_launcher_platform_interface.dart';
 
-import '../app/fake_launcher.dart';
+import '../core/fake_launcher.dart';
 import 'fake_auth.dart';
 import 'fake_households.dart';
 

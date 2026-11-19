@@ -1,6 +1,6 @@
 import 'dart:ui' show CheckedState, Tristate;
 
-import 'package:family_groceries/app/theme.dart';
+import 'package:family_groceries/core/theme.dart';
 import 'package:family_groceries/design/hex_radio.dart';
 import 'package:family_groceries/design/hex_segmented.dart';
 import 'package:family_groceries/design/hex_switch.dart';

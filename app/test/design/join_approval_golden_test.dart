@@ -3,9 +3,9 @@
 // joiner's wait without a household. After a deliberate look change:
 //   flutter test --update-goldens test/design/join_approval_golden_test.dart
 import 'package:family_groceries/analytics/analytics.dart';
-import 'package:family_groceries/app/device_cache.dart';
-import 'package:family_groceries/app/localizations.dart';
-import 'package:family_groceries/app/theme.dart';
+import 'package:family_groceries/core/device_cache.dart';
+import 'package:family_groceries/core/localizations.dart';
+import 'package:family_groceries/core/theme.dart';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/join_approval_section.dart';
 import 'package:family_groceries/household/join_request_waiting.dart';

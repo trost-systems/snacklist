@@ -1,10 +1,10 @@
 import 'package:family_groceries/analytics/flags.dart';
-import 'package:family_groceries/app/router.dart' show listPath;
 import 'package:family_groceries/list/list_view/item_row.dart';
 import 'package:family_groceries/list/list_view/price_views.dart';
 import 'package:family_groceries/list/list_view/summary_block.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/pricing.dart';
+import 'package:family_groceries/shell/router.dart' show listPath;
 import 'package:family_groceries/trip/trip_cubit.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';

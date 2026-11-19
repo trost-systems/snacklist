@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:family_groceries/analytics/flags.dart';
-import 'package:family_groceries/app/localizations.dart';
-import 'package:family_groceries/app/open_app.dart';
+import 'package:family_groceries/core/localizations.dart';
+import 'package:family_groceries/core/open_app.dart';
 import 'package:family_groceries/household/household_switcher.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/add_sheet/add_sheet.dart';

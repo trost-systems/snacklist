@@ -3,7 +3,7 @@ import 'dart:math';
 
 import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/analytics/events.dart';
-import 'package:family_groceries/app/network.dart';
+import 'package:family_groceries/core/network.dart';
 import 'package:family_groceries/list/add_sheet/suggestion.dart';
 import 'package:family_groceries/list/catalog/household_index.dart';
 import 'package:family_groceries/list/dictation.dart';

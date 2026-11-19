@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:family_groceries/app/legal_links.dart';
+import 'package:family_groceries/core/legal_links.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/purchases/premium_server.dart';
 import 'package:family_groceries/purchases/store_prices.dart';

@@ -2,7 +2,7 @@
 /// shared by the app (`main.dart`) and the tests.
 library;
 
-import 'package:family_groceries/app/localizations.dart';
+import 'package:family_groceries/core/localizations.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart' hide ThemeMode;
 import 'package:snacklist_widgetbook/src/addons.dart';

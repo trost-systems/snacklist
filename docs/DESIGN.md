@@ -22,7 +22,7 @@ node design/tokens/build.mjs --check   # writes nothing, exits 1 when an output 
 
 | Output | What it holds | Used by |
 | --- | --- | --- |
-| `app/lib/design/tokens.g.dart` | `SnacklistColors` (a `ThemeExtension`, light and dark), `HlFont`, `HlType`, `HlSpace`, `HlRadius`, `HlBorder`, `HlDepth`, `HlFocus`, `HlSize`, `HlHex`, `HlDuration`, `HlEasing` | `app/lib/app/theme.dart`, `app/lib/design/` |
+| `app/lib/design/tokens.g.dart` | `SnacklistColors` (a `ThemeExtension`, light and dark), `HlFont`, `HlType`, `HlSpace`, `HlRadius`, `HlBorder`, `HlDepth`, `HlFocus`, `HlSize`, `HlHex`, `HlDuration`, `HlEasing` | `app/lib/core/theme.dart`, `app/lib/design/` |
 | `site/public/tokens.css` | The same as `--hl-*` custom properties; dark colours under `prefers-color-scheme: dark` | The homepage (job 53) |
 
 The generator is plain Node with no packages. The `lint` gate runs the
@@ -53,7 +53,7 @@ pairs from the token file (`$extensions.com.snacklist.contrastPairs` and
 `contourRequired`) and fails when one drops under its minimum, or when a
 "contour required" pair stops needing its contour (then the rule is stale).
 The same test pins the lemon pairs below to two decimals.
-`app/test/app/theme_test.dart` checks the Material roles the screens use.
+`app/test/core/theme_test.dart` checks the Material roles the screens use.
 
 <!-- Generated from the token file; rerun the snippet in DECISIONS "Job 52" after a palette change. -->
 | Pair | Light | Dark | Min |
@@ -111,7 +111,7 @@ the label colour, not the theme's cobalt, which would be `#9fb6ff` on yellow
 
 ### Theme
 
-`appTheme(Brightness)` in `app/lib/app/theme.dart` builds Material 3
+`appTheme(Brightness)` in `app/lib/core/theme.dart` builds Material 3
 `ThemeData` for light and dark from the tokens. Screens keep their widgets,
 keys and strings; the theme gives them the 6b look.
 
@@ -252,7 +252,7 @@ quarter into its line and struck rows, one wrapped.
   drawn per Apple's rules (DECISIONS job 57 item 15). Only "Weiter mit
   E-Mail" is a house hex button.
 - On phones the tabs float as a raised hex pill above the home indicator
-  (`app/lib/app/shell.dart`, job 144), the selected tab on a honey hex; the
+  (`app/lib/shell/shell.dart`, job 144), the selected tab on a honey hex; the
   navigation rail's indicator is the same honey hex. Snackbars float as
   contoured notes.
 

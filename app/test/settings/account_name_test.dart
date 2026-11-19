@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:family_groceries/analytics/flags.dart';
-import 'package:family_groceries/app/localizations.dart';
-import 'package:family_groceries/app/theme.dart';
+import 'package:family_groceries/core/localizations.dart';
+import 'package:family_groceries/core/theme.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/session/your_name.dart';
 import 'package:family_groceries/settings/account_repository.dart';

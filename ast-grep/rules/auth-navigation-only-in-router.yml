@@ -1,4 +1,4 @@
-# Auth gating happens only in authRedirect (app/lib/app/router.dart,
+# Auth gating happens only in authRedirect (app/lib/shell/router.dart,
 # CLAUDE.md): screens never navigate to the sign-in or onboarding routes
 # themselves. Signing out or leaving a household changes SessionCubit's
 # state, and the router's redirect sends the user to /login or /welcome
@@ -18,7 +18,7 @@ severity: error
 files:
   - app/**
 ignores:
-  - app/lib/app/router.dart
+  - app/lib/shell/router.dart
   - app/test/**
 rule:
   any:
@@ -35,4 +35,4 @@ rule:
           has:
             field: function
             regex: '(?:^|\.)\s*(?:go|push|pushReplacement|replace|popAndPush|pushNamedAndRemoveUntil|namedLocation)(?:Named)?$'
-message: 'The sign-in or onboarding route is named outside authRedirect: change the session state (SessionCubit) and let authRedirect in app/lib/app/router.dart route the user'
+message: 'The sign-in or onboarding route is named outside authRedirect: change the session state (SessionCubit) and let authRedirect in app/lib/shell/router.dart route the user'

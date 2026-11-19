@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:family_groceries/app/router.dart';
 import 'package:family_groceries/design/field_border.dart';
 import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/tokens.g.dart';
@@ -11,6 +10,7 @@ import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/store_name_field.dart';
 import 'package:family_groceries/session/session_cubit.dart';
+import 'package:family_groceries/shell/router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';

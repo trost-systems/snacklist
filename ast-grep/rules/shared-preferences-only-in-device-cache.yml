@@ -1,5 +1,5 @@
 # One owner for the app's own on-device store: DeviceCache
-# (app/lib/app/device_cache.dart). supabase_flutter keeps the session in
+# (app/lib/core/device_cache.dart). supabase_flutter keeps the session in
 # shared_preferences.json through the legacy SharedPreferences API; on Linux
 # a second store on that same file rewrites it from its own copy and the
 # session is lost (BOARD 09:08: a relaunched Linux app came back signed out;
@@ -16,12 +16,12 @@ severity: error
 files:
   - app/lib/**
 ignores:
-  - app/lib/app/device_cache.dart
+  - app/lib/core/device_cache.dart
 rule:
   pattern: $STORE
   kind: identifier
   regex: '^SharedPreferences(?:Async|WithCache)?$'
-message: '$STORE opens a shared-preferences store outside DeviceCache: use DeviceCache (app/lib/app/device_cache.dart), which owns the one store with its own file on Linux; a second store on supabase''s shared_preferences.json loses the session'
+message: '$STORE opens a shared-preferences store outside DeviceCache: use DeviceCache (app/lib/core/device_cache.dart), which owns the one store with its own file on Linux; a second store on supabase''s shared_preferences.json loses the session'
 ---
 # Inside DeviceCache: the store is SharedPreferencesAsync with its own Linux
 # file. Without SharedPreferencesLinuxOptions, or with the legacy
@@ -31,7 +31,7 @@ id: device-cache-own-file
 language: dart
 severity: error
 files:
-  - app/lib/app/device_cache.dart
+  - app/lib/core/device_cache.dart
 rule:
   any:
     - kind: identifier

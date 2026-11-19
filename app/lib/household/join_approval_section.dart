@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:family_groceries/analytics/analytics.dart';
-import 'package:family_groceries/app/notices.dart';
+import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/design/count_badge.dart';
 import 'package:family_groceries/design/hex_switch.dart';
 import 'package:family_groceries/design/section_label.dart';

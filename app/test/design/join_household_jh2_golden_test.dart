@@ -6,8 +6,8 @@
 // look change:
 //   flutter test --update-goldens test/design/join_household_jh2_golden_test.dart
 import 'package:family_groceries/analytics/flags.dart';
-import 'package:family_groceries/app/localizations.dart';
-import 'package:family_groceries/app/theme.dart';
+import 'package:family_groceries/core/localizations.dart';
+import 'package:family_groceries/core/theme.dart';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/join_request_waiting.dart';
 import 'package:family_groceries/household/pending_invite.dart';

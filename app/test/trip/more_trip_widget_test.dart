@@ -1,5 +1,5 @@
 import 'package:family_groceries/analytics/flags.dart';
-import 'package:family_groceries/app/router.dart';
+import 'package:family_groceries/shell/router.dart';
 import 'package:family_groceries/trip/trip_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';

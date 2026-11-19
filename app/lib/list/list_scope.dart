@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/analytics/flags.dart';
-import 'package:family_groceries/app/device_cache.dart';
-import 'package:family_groceries/app/network.dart';
-import 'package:family_groceries/app/notices.dart';
+import 'package:family_groceries/core/device_cache.dart';
+import 'package:family_groceries/core/network.dart';
+import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/home_widget/home_widget_sync.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/list_cubit.dart';

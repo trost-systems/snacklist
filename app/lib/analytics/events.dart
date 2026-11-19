@@ -9,7 +9,6 @@
 /// docs/ANALYTICS.md.
 library;
 
-import 'package:family_groceries/app/router.dart' show screenNames;
 import 'package:family_groceries/household/invite_repository.dart'
     show InviteKind;
 import 'package:family_groceries/household/invite_share.dart'
@@ -17,6 +16,7 @@ import 'package:family_groceries/household/invite_share.dart'
 import 'package:family_groceries/log/model.dart' show TripSource;
 import 'package:family_groceries/session/session_cubit.dart'
     show HouseholdOrigin;
+import 'package:family_groceries/shell/router.dart' show screenNames;
 import 'package:family_groceries/tips/checklist.dart';
 import 'package:family_groceries/tips/hints.dart' show HintId;
 import 'package:family_groceries/trip/model.dart'

@@ -29,7 +29,7 @@ One row per note (`supabase/migrations/20261030070000_feedback.sql`; every colum
 | `platform` | `ios`, `android`, `web`, `linux`, `macos`, `windows`. |
 | `os_version` | `Android 14 (SDK 34)`, `iOS 18.1`; on the web only the browser family and OS (`Safari on iOS`), never the user agent. |
 | `locale` | The app's language when sending (`de`, `en`). |
-| `screen` | Null for a note written from More's row (job 259: the form is about no screen, so none is sent). Notes from before job 259, and the shake entry (job 138, not shipped), carry the screen the note is about, a fixed name: the last screen before the More tab (`list` almost always) or the live one. Never a path, an invite code or an item. The names are `screenNames` in `app/lib/app/router.dart`. |
+| `screen` | Null for a note written from More's row (job 259: the form is about no screen, so none is sent). Notes from before job 259, and the shake entry (job 138, not shipped), carry the screen the note is about, a fixed name: the last screen before the More tab (`list` almost always) or the live one. Never a path, an invite code or an item. The names are `screenNames` in `app/lib/shell/router.dart`. |
 | `screenshot` | Null without a screenshot. Otherwise the image's object name in the bucket `feedback-screenshots`: `<user_id>/<id>.png`. The database refuses any other name, so a note can only name its sender's image for this note. |
 | `is_internal` | Peter's household (the `ANALYTICS_INTERNAL_HOUSEHOLDS` define), a debug, profile or preview build, an install marked internal under More, or a test account. The database forces it for test accounts (`.test`, `.invalid`, `.example`, `.localhost`, `example.com/.net/.org`), whatever the app says. |
 

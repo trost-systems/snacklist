@@ -1,13 +1,13 @@
 import 'dart:async';
 
-import 'package:family_groceries/app/router.dart';
-import 'package:family_groceries/app/shell.dart';
 import 'package:family_groceries/design/hex_pill.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/name_dialog.dart';
+import 'package:family_groceries/shell/router.dart';
+import 'package:family_groceries/shell/shell.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';

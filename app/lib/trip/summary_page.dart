@@ -1,14 +1,14 @@
 import 'dart:async';
 
 import 'package:family_groceries/analytics/flags.dart';
-import 'package:family_groceries/app/notices.dart';
-import 'package:family_groceries/app/router.dart' show listPath;
+import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_view/shopping_list_view.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/purchases/entitlements.dart';
+import 'package:family_groceries/shell/router.dart' show listPath;
 import 'package:family_groceries/trip/model.dart';
 import 'package:family_groceries/trip/summary_view.dart';
 import 'package:family_groceries/trip/trip_cubit.dart';

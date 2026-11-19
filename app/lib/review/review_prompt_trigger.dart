@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:family_groceries/app/notices.dart';
+import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/review/review_prompt.dart';
 import 'package:flutter/gestures.dart';

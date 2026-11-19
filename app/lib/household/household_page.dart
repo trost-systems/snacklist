@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:family_groceries/app/environment.dart';
+import 'package:family_groceries/core/environment.dart';
 import 'package:family_groceries/design/section_label.dart';
 import 'package:family_groceries/household/currency_section.dart';
 import 'package:family_groceries/household/default_list.dart';

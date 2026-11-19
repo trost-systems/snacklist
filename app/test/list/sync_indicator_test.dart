@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:family_groceries/app/localizations.dart';
-import 'package:family_groceries/app/network.dart';
-import 'package:family_groceries/app/theme.dart';
+import 'package:family_groceries/core/localizations.dart';
+import 'package:family_groceries/core/network.dart';
+import 'package:family_groceries/core/theme.dart';
 import 'package:family_groceries/design/tactile.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/entry.dart';

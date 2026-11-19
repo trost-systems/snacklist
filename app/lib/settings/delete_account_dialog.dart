@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:family_groceries/app/environment.dart';
-import 'package:family_groceries/app/theme.dart';
+import 'package:family_groceries/core/environment.dart';
+import 'package:family_groceries/core/theme.dart';
 import 'package:family_groceries/design/field_border.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/purchases/premium_dialogs.dart';

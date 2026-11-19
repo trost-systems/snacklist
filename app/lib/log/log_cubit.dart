@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:family_groceries/app/device_cache.dart';
+import 'package:family_groceries/core/device_cache.dart';
 import 'package:family_groceries/log/model.dart';
 import 'package:family_groceries/log/trip_repository.dart';
 import 'package:flutter/foundation.dart' show immutable;

@@ -4,7 +4,7 @@
 // Emoji beside it are in docs/screenshots/147/ (the tester has no emoji
 // font in CI). After a deliberate look change:
 //   flutter test --update-goldens test/design/item_icon_fallback_golden_test.dart
-import 'package:family_groceries/app/theme.dart';
+import 'package:family_groceries/core/theme.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/list/list_view/item_icon_fallback.dart';
 import 'package:flutter_test/flutter_test.dart';

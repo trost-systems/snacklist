@@ -1,13 +1,13 @@
 import 'dart:async';
 
 import 'package:family_groceries/analytics/flags.dart';
-import 'package:family_groceries/app/router.dart';
 import 'package:family_groceries/feedback/annotator.dart';
 import 'package:family_groceries/feedback/feedback_context.dart';
 import 'package:family_groceries/feedback/feedback_sheet.dart';
 import 'package:family_groceries/more/more_screen.dart';
 import 'package:family_groceries/report/report_cubit.dart';
 import 'package:family_groceries/report/report_repository.dart';
+import 'package:family_groceries/shell/router.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -17,7 +17,6 @@ import '../feedback/fb2_harness.dart'
 import '../feedback/fb4_harness.dart' show fb4Server;
 import '../more/more_harness.dart';
 import 'fakes.dart';
-
 import 'report_harness.dart';
 
 void main() {

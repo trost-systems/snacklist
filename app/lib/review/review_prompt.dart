@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:family_groceries/analytics/analytics.dart';
-import 'package:family_groceries/app/environment.dart';
+import 'package:family_groceries/core/environment.dart';
 import 'package:family_groceries/review/review_counters.dart';
 import 'package:family_groceries/review/review_gates.dart';
 import 'package:family_groceries/review/store_review.dart';

@@ -1,4 +1,4 @@
-import 'package:family_groceries/app/guides.dart';
+import 'package:family_groceries/core/guides.dart';
 import 'package:family_groceries/purchases/purchase_repository.dart';
 import 'package:flutter/foundation.dart' show TargetPlatform, immutable;
 import 'package:supabase_flutter/supabase_flutter.dart';

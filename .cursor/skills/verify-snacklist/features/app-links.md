@@ -34,7 +34,7 @@ Preconditions:
 - **Signed out.** In a fresh context `page.goto('/more/invites')`. Observable: URL `/login?next=/more/invites` (the same for `/more/household`: `/login?next=/more/household`, driven 2026-11-09). Sign in with „Weiter mit E-Mail“, „E-Mail“, „Passwort“, „Anmelden“, answer the usage-data question (`answerConsent`): URL `/more/invites`.
 - **Without a household.** `signUp(page, email, '/more/settings')`: URL `/welcome?next=/more/settings`; „Haushalt erstellen“, then on the guided start „Überspringen“ (Mit wem), „Weiter“ (name), „Überspringen“ (stores), „Weiter“ („Was fehlt gerade?“), each step's URL carrying `?next=`. `e2e/tests/deep-links.spec.ts` ("a signed-out link survives onboarding for a new account") expects `/more/settings` at the end.
 - **Signed out at `/`.** Fresh context, `page.goto('/')` or `page.goto('/does/not/exist')`. Observable: URL `/start`, button „Los geht's“.
-- **Specs.** `e2e/tests/deep-links.spec.ts`; router cases in `app/test/app/router_test.dart`; the domain files in `app/test/app/deep_links_config_test.dart`. Run with `scripts/verify.sh --only e2e -- tests/deep-links.spec.ts`.
+- **Specs.** `e2e/tests/deep-links.spec.ts`; router cases in `app/test/shell/router_test.dart`; the domain files in `app/test/core/deep_links_config_test.dart`. Run with `scripts/verify.sh --only e2e -- tests/deep-links.spec.ts`.
 
 ## Gotchas
 

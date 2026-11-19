@@ -1,4 +1,4 @@
-import 'package:family_groceries/app/environment.dart';
+import 'package:family_groceries/core/environment.dart';
 import 'package:family_groceries/household/household_kind.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/tips/usage_log.dart';

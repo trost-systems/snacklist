@@ -15954,3 +15954,25 @@ Peter picked RC2 from job 278's prototypes and answered RC-Q1 to RC-Q7 with the 
    N-284 (sender prune at 02:20 UTC, before the 02:30 backup; pgTAP pins it), N-290 and N-291
    (entry hint; no "Foto" in the picker help). Deferred to the rollout PR: N-281 (Impressum's
    in-app path) and N-283. Each new test fails with its fix taken out.
+
+## Job 305: folder-level LEGO layers, step 1: `lib/app` split into `lib/core` and `lib/shell` (2026-11-19)
+
+R8 of the LEGO report (Peter picked LR1, 2026-11-18). Pure move, no behaviour change.
+
+1. **Which file goes where.** `lib/shell/` keeps what assembles the app: `app.dart`, `router.dart`
+   and `shell.dart` (the tab shell). Everything else in the old `lib/app/` is code any folder may
+   use and moves to `lib/core/`: environment, network, notices, device cache, theme, language,
+   localizations, guides, legal links, deep links, early keys, document language, scroll-through,
+   store listings and the open-the-app card. `main.dart` stays at `lib/` (Flutter's entry point);
+   it counts as shell.
+2. **Tests follow the file they test.** `test/app/` became `test/core/` and `test/shell/`: the
+   router, app-links, navigation and shell tests go to `shell/`, the rest (with the open-app
+   goldens, byte for byte) to `core/`.
+3. **References.** One script moved the files and rewrote every `lib/app/...`, `test/app/...` and
+   `package:family_groceries/app/...` outside the logs that record history (DECISIONS, NEEDS_*,
+   DONE_SUMMARY, `docs/done/`, the hill-climb patches and research). The ast-grep rules, AGENTS.md,
+   the feature files, `site/test/consistency.test.mjs` and `web-prod.sh` name the new paths; the
+   emotely column in `REUSED_FROM_EMOTELY.md` keeps emotely's own `lib/app/environment.dart`.
+4. **What is left for later steps.** `core/device_cache.dart` still imports seven feature folders
+   and about 30 feature files import `shell/router.dart` for path constants; the import-direction
+   check (step 2) records both in its baseline.

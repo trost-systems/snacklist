@@ -1,10 +1,9 @@
 import 'dart:async';
 
 import 'package:family_groceries/analytics/flags.dart';
-import 'package:family_groceries/app/environment.dart';
-import 'package:family_groceries/app/legal_links.dart';
-import 'package:family_groceries/app/notices.dart';
-import 'package:family_groceries/app/router.dart';
+import 'package:family_groceries/core/environment.dart';
+import 'package:family_groceries/core/legal_links.dart';
+import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/design/field_border.dart';
 import 'package:family_groceries/design/hex_radio.dart';
 import 'package:family_groceries/design/section_label.dart';
@@ -17,6 +16,7 @@ import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/settings/access_cubit.dart';
 import 'package:family_groceries/settings/access_repository.dart';
 import 'package:family_groceries/settings/integration_lock.dart';
+import 'package:family_groceries/shell/router.dart';
 import 'package:family_groceries/siri/siri_channel.dart';
 import 'package:family_groceries/siri/siri_phrases.dart';
 import 'package:flutter/foundation.dart';

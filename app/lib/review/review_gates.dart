@@ -1,4 +1,4 @@
-import 'package:family_groceries/app/environment.dart';
+import 'package:family_groceries/core/environment.dart';
 import 'package:family_groceries/review/review_counters.dart';
 import 'package:flutter/foundation.dart';
 

@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:family_groceries/app/environment.dart';
-import 'package:family_groceries/app/notices.dart';
+import 'package:family_groceries/core/environment.dart';
+import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/section_label.dart';
 import 'package:family_groceries/design/tokens.g.dart';

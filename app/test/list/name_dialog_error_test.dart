@@ -1,4 +1,4 @@
-import 'package:family_groceries/app/localizations.dart';
+import 'package:family_groceries/core/localizations.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/name_dialog.dart';
 import 'package:flutter_test/flutter_test.dart';

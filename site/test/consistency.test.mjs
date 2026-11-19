@@ -35,8 +35,8 @@ test('the help page, the footer flag and the app constant agree on published', (
   assert.equal(drafts[0], drafts[1], 'support.md and support-en.md publish together');
   const published = !drafts[0];
   assert.equal(readConfig().supportPublished, published, 'site/config.json supportPublished');
-  const guides = readFileSync(join(REPO, 'app', 'lib', 'app', 'guides.dart'), 'utf8');
+  const guides = readFileSync(join(REPO, 'app', 'lib', 'core', 'guides.dart'), 'utf8');
   const constant = /^const supportPagePublished = (true|false);$/m.exec(guides);
-  assert.ok(constant, 'app/lib/app/guides.dart declares supportPagePublished');
-  assert.equal(constant[1] === 'true', published, 'app/lib/app/guides.dart supportPagePublished');
+  assert.ok(constant, 'app/lib/core/guides.dart declares supportPagePublished');
+  assert.equal(constant[1] === 'true', published, 'app/lib/core/guides.dart supportPagePublished');
 });

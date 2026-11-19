@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:math' as math;
 
-import 'package:family_groceries/app/device_cache.dart';
-import 'package:family_groceries/app/notices.dart';
+import 'package:family_groceries/core/device_cache.dart';
+import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/feedback/annotator.dart';

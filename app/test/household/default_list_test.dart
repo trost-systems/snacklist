@@ -1,5 +1,5 @@
 import 'package:family_groceries/analytics/flags.dart';
-import 'package:family_groceries/app/localizations.dart';
+import 'package:family_groceries/core/localizations.dart';
 import 'package:family_groceries/household/household_page.dart';
 import 'package:family_groceries/household/household_switcher.dart';
 import 'package:family_groceries/household/invite_repository.dart';

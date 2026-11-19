@@ -1,15 +1,15 @@
 # A page's ScaffoldMessenger shows its snackbars in the page's Scaffold, which an open dialog's or
 # sheet's barrier covers: dimmed, out of reach, out of the semantics tree. Refusals said while a
 # name dialog or the item sheet stayed open went unseen (job 116). Notices.of(context) picks the
-# messenger above the routes while a dialog or sheet is open (app/lib/app/notices.dart).
+# messenger above the routes while a dialog or sheet is open (app/lib/core/notices.dart).
 id: snackbars-through-notices
 language: dart
 severity: error
 files:
   - app/lib/**
 ignores:
-  - app/lib/app/notices.dart
+  - app/lib/core/notices.dart
 rule:
   kind: member_expression
   regex: '^ScaffoldMessenger\s*\.\s*(of|maybeOf)$'
-message: 'ScaffoldMessenger.of/maybeOf shows under an open dialog''s barrier: use Notices.of(context) or Notices.maybeOf(context) (app/lib/app/notices.dart)'
+message: 'ScaffoldMessenger.of/maybeOf shows under an open dialog''s barrier: use Notices.of(context) or Notices.maybeOf(context) (app/lib/core/notices.dart)'

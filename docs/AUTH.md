@@ -148,8 +148,8 @@ Client IDs are public; secrets are not.
 
 Release builds read the app values with
 `flutter build … --dart-define-from-file=config/auth.json`. Only
-`app/lib/app/environment.dart` reads them. An empty value hides the button.
-A unit test (`test/app/auth_config_test.dart`) fails when `Auth.xcconfig`
+`app/lib/core/environment.dart` reads them. An empty value hides the button.
+A unit test (`test/core/auth_config_test.dart`) fails when `Auth.xcconfig`
 does not hold the reversed `GOOGLE_IOS_CLIENT_ID`.
 
 `supabase/config.toml` has `[auth.external.google]` and `[auth.external.apple]`

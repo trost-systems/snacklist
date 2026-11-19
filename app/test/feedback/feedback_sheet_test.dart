@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:family_groceries/app/language.dart';
+import 'package:family_groceries/core/language.dart';
 import 'package:family_groceries/design/hex_checkbox.dart';
 import 'package:family_groceries/feedback/feedback_context.dart';
 import 'package:family_groceries/feedback/feedback_repository.dart';

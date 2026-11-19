@@ -1,7 +1,7 @@
 // Goldens of the themed components in every state, light and dark (design
 // job 52). After a deliberate look change:
 //   flutter test --update-goldens test/design/components_golden_test.dart
-import 'package:family_groceries/app/theme.dart';
+import 'package:family_groceries/core/theme.dart';
 import 'package:family_groceries/design/field_border.dart';
 import 'package:family_groceries/design/hex_checkbox.dart';
 import 'package:family_groceries/design/hex_segmented.dart';

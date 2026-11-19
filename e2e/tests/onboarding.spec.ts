@@ -2,7 +2,7 @@
 // with the stores picked, job 58, or without) or join one with an invite, invite the partner, manage invites.
 // Since job 168b creating one goes through the guided start's questions (guided-start.spec.ts).
 // The acceptance criteria on the web; the mobile parts are unit-tested (app/test/household,
-// app/test/app/router_test.dart, deep_links_config_test.dart) and on Peter's device checklist.
+// app/test/shell/router_test.dart, deep_links_config_test.dart) and on Peter's device checklist.
 import { expect, test, type Browser, type Page } from './fixtures';
 import process from 'node:process';
 import {
