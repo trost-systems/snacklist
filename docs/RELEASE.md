@@ -313,9 +313,18 @@ promote workflow (`.github/workflows/play-promote.yml`, lane
 `android promote_draft`) sets that versionCode as alpha's draft release:
 
 ```bash
-gh workflow run play-promote.yml -f version_code=1414 -f track=alpha
-gh workflow run play-promote.yml -f version_code=1414 -f commit=false   # validate only
+gh workflow run play-promote.yml -f version_code=<versionCode> -f commit=false   # validate only, first
+gh workflow run play-promote.yml -f version_code=<versionCode> -f track=alpha
 ```
+
+Run it right after the release run that uploaded the build, and check with
+`commit=false` first. Observed in job 316, not documented by Google: the Play
+API stops offering an internal bundle once newer ones replace it. Its edit
+listed build 1414 at 07:59 UTC on 2026-11-19; by 08:53 UTC, after Release run
+411 had uploaded 1421, Play refused it with "The following APK version codes
+could not be found", and 1415 too. When Play gives that answer, add the build
+by hand in Play Console: Closed testing, alpha, Create release, Add from
+library, and save it as a draft without rolling it out.
 
 It never uploads a bundle, never touches production and creates only a draft,
 which the commit neither sends for review nor rolls out. The commit sets
@@ -327,7 +336,9 @@ out in Play Console; an older draft is replaced. The release notes are copied
 from a release that already carries the versionCode (internal first), else the
 draft has none. Play refuses a versionCode it does not have when the lane
 sets the track or at validate or commit; the commit is atomic, so a refused
-run changes nothing. The log lists every track before, and alpha read back afterwards from a
+run changes nothing, and the lane deletes its edit. The draft's name carries
+the versionCode, such as `0.1.0 (1422)`, so it differs from a live release of
+the same version. The log lists the edit's bundles and every track before, and alpha read back afterwards from a
 second edit that is deleted; the run fails if alpha then has no draft with
 the versionCode. Like a release run, it works from `main` only (the `release`
 environment).

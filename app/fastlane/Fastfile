@@ -434,7 +434,7 @@ platform :android do
     # informs. Play refuses a versionCode it lacks when the track is set or at validate or commit;
     # the commit is atomic, so nothing lands.
     listed = client.aab_version_codes
-    UI.message("The edit lists #{listed.size} bundles (#{listed.min}..#{listed.max}), " \
+    UI.message("The edit lists #{listed.size} bundles (#{listed.sort.join(',')}), " \
                "#{listed.include?(version_code) ? '' : 'not '}#{version_code}")
     tracks = client.tracks
     tracks.each { |t| UI.message("Before: #{t.track}: #{describe_releases(t)}") }
@@ -442,19 +442,30 @@ platform :android do
              .flat_map { |t| t.releases || [] }
              .find { |r| carries?(r, version_code) }
     UI.message(source ? "Release notes from the release #{source.name}" : "No release carries #{version_code}: no release notes")
+    # The versionCode in the name tells the draft apart from a live release of the same version.
     # A field set to nil is sent and breaks the client's serializer; leave it unset instead.
-    copied = { name: source&.name, release_notes: source&.release_notes }.compact
-    draft = AndroidPublisher::TrackRelease.new(status: Supply::ReleaseStatus::DRAFT, version_codes: [version_code], **copied)
+    copied = { release_notes: source&.release_notes }.compact
+    draft = AndroidPublisher::TrackRelease.new(name: source ? "#{source.name} (#{version_code})" : version_code.to_s,
+                                               status: Supply::ReleaseStatus::DRAFT, version_codes: [version_code], **copied)
     track = tracks.find { |t| t.track == track_name } || AndroidPublisher::Track.new(track: track_name, releases: [])
     track.releases = (track.releases || []).reject { |r| r.status == Supply::ReleaseStatus::DRAFT } + [draft]
-    client.update_track(track_name, track)
-    if ENV.fetch("PROMOTE_COMMIT", "false") == "true"
-      client.commit_current_edit!
-      UI.success("Committed: #{track_name} has versionCode #{version_code} as its draft release")
-    else
-      client.validate_current_edit!
-      client.abort_current_edit
-      UI.success("Validated only (PROMOTE_COMMIT is not true); nothing changed on Play")
+    begin
+      client.update_track(track_name, track)
+      if ENV.fetch("PROMOTE_COMMIT", "false") == "true"
+        client.commit_current_edit!
+        UI.success("Committed: #{track_name} has versionCode #{version_code} as its draft release")
+      else
+        client.validate_current_edit!
+        client.abort_current_edit
+        UI.success("Validated only (PROMOTE_COMMIT is not true); nothing changed on Play")
+      end
+    rescue StandardError
+      begin
+        client.abort_current_edit
+      rescue StandardError => e
+        UI.important("Could not delete the edit (Play expires it): #{e.message}")
+      end
+      raise
     end
 
     check = play_client
