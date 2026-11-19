@@ -530,7 +530,8 @@ verify_jwt = false
 
 [functions.report]
 import_map = "./functions/deno.json"
-# DSA reports: only the snacklist.app Vercel function calls it, with the waitlist's secret (job 275).
+# DSA reports: the snacklist.app Vercel function with the waitlist's secret (job 275), and the app at
+# /report/app with its own session token, which the function checks (job 281).
 verify_jwt = false
 
 [functions.feedback-digest]

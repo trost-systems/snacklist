@@ -1,8 +1,10 @@
-// The DSA report form's endpoint: /functions/v1/report (job 275). Not wrapped in withTelemetry:
-// nothing about a report leaves the function but the confirmation mail.
+// The DSA report endpoints: /functions/v1/report for the site's form (job 275), /report/app for
+// the app (job 281). Not wrapped in withTelemetry: nothing about a report leaves the function but
+// the confirmation mail.
+import { authenticateSession } from '../_shared/auth.ts';
 import { serviceDb } from '../_shared/db.ts';
 import { configFrom, createHandler } from './handler.ts';
-import { sqlStore } from './store.ts';
+import { sqlAppStore, sqlStore } from './store.ts';
 
 declare const EdgeRuntime: { waitUntil(p: Promise<unknown>): void };
 
@@ -15,6 +17,7 @@ Deno.serve(createHandler({
   config,
   mailer,
   store: sqlStore(serviceDb),
+  app: { authenticate: (req) => authenticateSession(req), store: sqlAppStore(serviceDb) },
   now: () => new Date(),
   random: (bytes) => crypto.getRandomValues(new Uint8Array(bytes)),
   defer: (work) => local ? work() : EdgeRuntime.waitUntil(Promise.resolve().then(work)),

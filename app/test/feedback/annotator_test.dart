@@ -75,6 +75,9 @@ Future<({Future<Uint8List?> result, Size size})> open(
   Brightness brightness = Brightness.light,
   Locale locale = const Locale('de'),
   void Function(Canvas, Size) screen = blank,
+
+  /// Opened for a report (job 281).
+  bool forReport = false,
 }) async {
   tester.view
     ..devicePixelRatio = 1
@@ -94,7 +97,11 @@ Future<({Future<Uint8List?> result, Size size})> open(
           body: Center(
             child: TextButton(
               key: const ValueKey('go'),
-              onPressed: () => result = annotateScreenshot(context, image),
+              onPressed: () => result = annotateScreenshot(
+                context,
+                image,
+                forReport: forReport,
+              ),
               child: const SizedBox.square(dimension: 48),
             ),
           ),
@@ -404,6 +411,63 @@ void main() {
         }
       }
     }
+  });
+
+  testWidgets('for a report the cover tool comes first and is picked, under '
+      "the report's hint: a drag hides what is under it", (tester) async {
+    final (:result, :size) = await open(tester, forReport: true);
+    expect(
+      find.text('Verdecke darauf, was nichts mit der Meldung zu tun hat.'),
+      findsOneWidget,
+    );
+    expect(
+      tester.getTopLeft(key('annotator-tool-cover')).dx,
+      lessThan(tester.getTopLeft(key('annotator-tool-pen')).dx),
+      reason: 'the cover tool comes first',
+    );
+    await drag(tester, const [
+      Offset(0.2, 0.2),
+      Offset(0.5, 0.3),
+      Offset(0.8, 0.4),
+    ]);
+    final png = await done(tester, result);
+    final (:width, height: _, :pixels) = await decode(tester, png!);
+    final scale = width / size.width;
+    Color pixel(double x, double y) {
+      final i =
+          ((y * size.height * scale).round() * width +
+              (x * size.width * scale).round()) *
+          4;
+      return Color.fromARGB(
+        pixels.getUint8(i + 3),
+        pixels.getUint8(i),
+        pixels.getUint8(i + 1),
+        pixels.getUint8(i + 2),
+      );
+    }
+
+    final ink = SnacklistColors.of(Brightness.light).ink;
+    expect(pixel(0.5, 0.3), ink, reason: "the box's inside is covered");
+    expect(pixel(0.3, 0.25), ink);
+    expect(
+      pixel(0.9, 0.6),
+      const Color(0xFFFFFFFF),
+      reason: 'outside it the screen shows',
+    );
+  });
+
+  testWidgets("feedback's annotator starts with the pen, the cover tool last", (
+    tester,
+  ) async {
+    await open(tester);
+    expect(
+      find.text('Verdecke darauf, was nichts mit der Meldung zu tun hat.'),
+      findsNothing,
+    );
+    expect(
+      tester.getTopLeft(key('annotator-tool-cover')).dx,
+      greaterThan(tester.getTopLeft(key('annotator-tool-text')).dx),
+    );
   });
 
   testWidgets('a rectangle dragged up and to the left frames all it was '

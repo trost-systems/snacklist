@@ -25,6 +25,7 @@ import 'package:family_groceries/more/more_screen.dart';
 import 'package:family_groceries/purchases/premium_server.dart';
 import 'package:family_groceries/purchases/purchase_repository.dart';
 import 'package:family_groceries/purchases/store_prices.dart';
+import 'package:family_groceries/report/report_repository.dart';
 import 'package:family_groceries/review/store_review.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/settings/account_repository.dart';
@@ -49,6 +50,7 @@ import '../household/harness.dart'
     show FakeInvites, FakeSharer, MemoryPendingStore;
 import '../list/fake_repository.dart';
 import '../purchases/fakes.dart';
+import '../report/fakes.dart';
 import '../review/fakes.dart';
 import '../settings/fake_account.dart';
 
@@ -127,6 +129,7 @@ typedef More = ({
   GoRouter router,
   Analytics analytics,
   FakeFeedbackRepository feedback,
+  FakeReportRepository report,
   ScreenTracker screens,
   ScreenCapture capture,
   ShakeSetting shake,
@@ -199,6 +202,9 @@ Future<More> pumpMore(
   /// 268); an empty one by default.
   FakeFeedbackRepository? feedback,
 
+  /// The `report` function (job 281); one without a prefill by default.
+  FakeReportRepository? report,
+
   /// The accelerometer of `app`'s shell; none by default (tests have no
   /// sensors plugin).
   Stream<AccelerometerEvent> shakeSamples = const Stream.empty(),
@@ -254,6 +260,7 @@ Future<More> pumpMore(
   final repo = FakeRepository();
   seed?.call(repo);
   final server = feedback ?? FakeFeedbackRepository();
+  final reports = report ?? FakeReportRepository();
   final feedbackCubit = FeedbackCubit(server, analytics: shownAnalytics);
   addTearDown(feedbackCubit.close);
   final inbox = FeedbackInbox(server);
@@ -310,6 +317,7 @@ Future<More> pumpMore(
         RepositoryProvider.value(value: screens),
         RepositoryProvider.value(value: capture),
         RepositoryProvider<FeedbackDevice>.value(value: FakeFeedbackDevice()),
+        RepositoryProvider<ReportRepository>.value(value: reports),
         RepositoryProvider<InviteRepository>.value(
           value: invites ?? FakeInvites(),
         ),
@@ -367,6 +375,7 @@ Future<More> pumpMore(
     router: router,
     analytics: shownAnalytics,
     feedback: server,
+    report: reports,
     screens: screens,
     capture: capture,
     shake: shake,

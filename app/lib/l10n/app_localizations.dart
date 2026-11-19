@@ -5629,6 +5629,390 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Name gespeichert'**
   String get yourNameSaved;
+
+  /// More (flag report-content-entry, job 281): subtitle of the feedback row (Feedback & ideas or Send feedback); Legal N-226's second label route
+  ///
+  /// In de, this message translates to:
+  /// **'Auch: Inhalte melden'**
+  String get reportEntryAlso;
+
+  /// Job 281: the button in Feedback & ideas (and at the top of the feedback form without FB4) that opens the report form; also the form's title
+  ///
+  /// In de, this message translates to:
+  /// **'Inhalt melden'**
+  String get reportContent;
+
+  /// Job 281: under the Report content button
+  ///
+  /// In de, this message translates to:
+  /// **'Nur wir lesen die Meldung, niemand in deinem Haushalt.'**
+  String get reportEntryHint;
+
+  /// Report form (Legal B.4, verbatim): the intro at the top
+  ///
+  /// In de, this message translates to:
+  /// **'Hier meldest du Inhalte in Snacklist, die du für rechtswidrig hältst, zum Beispiel einen Eintrag, eine Liste, einen Haushaltsnamen oder ein Foto. Für Fragen oder Fehler nutze bitte Feedback oder support@snacklist.app. Dieses Formular ist kein Notruf: Ist jemand in akuter Gefahr, ruf sofort den örtlichen Notruf an, in der EU die 112.'**
+  String get reportIntro;
+
+  /// Report form (Legal B.4): tag after a required question, shown in brackets
+  ///
+  /// In de, this message translates to:
+  /// **'Pflicht'**
+  String get reportRequired;
+
+  /// Report form (Legal B.4): tag after the name and e-mail labels, shown in brackets
+  ///
+  /// In de, this message translates to:
+  /// **'empfohlen'**
+  String get reportRecommended;
+
+  /// Report form (Legal B.4): question 1, the kind of report
+  ///
+  /// In de, this message translates to:
+  /// **'Worum geht es?'**
+  String get reportAbout;
+
+  /// Report form (Legal B.4): kind of report, sent as hate
+  ///
+  /// In de, this message translates to:
+  /// **'Beleidigung, Bedrohung oder Hetze'**
+  String get reportCategoryHate;
+
+  /// Report form (Legal B.4): kind of report, sent as personal_rights
+  ///
+  /// In de, this message translates to:
+  /// **'Verletzung meiner Persönlichkeitsrechte oder Privatsphäre (z. B. Foto von mir)'**
+  String get reportCategoryPersonalRights;
+
+  /// Report form (Legal B.4): kind of report, sent as ip
+  ///
+  /// In de, this message translates to:
+  /// **'Urheber- oder Markenrecht'**
+  String get reportCategoryIp;
+
+  /// Report form (Legal B.4): kind of report, sent as csam; hides name and e-mail
+  ///
+  /// In de, this message translates to:
+  /// **'Darstellung sexuellen Kindesmissbrauchs'**
+  String get reportCategoryCsam;
+
+  /// Report form (Legal B.4): kind of report, sent as danger
+  ///
+  /// In de, this message translates to:
+  /// **'Gefahr für Leben oder Sicherheit'**
+  String get reportCategoryDanger;
+
+  /// Report form (Legal B.4): kind of report, sent as other
+  ///
+  /// In de, this message translates to:
+  /// **'Anderer Rechtsverstoß'**
+  String get reportCategoryOther;
+
+  /// Report form (Legal B.4): question 2; also the title of the picker sheet
+  ///
+  /// In de, this message translates to:
+  /// **'Wo ist der Inhalt?'**
+  String get reportWhere;
+
+  /// Report form (Legal B.4, the app's sentence, N-260 cut 2): help under question 2 once something is picked
+  ///
+  /// In de, this message translates to:
+  /// **'In der App wählen wir den Eintrag, die Liste oder das Foto für dich aus – bitte prüfe die Auswahl.'**
+  String get reportWhereHelp;
+
+  /// Report form (job 278 prototype): help under question 2 before anything is picked
+  ///
+  /// In de, this message translates to:
+  /// **'Wähle den Eintrag, die Liste oder den Haushaltsnamen. Je genauer, desto schneller finden wir ihn.'**
+  String get reportWhereChooseHelp;
+
+  /// Report form (Legal N-260, verbatim): help with the text field after Somewhere else was picked
+  ///
+  /// In de, this message translates to:
+  /// **'Beschreibe, wo er ist: Name des Haushalts und der Liste und der genaue Text des Eintrags. Je genauer, desto schneller finden wir ihn.'**
+  String get reportWhereElsewhereHelp;
+
+  /// Report form (job 278 prototype): opens the picker for question 2
+  ///
+  /// In de, this message translates to:
+  /// **'Auswählen'**
+  String get reportWhereChoose;
+
+  /// Report form (job 278 prototype): opens the picker again once something is picked
+  ///
+  /// In de, this message translates to:
+  /// **'Ändern'**
+  String get reportWhereChange;
+
+  /// Report form (Legal B.4): question 3
+  ///
+  /// In de, this message translates to:
+  /// **'Warum ist der Inhalt rechtswidrig?'**
+  String get reportWhy;
+
+  /// Report form (Legal B.4): help under question 3
+  ///
+  /// In de, this message translates to:
+  /// **'Erkläre bitte so genau wie möglich, welches Recht verletzt wird und warum. Wenn es um deine eigenen Rechte geht, sag uns, in welcher Beziehung du zum Inhalt stehst.'**
+  String get reportWhyHelp;
+
+  /// Report form: characters of the reason used, of at most 5,000
+  ///
+  /// In de, this message translates to:
+  /// **'{count} / {max}'**
+  String reportCounter(int count, int max);
+
+  /// Report form (Legal B.4): label of the name field
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Name'**
+  String get reportName;
+
+  /// Report form (Legal B.4): label of the e-mail field
+  ///
+  /// In de, this message translates to:
+  /// **'Deine E-Mail-Adresse'**
+  String get reportEmail;
+
+  /// Report form (Legal B.4): help under name and e-mail
+  ///
+  /// In de, this message translates to:
+  /// **'Wir brauchen Namen und E-Mail-Adresse, um dir den Eingang zu bestätigen und dir unsere Entscheidung mitzuteilen. Ohne sie prüfen wir die Meldung trotzdem, können dir aber nicht antworten.'**
+  String get reportContactHelp;
+
+  /// Report form (Legal B.4): shown for child sexual abuse material instead of name and e-mail, and as their help once added
+  ///
+  /// In de, this message translates to:
+  /// **'Bei Darstellungen sexuellen Kindesmissbrauchs kannst du ohne Namen und E-Mail-Adresse melden.'**
+  String get reportCsamNote;
+
+  /// Report form (job 278 prototype): shows the hidden name and e-mail fields for child sexual abuse material
+  ///
+  /// In de, this message translates to:
+  /// **'Namen und E-Mail-Adresse angeben'**
+  String get reportCsamAdd;
+
+  /// Report form (Legal B.4): the required check box
+  ///
+  /// In de, this message translates to:
+  /// **'Ich bin in gutem Glauben davon überzeugt, dass meine Angaben und Vorwürfe in dieser Meldung richtig und vollständig sind.'**
+  String get reportGoodFaith;
+
+  /// Report form (Legal B.4 without 'in the app', N-260 cut 1): opens the annotator on the screen before More (flag feedback-fb2)
+  ///
+  /// In de, this message translates to:
+  /// **'Screenshot anhängen (optional)'**
+  String get reportScreenshot;
+
+  /// Report form (Legal B.4): help under the screenshot button; also the annotator's hint when it opens for a report
+  ///
+  /// In de, this message translates to:
+  /// **'Verdecke darauf, was nichts mit der Meldung zu tun hat.'**
+  String get reportScreenshotHelp;
+
+  /// Report form (job 278 prototype): next to the attached screenshot's preview
+  ///
+  /// In de, this message translates to:
+  /// **'Screenshot angehängt'**
+  String get reportScreenshotAttached;
+
+  /// Report form (job 278 prototype): removes the attached screenshot
+  ///
+  /// In de, this message translates to:
+  /// **'Entfernen'**
+  String get reportScreenshotRemove;
+
+  /// Report form (Legal B.4): footer before the link to the privacy policy
+  ///
+  /// In de, this message translates to:
+  /// **'Wie wir mit deinen Angaben umgehen:'**
+  String get reportPrivacyLead;
+
+  /// Report form (Legal B.4): footer link to the privacy policy's section on reports
+  ///
+  /// In de, this message translates to:
+  /// **'Datenschutzerklärung, Abschnitt 10'**
+  String get reportPrivacyLink;
+
+  /// Report form (Legal B.4): the send button
+  ///
+  /// In de, this message translates to:
+  /// **'Meldung senden'**
+  String get reportSend;
+
+  /// Report form (job 278 prototype): error under question 1 after Send
+  ///
+  /// In de, this message translates to:
+  /// **'Wähle, worum es geht.'**
+  String get reportErrorAbout;
+
+  /// Report form (job 278 prototype): error under question 2 after Send
+  ///
+  /// In de, this message translates to:
+  /// **'Wähle, wo der Inhalt ist.'**
+  String get reportErrorWhere;
+
+  /// Report form (job 278 prototype): error under question 3 after Send, with the characters still missing
+  ///
+  /// In de, this message translates to:
+  /// **'Mindestens 20 Zeichen (noch {count}).'**
+  String reportErrorShort(int count);
+
+  /// Report form (job 278 prototype): error under question 3 after Send
+  ///
+  /// In de, this message translates to:
+  /// **'Höchstens 5.000 Zeichen.'**
+  String get reportErrorLong;
+
+  /// Report form (job 281): error under the e-mail field after Send when it is no address
+  ///
+  /// In de, this message translates to:
+  /// **'Prüfe die E-Mail-Adresse.'**
+  String get reportErrorEmail;
+
+  /// Report form (job 278 prototype): error under the good-faith check box after Send
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte bestätige das, um die Meldung zu senden.'**
+  String get reportErrorGoodFaith;
+
+  /// Report form (Legal N-242, without the link): the server refused it, too many reports this hour
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Meldung wurde nicht gesendet, weil gerade zu viele Meldungen ankommen. Deine Angaben sind noch da. Bitte versuch es in einer Stunde noch einmal oder schick sie per E-Mail an unsere Kontaktstelle support@snacklist.app: worum es geht, wo der Inhalt ist und warum er rechtswidrig ist. Auch so bearbeiten wir deine Meldung.'**
+  String get reportFailedRateLimited;
+
+  /// Report form (the web form's text, without the link): the server answered with an error
+  ///
+  /// In de, this message translates to:
+  /// **'Die Meldung konnte gerade nicht gesendet werden. Bitte versuch es gleich noch einmal oder schreib an support@snacklist.app.'**
+  String get reportFailedUnavailable;
+
+  /// Report form (the web form's text): no answer from the server
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Verbindung. Deine Angaben sind noch da: Bitte versuch es gleich noch einmal.'**
+  String get reportFailedOffline;
+
+  /// Report form: the screenshot is over the 2 MiB the server takes, refused before sending or by the server (413)
+  ///
+  /// In de, this message translates to:
+  /// **'Der Screenshot ist zu groß. Entferne ihn und sende die Meldung noch einmal.'**
+  String get reportFailedScreenshotTooLarge;
+
+  /// Report picker (job 278 prototype): the search field's hint
+  ///
+  /// In de, this message translates to:
+  /// **'Einträge und Listen suchen'**
+  String get reportPickerSearch;
+
+  /// Report picker (job 278 prototype): section of the household's items
+  ///
+  /// In de, this message translates to:
+  /// **'Einträge'**
+  String get reportPickerItems;
+
+  /// Report picker (job 278 prototype): section of the household's lists
+  ///
+  /// In de, this message translates to:
+  /// **'Listen'**
+  String get reportPickerLists;
+
+  /// Report picker (job 278 prototype): section with the household's name
+  ///
+  /// In de, this message translates to:
+  /// **'Name des Haushalts'**
+  String get reportPickerHousehold;
+
+  /// Report picker (job 278 prototype): the last row, for a place the picker does not list
+  ///
+  /// In de, this message translates to:
+  /// **'Woanders'**
+  String get reportPickerElsewhere;
+
+  /// Report form (job 278 prototype): kind of the picked place, above its name
+  ///
+  /// In de, this message translates to:
+  /// **'Eintrag'**
+  String get reportKindItem;
+
+  /// Report form (job 278 prototype): kind of the picked place, above its name
+  ///
+  /// In de, this message translates to:
+  /// **'Liste'**
+  String get reportKindList;
+
+  /// Report form (job 278 prototype): kind of the picked place, above its name
+  ///
+  /// In de, this message translates to:
+  /// **'Haushalt'**
+  String get reportKindHousehold;
+
+  /// Report form: the picked item's, list's or household's name in quotes
+  ///
+  /// In de, this message translates to:
+  /// **'„{name}“'**
+  String reportQuoted(String name);
+
+  /// Report form (job 278 prototype): under a picked item, its list and household
+  ///
+  /// In de, this message translates to:
+  /// **'Liste „{list}“ · {household}'**
+  String reportItemContext(String list, String household);
+
+  /// Report confirmation (job 278 prototype): heading
+  ///
+  /// In de, this message translates to:
+  /// **'Meldung gesendet'**
+  String get reportSentTitle;
+
+  /// Report confirmation (job 278 prototype): above the report's number
+  ///
+  /// In de, this message translates to:
+  /// **'Nummer'**
+  String get reportNumber;
+
+  /// Report confirmation (job 278 prototype): copies the number
+  ///
+  /// In de, this message translates to:
+  /// **'Nummer kopieren'**
+  String get reportCopyNumber;
+
+  /// Report confirmation (job 278 prototype): the copy button once the number was copied
+  ///
+  /// In de, this message translates to:
+  /// **'Kopiert'**
+  String get reportCopied;
+
+  /// Report confirmation (Legal B.4, verbatim)
+  ///
+  /// In de, this message translates to:
+  /// **'Danke, deine Meldung ist eingegangen. Nummer: {ref}. Wir prüfen sie selbst – ohne automatische Entscheidung – und melden uns, wenn du eine E-Mail-Adresse angegeben hast.'**
+  String reportThanks(String ref);
+
+  /// Report confirmation (job 278 prototype): when an e-mail address was sent
+  ///
+  /// In de, this message translates to:
+  /// **'Eine Bestätigung ist an {email} unterwegs.'**
+  String reportMailed(String email);
+
+  /// Report confirmation (job 278 prototype): when no e-mail address was sent
+  ///
+  /// In de, this message translates to:
+  /// **'Du hast keine E-Mail-Adresse angegeben, darum können wir dir nicht antworten. Heb die Nummer auf, wenn du nachfragen willst.'**
+  String get reportNotMailed;
+
+  /// Report confirmation (job 278 prototype)
+  ///
+  /// In de, this message translates to:
+  /// **'Meldungen stehen nicht unter Deine Notizen, und niemand in deinem Haushalt sieht sie.'**
+  String get reportNotInNotes;
+
+  /// Report confirmation (job 278 prototype): back to where the report was started
+  ///
+  /// In de, this message translates to:
+  /// **'Fertig'**
+  String get reportDone;
 }
 
 class _AppLocalizationsDelegate

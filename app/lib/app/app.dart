@@ -33,6 +33,7 @@ import 'package:family_groceries/purchases/entitlements.dart';
 import 'package:family_groceries/purchases/premium_server.dart';
 import 'package:family_groceries/purchases/purchase_cubit.dart';
 import 'package:family_groceries/purchases/store_prices.dart';
+import 'package:family_groceries/report/report_repository.dart';
 import 'package:family_groceries/review/review_prompt.dart';
 import 'package:family_groceries/review/store_review.dart';
 import 'package:family_groceries/session/mail_language.dart';
@@ -93,6 +94,9 @@ class const App({
 
   /// Build and device facts for feedback; the plugins by default.
   final FeedbackDevice? feedbackDevice,
+
+  /// Where reports of illegal content go (job 281); Supabase by default.
+  final ReportRepository? report,
 
   /// The language picked under More's Einstellungen, read before the
   /// first frame.
@@ -293,6 +297,10 @@ class _AppState() extends State<App> {
             SupabaseOnboardingBackend(Supabase.instance.client),
       ),
       RepositoryProvider.value(value: widget.account),
+      RepositoryProvider<ReportRepository>(
+        create: (_) =>
+            widget.report ?? SupabaseReportRepository(Supabase.instance.client),
+      ),
       RepositoryProvider.value(value: _screens),
       RepositoryProvider.value(value: _capture),
       RepositoryProvider.value(value: _device),

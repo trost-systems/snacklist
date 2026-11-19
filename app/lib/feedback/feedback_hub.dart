@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/app/guides.dart';
 import 'package:family_groceries/app/legal_links.dart';
 import 'package:family_groceries/app/notices.dart';
@@ -13,12 +14,14 @@ import 'package:family_groceries/feedback/feedback_inbox.dart';
 import 'package:family_groceries/feedback/feedback_note.dart';
 import 'package:family_groceries/feedback/feedback_sheet.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
+import 'package:family_groceries/report/report_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// Feedback & Ideen (job 268, FB4): write to Snacklist Support, the user's
-/// own notes with their status, and the listed ideas to +1.
+/// Feedback & Ideen (job 268, FB4): write to Snacklist Support, report
+/// content (job 281, flag `report-content-entry`), the user's own notes
+/// with their status, and the listed ideas to +1.
 class const FeedbackHubPage({super.key}) extends StatefulWidget {
   @override
   State<FeedbackHubPage> createState() => _FeedbackHubPageState();
@@ -38,6 +41,9 @@ class _FeedbackHubPageState() extends State<FeedbackHubPage> {
     final t = SnacklistColors.of(Theme.of(context).brightness);
     final state = context.watch<FeedbackInbox>().state;
     final language = Localizations.localeOf(context).languageCode;
+    final report = context.select<Flags?, bool>(
+      (flags) => flags?.isOn(reportContentEntryFlag) ?? false,
+    );
     const side = EdgeInsets.symmetric(horizontal: HlSpace.s4);
     return InboxLoader(
       child: ListView(
@@ -56,6 +62,13 @@ class _FeedbackHubPageState() extends State<FeedbackHubPage> {
               label: Text(l10n.feedbackWrite),
             ),
           ),
+          if (report)
+            Padding(
+              padding: side.copyWith(top: HlSpace.s3),
+              child: ReportEntry(
+                onPressed: () => unawaited(openReportForm(context)),
+              ),
+            ),
           HlSectionLabel(l10n.feedbackYourNotes),
           if (state.failed)
             _Retry(onRetry: () => unawaited(refreshInbox(context)))

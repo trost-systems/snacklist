@@ -71,6 +71,14 @@ const addFeedbackListFlag = 'add-feedback-list';
 /// a row to change it. Off, neither shows.
 const displayNameFlag = 'display-name';
 
+/// The flag that turns on reporting content in the app (job 281, RC2):
+/// More's feedback row says „Auch: Inhalte melden“, Feedback & ideas (or,
+/// without FB4, the feedback form opened from More) has „Inhalt melden“,
+/// which opens the report form (Legal B.4) with its picker of the
+/// household's items and lists and the confirmation with the report's
+/// number. Off, nothing of it shows.
+const reportContentEntryFlag = 'report-content-entry';
+
 /// PostHog feature flags, the app's runtime toggles (job 44,
 /// docs/ANALYTICS.md "Feature flags"). Read a toggle with [isOn] wherever it
 /// matters; nothing else in the app reads PostHog flags.

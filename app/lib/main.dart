@@ -25,6 +25,7 @@ import 'package:family_groceries/purchases/premium_server.dart';
 import 'package:family_groceries/purchases/purchase_cubit.dart';
 import 'package:family_groceries/purchases/setup.dart';
 import 'package:family_groceries/purchases/store_prices.dart';
+import 'package:family_groceries/report/report_repository.dart';
 import 'package:family_groceries/review/review_gates.dart';
 import 'package:family_groceries/review/review_prompt.dart';
 import 'package:family_groceries/review/store_review.dart';
@@ -196,6 +197,7 @@ Future<void> _main(WidgetsBinding Function() binding) async {
       cache: cache,
       account: account,
       feedback: SupabaseFeedbackRepository(client),
+      report: SupabaseReportRepository(client),
       invites: SupabaseInviteRepository(client),
       pendingInvite: pendingInvite,
       yourName: YourNameCubit(

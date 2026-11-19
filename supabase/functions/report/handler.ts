@@ -8,10 +8,21 @@
 //     everyone), 503 unavailable
 // Everything else, and every request without the secret, is 404, as is every request while
 // WAITLIST_PROXY_SECRET is unset.
-// Logs are fixed codes ("report: stored", "report 429"): never a body, address, name or a Postgres
-// message (a check violation's detail holds the row).
+//
+// The app calls its own route (job 281), with its session token and no secret, cross-origin:
+//   POST /report/app  {locale, category, target, location, reason, name, email, good_faith,
+//                      screenshot}
+//     target is {kind: household|list|item, id} or {kind: elsewhere}; screenshot, optional, is a
+//     PNG in base64 of at most MAX_SCREENSHOT bytes.
+//     201 {"ref"}, 400 invalid_request, 401/403 the shared auth answer, 413 too_large,
+//     429 rate_limited (APP_LIMITS: per user, and app reports for everyone), 503 unavailable
+// Logs are fixed codes ("report: stored", "report 429"): never a body, address, name, user id or
+// a Postgres message (a check violation's detail holds the row).
 import { confirmationMail, type Locale } from './mail.ts';
+import { AuthError } from '../_shared/auth.ts';
+import { discardUnreadBody, json, preflight } from '../_shared/http.ts';
 import { type Mailer, RESEND_API_URL, resendMailer } from '../_shared/resend.ts';
+import { isPng } from '../feedback-screenshots/upload.ts';
 import { sameSecret } from '../waitlist/crypto.ts';
 
 export interface Config {
@@ -40,6 +51,12 @@ export const LIMITS = { perHour: 200 };
  */
 export const CONFIRM_RETRY_MS = [2_000, 8_000];
 
+/**
+ * The app route's own: per signed-in user, and app reports for everyone as a circuit breaker
+ * (Legal N-242). Every app report with an address is confirmed (N-241): no per-address cap.
+ */
+export const APP_LIMITS = { perUserHour: 5, perHour: 200 };
+
 export const CATEGORIES = ['hate', 'personal_rights', 'ip', 'csam', 'danger', 'other'] as const;
 export type Category = (typeof CATEGORIES)[number];
 
@@ -51,6 +68,17 @@ export interface Report {
   reason: string;
   name: string | null;
   email: string | null;
+}
+
+/** What an app report is about: the household, list or item the reporter picked, or elsewhere. */
+export type Target =
+  | { kind: 'household' | 'list' | 'item'; id: string }
+  | { kind: 'elsewhere' };
+
+/** A valid app report; screenshot is the PNG's bytes. */
+export interface AppReport extends Report {
+  target: Target;
+  screenshot: Uint8Array | null;
 }
 
 export interface Stored {
@@ -68,9 +96,27 @@ export interface Store {
   confirmationSent(id: string, now: Date): Promise<boolean>;
 }
 
+/** content_report_submit_app: refused says which limit stored nothing. */
+export interface AppStore {
+  submit(
+    userId: string,
+    report: AppReport,
+    now: Date,
+    limits: typeof APP_LIMITS,
+  ): Promise<Stored | { refused: 'user' | 'global' }>;
+}
+
+export interface AppDeps {
+  /** The session's user; throws an AuthError when it can't (authenticateSession). */
+  authenticate(req: Request): Promise<{ userId: string }>;
+  store: AppStore;
+}
+
 export interface Deps {
   config: Config | null;
   store: Store;
+  /** The app route; without it /report/app is 404 like any other path. */
+  app?: AppDeps;
   mailer: Mailer | null;
   now(): Date;
   random(bytes: number): Uint8Array;
@@ -101,12 +147,23 @@ const answer = (status: number, body: unknown) => {
 const notFound = () => answer(404, { error: 'not_found' });
 const invalidRequest = () => answer(400, { error: 'invalid_request' });
 
+/** The app route's answers: the same logs, with CORS for the web build. */
+const appAnswer = (status: number, body: unknown, headers: Record<string, string> = {}) => {
+  if (status >= 300) console.log(`report ${status}`);
+  return json(body, { status, headers: { 'cache-control': 'no-store', ...headers } });
+};
+
 export const MAX_BODY = 64 * 1024;
+/** A screenshot of at most MAX_SCREENSHOT bytes in base64, and the report's text. */
+export const MAX_APP_BODY = 3 * 1024 * 1024;
+/** content_report_screenshots' check. */
+export const MAX_SCREENSHOT = 2 * 1024 * 1024;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const CONTROL = /\p{Cc}/u;
 /** Control characters but line breaks and tabs, which a location or reason may hold. */
 const CONTROL_IN_TEXT = /(?![\n\r\t])\p{Cc}/u;
 const REF_ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Code points, as Postgres's char_length counts them. */
 const length = (s: string) => [...s].length;
@@ -131,8 +188,8 @@ function optional(value: unknown, valid: (s: string) => boolean): string | null 
 
 const isCategory = (v: unknown): v is Category => CATEGORIES.some((c) => c === v);
 
-/** The report body; 'honeypot' for a valid body with the hidden field filled; null when invalid. */
-export function parseReport(b: Body): Report | 'honeypot' | null {
+/** The fields both routes take, or null when one is invalid. */
+function parseFields(b: Body): Report | null {
   if (b.locale !== 'de' && b.locale !== 'en') return null;
   if (!isCategory(b.category)) return null;
   if (b.good_faith !== true) return null;
@@ -146,8 +203,48 @@ export function parseReport(b: Body): Report | 'honeypot' | null {
   if (location === null || reason === null || name === undefined || email === undefined) {
     return null;
   }
-  if (b.website !== undefined && b.website !== '') return 'honeypot';
   return { locale: b.locale, category: b.category, location, reason, name, email };
+}
+
+/** The report body; 'honeypot' for a valid body with the hidden field filled; null when invalid. */
+export function parseReport(b: Body): Report | 'honeypot' | null {
+  const report = parseFields(b);
+  if (!report) return null;
+  if (b.website !== undefined && b.website !== '') return 'honeypot';
+  return report;
+}
+
+function parseTarget(value: unknown): Target | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const { kind, id } = value as Body;
+  if (kind === 'elsewhere') return id === undefined || id === null ? { kind } : null;
+  if (kind !== 'household' && kind !== 'list' && kind !== 'item') return null;
+  return typeof id === 'string' && UUID.test(id) ? { kind, id: id.toLowerCase() } : null;
+}
+
+/** The PNG's bytes; null when absent, undefined when invalid, too_large over MAX_SCREENSHOT. */
+function parseScreenshot(value: unknown): Uint8Array | null | undefined | 'too_large' {
+  if (value === undefined || value === null) return null;
+  if (typeof value !== 'string') return undefined;
+  if (value.length > Math.ceil(MAX_SCREENSHOT / 3) * 4) return 'too_large';
+  let png: Uint8Array;
+  try {
+    png = Uint8Array.from(atob(value), (c) => c.charCodeAt(0));
+  } catch {
+    return undefined;
+  }
+  if (png.length > MAX_SCREENSHOT) return 'too_large';
+  return isPng(png) ? png : undefined;
+}
+
+/** The app's report body; null when invalid. */
+export function parseAppReport(b: Body): AppReport | 'too_large' | null {
+  const screenshot = parseScreenshot(b.screenshot);
+  if (screenshot === 'too_large') return 'too_large';
+  const report = parseFields(b);
+  const target = parseTarget(b.target);
+  if (!report || !target || screenshot === undefined) return null;
+  return { ...report, target, screenshot };
 }
 
 /** M-XXXX-XXXX from 8 random bytes; 256 is a multiple of 32, so no letter is likelier. */
@@ -156,15 +253,16 @@ export function randomRef(bytes: Uint8Array): string {
   return `M-${letters.slice(0, 4)}-${letters.slice(4, 8)}`;
 }
 
-/** The body as JSON object, or null when it is longer than MAX_BODY or no object. */
-async function readBody(req: Request): Promise<Body | null> {
+/** The body as JSON object, null when it is no object, 'too_large' when longer than [max]. */
+async function readBody(req: Request, max: number): Promise<Body | 'too_large' | null> {
   const declared = Number(req.headers.get('content-length') ?? '0');
-  if (declared > MAX_BODY || !req.body) return null;
+  if (declared > max) return 'too_large';
+  if (!req.body) return null;
   const chunks: Uint8Array[] = [];
   let size = 0;
   for await (const chunk of req.body) {
     size += chunk.length;
-    if (size > MAX_BODY) return null;
+    if (size > max) return 'too_large';
     chunks.push(chunk);
   }
   const bytes = new Uint8Array(size);
@@ -182,11 +280,10 @@ async function readBody(req: Request): Promise<Body | null> {
 }
 
 const ROUTE = /^\/(?:functions\/v1\/)?report\/?$/;
+const APP_ROUTE = /^\/(?:functions\/v1\/)?report\/app\/?$/;
 
 export function createHandler(deps: Deps): (req: Request) => Promise<Response> {
-  const { store } = deps;
-  if (!deps.config) return () => Promise.resolve(notFound());
-  const config: Config = deps.config;
+  const { store, config } = deps;
 
   async function confirm(report: Report, stored: Stored, createdAt: Date) {
     if (!report.email) return;
@@ -212,13 +309,71 @@ export function createHandler(deps: Deps): (req: Request) => Promise<Response> {
     log('confirmation_sent');
   }
 
+  /** After the answer: the confirmation, when the store says so. */
+  async function confirmLater(report: Report, row: Stored, now: Date) {
+    if (row.confirm) {
+      await deps.defer(() =>
+        confirm(report, row, now).catch((e) => failure('confirmation_failed', e))
+      );
+    }
+  }
+
+  async function fromApp(app: AppDeps, req: Request): Promise<Response> {
+    const early = preflight(req);
+    if (early) return early;
+    if (req.method !== 'POST') {
+      await discardUnreadBody(req);
+      return appAnswer(404, { error: 'not_found' });
+    }
+    let userId: string;
+    try {
+      ({ userId } = await app.authenticate(req));
+    } catch (e) {
+      await discardUnreadBody(req);
+      if (!(e instanceof AuthError)) {
+        failure('auth_failed', e);
+        return appAnswer(503, { error: 'unavailable' });
+      }
+      log(e.reason);
+      return appAnswer(
+        e.status,
+        { error: e.reason, message: e.message },
+        e.status === 401 ? { 'www-authenticate': 'Bearer' } : {},
+      );
+    }
+    try {
+      const body = await readBody(req, MAX_APP_BODY);
+      const report = body === 'too_large' ? body : body && parseAppReport(body);
+      if (report === 'too_large') {
+        // A declared length over the limit leaves the body unread.
+        await discardUnreadBody(req);
+        return appAnswer(413, { error: 'too_large' });
+      }
+      if (!report) return appAnswer(400, { error: 'invalid_request' });
+      const now = deps.now();
+      const row = await app.store.submit(userId, report, now, APP_LIMITS);
+      if ('refused' in row) {
+        log(row.refused === 'global' ? 'global_cap_hit' : 'user_cap_hit');
+        return appAnswer(429, { error: 'rate_limited' });
+      }
+      log('app_stored');
+      await confirmLater(report, row, now);
+      return appAnswer(201, { ref: row.ref });
+    } catch (e) {
+      failure('app_failed', e);
+      return appAnswer(503, { error: 'unavailable' });
+    }
+  }
+
   return async (req) => {
+    if (deps.app && APP_ROUTE.test(new URL(req.url).pathname)) return await fromApp(deps.app, req);
+    if (!config) return notFound();
     const secret = req.headers.get('x-waitlist-proxy-secret') ?? '';
     if (!await sameSecret(secret, config.proxySecret)) return notFound();
     if (!ROUTE.test(new URL(req.url).pathname) || req.method !== 'POST') return notFound();
     try {
-      const body = await readBody(req);
-      const report = body && parseReport(body);
+      const body = await readBody(req, MAX_BODY);
+      const report = body === 'too_large' ? null : body && parseReport(body);
       if (!report) return invalidRequest();
       if (report === 'honeypot') {
         log('honeypot');
@@ -231,11 +386,7 @@ export function createHandler(deps: Deps): (req: Request) => Promise<Response> {
         return answer(429, { error: 'rate_limited' });
       }
       log('stored');
-      if (stored.confirm) {
-        await deps.defer(() =>
-          confirm(report, stored, now).catch((e) => failure('confirmation_failed', e))
-        );
-      }
+      await confirmLater(report, stored, now);
       return answer(201, { ref: stored.ref });
     } catch (e) {
       failure('failed', e);

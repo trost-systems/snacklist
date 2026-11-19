@@ -17,12 +17,18 @@ import 'package:material_ui/material_ui.dart';
 /// with a pen, rectangles and text, and covers what nobody should see
 /// (job 267, job 290). BetterFeedback shows it scaled
 /// down and takes the PNG; the marks are our own layer on it. The PNG of
-/// what they marked, or null when they closed it.
-Future<Uint8List?> annotateScreenshot(BuildContext context, ui.Image image) =>
+/// what they marked, or null when they closed it. For a report (job 281)
+/// [forReport] starts with the cover tool, first among the tools, under the
+/// report's hint.
+Future<Uint8List?> annotateScreenshot(
+  BuildContext context,
+  ui.Image image, {
+  bool forReport = false,
+}) =>
     // A popup route: the shake stays quiet while it shows (`Popups`).
     showGeneralDialog<Uint8List>(
       context: context,
-      pageBuilder: (_, _, _) => Annotator(image: image),
+      pageBuilder: (_, _, _) => Annotator(image: image, forReport: forReport),
     );
 
 /// What the user can do on the screenshot.
@@ -63,14 +69,19 @@ final class const _Words(final Offset at, final String text) extends _Mark;
 /// ours too, BetterFeedback stays in navigate mode (no painter of its own),
 /// and its column is covered: one set of tools, one undo, and the PNG holds
 /// exactly the marks shown.
-class const Annotator({required final ui.Image image, super.key})
-    extends StatefulWidget {
+class const Annotator({
+  required final ui.Image image,
+
+  /// Starts with [AnnotateTool.cover], first among the tools.
+  final bool forReport = false,
+  super.key,
+}) extends StatefulWidget {
   @override
   State<Annotator> createState() => _AnnotatorState();
 }
 
 class _AnnotatorState() extends State<Annotator> {
-  var _tool = AnnotateTool.pen;
+  late var _tool = widget.forReport ? AnnotateTool.cover : AnnotateTool.pen;
   final _marks = <_Mark>[];
 
   /// The stroke being drawn or the frame being dragged open.
@@ -238,6 +249,7 @@ class _AnnotatorState() extends State<Annotator> {
     final media = MediaQuery.of(context);
     final tools = _Tools(
       tool: _tool,
+      forReport: widget.forReport,
       canUndo: _marks.isNotEmpty || _typingAt != null,
       onPick: _pick,
       onUndo: _undo,
@@ -563,6 +575,9 @@ class const _Lines(
 /// Text / Verdecken and Undo.
 class const _Tools({
   required final AnnotateTool tool,
+
+  /// The cover tool first, under the report's hint.
+  required final bool forReport,
   required final bool canUndo,
   required final ValueChanged<AnnotateTool> onPick,
   required final VoidCallback onUndo,
@@ -573,6 +588,12 @@ class const _Tools({
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final t = SnacklistColors.of(Theme.of(context).brightness);
+    final coverSegment = HexSegment(
+      key: const ValueKey('annotator-tool-cover'),
+      value: AnnotateTool.cover,
+      label: l10n.feedbackToolCover,
+      icon: Icons.rectangle,
+    );
     return Material(
       color: t.surfaceRaised,
       child: SafeArea(
@@ -604,7 +625,9 @@ class const _Tools({
                     const SizedBox(width: HlSpace.s1),
                     Expanded(
                       child: Text(
-                        l10n.feedbackAnnotateHint,
+                        forReport
+                            ? l10n.reportScreenshotHelp
+                            : l10n.feedbackAnnotateHint,
                         style: TextStyle(fontSize: 15, color: t.textMuted),
                       ),
                     ),
@@ -637,6 +660,7 @@ class const _Tools({
                         value: tool,
                         onChanged: onPick,
                         segments: [
+                          if (forReport) coverSegment,
                           HexSegment(
                             key: const ValueKey('annotator-tool-pen'),
                             value: AnnotateTool.pen,
@@ -655,12 +679,7 @@ class const _Tools({
                             label: l10n.feedbackToolText,
                             icon: Icons.title,
                           ),
-                          HexSegment(
-                            key: const ValueKey('annotator-tool-cover'),
-                            value: AnnotateTool.cover,
-                            label: l10n.feedbackToolCover,
-                            icon: Icons.rectangle,
-                          ),
+                          if (!forReport) coverSegment,
                         ],
                       ),
                     ),

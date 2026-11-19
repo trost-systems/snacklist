@@ -4,7 +4,7 @@ description: "Report illegal content in Snacklist, no account needed, and our co
 locale: en
 path: /en/report
 translation_key: report
-updated: 2026-11-17
+updated: 2026-11-18
 form:
   required: required
   recommended: recommended
@@ -46,7 +46,7 @@ form:
 
 # Report content
 
-Use this form to report content in Snacklist that you believe is illegal, for example an item, a list, a household name or a photo. For questions or bugs, please use feedback or support@snacklist.app. If someone is in immediate danger, call the police (112 or 110 in Germany).
+Use this form to report content in Snacklist that you believe is illegal, for example an item, a list, a household name or a photo. For questions or bugs, please use feedback or support@snacklist.app. This form is not an emergency service: if someone is in immediate danger, call your local emergency number now (112 in the EU).
 
 ## Content rules and how we handle reports {#rules}
 

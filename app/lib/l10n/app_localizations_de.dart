@@ -3535,4 +3535,234 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get yourNameSaved => 'Name gespeichert';
+
+  @override
+  String get reportEntryAlso => 'Auch: Inhalte melden';
+
+  @override
+  String get reportContent => 'Inhalt melden';
+
+  @override
+  String get reportEntryHint =>
+      'Nur wir lesen die Meldung, niemand in deinem Haushalt.';
+
+  @override
+  String get reportIntro =>
+      'Hier meldest du Inhalte in Snacklist, die du für rechtswidrig hältst, zum Beispiel einen Eintrag, eine Liste, einen Haushaltsnamen oder ein Foto. Für Fragen oder Fehler nutze bitte Feedback oder support@snacklist.app. Dieses Formular ist kein Notruf: Ist jemand in akuter Gefahr, ruf sofort den örtlichen Notruf an, in der EU die 112.';
+
+  @override
+  String get reportRequired => 'Pflicht';
+
+  @override
+  String get reportRecommended => 'empfohlen';
+
+  @override
+  String get reportAbout => 'Worum geht es?';
+
+  @override
+  String get reportCategoryHate => 'Beleidigung, Bedrohung oder Hetze';
+
+  @override
+  String get reportCategoryPersonalRights =>
+      'Verletzung meiner Persönlichkeitsrechte oder Privatsphäre (z. B. Foto von mir)';
+
+  @override
+  String get reportCategoryIp => 'Urheber- oder Markenrecht';
+
+  @override
+  String get reportCategoryCsam => 'Darstellung sexuellen Kindesmissbrauchs';
+
+  @override
+  String get reportCategoryDanger => 'Gefahr für Leben oder Sicherheit';
+
+  @override
+  String get reportCategoryOther => 'Anderer Rechtsverstoß';
+
+  @override
+  String get reportWhere => 'Wo ist der Inhalt?';
+
+  @override
+  String get reportWhereHelp =>
+      'In der App wählen wir den Eintrag, die Liste oder das Foto für dich aus – bitte prüfe die Auswahl.';
+
+  @override
+  String get reportWhereChooseHelp =>
+      'Wähle den Eintrag, die Liste oder den Haushaltsnamen. Je genauer, desto schneller finden wir ihn.';
+
+  @override
+  String get reportWhereElsewhereHelp =>
+      'Beschreibe, wo er ist: Name des Haushalts und der Liste und der genaue Text des Eintrags. Je genauer, desto schneller finden wir ihn.';
+
+  @override
+  String get reportWhereChoose => 'Auswählen';
+
+  @override
+  String get reportWhereChange => 'Ändern';
+
+  @override
+  String get reportWhy => 'Warum ist der Inhalt rechtswidrig?';
+
+  @override
+  String get reportWhyHelp =>
+      'Erkläre bitte so genau wie möglich, welches Recht verletzt wird und warum. Wenn es um deine eigenen Rechte geht, sag uns, in welcher Beziehung du zum Inhalt stehst.';
+
+  @override
+  String reportCounter(int count, int max) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+    final intl.NumberFormat maxNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String maxString = maxNumberFormat.format(max);
+
+    return '$countString / $maxString';
+  }
+
+  @override
+  String get reportName => 'Dein Name';
+
+  @override
+  String get reportEmail => 'Deine E-Mail-Adresse';
+
+  @override
+  String get reportContactHelp =>
+      'Wir brauchen Namen und E-Mail-Adresse, um dir den Eingang zu bestätigen und dir unsere Entscheidung mitzuteilen. Ohne sie prüfen wir die Meldung trotzdem, können dir aber nicht antworten.';
+
+  @override
+  String get reportCsamNote =>
+      'Bei Darstellungen sexuellen Kindesmissbrauchs kannst du ohne Namen und E-Mail-Adresse melden.';
+
+  @override
+  String get reportCsamAdd => 'Namen und E-Mail-Adresse angeben';
+
+  @override
+  String get reportGoodFaith =>
+      'Ich bin in gutem Glauben davon überzeugt, dass meine Angaben und Vorwürfe in dieser Meldung richtig und vollständig sind.';
+
+  @override
+  String get reportScreenshot => 'Screenshot anhängen (optional)';
+
+  @override
+  String get reportScreenshotHelp =>
+      'Verdecke darauf, was nichts mit der Meldung zu tun hat.';
+
+  @override
+  String get reportScreenshotAttached => 'Screenshot angehängt';
+
+  @override
+  String get reportScreenshotRemove => 'Entfernen';
+
+  @override
+  String get reportPrivacyLead => 'Wie wir mit deinen Angaben umgehen:';
+
+  @override
+  String get reportPrivacyLink => 'Datenschutzerklärung, Abschnitt 10';
+
+  @override
+  String get reportSend => 'Meldung senden';
+
+  @override
+  String get reportErrorAbout => 'Wähle, worum es geht.';
+
+  @override
+  String get reportErrorWhere => 'Wähle, wo der Inhalt ist.';
+
+  @override
+  String reportErrorShort(int count) {
+    return 'Mindestens 20 Zeichen (noch $count).';
+  }
+
+  @override
+  String get reportErrorLong => 'Höchstens 5.000 Zeichen.';
+
+  @override
+  String get reportErrorEmail => 'Prüfe die E-Mail-Adresse.';
+
+  @override
+  String get reportErrorGoodFaith =>
+      'Bitte bestätige das, um die Meldung zu senden.';
+
+  @override
+  String get reportFailedRateLimited =>
+      'Deine Meldung wurde nicht gesendet, weil gerade zu viele Meldungen ankommen. Deine Angaben sind noch da. Bitte versuch es in einer Stunde noch einmal oder schick sie per E-Mail an unsere Kontaktstelle support@snacklist.app: worum es geht, wo der Inhalt ist und warum er rechtswidrig ist. Auch so bearbeiten wir deine Meldung.';
+
+  @override
+  String get reportFailedUnavailable =>
+      'Die Meldung konnte gerade nicht gesendet werden. Bitte versuch es gleich noch einmal oder schreib an support@snacklist.app.';
+
+  @override
+  String get reportFailedOffline =>
+      'Keine Verbindung. Deine Angaben sind noch da: Bitte versuch es gleich noch einmal.';
+
+  @override
+  String get reportFailedScreenshotTooLarge =>
+      'Der Screenshot ist zu groß. Entferne ihn und sende die Meldung noch einmal.';
+
+  @override
+  String get reportPickerSearch => 'Einträge und Listen suchen';
+
+  @override
+  String get reportPickerItems => 'Einträge';
+
+  @override
+  String get reportPickerLists => 'Listen';
+
+  @override
+  String get reportPickerHousehold => 'Name des Haushalts';
+
+  @override
+  String get reportPickerElsewhere => 'Woanders';
+
+  @override
+  String get reportKindItem => 'Eintrag';
+
+  @override
+  String get reportKindList => 'Liste';
+
+  @override
+  String get reportKindHousehold => 'Haushalt';
+
+  @override
+  String reportQuoted(String name) {
+    return '„$name“';
+  }
+
+  @override
+  String reportItemContext(String list, String household) {
+    return 'Liste „$list“ · $household';
+  }
+
+  @override
+  String get reportSentTitle => 'Meldung gesendet';
+
+  @override
+  String get reportNumber => 'Nummer';
+
+  @override
+  String get reportCopyNumber => 'Nummer kopieren';
+
+  @override
+  String get reportCopied => 'Kopiert';
+
+  @override
+  String reportThanks(String ref) {
+    return 'Danke, deine Meldung ist eingegangen. Nummer: $ref. Wir prüfen sie selbst – ohne automatische Entscheidung – und melden uns, wenn du eine E-Mail-Adresse angegeben hast.';
+  }
+
+  @override
+  String reportMailed(String email) {
+    return 'Eine Bestätigung ist an $email unterwegs.';
+  }
+
+  @override
+  String get reportNotMailed =>
+      'Du hast keine E-Mail-Adresse angegeben, darum können wir dir nicht antworten. Heb die Nummer auf, wenn du nachfragen willst.';
+
+  @override
+  String get reportNotInNotes =>
+      'Meldungen stehen nicht unter Deine Notizen, und niemand in deinem Haushalt sieht sie.';
+
+  @override
+  String get reportDone => 'Fertig';
 }

@@ -264,4 +264,15 @@ insert into public.content_report_decisions (report_id, decided_at, outcome, gro
 values ((select id from public.content_reports where ref = 'M-BACK-0275'), now(), 'no_change',
   'Testmeldung.');
 
+-- Job 281: a made-up app report with its screenshot (a bare PNG signature) and its sender row.
+insert into public.content_reports (ref, source, locale, category, location, reason, good_faith,
+  target_kind, target_id)
+values ('M-BACK-0281', 'app', 'en', 'other', 'item "Backup" in list "Test", household "Backup"',
+  'A made-up report for the backup drill.', true, 'item', '00000000-0000-4000-8000-0000000b0281');
+insert into public.content_report_screenshots (report_id, png)
+values ((select id from public.content_reports where ref = 'M-BACK-0281'),
+  '\x89504e470d0a1a0a'::bytea);
+insert into public.content_report_app_senders (user_id, at)
+values ('00000000-0000-4000-8000-0000000b0281', now());
+
 commit;

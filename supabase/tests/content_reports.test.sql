@@ -38,8 +38,9 @@ $$;
 
 select columns_are('public', 'content_reports', array[
   'id', 'ref', 'created_at', 'source', 'locale', 'category', 'location', 'reason', 'reporter_name',
-  'reporter_email', 'good_faith', 'confirmation_sent_at', 'closed_at', 'retain_until', 'retain_reason'],
-  'a report holds what the form asked, its times and the hold; no IP, no user, no household');
+  'reporter_email', 'good_faith', 'confirmation_sent_at', 'closed_at', 'retain_until', 'retain_reason',
+  'target_kind', 'target_id'],
+  'a report holds what the form asked, its times and the hold (and the app''s target, job 281); no IP, no user, no household');
 select columns_are('public', 'content_report_decisions', array[
   'id', 'report_id', 'decided_at', 'outcome', 'ground', 'notified_at'],
   'a decision holds date, outcome, ground and when the notifier was told (N-230)');
@@ -47,8 +48,9 @@ select is(
   (select array_agg(c.relname::text order by c.relname) from pg_class c
    where c.relnamespace = 'public'::regnamespace and c.relname like 'content_report%'
      and c.relkind = 'r' and c.relrowsecurity),
-  array['content_report_decisions', 'content_reports'],
-  'RLS is on for both tables');
+  array['content_report_app_senders', 'content_report_decisions', 'content_report_screenshots',
+        'content_reports'],
+  'RLS is on for both tables (and job 281''s two)');
 select is((select count(*)::integer from pg_policies where schemaname = 'public'
            and tablename in ('content_reports', 'content_report_decisions')),
   0, 'and no policy opens either');
@@ -85,8 +87,8 @@ select is(
      and has_function_privilege('service_role', f.oid, 'execute')
      and f.prosecdef and f.proconfig @> array['search_path=""']),
   array['content_report_confirmation_sent', 'content_report_decide', 'content_report_notified',
-        'content_report_submit', 'purge_content_reports'],
-  'the service connection executes the five, security definer with an empty search_path');
+        'content_report_submit', 'content_report_submit_app', 'purge_content_reports'],
+  'the service connection executes the five (and job 281''s submit), security definer with an empty search_path');
 
 select pg_temp.seed('M-0000-0001', '2026-11-10 10:00+00');
 
@@ -180,7 +182,7 @@ select throws_ok($$select * from public.content_report_submit('de', 'hate', 'x',
   '23514', null, 'a name over 200 characters is refused');
 select throws_ok($$insert into public.content_reports (ref, source, locale, category, location, reason, good_faith)
   values ('M-0000-0004', 'app', 'de', 'hate', 'x', 'a reason of twenty letters', true)$$,
-  '23514', null, 'source is web only (the in-app job adds app)');
+  '23514', null, 'an app report needs its target (job 281)');
 select throws_ok($$insert into public.content_reports (ref, source, locale, category, location, reason, good_faith)
   values ('M-0000-0005', 'web', 'de', 'hate', 'x', 'a reason of twenty letters', false)$$,
   '23514', null, 'good faith must be confirmed');

@@ -5,8 +5,9 @@ under the Digital Services Act (Art. 3(g)(iii)) and must take reports of illegal
 Legal Review's Addendum B (N-226 to N-240, 16 Nov 2026) sets the rules; job 275 built the web part.
 The public side is the form at [snacklist.app/inhalte-melden](https://snacklist.app/inhalte-melden)
 and [snacklist.app/en/report](https://snacklist.app/en/report), linked from every page's footer, the
-Impressum (contact point under Art. 11/12 DSA) and the help pages. The in-app entry follows in its
-own job behind a flag (N-226: a separate first-level choice, not a feedback category).
+Impressum (contact point under Art. 11/12 DSA) and the help pages. Job 281 adds the in-app entry
+behind the flag `report-content-entry` (N-226: a separate first-level choice, not a feedback
+category); its reports land in the same table ("Reports from the app" below).
 
 **Only Peter reads and decides reports.** No agent, bot, LLM or script reads, sorts or summarises
 a report, on any copy of the production database (N-230, and Peter's rule that bots don't read user
@@ -29,6 +30,50 @@ notify script) reaches them. Reports are not feedback: no FB4 status, no reply, 
 feedback purge, not in any household's data or export.
 
 Limits that never decide on content (so no Art. 16(6) disclosure is needed): the honeypot, 5 per client network per hour at Vercel, and 200 web reports per hour in total as a circuit breaker (more are refused with the message that names support@snacklist.app, and the function logs "report: global_cap_hit"). Every stored report with an e-mail address gets the confirmation (Art. 16(4); Legal N-241: no per-address mail cap). A report e-mailed to support@snacklist.app is a valid notice too: confirm it by hand without undue delay and file it as a report (N-246).
+
+## Reports from the app
+
+The app posts to the same edge function's route `/functions/v1/report/app`, pinned to Frankfurt
+(`?forceFunctionRegion=eu-central-1`, Legal N-285), with the user's own
+session token (no proxy secret, no Vercel step; API keys, MCP and Siri tokens are refused). It
+checks the same fields, stores through `content_report_submit_app` and sends the same B.4
+confirmation through the same code as a web report. An app report differs in four columns and two
+tables:
+
+- `source` is `app`.
+- `target_kind` and `target_id` say what the reporter picked: `household`, `list` or `item` with
+  that row's id, or `elsewhere` without an id (then `location` holds the reporter's own words).
+  For a picked target `location` is the app's English summary for you, such as
+  `item "Hafermilch" in list "Wocheneinkauf", household "Familie Brandt"`. The id is no foreign
+  key: the content may be gone when you look. Find it with
+  `select * from public.households where id = '<target_id>'`, or `public.lists`, `public.items`
+  (both carry `household_id`).
+- `public.content_report_screenshots` holds the screenshot the reporter attached, if any: a PNG
+  of their screen before More, with what has nothing to do with the report covered by them. It
+  shows in the Table Editor as bytes only. Save it as a file on your own machine (never an agent), with
+  `SUPABASE_DB_URL` set:
+
+  ```sh
+  psql "$SUPABASE_DB_URL" -At -c "select encode(s.png, 'base64')
+    from public.content_report_screenshots s join public.content_reports r on r.id = s.report_id
+    where r.ref = 'M-XXXX-XXXX'" | base64 -d > M-XXXX-XXXX.png
+  ```
+
+  It goes with its report: the 12-month purge deletes it by cascade. The purge does not reach your saved file: delete it as soon as the case is closed, unless the Art. 18 runbook needs it for the BKA. Never save the screenshot of a csam report (N-287).
+- `public.content_report_app_senders` keeps the sender's user id and time, for the limit only. Rows
+  go after an hour (at the next app report, and daily at 02:20 UTC, before the 02:30 backup, by
+  `prune_content_report_app_senders`). A report itself never names its sender's account; ask by
+  e-mail if you need more.
+
+App limits, on content never (Legal N-241, N-242): 5 app reports per user per hour, and 200 app
+reports per hour in total as a circuit breaker, counted apart from the web's. A refused report gets
+429; the function logs `report: user_cap_hit` or `report: global_cap_hit` next to `report 429`.
+Every stored app report with an e-mail address gets the confirmation: the app route has no
+per-address mail cap.
+
+`notify.ts --confirmations` (N-244: reports with an address and no `confirmation_sent_at`) covers
+app reports too: they use the same columns and the same `report-confirm/<id>` idempotency key, and
+it does not filter on `source`.
 
 ## Daily routine
 
