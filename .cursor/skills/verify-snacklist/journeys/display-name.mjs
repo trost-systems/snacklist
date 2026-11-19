@@ -3,8 +3,8 @@
 // sign-up whose provider name is prefilled (one tap), a joiner from an invite link (the step comes
 // before the join screen, the owner then sees the name), and a seeded member whose name is still
 // the e-mail prefix (asked once with „Jetzt nicht“, then changes it under Konto, also at 200 %).
-// A later provider name does not replace a chosen one. Needs a build with
-// VH_DEFINES="FLAGS_ON=display-name".
+// A later provider name does not replace a chosen one. Runs on a plain
+// launch (the flag rolls out in full; with join-household-jh2 the joiner joins without a tap).
 //
 //   node journeys/display-name.mjs <evidence dir> [--lang de|en] [--dark]
 import process from 'node:process';
@@ -137,6 +137,10 @@ try {
     const email = `name-join-${stamp}@fg-test.invalid`;
     await page.goto(`/join/${code}`);
     await page.getByRole('link', { name: lang === 'en' ? 'Join in the browser' : 'Im Browser beitreten' }).click();
+    // join-household-jh2 (users' build) asks „Konto erstellen“ or „Anmelden“ first.
+    const create = button(page, L('jh2InviteSheetCreate'));
+    // The sheet opens a frame after the login screen, so wait for it alone before falling back.
+    if (await create.waitFor({ timeout: 10_000 }).then(() => true, () => false)) await create.click();
     await signUpOrIn(page, L, email, { signUp: true });
     await page.waitForURL(new RegExp(`/your-name\\?invite=${code}`), { timeout: 30_000 });
     log(`ok: the joiner lands on /your-name with the invite (${page.url()})`);
@@ -144,9 +148,11 @@ try {
     await capture(page, dir, '05-joiner-name');
     await typeInto(nameField(page, L), 'Jo Brandt');
     await button(page, L('onboardingNext')).click();
-    await button(page, L('joinHousehold')).waitFor({ timeout: 30_000 });
+    // With join-household-jh2 the app joins without the „Haushalt beitreten“ tap.
+    const join = button(page, L('joinHousehold'));
+    await join.or(page.getByRole('textbox', { name: L('addFieldHint') })).first().waitFor({ timeout: 30_000 });
     await capture(page, dir, '06-joiner-join-screen');
-    await button(page, L('joinHousehold')).click();
+    if (await join.count()) await join.click();
     await page.waitForURL(/\/$/, { timeout: 30_000 });
     const { data: members } = await miaApi.rpc('household_members_of', { p_household: mia.householdId });
     check(members.some((m) => m.display_name === 'Jo Brandt'), 'the owner sees the joiner by the chosen name');

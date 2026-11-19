@@ -1,5 +1,4 @@
-// Feature grocery-log (job 199), behind the PostHog flag grocery-log: launch with
-// VH_DEFINES="FLAGS_ON=grocery-log". Entry points the Verlauf tab and the list after a tick.
+// Feature grocery-log (job 199), on a plain launch (the flag rolls out in full). Entry points the Verlauf tab and the list after a tick.
 // Seeds Lidl and Rewe and a known set of trips through save_trip (fixed ids, so a rerun upserts
 // them), then proves gl-calendar (a 3-trip and a 5-trip day), gl-day-filter, gl-journal,
 // gl-view-toggle with its persistence over a reload, gl-store-timeline, gl-free-window (a 40-day-old

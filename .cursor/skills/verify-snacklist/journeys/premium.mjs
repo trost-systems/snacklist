@@ -10,7 +10,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import {
-  addField, addSheet, apiAs, capture, instance, itemRow, logger, member, openApp, openTab, repo, reveal, signIn, typeInto,
+  addField, addSheet, answerShopAsk, apiAs, capture, householdButton, instance, itemRow, logger, member, openApp, openTab, repo, reveal, signIn, switchHousehold, typeInto,
 } from '../helpers/lib.mjs';
 
 const [dir] = process.argv.slice(2);
@@ -80,7 +80,7 @@ const renews = (page, L) => page.getByText(new RegExp(`^${L('premiumStatusRenews
 const anyStatus = (page) => page.getByText(/^Snacklist Premium (Lifetime|aktiv|über)/);
 // Material's own back button: its name comes from the framework's localizations, not the ARB.
 const back = (page) => page.getByRole('button', { name: /^(Zurück|Back)$/ }).click();
-const chip = (page, name) => page.getByRole('button', { name: new RegExp(`^${name}(\\s|$)`) });
+const chip = householdButton;
 
 /** Waits until [locator] has [n] matches; returns the ms it took. */
 async function until(locator, n, timeout = 15_000) {
@@ -94,10 +94,7 @@ async function until(locator, n, timeout = 15_000) {
 
 async function showHousehold(page, L, from, to) {
   await openTab(page, L, 'tabList');
-  await chip(page, from).click();
-  await page.getByRole('heading', { name: L('householdsTitle') }).waitFor({ timeout: 10_000 });
-  await page.getByRole('button', { name: new RegExp(`^${to}\\s+\\d+ `) }).click();
-  await chip(page, to).waitFor({ timeout: 10_000 });
+  await switchHousehold(page, L, from, to);
 }
 
 const miaApp = await openApp(inst, { videoDir: join(dir, 'mia') });
@@ -193,6 +190,7 @@ try {
   await capture(page, dir, '11-mia-added-after-lapse');
   await coffee.click();
   await itemRow(page, 'Kaffee').waitFor({ state: 'detached', timeout: 10_000 });
+  await answerShopAsk(page, L, 'shopAskNo');
   const listId = sql(`select id from public.households where name = '${other}' and id in (select household_id from public.household_members where user_id = '${mia.id}')`);
   let status;
   for (let i = 0; i < 40 && status !== 'bought'; i++) {

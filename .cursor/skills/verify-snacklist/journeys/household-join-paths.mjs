@@ -8,7 +8,7 @@
 //   node journeys/household-join-paths.mjs <evidence dir> [--lang de|en]
 import process from 'node:process';
 import { execFileSync } from 'node:child_process';
-import { addField, apiAs, capture, instance, logger, member, openApp, signIn, typeInto } from '../helpers/lib.mjs';
+import { addField, apiAs, capture, householdButton, instance, logger, member, openApp, openHouseholds, signIn, typeInto } from '../helpers/lib.mjs';
 
 const [dir, ...rest] = process.argv.slice(2);
 const lang = rest.includes('--lang') ? rest[rest.indexOf('--lang') + 1] : 'de';
@@ -39,10 +39,7 @@ log(`setup: Mia made ${names.join(', ')} with an invite each`);
 
 const joinRow = (page, L) => page.getByRole('button', { name: L('joinWithCode'), exact: true });
 const codeField = (page, L) => page.getByRole('textbox', { name: L('inviteCode') });
-async function openSheet(page, L, shown) {
-  await page.getByRole('button', { name: new RegExp(`^${shown}(\\s|$)`) }).click();
-  await page.getByRole('heading', { name: L('householdsTitle') }).waitFor({ timeout: 10_000 });
-}
+const openSheet = openHouseholds;
 // On the web `/join/<code>` is the invite landing page; its „Im Browser beitreten“ opens the app
 // with `?invite=` (the phones open the app's `/join/<code>` route directly).
 async function openLink(page, code) {
@@ -52,9 +49,14 @@ async function openLink(page, code) {
   await page.waitForURL(/invite=|\/join|\/login/, { timeout: 30_000 });
   log(`link /join/<code>: landing page ${landing}, then the app at ${new URL(page.url()).pathname}`);
 }
+// A typed code waits for „Haushalt beitreten“; with join-household-jh2 (users' build) a link joins
+// without it.
 async function confirmJoin(page, L, name) {
-  await page.getByRole('button', { name: L('joinHousehold'), exact: true }).click();
-  await page.getByRole('button', { name: new RegExp(`^${name}(\\s|$)`) }).waitFor({ timeout: 30_000 });
+  const join = page.getByRole('button', { name: L('joinHousehold'), exact: true });
+  const shown = householdButton(page, name).first();
+  await join.or(shown).first().waitFor({ timeout: 30_000 });
+  if (await join.count()) await join.click();
+  await shown.waitFor({ timeout: 30_000 });
 }
 
 const { browser, page, L, errors } = await openApp(inst, { lang, videoDir: dir });
@@ -110,7 +112,7 @@ try {
   if (memberOf(ida, 'Nachbarn') !== '1') throw new Error('the typed code did not join');
 
   await openLink(page, codes.Verein);
-  await page.getByRole('button', { name: L('joinHousehold'), exact: true }).waitFor({ timeout: 30_000 });
+  await page.getByRole('button', { name: L('joinHousehold'), exact: true }).or(householdButton(page, 'Verein')).first().waitFor({ timeout: 30_000 });
   await capture(page, dir, '08-link-preview');
   await confirmJoin(page, L, 'Verein');
   log(`/join/<code> signed in: Ida in Verein ${memberOf(ida, 'Verein')}`);
@@ -127,6 +129,10 @@ if (!failed) {
   try {
     const { page: p2, L: L2 } = second;
     await openLink(p2, codes.Oma);
+    // join-household-jh2 (users' build) asks „Konto erstellen“ or „Anmelden“ first.
+    const signInFirst = p2.getByRole('button', { name: L2('signIn'), exact: true });
+    // The sheet opens a frame after the login screen, so wait for it alone before falling back.
+    if (await signInFirst.waitFor({ timeout: 10_000 }).then(() => true, () => false)) await signInFirst.click();
     const withEmail = p2.getByRole('button', { name: L2('continueWithEmail') });
     await withEmail.or(p2.getByRole('textbox', { name: L2('email') })).waitFor({ timeout: 30_000 });
     log(`signed out, /join/<code> → ${new URL(p2.url()).pathname}${new URL(p2.url()).search.replace(/invite=[^&]+/, 'invite=<code>')}`);
@@ -136,12 +142,13 @@ if (!failed) {
     await p2.keyboard.press('Enter');
     const join = p2.getByRole('button', { name: L2('joinHousehold'), exact: true });
     const decline = p2.getByRole('button', { name: L2('analyticsDecline'), exact: true });
-    await join.or(decline).first().waitFor({ timeout: 30_000 });
+    const oma = householdButton(p2, 'Oma').first();
+    await join.or(decline).or(oma).first().waitFor({ timeout: 30_000 });
     if (await decline.isVisible()) {
       await p2.mouse.move(195, 400);
       await decline.click();
     }
-    await join.waitFor({ timeout: 30_000 });
+    await join.or(oma).first().waitFor({ timeout: 30_000 });
     await capture(p2, dir, '09-signed-out-link-after-sign-in');
     await confirmJoin(p2, L2, 'Oma');
     log(`signed out → sign-in → join: Noah in Oma ${memberOf(noah, 'Oma')}`);

@@ -6,7 +6,8 @@
 // chilled items (Vollmilch and Butter at „Wochenmarkt“, set up through the API). Then a finger held
 // on a row while the server's answer arrives: the rows stay as they were until it lifts.
 //
-//   launched with VH_DEFINES="FLAGS_ON=input-stable-rows" (or without, for --expect off)
+//   launched with VH_FLAGS_OFF=on-device-catalog for --expect on (with on-device-catalog on the
+//   answer moves no row, so the control fails), VH_FLAGS_FULL=0 for --expect off
 //   node journeys/input-stable-rows.mjs <evidence dir> [--expect on|off]
 import process from 'node:process';
 import { accessibleName, addField, addSheet, apiAs, capture, headingAbove, instance, itemRow, logger, member, nextFrames, openApp, reveal, signIn, typeInto } from '../helpers/lib.mjs';

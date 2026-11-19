@@ -186,6 +186,60 @@ export async function headingAbove(page, row) {
   return best?.text ?? null;
 }
 
+/**
+ * The list's button naming household [name]: the switcher („Einkaufsliste · Familie Brandt“, with
+ * list-declutter, as users have it) or the household chip of a `VH_FLAGS_FULL=0` build.
+ */
+export const householdButton = (page, name) => page.getByRole('button', { name: new RegExp(`(^|· )${escape(name)}(\\s|$)`) });
+
+/**
+ * Opens „Deine Haushalte“ from the list showing household [name]: the switcher sheet opens on the
+ * household's page, whose „Zurück: Haushalte“ leads there; the chip opens it directly.
+ */
+export async function openHouseholds(page, L, name) {
+  await householdButton(page, name).first().click();
+  const heading = page.getByRole('heading', { name: L('householdsTitle') });
+  const back = page.getByRole('button', { name: L('switcherBack', { page: L('switcherHouseholds') }), exact: true });
+  await heading.or(back).first().waitFor({ timeout: 10_000 });
+  if (!(await heading.count())) await back.click();
+  await heading.waitFor({ timeout: 10_000 });
+}
+
+/**
+ * Shows household [to]'s first list from the list showing [from]: on „Deine Haushalte“ its row
+ * switches at once with the chip; the switcher sheet opens the household's page, whose list row
+ * („Einkaufsliste nichts offen“) switches and closes the sheet.
+ */
+export async function switchHousehold(page, L, from, to) {
+  await openHouseholds(page, L, from);
+  await page.getByRole('button', { name: new RegExp(`^${escape(to)}\\s+\\d+ `) }).click();
+  const listRow = page.getByRole('button', { name: /\s(nichts offen|nothing open|\d+ (offen|open))( \S+)?$/ });
+  const back = page.getByRole('button', { name: L('switcherBack', { page: L('switcherHouseholds') }), exact: true });
+  if (await back.waitFor({ timeout: 3_000 }).then(() => true, () => false)) {
+    await listRow.first().click();
+    await back.waitFor({ state: 'detached', timeout: 10_000 });
+  }
+  await householdButton(page, to).first().waitFor({ timeout: 10_000 });
+}
+
+/**
+ * Answers „Kaufst du gerade ein?“, the question trip-mode (full rollout) asks after a member's own
+ * tick while no trip runs, with the button of ARB key [key]: 'shopAskNo', 'shopAskYes' or
+ * 'shopAskTakeBack'. Returns false when the question did not come within [timeout] ms (a
+ * pharmacy's item, a running trip, a `VH_FLAGS_FULL=0` build).
+ */
+export async function answerShopAsk(page, L, key = 'shopAskNo', timeout = 3_000) {
+  const button = page.getByRole('button', { name: L(key), exact: true });
+  try {
+    await button.waitFor({ timeout });
+  } catch {
+    return false;
+  }
+  await button.click();
+  await button.waitFor({ state: 'detached', timeout: 5_000 });
+  return true;
+}
+
 /** A tab of the shell by its ARB key ('tabList' or 'tabMore'): the bottom bar on phones, the rail from 840 px. */
 export async function openTab(page, L, key) {
   await page.getByRole('tab', { name: L(key), exact: true }).click();

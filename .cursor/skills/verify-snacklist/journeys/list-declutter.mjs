@@ -1,7 +1,7 @@
 // Feature list-declutter (job 229, flag `list-declutter`): the switcher in the see-through header,
 // the total as a row, and the switcher sheet's three levels with the members page. Long-press then
-// drag reorders a list and a household by touch, checked on the server. Needs a build with
-// VH_DEFINES="FLAGS_ON=list-declutter,prices-and-trip-total". Adds two lists, a second household
+// drag reorders a list and a household by touch, checked on the server. Runs on a plain
+// launch (its flags roll out in full). Adds two lists, a second household
 // and an open person invite for the first member, and removes them at the end.
 //
 //   node journeys/list-declutter.mjs <evidence dir> [--lang de|en] [--dark] [--scale 1.3]

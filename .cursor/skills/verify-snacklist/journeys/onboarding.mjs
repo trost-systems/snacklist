@@ -8,7 +8,7 @@
 //   node journeys/onboarding.mjs <evidence dir> [--lang de|en] [--dark]
 import process from 'node:process';
 import { createClient } from '../../../../e2e/node_modules/@supabase/supabase-js/dist/index.mjs';
-import { capture, instance, logger, openApp, typeInto } from '../helpers/lib.mjs';
+import { capture, instance, logger, openApp, reveal, typeInto } from '../helpers/lib.mjs';
 
 const [dir, ...rest] = process.argv.slice(2);
 const opt = (name, def) => (rest.includes(`--${name}`) ? rest[rest.indexOf(`--${name}`) + 1] : def);
@@ -31,6 +31,14 @@ const check = (ok, what) => {
 const { browser, page, L, errors } = await openApp(inst, { lang, dark, videoDir: dir });
 const second = await openApp(inst, { lang, dark });
 const button = (p, name) => p.getByRole('button', { name, exact: true });
+// display-name (users' build) asks the new account's own name after the usage question.
+const nameStep = async (p, name) => {
+  const field = p.getByRole('textbox', { name: new RegExp(`^${L('yourNameLabel')}`) });
+  if (!(await field.waitFor({ timeout: 10_000 }).then(() => true, () => false))) return false;
+  await typeInto(field, name);
+  await button(p, L('onboardingNext')).click();
+  return true;
+};
 const at = async (path) => {
   await page.waitForURL(new RegExp(`${path}(\\?|$)`), { timeout: 20_000 });
   await page.waitForTimeout(400);
@@ -80,6 +88,12 @@ try {
   await typeInto(page.getByRole('textbox', { name: L('email') }), owner);
   await typeInto(page.getByRole('textbox', { name: L('password') }), password);
   await button(page, L('signUp')).click();
+  await page.waitForURL(/\/(your-name|start\/invite)(\?|$)/, { timeout: 20_000 });
+  if (page.url().includes('/your-name')) {
+    await capture(page, dir, '07b-your-name');
+    await nameStep(page, 'Mia');
+    log('ok: the name step came after the account and took „Mia“');
+  }
   await at('/start/invite');
   await capture(page, dir, '08-invite');
 
@@ -106,6 +120,10 @@ try {
   await sp.goto(`/join/${codes[1]}`);
   // `/join/<code>` is the static invite page (app/web/join), not the app: its link opens the app with the invite.
   await sp.getByRole('link', { name: lang === 'en' ? 'Join in the browser' : 'Im Browser beitreten' }).click();
+  // join-household-jh2 (users' build) asks „Konto erstellen“ or „Anmelden“ first.
+  const create = button(sp, L('jh2InviteSheetCreate'));
+  // The sheet opens a frame after the login screen, so wait for it alone before falling back.
+  if (await create.waitFor({ timeout: 10_000 }).then(() => true, () => false)) await create.click();
   const secondEmail = sp.getByRole('button', { name: L('continueWithEmail') });
   await secondEmail.or(sp.getByRole('textbox', { name: L('email') })).waitFor({ timeout: 30_000 });
   if (await secondEmail.isVisible()) await secondEmail.click();
@@ -114,15 +132,22 @@ try {
   await button(sp, L('signUp')).click();
   await sp.waitForURL(/analytics-consent/, { timeout: 30_000 });
   await button(sp, L('analyticsDecline')).click();
-  await button(sp, L('joinHousehold')).click();
+  await nameStep(sp, 'Jo');
+  // With join-household-jh2 a link joins without the „Haushalt beitreten“ tap.
+  const join = button(sp, L('joinHousehold'));
+  await join.or(sp.getByRole('textbox', { name: L('addFieldHint') })).first().waitFor({ timeout: 30_000 });
+  if (await join.count()) await join.click();
   await sp.waitForURL(/\/$/, { timeout: 30_000 });
   log('the second user joined through the second link');
-  await page.getByText(new RegExp(`^(${L('inviteJoined')}|join-${stamp}.*)`)).first().waitFor({ timeout: 15_000 });
+  await page.getByText(new RegExp(`(^${L('inviteJoined')}|^join-${stamp}|${L('inviteJoinedName', { name: 'Jo' })})`)).first().waitFor({ timeout: 15_000 });
   await page.waitForTimeout(500);
   await capture(page, dir, '10-joined-live');
   log('ok: the first page marks the invite joined without a reload');
 
-  await page.getByRole('button', { name: L('toTheList') }).click();
+  // The German invite note is long: the button sits below the screen, built only once scrolled near.
+  const toList = page.getByRole('button', { name: L('toTheList') });
+  await reveal(page, toList);
+  await toList.click();
   await at('/');
   await page.waitForTimeout(1500);
   await capture(page, dir, '11-list');

@@ -1,7 +1,7 @@
 // Feature list-declutter, `ld-voice` (job 248): the switcher sheet's one row for Siri, Alexa & KI,
 // its household step and its list step, on a 320 × 568 phone. Back from the list step saves
 // nothing; a list pick saves the household and the list on the server, and the row names both.
-// Needs a build with VH_DEFINES="FLAGS_ON=list-declutter,default-list-voice-target". Adds a second
+// Runs on a plain launch (its flags roll out in full). Adds a second
 // household with a long name and two lists, and leaves it at the end.
 //
 //   node journeys/voice-default.mjs <evidence dir> [--lang de|en] [--dark] [--scale 2]

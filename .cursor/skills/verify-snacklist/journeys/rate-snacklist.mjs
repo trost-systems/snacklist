@@ -8,7 +8,7 @@
 //
 //   node journeys/rate-snacklist.mjs <evidence dir> [--lang de|en]
 import process from 'node:process';
-import { addField, capture, instance, logger, member, openApp, openTab, reveal, signIn, typeInto } from '../helpers/lib.mjs';
+import { addField, answerShopAsk, capture, instance, logger, member, openApp, openTab, reveal, signIn, typeInto } from '../helpers/lib.mjs';
 
 const [dir, ...rest] = process.argv.slice(2);
 const lang = rest.includes('--lang') ? rest[rest.indexOf('--lang') + 1] : 'de';
@@ -51,6 +51,7 @@ try {
   const first = open.first();
   await reveal(page, first);
   await first.click();
+  await answerShopAsk(page, L, 'shopAskNo');
   // The sync indicator's card or pill: a button named „Offline: …“ (e2e's offlineIndicator).
   const offlineShown = async () => (await page.getByRole('button', { name: new RegExp(`^${L('syncOffline')}:`) }).count()) > 0;
   for (const end = Date.now() + 8_000; !(await offlineShown()) && Date.now() < end; ) await page.waitForTimeout(250);
@@ -67,6 +68,7 @@ try {
     const row = open.first();
     await reveal(page, row);
     await row.click();
+    await answerShopAsk(page, L, 'shopAskNo', 1_500);
     await page.waitForTimeout(400);
   }
   if ((await open.count()) > 0) throw new Error('items left open after ticking all');
@@ -89,6 +91,7 @@ try {
   await back.waitFor({ timeout: 10_000 });
   await reveal(page, back);
   await back.click();
+  await answerShopAsk(page, L, 'shopAskNo');
   for (const end = Date.now() + 10_000; (await open.count()) > 0 && Date.now() < end; ) await page.waitForTimeout(250);
   await page.waitForTimeout(1_000);
   const undone = await counters();
@@ -111,13 +114,17 @@ try {
   if (!long?.last_error_at) throw new Error('a minute offline was not counted as a sync failure');
 
   await openTab(page, L, 'tabMore');
-  const feedback = page.getByRole('button', { name: new RegExp(`^${L('feedbackRow')}( |$)`) });
+  // feedback-fb4 (users' build) names the row „Feedback & Ideen“; a flag-off build „Feedback senden“.
+  const hub = page.getByRole('button', { name: new RegExp(`^${L('feedbackHubRow')}( |,|$)`) });
+  await hub.or(page.getByRole('button', { name: new RegExp(`^${L('feedbackRow')}( |$)`) })).first().waitFor({ timeout: 10_000 });
+  const feedbackLabel = L((await hub.count()) ? 'feedbackHubRow' : 'feedbackRow');
+  const feedback = page.getByRole('button', { name: new RegExp(`^${feedbackLabel}( |,|$)`) });
   await reveal(page, feedback);
   await capture(page, dir, '02-more-feedback-group');
   const rate = await page.getByRole('button', { name: new RegExp(`^${L('rateApp')}( |$)`) }).count();
   const aria = await page.locator('body').ariaSnapshot();
-  const order = aria.indexOf(L('feedbackRow')) < aria.indexOf(L('helpRow'));
-  log(`More: „${L('rateApp')}“ rows: ${rate}; „${L('feedbackRow')}“ before „${L('helpRow')}“: ${order}`);
+  const order = aria.indexOf(feedbackLabel) < aria.indexOf(L('helpRow'));
+  log(`More: „${L('rateApp')}“ rows: ${rate}; „${feedbackLabel}“ before „${L('helpRow')}“: ${order}`);
   if (rate !== 0) throw new Error('the web build shows the rate row');
   if (!order) throw new Error('feedback and help rows are not in order');
   if (errors.length) throw new Error(`page errors: ${errors.join('; ')}`);

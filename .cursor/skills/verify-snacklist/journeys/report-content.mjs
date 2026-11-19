@@ -1,7 +1,7 @@
 // Feature report-content, sub-feature rc-app (job 281, flag report-content-entry): More's feedback
 // row with „Auch: Inhalte melden“, „Inhalt melden“ in Feedback & Ideen (--fb4, launched with
-// VH_DEFINES="FLAGS_ON=report-content-entry,feedback-fb4") or on top of the feedback sheet
-// (without --fb4, launched with VH_DEFINES="FLAGS_ON=report-content-entry"), the form's errors,
+// VH_DEFINES="FLAGS_ON=report-content-entry") or on top of the feedback sheet
+// (without --fb4, launched with that and VH_FLAGS_OFF=feedback-fb4), the form's errors,
 // an item picked in the picker, the prefilled e-mail, the send through /functions/v1/report/app
 // and the number on the confirmation; Fertig goes back where it started. The stored row is read
 // by the caller (journey.log prints the number).
