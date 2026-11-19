@@ -3791,7 +3791,7 @@ abstract class AppLocalizations {
   /// Job 178 (Legal N-112): plain text on every surface that makes or shares an invite (invite sheet, Einladungen, onboarding invite steps): what the public join page shows. Wording from Legal, 2026-11-10; N-151b wording from Legal, 2026-11-13 (job 216), names exactly what the page shows; change only with Legal
   ///
   /// In de, this message translates to:
-  /// **'Wer den Link oder Code hat, sieht vor dem Beitritt deinen Vornamen (aus deinem Anzeigenamen, falls du einen eingetragen hast), den Namen des Haushalts, die Zahl der Mitglieder und der offenen Einträge und ob der Haushalt Snacklist Premium hat. Gib Link und Code nur an Personen weiter, die du einladen willst.'**
+  /// **'Wer den Link oder Code hat, sieht vor dem Beitritt deinen Namen (deinen Anzeigenamen, falls du einen eingetragen hast), den Namen des Haushalts, die Zahl der Mitglieder und der offenen Einträge und ob der Haushalt Snacklist Premium hat. Gib Link und Code nur an Personen weiter, die du einladen willst.'**
   String get inviteJoinPageHint;
 
   /// Job 169b W2: section of the invite sheet for the reusable group link (owner and admins)
@@ -5567,7 +5567,7 @@ abstract class AppLocalizations {
   /// Job 297: the name step's text under its heading
   ///
   /// In de, this message translates to:
-  /// **'Alle in deinem Haushalt sehen diesen Namen. Wen du einlädst, sieht deinen Vornamen. Du kannst ihn später ändern.'**
+  /// **'Alle in deinem Haushalt und die Personen, die du einlädst, sehen diesen Namen. Du kannst ihn später ändern.'**
   String get yourNameBody;
 
   /// Job 297: the name field's label, the name step's title bar, Konto's row and the edit sheet's title
@@ -5621,7 +5621,7 @@ abstract class AppLocalizations {
   /// Job 297: the text of the sheet that changes the name
   ///
   /// In de, this message translates to:
-  /// **'Alle in deinem Haushalt sehen diesen Namen. Wen du einlädst, sieht deinen Vornamen.'**
+  /// **'Alle in deinem Haushalt und die Personen, die du einlädst, sehen diesen Namen.'**
   String get yourNameEditBody;
 
   /// Job 297: the notice after the sheet saved the name

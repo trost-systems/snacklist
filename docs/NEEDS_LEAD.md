@@ -2483,3 +2483,16 @@ Status: open, the lead's call. Nothing here blocks the job's PR. The map and the
 ## NEEDS_LEAD Job 295: re-film the voice-add English video (2026-11-17)
 
 `site/public/media/voice-add-en-*.mp4/.webm/.webp` still show the burned-in caption "Snacklist listens in German." while `voice-add-en.vtt` and `marketing/videos/copy.json` now say "Dictation follows the app language." Re-film with `marketing/videos` (README) so video and captions match. The caption wording (DE "Diktat folgt der App-Sprache.", EN "Dictation follows the app language.") is Engineering's own: PM's answer for job 295 gave no replacement text for it, so PM may want to confirm it.
+
+## NEEDS_LEAD Job 312: ARB copy change for Legal, hold the merge (2026-11-19)
+
+Do not merge before `in/LEGAL_GO` exists or you say copy-only is fine. PR #554; the head SHA moves with every push-pr, read it with `gh pr view 554 --json headRefOid`. The migration ships on merge whatever the flag (the join page is not behind `display-name`). sha256 at commit time: `app_de.arb` c20ca9419daa4fb5db48bbc9be416a0d3fb5d15beec07d9f83687bdd0d3d15c3, `app_en.arb` 2cfe97d06d3f41b10c27a5fd3e06739f7b713ff9fd04dd7a92a404e9d1502838.
+
+Strings (old -> new):
+- `yourNameBody` EN: "Everyone in your household sees this name. The people you invite see your first name. You can change it later." -> "Everyone in your household and the people you invite see this name. You can change it later."
+- `yourNameBody` DE: "Alle in deinem Haushalt sehen diesen Namen. Wen du einlädst, sieht deinen Vornamen. Du kannst ihn später ändern." -> "Alle in deinem Haushalt und die Personen, die du einlädst, sehen diesen Namen. Du kannst ihn später ändern."
+- `yourNameEditBody` EN: "...sees this name. People you invite see your first name." -> "Everyone in your household and people you invite see this name."
+- `yourNameEditBody` DE: "...Wen du einlädst, sieht deinen Vornamen." -> "Alle in deinem Haushalt und die Personen, die du einlädst, sehen diesen Namen."
+- `inviteJoinPageHint` (Legal's N-112/N-151b text) EN: "...before joining your first name (from your display name, if you have set one)..." -> "...your name (your display name, if you have set one)..."; DE: "deinen Vornamen (aus deinem Anzeigenamen, falls du einen eingetragen hast)" -> "deinen Namen (deinen Anzeigenamen, falls du einen eingetragen hast)".
+
+Behavior behind it: the join page and code preview showed only the first word of the display name; the new migration shows the whole name. That widens what a signed-out link holder sees, so privacy.md (join page paragraph: "the first name of the person who invited" -> "the display name of the person who invited") and datenschutz.md ("den Vornamen der Person" -> "den Anzeigenamen der Person") and PRIVACY_DATA_MAP changed too. Legal should see both.

@@ -1760,3 +1760,15 @@ screenshot (N-287); sender prune cron `20 2 * * *` (N-284). Impressum, imprint, 
 privacy, mail.ts, notify.ts and the support pages equal main. Legal's GO came at e2c13607 (19 Nov,
 02:12 CET); the landing rebase took main's flags.json plus `report-content-entry` "off" and fixed the
 migration name in PRIVACY_DATA_MAP, nothing else.
+
+## Job 312: display-name copy says what invitees see
+
+**What invitees saw.** The first word of the display name, not the full name. `preview_invite_public` (the join page and the app's code preview) returned `split_part(btrim(display_name), ' ', 1)` as `inviter`. The app has one name field, so "Olga Brandt" showed as "Olga".
+
+**Change.** The split is gone: migration `20261119090000_invite_preview_full_name.sql` returns the display name as typed (still null for an empty name or the e-mail prefix). The name sheet (Account > Your name, the post-sign-in step) and the invite hint no longer mention a first name. Privacy texts (EN/DE), PRIVACY_DATA_MAP and the feature files say "display name". pgTAP pins "Olga Brandt"; the four invite-sheet goldens are re-rendered. Behind the existing display-name flag, no new flag. Old apps and join.js keep working (same JSON shape).
+
+**Legal note.** The signed-out join page now shows a last name too, and the privacy text changed with it: see NEEDS_LEAD.
+
+**Tests.** Flutter 3.50.0 (CI's SDK). Goldens re-rendered: `invite-sheet-*` (design) and `switcher-invite-*` (household). `flutter test test/household test/session test/settings test/design` passes except `default_list_test.dart` cases (pending-timer assertion, also failing on main). l10n files regenerated with 3.50: the diff to main is only the 3 changed strings per file. pgTAP runs in CI only.
+
+**Ships regardless of the flag.** The migration goes to production on merge and the join page is not behind `display-name`; only the app sheet is. The flag is already at full rollout. Older docs (docs/legal/169b-privacy-draft.md, docs/households/PLAN.md, earlier migration comments) still say "first name" on purpose: they are history.
