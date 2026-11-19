@@ -16138,3 +16138,40 @@ in the edit's bundle list, which shows which bundles Play keeps. It deletes its 
 refuses the update, validate or commit. It names the draft `<source name> (<versionCode>)`, or the
 versionCode alone, so the draft and alpha's live "0.1.0" look different in Console. This is
 internal metadata, not user copy.
+
+## Job 314: store app prototypes, rounds OS and SS (2026-11-18)
+
+Peter (t1059u): a prototype round for "Open store app" (DL1), plus how users pick stores so they can be recognised,
+in a way that scales across countries. Prototype only; nothing in the app changed. Sandbox: `docs/design/store-apps/`.
+
+1. **OS pick: OS1, a key in the store's header, with OS3's app card on the store's screen as its labelled twin.**
+   Runner-up: OS4, a menu from a visible key. The key costs no height and is one tap away; it shows only on stores
+   whose chain has an app. At 310 % it cuts all five store names (today three), so OS-Q4's default shows the
+   count as a number only above 200 %, which brings it to two (measured).
+2. **No hold.** OS4 was asked for as a long-press menu; job 171 (Peter) made a header hold do nothing, so it is
+   a visible key instead.
+3. **iOS opens the App Store page for 37 of the 58 registry entries.** Their domains claim no path that opens the
+   app's start screen (Lidl Plus, Mein dm, EDEKA and others), and DL1 allows no custom schemes, so the
+   fallback page, with its "Open" button, is the honest outcome. The prototype shows it per chain.
+4. **SS pick: SS2, type as today, matches offered, "Is this Lidl?" once**, with SS5's rules: ask existing stores
+   only where the chain has an app, and take the country from the phone's region per store, with no household
+   setting. Runner-up: SS5, lazy. SS3 (nearby) would send the location to a map service; that is a note for Legal.
+5. **Registry: chain and country (ISO 3166-1 alpha-2) as the key, the ids per country, in `retailers.json`.**
+   It is loaded by the deploy into a public, read-only `retailers` table, cached by the app, and checked by
+   `verify-registry.mjs` against Apple, Google, the AASA files and Digital Asset Links. It holds 58 verified
+   entries in DE, AT, CH, FR, NL, PL, IT and ES, plus Dino PL (no app found). No id is guessed. DeutschlandCard
+   and PAYBACK are left out.
+6. **Android without `<queries>` per package (SS-Q5).** Android's package-visibility docs say `startActivity`
+   needs no visibility; catch `ActivityNotFoundException`, then open the Play page. A new country then needs
+   no release. This differs from DL1's brief, so it is an open question, to be confirmed on a device.
+7. **Not merged.** Draft PR only, as for every prototype round. The preview stacks onto job 293's deployment
+   byte for byte (`build.sh --base`).
+
+## Job 318: onboarding store prototypes, round OB (2026-11-19)
+
+1. **Baseline is today plus job 313's card.** On main, onboarding's store chips create plain-named stores. Job 313 (in progress, `chain_card.dart`, `get_chain_questions`) then asks about each one with an app on the first list. That second question is the gap Peter spotted, so every option is counted against main's step plus those questions.
+2. **Stacked on job 314's draft.** Round OB reuses 314's phone, tokens, registry and page (`docs/design/store-apps/`). 314's draft #551 is behind main, so the branch is main plus 314's commit cherry-picked plus this round (job 239's pattern), with base main. Neither PR is merged.
+3. **Shared files changed only additively.** `phone.js` gains a `headerTrail` hook (the app key after the chevron, Peter's pick 2 for job 313). `data.js` gains dm AT and MPREIS AT. The overview gets a third card. The full verify still passes, and OS's `measured.json` is unchanged.
+4. **Taps are proven on live phones.** `drives` in `ob.js` taps the first phone of each walk, and `verify.mjs` checks the count against `metrics` and the stores it ends with. Mutations bite: a wrong count, "official partner" wording and chips that stop linking each failed.
+5. **Pick OB1 (region chips, linked, without the hint lines). Runner-up OB4.** The numbers and OB-Q1 to OB-Q11 are in `docs/design/store-apps/ob/RECOMMENDATION.md`.
+6. **No disclaimer and no location, checked.** N-292 holds on every OB phone in both languages. The country is the phone's region.

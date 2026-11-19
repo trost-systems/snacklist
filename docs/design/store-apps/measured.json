@@ -1,0 +1,353 @@
+{
+ "OS": {
+  "100": {
+   "OS1": {
+    "extra": 0,
+    "rows": 6,
+    "todayRows": 6,
+    "cut": 1,
+    "todayCut": 1,
+    "aldiBadge": 170,
+    "todayAldiBadge": 220,
+    "state": "list"
+   },
+   "OS2": {
+    "extra": 47,
+    "rows": 5,
+    "todayRows": 5,
+    "cut": 1,
+    "todayCut": 1,
+    "aldiBadge": 220,
+    "todayAldiBadge": 220,
+    "state": "trip"
+   },
+   "OS3": {
+    "extra": 0,
+    "rows": 6,
+    "todayRows": 6,
+    "cut": 1,
+    "todayCut": 1,
+    "aldiBadge": 220,
+    "todayAldiBadge": 220,
+    "state": "list"
+   },
+   "OS4": {
+    "extra": 0,
+    "rows": 6,
+    "todayRows": 6,
+    "cut": 1,
+    "todayCut": 1,
+    "aldiBadge": 170,
+    "todayAldiBadge": 220,
+    "state": "list"
+   },
+   "OS5": {
+    "extra": 12,
+    "rows": 4,
+    "todayRows": 4,
+    "cut": 1,
+    "todayCut": 1,
+    "aldiBadge": 220,
+    "todayAldiBadge": 220,
+    "state": "trip"
+   }
+  },
+  "200": {
+   "OS1": {
+    "extra": 0,
+    "rows": 5,
+    "todayRows": 5,
+    "cut": 2,
+    "todayCut": 2,
+    "aldiBadge": 123,
+    "todayAldiBadge": 181,
+    "state": "list"
+   },
+   "OS2": {
+    "extra": 47,
+    "rows": 3,
+    "todayRows": 4,
+    "cut": 2,
+    "todayCut": 2,
+    "aldiBadge": 181,
+    "todayAldiBadge": 181,
+    "state": "trip"
+   },
+   "OS3": {
+    "extra": 0,
+    "rows": 5,
+    "todayRows": 5,
+    "cut": 2,
+    "todayCut": 2,
+    "aldiBadge": 181,
+    "todayAldiBadge": 181,
+    "state": "list"
+   },
+   "OS4": {
+    "extra": 0,
+    "rows": 5,
+    "todayRows": 5,
+    "cut": 2,
+    "todayCut": 2,
+    "aldiBadge": 123,
+    "todayAldiBadge": 181,
+    "state": "list"
+   },
+   "OS5": {
+    "extra": 68,
+    "rows": 2,
+    "todayRows": 3,
+    "cut": 2,
+    "todayCut": 2,
+    "aldiBadge": 181,
+    "todayAldiBadge": 181,
+    "state": "trip"
+   }
+  },
+  "310": {
+   "OS1": {
+    "extra": 0,
+    "rows": 3,
+    "todayRows": 3,
+    "cut": 5,
+    "todayCut": 3,
+    "aldiBadge": 72,
+    "todayAldiBadge": 130,
+    "state": "list"
+   },
+   "OS2": {
+    "extra": 47,
+    "rows": 2,
+    "todayRows": 2,
+    "cut": 3,
+    "todayCut": 3,
+    "aldiBadge": 130,
+    "todayAldiBadge": 130,
+    "state": "trip"
+   },
+   "OS3": {
+    "extra": 0,
+    "rows": 3,
+    "todayRows": 3,
+    "cut": 3,
+    "todayCut": 3,
+    "aldiBadge": 130,
+    "todayAldiBadge": 130,
+    "state": "list"
+   },
+   "OS4": {
+    "extra": 0,
+    "rows": 3,
+    "todayRows": 3,
+    "cut": 5,
+    "todayCut": 3,
+    "aldiBadge": 72,
+    "todayAldiBadge": 130,
+    "state": "list"
+   },
+   "OS5": {
+    "extra": 155,
+    "rows": 1,
+    "todayRows": 2,
+    "cut": 3,
+    "todayCut": 3,
+    "aldiBadge": 130,
+    "todayAldiBadge": 130,
+    "state": "trip"
+   }
+  },
+  "100-de": {
+   "OS1": {
+    "extra": 0,
+    "rows": 6,
+    "todayRows": 6,
+    "cut": 1,
+    "todayCut": 1,
+    "aldiBadge": 165,
+    "todayAldiBadge": 220,
+    "state": "list"
+   },
+   "OS2": {
+    "extra": 47,
+    "rows": 5,
+    "todayRows": 5,
+    "cut": 1,
+    "todayCut": 1,
+    "aldiBadge": 220,
+    "todayAldiBadge": 220,
+    "state": "trip"
+   },
+   "OS3": {
+    "extra": 0,
+    "rows": 6,
+    "todayRows": 6,
+    "cut": 1,
+    "todayCut": 1,
+    "aldiBadge": 220,
+    "todayAldiBadge": 220,
+    "state": "list"
+   },
+   "OS4": {
+    "extra": 0,
+    "rows": 6,
+    "todayRows": 6,
+    "cut": 1,
+    "todayCut": 1,
+    "aldiBadge": 165,
+    "todayAldiBadge": 220,
+    "state": "list"
+   },
+   "OS5": {
+    "extra": 12,
+    "rows": 4,
+    "todayRows": 4,
+    "cut": 1,
+    "todayCut": 1,
+    "aldiBadge": 220,
+    "todayAldiBadge": 220,
+    "state": "trip"
+   }
+  },
+  "200-de": {
+   "OS1": {
+    "extra": 0,
+    "rows": 5,
+    "todayRows": 5,
+    "cut": 3,
+    "todayCut": 2,
+    "aldiBadge": 111,
+    "todayAldiBadge": 169,
+    "state": "list"
+   },
+   "OS2": {
+    "extra": 47,
+    "rows": 3,
+    "todayRows": 4,
+    "cut": 2,
+    "todayCut": 2,
+    "aldiBadge": 169,
+    "todayAldiBadge": 169,
+    "state": "trip"
+   },
+   "OS3": {
+    "extra": 0,
+    "rows": 5,
+    "todayRows": 5,
+    "cut": 2,
+    "todayCut": 2,
+    "aldiBadge": 169,
+    "todayAldiBadge": 169,
+    "state": "list"
+   },
+   "OS4": {
+    "extra": 0,
+    "rows": 5,
+    "todayRows": 5,
+    "cut": 3,
+    "todayCut": 2,
+    "aldiBadge": 111,
+    "todayAldiBadge": 169,
+    "state": "list"
+   },
+   "OS5": {
+    "extra": 68,
+    "rows": 2,
+    "todayRows": 3,
+    "cut": 2,
+    "todayCut": 2,
+    "aldiBadge": 169,
+    "todayAldiBadge": 169,
+    "state": "trip"
+   }
+  },
+  "310-de": {
+   "OS1": {
+    "extra": 0,
+    "rows": 3,
+    "todayRows": 3,
+    "cut": 5,
+    "todayCut": 3,
+    "aldiBadge": 52,
+    "todayAldiBadge": 110,
+    "state": "list"
+   },
+   "OS2": {
+    "extra": 47,
+    "rows": 2,
+    "todayRows": 2,
+    "cut": 3,
+    "todayCut": 3,
+    "aldiBadge": 110,
+    "todayAldiBadge": 110,
+    "state": "trip"
+   },
+   "OS3": {
+    "extra": 0,
+    "rows": 3,
+    "todayRows": 3,
+    "cut": 3,
+    "todayCut": 3,
+    "aldiBadge": 110,
+    "todayAldiBadge": 110,
+    "state": "list"
+   },
+   "OS4": {
+    "extra": 0,
+    "rows": 3,
+    "todayRows": 3,
+    "cut": 5,
+    "todayCut": 3,
+    "aldiBadge": 52,
+    "todayAldiBadge": 110,
+    "state": "list"
+   },
+   "OS5": {
+    "extra": 155,
+    "rows": 1,
+    "todayRows": 2,
+    "cut": 3,
+    "todayCut": 3,
+    "aldiBadge": 110,
+    "todayAldiBadge": 110,
+    "state": "trip"
+   }
+  }
+ },
+ "SS": {
+  "SS1": {
+   "migrate": 9,
+   "new": 3,
+   "unlisted": 3,
+   "twocountries": 5,
+   "country": 5
+  },
+  "SS2": {
+   "migrate": 3,
+   "new": 4,
+   "unlisted": 3,
+   "twocountries": 3,
+   "country": 8
+  },
+  "SS3": {
+   "migrate": 6,
+   "new": 5,
+   "unlisted": 5,
+   "twocountries": 5,
+   "country": 5
+  },
+  "SS4": {
+   "migrate": 4,
+   "new": 3,
+   "unlisted": 4,
+   "twocountries": 4,
+   "country": 8
+  },
+  "SS5": {
+   "migrate": 3,
+   "new": 4,
+   "unlisted": 3,
+   "twocountries": 5,
+   "country": 5
+  }
+ }
+}

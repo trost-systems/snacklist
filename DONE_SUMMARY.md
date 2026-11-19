@@ -1791,3 +1791,51 @@ undo now deletes through the new RPC `undo_add`, which takes the edits' lessons 
 keep them (spec). Migration `20261119070000_undo_added_details.sql`, pgTAP
 `undo_added_details.test.sql`, app tests for the op, journey
 `verify-snacklist/journeys/undo-added-details.mjs`. Details: `docs/done/315.md`.
+
+## Job 314: store app prototypes, rounds OS and SS (2026-11-18)
+
+This is a draft PR that must not be merged. It holds two prototype rounds; nothing in the app changed.
+- **OS ("Open <store> app"):** the pick is OS1, a key in the store's header (1 tap, +0 px), with the app card on the store's screen. The runner-up is OS4, a store menu.
+- **SS (recognising stores across countries):** the pick is SS2, type as today with matches offered and "Is this Lidl?" once, using SS5's rules. The runner-up is SS5.
+- **Data model proposal:** a registry keyed by chain and ISO country, in the repo as `retailers.json`, loaded into a public `retailers` table, with three nullable store columns. A new country needs no app release.
+- **Registry:** 58 verified entries in 8 countries, with no guessed ids.
+
+The preview is `dpl_DCsGpHfgWuk3zykuQLSewWqPMSWf` (the lead mints the share link). Details: [docs/done/314.md](docs/done/314.md).
+
+## Job 318: onboarding store prototypes, round OB (2026-11-19)
+
+A draft PR that must not be merged. It holds one prototype round. Nothing in the app changed (Changelog: none). The build waits for Peter's pick and queues behind job 313.
+
+## Preview
+
+- The preview is deployment `dpl_9keK9N842jnMATrkQj1vxVQmRUnz` on `family-groceries-design`, target preview, READY.
+- The round is at https://family-groceries-design-3vmm15exh-peter-trost.vercel.app/store-apps/ob/, and the overview at `…/store-apps/`. Add `?lang=de`, `?theme=dark`, `?ts=200` or `?ts=310`, and `?scenario=de|at|unlisted|skip|twoapps|joiner`.
+- All 129 files' SHA-1s match the build. The 124 files of job 314's `dpl_DCsGpHfgWuk3zykuQLSewWqPMSWf` are fetched byte for byte, so the old links keep working.
+- The bare URL answers 302 (SSO). Protection is unchanged: no bypass and no domain.
+- **The share link is not minted.** This runner has no Vercel connector, so the lead mints it (NEEDS_LEAD) and writes the 23-hour expiry next to it.
+
+## Round OB
+
+Today (main, plus job 313's card) and OB1 to OB5. Each walks six scenarios, and the first phone of each walk is live. Totals are the taps from arriving at the store step until every store with an app is linked. Brackets give the difference from today.
+
+| Option | New in DE | New in AT | Not listed | Skip | Two apps | Joiner | Store screens |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Today | 7 | 9 | 5 | 1 | 8 | 0 | 1 |
+| OB1 region chips, linked | 4 (−3) | 4 (−5) | 4 (−1) | 1 | 6 (−2) | 0 | 1 |
+| OB2 type-ahead | 4 (−3), 3 typed | 4 (−5), 3 typed | 3 (−2) | 1 | 6 (−2) | 0 | 1 |
+| OB3 top five plus Other | 5 (−2) | 4 (−5) | 4 (−1) | 1 | 6 (−2) | 0 | 1 |
+| OB4 no step, a card on the list | 4 (−3) | 4 (−5) | 4 (−1) | 1 | 6 (−2) | 0 | 0 |
+| OB5 OB1 plus a key preview | 4 (−3) | 4 (−5) | 4 (−1) | 1 | 3 (−5) | 0 | 1 |
+
+**Pick: OB1, without the two hint lines (OB-Q1).** It keeps today's step and today's taps. The chips come from the phone's region, and a tapped chip is linked, so job 313's questions afterwards go away. The step goes from 34 words to 10. **Runner-up: OB4.** It has one step fewer. But its card leaves 1 item in view at 100 % and none at 200 %, and a joiner from another country would see that country's chips. OB-Q1 to OB-Q11 are in `docs/design/store-apps/ob/RECOMMENDATION.md` (and `.de.md`).
+
+## How to verify
+
+- From the repo root, run `node docs/design/store-apps/verify.mjs`. It ended `all checks passed (677)` for OS, SS and OB, and also on the built folder (`/tmp/ob318/dist`). `--only=OB` runs this round alone (497 checks).
+- The checks bite. A wrong tap count, "official partner" wording and chips that stop linking each failed.
+- Screenshots: `docs/screenshots/318/` (`tools/shots.mjs docs/screenshots/318 . --only=OB`).
+
+## Not done here
+
+- The share link, which the lead mints.
+- Any app change. The build follows job 313 and Peter's pick.
