@@ -16166,3 +16166,12 @@ in a way that scales across countries. Prototype only; nothing in the app change
    no release. This differs from DL1's brief, so it is an open question, to be confirmed on a device.
 7. **Not merged.** Draft PR only, as for every prototype round. The preview stacks onto job 293's deployment
    byte for byte (`build.sh --base`).
+
+## Job 318: onboarding store prototypes, round OB (2026-11-19)
+
+1. **Baseline is today plus job 313's card.** On main, onboarding's store chips create plain-named stores. Job 313 (in progress, `chain_card.dart`, `get_chain_questions`) then asks about each one with an app on the first list. That second question is the gap Peter spotted, so every option is counted against main's step plus those questions.
+2. **Stacked on job 314's draft.** Round OB reuses 314's phone, tokens, registry and page (`docs/design/store-apps/`). 314's draft #551 is behind main, so the branch is main plus 314's commit cherry-picked plus this round (job 239's pattern), with base main. Neither PR is merged.
+3. **Shared files changed only additively.** `phone.js` gains a `headerTrail` hook (the app key after the chevron, Peter's pick 2 for job 313). `data.js` gains dm AT and MPREIS AT. The overview gets a third card. The full verify still passes, and OS's `measured.json` is unchanged.
+4. **Taps are proven on live phones.** `drives` in `ob.js` taps the first phone of each walk, and `verify.mjs` checks the count against `metrics` and the stores it ends with. Mutations bite: a wrong count, "official partner" wording and chips that stop linking each failed.
+5. **Pick OB1 (region chips, linked, without the hint lines). Runner-up OB4.** The numbers and OB-Q1 to OB-Q11 are in `docs/design/store-apps/ob/RECOMMENDATION.md`.
+6. **No disclaimer and no location, checked.** N-292 holds on every OB phone in both languages. The country is the phone's region.

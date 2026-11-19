@@ -1,6 +1,7 @@
 import { Phone, initial, view } from './phone.js';
 import * as OS from './os.js';
 import * as SS from './ss.js';
+import * as OB from './ob.js';
 
 const params = new URLSearchParams(location.search);
 const round = document.body.dataset.round;
@@ -10,20 +11,23 @@ const S = {
   ts: ({ 200: 200, 310: 310 })[params.get('ts')] ?? 100,
   platform: params.get('platform') === 'android' ? 'android' : 'ios',
   installed: params.get('installed') !== 'no',
-  scenario: SS.scenarios.some((x) => x.id === params.get('scenario')) ? params.get('scenario') : SS.scenarios[0].id,
+  scenario: (round === 'OB' ? OB : SS).scenarios.some((x) => x.id === params.get('scenario')) ? params.get('scenario') : (round === 'OB' ? OB : SS).scenarios[0].id,
 };
-const defaults = { lang: 'en', theme: 'light', ts: '100', platform: 'ios', installed: 'yes', scenario: SS.scenarios[0].id };
+const defaults = { lang: 'en', theme: 'light', ts: '100', platform: 'ios', installed: 'yes', scenario: (round === 'OB' ? OB : SS).scenarios[0].id };
 
 const W = {
   en: {
-    overview: 'Store apps: prototype rounds OS and SS', back: 'Store apps overview',
-    overviewNote: 'Peter (18 Nov 2026): “Give me a prototype round for the open store app. I want to see where we best put these, and we might also need to think about how we allow users to select stores if we’re now starting to need to recognise them properly. Also make suggestions that scale across countries.” Two rounds, five options each, next to today. Mock data only (the fictional Familie Brandt); nothing is sent, nothing opens.',
+    overview: 'Store apps: prototype rounds OS, SS and OB', back: 'Store apps overview',
+    OB: 'Round OB: picking and linking stores during onboarding',
+    OBshort: 'Peter (19 Nov 2026): “regarding linking stores: I think we missed the onboarding part.” Five ways for onboarding to pick and link stores, next to today plus job 313’s card. Taps and screens are counted against today in six scenarios.',
+    overviewNote: 'Peter (18 Nov 2026): “Give me a prototype round for the open store app. I want to see where we best put these, and we might also need to think about how we allow users to select stores if we’re now starting to need to recognise them properly. Also make suggestions that scale across countries.” Two rounds, five options each, next to today. Round OB (19 Nov 2026) adds onboarding. Mock data only (the fictional Familie Brandt); nothing is sent, nothing opens.',
     OS: 'Round OS: where “Open &lt;store&gt; app” lives', SS: 'Round SS: picking and recognising stores, across countries',
     OSshort: 'Five places for the action: the store’s header, the trip strip, the store’s screen, a store menu, and the moment a store is done.',
     SSshort: 'Five ways to turn free-text stores into recognised chains with an optional branch: a chain picker, type-ahead with “Is this Lidl?”, nearby on a map, a directory by country, and a lazy match only where an app exists. With the registry proposal.',
     note: {
       OS: 'Each option shows the list of five stores (dm, Lidl, a long ALDI SÜD name, a market without an app, REWE), what a tap does with the app installed and without it, the long name and the store without an app at the largest text, and the option’s own screen. The first phone is live: tap it. The controls set language, theme, text size, platform and whether the apps are installed.',
       SS: 'Each option walks five scenarios: the household’s existing stores get linked, a new store, a store not in the registry, one chain in two countries, and a change of country. Pick a scenario above; every option shows it as a strip of frames with its taps counted.',
+      OB: 'Each option walks six scenarios: a new user in Germany (Lidl, dm, REWE), a new user in Austria (Hofer, SPAR, Lidl; Hofer is ALDI SÜD with its own app), a store not in the registry, choosing nothing or skipping, a chain with two apps (BILLA or jö Bonus Club), and joining an existing household. The first phone of each strip is live: tap it. Taps count from arriving at the store step until every store with an app is linked. Mock data only.',
     },
     light: 'Light', dark: 'Dark', text: 'Text', largest: '200 % (Android’s largest)', ios: '310 % (iOS’s largest)',
     platform: 'Platform', installed: 'Apps', inst: 'installed', notInst: 'not installed', scenario: 'Scenario',
@@ -32,14 +36,17 @@ const W = {
     walkTaps: (n) => `Taps: <b>${n}</b>`,
   },
   de: {
-    overview: 'Händler-Apps: Prototyp-Runden OS und SS', back: 'Übersicht Händler-Apps',
-    overviewNote: 'Peter (18. Nov 2026): „Give me a prototype round for the open store app. I want to see where we best put these, and we might also need to think about how we allow users to select stores if we’re now starting to need to recognise them properly. Also make suggestions that scale across countries.“ Zwei Runden mit je fünf Optionen, neben heute. Nur Beispieldaten (die erfundene Familie Brandt); nichts wird gesendet, nichts öffnet sich.',
+    overview: 'Händler-Apps: Prototyp-Runden OS, SS und OB', back: 'Übersicht Händler-Apps',
+    OB: 'Runde OB: Läden im Einstieg wählen und verbinden',
+    OBshort: 'Peter (19. Nov 2026): „regarding linking stores: I think we missed the onboarding part.“ Fünf Wege, im Einstieg Läden zu wählen und zu verbinden, neben heute plus der Karte aus Job 313. Tipps und Bildschirme sind in sechs Szenarien gegen heute gezählt.',
+    overviewNote: 'Peter (18. Nov 2026): „Give me a prototype round for the open store app. I want to see where we best put these, and we might also need to think about how we allow users to select stores if we’re now starting to need to recognise them properly. Also make suggestions that scale across countries.“ Zwei Runden mit je fünf Optionen, neben heute. Runde OB (19. Nov 2026) ergänzt den Einstieg. Nur Beispieldaten (die erfundene Familie Brandt); nichts wird gesendet, nichts öffnet sich.',
     OS: 'Runde OS: wo „&lt;Laden&gt;-App öffnen“ sitzt', SS: 'Runde SS: Läden wählen und erkennen, über Ländergrenzen',
     OSshort: 'Fünf Orte für die Aktion: der Kopf des Ladens, der Einkaufsstreifen, die Seite des Ladens, ein Laden-Menü und der Moment, in dem ein Laden erledigt ist.',
     SSshort: 'Fünf Wege, aus frei getippten Läden erkannte Ketten mit optionaler Filiale zu machen: eine Ketten-Auswahl, Vorschläge beim Tippen mit „Ist das Lidl?“, in der Nähe auf der Karte, ein Verzeichnis nach Ländern und ein fauler Abgleich nur, wo es eine App gibt. Mit dem Vorschlag für das Verzeichnis.',
     note: {
       OS: 'Jede Option zeigt die Liste mit fünf Läden (dm, Lidl, ein langer ALDI-SÜD-Name, ein Markt ohne App, REWE), was ein Tipp mit installierter und ohne App tut, den langen Namen und den Laden ohne App bei größter Schrift, und den eigenen Bildschirm der Option. Das erste Handy ist live: tipp es an. Oben stellst du Sprache, Farben, Schriftgröße, Plattform und installierte Apps ein.',
       SS: 'Jede Option geht fünf Szenarien durch: die vorhandenen Läden werden verbunden, ein neuer Laden, ein Laden, den das Verzeichnis nicht kennt, eine Kette in zwei Ländern und ein Wechsel des Landes. Wähl oben ein Szenario; jede Option zeigt es als Bildfolge mit gezählten Tipps.',
+      OB: 'Jede Option geht sechs Szenarien durch: neu in Deutschland (Lidl, dm, REWE), neu in Österreich (Hofer, SPAR, Lidl; Hofer ist ALDI SÜD mit eigener App), ein Laden, den das Verzeichnis nicht kennt, nichts wählen oder überspringen, eine Kette mit zwei Apps (BILLA oder jö Bonus Club) und einem bestehenden Haushalt beitreten. Das erste Handy jeder Bildfolge ist live: tipp es an. Gezählt wird ab Ankunft im Laden-Schritt, bis jeder Laden mit App verbunden ist. Nur Beispieldaten.',
     },
     light: 'Hell', dark: 'Dunkel', text: 'Text', largest: '200 % (größte bei Android)', ios: '310 % (größte bei iOS)',
     platform: 'Plattform', installed: 'Apps', inst: 'installiert', notInst: 'nicht installiert', scenario: 'Szenario',
@@ -130,15 +137,15 @@ const recFile = S.lang === 'de' ? 'RECOMMENDATION.de.md' : 'RECOMMENDATION.md';
 const btn = (k, v, label) => `<button data-set="${k}=${v}" aria-pressed="${String(S[k] === true ? 'yes' : S[k] === false ? 'no' : S[k]) === String(v)}">${label}</button>`;
 const baseControls = () => `<span class="lbl">Lang</span>${btn('lang', 'en', 'English')}${btn('lang', 'de', 'Deutsch')}<span class="sep"></span>${btn('theme', 'light', W.light)}${btn('theme', 'dark', W.dark)}<span class="sep"></span>${btn('ts', 100, `${W.text} 100 %`)}${btn('ts', 200, `${W.text} ${W.largest}`)}${btn('ts', 310, `${W.text} ${W.ios}`)}`;
 const qs = () => { const q = new URLSearchParams(location.search); q.delete('scenario'); const s = q.toString(); return s ? `?${s}` : ''; };
-const R = { OS, SS };
+const R = { OS, SS, OB };
 const optTitle = (r, id) => R[r].options.find((o) => o.id === id)?.title[S.lang] ?? '';
 
 async function overviewPage(app) {
-  const recs = { OS: await recOf(`os/${recFile}`), SS: await recOf(`ss/${recFile}`) };
+  const recs = { OS: await recOf(`os/${recFile}`), SS: await recOf(`ss/${recFile}`), OB: await recOf(`ob/${recFile}`) };
   const card = (id) => `<a class="ocard" href="${id.toLowerCase()}/${qs()}" data-round-link="${id}"><h2>${W[id]}</h2><p>${W[`${id}short`]}</p>
     <p><span class="tag pick">${W.pick}</span> ${optTitle(id, recs[id].pick)}</p><p><span class="tag runner">${W.runner}</span> ${optTitle(id, recs[id].runner)}</p></a>`;
   app.innerHTML = `<header class="page-head"><div class="title-row"><h1>${W.overview}</h1></div><p class="note">${W.overviewNote}</p><div class="controls">${baseControls()}</div></header>
-    <div class="view"><div class="cards">${card('OS')}${card('SS')}</div></div>`;
+    <div class="view"><div class="cards">${card('OB')}${card('OS')}${card('SS')}</div></div>`;
   document.title = W.overview;
 }
 
@@ -160,7 +167,7 @@ async function roundPage(app) {
   const rec = await recOf(recFile);
   const mod = R[round];
   const tag = (id) => (id === rec.pick ? `<span class="tag pick">${W.pick}</span>` : id === rec.runner ? `<span class="tag runner">${W.runner}</span>` : '');
-  const framesOf = (opt) => (round === 'OS' ? mod.frames(opt) : mod.walk(opt, S.scenario));
+  const framesOf = (opt) => (round === 'OS' ? mod.frames(opt) : mod.walk(opt, S.scenario, S.lang));
   const cell = (opt, f, i) => `<figure class="cell"><figcaption>${f.cap[S.lang]}${f.taps !== undefined ? ` · ${W.walkTaps(f.taps)}` : ''}</figcaption><div class="host" data-frame="${opt.id}:${i}"></div></figure>`;
   const section = (opt) => {
     const fs = framesOf(opt);
@@ -178,7 +185,7 @@ async function roundPage(app) {
       <p class="note"><b>${W.pick}: ${optTitle(round, rec.pick)}</b> · ${W.runner}: ${optTitle(round, rec.runner)} · <a href="#rec">${W.jump} ↓</a></p>
     </header>
     <div class="view">
-      <section class="facts"><h2>${W.factsTitle}</h2><ul>${FACTS[round].map((x) => `<li>${x}</li>`).join('')}</ul></section>
+      <section class="facts"><h2>${W.factsTitle}</h2><ul>${(round === 'OB' ? OB.facts[S.lang] : FACTS[round]).map((x) => `<li>${x}</li>`).join('')}</ul></section>
       ${mod.options.map(section).join('')}
       ${round === 'SS' ? await SS.registrySection(S.lang) : ''}
       <section class="rec" id="rec">${md(rec.src)}</section>

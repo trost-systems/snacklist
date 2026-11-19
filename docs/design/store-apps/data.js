@@ -21,6 +21,8 @@ export const chains = {
   'rossmann:DE': { chain: 'rossmann', name: 'Rossmann', country: 'DE', app: 'Rossmann', ul: false, aliases: ['rossmann'] },
   'billa:AT': { chain: 'billa', name: 'BILLA', country: 'AT', app: 'BILLA', ul: false, aliases: ['billa'] },
   'spar-at:AT': { chain: 'spar-at', name: 'SPAR', country: 'AT', app: 'SPAR', ul: false, aliases: ['spar', 'eurospar', 'interspar'] },
+  'dm:AT': { chain: 'dm', name: 'dm', country: 'AT', app: 'Mein dm', ul: false, aliases: ['dm'] },
+  'mpreis:AT': { chain: 'mpreis', name: 'MPREIS', country: 'AT', app: 'MPREIS', ul: false, aliases: ['mpreis'] },
   'penny:AT': { chain: 'penny', name: 'PENNY', country: 'AT', app: 'PENNY', ul: false, aliases: ['penny'] },
   'carrefour:FR': { chain: 'carrefour', name: 'Carrefour', country: 'FR', app: 'Carrefour', ul: true, aliases: ['carrefour'] },
   'leclerc:FR': { chain: 'leclerc', name: 'E.Leclerc', country: 'FR', app: 'E.Leclerc', ul: false, aliases: ['leclerc', 'e.leclerc'] },

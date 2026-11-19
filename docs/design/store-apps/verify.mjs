@@ -77,6 +77,10 @@ const settings = [];
 for (const lang of ['en', 'de']) for (const theme of ['light', 'dark']) for (const ts of [100, 200, 310]) settings.push({ lang, theme, ts });
 const q = (o) => Object.entries(o).filter(([k, v]) => !(k === 'lang' && v === 'en') && !(k === 'theme' && v === 'light') && !(k === 'ts' && v === 100)).map(([k, v]) => `${k}=${v}`).join('&');
 
+const onlyOB = process.argv.includes('--only=OB');
+const measured = { OS: {}, SS: {} };
+const scen = ['migrate', 'new', 'unlisted', 'twocountries', 'country'];
+if (!onlyOB) {
 // --- Round OS -------------------------------------------------------------------------------------------------------
 for (const s of settings) {
   for (const platform of ['ios', 'android']) {
@@ -139,7 +143,6 @@ check(await page.locator('[data-frame="OS5:3"] [data-done="markt"]').count() ===
 }
 
 // Measurements at 390 × 844 (the phone), each option against Today in the same state, at 100 %, 200 % and 310 %.
-const measured = { OS: {}, SS: {} };
 for (const ts of [100, 200, 310]) {
   for (const lang of ['en', 'de']) {
   const m = await page.evaluate(async ({ ts, base, lang }) => {
@@ -178,7 +181,6 @@ for (const ts of [100, 200, 310]) {
 for (const [id, v] of Object.entries(measured.OS[100])) console.log(`OS ${id} 100 %: +${v.extra} px, rows ${v.rows} (today ${v.todayRows}), names cut ${v.cut} (today ${v.todayCut}); 310 % de: names cut ${measured.OS['310-de'][id].cut} (today ${measured.OS['310-de'][id].todayCut}), ALDI badge ${measured.OS['310-de'][id].aldiBadge} (today ${measured.OS['310-de'][id].todayAldiBadge})`);
 
 // --- Round SS -------------------------------------------------------------------------------------------------------
-const scen = ['migrate', 'new', 'unlisted', 'twocountries', 'country'];
 for (const s of settings) {
   for (const sc of scen) {
     if ((s.theme === 'dark' || s.lang === 'de') && s.ts === 200) continue;
@@ -224,18 +226,182 @@ for (const sc of scen) {
 const reg = await page.locator('#registry').getAttribute('data-registry');
 check(Number(reg) === registry.entries.length, `SS: the registry table shows all ${registry.entries.length} entries`);
 
+}
+
+// --- Round OB -------------------------------------------------------------------------------------------------------
+const OB = await import(join(dir, 'ob.js'));
+const obScen = OB.scenarios.map((x) => x.id);
+const obTargets = () => page.evaluate(() => {
+  const out = [];
+  for (const host of document.querySelectorAll('.host')) {
+    const ph = host.querySelector('.phone');
+    const z = Number(ph.style.zoom || 1);
+    for (const el of ph.querySelectorAll('.checks .check, [data-own], [data-other], [data-confirm], [data-keep], [data-app], .card .textbtn, .sheet .textbtn')) {
+      const r = el.getBoundingClientRect();
+      if (r.width && (r.height / z < 43.5 || r.width / z < 43.5)) out.push(`${host.dataset.frame}: target ${el.className} ${Math.round(r.width / z)}×${Math.round(r.height / z)}`);
+    }
+  }
+  return out;
+});
+for (const s of settings) {
+  for (const sc of obScen) {
+    if ((s.theme === 'dark' || s.lang === 'de') && s.ts === 200) continue;
+    const qs = q({ ...s, scenario: sc });
+    await open(`ob/?${qs}`);
+    for (const p of [...await layout(), ...await obTargets()]) check(false, `OB ${qs}: ${p}`);
+    check(true, `OB ${qs} laid out`);
+  }
+}
+
+// N-292 and the brief: no store-name disclaimer, no "official" or "partner" wording, no location, on any OB phone.
+for (const lang of ['en', 'de']) {
+  for (const sc of obScen) {
+    await open(`ob/?lang=${lang}&scenario=${sc}`);
+    const text = (await page.locator('.host').allInnerTexts()).join('\n');
+    check(!/trade ?marks|Marken gehören|affiliated|in keiner Verbindung/i.test(text), `OB ${lang} ${sc}: no store-name disclaimer on a phone`);
+    check(!/official|partner|offiziell/i.test(text), `OB ${lang} ${sc}: no “official” or “partner” wording`);
+    check(await page.locator('.host [data-dialog="loc"], .host .map').count() === 0 && !/location|Standort/i.test(text), `OB ${lang} ${sc}: nothing asks for location`);
+  }
+}
+
+// The live first phone of every walk: tap the path in drives[], count the taps, read where the phone ends.
+const obState = (sel) => page.locator(sel).evaluate((el) => {
+  const s = el.phone.s;
+  return { screen: s.screen, card: Boolean(s.card), picked: s.picked.map((p) => ({ key: p.key, name: p.name, app: p.app ?? null })), stores: (s.stores ?? []).map((x) => x.link ?? x.name) };
+});
+for (const opt of OB.options) {
+  for (const [sc, path] of Object.entries(OB.drives[opt.id])) {
+    await open(`ob/?scenario=${sc}`);
+    const sel = `[data-frame="${opt.id}:0"]`;
+    const host = page.locator(sel);
+    let taps = 0;
+    for (const a of path) {
+      if (a.fill !== undefined) await host.locator('[data-input="typed"]').last().fill(a.fill);
+      else { await host.locator(a.click).first().click(); taps += 1; }
+    }
+    const st = await obState(sel);
+    const [stepTaps, , , later] = OB.metrics[opt.id][sc];
+    const claimed = opt.noStep ? later - (sc === 'twoapps' ? 4 : 0) : stepTaps;
+    check(taps === claimed, `${opt.id} ${sc}: the live phone took ${taps} taps, the table says ${claimed}`);
+    if (opt.noStep) {
+      check(st.screen === 'list' && !st.card, `${opt.id} ${sc}: the card is answered and gone (${st.screen}, card ${st.card})`);
+      const want = OB.expected.linked[sc];
+      check(sc === 'skip' ? st.stores.join() === 'none' || st.stores.length === 1 : JSON.stringify(st.stores) === JSON.stringify(want), `${opt.id} ${sc}: the list ends with ${want} (${st.stores})`);
+    } else {
+      check(st.screen === 'need', `${opt.id} ${sc}: the step hands over to “What do you need right now?” (${st.screen})`);
+      const got = st.picked.map((p) => (opt.id === 'today' ? p.name : p.key ?? p.name));
+      const want = opt.id === 'today' ? OB.expected.today[sc] : OB.expected.linked[sc];
+      check(JSON.stringify([...got].sort()) === JSON.stringify([...want].sort()), `${opt.id} ${sc}: picked ${got}, expected ${want}`);
+      if (opt.id === 'today') check(st.picked.every((p) => p.key === null), `today ${sc}: every store stays a plain name`);
+    }
+    if (opt.id === 'OB5' && sc === 'twoapps') check(st.picked[0]?.app === 'jö Bonus Club', 'OB5 two apps: jö Bonus Club chosen in the step');
+  }
+}
+
+// Each walk ends at the table's total, joiners never see a store step, and only OB4 can show the joiner a card.
+for (const lang of ['en', 'de']) {
+  for (const opt of OB.options) {
+    for (const sc of obScen) {
+      const fs = OB.walk(opt, sc, lang);
+      check(fs[fs.length - 1].taps === OB.totalOf(opt.id, sc), `${opt.id} ${sc}: the walk ends at ${OB.totalOf(opt.id, sc)} taps (${fs[fs.length - 1].taps})`);
+      const counted = fs.filter((f) => f.taps !== undefined).map((f) => f.taps);
+      check(counted.every((t, i) => i === 0 || t >= counted[i - 1]), `${opt.id} ${sc}: taps never go down along the walk (${counted})`);
+      if (sc === 'joiner') {
+        check(fs.every((f) => f.state.screen !== 'ob'), `${opt.id} joiner: no store step`);
+        check(fs.some((f) => f.state.stores?.every((x) => x.link === 'lidl:DE' || x.link === 'dm:DE' || x.link === 'rewe:DE')), `${opt.id} joiner: the household’s stores arrive linked, with Germany’s apps on an Austrian phone`);
+        check(fs.some((f) => f.state.card) === (opt.id === 'OB4'), `${opt.id} joiner: a card only in OB4, and only when nobody answered`);
+      }
+    }
+  }
+}
+await open('ob/?scenario=twoapps');
+check(await page.locator('[data-option="OB5"] [data-app="jö Bonus Club"]').count() >= 1, 'OB5: the step offers BILLA’s second app');
+check(await page.locator('[data-option="OB1"] [data-chaincard="billa:AT"] [data-app="jö Bonus Club"]').count() === 1, 'OB1: the store’s screen changes BILLA’s app later');
+check(registry.entries.some((e) => e.chain === 'billa' && e.country === 'AT' && e.app.name === OB.appsOf['billa:AT'][0] && /jö Bonus Club/.test(e.note)), 'registry: BILLA’s default app and jö Bonus Club as its alternative');
+await open('ob/?scenario=at');
+check(await page.locator('[data-frame="OB1:0"] [data-pick="aldi-sued:AT"]').innerText() === 'Hofer', 'OB1 AT: the chip says Hofer, the registry’s name in Austria');
+check(await page.locator('[data-frame="today:0"] [data-pick="Hofer"]').count() === 0, 'today AT: no Hofer chip (German chips on every phone)');
+check(await page.locator('[data-option="OB1"] [data-suggest] [data-chain="aldi-sued:AT"]').count() === 1, 'OB1: “Hofer” typed on a German phone still finds Austria’s Hofer');
+await open('ob/?scenario=unlisted');
+check(await page.locator('[data-option="OB1"] .host').last().locator('[data-store="hofladensonnenwiese"] [data-open]').count() === 0, 'OB1: a store of one’s own gets no app key');
+for (const sc of ['de', 'at']) {
+  await open(`ob/?scenario=${sc}`);
+  await page.screenshot({ path: join(shots, `OB-${sc}-en-light-100.png`), fullPage: true });
+}
+
+// Measured at 390 × 844: UI words on the screen (chain and app names not counted), and whether Continue (OB4: Done)
+// shows without scrolling, on the screen where the user picks for a new user in Germany.
+const obMeasured = {};
+for (const ts of [100, 200, 310]) {
+  for (const lang of ['en', 'de']) {
+    obMeasured[`${ts}-${lang}`] = await page.evaluate(async ({ ts, base, lang }) => {
+      const P = await import(`${base}phone.js`);
+      const O = await import(`${base}ob.js`);
+      const out = {};
+      for (const opt of [...O.options, O.lean]) {
+        const fs = O.walk(opt.id === 'OB1-lean' ? O.options[1] : opt, 'de', lang);
+        const f = opt.noStep ? fs[0] : fs.filter((x) => x.state.screen === 'ob').pop();
+        const host = document.createElement('div');
+        host.style.cssText = 'position:absolute;left:-2000px;top:0';
+        document.body.append(host);
+        host.innerHTML = P.view(P.initial(opt, { ts, lang, ...structuredClone(f.state) }));
+        const ph = host.querySelector('.phone');
+        const sc = ph.querySelector('[data-scroll]');
+        const zone = opt.noStep ? ph.querySelector('[data-card]') : sc;
+        const go = ph.querySelector(opt.noStep ? '[data-done]' : '[data-next]');
+        const bottom = opt.noStep ? ph.querySelector('[data-bottom]').getBoundingClientRect().top : sc.getBoundingClientRect().bottom;
+        const scroll = go.getBoundingClientRect().bottom > bottom + 0.5;
+        zone.querySelectorAll('[data-pick], .sbadge, .appkey').forEach((e) => e.remove());
+        const words = zone.innerText.split(/\s+/).filter((x) => /\p{L}/u.test(x)).length;
+        host.remove();
+        // The first list the user lands on (today: job 313's first question; OB4: its card): items in view above the band.
+        const lf = fs.find((x) => x.state.screen === 'list');
+        host.innerHTML = P.view(P.initial(opt, { ts, lang, ...structuredClone(lf.state) }));
+        document.body.append(host);
+        const lp = host.querySelector('.phone');
+        const top = lp.querySelector('[data-scroll]').getBoundingClientRect().top;
+        const band = lp.querySelector('[data-bottom]').getBoundingClientRect().top;
+        const rows = [...lp.querySelectorAll('.item')].filter((r) => { const b = r.getBoundingClientRect(); return b.top >= top - 0.5 && b.bottom <= band + 0.5; }).length;
+        host.remove();
+        out[opt.id] = { words, scroll, rows };
+      }
+      return out;
+    }, { ts, base, lang });
+  }
+}
+for (const [id, v] of Object.entries(obMeasured['100-en'])) console.log(`OB ${id}: ${v.words} words (de ${obMeasured['100-de'][id].words}), scroll to Continue at 100/200/310 %: ${[100, 200, 310].map((t) => obMeasured[`${t}-en`][id].scroll).join('/')}, first list items in view ${[100, 200, 310].map((t) => obMeasured[`${t}-en`][id].rows).join('/')} (de ${[100, 200, 310].map((t) => obMeasured[`${t}-de`][id].rows).join('/')})`);
+const obFile = join(dir, 'ob/measured.json');
+const obFresh = JSON.stringify(obMeasured, null, 1);
+if (write) writeFileSync(obFile, `${obFresh}\n`);
+check(existsSync(obFile) && JSON.stringify(JSON.parse(readFileSync(obFile, 'utf8')), null, 1) === obFresh, 'ob/measured.json matches this run (rerun with --write after a change)');
+const yn = (b, de) => (b ? (de ? 'ja' : 'yes') : (de ? 'nein' : 'no'));
+for (const f of ['RECOMMENDATION.md', 'RECOMMENDATION.de.md']) {
+  const src = readFileSync(join(dir, 'ob', f), 'utf8');
+  const de = f.includes('.de.');
+  for (const opt of [...OB.options, OB.lean]) {
+    const row = src.split('\n').find((l) => l.startsWith(`| **${opt.id}**`) || l.startsWith(`| ${opt.id} `) || (opt.id === 'today' && /^\| (Today|Heute)/.test(l)));
+    const tot = opt.id === 'OB1-lean' ? [] : obScen.map((sc) => OB.totalOf(opt.id, sc));
+    if (opt.id !== 'OB1-lean') check(row && obScen.every((sc, i) => row.includes(`| ${tot[i]} |`) || row.includes(`| ${tot[i]} (`)), `ob/${f}: ${opt.id} row has the totals ${tot.join('/')}`);
+    const m = obMeasured[`100-${de ? 'de' : 'en'}`][opt.id];
+    const sc = [100, 200, 310].map((t) => yn(obMeasured[`${t}-${de ? 'de' : 'en'}`][opt.id].scroll, de)).join(' / ');
+    const mrow = src.split('\n').filter((l) => l.startsWith(`| **${opt.id}**`) || l.startsWith(`| ${opt.id} `) || (opt.id === 'today' && /^\| (Today|Heute)/.test(l)))[opt.id === 'OB1-lean' ? 0 : 1];
+    const rows = [100, 200].map((t) => obMeasured[`${t}-${de ? 'de' : 'en'}`][opt.id].rows).join(' / ');
+    check(mrow && mrow.includes(`| ${m.words} |`) && mrow.includes(sc) && mrow.includes(`| ${rows} |`), `ob/${f}: ${opt.id} measured row says ${m.words} words, scroll ${sc} and ${rows} items in view`);
+  }
+}
+
 // --- Overview, recommendations, a phone-sized screen ----------------------------------------------------------------
 for (const lang of ['en', 'de']) {
   await open(lang === 'de' ? '?lang=de' : '');
-  check(await page.locator('[data-round-link]').count() === 2, `overview ${lang}: two round links`);
-  for (const r of ['OS', 'SS']) {
+  check(await page.locator('[data-round-link]').count() === 3, `overview ${lang}: three round links`);
+  for (const r of ['OB', 'OS', 'SS']) {
     const href = await page.locator(`[data-round-link="${r}"]`).getAttribute('href');
     check(href.startsWith(`${r.toLowerCase()}/`), `overview ${lang}: ${r} links to its page`);
     check(!/<!-- pick: \w+ -->/.test(await page.locator(`[data-round-link="${r}"]`).innerText()), `overview ${lang}: ${r} card renders`);
   }
   if (lang === 'en') await page.screenshot({ path: join(shots, 'overview.png') });
 }
-for (const r of ['os', 'ss']) {
+for (const r of ['ob', 'os', 'ss']) {
   const en = readFileSync(join(dir, r, 'RECOMMENDATION.md'), 'utf8');
   const de = readFileSync(join(dir, r, 'RECOMMENDATION.de.md'), 'utf8');
   const pick = (s) => [s.match(/<!-- pick: (\w+) -->/)?.[1], s.match(/<!-- runner-up: (\w+) -->/)?.[1]];
@@ -244,7 +410,7 @@ for (const r of ['os', 'ss']) {
 }
 const phone = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
 const pp = await phone.newPage();
-for (const path of ['', 'os/', 'ss/', 'os/?ts=310', 'ss/?lang=de&theme=dark']) {
+for (const path of ['', 'os/', 'ss/', 'os/?ts=310', 'ss/?lang=de&theme=dark', 'ob/', 'ob/?ts=310&scenario=twoapps', 'ob/?lang=de&theme=dark&scenario=joiner']) {
   await pp.goto(`${url}${base}${path}`);
   await pp.waitForSelector('body[data-ready]');
   const sideways = await pp.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
@@ -256,6 +422,7 @@ await pp.screenshot({ path: join(shots, 'OS-phone-390x844.png') });
 await phone.close();
 
 // The measured numbers must match measured.json and the tables in both RECOMMENDATION files.
+if (!onlyOB) {
 const mfile = join(dir, 'measured.json');
 const fresh = JSON.stringify(measured, null, 1);
 if (write) writeFileSync(mfile, `${fresh}\n`);
@@ -276,6 +443,8 @@ for (const r of ['os', 'ss']) {
       }
     }
   }
+}
+
 }
 
 check(errors.length === 0, `no page errors (${errors.slice(0, 3).join(' | ')})`);

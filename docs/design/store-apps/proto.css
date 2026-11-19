@@ -418,3 +418,23 @@ th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; color
 .list-top .tact > span { white-space: nowrap; overflow-wrap: normal; }
 /* System pages outside the app scale their text too, but cap where they would leave the phone. */
 .outside { --ts: var(--tsc); }
+
+/* Round OB (job 318): the onboarding store step's variants. */
+.obbar h1 { font: 800 calc(22px * var(--tsc))/1.15 var(--hl-font-family-display); }
+.obbar { padding-left: 8px; }
+.checks { display: grid; grid-auto-rows: max-content; border: 2px solid var(--hl-color-border); border-radius: 18px; background: var(--hl-color-surface-raised); padding: 0 12px; }
+.checks .check { align-items: center; min-height: 52px; font-weight: 650; font-size: calc(16px * var(--ts)); text-align: left; }
+.checks .check + .check { border-top: 1px solid var(--hl-color-divider); }
+.checks .check > .grow { min-width: 0; overflow-wrap: anywhere; }
+.hexbox.plus .icon { color: var(--hl-color-brand); }
+.hexfield .iconbtn.sm { width: 44px; height: 44px; margin-right: -10px; color: var(--hl-color-brand); }
+.chip .icon.sm { width: 16px; height: 16px; }
+.preview { display: grid; gap: 6px; grid-auto-rows: max-content; }
+.prevrow { display: grid; gap: 6px; grid-auto-rows: max-content; }
+.prevrow .shead-row { min-height: 44px; }
+.prevrow .rule { flex: 1; min-width: 12px; height: 3px; border-radius: 2px; background: var(--hl-color-brand); }
+.appkey { flex: 0 1 auto; min-width: 0; display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 10px; background: var(--hl-color-accent-soft); color: var(--hl-color-on-accent-soft); font-weight: 650; font-size: calc(13.5px * var(--ts)); overflow-wrap: anywhere; }
+/* Job 313's header (Peter's pick 2): a plain chevron with no button chrome; only the app key stays a key. */
+body[data-round="OB"] .caret { filter: none; width: 44px; }
+body[data-round="OB"] .caret::after { display: none; }
+body[data-round="OB"] .card .textbtn { min-width: 64px; justify-content: center; }

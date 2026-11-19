@@ -46,7 +46,7 @@ const header = (s, store) => {
   return `<div class="shead-row" data-store="${store.id}">
     <button class="shead-hit" ${at('fold', store.id)} aria-label="${esc(store.name)}, ${esc(t(s).itemCount(open))}"></button>
     <span class="shead-left">${badge(store.name)}<i class="rule"></i></span>
-    <span class="cnt"><b>${open}</b> ${esc(t(s).itemWord(open))}</span>${extra}<span class="caret ${folded ? 'folded' : ''}" aria-hidden="true">${ic('expand_more')}</span></div>`;
+    <span class="cnt"><b>${open}</b> ${esc(t(s).itemWord(open))}</span>${extra}<span class="caret ${folded ? 'folded' : ''}" aria-hidden="true">${ic('expand_more')}</span>${s.opt.headerTrail?.(s, store) ?? ''}</div>`;
 };
 
 const section = (s, store) => {
