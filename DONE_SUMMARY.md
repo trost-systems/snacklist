@@ -1760,3 +1760,9 @@ screenshot (N-287); sender prune cron `20 2 * * *` (N-284). Impressum, imprint, 
 privacy, mail.ts, notify.ts and the support pages equal main. Legal's GO came at e2c13607 (19 Nov,
 02:12 CET); the landing rebase took main's flags.json plus `report-content-entry` "off" and fixed the
 migration name in PRIVACY_DATA_MAP, nothing else.
+
+## Job 316: Play promote to closed testing as a draft
+
+`play-promote.yml` and the lane `android promote_draft` put a versionCode Play already has on alpha
+as a draft release, nothing sent for review, production untouched. Details and how to verify:
+`docs/done/316-play-promote-alpha.md`; the run on 1414 is in the job's ops summary.

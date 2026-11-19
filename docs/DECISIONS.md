@@ -16017,3 +16017,20 @@ the shell's router. Now it imports only core; the baseline lost its 8 `analytics
 3. **`ReportedError`.** The error report named `HouseholdError` and its problem by type. Now
    `analytics/exceptions.dart` has the interface `ReportedError` (`typeName`, `code`) and
    `HouseholdError` implements it with the same strings.
+
+## Job 316: Play promote to closed testing as a draft
+
+1. **Own lane on supply's client, not `upload_to_play_store`.** supply's promote path
+   (`track_promote_to`) needs the versionCode on the source track, and build 1414 (the beta cut)
+   is no longer on internal (1415 replaced it). Its upload path with `version_codes_to_retain` and
+   no bundle never updates a track. `android promote_draft` checks the bundle library, then writes
+   the track itself.
+2. **Keep the track's other releases.** supply's `update_track` replaces the release list. The
+   lane keeps alpha's completed 1368 and replaces only a draft, so closed testers keep their build
+   until Peter rolls the draft out.
+3. **`changesNotSentForReview` without supply's rescue.** The rescue retries without the flag when
+   Play refuses it, which could send other pending Console changes for review. The run fails instead.
+4. **Release notes copied from Play only.** Play releases from release.yml carry none
+   (`skip_upload_changelogs`), so the draft usually has none. No new copy, nothing for Legal.
+5. **`commit` input (default on).** Off validates the edit and deletes it: a dry run, and a
+   read-only second look at the tracks after a promote.

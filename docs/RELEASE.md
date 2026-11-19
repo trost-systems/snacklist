@@ -305,6 +305,29 @@ takes the app's version and build number (`FLUTTER_BUILD_NAME`,
   2026-10-28 and set `PLAY_RELEASE_STATUS` to `completed`; from then on every
   upload run rolled out to internal testers until job 174.
 
+## Promote a build to closed testing
+
+`release.yml` uploads only to the internal track. To give closed testing
+(`alpha`, tester list "Snacklist Beta") a build Play already has, the Play
+promote workflow (`.github/workflows/play-promote.yml`, lane
+`android promote_draft`) sets that versionCode as alpha's draft release:
+
+```bash
+gh workflow run play-promote.yml -f version_code=1414 -f track=alpha
+gh workflow run play-promote.yml -f version_code=1414 -f commit=false   # validate only
+```
+
+It never uploads a bundle, never touches production and sends nothing for
+review: the edit is committed with `changesNotSentForReview`. Alpha's other
+releases stay, so its testers keep their build until someone rolls the draft
+out in Play Console; an older draft is replaced. The release notes are copied
+from a release that already carries the versionCode (internal first), else the
+draft has none. A versionCode missing from Play's bundle library fails the
+run. The log lists every track before, and alpha read back afterwards from a
+second edit that is deleted; the run fails if alpha then has no draft with
+the versionCode. Like a release run, it works from `main` only (the `release`
+environment).
+
 ## Lanes
 
 Run lanes from `app/` with `bundle exec fastlane <platform> <lane>`.
@@ -319,6 +342,7 @@ Run lanes from `app/` with `bundle exec fastlane <platform> <lane>`.
 | `android build` | `flutter build appbundle`, signed with `android/key.properties`. |
 | `android play_access` | Gets a Google token for the service account (fails if that does not work), then tries to open a Play edit; writes `ok` or Play's refusal to `PLAY_ACCESS_FILE`. |
 | `android internal` | Uploads the AAB to the `internal` track with `PLAY_RELEASE_STATUS`, or validates it only (`RELEASE_UPLOAD` not `true`). Uploads no listing, changelog or images. |
+| `android promote_draft` | Sets `VERSION_CODE` (already in Play's bundle library) as the draft release of `PROMOTE_TRACK` (`alpha` only), keeping the track's other releases; commits with `PROMOTE_COMMIT=true`, else validates only. [Promote a build to closed testing](#promote-a-build-to-closed-testing). |
 
 The lint gate runs `scripts/release/test.sh` and shellchecks
 `scripts/release/`; CI's `fastlane` job checks that the Gemfile.lock installs
