@@ -231,7 +231,7 @@ const small = await browser.newPage({ viewport: { width: 390, height: 844 } });
 await small.goto(`${url}${pathArg}`);
 await small.waitForSelector('body[data-ready]');
 check(await small.evaluate(() => document.documentElement.scrollWidth <= 391), 'overview: no sideways scroll at 390 px');
-check((await small.locator('a.ocard').count()) === 1, 'overview: links round AS');
+check((await small.locator('a.ocard[href^="as/"]').count()) === 1, 'overview: links round AS');
 
 const file = join(here, 'measured.json');
 if (write) writeFileSync(file, `${JSON.stringify(measured, null, 1)}\n`);

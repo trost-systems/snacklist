@@ -1,4 +1,4 @@
-# After-add sheet: prototype round AS (job 319)
+# After-add sheet: prototype rounds AS (job 319) and AM (job 323)
 
 A throwaway HTML sandbox for one decision: how the add sheet looks after an item was added. It drops the close key, the "Just added" header, the "Added / Undo" row and the gap above the field, and it keeps every field in view while the keyboard is up. Nothing here ships, and the app is unchanged. It uses mock data only (the fictional Familie Brandt), makes no network calls, and shows store names as plain text (Legal N-292).
 
@@ -24,3 +24,20 @@ The controls set the language (`?lang=de`), the theme (`?theme=dark`), the text 
 ## Run
 
 From the repo root, run `node docs/design/after-add/verify.mjs`. To check the preview, run `bash docs/design/after-add/build.sh /tmp/dist` and then `node docs/design/after-add/verify.mjs /tmp/dist --path /after-add/`.
+
+## Round AM (job 323): typing something that is already there
+
+`am/` shows, inside AS1's sheet, five ways to mark a typed item that matches one on the list or one ticked recently. Each way lets the user tick it off, merge into it, add a separate item, or put a ticked one back on the list. Peter took the idea from Bring!. The page opens with today's duplicate handling (refusal, the Merge note, ticked items never match) and with what each outcome means. Then come AM1 to AM5, each with a live phone and eleven frames, the measured table, and `am/RECOMMENDATION.md` (in English) and `am/RECOMMENDATION.de.md` (in German), with the pick (AM2), the runner-up (AM1) and AM-Q1 to AM-Q11. It uses the same controls as round AS.
+
+- `am/model.js` holds the mock list, the matcher (exact, another spelling or plural, part of a compound) and one reducer for every outcome. `am/phone.js` holds the five options as records; it reuses `phone.js` (AS1's chips, the field, the keyboard). `am/walk.js` holds the scenarios, each option's path to each outcome, and the frames.
+- `node docs/design/after-add/am/verify.mjs [<root>] [--path <url path>] [--write]` drives the round on both phones, in both languages and both themes, at every text size. It checks:
+  - the matches each scenario shows, and their status;
+  - a key for every outcome the option offers;
+  - every match and key in view above the keyboard;
+  - 44 px keys;
+  - that UI words are app strings;
+  - every outcome path, clicked and pressed on the live phone, against the reducer;
+  - the numbers in `am/measured.json` and `am/RECOMMENDATION.md`.
+
+  Its last line is `all checks passed (N)`.
+- `node docs/design/after-add/am/shots.mjs <out>` takes the PR's screenshots.

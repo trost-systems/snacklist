@@ -16148,3 +16148,23 @@ internal metadata, not user copy.
 - **No rollback for a mistaken add.** Peter's update (t1071u, 22:02 CET) drops Undo entirely: the user closes the sheet, taps the row and deletes it, and the learned store and category are not rolled back, since the next add corrects them. Job 315's code stays untouched. The first build missed this update and proposed an `undo_add` path as AS-Q1; review 0 caught it, and the question was removed.
 - **The preview builds on the newest earlier preview.** It is `dpl_9keK9N842jnMATrkQj1vxVQmRUnz`, fetched byte for byte, so the earlier rounds' links keep working.
 - **Open pickers are one sideways line (review 1).** The first version wrapped the options onto several lines. At large text they pushed options and the field under the keyboard, and the in-view check missed it because it looked only at frames with the pickers closed. Now every option shows each picker as one sideways line with the item's choice scrolled into view, as `FoldoutChips` does, and the check covers the open-picker frames. AS1 stays the pick: it is the only sheet option that keeps everything in view at 310 % with a picker open.
+
+## Job 323: add-match prototypes (round AM)
+
+- **Stacked on job 319's draft (#568).** The round reuses AS1's sheet, the phone chrome and the keyboard from `docs/design/after-add/`. It lives in `after-add/am/`, and the PR's base is `job/319-after-add-sheet-prototypes`. Neither draft is merged. Shared files changed only additively: exports in `phone.js` and `page.js`, eight icons in `icons.js`, the overview's second card. AS's verify still passes 3758 checks.
+- **Today's behaviour from the code, not the brief.** An exact match is refused with no button. Only a `canonical_key` match gets the Merge note, and only after the add. Ticked items never match. The round page states this, with citations.
+- **Peter's clarification (t1077u) arrived two minutes after the job started, and I read it only before the push.** The first draft's AM2 (select the existing item, honey behind the sheet) broke it, and so did every option, by showing a matched item behind the sheet after an outcome. Both were reworked:
+  - outcomes leave the list behind the sheet alone, and the sheet says what happened in the chips' place, with the app's sentences (`dedupeMerged`, `itemTicked`, `alreadyOnList`, plus `readd` + item);
+  - AM2 became one marked suggestion row per outcome.
+
+  `verify.mjs` now fails any frame with a pre-sheet item behind the sheet.
+- **"Tick off" defined per match.** For an open match it means ticked off, with nothing added. A ticked match can't be ticked off again, and its outcome is "Back on the list" (the app's `readd` string), with its amount, store, brand and details.
+- **The options differ in Enter as well as marking:** merge (AM1, AM3), keep as today (AM2), add (AM4), tick off (AM5, Bring!'s toggle). AM5 shows why the toggle is risky when typing: Enter on "Milk" takes Milk off the list.
+- **Pick AM2 over AM1.** Each outcome is a visibly marked row showing its result, Enter is today's no-change refusal, and it holds up best at large text. AM1 is 56 px shorter while typing, but merges on Enter and on a row tap without saying so.
+- **Rows must not shrink in the sheet's column.** The first run measured AM1 as in view at 200 % on Android while its rows overlapped. With `flex-shrink: 0`, the overflow shows. The table gives "in view" for one match and for three.
+- **The stepper follows the app's `stepQuantity`** ("1 kg" → "2 kg"); merge follows `merge_quantities` (1 kg + none stays 1 kg, AM-Q6).
+- **Preview:** `dpl_Do8APvKCfawUUJLdynRviWKxC5cy`, built on `dpl_F5GxUXuGo4Tv6Wjaw6uJMeHyTGZg`, with 158 files byte-checked. It replaces `dpl_9skSoQBYYiw1YaNhuttv4k4ebimP` (before the clarification). The share link is for the lead to mint.
+- **Review 0: one marking language, no part matches.**
+  - Match rows had used honey-soft, the colour of AS1's plain "Enter adds this" suggestion, which broke Peter's "marked to distinguish from a suggestion that adds". Every option now uses blue (accent) for on the list, mint for tick off and grey for ticked, and verify.mjs compares backgrounds.
+  - "Milk" had offered a one-tap merge into Oat milk, a different product. Compounds are no longer matches anywhere, and the several-matches scenario is now two open Milks and a ticked one.
+  - The preview is now `dpl_DwV7uqNrRrNdsruXL8hTByoSnvK5`.

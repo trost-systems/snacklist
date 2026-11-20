@@ -3,7 +3,7 @@
 import { icons } from './icons.js';
 import { categories, catName, curItem, lastTwo, nameOf, stores, storeName, suggestions, t } from './model.js';
 
-const esc = (v) => String(v).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+export const esc = (v) => String(v).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 export const ic = (n, cls = 'icon') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="${icons[n]}"/></svg>`;
 
 const name = (item, lang) => item[lang];
@@ -19,7 +19,7 @@ export const row = (item, env, { cur = false, fresh = false } = {}) => {
 };
 
 // Controls the options are made of. data-field marks what "every field visible" is checked on.
-const qtyCtl = (item, env) => {
+export const qtyCtl = (item, env) => {
   const w = t(env.lang);
   return `<span class="qty" data-field="qty"><span>
     <button data-act="qty-" aria-label="${w.less}">${ic('remove')}</button>
@@ -29,9 +29,9 @@ const qtyCtl = (item, env) => {
 };
 const chip = (field, act, label, { open = false, grow = false, lead = '', arrow = true } = {}) =>
   `<button class="tact${open ? ' open' : ''}${grow ? ' grow' : ''}" data-field="${field}" data-act="${act}" aria-expanded="${open}"><span>${lead}${esc(label)}${arrow ? ic('arrow_drop_down') : ''}</span></button>`;
-const storeChip = (item, s, env, o = {}) => chip('store', 'open:store', storeName(item.store, env.lang), { open: s.open === 'store', ...o });
-const catChip = (item, s, env, o = {}) => chip('category', 'open:cat', catName(item.cat, env.lang), { open: s.open === 'cat', ...o });
-const detailsChip = (item, s, env, o = {}) => {
+export const storeChip = (item, s, env, o = {}) => chip('store', 'open:store', storeName(item.store, env.lang), { open: s.open === 'store', ...o });
+export const catChip = (item, s, env, o = {}) => chip('category', 'open:cat', catName(item.cat, env.lang), { open: s.open === 'cat', ...o });
+export const detailsChip = (item, s, env, o = {}) => {
   const w = t(env.lang);
   const v = [item.brand, item.details].filter(Boolean).join(', ');
   // Compact: only the icon until there is something to show; its name is the button's label.
@@ -42,7 +42,7 @@ const field = (fieldName, value, placeholder, { focus = false, wide = false, sma
   `<label class="hexfield${focus ? ' focus' : ''}${small ? ' small' : ''}${wide ? ' wide' : ''}" data-field="${fieldName}"><span>
     ${focus && !value ? '<i class="caret"></i>' : ''}<input data-input="${fieldName}" value="${esc(value)}" placeholder="${esc(placeholder)}" aria-label="${esc(placeholder)}">
   </span></label>`;
-const detailsField = (item, s, env, o = {}) => field('details', item.details, o.placeholder ?? t(env.lang).detailsEx, { focus: s.open === 'details', ...o });
+export const detailsField = (item, s, env, o = {}) => field('details', item.details, o.placeholder ?? t(env.lang).detailsEx, { focus: s.open === 'details', ...o });
 const brandField = (item, s, env, o = {}) => field('brand', item.brand, t(env.lang).brand, o);
 const storeOpts = (item, env, { line = false } = {}) => {
   const w = t(env.lang);
@@ -52,9 +52,9 @@ const storeOpts = (item, env, { line = false } = {}) => {
 const catOpts = (item, env, { line = false } = {}) =>
   `<div class="line${line ? ' nowrap' : ''}" data-opts="cat">${categories.map((c) => `<button class="opt${item.cat === c.id ? ' on' : ''}" data-act="cat:${c.id}"><span>${esc(c[env.lang])}</span></button>`).join('')}</div>`;
 // An open picker is one sideways line, so it never pushes the field under the keyboard at large text.
-const picker = (item, s, env) =>
+export const picker = (item, s, env) =>
   s.open === 'store' ? `<div data-field="options">${storeOpts(item, env, { line: true })}</div>` : s.open === 'cat' ? `<div data-field="options">${catOpts(item, env, { line: true })}</div>` : '';
-const input = (s, env) => {
+export const input = (s, env) => {
   const focus = s.open !== 'details';
   return `<label class="hexfield${focus ? ' focus' : ''}" data-field="input"><span>${focus && !s.text ? '<i class="caret"></i>' : ''}
     <input data-input="text" value="${esc(s.text)}" placeholder="${esc(t(env.lang).hint)}" enterkeyhint="send">${ic('mic')}
@@ -147,7 +147,7 @@ export const options = {
   },
 };
 
-const keyboard = (env) => {
+export const keyboard = (env) => {
   const rows = env.lang === 'de' ? ['qwertzuiop', 'asdfghjkl', 'yxcvbnm'] : ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'];
   const k = (c, cls = '') => `<span class="k ${cls}">${c}</span>`;
   const pred = env.lang === 'de' ? ['Ich', 'Die', 'Das'] : ['I', 'The', 'I’m'];

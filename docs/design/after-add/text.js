@@ -1,7 +1,7 @@
 // The page's own words (not app UI), English and German.
 const en = {
   lang: 'Lang', light: 'Light', dark: 'Dark', textSize: 'Text', androidMax: 'Android’s largest', iosMax: 'iOS’s largest',
-  overview: 'All rounds', overviewTitle: 'After-add sheet: prototypes (job 319)',
+  overview: 'All rounds', overviewTitle: 'After-add sheet: prototypes (jobs 319, 323)',
   roundTitle: 'Round AS: the sheet after an add',
   roundBlurb: 'Five ways to edit the item you just added without the close key, the “Just added” header, the “Added / Undo” row or the gap above the field. Every field in view with the keyboard up.',
   note: 'A throwaway prototype with mock data (the fictional Familie Brandt). Nothing here ships. The live phone on the left of each option works: type in the field (try “Oat”, “Br”, “E”), Enter or a row adds, the chips edit, a swipe down on the grabber or a tap on the list above closes. Store names are plain text (N-292).',
@@ -50,7 +50,7 @@ const en = {
 const de = {
   ...en,
   lang: 'Sprache', light: 'Hell', dark: 'Dunkel', textSize: 'Text', androidMax: 'größte bei Android', iosMax: 'größte bei iOS',
-  overview: 'Alle Runden', overviewTitle: 'Sheet nach dem Hinzufügen: Prototypen (Job 319)',
+  overview: 'Alle Runden', overviewTitle: 'Sheet nach dem Hinzufügen: Prototypen (Jobs 319, 323)',
   roundTitle: 'Runde AS: das Sheet nach dem Hinzufügen',
   roundBlurb: 'Fünf Wege, den gerade hinzugefügten Artikel zu bearbeiten, ohne Schließen-Taste, ohne „Gerade hinzugefügt“, ohne die Zeile „Hinzugefügt / Rückgängig“ und ohne die Lücke über dem Feld. Alle Felder sichtbar, während die Tastatur offen ist.',
   note: 'Ein Wegwerf-Prototyp mit Beispieldaten (die erfundene Familie Brandt). Nichts davon wird ausgeliefert. Das Live-Telefon links in jeder Option funktioniert: tippe ins Feld („Hafer“, „Br“, „E“), Enter oder eine Zeile fügt hinzu, die Chips bearbeiten, Wischen am Griff nach unten oder Tippen auf die Liste darüber schließt. Ladennamen sind reiner Text (N-292).',
