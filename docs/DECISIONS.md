@@ -16465,3 +16465,35 @@ without asking:
    case and the 402 message, `api_integration_test.ts`). App: flag off shows nothing even with the
    server switch on; flag on with Premium is open; flag on without Premium shows the card with its
    message and the button to the Premium page (`integration_lock_test.dart`).
+
+## Job 325 review 0, 2026-11-20
+
+Review 0 (VERDICT FIX) drove the merged fix (#576) on the real web build with an expired token at start
+(`jwt_expiry = 60`, `--wait 90`, `--os-none flips`): "Offline" flashed at 11.7 s on a working network.
+Peter's device info came in at the same time (LEAD_OVERRIDE, t1085u): the indicator goes away on its own
+after a few seconds, and it happens on mobile data, not Wi-Fi.
+
+- **The rewatch kept no hold.** The false "none"'s resync answered, `_networkWorks` subscribed the
+  still-joining start channel again, and the new `_watch` ran after the answer had ended the grace, so
+  its refused first join showed. Now a join that replaces one still waiting for its first status
+  inherits that join's hold (`_joinHeld`, a field instead of the closure's local). Rejoining at once
+  stays: the reconnect after a real outage needs it.
+- **An unconfirmed down lifted the hold.** `_holding` and the channel's `held` both required
+  `!_networkDown`, which the OS report alone sets. Now they require `!_downConfirmed`: a request failed
+  while the OS said down (`_goOffline` sets it, `_networkWorks` clears it). Flight mode stays prompt,
+  since its request fails at once; a cellular start whose report is wrong keeps the 10 s grace.
+- **Cellular start.** Tests for none for 1 s then up, a server answering at 2.5 s, the first join
+  refused and the next joining after the grace; and a first join slower than the grace with no report.
+  Web build: `--os-none flips --flip-after 1000 --slow-channel 1500 --wait 90` (expired token).
+- **Resume resubscribes a down channel** (job 212's open item, brief hypothesis 3). A channel that
+  dropped while hidden waited for its backoff, up to 30 s, after the resume's resync showed the list
+  online. `resumed()` now subscribes it at once when its backoff is pending; a join in flight is left
+  alone. Hypothesis 3 was marked ruled out without this; it is now done.
+- **Not done: one plugin listener for the app's life.** It would spare a household switch a fresh
+  `NWPathMonitor`, but Peter's report points at mobile data, which a shared listener does not change, and
+  a false report now costs one resync and no indicator. Kept out to keep one rule.
+- **Not coalesced: the resync a down starts.** A resync already in flight was sent before the down and
+  cannot settle it, so the down needs its own. A flapping network costs one resync (three reads) per
+  change to none.
+- **Overclaims corrected.** DONE_SUMMARY's root cause now says the device path is not pinned;
+  FEATURES-FOR-WRITERS no longer says "never" and its Last verified line names the commit.

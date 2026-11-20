@@ -1062,6 +1062,119 @@ void main() {
         });
       });
 
+      test('a false none, then the first join refused (an expired token) '
+          'before the server answers: no offline (review 0, A)', () {
+        fakeAsync((async) {
+          repo.itemsGate = Completer();
+          final (c, seen) = started(async, network: network.stream);
+          network.add(Network.down);
+          async.elapse(const Duration(milliseconds: 5));
+          network.add(Network.up);
+          async.elapse(const Duration(milliseconds: 100));
+          repo.emitStatus!(ConnectionStatus.offline);
+          async.elapse(const Duration(milliseconds: 300));
+          repo.itemsGate!.complete();
+          repo.itemsGate = null;
+          async.elapse(const Duration(seconds: 15));
+          expect(seen, everyElement(isNull));
+          close(async, c);
+        });
+      });
+
+      test('none that stays, the first join refused before the server '
+          'answers: no offline (review 0, B)', () {
+        fakeAsync((async) {
+          repo.itemsGate = Completer();
+          final (c, seen) = started(async, network: network.stream);
+          network.add(Network.down);
+          async.elapse(const Duration(milliseconds: 100));
+          repo.emitStatus!(ConnectionStatus.offline);
+          async.elapse(const Duration(milliseconds: 300));
+          repo.itemsGate!.complete();
+          repo.itemsGate = null;
+          async.elapse(const Duration(seconds: 15));
+          expect(seen, everyElement(isNull));
+          expect(c.state.connection, ConnectionStatus.online);
+          close(async, c);
+        });
+      });
+
+      test('a false none whose answer subscribes the joining channel again: '
+          'the new join keeps the start hold (review 0, D)', () {
+        fakeAsync((async) {
+          final watches = repo.watches;
+          final (c, seen) = started(async, network: network.stream);
+          network.add(Network.down);
+          async.elapse(const Duration(milliseconds: 5));
+          network.add(Network.up);
+          async.elapse(const Duration(milliseconds: 500));
+          expect(repo.watches, watches + 2, reason: 'the join was restarted');
+          repo.emitStatus!(ConnectionStatus.offline);
+          async.elapse(const Duration(milliseconds: 300));
+          expect(seen, everyElement(isNull));
+          async.elapse(const Duration(seconds: 3));
+          repo.emitStatus!(ConnectionStatus.online);
+          async.elapse(const Duration(seconds: 15));
+          expect(seen, everyElement(isNull));
+          close(async, c);
+        });
+      });
+
+      test('a cellular start: none for 1 s, a slow server, the first join '
+          'refused and the next joining after the grace: no offline', () {
+        fakeAsync((async) {
+          repo.itemsGate = Completer();
+          final (c, seen) = started(async, network: network.stream);
+          network.add(Network.down);
+          async.elapse(const Duration(seconds: 1));
+          network.add(Network.up);
+          async.elapse(const Duration(milliseconds: 200));
+          repo.emitStatus!(ConnectionStatus.offline);
+          async.elapse(const Duration(milliseconds: 1300));
+          repo.itemsGate!.complete();
+          repo.itemsGate = null;
+          async.elapse(const Duration(seconds: 10));
+          repo.emitStatus!(ConnectionStatus.online);
+          async.elapse(const Duration(seconds: 5));
+          expect(seen, everyElement(isNull));
+          expect(c.state.connection, ConnectionStatus.online);
+          close(async, c);
+        });
+      });
+
+      test('a cellular start whose first join takes longer than the grace, '
+          'the server slow too: no offline', () {
+        fakeAsync((async) {
+          repo.itemsGate = Completer();
+          final (c, seen) = started(async, network: network.stream);
+          async.elapse(const Duration(seconds: 4));
+          repo.itemsGate!.complete();
+          repo.itemsGate = null;
+          async.elapse(const Duration(seconds: 9));
+          repo.emitStatus!(ConnectionStatus.offline);
+          async.elapse(const Duration(seconds: 3));
+          repo.emitStatus!(ConnectionStatus.online);
+          async.elapse(const Duration(seconds: 2));
+          expect(seen, everyElement(isNull));
+          close(async, c);
+        });
+      });
+
+      test('flight mode on start: the first join failing first is held, '
+          'the report and its failed request show offline at once', () {
+        fakeAsync((async) {
+          repo.online = false;
+          final (c, _) = started(async, network: network.stream);
+          repo.emitStatus!(ConnectionStatus.offline);
+          async.elapse(const Duration(milliseconds: 100));
+          expect(c.state.trouble, isNull, reason: 'in the grace');
+          network.add(Network.down);
+          async.elapse(Duration.zero);
+          expect(c.state.trouble, SyncTrouble.offline);
+          close(async, c);
+        });
+      });
+
       test('an up missed in the background: back in front, an answer clears '
           'offline', () {
         fakeAsync((async) {
@@ -1308,6 +1421,28 @@ void main() {
         expect(seen, everyElement(isNull), reason: 'no banner in the grace');
         async.elapse(const Duration(milliseconds: 200));
         expect(c.state.trouble, SyncTrouble.offline);
+        close(async, c);
+      });
+    });
+
+    test('a channel that dropped in the background subscribes again on '
+        'resume, not when its backoff comes due (job 325)', () {
+      fakeAsync((async) {
+        final (c, seen) = started(async);
+        repo.emitStatus!(ConnectionStatus.online);
+        async.elapse(const Duration(seconds: 11));
+        c.hidden();
+        repo.emitStatus!(ConnectionStatus.offline);
+        async.elapse(const Duration(seconds: 3));
+        repo.emitStatus!(ConnectionStatus.offline);
+        async.elapse(const Duration(seconds: 2));
+        final watches = repo.watches;
+        unawaited(c.resumed());
+        async.elapse(Duration.zero);
+        expect(repo.watches, watches + 1);
+        repo.emitStatus!(ConnectionStatus.online);
+        async.elapse(const Duration(seconds: 15));
+        expect(seen, everyElement(isNull));
         close(async, c);
       });
     });

@@ -3,12 +3,13 @@
 // jwt_expiry to start with an expired access token), opens the app again in the same browser
 // profile and watches the sync indicator and the realtime joins for --watch seconds.
 // --os-none makes the browser's network say none on a working network, as iOS's path monitor does
-// (`stays`: until the end; `flips`: an online event 30 ms after the app asked). --slow-channel
+// (`stays`: until the end; `flips`: an online event --flip-after ms, default 30, after the app
+// showed; 1000 plays a cellular start). --slow-channel
 // holds every realtime frame from the server for that many ms, as a phone's slower join does.
 // --airplane opens the app with the browser's network saying none and every request to the stack
 // failing as disconnected (the page itself still loads): then „Offline“ has to show within 2 s.
 //
-//   node journeys/cold-start-offline.mjs <evidence dir> [--wait 0] [--watch 25] [--starts 1] [--os-none stays|flips] [--slow-channel ms] [--airplane]
+//   node journeys/cold-start-offline.mjs <evidence dir> [--wait 0] [--watch 25] [--starts 1] [--os-none stays|flips] [--flip-after ms] [--slow-channel ms] [--airplane]
 import process from 'node:process';
 import { capture, instance, logger, member, openApp, signIn } from '../helpers/lib.mjs';
 
@@ -20,6 +21,7 @@ const starts = Number(opt('starts', '1'));
 const airplaneFlag = process.argv.includes('--airplane');
 const osNone = opt('os-none', airplaneFlag ? 'stays' : null);
 const slowChannel = Number(opt('slow-channel', '0'));
+const flipAfter = Number(opt('flip-after', '30'));
 const airplane = airplaneFlag;
 if (!dir) throw new Error('usage: cold-start-offline.mjs <evidence dir> [--wait s] [--watch s] [--starts n]');
 
@@ -45,7 +47,7 @@ try {
     const at = () => `${((Date.now() - t0) / 1000).toFixed(1)} s`;
     tab.on('pageerror', (e) => errors.push(e.message));
     if (osNone) {
-      await tab.addInitScript((flips) => {
+      await tab.addInitScript(({ flips, after }) => {
         let online = false;
         Object.defineProperty(Navigator.prototype, 'onLine', { configurable: true, get: () => online });
         if (flips) {
@@ -55,10 +57,10 @@ try {
             setTimeout(() => {
               online = true;
               globalThis.dispatchEvent(new Event('online'));
-            }, 30);
+            }, after);
           }, 10);
         }
-      }, osNone === 'flips');
+      }, { flips: osNone === 'flips', after: flipAfter });
       log(`  the browser's network says none (${osNone})`);
     }
     if (slowChannel) {

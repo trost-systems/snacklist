@@ -32,3 +32,10 @@ The household-switch path can still start a fresh iOS monitor; harmless now.
 
 ## Release
 Next green main build on TestFlight and Play internal. No flag.
+
+## Review 0 follow-up
+Review 0 made "Offline" flash on the fixed web build with a false "none" and an expired token. Fixed:
+a restarted join keeps the start's hold (`_joinHeld`), the system's "no network" lifts the grace only
+after a failed request (`_downConfirmed`), and a resume subscribes a dropped channel at once. Peter's
+device info: a short flash, on mobile data. Cellular-start tests and journey flags (`--flip-after`).
+The root cause above is proven for a fresh monitor; the tester's exact path is not pinned (NEEDS_LEAD).
