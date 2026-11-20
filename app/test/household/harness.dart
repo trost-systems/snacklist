@@ -25,6 +25,7 @@ import 'package:family_groceries/onboarding/steps.dart';
 import 'package:family_groceries/purchases/entitlements.dart';
 import 'package:family_groceries/purchases/premium_server.dart';
 import 'package:family_groceries/purchases/store_prices.dart';
+import 'package:family_groceries/session/new_store.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/session/social_sign_in.dart';
 import 'package:family_groceries/settings/account_repository.dart';
@@ -406,6 +407,9 @@ class TestSession(super.initialState)
   /// Each create: the name and the stores, joined with ", ", and where.
   final creates = <(String, String)>[];
 
+  /// Each create's stores, with their chains.
+  final createStores = <List<NewStore>>[];
+
   /// Each create's kind, null when none was sent.
   final createKinds = <String?>[];
   final origins = <HouseholdOrigin>[];
@@ -527,7 +531,7 @@ class TestSession(super.initialState)
   @override
   Future<String> createHousehold(
     String name, {
-    List<String> stores = const [],
+    List<NewStore> stores = const [],
     String? kind,
     HouseholdOrigin from = HouseholdOrigin.onboarding,
     String? requestId,
@@ -537,7 +541,8 @@ class TestSession(super.initialState)
       _show(_households.firstWhere((h) => h.id == id));
       return id;
     }
-    creates.add((name, stores.join(', ')));
+    creates.add((name, [for (final s in stores) s.name].join(', ')));
+    createStores.add(stores);
     createKinds.add(kind);
     origins.add(from);
     await _answer();

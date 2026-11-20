@@ -174,7 +174,11 @@ class const _Suggestion({
     final text = Theme.of(context).textTheme;
     final country = l10n.countryName(retailer.country);
     final app = retailer.apps.firstOrNull;
+    // Its own node: otherwise the button's label and tap go up to the node
+    // around it, and the name field above becomes a child of the button
+    // (the onboarding store step, job 321).
     return Semantics(
+      container: true,
       button: true,
       label: l10n.chainSuggestionPick(retailer.name, country),
       onTap: onTap,

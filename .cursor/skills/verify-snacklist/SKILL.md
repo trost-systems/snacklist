@@ -75,7 +75,7 @@ A journey is `journeys/<feature-id>.mjs`, a plain Node script on `helpers/lib.mj
 | Helper | Does |
 | --- | --- |
 | `instance()`, `member(inst, 'mia')` | The launched instance and a seeded member (`email`, `password`, `id`, `householdId`) |
-| `openApp(inst, { lang, viewport, dpr, dark, videoDir })` | A fresh Chromium context on the build: `de-DE` or `en-US` locale, 390×844 at DPR 2 by default. Returns `{ browser, context, page, L, errors }` |
+| `openApp(inst, { lang, locale, viewport, dpr, dark, videoDir })` | A fresh Chromium context on the build: `de-DE` or `en-US` locale (`locale: 'de-AT'` sets the region, which the store chips read), 390×844 at DPR 2 by default. Returns `{ browser, context, page, L, errors }` |
 | `L(key, params)` / `labels(lang)` | UI text from `app/l10n/app_<lang>.arb` by key, so one script runs in both languages |
 | `signIn(page, L, user)` | The login screen with email and password, declines the analytics question, dismisses the „Erste Schritte“ card |
 | `addField`, `addSheet`, `itemRow(page, name)`, `openTab(page, L, 'tabMore')`, `headingAbove(page, row)` | Stable handles: the textbox „Was brauchst du?“, the group „Hinzufügen“, a row by item name, the tabs, the category heading above a row |

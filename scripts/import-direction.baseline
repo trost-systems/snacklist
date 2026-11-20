@@ -20,8 +20,7 @@ feedback/screen_tracker.dart -> shell/router.dart
 home_widget/home_widget_sync.dart -> list/list_cubit.dart
 home_widget/widget_payload.dart -> list/list_cubit.dart
 home_widget/widget_payload.dart -> list/list_view/sections.dart
-household/create_household_screen.dart -> list/model.dart
-household/create_household_screen.dart -> list/store_name_field.dart
+household/create_household_screen.dart -> list/new_stores_picker.dart
 household/create_household_screen.dart -> shell/router.dart
 household/currency_section.dart -> list/list_cubit.dart
 household/currency_section.dart -> list/pricing.dart
@@ -105,9 +104,7 @@ onboarding/steps.dart -> household/household_kind.dart
 onboarding/steps.dart -> household/invite_repository.dart
 onboarding/steps.dart -> household/join_code_screen.dart
 onboarding/steps.dart -> household/onboarding_page.dart
-onboarding/steps.dart -> household/popular_stores.dart
-onboarding/steps.dart -> list/model.dart
-onboarding/steps.dart -> list/store_name_field.dart
+onboarding/steps.dart -> list/new_stores_picker.dart
 report/report_page.dart -> feedback/annotator.dart
 report/report_page.dart -> feedback/screen_capture.dart
 report/report_picker.dart -> list/list_cubit.dart

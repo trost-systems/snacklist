@@ -7,6 +7,7 @@ import 'package:family_groceries/household/household_kind.dart';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/pending_invite.dart';
 import 'package:family_groceries/list/model.dart';
+import 'package:family_groceries/session/new_store.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -913,9 +914,10 @@ class SessionCubit(
   }
 
   /// Creates a household named [name] with [stores] in that order (no
-  /// store without a pick) and shows it; returns its id. [kind] is who the
-  /// user shops with there (`partner`, `family`, `flat`, `club`, `solo`),
-  /// null when not asked; [from] where it was created, for analytics.
+  /// store without a pick), links those of a chain to it, and shows it;
+  /// returns its id. [kind] is who the user shops with there (`partner`,
+  /// `family`, `flat`, `club`, `solo`), null when not asked; [from] where it
+  /// was created, for analytics.
   ///
   /// Each call is one household: onboarding may call it once per household
   /// it creates, one after the other, and the last one created is shown.
@@ -928,12 +930,16 @@ class SessionCubit(
   /// households, [HouseholdProblem.offline] without an answer.
   Future<String> createHousehold(
     String name, {
-    List<String> stores = const [],
+    List<NewStore> stores = const [],
     String? kind,
     HouseholdOrigin from = HouseholdOrigin.onboarding,
     String? requestId,
   }) async {
-    final key = jsonEncode([name, stores, kind]);
+    final key = jsonEncode([
+      name,
+      [for (final s in stores) s.toJson()],
+      kind,
+    ]);
     requestId ??= switch (_create) {
       (key: final k, :final requestId) when k == key => requestId,
       _ => const Uuid().v4(),
@@ -945,7 +951,7 @@ class SessionCubit(
         params: {
           'p_name': name,
           'p_default_stores': false,
-          'p_stores': stores,
+          'p_stores': [for (final s in stores) s.name],
           'p_request_id': requestId,
           'p_kind': kind,
         },
@@ -958,6 +964,7 @@ class SessionCubit(
           'context': from.name,
         });
       }
+      await _linkStores(id, stores);
       // Kept until the household shows: a retry after a failed reload must
       // not make a second one.
       await householdCall(() => refresh(show: id));
@@ -967,6 +974,42 @@ class SessionCubit(
       return id;
     }
     throw const HouseholdError(HouseholdProblem.other);
+  }
+
+  /// Links each of [stores] that is a chain to it in household [id]. Runs
+  /// again whole on a retry: `add_store` answers the store there is, and a
+  /// second answer sets the same chain.
+  Future<void> _linkStores(String id, List<NewStore> stores) async {
+    for (final store in stores) {
+      if (store.chain case (:final chain, :final country)) {
+        final storeId = await householdCall(
+          () => _client.rpc<String>(
+            'add_store',
+            params: {'p_household': id, 'p_name': store.name},
+          ),
+        );
+        await householdCall(() async {
+          try {
+            await _client.rpc<void>(
+              'answer_store_retailer',
+              params: {
+                'p_store': storeId,
+                'p_chain': chain,
+                'p_country': country,
+                'p_app': null,
+              },
+            );
+          } on PostgrestException catch (e) {
+            // `unknown_retailer`: the app's copy of the registry names a
+            // chain the server no longer has. The store stays plain; the
+            // list's card asks about it later (job 313).
+            if (e.code != '22023') {
+              rethrow;
+            }
+          }
+        });
+      }
+    }
   }
 
   /// Joins the household of invite [code] and shows it; the user's other

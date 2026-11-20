@@ -1,9 +1,12 @@
 // The retailer registry (supabase/retailers/retailers.json, job 313) and the migration rows it
 // becomes. The lint gate runs --check: the file's schema, and that the newest migration with a
 // RETAILERS_BEGIN block holds the rows this file generates, and that the app's analytics allow-list
-// (app/lib/analytics/events.dart) names exactly its chains and countries.
+// (app/lib/analytics/events.dart) names exactly its chains and countries, and that the app's copy
+// (app/lib/list/retailer_registry.g.dart, the onboarding chips before sign-in, job 321) is current.
 // Usage:
 //   deno run --allow-read scripts/retailers.ts --check
+//   deno run --allow-read --allow-write scripts/retailers.ts --dart
+//     the app's copy written again
 //   deno run --allow-read --allow-write scripts/retailers.ts --migration [migration.sql]
 //     a new timestamped migration, or the block replaced in a migration that is not on main yet
 //   deno run --allow-read --allow-net scripts/retailers.ts --verify [--only DE,AT]
@@ -12,6 +15,7 @@
 export const REGISTRY = 'supabase/retailers/retailers.json';
 export const MIGRATIONS = 'supabase/migrations';
 export const EVENTS = 'app/lib/analytics/events.dart';
+export const DART = 'app/lib/list/retailer_registry.g.dart';
 
 /** The strings of the Dart set literal `const <name> = {...};` in [dart]. */
 export function dartSet(dart: string, name: string): Set<string> | undefined {
@@ -35,6 +39,8 @@ export type Entry = {
   chain: string;
   country: string;
   name: string;
+  /** What a chip and a store made from it are called, when shorter than [name] ("Netto"). */
+  short?: string;
   aliases: string[];
   web: string | null;
   apps: RetailerApp[];
@@ -51,7 +57,7 @@ const ALIAS = /^[a-z0-9]+( [a-z0-9]+)*$/;
 const HOST = /^[a-z0-9-]+(\.[a-z0-9-]+)+$/;
 const PACKAGE = /^[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z0-9_]+)+$/;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
-const ENTRY_KEYS = ['chain', 'country', 'name', 'aliases', 'web', 'apps', 'status', 'verified', 'sources', 'note'];
+const ENTRY_KEYS = ['chain', 'country', 'name', 'short', 'aliases', 'web', 'apps', 'status', 'verified', 'sources', 'note'];
 const APP_KEYS = ['name', 'android', 'ios', 'universalLink'];
 
 type Json = Record<string, unknown>;
@@ -83,10 +89,13 @@ function parseEntry(raw: unknown, index: number, problems: string[]): Entry | un
   const before = problems.length;
   const extra = Object.keys(raw).filter((k) => !ENTRY_KEYS.includes(k));
   if (extra.length > 0) problems.push(`${at}: unknown keys ${extra.join(', ')}`);
-  const { chain, country, name, aliases, web, apps, status, verified, sources, note } = raw;
+  const { chain, country, name, short, aliases, web, apps, status, verified, sources, note } = raw;
   if (typeof chain !== 'string' || !CHAIN.test(chain)) problems.push(`${at}: chain must be like "aldi-sued"`);
   if (typeof country !== 'string' || !COUNTRY.test(country)) problems.push(`${at}: country is not ISO alpha-2`);
   if (!isString(name)) problems.push(`${at}: name missing`);
+  if (short !== undefined && (!isString(short) || short === name)) {
+    problems.push(`${at}: short is a name shorter than name, or left out`);
+  }
   if (!strings(aliases) || !aliases.every((a) => ALIAS.test(a) && a.length >= 3)) {
     problems.push(`${at}: aliases are lower-case words without accents, three characters or more`);
   }
@@ -109,7 +118,19 @@ function parseEntry(raw: unknown, index: number, problems: string[]): Entry | un
     !strings(aliases) || (web !== null && typeof web !== 'string') || (status !== 'verified' && status !== 'no-app') ||
     typeof verified !== 'string' || !strings(sources) || !isString(note)
   ) return undefined;
-  return { chain, country, name, aliases, web, apps: list, status, verified, sources, note };
+  return {
+    chain,
+    country,
+    name,
+    ...(isString(short) ? { short } : {}),
+    aliases,
+    web,
+    apps: list,
+    status,
+    verified,
+    sources,
+    note,
+  };
 }
 
 /** The registry, or an error naming every problem in it. */
@@ -156,6 +177,70 @@ export async function dataBlock(registry: Registry): Promise<string> {
     'delete from public.retailers r',
     'where not exists (select from registry g where g.chain = r.chain and g.country = r.country);',
     END,
+  ].join('\n');
+}
+
+const dartString = (s: string): string => `'${s.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\$/g, '\\$')}'`;
+
+type DartValue = string | { call: string; args: [string, DartValue][] } | DartValue[];
+
+/** [value] at [indent] after [prefix] and before [suffix], as dart format's tall style lays it out: on one line when it fits in 80. */
+function dartLines(value: DartValue, indent: string, prefix: string, suffix: string): string[] {
+  const flat = (v: DartValue): string =>
+    typeof v === 'string'
+      ? v
+      : Array.isArray(v)
+      ? `[${v.map(flat).join(', ')}]`
+      : `${v.call}(${v.args.map(([k, a]) => `${k}: ${flat(a)}`).join(', ')})`;
+  const line = `${indent}${prefix}${flat(value)}${suffix}`;
+  if (typeof value === 'string' || line.length <= 80) return [line];
+  const inner = `${indent}  `;
+  if (Array.isArray(value)) {
+    return [`${indent}${prefix}[`, ...value.flatMap((v) => dartLines(v, inner, '', ',')), `${indent}]${suffix}`];
+  }
+  return [
+    `${indent}${prefix}${value.call}(`,
+    ...value.args.flatMap(([k, a]) => dartLines(a, inner, `${k}: `, ',')),
+    `${indent})${suffix}`,
+  ];
+}
+
+/** The app's copy of the registry: what the onboarding chips and their suggestions read before sign-in. */
+export function dartFile(registry: Registry): string {
+  const entries: DartValue = registry.entries.map((e) => ({
+    call: 'Retailer',
+    args: [
+      ['chain', dartString(e.chain)],
+      ['country', dartString(e.country)],
+      ['name', dartString(e.name)],
+      ...(e.short === undefined ? [] : [['short', dartString(e.short)] as [string, DartValue]]),
+      ...(e.aliases.length === 0 ? [] : [['aliases', e.aliases.map(dartString)] as [string, DartValue]]),
+      ...(e.apps.length === 0 ? [] : [[
+        'apps',
+        e.apps.map((a): DartValue => ({
+          call: 'RetailerApp',
+          args: [
+            ['name', dartString(a.name)],
+            ['android', dartString(a.android)],
+            ['ios', dartString(a.ios)],
+            ...(a.universalLink === null ? [] : [['universalLink', dartString(a.universalLink)] as [string, DartValue]]),
+          ],
+        })),
+      ] as [string, DartValue]]),
+    ],
+  }));
+  const [, ...list] = dartLines(entries, '', '', ';');
+  return [
+    '// Generated by scripts/retailers.ts --dart from',
+    `// ${REGISTRY}; edit the JSON, not this file.`,
+    '',
+    "import 'package:family_groceries/list/retailer.dart';",
+    '',
+    '/// The registry as the app was built with it, in its order: per country the',
+    '/// order the onboarding chips show (most stores first).',
+    'const retailerRegistry = <Retailer>[',
+    ...list,
+    '',
   ].join('\n');
 }
 
@@ -217,7 +302,14 @@ async function check(): Promise<number> {
       return 1;
     }
   }
-  console.error(`retailers: ${registry.entries.length} entries, ${MIGRATIONS}/${file} current`);
+  const dart = await Deno.readTextFile(DART).catch(() => '');
+  if (dart !== dartFile(registry)) {
+    console.error(
+      `retailers: ${DART} differs from ${REGISTRY}: run "deno run --allow-read --allow-write scripts/retailers.ts --dart"`,
+    );
+    return 1;
+  }
+  console.error(`retailers: ${registry.entries.length} entries, ${MIGRATIONS}/${file} and ${DART} current`);
   return 0;
 }
 
@@ -425,11 +517,15 @@ async function verify(only: Set<string> | undefined): Promise<number> {
 
 if (import.meta.main) {
   const [mode, ...rest] = Deno.args;
-  const usage = 'usage: scripts/retailers.ts --check | --migration [file.sql] | --verify [--only DE,AT]';
+  const usage = 'usage: scripts/retailers.ts --check | --migration [file.sql] | --dart | --verify [--only DE,AT]';
   let code: number;
   if (mode === '--check') code = await check();
   else if (mode === '--migration') code = await migration(rest[0]);
-  else if (mode === '--verify') {
+  else if (mode === '--dart') {
+    await Deno.writeTextFile(DART, dartFile(await readRegistry()));
+    console.error(`retailers: wrote ${DART}`);
+    code = 0;
+  } else if (mode === '--verify') {
     const only = rest[0] === '--only' && rest[1] !== undefined ? new Set(rest[1].split(',')) : undefined;
     code = await verify(only);
   } else {

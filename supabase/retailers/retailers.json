@@ -3,6 +3,54 @@
   "updated": "2026-11-19",
   "entries": [
     {
+      "chain": "edeka",
+      "country": "DE",
+      "name": "EDEKA",
+      "aliases": [],
+      "web": "www.edeka.de",
+      "apps": [
+        {
+          "name": "EDEKA",
+          "android": "de.edeka.genuss",
+          "ios": "1272688648",
+          "universalLink": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-18",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1272688648&country=de",
+        "https://play.google.com/store/apps/details?id=de.edeka.genuss&hl=en&gl=DE",
+        "https://app-site-association.cdn-apple.com/a/v1/www.edeka.de",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.edeka.de&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "No universal link: www.edeka.de has no apple-app-site-association on Apple's CDN and no asset links."
+    },
+    {
+      "chain": "rewe",
+      "country": "DE",
+      "name": "REWE",
+      "aliases": [],
+      "web": "www.rewe.de",
+      "apps": [
+        {
+          "name": "REWE",
+          "android": "de.rewe.app.mobile",
+          "ios": "714121079",
+          "universalLink": "https://www.rewe.de/shop"
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-18",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=714121079&country=de",
+        "https://play.google.com/store/apps/details?id=de.rewe.app.mobile&hl=en&gl=DE",
+        "https://app-site-association.cdn-apple.com/a/v1/www.rewe.de",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.rewe.de&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "No home path in the AASA; /shop opens the app's shop section."
+    },
+    {
       "chain": "lidl",
       "country": "DE",
       "name": "Lidl",
@@ -25,32 +73,6 @@
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.lidl.de&relation=delegate_permission/common.handle_all_urls"
       ],
       "note": "One Lidl Plus app for all countries (same iOS id and package everywhere). No universal link: the AASA claims only product, category, flyer, search and /prm/ paths, no home path."
-    },
-    {
-      "chain": "aldi-nord",
-      "country": "DE",
-      "name": "ALDI Nord",
-      "aliases": [
-        "aldi"
-      ],
-      "web": "www.aldi-nord.de",
-      "apps": [
-        {
-          "name": "ALDI Nord",
-          "android": "de.aldiNord.android",
-          "ios": "543651999",
-          "universalLink": "https://www.aldi-nord.de/app-only/dashboard.html"
-        }
-      ],
-      "status": "verified",
-      "verified": "2026-11-18",
-      "sources": [
-        "https://itunes.apple.com/lookup?id=543651999&country=de",
-        "https://play.google.com/store/apps/details?id=de.aldiNord.android&hl=en&gl=DE",
-        "https://app-site-association.cdn-apple.com/a/v1/www.aldi-nord.de",
-        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.aldi-nord.de&relation=delegate_permission/common.handle_all_urls"
-      ],
-      "note": "ALDI Nord (ALDI Einkauf) app. /app-only/dashboard.html is claimed for the app and names its dashboard."
     },
     {
       "chain": "aldi-sued",
@@ -80,78 +102,30 @@
       "note": "ALDI SÜD (ALDI International Services) app; iOS bundle de.bjoerndemming.aldisued. /homescreen opens the app home."
     },
     {
-      "chain": "edeka",
+      "chain": "aldi-nord",
       "country": "DE",
-      "name": "EDEKA",
-      "aliases": [],
-      "web": "www.edeka.de",
-      "apps": [
-        {
-          "name": "EDEKA",
-          "android": "de.edeka.genuss",
-          "ios": "1272688648",
-          "universalLink": null
-        }
-      ],
-      "status": "verified",
-      "verified": "2026-11-18",
-      "sources": [
-        "https://itunes.apple.com/lookup?id=1272688648&country=de",
-        "https://play.google.com/store/apps/details?id=de.edeka.genuss&hl=en&gl=DE",
-        "https://app-site-association.cdn-apple.com/a/v1/www.edeka.de",
-        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.edeka.de&relation=delegate_permission/common.handle_all_urls"
-      ],
-      "note": "No universal link: www.edeka.de has no apple-app-site-association on Apple's CDN and no asset links."
-    },
-    {
-      "chain": "netto-md",
-      "country": "DE",
-      "name": "Netto Marken-Discount",
+      "name": "ALDI Nord",
       "aliases": [
-        "netto"
+        "aldi"
       ],
-      "web": "www.netto-online.de",
+      "web": "www.aldi-nord.de",
       "apps": [
         {
-          "name": "Netto",
-          "android": "com.valuephone.vpnetto",
-          "ios": "379404334",
-          "universalLink": null
+          "name": "ALDI Nord",
+          "android": "de.aldiNord.android",
+          "ios": "543651999",
+          "universalLink": "https://www.aldi-nord.de/app-only/dashboard.html"
         }
       ],
       "status": "verified",
       "verified": "2026-11-18",
       "sources": [
-        "https://itunes.apple.com/lookup?id=379404334&country=de",
-        "https://play.google.com/store/apps/details?id=com.valuephone.vpnetto&hl=en&gl=DE",
-        "https://app-site-association.cdn-apple.com/a/v1/www.netto-online.de",
-        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.netto-online.de&relation=delegate_permission/common.handle_all_urls"
+        "https://itunes.apple.com/lookup?id=543651999&country=de",
+        "https://play.google.com/store/apps/details?id=de.aldiNord.android&hl=en&gl=DE",
+        "https://app-site-association.cdn-apple.com/a/v1/www.aldi-nord.de",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.aldi-nord.de&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "No universal link: www.netto-online.de has no AASA on Apple's CDN and no asset links."
-    },
-    {
-      "chain": "rewe",
-      "country": "DE",
-      "name": "REWE",
-      "aliases": [],
-      "web": "www.rewe.de",
-      "apps": [
-        {
-          "name": "REWE",
-          "android": "de.rewe.app.mobile",
-          "ios": "714121079",
-          "universalLink": "https://www.rewe.de/shop"
-        }
-      ],
-      "status": "verified",
-      "verified": "2026-11-18",
-      "sources": [
-        "https://itunes.apple.com/lookup?id=714121079&country=de",
-        "https://play.google.com/store/apps/details?id=de.rewe.app.mobile&hl=en&gl=DE",
-        "https://app-site-association.cdn-apple.com/a/v1/www.rewe.de",
-        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.rewe.de&relation=delegate_permission/common.handle_all_urls"
-      ],
-      "note": "No home path in the AASA; /shop opens the app's shop section."
+      "note": "ALDI Nord (ALDI Einkauf) app. /app-only/dashboard.html is claimed for the app and names its dashboard."
     },
     {
       "chain": "kaufland",
@@ -176,6 +150,33 @@
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.kaufland.de&relation=delegate_permission/common.handle_all_urls"
       ],
       "note": "Same app as Kaufland PL. No universal link: the AASA claims only URLs carrying ivy_redirect=true (a redirect marker), no plain home path."
+    },
+    {
+      "chain": "netto-md",
+      "country": "DE",
+      "name": "Netto Marken-Discount",
+      "short": "Netto",
+      "aliases": [
+        "netto"
+      ],
+      "web": "www.netto-online.de",
+      "apps": [
+        {
+          "name": "Netto",
+          "android": "com.valuephone.vpnetto",
+          "ios": "379404334",
+          "universalLink": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-18",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=379404334&country=de",
+        "https://play.google.com/store/apps/details?id=com.valuephone.vpnetto&hl=en&gl=DE",
+        "https://app-site-association.cdn-apple.com/a/v1/www.netto-online.de",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.netto-online.de&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "No universal link: www.netto-online.de has no AASA on Apple's CDN and no asset links."
     },
     {
       "chain": "penny",
@@ -250,64 +251,6 @@
       "note": "Rossmann Germany app; Rossmann PL is a different app. No universal link: the AASA lists three legacy paths without a leading slash and no asset links."
     },
     {
-      "chain": "lidl",
-      "country": "AT",
-      "name": "Lidl",
-      "aliases": [],
-      "web": "www.lidl.at",
-      "apps": [
-        {
-          "name": "Lidl Plus",
-          "android": "com.lidl.eci.lidlplus",
-          "ios": "1238611143",
-          "universalLink": null
-        }
-      ],
-      "status": "verified",
-      "verified": "2026-11-18",
-      "sources": [
-        "https://itunes.apple.com/lookup?id=1238611143&country=at",
-        "https://play.google.com/store/apps/details?id=com.lidl.eci.lidlplus&hl=en&gl=AT",
-        "https://app-site-association.cdn-apple.com/a/v1/www.lidl.at",
-        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.lidl.at&relation=delegate_permission/common.handle_all_urls"
-      ],
-      "note": "Same Lidl Plus app as DE. www.lidl.at claims only /prm/* and has no asset links."
-    },
-    {
-      "chain": "aldi-sued",
-      "country": "AT",
-      "name": "Hofer",
-      "aliases": [
-        "aldi"
-      ],
-      "web": "www.hofer.at",
-      "apps": [
-        {
-          "name": "HOFER",
-          "android": "de.apptiv.business.android.aldi_at",
-          "ios": "395677652",
-          "universalLink": "https://www.hofer.at/homescreen"
-        },
-        {
-          "name": "Unser HOFER",
-          "android": "com.hofer.unserhofer.android",
-          "ios": "1529571062",
-          "universalLink": null
-        }
-      ],
-      "status": "verified",
-      "verified": "2026-11-19",
-      "sources": [
-        "https://itunes.apple.com/lookup?id=395677652&country=at",
-        "https://play.google.com/store/apps/details?id=de.apptiv.business.android.aldi_at&hl=en&gl=AT",
-        "https://app-site-association.cdn-apple.com/a/v1/www.hofer.at",
-        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.hofer.at&relation=delegate_permission/common.handle_all_urls",
-        "https://itunes.apple.com/lookup?id=1529571062&country=at",
-        "https://play.google.com/store/apps/details?id=com.hofer.unserhofer.android"
-      ],
-      "note": "Hofer is ALDI SÜD in Austria with its own app (bundle com.aldisued.HoferAT), not the German ALDI SÜD app. Second app: Unser HOFER (iOS bundle at.hofer.unserhofer.at)."
-    },
-    {
       "chain": "billa",
       "country": "AT",
       "name": "BILLA",
@@ -368,6 +311,64 @@
       "note": "SPAR Österreich's own app; SPAR Croatia (hr.spar.app) and Slovenia (si.spar.plus) are separate apps. No universal link: the AASA claims only /app/link/* and /produktwelt/app/*."
     },
     {
+      "chain": "aldi-sued",
+      "country": "AT",
+      "name": "Hofer",
+      "aliases": [
+        "aldi"
+      ],
+      "web": "www.hofer.at",
+      "apps": [
+        {
+          "name": "HOFER",
+          "android": "de.apptiv.business.android.aldi_at",
+          "ios": "395677652",
+          "universalLink": "https://www.hofer.at/homescreen"
+        },
+        {
+          "name": "Unser HOFER",
+          "android": "com.hofer.unserhofer.android",
+          "ios": "1529571062",
+          "universalLink": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-19",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=395677652&country=at",
+        "https://play.google.com/store/apps/details?id=de.apptiv.business.android.aldi_at&hl=en&gl=AT",
+        "https://app-site-association.cdn-apple.com/a/v1/www.hofer.at",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.hofer.at&relation=delegate_permission/common.handle_all_urls",
+        "https://itunes.apple.com/lookup?id=1529571062&country=at",
+        "https://play.google.com/store/apps/details?id=com.hofer.unserhofer.android"
+      ],
+      "note": "Hofer is ALDI SÜD in Austria with its own app (bundle com.aldisued.HoferAT), not the German ALDI SÜD app. Second app: Unser HOFER (iOS bundle at.hofer.unserhofer.at)."
+    },
+    {
+      "chain": "lidl",
+      "country": "AT",
+      "name": "Lidl",
+      "aliases": [],
+      "web": "www.lidl.at",
+      "apps": [
+        {
+          "name": "Lidl Plus",
+          "android": "com.lidl.eci.lidlplus",
+          "ios": "1238611143",
+          "universalLink": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-18",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1238611143&country=at",
+        "https://play.google.com/store/apps/details?id=com.lidl.eci.lidlplus&hl=en&gl=AT",
+        "https://app-site-association.cdn-apple.com/a/v1/www.lidl.at",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.lidl.at&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Same Lidl Plus app as DE. www.lidl.at claims only /prm/* and has no asset links."
+    },
+    {
       "chain": "penny",
       "country": "AT",
       "name": "PENNY",
@@ -390,30 +391,6 @@
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.penny.at&relation=delegate_permission/common.handle_all_urls"
       ],
       "note": "PENNY Österreich, a different app from PENNY DE. No universal link: the AASA claims only /unser-penny/app-store/* and /unser-penny/app-direkt/*."
-    },
-    {
-      "chain": "dm",
-      "country": "AT",
-      "name": "dm",
-      "aliases": [],
-      "web": "www.dm.at",
-      "apps": [
-        {
-          "name": "Mein dm",
-          "android": "de.dm.meindm.android",
-          "ios": "1186271926",
-          "universalLink": null
-        }
-      ],
-      "status": "verified",
-      "verified": "2026-11-18",
-      "sources": [
-        "https://itunes.apple.com/lookup?id=1186271926&country=at",
-        "https://play.google.com/store/apps/details?id=de.dm.meindm.android&hl=en&gl=AT",
-        "https://app-site-association.cdn-apple.com/a/v1/www.dm.at",
-        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.dm.at&relation=delegate_permission/common.handle_all_urls"
-      ],
-      "note": "Same Mein dm app as DE; www.dm.at lists the same appID and package. No home path claimed."
     },
     {
       "chain": "mpreis",
@@ -439,6 +416,30 @@
         "https://www.mpreis.at/"
       ],
       "note": "mpreis.at links exactly this pair. No universal link: no AASA on www.mpreis.at."
+    },
+    {
+      "chain": "dm",
+      "country": "AT",
+      "name": "dm",
+      "aliases": [],
+      "web": "www.dm.at",
+      "apps": [
+        {
+          "name": "Mein dm",
+          "android": "de.dm.meindm.android",
+          "ios": "1186271926",
+          "universalLink": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-18",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1186271926&country=at",
+        "https://play.google.com/store/apps/details?id=de.dm.meindm.android&hl=en&gl=AT",
+        "https://app-site-association.cdn-apple.com/a/v1/www.dm.at",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.dm.at&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Same Mein dm app as DE; www.dm.at lists the same appID and package. No home path claimed."
     },
     {
       "chain": "migros",

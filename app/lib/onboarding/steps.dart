@@ -9,10 +9,8 @@ import 'package:family_groceries/household/household_kind.dart';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/join_code_screen.dart';
 import 'package:family_groceries/household/onboarding_page.dart';
-import 'package:family_groceries/household/popular_stores.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
-import 'package:family_groceries/list/model.dart';
-import 'package:family_groceries/list/store_name_field.dart';
+import 'package:family_groceries/list/new_stores_picker.dart';
 import 'package:family_groceries/onboarding/draft.dart';
 import 'package:family_groceries/onboarding/invite_step.dart';
 import 'package:family_groceries/onboarding/onboarding_cubit.dart';
@@ -340,106 +338,33 @@ class _NameStepState() extends State<_NameStep> {
   }
 }
 
-/// The stores: [popularStores] to pick, nothing picked, plus own ones typed
-/// in place. „Überspringen“ starts without stores.
-class const _StoresStep() extends StatefulWidget {
-  @override
-  State<_StoresStep> createState() => _StoresStepState();
-}
-
-class _StoresStepState() extends State<_StoresStep> {
-  /// The own store being typed.
-  var _naming = false;
-
-  void _toggle(String store) {
-    final key = nameKey(store);
-    context.read<OnboardingCubit>().update(
-      (d) => d.copyWith(
-        stores: d.stores.any((s) => nameKey(s) == key)
-            ? [...d.stores.where((s) => nameKey(s) != key)]
-            : [...d.stores, store],
-      ),
-    );
-  }
-
-  /// A typed name of an offered chain ticks its chip; one already picked
-  /// stays picked.
-  Future<bool> _addOwn(String name) async {
-    final key = nameKey(name);
-    final offered = popularStores(AppLocalizations.of(context))
-        .where((p) => nameKey(p) == key);
-    context.read<OnboardingCubit>().update(
-      (d) => d.stores.any((s) => nameKey(s) == key)
-          ? d
-          : d.copyWith(
-              stores: [
-                ...d.stores,
-                offered.firstOrNull ??
-                    name.trim().replaceAll(RegExp(r'\s+'), ' '),
-              ],
-            ),
-    );
-    setState(() => _naming = false);
-    return true;
-  }
-
+/// The stores: [NewStoresPicker]. „Überspringen“ starts without stores.
+/// With the flag `open-store-app` the chips are the region's chains and
+/// both hints go (job 321 OB-Q1).
+class const _StoresStep() extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final t = SnacklistColors.of(theme.brightness);
-    final stores = _draft(context).stores;
     final onboarding = context.read<OnboardingCubit>();
-    final own = [
-      for (final s in stores)
-        if (!popularStores(l10n).contains(s)) s,
-    ];
+    final linked = context.select<Flags?, bool>(
+      (f) => f?.isOn(openStoreAppFlag) ?? false,
+    );
     return OnboardingStepPage(
       step: OnboardingStep.stores,
       title: l10n.storesStepTitle,
       back: OnboardingStep.name,
       children: [
-        Text(l10n.onboardingStoresHint),
-        const SizedBox(height: HlSpace.s3),
-        Wrap(
-          key: const ValueKey('onboarding-stores'),
-          spacing: HlSpace.s2,
-          runSpacing: HlSpace.s2,
-          children: [
-            for (final store in [...popularStores(l10n), ...own])
-              FilterChip(
-                key: ValueKey('onboarding-store-$store'),
-                label: Text(store),
-                // The theme's label colour is white in dark; on honey the
-                // text is navy.
-                labelStyle: theme.chipTheme.labelStyle?.copyWith(
-                  color: stores.contains(store) ? t.onHoney : t.text,
-                ),
-                selected: stores.contains(store),
-                onSelected: (_) => _toggle(store),
-              ),
-            if (!_naming)
-              // A button, not an ActionChip: Flutter web names a chip a
-              // check box.
-              TextButton.icon(
-                key: const ValueKey('onboarding-store-own'),
-                style: TextButton.styleFrom(
-                  minimumSize: const Size(0, HlSize.target),
-                ),
-                icon: const Icon(Icons.add),
-                label: Text(l10n.storeAddOwn),
-                onPressed: () => setState(() => _naming = true),
-              ),
-          ],
-        ),
-        if (_naming) ...[
-          const SizedBox(height: HlSpace.s2),
-          StoreNameField(
-            confirmLabel: l10n.storeAddOwn,
-            onConfirm: _addOwn,
-            onCancel: () => setState(() => _naming = false),
-          ),
+        if (!linked) ...[
+          Text(l10n.onboardingStoresHint),
+          const SizedBox(height: HlSpace.s3),
         ],
+        NewStoresPicker(
+          stores: _draft(context).stores,
+          onChanged: (stores) =>
+              onboarding.update((d) => d.copyWith(stores: stores)),
+          linked: linked,
+        ),
         const SizedBox(height: HlSpace.s5),
         _NextAndSkip(
           nextLabel: l10n.onboardingNext,
@@ -448,16 +373,17 @@ class _StoresStepState() extends State<_StoresStep> {
             (d) => d.copyWith(stores: const [], step: OnboardingStep.need),
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.only(top: HlSpace.s2),
-          child: Text(
-            l10n.skipStoresHint,
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+        if (!linked)
+          Padding(
+            padding: const EdgeInsets.only(top: HlSpace.s2),
+            child: Text(
+              l10n.skipStoresHint,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
-        ),
       ],
     );
   }

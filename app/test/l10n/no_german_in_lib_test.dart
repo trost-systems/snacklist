@@ -14,13 +14,16 @@ const germanDataFiles = {
   'lib/list/quantity.dart': 'quantity merge: German unit words',
   'lib/list/pricing.dart': 'price parsing: unit words',
   'lib/list/model.dart': 'umlaut folding for the dedupe key',
+  'lib/list/retailer_registry.g.dart':
+      'the retailer registry: chain and app names, as the retailers write them',
+  'lib/list/retailer.dart': "public.retailer_key's port: umlaut and ß folding",
 };
 
 /// Single German literals outside [germanDataFiles], each with its reason.
 const germanLiterals = {
   ('lib/design/section_label.dart', "'ß'"): 'upper-casing rule for ß',
   ('lib/list/list_view/dividers.dart', "'ß'"): 'upper-casing rule for ß',
-  ('lib/household/popular_stores.dart', "'Aldi Süd'"): 'a store name',
+  ('lib/list/new_stores_picker.dart', "'Aldi Süd'"): 'a store name',
   ('lib/settings/delete_account_dialog.dart', "'löschen'"):
       'accepted confirmation word, matched against input',
   ('lib/siri/siri_phrases.dart', "'Etwas auf Snacklist setzen'"):

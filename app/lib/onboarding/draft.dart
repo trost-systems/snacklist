@@ -1,4 +1,5 @@
 import 'package:family_groceries/household/household_kind.dart';
+import 'package:family_groceries/session/new_store.dart';
 import 'package:flutter/foundation.dart';
 
 /// The steps of the guided start (job 168b), in order. Each has its own
@@ -56,7 +57,7 @@ class const OnboardingDraft({
   final String? name,
 
   /// The stores picked, in that order.
-  final List<String> stores = const [],
+  final List<NewStore> stores = const [],
 
   /// What the user needs right now, in the order added.
   final List<DraftItem> items = const [],
@@ -101,7 +102,7 @@ class const OnboardingDraft({
     List<HouseholdKind>? kinds,
     String? otherKind,
     String? Function()? name,
-    List<String>? stores,
+    List<NewStore>? stores,
     List<DraftItem>? items,
     String? userId,
     String? householdId,
@@ -125,7 +126,7 @@ class const OnboardingDraft({
     'kinds': [for (final k in kinds) k.name],
     'other_kind': otherKind,
     'name': name,
-    'stores': stores,
+    'stores': [for (final s in stores) s.toJson()],
     'items': [
       for (final i in items) {'id': i.id, 'text': i.text},
     ],
@@ -154,7 +155,7 @@ class const OnboardingDraft({
           kinds: [...kinds.map(HouseholdKind.parse).nonNulls],
           otherKind: otherKind,
           name: name,
-          stores: [...stores.whereType<String>()],
+          stores: [...stores.map(NewStore.fromJson).nonNulls],
           items: [
             for (final item in items)
               if (item case {'id': final String id, 'text': final String text})

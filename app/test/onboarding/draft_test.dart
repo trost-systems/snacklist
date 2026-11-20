@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:family_groceries/household/household_kind.dart';
 import 'package:family_groceries/onboarding/draft.dart';
+import 'package:family_groceries/session/new_store.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -10,7 +11,10 @@ void main() {
     kinds: [HouseholdKind.club, HouseholdKind.solo],
     otherKind: 'Nachbarn',
     name: 'Kegelclub',
-    stores: ['REWE'],
+    stores: [
+      NewStore('REWE', chain: (chain: 'rewe', country: 'DE')),
+      NewStore('Bäcker Kühn'),
+    ],
     items: [DraftItem(id: 'a', text: '2 Gurken')],
     userId: 'u',
     householdId: 'h',
@@ -33,6 +37,17 @@ void main() {
     expect(read?.ownHouseholdFor, isNull);
     expect(read?.requestId, isNull);
     expect(read?.items, draft.items);
+  });
+
+  test('a draft from before job 321 reads its stores as plain ones', () {
+    final json = {
+      ...draft.toJson(),
+      'stores': ['REWE', 'Bäcker Kühn', 7],
+    };
+    expect(OnboardingDraft.fromJson(json)?.stores, const [
+      NewStore('REWE'),
+      NewStore('Bäcker Kühn'),
+    ]);
   });
 
   test('a draft of a newer build or a cut-off write is no draft', () {
