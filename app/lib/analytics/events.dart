@@ -30,6 +30,22 @@ enum AddSource() {
   scan,
 }
 
+/// What a match row of the add sheet did, or its + row (job 324, flag
+/// `add-match-rows`).
+enum MatchOutcome() {
+  /// Folded what is typed into the open item.
+  merge,
+
+  /// Ticked the open item off.
+  tick,
+
+  /// Put the ticked item back on the list.
+  readd,
+
+  /// Added what is typed as a separate item next to the open one.
+  separate,
+}
+
 /// Which order a category reorder changed; [wire] is what is sent.
 enum ReorderScope(final String wire) {
   /// The household's default (route) order, used without a store.
@@ -228,6 +244,11 @@ final eventCatalog = <String, Map<String, PropertyRule>>{
     'actor_role': _roles,
     'household_size': _householdSize,
   },
+  // Job 324 (AM2, flag add-match-rows): the add sheet showed the items
+  // already on the list that are the same thing as the typed text, and what
+  // one tap did with them. Never the text or the items.
+  'add_match_shown': const {},
+  'add_match_outcome': {'outcome': _namesOf(MatchOutcome.values)},
   // Job 50 (Spec #4 AC7): the Premium page offered a plan with its price,
   // once per visit, from More, the integration settings, the history's
   // locked row (job 199) or a trip summary's card (job 234). Never a price.

@@ -319,6 +319,19 @@ void main() {
     );
   });
 
+  test('a separate add survives its JSON; a cached add from before it '
+      'is not separate (job 324)', () {
+    final separate = AddItem(item('x'), separate: true);
+    final back = ItemOp.fromJson(separate.toJson());
+    expect(back, isA<AddItem>().having((op) => op.separate, 'separate', true));
+    final old = {...AddItem(item('x')).toJson()}..remove('separate');
+    expect(
+      ItemOp.fromJson(old),
+      isA<AddItem>().having((op) => op.separate, 'separate', false),
+    );
+    expect(AddItem(item('x')).toJson().containsKey('separate'), isFalse);
+  });
+
   group('duplicate hint (job 32b)', () {
     Item named(
       String id,

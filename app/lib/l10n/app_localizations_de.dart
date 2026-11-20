@@ -3886,4 +3886,12 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get migrateDone => 'Zugeordnet';
+
+  @override
+  String get addMatchTickOff => 'Abhaken';
+
+  @override
+  String addMatchReadded(String item) {
+    return 'Wieder auf der Liste: $item';
+  }
 }

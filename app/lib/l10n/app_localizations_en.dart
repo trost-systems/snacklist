@@ -3861,4 +3861,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get migrateDone => 'Matched';
+
+  @override
+  String get addMatchTickOff => 'Tick off';
+
+  @override
+  String addMatchReadded(String item) {
+    return 'Back on the list: $item';
+  }
 }

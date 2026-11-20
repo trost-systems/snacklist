@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:family_groceries/analytics/events.dart';
+import 'package:family_groceries/list/add_sheet/match_rows.dart';
 import 'package:family_groceries/list/add_sheet/suggestion.dart';
 import 'package:family_groceries/list/catalog/catalog_index.dart';
 import 'package:family_groceries/list/catalog/household_index.dart';
@@ -51,6 +52,15 @@ class const AddSheetState({
 
   /// The server is asked for the rows of [text] and has not answered.
   final bool fetching = false,
+
+  /// Job 324 (flag `add-match-rows`): the items on the list that are the
+  /// same thing as [text], as what one tap does with each, and the typed
+  /// entry they were found for.
+  final List<MatchRow> matches = const [],
+  final ParsedEntry? matched,
+
+  /// The match row just taken, said in the note until the next letter.
+  final MatchRow? taken,
 }) {
   /// Whether [suggestions] answer what is typed now.
   bool get fresh => answered.isNotEmpty && answered == text.trim();
@@ -83,9 +93,16 @@ class AddSheetCubit(
   CatalogIndex Function() catalogIndex = _bundled,
   bool Function() addFeedback = _off,
   bool Function() compact = _off,
+  bool Function() matchRows = _off,
   Duration detailsPause = const Duration(milliseconds: 500),
 }) extends Cubit<AddSheetState> {
-  this : super(const AddSheetState());
+  this : super(const AddSheetState()) {
+    _listChanges = _list.stream.listen((_) => _rematch());
+  }
+
+  /// The list's changes while text is typed: another member adds, ticks or
+  /// deletes the same item, and the match rows follow (job 324 review 0).
+  late final StreamSubscription<ListState> _listChanges;
 
   static bool _off() => false;
 
@@ -96,6 +113,7 @@ class AddSheetCubit(
   final _onDeviceCatalog = onDeviceCatalog;
   final _addFeedback = addFeedback;
   final _compact = compact;
+  final _matchRows = matchRows;
   final _detailsPause = detailsPause;
 
   /// The catalog the device parses and guesses with: the bundled one with
@@ -118,6 +136,125 @@ class AddSheetCubit(
   /// Whether the flag `add-sheet-compact` (job 322, AS1) is on now; it
   /// builds on [addFeedback] and counts only with it.
   bool get compact => addFeedback && _compact();
+
+  /// Whether the flag `add-match-rows` (job 324, AM2) is on now; it builds
+  /// on [compact] and counts only with it.
+  bool get matchRows => compact && _matchRows();
+
+  ItemMatcher? _matcher;
+
+  /// The items of the shown list that are the same thing as [key], as
+  /// rows, found for the typed row of [rows] (its name without the brand
+  /// and details split off), or for the device's reading of [key] when
+  /// [rows] answer another text. None with the flag off.
+  ({ParsedEntry? typed, List<MatchRow> rows}) _match(
+    String key,
+    List<Suggestion>? rows,
+  ) {
+    if (!matchRows || key.isEmpty) {
+      return (typed: null, rows: const []);
+    }
+    final typed =
+        rows
+            ?.where((row) => row.source == SuggestionSource.typed)
+            .firstOrNull
+            ?.entry ??
+        _parsedOnDevice(key);
+    final catalog = _catalogIndex();
+    final matcher = switch (_matcher) {
+      final known? when identical(known.catalog, catalog) => known,
+      _ => _matcher = ItemMatcher(catalog),
+    };
+    final (:open, :ticked) = matcher.matches(typed.name, _list.state.items);
+    return (typed: typed, rows: matchRowsFor(open, ticked, typed.quantity));
+  }
+
+  ParsedEntry _parsedOnDevice(String key) {
+    final Entry(:name, :quantity) = _parse(key);
+    return ParsedEntry(name: name, quantity: quantity);
+  }
+
+  /// What Enter takes instead of the first row: the first ticked match
+  /// when there is no open one.
+  ReaddRow? get enterMatch => switch (state.matches.firstOrNull) {
+    final ReaddRow row => row,
+    _ => null,
+  };
+
+  /// One tap on a match row: merges what is typed into the open item,
+  /// ticks it off, or puts the ticked one back. Then the input clears for
+  /// the next item and the note says what happened. False when the list
+  /// refused it (the item went meanwhile); the text stays then.
+  bool takeMatch(MatchRow row) {
+    saveDetails();
+    final MatchRow done;
+    final MatchOutcome outcome;
+    switch (row) {
+      case MergeRow(:final item):
+        final merged = _list.mergeTyped(
+          item.id,
+          state.matched ?? ParsedEntry(name: item.name),
+        );
+        if (merged == null) {
+          _rematch();
+          return false;
+        }
+        done = MergeRow(merged, merged.quantity ?? '');
+        outcome = MatchOutcome.merge;
+      case TickRow(:final item):
+        if (_list.state.items[item.id]?.status != ItemStatus.active) {
+          _rematch();
+          return false;
+        }
+        _list.tick(item.id, inAddSheet: true);
+        done = row;
+        outcome = MatchOutcome.tick;
+      case ReaddRow(:final item):
+        if (_list.state.items[item.id]?.status != ItemStatus.bought) {
+          _rematch();
+          return false;
+        }
+        _list.readd(item.id);
+        done = row;
+        outcome = MatchOutcome.readd;
+    }
+    _list.matchTaken(outcome);
+    _forget();
+    emit(AddSheetState(open: state.open, session: state.session, taken: done));
+    return true;
+  }
+
+  /// The match rows again for the text typed now, against the list as it is
+  /// now; emitted only when they differ from those shown.
+  void _rematch() {
+    final key = state.text.trim();
+    if (isClosed || !matchRows || !state.open || key.isEmpty) {
+      return;
+    }
+    final match = _match(key, state.carried ? null : state.suggestions);
+    if (!listEquals(
+      match.rows.map(_shown).toList(),
+      state.matches.map(_shown).toList(),
+    )) {
+      emit(_with(matches: match.rows, matched: () => match.typed));
+    }
+  }
+
+  /// What a match row shows and acts on.
+  static Object _shown(MatchRow row) {
+    final item = row.item;
+    return (
+      row.runtimeType,
+      item.id,
+      item.status,
+      item.name,
+      item.quantity,
+      item.brand,
+      item.properties,
+      item.storeId,
+      row is MergeRow ? row.quantity : null,
+    );
+  }
 
   final _cache = <String, List<Suggestion>>{};
   Timer? _typing;
@@ -256,7 +393,15 @@ class AddSheetCubit(
     final key = text.trim();
     clock.rank = null;
     if (key.isEmpty) {
-      emit(_with(text: text, added: () => null, suggestions: const []));
+      emit(
+        _with(
+          text: text,
+          added: () => null,
+          suggestions: const [],
+          matches: const [],
+          matched: () => null,
+        ),
+      );
       return;
     }
     final known = _cache[key];
@@ -273,6 +418,9 @@ class AddSheetCubit(
     if (known == null) {
       clock.rank = ranking.elapsed;
     }
+    final carried =
+        known == null && !stableRows && state.suggestions.isNotEmpty;
+    final match = _match(key, carried ? null : rows);
     emit(
       _with(
         open: true,
@@ -280,7 +428,9 @@ class AddSheetCubit(
         added: () => null,
         suggestions: rows,
         answered: known != null || deviceRanked ? key : null,
-        carried: known == null && !stableRows && state.suggestions.isNotEmpty,
+        carried: carried,
+        matches: match.rows,
+        matched: () => match.typed,
       ),
     );
     if (known == null) {
@@ -294,12 +444,16 @@ class AddSheetCubit(
 
   /// Adds [suggestion] with the chips' picks, then clears the input for the
   /// next item. The picks start over with it.
+  ///
+  /// Next to an open match (flag `add-match-rows`) it is a separate item,
+  /// also when it is the same name, brand and details.
   AddResult take(Suggestion suggestion) {
     saveDetails();
     final entry = suggestion.entry;
     final store = state.store;
+    final separate = state.matches.any((row) => row is! ReaddRow);
     final result =
-        _openWithSameWords(suggestion) ??
+        (separate ? null : _openWithSameWords(suggestion)) ??
         _list.addParsed(
           ParsedEntry(
             name: entry.name,
@@ -312,10 +466,14 @@ class AddSheetCubit(
           ),
           noStore: store != null && store.value == null,
           autoCategory: state.category == null,
+          separate: separate,
           source: suggestion.source == SuggestionSource.typed
               ? AddSource.typed
               : AddSource.suggestion,
         );
+    if (separate && result is Added) {
+      _list.matchTaken(MatchOutcome.separate);
+    }
     if (result is! NothingToAdd) {
       // An add can change what the server suggests next (store memory,
       // history), so answers from before it are not reused.
@@ -462,6 +620,9 @@ class AddSheetCubit(
   void onChange(Change<AddSheetState> change) {
     super.onChange(change);
     final before = change.currentState;
+    if (before.matches.isEmpty && change.nextState.matches.isNotEmpty) {
+      _list.matchShown();
+    }
     if (before.hint != null &&
         before.merge == null &&
         change.nextState.hint != before.hint &&
@@ -514,12 +675,15 @@ class AddSheetCubit(
       _loading = null;
     }
     if (!isClosed && state.text.trim() == key) {
+      final match = _match(key, rows);
       emit(
         _with(
           suggestions: rows,
           answered: key,
           carried: false,
           fetching: false,
+          matches: match.rows,
+          matched: () => match.typed,
         ),
       );
     }
@@ -705,6 +869,8 @@ class AddSheetCubit(
     bool? carried,
     ItemChanges? unsaved,
     bool? fetching,
+    List<MatchRow>? matches,
+    ParsedEntry? Function()? matched,
   }) => AddSheetState(
     open: open ?? state.open,
     text: text ?? state.text,
@@ -720,11 +886,16 @@ class AddSheetCubit(
     unsaved: unsaved ?? state.unsaved,
     // A new text waits for its own request.
     fetching: fetching ?? (text == null && state.fetching),
+    matches: matches ?? state.matches,
+    matched: matched == null ? state.matched : matched(),
+    // The next letter ends the note on the last match row taken.
+    taken: text == null ? state.taken : null,
   );
 
   @override
   Future<void> close() {
     _typing?.cancel();
+    unawaited(_listChanges.cancel());
     saveDetails();
     return super.close();
   }

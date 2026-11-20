@@ -10,6 +10,7 @@ import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/add_sheet/add_sheet_cubit.dart';
 import 'package:family_groceries/list/add_sheet/compact_details.dart';
+import 'package:family_groceries/list/add_sheet/match_rows.dart';
 import 'package:family_groceries/list/add_sheet/suggestion.dart';
 import 'package:family_groceries/list/chain_suggestions.dart';
 import 'package:family_groceries/list/edit_item_sheet.dart';
@@ -105,6 +106,9 @@ List<Suggestion> sheetRows(AddSheetState sheet, ListCubit list) {
 /// screen, where its rows scroll. Laid over the whole list area.
 class const AddSheet({
   required final ValueChanged<Suggestion> onTake,
+
+  /// A match row's tap (flag `add-match-rows`, job 324).
+  required final ValueChanged<MatchRow> onMatch,
   required final VoidCallback onClose,
 
   /// Folds, picks and Undo inside the sheet hand focus back to the input.
@@ -249,6 +253,7 @@ class _AddSheetState() extends State<AddSheet> {
                   child: _Content(
                     maxHeight: max < 0 ? 0 : max,
                     onTake: widget.onTake,
+                    onMatch: widget.onMatch,
                     onClose: widget.onClose,
                     onPicked: widget.onPicked,
                   ),
@@ -358,6 +363,7 @@ class const _Surface({
 class const _Content({
   required final double maxHeight,
   required final ValueChanged<Suggestion> onTake,
+  required final ValueChanged<MatchRow> onMatch,
   required final VoidCallback onClose,
   required final VoidCallback onPicked,
 }) extends StatefulWidget {
@@ -421,6 +427,7 @@ class _ContentState() extends State<_Content> {
     required Catalog catalog,
     required Store? ownStore,
     required ValueChanged<Suggestion> onTake,
+    bool plus = false,
   }) {
     final Suggestion(:source, :entry) = row;
     return _reuse(
@@ -436,6 +443,7 @@ class _ContentState() extends State<_Content> {
         entry.deviceParsed,
         stale,
         first,
+        plus,
         base?.brand,
         base?.properties,
         (catalog, ownStore, onTake),
@@ -445,6 +453,7 @@ class _ContentState() extends State<_Content> {
         suggestion: row,
         stale: stale,
         first: first,
+        plus: plus,
         base: base,
         catalog: catalog,
         ownStore: ownStore,
@@ -460,7 +469,7 @@ class _ContentState() extends State<_Content> {
     final last = _made..clear();
     _made = _making;
     _making = last;
-    final _Content(:maxHeight, :onTake, :onClose, :onPicked) = widget;
+    final _Content(:maxHeight, :onTake, :onMatch, :onClose, :onPicked) = widget;
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     final cubit = context.watch<AddSheetCubit>();
@@ -555,6 +564,7 @@ class _ContentState() extends State<_Content> {
     ];
     final compact = cubit.compact;
     final notes = <Widget>[
+      if (sheet.taken case final taken?) _MatchNote(taken),
       // Compact: an add shows in the list behind the sheet and is undone
       // there; only "already on the list" stays a note.
       if (sheet.added case final added? when !compact || added is! Added)
@@ -646,11 +656,11 @@ class _ContentState() extends State<_Content> {
         onClose: onClose,
         children: [
           ...notes,
-          switch (details) {
-            // After an add: its chips, as tall as they are. They fit
-            // above the keyboard up to 310 % on a 390 px phone and 200 % on
-            // a 360 px one; beyond that they scroll rather than overflow.
-            final item? => Flexible(
+          // After an add: its chips, as tall as they are. They fit above the
+          // keyboard up to 310 % on a 390 px phone and 200 % on a 360 px
+          // one; beyond that they scroll rather than overflow.
+          if (details case final item?)
+            Flexible(
               child: SingleChildScrollView(
                 child: CompactDetails(
                   key: ValueKey('added-details-${item.id}'),
@@ -658,9 +668,50 @@ class _ContentState() extends State<_Content> {
                   onDone: onPicked,
                 ),
               ),
+            )
+          // Job 324: a match row just taken leaves only its note.
+          else if (sheet.taken != null)
+            const SizedBox.shrink()
+          // Job 324 (flag `add-match-rows`): the same items on the list,
+          // then the + row closest to the field, which never scrolls away.
+          else if (sheet.matches.isNotEmpty) ...[
+            Flexible(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: _firstOpenRows * _matchExtent(scaler),
+                ),
+                child: ListView(
+                  key: const ValueKey('add-match-rows'),
+                  shrinkWrap: true,
+                  padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
+                  children: [
+                    for (final (i, match) in sheet.matches.indexed)
+                      _MatchTile(
+                        key: ValueKey('match-$i'),
+                        row: match,
+                        enter: i == 0 && match is ReaddRow,
+                        catalog: catalog,
+                        onTap: () => onMatch(match),
+                      ),
+                  ],
+                ),
+              ),
             ),
+            if (rows.firstOrNull case final plus?)
+              _row(
+                const ValueKey('match-plus'),
+                plus,
+                stale: false,
+                first: cubit.enterMatch == null,
+                plus: true,
+                base: plus.entry,
+                catalog: catalog,
+                ownStore: null,
+                onTake: onTake,
+              ),
+          ] else
             // Typing, or opened: the rows, at most three, the others scroll.
-            null => Flexible(
+            Flexible(
               child: ConstrainedBox(
                 constraints: BoxConstraints(
                   maxHeight: _firstOpenRows * _rowExtent(scaler),
@@ -673,7 +724,6 @@ class _ContentState() extends State<_Content> {
                 ),
               ),
             ),
-          },
         ],
       );
     } else {
@@ -887,6 +937,9 @@ class const _SuggestionRow({
   /// Dimmed: it answers an earlier text and may still change (RI1).
   required final bool stale,
   required final bool first,
+
+  /// The add sheet's + row under match rows (job 324): a + for its icon.
+  required final bool plus,
   required final ParsedEntry? base,
   required final Catalog catalog,
   required final Store? ownStore,
@@ -952,9 +1005,10 @@ class const _SuggestionRow({
                   children: [
                     SizedBox(
                       width: 24,
-                      child:
-                          suggestion.source == SuggestionSource.due &&
-                              category == null
+                      child: plus
+                          ? Icon(Icons.add, size: 22, color: scheme.primary)
+                          : suggestion.source == SuggestionSource.due &&
+                                category == null
                           ? const Text(
                               '🔁',
                               textAlign: TextAlign.center,
@@ -1061,6 +1115,181 @@ class const _SuggestionRow({
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+const _matchNameSize = 16.0;
+const _matchGap = 3.0;
+
+/// A match tile's height at [scaler] with its second line, its gap
+/// included (job 324).
+double _matchExtent(TextScaler scaler) =>
+    2 * _matchGap +
+    math.max(
+      HlSize.target,
+      12 +
+          scaler.scale(_matchNameSize) * _nameLeading +
+          scaler.scale(_detailSize) * _detailLeading,
+    );
+
+/// "10× Eier": a Menge and a name as the list writes them.
+String _withQuantity(String? quantity, String name) =>
+    [?quantityLabel(quantity), name].join(' ');
+
+/// "Edeka · Weihenstephan · 1,5 %": the item's store, brand and details.
+String _matchDetails(Item item, Catalog catalog) => [
+  ?catalog.store(item.storeId ?? '')?.name,
+  ?item.brand,
+  ...splitProperties(item.properties),
+].join(' · ');
+
+/// Job 324 (AM2, flag `add-match-rows`): an item already on the list as
+/// what a tap does with it. Merge in accent blue with the Menge it would
+/// have, tick off in mint with the name struck through, back on the list in
+/// grey with its own Menge; the store, brand and details below. [enter]:
+/// the one Enter takes, with the return key's hex.
+class const _MatchTile({
+  required final MatchRow row,
+  required final bool enter,
+  required final Catalog catalog,
+  required final VoidCallback onTap,
+  super.key,
+}) extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final t = SnacklistColors.of(Theme.of(context).brightness);
+    final item = row.item;
+    final (action, icon, face, ink, text) = switch (row) {
+      MergeRow(:final quantity) => (
+        l10n.dedupeMerge,
+        Icons.call_merge,
+        scheme.primaryContainer,
+        scheme.onPrimaryContainer,
+        _withQuantity(quantity, item.name),
+      ),
+      TickRow() => (
+        l10n.addMatchTickOff,
+        Icons.check_circle_outline,
+        scheme.tertiaryContainer,
+        scheme.onTertiaryContainer,
+        item.name,
+      ),
+      ReaddRow() => (
+        l10n.readd,
+        Icons.replay,
+        scheme.surfaceContainerHighest,
+        scheme.onSurface,
+        _withQuantity(item.quantity, item.name),
+      ),
+    };
+    final details = _matchDetails(item, catalog);
+    return Semantics(
+      container: true,
+      button: true,
+      label: [action, text, if (details.isNotEmpty) details].join(', '),
+      excludeSemantics: true,
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: _matchGap),
+        child: Material(
+          color: face,
+          borderRadius: BorderRadius.circular(HlRadius.s),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: HlSize.target),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(12, 6, 8, 6),
+                child: Row(
+                  spacing: 12,
+                  children: [
+                    Icon(icon, size: 20, color: ink),
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            text,
+                            style: TextStyle(
+                              fontSize: _matchNameSize,
+                              height: _nameLeading,
+                              fontWeight: FontWeight.w700,
+                              color: ink,
+                              decoration: row is TickRow
+                                  ? TextDecoration.lineThrough
+                                  : null,
+                            ),
+                          ),
+                          if (details.isNotEmpty)
+                            Text(
+                              details,
+                              style: TextStyle(
+                                fontSize: _detailSize,
+                                height: _detailLeading,
+                                fontWeight: FontWeight.w500,
+                                color: t.textMuted,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    if (enter)
+                      Icon(Icons.keyboard_return, size: 20, color: t.text),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// What the match row just taken did, until the next letter (job 324):
+/// "Zusammengeführt: 2× Nudeln", "Nudeln abgehakt", "Wieder auf der Liste:
+/// 10× Eier".
+class const _MatchNote(final MatchRow taken) extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final item = taken.item;
+    final (icon, text) = switch (taken) {
+      MergeRow(:final quantity) => (
+        Icons.call_merge,
+        l10n.dedupeMerged(_withQuantity(quantity, item.name)),
+      ),
+      TickRow() => (Icons.check_circle_outline, l10n.itemTicked(item.name)),
+      ReaddRow() => (
+        Icons.replay,
+        l10n.addMatchReadded(_withQuantity(item.quantity, item.name)),
+      ),
+    };
+    return Padding(
+      key: const ValueKey('match-note'),
+      padding: const EdgeInsets.fromLTRB(20, 10, 12, 10),
+      child: Row(
+        spacing: 12,
+        children: [
+          Icon(icon, size: 20, color: scheme.primary),
+          Expanded(
+            child: Semantics(
+              container: true,
+              liveRegion: true,
+              child: Text(
+                text,
+                style: TextStyle(fontSize: 16, color: scheme.onSurface),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -986,6 +986,13 @@ const _plainDescriptors = {
   'ohne zucker', 'koffeinfrei', 'entkoffeiniert', 'alkoholfrei', 'fettarm',
 };
 
+/// public.canonical_key([name]) on the device: the key that spelling
+/// variants, synonyms and recognized typos of [name] share; empty for a
+/// name without one. The add sheet's match rows key both sides with it
+/// (job 324).
+String canonicalKeyOf(String name, CatalogIndex catalog) =>
+    _CatalogLookups.of(catalog).canonicalOfKey(itemKey(name));
+
 /// What the ranking reads of a [CatalogIndex], built once per index.
 final class _CatalogLookups._(final CatalogIndex index) {
   factory of(CatalogIndex index) => _built[index] ??= _CatalogLookups._(index);

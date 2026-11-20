@@ -60,6 +60,10 @@
       "rollout": "off",
       "note": "AS1, the compact add sheet on top of add-feedback-list (no close key, only the grab handle; after an add no Added note or Undo but one row of chips for amount, store, category and details, whose options fold out as one sideways line; the sheet as tall as its content; the list behind it only the last two adds; a swipe down, a tap beside it, the back key or Enter in the empty field closes it) shows only while the PostHog flag add-sheet-compact is on (job 322); on for Peter and the testers"
     },
+    "add-match-rows": {
+      "rollout": "off",
+      "note": "AM2, the add sheet's match rows on top of add-sheet-compact (while typing, the items already on the list that are the same thing, also as a plural or a synonym, show as rows: merge into the open one, tick it off, or put a ticked one back on the list, each one tap; the + row and Enter add the typed item separately next to an open one, and Enter puts a ticked one back) shows only while the PostHog flag add-match-rows is on (job 324)"
+    },
     "display-name": {
       "rollout": "full",
       "note": "the name step after sign-in (Wie sollen wir dich nennen?, prefilled from Google or Apple, required before a household is created or joined, once with Jetzt nicht for members whose name is still their e-mail prefix) and Konto > Dein Name show only while the PostHog flag display-name is on (job 297)"

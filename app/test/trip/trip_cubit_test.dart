@@ -173,8 +173,8 @@ class World(
     async.flushMicrotasks();
   }
 
-  void tick(String id) {
-    list.tick(id);
+  void tick(String id, {bool inAddSheet = false}) {
+    list.tick(id, inAddSheet: inAddSheet);
     async.flushMicrotasks();
   }
 
@@ -217,6 +217,16 @@ void main() {
       expect(w.state, isA<Asking>());
       expect((w.state as Asking).snapshot.keys.toSet(), {'bread', 'tea'});
       expect(w.shopEvents(), ['shop_asked {answer: no}']);
+    });
+  });
+
+  test('a tick from the add sheet asks nothing (job 324)', () {
+    run((w) {
+      w.tick('milk', inAddSheet: true);
+      expect(w.state, isA<NoTrip>());
+      expect(w.list.state.allItems['milk']!.status, ItemStatus.bought);
+      w.tick('bread');
+      expect(w.state, isA<Asking>(), reason: 'a tick on the list still asks');
     });
   });
 

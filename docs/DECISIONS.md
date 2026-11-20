@@ -16570,3 +16570,76 @@ was the only evidence and the card showed. Web build, `--os-none stays --radio-d
 - **Tests:** F4 and F1 (none that stays, requests failing for 800 ms, no up; F1 with the channel
   joining at 3 s) and a slow extra request fail on main; a flight-mode case pins the card at the
   extra request's failure (not before 1.5 s). Journey: `--no-online` in `cold-start-offline.mjs`.
+
+## Job 324: add-match outcome rows (AM2) in the compact add sheet
+
+Peter picked AM2 (t1081u) from round AM (job 323, #571). Defaults AM-Q1 and AM-Q3 to AM-Q11 as written in
+`docs/design/after-add/am/RECOMMENDATION.md` (#571); AM-Q2 changed by Peter: Enter on an open match adds a separate item.
+
+1. **Stacked on #573.** Job 322 (#573) sits on #570 and #569, all unmerged (Legal GO on #569). This branch is one
+   commit on #573's head; the PR's base is `job/322-after-add-sheet-as1`. It also changes ARB strings, so it stops at
+   ci-ok either way.
+2. **Flag.** `add-match-rows`, rollout off, counts only with `add-sheet-compact` (`AddSheetCubit.matchRows`). Off:
+   today's „… steht schon auf der Liste“ refusal and the merge hint, unchanged (widget test and job 322's journey on
+   the web build).
+3. **What matches.** The device's port of `public.canonical_key` (`canonicalKeyOf`: `canonicalOfKey(itemKey(name))`)
+   on both sides, the typed row's name (brand and details split off) against each item's name, cached per name. The
+   server's stored `items.canonical_key` is not used: a queued add has none yet, and keying both sides on the device
+   cannot disagree with itself. Brand and details never stop a match (AM-Q4). „Milch“ does not match „Hafermilch“ or
+   „Vollmilch“ (different keys); „Apfel“ matches „Äpfel“, „Apple“ matches both „Äpfel“ and „Apples“.
+4. **Ticked matches** come from `recentlyUsed` (the list's „Zuletzt verwendet“), which leaves out a thing that is open
+   again: a ticked match shows only when none of it is open. With an open one the merge and tick rows already fill
+   the three rows (AM-Q5).
+5. **Rows as a sealed type.** `MergeRow`, `TickRow`, `ReaddRow` (`add_sheet/match_rows.dart`), built by the pure
+   `matchRowsFor`: first open match merge + tick, further open ones merge, ticked ones back on the list, three at most;
+   an item whose merged Menge would not fit (`QuantityTooLong`) keeps only its tick row. With matches the sheet shows
+   them and one `+` row (the first suggestion) and hides its other suggestions. The match rows scroll in their own
+   area capped at three tiles; the `+` row sits outside it, right above the field (AM-Q8).
+6. **Enter adds a separate item (AM-Q2, Peter).** The server's `items_skip_duplicate` (job 64) skipped any open exact
+   duplicate, so a second „Kefir“ needed the server: `put_item` gained `p_separate boolean default false`
+   (migration `20261120151031_add_separate.sql`), a transaction-local `family_groceries.separate` the trigger reads,
+   cleared after the insert. The race job 64 guards stays guarded: only an add whose user saw the match sends it
+   (`AddItem.separate`, kept in the device's queue). A separate add sends no duplicate hint afterwards. Store builds and
+   `add_item` (MCP, Siri, Alexa) send nothing and keep the rule. pgTAP `add_separate.test.sql`.
+7. **Merge** is one `EditItem` (Menge by `mergeQuantities` from the live item at the tap, brand and details only where
+   the item has none), not `merge_items`: there is no second item to fold. Tick off is `tick`, back on the list
+   `readd`. No Undo (AM-Q7); the note says what happened until the next letter, with the app's sentences plus one new
+   one („Wieder auf der Liste: {item}“).
+8. **A tick from the sheet asks no trip question.** Driving the web build (trip-mode is at full rollout) the tick row
+   opened „Kaufst du gerade ein?“, whose sheet replaced the add sheet. `OwnItemTicked.inAddSheet` now keeps the trip
+   cubit from asking; a running trip still counts the tick. The widget tests ran without trip-mode and missed it.
+9. **Duplicate hint (AM-Q9).** Separate adds send none. An add whose match the device did not find (its catalog behind
+   the server's) still gets the hint in the sheet, as without the flag.
+10. **Analytics (AM-Q11).** `add_match_shown` (no properties, when the rows appear) and `add_match_outcome` (`outcome`:
+    merge, tick, readd, separate). „keep“ from the recommendation is gone with AM-Q2. Rules in `eventCatalog`, rows in
+    docs/ANALYTICS.md.
+11. **New UI strings:** `addMatchTickOff` („Abhaken“ / "Tick off", the tick row's action for screen readers) and
+    `addMatchReadded`. Merge and back on the list reuse `dedupeMerge`, `dedupeMerged`, `readd`, `itemTicked`.
+12. **Colours** from the theme: merge `primaryContainer` (accent soft), tick `tertiaryContainer` (mint), back on the
+    list `surfaceContainerHighest` (grey); honey stays only on the row Enter adds. The hint under the field („↵ nimmt
+    den ersten Vorschlag“) is unchanged: the `+` row is the first suggestion.
+13. **No e2e spec.** The web-build journey `journeys/add-match-rows.mjs` drives every outcome against the real stack
+    (de and en), the widget tests cover flag on and off, pgTAP the server. CI's e2e suite runs unchanged.
+
+### Job 324 review 0 (FIX)
+
+1. **Rows follow the list.** The match rows were made on a key or a server answer only: when the other member deleted
+   the item, the sheet kept offering it, and „Abhaken“ said „… abgehakt“ for an item that no longer existed. The sheet
+   cubit now listens to the list and makes the rows again for the typed text whenever they would differ (a delete, a
+   tick, a put back, an add of the same item elsewhere). Tick off and back on the list check the item as it is now, as
+   merge did: no longer open (or no longer ticked) and nothing happens and nothing is said; the rows refresh instead.
+   Widget tests pin a remote delete, a stale row taken after it, a ticked item put back elsewhere and a remote add while
+   typing (rows without a key, Enter then a separate add); removing the listener or the checks fails them. The web
+   journey deletes the typed item through the API and waits for the rows to go.
+2. **Two items that read alike get one merge row.** Two plain „Kefir“ offered two rows both „Zusammenführen, 2×
+   Kefir“, which nobody could tell apart. A further open match whose merge row reads like an earlier one (name, merged
+   Menge, store, brand, details) gets none.
+3. **AM-Q8 deviation, named.** The accepted default says the `+` row "moves above the matches" at large text. The build
+   keeps it below them, outside their scroll area, right above the field: the + row still never scrolls away, and it
+   stays where Enter's honey row always is in AS1.
+4. **A typed amount with only a ticked match.** „3 Eier“ against a ticked „10× Eier“ puts back 10× Eier (AM-Q3's
+   default: the old amount comes back); the typed 3 is not used. Kept as Peter accepted it; the feature map and the
+   writers' notes say so. The `+` row adds „3 Eier“ as a new item for whoever wants that.
+5. **No scroll check in the journey.** The seeded list is too short to scroll, so the journey's offsets proved nothing;
+   it no longer logs them. The widget test with 30 items covers every outcome (merge, tick, back on the list, separate
+   add).

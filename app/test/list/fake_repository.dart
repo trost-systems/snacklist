@@ -515,10 +515,17 @@ class FakeRepository() implements ListRepository {
     }
     // As the repository: a line typed offline is parsed before it is added.
     final op = switch (sentOp) {
-      AddItem(deviceParsed: true, :final item, :final noStore) => AddItem(
-        (await parse(item.name)).onto(item, noStore: noStore),
-        noStore: noStore,
-      ),
+      AddItem(
+        deviceParsed: true,
+        :final item,
+        :final noStore,
+        :final separate,
+      ) =>
+        AddItem(
+          (await parse(item.name)).onto(item, noStore: noStore),
+          noStore: noStore,
+          separate: separate,
+        ),
       EditItem(deviceParsed: true, :final changes, :final keyBefore) =>
         EditItem(
           sentOp.itemId,
@@ -542,7 +549,7 @@ class FakeRepository() implements ListRepository {
         // items_rename_duplicate fires on a list_id change too (job 169b K).
         sent.removeLast();
         throw const RejectedOp('already_on_list', nameTaken: true);
-      case AddItem(:final item) when _openTwin(item) != null:
+      case AddItem(:final item, separate: false) when _openTwin(item) != null:
         // put_item: the open item the add already is, unchanged.
         final kept = _openTwin(item)!;
         touched = {op.itemId: null, kept.id: kept};

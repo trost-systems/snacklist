@@ -6187,6 +6187,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Zugeordnet'**
   String get migrateDone;
+
+  /// Job 324 (AM2, flag add-match-rows): the action a screen reader names on the add sheet's match row that ticks the open item off, before the item
+  ///
+  /// In de, this message translates to:
+  /// **'Abhaken'**
+  String get addMatchTickOff;
+
+  /// Job 324 (AM2): the add sheet's note after a ticked item was put back from its match row or with Enter; item is its Menge and name (10× Eier)
+  ///
+  /// In de, this message translates to:
+  /// **'Wieder auf der Liste: {item}'**
+  String addMatchReadded(String item);
 }
 
 class _AppLocalizationsDelegate

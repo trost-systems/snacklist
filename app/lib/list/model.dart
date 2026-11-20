@@ -879,6 +879,7 @@ sealed class const ItemOp(final String itemId) {
         noStore: json['no_store'] == true,
         deviceParsed: json['device_parsed'] == true,
         autoCategory: json['auto_category'] == true,
+        separate: json['separate'] == true,
       ),
       'status' => SetStatus(
         id,
@@ -1054,6 +1055,7 @@ sealed class const ItemOp(final String itemId) {
         :final noStore,
         :final deviceParsed,
         :final autoCategory,
+        :final separate,
       ) =>
         {
           'op': 'add',
@@ -1062,6 +1064,7 @@ sealed class const ItemOp(final String itemId) {
           if (noStore) 'no_store': true,
           if (deviceParsed) 'device_parsed': true,
           if (autoCategory) 'auto_category': true,
+          if (separate) 'separate': true,
         },
       SetStatus(:final status, :final at, :final storeId) => {
         'op': 'status',
@@ -1143,13 +1146,16 @@ sealed class const ItemOp(final String itemId) {
 /// shows until then, so a category correction queued ahead of this add is
 /// learned first. The server answers with the open item the add already is
 /// when the list has one (`put_item`), and the app folds this item into it
-/// ([ItemOp.ontoKept]).
+/// ([ItemOp.ontoKept]). [separate] (job 324, flag `add-match-rows`): the
+/// user chose to add it next to the same open item, which the server then
+/// keeps as a second item (`put_item`'s `p_separate`).
 final class AddItem(
   final Item item, {
   final bool restored = false,
   final bool noStore = false,
   final bool deviceParsed = false,
   final bool autoCategory = false,
+  final bool separate = false,
 }) extends ItemOp {
   this : super(item.id);
 
