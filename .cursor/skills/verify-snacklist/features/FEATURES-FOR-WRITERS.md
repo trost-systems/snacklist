@@ -681,7 +681,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 
 **Unverified.** The rating window on a real phone (no phone was available), and the store page opening on a real phone.
 
-**Last verified.** 20 November 2026, job 326 branch, in the app's tests: the trip moments (not switched on). Earlier: 19 November 2026, code version af0287cf, in the web app (German): no rating row on the web, and a whole list ticked off counted as one trip, with the question after each tick answered „Nein, nur abgehakt“. Earlier: 18 November 2026, code version 0ca5dcc9, in the web app; the store's rating dialog needs a store install and was not checked.
+**Last verified.** 20 November 2026, code version 40f39984, in the app's tests and, with the switch on for a test build, in the web app (German): no ask while the trip question is up and one 3 seconds after „Nein, nur abgehakt“, none mid-trip or on the summary and one after „Fertig“, none after „Zurücknehmen“, and a household switch holding asks back (the web app cannot show the store's window, so the asks were read from the app's own log). Earlier: 19 November 2026, code version af0287cf, in the web app (German): no rating row on the web, and a whole list ticked off counted as one trip, with the question after each tick answered „Nein, nur abgehakt“. Earlier: 18 November 2026, code version 0ca5dcc9, in the web app; the store's rating dialog needs a store install and was not checked.
 
 ## Account: data export and deletion
 

@@ -1942,3 +1942,10 @@ grace, flight mode with the channel failing first, and the resume resubscribe. F
 **Not verified.** On a real iPhone on mobile data. NEEDS_LEAD asks for a check on the next TestFlight
 build.
 
+
+## Job 326 review 0: the setback wiring tested
+
+A widget test pumps the real `App` and proves that a household switch and a sent bug note hold the rating prompt back.
+Removing the wiring in `app.dart` now fails it. A question left unanswered no longer keeps the prompt waiting for a
+later „Nein“. DECISIONS explains SA1, a quick „Fertig“ and the „War geplant“ marks. Behind `rating-triggers-v2` (off).
+Details: [docs/done/326.md](docs/done/326.md).
