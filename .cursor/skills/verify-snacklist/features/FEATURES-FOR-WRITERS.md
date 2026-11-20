@@ -514,7 +514,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 1. Open „Liste“ (EN: "List") and use it as usual with the connection off.
 2. The card „Offline“ shows under the bar at the top of the list: „Änderungen werden synchronisiert, sobald du wieder online bist.“ (EN: "Your changes will sync once you're back online."). After about 3 s, or when you scroll or swipe it up, the card shrinks into the small „Offline“ pill next to the list and household name at the top left, left of „Anpassen“ (EN: "Edit"); tap the pill to read the card again. While the add field's sheet is open the card or pill steps aside with the bar at the top and comes back when the sheet closes.
 3. When the connection returns, the card or pill goes away on its own within a few seconds, with no tap and no message. If it says „Sync gestört“ (EN: "Sync failing") instead, tap it to try again.
-4. Opening the app or coming back to it: the card waits up to 10 s for the server before it says „Offline“, so a slow start shows no card. In flight mode it shows at once. If the server answers with errors (the connection itself is there), „Sync gestört“ can show sooner, within a few seconds.
+4. Opening the app or coming back to it: the card waits up to 10 s for the server before it says „Offline“, so a slow start shows no card. In flight mode it shows at once. A start with a working connection never shows it, also on iPhones that report no network for a moment when the app opens. If the server answers with errors (the connection itself is there), „Sync gestört“ can show sooner, within a few seconds.
 
 **Never claim.**
 - That a partner sees offline changes before they sync.
@@ -522,9 +522,9 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 - That reordering stores or categories, adding or changing stores, categories or lists, feedback or account actions work offline.
 - Offline voice dictation to a server: dictation stays on the device, but splitting text into items needs a connection.
 
-**Unverified.** Offline sign-in, and a first start offline before the list was ever synced (not covered by the automatic tests or read in detail).
+**Unverified.** Offline sign-in, and a first start offline before the list was ever synced (not covered by the automatic tests or read in detail). On an iPhone itself: the start without the card was checked in the web app with the browser reporting no network while the server answered, the way iPhones do, not on a phone.
 
-**Last verified.** 19 November 2026, code version af0287cf, in the web app (German).
+**Last verified.** 20 November 2026, in the web app (German): a start with the phone reporting no network on a working connection shows no card, a start in flight mode shows it within about a second (job 325). Earlier: 19 November 2026, code version af0287cf, in the web app (German).
 
 ## Grocery log: „Verlauf“
 

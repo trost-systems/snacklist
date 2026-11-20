@@ -330,6 +330,25 @@ void main() {
       expect(pill(), findsNothing);
     });
 
+    testWidgets('a start whose OS watch says none on a working network, as '
+        'iOS does, shows no card and no pill (job 325)', (tester) async {
+      phone(tester);
+      final network = StreamController<Network>();
+      addTearDown(network.close);
+      await pumpList(tester, network: network.stream);
+      network.add(Network.down);
+      for (var i = 0; i < 40; i++) {
+        await tester.pump(const Duration(milliseconds: 250));
+        expect(card(), findsNothing);
+        expect(pill(), findsNothing);
+        expect(find.text('Offline'), findsNothing);
+      }
+      network.add(Network.up);
+      await tester.pumpAndSettle();
+      expect(card(), findsNothing);
+      expect(pill(), findsNothing);
+    });
+
     testWidgets('the fading card text stays inside the shrinking hex', (
       tester,
     ) async {
