@@ -141,12 +141,13 @@ void main() {
     expect(key('premium-terms-lifetime'), findsNothing);
     expect(
       find.text(
-        'Premium gehört dann zum Haushalt „Zuhause“ und bleibt dort, auch '
-        'wenn du den Haushalt später verlässt.',
+        'Premium gehört dann dir und gilt in jedem Haushalt, in dem du '
+        'Mitglied bist, auch in späteren. Die anderen Mitglieder bekommen es '
+        'dadurch nicht.',
       ),
       findsOneWidget,
     );
-    expect(key('premium-household'), findsOneWidget);
+    expect(key('premium-owner'), findsOneWidget);
 
     await pickLifetime(tester);
     expect(key('premium-buy-yearly'), findsNothing);
@@ -200,8 +201,9 @@ void main() {
     );
     expect(
       find.text(
-        'Premium then belongs to the household “Zuhause” and stays there, '
-        'even if you leave it later.',
+        "Premium then belongs to you and applies in every household you're "
+        "a member of, later ones included. The other members don't get it "
+        'through your purchase.',
       ),
       findsOneWidget,
     );
@@ -357,7 +359,7 @@ void main() {
     }
     expect(find.byType(FilledButton), findsNothing);
     expect(key('lifetime-restore'), findsNothing);
-    expect(key('premium-household'), findsNothing);
+    expect(key('premium-owner'), findsNothing);
     expectHiddenBeforeSales();
   }
 
@@ -632,7 +634,7 @@ void main() {
     expect(
       find.text(
         'Snacklist Premium kaufst du in der iPhone- oder Android-App. Danach '
-        'ist es auch hier für deinen ganzen Haushalt freigeschaltet.',
+        'gilt es auch hier, in jedem deiner Haushalte.',
       ),
       findsOneWidget,
     );
@@ -649,8 +651,8 @@ void main() {
     );
     expect(
       find.text(
-        'You can buy Snacklist Premium in the iPhone or Android app. It is '
-        'then unlocked here too, for your whole household.',
+        'You can buy Snacklist Premium in the iPhone or Android app. It then '
+        'applies here too, in each of your households.',
       ),
       findsOneWidget,
     );

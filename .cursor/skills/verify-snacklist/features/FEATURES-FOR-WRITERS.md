@@ -822,7 +822,7 @@ Since 10 November 2026 the skill is called Snacklist, with the invocation „sna
 - That nothing is locked without Premium (older trips in „Verlauf“ and the planned-and-added comparison after a trip are).
 - That a household without Premium can buy its way past those locks today (nothing is for sale).
 
-**When it goes on sale.** Nothing changes for users until Peter says go. Ask Peter for the launch copy's source; don't write it from this section.
+**When it goes on sale.** Nothing changes for users until Peter says go. Ask Peter for the launch copy's source; don't write it from this section. The sale's legal texts are written and wait for Legal's yes and the launch (job 329): Premium then belongs to the person who buys it and works in every household they are in (at most 20, as for everyone); other members don't get it through their purchase; a yearly plan renews at the store's price until cancelled at Apple or Google; when it ends nothing is deleted and „Verlauf“ shows the last 4 weeks again; Lifetime is paid once and lasts as long as the account; costly features come only with limits stated as numbers, also with Lifetime. None of this is live: don't quote it before the launch.
 
 **Unverified.** Real store purchases (no store test account was available). Whether the usage data ever records a visit to the buy page in the released app (it should not).
 

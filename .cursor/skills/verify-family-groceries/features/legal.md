@@ -7,7 +7,7 @@ The help and contact page lives on the guides site (`site/`, snacklist.app): `/s
 - `lg-help-row` More shows "Hilfe & Kontakt" / "Help & contact" (`more-help`, one line with an external-link icon, no detail since job 85) under "Feedback senden", in release builds too (`supportPagePublished` in `app/lib/core/guides.dart`).
 - `lg-help-open` a tap opens https://snacklist.app/support (German UI) or https://snacklist.app/en/support (any other language) in the system browser (a new tab on the web); the app stays on More.
 - `lg-pages` https://snacklist.app/support and https://snacklist.app/en/support answer 200 without an "ENTWURF" / "DRAFT" banner and link the Alexa guide (`/de/anleitungen/alexa`, English `/en/guides/alexa`). The whole site still sends `X-Robots-Tag: noindex` until the beta launch.
-- `lg-draft` the site's draft mechanism stays for other pages: `draft: true` shows a page with the banner, an HTML comment and `noindex` in preview and local builds, and `VERCEL_ENV=production` builds leave it out (404). The purchases privacy pages (`/datenschutz-kaeufe`, `/en/privacy-purchases`) answer 404 in production that way.
+- `lg-draft` the site's draft mechanism stays for other pages: `draft: true` shows a page with the banner, an HTML comment and `noindex` in preview and local builds, and `VERCEL_ENV=production` builds leave it out (404). The terms of use (`/nutzungsbedingungen`, `/en/terms`, job 329) answer 404 in production that way; the old purchases privacy drafts are gone. Content waiting for the Premium sale (privacy section 5a, the help page's Premium answers) is gated on the hold `premium-launch` instead (`::: once premium-launch`, `site/test/gates.test.mjs`).
 
 ## How to get to it (user POV)
 
