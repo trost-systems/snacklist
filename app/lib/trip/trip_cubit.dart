@@ -48,7 +48,8 @@ enum TripSave() {
 /// [trip] ended: the fresh summary page, or with [auto] the list's card
 /// „Einkauf automatisch beendet“. [from] is the trip as it ran, for „Weiter
 /// einkaufen“. Once [save] is [TripSave.saved], [trip] is the server's
-/// answer, so without Premium its lines are null.
+/// answer, with this device's lines where it withholds them (no Premium):
+/// the summary shows them once Premium arrives.
 final class const Ended(
   final FinishedTrip trip, {
   required final RunningTrip from,
@@ -468,7 +469,13 @@ class TripCubit(
     }
     if (state case Ended(:final trip, :final from, :final auto, save: final was)
         when trip.id == id && was != save) {
-      emit(Ended(answer ?? trip, from: from, auto: auto, save: save));
+      final shown = switch ((answer, trip.lines)) {
+        (final answer?, final lines?) when answer.lines == null =>
+          answer.withLines(lines),
+        (final answer?, _) => answer,
+        (null, _) => trip,
+      };
+      emit(Ended(shown, from: from, auto: auto, save: save));
     }
   }
 

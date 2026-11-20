@@ -325,14 +325,18 @@ void main() {
     });
   });
 
-  test('without Premium the saved end shows without lines', () {
+  test('without Premium the server withholds the lines; the saved end keeps '
+      "this device's, for the summary once Premium arrives", () {
     run((w) {
       w.sessions.premium = false;
       w.trips.startByHand();
       w.tick('milk');
       unawaited(w.trips.finish());
       w.async.flushMicrotasks();
-      expect(w.ended.trip.lines, isNull);
+      expect(w.ended.save, TripSave.saved);
+      expect([
+        for (final l in w.ended.trip.lines!) (l.key, l.bought),
+      ], contains(('milk', true)));
       expect(w.ended.trip.bought, 1);
     });
   });

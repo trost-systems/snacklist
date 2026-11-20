@@ -21,7 +21,7 @@ import 'package:family_groceries/purchases/purchase_repository.dart'
     show NoSale;
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/shell/router.dart'
-    show historyTripPath, premiumPath;
+    show historyTripPath, premiumPath, showPaywall;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -525,7 +525,9 @@ class const _StoreTimeline({
 
 /// The quiet row for a Free user's [locked] older trips: they are kept and
 /// show with Snacklist Premium. Opens the Premium page where it is sold;
-/// otherwise says, as the integration settings' card does, why not.
+/// otherwise says, as the integration settings' card does, why not. With
+/// [paywallCs1Flag] it always opens the page, over Verlauf, which tells
+/// itself whether it sells.
 class const _LockedHint({
   required final int locked,
   required final Future<OfferSwitch?> offer,
@@ -540,16 +542,17 @@ class const _LockedHint({
     final noSale = context.select<PurchaseCubit?, NoSale?>(
       (c) => c?.state.noSale,
     );
+    final cs1 = context.select<Flags?, bool>(
+      (flags) => flags?.isOn(paywallCs1Flag) ?? false,
+    );
     return FutureBuilder(
       future: offer,
       builder: (context, snapshot) {
         // Exactly when More lists Premium; before sales start the row says
         // nothing about buying (job 87).
-        final opens = premiumListed(
-          held: held,
-          offer: snapshot.data,
-          noSale: noSale,
-        );
+        final opens =
+            cs1 ||
+            premiumListed(held: held, offer: snapshot.data, noSale: noSale);
         final row = Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: 20,
@@ -588,12 +591,14 @@ class const _LockedHint({
             button: true,
             child: InkWell(
               key: const ValueKey('log-locked-premium'),
-              onTap: () => context.go(
-                Uri(
-                  path: premiumPath,
-                  queryParameters: {'from': PaywallEntry.history.name},
-                ).toString(),
-              ),
+              onTap: cs1
+                  ? () => unawaited(showPaywall(context, PaywallEntry.history))
+                  : () => context.go(
+                      Uri(
+                        path: premiumPath,
+                        queryParameters: {'from': PaywallEntry.history.name},
+                      ).toString(),
+                    ),
               child: row,
             ),
           ),

@@ -11,6 +11,7 @@ import 'package:family_groceries/household/join_request_waiting.dart';
 import 'package:family_groceries/household/join_screen.dart';
 import 'package:family_groceries/household/pending_invite.dart';
 import 'package:family_groceries/household/welcome_screen.dart';
+import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/list_link.dart';
 import 'package:family_groceries/list/list_repository.dart';
 import 'package:family_groceries/list/list_screen.dart';
@@ -24,7 +25,9 @@ import 'package:family_groceries/onboarding/draft.dart';
 import 'package:family_groceries/onboarding/onboarding_cubit.dart';
 import 'package:family_groceries/onboarding/start_screen.dart';
 import 'package:family_groceries/onboarding/steps.dart';
+import 'package:family_groceries/purchases/entitlements.dart';
 import 'package:family_groceries/purchases/premium_page_cubit.dart';
+import 'package:family_groceries/purchases/premium_screen.dart';
 import 'package:family_groceries/session/login_screen.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/session/your_name.dart';
@@ -32,9 +35,9 @@ import 'package:family_groceries/session/your_name_screen.dart';
 import 'package:family_groceries/shell/shell.dart';
 import 'package:family_groceries/trip/summary_page.dart';
 import 'package:family_groceries/trip/trip_repository.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
 const listPath = '/';
@@ -134,6 +137,57 @@ const householdPath = '/more/household';
 /// the household's premium status. The path and its screen name stay
 /// `lifetime` from before job 49, so links and analytics keep their name.
 const premiumPath = '/more/lifetime';
+
+/// The Premium page over the current screen (flag `paywall-cs1`, job 327),
+/// from a lock ([entry]): closing it returns to the lock, and once Premium
+/// arrives (bought, restored, or a partner's) it closes by itself, the lock
+/// then open. On the root navigator, so it covers the tabs; the app's
+/// providers sit above that navigator.
+Future<void> showPaywall(BuildContext context, PaywallEntry entry) =>
+    Navigator.of(context, rootNavigator: true).push(
+      MaterialPageRoute<void>(
+        fullscreenDialog: true,
+        builder: (_) => _Paywall(entry),
+      ),
+    );
+
+class const _Paywall(final PaywallEntry entry) extends StatefulWidget {
+  @override
+  State<_Paywall> createState() => _PaywallState();
+}
+
+class _PaywallState() extends State<_Paywall> {
+  late final bool _heldAtOpen;
+  var _closed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Not a lazy initializer: that would first run after the purchase.
+    _heldAtOpen = context.read<Entitlements>().has(Entitlement.premium);
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      BlocListener<Entitlements, EntitlementsState>(
+        listener: (context, _) {
+          // Once: a second event during the pop would pop the lock's page.
+          if (!_heldAtOpen &&
+              !_closed &&
+              context.read<Entitlements>().has(Entitlement.premium)) {
+            _closed = true;
+            Navigator.of(context).pop();
+          }
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            leading: const CloseButton(key: ValueKey('paywall-close')),
+            title: Text(AppLocalizations.of(context).premiumTitle),
+          ),
+          body: PremiumScreen(entry: widget.entry),
+        ),
+      );
+}
 
 /// More's Tipps: every hint of the List tab, to read again (job 168b).
 const tipsPath = '/more/tips';

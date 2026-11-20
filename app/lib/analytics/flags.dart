@@ -95,6 +95,14 @@ const reportContentEntryFlag = 'report-content-entry';
 /// the list's card asking about existing stores once. Off, none shows.
 const openStoreAppFlag = 'open-store-app';
 
+/// The flag for the Premium page's CS1 copy (job 327): Premium as the
+/// user's own in the hero, the benefits AI over MCP, the API, planned
+/// against bought and the full Verlauf, and under the plans whom a purchase
+/// unlocks. Verlauf's lock and the trip summary's locked card open the page
+/// over the screen they are on, and it closes back to them, by itself after
+/// a purchase. Off, the page and both locks are as before.
+const paywallCs1Flag = 'paywall-cs1';
+
 /// PostHog feature flags, the app's runtime toggles (job 44,
 /// docs/ANALYTICS.md "Feature flags"). Read a toggle with [isOn] wherever it
 /// matters; nothing else in the app reads PostHog flags.

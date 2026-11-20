@@ -23,6 +23,58 @@ Future<void> openManageSubscriptions(BuildContext context) async {
   });
 }
 
+/// Where a yearly plan is managed when no store sheet can open: the web
+/// sells nothing, so it names the App Store's and Google Play's pages.
+class const ManageOnWeb({super.key}) extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    Widget link(String key, String label, Uri url) => LegalLink(
+      key: ValueKey(key),
+      url: url,
+      builder: (context, open) =>
+          TextButton(onPressed: open, child: Text(label)),
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(l10n.premiumManageWeb),
+        Wrap(
+          children: [
+            link(
+              'premium-manage-apple',
+              l10n.premiumManageApple,
+              appleSubscriptionsUrl,
+            ),
+            link(
+              'premium-manage-google',
+              l10n.premiumManageGoogle,
+              googleSubscriptionsUrl,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// [ManageOnWeb] as a dialog, for More's „Abo verwalten oder kündigen“ on
+/// the web.
+Future<void> showManageOnWeb(BuildContext context) => showDialog<void>(
+  context: context,
+  builder: (dialog) => AlertDialog(
+    key: const ValueKey('manage-web-dialog'),
+    content: const ManageOnWeb(),
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.of(dialog).pop(),
+        child: Text(AppLocalizations.of(dialog).close),
+      ),
+    ],
+  ),
+);
+
 /// [text] with its one `[label]` part as a link that calls [onTap]; the
 /// brackets are not shown. Legal Review's strings mark the link this way,
 /// so the sentence stays word for word. A recognizer on the span, not a

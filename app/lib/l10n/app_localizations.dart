@@ -3080,6 +3080,48 @@ abstract class AppLocalizations {
   /// **'Eigene Automationen mit der Snacklist API'**
   String get premiumBenefitApi;
 
+  /// Premium page with paywall-cs1 (job 327, CS1): the slogan, only while sales run (N-68)
+  ///
+  /// In de, this message translates to:
+  /// **'Mehr aus deiner Liste machen.'**
+  String get premiumCs1HeroTitle;
+
+  /// Premium page with paywall-cs1 (job 327): Premium is per user (PB2, job 185); what stays free (CS1). Never name barcode, receipts or photos here
+  ///
+  /// In de, this message translates to:
+  /// **'Snacklist Premium gehört dir und gilt in jedem Haushalt, in dem du bist. Liste, Preise und Einkaufssumme bleiben für alle kostenlos.'**
+  String get premiumCs1HeroBody;
+
+  /// Premium page with paywall-cs1 (job 327): benefit line, the planned-vs-bought trip summary (PB3a); only while trip-mode is on
+  ///
+  /// In de, this message translates to:
+  /// **'Nach jedem Einkauf sehen, was geplant war und was dazukam'**
+  String get premiumBenefitPlanned;
+
+  /// Premium page with paywall-cs1 (job 327): benefit line, the full history (H1); only while grocery-log is on
+  ///
+  /// In de, this message translates to:
+  /// **'Alle Einkäufe im Verlauf, nicht nur die letzten 4 Wochen'**
+  String get premiumBenefitHistory;
+
+  /// Premium page with paywall-cs1 (job 327): under the plans, whom a purchase unlocks (PB2, per user since job 185); replaces premiumHousehold there
+  ///
+  /// In de, this message translates to:
+  /// **'Premium gehört dann dir und gilt in jedem Haushalt, in dem du bist, auch in künftigen. Andere Mitglieder bekommen es dadurch nicht.'**
+  String get premiumForYou;
+
+  /// Premium page with paywall-cs1 (job 327): while the entitlement is unknown; per user
+  ///
+  /// In de, this message translates to:
+  /// **'Wir prüfen, ob du Snacklist Premium schon hast …'**
+  String get premiumCs1Checking;
+
+  /// Premium page with paywall-cs1 (job 327), web after sales start: where to buy; per user
+  ///
+  /// In de, this message translates to:
+  /// **'Snacklist Premium kaufst du in der iPhone- oder Android-App. Danach hast du es auch hier.'**
+  String get premiumCs1Web;
+
   /// PLACEHOLDER (job 49): Snacklist Launch / Legal Review K.13 write the final copy (NEEDS_LEAD Job 49). Premium page: an active yearly plan that renews
   ///
   /// In de, this message translates to:

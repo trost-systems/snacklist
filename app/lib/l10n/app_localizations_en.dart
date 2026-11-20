@@ -1839,6 +1839,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumBenefitApi => 'Your own automations with the Snacklist API';
 
   @override
+  String get premiumCs1HeroTitle => 'Get more out of your list.';
+
+  @override
+  String get premiumCs1HeroBody =>
+      'Snacklist Premium is yours and works in every household you\'re in. The list, prices and shopping totals stay free for everyone.';
+
+  @override
+  String get premiumBenefitPlanned =>
+      'After every trip, see what was planned and what got added';
+
+  @override
+  String get premiumBenefitHistory =>
+      'Every trip in your history, not just the last 4 weeks';
+
+  @override
+  String get premiumForYou =>
+      'Premium is then yours and works in every household you\'re in, including future ones. It doesn\'t extend to other members.';
+
+  @override
+  String get premiumCs1Checking =>
+      'Checking whether you already have Snacklist Premium…';
+
+  @override
+  String get premiumCs1Web =>
+      'You can buy Snacklist Premium in the iPhone or Android app. You then have it here too.';
+
+  @override
   String premiumStatusRenews(DateTime date) {
     final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMMd(localeName);
     final String dateString = dateDateFormat.format(date);

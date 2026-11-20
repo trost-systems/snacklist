@@ -16390,3 +16390,57 @@ accounts, a local stack and GitHub runners.
   reconnect, so a dropped channel waited for its backoff (up to 30 s) while the list said online:
   `_networkWorks` now subscribes a down channel at once, whichever way the down ends. And a down
   mid-session whose request hung never showed "Offline" (before: at once): now after 1.5 s.
+
+## Job 327: the paywall's CS1 copy, the locks open it, manage or cancel from Mehr
+
+Peter t1086u (2026-11-20) approved items 1, 2 and 5 of the Nov 19 upkeep's findings. The agreed model
+(prices from the store, CS1 split, H1, PB3a, PB2 per-user Premium) is unchanged.
+
+1. **One flag, `paywall-cs1` (rollout off).** It switches the Premium page's copy and the two locks
+   together, so Legal's GO on the copy and the rollout are one step. Flag off, the page and the locks
+   are exactly as before (tests assert both).
+2. **The copy follows CS1 and PB2.** Hero: „Snacklist Premium gehört dir und gilt in jedem Haushalt,
+   in dem du bist. Liste, Preise und Einkaufssumme bleiben für alle kostenlos.“ The benefits lead
+   with the integrations (MCP, then the API while `public-api` is on), then the planned-vs-bought
+   summary (only while `trip-mode` is on) and the full history (only while `grocery-log` is on): a
+   line never promises a feature the user's build hides. Under the plans „Premium gehört dann dir
+   und gilt in jedem Haushalt, in dem du bist, auch in künftigen. Andere Mitglieder bekommen es
+   dadurch nicht.“ replaces the household line; the checking and web lines say „du“ too. The
+   slogan („Mehr aus deiner Liste machen.“) still shows only while selling (N-68). The hexes show
+   the three benefits instead of three members and a plus (the one-person household of NEEDS_PETER
+   „Job 185“ item 3). Nothing names prices, totals, barcodes, receipts, photos or themes: prices and
+   totals are free, the others are not built, and the page names no feature it cannot show.
+   Lifetime keeps „Einmal zahlen, kein Abo.“: no „unbegrenzt“ anywhere (a test checks the page's
+   text for it). Export is not listed: the account's data export is free and must stay so; a
+   Premium export does not exist yet.
+3. **Not rewritten:** the flow notices Legal wrote word for word (`premiumLifetimeWhileYearly*`,
+   `lifetimeUsedElsewhere`, `premiumTwoYearly`, `premiumBillingContinues*`) and the account
+   deletion texts still say „Haushalt“. They show only in purchase states that cannot happen before
+   sales start, and they are Legal's texts; NEEDS_LEAD lists them for the same GO.
+4. **The locks open the page over the screen.** With the flag on, Verlauf's lock row (all three
+   places use one widget) and the summary's card always show their button, also before sales start,
+   and open the Premium page as a full-screen route on the root navigator with a close button
+   (`showPaywall`, `shell/router.dart`, where both lock files already import from; the
+   import-direction baseline forbids a new log/trip -> purchases import). The router location does
+   not change, so close is a plain pop back to the lock, scroll position and tab kept. Before sales
+   the page shows the hero and benefits only (same rules as from Mehr). `paywall_viewed` keeps its
+   entry `history`/`trip`.
+5. **Back after a purchase.** The route closes itself when Premium turns on while it is open
+   (bought, restored, or arriving from another device), read once at open so an already-held
+   Premium does not close it. Verlauf's cubit already refetched on entitlement changes. The trip
+   summary did not unlock: the fresh summary took the server's save answer, which withholds lines
+   without Premium, and dropped the lines this device had computed; it now keeps the device's lines
+   when the answer has none (shown only once Premium is held, the card stays otherwise). A summary
+   opened from Verlauf refetches when Premium changes. Both fixes have tests that fail without them.
+6. **Manage or cancel: it existed only on the Premium page.** `openManageSubscriptions` already used
+   the platform's management: StoreKit's `showManageSubscriptions` sheet on iOS (Apple's page as
+   fallback) and Play's deep link with `sku=com.snacklist.app.yearly&package=com.snacklist.app` on
+   Android. It is kept instead of RevenueCat's `managementURL`, which needs the SDK configured and
+   a customer fetched; RevenueCat starts only on Buy and Restore (H-67). New: the Mehr row „Abo
+   verwalten oder kündigen“ (`more-manage-subscription`, existing string `premiumManage`) under
+   „Snacklist Premium“, shown whenever a yearly plan runs for the user (`Entitlements.yearlyRuns`,
+   the page's own condition: Premium from a yearly plan, or one still billed next to Lifetime). On
+   the web it opens a dialog with the App Store and Google Play pages (the page's links, now a
+   shared widget). It is **not** behind the flag: only yearly subscribers see it, none exist before
+   sales, and a way to cancel must not depend on flags loading. Lifetime and free unlocks have no
+   subscription to manage, so no row.

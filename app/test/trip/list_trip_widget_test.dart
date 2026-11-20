@@ -14,6 +14,8 @@ import 'package:family_groceries/log/model.dart' hide TripSource;
 import 'package:family_groceries/log/trip_repository.dart';
 import 'package:family_groceries/purchases/entitlements.dart';
 import 'package:family_groceries/purchases/premium_server.dart';
+import 'package:family_groceries/purchases/purchase_cubit.dart';
+import 'package:family_groceries/purchases/store_prices.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/shell/list_parts.dart';
 import 'package:family_groceries/shell/router.dart';
@@ -32,7 +34,7 @@ import '../household/harness.dart' show TestSession;
 import '../list/fake_repository.dart';
 import '../list/memory_cache.dart';
 import '../log/fakes.dart' show FakeTrips;
-import '../purchases/fakes.dart' show FakeEntitlementsSource, FakePremiumServer;
+import '../purchases/fakes.dart' show FakeEntitlementsSource, TestPurchases;
 import 'trip_cubit_test.dart' show FakeSessions, Tracked, emptyCache;
 
 /// The server's trip sessions, also answering `trip_session` for
@@ -43,9 +45,14 @@ class Sessions() extends FakeSessions {
   /// The grocery log, whose entries of a trip go with it.
   FakeTrips? log;
 
+  /// Answers as the server does: without [premium], no lines.
   @override
-  Future<FinishedTrip> fetch(String id) async =>
-      fetched[id] ?? (throw StateError('no trip $id'));
+  Future<FinishedTrip> fetch(String id) async {
+    final trip = fetched[id] ?? (throw StateError('no trip $id'));
+    return premium
+        ? trip
+        : FinishedTrip.fromJson({...trip.toJson(), 'lines': null});
+  }
 
   @override
   Future<void> delete(String id) async {
@@ -62,6 +69,9 @@ typedef Shop = ({
   Sessions sessions,
   GoRouter router,
   void Function(Duration) wait,
+
+  /// Peter's premium and purchases over the fakes: a store that sells.
+  TestPurchases purchases,
 });
 
 const session = InHousehold('peter', Household(id: 'home', name: 'Zuhause'), [
@@ -119,11 +129,11 @@ Future<Shop> pumpList(
   await trips.start();
   final testSession = TestSession(session);
   addTearDown(testSession.close);
-  final entitlements = Entitlements(
-    FakeEntitlementsSource(unlockedNow: premium),
-    testSession,
+  final purchases = TestPurchases(
+    session: testSession,
+    source: FakeEntitlementsSource(unlockedNow: premium),
   );
-  addTearDown(entitlements.close);
+  addTearDown(purchases.close);
   final popups = Popups();
   addTearDown(popups.dispose);
   final router = GoRouter(
@@ -162,7 +172,10 @@ Future<Shop> pumpList(
         RepositoryProvider<TripRepository>.value(value: logTrips),
         RepositoryProvider<TripSessionRepository>.value(value: sessions),
         RepositoryProvider<Analytics>.value(value: Tracked()),
-        RepositoryProvider<PremiumServer>.value(value: FakePremiumServer()),
+        RepositoryProvider<PremiumServer>.value(value: purchases.premium),
+        RepositoryProvider<StorePriceReader>.value(
+          value: purchases.storePrices,
+        ),
         RepositoryProvider.value(value: cache),
       ],
       child: MultiBlocProvider(
@@ -170,7 +183,8 @@ Future<Shop> pumpList(
           BlocProvider.value(value: shownFlags),
           BlocProvider.value(value: list),
           BlocProvider.value(value: trips),
-          BlocProvider.value(value: entitlements),
+          BlocProvider<Entitlements>.value(value: purchases.entitlements),
+          BlocProvider<PurchaseCubit>.value(value: purchases.purchases),
           BlocProvider<SessionCubit>.value(value: testSession),
         ],
         child: MaterialApp.router(
@@ -196,6 +210,7 @@ Future<Shop> pumpList(
     sessions: sessions,
     router: router,
     wait: (Duration d) => offset += d,
+    purchases: purchases,
   );
 }
 
@@ -645,5 +660,120 @@ void main() {
       findsOneWidget,
     );
     expect(key('trip-summary-retry'), findsNothing);
+  });
+
+  group('paywall-cs1 (job 327)', () {
+    const flags = {tripModeFlag, groceryLogFlag, paywallCs1Flag};
+
+    Future<void> openPaywall(WidgetTester tester) async {
+      await tester.ensureVisible(key('trip-locked-premium'));
+      await tester.pumpAndSettle();
+      await tester.tap(key('trip-locked-premium'));
+      await tester.pumpAndSettle();
+      expect(key('lifetime-screen'), findsOneWidget);
+    }
+
+    /// Buys the yearly plan; the webhook's row arrives and the server then
+    /// answers with lines.
+    Future<void> buy(WidgetTester tester, Shop shop) async {
+      await tester.scrollUntilVisible(
+        key('premium-buy-yearly'),
+        200,
+        scrollable: find.descendant(
+          of: key('lifetime-screen'),
+          matching: find.byType(Scrollable),
+        ),
+      );
+      await tester.ensureVisible(key('premium-buy-yearly'));
+      await tester.pumpAndSettle();
+      await tester.tap(key('premium-buy-yearly'));
+      await tester.pump();
+      expect(shop.purchases.repository.calls, ['buy peter yearly']);
+      shop.sessions.premium = true;
+      shop.purchases.unlock();
+      await tester.pumpAndSettle();
+    }
+
+    Future<String> endFreeTrip(WidgetTester tester, Shop shop) async {
+      await startByTick(tester, 'Milch');
+      await tick(tester, 'Brot');
+      await tester.tap(key('trip-strip-end'));
+      await tester.pumpAndSettle();
+      expect(key('trip-locked'), findsOneWidget);
+      return shop.sessions.saved.single.id;
+    }
+
+    testWidgets('the locked card opens the Premium page over the summary; '
+        'closing it returns to the summary', (tester) async {
+      final shop = await pumpList(tester, premium: false, flags: flags);
+      final id = await endFreeTrip(tester, shop);
+      await openPaywall(tester);
+      expect(key('trip-locked'), findsNothing, reason: 'covered');
+      await tester.tap(key('paywall-close'));
+      await tester.pumpAndSettle();
+      expect(key('lifetime-screen'), findsNothing);
+      expect(key('trip-locked'), findsOneWidget);
+      expect(shop.router.state.uri.path, tripSummaryPath(id));
+    });
+
+    testWidgets('a purchase from the fresh summary closes the paywall and '
+        'shows what was planned and bought', (tester) async {
+      final shop = await pumpList(tester, premium: false, flags: flags);
+      final id = await endFreeTrip(tester, shop);
+      final planned = find.text('Beim Start auf der Liste'.toUpperCase());
+      expect(planned, findsNothing);
+      await openPaywall(tester);
+      await buy(tester, shop);
+      expect(key('lifetime-screen'), findsNothing, reason: 'closed by itself');
+      expect(shop.router.state.uri.path, tripSummaryPath(id));
+      expect(key('trip-locked'), findsNothing);
+      expect(planned, findsWidgets);
+      expect(find.text('2 von 3 von der Liste gekauft'), findsOneWidget);
+    });
+
+    testWidgets("a purchase from a Verlauf entry's summary shows its rows", (
+      tester,
+    ) async {
+      final shop = await pumpList(
+        tester,
+        premium: false,
+        flags: flags,
+        logged: [
+          Trip(
+            id: 'log-1',
+            day: DateTime.now(),
+            items: const [TripItem(name: 'Milch')],
+            createdAt: DateTime.now(),
+            storeId: 'lidl',
+            storeName: 'Lidl',
+            sessionId: 'trip-9',
+          ),
+        ],
+      );
+      shop.sessions.fetched['trip-9'] = FinishedTrip(
+        id: 'trip-9',
+        householdId: 'home',
+        startedAt: DateTime(2026, 11, 14, 10),
+        endedAt: DateTime(2026, 11, 14, 10, 25),
+        active: const Duration(minutes: 25),
+        end: TripEnd.user,
+        source: TripSource.ask,
+        currency: 'EUR',
+        lines: const [
+          TripLine(key: 'm', name: 'Milch', planned: true, bought: true),
+        ],
+        bought: 1,
+        day: DateTime(2026, 11, 14),
+        stores: const ['Lidl'],
+      );
+      shop.router.go(historyTripPath('trip-9'));
+      await tester.pumpAndSettle();
+      expect(key('trip-locked'), findsOneWidget);
+      await openPaywall(tester);
+      await buy(tester, shop);
+      expect(key('lifetime-screen'), findsNothing);
+      expect(key('trip-locked'), findsNothing);
+      expect(find.text('1 von 1 von der Liste gekauft'), findsOneWidget);
+    });
   });
 }

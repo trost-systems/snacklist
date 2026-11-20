@@ -21,11 +21,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// Snacklist Premium for the whole household (`/more/lifetime`), laid out as
-/// PW-P4 „Haushalt“ (job 87): the household as the hero, the status, the
-/// yearly plan and Lifetime as two tiles with the store's own prices, one Buy
-/// for the picked plan, restore, and the plan's management. A page of the
-/// More tab, which gives it its frame. Opening it reads the server switch
+/// Snacklist Premium for the whole household (`/more/lifetime`, or over the
+/// screen of a lock: `showPaywall`), laid out as PW-P4 „Haushalt“ (job 87):
+/// the household as the hero (with [paywallCs1Flag] the benefits, and
+/// Premium as the user's own in every household, CS1, job 327), the status,
+/// the yearly plan and Lifetime as two tiles with the store's own prices,
+/// one Buy for the picked plan, restore, and the plan's management. Its
+/// frame comes from More or `showPaywall`. Opening it reads the server switch
 /// and the store's prices (StoreKit or Play Billing, A2-5); only Buy and
 /// Restore start RevenueCat (Legal Review H-67).
 class const PremiumScreen({
@@ -55,7 +57,6 @@ class const _PremiumView() extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final language = Localizations.localeOf(context).languageCode;
     final entitlements = context.watch<Entitlements>();
     final premium = entitlements.premium;
     bool offers(PremiumPlan plan) =>
@@ -65,6 +66,9 @@ class const _PremiumView() extends StatelessWidget {
         InHousehold(:final household) => household,
         _ => null,
       },
+    );
+    final cs1 = context.select<Flags?, bool>(
+      (flags) => flags?.isOn(paywallCs1Flag) ?? false,
     );
     final page = context.watch<PremiumPageCubit>().state;
     final mine = page.mine;
@@ -85,9 +89,7 @@ class const _PremiumView() extends StatelessWidget {
     ];
     final launched = page.launch == OfferSwitch.on;
     final selling = launched && sells;
-    final yearlyRuns =
-        premium is ActivePremium && premium.source == PremiumSource.yearly ||
-        entitlements.yearlyBilled;
+    final yearlyRuns = entitlements.yearlyRuns;
     final manage = !kIsWeb && yearlyRuns;
     void buy(PremiumPlan plan) => unawaited(() async {
       if (plan == PremiumPlan.lifetime &&
@@ -175,7 +177,12 @@ class const _PremiumView() extends StatelessWidget {
                 trailing: const Icon(Icons.open_in_new),
                 onTap: () => unawaited(openManageSubscriptions(context)),
               ),
-            if (kIsWeb && yearlyRuns) _ManageOnWeb(language: language),
+            if (kIsWeb && yearlyRuns)
+              const Padding(
+                key: ValueKey('premium-manage-web'),
+                padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
+                child: ManageOnWeb(),
+              ),
             if (entitlements.boughtLifetimeTwice)
               _Note(
                 'lifetime-bought-twice',
@@ -184,11 +191,19 @@ class const _PremiumView() extends StatelessWidget {
               ),
             ?_flow(context, state.flow),
             if (premium == null && sells)
-              _Note('lifetime-checking', Icons.sync, l10n.premiumChecking),
+              _Note(
+                'lifetime-checking',
+                Icons.sync,
+                cs1 ? l10n.premiumCs1Checking : l10n.premiumChecking,
+              ),
             // Where to buy, only once sales started (Legal Review final
             // texts: nothing about buying on the web before).
             if (noSale is PurchasesUnsupported && page.launch == OfferSwitch.on)
-              _Note('lifetime-web', Icons.phone_iphone, l10n.premiumWeb),
+              _Note(
+                'lifetime-web',
+                Icons.phone_iphone,
+                cs1 ? l10n.premiumCs1Web : l10n.premiumWeb,
+              ),
             if (sells &&
                 household != null &&
                 PremiumPlan.values.any(offers) &&
@@ -205,7 +220,7 @@ class const _PremiumView() extends StatelessWidget {
               _Plans(
                 cards: cards,
                 prices: prices,
-                household: household.name,
+                household: cs1 ? null : household.name,
                 onBuy: buy,
               ),
             // Only once sales start, or for a household that bought twice:
@@ -430,8 +445,10 @@ TextStyle _display(BuildContext context, double size, {Color? color}) {
 }
 
 /// One buys, everyone has it: the household's members as hexes, what
-/// Premium is for the household, and what it unlocks. No Siri or Alexa
-/// (both stay free, job 184 and Legal Review N-27).
+/// Premium is for the household, and what it unlocks. With
+/// [paywallCs1Flag] the benefits as hexes and Premium as the user's own,
+/// saying what stays free (CS1). No Siri or Alexa (both stay free, job 184
+/// and Legal Review N-27), nor prices and totals, which stay free (CS1).
 class const _Hero({
   /// This build sells and sales started: only then the buying slogan
   /// (Legal Review N-68).
@@ -442,9 +459,12 @@ class const _Hero({
     final l10n = AppLocalizations.of(context);
     final t = SnacklistColors.of(Theme.of(context).brightness);
     // No Flags above (a screen on its own, in tests): off.
-    final api = context.select<Flags?, bool>(
-      (flags) => flags?.isOn(publicApiFlag) ?? false,
-    );
+    bool on(String flag) =>
+        context.select<Flags?, bool>((flags) => flags?.isOn(flag) ?? false);
+    final api = on(publicApiFlag);
+    final cs1 = on(paywallCs1Flag);
+    final planned = cs1 && on(tripModeFlag);
+    final history = cs1 && on(groceryLogFlag);
     Widget hex(Color face, IconData icon, Color ink) => Padding(
       padding: const EdgeInsets.symmetric(horizontal: 3),
       child: PointyHex(
@@ -466,12 +486,18 @@ class const _Hero({
           ExcludeSemantics(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                hex(t.cobalt, Icons.person_outline, t.onCobalt),
-                hex(t.mint, Icons.person_outline, t.onMint),
-                hex(t.tomato, Icons.person_outline, t.onTomato),
-                hex(t.surfaceRaised, Icons.add, t.text),
-              ],
+              children: cs1
+                  ? [
+                      hex(t.cobalt, Icons.smart_toy_outlined, t.onCobalt),
+                      hex(t.mint, Icons.fact_check_outlined, t.onMint),
+                      hex(t.tomato, Icons.history, t.onTomato),
+                    ]
+                  : [
+                      hex(t.cobalt, Icons.person_outline, t.onCobalt),
+                      hex(t.mint, Icons.person_outline, t.onMint),
+                      hex(t.tomato, Icons.person_outline, t.onTomato),
+                      hex(t.surfaceRaised, Icons.add, t.text),
+                    ],
             ),
           ),
           const SizedBox(height: HlSpace.s4),
@@ -480,7 +506,7 @@ class const _Hero({
               header: true,
               container: true,
               child: Text(
-                l10n.premiumHeroTitle,
+                cs1 ? l10n.premiumCs1HeroTitle : l10n.premiumHeroTitle,
                 key: const ValueKey('premium-hero-title'),
                 textAlign: TextAlign.center,
                 style: _display(context, 26),
@@ -493,7 +519,7 @@ class const _Hero({
           Semantics(
             container: true,
             child: Text(
-              l10n.premiumHeroBody,
+              cs1 ? l10n.premiumCs1HeroBody : l10n.premiumHeroBody,
               key: const ValueKey('premium-hero-body'),
               textAlign: TextAlign.center,
             ),
@@ -501,6 +527,9 @@ class const _Hero({
           const SizedBox(height: HlSpace.s4),
           _Benefit(Icons.smart_toy_outlined, l10n.premiumBenefitAi),
           if (api) _Benefit(Icons.terminal, l10n.premiumBenefitApi),
+          if (planned)
+            _Benefit(Icons.fact_check_outlined, l10n.premiumBenefitPlanned),
+          if (history) _Benefit(Icons.history, l10n.premiumBenefitHistory),
         ],
       ),
     );
@@ -532,17 +561,18 @@ class const _Benefit(final IconData icon, final String text)
   }
 }
 
-/// The offered plans as tiles to pick from, the household the purchase
-/// binds to, one Buy for the picked plan with its terms, restore and the
-/// legal links. The pick lives in [PremiumPageCubit], so it survives the
-/// tiles scrolling out of the lazy list.
+/// The offered plans as tiles to pick from, whom the purchase unlocks, one
+/// Buy for the picked plan with its terms, restore and the legal links. The
+/// pick lives in [PremiumPageCubit], so it survives the tiles scrolling out
+/// of the lazy list.
 class const _Plans({
   /// The plans on offer, each with a price in [prices]; never empty.
   required final List<PremiumPlan> cards,
   required final Map<PremiumPlan, StorePrice> prices,
 
-  /// The name of the household the purchase unlocks (Legal Review Q6).
-  required final String household,
+  /// The name of the household the purchase unlocks (Legal Review Q6);
+  /// null with [paywallCs1Flag], where it unlocks the user (CS1).
+  required final String? household,
   required final void Function(PremiumPlan plan) onBuy,
 }) extends StatelessWidget {
   @override
@@ -586,16 +616,23 @@ class const _Plans({
           Semantics(
             container: true,
             child: Row(
-              key: const ValueKey('premium-household'),
+              key: ValueKey(
+                household == null ? 'premium-for-you' : 'premium-household',
+              ),
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.home_outlined, size: 18),
+                Icon(
+                  household == null
+                      ? Icons.person_outline
+                      : Icons.home_outlined,
+                  size: 18,
+                ),
                 const SizedBox(width: HlSpace.s2),
                 Expanded(
-                  child: Text(
-                    l10n.premiumHousehold(household),
-                    style: theme.textTheme.bodySmall,
-                  ),
+                  child: Text(switch (household) {
+                    final name? => l10n.premiumHousehold(name),
+                    null => l10n.premiumForYou,
+                  }, style: theme.textTheme.bodySmall),
                 ),
               ],
             ),
@@ -763,38 +800,4 @@ class const _Link(
       child: Text(label),
     ),
   );
-}
-
-/// The web sells nothing and can't open a store's sheet: the two pages
-/// where a yearly plan is managed.
-class const _ManageOnWeb({required final String language})
-    extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return Padding(
-      key: const ValueKey('premium-manage-web'),
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(l10n.premiumManageWeb),
-          Wrap(
-            children: [
-              _Link(
-                'premium-manage-apple',
-                l10n.premiumManageApple,
-                appleSubscriptionsUrl,
-              ),
-              _Link(
-                'premium-manage-google',
-                l10n.premiumManageGoogle,
-                googleSubscriptionsUrl,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
 }
