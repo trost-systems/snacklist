@@ -1864,3 +1864,12 @@ stacked on job 313's #569, which waits for Legal's GO. #570 lands after #569. De
   per account, so target his device's distinct id or use a `FLAGS_ON=open-store-app` build.
 
 **Merged as.** Not merged yet. The PR head is #570.
+
+## Job 322: the compact add sheet (AS1) and Undo as a plain delete again
+
+Behind the flag `add-sheet-compact` (off; on for Peter and the testers): after an add the sheet is one row of chips
+(− Menge +, store, category, details) under a slim handle, with no ✕, no „Hinzugefügt“ note and no „Rückgängig“, 132 px
+above the keyboard instead of 312; pickers are one sideways line; the list behind shows only the last two adds; a tap
+outside, a swipe down, back or Enter in the empty field closes it. For everyone, „Rückgängig“ keeps what an add's details
+taught again (job 315 reverted). Review 0: chips capped at half the row and options at the line, so long German names
+still fit at 200 % on 360 × 640 (tested). Details: [docs/done/322.md](docs/done/322.md).

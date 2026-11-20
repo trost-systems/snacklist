@@ -20,6 +20,9 @@ import 'package:material_ui/material_ui.dart';
 enum _Fold() {
   store,
   category,
+
+  /// [FoldoutChips.fold]'s.
+  more,
 }
 
 /// The options' height: a touch target.
@@ -83,6 +86,19 @@ class const FoldoutChips({
   /// mark shows either way.
   final bool chipIcons = true,
 
+  /// The drop-down arrow at each chip's end.
+  final bool chipArrows = true,
+
+  /// Opened options stand in one line that scrolls sideways, the selected
+  /// one in view, instead of wrapping onto lines of their own (the compact
+  /// add sheet, job 322): an open picker then takes one line at any text
+  /// size.
+  final bool optionsInLine = false,
+
+  /// A chip of the caller's after the store's and the category's, which
+  /// folds out its own panel below them; one of the three is open at a time.
+  final ChipFold? fold,
+
   /// Outlines a chip whose value the user changed.
   final bool storeChanged = false,
   final bool categoryChanged = false,
@@ -99,11 +115,26 @@ class const FoldoutChips({
 
 /// [FoldoutChips.line]: the chips between [before] and [after], aligned to
 /// their bottom edge, the line [side] in from either edge as it scrolls.
+/// With [wrap] the line wraps onto more lines instead of scrolling, so
+/// every control stays in view at any text size (job 322).
 @immutable
 class const ChipLine({
   required final List<Widget> before,
   required final List<Widget> after,
   final double side = 0,
+  final bool wrap = false,
+});
+
+/// [FoldoutChips.fold]: a chip with [icon] and [label] (the icon alone
+/// without one), read as [semanticsLabel], whose [panel] folds out below the
+/// chips like their options. The panel gets the fold-back.
+@immutable
+class const ChipFold({
+  required final Key chipKey,
+  required final IconData icon,
+  required final String? label,
+  required final String semanticsLabel,
+  required final Widget Function(VoidCallback foldBack) panel,
 });
 
 class _FoldoutChipsState() extends State<FoldoutChips> {
@@ -114,7 +145,7 @@ class _FoldoutChipsState() extends State<FoldoutChips> {
 
   void _toggle(_Fold fold) {
     setState(() => _fold = _fold == fold ? null : fold);
-    if (_fold != null && widget.line != null) {
+    if (_fold != null && widget.line != null && !widget.line!.wrap) {
       // The line sits in a scrolling area of its own (the add sheet's
       // details): it and the options below it come into view, and the line
       // scrolls sideways to the opened chip, which a screen reader can open
@@ -190,6 +221,7 @@ class _FoldoutChipsState() extends State<FoldoutChips> {
           semanticsLabel: storeSemantics,
           auto: w.storeAuto,
           open: _fold == _Fold.store,
+          arrow: w.chipArrows,
           changed: w.storeChanged,
           onTap: () => _toggle(_Fold.store),
         ),
@@ -203,10 +235,26 @@ class _FoldoutChipsState() extends State<FoldoutChips> {
           semanticsLabel: categorySemantics,
           auto: w.categoryAuto,
           open: _fold == _Fold.category,
+          arrow: w.chipArrows,
           changed: w.categoryChanged,
           onTap: () => _toggle(_Fold.category),
         ),
       ),
+      if (w.fold case final more?)
+        KeyedSubtree(
+          key: _chips[_Fold.more],
+          child: _Chip(
+            key: more.chipKey,
+            leading: more.icon,
+            label: more.label,
+            semanticsLabel: more.semanticsLabel,
+            auto: false,
+            open: _fold == _Fold.more,
+            arrow: w.chipArrows,
+            changed: false,
+            onTap: () => _toggle(_Fold.more),
+          ),
+        ),
     ];
     final line = w.line;
     final folded = switch (_fold) {
@@ -220,16 +268,24 @@ class _FoldoutChipsState() extends State<FoldoutChips> {
         onSelect: w.onStore,
         onCreate: w.onCreateStore,
         chains: w.chains,
+        inLine: w.optionsInLine,
       ),
-      _Fold.category => _Options([
-        for (final c in w.catalog.categories)
-          OptionChip(
-            key: ValueKey('category-option-${c.id}'),
-            label: categoryName(c, l10n),
-            selected: c.id == w.categoryId,
-            onTap: () => _pick(() => w.onCategory(c.id)),
-          ),
-      ]),
+      _Fold.category => Padding(
+        padding: EdgeInsets.only(top: w.optionsInLine ? 4 : 10),
+        child: _OptionsWrap(inLine: w.optionsInLine, [
+          for (final c in w.catalog.categories)
+            OptionChip(
+              key: ValueKey('category-option-${c.id}'),
+              label: categoryName(c, l10n),
+              selected: c.id == w.categoryId,
+              onTap: () => _pick(() => w.onCategory(c.id)),
+            ),
+        ]),
+      ),
+      _Fold.more => switch (w.fold) {
+        final more? => more.panel(() => setState(() => _fold = null)),
+        null => const SizedBox(width: double.infinity),
+      },
     };
     final options = AnimatedSize(
       duration: hlMotion(context, HlDuration.medium),
@@ -250,6 +306,37 @@ class _FoldoutChipsState() extends State<FoldoutChips> {
             ],
           ),
           options,
+        ],
+        ChipLine(:final before, :final after, :final side, wrap: true) => [
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: side),
+            // A chip takes at most half the line, its name cut short: long
+            // names at a large text size keep the row to two lines, which
+            // leaves room for an open picker above the keyboard (job 322).
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final half = (constraints.maxWidth - 6) / 2;
+                return Wrap(
+                  spacing: 6,
+                  runSpacing: 3,
+                  crossAxisAlignment: WrapCrossAlignment.end,
+                  children: [
+                    ...before,
+                    for (final chip in chips)
+                      ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: half),
+                        child: chip,
+                      ),
+                    ...after,
+                  ],
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: side),
+            child: folded,
+          ),
         ],
         ChipLine(:final before, :final after, :final side) => [
           SingleChildScrollView(
@@ -275,7 +362,9 @@ class _FoldoutChipsState() extends State<FoldoutChips> {
 
 class const _Chip({
   required final IconData? leading,
-  required final String label,
+
+  /// Null: the icon alone.
+  required final String? label,
 
   /// Names the chip apart from the option of the same name.
   required final String semanticsLabel,
@@ -285,6 +374,7 @@ class const _Chip({
   required final bool open,
   required final bool changed,
   required final VoidCallback onTap,
+  final bool arrow = true,
   super.key,
 }) extends StatelessWidget {
   @override
@@ -341,15 +431,21 @@ class const _Chip({
               Icon(autoMark, size: 18, color: t.accent)
             else if (leading != null)
               Icon(leading, size: 20),
-            Flexible(
-              child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
-            ),
-            AnimatedRotation(
-              turns: open ? 0.5 : 0,
-              duration: hlMotion(context, HlDuration.short),
-              curve: HlEasing.standard,
-              child: const Icon(Icons.arrow_drop_down, size: 20),
-            ),
+            if (label case final label?)
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            if (arrow)
+              AnimatedRotation(
+                turns: open ? 0.5 : 0,
+                duration: hlMotion(context, HlDuration.short),
+                curve: HlEasing.standard,
+                child: const Icon(Icons.arrow_drop_down, size: 20),
+              ),
           ],
         ),
       ),
@@ -393,6 +489,7 @@ class const _StoreOptions({
   required final ValueChanged<String?> onSelect,
   required final Future<Store?> Function(String name)? onCreate,
   required final StoreChains? chains,
+  required final bool inLine,
 }) extends StatefulWidget {
   @override
   State<_StoreOptions> createState() => _StoreOptionsState();
@@ -524,7 +621,7 @@ class _StoreOptionsState() extends State<_StoreOptions> {
     final chains = w.chains;
     final asking = _asking;
     return Padding(
-      padding: const EdgeInsets.only(top: 10),
+      padding: EdgeInsets.only(top: w.inLine ? 4 : 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         spacing: 6,
@@ -535,38 +632,34 @@ class _StoreOptionsState() extends State<_StoreOptions> {
               onChanged: (_) => setState(() {}),
               onSubmitted: _submitSearch,
             ),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: [
-              if (query.isEmpty)
+          _OptionsWrap(inLine: w.inLine, [
+            if (query.isEmpty)
+              OptionChip(
+                key: const ValueKey('store-option-none'),
+                leading: const Icon(Icons.storefront_outlined, size: 22),
+                label: w.noStoreLabel,
+                selected: w.storeId == null && !w.undecided,
+                onTap: () => w.onPick(null),
+              ),
+            for (final s in w.catalog.stores)
+              if (nameKey(s.name).contains(query))
                 OptionChip(
-                  key: const ValueKey('store-option-none'),
-                  leading: const Icon(Icons.storefront_outlined, size: 22),
-                  label: w.noStoreLabel,
-                  selected: w.storeId == null && !w.undecided,
-                  onTap: () => w.onPick(null),
+                  key: ValueKey('store-option-${s.id}'),
+                  label: s.name,
+                  selected: s.id == w.storeId,
+                  onTap: () => w.onPick(s.id),
                 ),
-              for (final s in w.catalog.stores)
-                if (nameKey(s.name).contains(query))
-                  OptionChip(
-                    key: ValueKey('store-option-${s.id}'),
-                    label: s.name,
-                    selected: s.id == w.storeId,
-                    onTap: () => w.onPick(s.id),
-                  ),
-              if (w.onCreate != null && naming == null && asking == null)
-                OptionChip(
-                  key: const ValueKey('store-option-new'),
-                  focusNode: _newOption,
-                  leading: const Icon(Icons.add, size: 22),
-                  label: l10n.storeNew,
-                  semanticsLabel: l10n.storeNewLabel,
-                  selected: false,
-                  onTap: () => _startNaming(_search.text),
-                ),
-            ],
-          ),
+            if (w.onCreate != null && naming == null && asking == null)
+              OptionChip(
+                key: const ValueKey('store-option-new'),
+                focusNode: _newOption,
+                leading: const Icon(Icons.add, size: 22),
+                label: l10n.storeNew,
+                semanticsLabel: l10n.storeNewLabel,
+                selected: false,
+                onTap: () => _startNaming(_search.text),
+              ),
+          ]),
           if (naming != null)
             StoreNameField(
               initial: naming,
@@ -650,15 +743,69 @@ class const _SearchField({
   }
 }
 
-class const _Options(final List<Widget> options) extends StatelessWidget {
+/// Options on lines of their own, or with [inLine] in one line that
+/// scrolls sideways, opened with the selected one in view.
+class const _OptionsWrap(
+  final List<OptionChip> options, {
+  required final bool inLine,
+}) extends StatefulWidget {
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(top: 10),
-    child: SizedBox(
-      width: double.infinity,
-      child: Wrap(spacing: 6, runSpacing: 6, children: options),
-    ),
-  );
+  State<_OptionsWrap> createState() => _OptionsWrapState();
+}
+
+class _OptionsWrapState() extends State<_OptionsWrap> {
+  final _selected = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.inLine) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final option = _selected.currentContext;
+        if (!mounted || option == null) {
+          return;
+        }
+        if (option.findRenderObject() case final box?) {
+          // At once: the line opens with it in view.
+          Scrollable.maybeOf(
+            option,
+            axis: Axis.horizontal,
+          )?.position.ensureVisible(box, alignment: 0.5);
+        }
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final options = widget.options;
+    if (!widget.inLine) {
+      return SizedBox(
+        width: double.infinity,
+        child: Wrap(spacing: 6, runSpacing: 6, children: options),
+      );
+    }
+    // An option is never wider than the line: a long store name at a large
+    // text size ends in an ellipsis instead of running off both edges.
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        key: const ValueKey('options-line'),
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          spacing: 6,
+          children: [
+            for (final option in options)
+              ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: constraints.maxWidth),
+                child: option.selected
+                    ? KeyedSubtree(key: _selected, child: option)
+                    : option,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 /// A pick among options: honey with the navy contour when [selected], a

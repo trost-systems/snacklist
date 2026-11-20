@@ -82,6 +82,7 @@ class AddSheetCubit(
   bool Function() onDeviceCatalog = _off,
   CatalogIndex Function() catalogIndex = _bundled,
   bool Function() addFeedback = _off,
+  bool Function() compact = _off,
   Duration detailsPause = const Duration(milliseconds: 500),
 }) extends Cubit<AddSheetState> {
   this : super(const AddSheetState());
@@ -94,6 +95,7 @@ class AddSheetCubit(
   final _stableRows = stableRows;
   final _onDeviceCatalog = onDeviceCatalog;
   final _addFeedback = addFeedback;
+  final _compact = compact;
   final _detailsPause = detailsPause;
 
   /// The catalog the device parses and guesses with: the bundled one with
@@ -112,6 +114,10 @@ class AddSheetCubit(
 
   /// Whether the flag `add-feedback-list` is on now.
   bool get addFeedback => _addFeedback();
+
+  /// Whether the flag `add-sheet-compact` (job 322, AS1) is on now; it
+  /// builds on [addFeedback] and counts only with it.
+  bool get compact => addFeedback && _compact();
 
   final _cache = <String, List<Suggestion>>{};
   Timer? _typing;
@@ -394,7 +400,7 @@ class AddSheetCubit(
   void undo() {
     if (state.added case Added(:final item)) {
       _details?.cancel();
-      _list.undoAdd(item.id);
+      _list.delete(item.id);
       emit(_with(added: () => null, unsaved: const ItemChanges()));
     }
   }

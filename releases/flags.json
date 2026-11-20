@@ -52,6 +52,10 @@
       "rollout": "full",
       "note": "while the add sheet is open the list behind it shows its items without store and category headings and ends in a Just added section with each add, and slides back into stores and categories when the sheet closes; after an add the sheet shows the item's details (amount, brand, details, store, category) until the next letter, store and category in its one sideways line, the list's top bar away while the sheet is open (job 288); a thin line above the field while suggestions load, older ones dimmed; only while the PostHog flag add-feedback-list is on (job 276)"
     },
+    "add-sheet-compact": {
+      "rollout": "off",
+      "note": "AS1, the compact add sheet on top of add-feedback-list (no close key, only the grab handle; after an add no Added note or Undo but one row of chips for amount, store, category and details, whose options fold out as one sideways line; the sheet as tall as its content; the list behind it only the last two adds; a swipe down, a tap beside it, the back key or Enter in the empty field closes it) shows only while the PostHog flag add-sheet-compact is on (job 322); on for Peter and the testers"
+    },
     "display-name": {
       "rollout": "full",
       "note": "the name step after sign-in (Wie sollen wir dich nennen?, prefilled from Google or Apple, required before a household is created or joined, once with Jetzt nicht for members whose name is still their e-mail prefix) and Konto > Dein Name show only while the PostHog flag display-name is on (job 297)"

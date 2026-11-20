@@ -48,11 +48,14 @@ typedef ListFrame = ({int columns, double side, double columnWidth});
 /// The list behind the open add sheet (flag `add-feedback-list`, job 276):
 /// its items in walk order without store or category headings, then the
 /// [added] ones under „Gerade hinzugefügt“, the last of them just above the
-/// sheet, [sheetExtent] tall.
+/// sheet, [sheetExtent] tall. With [lastTwo] (flag `add-sheet-compact`,
+/// job 322) only the last two of [added] still on the list show, without
+/// the heading, right above the sheet.
 @immutable
 class const BehindSheet({
   required final List<String> added,
   required final ValueListenable<double> sheetExtent,
+  final bool lastTwo = false,
 });
 
 /// How long the list takes between its stores and categories and the flat
@@ -643,6 +646,7 @@ class _ShoppingListViewState()
               claimsOf,
               prices: prices,
               added: behind.added,
+              lastTwo: behind.lastTwo,
             )
           : _entries(
               run,
@@ -668,7 +672,45 @@ class _ShoppingListViewState()
     // Every store empty: no section shows, the empty list says so. Alone,
     // it is centred in the room above the add field; with recently used
     // items it stays on top, so their tile shows below it.
-    final body = behind != null
+    final body = behind != null && behind.lastTwo
+        // Down on the sheet's top edge, also when they are all there is.
+        ? ValueListenableBuilder(
+            valueListenable: behind.sheetExtent,
+            builder: (context, extent, _) => SliverLayoutBuilder(
+              builder: (context, constraints) => SliverToBoxAdapter(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: math.max(
+                      0,
+                      constraints.viewportMainAxisExtent -
+                          constraints.precedingScrollExtent -
+                          _sheetRoom(extent),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsetsDirectional.only(
+                      end: math.max(0, width - 2 * side - frame.columnWidth),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: _flatEntries(
+                        shown,
+                        state,
+                        folded,
+                        fresh,
+                        claimsOf,
+                        prices: prices,
+                        added: behind.added,
+                        lastTwo: true,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          )
+        : behind != null
         // One column over the sheet's, which stands in the first one.
         ? SliverPadding(
             padding: EdgeInsetsDirectional.only(
@@ -741,11 +783,13 @@ class _ShoppingListViewState()
           padding: EdgeInsets.symmetric(horizontal: side),
           sliver: SliverMainAxisGroup(
             slivers: [
-              const SliverToBoxAdapter(child: OpenAppSlot()),
-              const SliverToBoxAdapter(child: ListHints()),
-              const SliverToBoxAdapter(child: ChainCard()),
-              SliverToBoxAdapter(child: listParts(context).tripEnded()),
-              const SliverToBoxAdapter(child: SizedBox(height: 4)),
+              if (!(behind?.lastTwo ?? false)) ...[
+                const SliverToBoxAdapter(child: OpenAppSlot()),
+                const SliverToBoxAdapter(child: ListHints()),
+                const SliverToBoxAdapter(child: ChainCard()),
+                SliverToBoxAdapter(child: listParts(context).tripEnded()),
+                const SliverToBoxAdapter(child: SizedBox(height: 4)),
+              ],
               body,
               // Without the flag the screen shows the total in a bar at the
               // bottom and each store's at its section's end.
@@ -784,9 +828,8 @@ class _ShoppingListViewState()
             null => SizedBox(height: bottom),
             BehindSheet(:final sheetExtent) => ValueListenableBuilder(
               valueListenable: sheetExtent,
-              builder: (context, extent, _) => SizedBox(
-                height: MediaQuery.paddingOf(context).bottom + extent + 4,
-              ),
+              builder: (context, extent, _) =>
+                  SizedBox(height: _sheetRoom(extent)),
             ),
           },
         ),
@@ -794,6 +837,11 @@ class _ShoppingListViewState()
     );
     return glide ? GlideScope(glides: _glides, child: scrollView) : scrollView;
   }
+
+  /// The room the open sheet, [extent] tall, and the add bar under it take
+  /// at the list's end.
+  double _sheetRoom(double extent) =>
+      MediaQuery.paddingOf(context).bottom + extent + 4;
 
   /// A recently used item as the list's own row, icon included, faded: a
   /// tap puts it back on the list. The row's own gestures are off (no
@@ -873,6 +921,7 @@ class _ShoppingListViewState()
     String? Function(Item item) claimsOf, {
     required bool prices,
     required List<String> added,
+    bool lastTwo = false,
   }) {
     final hidden = {
       for (final section in run)
@@ -899,6 +948,10 @@ class _ShoppingListViewState()
           rest.add(entry);
         }
       }
+    }
+    if (lastTwo) {
+      final shown = [for (final id in added) ?adds[id]];
+      return shown.sublist(math.max(0, shown.length - 2));
     }
     const heading = ValueKey('just-added');
     return [

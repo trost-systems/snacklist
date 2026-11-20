@@ -106,6 +106,8 @@ class const ShoppingList({
                 context.read<CatalogCubit?>()?.state ?? CatalogIndex.bundled,
             addFeedback: () =>
                 context.read<Flags?>()?.isOn(addFeedbackListFlag) ?? false,
+            compact: () =>
+                context.read<Flags?>()?.isOn(addSheetCompactFlag) ?? false,
           ),
         ),
       ],
@@ -417,7 +419,13 @@ class _ShoppingListState() extends State<_ShoppingList> {
   }
 
   Future<void> _submit() async {
-    _afterAdd(await context.read<AddSheetCubit>().takeFirst());
+    final sheet = context.read<AddSheetCubit>();
+    // Compact (job 322): Enter in the empty field is done adding.
+    if (sheet.compact && sheet.state.open && _input.text.trim().isEmpty) {
+      _close();
+      return;
+    }
+    _afterAdd(await sheet.takeFirst());
   }
 
   void _afterAdd(AddResult? result) {
@@ -482,6 +490,12 @@ class _ShoppingListState() extends State<_ShoppingList> {
     final session = context.select<AddSheetCubit, List<String>?>(
       (c) => addFeedback ? c.state.session : null,
     );
+    // AddSheetCubit.compact's rule, read where a flag change rebuilds.
+    final compact =
+        addFeedback &&
+        context.select<Flags?, bool>(
+          (flags) => flags?.isOn(addSheetCompactFlag) ?? false,
+        );
     return ReviewPromptTrigger(
       cubit: context.read<ListCubit>(),
       listening: _listening,
@@ -577,6 +591,7 @@ class _ShoppingListState() extends State<_ShoppingList> {
                                       ? BehindSheet(
                                           added: session,
                                           sheetExtent: _sheetExtent,
+                                          lastTwo: compact,
                                         )
                                       : null,
                                   header: _Header(

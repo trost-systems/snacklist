@@ -1227,15 +1227,6 @@ void main() {
         expect(sent.single.url.queryParameters['id'], 'eq.i1');
       });
 
-      test("the add sheet's undo deletes through undo_add", () async {
-        final repo = server((_) => (200, null));
-        expect(await repo.send(const DeleteItem('i1', undoAdd: true)), {
-          'i1': null,
-        });
-        expect(route(sent.single), 'POST /rest/v1/rpc/undo_add');
-        expect(jsonDecode(sent.single.body), {'p_item': 'i1'});
-      });
-
       test('an add names its list; one queued before lists names none, so '
           'the server takes the first (job 169b K)', () async {
         final repo = server((_) => (200, [row('item-1')]));
