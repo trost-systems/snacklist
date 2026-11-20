@@ -1,5 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:family_groceries/analytics/analytics.dart';
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/device_cache.dart';
 import 'package:family_groceries/core/localizations.dart';
 import 'package:family_groceries/core/notices.dart';
@@ -12,6 +13,7 @@ import 'package:family_groceries/log/model.dart';
 import 'package:family_groceries/log/trip_repository.dart';
 import 'package:family_groceries/purchases/premium_server.dart';
 import 'package:family_groceries/purchases/purchase_repository.dart';
+import 'package:family_groceries/purchases/store_prices.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/shell/router.dart' show premiumPath;
 import 'package:flutter/foundation.dart';
@@ -27,7 +29,11 @@ import '../list/fake_repository.dart';
 import '../list/memory_cache.dart';
 import '../more/more_harness.dart' show FakeSession;
 import '../purchases/fakes.dart'
-    show FakePremiumServer, FakePurchaseRepository, TestPurchases;
+    show
+        FakeEntitlementsSource,
+        FakePremiumServer,
+        FakePurchaseRepository,
+        TestPurchases;
 import 'fakes.dart';
 
 /// Records what the app sends.
@@ -54,6 +60,9 @@ typedef History = ({
   DeviceCache cache,
   Tracked analytics,
   GoRouter router,
+
+  /// With `sells`, Peter's purchases and premium over the fakes.
+  TestPurchases? purchases,
 });
 
 /// The history screen as the Verlauf tab has it, on Thursday 12 November
@@ -79,7 +88,16 @@ Future<History> pumpHistory(
 
   /// Whether the tab is on screen; the shell keeps it alive behind others.
   ValueListenable<bool>? shown,
+
+  /// The PostHog flags that are on.
+  Set<String> flags = const {},
+
+  /// The real Premium page behind the lock: Peter in Zuhause, free
+  /// (`premium` false), with a store that sells and his Entitlements, whose
+  /// changes Verlauf follows. Without it there are no Entitlements.
+  bool sells = false,
 }) async {
+  assert(!sells || noSale == null, 'a store that sells has no NoSale');
   tester.view
     ..devicePixelRatio = 1
     ..physicalSize = size;
@@ -117,7 +135,40 @@ Future<History> pumpHistory(
     ],
   );
   addTearDown(router.dispose);
+  TestPurchases? paywall;
   Widget purchasesFor(Widget child) {
+    if (sells) {
+      final session = FakeSession();
+      whenListen(
+        session,
+        const Stream<Session>.empty(),
+        initialState: const InHousehold(
+          'peter',
+          Household(id: 'home', name: 'Zuhause'),
+          [Household(id: 'home', name: 'Zuhause')],
+        ),
+      );
+      final purchases = paywall = TestPurchases(
+        session: session,
+        source: FakeEntitlementsSource(unlockedNow: premium),
+      );
+      addTearDown(purchases.close);
+      return MultiRepositoryProvider(
+        providers: [
+          RepositoryProvider<StorePriceReader>.value(
+            value: purchases.storePrices,
+          ),
+        ],
+        child: MultiBlocProvider(
+          providers: [
+            BlocProvider<SessionCubit>.value(value: session),
+            BlocProvider.value(value: purchases.entitlements),
+            BlocProvider.value(value: purchases.purchases),
+          ],
+          child: child,
+        ),
+      );
+    }
     if (noSale == null) {
       return child;
     }
@@ -145,8 +196,11 @@ Future<History> pumpHistory(
           value: premiumServer ?? FakePremiumServer(),
         ),
       ],
-      child: BlocProvider.value(
-        value: list,
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: list),
+          BlocProvider(create: (_) => Flags(forced: flags)),
+        ],
         child: purchasesFor(
           MaterialApp.router(
             routerConfig: router,
@@ -165,5 +219,11 @@ Future<History> pumpHistory(
     ),
   );
   await tester.pumpAndSettle();
-  return (trips: fake, cache: device, analytics: analytics, router: router);
+  return (
+    trips: fake,
+    cache: device,
+    analytics: analytics,
+    router: router,
+    purchases: paywall,
+  );
 }

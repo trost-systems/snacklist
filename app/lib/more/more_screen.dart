@@ -22,6 +22,7 @@ import 'package:family_groceries/household/invites_page.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/more/app_update.dart';
 import 'package:family_groceries/purchases/entitlements.dart';
+import 'package:family_groceries/purchases/premium_dialogs.dart';
 import 'package:family_groceries/purchases/premium_page_cubit.dart';
 import 'package:family_groceries/purchases/premium_screen.dart';
 import 'package:family_groceries/purchases/premium_server.dart';
@@ -224,6 +225,7 @@ enum _Item(final IconData icon, final String key, final _Tint tint) {
   startTrip(Icons.shopping_cart_outlined, 'more-start-trip', _Tint.honey),
   account(Icons.manage_accounts_outlined, 'menu-account', _Tint.mint),
   premium(Icons.favorite_outline, 'more-lifetime', _Tint.honey),
+  manage(Icons.autorenew, 'more-manage-subscription', _Tint.honey),
   household(Icons.home_outlined, 'more-household', _Tint.honey),
   invite(Icons.person_add_outlined, 'more-invite', _Tint.honey),
   archived(Icons.inventory_2_outlined, 'more-archived', _Tint.honey),
@@ -245,7 +247,7 @@ enum _Item(final IconData icon, final String key, final _Tint tint) {
   /// stands alone at the end.
   static const groups = <List<_Item>>[
     [startTrip],
-    [account, premium],
+    [account, premium, manage],
     [household, invite, archived],
     [access],
     [settings, usageData],
@@ -285,6 +287,9 @@ class _MoreListState() extends State<_MoreList> {
     final unlocked = context.select<Entitlements, bool>(
       (e) => e.has(Entitlement.premium),
     );
+    // Not behind a flag: a subscriber's way to cancel must not wait for
+    // flags to load.
+    final yearlyRuns = context.select<Entitlements, bool>((e) => e.yearlyRuns);
     final noSale = context.select<PurchaseCubit, NoSale?>(
       (c) => c.state.noSale,
     );
@@ -322,6 +327,7 @@ class _MoreListState() extends State<_MoreList> {
         bool shown(_Item item) => switch (item) {
           _Item.startTrip => canStartTrip,
           _Item.premium => premium,
+          _Item.manage => yearlyRuns,
           _Item.household || _Item.invite => household != null && !declutter,
           _Item.archived => widget.showArchived,
           _Item.help => widget.showHelp,
@@ -399,6 +405,16 @@ class _MoreListState() extends State<_MoreList> {
         label: l10n.premiumTitle,
         selected: selected == MorePage.premium,
         onTap: () => go(premiumPath),
+      ),
+      // The store's own sheet or page; the web names both stores' pages.
+      // RevenueCat stays off (H-67).
+      _Item.manage => _Row(
+        item,
+        label: l10n.premiumManage,
+        trailing: _Trailing.external,
+        onTap: () => unawaited(
+          kIsWeb ? showManageOnWeb(context) : openManageSubscriptions(context),
+        ),
       ),
       _Item.household => _Row(
         item,

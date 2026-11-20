@@ -1,3 +1,4 @@
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/language.dart';
 import 'package:family_groceries/core/legal_links.dart';
 import 'package:family_groceries/purchases/premium_server.dart';
@@ -1439,6 +1440,142 @@ void main() {
         findsOneWidget,
       );
       debugDefaultTargetPlatformOverride = null;
+    });
+  });
+
+  group('paywall-cs1 (job 327)', () {
+    const cs1 = {paywallCs1Flag};
+    const all = {paywallCs1Flag, publicApiFlag, tripModeFlag, groceryLogFlag};
+    const planned = 'Nach jedem Einkauf sehen, was geplant war und was dazukam';
+    const history = 'Alle Einkäufe im Verlauf, nicht nur die letzten 4 Wochen';
+
+    /// What CS1 keeps free, and what Lifetime never promises, appear
+    /// nowhere on the page.
+    void claimsNothingFree() {
+      expect(
+        find.descendant(
+          of: key('lifetime-screen'),
+          matching: find.textContaining(
+            RegExp(
+              'barcode|unbegrenzt|unlimited|Preis eintragen|'
+              'Einkaufssumme ist Premium',
+              caseSensitive: false,
+            ),
+            findRichText: true,
+          ),
+        ),
+        findsNothing,
+      );
+    }
+
+    testWidgets("the hero says Premium is the user's own, the benefits in "
+        'order, and under the plans whom a purchase unlocks', (tester) async {
+      await openLifetime(tester, flags: all);
+      expect(find.text('Mehr aus deiner Liste machen.'), findsOneWidget);
+      expect(
+        find.text(
+          'Snacklist Premium gehört dir und gilt in jedem Haushalt, in dem du '
+          'bist. Liste, Preise und Einkaufssumme bleiben für alle kostenlos.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Einer kauft. Alle haben es.'), findsNothing);
+      final benefits = [
+        'KI-Assistenten, die MCP unterstützen, mit eurer Liste verbinden',
+        'Eigene Automationen mit der Snacklist API',
+        planned,
+        history,
+      ];
+      final tops = [
+        for (final text in benefits) tester.getTopLeft(find.text(text)).dy,
+      ];
+      expect(tops, [...tops]..sort(), reason: 'in this order');
+      expect(key('premium-household'), findsNothing);
+      expect(
+        find.descendant(
+          of: key('premium-for-you'),
+          matching: find.text(
+            'Premium gehört dann dir und gilt in jedem Haushalt, in dem du '
+            'bist, auch in künftigen. Andere Mitglieder bekommen es dadurch '
+            'nicht.',
+          ),
+        ),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Zuhause'), findsNothing);
+      claimsNothingFree();
+      await pickLifetime(tester);
+      expect(find.text('Einmal zahlen, kein Abo.'), findsOneWidget);
+      claimsNothingFree();
+    });
+
+    testWidgets('planned and history only with their flags', (tester) async {
+      await openLifetime(tester, flags: cs1);
+      expect(
+        find.text(
+          'KI-Assistenten, die MCP unterstützen, mit eurer Liste verbinden',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text(planned), findsNothing);
+      expect(find.text(history), findsNothing);
+      expect(
+        find.text('Eigene Automationen mit der Snacklist API'),
+        findsNothing,
+      );
+    });
+
+    testWidgets('in English', (tester) async {
+      await openLifetime(tester, flags: all, language: AppLanguage.en);
+      expect(find.text('Get more out of your list.'), findsOneWidget);
+      expect(
+        find.text('After every trip, see what was planned and what got added'),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: key('premium-for-you'),
+          matching: find.textContaining('Premium is then yours'),
+        ),
+        findsOneWidget,
+      );
+      claimsNothingFree();
+    });
+
+    testWidgets('checking and the web say it per user', (tester) async {
+      await openLifetime(
+        tester,
+        flags: cs1,
+        entitlements: FakeEntitlementsSource()..offline = true,
+      );
+      expect(
+        find.text('Wir prüfen, ob du Snacklist Premium schon hast …'),
+        findsOneWidget,
+      );
+      await tester.pumpWidget(const SizedBox());
+      await openLifetime(
+        tester,
+        flags: cs1,
+        store: FakePurchaseRepository(
+          withoutStore: const PurchasesUnsupported(),
+        ),
+      );
+      expect(
+        find.text(
+          'Snacklist Premium kaufst du in der iPhone- oder Android-App. '
+          'Danach hast du es auch hier.',
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('flag off: the household page as before', (tester) async {
+      await openLifetime(tester, flags: {tripModeFlag, groceryLogFlag});
+      expect(find.text('Einer kauft. Alle haben es.'), findsOneWidget);
+      expect(key('premium-household'), findsOneWidget);
+      expect(key('premium-for-you'), findsNothing);
+      expect(find.text(planned), findsNothing);
+      expect(find.text(history), findsNothing);
     });
   });
 }

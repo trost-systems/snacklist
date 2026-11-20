@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/design/pointy_hex.dart';
 import 'package:family_groceries/design/sticker.dart';
 import 'package:family_groceries/design/tokens.g.dart';
@@ -8,14 +11,16 @@ import 'package:family_groceries/purchases/premium_server.dart';
 import 'package:family_groceries/purchases/purchase_cubit.dart';
 import 'package:family_groceries/purchases/purchase_repository.dart'
     show NoSale;
-import 'package:family_groceries/shell/router.dart' show premiumPath;
+import 'package:family_groceries/shell/router.dart'
+    show premiumPath, showPaywall;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// What a Free summary shows in place of the planned and extra rows (job
 /// 234, PB3a, TM2's card, no blur). The button only where More lists
-/// Snacklist Premium, as in Verlauf's locked row.
+/// Snacklist Premium, as in Verlauf's locked row; with [paywallCs1Flag]
+/// always, opening the page over the summary.
 class const TripLockedCard({super.key}) extends StatefulWidget {
   @override
   State<TripLockedCard> createState() => _TripLockedCardState();
@@ -36,14 +41,15 @@ class _TripLockedCardState() extends State<TripLockedCard> {
     final noSale = context.select<PurchaseCubit?, NoSale?>(
       (c) => c?.state.noSale,
     );
+    final cs1 = context.select<Flags?, bool>(
+      (flags) => flags?.isOn(paywallCs1Flag) ?? false,
+    );
     return FutureBuilder(
       future: _offer,
       builder: (context, snapshot) {
-        final opens = premiumListed(
-          held: held,
-          offer: snapshot.data,
-          noSale: noSale,
-        );
+        final opens =
+            cs1 ||
+            premiumListed(held: held, offer: snapshot.data, noSale: noSale);
         return HlSticker(
           key: const ValueKey('trip-locked'),
           depth: StickerDepth.s,
@@ -89,12 +95,18 @@ class _TripLockedCardState() extends State<TripLockedCard> {
                     padding: const EdgeInsets.only(top: HlSpace.s2),
                     child: FilledButton(
                       key: const ValueKey('trip-locked-premium'),
-                      onPressed: () => context.go(
-                        Uri(
-                          path: premiumPath,
-                          queryParameters: {'from': PaywallEntry.trip.name},
-                        ).toString(),
-                      ),
+                      onPressed: cs1
+                          ? () => unawaited(
+                              showPaywall(context, PaywallEntry.trip),
+                            )
+                          : () => context.go(
+                              Uri(
+                                path: premiumPath,
+                                queryParameters: {
+                                  'from': PaywallEntry.trip.name,
+                                },
+                              ).toString(),
+                            ),
                       child: Text(l10n.shopLockedButton),
                     ),
                   ),

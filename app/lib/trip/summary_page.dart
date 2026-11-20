@@ -30,6 +30,10 @@ class _TripSummaryPageState() extends State<TripSummaryPage> {
   TripCubit? _trips;
   Future<FinishedTrip>? _fetch;
 
+  /// Premium when [_fetch] was asked: the server withholds the lines
+  /// without it, so Premium arriving asks again.
+  bool? _fetchedHeld;
+
   /// This page's „War geplant“ changes to the server's trip.
   final _marks = <String, bool>{};
 
@@ -96,8 +100,13 @@ class _TripSummaryPageState() extends State<TripSummaryPage> {
     }
   }
 
-  Future<FinishedTrip> _load() =>
-      _fetch ??= context.read<TripSessionRepository>().fetch(widget.id);
+  Future<FinishedTrip> _load({required bool held}) {
+    if (held != _fetchedHeld) {
+      _fetchedHeld = held;
+      _fetch = null;
+    }
+    return _fetch ??= context.read<TripSessionRepository>().fetch(widget.id);
+  }
 
   Future<void> _markFetched(String id, TripLine line, bool planned) async {
     final notices = Notices.of(context);
@@ -173,7 +182,7 @@ class _TripSummaryPageState() extends State<TripSummaryPage> {
       );
     } else {
       body = FutureBuilder(
-        future: _load(),
+        future: _load(held: held),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return _Failed(

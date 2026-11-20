@@ -280,6 +280,14 @@ class Entitlements(
     EntitlementsUnknown() => false,
   };
 
+  /// A yearly plan runs: premium comes from one, or one is still billed
+  /// (also next to Lifetime). Then the Premium page and More show where it
+  /// is managed and cancelled (H-83).
+  bool get yearlyRuns => switch (premium) {
+    ActivePremium(source: PremiumSource.yearly) => true,
+    _ => yearlyBilled,
+  };
+
   /// Whether to offer [plan] of [entitlement] for sale: only when neither the
   /// household nor the user is known to have it. Without premium both plans;
   /// with an active yearly plan only Lifetime (the upgrade; never a second

@@ -1899,3 +1899,11 @@ docs/done/325-offline-on-every-start.md.
 
 **Not verified.** On a real iPhone (no device here). TestFlight: the next green main build carries it.
 No flag.
+
+## Job 327: paywall copy for CS1, the locks open it, manage or cancel from Mehr
+
+Behind the flag `paywall-cs1` (off): the Premium page speaks of the buyer's own Premium in every household and lists
+AI assistants, planned-vs-bought and full history; Verlauf's lock and the trip summary's locked card open it over the
+screen, ✕ goes back, a purchase closes it and unlocks both. Without a flag: Mehr's „Abo verwalten oder kündigen“ for
+anyone with a running yearly plan (StoreKit sheet, Play deep link, both links on the web). Waits for Legal's GO on the
+new strings. Details: [docs/done/327.md](docs/done/327.md).

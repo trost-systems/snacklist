@@ -812,6 +812,8 @@ Since 10 November 2026 the skill is called Snacklist, with the invocation „sna
 
 **Note.** The privacy policy explains the free unlock in the section „Snacklist Premium in der Beta“ (snacklist.app/datenschutz#premium-beta): testers and Apple's and Google's app review get Premium for free until the team ends it, and it never turns into a paid purchase.
 
+**Built, not shown to users yet.** Three changes wait for the legal review and the launch. (1) A new text for the Premium page: Premium belongs to the person who buys it and works in every household they are in („Snacklist Premium gehört dir und gilt in jedem Haushalt, in dem du bist. Liste, Preise und Einkaufssumme bleiben für alle kostenlos.“, EN "Snacklist Premium is yours and works in every household you're in. The list, prices and shopping totals stay free for everyone."), and it lists AI assistants, the planned-and-added comparison after a trip and all trips in „Verlauf“. (2) The two locks then open the Premium page; closing it goes back to where you were, and after a purchase it closes by itself and the lock is gone. (3) Anyone paying for the yearly plan gets the row „Abo verwalten oder kündigen“ (EN "Manage or cancel subscription") in „Mehr“, which opens Apple's or Google's subscription settings. This one is in the app already, but nobody pays for a plan yet, so nobody sees it. Don't write about any of the three until Peter says go.
+
 **Never claim.**
 - That Premium can be bought, or any price, plan or discount (yearly and Lifetime are planned, not for sale).
 - That Siri, Alexa or AI assistants need Premium today (they do not), that AI assistants stay free after the public launch (they become part of Premium), or that Siri or Alexa ever need it (both stay free).
@@ -826,4 +828,4 @@ Since 10 November 2026 the skill is called Snacklist, with the invocation „sna
 
 **Unverified.** Real store purchases (no store test account was available). Whether the usage data ever records a visit to the buy page in the released app (it should not).
 
-**Last verified.** 19 November 2026, code version af0287cf, in the web app (German); the two locks seen in the web app: a household without Premium gets the locked 40-day-old trip in „Verlauf“ and the locked card after a trip.
+**Last verified.** 20 November 2026, job 327 branch at b9f360f3, in the web app with the flag `paywall-cs1` on (German, English, 200 % text): both locks open the page and close back to where they were, a yearly purchase (sent as the store would) closes it by itself and unlocks Verlauf and the summary, and „Abo verwalten oder kündigen“ shows in „Mehr“ for the yearly buyer only, with the App Store and Google Play links on the web. Before that: 19 November 2026, code version af0287cf, in the web app (German); the two locks seen in the web app: a household without Premium gets the locked 40-day-old trip in „Verlauf“ and the locked card after a trip.

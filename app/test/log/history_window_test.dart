@@ -1,3 +1,4 @@
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/purchases/purchase_repository.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -282,5 +283,110 @@ void main() {
     expect(key('log-trip-${saved.id}'), findsNothing);
     await tester.scrollUntilVisible(key('log-journal-locked'), 100);
     expect(find.text('1 älterer Einkauf'), findsOneWidget);
+  });
+
+  group('paywall-cs1 (job 327)', () {
+    Finder pageList() => find.descendant(
+      of: key('lifetime-screen'),
+      matching: find.byType(Scrollable),
+    );
+
+    Future<void> openFromLock(WidgetTester tester) async {
+      await tester.scrollUntilVisible(key('log-journal-locked'), 100);
+      await tester.ensureVisible(key('log-locked-premium'));
+      await tester.pumpAndSettle();
+      await tester.tap(key('log-locked-premium'));
+      await tester.pumpAndSettle();
+    }
+
+    for (final offer in [true, false]) {
+      testWidgets('offer ${offer ? 'on' : 'off'}: the locked row opens the '
+          'Premium page over Verlauf; closing it shows Verlauf again', (
+        tester,
+      ) async {
+        final history = await pumpHistory(
+          tester,
+          trips: all,
+          premium: false,
+          premiumServer: FakePremiumServer(offer: offer),
+          flags: {paywallCs1Flag},
+          sells: true,
+        );
+        await openFromLock(tester);
+        expect(key('lifetime-screen'), findsOneWidget);
+        expect(key('log-journal'), findsNothing, reason: 'covered');
+        expect(find.textContaining('premium-page:'), findsNothing);
+        expect(history.router.state.uri.path, '/', reason: 'Verlauf stays');
+        expect(
+          [
+            for (final (event, properties) in history.analytics.events)
+              '$event $properties',
+          ],
+          offer ? ['paywall_viewed {entry_point: history}'] : isEmpty,
+          reason: 'sent only where the page offers a plan',
+        );
+
+        await tester.tap(key('paywall-close'));
+        await tester.pumpAndSettle();
+        expect(key('lifetime-screen'), findsNothing);
+        expect(key('log-journal-locked'), findsOneWidget);
+        expect(find.text('2 ältere Einkäufe'), findsOneWidget);
+        expect(history.router.state.uri.path, '/');
+      });
+    }
+
+    testWidgets('a purchase from the paywall closes it, and Verlauf shows the '
+        'older trips without the lock', (tester) async {
+      final history = await pumpHistory(
+        tester,
+        trips: all,
+        premium: false,
+        flags: {paywallCs1Flag},
+        sells: true,
+        size: const Size(390, 1400),
+      );
+      await openFromLock(tester);
+      await tester.scrollUntilVisible(
+        key('premium-buy-yearly'),
+        200,
+        scrollable: pageList(),
+      );
+      await tester.tap(key('premium-buy-yearly'));
+      await tester.pump();
+      final purchases = history.purchases!;
+      expect(purchases.repository.calls, ['buy peter yearly']);
+      expect(key('lifetime-screen'), findsOneWidget, reason: 'unlocking');
+
+      // The webhook's row arrives; the server then reads the whole history.
+      history.trips.premium = true;
+      purchases.unlock();
+      await tester.pumpAndSettle();
+      expect(key('lifetime-screen'), findsNothing, reason: 'closed by itself');
+      expect(find.text(lockedTitle), findsNothing);
+      await tester.scrollUntilVisible(key('log-trip-${old.id}'), 100);
+      expect(key('log-trip-${justOut.id}'), findsOneWidget);
+    });
+
+    testWidgets("the calendar's hint under a locked month opens it too", (
+      tester,
+    ) async {
+      await pumpHistory(
+        tester,
+        trips: all,
+        premium: false,
+        premiumServer: FakePremiumServer(offer: false),
+        flags: {paywallCs1Flag},
+        sells: true,
+      );
+      await previousMonth(tester);
+      await tester.tap(
+        find.descendant(
+          of: key('log-calendar-locked'),
+          matching: key('log-locked-premium'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(key('lifetime-screen'), findsOneWidget);
+    });
   });
 }

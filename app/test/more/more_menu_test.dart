@@ -5,12 +5,14 @@ import 'package:family_groceries/design/sticker.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/more/app_update.dart';
 import 'package:family_groceries/more/more_screen.dart';
+import 'package:family_groceries/purchases/store_prices.dart';
 import 'package:family_groceries/shell/router.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../analytics/fakes.dart' show MemoryAnalyticsStore, loadedAnalytics;
+import '../purchases/fakes.dart';
 import 'more_harness.dart';
 
 /// The M-P2 menu (job 85): inset groups, the legal rows in their own group,
@@ -498,6 +500,77 @@ void main() {
         findsOneWidget,
       );
       expect(find.byTooltip('Later'), findsOneWidget);
+    });
+  });
+
+  group('Abo verwalten oder kündigen (job 327, no flag)', () {
+    final lifetime = {
+      'kind': 'premium',
+      'source': 'purchase',
+      'premium_source': 'lifetime',
+    };
+    final cases = <(String, FakeEntitlementsSource, bool)>[
+      (
+        'a yearly plan of the household',
+        FakeEntitlementsSource()..rowsNow = [yearlyRow(from: DateTime.now())],
+        true,
+      ),
+      (
+        "the user's own yearly plan",
+        FakeEntitlementsSource()
+          ..rowsNow = []
+          ..userRows['peter'] = [yearlyRow(from: DateTime.now())],
+        true,
+      ),
+      (
+        'Lifetime while a yearly plan still bills',
+        FakeEntitlementsSource()
+          ..rowsNow = [yearlyRow(from: DateTime.now()), lifetime],
+        true,
+      ),
+      ('Free', FakeEntitlementsSource(), false),
+      ('Lifetime', FakeEntitlementsSource()..rowsNow = [lifetime], false),
+      (
+        'a promotional grant',
+        FakeEntitlementsSource()..rowsNow = [promotionalRow()],
+        false,
+      ),
+    ];
+    for (final (name, rows, shown) in cases) {
+      testWidgets('$name: ${shown ? 'shown' : 'not shown'}', (tester) async {
+        await pumpMore(tester, size: tall, entitlements: rows);
+        expect(
+          key('more-manage-subscription'),
+          shown ? findsOneWidget : findsNothing,
+        );
+        if (shown) {
+          expect(
+            groupOf(tester, 'more-manage-subscription'),
+            groupOf(tester, 'menu-account'),
+            reason: 'with Konto and Premium',
+          );
+          expect(find.text('Abo verwalten oder kündigen'), findsOneWidget);
+          expect(
+            icon(tester, 'more-manage-subscription', Icons.open_in_new),
+            isTrue,
+          );
+        }
+      });
+    }
+
+    testWidgets("a tap opens the store's subscription management once, "
+        'without RevenueCat', (tester) async {
+      final more = await pumpMore(
+        tester,
+        size: tall,
+        prices: FakeStorePrices(fakeStorePrices, manages: true),
+        entitlements: FakeEntitlementsSource()
+          ..rowsNow = [yearlyRow(from: DateTime.now())],
+      );
+      await tapKey(tester, 'more-manage-subscription');
+      expect(more.purchases.storePrices.manageCalls, 1);
+      expect(more.purchases.repository.calls, isEmpty);
+      expect(path(more), morePath, reason: 'More stays');
     });
   });
 }
