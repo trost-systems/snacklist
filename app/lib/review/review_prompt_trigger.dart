@@ -107,7 +107,11 @@ class _ReviewPromptTriggerState() extends State<ReviewPromptTrigger> {
         switch (activity) {
           case OwnItemAdded():
             unawaited(prompt.itemAdded());
-          case ItemEdited() || CategoriesReordered() || OwnItemTicked():
+          // A tick after the question left unanswered (its scope went
+          // away): that moment is over.
+          case OwnItemTicked():
+            _parked = false;
+          case ItemEdited() || CategoriesReordered():
             break;
           case TripCompleted(:final ticked):
             unawaited(prompt.tripCompleted());

@@ -370,6 +370,23 @@ void main() {
       expect(review.requests, 0);
     });
 
+    testWidgets('a question that goes unanswered ends the moment at the '
+        'next tick', (tester) async {
+      await pumpTrips(tester);
+      await shop(tester, 3);
+      await question(tester);
+      await idle(tester, const Duration(seconds: 5));
+      // The sheet goes without an answer (the household's scope rebuilt).
+      Navigator.of(tester.element(find.text('answer'))).pop();
+      await tester.pumpAndSettle();
+      trips.asking = false;
+      await shop(tester, 1);
+      await question(tester);
+      await answer(tester, declined: true);
+      await idle(tester, const Duration(seconds: 10));
+      expect(review.requests, 0, reason: 'Nein on an ordinary tick');
+    });
+
     testWidgets('„Ja“ asks nothing: the trip summary will', (tester) async {
       await pumpTrips(tester);
       await shop(tester, 3);

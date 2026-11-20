@@ -16497,3 +16497,20 @@ after a few seconds, and it happens on mobile data, not Wi-Fi.
   change to none.
 - **Overclaims corrected.** DONE_SUMMARY's root cause now says the device path is not pinned;
   FEATURES-FOR-WRITERS no longer says "never" and its Last verified line names the commit.
+
+## Job 326 review 0: the SA3 wiring tested, an unanswered question, and three clarifications
+
+1. **The app-level setbacks have a test of their own.** `app/test/shell/app_review_setbacks_test.dart` pumps the real
+   `App` and checks that a household switch sets `last_setback_at` and a sent bug note sets `last_bug_note_at` (an idea
+   note and a cold start set nothing). Before it, deleting the two listeners in `app.dart` left every test green.
+2. **An unanswered question ends its moment at the next tick.** `TripOnList._ask` returns without an answer when the
+   trip state changed while the sheet was up, so no `QuestionAnswered` came and the parked moment stayed. A later
+   „Nein“ on an ordinary tick would then have asked. The trigger now drops a parked moment on the next own tick.
+3. **SA1 is a check at the fire, not a missing timer start.** The emptied list starts the 3 s as always; `_fire`
+   returns while a trip runs. Only a tap ends a trip, and a tap cancels the timer, so the two read the same.
+4. **ST1 needs the save's answer before the summary is left.** „Fertig“ tapped while the save is still on its way (a
+   slow network) loses the moment, though the save may succeed a second later. Kept: holding the moment for the
+   answer would ask on the list well after the user moved on, and the next finished trip is the next chance.
+5. **„Everything planned bought“ follows the trip's start snapshot, not the „War geplant“ marks.** A mark only adds an
+   extra to the planned part (`countsPlanned`); it cannot take a snapshot item out of it, so a leftover from the
+   start always makes the trip incomplete, whatever the user marks.
