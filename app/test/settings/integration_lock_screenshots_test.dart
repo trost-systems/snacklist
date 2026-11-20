@@ -6,6 +6,7 @@
 //     test/settings/integration_lock_screenshots_test.dart
 import 'dart:io';
 
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/language.dart';
 import 'package:family_groceries/purchases/purchase_repository.dart';
 import 'package:family_groceries/shell/router.dart';
@@ -60,7 +61,7 @@ void main() {
           location: accessPath,
           size: const Size(390, 1400),
           language: AppLanguage.byCode(lang),
-          integrationLock: true,
+          flags: {premiumGateIntegrationsFlag},
           premium: FakePremiumServer(lock: true),
           entitlements: FakeEntitlementsSource(unlockedNow: unlocked),
           store: FakePurchaseRepository(withoutStore: noSale),

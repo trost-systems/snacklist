@@ -5,6 +5,6 @@
   "POSTHOG_HOST": "https://posthog.invalid",
   "LEGAL_DRAFTS": "true",
   "HOUSEHOLD_ARCHIVE": "true",
-  "INTEGRATION_LOCK": "true",
+  "FLAGS_ON": "premium-gate-integrations",
   "ITEM_ICONS_URL": ""
 }

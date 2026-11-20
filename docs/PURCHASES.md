@@ -598,14 +598,19 @@ until Peter says go:
 
 - **Server:** `app_switches.integration_lock` (seeded off). Off, every integration works as it did
   before job 50, for every household. On, the mcp function (tool calls) and the api function
-  refuse a household without premium, as `public.integration_gate(household, integration)` decides with job 49's
-  `household_has_premium` (yearly not ended, Lifetime or a running promotional grant, testers'
-  included; read at request time).
-- **App:** the build define `INTEGRATION_LOCK` (off). On, the integration settings (More ›
-  Zugänge) show a household without premium, while the server switch is on, what Snacklist
+  refuse a caller without premium, as `public.integration_gate(household, integration, user)`
+  decides with job 49's `household_has_premium` or job 185's `user_has_premium` of the caller
+  (yearly not ended, Lifetime or a running promotional grant, testers' included; read at request
+  time). Nothing the app sends counts.
+- **App:** the PostHog flag `premium-gate-integrations` (job 328, off; it replaced the build
+  define `INTEGRATION_LOCK`, so it goes on without a new build). On, the integration settings
+  (More › Zugänge) show a user without premium, while the server switch is on, what Snacklist
   Premium includes, its connections as paused, and a button to the Premium page where this build
   sells (else "Bald verfügbar", on the web job 49's "buy it in the app" note). On in e2e
-  (`app/config/e2e.json`).
+  (`FLAGS_ON` in `app/config/e2e.json`). Off, the app shows nothing of the lock even while the
+  server enforces it, so turn the server switch on first and the flag right after.
+- **Not gated:** „Meine Daten exportieren“ (`export_my_data`, Konto). It is the account's GDPR
+  copy (Art. 12(5), 15, 20), free by law; Premium's "export" means the API and MCP (job 328).
 
 What a locked household gets: an MCP tool call a tool result with `isError: true` and HTTP 200
 (German, or English for a client that prefers it). Nothing is added, queued or kept. OAuth
@@ -642,8 +647,8 @@ its price (docs/ANALYTICS.md).
    texts that call the integrations free are updated (NEEDS_LEAD "Job 50").
 4. The server switch on: `update public.app_switches set enabled = true, changed_at = now() where
    key = 'integration_lock';` (service role, SQL editor). From now on locked households are refused.
-5. The app define on in the next store builds (`--dart-define=INTEGRATION_LOCK=true`), with the
-   changelog hold `integration-lock` released in `releases/flags.json`.
+5. The PostHog flag `premium-gate-integrations` on (installed builds follow; no new build), with
+   the changelog hold `integration-lock` released in `releases/flags.json`.
 
 Rolling back: the server switch off opens every integration at once and hides the app's card in
 every build (the app reads the switch). Testing locally: `update public.app_switches set enabled =

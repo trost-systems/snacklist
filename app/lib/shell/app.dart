@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/core/device_cache.dart';
 import 'package:family_groceries/core/document_language.dart';
-import 'package:family_groceries/core/environment.dart';
 import 'package:family_groceries/core/language.dart';
 import 'package:family_groceries/core/localizations.dart';
 import 'package:family_groceries/core/network.dart';
@@ -155,10 +154,6 @@ class const App({
 
   /// The theme picked there; the device's setting by default.
   final ThemeMode theme = ThemeMode.system,
-
-  /// Whether the integration settings may show the integration lock (the
-  /// `INTEGRATION_LOCK` define, job 50).
-  final bool integrationLock = Environment.integrationLock,
   super.key,
 }) extends StatefulWidget {
   @override
@@ -188,10 +183,7 @@ class _AppState() extends State<App> {
   late final _language = LanguageCubit(widget.cache, widget.language);
   late final _theme = ThemeCubit(widget.cache, widget.theme);
   late final _itemIcons = widget.itemIcons ?? ItemIconsCubit();
-  late final _integrationLock = IntegrationLockCubit(
-    widget.premium,
-    enabled: widget.integrationLock,
-  );
+  late final _integrationLock = IntegrationLockCubit(widget.premium);
 
   /// Built once: a theme change only switches between them.
   final _light = appTheme(Brightness.light);

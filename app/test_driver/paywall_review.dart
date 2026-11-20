@@ -121,9 +121,7 @@ Future<void> main() async {
           ),
           BlocProvider.value(value: purchases.entitlements),
           BlocProvider.value(value: purchases.purchases),
-          BlocProvider.value(
-            value: IntegrationLockCubit(purchases.premium, enabled: false),
-          ),
+          BlocProvider.value(value: IntegrationLockCubit(purchases.premium)),
         ],
         child: MaterialApp.router(
           debugShowCheckedModeBanner: false,

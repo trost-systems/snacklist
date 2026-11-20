@@ -19,21 +19,17 @@ class const ServerLock({
   required final bool offerOpen,
 });
 
-/// The server's switches, app-wide. With the `INTEGRATION_LOCK` define off
-/// ([enabled] false) it never asks and the state stays null, so the app
-/// shows nothing of the lock.
-class IntegrationLockCubit(
-  final PremiumServer _server, {
-  required final bool enabled,
-}) extends Cubit<ServerLock?> {
+/// The server's switches, app-wide; null until first read. Whether the app
+/// shows the lock at all is the flag `premium-gate-integrations` (job 328),
+/// read where Zugänge decides.
+class IntegrationLockCubit(final PremiumServer _server)
+    extends Cubit<ServerLock?> {
   this : super(null);
 
-  /// Reads both switches again. A lock that cannot be read counts as off
-  /// (the server decides); an offer that cannot be read as open.
+  /// Reads both switches again: one call while the lock is off. A lock that
+  /// cannot be read counts as off (the server decides); an offer that
+  /// cannot be read as open.
   Future<void> refresh() async {
-    if (!enabled) {
-      return;
-    }
     final enforced = await _server.integrationLock();
     final offerOpen =
         enforced && await _server.offerSwitch() != OfferSwitch.off;

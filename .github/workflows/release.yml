@@ -275,10 +275,9 @@ jobs:
           POSTHOG_HOST: ${{ vars.POSTHOG_HOST }}
           ANALYTICS_INTERNAL_HOUSEHOLDS: ${{ vars.ANALYTICS_INTERNAL_HOUSEHOLDS }}
           # Snacklist Premium (job 67, docs/PAYWALL_RELEASE.md): empty until the go-live, which
-          # keeps the purchase screen and the integration lock off.
+          # keeps the purchase screen off.
           REVENUECAT_PURCHASES: ${{ vars.REVENUECAT_PURCHASES }}
           REVENUECAT_APPLE_API_KEY: ${{ secrets.REVENUECAT_APPLE_API_KEY }}
-          INTEGRATION_LOCK: ${{ vars.INTEGRATION_LOCK }}
           APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID || secrets.APPLE_TEAM_ID }}
           MATCH_GIT_URL: ${{ vars.MATCH_GIT_URL || secrets.MATCH_GIT_URL }}
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
@@ -354,7 +353,6 @@ jobs:
           ANALYTICS_INTERNAL_HOUSEHOLDS: ${{ vars.ANALYTICS_INTERNAL_HOUSEHOLDS }}
           REVENUECAT_PURCHASES: ${{ vars.REVENUECAT_PURCHASES }}
           REVENUECAT_GOOGLE_API_KEY: ${{ secrets.REVENUECAT_GOOGLE_API_KEY }}
-          INTEGRATION_LOCK: ${{ vars.INTEGRATION_LOCK }}
       - name: Remove the upload keystore
         if: always()
         run: rm -f android/upload-keystore.jks android/key.properties
