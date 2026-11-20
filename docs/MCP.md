@@ -151,13 +151,14 @@ message that lists the valid options. A call that arrives while its household is
 (a member leaves, a role changes, an account is deleted) and would write the Premium check's record
 ends with a tool error that says nothing was changed and to try again (`busyNow` in `tools.ts`).
 
-**Integration lock (job 50, off).** With the server switch `integration_lock` on, a household
-without Snacklist Premium can still discover the server, run OAuth, `initialize` and `tools/list`,
-but every `tools/call` answers HTTP 200 with a tool result `{isError: true}` and "Dieser Haushalt
-braucht Snacklist Premium für den Zugang über KI-Assistenten. Schalte es in der Snacklist-App frei.
+**Integration lock (job 50, off).** With the server switch `integration_lock` on, a user
+without Snacklist Premium (neither their own plan nor a grant of the household the call acts in;
+another member's plan does not count) can still discover the server, run OAuth, `initialize` and `tools/list`,
+but every `tools/call` answers HTTP 200 with a tool result `{isError: true}` and "Du brauchst
+Snacklist Premium für den Zugang über KI-Assistenten. Schalte es in der Snacklist-App frei.
 Es wurde nichts gelesen oder geändert." (English for a client whose `Accept-Language` prefers it;
 placeholder copy, `tools.ts` `premiumRequired`). Never 401 or 403: the client keeps its token or
-PAT, and once the household has Premium the same connection works without signing in again. The
+PAT, and once the user has Premium the same connection works without signing in again. The
 check (`requirePremium`, `_shared/premium.ts`, once per request and household, for the household
 the call acts in) reads nothing else; a failing check is an error like any database failure. No change to
 `mcp-proxy/vercel.json`. docs/PURCHASES.md, "Integration lock".

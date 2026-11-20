@@ -37,9 +37,6 @@ export function defines(inst: Instance, env: StackEnv, surface: SurfaceKind): st
     `--dart-define=FAKE_STORE=${Deno.env.get('FG_FAKE_STORE') || 'ok'}`,
     // Job 44: analytics against a local stand-in (cli/posthog_collector.ts, features/analytics.md).
     ...posthogDefines(Deno.env.get('FG_POSTHOG_HOST')),
-    // Job 50: the integration lock's settings card (features/purchases.md), the flag
-    // premium-gate-integrations since job 328; the server switch too.
-    ...(Deno.env.get('FG_INTEGRATION_LOCK') === '1' ? ['--dart-define=FLAGS_ON=premium-gate-integrations'] : []),
   ];
 }
 

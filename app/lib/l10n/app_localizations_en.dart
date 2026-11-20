@@ -1988,7 +1988,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get integrationPremiumBody =>
-      'AI assistants are part of Snacklist Premium. Your connections stay saved and work again as soon as your household has Snacklist Premium.';
+      'AI assistants are part of Snacklist Premium. Your connections stay saved and work again as soon as you have Snacklist Premium.';
 
   @override
   String get integrationPremiumAi => 'AI assistants that support MCP';
@@ -2062,7 +2062,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get apiPremium =>
-      'The Snacklist API is part of Snacklist Premium. Your keys stay and work again as soon as your household has Premium.';
+      'The Snacklist API is part of Snacklist Premium. Your keys stay and work again as soon as you have Premium.';
 
   @override
   String get accessTokensHint =>

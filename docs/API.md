@@ -72,9 +72,11 @@ Authorization: Bearer fgp_…
 - **Other credentials do not work here.** MCP tokens, Siri credentials, OAuth access tokens and
   app sessions get `401 invalid_token`; API keys do not work on the MCP server or Siri.
 - **Snacklist Premium**: the API is a Premium integration like the MCP server (Siri and Alexa
-  stay free). While the server switch `integration_lock` is on, a household without Premium gets
-  `402 premium_required`; nothing is read or changed, the key keeps working once the household
-  unlocks. While the switch is off (until the paywall release) every household may use it.
+  stay free). While the server switch `integration_lock` is on, a key whose holder has no
+  Premium (neither their own plan nor a grant of the key's household; another member's plan does
+  not count) gets `402 premium_required` with the message "You need Snacklist Premium to use the
+  API. Unlock it in the Snacklist app. Nothing was read or changed."; the key keeps working once
+  its holder has Premium. While the switch is off (until the paywall release) everyone may use it.
 
 OAuth access for third-party apps is not part of v1 (see "Later").
 
@@ -224,7 +226,7 @@ optional.
 | 400 | `invalid_idempotency_key` | The key is empty, too long or not printable ASCII |
 | 401 | `missing_token` | No `Authorization: Bearer` header |
 | 401 | `invalid_token` | Unknown, revoked or not an API key |
-| 402 | `premium_required` | The household needs Snacklist Premium for the API (integration lock on) |
+| 402 | `premium_required` | The key's holder needs Snacklist Premium for the API (integration lock on) |
 | 403 | `insufficient_scope` | The key lacks the scope (`details.required`) |
 | 404 | `not_found` | No such endpoint |
 | 404 | `item_not_found` | No such item in this household (or not open, for `PATCH`) |

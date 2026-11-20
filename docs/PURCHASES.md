@@ -593,8 +593,8 @@ premium:
 
 Job 50 (Spec #4; DECISIONS "Job 50"). MCP / AI assistants and the API (job 73) are part of
 Snacklist Premium; the list, sync, categories, the app, the web app, Siri (job 184) and Alexa
-(job 72) stay free. Two switches, both off
-until Peter says go:
+(job 72) stay free. One switch, off until Peter says go; it is what job 328's brief calls
+`premium-gate-integrations`:
 
 - **Server:** `app_switches.integration_lock` (seeded off). Off, every integration works as it did
   before job 50, for every household. On, the mcp function (tool calls) and the api function
@@ -602,17 +602,17 @@ until Peter says go:
   decides with job 49's `household_has_premium` or job 185's `user_has_premium` of the caller
   (yearly not ended, Lifetime or a running promotional grant, testers' included; read at request
   time). Nothing the app sends counts.
-- **App:** the PostHog flag `premium-gate-integrations` (job 328, off; it replaced the build
-  define `INTEGRATION_LOCK`, so it goes on without a new build). On, the integration settings
-  (More › Zugänge) show a user without premium, while the server switch is on, what Snacklist
-  Premium includes, its connections as paused, and a button to the Premium page where this build
-  sells (else "Bald verfügbar", on the web job 49's "buy it in the app" note). On in e2e
-  (`FLAGS_ON` in `app/config/e2e.json`). Off, the app shows nothing of the lock even while the
-  server enforces it, so turn the server switch on first and the flag right after.
+- **App:** follows the server switch (`integration_lock()`, read when Zugänge opens); no define
+  and no PostHog flag since job 328 (#577 put a flag `premium-gate-integrations` in front of the
+  card, review 0 removed it: with the switch on and the flag off a user was refused without a
+  word). While the switch is on, the integration settings (More › Zugänge) show a user without
+  premium what Snacklist Premium includes, their connections as paused, and a button to the
+  Premium page where this build sells (else "Bald verfügbar", on the web job 49's "buy it in the
+  app" note). Builds before job 328 never show it.
 - **Not gated:** „Meine Daten exportieren“ (`export_my_data`, Konto). It is the account's GDPR
   copy (Art. 12(5), 15, 20), free by law; Premium's "export" means the API and MCP (job 328).
 
-What a locked household gets: an MCP tool call a tool result with `isError: true` and HTTP 200
+What a locked user gets: an MCP tool call a tool result with `isError: true` and HTTP 200
 (German, or English for a client that prefers it). Nothing is added, queued or kept. OAuth
 discovery, initialize and tools/list stay free. Alexa is not locked at all (job 72, Legal Review
 N-27): `integration_gate` answers `alexa` open (`20261102120000_alexa_free.sql`), the alexa
@@ -626,7 +626,8 @@ locked client cannot add through it instead. All copy is a placeholder until Sna
 
 What it never does: delete, revoke or disconnect anything. A lapsed yearly plan (or a refund)
 locks again at read time; tokens, the Siri credential, the Alexa link, OAuth connections and the
-list stay, and buying or renewing opens everything at once, for every member, with no relinking.
+list stay, and buying or renewing opens everything at once for the buyer, in every household they
+are in, with no relinking. Another member's plan does not open it (per-user Premium, job 185, PB2).
 Connecting while locked is allowed. A failing check answers with the endpoint's normal "try again"
 error, never with the premium answer and never by adding.
 
@@ -645,10 +646,12 @@ its price (docs/ANALYTICS.md).
    cut-over with `scripts/iap/integration-cutover.sql` (read-only).
 3. Legal Review has added `integration_blocked` and `paywall_viewed` to privacy section 9 and the
    texts that call the integrations free are updated (NEEDS_LEAD "Job 50").
-4. The server switch on: `update public.app_switches set enabled = true, changed_at = now() where
-   key = 'integration_lock';` (service role, SQL editor). From now on locked households are refused.
-5. The PostHog flag `premium-gate-integrations` on (installed builds follow; no new build), with
-   the changelog hold `integration-lock` released in `releases/flags.json`.
+4. Most installs run a build from job 328 on (older builds show no card while refusing).
+5. The server switch on: `update public.app_switches set enabled = true, changed_at = now() where
+   key = 'integration_lock';` (service role, SQL editor). From now on every user without Premium
+   is refused, everywhere at once: the switch has no per-user targeting, so a TestFlight trial
+   for Peter alone is not possible (use a local stack). Then the changelog hold
+   `integration-lock` released in `releases/flags.json`.
 
 Rolling back: the server switch off opens every integration at once and hides the app's card in
 every build (the app reads the switch). Testing locally: `update public.app_switches set enabled =

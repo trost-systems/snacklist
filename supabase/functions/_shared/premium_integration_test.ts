@@ -321,3 +321,27 @@ test("job 185: a user's own yearly plan opens MCP; its lapse locks it, Siri, Ale
                 now() + interval '365 days', true, false)`;
     assertFalse((await mcp(m, t)('list_items')).isError, 'renewed: MCP open again');
   }));
+
+test("job 328 review 0: another member's own plan does not open MCP for you", () =>
+  withHousehold(true, async (m, sql) => {
+    const t = recorder();
+    const partner: Member = { ...m, userId: crypto.randomUUID() };
+    try {
+      await sql`insert into auth.users (id, email)
+                values (${partner.userId}, ${`${partner.userId}@fg-test.invalid`})`;
+      await sql`insert into public.household_members (household_id, user_id, role)
+                values (${m.householdId}, ${partner.userId}, 'member')`;
+      await ownYearly(sql, partner, `m328-${partner.userId.slice(0, 8)}`);
+
+      const mine = await mcp(m, t)('list_items');
+      assertEquals([mine.isError, mine.content[0]?.text], [true, premiumRequired.de]);
+      assertFalse(
+        (await mcp(partner, t)('list_items')).isError,
+        'the buyer, in the same household',
+      );
+    } finally {
+      await sql`delete from public.purchases where bound_user = ${partner.userId}`;
+      await sql`delete from public.household_members where user_id = ${partner.userId}`;
+      await sql`delete from auth.users where id = ${partner.userId}`;
+    }
+  }));

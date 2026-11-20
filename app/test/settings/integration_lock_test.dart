@@ -1,4 +1,3 @@
-import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/list/list_screen.dart';
 import 'package:family_groceries/list/stores_screen.dart';
 import 'package:family_groceries/purchases/entitlements.dart';
@@ -15,10 +14,10 @@ import '../purchases/fake_revenuecat.dart';
 import '../purchases/fakes.dart';
 
 /// Job 50: the integration settings with the integration lock. The card and
-/// its Buy button show only while the flag premium-gate-integrations is on
-/// (job 328), the server enforces the lock and the household is known to
-/// have no Snacklist Premium (Spec #4 AC3); existing connections stay listed
-/// as paused; a purchase by any member hides it all within one sync (AC4).
+/// its Buy button show exactly while the server enforces the lock and the
+/// user is known to have no Snacklist Premium (Spec #4 AC3; no app flag,
+/// job 328 review 0); existing connections stay listed as paused; a purchase
+/// hides it all within one sync (AC4).
 void main() {
   setUpAll(fakeSupabase);
   setUp(() {
@@ -39,7 +38,6 @@ void main() {
 
   Future<More> access(
     WidgetTester tester, {
-    bool flagOn = true,
     bool lock = true,
     bool offer = true,
     bool offerReadable = true,
@@ -50,7 +48,6 @@ void main() {
     tester,
     location: accessPath,
     size: const Size(390, 1600),
-    flags: {if (flagOn) premiumGateIntegrationsFlag},
     premium: FakePremiumServer(lock: lock, offer: offer)
       ..offerFails = !offerReadable,
     entitlements: rows,
@@ -149,7 +146,7 @@ void main() {
     expect(
       find.text(
         'Die Snacklist-API gehört zu Snacklist Premium. Deine Schlüssel '
-        'bleiben und funktionieren wieder, sobald dein Haushalt Premium hat.',
+        'bleiben und funktionieren wieder, sobald du Premium hast.',
       ),
       findsOneWidget,
     );
@@ -179,8 +176,8 @@ void main() {
     expect(more.purchases.repository.calls, isEmpty, reason: 'no purchase');
   });
 
-  testWidgets('a purchase by the partner hides the card and the pause within '
-      'one sync, without leaving the page', (tester) async {
+  testWidgets('a purchase hides the card and the pause within one sync, '
+      'without leaving the page', (tester) async {
     final more = await access(tester);
     expect(key('integration-buy'), findsOneWidget);
     more.purchases.unlock();
@@ -217,20 +214,18 @@ void main() {
     });
   }
 
-  // Job 328: the flag premium-gate-integrations, the server switch and the
-  // household's premium decide together.
-  group('premium-gate-integrations', () {
-    testWidgets('flag off, server switch on, no Premium: no card, nothing '
-        'paused', (tester) async {
-      await access(tester, flagOn: false);
+  // Job 328 review 0: the app follows the server switch alone, so it
+  // explains every refusal the server makes.
+  group('the server switch', () {
+    testWidgets('off: no card, nothing paused', (tester) async {
+      await access(tester, lock: false);
       expect(key('integration-premium'), findsNothing);
       expect(key('integration-buy'), findsNothing);
       expect(key('access-paused'), findsNothing);
       expect(find.text('Kurzbefehl'), findsOneWidget);
     });
 
-    testWidgets('flag on, server switch on, Premium: no card, nothing '
-        'paused', (tester) async {
+    testWidgets('on, Premium: no card, nothing paused', (tester) async {
       await access(tester, rows: FakeEntitlementsSource(unlockedNow: true));
       expect(key('integration-premium'), findsNothing);
       expect(key('integration-buy'), findsNothing);
@@ -238,11 +233,19 @@ void main() {
       expect(find.text('Kurzbefehl'), findsOneWidget);
     });
 
-    testWidgets('flag on, server switch on, no Premium: the card, Buy to the '
-        'Premium page, the token paused', (tester) async {
+    testWidgets('on, Free: the card, Buy to the Premium page, the token '
+        'paused', (tester) async {
       final more = await access(tester);
       expect(key('integration-premium'), findsOneWidget);
       expect(find.text('Teil von Snacklist Premium'), findsOneWidget);
+      expect(
+        find.text(
+          'KI-Assistenten gehören zu Snacklist Premium. Deine Verbindungen '
+          'bleiben gespeichert und funktionieren wieder, sobald du Snacklist '
+          'Premium hast.',
+        ),
+        findsOneWidget,
+      );
       expect(key('access-paused'), findsOneWidget);
       await tester.tap(key('integration-buy'));
       await tester.pumpAndSettle();
@@ -252,12 +255,6 @@ void main() {
       );
       expect(key('premium-buy-yearly'), findsOneWidget);
     });
-  });
-
-  testWidgets('the server switch off: nothing shown', (tester) async {
-    await access(tester, lock: false);
-    expect(key('integration-premium'), findsNothing);
-    expect(key('access-paused'), findsNothing);
   });
 
   testWidgets('REVENUECAT_PURCHASES off: what is included and "Bald '
@@ -311,7 +308,6 @@ void main() {
       tester,
       location: accessPath,
       size: const Size(390, 1600),
-      flags: {premiumGateIntegrationsFlag},
       premium: FakePremiumServer(lock: true),
       analytics: analytics,
     );
@@ -380,7 +376,6 @@ void main() {
       tester,
       location: accessPath,
       size: const Size(390, 1600),
-      flags: {premiumGateIntegrationsFlag},
       premium: FakePremiumServer(lock: true),
       sdk: RevenueCatRepository('appl_public', native.noteCustomer),
     );
@@ -412,7 +407,7 @@ void main() {
 
   // Spec #4 AC5: the list, sync, categories, stores, settings (theme, app
   // icon, language), account and invites stay free; only the integration
-  // settings show the lock, for a locked household with the flag on.
+  // settings show the lock, for a locked user.
   for (final location in [
     listPath,
     morePath,
@@ -421,12 +416,11 @@ void main() {
     accountPath,
     invitesPath,
   ]) {
-    testWidgets('locked, flag on: $location shows no paywall', (tester) async {
+    testWidgets('locked: $location shows no paywall', (tester) async {
       final more = await pumpMore(
         tester,
         location: location,
         size: const Size(390, 1600),
-        flags: {premiumGateIntegrationsFlag},
         premium: FakePremiumServer(lock: true),
         routes: [
           GoRoute(path: listPath, builder: (_, _) => const ListScreen()),
@@ -451,12 +445,11 @@ void main() {
     (storeDetailsPath(null), 'categories'),
     (storeDetailsPath('lidl'), 'store details'),
   ]) {
-    testWidgets('locked, flag on: $title show no paywall', (tester) async {
+    testWidgets('locked: $title show no paywall', (tester) async {
       await pumpMore(
         tester,
         location: location,
         size: const Size(390, 1600),
-        flags: {premiumGateIntegrationsFlag},
         premium: FakePremiumServer(lock: true),
         routes: listTabRoutes(),
       );

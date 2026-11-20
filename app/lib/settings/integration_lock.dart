@@ -8,8 +8,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 /// integration settings open.
 @immutable
 class const ServerLock({
-  /// `integration_lock` is on: MCP and the API refuse a household without
-  /// Snacklist Premium. Siri (job 184) and Alexa (Legal Review N-27) stay
+  /// `integration_lock` is on: MCP and the API refuse a user without
+  /// Snacklist Premium (their own or the household's; another member's plan
+  /// does not count). Siri (job 184) and Alexa (Legal Review N-27) stay
   /// free.
   required final bool enforced,
 
@@ -19,9 +20,8 @@ class const ServerLock({
   required final bool offerOpen,
 });
 
-/// The server's switches, app-wide; null until first read. Whether the app
-/// shows the lock at all is the flag `premium-gate-integrations` (job 328),
-/// read where Zugänge decides.
+/// The server's switches, app-wide; null until first read. Zugänge shows the
+/// lock exactly while the server enforces it (job 328 review 0).
 class IntegrationLockCubit(final PremiumServer _server)
     extends Cubit<ServerLock?> {
   this : super(null);
@@ -42,12 +42,12 @@ class IntegrationLockCubit(final PremiumServer _server)
 /// What the integration settings say about Snacklist Premium.
 sealed class const IntegrationAccess();
 
-/// Nothing: the lock is off, the household has premium, or either is not
-/// known yet (loading, offline).
+/// Nothing: the lock is off, the user has premium, or either is not known
+/// yet (loading, offline).
 final class const IntegrationsOpen() extends IntegrationAccess;
 
-/// The household is known to have no premium while the server enforces the
-/// lock: its connections are paused, and [offer] says how it unlocks.
+/// The user is known to have no premium while the server enforces the lock:
+/// their connections are paused, and [offer] says how they unlock.
 final class const IntegrationsLocked(final LockOffer offer)
     extends IntegrationAccess;
 
@@ -63,8 +63,8 @@ enum LockOffer() {
 }
 
 /// The one decision: locked only when the server enforces the lock and
-/// [Entitlements.canOffer] says the household has no premium (it is false
-/// while unknown, so an unlocked household never sees Buy).
+/// [Entitlements.canOffer] says the user has no premium (it is false while
+/// unknown, so an unlocked user never sees Buy).
 IntegrationAccess integrationAccess({
   required ServerLock? server,
   required Entitlements entitlements,

@@ -2006,7 +2006,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get integrationPremiumBody =>
-      'KI-Assistenten gehören zu Snacklist Premium. Eure Verbindungen bleiben gespeichert und funktionieren wieder, sobald euer Haushalt Snacklist Premium hat.';
+      'KI-Assistenten gehören zu Snacklist Premium. Deine Verbindungen bleiben gespeichert und funktionieren wieder, sobald du Snacklist Premium hast.';
 
   @override
   String get integrationPremiumAi => 'KI-Assistenten, die MCP unterstützen';
@@ -2084,7 +2084,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get apiPremium =>
-      'Die Snacklist-API gehört zu Snacklist Premium. Deine Schlüssel bleiben und funktionieren wieder, sobald dein Haushalt Premium hat.';
+      'Die Snacklist-API gehört zu Snacklist Premium. Deine Schlüssel bleiben und funktionieren wieder, sobald du Premium hast.';
 
   @override
   String get accessTokensHint =>

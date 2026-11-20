@@ -72,15 +72,16 @@ status are in [`PRODUCT_FEATURE_MAP.md`](PRODUCT_FEATURE_MAP.md).
 | `premium-launch` | `releases/flags.json` hold | `released: false` | 5.6 |
 | PR #153 (privacy section 5a, FAQ, terms draft) | repository | open, not merged | 4.1 |
 | `app_switches.integration_lock` | hosted database | `false` | 6.4 |
-| `premium-gate-integrations` | PostHog feature flag (job 328) | off | 6.5 |
 | `integration-lock` | `releases/flags.json` hold | `released: false` | 6.5 |
 
 Store builds read the three build switches through `app/fastlane/Fastfile`
 (`PREMIUM_DEFINES`) and `.github/workflows/release.yml`. The web app never
 sells, so it takes no purchase define. While a variable is unset the build
-sells nothing. The app shows the integration lock only while the PostHog
-flag `premium-gate-integrations` is on (job 328), in every build already
-installed; the servers enforce it only while `integration_lock` is on.
+sells nothing. `integration_lock` is the one switch of the integration
+lock, the brief's `premium-gate-integrations` (job 328): the servers refuse
+by it, and every build since job 328 shows the lock exactly while it is on.
+There is no PostHog flag for it (review 0 of job 328 removed one, since a
+flag off with the switch on left users refused without a word).
 
 The Home Screen widgets are not part of the lock. They show the list the
 app already has and never call Siri's, Alexa's, the MCP or the API endpoint, so they
@@ -347,23 +348,24 @@ update public.app_switches set enabled = true, changed_at = now() where key = 'i
 ```
 
 From this moment MCP tool calls and the Snacklist API (job 73,
-`docs/API.md`) refuse households without Premium: MCP with the Premium
+`docs/API.md`) refuse every user without Premium, all at once: the switch
+is global, so there is no trial for Peter alone (try it on a local stack,
+`e2e/tests/integration-lock.spec.ts`). Refused: MCP with the Premium
 sentence, the API with `402 premium_required`. Siri (Shortcut and native,
 job 184) and Alexa (add, read, launch, job 72) stay open. Nothing is deleted
-or disconnected. The API's keys keep working once the household unlocks;
+or disconnected. The API's keys keep working once the user has Premium;
 the API section under Mehr › Zugänge shows a Premium line while the lock is
-shown.
+shown. Store builds and the web app from job 328 on show the Premium card
+under Mehr › Zugänge at once; older store builds show none, so wait until
+most installs run a newer build (Play and App Store version stats).
 
-6.5 **Lead**: the app side. Turn the PostHog flag `premium-gate-integrations`
-on (first for Peter's install to check it on TestFlight, then for everyone).
-Installed store builds and the web app then show the Premium card under
-Mehr › Zugänge once they have the flag; no new build is needed. A PR sets `"released": true` for
+6.5 **Lead**: after 6.4. A PR sets `"released": true` for
 `integration-lock` in `releases/flags.json`. The held item then reaches
 the next release. Its commit's text named Siri, which stays free (job 184).
 `releases/changelog/rewords.json` (job 213, docs/CHANGELOG.md, "Rewording an
 item on main") replaces it, so the draft says only "Der Zugang für
-KI-Assistenten gehört jetzt zu Snacklist Premium; dein Haushalt schaltet ihn
-mit einem Kauf für alle frei." Check that line in the next draft before
+KI-Assistenten gehört jetzt zu Snacklist Premium; mit Premium nutzt du ihn
+in jedem deiner Haushalte." (per user since job 185; reworded in job 328) Check that line in the next draft before
 releasing the hold.
 
 ## 7. After each step: what to watch
