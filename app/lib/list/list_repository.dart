@@ -575,7 +575,7 @@ class SupabaseListRepository(
   /// that was already on the list (then this id is gone, answered as null).
   /// No row: the id is taken by a row this user cannot see.
   Future<Map<String, Item?>> _add(AddItem op) => _refusable(() async {
-    final AddItem(:noStore, :deviceParsed, :autoCategory) = op;
+    final AddItem(:noStore, :deviceParsed, :autoCategory, :separate) = op;
     final item = deviceParsed
         ? (await parse(op.item.name)).onto(op.item, noStore: noStore)
         : op.item;
@@ -598,6 +598,8 @@ class SupabaseListRepository(
           'p_status': item.status.name,
           'p_no_store': noStore,
           if (_categoryStore()) 'p_category_store': true,
+          // Job 324: next to the same open item.
+          if (separate) 'p_separate': true,
           // None (an add queued before lists): the household's first list.
           'p_list': ?item.listId,
         },

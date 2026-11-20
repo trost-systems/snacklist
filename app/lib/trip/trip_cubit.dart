@@ -119,7 +119,9 @@ class TripCubit(
   this : super(const NoTrip()) {
     _subscriptions = [
       _list.activity.listen((activity) {
-        if (activity case OwnItemTicked(:final item)) {
+        // A tick in the add sheet asks nothing: the question's sheet would
+        // take the add sheet's place while the user is adding (job 324).
+        if (activity case OwnItemTicked(:final item, inAddSheet: false)) {
           unawaited(_ticked(item));
         }
       }),

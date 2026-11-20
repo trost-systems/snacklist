@@ -73,6 +73,14 @@ const addFeedbackListFlag = 'add-feedback-list';
 /// the system back or Enter in the empty field closes it.
 const addSheetCompactFlag = 'add-sheet-compact';
 
+/// The flag for the add sheet's match rows (job 324, AM2), on top of
+/// [addSheetCompactFlag]: while typing, the items already on the list that
+/// are the same thing show as rows that merge into one, tick it off or put
+/// a ticked one back, each with one tap, above the + row, which (like
+/// Enter) adds the typed item separately. Only ticked ones: Enter puts the
+/// first back.
+const addMatchRowsFlag = 'add-match-rows';
+
 /// The flag that asks for the user's name (job 297, DN3 and DE1): right
 /// after the sign-in a screen asks „Wie sollen wir dich nennen?“, prefilled
 /// with a Google or Apple name and required without one (once, with „Jetzt

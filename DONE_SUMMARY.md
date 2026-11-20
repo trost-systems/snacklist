@@ -1976,3 +1976,12 @@ Review 2 of job 325: at a start whose first requests fail while the OS says "no 
 says it is back, the app showed "Offline" after 1.5 s although the network worked again. Now it asks
 the server once more at that point and shows the card only if that fails too. Flight mode still shows
 it about 2.6 s after opening (web). Details, evidence and test results: `docs/done/325d-offline-no-online-retry.md`.
+
+## Job 324: add-match outcome rows (AM2) in the compact add sheet
+
+Behind the flag `add-match-rows` (off; on top of `add-sheet-compact`): typing what is already on the list shows marked
+rows in the sheet before the add, merge („2× Kefir“, blue), tick off (mint) and back on the list for a lately ticked
+one (grey), one tap each, above the `+` row. Enter adds a separate item next to an open match (Peter's AM-Q2; the server
+keeps it through `put_item`'s new `p_separate`). „Milch“ never offers „Hafermilch“; nothing behind the sheet moves; a
+tick from the sheet asks no trip question. Review 0: the rows follow the list while typing (another member's delete no longer leaves a row that claims „abgehakt“), and two items that read alike get one merge row. Two new UI strings: waits for Legal GO and for #569/#570/#573. Details:
+[docs/done/324.md](docs/done/324.md).

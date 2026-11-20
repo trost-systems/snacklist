@@ -1791,5 +1791,9 @@
   "migrateBody": "Erkannte Läden können einen Knopf für ihre App zeigen. Die Namen bleiben, wie du sie geschrieben hast.",
   "@migrateBody": {"description": "Job 313, Legal N-293 (word for word): the list card that asks about stores made before, under its question"},
   "migrateDone": "Zugeordnet",
-  "@migrateDone": {"description": "Job 313, Legal N-293 (word for word, not „Verbunden“): said to screen readers after a store was matched to its chain from the list card"}
+  "@migrateDone": {"description": "Job 313, Legal N-293 (word for word, not „Verbunden“): said to screen readers after a store was matched to its chain from the list card"},
+  "addMatchTickOff": "Abhaken",
+  "@addMatchTickOff": {"description": "Job 324 (AM2, flag add-match-rows): the action a screen reader names on the add sheet's match row that ticks the open item off, before the item"},
+  "addMatchReadded": "Wieder auf der Liste: {item}",
+  "@addMatchReadded": {"description": "Job 324 (AM2): the add sheet's note after a ticked item was put back from its match row or with Enter; item is its Menge and name (10× Eier)", "placeholders": {"item": {"type": "String"}}}
 }

@@ -213,7 +213,12 @@ final class const CategoriesReordered() extends ListActivity;
 final class const TripCompleted(final int ticked) extends ListActivity;
 
 /// The user ticked [item] off (active to bought), as it was before the tick.
-final class const OwnItemTicked(final Item item) extends ListActivity;
+/// [inAddSheet]: from the add sheet's match row (job 324), which no trip
+/// question may cover.
+final class const OwnItemTicked(
+  final Item item, {
+  final bool inAddSheet = false,
+}) extends ListActivity;
 
 /// A re-add put an item back on the still empty list within
 /// [ListCubit.undoWindow] of the tick that emptied it (job 326, SA2): told
@@ -839,10 +844,13 @@ class ListCubit(
   /// name, brand and details already on the list is not added twice.
   /// [source] is how the user picked it, for analytics. [autoCategory]: the
   /// entry's category is the server's guess, not the user's pick.
+  /// [separate] (job 324): the user saw the same item on the list and adds
+  /// this one next to it.
   AddResult addParsed(
     ParsedEntry entry, {
     bool noStore = false,
     bool autoCategory = false,
+    bool separate = false,
     AddSource source = AddSource.typed,
   }) {
     final name = entry.name.trim();
@@ -851,7 +859,8 @@ class ListCubit(
     }
     final key = _sameItem(name, entry.brand, entry.properties);
     for (final item in state.items.values) {
-      if (item.status == ItemStatus.active &&
+      if (!separate &&
+          item.status == ItemStatus.active &&
           _sameItem(item.name, item.brand, item.properties) == key) {
         return AlreadyOnList(item);
       }
@@ -876,6 +885,7 @@ class ListCubit(
         noStore: noStore,
         deviceParsed: entry.deviceParsed,
         autoCategory: autoCategory,
+        separate: separate,
       ),
     );
     _track('item_added', {'source': source.name, ..._actor()});
@@ -908,7 +918,8 @@ class ListCubit(
     }
   }
 
-  void tick(String id) {
+  /// [inAddSheet]: the add sheet's match row ticked it (job 324).
+  void tick(String id, {bool inAddSheet = false}) {
     final before = state.allItems[id];
     final active = before?.status == ItemStatus.active;
     // Counted before the enqueue, whose emptied list resets the count.
@@ -921,7 +932,7 @@ class ListCubit(
     );
     if (before != null && active) {
       _track('item_ticked', _actor());
-      _tell(OwnItemTicked(before));
+      _tell(OwnItemTicked(before, inAddSheet: inAddSheet));
       final now = _clock();
       // Emptied again within the undo window (a re-add from "recently used"
       // ticked off again): the same trip, not a second one.
@@ -1239,6 +1250,44 @@ class ListCubit(
     _track('dedupe_hint_merged', _actor());
     return fold.merge;
   }
+
+  /// Job 324: folds a typed [entry] into the open item [id] in one edit:
+  /// the Menge merges (`public.merge_quantities`), a brand or details the
+  /// item has none of come from [entry]. The item as it is then; null, with
+  /// a [MergeRefused], when it is gone or ticked by now or the merged
+  /// quantity would not fit.
+  Item? mergeTyped(String id, ParsedEntry entry) {
+    final item = state.items[id];
+    if (item == null || item.status != ItemStatus.active) {
+      _report(MergeRefused(item?.name ?? entry.name));
+      return null;
+    }
+    final String quantity;
+    try {
+      quantity = mergeQuantities(item.quantity, entry.quantity);
+    } on QuantityTooLong {
+      _report(MergeRefused(item.name));
+      return null;
+    }
+    final changes = ItemChanges(
+      quantity: SetTo(quantity),
+      brand: item.brand == null && entry.brand != null
+          ? SetTo(entry.brand)
+          : null,
+      properties: item.properties == null && entry.properties != null
+          ? SetTo(entry.properties)
+          : null,
+    );
+    edit(id, changes);
+    return changes.apply(item);
+  }
+
+  /// Job 324: the add sheet showed match rows for a text.
+  void matchShown() => _track('add_match_shown');
+
+  /// Job 324: what a match row or the add sheet's + row did.
+  void matchTaken(MatchOutcome outcome) =>
+      _track('add_match_outcome', {'outcome': outcome.name});
 
   /// The op that folds [other] into [kept] and the merge the UI can undo.
   /// Throws [QuantityTooLong] when the merged quantity would not fit.
@@ -2092,8 +2141,9 @@ class ListCubit(
       unawaited(resync());
     }
     // Job 32b: once the server has keyed a new add, name an open item that
-    // is another spelling of it (the add itself went through).
-    if (op case AddItem(restored: false)) {
+    // is another spelling of it (the add itself went through). Not for a
+    // separate add (job 324): the user saw the open one and chose.
+    if (op case AddItem(restored: false, separate: false)) {
       final added = state.items[op.itemId];
       if (added != null && added.status == ItemStatus.active) {
         final similar = similarItems(added, state.items.values);

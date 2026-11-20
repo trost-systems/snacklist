@@ -16,6 +16,7 @@ import 'package:family_groceries/home_widget/widget_launch.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/add_sheet/add_sheet.dart';
 import 'package:family_groceries/list/add_sheet/add_sheet_cubit.dart';
+import 'package:family_groceries/list/add_sheet/match_rows.dart';
 import 'package:family_groceries/list/add_sheet/suggestion.dart';
 import 'package:family_groceries/list/catalog/catalog_index.dart';
 import 'package:family_groceries/list/catalog/catalog_loader.dart';
@@ -108,6 +109,8 @@ class const ShoppingList({
                 context.read<Flags?>()?.isOn(addFeedbackListFlag) ?? false,
             compact: () =>
                 context.read<Flags?>()?.isOn(addSheetCompactFlag) ?? false,
+            matchRows: () =>
+                context.read<Flags?>()?.isOn(addMatchRowsFlag) ?? false,
           ),
         ),
       ],
@@ -418,11 +421,27 @@ class _ShoppingListState() extends State<_ShoppingList> {
     _refocusAfterTap();
   }
 
+  /// A match row's tap (job 324): the input clears for the next item.
+  void _takeMatch(MatchRow row) {
+    if (context.read<AddSheetCubit>().takeMatch(row)) {
+      _input.clear();
+    }
+    _refocusAfterTap();
+  }
+
   Future<void> _submit() async {
     final sheet = context.read<AddSheetCubit>();
     // Compact (job 322): Enter in the empty field is done adding.
     if (sheet.compact && sheet.state.open && _input.text.trim().isEmpty) {
       _close();
+      return;
+    }
+    // Job 324: only a ticked match, and Enter puts it back.
+    if (sheet.enterMatch case final row?) {
+      if (sheet.takeMatch(row)) {
+        _input.clear();
+      }
+      _inputFocus.requestFocus();
       return;
     }
     _afterAdd(await sheet.takeFirst());
@@ -644,6 +663,7 @@ class _ShoppingListState() extends State<_ShoppingList> {
                       },
                       child: AddSheet(
                         onTake: _take,
+                        onMatch: _takeMatch,
                         onClose: _close,
                         onPicked: _refocusAfterTap,
                         extent: _sheetExtent,

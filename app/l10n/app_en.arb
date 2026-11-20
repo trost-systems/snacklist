@@ -1314,5 +1314,8 @@
   "storeChainPickerSearch": "Search chains",
   "storeChainPickerEmpty": "No chain found.",
   "migrateBody": "Recognised stores can show a button for their app. Names stay as you wrote them.",
-  "migrateDone": "Matched"
+  "migrateDone": "Matched",
+  "addMatchTickOff": "Tick off",
+  "addMatchReadded": "Back on the list: {item}",
+  "@addMatchReadded": {"placeholders": {"item": {"type": "String"}}}
 }
