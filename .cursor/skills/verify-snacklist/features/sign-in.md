@@ -24,7 +24,7 @@ Signed out, Snacklist opens on the start screen of the guided start (`/start`, f
 
 ## How to get to it (user POV)
 
-- Open Snacklist signed out: the start screen; tap „Schon ein Konto“ / "Already have an account". Or open `/login` directly. A link to a screen (`/more/invites`) or an invite link opens the login screen at once.
+- Open Snacklist signed out: the start screen; tap „Schon ein Konto“ / "Already have an account". Or open `/login` directly. A link to a screen (`/more/invites`) opens the login screen at once; an invite link does in the phone apps, while a browser first shows the invite's join page (`app/web/join/`, „Im Browser beitreten“ / "Join in the browser").
 - Signed in: tab „Mehr“ / "More", then „Abmelden“ / "Sign out".
 - Email: tap „Weiter mit E-Mail“ / "Continue with email" (builds with Google or Apple), then tap the email field.
 - Sign-up: type email and password, tap „Registrieren“ / "Sign up".
