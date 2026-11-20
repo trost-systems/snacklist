@@ -131,8 +131,9 @@ class _DeleteAccountDialogState() extends State<DeleteAccountDialog> {
 
   /// Archived households are only named with the archive texts, so only
   /// then does their premium ask for the tick.
-  bool _endsPremium(AccountFate fate) =>
-      widget.archiveTexts ? fate.endsPremium : fate.deletedPremium.isNotEmpty;
+  bool _endsPremium(AccountFate fate) => widget.archiveTexts
+      ? fate.endsPremium
+      : fate.ownPremium || fate.deletedPremium.isNotEmpty;
 
   @override
   Widget build(BuildContext context) {
@@ -290,6 +291,15 @@ class const _PremiumWarning({
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (fate.ownPremium)
+              Padding(
+                key: const ValueKey('account-delete-own-premium'),
+                padding: const EdgeInsets.only(right: 8, bottom: 8),
+                child: Text(
+                  l10n.accountDeleteOwnPremium,
+                  style: TextStyle(color: scheme.onErrorContainer),
+                ),
+              ),
             for (final FateDeleted(:householdName) in fate.deletedPremium)
               Padding(
                 padding: const EdgeInsets.only(right: 8),

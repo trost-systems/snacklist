@@ -112,7 +112,8 @@ Future<bool> confirmLifetimeWhileYearly(
 /// Before deleting the account ([account]) or leaving, deleting or
 /// archiving the household (H-85): a yearly plan keeps being billed, and
 /// none of these cancels it. The subscriber is told so, with the store's
-/// manage page; other members of a household with such a plan get the
+/// manage page (deleting the account: their Premium ends, the plan goes
+/// on); other members of a household with such a plan get the
 /// short line. True to go on. Nothing to say, or the server can't be asked:
 /// true, the flow goes on as before.
 ///
@@ -144,11 +145,11 @@ Future<bool> confirmBillingContinues(
       key: ValueKey(
         subscriber ? 'premium-billing-continues' : 'premium-billing-other',
       ),
-      content: Text(
-        subscriber
-            ? l10n.premiumBillingContinues
-            : l10n.premiumBillingContinuesOther,
-      ),
+      content: Text(switch ((subscriber, account)) {
+        (true, true) => l10n.premiumBillingContinuesAccount,
+        (true, false) => l10n.premiumBillingContinues,
+        (false, _) => l10n.premiumBillingContinuesOther,
+      }),
       actions: [
         if (subscriber)
           TextButton(

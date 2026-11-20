@@ -34,14 +34,21 @@ class const AccountFate(
   /// One per household the user is in; none without a household.
   final List<HouseholdFate> households, {
   final List<ArchivedFate> archived = const [],
+
+  /// The user's own Snacklist Premium (`user_entitlements`, job 185): it
+  /// belongs to the account and ends with it, a one-time purchase too.
+  final bool ownPremium = false,
 }) {
   /// The households deleted with the account that have Snacklist Premium.
   Iterable<FateDeleted> get deletedPremium =>
       households.whereType<FateDeleted>().where((h) => h.unlocked);
 
-  /// Snacklist Premium of some household ends with the account.
+  /// The user's own Snacklist Premium or some household's ends with the
+  /// account.
   bool get endsPremium =>
-      deletedPremium.isNotEmpty || archived.any((a) => a.unlocked);
+      ownPremium ||
+      deletedPremium.isNotEmpty ||
+      archived.any((a) => a.unlocked);
 }
 
 /// Whether the server revoked the app's Sign in with Apple grant.
@@ -129,12 +136,14 @@ class SupabaseAccountRepository(
 
   @override
   Future<AccountFate> fate() => _guard(() async {
-    final (households, archived) = await (
+    final (households, archived, ownPremium) = await (
       _householdFates(),
       _client.rpc<List<dynamic>>('archived_households'),
+      _ownPremium(),
     ).wait;
     return AccountFate(
       households,
+      ownPremium: ownPremium,
       archived: [
         for (final row in archived.cast<Map<String, dynamic>>())
           ArchivedFate(
@@ -144,6 +153,26 @@ class SupabaseAccountRepository(
       ],
     );
   });
+
+  /// An own premium row without end or with one still ahead: the rule of
+  /// the server's `user_premium()` (Lifetime has no end).
+  Future<bool> _ownPremium() async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) {
+      return false;
+    }
+    final rows = await _client.rest
+        .from('user_entitlements')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('kind', 'premium')
+        .or(
+          'expires_at.is.null,'
+          'expires_at.gt.${DateTime.now().toUtc().toIso8601String()}',
+        )
+        .limit(1);
+    return rows.isNotEmpty;
+  }
 
   /// Each household's fate: kept for its other members, or deleted with
   /// its last one.

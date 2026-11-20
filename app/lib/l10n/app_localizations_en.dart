@@ -695,12 +695,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String accountDeletePremium(String household) {
-    return '“$household” has Snacklist Premium. It belongs to the household and ends with it. Archiving isn\'t possible here, because an archived household is deleted with your account. To keep the household with Premium, invite someone first and delete your account only after they have joined.';
+    return '“$household” is unlocked as a household, for all its members. This unlock belongs to the household, not to your account, and ends with it. Archiving isn\'t possible here, because an archived household is deleted with your account. To keep the unlock, invite someone first and delete your account only after they have joined.';
   }
 
   @override
+  String get accountDeleteOwnPremium =>
+      'Your Snacklist Premium belongs to your account and ends with it, a one-time purchase too. It can\'t be moved to another account.';
+
+  @override
   String accountDeletePremiumLastMember(String household) {
-    return '“$household” has Snacklist Premium. It belongs to the household. If you delete your account, it ends. Do you want to keep it? Then ask someone to join first. Wait until they have joined. Then delete your account.';
+    return '“$household” is unlocked as a household. The unlock belongs to the household. If you delete your account, it ends. Do you want to keep it? Then ask someone to join first. Wait until they have joined. Then delete your account.';
   }
 
   @override
@@ -734,7 +738,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountDeletePremiumAck =>
-      'I know: Premium ends. I will not get my money back on its own.';
+      'I know: Premium ends. A purchase isn\'t refunded on its own.';
 
   @override
   String get accountDeleteConfirmLabel => 'Type DELETE to confirm';
@@ -1697,10 +1701,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lifetimeRestore => 'Restore purchase';
 
   @override
-  String get lifetimeUnlockedBody =>
-      'Snacklist Lifetime is unlocked for your whole household. Thank you!';
-
-  @override
   String get lifetimePending => 'Waiting for approval';
 
   @override
@@ -1716,7 +1716,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lifetimeBoughtTwice =>
-      'Your household bought Snacklist Lifetime more than once. One of the purchases can be refunded.';
+      'Snacklist Lifetime was bought more than once. Whoever paid for one of the purchases can get it refunded.';
 
   @override
   String get lifetimeCanceled => 'Purchase canceled.';
@@ -1730,7 +1730,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lifetimeUsedElsewhere =>
-      'This purchase belongs to another, earlier household and stays there. It unlocks nothing here.';
+      'This purchase already belongs to another Snacklist account or household and stays there. It unlocks nothing for you.';
 
   @override
   String get lifetimeNothingRestored => 'No earlier purchase found.';
@@ -1739,10 +1739,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String lifetimeStoreFailed(String code) {
     return 'The purchase didn\'t go through ($code).';
   }
-
-  @override
-  String get lifetimeWeb =>
-      'You can buy Snacklist Lifetime in the iPhone or Android app. It\'s then unlocked here too, for your whole household.';
 
   @override
   String get lifetimeChecking =>
@@ -1757,7 +1753,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get refundHelpBody =>
-      'Snacklist Lifetime always belongs to the household it was bought in. Only Apple refunds App Store purchases. For Google Play, ask Google within 48 hours of buying; after that, email us at support@snacklist.app and we\'ll look at your request. Your statutory rights are not affected.';
+      'Only Apple refunds App Store purchases. For Google Play, ask Google within 48 hours of buying; after that, email us at support@snacklist.app and we\'ll look at your request. Your statutory rights are not affected.';
 
   @override
   String get refundHelpApple =>
@@ -1769,7 +1765,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get refundHelpReason =>
-      'As the reason you can write: “My household was already unlocked.”';
+      'As the reason you can write, for example: “I already had Snacklist Premium.”';
 
   @override
   String get refundHelpAppleLink => 'Ask Apple';
@@ -1922,11 +1918,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumUsedElsewhereYearly =>
-      'Your Apple or Google account already pays a yearly plan for another household. Someone else in this household can subscribe to Snacklist Premium.';
+      'An Apple or Google account pays for one Snacklist Premium yearly plan at most. If yours already pays one for another Snacklist account, Premium applies only there.';
 
   @override
   String get premiumTwoYearly =>
-      'Your household has two yearly plans. Each can only be cancelled by whoever took it out.';
+      'Your Premium currently comes from two yearly plans. Each can only be cancelled with the Apple or Google account it was taken out with.';
 
   @override
   String get premiumWeb =>
@@ -1959,22 +1955,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumLifetimeWhileYearly =>
-      'Your household already has a yearly plan. It keeps running and being billed after the one-time purchase until it is cancelled; the rest of the plan year isn\'t refunded automatically. Only the person who took out the plan can cancel it, in [Manage subscriptions]. Snacklist can\'t cancel it.';
+      'A yearly plan is already tied to this household. It keeps running and being billed after your one-time purchase until it is cancelled; the rest of the plan year isn\'t refunded automatically. Only the person who took out the plan can cancel it, in [Manage subscriptions]. Snacklist can\'t cancel it.';
 
   @override
   String get premiumLifetimeWhileYearlySubscriber =>
-      'Your household already has a yearly plan. It keeps running and being billed after the one-time purchase until it is cancelled; the rest of the plan year isn\'t refunded automatically. You can cancel it in [Manage subscription]. Snacklist can\'t cancel it.';
+      'You already have a yearly plan. It keeps running and being billed after the one-time purchase until you cancel it; the rest of the plan year isn\'t refunded automatically. You can cancel it in [Manage subscription]. Snacklist can\'t cancel it.';
 
   @override
   String get premiumBuyAnyway => 'Buy anyway';
 
   @override
   String get premiumBillingContinues =>
-      'Your Snacklist Premium yearly plan keeps running and is billed to your Apple or Google account until you cancel it. Deleting or leaving doesn\'t cancel it.';
+      'Your Snacklist Premium yearly plan keeps running and is billed to your Apple or Google account until you cancel it. Leaving, deleting or archiving a household doesn\'t cancel it.';
+
+  @override
+  String get premiumBillingContinuesAccount =>
+      'Your Snacklist Premium yearly plan keeps running and is billed to your Apple or Google account until you cancel it. Deleting your account ends your Premium, but not the plan. Cancel it first.';
 
   @override
   String get premiumBillingContinuesOther =>
-      'A yearly plan for this household keeps running until it is cancelled.';
+      'A yearly plan is tied to this household. It keeps running until it is cancelled.';
 
   @override
   String get premiumManageSubscription => 'Manage subscription';

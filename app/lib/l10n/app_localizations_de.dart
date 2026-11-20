@@ -703,12 +703,16 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String accountDeletePremium(String household) {
-    return '„$household“ hat Snacklist Premium. Es gehört zum Haushalt und endet mit ihm. Archivieren geht hier nicht, denn ein archivierter Haushalt wird mit deinem Konto gelöscht. Soll der Haushalt mit Premium bleiben, lade vorher jemanden ein und lösche dein Konto erst, wenn die Person beigetreten ist.';
+    return '„$household“ ist als Haushalt freigeschaltet, für alle Mitglieder. Diese Freischaltung gehört zum Haushalt, nicht zu deinem Konto, und endet mit ihm. Archivieren geht hier nicht, denn ein archivierter Haushalt wird mit deinem Konto gelöscht. Soll die Freischaltung bleiben, lade vorher jemanden ein und lösche dein Konto erst, wenn die Person beigetreten ist.';
   }
 
   @override
+  String get accountDeleteOwnPremium =>
+      'Dein Snacklist Premium gehört zu deinem Konto und endet mit ihm, auch ein Einmalkauf. Auf ein anderes Konto lässt es sich nicht übertragen.';
+
+  @override
   String accountDeletePremiumLastMember(String household) {
-    return '„$household“ hat Snacklist Premium. Das gehört zum Haushalt. Löschst du dein Konto, endet es. Soll es bleiben? Dann lad erst jemand ein. Warte, bis die Person beigetreten ist. Lösch dann dein Konto.';
+    return '„$household“ ist als Haushalt freigeschaltet. Die Freischaltung gehört zum Haushalt. Löschst du dein Konto, endet sie. Soll sie bleiben? Dann lad erst jemand ein. Warte, bis die Person beigetreten ist. Lösch dann dein Konto.';
   }
 
   @override
@@ -743,7 +747,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get accountDeletePremiumAck =>
-      'Ich weiß: Premium endet. Ich bekomme mein Geld nicht von selbst zurück.';
+      'Ich weiß: Premium endet. Ein Kauf wird nicht von selbst erstattet.';
 
   @override
   String get accountDeleteConfirmLabel => 'Zum Bestätigen LÖSCHEN eingeben';
@@ -1714,10 +1718,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get lifetimeRestore => 'Kauf wiederherstellen';
 
   @override
-  String get lifetimeUnlockedBody =>
-      'Snacklist Lifetime ist für euren ganzen Haushalt freigeschaltet. Danke!';
-
-  @override
   String get lifetimePending => 'Wartet auf Bestätigung';
 
   @override
@@ -1733,7 +1733,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get lifetimeBoughtTwice =>
-      'Euer Haushalt hat Snacklist Lifetime mehr als einmal gekauft. Einen der Käufe kannst du dir erstatten lassen.';
+      'Snacklist Lifetime wurde mehr als einmal gekauft. Wer einen der Käufe bezahlt hat, kann ihn sich erstatten lassen.';
 
   @override
   String get lifetimeCanceled => 'Kauf abgebrochen.';
@@ -1747,7 +1747,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get lifetimeUsedElsewhere =>
-      'Dieser Kauf gehört zu einem anderen, früheren Haushalt und bleibt dort. Hier schaltet er nichts frei.';
+      'Dieser Kauf gehört schon zu einem anderen Snacklist-Konto oder Haushalt und bleibt dort. Für dich schaltet er nichts frei.';
 
   @override
   String get lifetimeNothingRestored => 'Kein früherer Kauf gefunden.';
@@ -1756,10 +1756,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String lifetimeStoreFailed(String code) {
     return 'Der Kauf hat nicht geklappt ($code).';
   }
-
-  @override
-  String get lifetimeWeb =>
-      'Kaufen kannst du Snacklist Lifetime in der iPhone- oder Android-App. Danach ist es auch hier für deinen ganzen Haushalt freigeschaltet.';
 
   @override
   String get lifetimeChecking =>
@@ -1774,7 +1770,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get refundHelpBody =>
-      'Snacklist Lifetime gehört immer zu dem Haushalt, in dem es gekauft wurde. Käufe im App Store erstattet nur Apple. Bei Google Play beantragst du die Erstattung in den ersten 48 Stunden bei Google; danach schreib uns an support@snacklist.app, wir prüfen jede Anfrage einzeln. Deine gesetzlichen Rechte bleiben unberührt.';
+      'Käufe im App Store erstattet nur Apple. Bei Google Play beantragst du die Erstattung in den ersten 48 Stunden bei Google; danach schreib uns an support@snacklist.app, wir prüfen jede Anfrage einzeln. Deine gesetzlichen Rechte bleiben unberührt.';
 
   @override
   String get refundHelpApple =>
@@ -1786,7 +1782,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get refundHelpReason =>
-      'Als Grund kannst du schreiben: „Mein Haushalt war schon freigeschaltet.“';
+      'Als Grund kannst du zum Beispiel schreiben: „Ich hatte Snacklist Premium schon.“';
 
   @override
   String get refundHelpAppleLink => 'Bei Apple anfragen';
@@ -1940,11 +1936,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get premiumUsedElsewhereYearly =>
-      'Dein Apple- bzw. Google-Konto zahlt schon ein Jahresabo für einen anderen Haushalt. Jemand anderes aus diesem Haushalt kann Snacklist Premium abschließen.';
+      'Ein Apple- bzw. Google-Konto bezahlt höchstens ein Jahresabo für Snacklist Premium. Bezahlt deines schon eines für ein anderes Snacklist-Konto, gilt Premium nur dort.';
 
   @override
   String get premiumTwoYearly =>
-      'Euer Haushalt hat zwei Jahresabos. Kündigen kann jedes nur, wer es abgeschlossen hat.';
+      'Dein Premium kommt gerade aus zwei Jahresabos. Kündigen lässt sich jedes nur mit dem Apple- bzw. Google-Konto, mit dem es abgeschlossen wurde.';
 
   @override
   String get premiumWeb =>
@@ -1977,22 +1973,26 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get premiumLifetimeWhileYearly =>
-      'Euer Haushalt hat schon ein Jahresabo. Es läuft nach dem Einmalkauf weiter und wird weiter abgerechnet, bis es gekündigt wird; das restliche Abojahr wird nicht automatisch erstattet. Kündigen kann nur, wer das Abo abgeschlossen hat, unter [Abos verwalten]. Snacklist kann das Abo nicht kündigen.';
+      'An diesen Haushalt ist schon ein Jahresabo gebunden. Es läuft nach deinem Einmalkauf weiter und wird weiter abgerechnet, bis es gekündigt wird; das restliche Abojahr wird nicht automatisch erstattet. Kündigen kann nur, wer das Abo abgeschlossen hat, unter [Abos verwalten]. Snacklist kann das Abo nicht kündigen.';
 
   @override
   String get premiumLifetimeWhileYearlySubscriber =>
-      'Euer Haushalt hat schon ein Jahresabo. Es läuft nach dem Einmalkauf weiter und wird weiter abgerechnet, bis es gekündigt wird; das restliche Abojahr wird nicht automatisch erstattet. Du kannst es unter [Abo verwalten] kündigen. Snacklist kann das Abo nicht kündigen.';
+      'Du hast schon ein Jahresabo. Es läuft nach dem Einmalkauf weiter und wird weiter abgerechnet, bis du es kündigst; das restliche Abojahr wird nicht automatisch erstattet. Du kannst es unter [Abo verwalten] kündigen. Snacklist kann das Abo nicht kündigen.';
 
   @override
   String get premiumBuyAnyway => 'Trotzdem kaufen';
 
   @override
   String get premiumBillingContinues =>
-      'Dein Jahresabo für Snacklist Premium läuft weiter und wird über dein Apple- bzw. Google-Konto abgerechnet, bis du es kündigst. Löschen oder Verlassen kündigt es nicht.';
+      'Dein Jahresabo für Snacklist Premium läuft weiter und wird über dein Apple- bzw. Google-Konto abgerechnet, bis du es kündigst. Einen Haushalt zu verlassen, zu löschen oder zu archivieren kündigt es nicht.';
+
+  @override
+  String get premiumBillingContinuesAccount =>
+      'Dein Jahresabo für Snacklist Premium läuft weiter und wird über dein Apple- bzw. Google-Konto abgerechnet, bis du es kündigst. Löschst du dein Konto, endet dein Premium, das Abo aber nicht. Kündige es vorher.';
 
   @override
   String get premiumBillingContinuesOther =>
-      'Ein Jahresabo für diesen Haushalt läuft weiter, bis es gekündigt wird.';
+      'An diesen Haushalt ist ein Jahresabo gebunden. Es läuft weiter, bis es gekündigt wird.';
 
   @override
   String get premiumManageSubscription => 'Abo verwalten';

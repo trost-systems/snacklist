@@ -36,11 +36,11 @@ const manageOnWeb = (page: Page) =>
   page.getByRole('group', { name: 'Dein Jahresabo verwaltest du im App Store oder bei Google Play.' });
 /** The note after Lifetime: its sentence as text, the store page as a link of its own. */
 const lifetimeWhileYearly = (page: Page, rest: RegExp) =>
-  page.getByText(new RegExp(`^Euer Haushalt hat schon ein Jahresabo\\..*${rest.source}`));
+  page.getByText(new RegExp(`^(An diesen Haushalt ist schon ein Jahresabo gebunden|Du hast schon ein Jahresabo)\\..*${rest.source}`));
 const billingContinues = (page: Page) =>
   page.getByText(/^Dein Jahresabo für Snacklist Premium läuft weiter und wird über dein Apple- bzw\. Google-Konto/);
 const billingOther = (page: Page) =>
-  page.getByText('Ein Jahresabo für diesen Haushalt läuft weiter, bis es gekündigt wird.');
+  page.getByText('An diesen Haushalt ist ein Jahresabo gebunden. Es läuft weiter, bis es gekündigt wird.');
 
 /** A fresh invite code for [email]'s household, through their own API client. */
 async function inviteCode(email: string): Promise<string> {

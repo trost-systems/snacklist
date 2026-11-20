@@ -1926,3 +1926,11 @@ RevenueCat lines in the privacy policy and the account-deletion page, both worde
 
 **Not merged.** Legal's GO first (brief). Details: docs/done/329-subscription-legal-texts.md, docs/DECISIONS.md
 "Job 329". Screenshots: docs/screenshots/329/.
+
+## Job 330: Legal MUSTs before premium-launch (N-308, N-309, N-310)
+
+Draft #584 is stacked on #580 and not merged (Legal GO needed). N-308 rewrites the Premium copy
+for per-user Premium, as a draft written without the report. Account deletion now also warns a
+user whose own Premium ends with the account. N-310 fixes the Apple terms link in terms.md.
+N-309 is blocked on the report's redline. The rebase onto main and the hash NEEDS_LEAD wait for
+#580 and #579. Review 0's copy fixes are in: refund help drafts, the K.13 refund sentence restored and the feature file. The brief's land steps still wait for the report and #580/#579. Review 1 confirmed those fixes in the app; only the blocked land steps remain. Details and resume steps: [docs/done/330.md](docs/done/330.md).

@@ -13,6 +13,7 @@ class FakeAccountRepository() implements AccountRepository {
     FateKept('Zuhause', ['Lea']),
   ];
   var archived = <ArchivedFate>[];
+  var ownPremium = false;
   AccountError? fateError;
   var deleteResult = const AccountDeleted(AppleUnlink.notLinked);
   AccountError? deleteError;
@@ -29,7 +30,7 @@ class FakeAccountRepository() implements AccountRepository {
     if (fateError case final error?) {
       throw error;
     }
-    return AccountFate(fateResult, archived: archived);
+    return AccountFate(fateResult, archived: archived, ownPremium: ownPremium);
   }
 
   @override

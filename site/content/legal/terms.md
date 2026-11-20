@@ -49,7 +49,7 @@ On a new device you restore a purchase with "Restore purchase" on the "Snacklist
 
 ## 4. Buying through the App Store and Google Play
 
-You buy Snacklist Premium in the app through Apple's App Store or Google Play. The store handles the order, the payment, the receipt and the cancellation of a yearly plan. The store shows you the price, including VAT, before you buy. [Apple's](https://www.apple.com/legal/internet-services/itunes/de/terms.html) or [Google Play's](https://play.google.com/about/play-terms/) terms also apply to that. On Apple devices, [Apple's standard license agreement](https://www.apple.com/legal/internet-services/itunes/dev/stdeula/) applies as well. For defects and liability, the statutory rules always apply (sections 13 and 14), even if those documents say otherwise.
+You buy Snacklist Premium in the app through Apple's App Store or Google Play. The store handles the order, the payment, the receipt and the cancellation of a yearly plan. The store shows you the price, including VAT, before you buy. [Apple's](https://www.apple.com/legal/internet-services/itunes/) or [Google Play's](https://play.google.com/about/play-terms/) terms also apply to that. On Apple devices, [Apple's standard license agreement](https://www.apple.com/legal/internet-services/itunes/dev/stdeula/) applies as well. For defects and liability, the statutory rules always apply (sections 13 and 14), even if those documents say otherwise.
 
 ## 5. Yearly plan
 
@@ -85,7 +85,7 @@ Refunds go through the store you bought from: with Apple at [reportaproblem.appl
 
 ## 10. Right of withdrawal
 
-As a consumer you have a statutory right of withdrawal. Because you buy from Apple or Google, you exercise it with them. The withdrawal information and the details, including when the right ends early, are in [Apple's](https://www.apple.com/legal/internet-services/itunes/de/terms.html) or [Google Play's](https://play.google.com/about/play-terms/) terms.
+As a consumer you have a statutory right of withdrawal. Because you buy from Apple or Google, you exercise it with them. The withdrawal information and the details, including when the right ends early, are in [Apple's](https://www.apple.com/legal/internet-services/itunes/) or [Google Play's](https://play.google.com/about/play-terms/) terms.
 
 ## 11. Updates and changes
 
