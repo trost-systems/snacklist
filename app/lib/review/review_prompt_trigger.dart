@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/list/list_cubit.dart';
+import 'package:family_groceries/review/review_gates.dart';
 import 'package:family_groceries/review/review_prompt.dart';
+import 'package:family_groceries/review/trip_signals.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,6 +14,11 @@ import 'package:material_ui/material_ui.dart';
 /// a completed trip of at least [minTicks] ticks, once the user has left
 /// the list alone for [idle]: never while they type, speak or have a
 /// dialog open. Without a [ReviewPrompt] above it, only shows [child].
+///
+/// Under [ReviewRules.v2] trip mode ([TripSignals] above it) moves the
+/// moment (job 326): an emptied list waits for „Kaufst du gerade ein?“ and
+/// asks only once it is answered „Nein“ (ST2), never while a trip runs
+/// (SA1); a fresh trip summary left asks too (ST1).
 class const ReviewPromptTrigger({
   required final ListCubit cubit,
 
@@ -36,10 +43,15 @@ class const ReviewPromptTrigger({
 
 class _ReviewPromptTriggerState() extends State<ReviewPromptTrigger> {
   ReviewPrompt? _prompt;
+  TripSignals? _trips;
   Popups? _popups;
   final _subscriptions = <StreamSubscription<Object?>>[];
   late final AppLifecycleListener _lifecycle;
   Timer? _due;
+
+  /// The emptied list's moment, held while „Kaufst du gerade ein?“ is up:
+  /// its answer decides.
+  var _parked = false;
   Timer? _offline;
   var _foreground = true;
   var _visible = true;
@@ -54,7 +66,7 @@ class _ReviewPromptTriggerState() extends State<ReviewPromptTrigger> {
       onStateChange: (state) {
         _foreground = state == AppLifecycleState.resumed;
         if (!_foreground) {
-          _cancel();
+          _drop();
         }
         _watchOffline();
       },
@@ -68,9 +80,11 @@ class _ReviewPromptTriggerState() extends State<ReviewPromptTrigger> {
 
   void _onPointer(PointerEvent event) {
     if (event is PointerDownEvent) {
-      _cancel();
+      _acted();
     }
   }
+
+  bool get _tripMoments => _prompt?.rules.tripMoments ?? false;
 
   @override
   void didUpdateWidget(ReviewPromptTrigger oldWidget) {
@@ -86,6 +100,8 @@ class _ReviewPromptTriggerState() extends State<ReviewPromptTrigger> {
     if (prompt == null) {
       return;
     }
+    // Read again with the household's list: its trips come with it.
+    final trips = _trips = context.read<TripSignals?>();
     _subscriptions.addAll([
       cubit.activity.listen((activity) {
         switch (activity) {
@@ -96,11 +112,35 @@ class _ReviewPromptTriggerState() extends State<ReviewPromptTrigger> {
           case TripCompleted(:final ticked):
             unawaited(prompt.tripCompleted());
             if (ticked >= ReviewPromptTrigger.minTicks || prompt.forced) {
-              _due?.cancel();
-              _due = Timer(ReviewPromptTrigger.idle, _fire);
+              _start();
+            }
+          case TripReopened():
+            if (_tripMoments) {
+              unawaited(prompt.tripReopened());
+              _drop();
             }
         }
       }),
+      if (trips != null)
+        trips.signals.listen((signal) {
+          switch (signal) {
+            case TripSaveFailed():
+              unawaited(prompt.setback());
+            case TripQuestionClosed(:final declined) when _tripMoments:
+              final pending = _parked || _due != null;
+              _drop();
+              if (pending && declined) {
+                _start();
+              }
+            case TripSummaryLeft(:final bought, :final complete)
+                when _tripMoments &&
+                    complete &&
+                    (bought >= ReviewPromptTrigger.minTicks || prompt.forced):
+              _start();
+            case TripQuestionClosed() || TripSummaryLeft():
+              break;
+          }
+        }),
       // A queued write the server refused; a taken name or a change that
       // needs a connection is a message about the input, no sync failure.
       cubit.rejections
@@ -130,7 +170,7 @@ class _ReviewPromptTriggerState() extends State<ReviewPromptTrigger> {
   }
 
   void _unfollow() {
-    _cancel();
+    _drop();
     _offline?.cancel();
     _offline = null;
     for (final subscription in _subscriptions) {
@@ -139,7 +179,23 @@ class _ReviewPromptTriggerState() extends State<ReviewPromptTrigger> {
     _subscriptions.clear();
   }
 
-  void _cancel() {
+  void _start() {
+    _drop();
+    _due = Timer(ReviewPromptTrigger.idle, _fire);
+  }
+
+  void _drop() {
+    _due?.cancel();
+    _due = null;
+    _parked = false;
+  }
+
+  /// A touch or a key drops the waiting moment, unless it is the answer to
+  /// „Kaufst du gerade ein?“, which decides it.
+  void _acted() {
+    if (_due != null && _tripMoments && (_trips?.asking ?? false)) {
+      _parked = true;
+    }
     _due?.cancel();
     _due = null;
   }
@@ -147,7 +203,7 @@ class _ReviewPromptTriggerState() extends State<ReviewPromptTrigger> {
   /// A key up may be the end of the press that ticked.
   bool _onKey(KeyEvent event) {
     if (event is! KeyUpEvent) {
-      _cancel();
+      _acted();
     }
     return false;
   }
@@ -155,6 +211,16 @@ class _ReviewPromptTriggerState() extends State<ReviewPromptTrigger> {
   /// No retry: the next completed trip is the next chance.
   void _fire() {
     _due = null;
+    if (_tripMoments) {
+      // A trip runs (SA1): its summary is the moment.
+      if (_trips?.running ?? false) {
+        return;
+      }
+      if (_trips?.asking ?? false) {
+        _parked = true;
+        return;
+      }
+    }
     // The shell's Scaffold takes the keyboard out of the list's MediaQuery.
     // Another tab (the shell keeps the List branch mounted, offstage) or a
     // page pushed over the list: the user is somewhere else.

@@ -95,6 +95,15 @@ const reportContentEntryFlag = 'report-content-entry';
 /// the list's card asking about existing stores once. Off, none shows.
 const openStoreAppFlag = 'open-store-app';
 
+/// The flag for the store rating prompt's trip moments (job 326): the
+/// prompt after a fresh trip summary, all planned items bought, is left
+/// (ST1), or once „Kaufst du gerade ein?“ after the emptying tick is
+/// answered „Nein“ (ST2); none while a trip runs or after an emptying taken
+/// back; held back after a failed trip save, a join, a household switch or
+/// a bug note; at most two a year, 180 days apart. Off, today's prompt after
+/// an emptied list.
+const ratingTriggersV2Flag = 'rating-triggers-v2';
+
 /// PostHog feature flags, the app's runtime toggles (job 44,
 /// docs/ANALYTICS.md "Feature flags"). Read a toggle with [isOn] wherever it
 /// matters; nothing else in the app reads PostHog flags.

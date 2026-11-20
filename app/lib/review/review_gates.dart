@@ -44,6 +44,16 @@ enum ReviewGate() {
   completedTrips,
   itemsAdded,
   noRecentError,
+
+  /// [ReviewRules.v2]: no failed trip save, join or household switch
+  /// since the time [noRecentError] looks back to.
+  noRecentSetback,
+
+  /// [ReviewRules.v2]: no bug note in the last [bugNoteWindow].
+  noRecentBugNote,
+
+  /// [ReviewRules.v2]: no list emptying taken back this session (SA2).
+  notReopened,
   cooldown,
   versionCap,
   yearCap,
@@ -54,10 +64,39 @@ const minActiveDays = 3;
 const minCompletedTrips = 2;
 const minItemsAdded = 25;
 const errorWindow = Duration(hours: 24);
-const requestCooldown = Duration(days: 120);
+const bugNoteWindow = Duration(days: 14);
 const maxRequestsPerVersion = 2;
 const requestWindow = Duration(days: 365);
-const maxRequestsPerWindow = 3;
+
+/// The rules the prompt asks by: [v1] since job 155, [v2] with the flag
+/// `rating-triggers-v2` (job 326), which leaves one of the OS's three
+/// prompts a year in reserve and holds back after a setback.
+enum ReviewRules({
+  required final Duration cooldown,
+  required final int maxRequestsPerWindow,
+
+  /// The gates [ReviewGate.noRecentSetback], [ReviewGate.noRecentBugNote]
+  /// and [ReviewGate.notReopened] hold; off, they pass.
+  required final bool setbacks,
+
+  /// The trigger's trip moments: a fresh trip summary left (ST1), the
+  /// emptied list once „Kaufst du gerade ein?“ is answered no (ST2), none
+  /// while a trip runs (SA1).
+  required final bool tripMoments,
+}) {
+  v1(
+    cooldown: Duration(days: 120),
+    maxRequestsPerWindow: 3,
+    setbacks: false,
+    tripMoments: false,
+  ),
+  v2(
+    cooldown: Duration(days: 180),
+    maxRequestsPerWindow: 2,
+    setbacks: true,
+    tripMoments: true,
+  ),
+}
 
 /// The first gate [c] fails at [now], or null when all pass.
 ReviewGate? failingGate(
@@ -65,6 +104,7 @@ ReviewGate? failingGate(
   required DateTime now,
   required String version,
   required BuildChannel channel,
+  required ReviewRules rules,
 }) {
   final firstLaunch = c.firstLaunch;
   final last = c.requests.lastOrNull;
@@ -74,6 +114,10 @@ ReviewGate? failingGate(
     _ => now.subtract(errorWindow),
   };
   final lastError = c.lastErrorAt;
+  final lastSetback = c.lastSetbackAt;
+  final lastBugNote = c.lastBugNoteAt;
+  final lastReopened = c.lastReopenedAt;
+  final session = c.sessionStart;
   bool passes(ReviewGate gate) => switch (gate) {
     ReviewGate.storeBuild => channel == BuildChannel.store,
     ReviewGate.firstLaunchAge =>
@@ -83,8 +127,21 @@ ReviewGate? failingGate(
     ReviewGate.itemsAdded => c.itemsAdded >= minItemsAdded,
     ReviewGate.noRecentError =>
       lastError == null || lastError.isBefore(errorSince),
+    ReviewGate.noRecentSetback =>
+      !rules.setbacks ||
+          lastSetback == null ||
+          lastSetback.isBefore(errorSince),
+    ReviewGate.noRecentBugNote =>
+      !rules.setbacks ||
+          lastBugNote == null ||
+          now.difference(lastBugNote) >= bugNoteWindow,
+    ReviewGate.notReopened =>
+      !rules.setbacks ||
+          lastReopened == null ||
+          session == null ||
+          lastReopened.isBefore(session),
     ReviewGate.cooldown =>
-      last == null || now.difference(last.at) >= requestCooldown,
+      last == null || now.difference(last.at) >= rules.cooldown,
     // Requests older than [requestWindow] are pruned on write, so a version
     // older than a year counts only its last year; the cooldown still holds.
     ReviewGate.versionCap =>
@@ -92,7 +149,7 @@ ReviewGate? failingGate(
           maxRequestsPerVersion,
     ReviewGate.yearCap =>
       c.requests.where((r) => now.difference(r.at) < requestWindow).length <
-          maxRequestsPerWindow,
+          rules.maxRequestsPerWindow,
   };
   return ReviewGate.values.where((g) => !passes(g)).firstOrNull;
 }

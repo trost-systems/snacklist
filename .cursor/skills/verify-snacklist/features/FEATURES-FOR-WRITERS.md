@@ -667,7 +667,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 
 ## Rating Snacklist in the store
 
-**What it does.** In the iPhone and Android apps, More has the row „Snacklist bewerten“ (EN: "Rate Snacklist"). It opens Snacklist's page in the App Store or on Google Play, where people can leave a rating. Once Snacklist is in the public stores, the app may also ask for a rating with the phone's own rating window: only right after a shopping trip is finished (every item of a list with at least three items ticked off), after a few quiet seconds, and only for people who have used Snacklist for at least a week, on several days, without trouble (no failed sync, no error) lately. It asks at most a few times a year, never twice in four months. Snacklist asks no question of its own first and shows no extra text.
+**What it does.** In the iPhone and Android apps, More has the row „Snacklist bewerten“ (EN: "Rate Snacklist"). It opens Snacklist's page in the App Store or on Google Play, where people can leave a rating. Once Snacklist is in the public stores, the app may also ask for a rating with the phone's own rating window: only right after a shopping trip is finished (every item of a list with at least three items ticked off), after a few quiet seconds, and only for people who have used Snacklist for at least a week, on several days, without trouble (no failed sync, no error) lately. It asks at most a few times a year, never twice in four months. Snacklist asks no question of its own first and shows no extra text. Not switched on yet: with the shopping trip feature, the window would come after leaving a finished trip's summary (everything planned bought), or after answering „Nein, nur abgehakt“, never while a trip runs, not after a feedback note about a bug for two weeks, and at most twice a year, six months apart.
 
 **How to get there.**
 1. Tap „Mehr“ (EN: "More").
@@ -681,7 +681,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 
 **Unverified.** The rating window on a real phone (no phone was available), and the store page opening on a real phone.
 
-**Last verified.** 19 November 2026, code version af0287cf, in the web app (German): no rating row on the web, and a whole list ticked off counted as one trip, with the question after each tick answered „Nein, nur abgehakt“. Earlier: 18 November 2026, code version 0ca5dcc9, in the web app; the store's rating dialog needs a store install and was not checked.
+**Last verified.** 20 November 2026, job 326 branch, in the app's tests: the trip moments (not switched on). Earlier: 19 November 2026, code version af0287cf, in the web app (German): no rating row on the web, and a whole list ticked off counted as one trip, with the question after each tick answered „Nein, nur abgehakt“. Earlier: 18 November 2026, code version 0ca5dcc9, in the web app; the store's rating dialog needs a store install and was not checked.
 
 ## Account: data export and deletion
 

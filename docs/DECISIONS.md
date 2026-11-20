@@ -16390,3 +16390,44 @@ accounts, a local stack and GitHub runners.
   reconnect, so a dropped channel waited for its backoff (up to 30 s) while the list said online:
   `_networkWorks` now subscribes a down channel at once, whichever way the down ends. And a down
   mid-session whose request hung never showed "Offline" (before: at once): now after 1.5 s.
+
+## Job 326: store rating moments ST1 and ST2 (flag `rating-triggers-v2`)
+
+Peter picked the recommended set of the write-up `store-rating-triggers-2026-11-20.md` (t1084u) with its defaults:
+ST1, ST2, SA1, SA2, SA3, SA5 and SA6. Everything sits behind the PostHog flag `rating-triggers-v2`; off, job 155's
+moment after an emptied list runs unchanged, and the counters are the same JSON with three more optional keys.
+
+1. **The trip-question conflict is solved by parking, not by a retry loop.** With the flag on, an emptied list
+   (at least 3 own ticks) starts the 3-second wait as before. While „Kaufst du gerade ein?“ is up, the moment parks:
+   the tap on the sheet and the timer firing over it no longer drop it. „Nein, nur abgehakt“ (or the sheet dismissed)
+   starts a fresh 3-second wait on the list (ST2); „Ja“ drops it, since the trip's end is the better moment (ST1);
+   „Zurücknehmen“ drops it and counts as SA2. Any other popup still drops the moment, as before: only the trip
+   question is a known, expected interruption.
+2. **ST1 fires when the fresh summary is left,** through „Fertig“ or back, never on the summary page itself (the
+   write-up's default 2: the total stays uncovered). It needs an end by Beenden (not the 4-hour auto end), a save
+   that went through on the first try (none after „Erneut versuchen“ or a refusal), no „Einkauf löschen“, every
+   planned item (the trip's start snapshot) bought, and at least 3 items bought. „Weiter einkaufen“ is not a leave.
+   The 3 seconds, the idle rules and every gate apply as for the list.
+3. **Which side knows what.** `review/` may not import `trip/` (import-direction layers), so `review/trip_signals.dart`
+   declares what the prompt needs (`running`, `asking`, closed question, summary left, failed save) and the shell's
+   list scope adapts `TripCubit` to it. `TripCubit` reports facts (bought count, complete or not); the threshold of 3
+   stays in the trigger.
+4. **SA1.** A trip running when the list empties starts no wait; the moment comes after Beenden.
+5. **SA2 lives in the list.** `ListCubit.readd` already knows the emptying time (it uses it to keep a re-tick inside
+   10 minutes the same trip), so it tells `TripReopened` when a put-back from „Zuletzt verwendet“ or „Zurücknehmen“
+   reopens a list emptied in the last 10 minutes, once per emptying. The prompt then takes that emptying back off
+   `completedTrips` and blocks the rest of the session (`last_reopened_at` before the session start passes). Any
+   put-back in the window counts, as the write-up words it, not only the undo of the emptying tick, but only while the
+   list is still empty: a „Zurücknehmen“ on a list refilled since is a mis-tick, not a taken-back trip.
+6. **SA3 setbacks are recorded always and read only with the flag on.** A failed or refused trip save on the shown
+   summary, a household switch, and a join or new household while signed in (not a cold start or a sign-in) set
+   `last_setback_at`, which blocks like an error (24 hours and the session before). A sent feedback note of category
+   bug sets `last_bug_note_at`, which blocks for 14 days (the write-up's default 3). Recording without the flag keeps
+   the counters honest for the day the flag turns on; with it off no gate reads them.
+7. **SA5 as a table.** `ReviewRules.v1` (120 days, 3 per 365 days) and `ReviewRules.v2` (180 days, 2 per 365 days,
+   setbacks on) replace the loose constants, so the flag picks one row instead of branching per gate. The per-version
+   cap of 2 and every other gate stay.
+8. **No new UI strings, no analytics change.** SA7 (a `trigger` property) is out of scope, so `review_prompt_requested`
+   keeps no properties. No ARB, legal or privacy file changed.
+9. **Rollout.** `releases/flags.json` has `rating-triggers-v2` off. The prompt asks only in public store builds, so
+   turning the flag on for testers changes nothing they can see; creating the PostHog flag is the lead's step.

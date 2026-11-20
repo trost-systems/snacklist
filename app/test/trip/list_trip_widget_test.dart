@@ -14,8 +14,14 @@ import 'package:family_groceries/log/model.dart' hide TripSource;
 import 'package:family_groceries/log/trip_repository.dart';
 import 'package:family_groceries/purchases/entitlements.dart';
 import 'package:family_groceries/purchases/premium_server.dart';
+import 'package:family_groceries/review/review_counters.dart';
+import 'package:family_groceries/review/review_gates.dart';
+import 'package:family_groceries/review/review_prompt.dart';
+import 'package:family_groceries/review/review_prompt_trigger.dart';
+import 'package:family_groceries/review/trip_signals.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/shell/list_parts.dart';
+import 'package:family_groceries/shell/list_scope.dart' show TripCubitSignals;
 import 'package:family_groceries/shell/router.dart';
 import 'package:family_groceries/trip/model.dart';
 import 'package:family_groceries/trip/summary_page.dart';
@@ -33,6 +39,7 @@ import '../list/fake_repository.dart';
 import '../list/memory_cache.dart';
 import '../log/fakes.dart' show FakeTrips;
 import '../purchases/fakes.dart' show FakeEntitlementsSource, FakePremiumServer;
+import '../review/fakes.dart';
 import 'trip_cubit_test.dart' show FakeSessions, Tracked, emptyCache;
 
 /// The server's trip sessions, also answering `trip_session` for
@@ -82,6 +89,9 @@ Future<Shop> pumpList(
   Locale locale = const Locale('de'),
   double textScale = 1,
   Size size = const Size(390, 844),
+
+  /// The rating prompt the list's trigger feeds, with this cubit's trips.
+  ReviewPrompt? reviewPrompt,
 }) async {
   tester.view
     ..devicePixelRatio = 3
@@ -164,6 +174,10 @@ Future<Shop> pumpList(
         RepositoryProvider<Analytics>.value(value: Tracked()),
         RepositoryProvider<PremiumServer>.value(value: FakePremiumServer()),
         RepositoryProvider.value(value: cache),
+        if (reviewPrompt != null) ...[
+          RepositoryProvider.value(value: reviewPrompt),
+          RepositoryProvider<TripSignals>.value(value: TripCubitSignals(trips)),
+        ],
       ],
       child: MultiBlocProvider(
         providers: [
@@ -401,6 +415,85 @@ void main() {
     expect(shop.router.state.uri.path, listPath);
     expect(strip, findsNothing);
     expect(shop.trips.state, isA<NoTrip>());
+  });
+
+  group('the rating prompt with rating-triggers-v2 (job 326)', () {
+    late FakeStoreReview review;
+
+    /// A due store-build install with the flag on.
+    ReviewPrompt due() {
+      review = FakeStoreReview();
+      final now = DateTime.now();
+      return ReviewPrompt(
+        MemoryReviewStore()
+          ..json = ReviewCounters(
+            firstLaunch: now.subtract(const Duration(days: 30)),
+            activeDays: 5,
+            completedTrips: 4,
+            itemsAdded: 60,
+          ).toJson(),
+        review,
+        channel: BuildChannel.store,
+        version: Future.value('1.4.0'),
+        v2: () => true,
+      );
+    }
+
+    Future<void> idle(WidgetTester tester, Duration d) async {
+      await tester.pump(d);
+      await tester.pump();
+    }
+
+    testWidgets('the question after the emptying tick keeps the moment; Nein '
+        'asks 3 s later (ST2)', (tester) async {
+      await pumpList(tester, reviewPrompt: due());
+      for (final name in ['Milch', 'Brot']) {
+        await tick(tester, name);
+        await answer(tester, 'trip-ask-no');
+      }
+      await tick(tester, 'Seife');
+      expect(asked, findsOneWidget);
+      await idle(tester, const Duration(seconds: 5));
+      expect(review.requests, 0, reason: 'never over the question');
+      await answer(tester, 'trip-ask-no');
+      await idle(tester, ReviewPromptTrigger.idle);
+      expect(review.requests, 1);
+    });
+
+    testWidgets('a trip asks nothing at the emptying, but once its summary '
+        'is left (SA1, ST1)', (tester) async {
+      final shop = await pumpList(tester, reviewPrompt: due());
+      await startByTick(tester, 'Milch');
+      await tick(tester, 'Brot');
+      await tick(tester, 'Seife');
+      await idle(tester, const Duration(seconds: 5));
+      expect(review.requests, 0, reason: 'the trip still runs');
+      await tester.tap(key('trip-strip-end'));
+      await tester.pumpAndSettle();
+      await idle(tester, const Duration(seconds: 5));
+      expect(review.requests, 0, reason: 'not on the summary');
+      await tester.scrollUntilVisible(key('trip-summary-done'), 200);
+      await tester.tap(key('trip-summary-done'));
+      await tester.pumpAndSettle();
+      expect(shop.router.state.uri.path, listPath);
+      await idle(tester, ReviewPromptTrigger.idle);
+      expect(review.requests, 1);
+    });
+
+    testWidgets('a summary with a planned item left asks nothing', (
+      tester,
+    ) async {
+      await pumpList(tester, reviewPrompt: due());
+      await startByTick(tester, 'Milch');
+      await tick(tester, 'Brot');
+      await tester.tap(key('trip-strip-end'));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(key('trip-summary-done'), 200);
+      await tester.tap(key('trip-summary-done'));
+      await tester.pumpAndSettle();
+      await idle(tester, const Duration(seconds: 10));
+      expect(review.requests, 0);
+    });
   });
 
   testWidgets('Weiter einkaufen runs the same trip again', (tester) async {

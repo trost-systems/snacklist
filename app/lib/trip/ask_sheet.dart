@@ -1,16 +1,8 @@
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/list_view/item_icon.dart';
+import 'package:family_groceries/trip/model.dart';
 import 'package:material_ui/material_ui.dart';
-
-/// What the user answered „Kaufst du gerade ein?“.
-enum AskAnswer() {
-  yes,
-
-  /// Also a dismissal: a scrim tap, back, dragging the sheet down.
-  no,
-  takeBack,
-}
 
 /// The question after an own tick while no trip runs (job 234, TM2's
 /// sheet). [itemName] is the item just ticked off.

@@ -32,6 +32,17 @@ class const ReviewCounters({
   final DateTime? lastErrorAt,
   final DateTime? sessionStart,
   final DateTime? previousSessionStart,
+
+  /// A trip save that failed or was refused, a join or a household switch
+  /// (job 326, SA3).
+  final DateTime? lastSetbackAt,
+
+  /// A sent feedback note of the kind bug.
+  final DateTime? lastBugNoteAt,
+
+  /// A re-add put an item back right after the tick that emptied the list
+  /// (SA2).
+  final DateTime? lastReopenedAt,
 }) {
   /// Anything unreadable is a fresh install's counters: the prompt only
   /// waits longer.
@@ -65,6 +76,9 @@ class const ReviewCounters({
           lastErrorAt: _time(map['last_error_at']),
           sessionStart: _time(map['session_start']),
           previousSessionStart: _time(map['previous_session_start']),
+          lastSetbackAt: _time(map['last_setback_at']),
+          lastBugNoteAt: _time(map['last_bug_note_at']),
+          lastReopenedAt: _time(map['last_reopened_at']),
         );
       }
     } on FormatException {
@@ -91,6 +105,9 @@ class const ReviewCounters({
     'last_error_at': ?lastErrorAt?.toUtc().toIso8601String(),
     'session_start': ?sessionStart?.toUtc().toIso8601String(),
     'previous_session_start': ?previousSessionStart?.toUtc().toIso8601String(),
+    'last_setback_at': ?lastSetbackAt?.toUtc().toIso8601String(),
+    'last_bug_note_at': ?lastBugNoteAt?.toUtc().toIso8601String(),
+    'last_reopened_at': ?lastReopenedAt?.toUtc().toIso8601String(),
   });
 
   ReviewCounters copyWith({
@@ -103,6 +120,9 @@ class const ReviewCounters({
     DateTime? lastErrorAt,
     DateTime? sessionStart,
     DateTime? previousSessionStart,
+    DateTime? lastSetbackAt,
+    DateTime? lastBugNoteAt,
+    DateTime? lastReopenedAt,
   }) => ReviewCounters(
     firstLaunch: firstLaunch ?? this.firstLaunch,
     lastActiveDay: lastActiveDay ?? this.lastActiveDay,
@@ -113,6 +133,9 @@ class const ReviewCounters({
     lastErrorAt: lastErrorAt ?? this.lastErrorAt,
     sessionStart: sessionStart ?? this.sessionStart,
     previousSessionStart: previousSessionStart ?? this.previousSessionStart,
+    lastSetbackAt: lastSetbackAt ?? this.lastSetbackAt,
+    lastBugNoteAt: lastBugNoteAt ?? this.lastBugNoteAt,
+    lastReopenedAt: lastReopenedAt ?? this.lastReopenedAt,
   );
 }
 

@@ -677,4 +677,151 @@ void main() {
       expect(w.sessions.saved, isEmpty);
     });
   });
+
+  group('activity for the rating prompt (job 326)', () {
+    /// What [w]'s trip cubit tells from now on, as text.
+    List<String> told(World w) {
+      final heard = <String>[];
+      w.trips.activity.listen(
+        (a) => heard.add(switch (a) {
+          QuestionAnswered(:final answer) => 'answered ${answer.name}',
+          SummaryLeft(:final bought, complete: true) => 'left $bought complete',
+          SummaryLeft(:final bought) => 'left $bought',
+          SaveFailed() => 'save failed',
+        }),
+      );
+      return heard;
+    }
+
+    /// Ticks the whole list off on a trip started by the first tick.
+    void shopAll(World w) {
+      w
+        ..tick('milk')
+        ..trips.yes()
+        ..tick('bread')
+        ..tick('tea');
+    }
+
+    test('the answers to the question', () {
+      run((w) {
+        final heard = told(w);
+        w
+          ..tick('milk')
+          ..trips.no()
+          ..tick('bread')
+          ..trips.takeBack()
+          ..tick('tea')
+          ..trips.yes();
+        w.async.flushMicrotasks();
+        expect(heard, ['answered no', 'answered takeBack', 'answered yes']);
+      });
+    });
+
+    test('leaving the summary of a Beenden saved at once with every planned '
+        'item bought is complete', () {
+      run((w) {
+        final heard = told(w);
+        shopAll(w);
+        unawaited(w.trips.finish());
+        w.async.flushMicrotasks();
+        w.trips.dismissEnded();
+        w.async.flushMicrotasks();
+        expect(heard, ['answered yes', 'left 3 complete']);
+      });
+    });
+
+    test('a planned item left over is not complete', () {
+      run((w) {
+        final heard = told(w);
+        w
+          ..tick('milk')
+          ..trips.yes()
+          ..tick('bread');
+        unawaited(w.trips.finish());
+        w.async.flushMicrotasks();
+        w.trips.dismissEnded();
+        w.async.flushMicrotasks();
+        expect(heard.last, 'left 2');
+      });
+    });
+
+    test('an end by the long-running rule is not complete', () {
+      run((w) {
+        final heard = told(w);
+        shopAll(w);
+        w.elapse(const Duration(hours: 4, seconds: 30));
+        expect(w.ended.auto, isTrue);
+        w.trips.dismissEnded();
+        w.async.flushMicrotasks();
+        expect(heard.last, 'left 3');
+      });
+    });
+
+    test('a failed save, even saved on Erneut versuchen, is told and not '
+        'complete', () {
+      run((w) {
+        final heard = told(w);
+        w.sessions.fail = true;
+        shopAll(w);
+        unawaited(w.trips.finish());
+        w.async.flushMicrotasks();
+        w.sessions.fail = false;
+        unawaited(w.trips.retry());
+        w.async.flushMicrotasks();
+        expect(w.ended.saved, isTrue);
+        w.trips.dismissEnded();
+        w.async.flushMicrotasks();
+        expect(heard, ['answered yes', 'save failed', 'left 3']);
+      });
+    });
+
+    test('a refused save is told', () {
+      run((w) {
+        final heard = told(w);
+        w.sessions.refuse = true;
+        shopAll(w);
+        unawaited(w.trips.finish());
+        w.async.flushMicrotasks();
+        w.trips.dismissEnded();
+        w.async.flushMicrotasks();
+        expect(heard, ['answered yes', 'save failed', 'left 3']);
+      });
+    });
+
+    test('a deleted end is not complete', () {
+      run((w) {
+        final heard = told(w);
+        shopAll(w);
+        unawaited(w.trips.finish());
+        w.async.flushMicrotasks();
+        unawaited(w.trips.delete());
+        w.async.flushMicrotasks();
+        w.trips.dismissEnded();
+        w.async.flushMicrotasks();
+        expect(heard.last, 'left 3');
+      });
+    });
+
+    test('Weiter einkaufen leaves no summary; the next Beenden can be '
+        'complete', () {
+      run((w) {
+        final heard = told(w);
+        w
+          ..tick('milk')
+          ..trips.yes()
+          ..tick('bread');
+        unawaited(w.trips.finish());
+        w.async.flushMicrotasks();
+        w.trips.keepShopping();
+        w.async.flushMicrotasks();
+        expect(heard, ['answered yes']);
+        w.tick('tea');
+        unawaited(w.trips.finish());
+        w.async.flushMicrotasks();
+        w.trips.dismissEnded();
+        w.async.flushMicrotasks();
+        expect(heard, ['answered yes', 'left 3 complete']);
+      });
+    });
+  });
 }

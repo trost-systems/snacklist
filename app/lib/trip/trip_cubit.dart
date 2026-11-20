@@ -76,6 +76,26 @@ final class const Ended(
 /// question and no strip.
 final class const RunningElsewhere(final String householdId) extends TripState;
 
+/// What the user did with trip mode, for the store rating prompt (job
+/// 326).
+@immutable
+sealed class const TripActivity();
+
+/// „Kaufst du gerade ein?“ was answered (a dismissal is [AskAnswer.no]).
+final class const QuestionAnswered(final AskAnswer answer) extends TripActivity;
+
+/// The summary page of an end was left, or the auto-end card's ×; [bought]
+/// items were ticked on the trip. [complete]: the user's own Beenden, saved
+/// at the first go (no failed or refused save, not deleted), with every
+/// planned item bought.
+final class const SummaryLeft({
+  required final int bought,
+  required final bool complete,
+}) extends TripActivity;
+
+/// The save of the shown end failed or was refused.
+final class const SaveFailed() extends TripActivity;
+
 /// Trip mode (job 234) in one household for the signed-in user: the
 /// question after each own tick, the running trip with its long-running
 /// rule, and its end, saved to the server. The trip lives in
@@ -112,6 +132,13 @@ class TripCubit(
 
   late final List<StreamSubscription<Object?>> _subscriptions;
   Timer? _timer;
+  final _activity = StreamController<TripActivity>.broadcast();
+
+  /// The latest end of this cubit: its trip, whether every planned item
+  /// was bought (from the trip as it ended here; the server's answer has no
+  /// lines without Premium), and whether its save failed or it was
+  /// deleted since.
+  ({String id, bool allPlanned, bool spoilt})? _lastEnd;
 
   /// This household's ends whose save has not gone through, by trip id.
   final _unsaved = <String, FinishedTrip>{};
@@ -122,6 +149,9 @@ class TripCubit(
 
   /// Device writes, one after the other.
   Future<void> _writes = Future.value();
+
+  /// What the user does with trip mode (broadcast).
+  Stream<TripActivity> get activity => _activity.stream;
 
   /// Restores the trip from the device, retries unsaved ends and runs the
   /// rule. Call once the cubit is created.
@@ -161,6 +191,7 @@ class TripCubit(
     )) {
       _track('shop_asked', {'answer': ShopAnswer.yes.wire});
       _begin(at, listId, snapshot, TripSource.ask, startItem: item.id);
+      _tell(const QuestionAnswered(AskAnswer.yes));
     }
   }
 
@@ -169,6 +200,7 @@ class TripCubit(
     if (state is Asking) {
       _track('shop_asked', {'answer': ShopAnswer.no.wire});
       _set(const NoTrip());
+      _tell(const QuestionAnswered(AskAnswer.no));
     }
   }
 
@@ -178,6 +210,7 @@ class TripCubit(
       _track('shop_asked', {'answer': ShopAnswer.takeBack.wire});
       _list.readd(item.id);
       _set(const NoTrip());
+      _tell(const QuestionAnswered(AskAnswer.takeBack));
     }
   }
 
@@ -230,6 +263,7 @@ class TripCubit(
   Future<void> delete() async {
     if (state case Ended(:final trip)) {
       await _repo.delete(trip.id);
+      _spoil(trip.id);
       _unsaved.remove(trip.id);
       _persist();
     }
@@ -252,8 +286,21 @@ class TripCubit(
 
   /// The summary page was left, or the card's ×.
   void dismissEnded() {
-    if (state is Ended) {
+    if (state case Ended(:final trip, :final auto, :final saved)) {
+      final end = _lastEnd;
       _set(const NoTrip());
+      _tell(
+        SummaryLeft(
+          bought: trip.bought,
+          complete:
+              !auto &&
+              saved &&
+              end != null &&
+              end.id == trip.id &&
+              end.allPlanned &&
+              !end.spoilt,
+        ),
+      );
     }
   }
 
@@ -412,6 +459,13 @@ class TripCubit(
       previous: _previous,
     );
     _previous = null;
+    _lastEnd = (
+      id: finished.id,
+      allPlanned: (finished.lines ?? const <TripLine>[])
+          .where((l) => l.planned)
+          .every((l) => l.bought),
+      spoilt: false,
+    );
     _track('shop_ended', {
       'reason': end.name,
       'minutes': ShopMinutes.of(finished.active).wire,
@@ -469,6 +523,23 @@ class TripCubit(
     if (state case Ended(:final trip, :final from, :final auto, save: final was)
         when trip.id == id && was != save) {
       emit(Ended(answer ?? trip, from: from, auto: auto, save: save));
+      if (save == TripSave.failed || save == TripSave.refused) {
+        _spoil(id);
+        _tell(const SaveFailed());
+      }
+    }
+  }
+
+  /// The end of [id], if it is the latest, can no longer be complete.
+  void _spoil(String id) {
+    if (_lastEnd case final end? when end.id == id) {
+      _lastEnd = (id: id, allPlanned: end.allPlanned, spoilt: true);
+    }
+  }
+
+  void _tell(TripActivity activity) {
+    if (!_activity.isClosed) {
+      _activity.add(activity);
     }
   }
 
@@ -566,6 +637,7 @@ class TripCubit(
   @override
   Future<void> close() {
     _timer?.cancel();
+    unawaited(_activity.close());
     for (final s in _subscriptions) {
       unawaited(s.cancel());
     }

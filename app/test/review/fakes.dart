@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:family_groceries/review/review_counters.dart';
 import 'package:family_groceries/review/store_review.dart';
+import 'package:family_groceries/review/trip_signals.dart';
 
 /// The device's review counters for one test.
 class MemoryReviewStore() implements ReviewStore {
@@ -34,4 +37,22 @@ class FakeStoreReview() implements StoreReview {
       throw error;
     }
   }
+}
+
+/// Trip mode as the shell shows it to the prompt, set by hand.
+class FakeTripSignals() implements TripSignals {
+  @override
+  var running = false;
+
+  @override
+  var asking = false;
+
+  final _signals = StreamController<TripSignal>.broadcast();
+
+  @override
+  Stream<TripSignal> get signals => _signals.stream;
+
+  void tell(TripSignal signal) => _signals.add(signal);
+
+  Future<void> close() => _signals.close();
 }

@@ -23,9 +23,18 @@ class ReviewPrompt(
   /// Skips the gates outside a store build (`REVIEW_PROMPT_FORCE`).
   final bool force = Environment.reviewPromptForce,
   final Analytics? analytics,
+
+  /// The flag `rating-triggers-v2`: [ReviewRules.v2] instead of v1; read
+  /// at each request and trip moment.
+  final bool Function() v2 = _off,
 }) {
   final DateTime Function() _clock = clock ?? DateTime.now;
   var _counters = const ReviewCounters();
+
+  static bool _off() => false;
+
+  /// The rules in force now.
+  ReviewRules get rules => v2() ? ReviewRules.v2 : ReviewRules.v1;
 
   /// Every change runs after the one before, the load first, so a count
   /// made before the load lands on the loaded counters.
@@ -84,6 +93,25 @@ class ReviewPrompt(
   /// error.
   Future<void> errorSeen() => _change((c) => c.copyWith(lastErrorAt: _clock()));
 
+  /// A trip save that failed or was refused, a join or a household switch
+  /// (job 326, SA3): under [ReviewRules.v2] it holds the prompt back like
+  /// an error.
+  Future<void> setback() => _change((c) => c.copyWith(lastSetbackAt: _clock()));
+
+  /// A feedback note of the kind bug was sent: under [ReviewRules.v2] no
+  /// prompt for [bugNoteWindow].
+  Future<void> bugNoted() =>
+      _change((c) => c.copyWith(lastBugNoteAt: _clock()));
+
+  /// The list's last emptying was taken back (SA2): it is no completed
+  /// trip, and under [ReviewRules.v2] this session asks no more.
+  Future<void> tripReopened() => _change(
+    (c) => c.copyWith(
+      completedTrips: c.completedTrips > 0 ? c.completedTrips - 1 : 0,
+      lastReopenedAt: _clock(),
+    ),
+  );
+
   /// Asks the store when every gate passes (or [forced]) and the store has
   /// a prompt here; the store decides whether it shows. Returns whether it
   /// asked.
@@ -97,6 +125,7 @@ class ReviewPrompt(
                 now: now,
                 version: current,
                 channel: channel,
+                rules: rules,
               ) !=
               null) {
         return false;
