@@ -9,6 +9,7 @@ import 'package:family_groceries/design/tactile.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/add_sheet/add_sheet_cubit.dart';
+import 'package:family_groceries/list/add_sheet/compact_details.dart';
 import 'package:family_groceries/list/add_sheet/suggestion.dart';
 import 'package:family_groceries/list/chain_suggestions.dart';
 import 'package:family_groceries/list/edit_item_sheet.dart';
@@ -195,6 +196,19 @@ class _AddSheetState() extends State<AddSheet> {
 
   static String _ms(Duration d) => (d.inMicroseconds / 1000).toStringAsFixed(1);
 
+  /// The system back closes the compact sheet, which has no close key. A
+  /// field in it that holds the back (a new store's name) takes it first:
+  /// this listener runs before the route's own pop.
+  Future<bool> _back() async {
+    if (ModalRoute.of(context)?.popDisposition ==
+        RoutePopDisposition.doNotPop) {
+      await Navigator.of(context).maybePop();
+      return true;
+    }
+    widget.onClose();
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     final still = MediaQuery.disableAnimationsOf(context);
@@ -224,7 +238,11 @@ class _AddSheetState() extends State<AddSheet> {
           // The add bar floats over the list's bottom edge and comes in as
           // the bottom padding; the sheet stands on it.
           final bar = media.padding.bottom;
-          final max = constraints.maxHeight - bar - media.padding.top - _topGap;
+          final cubit = context.read<AddSheetCubit>();
+          // Compact: the chips and an open picker may take the room up to
+          // the status bar at a large text size on a small phone.
+          final gap = cubit.compact ? 0 : _topGap;
+          final max = constraints.maxHeight - bar - media.padding.top - gap;
           final content = _shown || open
               ? _ReportHeight(
                   to: open ? widget.extent : null,
@@ -236,9 +254,13 @@ class _AddSheetState() extends State<AddSheet> {
                   ),
                 )
               : null;
-          final cubit = context.read<AddSheetCubit>();
           return Stack(
             children: [
+              if (open && cubit.compact)
+                BackButtonListener(
+                  onBackButtonPressed: _back,
+                  child: const SizedBox.shrink(),
+                ),
               // A tap target for the pointer only: Schließen and Escape
               // close the sheet for everyone else.
               if (open || _shown)
@@ -531,8 +553,11 @@ class _ContentState() extends State<_Content> {
         ),
       ),
     ];
+    final compact = cubit.compact;
     final notes = <Widget>[
-      if (sheet.added case final added?)
+      // Compact: an add shows in the list behind the sheet and is undone
+      // there; only "already on the list" stays a note.
+      if (sheet.added case final added? when !compact || added is! Added)
         _AddedNote(
           added,
           catalog: catalog,
@@ -615,6 +640,83 @@ class _ContentState() extends State<_Content> {
     // above the capped rows, so it never pushes them out of view.
     final firstOpen = sheet.text.trim().isEmpty;
     final scaler = MediaQuery.textScalerOf(context);
+    final Widget body;
+    if (compact) {
+      body = _CompactBody(
+        onClose: onClose,
+        children: [
+          ...notes,
+          switch (details) {
+            // After an add: its chips, as tall as they are. They fit
+            // above the keyboard up to 310 % on a 390 px phone and 200 % on
+            // a 360 px one; beyond that they scroll rather than overflow.
+            final item? => Flexible(
+              child: SingleChildScrollView(
+                child: CompactDetails(
+                  key: ValueKey('added-details-${item.id}'),
+                  item: item,
+                  onDone: onPicked,
+                ),
+              ),
+            ),
+            // Typing, or opened: the rows, at most three, the others scroll.
+            null => Flexible(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: _firstOpenRows * _rowExtent(scaler),
+                ),
+                child: ListView(
+                  key: const ValueKey('add-suggestions'),
+                  shrinkWrap: true,
+                  padding: EdgeInsets.zero,
+                  children: suggestions,
+                ),
+              ),
+            ),
+          },
+        ],
+      );
+    } else {
+      body = maxHeight < _roomy * scaler.scale(16) / 16
+          // Too little room to keep the chips put: everything scrolls.
+          ? ListView(
+              shrinkWrap: true,
+              padding: EdgeInsets.zero,
+              children: [...fixed, ...rowWidgets],
+            )
+          : Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ...fixed,
+                if (firstOpen && !steady) ...notes,
+                Flexible(
+                  child: FocusTraversalOrder(
+                    order: const NumericFocusOrder(2),
+                    child: ConstrainedBox(
+                      constraints: steady
+                          ? BoxConstraints.tightFor(
+                              height: _firstOpenRows * _rowExtent(scaler),
+                            )
+                          : BoxConstraints(
+                              maxHeight: firstOpen
+                                  ? _firstOpenRows * _rowExtent(scaler)
+                                  : double.infinity,
+                            ),
+                      child: ListView(
+                        key: const ValueKey('add-suggestions'),
+                        shrinkWrap: true,
+                        padding: EdgeInsets.zero,
+                        children: firstOpen && !steady
+                            ? suggestions
+                            : rowWidgets,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+    }
     return AnimatedOpacity(
       opacity: sheet.open ? 1 : 0,
       duration: hlMotion(context, HlDuration.short),
@@ -626,45 +728,7 @@ class _ContentState() extends State<_Content> {
           container: true,
           explicitChildNodes: true,
           label: l10n.addButton,
-          child: maxHeight < _roomy * scaler.scale(16) / 16
-              // Too little room to keep the chips put: everything scrolls.
-              ? ListView(
-                  shrinkWrap: true,
-                  padding: EdgeInsets.zero,
-                  children: [...fixed, ...rowWidgets],
-                )
-              : Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    ...fixed,
-                    if (firstOpen && !steady) ...notes,
-                    Flexible(
-                      child: FocusTraversalOrder(
-                        order: const NumericFocusOrder(2),
-                        child: ConstrainedBox(
-                          constraints: steady
-                              ? BoxConstraints.tightFor(
-                                  height: _firstOpenRows * _rowExtent(scaler),
-                                )
-                              : BoxConstraints(
-                                  maxHeight: firstOpen
-                                      ? _firstOpenRows * _rowExtent(scaler)
-                                      : double.infinity,
-                                ),
-                          child: ListView(
-                            key: const ValueKey('add-suggestions'),
-                            shrinkWrap: true,
-                            padding: EdgeInsets.zero,
-                            children: firstOpen && !steady
-                                ? suggestions
-                                : rowWidgets,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+          child: body,
         ),
       ),
     );
@@ -687,11 +751,73 @@ List<Key> _rowKeys(List<Suggestion> rows, {required bool byContent}) {
   ];
 }
 
+/// The compact sheet (flag `add-sheet-compact`, job 322): the grab handle
+/// over [children], as tall as they are. A tap on the handle or a swipe
+/// down closes it; for a screen reader the handle is Schließen.
+class const _CompactBody({
+  required final VoidCallback onClose,
+  required final List<Widget> children,
+}) extends StatefulWidget {
+  @override
+  State<_CompactBody> createState() => _CompactBodyState();
+}
+
+class _CompactBodyState() extends State<_CompactBody> {
+  /// How far the current drag went down.
+  var _dragged = 0.0;
+
+  static const _closeDistance = 48.0;
+  static const _closeVelocity = 700.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final onClose = widget.onClose;
+    return GestureDetector(
+      onVerticalDragStart: (_) => _dragged = 0,
+      onVerticalDragUpdate: (d) => _dragged += d.delta.dy,
+      onVerticalDragEnd: (d) {
+        if (_dragged > _closeDistance ||
+            d.velocity.pixelsPerSecond.dy > _closeVelocity) {
+          onClose();
+        }
+      },
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Exposed like the rows: a tap on a web semantics button node
+          // takes the add field's text input with it; this node only taps.
+          Semantics(
+            container: true,
+            button: true,
+            label: l10n.close,
+            onTap: onClose,
+            excludeSemantics: true,
+            child: GestureDetector(
+              key: const ValueKey('add-sheet-grabber'),
+              behavior: HitTestBehavior.opaque,
+              onTap: onClose,
+              // As slim as it goes: at 200 % on a 360 px phone the chips and
+              // an open picker need every pixel above the keyboard.
+              child: const SizedBox(
+                height: 12,
+                child: Stack(children: [_GrabHandle(top: 4)]),
+              ),
+            ),
+          ),
+          ...widget.children,
+        ],
+      ),
+    );
+  }
+}
+
 /// The sheet's grab handle, centred over the chips.
-class const _GrabHandle() extends StatelessWidget {
+class const _GrabHandle({final double top = 7}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Positioned(
-    top: 7,
+    top: top,
     left: 0,
     right: 0,
     child: Center(

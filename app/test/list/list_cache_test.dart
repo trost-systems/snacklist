@@ -79,7 +79,6 @@ void main() {
         sortKey: 768.25,
       ),
       const DeleteItem('milk'),
-      const DeleteItem('bread', undoAdd: true),
     ],
     usuals: const [
       Usual(name: 'Gurken', quantity: '2', due: true),
@@ -102,12 +101,7 @@ void main() {
       MoveItem,
       PlaceItem,
       DeleteItem,
-      DeleteItem,
     ]);
-    expect(
-      [for (final op in back.pending.whereType<DeleteItem>()) op.undoAdd],
-      [false, true],
-    );
     final edit = back.pending[3] as EditItem;
     expect(edit.changes.toColumns(), {
       'name': 'Hafermilch',
@@ -132,6 +126,19 @@ void main() {
       [for (final u in back.usuals) (u.name, u.quantity, u.due)],
       [('Gurken', '2', true), ('Brot', null, false)],
     );
+  });
+
+  test("a queued undo from job 315's app loads as a plain delete", () {
+    final json =
+        jsonDecode(jsonEncode(snapshot.toJson())) as Map<String, Object?>;
+    (json['pending']! as List<Object?>).add({
+      'item_id': 'bread',
+      'op': 'delete',
+      'undo_add': true,
+    });
+    final back = ListSnapshot.fromJson(json);
+    expect(back.pending.last, isA<DeleteItem>());
+    expect(back.pending.last.toJson(), {'item_id': 'bread', 'op': 'delete'});
   });
 
   group('encode', () {

@@ -64,6 +64,15 @@ const onDeviceCatalogFlag = 'on-device-catalog';
 /// answer an older text are dimmed.
 const addFeedbackListFlag = 'add-feedback-list';
 
+/// The flag that makes the add sheet compact (job 322, AS1), on top of
+/// [addFeedbackListFlag]: no Schließen key, only the grab handle; after an
+/// add no „Hinzugefügt“ note and no Rückgängig, but one row of chips (Menge
+/// with its steppers, the store, the category and Details) whose options
+/// fold out as one sideways line; the sheet as tall as what it shows; the
+/// list behind it only the last two adds. A swipe down, a tap beside it,
+/// the system back or Enter in the empty field closes it.
+const addSheetCompactFlag = 'add-sheet-compact';
+
 /// The flag that asks for the user's name (job 297, DN3 and DE1): right
 /// after the sign-in a screen asks „Wie sollen wir dich nennen?“, prefilled
 /// with a Google or Apple name and required without one (once, with „Jetzt

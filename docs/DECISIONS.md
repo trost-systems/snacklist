@@ -16268,3 +16268,56 @@ Peter picked OB1 with all defaults OB-Q1 to OB-Q11 (2026-11-20). Calls made whil
 11. **No new UI strings, and no ARB or legal file changed.** What is stored and sent is unchanged in kind: a store's
     chain and country, as job 313 stores them (privacy §5/§9 as in #569). The region is read on the device and is not
     sent. Only the chain the user picks is stored, with its country.
+
+## Job 322: the compact add sheet (AS1) and Undo as a plain delete again
+
+Peter picked AS1 „Chip row“ (t1076u, 2026-11-20) with AS-Q1 to Q3, Q5 and Q7 to Q11 as proposed in job 319's
+RECOMMENDATION.md, AS-Q6 changed (a tap outside the sheet closes it) and AS-Q4 changed (duplicates stay as they are).
+Calls made while building it:
+
+1. **Stacked on #570.** The brief starts this job after job 321, whose #570 waits on #569 (Legal GO). The branch builds
+   on #570's head and its PR targets that branch; it lands after both, through push-pr.sh and merge-pr.sh.
+2. **`compact` needs both flags.** `AddSheetCubit.compact` is `add-sheet-compact` and `add-feedback-list` (AS-Q11: AS1
+   sits on top of it and reuses its details state, `session` and saving). With `add-sheet-compact` off the sheet is
+   the same code path as before; the flag-off widget tests and goldens pass unchanged.
+3. **Undo goes only with the flag; the take-back goes for everyone.** The compact sheet has no „Rückgängig“ after an
+   add. The flag-off sheet keeps its Undo, which is now a plain delete: migration `20261120073857_undo_add_plain_delete.sql`
+   restores `items_learn` and `items_unlearn_delete` verbatim from before job 315 and makes `public.undo_add` a plain
+   delete under the caller's RLS. The function stays because store builds with job 315's app call it (squawk forbids
+   the drop); the `edit_*` columns stay unwritten. `DeleteItem` lost `undoAdd`; an old cached op with `"undo_add":
+   true` loads as a plain delete. A delete within 10 minutes still takes back a pick made with the add itself, as
+   before job 315; an undo queued offline for longer no longer does.
+4. **Job 315's changelog item is reworded, not dropped.** It is on main but in no public release, and its sentence
+   („nimmt jetzt auch … zurück“) is now false. `releases/changelog/rewords.json` gives it the behaviour users get:
+   Undo removes the item and the picked store and category stay remembered.
+5. **AS-Q4 taken to include „steht schon auf der Liste“.** That note comes from the same `_AddedNote` as „✓
+   Hinzugefügt“, but it is the duplicate behaviour Peter said to keep, so the compact sheet hides only the `Added`
+   case. The merge hint, „Zusammenführen“ and the merge's own „Rückgängig“ are unchanged, above the chip row.
+6. **Opened, nothing added: today's rows.** The prototype's first frame shows an empty sheet, but its model had no
+   usuals. The compact sheet keeps what the flag-off sheet shows before typing (the due usuals, at most three, or
+   „Tippe, um Vorschläge zu sehen“), only without the ✕ and the fixed room for three rows.
+7. **AS-Q5 „up to three suggestions“ is a height, not a cut.** Typing shows the rows in a box at most three rows tall;
+   more rows scroll inside it, so none of the server's rows become unreachable.
+8. **The chip row wraps; it never scrolls sideways.** Menge's field is as wide as its text (1.7 to 5 em), so „2“ keeps
+   the row on one line and „500 g“ still shows whole. The steppers are 34 px wide and 44 px high (the prototype's
+   look; a 44 px width would wrap the details chip on every 390 px phone). In English the row is one line, 60 px (132
+   px with the add bar; the prototype measured 131). In German „Laden: Ohne Laden“ with „Kühlregal“ wraps the details
+   chip (111 px, 183 px with the bar); a named store such as „Edeka“ fits one line.
+9. **Room at large text.** The compact sheet drops the 28 px gap under the status bar, its grab handle strip is 12 px,
+   wrapped chip lines sit 3 px apart and an open options line 4 px under them: at 200 % on a 360 × 640 phone with the
+   keyboard up the open details field needed every pixel. Each chip takes at most half the row (its name ends in
+   „…“) and an option at most the line's width: with the demo household's „Hofladen Sonnenhang“ and „Vorrat &
+   Konserven“ the row was four lines at 200 % on 360 × 640 and an open picker scrolled the sheet (review 0); capped,
+   it is two lines and fits. The in-view test runs with those long names too. A vertical scroll view stays around
+   the chips as a fallback for what the tests do not cover, such as the store search field that more than five
+   stores add above the options. On the web build at 310 % without a soft keyboard, the add bar's hint line takes three lines and the
+   chips use that fallback; phones hide the hint while the keyboard is up.
+10. **Closing.** The scrim already took every tap outside the sheet, the two rows behind it included, so AS-Q6 needed
+    no change, only a test. The grab handle is a button named „Schließen“ (the ✕'s string, no new text). A swipe down
+    of 48 px or a flick closes; one that starts on the suggestion rows scrolls them. Android's back key goes through a
+    `BackButtonListener` (a `PopScope` would catch barrier taps); it runs before the route's pop, so while the route
+    holds the back (a new store's name, `StoreNameField`'s `PopScope`) it hands the back to that first, and Enter in the empty field closes, compact only.
+11. **No new UI strings.** The details chip's name is `fieldProperties` („Eigenschaften“ / "Details"), Menge's
+    `itemQuantity`, the steppers' `quantityMinus` and `quantityPlus`. No ARB, legal or privacy file changed.
+12. **Rollout.** `releases/flags.json` has `add-sheet-compact` off. Creating the PostHog flag for Peter and the internal
+    testers is the lead's step (NEEDS_LEAD), as for job 276's `add-feedback-list`.

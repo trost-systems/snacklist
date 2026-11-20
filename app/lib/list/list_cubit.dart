@@ -1074,10 +1074,6 @@ class ListCubit(
 
   void delete(String id) => _enqueue(DeleteItem(id));
 
-  /// The add sheet's Rückgängig: deletes the item just added and what its
-  /// details taught the household about the name.
-  void undoAdd(String id) => _enqueue(DeleteItem(id, undoAdd: true));
-
   /// The device's clock, which decides whose prices count today.
   DateTime get now => _clock();
 

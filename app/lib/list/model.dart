@@ -905,7 +905,7 @@ sealed class const ItemOp(final String itemId) {
         storeId: json['store_id'] as String?,
         sortKey: (json['sort_key'] as num?)?.toDouble(),
       ),
-      'delete' => DeleteItem(id, undoAdd: json['undo_add'] == true),
+      'delete' => DeleteItem(id),
       'merge' => MergeItems(
         id,
         mergeId: json['merge_id']! as String,
@@ -1095,10 +1095,7 @@ sealed class const ItemOp(final String itemId) {
           'store_id': storeId,
           'sort_key': sortKey,
         },
-      DeleteItem(:final undoAdd) => {
-        'op': 'delete',
-        if (undoAdd) 'undo_add': true,
-      },
+      DeleteItem() => {'op': 'delete'},
       MoveToList(:final listId) => {'op': 'list', 'list_id': listId},
       ClaimItem(:final userId, :final quantity, :final at) => {
         'op': 'claim',
@@ -1232,10 +1229,7 @@ final class const PlaceItem(
   );
 }
 
-/// [undoAdd]: the add sheet's Rückgängig, which also takes back what the
-/// item's edits taught (`undo_add`, job 315); any other delete keeps it.
-final class const DeleteItem(super.itemId, {final bool undoAdd = false})
-    extends ItemOp {
+final class const DeleteItem(super.itemId) extends ItemOp {
   @override
   Item? apply(Item? current) => null;
 }
