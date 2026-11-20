@@ -79,6 +79,13 @@ const displayNameFlag = 'display-name';
 /// number. Off, nothing of it shows.
 const reportContentEntryFlag = 'report-content-entry';
 
+/// The flag that opens a store's chain app (job 313, DL1 and SS): the app
+/// key in a linked store's section header with its one-time tip, the store
+/// screen's app card with the app to open and its chain, chains suggested
+/// while a store is named, „Ist das …?“ when a saved name is a chain, and
+/// the list's card asking about existing stores once. Off, none shows.
+const openStoreAppFlag = 'open-store-app';
+
 /// PostHog feature flags, the app's runtime toggles (job 44,
 /// docs/ANALYTICS.md "Feature flags"). Read a toggle with [isOn] wherever it
 /// matters; nothing else in the app reads PostHog flags.

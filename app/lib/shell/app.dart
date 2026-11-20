@@ -27,6 +27,7 @@ import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/catalog/catalog_loader.dart';
 import 'package:family_groceries/list/list_link.dart';
 import 'package:family_groceries/list/list_view/item_icon.dart';
+import 'package:family_groceries/list/store_app.dart';
 import 'package:family_groceries/onboarding/onboarding_cubit.dart';
 import 'package:family_groceries/purchases/entitlements.dart';
 import 'package:family_groceries/purchases/premium_server.dart';
@@ -97,6 +98,9 @@ class const App({
 
   /// Where reports of illegal content go (job 281); Supabase by default.
   final ReportRepository? report,
+
+  /// What opens a store's chain app (job 313); the platform's by default.
+  final StoreAppOpener storeApps = const PlatformStoreAppOpener(),
 
   /// The language picked under More's Einstellungen, read before the
   /// first frame.
@@ -313,6 +317,7 @@ class _AppState() extends State<App> {
       RepositoryProvider.value(value: _addSheetRequest),
       RepositoryProvider.value(value: widget.reviewPrompt),
       RepositoryProvider.value(value: widget.storeReview),
+      RepositoryProvider.value(value: widget.storeApps),
       if (widget.homeWidgets case final homeWidgets?)
         RepositoryProvider.value(value: homeWidgets),
       if (widget.network case final network?)

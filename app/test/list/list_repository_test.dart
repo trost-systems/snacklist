@@ -5,6 +5,7 @@ import 'package:family_groceries/list/dictation.dart';
 import 'package:family_groceries/list/list_repository.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/pricing.dart';
+import 'package:family_groceries/list/retailer.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -868,6 +869,154 @@ void main() {
         expect(route(sent.last), 'POST /rest/v1/rpc/$function');
         expect(params(sent.last), expected, reason: function);
       }
+    });
+
+    group('chains (job 313)', () {
+      const lidlRow = {
+        'chain': 'lidl',
+        'country': 'DE',
+        'name': 'Lidl',
+        'apps': [
+          {
+            'name': 'Lidl Plus',
+            'android': 'com.lidl.eci.lidlplus',
+            'ios': '1238611143',
+            'universalLink': null,
+          },
+        ],
+      };
+      const lidl = Retailer(chain: 'lidl', country: 'DE', name: 'Lidl');
+
+      test('stores come with their chain', () async {
+        final repo = server(
+          (r) => switch (r.url.pathSegments.last) {
+            'stores' => (
+              200,
+              [
+                {
+                  'id': 's1',
+                  'name': 'Lidl am Markt',
+                  'sort_order': 1,
+                  'seed_key': null,
+                  'retailer_app': null,
+                  'retailer_answered': true,
+                  'retailer': lidlRow,
+                },
+              ],
+            ),
+            'household_members_of' || 'households' => (200, <Object?>[]),
+            _ => (200, <Object?>[]),
+          },
+        );
+        final store = (await repo.fetchCatalog()).stores.single;
+        expect(
+          sent
+              .singleWhere((r) => r.url.pathSegments.last == 'stores')
+              .url
+              .queryParameters['select'],
+          'id,name,sort_order,seed_key,retailer_app,retailer_answered,'
+          'retailer:retailers(chain,country,name,apps)',
+        );
+        expect(store.retailer?.key, lidl.key);
+        expect(store.app?.name, 'Lidl Plus');
+        expect(store.retailerAnswered, isTrue);
+      });
+
+      test('matching sends the name and the region', () async {
+        final repo = server(
+          (_) => (
+            200,
+            [
+              {...lidlRow, 'exact': true},
+            ],
+          ),
+        );
+        final matches = await repo.matchRetailers('Lidl am Markt', 'DE');
+        expect(route(sent.single), 'POST /rest/v1/rpc/match_retailers');
+        expect(params(sent.single), {
+          'p_name': 'Lidl am Markt',
+          'p_country': 'DE',
+        });
+        expect(matches.single.exact, isTrue);
+        expect(matches.single.retailer.key, lidl.key);
+      });
+
+      test(
+        "the picker reads the registry, a country's only when given",
+        () async {
+          final repo = server((_) => (200, [lidlRow]));
+          await repo.listRetailers();
+          await repo.listRetailers(country: 'AT');
+          expect(route(sent.first), 'GET /rest/v1/retailers');
+          expect(
+            sent.first.url.queryParameters['select'],
+            'chain,country,name,apps',
+          );
+          expect(sent.first.url.queryParameters['country'], isNull);
+          expect(sent.last.url.queryParameters['country'], 'eq.AT');
+          expect(sent.last.url.queryParametersAll['order'], [
+            'name.asc.nullslast,country.asc.nullslast',
+          ]);
+        },
+      );
+
+      test(
+        'an answer links with the app, or unlinks without a chain',
+        () async {
+          final repo = server((_) => (200, null));
+          await repo.answerStoreRetailer(
+            's1',
+            lidl,
+            app: 'com.lidl.eci.lidlplus',
+          );
+          await repo.answerStoreRetailer('s1', null, app: 'ignored');
+          expect([
+            for (final r in sent) route(r),
+          ], List.filled(2, 'POST /rest/v1/rpc/answer_store_retailer'));
+          expect(
+            [for (final r in sent) params(r)],
+            [
+              {
+                'p_store': 's1',
+                'p_chain': 'lidl',
+                'p_country': 'DE',
+                'p_app': 'com.lidl.eci.lidlplus',
+              },
+              {
+                'p_store': 's1',
+                'p_chain': null,
+                'p_country': null,
+                'p_app': null,
+              },
+            ],
+          );
+        },
+      );
+
+      test('questions are asked for the household, one per store', () async {
+        final repo = server(
+          (_) => (
+            200,
+            [
+              {...lidlRow, 'store_id': 's1'},
+              {...lidlRow, 'chain': 'aldi-nord', 'store_id': 's2'},
+              {...lidlRow, 'chain': 'aldi-sued', 'store_id': 's2'},
+            ],
+          ),
+        );
+        final questions = await repo.retailerQuestions('DE');
+        expect(params(sent.single), {
+          'p_household': 'household',
+          'p_country': 'DE',
+        });
+        expect(
+          [
+            for (final q in questions)
+              '${q.storeId}: ${q.chains.map((c) => c.chain).join(', ')}',
+          ],
+          ['s1: lidl', 's2: aldi-nord, aldi-sued'],
+        );
+      });
     });
 
     test('renaming a category writes its name', () async {

@@ -22,6 +22,9 @@ class const StoreNameField({
   final String fieldKey = 'store-new-field',
   final String confirmKey = 'store-new-confirm',
   final String cancelKey = 'store-new-cancel',
+
+  /// The text as it is typed (the add sheet's chain suggestions, job 313).
+  final ValueChanged<String>? onChanged,
   super.key,
 }) extends StatefulWidget {
   @override
@@ -119,7 +122,10 @@ class _StoreNameFieldState() extends State<StoreNameField> {
                   textCapitalization: TextCapitalization.words,
                   textInputAction: TextInputAction.done,
                   style: TextStyle(fontSize: 16, color: scheme.onSurface),
-                  onChanged: (_) => setState(() {}),
+                  onChanged: (text) {
+                    setState(() {});
+                    widget.onChanged?.call(text);
+                  },
                   onEditingComplete: () {},
                   onSubmitted: (_) => unawaited(_confirm()),
                   decoration: InputDecoration(

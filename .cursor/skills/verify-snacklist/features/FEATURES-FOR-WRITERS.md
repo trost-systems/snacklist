@@ -429,7 +429,7 @@ The starting categories, in order: Obst & Gemüse, Brot & Backwaren, Kühlregal,
 5. Right after adding an item (in its details under the „Hinzugefügt“ note) or while editing one, open the store chip and tap „Neuer Laden“ (EN: "New store", the row with a plus), type the name and press Enter: the store is created and chosen for the item.
 
 **Never claim.**
-- Store logos, chain colours or official store maps. Store names appear as plain names in a small hexagonal label. The walking orders are researched defaults that can differ from a real shop.
+- Store logos, chain colours or official store maps. Store names appear as plain text above their items. The walking orders are researched defaults that can differ from a real shop.
 - That items, stores or categories can be dragged around on the list; moving an item is the edit sheet's store or category choice, and ordering lives in „Anpassen“.
 - That holding a store's name or a category heading opens the store; only „Anpassen“ does.
 - That the app knows a store's prices, opening hours or locations. The prices on the list are the ones the household types in.
@@ -439,6 +439,26 @@ The starting categories, in order: Obst & Gemüse, Brot & Backwaren, Kühlregal,
 **Note.** The onboarding skip hint says „Du kannst sie später unter Liste → Anpassen anlegen.“ / "You can add them later under List → Edit."
 
 **Last verified.** 18 November 2026, code version 0ca5dcc9, in the web app (German). „Anpassen“ top right and the „Ohne Laden“ section: 19 November 2026, code version af0287cf, in the web app (German); the store by category and the total's store lines: checked in the code.
+
+## Opening a store's app (built, not switched on)
+
+**What it does.** Not for users yet: it is switched on only for testers. Snacklist can recognise that a store on the list belongs to a supermarket or drugstore chain, for example Lidl, ALDI SÜD, REWE, EDEKA, Kaufland, PENNY, Netto, dm or Rossmann in Germany, and the big chains in Austria, Switzerland, France, the Netherlands, Poland, Italy and Spain. Once a store is matched to its chain („zugeordnet“), it gets a small button at the end of its name line on the list. The button opens the chain's own app on the phone, for example Lidl Plus for coupons at the checkout. If the app isn't on the phone, the button opens its page in the App Store or Google Play instead; on an iPhone some chains' apps also open through that page. In the browser version it opens the app's store page. The store keeps the name the household gave it. Where a chain has two apps (BILLA and jö Bonus Club in Austria, for example), the household picks which one the button opens. The first time, a short line under the button says what it does.
+
+**How to get there.**
+1. When you add a store (Liste → „Anpassen“ → „Laden hinzufügen“, or „Neuer Laden“ while adding or editing an item), matching chains appear under the name as you type. Tap one, or save your own name: if it is a chain's, Snacklist asks once, for example „Ist das Lidl (Deutschland)?“, with „Ja“ or „Nein, so lassen“.
+2. Stores you had before are asked once each from a card at the top of the list: „Ist dein „Lidl“ die Kette Lidl (Deutschland)?“.
+3. In a store's details (Liste → „Anpassen“ → the store), the „App“ card opens the app and, for a chain with two apps, lets you choose one. Below it, „Zugeordnet: Lidl · Deutschland“ with „Ändern“ and „Zuordnung aufheben“, or „Kette zuordnen“ for a store without a chain.
+
+**Never claim.**
+- That it is available to everyone yet.
+- That a store is „verbunden“, "linked" or "connected" to a chain, or that Snacklist works with, partners with, is endorsed by or shares anything with the chains. Snacklist only recognises the chain by its name and the phone opens the chain's app; nothing about the list goes to the chain. Say „zugeordnet“ / "matched".
+- That it opens a loyalty card, coupons or a specific screen inside the chain's app. It opens the app's start, or its store page.
+- Store logos, app icons or chain colours: chain names are plain text.
+- That the store's location is used. The phone's region only decides which country's chains come first.
+
+**Note.** The note on store names („Ladennamen wie dm, Lidl oder EDEKA …“) is no longer in the app; it is in the Impressum (Ladennamen) and the English imprint (Shop names).
+
+**Last verified.** LAST_VERIFIED_313
 
 ## Prices and the shopping total
 

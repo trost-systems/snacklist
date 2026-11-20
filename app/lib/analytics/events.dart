@@ -115,6 +115,51 @@ const _hintIds = OneOf({
 });
 const _householdSize = IntIn(1, 100);
 
+/// The chain ids of `supabase/retailers/retailers.json` (job 313); the lint
+/// gate's `scripts/retailers.ts --check` keeps the two equal.
+const retailerChains = {
+  'albert-heijn',
+  'aldi-nord',
+  'aldi-sued',
+  'auchan',
+  'biedronka',
+  'billa',
+  'carrefour',
+  'conad',
+  'coop-ch',
+  'coop-it',
+  'denner',
+  'dia',
+  'dino',
+  'dirk',
+  'dm',
+  'edeka',
+  'eroski',
+  'esselunga',
+  'eurospin',
+  'intermarche',
+  'jumbo',
+  'kaufland',
+  'kruidvat',
+  'leclerc',
+  'lidl',
+  'mercadona',
+  'migros',
+  'monoprix',
+  'mpreis',
+  'netto-md',
+  'penny',
+  'plus-nl',
+  'rewe',
+  'rossmann',
+  'spar-at',
+  'super-u',
+  'zabka',
+};
+
+/// The countries of that registry, ISO 3166-1 alpha-2.
+const retailerCountries = {'AT', 'CH', 'DE', 'ES', 'FR', 'IT', 'NL', 'PL'};
+
 /// Event name to its allowed properties. An event not in here is refused;
 /// so is a property not listed for it.
 final eventCatalog = <String, Map<String, PropertyRule>>{
@@ -248,6 +293,14 @@ final eventCatalog = <String, Map<String, PropertyRule>>{
   // ticked off. Never the store, the day or the items.
   'trip_logged': const {
     'source': OneOf({'manual', 'prompt'}),
+  },
+  // Job 313 (DL1): a store's chain app, its store page or the chain's site
+  // opened from the list or the store's screen. The chain and its country,
+  // never the store's name.
+  'store_app_opened': const {
+    'chain': OneOf(retailerChains),
+    'country': OneOf(retailerCountries),
+    'outcome': OneOf({'app', 'store_page'}),
   },
   // Job 21: after the server took a note, once per note. Never its text.
   // Job 267: whether a screenshot went along, never the image or its name.

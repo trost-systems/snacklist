@@ -1799,3 +1799,12 @@ sheet; only „Erlauben“ says yes, off stays one tap. The switch hint, the inv
 note and the Lifetime line have Legal's texts word for word. Unit tests, an e2e on the web build
 (CI run 44607184526) and updated goldens prove it. Details and ARB hashes: `docs/done/317.md`.
 Waits for the lead's `in/LEGAL_GO_317` before merge.
+
+## Job 313: open the store's app and linking stores to chains
+
+Behind the flag `open-store-app` (off): a store matched to a grocery chain opens the chain's app from a key in its list
+header and an „App“ card on its screen (with a choice where a chain has two apps). Stores are linked where they are
+made (chains offered while typing, „Ist das Lidl (Deutschland)?“ once) and older stores are asked once from a card on
+the list. Legal's texts (imprint, privacy §5 and §9) and the removed store-name note are in the same PR. The registry of 59 chain entries in 8 countries is `supabase/retailers/retailers.json`, loaded by migration
+`20261119200125_retailers.sql`. For everyone: the store header's fold key became a plain caret. Details:
+`docs/done/313.md`.

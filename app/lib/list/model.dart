@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:family_groceries/list/pricing.dart';
+import 'package:family_groceries/list/retailer.dart';
 import 'package:flutter/foundation.dart' show immutable, listEquals, mapEquals;
 
 enum ItemStatus() {
@@ -48,12 +49,30 @@ class const Store({
   required final String name,
   required final int sortOrder,
   final String? seedKey,
+
+  /// The chain the store is linked to (job 313); none when unlinked or on
+  /// a server or device copy from before chains.
+  final Retailer? retailer,
+
+  /// The android package of the chain's app the household picked; none
+  /// for the default.
+  final String? retailerApp,
+
+  /// Whether the household answered „Ist das …?“ for the store, yes or no:
+  /// it is never asked again.
+  final bool retailerAnswered = false,
 }) {
   factory fromJson(Map<String, Object?> json) => Store(
     id: json['id']! as String,
     name: json['name']! as String,
     sortOrder: json['sort_order']! as int,
     seedKey: json['seed_key'] as String?,
+    retailer: switch (json['retailer']) {
+      final Map<String, Object?> row => Retailer.fromJson(row),
+      _ => null,
+    },
+    retailerApp: json['retailer_app'] as String?,
+    retailerAnswered: json['retailer_answered'] == true,
   );
 
   Map<String, Object?> toJson() => {
@@ -61,7 +80,31 @@ class const Store({
     'name': name,
     'sort_order': sortOrder,
     'seed_key': seedKey,
+    'retailer': retailer?.toJson(),
+    'retailer_app': retailerApp,
+    'retailer_answered': retailerAnswered,
   };
+
+  /// The chain's app the store opens: the picked one, else the chain's
+  /// default; none when unlinked or the chain has no app.
+  RetailerApp? get app => retailer?.app(retailerApp);
+
+  Store copyWith({
+    String? name,
+    int? sortOrder,
+    String? Function()? seedKey,
+    Retailer? Function()? retailer,
+    String? Function()? retailerApp,
+    bool? retailerAnswered,
+  }) => Store(
+    id: id,
+    name: name ?? this.name,
+    sortOrder: sortOrder ?? this.sortOrder,
+    seedKey: seedKey == null ? this.seedKey : seedKey(),
+    retailer: retailer == null ? this.retailer : retailer(),
+    retailerApp: retailerApp == null ? this.retailerApp : retailerApp(),
+    retailerAnswered: retailerAnswered ?? this.retailerAnswered,
+  );
 
   /// Legal GL-2 (N-167): a pharmacy by its name or seed key, in any case.
   /// Its ticks raise no trip question, so
@@ -244,13 +287,38 @@ class const Catalog({
     stores: [
       for (final s in stores)
         if (s.id == storeId)
-          Store(
-            id: s.id,
+          s.copyWith(
             name: name,
-            sortOrder: s.sortOrder,
-            seedKey: s.seedKey == 'hardware' || nameKey(name) == nameKey(s.name)
+            seedKey: () =>
+                s.seedKey == 'hardware' || nameKey(name) == nameKey(s.name)
                 ? s.seedKey
                 : null,
+          )
+        else
+          s,
+    ],
+    layout: layout,
+    members: members,
+    lists: lists,
+    currency: currency,
+  );
+
+  /// The store linked to [retailer] with its [app] (none: the default),
+  /// or, without a retailer, unlinked; answered either way, as
+  /// `public.answer_store_retailer` does.
+  Catalog withStoreRetailer(
+    String storeId,
+    Retailer? retailer, {
+    String? app,
+  }) => Catalog(
+    categories: categories,
+    stores: [
+      for (final s in stores)
+        if (s.id == storeId)
+          s.copyWith(
+            retailer: () => retailer,
+            retailerApp: () => retailer == null ? null : app,
+            retailerAnswered: true,
           )
         else
           s,
@@ -277,13 +345,7 @@ class const Catalog({
       categories: categories,
       stores: [
         for (final (i, id) in ids.indexed)
-          if (byId[id] case final s?)
-            Store(
-              id: s.id,
-              name: s.name,
-              sortOrder: (i + 1) * 10,
-              seedKey: s.seedKey,
-            ),
+          if (byId[id] case final s?) s.copyWith(sortOrder: (i + 1) * 10),
       ],
       layout: layout,
       members: members,

@@ -69,6 +69,10 @@ select public.reorder_stores((select id from fx where key = 'home'),
   array[pg_temp.store((select id from fx where key = 'home'), 'Wochenmarkt'),
         pg_temp.store((select id from fx where key = 'home'), 'Supermarkt'),
         pg_temp.store((select id from fx where key = 'home'), 'Drogerie')]);
+-- Job 313: a store linked to a chain with a picked app, and one answered "none of these".
+select public.answer_store_retailer(pg_temp.store((select id from fx where key = 'home'), 'Drogerie'), 'dm', 'DE',
+  'de.dm.meindm.android');
+select public.answer_store_retailer(pg_temp.store((select id from fx where key = 'home'), 'Wochenmarkt'), null, null);
 select public.create_personal_access_token('Claude Desktop');
 -- Job 21: feedback as the app sends it; household_id and is_internal come from the trigger.
 insert into public.feedback (id, message, category, contact_ok, app_version, build, platform, os_version, locale, screen)

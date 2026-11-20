@@ -8,7 +8,10 @@ import 'package:family_groceries/design/tactile.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/category_names.dart';
+import 'package:family_groceries/list/chain_question.dart';
+import 'package:family_groceries/list/chain_suggestions.dart';
 import 'package:family_groceries/list/model.dart';
+import 'package:family_groceries/list/retailer.dart';
 import 'package:family_groceries/list/store_name_field.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
@@ -67,6 +70,11 @@ class const FoldoutChips({
   /// a store of the household, or finds the one it already has, and is
   /// picked. Null when it could not be saved.
   final Future<Store?> Function(String name)? onCreateStore,
+
+  /// Chains for a new store (job 313, flag `open-store-app`): suggested
+  /// under its name while typing, asked about in place once a plain name
+  /// that is a chain's is saved. Null: none.
+  final StoreChains? chains,
 
   /// Shows the store options from the start (Widgetbook stories).
   final bool storesOpen = false,
@@ -209,7 +217,9 @@ class _FoldoutChipsState() extends State<FoldoutChips> {
         noStoreLabel: w.storeLabel,
         undecided: w.storeAuto,
         onPick: (id) => _pick(() => w.onStore(id)),
+        onSelect: w.onStore,
         onCreate: w.onCreateStore,
+        chains: w.chains,
       ),
       _Fold.category => _Options([
         for (final c in w.catalog.categories)
@@ -378,7 +388,11 @@ class const _StoreOptions({
   /// No store means "not decided yet": nothing is selected.
   required final bool undecided,
   required final ValueChanged<String?> onPick,
+
+  /// Picks a store and leaves the options open, for the chain question.
+  required final ValueChanged<String?> onSelect,
   required final Future<Store?> Function(String name)? onCreate,
+  required final StoreChains? chains,
 }) extends StatefulWidget {
   @override
   State<_StoreOptions> createState() => _StoreOptionsState();
@@ -391,6 +405,13 @@ class _StoreOptionsState() extends State<_StoreOptions> {
   /// The new store's first text while its field is open; null otherwise.
   String? _naming;
 
+  /// The new store's text as typed, for the chain suggestions.
+  var _typed = '';
+
+  /// The new store just saved and the chains its name is, asked about in
+  /// place of its field (job 313).
+  (Store, List<Retailer>)? _asking;
+
   @override
   void dispose() {
     _search.dispose();
@@ -398,7 +419,13 @@ class _StoreOptionsState() extends State<_StoreOptions> {
     super.dispose();
   }
 
-  void _startNaming(String text) => setState(() => _naming = text.trim());
+  void _startNaming(String text) {
+    final name = text.trim();
+    setState(() {
+      _naming = name;
+      _typed = name;
+    });
+  }
 
   void _cancelNaming() {
     setState(() => _naming = null);
@@ -420,21 +447,71 @@ class _StoreOptionsState() extends State<_StoreOptions> {
 
   Future<bool> _create(String name) async {
     final existing = widget.catalog.storeNamed(name);
+    final chains = existing == null ? widget.chains : null;
+    final matches = chains?.match(name);
     final store = existing ?? await widget.onCreate!(name);
     if (store == null || !mounted) {
       return false;
     }
-    if (existing == null) {
+    final named = exactChains(await matches ?? const []);
+    if (!mounted) {
+      return false;
+    }
+    final l10n = AppLocalizations.of(context);
+    _announce(
+      store,
+      existing,
+      question: named.isEmpty
+          ? null
+          : chainQuestionTitle(l10n, store.name, named, existing: false),
+    );
+    if (named.isNotEmpty) {
+      // Picked for the item already; the options stay open for the answer.
+      // Focus goes back to the add field, so the question is announced.
+      widget.onSelect(store.id);
+      setState(() {
+        _naming = null;
+        _asking = (store, named);
+      });
+      return true;
+    }
+    widget.onPick(store.id);
+    return true;
+  }
+
+  /// A suggested chain picked: the store named after it (or found by that
+  /// name) is linked to it and picked.
+  Future<void> _createLinked(RetailerMatch match, StoreChains chains) async {
+    final name = match.storeName(_typed);
+    final existing = widget.catalog.storeNamed(name);
+    final store = await chains.addLinked(name, match.retailer);
+    if (store == null || !mounted) {
+      return;
+    }
+    _announce(store, existing);
+    widget.onPick(store.id);
+  }
+
+  void _answer(Store store, Retailer? chain) {
+    unawaited(widget.chains?.answer(store.id, chain));
+    setState(() => _asking = null);
+    widget.onPick(store.id);
+  }
+
+  void _announce(Store store, Store? existing, {String? question}) {
+    final added = existing == null
+        ? AppLocalizations.of(context).storeAddedAndSelected(store.name)
+        : null;
+    final text = [?added, ?question].join(' ');
+    if (text.isNotEmpty) {
       unawaited(
         SemanticsService.sendAnnouncement(
           View.of(context),
-          AppLocalizations.of(context).storeAddedAndSelected(store.name),
+          text,
           Directionality.of(context),
         ),
       );
     }
-    widget.onPick(store.id);
-    return true;
   }
 
   @override
@@ -444,6 +521,8 @@ class _StoreOptionsState() extends State<_StoreOptions> {
     final searching = w.catalog.stores.length > storeSearchThreshold;
     final query = nameKey(_search.text);
     final naming = _naming;
+    final chains = w.chains;
+    final asking = _asking;
     return Padding(
       padding: const EdgeInsets.only(top: 10),
       child: Column(
@@ -476,7 +555,7 @@ class _StoreOptionsState() extends State<_StoreOptions> {
                     selected: s.id == w.storeId,
                     onTap: () => w.onPick(s.id),
                   ),
-              if (w.onCreate != null && naming == null)
+              if (w.onCreate != null && naming == null && asking == null)
                 OptionChip(
                   key: const ValueKey('store-option-new'),
                   focusNode: _newOption,
@@ -494,6 +573,28 @@ class _StoreOptionsState() extends State<_StoreOptions> {
               confirmLabel: l10n.storeCreateConfirm,
               onConfirm: _create,
               onCancel: _cancelNaming,
+              onChanged: chains == null
+                  ? null
+                  : (text) => setState(() => _typed = text),
+            ),
+          if (naming != null && chains != null)
+            ChainSuggestions(
+              text: _typed,
+              match: chains.match,
+              onPick: (m) => unawaited(_createLinked(m, chains)),
+            ),
+          if (asking case (final store, final named)?)
+            ComesIntoView(
+              key: ValueKey('chain-question-${store.id}'),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: HlSpace.s2),
+                child: ChainQuestion(
+                  storeName: store.name,
+                  chains: named,
+                  existing: false,
+                  onAnswer: (chain) => _answer(store, chain),
+                ),
+              ),
             ),
         ],
       ),

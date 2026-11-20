@@ -1,5 +1,6 @@
 package com.snacklist.app
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Build
 import android.os.Handler
@@ -54,6 +55,34 @@ class MainActivity : FlutterActivity() {
                     else -> result.notImplemented()
                 }
             }
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "familygroceries/store_app")
+            .setMethodCallHandler { call, result ->
+                val pkg = call.argument<String>("package")
+                if (call.method == "launch" && pkg != null) {
+                    result.success(launchPackage(pkg))
+                } else {
+                    result.notImplemented()
+                }
+            }
+    }
+
+    /**
+     * Starts the launcher activity of a store's chain app (job 313,
+     * lib/list/store_app.dart); false when it is not installed, and Dart
+     * opens its Play page instead. startActivity is not filtered by package
+     * visibility, so no <queries> entry lists the chains' packages.
+     */
+    private fun launchPackage(pkg: String): Boolean {
+        val intent = Intent(Intent.ACTION_MAIN)
+            .addCategory(Intent.CATEGORY_LAUNCHER)
+            .setPackage(pkg)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return try {
+            startActivity(intent)
+            true
+        } catch (e: ActivityNotFoundException) {
+            false
+        }
     }
 
     /**

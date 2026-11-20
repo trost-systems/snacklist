@@ -440,14 +440,6 @@ class _StoresStepState() extends State<_StoresStep> {
             onCancel: () => setState(() => _naming = false),
           ),
         ],
-        const SizedBox(height: HlSpace.s3),
-        Text(
-          l10n.storesDisclaimer,
-          key: const ValueKey('stores-disclaimer'),
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
         const SizedBox(height: HlSpace.s5),
         _NextAndSkip(
           nextLabel: l10n.onboardingNext,

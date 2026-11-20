@@ -2348,12 +2348,6 @@ abstract class AppLocalizations {
   /// **'Baumarkt'**
   String get storeHardware;
 
-  /// Legal Review L-7 (N-23), approved by Peter 2026-11-01 (L1): character for character; the onboarding store step (job 78: no longer on the stores screen)
-  ///
-  /// In de, this message translates to:
-  /// **'Ladennamen wie dm, Lidl oder EDEKA verwenden wir nur, damit du erkennst, für welchen Laden eine Liste gedacht ist. Die Namen und Marken gehören den jeweiligen Unternehmen. Snacklist ist ein unabhängiges Angebot und steht in keiner Verbindung zu diesen Unternehmen. Sie unterstützen oder empfehlen Snacklist nicht.'**
-  String get storesDisclaimer;
-
   /// No description provided for @skipStores.
   ///
   /// In de, this message translates to:
@@ -6013,6 +6007,186 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Fertig'**
   String get reportDone;
+
+  /// Job 313 DL1: the action that opens a store's app, e.g. „Lidl Plus öffnen“: the list header key's screen-reader name and the store screen's button name. {app} is the retailer app's name from the registry
+  ///
+  /// In de, this message translates to:
+  /// **'{app} öffnen'**
+  String storeAppOpen(String app);
+
+  /// Job 313: a chain's country by its ISO 3166-1 code, e.g. after a chain name: „REWE · Deutschland“
+  ///
+  /// In de, this message translates to:
+  /// **'{code, select, DE{Deutschland} AT{Österreich} CH{Schweiz} FR{Frankreich} NL{Niederlande} PL{Polen} IT{Italien} ES{Spanien} other{{code}}}'**
+  String countryName(String code);
+
+  /// Job 313 SS2: asked once after saving a new store whose name is a chain's, e.g. „Ist das REWE (Deutschland)?“. {chain} is the chain's name, {country} the country's name
+  ///
+  /// In de, this message translates to:
+  /// **'Ist das {chain} ({country})?'**
+  String chainQuestionOne(String chain, String country);
+
+  /// Job 313 SS5: asked once about an existing store whose name is a chain's. {store} is the household's store name
+  ///
+  /// In de, this message translates to:
+  /// **'Ist dein „{store}“ die Kette {chain} ({country})?'**
+  String chainQuestionOneExisting(String store, String chain, String country);
+
+  /// Job 313: the line under the chain question when the chain has an app. {app} is the app's name, e.g. „Lidl Plus“
+  ///
+  /// In de, this message translates to:
+  /// **'Dann kannst du {app} direkt aus der Liste öffnen.'**
+  String chainQuestionApp(String app);
+
+  /// Job 313: the chain question's yes: link the store to the chain
+  ///
+  /// In de, this message translates to:
+  /// **'Ja'**
+  String get chainQuestionYes;
+
+  /// Job 313 SS2: the chain question's no after creating a store: keep it as typed, not linked, never asked again
+  ///
+  /// In de, this message translates to:
+  /// **'Nein, so lassen'**
+  String get chainQuestionKeep;
+
+  /// Job 313 SS5: the chain question's no for an existing store: not linked, never asked again
+  ///
+  /// In de, this message translates to:
+  /// **'Nein'**
+  String get chainQuestionNo;
+
+  /// Job 313 SS2: asked after saving a new store whose name fits several chains, e.g. „Welches Aldi?“, one button per chain below
+  ///
+  /// In de, this message translates to:
+  /// **'Welches {store}?'**
+  String chainQuestionWhich(String store);
+
+  /// Job 313 SS5: asked about an existing store whose name fits several chains, one button per chain below
+  ///
+  /// In de, this message translates to:
+  /// **'Welche Kette ist dein „{store}“?'**
+  String chainQuestionWhichExisting(String store);
+
+  /// Job 313: the answer to „Welches Aldi?“ when the store is none of the chains: not linked, never asked again
+  ///
+  /// In de, this message translates to:
+  /// **'Keins davon'**
+  String get chainQuestionNone;
+
+  /// Job 313: a chain with its country, where chains of several countries are listed, e.g. „Hofer (Österreich)“
+  ///
+  /// In de, this message translates to:
+  /// **'{chain} ({country})'**
+  String chainWithCountry(String chain, String country);
+
+  /// Job 313 DL1: one-time tip line under the first store header that has an open-store-app key, next to the key's icon; gone after its X or the first tap on a key
+  ///
+  /// In de, this message translates to:
+  /// **'Öffnet die App des Ladens.'**
+  String get storeAppTip;
+
+  /// Job 313 SS5: the progress on the list's card that asks existing stores for their chain, e.g. „1 / 3“
+  ///
+  /// In de, this message translates to:
+  /// **'{index} / {total}'**
+  String chainCardProgress(int index, int total);
+
+  /// Job 313 SS5: the screen-reader name of the chain card's progress „1 / 3“
+  ///
+  /// In de, this message translates to:
+  /// **'Laden {index} von {total}'**
+  String chainCardProgressLabel(int index, int total);
+
+  /// Job 313 SS2: screen-reader name of a chain suggested under a new store's name while typing; a tap creates the store linked to the chain
+  ///
+  /// In de, this message translates to:
+  /// **'{chain} ({country}) wählen'**
+  String chainSuggestionPick(String chain, String country);
+
+  /// Job 313 OS3: the label of the store screen's card with the chain's app
+  ///
+  /// In de, this message translates to:
+  /// **'App'**
+  String get storeAppCardTitle;
+
+  /// Job 313 OS3: the store screen's button that opens the chain's app (screen readers hear storeAppOpen)
+  ///
+  /// In de, this message translates to:
+  /// **'Öffnen'**
+  String get storeAppCardOpen;
+
+  /// Job 313 SS-Q8: above the choice of app when the chain has several; the choice is kept per store
+  ///
+  /// In de, this message translates to:
+  /// **'Welche App soll sich öffnen?'**
+  String get storeAppCardChoose;
+
+  /// Job 313 SS1: the store screen's line naming the chain the store is linked to, e.g. „Zugeordnet: Lidl · Deutschland“ (Legal N-293: never „verbunden“)
+  ///
+  /// In de, this message translates to:
+  /// **'Zugeordnet: {chain} · {country}'**
+  String storeChainLinked(String chain, String country);
+
+  /// Job 313 SS1: button beside the linked chain: pick another chain
+  ///
+  /// In de, this message translates to:
+  /// **'Ändern'**
+  String get storeChainChange;
+
+  /// Job 313: screen-reader name of storeChainChange
+  ///
+  /// In de, this message translates to:
+  /// **'Kette ändern'**
+  String get storeChainChangeLabel;
+
+  /// Job 313 SS1: button beside the linked chain: the store is no chain's any more (and is not asked again)
+  ///
+  /// In de, this message translates to:
+  /// **'Zuordnung aufheben'**
+  String get storeChainUnlink;
+
+  /// Job 313: screen-reader name of storeChainUnlink
+  ///
+  /// In de, this message translates to:
+  /// **'Zuordnung zur Kette aufheben'**
+  String get storeChainUnlinkLabel;
+
+  /// Job 313 SS1: the store screen's button for a store without a chain; opens the chain picker
+  ///
+  /// In de, this message translates to:
+  /// **'Kette zuordnen'**
+  String get storeChainConnect;
+
+  /// Job 313 SS1: title of the chain picker
+  ///
+  /// In de, this message translates to:
+  /// **'Kette wählen'**
+  String get storeChainPickerTitle;
+
+  /// Job 313 SS1: the chain picker's search field hint; finds chains of every country
+  ///
+  /// In de, this message translates to:
+  /// **'Kette suchen'**
+  String get storeChainPickerSearch;
+
+  /// Job 313 SS1: the chain picker when the search finds nothing
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Kette gefunden.'**
+  String get storeChainPickerEmpty;
+
+  /// Job 313, Legal N-293 (word for word): the list card that asks about stores made before, under its question
+  ///
+  /// In de, this message translates to:
+  /// **'Erkannte Läden können einen Knopf für ihre App zeigen. Die Namen bleiben, wie du sie geschrieben hast.'**
+  String get migrateBody;
+
+  /// Job 313, Legal N-293 (word for word, not „Verbunden“): said to screen readers after a store was matched to its chain from the list card
+  ///
+  /// In de, this message translates to:
+  /// **'Zugeordnet'**
+  String get migrateDone;
 }
 
 class _AppLocalizationsDelegate
