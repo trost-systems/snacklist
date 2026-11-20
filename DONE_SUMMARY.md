@@ -1990,3 +1990,13 @@ tick from the sheet asks no trip question. Review 0: the rows follow the list wh
 
 The user id and time kept for the app report limit now go within two hours, not up to 25, so
 the privacy text of the report-content rollout holds. Details: `docs/done/333b-senders-prune-hourly.md`.
+
+## Job 328 review 0: one switch, per-user wording
+
+Two fixes to #577. **One switch:** the app's PostHog flag is gone; Mehr › Zugänge explains the lock
+exactly while the server's `integration_lock` refuses the user (the brief's `premium-gate-integrations`
+is that switch). With the flag, turning the switch on for a TestFlight check would have refused every
+beta user's API and MCP without a word; the switch is global, so that check needs a local stack.
+**Per-user words:** the card, the API line, the API's 402 and MCP's refusal now say *you* need Premium,
+since another member's plan does not unlock you (now tested). The ARB change waits for Legal's GO, so
+this PR is pushed, not merged. Details: [docs/done/328.md](docs/done/328.md).

@@ -23,7 +23,7 @@ This directory is the maintained record of what Snacklist does today, one file p
 - The list builds rows lazily. Scroll with `reveal` (e2e helpers) or the mouse wheel before looking for a row far down.
 - Set preconditions through the API (`apiAs` in `helpers/lib.mjs`) or `scripts/fg db query --write`. Prove the behavior under test only through the UI.
 - Helper names in recipes (`addField`, `itemRow`, `addSheet`, `editSheet`, `openTab`, `openMore`, `tick`, `putBack`, `openEdit`, `pickInSheet`, `saveEdit`, `cutOff`, `signUpWithHousehold`, `createInviteCode`, `joinWithCode`, `answerConsent`) come from `e2e/tests/helpers.ts`. Journeys use the JS copies in `helpers/lib.mjs` where they exist.
-- Each file names the e2e specs that already cover the feature. Run them with `scripts/verify.sh --only e2e -- tests/<file>`. That builds the e2e web build (`app/config/e2e.json`, which turns on LEGAL_DRAFTS, HOUSEHOLD_ARCHIVE and the flag `premium-gate-integrations`) and runs under `/tmp/fg-e2e.lock`.
+- Each file names the e2e specs that already cover the feature. Run them with `scripts/verify.sh --only e2e -- tests/<file>`. That builds the e2e web build (`app/config/e2e.json`, which turns on LEGAL_DRAFTS and HOUSEHOLD_ARCHIVE) and runs under `/tmp/fg-e2e.lock`.
 
 ## Proof and skip reporting
 

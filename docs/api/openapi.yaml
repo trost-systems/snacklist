@@ -475,7 +475,7 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
     PremiumRequired:
-      description: premium_required; the household needs Snacklist Premium for the API. Nothing was read or changed.
+      description: premium_required; the key's holder needs Snacklist Premium for the API (their own plan, or a grant of the key's household). Nothing was read or changed.
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }

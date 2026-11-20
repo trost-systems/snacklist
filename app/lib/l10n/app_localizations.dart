@@ -3308,10 +3308,10 @@ abstract class AppLocalizations {
   /// **'Teil von Snacklist Premium'**
   String get integrationPremiumTitle;
 
-  /// PLACEHOLDER (job 50): Snacklist Launch writes the final copy (NEEDS_LEAD Job 50). Integration settings, locked household: why the connections are paused; nothing is removed
+  /// PLACEHOLDER (job 50): Snacklist Launch writes the final copy (NEEDS_LEAD Job 50). Integration settings, locked user (job 328 review 0: per user, another member's Premium does not unlock you): why the connections are paused; nothing is removed
   ///
   /// In de, this message translates to:
-  /// **'KI-Assistenten gehören zu Snacklist Premium. Eure Verbindungen bleiben gespeichert und funktionieren wieder, sobald euer Haushalt Snacklist Premium hat.'**
+  /// **'KI-Assistenten gehören zu Snacklist Premium. Deine Verbindungen bleiben gespeichert und funktionieren wieder, sobald du Snacklist Premium hast.'**
   String get integrationPremiumBody;
 
   /// PLACEHOLDER (job 50): Snacklist Launch writes the final copy (NEEDS_LEAD Job 50). Integration settings, locked household: included in Snacklist Premium
@@ -3446,10 +3446,10 @@ abstract class AppLocalizations {
   /// **'Die API ist noch nicht freigeschaltet.'**
   String get apiDisabled;
 
-  /// PLACEHOLDER (job 73): Snacklist Launch writes the final copy. Zugänge, API section, locked household (job 50): the keys stay, unused for now; new ones can still be made
+  /// PLACEHOLDER (job 73): Snacklist Launch writes the final copy. Zugänge, API section, locked user (job 50; job 328 review 0: per user, another member's Premium does not unlock you): the keys stay, unused for now; new ones can still be made
   ///
   /// In de, this message translates to:
-  /// **'Die Snacklist-API gehört zu Snacklist Premium. Deine Schlüssel bleiben und funktionieren wieder, sobald dein Haushalt Premium hat.'**
+  /// **'Die Snacklist-API gehört zu Snacklist Premium. Deine Schlüssel bleiben und funktionieren wieder, sobald du Premium hast.'**
   String get apiPremium;
 
   /// Zugänge, under the access token heading while the public API is hidden (job 80)

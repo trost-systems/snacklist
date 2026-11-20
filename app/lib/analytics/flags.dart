@@ -112,12 +112,6 @@ const openStoreAppFlag = 'open-store-app';
 /// an emptied list.
 const ratingTriggersV2Flag = 'rating-triggers-v2';
 
-/// The flag that shows the Premium lock of integrations (job 328): while
-/// the server's `integration_lock` switch is on and the household has no
-/// Snacklist Premium, Zugänge shows the Premium card and its connections as
-/// paused. Off, nothing of the lock shows; the server enforces it either way.
-const premiumGateIntegrationsFlag = 'premium-gate-integrations';
-
 /// PostHog feature flags, the app's runtime toggles (job 44,
 /// docs/ANALYTICS.md "Feature flags"). Read a toggle with [isOn] wherever it
 /// matters; nothing else in the app reads PostHog flags.

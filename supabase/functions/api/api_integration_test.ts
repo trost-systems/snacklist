@@ -484,7 +484,7 @@ test('a revoked key is 401; the integration lock without Premium is 402 until it
     assertEquals(error.code, 'premium_required');
     assertEquals(
       error.message,
-      'This household needs Snacklist Premium to use the API. Unlock it in the Snacklist app. ' +
+      'You need Snacklist Premium to use the API. Unlock it in the Snacklist app. ' +
         'Nothing was read or changed.',
     );
     const rows = await sql`select from public.items where household_id = ${mine.householdId}`;
@@ -515,6 +515,34 @@ test("job 328: with the integration lock on, the key holder's own Premium opens 
     const read = await api(key.token, 'GET', '/items');
     assertEquals(read.status, 200);
     assertEquals((await read.json()).data.map((i: Item) => i.name), ['Kaffee']);
+  }));
+
+test("job 328 review 0: another member's Premium does not open the API for you", () =>
+  withMembers(async (sql, [mine, theirs]) => {
+    await sql`insert into public.household_members (household_id, user_id, role)
+              values (${mine.householdId}, ${theirs.userId}, 'member')`;
+    const key = await mint(sql, mine, ['read', 'write'], mine.householdId);
+    const theirKey = await mint(sql, theirs, ['read', 'write'], mine.householdId);
+    await sql`update public.app_switches set enabled = true where key = 'integration_lock'`;
+    const tx = `m328-${theirs.userId.slice(0, 8)}`;
+    await sql`select public.purchase_record_user('apple', ${tx}, ${tx}, ${await sha256Hex(tx)},
+          'com.snacklist.app.yearly', 'premium', 'yearly', 'Production', now() - interval '1 minute',
+          24.99, 'EUR', 'DE', ${theirs.userId}::uuid, now(), now() + interval '365 days', true, false)`;
+
+    const locked = await api(key.token, 'GET', '/items');
+    assertEquals(locked.status, 402, "the partner's plan is theirs");
+    const { error } = await locked.json();
+    assertEquals(
+      [error.code, error.message],
+      [
+        'premium_required',
+        'You need Snacklist Premium to use the API. Unlock it in the Snacklist app. ' +
+        'Nothing was read or changed.',
+      ],
+    );
+    const open = await api(theirKey.token, 'GET', '/items');
+    assertEquals(open.status, 200, 'the buyer, in the same household');
+    await open.body?.cancel();
   }));
 
 test('switched off, no key can be made and a key from before gets 404 until it is on', () =>

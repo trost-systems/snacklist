@@ -56,8 +56,8 @@ end
 ANALYTICS_DEFINES = %w[POSTHOG_PROJECT_API_KEY POSTHOG_HOST ANALYTICS_INTERNAL_HOUSEHOLDS].freeze
 
 # Snacklist Premium (job 67, docs/PAYWALL_RELEASE.md): the purchase screen and RevenueCat's public
-# SDK keys, from the release environment. Unset, the build sells nothing. The integration lock is
-# the PostHog flag premium-gate-integrations (job 328).
+# SDK keys, from the release environment. Unset, the build sells nothing. The integration lock
+# follows the server switch integration_lock alone (job 328).
 PREMIUM_DEFINES = %w[REVENUECAT_PURCHASES REVENUECAT_APPLE_API_KEY REVENUECAT_GOOGLE_API_KEY].freeze
 
 # releases/flags.json at the repo root: a hold released there switches its define on.

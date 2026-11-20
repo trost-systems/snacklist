@@ -1,8 +1,8 @@
 // Job 50 (Spec #4): MCP is part of Snacklist Premium once the server's integration_lock switch is
-// on. A household without premium is refused in context and nothing is added; the integration
-// settings say so for every member, with connections paused, not removed; a yearly plan opens it
-// within one sync with the same credentials; its expiry locks it again and deletes nothing. A
-// tester's grant works throughout. Siri (job 184) and Alexa (job 72, Legal Review N-27) stay free:
+// on. A user without premium (per user: another member's plan does not count, job 328) is refused
+// in context and nothing is added; the integration settings say so, with connections paused, not
+// removed; a yearly plan opens it within one sync with the same credentials; its expiry locks it
+// again and deletes nothing. A tester's grant works throughout. Siri (job 184) and Alexa (job 72, Legal Review N-27) stay free:
 // they add throughout and Alexa's connection never shows as paused.
 //
 // The switch is global, so this spec runs alone after the suite (scripts/gates/e2e.sh,
@@ -30,7 +30,7 @@ import { connectWithToken } from './mcp-helpers';
 test.describe.configure({ mode: 'serial' });
 
 const mcpPremium =
-  'Dieser Haushalt braucht Snacklist Premium für den Zugang über KI-Assistenten. Schalte es in der Snacklist-App frei. Es wurde nichts gelesen oder geändert.';
+  'Du brauchst Snacklist Premium für den Zugang über KI-Assistenten. Schalte es in der Snacklist-App frei. Es wurde nichts gelesen oder geändert.';
 
 async function lockSwitch(enabled: boolean) {
   const { error } = await adminClient().from('app_switches').update({ enabled }).eq('key', 'integration_lock');

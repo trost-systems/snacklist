@@ -1,9 +1,5 @@
 {
   "flags": {
-    "premium-gate-integrations": {
-      "rollout": "off",
-      "note": "Mehr > Zugänge shows the Snacklist Premium card, paused connections and the way to the Premium page only while the PostHog flag premium-gate-integrations is on and the server's integration_lock refuses the user (job 328); the API (402 premium_required) and MCP enforce integration_lock server-side whatever the flag"
-    },
     "public-api": {
       "rollout": "off",
       "note": "the Snacklist API keys under Mehr > Zugänge show only while the PostHog flag public-api is on (job 73)"
@@ -107,7 +103,7 @@
     },
     "integration-lock": {
       "released": false,
-      "note": "AI assistants and the API need Snacklist Premium only once Peter turns the integration lock on (server switch integration_lock, then the PostHog flag premium-gate-integrations); Siri and Alexa stay free"
+      "note": "AI assistants and the API need Snacklist Premium only once Peter turns the integration lock on (the server switch integration_lock, which the app follows since job 328); Siri and Alexa stay free"
     }
   }
 }

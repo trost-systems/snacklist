@@ -16657,3 +16657,36 @@ day's run, about 25 hours. Legal's text stays; the code changes to match it.
 - **The 02:20 slot was only there to beat the 02:30 backup (N-284 alternative).** #588 keeps the
   table's rows out of the dump altogether, so the timing no longer matters for the backup.
 - **Cost:** 24 runs a day of one indexed delete on a table that holds at most a few hundred rows.
+
+## Job 328 review 0: one switch, per-user wording (2026-11-20)
+
+Review 0 found two faults in #577. Calls made without asking:
+
+1. **The PostHog flag `premium-gate-integrations` is gone; the app follows the server switch.**
+   The flag only decided whether the app explained a refusal the server made anyway. With
+   `integration_lock` on and the flag off for someone, their API and MCP were refused and the
+   app said nothing, and #577's own rollout order (server switch, then the flag for Peter only)
+   produced exactly that for every beta user. Documenting a safe order (flag first) would leave
+   the trap in place. Now the card shows exactly when the server enforces and the user has no
+   Premium, so a refusal always has its explanation. The brief's switch name maps to
+   `app_switches.integration_lock` (docs/PURCHASES.md, PAYWALL_RELEASE.md); renaming the key
+   would touch about 60 files for a name, and a second key for the same switch would invite the
+   same split. The switch is global: a TestFlight trial for Peter alone is not possible without a
+   per-user server allow-list, which nobody asked for; the local stack and the e2e spec cover it.
+   Builds before job 328 show no card while refusing, so the go-live waits until most installs
+   run a newer build.
+2. **Everything a locked user reads says "you", not "your household".** Premium is per user
+   (PB2, #387): another member's plan does not unlock you; only your own plan or a grant of the
+   household does. Reworded: `integrationPremiumBody` and `apiPremium` (DE, EN), the API's 402
+   message, MCP's `premiumRequired`, docs/API.md, openapi.yaml, docs/MCP.md, the held changelog
+   reword in `releases/changelog/rewords.json`. `premiumWeb` (the web note on the card) is left to
+   #580 (job 329), which already rewords it per user. Tests pin "another member's Premium does
+   not unlock you" for the API and MCP. The ARB change needs Legal's GO, so this PR is not
+   merged (NEEDS_LEAD "Job 328").
+3. **Not changed here, flagged in NEEDS_LEAD:** other texts still describe Premium as
+   household-wide. #579 (job 327) brings per-user Premium page copy (`premiumCs1HeroBody`,
+   `premiumForYou`, `premiumCs1Web`) and #580 (job 329) the legal texts and `premiumWeb`. Neither
+   touches `invitePremiumShared` („Premium gilt für alle im Haushalt“), `jh2PreviewPremium`, or
+   the store product description "One purchase for the whole household."
+   (`app/ios/Snacklist.storekit`, `scripts/iap/product.ts`). Those are paywall and store copy
+   outside this gate, so the lead routes them.

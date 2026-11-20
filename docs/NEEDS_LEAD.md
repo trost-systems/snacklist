@@ -944,9 +944,9 @@ Turning it on is Peter's go. Decisions: DECISIONS "Job 50". Behavior: docs/PURCH
    now() where key = 'integration_lock';` From that moment Siri, Alexa and MCP refuse households
    without premium. Off again: the same with `false`; everything opens at once and the app hides
    the card in every build.
-6. The app define in the next store builds: `--dart-define=INTEGRATION_LOCK=true` (release
-   workflow defines, like `REVENUECAT_PURCHASES`), and `releases/flags.json` hold
-   `integration-lock` set to released in a PR with the changelog item.
+6. Superseded by job 328: no app define any more (nothing reads `INTEGRATION_LOCK`); builds
+   from job 328 on follow the server switch. Only `releases/flags.json` hold `integration-lock`
+   set to released in a PR with the changelog item.
 
 ### Legal Review touchpoints (no legal text was edited)
 
