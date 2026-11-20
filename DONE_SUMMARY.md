@@ -1877,9 +1877,10 @@ still fit at 200 % on 360 × 640 (tested). Details: [docs/done/322.md](docs/done
 ## Job 325: no "Offline" on a start with a working network
 
 **Root cause.** The list showed "Offline" as soon as the phone's system reported no network, skipping the
-10 s start grace, and an answering server could not clear it until the live connection joined. iPhones
-report no network for a moment on a working one (a freshly started network monitor says none until its
-first update), so starts could show "Offline" every time.
+10 s start grace, and an answering server could not clear it until the live connection joined. iPhones can
+report no network on a working one (proven for a freshly started network monitor, which says none until
+its first update), but which path the tester's phone takes on a cellular start is not pinned: the plain
+first check at cold start reported the real network on the simulator.
 
 **Fix.** A "no network" report from the system now makes the list ask the server: with no network the
 request fails at once and "Offline" shows (flight mode stays prompt), and when the server answers a
@@ -1919,3 +1920,25 @@ Premium page. The app side is the new PostHog flag `premium-gate-integrations` (
 define `INTEGRATION_LOCK`, so no new build is needed); the server side stays `integration_lock`.
 The GDPR data export stays free. Tests for off, on with Premium and on without Premium on both
 sides; e2e and a web drive passed. Details: [docs/done/328.md](docs/done/328.md).
+
+## Job 325 review 0: the fix still flashed "Offline" in two orders
+
+**What review 0 found.** With a false "none" at start and the first realtime join refused (an expired
+token, the normal state for an app opened hours later), "Offline" still flashed on a working network:
+the "none"'s answered request restarted the joining channel, and the new join lost the start's hold; and
+a channel failure before that request answered was not held while the system merely said "no network".
+Peter's device info (LEAD_OVERRIDE): the flash is short and comes on mobile data, not Wi-Fi.
+
+**Fix.** A join that replaces one still waiting for its first answer keeps its start hold
+(`_joinHeld`), and the system's "no network" lifts the start hold only once a request has failed under
+it (`_downConfirmed`), so flight mode still shows "Offline" at once. A channel that dropped while the app
+was in the background subscribes again on resume instead of waiting for its backoff (job 212's open
+item). `app/lib/list/list_cubit.dart`.
+
+**Tests.** `list_cubit_test.dart`: review 0's probes A, B and D, a cellular start (none for 1 s, a slow
+server, the first join refused, the next one joining after the grace), a first join slower than the
+grace, flight mode with the channel failing first, and the resume resubscribe. Five fail on main.
+
+**Not verified.** On a real iPhone on mobile data. NEEDS_LEAD asks for a check on the next TestFlight
+build.
+

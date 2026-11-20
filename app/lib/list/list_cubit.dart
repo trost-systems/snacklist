@@ -285,7 +285,7 @@ class ListCubit(
   var _renewing = false;
 
   /// Whether a failure now is retried unseen.
-  bool get _holding => (_grace != null || _away) && !_networkDown;
+  bool get _holding => (_grace != null || _away) && !_downConfirmed;
   final _networkChanges = network;
   StreamSubscription<Network>? _network;
   Timer? _networkBack;
@@ -301,6 +301,15 @@ class ListCubit(
   /// The resyncs started when the OS said down: an answer to a later one
   /// shows the network works, whatever the OS said.
   var _downAtResync = 0;
+
+  /// Whether a request failed while the OS said down. Until then the down
+  /// is a report, and iOS reports none for a network that works (job 325):
+  /// the grace still holds.
+  var _downConfirmed = false;
+
+  /// The channel's join has not told its first status yet and began in a
+  /// grace, or replaced a join that did: its first failure is not shown.
+  var _joinHeld = false;
 
   /// Whether the channel said up when the network went down and has said
   /// nothing since: its socket may have died with the network, unnoticed
@@ -480,6 +489,13 @@ class ListCubit(
       emit(state.copyWith(connection: ConnectionStatus.connecting));
       _beginGrace();
     }
+    // A channel that dropped in the background subscribes now, not when its
+    // backoff (up to 30 s) comes due.
+    if (away && !_channelUp && _resubscribe != null) {
+      _resubscribe?.cancel();
+      _resubscribeDelay = _firstResubscribe;
+      unawaited(_rewatch());
+    }
     return resync();
   }
 
@@ -517,8 +533,9 @@ class ListCubit(
   void _watch() {
     final generation = ++_watchGeneration;
     bool current() => generation == _watchGeneration && !isClosed;
-    // A join begun in the grace gets its whole timeout, even past it.
-    var joiningInGrace = _grace != null;
+    // A join begun in the grace gets its whole timeout, even past it, and so
+    // does one that replaces it before its first status (job 325 review 0).
+    _joinHeld = _joinHeld || _grace != null;
     _unwatch = _repo.watch(
       onItem: (row) {
         if (current()) {
@@ -583,8 +600,9 @@ class ListCubit(
       },
       onStatus: (status) {
         if (current()) {
+          final joiningInGrace = _joinHeld;
+          _joinHeld = false;
           _onChannelStatus(status, joiningInGrace: joiningInGrace);
-          joiningInGrace = false;
         }
       },
     );
@@ -601,7 +619,7 @@ class ListCubit(
     final held =
         status == ConnectionStatus.offline &&
         (_holding || joiningInGrace || renewing) &&
-        !_networkDown;
+        !_downConfirmed;
     if (status == ConnectionStatus.offline && !held) {
       _troubleRound = null;
     }
@@ -674,6 +692,7 @@ class ListCubit(
     _networkAsked?.cancel();
     _networkAsked = null;
     _networkDown = false;
+    _downConfirmed = false;
     if (_channelSuspect) {
       _channelSuspect = false;
       _renewing = true;
@@ -2119,6 +2138,7 @@ class ListCubit(
 
   void _goOffline() {
     _troubleRound = null;
+    _downConfirmed = _downConfirmed || _networkDown;
     if (!_holding) {
       emit(
         state.copyWith(connection: ConnectionStatus.offline, failing: false),
