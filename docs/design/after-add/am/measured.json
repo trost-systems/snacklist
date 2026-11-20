@@ -4,17 +4,17 @@
    "AM1": {
     "max": 200,
     "largest": 310,
-    "firstMiss": "310% en: several: t1, back, new, field"
+    "firstMiss": "310% en: several: new, field"
    },
    "AM2": {
     "max": 200,
     "largest": 310,
-    "firstMiss": "310% en: several: field"
+    "firstMiss": "310% en: spelling: field; brand: field; several: new, field"
    },
    "AM3": {
     "max": 100,
     "largest": 310,
-    "firstMiss": "200% en: several: t1"
+    "firstMiss": "200% de: several: t1"
    },
    "AM4": {
     "max": 100,
@@ -24,7 +24,7 @@
    "AM5": {
     "max": 200,
     "largest": 310,
-    "firstMiss": "310% en: several: t1, back, new, field"
+    "firstMiss": "310% en: several: field"
    }
   },
   "fitsOne": {
@@ -36,7 +36,7 @@
    "AM2": {
     "max": 200,
     "largest": 310,
-    "firstMiss": "310% de: brand: field"
+    "firstMiss": "310% en: spelling: field; brand: field"
    },
    "AM3": {
     "max": 200,
@@ -76,7 +76,7 @@
   },
   "AM5": {
    "one": 171,
-   "several": 271,
+   "several": 263,
    "afterEnter": 131
   }
  },
@@ -90,12 +90,12 @@
    "AM2": {
     "max": 100,
     "largest": 200,
-    "firstMiss": "200% en: several: field"
+    "firstMiss": "200% en: several: new, field"
    },
    "AM3": {
-    "max": 0,
+    "max": 100,
     "largest": 200,
-    "firstMiss": "100% de: several: t1"
+    "firstMiss": "200% de: exact: field; spelling: tick, merge, new, field; brand: tick, merge, new, field; several: t1, tick, merge, new, field"
    },
    "AM4": {
     "max": 100,
@@ -105,7 +105,7 @@
    "AM5": {
     "max": 100,
     "largest": 200,
-    "firstMiss": "200% en: several: t1, back, new, field"
+    "firstMiss": "200% en: several: field"
    }
   },
   "fitsOne": {
@@ -155,7 +155,7 @@
   },
   "AM5": {
    "one": 171,
-   "several": 271,
+   "several": 263,
    "afterEnter": 131
   }
  },

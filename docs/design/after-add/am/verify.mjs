@@ -69,6 +69,13 @@ const inspect = () =>
             {
               // One entry per matched item (AM2 gives an item a row per outcome).
               matches: [...new Map(ms.reverse().map((m) => [m.dataset.match, { id: m.dataset.match, status: m.dataset.status, text: m.innerText }])).values()].reverse(),
+              // What marks each match row: its own background, else its first child's (AM3's chips paint a span).
+              bgs: ms.map((m) => {
+                const own = getComputedStyle(m).backgroundColor;
+                return own === 'rgba(0, 0, 0, 0)' && m.firstElementChild ? getComputedStyle(m.firstElementChild).backgroundColor : own;
+              }),
+              // AS1's plain suggestion that Enter adds.
+              plainBg: sheet.querySelector('.sugg.first:not([data-match])') ? getComputedStyle(sheet.querySelector('.sugg.first:not([data-match])')).backgroundColor : null,
               behind: [...ph.querySelectorAll('.list.behind [data-row]')].map((r) => r.dataset.row),
               note: sheet.querySelector('[data-note]') ? { kind: sheet.querySelector('[data-note]').dataset.note, text: sheet.querySelector('[data-note]').innerText.trim() } : null,
               outcomes: [...new Set(keys.map((k) => k.dataset.outcome))],
@@ -153,6 +160,15 @@ for (const device of devices) {
             for (const st of statuses) check(f.matches.some((m) => m.status === st), `${tag} ${id} ${key}: a ${st} match is marked`);
             for (const o of keysOn(id, key)) check(f.outcomes.includes(o), `${tag} ${id} ${key}: a key for ${o}`);
           }
+          // Review 0: no match may look like the plain suggestion Enter adds (Peter t1077u: marked apart from an add).
+          const plain = F.none.plainBg;
+          check(plain !== null, `${tag} ${id}: the no-match frame shows AS1's plain Enter suggestion`);
+          for (const [k, f] of Object.entries(F)) {
+            if (!f) continue;
+            for (const bg of f.bgs) check(bg !== plain && bg !== 'rgba(0, 0, 0, 0)', `${tag} ${id} ${k}: a match is marked apart from a plain add (${bg} vs ${plain})`);
+          }
+          // Review 0: a product that only contains the word (Oat milk for Milk) is no match.
+          check(!F.several.matches.some((m) => m.id === 'o2'), `${tag} ${id}: Milk offers no Oat milk`);
           // Two Oat milks apart: the match shows its store and brand.
           const brandFrame = id === 'AM4' ? null : F.brand;
           if (brandFrame) check(/dm/.test(brandFrame.matches[0]?.text ?? '') && /Hafergold/.test(brandFrame.matches[0]?.text ?? ''), `${tag} ${id}: the Oat milk match shows dm and Hafergold`);

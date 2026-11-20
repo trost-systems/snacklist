@@ -14,9 +14,9 @@ Peters Klarstellung (t1077u) gilt für alle fünf Optionen. Ein Treffer steht nu
 | AM2 Ergebnis-Zeilen | lässt die Liste, sagt, dass er da ist | wieder auf die Liste | 1 | 1 | 1 | 1 | 247 / 247 px | 303 / 303 px |
 | AM3 Entscheidungs-Tasten | führt zusammen (+1) | wieder auf die Liste | 1 | 1 | 1 | 1 | 187 / 187 px | 247 / 247 px |
 | AM4 Erst hinzufügen, dann anbieten | fügt getrennt hinzu | fügt getrennt hinzu | – | 2 | 1 | 2 | 135 / 135 px | 135 / 135 px |
-| AM5 Kacheln (Bring!) | hakt ab | wieder auf die Liste | 1 | 1 | 1 | 1 | 171 / 171 px | 271 / 271 px |
+| AM5 Kacheln (Bring!) | hakt ab | wieder auf die Liste | 1 | 1 | 1 | 1 | 171 / 171 px | 263 / 263 px |
 
-AM4 zeigt beim Tippen nichts, sein Sheet ist also das von AS1. Sein Treffer erscheint nach Enter, in einem Sheet von 187 / 237 px. AM2 braucht für einen offenen Treffer auf denselben Artikel zwei Zeilen (zusammenführen und abhaken). Bei Milch halten seine drei Zeilen also Milch und Hafermilch, und die abgehakte Buttermilch passt nicht hinein. Die anderen Optionen zeigen alle drei.
+AM4 zeigt beim Tippen nichts, sein Sheet ist also das von AS1. Sein Treffer erscheint nach Enter, in einem Sheet von 187 / 237 px. AM2 braucht für einen offenen Treffer auf denselben Artikel zwei Zeilen (zusammenführen und abhaken). Bei Milch halten seine drei Zeilen also die Milch von Edeka (zusammenführen, abhaken) und die Milch von Lidl, und die gestern abgehakte Milch passt nicht hinein. Die anderen Optionen zeigen alle drei.
 
 **Sichtbar.** Jeder Treffer, jede Taste, die entscheidet, und das Feld müssen über der Tastatur und auf dem Bildschirm liegen, ohne seitliches Wischen und ohne Scrollen im Sheet. Geprüft in beiden Sprachen und beiden Designs.
 
@@ -24,13 +24,16 @@ AM4 zeigt beim Tippen nichts, sein Sheet ist also das von AS1. Sein Treffer ersc
 | --- | --- | --- | --- | --- | --- |
 | AM1 | bis 200 % | bis 200 % | bis 200 % | 100 % | keine |
 | AM2 | bis 200 % | bis 200 % | bis 200 % | 100 % | keine |
-| AM3 | bis 200 % | 100 % | 100 % | nein: auf Deutsch braucht der dritte Name ein Wischen | Zusammenführen, Neu, Wieder auf die Liste (alle schon in der App) |
+| AM3 | bis 200 % | 100 % | 100 % | 100 % | Zusammenführen, Neu, Wieder auf die Liste (alle schon in der App) |
 | AM4 | 100 % | 100 % | 100 % | 100 % | Zusammenführen, Wieder auf die Liste (schon in der App) |
 | AM5 | bis 310 % | bis 200 % | bis 200 % | 100 % | keine |
 
+**Eine Markierung in jeder Option** (Review 0): Blau (Akzent) heißt schon auf der Liste, Minzgrün abhaken, Grau abgehakt. Honiggelb bleibt nur der normale Vorschlag von AS1, den Enter hinzufügt, also sieht keine Treffer-Zeile wie ein Hinzufügen aus; `verify.mjs` vergleicht den Hintergrund jeder Treffer-Zeile mit dem dieses Vorschlags. Honiggelbe Tasten (AM3) bleiben die Taste, die Enter nimmt.
+
 Jede Option markiert die Szenarien gleich, bei jeder Größe, in beiden Sprachen und beiden Designs:
 - genau (Nudeln), Plural (Apfel → Äpfel 1 kg) und der Fall mit Laden und Marke zeigen je einen Treffer, und Hafermilch zeigt „dm · Hafergold“;
-- mehrere Treffer (Milch) zeigen drei Artikel, bei AM2 zwei;
+- mehrere Treffer (Milch) zeigen drei Artikel: die offene Milch von Edeka und von Lidl und die gestern abgehakte (bei AM2 zwei Artikel);
+- Milch bietet nie Hafermilch an: ein Produkt, das das getippte Wort nur enthält, ist ein anderer Artikel und kein Treffer;
 - ein gestern abgehakter Treffer (Eier) erscheint als abgehakt;
 - kein Treffer (Zimt) zeigt AS1, wie es ist.
 
@@ -39,8 +42,8 @@ AM4 ist die Ausnahme: Es markiert nichts, bis Enter den Artikel hinzugefügt hat
 ## Warum AM2
 
 - **Es ist Peters Klarstellung, wörtlich genommen.** Jedes Ergebnis ist ein eigener Vorschlag, deutlich unterschieden von der +-Zeile, die hinzufügt:
-  - Zusammenführen zeigt den Artikel, wie er danach wäre, 2× Nudeln, honiggelb, mit dem Symbol für Zusammenführen;
-  - Abhaken zeigt den Namen durchgestrichen, minzgrün, mit dem Häkchen-Symbol;
+  - Zusammenführen zeigt den Artikel, wie er danach wäre, 2× Nudeln, blau (die Farbe der Runde für „auf der Liste“), mit dem Symbol für Zusammenführen;
+  - Abhaken zeigt den Namen durchgestrichen, minzgrün, mit dem Häkchen-Symbol und derselben zweiten Zeile;
   - ein abgehakter Treffer zeigt das Symbol von Wieder auf die Liste, grau.
 
   Man muss nichts lesen außer dem Artikel selbst, und es braucht keine neuen UI-Wörter.
@@ -53,7 +56,7 @@ AM4 ist die Ausnahme: Es markiert nichts, bis Enter den Artikel hinzugefügt hat
 ## Warum nicht die anderen
 
 - **AM1** (zweite Wahl): Jedes Ergebnis braucht einen Tipp, in zwei Zeilen statt drei. Aber Enter führt zusammen, ein Tipp auf die Zeile auch, und nichts auf der Zeile sagt das. Sein Abhaken ist eine nackte runde Taste.
-- **AM3**: Drei gleiche Tasten unter einem Treffer sind die klarste einzelne Wahl. Aber es ist die einzige Option, die Wörter braucht (Zusammenführen, Neu, Wieder auf die Liste). Auf Deutsch auf dem Telefon mit 360 px braucht der Name des dritten Treffers ein Wischen. Jede Taste bleibt nur bis 200 % (iPhone) und 100 % (Android) sichtbar. Enter führt zusammen.
+- **AM3**: Drei gleiche Tasten unter einem Treffer sind die klarste einzelne Wahl. Aber es ist die einzige Option, die Wörter braucht (Zusammenführen, Neu, Wieder auf die Liste). Jede Taste bleibt nur bis 200 % (iPhone) und 100 % (Android) sichtbar. Enter führt zusammen.
 - **AM4**: die heutige Reihenfolge. Beim Tippen ist nichts markiert, also sieht man den Treffer erst nach dem Hinzufügen. Zusammenführen braucht 2 Tipps, und Abhaken hat keine Taste. Seine Angebotszeile bleibt nur bei 100 % sichtbar.
 - **AM5**: Die Kacheln sehen Bring! am ähnlichsten, aber ein Tipp und Enter haken ab. Wer „Milch“ und Enter tippt, das natürlichste Hinzufügen, nimmt Milch von der Liste. Zusammenführen versteckt sich in einem + in der Ecke.
 
@@ -62,13 +65,13 @@ AM4 ist die Ausnahme: Es markiert nichts, bis Enter den Artikel hinzugefügt hat
 1. **AM-Q1. Flag.** *Vorgabe:* ein neues Flag `add-match-rows` in releases/flags.json, Rollout aus, an für Peter und die Tester. Es baut auf `add-sheet-compact` (Job 322) auf und braucht es. Ist das Flag aus, bleiben die heutige Abweisung und der Hinweis „steht schon auf der Liste“.
 2. **AM-Q2. Was Enter bei einem genauen oder Plural-Treffer auf einen offenen Artikel tut.** *Vorgabe:* Nichts ändert sich, und das Sheet sagt „Nudeln steht schon auf der Liste“ (AM2, wie heute). Die Alternativen sind zusammenführen (+1, AM1 und AM3), getrennt hinzufügen (AM4) oder abhaken (AM5, das Umschalten von Bring!).
 3. **AM-Q3. Abgehakte Artikel als Treffer.** *Vorgabe:* ja, die Artikel im abgehakten Bereich der gezeigten Liste, auf einer grauen Zeile mit dem Symbol von Wieder auf die Liste. Enter oder ein Tipp bringt den Artikel zurück, mit Menge, Laden, Marke und Eigenschaften. Ein offener Treffer auf denselben Artikel kommt immer zuerst. Soll die alte Menge zurückkommen (10× Eier) oder geleert werden? *Vorgabe:* Sie kommt zurück.
-4. **AM-Q4. Was als derselbe Artikel zählt.** *Vorgabe:* der `canonical_key` des Servers (Plural, Umlaute, Synonyme, Tippfehler), egal welche Marke und Eigenschaften die beiden Artikel haben. „Hafermilch“ trifft die Hafermilch Hafergold von dm, und die +-Zeile fügt eine getrennte hinzu. Ein Teil-Treffer (Milch, während Hafermilch auf der Liste steht) bekommt nur eine Zeile zum Zusammenführen, und Enter wirkt nie auf ihn.
+4. **AM-Q4. Was als derselbe Artikel zählt.** *Vorgabe:* der `canonical_key` des Servers (Plural, Umlaute, Synonyme, Tippfehler), egal welche Marke und Eigenschaften die beiden Artikel haben. „Hafermilch“ trifft die Hafermilch Hafergold von dm, und die +-Zeile fügt eine getrennte hinzu. Ein Produkt, das das getippte Wort nur enthält (Hafermilch für Milch), ist ein anderer Artikel und kein Treffer: es bekommt keine Zeile, wie AS1 heute offene Artikel aus den Vorschlägen ausblendet. Milch in Hafermilch zusammenzuführen ist nie einen Tipp entfernt.
 5. **AM-Q5. Mehrere Treffer.** *Vorgabe:*
    - höchstens drei Zeilen, wie im Prototyp (die drei aus AS-Q5);
-   - ein offener Treffer auf den getippten Artikel braucht zwei Zeilen, zusammenführen und abhaken, andere Treffer je eine, in dieser Reihenfolge: derselbe Artikel, andere offene, abgehakte;
+   - der erste offene Treffer braucht zwei Zeilen, zusammenführen und abhaken, andere Treffer je eine, offene vor abgehakten;
    - die +-Zeile kommt danach, als vierte Zeile.
 
-   Bei Milch passt die abgehakte Buttermilch nicht hinein.
+   Bei Milch passt die gestern abgehakte Milch nicht hinein. Enter und die ersten Zeilen wirken auf den ältesten offenen Treffer (die Milch von Edeka).
 6. **AM-Q6. Mengen beim Zusammenführen.** *Vorgabe:* das heutige `merge_quantities`. Eine getippte Menge addiert sich („2 Nudeln“ auf Nudeln ergibt 3×), und keine Menge zählt als ein Stück. Ein Gewicht plus keine Menge bleibt, wie es ist (Äpfel 1 kg), und die Zeile zum Zusammenführen zeigt das vor dem Tipp. Soll diese Zeile dann stattdessen den Schritt des Zählers anbieten (2 kg)?
 7. **AM-Q7. Was das Sheet nach einem Ergebnis sagt.** *Vorgabe:* eine Zeile an der Stelle der Chips bis zum nächsten Buchstaben, ohne Rückgängig (Peter hat Rückgängig in AS gestrichen). Sie nutzt die Sätze der App: „Zusammengeführt: 2× Nudeln“, „Nudeln abgehakt“, „Nudeln steht schon auf der Liste“. Wieder auf die Liste ist „Wieder auf die Liste: 10× Eier“, gebaut aus dem vorhandenen Label `readd`. Ein falsches Abhaken macht man mit einem Tipp auf die Zeile im abgehakten Bereich rückgängig, ein falsches Zusammenführen, indem man die Menge ändert.
 8. **AM-Q8. Große Schrift.** In AM2 schieben die Zeilen das Feld in zwei Fällen unter die Tastatur: ein Treffer mit zweiter Zeile (Laden und Marke) bei 310 % auf dem iPhone, und drei Treffer bei 310 % auf dem iPhone oder 200 % bei Android. Der Prototyp löst das nicht. *Vorgabe für den Bau:* Die Zeilen scrollen über dem Feld, das fest bleibt, und die +-Zeile rückt über die Treffer, damit ein getrenntes Hinzufügen nie weggescrollt ist.

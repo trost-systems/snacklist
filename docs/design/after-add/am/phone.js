@@ -12,7 +12,7 @@ const qtyText = (q) => (q === '' ? '' : /^\d+$/.test(q) ? `${q}×` : q);
 const facts = (i, lang) => [i.store ? storeName(i.store, lang) : '', i.brand, i.details].filter(Boolean).join(' · ');
 const nameLine = (i, lang) => `${qtyText(i.qty) ? `<b class="q">${esc(qtyText(i.qty))}</b> ` : ''}<b>${esc(i[lang])}</b>`;
 
-// A match as a list row: the list's look, honey-marked when open, struck through when ticked.
+// A match as a list row: the list's look, blue (accent) when open, struck through when ticked.
 const matchBody = (m, env, extra = '') => {
   const i = m.item;
   const f = facts(i, env.lang);
@@ -59,7 +59,8 @@ export const options = {
     id: 'AM2',
     // One row per outcome, each marked by its icon and by showing its result: merge shows the amount after it
     // (2× Pasta), tick off shows the name struck through, a ticked match shows Back on the list's icon. The + row adds.
-    // No row is honey: Enter keeps the list as it is, as today's refusal, and the sheet says so.
+    // No row is on Enter (none is honey, AS1's add colour): Enter keeps the list as it is, as today's refusal, and the
+    // sheet says so.
     typing: (s, env, ms) => {
       const rows = [];
       for (const m of ms) {
@@ -67,12 +68,13 @@ export const options = {
         const f = facts(i, env.lang);
         const sub = f ? `<span class="sub">${esc(f)}</span>` : '';
         if (i.status === 'ticked') {
-          rows.push(`<button class="sugg orow back" ${mattrs(m)} data-act="back:${i.id}" data-outcome="back">${ic('replay')}<span class="nm">${nameLine(i, env.lang)}${sub}</span>${m.same ? enterMark : ''}</button>`);
+          rows.push(`<button class="sugg orow back" ${mattrs(m)} data-act="back:${i.id}" data-outcome="back">${ic('replay')}<span class="nm">${nameLine(i, env.lang)}${sub}</span>${m === ms[0] ? enterMark : ''}</button>`);
           continue;
         }
         const merged = { ...i, qty: mergeQty(i.qty, '') };
         rows.push(`<button class="sugg orow merge" ${mattrs(m)} data-act="merge:${i.id}" data-outcome="merge">${ic('call_merge')}<span class="nm">${nameLine(merged, env.lang)}${sub}</span></button>`);
-        if (m.same) rows.push(`<button class="sugg orow tick" ${mattrs(m)} data-act="tick:${i.id}" data-outcome="tick">${ic('check_circle_outline')}<span class="nm"><s>${esc(i[env.lang])}</s></span></button>`);
+        // The first open match also gets a tick-off row, with the same second line so both rows read as one item.
+        if (i === ms.find((x) => x.item.status === 'open').item) rows.push(`<button class="sugg orow tick" ${mattrs(m)} data-act="tick:${i.id}" data-outcome="tick">${ic('check_circle_outline')}<span class="nm"><s>${esc(i[env.lang])}</s>${sub}</span></button>`);
       }
       const first = sameItem(s, env.lang);
       return `${rows.slice(0, 3).join('')}${newRow(s, env, 'new', !first)}`;
@@ -130,7 +132,7 @@ export const options = {
   },
   AM5: {
     id: 'AM5',
-    // Bring!'s tiles: what is on the list is honey; a tap ticks it off, as in Bring!, and so does Enter. A ticked
+    // Bring!'s tiles: what is on the list is blue; a tap ticks it off, as in Bring!, and so does Enter. A ticked
     // tile comes back with a tap. The + in a tile's corner merges. The last tile adds the typed text as new.
     typing: (s, env, ms) => {
       const first = sameItem(s, env.lang);

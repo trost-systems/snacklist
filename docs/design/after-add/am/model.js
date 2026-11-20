@@ -18,11 +18,12 @@ const listed = [
   { key: 'oatmilk', en: 'Oat milk', de: 'Hafermilch', emoji: '🥛', cat: 'drinks', store: 'dm', qty: '2', brand: 'Hafergold', keys: ['oatmilk'] },
   { key: 'milk', en: 'Milk', de: 'Milch', emoji: '🥛', cat: 'chilled', store: 'edeka', qty: '', details: { en: '1.5 %', de: '1,5 %' }, keys: [] },
   { key: 'bananas', en: 'Bananas', de: 'Bananen', emoji: '🍌', cat: 'produce', store: null, qty: '6', keys: ['banana', 'banane'] },
+  { key: 'milk', en: 'Milk', de: 'Milch', emoji: '🥛', cat: 'chilled', store: 'lidl', qty: '', details: { en: '3.5 %', de: '3,5 %' }, keys: [] },
 ];
 // Ticked yesterday: in the list's ticked section today.
 const ticked = [
   { key: 'eggs', en: 'Eggs', de: 'Eier', emoji: '🥚', cat: 'chilled', store: 'edeka', qty: '10', details: { en: 'free range', de: 'Freiland' }, keys: ['egg', 'ei'] },
-  { key: 'buttermilk', en: 'Buttermilk', de: 'Buttermilch', emoji: '🥛', cat: 'chilled', store: 'edeka', qty: '', keys: [] },
+  { key: 'milk', en: 'Milk', de: 'Milch', emoji: '🥛', cat: 'chilled', store: null, qty: '', details: { en: 'organic', de: 'Bio' }, keys: [] },
 ];
 // Typing suggestions from the catalog and history (AS-Q5: up to three while typing).
 export const catalog = [
@@ -61,9 +62,9 @@ export const lastTwo = (s) => [...new Set(s.added)].slice(-2).map((id) => byId(s
 // Case, accents and umlauts fold (ä → a here; the server folds further).
 export const fold = (x) => x.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
 
-// A match is an item on the list (open) or ticked whose name the typed text is: 'exact' (same name), 'spelling'
-// (another form the canonical key folds: plural, umlaut, the other language), or 'part' (a compound or a word of it:
-// Milch in Hafermilch). Only exact and spelling matches are the same item; a part match is shown, never acted on by Enter.
+// A match is an item on the list (open) or ticked that is the typed item: 'exact' (same name) or 'spelling' (another
+// form the canonical key folds: plural, umlaut, the other language). A compound that only contains the word (Oat milk
+// for Milk) is a different product and no match (review 0): it is not offered to merge into.
 export const matches = (s, lang) => {
   const q = fold(s.text);
   if (q.length < 3) return [];
@@ -75,13 +76,12 @@ export const matches = (s, lang) => {
     let kind = null;
     if (i[lang].toLowerCase() === s.text.trim().toLowerCase()) kind = 'exact';
     else if (name === q || forms.includes(q)) kind = 'spelling';
-    else if (q.length >= 4 && (name.split(' ').includes(q) || name.endsWith(q))) kind = 'part';
-    if (kind) out.push({ item: i, kind, same: kind !== 'part' });
+    if (kind) out.push({ item: i, kind });
   }
-  const rank = (m) => (m.same ? 0 : 2) + (m.item.status === 'open' ? 0 : 1);
-  return out.sort((a, b) => rank(a) - rank(b)).slice(0, 3);
+  // Open ones first, the oldest first among them (the one Enter acts on), then ticked ones.
+  return out.sort((a, b) => (a.item.status === 'open' ? 0 : 1) - (b.item.status === 'open' ? 0 : 1)).slice(0, 3);
 };
-export const sameItem = (s, lang) => matches(s, lang).find((m) => m.same) ?? null;
+export const sameItem = (s, lang) => matches(s, lang)[0] ?? null;
 
 // Catalog suggestions while typing; an item that already matches is not suggested again.
 export const suggestions = (s, lang, room = 3) => {

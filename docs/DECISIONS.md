@@ -16164,3 +16164,7 @@ internal metadata, not user copy.
 - **Rows must not shrink in the sheet's column.** The first run measured AM1 as in view at 200 % on Android while its rows overlapped. With `flex-shrink: 0`, the overflow shows. The table gives "in view" for one match and for three.
 - **The stepper follows the app's `stepQuantity`** ("1 kg" → "2 kg"); merge follows `merge_quantities` (1 kg + none stays 1 kg, AM-Q6).
 - **Preview:** `dpl_Do8APvKCfawUUJLdynRviWKxC5cy`, built on `dpl_F5GxUXuGo4Tv6Wjaw6uJMeHyTGZg`, with 158 files byte-checked. It replaces `dpl_9skSoQBYYiw1YaNhuttv4k4ebimP` (before the clarification). The share link is for the lead to mint.
+- **Review 0: one marking language, no part matches.**
+  - Match rows had used honey-soft, the colour of AS1's plain "Enter adds this" suggestion, which broke Peter's "marked to distinguish from a suggestion that adds". Every option now uses blue (accent) for on the list, mint for tick off and grey for ticked, and verify.mjs compares backgrounds.
+  - "Milk" had offered a one-tap merge into Oat milk, a different product. Compounds are no longer matches anywhere, and the several-matches scenario is now two open Milks and a ticked one.
+  - The preview is now `dpl_DwV7uqNrRrNdsruXL8hTByoSnvK5`.

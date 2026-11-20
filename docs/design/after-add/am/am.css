@@ -1,6 +1,7 @@
-/* Round AM: a match drawn as a list row. Open: honey-soft with a honey edge. Ticked: muted and struck through. */
+/* Round AM's marking, the same in every option: accent means "already on the list", mint "tick off", grey "ticked".
+   Honey-soft stays AS1's plain suggestion that Enter adds, so no match looks like an add (review 0). */
 .mrow { display: flex; align-items: stretch; gap: 4px; border-radius: 12px; min-height: 48px; }
-.mrow.open { background: var(--hl-color-honey-soft); box-shadow: inset 4px 0 0 var(--hl-color-honey); }
+.mrow.open { background: var(--hl-color-accent-soft); color: var(--hl-color-on-accent-soft); box-shadow: inset 4px 0 0 var(--hl-color-accent); }
 .mrow.ticked { background: var(--hl-color-surface-sunken); }
 .th-dark .mrow.ticked { background: var(--hl-color-surface); }
 .mbody { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 4px 8px 4px 12px; min-height: 48px; font-size: calc(16px * var(--ts)); }
@@ -33,7 +34,7 @@
 .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .ts200 .tiles, .ts310 .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .tile { position: relative; border-radius: 14px; min-height: 84px; display: grid; }
-.tile.open { background: var(--hl-color-honey); color: var(--hl-color-on-honey); }
+.tile.open { background: var(--hl-color-accent-soft); color: var(--hl-color-on-accent-soft); box-shadow: inset 0 0 0 2px var(--hl-color-accent); }
 .tile.ticked { background: var(--hl-color-surface); box-shadow: inset 0 0 0 2px var(--hl-color-border); }
 .tile.newtile { box-shadow: inset 0 0 0 2px var(--hl-color-border); border: 0; background: none; }
 .tbody { display: grid; align-content: center; justify-items: center; gap: 1px; padding: 8px 6px; text-align: center; font-size: calc(14px * var(--ts)); line-height: 1.2; min-height: 84px; min-width: 0; overflow-wrap: anywhere; }
@@ -43,7 +44,7 @@
 .tbody .sub { font-size: calc(11.5px * var(--ts)); opacity: 0.8; }
 .tile.ticked .tbody b { text-decoration: line-through; }
 .tbody .ret { width: 16px; height: 16px; position: absolute; left: 6px; top: 6px; }
-.tile.open .tbody .ret { color: var(--hl-color-on-honey); }
+.tile.open .tbody .ret { color: var(--hl-color-on-accent-soft); }
 .corner { position: absolute; right: 0; top: 0; width: 44px; height: 44px; display: grid; place-items: start end; padding: 4px; }
 .corner .icon { width: 22px; height: 22px; border-radius: 11px; background: var(--hl-color-surface-raised); color: var(--hl-color-text); }
 
@@ -62,8 +63,8 @@
 .sugg.orow .nm .q { color: var(--hl-color-brand); }
 .sugg.orow .sub { display: block; font-size: calc(13px * var(--ts)); color: var(--hl-color-text-muted); }
 .sugg.orow > .icon:first-child { width: 24px; height: 24px; color: var(--hl-color-text); }
-.sugg.orow.merge { background: var(--hl-color-honey-soft); }
-.sugg.orow.tick { background: var(--hl-color-mint-soft); }
+.sugg.orow.merge { background: var(--hl-color-accent-soft); color: var(--hl-color-on-accent-soft); box-shadow: inset 4px 0 0 var(--hl-color-accent); }
+.sugg.orow.tick { background: var(--hl-color-mint-soft); box-shadow: inset 4px 0 0 var(--hl-color-mint); }
 .sugg.orow.back { background: var(--hl-color-surface-sunken); }
 .th-dark .sugg.orow.back { background: var(--hl-color-surface); }
 .sugg.orow s { text-decoration-thickness: 2px; font-weight: 600; }
