@@ -16431,3 +16431,74 @@ moment after an emptied list runs unchanged, and the counters are the same JSON 
    keeps no properties. No ARB, legal or privacy file changed.
 9. **Rollout.** `releases/flags.json` has `rating-triggers-v2` off. The prompt asks only in public store builds, so
    turning the flag on for testers changes nothing they can see; creating the PostHog flag is the lead's step.
+
+## Job 329: subscription legal texts for per-user Premium (redo of #153), 2026-11-20
+
+Peter approved item 4 on 20 Nov 2026 (t1086u). #153 (Spec #4 texts: Legal's K.13.R handoff, K.13.S terms and the
+K.13.T fixes, applied in jobs 47 and 67, approved by Peter on 31 Oct "publish only with job 49 and the paywall") still
+described household Premium, Siri as Premium and the pre-CS1 split. Not merged; Legal GO first.
+
+1. **Redone on main, not rebased.** Almost every purchase sentence changes with per-user Premium (job 185): who
+   RevenueCat knows (the account id), what Apple and Google receive, who sees the unlock, what account deletion
+   does. Legal's redlines kept where they still apply, by file in `/workspace/legal/reviews/`:
+   `2026-10-30-hummlist.md` K.13.4 S-1 to S-5 (per-user versions; the yearly plan keeps billing after leaving or
+   deleting), K.13.R R.1 (5a's structure, payment, Google refund, check value and bookkeeping sentences; draft pages
+   deleted), R.2 (§12), R.4 (the cancel answer word for word with the Premium name and path; the MCP line „Das gehört
+   zu Snacklist Premium.“, now behind the hold `integration-lock`, since MCP is free until the lock), R.6 (terms live
+   and linked before the yearly plan sells), K.13.S (the terms: statute-only, Lifetime not terminated ordinarily,
+   36-month pro rata at shutdown, consent-only new versions; "no lawyer before publishing") and K.13.T's S-4 refund
+   lines; `2026-11-10-snacklist-premium.md` N-128 (a numbered cap in the terms and on the paywall, "du", a personal
+   and household use sentence, no "we may limit") and N-129 (manage-or-cancel entry, terms live, paywall says the free
+   list needs no Premium); `2026-11-19-snacklist-inapp-legal.md` Q25 (`premiumYearlyTerms` and the paywall binding
+   line MUST STAY) and N-302 (Lifetime line untouched). The 15 and 17 Nov reviews have nothing on subscriptions.
+   (When the job started, a listing of `/workspace/legal/reviews/` on hz showed only the 15 and 17 Nov files; review
+   0 found all of them there, and this round applies them.)
+2. **Every fact was read off the code** (main c8e08241, a read-only subagent with file:line evidence): RevenueCat gets
+   the user id only after a tap and after `note_revenuecat_customer()`; Apple gets it as `appAccountToken`, Google an
+   unsalted SHA-256 of it; only the buyer reads `user_entitlements`; the invite preview's `recent_purchase` counts the
+   buyer's own purchases; account deletion ends user Premium at once (cascade), purges the purchase to a tombstone
+   after 30 days and queues RevenueCat's customer deletion only when `revenuecat_customers` holds the id; a lapse
+   deletes nothing and the history and the planned-vs-bought summary open for the household's or the viewer's own
+   Premium; a user is in at most 20 households (`household_cap()`); the API allows 60 calls a minute per key (burst
+   20), 1,000 a day per household and 10 active keys per person.
+3. **The site texts wait behind the hold `premium-launch`**, not behind a merge date. With `::: once premium-launch`
+   (new text) and `::: until premium-launch` (today's) this PR can merge after Legal's GO and nothing changes on
+   snacklist.app until the hold is released, which PAYWALL_RELEASE 5.6 ties to no later than 5.4 and to the date
+   lines. `site/test/gates.test.mjs` lists all 24 gates of the four pages with a phrase only that side renders, checks
+   held and released production builds against it, and fails when a page's gate count differs from the list. Each of
+   the 24 gates removed one at a time made the render test fail (review 0 had shown two headings the first version
+   missed).
+4. **Two places cannot be gated**, so their words are true before and after the sale: the RevenueCat bullets in §12
+   and §13 (a `:::` block cannot sit inside a list) and the account-deletion pages `app/web/konto-loeschen.html` /
+   `delete-account.html` (part of the web build). They go live with the next deploy.
+5. **In the app the purchase disclosures are per-user, exactly as Legal's GO of 20 Nov (21:51) has them**:
+   `premiumYearlyTerms` (the store's price; a lapse deletes nothing and the history goes back to 4 weeks),
+   `premiumOwner` under the plans (replacing the household binding `premiumHousehold`, a new key because its
+   `{household}` placeholder goes) and `premiumWeb`. Review 0 had moved the last two to #579 (flag `paywall-cs1`) to
+   avoid two wordings; the Lead's override then had #579 leave the household-wording keys out with `paywall-cs1` off,
+   so that left the sale page saying "belongs to the household" (review 1). Restored from 2abc7521 byte for byte, so
+   both ARB files hash as Legal approved them. The hero above („Einer kauft. Alle haben es.“) stays household-worded
+   and is #579's; before 5.4 it must change, the page must say the free list needs no Premium (N-129) and name the
+   20-household cap (N-128): PAYWALL_RELEASE 4.1, NEEDS_LEAD.
+6. **N-128 in the terms**: §3 names the cap (at most 20 households, Free and Premium alike, the existing
+   `household_cap()`) and the personal and household use sentence; §8 names the API's numbers and says costly
+   features that don't exist yet (cloud receipts, web images, own photos) are offered only once their limits stand as
+   numbers in the terms and on the Premium page. No "reasonable limits", no unilateral change reason for costs (the
+   first version's §11 bullet is gone). The help page's limits answer is gone: it claimed the app names limits at
+   each feature, which it doesn't. MCP has no per-user limit; Lifetime's allowances (`lifetime-allowances`) are open
+   for Peter.
+7. **Terms stay `draft: true` until Legal's GO, then publish before the sale.** K.13.S says these terms need no lawyer (the 15 Nov
+   review's inventory still lists terms of use as a lawyer item; NEEDS_LEAD asks Legal which holds), and N-129/R.6 want the page
+   live and linked before a yearly plan sells: PAYWALL_RELEASE 4.2 is now a blocker for 5.4. The site has no page-level
+   hold, so publishing is a PR that drops `draft`, sets the date and points `termsUrl` at the page. The date line is a
+   real date: the build refuses `⟦…⟧` placeholders, also on drafts.
+8. **Terms content follows the agreed model**: Free is everything for shopping (list, prices and totals, the last 4
+   weeks of history, Siri, Alexa); Premium is API and MCP, insights such as planned-vs-bought, the full history and
+   per-use-cost features once they exist; downloading your data always stays free. CS1's "export" is left out of
+   Premium because the only export in the app is the free GDPR download (`premium-pitch`); whether a separate Premium
+   export is meant is a question for Peter (NEEDS_LEAD). Premium is the buyer's, in every household; Lifetime lasts
+   while the account exists and Snacklist runs, and ends with account deletion.
+9. **#premium-beta is unchanged**: it describes household grants, which Legal approved and which stay the only
+   promotional path (`scripts/iap/promotional.ts` grants households; beta tester grants stay off).
+10. **The draft purchase pages are deleted** (`datenschutz-kaeufe.md`, `privacy-purchases.md`, Legal R.1 (3)); their
+    text is section 5a now.

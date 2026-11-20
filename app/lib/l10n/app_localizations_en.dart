@@ -1898,12 +1898,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumYearlyTerms =>
-      'Snacklist Premium yearly, 1 year. The plan renews automatically for another year unless you cancel it at least 24 hours before the end of the period. Your Apple or Google account is charged when you confirm the purchase and at every renewal. You can manage and cancel the plan in the App Store\'s or Google Play\'s subscription settings.';
+      'Snacklist Premium yearly, 1 year, at the store\'s price shown. The plan renews automatically for another year unless you cancel it at least 24 hours before the end of the period. Your Apple or Google account is charged when you confirm the purchase and at every renewal. You can manage and cancel the plan in the App Store\'s or Google Play\'s subscription settings. If the plan ends, we delete nothing; the history then shows the last 4 weeks again.';
 
   @override
-  String premiumHousehold(String household) {
-    return 'Premium then belongs to the household “$household” and stays there, even if you leave it later.';
-  }
+  String get premiumOwner =>
+      'Premium then belongs to you and applies in every household you\'re a member of, later ones included. The other members don\'t get it through your purchase.';
 
   @override
   String get premiumBuyYearly => 'Subscribe yearly';
@@ -1931,7 +1930,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumWeb =>
-      'You can buy Snacklist Premium in the iPhone or Android app. It is then unlocked here too, for your whole household.';
+      'You can buy Snacklist Premium in the iPhone or Android app. It then applies here too, in each of your households.';
 
   @override
   String get premiumRefundYearly =>

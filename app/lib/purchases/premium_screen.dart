@@ -202,12 +202,7 @@ class const _PremiumView() extends StatelessWidget {
                 ),
               },
             if (household != null && cards.isNotEmpty)
-              _Plans(
-                cards: cards,
-                prices: prices,
-                household: household.name,
-                onBuy: buy,
-              ),
+              _Plans(cards: cards, prices: prices, onBuy: buy),
             // Only once sales start, or for a household that bought twice:
             // before, it would suggest a purchase (Legal Review N-69).
             if (launched || entitlements.boughtLifetimeTwice)
@@ -532,17 +527,14 @@ class const _Benefit(final IconData icon, final String text)
   }
 }
 
-/// The offered plans as tiles to pick from, the household the purchase
-/// binds to, one Buy for the picked plan with its terms, restore and the
+/// The offered plans as tiles to pick from, whom the purchase belongs to,
+/// one Buy for the picked plan with its terms, restore and the
 /// legal links. The pick lives in [PremiumPageCubit], so it survives the
 /// tiles scrolling out of the lazy list.
 class const _Plans({
   /// The plans on offer, each with a price in [prices]; never empty.
   required final List<PremiumPlan> cards,
   required final Map<PremiumPlan, StorePrice> prices,
-
-  /// The name of the household the purchase unlocks (Legal Review Q6).
-  required final String household,
   required final void Function(PremiumPlan plan) onBuy,
 }) extends StatelessWidget {
   @override
@@ -586,14 +578,14 @@ class const _Plans({
           Semantics(
             container: true,
             child: Row(
-              key: const ValueKey('premium-household'),
+              key: const ValueKey('premium-owner'),
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.home_outlined, size: 18),
+                const Icon(Icons.person_outline, size: 18),
                 const SizedBox(width: HlSpace.s2),
                 Expanded(
                   child: Text(
-                    l10n.premiumHousehold(household),
+                    l10n.premiumOwner,
                     style: theme.textTheme.bodySmall,
                   ),
                 ),

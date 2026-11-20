@@ -78,8 +78,8 @@ reasons.
   it.
 - **Billing notes follow the subscriber.** `my_yearly_plan()` counts the caller's own yearly plan
   in every household, so the subscriber sees its status and billing problem wherever they are,
-  and the "your plan keeps billing" dialog also shows when they leave or join any household or
-  delete the account (its text stays true; the copy review in NEEDS_PETER covers whether it
+  and the "your plan keeps billing" dialog also shows when they leave any household or
+  delete the account; joining shows none, only leaving and account deletion call it (its text stays true; the copy review in NEEDS_PETER covers whether it
   should show on leaving).
 - **Promotional grants to a user customer** sync into `user_entitlements`
   (`promotional_premium_sync_user`). `scripts/iap/promotional.ts` still grants households only:
@@ -279,9 +279,10 @@ never ends a paid period; only a refund revokes at once.
 | missing | Auto-renew off | Revoke |
 
 **Analytics.** `purchase_completed` goes out once per purchase, when both the webhook's record
-and the buyer's claim are in (whichever comes second), under the buyer's consent;
+and the buyer's claim are in (whichever comes second), under the buyer's consent; a user-bound
+purchase (job 185) needs no claim and sends it at the first grant;
 `purchase_refunded` on a refund of a purchase with a known buyer. Both carry `product_id` and
-`premium_source` (`yearly` | `lifetime`). A renewal sends nothing. Without a claim, or without consent, nothing is sent (the paying
+`premium_source` (`yearly` | `lifetime`). A renewal sends nothing. Without a claim (household path), or without consent, nothing is sent (the paying
 share is a lower bound, docs/ANALYTICS.md). Sandbox purchases and purchases in households with a
 promotional grant (testers, reviewers) are `is_internal`. `purchase_restored` is not sent: a RevenueCat
 restore produces no event for us, and no production code sends it (the job 25 helper
@@ -332,10 +333,10 @@ RevenueCat talks to Apple (App Store Server API with the In-App Purchase key) an
 Developer API through a service account; real-time developer notifications).
 
 Data RevenueCat receives (only after a tap on Buy or Restore, job 47): the household UUID as App
-User ID (what reaches Apple and Google: "What Apple and Google receive" below), store transaction ids and the Play purchase token,
+User ID (since job 185 the Snacklist user id in new builds; read "household id" below as "App User ID") (what reaches Apple and Google: "What Apple and Google receive" below), store transaction ids and the Play purchase token,
 product id, price, currency, storefront or country code, purchase and refund dates, sandbox or
 production, platform, app and SDK version, the device locale, and the requesting IP address
-(network level). No e-mail, no name, no Supabase user id, no list or household content; the app
+(network level). No e-mail, no name, no list or household content (and, in builds before job 185, no Supabase user id); the app
 sets no customer attributes and collects no advertising or device identifiers (enforced by the
 lint rules `purchases-flutter-only-in-revenuecat-repository` and `no-revenuecat-customer-data`). RevenueCat states customer
 data "is sent to AWS data centers located in the United States" (https://www.revenuecat.com/privacy/);
@@ -372,8 +373,8 @@ locked version changes until this section is checked again.
   the app sets no StoreKit version): when the App User ID parses as a UUID, every purchase gets
   `Product.PurchaseOption.appAccountToken(uuid)`
   ([PurchasesOrchestrator.swift#L846-L849](https://github.com/RevenueCat/purchases-ios/blob/5.99.0/Sources/Purchasing/Purchases/PurchasesOrchestrator.swift#L846-L849)).
-  Our App User ID is the household UUID, so **Apple receives the household id as the
-  transaction's `appAccountToken`**.
+  Our App User ID is a UUID (the household's before job 185, the user's since), so **Apple receives
+  the App User ID as the transaction's `appAccountToken`**.
 - **Apple, StoreKit 1** (iOS 15 only; since job 97 the app needs iOS 17, so no purchase takes
   this path any more; kept for the record): the SDK
   sets `SKMutablePayment.applicationUsername = appUserID` for every purchase, UUID or not
@@ -386,7 +387,7 @@ locked version changes until this section is checked again.
   ([BillingWrapper.kt#L1031](https://github.com/RevenueCat/purchases-android/blob/11.0.0/purchases/src/main/kotlin/com/revenuecat/purchases/google/BillingWrapper.kt#L1031)),
   where `sha256()` is the Base64 of the unsalted SHA-256 of the id's bytes
   ([utils.kt#L33-L37](https://github.com/RevenueCat/purchases-android/blob/11.0.0/purchases/src/main/kotlin/com/revenuecat/purchases/common/utils.kt#L33-L37)).
-  **Google receives a hash of the household id**, not the id. `setObfuscatedProfileId` is never
+  **Google receives a hash of the App User ID** (household or, since job 185, user id), not the id. `setObfuscatedProfileId` is never
   called in purchases-android 11.0.0 (no occurrence in the source).
 - So draft 5a's sentence ("gibt RevenueCat beim Kauf die Kennung deines Haushalts an Apple
   weiter bzw. einen daraus gebildeten Hashwert an Google") matches the source. Two details for
@@ -421,7 +422,7 @@ checked for purchases_flutter 11.0.0, as above.
   ([iOS DeviceCache.swift#L976-L986](https://github.com/RevenueCat/purchases-ios/blob/5.99.0/Sources/Caching/DeviceCache.swift#L976-L986),
   [Android DateExtensions.kt#L15-L16](https://github.com/RevenueCat/purchases-android/blob/11.0.0/purchases/src/main/kotlin/com/revenuecat/purchases/common/caching/DateExtensions.kt#L15-L16)).
   Stale entries are refreshed, not deleted: everything stays until the SDK switches to another
-  App User ID (a Buy or Restore for another household, which clears the old household's
+  App User ID (a Buy or Restore under another account since job 185, before it for another household, which clears the old customer's
   CustomerInfo and offerings,
   [DeviceCache.swift#L129-L149](https://github.com/RevenueCat/purchases-ios/blob/5.99.0/Sources/Caching/DeviceCache.swift#L129-L149)),
   `logOut`, or uninstalling the app.

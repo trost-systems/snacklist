@@ -70,7 +70,7 @@ status are in [`PRODUCT_FEATURE_MAP.md`](PRODUCT_FEATURE_MAP.md).
 | `REVENUECAT_APPLE_API_KEY`, `REVENUECAT_GOOGLE_API_KEY` | GitHub secrets, `release` environment | unset | 5.1 |
 | `app_switches.premium_offer` | hosted database | `false` | 5.4 |
 | `premium-launch` | `releases/flags.json` hold | `released: false` | 5.6 |
-| PR #153 (privacy section 5a, FAQ, terms draft) | repository | open, not merged | 4.1 |
+| Job 329 PR (privacy section 5a, help answers, terms draft) | repository | open, not merged; its site texts wait for `premium-launch` | 4.1 |
 | `app_switches.integration_lock` | hosted database | `false` | 6.4 |
 | `INTEGRATION_LOCK` | GitHub variable, `release` environment, and the Vercel project's environment | unset | 6.5 |
 | `integration-lock` | `releases/flags.json` hold | `released: false` | 6.5 |
@@ -211,24 +211,39 @@ The open gaps between the drafts and what the app does are listed in the
 job 67 PR ("For Legal Review"). Each one is either closed or accepted by
 Legal before 4.1.
 
-4.1 **Legal, Peter's yes**: PR #153 (rebased onto main by job 67). It puts
-section 5a (yearly plan and Lifetime) into the privacy policy, deletes the
-draft purchase pages, adds the FAQ entry "Wie kündige ich das Jahresabo?"
-and the terms page as `draft: true`. It goes live on snacklist.app when it
-merges, so it merges together with step 5.4, not earlier. Before merging,
-set the publication date (handoff R.1 (4)) and confirm the English §12 line
-job 67 composed while rebasing. The Lead merges it with
-`~/groceries-ops/bin/merge-lock bash -c 'scripts/push-pr.sh && scripts/merge-pr.sh --wait 153'`
-from the PR's checkout.
+4.1 **Legal, Peter's yes**: the job 329 PR (#580), which replaces PR #153.
+It puts section 5a (yearly plan and Lifetime, per-user since job 185) into
+the privacy policy, the help page's answers on cancelling, leaving a
+household, a lapse and refunds, the Premium page's per-user lines (the
+yearly terms, `premiumOwner` under the plans, the web note `premiumWeb`)
+and the account-deletion page's Premium lines. It deletes the draft
+purchase pages. The site parts sit in `::: once premium-launch` blocks (the
+old answers in `::: until premium-launch`), so the PR can merge after
+Legal's GO without going live: production renders them only once the hold
+is released (5.6, `site/test/gates.test.mjs`). The app strings show only
+with `REVENUECAT_PURCHASES` and `premium_offer` on. The account-deletion
+page (`app/web/konto-loeschen.html`, `delete-account.html`) and the §12/§13
+RevenueCat lines are worded to be true before and after the sale and go
+live with the next web release. Still household-worded on the Premium
+page: the hero („Einer kauft. Alle haben es.“, „… für euren ganzen
+Haushalt …“), job 327's (#579; the Lead's override of 20 Nov has #579 leave the
+11 household-wording keys out (N-308) and keeps `paywall-cs1` off). Before 5.4 the hero must stop
+promising the household and the page must say, without a further tap,
+that the free list needs no Premium (N-129), and the 20-household cap must
+stand on the page (N-128): open for the Lead, NEEDS_LEAD "Job 329".
 
-4.2 **Legal, Peter's yes**: the terms of use (`nutzungsbedingungen.md`,
-`terms.md`). They stay `draft: true` until a lawyer has cleared the
-⟦NEEDS A LAWYER BEFORE PUBLISHING⟧ markers. Until then the Premium page
-links Apple's standard EULA on iOS and the support page on Android and the
-web (`termsUrl` in `app/lib/purchases/premium_server.dart`). Once the page is
-published, a one-line PR points `termsUrl` at `/nutzungsbedingungen` and
-`/en/terms` on Android and the web. Apple's EULA can stay on iOS, or the
-terms page can replace it there too (Legal decides).
+4.2 **Legal, Peter's yes; blocker for 5.4**: the terms of use
+(`nutzungsbedingungen.md`, `terms.md`, job 329; Legal's K.13.S rewritten
+per-user). Legal N-129 and K.13.R R.6 want them live and linked before a
+yearly plan is sold. They stay `draft: true` (404 in production) until
+Legal's GO; then a PR drops `draft`, sets the date line, and points
+`termsUrl` (`app/lib/purchases/premium_server.dart`) at
+`/nutzungsbedingungen` and `/en/terms` on Android and the web, before 5.4.
+Apple's EULA can stay on iOS, or the terms page can replace it there too
+(Legal decides). Also before 5.4 (N-128): numbered limits for any per-use
+cost feature that is offered, in the terms (section 8) and on the Premium
+page; today only the API has numbers (section 8 names them), MCP has none,
+and Lifetime's allowances (`lifetime-allowances`) are open for Peter.
 
 4.3 **Legal**: privacy section 9 names `paywall_viewed` and
 `integration_blocked` (and the Siri events), and section 7 says that AI
@@ -242,7 +257,7 @@ user id since job 185).
 4.5 **Legal, Peter's yes**: the purchase privacy texts describe per-user
 Premium (job 185): RevenueCat and through it Apple and Google receive the
 account id, the purchase belongs to the account, and the RevenueCat
-customer is deleted 30 days after the account. The Premium page copy that
+customer is deleted 30 days after the account. Drafted in job 329 (4.1). The Premium page copy that
 promises the household changes through the prototype gate. Both lists are
 in NEEDS_PETER "Job 185".
 
@@ -304,9 +319,12 @@ household has no promotional grant, so the reviewer can buy in the sandbox
 shows no Buy). Play: the production track, with its own release job as on
 Apple.
 
-5.6 **Lead**: the changelog. A PR sets `"released": true` for
+5.6 **Lead**: the changelog and the sale's legal texts. A PR sets `"released": true` for
 `premium-launch` in `releases/flags.json`, as part of the release whose
-store build first sells. The next `changelog.mjs draft` then takes the held
+store build first sells, and merges no later than 5.4 turns the sale on:
+it publishes privacy section 5a and the help page's Premium answers (4.1).
+The same PR sets `updated:` and the „Stand“ / "Last updated" line of
+`datenschutz.md`, `privacy.md`, `support.md` and `support-en.md` to its date. The next `changelog.mjs draft` then takes the held
 Premium items: job 49's ("Snacklist Premium gibt es jetzt jährlich oder als
 Lifetime …") and job 67's. Whoever owns the release checks the "What's new"
 texts against the 500-character limit (`node scripts/release/changelog.mjs drafts`).

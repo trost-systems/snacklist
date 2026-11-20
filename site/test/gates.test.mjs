@@ -109,3 +109,59 @@ test('the Claude guides say AI access needs Premium only once integration-lock i
     assert.match(on.page(route).querySelector('main').innerHTML, premium);
   }
 });
+
+// Per-user Premium's sale terms (job 329), live only with the sale itself: one row per
+// `premium-launch` gate in the four pages, with a phrase only that side of the gate renders.
+const PREMIUM_LAUNCH_GATES = [
+  ['datenschutz', 'once', '5a. Snacklist Premium: Jahresabo und Einmalkauf'],
+  ['datenschutz', 'once', 'Snacklist Premium, das du gekauft hast, endet mit deinem Konto, auch ein Einmalkauf'],
+  ['datenschutz', 'until', 'Snacklist Lifetime endet mit dem Haushalt'],
+  ['datenschutz', 'once', 'Snacklist Premium, das du gekauft hast, behältst du'],
+  ['privacy', 'once', '5a. Snacklist Premium: yearly plan and one-time purchase'],
+  ['privacy', 'once', 'Snacklist Premium you bought ends with your account, a one-time purchase included'],
+  ['privacy', 'until', 'Snacklist Lifetime ends with the household'],
+  ['privacy', 'once', 'you keep Snacklist Premium you bought'],
+  ['support', 'until', 'auch mit Snacklist Lifetime; der Kauf lässt sich nicht auf einen anderen Haushalt übertragen'],
+  ['support', 'once', 'endet mit deinem Konto, auch der Einmalkauf; es lässt sich nicht auf ein anderes Konto übertragen'],
+  ['support', 'until', 'Was passiert mit Snacklist Lifetime, wenn ich als letztes Mitglied einen Haushalt verlasse?'],
+  ['support', 'until', 'Kann ich Snacklist Lifetime zurückgeben?'],
+  ['support', 'once', 'Was passiert mit Snacklist Premium, wenn ich einen Haushalt verlasse?'],
+  ['support', 'once', 'Wie kündige ich das Jahresabo?'],
+  ['support', 'once', 'Was passiert, wenn mein Premium endet?'],
+  ['support', 'once', 'Kann ich Snacklist Premium zurückgeben?'],
+  ['support-en', 'until', "Snacklist Lifetime included; the purchase can't be moved to another household"],
+  ['support-en', 'once', "the one-time purchase included; it can't be moved to another account"],
+  ['support-en', 'until', 'What happens to Snacklist Lifetime if I leave a household as its last member?'],
+  ['support-en', 'until', 'Can I get a refund for Snacklist Lifetime?'],
+  ['support-en', 'once', 'What happens to Snacklist Premium if I leave a household?'],
+  ['support-en', 'once', 'How do I cancel the yearly plan?'],
+  ['support-en', 'once', 'What happens when my Premium ends?'],
+  ['support-en', 'once', 'Can I get a refund for Snacklist Premium?'],
+];
+const ROUTE = { datenschutz: '/datenschutz', privacy: '/en/privacy', support: '/support', 'support-en': '/en/support' };
+
+test('every premium-launch gate of the privacy and help pages is listed, so a dropped gate fails the test below', () => {
+  for (const page of Object.keys(ROUTE)) {
+    const source = readFileSync(join(import.meta.dirname, '..', 'content', 'legal', `${page}.md`), 'utf8');
+    const gates = source.match(/premium-launch/g)?.length ?? 0;
+    assert.equal(gates, PREMIUM_LAUNCH_GATES.filter(([p]) => p === page).length, `${page}.md: gates in the file vs rows in PREMIUM_LAUNCH_GATES`);
+  }
+});
+
+test('the privacy and help pages describe the Premium sale only once premium-launch is released', () => {
+  const launch = (released) => {
+    const data = JSON.parse(REAL_FLAGS);
+    data.holds['premium-launch'].released = released;
+    return JSON.stringify(data);
+  };
+  const held = buildSite({ env: PROD, repo: { record: ALL_VERSIONS_LIVE, flags: launch(false) } });
+  const live = buildSite({ env: PROD, repo: { record: ALL_VERSIONS_LIVE, flags: launch(true) } });
+  const text = (site, page) => site.page(ROUTE[page]).querySelector('main').text;
+  for (const [page, mode, phrase] of PREMIUM_LAUNCH_GATES) {
+    assert.equal(text(held, page).includes(phrase), mode === 'until', `held ${page}: ${phrase}`);
+    assert.equal(text(live, page).includes(phrase), mode === 'once', `released ${page}: ${phrase}`);
+  }
+  for (const out of [held, live]) for (const page of Object.keys(ROUTE)) {
+    assert.doesNotMatch(out.page(ROUTE[page]).querySelector('main').innerHTML, /since-block|draft-banner/, page);
+  }
+});

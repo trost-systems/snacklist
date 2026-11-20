@@ -3164,17 +3164,17 @@ abstract class AppLocalizations {
   /// **'Einmal zahlen, kein Abo.'**
   String get premiumLifetimeValue;
 
-  /// PLACEHOLDER (job 49): Snacklist Launch / Legal Review K.13 write the final copy (NEEDS_LEAD Job 49). Premium page: the subscription disclosures next to the yearly card and its Buy button (App Store Review Guidelines 3.1.2, Google Play)
+  /// DRAFT for Legal GO (job 329, per-user Premium; was the job 49 placeholder): the store's price, auto-renewal, charging, cancelling in the store, and what a lapse means (nothing deleted, the history back to 4 weeks). Premium page: the subscription disclosures next to the yearly card and its Buy button (App Store Review Guidelines 3.1.2, Google Play)
   ///
   /// In de, this message translates to:
-  /// **'Snacklist Premium jährlich, Laufzeit 1 Jahr. Das Abo verlängert sich automatisch um ein Jahr, wenn du es nicht mindestens 24 Stunden vor Ende der Laufzeit kündigst. Bezahlt wird über dein Apple- bzw. Google-Konto, bei der Bestätigung des Kaufs und bei jeder Verlängerung. Verwalten und kündigen kannst du das Abo in den Abo-Einstellungen des App Store bzw. von Google Play.'**
+  /// **'Snacklist Premium jährlich, Laufzeit 1 Jahr, zum angezeigten Preis des Stores. Das Abo verlängert sich automatisch um ein Jahr, wenn du es nicht mindestens 24 Stunden vor Ende der Laufzeit kündigst. Bezahlt wird über dein Apple- bzw. Google-Konto, bei der Bestätigung des Kaufs und bei jeder Verlängerung. Verwalten und kündigen kannst du das Abo in den Abo-Einstellungen des App Store bzw. von Google Play. Endet das Abo, löschen wir nichts; der Verlauf zeigt dann wieder die letzten 4 Wochen.'**
   String get premiumYearlyTerms;
 
-  /// LEGAL REVIEW Q6 (job 87): the household binding, shown before purchase. Wording pending Legal Review.
+  /// DRAFT for Legal GO (job 329): per-user Premium (PB2, job 185) replaces the household binding of Legal Review Q6 (job 87), shown before purchase under the plan tiles
   ///
   /// In de, this message translates to:
-  /// **'Premium gehört dann zum Haushalt „{household}“ und bleibt dort, auch wenn du den Haushalt später verlässt.'**
-  String premiumHousehold(String household);
+  /// **'Premium gehört dann dir und gilt in jedem Haushalt, in dem du Mitglied bist, auch in späteren. Die anderen Mitglieder bekommen es dadurch nicht.'**
+  String get premiumOwner;
 
   /// PLACEHOLDER (job 49): Snacklist Launch / Legal Review K.13 write the final copy (NEEDS_LEAD Job 49). Premium page: buy the yearly plan; RevenueCat starts only on this tap (H-67)
   ///
@@ -3218,10 +3218,10 @@ abstract class AppLocalizations {
   /// **'Euer Haushalt hat zwei Jahresabos. Kündigen kann jedes nur, wer es abgeschlossen hat.'**
   String get premiumTwoYearly;
 
-  /// PLACEHOLDER (job 49): Snacklist Launch / Legal Review K.13 write the final copy (NEEDS_LEAD Job 49). Premium page on the web: no sales on the web
+  /// DRAFT for Legal GO (job 329, per-user Premium; was the job 49 placeholder). Premium page on the web: no sales on the web
   ///
   /// In de, this message translates to:
-  /// **'Snacklist Premium kaufst du in der iPhone- oder Android-App. Danach ist es auch hier für deinen ganzen Haushalt freigeschaltet.'**
+  /// **'Snacklist Premium kaufst du in der iPhone- oder Android-App. Danach gilt es auch hier, in jedem deiner Haushalte.'**
   String get premiumWeb;
 
   /// PLACEHOLDER (job 49): Snacklist Launch / Legal Review K.13 write the final copy (NEEDS_LEAD Job 49). Refund help: a short note for the yearly plan below the H-76 texts, which name only Lifetime (NEEDS_LEAD Job 49)

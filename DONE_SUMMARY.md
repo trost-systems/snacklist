@@ -1908,3 +1908,21 @@ that comes with the emptying tick, instead of being lost to that question. No as
 the emptying, a failed trip save, a join or household switch (24 h and next session), or within 14 days of a bug
 note; at most 2 asks a year, 180 days apart. Flag off: unchanged. Proof is widget and unit tests (the dialog is native).
 Details: [docs/done/326.md](docs/done/326.md).
+
+## Job 329: subscription legal texts for per-user Premium (redo of #153)
+
+**What.** The privacy policy's section 5a, the help page's Premium answers, the terms of use (Legal's K.13.S, rewritten)
+and the Premium page's purchase disclosures (yearly terms, whom Premium belongs to, the web note) now describe the agreed model: Premium belongs to the buyer and works in every
+household they are in (at most 20, as for everyone), the yearly plan renews at the store's price until cancelled at
+Apple or Google, Lifetime is paid once and lasts while the account does, a lapse deletes nothing and the history goes
+back to 4 weeks, and costly features come only with numbered limits (the API's are named). Every data fact was read
+off the code (main c8e08241); Legal's redlines from the 30 Oct, 10 Nov and 19 Nov reviews are applied where they still
+hold.
+
+**Behind what.** The site texts render only once the release hold `premium-launch` is released (a site test lists and
+checks all 24 gates); the terms stay a draft page until Legal's GO and must be published before the sale; the app
+strings show only once sales are switched on. The Premium page's hero is job 327's (#579) and still says household. Live after merge: two
+RevenueCat lines in the privacy policy and the account-deletion page, both worded to be true before and after the sale.
+
+**Not merged.** Legal's GO first (brief). Details: docs/done/329-subscription-legal-texts.md, docs/DECISIONS.md
+"Job 329". Screenshots: docs/screenshots/329/.
