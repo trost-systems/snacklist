@@ -61,7 +61,8 @@ try {
   await page.waitForTimeout(3_000);
 
   await edit.click();
-  await page.getByRole('button', { name: new RegExp(storeName) }).first().click();
+  // Exact: list-summary leaves „Wochenmarkt am Kollwitzplatz (Samstag)“, which a substring would pick.
+  await page.getByRole('button', { name: storeName, exact: true }).first().click();
   const rename = page.getByRole('button', { name: L('storeRename', { store: storeName }), exact: true });
   await rename.click();
   const field = page.getByRole('textbox', { name: L('storeNameHint') });
