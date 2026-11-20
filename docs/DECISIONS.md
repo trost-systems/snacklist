@@ -16223,3 +16223,48 @@ header restyle. Decisions the picks left open:
     conditional and stays true; NEEDS_LEAD asks Legal whether to keep it.
 16. **Regions without chains rank Germany first.** A phone or browser region outside the registry's eight countries
     (an en-US browser) ranks German chains first instead of every country alike, as a missing region already did.
+
+## Job 321: onboarding store chips from the phone's region, linked (OB1)
+
+Peter picked OB1 with all defaults OB-Q1 to OB-Q11 (2026-11-20). Calls made while building it:
+
+1. **Stacked on #569, not after it.** The brief says to start once job 313 has merged; #569 still waits for Legal's
+   GO. The branch builds on #569's head (`job/313-dl1-open-store-app`, which contains main) and its PR targets that
+   branch. It lands after #569, through push-pr.sh and merge-pr.sh once its base is main.
+2. **The registry ships inside the app.** The store step comes before the account, and `public.retailers` and
+   `match_retailers` are for signed-in users only (least privilege). Opening them to anon would also need a connection
+   on a step that works offline today. `scripts/retailers.ts --dart` writes `app/lib/list/retailer_registry.g.dart`
+   from `supabase/retailers/retailers.json`; `--check` in the lint gate fails while it differs, as it does for the
+   migration rows. The generator lays the file out as `dart format` would, so the flutter gate's format check agrees.
+3. **`matchRegistry` ports `public.match_retailers` to Dart** for the suggestions under "Add your own store", and
+   `app/test/list/retailer_registry_test.dart` asserts every case of `supabase/tests/retailers.test.sql` against it.
+   With no region (OB-Q2) every country counts the same. This differs from job 313's decision 16, which ranks Germany
+   first for an unknown region in the list's own matching (`phoneRegion()`); that stays unchanged.
+4. **OB-Q11, the chip order, is the registry's order, and the registry now stands in chip order.** In 313's file
+   Germany started with Lidl and ALDI Nord. Germany now follows today's chips (EDEKA, REWE, Lidl, ALDI SÜD, ALDI Nord,
+   Kaufland, Netto, PENNY, dm, Rossmann), and Austria follows the prototype (BILLA, SPAR, Hofer, Lidl, PENNY, MPREIS,
+   dm). The rows themselves did not change, but the migration block is generated in file order, so
+   `20261120061207_retailers_data.sql` upserts the same rows again.
+5. **OB-Q3: `short` lives in the JSON and the app's copy, not in the database.** Only Netto Marken-Discount has one
+   ("Netto"). A store made from a chip is named by `short ?? name`, so "Netto" stays "Netto" as today. The store screen
+   still shows the registry's name in its chain line.
+6. **Links are made on create, in the app.** `create_household` keeps its signature (an added parameter would add a
+   second overload, which PostgREST can't choose between, and dropping the old one would break the store builds).
+   After the create, `SessionCubit.createHousehold` calls `add_store` (it returns the existing store's id) and
+   `answer_store_retailer` with the default app (OB-Q5) for each linked store. A retry after a lost answer runs
+   everything again with the same request id and converges. An `unknown_retailer` refusal (the app's copy names a chain
+   the server dropped) leaves that store plain, and job 313's list card asks about it later.
+7. **The draft keeps chains next to names.** `OnboardingDraft.stores` is a list of `NewStore` (in `lib/session/`,
+   because `createHousehold` is core). It is saved as `{name, chain, country}`, and plain strings from older drafts still
+   load.
+8. **OB-Q2 is taken literally.** A region without chains (en-US, en-GB) shows no chips at all, including Baumarkt, only
+   "Add your own store" with suggestions from every country.
+9. **OB-Q1 and OB-Q8 together.** "Neuer Haushalt" also drops its two hint lines when the flag is on, so both screens
+   that share the picker read the same way. With the flag off, both screens are as before: the fixed German list, both
+   hints, and plain stores.
+10. **Suggestions now get their own semantics node.** With the field above them inside one list item, job 313's
+    suggestion `Semantics(button)` merged into the item's node. On the web, the "Store name" field was then a child of
+    "Choose Hofer (Austria)". `container: true` fixes this in the add sheet too.
+11. **No new UI strings, and no ARB or legal file changed.** What is stored and sent is unchanged in kind: a store's
+    chain and country, as job 313 stores them (privacy §5/§9 as in #569). The region is read on the device and is not
+    sent. Only the chain the user picks is stored, with its country.

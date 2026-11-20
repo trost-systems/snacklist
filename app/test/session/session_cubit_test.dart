@@ -1,16 +1,16 @@
 import 'dart:async';
-
 import 'dart:convert';
 
 import 'package:fake_async/fake_async.dart';
 import 'package:family_groceries/household/household_kind.dart';
 import 'package:family_groceries/household/invite_repository.dart';
+import 'package:family_groceries/session/new_store.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' hide Session;
 import 'package:supabase_flutter/supabase_flutter.dart'
     as auth_types
     show Session;
+import 'package:supabase_flutter/supabase_flutter.dart' hide Session;
 
 import 'fake_auth.dart';
 import 'fake_households.dart';
@@ -526,16 +526,78 @@ void main() {
       await cubit.refresh();
       server.dropNextAnswer = true;
       await expectLater(
-        cubit.createHousehold('Eltern', stores: const ['REWE']),
+        cubit.createHousehold('Eltern', stores: const [NewStore('REWE')]),
         _problem(HouseholdProblem.offline),
       );
-      final id = await cubit.createHousehold('Eltern', stores: const ['REWE']);
+      final id = await cubit.createHousehold(
+        'Eltern',
+        stores: const [NewStore('REWE')],
+      );
       expect(server.memberships['peter'], ['home', 'club', id]);
       final requests = {
         for (final c in server.calls.where((c) => c.contains('create')))
           (jsonDecode(c.substring(c.indexOf(' ') + 1)) as Map)['p_request_id'],
       };
       expect(requests, hasLength(1), reason: 'the same request id');
+    });
+
+    group('stores of a chain (job 321)', () {
+      const lidl = NewStore('Lidl', chain: (chain: 'lidl', country: 'DE'));
+      const hofer = NewStore(
+        'Hofer',
+        chain: (chain: 'aldi-sued', country: 'AT'),
+      );
+      const baecker = NewStore('Bäcker Kühn');
+
+      test('are made with the household, then linked to their chain', () async {
+        await cubit.refresh();
+        final id = await cubit.createHousehold(
+          'Eltern',
+          stores: const [lidl, baecker, hofer],
+        );
+        expect(server.households[id]?.stores, ['Lidl', 'Bäcker Kühn', 'Hofer']);
+        expect(server.households[id]?.chains, {
+          'Lidl': 'lidl/DE',
+          'Hofer': 'aldi-sued/AT',
+        });
+        expect(
+          server.calls.where((c) => c.startsWith('rpc/add_store')),
+          hasLength(2),
+          reason: 'the plain store is asked about later, not linked',
+        );
+        expect(cubit.state, _shows(id));
+      });
+
+      test('a chain the server no longer has leaves its store plain', () async {
+        await cubit.refresh();
+        server.unknownChains.add('aldi-sued/AT');
+        final id = await cubit.createHousehold(
+          'Eltern',
+          stores: const [hofer, lidl],
+        );
+        expect(server.households[id]?.chains, {'Lidl': 'lidl/DE'});
+        expect(cubit.state, _shows(id));
+      });
+
+      test(
+        'a retry after a lost answer links them in the one household',
+        () async {
+          await cubit.refresh();
+          server.dropAnswerTo.add('add_store');
+          await expectLater(
+            cubit.createHousehold('Eltern', stores: const [lidl]),
+            _problem(HouseholdProblem.offline),
+          );
+          final id = await cubit.createHousehold(
+            'Eltern',
+            stores: const [lidl],
+          );
+          expect(server.memberships['peter'], ['home', 'club', id]);
+          expect(server.households[id]?.stores, ['Lidl']);
+          expect(server.households[id]?.chains, {'Lidl': 'lidl/DE'});
+          expect(cubit.state, _shows(id));
+        },
+      );
     });
 
     test('a create retried after a failed reload is one household', () async {

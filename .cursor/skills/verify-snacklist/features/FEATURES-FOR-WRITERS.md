@@ -126,7 +126,7 @@ The app is called Snacklist. It used to be called Hummlist. The app, its Siri ph
 1. Open Snacklist signed out and tap „Los geht's“ (EN: "Get started"). If the app asks about usage data, answer it.
 2. „Mit wem kaufst du ein?“ (EN: "Who do you shop with?"): tap all that fit: „Partner·in“, „Familie“, „WG“, „Verein oder Team“, „Nur ich“, „Andere“ (EN: "Partner", "Family", "Flatmates", "Club or team", "Just me", "Other"). The first one picked sets up the household; Snacklist keeps the others for later.
 3. „Wie soll euer Haushalt heißen?“ (EN: "What should your household be called?"): the name is suggested from the answer, „Unsere Familie“ for example (EN: "Our family"). Everyone you invite sees it.
-4. „Wo kauft ihr ein?“ (EN: "Where do you shop?"): tap the stores you shop at, from eleven common ones (EDEKA, REWE, Lidl, Aldi Süd, Aldi Nord, Kaufland, Netto, Penny, dm, Rossmann and a „Baumarkt“, EN: "Hardware store"), or „Eigenen Laden hinzufügen“ (EN: "Add your own store") and type a name such as „Wochenmarkt“; typing one of the eleven, „edeka“ say, ticks it.
+4. „Wo kauft ihr ein?“ (EN: "Where do you shop?"): tap the stores you shop at, from eleven common ones (EDEKA, REWE, Lidl, Aldi Süd, Aldi Nord, Kaufland, Netto, Penny, dm, Rossmann and a „Baumarkt“, EN: "Hardware store"), or „Eigenen Laden hinzufügen“ (EN: "Add your own store") and type a name such as „Wochenmarkt“; typing one of the eleven, „edeka“ say, ticks it. Only for testers so far: the stores offered are the big chains of the country the phone is set to (in Austria BILLA, SPAR, Hofer, Lidl, PENNY, MPREIS, dm and „Baumarkt“), a tapped one is already matched to its chain (see „Opening a store's app“), there are no hint lines, and typing a name shows matching chains from any country. A phone set to a country Snacklist knows no chains for (the US or the UK) shows no store chips, only „Eigenen Laden hinzufügen“.
 5. „Was fehlt gerade?“ (EN: "What do you need right now?"): tap things like „Milch“ or „Brot“ (EN: "Milk", "Bread"), or type anything else, „2 Gurken“ for example. Then „Weiter mit 2 Artikeln“ (EN: "Continue with 2 items").
 6. „Konto erstellen“ (EN: "Create your account"): sign up or sign in with Google, Apple or email.
 7. „Wie sollen wir dich nennen?“ (EN: "What should we call you?"): your name as the household will see it (skipped when you chose one before).
@@ -143,7 +143,7 @@ On Android the phone's back button goes one screen back, as the arrow in the tit
 - That the answers sync before the account exists: they stay on this one device until the sign-in.
 - A button to paste an invite on the first screen or on „Willkommen bei Snacklist“: there is none any more.
 
-**Last verified.** 19 November 2026, code version af0287cf, in the web app (German and English), with the name step after the account. 18 November 2026, code version 0ca5dcc9: discarding the answers with one tap. Android's back button by the app's automatic tests. Copy of 17 November 2026: the invite screen is titled „Gemeinsam einkaufen“ (EN "Shop together") with the button „Leute einladen“ (EN "Invite people"); the More row has the same button text.
+**Last verified.** 20 November 2026, job 321 branch on 8f3b96d2, in the web app (German, browsers set to Germany, Austria and the US): the store step with the test switch on, and off. 19 November 2026, code version af0287cf, in the web app (German and English), with the name step after the account. 18 November 2026, code version 0ca5dcc9: discarding the answers with one tap. Android's back button by the app's automatic tests. Copy of 17 November 2026: the invite screen is titled „Gemeinsam einkaufen“ (EN "Shop together") with the button „Leute einladen“ (EN "Invite people"); the More row has the same button text.
 
 ## Household and invites
 
@@ -445,20 +445,22 @@ The starting categories, in order: Obst & Gemüse, Brot & Backwaren, Kühlregal,
 **What it does.** Not for users yet: it is switched on only for testers. Snacklist can recognise that a store on the list belongs to a supermarket or drugstore chain, for example Lidl, ALDI SÜD, REWE, EDEKA, Kaufland, PENNY, Netto, dm or Rossmann in Germany, and the big chains in Austria, Switzerland, France, the Netherlands, Poland, Italy and Spain. Once a store is matched to its chain („zugeordnet“), it gets a small button at the end of its name line on the list. The button opens the chain's own app on the phone, for example Lidl Plus for coupons at the checkout. If the app isn't on the phone, the button opens its page in the App Store or Google Play instead; on an iPhone some chains' apps also open through that page. In the browser version it opens the app's store page. The store keeps the name the household gave it. Where a chain has two apps (BILLA and jö Bonus Club in Austria, for example), the household picks which one the button opens. The first time, a short line under the button says what it does.
 
 **How to get there.**
-1. When you add a store (Liste → „Anpassen“ → „Laden hinzufügen“, or „Neuer Laden“ while adding or editing an item), matching chains appear under the name as you type. Tap one, or save your own name: if it is a chain's, Snacklist asks once, for example „Ist das Lidl (Deutschland)?“, with „Ja“ or „Nein, so lassen“.
-2. Stores you had before are asked once each from a card at the top of the list: „Ist dein „Lidl“ die Kette Lidl (Deutschland)?“.
-3. In a store's details (Liste → „Anpassen“ → the store), the „App“ card opens the app and, for a chain with two apps, lets you choose one. Below it, „Zugeordnet: Lidl · Deutschland“ with „Ändern“ and „Zuordnung aufheben“, or „Kette zuordnen“ for a store without a chain.
+1. When you set up Snacklist or a new household, the store step offers the chains of the country the phone is set to. A store you tap there is already matched: nothing is asked about it later.
+2. When you add a store (Liste → „Anpassen“ → „Laden hinzufügen“, or „Neuer Laden“ while adding or editing an item), matching chains appear under the name as you type. Tap one, or save your own name: if it is a chain's, Snacklist asks once, for example „Ist das Lidl (Deutschland)?“, with „Ja“ or „Nein, so lassen“.
+3. Stores you had before are asked once each from a card at the top of the list: „Ist dein „Lidl“ die Kette Lidl (Deutschland)?“.
+4. In a store's details (Liste → „Anpassen“ → the store), the „App“ card opens the app and, for a chain with two apps, lets you choose one. Below it, „Zugeordnet: Lidl · Deutschland“ with „Ändern“ and „Zuordnung aufheben“, or „Kette zuordnen“ for a store without a chain.
 
 **Never claim.**
 - That it is available to everyone yet.
 - That a store is „verbunden“, "linked" or "connected" to a chain, or that Snacklist works with, partners with, is endorsed by or shares anything with the chains. Snacklist only recognises the chain by its name and the phone opens the chain's app; nothing about the list goes to the chain. Say „zugeordnet“ / "matched".
 - That it opens a loyalty card, coupons or a specific screen inside the chain's app. It opens the app's start, or its store page.
 - Store logos, app icons or chain colours: chain names are plain text.
-- That the store's location is used. The phone's region only decides which country's chains come first.
+- That the store's location is used. The phone's region only decides which country's chains come first, and which chains the setup offers (in the browser: the browser's language setting).
+- That a chain with two apps asks which one during the setup: it takes the chain's default app; the store's details change it.
 
 **Note.** The note on store names („Ladennamen wie dm, Lidl oder EDEKA …“) is no longer in the app; it is in the Impressum (Ladennamen) and the English imprint (Shop names).
 
-**Last verified.** LAST_VERIFIED_313
+**Last verified.** LAST_VERIFIED_313 The setup's store step (step 1): 20 November 2026, job 321 branch on 8f3b96d2, in the web app with the test switch on (German, browsers set to Germany, Austria and the US; „Neuer Haushalt“ set to Austria).
 
 ## Prices and the shopping total
 

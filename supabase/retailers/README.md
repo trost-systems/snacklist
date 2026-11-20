@@ -8,7 +8,10 @@ researched the entries on 2026-11-18; job 313 turned them into this file and `pu
 
 - `chain` and `country` (ISO alpha-2) are the key. One chain can have a different app per country
   (ALDI SÜD, PENNY, Carrefour) or the same one everywhere (Lidl Plus).
-- `name` is what the household sees. `aliases` are further lower-case names people type for it
+- Entries of one country stand in the order the onboarding offers them as chips, most stores first
+  (job 321).
+- `name` is what the household sees. `short`, when set, is a shorter name for the chip and the store
+  made from it ("Netto" for Netto Marken-Discount); the database does not keep it. `aliases` are further lower-case names people type for it
   ("aldi", "netto", "eurospar"), three characters or more. Matching folds case, accents and
   punctuation (`public.retailer_key`).
 - `apps` lists every app with both store ids. The first one is the default, the chain's loyalty or
@@ -23,6 +26,9 @@ researched the entries on 2026-11-18; job 313 turned them into this file and `pu
 2. Run `deno run --allow-read --allow-write scripts/retailers.ts --migration`. It writes a new
    migration that upserts every entry and deletes the others; stores of a deleted entry lose their
    link. The lint gate (`--check`) fails while the newest migration's rows differ from the file.
+3. Run `deno run --allow-read --allow-write scripts/retailers.ts --dart`. It writes the app's copy,
+   `app/lib/list/retailer_registry.g.dart`: the onboarding's store step runs before sign-in, when
+   the app can't read `public.retailers`. `--check` fails while the copy differs.
 
 A new country needs nothing else: matching tries the phone's country first and then every country.
 

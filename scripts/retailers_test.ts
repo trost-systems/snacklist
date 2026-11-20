@@ -1,5 +1,5 @@
 import { assertEquals, assertThrows } from '@std/assert';
-import { blockOf, dataBlock, newestWithBlock, parseRegistry, readMigrations, readRegistry, type Registry } from './retailers.ts';
+import { blockOf, DART, dartFile, dataBlock, newestWithBlock, parseRegistry, readMigrations, readRegistry, type Registry } from './retailers.ts';
 
 const lidl = {
   chain: 'lidl',
@@ -18,18 +18,25 @@ const registry = (...entries: unknown[]) => ({ version: 2, updated: '2026-11-19'
 Deno.test('the repository registry parses and its newest migration is current', async () => {
   const parsed = await readRegistry();
   const de = parsed.entries.filter((e) => e.country === 'DE').map((e) => `${e.name} (${e.apps[0]?.name})`);
+  // The onboarding chips' order (job 321): today's German chips, then Austria's most stores first.
   assertEquals(de, [
-    'Lidl (Lidl Plus)',
-    'ALDI Nord (ALDI Nord)',
-    'ALDI SÜD (ALDI SÜD)',
     'EDEKA (EDEKA)',
-    'Netto Marken-Discount (Netto)',
     'REWE (REWE)',
+    'Lidl (Lidl Plus)',
+    'ALDI SÜD (ALDI SÜD)',
+    'ALDI Nord (ALDI Nord)',
     'Kaufland (Kaufland)',
+    'Netto Marken-Discount (Netto)',
     'PENNY (PENNY)',
     'dm (Mein dm)',
     'Rossmann (Rossmann)',
   ]);
+  assertEquals(
+    parsed.entries.filter((e) => e.country === 'AT').map((e) => e.short ?? e.name),
+    ['BILLA', 'SPAR', 'Hofer', 'Lidl', 'PENNY', 'MPREIS', 'dm'],
+  );
+  assertEquals(parsed.entries.find((e) => e.chain === 'netto-md')?.short, 'Netto');
+  assertEquals(await Deno.readTextFile(DART), dartFile(parsed));
   const [, sql] = newestWithBlock(await readMigrations()) ?? [];
   assertEquals(blockOf(sql ?? ''), await dataBlock(parsed));
 });
@@ -45,6 +52,8 @@ Deno.test('schema problems are named', () => {
   bad({ apps: [{ ...lidl.apps[0], ios: null }] }, 'bad ios id');
   bad({ apps: [{ ...lidl.apps[0], storeFallback: {} }] }, 'unknown keys storeFallback');
   bad({ apps: [lidl.apps[0], lidl.apps[0]] }, 'an android package twice');
+  bad({ short: 'Lidl' }, 'short is a name shorter than name');
+  bad({ short: '' }, 'short is a name shorter than name');
   assertThrows(() => parseRegistry(registry(lidl, lidl)), Error, 'DE/lidl twice');
 });
 
@@ -55,4 +64,16 @@ Deno.test('the block changes with the rows the database keeps, not with notes', 
   assertEquals(await dataBlock(noted), await dataBlock(base));
   assertEquals((await dataBlock(renamed)) === (await dataBlock(base)), false);
   assertEquals(blockOf(`x\n${await dataBlock(base)}\ny`), await dataBlock(base));
+});
+
+Deno.test('the app copy keeps a short name and lays out as dart format does', () => {
+  const dart = dartFile(parseRegistry(registry({ ...lidl, short: 'L', aliases: ['lidl markt'] })));
+  assertEquals(dart.split('\n').filter((l) => l.length > 80), []);
+  assertEquals(dart.includes("    short: 'L',\n    aliases: ['lidl markt'],\n"), true);
+  assertEquals(
+    dart.includes(
+      "    apps: [\n      RetailerApp(\n        name: 'Lidl Plus',\n        android: 'com.lidl.eci.lidlplus',\n",
+    ),
+    true,
+  );
 });

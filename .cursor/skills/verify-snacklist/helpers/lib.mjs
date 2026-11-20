@@ -92,13 +92,14 @@ export async function typeInto(field, text, { perKey = 0 } = {}) {
  * A fresh browser context on the web build. lang 'de' or 'en' sets the browser locale, which the
  * app follows while its language is "System". Video goes to `videoDir` when given.
  */
-export async function openApp(inst, { lang = 'de', viewport = { width: 390, height: 844 }, dpr = 2, dark = false, videoDir, headless = true } = {}) {
+export async function openApp(inst, { lang = 'de', locale, viewport = { width: 390, height: 844 }, dpr = 2, dark = false, videoDir, headless = true } = {}) {
   const browser = await chromium.launch({ headless });
   const context = await browser.newContext({
     baseURL: inst.webUrl,
     viewport,
     deviceScaleFactor: dpr,
-    locale: lang === 'en' ? 'en-US' : 'de-DE',
+    // The browser's language region is the phone's region on the web (`de-AT`: Austria's store chips).
+    locale: locale ?? (lang === 'en' ? 'en-US' : 'de-DE'),
     timezoneId: 'Europe/Berlin',
     colorScheme: dark ? 'dark' : 'light',
     ...(videoDir && { recordVideo: { dir: videoDir, size: viewport } }),

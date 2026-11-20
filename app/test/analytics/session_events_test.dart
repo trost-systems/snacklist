@@ -4,6 +4,7 @@ import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/analytics/events.dart';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/pending_invite.dart';
+import 'package:family_groceries/session/new_store.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide Session;
@@ -141,7 +142,10 @@ void main() {
   });
 
   test('the stores picked in onboarding are counted, not named', () async {
-    await cubit.createHousehold('Zuhause', stores: const ['REWE', 'dm']);
+    await cubit.createHousehold(
+      'Zuhause',
+      stores: const [NewStore('REWE'), NewStore('dm')],
+    );
     final properties = props((await sent()).single);
     expect(properties['store_count'], 2);
     expect(properties.values, isNot(contains('REWE')));
@@ -151,7 +155,7 @@ void main() {
       'event', () async {
     db.dropNextAnswer = true;
     await expectLater(
-      cubit.createHousehold('Zuhause', stores: const ['REWE']),
+      cubit.createHousehold('Zuhause', stores: const [NewStore('REWE')]),
       throwsA(
         isA<HouseholdError>().having(
           (e) => e.problem,
@@ -162,7 +166,7 @@ void main() {
     );
     expect(cubit.state, isA<NeedsHousehold>());
     // The retry's request id finds the household the first call made.
-    await cubit.createHousehold('Zuhause', stores: const ['REWE']);
+    await cubit.createHousehold('Zuhause', stores: const [NewStore('REWE')]);
     expect(cubit.state, isA<InHousehold>());
     expect(db.calls.where((c) => c.contains('create_household')), hasLength(2));
     expect(db.memberships['peter'], [_home]);

@@ -2,9 +2,10 @@ import 'dart:convert';
 
 import 'package:family_groceries/household/household_kind.dart';
 import 'package:family_groceries/household/invite_repository.dart';
-import 'package:family_groceries/household/popular_stores.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
+import 'package:family_groceries/list/new_stores_picker.dart';
 import 'package:family_groceries/onboarding/draft.dart';
+import 'package:family_groceries/session/new_store.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -24,7 +25,10 @@ OnboardingDraft answered(OnboardingStep step) => OnboardingDraft(
   step: step,
   kinds: const [HouseholdKind.family, HouseholdKind.club],
   name: 'Familie Trost',
-  stores: const ['REWE', 'Bäcker Kühn'],
+  stores: const [
+    NewStore('REWE', chain: (chain: 'rewe', country: 'DE')),
+    NewStore('Bäcker Kühn'),
+  ],
   items: const [
     DraftItem(id: 'i1', text: 'Milch'),
     DraftItem(id: 'i2', text: '2 Gurken'),
@@ -37,6 +41,11 @@ Future<void> typeAndSubmit(WidgetTester tester, String k, String text) async {
   await tester.testTextInput.receiveAction(TextInputAction.done);
   await tester.pumpAndSettle();
 }
+
+/// The draft's stores by name, in order.
+List<String> storeNames(Onboarding o) => [
+  for (final s in o.onboarding.state?.stores ?? const <NewStore>[]) s.name,
+];
 
 bool chipSelected(WidgetTester tester, String k) =>
     tester.widget<FilterChip>(key(k)).selected;
@@ -288,7 +297,7 @@ void main() {
       await tapKey(tester, 'onboarding-store-own');
       await typeAndSubmit(tester, 'store-new-field', 'edeka');
       expect(chipSelected(tester, 'onboarding-store-EDEKA'), isTrue);
-      expect(o.onboarding.state?.stores, ['REWE', 'Bäcker Kühn', 'EDEKA']);
+      expect(storeNames(o), ['REWE', 'Bäcker Kühn', 'EDEKA']);
       await tapKey(tester, 'onboarding-skip');
       expect(o.onboarding.state?.stores, isEmpty);
       expect(location(o), '/start/need');
@@ -353,6 +362,9 @@ void main() {
       o.session.emit(const NeedsHousehold('peter'));
       await tester.pumpAndSettle();
       expect(o.session.creates, [('Familie Trost', 'REWE, Bäcker Kühn')]);
+      expect(o.session.createStores, [
+        answered(OnboardingStep.account).stores,
+      ], reason: 'REWE with its chain');
       expect(o.session.createKinds, ['family'], reason: 'with the create');
       expect(o.backend.kinds, isEmpty, reason: 'no second write');
       expect(o.backend.items['home']?.map((i) => i.id), ['i1', 'i2']);
@@ -530,7 +542,9 @@ void main() {
       expect(saved['step'], 'stores');
       expect(saved['kinds'], ['flat']);
       expect(saved['name'], 'WG Sonnenallee');
-      expect(saved['stores'], ['Penny']);
+      expect(saved['stores'], [
+        {'name': 'Penny', 'chain': null, 'country': null},
+      ]);
 
       // The app is killed and started again.
       await tester.pumpWidget(const SizedBox());
@@ -740,7 +754,7 @@ void main() {
       );
       expect(key('onboarding-store-Baumarkt'), findsNothing);
       await tapKey(tester, 'onboarding-store-Hardware store');
-      expect(o.onboarding.state?.stores, ['Hardware store']);
+      expect(storeNames(o), ['Hardware store']);
     });
   });
 }

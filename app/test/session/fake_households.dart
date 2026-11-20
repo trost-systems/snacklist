@@ -11,6 +11,11 @@ import 'fake_auth.dart';
 /// One household on [FakeHouseholds]' server.
 class ServerHousehold(var String name, {var int open = 0}) {
   final members = <String>[];
+
+  /// Its stores by name, in order, and the chain of each linked one
+  /// (`lidl/DE`).
+  final stores = <String>[];
+  final chains = <String, String>{};
 }
 
 /// The households RPCs of docs/households/W1.md, in memory, for the user
@@ -38,6 +43,13 @@ class FakeHouseholds(final FakeAuth fakeAuth)
   /// The next call is done on the server but its answer is lost (not
   /// analytics' own consent call, which runs beside it, job 31).
   var dropNextAnswer = false;
+
+  /// RPCs whose next call is done on the server but whose answer is lost.
+  final dropAnswerTo = <String>{};
+
+  /// Chains `answer_store_retailer` does not know (`chain/COUNTRY`): a
+  /// newer registry dropped them.
+  final unknownChains = <String>{};
 
   /// `my_households` fails: the reload after an RPC.
   var failReads = false;
@@ -133,7 +145,8 @@ class FakeHouseholds(final FakeAuth fakeAuth)
         final Map<String, Object?> map => map,
         _ => const <String, Object?>{},
       };
-      if (dropNextAnswer && path != 'rpc/record_analytics_consent') {
+      if ((dropNextAnswer && path != 'rpc/record_analytics_consent') ||
+          dropAnswerTo.remove(path.replaceFirst('rpc/', ''))) {
         dropNextAnswer = false;
         _answer(request.method, path, request.url, body);
         throw http.ClientException('connection lost', request.url);
@@ -163,7 +176,7 @@ class FakeHouseholds(final FakeAuth fakeAuth)
           request,
         );
       } on _Refused catch (e) {
-        return _json({'message': e.message, 'code': 'P0001'}, 400, request);
+        return _json({'message': e.message, 'code': e.code}, 400, request);
       }
     }),
   );
@@ -251,7 +264,31 @@ class FakeHouseholds(final FakeAuth fakeAuth)
         final id = nextIds.isEmpty ? 'h${++_n}' : nextIds.removeAt(0);
         _requests[key] = id;
         member(_user, id, body['p_name']! as String);
+        households[id]!.stores.addAll([
+          for (final s in body['p_stores']! as List<Object?>) s! as String,
+        ]);
         return {'id': id, 'name': body['p_name']};
+      case ('POST', 'rpc/add_store'):
+        final id = household();
+        final name = body['p_name']! as String;
+        final stores = households[id]!.stores;
+        var index = stores.indexWhere(
+          (s) => s.toLowerCase() == name.toLowerCase(),
+        );
+        if (index < 0) {
+          index = stores.length;
+          stores.add(name);
+        }
+        return '$id/$index';
+      case ('POST', 'rpc/answer_store_retailer'):
+        final [id, index] = (body['p_store']! as String).split('/');
+        final chain = '${body['p_chain']}/${body['p_country']}';
+        if (unknownChains.contains(chain)) {
+          throw const _Refused('unknown_retailer', code: '22023');
+        }
+        final household = households[id]!;
+        household.chains[household.stores[int.parse(index)]] = chain;
+        return null;
       case ('POST', 'rpc/accept_invite'):
         expect(body['p_mode'], 'add', reason: 'the app never moves out');
         final id = invites[body['p_code']];
@@ -350,4 +387,5 @@ class FakeHouseholds(final FakeAuth fakeAuth)
   }) => _rest.rpc<T>(fn, params: params);
 }
 
-final class const _Refused(final String message) implements Exception;
+final class const _Refused(final String message, {final String code = 'P0001'})
+    implements Exception;

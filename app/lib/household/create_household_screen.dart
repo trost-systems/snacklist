@@ -1,14 +1,13 @@
 import 'dart:async';
 
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/design/field_border.dart';
 import 'package:family_groceries/design/motion.dart';
-import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/onboarding_page.dart';
-import 'package:family_groceries/household/popular_stores.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
-import 'package:family_groceries/list/model.dart';
-import 'package:family_groceries/list/store_name_field.dart';
+import 'package:family_groceries/list/new_stores_picker.dart';
+import 'package:family_groceries/session/new_store.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/shell/router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -27,8 +26,8 @@ bool validHouseholdName(String name) {
 }
 
 /// Onboarding Step 2a: the household's name (prefilled, editable) and its
-/// stores: [popularStores] to pick, nothing picked, plus own ones typed in
-/// place; "Überspringen" creates it without stores. Once the server has
+/// stores ([NewStoresPicker], the guided start's chips); "Überspringen"
+/// creates it without stores. Once the server has
 /// created it the router moves on to Step 3, inviting the partner. A
 /// second tap while creating does nothing; a retry after a lost answer
 /// finds the household and goes on (no second one).
@@ -54,10 +53,7 @@ class _CreateHouseholdScreenState() extends State<CreateHouseholdScreen> {
   );
 
   /// The stores to create, in the order picked.
-  var _stores = <String>[];
-
-  /// The own store being typed; false while the add row shows.
-  var _naming = false;
+  var _stores = <NewStore>[];
   final _nameFocus = FocusNode();
   final _scroll = ScrollController();
   var _busy = false;
@@ -70,33 +66,6 @@ class _CreateHouseholdScreenState() extends State<CreateHouseholdScreen> {
     _nameFocus.dispose();
     _scroll.dispose();
     super.dispose();
-  }
-
-  void _toggle(String store) {
-    final key = nameKey(store);
-    setState(
-      () => _stores = _stores.any((s) => nameKey(s) == key)
-          ? [..._stores.where((s) => nameKey(s) != key)]
-          : [..._stores, store],
-    );
-  }
-
-  /// A typed name of an offered chain ticks its chip; one already picked
-  /// stays picked.
-  Future<bool> _addOwn(String name) async {
-    final key = nameKey(name);
-    final offered = popularStores(AppLocalizations.of(context))
-        .where((p) => nameKey(p) == key);
-    setState(() {
-      if (!_stores.any((s) => nameKey(s) == key)) {
-        _stores = [
-          ..._stores,
-          offered.firstOrNull ?? name.trim().replaceAll(RegExp(r'\s+'), ' '),
-        ];
-      }
-      _naming = false;
-    });
-    return true;
   }
 
   Future<void> _create({bool skip = false}) async {
@@ -150,13 +119,11 @@ class _CreateHouseholdScreenState() extends State<CreateHouseholdScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final t = SnacklistColors.of(theme.brightness);
     final problem = _problem;
     final nameError = _invalidName ? l10n.householdNameInvalid : null;
-    final own = [
-      for (final s in _stores)
-        if (!popularStores(l10n).contains(s)) s,
-    ];
+    final linked = context.select<Flags?, bool>(
+      (f) => f?.isOn(openStoreAppFlag) ?? false,
+    );
     return OnboardingPage(
       title: widget.from == HouseholdOrigin.switcher
           ? l10n.newHousehold
@@ -196,47 +163,17 @@ class _CreateHouseholdScreenState() extends State<CreateHouseholdScreen> {
         const SizedBox(height: 16),
         Text(l10n.storesChoice, style: theme.textTheme.titleSmall),
         const SizedBox(height: 4),
-        Text(l10n.onboardingStoresHint, style: theme.textTheme.bodyMedium),
-        const SizedBox(height: 12),
-        Wrap(
-          key: const ValueKey('onboarding-stores'),
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (final store in [...popularStores(l10n), ...own])
-              FilterChip(
-                key: ValueKey('onboarding-store-$store'),
-                label: Text(store),
-                // The theme's label colour is white in dark; on honey the
-                // text is navy.
-                labelStyle: theme.chipTheme.labelStyle?.copyWith(
-                  color: _stores.contains(store) ? t.onHoney : t.text,
-                ),
-                selected: _stores.contains(store),
-                onSelected: _busy ? null : (_) => _toggle(store),
-              ),
-            if (!_naming)
-              // A button, not an ActionChip: Flutter web names a chip a
-              // check box.
-              TextButton.icon(
-                key: const ValueKey('onboarding-store-own'),
-                style: TextButton.styleFrom(
-                  minimumSize: const Size(0, HlSize.target),
-                ),
-                icon: const Icon(Icons.add),
-                label: Text(l10n.storeAddOwn),
-                onPressed: _busy ? null : () => setState(() => _naming = true),
-              ),
-          ],
-        ),
-        if (_naming) ...[
+        if (!linked) ...[
+          Text(l10n.onboardingStoresHint, style: theme.textTheme.bodyMedium),
+          const SizedBox(height: 12),
+        ] else
           const SizedBox(height: 8),
-          StoreNameField(
-            confirmLabel: l10n.storeAddOwn,
-            onConfirm: _addOwn,
-            onCancel: () => setState(() => _naming = false),
-          ),
-        ],
+        NewStoresPicker(
+          stores: _stores,
+          onChanged: (stores) => setState(() => _stores = stores),
+          linked: linked,
+          enabled: !_busy,
+        ),
         if (problem != null)
           ProblemText(
             householdProblemText(l10n, problem),
@@ -259,13 +196,14 @@ class _CreateHouseholdScreenState() extends State<CreateHouseholdScreen> {
           onPressed: _busy ? null : () => unawaited(_create(skip: true)),
           child: Text(l10n.skipStores),
         ),
-        Text(
-          l10n.skipStoresHint,
-          textAlign: TextAlign.center,
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
+        if (!linked)
+          Text(
+            l10n.skipStoresHint,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
           ),
-        ),
       ],
     );
   }

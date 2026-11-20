@@ -12,8 +12,11 @@ import {
 
 const flag = 'open-store-app';
 
-async function newPage(browser: Browser, { on = true, more = {} }: { on?: boolean; more?: Record<string, boolean> } = {}): Promise<Page> {
-  const context = await browser.newContext();
+async function newPage(
+  browser: Browser,
+  { on = true, more = {}, locale }: { on?: boolean; more?: Record<string, boolean>; locale?: string } = {},
+): Promise<Page> {
+  const context = await browser.newContext(locale === undefined ? {} : { locale });
   await fakeCollector(context, { flags: { [flag]: on, ...more } });
   // The store pages a key opens on the web: answered here, nothing leaves the machine.
   await context.route(/^https:\/\/(play\.google\.com|apps\.apple\.com)\//, (route) =>
@@ -168,8 +171,15 @@ test('STORE APPS: on the users\' build (add-feedback-list) the chains offered an
 });
 
 test('STORE APPS: stores made before are asked one at a time from a card on the list; an answer is never asked again', async ({ browser }) => {
-  const page = await newPage(browser);
+  // Made while the flag was off: with it on, the guided start's chips are matched already (job 321).
+  const flags = { [flag]: false };
+  const context = await browser.newContext();
+  await fakeCollector(context, { flags });
+  const page = await context.newPage();
   await startHousehold(page, 'store-apps-card', ['Lidl', 'dm', 'Baumarkt']);
+  flags[flag] = true;
+  await page.reload();
+  await openTab(page, 'Liste');
   const card = page.getByRole('heading', { name: /^Ist dein „/ });
   await expect(card).toHaveAccessibleName('Ist dein „Lidl“ die Kette Lidl (Deutschland)?');
   await expect(page.getByText('Laden 1 von 2'), 'Baumarkt names no chain').toBeVisible();
@@ -189,6 +199,31 @@ test('STORE APPS: stores made before are asked one at a time from a card on the 
   await page.getByRole('button', { name: 'Zurück' }).click();
   await storeRow(page, 'dm').click();
   await expect(page.getByRole('button', { name: 'Kette zuordnen' }), '"Nein" left dm unmatched').toBeVisible();
+});
+
+test('STORE APPS: the guided start offers the region\'s chains, matched as they are tapped (OB1)', async ({ browser }) => {
+  // A browser set to Austria (job 321): its chains as chips, no hint lines, nothing asked afterwards.
+  const page = await newPage(browser, { locale: 'de-AT' });
+  await signUp(page, newEmail('store-apps-ob1'));
+  await page.getByRole('button', { name: 'Haushalt erstellen' }).click();
+  await page.getByRole('button', { name: 'Überspringen', exact: true }).click();
+  await page.getByRole('button', { name: 'Weiter', exact: true }).click();
+  await expect(page).toHaveURL(/\/start\/stores(\?|$)/);
+  const chips = page.getByRole('checkbox');
+  const austria = ['BILLA', 'SPAR', 'Hofer', 'Lidl', 'PENNY', 'MPREIS', 'dm', 'Baumarkt'];
+  await expect(chips).toHaveCount(austria.length);
+  for (const [i, name] of austria.entries()) await expect(chips.nth(i)).toHaveAccessibleName(name);
+  await expect(page.getByText(/^Wähl die Läden|^Ohne Läden starten/)).toHaveCount(0);
+  await screenshot(page, '321-01-stores-at');
+  for (const store of ['BILLA', 'Hofer']) await page.getByRole('checkbox', { name: store, exact: true }).click();
+  await page.getByRole('button', { name: 'Weiter', exact: true }).click();
+  await expect(page).toHaveURL(/\/start\/need(\?|$)/);
+  await page.getByRole('button', { name: 'Weiter', exact: true }).click();
+  await expect(page).toHaveURL(/\/start\/invite(\?|$)/, { timeout: 20_000 });
+  await skipInvite(page);
+  await expect(page.getByRole('heading', { name: /^Ist dein „/ }), 'tapped chips are matched already').toHaveCount(0);
+  await openStoreDetails(page, 'Hofer');
+  await expect(page.getByText('Zugeordnet: Hofer · Österreich')).toBeVisible();
 });
 
 test('STORE APPS: flag off, stores are made and shown as before', async ({ browser }) => {

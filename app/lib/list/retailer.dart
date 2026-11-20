@@ -1,4 +1,5 @@
 import 'package:family_groceries/analytics/events.dart' show retailerCountries;
+import 'package:family_groceries/list/retailer_registry.g.dart';
 import 'package:flutter/foundation.dart' show immutable;
 import 'package:flutter/widgets.dart' show WidgetsBinding;
 
@@ -15,6 +16,107 @@ String phoneRegion() => switch (WidgetsBinding
   final String code when retailerCountries.contains(code) => code,
   _ => 'DE',
 };
+
+/// The phone's region when the app's registry has chains there, else null
+/// (a phone set to the UK or the US): the country whose chains the
+/// onboarding offers as chips (job 321). On the web the browser's language
+/// names it (`de-AT`); never the location.
+String? registryRegion() {
+  final code = WidgetsBinding.instance.platformDispatcher.locale.countryCode
+      ?.toUpperCase();
+  return retailerRegistry.any((r) => r.country == code) ? code : null;
+}
+
+/// The chains of [country] in the registry's order, the onboarding's chips;
+/// none for null.
+List<Retailer> registryChains(String? country) => [
+  for (final r in retailerRegistry)
+    if (r.country == country) r,
+];
+
+/// A name as matching compares it, as `public.retailer_key` does: lower
+/// case, diacritics and ß folded, every run of other characters one space.
+String retailerKey(String name) {
+  final folded = StringBuffer();
+  for (final char in name.toLowerCase().split('')) {
+    folded.write(_folds[char] ?? char);
+  }
+  return folded.toString().replaceAll(RegExp('[^a-z0-9]+'), ' ').trim();
+}
+
+const _from = 'àáâãäåāăąçćčďđèéêëēėęěìíîïīįłñńňòóôõöøōőŕřśšşșťțùúûüūůűųýÿźżž';
+const _to = 'aaaaaaaaacccddeeeeeeeeiiiiiilnnnoooooooorrssssttuuuuuuuuyyzzz';
+final _folds = {
+  'ß': 'ss',
+  'æ': 'ae',
+  'œ': 'oe',
+  for (var i = 0; i < _from.length; i++) _from[i]: _to[i],
+};
+
+/// The chains [typed] names, from the app's registry, as
+/// `public.match_retailers` answers before sign-in (the onboarding has no
+/// account yet): the exact matches first, of several only the longest
+/// name, [country]'s alone when it has one; then the chains whose name or
+/// an alias starts with it (two characters or more). At most five; with
+/// [country] null every country counts the same.
+List<RetailerMatch> matchRegistry(
+  String typed,
+  String? country, {
+  List<Retailer> registry = retailerRegistry,
+}) {
+  final k = retailerKey(typed);
+  if (k.isEmpty) {
+    return const [];
+  }
+  List<String> keysOf(Retailer r) => [
+    for (final name in [r.name, ...r.aliases]) retailerKey(name),
+  ];
+  final exact = <Retailer, int>{
+    for (final r in registry)
+      if (keysOf(r).where((key) => k == key || k.startsWith('$key '))
+          case final hits when hits.isNotEmpty)
+        r: hits.map((h) => h.length).reduce((a, b) => a > b ? a : b),
+  };
+  final longest = exact.values.fold(0, (a, b) => a > b ? a : b);
+  final best = [
+    for (final MapEntry(:key, :value) in exact.entries)
+      if (value == longest) key,
+  ];
+  final home = best.any((r) => r.country == country);
+  final prefix = [
+    if (k.length >= 2)
+      for (final r in registry)
+        if (!exact.containsKey(r) && keysOf(r).any((key) => key.startsWith(k)))
+          r,
+  ];
+  int byCountryAndName(Retailer a, Retailer b) {
+    final here =
+        (b.country == country ? 1 : 0) - (a.country == country ? 1 : 0);
+    if (here != 0) {
+      return here;
+    }
+    for (final (x, y) in [
+      (a.name.toLowerCase(), b.name.toLowerCase()),
+      (a.country, b.country),
+      (a.chain, b.chain),
+    ]) {
+      if (x.compareTo(y) case final order when order != 0) {
+        return order;
+      }
+    }
+    return 0;
+  }
+
+  return [
+    for (final r in [
+      for (final r in best)
+        if (!home || r.country == country) r,
+    ]..sort(byCountryAndName))
+      RetailerMatch(r, exact: true),
+    for (final r in prefix..sort(byCountryAndName))
+      RetailerMatch(r, exact: false),
+  ].take(5).toList();
+}
 
 /// A chain's app, as `public.retailers.apps` lists it (job 313). Its
 /// [android] package is its identity: `stores.retailer_app` names it.
@@ -69,6 +171,14 @@ class const Retailer({
   required final String country,
   required final String name,
 
+  /// What a chip and a store made from it are called when shorter than
+  /// [name] („Netto“); only the app's copy of the registry has it (job 321).
+  final String? short,
+
+  /// Further names people type for it, lower case; only the app's copy of
+  /// the registry has them.
+  final List<String> aliases = const [],
+
   /// The chain's apps, the default (loyalty or coupon app) first.
   final List<RetailerApp> apps = const [],
 }) {
@@ -88,6 +198,9 @@ class const Retailer({
     'name': name,
     'apps': [for (final app in apps) app.toJson()],
   };
+
+  /// The name a chip shows and a store picked from one gets.
+  String get label => short ?? name;
 
   /// What identifies the entry: `public.retailers`' primary key.
   ({String chain, String country}) get key => (chain: chain, country: country);

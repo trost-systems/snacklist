@@ -649,7 +649,7 @@ export async function signUpWithHousehold(page: Page, email: string, { stores }:
   await skipInvite(page);
 }
 
-/** Onboarding's store offer (app/lib/household/popular_stores.dart). */
+/** Onboarding's store offer (app/lib/list/new_stores_picker.dart). */
 export const popularStores = ['EDEKA', 'REWE', 'Lidl', 'Aldi Süd', 'Aldi Nord', 'Kaufland', 'Netto', 'Penny', 'dm', 'Rossmann', 'Baumarkt'];
 
 /**
