@@ -1050,13 +1050,15 @@ void main() {
         });
       });
 
-      test('airplane mode on start shows offline at the first failed '
-          'request', () {
+      test('airplane mode on start shows offline once no up came for 1.5 s '
+          'after the failed request', () {
         fakeAsync((async) {
           repo.online = false;
           final (c, _) = started(async, network: network.stream);
           network.add(Network.down);
-          async.elapse(Duration.zero);
+          async.elapse(networkSettle - const Duration(milliseconds: 100));
+          expect(c.state.trouble, isNull, reason: 'an up may still come');
+          async.elapse(const Duration(milliseconds: 100));
           expect(c.state.trouble, SyncTrouble.offline);
           close(async, c);
         });
@@ -1142,6 +1144,76 @@ void main() {
         });
       });
 
+      test('a start join that never told a status does not pass its hold '
+          'to a rejoin long after (review 1)', () {
+        fakeAsync((async) {
+          final (c, _) = started(async, network: network.stream);
+          async.elapse(const Duration(seconds: 25));
+          network.add(Network.down);
+          async.elapse(Duration.zero);
+          network.add(Network.up);
+          async.elapse(Duration.zero);
+          repo.emitStatus!(ConnectionStatus.offline);
+          async.elapse(Duration.zero);
+          expect(c.state.trouble, SyncTrouble.offline);
+          close(async, c);
+        });
+      });
+
+      test('no report, the first requests failing for 800 ms (a cellular '
+          'radio waking): no offline (review 1, E0)', () {
+        fakeAsync((async) {
+          repo.online = false;
+          final (c, seen) = started(async, network: network.stream);
+          async.elapse(const Duration(milliseconds: 800));
+          repo.online = true;
+          async.elapse(const Duration(seconds: 12));
+          repo.emitStatus!(ConnectionStatus.online);
+          async.elapse(const Duration(seconds: 2));
+          expect(seen, everyElement(isNull));
+          close(async, c);
+        });
+      });
+
+      test('none at start while the cellular radio wakes, its requests '
+          'failing, up 800 ms later: no offline (review 1, E1)', () {
+        fakeAsync((async) {
+          repo.online = false;
+          final (c, seen) = started(async, network: network.stream);
+          network.add(Network.down);
+          async.elapse(const Duration(milliseconds: 800));
+          repo.online = true;
+          network.add(Network.up);
+          async.elapse(const Duration(seconds: 12));
+          repo.emitStatus!(ConnectionStatus.online);
+          async.elapse(const Duration(seconds: 2));
+          expect(seen, everyElement(isNull));
+          close(async, c);
+        });
+      });
+
+      test('a false none, the request sent before the report failing: no '
+          'offline (review 1, E2)', () {
+        fakeAsync((async) {
+          final first = Completer<void>();
+          repo.itemsGate = first;
+          final (c, seen) = started(async, network: network.stream);
+          final second = Completer<void>();
+          repo.itemsGate = second;
+          network.add(Network.down);
+          async.elapse(const Duration(milliseconds: 1));
+          first.completeError(Exception('socket'));
+          async.elapse(const Duration(milliseconds: 300));
+          repo.itemsGate = null;
+          second.complete();
+          async.elapse(const Duration(seconds: 12));
+          repo.emitStatus!(ConnectionStatus.online);
+          async.elapse(const Duration(seconds: 2));
+          expect(seen, everyElement(isNull));
+          close(async, c);
+        });
+      });
+
       test('a cellular start whose first join takes longer than the grace, '
           'the server slow too: no offline', () {
         fakeAsync((async) {
@@ -1161,7 +1233,7 @@ void main() {
       });
 
       test('flight mode on start: the first join failing first is held, '
-          'the report and its failed request show offline at once', () {
+          'the report and its failed request show offline 1.5 s later', () {
         fakeAsync((async) {
           repo.online = false;
           final (c, _) = started(async, network: network.stream);
@@ -1169,7 +1241,7 @@ void main() {
           async.elapse(const Duration(milliseconds: 100));
           expect(c.state.trouble, isNull, reason: 'in the grace');
           network.add(Network.down);
-          async.elapse(Duration.zero);
+          async.elapse(networkSettle);
           expect(c.state.trouble, SyncTrouble.offline);
           close(async, c);
         });
@@ -1377,13 +1449,14 @@ void main() {
       });
     });
 
-    test('the OS saying no network shows offline at once, in the grace', () {
+    test('the OS saying no network shows offline in the grace, 1.5 s after '
+        'its request failed (job 325 review 1)', () {
       fakeAsync((async) {
         repo.online = false;
         final network = StreamController<Network>();
         final (c, _) = started(async, network: network.stream);
         network.add(Network.down);
-        async.elapse(Duration.zero);
+        async.elapse(networkSettle);
         expect(c.state.trouble, SyncTrouble.offline);
         close(async, c);
         unawaited(network.close());

@@ -16514,3 +16514,34 @@ after a few seconds, and it happens on mobile data, not Wi-Fi.
 5. **„Everything planned bought“ follows the trip's start snapshot, not the „War geplant“ marks.** A mark only adds an
    extra to the planned part (`countsPlanned`); it cannot take a snapshot item out of it, so a leftover from the
    start always makes the trip incomplete, whatever the user marks.
+
+## Job 325 review 1, 2026-11-21
+
+Review 1 (VERDICT FIX) found a case that fits Peter's report (a short flash, on mobile data) and still
+flashed after #581: the OS says none at start, the first requests fail at once while the cellular radio
+wakes (iOS URLSession's -1009), and the network is up 800 ms later. The down's own resync failed,
+`_goOffline` confirmed the down, the grace let go, and "Offline" showed until the up's 1.5 s settle
+(web build: from about 1 s to 2.7 s, 3 of 3 starts; 0 of 2 without the OS report).
+
+- **Hypothesis 5, named: a real "none" for under a second at a cellular start.** It is a separate path
+  from the fresh-monitor false none (hypothesis 1), and the tester's report fits it better.
+- **In a grace, a confirmed down waits 1.5 s for an up.** A request sent after the report that fails
+  confirms the down only after `networkSettle` without an up (`_confirmDown`, `_downConfirming`); an up
+  in that window cancels it, and the failures stay held by the grace. Outside a grace (or hidden) it
+  confirms at once, as before. Cost: a start in flight mode shows "Offline" 1.5 s after its first
+  failed request, about 2.6 s from opening the page on the web (before: 1.1 s). That is the price of
+  waiting for the OS's real answer, which the brief asks for; the journey's bar is 3 s.
+- **Only a request sent after the report confirms it.** `_goOffline` confirmed on any failure, also
+  of the start's resync sent before the "none" arrived, against the rule used for answers
+  (`number > _downAtResync`). Now only `resync` confirms, with that same condition. Writes and catalog
+  reloads leave confirmation alone; outside a grace their failures show anyway.
+- **The join hold is bounded.** `_joinHeld` lasted until some join told a status, so a much later
+  rejoin could inherit it outside any grace. It now ends 20 s (twice the join timeout) after the join
+  that took it began (`_joinHoldEnds`).
+- **Resume and supabase_flutter's own rejoin do not race into a shown error.** On resume
+  supabase_flutter reconnects the socket and rejoins its channels, while `resumed()` removes the list's
+  channel and subscribes a new one. The removed channel's statuses are dropped by the watch generation
+  check (`current()`), and the new channel's first status is held by the resume's grace. From the code;
+  not driven on a phone.
+- **Tests:** E1 (radio waking) and E2 (a pre-report request failing) fail on main; E0 (the control),
+  the bounded hold, and the flight-mode tests now asserting the 1.5 s.

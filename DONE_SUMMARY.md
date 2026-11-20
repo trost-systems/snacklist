@@ -1883,7 +1883,7 @@ its first update), but which path the tester's phone takes on a cellular start i
 first check at cold start reported the real network on the simulator.
 
 **Fix.** A "no network" report from the system now makes the list ask the server: with no network the
-request fails at once and "Offline" shows (flight mode stays prompt), and when the server answers a
+request fails at once and "Offline" shows (since review 1: in the start grace 1.5 s later), and when the server answers a
 request sent after the report, the network works and nothing shows. `app/lib/list/list_cubit.dart`.
 A request still unanswered 1.5 s after the report shows "Offline" (outside the start grace), and a dropped
 realtime channel subscribes again at once however the report ends (both from the in-session review).
@@ -1931,7 +1931,7 @@ Peter's device info (LEAD_OVERRIDE): the flash is short and comes on mobile data
 
 **Fix.** A join that replaces one still waiting for its first answer keeps its start hold
 (`_joinHeld`), and the system's "no network" lifts the start hold only once a request has failed under
-it (`_downConfirmed`), so flight mode still shows "Offline" at once. A channel that dropped while the app
+it (`_downConfirmed`), so flight mode still shows "Offline" (since review 1: 1.5 s after that failure). A channel that dropped while the app
 was in the background subscribes again on resume instead of waiting for its backoff (job 212's open
 item). `app/lib/list/list_cubit.dart`.
 
@@ -1949,3 +1949,23 @@ A widget test pumps the real `App` and proves that a household switch and a sent
 Removing the wiring in `app.dart` now fails it. A question left unanswered no longer keeps the prompt waiting for a
 later „Nein“. DECISIONS explains SA1, a quick „Fertig“ and the „War geplant“ marks. Behind `rating-triggers-v2` (off).
 Details: [docs/done/326.md](docs/done/326.md).
+
+## Job 325 review 1: the cellular radio waking still flashed "Offline"
+
+**What review 1 found.** The case that fits Peter's report best: on mobile data the phone reports no
+network at start and the first requests fail while the radio wakes, then the network is up under a
+second later. The failed request confirmed the "no network" and "Offline" flashed for about 2 s. A
+failed request sent before the report also counted as confirmation.
+
+**Fix.** During the start or resume grace, a failed request confirms the system's "no network" only if
+it was sent after the report and no "online" follows within 1.5 s. Flight mode shows "Offline" about
+1.5 s after the first failed request (2.6 s from opening the page on the web, before 1.1 s). The start
+join's hold now ends after 20 s. `app/lib/list/list_cubit.dart`.
+
+**Verify.** `list_cubit_test.dart` "review 1" tests (E1 and E2 fail on main);
+`node .cursor/skills/verify-snacklist/journeys/cold-start-offline.mjs <dir> --os-none stays
+--radio-down 800 --starts 3` (0 "Offline"; the reviewer saw it on 3 of 3 before), `--airplane` (within
+3 s).
+
+**Still not verified on an iPhone.** NEEDS_LEAD points the device check at the build carrying this fix.
+

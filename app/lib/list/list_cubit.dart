@@ -302,14 +302,24 @@ class ListCubit(
   /// shows the network works, whatever the OS said.
   var _downAtResync = 0;
 
-  /// Whether a request failed while the OS said down. Until then the down
-  /// is a report, and iOS reports none for a network that works (job 325):
-  /// the grace still holds.
+  /// Whether a request sent after the OS said down failed, and in a grace no
+  /// up came within [networkSettle] after. Until then the down is a report,
+  /// and iOS reports none for a network that works (job 325): the grace
+  /// still holds.
   var _downConfirmed = false;
+
+  /// In a grace, the [networkSettle] a failed request's confirmation waits
+  /// for an up: a cellular start reports none and fails its first requests
+  /// while the radio wakes (job 325 review 1).
+  Timer? _downConfirming;
 
   /// The channel's join has not told its first status yet and began in a
   /// grace, or replaced a join that did: its first failure is not shown.
   var _joinHeld = false;
+
+  /// Ends [_joinHeld] for a join that never told a status, so a much later
+  /// rejoin does not inherit it.
+  Timer? _joinHoldEnds;
 
   /// Whether the channel said up when the network went down and has said
   /// nothing since: its socket may have died with the network, unnoticed
@@ -535,7 +545,11 @@ class ListCubit(
     bool current() => generation == _watchGeneration && !isClosed;
     // A join begun in the grace gets its whole timeout, even past it, and so
     // does one that replaces it before its first status (job 325 review 0).
-    _joinHeld = _joinHeld || _grace != null;
+    if (!_joinHeld && _grace != null) {
+      _joinHeld = true;
+      // Twice the join's own timeout: it has told a status by then.
+      _joinHoldEnds = Timer(startGrace * 2, () => _joinHeld = false);
+    }
     _unwatch = _repo.watch(
       onItem: (row) {
         if (current()) {
@@ -602,6 +616,7 @@ class ListCubit(
         if (current()) {
           final joiningInGrace = _joinHeld;
           _joinHeld = false;
+          _joinHoldEnds?.cancel();
           _onChannelStatus(status, joiningInGrace: joiningInGrace);
         }
       },
@@ -649,6 +664,8 @@ class ListCubit(
     _networkBack = null;
     _networkAsked?.cancel();
     _networkAsked = null;
+    _downConfirming?.cancel();
+    _downConfirming = null;
     switch (network) {
       case Network.down:
         _networkDown = true;
@@ -665,6 +682,7 @@ class ListCubit(
           _networkAsked = Timer(networkSettle, () {
             _networkAsked = null;
             if (_networkDown) {
+              _downConfirmed = true;
               _goOffline();
             }
           });
@@ -691,6 +709,8 @@ class ListCubit(
     _networkBack = null;
     _networkAsked?.cancel();
     _networkAsked = null;
+    _downConfirming?.cancel();
+    _downConfirming = null;
     _networkDown = false;
     _downConfirmed = false;
     if (_channelSuspect) {
@@ -1772,6 +1792,9 @@ class ListCubit(
       _goFailing(round);
     } on Object {
       fetched = false;
+      if (_networkDown && number > _downAtResync) {
+        _confirmDown();
+      }
       // A resync started later answered meanwhile: the server is reachable,
       // this one's socket died (job 212).
       if (number > _resyncShown) {
@@ -1789,6 +1812,25 @@ class ListCubit(
     }
     unawaited(_flush());
     return fetched;
+  }
+
+  /// A request sent after the OS said down failed: the down is the answer,
+  /// in a grace once no up came for [networkSettle].
+  void _confirmDown() {
+    if (_downConfirmed || _downConfirming != null) {
+      return;
+    }
+    if (_grace == null && !_away) {
+      _downConfirmed = true;
+      return;
+    }
+    _downConfirming = Timer(networkSettle, () {
+      _downConfirming = null;
+      if (_networkDown) {
+        _downConfirmed = true;
+        _goOffline();
+      }
+    });
   }
 
   void _showSnapshot(
@@ -2138,7 +2180,6 @@ class ListCubit(
 
   void _goOffline() {
     _troubleRound = null;
-    _downConfirmed = _downConfirmed || _networkDown;
     if (!_holding) {
       emit(
         state.copyWith(connection: ConnectionStatus.offline, failing: false),
@@ -2276,6 +2317,8 @@ class ListCubit(
     _grace?.cancel();
     _networkBack?.cancel();
     _networkAsked?.cancel();
+    _downConfirming?.cancel();
+    _joinHoldEnds?.cancel();
     _resubscribe?.cancel();
     _catalogReload?.cancel();
     _save?.cancel();

@@ -7,9 +7,12 @@
 // showed; 1000 plays a cellular start). --slow-channel
 // holds every realtime frame from the server for that many ms, as a phone's slower join does.
 // --airplane opens the app with the browser's network saying none and every request to the stack
-// failing as disconnected (the page itself still loads): then „Offline“ has to show within 2 s.
+// failing as disconnected (the page itself still loads): then „Offline“ has to show within 3 s.
+// --radio-down <ms> plays a cellular radio waking (job 325 review 1): every request and socket to
+// the stack fails as disconnected until <ms> after the first one, then the network is back and,
+// with --os-none, the browser fires `online`.
 //
-//   node journeys/cold-start-offline.mjs <evidence dir> [--wait 0] [--watch 25] [--starts 1] [--os-none stays|flips] [--flip-after ms] [--slow-channel ms] [--airplane]
+//   node journeys/cold-start-offline.mjs <evidence dir> [--wait 0] [--watch 25] [--starts 1] [--os-none stays|flips] [--flip-after ms] [--slow-channel ms] [--airplane] [--radio-down ms]
 import process from 'node:process';
 import { capture, instance, logger, member, openApp, signIn } from '../helpers/lib.mjs';
 
@@ -23,6 +26,7 @@ const osNone = opt('os-none', airplaneFlag ? 'stays' : null);
 const slowChannel = Number(opt('slow-channel', '0'));
 const flipAfter = Number(opt('flip-after', '30'));
 const airplane = airplaneFlag;
+const radioDown = Number(opt('radio-down', '0'));
 if (!dir) throw new Error('usage: cold-start-offline.mjs <evidence dir> [--wait s] [--watch s] [--starts n]');
 
 const log = logger(dir);
@@ -48,20 +52,56 @@ try {
     tab.on('pageerror', (e) => errors.push(e.message));
     if (osNone) {
       await tab.addInitScript(({ flips, after }) => {
-        let online = false;
-        Object.defineProperty(Navigator.prototype, 'onLine', { configurable: true, get: () => online });
+        globalThis.__online = false;
+        Object.defineProperty(Navigator.prototype, 'onLine', { configurable: true, get: () => globalThis.__online });
         if (flips) {
           const poll = setInterval(() => {
             if (!document.querySelector('flt-semantics-host, flutter-view')) return;
             clearInterval(poll);
             setTimeout(() => {
-              online = true;
+              globalThis.__online = true;
               globalThis.dispatchEvent(new Event('online'));
             }, after);
           }, 10);
         }
       }, { flips: osNone === 'flips', after: flipAfter });
       log(`  the browser's network says none (${osNone})`);
+    }
+    if (radioDown) {
+      const api = new URL(inst.apiUrl);
+      let up = false;
+      let firstFail = null;
+      const bringUp = () => {
+        up = true;
+        log(`  ${at()} network up`);
+        if (osNone) {
+          tab.evaluate(() => {
+            globalThis.__online = true;
+            globalThis.dispatchEvent(new Event('online'));
+          }).catch(() => {});
+        }
+      };
+      const noteFail = () => {
+        if (firstFail !== null) return;
+        firstFail = Date.now();
+        log(`  ${at()} first request failed`);
+        setTimeout(bringUp, radioDown);
+      };
+      await tab.route((url) => url.host === api.host, (route) => {
+        if (up) return route.continue();
+        noteFail();
+        return route.abort('internetdisconnected');
+      });
+      await tab.routeWebSocket((url) => url.host === api.host, (ws) => {
+        if (!up) {
+          noteFail();
+          ws.close();
+          return;
+        }
+        const server = ws.connectToServer();
+        ws.onMessage((message) => server.send(message));
+        server.onMessage((message) => ws.send(message));
+      });
     }
     if (slowChannel) {
       await tab.routeWebSocket(/\/realtime\/v1\/websocket/, (ws) => {
@@ -105,7 +145,7 @@ try {
     await capture(tab, dir, `start-${start}-end`);
     if (airplane) {
       const seconds = first === null ? Infinity : Number.parseFloat(first);
-      if (seconds > 2) failed ??= new Error(`start ${start} in airplane mode: offline ${first === null ? 'never showed' : `only at ${first}`}`);
+      if (seconds > 3) failed ??= new Error(`start ${start} in airplane mode: offline ${first === null ? 'never showed' : `only at ${first}`}`);
     } else if (shown) {
       failed ??= new Error(`start ${start} showed offline on a working network (first at ${first})`);
     }
