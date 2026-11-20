@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/list/entry.dart';
 import 'package:family_groceries/list/list_cubit.dart';
@@ -6,6 +8,7 @@ import 'package:family_groceries/review/review_counters.dart';
 import 'package:family_groceries/review/review_gates.dart';
 import 'package:family_groceries/review/review_prompt.dart';
 import 'package:family_groceries/review/review_prompt_trigger.dart';
+import 'package:family_groceries/review/trip_signals.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -20,35 +23,47 @@ void main() {
   late ListCubit cubit;
   late FakeRepository repo;
   late Popups popups;
+  late MemoryReviewStore store;
+  late ReviewPrompt prompt;
 
-  /// A store build's install that is due: only the trip is missing.
+  /// A store build's install that is due: only the trip is missing. [v2]
+  /// is the flag `rating-triggers-v2`; [trips] trip mode, none by default.
   Future<void> pumpTrigger(
     WidgetTester tester, {
     bool listening = false,
+    bool v2 = false,
+    TripSignals? trips,
+    DateTime Function() clock = DateTime.now,
   }) async {
     review = FakeStoreReview();
-    final now = DateTime.now();
-    final store = MemoryReviewStore()
+    final now = clock();
+    store = MemoryReviewStore()
       ..json = ReviewCounters(
         firstLaunch: now.subtract(const Duration(days: 30)),
         activeDays: 5,
         completedTrips: 4,
         itemsAdded: 60,
       ).toJson();
-    final prompt = ReviewPrompt(
+    prompt = ReviewPrompt(
       store,
       review,
       channel: BuildChannel.store,
       version: Future.value('1.4.0'),
+      clock: clock,
+      v2: () => v2,
     );
     repo = FakeRepository();
-    cubit = ListCubit(repo, MemoryListCache(), userId: 'peter')..start();
+    cubit = ListCubit(repo, MemoryListCache(), userId: 'peter', clock: clock)
+      ..start();
     addTearDown(cubit.close);
     popups = Popups();
     addTearDown(popups.dispose);
     await tester.pumpWidget(
-      RepositoryProvider.value(
-        value: prompt,
+      MultiRepositoryProvider(
+        providers: [
+          RepositoryProvider.value(value: prompt),
+          if (trips != null) RepositoryProvider.value(value: trips),
+        ],
         child: MaterialApp(
           navigatorObservers: [popups],
           builder: (_, child) => NoticesHost(popups: popups, child: child!),
@@ -65,8 +80,8 @@ void main() {
     await tester.pump();
   }
 
-  /// Adds [count] items, then ticks them all off.
-  Future<void> shop(WidgetTester tester, int count) async {
+  /// Adds [count] items, then ticks them all off; their ids.
+  Future<List<String>> shop(WidgetTester tester, int count) async {
     final ids = [
       for (var i = 0; i < count; i++)
         (cubit.addEntry(parseEntry('Ding $i')) as Added).item.id,
@@ -74,6 +89,7 @@ void main() {
     await tester.pump();
     ids.forEach(cubit.tick);
     await tester.pump();
+    return ids;
   }
 
   Future<void> idle(
@@ -277,5 +293,217 @@ void main() {
     await shop(tester, 3);
     await idle(tester);
     expect(review.requests, 0);
+  });
+
+  group('trip moments (job 326)', () {
+    late FakeTripSignals trips;
+    late DateTime now;
+
+    Future<void> pumpTrips(WidgetTester tester, {bool v2 = true}) async {
+      trips = FakeTripSignals();
+      addTearDown(trips.close);
+      now = DateTime(2026, 11, 20, 18);
+      await pumpTrigger(tester, v2: v2, trips: trips, clock: () => now);
+    }
+
+    /// „Kaufst du gerade ein?“ comes up after the emptying tick, as the
+    /// list's sheet on the root navigator.
+    Future<void> question(WidgetTester tester) async {
+      trips.asking = true;
+      final context = tester.element(find.byType(SizedBox).last);
+      showModalBottomSheet<void>(
+        context: context,
+        useRootNavigator: true,
+        builder: (sheet) => TextButton(
+          onPressed: () => Navigator.of(sheet).pop(),
+          child: const Text('answer'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(popups.open, isTrue);
+    }
+
+    /// The user taps an answer: the sheet closes and trip mode tells it.
+    Future<void> answer(WidgetTester tester, {required bool declined}) async {
+      await tester.tap(find.text('answer'));
+      await tester.pumpAndSettle();
+      trips
+        ..asking = false
+        ..tell(TripQuestionClosed(declined: declined));
+      await tester.pump();
+    }
+
+    int completedTrips() => ReviewCounters.parse(store.json).completedTrips;
+
+    testWidgets('the question after the emptying tick: „Nein“ asks 3 s '
+        'later', (tester) async {
+      await pumpTrips(tester);
+      await shop(tester, 3);
+      await question(tester);
+      await idle(tester, const Duration(seconds: 5));
+      expect(review.requests, 0, reason: 'not over the question');
+      await answer(tester, declined: true);
+      await idle(tester, const Duration(milliseconds: 2900));
+      expect(review.requests, 0);
+      await idle(tester, const Duration(milliseconds: 100));
+      expect(review.requests, 1);
+    });
+
+    testWidgets('„Nein“ within the 3 s asks 3 s after it', (tester) async {
+      await pumpTrips(tester);
+      await shop(tester, 3);
+      await question(tester);
+      await idle(tester, const Duration(seconds: 1));
+      await answer(tester, declined: true);
+      await idle(tester);
+      expect(review.requests, 1);
+    });
+
+    testWidgets('with the flag off the question loses the prompt, as '
+        'before', (tester) async {
+      await pumpTrips(tester, v2: false);
+      await shop(tester, 3);
+      await question(tester);
+      await idle(tester, const Duration(seconds: 5));
+      await answer(tester, declined: true);
+      await idle(tester, const Duration(seconds: 10));
+      expect(review.requests, 0);
+    });
+
+    testWidgets('„Ja“ asks nothing: the trip summary will', (tester) async {
+      await pumpTrips(tester);
+      await shop(tester, 3);
+      await question(tester);
+      await answer(tester, declined: false);
+      trips.running = true;
+      await idle(tester, const Duration(seconds: 10));
+      expect(review.requests, 0);
+    });
+
+    testWidgets('„Zurücknehmen“ asks nothing, is no trip, and nothing asks '
+        'until the next session', (tester) async {
+      await pumpTrips(tester);
+      final ids = await shop(tester, 3);
+      expect(completedTrips(), 5);
+      await question(tester);
+      await tester.tap(find.text('answer'));
+      await tester.pumpAndSettle();
+      // TripCubit.takeBack: the tick's undo, then the answer.
+      cubit.readd(ids.last);
+      trips
+        ..asking = false
+        ..tell(const TripQuestionClosed(declined: false));
+      await idle(tester, const Duration(seconds: 10));
+      expect(review.requests, 0);
+      expect(completedTrips(), 4);
+      cubit.tick(ids.last);
+      await tester.pump();
+
+      Future<void> shopAgainAndDecline() async {
+        now = now.add(const Duration(minutes: 11));
+        await shop(tester, 3);
+        await question(tester);
+        await answer(tester, declined: true);
+        await idle(tester);
+      }
+
+      await shopAgainAndDecline();
+      expect(review.requests, 0, reason: 'the same session');
+      unawaited(prompt.resumed());
+      await tester.pump();
+      await shopAgainAndDecline();
+      expect(review.requests, 1);
+    });
+
+    testWidgets('a re-add right after the emptying tick holds it back', (
+      tester,
+    ) async {
+      await pumpTrips(tester);
+      final ids = await shop(tester, 3);
+      cubit.readd(ids.first);
+      await tester.pump();
+      await idle(tester);
+      expect(review.requests, 0);
+    });
+
+    testWidgets('a running trip: the list emptied asks nothing (SA1)', (
+      tester,
+    ) async {
+      await pumpTrips(tester);
+      trips.running = true;
+      await shop(tester, 3);
+      await idle(tester, const Duration(seconds: 10));
+      expect(review.requests, 0);
+    });
+
+    testWidgets('with the flag off a running trip asks at the emptying, as '
+        'before', (tester) async {
+      await pumpTrips(tester, v2: false);
+      trips.running = true;
+      await shop(tester, 3);
+      await idle(tester);
+      expect(review.requests, 1);
+    });
+
+    group('a trip summary left (ST1)', () {
+      Future<void> leave(
+        WidgetTester tester, {
+        int bought = 3,
+        bool complete = true,
+      }) async {
+        trips.tell(TripSummaryLeft(bought: bought, complete: complete));
+        await tester.pump();
+      }
+
+      testWidgets('complete with three bought asks 3 s later', (tester) async {
+        await pumpTrips(tester);
+        await leave(tester);
+        await idle(tester, const Duration(milliseconds: 2900));
+        expect(review.requests, 0);
+        await idle(tester, const Duration(milliseconds: 100));
+        expect(review.requests, 1);
+      });
+
+      testWidgets('not complete asks nothing', (tester) async {
+        await pumpTrips(tester);
+        await leave(tester, complete: false);
+        await idle(tester, const Duration(seconds: 10));
+        expect(review.requests, 0);
+      });
+
+      testWidgets('two bought asks nothing', (tester) async {
+        await pumpTrips(tester);
+        await leave(tester, bought: 2);
+        await idle(tester, const Duration(seconds: 10));
+        expect(review.requests, 0);
+      });
+
+      testWidgets('a tap within the 3 s cancels it', (tester) async {
+        await pumpTrips(tester);
+        await leave(tester);
+        await idle(tester, const Duration(seconds: 2));
+        await tester.tapAt(const Offset(200, 300));
+        await idle(tester, const Duration(seconds: 10));
+        expect(review.requests, 0);
+      });
+
+      testWidgets('with the flag off asks nothing', (tester) async {
+        await pumpTrips(tester, v2: false);
+        await leave(tester);
+        await idle(tester, const Duration(seconds: 10));
+        expect(review.requests, 0);
+      });
+
+      testWidgets('a failed trip save before holds it back (SA3)', (
+        tester,
+      ) async {
+        await pumpTrips(tester);
+        trips.tell(const TripSaveFailed());
+        await tester.pump();
+        await leave(tester);
+        await idle(tester);
+        expect(review.requests, 0);
+      });
+    });
   });
 }

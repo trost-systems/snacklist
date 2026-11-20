@@ -24,6 +24,7 @@ void main() {
     String version = '1.4.0',
     bool force = false,
     Analytics? analytics,
+    bool v2 = false,
   }) => ReviewPrompt(
     store,
     review,
@@ -32,6 +33,7 @@ void main() {
     force: force,
     clock: () => now,
     analytics: analytics,
+    v2: () => v2,
   );
 
   /// An install first opened 8 days ago and used on [days] days, the last
@@ -40,6 +42,7 @@ void main() {
     int days = 3,
     BuildChannel channel = BuildChannel.store,
     Analytics? analytics,
+    bool v2 = false,
   }) async {
     final today = now;
     now = today.subtract(const Duration(days: 8));
@@ -55,7 +58,7 @@ void main() {
     await first.tripCompleted();
     await first.tripCompleted();
     now = today;
-    final p = prompt(channel: channel, analytics: analytics);
+    final p = prompt(channel: channel, analytics: analytics, v2: v2);
     await p.load();
     return p;
   }
@@ -282,6 +285,81 @@ void main() {
       await p.requestIfDue();
       expect(await sent(), isEmpty);
       expect(review.requests, 1);
+    });
+  });
+
+  group('rating-triggers-v2 (job 326)', () {
+    test('a setback holds the prompt back for this session under v2, not '
+        'v1', () async {
+      final v1 = await used();
+      await v1.setback();
+      expect(await v1.requestIfDue(), isTrue);
+      store = MemoryReviewStore();
+      review = FakeStoreReview();
+      final p = await used(v2: true);
+      await p.setback();
+      expect(await p.requestIfDue(), isFalse);
+      now = now.add(const Duration(hours: 1));
+      await p.resumed();
+      expect(
+        await p.requestIfDue(),
+        isFalse,
+        reason: 'the session before still had it',
+      );
+      now = now.add(const Duration(hours: 24));
+      await p.resumed();
+      expect(await p.requestIfDue(), isTrue);
+      expect(review.requests, 1);
+    });
+
+    test('a bug note holds it back for 14 days under v2', () async {
+      final p = await used(v2: true);
+      await p.bugNoted();
+      now = now.add(const Duration(days: 13));
+      await p.resumed();
+      await p.resumed();
+      expect(await p.requestIfDue(), isFalse);
+      now = now.add(const Duration(days: 1));
+      expect(await p.requestIfDue(), isTrue);
+    });
+
+    test(
+      'an emptying taken back is no trip and ends the chance of this session; '
+      'the next session may ask',
+      () async {
+        final p = await used(v2: true);
+        await p.tripCompleted();
+        await p.tripReopened();
+        expect(
+          ReviewCounters.parse(store.json).completedTrips,
+          2,
+          reason: 'the taken-back emptying does not count',
+        );
+        await p.tripCompleted();
+        expect(await p.requestIfDue(), isFalse);
+        now = now.add(const Duration(minutes: 5));
+        await p.resumed();
+        expect(await p.requestIfDue(), isTrue);
+      },
+    );
+
+    test('taking back never counts below zero trips', () async {
+      final p = prompt(v2: true);
+      await p.load();
+      await p.tripReopened();
+      await p.tripCompleted();
+      expect(ReviewCounters.parse(store.json).completedTrips, 1);
+    });
+
+    test('v2 waits 180 days between requests', () async {
+      final p = await used(v2: true);
+      expect(await p.requestIfDue(), isTrue);
+      now = now.add(const Duration(days: 179));
+      await p.resumed();
+      expect(await p.requestIfDue(), isFalse);
+      now = now.add(const Duration(days: 1));
+      expect(await p.requestIfDue(), isTrue);
+      expect(review.requests, 2);
     });
   });
 }

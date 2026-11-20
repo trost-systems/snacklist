@@ -1899,3 +1899,12 @@ docs/done/325-offline-on-every-start.md.
 
 **Not verified.** On a real iPhone (no device here). TestFlight: the next green main build carries it.
 No flag.
+
+## Job 326: store rating moments ST1 and ST2 (flag `rating-triggers-v2`)
+
+Behind the flag `rating-triggers-v2` (off), the store's rating dialog is asked after leaving a finished trip's summary
+(everything planned bought, at least 3 items, saved on the first try) or after „Nein, nur abgehakt“ on the question
+that comes with the emptying tick, instead of being lost to that question. No ask while a trip runs, after an undo of
+the emptying, a failed trip save, a join or household switch (24 h and next session), or within 14 days of a bug
+note; at most 2 asks a year, 180 days apart. Flag off: unchanged. Proof is widget and unit tests (the dialog is native).
+Details: [docs/done/326.md](docs/done/326.md).

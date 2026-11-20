@@ -2,6 +2,15 @@ import 'package:family_groceries/list/pricing.dart';
 import 'package:family_groceries/log/model.dart' show parseDay, wireDay;
 import 'package:flutter/foundation.dart' show immutable, listEquals, mapEquals;
 
+/// What the user answered „Kaufst du gerade ein?“.
+enum AskAnswer() {
+  yes,
+
+  /// Also a dismissal: a scrim tap, back, dragging the sheet down.
+  no,
+  takeBack,
+}
+
 /// How a trip started: the question after a tick, or Mehr's
 /// „Einkauf starten“.
 enum TripSource() {

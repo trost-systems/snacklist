@@ -3192,6 +3192,85 @@ void main() {
       expect(trips(), [1]);
     });
 
+    group('a re-add right after the emptying tick (job 326, SA2)', () {
+      late DateTime now;
+      late ListCubit clocked;
+      late List<ListActivity> told;
+
+      setUp(() async {
+        now = DateTime.utc(2026, 11, 6, 9);
+        clocked = ListCubit(
+          FakeRepository(),
+          MemoryListCache(),
+          userId: 'peter',
+          clock: () => now,
+        )..start();
+        told = [];
+        final sub = clocked.activity.listen(told.add);
+        addTearDown(() async {
+          await sub.cancel();
+          await clocked.close();
+        });
+        await settle();
+      });
+
+      Future<List<String>> emptied(List<String> names) async {
+        final ids = [
+          for (final n in names)
+            (clocked.addEntry(parseEntry(n)) as Added).item.id,
+        ];
+        await settle();
+        ids.forEach(clocked.tick);
+        await settle();
+        return ids;
+      }
+
+      int reopened() => told.whereType<TripReopened>().length;
+
+      test('reopens the trip, once per emptying', () async {
+        final ids = await emptied(['Milch', 'Brot', 'Eier']);
+        now = now.add(const Duration(minutes: 9));
+        clocked.readd(ids.first);
+        await settle();
+        expect(reopened(), 1);
+        clocked
+          ..tick(ids.first)
+          ..readd(ids[1]);
+        await settle();
+        expect(reopened(), 1, reason: 'still the same emptying');
+      });
+
+      test('not once the list has new items', () async {
+        final ids = await emptied(['Milch', 'Brot', 'Eier']);
+        clocked.addEntry(parseEntry('Butter'));
+        await settle();
+        clocked.readd(ids.first);
+        await settle();
+        expect(reopened(), 0);
+      });
+
+      test('after the undo window it is a plain re-add', () async {
+        final ids = await emptied(['Milch', 'Brot', 'Eier']);
+        now = now.add(ListCubit.undoWindow + const Duration(seconds: 1));
+        clocked.readd(ids.first);
+        await settle();
+        expect(reopened(), 0);
+      });
+
+      test('a later emptying can be reopened again', () async {
+        final first = await emptied(['Milch']);
+        clocked.readd(first.single);
+        await settle();
+        now = now.add(ListCubit.undoWindow + const Duration(minutes: 1));
+        clocked.tick(first.single);
+        await settle();
+        final second = await emptied(['Brot']);
+        clocked.readd(second.single);
+        await settle();
+        expect(reopened(), 2);
+      });
+    });
+
     test('an item unticked and ticked again counts once', () async {
       final milk = await added('Milch');
       final bread = await added('Brot');

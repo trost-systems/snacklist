@@ -12,6 +12,7 @@ import 'package:family_groceries/list/list_holds.dart';
 import 'package:family_groceries/list/list_parts.dart';
 import 'package:family_groceries/list/list_repository.dart';
 import 'package:family_groceries/log/trip_repository.dart';
+import 'package:family_groceries/review/trip_signals.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/shell/list_parts.dart';
 import 'package:family_groceries/siri/siri_channel.dart';
@@ -281,6 +282,7 @@ class _ScopeState() extends State<_Scope> {
 
   /// Trip mode (job 234): asks after own ticks, runs the user's trip.
   late final TripCubit _trips;
+  late final _signals = TripCubitSignals(_trips);
   StreamSubscription<Map<String, bool>>? _flags;
 
   /// Holds the shown list until its rows are gone (job 222): a row that
@@ -362,9 +364,35 @@ class _ScopeState() extends State<_Scope> {
   }
 
   @override
-  Widget build(BuildContext context) => RepositoryProvider.value(
-    value: _notices,
+  Widget build(BuildContext context) => MultiRepositoryProvider(
+    providers: [
+      RepositoryProvider.value(value: _notices),
+      RepositoryProvider<TripSignals>.value(value: _signals),
+    ],
     child: BlocProvider.value(value: _trips, child: widget.child),
+  );
+}
+
+/// [TripCubit] for the store rating prompt (job 326).
+class TripCubitSignals(final TripCubit _trips) implements TripSignals {
+  @override
+  bool get running => _trips.state is Running;
+
+  @override
+  bool get asking => _trips.state is Asking;
+
+  @override
+  Stream<TripSignal> get signals => _trips.activity.map(
+    (activity) => switch (activity) {
+      QuestionAnswered(:final answer) => TripQuestionClosed(
+        declined: answer == AskAnswer.no,
+      ),
+      SummaryLeft(:final bought, :final complete) => TripSummaryLeft(
+        bought: bought,
+        complete: complete,
+      ),
+      SaveFailed() => const TripSaveFailed(),
+    },
   );
 }
 

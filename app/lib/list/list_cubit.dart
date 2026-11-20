@@ -215,6 +215,11 @@ final class const TripCompleted(final int ticked) extends ListActivity;
 /// The user ticked [item] off (active to bought), as it was before the tick.
 final class const OwnItemTicked(final Item item) extends ListActivity;
 
+/// A re-add put an item back on the still empty list within
+/// [ListCubit.undoWindow] of the tick that emptied it (job 326, SA2): told
+/// once per emptying.
+final class const TripReopened() extends ListActivity;
+
 const _maxResubscribe = Duration(seconds: 30);
 
 /// How long the OS's network stays up before the list reconnects: a
@@ -312,6 +317,9 @@ class ListCubit(
 
   /// When this user's tick last completed a trip.
   DateTime? _tripDoneAt;
+
+  /// The [_tripDoneAt] a [TripReopened] was told for.
+  DateTime? _reopenedTrip;
 
   /// Renames sent again after a refusal; a second refusal is final.
   final _resentRenames = Set<EditItem>.identity();
@@ -893,9 +901,18 @@ class ListCubit(
     final item = state.allItems[id];
     final bought = item?.status == ItemStatus.bought;
     final boughtAt = item?.boughtAt;
-    final undo =
-        boughtAt != null && _clock().difference(boughtAt) <= undoWindow;
+    final now = _clock();
+    final undo = boughtAt != null && now.difference(boughtAt) <= undoWindow;
+    final emptied = !_hasOpenItem(state.items);
     untick(id);
+    if (_tripDoneAt case final done?
+        when bought &&
+            emptied &&
+            done != _reopenedTrip &&
+            now.difference(done) <= undoWindow) {
+      _reopenedTrip = done;
+      _tell(const TripReopened());
+    }
     if (bought && !undo) {
       _track('item_added', {'source': AddSource.suggestion.name, ..._actor()});
       _tell(

@@ -115,6 +115,7 @@ Future<void> _main(WidgetsBinding Function() binding) async {
     channel: BuildChannel.current,
     version: appVersionName(),
     analytics: analytics,
+    v2: () => analytics.flags.isOn(ratingTriggersV2Flag),
   );
   unawaited(reviewPrompt.load());
   reportUncaughtErrors(

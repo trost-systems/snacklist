@@ -50,6 +50,27 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide Session;
 
+/// Whether going from [before] to [after] is a join or a household switch:
+/// a setback for the rating prompt (job 326, SA3). A start or a sign-in
+/// into a household is none.
+bool joinedOrSwitched(Session before, Session after) =>
+    switch ((before, after)) {
+      (NeedsHousehold(), InHousehold()) => true,
+      (
+        InHousehold(household: Household(id: final was)),
+        InHousehold(:final household),
+      ) =>
+        household.id != was,
+      _ => false,
+    };
+
+/// Whether going from [before] to [after] sent a feedback note of the kind
+/// bug: a reason to hold the rating prompt back (job 326, SA3).
+bool bugNoteSent(FeedbackState before, FeedbackState after) =>
+    after.status == FeedbackStatus.sent &&
+    before.status != FeedbackStatus.sent &&
+    after.category == FeedbackCategory.bug;
+
 class const App({
   required final SessionCubit session,
   required final SocialSignIn social,
@@ -160,6 +181,9 @@ class _AppState() extends State<App> {
       widget.onboarding ??
       OnboardingCubit(widget.cache, analytics: widget.analytics);
   late final StreamSubscription<Session> _sessions;
+
+  /// Joins, household switches and bug notes, for the rating prompt.
+  late final List<StreamSubscription<Object?>> _setbacks;
   late final InviteSharer _sharer = widget.sharer ?? PlatformInviteSharer();
   late final _language = LanguageCubit(widget.cache, widget.language);
   late final _theme = ThemeCubit(widget.cache, widget.theme);
@@ -198,6 +222,22 @@ class _AppState() extends State<App> {
     _reviewSessions = widget.reviewPrompt.followLifecycle();
     _onboarding.sessionChanged(widget.session.state);
     _sessions = widget.session.stream.listen(_onboarding.sessionChanged);
+    var session = widget.session.state;
+    var note = _feedback.state;
+    _setbacks = [
+      widget.session.stream.listen((next) {
+        if (joinedOrSwitched(session, next)) {
+          unawaited(widget.reviewPrompt.setback());
+        }
+        session = next;
+      }),
+      _feedback.stream.listen((next) {
+        if (bugNoteSent(note, next)) {
+          unawaited(widget.reviewPrompt.bugNoted());
+        }
+        note = next;
+      }),
+    ];
     _lifecycle = AppLifecycleListener(
       onHide: () => unawaited(widget.analytics.flush()),
       onResume: () {
@@ -268,6 +308,9 @@ class _AppState() extends State<App> {
       unawaited(trigger.cancel());
     }
     unawaited(_sessions.cancel());
+    for (final setback in _setbacks) {
+      unawaited(setback.cancel());
+    }
     if (widget.onboarding == null) {
       unawaited(_onboarding.close());
     }

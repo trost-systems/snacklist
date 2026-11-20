@@ -63,6 +63,10 @@
     "report-content-entry": {
       "rollout": "off",
       "note": "reporting content in the app (More's feedback row says Also: report content; Feedback & ideas, or without FB4 the feedback form opened from More, has Report content, which opens the report form with Legal's B.4 texts, its picker of the household's items, lists and name or somewhere else, an optional covered screenshot with feedback-fb2, and the confirmation with the report's number) shows only while the PostHog flag report-content-entry is on (job 281); off until Legal's hash-bound GO on the B.3 to B.8 texts (N-226)"
+    },
+    "rating-triggers-v2": {
+      "rollout": "off",
+      "note": "the store rating prompt's trip moments (ST1: after leaving the summary of a finished trip with everything planned bought; ST2: after an emptied list answered Nein, nur abgehakt; no ask while a trip runs, after an undo of the emptying, a failed trip save, a join or household switch, or within 14 days of a bug note; at most 2 asks a year, 180 days apart) apply only while the PostHog flag rating-triggers-v2 is on (job 326); off, the prompt keeps job 155's emptied-list moment"
     }
   },
   "holds": {

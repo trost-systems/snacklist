@@ -6,7 +6,7 @@ import 'package:family_groceries/list/list_view/shopping_list_view.dart';
 import 'package:family_groceries/shell/router.dart' show tripSummaryPath;
 import 'package:family_groceries/trip/ask_sheet.dart';
 import 'package:family_groceries/trip/ended_card.dart';
-import 'package:family_groceries/trip/model.dart' show RunningTrip;
+import 'package:family_groceries/trip/model.dart' show AskAnswer, RunningTrip;
 import 'package:family_groceries/trip/trip_cubit.dart';
 import 'package:family_groceries/trip/trip_strip.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

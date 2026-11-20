@@ -18,7 +18,14 @@ void main() {
     ReviewCounters c, {
     String version = '1.4.0',
     BuildChannel channel = BuildChannel.store,
-  }) => failingGate(c, now: now, version: version, channel: channel);
+    ReviewRules rules = ReviewRules.v1,
+  }) => failingGate(
+    c,
+    now: now,
+    version: version,
+    channel: channel,
+    rules: rules,
+  );
 
   ReviewRequest daysAgo(int days, [String version = '1.3.0']) =>
       ReviewRequest(now.subtract(Duration(days: days)), version);
@@ -109,7 +116,7 @@ void main() {
     });
   });
 
-  test('a request 119 days ago blocks, 120 days ago does not', () {
+  test('v1: a request 119 days ago blocks, 120 days ago does not', () {
     expect(gate(due.copyWith(requests: [daysAgo(119)])), ReviewGate.cooldown);
     expect(gate(due.copyWith(requests: [daysAgo(120)])), isNull);
   });
@@ -124,7 +131,7 @@ void main() {
     expect(gate(due.copyWith(requests: [daysAgo(300), daysAgo(150)])), isNull);
   });
 
-  test('three requests in 365 days block', () {
+  test('v1: three requests in 365 days block', () {
     expect(
       gate(
         due.copyWith(
@@ -149,5 +156,77 @@ void main() {
       ),
       isNull,
     );
+  });
+
+  group('v2 (job 326)', () {
+    ReviewGate? v2(ReviewCounters c) => gate(c, rules: ReviewRules.v2);
+
+    test('a request 179 days ago blocks, 180 days ago does not', () {
+      expect(v2(due.copyWith(requests: [daysAgo(179)])), ReviewGate.cooldown);
+      expect(v2(due.copyWith(requests: [daysAgo(180)])), isNull);
+    });
+
+    test('two requests in 365 days block', () {
+      expect(
+        v2(due.copyWith(requests: [daysAgo(364, '1.2.0'), daysAgo(184)])),
+        ReviewGate.yearCap,
+      );
+      expect(
+        v2(due.copyWith(requests: [daysAgo(365, '1.2.0'), daysAgo(184)])),
+        isNull,
+      );
+    });
+
+    test('a setback blocks for 24 hours or since the last session, as an '
+        'error does; v1 ignores it', () {
+      final hoursAgo = due.copyWith(
+        previousSessionStart: now.subtract(const Duration(hours: 2)),
+        lastSetbackAt: now.subtract(const Duration(hours: 23)),
+      );
+      expect(v2(hoursAgo), ReviewGate.noRecentSetback);
+      expect(gate(hoursAgo), isNull);
+      final lastSession = due.copyWith(
+        previousSessionStart: now.subtract(const Duration(days: 5)),
+        lastSetbackAt: now.subtract(const Duration(days: 4)),
+      );
+      expect(v2(lastSession), ReviewGate.noRecentSetback);
+      expect(
+        v2(
+          due.copyWith(
+            lastSetbackAt: now.subtract(const Duration(days: 2, minutes: 1)),
+          ),
+        ),
+        isNull,
+      );
+    });
+
+    test('a bug note blocks for 14 days; v1 ignores it', () {
+      final recent = due.copyWith(
+        lastBugNoteAt: now.subtract(const Duration(days: 13, hours: 23)),
+      );
+      expect(v2(recent), ReviewGate.noRecentBugNote);
+      expect(gate(recent), isNull);
+      expect(
+        v2(due.copyWith(lastBugNoteAt: now.subtract(bugNoteWindow))),
+        isNull,
+      );
+    });
+
+    test('an emptying taken back blocks the rest of the session; v1 '
+        'ignores it', () {
+      final thisSession = due.copyWith(
+        lastReopenedAt: now.subtract(const Duration(minutes: 1)),
+      );
+      expect(v2(thisSession), ReviewGate.notReopened);
+      expect(gate(thisSession), isNull);
+      expect(
+        v2(
+          due.copyWith(
+            lastReopenedAt: now.subtract(const Duration(minutes: 10)),
+          ),
+        ),
+        isNull,
+      );
+    });
   });
 }
