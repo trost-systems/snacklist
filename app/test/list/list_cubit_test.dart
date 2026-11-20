@@ -686,13 +686,14 @@ void main() {
       async.flushMicrotasks();
     }
 
-    test('down shows offline at once, with no request and no tap', () {
+    test('down shows offline at once, with no tap: the one fetch it asks '
+        'fails', () {
       fakeAsync((async) {
         final (c, _) = following(async);
         final fetches = repo.itemFetches;
         down(async);
         expect(c.state.trouble, SyncTrouble.offline);
-        expect(repo.itemFetches, fetches, reason: 'the OS told, not a fetch');
+        expect(repo.itemFetches, fetches + 1, reason: 'job 325');
         close(async, c);
       });
     });
@@ -838,21 +839,22 @@ void main() {
       },
     );
 
-    test('a retry that gets through before the network settled does not '
-        'trust the channel either, and the renewal does not flicker', () {
+    test('a retry that gets through before the network settled clears '
+        'offline, renews the channel once, and the renewal does not '
+        'flicker', () {
       fakeAsync((async) {
         final (c, seen) = following(async);
         repo.rejoinOnRenew = false;
         down(async);
         async.elapse(const Duration(seconds: 2));
         up(async);
-        // The 3 s retry answers while the network settles: the OS still
-        // says down until it settled.
+        // The 3 s retry answers while the network settles: sent after the
+        // down, its answer says the network works (job 325).
         async.elapse(const Duration(milliseconds: 1100));
-        expect(c.state.trouble, SyncTrouble.offline);
-        async.elapse(const Duration(milliseconds: 400));
+        expect(c.state.trouble, isNull);
         expect(repo.renewals, 1);
-        expect(c.state.trouble, isNull, reason: 'the reconnect answered');
+        async.elapse(const Duration(milliseconds: 400));
+        expect(repo.renewals, 1, reason: 'the settle has nothing left to do');
         // The renewed socket errors the channel once, then it joins again.
         repo.emitStatus!(ConnectionStatus.offline);
         async.elapse(Duration.zero);
@@ -868,6 +870,44 @@ void main() {
           everyElement(isNull),
           reason: 'offline once, never back after it cleared',
         );
+        close(async, c);
+      });
+    });
+
+    test('a channel that dropped in an outage subscribes again as soon as '
+        'a retry answers, before the network settled (job 325)', () {
+      fakeAsync((async) {
+        final (c, _) = following(async);
+        down(async);
+        repo.emitStatus!(ConnectionStatus.offline);
+        // Resubscribed at 3 s and 9 s, each timing out; the next is due at
+        // 21 s.
+        async.elapse(const Duration(seconds: 3));
+        repo.emitStatus!(ConnectionStatus.offline);
+        async.elapse(const Duration(seconds: 6));
+        repo.emitStatus!(ConnectionStatus.offline);
+        async.elapse(const Duration(seconds: 2));
+        final watches = repo.watches;
+        up(async);
+        async.elapse(const Duration(milliseconds: 1600));
+        expect(repo.watches, watches + 1, reason: 'now, not at 21 s');
+        expect(c.state.trouble, isNull);
+        close(async, c);
+      });
+    });
+
+    test('down while a request hangs shows offline after 1.5 s (job 325)', () {
+      fakeAsync((async) {
+        final (c, _) = following(async);
+        async.elapse(const Duration(seconds: 11));
+        repo.itemsGate = Completer();
+        network.add(Network.down);
+        async.elapse(networkSettle - const Duration(milliseconds: 100));
+        expect(c.state.trouble, isNull, reason: 'the request may answer');
+        async.elapse(const Duration(milliseconds: 200));
+        expect(c.state.trouble, SyncTrouble.offline);
+        repo.itemsGate!.complete();
+        repo.itemsGate = null;
         close(async, c);
       });
     });
@@ -962,6 +1002,85 @@ void main() {
     }
 
     const justBefore = Duration(milliseconds: 9900);
+
+    group('the OS saying no network on a working one (job 325)', () {
+      late StreamController<Network> network;
+
+      setUp(() => network = StreamController<Network>());
+      tearDown(() => network.close());
+
+      test('none, then wifi a moment later (iOS) shows no offline', () {
+        fakeAsync((async) {
+          final (c, seen) = started(async, network: network.stream);
+          network.add(Network.down);
+          async.elapse(const Duration(milliseconds: 30));
+          network.add(Network.up);
+          async.elapse(const Duration(seconds: 15));
+          expect(seen, everyElement(isNull));
+          expect(c.state.connection, ConnectionStatus.online);
+          close(async, c);
+        });
+      });
+
+      test('none that stays while the server answers shows no offline', () {
+        fakeAsync((async) {
+          repo.itemsGate = Completer();
+          final (c, seen) = started(async, network: network.stream);
+          network.add(Network.down);
+          async.elapse(const Duration(milliseconds: 300));
+          repo.itemsGate!.complete();
+          repo.itemsGate = null;
+          async.elapse(const Duration(seconds: 15));
+          expect(seen, everyElement(isNull));
+          expect(c.state.connection, ConnectionStatus.online);
+          close(async, c);
+        });
+      });
+
+      test('none after the first answer, slow channel: no offline', () {
+        fakeAsync((async) {
+          final (c, seen) = started(async, network: network.stream);
+          network.add(Network.down);
+          async.elapse(const Duration(seconds: 12));
+          repo.emitStatus!(ConnectionStatus.online);
+          async.elapse(const Duration(seconds: 5));
+          expect(seen, everyElement(isNull));
+          expect(c.state.connection, ConnectionStatus.online);
+          close(async, c);
+        });
+      });
+
+      test('airplane mode on start shows offline at the first failed '
+          'request', () {
+        fakeAsync((async) {
+          repo.online = false;
+          final (c, _) = started(async, network: network.stream);
+          network.add(Network.down);
+          async.elapse(Duration.zero);
+          expect(c.state.trouble, SyncTrouble.offline);
+          close(async, c);
+        });
+      });
+
+      test('an up missed in the background: back in front, an answer clears '
+          'offline', () {
+        fakeAsync((async) {
+          final (c, _) = started(async, network: network.stream);
+          async.elapse(const Duration(seconds: 11));
+          repo.online = false;
+          network.add(Network.down);
+          async.elapse(Duration.zero);
+          expect(c.state.trouble, SyncTrouble.offline);
+          c.hidden();
+          // iOS drops the plugin's updates in the background: no up.
+          repo.online = true;
+          unawaited(c.resumed());
+          async.elapse(Duration.zero);
+          expect(c.state.trouble, isNull);
+          close(async, c);
+        });
+      });
+    });
 
     test('a first fetch still in flight stays connecting through the grace, '
         'then shows offline', () {
@@ -1228,13 +1347,22 @@ void main() {
       });
     });
 
-    test('an answer while the OS says no network keeps offline', () {
+    test('an answer to a request sent before the OS said no network keeps '
+        'offline', () {
       fakeAsync((async) {
         final network = StreamController<Network>();
         final (c, _) = started(async, network: network.stream);
+        async.elapse(const Duration(seconds: 11));
+        final sent = repo.itemsGate = Completer();
+        unawaited(c.resync());
+        async.elapse(Duration.zero);
+        repo
+          ..itemsGate = null
+          ..online = false;
         network.add(Network.down);
         async.elapse(Duration.zero);
-        unawaited(c.resync());
+        expect(c.state.trouble, SyncTrouble.offline);
+        sent.complete();
         async.elapse(Duration.zero);
         expect(c.state.trouble, SyncTrouble.offline);
         close(async, c);

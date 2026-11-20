@@ -267,7 +267,8 @@ class ListCubit(
 
   /// Runs for [startGrace] after a start or a resume, until a request
   /// answers. Meanwhile a failed request or a dropped channel is retried
-  /// unseen; the OS's network down still shows offline at once.
+  /// unseen; the OS's network down still shows offline at the first
+  /// failure.
   Timer? _grace;
 
   /// The app is hidden, and on a phone its realtime socket closed on
@@ -284,9 +285,17 @@ class ListCubit(
   StreamSubscription<Network>? _network;
   Timer? _networkBack;
 
+  /// Outside the grace, the OS's down shows offline when the request it
+  /// started has not answered within [networkSettle].
+  Timer? _networkAsked;
+
   /// Whether the OS's network went down and has not been back for
-  /// [networkSettle] since.
+  /// [networkSettle] since, nor answered a request sent after.
   var _networkDown = false;
+
+  /// The resyncs started when the OS said down: an answer to a later one
+  /// shows the network works, whatever the OS said.
+  var _downAtResync = 0;
 
   /// Whether the channel said up when the network went down and has said
   /// nothing since: its socket may have died with the network, unnoticed
@@ -612,15 +621,29 @@ class ListCubit(
   void _onNetwork(Network network) {
     _networkBack?.cancel();
     _networkBack = null;
+    _networkAsked?.cancel();
+    _networkAsked = null;
     switch (network) {
       case Network.down:
         _networkDown = true;
+        _downAtResync = _resyncsStarted;
         if (_channelUp) {
           // Not trusted until it joins again.
           _channelUp = false;
           _channelSuspect = true;
         }
-        _goOffline();
+        // iOS says none for a network that works: on a new path monitor,
+        // and with an update dropped in the background (job 325). A request
+        // tells: with no network it fails at once and shows offline.
+        if (_grace == null) {
+          _networkAsked = Timer(networkSettle, () {
+            _networkAsked = null;
+            if (_networkDown) {
+              _goOffline();
+            }
+          });
+        }
+        unawaited(resync());
       case Network.up when _networkDown:
         _networkBack = Timer(networkSettle, _reconnect);
       case Network.up:
@@ -629,9 +652,19 @@ class ListCubit(
   }
 
   /// The network is back: subscribe and fetch now, not when the backoff and
-  /// the 3 s retry come due. A suspect channel gets a new socket.
+  /// the 3 s retry come due.
   void _reconnect() {
+    _networkWorks();
+    unawaited(retry());
+  }
+
+  /// The OS's down is over: a suspect channel gets a new socket, a down one
+  /// subscribes now, not when its backoff comes due.
+  void _networkWorks() {
+    _networkBack?.cancel();
     _networkBack = null;
+    _networkAsked?.cancel();
+    _networkAsked = null;
     _networkDown = false;
     if (_channelSuspect) {
       _channelSuspect = false;
@@ -642,7 +675,6 @@ class ListCubit(
       _resubscribeDelay = _firstResubscribe;
       unawaited(_rewatch());
     }
-    unawaited(retry());
   }
 
   Future<void> _rewatch() async {
@@ -1687,6 +1719,9 @@ class ListCubit(
       // Not a record `.wait`: its ParallelWaitError would hide a
       // ServerTrouble.
       await Future.wait([catalog, rows, claims]);
+      if (_networkDown && number > _downAtResync) {
+        _networkWorks();
+      }
       if (number > _resyncShown) {
         _resyncShown = number;
         _showSnapshot(await catalog, await rows, await claims, heard);
@@ -2203,6 +2238,7 @@ class ListCubit(
     _retry?.cancel();
     _grace?.cancel();
     _networkBack?.cancel();
+    _networkAsked?.cancel();
     _resubscribe?.cancel();
     _catalogReload?.cancel();
     _save?.cancel();

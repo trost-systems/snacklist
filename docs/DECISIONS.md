@@ -16321,3 +16321,72 @@ Calls made while building it:
     `itemQuantity`, the steppers' `quantityMinus` and `quantityPlus`. No ARB, legal or privacy file changed.
 12. **Rollout.** `releases/flags.json` has `add-sheet-compact` off. Creating the PostHog flag for Peter and the internal
     testers is the lead's step (NEEDS_LEAD), as for job 276's `add-feedback-list`.
+
+## Job 325: no "Offline" on a start with a working network, 2026-11-20
+
+Peter (t1083u): a household tester sees the offline indicator on her iPhone (TestFlight) on every start.
+Job 212's 10 s grace did not help. No real user's data or logs were used; everything below ran on test
+accounts, a local stack and GitHub runners.
+
+- **Root cause.** The list took the OS's "no network" as proof. A `Network.down` from the OS watch
+  showed "Offline" at once, skipping the 10 s grace, and an answered request could not clear it while
+  the OS still said down (job 212's exception). Only the realtime channel joining or the OS saying up
+  for 1.5 s cleared it. On iOS the OS watch says "none" for a network that works: connectivity_plus
+  7.3.2 reads `NWPathMonitor.currentPath` of a monitor it has just started, and that path is
+  unsatisfied until the first update a moment later (10 of 10 on a macOS runner: `none` right after
+  `start`, the real path 0.1 to 1.5 ms later; 3 of 3 on an iOS simulator with the real plugin: a
+  `check` while nothing listens says `none`). It also drops the monitor's updates while the app is in
+  the background, so a "down" before the background can outlive the network's return.
+- **Reproduced.** In the real web build of main, with `navigator.onLine` false on a working network
+  (what connectivity_plus reads on the web), 6 of 6 starts showed "Offline" until the channel joined;
+  with realtime frames held 3 s, as a phone's slower join, from 0.9 s to 4.5 s (2 of 2;
+  `journeys/cold-start-offline.mjs`, screenshot `docs/screenshots/325/01-main-os-none-offline.png`).
+  Widget test: the sync card shows on main. Cubit tests: "none, then wifi a moment later",
+  "none that stays while the server answers", "none after the first answer, slow channel",
+  "an up missed in the background" fail on main.
+- **Fix: the server decides, the OS only asks.** An OS "down" starts a resync (`_onNetwork`). With no
+  network it fails at once and "Offline" shows then, in the grace too (a failure is not held while the OS
+  says down). An answer to a request sent after the OS said down shows the network works: the down is
+  over (`_networkWorks`, which also renews a channel that was up), the list shows online. An answer to a
+  request sent before the down keeps "Offline" (job 212 review 0's race). Back up for 1.5 s still
+  reconnects as in job 166. The fetch the down starts is the one cost: one resync per OS change to none.
+- **Flight mode stays prompt only because a request fails at once with no network.** The web build
+  measured it (`--airplane`: "Offline" at 1.1 s from navigation, the app's own start included). On a
+  phone the app reads over `dart:io` (`package:http`), whose host lookup fails at once with no
+  interface up: inferred, not measured on a device. Should such a request hang instead, "Offline"
+  shows 1.5 s (`networkSettle`) after the OS said down (`_networkAsked`), or at the end of the start's
+  10 s grace when the down came inside it.
+- **Changed tests of jobs 166 and 212.** "Down shows offline at once, with no request" now expects the
+  one fetch. "An answer while the OS says no network keeps offline" now covers only a request sent
+  before the down. A retry that answers while the network settles clears offline at once (before:
+  0.5 s later, after the settle).
+- **Hypotheses.**
+  1. *iOS reports none at cold start before the first path update.* Confirmed for a monitor started
+     fresh, which connectivity_plus does on a listen after the last cancel and on a `check` with nobody
+     listening; the plain first listen at cold start reported the real network on the simulator (the
+     plugin starts its monitor at registration). A widget-test trace of the real App over mocked
+     channels found a cancel then listen only on a household switch whose cache read takes longer than
+     a frame; cold start, a queued other household, hide and resume, flags and token refreshes listen
+     once. So the exact device path is not pinned, but every iOS path to a false "none" now ends at the
+     server's answer.
+  2. *The channel never comes up for this kind of account.* Ruled out as a cause: since job 212 an
+     answered fetch shows online with the channel down. Expired token at start (local stack,
+     `jwt_expiry = 60`, tab reopened after 100 s, 2 of 2): the first realtime joins answer
+     `InvalidJWTToken: Token has expired`, the rejoin works, no "Offline" (the first join's failure is
+     held). Several households and a stale cached household: the trace above, one listen.
+  3. *Start or resume ordering.* Ruled out: the cached list loads before the watch and the first resync
+     start; the grace ends only at an answer. A resume after a missed "up" kept "Offline" until an
+     answer could clear it, which it could not: fixed by the same rule (test "an up missed in the
+     background").
+  4. *Auth refresh, Supabase.initialize, realtime token.* REST waits for the refresh
+     (`SupabaseClient._getAccessToken`); realtime joins with the stored token and rejoins after
+     `tokenRefreshed`; see 2.
+- **Not done: owning the iOS watch.** Keeping one plugin listener for the app's life would avoid fresh
+  monitors, and a re-check on resume would catch dropped updates. With the server deciding, neither
+  changes what the user sees, so neither ships (one rule instead of three guards).
+- **No feature flag** (a bug fix of the indicator, as job 212).
+- **In-session review (two findings, each proven by a test that failed on the first version).** A retry
+  that answered after an outage, before the network's 1.5 s settle, ended the down without the
+  reconnect, so a dropped channel waited for its backoff (up to 30 s) while the list said online:
+  `_networkWorks` now subscribes a down channel at once, whichever way the down ends. And a down
+  mid-session whose request hung never showed "Offline" (before: at once): now after 1.5 s.

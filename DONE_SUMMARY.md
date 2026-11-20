@@ -1873,3 +1873,29 @@ above the keyboard instead of 312; pickers are one sideways line; the list behin
 outside, a swipe down, back or Enter in the empty field closes it. For everyone, „Rückgängig“ keeps what an add's details
 taught again (job 315 reverted). Review 0: chips capped at half the row and options at the line, so long German names
 still fit at 200 % on 360 × 640 (tested). Details: [docs/done/322.md](docs/done/322.md).
+
+## Job 325: no "Offline" on a start with a working network
+
+**Root cause.** The list showed "Offline" as soon as the phone's system reported no network, skipping the
+10 s start grace, and an answering server could not clear it until the live connection joined. iPhones
+report no network for a moment on a working one (a freshly started network monitor says none until its
+first update), so starts could show "Offline" every time.
+
+**Fix.** A "no network" report from the system now makes the list ask the server: with no network the
+request fails at once and "Offline" shows (flight mode stays prompt), and when the server answers a
+request sent after the report, the network works and nothing shows. `app/lib/list/list_cubit.dart`.
+A request still unanswered 1.5 s after the report shows "Offline" (outside the start grace), and a dropped
+realtime channel subscribes again at once however the report ends (both from the in-session review).
+
+**Ruled out.** A realtime channel that never joins (an answer shows online since job 212), an expired
+token at start (reproduced on a local stack: the first join is refused, the rejoin works, no "Offline"),
+start or resume ordering, Supabase init and the realtime token. Details: docs/DECISIONS.md "Job 325",
+docs/done/325-offline-on-every-start.md.
+
+**Verify.** `cd app && flutter test test/list/list_cubit_test.dart test/list/sync_indicator_test.dart`;
+`node .cursor/skills/verify-snacklist/journeys/cold-start-offline.mjs <dir> --os-none stays
+--slow-channel 3000 --starts 3` after `helpers/launch.sh` (PASS: no "Offline"; main showed it 0.9 to
+4.5 s), and `--airplane` (PASS: "Offline" within 2 s).
+
+**Not verified.** On a real iPhone (no device here). TestFlight: the next green main build carries it.
+No flag.
