@@ -18,6 +18,7 @@ import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/invite_share.dart';
 import 'package:family_groceries/household/pending_invite.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
+import 'package:family_groceries/list/store_app.dart';
 import 'package:family_groceries/more/app_update.dart';
 import 'package:family_groceries/more/more_screen.dart';
 import 'package:family_groceries/purchases/premium_server.dart';
@@ -55,6 +56,23 @@ import '../review/fakes.dart';
 import '../settings/fake_account.dart';
 
 class FakeSession() extends MockCubit<Session> implements SessionCubit;
+
+/// Opens every app it is asked to; records what was launched, in order.
+final class FakeStoreApps() implements StoreAppOpener {
+  final opened = <String>[];
+
+  @override
+  Future<bool> launchPackage(String package) async {
+    opened.add(package);
+    return true;
+  }
+
+  @override
+  Future<bool> openLink(Uri url, {required bool appOnly}) async {
+    opened.add('$url');
+    return true;
+  }
+}
 
 /// An update source that always offers [update] and records what is applied.
 final class FakeAppUpdates(final AppUpdate? update) implements AppUpdates {
@@ -212,6 +230,10 @@ Future<More> pumpMore(
   /// Session states after the first (Peter in Zuhause), e.g. a household
   /// switch.
   Stream<Session> sessions = const Stream.empty(),
+
+  /// What a store's app key and Öffnen launch (job 313); one that takes
+  /// every app by default.
+  StoreAppOpener? storeApps,
 }) async {
   tester.view
     ..devicePixelRatio = 1
@@ -329,6 +351,9 @@ Future<More> pumpMore(
         ),
         RepositoryProvider<StoreReview>.value(
           value: storeReview ?? FakeStoreReview(),
+        ),
+        RepositoryProvider<StoreAppOpener>.value(
+          value: storeApps ?? FakeStoreApps(),
         ),
       ],
       child: MultiBlocProvider(

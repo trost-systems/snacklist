@@ -73,6 +73,7 @@ The list
 - [classifier](./classifier.md): the automatic category for every new item, learning from moves, spelling variants and synonyms.
 - [categories](./categories.md): Liste → „Anpassen“ → „Ohne Laden“ (and every store's details): add, rename, delete, reorder; the 11 seeded categories.
 - [stores-walk-order](./stores-walk-order.md): store sections and category dividers in walk order, nothing on the list drags, a tap on a store divider folds it (a hold does nothing), the stores screen under Liste → „Anpassen“ and a store's details (add, rename, delete, reorder), adding a store from the store chip, item→store memory and the store by category for app adds.
+- [store-apps](./store-apps.md): behind the flag `open-store-app` (off): a store matched to a chain (offered while its name is typed, „Ist das Lidl (Deutschland)?“ once, a card on the list for older stores, the „Zugeordnet“ line and picker on its details) opens the chain's app from its list header's key or its „App“ card, with a choice where a chain has two apps.
 - [prices](./prices.md): a price chip on each row and its editor (Gesamt or pro Stück/kg/l, the scale weight), the sums in list-declutter's summary block (the „Summe <Laden>“ lines and „Einkaufssumme“ bar on the flag-off screen only), the household's „Währung“; Free, live for the household.
 - [live-sync](./live-sync.md): members see each other's changes live; „N neu von <Name>“ and the sync icon beside the switcher.
 - [offline](./offline.md): what works without a connection, what waits, and the messages.

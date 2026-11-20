@@ -275,7 +275,11 @@ void main() {
       )) {
         expect(chipSelected(tester, 'onboarding-store-$store'), isFalse);
       }
-      expect(key('stores-disclaimer'), findsOneWidget);
+      expect(
+        key('stores-disclaimer'),
+        findsNothing,
+        reason: 'L-7 lives only in the Impressum (Legal N-292)',
+      );
       await tapKey(tester, 'onboarding-store-REWE');
       await tapKey(tester, 'onboarding-store-dm');
       await tapKey(tester, 'onboarding-store-dm');

@@ -4,7 +4,7 @@ description: "Impressum von Snacklist: Anbieter, Anschrift und Kontakt."
 locale: de
 path: /impressum
 translation_key: imprint
-updated: 2026-11-17
+updated: 2026-11-20
 ---
 
 # Impressum
@@ -37,9 +37,9 @@ Yalovastr. 5
 72108 Rottenburg am Neckar
 Deutschland
 
-## Ladennamen
+## Ladennamen {#ladennamen}
 
-Ladennamen wie dm, Lidl oder EDEKA verwenden wir nur, damit du erkennst, für welchen Laden eine Liste gedacht ist. Die Namen und Marken gehören den jeweiligen Unternehmen. Snacklist ist ein unabhängiges Angebot und steht in keiner Verbindung zu diesen Unternehmen. Sie unterstützen oder empfehlen Snacklist nicht.
+Ladennamen wie dm, Lidl oder EDEKA und die Namen ihrer Apps verwenden wir nur, damit du erkennst, für welchen Laden eine Liste gedacht ist, und damit du die App des Ladens von Snacklist aus öffnen kannst. Die Namen und Marken gehören den jeweiligen Unternehmen. Snacklist ist ein unabhängiges Angebot und steht in keiner Verbindung zu diesen Unternehmen. Sie unterstützen oder empfehlen Snacklist nicht. Ihre Logos zeigen wir nicht.
 
 ## Marken
 

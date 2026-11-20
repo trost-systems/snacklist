@@ -1393,10 +1393,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get storeHardware => 'Hardware store';
 
   @override
-  String get storesDisclaimer =>
-      'We use shop names such as dm, Lidl or EDEKA only so you can see which shop a list is for. The names and trade marks belong to their owners. Snacklist is independent and isn\'t affiliated with, sponsored or endorsed by these companies.';
-
-  @override
   String get skipStores => 'Skip';
 
   @override
@@ -3739,4 +3735,130 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reportDone => 'Done';
+
+  @override
+  String storeAppOpen(String app) {
+    return 'Open $app';
+  }
+
+  @override
+  String countryName(String code) {
+    String _temp0 = intl.Intl.selectLogic(code, {
+      'DE': 'Germany',
+      'AT': 'Austria',
+      'CH': 'Switzerland',
+      'FR': 'France',
+      'NL': 'Netherlands',
+      'PL': 'Poland',
+      'IT': 'Italy',
+      'ES': 'Spain',
+      'other': '$code',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String chainQuestionOne(String chain, String country) {
+    return 'Is this $chain ($country)?';
+  }
+
+  @override
+  String chainQuestionOneExisting(String store, String chain, String country) {
+    return 'Is your “$store” the chain $chain ($country)?';
+  }
+
+  @override
+  String chainQuestionApp(String app) {
+    return 'Then you can open $app right from the list.';
+  }
+
+  @override
+  String get chainQuestionYes => 'Yes';
+
+  @override
+  String get chainQuestionKeep => 'No, keep it as is';
+
+  @override
+  String get chainQuestionNo => 'No';
+
+  @override
+  String chainQuestionWhich(String store) {
+    return 'Which $store?';
+  }
+
+  @override
+  String chainQuestionWhichExisting(String store) {
+    return 'Which chain is your “$store”?';
+  }
+
+  @override
+  String get chainQuestionNone => 'None of these';
+
+  @override
+  String chainWithCountry(String chain, String country) {
+    return '$chain ($country)';
+  }
+
+  @override
+  String get storeAppTip => 'Opens the store\'s app.';
+
+  @override
+  String chainCardProgress(int index, int total) {
+    return '$index / $total';
+  }
+
+  @override
+  String chainCardProgressLabel(int index, int total) {
+    return 'Store $index of $total';
+  }
+
+  @override
+  String chainSuggestionPick(String chain, String country) {
+    return 'Choose $chain ($country)';
+  }
+
+  @override
+  String get storeAppCardTitle => 'App';
+
+  @override
+  String get storeAppCardOpen => 'Open';
+
+  @override
+  String get storeAppCardChoose => 'Which app should open?';
+
+  @override
+  String storeChainLinked(String chain, String country) {
+    return 'Matched: $chain · $country';
+  }
+
+  @override
+  String get storeChainChange => 'Change';
+
+  @override
+  String get storeChainChangeLabel => 'Change chain';
+
+  @override
+  String get storeChainUnlink => 'Remove match';
+
+  @override
+  String get storeChainUnlinkLabel => 'Remove the chain match';
+
+  @override
+  String get storeChainConnect => 'Match to a chain';
+
+  @override
+  String get storeChainPickerTitle => 'Choose a chain';
+
+  @override
+  String get storeChainPickerSearch => 'Search chains';
+
+  @override
+  String get storeChainPickerEmpty => 'No chain found.';
+
+  @override
+  String get migrateBody =>
+      'Recognised stores can show a button for their app. Names stay as you wrote them.';
+
+  @override
+  String get migrateDone => 'Matched';
 }

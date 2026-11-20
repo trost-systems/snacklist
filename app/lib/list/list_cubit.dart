@@ -13,6 +13,7 @@ import 'package:family_groceries/list/list_repository.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/pricing.dart';
 import 'package:family_groceries/list/quantity.dart';
+import 'package:family_groceries/list/retailer.dart';
 import 'package:family_groceries/list/subtotals.dart';
 import 'package:flutter/foundation.dart' show immutable, listEquals, setEquals;
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -250,12 +251,16 @@ class ListCubit(
   /// Whether the flag `on-device-catalog` is on (job 274): a resync then
   /// fetches the household's index too.
   bool Function() householdIndex = _off,
+
+  /// The country whose chains a store name matches first (job 313).
+  String Function() region = phoneRegion,
 }) extends Cubit<ListState> {
   this : super(const ListState());
 
   static bool _off() => false;
 
   final _householdIndex = householdIndex;
+  final _region = region;
 
   final DateTime Function() _clock = clock ?? DateTime.now;
   final _graceLength = grace;
@@ -1347,6 +1352,12 @@ class ListCubit(
 
   void dismissHint() => _setPrefs(state.prefs.copyWith(hintDismissed: true));
 
+  void closeStoreAppTip() {
+    if (!state.prefs.storeAppTipClosed) {
+      _setPrefs(state.prefs.copyWith(storeAppTipClosed: true));
+    }
+  }
+
   void _setPrefs(ListPrefs prefs) {
     emit(state.copyWith(prefs: prefs));
     unawaited(_cache.savePrefs(prefs));
@@ -1378,7 +1389,21 @@ class ListCubit(
   /// the others when there is none, so that creating and picking a store is
   /// one step. Null when there is no name or it could not be saved; the user
   /// is told why. Not queued like item writes: offline it is refused.
-  Future<Store?> addStore(String name) async {
+  ///
+  /// With [retailer] (a picked chain, job 313) the store is linked to it
+  /// too; the store comes back even when only the link failed (reported).
+  Future<Store?> addStore(String name, {Retailer? retailer}) async {
+    final store = await _addStore(name);
+    if (store == null ||
+        retailer == null ||
+        store.retailer?.key == retailer.key) {
+      return store;
+    }
+    await linkStore(store.id, retailer);
+    return state.catalog.store(store.id) ?? store;
+  }
+
+  Future<Store?> _addStore(String name) async {
     final clean = name.trim().replaceAll(RegExp(r'\s+'), ' ');
     if (clean.isEmpty) {
       return null;
@@ -1411,6 +1436,82 @@ class ListCubit(
     }
     unawaited(_reloadCatalog());
     return store;
+  }
+
+  /// The chains a store named [name] may be, those of the phone's region
+  /// first (job 313): exact matches before prefixes, at most five. Empty
+  /// for fewer than two letters, and when the server can't be reached.
+  Future<List<RetailerMatch>> matchRetailers(String name) async {
+    final clean = name.trim();
+    if (clean.length < 2) {
+      return const [];
+    }
+    try {
+      return await _repo.matchRetailers(clean, _region());
+    } on Object {
+      return const [];
+    }
+  }
+
+  /// Every chain of the registry for the chain picker, the phone region's
+  /// first, each part by name; with [country], that country's only. Empty
+  /// when the server can't be reached.
+  Future<List<Retailer>> listRetailers({String? country}) async {
+    final List<Retailer> all;
+    try {
+      all = await _repo.listRetailers(country: country);
+    } on Object {
+      return const [];
+    }
+    final region = _region();
+    return [
+      ...all.where((r) => r.country == region),
+      ...all.where((r) => r.country != region),
+    ];
+  }
+
+  /// The household's stores to ask „Ist das …?“ about, one question per
+  /// store not linked or answered yet, also on this device. Empty when the
+  /// server can't be reached.
+  Future<List<StoreQuestion>> retailerQuestions() async {
+    final List<StoreQuestion> questions;
+    try {
+      questions = await _repo.retailerQuestions(_region());
+    } on Object {
+      return const [];
+    }
+    return [
+      for (final q in questions)
+        if (state.catalog.store(q.storeId) case final store?
+            when store.retailer == null && !store.retailerAnswered)
+          q,
+    ];
+  }
+
+  /// Links the store to [retailer] with its [app] (an android package of
+  /// the chain's apps, none for the default). Not queued: offline it is
+  /// refused. Whether the server took it.
+  Future<bool> linkStore(String storeId, Retailer retailer, {String? app}) =>
+      _changeStores(
+        state.catalog.withStoreRetailer(storeId, retailer, app: app),
+        () => _repo.answerStoreRetailer(storeId, retailer, app: app),
+      );
+
+  /// The household's „Nein“ (or „Lösen“): the store is no chain, and is
+  /// not asked about again. Whether the server took it.
+  Future<bool> declineStore(String storeId) => _changeStores(
+    state.catalog.withStoreRetailer(storeId, null),
+    () => _repo.answerStoreRetailer(storeId, null),
+  );
+
+  /// Picks the linked chain's app with the [android] package for the
+  /// store. False for a store without a chain, or when not saved.
+  Future<bool> setStoreApp(String storeId, String android) async {
+    final retailer = state.catalog.store(storeId)?.retailer;
+    if (retailer == null) {
+      return false;
+    }
+    return await linkStore(storeId, retailer, app: android);
   }
 
   /// Whether the server took it.

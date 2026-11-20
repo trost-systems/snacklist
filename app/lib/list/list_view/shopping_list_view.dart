@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' show SemanticsHitTestBehavior;
 
+import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/core/open_app.dart';
@@ -9,11 +10,13 @@ import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/section_label.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
+import 'package:family_groceries/list/chain_suggestions.dart';
 import 'package:family_groceries/list/claims.dart';
 import 'package:family_groceries/list/edit_item_sheet.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_link.dart';
 import 'package:family_groceries/list/list_parts.dart';
+import 'package:family_groceries/list/list_view/chain_card.dart';
 import 'package:family_groceries/list/list_view/dividers.dart';
 import 'package:family_groceries/list/list_view/explainer.dart';
 import 'package:family_groceries/list/list_view/glide.dart';
@@ -23,6 +26,7 @@ import 'package:family_groceries/list/list_view/price_views.dart';
 import 'package:family_groceries/list/list_view/sections.dart';
 import 'package:family_groceries/list/list_view/summary_block.dart';
 import 'package:family_groceries/list/model.dart';
+import 'package:family_groceries/list/store_app.dart';
 import 'package:family_groceries/list/subtotals.dart';
 import 'package:family_groceries/tips/hint_views.dart';
 import 'package:flutter/foundation.dart'
@@ -516,6 +520,9 @@ class _ShoppingListViewState()
       item: item,
       catalog: state.catalog,
       onCreateStore: cubit.addStore,
+      chains: context.read<Flags?>()?.isOn(openStoreAppFlag) ?? false
+          ? StoreChains.of(cubit)
+          : null,
       listId: item.listOn(state.catalog.lists.firstOrNull?.id),
       myClaim: claims.where((c) => c.userId == cubit.userId).firstOrNull,
       othersBring: claimLine(
@@ -599,6 +606,12 @@ class _ShoppingListViewState()
     final declutter = context.select<Flags?, bool>(
       (flags) => flags?.isOn(listDeclutterFlag) ?? false,
     );
+    final storeApps = context.select<Flags?, bool>(
+      (flags) => flags?.isOn(openStoreAppFlag) ?? false,
+    );
+    final tipUnder = storeApps && !state.prefs.storeAppTipClosed
+        ? shown.where((s) => s.store?.app != null).firstOrNull?.key
+        : null;
     final behind = widget.behindSheet;
     if (behind == null) {
       _pinnedTo = null;
@@ -639,6 +652,8 @@ class _ShoppingListViewState()
               claimsOf,
               prices: prices,
               summary: summary,
+              storeApps: storeApps,
+              tipUnder: tipUnder,
             );
       final index = {for (final (i, e) in entries.indexed) e.key: i};
       return SliverList.builder(
@@ -728,6 +743,7 @@ class _ShoppingListViewState()
             slivers: [
               const SliverToBoxAdapter(child: OpenAppSlot()),
               const SliverToBoxAdapter(child: ListHints()),
+              const SliverToBoxAdapter(child: ChainCard()),
               SliverToBoxAdapter(child: listParts(context).tripEnded()),
               const SliverToBoxAdapter(child: SizedBox(height: 4)),
               body,
@@ -827,6 +843,19 @@ class _ShoppingListViewState()
     );
   }
 
+  /// The header key's tap: the store's app (or its store page), and the
+  /// tip has done its job.
+  void _openStoreApp(Store store) {
+    context.read<ListCubit>().closeStoreAppTip();
+    unawaited(
+      openStoreApp(
+        store,
+        opener: context.read<StoreAppOpener>(),
+        analytics: context.read<Analytics?>(),
+      ),
+    );
+  }
+
   Widget _placed(Widget panel) {
     _panelPlaced = true;
     return panel;
@@ -895,6 +924,12 @@ class _ShoppingListViewState()
 
     /// The summary block's, with `list-declutter`: no section sums then.
     required Summary? summary,
+
+    /// Flag `open-store-app`: headers of stores with an app get its key.
+    bool storeApps = false,
+
+    /// The section whose header the store app tip goes under.
+    String? tipUnder,
   }) {
     Widget glided(Key key, Widget child) =>
         Glide(key: key, id: key, child: child);
@@ -906,6 +941,8 @@ class _ShoppingListViewState()
     for (final (i, section) in run.indexed) {
       final isFolded = folded(section);
       final storeKey = ValueKey('store-${section.key}');
+      final store = section.store;
+      final app = storeApps ? store?.app : null;
       entries.add(
         glided(
           storeKey,
@@ -922,10 +959,20 @@ class _ShoppingListViewState()
               folded: isFolded,
               leaving: _leaving,
               onToggle: () => context.read<ListCubit>().toggleFold(section.key),
+              app: app,
+              onOpenApp: store == null ? null : () => _openStoreApp(store),
             ),
           ),
         ),
       );
+      if (section.key == tipUnder) {
+        entries.add(
+          StoreAppTip(
+            key: const ValueKey('store-app-tip'),
+            onClose: cubit.closeStoreAppTip,
+          ),
+        );
+      }
       if (isFolded) {
         continue;
       }

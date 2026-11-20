@@ -1,0 +1,54 @@
+# Checks weekly that every app in supabase/retailers/retailers.json still resolves (job 313,
+# SS-Q6): its App Store id and Play package, and its universal link against the chain's
+# association files, through scripts/retailers.ts --verify (public, read-only requests; no
+# secrets). A failure opens or updates an issue; the next green run closes it. Changes to the
+# registry go through PRs only.
+name: Retailer registry check
+
+on:
+  schedule:
+    - cron: '41 4 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: retailers-verify
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      ISSUE_TITLE: 'Retailer registry: an app id or link stopped resolving'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: ./.github/actions/deno
+        with:
+          deno-version-file: .dvmrc
+          # The token may write issues: no Deno from the Actions cache, only a checksum-verified download.
+          cache: false
+      - name: Verify every app and link
+        id: verify
+        run: deno run --allow-read --allow-net scripts/retailers.ts --verify
+      - name: Report in an issue
+        if: failure() && steps.verify.outcome == 'failure'
+        run: |
+          body="Run $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID found apps or links in supabase/retailers/retailers.json that no longer resolve (the FAIL lines in its log). Fix the entry in a PR (scripts/retailers.ts --migration writes the data migration) or remove it."
+          open=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --limit 500 --json number,title \
+            --jq 'map(select(.title == env.ISSUE_TITLE))[0].number // empty')
+          if [ -n "$open" ]; then
+            gh issue comment "$open" --repo "$GITHUB_REPOSITORY" --body "$body"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$ISSUE_TITLE" --body "$body"
+          fi
+      - name: Close the issue
+        run: |
+          for n in $(gh issue list --repo "$GITHUB_REPOSITORY" --state open --limit 500 --json number,title \
+            --jq '.[] | select(.title == env.ISSUE_TITLE) | .number'); do
+            gh issue close "$n" --repo "$GITHUB_REPOSITORY" --comment "Run $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID found every app and link resolving."
+          done

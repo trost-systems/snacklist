@@ -483,7 +483,7 @@ test('AC11: onboarding, the share text and errors in English', async ({ browser 
   await page.getByRole('button', { name: 'Continue', exact: true }).click();
   await expect(page.getByRole('checkbox', { name: 'EDEKA', exact: true }), 'nothing picked').not.toBeChecked();
   await expect(page.getByRole('button', { name: 'Add your own store' })).toBeVisible();
-  await expect(page.getByText(/^We use shop names such as dm, Lidl or EDEKA only/)).toBeVisible();
+  await expect(page.getByText(/^We use shop names such as dm, Lidl or EDEKA only/), 'the shop-name note lives in the imprint only').toHaveCount(0);
   await page.getByRole('button', { name: 'Skip', exact: true }).click();
   await page.getByRole('button', { name: 'Continue', exact: true }).click();
   await page.getByRole('button', { name: 'Invite someone', exact: true }).click();

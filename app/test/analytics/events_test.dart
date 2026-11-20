@@ -41,6 +41,7 @@ void main() {
       'scan_started',
       'off_miss',
       'trip_logged',
+      'store_app_opened',
     });
   });
 
@@ -178,6 +179,12 @@ void main() {
     ...allowed32a,
     ...allowed168b,
     ...allowed195,
+    for (final outcome in ['app', 'store_page'])
+      (
+        'store_app_opened',
+        {'chain': 'lidl', 'country': 'DE', 'outcome': outcome},
+      ),
+    ('store_app_opened', {'chain': 'aldi-sued', 'country': 'AT'}),
   ]) {
     test('allows $event $properties', () {
       expect(() => checkEvent(event, properties), returnsNormally);
@@ -283,6 +290,11 @@ void main() {
     ('trip_logged', {'items': 'Milch'}, 'the items'),
     ('item_added', {'source': 'barcode'}, 'the other word for scan'),
     ('item_added', {'ean': '4006381333931'}, 'the EAN of a scanned add'),
+    ('store_app_opened', {'chain': 'Lidl am Markt'}, "the store's name"),
+    ('store_app_opened', {'store': 'Lidl'}, 'the store'),
+    ('store_app_opened', {'country': 'de'}, 'a country in lower case'),
+    ('store_app_opened', {'outcome': 'storePage'}, "the enum's name"),
+    ('store_app_opened', {'app': 'com.lidl.eci.lidlplus'}, 'the package'),
   ];
   for (final (event, properties, why) in refused) {
     if (event == 'invite_accepted' && properties.isEmpty) {

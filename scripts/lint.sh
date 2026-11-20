@@ -59,6 +59,10 @@ deno test -q --config scripts/deno.json --allow-read --allow-write scripts/workf
 log "pinned dependencies"
 deno run --frozen --allow-read scripts/pinned-deps.ts
 deno test -q --frozen --config scripts/deno.json --allow-read --allow-write scripts/pinned-deps_test.ts
+log "retailer registry"
+# Job 313: supabase/retailers/retailers.json is valid and the newest retailers migration holds its rows.
+deno run --allow-read scripts/retailers.ts --check
+deno test -q --config scripts/deno.json --allow-read scripts/retailers_test.ts
 log "mcp.snacklist.app routes"
 deno test -q --config scripts/deno.json --allow-read scripts/mcp-proxy-routes_test.ts
 log "import direction"

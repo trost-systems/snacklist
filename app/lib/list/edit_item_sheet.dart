@@ -4,6 +4,7 @@ import 'package:family_groceries/design/field_border.dart';
 import 'package:family_groceries/design/hex_checkbox.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
+import 'package:family_groceries/list/chain_suggestions.dart';
 import 'package:family_groceries/list/entry.dart';
 import 'package:family_groceries/list/foldout_chips.dart';
 import 'package:family_groceries/list/list_names.dart';
@@ -46,6 +47,10 @@ Future<ItemEdit?> showEditItemSheet(
   String? listId,
   Claim? myClaim,
   String? othersBring,
+
+  /// A new store's chain, offered and asked as in the add sheet (job 313,
+  /// flag open-store-app); null without the flag.
+  StoreChains? chains,
 }) => showModalBottomSheet<ItemEdit>(
   context: context,
   // Over the whole app, tabs included: the sheet stands on the bottom edge.
@@ -67,6 +72,7 @@ Future<ItemEdit?> showEditItemSheet(
     listId: listId,
     myClaim: myClaim,
     othersBring: othersBring,
+    chains: chains,
   ),
 );
 
@@ -77,6 +83,7 @@ class const _EditItemSheet({
   required final String? listId,
   required final Claim? myClaim,
   required final String? othersBring,
+  required final StoreChains? chains,
 }) extends StatefulWidget {
   @override
   State<_EditItemSheet> createState() => _EditItemSheetState();
@@ -110,6 +117,24 @@ class _EditItemSheetState() extends State<_EditItemSheet> {
     }
     return store;
   }
+
+  /// The chains passed in, with a linked store made here added to the sheet's
+  /// catalog like [_createStore]'s.
+  late final StoreChains? _chains = switch (widget.chains) {
+    final chains? => StoreChains(
+      match: chains.match,
+      addLinked: (name, retailer) async {
+        final store = await chains.addLinked(name, retailer);
+        if (store != null && mounted && _catalog.store(store.id) == null) {
+          setState(() => _catalog = _catalog.withStore(store));
+        }
+        return store;
+      },
+      link: chains.link,
+      decline: chains.decline,
+    ),
+    null => null,
+  };
 
   @override
   void dispose() {
@@ -242,6 +267,7 @@ class _EditItemSheetState() extends State<_EditItemSheet> {
                     storeChanged: _storeId != _originalStore,
                     categoryChanged: _categoryId != widget.item.categoryId,
                     onCreateStore: _createStore,
+                    chains: _chains,
                     onStore: (id) => setState(() => _storeId = id),
                     onCategory: (id) => setState(() => _categoryId = id),
                   ),

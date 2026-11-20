@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:family_groceries/design/field_border.dart';
+import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -8,7 +9,9 @@ import 'package:material_ui/material_ui.dart';
 /// while [save] runs and when it answers false (a name taken, offline), so
 /// the name can be fixed. [validate] answers why a name cannot be saved
 /// (taken), shown under the field, or null. An empty name closes it without
-/// saving.
+/// saving. [below] shows under the field as the name is typed (job 313's
+/// chain suggestions); its `submit` saves a name the way the confirm button
+/// does, with its own `save`.
 Future<void> showNameDialog(
   BuildContext context, {
   required String title,
@@ -18,6 +21,7 @@ Future<void> showNameDialog(
   String? Function(String name)? validate,
   String initial = '',
   int maxLength = 60,
+  NameDialogBelow? below,
 }) => showDialog<void>(
   context: context,
   builder: (_) => _NameDialog(
@@ -28,7 +32,14 @@ Future<void> showNameDialog(
     validate: validate,
     initial: initial,
     maxLength: maxLength,
+    below: below,
   ),
+);
+
+/// Content under the name dialog's field for the [text] typed so far.
+typedef NameDialogBelow = Widget Function(
+  String text,
+  void Function(String name, Future<bool> Function(String name) save) submit,
 );
 
 class const _NameDialog({
@@ -39,6 +50,7 @@ class const _NameDialog({
   required final String? Function(String name)? validate,
   required final String initial,
   required final int maxLength,
+  required final NameDialogBelow? below,
 }) extends StatefulWidget {
   @override
   State<_NameDialog> createState() => _NameDialogState();
@@ -56,11 +68,14 @@ class _NameDialogState() extends State<_NameDialog> {
     super.dispose();
   }
 
-  Future<void> _submit() async {
+  Future<void> _submit(
+    String typed,
+    Future<bool> Function(String name) save,
+  ) async {
     if (_busy) {
       return;
     }
-    final name = _name.text.trim();
+    final name = typed.trim();
     if (name.isEmpty) {
       Navigator.of(context).pop();
       return;
@@ -70,7 +85,7 @@ class _NameDialogState() extends State<_NameDialog> {
       return;
     }
     setState(() => _busy = true);
-    final saved = await widget.save(name);
+    final saved = await save(name);
     if (!mounted) {
       return;
     }
@@ -80,6 +95,23 @@ class _NameDialogState() extends State<_NameDialog> {
       setState(() => _busy = false);
     }
   }
+
+  Widget _withBelow(Widget field) => switch (widget.below) {
+    null => field,
+    final below => Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      spacing: HlSpace.s2,
+      children: [
+        field,
+        ListenableBuilder(
+          listenable: _name,
+          builder: (_, _) =>
+              below(_name.text, (name, save) => unawaited(_submit(name, save))),
+        ),
+      ],
+    ),
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -100,31 +132,33 @@ class _NameDialogState() extends State<_NameDialog> {
       child: AlertDialog(
         scrollable: true,
         title: Text(widget.title),
-        content: LabeledField(
-          key: _field,
-          label: widget.label,
-          field: Semantics(
-            hint: _error ?? '',
-            child: TextField(
-              autofillHints: null,
-              key: const ValueKey('name-dialog-field'),
-              controller: _name,
-              autofocus: true,
-              readOnly: _busy,
-              maxLength: widget.maxLength,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: InputDecoration(
-                error: switch (_error) {
-                  final e? => FieldError(e),
-                  null => null,
+        content: _withBelow(
+          LabeledField(
+            key: _field,
+            label: widget.label,
+            field: Semantics(
+              hint: _error ?? '',
+              child: TextField(
+                autofillHints: null,
+                key: const ValueKey('name-dialog-field'),
+                controller: _name,
+                autofocus: true,
+                readOnly: _busy,
+                maxLength: widget.maxLength,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: InputDecoration(
+                  error: switch (_error) {
+                    final e? => FieldError(e),
+                    null => null,
+                  },
+                ),
+                onChanged: (_) {
+                  if (_error != null) {
+                    setState(() => _error = null);
+                  }
                 },
+                onSubmitted: (_) => unawaited(_submit(_name.text, widget.save)),
               ),
-              onChanged: (_) {
-                if (_error != null) {
-                  setState(() => _error = null);
-                }
-              },
-              onSubmitted: (_) => unawaited(_submit()),
             ),
           ),
         ),
@@ -138,7 +172,9 @@ class _NameDialogState() extends State<_NameDialog> {
             ),
             FilledButton(
               key: const ValueKey('name-dialog-confirm'),
-              onPressed: _busy ? null : () => unawaited(_submit()),
+              onPressed: _busy
+                  ? null
+                  : () => unawaited(_submit(_name.text, widget.save)),
               child: Text(widget.confirm),
             ),
           ])

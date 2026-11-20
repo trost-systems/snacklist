@@ -4,6 +4,7 @@ import 'package:family_groceries/list/add_sheet/suggestion.dart';
 import 'package:family_groceries/list/catalog/household_index.dart';
 import 'package:family_groceries/list/dictation.dart';
 import 'package:family_groceries/list/model.dart';
+import 'package:family_groceries/list/retailer.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 enum ConnectionStatus() {
@@ -73,6 +74,31 @@ abstract interface class ListRepository() {
 
   /// Its items fall back to no store.
   Future<void> deleteStore(String id);
+
+  /// The chains whose name or alias matches the store name [name], those
+  /// of [country] first (`public.match_retailers`, job 313): at most five,
+  /// exact matches before prefixes. Throws when the server can't be
+  /// reached.
+  Future<List<RetailerMatch>> matchRetailers(String name, String country);
+
+  /// The registry's chains by name, of [country] only when given (the
+  /// chain picker). Throws when the server can't be reached.
+  Future<List<Retailer>> listRetailers({String? country});
+
+  /// Links the store to [retailer] with its [app] (an android package of
+  /// the chain's apps, none for the default), or with none unlinks it; the
+  /// store counts as answered either way (`public.answer_store_retailer`).
+  Future<void> answerStoreRetailer(
+    String storeId,
+    Retailer? retailer, {
+    String? app,
+  });
+
+  /// The household's stores to ask „Ist das …?“ about once, each with the
+  /// chains with an app its name matches exactly, those of [country]
+  /// first (`public.retailer_questions`). Throws when the server can't be
+  /// reached.
+  Future<List<StoreQuestion>> retailerQuestions(String country);
 
   /// Splits one typed entry into its fields with the server's parser.
   /// Throws when the server can't be reached.
@@ -210,6 +236,10 @@ class SupabaseListRepository(
       'categorized_via, canonical_key, list_id, price_unit_micros, '
       'price_basis, price_per, price_currency, priced_at';
 
+  static const _storeColumns =
+      'id, name, sort_order, seed_key, retailer_app, retailer_answered, '
+      'retailer:retailers(chain, country, name, apps)';
+
   @override
   Future<Catalog> fetchCatalog() => _answered(() async {
     final categories = _sent(
@@ -222,7 +252,7 @@ class SupabaseListRepository(
     final stores = _sent(
       _client.rest
           .from('stores')
-          .select('id, name, sort_order, seed_key')
+          .select(_storeColumns)
           .eq('household_id', householdId)
           .order('sort_order', ascending: true),
     );
@@ -375,6 +405,63 @@ class SupabaseListRepository(
   Future<void> deleteStore(String id) => _refusable(
     () => _client.rpc<void>('delete_store', params: {'p_store': id}),
   );
+
+  @override
+  Future<List<RetailerMatch>> matchRetailers(String name, String country) =>
+      _answered(() async {
+        final rows = await _client.rpc<List<dynamic>>(
+          'match_retailers',
+          params: {'p_name': name, 'p_country': country},
+        );
+        return [
+          for (final row in rows.whereType<Map<String, dynamic>>())
+            RetailerMatch.fromJson(row),
+        ];
+      });
+
+  @override
+  Future<List<Retailer>> listRetailers({String? country}) =>
+      _answered(() async {
+        var query = _client.rest
+            .from('retailers')
+            .select('chain, country, name, apps');
+        if (country != null) {
+          query = query.eq('country', country);
+        }
+        final rows = await query
+            .order('name', ascending: true)
+            .order('country', ascending: true);
+        return rows.map(Retailer.fromJson).toList();
+      });
+
+  @override
+  Future<void> answerStoreRetailer(
+    String storeId,
+    Retailer? retailer, {
+    String? app,
+  }) => _refusable(
+    () => _client.rpc<void>(
+      'answer_store_retailer',
+      params: {
+        'p_store': storeId,
+        'p_chain': retailer?.chain,
+        'p_country': retailer?.country,
+        'p_app': retailer == null ? null : app,
+      },
+    ),
+  );
+
+  @override
+  Future<List<StoreQuestion>> retailerQuestions(String country) =>
+      _answered(() async {
+        final rows = await _client.rpc<List<dynamic>>(
+          'retailer_questions',
+          params: {'p_household': householdId, 'p_country': country},
+        );
+        return StoreQuestion.group(
+          rows.whereType<Map<String, dynamic>>().toList(),
+        );
+      });
 
   @override
   Future<ParsedEntry> parse(String text) => _answered(() async {

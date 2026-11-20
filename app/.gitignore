@@ -49,3 +49,4 @@ app.*.map.json
 
 # Golden diff output (flutter test on a golden mismatch).
 test/design/failures/
+test/**/failures/

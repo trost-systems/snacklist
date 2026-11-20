@@ -1409,10 +1409,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get storeHardware => 'Baumarkt';
 
   @override
-  String get storesDisclaimer =>
-      'Ladennamen wie dm, Lidl oder EDEKA verwenden wir nur, damit du erkennst, für welchen Laden eine Liste gedacht ist. Die Namen und Marken gehören den jeweiligen Unternehmen. Snacklist ist ein unabhängiges Angebot und steht in keiner Verbindung zu diesen Unternehmen. Sie unterstützen oder empfehlen Snacklist nicht.';
-
-  @override
   String get skipStores => 'Überspringen';
 
   @override
@@ -3764,4 +3760,130 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get reportDone => 'Fertig';
+
+  @override
+  String storeAppOpen(String app) {
+    return '$app öffnen';
+  }
+
+  @override
+  String countryName(String code) {
+    String _temp0 = intl.Intl.selectLogic(code, {
+      'DE': 'Deutschland',
+      'AT': 'Österreich',
+      'CH': 'Schweiz',
+      'FR': 'Frankreich',
+      'NL': 'Niederlande',
+      'PL': 'Polen',
+      'IT': 'Italien',
+      'ES': 'Spanien',
+      'other': '$code',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String chainQuestionOne(String chain, String country) {
+    return 'Ist das $chain ($country)?';
+  }
+
+  @override
+  String chainQuestionOneExisting(String store, String chain, String country) {
+    return 'Ist dein „$store“ die Kette $chain ($country)?';
+  }
+
+  @override
+  String chainQuestionApp(String app) {
+    return 'Dann kannst du $app direkt aus der Liste öffnen.';
+  }
+
+  @override
+  String get chainQuestionYes => 'Ja';
+
+  @override
+  String get chainQuestionKeep => 'Nein, so lassen';
+
+  @override
+  String get chainQuestionNo => 'Nein';
+
+  @override
+  String chainQuestionWhich(String store) {
+    return 'Welches $store?';
+  }
+
+  @override
+  String chainQuestionWhichExisting(String store) {
+    return 'Welche Kette ist dein „$store“?';
+  }
+
+  @override
+  String get chainQuestionNone => 'Keins davon';
+
+  @override
+  String chainWithCountry(String chain, String country) {
+    return '$chain ($country)';
+  }
+
+  @override
+  String get storeAppTip => 'Öffnet die App des Ladens.';
+
+  @override
+  String chainCardProgress(int index, int total) {
+    return '$index / $total';
+  }
+
+  @override
+  String chainCardProgressLabel(int index, int total) {
+    return 'Laden $index von $total';
+  }
+
+  @override
+  String chainSuggestionPick(String chain, String country) {
+    return '$chain ($country) wählen';
+  }
+
+  @override
+  String get storeAppCardTitle => 'App';
+
+  @override
+  String get storeAppCardOpen => 'Öffnen';
+
+  @override
+  String get storeAppCardChoose => 'Welche App soll sich öffnen?';
+
+  @override
+  String storeChainLinked(String chain, String country) {
+    return 'Zugeordnet: $chain · $country';
+  }
+
+  @override
+  String get storeChainChange => 'Ändern';
+
+  @override
+  String get storeChainChangeLabel => 'Kette ändern';
+
+  @override
+  String get storeChainUnlink => 'Zuordnung aufheben';
+
+  @override
+  String get storeChainUnlinkLabel => 'Zuordnung zur Kette aufheben';
+
+  @override
+  String get storeChainConnect => 'Kette zuordnen';
+
+  @override
+  String get storeChainPickerTitle => 'Kette wählen';
+
+  @override
+  String get storeChainPickerSearch => 'Kette suchen';
+
+  @override
+  String get storeChainPickerEmpty => 'Keine Kette gefunden.';
+
+  @override
+  String get migrateBody =>
+      'Erkannte Läden können einen Knopf für ihre App zeigen. Die Namen bleiben, wie du sie geschrieben hast.';
+
+  @override
+  String get migrateDone => 'Zugeordnet';
 }

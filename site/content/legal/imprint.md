@@ -4,7 +4,7 @@ description: "Imprint of Snacklist: provider, address and contact."
 locale: en
 path: /en/imprint
 translation_key: imprint
-updated: 2026-11-17
+updated: 2026-11-20
 ---
 
 # Imprint
@@ -39,9 +39,9 @@ Yalovastr. 5
 72108 Rottenburg am Neckar
 Germany
 
-## Shop names
+## Shop names {#shop-names}
 
-We use shop names such as dm, Lidl or EDEKA only so you can see which shop a list is for. The names and trade marks belong to their owners. Snacklist is independent and isn't affiliated with, sponsored or endorsed by these companies.
+We use shop names such as dm, Lidl or EDEKA, and the names of their apps, only so you can see which shop a list is for and open the shop's app from Snacklist. The names and trade marks belong to their owners. Snacklist is independent and isn't affiliated with, sponsored or endorsed by these companies. We don't show their logos.
 
 ## Trademarks
 

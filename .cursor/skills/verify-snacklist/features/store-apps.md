@@ -1,0 +1,41 @@
+# Store apps and chains
+
+Behind the PostHog flag `open-store-app` (off for users; job 313), a store can be matched to a grocery chain („zugeordnet“, never „verbunden“: Legal N-293) in the household's region or another country (Lidl, ALDI Nord, ALDI SÜD, EDEKA, Netto Marken-Discount, REWE, Kaufland, PENNY, dm, Rossmann in Germany, plus 49 more chains in AT, CH, FR, NL, PL, IT and ES). A matched store whose chain has an app gets a key in its list header and an „App“ card on its screen that open the chain's app: on Android the installed app (else its Play page), on iPhone its universal link where the chain has one (else the App Store page, where „Öffnen“ starts an installed app), in the web app the app's store page in a new tab (the App Store's in an iPhone's browser, else Google Play's), never the chain's own site: nothing reaches the chain (Legal N-296). Stores are matched where they are made: chains are offered while the name is typed, and a plain name that is a chain's asks „Ist das Lidl (Deutschland)?“ once. Stores made before are asked once from a card on the list. The store's own name never changes. Chains are plain text names, no logos, no disclaimer line (the store-name note lives only in the Impressum, Legal N-292).
+
+## Sub-features
+
+- `sa-header-key` (flag on) a matched store whose chain has an app: an icon key (open in new) last in its list header, after the count and the plain caret, 48 px, accessible name „<App> öffnen“ / "Open <App>" („Lidl Plus öffnen“). A tap opens the app (see above) and never folds the section; a hold does nothing. Stores without a chain or app show no key. Folded sections keep their key.
+- `sa-tip` (flag on) once, under the first header that has a key: „Öffnet die App des Ladens.“ / "Opens the store's app." with an X („Schließen“). Gone for good on this device and household after the X or the first key tap.
+- `sa-large-text` from 200 % text the header's count shows as a number only („2“); the accessible name keeps „2 Artikel“. Nothing overflows at 310 %, with or without the key.
+- `sa-suggest` (flag on) typing a new store's name (Liste → „Anpassen“ → „Laden hinzufügen“, and „+ Neuer Laden“ in the add sheet's and the edit sheet's store options) shows up to three chains under the field from the second letter: name, country, app. Accessible name „<Chain> (<Land>) wählen“ / "Choose <Chain> (<Country>)". The browser's or phone's region comes first, then every country („Hofer“ on a German phone finds HOFER · Österreich). A tap makes the store matched; its name is the chain's when the typed text only began it („Re“ → „REWE“), else the typed text.
+- `sa-ask` (flag on) saving a plain name that names a chain („Lidl“, „Lidl am Markt“) asks once: „Ist das Lidl (Deutschland)?“ / "Is this Lidl (Germany)?" with „Dann kannst du Lidl Plus direkt aus der Liste öffnen.“, „Ja“ and „Nein, so lassen“. A name of two chains („Aldi“) asks „Welches Aldi?“ with one button per chain and „Keins davon“. On the stores page it is a dialog after the name dialog closes; in the add sheet it replaces the name field, the new store already picked for the item. Closing without an answer leaves the store unasked (the list card may ask). A name of no chain („Wochenmarkt“) is saved as before, no question.
+- `sa-card` (flag on) stores that are not matched, not answered, and whose name names a chain with an app get a card at the top of the list, one store at a time with „1 / 2“: „Ist dein „Lidl“ die Kette Lidl (Deutschland)?“ with Legal's line „Erkannte Läden können einen Knopf für ihre App zeigen. Die Namen bleiben, wie du sie geschrieben hast.“ and „Ja“ / „Nein“ (two chains: „Welche Kette ist dein „Aldi“?“, a button each, „Keins davon“). An answer is stored for the household and never asked again; „Ja“ is announced „Zugeordnet“ / "Matched". No card offline, behind the open add sheet, or with the flag off.
+- `sa-store-screen` (flag on) a store's details: under its name, for a matched store with an app, an „App“ card with the app's name and „Öffnen“ (accessible name „<App> öffnen“). Under it the chain line „Zugeordnet: Lidl · Deutschland“ / "Matched: Lidl · Germany" with „Ändern“ („Kette ändern“) and „Zuordnung aufheben“ („Zuordnung zur Kette aufheben“); a store without a chain shows „Kette zuordnen“ / "Match to a chain", which opens the chain picker: a search „Kette suchen“, the region's chains first, typed text finds every country's chains and aliases. „Ohne Laden“ shows none of it.
+- `sa-app-choice` (flag on) a chain with two apps (BILLA and jö Bonus Club, Hofer and Unser HOFER, Leclerc and Leclerc DRIVE, and others) shows „Welche App soll sich öffnen?“ with a radio per app on the store's App card; the first is the chain's loyalty or coupon app. The choice is the store's, shared with the household, and the header key's name follows it („jö Bonus Club öffnen“).
+- `sa-analytics` a key or „Öffnen“ that opened something sends `store_app_opened` with the chain id, its country and app or store page (`outcome`), never the store's name (after the usage-data yes only; privacy §9 names it „Laden-App geöffnet“).
+
+## How to get to it (user POV)
+
+- List tab: the key at the end of a matched store's header; the card at the top asks about older stores.
+- Liste → „Anpassen“ → „Laden hinzufügen“: type, tap a chain or press Enter.
+- Add sheet: type an item, tap the store chip („Laden: …“), „Neuer Laden“ („Neuen Laden anlegen“), type the name.
+- Liste → „Anpassen“ → a store: the „App“ card, the app choice and the chain line.
+
+## Driving it with Playwright
+
+Preconditions: the flag on through the PostHog fake (`fakeCollector(context, { flags: { 'open-store-app': true } })` in `e2e/tests/helpers.ts`); the browser locale de-DE is the region. Route `https://play.google.com/**` and `https://apps.apple.com/**` in the context so a key's new tab stays local. `e2e/tests/store-apps.spec.ts` covers every sub-feature but `sa-large-text` and `sa-analytics` (widget tests: `app/test/list/store_header_test.dart`, `app/test/list/store_app_test.dart`).
+
+- Suggest: „Laden hinzufügen“, `typeInto(getByRole('textbox', { name: 'Name des Ladens' }), 'Re')` → button „REWE (Deutschland) wählen“; click → row „REWE“ on „Läden“, no dialog.
+- Ask: type „Lidl am Markt“, Enter → text „Ist das Lidl (Deutschland)?“ → „Ja“; the store's details then read „Zugeordnet: Lidl · Deutschland“ and show „Lidl Plus“ with the button „Lidl Plus öffnen“.
+- Open: `context.waitForEvent('page')` around a click on „Lidl Plus öffnen“ (store screen or list header) → the new tab's URL is `https://play.google.com/store/apps/details?id=com.lidl.eci.lidlplus` (Chromium's user agent is no iPhone).
+- App choice: a store answered „Ja“ for „Billa“ (BILLA, Österreich) → details → `getByRole('radio', { name: 'jö Bonus Club' })` (in the radiogroup „Welche App soll sich öffnen?“) → button „jö Bonus Club öffnen“; after a reload the list header's key has that name.
+- Card: a household made with the stores Lidl, dm and Baumarkt → text „Ist dein „Lidl“ die Kette Lidl (Deutschland)?“ and „1 / 2“ → „Ja“ → „dm“ asked → „Nein“ → no card, also after a reload.
+- Server read-back: `stores.retailer_chain`, `retailer_country`, `retailer_app`, `retailer_answered` (`apiAs` select), or `rpc('match_retailers', { p_name, p_country })`.
+
+## Gotchas
+
+- Flag off: no key, tip, card, suggestions, question, App card or chain line; the header's plain caret is everyone's (stores-walk-order).
+- The web app opens the app's store page, not an app; Android and iPhone behaviour is in the code and unit tests only (no device on the box). Unverified on a device: Android's launch without a package query, and which screen the 21 universal links open.
+- Answers are per store: once a store is answered („Nein“ too), neither card nor question asks again; only the store screen's chain line changes it.
+- Adding stores needs a connection; offline no chains are offered and typing works as before.
+- The registry is `supabase/retailers/retailers.json` (59 entries, 68 apps); a chain's or country's id must also be in the app's analytics allow-list (the lint gate checks).

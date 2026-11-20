@@ -1,11 +1,15 @@
 import 'dart:async';
 
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/design/hex_pill.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
+import 'package:family_groceries/list/chain_question.dart';
+import 'package:family_groceries/list/chain_suggestions.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/name_dialog.dart';
+import 'package:family_groceries/list/retailer.dart';
 import 'package:family_groceries/shell/router.dart';
 import 'package:family_groceries/shell/shell.dart';
 import 'package:flutter/semantics.dart';
@@ -70,13 +74,32 @@ class const StoresScreen({super.key}) extends StatelessWidget {
     }
   }
 
-  /// A name the household has already stays in the dialog, with why.
-  Future<void> _add(BuildContext context) {
+  /// A name the household has already stays in the dialog, with why. With
+  /// [chains] (job 313) matching chains show under the field, and a plain
+  /// name that is a chain's is asked about once the dialog has closed.
+  Future<void> _add(BuildContext context, {required bool chains}) async {
     final l10n = AppLocalizations.of(context);
     final cubit = context.read<ListCubit>();
     final view = View.of(context);
     final direction = Directionality.of(context);
-    return showNameDialog(
+    final storeChains = StoreChains.of(cubit);
+    // The plain name saved and its exact chains, looked up as it saves.
+    (Store, Future<List<RetailerMatch>>)? asked;
+    bool saved(Store? store) {
+      if (store == null) {
+        return false;
+      }
+      unawaited(
+        SemanticsService.sendAnnouncement(
+          view,
+          l10n.storeAdded(store.name),
+          direction,
+        ),
+      );
+      return true;
+    }
+
+    await showNameDialog(
       context,
       title: l10n.storeAdd,
       confirm: l10n.storeCreateConfirm,
@@ -87,20 +110,33 @@ class const StoresScreen({super.key}) extends StatelessWidget {
         null => null,
       },
       save: (name) async {
+        final matches = chains
+            ? storeChains.match(name)
+            : Future.value(const <RetailerMatch>[]);
         final store = await cubit.addStore(name);
-        if (store == null) {
-          return false;
+        if (store != null) {
+          asked = (store, matches);
         }
-        unawaited(
-          SemanticsService.sendAnnouncement(
-            view,
-            l10n.storeAdded(store.name),
-            direction,
-          ),
-        );
-        return true;
+        return saved(store);
       },
+      below: chains
+          ? (text, submit) => ChainSuggestions(
+              text: text,
+              match: storeChains.match,
+              onPick: (m) => submit(
+                m.storeName(text),
+                (name) async =>
+                    saved(await storeChains.addLinked(name, m.retailer)),
+              ),
+            )
+          : null,
     );
+    if (asked case (final store, final matches)?) {
+      final chainsOfName = exactChains(await matches);
+      if (chainsOfName.isNotEmpty && context.mounted) {
+        await askChain(context, store, chainsOfName, storeChains.answer);
+      }
+    }
   }
 
   @override
@@ -110,11 +146,14 @@ class const StoresScreen({super.key}) extends StatelessWidget {
     final stores = context.select<ListCubit, List<Store>>(
       (c) => c.state.catalog.stores,
     );
+    final chains = context.select<Flags?, bool>(
+      (f) => f?.isOn(openStoreAppFlag) ?? false,
+    );
     return Scaffold(
       appBar: AppBar(title: Text(l10n.storesTitle)),
       floatingActionButton: AddButton(
         key: const ValueKey('store-add'),
-        onPressed: () => unawaited(_add(context)),
+        onPressed: () => unawaited(_add(context, chains: chains)),
         label: l10n.storeAdd,
       ),
       body: Align(

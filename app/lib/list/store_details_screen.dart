@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/design/field_border.dart';
 import 'package:family_groceries/design/hex_pill.dart';
 import 'package:family_groceries/design/tokens.g.dart';
@@ -9,6 +10,7 @@ import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_view/item_icon.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/name_dialog.dart';
+import 'package:family_groceries/list/store_chain_section.dart';
 import 'package:family_groceries/list/stores_screen.dart';
 import 'package:family_groceries/shell/router.dart';
 import 'package:family_groceries/shell/shell.dart';
@@ -52,6 +54,9 @@ class const StoreDetailsScreen({required final String? storeId, super.key})
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     final stops = walkingOrder(catalog, id);
+    final chains = context.select<Flags?, bool>(
+      (f) => f?.isOn(openStoreAppFlag) ?? false,
+    );
 
     void reorder(int from, int to) {
       final next = [...stops];
@@ -101,6 +106,7 @@ class const StoreDetailsScreen({required final String? storeId, super.key})
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 if (store != null) _StoreName(store),
+                if (store != null && chains) StoreChainSection(store),
                 // With HexPill.margin's s1, s4 above and below the intro,
                 // as on the stores screen.
                 Padding(

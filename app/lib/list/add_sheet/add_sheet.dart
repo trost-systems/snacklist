@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/environment.dart';
 import 'package:family_groceries/core/theme.dart';
 import 'package:family_groceries/design/motion.dart';
@@ -9,6 +10,7 @@ import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/add_sheet/add_sheet_cubit.dart';
 import 'package:family_groceries/list/add_sheet/suggestion.dart';
+import 'package:family_groceries/list/chain_suggestions.dart';
 import 'package:family_groceries/list/edit_item_sheet.dart';
 import 'package:family_groceries/list/foldout_chips.dart';
 import 'package:family_groceries/list/list_cubit.dart';
@@ -443,6 +445,9 @@ class _ContentState() extends State<_Content> {
     final sheet = cubit.state;
     final list = context.watch<ListCubit>();
     final catalog = list.state.catalog;
+    final chains = context.select<Flags?, bool>(
+      (f) => f?.isOn(openStoreAppFlag) ?? false,
+    );
     final rows = _held ?? sheetRows(sheet, list);
     _built = rows;
     final rowKeys = _rowKeys(rows, byContent: cubit.stableRows);
@@ -491,6 +496,7 @@ class _ContentState() extends State<_Content> {
                       list,
                       onPicked,
                       onClose,
+                      chains,
                     ),
                     () => FoldoutChips(
                       catalog: catalog,
@@ -507,6 +513,7 @@ class _ContentState() extends State<_Content> {
                           sheet.category != null &&
                           sheet.category != first?.categoryId,
                       onCreateStore: list.addStore,
+                      chains: chains ? StoreChains.of(list) : null,
                       onStore: (id) {
                         context.read<AddSheetCubit>().pickStore(id);
                         onPicked();
@@ -1260,6 +1267,9 @@ class _AddedDetailsState() extends State<_AddedDetails> {
     final catalog = list.state.catalog;
     final sheet = context.read<AddSheetCubit>();
     final item = widget.item;
+    final chains = context.select<Flags?, bool>(
+      (f) => f?.isOn(openStoreAppFlag) ?? false,
+    );
     return Padding(
       padding: const EdgeInsets.only(top: 4, bottom: 12),
       child: ItemDetailFields(
@@ -1279,6 +1289,7 @@ class _AddedDetailsState() extends State<_AddedDetails> {
           storeLabel: l10n.noStore,
           categoryLabel: l10n.categoryAuto,
           onCreateStore: list.addStore,
+          chains: chains ? StoreChains.of(list) : null,
           onStore: (id) {
             sheet.editDetails(ItemChanges(storeId: SetTo(id)), now: true);
             widget.onDone();

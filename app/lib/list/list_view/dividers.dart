@@ -1,5 +1,4 @@
 import 'package:family_groceries/design/section_label.dart';
-import 'package:family_groceries/design/tactile.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/category_names.dart';
@@ -9,13 +8,15 @@ import 'package:family_groceries/list/list_view/item_row.dart';
 import 'package:family_groceries/list/list_view/leaving_rows.dart';
 import 'package:family_groceries/list/list_view/sections.dart';
 import 'package:family_groceries/list/model.dart';
-import 'package:family_groceries/list/store_badge.dart';
+import 'package:family_groceries/list/retailer.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// A section's divider: the store's badge (its name), a brand-coloured
-/// rule, the count and a caret. A tap folds or unfolds the section and does
-/// nothing else; a hold is not an edit (Peter, job 171), the store's details
-/// are under Liste → Anpassen.
+/// A section's divider, laid out like „Zuletzt verwendet“'s header: the
+/// store's name as plain text, a brand-coloured rule, the count and a plain
+/// caret. A tap folds or unfolds the section and does nothing else; a hold
+/// is not an edit (Peter, job 171), the store's details are under Liste →
+/// Anpassen. With [app] (flag `open-store-app`, job 313) a key after the
+/// caret opens the store's app: its own target, outside the fold.
 class const StoreDivider({
   required final StoreSection section,
 
@@ -23,13 +24,16 @@ class const StoreDivider({
   required final bool folded,
   required final LeavingRows leaving,
   required final VoidCallback onToggle,
+  final RetailerApp? app,
+  final VoidCallback? onOpenApp,
   super.key,
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final name = section.store?.name ?? l10n.noStore;
-    final divider = Semantics(
+    final app = this.app;
+    final fold = Semantics(
       container: true,
       button: true,
       expanded: !folded,
@@ -44,14 +48,70 @@ class const StoreDivider({
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: onToggle,
-          child: _Head(section: section, name: name, folded: folded),
+          child: _Head(
+            section: section,
+            name: name,
+            folded: folded,
+            keyed: app != null,
+          ),
         ),
       ),
     );
     return _ClosesWithRows(
       items: [for (final block in section.blocks) ...block.items],
       leaving: leaving,
-      child: divider,
+      child: app == null
+          ? fold
+          : Row(
+              children: [
+                Expanded(child: fold),
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(
+                    start: 10,
+                    end: HlSpace.s1,
+                  ),
+                  child: _AppKey(
+                    key: ValueKey('store-app-${section.key}'),
+                    app: app,
+                    onOpen: onOpenApp ?? () {},
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+}
+
+/// The open-in-new key: a 48 px target with the app's name for screen
+/// readers. A hold claims the press, as the header's does, so its release
+/// opens nothing.
+class const _AppKey({
+  required final RetailerApp app,
+  required final VoidCallback onOpen,
+  super.key,
+}) extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final t = SnacklistColors.of(Theme.of(context).brightness);
+    // A label, not a tooltip: on the web a showing tooltip moves the
+    // route's semantics.
+    return Semantics(
+      container: true,
+      button: true,
+      label: AppLocalizations.of(context).storeAppOpen(app.name),
+      excludeSemantics: true,
+      onTap: onOpen,
+      child: Hold(
+        onHold: () {},
+        child: SizedBox.square(
+          dimension: HlSize.target,
+          child: IconButton(
+            onPressed: onOpen,
+            padding: EdgeInsets.zero,
+            icon: Icon(Icons.open_in_new, size: 22, color: t.brand),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -60,11 +120,14 @@ class const _Head({
   required final StoreSection section,
   required final String name,
   required final bool folded,
+
+  /// The app key follows outside the fold area, with its own padding.
+  required final bool keyed,
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     constraints: const BoxConstraints(minHeight: 52),
-    padding: const EdgeInsets.fromLTRB(18, 2, 10, 2),
+    padding: EdgeInsetsDirectional.fromSTEB(18, 2, keyed ? 0 : 24, 2),
     child: _row(context),
   );
 
@@ -75,6 +138,9 @@ class const _Head({
     final t = SnacklistColors.of(scheme.brightness);
     final tint = store == null ? scheme.outline : t.brand;
     final reduce = MediaQuery.disableAnimationsOf(context);
+    // From 200 % the word would take the room the name needs; the
+    // screen reader label keeps it.
+    final numberOnly = MediaQuery.textScalerOf(context).scale(1) >= 2;
     return LayoutBuilder(
       builder: (context, outer) => Row(
         spacing: 10,
@@ -84,13 +150,24 @@ class const _Head({
               builder: (context, constraints) => Row(
                 spacing: 10,
                 children: [
-                  // The badge is the store's name; "no store" gets a neutral
-                  // one of the same shape. The name comes before the line,
-                  // which may shrink to nothing at large text.
-                  StoreBadge(
-                    store ?? Store(id: '', name: name, sortOrder: 0),
-                    height: 32,
-                    maxWidth: (constraints.maxWidth - 10).clamp(0, 1e9),
+                  // The name as „Zuletzt verwendet“ shows its title (Peter,
+                  // job 313): plain text in ListTile's title style. It comes
+                  // before the line, which may shrink to nothing at large
+                  // text, and wraps once before it is cut.
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: (constraints.maxWidth - 10).clamp(0, 1e9),
+                    ),
+                    child: Text(
+                      name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: store == null
+                            ? scheme.onSurfaceVariant
+                            : scheme.onSurface,
+                      ),
+                    ),
                   ),
                   Expanded(
                     child: Container(
@@ -106,7 +183,7 @@ class const _Head({
             ),
           ),
           // At most half the row, so large text wraps the count instead of
-          // squeezing the store's badge to nothing.
+          // squeezing the store's name to nothing.
           ConstrainedBox(
             constraints: BoxConstraints(maxWidth: outer.maxWidth / 2),
             child: Text.rich(
@@ -124,7 +201,8 @@ class const _Head({
                       fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                   ),
-                  TextSpan(text: ' ${l10n.itemsWord(section.count)}'),
+                  if (!numberOnly)
+                    TextSpan(text: ' ${l10n.itemsWord(section.count)}'),
                 ],
               ),
               style: TextStyle(
@@ -134,31 +212,58 @@ class const _Head({
               ),
             ),
           ),
-          // The fold key: a raised hex the size of a target, like the add
-          // sheet's keys, so the control reads as one. The whole row taps.
-          SizedBox.fromSize(
-            size: const Size(52, HlSize.target),
-            child: TactileFace(
-              states: const {},
-              colors: TactileColors(
-                face: t.surfaceRaised,
-                contour: t.border,
-                edge: t.surfaceEdge,
-                focus: t.accent,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  bottom: raisedFaces ? HlDepth.edge : 0,
-                ),
-                child: Center(
-                  child: AnimatedRotation(
-                    turns: folded ? -0.25 : 0,
-                    duration: reduce ? Duration.zero : HlDuration.short,
-                    curve: HlEasing.standard,
-                    child: Icon(Icons.expand_more, size: 24, color: t.text),
-                  ),
-                ),
-              ),
+          // ExpansionTile's caret: plain, in its collapsed colour. The whole
+          // row taps.
+          AnimatedRotation(
+            turns: folded ? -0.25 : 0,
+            duration: reduce ? Duration.zero : HlDuration.short,
+            curve: HlEasing.standard,
+            child: Icon(
+              Icons.expand_more,
+              size: 24,
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The one-time tip under the first header with an app key (job 313):
+/// the key's icon, what it does, and a close X. A line outside the
+/// header, not a pill.
+class const StoreAppTip({required final VoidCallback onClose, super.key})
+    extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final t = SnacklistColors.of(scheme.brightness);
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(start: 18, end: HlSpace.s1),
+      child: Row(
+        spacing: HlSpace.s2,
+        children: [
+          ExcludeSemantics(
+            child: Icon(Icons.open_in_new, size: 18, color: t.brand),
+          ),
+          Expanded(
+            child: Text(
+              l10n.storeAppTip,
+              style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
+            ),
+          ),
+          Semantics(
+            container: true,
+            button: true,
+            label: l10n.close,
+            excludeSemantics: true,
+            onTap: onClose,
+            child: IconButton(
+              key: const ValueKey('store-app-tip-close'),
+              onPressed: onClose,
+              icon: Icon(Icons.close, color: scheme.onSurfaceVariant),
             ),
           ),
         ],

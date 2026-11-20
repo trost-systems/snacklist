@@ -9,6 +9,7 @@ import 'package:family_groceries/list/list_repository.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/pricing.dart';
 import 'package:family_groceries/list/quantity.dart';
+import 'package:family_groceries/list/retailer.dart';
 
 /// An in-memory server. [online] false makes every call fail like a dropped
 /// connection; [reject] makes the next write fail like a refused one;
@@ -307,6 +308,110 @@ class FakeRepository() implements ListRepository {
 
   /// What parse_item answers for a text; unknown texts parse to their name.
   final parsed = <String, ParsedEntry>{};
+
+  /// The chain registry (`public.retailers`); none by default. Matching
+  /// folds case only: a name or `aliases` entry equal to the typed name, or
+  /// starting it before a space, is exact; one the typed name starts
+  /// (two letters or more) a prefix.
+  var retailers = const <Retailer>[];
+
+  /// Lower-case alias words per registry entry.
+  var aliases = const <({String chain, String country}), List<String>>{};
+
+  /// The countries matchRetailers and retailerQuestions were asked for.
+  final retailerCountries = <String>[];
+
+  /// Like `public.match_retailers`: exact before prefix, [country] first,
+  /// then by name; exact matches of [country] drop other countries'.
+  @override
+  Future<List<RetailerMatch>> matchRetailers(
+    String name,
+    String country,
+  ) async {
+    _ensureOnline();
+    retailerCountries.add(country);
+    return _matches(name, country);
+  }
+
+  List<RetailerMatch> _matches(String name, String country) {
+    final matches = _ranked(name, country);
+    final local = matches.any((m) => m.exact && m.retailer.country == country);
+    return [
+      for (final m in matches)
+        if (!local || !m.exact || m.retailer.country == country) m,
+    ].take(5).toList();
+  }
+
+  List<RetailerMatch> _ranked(String typed, String country) {
+    final key = nameKey(typed);
+    return [
+      for (final r in retailers)
+        if (_words(r) case final words
+            when words.any((w) => key == w || key.startsWith('$w ')))
+          RetailerMatch(r, exact: true)
+        else if (key.length >= 2 && _words(r).any((w) => w.startsWith(key)))
+          RetailerMatch(r, exact: false),
+    ]..sort(
+      (a, b) => [
+        (a.exact ? 0 : 1).compareTo(b.exact ? 0 : 1),
+        (a.retailer.country == country ? 0 : 1).compareTo(
+          b.retailer.country == country ? 0 : 1,
+        ),
+        a.retailer.name.compareTo(b.retailer.name),
+      ].firstWhere((c) => c != 0, orElse: () => 0),
+    );
+  }
+
+  List<String> _words(Retailer r) => [nameKey(r.name), ...?aliases[r.key]];
+
+  @override
+  Future<List<Retailer>> listRetailers({String? country}) async {
+    _ensureOnline();
+    return [
+      for (final r in retailers)
+        if (country == null || r.country == country) r,
+    ]..sort((a, b) => a.name.compareTo(b.name));
+  }
+
+  /// Like `public.answer_store_retailer`: refuses a chain the registry
+  /// lacks and an app that is not one of the chain's.
+  @override
+  Future<void> answerStoreRetailer(
+    String storeId,
+    Retailer? retailer, {
+    String? app,
+  }) async {
+    final entry = retailers.where((r) => r.key == retailer?.key).firstOrNull;
+    if (retailer != null &&
+        (entry == null ||
+            (app != null && !entry.apps.any((a) => a.android == app)))) {
+      _ensureOnline();
+      throw const RejectedOp('invalid_retailer');
+    }
+    _writeCatalog(
+      'answerStoreRetailer($storeId, ${retailer?.chain}, '
+      '${retailer?.country}, $app)',
+    );
+    stores = Catalog(stores: stores)
+        .withStoreRetailer(storeId, entry, app: app)
+        .stores;
+  }
+
+  @override
+  Future<List<StoreQuestion>> retailerQuestions(String country) async {
+    _ensureOnline();
+    retailerCountries.add(country);
+    return [
+      for (final s in stores)
+        if (s.retailer == null && !s.retailerAnswered)
+          if ([
+                for (final m in _matches(s.name, country))
+                  if (m.exact && m.retailer.apps.isNotEmpty) m.retailer,
+              ]
+              case final chains when chains.isNotEmpty)
+            StoreQuestion(storeId: s.id, chains: chains),
+    ];
+  }
 
   @override
   Future<ParsedEntry> parse(String text) async {

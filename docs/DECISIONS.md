@@ -16163,3 +16163,63 @@ internal metadata, not user copy.
   hit-testable before scrolling. With the shorter hint its centre now sits above the home
   indicator while its bottom edge is still below the fold (scroll extent 156 px). The test now
   asserts the bottom edge below the fold, which is what "it scrolls inside the sheet" needs.
+
+## Job 313: open the store's app (DL1) and linking stores to chains (SS)
+
+Peter's picks of 2026-11-19 (t1064u) on job 314's prototypes: OS1 (a key in the store's list header) with OS3's app
+card on the store's screen; SS1 + SS2 (type as today, chains offered, "Is this <chain>?" once) with SS5's rules; the
+other open questions on their defaults. Everything new is behind the PostHog flag `open-store-app` (off) except the
+header restyle. Decisions the picks left open:
+
+1. **The header restyle ships to everyone, as Peter picked it.** His complaint (the fold key takes too much space) is
+   independent of the flag and of Legal. The store's name is plain text in the title style of „Zuletzt verwendet“'s
+   header (ListTile's), then the brand rule, the count and a plain caret. A first version kept the hex name badge;
+   review 0 held Peter's words („match the recently used section's header style“) against it, so the badge went. From
+   200 % text the count is a number only (OS-Q4 measured the cut names at 200 % too).
+2. **The registry lives in Postgres, loaded by a generated migration**, not by a deploy step (SS-Q1 named a deploy
+   upsert). `supabase/retailers/retailers.json` is the source; `scripts/retailers.ts --migration` writes a migration
+   that upserts every entry and deletes the rest, and the lint gate's `--check` fails when the newest one differs from
+   the file. Same outcome (a country added without an app release, MCP and Siri can share it), no new deploy path,
+   and the local stack, CI and production all get it the same way.
+3. **Only signed-in users read `retailers`.** least_privilege.test.sql holds that a signed-out caller reads no table;
+   guests are signed in.
+4. **Matching runs on the server** (`match_retailers`, SS-Q7), called while typing (250 ms after the last key).
+   Adding a store already needs a connection, so offline loses nothing: no suggestions, typing as before.
+5. **Several apps per chain** (Peter changed SS-Q8): `apps[0]` is the loyalty or coupon app and the default; a second
+   app is listed only when both store ids were checked live (10 such apps). The choice is per store
+   (`stores.retailer_app`, an Android package of one of the chain's apps, checked by `answer_store_retailer`).
+6. **No disclaimer line anywhere: L-7 lives only in the Impressum/Imprint (Legal N-292, 2026-11-19).** Peter changed
+   SS-Q9; Legal's answer (lead update 21:10) removed the store-name note from the guided start's and the new
+   household's store steps too, with the ARB key `storesDisclaimer`. In the same PR, word for word from Legal: the
+   imprint's „Ladennamen“ / "Shop names" section with an anchor (N-294), privacy §5 on the stored chain fields
+   (N-296) and §9 on the event „Laden-App geöffnet“ (N-304), dates bumped, no new consent round. Legal's N-293 words:
+   a store is „zugeordnet“ / "matched" to a chain, never „verbunden“ or "linked" (the store screen's line, its
+   buttons „Kette zuordnen“ and „Zuordnung aufheben“, the list card's text). N-295 is skipped (Peter: less text).
+7. **Android starts the app without `<queries>`** (SS-Q5's default, which Peter's "defaults apply" covers, over the
+   DL1 brief's `<queries>` list): starting an activity is not filtered by package visibility, so a chain added later
+   needs no release. No QUERY_ALL_PACKAGES. iOS opens the universal link only when an app claims it, else the App
+   Store page (`itms-apps://`); no URL schemes, nothing in Info.plist. The web build opens the app's store page
+   (the App Store's in an iPhone's browser, else Google Play's), not the chain's site: Legal's privacy text holds
+   only while nothing reaches the chain and the phone opens the app or its store page (N-296's condition).
+8. **Seeded stores (dm, Lidl, EDEKA) are not linked automatically.** They are asked once from the list card like any
+   older store, so a household outside Germany is never linked to a German chain by default.
+9. **The edit sheet's store options offer chains too.** Peter named the add sheet and the stores page; the edit
+   sheet makes stores the same way, and one behaviour for "+ Neuer Laden" everywhere is less to explain.
+10. **`store_app_opened` admits registry ids only.** The analytics allow-list names the chains and countries; the
+    lint gate keeps it equal to the registry, so a chain added there needs an app build before its opens are counted.
+11. **The one-time tip is stored with the household's list settings** on the device, like „Erste Schritte“: a second
+    household shows it once more.
+12. **A question closed without an answer asks again later** (from the list card); „Nein“ is final for that store,
+    and only its chain line on the store's screen changes it.
+13. **SS-Q6's weekly check is built:** `.github/workflows/retailers-verify.yml` runs `scripts/retailers.ts --verify`
+    every Monday and opens (or updates) an issue when an app id or link stops resolving; a green run closes it.
+    Public, read-only requests, no secrets; the token only writes issues, so Deno comes without the Actions cache.
+14. **SS-Q5's device check gates the flag, not the merge.** Its default ends "confirm on a real Android 14 device
+    before DL1 lands". No device or emulator with the retailer apps is reachable from the runners, and the flag is off
+    for users, so the check moves to Peter's first test with the flag on (an internal build), before any rollout.
+    NEEDS_LEAD "Job 313" asks the lead to confirm that order.
+15. **No `branch` column yet** (SS-Q4's default named a nullable one). Nothing writes it in v1; it comes with the first
+    feature that sets a branch, in a migration of its own. Legal's §5 text („falls du sie angibst, die Filiale“) is
+    conditional and stays true; NEEDS_LEAD asks Legal whether to keep it.
+16. **Regions without chains rank Germany first.** A phone or browser region outside the registry's eight countries
+    (an en-US browser) ranks German chains first instead of every country alike, as a missing region already did.

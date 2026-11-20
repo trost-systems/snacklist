@@ -237,14 +237,6 @@ class _CreateHouseholdScreenState() extends State<CreateHouseholdScreen> {
             onCancel: () => setState(() => _naming = false),
           ),
         ],
-        const SizedBox(height: 12),
-        Text(
-          l10n.storesDisclaimer,
-          key: const ValueKey('stores-disclaimer'),
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
         if (problem != null)
           ProblemText(
             householdProblemText(l10n, problem),

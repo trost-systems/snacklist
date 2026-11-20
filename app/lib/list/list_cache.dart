@@ -185,26 +185,34 @@ class const ListPrefs({
   final Set<String> folded = const {},
   final bool hintDismissed = false,
   final String? shownList,
+
+  /// The tip under the first store's app key was closed or the key used
+  /// (job 313).
+  final bool storeAppTipClosed = false,
 }) {
   factory fromJson(Map<String, Object?> json) => ListPrefs(
     folded: {...(json['folded'] as List<Object?>? ?? const []).cast<String>()},
     hintDismissed: json['hint_dismissed'] as bool? ?? false,
     shownList: json['shown_list'] as String?,
+    storeAppTipClosed: json['store_app_tip_closed'] as bool? ?? false,
   );
 
   Map<String, Object?> toJson() => {
     'folded': [...folded],
     'hint_dismissed': hintDismissed,
     'shown_list': ?shownList,
+    if (storeAppTipClosed) 'store_app_tip_closed': true,
   };
 
   ListPrefs copyWith({
     Set<String>? folded,
     bool? hintDismissed,
     String? shownList,
+    bool? storeAppTipClosed,
   }) => ListPrefs(
     folded: folded ?? this.folded,
     hintDismissed: hintDismissed ?? this.hintDismissed,
     shownList: shownList ?? this.shownList,
+    storeAppTipClosed: storeAppTipClosed ?? this.storeAppTipClosed,
   );
 }
