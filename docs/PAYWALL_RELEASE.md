@@ -72,14 +72,15 @@ status are in [`PRODUCT_FEATURE_MAP.md`](PRODUCT_FEATURE_MAP.md).
 | `premium-launch` | `releases/flags.json` hold | `released: false` | 5.6 |
 | PR #153 (privacy section 5a, FAQ, terms draft) | repository | open, not merged | 4.1 |
 | `app_switches.integration_lock` | hosted database | `false` | 6.4 |
-| `INTEGRATION_LOCK` | GitHub variable, `release` environment, and the Vercel project's environment | unset | 6.5 |
+| `premium-gate-integrations` | PostHog feature flag (job 328) | off | 6.5 |
 | `integration-lock` | `releases/flags.json` hold | `released: false` | 6.5 |
 
-Store builds read the four build switches through `app/fastlane/Fastfile`
-(`PREMIUM_DEFINES`) and `.github/workflows/release.yml`. The web build reads
-`INTEGRATION_LOCK` through `scripts/vercel.sh`. The web app never sells, so
-it takes no purchase define. While a variable is unset the build sells
-nothing and locks nothing.
+Store builds read the three build switches through `app/fastlane/Fastfile`
+(`PREMIUM_DEFINES`) and `.github/workflows/release.yml`. The web app never
+sells, so it takes no purchase define. While a variable is unset the build
+sells nothing. The app shows the integration lock only while the PostHog
+flag `premium-gate-integrations` is on (job 328), in every build already
+installed; the servers enforce it only while `integration_lock` is on.
 
 The Home Screen widgets are not part of the lock. They show the list the
 app already has and never call Siri's, Alexa's, the MCP or the API endpoint, so they
@@ -353,10 +354,10 @@ or disconnected. The API's keys keep working once the household unlocks;
 the API section under Mehr › Zugänge shows a Premium line while the lock is
 shown.
 
-6.5 **Lead**: the app side. Set the variable `INTEGRATION_LOCK=true` in the
-`release` environment and in the Vercel project's environment (production
-and preview). The next store builds and the next web deploy then show the
-Premium card under Mehr › Zugänge. A PR sets `"released": true` for
+6.5 **Lead**: the app side. Turn the PostHog flag `premium-gate-integrations`
+on (first for Peter's install to check it on TestFlight, then for everyone).
+Installed store builds and the web app then show the Premium card under
+Mehr › Zugänge once they have the flag; no new build is needed. A PR sets `"released": true` for
 `integration-lock` in `releases/flags.json`. The held item then reaches
 the next release. Its commit's text named Siri, which stays free (job 184).
 `releases/changelog/rewords.json` (job 213, docs/CHANGELOG.md, "Rewording an
@@ -382,7 +383,7 @@ releasing the hold.
 | Anything with the sale (wrong price, store problem, a bug) | `update public.app_switches set enabled = false, changed_at = now() where key = 'premium_offer';` | At once, on every build: no card, no Buy, no store price query. What was bought stays unlocked |
 | A price drifted | The same statement, then fix the price (Ops, Peter's yes) | As above |
 | The integration lock refuses the wrong households | `update public.app_switches set enabled = false, changed_at = now() where key = 'integration_lock';` | At once: every integration open for every household, and the app hides the card in every build (it reads the switch) |
-| A build should not sell at all | Unset `REVENUECAT_PURCHASES` (and `INTEGRATION_LOCK`), and let the next Release run ship | The next builds show "bald verfügbar". Installed builds follow the server switch |
+| A build should not sell at all | Unset `REVENUECAT_PURCHASES`, and let the next Release run ship | The next builds show "bald verfügbar". Installed builds follow the server switch |
 | The privacy text must come back | Revert the #153 commit on main in a PR | snacklist.app redeploys from main |
 | A webhook secret leaked | Rotate `REVENUECAT_WEBHOOK_AUTH` in RevenueCat and the function secrets together. Never rotate `REVENUECAT_TOMBSTONE_HMAC_KEY` | Deliveries between the two changes fail and are retried |
 | A single purchase is wrong | Refunds go through Apple or Google (the refund help, `PURCHASES.md` "Refunds when something is off"). RevenueCat's refund event locks that purchase | Snacklist never refunds itself |

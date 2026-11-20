@@ -55,10 +55,6 @@ build() {
   # Preview deployments (main on preview.app.snacklist.app) are ours: every event internal.
   if [[ ${VERCEL_ENV:-} != production ]]; then analytics+=(--dart-define=ANALYTICS_INTERNAL_BUILD=true); fi
   echo "vercel.sh: analytics $([[ -n ${POSTHOG_PROJECT_API_KEY:-} ]] && echo on || echo off)"
-  # Job 67 (docs/PAYWALL_RELEASE.md): the integration settings' Premium card, when the Vercel
-  # project sets INTEGRATION_LOCK=true. The web app never sells, so no purchase defines.
-  local premium=()
-  if [[ ${INTEGRATION_LOCK:-} == true ]]; then premium=(--dart-define=INTEGRATION_LOCK=true); fi
   # Readable web stack traces need the source map in PostHog: only with a personal key (error
   # tracking write, Einkauf only) and the project id in the Vercel project.
   local maps=()
@@ -69,7 +65,7 @@ build() {
   flutter build web --release --no-web-resources-cdn --wasm --base-href / \
     --dart-define=SUPABASE_URL="$SUPABASE_URL" \
     --dart-define=SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY" \
-    --dart-define-from-file=config/auth.json ${analytics[@]+"${analytics[@]}"} ${premium[@]+"${premium[@]}"} \
+    --dart-define-from-file=config/auth.json ${analytics[@]+"${analytics[@]}"} \
     ${maps[@]+"${maps[@]}"}
   ../scripts/join-config.sh build/web
   if ((${#maps[@]})); then

@@ -240,10 +240,14 @@ class const _Access({required final bool onIphone}) extends StatelessWidget {
   }
 
   /// Job 50: whether to show the lock. Without the app-wide cubit (a
-  /// screen on its own) or with the `INTEGRATION_LOCK` define off, never.
+  /// screen on its own) or with the flag `premium-gate-integrations` off
+  /// (job 328), never.
   static IntegrationAccess _accessOf(BuildContext context) {
+    final gated = context.select<Flags?, bool>(
+      (f) => f?.isOn(premiumGateIntegrationsFlag) ?? false,
+    );
     final server = context.watch<IntegrationLockCubit?>()?.state;
-    if (server == null) {
+    if (!gated || server == null) {
       return const IntegrationsOpen();
     }
     return integrationAccess(

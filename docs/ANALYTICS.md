@@ -430,7 +430,9 @@ Runtime toggles are PostHog feature flags, read in one place: `Analytics.flags.i
   the total as a row of the list, the switcher sheet, job 229) and `feedback-fb2` (feedback with a
   screenshot: the shake question on iOS and Android, the annotator, the form's Bildschirmname and
   Bildschirmfoto switches, More's „Bildschirmfoto hinzufügen“ and the shake switch under
-  Einstellungen, job 267). A flag gates code paths only; it never gates consent, data or legal texts.
+  Einstellungen, job 267) and `premium-gate-integrations` (Zugänge's Snacklist Premium card and
+  paused connections while the server's `integration_lock` refuses the user, job 328; the server
+  enforces the lock whatever the flag). A flag gates code paths only; it never gates consent, data or legal texts.
 - **Targeting internal installs.** A flag may be released by the person property
   `is_internal`, so that only internal installs get it (Peter's TestFlight build, marked
   internal under More). The app sends `{'is_internal': Analytics.internalNow}` with

@@ -55,11 +55,10 @@ end
 # households, from the release environment. Unset, the build has analytics off.
 ANALYTICS_DEFINES = %w[POSTHOG_PROJECT_API_KEY POSTHOG_HOST ANALYTICS_INTERNAL_HOUSEHOLDS].freeze
 
-# Snacklist Premium (job 67, docs/PAYWALL_RELEASE.md): the purchase screen, RevenueCat's public SDK
-# keys and the integration lock, from the release environment. Unset, the build sells nothing and
-# locks nothing.
-PREMIUM_DEFINES = %w[REVENUECAT_PURCHASES REVENUECAT_APPLE_API_KEY REVENUECAT_GOOGLE_API_KEY
-                     INTEGRATION_LOCK].freeze
+# Snacklist Premium (job 67, docs/PAYWALL_RELEASE.md): the purchase screen and RevenueCat's public
+# SDK keys, from the release environment. Unset, the build sells nothing. The integration lock is
+# the PostHog flag premium-gate-integrations (job 328).
+PREMIUM_DEFINES = %w[REVENUECAT_PURCHASES REVENUECAT_APPLE_API_KEY REVENUECAT_GOOGLE_API_KEY].freeze
 
 # releases/flags.json at the repo root: a hold released there switches its define on.
 FLAGS_JSON = File.expand_path("../../releases/flags.json", __dir__)

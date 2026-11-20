@@ -28,7 +28,7 @@ export FG_PORT_PREFIX="$VH_PREFIX" FG_PROJECT_ID="$VH_PROJECT_ID" FG_STACK_WORKD
 
 # What a production build gets (app/config/auth.json minus the hosted Google client and APP_URL),
 # with the e2e stand-in PostHog host so nothing reaches a real PostHog project.
-# VH_DEFINES adds space-separated NAME=value pairs, e.g. "FLAGS_ON=public-api INTEGRATION_LOCK=true".
+# VH_DEFINES adds space-separated NAME=value pairs, e.g. "FLAGS_ON=public-api,premium-gate-integrations LEGAL_DRAFTS=true".
 # FLAGS_ON always holds the flags releases/flags.json rolls out to everyone ("full"), because users
 # get them and this build reaches no PostHog; VH_FLAGS_FULL=0 leaves them out (the sheet a new
 # install sees before PostHog's first answer), VH_FLAGS_OFF (comma-separated) leaves out only those.

@@ -204,9 +204,6 @@ Future<More> pumpMore(
   /// The server's invites and archived households.
   FakeInvites? invites,
 
-  /// The `INTEGRATION_LOCK` define (job 50); the switch is `premium.lock`.
-  bool integrationLock = false,
-
   /// More's update source; set, More is the only route (no pages).
   AppUpdates? updates,
 
@@ -274,10 +271,7 @@ Future<More> pumpMore(
     clock: clock,
   );
   addTearDown(purchases.close);
-  final lock = IntegrationLockCubit(
-    purchases.premium,
-    enabled: integrationLock,
-  );
+  final lock = IntegrationLockCubit(purchases.premium);
   addTearDown(lock.close);
   final repo = FakeRepository();
   seed?.call(repo);

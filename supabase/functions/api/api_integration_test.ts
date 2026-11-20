@@ -101,6 +101,7 @@ async function withMembers(
       await sql`update public.app_switches set enabled = ${enabled} where key = ${key}`;
     }
     for (const userId of users) {
+      await sql`delete from public.purchases where bound_user = ${userId}`;
       await sql`delete from public.households where id in (
         select household_id from public.household_members where user_id = ${userId})`;
       await sql`delete from auth.users where id = ${userId}`;
@@ -479,7 +480,13 @@ test('a revoked key is 401; the integration lock without Premium is 402 until it
       body: { items: [{ name: 'Kaffee' }] },
     });
     assertEquals(locked.status, 402);
-    assertEquals((await locked.json()).error.code, 'premium_required');
+    const { error } = await locked.json();
+    assertEquals(error.code, 'premium_required');
+    assertEquals(
+      error.message,
+      'This household needs Snacklist Premium to use the API. Unlock it in the Snacklist app. ' +
+        'Nothing was read or changed.',
+    );
     const rows = await sql`select from public.items where household_id = ${mine.householdId}`;
     assertEquals(rows.length, 0, 'nothing was changed');
 
@@ -492,6 +499,22 @@ test('a revoked key is 401; the integration lock without Premium is 402 until it
     const revoked = await api(key.token, 'GET', '/items');
     assertEquals(revoked.status, 401);
     assertEquals((await revoked.json()).error.code, 'invalid_token');
+  }));
+
+test("job 328: with the integration lock on, the key holder's own Premium opens the API", () =>
+  withMembers(async (sql, [mine]) => {
+    const key = await mint(sql, mine, ['read', 'write']);
+    await sql`update public.app_switches set enabled = true where key = 'integration_lock'`;
+    const tx = `u328-${mine.userId.slice(0, 8)}`;
+    await sql`select public.purchase_record_user('apple', ${tx}, ${tx}, ${await sha256Hex(tx)},
+          'com.snacklist.app.yearly', 'premium', 'yearly', 'Production', now() - interval '1 minute',
+          24.99, 'EUR', 'DE', ${mine.userId}::uuid, now(), now() + interval '365 days', true, false)`;
+    const added = await api(key.token, 'POST', '/items', { body: { items: [{ name: 'Kaffee' }] } });
+    assertEquals(added.status, 201);
+    await added.body?.cancel();
+    const read = await api(key.token, 'GET', '/items');
+    assertEquals(read.status, 200);
+    assertEquals((await read.json()).data.map((i: Item) => i.name), ['Kaffee']);
   }));
 
 test('switched off, no key can be made and a key from before gets 404 until it is on', () =>

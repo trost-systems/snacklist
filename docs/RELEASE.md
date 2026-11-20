@@ -445,7 +445,6 @@ deployments from `main` only). Values marked "variable" may also be secrets.
 | `REVENUECAT_PURCHASES` | variable | both | Unset: no purchase screen ("bald verfügbar"). `true` at the paywall go-live ([`PAYWALL_RELEASE.md`](PAYWALL_RELEASE.md)). |
 | `REVENUECAT_APPLE_API_KEY` | secret | iOS | RevenueCat's public App Store SDK key (`appl_…`). Without it the build sells nothing. |
 | `REVENUECAT_GOOGLE_API_KEY` | secret | Android | RevenueCat's public Play SDK key (`goog_…`). Without it the build sells nothing. |
-| `INTEGRATION_LOCK` | variable | both | Unset: no Premium card in the integration settings. `true` once the server's `integration_lock` switch is on ([`PAYWALL_RELEASE.md`](PAYWALL_RELEASE.md)). |
 
 Play needs no key: the Android job signs in to Google with Workload Identity
 Federation (below). The workflow's `env` holds the non-secret identifiers:

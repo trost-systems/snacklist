@@ -1908,3 +1908,14 @@ that comes with the emptying tick, instead of being lost to that question. No as
 the emptying, a failed trip save, a join or household switch (24 h and next session), or within 14 days of a bug
 note; at most 2 asks a year, 180 days apart. Flag off: unchanged. Proof is widget and unit tests (the dialog is native).
 Details: [docs/done/326.md](docs/done/326.md).
+
+## Job 328: Premium gate for the API and MCP behind `premium-gate-integrations`
+
+**For users today: no change.** The gate is off during the beta. When Peter turns it on, the API
+answers `402 premium_required` with a message and MCP refuses tool calls with a sentence, for a user
+whose household and own account have no Premium; Postgres decides, never the app. In the app,
+Mehr › Zugänge then shows „Teil von Snacklist Premium“, the paused connections and the way to the
+Premium page. The app side is the new PostHog flag `premium-gate-integrations` (replaces the build
+define `INTEGRATION_LOCK`, so no new build is needed); the server side stays `integration_lock`.
+The GDPR data export stays free. Tests for off, on with Premium and on without Premium on both
+sides; e2e and a web drive passed. Details: [docs/done/328.md](docs/done/328.md).

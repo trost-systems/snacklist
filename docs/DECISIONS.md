@@ -16431,3 +16431,37 @@ moment after an emptied list runs unchanged, and the counters are the same JSON 
    keeps no properties. No ARB, legal or privacy file changed.
 9. **Rollout.** `releases/flags.json` has `rating-triggers-v2` off. The prompt asks only in public store builds, so
    turning the flag on for testers changes nothing they can see; creating the PostHog flag is the lead's step.
+
+## Job 328: Premium gate for export, API and MCP, off during the beta (2026-11-20)
+
+Peter t1086u approved item 3: with a remote switch on, export, the API and MCP need the
+RevenueCat `premium` entitlement, checked server-side; off (PX1) everything stays open. Calls made
+without asking:
+
+1. **The server gate already existed; this job did not build a second one.** Job 50's
+   `public.integration_gate(household, integration, user)` refuses MCP tool calls and every API
+   route while `app_switches.integration_lock` is on and neither the household (job 49) nor the
+   caller (job 185, #387) has Premium. The API answers `402 premium_required` with a message, MCP
+   a tool result with `isError: true` (never 401 or 403, so clients keep their tokens). Nothing is
+   revoked or deleted, so existing tokens' data is untouched. `integration_lock` stays off.
+2. **The new switch `premium-gate-integrations` is a PostHog flag for the app's side.** It replaces
+   the build define `INTEGRATION_LOCK`, which needed a new store build to show the lock and so was
+   not a remote switch. The server switch stays the enforcement, since the server must not trust
+   anything the app sends and PostHog evaluates flags per install, which an API key or OAuth token
+   cannot name. The app shows the Premium card, the paused connections and the way to the Premium
+   page only when the flag is on, the server switch is on and the user has no Premium. Go-live
+   order: server switch, then the flag (docs/PURCHASES.md). The define's plumbing (Fastfile,
+   release.yml, vercel.sh, e2e.json, fg) is gone; e2e and `FG_INTEGRATION_LOCK=1` force the flag
+   through `FLAGS_ON`. The GitHub and Vercel variable `INTEGRATION_LOCK` is now unread.
+3. **"Export" gates nothing today.** The only export in the app is „Meine Daten exportieren“
+   (`export_my_data`), the GDPR copy of the account (Art. 12(5), 15, 20), free by law and named
+   in the delete-account dialog; job 194's brief says the same. Premium's "export" in CS1 is the
+   API and MCP. A future Premium export (CSV, history) goes through `integration_gate` with its
+   own integration name.
+4. **No new copy.** The card's texts (`integrationPremium*`, `apiPremium`) are job 50's and
+   job 73's; jobs 327 and 329 own paywall and legal copy. No ARB change, so the PR can land.
+5. **Tests.** Server: switch off open, on with Premium open, on without Premium refused with
+   its message, for MCP (job 50 and 185 tests) and the API (the missing "own Premium opens the API"
+   case and the 402 message, `api_integration_test.ts`). App: flag off shows nothing even with the
+   server switch on; flag on with Premium is open; flag on without Premium shows the card with its
+   message and the button to the Premium page (`integration_lock_test.dart`).
