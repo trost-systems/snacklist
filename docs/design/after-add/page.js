@@ -3,9 +3,10 @@ import { act, initial, run } from './model.js';
 import { options, phone, settle } from './phone.js';
 import { frames, storeCat, todayFrame } from './walk.js';
 import { text } from './text.js';
+import { text as amText } from './am/text.js';
 
 const params = new URLSearchParams(location.search);
-const env = {
+export const env = {
   lang: params.get('lang') === 'de' ? 'de' : 'en',
   theme: params.get('theme') === 'dark' ? 'dark' : 'light',
   ts: ['200', '310'].includes(params.get('ts')) ? Number(params.get('ts')) : 100,
@@ -15,7 +16,7 @@ const W = text[env.lang];
 const ids = ['AS1', 'AS2', 'AS3', 'AS4', 'AS5'];
 
 // The app's tokens, light or dark on a class, so both themes can sit on one page.
-const themeCss = async (href) => {
+export const themeCss = async (href) => {
   const css = await (await fetch(href)).text();
   const light = css.match(/:root\s*{([^}]*)}/)[1];
   const dark = css.match(/prefers-color-scheme:\s*dark\)\s*{\s*:root\s*{([^}]*)}/)[1];
@@ -32,7 +33,7 @@ const link = (k, v) => {
   return `${location.pathname}${q ? `?${q}` : ''}${location.hash}`;
 };
 const btn = (k, v, label) => `<button aria-pressed="${String(env[k]) === String(v)}" onclick="location.href='${link(k, v)}'">${label}</button>`;
-const controls = () => `<div class="controls"><span class="lbl">${W.lang}</span>${btn('lang', 'en', 'English')}${btn('lang', 'de', 'Deutsch')}<span class="sep"></span>
+export const controls = () => `<div class="controls"><span class="lbl">${W.lang}</span>${btn('lang', 'en', 'English')}${btn('lang', 'de', 'Deutsch')}<span class="sep"></span>
   ${btn('theme', 'light', W.light)}${btn('theme', 'dark', W.dark)}<span class="sep"></span>
   ${btn('ts', 100, `${W.textSize} 100 %`)}${btn('ts', 200, `${W.textSize} 200 % (${W.androidMax})`)}${btn('ts', 310, `${W.textSize} 310 % (${W.iosMax})`)}<span class="sep"></span>
   ${btn('device', 'ios', 'iPhone 390 × 844')}${btn('device', 'android', 'Android 360 × 640')}</div>`;
@@ -41,7 +42,7 @@ const head = (title, back) => `<header class="page-head"><div class="title-row">
   <p class="note">${W.note}</p>${controls()}</header>`;
 
 // RECOMMENDATION.md on the page: headings, lists, tables, bold, italics and code are all it uses.
-const md = (src) => {
+export const md = (src) => {
   const inline = (x) => x.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/\*([^*]+)\*/g, '<i>$1</i>');
   const out = [];
   let list = null;
@@ -81,7 +82,7 @@ const md = (src) => {
   return out.join('');
 };
 
-const cell = (caption, html, small = '', key = '') => `<figure class="cell"${key ? ` data-frame="${key}"` : ''}><figcaption>${caption}${small ? `<small>${small}</small>` : ''}</figcaption>${html}</figure>`;
+export const cell = (caption, html, small = '', key = '') => `<figure class="cell"${key ? ` data-frame="${key}"` : ''}><figcaption>${caption}${small ? `<small>${small}</small>` : ''}</figcaption>${html}</figure>`;
 
 // The live phone: click through it like the app. Typing in the field suggests; Enter adds the first row.
 const lives = new Map();
@@ -193,9 +194,13 @@ export const overview = async () => {
   await themeCss('../../../site/public/tokens.css');
   document.title = W.overviewTitle;
   const m = await fetch('measured.json').then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  const am = await fetch('am/measured.json').then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  const A = amText[env.lang];
   document.body.innerHTML = `${head(W.overviewTitle, false)}<main class="view"><div class="cards">
     <a class="ocard" href="as/${location.search}"><h2>${W.roundTitle}</h2><p>${W.roundBlurb}</p>
-    ${m ? `<p><span class="tag pick">${W.pick}</span> ${m.pick} ${W.options[m.pick].name} · <span class="tag runner">${W.runner}</span> ${m.runner} ${W.options[m.runner].name}</p>` : ''}</a></div></main>`;
+    ${m ? `<p><span class="tag pick">${W.pick}</span> ${m.pick} ${W.options[m.pick].name} · <span class="tag runner">${W.runner}</span> ${m.runner} ${W.options[m.runner].name}</p>` : ''}</a>
+    <a class="ocard" href="am/${location.search}"><h2>${A.roundTitle}</h2><p>${A.roundBlurb}</p>
+    ${am ? `<p><span class="tag pick">${W.pick}</span> ${am.pick} ${A.options[am.pick].name} · <span class="tag runner">${W.runner}</span> ${am.runner} ${A.options[am.runner].name}</p>` : ''}</a></div></main>`;
   document.body.className = `th-${env.theme}`;
   document.body.dataset.ready = '1';
 };

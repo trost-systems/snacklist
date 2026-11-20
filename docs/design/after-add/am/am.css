@@ -1,0 +1,73 @@
+/* Round AM: a match drawn as a list row. Open: honey-soft with a honey edge. Ticked: muted and struck through. */
+.mrow { display: flex; align-items: stretch; gap: 4px; border-radius: 12px; min-height: 48px; }
+.mrow.open { background: var(--hl-color-honey-soft); box-shadow: inset 4px 0 0 var(--hl-color-honey); }
+.mrow.ticked { background: var(--hl-color-surface-sunken); }
+.th-dark .mrow.ticked { background: var(--hl-color-surface); }
+.mbody { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 4px 8px 4px 12px; min-height: 48px; font-size: calc(16px * var(--ts)); }
+.mbody .hx { width: 24px; flex: none; text-align: center; }
+.mbody .nm { flex: 1; min-width: 0; overflow-wrap: anywhere; line-height: 1.25; }
+.mbody .nm .q { color: var(--hl-color-brand); }
+.mbody .sub { display: block; font-size: calc(13px * var(--ts)); color: var(--hl-color-text-muted); }
+.mrow.ticked .nm > b:not(.q) { text-decoration: line-through; text-decoration-thickness: 2px; color: var(--hl-color-text-muted); }
+.mbody .icon { color: var(--hl-color-text-muted); width: 20px; height: 20px; flex: none; }
+.mbody .icon.lead { color: var(--hl-color-text); }
+.ret { color: var(--hl-color-text-muted); }
+.roundbtn { width: 48px; min-height: 48px; display: grid; place-items: center; flex: none; color: var(--hl-color-text); }
+.roundbtn .icon { width: 26px; height: 26px; }
+.roundbtn.chipbtn { width: 44px; min-height: 44px; }
+.sugg.newrow .icon:first-child { color: var(--hl-color-brand); width: 24px; height: 24px; }
+.sugg.newrow > span { font-weight: 600; }
+.sugg .ret { margin-left: auto; }
+
+/* AM3: the match as a card, then the keys. */
+.mrow.card .mbody { cursor: default; }
+.decide { display: grid; grid-template-columns: auto 1fr 1fr; gap: 8px; }
+.decide.two { grid-template-columns: 1fr auto; }
+.decide .tact { flex: initial; }
+.decide .tact > span { padding: 4px 14px; }
+.decide .tact .ret { color: inherit; opacity: 0.7; }
+.opt.ticked > span { color: var(--hl-color-text-muted); text-decoration: line-through; }
+.opt .icon { width: 18px; height: 18px; }
+
+/* AM5: tiles. Honey: on the list. Outlined with a tick: ticked. */
+.tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.ts200 .tiles, .ts310 .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.tile { position: relative; border-radius: 14px; min-height: 84px; display: grid; }
+.tile.open { background: var(--hl-color-honey); color: var(--hl-color-on-honey); }
+.tile.ticked { background: var(--hl-color-surface); box-shadow: inset 0 0 0 2px var(--hl-color-border); }
+.tile.newtile { box-shadow: inset 0 0 0 2px var(--hl-color-border); border: 0; background: none; }
+.tbody { display: grid; align-content: center; justify-items: center; gap: 1px; padding: 8px 6px; text-align: center; font-size: calc(14px * var(--ts)); line-height: 1.2; min-height: 84px; min-width: 0; overflow-wrap: anywhere; }
+.tbody .emo { font-size: calc(22px * min(var(--ts), 1.6)); height: 1.2em; }
+.tbody .emo .icon { width: 24px; height: 24px; }
+.tbody .tq { font-weight: 700; font-size: calc(13px * var(--ts)); }
+.tbody .sub { font-size: calc(11.5px * var(--ts)); opacity: 0.8; }
+.tile.ticked .tbody b { text-decoration: line-through; }
+.tbody .ret { width: 16px; height: 16px; position: absolute; left: 6px; top: 6px; }
+.tile.open .tbody .ret { color: var(--hl-color-on-honey); }
+.corner { position: absolute; right: 0; top: 0; width: 44px; height: 44px; display: grid; place-items: start end; padding: 4px; }
+.corner .icon { width: 22px; height: 22px; border-radius: 11px; background: var(--hl-color-surface-raised); color: var(--hl-color-text); }
+
+/* Behind the sheet: a ticked row. */
+.item.tickedrow .nm b:not([style]) { text-decoration: line-through; color: var(--hl-color-text-muted); }
+.item.tickedrow .hx .icon { width: 22px; height: 22px; color: var(--hl-color-text-muted); }
+.phone-none { width: 390px; height: 120px; border: 2px dashed var(--hl-color-border); border-radius: 18px; }
+.phone-none.android { width: 360px; }
+.phone.closed .list { padding-top: 8px; }
+/* The sheet's column must not squeeze a row below its text; a sheet too tall then shows as overflow. */
+.sbody > .mrow, .sbody > .tiles, .sbody > .decide, .sbody > .sugg, .sbody > .line { flex-shrink: 0; }
+
+/* AM2: one row per outcome, marked by its icon and its result. */
+.sugg.orow { border-radius: 12px; }
+.sugg.orow .nm { flex: 1; min-width: 0; line-height: 1.25; overflow-wrap: anywhere; }
+.sugg.orow .nm .q { color: var(--hl-color-brand); }
+.sugg.orow .sub { display: block; font-size: calc(13px * var(--ts)); color: var(--hl-color-text-muted); }
+.sugg.orow > .icon:first-child { width: 24px; height: 24px; color: var(--hl-color-text); }
+.sugg.orow.merge { background: var(--hl-color-honey-soft); }
+.sugg.orow.tick { background: var(--hl-color-mint-soft); }
+.sugg.orow.back { background: var(--hl-color-surface-sunken); }
+.th-dark .sugg.orow.back { background: var(--hl-color-surface); }
+.sugg.orow s { text-decoration-thickness: 2px; font-weight: 600; }
+
+/* What became of a match, in the chips' place. */
+.amnote { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 4px 12px; font-size: calc(15px * var(--ts)); font-weight: 600; flex-shrink: 0; }
+.amnote .icon { color: var(--hl-color-brand); }
