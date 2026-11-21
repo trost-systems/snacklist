@@ -156,8 +156,8 @@ table.m tr.pick td:first-child { font-weight: 800; }
 
 /* TE1 total */
 .totals { margin-top: 20px; }
-.totals .tin { display: grid; gap: 2px; padding-top: 12px; border-top: 2px solid var(--c-text); }
-.ttitle { font-size: calc(13px * var(--ts)); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-text-muted); margin-bottom: 6px; }
+.totals .tin { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; padding-top: 12px; border-top: 2px solid var(--c-text); }
+.ttitle { overflow-wrap: anywhere; font-size: calc(13px * var(--ts)); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-text-muted); margin-bottom: 6px; }
 .tline { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 12px; min-height: 32px; font-size: calc(15px * var(--ts)); }
 .tline .tname { font-weight: 700; overflow-wrap: anywhere; min-width: 0; }
 .tline .tamt { margin-left: auto; font-weight: 800; font-variant-numeric: tabular-nums; text-align: right; }
@@ -493,3 +493,22 @@ body.solo { margin: 0; padding: 0; background: #888; }
 .ts-large:not(.o-today) .mrow .mi { display: none; }
 .ts-large:not(.o-today) .mrow { flex-wrap: wrap; column-gap: 8px; }
 .ts-large:not(.o-today) .mistake .btn .face { font-size: calc(15px * var(--th)); }
+.legal { display: flex; flex-wrap: wrap; gap: 0 4px; padding: 4px 8px; margin-top: 8px; }
+.llink { min-height: 44px; padding: 0 8px; font-size: calc(14px * var(--ts)); color: var(--c-brand); font-weight: 600; }
+.version { margin: 16px 4px 0; font-size: calc(13px * var(--ts)); color: var(--c-text-muted); }
+
+/* TE1 at large text (job 348's rule): an amount too wide beside its name goes under it, whole; „mind.“ may sit a line
+   above its number. */
+.ts-large .tline .tamt { max-width: 100%; }
+
+/* On a phone-width screen the 390 px phones shrink to fit (page.js sets --pz). */
+body.page.narrow .view { padding: 12px 8px; }
+body.page.narrow .frames { gap: 12px; padding: 4px 0 16px; }
+body.page.narrow figure.cell .phone { zoom: var(--pz, 1); }
+body.page.narrow .grid-all { grid-template-columns: minmax(0, 1fr); }
+body.page.narrow .page-head { padding: 12px 8px 0; }
+.ts-large:not(.o-today) .ttitle { font-size: calc(13px * var(--th)); }
+.ts-large .popover { width: calc(100% - 24px); }
+.llink { overflow-wrap: anywhere; text-align: left; }
+.ts-large:not(.o-today) .mrow .chev { display: none; }
+.popover { max-height: calc(100% - 70px); overflow-y: auto; scrollbar-width: none; }

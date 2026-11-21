@@ -41,7 +41,15 @@ export const arb = {
   "premiumTitle": "Snacklist Premium",
   "done": "Done",
   "shopStartByHand": "Start a trip",
-  "switcherInvite": "Invite"
+  "switcherInvite": "Invite",
+  "accessTitle": "Access",
+  "analyticsSection": "Usage data",
+  "imprint": "Imprint",
+  "privacyPolicy": "Privacy policy",
+  "premiumTermsLink": "Terms of Use (EULA)",
+  "licenses": "Licenses",
+  "rateApp": "Rate Snacklist",
+  "appVersion": "Version {version}"
  },
  "de": {
   "addFieldHint": "Was brauchst du?",
@@ -84,7 +92,15 @@ export const arb = {
   "premiumTitle": "Snacklist Premium",
   "done": "Fertig",
   "shopStartByHand": "Einkauf starten",
-  "switcherInvite": "Einladen"
+  "switcherInvite": "Einladen",
+  "accessTitle": "Zugänge",
+  "analyticsSection": "Nutzungsdaten",
+  "imprint": "Impressum",
+  "privacyPolicy": "Datenschutzerklärung",
+  "premiumTermsLink": "Nutzungsbedingungen (EULA)",
+  "licenses": "Lizenzen",
+  "rateApp": "Snacklist bewerten",
+  "appVersion": "Version {version}"
  }
 };
 export const proposed = {

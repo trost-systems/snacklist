@@ -1,8 +1,8 @@
 // Round RD's page: an overview (pick, table, every option's list side by side) and one view per option with its six
 // frames and a live meter under each. ?opt=RD3 &theme=dark &lang=de &ts=200|310.
-import { fit, measure } from './measure.js';
+import { fit, measureAll } from './measure.js';
 import { byId, frameName, frames, ids, options } from './options.js';
-import { esc, frame } from './render.js';
+import { esc, frame, screenName } from './render.js';
 import { pick, rec, runnerUp } from './recommend.js';
 
 const q = new URLSearchParams(location.search);
@@ -60,7 +60,7 @@ const meterLine = (m, kind) => {
   return `<p class="meter" title="${esc([...m.smallTaps, ...m.lowText, ...m.lowUi, ...m.overflow].join('\n'))}">${parts.join(' · ')}</p>`;
 };
 
-const cell = (o, kind) => `<figure class="cell" data-cell="${o.id}-${kind}"><figcaption>${esc(frameName[kind][s.lang])}</figcaption>${frame(s, o, kind)}<div class="live"></div></figure>`;
+const cell = (o, kind) => `<figure class="cell" data-cell="${o.id}-${kind}"><figcaption>${esc((kind === 'screen' ? screenName(o) : frameName[kind])[s.lang])}</figcaption>${frame(s, o, kind)}<div class="live"></div></figure>`;
 
 const optionView = (o) => `<section class="option" data-option-view="${o.id}">${optHead(o)}<div class="frames">${frames.map((k) => cell(o, k)).join('')}</div></section>`;
 
@@ -90,7 +90,7 @@ const solo = async () => {
     phone.getBoundingClientRect();
     await document.fonts.ready;
     fit(phone);
-    return measure(phone, palette);
+    return measureAll(phone, palette);
   };
   document.body.dataset.ready = '1';
 };
@@ -99,6 +99,13 @@ const run = async () => {
   if (q.has('solo')) return solo();
   let measured = null;
   try { measured = await (await fetch('measured.json')).json(); } catch { measured = null; }
+  const narrow = () => {
+    const room = document.documentElement.clientWidth - 16;
+    document.body.classList.toggle('narrow', room < 390);
+    document.body.style.setProperty('--pz', String(Math.min(1, room / 390)));
+  };
+  narrow();
+  addEventListener('resize', narrow);
   document.getElementById('app').innerHTML = `${head}<main class="view">${s.view === 'overview' ? overview(measured) : optionView(byId[s.view])}</main>`;
   for (const b of document.querySelectorAll('[data-go]')) b.addEventListener('click', () => go(JSON.parse(b.dataset.go)));
   await document.fonts.ready;

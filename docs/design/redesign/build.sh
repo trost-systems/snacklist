@@ -16,7 +16,7 @@ fi
 dst="$out/redesign"
 rm -rf "$dst"
 mkdir -p "$dst/vendor/fonts" "$dst/tools" "$dst/rd"
-cp "$here"/{index.html,proto.css,palette.css,page.js,render.js,measure.js,options.js,data.js,strings.js,icons.js,recommend.js,verify.mjs,build.sh,README.md,HEX-INVENTORY.md} "$dst/"
+cp "$here"/{index.html,proto.css,palette.css,page.js,render.js,measure.js,options.js,data.js,strings.js,icons.js,recommend.js,places.js,verify.mjs,build.sh,README.md,HEX-INVENTORY.md} "$dst/"
 cp "$here/tools"/{serve.mjs,strings.mjs,palette.mjs,table.mjs,shoot.mjs,fetch-base.mjs,link-overview.mjs,icons.py} "$dst/tools/"
 cp "$here/rd"/{index.html,measured.json,RECOMMENDATION.md,RECOMMENDATION.de.md} "$dst/rd/"
 cp "$repo/site/public/fonts"/{bricolage-grotesque-latin-standard-normal,inter-latin-wght-normal}.woff2 "$dst/vendor/fonts/"

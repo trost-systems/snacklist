@@ -170,7 +170,7 @@ Docs describing it: `docs/STORE_SCREENSHOTS.md:7`.
 | Mask variables `--hex-img`, `--sweep-img`, `--pointy-img` | `:32-34` | all below | tokens-only (swap masks) |
 | `.hx` static horizontal hex (tags, chips) | `:160-180` (comment `:128-158`) | `landing.mjs:162,290`; scenes (`.compose hx`) | tokens-only |
 | `.hxp` pointy hex (ticks, play button) | `:182-213` | `landing.mjs:162,264,290`, `report.mjs:119`, `waitlist.mjs:77`, scenes, `demo.js:3` (play button) | structural (0.866 box) |
-| `.hex` tactile control (face, side wall, edge, focus ring from stacked shadows) | `:215-330`, focus `:306-318`, `.hex--small` `:320-326` | header CTA on every page `build.mjs:408`; `landing.mjs:160,270`; `report.mjs:112`; `waitlist.mjs:72,96` | widget swap (focus ring is hex-shaped shadows) |
+| `.hex` tactile control (face, side wall, edge, focus ring from stacked shadows) | `:215-330`, focus `:306-318`, `.hex--small` `:320-326` | header CTA on every page `build.mjs:408`; `landing.mjs:160,270`; `report.mjs:112`; `waitlist.mjs:72,96`; excluded from the cards' link style by `a:not(.hex)` in `waitlist.css:20` and `report.css:16` | widget swap (focus ring is hex-shaped shadows) |
 | Forced-colours fallbacks | `:762-795` | same | tokens-only |
 | Masks | `site/public/hex/hex-cap-l.svg`, `hex-cap-r.svg`, `hex-pointy.svg` | all of the above | structural |
 | Honeycomb block art | `site/public/hex/block-hex.svg`, `block-hex-dark.svg`; `landing.css:742-745,790` (voice, privacy, cta blocks) | landing page | structural |

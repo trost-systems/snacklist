@@ -60,7 +60,7 @@ const lineRects = (el) => [...range(el).getClientRects()].filter((r) => r.width 
 const label = (el) => `${el.tagName.toLowerCase()}.${[...el.classList].join('.')}${el.dataset.row ? `[${el.dataset.row}]` : ''} "${(el.textContent || el.getAttribute('aria-label') || '').trim().slice(0, 28)}"`;
 // Text that may end in an ellipsis by design: the list name in the bars, the add field's hint.
 const ELLIPSIS = '.two > *, .ttl b, .ptitle b, .large b, .addfield .hint';
-const SCROLLERS = '.scroll, .stabs, .sheet, .panel, .drawer, .frames';
+const SCROLLERS = '.scroll, .stabs, .sheet, .panel, .drawer, .popover, .frames';
 
 export const measure = (phone, palette) => {
   const pr = phone.getBoundingClientRect();
@@ -192,6 +192,7 @@ export const measure = (phone, palette) => {
     overflow: [...new Set(overflow)],
     broken,
     offPalette: [...offPalette],
+    dests: [...new Set([...phone.querySelectorAll('[data-dest]')].map((e) => e.dataset.dest))],
   };
 };
 
@@ -207,4 +208,25 @@ export const fit = (phone) => {
   const b = bot ? sh.bottom - bot.getBoundingClientRect().top : 34;
   content.style.setProperty('--top', `${Math.round(t + 4)}px`);
   content.style.setProperty('--bot', `${Math.round(b + 24)}px`);
+  if (phone.hasAttribute('data-menu-end')) for (const m of phone.querySelectorAll('[data-sheet]')) m.scrollTop = m.scrollHeight;
+};
+
+// Measures what the phone shows at rest, then every page of every scrolling area (the list down to its total, a long
+// menu), so nothing below the first screen escapes the checks. Rows count at rest only.
+export const measureAll = (phone, palette) => {
+  const first = measure(phone, palette);
+  const all = { ...first };
+  for (const sc of phone.querySelectorAll('.scroll, [data-sheet]')) {
+    const start = sc.scrollTop;
+    const step = Math.max(80, sc.clientHeight - 60);
+    for (let y = 0; y < sc.scrollHeight - sc.clientHeight + step; y += step) {
+      sc.scrollTop = Math.min(y, sc.scrollHeight - sc.clientHeight);
+      const m = measure(phone, palette);
+      for (const k of ['smallTaps', 'lowText', 'lowUi', 'overflow', 'offPalette', 'broken']) all[k] = [...new Set([...all[k], ...m[k]])];
+      for (const k of ['minTap', 'contrast', 'ui']) if (m[k] !== null) all[k] = all[k] === null ? m[k] : Math.min(all[k], m[k]);
+      if (sc.scrollTop >= sc.scrollHeight - sc.clientHeight) break;
+    }
+    sc.scrollTop = start;
+  }
+  return all;
 };

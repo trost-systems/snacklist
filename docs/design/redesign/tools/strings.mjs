@@ -13,7 +13,8 @@ export const keys = [
   'subtotalsTotal', 'subtotalsUnpriced', 'moneyAtLeast', 'emptyList', 'account', 'hintsTitle', 'signOut', 'itemsWord',
   'listItemCount', 'householdMembers', 'listsTitle', 'shopAskTitle', 'shopAskYes', 'shopAskNo', 'shopAskMistake',
   'shopAskTakeBack', 'addSheetHint', 'suggestionRecent', 'suggestionHistory', 'feedbackHubRow', 'premiumTitle', 'done',
-  'shopStartByHand', 'switcherInvite',
+  'shopStartByHand', 'switcherInvite', 'accessTitle', 'analyticsSection', 'imprint', 'privacyPolicy', 'premiumTermsLink',
+  'licenses', 'rateApp', 'appVersion',
 ];
 // New words: the menus' own labels (RD2, RD4, RD6, RD7, RD8), RD8's "All" tab, RD5's and RD10's add button.
 export const proposed = {

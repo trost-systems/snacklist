@@ -42,7 +42,7 @@ export const suggestions = [
 
 export const money = (lang, cents) => {
   const n = (cents / 100).toFixed(2);
-  return lang === 'de' ? `${n.replace('.', ',')} €` : `€${n}`;
+  return lang === 'de' ? `${n.replace('.', ',')}\u00a0€` : `€${n}`;
 };
 
 // TE1 (job 348): a line per store with a price, „mind.“ when the store also has unpriced items; the total says once

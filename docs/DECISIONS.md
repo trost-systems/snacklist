@@ -17002,3 +17002,9 @@ pinned above the field, other suggestions hidden); all of it stays behind `add-s
    `HexSwitch`, `HexSegmented` and `HexCheckbox` need rewrites.
 8. **Taps are counted from the menu design, not measured.** History costs 2 taps in RD2; whether that matters is
    RD-Q2's PostHog check, an assumption until then.
+9. **Review 0: the places are data.** `places.js` holds every row of the real More tab (`more_screen.dart`), History,
+   Edit and the list switcher, and says where each option puts each one. The menus, the More frame and the taps table
+   come from it, so a menu cannot drop a place without verify noticing. The imprint stays 2 taps away everywhere
+   (DDG §5).
+10. **Review 0: measure below the first screen.** Each phone is measured at rest and on every scrolled page. The
+    first version only measured what the browser window showed, which missed the TE1 total's overflow at 310 %.

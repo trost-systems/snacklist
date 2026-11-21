@@ -2097,5 +2097,6 @@ Ten designs away from the hexagons on today's palette (RD1 to RD10, plus Today),
 and menu, on the hide-categories list with the TE1 total; six frames each in light and dark, 100/200/310 %,
 English and German. Pick RD2 Pill dock (no tab bar, menu button beside the add field, +1 row), runner-up RD4 One
 screen (10 rows), RD1 tokens-only swap first. Hexagon inventory with file:line. Draft PR, never merged; protected
-preview on family-groceries-design (share link from the lead). `verify.mjs` 5834 checks; details
-`docs/done/353.md`.
+preview on family-groceries-design (share link from the lead). Review 0: the total at 310 %, the real More
+places in every menu, phones that fit phone screens; `verify.mjs` 6189 checks, preview `dpl_6RCZRM97GbiFSj7MU986aU3JN7fH`;
+details `docs/done/353.md`.

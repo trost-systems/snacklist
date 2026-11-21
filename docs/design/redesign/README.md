@@ -10,11 +10,16 @@ hexagons are today is in `HEX-INVENTORY.md`.
 - `data.js`: the mock list (the fictional Brandt family, job 350's 12 items, job 348's TE1 total).
 - `strings.js` (from the ARB files, `tools/strings.mjs`), `palette.css` (from `tokens.g.dart`, `tools/palette.mjs`),
   `icons.js` (from Flutter's Material icon font, `tools/icons.py`).
-- `measure.js`: rows, tap targets, contrast, borders, overflow, broken words and palette colours of one phone.
+- `measure.js`: rows, tap targets, contrast, borders, overflow, broken words and palette colours of one phone, at rest
+  and on every scrolled page of the list and of long menus (`measureAll`).
 - `verify.mjs`: measures all 792 phones (11 options × 6 frames × 2 themes × 3 text sizes × 2 languages) and checks
   the RECOMMENDATION tables. `--write` updates `rd/measured.json`; `tools/table.mjs` rewrites the tables from it.
 - `tools/shoot.mjs <query> <png> [--sel <css>]`: a screenshot of the page.
 - `build.sh <out> --base <dpl id>`: the preview folder, on top of the previous preview's files.
 
-Run from the repo root: `node docs/design/redesign/verify.mjs` (Playwright from `e2e/node_modules` or
-`~/family-groceries/e2e`).
+Run from the repo root: `node docs/design/redesign/verify.mjs`. It loads Playwright from this checkout's
+`e2e/node_modules`, or, in a worktree without one (job worktrees on hz), from `~/family-groceries/e2e`.
+
+`places.js` lists every place today's More tab leads to (`more_screen.dart`), plus History, Edit and switching lists,
+and says where each option puts each one; the menus and the More frame are drawn from it, and the taps table is
+computed from it.

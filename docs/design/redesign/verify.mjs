@@ -13,6 +13,8 @@ import { serve } from './tools/serve.mjs';
 import { generate as genStrings } from './tools/strings.mjs';
 import { generate as genPalette, readTokens } from './tools/palette.mjs';
 import { frames, ids, options } from './options.js';
+import { dests, taps } from './places.js';
+import { tapCols, tapsTable } from './tools/table.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const args = process.argv.slice(2);
@@ -87,6 +89,13 @@ for (const [key, m] of Object.entries(results)) {
   if (id && th) check(true, 'counted');
 }
 
+// Every place the real More tab, History, Edit and the list switcher lead to is drawn in each option's frames.
+for (const o of options) {
+  const drawn = new Set(frames.flatMap((f) => results[`${o.id}/${f}/light/1/en`].dests));
+  for (const d of Object.keys(dests)) check(drawn.has(d), `${o.id}: the frames draw a way to ${d}`);
+  if (o.nav === 'storeTabs') check(drawn.has('more'), `${o.id}: the ••• menu leads to More`);
+}
+
 const min = (xs) => Math.min(...xs.filter((x) => x !== null));
 const summary = {};
 for (const id of ids) {
@@ -130,6 +139,15 @@ for (const [file, todayName] of [['RECOMMENDATION.md', 'Today'], ['RECOMMENDATIO
     check(c[7] === String(sm.overflow310), `${file} ${id}: overflows at 310 % ${c[7]} = ${sm.overflow310}`);
     check(c[8] === String(sm.broken310), `${file} ${id}: broken words at 310 % ${c[8]} = ${sm.broken310}`);
   }
+}
+
+// The taps table quotes places.js.
+for (const [file, lang] of [['RECOMMENDATION.md', 'en'], ['RECOMMENDATION.de.md', 'de']]) {
+  const p = join(dir, 'rd', file);
+  const md = existsSync(p) ? readFileSync(p, 'utf8') : '';
+  const block = md.split('<!-- taps -->')[1]?.split('<!-- /taps -->')[0]?.trim() ?? '';
+  check(block === tapsTable(lang), `${file}: the taps table equals places.js (node tools/table.mjs)`);
+  for (const o of options) for (const c of tapCols) check(taps(o, c.dest) >= 1, `${o.id}: ${c.dest} is reachable`);
 }
 
 const measuredPath = join(dir, 'rd', 'measured.json');

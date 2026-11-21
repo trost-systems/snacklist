@@ -6,8 +6,6 @@
 // price: chip (a tappable chip), text (amount as text, „+“ icon when none), leader (dotted leader to the amount);
 // priceQuiet: no mark on a row without a price (the price is set in the item's sheet, RD-Q3).
 // stores: how a store opens its rows (rule, card, title, tabs, caps).
-// taps: taps from the list to History, Stores, Settings and another list, counted from the menu design; menuAt: where
-// the control that opens the menu sits (bottom: in thumb reach).
 // r: the corner radii by component size, in px: xs (checkbox, badge), sm (chip), md (button, field), lg (card, bar), xl (sheet).
 export const options = [
   {
@@ -22,7 +20,6 @@ export const options = [
     },
     revisits: { en: [], de: [] },
     nav: 'float', tick: 'row', price: 'chip', stores: 'rule',
-    taps: { history: 1, stores: 2, settings: 2, list: 2 }, menuAt: 'bottom',
     r: { xs: 0, sm: 0, md: 0, lg: 0, xl: 28 },
   },
   {
@@ -40,7 +37,6 @@ export const options = [
       de: ['Nur das Form-Token: HexPill, HexBorder, HexCheckbox und das Eingabefeld zeichnen Rechtecke mit Rundung', 'Der Platzhalter beim Joghurt ist ein abgerundetes Quadrat statt einer Wabe'],
     },
     nav: 'float', tick: 'row', price: 'chip', stores: 'rule',
-    taps: { history: 1, stores: 2, settings: 2, list: 2 }, menuAt: 'bottom',
     r: { xs: 6, sm: 8, md: 12, lg: 20, xl: 24 },
   },
   {
@@ -50,15 +46,14 @@ export const options = [
     navName: { en: 'One dock: menu button beside the add field; the menu is a sheet', de: 'Ein Dock: Menü-Knopf neben dem Eingabefeld; das Menü ist ein Sheet' },
     cost: 'structure',
     rationale: {
-      en: 'The tab bar goes: the list is the app, and History, Stores and Settings live in one menu sheet that also switches lists. The bottom band shrinks to one 52 px line, so the list gets a row back.',
-      de: 'Die Tab-Leiste fällt weg: Die Liste ist die App, Verlauf, Läden und Einstellungen liegen in einem Menü-Sheet, das auch die Liste wechselt. Unten bleibt eine Zeile von 52 px, die Liste gewinnt eine Zeile.',
+      en: 'The tab bar goes: the list is the app, and History and every row of today’s More tab live in one menu sheet that also switches lists. Edit stays top right. The bottom band shrinks to one 52 px line, so the list gets a row back.',
+      de: 'Die Tab-Leiste fällt weg: Die Liste ist die App, Verlauf und jede Zeile des heutigen Mehr-Tabs liegen in einem Menü-Sheet, das auch die Liste wechselt. Anpassen bleibt oben rechts. Unten bleibt eine Zeile von 52 px, die Liste gewinnt eine Zeile.',
     },
     revisits: {
-      en: ['Navigation: three tabs become one menu sheet with lists, History, Stores, Settings', 'Ticking: a round check at the row’s start, rows without dividers', 'Elevation: contour kept, the hard sticker shadow dropped'],
-      de: ['Navigation: Drei Tabs werden ein Menü-Sheet mit Listen, Verlauf, Läden, Einstellungen', 'Abhaken: ein runder Haken vorn in der Zeile, Zeilen ohne Trennlinien', 'Tiefe: Kontur bleibt, der harte Sticker-Schatten fällt weg'],
+      en: ['Navigation: three tabs become one menu sheet with the lists, History, Start a trip, Account and the rest of More', 'Ticking: a round check at the row’s start, rows without dividers', 'Elevation: contour kept, the hard sticker shadow dropped'],
+      de: ['Navigation: Drei Tabs werden ein Menü-Sheet mit den Listen, Verlauf, Einkauf starten, Konto und dem Rest von Mehr', 'Abhaken: ein runder Haken vorn in der Zeile, Zeilen ohne Trennlinien', 'Tiefe: Kontur bleibt, der harte Sticker-Schatten fällt weg'],
     },
     nav: 'dock', tick: 'circle', price: 'text', stores: 'title',
-    taps: { history: 2, stores: 2, settings: 2, list: 2 }, menuAt: 'bottom',
     r: { xs: 999, sm: 999, md: 999, lg: 999, xl: 28 },
   },
   {
@@ -76,7 +71,6 @@ export const options = [
       de: ['Navigation: Läden wird ein Tab; Anpassen verlässt die obere Leiste', 'Abhaken: eine eckige Box am Zeilenende', 'Tiefe: flach, 1-px-Trennlinien, keine Kontur, kein Sticker-Schatten', 'Schrift: ein 32-px-Titel in Bricolage für die Liste'],
     },
     nav: 'docked', tick: 'box', tickAt: 'end', price: 'text', priceQuiet: true, stores: 'title',
-    taps: { history: 1, stores: 1, settings: 2, list: 2 }, menuAt: 'bottom',
     r: { xs: 6, sm: 8, md: 8, lg: 12, xl: 16 },
   },
   {
@@ -86,15 +80,14 @@ export const options = [
     navName: { en: 'No tabs: the title opens a panel with lists and every other place', de: 'Keine Tabs: Der Titel öffnet ein Panel mit Listen und allen anderen Orten' },
     cost: 'structure',
     rationale: {
-      en: 'The title is the only menu: a tap drops a panel with households, lists, History, Stores and Settings. The add field docks to the bottom edge. Radii follow the size of the thing, so small parts look precise and big ones soft.',
-      de: 'Der Titel ist das einzige Menü: Ein Tipp öffnet ein Panel mit Haushalten, Listen, Verlauf, Läden und Einstellungen. Das Eingabefeld sitzt fest am unteren Rand. Die Rundung folgt der Größe: Kleines wirkt präzise, Großes weich.',
+      en: 'The title is the only menu: a tap drops a panel with households, lists, History and every row of today’s More tab. The add field docks to the bottom edge. Radii follow the size of the thing, so small parts look precise and big ones soft.',
+      de: 'Der Titel ist das einzige Menü: Ein Tipp öffnet ein Panel mit Haushalten, Listen, Verlauf und jeder Zeile des heutigen Mehr-Tabs. Das Eingabefeld sitzt fest am unteren Rand. Die Rundung folgt der Größe: Kleines wirkt präzise, Großes weich.',
     },
     revisits: {
       en: ['Navigation: tab bar and Edit replaced by the title’s panel', 'Density: 44 px rows with full-width hairlines (one more row)', 'Add: a docked field with the mic inside', 'Ticking: a 4 px rounded box at the start'],
       de: ['Navigation: Tab-Leiste und Anpassen weichen dem Panel am Titel', 'Dichte: 44-px-Zeilen mit Haarlinien über die ganze Breite (eine Zeile mehr)', 'Hinzufügen: ein festes Feld mit Mikrofon', 'Abhaken: eine Box mit 4 px Rundung vorn'],
     },
     nav: 'panel', tick: 'box', price: 'text', priceQuiet: true, stores: 'caps',
-    taps: { history: 2, stores: 2, settings: 2, list: 2 }, menuAt: 'top',
     r: { xs: 4, sm: 8, md: 12, lg: 20, xl: 20 },
   },
   {
@@ -112,7 +105,6 @@ export const options = [
       de: ['Hinzufügen: Der Knopf öffnet das Sheet mit einem Tipp, wie heute das Feld; die Frage „Was brauchst du?“ verschwindet von der Liste', 'Läden: jeder eine erhabene Karte mit Anzahl und Summe', 'Tiefe: weiche Schatten statt Sticker-Schatten', 'Leerer Zustand: eine Karte mit großem + zum Start', 'Abhaken: wie heute, die ganze Zeile wird mint und durchgestrichen'],
     },
     nav: 'fab', tick: 'row', price: 'chip', stores: 'card',
-    taps: { history: 1, stores: 1, settings: 2, list: 2 }, menuAt: 'bottom',
     r: { xs: 999, sm: 12, md: 16, lg: 24, xl: 24 },
   },
   {
@@ -126,29 +118,27 @@ export const options = [
       de: 'Ein Seitenmenü hält alles, was nicht die Liste ist, oben der Haushalt mit seinen Leuten. Fließende Ecken (Squircle) wirken weicher als Kreisbögen gleicher Größe, und Flutter zeichnet sie selbst.',
     },
     revisits: {
-      en: ['Navigation: drawer with members, lists, History, Stores, Settings', 'Shape: continuous corners (RoundedSuperellipseBorder in Flutter)', 'Prices: plain amounts in a muted column, „+“ only on unpriced rows', 'Motion: the drawer pushes the list 24 px', 'Ticking: swipe right or tap; the row turns mint under a check'],
-      de: ['Navigation: Seitenmenü mit Mitgliedern, Listen, Verlauf, Läden, Einstellungen', 'Form: fließende Ecken (RoundedSuperellipseBorder in Flutter)', 'Preise: Beträge leise in einer Spalte, „+“ nur ohne Preis', 'Bewegung: Das Menü schiebt die Liste 24 px zur Seite', 'Abhaken: nach rechts wischen oder tippen; die Zeile wird mint unter einem Haken'],
+      en: ['Navigation: drawer with members, lists, History and every row of today’s More tab', 'Shape: continuous corners (RoundedSuperellipseBorder in Flutter)', 'Prices: plain amounts in a muted column, „+“ only on unpriced rows', 'Motion: the drawer pushes the list 24 px', 'Ticking: swipe right or tap; the row turns mint under a check'],
+      de: ['Navigation: Seitenmenü mit Mitgliedern, Listen, Verlauf und jeder Zeile des heutigen Mehr-Tabs', 'Form: fließende Ecken (RoundedSuperellipseBorder in Flutter)', 'Preise: Beträge leise in einer Spalte, „+“ nur ohne Preis', 'Bewegung: Das Menü schiebt die Liste 24 px zur Seite', 'Abhaken: nach rechts wischen oder tippen; die Zeile wird mint unter einem Haken'],
     },
     nav: 'drawer', tick: 'swipe', price: 'text', stores: 'title',
-    taps: { history: 2, stores: 2, settings: 2, list: 2 }, menuAt: 'top',
     r: { xs: 10, sm: 10, md: 18, lg: 28, xl: 28 },
   },
   {
     id: 'RD7',
     name: { en: 'People first', de: 'Leute zuerst' },
     radius: { en: 'Mixed: circles for people and ticks, 10 for everything else', de: 'Gemischt: Kreise für Leute und Haken, 10 für alles andere' },
-    navName: { en: 'Segmented List | History on top; the household’s faces open settings', de: 'Segmente Liste | Verlauf oben; die Gesichter des Haushalts öffnen die Einstellungen' },
+    navName: { en: 'Segmented List | History on top; the household’s faces open a sheet with Edit and all of More', de: 'Segmente Liste | Verlauf oben; die Gesichter des Haushalts öffnen ein Sheet mit Anpassen und allem aus Mehr' },
     cost: 'structure',
     rationale: {
-      en: 'Snacklist is shared, so the people are the menu: the household’s avatars top right open the household and settings sheet. List and History switch with a segmented control; nothing sits at the bottom but the add field.',
-      de: 'Snacklist wird geteilt, also sind die Leute das Menü: Die Avatare oben rechts öffnen Haushalt und Einstellungen. Liste und Verlauf wechseln über Segmente; unten sitzt nur das Eingabefeld.',
+      en: 'Snacklist is shared, so the people are the menu: the household’s avatars top right open a sheet with the household, Edit and every row of today’s More tab. List and History switch with a segmented control; nothing sits at the bottom but the add field.',
+      de: 'Snacklist wird geteilt, also sind die Leute das Menü: Die Avatare oben rechts öffnen ein Sheet mit dem Haushalt, Anpassen und jeder Zeile des heutigen Mehr-Tabs. Liste und Verlauf wechseln über Segmente; unten sitzt nur das Eingabefeld.',
     },
     revisits: {
       en: ['Navigation: segmented control and an avatar menu, no tab bar', 'Ticking: a circle at the row’s end, the row turns mint', 'Quantities: a small badge before the name instead of blue text', 'Icons: the emoji stay, the placeholder is a circle'],
       de: ['Navigation: Segmente und ein Avatar-Menü, keine Tab-Leiste', 'Abhaken: ein Kreis am Zeilenende, die Zeile wird mint', 'Mengen: ein kleines Badge vor dem Namen statt blauer Schrift', 'Icons: Emoji bleiben, der Platzhalter ist ein Kreis'],
     },
     nav: 'avatars', tick: 'circle', tickAt: 'end', price: 'text', stores: 'title',
-    taps: { history: 1, stores: 2, settings: 2, list: 2 }, menuAt: 'top',
     r: { xs: 999, sm: 10, md: 10, lg: 16, xl: 20 },
   },
   {
@@ -158,15 +148,14 @@ export const options = [
     navName: { en: 'Store tabs under the title; a ••• menu for the rest', de: 'Laden-Tabs unter dem Titel; ein •••-Menü für den Rest' },
     cost: 'structure',
     rationale: {
-      en: 'In the shop you want one store: tabs filter the list to it, with All as the default. Everything else (History, Stores, Settings) moves into a compact ••• menu, so the bottom holds only the add field.',
-      de: 'Im Laden zählt ein Laden: Tabs filtern die Liste darauf, Alle ist der Standard. Alles andere (Verlauf, Läden, Einstellungen) wandert in ein kompaktes •••-Menü, unten bleibt nur das Eingabefeld.',
+      en: 'In the shop you want one store: tabs filter the list to it, with All as the default. History, Edit, Start a trip, Settings and the legal pages move into a compact ••• menu, Account and the rest behind its More row, so the bottom holds only the add field.',
+      de: 'Im Laden zählt ein Laden: Tabs filtern die Liste darauf, Alle ist der Standard. Verlauf, Anpassen, Einkauf starten, Einstellungen und die Rechtstexte wandern in ein kompaktes •••-Menü, Konto und der Rest hinter dessen Zeile Mehr; unten bleibt nur das Eingabefeld.',
     },
     revisits: {
       en: ['Store switching: horizontal tabs with counts', 'Navigation: an overflow menu, no tab bar', 'Shape: tight 6 px corners, underline for the active tab', 'Ticking: tap the row, the name strikes through'],
       de: ['Laden wechseln: Tabs mit Anzahl nebeneinander', 'Navigation: ein Überlauf-Menü, keine Tab-Leiste', 'Form: knappe 6-px-Ecken, Unterstrich für den aktiven Tab', 'Abhaken: Zeile antippen, der Name wird durchgestrichen'],
     },
     nav: 'storeTabs', tick: 'strike', price: 'text', priceQuiet: true, stores: 'tabs',
-    taps: { history: 2, stores: 2, settings: 2, list: 2 }, menuAt: 'top',
     r: { xs: 4, sm: 6, md: 6, lg: 6, xl: 12 },
   },
   {
@@ -184,7 +173,6 @@ export const options = [
       de: ['Preise: Punktlinien, Ziffern in Spalten, die Summe als Bon-Fuß', 'Abhaken: ein Tintenstrich durch die Zeile', 'Schrift: Ladennamen in Bricolage-Versalien, 46-px-Zeilen', 'Form: Die Abrisskante ersetzt die Wabe als Marken-Motiv'],
     },
     nav: 'textTabs', tick: 'strike', price: 'leader', stores: 'caps',
-    taps: { history: 1, stores: 2, settings: 2, list: 2 }, menuAt: 'bottom',
     r: { xs: 2, sm: 2, md: 2, lg: 2, xl: 2 },
   },
   {
@@ -202,7 +190,6 @@ export const options = [
       de: ['Form: Der Biss ersetzt die Wabe (auch für das App-Icon denkbar, RD-Q4)', 'Abhaken: ein gelber Sticker-Punkt mit Haken springt auf', 'Hinzufügen: ein runder Knopf neben den Tabs öffnet das Sheet', 'Summe: eine erhabene Karte mit Biss'],
     },
     nav: 'split', tick: 'sticker', price: 'chip', stores: 'rule',
-    taps: { history: 1, stores: 2, settings: 2, list: 2 }, menuAt: 'bottom',
     r: { xs: 999, sm: 12, md: 20, lg: 24, xl: 28 },
   },
 ];
@@ -214,6 +201,6 @@ export const frameName = {
   tick: { en: 'Tick', de: 'Abhaken' },
   nav: { en: 'Menu open', de: 'Menü offen' },
   add: { en: 'Add sheet', de: 'Hinzufügen' },
-  screen: { en: 'Settings', de: 'Einstellungen' },
+  screen: { en: 'More', de: 'Mehr' },
   empty: { en: 'Empty list', de: 'Leere Liste' },
 };

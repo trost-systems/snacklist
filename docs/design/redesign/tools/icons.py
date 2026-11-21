@@ -11,7 +11,9 @@ NAMES = ['expand_more', 'expand_less', 'unfold_more', 'shopping_cart_outlined', 
          'tune', 'language', 'lightbulb_outline', 'drag_handle', 'delete_outline', 'swap_horiz', 'list', 'checklist',
          'home_outlined', 'person_add_alt', 'feedback_outlined', 'star_outline', 'logout', 'arrow_drop_down', 'edit_outlined',
          'radio_button_unchecked', 'check_circle', 'check_box_outline_blank', 'check_box', 'circle_outlined', 'done_all',
-         'shopping_basket_outlined', 'workspace_premium_outlined', 'keyboard_arrow_down', 'euro']
+         'shopping_basket_outlined', 'workspace_premium_outlined', 'keyboard_arrow_down', 'euro',
+         'manage_accounts_outlined', 'key_outlined', 'insights_outlined', 'info_outline', 'privacy_tip_outlined',
+         'article_outlined', 'description_outlined']
 home = os.path.expanduser('~/flutter')
 src = open(f'{home}/packages/flutter/lib/src/material/icons.dart').read()
 font = TTFont(f'{home}/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf')

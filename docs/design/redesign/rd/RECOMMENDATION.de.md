@@ -7,8 +7,13 @@ geändert.
 - Seite: `docs/design/redesign/rd/` (Englisch; `?lang=de` für Deutsch, `?theme=dark`, `?ts=200` oder `?ts=310`).
 - Jede Option ist auf dieselbe Liste gezeichnet: die Liste aus Job 350 mit ausgeblendeten Kategorien und der Summe TE1
   aus Job 348. Der Haushalt ist die erfundene Familie Brandt. Alle Daten sind Beispieldaten.
-- Jede Option hat sechs Bilder: die Liste, ein Abhaken, das offene Menü, das Hinzufügen-Sheet mit Tastatur, die
-  Einstellungen und die leere Liste.
+- Jede Option hat sechs Bilder: die Liste, ein Abhaken, das offene Menü, das Hinzufügen-Sheet mit Tastatur, Mehr (oder,
+  wo das Menü alle Orte enthält, dieses Menü ans Ende gescrollt) und die leere Liste.
+- Jeder Ort, zu dem der Mehr-Tab heute führt, ist in jeder Option: Einkauf starten, Konto (darin Premium), Zugänge,
+  Einstellungen, Nutzungsdaten, Tipps, Feedback & Ideen, Snacklist bewerten, Hilfe & Kontakt, Impressum,
+  Datenschutzerklärung, Nutzungsbedingungen und Lizenzen sowie Abmelden (`more_screen.dart`, wie ein iPhone es zeigt).
+  Dazu Verlauf, Anpassen (dort sind die Läden) und der Listenwechsel. `places.js` sagt, wo jeder davon in jeder Option
+  liegt.
 - Die Farben sind genau die heutigen Tokens. `palette.css` wird aus `app/lib/design/tokens.g.dart` erzeugt, und
   `verify.mjs` schlägt fehl, wenn ein Telefon eine Farbe außerhalb davon malt. Formen, Menüs, Zeilen, Haken und Schrift
   sind frei.
@@ -20,13 +25,13 @@ geändert.
 | Option | Ecken | Menü | Aufwand |
 | --- | --- | --- | --- |
 | RD1 Weich getauscht | weich: 8 Chip, 12 Button und Feld, 20 Leiste, 24 Sheet | die heutige schwebende Tab-Leiste | günstig: nur Tokens |
-| RD2 Pillen-Dock | Pille bei jedem Bedienelement, 28 Sheet | keine Tab-Leiste; ein Menü-Button neben dem Eingabefeld öffnet ein Sheet mit Listen, Verlauf, Läden, Anpassen, Einstellungen | strukturell |
+| RD2 Pillen-Dock | Pille bei jedem Bedienelement, 28 Sheet | keine Tab-Leiste; ein Menü-Button neben dem Eingabefeld öffnet ein Sheet mit den Listen, Verlauf und jeder Zeile von Mehr; Anpassen bleibt oben rechts | strukturell |
 | RD3 Feste Tabs | 6 Box, 8 Button und Feld, 16 Sheet | Tab-Leiste über die volle Breite mit vier Tabs (Läden bekommt einen), großer Titel | strukturell |
-| RD4 Ein Screen | nach Größe verschachtelt: 4 klein, 12 mittel, 20 groß | keine Tabs; der Titel klappt ein Panel mit Haushalten, Listen, Verlauf, Läden, Einstellungen auf | strukturell |
+| RD4 Ein Screen | nach Größe verschachtelt: 4 klein, 12 mittel, 20 groß | keine Tabs; der Titel klappt ein Panel mit Haushalten, Listen, Verlauf und jeder Zeile von Mehr auf | strukturell |
 | RD5 Laden-Karten | 12 Chip, 16 Button, 24 Karte und Sheet, runder Hinzufügen-Button | untere Leiste mit vier Tabs um einen runden Hinzufügen-Button | strukturell |
-| RD6 Seitenmenü | Squircle (fließende Ecken) 10 / 18 / 28 | Menü-Button oben links öffnet ein Seitenmenü | strukturell |
-| RD7 Leute zuerst | Kreise für Leute und Haken, 10 für den Rest | Liste und Verlauf als Segmente oben; die Avatare des Haushalts öffnen die Einstellungen | strukturell |
-| RD8 Laden-Tabs | eng: 4 und 6, 12 Sheet | Tabs pro Laden unter dem Titel; ein •••-Menü für den Rest | strukturell |
+| RD6 Seitenmenü | Squircle (fließende Ecken) 10 / 18 / 28 | Menü-Button oben links öffnet ein Seitenmenü mit den Listen, Verlauf und jeder Zeile von Mehr | strukturell |
+| RD7 Leute zuerst | Kreise für Leute und Haken, 10 für den Rest | Liste und Verlauf als Segmente oben; die Avatare des Haushalts öffnen ein Sheet mit Anpassen und jeder Zeile von Mehr | strukturell |
+| RD8 Laden-Tabs | eng: 4 und 6, 12 Sheet | Tabs pro Laden unter dem Titel; ein •••-Menü mit Verlauf, Anpassen, Einkauf starten, Einstellungen, den Rechtstexten und Mehr (Konto und der Rest) | strukturell |
 | RD9 Kassenbon | überall scharf 2; ein abgerissener Rand ist das Motiv | die heutigen drei Tabs als feste Textleiste | mittel: Widgets neu gezeichnet |
 | RD10 Biss | rund 20, mit einem runden Biss aus einer Ecke der Hauptelemente | schwebende Tab-Kapsel plus ein eigener runder Hinzufügen-Button | strukturell |
 
@@ -55,21 +60,23 @@ Was jede Option sonst noch ändert, und warum, steht auf der Seite unter ihrem N
 <!-- table -->
 | Option | Aufwand | Ganze Zeilen, 100 % | Ganze Zeilen, 310 % | Kleinstes Tippziel | Niedrigster Textkontrast, hell / dunkel | Niedrigster Randkontrast, hell / dunkel | Überläufe bei 310 % | Getrennte Wörter bei 310 % |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Heute | heute | 7 | 1 | 44 px | 7,1 / 8,43 | – / – | 0 | 7 |
-| RD1 Weich getauscht | günstig (nur Tokens) | 7 | 2 | 44 px | 7,1 / 8,43 | 7,1 / 5,12 | 0 | 2 |
-| **RD2 Pillen-Dock** | strukturell | 8 | 2 | 44 px | 7,1 / 8,43 | 7,1 / 5,12 | 0 | 2 |
-| RD3 Feste Tabs | strukturell | 7 | 2 | 44 px | 7,1 / 8,43 | 7,1 / 8,43 | 0 | 2 |
-| RD4 Ein Screen (zweite Wahl) | strukturell | 10 | 2 | 44 px | 7,1 / 8,43 | 7,1 / 5,12 | 0 | 2 |
-| RD5 Laden-Karten | strukturell | 8 | 2 | 44 px | 7,1 / 8,43 | 8,87 / 8,43 | 0 | 2 |
-| RD6 Seitenmenü | strukturell | 9 | 2 | 44 px | 7,1 / 8,56 | 7,1 / 9,68 | 0 | 2 |
-| RD7 Leute zuerst | strukturell | 7 | 2 | 44 px | 6,63 / 8,43 | 7,1 / 5,12 | 0 | 1 |
-| RD8 Laden-Tabs | strukturell | 8 | 2 | 44 px | 7,1 / 8,43 | 8,87 / 5,12 | 0 | 2 |
-| RD9 Kassenbon | mittel (Widgets) | 7 | 2 | 44 px | 7,1 / 8,43 | 8,87 / 8,43 | 0 | 2 |
-| RD10 Biss | strukturell | 8 | 2 | 44 px | 7,1 / 8,43 | 7,1 / 5,12 | 0 | 2 |
+| Heute | heute | 7 | 1 | 44 px | 7,1 / 8,43 | – / – | 0 | 29 |
+| RD1 Weich getauscht | günstig (nur Tokens) | 7 | 2 | 44 px | 7,1 / 8,43 | 7,1 / 5,12 | 0 | 7 |
+| **RD2 Pillen-Dock** | strukturell | 8 | 2 | 44 px | 6,63 / 8,43 | 7,1 / 5,12 | 0 | 16 |
+| RD3 Feste Tabs | strukturell | 7 | 2 | 44 px | 7,1 / 8,43 | 7,1 / 8,43 | 0 | 7 |
+| RD4 Ein Screen (zweite Wahl) | strukturell | 10 | 2 | 44 px | 7,1 / 8,43 | 7,1 / 5,12 | 0 | 16 |
+| RD5 Laden-Karten | strukturell | 8 | 2 | 44 px | 7,1 / 8,43 | 8,87 / 8,43 | 0 | 9 |
+| RD6 Seitenmenü | strukturell | 9 | 2 | 44 px | 6,63 / 8,56 | 7,1 / 9,68 | 0 | 17 |
+| RD7 Leute zuerst | strukturell | 7 | 2 | 44 px | 6,63 / 8,43 | 7,1 / 5,12 | 0 | 10 |
+| RD8 Laden-Tabs | strukturell | 8 | 2 | 44 px | 7,1 / 8,43 | 8,87 / 5,12 | 0 | 5 |
+| RD9 Kassenbon | mittel (Widgets) | 7 | 2 | 44 px | 7,1 / 8,43 | 8,87 / 8,43 | 0 | 7 |
+| RD10 Biss | strukturell | 8 | 2 | 44 px | 7,1 / 8,43 | 7,1 / 5,12 | 0 | 8 |
 <!-- /table -->
 
 So wurde gemessen. `verify.mjs` rendert jede Option × Bild × hell und dunkel × 100, 200 und 310 % Text × Englisch und
-Deutsch (792 Telefone) in Chromium und misst jedes mit `measure.js`:
+Deutsch (792 Telefone) in Chromium und misst jedes mit `measure.js`. Es misst, was das Telefon in Ruhe zeigt, scrollt
+dann jeden scrollbaren Bereich (die Liste bis zu ihrer Summe, ein langes Menü) Seite für Seite und misst erneut. So
+entgeht nichts unterhalb des ersten Bildschirms:
 
 - **Ganze Zeilen.** Artikelzeilen, die ganz zwischen oberer und unterer Leiste liegen, im Listen-Bild (Englisch, hell).
   Das Telefon ist ein iPhone-Screen mit 390 × 844, mit 47 px Statusleiste und 34 px Home-Indikator. Die Zahlen aus
@@ -89,15 +96,29 @@ Deutsch (792 Telefone) in Chromium und misst jedes mit `measure.js`:
 - Die Zahlen der Tabelle kommen aus `rd/measured.json` (`tools/table.mjs`), und `verify.mjs` prüft jede Zelle gegen
   einen frischen Lauf.
 
-Tipps, gezählt nach dem Design des jeweiligen Menüs (nicht gemessen):
+Tipps von der Liste zu jedem Ort, aus dem Design jedes Menüs (`places.js`, nicht gemessen; `verify.mjs` prüft diese
+Tabelle dagegen und dass jede Option einen Weg zu allen 16 Orten zeichnet). Die übrigen Zeilen von Mehr (Zugänge,
+Nutzungsdaten, Tipps, Feedback, Bewerten, Hilfe, die anderen Rechtstexte) brauchen so viele Tipps wie Konto, außer in
+RD8: Dort liegen Einstellungen und die Rechtstexte im •••-Menü (2) und der Rest hinter dessen Zeile Mehr (3):
 
-| Option | zum Verlauf | zu den Läden | zu den Einstellungen | zu einer anderen Liste | Menü öffnet von |
-| --- | --- | --- | --- | --- | --- |
-| Heute, RD1, RD9, RD10 | 1 | 2 | 2 | 2 | unten (Tabs) |
-| RD2 | 2 | 2 | 2 | 2 | unten (Menü-Button) |
-| RD3, RD5 | 1 | 1 | 2 | 2 | unten (Tabs) |
-| RD4, RD6, RD8 | 2 | 2 | 2 | 2 | oben |
-| RD7 | 1 | 2 | 2 | 2 | oben |
+<!-- taps -->
+| Option | Verlauf | Anpassen (Läden) | Einkauf starten | Konto | Einstellungen | Impressum | Abmelden | Andere Liste | Konto & Co. öffnen von |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Heute | 1 | 1 | 2 | 2 | 2 | 2 | 2 | 2 | Tab-Leiste |
+| RD1 | 1 | 1 | 2 | 2 | 2 | 2 | 2 | 2 | Tab-Leiste |
+| RD2 | 2 | 1 | 2 | 2 | 2 | 2 | 2 | 2 | Menü-Knopf, unten |
+| RD3 | 1 | 1 | 2 | 2 | 2 | 2 | 2 | 2 | Tab-Leiste |
+| RD4 | 2 | 1 | 2 | 2 | 2 | 2 | 2 | 2 | Titel, oben |
+| RD5 | 1 | 1 | 2 | 2 | 2 | 2 | 2 | 2 | Tab-Leiste |
+| RD6 | 2 | 1 | 2 | 2 | 2 | 2 | 2 | 2 | Menü-Knopf, oben |
+| RD7 | 1 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | Avatare, oben |
+| RD8 | 2 | 2 | 2 | 3 | 2 | 2 | 3 | 2 | •••-Knopf, oben |
+| RD9 | 1 | 1 | 2 | 2 | 2 | 2 | 2 | 2 | Tab-Leiste |
+| RD10 | 1 | 1 | 2 | 2 | 2 | 2 | 2 | 2 | Tab-Leiste |
+<!-- /taps -->
+
+Das Impressum bleibt in jeder Option 2 Tipps von der Liste entfernt. `more_screen.dart` hält die Rechtstexte einen Tipp
+vom Mehr-Tab entfernt (DDG §5); RD8 behält sie deshalb in seinem •••-Menü.
 
 Was die Zahlen sagen:
 
@@ -107,6 +128,10 @@ Was die Zahlen sagen:
   RD1, RD3, RD7 und RD9 zeigen so viele wie Heute.
 - Bei 310 % zeigt jede RD-Option 2 ganze Zeilen, Heute nur 1. Sie nutzen dieselbe Regel für große Schrift: Der Preis
   rutscht unter den Namen, und Überschriften wachsen ab 200 % nicht weiter (RD-Q6).
+- Die Summe folgt bei großer Schrift der Regel aus Job 348: Ein Betrag, der neben seinem Namen zu breit ist, rutscht
+  ganz darunter.
+- Getrennte Wörter: Heute trennt bei 310 % 29, die RD-Optionen 5 bis 17. Die Optionen, deren eines Menü alle Orte
+  enthält (RD2, RD4, RD6), trennen am meisten, weil ein langes Menü mehr lange deutsche Wörter zeigt.
 
 ## Empfehlung
 
@@ -114,13 +139,15 @@ Was die Zahlen sagen:
 Liste benutzt:
 
 - Die Sechsecke werden Pillen, eine freundliche Form, die zu einer Snack-App passt.
-- Die Tab-Leiste fällt weg. Verlauf, Läden, Anpassen und Einstellungen liegen in einem Menü-Sheet, das auch die Listen
-  wechselt.
+- Die Tab-Leiste fällt weg. Verlauf und jede Zeile des heutigen Mehr-Tabs liegen in einem Menü-Sheet, das auch die
+  Listen wechselt, jede wie heute 2 Tipps entfernt. Anpassen bleibt oben rechts, 1 Tipp, wie heute.
 - Der Menü-Button sitzt neben dem Eingabefeld in Daumenreichweite. Der untere Rand des Screens ist damit eine Zeile.
 - Die Liste gewinnt eine Zeile (8 statt 7).
 - Hinzufügen bleibt gleich: Das Feld ist immer da.
-- Der Nachteil ist ein Tipp mehr zum Verlauf (2 statt 1). Der Verlauf ist heute der am wenigsten genutzte Tab. Das ist
-  eine Annahme. RD-Q2 enthält die Prüfung in den Analytics.
+- Der Nachteil ist ein Tipp mehr zum Verlauf (2 statt 1). Dass der Verlauf seltener geöffnet wird als die Liste, ist
+  eine Annahme, keine Messung. RD-Q2 enthält die Prüfung in den Analytics.
+- Das Menü-Sheet ist lang (16 Zeilen und die Listen). Es öffnet mit den Listen und dem Verlauf oben; Konto und der Rest
+  brauchen einen Scroll, wie heute im Mehr-Tab.
 
 **Zweite Wahl: RD4 Ein Screen.** Sie hat die dichteste Liste: 10 Zeilen statt 7. Ihre Radien folgen der Größe jedes
 Teils. Das ist das am klarsten begründete Radius-System der zehn. Ihr Menü sitzt oben unter dem Titel, auf einem großen
@@ -148,7 +175,7 @@ Nicht gewählt, und warum:
 
 - **RD-Q1: zwei Schritte?** Vorgabe: ja. Zuerst der Token-Tausch von RD1, dann das Dock von RD2 hinter einem neuen Flag
   (`pill-dock`).
-- **RD-Q2: Verlauf ohne Tab.** Vorgabe: Der Verlauf ist die erste Zeile im Menü-Sheet. Vor dem Bauen die
+- **RD-Q2: Verlauf ohne Tab.** Vorgabe: Der Verlauf ist der erste Ort im Menü-Sheet, unter den Listen. Vor dem Bauen die
   PostHog-Screen-Views von Verlauf gegen Liste prüfen. Wenn der Verlauf oft geöffnet wird,
   hält die Tab-Leiste von RD3 oder RD9 ihn bei 1 Tipp.
 - **RD-Q3: eine Zeile ohne Preis.** RD2 behält ein kleines „+“ am Zeilenende, das den Preis setzt wie heute der Chip
@@ -164,7 +191,8 @@ Nicht gewählt, und warum:
   200 % nicht weiter. Vorgabe: ja, für alle Listenzeilen und Überschriften.
 - **RD-Q7: Abhaken.** RD2 zeichnet vorne in der Zeile einen runden Haken. Die ganze Zeile hakt weiterhin ab, wie heute,
   und der Kreis zeigt den Zustand. Vorgabe: wie gezeichnet.
-- **RD-Q8: Anpassen.** RD2 behält es oben rechts als ruhige Pille und führt es auch im Menü. Vorgabe: beides.
+- **RD-Q8: Anpassen.** RD2 behält es oben rechts als ruhige Pille, 1 Tipp wie heute, und das Menü wiederholt es nicht.
+  Vorgabe: wie gezeichnet.
 - **RD-Q9: Felder und Beschriftungen.** Heute stehen die Beschriftungen über den Feldern, weil ein Sechseck-Umriss keine
   schwebende Beschriftung tragen kann (`LabeledField`, Lint `no-label-in-hex-field`). Vorgabe: Beschriftungen über dem
   Feld lassen und die Lint-Regel umbenennen, wenn die Sechsecke gehen.
