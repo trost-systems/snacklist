@@ -2113,3 +2113,16 @@ store's screen with only its name, and no „Sortiert wie dein Laden“ tip. The
 the same as before (categories still sort underneath, proven off vs on in the web app with the same
 12 rows); the classifier, API and MCP are unchanged. No new copy. Ships with the next green main
 build. Details and the full list of places: `docs/done/350-hide-categories-ui.md`.
+
+## Job 344: API and MCP item operations
+
+An assistant over MCP and an API key can now change an entry (name, quantity, brand, details,
+list), delete it, put a ticked one back, look one up and merge a near-duplicate the way the app's
+„Zusammenführen“ does; `GET /v1/household` gives name, currency and member count (never who),
+`GET /v1/lists` marks the default list, and the Premium refusals say `unlock: "app"`. All through
+the app's own database writes, no migration. The consent screen and API key dialog now say
+„lesen, hinzufügen, ändern, abhaken und löschen“, so the PR touches ARB and waits for the lead.
+Review 0: `merge_items` merges only on one list, like the app. Review 1: `untick_items` by name
+brings back no older ticked twin when the item is open already, so a repeat changes nothing.
+Live probe 239/239.
+Details: `docs/done/344-api-mcp-item-ops.md`.

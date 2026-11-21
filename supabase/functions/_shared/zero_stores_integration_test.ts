@@ -5,7 +5,7 @@
 import { assertEquals, assertExists, assertRejects } from '@std/assert';
 import postgres from 'postgres';
 import { asUser, databaseUrl } from './db.ts';
-import { addItems as mcpAddItems, listItems, moveItem, stores, ToolError } from './list.ts';
+import { addItems as mcpAddItems, listItems, stores, ToolError, updateItem } from './list.ts';
 import { addItems as voiceAddItems } from '../voice/items.ts';
 import { openItems } from '../alexa/store.ts';
 
@@ -49,7 +49,7 @@ Deno.test({
         assertEquals(added.map((i) => i?.store), [null, null]);
         const listed = await listItems(tx, householdId, {});
         assertEquals(listed.items.map((i) => i.name).sort(), ['Duschgel', 'Zahnpasta']);
-        const moved = await moveItem(tx, householdId, { item: 'Zahnpasta', store: null });
+        const moved = await updateItem(tx, householdId, { item: 'Zahnpasta' }, { store: null });
         assertEquals(moved.store, null);
       });
       await assertRejects(

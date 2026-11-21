@@ -6,11 +6,18 @@ export const routes = [
   { operation: 'addItems', method: 'POST', path: '/v1/items', scope: 'write', idempotent: true },
   { operation: 'getItem', method: 'GET', path: '/v1/items/{id}', scope: 'read', idempotent: false },
   {
-    operation: 'moveItem',
+    operation: 'updateItem',
     method: 'PATCH',
     path: '/v1/items/{id}',
     scope: 'write',
     idempotent: false,
+  },
+  {
+    operation: 'deleteItem',
+    method: 'DELETE',
+    path: '/v1/items/{id}',
+    scope: 'write',
+    idempotent: true,
   },
   {
     operation: 'tickItem',
@@ -35,9 +42,16 @@ export const routes = [
   },
   { operation: 'listStores', method: 'GET', path: '/v1/stores', scope: 'read', idempotent: false },
   { operation: 'listLists', method: 'GET', path: '/v1/lists', scope: 'read', idempotent: false },
+  {
+    operation: 'getHousehold',
+    method: 'GET',
+    path: '/v1/household',
+    scope: 'read',
+    idempotent: false,
+  },
 ] as const satisfies readonly {
   operation: string;
-  method: 'GET' | 'POST' | 'PATCH';
+  method: 'GET' | 'POST' | 'PATCH' | 'DELETE';
   path: `/v1/${string}`;
   scope: 'read' | 'write';
   /** Takes an Idempotency-Key header. */

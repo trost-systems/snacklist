@@ -343,7 +343,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String consentListAccess(String client) {
-    return 'Einträge deiner Einkaufsliste lesen, hinzufügen, abhaken und verschieben. $client und sein Anbieter erhalten dabei die Inhalte eurer Liste.';
+    return 'Einträge deiner Einkaufsliste lesen, hinzufügen, ändern, abhaken und löschen. $client und sein Anbieter erhalten dabei die Inhalte eurer Liste.';
   }
 
   @override
@@ -2052,7 +2052,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get apiScopeReadWriteBody =>
-      'Kann auch Einträge hinzufügen, abhaken und verschieben.';
+      'Kann auch Einträge hinzufügen, ändern, abhaken und löschen.';
 
   @override
   String get apiKeyCreated => 'API-Schlüssel erstellt';

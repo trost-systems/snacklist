@@ -82,7 +82,10 @@ test('MCP over OAuth 2.1: discovery, registration, consent with PKCE, then tools
   expect(client.getServerVersion()?.name).toBe('snacklist');
   const { tools } = await client.listTools();
   expect(tools.map((t) => t.name).sort()).toEqual(
-    ['add_items', 'list_categories', 'list_households', 'list_items', 'list_lists', 'list_stores', 'move_item', 'tick_items'],
+    [
+      'add_items', 'get_item', 'list_categories', 'list_households', 'list_items', 'list_lists', 'list_stores',
+      'merge_items', 'move_item', 'remove_items', 'tick_items', 'untick_items', 'update_item',
+    ],
   );
 
   const added = await call<{ added: Item[]; alreadyOnList: Item[] }>(client, 'add_items', {
@@ -102,15 +105,24 @@ test('MCP over OAuth 2.1: discovery, registration, consent with PKCE, then tools
   await expect.poll(async () =>
     (await db.from('items').select('categories(name)').eq('name', 'Hafermilch').single()).data,
   ).toEqual({ categories: { name: 'Getränke' } });
+  const edited = await call<Item>(client, 'update_item', { item: 'äpfel', quantity: '3' });
+  expect(edited.quantity).toBe('3');
+  await within(3_000, (timeout) => expect(itemRow(app, 'Äpfel'), 'an MCP edit shows up live in the app').toHaveAccessibleName('Äpfel 3', { timeout }));
 
   await screenshot(app, 'mcp-02-list-after-add');
   const ticked = await call<{ ticked: Item[] }>(client, 'tick_items', { items: ['Brot', 'äpfel'] });
   expect(ticked.ticked.map((i) => i.name).sort()).toEqual(['Brot', 'Äpfel']);
   await within(3_000, (timeout) => expect(itemRow(app, 'Brot'), 'an MCP tick disappears live in the app').toHaveCount(0, { timeout }));
+  const unticked = await call<{ unticked: Item[] }>(client, 'untick_items', { items: ['brot'] });
+  expect(unticked.unticked.map((i) => i.name)).toEqual(['Brot']);
+  await within(3_000, (timeout) => expect(itemRow(app, 'Brot'), 'an MCP untick shows up live in the app').toBeVisible({ timeout }));
+  const removed = await call<{ removed: Item[] }>(client, 'remove_items', { items: ['Brot'] });
+  expect(removed.removed.map((i) => i.name)).toEqual(['Brot']);
+  await within(3_000, (timeout) => expect(itemRow(app, 'Brot'), 'an MCP remove disappears live in the app').toHaveCount(0, { timeout }));
 
   const listed = await call<{ items: Item[]; counts: { open: number; checkedLast24h: number } }>(client, 'list_items', {});
   expect(listed.items.map((i) => i.name)).toEqual(['Hafermilch']);
-  expect(listed.counts, 'the whole list counted next to the items').toEqual({ open: 1, checkedLast24h: 2 });
+  expect(listed.counts, 'the whole list counted next to the items').toEqual({ open: 1, checkedLast24h: 1 });
   await screenshot(app, 'mcp-03-list-after-tick');
 
   // The grant shows up in the app's settings and can be disconnected there.

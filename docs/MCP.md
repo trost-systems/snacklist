@@ -140,7 +140,8 @@ caller's default list in the household (chosen in the app, else the first list;
 job 207), where Siri and Alexa add too; `list` takes a list's id
 or its exact name (any case) as `list_lists` shows them, in the chosen
 household; another household's list is a tool error naming this one's lists.
-`tick_items` and `move_item` without `list` find an item given by its id on
+`tick_items`, `move_item`, `update_item`, `remove_items`, `untick_items`,
+`get_item` and `merge_items` without `list` find an item given by its id on
 any list of the household (ids from `list_items` with `list`); names still
 mean the default list. Items carry `listId`. Claims ("Ich bringe") are not exposed: they are a
 person's promise, not an agent's.
@@ -150,11 +151,27 @@ person's promise, not an agent's.
 | `list_households` | none | The user's households as `[{id, name, members, default}]` in joining order; `default` marks where calls without `household` go. A personal access token sees only its own household. Not behind the Premium lock: it lists only the user's own households, so a locked default can find an unlocked one. |
 | `list_lists` | `household?` | The household's lists as `[{id, name, default}]` in their order; `default` marks the caller's default list (chosen in the app, else the first), where calls without `list` go. |
 | `list_items` | `store?`, `category?`, `household?`, `list?` | Open items of one list (`list` in the answer names it) in aisle order, and inside a category in the household's walk order (`sort_key`, the order the app's drag and drop sets), then by age. With `store`: that store's items plus untagged ones, in that store's order. Next to `items`, `counts: {open, checkedLast24h}` counts that whole list whatever the filter: open items, and items ticked in the last 24 hours (one query on `items_household_status_idx`). |
-| `add_items` | `items: [{name, quantity?, brand?, properties?, category?, store?}]` (1–50), `household?`, `list?` | Adds items to the list through `public.add_list_item`, the add path Siri shares. The name is split by the parser (`public.parse_item`): "Windeln Pampers Größe 3" becomes name "Windeln", brand "Pampers", properties "Größe 3"; "2 Gurken" becomes name "Gurken", quantity "2". A non-blank `quantity` (max 40), `brand` (max 60) or `properties` (max 120, comma-separated) replaces the parsed value. The category comes from the household's learned corrections, then the German dictionary. The store comes from where the item was last bought, else a store brand's store (Balea: dm), else dm for drugstore items. Items already on the list come back under `alreadyOnList` instead of being duplicated: name, brand and properties are compared, so "Gurke" is "2 Gurken" but "Windeln Größe 5" is not "Windeln Größe 4". An explicit `category` is learned like a correction. A new item whose spelling variant or synonym is already open ("Karotten" with "Möhren", `public.similar_items`, job 32b) is still added and reported under `similarOnList: [{added, onList: [item], total}]`: `onList` holds at most three of the similar open items, oldest first, `total` says how many there are; nothing is merged. A call whose adds take longer than 5 seconds ends with a tool error and adds nothing. Calls of one user wait for each other; one that waited 5 seconds ends with the same tool error. |
+| `add_items` | `items: [{name, quantity?, brand?, properties?, category?, store?}]` (1–50), `household?`, `list?` | Adds items to the list through `public.add_list_item`, the add path Siri shares. The name is split by the parser (`public.parse_item`): "Windeln Pampers Größe 3" becomes name "Windeln", brand "Pampers", properties "Größe 3"; "2 Gurken" becomes name "Gurken", quantity "2". A non-blank `quantity` (max 40), `brand` (max 60) or `properties` (max 120, comma-separated) replaces the parsed value. The category comes from the household's learned corrections, then the German dictionary. The store comes from where the item was last bought, else a store brand's store (Balea: dm), else dm for drugstore items. Items already on the list come back under `alreadyOnList` instead of being duplicated: name, brand and properties are compared, so "Gurke" is "2 Gurken" but "Windeln Größe 5" is not "Windeln Größe 4". An explicit `category` is learned like a correction. A new item whose spelling variant or synonym is already open ("Karotten" with "Möhren", `public.similar_items`, job 32b) is still added and reported under `similarOnList: [{added, onList: [item], total}]`: `onList` holds at most three of the similar open items, oldest first, `total` says how many there are. Nothing is merged by itself: on the user's word, `merge_items` with `keep` the `onList` item and `merge` the new one does what the app's „Zusammenführen“ does. A call whose adds take longer than 5 seconds ends with a tool error and adds nothing. Calls of one user wait for each other; one that waited 5 seconds ends with the same tool error. |
 | `tick_items` | `items: [name or id]` (1–50), `household?`, `list?` | Ticks items off; they move to "Zuletzt verwendet". Unresolvable or already ticked names come back under `notFound` with the reason, so a repeated call changes nothing. |
 | `move_item` | `item`, `category?`, `store?` (`null` removes the store), `household?`, `list?` | Changes category and/or store through `public.move_item`; the item goes to the end of its new group in the walk order. The household remembers both: the next `add_items` (or app add) of that item uses them. `store: null` forgets the store. |
+| `update_item` | `item`, `name?`, `quantity?`, `brand?`, `properties?` (each `null` or blank clears it), `category?`, `store?` (`null` removes the store), `toList?`, `household?`, `list?` | Edits an open item like the app's edit sheet, in one transaction: the given text fields first (the name is taken as it is, not split), then `toList` (moves it to that list, keeping its category and store), then category and store as in `move_item`. `list` says where to find the item, `toList` where it goes. With nothing to change the tool error is „Gib an, was sich ändern soll.“ A rename that would make the item the twin of another open item on its list (same name, brand and properties) is the tool error `„<name>“ steht schon offen auf der Liste.` and changes nothing. Returns the item. |
+| `remove_items` | `items: [name or id]` (1–50), `household?`, `list?` | Removes open items from the list, found like `tick_items` finds them (names on the list, ids on any list of the household). Returns `{removed, notFound}`: `removed` holds the items as they were. A plain delete, like the app's: what the household taught Snacklist about an item (its category and store) stays for the next add. A repeated call finds nothing and changes nothing. |
+| `untick_items` | `items: [name or id]` (1–50), `household?`, `list?` | Puts ticked items back on the list. An id finds a ticked item on any list of the household (or on `list`); an open one comes back under `notFound` with `Eintrag „<id>“ ist nicht abgehakt.` A name looks among the list's ticked items, the most recently ticked row of each name, of the 50 most recently ticked names; open items are not candidates, and a name whose item is open on the list already comes back under `notFound` with `„<Name>“ steht schon offen auf der Liste.` (every purchase leaves a ticked row, so a repeat would otherwise bring back an older one). Returns `{unticked, notFound}`, so a repeated call changes nothing. |
+| `get_item` | `item`, `household?`, `list?` | One item with `status` (`open` or `ticked`) and `addedAt`. An id finds it in any status on any list of the household (or on `list`); a name looks among the list's open items. |
+| `merge_items` | `keep`, `merge`, `household?`, `list?` | Folds `merge` into `keep`, like the app's „Zusammenführen“, through `public.merge_items`. Both must be open items, found like `tick_items` finds them; usually `keep` is the `onList` item of a `similarOnList` and `merge` the new one. `keep` keeps its name; the quantities add up („2“ and „3“ make „5“, `public.merge_quantities`); brand and properties are `keep`'s, else `merge`'s; the `merge` row is deleted. Two items on different lists are refused as in the app, which merges only on the list it shows: „<keep>“ und „<merge>“ stehen auf verschiedenen Listen. Zusammengeführt wird nur auf einer Liste.“ One item for both is a tool error, and so is a merged quantity over 40 characters: „Die zusammengeführte Menge wäre zu lang (höchstens 40 Zeichen).“ Returns `{kept, merged}`, `merged` as it was before. |
 | `list_categories` | `household?` | Categories in aisle order. |
 | `list_stores` | `household?` | Stores. |
+
+Each tool tells the client what kind it is (MCP tool annotations): the `list_*` tools and
+`get_item` only read (`readOnlyHint`). `tick_items`, `untick_items` and `update_item` change the
+list but destroy nothing and can be repeated (`destructiveHint: false`, `idempotentHint: true`);
+`move_item` can be repeated too (`idempotentHint`). `remove_items` deletes and can be repeated
+(`destructiveHint: true`, `idempotentHint: true`); `merge_items` deletes the folded-in row
+(`destructiveHint: true`). A client may ask the user before a destructive call.
+
+The server names itself `snacklist` with `serverInfo.version` `1.1.0` (job 344 added five tools).
+Clients cache `tools/list` for an hour; the version moves whenever the tools change, so a new
+version says the list is worth fetching again.
 
 Results are JSON text. Every item in a result carries `id`, `name`,
 `brand`, `properties`, `quantity`, `category` and `store`; `brand` and
@@ -174,7 +191,9 @@ another member's plan does not count) can still discover the server, run OAuth, 
 but every `tools/call` answers HTTP 200 with a tool result `{isError: true}` and "Du brauchst
 Snacklist Premium für den Zugang über KI-Assistenten. Schalte es in der Snacklist-App frei.
 Es wurde nichts gelesen oder geändert." (English for a client whose `Accept-Language` prefers it;
-placeholder copy, `tools.ts` `premiumRequired`). Never 401 or 403: the client keeps its token or
+placeholder copy, `tools.ts` `premiumRequired`), and `structuredContent: {error: "premium_required",
+details: {integration: "mcp", unlock: "app"}}` for a client that acts on it: the locked
+integration and where it unlocks, with no link and no price (store rules). Never 401 or 403: the client keeps its token or
 PAT, and once the user has Premium the same connection works without signing in again. The
 check (`requirePremium`, `_shared/premium.ts`, once per request and household, for the household
 the call acts in) reads nothing else; a failing check is an error like any database failure. No change to
@@ -632,6 +651,12 @@ stack or the hosted project, not only the docs:
 
 ## Tests
 
+- `mcp/tools_test.ts` (Deno): the tool list, each tool's annotations and the Premium refusal's
+  `structuredContent`.
+- `mcp/item_ops_integration_test.ts` (db gate, `FG_DB_TEST=1`): per item operation the happy
+  path, another household's id not found, a rename onto an open twin refused, learning kept after
+  a remove, the merged quantity („2“ and „3“ make „5“), untick by name picking the latest ticked
+  row.
 - `supabase/tests/personal_access_tokens.test.sql` (pgTAP): hashing, one-time
   plaintext, owner-only visibility, cross-household isolation, one-way revoke,
   token death on leaving the household.

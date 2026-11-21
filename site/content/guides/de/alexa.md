@@ -29,7 +29,7 @@ Alexa meldet sich mit deinem Snacklist-Konto an, nicht mit einem Token. Du musst
 1. Öffne die Alexa-App, such im Skill-Store nach **Snacklist** und öffne die Seite des Skills.
 2. Tippe auf **Zur Verwendung aktivieren**. Die Anmeldung von Snacklist öffnet sich gleich danach.
 3. Melde dich an, wenn Snacklist danach fragt, und zwar genauso wie in der App.
-4. Snacklist fragt „Zugriff erlauben?“ und zeigt, was „Amazon Alexa“ darf: Einträge deiner Einkaufsliste lesen, hinzufügen, abhaken und verschieben. Tippe auf **Erlauben**.
+4. Snacklist fragt „Zugriff erlauben?“ und zeigt, was „Amazon Alexa“ darf: Einträge deiner Einkaufsliste lesen, hinzufügen, ändern, abhaken und löschen. Tippe auf **Erlauben**.
 5. Die Alexa-App zeigt an, dass dein Konto verknüpft ist.
 
 ## Schritt 2: Ausprobieren

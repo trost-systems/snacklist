@@ -1,22 +1,24 @@
 // What each route does (routes.ts names them): its input, parsed strictly from the request, and
 // the work on the list (_shared/list.ts), run as the key's member under RLS.
 import { z } from 'zod';
-import type { Tx } from '../_shared/db.ts';
+import { oneRow, type Tx } from '../_shared/db.ts';
 import {
   addItemIds,
   type ApiItem,
   apiItemsById,
   categories,
   counts,
+  deleteItemById,
   itemById,
+  listCatalog,
   lists,
-  moveItemById,
   type OpenItem,
   openItems,
   type Position,
   resolveFilter,
   setItemStatus,
   stores,
+  updateItemById,
   UUID,
 } from '../_shared/list.ts';
 import { storedText } from '../_shared/stored_text.ts';
@@ -86,10 +88,20 @@ const newItem = z.object({
 const addBody = z.object({ items: z.array(newItem).min(1).max(BATCH), list: ref.optional() })
   .strict();
 
-const moveBody = z.object({ category: ref.optional(), store: ref.nullable().optional() }).strict()
-  .refine((b) => b.category !== undefined || b.store !== undefined, {
-    message: 'Give category, store or both',
-  });
+/** Blank or null clears the field. */
+const clearable = (max: number) => storedText.trim().max(max).nullable().optional();
+
+const editBody = z.object({
+  name: storedText.trim().min(1).max(120).optional(),
+  quantity: clearable(40),
+  brand: clearable(60),
+  properties: clearable(120),
+  category: ref.optional(),
+  store: ref.nullable().optional(),
+  list: ref.optional(),
+}).strict().refine((b) => Object.values(b).some((v) => v !== undefined), {
+  message: 'Give at least one field to change',
+});
 
 // Cursors ------------------------------------------------------------------------------------
 
@@ -264,11 +276,18 @@ export const operations: Record<Operation, Parse> = {
     return async (tx, household) => ok({ data: await setItemStatus(tx, household, id, 'active') });
   },
 
-  moveItem: (raw) => {
+  updateItem: (raw) => {
     const id = idOf(raw);
     strict(noQuery, raw.query, 'query');
-    const move = strict(moveBody, raw.body ?? {}, 'body');
-    return async (tx, household) => ok({ data: await moveItemById(tx, household, id, move) });
+    const edit = strict(editBody, raw.body ?? {}, 'body');
+    return async (tx, household) => ok({ data: await updateItemById(tx, household, id, edit) });
+  },
+
+  deleteItem: (raw) => {
+    const id = idOf(raw);
+    strict(noQuery, raw.query, 'query');
+    strict(noBody, raw.body ?? {}, 'body');
+    return async (tx, household) => ok({ data: await deleteItemById(tx, household, id) });
   },
 
   listCategories: (raw) => {
@@ -283,7 +302,33 @@ export const operations: Record<Operation, Parse> = {
 
   listLists: (raw) => {
     strict(noQuery, raw.query, 'query');
-    return async (tx, household) =>
-      named((await lists(tx, household)).map((l) => ({ ...l, sort_order: l.position })));
+    return async (tx, household) => {
+      const [rows, { defaultList }] = await Promise.all([
+        lists(tx, household),
+        listCatalog(tx, household),
+      ]);
+      return ok({
+        data: rows.map((l) => ({
+          id: l.id,
+          name: l.name,
+          sortOrder: l.position,
+          default: l.id === defaultList.id,
+        })),
+        nextCursor: null,
+      });
+    };
+  },
+
+  // The household's name, currency and size; never who its members are.
+  getHousehold: (raw) => {
+    strict(noQuery, raw.query, 'query');
+    return async (tx, household) => {
+      const rows = await tx<{ id: string; name: string; currency: string; memberCount: number }[]>`
+        select h.id, h.name, h.currency, m.member_count as "memberCount"
+        from public.households h
+        join public.my_households() m on m.id = h.id
+        where h.id = ${household}`;
+      return ok({ data: oneRow(rows, 'household') });
+    };
   },
 };

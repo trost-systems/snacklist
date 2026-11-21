@@ -203,6 +203,8 @@ test('add, read, tick, untick and move through the API, one household only', () 
         ['GET', `/items/${gurken.id}`, undefined],
         ['POST', `/items/${gurken.id}/tick`, undefined],
         ['PATCH', `/items/${gurken.id}`, { store: null }],
+        ['PATCH', `/items/${gurken.id}`, { name: 'Fremd' }],
+        ['DELETE', `/items/${gurken.id}`, undefined],
       ] as const
     ) {
       const res = await api(other.token, method, path, { body });
@@ -212,9 +214,13 @@ test('add, read, tick, untick and move through the API, one household only', () 
     const theirList = await (await api(other.token, 'GET', '/items')).json();
     assertEquals(theirList.data, []);
     assertEquals(theirList.counts, { open: 0, checkedLast24h: 0 });
-    const [item] = await sql<{ status: string }[]>`
-      select status from public.items where id = ${gurken.id}`;
-    assertEquals(item?.status, 'active', 'the other household could not tick it');
+    const [item] = await sql<{ status: string; name: string }[]>`
+      select status, name from public.items where id = ${gurken.id}`;
+    assertEquals(
+      [item?.status, item?.name],
+      ['active', 'Gurken'],
+      'the other household could not tick, rename or delete it',
+    );
   }));
 
 test('pages follow the aisle order with stable cursors that belong to their filter', () =>
@@ -287,6 +293,11 @@ test('job 169b W3: lists, the list filter with its cursors, adds to a list, list
       lists.data.map((l: { name: string; sortOrder: number }) => [l.name, l.sortOrder]),
       [['Einkaufsliste', 0], ['Baumarkt', 1]],
       "only the key's household, in order",
+    );
+    assertEquals(
+      lists.data.map((l: { default: boolean }) => l.default),
+      [true, false],
+      'without a choice the first list is the default',
     );
     const [first, hardware] = lists.data as { id: string }[];
     assertExists(first);
@@ -595,7 +606,7 @@ test('a read key reads on every route and changes nothing; a read-write key does
     assertExists(milk);
     const bodies: Record<string, unknown> = {
       addItems: { items: [{ name: 'Brot' }] },
-      moveItem: { store: null },
+      updateItem: { store: null },
     };
     const call = (token: string, route: (typeof routes)[number]) =>
       api(token, route.method, route.path.replace('/v1', '').replace('{id}', milk.id), {
@@ -620,7 +631,11 @@ test('a read key reads on every route and changes nothing; a read-write key does
     }
     assertEquals(await state(), before, 'the read key changed nothing');
 
-    for (const route of routes) {
+    // The delete last: the routes after it would not find the item.
+    const deleteLast = [...routes].sort((a, b) =>
+      Number(a.method === 'DELETE') - Number(b.method === 'DELETE')
+    );
+    for (const route of deleteLast) {
       const res = await call(writer.token, route);
       assert(res.ok, `${route.method} ${route.path} with a read-write key: ${res.status}`);
       await res.body?.cancel();
@@ -1044,4 +1059,119 @@ test("one member's requests at once hold one connection; another household is an
         delete from public.items where household_id = ${loud.householdId} returning name`;
       assertEquals(open.map((r) => r.name).toSorted(), names.toSorted());
     }
+  }));
+
+test('job 344: PATCH edits the text fields and the list like the app; a twin is 409', () =>
+  withMembers(async (sql, [mine]) => {
+    const key = await mint(sql, mine, ['read', 'write']);
+    await asUser(
+      mine.userId,
+      (tx) => tx`select public.create_list(${mine.householdId}, 'Baumarkt', gen_random_uuid())`,
+    );
+    const added = await api(key.token, 'POST', '/items', {
+      body: { items: [{ name: '2 Gurken' }, { name: 'Milch' }, { name: 'Hafermilch' }] },
+    });
+    const [gurken, milch, hafer] = (await added.json()).data.added as Item[];
+    assertExists(gurken);
+    assertExists(milch);
+    assertExists(hafer);
+
+    const edited = await api(key.token, 'PATCH', `/items/${gurken.id}`, {
+      body: { name: ' Salatgurken ', quantity: null, brand: 'Bio', properties: 'lose' },
+    });
+    assertEquals(edited.status, 200);
+    const item = (await edited.json()).data;
+    assertEquals(
+      [item.name, item.quantity, item.brand, item.properties, item.status],
+      ['Salatgurken', null, 'Bio', 'lose', 'open'],
+    );
+    const cleared = await api(key.token, 'PATCH', `/items/${gurken.id}`, {
+      body: { brand: ' ', properties: null, quantity: '3' },
+    });
+    const clearedItem = (await cleared.json()).data;
+    assertEquals(
+      [clearedItem.brand, clearedItem.properties, clearedItem.quantity],
+      [null, null, '3'],
+      'blank or null clears',
+    );
+
+    const moved = await api(key.token, 'PATCH', `/items/${gurken.id}`, {
+      body: { list: 'baumarkt', category: 'Kühlregal' },
+    });
+    assertEquals(moved.status, 200);
+    const movedItem = (await moved.json()).data;
+    const [hardware] = await sql<{ id: string }[]>`
+      select id from public.lists where household_id = ${mine.householdId} and name = 'Baumarkt'`;
+    assertEquals([movedItem.listId, movedItem.category], [hardware?.id, 'Kühlregal']);
+
+    const twin = await api(key.token, 'PATCH', `/items/${hafer.id}`, { body: { name: 'milch' } });
+    assertEquals(twin.status, 409);
+    assertEquals((await twin.json()).error, {
+      code: 'conflict',
+      message: 'An open item with this name, brand and details is already on the list.',
+    });
+    const [still] = await sql<
+      { name: string }[]
+    >`select name from public.items where id = ${hafer.id}`;
+    assertEquals(still?.name, 'Hafermilch', 'the refused rename changed nothing');
+
+    const noList = await api(key.token, 'PATCH', `/items/${hafer.id}`, { body: { list: 'Fest' } });
+    assertEquals(noList.status, 422);
+    assertEquals((await noList.json()).error.code, 'list_not_found');
+  }));
+
+test('job 344: DELETE removes an item in any status and keeps what the household learned', () =>
+  withMembers(async (sql, [mine]) => {
+    const key = await mint(sql, mine, ['read', 'write']);
+    const added = await api(key.token, 'POST', '/items', {
+      body: { items: [{ name: 'Basilikum' }, { name: 'Brot' }] },
+    });
+    const [basil, bread] = (await added.json()).data.added as Item[];
+    assertExists(basil);
+    assertExists(bread);
+    assert((basil as unknown as { category: string }).category !== 'Kühlregal');
+    await api(key.token, 'PATCH', `/items/${basil.id}`, { body: { category: 'Kühlregal' } });
+
+    const deleted = await api(key.token, 'DELETE', `/items/${basil.id}`);
+    assertEquals(deleted.status, 200);
+    const gone = (await deleted.json()).data;
+    assertEquals([gone.id, gone.name, gone.category], [basil.id, 'Basilikum', 'Kühlregal']);
+    assertEquals((await api(key.token, 'GET', `/items/${basil.id}`)).status, 404);
+    const again = await api(key.token, 'DELETE', `/items/${basil.id}`);
+    assertEquals(again.status, 404);
+    assertEquals((await again.json()).error.code, 'item_not_found');
+
+    const readded = await api(key.token, 'POST', '/items', {
+      body: { items: [{ name: 'Basilikum' }] },
+    });
+    const [back] = (await readded.json()).data.added as { category: string }[];
+    assertEquals(back?.category, 'Kühlregal', 'the delete kept the lesson');
+
+    await api(key.token, 'POST', `/items/${bread.id}/tick`);
+    const headers = { 'idempotency-key': `d-${crypto.randomUUID()}` };
+    const ticked = await api(key.token, 'DELETE', `/items/${bread.id}`, { headers });
+    assertEquals(ticked.status, 200);
+    assertEquals((await ticked.json()).data.status, 'ticked', 'a ticked item can be deleted');
+    const replay = await api(key.token, 'DELETE', `/items/${bread.id}`, { headers });
+    assertEquals(replay.status, 200, 'a retry with the key replays the answer');
+    assertEquals(replay.headers.get('idempotent-replayed'), 'true');
+    await replay.body?.cancel();
+    const [count] = await sql<{ count: number }[]>`
+      select count(*)::int from public.items where id in (${basil.id}, ${bread.id})`;
+    assertEquals(count?.count, 0);
+  }));
+
+test('job 344: GET /v1/household names the household, its currency and size, no members', () =>
+  withMembers(async (sql, [mine, theirs]) => {
+    await sql`insert into public.household_members (household_id, user_id, role)
+              values (${mine.householdId}, ${theirs.userId}, 'member')`;
+    const key = await mint(sql, mine, ['read']);
+    const res = await api(key.token, 'GET', '/household');
+    assertEquals(res.status, 200);
+    assertEquals(await res.json(), {
+      data: { id: mine.householdId, name: '73', currency: 'EUR', memberCount: 2 },
+    });
+    const theirKey = await mint(sql, theirs, ['read'], theirs.householdId);
+    const theirs1 = (await (await api(theirKey.token, 'GET', '/household')).json()).data;
+    assertEquals([theirs1.id, theirs1.memberCount], [theirs.householdId, 1], "the key's household");
   }));

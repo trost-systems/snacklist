@@ -342,7 +342,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String consentListAccess(String client) {
-    return 'Read, add, tick off and move items on your shopping list. $client and its provider will receive your list contents.';
+    return 'Read, add, change, tick off and remove items on your shopping list. $client and its provider will receive your list contents.';
   }
 
   @override
@@ -2033,7 +2033,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get apiScopeReadWrite => 'Read and write';
 
   @override
-  String get apiScopeReadWriteBody => 'Can also add, tick off and move items.';
+  String get apiScopeReadWriteBody =>
+      'Can also add, change, tick off and remove items.';
 
   @override
   String get apiKeyCreated => 'API key created';

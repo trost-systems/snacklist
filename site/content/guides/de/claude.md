@@ -9,7 +9,7 @@ updated: 2026-11-04
 
 # Snacklist mit Claude verbinden
 
-Claude kann deine Snacklist lesen, Sachen draufsetzen, abhaken und in eine andere Kategorie oder einen anderen Laden verschieben. Du schreibst Claude einfach, was du brauchst:
+Claude kann deine Snacklist lesen, Sachen draufsetzen, ändern, abhaken, wieder draufsetzen, löschen und in eine andere Kategorie, einen anderen Laden oder eine andere Liste verschieben. Du schreibst Claude einfach, was du brauchst:
 
 > **Du:** Setz Milch, zwei Gurken und Klopapier auf die Snacklist.
 > **Claude:** Ich habe Milch, 2 Gurken und Klopapier auf die Snacklist gesetzt.
@@ -46,7 +46,7 @@ Die Namen der Menüpunkte in Claude stehen hier auf Deutsch, in Klammern auf Eng
 
 1. Klicke in der Liste der Connectors bei **Snacklist** auf **Verbinden** (Connect). Ein neues Fenster öffnet Snacklist.
 2. Melde dich an, wenn Snacklist danach fragt, und zwar genauso wie in der App.
-3. Snacklist fragt „Zugriff erlauben?“ und zeigt, was Claude darf: Einträge deiner Einkaufsliste lesen, hinzufügen, abhaken und verschieben. Prüf, dass dein Haushalt dasteht, und klicke auf **Erlauben**.
+3. Snacklist fragt „Zugriff erlauben?“ und zeigt, was Claude darf: Einträge deiner Einkaufsliste lesen, hinzufügen, ändern, abhaken und löschen. Prüf, dass dein Haushalt dasteht, und klicke auf **Erlauben**.
 4. Claude braucht danach noch ein paar Sekunden, bis die Verbindung steht. Das Fenster zeigt so lange „Fertig, du kannst zu Claude zurückkehren.“ oder bleibt bis zu zehn Sekunden leer. Warte, bis es sich schließt oder Claude den Connector als verbunden zeigt.
 
 ## Schritt 3: Ausprobieren
@@ -63,6 +63,9 @@ Die Namen der Menüpunkte in Claude stehen hier auf Deutsch, in Klammern auf Eng
 | Was brauche ich bei dm? | Alles für dm und alles ohne Laden, in der Reihenfolge von dm. |
 | Hak Milch und Gurken ab. | Beide verschwinden von der Liste und stehen in der App unter „Zuletzt verwendet“. |
 | Verschieb die Hafermilch nach Getränke. | Snacklist merkt sich das für euren Haushalt. Beim nächsten Mal landet Hafermilch gleich dort. |
+| Mach bei den Gurken 3 draus. | Die Menge der Gurken steht jetzt auf 3. |
+| Die Milch brauchen wir doch noch. | Die gerade abgehakte Milch steht wieder auf der Liste. |
+| Streich den Sekt. | Der Sekt ist gelöscht. Was Snacklist über Sekt gelernt hat (Kategorie, Laden), bleibt. |
 
 Was schon auf der Liste steht, kommt nicht doppelt dazu. Claude sagt dir dann, dass es schon draufsteht. Snacklist sortiert deutsche Namen am besten ein. Häufige englische Wörter kennt es auch.
 
