@@ -1,0 +1,60 @@
+# Makes PostHog's feature flags match main (job 332, docs/ANALYTICS.md "Flags from main and minimum
+# versions"): a new key in app/lib/analytics/flags.dart becomes a flag for internal installs, a
+# min_version in releases/flags.json becomes version conditions on that flag.
+# scripts/posthog/sync-flags.ts only creates flags and adds conditions; it never deletes or switches
+# a flag off. It also runs every 15 minutes. Without the ops secret POSTHOG_PERSONAL_API_KEY it says
+# so in a notice and passes.
+name: PostHog flag sync
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - app/lib/analytics/flags.dart
+      - releases/flags.json
+      - scripts/posthog/**
+      - .github/workflows/posthog-flag-sync.yml
+  # A condition added in PostHog gets its version without waiting for a push (review 0).
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Print the plan and change nothing
+        type: boolean
+        default: false
+
+concurrency:
+  group: posthog-flag-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    # The environment is where this job's secret can be limited to main; a sync is no deployment,
+    # so it leaves no deployment record.
+    environment:
+      name: ops
+      deployment: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: ./.github/actions/deno
+        with:
+          deno-version-file: .dvmrc
+          # This job holds a secret: no Deno from the Actions cache, only a checksum-verified download.
+          cache: false
+      - name: Sync PostHog flags
+        env:
+          POSTHOG_PERSONAL_API_KEY: ${{ secrets.POSTHOG_PERSONAL_API_KEY }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          args=()
+          if [ "$DRY_RUN" = true ]; then args+=(--dry-run); fi
+          deno run --frozen --allow-read=. \
+            --allow-env=POSTHOG_PERSONAL_API_KEY,POSTHOG_API_HOST,POSTHOG_PROJECT_ID,GITHUB_STEP_SUMMARY,GITHUB_EVENT_NAME \
+            --allow-net=eu.posthog.com --allow-write="$GITHUB_STEP_SUMMARY" \
+            scripts/posthog/sync-flags.ts "${args[@]}"

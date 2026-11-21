@@ -297,6 +297,17 @@ test('accepting sends first_open once, then one event per action, no list text; 
     expect('$ip' in e.properties).toBe(false);
   }
   expectAllowedKeys(collector);
+  // A version condition needs app_build, which only an install with a yes sends (job 332).
+  await expect.poll(() => collector.flags, { message: 'the install asks for its flags with its version and build' })
+    .toContainEqual(expect.objectContaining({
+      'distinct_id': installId,
+      'person_properties': expect.objectContaining({
+        'is_internal': true,
+        platform: 'web',
+        'app_version': expect.stringMatching(/^\d+\.\d+\.\d+\+\d+$/),
+        'app_build': expect.any(Number),
+      }),
+    }));
   await expectNoPostHogStorage(page);
   const sent = JSON.stringify(collector.events) + collector.bodies.join('');
   for (const secret of ['Hafermilch', 'Brot', 'Familie Geheim', email, email.split('@')[0], '127.0.0.1']) {

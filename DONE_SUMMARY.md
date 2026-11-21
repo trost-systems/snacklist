@@ -2000,3 +2000,13 @@ beta user's API and MCP without a word; the switch is global, so that check need
 **Per-user words:** the card, the API line, the API's 402 and MCP's refusal now say *you* need Premium,
 since another member's plan does not unlock you (now tested). The ARB change waits for Legal's GO, so
 this PR is pushed, not merged. Details: [docs/done/328.md](docs/done/328.md).
+
+## Job 332: PostHog flags from main, and a minimum app version per flag
+
+A new flag key on main now appears in PostHog for internal testers by itself. A `min_version` in
+`releases/flags.json` limits a flag to that app version and build and newer, for installs with an
+analytics yes; it is set once per flag and never moves. Hand edits of a flag's platforms,
+rollouts and version conditions in PostHog survive every run, and the sync also runs every 15
+minutes (reviews 0 and 1). All of it waits for the `ops` secret
+`POSTHOG_PERSONAL_API_KEY`. Details,
+evidence and test results: `docs/done/332-posthog-flag-sync.md`.

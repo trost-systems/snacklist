@@ -154,13 +154,19 @@ names Alexa fails with the reason. Redraft with `--force` after fixing
 
 Two kinds of flags, two places (job 44). Runtime toggles in the app are
 PostHog feature flags, read through `Analytics.flags.isOn(key)`
-([`docs/ANALYTICS.md`](ANALYTICS.md), "Feature flags"); the Lead creates
-them in PostHog. `flags.json` only gates the changelog: it says whether a
+([`docs/ANALYTICS.md`](ANALYTICS.md), "Feature flags"). A new key in
+`app/lib/analytics/flags.dart` becomes a PostHog flag for internal installs
+once it is on main (job 332). For the changelog, `flags.json` says whether a
 feature's changelog item is public yet. A feature behind a PostHog flag gets
 a key of the same name here, and `flags.json` is updated by hand, in a PR,
 when the PostHog rollout changes (`full` once everyone has it). Release and
 changelog holds (`hold:`) live only here. The changelog tooling never
 reads PostHog. A later job may add a read-only check that compares the two.
+A flag may also carry `min_version` (`"1.4.0"`, `"1.4.0+1420"` or an object
+with `default` and a version per platform): the lowest app version that gets
+the flag. The changelog ignores it; it is the one field PostHog reads: the flag sync writes it into the
+flag's conditions (docs/ANALYTICS.md, "Flags from main and minimum
+versions").
 
 What happens to a gated item:
 

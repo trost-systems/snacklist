@@ -16690,3 +16690,76 @@ Review 0 found two faults in #577. Calls made without asking:
    the store product description "One purchase for the whole household."
    (`app/ios/Snacklist.storekit`, `scripts/iap/product.ts`). Those are paywall and store copy
    outside this gate, so the lead routes them.
+
+## Job 332: PostHog flags from main, and a minimum app version per flag, 2026-11-21
+
+Peter (t1095u): flags appear in PostHog by themselves once on main, and a flag can be turned on only
+for the versions that have the feature complete.
+
+- **What the app sent before this job.** Without a yes: `platform` and `app_version`
+  (`0.1.0+<build>`) with the shared `no-consent` request (job 257). With a yes: only `is_internal`
+  as our flag property. The native SDKs add their own default flag properties (`$app_version`,
+  `$app_build`, OS, device type; posthog-ios `setDefaultPersonProperties`, posthog-android
+  `personPropertiesContext`, both on by default in the versions we pin), posthog-js on the web
+  adds none. No person profiles exist (`personProfiles: never`), so nothing persists in PostHog:
+  targeting works only on what each flag request carries.
+- **So the app now sends `platform`, `app_version` and `app_build` with `is_internal`** after a
+  yes (`Analytics._registerContext`), the same on iOS, Android and web. One property name for
+  every platform; the SDK's `$app_version` misses the web.
+- **Every version condition needs `app_build`.** Legal §18 L2 allows no property targeting
+  without consent, and the shared request already sends `app_version`. `app_build` is sent only
+  after a yes, so a version condition never matches the shared id: installs without consent see
+  a version-gated flag off. That is the price of L2; whether a version condition on the shared
+  request is allowed is a question for Legal (NEEDS_LEAD Job 332), not decided here.
+- **Build numbers, not only versions.** Every store build so far is `0.1.0` (`app/pubspec.yaml`),
+  so a semver condition cannot tell builds apart today. Build numbers rise across versions
+  (docs/RELEASE.md), so `min_version` takes `X.Y.Z` or `X.Y.Z+B` (build B and newer). PostHog's
+  flag service has `semver_gte` (rust/feature-flags `property_matching.rs`, checked 2026-11-21);
+  `app_build` uses `gte`.
+- **Per-platform minimums split a condition.** PostHog ANDs a condition's properties, so
+  `{ "default": "1.4.0", "ios": "1.4.1" }` becomes one condition per named platform plus one with
+  `platform is not` those. The sync owns the version properties of a flag with `min_version` and
+  recognizes them again on the next run, so it converges and a second run changes nothing.
+- **Pinned per flag, no moving cohorts (Peter t1100u, LEAD_OVERRIDE).** A flag's `min_version` is
+  the version its feature became complete in, set once and never bumped by a release. The brief's
+  auto-moving `app-latest-store-ios`/`-android` cohorts are dropped. Peter allowed "a cohort per
+  distinct min_version or a semver condition"; each flag gets its own conditions, since PostHog
+  supports `semver_gte` on flags and a condition is visible on the flag itself. (A cohort would
+  also work: the flags service evaluates a property cohort on the request's properties,
+  `evaluate_dynamic_cohorts`; it is one more object to keep in step.) `scripts/posthog/latest-store.ts` prints the
+  newest public store release from `releases/releases.json` (else `app/pubspec.yaml`'s version) to
+  help fill `min_version`. The record, not the App Store and Play APIs: it is the place that says
+  what the public has (releases/README.md), and needs no store keys.
+- **Never more than that.** The sync creates missing flags (`is_internal = true`, 100 %, active)
+  and changes only the version properties of flags with `min_version`. It never deletes, disables or
+  changes a rollout; its HTTP client has no DELETE and sends PATCH bodies with `filters` only.
+
+## Job 332 review 0: hand edits in PostHog survive the sync, and it runs every 15 minutes
+
+- **Version conditions are replaced where they stand; nothing else in a condition is touched.**
+  The first version stripped every `platform` condition from a condition that had a version, then
+  merged and split again. A second run so dropped a hand-set `platform = android` at 20 % into an
+  every-platform condition, and a rollout raised on the iOS half of a split spread to the rest.
+  Now only a condition without any `platform` condition is split (once); one that names its
+  platforms gets that platform's version, and a `platform is not` condition that misses a platform
+  newly given its own version gets that platform as a new condition beside it (it then excludes it
+  too). No merging. One condition naming platforms with different versions is an error for that
+  flag; the others still sync.
+- **Every 15 minutes, not only on a push.** A version-gated flag with only internal conditions
+  gets its version when someone adds a release condition in PostHog; until the next run every
+  version would get it. The schedule bounds that window, and the how-to says to add the condition
+  at 0 %, run the sync, then raise it. Without the secret each run is a green notice.
+
+## Job 332 review 1: version conditions set by hand survive the sync
+
+- **The sync owns one pair, recognised by shape.** Review 1 found the sync still dropped every
+  `app_version semver_*` and `app_build gte/is_set` condition, a human's included: an excluded
+  broken release (`semver_neq`) came back, a stricter `app_build gte 1600` widened to the
+  `min_version`'s build. Now only the last adjacent pair `app_version semver_gte` then
+  `app_build gte|is_set`, the shape the sync writes, is replaced; any other version condition
+  stays and is ANDed with it, so it can only narrow the flag.
+- **Re-read before each change.** The PATCH sends the whole `filters`; the sync now GETs the flag
+  right before it and plans it again, so an edit since the list is kept (window: milliseconds).
+- **A scheduled run warns on a plan error instead of failing.** A bad condition stays in PostHog
+  until someone fixes it; failing every 15 minutes would send 96 failure mails a day. A push and
+  a run by hand still fail red.
