@@ -428,6 +428,7 @@ class _ContentState() extends State<_Content> {
     required Store? ownStore,
     required ValueChanged<Suggestion> onTake,
     bool plus = false,
+    bool compact = false,
   }) {
     final Suggestion(:source, :entry) = row;
     return _reuse(
@@ -444,6 +445,7 @@ class _ContentState() extends State<_Content> {
         stale,
         first,
         plus,
+        compact,
         base?.brand,
         base?.properties,
         (catalog, ownStore, onTake),
@@ -454,6 +456,7 @@ class _ContentState() extends State<_Content> {
         stale: stale,
         first: first,
         plus: plus,
+        compact: compact,
         base: base,
         catalog: catalog,
         ownStore: ownStore,
@@ -604,22 +607,33 @@ class _ContentState() extends State<_Content> {
     // RI1 (flag `add-feedback-list`): rows that answer an earlier text may
     // still change until the server's answer for this one lands.
     final stale = cubit.addFeedback && sheet.carried && sheet.loading;
+    // Job 340: under match rows the first suggestion is the + row.
+    final plusRow = compact && sheet.matches.isNotEmpty;
     final suggestions = <Widget>[
       for (final (i, row) in rows.indexed)
         _row(
           rowKeys[i],
           row,
-          stale: stale,
-          // Enter takes nothing before anything is typed.
-          first: i == 0 && sheet.text.trim().isNotEmpty,
-          base: first,
+          stale: stale && !(plusRow && i == 0),
+          // Enter takes nothing before anything is typed, nor the first
+          // suggestion when it takes a match row.
+          first:
+              i == 0 &&
+              sheet.text.trim().isNotEmpty &&
+              !(plusRow && cubit.enterMatch != null),
+          plus: plusRow && i == 0,
+          base: plusRow && i == 0 ? row.entry : first,
           catalog: catalog,
           // A row tells its own store only while the
           // chip doesn't decide it for every row.
-          ownStore: pickedStore == null && row.entry.storeId != storeId
+          ownStore:
+              !(plusRow && i == 0) &&
+                  pickedStore == null &&
+                  row.entry.storeId != storeId
               ? catalog.store(row.entry.storeId ?? '')
               : null,
           onTake: onTake,
+          compact: compact,
         ),
       if (rows.isEmpty && sheet.added == null)
         Padding(
@@ -672,45 +686,10 @@ class _ContentState() extends State<_Content> {
           // Job 324: a match row just taken leaves only its note.
           else if (sheet.taken != null)
             const SizedBox.shrink()
-          // Job 324 (flag `add-match-rows`): the same items on the list,
-          // then the + row closest to the field, which never scrolls away.
-          else if (sheet.matches.isNotEmpty) ...[
-            Flexible(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxHeight: _firstOpenRows * _matchExtent(scaler),
-                ),
-                child: ListView(
-                  key: const ValueKey('add-match-rows'),
-                  shrinkWrap: true,
-                  padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
-                  children: [
-                    for (final (i, match) in sheet.matches.indexed)
-                      _MatchTile(
-                        key: ValueKey('match-$i'),
-                        row: match,
-                        enter: i == 0 && match is ReaddRow,
-                        catalog: catalog,
-                        onTap: () => onMatch(match),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-            if (rows.firstOrNull case final plus?)
-              _row(
-                const ValueKey('match-plus'),
-                plus,
-                stale: false,
-                first: cubit.enterMatch == null,
-                plus: true,
-                base: plus.entry,
-                catalog: catalog,
-                ownStore: null,
-                onTake: onTake,
-              ),
-          ] else
-            // Typing, or opened: the rows, at most three, the others scroll.
+          // Typing, or opened: the rows, at most three, the others scroll.
+          // Job 340 (flag `add-match-rows`): the match rows lead the same
+          // list, then the + row and the other suggestions.
+          else
             Flexible(
               child: ConstrainedBox(
                 constraints: BoxConstraints(
@@ -720,7 +699,18 @@ class _ContentState() extends State<_Content> {
                   key: const ValueKey('add-suggestions'),
                   shrinkWrap: true,
                   padding: EdgeInsets.zero,
-                  children: suggestions,
+                  children: [
+                    for (final match in sheet.matches)
+                      _MatchTile(
+                        key: ValueKey(
+                          'match-${match.runtimeType}-${match.item.id}',
+                        ),
+                        row: match,
+                        catalog: catalog,
+                        onTap: () => onMatch(match),
+                      ),
+                    ...suggestions,
+                  ],
                 ),
               ),
             ),
@@ -940,6 +930,9 @@ class const _SuggestionRow({
 
   /// The add sheet's + row under match rows (job 324): a + for its icon.
   required final bool plus,
+
+  /// The compact sheet has no return key: Enter's row is only tinted.
+  required final bool compact,
   required final ParsedEntry? base,
   required final Catalog catalog,
   required final Store? ownStore,
@@ -1084,7 +1077,7 @@ class const _SuggestionRow({
                         : StoreBadge(ownStore!, height: 24, maxWidth: 120)),
                     // The key Enter presses: a hex face on its edge, the size
                     // of the close button.
-                    if (first)
+                    if (first && !compact)
                       SizedBox.fromSize(
                         size: _hexKey,
                         child: TactileFace(
@@ -1120,20 +1113,6 @@ class const _SuggestionRow({
   }
 }
 
-const _matchNameSize = 16.0;
-const _matchGap = 3.0;
-
-/// A match tile's height at [scaler] with its second line, its gap
-/// included (job 324).
-double _matchExtent(TextScaler scaler) =>
-    2 * _matchGap +
-    math.max(
-      HlSize.target,
-      12 +
-          scaler.scale(_matchNameSize) * _nameLeading +
-          scaler.scale(_detailSize) * _detailLeading,
-    );
-
 /// "10× Eier": a Menge and a name as the list writes them.
 String _withQuantity(String? quantity, String name) =>
     [?quantityLabel(quantity), name].join(' ');
@@ -1148,11 +1127,10 @@ String _matchDetails(Item item, Catalog catalog) => [
 /// Job 324 (AM2, flag `add-match-rows`): an item already on the list as
 /// what a tap does with it. Merge in accent blue with the Menge it would
 /// have, tick off in mint with the name struck through, back on the list in
-/// grey with its own Menge; the store, brand and details below. [enter]:
-/// the one Enter takes, with the return key's hex.
+/// grey with its own Menge; the store, brand and details below. Full width
+/// and square like a [_SuggestionRow] (job 340).
 class const _MatchTile({
   required final MatchRow row,
-  required final bool enter,
   required final Catalog catalog,
   required final VoidCallback onTap,
   super.key,
@@ -1193,57 +1171,51 @@ class const _MatchTile({
       label: [action, text, if (details.isNotEmpty) details].join(', '),
       excludeSemantics: true,
       onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: _matchGap),
-        child: Material(
-          color: face,
-          borderRadius: BorderRadius.circular(HlRadius.s),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: onTap,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(minHeight: HlSize.target),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 6, 8, 6),
-                child: Row(
-                  spacing: 12,
-                  children: [
-                    Icon(icon, size: 20, color: ink),
-                    Expanded(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            text,
-                            style: TextStyle(
-                              fontSize: _matchNameSize,
-                              height: _nameLeading,
-                              fontWeight: FontWeight.w700,
-                              color: ink,
-                              decoration: row is TickRow
-                                  ? TextDecoration.lineThrough
-                                  : null,
-                            ),
-                          ),
-                          if (details.isNotEmpty)
-                            Text(
-                              details,
-                              style: TextStyle(
-                                fontSize: _detailSize,
-                                height: _detailLeading,
-                                fontWeight: FontWeight.w500,
-                                color: t.textMuted,
-                              ),
-                            ),
-                        ],
+      child: Material(
+        color: face,
+        child: InkWell(
+          onTap: onTap,
+          child: Container(
+            constraints: const BoxConstraints(minHeight: _rowHeight),
+            padding: const EdgeInsets.fromLTRB(16, 6, 16, 5),
+            decoration: BoxDecoration(
+              border: Border(bottom: BorderSide(color: scheme.outlineVariant)),
+            ),
+            child: Row(
+              spacing: 12,
+              children: [
+                Icon(icon, size: 20, color: ink),
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        text,
+                        style: TextStyle(
+                          fontSize: 16,
+                          height: _nameLeading,
+                          fontWeight: FontWeight.w700,
+                          color: ink,
+                          decoration: row is TickRow
+                              ? TextDecoration.lineThrough
+                              : null,
+                        ),
                       ),
-                    ),
-                    if (enter)
-                      Icon(Icons.keyboard_return, size: 20, color: t.text),
-                  ],
+                      if (details.isNotEmpty)
+                        Text(
+                          details,
+                          style: TextStyle(
+                            fontSize: _detailSize,
+                            height: _detailLeading,
+                            fontWeight: FontWeight.w500,
+                            color: t.textMuted,
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
         ),

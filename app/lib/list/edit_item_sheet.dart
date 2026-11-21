@@ -4,6 +4,8 @@ import 'package:family_groceries/design/field_border.dart';
 import 'package:family_groceries/design/hex_checkbox.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
+import 'package:family_groceries/list/add_sheet/compact_details.dart'
+    show QuantityGroup;
 import 'package:family_groceries/list/chain_suggestions.dart';
 import 'package:family_groceries/list/entry.dart';
 import 'package:family_groceries/list/foldout_chips.dart';
@@ -51,6 +53,9 @@ Future<ItemEdit?> showEditItemSheet(
   /// A new store's chain, offered and asked as in the add sheet (job 313,
   /// flag open-store-app); null without the flag.
   StoreChains? chains,
+
+  /// The add sheet's − Menge + in one hex (job 340, flag add-sheet-compact).
+  bool hexQuantity = false,
 }) => showModalBottomSheet<ItemEdit>(
   context: context,
   // Over the whole app, tabs included: the sheet stands on the bottom edge.
@@ -73,6 +78,7 @@ Future<ItemEdit?> showEditItemSheet(
     myClaim: myClaim,
     othersBring: othersBring,
     chains: chains,
+    hexQuantity: hexQuantity,
   ),
 );
 
@@ -84,6 +90,7 @@ class const _EditItemSheet({
   required final Claim? myClaim,
   required final String? othersBring,
   required final StoreChains? chains,
+  required final bool hexQuantity,
 }) extends StatefulWidget {
   @override
   State<_EditItemSheet> createState() => _EditItemSheetState();
@@ -240,6 +247,7 @@ class _EditItemSheetState() extends State<_EditItemSheet> {
                       quantity: _quantity,
                       properties: _properties,
                       onSubmitted: _save,
+                      hexQuantity: widget.hexQuantity,
                     ),
                   ],
                 ),
@@ -375,6 +383,10 @@ class const ItemDetailFields({
   required final VoidCallback onSubmitted,
   final VoidCallback? onStep,
 
+  /// Menge as the compact add sheet's hex group instead of the field with
+  /// side steppers (job 340).
+  final bool hexQuantity = false,
+
   /// Starts the fields' keys: `edit-brand`, `edit-quantity`, ….
   final String keyPrefix = 'edit',
 
@@ -412,6 +424,7 @@ class _ItemDetailFieldsState() extends State<ItemDetailFields> {
       :onSubmitted,
       :keyPrefix,
       :inLine,
+      :hexQuantity,
     ) = widget;
     if (inLine != null) {
       return _line(context, l10n, inLine);
@@ -420,90 +433,113 @@ class _ItemDetailFieldsState() extends State<ItemDetailFields> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: 10,
       children: [
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final brandField = KeyedSubtree(
-              key: _brandField,
-              child: _Field(
-                fieldKey: '$keyPrefix-brand',
-                label: l10n.fieldBrand,
-                hint: l10n.brandNone,
-                controller: brand,
-                maxLength: 60,
-                onSubmitted: onSubmitted,
-              ),
-            );
-            final quantityField = KeyedSubtree(
-              key: _quantityField,
-              child: _Field(
-                fieldKey: '$keyPrefix-quantity',
-                label: l10n.itemQuantity,
-                controller: quantity,
-                maxLength: 40,
-                narrow: true,
-                onSubmitted: onSubmitted,
-              ),
-            );
-            final steppers = ValueListenableBuilder(
-              valueListenable: quantity,
-              builder: (context, value, _) {
-                final text = value.text;
-                if (stepQuantity(text, up: true) == null) {
-                  return const SizedBox.shrink();
-                }
-                final canLower = stepQuantity(text, up: false) != null;
-                return Row(
-                  mainAxisSize: MainAxisSize.min,
-                  spacing: _stepperGap,
-                  children: [
-                    _Stepper(
-                      key: ValueKey('$keyPrefix-quantity-minus'),
-                      icon: Icons.remove,
-                      label: l10n.quantityMinus,
-                      onPressed: canLower ? () => _step(up: false) : null,
-                    ),
-                    _Stepper(
-                      key: ValueKey('$keyPrefix-quantity-plus'),
-                      icon: Icons.add,
-                      label: l10n.quantityPlus,
-                      onPressed: () => _step(up: true),
-                    ),
-                  ],
+        if (hexQuantity) ...[
+          _Field(
+            fieldKey: '$keyPrefix-brand',
+            label: l10n.fieldBrand,
+            hint: l10n.brandNone,
+            controller: brand,
+            maxLength: 60,
+            onSubmitted: onSubmitted,
+          ),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: QuantityGroup(
+              keyPrefix: keyPrefix,
+              controller: quantity,
+              onStep: widget.onStep ?? () {},
+              onSubmitted: onSubmitted,
+            ),
+          ),
+        ] else
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final brandField = KeyedSubtree(
+                key: _brandField,
+                child: _Field(
+                  fieldKey: '$keyPrefix-brand',
+                  label: l10n.fieldBrand,
+                  hint: l10n.brandNone,
+                  controller: brand,
+                  maxLength: 60,
+                  onSubmitted: onSubmitted,
+                ),
+              );
+              final quantityField = KeyedSubtree(
+                key: _quantityField,
+                child: _Field(
+                  fieldKey: '$keyPrefix-quantity',
+                  label: l10n.itemQuantity,
+                  controller: quantity,
+                  maxLength: 40,
+                  narrow: true,
+                  onSubmitted: onSubmitted,
+                ),
+              );
+              final steppers = ValueListenableBuilder(
+                valueListenable: quantity,
+                builder: (context, value, _) {
+                  final text = value.text;
+                  if (stepQuantity(text, up: true) == null) {
+                    return const SizedBox.shrink();
+                  }
+                  final canLower = stepQuantity(text, up: false) != null;
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    spacing: _stepperGap,
+                    children: [
+                      _Stepper(
+                        key: ValueKey('$keyPrefix-quantity-minus'),
+                        icon: Icons.remove,
+                        label: l10n.quantityMinus,
+                        onPressed: canLower ? () => _step(up: false) : null,
+                      ),
+                      _Stepper(
+                        key: ValueKey('$keyPrefix-quantity-plus'),
+                        icon: Icons.add,
+                        label: l10n.quantityPlus,
+                        onPressed: () => _step(up: true),
+                      ),
+                    ],
+                  );
+                },
+              );
+              if (_fitsOneRow(
+                context,
+                constraints.maxWidth,
+                l10n.itemQuantity,
+              )) {
+                final menge = SizedBox(
+                  width: _quantityWidth,
+                  child: quantityField,
                 );
-              },
-            );
-            if (_fitsOneRow(context, constraints.maxWidth, l10n.itemQuantity)) {
-              final menge = SizedBox(
-                width: _quantityWidth,
-                child: quantityField,
-              );
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                spacing: _rowGap,
-                children: [
-                  Expanded(child: brandField),
-                  menge,
-                  steppers,
-                ],
-              );
-            }
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              spacing: _rowGap,
-              children: [
-                brandField,
-                Row(
+                return Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   spacing: _rowGap,
                   children: [
-                    Expanded(child: quantityField),
+                    Expanded(child: brandField),
+                    menge,
                     steppers,
                   ],
-                ),
-              ],
-            );
-          },
-        ),
+                );
+              }
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                spacing: _rowGap,
+                children: [
+                  brandField,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    spacing: _rowGap,
+                    children: [
+                      Expanded(child: quantityField),
+                      steppers,
+                    ],
+                  ),
+                ],
+              );
+            },
+          ),
         _Field(
           fieldKey: '$keyPrefix-properties',
           label: l10n.fieldProperties,

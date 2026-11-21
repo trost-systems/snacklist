@@ -120,7 +120,7 @@ class _CompactDetailsState() extends State<CompactDetails> {
       ),
       line: ChipLine(
         before: [
-          _QuantityGroup(
+          QuantityGroup(
             controller: _quantity,
             onStep: sheet.saveDetails,
             onSubmitted: submitted,
@@ -134,13 +134,18 @@ class _CompactDetailsState() extends State<CompactDetails> {
   }
 }
 
-/// − Menge + in one hex, 44 px high, without a label: the field is named
-/// Menge for screen readers. The steppers step a number in it (and its
-/// unit) and are off where it holds none.
-class const _QuantityGroup({
+/// − Menge + in one hex (also the edit sheet's, job 340), 44 px high,
+/// without a label: the field is named Menge for screen readers. The
+/// steppers step a number in it (and its unit) and are off where it holds
+/// none.
+class const QuantityGroup({
   required final TextEditingController controller,
   required final VoidCallback onStep,
   required final VoidCallback onSubmitted,
+
+  /// Starts the keys: `added-quantity`, `added-quantity-minus`, …
+  final String keyPrefix = 'added',
+  super.key,
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -177,7 +182,7 @@ class const _QuantityGroup({
           icon: Icon(icon, size: 20, semanticLabel: label),
         );
     return Container(
-      key: const ValueKey('added-quantity-group'),
+      key: ValueKey('$keyPrefix-quantity-group'),
       height: height,
       padding: const EdgeInsets.symmetric(horizontal: HlSpace.s1),
       decoration: ShapeDecoration(
@@ -192,7 +197,7 @@ class const _QuantityGroup({
           mainAxisSize: MainAxisSize.min,
           children: [
             stepper(
-              const ValueKey('added-quantity-minus'),
+              ValueKey('$keyPrefix-quantity-minus'),
               Icons.remove,
               l10n.quantityMinus,
               stepQuantity(value.text, up: false) == null
@@ -204,7 +209,7 @@ class const _QuantityGroup({
               child: field,
             ),
             stepper(
-              const ValueKey('added-quantity-plus'),
+              ValueKey('$keyPrefix-quantity-plus'),
               Icons.add,
               l10n.quantityPlus,
               stepQuantity(value.text, up: true) == null
@@ -221,7 +226,7 @@ class const _QuantityGroup({
             data: const InputDecorationThemeData(),
             child: TextField(
               autofillHints: null,
-              key: const ValueKey('added-quantity'),
+              key: ValueKey('$keyPrefix-quantity'),
               controller: controller,
               textAlign: TextAlign.center,
               textInputAction: TextInputAction.done,
@@ -304,7 +309,7 @@ class _PropertiesFieldState() extends State<_PropertiesField> {
     final scheme = Theme.of(context).colorScheme;
     final _PropertiesField(:controller, :onSubmitted) = widget;
     return Padding(
-      padding: const EdgeInsets.only(top: 4),
+      padding: const EdgeInsets.only(top: HlSpace.s3),
       child: Semantics(
         label: l10n.fieldProperties,
         child: TextField(

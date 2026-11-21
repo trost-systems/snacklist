@@ -207,6 +207,12 @@ void main() {
       await tester.pumpAndSettle();
       expect(key('options-line'), findsNothing);
       expect(key('added-properties'), findsOneWidget);
+      final chips = tester.getRect(key('added-quantity-group'));
+      expect(
+        tester.getRect(key('added-properties')).top - chips.bottom,
+        greaterThanOrEqualTo(12),
+        reason: 'a clear gap between the chip row and the field',
+      );
       await tester.tap(key('chip-store'));
       await tester.pumpAndSettle();
       expect(key('added-properties'), findsNothing);

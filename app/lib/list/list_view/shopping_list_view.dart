@@ -518,12 +518,17 @@ class _ShoppingListViewState()
     final cubit = _cubit;
     final state = cubit.state;
     final claims = state.claims[item.id] ?? const <Claim>[];
+    final flags = context.read<Flags?>();
     final edit = await showEditItemSheet(
       context,
       item: item,
+      // AddSheetCubit.compact's rule: the add sheet's quantity control.
+      hexQuantity:
+          (flags?.isOn(addFeedbackListFlag) ?? false) &&
+          (flags?.isOn(addSheetCompactFlag) ?? false),
       catalog: state.catalog,
       onCreateStore: cubit.addStore,
-      chains: context.read<Flags?>()?.isOn(openStoreAppFlag) ?? false
+      chains: flags?.isOn(openStoreAppFlag) ?? false
           ? StoreChains.of(cubit)
           : null,
       listId: item.listOn(state.catalog.lists.firstOrNull?.id),
