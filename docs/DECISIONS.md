@@ -16953,3 +16953,23 @@ pinned above the field, other suggestions hidden); all of it stays behind `add-s
    PostHog with no sign. `const String xFlag` is read; other types throw with the line number.
 2. **Follow-up PR, not a reopened #589.** #589 was merged under the Legal GO; this change touches
    only the sync script, its tests and docs, no legal, ARB, store or consent text.
+
+## Job 343: totals with missing prices, prototype round TE, 2026-11-21
+
+1. **The round is static HTML, its Today calibrated against the real app.** `tools/capture-today.mjs`
+   puts Peter's list (dm, Lidl, Edeka, IKEA, no store) into the release web build in the four
+   states and records the block's height. The replica uses the app's own font files and Material 3
+   bodyMedium's height (20/14) and letter spacing (0.25 px); with them it is within 3 px at 100 %
+   on 390 × 844. The site's variable Inter set the text about 5 % narrower and moved line breaks.
+2. **Height means what an option adds to the list against no total at all**, so TE3's taller
+   dividers and TE5's top bar count too. Rows saved use one row height per phone and text size.
+3. **Pick TE1, runner-up TE2.** TE1 keeps every ST3 rule Peter chose and drops only empty lines and
+   the "with price" count. TE2 and TE3 revisit ST4 and ST1, which lost round ST. TE5 needs a new
+   floor notation and cuts the list name in German and on the 360 px Android.
+4. **A new flag for the build (TE-Q1 default).** `list-declutter` and `prices-and-trip-total` are at
+   full rollout, so a change in place would reach every user before Peter sees it.
+5. **Found, not fixed here:** at 310 % the real app breaks an amount inside the number ("€6.3 / 8").
+   TE-Q9 proposes the fix for the build.
+6. **Draft PR, never merged**, as rounds 318, 319 and 323. Deployed as a preview on
+   `family-groceries-design` on top of `dpl_DwV7uqNrRrNdsruXL8hTByoSnvK5` (all 158 files kept), with a
+   card on the root overview.

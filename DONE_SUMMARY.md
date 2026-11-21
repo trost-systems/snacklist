@@ -2079,3 +2079,7 @@ The flag sync skipped a flag declaration that `dart format` wraps over two lines
 word; it now reads it, and fails loudly on a declaration it cannot read. A hand-written `iOS`
 platform condition gets the iOS version. `docs/ANALYTICS.md` says a version-gated flag never
 reaches installs without an analytics yes. Details: `docs/done/332-posthog-flag-sync.md`.
+
+## Job 343: totals with missing prices, prototype round TE
+
+Five ways (TE1 to TE5) to show the shopping total when no item or only some have a price, against today's ST3 block measured in the release web build. Pick TE1 "Only what has a price" (no block without a price, lines only for stores with one, one "N without price" on the total; saves 7 rows on Peter's screen), runner-up TE2 "One line, opens on tap". Preview `dpl_AzVTNgaZXX1gDRup32KRMCKBrfYc` (https://family-groceries-design-3t50zn79z-peter-trost.vercel.app/totals/te/, SSO, share link from the lead). `node docs/design/totals/verify.mjs` ends `all checks passed (2371)`. Draft PR, never merged; no app change. Details: `docs/done/343.md`.
