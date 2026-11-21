@@ -4,7 +4,7 @@ description: "Impressum von Snacklist: Anbieter, Anschrift und Kontakt."
 locale: de
 path: /impressum
 translation_key: imprint
-updated: 2026-11-20
+updated: 2026-11-21
 ---
 
 # Impressum
@@ -28,7 +28,7 @@ E-Mail: [support@snacklist.app](mailto:support@snacklist.app)
 
 Zentrale Kontaktstelle für Behörden der Mitgliedstaaten, die EU-Kommission und das Europäische Gremium für digitale Dienste (Art. 11 DSA) und für Nutzerinnen und Nutzer (Art. 12 DSA): [support@snacklist.app](mailto:support@snacklist.app). Du kannst uns auf Deutsch oder Englisch schreiben. Jede Nachricht liest und beantwortet ein Mensch.
 
-Rechtswidrige Inhalte in Snacklist meldest du am einfachsten über das Formular [Inhalte melden](/inhalte-melden), auch ohne Konto. Dort stehen auch unsere Regeln für Inhalte und wie wir mit Meldungen umgehen.
+Rechtswidrige Inhalte in Snacklist meldest du am einfachsten über das Formular [Inhalte melden](/inhalte-melden), auch ohne Konto, oder in der App über Mehr und dann „Inhalt melden“. Auf der Seite des Formulars stehen auch unsere Regeln für Inhalte und wie wir mit Meldungen umgehen.
 
 ## Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV
 

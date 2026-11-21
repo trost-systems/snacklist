@@ -4,12 +4,12 @@ description: "Datenschutzerklärung von Snacklist: welche Daten die App und die 
 locale: de
 path: /datenschutz
 translation_key: privacy
-updated: 2026-11-20
+updated: 2026-11-21
 ---
 
 # Datenschutzerklärung
 
-Stand: 20. November 2026
+Stand: 21. November 2026
 
 Hier steht, welche personenbezogenen Daten Snacklist verarbeitet, wozu, auf welcher Rechtsgrundlage, an wen sie gehen und welche Rechte du hast. Snacklist ist eine Einkaufslisten-App für Haushalte für iPhone, Android und Browser (app.snacklist.app) mit der Website snacklist.app.
 
@@ -178,7 +178,7 @@ Unter Mehr › Feedback & Ideen stellen wir einige Ideen für Snacklist vor. Dei
 
 ### Meldungen rechtswidriger Inhalte {#meldungen}
 
-Meldest du über das Formular auf snacklist.app/inhalte-melden oder in der App einen Inhalt, speichern wir die Art des Inhalts, wo er sich befindet (in der App die Kennung des Eintrags, der Liste oder des Fotos), deine Begründung, deine Bestätigung, dass deine Angaben richtig sind, einen Screenshot, falls du einen anhängst, den Zeitpunkt und, wenn du sie angibst, deinen Namen und deine E-Mail-Adresse; in der App zusätzlich deine Nutzerkennung. Wir speichern die Meldung bei Supabase (Server in Frankfurt am Main) und schicken dir die Eingangsbestätigung und unsere Entscheidung über Resend (Abschnitt 12). Lesen und bearbeiten kann Meldungen nur Peter Trost; andere Mitglieder des Haushalts sehen sie nicht. Wer den gemeldeten Inhalt eingestellt hat, erfährt deinen Namen nur, wenn das für die Entscheidung unbedingt nötig ist. Begründet eine Meldung den Verdacht einer Straftat, die Leben oder Sicherheit von Menschen gefährdet, geben wir die Angaben an das Bundeskriminalamt weiter (Art. 18 DSA, § 13 DDG). Rechtsgrundlage: Art. 6 Abs. 1 lit. c DSGVO in Verbindung mit Art. 16 bis 18 der Verordnung (EU) 2022/2065 (Digital Services Act). Für das Formular auf der Website verarbeitet unser Hoster Vercel deine IP-Adresse, um Missbrauch zu begrenzen (Abschnitt 2). Wir löschen Meldungen und unsere Entscheidung 12 Monate nach Abschluss des Falls, außer wir brauchen sie länger, weil ein Verfahren läuft.
+Meldest du über das Formular auf snacklist.app/inhalte-melden oder in der App einen Inhalt, speichern wir die Art des Inhalts, wo er sich befindet (in der App die Kennung und den Namen des Eintrags, der Liste oder des Haushalts, die du auswählst), deine Begründung, deine Bestätigung, dass deine Angaben richtig sind, einen Screenshot, falls du einen anhängst, den Zeitpunkt und, wenn du sie angibst, deinen Namen und deine E-Mail-Adresse. Mit deinem Konto verknüpfen wir eine Meldung aus der App nicht; nur für die Grenze von 5 Meldungen pro Stunde speichern wir deine Nutzerkennung und den Zeitpunkt der Meldung, höchstens einen Tag lang (bei Meldungen zu Darstellungen sexuellen Kindesmissbrauchs gar nicht). Wir speichern die Meldung bei Supabase (Server in Frankfurt am Main) und schicken dir die Eingangsbestätigung und unsere Entscheidung über Resend (Abschnitt 12). Lesen und bearbeiten kann Meldungen nur Peter Trost; andere Mitglieder des Haushalts sehen sie nicht. Wer den gemeldeten Inhalt eingestellt hat, erfährt deinen Namen nur, wenn das für die Entscheidung unbedingt nötig ist. Begründet eine Meldung den Verdacht einer Straftat, die Leben oder Sicherheit von Menschen gefährdet, geben wir die Angaben an das Bundeskriminalamt weiter (Art. 18 DSA, § 13 DDG). Rechtsgrundlage: Art. 6 Abs. 1 lit. c DSGVO in Verbindung mit Art. 16 bis 18 der Verordnung (EU) 2022/2065 (Digital Services Act). Für das Formular auf der Website verarbeitet unser Hoster Vercel deine IP-Adresse, um Missbrauch zu begrenzen (Abschnitt 2). Wir löschen Meldungen und unsere Entscheidung 12 Monate nach Abschluss des Falls, außer wir brauchen sie länger, weil ein Verfahren läuft.
 
 ## 11. Sicherungskopien
 

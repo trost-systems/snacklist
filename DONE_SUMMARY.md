@@ -1990,3 +1990,9 @@ tick from the sheet asks no trip question. Review 0: the rows follow the list wh
 
 The user id and time kept for the app report limit now go within two hours, not up to 25, so
 the privacy text of the report-content rollout holds. Details: `docs/done/333b-senders-prune-hourly.md`.
+
+## Job 333: report content rollout
+
+The rollout PR for in-app reporting (RC2) to all users, with Legal's Impressum and privacy text
+and the sender rows kept out of backups. Open until Legal's hash GO and live store builds.
+Details: `docs/done/333-report-content-rollout.md`.

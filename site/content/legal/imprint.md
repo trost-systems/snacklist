@@ -4,7 +4,7 @@ description: "Imprint of Snacklist: provider, address and contact."
 locale: en
 path: /en/imprint
 translation_key: imprint
-updated: 2026-11-20
+updated: 2026-11-21
 ---
 
 # Imprint
@@ -30,7 +30,7 @@ Email: [support@snacklist.app](mailto:support@snacklist.app)
 
 Single point of contact for Member State authorities, the European Commission and the European Board for Digital Services (Art. 11 DSA) and for users (Art. 12 DSA): [support@snacklist.app](mailto:support@snacklist.app). You can write to us in German or English. A person reads and answers every message.
 
-The easiest way to report illegal content in Snacklist is the [Report content](/en/report) form, no account needed. That page also explains our content rules and how we handle reports.
+The easiest way to report illegal content in Snacklist is the [Report content](/en/report) form, no account needed, or in the app through More and then "Report content". The form's page also explains our content rules and how we handle reports.
 
 ## Responsible for content pursuant to § 18 (2) MStV (German Interstate Media Treaty)
 

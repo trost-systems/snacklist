@@ -4,13 +4,13 @@ description: "Privacy policy of Snacklist: which data the app and the website pr
 locale: en
 path: /en/privacy
 translation_key: privacy
-updated: 2026-11-20
+updated: 2026-11-21
 ---
 
 # Privacy policy
 
 This is a translation. The [German version](/datenschutz) is authoritative.
-Last updated: 20 November 2026
+Last updated: 21 November 2026
 
 This page explains which personal data Snacklist processes, why, on what legal basis, who receives it and what rights you have. Snacklist is a shopping-list app for households on iPhone, Android and in the browser (app.snacklist.app), with the website snacklist.app.
 
@@ -159,7 +159,7 @@ Under More › Feedback & ideas we list a few ideas for Snacklist. Your househol
 
 ### Reports of illegal content {#reports}
 
-If you report content through the form at snacklist.app/en/report or in the app, we store the kind of content, where it is (in the app, the ID of the item, list or photo), your explanation, your confirmation that your details are accurate, a screenshot if you attach one, the time and, if you give them, your name and e-mail address; in the app also your user ID. We store the report at Supabase (servers in Frankfurt am Main) and send you the confirmation of receipt and our decision through Resend (section 12). Only Peter Trost can read and handle reports; other household members don't see them. The person who posted the reported content learns your name only if that is strictly necessary for the decision. If a report gives rise to a suspicion of a crime threatening people's life or safety, we pass the details to the Federal Criminal Police Office (Art. 18 DSA, § 13 DDG). Legal basis: Art. 6(1)(c) GDPR in conjunction with Art. 16 to 18 of Regulation (EU) 2022/2065 (Digital Services Act). For the form on the website, our host Vercel processes your IP address to limit abuse (section 2). We delete reports and our decision 12 months after the case is closed, unless we need them longer because proceedings are ongoing.
+If you report content through the form at snacklist.app/en/report or in the app, we store the kind of content, where it is (in the app, the ID and name of the item, list or household you pick), your explanation, your confirmation that your details are accurate, a screenshot if you attach one, the time and, if you give them, your name and e-mail address. We don't link an app report to your account; only for the limit of 5 reports per hour do we store your user ID and the time of the report, for one day at most (not at all for reports of child sexual abuse material). We store the report at Supabase (servers in Frankfurt am Main) and send you the confirmation of receipt and our decision through Resend (section 12). Only Peter Trost can read and handle reports; other household members don't see them. The person who posted the reported content learns your name only if that is strictly necessary for the decision. If a report gives rise to a suspicion of a crime threatening people's life or safety, we pass the details to the Federal Criminal Police Office (Art. 18 DSA, § 13 DDG). Legal basis: Art. 6(1)(c) GDPR in conjunction with Art. 16 to 18 of Regulation (EU) 2022/2065 (Digital Services Act). For the form on the website, our host Vercel processes your IP address to limit abuse (section 2). We delete reports and our decision 12 months after the case is closed, unless we need them longer because proceedings are ongoing.
 
 ## 11. Backups
 

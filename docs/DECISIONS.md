@@ -16657,3 +16657,34 @@ day's run, about 25 hours. Legal's text stays; the code changes to match it.
 - **The 02:20 slot was only there to beat the 02:30 backup (N-284 alternative).** #588 keeps the
   table's rows out of the dump altogether, so the timing no longer matters for the backup.
 - **Cost:** 24 runs a day of one indexed delete on a table that holds at most a few hundred rows.
+
+## Job 333: report content for all users, with Legal's Impressum and privacy text, 2026-11-21
+
+Rollout PR for `report-content-entry` (RC2, #524), per Legal's 2026-11-21 Addendum B. Text from the
+2026-11-17 batch, section 16 (N-281, N-283), applied by a script that fails unless each OLD string
+occurs exactly once; no wording adapted.
+
+- **N-284 option (a) lives in `scripts/backup/dump.sh`, not in `backup.yml`.** The brief and Legal
+  say "the pg_dump in backup.yml", but the workflow calls `dump.sh`, which holds the only pg_dump.
+  The flag `--exclude-table-data=public.content_report_app_senders` is there, so the restore drill
+  (db gate) runs the same dump. `backup.yml` is unchanged.
+- **The drill proves the exclusion.** `--strict-names` does not cover `--exclude-table-data`, so a
+  renamed table would silently go back into the backups. `drill.sh` reads the excluded tables from
+  `dump.sh`, requires each to come back with 0 rows (the fixture has one), and compares the others
+  as before. A typo in the table name failed it locally.
+- **N-279 date: 2026-11-21**, the day the PR was made. It cannot merge before Legal's hash GO and
+  both store builds being live, so the lander sets `updated:` and Stand / Last updated on the four
+  pages to the merge date (that changes the hashes Legal checks).
+- **One point for Legal, text not changed:** for an item the app sends `location` with the item's,
+  its list's and its household's names (`report_repository.dart` `ItemTarget.location`); the approved
+  §10 wording names "the item, list or household you pick".
+
+## Job 333 review 0: the one-day retention made true first (#591), 2026-11-21
+
+- **„höchstens einen Tag lang“ / "for one day at most" did not hold on main.** The sender rows were
+  pruned once a day (rows older than an hour), so a row could live about 25 hours. Legal's text
+  stays; #591 (job 333b, merged first) runs the prune hourly, so a row lives under two hours. The
+  rollout PR #588 must land after it, as it now does by its base.
+- **The drill's PASS line counts identical tables and tables left empty on purpose apart.**
+- **For Legal, not changed:** while a sender row exists, its `at` equals the report's `created_at`,
+  so the report can be matched to a user id in that window (N-284 already says "matchable").
