@@ -11,6 +11,13 @@ import 'package:posthog_flutter/posthog_flutter.dart';
 /// an id of this install: nothing about it is stored or sent.
 const sharedFlagsId = 'no-consent';
 
+/// Whether the shared flag request also carries `is_internal` and
+/// `tester_groups` for an internal user or one in a tester group, so
+/// testers get their flags without an analytics yes. Legal rejected it
+/// (N-313): it stays false (docs/ANALYTICS.md, "Tester groups without
+/// consent", job 337).
+const sharedFlagsCarryTesterGroups = false;
+
 /// What may go to PostHog for [event] with [properties], or null to drop
 /// it: `Analytics`' gate, run on every Dart-side event before the SDK adds
 /// its own properties.
@@ -145,12 +152,14 @@ class PostHogClient({
   Future<void> forget() => forgetPostHogState(projectKey);
 
   /// The flags PostHog evaluates for [sharedFlagsId], by key, or null
-  /// without a usable answer. Sends the project key, that id, [platform]
-  /// and [appVersion] as flag properties (which make no person profile) and
-  /// no GeoIP lookup; no cookies, no SDK. Never throws.
+  /// without a usable answer. Sends the project key, that id, [platform],
+  /// [appVersion] and [targeting] (empty unless
+  /// [sharedFlagsCarryTesterGroups]) as flag properties (which make no
+  /// person profile) and no GeoIP lookup; no cookies, no SDK. Never throws.
   Future<Map<String, bool>?> sharedFlags({
     required String platform,
     required String appVersion,
+    Map<String, Object> targeting = const {},
   }) async {
     try {
       final response = await _http
@@ -163,6 +172,7 @@ class PostHogClient({
               'person_properties': {
                 'platform': platform,
                 'app_version': appVersion,
+                ...targeting,
               },
               'geoip_disable': true,
             }),

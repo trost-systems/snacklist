@@ -23,13 +23,15 @@ class const AnalyticsState({
   /// share ([sharedFlagsId]).
   final bool? consent,
 
-  /// Marked internal under More: every event says `is_internal`.
-  final bool internalInstall = false,
+  /// The signed-in user's tester groups (`my_tester_groups`, job 337),
+  /// empty while signed out or not known.
+  final Set<String> testerGroups = const {},
 });
 
 /// What analytics keeps on the device, per install (not per account): the
 /// pseudonymous install id, the consent decision, whether `first_open`
-/// went out for this install id, and the flags served without consent. The
+/// went out for this install id, the flags served without consent and the
+/// last user's tester groups. The
 /// install id and the `first_open` mark exist only while the consent is yes
 /// (TDDDG §25).
 abstract interface class AnalyticsStore() {
@@ -59,9 +61,20 @@ abstract interface class AnalyticsStore() {
 
   Future<void> saveFirstOpenSentFor(String installId);
 
-  Future<bool> internalInstall();
+  /// Deletes the internal-install mark a long press under More set before
+  /// job 337: only the server's tester groups make a release build
+  /// internal now.
+  Future<void> forgetInternalInstallMark();
 
-  Future<void> saveInternalInstall({required bool internal});
+  /// [userId]'s tester groups as last read, or null if none were kept for
+  /// that user.
+  Future<Set<String>?> testerGroups(String userId);
+
+  /// Keeps [groups] as [userId]'s, in place of any other user's.
+  Future<void> saveTesterGroups(String userId, Set<String> groups);
+
+  /// Deletes the tester groups kept (at sign-out).
+  Future<void> forgetTesterGroups();
 
   /// The flags last served without consent ([PostHogClient.sharedFlags]),
   /// for an offline start; empty if none.
@@ -108,6 +121,10 @@ class const AnalyticsConfig({
 
   /// Flags on without PostHog ([Flags.forced]).
   final Set<String> forcedFlags = const {},
+
+  /// The shared flag request carries the flag targeting of an internal
+  /// user or one in a tester group ([sharedFlagsCarryTesterGroups]).
+  final bool sharedFlagsTargeting = sharedFlagsCarryTesterGroups,
 }) {
   /// The build number of [appVersion] (`1023`), null without one.
   int? get appBuild => switch (appVersion.split('+')) {
@@ -157,8 +174,11 @@ class Analytics(
   /// The SDK is set up and not stopped.
   var _running = false;
 
-  /// The `is_internal` PostHog has for flag targeting, null until sent.
-  bool? _flagsInternal;
+  /// The flag targeting PostHog has ([_flagTargeting]), null until sent.
+  Map<String, Object>? _flagsSent;
+
+  /// The targeting the newest shared flag request carried.
+  Map<String, Object>? _sharedTargeting;
 
   /// SDK set-ups and stops, one after the other.
   Future<void> _lifecycle = Future.value();
@@ -185,13 +205,23 @@ class Analytics(
   /// stored with or without consent and with or without a project key.
   bool get internalNow => isInternal(
     releaseBuild: _config.releaseBuild,
-    internalInstall: state.internalInstall,
+    testerGroups: state.testerGroups,
     householdId: _user?.householdId,
     email: _user?.email,
     internalHouseholds: _config.internalHouseholds,
     internalEmailDomains: _config.internalEmailDomains,
     testerHousehold: testerHousehold,
   );
+
+  /// Whether More offers the install id and a test error: in a build that
+  /// can send, a debug or profile build or a user in the tester group
+  /// `internal`. Not every [internalNow]: a test account or the RevenueCat
+  /// tester household (App and Play Review's accounts) only keeps the
+  /// analytics clean and gets no tools.
+  bool get showsInternalTools =>
+      enabled &&
+      (!_config.releaseBuild ||
+          state.testerGroups.contains(internalTesterGroup));
 
   /// The install id PostHog evaluates flags for, while the consent is yes:
   /// a flag can target this one install (`distinct_id`, job 190), e.g.
@@ -203,7 +233,18 @@ class Analytics(
   String? get testerHousehold => _testerHousehold;
   set testerHousehold(String? household) {
     _testerHousehold = household;
-    _registerContext();
+    _targetingChanged();
+  }
+
+  /// Set by the tester groups sync (`tester_groups.dart`): the signed-in
+  /// user's tester groups.
+  void setTesterGroups(Set<String> groups) {
+    if (setEquals(groups, state.testerGroups) || isClosed) {
+      return;
+    }
+    emit(_with(testerGroups: groups));
+    _syncConsent();
+    _targetingChanged();
   }
 
   String? _testerHousehold;
@@ -221,12 +262,12 @@ class Analytics(
   /// no, and the consent screen asks again. Call once before the first
   /// frame.
   Future<void> load() async {
-    final (stored, decided, version, internal, firstOpen) = await (
+    final (stored, decided, version, firstOpen, _) = await (
       _store.installId(),
       _store.consent(),
       _store.consentTextVersion(),
-      _store.internalInstall(),
       _store.firstOpenSentFor(),
+      _store.forgetInternalInstallMark(),
     ).wait;
     final outdated = decided == true && version != consentTextVersion;
     final consent = outdated ? null : decided;
@@ -248,7 +289,11 @@ class Analytics(
       unawaited(_serially(_forgetSdkState));
     }
     emit(
-      AnalyticsState(loaded: true, consent: consent, internalInstall: internal),
+      AnalyticsState(
+        loaded: true,
+        consent: consent,
+        testerGroups: state.testerGroups,
+      ),
     );
     if (consent == true) {
       unawaited(_serially(() => _start(fresh: false)));
@@ -264,7 +309,7 @@ class Analytics(
       _recorded = null;
     }
     _syncConsent();
-    _registerContext();
+    _targetingChanged();
     if (user != null) {
       // Not queued behind the SDK's set-ups: once it runs, decide() sends.
       unawaited(_sendFirstOpen());
@@ -363,7 +408,7 @@ class Analytics(
       return;
     }
     _running = false;
-    _flagsInternal = null;
+    _flagsSent = null;
     try {
       await _posthog?.stop();
     } on Object catch (e) {
@@ -404,6 +449,9 @@ class Analytics(
       return;
     }
     final request = ++_sharedRequest;
+    final targeting = _sharedTargeting = _config.sharedFlagsTargeting
+        ? _sharedFlagTargeting()
+        : const <String, Object>{};
     bool current() =>
         request == _sharedRequest && state.consent != true && !flags.isClosed;
     final cached = await _store.sharedFlags();
@@ -414,21 +462,45 @@ class Analytics(
       final served = await posthog.sharedFlags(
         platform: _config.platform,
         appVersion: _config.appVersion,
+        targeting: targeting,
       );
       if (served != null && current()) {
         flags.replace(served);
-        await _store.saveSharedFlags(served);
+        // A tester's answer is theirs: the device keeps only everyone's.
+        if (targeting.isEmpty) {
+          await _store.saveSharedFlags(served);
+        }
       }
     }());
   }
 
-  /// More's switch for test devices: every event then says internal.
-  Future<void> markInternalInstall({required bool internal}) async {
-    emit(_with(internalInstall: internal));
-    _syncConsent();
+  /// The user, the household or the tester groups changed: the context
+  /// and the flag targeting follow, and so do the shared flags when they
+  /// carry the targeting ([AnalyticsConfig.sharedFlagsTargeting]).
+  void _targetingChanged() {
     _registerContext();
-    await _store.saveInternalInstall(internal: internal);
+    if (_config.sharedFlagsTargeting &&
+        state.loaded &&
+        state.consent != true &&
+        !mapEquals(_sharedFlagTargeting(), _sharedTargeting)) {
+      unawaited(_loadSharedFlags());
+    }
   }
+
+  /// What flags are targeted by: `is_internal` and `tester_groups`
+  /// ([testerGroupsProperty], empty for none, so that leaving a group
+  /// replaces the value the SDK had).
+  Map<String, Object> _flagTargeting() => {
+    'is_internal': internalNow,
+    'tester_groups': testerGroupsProperty(state.testerGroups),
+  };
+
+  /// [_flagTargeting] for the shared flag request: nothing unless internal
+  /// or in a group, so everyone else's request stays as without the switch.
+  Map<String, Object> _sharedFlagTargeting() =>
+      internalNow || state.testerGroups.isNotEmpty
+      ? _flagTargeting()
+      : const {};
 
   /// Hands [event] to PostHog if analytics is live; refuses (and drops)
   /// anything [checkEvent] does not allow.
@@ -534,23 +606,24 @@ class Analytics(
             debugPrint('analytics: context not registered: ${e.runtimeType}');
           }),
     );
-    // Flags may be released to internal installs only, or from a build on
-    // (docs/ANALYTICS.md). Only installs with a yes send `app_build`, so a
-    // version condition never matches the shared request (Legal §18 L2).
-    final internal = internalNow;
-    if (internal != _flagsInternal) {
-      _flagsInternal = internal;
+    // Flags may be released to internal installs or tester groups only,
+    // or from a build on (docs/ANALYTICS.md). Only installs with a yes send
+    // `app_build`, so a version condition never matches the shared request
+    // (Legal §18 L2).
+    final targeting = {
+      ..._flagTargeting(),
+      'platform': _config.platform,
+      'app_version': _config.appVersion,
+      'app_build': ?_config.appBuild,
+    };
+    if (!mapEquals(targeting, _flagsSent)) {
+      _flagsSent = targeting;
       unawaited(
         posthog
-            .flagProperties({
-              'is_internal': internal,
-              'platform': _config.platform,
-              'app_version': _config.appVersion,
-              'app_build': ?_config.appBuild,
-            })
+            .flagProperties(targeting)
             .then((_) => _refreshFlags())
             .catchError((Object e) {
-              _flagsInternal = null;
+              _flagsSent = null;
               debugPrint('analytics: flag targeting not set: ${e.runtimeType}');
             }),
       );
@@ -672,11 +745,11 @@ class Analytics(
     );
   }
 
-  AnalyticsState _with({bool? consent, bool? internalInstall}) =>
+  AnalyticsState _with({bool? consent, Set<String>? testerGroups}) =>
       AnalyticsState(
         loaded: state.loaded,
         consent: consent ?? state.consent,
-        internalInstall: internalInstall ?? state.internalInstall,
+        testerGroups: testerGroups ?? state.testerGroups,
       );
 
   @override

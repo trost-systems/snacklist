@@ -17,7 +17,7 @@ The app has three tabs, „Liste“, „Verlauf“ and „Mehr“ (EN "List", "H
 - `version` last line „Version 0.x.y (build)“ (a local build reads „Version 0.1.0 (1)“).
 - `sign-out` „Abmelden“ ends the session and shows the login.
 - `analytics-switch` „Nutzungsdaten und Fehlerberichte senden“ switch on the Nutzungsdaten page (only where the build can send analytics); on asks the consent question in a sheet first, off is one tap.
-- `internal-install` long press on the version line toggles an internal-install mark (testers only).
+- `internal-tools` in a debug or profile build, or for a user in the server's tester group `internal` (job 337), of a build that can send, „Testfehler senden“ and, after the analytics yes, „Installations-ID kopieren: {id}“ show below the version. A long press on the version does nothing since job 337. Proved by `node journeys/tester-groups.mjs <evidence dir>` (not a `drive.sh` id): a customer's long press unlocks nothing, the group `internal` shows the button after a reload, the flag request after the yes carries `tester_groups`, the shared requests before it do not.
 
 More entries in order (groups top to bottom; rows: DE label, EN label; no hints; no group headings):
 
@@ -73,6 +73,6 @@ Preconditions:
 - The tabs are role `tab` on the phone's bar and on the rail alike (driven 2026-11-13 at 390 and 1366 px). Use `openTab`.
 - Pages open by deep link: back goes to the More list, not out of the app.
 - Opening snacklist.app pages stays external everywhere; never an in-app browser. Real site pages are not reachable offline; stub them.
-- Long-press on the version line (touch only in practice) toggles „Interne Installation“ and shows „Testfehler senden“ and, while usage data is on, „Installations-ID kopieren: {id}“ / "Copy installation ID: {id}"; internal testers only, not for copy.
+- Debug builds and users in the tester group `internal` see „Testfehler senden“ and, while usage data is on, „Installations-ID kopieren: {id}“ / "Copy installation ID: {id}" below the version line, with no long press and no „Interne Installation“ line (removed in job 337); test accounts and the RevenueCat tester household (App Review) are internal for analytics but see neither in a release build, so a plain drive shows none (job 337 review 0). Not for copy.
 - Wide More page title: „Mehr“ heading; language page adds a back button next to its title.
 - More has no section headings since job 203 (until then „Rechtliches“ / "Legal" stood above the legal rows). „Nutzungsdaten“ (the usage-data switch) and „Datenschutzerklärung“ (the policy) are different rows: the first is a setting, the second the legal text.

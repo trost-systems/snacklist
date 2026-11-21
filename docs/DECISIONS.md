@@ -16855,3 +16855,68 @@ job 331's fixes (#590, same PR) with the two adjustments its review left open. I
 - **The privacy policy's §7 sentence on API counting** should name MCP too (job 331 J1 note). That is
   legal text, out of this job's scope by brief: NEEDS_LEAD "Job 336". The data map row is in
   `docs/PRIVACY_DATA_MAP.md`.
+
+## Job 337: server-side tester groups (TG1), the long-press internal switch removed, 2026-11-21
+
+Peter (t1106u, TG1): anyone could long-press the version line under More, mark the install
+internal and unlock tester-only flags. No hidden unlocks: testers are segmented on the server only.
+
+1. **The long press is gone, and so is its mark.** More's version line takes no gesture; the
+   strings „Interne Installation“ / "Internal installation" are deleted. `Analytics.load` deletes
+   the `analytics.internal` value older builds stored (`AnalyticsStore.forgetInternalInstallMark`),
+   so an upgraded phone that was marked internal is a customer again until the lead adds its user
+   to `internal`. Debug, profile and preview builds stay internal, as do the household define, the
+   RevenueCat tester household and the test e-mail domains.
+2. **`public.tester_groups` (user, group name, added at).** Per user, not per household: a tester
+   is a person, and the same person tests on every device. RLS lets a user read their own rows; no
+   client writes (all privileges revoked, `select` granted back to `authenticated`). The lead adds
+   people with SQL as the service role (docs/ANALYTICS.md, "Tester groups"); no user id is in the
+   repository or a seed. The foreign key cascades on account deletion; `export_my_data` gains
+   `tester_groups`. `my_tester_groups()` is `security definer` with `auth.uid()` (like the other
+   `my_*` RPCs) and sorts byte-wise (`collate "C"`), the order the app joins them in.
+3. **`is_internal` = the old rules or the group `internal`.** Any other group name only reaches
+   flags. The app reads the groups at each sign-in and whenever it comes back from the background
+   (`AppLifecycleListener.onShow`, not `onResume`: on the web every window focus is a resume, and a
+   read per focus buys nothing), keeps the last user's for an offline start and deletes them at
+   sign-out (`TesterGroupsSync`, wired in `main.dart` like the entitlements).
+4. **`tester_groups` goes with `is_internal` as a flag property only.** Sorted and comma-joined,
+   `''` for none: posthog's `setPersonPropertiesForFlags` merges, so an empty value is what
+   overwrites a group the user just left. It is not an event property (the allow-list is
+   unchanged) and makes no person profile. Flags on `is_internal = true` keep working unchanged.
+5. **More's internal tools: debug and profile builds and the group `internal` only.**
+   „Installations-ID kopieren“ and „Testfehler senden“ showed after the long press; they now show
+   in a build that can send (`Analytics.enabled`) for a debug or profile build or a user in the
+   group `internal` (`Analytics.showsInternalTools`). Not for every `internalNow` (review 0): the
+   RevenueCat tester household is App and Play Review's accounts, and a visible test-error button
+   in a store review build risks a rejection (App Store 2.1/2.2) and is a tester surface for
+   people outside the test groups. Test accounts and the tester household stay internal for
+   analytics only. A widget test pins both; the e2e spec adds its account to `internal` through
+   the service client before it looks for the button.
+6. **Tester flags without consent: built, switched off; Legal rejected it (N-313, Nov 21).** Without a current
+   yes only the shared `no-consent` request runs (Legal §18 FL1'), so a tester who declined
+   analytics never gets an internal or group flag. Smallest change found: with
+   `sharedFlagsCarryTesterGroups` (`app/lib/analytics/posthog_client.dart:19`, `false`) on, that
+   request adds `is_internal` and `tester_groups` to its `person_properties`
+   (`posthog_client.dart:175`), only for an internal user or one in a group
+   (`Analytics._sharedFlagTargeting`); everyone else's request is unchanged byte for byte. No id,
+   no event, no cookie, `geoip_disable` as before; the app asks again when the targeting changes.
+   **Question for Legal:** may the app, for a signed-in user whom we put into a tester group or
+   who is internal, and who has not said yes to analytics, send PostHog EU the flag properties
+   `is_internal` (bool) and `tester_groups` (group names such as `internal,beta-de`) with the shared
+   id `no-consent` and no other identifier, so the test features we released to them switch on?
+   PostHog also sees the IP address and, on the web, the User-Agent of that request, as for every
+   shared request today, and could link a request carrying a rare group name to that IP in its
+   technical logs. Alternatives if not: testers must say yes to analytics to get tester flags
+   (today's behaviour, nothing to do), or the server answers group flags itself (a new table of
+   flag keys per group, no PostHog request at all; bigger, and a second flag system).
+   **Legal's answer (N-313, Nov 21 2026): no.** The no-consent flag request never carries
+   `is_internal` or `tester_groups`; `sharedFlagsCarryTesterGroups` stays `false` and must not be
+   turned on. Testers who want tester flags say yes to analytics (today's behaviour).
+7. **The version line is its own semantics node.** Test accounts are internal, so every e2e
+   account now sees „Testfehler senden“ under the version. On the web the text then became the
+   label of a group around the button, and `getByText(/^Version /)` (shell-more's spec, the CI
+   run on the first push) found nothing. `Semantics(container: true)` around the line keeps it
+   plain text for screen readers and tests alike.
+8. **Job 332's flag sync** (`is_internal = true` default for new flags) stays as it is: members
+   of `internal` send `is_internal: true`. Rebased onto #589, the flag request after a yes carries
+   all five properties: `is_internal`, `tester_groups`, `platform`, `app_version`, `app_build`.

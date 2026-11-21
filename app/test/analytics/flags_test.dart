@@ -319,12 +319,15 @@ void main() {
     expect(analytics.flags.isOn('shared-thing'), isFalse);
   });
 
-  group('targeting by is_internal and build', () {
+  group('targeting by is_internal, tester_groups and build', () {
     late Analytics analytics;
 
     setUp(() async {
       native.targeting = (properties) => {
         'internal-only': properties['is_internal'] == true,
+        'beta-de-only': '${properties['tester_groups']}'
+            .split(',')
+            .contains('beta-de'),
       };
       analytics = await start();
     });
@@ -332,16 +335,22 @@ void main() {
     List<Object?> sent() => [
       for (final c in native.calls)
         if (c.method == 'setPersonPropertiesForFlags')
-          ((c.arguments as Map)['userProperties'] as Map)['is_internal'],
+          {
+            for (final MapEntry(:key, :value)
+                in ((c.arguments as Map)['userProperties'] as Map).entries)
+              if (key == 'is_internal' || key == 'tester_groups') key: value,
+          },
     ];
 
-    test('after the yes PostHog evaluates flags with is_internal and the '
-        'build, as flag properties only', () async {
+    test('after the yes PostHog evaluates flags with is_internal, '
+        'tester_groups and the build, as flag properties only', () async {
       analytics.setUser(customer);
       await analytics.decide(granted: true);
       await pumpEventQueue();
+      expect(sent(), hasLength(1));
       expect(native.flagProperties, {
         'is_internal': false,
+        'tester_groups': '',
         'platform': 'web',
         'app_version': '0.1.0+7',
         'app_build': 7,
@@ -351,24 +360,52 @@ void main() {
       expect(native.methods, isNot(contains('identify')));
     });
 
-    test('marked internal: sent again once, and the flags follow', () async {
+    test(
+      'in the group internal: sent again once, and the flags follow',
+      () async {
+        analytics.setUser(customer);
+        await analytics.decide(granted: true);
+        await pumpEventQueue();
+        analytics.setTesterGroups({'internal'});
+        await pumpEventQueue();
+        expect(analytics.flags.isOn('internal-only'), isTrue);
+        // Context registered again without a change sends nothing new.
+        analytics
+          ..testerHousehold = null
+          ..setTesterGroups({'internal'});
+        await pumpEventQueue();
+        analytics.setTesterGroups({});
+        await pumpEventQueue();
+        expect(sent(), [
+          {'is_internal': false, 'tester_groups': ''},
+          {'is_internal': true, 'tester_groups': 'internal'},
+          {'is_internal': false, 'tester_groups': ''},
+        ]);
+        expect(analytics.flags.isOn('internal-only'), isFalse);
+      },
+    );
+
+    test('an opt-in group targets its flag without making the user '
+        'internal', () async {
       analytics.setUser(customer);
       await analytics.decide(granted: true);
       await pumpEventQueue();
-      await analytics.markInternalInstall(internal: true);
+      analytics.setTesterGroups({'internal', 'beta-de', 'alexa'});
       await pumpEventQueue();
-      expect(analytics.flags.isOn('internal-only'), isTrue);
-      // Context registered again without a change sends nothing new.
-      analytics.testerHousehold = null;
+      analytics.setTesterGroups({'beta-de'});
       await pumpEventQueue();
-      await analytics.markInternalInstall(internal: false);
-      await pumpEventQueue();
-      expect(sent(), [false, true, false]);
+      expect(sent().skip(1), [
+        {'is_internal': true, 'tester_groups': 'alexa,beta-de,internal'},
+        {'is_internal': false, 'tester_groups': 'beta-de'},
+      ]);
+      expect(analytics.flags.isOn('beta-de-only'), isTrue);
       expect(analytics.flags.isOn('internal-only'), isFalse);
     });
 
     test('a no clears it; the next yes sends it again', () async {
-      await analytics.markInternalInstall(internal: true);
+      analytics
+        ..setUser(customer)
+        ..setTesterGroups({'internal'});
       await analytics.decide(granted: true);
       await pumpEventQueue();
       await analytics.decide(granted: false);
@@ -380,13 +417,18 @@ void main() {
         server.requests.last.body,
         sharedFlagsBody,
         reason:
-            'no is_internal and no app_build: no version condition '
-            'matches without consent',
+            'no is_internal, no tester_groups and no app_build: no version '
+            'condition matches without consent',
       );
       await analytics.decide(granted: true);
       await pumpEventQueue();
-      expect(native.flagProperties, containsPair('is_internal', true));
-      expect(native.flagProperties, containsPair('app_build', 7));
+      expect(native.flagProperties, {
+        'is_internal': true,
+        'tester_groups': 'internal',
+        'platform': 'web',
+        'app_version': '0.1.0+7',
+        'app_build': 7,
+      });
       expect(analytics.flags.isOn('internal-only'), isTrue);
     });
   });
@@ -401,6 +443,79 @@ void main() {
     expect(version('1.4.0+1414').appBuild, 1414);
     expect(version('1.4.0').appBuild, isNull);
     expect(version('0').appBuild, isNull);
+  });
+
+  group('shared flags with tester groups (off: Legal N-313)', () {
+    const switchedOn = AnalyticsConfig(
+      releaseBuild: true,
+      householdGroups: false,
+      platform: 'web',
+      appVersion: '0.1.0+7',
+      sharedFlagsTargeting: true,
+    );
+
+    Future<Analytics> startWith(AnalyticsConfig config) async {
+      final analytics = await loadedAnalytics(
+        store,
+        server: server,
+        config: config,
+      );
+      opened.add(analytics);
+      await pumpEventQueue();
+      return analytics;
+    }
+
+    test('switched off (the build default), a tester without consent asks '
+        'exactly as everyone else', () async {
+      decidedNo();
+      final analytics = await startWith(releaseConfig);
+      analytics
+        ..setUser(customer)
+        ..setTesterGroups({'internal', 'beta-de'});
+      await pumpEventQueue();
+      expect(server.requests, hasLength(1));
+      expect(server.requests.single.body, sharedFlagsBody);
+    });
+
+    test('switched on, a tester without consent asks again with '
+        'is_internal and tester_groups, no id', () async {
+      decidedNo();
+      server.served = {'beta-only': false};
+      final analytics = await startWith(switchedOn);
+      analytics.setUser(customer);
+      await pumpEventQueue();
+      expect(server.requests.single.body, sharedFlagsBody);
+      server.served = {'beta-only': true};
+      analytics.setTesterGroups({'beta-de'});
+      await pumpEventQueue();
+      expect(server.requests, hasLength(2));
+      expect(server.requests.last.body, {
+        ...sharedFlagsBody,
+        'person_properties': {
+          'platform': 'web',
+          'app_version': '0.1.0+7',
+          'is_internal': false,
+          'tester_groups': 'beta-de',
+        },
+      });
+      expect(analytics.flags.isOn('beta-only'), isTrue);
+      expect(store.sharedFlagValues, {
+        'beta-only': false,
+      }, reason: "the device keeps only everyone's answer");
+      expect(native.calls, isEmpty, reason: 'no SDK, no event');
+      expect(store.id, isNull);
+    });
+
+    test('switched on, a customer outside every group asks exactly as '
+        'before', () async {
+      final analytics = await startWith(switchedOn);
+      analytics
+        ..setUser(customer)
+        ..setTesterGroups({});
+      await pumpEventQueue();
+      expect(server.requests, hasLength(1));
+      expect(server.requests.single.body, sharedFlagsBody);
+    });
   });
 
   test('a build without a key has every flag off, cached ones too', () async {

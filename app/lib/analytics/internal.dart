@@ -4,7 +4,8 @@
 ///
 /// The rules, each enough on its own:
 /// - a debug or profile build ([releaseBuild] false);
-/// - an install flagged internal under More (long press on the version);
+/// - a user in the tester group `internal` ([internalTesterGroup], the
+///   server's `tester_groups`, job 337);
 /// - a household listed in the `ANALYTICS_INTERNAL_HOUSEHOLDS` define;
 /// - a household with a RevenueCat promotional grant ([testerHousehold]:
 ///   testers', App and Play Review's free premium; their households never
@@ -20,7 +21,7 @@
 /// never sent.
 bool isInternal({
   required bool releaseBuild,
-  required bool internalInstall,
+  required Set<String> testerGroups,
   required String? householdId,
   required String? email,
   Set<String> internalHouseholds = const {},
@@ -28,10 +29,19 @@ bool isInternal({
   String? testerHousehold,
 }) =>
     !releaseBuild ||
-    internalInstall ||
+    testerGroups.contains(internalTesterGroup) ||
     (householdId != null && internalHouseholds.contains(householdId)) ||
     (householdId != null && householdId == testerHousehold) ||
     (email != null && _testDomain(email, internalEmailDomains));
+
+/// The tester group whose members count as internal (docs/ANALYTICS.md,
+/// "Tester groups").
+const internalTesterGroup = 'internal';
+
+/// [groups] as the `tester_groups` flag property: sorted, comma-joined,
+/// empty for none, so a flag can target `tester_groups icontains beta-de`.
+String testerGroupsProperty(Set<String> groups) =>
+    (groups.toList()..sort()).join(',');
 
 const _reservedTopLevel = {'test', 'invalid', 'example', 'localhost'};
 const _reservedDomains = {'example.com', 'example.net', 'example.org'};

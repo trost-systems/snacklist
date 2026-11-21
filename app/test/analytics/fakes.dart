@@ -174,7 +174,13 @@ class MemoryAnalyticsStore() implements AnalyticsStore {
   /// The consent text version [decided] was given under.
   String? textVersion;
   String? firstOpen;
-  var internal = false;
+
+  /// The mark builds before job 337 kept; [forgetInternalInstallMark]
+  /// clears it.
+  var internalMark = false;
+
+  /// The kept tester groups by user (only one user's at a time).
+  ({String user, Set<String> groups})? keptGroups;
 
   /// The flags cached from shared requests.
   var sharedFlagValues = <String, bool>{};
@@ -224,11 +230,18 @@ class MemoryAnalyticsStore() implements AnalyticsStore {
       firstOpen = installId;
 
   @override
-  Future<bool> internalInstall() async => internal;
+  Future<void> forgetInternalInstallMark() async => internalMark = false;
 
   @override
-  Future<void> saveInternalInstall({required bool internal}) async =>
-      this.internal = internal;
+  Future<Set<String>?> testerGroups(String userId) async =>
+      keptGroups?.user == userId ? keptGroups?.groups : null;
+
+  @override
+  Future<void> saveTesterGroups(String userId, Set<String> groups) async =>
+      keptGroups = (user: userId, groups: {...groups});
+
+  @override
+  Future<void> forgetTesterGroups() async => keptGroups = null;
 
   @override
   Future<Map<String, bool>> sharedFlags() async => sharedFlagValues;

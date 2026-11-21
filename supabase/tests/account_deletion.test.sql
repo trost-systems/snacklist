@@ -337,8 +337,8 @@ select is(
   (select array_agg(k order by k) from export, jsonb_object_keys(doc) k),
   array['access_tokens', 'account', 'alexa_links', 'analytics_decisions', 'archived_households', 'connected_apps', 'exported_at',
         'feedback', 'feedback_idea_votes', 'format', 'history', 'household', 'household_removals', 'households', 'invite_uses', 'invites_created', 'item_claims',
-        'items_added', 'join_requests', 'lists_created', 'profile', 'purchases', 'trip_sessions_started', 'trips_logged',
-        'version'],
+        'items_added', 'join_requests', 'lists_created', 'profile', 'purchases', 'tester_groups', 'trip_sessions_started',
+        'trips_logged', 'version'],
   'the export has the documented sections'
 );
 select is(
@@ -390,6 +390,8 @@ select is(
     'item_claims', jsonb_build_array(jsonb_build_object('household_id', (select id from he),
       'item_name', 'Äpfel', 'quantity', null, 'created_at', now())),
     'join_requests', '[]'::jsonb,
+    -- Job 337: Emil is in no tester group (tester_groups.test.sql covers a tester's export).
+    'tester_groups', '[]'::jsonb,
     -- Job 199: his trip, not Frida's.
     'trips_logged', jsonb_build_array(jsonb_build_object('household_id', (select id from he), 'store_name', null,
       'shopped_on', current_date, 'items', jsonb_build_array(jsonb_build_object('name', 'Äpfel', 'quantity', '1 kg')),

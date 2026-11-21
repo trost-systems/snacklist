@@ -117,6 +117,7 @@ const NO_ROW = [
   'revenuecat_deletions',
   'revenuecat_events',
   'revenuecat_households',
+  'tester_groups',
   'user_entitlements',
   'waitlist',
   'waitlist_consent_proof',
