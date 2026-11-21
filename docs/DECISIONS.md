@@ -16763,3 +16763,44 @@ for the versions that have the feature complete.
 - **A scheduled run warns on a plan error instead of failing.** A bad condition stays in PostHog
   until someone fixes it; failing every 15 minutes would send 96 failure mails a day. A push and
   a run by hand still fail red.
+
+## Job 335: chain apps open directly on iPhone (2026-11-21)
+
+- **Why.** Peter, build 1439: EDEKA and Lidl opened the App Store page although both apps were
+  installed. The iOS plan tried only a universal link, and 47 of the 68 app rows had none.
+- **The plan.** iOS now tries the universal link (app only), then the bare root of the app's URL
+  scheme (`edeka://`), then the App Store (`storeAppPlan`, `app/lib/list/store_app.dart`). The
+  scheme step runs with `LaunchMode.externalApplication`, not `externalNonBrowserApplication`: the
+  latter sets `universalLinksOnly`, under which iOS opens nothing but universal links. url_launcher_ios
+  6.4.2 calls `UIApplication.open` without `canOpenURL`, so no `LSApplicationQueriesSchemes` entry
+  is needed and Info.plist is unchanged; iOS answers false when no app takes the scheme. Proven on
+  iOS 18.6 and 27.2 simulators (GitHub runs 44876062114 and 44874758450, url_launcher 6.3.3 with
+  url_launcher_ios 6.4.2 as the lock pins them): a third-party app's scheme opens it with
+  `externalApplication` (true), a missing one answers false and shows nothing, and
+  `externalNonBrowserApplication` refuses every custom scheme. `canLaunchUrl` answers false for an
+  installed third-party scheme without the query entry (true only for Apple's own), so it is not
+  used. iOS 17 could not run: GitHub retired macos-14. Probe: `docs/screenshots/335/probe/`. Android and
+  the web app keep their plans (the package starts on Android; a browser would show an error page for
+  a missing app).
+- **Schemes from evidence only.** 3 from iOS-side evidence (the chain's own pages: Jumbo, dm, Dia),
+  the rest from the current Android APK's manifest (`tool/retailers/app_schemes.py`, apkpure else
+  Aptoide, nothing from the APK runs). The iOS apps' Info.plists are not public, so an Android scheme is
+  a strong hint, not proof; a wrong one costs nothing (iOS answers false, the App Store opens). Kept
+  out: OAuth, payment and SDK schemes; a scheme several apps declare (`aldinord`, four ALDI Nord
+  countries, which all have universal links); a scheme only an old build declared (Esselunga,
+  E.Leclerc). Kaufland: `com.kaufland.iosapp`, the iOS bundle id that the Android app accepts for
+  invites from iPhones, not the Android launcher's `com.kaufland.corpapp`.
+- **Universal links: first-party hosts only (OS2).** The AASA recheck found claims on 23 more apps;
+  14 on the chains' own domains went in. Adjust (`edeka.go.link`, `kaufland.go.link`), AppsFlyer
+  (`*.onelink.me`, `link.jush.pl`) and Firebase (`*.page.link`, shut down in 2025) stayed out: a bare
+  link there hands the app's attribution SDK a click and may land on an error screen. Supercard's
+  claim needs AASA substitution variables, which `--verify` cannot check; it stayed out.
+- **Coverage.** iPhone direct open: 21 of 68 app rows before, 63 after (43 by a verified universal
+  link, 20 by a scheme alone). `supabase/retailers/coverage.md` (generated, `--check` keeps it current)
+  lists each app's way and source.
+- **Analytics (OS3).** `store_app_opened` already carries the context's `platform` (`ios`,
+  `android`, `web`), like every event since job 44, so it needed no new property. Review 0 caught
+  that an event-level `platform` added first never arrived: `Analytics.track` lays the context over
+  the event's properties. A test now fails when an event's rules name a context key. The insight is `analytics/queries/store_app_opens.sql`, not a gate
+  query: while the flag is on for internal testers only, the internal filter would leave nothing. The
+  personal API key on the runners lacks `insight` and `query` scopes, so the Lead creates the insight.

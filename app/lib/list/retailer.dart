@@ -131,6 +131,11 @@ class const RetailerApp({
   /// An https link the app claims (iOS universal link), opening its home;
   /// none when the chain's site claims none that lands there.
   final String? universalLink,
+
+  /// The URL scheme the app registers (`lidlplus`), found in its Info.plist,
+  /// its Android manifest or the chain's own pages (job 335): iOS opens its
+  /// bare root when no universal link opened the app.
+  final String? scheme,
 }) {
   /// Null for a row without a name or both store ids, so one bad entry
   /// leaves the chain's other apps and the list itself working.
@@ -148,6 +153,10 @@ class const RetailerApp({
           final String link when link.isNotEmpty => link,
           _ => null,
         },
+        scheme: switch (json['scheme']) {
+          final String scheme when _scheme.hasMatch(scheme) => scheme,
+          _ => null,
+        },
       ),
     _ => null,
   };
@@ -157,7 +166,10 @@ class const RetailerApp({
     'android': android,
     'ios': ios,
     'universalLink': universalLink,
+    'scheme': scheme,
   };
+
+  static final _scheme = RegExp(r'^[a-z][a-z0-9+.-]*$');
 }
 
 /// A chain in one country, an entry of `public.retailers`: a store of the

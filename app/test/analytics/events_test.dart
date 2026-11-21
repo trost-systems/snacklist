@@ -338,6 +338,13 @@ void main() {
     );
   });
 
+  test('no event names a context key: Analytics would overwrite it with the '
+      "context's value on every event (job 335)", () {
+    for (final MapEntry(key: event, value: rules) in eventCatalog.entries) {
+      expect(rules.keys.where(contextKeys.contains), isEmpty, reason: event);
+    }
+  });
+
   test('a refusal never repeats the value', () {
     try {
       checkEvent('item_added', {'source': 'Hafermilch'});

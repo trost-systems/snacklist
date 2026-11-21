@@ -16,6 +16,25 @@ const rewe = RetailerApp(
   ios: '714121079',
   universalLink: 'https://www.rewe.de/shop',
 );
+const edeka = RetailerApp(
+  name: 'EDEKA',
+  android: 'de.edeka.genuss',
+  ios: '1272688648',
+  scheme: 'edeka',
+);
+const kaufland = RetailerApp(
+  name: 'Kaufland',
+  android: 'com.kaufland.Kaufland',
+  ios: '1087780386',
+  scheme: 'com.kaufland.iosapp',
+);
+const both = RetailerApp(
+  name: 'REWE',
+  android: 'de.rewe.app.mobile',
+  ios: '714121079',
+  universalLink: 'https://www.rewe.de/shop',
+  scheme: 'rewe',
+);
 const lidl = Retailer(
   chain: 'lidl',
   country: 'DE',
@@ -83,7 +102,41 @@ void main() {
       ]);
     });
 
-    test('iOS without one: the App Store at once', () {
+    test('iOS with a URL scheme: its bare root, for any app, then the App '
+        'Store', () {
+      expect(plan(edeka, StoreAppPlatform.ios), [
+        'edeka:// app',
+        'itms-apps://apps.apple.com/app/id1272688648 store_page',
+      ]);
+    });
+
+    test('a dotted scheme keeps its dots and gets nothing after //', () {
+      expect(plan(kaufland, StoreAppPlatform.ios), [
+        'com.kaufland.iosapp:// app',
+        'itms-apps://apps.apple.com/app/id1087780386 store_page',
+      ]);
+    });
+
+    test('iOS with both: the universal link first, then the scheme', () {
+      expect(plan(both, StoreAppPlatform.ios), [
+        'app-only:https://www.rewe.de/shop app',
+        'rewe:// app',
+        'itms-apps://apps.apple.com/app/id714121079 store_page',
+      ]);
+    });
+
+    test('a scheme stays off Android and the web app: the package opens on '
+        'Android, and a browser would show an error for a missing app', () {
+      for (final platform in [
+        StoreAppPlatform.android,
+        StoreAppPlatform.iphoneBrowser,
+        StoreAppPlatform.other,
+      ]) {
+        expect(plan(edeka, platform), isNot(contains(startsWith('edeka:'))));
+      }
+    });
+
+    test('iOS without either: the App Store at once', () {
       expect(plan(lidlPlus, StoreAppPlatform.ios), [
         'itms-apps://apps.apple.com/app/id1238611143 store_page',
       ]);
@@ -110,6 +163,21 @@ void main() {
   });
 
   group('running it', () {
+    test('iOS: an installed app takes its scheme, a missing one falls '
+        'through to the App Store', () async {
+      final steps = storeAppPlan(edeka, StoreAppPlatform.ios);
+      final installed = _Opener((t) => t == 'edeka://');
+      expect(await runStoreAppPlan(steps, installed), StoreAppOutcome.app);
+      expect(installed.tried, ['edeka://']);
+
+      final missing = _Opener((t) => t.startsWith('itms-apps:'));
+      expect(await runStoreAppPlan(steps, missing), StoreAppOutcome.storePage);
+      expect(missing.tried, [
+        'edeka://',
+        'itms-apps://apps.apple.com/app/id1272688648',
+      ]);
+    });
+
     final steps = storeAppPlan(lidlPlus, StoreAppPlatform.android);
 
     test('stops at the first step that opens', () async {

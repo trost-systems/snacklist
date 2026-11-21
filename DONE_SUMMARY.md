@@ -2010,3 +2010,17 @@ rollouts and version conditions in PostHog survive every run, and the sync also 
 minutes (reviews 0 and 1). All of it waits for the `ops` secret
 `POSTHOG_PERSONAL_API_KEY`. Details,
 evidence and test results: `docs/done/332-posthog-flag-sync.md`.
+
+## Job 335: chain apps open directly on iPhone (2026-11-21)
+
+On an iPhone, a store's app key now opens the chain's installed app through its universal link or
+its URL scheme before falling back to the App Store: 63 of 68 app rows (21 before), EDEKA
+(`edeka://`), Lidl Plus (`app.lidlplus.com`, `lidlplus://`) and Kaufland among them. Proven on iOS
+18.6 and 27.2 simulators; Info.plist unchanged. Per-app sources: `supabase/retailers/coverage.md`.
+Details: `docs/done/335-store-app-direct-open.md`.
+
+Review 0 of job 335: the event-level `platform` added to `store_app_opened` never arrived, because
+the analytics context's own `platform` (`ios`, `android`, `web`) overwrites it on every event. It
+is gone; the insight breaks down by the context value, and a test now fails when an event's rules
+name a context key. Also: a dotted-scheme plan test (`com.kaufland.iosapp://`), "certificate
+subject" instead of "signed" in the registry notes, and README lines on shared and short schemes.

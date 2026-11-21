@@ -1,5 +1,5 @@
 import { assertEquals, assertThrows } from '@std/assert';
-import { blockOf, DART, dartFile, dataBlock, newestWithBlock, parseRegistry, readMigrations, readRegistry, type Registry } from './retailers.ts';
+import { blockOf, COVERAGE, coverageFile, DART, dartFile, dataBlock, newestWithBlock, parseRegistry, readMigrations, readRegistry, type Registry } from './retailers.ts';
 
 const lidl = {
   chain: 'lidl',
@@ -7,7 +7,7 @@ const lidl = {
   name: 'Lidl',
   aliases: [],
   web: 'www.lidl.de',
-  apps: [{ name: 'Lidl Plus', android: 'com.lidl.eci.lidlplus', ios: '1238611143', universalLink: null }],
+  apps: [{ name: 'Lidl Plus', android: 'com.lidl.eci.lidlplus', ios: '1238611143', universalLink: null, scheme: 'lidlplus' }],
   status: 'verified',
   verified: '2026-11-18',
   sources: ['https://itunes.apple.com/lookup?id=1238611143&country=de'],
@@ -37,6 +37,7 @@ Deno.test('the repository registry parses and its newest migration is current', 
   );
   assertEquals(parsed.entries.find((e) => e.chain === 'netto-md')?.short, 'Netto');
   assertEquals(await Deno.readTextFile(DART), dartFile(parsed));
+  assertEquals(await Deno.readTextFile(COVERAGE), coverageFile(parsed));
   const [, sql] = newestWithBlock(await readMigrations()) ?? [];
   assertEquals(blockOf(sql ?? ''), await dataBlock(parsed));
 });
@@ -51,6 +52,9 @@ Deno.test('schema problems are named', () => {
   bad({ status: 'no-app' }, 'a no-app entry lists none');
   bad({ apps: [{ ...lidl.apps[0], ios: null }] }, 'bad ios id');
   bad({ apps: [{ ...lidl.apps[0], storeFallback: {} }] }, 'unknown keys storeFallback');
+  for (const scheme of [undefined, '', 'lidlplus://', 'LidlPlus', 'https', 'itms-apps', 7]) {
+    bad({ apps: [{ ...lidl.apps[0], scheme }] }, 'scheme must be');
+  }
   bad({ apps: [lidl.apps[0], lidl.apps[0]] }, 'an android package twice');
   bad({ short: 'Lidl' }, 'short is a name shorter than name');
   bad({ short: '' }, 'short is a name shorter than name');

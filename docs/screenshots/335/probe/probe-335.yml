@@ -1,0 +1,48 @@
+name: probe-335
+on:
+  push:
+    branches: ['probe/**']
+permissions:
+  contents: read
+jobs:
+  probe:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: macos-15, ios: '18', xcode: '' }
+          - { runner: xcode-27, ios: newest, xcode: local }
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - if: matrix.xcode == 'local'
+        uses: ./.github/actions/xcode
+      - run: xcodebuild -version; xcrun simctl list runtimes
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          channel: stable
+          flutter-version: '3.50.0'
+      - name: build
+        run: |
+          cd "$RUNNER_TEMP"
+          flutter create --org dev.probe --platforms ios probe335
+          cd probe335
+          flutter pub add 'url_launcher:6.3.3' 'override:url_launcher_ios:6.4.2'
+          grep -A6 -E '^  url_launcher(_ios)?:' pubspec.lock
+          grep -c LSApplicationQueriesSchemes ios/Runner/Info.plist || true
+          cp "$GITHUB_WORKSPACE/probe335/main.dart" lib/main.dart
+          flutter build ios --simulator --debug
+          cd "$RUNNER_TEMP"
+          flutter create --org dev.probe --platforms ios target335
+          cd target335
+          plist=ios/Runner/Info.plist
+          /usr/libexec/PlistBuddy -c 'Add :CFBundleURLTypes array' -c 'Add :CFBundleURLTypes:0 dict' -c 'Add :CFBundleURLTypes:0:CFBundleURLName string dev.probe.target335' -c 'Add :CFBundleURLTypes:0:CFBundleURLSchemes array' -c 'Add :CFBundleURLTypes:0:CFBundleURLSchemes:0 string probetarget335' "$plist"
+          flutter build ios --simulator --debug
+      - name: probe
+        run: probe335/run.sh '${{ matrix.ios }}' "$RUNNER_TEMP/probe335/build/ios/iphonesimulator/Runner.app" "$RUNNER_TEMP/out" "$RUNNER_TEMP/target335/build/ios/iphonesimulator/Runner.app"
+      - if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: probe-${{ matrix.runner }}-${{ matrix.ios }}
+          path: ${{ runner.temp }}/out

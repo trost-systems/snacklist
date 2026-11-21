@@ -57,3 +57,4 @@ e2e/sync-evidence/
 # Job 31: ASK CLI state (skill id, profile) after `ask deploy`
 alexa/.ask/
 .deno.strict*.json
+__pycache__/
