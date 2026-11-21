@@ -29,4 +29,5 @@ python3 -m http.server 8771 --directory docs/design/h-satz-final/h-dist
 
 ## Feature prototypes
 
+- **Totals with missing prices (job 343):** [`totals/`](totals/README.md), round TE: five ways to show the shopping total when no item or only some items have a price, with a Today calibrated against the release web build, and [`te/RECOMMENDATION.md`](totals/te/RECOMMENDATION.md). Run `node docs/design/totals/verify.mjs`.
 - **Grocery log (job 198):** [`grocery-log/`](grocery-log/), five interactive approaches behind one switcher, plus [`RECOMMENDATION.md`](grocery-log/RECOMMENDATION.md). Serve the repo root (`python3 -m http.server 4198 --bind 127.0.0.1`) and open `/docs/design/grocery-log/index.html`.

@@ -1,0 +1,199 @@
+@font-face { font-family: "Bricolage Grotesque"; src: url("../../../site/public/fonts/bricolage-grotesque-latin-standard-normal.woff2") format("woff2"); font-weight: 200 800; }
+@font-face { font-family: "Inter"; src: url("../../../site/public/fonts/inter-latin-wght-normal.woff2") format("woff2"); font-weight: 100 900; }
+
+/* The phone's text: the app's own font files (app/pubspec.yaml); the site's variable Inter sets about 5 % narrower. */
+@font-face { font-family: "App Inter"; src: url("../../../app/assets/fonts/Inter-Regular.ttf") format("truetype"); font-weight: 400; }
+@font-face { font-family: "App Inter"; src: url("../../../app/assets/fonts/Inter-Medium.ttf") format("truetype"); font-weight: 500; }
+@font-face { font-family: "App Inter"; src: url("../../../app/assets/fonts/Inter-SemiBold.ttf") format("truetype"); font-weight: 600; }
+@font-face { font-family: "App Inter"; src: url("../../../app/assets/fonts/Inter-Bold.ttf") format("truetype"); font-weight: 700; }
+@font-face { font-family: "App Bricolage"; src: url("../../../app/assets/fonts/BricolageGrotesque-Bold.ttf") format("truetype"); font-weight: 700; }
+@font-face { font-family: "App Bricolage"; src: url("../../../app/assets/fonts/BricolageGrotesque-ExtraBold.ttf") format("truetype"); font-weight: 800; }
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--hl-color-surface-sunken); color: var(--hl-color-text); font: 15px/1.45 var(--hl-font-family-sans); }
+button { font: inherit; color: inherit; cursor: pointer; background: none; border: 0; padding: 0; text-align: left; }
+p { margin: 0; }
+a { color: var(--hl-color-brand); }
+.icon { width: 24px; height: 24px; fill: currentColor; flex: none; }
+.emo { font-family: "Apple Color Emoji", "Noto Color Emoji", "Segoe UI Emoji", sans-serif; }
+
+/* Page chrome (not the app). */
+.page-head { padding: 16px 16px 0; display: grid; gap: 8px; max-width: 2000px; margin: 0 auto; }
+.title-row { display: flex; flex-wrap: wrap; gap: 4px 16px; align-items: baseline; }
+.page-head h1 { font: 800 26px/1.1 var(--hl-font-family-display); letter-spacing: -0.03em; margin: 0; }
+.back-link { font-size: 13px; font-weight: 650; }
+.note { color: var(--hl-color-text-muted); font-size: 13.5px; max-width: 1050px; }
+.controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.controls .sep { width: 8px; }
+.controls .lbl { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--hl-color-text-muted); margin-right: 2px; }
+.controls button { padding: 6px 12px; border: 2px solid var(--hl-color-edge); border-radius: 8px; background: var(--hl-color-surface-raised); font-size: 13px; font-weight: 650; color: var(--hl-color-text); }
+.controls button[aria-pressed="true"] { background: var(--hl-color-honey); color: var(--hl-color-on-honey); }
+.view { max-width: 2000px; margin: 0 auto; padding: 16px; display: grid; gap: 40px; }
+.view > * { min-width: 0; }
+.option, .rec, .facts { display: grid; gap: 10px; }
+.option > h2, .rec > h2, .facts > h2 { margin: 0; font: 800 22px/1.2 var(--hl-font-family-display); letter-spacing: -0.02em; }
+.option > p, .facts p, .facts li { font-size: 14px; max-width: 1050px; }
+.facts ul, .rec ol, .rec ul { margin: 0; padding-left: 22px; display: grid; gap: 5px; max-width: 1100px; font-size: 14px; }
+.rec h3 { font: 700 18px/1.2 var(--hl-font-family-display); margin: 10px 0 0; }
+.frames { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start; }
+figure.cell { margin: 0; display: grid; gap: 6px; align-content: start; }
+figure.cell figcaption { font-size: 12.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--hl-color-text-muted); max-width: 390px; min-height: 2.9em; }
+figure.cell figcaption small { display: block; text-transform: none; letter-spacing: 0; font-weight: 500; }
+.meter { font-size: 13px; color: var(--hl-color-text-muted); max-width: 1050px; }
+.meter b { color: var(--hl-color-text); }
+.tag { display: inline-block; padding: 1px 8px; border-radius: 10px; font: 650 12px/1.5 var(--hl-font-family-sans); vertical-align: 3px; margin-left: 6px; }
+.tag.pick { background: var(--hl-color-honey); color: var(--hl-color-on-honey); }
+.tag.runner { background: var(--hl-color-mint-soft); color: var(--hl-color-text); }
+.table-wrap { overflow-x: auto; max-width: 100%; }
+.facts, .rec, .option { min-width: 0; }
+table { border-collapse: collapse; font-size: 13.5px; min-width: 900px; }
+th, td { border-bottom: 1px solid var(--hl-color-divider); padding: 8px 12px 8px 0; text-align: left; vertical-align: top; }
+th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--hl-color-text-muted); }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); gap: 16px; max-width: 1150px; }
+.ocard { display: grid; gap: 8px; align-content: start; padding: 16px; border: 2px solid var(--hl-color-border); border-radius: 18px; background: var(--hl-color-surface-raised); box-shadow: 0 3px 0 var(--hl-color-edge); color: var(--hl-color-text); text-decoration: none; }
+.ocard h2 { margin: 0; font: 800 20px/1.2 var(--hl-font-family-display); }
+.ocard p { font-size: 14px; }
+.live { display: grid; gap: 6px; }
+.live .hint { font-size: 12.5px; color: var(--hl-color-text-muted); max-width: 390px; }
+.live .states { display: flex; gap: 6px; flex-wrap: wrap; }
+.live .states button { font-size: 12.5px; font-weight: 700; color: var(--hl-color-brand); padding: 4px 8px; border: 1.5px solid var(--hl-color-divider); border-radius: 8px; }
+.live .states button[aria-pressed="true"] { border-color: var(--hl-color-brand); }
+
+/* The phone. Inside, the app's theme and text size (--ts); text heights are Material 3 bodyMedium's 20/14 and 0.25 px letter spacing. */
+.phone {
+  --ts: 1; --sb: 47px; --lh: 1.4286; width: 390px; height: 844px; position: relative; overflow: hidden; flex: none; isolation: isolate;
+  outline: 2px solid var(--hl-color-edge); border-radius: 44px; background: var(--hl-color-surface); color: var(--hl-color-text);
+  box-shadow: 0 8px 0 2px var(--hl-color-edge); display: flex; flex-direction: column; font-family: "App Inter", var(--hl-font-family-sans); font-size: calc(14px * var(--ts)); line-height: var(--lh); letter-spacing: 0.25px; text-align: left;
+}
+.phone.android { --sb: 24px; width: 360px; height: 640px; border-radius: 18px; }
+.phone.ts200 { --ts: 2; }
+.phone.ts310 { --ts: 3.1; }
+.status { height: var(--sb); flex: none; display: flex; align-items: center; padding: 6px 32px 0; font-size: 15px; font-weight: 650; line-height: 1.2; }
+.android .status { padding: 0 14px; font-size: 13px; }
+.status .sig { margin-left: auto; width: 64px; height: 12px; border-radius: 4px; background: linear-gradient(90deg, currentColor 0 18px, transparent 18px 24px, currentColor 24px 40px, transparent 40px 46px, currentColor 46px); opacity: 0.85; }
+.screen { position: relative; flex: 1; min-height: 0; }
+.scroll { position: absolute; inset: 0; overflow-y: auto; scrollbar-width: none; }
+.scroll::-webkit-scrollbar { display: none; }
+.content { padding: 0 16px; }
+.homeind { position: absolute; left: 0; right: 0; bottom: 0; height: 22px; z-index: 40; pointer-events: none; display: grid; place-items: end center; padding-bottom: 8px; }
+.homeind i { width: 134px; height: 5px; border-radius: 3px; background: var(--hl-color-text); }
+
+/* Top bar: see-through over the list (job 229): the household and list switcher, Edit. */
+.topbar { position: absolute; left: 0; right: 0; top: 0; z-index: 5; display: flex; flex-wrap: nowrap; align-items: flex-start; gap: 8px; padding: 10px 16px 8px;
+  background: linear-gradient(var(--hl-color-surface) 70%, color-mix(in srgb, var(--hl-color-surface) 0%, transparent)); }
+.topbar .switcher + * { margin-left: auto; }
+.hexbtn { --o: var(--hl-color-border); display: inline-flex; flex: none; max-width: 100%;
+  filter: drop-shadow(2px 0 0 var(--o)) drop-shadow(-2px 0 0 var(--o)) drop-shadow(0 2px 0 var(--o)) drop-shadow(0 -2px 0 var(--o)) drop-shadow(0 4px 0 var(--o)); }
+.hexbtn > span { --cut: 14px; min-height: 48px; display: inline-flex; align-items: center; gap: 6px; padding: 2px calc(var(--cut) + 6px); background: var(--hl-color-surface-raised);
+  clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% 50%, calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 50%); font-weight: 800; font-size: calc(15px * var(--tb)); line-height: 1.2; white-space: nowrap; }
+.th-light .hexbtn > span { background: #fff; }
+/* The top bar's text grows little with the system size (about 1.1× at 310 %); the list name gives way with an ellipsis. */
+.topbar { --tb: min(var(--ts), 1.1); }
+.hexbtn.switcher { flex: 0 1 auto; min-width: 0; }
+.hexbtn.switcher > span { min-width: 0; }
+.hexbtn .two { display: grid; min-width: 0; }
+.hexbtn .two > * { overflow: hidden; text-overflow: ellipsis; }
+.hexbtn .two small { font-size: calc(12px * var(--tb)); font-weight: 600; color: var(--hl-color-text-muted); }
+.hexbtn .two b { font-size: calc(15px * var(--tb)); }
+.hexbtn .updown { width: 20px; height: 20px; }
+.hexbtn.amt > span { --cut: 12px; padding: 2px calc(var(--cut) + 2px); font-variant-numeric: tabular-nums; }
+.hexbtn.amt .plus { font-style: normal; color: var(--hl-color-text-muted); margin-left: -5px; }
+
+/* Store divider, category head, item row with its price chip. */
+.store { padding-bottom: 20px; }
+.store:last-of-type { padding-bottom: 0; }
+.sdivider { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; min-height: 52px; padding: 4px 0; }
+.sdivider .dname { font-size: calc(17px * var(--ts)); color: var(--hl-color-text-muted); }
+.sdivider .dline { flex: 1 1 40px; height: 3px; background: var(--hl-color-text); border-radius: 2px; }
+.sdivider .dtail { display: inline-flex; align-items: center; gap: 10px; margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
+.sdivider .dcount { font-size: calc(15px * var(--ts)); color: var(--hl-color-text-muted); }
+.sdivider .dcount b { color: var(--hl-color-text); font-weight: 800; }
+.sdivider .dsum { font-size: calc(15px * var(--ts)); font-weight: 800; font-variant-numeric: tabular-nums; }
+.sdivider .dchev { color: var(--hl-color-text-muted); margin-right: 4px; }
+.cat { display: flex; align-items: center; gap: 10px; min-height: 32px; font-size: calc(13px * var(--ts)); font-weight: 650; letter-spacing: 0.1em; text-transform: uppercase; color: var(--hl-color-text-muted); }
+.cat::after { content: ""; flex: 1; height: 1px; background: var(--hl-color-divider); }
+.item { display: flex; align-items: center; gap: 16px; min-height: 48px; padding: 0 0 0 4px; cursor: pointer; }
+.item.target { background: var(--hl-color-honey-soft); border-radius: 12px; }
+.item .emo { width: 22px; font-size: calc(20px * min(var(--ts), 1.6)); flex: none; text-align: center; }
+.item .nm { flex: 1; min-width: 0; font-size: calc(17px * var(--ts)); overflow-wrap: anywhere; }
+.item .nm b { font-weight: 800; }
+.item .nm .q { color: var(--hl-color-brand); }
+.chip { --o: var(--hl-color-text-muted); flex: none; filter: drop-shadow(2px 0 0 var(--o)) drop-shadow(-2px 0 0 var(--o)) drop-shadow(0 2px 0 var(--o)) drop-shadow(0 -2px 0 var(--o)); }
+.chip.set { --o: var(--hl-color-border); }
+.chip.open { --o: var(--hl-color-brand); }
+.chip > span { --cut: 9px; display: inline-flex; align-items: center; gap: 2px; height: 32px; overflow: hidden; padding: 0 calc(var(--cut) + 6px); font-weight: 800; font-size: calc(14px * var(--ts)); line-height: 1.2;
+  background: var(--hl-color-surface); color: var(--hl-color-text-muted); white-space: nowrap; font-variant-numeric: tabular-nums;
+  clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% 50%, calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 50%); }
+.chip.set > span { background: var(--hl-color-surface-raised); color: var(--hl-color-text); }
+.icon.tiny { width: 16px; height: 16px; }
+
+/* The block (summary_block.dart): margin 12/16, a 2 px rule, store lines of 48, a divider of 8, the total of 56. */
+.blk { margin: 12px 0 0; padding: 0 4px; border-top: 2px solid var(--hl-color-text); }
+.bhead { padding: 12px 0 4px; font-size: calc(13px * var(--ts)); font-weight: 800; letter-spacing: 1.2px; color: var(--hl-color-text-muted); text-transform: uppercase; }
+.sline { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 4px 0; cursor: pointer; }
+.sline .sname { flex: 1; min-width: 0; display: grid; }
+.sline .sname b { font-size: calc(15px * var(--ts)); font-weight: 800; overflow-wrap: anywhere; }
+.sdet, .tcounts { overflow-wrap: anywhere; font-size: calc(13px * var(--ts)); font-weight: 500; color: var(--hl-color-text-muted); font-variant-numeric: tabular-nums; }
+.sdet .icon { vertical-align: -2px; margin-right: 2px; fill: var(--hl-color-text-muted); }
+.samt { max-width: 55%; text-align: end; overflow-wrap: break-word; font-size: calc(16px * var(--ts)); font-weight: 800; font-variant-numeric: tabular-nums; }
+.bdiv { height: 8px; display: flex; align-items: center; }
+.bdiv::before { content: ""; flex: 1; height: 2px; background: var(--hl-color-border); }
+.tline { display: flex; flex-direction: column; justify-content: center; min-height: 56px; padding: 4px 0; }
+.tline[data-act] { cursor: pointer; }
+.trow { display: flex; align-items: center; gap: 12px; }
+.ttitle { flex: 1; min-width: 0; font-size: calc(15px * var(--ts)); font-weight: 800; overflow-wrap: anywhere; }
+.ttitle.big { font-size: calc(17px * var(--ts)); }
+.tamt { max-width: 55%; text-align: end; overflow-wrap: break-word; font: 800 calc(24px * var(--ts))/var(--lh) "App Bricolage", var(--hl-font-family-display); font-variant-numeric: tabular-nums; }
+.marks { font: 400 calc(15px * var(--ts))/var(--lh) "App Inter", var(--hl-font-family-sans); color: var(--hl-color-text-muted); }
+.samt .marks { font: inherit; color: inherit; }
+.chev { display: grid; place-items: center; width: 24px; color: var(--hl-color-text-muted); }
+.chev.up { transform: rotate(180deg); }
+.tline.one { min-height: 48px; }
+/* Names and counts wrap inside their column, as Flutter breaks an over-long word in an Expanded text. */
+/* TE4: the count of items without a price is a link to the next one (min 48 px tall). */
+.nudge { display: inline-flex; align-items: center; gap: 2px; min-height: 48px; flex: 0 1 auto; min-width: 0; overflow-wrap: anywhere; text-align: end; font-size: calc(13px * var(--ts)); font-weight: 700; color: var(--hl-color-brand); }
+.nudge .go { width: 20px; height: 20px; transform: rotate(-90deg); }
+.blk > .nudge { margin-top: -8px; }
+.trow .nudge { max-width: 55%; }
+
+.used { display: flex; align-items: center; justify-content: space-between; min-height: 48px; margin-top: 20px; padding: 0 0 0 0; font-size: calc(16px * var(--ts)); }
+.used .icon { color: var(--hl-color-text-muted); margin-right: 4px; }
+
+/* Bottom band: the trip strip (while a trip runs), the floating add field and the tab bar. */
+/* At large text the release build keeps the band inside the screen: tab and trip text grow little, the field clips its hint. */
+.bottom { position: absolute; left: 16px; right: 16px; bottom: 12px; z-index: 6; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.ios .bottom { bottom: 30px; }
+.trip { --ts2: min(var(--ts), 1.15); display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 12px; border-radius: 14px; background: var(--hl-color-inverse); color: var(--hl-color-on-inverse); font-size: calc(13px * var(--ts2)); line-height: 1.2; white-space: nowrap; overflow: hidden; }
+.trip .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--hl-color-mint); flex: none; }
+.trip b { font: 800 calc(18px * var(--ts2))/1.2 "App Bricolage", var(--hl-font-family-display); }
+.trip span:not(.end):not(.pause) { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-weight: 700; letter-spacing: 0.08em; }
+.trip .pause, .trip .end, .trip .dot, .trip b { flex: none; }
+.trip .pause { display: inline-flex; gap: 4px; padding: 10px 12px; border-radius: 10px; background: color-mix(in srgb, var(--hl-color-on-inverse) 15%, transparent); }
+.trip .pause i { width: 4px; height: 14px; background: currentColor; border-radius: 1px; }
+.trip .end > span { display: inline-block; padding: 8px 16px; background: var(--hl-color-honey); color: var(--hl-color-on-honey); font-weight: 800; clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 8px 100%, 0 50%); }
+.addfield { min-width: 0; --o: var(--hl-color-border); filter: drop-shadow(2px 0 0 var(--o)) drop-shadow(-2px 0 0 var(--o)) drop-shadow(0 2px 0 var(--o)) drop-shadow(0 -2px 0 var(--o)) drop-shadow(0 3px 0 var(--o)); }
+.addfield > span { --cut: 16px; display: flex; align-items: center; height: 48px; overflow: hidden; white-space: nowrap; padding: 0 22px; font-size: calc(17px * var(--ts)); line-height: 1.2; color: var(--hl-color-text-muted); background: var(--hl-color-surface-raised);
+  clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% 50%, calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 50%); }
+.th-light .addfield > span { background: #fff; }
+.tabs { justify-self: center; max-width: 100%; display: flex; gap: 2px; padding: 4px 14px; --o: var(--hl-color-border); background: var(--hl-color-surface-raised); filter: drop-shadow(2px 0 0 var(--o)) drop-shadow(-2px 0 0 var(--o)) drop-shadow(0 2px 0 var(--o)) drop-shadow(0 -2px 0 var(--o)) drop-shadow(0 3px 0 var(--o));
+  clip-path: polygon(18px 0, calc(100% - 18px) 0, 100% 50%, calc(100% - 18px) 100%, 18px 100%, 0 50%); }
+.th-light .tabs { background: #fff; }
+.tab { display: flex; align-items: center; gap: 6px; padding: 0 14px; min-height: 44px; font-size: calc(14px * min(var(--ts), 1.15)); font-weight: 700; white-space: nowrap; line-height: 1.2; }
+.android .tab { padding: 0 10px; }
+.tab.on { background: var(--hl-color-honey); color: var(--hl-color-on-honey); clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 10px 100%, 0 50%); }
+
+/* TE5's sheet: the receipt over a scrim. */
+.scrim { position: absolute; inset: 0; z-index: 20; background: rgb(0 0 0 / 0.32); }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 21; max-height: calc(100% - 24px); overflow-y: auto; background: var(--hl-color-surface-raised); border-radius: 28px 28px 0 0; padding: 0 16px 40px; }
+.sheet .grab { height: 24px; display: grid; place-items: center; cursor: pointer; }
+.sheet .grab i { width: 32px; height: 4px; border-radius: 2px; background: var(--hl-color-divider); }
+.sheetbody { padding: 0 4px; }
+
+.th-dark { color-scheme: dark; }
+.th-light { color-scheme: light; }
+
+/* On a phone the 390 px phones fill the screen: only the page's text keeps its side padding. */
+@media (max-width: 440px) {
+  .view { padding-left: 0; padding-right: 0; }
+  .view > section > :not(.frames), .frames figcaption, .live .states { padding-left: 12px; padding-right: 12px; }
+}
