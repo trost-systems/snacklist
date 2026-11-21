@@ -16953,3 +16953,20 @@ pinned above the field, other suggestions hidden); all of it stays behind `add-s
    PostHog with no sign. `const String xFlag` is read; other types throw with the line number.
 2. **Follow-up PR, not a reopened #589.** #589 was merged under the Legal GO; this change touches
    only the sync script, its tests and docs, no legal, ARB, store or consent text.
+
+## Job 346: categories for non-grocery stores (research, no production change)
+
+1. **Report, not code.** The brief asks for a recommendation. Production code stays untouched, and
+   the draft PR carries only `docs/research/346-categories/` and is never merged.
+2. **Mock household on a local stack.** The IKEA, dm, Baumarkt and Apotheke cases ran through the
+   real `create_household`, `classify_item_detail` and `guess_store` (all migrations at
+   `d3db3273`, port block 591xx) in rolled-back transactions. No production or user data was read.
+3. **Recommendation CAT1, runner-up CAT4.** CAT1 gives stores a kind with their own category set and
+   walk order, generalizing job 151. CAT4 shows plain stores without dividers. CAT4 wins if job 347
+   hides categories by default.
+4. **IKEA area names are ours.** German Market Hall department names could not be verified from IKEA
+   sources, so the proposed `home` set uses neutral names (Möbel, Küche & Essen, Textilien, Lampen,
+   Deko & Bilder, Aufbewahrung, Pflanzen).
+5. **Misfires B1 to B7 are listed, not fixed** (Spiegel and Kleiderbügel go to Drogerie, Bratpfanne
+   and Medikament go to Fleisch, Topf goes to Kühlregal, and so on). The brief forbids production
+   changes, so they go to the lead as a separate small job.

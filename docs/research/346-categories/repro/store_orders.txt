@@ -1,0 +1,76 @@
+  store   | sort_order |        category         | hidden 
+----------+------------+-------------------------+--------
+ IKEA     |         10 | Obst & Gemüse           | f
+ IKEA     |         20 | Brot & Backwaren        | f
+ IKEA     |         30 | Kühlregal               | f
+ IKEA     |         40 | Fleisch/Wurst/Fisch     | f
+ IKEA     |         50 | Vorrat & Konserven      | f
+ IKEA     |         60 | Süßes & Snacks          | f
+ IKEA     |         70 | Getränke                | f
+ IKEA     |         80 | Tiefkühl                | f
+ IKEA     |         90 | Haushalt                | f
+ IKEA     |        100 | 👶 Drogerie             | f
+ IKEA     |        110 | Farben & Lacke          | f
+ IKEA     |        120 | Sanitär                 | f
+ IKEA     |        130 | Elektro & Leuchtmittel  | f
+ IKEA     |        140 | Werkzeug                | f
+ IKEA     |        150 | Schrauben & Befestigung | f
+ IKEA     |        160 | Holz & Baustoffe        | f
+ IKEA     |        170 | Garten & Pflanzen       | f
+ IKEA     |        180 | Sonstiges               | f
+ dm       |         10 | 👶 Drogerie             | f
+ dm       |         20 | Vorrat & Konserven      | f
+ dm       |         30 | Süßes & Snacks          | f
+ dm       |         40 | Haushalt                | f
+ dm       |         50 | Getränke                | f
+ dm       |         60 | Farben & Lacke          | f
+ dm       |         70 | Sanitär                 | f
+ dm       |         80 | Elektro & Leuchtmittel  | f
+ dm       |         90 | Werkzeug                | f
+ dm       |        100 | Schrauben & Befestigung | f
+ dm       |        110 | Holz & Baustoffe        | f
+ dm       |        120 | Garten & Pflanzen       | f
+ dm       |        130 | Sonstiges               | f
+ dm       |        140 | Obst & Gemüse           | t
+ dm       |        150 | Brot & Backwaren        | t
+ dm       |        160 | Kühlregal               | t
+ dm       |        170 | Fleisch/Wurst/Fisch     | t
+ dm       |        180 | Tiefkühl                | t
+ Baumarkt |         10 | Farben & Lacke          | f
+ Baumarkt |         20 | Sanitär                 | f
+ Baumarkt |         30 | Elektro & Leuchtmittel  | f
+ Baumarkt |         40 | Werkzeug                | f
+ Baumarkt |         50 | Schrauben & Befestigung | f
+ Baumarkt |         60 | Holz & Baustoffe        | f
+ Baumarkt |         70 | Garten & Pflanzen       | f
+ Baumarkt |         80 | Haushalt                | f
+ Baumarkt |         90 | Getränke                | f
+ Baumarkt |        100 | Süßes & Snacks          | f
+ Baumarkt |        110 | Sonstiges               | f
+ Baumarkt |        120 | Obst & Gemüse           | t
+ Baumarkt |        130 | Brot & Backwaren        | t
+ Baumarkt |        140 | Kühlregal               | t
+ Baumarkt |        150 | Fleisch/Wurst/Fisch     | t
+ Baumarkt |        160 | Vorrat & Konserven      | t
+ Baumarkt |        170 | Tiefkühl                | t
+ Baumarkt |        180 | 👶 Drogerie             | t
+ Apotheke |         10 | Obst & Gemüse           | f
+ Apotheke |         20 | Brot & Backwaren        | f
+ Apotheke |         30 | Kühlregal               | f
+ Apotheke |         40 | Fleisch/Wurst/Fisch     | f
+ Apotheke |         50 | Vorrat & Konserven      | f
+ Apotheke |         60 | Süßes & Snacks          | f
+ Apotheke |         70 | Getränke                | f
+ Apotheke |         80 | Tiefkühl                | f
+ Apotheke |         90 | Haushalt                | f
+ Apotheke |        100 | 👶 Drogerie             | f
+ Apotheke |        110 | Farben & Lacke          | f
+ Apotheke |        120 | Sanitär                 | f
+ Apotheke |        130 | Elektro & Leuchtmittel  | f
+ Apotheke |        140 | Werkzeug                | f
+ Apotheke |        150 | Schrauben & Befestigung | f
+ Apotheke |        160 | Holz & Baustoffe        | f
+ Apotheke |        170 | Garten & Pflanzen       | f
+ Apotheke |        180 | Sonstiges               | f
+(72 rows)
+
