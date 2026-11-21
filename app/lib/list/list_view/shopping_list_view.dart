@@ -403,11 +403,15 @@ class _ShoppingListViewState()
   }
 
   /// How tall a section stands in its column, roughly: a folded one a
-  /// divider, an open one its rows and category dividers too.
-  static double Function(StoreSection section) _weightIn(ListState state) =>
-      (s) => state.prefs.folded.contains(s.key)
-      ? 1
-      : 1 + s.count + 0.6 * s.blocks.length;
+  /// divider, an open one its rows and, unless [hideCategoriesFlag] is on,
+  /// its category dividers too.
+  double Function(StoreSection section) _weightIn(ListState state) {
+    final dividers =
+        !(context.read<Flags?>()?.isOn(hideCategoriesFlag) ?? false);
+    return (s) => state.prefs.folded.contains(s.key)
+        ? 1
+        : 1 + s.count + (dividers ? 0.6 * s.blocks.length : 0);
+  }
 
   void _snack(String text, {VoidCallback? undo}) {
     final l10n = AppLocalizations.of(context);
@@ -526,6 +530,7 @@ class _ShoppingListViewState()
       hexQuantity:
           (flags?.isOn(addFeedbackListFlag) ?? false) &&
           (flags?.isOn(addSheetCompactFlag) ?? false),
+      categories: !(flags?.isOn(hideCategoriesFlag) ?? false),
       catalog: state.catalog,
       onCreateStore: cubit.addStore,
       chains: flags?.isOn(openStoreAppFlag) ?? false
@@ -632,6 +637,9 @@ class _ShoppingListViewState()
     final glide = context.select<Flags?, bool>(
       (flags) => flags?.isOn(addFeedbackListFlag) ?? false,
     );
+    final categories = context.select<Flags?, bool>(
+      (flags) => !(flags?.isOn(hideCategoriesFlag) ?? false),
+    );
     final summary = behind == null && declutter && prices
         ? summaryOf(
             state.items.values,
@@ -650,6 +658,7 @@ class _ShoppingListViewState()
               fresh,
               claimsOf,
               prices: prices,
+              categories: categories,
               added: behind.added,
               lastTwo: behind.lastTwo,
             )
@@ -660,6 +669,7 @@ class _ShoppingListViewState()
               fresh,
               claimsOf,
               prices: prices,
+              categories: categories,
               summary: summary,
               storeApps: storeApps,
               tipUnder: tipUnder,
@@ -706,6 +716,7 @@ class _ShoppingListViewState()
                         fresh,
                         claimsOf,
                         prices: prices,
+                        categories: categories,
                         added: behind.added,
                         lastTwo: true,
                       ),
@@ -925,6 +936,7 @@ class _ShoppingListViewState()
     Set<String> fresh,
     String? Function(Item item) claimsOf, {
     required bool prices,
+    required bool categories,
     required List<String> added,
     bool lastTwo = false,
   }) {
@@ -943,6 +955,7 @@ class _ShoppingListViewState()
       fresh,
       claimsOf,
       prices: prices,
+      categories: categories,
       summary: null,
     )) {
       if (entry.key case ValueKey<String>(:final value)
@@ -979,6 +992,10 @@ class _ShoppingListViewState()
     Set<String> fresh,
     String? Function(Item item) claimsOf, {
     required bool prices,
+
+    /// A divider over each category's rows; without, flag `hide-categories`,
+    /// a section's rows run on in the same order.
+    required bool categories,
 
     /// The summary block's, with `list-declutter`: no section sums then.
     required Summary? summary,
@@ -1034,12 +1051,26 @@ class _ShoppingListViewState()
       if (isFolded) {
         continue;
       }
-      for (final block in section.blocks) {
+      final blocks = categories
+          ? section.blocks
+          : [
+              CategoryBlock(null, [
+                for (final block in section.blocks) ...block.items,
+              ]),
+            ];
+      for (final block in blocks) {
         final category = block.category;
-        final categoryKey = ValueKey('category-${section.key}-${category?.id}');
-        entries.add(
-          glided(categoryKey, CategoryDivider(block: block, leaving: _leaving)),
-        );
+        if (categories) {
+          final categoryKey = ValueKey(
+            'category-${section.key}-${category?.id}',
+          );
+          entries.add(
+            glided(
+              categoryKey,
+              CategoryDivider(block: block, leaving: _leaving),
+            ),
+          );
+        }
         for (final (j, item) in block.items.indexed) {
           entries.add(
             glided(

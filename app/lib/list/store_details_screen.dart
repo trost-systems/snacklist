@@ -23,7 +23,9 @@ import 'package:material_ui/material_ui.dart';
 /// at the top. Reordering saves at once: for no store it is the route
 /// order (also of stores without their own), for a store its walking order,
 /// whose `hidden` flags stay as they are. Categories belong to the
-/// household: a rename, add or delete here shows in every store.
+/// household: a rename, add or delete here shows in every store. With flag
+/// `hide-categories` a store's screen is its name (and chain) alone, and the
+/// section without a store has none.
 class const StoreDetailsScreen({required final String? storeId, super.key})
     extends StatelessWidget {
   @override
@@ -33,11 +35,15 @@ class const StoreDetailsScreen({required final String? storeId, super.key})
     final (catalog, loaded) = context.select<ListCubit, (Catalog, bool)>(
       (c) => (c.state.catalog, c.state.loaded),
     );
+    final categories = context.select<Flags?, bool>(
+      (f) => !(f?.isOn(hideCategoriesFlag) ?? false),
+    );
     final id = storeId;
     final store = id == null ? null : catalog.store(id);
-    if (id != null && store == null) {
-      if (loaded) {
-        // Deleted on another device, or a stale link: back to the stores.
+    if ((id != null && store == null) || (id == null && !categories)) {
+      if (loaded || id == null) {
+        // Deleted on another device, a stale link, or the section without a
+        // store under `hide-categories`: back to the stores.
         WidgetsBinding.instance.addPostFrameCallback((_) {
           // Once: the route stops being current as it leaves.
           if (!context.mounted ||
@@ -53,10 +59,31 @@ class const StoreDetailsScreen({required final String? storeId, super.key})
       }
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    final stops = walkingOrder(catalog, id);
     final chains = context.select<Flags?, bool>(
       (f) => f?.isOn(openStoreAppFlag) ?? false,
     );
+    if (store != null && !categories) {
+      return Scaffold(
+        appBar: AppBar(title: Text(store.name)),
+        body: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: pageMaxWidth),
+            child: ListView(
+              key: const ValueKey('store-details'),
+              padding: EdgeInsets.only(
+                bottom: fabClearance + MediaQuery.paddingOf(context).bottom,
+              ),
+              children: [
+                _StoreName(store),
+                if (chains) StoreChainSection(store),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+    final stops = walkingOrder(catalog, id);
 
     void reorder(int from, int to) {
       final next = [...stops];

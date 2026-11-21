@@ -482,6 +482,9 @@ class _ContentState() extends State<_Content> {
     final chains = context.select<Flags?, bool>(
       (f) => f?.isOn(openStoreAppFlag) ?? false,
     );
+    final categories = context.select<Flags?, bool>(
+      (f) => !(f?.isOn(hideCategoriesFlag) ?? false),
+    );
     final rows = _held ?? sheetRows(sheet, list);
     _built = rows;
     final rowKeys = _rowKeys(rows, byContent: cubit.stableRows);
@@ -531,6 +534,7 @@ class _ContentState() extends State<_Content> {
                       onPicked,
                       onClose,
                       chains,
+                      categories,
                     ),
                     () => FoldoutChips(
                       catalog: catalog,
@@ -552,10 +556,12 @@ class _ContentState() extends State<_Content> {
                         context.read<AddSheetCubit>().pickStore(id);
                         onPicked();
                       },
-                      onCategory: (id) {
-                        context.read<AddSheetCubit>().pickCategory(id);
-                        onPicked();
-                      },
+                      onCategory: categories
+                          ? (id) {
+                              context.read<AddSheetCubit>().pickCategory(id);
+                              onPicked();
+                            }
+                          : null,
                       trailing: _CloseButton(onClose: onClose),
                     ),
                   ),
@@ -1597,6 +1603,9 @@ class _AddedDetailsState() extends State<_AddedDetails> {
     final chains = context.select<Flags?, bool>(
       (f) => f?.isOn(openStoreAppFlag) ?? false,
     );
+    final categories = context.select<Flags?, bool>(
+      (f) => !(f?.isOn(hideCategoriesFlag) ?? false),
+    );
     return Padding(
       padding: const EdgeInsets.only(top: 4, bottom: 12),
       child: ItemDetailFields(
@@ -1621,10 +1630,12 @@ class _AddedDetailsState() extends State<_AddedDetails> {
             sheet.editDetails(ItemChanges(storeId: SetTo(id)), now: true);
             widget.onDone();
           },
-          onCategory: (id) {
-            sheet.editDetails(ItemChanges(categoryId: id), now: true);
-            widget.onDone();
-          },
+          onCategory: categories
+              ? (id) {
+                  sheet.editDetails(ItemChanges(categoryId: id), now: true);
+                  widget.onDone();
+                }
+              : null,
           // Narrower, so the category's chip peeks in on a phone and
           // tells that the line scrolls.
           chipIcons: false,

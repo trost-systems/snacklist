@@ -1,3 +1,4 @@
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/store_badge.dart';
 import 'package:family_groceries/shell/router.dart';
@@ -21,6 +22,7 @@ void main() {
     WidgetTester tester,
     String? storeId, {
     List<Locale> device = const [Locale('de', 'DE')],
+    Set<String> flags = const {},
   }) async {
     repo = (await pumpMore(
       tester,
@@ -28,6 +30,7 @@ void main() {
       size: const Size(358, 800),
       routes: listTabRoutes(),
       device: device,
+      flags: flags,
     )).repo;
   }
 
@@ -63,6 +66,26 @@ void main() {
     await gesture.up();
     await tester.pumpAndSettle();
   }
+
+  group('flag hide-categories', () {
+    testWidgets('a store is its name alone: no categories, no order', (
+      tester,
+    ) async {
+      await pump(tester, 'lidl', flags: {hideCategoriesFlag});
+      expect(find.widgetWithText(AppBar, 'Lidl'), findsOneWidget);
+      expect(key('store-rename'), findsOneWidget);
+      expect(shown(tester), isEmpty);
+      expect(key('category-add'), findsNothing);
+      expect(find.textContaining('Kategorie'), findsNothing);
+    });
+
+    testWidgets('the section without a store has no screen: back to the '
+        'stores', (tester) async {
+      await pump(tester, null, flags: {hideCategoriesFlag});
+      expect(key('stores-screen'), findsOneWidget);
+      expect(find.textContaining('Kategorie'), findsNothing);
+    });
+  });
 
   group('a store', () {
     testWidgets('shows its walking order under its name', (tester) async {

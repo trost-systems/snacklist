@@ -23,6 +23,7 @@ void main() {
     bool owner = true,
     HouseholdKind? kind,
     bool canAddHousehold = false,
+    bool categoriesHidden = false,
   }) => HintContext(
     platform: platform,
     startedAt: start,
@@ -35,6 +36,7 @@ void main() {
     owner: owner,
     kind: kind,
     canAddHousehold: canAddHousehold,
+    categoriesHidden: categoriesHidden,
   );
 
   Hint hint(
@@ -267,6 +269,11 @@ void main() {
       expect(pick(shopped, c)?.id, HintId.storeOrder);
       expect(pick(shopped, context(members: 2, items: 0, stores: 0)), isNull);
       expect(pick(shopped.record(Signal.categoryReorder), c), isNull);
+      expect(
+        pick(shopped, context(members: 2, items: 0, categoriesHidden: true)),
+        isNull,
+        reason: 'flag hide-categories: no category order to teach',
+      );
     });
 
     test('add-store: 3 active days without a store', () {

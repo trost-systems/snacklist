@@ -16999,3 +16999,38 @@ pinned above the field, other suggestions hidden); all of it stays behind `add-s
    pins carry the five words where that differs (reason `_tailGuard`).
 5. **Not done.** English near-forms (cool pack, frying pan, mirror), a fixed parity sample, a
    web journey for `cl-tail-guards`, and the on-device homographs: follow-ups, not part of B1 to B7.
+
+## Job 350: categories hidden behind `hide-categories`, 2026-11-21
+
+Peter, 21 Nov 2026 (t1119s4855): remove categories from what users see until someone asks for them
+with a good reason; the item order stays. All of it behind the new PostHog flag `hide-categories`
+(the sync makes it internal-only; `releases/flags.json` rollout `off`). Flag off is unchanged.
+
+1. **Hidden, not removed.** Categories keep sorting underneath: `sectionsOf` still builds a block
+   per category in the store's walk order. With the flag the list emits one run of rows per section
+   and no `CategoryDivider`, so a row's position never moves, and only the section's last row loses
+   its rule (as a block's last row did). The classifier, the category memory, the API and MCP are
+   untouched.
+2. **One switch for the chips.** `FoldoutChips.onCategory` is nullable: null means no category chip
+   and no category fold. Its four callers (edit sheet, the add sheet's header, the added item's
+   details, the compact details) pass null with the flag. A save then never sends a category, so the
+   item keeps the classifier's.
+3. **Store screens lose what was only categories.** „Läden“ drops the pinned „Ohne Laden“ row (its
+   screen is nothing but the category order) and its hint line, whose second sentence tells the
+   user to order categories. A store's details keep the name field and the chain card only;
+   `/edit/none` goes back to „Läden“. No new copy: a reworded hint would be a new ARB string, which
+   waits for review, and the list of stores with drag handles explains itself. Peter re-designs
+   these screens later; this job redesigns nothing.
+4. **The store-order tip** („Sortiert wie dein Laden“, its body is about category order) carries
+   `aboutCategories` and `Hint.offered` drops it under the flag, on the list and under Mehr → Tipps,
+   from one rule.
+5. **Left as they are.** The delete-account and leave-household dialogs say the household's
+   categories are deleted (they still exist and are deleted), and the API key scope text says the
+   API reads categories (it still does). „Noch keine Läden … nach seinem Laufweg“ and the
+   delete-store text „Sein Laufweg geht mit.“ stay too: a store's walk order still sorts its
+   items, it is only no longer editable. Searched and without category text: item rows and their
+   screen-reader labels, „Zuletzt verwendet“, „Gerade hinzugefügt“, suggestion rows (the category
+   only picks the 🔁 fallback icon), trip summary, Verlauf, totals, onboarding, home-screen
+   widgets (payload: name, quantity, store), and there is no list share-as-text.
+6. **Targeting.** The flag sync creates it with `is_internal = true` at 100 %, which covers Peter's
+   phone and the internal tester group. Nobody else gets it until a condition is added in PostHog.

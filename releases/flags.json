@@ -71,6 +71,10 @@
     "rating-triggers-v2": {
       "rollout": "off",
       "note": "the store rating prompt's trip moments (ST1: after leaving the summary of a finished trip with everything planned bought; ST2: after an emptied list answered Nein, nur abgehakt; no ask while a trip runs, after an undo of the emptying, a failed trip save, a join or household switch, or within 14 days of a bug note; at most 2 asks a year, 180 days apart) apply only while the PostHog flag rating-triggers-v2 is on (job 326); off, the prompt keeps job 155's emptied-list moment"
+    },
+    "hide-categories": {
+      "rollout": "off",
+      "note": "categories leave what users see only while the PostHog flag hide-categories is on (job 350): no category headings in the list (also trip mode, Zuletzt verwendet and the add sheet's list), no category chip or picker in the add sheet and the edit sheet, no category order on the store screens and no hint about it; the order stays (categories sort underneath); on for internal installs (Peter and the internal tester group) only"
     }
   },
   "holds": {

@@ -49,6 +49,7 @@ class const ProvideHints({
         kind: session is InHousehold ? session.household.kind : null,
         host: context.read<HintHost?>() ?? const HintHost(),
         analytics: context.read<Analytics?>(),
+        flags: context.read<Flags?>(),
       );
       unawaited(cubit.load());
       return cubit;

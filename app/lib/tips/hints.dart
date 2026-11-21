@@ -109,6 +109,9 @@ class const HintContext({
   /// The app can create a second household: [HintAction.addHousehold]
   /// works. False until job 169b (`HintHost.addHousehold`).
   final bool canAddHousehold = false,
+
+  /// Flag `hide-categories`: nothing on screen names a category.
+  final bool categoriesHidden = false,
 });
 
 /// One hint: its text, when it is useful, and what retires it.
@@ -131,11 +134,19 @@ class const Hint({
   /// Null shows it everywhere.
   final Set<HintPlatform>? platforms,
   final HintAction? action,
+
+  /// It teaches categories, which flag `hide-categories` hides.
+  final bool aboutCategories = false,
 }) {
   /// Whether it can show at all on [platform], its action included.
-  bool offered(HintPlatform platform, {required bool canAddHousehold}) =>
+  bool offered(
+    HintPlatform platform, {
+    required bool canAddHousehold,
+    bool categoriesHidden = false,
+  }) =>
       (platforms?.contains(platform) ?? true) &&
-      (action != HintAction.addHousehold || canAddHousehold);
+      (action != HintAction.addHousehold || canAddHousehold) &&
+      !(aboutCategories && categoriesHidden);
 
   /// The user did what it is about.
   bool usedIn(UsageLog log) => switch (retiredBy) {
@@ -203,6 +214,7 @@ final hints = <Hint>[
     icon: Icons.swap_vert,
     place: HintPlace.belowEdit,
     retiredBy: Signal.categoryReorder,
+    aboutCategories: true,
     when: (log, c, _) => c.stores > 0 && log.saw(Signal.shopDone),
   ),
   Hint(
@@ -300,6 +312,7 @@ Hint? nextHint(
         hint.offered(
           context.platform,
           canAddHousehold: context.canAddHousehold,
+          categoriesHidden: context.categoriesHidden,
         ) &&
         !hint.doneIn(log) &&
         hint.when(log, context, now),

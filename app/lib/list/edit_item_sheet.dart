@@ -56,6 +56,9 @@ Future<ItemEdit?> showEditItemSheet(
 
   /// The add sheet's − Menge + in one hex (job 340, flag add-sheet-compact).
   bool hexQuantity = false,
+
+  /// The category chip; off with flag `hide-categories`.
+  bool categories = true,
 }) => showModalBottomSheet<ItemEdit>(
   context: context,
   // Over the whole app, tabs included: the sheet stands on the bottom edge.
@@ -79,6 +82,7 @@ Future<ItemEdit?> showEditItemSheet(
     othersBring: othersBring,
     chains: chains,
     hexQuantity: hexQuantity,
+    categories: categories,
   ),
 );
 
@@ -91,6 +95,7 @@ class const _EditItemSheet({
   required final String? othersBring,
   required final StoreChains? chains,
   required final bool hexQuantity,
+  required final bool categories,
 }) extends StatefulWidget {
   @override
   State<_EditItemSheet> createState() => _EditItemSheetState();
@@ -277,7 +282,9 @@ class _EditItemSheetState() extends State<_EditItemSheet> {
                     onCreateStore: _createStore,
                     chains: _chains,
                     onStore: (id) => setState(() => _storeId = id),
-                    onCategory: (id) => setState(() => _categoryId = id),
+                    onCategory: widget.categories
+                        ? (id) => setState(() => _categoryId = id)
+                        : null,
                   ),
                 ),
               ),

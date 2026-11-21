@@ -31,6 +31,7 @@ The List tab has one slot at the top of the list (job 168b, H2 trigger hints; be
   | `second-household` | „Noch eine Liste?“ + „Haushalt erstellen“ | 14 active days | (not visible yet) | card | all, once a second household can be made (job 169b) |
 
 - `tips-page` Mehr → „Tipps“ (`/more/tips`, key `more-tips` on the row, `more-tips-page` on the page): every hint this platform can show, shown or not, hidden or not, with its button and without an X.
+- `hint-hide-categories` flag `hide-categories` (job 350): `store-order` („Sortiert wie dein Laden“, about the category order) is not offered, neither on the list nor under Mehr → „Tipps“ (`Hint.aboutCategories`).
 - `hint-state` per user on the device under `hints.<user id>` (`UsageLog`: signal counts, active days, each hint's showings, X and button, the X streak and pause). Kept after signing out. Job 80's dismissed tips (`tips.<user id>`) count as hidden hints.
 
 ## How to get to it (user POV)

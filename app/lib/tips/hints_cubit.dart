@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/analytics/events.dart';
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/household/household_kind.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/model.dart';
@@ -34,6 +35,7 @@ class HintsCubit(
   HouseholdKind? kind,
   final HintHost host = const HintHost(),
   final Analytics? analytics,
+  final Flags? flags,
 
   /// The hints to pick from; [hints] by default.
   final List<Hint>? registry,
@@ -249,6 +251,7 @@ class HintsCubit(
           owner: _owner,
           kind: _kind,
           canAddHousehold: host.canAddHousehold,
+          categoriesHidden: flags?.isOn(hideCategoriesFlag) ?? false,
         );
         if (nextHint(_registry, log, now, context) case final hint?) {
           _picked = true;

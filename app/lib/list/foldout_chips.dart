@@ -50,7 +50,9 @@ class const FoldoutChips({
   required final String? storeId,
   required final String? categoryId,
   required final ValueChanged<String?> onStore,
-  required final ValueChanged<String> onCategory,
+
+  /// Null: no category chip (flag `hide-categories`).
+  required final ValueChanged<String>? onCategory,
 
   /// The store chip and the no-store option without a store.
   required final String storeLabel,
@@ -140,6 +142,16 @@ class const ChipFold({
 class _FoldoutChipsState() extends State<FoldoutChips> {
   late _Fold? _fold = widget.storesOpen ? _Fold.store : null;
 
+  @override
+  void didUpdateWidget(FoldoutChips oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // The category chip went (flag `hide-categories` came on): its options
+    // go with it.
+    if (widget.onCategory == null && _fold == _Fold.category) {
+      _fold = null;
+    }
+  }
+
   /// The chips, so an opened one can be scrolled to along the line.
   final _chips = {for (final fold in _Fold.values) fold: GlobalKey()};
 
@@ -226,20 +238,21 @@ class _FoldoutChipsState() extends State<FoldoutChips> {
           onTap: () => _toggle(_Fold.store),
         ),
       ),
-      KeyedSubtree(
-        key: _chips[_Fold.category],
-        child: _Chip(
-          key: const ValueKey('chip-category'),
-          leading: w.chipIcons ? Icons.category_outlined : null,
-          label: categoryText,
-          semanticsLabel: categorySemantics,
-          auto: w.categoryAuto,
-          open: _fold == _Fold.category,
-          arrow: w.chipArrows,
-          changed: w.categoryChanged,
-          onTap: () => _toggle(_Fold.category),
+      if (w.onCategory != null)
+        KeyedSubtree(
+          key: _chips[_Fold.category],
+          child: _Chip(
+            key: const ValueKey('chip-category'),
+            leading: w.chipIcons ? Icons.category_outlined : null,
+            label: categoryText,
+            semanticsLabel: categorySemantics,
+            auto: w.categoryAuto,
+            open: _fold == _Fold.category,
+            arrow: w.chipArrows,
+            changed: w.categoryChanged,
+            onTap: () => _toggle(_Fold.category),
+          ),
         ),
-      ),
       if (w.fold case final more?)
         KeyedSubtree(
           key: _chips[_Fold.more],
@@ -270,18 +283,21 @@ class _FoldoutChipsState() extends State<FoldoutChips> {
         chains: w.chains,
         inLine: w.optionsInLine,
       ),
-      _Fold.category => Padding(
-        padding: EdgeInsets.only(top: w.optionsInLine ? 4 : 10),
-        child: _OptionsWrap(inLine: w.optionsInLine, [
-          for (final c in w.catalog.categories)
-            OptionChip(
-              key: ValueKey('category-option-${c.id}'),
-              label: categoryName(c, l10n),
-              selected: c.id == w.categoryId,
-              onTap: () => _pick(() => w.onCategory(c.id)),
-            ),
-        ]),
-      ),
+      _Fold.category => switch (w.onCategory) {
+        final onCategory? => Padding(
+          padding: EdgeInsets.only(top: w.optionsInLine ? 4 : 10),
+          child: _OptionsWrap(inLine: w.optionsInLine, [
+            for (final c in w.catalog.categories)
+              OptionChip(
+                key: ValueKey('category-option-${c.id}'),
+                label: categoryName(c, l10n),
+                selected: c.id == w.categoryId,
+                onTap: () => _pick(() => onCategory(c.id)),
+              ),
+          ]),
+        ),
+        null => const SizedBox(width: double.infinity),
+      },
       _Fold.more => switch (w.fold) {
         final more? => more.panel(() => setState(() => _fold = null)),
         null => const SizedBox(width: double.infinity),
