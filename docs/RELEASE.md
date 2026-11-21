@@ -105,6 +105,26 @@ warns, and the page shows "Fehlerbehebungen und Verbesserungen.". TestFlight's
 "What to Test" is written from the same notes, per upload, for the internal
 testers ([What to Test](#what-to-test)).
 
+## Store release checklist
+
+### Before submitting a public build
+
+- [ ] Peter's go for the public release (see [Public releases](#public-releases)).
+- [ ] App Privacy (Apple) and Data safety (Play) cover every data type the build sends; Snacklist Ops confirms.
+
+### After both stores have the build live
+
+- [ ] Public release record workflow ran (see above).
+- [ ] Flag rollouts that wait for a live store build (list below): open each, refresh its dates, get Legal's hash GO, merge.
+
+### Flag rollouts waiting for a live store build
+
+| Flag | PR / job | Needs before merge |
+| --- | --- | --- |
+| `report-content-entry` (in-app Report content, RC2, #524) | job 333 rollout PR | Both public store builds contain #524 and are live; Play Data safety "Other user-generated content" lists the purpose "Fraud prevention, security, and compliance" (Ops, Peter's DS1 yes; Apple already OK); N-279 dates on impressum, imprint, datenschutz, privacy set to the merge date; Legal's hash GO on the final head (Legal review 2026-11-21, Addenda B and C). |
+
+When a flagged feature's rollout depends on a public build, add a row here.
+
 ## When a run ships
 
 Three events start a run:
