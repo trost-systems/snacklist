@@ -16982,3 +16982,11 @@ pinned above the field, other suggestions hidden); all of it stays behind `add-s
    only looked at the list and top bar and called that "nothing sticks out".
 3. **Reviewer's nice-to-haves taken**: a TE-Q6 frame, TE-Q10 (foreign-currency prices), labelled controls,
    ±1 row at 310 %, no sideways scroll at 390 px.
+
+## Job 343 review 1: names over amounts at large text, 2026-11-21
+
+1. **Names, counts and TE4's link break inside their column**, as Flutter breaks an over-long word in an
+   `Expanded` text, instead of running under the amount. TE4's in-row link takes at most 55 %, like the amounts.
+2. **verify checks every total and store row for overlapping parts** by glyph boxes, on every phone of the
+   page. It failed 48 rows on the reviewed CSS.
+3. The heights that moved are 310 % and Android 200 % only (TE4 (a), German TE1 (d)). The pick stands.

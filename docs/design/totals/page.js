@@ -164,7 +164,7 @@ export const round = async () => {
   const real = `real/${env.lang}-${env.theme}-${env.device === 'android' ? '100-android' : env.ts === 310 ? '310' : '100'}-a.png`;
   document.body.innerHTML = `${head(W.roundTitle, true)}<main class="view">
     <section class="facts" id="today"><h2>${W.today}</h2>${W.todayFacts}${meter(m, 'today').replace(/Rows saved.*<\/b>\./, '').replace(/Gesparte Zeilen.*<\/b>\./, '')}
-      <div class="frames">${[...stateIds, 'b1'].map((st) => cell(W.states[st], frame('today', st), W.stateSub[st], st)).join('')}
+      <div class="frames">${[...stateIds, 'b1'].map((st) => cell(W.states[st], frame('today', st), st === 'b1' ? W.stateSub.b1Today : W.stateSub[st], st)).join('')}
       ${cell(W.real, `<img class="realshot" src="${real}" width="${env.device === 'android' ? 360 : 390}" alt="" onerror="this.closest('figure').remove()">`)}</div></section>
     ${ids.map((id) => optionSection(id, m)).join('')}
     ${table(m)}

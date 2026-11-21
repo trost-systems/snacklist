@@ -34,7 +34,7 @@ Pixel, die die Option gegenüber gar keiner Summe hinzufügt (Block, höhere Tre
 | TE3 Summen an den Laden-Trennern | 100 % | 0 (+7) | 75 (+5) | 70 (+5) | 75 (+5) |
 | TE3 Summen an den Laden-Trennern | 310 % | 0 (+6) | 685 (+4) | 586 (+2) | 456 (+7) |
 | TE4 Summe und der nächste Preis | 100 % | 70 (+5) | 110 (+5) | 357 (0) | 115 (+5) |
-| TE4 Summe und der nächste Preis | 310 % | 155 (+5) | 509 (+6) | 993 (0) | 461 (+7) |
+| TE4 Summe und der nächste Preis | 310 % | 221 (+4) | 509 (+6) | 993 (0) | 461 (+7) |
 | TE5 Summe oben in der Leiste | 100 % | 0 (+7) | 0 (+7) | 0 (+7) | 0 (+7) |
 | TE5 Summe oben in der Leiste | 310 % | 0 (+6) | 0 (+9) | 0 (+6) | 0 (+10) |
 
@@ -48,7 +48,7 @@ Pixel, die die Option gegenüber gar keiner Summe hinzufügt (Block, höhere Tre
 6. **TE-Q6 Nur ein Laden mit Preis.** Haben nur Artikel eines Ladens einen Preis, zeigt TE1 eine Zeile „Einkaufssumme“ und keine Laden-Zeile, wie ST3 bei einem Laden (eine Zeile würde die Summe wiederholen). Vorgabe: so lassen; gezählt werden Läden mit Preis, nicht Läden auf der Liste.
 7. **TE-Q7 Ein Laden ohne Preise beim Einkauf gekauft.** Ein ganz gekaufter Laden ohne Preis bekommt keine Zeile; seine Artikel zählen bei „ohne Preis“. Vorgabe: wie gezeigt. Anderer Weg: eine Zeile „alles gekauft“ ohne Betrag behalten.
 8. **TE-Q8 Das Zeichen für die Untergrenze in TE5.** Falls TE5 gewählt wird: in der Pille ist kein Platz für „mind.“, der Prototyp schreibt „6,38 €+“, ein neues Zeichen. Vorgabe: mit TE1 nicht nötig.
-9. **TE-Q9 Beträge bei größter Schrift.** Bei 310 % bricht die echte App einen Betrag mitten in der Zahl um („€6.3 / 8“, gesehen im Release-Web-Build), heute und in jeder Option. Vorgabe: im Bau beheben; ein Betrag, der nicht passt, steht in einer eigenen Zeile unter dem Namen. Das ist eine Zeile mehr, aber die Zahl bleibt ganz.
+9. **TE-Q9 Beträge bei größter Schrift.** Bei 310 % bricht die echte App einen Betrag mitten in der Zahl um („€6.3 / 8“, gesehen im Release-Web-Build), heute und in jeder Option. Der Name daneben bricht dann auch: „Gesa / mt“, „Einka / ufssu / mme“. Vorgabe: im Bau beheben; ein Betrag, der nicht passt, steht in einer eigenen Zeile unter dem Namen. Das ist eine Zeile mehr, aber Zahl und Name bleiben ganz.
 
 10. **TE-Q10 Preise in einer anderen Währung.** Die App lässt einen Artikel, der heute in einer anderen Währung bepreist wurde, aus den Summen und macht sie zur Untergrenze (`Sum.foreign`); der Prototyp bildet das nicht nach. Ein Laden, dessen einzige Preise fremd sind, hat keinen Betrag, aber eine Untergrenze. Vorgabe: TE1 behandelt ihn wie einen Laden ohne Preis (keine Zeile), und die Zählung an der Summe nennt ihn mit den anderen („4 ohne Preis“).
 

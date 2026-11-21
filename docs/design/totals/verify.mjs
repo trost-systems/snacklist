@@ -115,6 +115,29 @@ for (const [device, ts] of sizes) {
     for (const theme of ts === 100 ? ['light', 'dark'] : ['light']) {
       await open(`lang=${lang}&theme=${theme}&ts=${ts}&device=${device}`);
       const { out } = await inspect();
+      // On every phone of the page (each option's frames, the extra ones and the live phones): in a total or store row,
+      // no two parts draw over each other. Glyph boxes by Range, so a word that runs past its own box counts.
+      const overlaps = await page.evaluate(() => {
+        const boxes = (el) => {
+          const r = document.createRange();
+          r.selectNodeContents(el);
+          return [...r.getClientRects()].filter((b) => b.width > 0.5 && b.height > 0.5);
+        };
+        const hit = (a, b) => a.some((x) => b.some((y) => Math.min(x.right, y.right) - Math.max(x.left, y.left) > 0.5 && Math.min(x.bottom, y.bottom) - Math.max(x.top, y.top) > 0.5));
+        const found = [];
+        for (const row of document.querySelectorAll('.phone .trow, .phone .sline')) {
+          const parts = [...row.children].map(boxes);
+          for (let i = 0; i < parts.length; i += 1) for (let j = i + 1; j < parts.length; j += 1) {
+            if (hit(parts[i], parts[j])) {
+              const where = row.closest('section')?.id ?? '?';
+              const frame = row.closest('figure[data-frame]')?.dataset.frame ?? 'live';
+              found.push(`${where} ${frame}: “${row.innerText.replace(/\s+/g, ' ').trim()}”`);
+            }
+          }
+        }
+        return found;
+      });
+      check(overlaps.length === 0, `${device} ${ts} % ${lang} ${theme}: no row draws its name over its amount or link (${overlaps.length}: ${overlaps.slice(0, 4).join('; ')})`);
       const where = `${device} ${ts} % ${lang} ${theme}`;
       const W = words[lang];
       for (const st of states) {

@@ -19,9 +19,12 @@ The controls set the language (`?lang=de`), the theme (`?theme=dark`), the text 
   - in every option and state: no store line says "without price", the floor and ≈ marks sit exactly where an item lacks a price or holds a planned weight, the store lines add up to the total, "No store" keeps its own line, a trip shows what was bought;
   - each option's own rules (TE1 to TE5), 44 px controls, and that no element of the phone (top bar, list, block, trip bar, add field, tab bar) shows past its edge; an element clipped by its box, as the add field clips its hint at large text, counts by its visible part;
   - TE-Q6's frame (one store priced: TE1 shows a total line only) and that the page fits a 390 px phone without sideways scrolling;
+  - on every phone of the page, that no two parts of a total or store row (name, amount, TE4's link) draw over each other, by their glyph boxes;
   - the Today replica against the real app's heights (±3 px on the iPhone at 100 %, 12 % elsewhere);
   - the live phones: pricing an item, opening TE2, TE4's link to the next unpriced item, TE5's sheet, a tick on a trip;
   - the numbers in `te/measured.json` and both `RECOMMENDATION` files.
+
+  At large text the add field cuts off its hint and the trip bar shortens “Trip in progress” (“Einkauf lä…” in German at 310 %), as the release build keeps End and the field inside the screen; that is intended, not a defect.
 
   Its last line is `all checks passed (N)`. `--write` stores the measurements in `te/measured.json`.
 - `build.sh <out> [--base <deployment id>]` builds the preview folder. `tools/shots.mjs <out>` takes the PR's screenshots.

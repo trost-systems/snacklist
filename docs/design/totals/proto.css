@@ -133,7 +133,7 @@ th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; color
 .sline { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 4px 0; cursor: pointer; }
 .sline .sname { flex: 1; min-width: 0; display: grid; }
 .sline .sname b { font-size: calc(15px * var(--ts)); font-weight: 800; overflow-wrap: anywhere; }
-.sdet, .tcounts { font-size: calc(13px * var(--ts)); font-weight: 500; color: var(--hl-color-text-muted); font-variant-numeric: tabular-nums; }
+.sdet, .tcounts { overflow-wrap: anywhere; font-size: calc(13px * var(--ts)); font-weight: 500; color: var(--hl-color-text-muted); font-variant-numeric: tabular-nums; }
 .sdet .icon { vertical-align: -2px; margin-right: 2px; fill: var(--hl-color-text-muted); }
 .samt { max-width: 55%; text-align: end; overflow-wrap: break-word; font-size: calc(16px * var(--ts)); font-weight: 800; font-variant-numeric: tabular-nums; }
 .bdiv { height: 8px; display: flex; align-items: center; }
@@ -141,7 +141,7 @@ th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; color
 .tline { display: flex; flex-direction: column; justify-content: center; min-height: 56px; padding: 4px 0; }
 .tline[data-act] { cursor: pointer; }
 .trow { display: flex; align-items: center; gap: 12px; }
-.ttitle { flex: 1; min-width: 0; font-size: calc(15px * var(--ts)); font-weight: 800; }
+.ttitle { flex: 1; min-width: 0; font-size: calc(15px * var(--ts)); font-weight: 800; overflow-wrap: anywhere; }
 .ttitle.big { font-size: calc(17px * var(--ts)); }
 .tamt { max-width: 55%; text-align: end; overflow-wrap: break-word; font: 800 calc(24px * var(--ts))/var(--lh) "App Bricolage", var(--hl-font-family-display); font-variant-numeric: tabular-nums; }
 .marks { font: 400 calc(15px * var(--ts))/var(--lh) "App Inter", var(--hl-font-family-sans); color: var(--hl-color-text-muted); }
@@ -149,10 +149,12 @@ th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; color
 .chev { display: grid; place-items: center; width: 24px; color: var(--hl-color-text-muted); }
 .chev.up { transform: rotate(180deg); }
 .tline.one { min-height: 48px; }
+/* Names and counts wrap inside their column, as Flutter breaks an over-long word in an Expanded text. */
 /* TE4: the count of items without a price is a link to the next one (min 48 px tall). */
-.nudge { display: inline-flex; align-items: center; gap: 2px; min-height: 48px; font-size: calc(13px * var(--ts)); font-weight: 700; color: var(--hl-color-brand); }
+.nudge { display: inline-flex; align-items: center; gap: 2px; min-height: 48px; flex: 0 1 auto; min-width: 0; overflow-wrap: anywhere; text-align: end; font-size: calc(13px * var(--ts)); font-weight: 700; color: var(--hl-color-brand); }
 .nudge .go { width: 20px; height: 20px; transform: rotate(-90deg); }
 .blk > .nudge { margin-top: -8px; }
+.trow .nudge { max-width: 55%; }
 
 .used { display: flex; align-items: center; justify-content: space-between; min-height: 48px; margin-top: 20px; padding: 0 0 0 0; font-size: calc(16px * var(--ts)); }
 .used .icon { color: var(--hl-color-text-muted); margin-right: 4px; }
@@ -173,10 +175,11 @@ th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; color
 .addfield > span { --cut: 16px; display: flex; align-items: center; height: 48px; overflow: hidden; white-space: nowrap; padding: 0 22px; font-size: calc(17px * var(--ts)); line-height: 1.2; color: var(--hl-color-text-muted); background: var(--hl-color-surface-raised);
   clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% 50%, calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 50%); }
 .th-light .addfield > span { background: #fff; }
-.tabs { justify-self: center; max-width: 100%; display: flex; gap: 4px; padding: 4px 18px; --o: var(--hl-color-border); background: var(--hl-color-surface-raised); filter: drop-shadow(2px 0 0 var(--o)) drop-shadow(-2px 0 0 var(--o)) drop-shadow(0 2px 0 var(--o)) drop-shadow(0 -2px 0 var(--o)) drop-shadow(0 3px 0 var(--o));
+.tabs { justify-self: center; max-width: 100%; display: flex; gap: 2px; padding: 4px 14px; --o: var(--hl-color-border); background: var(--hl-color-surface-raised); filter: drop-shadow(2px 0 0 var(--o)) drop-shadow(-2px 0 0 var(--o)) drop-shadow(0 2px 0 var(--o)) drop-shadow(0 -2px 0 var(--o)) drop-shadow(0 3px 0 var(--o));
   clip-path: polygon(18px 0, calc(100% - 18px) 0, 100% 50%, calc(100% - 18px) 100%, 18px 100%, 0 50%); }
 .th-light .tabs { background: #fff; }
 .tab { display: flex; align-items: center; gap: 6px; padding: 0 14px; min-height: 44px; font-size: calc(14px * min(var(--ts), 1.15)); font-weight: 700; white-space: nowrap; line-height: 1.2; }
+.android .tab { padding: 0 10px; }
 .tab.on { background: var(--hl-color-honey); color: var(--hl-color-on-honey); clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 10px 100%, 0 50%); }
 
 /* TE5's sheet: the receipt over a scrim. */

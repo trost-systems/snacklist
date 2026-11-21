@@ -34,7 +34,7 @@ Pixels the option adds against no total at all (block, taller dividers or top ba
 | TE3 Sums on the store dividers | 100 % | 0 (+7) | 75 (+5) | 70 (+5) | 75 (+5) |
 | TE3 Sums on the store dividers | 310 % | 0 (+6) | 685 (+4) | 586 (+2) | 456 (+7) |
 | TE4 Total and the next price | 100 % | 70 (+5) | 110 (+5) | 357 (0) | 115 (+5) |
-| TE4 Total and the next price | 310 % | 155 (+5) | 509 (+6) | 993 (0) | 461 (+7) |
+| TE4 Total and the next price | 310 % | 221 (+4) | 509 (+6) | 993 (0) | 461 (+7) |
 | TE5 Total in the top bar | 100 % | 0 (+7) | 0 (+7) | 0 (+7) | 0 (+7) |
 | TE5 Total in the top bar | 310 % | 0 (+6) | 0 (+9) | 0 (+6) | 0 (+10) |
 
@@ -48,7 +48,7 @@ Pixels the option adds against no total at all (block, taller dividers or top ba
 6. **TE-Q6 One store priced.** With prices in one store only, TE1 shows one “Shopping total” line and no store line, as ST3 does with one store (a line would repeat the total). Default: keep that rule; it counts stores with a price, not stores on the list.
 7. **TE-Q7 A store bought without prices on a trip.** A store bought in full with no price gets no line; its items count in “without price”. Default: as shown. Alternative: keep an “all bought” line without an amount.
 8. **TE-Q8 TE5’s floor mark.** If TE5 is preferred: the pill has no room for “at least”, so the prototype writes “€6.38+”, a new notation. Default: not needed with TE1.
-9. **TE-Q9 Amounts at the largest text.** At 310 % the real app breaks an amount inside the number (“€6.3 / 8”, seen in the release web build), in Today and in every option. Default: fix it in the build: an amount that does not fit goes on its own line under the name. It is one more line, but the number stays whole.
+9. **TE-Q9 Amounts at the largest text.** At 310 % the real app breaks an amount inside the number (“€6.3 / 8”, seen in the release web build), in Today and in every option. The name beside it then breaks too: in German “Gesa / mt”, “Einka / ufssu / mme”. Default: fix it in the build: an amount that does not fit goes on its own line under the name. It is one more line, but the number and the name stay whole.
 
 10. **TE-Q10 Prices in another currency.** The app leaves an item priced today in another currency out of the sums and makes them a floor (`Sum.foreign`); the prototype does not model it. A store whose only prices are foreign has no amount but a floor. Default: TE1 treats it as a store without a price (no line), and the total’s count names it with the others (“4 without price”), as today’s `pr-total` counts it neither as priced nor as open.
 
