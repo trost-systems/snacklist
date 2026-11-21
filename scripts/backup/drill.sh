@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Restore drill against the local stack, run by the db gate: fixture data in every backed-up
 # table, dump.sh with a throwaway age key, decrypt, reset the database to the migrations,
-# restore.sh, and the same row count and content checksum per table as before. Then the restored
+# restore.sh, and the same row count and content checksum per table as before (tables dump.sh
+# leaves the data out of come back empty). Then the restored
 # users sign in and the triggers work again. Never touches the real backup key.
 set -euo pipefail
 source "$(dirname "$0")/../lib.sh"
@@ -69,7 +70,14 @@ db_reset
 [[ "$(sql -c 'select count(*) from auth.users')" == 0 ]] || fail "reset left users behind"
 age -d -i "$work/key.txt" "$work/backup.sql.age" | scripts/backup/restore.sh
 snapshot >"$work/after.txt"
-if ! diff -u "$work/before.txt" "$work/after.txt" >&2; then
+excluded="$(grep -o -- '--exclude-table-data=[a-z_.]*' scripts/backup/dump.sh | cut -d= -f2)"
+[[ -n $excluded ]] || fail "found no --exclude-table-data in dump.sh"
+for table in $excluded; do
+  awk -v t="$table" '$1 == t && $2 == 0 { found = 1 } END { exit !found }' "$work/after.txt" \
+    || fail "$table has rows after the restore, or is no table: dump.sh must leave its data out"
+done
+kept() { awk -v ex="$excluded" 'BEGIN { split(ex, e); for (i in e) skip[e[i]] = 1 } !($1 in skip)' "$1"; }
+if ! diff -u <(kept "$work/before.txt") <(kept "$work/after.txt") >&2; then
   fail "restored data differs from the original (- before, + after)"
 fi
 
@@ -95,5 +103,5 @@ check="$(sql -q -c "
 [[ $check == "true true true" ]] \
   || fail "after the restore: bought_by from the trigger, new item_events id, classified ('$check', expected 'true true true')"
 
-printf '%s\n' "drill: PASS: $(wc -l <"$work/before.txt") tables identical after dump, decrypt and restore:" >&2
+printf '%s\n' "drill: PASS: $(kept "$work/before.txt" | wc -l) tables identical after dump, decrypt and restore, $(wc -w <<<"$excluded") left empty on purpose:" >&2
 awk '{ printf "  %-30s %6s  %s\n", $1, $2, $3 }' "$work/after.txt" >&2

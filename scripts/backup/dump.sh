@@ -19,9 +19,13 @@ recipient="$(tr -d '[:space:]' <"$recipient_file")"
 trap 'rm -f "$out"' ERR
 
 # -t patterns, not --schema: pg_dump ignores -n when any -t is given (DECISIONS 13b.1).
-# --strict-names fails the dump if a pattern stops matching, e.g. a renamed auth table.
+# --strict-names fails the dump if a pattern stops matching, e.g. a renamed auth table; it does
+# not cover --exclude-table-data, so drill.sh proves each excluded table comes back empty.
+# content_report_app_senders: user id and time of app reports, kept a day at most, so never in a
+# 90-day backup (Legal N-284).
 pg_dump --data-only --quote-all-identifiers --strict-names \
   --table='public.*' --table=auth.users --table=auth.identities \
+  --exclude-table-data=public.content_report_app_senders \
   | age --encrypt --recipient "$recipient" --output "$out"
 
 min_bytes=16384

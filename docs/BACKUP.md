@@ -16,6 +16,9 @@ sources are in [`DECISIONS.md`](DECISIONS.md), job 13b.
   or Apple sign-in, and every row still points at its user.
 - Not the schema. Tables, functions, policies and triggers come from
   `supabase/migrations/`, so a restore applies the migrations first.
+- Not the rows of `public.content_report_app_senders` (who sent an app
+  report when, kept a day at most), so they never sit in a 90-day backup
+  (Legal N-284). The table comes back empty; the restore drill checks that.
 
 `scripts/backup/dump.sh` makes the backup. It runs `pg_dump 17 --data-only`
 through the session pooler (`aws-1-eu-central-1.pooler.supabase.com:5432`,
