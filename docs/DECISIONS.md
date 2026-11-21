@@ -16920,3 +16920,29 @@ internal and unlock tester-only flags. No hidden unlocks: testers are segmented 
 8. **Job 332's flag sync** (`is_internal = true` default for new flags) stays as it is: members
    of `internal` send `is_internal: true`. Rebased onto #589, the flag request after a yes carries
    all five properties: `is_internal`, `tester_groups`, `platform`, `app_version`, `app_build`.
+
+## Job 340: one suggestion list, shared row style, chip gap, edit-sheet stepper
+
+Peter, 21 Nov 2026 (t1112u, t1113u and two follow-ups), after seeing the split on TestFlight. This
+reverses job 324's AM-Q8 layout (match rows in their own capped area as rounded tiles, the `+` row
+pinned above the field, other suggestions hidden); all of it stays behind `add-sheet-compact` and
+`add-match-rows`, no new flag.
+
+1. **One list.** With match rows the `add-suggestions` list holds, top to bottom: the match rows
+   (`matchRowsFor` order), the `+` row (the first suggestion, what Enter adds), the other
+   suggestions. They are no longer hidden. The separate `add-match-rows` list and `match-plus` row
+   are gone.
+2. **One row chrome.** A match row is full width, square, with `_SuggestionRow`'s padding and
+   hairline; it keeps its tint and icon (merge, tick off, readd). Honey still marks Enter's row.
+3. **No return-key hex** in the compact sheet (a tap on the `+` row and Enter still add the typed
+   item separately, AM-Q2). The flag-off sheet keeps its hex.
+4. **Keys by content.** Match rows are keyed by kind and item id instead of `match-$i`; the `+`
+   row has its suggestion's content key, so `input-stable-rows` still holds.
+5. **Consequence, not avoided.** Three match rows fill the three-row window, so the `+` row and the
+   other suggestions sit below the fold and scroll into view; Enter works unchanged. A match row
+   that appears while typing sits above the suggestions and moves them down by one row. Peter's
+   order wins; no other order was invented to avoid it.
+6. **Chip gap.** `_PropertiesField`'s top padding is `HlSpace.s3` (12) instead of `HlSpace.s1`.
+7. **Edit-sheet stepper.** With `add-sheet-compact` the edit sheet's Menge is the add sheet's hex
+   group (`QuantityGroup`, moved to public, keys prefixed `edit-`), under Marke; flag off keeps the
+   labelled field with side steppers. Stepping and typing save as before.

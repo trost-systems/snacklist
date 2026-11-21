@@ -6,6 +6,7 @@ import 'package:family_groceries/core/theme.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/add_sheet/add_sheet_cubit.dart';
 import 'package:family_groceries/list/add_sheet/match_rows.dart';
+import 'package:family_groceries/list/add_sheet/suggestion.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_screen.dart';
 import 'package:family_groceries/list/model.dart';
@@ -108,7 +109,34 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Finder key(String key) => find.byKey(ValueKey(key));
+  Finder keyed(bool Function(String) test) => find.byWidgetPredicate((w) {
+    final k = w.key;
+    return k is ValueKey<String> && test(k.value);
+  });
+
+  /// The [n]th widget [keyed] finds, or nothing: `.at` throws past the end.
+  Finder nth(bool Function(String) test, int n) {
+    final found = keyed(test).evaluate().toList();
+    return n < found.length
+        ? find.byWidget(found[n].widget)
+        : find.byKey(const ValueKey('no-such-row'));
+  }
+
+  /// 'match-N': the Nth match tile (keyed by content since job 340);
+  /// 'match-plus': the first suggestion row, the + row.
+  Finder key(String key) {
+    if (RegExp(r'^match-\d+$').hasMatch(key)) {
+      return nth(
+        (v) => v.startsWith('match-') && v != 'match-note',
+        int.parse(key.substring(6)),
+      );
+    }
+    if (key == 'match-plus') {
+      return nth((v) => v.startsWith('suggestion-'), 0);
+    }
+    return find.byKey(ValueKey(key));
+  }
+
   Finder field() => key('add-item-field');
   Finder sheet() => key('add-sheet');
   Finder inSheet(Finder f) => find.descendant(of: sheet(), matching: f);
@@ -172,18 +200,24 @@ void main() {
         lessThanOrEqualTo(tester.getRect(field()).top),
         reason: 'and above the field',
       );
-      expect(
-        inSheet(find.byIcon(Icons.keyboard_return)),
-        findsOneWidget,
-        reason: 'one key for Enter',
-      );
+      for (final k in ['match-0', 'match-1', 'match-plus']) {
+        final rect = tester.getRect(key(k));
+        final list = tester.getRect(key('add-suggestions'));
+        expect(rect.left, list.left, reason: '$k is full width');
+        expect(rect.right, list.right, reason: '$k is full width');
+      }
       expect(
         find.descendant(
-          of: key('match-plus'),
-          matching: find.byIcon(Icons.keyboard_return),
+          of: key('add-suggestions'),
+          matching: find.byType(ClipRRect),
         ),
-        findsOneWidget,
-        reason: "the + row is Enter's",
+        findsNothing,
+        reason: 'square rows, no rounded tiles',
+      );
+      expect(
+        inSheet(find.byIcon(Icons.keyboard_return)),
+        findsNothing,
+        reason: 'no return key any more (job 340)',
       );
       expect(matchEvents(), ['add_match_shown']);
 
@@ -192,10 +226,67 @@ void main() {
       final add = repo.sent.whereType<AddItem>().last;
       expect(add.separate, isTrue);
       expect(repo.rows.values.where((i) => i.name == 'Nudeln'), hasLength(2));
-      expect(key('add-match-rows'), findsNothing, reason: 'the field cleared');
+      expect(key('match-0'), findsNothing, reason: 'the field cleared');
       expect(key('dedupe-hint'), findsNothing);
       expect(find.textContaining('schon auf der Liste'), findsNothing);
       expect(matchEvents().last, 'add_match_outcome:separate');
+    });
+
+    testWidgets('one list: matches, the + row, then the other suggestions', (
+      tester,
+    ) async {
+      await pumpList(
+        tester,
+        seed: (repo) => repo
+          ..remoteAdd('Nudeln')
+          ..suggestions['Nudeln'] = [
+            const Suggestion(
+              SuggestionSource.typed,
+              ParsedEntry(name: 'Nudeln'),
+            ),
+            const Suggestion(
+              SuggestionSource.history,
+              ParsedEntry(name: 'Nudeln Vollkorn'),
+            ),
+          ],
+      );
+      await type(tester, 'Nudeln');
+      final list = key('add-suggestions');
+      expect(find.byType(Scrollable), findsWidgets);
+      expect(
+        find.descendant(of: list, matching: find.byType(Scrollable)),
+        findsOneWidget,
+        reason: 'one scrollable list',
+      );
+      expect(key('match-note'), findsNothing);
+      final tops = [
+        tester.getRect(key('match-0')).top,
+        tester.getRect(key('match-1')).top,
+        tester.getRect(key('match-plus')).top,
+      ];
+      expect(tops, orderedEquals([...tops]..sort()), reason: 'in order');
+      expect(tops.toSet(), hasLength(3));
+      await tester.drag(list, const Offset(0, -300));
+      await tester.pumpAndSettle();
+      final other = find.descendant(
+        of: list,
+        matching: find.textContaining('Vollkorn', findRichText: true),
+      );
+      expect(other, findsWidgets, reason: 'other suggestions stay visible');
+      expect(
+        tester.getRect(other.first).top,
+        greaterThan(tester.getRect(key('match-plus')).top),
+        reason: 'below the + row',
+      );
+      expect(
+        tester.getSemantics(key('match-0')),
+        matchesSemantics(
+          isButton: true,
+          hasTapAction: true,
+          label: '2× Nudeln',
+        ),
+        skip: true,
+      );
     });
 
     testWidgets('a tap on the + row adds separately too', (tester) async {
@@ -216,7 +307,7 @@ void main() {
       expect(repo.rows.values.where((i) => i.name == 'Nudeln'), hasLength(1));
       expect(typed(tester), isEmpty);
       expect(inSheet(find.text('Zusammengeführt: 2× Nudeln')), findsOneWidget);
-      expect(key('add-match-rows'), findsNothing);
+      expect(key('match-0'), findsNothing);
       expect(key('dedupe-undo'), findsNothing, reason: 'no Rückgängig');
       expect(matchEvents().last, 'add_match_outcome:merge');
 
@@ -305,6 +396,9 @@ void main() {
       expect(textIn('match-1', 'Milch'), findsOneWidget);
       expect(textIn('match-2', 'dm · 3,5 %'), findsOneWidget);
       expect(key('match-3'), findsNothing);
+      expect(key('match-plus'), findsNothing, reason: 'the 4th row, scrolled');
+      await tester.drag(key('add-suggestions'), const Offset(0, -300));
+      await tester.pumpAndSettle();
       expect(key('match-plus'), findsOneWidget);
     });
   });
@@ -323,7 +417,7 @@ void main() {
       repo.rows.remove(oat.id);
       repo.emitDelete!(oat.id);
       await tester.pumpAndSettle();
-      expect(key('add-match-rows'), findsNothing, reason: 'rows follow');
+      expect(key('match-0'), findsNothing, reason: 'rows follow');
       expect(key('match-note'), findsNothing);
       expect(typed(tester), 'Hafermilch', reason: 'the text stays');
       expect(matchEvents(), ['add_match_shown']);
@@ -383,7 +477,7 @@ void main() {
         'Enter adds a separate one', (tester) async {
       await pumpList(tester, seed: (_) {});
       await type(tester, 'Kakao');
-      expect(key('add-match-rows'), findsNothing);
+      expect(key('match-0'), findsNothing);
       repo.emitItem!(repo.remoteAdd('Kakao'));
       await tester.pumpAndSettle();
       expect(textIn('match-0', '2× Kakao'), findsOneWidget);
@@ -425,14 +519,7 @@ void main() {
       await type(tester, 'Eier');
       expect(textIn('match-0', '10× Eier'), findsOneWidget);
       expect(textIn('match-0', 'Lidl'), findsOneWidget);
-      expect(
-        find.descendant(
-          of: key('match-0'),
-          matching: find.byIcon(Icons.keyboard_return),
-        ),
-        findsOneWidget,
-        reason: "Enter's",
-      );
+      expect(inSheet(find.byIcon(Icons.keyboard_return)), findsNothing);
       expect(
         find.descendant(
           of: key('match-plus'),
@@ -471,8 +558,7 @@ void main() {
           'flag', (tester) async {
         await pumpList(tester, seed: (repo) => repo.remoteAdd(onList));
         await type(tester, typedText);
-        expect(key('add-match-rows'), findsNothing);
-        expect(key('match-plus'), findsNothing);
+        expect(key('match-0'), findsNothing);
         expect(key('add-suggestions'), findsOneWidget);
         expect(matchEvents(), isEmpty);
       });
@@ -487,7 +573,7 @@ void main() {
       seed: (repo) => repo.remoteAdd('Nudeln'),
     );
     await type(tester, 'Nudeln');
-    expect(key('add-match-rows'), findsNothing);
+    expect(key('match-0'), findsNothing);
     await enter(tester);
     expect(
       inSheet(find.text('Nudeln steht schon auf der Liste')),
@@ -577,7 +663,7 @@ void main() {
         await type(tester, 'Milch');
         expect(key('match-0'), findsOneWidget);
         final view = Rect.fromLTRB(0, 47, size.width, size.height - keyboard);
-        for (final k in ['match-plus', 'add-item-field']) {
+        for (final k in ['add-suggestions', 'add-item-field']) {
           final rect = tester.getRect(key(k));
           expect(
             view.contains(rect.topLeft) &&
@@ -586,15 +672,11 @@ void main() {
             reason: '$k at $rect, outside $view',
           );
         }
-        expect(
-          tester.getRect(key('match-plus')).bottom,
-          lessThanOrEqualTo(tester.getRect(field()).top),
-        );
-        final rows = tester.getRect(key('add-match-rows'));
+        final rows = tester.getRect(key('add-suggestions'));
         expect(rows.top, greaterThanOrEqualTo(view.top));
         expect(
           rows.bottom,
-          lessThanOrEqualTo(tester.getRect(key('match-plus')).top + 0.5),
+          lessThanOrEqualTo(tester.getRect(field()).top + 0.5),
         );
         expect(tester.takeException(), isNull);
       });

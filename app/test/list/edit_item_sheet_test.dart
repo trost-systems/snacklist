@@ -42,6 +42,7 @@ void main() {
     Item? item,
     Size size = const Size(400, 900),
     Future<Store?> Function(String name)? onCreateStore,
+    bool hexQuantity = false,
   }) async {
     ItemChanges? result;
     var closed = false;
@@ -62,6 +63,7 @@ void main() {
                   final edit = await showEditItemSheet(
                     context,
                     item: item ?? milk,
+                    hexQuantity: hexQuantity,
                     catalog: catalog,
                     onCreateStore:
                         onCreateStore ??
@@ -125,6 +127,46 @@ void main() {
       await tester.tap(key('edit-done'));
     });
     expect(result!.toColumns(), {'brand': 'Berchtesgadener', 'quantity': '3'});
+  });
+
+  group("the add sheet's quantity control (flag add-sheet-compact)", () {
+    testWidgets('flag on: minus, number and plus in one hex', (tester) async {
+      await run(tester, null, hexQuantity: true);
+      final group = tester.getRect(key('edit-quantity-group'));
+      final minus = tester.getRect(key('edit-quantity-minus'));
+      final field = tester.getRect(key('edit-quantity'));
+      final plus = tester.getRect(key('edit-quantity-plus'));
+      expect(minus.right, lessThanOrEqualTo(field.left));
+      expect(field.right, lessThanOrEqualTo(plus.left));
+      expect([minus, field, plus].every(group.inflate(0.5).overlaps), isTrue);
+      expect(minus.width, 34);
+      expect(find.text('Menge'), findsNothing, reason: 'no label, like add');
+      await tester.tap(key('edit-quantity-plus'));
+      await tester.pump();
+      expect(text(tester, 'edit-quantity'), '3');
+      await tester.tap(key('edit-quantity-minus'));
+      await tester.tap(key('edit-quantity-minus'));
+      await tester.pump();
+      expect(text(tester, 'edit-quantity'), '1');
+    });
+
+    testWidgets('flag on: stepping saves like typing', (tester) async {
+      final result = await run(tester, () async {
+        await tester.tap(key('edit-quantity-plus'));
+        await tester.pump();
+        await tester.tap(key('edit-done'));
+      }, hexQuantity: true);
+      expect(result!.toColumns(), {'quantity': '3'});
+    });
+
+    testWidgets('flag off: the field with its side steppers', (tester) async {
+      await open(tester, milk);
+      expect(key('edit-quantity-group'), findsNothing);
+      expect(
+        tester.getRect(key('edit-quantity-minus')).left,
+        greaterThan(tester.getRect(key('edit-quantity')).right),
+      );
+    });
   });
 
   testWidgets('emptied fields are saved as null', (tester) async {
