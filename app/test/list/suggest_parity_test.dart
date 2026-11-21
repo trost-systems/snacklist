@@ -61,9 +61,38 @@ const _categoryExceptions = <String, String>{
   'Nagelkleb|Nagelkleb': _partial,
   'Nagelklebe|Nagelklebe': _partial,
   'Peperon|Peperon': _partial,
+  'Topf|Topf': _homograph,
+  'Apfelmu|Apfelmu': _partial,
+  'Butterschma|Butterschma': _partial,
+  'Butterschmal|Butterschmal': _partial,
+  'Estric|Estric': _partial,
+  'Polent|Polent': _partial,
+  'Curryurst|Curryurst': _typo,
+  'Curryeurst|Curryeurst': _typo,
+  'Kucheform|Kucheform': _typo,
+  'Kuchneform|Kuchneform': _typo,
+  'Kucheeform|Kucheeform': _typo,
+  'Milchulver|Milchulver': _typo,
+  'Milcheulver|Milcheulver': _typo,
+  'Nagelflege|Nagelflege': _typo,
+  'Nageleflege|Nageleflege': _typo,
+  'Pomeär|Pomeär': _typo,
+  'Schnekel|Schnekel': _typo,
+  'To|Topf': _homograph,
+  'Kohlenschauf|Kohlenschauf': _typo,
+  'Kohlenschaufe|Kohlenschaufe': _typo,
+  'Schäufele|Schäufele': _homograph,
+  'Mozzareleakugeln|Mozzareleakugeln': _typo,
+  'Nagelinsel|Nagelinsel': _typo,
+  'Nageleinsel|Nageleinsel': _typo,
+  'Rohrudel|Rohrudel': _typo,
+  'Rohreudel|Rohreudel': _typo,
   'Catrice|Catrice': _brandAlone,
 };
 
+const _homograph =
+    'a word the stemmer folds onto another word (Topf and Topfen): the server '
+    'reads the typed spelling (job 282), guessCategory has no homographs yet';
 const _typo =
     'a typo: public.classify_item_detail corrects it (lexicon_fuzzy), '
     'guessCategory has no typo path and finds a part of another word';
@@ -281,7 +310,10 @@ void main() {
       );
       final pinned = {
         ...storeExceptions,
-        if (categoryStore) ...categoryStoreExceptions,
+        if (categoryStore)
+          ...categoryStoreExceptions
+        else
+          ...categoryStoreOffExceptions,
       };
       expect([
         for (final line in byCategory)

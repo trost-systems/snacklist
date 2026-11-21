@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "revision": 3,
+  "revision": 4,
   "entries": {
     "=ajax": "🧴",
     "=axe": "🧴",
@@ -2752,8 +2752,10 @@
     "tassimo": "☕",
     "tastatur": "⌨️",
     "taucherbrille": "🥽",
+    "tea light": "🕯️",
     "tea lights": "🕯️",
     "tea tree oil": "",
+    "tealight": "🕯️",
     "tealights": "🕯️",
     "teapot": "🫖",
     "teddy": "🧸",

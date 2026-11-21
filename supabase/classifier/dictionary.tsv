@@ -278,6 +278,7 @@ dips	chilled
 edamer	chilled
 ei	chilled
 eier	chilled
+spiegelei	chilled
 eiersalat	chilled
 emmentaler	chilled
 feta	chilled
@@ -926,7 +927,9 @@ backofenreiniger	household
 backpapier	household
 backpinsel	household
 # Wooden kitchen things (holz, brett): Nudelholz, Holzlöffel, Schneidebrett stay Haushalt.
+bügel	household
 nudelholz	household
+pfanne	household
 pfannenwender	household
 löffel	household
 kochlöffel	household
@@ -941,9 +944,12 @@ frühstücksbrett	household
 brettchen	household
 schüssel	household
 holzschüssel	household
+spiegel	household
 teller	household
 holzteller	household
 bilderrahmen	household
+topf	household
+töpfe	household
 wechselrahmen	household
 fotorahmen	household
 holzstäbchen	household
@@ -1074,6 +1080,7 @@ küchenrolle	household
 küchentücher	household
 kugelschreiber	household
 kühlakku	household
+kühlpack	household
 lampenöl	household
 lappen	household
 leckerli	household
@@ -1210,6 +1217,7 @@ elmex	drugstore
 entferner	drugstore
 eyeliner	drugstore
 fa	drugstore
+medikament	drugstore
 nagelfeile	drugstore
 hornhautfeile	drugstore
 glasfeile	drugstore
@@ -1398,6 +1406,7 @@ zahnpaste	drugstore
 zahnseide	drugstore
 zahnungsgel	drugstore
 zahnzwischenraumbürste	drugstore
+zeckenzange	drugstore
 zäpfchen	drugstore
 nivea	drugstore
 

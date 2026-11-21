@@ -1,4 +1,4 @@
-# 345 non-food items from job 2b's household and drugstore sweep: item<TAB>seed_key.
+# 353 non-food items from job 2b's household and drugstore sweep: item<TAB>seed_key.
 # ./sweep.sh classifies each on the local stack and prints the rows that differ.
 Mülltüten	household
 Mülltüte	household
@@ -345,3 +345,11 @@ Hundekotbeutel	household
 Gassibeutel	household
 Kotbeutel	household
 Fischfutter	household
+Spiegel	household
+Kleiderbügel	household
+Bratpfanne	household
+Topf	household
+Medikament	drugstore
+tea lights	household
+Kühlpack	household
+Zeckenzange	drugstore
