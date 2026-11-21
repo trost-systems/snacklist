@@ -1,0 +1,84 @@
+store	name	category	seed_key	via	canonical_key
+IKEA	Köttbullar	Sonstiges	other	fallback	kotbular
+IKEA	Hotdog	Sonstiges	other	fallback	hotdog
+IKEA	Preiselbeermarmelade	Vorrat & Konserven	pantry	exact	preiselbermarmelad
+IKEA	Teelichter	Haushalt	household	exact	telichter
+IKEA	Duftkerzen	Haushalt	household	exact	duftkerz
+IKEA	Bilderrahmen	Haushalt	household	exact	bilderam
+IKEA	Aufbewahrungsbox	Sonstiges	other	fallback	aufbewarungsbox
+IKEA	Kallax Einsätze	Sonstiges	other	fallback	kalax einsaz
+IKEA	BILLY Regal	Sonstiges	other	fallback	bily regal
+IKEA	Zimmerpflanze	Garten & Pflanzen	garden	exact	zimerpflanz
+IKEA	Monstera	Sonstiges	other	fallback	monstera
+IKEA	Übertopf	Garten & Pflanzen	garden	exact	ubertopf
+IKEA	Pfannenwender	Haushalt	household	exact	pfanenwender
+IKEA	Schneidebrett	Haushalt	household	exact	schneidebret
+IKEA	Trinkgläser	Sonstiges	other	fallback	trinkglaser
+IKEA	Bratpfanne	Fleisch/Wurst/Fisch	meat	exact	bratpfan
+IKEA	Kleiderbügel	👶 Drogerie	drugstore	exact	kleiderbugel
+IKEA	Kissenbezug	Sonstiges	other	fallback	kisenbezug
+IKEA	Bettwäsche	Sonstiges	other	fallback	betwasch
+IKEA	Handtücher	Haushalt	household	exact	hantucher
+IKEA	Teppich	Sonstiges	other	fallback	tepich
+IKEA	Vorhang	Sonstiges	other	fallback	vorhang
+IKEA	LED-Lampe	Elektro & Leuchtmittel	electrical	exact	led lamp
+IKEA	Glühbirne	Elektro & Leuchtmittel	electrical	exact	glubirn
+IKEA	Gefrierbeutel	Haushalt	household	exact	gefrierbeutel
+IKEA	Servietten	Haushalt	household	exact	serviet
+IKEA	Spiegel	👶 Drogerie	drugstore	exact	spiegel
+IKEA	Wäschekorb	Sonstiges	other	fallback	waschekorb
+IKEA	meatballs	Sonstiges	other	fallback	meatbal
+IKEA	tea lights	Vorrat & Konserven	pantry	synonym	tee ligt
+IKEA	picture frame	Sonstiges	other	fallback	piktur fram
+IKEA	storage box	Sonstiges	other	fallback	storag box
+dm	Zahnpasta	👶 Drogerie	drugstore	exact	zanpasta
+dm	Shampoo	👶 Drogerie	drugstore	exact	shampo
+dm	Duschgel	👶 Drogerie	drugstore	exact	duschgel
+dm	Windeln	👶 Drogerie	drugstore	exact	windel
+dm	Feuchttücher	👶 Drogerie	drugstore	exact	feuchtucher
+dm	Deo	👶 Drogerie	drugstore	exact	deodorant
+dm	Sonnencreme	👶 Drogerie	drugstore	exact	sonenkrem
+dm	Wattepads	👶 Drogerie	drugstore	exact	watepad
+dm	Rasierklingen	👶 Drogerie	drugstore	exact	rasierkling
+dm	Haargummis	👶 Drogerie	drugstore	exact	hargumi
+dm	Nagellack	👶 Drogerie	drugstore	exact	nagelak
+dm	Waschmittel	Haushalt	household	exact	waschmitel
+dm	Spülmaschinentabs	Haushalt	household	exact	spulmaschinentab
+dm	Babybrei	👶 Drogerie	drugstore	exact	babybrei
+dm	Hafermilch	Kühlregal	chilled	exact	hafermilch
+dm	Studentenfutter	Süßes & Snacks	sweets	exact	studentenfuter
+dm	Taschentücher	👶 Drogerie	drugstore	exact	taschentucher
+dm	Kontaktlinsenlösung	👶 Drogerie	drugstore	exact	kontaktlinsenlosung
+dm	Vitamin D	👶 Drogerie	drugstore	exact	vitamin d
+dm	Tampons	👶 Drogerie	drugstore	exact	tampon
+dm	Fotoabzüge	Sonstiges	other	fallback	fotoabzug
+Baumarkt	Schrauben	Schrauben & Befestigung	fasteners	exact	schraub
+Baumarkt	Dübel	Schrauben & Befestigung	fasteners	exact	dubel
+Baumarkt	Akkuschrauber	Werkzeug	tools	exact	akuschrauber
+Baumarkt	Silikon	Sanitär	plumbing	exact	silikon
+Baumarkt	Wandfarbe	Farben & Lacke	paint	exact	wandfarb
+Baumarkt	Malerkrepp	Farben & Lacke	paint	exact	malerkrep
+Baumarkt	Pinsel	Farben & Lacke	paint	exact	pinsel
+Baumarkt	Holzleim	Holz & Baustoffe	building	exact	holzleim
+Baumarkt	Blumenerde	Garten & Pflanzen	garden	exact	blumenerd
+Baumarkt	Verlängerungskabel	Elektro & Leuchtmittel	electrical	exact	verlangerungskabel
+Baumarkt	Schleifpapier	Werkzeug	tools	exact	schleifpapier
+Baumarkt	Wasserwaage	Werkzeug	tools	exact	waserwag
+Baumarkt	Kabelbinder	Elektro & Leuchtmittel	electrical	exact	kabelbinder
+Baumarkt	Rasensamen	Garten & Pflanzen	garden	exact	rasensam
+Baumarkt	Gartenschlauch	Garten & Pflanzen	garden	exact	gartenschlauch
+Baumarkt	Arbeitshandschuhe	Werkzeug	tools	exact	arbeitshandschu
+Apotheke	Ibuprofen	👶 Drogerie	drugstore	exact	ibuprof
+Apotheke	Paracetamol	👶 Drogerie	drugstore	exact	paracetamol
+Apotheke	Nasenspray	👶 Drogerie	drugstore	exact	nasenspray
+Apotheke	Hustensaft	👶 Drogerie	drugstore	exact	hustensaft
+Apotheke	Pflaster	👶 Drogerie	drugstore	exact	pflaster
+Apotheke	Fieberthermometer	👶 Drogerie	drugstore	exact	fiebertermometer
+Apotheke	Halstabletten	👶 Drogerie	drugstore	exact	halstablet
+Apotheke	Rezept abholen	Sonstiges	other	fallback	rezept abhol
+Apotheke	Magnesium	👶 Drogerie	drugstore	exact	magnesium
+Apotheke	Zeckenzange	Werkzeug	tools	exact	zekenzang
+Apotheke	Desinfektionsmittel	Haushalt	household	exact	desinfektionsmitel
+Apotheke	Elektrolyte	Sonstiges	other	fallback	elektrolyt
+Apotheke	Kühlpack	👶 Drogerie	drugstore	fuzzy	kulpad
+(82 rows)

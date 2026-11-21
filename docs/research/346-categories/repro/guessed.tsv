@@ -1,0 +1,84 @@
+store	name	category	default_store
+IKEA	Köttbullar	Sonstiges	(Ohne Laden)
+IKEA	Hotdog	Sonstiges	(Ohne Laden)
+IKEA	Preiselbeermarmelade	Vorrat & Konserven	(Ohne Laden)
+IKEA	Teelichter	Haushalt	(Ohne Laden)
+IKEA	Duftkerzen	Haushalt	(Ohne Laden)
+IKEA	Bilderrahmen	Haushalt	(Ohne Laden)
+IKEA	Aufbewahrungsbox	Sonstiges	(Ohne Laden)
+IKEA	Kallax Einsätze	Sonstiges	(Ohne Laden)
+IKEA	BILLY Regal	Sonstiges	(Ohne Laden)
+IKEA	Zimmerpflanze	Garten & Pflanzen	Baumarkt
+IKEA	Monstera	Sonstiges	(Ohne Laden)
+IKEA	Übertopf	Garten & Pflanzen	Baumarkt
+IKEA	Pfannenwender	Haushalt	(Ohne Laden)
+IKEA	Schneidebrett	Haushalt	(Ohne Laden)
+IKEA	Trinkgläser	Sonstiges	(Ohne Laden)
+IKEA	Bratpfanne	Fleisch/Wurst/Fisch	(Ohne Laden)
+IKEA	Kleiderbügel	👶 Drogerie	dm
+IKEA	Kissenbezug	Sonstiges	(Ohne Laden)
+IKEA	Bettwäsche	Sonstiges	(Ohne Laden)
+IKEA	Handtücher	Haushalt	(Ohne Laden)
+IKEA	Teppich	Sonstiges	(Ohne Laden)
+IKEA	Vorhang	Sonstiges	(Ohne Laden)
+IKEA	LED-Lampe	Elektro & Leuchtmittel	Baumarkt
+IKEA	Glühbirne	Elektro & Leuchtmittel	Baumarkt
+IKEA	Gefrierbeutel	Haushalt	(Ohne Laden)
+IKEA	Servietten	Haushalt	(Ohne Laden)
+IKEA	Spiegel	👶 Drogerie	dm
+IKEA	Wäschekorb	Sonstiges	(Ohne Laden)
+IKEA	meatballs	Sonstiges	(Ohne Laden)
+IKEA	tea lights	Vorrat & Konserven	(Ohne Laden)
+IKEA	picture frame	Sonstiges	(Ohne Laden)
+IKEA	storage box	Sonstiges	(Ohne Laden)
+dm	Zahnpasta	👶 Drogerie	dm
+dm	Shampoo	👶 Drogerie	dm
+dm	Duschgel	👶 Drogerie	dm
+dm	Windeln	👶 Drogerie	dm
+dm	Feuchttücher	👶 Drogerie	dm
+dm	Deo	👶 Drogerie	dm
+dm	Sonnencreme	👶 Drogerie	dm
+dm	Wattepads	👶 Drogerie	dm
+dm	Rasierklingen	👶 Drogerie	dm
+dm	Haargummis	👶 Drogerie	dm
+dm	Nagellack	👶 Drogerie	dm
+dm	Waschmittel	Haushalt	(Ohne Laden)
+dm	Spülmaschinentabs	Haushalt	(Ohne Laden)
+dm	Babybrei	👶 Drogerie	dm
+dm	Hafermilch	Kühlregal	(Ohne Laden)
+dm	Studentenfutter	Süßes & Snacks	(Ohne Laden)
+dm	Taschentücher	👶 Drogerie	dm
+dm	Kontaktlinsenlösung	👶 Drogerie	dm
+dm	Vitamin D	👶 Drogerie	dm
+dm	Tampons	👶 Drogerie	dm
+dm	Fotoabzüge	Sonstiges	(Ohne Laden)
+Baumarkt	Schrauben	Schrauben & Befestigung	Baumarkt
+Baumarkt	Dübel	Schrauben & Befestigung	Baumarkt
+Baumarkt	Akkuschrauber	Werkzeug	Baumarkt
+Baumarkt	Silikon	Sanitär	Baumarkt
+Baumarkt	Wandfarbe	Farben & Lacke	Baumarkt
+Baumarkt	Malerkrepp	Farben & Lacke	Baumarkt
+Baumarkt	Pinsel	Farben & Lacke	Baumarkt
+Baumarkt	Holzleim	Holz & Baustoffe	Baumarkt
+Baumarkt	Blumenerde	Garten & Pflanzen	Baumarkt
+Baumarkt	Verlängerungskabel	Elektro & Leuchtmittel	Baumarkt
+Baumarkt	Schleifpapier	Werkzeug	Baumarkt
+Baumarkt	Wasserwaage	Werkzeug	Baumarkt
+Baumarkt	Kabelbinder	Elektro & Leuchtmittel	Baumarkt
+Baumarkt	Rasensamen	Garten & Pflanzen	Baumarkt
+Baumarkt	Gartenschlauch	Garten & Pflanzen	Baumarkt
+Baumarkt	Arbeitshandschuhe	Werkzeug	Baumarkt
+Apotheke	Ibuprofen	👶 Drogerie	dm
+Apotheke	Paracetamol	👶 Drogerie	dm
+Apotheke	Nasenspray	👶 Drogerie	dm
+Apotheke	Hustensaft	👶 Drogerie	dm
+Apotheke	Pflaster	👶 Drogerie	dm
+Apotheke	Fieberthermometer	👶 Drogerie	dm
+Apotheke	Halstabletten	👶 Drogerie	dm
+Apotheke	Rezept abholen	Sonstiges	(Ohne Laden)
+Apotheke	Magnesium	👶 Drogerie	dm
+Apotheke	Zeckenzange	Werkzeug	Baumarkt
+Apotheke	Desinfektionsmittel	Haushalt	(Ohne Laden)
+Apotheke	Elektrolyte	Sonstiges	(Ohne Laden)
+Apotheke	Kühlpack	👶 Drogerie	dm
+(82 rows)

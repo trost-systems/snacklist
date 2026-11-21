@@ -2079,3 +2079,14 @@ The flag sync skipped a flag declaration that `dart format` wraps over two lines
 word; it now reads it, and fails loudly on a declaration it cannot read. A hand-written `iOS`
 platform condition gets the iOS version. `docs/ANALYTICS.md` says a version-gated flag never
 reaches installs without an analytics yes. Details: `docs/done/332-posthog-flag-sync.md`.
+
+## Job 346: categories deep dive (research, draft PR, not merged)
+
+At IKEA, Snacklist sorts with grocery categories. A mock IKEA trip of 32 items put 15 in
+Sonstiges, Spiegel and Kleiderbügel in Drogerie and Bratpfanne in Fleisch. No item defaulted to
+the IKEA store. The report compares five approaches. It recommends CAT1, store kinds (supermarket,
+drugstore, hardware, home, pharmacy, other) with their own category set and walk order,
+generalizing job 151's Baumarkt. The runner-up is CAT4, plain stores without dividers, which wins
+if job 347 hides categories. It lists 11 open questions with defaults and 7 classifier misfires to
+fix in a separate job. Report: `docs/research/346-categories/README.md`. Details:
+`docs/done/346-categories-deep-dive.md`.
