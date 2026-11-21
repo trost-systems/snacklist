@@ -2104,3 +2104,12 @@ in Flutter. Not live yet: the production deploy of #606 failed with a 401 (expir
   the token step, NEEDS_LEAD the correction (#606 also merged before review 0).
 - **Not done.** English near-forms, a journey for `cl-tail-guards`, a fixed parity sample, device
   homographs (nice to have in the review).
+
+## Job 350: categories hidden behind `hide-categories`
+
+Behind the new flag `hide-categories` (internal installs only, Peter included): no category
+headings on the list, no category chip in the add or edit sheet, „Läden“ without „Ohne Laden“, a
+store's screen with only its name, and no „Sortiert wie dein Laden“ tip. The order of the list is
+the same as before (categories still sort underneath, proven off vs on in the web app with the same
+12 rows); the classifier, API and MCP are unchanged. No new copy. Ships with the next green main
+build. Details and the full list of places: `docs/done/350-hide-categories-ui.md`.

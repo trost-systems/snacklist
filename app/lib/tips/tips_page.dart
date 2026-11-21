@@ -1,3 +1,4 @@
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/tips/hint_host.dart';
 import 'package:family_groceries/tips/hint_views.dart';
@@ -16,9 +17,17 @@ class const TipsPage({super.key}) extends StatelessWidget {
       platform: defaultTargetPlatform,
     );
     final canAddHousehold = context.read<HintHost?>()?.canAddHousehold ?? false;
+    final categoriesHidden = context.select<Flags?, bool>(
+      (f) => f?.isOn(hideCategoriesFlag) ?? false,
+    );
     final shown = [
       for (final hint in hints)
-        if (hint.offered(platform, canAddHousehold: canAddHousehold)) hint,
+        if (hint.offered(
+          platform,
+          canAddHousehold: canAddHousehold,
+          categoriesHidden: categoriesHidden,
+        ))
+          hint,
     ];
     return ListView(
       key: const ValueKey('more-tips-page'),

@@ -419,6 +419,12 @@ The starting categories, in order: Obst & Gemüse, Brot & Backwaren, Kühlregal,
 
 **Unverified.** Whether there is a limit on the number of categories: none found in the app.
 
+**Hiding categories (built, not switched on).** Not for users yet: switched on only for testers. With it, the list shows its stores and items in the same order as before, but without the category headings in between. Adding or editing an item offers the store and no category. „Anpassen“ lists the stores only, without „Ohne Laden“, and a store's page has just its name (and its chain, where that is on). The tip „Sortiert wie dein Laden“ does not show. Snacklist still files each item in a category behind the scenes, which is what keeps the order; Siri, Alexa, AI assistants and the API work as before.
+
+Never claim (hidden categories): that categories are gone or deleted, that the order changed, or that it is available to everyone.
+
+Last verified (hidden categories): 21 November 2026, before it reached the main code, in the web app with the test switch on and off (German): the same 12 items in the same order both ways, no category on the list, in the add sheet, the edit sheet, „Läden“ or a store's page with the switch on.
+
 **Last verified.** 19 November 2026, code version af0287cf, in the web app (German): „Anpassen“, „Läden“, a store's category order, and a Baumarkt's seven categories. Earlier: 18 November 2026, code version 0ca5dcc9, in the web app (German).
 
 ## Stores, walk order and the sections of the list

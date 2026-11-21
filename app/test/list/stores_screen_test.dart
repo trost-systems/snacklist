@@ -1,3 +1,4 @@
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/language.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/store_badge.dart';
@@ -20,6 +21,7 @@ void main() {
     WidgetTester tester, {
     void Function(FakeRepository repo)? seed,
     AppLanguage? language,
+    Set<String> flags = const {},
   }) async {
     repo = (await pumpMore(
       tester,
@@ -28,6 +30,7 @@ void main() {
       routes: listTabRoutes(),
       language: language,
       seed: seed,
+      flags: flags,
     )).repo;
   }
 
@@ -55,6 +58,33 @@ void main() {
       findsNothing,
       reason: 'job 148: the inner hexagon went',
     );
+  });
+
+  testWidgets('"Ohne Laden" holds its categories, which the hint names', (
+    tester,
+  ) async {
+    await pump(tester);
+    expect(key('store-row-none'), findsOneWidget);
+    expect(find.textContaining('Kategorien'), findsWidgets);
+  });
+
+  testWidgets('flag hide-categories: the stores alone, no "Ohne Laden" and no '
+      'word of categories', (tester) async {
+    await pump(tester, flags: {hideCategoriesFlag});
+    expect(key('store-row-lidl'), findsOneWidget);
+    expect(key('store-row-none'), findsNothing);
+    expect(find.textContaining('Kategorie'), findsNothing);
+  });
+
+  testWidgets('flag hide-categories: no stores yet still says what one does', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      seed: (repo) => repo.stores = const [],
+      flags: {hideCategoriesFlag},
+    );
+    expect(key('stores-empty'), findsOneWidget);
   });
 
   testWidgets('the button adds a store below the others', (tester) async {

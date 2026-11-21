@@ -77,6 +77,9 @@ class _CompactDetailsState() extends State<CompactDetails> {
     final chains = context.select<Flags?, bool>(
       (f) => f?.isOn(openStoreAppFlag) ?? false,
     );
+    final categories = context.select<Flags?, bool>(
+      (f) => !(f?.isOn(hideCategoriesFlag) ?? false),
+    );
     final details = [?item.brand, ?item.properties].join(', ');
     void submitted() {
       sheet.saveDetails();
@@ -95,10 +98,12 @@ class _CompactDetailsState() extends State<CompactDetails> {
         sheet.editDetails(ItemChanges(storeId: SetTo(id)), now: true);
         widget.onDone();
       },
-      onCategory: (id) {
-        sheet.editDetails(ItemChanges(categoryId: id), now: true);
-        widget.onDone();
-      },
+      onCategory: categories
+          ? (id) {
+              sheet.editDetails(ItemChanges(categoryId: id), now: true);
+              widget.onDone();
+            }
+          : null,
       chipIcons: false,
       chipArrows: false,
       optionsInLine: true,

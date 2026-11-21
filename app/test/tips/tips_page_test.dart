@@ -1,3 +1,4 @@
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/localizations.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/tips/hint_host.dart';
@@ -8,17 +9,37 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
 void main() {
-  Widget app(Widget child, {HintHost? host}) => MaterialApp(
-    localizationsDelegates: appLocalizationsDelegates,
-    supportedLocales: AppLocalizations.supportedLocales,
-    locale: const Locale('de'),
-    home: RepositoryProvider.value(
-      value: host ?? const HintHost(),
-      child: Scaffold(body: child),
-    ),
-  );
+  Widget app(Widget child, {HintHost? host, Set<String> flags = const {}}) =>
+      MaterialApp(
+        localizationsDelegates: appLocalizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('de'),
+        home: BlocProvider(
+          create: (_) => Flags(forced: flags),
+          child: RepositoryProvider.value(
+            value: host ?? const HintHost(),
+            child: Scaffold(body: child),
+          ),
+        ),
+      );
 
   group('More → Tipps', () {
+    testWidgets('flag hide-categories: no tip about the category order', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        app(const TipsPage(), flags: {hideCategoriesFlag}),
+      );
+      expect(
+        find.byKey(const ValueKey('tips-store-order'), skipOffstage: false),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('tips-add-store'), skipOffstage: false),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('lists every hint of this platform to read again', (
       tester,
     ) async {

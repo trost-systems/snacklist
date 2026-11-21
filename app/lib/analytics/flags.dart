@@ -112,6 +112,12 @@ const openStoreAppFlag = 'open-store-app';
 /// an emptied list.
 const ratingTriggersV2Flag = 'rating-triggers-v2';
 
+/// The flag that hides categories from what users see (job 350): no
+/// category headings in the list, no category chip in the add and edit
+/// sheets, no category order on the store screens. Items keep their order;
+/// categories still sort them underneath.
+const hideCategoriesFlag = 'hide-categories';
+
 /// PostHog feature flags, the app's runtime toggles (job 44,
 /// docs/ANALYTICS.md "Feature flags"). Read a toggle with [isOn] wherever it
 /// matters; nothing else in the app reads PostHog flags.

@@ -149,6 +149,12 @@ class const StoresScreen({super.key}) extends StatelessWidget {
     final chains = context.select<Flags?, bool>(
       (f) => f?.isOn(openStoreAppFlag) ?? false,
     );
+    // Flag `hide-categories`: a store's screen orders no categories, so the
+    // hint saying so and the section without a store, which is nothing but
+    // its categories, go.
+    final categories = context.select<Flags?, bool>(
+      (f) => !(f?.isOn(hideCategoriesFlag) ?? false),
+    );
     return Scaffold(
       appBar: AppBar(title: Text(l10n.storesTitle)),
       floatingActionButton: AddButton(
@@ -169,19 +175,23 @@ class const StoresScreen({super.key}) extends StatelessWidget {
             ),
             // HexPill.margin adds s1: s4 to the first row, twice the gap
             // between rows, so the intro reads as its own group.
-            header: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                HlSpace.s4,
-                HlSpace.s3,
-                HlSpace.s4,
-                HlSpace.s3,
-              ),
-              child: Text(
-                stores.isEmpty ? l10n.storesEmpty : l10n.storesHint,
-                key: stores.isEmpty ? const ValueKey('stores-empty') : null,
-              ),
-            ),
-            footer: const _NoStoreRow(),
+            header: stores.isNotEmpty && !categories
+                ? const SizedBox(height: HlSpace.s3)
+                : Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      HlSpace.s4,
+                      HlSpace.s3,
+                      HlSpace.s4,
+                      HlSpace.s3,
+                    ),
+                    child: Text(
+                      stores.isEmpty ? l10n.storesEmpty : l10n.storesHint,
+                      key: stores.isEmpty
+                          ? const ValueKey('stores-empty')
+                          : null,
+                    ),
+                  ),
+            footer: categories ? const _NoStoreRow() : null,
             onReorderItem: (from, to) {
               final ids = [for (final s in stores) s.id];
               ids.insert(to, ids.removeAt(from));
