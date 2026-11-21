@@ -1,8 +1,8 @@
 {
   "flags": {
     "public-api": {
-      "rollout": "off",
-      "note": "the Snacklist API keys under Mehr > Zugänge show only while the PostHog flag public-api is on (job 73)"
+      "rollout": "full",
+      "note": "the Snacklist API keys under Mehr > Zugänge show only while the PostHog flag public-api is on (job 73); on at 100 % for everyone since 2026-11-21 14:08 CET (flag id 373927, app_switches.public_api on) after job 336 (#590) and a green production smoke"
     },
     "grocery-log": {
       "rollout": "full",

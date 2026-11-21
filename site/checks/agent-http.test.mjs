@@ -26,7 +26,7 @@ function distWith(edits) {
   const dist = join(mkdtempSync(join(tmpdir(), 'agent-http-')), 'dist');
   cpSync(DIST, dist, { recursive: true });
   for (const [rel, edit] of Object.entries(edits)) {
-    if (edit === null) rmSync(join(dist, rel));
+    if (edit === null) rmSync(join(dist, rel), { force: true });
     else writeFileSync(join(dist, rel), edit(readFileSync(join(dist, rel), 'utf8')));
   }
   return dist;
@@ -39,9 +39,10 @@ const catches = async (edits, check, pattern, publicApi) => {
 
 test('the built site serves every agent file, llms.txt link and sitemap URL', async () => {
   assert.ok(existsSync(join(DIST, 'llms.txt')), 'build the site first: cd site && npm run build');
-  const { problems, skipped } = await served(DIST, readPublicApi(join(SITE, '..')));
+  const publicApi = readPublicApi(join(SITE, '..'));
+  const { problems, skipped } = await served(DIST, publicApi);
   assert.deepEqual(problems, []);
-  assert.deepEqual(skipped, [{ check: 'openapi', reason: 'public-api rollout is off in releases/flags.json' }]);
+  assert.deepEqual(skipped, publicApi ? [] : [{ check: 'openapi', reason: 'public-api rollout is off in releases/flags.json' }]);
 });
 
 test('a twin listed in llms.txt that is gone fails', () => catches({ 'en/guides/claude.md': null }, 'llms-txt', /\/en\/guides\/claude\.md answers 404/));
@@ -50,4 +51,4 @@ test('a sitemap URL that is not served fails', () =>
   catches({ 'sitemap.xml': (xml) => xml.replace('/en/guides/claude<', '/en/guides/nope<') }, 'sitemap', /\/en\/guides\/nope answers 404/));
 test('a sitemap URL serving another canonical URL fails', () =>
   catches({ 'en/privacy.html': (html) => html.replace('<link rel="canonical" href="https://snacklist.app/en/privacy">', '<link rel="canonical" href="https://snacklist.app/en/privacy-old">') }, 'sitemap', /canonical URL is https:\/\/snacklist\.app\/en\/privacy-old/));
-test('with the public API on, a missing openapi.yaml fails', () => catches({}, 'openapi', /\/openapi\.yaml answers 404/, true));
+test('with the public API on, a missing openapi.yaml fails', () => catches({ 'openapi.yaml': null }, 'openapi', /\/openapi\.yaml answers 404/, true));
