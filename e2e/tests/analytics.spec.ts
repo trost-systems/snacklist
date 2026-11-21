@@ -2,9 +2,10 @@ import { expect, type Locator, type Page, test } from './fixtures';
 import {
   addField,
   addItem,
+  adminClient,
   answerConsent,
+  apiAs,
   askedFlagsFor,
-  boxOf,
   type Collector,
   collectorMark,
   createInviteCode,
@@ -446,33 +447,39 @@ test('a member with a household is asked once on a new install, then goes to the
   expectOnlyNoConsentFlags(collector, 'declined, signed out and in');
 });
 
-test('an internal device sends a test error, scrubbed, to error tracking', async ({ browser }) => {
+test('an internal user sends a test error, scrubbed, to error tracking', async ({ browser }) => {
   const context = await browser.newContext();
   const collector = await fakeCollector(context);
   const page = await context.newPage();
-  await signUp(page, newEmail('errors'), '/', { consent: 'accept' });
+  // A test account (example.test) is internal for analytics but gets no tools in a release build
+  // (job 337: App Review's tester accounts must not see them). The server's tester group internal
+  // shows "Testfehler senden" below the version; there is no long press any more.
+  const email = newEmail('errors');
+  await signUp(page, email, '/', { consent: 'accept' });
   await createHousehold(page);
   await skipInvite(page);
   await openTab(page, 'Mehr');
   await expect(page).toHaveURL(/\/more$/);
-  // More is a lazy list: wheel down to the version line at its end.
+  // More is a lazy list: wheel down to its end.
   await page.mouse.move(240, 400);
   const version = page.getByText(/^Version /);
   await expect(async () => {
     await page.mouse.wheel(0, 800);
     await expect(version).toBeVisible({ timeout: 500 });
   }).toPass();
-  // Let the scroll settle before measuring where to press.
-  await page.waitForTimeout(500);
-  const box = await boxOf(version);
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  await page.mouse.down();
-  await page.waitForTimeout(1_000);
-  await page.mouse.up();
-  // "Interne Installation" and "Testfehler senden" show below the version: wheel down to them.
   const testError = page.getByRole('button', { name: 'Testfehler senden' });
+  await expect(testError).toHaveCount(0);
+
+  const { data: { user } } = await (await apiAs(email)).auth.getUser();
+  const added = await adminClient().from('tester_groups').insert({ user_id: must(user, 'signed-in user').id, group_name: 'internal' });
+  expect(added.error).toBeNull();
+  // The app reads the groups again at the next start.
+  await page.goto('/');
+  await expect(addField(page)).toBeFocused();
+  await openTab(page, 'Mehr');
+  await page.mouse.move(240, 400);
   await expect(async () => {
-    await page.mouse.wheel(0, 400);
+    await page.mouse.wheel(0, 800);
     await expect(testError).toBeVisible({ timeout: 500 });
   }).toPass();
   await page.waitForTimeout(500);

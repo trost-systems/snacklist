@@ -240,29 +240,43 @@ void main() {
   test('analytics state is per install and survives sign-outs', () async {
     expect(await cache.installId(), isNull);
     expect(await cache.consent(), isNull);
-    expect(await cache.internalInstall(), isFalse);
     await cache.saveInstallId('id-1');
     await cache.saveConsent(granted: false, textVersion: '2026-11-01');
     await cache.saveFirstOpenSentFor('id-1');
-    await cache.saveInternalInstall(internal: true);
     await cache.remember('peter', households: [home], shown: home.id);
     await cache.forget();
     expect(await cache.installId(), 'id-1');
     expect(await cache.consent(), isFalse);
     expect(await cache.firstOpenSentFor(), 'id-1');
-    expect(await cache.internalInstall(), isTrue);
 
     await cache.forgetInstallId();
     expect(await cache.installId(), isNull);
     expect(await cache.firstOpenSentFor(), isNull);
     expect(await cache.consent(), isFalse, reason: 'the answer stays');
     expect(await cache.consentTextVersion(), '2026-11-01');
-    expect(await cache.internalInstall(), isTrue);
 
     await cache.forgetConsent();
     expect(await cache.consent(), isNull);
     expect(await cache.consentTextVersion(), isNull);
-    expect(await cache.internalInstall(), isTrue);
+  });
+
+  test('the internal-install mark of older builds is deleted', () async {
+    final prefs = SharedPreferencesAsync();
+    await prefs.setBool('analytics.internal', true);
+    await cache.forgetInternalInstallMark();
+    expect(await prefs.containsKey('analytics.internal'), isFalse);
+  });
+
+  test("the tester groups are one user's, until forgotten", () async {
+    expect(await cache.testerGroups('peter'), isNull);
+    await cache.saveTesterGroups('peter', {'internal', 'beta-de'});
+    expect(await cache.testerGroups('peter'), {'beta-de', 'internal'});
+    expect(await cache.testerGroups('lea'), isNull, reason: 'not hers');
+    await cache.saveTesterGroups('lea', {});
+    expect(await cache.testerGroups('lea'), isEmpty);
+    expect(await cache.testerGroups('peter'), isNull, reason: 'replaced');
+    await cache.forgetTesterGroups();
+    expect(await cache.testerGroups('lea'), isNull);
   });
 
   test('the shared flags are kept across sign-outs and the deletion of the '

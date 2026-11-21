@@ -1125,9 +1125,6 @@ class AppLocalizationsDe extends AppLocalizations {
       'Gilt für dieses Gerät. Ausschalten löscht die Kennung auf diesem Gerät.';
 
   @override
-  String get internalInstall => 'Interne Installation';
-
-  @override
   String copyInstallId(String id) {
     return 'Installations-ID kopieren: $id';
   }

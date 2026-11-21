@@ -379,8 +379,9 @@ void main() {
       'is_internal': false,
       r'$geoip_disable': true,
     });
-    analytics.setUser(customer);
-    await analytics.markInternalInstall(internal: true);
+    analytics
+      ..setUser(customer)
+      ..setTesterGroups({'internal'});
     await analytics.flush();
     expect(registered(), containsPair('household_id', householdA));
     expect(registered(), containsPair('is_internal', true));
@@ -599,11 +600,12 @@ void main() {
     Future<bool> internalFor(
       AnalyticsUser user, {
       AnalyticsConfig config = releaseConfig,
-      bool install = false,
+      Set<String> groups = const {},
     }) async {
       final a = await loadedAnalytics(store, config: config);
-      await a.markInternalInstall(internal: install);
-      a.setUser(user);
+      a
+        ..setTesterGroups(groups)
+        ..setUser(user);
       await a.decide(granted: true);
       a.track('store_reordered');
       await a.flush();
@@ -662,9 +664,16 @@ void main() {
       );
     });
 
-    test('an install marked under More is internal', () async {
-      expect(await internalFor(customer, install: true), isTrue);
-      expect(store.internal, isTrue);
+    test('a user in the tester group internal is internal', () async {
+      expect(await internalFor(customer, groups: {'internal'}), isTrue);
+      expect(await internalFor(customer, groups: {'beta-de'}), isFalse);
+    });
+
+    test('the mark an older build kept is deleted at start and counts for '
+        'nothing', () async {
+      store.internalMark = true;
+      expect(await internalFor(customer), isFalse);
+      expect(store.internalMark, isFalse);
     });
   });
 
@@ -769,10 +778,10 @@ void main() {
       },
     );
 
-    test('marking the install internal records that', () async {
+    test('joining the tester group internal records that', () async {
       analytics.setUser(customer);
       await analytics.decide(granted: true);
-      await analytics.markInternalInstall(internal: true);
+      analytics.setTesterGroups({'internal'});
       expect(recorded.last, '${store.id} true true false');
     });
 

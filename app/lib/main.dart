@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/analytics/setup.dart';
+import 'package:family_groceries/analytics/tester_groups.dart';
 import 'package:family_groceries/core/device_cache.dart';
 import 'package:family_groceries/core/early_keys.dart';
 import 'package:family_groceries/core/environment.dart';
@@ -153,6 +154,11 @@ Future<void> _main(WidgetsBinding Function() binding) async {
     beforeSignOut: siri?.signingOut,
   );
   siri?.follow(session);
+  TesterGroupsSync(
+    SupabaseTesterGroupsSource(client),
+    cache,
+    analytics,
+  ).follow(session);
   final homeWidgets = homeWidgetSyncFor(
     web: kIsWeb,
     platform: defaultTargetPlatform,

@@ -2000,3 +2000,13 @@ beta user's API and MCP without a word; the switch is global, so that check need
 **Per-user words:** the card, the API line, the API's 402 and MCP's refusal now say *you* need Premium,
 since another member's plan does not unlock you (now tested). The ARB change waits for Legal's GO, so
 this PR is pushed, not merged. Details: [docs/done/328.md](docs/done/328.md).
+
+## Job 337: server-side tester groups, the long-press internal switch removed
+
+Nobody can make an install internal from the app any more: the long press under More is gone.
+Internal testers and opt-in groups (`beta-de`, …) live in `public.tester_groups`, written only by
+the lead's SQL; the app sends `is_internal` and `tester_groups` as flag properties after the
+analytics yes. Flag targeting without consent is built behind a switch that stays off until Legal
+answers. More's test tools show only in debug builds and for the group `internal`, never for App
+Review's tester accounts (review 0). Not merged: needs Legal's GO and the lead's seeding of Peter
+and Lea. Details: `docs/done/337-tester-groups.md`.
