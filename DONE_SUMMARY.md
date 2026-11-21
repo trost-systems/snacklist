@@ -1976,3 +1976,12 @@ Review 2 of job 325: at a start whose first requests fail while the OS says "no 
 says it is back, the app showed "Offline" after 1.5 s although the network worked again. Now it asks
 the server once more at that point and shows the card only if that fails too. Flight mode still shows
 it about 2.6 s after opening (web). Details, evidence and test results: `docs/done/325d-offline-no-online-retry.md`.
+
+## Job 331: public API and MCP tested live and reviewed, 2026-11-21
+
+Verdict READY-AFTER-FIXES: the API can be switched on once the draft PR lands. Every endpoint and
+tool was run over HTTP against the job's local stack with synthetic households: 158 of 159 checks as
+expected on the branch, the remaining one is MCP's missing rate limit (J1). Report, test log and
+probe in the ops job dir (`out/`); summary in `docs/done/331.md`. The draft PR fixes MCP leaking and
+not reporting database errors, U+0000 in MCP arguments, missing `no-store`/`nosniff` on API answers,
+and three doc errors. Not merged by brief; no new endpoints, flags or switches.

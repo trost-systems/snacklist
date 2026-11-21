@@ -16570,3 +16570,24 @@ was the only evidence and the card showed. Web build, `--os-none stays --radio-d
 - **Tests:** F4 and F1 (none that stays, requests failing for 800 ms, no up; F1 with the channel
   joining at 3 s) and a slow extra request fail on main; a flight-mode case pins the card at the
   extra request's failure (not before 1.5 s). Journey: `--no-online` in `cold-start-offline.mjs`.
+
+## Job 331: the public API and MCP tested live and reviewed, 2026-11-21
+
+Peter (t1094u): test the API, review it and the MCP, recommend what to add since the features grew.
+Verdict READY-AFTER-FIXES; the report is in the ops job dir (`jobs/331-api-mcp-test-review/out/`:
+RECOMMENDATIONS.md, test-log.md, probe.ts), not in the repo, because it is a decision input for
+Peter, not a contract.
+
+- **Tested over HTTP on the job's own local stack, not through `handle()`.** `probe.ts` signs fg-seeded
+  synthetic users in through GoTrue, mints keys through PostgREST like the app, and calls the running
+  edge functions, so Kong, the edge runtime and the real switches are in the path. 159 checks.
+- **Switches set on the local database only** (`public_api`, `integration_lock` on and off, a
+  promotional Premium row), restored to off at the end. No production key, flag or switch touched.
+- **Fixed here, in one draft PR, only what testing showed broken and a few lines fix:** an MCP tool
+  failure inside Postgres sent the database's own text to the assistant and was neither logged nor
+  reported (now `failedNow`, reported like the API does); MCP text arguments took U+0000 (the API's
+  rule now lives in `_shared/stored_text.ts`, not in `_shared/list.ts`, whose importers outside
+  api/mcp would need zod in their lockfile); API answers get `no-store` and `nosniff`; three doc lines
+  were wrong. Not fixed here: `items.created_at` on insert (a trigger change on the shared items path,
+  J2) and MCP rate limits (J1): both need their own review.
+- **No new endpoints.** The gap list (A1 to A13) waits for Peter's pick.
