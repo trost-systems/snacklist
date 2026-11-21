@@ -303,7 +303,8 @@ class ListCubit(
   var _downAtResync = 0;
 
   /// Whether a request sent after the OS said down failed, and in a grace no
-  /// up came within [networkSettle] after. Until then the down is a report,
+  /// up came within [networkSettle] after and the request sent then failed
+  /// too ([_downAsk]). Until then the down is a report,
   /// and iOS reports none for a network that works (job 325): the grace
   /// still holds.
   var _downConfirmed = false;
@@ -312,6 +313,11 @@ class ListCubit(
   /// for an up: a cellular start reports none and fails its first requests
   /// while the radio wakes (job 325 review 1).
   Timer? _downConfirming;
+
+  /// The resync sent when [_downConfirming] ran out with no up: the OS's
+  /// silence proves nothing either (job 325 review 2), so only its failure
+  /// confirms the down.
+  int? _downAsk;
 
   /// The channel's join has not told its first status yet and began in a
   /// grace, or replaced a join that did: its first failure is not shown.
@@ -666,6 +672,7 @@ class ListCubit(
     _networkAsked = null;
     _downConfirming?.cancel();
     _downConfirming = null;
+    _downAsk = null;
     switch (network) {
       case Network.down:
         _networkDown = true;
@@ -711,6 +718,7 @@ class ListCubit(
     _networkAsked = null;
     _downConfirming?.cancel();
     _downConfirming = null;
+    _downAsk = null;
     _networkDown = false;
     _downConfirmed = false;
     if (_channelSuspect) {
@@ -1793,7 +1801,7 @@ class ListCubit(
     } on Object {
       fetched = false;
       if (_networkDown && number > _downAtResync) {
-        _confirmDown();
+        _confirmDown(number);
       }
       // A resync started later answered meanwhile: the server is reachable,
       // this one's socket died (job 212).
@@ -1814,10 +1822,17 @@ class ListCubit(
     return fetched;
   }
 
-  /// A request sent after the OS said down failed: the down is the answer,
-  /// in a grace once no up came for [networkSettle].
-  void _confirmDown() {
-    if (_downConfirmed || _downConfirming != null) {
+  /// The resync [number], sent after the OS said down, failed: the down is
+  /// the answer, in a grace once no up came for [networkSettle] and a request
+  /// sent then failed too.
+  void _confirmDown(int number) {
+    final ask = _downAsk;
+    if (ask != null && number >= ask) {
+      _downAsk = null;
+      _downConfirmed = true;
+      return;
+    }
+    if (_downConfirmed || _downConfirming != null || ask != null) {
       return;
     }
     if (_grace == null && !_away) {
@@ -1826,9 +1841,9 @@ class ListCubit(
     }
     _downConfirming = Timer(networkSettle, () {
       _downConfirming = null;
-      if (_networkDown) {
-        _downConfirmed = true;
-        _goOffline();
+      if (_networkDown && !isClosed) {
+        _downAsk = _resyncsStarted + 1;
+        unawaited(resync());
       }
     });
   }

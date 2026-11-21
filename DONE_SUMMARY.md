@@ -1969,3 +1969,10 @@ join's hold now ends after 20 s. `app/lib/list/list_cubit.dart`.
 
 **Still not verified on an iPhone.** NEEDS_LEAD points the device check at the build carrying this fix.
 
+
+## Job 325d: no "Offline" when the OS never says the network is back
+
+Review 2 of job 325: at a start whose first requests fail while the OS says "no network" and never
+says it is back, the app showed "Offline" after 1.5 s although the network worked again. Now it asks
+the server once more at that point and shows the card only if that fails too. Flight mode still shows
+it about 2.6 s after opening (web). Details, evidence and test results: `docs/done/325d-offline-no-online-retry.md`.

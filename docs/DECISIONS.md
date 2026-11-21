@@ -16545,3 +16545,28 @@ wakes (iOS URLSession's -1009), and the network is up 800 ms later. The down's o
   not driven on a phone.
 - **Tests:** E1 (radio waking) and E2 (a pre-report request failing) fail on main; E0 (the control),
   the bounded hold, and the flight-mode tests now asserting the 1.5 s.
+
+## Job 325d: no "Offline" when the OS never says the network is back, 2026-11-21
+
+Review 2 of job 325 (VERDICT FIX): in the start grace, a request failing after the OS said none
+confirmed the down once no "online" came within 1.5 s, without asking the server again. When the OS
+stays at none on a working network (hypothesis 1 of job 325, iOS's fresh path monitor), that silence
+was the only evidence and the card showed. Web build, `--os-none stays --radio-down 800 --no-online`:
+"Offline" from 2.6 s to 4.1 s in 3 of 3 starts on main, with requests answering from 1.1 s.
+
+- **The settle without an up sends one more request; only its failure confirms.** `_downConfirming`
+  no longer calls `_goOffline`: it starts a resync and records its number (`_downAsk`). That resync's
+  failure, or a later one's, sets `_downConfirmed` and its catch shows offline; an answer ends the down
+  (`_networkWorks`). `_downConfirmed` stays false while the request is out, so the grace keeps holding
+  until the answer (review 2 asked to avoid that window). Any network event drops the ask.
+- **Flight mode is unchanged.** The extra request fails at once, so "Offline" still shows 1.5 s after
+  the first failure: 2.6 s from opening the page on the web, 2 of 2 starts.
+- **A real outage longer than the 1.5 s settle still shows the card** (review 2's probe F2: requests
+  failing for 2 s, then an up). The network really is down then, so the card is correct. A device
+  report of a longer cellular wake would land here: the bound is `networkSettle` plus one request.
+- **Correction to "Job 325 review 1":** "Outside a grace (or hidden) it confirms at once" is wrong for
+  the hidden case. The code confirms at once only when the app is visible and outside a grace
+  (`_grace == null && !_away`); a hidden app waits the settle, and now the extra request too.
+- **Tests:** F4 and F1 (none that stays, requests failing for 800 ms, no up; F1 with the channel
+  joining at 3 s) and a slow extra request fail on main; a flight-mode case pins the card at the
+  extra request's failure (not before 1.5 s). Journey: `--no-online` in `cold-start-offline.mjs`.
