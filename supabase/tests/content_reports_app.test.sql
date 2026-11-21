@@ -57,9 +57,9 @@ select is((select count(*)::integer from pg_publication_tables
            where tablename in ('content_report_screenshots', 'content_report_app_senders')),
   0, 'neither new table is in a realtime publication');
 select is((select command from cron.job where jobname = 'prune-content-report-app-senders'),
-  'select public.prune_content_report_app_senders()', 'sender rows are pruned daily');
+  'select public.prune_content_report_app_senders()', 'sender rows are pruned by the cron job');
 select is((select schedule from cron.job where jobname = 'prune-content-report-app-senders'),
-  '20 2 * * *', 'at 02:20 UTC, before the 02:30 backup (Legal N-284)');
+  '20 * * * *', 'every hour, so a row lives under two hours: the policy says a day at most (Legal N-283)');
 
 -- Privileges --------------------------------------------------------------------------------------
 

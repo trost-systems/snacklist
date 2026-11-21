@@ -61,8 +61,8 @@ tables:
 
   It goes with its report: the 12-month purge deletes it by cascade. The purge does not reach your saved file: delete it as soon as the case is closed, unless the Art. 18 runbook needs it for the BKA. Never save the screenshot of a csam report (N-287).
 - `public.content_report_app_senders` keeps the sender's user id and time, for the limit only. Rows
-  go after an hour (at the next app report, and daily at 02:20 UTC, before the 02:30 backup, by
-  `prune_content_report_app_senders`). A report itself never names its sender's account; ask by
+  go after an hour (at the next app report, and every hour at :20 by
+  `prune_content_report_app_senders`, so none is older than two hours). A report itself never names its sender's account; ask by
   e-mail if you need more.
 
 App limits, on content never (Legal N-241, N-242): 5 app reports per user per hour, and 200 app
