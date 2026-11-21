@@ -10,9 +10,10 @@
 // failing as disconnected (the page itself still loads): then „Offline“ has to show within 3 s.
 // --radio-down <ms> plays a cellular radio waking (job 325 review 1): every request and socket to
 // the stack fails as disconnected until <ms> after the first one, then the network is back and,
-// with --os-none, the browser fires `online`.
+// with --os-none, the browser fires `online`. --no-online keeps the browser's network saying none
+// and fires no `online` when it is back, as iOS's monitor that stays at none (job 325 review 2).
 //
-//   node journeys/cold-start-offline.mjs <evidence dir> [--wait 0] [--watch 25] [--starts 1] [--os-none stays|flips] [--flip-after ms] [--slow-channel ms] [--airplane] [--radio-down ms]
+//   node journeys/cold-start-offline.mjs <evidence dir> [--wait 0] [--watch 25] [--starts 1] [--os-none stays|flips] [--flip-after ms] [--slow-channel ms] [--airplane] [--radio-down ms] [--no-online]
 import process from 'node:process';
 import { capture, instance, logger, member, openApp, signIn } from '../helpers/lib.mjs';
 
@@ -27,6 +28,7 @@ const slowChannel = Number(opt('slow-channel', '0'));
 const flipAfter = Number(opt('flip-after', '30'));
 const airplane = airplaneFlag;
 const radioDown = Number(opt('radio-down', '0'));
+const noOnline = process.argv.includes('--no-online');
 if (!dir) throw new Error('usage: cold-start-offline.mjs <evidence dir> [--wait s] [--watch s] [--starts n]');
 
 const log = logger(dir);
@@ -74,7 +76,7 @@ try {
       const bringUp = () => {
         up = true;
         log(`  ${at()} network up`);
-        if (osNone) {
+        if (osNone && !noOnline) {
           tab.evaluate(() => {
             globalThis.__online = true;
             globalThis.dispatchEvent(new Event('online'));

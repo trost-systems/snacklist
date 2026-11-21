@@ -1214,6 +1214,70 @@ void main() {
         });
       });
 
+      test('none at start that stays, the requests failing for 800 ms, no '
+          'up: no offline (review 2, F4)', () {
+        fakeAsync((async) {
+          repo.online = false;
+          final (c, seen) = started(async, network: network.stream);
+          network.add(Network.down);
+          async.elapse(const Duration(milliseconds: 800));
+          repo.online = true;
+          async.elapse(const Duration(seconds: 12));
+          expect(seen, everyElement(isNull));
+          close(async, c);
+        });
+      });
+
+      test('none at start that stays, the requests failing for 800 ms, the '
+          'channel joining at 3 s: no offline (review 2, F1)', () {
+        fakeAsync((async) {
+          repo.online = false;
+          final (c, seen) = started(async, network: network.stream);
+          network.add(Network.down);
+          async.elapse(const Duration(milliseconds: 800));
+          repo.online = true;
+          async.elapse(const Duration(milliseconds: 2200));
+          repo.emitStatus!(ConnectionStatus.online);
+          async.elapse(const Duration(seconds: 12));
+          expect(seen, everyElement(isNull));
+          close(async, c);
+        });
+      });
+
+      test('none at start that stays, the request asked after the settle '
+          'slow to answer: no offline while it is out (review 2)', () {
+        fakeAsync((async) {
+          repo.online = false;
+          final (c, seen) = started(async, network: network.stream);
+          network.add(Network.down);
+          async.elapse(const Duration(milliseconds: 800));
+          repo.online = true;
+          final slow = Completer<void>();
+          repo.itemsGate = slow;
+          async.elapse(const Duration(seconds: 2));
+          expect(seen, everyElement(isNull));
+          repo.itemsGate = null;
+          slow.complete();
+          async.elapse(const Duration(seconds: 12));
+          expect(seen, everyElement(isNull));
+          close(async, c);
+        });
+      });
+
+      test('none at start that stays and no request answering: offline once '
+          'the request asked after the settle fails too (review 2)', () {
+        fakeAsync((async) {
+          repo.online = false;
+          final (c, seen) = started(async, network: network.stream);
+          network.add(Network.down);
+          async.elapse(const Duration(milliseconds: 1400));
+          expect(seen, everyElement(isNull));
+          async.elapse(const Duration(milliseconds: 200));
+          expect(c.state.trouble, SyncTrouble.offline);
+          close(async, c);
+        });
+      });
+
       test('a cellular start whose first join takes longer than the grace, '
           'the server slow too: no offline', () {
         fakeAsync((async) {
