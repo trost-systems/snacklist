@@ -28,7 +28,7 @@ Preconditions: a local Supabase stack with this checkout's migrations and `WAITL
 - Wait about a second before measuring where the done box is: the site scrolls smoothly.
 - Decision: `select public.content_report_decide('<ref>', 'no_change', '…')`, then `deno run -A scripts/moderation/notify.ts --decision <id>` (dry run).
 
-In the app (`rc-app`): launch with `VH_DEFINES="FLAGS_ON=report-content-entry"` (the users' build has the hub and screenshots, so pass `--fb4`; for the sheet without the hub add `VH_FLAGS_OFF=feedback-fb4` and drop `--fb4`), then `cd .cursor/skills/verify-snacklist && node journeys/report-content.mjs <evidence dir> [--fb4] [--screenshot] [--lang en] [--item <name>]`. It prints `REF M-…`; read the row as postgres in the stack's db container (`select … from content_reports where ref = '<ref>'`, the screenshot with `encode(png, 'base64')`). Locally the function has no `RESEND_API_KEY`, so the log says `report: mail_unconfigured`.
+In the app (`rc-app`): launch with `VH_DEFINES="FLAGS_ON=report-content-entry"` (the users' build has the hub and screenshots, so pass `--fb4`; for the sheet without the hub add `VH_FLAGS_OFF=feedback-fb4` and drop `--fb4`), then `cd .cursor/skills/verify-snacklist && node journeys/report-content.mjs <evidence dir> [--fb4] [--screenshot] [--csam] [--clear] [--lang en] [--item <name>]`. It prints `REF M-…`; read the row as postgres in the stack's db container (`select … from content_reports where ref = '<ref>'`, the screenshot with `encode(png, 'base64')`). Locally the function has no `RESEND_API_KEY`, so the log says `report: mail_unconfigured`.
 
 ## Gotchas
 
