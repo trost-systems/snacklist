@@ -1,5 +1,7 @@
 import {
+  DAY,
   type Detection,
+  HOUR,
   type Household,
   MINUTE,
   type Ms,
@@ -9,6 +11,7 @@ import {
   type Tick,
   type Trip,
 } from './model.ts';
+import { shuffles } from './learn.ts';
 
 /** A tick with the time a detector believes. */
 interface Timed {
@@ -153,7 +156,9 @@ export function startingRule(h: Household): Detection {
         trips.push(tripOf(part, store, true));
         if (store === null) continue;
         segments.push({ store, at: first?.t ?? 0, clumps: part.map((x) => [x.tick.key]) });
-        for (const x of part) if (x.tick.store !== store) storeMemory.push({ key: x.tick.key, store, tick: x.tick });
+        for (const x of part) {
+          if (x.tick.store !== store) storeMemory.push({ key: x.tick.key, store, tick: x.tick, walk: first?.t ?? 0 });
+        }
       }
     }
   }
@@ -177,6 +182,14 @@ export interface Params {
   readonly sweepTrip: number;
   /** Times from the device's clock, corrected by its usual offset; else commit times. */
   readonly clientTime: boolean;
+  /** T4a narrowed: store memory only from a walk 75 % one store (3+ tagged ticks), not its edge ticks. */
+  readonly narrowMemory: boolean;
+  /** A key's store moves once this many walks at that store have proposed it. */
+  readonly memoryConfirm: number;
+  /** T1a as approved: a run also ends at the tick that leaves its store with no open item. */
+  readonly allTickedEnds: boolean;
+  /** A walk the order learner's gate turns away as a shuffle writes no store memory either. */
+  readonly gateMemory: boolean;
 }
 
 export const FINAL: Params = {
@@ -188,20 +201,46 @@ export const FINAL: Params = {
   switchGap: 2 * MINUTE,
   sweepTrip: 5,
   clientTime: true,
+  narrowMemory: false,
+  memoryConfirm: 2,
+  allTickedEnds: false,
+  gateMemory: true,
 };
 
 /**
  * The device's clock, shifted by its usual difference to the server: the 10th percentile of
- * (commit time - device time) over the person's ticks, which online ticks set and offline ones
+ * (commit time - device time) over the person's ticks of the 7 days before and the 36 hours after
+ * the tick (what a run at most 36 hours later has seen), which online ticks set and offline ones
  * (later commits) do not.
  */
 function corrected(h: Household): Timed[] {
   const out: Timed[] = [];
   for (const own of groupBy(h.ticks, (t) => t.actor).values()) {
-    const d = own.map((t) => t.serverAt - t.clientAt).sort((a, b) => a - b);
-    const offset = d[Math.floor(d.length * 0.1)] ?? 0;
-    for (const tick of own) out.push({ tick, t: tick.clientAt + offset });
+    const sorted = [...own].sort((a, b) => a.serverAt - b.serverAt);
+    let lo = 0;
+    let hi = 0;
+    for (const tick of sorted) {
+      while ((sorted[lo]?.serverAt ?? Infinity) < tick.serverAt - 7 * DAY) lo++;
+      while (hi < sorted.length && (sorted[hi]?.serverAt ?? Infinity) <= tick.serverAt + 36 * HOUR) hi++;
+      const d = sorted.slice(lo, hi).map((o) => o.serverAt - o.clientAt).sort((a, b) => a - b);
+      out.push({ tick, t: tick.clientAt + (d[Math.floor(d.length * 0.1)] ?? 0) });
+    }
   }
+  return out;
+}
+
+/** T1a's second end: after the tick that ticks the last open item of the store most of the run is at. */
+function allTicked(run: readonly Timed[]): Timed[][] {
+  const out: Timed[][] = [];
+  let current: Timed[] = [];
+  for (const x of run) {
+    current.push(x);
+    if (x.tick.store !== null && x.tick.store === majority(current).store && x.tick.storeOpenAfter === 0) {
+      out.push(current);
+      current = [];
+    }
+  }
+  if (current.length > 0) out.push(current);
   return out;
 }
 
@@ -292,7 +331,8 @@ export function finalRule(h: Household, p: Params = FINAL): Detection {
   const walks: Piece[] = [];
   const bursts: Piece[] = [];
   for (const own of groupBy(ticks, (x) => x.tick.actor).values()) {
-    for (const run of chains(own, p.gap)) {
+    const runs = chains(own, p.gap).flatMap((run) => (p.allTickedEnds ? allTicked(run) : [run]));
+    for (const run of runs) {
       for (const xs of byStore(run, p.switchGap)) {
         const { store } = majority(xs);
         if (store !== null && pharmacies.has(store)) continue;
@@ -310,17 +350,22 @@ export function finalRule(h: Household, p: Params = FINAL): Detection {
 
   const segments: Segment[] = [];
   const storeMemory: StoreMemoryWrite[] = [];
+  const proposals = new Map<string, number>();
   const trips: { xs: Timed[]; store: string | null; walked: boolean }[] = [];
   for (const w of [...walks].sort((a, b) => (a.xs[0]?.t ?? 0) - (b.xs[0]?.t ?? 0))) {
     if (w.store !== null && w.clumps.length >= 2) {
       segments.push({ store: w.store, at: w.xs[0]?.t ?? 0, clumps: w.clumps.map((c) => c.map((x) => x.tick.key)) });
     }
     const m = majority(w.xs);
-    if (w.store !== null && m.tagged >= 3 && m.share >= 0.75) {
+    if (w.store !== null && (!p.narrowMemory || (m.tagged >= 3 && m.share >= 0.75))) {
       w.xs.forEach((x, i) => {
-        const inside = i > 0 && i < w.xs.length - 1;
-        if (x.tick.store === null || (x.tick.store !== w.store && inside)) {
-          storeMemory.push({ key: x.tick.key, store: w.store ?? '', tick: x.tick });
+        const inside = !p.narrowMemory || (i > 0 && i < w.xs.length - 1);
+        if (w.store === null || !(x.tick.store === null || (x.tick.store !== w.store && inside))) return;
+        const proposal = `${x.tick.key}\u0000${w.store}`;
+        const n = (proposals.get(proposal) ?? 0) + 1;
+        proposals.set(proposal, n);
+        if (n >= p.memoryConfirm) {
+          storeMemory.push({ key: x.tick.key, store: w.store, tick: x.tick, walk: w.xs[0]?.t ?? 0 });
         }
       });
     }
@@ -344,5 +389,7 @@ export function finalRule(h: Household, p: Params = FINAL): Detection {
     else if (b.xs.length >= p.sweepTrip) trips.push({ xs: [...b.xs], store: b.store, walked: false });
   }
   const history = trips.map((t) => tripOf(t.xs.sort(byTime), t.store, t.walked));
-  return { trips: mergeHousehold(history, p.gap), segments, storeMemory };
+  const turnedAway = p.gateMemory ? [...shuffles(h.stores, segments)] : [];
+  const taughtMemory = storeMemory.filter((w) => !turnedAway.some((s) => s.store === w.store && s.at === w.walk));
+  return { trips: mergeHousehold(history, p.gap), segments, storeMemory: taughtMemory };
 }

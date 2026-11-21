@@ -88,6 +88,8 @@ export interface StoreMemoryWrite {
   readonly key: string;
   readonly store: string;
   readonly tick: Tick;
+  /** Start of the walk that wrote it (its segment's [Segment.at]). */
+  readonly walk: Ms;
 }
 
 export interface Detection {

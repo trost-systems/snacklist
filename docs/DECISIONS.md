@@ -16994,8 +16994,25 @@ pinned above the field, other suggestions hidden); all of it stays behind `add-s
    reaches 84 % and equals it elsewhere. The tables show both, so detection and learning effects
    stay apart. Pairwise votes with the prior as one vote were measured and dropped (never beat the
    prior: unseen items dilute every learned pair); a reverse-walk rule too (no gain).
-4. **Proposed changes to Peter's approved rule** (H2 bursts, T1a pause) are written as TD-Q1 and
-   TD-Q2 for his call, with the numbers; the rule as shipped by job 352 is his pick.
+4. **Every change to Peter's approved rule is its own question** (TD-Q1, Q2, Q10 to Q14), each with
+   a variant row that puts the approved rule back. Review 0 found that only H2 and the T1a pause had
+   one, and that the first version credited the T4a narrowing with gains that came from walk
+   detection.
 5. **No real data.** The only production path is the full-access database password; the brief
    allows real ticks only through an existing read-only path. The aggregates that would calibrate
    the pace rule are TD-Q8.
+6. **Review 0: a second line of defence that does not depend on pace.** With slow unpacking or slow
+   catch-ups (15 to 60 s per item) the pace rule does nothing. Measured fixes, kept: a shuffle gate
+   (once a store has 3 taught walks, a walk agreeing with its order on under 60 % of pairs teaches
+   nothing; slow unpacking 78 → 84 %, prior 80 %), the same verdict for store memory, and store
+   memory moving only on the second agreeing walk (keys ending wrong 128/1226 → 7/141). Dropped:
+   T4a narrowing (6/105, a quarter fewer keys). Store memory is now scored by its end state, since
+   counting writes rewarded learning less. The generator has no store-memory feedback, so it
+   under-counts what confirmation learns; the README says so.
+7. **Review 0: the trip question asks once per shop.** Today it opens after every own tick and
+   forgets „Nein"; the people this job is for dismiss it each time. Proposed: after „Nein" quiet
+   until 30 minutes without a tick, after three „Nein" in a row not at all (TD-Q4, TD-Q5).
+8. **Review 0: reconciliation for job 352.** Detected rows that are neither frozen nor removed are
+   replaced each run; `frozen_at`, `removed_at` and `tick_ids` survive reruns with `source` still
+   `detected`; `detected_by uuid[]` holds a T2a trip's people. Members' direct read of `item_events`
+   (tick times to the microsecond) is proposed to be revoked; no client reads it.

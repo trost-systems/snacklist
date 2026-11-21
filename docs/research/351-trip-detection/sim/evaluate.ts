@@ -21,6 +21,7 @@ const quiet: Habits = {
   impulse: 0.2,
   homeBefore: 0,
   voice: 0,
+  dismiss: 0,
 };
 
 const base: Omit<Persona, 'name' | 'seed' | 'members'> = {
@@ -42,6 +43,8 @@ const base: Omit<Persona, 'name' | 'seed' | 'members'> = {
   remoteEdits: 0.15,
   notFound: 0.05,
   shelfBatch: 0.5,
+  catchUpGap: [1, 3],
+  unpackGap: [4, 20],
 };
 
 /** Households with one chaotic habit turned up each; README "Simulation" explains them. */
@@ -52,7 +55,7 @@ export const personas: readonly Persona[] = [
     seed: 1,
     members: {
       peter: { ...quiet, walk: 0.85, offline: 0.1, skew: 40 * SECOND, homeBefore: 0.5, voice: 1 },
-      lea: { ...quiet, walk: 0.4, checkout: 0.35, homeBefore: 1, voice: 0.5 },
+      lea: { ...quiet, walk: 0.4, checkout: 0.35, homeBefore: 1, voice: 0.5, dismiss: 3 },
     },
   },
   {
@@ -102,6 +105,22 @@ export const personas: readonly Persona[] = [
     backToBack: 0.5,
     members: { a: { ...quiet, walk: 0.9 } },
   },
+  {
+    ...base,
+    name: 'slow-unpacker',
+    seed: 8,
+    deliveries: 1,
+    visitsPerWeek: 1.5,
+    unpackGap: [15, 60],
+    members: { a: { ...quiet }, b: { ...quiet, walk: 0.6 } },
+  },
+  {
+    ...base,
+    name: 'slow-catchup',
+    seed: 9,
+    catchUpGap: [15, 60],
+    members: { a: { ...quiet, walk: 0.2, checkout: 0.1 }, b: { ...quiet, walk: 0.5, checkout: 0.1 } },
+  },
 ];
 
 export interface Score {
@@ -117,6 +136,9 @@ export interface Score {
   readonly wrongStore: number;
   readonly memoryWrites: number;
   readonly memoryWrong: number;
+  /** Keys store memory wrote, and those whose last write is not the store the household buys them at most. */
+  readonly memoryKeys: number;
+  readonly memoryKeysWrong: number;
   /** Taught pairs (keys in different clumps of a segment) against the real walk order. */
   readonly pairs: number;
   readonly pairsWrong: number;
@@ -155,6 +177,21 @@ export function score(h: Household, d: Detection): Score {
     const v = w.tick.truth.visit;
     if (v === null || storeOf.get(v) !== w.store) memoryWrong++;
   }
+  const usual = new Map<string, Map<string, number>>();
+  for (const t of h.ticks) {
+    const store = t.truth.visit === null ? undefined : storeOf.get(t.truth.visit);
+    if (store === undefined || t.kind !== 'bought') continue;
+    const counts = usual.get(t.key) ?? new Map<string, number>();
+    counts.set(store, (counts.get(store) ?? 0) + 1);
+    usual.set(t.key, counts);
+  }
+  const last = new Map<string, string>();
+  for (const w of [...d.storeMemory].sort((a, b) => a.tick.clientAt - b.tick.clientAt)) last.set(w.key, w.store);
+  let memoryKeysWrong = 0;
+  for (const [key, store] of last) {
+    const counts = [...(usual.get(key) ?? new Map<string, number>())].sort((a, b) => b[1] - a[1]);
+    if (counts[0]?.[0] !== store) memoryKeysWrong++;
+  }
   const { pairs, wrong } = taught(h, d.segments);
   return {
     visits: visits.length,
@@ -166,6 +203,8 @@ export function score(h: Household, d: Detection): Score {
     wrongStore,
     memoryWrites: d.storeMemory.length,
     memoryWrong,
+    memoryKeys: last.size,
+    memoryKeysWrong,
     pairs,
     pairsWrong: wrong,
   };
@@ -238,25 +277,50 @@ export interface Run {
 
 export const runs: readonly Run[] = [
   { name: 'starting rule + ema', detector: startingRule, learner: ema },
-  { name: 'starting rule + reassign', detector: startingRule, learner: reassign() },
+  { name: 'starting rule + final learner', detector: startingRule, learner: reassign() },
   { name: 'final rule + ema', detector: finalRule, learner: ema },
-  { name: 'final rule + reassign', detector: finalRule, learner: reassign() },
+  { name: 'final rule + final learner', detector: finalRule, learner: reassign() },
 ];
 
-export const knockouts: readonly { name: string; params: Params }[] = [
-  { name: 'final', params: FINAL },
-  { name: 'commit times (no client time)', params: { ...FINAL, clientTime: false } },
-  { name: 'no clumps (each tick its own)', params: { ...FINAL, clump: 0 } },
-  { name: 'no pace rule', params: { ...FINAL, pace: 0 } },
-  { name: 'pace 40 s', params: { ...FINAL, pace: 40 * SECOND } },
-  { name: 'clump 3 s', params: { ...FINAL, clump: 3 * SECOND } },
-  { name: 'clump 10 s', params: { ...FINAL, clump: 10 * SECOND } },
-  { name: 'gap 5 min', params: { ...FINAL, gap: 5 * MINUTE } },
-  { name: 'gap 15 min', params: { ...FINAL, gap: 15 * MINUTE } },
-  { name: 'no pause merge', params: { ...FINAL, pause: 0 } },
-  { name: 'store switch without travel time', params: { ...FINAL, switchGap: 0 } },
-  { name: 'bursts never trips', params: { ...FINAL, sweepTrip: Infinity } },
-  { name: 'bursts from 3 ticks', params: { ...FINAL, sweepTrip: 3 } },
+export interface Variant {
+  readonly name: string;
+  readonly params: Params;
+  readonly learner: Learner;
+}
+
+const FINAL_VARIANT: Variant = { name: 'final', params: FINAL, learner: reassign() };
+const v = (name: string, params: Partial<Params>, learner: Learner = reassign()): Variant => ({
+  name,
+  params: { ...FINAL, ...params },
+  learner,
+});
+
+/** The final rule with one knob moved; the first rows put back one approved rule each, or try a rejected fix. */
+export const variants: readonly Variant[] = [
+  FINAL_VARIANT,
+  v('H1 as approved: no pace rule, no clumps', { pace: 0, clump: 0 }),
+  v('T1a as approved: all ticked ends the trip, no pause', { allTickedEnds: true, pause: 0 }),
+  v('T1a all-ticked end kept (pause stays)', { allTickedEnds: true }),
+  v('T3a as approved: no travel time', { switchGap: 0 }),
+  v('T4a as approved: immediate, shuffles not gated', { memoryConfirm: 1, gateMemory: false }),
+  v('T4a immediate (shuffles gated)', { memoryConfirm: 1 }),
+  v('T4a narrowed too: 75 % one store, not the edge ticks', { narrowMemory: true }),
+  v('commit times (no tap time)', { clientTime: false }),
+  v('store memory not gated by shuffles', { gateMemory: false }),
+  v('no outlier gate', {}, reassign(0.5, null)),
+  v('no pace rule', { pace: 0 }),
+  v('no pace rule, no outlier gate', { pace: 0 }, reassign(0.5, null)),
+  v('outlier gate 0.5', {}, reassign(0.5, { after: 3, min: 0.5 })),
+  v('outlier gate 0.7', {}, reassign(0.5, { after: 3, min: 0.7 })),
+  v('no clumps (each tick its own)', { clump: 0 }),
+  v('pace 40 s', { pace: 40 * SECOND }),
+  v('clump 3 s', { clump: 3 * SECOND }),
+  v('clump 10 s', { clump: 10 * SECOND }),
+  v('gap 5 min', { gap: 5 * MINUTE }),
+  v('gap 15 min', { gap: 15 * MINUTE }),
+  v('no pause merge', { pause: 0 }),
+  v('bursts never trips', { sweepTrip: Infinity }),
+  v('bursts from 3 ticks', { sweepTrip: 3 }),
 ];
 
 const pct = (x: number): string => `${Math.round(x * 100)} %`;
@@ -269,59 +333,82 @@ export function report(seeds = 5): string {
   const named = (p: string): Household[] => households.filter((h) => h.name === p);
 
   lines.push(
-    '| Household | Rule | Visits | Trips | Precision | Recall | Phantom | Split | Wrong store | Store memory wrong | Taught pairs wrong | Order accuracy |',
-    '| --- | --- | --: | --: | --: | --: | --: | --: | --: | --: | --: | --: |',
+    '| Household | Rule | Visits | Trips | Precision | Recall | Phantom | Split | Wrong store | Store memory writes wrong | Store memory keys wrong at the end | Walk pairs wrong | Order accuracy |',
+    '| --- | --- | --: | --: | --: | --: | --: | --: | --: | --: | --: | --: | --: |',
   );
   for (const p of personas) {
     const hs = named(p.name);
     const prior = mean(hs.map((h) => orderAccuracy(h, new Map(h.stores.map((s) => [s.id, s.prior])))));
-    const ceiling = mean(hs.map((h) => orderAccuracy(h, reassign().learn(h.stores, oracle(h)))));
+    const ceiling = mean(hs.map((h) => orderAccuracy(h, reassign(0.5, null).learn(h.stores, oracle(h)))));
     for (const run of runs) {
       const scores = hs.map((h) => score(h, run.detector(h)));
       const acc = mean(hs.map((h) => orderAccuracy(h, run.learner.learn(h.stores, run.detector(h).segments))));
       lines.push(row(p.name, run.name, scores, acc));
     }
     lines.push(
-      `| ${p.name} | prior only / every visit taught (reassign) | | | | | | | | | | ${pct(prior)} / ${pct(ceiling)} |`,
+      `| ${p.name} | prior only / every visit taught | | | | | | | | | | | ${pct(prior)} / ${pct(ceiling)} |`,
     );
   }
   lines.push(
     '',
-    '| Variant of the final rule (reassign learner) | Precision | Recall | Phantom | Split | Store memory wrong | Taught pairs wrong | Order accuracy | Most affected household (order accuracy, recall) |',
-    '| --- | --: | --: | --: | --: | --: | --: | --: | --- |',
+    '| Variant of the final rule | Precision | Recall | Phantom | Split | Store memory writes wrong | Store memory keys wrong at the end | Walk pairs wrong | Order accuracy | Most affected household: final → variant |',
+    '| --- | --: | --: | --: | --: | --: | --: | --: | --: | --- |',
   );
-  const perHousehold = (params: Params): Map<string, { acc: number; recall: number }> =>
-    new Map(personas.map((p) => {
-      const hs = named(p.name);
-      const scores = hs.map((h) => score(h, finalRule(h, params)));
-      const acc = mean(hs.map((h) => orderAccuracy(h, reassign().learn(h.stores, finalRule(h, params).segments))));
-      return [p.name, { acc, recall: sum(scores).recall }];
-    }));
-  const reference = perHousehold(FINAL);
-  for (const k of knockouts) {
-    const scores = households.map((h) => score(h, finalRule(h, k.params)));
-    const acc = mean(
-      households.map((h) => orderAccuracy(h, reassign().learn(h.stores, finalRule(h, k.params).segments))),
-    );
-    const s = sum(scores);
-    const mine = perHousehold(k.params);
+  interface Look {
+    readonly acc: number;
+    readonly recall: number;
+    readonly memory: number;
+    readonly pairs: number;
+  }
+  const measured = new Map<Variant, Map<Household, { s: Score; acc: number }>>();
+  const measure = (k: Variant, h: Household): { s: Score; acc: number } => {
+    let byHousehold = measured.get(k);
+    if (byHousehold === undefined) measured.set(k, byHousehold = new Map());
+    let m = byHousehold.get(h);
+    if (m === undefined) {
+      const d = finalRule(h, k.params);
+      m = { s: score(h, d), acc: orderAccuracy(h, k.learner.learn(h.stores, d.segments)) };
+      byHousehold.set(h, m);
+    }
+    return m;
+  };
+  const look = (k: Variant, hs: readonly Household[]): Look & { s: Score } => {
+    const ms = hs.map((h) => measure(k, h));
+    const s = sum(ms.map((m) => m.s));
+    const acc = mean(ms.map((m) => m.acc));
+    return {
+      s,
+      acc,
+      recall: s.recall,
+      memory: s.memoryKeysWrong / Math.max(1, s.memoryKeys),
+      pairs: s.pairsWrong / Math.max(1, s.pairs),
+    };
+  };
+  const reference = new Map(personas.map((p) => [p.name, look(variants[0] ?? FINAL_VARIANT, named(p.name))]));
+  for (const k of variants) {
+    const all = look(k, households);
     let most = '';
-    let delta = 0;
-    for (const [name, v] of mine) {
-      const ref = reference.get(name);
-      if (ref === undefined) continue;
-      const d = Math.abs(v.acc - ref.acc) + Math.abs(v.recall - ref.recall);
+    let delta = 0.005;
+    for (const p of personas) {
+      const ref = reference.get(p.name);
+      if (ref === undefined || k === variants[0]) continue;
+      const v = look(k, named(p.name));
+      const d = Math.abs(v.acc - ref.acc) + Math.abs(v.recall - ref.recall) + Math.abs(v.memory - ref.memory) +
+        Math.abs(v.pairs - ref.pairs);
       if (d > delta) {
         delta = d;
-        most = `${name}: ${pct(ref.acc)} → ${pct(v.acc)}, ${pct(ref.recall)} → ${pct(v.recall)}`;
+        most = `${p.name}: order ${pct(ref.acc)} → ${pct(v.acc)}, recall ${pct(ref.recall)} → ${
+          pct(v.recall)
+        }, memory keys wrong ${pct(ref.memory)} → ${pct(v.memory)}, pairs wrong ${pct(ref.pairs)} → ${pct(v.pairs)}`;
       }
     }
+    const s = all.s;
     lines.push(
       `| ${k.name} | ${pct(s.precision)} | ${
         pct(s.recall)
-      } | ${s.phantom} | ${s.split} | ${s.memoryWrong}/${s.memoryWrites} | ${
-        pct(s.pairsWrong / Math.max(1, s.pairs))
-      } | ${pct(acc)} | ${k.params === FINAL ? '' : most || 'none'} |`,
+      } | ${s.phantom} | ${s.split} | ${s.memoryWrong}/${s.memoryWrites} | ${s.memoryKeysWrong}/${s.memoryKeys} | ${
+        pct(all.pairs)
+      } | ${pct(all.acc)} | ${k === variants[0] ? '' : most || 'none'} |`,
     );
   }
   return lines.join('\n');
@@ -346,6 +433,8 @@ function sum(scores: readonly Score[]): Score & { precision: number; recall: num
     wrongStore: total((s) => s.wrongStore),
     memoryWrites: total((s) => s.memoryWrites),
     memoryWrong: total((s) => s.memoryWrong),
+    memoryKeys: total((s) => s.memoryKeys),
+    memoryKeysWrong: total((s) => s.memoryKeysWrong),
     pairs: total((s) => s.pairs),
     pairsWrong: total((s) => s.pairsWrong),
   };
@@ -355,7 +444,7 @@ function row(household: string, rule: string, scores: readonly Score[], acc: num
   const s = sum(scores);
   return `| ${household} | ${rule} | ${s.visits} | ${s.trips} | ${pct(s.precision)} | ${
     pct(s.recall)
-  } | ${s.phantom} | ${s.split} | ${s.wrongStore} | ${s.memoryWrong}/${s.memoryWrites} | ${
+  } | ${s.phantom} | ${s.split} | ${s.wrongStore} | ${s.memoryWrong}/${s.memoryWrites} | ${s.memoryKeysWrong}/${s.memoryKeys} | ${
     pct(s.pairsWrong / Math.max(1, s.pairs))
   } | ${pct(acc)} |`;
 }

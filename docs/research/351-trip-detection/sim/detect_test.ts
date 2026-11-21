@@ -1,9 +1,11 @@
 import { FINAL, finalRule, startingRule } from './detect.ts';
+import { shuffles } from './learn.ts';
 import { orderAccuracy, personas, report, runs, score } from './evaluate.ts';
 import { generate } from './generate.ts';
 import { reassign } from './learn.ts';
 import {
   type Context,
+  DAY,
   HOUR,
   type Household,
   MINUTE,
@@ -116,14 +118,40 @@ Deno.test('one item at a small store before the big one is its own trip (T3a)', 
   );
 });
 
-Deno.test('an item tagged to another store, bought mid-walk, teaches store memory; at the edge it does not', () => {
-  const mid = finalRule(household(run(7, MINUTE).map((s, i) => (i === 3 ? { ...s, store: 'aldi' } : s))));
-  assert(mid.storeMemory.length === 1 && mid.storeMemory[0]?.store === 'rewe', 'k3 learns rewe');
-  const edge = finalRule(household(run(7, MINUTE).map((s, i) => (i === 6 ? { ...s, store: 'aldi', left: 3 } : s))));
-  assert(edge.trips.length === 1 && edge.trips[0]?.ticks.length === 7, 'the last tick stays in the trip');
-  assert(edge.storeMemory.length === 0, 'but does not move to rewe: it may be the next store');
-  const storeless = finalRule(household(run(5, MINUTE).map((s, i) => (i === 4 ? { ...s, store: null } : s))));
+Deno.test('an item bought where it is not tagged moves to that store after the second walk (T4a, confirmed)', () => {
+  const walk = (day: number): Spec[] =>
+    run(7, MINUTE, day * DAY, {}, day * 10).map((s, i) => (i === 3 ? { ...s, key: 'eggs', store: 'aldi' } : s));
+  const once = finalRule(household(walk(0)));
+  assert(once.storeMemory.length === 0, 'one walk only proposes');
+  const twice = finalRule(household([...walk(0), ...walk(2)]));
+  assert(twice.storeMemory.map((w) => `${w.key}:${w.store}`).join() === 'eggs:rewe', 'the second walk moves eggs');
+  const immediate = finalRule(household(walk(0)), { ...FINAL, memoryConfirm: 1 });
+  assert(immediate.storeMemory.length === 1, 'T4a as approved moves it at once');
+  const storeless = finalRule(
+    household(run(5, MINUTE).map((s, i) => (i === 4 ? { ...s, store: null } : s))),
+    { ...FINAL, memoryConfirm: 1 },
+  );
   assert(storeless.storeMemory.length === 1, 'a storeless item joins the store');
+});
+
+Deno.test('a last tick tagged to a store with items left stays in the walk', () => {
+  const edge = run(7, MINUTE).map((s, i) => (i === 6 ? { ...s, store: 'aldi', left: 3 } : s));
+  const d = finalRule(household(edge), { ...FINAL, memoryConfirm: 1 });
+  assert(d.trips.length === 1 && d.trips[0]?.ticks.length === 7, 'one trip of seven');
+  assert(d.storeMemory.length === 1, 'T4a as approved: it learns rewe');
+  const narrowed = finalRule(household(edge), { ...FINAL, memoryConfirm: 1, narrowMemory: true });
+  assert(narrowed.storeMemory.length === 0, 'narrowed: the edge tick may be the next store');
+});
+
+Deno.test('narrowed T4a needs 75 % of the tagged ticks at one store', () => {
+  const mixed = run(6, MINUTE).map((
+    s,
+    i,
+  ) => (i === 1 || i === 3 ? { ...s, store: 'aldi' } : i === 2 ? { ...s, store: null } : s));
+  const p = { ...FINAL, memoryConfirm: 1, narrowMemory: true };
+  assert(finalRule(household(mixed), p).storeMemory.length === 0, '3 of 5 tagged is not enough');
+  const clear = run(6, MINUTE).map((s, i) => (i === 2 ? { ...s, store: null } : s));
+  assert(finalRule(household(clear), p).storeMemory.length === 1, '5 of 5 is');
 });
 
 Deno.test('offline: the commit times are a sync burst, the device times are the walk', () => {
@@ -210,6 +238,10 @@ Deno.test('a pharmacy is never a trip and teaches nothing (GL-2)', () => {
 Deno.test('simulation: the final rule beats the starting rule in every household', () => {
   const starting = runs.find((r) => r.name === 'starting rule + ema');
   assert(starting !== undefined, 'starting run');
+  let wrongNow = 0;
+  let keysNow = 0;
+  let wrongBefore = 0;
+  let keysBefore = 0;
   for (const p of personas) {
     for (let i = 0; i < 2; i++) {
       const h = generate({ ...p, seed: p.seed * 1000 + i });
@@ -218,13 +250,69 @@ Deno.test('simulation: the final rule beats the starting rule in every household
       const after = orderAccuracy(h, reassign().learn(h.stores, final.segments));
       assert(after >= before, `${p.name} #${i}: order ${after.toFixed(3)} < ${before.toFixed(3)}`);
       const s = score(h, final);
-      assert(s.memoryWrong === 0, `${p.name} #${i}: ${s.memoryWrong} wrong store memory writes`);
+      const was = score(h, starting?.detector(h) ?? final);
+      wrongNow += s.memoryKeysWrong;
+      keysNow += s.memoryKeys;
+      wrongBefore += was.memoryKeysWrong;
+      keysBefore += was.memoryKeys;
     }
   }
+  assert(
+    wrongNow / keysNow < wrongBefore / keysBefore,
+    `store memory keys wrong ${wrongNow}/${keysNow}, starting rule ${wrongBefore}/${keysBefore}`,
+  );
 });
 
 Deno.test('the tables in README.md are the simulator output', async () => {
   const readme = await Deno.readTextFile(new URL('../README.md', import.meta.url));
   const inside = readme.split('<!-- sim:begin -->\n')[1]?.split('\n<!-- sim:end -->')[0];
   assert(inside === report(5), 'README tables are stale: paste `deno run sim/evaluate.ts 5` between the sim markers');
+});
+
+const ordered = (id: string, n: number): Store => {
+  const prior = new Map(Array.from({ length: n }, (_, i) => [`k${i}`, i / n]));
+  return { id, pharmacy: false, layout: prior, prior };
+};
+
+Deno.test('once a store is learned, a walk that shuffles its order teaches neither order nor store memory', () => {
+  const walks = [0, 1, 2].flatMap((day) => run(6, MINUTE, day * DAY));
+  const shuffle = run(6, 40 * SECOND, 3 * DAY).reverse().map((s, i) => ({ ...s, at: 3 * DAY + i * 40 * SECOND }));
+  shuffle.push({ at: 3 * DAY + 6 * 40 * SECOND, key: 'k10', store: null });
+  const h = household([...walks, ...shuffle], [ordered('rewe', 20), store('aldi')]);
+  const p = { ...FINAL, memoryConfirm: 1 };
+  const d = finalRule(h, p);
+  assert(d.segments.length === 4, 'four walks offered');
+  assert(shuffles(h.stores, d.segments).size === 1, 'the reversed one is turned away');
+  assert(d.storeMemory.length === 0, 'k10 does not move');
+  assert(finalRule(h, { ...p, gateMemory: false }).storeMemory.length === 1, 'without the gate it would');
+  const order = reassign().learn(h.stores, d.segments).get('rewe');
+  assert((order?.get('k0') ?? 1) < (order?.get('k5') ?? 0), 'the order stays k0 before k5');
+});
+
+Deno.test('the clock offset comes from online ticks even when most ticks were offline', () => {
+  const offline = run(6, 90 * SECOND, 0, { skew: -HOUR }).map((s, i) => ({ ...s, server: 20 * MINUTE + i * 400 }));
+  const online = run(4, 3 * HOUR, 2 * HOUR, { skew: -HOUR }, 10);
+  const d = finalRule(household([...offline, ...online]));
+  assert(
+    Math.abs((d.trips[0]?.start ?? 0) - T0) <= 2 * SECOND,
+    `the walk at its true time, got ${((d.trips[0]?.start ?? 0) - T0) / MINUTE} min`,
+  );
+});
+
+Deno.test('the clock offset uses the last week only: a phone set right later is not shifted back', () => {
+  const wrong = run(4, 3 * HOUR, 0, { skew: HOUR });
+  const right = run(6, MINUTE, 10 * DAY, {}, 10);
+  const d = finalRule(household([...wrong, ...right]));
+  const walk = d.trips.find((t) => t.walked);
+  assert(walk?.start === T0 + 10 * DAY + SECOND, 'the later walk keeps its time');
+});
+
+Deno.test("T1a as approved: ticking the store's last item ends the trip", () => {
+  const specs = run(6, MINUTE).map((s, i) => (i === 2 ? { ...s, left: 0 } : s));
+  assert(finalRule(household(specs)).trips.length === 1, 'final: one trip');
+  assert(finalRule(household(specs), { ...FINAL, allTickedEnds: true }).trips.length === 1, 'the pause joins them');
+  assert(
+    finalRule(household(specs), { ...FINAL, allTickedEnds: true, pause: 0 }).trips.length === 2,
+    'approved (no pause): two',
+  );
 });

@@ -30,6 +30,8 @@ export interface Habits {
   readonly homeBefore: number;
   /** Per week: ticks through Siri or Alexa. */
   readonly voice: number;
+  /** Seconds lost to dismissing the trip question after each tick ("Nein, nur abgehakt" asks again). */
+  readonly dismiss: number;
 }
 
 export interface StoreSpec {
@@ -68,6 +70,10 @@ export interface Persona {
   readonly notFound: number;
   /** Neighbouring items picked first and ticked together a second or two apart. */
   readonly shelfBatch: number;
+  /** Seconds between ticks when catching up at home: [lo, hi]. */
+  readonly catchUpGap: readonly [number, number];
+  /** Seconds between ticks when unpacking a delivery: [lo, hi]. */
+  readonly unpackGap: readonly [number, number];
 }
 
 /** mulberry32: a small seeded generator, so every run of a persona is the same household. */
@@ -247,7 +253,9 @@ export function generate(p: Persona): Household {
         if (j > i && r() < p.shelfBatch) {
           const batch = picked.slice(i, j + 1).sort((a, b) => priorPos(a.e) - priorPos(b.e));
           const at = batch.reduce((m, x) => Math.max(m, x.t), 0);
-          batch.forEach((x, k) => picked.splice(i + k, 1, { e: x.e, t: at + k * between(1, 2.5) * SECOND }));
+          batch.forEach((x, k) =>
+            picked.splice(i + k, 1, { e: x.e, t: at + k * (between(1, 2.5) + h.dismiss) * SECOND })
+          );
         }
         i = j + 1;
       }
@@ -278,7 +286,7 @@ export function generate(p: Persona): Household {
     const order = conveyor ? shuffled(picked) : [...picked].sort((a, b) => priorPos(a.e) - priorPos(b.e));
     let u = mode === 'checkout' ? leave - between(1, 3) * MINUTE : leave + between(20, 90) * MINUTE;
     for (const { e } of order) {
-      u += between(1, mode === 'checkout' ? 5 : 3) * SECOND;
+      u += (mode === 'checkout' ? between(1, 5) : between(...p.catchUpGap)) * SECOND;
       tick(e, actor, u + h.skew, visit, mode);
     }
     return leave;
@@ -364,7 +372,7 @@ export function generate(p: Persona): Household {
       const list = plan(store, int(10, 18), actor, week + 6 * DAY);
       let t = week + 6 * DAY + between(10, 18) * HOUR;
       for (const e of shuffled(list)) {
-        t += between(4, 20) * SECOND;
+        t += between(...p.unpackGap) * SECOND;
         tick(e, actor, t + habits(actor).skew, null, 'delivery');
       }
     }
