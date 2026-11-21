@@ -21,7 +21,7 @@
 
 ## Gemessen: was der Block der Liste hinzufügt, iPhone 390 × 844
 
-Pixel, die die Option gegenüber gar keiner Summe hinzufügt (Block, höhere Trenner oder Leiste). In Klammern die gegenüber heute gesparten Listenzeilen: 48 px bei 100 %, bei 310 % eine Zeile von 151 px. 310 % ist die größte Stufe des iPhones. Android 360 × 640 bei 100 % und 200 % steht in der Tabelle der Seite. Das Telefon „Heute“ trifft den Release-Web-Build auf 3 px bei 100 % (353/357 gegen 354/359 px) und auf 12 % bei 310 % (`te/real/heights.json`). Gemessen auf Englisch.
+Pixel, die die Option gegenüber gar keiner Summe hinzufügt (Block, höhere Trenner oder Leiste). In Klammern die gegenüber heute gesparten Listenzeilen: 48 px bei 100 %, bei 310 % eine Zeile von 151 px. 310 % ist die größte Stufe des iPhones. Android 360 × 640 bei 100 % und 200 % steht in der Tabelle der Seite. Das Telefon „Heute“ trifft den Release-Web-Build auf 3 px bei 100 % (353/357 gegen 354/359 px) und auf 12 % bei 310 % (`te/real/heights.json`). Das sind bei 310 % bis zu 104 px; die gesparten Zeilen dort gelten ±1 Zeile. Gemessen auf Englisch.
 
 | Option | Text | (a) Keine Preise | (b) Einige | (c) Alle | (d) Einkauf |
 | --- | --- | --- | --- | --- | --- |
@@ -49,6 +49,8 @@ Pixel, die die Option gegenüber gar keiner Summe hinzufügt (Block, höhere Tre
 7. **TE-Q7 Ein Laden ohne Preise beim Einkauf gekauft.** Ein ganz gekaufter Laden ohne Preis bekommt keine Zeile; seine Artikel zählen bei „ohne Preis“. Vorgabe: wie gezeigt. Anderer Weg: eine Zeile „alles gekauft“ ohne Betrag behalten.
 8. **TE-Q8 Das Zeichen für die Untergrenze in TE5.** Falls TE5 gewählt wird: in der Pille ist kein Platz für „mind.“, der Prototyp schreibt „6,38 €+“, ein neues Zeichen. Vorgabe: mit TE1 nicht nötig.
 9. **TE-Q9 Beträge bei größter Schrift.** Bei 310 % bricht die echte App einen Betrag mitten in der Zahl um („€6.3 / 8“, gesehen im Release-Web-Build), heute und in jeder Option. Vorgabe: im Bau beheben; ein Betrag, der nicht passt, steht in einer eigenen Zeile unter dem Namen. Das ist eine Zeile mehr, aber die Zahl bleibt ganz.
+
+10. **TE-Q10 Preise in einer anderen Währung.** Die App lässt einen Artikel, der heute in einer anderen Währung bepreist wurde, aus den Summen und macht sie zur Untergrenze (`Sum.foreign`); der Prototyp bildet das nicht nach. Ein Laden, dessen einzige Preise fremd sind, hat keinen Betrag, aber eine Untergrenze. Vorgabe: TE1 behandelt ihn wie einen Laden ohne Preis (keine Zeile), und die Zählung an der Summe nennt ihn mit den anderen („4 ohne Preis“).
 
 ## Was hier nicht entschieden wird
 

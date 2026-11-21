@@ -16973,3 +16973,12 @@ pinned above the field, other suggestions hidden); all of it stays behind `add-s
 6. **Draft PR, never merged**, as rounds 318, 319 and 323. Deployed as a preview on
    `family-groceries-design` on top of `dpl_DwV7uqNrRrNdsruXL8hTByoSnvK5` (all 158 files kept), with a
    card on the root overview.
+
+## Job 343 review 0: chrome at max text, 2026-11-21
+
+1. **The bottom band follows the release build at large text**: tab and trip text grow at most 1.15×, the
+   add field clips its hint, the trip label gives way before End. The block heights don't change.
+2. **verify's overflow check covers the whole phone**, by what stays visible after clipping; the old one
+   only looked at the list and top bar and called that "nothing sticks out".
+3. **Reviewer's nice-to-haves taken**: a TE-Q6 frame, TE-Q10 (foreign-currency prices), labelled controls,
+   ±1 row at 310 %, no sideways scroll at 390 px.

@@ -32,9 +32,9 @@ const link = (k, v) => {
 };
 const btn = (k, v, label) => `<button aria-pressed="${String(env[k]) === String(v)}" onclick="location.href='${link(k, v)}'">${label}</button>`;
 const controls = () => `<div class="controls"><span class="lbl">${W.lang}</span>${btn('lang', 'en', 'English')}${btn('lang', 'de', 'Deutsch')}<span class="sep"></span>
-  ${btn('theme', 'light', W.light)}${btn('theme', 'dark', W.dark)}<span class="sep"></span>
-  ${btn('ts', 100, `${W.textSize} 100 %`)}${btn('ts', 200, `${W.textSize} 200 % (${W.androidMax})`)}${btn('ts', 310, `${W.textSize} 310 % (${W.iosMax})`)}<span class="sep"></span>
-  ${btn('device', 'ios', 'iPhone 390 × 844')}${btn('device', 'android', 'Android 360 × 640')}</div>`;
+  <span class="lbl">${W.themeLbl}</span>${btn('theme', 'light', W.light)}${btn('theme', 'dark', W.dark)}<span class="sep"></span>
+  <span class="lbl">${W.textSize}</span>${btn('ts', 100, '100 %')}${btn('ts', 200, `200 % (${W.androidMax})`)}${btn('ts', 310, `310 % (${W.iosMax})`)}<span class="sep"></span>
+  <span class="lbl">${W.phoneLbl}</span>${btn('device', 'ios', 'iPhone 390 × 844')}${btn('device', 'android', 'Android 360 × 640')}</div>`;
 const head = (title, back) => `<header class="page-head"><div class="title-row"><h1>${title}</h1>${back ? `<a class="back-link" href="../${location.search}">← ${W.overview}</a>` : ''}</div>
   <p class="note">${W.note}</p>${controls()}</header>`;
 
@@ -116,6 +116,7 @@ const mountLive = (el, id) => {
 const frame = (id, st, extra = {}, show = '') => phone({ ...initial(st), ...extra }, options[id], env, { show });
 const frames = (id) => {
   const list = stateIds.map((st) => cell(W.states[st], frame(id, st), W.stateSub[st], st));
+  if (id === 'TE1') list.push(cell(W.states.b1, frame(id, 'b1'), W.stateSub.b1, 'b1'));
   if (id === 'TE2') list.push(cell(W.extra.TE2, frame(id, 'b', { open: true }), '', 'b-open'));
   if (id === 'TE5') list.push(cell(W.extra.TE5, frame(id, 'b', { sheet: true }), '', 'b-sheet'));
   if (id === 'TE3') list.push(cell(W.extra.TE3, frame(id, 'b', {}, 'lidl'), '', 'b-top'));
@@ -163,7 +164,7 @@ export const round = async () => {
   const real = `real/${env.lang}-${env.theme}-${env.device === 'android' ? '100-android' : env.ts === 310 ? '310' : '100'}-a.png`;
   document.body.innerHTML = `${head(W.roundTitle, true)}<main class="view">
     <section class="facts" id="today"><h2>${W.today}</h2>${W.todayFacts}${meter(m, 'today').replace(/Rows saved.*<\/b>\./, '').replace(/Gesparte Zeilen.*<\/b>\./, '')}
-      <div class="frames">${stateIds.map((st) => cell(W.states[st], frame('today', st), W.stateSub[st], st)).join('')}
+      <div class="frames">${[...stateIds, 'b1'].map((st) => cell(W.states[st], frame('today', st), W.stateSub[st], st)).join('')}
       ${cell(W.real, `<img class="realshot" src="${real}" width="${env.device === 'android' ? 360 : 390}" alt="" onerror="this.closest('figure').remove()">`)}</div></section>
     ${ids.map((id) => optionSection(id, m)).join('')}
     ${table(m)}

@@ -3,9 +3,9 @@
 A throwaway HTML sandbox for one decision: what the list's total block shows when no item or only some items have a price. Peter (t1116u) found today's block "quite verbose for 0 info": with nothing priced it lists every store with "1 without price". Nothing here ships, and the app is unchanged. The sandbox uses mock data only (the fictional Brandt family), makes no network calls, and shows store names as plain text.
 
 - `index.html` is the overview. It links the round and shows its pick and runner-up. The preview's root overview (#414's list-declutter rounds) links the round too (`tools/link-overview.mjs`).
-- `te/` is round TE. It starts with today's rules (`summary_block.dart`, `subtotals.dart`), the Today replica in the four states and a screenshot of the real app. Then come TE1 to TE5, each with a live phone and a frame per state, the measured table, and `te/RECOMMENDATION.md` (English) or `te/RECOMMENDATION.de.md` (German) with the pick (TE1), the runner-up (TE2) and TE-Q1 to TE-Q9.
+- `te/` is round TE. It starts with today's rules (`summary_block.dart`, `subtotals.dart`), the Today replica in the four states and a screenshot of the real app. Then come TE1 to TE5, each with a live phone and a frame per state, the measured table, and `te/RECOMMENDATION.md` (English) or `te/RECOMMENDATION.de.md` (German) with the pick (TE1), the runner-up (TE2) and TE-Q1 to TE-Q10.
 
-The four states: (a) no item has a price; (b) Lidl priced in full (one per-kg item), Edeka's bread priced and its butter not, dm, IKEA and no store unpriced; (c) every item priced; (d) as (b) with a trip running, Lidl and the bread bought.
+The four states, plus a fifth frame for TE-Q6 (only Lidl priced): (a) no item has a price; (b) Lidl priced in full (one per-kg item), Edeka's bread priced and its butter not, dm, IKEA and no store unpriced; (c) every item priced; (d) as (b) with a trip running, Lidl and the bread bought.
 
 The controls set the language (`?lang=de`), the theme (`?theme=dark`), the text size (`?ts=200` or `?ts=310`) and the phone (`?device=android`, 360 × 640; the default is a 390 × 844 iPhone).
 
@@ -17,7 +17,8 @@ The controls set the language (`?lang=de`), the theme (`?theme=dark`), the text 
 - `verify.mjs [<root>] [--path <url path>] [--write]` drives the round in Chromium on both phones, in both languages and both themes, at every text size the phone offers. It checks:
   - that `strings.js` equals the ARB files;
   - in every option and state: no store line says "without price", the floor and ≈ marks sit exactly where an item lacks a price or holds a planned weight, the store lines add up to the total, "No store" keeps its own line, a trip shows what was bought;
-  - each option's own rules (TE1 to TE5), nothing sticking out of the phone, and 44 px controls;
+  - each option's own rules (TE1 to TE5), 44 px controls, and that no element of the phone (top bar, list, block, trip bar, add field, tab bar) shows past its edge; an element clipped by its box, as the add field clips its hint at large text, counts by its visible part;
+  - TE-Q6's frame (one store priced: TE1 shows a total line only) and that the page fits a 390 px phone without sideways scrolling;
   - the Today replica against the real app's heights (±3 px on the iPhone at 100 %, 12 % elsewhere);
   - the live phones: pricing an item, opening TE2, TE4's link to the next unpriced item, TE5's sheet, a tick on a trip;
   - the numbers in `te/measured.json` and both `RECOMMENDATION` files.

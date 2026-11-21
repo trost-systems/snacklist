@@ -44,7 +44,8 @@ figure.cell figcaption small { display: block; text-transform: none; letter-spac
 .tag { display: inline-block; padding: 1px 8px; border-radius: 10px; font: 650 12px/1.5 var(--hl-font-family-sans); vertical-align: 3px; margin-left: 6px; }
 .tag.pick { background: var(--hl-color-honey); color: var(--hl-color-on-honey); }
 .tag.runner { background: var(--hl-color-mint-soft); color: var(--hl-color-text); }
-.table-wrap { overflow-x: auto; }
+.table-wrap { overflow-x: auto; max-width: 100%; }
+.facts, .rec, .option { min-width: 0; }
 table { border-collapse: collapse; font-size: 13.5px; min-width: 900px; }
 th, td { border-bottom: 1px solid var(--hl-color-divider); padding: 8px 12px 8px 0; text-align: left; vertical-align: top; }
 th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--hl-color-text-muted); }
@@ -157,23 +158,25 @@ th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; color
 .used .icon { color: var(--hl-color-text-muted); margin-right: 4px; }
 
 /* Bottom band: the trip strip (while a trip runs), the floating add field and the tab bar. */
-.bottom { position: absolute; left: 16px; right: 16px; bottom: 12px; z-index: 6; display: grid; gap: 10px; }
+/* At large text the release build keeps the band inside the screen: tab and trip text grow little, the field clips its hint. */
+.bottom { position: absolute; left: 16px; right: 16px; bottom: 12px; z-index: 6; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
 .ios .bottom { bottom: 30px; }
-.trip { --ts2: min(var(--ts), 1.3); display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 12px; border-radius: 14px; background: var(--hl-color-inverse); color: var(--hl-color-on-inverse); font-size: calc(13px * var(--ts2)); line-height: 1.2; white-space: nowrap; overflow: hidden; }
+.trip { --ts2: min(var(--ts), 1.15); display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 12px; border-radius: 14px; background: var(--hl-color-inverse); color: var(--hl-color-on-inverse); font-size: calc(13px * var(--ts2)); line-height: 1.2; white-space: nowrap; overflow: hidden; }
 .trip .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--hl-color-mint); flex: none; }
 .trip b { font: 800 calc(18px * var(--ts2))/1.2 "App Bricolage", var(--hl-font-family-display); }
-.trip span:not(.end):not(.pause) { flex: 1; font-weight: 700; letter-spacing: 0.08em; }
+.trip span:not(.end):not(.pause) { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-weight: 700; letter-spacing: 0.08em; }
+.trip .pause, .trip .end, .trip .dot, .trip b { flex: none; }
 .trip .pause { display: inline-flex; gap: 4px; padding: 10px 12px; border-radius: 10px; background: color-mix(in srgb, var(--hl-color-on-inverse) 15%, transparent); }
 .trip .pause i { width: 4px; height: 14px; background: currentColor; border-radius: 1px; }
 .trip .end > span { display: inline-block; padding: 8px 16px; background: var(--hl-color-honey); color: var(--hl-color-on-honey); font-weight: 800; clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 8px 100%, 0 50%); }
-.addfield { --o: var(--hl-color-border); filter: drop-shadow(2px 0 0 var(--o)) drop-shadow(-2px 0 0 var(--o)) drop-shadow(0 2px 0 var(--o)) drop-shadow(0 -2px 0 var(--o)) drop-shadow(0 3px 0 var(--o)); }
+.addfield { min-width: 0; --o: var(--hl-color-border); filter: drop-shadow(2px 0 0 var(--o)) drop-shadow(-2px 0 0 var(--o)) drop-shadow(0 2px 0 var(--o)) drop-shadow(0 -2px 0 var(--o)) drop-shadow(0 3px 0 var(--o)); }
 .addfield > span { --cut: 16px; display: flex; align-items: center; height: 48px; overflow: hidden; white-space: nowrap; padding: 0 22px; font-size: calc(17px * var(--ts)); line-height: 1.2; color: var(--hl-color-text-muted); background: var(--hl-color-surface-raised);
   clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% 50%, calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 50%); }
 .th-light .addfield > span { background: #fff; }
-.tabs { justify-self: center; display: flex; gap: 4px; padding: 4px 24px; --o: var(--hl-color-border); background: var(--hl-color-surface-raised); filter: drop-shadow(2px 0 0 var(--o)) drop-shadow(-2px 0 0 var(--o)) drop-shadow(0 2px 0 var(--o)) drop-shadow(0 -2px 0 var(--o)) drop-shadow(0 3px 0 var(--o));
+.tabs { justify-self: center; max-width: 100%; display: flex; gap: 4px; padding: 4px 18px; --o: var(--hl-color-border); background: var(--hl-color-surface-raised); filter: drop-shadow(2px 0 0 var(--o)) drop-shadow(-2px 0 0 var(--o)) drop-shadow(0 2px 0 var(--o)) drop-shadow(0 -2px 0 var(--o)) drop-shadow(0 3px 0 var(--o));
   clip-path: polygon(18px 0, calc(100% - 18px) 0, 100% 50%, calc(100% - 18px) 100%, 18px 100%, 0 50%); }
 .th-light .tabs { background: #fff; }
-.tab { display: flex; align-items: center; gap: 6px; padding: 0 14px; min-height: 44px; font-size: calc(14px * min(var(--ts), 1.3)); font-weight: 700; white-space: nowrap; line-height: 1.2; }
+.tab { display: flex; align-items: center; gap: 6px; padding: 0 14px; min-height: 44px; font-size: calc(14px * min(var(--ts), 1.15)); font-weight: 700; white-space: nowrap; line-height: 1.2; }
 .tab.on { background: var(--hl-color-honey); color: var(--hl-color-on-honey); clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 10px 100%, 0 50%); }
 
 /* TE5's sheet: the receipt over a scrim. */
@@ -185,3 +188,9 @@ th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; color
 
 .th-dark { color-scheme: dark; }
 .th-light { color-scheme: light; }
+
+/* On a phone the 390 px phones fill the screen: only the page's text keeps its side padding. */
+@media (max-width: 440px) {
+  .view { padding-left: 0; padding-right: 0; }
+  .view > section > :not(.frames), .frames figcaption, .live .states { padding-left: 12px; padding-right: 12px; }
+}

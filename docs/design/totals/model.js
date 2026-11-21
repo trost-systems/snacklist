@@ -27,6 +27,8 @@ export const states = {
   b: { priced: ['milk', 'bananas', 'bread'], bought: [], trip: false },
   c: { priced: items.map((i) => i.id), bought: [], trip: false },
   d: { priced: ['milk', 'bananas', 'bread'], bought: ['milk', 'bananas', 'bread'], trip: true },
+  // (b) with one store priced: Lidl only (TE-Q6).
+  b1: { priced: ['milk', 'bananas'], bought: [], trip: false },
 };
 export const stateIds = ['a', 'b', 'c', 'd'];
 

@@ -21,7 +21,7 @@
 
 ## Measured: what the block adds to the list, iPhone 390 × 844
 
-Pixels the option adds against no total at all (block, taller dividers or top bar). The number in brackets is list rows saved against Today: 48 px at 100 %, at 310 % a row of 151 px. 310 % is the iPhone’s largest size. Android 360 × 640 at 100 % and 200 % is in the page’s table. The Today replica matches the release web build within 3 px at 100 % (353/357 against 354/359 px) and within 12 % at 310 % (`te/real/heights.json`).
+Pixels the option adds against no total at all (block, taller dividers or top bar). The number in brackets is list rows saved against Today: 48 px at 100 %, at 310 % a row of 151 px. 310 % is the iPhone’s largest size. Android 360 × 640 at 100 % and 200 % is in the page’s table. The Today replica matches the release web build within 3 px at 100 % (353/357 against 354/359 px) and within 12 % at 310 % (`te/real/heights.json`). That is up to 104 px at 310 %, so the rows saved there carry ±1 row.
 
 | Option | Text | (a) No prices | (b) Some | (c) All | (d) Trip |
 | --- | --- | --- | --- | --- | --- |
@@ -49,6 +49,8 @@ Pixels the option adds against no total at all (block, taller dividers or top ba
 7. **TE-Q7 A store bought without prices on a trip.** A store bought in full with no price gets no line; its items count in “without price”. Default: as shown. Alternative: keep an “all bought” line without an amount.
 8. **TE-Q8 TE5’s floor mark.** If TE5 is preferred: the pill has no room for “at least”, so the prototype writes “€6.38+”, a new notation. Default: not needed with TE1.
 9. **TE-Q9 Amounts at the largest text.** At 310 % the real app breaks an amount inside the number (“€6.3 / 8”, seen in the release web build), in Today and in every option. Default: fix it in the build: an amount that does not fit goes on its own line under the name. It is one more line, but the number stays whole.
+
+10. **TE-Q10 Prices in another currency.** The app leaves an item priced today in another currency out of the sums and makes them a floor (`Sum.foreign`); the prototype does not model it. A store whose only prices are foreign has no amount but a floor. Default: TE1 treats it as a store without a price (no line), and the total’s count names it with the others (“4 without price”), as today’s `pr-total` counts it neither as priced nor as open.
 
 ## What is not decided here
 

@@ -71,9 +71,22 @@ const inspect = () =>
         const ph = draw(id, st);
         const blk = ph.querySelector('[data-block]');
         const box = ph.getBoundingClientRect();
-        const outside = [...ph.querySelectorAll('[data-content] *, [data-topbar] *')].filter((el) => {
-          const r = el.getBoundingClientRect();
-          return r.width > 0 && (r.left < box.left - 0.5 || r.right > box.right + 0.5);
+        // Every element of the phone, by what stays visible of it: an ancestor that clips (the add field clips its hint,
+        // as the app does) cuts it first.
+        const visible = (el) => {
+          let { left, right } = el.getBoundingClientRect();
+          for (let a = el.parentElement; a && a !== ph; a = a.parentElement) {
+            if (getComputedStyle(a).overflowX === 'visible') continue;
+            const r = a.getBoundingClientRect();
+            left = Math.max(left, r.left);
+            right = Math.min(right, r.right);
+          }
+          return { left, right };
+        };
+        const outside = [...ph.querySelectorAll('*')].filter((el) => {
+          if (el.getBoundingClientRect().width === 0) return false;
+          const r = visible(el);
+          return r.right > r.left && (r.left < box.left - 0.5 || r.right > box.right + 0.5);
         }).length;
         const acts = [...ph.querySelectorAll('[data-block] [data-act], [data-bar-amount]')].map((el) => el.getBoundingClientRect().height);
         out[st].opts[id] = {
@@ -159,6 +172,19 @@ for (const [device, ts] of sizes) {
     }
   }
 }
+
+// TE-Q6's frame: with prices in one store only, TE1 shows one total line and no store line.
+await open('');
+const b1 = await page.locator('#TE1 figure[data-frame="b1"] [data-block]').evaluate((el) => ({ lines: el.querySelectorAll('.sline').length, total: el.querySelector('.tamt')?.innerText ?? '' }));
+check(b1.lines === 0 && /3\.89/.test(b1.total), `TE1 with one store priced: a total line only (${b1.lines} store lines, ${b1.total})`);
+// The page on a phone: nothing scrolls sideways at 390 px.
+await page.setViewportSize({ width: 390, height: 844 });
+for (const q of ['', 'lang=de']) {
+  await open(q);
+  const w = await page.evaluate(() => document.documentElement.scrollWidth);
+  check(w <= 390, `the round page fits a 390 px phone without sideways scrolling (${q || 'en'}: ${w} px)`);
+}
+await page.setViewportSize({ width: 1600, height: 1000 });
 
 // RECOMMENDATION.md's claim about TE5: in German and on the 360 px Android the amount cuts the list name; in English on
 // the iPhone it does not.
