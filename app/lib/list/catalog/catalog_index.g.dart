@@ -2,7 +2,7 @@
 // Do not edit; rerun the script after a classifier or item parser migration.
 
 /// public.catalog_version() of [catalogTerms], [catalogForms] and [catalogBrands].
-const catalogVersion = '5490f9136e87b539';
+const catalogVersion = 'ff7955a4919596be';
 
 /// public.classifier_terms: (term, key, category seed key).
 const catalogTerms = <(String, String, String)>[
@@ -170,6 +170,7 @@ const catalogTerms = <(String, String, String)>[
   ('brownies', 'brownie', 'bakery'),
   ('brunnenkresse', 'brunnenkress', 'produce'),
   ('brust', 'brust', 'meat'),
+  ('bräter', 'brater', 'household'),
   ('brösel', 'brosel', 'pantry'),
   ('brötchen', 'brotch', 'bakery'),
   ('brühe', 'bruh', 'pantry'),
@@ -190,6 +191,7 @@ const catalogTerms = <(String, String, String)>[
   ('bällchen', 'ballch', 'meat'),
   ('bärlauch', 'barlauch', 'produce'),
   ('bügel', 'bugel', 'household'),
+  ('bügeleisen', 'bugeleis', 'household'),
   ('bürste', 'burst', 'household'),
   ('cabanossi', 'cabanossi', 'meat'),
   ('calamari', 'calamari', 'meat'),
@@ -1293,6 +1295,7 @@ const catalogTerms = <(String, String, String)>[
   ('shiitake', 'shiitak', 'produce'),
   ('shrimps', 'shrimp', 'meat'),
   ('sicherung', 'sicherung', 'electrical'),
+  ('siegel', 'siegel', 'household'),
   ('signal', 'signal', 'drugstore'),
   ('silberzwiebeln', 'silberzwiebel', 'pantry'),
   ('silikon', 'silikon', 'plumbing'),
@@ -1795,6 +1798,7 @@ const catalogForms = <(String, String, String, bool)>[
   ('bouilon', 'bouilon', 'pantry', false),
   ('bounty', 'bounty', 'sweets', false),
   ('brat', 'brat', 'meat', false),
+  ('brater', 'brater', 'household', false),
   ('bratschlauch', 'bratschlauch', 'household', false),
   ('bratwurst', 'bratwurst', 'meat', false),
   ('braunfarb', 'braunfarb', 'drugstore', false),
@@ -1824,6 +1828,7 @@ const catalogForms = <(String, String, String, bool)>[
   ('brust', 'brust', 'meat', false),
   ('bruwurfel', 'bruwurfel', 'pantry', false),
   ('bugel', 'bugel', 'household', false),
+  ('bugeleis', 'bugeleis', 'household', false),
   ('bulet', 'frikadel', 'meat', false),
   ('bulgur', 'bulgur', 'pantry', false),
   ('buntlak', 'buntlak', 'paint', false),
@@ -3027,6 +3032,7 @@ const catalogForms = <(String, String, String, bool)>[
   ('shitak', 'shitak', 'produce', false),
   ('shrimp', 'shrimp', 'meat', false),
   ('sicherung', 'sicherung', 'electrical', false),
+  ('siegel', 'siegel', 'household', false),
   ('sifon', 'sifon', 'plumbing', false),
   ('signal', 'signal', 'drugstore', false),
   ('silberzwiebel', 'silberzwiebel', 'pantry', false),

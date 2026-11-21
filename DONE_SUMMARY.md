@@ -2089,4 +2089,18 @@ migrations (dictionary, synonyms, a lexicon rebuild for the catalog snapshot); n
 logic changed, so no flag. Why no generic tail guard: DECISIONS Job 349. Tests: new
 `supabase/tests/classifier_misfires.test.sql` (30 checks), full pgTAP, sweep (353 match), wordlist
 (94.2 % misspellings, 1 false match as before), `scripts/gates/db.sh` classifier steps, parity test
-in Flutter. Ships with the next green main build; no flag.
+in Flutter. Not live yet: the production deploy of #606 failed with a 401 (expired `SUPABASE_ACCESS_TOKEN`), see docs/NEEDS_PETER.md.
+
+### Job 349, review 0 fixes
+
+- **Tail guard.** `classify_item_detail` now ignores a dictionary tail hit of a short term (key of 3
+  letters or fewer) unless a typed word really ends in it, and a gel after a vowel is not a gel.
+  Element, Pigment, Dokument, Instrument, Vogel, Igel, Kegel are no longer filed under Fleisch or
+  Drogerie; Pekingente, Frischkäse, Mülltüte, Zuckerrübe, Blumenerde, Massagegel, Duschgel still
+  match. New terms: siegel, bräter, bügeleisen. Migrations: guard, dictionary, snapshot rebuild.
+- **Tests.** `classifier_misfires.test.sql` has 53 checks; full pgTAP (79 files), sweep (353), wordlist
+  (94.2 %, one false match as before), parity test pass after rewriting the table and pins.
+- **Record.** The production deploy of #606 failed (401), so the fix is not live; NEEDS_PETER holds
+  the token step, NEEDS_LEAD the correction (#606 also merged before review 0).
+- **Not done.** English near-forms, a journey for `cl-tail-guards`, a fixed parity sample, device
+  homographs (nice to have in the review).

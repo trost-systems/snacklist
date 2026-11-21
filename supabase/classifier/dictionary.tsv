@@ -927,7 +927,9 @@ backofenreiniger	household
 backpapier	household
 backpinsel	household
 # Wooden kitchen things (holz, brett): Nudelholz, Holzlöffel, Schneidebrett stay Haushalt.
+bräter	household
 bügel	household
+bügeleisen	household
 nudelholz	household
 pfanne	household
 pfannenwender	household
@@ -944,6 +946,7 @@ frühstücksbrett	household
 brettchen	household
 schüssel	household
 holzschüssel	household
+siegel	household
 spiegel	household
 teller	household
 holzteller	household
