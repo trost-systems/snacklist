@@ -78,7 +78,7 @@ th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; color
 .homeind i { width: 134px; height: 5px; border-radius: 3px; background: var(--hl-color-text); }
 
 /* Top bar: see-through over the list (job 229): the household and list switcher, Edit. */
-.topbar { position: absolute; left: 0; right: 0; top: 0; z-index: 5; display: flex; flex-wrap: nowrap; align-items: flex-start; gap: 8px; padding: 10px 16px 8px;
+.topbar { position: absolute; left: 0; right: 0; top: 0; z-index: 5; display: flex; flex-wrap: nowrap; align-items: flex-start; gap: 8px; padding: 10px 16px 14px;
   background: linear-gradient(var(--hl-color-surface) 70%, color-mix(in srgb, var(--hl-color-surface) 0%, transparent)); }
 .topbar .switcher + * { margin-left: auto; }
 .hexbtn { --o: var(--hl-color-border); display: inline-flex; flex: none; max-width: 100%;
@@ -109,7 +109,7 @@ th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; color
 .sdivider .dcount b { color: var(--hl-color-text); font-weight: 800; }
 .sdivider .dsum { font-size: calc(15px * var(--ts)); font-weight: 800; font-variant-numeric: tabular-nums; }
 .sdivider .dchev { color: var(--hl-color-text-muted); margin-right: 4px; }
-.cat { display: flex; align-items: center; gap: 10px; min-height: 32px; font-size: calc(13px * var(--ts)); font-weight: 650; letter-spacing: 0.1em; text-transform: uppercase; color: var(--hl-color-text-muted); }
+.cat { display: flex; align-items: center; gap: 10px; min-height: 32px; padding-left: 4px; line-height: 1; font-size: calc(13px * var(--ts)); font-weight: 650; letter-spacing: 1.04px; text-transform: uppercase; color: var(--hl-color-text-muted); }
 .cat::after { content: ""; flex: 1; height: 1px; background: var(--hl-color-divider); }
 .item { position: relative; display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 0 0 4px; cursor: pointer; }
 .item.target { background: var(--hl-color-honey-soft); border-radius: 12px; }
@@ -131,7 +131,8 @@ th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; color
 .used .icon { color: var(--hl-color-text-muted); margin-right: 4px; }
 
 /* Bottom band: the trip strip (while a trip runs), the floating add field and the tab bar. */
-.bottom { position: absolute; left: 16px; right: 16px; bottom: 12px; z-index: 6; display: grid; gap: 10px; }
+.bottom { position: absolute; left: 16px; right: 16px; bottom: 12px; z-index: 6; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.addfield { min-width: 0; }
 .ios .bottom { bottom: 30px; }
 .trip { --ts2: min(var(--ts), 1.3); display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 12px; border-radius: 14px; background: var(--hl-color-inverse); color: var(--hl-color-on-inverse); font-size: calc(13px * var(--ts2)); line-height: 1.2; white-space: nowrap; overflow: hidden; }
 .trip .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--hl-color-mint); flex: none; }
@@ -147,7 +148,7 @@ th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; color
 .tabs { justify-self: center; display: flex; gap: 4px; padding: 4px 24px; --o: var(--hl-color-border); background: var(--hl-color-surface-raised); filter: drop-shadow(2px 0 0 var(--o)) drop-shadow(-2px 0 0 var(--o)) drop-shadow(0 2px 0 var(--o)) drop-shadow(0 -2px 0 var(--o)) drop-shadow(0 3px 0 var(--o));
   clip-path: polygon(18px 0, calc(100% - 18px) 0, 100% 50%, calc(100% - 18px) 100%, 18px 100%, 0 50%); }
 .th-light .tabs { background: #fff; }
-.tab { display: flex; align-items: center; gap: 6px; padding: 0 14px; min-height: 44px; font-size: calc(14px * min(var(--ts), 1.3)); font-weight: 700; white-space: nowrap; line-height: 1.2; }
+.tab { display: flex; align-items: center; gap: 6px; padding: 0 12px; min-height: 44px; font-size: calc(14px * min(var(--ts), 1.3)); font-weight: 700; white-space: nowrap; line-height: 1.2; }
 .tab.on { background: var(--hl-color-honey); color: var(--hl-color-on-honey); clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 10px 100%, 0 50%); }
 
 
@@ -178,7 +179,7 @@ th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; color
 
 /* The edit sheet (replica of edit_item_sheet.dart at 390 × 844: 546 px, from the release build's screenshot). */
 .scrim { position: absolute; inset: 0; z-index: 20; background: rgb(0 0 0 / 0.38); }
-.esheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 21; max-height: calc(100% - 24px); overflow-y: auto; background: var(--hl-color-surface-raised); border-radius: 28px 28px 0 0; padding: 0 16px 34px; display: grid; gap: 6px; font-size: calc(16px * var(--ts)); }
+.esheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 21; max-height: calc(100% - 24px); overflow-y: auto; overflow-x: hidden; grid-template-columns: minmax(0, 1fr); background: var(--hl-color-surface-raised); border-radius: 28px 28px 0 0; padding: 0 16px 34px; display: grid; gap: 6px; font-size: calc(16px * var(--ts)); }
 .th-light .esheet { background: #fff; }
 .esheet .grab { height: 22px; display: grid; place-items: center; }
 .esheet .grab i { width: 32px; height: 4px; border-radius: 2px; background: var(--hl-color-divider); }
@@ -228,3 +229,26 @@ th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; color
 .sadd { display: flex; justify-content: flex-end; }
 .trip .end { padding: 0; }
 .new { text-decoration: underline dotted color-mix(in srgb, currentColor 60%, transparent); text-underline-offset: 3px; }
+
+/* ld-pill: on the 360 px Android from 200 % text the unselected tabs show their icon only (release build); the iPhone keeps them. */
+.android.ts200 .tab:not(.on) span, .android.ts310 .tab:not(.on) span { display: none; }
+.ios.ts310 .tabs, .ios.ts200 .tabs { padding: 4px 12px; }
+.ios.ts310 .tab, .ios.ts200 .tab { padding: 0 8px; }
+.tabs { max-width: 100%; }
+/* At large text the release build sets a row's name and the store name at 1.335 line height (310 %: 70 px a line). */
+.item .nm, .sdivider { line-height: 1.335; }
+/* At 200 % the release build gives a row 5 px above and below its name (a one-line row is 56 px); at 310 % none. */
+.ts200 .item { padding-top: 5px; padding-bottom: 5px; }
+.schip > span { max-width: 100%; overflow-wrap: anywhere; }
+.qrow .field { min-width: 0; }
+/* Large text: the sheet's buttons wrap, the trip strip's words give way, the stores screen keeps to the phone. */
+.actions { flex-wrap: wrap; }
+.actions .hexbtn > span { padding: 2px 28px; }
+.trip span:not(.end):not(.pause):not(.end > span) { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.trip .end { flex: none; }
+.stores-screen { grid-template-columns: minmax(0, 1fr); }
+.switchrow > span, .shint { min-width: 0; overflow-wrap: anywhere; }
+.srow .hexbtn { min-width: 0; }
+.srow .hexbtn > span { overflow: hidden; text-overflow: ellipsis; }
+.stores-screen .hexbtn > span { white-space: normal; overflow-wrap: anywhere; }
+.sadd .hexbtn { min-width: 0; max-width: 100%; }

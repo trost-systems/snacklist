@@ -127,7 +127,7 @@ export const phone = (s, opt, env, { live = false, show = '' } = {}) => {
       <div class="topbar" data-topbar>${topbar(st, opt)}</div>
       <div class="bottom" data-bottom>${trip}
         <div class="addfield" data-addfield><span>${esc(w(s.lang, 'addFieldHint'))}</span></div>
-        <div class="tabs"><span class="tab on">${ic('shopping_cart_outlined')}${esc(w(s.lang, 'tabList'))}</span><span class="tab">${ic('history')}${esc(w(s.lang, 'tabHistory'))}</span><span class="tab">${ic('menu')}${esc(w(s.lang, 'tabMore'))}</span></div>
+        <div class="tabs"><span class="tab on">${ic('shopping_cart_outlined')}<span>${esc(w(s.lang, 'tabList'))}</span></span><span class="tab">${ic('history')}<span>${esc(w(s.lang, 'tabHistory'))}</span></span><span class="tab">${ic('menu')}<span>${esc(w(s.lang, 'tabMore'))}</span></span></div>
       </div>
       ${s.sheet?.kind === 'edit' ? editSheet(st, opt) : ''}
       ${s.screen === 'stores' ? storesScreen(st) : ''}
