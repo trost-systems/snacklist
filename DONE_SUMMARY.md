@@ -2090,3 +2090,7 @@ logic changed, so no flag. Why no generic tail guard: DECISIONS Job 349. Tests: 
 `supabase/tests/classifier_misfires.test.sql` (30 checks), full pgTAP, sweep (353 match), wordlist
 (94.2 % misspellings, 1 false match as before), `scripts/gates/db.sh` classifier steps, parity test
 in Flutter. Ships with the next green main build; no flag.
+
+## Job 355: Recently used, expanded (round RU, prototypes)
+
+Four options (RU1 to RU4) for a "Recently used" section that is open by default and set apart from the list. Each one shows the tick landing and the one-tap return. Pick RU2 (a tinted tray with a peek on the add field), runner-up RU4 (check and strike-through). At scroll top no option shows a whole recent row, because the total sits in between. Only RU2's peek makes the landing visible. It is a draft PR and never merged. The app is unchanged. Details: `docs/done/355-recently-used-prototypes.md`.

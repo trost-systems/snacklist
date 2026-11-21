@@ -16978,3 +16978,10 @@ pinned above the field, other suggestions hidden); all of it stays behind `add-s
    typo rows. `suggest_parity.json` is rewritten and the pinned exceptions follow the test's own
    output. The server's category-store-off rows that agree with category-store-on get their own
    pin set (`categoryStoreOffExceptions`).
+
+## Job 355: round RU (Recently used, expanded)
+
+1. **The peek came from the measurement.** At scroll top none of the four open sections shows a whole recent row (390 × 844 and 360 × 640, 100 % to 310 %, EN and DE, with 3 or 15 recent items). TE1's total fills the space under a short list. So "open by default" alone still lets a ticked item leave the screen. RU2 pins the section's head to the add field while the tray is off screen, and it is the pick. `verify.mjs` checks that premise against the measure.
+2. **The peek's pill shows only my own newest tick (RU-Q5).** Recently used is household-wide, so without this rule Lea's ticks would land in Peter's peek while she shops.
+3. **No new hexagons.** Checks, pills, the tray and the peek are round or rounded rectangles, because job 353 is redesigning away from hex at the same time. The existing chrome stays as the app draws it.
+4. **The base is the unmerged flag builds.** These are job 350's `hide-categories` (#608) and job 348's TE1 (#607), drawn as their PRs describe.
