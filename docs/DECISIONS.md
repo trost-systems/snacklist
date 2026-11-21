@@ -16946,3 +16946,10 @@ pinned above the field, other suggestions hidden); all of it stays behind `add-s
 7. **Edit-sheet stepper.** With `add-sheet-compact` the edit sheet's Menge is the add sheet's hex
    group (`QuantityGroup`, moved to public, keys prefixed `edit-`), under Marke; flag off keeps the
    labelled field with side steppers. Stepping and typing save as before.
+
+## Job 332 land review 0: flags.dart parsing, 2026-11-21
+
+1. **A `const ... xFlag` the sync cannot read fails the run.** Skipping it would hide a flag from
+   PostHog with no sign. `const String xFlag` is read; other types throw with the line number.
+2. **Follow-up PR, not a reopened #589.** #589 was merged under the Legal GO; this change touches
+   only the sync script, its tests and docs, no legal, ARB, store or consent text.

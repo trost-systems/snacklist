@@ -272,6 +272,16 @@ Deno.test('a human web group with per-platform versions is not split or widened 
   ]);
 });
 
+Deno.test('a platform condition a human wrote as iOS gets the ios version (review 0, land)', () => {
+  const min = { default: '1.0.0', ios: '1.1.0' };
+  const flags = [
+    flag('f', { groups: [{ properties: [platform('iOS')], 'rollout_percentage': 30 }] }),
+  ];
+  assertEquals(groupsOf(runs(min, flags, 1)), [
+    { properties: [platform('iOS'), version('1.1.0'), buildSet], 'rollout_percentage': 30 },
+  ]);
+});
+
 Deno.test('a platform newly given its own version leaves the "is not" group with a new group', () => {
   const first = runs({ default: '1.0.0', ios: '1.1.0' }, [flag('f', { groups: [everyone] })], 1);
   const min = { default: '1.0.0', ios: '1.1.0', android: '1.2.0' };
@@ -369,6 +379,7 @@ Deno.test('flags.dart: keys of top-level const ...Flag with their doc comment on
     "const groceryLogFlag = 'grocery-log';",
     '',
     "const bareFlag = 'bare';",
+    "const String typedFlag = 'typed';",
     "const notAFlagName = 'ignored';",
     "  const indentedFlag = 'ignored-too';",
   ].join('\n');
@@ -378,9 +389,46 @@ Deno.test('flags.dart: keys of top-level const ...Flag with their doc comment on
       description: 'The flag that shows the Verlauf tab, the grocery log (job 199).',
     },
     { key: 'bare', description: 'bare' },
+    { key: 'typed', description: 'typed' },
   ]);
   assertThrows(() => parseFlagsDart("const xFlag = 'Bad_Key';"), InputError, 'Bad_Key');
   assertThrows(() => parseFlagsDart('class Flags {}'), InputError, 'no `const');
+});
+
+Deno.test('flags.dart: a declaration dart format wrapped after = keeps its key and doc', () => {
+  const text = [
+    '/// Plans the route through the shop',
+    '/// (an experiment).',
+    'const householdShoppingRoutePlannerExperimentFlag =',
+    "    'household-shopping-route-planner';",
+    '',
+    "const shortFlag = 'short';",
+  ].join('\n');
+  assertEquals(parseFlagsDart(text), [
+    {
+      key: 'household-shopping-route-planner',
+      description: 'Plans the route through the shop (an experiment).',
+    },
+    { key: 'short', description: 'short' },
+  ]);
+});
+
+Deno.test('flags.dart: a const ...Flag the parser cannot read is an error, never skipped', () => {
+  for (
+    const bad of [
+      'const fancyFlag = "double-quoted";',
+      "const builtFlag = 'a' + 'b';",
+      "const typedFlag = FlagKey('typed');",
+      "const Object typedNameFlag = 'typed';",
+    ]
+  ) {
+    assertThrows(
+      () => parseFlagsDart(`const okFlag = 'ok';\n${bad}`),
+      InputError,
+      'line 2: cannot read',
+      bad,
+    );
+  }
 });
 
 const release = (v: string, b: number, stores: Record<string, boolean>) => ({
