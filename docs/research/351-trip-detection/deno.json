@@ -1,0 +1,4 @@
+{
+  "fmt": { "lineWidth": 120, "singleQuote": true, "exclude": ["README.md"] },
+  "lint": { "rules": { "tags": ["recommended"] } }
+}

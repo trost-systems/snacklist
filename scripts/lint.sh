@@ -76,3 +76,5 @@ log "schema check against $base"
 deno run --allow-read --allow-run=git,squawk supabase/checks/schema_check.ts "$base"
 log "schema check tests"
 (cd supabase/checks && deno fmt --check -q && deno lint -q && deno test -q --allow-read --allow-write --allow-run=squawk,git)
+log "trip detection simulator tests (job 351)"
+(cd docs/research/351-trip-detection && deno fmt --check -q && deno lint -q && deno test -q --allow-read)
