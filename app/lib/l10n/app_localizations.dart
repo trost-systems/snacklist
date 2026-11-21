@@ -1880,19 +1880,13 @@ abstract class AppLocalizations {
   /// **'Gilt für dieses Gerät. Ausschalten löscht die Kennung auf diesem Gerät.'**
   String get analyticsToggleHint;
 
-  /// More: shown under the version while this install is marked internal (its analytics are filtered out)
-  ///
-  /// In de, this message translates to:
-  /// **'Interne Installation'**
-  String get internalInstall;
-
-  /// More, internal installs only: copies the analytics install id, so a PostHog feature flag can be turned on for this one install (job 190)
+  /// More, debug builds and the tester group internal only: copies the analytics install id, so a PostHog feature flag can be turned on for this one install (job 190)
   ///
   /// In de, this message translates to:
   /// **'Installations-ID kopieren: {id}'**
   String copyInstallId(String id);
 
-  /// More, internal installs only: raises a test exception for error tracking
+  /// More, debug builds and the tester group internal only: raises a test exception for error tracking
   ///
   /// In de, this message translates to:
   /// **'Testfehler senden'**

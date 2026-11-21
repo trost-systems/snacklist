@@ -1,0 +1,7 @@
+[08:34:47.653Z] customer, long press on the version: no „Testfehler senden“, no „Interne Installation“
+[08:34:47.770Z] insert as the user: "42501"
+[08:34:47.844Z] my_tester_groups as the user: ["beta-de","internal"]
+[08:34:52.061Z] in the group internal after a reload: „Testfehler senden“ shows below the version
+[08:34:52.061Z] shared requests before the yes (3): [{"platform":"web","app_version":"0.1.0+1"},{"platform":"web","app_version":"0.1.0+1"},{"platform":"web","app_version":"0.1.0+1"}]
+[08:34:53.242Z] flag request after the yes: {"token":"<project key>","distinct_id":"<install id>","groups":{},"person_properties":{"is_internal":true,"tester_groups":"beta-de,internal","$lib":"posthog-flutter","$lib_version":"5.58.3"},"timezone":"Europe/Berlin","$device_id":"<install id>","sent_at":"2026-11-21T08:34:53.186Z"}
+[08:34:53.352Z] PASS

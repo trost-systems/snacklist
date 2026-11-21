@@ -58,15 +58,19 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
 
   /// Analytics (job 19): the install id, the consent decision and the
   /// version of the consent text it was given under, the install id
-  /// `first_open` went out for, the internal-install mark, and the flags
-  /// served without consent (JSON `{key: bool}`, job 257). Kept across
-  /// sign-outs: the decision is per install, not per account.
+  /// `first_open` went out for, and the flags served without consent (JSON
+  /// `{key: bool}`, job 257). Kept across sign-outs: the decision is per
+  /// install, not per account. [_internalKey] is the internal-install mark
+  /// builds before job 337 kept, deleted at start. [_testerGroupsKey] is
+  /// the last user's tester groups (`{user, groups}`, job 337), for an
+  /// offline start; deleted at sign-out.
   static const _installIdKey = 'analytics.install_id';
   static const _consentKey = 'analytics.consent';
   static const _consentVersionKey = 'analytics.consent_text_version';
   static const _firstOpenKey = 'analytics.first_open';
   static const _internalKey = 'analytics.internal';
   static const _sharedFlagsKey = 'analytics.shared_flags';
+  static const _testerGroupsKey = 'analytics.tester_groups';
 
   /// The invite link the user opened and has not answered yet (job 22):
   /// `{code, at}`. Not under [forget]'s prefixes: a signed-out start (which
@@ -242,17 +246,36 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
       _write(() => _prefs.setString(_firstOpenKey, installId));
 
   @override
-  Future<bool> internalInstall() async {
+  Future<void> forgetInternalInstallMark() =>
+      _write(() => _prefs.remove(_internalKey));
+
+  @override
+  Future<Set<String>?> testerGroups(String userId) async {
     try {
-      return await _prefs.getBool(_internalKey) ?? false;
+      return switch (jsonDecode(
+        await _prefs.getString(_testerGroupsKey) ?? '',
+      )) {
+        {'user': final String user, 'groups': final List<Object?> groups}
+            when user == userId =>
+          {...groups.whereType<String>()},
+        _ => null,
+      };
     } on Object {
-      return false;
+      return null;
     }
   }
 
   @override
-  Future<void> saveInternalInstall({required bool internal}) =>
-      _write(() => _prefs.setBool(_internalKey, internal));
+  Future<void> saveTesterGroups(String userId, Set<String> groups) => _write(
+    () => _prefs.setString(
+      _testerGroupsKey,
+      jsonEncode({'user': userId, 'groups': groups.toList()..sort()}),
+    ),
+  );
+
+  @override
+  Future<void> forgetTesterGroups() =>
+      _write(() => _prefs.remove(_testerGroupsKey));
 
   @override
   Future<Map<String, bool>> sharedFlags() async {

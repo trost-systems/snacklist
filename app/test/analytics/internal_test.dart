@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   bool internal({
     bool release = true,
-    bool install = false,
+    Set<String> groups = const {},
     String? household,
     String? email,
     Set<String> households = const {},
@@ -12,7 +12,7 @@ void main() {
     String? tester,
   }) => isInternal(
     releaseBuild: release,
-    internalInstall: install,
+    testerGroups: groups,
     householdId: household,
     email: email,
     internalHouseholds: households,
@@ -31,8 +31,24 @@ void main() {
     expect(internal(release: false, email: 'anna@gmail.com'), isTrue);
   });
 
-  test('an internal install is internal', () {
-    expect(internal(install: true), isTrue);
+  test('the tester group internal is internal; other groups are not', () {
+    expect(internal(groups: {'internal'}), isTrue);
+    expect(internal(groups: {'beta-de', 'internal'}), isTrue);
+    expect(internal(groups: {'beta-de'}), isFalse);
+    expect(internal(groups: {'internal-de'}), isFalse);
+  });
+
+  test('a release build alone is not internal: no mark on the device', () {
+    expect(internal(email: 'lea@gmail.com', household: 'h1'), isFalse);
+  });
+
+  test('the tester_groups flag property is sorted and comma-joined', () {
+    expect(testerGroupsProperty({}), '');
+    expect(testerGroupsProperty({'internal'}), 'internal');
+    expect(
+      testerGroupsProperty({'internal', 'beta-de', 'alexa'}),
+      'alexa,beta-de,internal',
+    );
   });
 
   test('listed households are internal', () {

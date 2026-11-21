@@ -1114,9 +1114,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Applies to this device. Turning it off deletes the ID on this device.';
 
   @override
-  String get internalInstall => 'Internal installation';
-
-  @override
   String copyInstallId(String id) {
     return 'Copy installation ID: $id';
   }

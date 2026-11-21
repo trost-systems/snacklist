@@ -187,6 +187,10 @@ from public.personal_access_tokens where token_hash = repeat('d', 64);
 insert into public.oauth_app_devices (user_id, client_id, device)
 select id, '00000000-0000-4000-8000-0000000b0080', 'Chrome · macOS' from auth.users where email = 'peter@backup.test';
 
+-- Job 337: Peter is in a tester group, as the lead's SQL puts him there.
+insert into public.tester_groups (user_id, group_name)
+select id, 'internal' from auth.users where email = 'peter@backup.test';
+
 -- Job 82: a confirmed waitlist sign-up, a proof record and a rate counter (test addresses only).
 insert into public.waitlist (email, email_hmac, platform, locale, launch_news, consent_text_version,
   confirmed_at, last_mail_at)
