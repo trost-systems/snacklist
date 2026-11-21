@@ -16502,3 +16502,46 @@ described household Premium, Siri as Premium and the pre-CS1 split. Not merged; 
    promotional path (`scripts/iap/promotional.ts` grants households; beta tester grants stay off).
 10. **The draft purchase pages are deleted** (`datenschutz-kaeufe.md`, `privacy-purchases.md`, Legal R.1 (3)); their
     text is section 5a now.
+
+## Job 330: Legal MUSTs before premium-launch (N-308, N-309, N-310)
+
+Legal Review 2026-11-20 (#579/#580) found household wording in the Premium keys that ship with
+per-user Premium (#387, job 185). The report itself never reached the Hetzner runner (sync is
+box to hz only); the copy below is drafted from the brief and the two reviews that list the keys,
+and goes to Legal as a draft.
+
+1. **Rewritten keys (N-308).** The nine the brief names (`premiumLifetimeWhileYearly`,
+   `…Subscriber`, `lifetimeUsedElsewhere`, `premiumTwoYearly`, `premiumBillingContinues`,
+   `…Other`, `accountDeletePremium`, `…LastMember`, `…Ack`) plus five the #579/#580 reviews found
+   on the same screens (`premiumUsedElsewhereYearly`, `lifetimeBoughtTwice`; `premiumBenefitAi`
+   stays: "eure Liste" is the shared list). `apiPremium` and `integrationPremiumBody` are left to
+   #583 (job 328 review 0), which rewrites them the same way. Each
+   sentence names the owner the code actually checks: the user's own plan ("Du hast schon ein
+   Jahresabo"), a household-bound plan from before job 185 ("An diesen Haushalt ist … gebunden"),
+   or both where the rule merges them ("Dein Premium kommt gerade aus zwei Jahresabos",
+   "Snacklist Lifetime wurde mehr als einmal gekauft").
+2. **`lifetimeWeb` and `lifetimeUnlockedBody` deleted.** No caller since `premiumWeb` (job 329).
+3. **Account deletion warns the buyer (new behaviour).** Before, the red card and its tick came
+   only from `leaves_unlocked()`, a household answer, so a user with their own Lifetime who
+   deleted their account while others kept the household got no warning, though #580's
+   konto-loeschen.html says their Premium ends with the account. `AccountFate.ownPremium` reads
+   the user's own `user_entitlements` row in force (same rule as `user_premium()`: no end, or an
+   end ahead) and adds `accountDeleteOwnPremium` to the card; the tick then applies too. The ack
+   changed from "Ich bekomme mein Geld nicht von selbst zurück" to "Ein Kauf wird nicht von selbst
+   erstattet", true for a purchase and for a free household unlock.
+4. **Billing dialog split by moment.** `premiumBillingContinuesAccount` (new) says the account's
+   Premium ends but the plan does not; `premiumBillingContinues` now names leaving, deleting or
+   archiving a household only. `confirmBillingContinues` picks by its `account` flag.
+5. **N-310.** terms.md §4 and §10 link Apple's terms at `…/itunes/` (Apple's country chooser),
+   not the German page; nutzungsbedingungen.md keeps `…/itunes/de/terms.html`.
+6. **N-309** waits for the report's redline: no `#premium-grenzen` / `#premium-limits` section
+   exists on main, #579 or #580 (NEEDS_LEAD "Job 330").
+7. **Review 0 follow-up.** The refund help sheet (`refundHelpBody`, `refundHelpReason`, both
+   H-76 word for word) said Lifetime always belongs to the household and suggested "Mein Haushalt
+   war schon freigeschaltet" as the reason, which contradicts the new own-Premium card that links
+   to it. Both are now DRAFTs: the binding sentence is dropped (the sheet also opens from the join
+   screen, the household-bound case, so it names no owner) and the reason is "Ich hatte Snacklist
+   Premium schon". `premiumLifetimeWhileYearly` keeps K.13's „das restliche Abojahr wird nicht
+   automatisch erstattet“, which the first draft had dropped. `lifetimeUsedElsewhere` says
+   „Snacklist-Konto oder Haushalt“, since a receipt can still sit under a household App User ID
+   from an old build.

@@ -1220,16 +1220,22 @@ abstract class AppLocalizations {
   /// **'Mit „Meine Daten exportieren“ unter Konto kannst du vorher eine Kopie sichern.'**
   String get accountDeleteExportHint;
 
-  /// No description provided for @accountDeletePremium.
+  /// DRAFT for Legal GO (job 330, N-308: per-user Premium, #387). Account deletion: the last member's household has a household unlock (a promotional grant, or a household-bound purchase from before job 185)
   ///
   /// In de, this message translates to:
-  /// **'„{household}“ hat Snacklist Premium. Es gehört zum Haushalt und endet mit ihm. Archivieren geht hier nicht, denn ein archivierter Haushalt wird mit deinem Konto gelöscht. Soll der Haushalt mit Premium bleiben, lade vorher jemanden ein und lösche dein Konto erst, wenn die Person beigetreten ist.'**
+  /// **'„{household}“ ist als Haushalt freigeschaltet, für alle Mitglieder. Diese Freischaltung gehört zum Haushalt, nicht zu deinem Konto, und endet mit ihm. Archivieren geht hier nicht, denn ein archivierter Haushalt wird mit deinem Konto gelöscht. Soll die Freischaltung bleiben, lade vorher jemanden ein und lösche dein Konto erst, wenn die Person beigetreten ist.'**
   String accountDeletePremium(String household);
 
-  /// Account deletion (job 104): the last member's household has Snacklist Premium, in builds without the archive UI; accountDeletePremium without its archive sentence
+  /// DRAFT for Legal GO (job 330, N-308: per-user Premium, #387). Account deletion: the user has their own Snacklist Premium (bought or granted, user_entitlements)
   ///
   /// In de, this message translates to:
-  /// **'„{household}“ hat Snacklist Premium. Das gehört zum Haushalt. Löschst du dein Konto, endet es. Soll es bleiben? Dann lad erst jemand ein. Warte, bis die Person beigetreten ist. Lösch dann dein Konto.'**
+  /// **'Dein Snacklist Premium gehört zu deinem Konto und endet mit ihm, auch ein Einmalkauf. Auf ein anderes Konto lässt es sich nicht übertragen.'**
+  String get accountDeleteOwnPremium;
+
+  /// DRAFT for Legal GO (job 330, N-308: per-user Premium, #387). Account deletion (job 104): accountDeletePremium without its archive sentence, in builds without the archive UI
+  ///
+  /// In de, this message translates to:
+  /// **'„{household}“ ist als Haushalt freigeschaltet. Die Freischaltung gehört zum Haushalt. Löschst du dein Konto, endet sie. Soll sie bleiben? Dann lad erst jemand ein. Warte, bis die Person beigetreten ist. Lösch dann dein Konto.'**
   String accountDeletePremiumLastMember(String household);
 
   /// names: quoted and joined, like „Ferien“ und „Büro“
@@ -1250,10 +1256,10 @@ abstract class AppLocalizations {
   /// **'„{name}“'**
   String quotedName(String name);
 
-  /// No description provided for @accountDeletePremiumAck.
+  /// DRAFT for Legal GO (job 330, N-308: per-user Premium, #387). Account deletion: the box the user ticks before Delete works when Premium ends
   ///
   /// In de, this message translates to:
-  /// **'Ich weiß: Premium endet. Ich bekomme mein Geld nicht von selbst zurück.'**
+  /// **'Ich weiß: Premium endet. Ein Kauf wird nicht von selbst erstattet.'**
   String get accountDeletePremiumAck;
 
   /// No description provided for @accountDeleteConfirmLabel.
@@ -2852,12 +2858,6 @@ abstract class AppLocalizations {
   /// **'Kauf wiederherstellen'**
   String get lifetimeRestore;
 
-  /// No description provided for @lifetimeUnlockedBody.
-  ///
-  /// In de, this message translates to:
-  /// **'Snacklist Lifetime ist für euren ganzen Haushalt freigeschaltet. Danke!'**
-  String get lifetimeUnlockedBody;
-
   /// Snacklist Lifetime: Ask to Buy or a Play payment that completes later
   ///
   /// In de, this message translates to:
@@ -2882,10 +2882,10 @@ abstract class AppLocalizations {
   /// **'Dein Kauf ist angekommen, die Freischaltung dauert nur länger als sonst. Sie erscheint hier von selbst; bitte nicht noch einmal kaufen.'**
   String get lifetimeUnlockDelayed;
 
-  /// Snacklist Lifetime: the household has two or more store purchases; the refund help link is on the page
+  /// DRAFT for Legal GO (job 330, N-308: per-user Premium, #387). Premium page: two or more store purchases of Lifetime; the refund help link is on the page
   ///
   /// In de, this message translates to:
-  /// **'Euer Haushalt hat Snacklist Lifetime mehr als einmal gekauft. Einen der Käufe kannst du dir erstatten lassen.'**
+  /// **'Snacklist Lifetime wurde mehr als einmal gekauft. Wer einen der Käufe bezahlt hat, kann ihn sich erstatten lassen.'**
   String get lifetimeBoughtTwice;
 
   /// No description provided for @lifetimeCanceled.
@@ -2906,10 +2906,10 @@ abstract class AppLocalizations {
   /// **'Der Store ist gerade nicht erreichbar. Prüfe die Verbindung.'**
   String get lifetimeStoreOffline;
 
-  /// No description provided for @lifetimeUsedElsewhere.
+  /// DRAFT for Legal GO (job 330, N-308: per-user Premium, #387). Premium page: the store refused the purchase or restore because it belongs to another Snacklist account (RevenueCat's receipt in use, H-56)
   ///
   /// In de, this message translates to:
-  /// **'Dieser Kauf gehört zu einem anderen, früheren Haushalt und bleibt dort. Hier schaltet er nichts frei.'**
+  /// **'Dieser Kauf gehört schon zu einem anderen Snacklist-Konto oder Haushalt und bleibt dort. Für dich schaltet er nichts frei.'**
   String get lifetimeUsedElsewhere;
 
   /// No description provided for @lifetimeNothingRestored.
@@ -2923,12 +2923,6 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Der Kauf hat nicht geklappt ({code}).'**
   String lifetimeStoreFailed(String code);
-
-  /// No description provided for @lifetimeWeb.
-  ///
-  /// In de, this message translates to:
-  /// **'Kaufen kannst du Snacklist Lifetime in der iPhone- oder Android-App. Danach ist es auch hier für deinen ganzen Haushalt freigeschaltet.'**
-  String get lifetimeWeb;
 
   /// Snacklist Lifetime: the household's unlock is not known yet (loading or offline); no Buy button meanwhile
   ///
@@ -2948,10 +2942,10 @@ abstract class AppLocalizations {
   /// **'Kauf zurückfordern'**
   String get refundHelpTitle;
 
-  /// No description provided for @refundHelpBody.
+  /// DRAFT for Legal GO (job 330, N-308 follow-up: per-user Premium, was H-76 word for word). Refund help sheet, first paragraph; opened from the Premium page, the join screen and account deletion, so it names no owner of the purchase
   ///
   /// In de, this message translates to:
-  /// **'Snacklist Lifetime gehört immer zu dem Haushalt, in dem es gekauft wurde. Käufe im App Store erstattet nur Apple. Bei Google Play beantragst du die Erstattung in den ersten 48 Stunden bei Google; danach schreib uns an support@snacklist.app, wir prüfen jede Anfrage einzeln. Deine gesetzlichen Rechte bleiben unberührt.'**
+  /// **'Käufe im App Store erstattet nur Apple. Bei Google Play beantragst du die Erstattung in den ersten 48 Stunden bei Google; danach schreib uns an support@snacklist.app, wir prüfen jede Anfrage einzeln. Deine gesetzlichen Rechte bleiben unberührt.'**
   String get refundHelpBody;
 
   /// No description provided for @refundHelpApple.
@@ -2966,10 +2960,10 @@ abstract class AppLocalizations {
   /// **'Android, in den ersten 48 Stunden: Öffne Google Play, tippe auf dein Profilbild, dann „Zahlungen und Abos“, „Budget und Bestellverlauf“, wähle Snacklist Lifetime und „Problem melden“. Danach schreib uns mit der Bestellnummer (beginnt mit „GPA.“) oder der E-Mail-Adresse deines Google-Kontos.'**
   String get refundHelpGoogle;
 
-  /// No description provided for @refundHelpReason.
+  /// DRAFT for Legal GO (job 330, N-308 follow-up: per-user Premium, was H-76 word for word). Refund help sheet: a reason the user can give the store
   ///
   /// In de, this message translates to:
-  /// **'Als Grund kannst du schreiben: „Mein Haushalt war schon freigeschaltet.“'**
+  /// **'Als Grund kannst du zum Beispiel schreiben: „Ich hatte Snacklist Premium schon.“'**
   String get refundHelpReason;
 
   /// No description provided for @refundHelpAppleLink.
@@ -3206,16 +3200,16 @@ abstract class AppLocalizations {
   /// **'Datenschutzerklärung'**
   String get premiumPrivacyLink;
 
-  /// PLACEHOLDER (job 49): Snacklist Launch / Legal Review K.13 write the final copy (NEEDS_LEAD Job 49). Premium page: after lifetimeUsedElsewhere when the yearly plan belongs to another household (one subscription per Apple ID and group)
+  /// DRAFT for Legal GO (job 330, N-308: per-user Premium, #387). Premium page: after lifetimeUsedElsewhere (one subscription per Apple ID and group)
   ///
   /// In de, this message translates to:
-  /// **'Dein Apple- bzw. Google-Konto zahlt schon ein Jahresabo für einen anderen Haushalt. Jemand anderes aus diesem Haushalt kann Snacklist Premium abschließen.'**
+  /// **'Ein Apple- bzw. Google-Konto bezahlt höchstens ein Jahresabo für Snacklist Premium. Bezahlt deines schon eines für ein anderes Snacklist-Konto, gilt Premium nur dort.'**
   String get premiumUsedElsewhereYearly;
 
-  /// PLACEHOLDER (job 49): Snacklist Launch / Legal Review K.13 write the final copy (NEEDS_LEAD Job 49). Premium page: two yearly plans run at once (H-84); followed by the manage link
+  /// DRAFT for Legal GO (job 330, N-308: per-user Premium, #387). Premium page: two yearly plans run at once (H-84); followed by the manage link
   ///
   /// In de, this message translates to:
-  /// **'Euer Haushalt hat zwei Jahresabos. Kündigen kann jedes nur, wer es abgeschlossen hat.'**
+  /// **'Dein Premium kommt gerade aus zwei Jahresabos. Kündigen lässt sich jedes nur mit dem Apple- bzw. Google-Konto, mit dem es abgeschlossen wurde.'**
   String get premiumTwoYearly;
 
   /// DRAFT for Legal GO (job 329, per-user Premium; was the job 49 placeholder). Premium page on the web: no sales on the web
@@ -3260,16 +3254,16 @@ abstract class AppLocalizations {
   /// **'Apple bzw. Google konnten dein Jahresabo nicht abbuchen. Premium läuft noch bis {date}. Prüfe deine Zahlungsmethode im Store.'**
   String premiumBillingIssue(DateTime date);
 
-  /// Legal Review K.13 (job 49 ADDENDUM 2), word for word: do not reword. Before buying Lifetime while a yearly plan runs, and after (H-84). The part in [brackets] is the link to the store's subscription page; the app shows it without the brackets
+  /// DRAFT for Legal GO (job 330, N-308: per-user Premium, #387). Before buying Lifetime while a yearly plan runs, and after (H-84), when the plan is a household-bound one (bought before job 185) the user did not take out. The part in [brackets] is the link to the store's subscription page; the app shows it without the brackets
   ///
   /// In de, this message translates to:
-  /// **'Euer Haushalt hat schon ein Jahresabo. Es läuft nach dem Einmalkauf weiter und wird weiter abgerechnet, bis es gekündigt wird; das restliche Abojahr wird nicht automatisch erstattet. Kündigen kann nur, wer das Abo abgeschlossen hat, unter [Abos verwalten]. Snacklist kann das Abo nicht kündigen.'**
+  /// **'An diesen Haushalt ist schon ein Jahresabo gebunden. Es läuft nach deinem Einmalkauf weiter und wird weiter abgerechnet, bis es gekündigt wird; das restliche Abojahr wird nicht automatisch erstattet. Kündigen kann nur, wer das Abo abgeschlossen hat, unter [Abos verwalten]. Snacklist kann das Abo nicht kündigen.'**
   String get premiumLifetimeWhileYearly;
 
-  /// Legal Review K.13 (job 49 ADDENDUM 2), word for word: do not reword. premiumLifetimeWhileYearly for the subscriber (H-84). [brackets]: the store link
+  /// DRAFT for Legal GO (job 330, N-308: per-user Premium, #387). premiumLifetimeWhileYearly for the subscriber of the running plan (H-84). [brackets]: the store link
   ///
   /// In de, this message translates to:
-  /// **'Euer Haushalt hat schon ein Jahresabo. Es läuft nach dem Einmalkauf weiter und wird weiter abgerechnet, bis es gekündigt wird; das restliche Abojahr wird nicht automatisch erstattet. Du kannst es unter [Abo verwalten] kündigen. Snacklist kann das Abo nicht kündigen.'**
+  /// **'Du hast schon ein Jahresabo. Es läuft nach dem Einmalkauf weiter und wird weiter abgerechnet, bis du es kündigst; das restliche Abojahr wird nicht automatisch erstattet. Du kannst es unter [Abo verwalten] kündigen. Snacklist kann das Abo nicht kündigen.'**
   String get premiumLifetimeWhileYearlySubscriber;
 
   /// Legal Review K.13 (job 49 ADDENDUM 2), word for word: do not reword. Lifetime-while-yearly warning: opens the store sheet (RevenueCat starts only here, H-67). EN: Lead wording, PLACEHOLDER
@@ -3278,16 +3272,22 @@ abstract class AppLocalizations {
   /// **'Trotzdem kaufen'**
   String get premiumBuyAnyway;
 
-  /// Legal Review K.13 (job 49 ADDENDUM 2), word for word: do not reword. Before deleting the account, leaving, deleting or archiving a household, to the subscriber of a renewing yearly plan (H-85)
+  /// DRAFT for Legal GO (job 330, N-308: per-user Premium, #387). Before leaving, deleting or archiving a household, to the subscriber of a renewing yearly plan (H-85)
   ///
   /// In de, this message translates to:
-  /// **'Dein Jahresabo für Snacklist Premium läuft weiter und wird über dein Apple- bzw. Google-Konto abgerechnet, bis du es kündigst. Löschen oder Verlassen kündigt es nicht.'**
+  /// **'Dein Jahresabo für Snacklist Premium läuft weiter und wird über dein Apple- bzw. Google-Konto abgerechnet, bis du es kündigst. Einen Haushalt zu verlassen, zu löschen oder zu archivieren kündigt es nicht.'**
   String get premiumBillingContinues;
 
-  /// PLACEHOLDER (job 49): Snacklist Launch / Legal Review K.13 write the final copy (NEEDS_LEAD Job 49). Lead wording for Legal Review: the same moment, to members who are not the subscriber (H-85, NEEDS_LEAD Job 49)
+  /// DRAFT for Legal GO (job 330, N-308: per-user Premium, #387). Before deleting the account, to the subscriber of a renewing yearly plan (H-85)
   ///
   /// In de, this message translates to:
-  /// **'Ein Jahresabo für diesen Haushalt läuft weiter, bis es gekündigt wird.'**
+  /// **'Dein Jahresabo für Snacklist Premium läuft weiter und wird über dein Apple- bzw. Google-Konto abgerechnet, bis du es kündigst. Löschst du dein Konto, endet dein Premium, das Abo aber nicht. Kündige es vorher.'**
+  String get premiumBillingContinuesAccount;
+
+  /// DRAFT for Legal GO (job 330, N-308: per-user Premium, #387). The same moment as premiumBillingContinues, to a member who is not the subscriber of the household-bound yearly plan (bought before job 185) (H-85)
+  ///
+  /// In de, this message translates to:
+  /// **'An diesen Haushalt ist ein Jahresabo gebunden. Es läuft weiter, bis es gekündigt wird.'**
   String get premiumBillingContinuesOther;
 
   /// Legal Review K.13 (job 49 ADDENDUM 2), word for word: do not reword. Billing-continues dialog: opens the store's subscription page

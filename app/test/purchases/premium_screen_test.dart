@@ -404,7 +404,7 @@ void main() {
     ('bought', FakePurchaseRepository(bought: const BelongsElsewhere())),
     ('restored', FakePurchaseRepository(restored: const BelongsElsewhere())),
   ]) {
-    testWidgets('$what in another household: says so, refund help', (
+    testWidgets('$what for another account: says so, refund help', (
       tester,
     ) async {
       await openLifetime(tester, store: store);
@@ -416,8 +416,8 @@ void main() {
       shows({'lifetime-used-elsewhere'});
       expect(
         find.text(
-          'Dieser Kauf gehört zu einem anderen, früheren Haushalt und bleibt '
-          'dort. Hier schaltet er nichts frei.',
+          'Dieser Kauf gehört schon zu einem anderen Snacklist-Konto oder '
+          'Haushalt und bleibt dort. Für dich schaltet er nichts frei.',
         ),
         findsOneWidget,
       );
@@ -491,8 +491,8 @@ void main() {
     shows({'lifetime-unlocked', 'lifetime-bought-twice'});
     expect(
       find.text(
-        'Euer Haushalt hat Snacklist Lifetime mehr als einmal gekauft. Einen '
-        'der Käufe kannst du dir erstatten lassen.',
+        'Snacklist Lifetime wurde mehr als einmal gekauft. Wer einen der '
+        'Käufe bezahlt hat, kann ihn sich erstatten lassen.',
       ),
       findsOneWidget,
     );
@@ -502,8 +502,7 @@ void main() {
     expect(find.text('Kauf zurückfordern'), findsOneWidget);
     expect(
       find.text(
-        'Snacklist Lifetime gehört immer zu dem Haushalt, in dem es gekauft '
-        'wurde. Käufe im App Store erstattet nur Apple. Bei Google Play '
+        'Käufe im App Store erstattet nur Apple. Bei Google Play '
         'beantragst du die Erstattung in den ersten 48 Stunden bei Google; '
         'danach schreib uns an support@snacklist.app, wir prüfen jede Anfrage '
         'einzeln. Deine gesetzlichen Rechte bleiben unberührt.',
@@ -523,7 +522,7 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.textContaining('Mein Haushalt war schon freigeschaltet'),
+      find.textContaining('Ich hatte Snacklist Premium schon'),
       findsOneWidget,
     );
     expect(key('refund-apple'), findsOneWidget);
@@ -561,8 +560,8 @@ void main() {
     );
     expect(
       find.text(
-        'Your household bought Snacklist Lifetime more than once. One of the '
-        'purchases can be refunded.',
+        'Snacklist Lifetime was bought more than once. Whoever paid for one '
+        'of the purchases can get it refunded.',
       ),
       findsOneWidget,
     );
@@ -575,7 +574,6 @@ void main() {
     expect(find.text('Request a refund'), findsOneWidget);
     expect(
       find.text(
-        'Snacklist Lifetime always belongs to the household it was bought in. '
         'Only Apple refunds App Store purchases. For Google Play, ask Google '
         'within 48 hours of buying; after that, email us at '
         "support@snacklist.app and we'll look at your request. Your statutory "
@@ -1054,11 +1052,11 @@ void main() {
       expect(key('premium-lifetime-warning'), findsOneWidget);
       expect(
         find.text(
-          'Euer Haushalt hat schon ein Jahresabo. Es läuft nach dem '
-          'Einmalkauf weiter und wird weiter abgerechnet, bis es gekündigt '
-          'wird; das restliche Abojahr wird nicht automatisch erstattet. '
-          'Kündigen kann nur, wer das Abo abgeschlossen hat, unter Abos '
-          'verwalten. Snacklist kann das Abo nicht kündigen.',
+          'An diesen Haushalt ist schon ein Jahresabo gebunden. Es läuft nach '
+          'deinem Einmalkauf weiter und wird weiter abgerechnet, bis es '
+          'gekündigt wird; das restliche Abojahr wird nicht automatisch '
+          'erstattet. Kündigen kann nur, wer das Abo abgeschlossen hat, '
+          'unter Abos verwalten. Snacklist kann das Abo nicht kündigen.',
           findRichText: true,
         ),
         findsOneWidget,

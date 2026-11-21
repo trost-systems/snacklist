@@ -22,7 +22,7 @@ const newPage = async (browser: Browser) => {
 /** The status tile: its title says which Premium the household has (job 49). */
 const unlocked = (page: Page) => page.getByText(/^Snacklist Premium (Lifetime|aktiv|über)/);
 const buyButton = (page: Page) => page.getByRole('button', { name: /Weiter zum Kauf|kaufen/ });
-const BOUGHT_TWICE = /^Euer Haushalt hat Snacklist Lifetime mehr als einmal gekauft\./;
+const BOUGHT_TWICE = /^Snacklist Lifetime wurde mehr als einmal gekauft\./;
 
 async function inviteCode(email: string): Promise<string> {
   const { data, error } = await (await apiAs(email)).rpc('create_invite', {
@@ -76,7 +76,7 @@ test('joining an unlocked household: nothing to buy, the refund help; the purcha
   await screenshot(ben, 'job43-join-unlocked-de-390');
   await refundLink.click();
   await expect(ben.getByText('Kauf zurückfordern', { exact: true })).toBeVisible();
-  await expect(ben.getByText(/^Snacklist Lifetime gehört immer zu dem Haushalt, in dem es gekauft wurde\. Käufe im App Store erstattet nur Apple\./)).toBeVisible();
+  await expect(ben.getByText(/^Käufe im App Store erstattet nur Apple\./)).toBeVisible();
   await expect(ben.getByRole('link', { name: 'Mehr in den häufigen Fragen' })).toHaveAttribute('href', 'https://snacklist.app/support');
   await expect(ben.getByRole('link', { name: 'Bei Apple anfragen' })).toHaveAttribute('href', 'https://reportaproblem.apple.com/');
   await expect(ben.getByRole('link', { name: 'Bei Google anfragen' })).toHaveAttribute(
@@ -257,10 +257,10 @@ test('account deletion: the last member of an unlocked household confirms that P
   await page.reload();
   await openMore(page, 'Konto');
   await page.getByRole('button', { name: 'Konto löschen', exact: true }).click();
-  await expect(page.getByRole('group', { name: /^„Zuhause“ hat Snacklist Premium\. Es gehört zum Haushalt und endet mit ihm\. Archivieren geht hier nicht/ })).toBeVisible();
+  await expect(page.getByRole('group', { name: /^„Zuhause“ ist als Haushalt freigeschaltet, für alle Mitglieder\. Diese Freischaltung gehört zum Haushalt, nicht zu deinem Konto, und endet mit ihm\. Archivieren geht hier nicht/ })).toBeVisible();
   // The dialog's paragraphs reach the screen reader as one text.
   await expect(page.getByText(/Dein archivierter Haushalt „Unser Haushalt“ wird mit deinem Konto gelöscht, und mit ihm sein Snacklist Premium\./)).toBeVisible();
-  const ack = page.getByRole('checkbox', { name: 'Ich weiß: Premium endet. Ich bekomme mein Geld nicht von selbst zurück.' });
+  const ack = page.getByRole('checkbox', { name: 'Ich weiß: Premium endet. Ein Kauf wird nicht von selbst erstattet.' });
   await expect(ack).toBeVisible();
   // Scroll the dialog in Flutter first: a click on the field below the fold would land on the
   // canvas where the box is now.

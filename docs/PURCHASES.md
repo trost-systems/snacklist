@@ -132,9 +132,9 @@ reasons.
    the unlock (for Lifetime: the Lifetime row, also next to a running yearly plan), the page says
    "Wird freigeschaltet …".
 5. **Lifetime while a yearly plan renews** (H-84): Buy Lifetime first shows Legal Review's
-   warning, „Euer Haushalt hat schon ein Jahresabo. Es läuft nach dem Einmalkauf weiter und wird
-   weiter abgerechnet, bis es gekündigt wird; …“ (the subscriber's variant: „Du kannst es unter
-   [Abo verwalten] kündigen.“), with „Trotzdem kaufen“ · „Abbrechen“. The SDK starts only on
+   warning; the subscriber reads „Du hast schon ein Jahresabo. Es läuft nach dem Einmalkauf weiter
+   und wird weiter abgerechnet, bis du es kündigst; …“, a member under a household-bound plan
+   someone else pays „An diesen Haushalt ist schon ein Jahresabo gebunden. …“ (job 330, N-308), with „Trotzdem kaufen“ · „Abbrechen“. The SDK starts only on
    „Trotzdem kaufen“. After the purchase the page keeps that text with the store link while the
    plan renews. Snacklist never cancels or refunds the plan.
 6. RevenueCat calls our webhook (`POST /functions/v1/purchases/revenuecat/webhook`, the
@@ -156,10 +156,14 @@ reasons.
 9. Before deleting the account, joining another household (leave, delete or archive the current
    one) or re-enabling an archived one, the subscriber of a renewing plan reads „Dein Jahresabo
    für Snacklist Premium läuft weiter und wird über dein Apple- bzw. Google-Konto abgerechnet, bis
-   du es kündigst. Löschen oder Verlassen kündigt es nicht.“ with „Abo verwalten“ · „Trotzdem
+   du es kündigst.“ and then, for a household, „Einen Haushalt zu verlassen, zu löschen oder zu
+   archivieren kündigt es nicht.“, for the account „Löschst du dein Konto, endet dein Premium, das
+   Abo aber nicht. Kündige es vorher.“ (job 330, N-308), with „Abo verwalten“ · „Trotzdem
    fortfahren“ (account deletion also for a plan they pay for another household); other members
-   of a billed household the placeholder line „Ein Jahresabo für diesen Haushalt läuft weiter,
-   bis es gekündigt wird.“ (H-85).
+   of a household with a household-bound billed plan „An diesen Haushalt ist ein Jahresabo
+   gebunden. Es läuft weiter, bis es gekündigt wird.“ (H-85). Account deletion also warns the
+   buyer that their own Premium ends with the account (`accountDeleteOwnPremium`, ticked like a
+   household's).
 10. Refunds revoke one purchase's unlock (`purchase_revoke`) and send `purchase_refunded` once;
     `REFUND_REVERSED` reinstates it in its own household. A `TRANSFER` never moves anything.
 11. Restore (Kauf wiederherstellen) calls `restorePurchases()` under the household's App User ID.
@@ -168,24 +172,25 @@ reasons.
     (job 67). On Play, Buy takes the yearly base plan's own option, never RevenueCat's default,
     which would pick a trial or intro offer the page doesn't show.
     With the project's restore behavior **Keep with original App User ID** (an Ops setting),
-    RevenueCat refuses a purchase that belongs to another household; the app says "Dieser Kauf
-    gehört zu einem anderen, früheren Haushalt und bleibt dort." with the refund help. The server
+    RevenueCat refuses a purchase that belongs to another account or household; the app says
+    "Dieser Kauf gehört schon zu einem anderen Snacklist-Konto oder Haushalt und bleibt dort." with the refund
+    help. The server
     refuses it too (`purchase_record`: bound household, tombstones).
 
 | Case | What happens |
 | --- | --- |
 | Double tap on Buy, app killed mid-purchase | RevenueCat owns the transaction and finishes it; its webhook records it. A claim lost with a killed app leaves the buyer unknown: the unlock stands, `purchase_completed` is not sent (analytics undercount) |
 | Restore on a new phone or the partner's phone | Household already unlocked: shown at once, no Buy, no Restore (nothing to restore) |
-| The same purchase in another household (restore, re-buy, a RevenueCat `TRANSFER`) | Refused by RevenueCat (Keep with original App User ID) and by `purchase_record` (`used_elsewhere`): one household per purchase, for good. "Dieser Kauf gehört zu einem anderen, früheren Haushalt und bleibt dort." and the refund help link |
+| The same purchase in another household (restore, re-buy, a RevenueCat `TRANSFER`) | Refused by RevenueCat (Keep with original App User ID) and by `purchase_record` (`used_elsewhere`): one household per purchase, for good. "Dieser Kauf gehört schon zu einem anderen Snacklist-Konto oder Haushalt und bleibt dort." and the refund help link |
 | Restore after its household was deleted | Refused (`used_elsewhere` with `household_gone`; after the 30-day purge `tombstoned`). Nothing unlocks anywhere else (H-56) |
-| A second purchase in an unlocked household (two phones, Ask to Buy, a race) | Its own row; refunding one keeps the other's unlock. Every member's page then shows "Euer Haushalt hat Snacklist Lifetime mehr als einmal gekauft. Einen der Käufe kannst du dir erstatten lassen." with the refund help |
+| A second purchase in an unlocked household (two phones, Ask to Buy, a race) | Its own row; refunding one keeps the other's unlock. Every member's page then shows "Snacklist Lifetime wurde mehr als einmal gekauft. Wer einen der Käufe bezahlt hat, kann ihn sich erstatten lassen." with the refund help |
 | Buyer switches households between buying and claiming | The claim names the household the purchase was made for (job 47), not the one the buyer is in now. `purchase_claim` records the buyer if they were a member of it at the purchase time: a member now who joined before it, or one who left it in the last hour (`household_departures`, kept one hour) after joining before it. Otherwise (left more than an hour ago, joined after the purchase, never a member, or the household is gone) it answers 403 `no_household` and the buyer stays unknown (no `purchase_completed`); the unlock stands where it was bought |
 | Ask to Buy, Play pending payment | "Wartet auf Bestätigung"; RevenueCat's webhook records it when the store completes it, and the note goes once the unlock arrives |
 | A purchase or restore ends after the member switched households | The purchase is the user's (job 185): the unlock it waits for follows them into the household they switched to, also after they left their last household and started or joined another (job 211), so Buy stays off there until it arrives. Another account signed in on the device starts with nothing pending. Before job 185 the claim named the household bought for and the new household's page showed nothing of it (job 67) |
 | The plan ends while the app is open, also offline | The end-of-plan timer, and every return to the foreground, compute premium again from the last rows: the page offers the plans again, MCP and the API lock at the server (job 67) |
 | Products not loadable, offline, store down | Before the tap (no price read): no Buy, "Snacklist Premium ist gerade nicht verfügbar.". After the tap: the same line or the offline note; Buy stays and tries again; no crash |
 | Yearly-only storefront (BR, MX, IN) | The store returns no Lifetime: no Lifetime card and no Lifetime entry (warning, upgrade); the yearly card as usual. Lifetime holders and granted households there keep Premium |
-| The same Apple ID already pays the yearly plan for household A, and the person tries to buy or restore it in household B (iOS) | Apple allows one subscription per Apple ID per group, and RevenueCat (Keep with original App User ID) keeps the receipt with A: the store or RevenueCat refuses (`receiptAlreadyInUse`), the app says "Dieser Kauf gehört zu einem anderen, früheren Haushalt und bleibt dort." and "Dein Apple- bzw. Google-Konto zahlt schon ein Jahresabo für einen anderen Haushalt. Jemand anderes aus diesem Haushalt kann Snacklist Premium abschließen." The restore setting stays |
+| The same Apple ID already pays the yearly plan for household A, and the person tries to buy or restore it in household B (iOS) | Apple allows one subscription per Apple ID per group, and RevenueCat (Keep with original App User ID) keeps the receipt with A: the store or RevenueCat refuses (`receiptAlreadyInUse`), the app says "Dieser Kauf gehört schon zu einem anderen Snacklist-Konto oder Haushalt und bleibt dort." and "Ein Apple- bzw. Google-Konto bezahlt höchstens ein Jahresabo für Snacklist Premium. Bezahlt deines schon eines für ein anderes Snacklist-Konto, gilt Premium nur dort." The restore setting stays |
 | Two yearly plans in one household (two members' store accounts, a race) | Both rows kept, never merged; premium runs to the later end; the page says so with the manage link; the function logs `second_yearly` |
 | Yearly plan cancelled (auto-renew off) | Premium stays until the period's end, the status says "läuft am … aus"; EXPIRATION ends it |
 | Yearly plan lapsed | Premium off at read time; the paywall offers both plans again. Nothing is deleted: household, list, Alexa links, tokens, MCP grants stay (integrations are paused by job 50's gate). The row stays with its past end |

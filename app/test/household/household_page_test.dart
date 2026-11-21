@@ -292,6 +292,16 @@ void main() {
       await tester.tap(_key('household-leave-confirm'));
       await tester.pumpAndSettle();
       expect(_key('premium-billing-continues'), findsOneWidget);
+      expect(
+        find.text(
+          'Dein Jahresabo für Snacklist Premium läuft weiter und wird über '
+          'dein Apple- bzw. Google-Konto abgerechnet, bis du es kündigst. '
+          'Einen Haushalt zu verlassen, zu löschen oder zu archivieren '
+          'kündigt es nicht.',
+        ),
+        findsOneWidget,
+        reason: 'leaving says nothing about the account (N-308)',
+      );
       expect(o.session.leaves, isEmpty);
       await tester.tap(_key('premium-billing-continue'));
       await tester.pumpAndSettle();

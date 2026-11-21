@@ -97,6 +97,23 @@ void main() {
     }
   });
 
+  test('the fate has own Premium of the user, which ends with the account '
+      '(N-308)', () async {
+    final auth = FakeAuth()..user = userWith(const []);
+    addTearDown(auth.close);
+    final server = FakeHouseholds(auth)
+      ..member('peter', 'home', 'Zuhause')
+      ..member('lea', 'home', 'Zuhause');
+    expect(
+      (await SupabaseAccountRepository(server).fate()).endsPremium,
+      isFalse,
+    );
+    server.ownPremium.add(auth.user!.id);
+    final fate = await SupabaseAccountRepository(server).fate();
+    expect(fate.ownPremium, isTrue);
+    expect(fate.endsPremium, isTrue);
+  });
+
   test('the fate names each household: kept for others, or deleted '
       '(job 169b)', () async {
     final auth = FakeAuth()..user = userWith(const []);
@@ -123,6 +140,7 @@ void main() {
           .having((f) => f.unlocked, 'unlocked', isTrue),
     );
     expect(fate.endsPremium, isTrue);
+    expect(fate.ownPremium, isFalse);
     expect(
       server.calls.where((c) => c.startsWith('household_members')),
       isEmpty,

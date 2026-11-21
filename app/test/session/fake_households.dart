@@ -33,6 +33,9 @@ class FakeHouseholds(final FakeAuth fakeAuth)
   /// Households whose Snacklist Premium ends with their last member.
   final unlocked = <String>{};
 
+  /// Users with their own Snacklist Premium in force (`user_entitlements`).
+  final ownPremium = <String>{};
+
   /// Invite code to the household it leads to.
   final invites = <String, String>{};
 
@@ -234,6 +237,11 @@ class FakeHouseholds(final FakeAuth fakeAuth)
               'role': 'member',
               'joined_at': '2026-11-08T10:00:00Z',
             },
+        ];
+      case ('GET', 'user_entitlements'):
+        final user = url.queryParameters['user_id']?.replaceFirst('eq.', '');
+        return [
+          if (ownPremium.contains(user)) {'id': 'own-$user'},
         ];
       case ('POST', 'rpc/leaves_unlocked'):
         return unlocked.contains(household());

@@ -470,7 +470,8 @@ void main() {
         find.text(
           'Dein Jahresabo für Snacklist Premium läuft weiter und wird über '
           'dein Apple- bzw. Google-Konto abgerechnet, bis du es kündigst. '
-          'Löschen oder Verlassen kündigt es nicht.',
+          'Löschst du dein Konto, endet dein Premium, das Abo aber nicht. '
+          'Kündige es vorher.',
         ),
         findsOneWidget,
       );
@@ -516,8 +517,8 @@ void main() {
       await tapDelete(tester);
       expect(
         find.text(
-          'Ein Jahresabo für diesen Haushalt läuft weiter, bis es gekündigt '
-          'wird.',
+          'An diesen Haushalt ist ein Jahresabo gebunden. Es läuft weiter, '
+          'bis es gekündigt wird.',
         ),
         findsOneWidget,
       );
@@ -573,15 +574,17 @@ void main() {
     }
 
     const premiumText =
-        '„Zuhause“ hat Snacklist Premium. Es gehört zum Haushalt und endet mit '
-        'ihm. Archivieren geht hier nicht, denn ein archivierter Haushalt wird '
-        'mit deinem Konto gelöscht. Soll der Haushalt mit Premium bleiben, '
-        'lade vorher jemanden ein und lösche dein Konto erst, wenn die Person '
+        '„Zuhause“ ist als Haushalt freigeschaltet, für alle Mitglieder. Diese '
+        'Freischaltung gehört zum Haushalt, nicht zu deinem Konto, und endet '
+        'mit ihm. Archivieren geht hier nicht, denn ein archivierter Haushalt '
+        'wird mit deinem Konto gelöscht. Soll die Freischaltung bleiben, lade '
+        'vorher jemanden ein und lösche dein Konto erst, wenn die Person '
         'beigetreten ist.';
     const releaseText =
-        '„Zuhause“ hat Snacklist Premium. Das gehört zum Haushalt. Löschst du '
-        'dein Konto, endet es. Soll es bleiben? Dann lad erst jemand ein. '
-        'Warte, bis die Person beigetreten ist. Lösch dann dein Konto.';
+        '„Zuhause“ ist als Haushalt freigeschaltet. Die Freischaltung gehört '
+        'zum Haushalt. Löschst du dein Konto, endet sie. Soll sie bleiben? '
+        'Dann lad erst jemand ein. Warte, bis die Person beigetreten ist. '
+        'Lösch dann dein Konto.';
     final ack = find.byKey(const ValueKey('account-delete-premium-ack'));
 
     testWidgets('the last member of an unlocked household confirms that '
@@ -592,8 +595,7 @@ void main() {
       expect(find.text(premiumText), findsOneWidget);
       expect(
         find.text(
-          'Ich weiß: Premium endet. Ich bekomme mein Geld nicht von selbst '
-          'zurück.',
+          'Ich weiß: Premium endet. Ein Kauf wird nicht von selbst erstattet.',
         ),
         findsOneWidget,
       );
@@ -770,6 +772,59 @@ void main() {
       });
     }
 
+    // N-308: Premium the user bought belongs to their account, so it ends
+    // with it even when every household stays with others.
+    const ownText =
+        'Dein Snacklist Premium gehört zu deinem Konto und endet mit ihm, auch '
+        'ein Einmalkauf. Auf ein anderes Konto lässt es sich nicht übertragen.';
+    for (final archiveTexts in [true, false]) {
+      testWidgets('own Premium asks for the tick while Lea keeps the '
+          'household (archive texts $archiveTexts)', (tester) async {
+        account
+          ..fateResult = const [
+            FateKept('Zuhause', ['Lea']),
+          ]
+          ..ownPremium = true;
+        await openWith(tester, archiveTexts: archiveTexts);
+        expect(find.text(ownText), findsOneWidget);
+        expect(find.text(premiumText), findsNothing);
+        expect(find.text(releaseText), findsNothing);
+        await confirm(tester);
+        expect(confirmEnabled(tester), isFalse);
+        await tapKey(tester, 'account-delete-premium-ack');
+        await tapKey(tester, 'account-delete-confirm');
+        expect(account.deleteCalls, 1);
+      });
+    }
+
+    testWidgets('own Premium and an unlocked household: both said, one tick', (
+      tester,
+    ) async {
+      account
+        ..fateResult = const [FateDeleted('Zuhause', unlocked: true)]
+        ..ownPremium = true;
+      await openWith(tester, archiveTexts: true);
+      expect(find.text(ownText), findsOneWidget);
+      expect(find.text(premiumText), findsOneWidget);
+      expect(ack, findsOneWidget);
+    });
+
+    testWidgets('own Premium in English', (tester) async {
+      account
+        ..fateResult = const [
+          FateKept('Home', ['Lea']),
+        ]
+        ..ownPremium = true;
+      await openWith(tester, archiveTexts: false, locale: const Locale('en'));
+      expect(
+        find.text(
+          'Your Snacklist Premium belongs to your account and ends with it, a '
+          "one-time purchase too. It can't be moved to another account.",
+        ),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('in English, without the archive texts (job 104)', (
       tester,
     ) async {
@@ -777,16 +832,16 @@ void main() {
       await openWith(tester, archiveTexts: false, locale: const Locale('en'));
       expect(
         find.text(
-          '“Home” has Snacklist Premium. It belongs to the household. If you '
-          'delete your account, it ends. Do you want to keep it? Then ask '
-          'someone to join first. Wait until they have joined. Then delete '
-          'your account.',
+          '“Home” is unlocked as a household. The unlock belongs to the '
+          'household. If you delete your account, it ends. Do you want to '
+          'keep it? Then ask someone to join first. Wait until they have '
+          'joined. Then delete your account.',
         ),
         findsOneWidget,
       );
       expect(
         find.text(
-          'I know: Premium ends. I will not get my money back on its own.',
+          "I know: Premium ends. A purchase isn't refunded on its own.",
         ),
         findsOneWidget,
       );
@@ -797,17 +852,18 @@ void main() {
       await openWith(tester, archiveTexts: true, locale: const Locale('en'));
       expect(
         find.text(
-          '“Home” has Snacklist Premium. It belongs to the household and ends '
+          '“Home” is unlocked as a household, for all its members. This '
+          'unlock belongs to the household, not to your account, and ends '
           "with it. Archiving isn't possible here, because an archived "
-          'household is deleted with your account. To keep the household '
-          'with Premium, invite someone first and delete your account only '
-          'after they have joined.',
+          'household is deleted with your account. To keep the unlock, '
+          'invite someone first and delete your account only after they have '
+          'joined.',
         ),
         findsOneWidget,
       );
       expect(
         find.text(
-          'I know: Premium ends. I will not get my money back on its own.',
+          "I know: Premium ends. A purchase isn't refunded on its own.",
         ),
         findsOneWidget,
       );
