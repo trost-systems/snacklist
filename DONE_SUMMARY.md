@@ -1985,3 +1985,8 @@ one (grey), one tap each, above the `+` row. Enter adds a separate item next to 
 keeps it through `put_item`'s new `p_separate`). „Milch“ never offers „Hafermilch“; nothing behind the sheet moves; a
 tick from the sheet asks no trip question. Review 0: the rows follow the list while typing (another member's delete no longer leaves a row that claims „abgehakt“), and two items that read alike get one merge row. Two new UI strings: waits for Legal GO and for #569/#570/#573. Details:
 [docs/done/324.md](docs/done/324.md).
+
+## Job 333b: app report sender rows pruned hourly
+
+The user id and time kept for the app report limit now go within two hours, not up to 25, so
+the privacy text of the report-content rollout holds. Details: `docs/done/333b-senders-prune-hourly.md`.

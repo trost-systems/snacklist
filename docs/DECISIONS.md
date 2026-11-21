@@ -16643,3 +16643,17 @@ Peter picked AM2 (t1081u) from round AM (job 323, #571). Defaults AM-Q1 and AM-Q
 5. **No scroll check in the journey.** The seeded list is too short to scroll, so the journey's offsets proved nothing;
    it no longer logs them. The widget test with 30 items covers every outcome (merge, tick, back on the list, separate
    add).
+
+## Job 333b: app report sender rows pruned hourly, 2026-11-21
+
+Review 0 of job 333 found that the rollout PR's privacy text („höchstens einen Tag lang“ / "for one
+day at most", Legal N-283) did not hold: the prune deletes rows older than an hour, and it ran once
+a day at 02:20 UTC, so a row written at 01:21 UTC with no app report after it lived until the next
+day's run, about 25 hours. Legal's text stays; the code changes to match it.
+
+- **The cron job `prune-content-report-app-senders` runs at :20 every hour** (new migration; the
+  same name replaces the job). A row now lives under two hours. Its own PR, landed before the
+  rollout PR #588, whose contents the brief fixes.
+- **The 02:20 slot was only there to beat the 02:30 backup (N-284 alternative).** #588 keeps the
+  table's rows out of the dump altogether, so the timing no longer matters for the backup.
+- **Cost:** 24 runs a day of one indexed delete on a table that holds at most a few hundred rows.
