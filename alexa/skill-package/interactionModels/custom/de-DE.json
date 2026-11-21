@@ -60,10 +60,10 @@
           "name": "AddToListIntent",
           "slots": [
             {
-              "name": "items",
+              "name": "itemphrase",
               "type": "ITEM_PHRASE",
               "samples": [
-                "{items}"
+                "{itemphrase}"
               ]
             },
             {
@@ -72,22 +72,22 @@
             }
           ],
           "samples": [
-            "füge {items} zur {list} liste hinzu",
-            "füg {items} zur {list} liste hinzu",
-            "füge {items} auf die {list} liste hinzu",
-            "füg {items} auf die {list} liste hinzu",
-            "füge {items} zu {list} hinzu",
-            "füg {items} zu {list} hinzu",
-            "füge {items} zur {list} hinzu",
-            "füg {items} zur {list} hinzu",
-            "setz {items} auf die {list} liste",
-            "setze {items} auf die {list} liste",
-            "pack {items} auf die {list} liste",
-            "packe {items} auf die {list} liste",
-            "schreib {items} auf die {list} liste",
-            "schreibe {items} auf die {list} liste",
-            "{items} auf die {list} liste",
-            "{items} zur {list} liste"
+            "füge {itemphrase} zur {list} liste hinzu",
+            "füg {itemphrase} zur {list} liste hinzu",
+            "füge {itemphrase} auf die {list} liste hinzu",
+            "füg {itemphrase} auf die {list} liste hinzu",
+            "füge {itemphrase} zu {list} hinzu",
+            "füg {itemphrase} zu {list} hinzu",
+            "füge {itemphrase} zur {list} hinzu",
+            "füg {itemphrase} zur {list} hinzu",
+            "setz {itemphrase} auf die {list} liste",
+            "setze {itemphrase} auf die {list} liste",
+            "pack {itemphrase} auf die {list} liste",
+            "packe {itemphrase} auf die {list} liste",
+            "schreib {itemphrase} auf die {list} liste",
+            "schreibe {itemphrase} auf die {list} liste",
+            "{itemphrase} auf die {list} liste",
+            "{itemphrase} zur {list} liste"
           ]
         },
         {
@@ -347,12 +347,12 @@
           "prompts": {},
           "slots": [
             {
-              "name": "items",
+              "name": "itemphrase",
               "type": "ITEM_PHRASE",
               "elicitationRequired": true,
               "confirmationRequired": false,
               "prompts": {
-                "elicitation": "Elicit.Slot.AddToListIntent.items"
+                "elicitation": "Elicit.Slot.AddToListIntent.itemphrase"
               }
             },
             {
@@ -378,7 +378,7 @@
         ]
       },
       {
-        "id": "Elicit.Slot.AddToListIntent.items",
+        "id": "Elicit.Slot.AddToListIntent.itemphrase",
         "variations": [
           {
             "type": "PlainText",

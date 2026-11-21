@@ -57,7 +57,7 @@ Invocation: "Alexa, sag snacklist, …", "Alexa, frag snacklist, …", "Alexa, �
 | Intent | Examples (de-DE.json has them all) | Answer |
 | --- | --- | --- |
 | `AddItemIntent` (slot `items`, `AMAZON.SearchQuery`) | füg {items} hinzu · setz {items} auf die Liste · schreib {items} auf · wir brauchen {items} · trag {items} ein | added: "Ich habe Milch und Eier auf die Snacklist gesetzt." · open already, with other spellings of new items (job 32b, added anyway; job 68): "Schon auf der Snacklist: Milch und Möhren." |
-| `AddToListIntent` (slots `items`, custom type `ITEM_PHRASE`, and `list`, custom type `LIST_NAME`; job 207) | füge {items} zur {list} Liste hinzu · füge {items} auf die {list} Liste hinzu · füge {items} zu {list} hinzu · setz/pack/schreib {items} auf die {list} Liste · en: add {items} to the {list} list · add {items} to {list} · add {items} onto the {list} list | "Ich habe Luftballons auf die Liste Geburtstag gesetzt." · "Schon auf der Liste Geburtstag: Kerzen." The seeded list is "die Einkaufsliste" / "the shopping list". See [Named lists](#named-lists) |
+| `AddToListIntent` (slots `itemphrase`, custom type `ITEM_PHRASE`, and `list`, custom type `LIST_NAME`; job 207) | füge {itemphrase} zur {list} Liste hinzu · füge {itemphrase} auf die {list} Liste hinzu · füge {itemphrase} zu {list} hinzu · setz/pack/schreib {itemphrase} auf die {list} Liste · en: add {itemphrase} to the {list} list · add {itemphrase} to {list} · add {itemphrase} onto the {list} list | "Ich habe Luftballons auf die Liste Geburtstag gesetzt." · "Schon auf der Liste Geburtstag: Kerzen." The seeded list is "die Einkaufsliste" / "the shopping list". See [Named lists](#named-lists) |
 | `ReadListIntent` | was auf der Liste steht · was steht auf der Liste · lies die Liste vor · was brauchen wir | "Auf der Snacklist stehen 3 Sachen: Äpfel, 2 Liter Milch und Eier." in the app's aisle order; at most 10, then "und 5 weitere."; empty: "Die Snacklist ist leer." |
 | LaunchRequest | "Alexa, öffne snacklist" | "Was soll auf die Liste?" and waits for the answer (`Dialog.ElicitSlot`, so "Milch" alone works) |
 | `AMAZON.HelpIntent` | "Hilfe" | what the skill does, with the two examples; the session stays open |
@@ -85,10 +85,12 @@ another household's: the name is matched against the default household's lists o
 - **Why a second intent.** `AMAZON.SearchQuery` must be the only slot in a sample utterance
   (Amazon, "Tips for Using Built-in Slots"; the model build refuses "a phrase slot and another
   intent slot"). So `{list}` cannot join `AddItemIntent`'s `{items}`; `AddToListIntent` has both
-  slots in custom types. `ITEM_PHRASE` and `LIST_NAME` carry sample values (groceries and party
+  slots in custom types. The phrase slot is `{itemphrase}`: Amazon also refuses one slot name
+  with two types, and `{items}` is already `AMAZON.SearchQuery` on `AddItemIntent`.
+  `ITEM_PHRASE` and `LIST_NAME` carry sample values (groceries and party
   things; Alltag, Geburtstag, Baumarkt, Party, Wocheneinkauf, …; en: Birthday, Party, Hardware
   store, Weekly shop, …); custom slots also take values outside the list. Its dialog model
-  elicits `items` with the launch prompt, so "füge zur Geburtstag Liste hinzu" asks "Was soll auf
+  elicits `itemphrase` with the launch prompt, so "füge zur Geburtstag Liste hinzu" asks "Was soll auf
   die Liste?" and keeps the list slot.
 - **Alexa may swallow the list into the items.** `AddItemIntent` stays as it was, so "füge
   luftballons zur geburtstag liste hinzu" can arrive there with items "luftballons zur geburtstag
