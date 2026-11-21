@@ -16953,3 +16953,28 @@ pinned above the field, other suggestions hidden); all of it stays behind `add-s
    PostHog with no sign. `const String xFlag` is read; other types throw with the line number.
 2. **Follow-up PR, not a reopened #589.** #589 was merged under the Legal GO; this change touches
    only the sync script, its tests and docs, no legal, ARB, store or consent text.
+
+## Job 349: classifier misfires B1 to B7, 2026-11-21
+
+1. **Data, not a new tail rule.** A generic guard against short tails would break real compounds.
+   Measured: item_key drops a final e, so the keys of Käse, Tüte, Rübe, Säge, Erde and Ente are
+   `kas`, `tut`, `rub`, `sag`, `erd` and `ent`, and "never match as a tail" kills Frischkäse,
+   Mülltüte, Zuckerrübe and Blumenerde as much as Medikament. A "vowel before gel" rule would
+   break Massagegel, Avocadoöl and Spaghettieis for the same reason. So a word a short head must
+   not take is listed with its category: a longer term beats the short tail (the dictionary's
+   documented convention).
+2. **Categories.** Spiegel, Bügel (so Kleiderbügel), Pfanne, Topf, Töpfe and Kühlpack are
+   Haushalt (Kühlakku already is). Medikament and Zeckenzange are Drogerie, where Pflaster and
+   Pinzette are; routing to dm stays CAT-Q6. No new categories (CAT1 and CAT4 are Peter's call).
+3. **Topf is a homograph of Topfen** (key `topf`). Both are terms, so job 282's lexicon keeps the
+   spelling and the typed word decides; Töpfe is a term of its own because its umlaut plural does
+   not end in `topf`. The on-device guess has no homographs yet, so its Topf stays chilled until
+   the server answers (pinned in the parity test with that reason).
+4. **tea light(s)** are synonyms of teelicht. The synonym tea → tee stays for "green tea".
+5. **Three migrations.** A catalog change snapshots the version it replaces, so the version two
+   catalog migrations leave has no snapshot, and `catalog_delta.test.sql` (test 1) failed. A third
+   migration rebuilds the lexicon unchanged and takes it.
+6. **Parity sample.** The parity table samples the dictionary evenly, so new terms moved its
+   typo rows. `suggest_parity.json` is rewritten and the pinned exceptions follow the test's own
+   output. The server's category-store-off rows that agree with category-store-on get their own
+   pin set (`categoryStoreOffExceptions`).

@@ -2079,3 +2079,14 @@ The flag sync skipped a flag declaration that `dart format` wraps over two lines
 word; it now reads it, and fails loudly on a declaration it cannot read. A hand-written `iOS`
 platform condition gets the iOS version. `docs/ANALYTICS.md` says a version-gated flag never
 reaches installs without an analytics yes. Details: `docs/done/332-posthog-flag-sync.md`.
+
+## Job 349: classifier misfires B1 to B7
+
+Spiegel, Kleiderbügel, Bratpfanne, Topf, Medikament, tea lights, Kühlpack and Zeckenzange land in
+the right category (Haushalt, Haushalt, Haushalt, Haushalt, Drogerie, Haushalt, Haushalt, Drogerie);
+Topfen, Duschgel, Haargel, Ente, Bratwurst, Zange and green tea stay. Data fix through three
+migrations (dictionary, synonyms, a lexicon rebuild for the catalog snapshot); no code path or app
+logic changed, so no flag. Why no generic tail guard: DECISIONS Job 349. Tests: new
+`supabase/tests/classifier_misfires.test.sql` (30 checks), full pgTAP, sweep (353 match), wordlist
+(94.2 % misspellings, 1 false match as before), `scripts/gates/db.sh` classifier steps, parity test
+in Flutter. Ships with the next green main build; no flag.
