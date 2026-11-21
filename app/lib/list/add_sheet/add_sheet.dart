@@ -635,7 +635,7 @@ class _ContentState() extends State<_Content> {
           onTake: onTake,
           compact: compact,
         ),
-      if (rows.isEmpty && sheet.added == null)
+      if (rows.isEmpty && sheet.added == null && !plusRow)
         Padding(
           key: const ValueKey('add-sheet-empty'),
           padding: const EdgeInsets.fromLTRB(24, 14, 24, 14),

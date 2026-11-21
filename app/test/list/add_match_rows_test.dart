@@ -206,13 +206,21 @@ void main() {
         expect(rect.left, list.left, reason: '$k is full width');
         expect(rect.right, list.right, reason: '$k is full width');
       }
-      expect(
+      final materials = tester.widgetList<Material>(
         find.descendant(
           of: key('add-suggestions'),
-          matching: find.byType(ClipRRect),
+          matching: find.byType(Material),
         ),
-        findsNothing,
-        reason: 'square rows, no rounded tiles',
+      );
+      expect(materials, isNotEmpty);
+      for (final material in materials) {
+        expect(material.borderRadius, isNull, reason: 'square rows');
+        expect(material.shape, isNull, reason: 'no rounded tiles');
+      }
+      expect(
+        tester.getRect(key('match-1')).top,
+        tester.getRect(key('match-0')).bottom,
+        reason: 'rows touch: no gap between tiles',
       );
       expect(
         inSheet(find.byIcon(Icons.keyboard_return)),
@@ -277,15 +285,6 @@ void main() {
         tester.getRect(other.first).top,
         greaterThan(tester.getRect(key('match-plus')).top),
         reason: 'below the + row',
-      );
-      expect(
-        tester.getSemantics(key('match-0')),
-        matchesSemantics(
-          isButton: true,
-          hasTapAction: true,
-          label: '2× Nudeln',
-        ),
-        skip: true,
       );
     });
 
@@ -359,6 +358,14 @@ void main() {
         tester.getSemantics(key('match-1')),
         matchesSemantics(
           label: 'Abhaken, Nudeln, Lidl · Barilla',
+          isButton: true,
+          hasTapAction: true,
+        ),
+      );
+      expect(
+        tester.getSemantics(key('match-plus')),
+        matchesSemantics(
+          label: 'Nudeln, Wie getippt',
           isButton: true,
           hasTapAction: true,
         ),

@@ -2056,3 +2056,19 @@ analytics yes, next to job 332's `platform`, `app_version` and `app_build`. Flag
 consent was rejected by Legal (N-313): its switch stays off. More's test tools show only in debug
 builds and for the group `internal`, never for App Review's tester accounts (review 0). Landed
 after #589 with Legal's GO; nobody seeded. Details: `docs/done/337-tester-groups.md`.
+
+## Job 340: one suggestion list in the add sheet, chip gap, edit-sheet stepper
+
+PR #600 (merged as 5cbf7103, **before review 0 ran**; follow-up: review 0 fixes). With
+`add-sheet-compact` (match rows also need `add-match-rows`): the compact add sheet has one
+`add-suggestions` list, match rows then the `+` row then the other suggestions, all full width and
+square, keyed by content, no return-key hex (Enter and a tap on the `+` row still add separately);
+12 px between the chip row and the details field; the edit sheet's Menge is the add sheet's hex
+minus / number / plus (`QuantityGroup`). Flag off is unchanged. Known: with three match rows the `+`
+row and the other suggestions sit below the fold (DECISIONS Job 340). Tests: full `flutter test`,
+analyze, format, lint green on #600. Review 0 fixes: the skipped semantics assertion is replaced by
+a real one for the `+` row (match rows were already pinned), the square-rows check now looks at
+`Material` radius and shape and touching rows, and the empty-state hint no longer shows under match
+rows. Not done: a web-journey assertion of the new layout and a `ListScreen` test of the edit-sheet
+flag wiring (the reviewer drove both by hand). Ships with the next green main build; flags
+targeted at Peter and the testers already. Details: `docs/done/340-add-sheet-unified-list.md`.
