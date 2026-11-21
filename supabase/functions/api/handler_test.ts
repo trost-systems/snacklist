@@ -268,6 +268,21 @@ Deno.test('an unlocked household runs the operation and gets its answer', async 
   assertRateHeaders(res, '20', '19');
 });
 
+Deno.test('no answer may be cached or sniffed: list data, errors and the switched-off 404', async () => {
+  for (
+    const deps of [
+      fake({ result: { status: 200, body: { data: [] } } }),
+      fake({ begin: invalid }),
+      fake({ begin: { outcome: 'disabled' } }),
+    ]
+  ) {
+    const res = await handle(call('/items'), deps);
+    await res.body?.cancel();
+    assertEquals(res.headers.get('cache-control'), 'no-store', String(res.status));
+    assertEquals(res.headers.get('x-content-type-options'), 'nosniff', String(res.status));
+  }
+});
+
 Deno.test('a failing Premium check is 503 unavailable, never locked or open', async () => {
   const deps = fake({ premium: 'throws' });
   const res = await handle(call('/items'), deps);

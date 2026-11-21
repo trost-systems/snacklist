@@ -896,6 +896,32 @@ async function seedVarieties(sql: postgres.Sql, member: Member, from: number, to
   assertEquals(keys?.n, 1, 'the varieties share one canonical key');
 }
 
+test("job 336: a member's own insert with an endless created_at does not break paging", () =>
+  withMembers(async (sql, [mine]) => {
+    const key = await mint(sql, mine, ['read']);
+    const names = ['Unendlich', 'Minus', 'Fern', 'Heute'];
+    await asUser(
+      mine.userId,
+      (tx) =>
+        tx`insert into public.items (household_id, list_id, name, created_at)
+         select ${mine.householdId}, public.first_list(${mine.householdId}), v.name, v.at::timestamptz
+         from (values ('Unendlich', 'infinity'), ('Minus', '-infinity'), ('Fern', '10000-01-01Z'),
+                      ('Heute', now()::text)) v (name, at)`,
+    );
+    const seen: string[] = [];
+    let cursor: string | null = null;
+    do {
+      await refill(sql, key.id);
+      const query: string = cursor ? `?limit=1&cursor=${cursor}` : '?limit=1';
+      const res = await api(key.token, 'GET', `/items${query}`);
+      assertEquals(res.status, 200, `page ${seen.length + 1}`);
+      const page = await res.json();
+      seen.push(...page.data.map((i: Item) => i.name));
+      cursor = page.nextCursor;
+    } while (cursor && seen.length <= names.length);
+    assertEquals(seen.toSorted(), names.toSorted(), 'every item once, and it ends');
+  }));
+
 test('an add names at most three similar open items per added item, oldest first, with their number', () =>
   withMembers(async (sql, [mine]) => {
     const key = await mint(sql, mine, ['read', 'write']);

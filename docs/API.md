@@ -104,7 +104,7 @@ or more lists (e.g. `Wocheneinkauf` and `Baumarkt`); an add without `list` goes 
 default list (chosen in the app, else the first, the lowest `sortOrder`), where Siri and Alexa add
 too.
 
-Fields are camelCase, like the MCP tools' results.
+Fields are camelCase, like the items in the MCP tools' results.
 
 ## Endpoints
 
@@ -231,7 +231,7 @@ optional.
 | 404 | `not_found` | No such endpoint |
 | 404 | `item_not_found` | No such item in this household (or not open, for `PATCH`) |
 | 405 | `method_not_allowed` | The path exists, the method does not (`Allow` header) |
-| 409 | `conflict` | The change clashes with the list's current state (for example the item is already open twice) |
+| 409 | `conflict` | A concurrent change got in the way (for example the `Idempotency-Key` was released at that moment); nothing was changed, retry |
 | 413 | `payload_too_large` | The body is over 64 KiB |
 | 415 | `unsupported_media_type` | A body that is not `application/json` |
 | 422 | `store_not_found`, `category_not_found`, `list_not_found` | A named store, category or list does not exist (`details.candidates`) |
@@ -299,6 +299,8 @@ it with a deprecation notice in this document and in a `Deprecation` header.
   never the id or a query value), status, duration, the key's id. Never a body, a name, a header
   value or an address. Errors go to the functions' error tracking with the template words only
   (`_shared/telemetry.ts`).
+- Every answer carries `Cache-Control: no-store` (no shared cache keeps a list) and
+  `X-Content-Type-Options: nosniff`.
 - The gateway in front of the function keeps its own access log: each request's URL with its query
   string, so a `store` or `category` filter and a cursor (which carries the filter) appear there.
   Send the key in the `Authorization` header only; in a URL it is refused and would stay in that

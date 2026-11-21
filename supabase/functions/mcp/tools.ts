@@ -16,6 +16,8 @@ import {
   tickItems,
   ToolError,
 } from '../_shared/list.ts';
+import { storedText } from '../_shared/stored_text.ts';
+import { telemetry } from './telemetry.ts';
 
 const INSTRUCTIONS = `Snacklist: die gemeinsame Einkaufsliste eines Haushalts (deutsch).
 Einträge haben einen Namen (z. B. "Windeln"), optional eine Marke ("Pampers"), Eigenschaften
@@ -52,6 +54,15 @@ export const tookTooLong: Record<Lang, string> = {
 export const busyNow: Record<Lang, string> = {
   de: 'Das geht in diesem Moment nicht. Es wurde nichts geändert. Versuch es gleich noch einmal.',
   en: 'That is not possible at this moment. Nothing was changed. Try again in a moment.',
+};
+
+/**
+ * The tool error for any other failure. The call ran in one transaction, which rolled back. The
+ * error goes to error tracking; its own message (Postgres' text, say) never reaches the client.
+ */
+export const failedNow: Record<Lang, string> = {
+  de: 'Das hat nicht geklappt. Es wurde nichts geändert. Versuch es später noch einmal.',
+  en: 'That did not work. Nothing was changed. Try again later.',
 };
 
 /**
@@ -115,8 +126,9 @@ export function reportToolCalls(send: UserEvent, userId: string): ReportCall {
 /**
  * A tool body: runs as the caller in one transaction once the household (the [household]
  * argument, else the one the credential acts in) may use MCP; ToolErrors become tool-level
- * errors. A failing check throws, like any database error. A null [gate] is no check. Every call
- * ends with one [done], in the household it resolved to (the credential's while unresolved).
+ * errors. A failing check fails the call like any database error: reported, answered with
+ * failedNow. A null [gate] is no check. Every call ends with one [done], in the household it
+ * resolved to (the credential's while unresolved).
  */
 function run(
   auth: Auth,
@@ -146,8 +158,10 @@ function run(
       await done(h, toolError || slow || busy ? 'tool_error' : 'server');
       if (slow) return { isError: true, content: [{ type: 'text', text: tookTooLong[lang] }] };
       if (busy) return { isError: true, content: [{ type: 'text', text: busyNow[lang] }] };
-      if (!toolError) throw e;
-      return { isError: true, content: [{ type: 'text', text: e.message }] };
+      if (toolError) return { isError: true, content: [{ type: 'text', text: e.message }] };
+      console.error('mcp: tool failed', (e as Error)?.name, (e as { code?: unknown })?.code);
+      telemetry.exception(e);
+      return { isError: true, content: [{ type: 'text', text: failedNow[lang] }] };
     }
   };
 }
@@ -204,20 +218,20 @@ export async function householdNamed(tx: Tx, auth: Auth, ref: string): Promise<s
   );
 }
 
-const itemRef = z.string().min(1).max(120).describe(
+const itemRef = storedText.min(1).max(120).describe(
   'Name des Eintrags auf der Liste (z. B. "Milch") oder seine id; eine id findet ihn ohne "list" ' +
     'auf jeder Liste des Haushalts',
 );
-const storeName = z.string().min(1).max(60).describe(
+const storeName = storedText.min(1).max(60).describe(
   'Ein Laden des Haushalts (list_stores), z. B. "dm", "Lidl" oder ein eigener wie "Rewe"',
 );
-const categoryName = z.string().min(1).max(60).describe(
+const categoryName = storedText.min(1).max(60).describe(
   'Kategorie, z. B. "Obst & Gemüse" oder "Kühlregal"',
 );
-const householdRef = z.string().min(1).max(80).optional().describe(
+const householdRef = storedText.min(1).max(80).optional().describe(
   'Haushalt (list_households): seine id oder sein Name. Ohne Angabe der Standardhaushalt.',
 );
-const listRef = z.string().min(1).max(60).optional().describe(
+const listRef = storedText.min(1).max(60).optional().describe(
   'Liste des Haushalts (list_lists): ihre id oder ihr genauer Name. Ohne Angabe die Standardliste.',
 );
 
@@ -317,10 +331,10 @@ export function buildServer(
         'der Liste steht. Zusammengeführt wird nichts.',
       inputSchema: z.object({
         items: z.array(z.object({
-          name: z.string().min(1).max(120).describe('Was gekauft werden soll, z. B. "Milch"'),
-          quantity: z.string().max(40).optional().describe('Menge, z. B. "2" oder "500 g"'),
-          brand: z.string().max(60).optional().describe('Marke, z. B. "Pampers" oder "Ja!"'),
-          properties: z.string().max(120).optional().describe(
+          name: storedText.min(1).max(120).describe('Was gekauft werden soll, z. B. "Milch"'),
+          quantity: storedText.max(40).optional().describe('Menge, z. B. "2" oder "500 g"'),
+          brand: storedText.max(60).optional().describe('Marke, z. B. "Pampers" oder "Ja!"'),
+          properties: storedText.max(120).optional().describe(
             'Eigenschaften, mit Komma getrennt, z. B. "Größe 3, Big Pack" oder "1,5 %"',
           ),
           category: categoryName.optional().describe(

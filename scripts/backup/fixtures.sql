@@ -179,6 +179,9 @@ select id, 12.5, now() from public.personal_access_tokens where token_hash = rep
 insert into public.api_household_days (household_id, day, requests)
 values ((select id from fx where key = 'home'), current_date, 8);
 insert into public.api_auth_failures (ip_hash, window_start, failures) values (repeat('e', 64), now(), 3);
+-- Job 336: Peter's MCP request counter.
+insert into public.mcp_rate (user_id, tokens, refilled_at, day, requests)
+select id, 17.5, now(), current_date, 4 from auth.users where email = 'peter@backup.test';
 insert into public.api_idempotency (token_id, key, request_hash, status, body)
 select id, 'backup-drill', repeat('f', 64), 201, '{"data":{"added":[]}}'
 from public.personal_access_tokens where token_hash = repeat('d', 64);

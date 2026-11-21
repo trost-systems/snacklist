@@ -42,6 +42,7 @@ const d: Deps = {
     allowTokenRequest: () => Promise.resolve(true),
   },
   authenticate: () => Promise.resolve(auth),
+  takeCall: () => Promise.resolve(null),
   // The database is never reached: the gate says locked, so tool calls touch no data.
   serve: (req, a) =>
     createMcpHandler(() =>
