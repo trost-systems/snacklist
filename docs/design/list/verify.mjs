@@ -209,6 +209,47 @@ for (const f of ['RECOMMENDATION.md', 'RECOMMENDATION.de.md']) {
   ok(bad.length === 0, `${f}'s measured table matches the measure`, bad.slice(0, 4).join(' | '));
 }
 
+// The prose quotes measured numbers; each sentence is rebuilt from the fresh measure and must appear verbatim.
+const g = (lang, dev, ts, sc, id, f) => fresh[lang][dev][ts][sc][id][f];
+const span = (lang, sc, f) => ['RU1', 'RU2', 'RU3', 'RU4'].map((id) => g(lang, 'ios', 100, sc, id, f));
+const claims = {
+  'RECOMMENDATION.md': [
+    `1 open row on the iPhone (${g('en', 'ios', 100, 'long-15', 'RU2', 'active')} instead of ${g('en', 'ios', 100, 'long-15', 'RU1', 'active')})`,
+    `2 on Android (${g('en', 'android', 100, 'long-15', 'RU2', 'active')} instead of ${g('en', 'android', 100, 'long-15', 'RU1', 'active')})`,
+    `it costs 1 (${g('en', 'ios', 310, 'short-3', 'RU2', 'active')} instead of ${g('en', 'ios', 310, 'short-3', 'RU1', 'active')})`,
+    `scroll ${Math.min(...span('en', 'short-3', 'toFirstRecent'))} to ${Math.max(...span('en', 'short-3', 'toFirstRecent'))} px`,
+    `${Math.min(...span('en', 'long-15', 'toFirstRecent'))} to ${Math.max(...span('en', 'long-15', 'toFirstRecent'))} px with 11`,
+    `(${g('en', 'ios', 100, 'short-15', 'RU4', 'sectionPx')} px against RU1's ${g('en', 'ios', 100, 'short-15', 'RU1', 'sectionPx')} px)`,
+    `(${g('en', 'ios', 100, 'short-15', 'RU1', 'sectionPx')} px with 15)`,
+    `(${g('en', 'ios', 100, 'short-3', 'RU3', 'sectionPx')} px with 3)`,
+    `**Pick: ${stored.pick}`,
+    `Runner-up: ${stored.runner}`,
+  ],
+  'RECOMMENDATION.de.md': [
+    `1 offene Zeile (${g('de', 'ios', 100, 'long-15', 'RU2', 'active')} statt ${g('de', 'ios', 100, 'long-15', 'RU1', 'active')})`,
+    `auf Android 2 (${g('de', 'android', 100, 'long-15', 'RU2', 'active')} statt ${g('de', 'android', 100, 'long-15', 'RU1', 'active')})`,
+    ...(g('de', 'ios', 310, 'short-3', 'RU2', 'active') === g('de', 'ios', 310, 'short-3', 'RU1', 'active') ? [`keine Zeile (RU1 und RU2 zeigen je ${g('de', 'ios', 310, 'short-3', 'RU2', 'active')})`] : ['(RU2 kostet bei 310 % auf Deutsch eine Zeile: Text anpassen)']),
+    `${Math.min(...span('de', 'short-3', 'toFirstRecent'))} bis ${Math.max(...span('de', 'short-3', 'toFirstRecent'))} px scrollen`,
+    `${Math.min(...span('de', 'long-15', 'toFirstRecent'))} bis ${Math.max(...span('de', 'long-15', 'toFirstRecent'))} px`,
+    `(${g('de', 'ios', 100, 'short-15', 'RU4', 'sectionPx')} px statt ${g('de', 'ios', 100, 'short-15', 'RU1', 'sectionPx')} px bei RU1)`,
+    `(${g('de', 'ios', 100, 'short-3', 'RU3', 'sectionPx')} px mit 3)`,
+    `(${g('de', 'ios', 100, 'short-15', 'RU1', 'sectionPx')} px mit 15)`,
+    `**Wahl: ${stored.pick}`,
+    `Zweite Wahl: ${stored.runner}`,
+  ],
+};
+for (const [f, want] of Object.entries(claims)) {
+  const src = readFileSync(join(dir, 'ru', f), 'utf8');
+  for (const c of want) ok(src.includes(c), `${f} quotes the measure: ${c}`);
+}
+const zeroSame = ['en', 'de'].every((lang) => ['ios', 'android'].every((dev) => ['short-0', 'long-0'].every((sc) => {
+  const row = fresh[lang][dev][100][sc];
+  return ['RU1', 'RU2', 'RU3', 'RU4'].every((id) => row[id].active === row.today.active && row[id].sectionPx === 0);
+})));
+ok(zeroSame, 'with 0 recent items every option shows the same open rows as Today and no section');
+const neverAtTop = Object.values(fresh).every((d) => Object.values(d).every((t) => Object.values(t).every((sc) => Object.values(sc).every((opts) => Object.values(opts).every((o) => o.recent === 0)))));
+ok(neverAtTop, 'no option shows a whole recent row at scroll top (the premise of the pick)');
+
 await browser.close();
 server.close();
 if (failed.length) {

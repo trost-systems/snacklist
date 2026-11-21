@@ -250,6 +250,7 @@ th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; color
 .citem .nm b { font-weight: 600; }
 .citem .undo { width: 20px; height: 20px; color: var(--hl-color-text-muted); }
 .peek { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; min-height: 52px; padding: 6px 6px 6px 14px; border-radius: 16px; background: var(--hl-color-surface-sunken); border: 1.5px solid var(--hl-color-border); cursor: pointer; font-size: calc(14px * min(var(--ts), 1.6)); line-height: 1.25; }
+.bottom .peek { margin-bottom: -10px; padding-bottom: 16px; border-bottom: 0; border-radius: 16px 16px 0 0; }
 .peek[hidden] { display: none; }
 .peek .plabel { color: var(--hl-color-text-muted); font-weight: 700; min-width: 0; overflow-wrap: anywhere; }
 .ppill { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; max-width: 100%; padding: 0 10px 0 12px; border-radius: 999px; border: 1.5px solid var(--hl-color-border); background: var(--hl-color-surface-raised); font-weight: 700; }
