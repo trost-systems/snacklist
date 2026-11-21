@@ -564,7 +564,9 @@ condition set by hand, such as `app_version` is not `1.5.0` for a broken release
 Each flag carries its own conditions, not a shared cohort, so a flag shows its version on its own
 page. PostHog evaluates them on what the flag request sends. Every version condition needs
 `app_build`, which only installs with an analytics yes send, so none matches the no-consent request
-(Legal §18 L2). A flag with only internal conditions gets no version condition until someone adds
+(Legal §18 L2). So a version-gated flag, even at 100 %, never reaches users who said no or never
+answered. For a feature meant for everyone, skip `min_version` and add a condition without
+properties at 100 % once the store release carrying it is out. A flag with only internal conditions gets no version condition until someone adds
 another condition in PostHog; the next run then adds the version to it. So release a version-gated
 flag in this order: add the new condition at 0 %, run the workflow by hand (or wait for its
 quarter-hourly run) and check the flag shows the version conditions, then raise the percentage.

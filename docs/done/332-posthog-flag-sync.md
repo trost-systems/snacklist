@@ -5,8 +5,8 @@ PR: https://github.com/trost-systems/snacklist/pull/589 (merged as: the next com
 ## What was built
 
 - `scripts/posthog/sync-flags.ts` and `.github/workflows/posthog-flag-sync.yml`. After each push to
-  main that changes `app/lib/analytics/flags.dart`, `releases/flags.json`, `releases/releases.json`
-  or the script, every flag key PostHog lacks is created (active, `is_internal = true` at 100 %).
+  main that changes `app/lib/analytics/flags.dart`, `releases/flags.json` or the script (and every
+  15 minutes), every flag key PostHog lacks is created (active, `is_internal = true` at 100 %).
   Nothing else changes on a flag without `min_version`. It also runs by hand (Actions, with
   `dry_run`). Without the `ops` secret `POSTHOG_PERSONAL_API_KEY` it gives a notice and passes.
 - `min_version` in `releases/flags.json` (`"1.4.0"`, `"1.4.0+1420"`, or per platform with
@@ -45,3 +45,19 @@ PR: https://github.com/trost-systems/snacklist/pull/589 (merged as: the next com
   has error-tracking scopes only, so the dry run against PostHog stopped at HTTP 403
   (NEEDS_LEAD Job 332).
 - Whether a version condition may also reach installs without consent is Legal's call.
+
+## Land review 0 (2026-11-21, follow-up PR)
+
+- **Fixed:** `parseFlagsDart` skipped a declaration that `dart format` wraps after `=` (a key past
+  80 columns) without a word, so the sync never created that flag. It now reads a declaration over
+  line breaks, accepts `const String <name>Flag`, and throws for any other `const ... <name>Flag`
+  it cannot read. Tests: a wrapped declaration with its doc comment, four unreadable forms. All four
+  new tests fail on main's `plan.ts` and pass now (27 tests).
+- **Fixed:** a `platform` condition written `iOS` by hand now gets the `ios` version (PostHog's
+  `exact` ignores case).
+- **Docs:** `docs/ANALYTICS.md` says that a version-gated flag never reaches installs without an
+  analytics yes, and what to do for a feature meant for everyone. The trigger list above no
+  longer names `releases/releases.json`.
+- **Corrections:** #589's body says the dry run "sent the planned 17 flag POSTs"; that was the
+  fake PostHog in the test. The real push run created one flag (`public-api`, run 44898107148).
+  No scheduled run had appeared by 12:04 UTC (merged 11:13 UTC); see NEEDS_LEAD Job 332.

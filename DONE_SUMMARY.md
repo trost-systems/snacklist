@@ -2072,3 +2072,10 @@ a real one for the `+` row (match rows were already pinned), the square-rows che
 rows. Not done: a web-journey assertion of the new layout and a `ListScreen` test of the edit-sheet
 flag wiring (the reviewer drove both by hand). Ships with the next green main build; flags
 targeted at Peter and the testers already. Details: `docs/done/340-add-sheet-unified-list.md`.
+
+## Job 332, land review 0: flag keys over two lines
+
+The flag sync skipped a flag declaration that `dart format` wraps over two lines, without a
+word; it now reads it, and fails loudly on a declaration it cannot read. A hand-written `iOS`
+platform condition gets the iOS version. `docs/ANALYTICS.md` says a version-gated flag never
+reaches installs without an analytics yes. Details: `docs/done/332-posthog-flag-sync.md`.

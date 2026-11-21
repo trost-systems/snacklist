@@ -132,15 +132,23 @@ function parseMinVersion(value: unknown, where: string): MinVersion {
 }
 
 /**
- * Every top-level `const <name>Flag = '<key>';` of app/lib/analytics/flags.dart, its `///` doc
- * comment as one line.
+ * Every top-level `const [String] <name>Flag = '<key>';` of app/lib/analytics/flags.dart, its `///` doc
+ * comment as one line. A declaration may span lines (`dart format` wraps a long one after `=`);
+ * one the parser cannot read throws instead of being skipped.
  */
 export function parseFlagsDart(text: string): readonly { key: string; description: string }[] {
   const lines = text.split('\n');
   const flags: { key: string; description: string }[] = [];
   lines.forEach((line, index) => {
-    const match = /^const\s+\w+Flag\s*=\s*'([^']*)'\s*;/.exec(line);
-    if (match === null) return;
+    if (!/^const\s+(?:\w+\s+)?\w+Flag\b/.test(line)) return;
+    const declaration = lines.slice(index).join('\n');
+    const match = /^const\s+(?:String\s+)?\w+Flag\s*=\s*'([^'\n]*)'\s*;/.exec(declaration);
+    if (match === null) {
+      throw new InputError(
+        `flags.dart line ${index + 1}: cannot read the flag key of '${line.trim()}' ` +
+          "(write const <name>Flag = '<key>';)",
+      );
+    }
     const key = match[1] ?? '';
     if (!FLAG_KEY.test(key)) {
       throw new InputError(
@@ -355,7 +363,10 @@ const requirementOf = (minVersion: MinVersion, platform: string): Requirement =>
   (isPlatform(platform) ? minVersion.platforms.get(platform) : undefined) ?? minVersion.default;
 
 const platformValues = (p: PropertyFilter): readonly string[] =>
-  (Array.isArray(p.value) ? p.value : [p.value]).filter((v): v is string => typeof v === 'string');
+  (Array.isArray(p.value) ? p.value : [p.value])
+    .filter((v): v is string => typeof v === 'string')
+    // PostHog's `exact` and `is_not` ignore case: `iOS` is ios.
+    .map((v) => v.toLowerCase());
 
 /**
  * One group with [minVersion]. The sync's version pair is replaced; the group's other conditions,
