@@ -87,12 +87,21 @@ const _categoryExceptions = <String, String>{
   'Nageleinsel|Nageleinsel': _typo,
   'Rohrudel|Rohrudel': _typo,
   'Rohreudel|Rohreudel': _typo,
+  'Fleckent|Fleckent': _tailGuard,
+  'Heringssal|Heringssal': _partial,
+  'Heringssala|Heringssala': _partial,
+  'Kräuterto|Kräuterto': _partial,
+  'Colate|Colate': _partial,
+  'Chef Select|Chef Select': _tailGuard,
   'Catrice|Catrice': _brandAlone,
 };
 
 const _homograph =
     'a word the stemmer folds onto another word (Topf and Topfen): the server '
     'reads the typed spelling (job 282), guessCategory has no homographs yet';
+const _tailGuard =
+    'a word that only ends like a short term (ent, gel): the server ignores the '
+    'tail unless the typed word spells it, guessCategory has no typed text';
 const _typo =
     'a typo: public.classify_item_detail corrects it (lexicon_fuzzy), '
     'guessCategory has no typo path and finds a part of another word';

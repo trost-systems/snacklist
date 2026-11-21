@@ -2049,3 +2049,10 @@ needed. `docs/MODERATION.md` is the runbook.
    and try `scripts/moderation/notify.ts --decision <id>` without `--send` (MODERATION.md).
 3. **Look at new reports daily** in the Table Editor (`content_reports`): `danger` and `csam` the
    same day, the rest within 7 days. Agents never read them.
+
+## Job 349: production deploy failed, the classifier fix is not live
+
+`supabase-deploy` for #606 (run 44951268460) failed in "Migrations" with `Management API 401:
+Invalid access token`. Replace `SUPABASE_ACCESS_TOKEN` in the `ops` environment, rerun
+`supabase-deploy.yml` on main and check that `scripts/smoke-remote.sh` passed in that run. The
+classifier runs on the server, so users see the fix only after that deploy.
