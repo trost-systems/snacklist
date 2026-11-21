@@ -14,7 +14,7 @@ import {
   sha256Hex,
   supabaseUrl,
 } from '../_shared/auth.ts';
-import { serviceDb } from '../_shared/db.ts';
+import { rowBusy, serviceDb } from '../_shared/db.ts';
 import { requirePremiumWith } from '../_shared/premium.ts';
 import { userEvents } from '../_shared/user_events.ts';
 import { fetchClientMetadata } from './cimd.ts';
@@ -28,6 +28,14 @@ import {
 import { type OAuthDeps, oauthRoute } from './oauth.ts';
 import { telemetry } from './telemetry.ts';
 import { buildServer, langOf, reportToolCalls } from './tools.ts';
+
+/**
+ * Per user, over all MCP requests (job 336, like the API's per key, docs/MCP.md "Limits"): a token
+ * bucket of BURST refilled at PER_MINUTE a minute, and PER_DAY a UTC day.
+ */
+export const BURST = 20;
+export const PER_MINUTE = 60;
+export const PER_DAY = 1000;
 
 const PRM_SUFFIXES = ['/.well-known/oauth-protected-resource', '/oauth-protected-resource'];
 
@@ -63,7 +71,7 @@ const cors: Record<string, string> = {
   'access-control-allow-headers':
     'authorization, content-type, accept, mcp-protocol-version, mcp-method, mcp-name, ' +
     'mcp-session-id, last-event-id',
-  'access-control-expose-headers': 'www-authenticate, mcp-session-id',
+  'access-control-expose-headers': 'www-authenticate, mcp-session-id, retry-after',
 };
 
 export type Endpoints = {
@@ -86,6 +94,8 @@ export type Deps = {
   /** The front's client mapping and token forwarding; it reads authServerMetadata above. */
   oauth: Omit<OAuthDeps, 'authServerMetadata'>;
   authenticate: (req: Request) => Promise<Auth>;
+  /** Counts one request for the user: null when it may go ahead, else seconds to wait. */
+  takeCall: (userId: string) => Promise<number | null>;
   serve: (req: Request, auth: Auth) => Promise<Response>;
   allowedOriginHosts: () => string[];
 };
@@ -163,6 +173,16 @@ export async function handle(req: Request, deps: Deps = productionDeps): Promise
   } catch (e) {
     if (!(e instanceof AuthError)) throw e;
     return withCors(challenge(e, isModern(req) ? endpoints.cimdMetadata : endpoints.metadata));
+  }
+  let retryAfter: number | null;
+  try {
+    retryAfter = await deps.takeCall(auth.userId);
+  } catch (e) {
+    if (!rowBusy(e)) throw e;
+    return withCors(refused(503, 'Temporarily unavailable. Retry later.', 1));
+  }
+  if (retryAfter !== null) {
+    return withCors(refused(429, 'Rate limit reached. Retry later.', retryAfter));
   }
   return withCors(await deps.serve(req, auth));
 }
@@ -243,6 +263,14 @@ function challenge(error: AuthError, metadata: string): Response {
   return Response.json(
     { error: error.reason, error_description: error.message },
     { status: error.status, headers: { 'www-authenticate': `Bearer ${params.join(', ')}` } },
+  );
+}
+
+/** A JSON-RPC error without an id: the request was not read. */
+function refused(status: 429 | 503, message: string, retryAfter: number): Response {
+  return Response.json(
+    { jsonrpc: '2.0', id: null, error: { code: -32000, message } },
+    { status, headers: { 'retry-after': String(retryAfter) } },
   );
 }
 
@@ -364,6 +392,11 @@ export const productionDeps: Deps = {
   },
   publicOrigins: publicOriginsFromEnv,
   authenticate,
+  takeCall: async (userId) => {
+    const [row] = await serviceDb()<{ retry: number | null }[]>`
+      select public.mcp_take_call(${userId}::uuid, ${BURST}, ${PER_MINUTE}, ${PER_DAY}) as retry`;
+    return row?.retry ?? null;
+  },
   serve: (req, auth) =>
     createMcpHandler(() =>
       buildServer(

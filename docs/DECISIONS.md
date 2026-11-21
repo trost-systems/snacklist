@@ -16591,3 +16591,28 @@ Peter, not a contract.
   were wrong. Not fixed here: `items.created_at` on insert (a trigger change on the shared items path,
   J2) and MCP rate limits (J1): both need their own review.
 - **No new endpoints.** The gap list (A1 to A13) waits for Peter's pick.
+
+## Job 336: the API ready for the beta (J1 MCP limits, J2 created_at), 2026-11-21
+
+Peter picked PX1 (Nov 15): the public API is on for every household during the beta. This job lands
+job 331's fixes (#590, same PR) with the two adjustments its review left open. It switches nothing on.
+
+- **J1, MCP limits per user, not per token or household.** An MCP request carries a user (OAuth
+  session or access token) and may name any of the user's households, and OAuth sessions have no
+  key row the API's `api_token_buckets` could hang off. So one row per user in a new
+  `public.mcp_rate`: a token bucket (20, refilled at 60 a minute) and a count per UTC day (1000), the
+  API's numbers. Every authenticated MCP request counts, not only `tools/call`: each one costs the
+  same authentication and a session's `initialize` and `tools/list` are a handful a conversation. The
+  count comes after authentication, so a refused token is not counted. Modelled on `alexa_take_adds`: the user's share lock first without waiting,
+  so an account being deleted answers 503 at once. Over the limit: 429, `Retry-After`, a JSON-RPC
+  error with id null, in English like the API's `rate_limited` message (protocol text, no ARB).
+- **J1, own day count, not the API's `api_household_days`.** Sharing it would let an assistant's
+  conversation use up a household's scripts for the day and the other way round.
+- **J2, a range on insert, not a pin.** Seeds, the backup drill and integration tests insert past
+  `created_at` on purpose, and no client sends one (put_item, the API, MCP, Siri and Alexa all leave
+  it to the default). So an insert outside 2000-01-01 .. now() + 1 day gets now(); a row already
+  outside gets now() on its next update, and the migration updates every such row once. The day ahead
+  is slack for `now()` being the transaction's start, not a meaning.
+- **The privacy policy's §7 sentence on API counting** should name MCP too (job 331 J1 note). That is
+  legal text, out of this job's scope by brief: NEEDS_LEAD "Job 336". The data map row is in
+  `docs/PRIVACY_DATA_MAP.md`.

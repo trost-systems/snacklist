@@ -108,6 +108,19 @@ They matter for one case only: a tool call that sends no byte for 120 s
 fails on mcp.snacklist.app (and mcp.hummlist.com) with `ROUTER_EXTERNAL_TARGET_ERROR`. The tools
 answer in well under a second, and the supabase.co URL has no such limit.
 
+## Limits
+
+Per signed-in user, over all MCP requests after authentication (any household,
+OAuth or access token): a token bucket of 20 requests refilled at 60 a minute,
+and 1000 requests a UTC day. Over either, the function answers `429` with
+`Retry-After` (seconds) and a JSON-RPC error `-32000` "Rate limit reached.
+Retry later." without reading the request. A request while the account is
+being deleted gets `503`. The numbers are `BURST`, `PER_MINUTE` and `PER_DAY`
+in `supabase/functions/mcp/handler.ts`; `public.mcp_take_call` counts in
+`public.mcp_rate` (one row per user, service only), and `purge_mcp_rate()`
+deletes rows unused for a day (pg_cron `purge-mcp-rate`, 03:43 UTC). Before
+job 336, 60 concurrent calls with one token were all served (job 331 F5).
+
 ## Tools
 
 A user can be in several households (job 169b). Without the optional

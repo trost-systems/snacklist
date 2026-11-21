@@ -1,6 +1,6 @@
 # AI assistants (MCP) and access tokens
 
-An AI assistant that supports MCP can read and change the household's shopping list through Snacklist's MCP server. The user connects it in one of two ways: signing in (OAuth) when the assistant asks, which opens a consent page „Zugriff erlauben?“; or with a personal access token („Zugriffstoken“) that the user creates in the app (shown once). Everything is managed in Mehr → Zugänge: the server address with a copy button, the access tokens, and the connected apps, each of which can be revoked or disconnected at once. Nothing needs Premium today.
+An AI assistant that supports MCP can read and change the household's shopping list through Snacklist's MCP server. The user connects it in one of two ways: signing in (OAuth) when the assistant asks, which opens a consent page „Zugriff erlauben?“; or with a personal access token („Zugriffstoken“) that the user creates in the app (shown once). Everything is managed in Mehr → Zugänge: the server address with a copy button, the access tokens, and the connected apps, each of which can be revoked or disconnected at once. Nothing needs Premium today. The server takes at most 20 requests at once per user, refilled at one a second, and 1000 a UTC day (job 336); over that an assistant gets HTTP 429 with `Retry-After` and the JSON-RPC error „Rate limit reached. Retry later.“
 
 ## Sub-features
 

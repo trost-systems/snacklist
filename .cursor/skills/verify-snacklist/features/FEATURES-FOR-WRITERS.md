@@ -720,6 +720,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 - That the assistant sees more than the list (it reads and changes shopping items, categories and stores only).
 - That a key can be viewed again after creation (shown once).
 - That Snacklist knows where an assistant is used or tracks its location: it only keeps the browser and system name of the page where the user approved it (gone once disconnected); „Zuletzt aktiv“ is the day the assistant last signed in or refreshed its sign-in, not of every request.
+- That an assistant can send unlimited requests. Each user has 20 at once, refilled at one a second, and 1000 a day across all their assistants; beyond that the assistant is told to try again a little later (job 336).
 - That ended keys are deleted at once (the record stays 30 days, then a daily clean-up deletes it; the key itself stops working immediately).
 - Any specific assistant as officially supported or tested. The app's MCP help text on Zugänge names two assistants as examples; copy names none (see "Never claim (everywhere)").
 - That the well-known assistants already use the newest protocol version with Snacklist (today they connect the established way; both ways lead to the same page „Zugriff erlauben?“).
@@ -732,7 +733,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 
 **Not switched on yet: the Snacklist API.** Built but switched off for everyone: the app hides it and the server refuses its keys and requests. When it is on, Zugänge gets a section „API“ with an address, a link „API-Dokumentation“ and the button „API-Schlüssel erstellen“ (EN "Create API key"): the user names the key, picks „Nur lesen“ or „Lesen und schreiben“ (EN "Read only", "Read and write") and copies it once. Scripts and automations then read and change the list over HTTP. Do not announce it until Snacklist PM says so. Never claim it today, nor a short address like api.snacklist.app (none exists).
 
-**Last verified.** 19 November 2026, code version af0287cf, in the web app (German).
+**Last verified.** 21 November 2026, job 336 branch on a local stack: the request limit (60 calls at once with one token, 20 answered, the rest refused with a wait time). 19 November 2026, code version af0287cf, in the web app (German): the rest.
 
 ## Siri
 

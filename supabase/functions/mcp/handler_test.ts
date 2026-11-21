@@ -49,6 +49,7 @@ function deps(auth: Auth | AuthError): Deps {
       allowTokenRequest: () => Promise.resolve(true),
     },
     authenticate: () => auth instanceof AuthError ? Promise.reject(auth) : Promise.resolve(auth),
+    takeCall: () => Promise.resolve(null),
     serve: (_req, a) => Promise.resolve(Response.json({ served: a.via })),
     allowedOriginHosts: () => ['inspector.example'],
   };
@@ -113,7 +114,7 @@ Deno.test('a request without a token gets 401 pointing at the metadata', async (
   );
   assertEquals(
     res.headers.get('access-control-expose-headers'),
-    'www-authenticate, mcp-session-id',
+    'www-authenticate, mcp-session-id, retry-after',
   );
 });
 
@@ -155,6 +156,65 @@ Deno.test('OAuth and PAT credentials reach the MCP server', async () => {
     const res = await handle(post(), deps(auth));
     assertEquals(await res.json(), { served: auth.via });
   }
+});
+
+Deno.test('a request over the limit gets 429 with Retry-After and is not served', async () => {
+  const taken: string[] = [];
+  let served = 0;
+  const d: Deps = {
+    ...deps({ ...USER, via: 'pat' }),
+    takeCall: (userId) => {
+      taken.push(userId);
+      return Promise.resolve(taken.length > 2 ? 7 : null);
+    },
+    serve: () => {
+      served++;
+      return Promise.resolve(Response.json({}));
+    },
+  };
+  const statuses = [];
+  for (let i = 0; i < 3; i++) statuses.push((await handle(post(), d)).status);
+  const limited = await handle(post(), d);
+  assertEquals([...statuses, limited.status], [200, 200, 429, 429]);
+  assertEquals(served, 2);
+  assertEquals(taken, ['u', 'u', 'u', 'u']);
+  assertEquals(limited.headers.get('retry-after'), '7');
+  assertEquals(limited.headers.get('access-control-allow-origin'), '*');
+  assertEquals((await limited.json()).error.code, -32000);
+});
+
+Deno.test('a request whose account row is busy gets 503; other count failures throw', async () => {
+  const busy = Object.assign(new Error('busy'), { name: 'PostgresError', code: '55P03' });
+  const res = await handle(post(), {
+    ...deps({ ...USER, via: 'pat' }),
+    takeCall: () => Promise.reject(busy),
+  });
+  assertEquals(res.status, 503);
+  assertEquals(res.headers.get('retry-after'), '1');
+  const broken = new Error('down');
+  let thrown: unknown;
+  try {
+    await handle(post(), {
+      ...deps({ ...USER, via: 'pat' }),
+      takeCall: () => Promise.reject(broken),
+    });
+  } catch (e) {
+    thrown = e;
+  }
+  assertEquals(thrown, broken);
+});
+
+Deno.test('a request that fails authentication is not counted', async () => {
+  let counted = 0;
+  const res = await handle(post(), {
+    ...deps(new AuthError('invalid_token', 'abgelaufen')),
+    takeCall: () => {
+      counted++;
+      return Promise.resolve(null);
+    },
+  });
+  assertEquals(res.status, 401);
+  assertEquals(counted, 0);
 });
 
 Deno.test('browser origins outside the allowlist get 403; listed and absent origins pass', async () => {
