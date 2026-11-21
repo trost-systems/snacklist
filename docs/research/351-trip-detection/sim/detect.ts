@@ -182,6 +182,9 @@ export interface Params {
   readonly sweepTrip: number;
   /** Times from the device's clock, corrected by its usual offset; else commit times. */
   readonly clientTime: boolean;
+  /** `client_at` is stored only within this far before and after the commit, else null (commit time). */
+  readonly clientBefore: Ms;
+  readonly clientAfter: Ms;
   /** T4a narrowed: store memory only from a walk 75 % one store (3+ tagged ticks), not its edge ticks. */
   readonly narrowMemory: boolean;
   /** A key's store moves once this many walks at that store have proposed it. */
@@ -201,6 +204,8 @@ export const FINAL: Params = {
   switchGap: 2 * MINUTE,
   sweepTrip: 5,
   clientTime: true,
+  clientBefore: 7 * DAY,
+  clientAfter: 24 * HOUR,
   narrowMemory: false,
   memoryConfirm: 2,
   allTickedEnds: false,
@@ -213,10 +218,13 @@ export const FINAL: Params = {
  * the tick (what a run at most 36 hours later has seen), which online ticks set and offline ones
  * (later commits) do not.
  */
-function corrected(h: Household): Timed[] {
+function corrected(h: Household, p: Params): Timed[] {
   const out: Timed[] = [];
+  const stored = (t: Tick): boolean =>
+    t.serverAt - t.clientAt <= p.clientBefore && t.clientAt - t.serverAt <= p.clientAfter;
   for (const own of groupBy(h.ticks, (t) => t.actor).values()) {
-    const sorted = [...own].sort((a, b) => a.serverAt - b.serverAt);
+    for (const tick of own) if (!stored(tick)) out.push({ tick, t: tick.serverAt });
+    const sorted = own.filter(stored).sort((a, b) => a.serverAt - b.serverAt);
     let lo = 0;
     let hi = 0;
     for (const tick of sorted) {
@@ -327,7 +335,7 @@ function byStore(run: readonly Timed[], switchGap: Ms): Timed[][] {
 /** The proposed rule (README "Final rule"); [p] lets the evaluator move one knob at a time. */
 export function finalRule(h: Household, p: Params = FINAL): Detection {
   const pharmacies = new Set(h.stores.filter((s) => s.pharmacy).map((s) => s.id));
-  const ticks = kept(p.clientTime ? corrected(h) : h.ticks.map((tick) => ({ tick, t: tick.serverAt })));
+  const ticks = kept(p.clientTime ? corrected(h, p) : h.ticks.map((tick) => ({ tick, t: tick.serverAt })));
   const walks: Piece[] = [];
   const bursts: Piece[] = [];
   for (const own of groupBy(ticks, (x) => x.tick.actor).values()) {

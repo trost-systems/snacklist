@@ -16982,8 +16982,8 @@ pinned above the field, other suggestions hidden); all of it stays behind `add-s
 ## Job 351: trip detection from plain ticks (research), 2026-11-21
 
 1. **Simulator in TypeScript under the research folder, checked by the lint gate.** It joins
-   `tool/lint/ts/pack.ts`'s projects (strict types) and `scripts/lint.sh` runs its 20 tests
-   (under 2 s). A test fails when the README's tables differ from the simulator's output, so the
+   `tool/lint/ts/pack.ts`'s projects (strict types) and `scripts/lint.sh` runs its 32 tests
+   (about 3 s). A test fails when the README's tables differ from the simulator's output, so the
    numbers in the report cannot drift from the code job 352 ports.
 2. **Starting rule read literally.** H1 as "three ticks in a row with gaps under 5 min", T1a's end
    at 10 min quiet or when the store's open items reach zero, T2a merging on overlap. Both rules
@@ -17015,4 +17015,12 @@ pinned above the field, other suggestions hidden); all of it stays behind `add-s
 8. **Review 0: reconciliation for job 352.** Detected rows that are neither frozen nor removed are
    replaced each run; `frozen_at`, `removed_at` and `tick_ids` survive reruns with `source` still
    `detected`; `detected_by uuid[]` holds a T2a trip's people. Members' direct read of `item_events`
-   (tick times to the microsecond) is proposed to be revoked; no client reads it.
+   (tick times to the microsecond) is proposed to be revoked. Review 1 corrected "no client reads
+   it": `suggest_items` (the add sheet's usuals) is `security invoker` and reads it, so it becomes
+   `security definer` with a membership check in the same migration.
+9. **Review 1: `client_at` bounds and IO4.** The first bound (5 minutes after `now()`) nulled every
+   tick of a phone running ahead; the stored range is now 7 days before to 24 hours after the
+   commit, measured with the offline persona's clock an hour ahead (89/89 vs 86/87 with the old
+   bound). Detection replaces IO4's own end-of-trip learning trigger; manual trips' walks come
+   from `item_events` through the same tests; taught walks are stored on the trip so a replay can
+   start from IO4's seed and manual places; the learner change is TD-Q16.

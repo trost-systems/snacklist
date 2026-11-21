@@ -2097,12 +2097,15 @@ Design and evidence for detecting "someone is in a store ticking" without a star
 order (job 347) learns from people who never start one. `docs/research/351-trip-detection/README.md`:
 the final rule as pseudo-code, 42 red-team cases (each tied to a test or a simulation row), every
 change to Peter's approved rule as its own question with a variant row (TD-Q1, Q2, Q10 to Q14), UX
-and DE/EN copy (the trip question asks once per shop instead of on every tick), the reconciliation
-plan for job 352, legal notes (members can already read each other's tick times), TD-Q1 to TD-Q15.
-`sim/` holds a seeded generator of 9 chaotic household personas (slow unpacking and slow catch-up
-added in review 0), both detectors, two learners and an evaluator; `deno test --allow-read` there
-runs 26 tests (also in the lint gate), and each of 14 rule parts fails a behaviour test when mutated.
-Headline on synthetic data: wrong walk pairs 10-34 % → 1-4 % in six households (15-32 % in the
-three hardest, where a shuffle gate and store-memory confirmation contain the damage), store memory
-keys ending wrong 253/1,806 → 7/141, order accuracy +4 to +14 points per household. No real data
-read (no read-only path). Draft PR #610, never merged; no app or database change, no flag.
+and DE/EN copy (the trip question asks once per shop instead of on every tick), how detection feeds
+IO4's `item_order_memory` (one learning entry point, stored walks, replays from the seed and manual
+places; learner change TD-Q16), reconciliation for job 352, legal notes (members can already read
+each other's tick times; the revoke comes with `suggest_items` as `security definer`), TD-Q1 to
+TD-Q16. `sim/` holds a seeded generator of 9 chaotic household personas, both detectors, two
+learners and an evaluator; `deno test --allow-read` there runs 32 tests (also in the lint gate).
+Of 20 rule values mutated, 19 fail a behaviour test; the 20th (T1a's "all ticked" end) is joined
+back by the pause by design. Headline on synthetic data: wrong walk pairs 10-34 % → 1-4 % in six
+households (15-32 % in the three hardest, where a shuffle gate and store-memory confirmation contain
+the damage), store memory keys ending wrong 253/1,806 → 7/141, order accuracy +4 to +14 points per
+household. No real data read (no read-only path). Draft PR #610, never merged; no app or database
+change, no flag.

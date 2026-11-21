@@ -63,7 +63,7 @@ export const personas: readonly Persona[] = [
     name: 'offline-wrong-clock',
     seed: 2,
     backToBack: 0.4,
-    members: { solo: { ...quiet, walk: 0.9, offline: 0.5, skew: -HOUR, accident: 0.06, impulse: 0.6 } },
+    members: { solo: { ...quiet, walk: 0.9, offline: 0.5, skew: HOUR, accident: 0.06, impulse: 0.6 } },
   },
   {
     ...base,
@@ -306,6 +306,7 @@ export const variants: readonly Variant[] = [
   v('T4a immediate (shuffles gated)', { memoryConfirm: 1 }),
   v('T4a narrowed too: 75 % one store, not the edge ticks', { narrowMemory: true }),
   v('commit times (no tap time)', { clientTime: false }),
+  v('client_at clamped to 5 min ahead (first proposal)', { clientAfter: 5 * MINUTE }),
   v('store memory not gated by shuffles', { gateMemory: false }),
   v('no outlier gate', {}, reassign(0.5, null)),
   v('no pace rule', { pace: 0 }),

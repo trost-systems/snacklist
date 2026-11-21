@@ -24,7 +24,7 @@ Checked in `supabase/migrations/` on main at a1edd966.
 | The app has the tap time (`SetStatus.at`, `app/lib/list/model.dart:1167`) but does not send it | `_sendOne` in `app/lib/list/list_repository.dart:650` sends only `status` and `store_id` (the review drive saw `PATCH /items {"status":"bought"}`) | Job 352 must send it. |
 | `item_events` has no source | `items_log_event` | Siri, Alexa, MCP and API ticks look like app ticks. T5a needs a column. |
 | `item_events` has no store | same | The store at the tick time is gone once an item moves. Job 347 already plans `item_events.store_id`. |
-| Every household member can read every member's `item_events` rows, `actor` and `created_at` included | policy `item_events_select` (`foundation.sql:419`), table-level select for `authenticated` | The review read another member's ticks with microsecond times through PostgREST. No app or function reads the table directly (`app/lib`, `supabase/functions`). See Legal notes. |
+| Every household member can read every member's `item_events` rows, `actor` and `created_at` included | policy `item_events_select` (`foundation.sql:419`), table-level select for `authenticated` | The review read another member's ticks with microsecond times through PostgREST. The app reads it only through `suggest_items`, which runs as the member (`security invoker`), so a revoke has to change that function too. See Legal notes. |
 | `trip_sessions.source` is `ask` or `manual`; `started_by` is one person | `20261114181718_trip_mode.sql:13` | A detected trip fits with a new source `detected`; a two-person trip needs a second column. |
 | A trip at a pharmacy is never saved (GL-2) | `20261114213100_trip_mode_skips_pharmacies.sql` | Detection must skip pharmacies too. |
 | The trip question opens after every own tick; „Nein" is not remembered | `features/trip-mode.md` (`tm-ask`) | The people this job is for dismiss a sheet on every tick today. |
@@ -38,8 +38,10 @@ input: item_events of the household, action bought or restored,
 1  ticks   := events where source = 'app'                                   -- T5a
    time(e) := e.client_at + offset(e.actor)                                 -- F1, TD-Q13
               offset = 10th percentile of (created_at - client_at) over the actor's ticks
-              of the 7 days before (online ticks set it; offline ones commit late);
-              created_at when client_at is null (old app builds)
+              with a client_at, from 7 days before the tick to the run (at most 36 hours
+              after it); online ticks set it, offline ones commit late;
+              created_at when client_at is null (old app builds, or a tap time
+              outside 7 days before to 24 hours after the commit)
    drop every bought tick the same person restored within 10 minutes,
    and the restored tick                                                    -- T5a
 
@@ -88,13 +90,13 @@ Each row is a question for Peter. "Variant" names the row in the variant table b
 
 | Rule | Approved | Proposed | Variant: approved → proposed | Question |
 | --- | --- | --- | --- | --- |
-| H1 | 3 ticks, gaps under 5 min | 3 steps (ticks under 6 s apart are one), median step at least 20 s | "H1 as approved": precision 82 → 90 %, phantom trips 303 → 128, walk pairs wrong 20 → 11 %, store memory keys wrong 19/291 → 7/141, order 84 → 86 %. Recall drops 88 → 84 %: checkouts and catch-ups stop being sessions (checkout-ticker: walk pairs wrong 27 → 3 %) | TD-Q10 |
+| H1 | 3 ticks, gaps under 5 min | 3 steps (ticks under 6 s apart are one), median step at least 20 s; ticks up to 10 minutes apart stay one run | "H1 as approved": precision 82 → 90 %, phantom trips 303 → 128, walk pairs wrong 20 → 11 %, store memory keys wrong 19/291 → 7/141, order 84 → 86 %. Recall drops 88 → 84 %: checkouts and catch-ups stop being sessions (checkout-ticker: walk pairs wrong 27 → 3 %). For the gap, "gap 5 min": recall 84 → 82 %, split visits 44 → 59 | TD-Q10 |
 | H2 | every detected session is a trip | a walk is a trip; a burst only from 5 ticks, and never teaches | "bursts from 3 ticks": phantom 303 → 128 for recall 88 → 84 %. "bursts never trips": recall 63 % | TD-Q1 |
 | T1a, end | 10 min quiet, or every item of the store ticked | 10 min quiet only | "T1a all-ticked end kept": precision 88 → 90 %, phantom 137 → 128; everything else equal. A forgotten add-and-tick right after the last item no longer starts a second trip | TD-Q11 |
 | T1a, later | same person, same store later = new trip | within 30 min the trip continues | "no pause merge": split visits 104 → 44 | TD-Q2 |
 | T1a, gap | 10 min | 10 min (kept) | "gap 15 min" is a little better here (recall 85 %, 36 splits) and "gap 5 min" worse (82 %, 59). The difference is small and generator-bound, so 10 min stays | none |
 | T3a | a store with under 3 items counts if all ticked within 5 min | the same, and a store change needs 2 min without a tick | "T3a as approved": precision 87 → 90 %, phantom 141 → 128. A lone item tagged to another store and ticked last no longer makes a 1-item trip there | TD-Q12 |
-| new | server commit time | the phone's tap time, corrected by its usual offset | "commit times": offline household order 86 → 89 %, recall 87 → 89 %, store memory keys wrong 15 → 7 % | TD-Q13 |
+| new | server commit time | the phone's tap time, corrected by its usual offset; stored within 7 days before to 24 hours after the commit | "commit times": offline household (clock an hour ahead) order 86 → 89 %, recall 87 → 89 %, store memory keys wrong 15 → 7 %. "client_at clamped to 5 min ahead" (this report's first proposal) is as bad as no tap time for a phone running ahead | TD-Q13 |
 | T4a | minority and storeless items learn the majority store at once | a walk that is not a shuffle proposes; the second proposal moves the item | "T4a as approved": 128 of 1,226 keys end wrong (10 %) → 7 of 141 (5 %). Slow-unpacker: 41/193 → 0/12. The simulator under-counts what confirmation learns, because it never feeds store memory back into later adds; in the app the cost is one more walk before an item moves | TD-Q14 |
 | T2a, T5a | as written | as written | | none |
 
@@ -121,7 +123,7 @@ The first version of this report credited T4a "narrowing" (75 % one store, never
 | 11 | Partner at home ticks 1 to 3 "we have that" while the other shops | Part of the household trip if 3 ticks | Out of the trip | test "a partner ticking" |
 | 12 | Partner at home ticks 5 or more while the other shops at that store | Merged into the trip | Merged into the trip. **Remains**, rare; fix by removing the lines | by design |
 | 13 | Phone offline in the store, syncs at the exit | Times are a 1 s burst at the exit | Walk from the tap times (F1) | test "offline"; sim offline-wrong-clock |
-| 14 | Phone clock an hour off, or a hand-set time zone | Unaffected (server time) | Corrected by the person's usual offset; the offset survives most ticks being offline | tests "a device clock an hour off", "the clock offset comes from online ticks" |
+| 14 | Phone clock off, or a hand-set time zone | Unaffected (server time) | Corrected by the person's usual offset, ahead or behind, offline walks included, as long as the tap time is within 7 days before to 24 hours after the commit. A phone more than 24 hours ahead, or a walk synced more than 7 days later, falls back to commit times (an offline walk then teaches nothing) | tests "a device clock an hour off", "a phone clock an hour ahead", "the clock offset comes from online ticks", "a tap time beyond the stored bounds", "a walk synced three days later"; sim offline-wrong-clock (an hour ahead) |
 | 15 | The clock is put right after weeks of being off | Unaffected | The offset reads the last 7 days only | test "the clock offset uses the last week only" |
 | 16 | Ticks from two devices, or retried ops, arrive out of order | Server order | Tap-time order; a late tick reshapes the trip on the next run | by design; reconciliation in "For job 352" |
 | 17 | The clock jumps mid-trip (network time fix) | Unaffected | One step lands out of place; the halfway learner damps it. **Remains**, rare | not simulated |
@@ -142,14 +144,14 @@ The first version of this report credited T4a "narrowing" (75 % one store, never
 | 32 | Siri, Alexa, MCP or API ticks during a walk | Excluded (needs a source column) | Excluded; they do not break the walk's chain | test "Siri, Alexa and agent ticks" |
 | 33 | Delivery unpacked at home, a tick every 4 to 20 s | A trip; teaches random order; store memory moves | A trip in history ("Einkauf bei Rewe"), teaches nothing. Arguably right for a delivery | test "a delivery unpacked"; sim delivery |
 | 34 | Delivery unpacked slowly, 15 to 60 s per item | As 33 | Passes the pace rule. Once the store has 3 taught walks, the shuffle gate turns it away: no order, no store memory. **Remains**: the first 3 walks at a store are not gated | test "once a store is learned, a walk that shuffles"; sim slow-unpacker: order 84 % (78 % without the gate, prior 80 %), store memory keys wrong 0/12 |
-| 35 | Two people split the list, one starts at the back | Two trips or one; the backwards walk teaches the reverse | One household trip, both walks teach; the positions-only learner limits the damage to that half. **Remains**: 16 % wrong walk pairs (TD-Q6) | test "two people splitting"; sim split-couple: order 73 % becomes 85 % |
+| 35 | Two people split the list, one starts at the back | Two trips or one; the backwards walk teaches the reverse | One household trip, both walks teach; the positions-only learner limits the damage to that half. **Remains**: 16 % wrong walk pairs (TD-Q6) | test "two people splitting"; sim split-couple: order 73 % becomes 85 %; with the final learner on both sides 85 → 85, so the gain is the learner's |
 | 36 | Two people at different stores at once | Separate trips | Same | by design |
 | 37 | Neighbours from one shelf ticked together in list order | Teaches the list order between them | One step, tied | test "neighbours ticked together" |
 | 38 | A pharmacy | Not covered by the rule | Never a trip, no order, no store memory (GL-2) | test "a pharmacy" |
 | 39 | A manual trip is running | Not covered | Its ticks belong to the manual trip; detection skips that person while it runs | by design |
 | 40 | Plans at the desktop and ticks rows away ("have that") | As 3 | As 3 | by design |
 | 41 | Answers „Nein, nur abgehakt", then walks the store | The sheet asks again on every tick | Asked once; the walk is detected (TD-Q5) | UX below |
-| 42 | Dismisses the trip question after every tick | Not modelled | Each dismissal adds about 3 s between ticks. Shelf batches stay one step (4 to 5.5 s apart, under the 6 s window) and walks stay walks | sim peter-lea (Lea dismisses) |
+| 42 | Dismisses the trip question after every tick | Not modelled | Today a dismissal takes 3.5 s or more (the review drive's scripted tick and „Nein"), so a shelf batch can split into single steps; walks stay walks. With the proposed UX (asked once per shop) only the first tick of a shop pays it. The simulator models 3 s per tick for Lea, which keeps batches together | sim peter-lea (Lea dismisses) |
 
 ## Simulation
 
@@ -160,7 +162,7 @@ The first version of this report credited T4a "narrowing" (75 % one store, never
 | Persona | Turned up |
 | --- | --- |
 | peter-lea | Peter walks (85 %), clock 40 s off; Lea walks 40 %, checkout 35 %, ticks "we have that" weekly, dismisses the trip question after every tick (3 s) |
-| offline-wrong-clock | offline in 50 % of walks, clock an hour behind, many stray ticks and impulse adds |
+| offline-wrong-clock | offline in 50 % of walks, clock an hour ahead, many stray ticks and impulse adds |
 | checkout-ticker | 70 % and 50 % of visits ticked at the checkout |
 | home-sweeper | two "we have that" bursts a week, one member mostly catches up at home |
 | delivery | a delivery unpacked and ticked at home every week, 4 to 20 s per item |
@@ -231,6 +233,7 @@ The first version of this report credited T4a "narrowing" (75 % one store, never
 | T4a immediate (shuffles gated) | 90 % | 84 % | 128 | 44 | 90/1305 | 106/1124 | 11 % | 86 % | slow-unpacker: order 84 % → 84 %, recall 87 % → 87 %, memory keys wrong 0 % → 18 %, pairs wrong 32 % → 32 % |
 | T4a narrowed too: 75 % one store, not the edge ticks | 90 % | 84 % | 128 | 44 | 2/113 | 6/105 | 11 % | 86 % | slow-trips: order 90 % → 90 %, recall 80 % → 80 %, memory keys wrong 6 % → 12 %, pairs wrong 2 % → 2 % |
 | commit times (no tap time) | 90 % | 84 % | 128 | 45 | 3/131 | 7/123 | 12 % | 85 % | offline-wrong-clock: order 89 % → 86 %, recall 89 % → 87 %, memory keys wrong 7 % → 15 %, pairs wrong 4 % → 3 % |
+| client_at clamped to 5 min ahead (first proposal) | 90 % | 84 % | 128 | 44 | 3/135 | 7/126 | 12 % | 85 % | offline-wrong-clock: order 89 % → 86 %, recall 89 % → 87 %, memory keys wrong 7 % → 15 %, pairs wrong 4 % → 3 % |
 | store memory not gated by shuffles | 90 % | 84 % | 128 | 44 | 21/186 | 14/167 | 11 % | 86 % | slow-unpacker: order 84 % → 84 %, recall 87 % → 87 %, memory keys wrong 0 % → 23 %, pairs wrong 32 % → 32 % |
 | no outlier gate | 90 % | 84 % | 128 | 44 | 3/153 | 7/141 | 11 % | 85 % | slow-unpacker: order 84 % → 78 %, recall 87 % → 87 %, memory keys wrong 0 % → 0 %, pairs wrong 32 % → 32 % |
 | no pace rule | 90 % | 84 % | 128 | 44 | 4/163 | 7/149 | 15 % | 85 % | delivery: order 84 % → 81 %, recall 91 % → 91 %, memory keys wrong 0 % → 0 %, pairs wrong 2 % → 33 % |
@@ -325,7 +328,7 @@ An edited or removed trip is frozen: detection never rewrites or re-detects it (
 
 ## For job 352
 
-**Columns.** `item_events` gains `client_at timestamptz` (the tap time, from `SetStatus.at`; clamped to the 7 days before and 5 minutes after `now()`, else null), `source text` (`app`, `voice`, `agent`; edge functions set it through a transaction-local setting the trigger reads) and `store_id uuid` (the item's store at the event, as job 347 plans). All three are nullable, so old app builds keep working. Their ticks fall back to commit times, so an offline walk becomes a burst and teaches nothing: a safe failure. The app sends `ticked_at` with the status update; `items.bought_at` stays the server's time.
+**Columns.** `item_events` gains `client_at timestamptz` (the tap time, from `SetStatus.at`, stored as sent when it lies within 7 days before to 24 hours after the commit, else null; the per-person offset absorbs any skew inside those bounds, ahead or behind. This report first proposed "5 minutes after `now()`", which nulls every tick of a phone running ahead: see TD-Q13), `source text` (`app`, `voice`, `agent`; edge functions set it through a transaction-local setting the trigger reads) and `store_id uuid` (the item's store at the event, as job 347 plans). All three are nullable, so old app builds keep working. Their ticks fall back to commit times, so an offline walk becomes a burst and teaches nothing: a safe failure. The app sends `ticked_at` with the status update; `items.bought_at` stays the server's time.
 
 **Detected trips.** They go into `trip_sessions` with `source = 'detected'` and `end_reason = 'auto'`, plus `trips` rows as trip mode writes them. Three new nullable columns:
 
@@ -335,20 +338,37 @@ An edited or removed trip is frozen: detection never rewrites or re-detects it (
 
 **Reconciliation, each run.** `detect_trips(household)` runs in one transaction, under the household's advisory lock:
 
-1. Window: the 36 hours before the newest app tick. Ticks in `tick_ids` of a frozen or removed trip are taken out of the input, so a removed trip is never detected again and an edited one keeps its ticks.
+1. Window: the 36 hours before the newest app tick, widened back to the start of every unfrozen detected trip that overlaps it, so no trip is cut at the window's edge. Ticks in `tick_ids` of a frozen or removed trip are taken out of the input, so a removed trip is never detected again and an edited one keeps its ticks.
 2. Detect trips from the rest.
-3. Delete the household's detected trips that are neither frozen nor removed and overlap the window, with their `trips` rows. Insert the new ones with fresh ids. A late offline tick, a T2a merge or an untick therefore replaces a trip instead of leaving a stale duplicate; ids are not stable and nothing outside the function refers to an unfrozen detected trip.
-4. Recompute order and store memory for each store the window touched, by replaying that store's taught walks (from non-removed detected trips and manual trips) in time order. The halfway learner cannot subtract one trip, and a store has tens to hundreds of trips, so a replay is cheap. Store memory is recomputed from the proposals the same way.
+3. Delete the household's detected trips that are neither frozen nor removed and lie in the window (after step 1, every one that overlaps it does), with their `trips` rows. Insert the new ones with fresh ids. A late offline tick, a T2a merge or an untick therefore replaces a trip instead of leaving a stale duplicate; ids are not stable and nothing outside the function refers to an unfrozen detected trip.
+4. Hand the new walks to IO4's learner, or replay a store when a taught walk changed (next section).
 5. Set `detected_through`.
 
 A removed trip keeps its row (with `removed_at`) only as a tombstone, without lines: its `lines` are emptied and its `trips` rows deleted. Verlauf and exports skip it.
+
+**Feeding IO4's learner.** Job 347's IO4 keeps the learned order in `item_order_memory` (`source learned | manual`, a `trips` count, a migration seed with `trips = 0`, manual places from „Neben…", `place_item` and `set_store_order`, and "a manual position moves only after three contradicting trips"), and plans its own learning trigger: "when a trip ends (or after 20 minutes without a tick)", reading a trip's `bought` events (`jobs/347-item-order-prototypes/out/APPROACHES.md`, "Data, migration and sync"). Detection fits into that design like this:
+
+- **One entry point.** `detect_trips` replaces IO4's trigger; it is the only code that hands walks to the learner. There is no second learner at a trip's end.
+- **Manual trips go through it too.** `trip_sessions` has no tick sequence, so a manual trip's walks come from the same `item_events`: the starter's app ticks between `started_at` and `ended_at`, outside its pauses, through the same step, pace and shuffle tests. The manual trip only fixes the trip's boundary and its Verlauf row; its checkout ticks teach nothing, as anywhere else.
+- **Taught walks are stored.** `trip_sessions.walks jsonb` holds each taught walk of a trip (store, time, steps of canonical keys, and each key's store tag for store memory). A replay needs them, because `item_events` change under late ticks and the gate's verdict depends on the order at the time.
+- **The normal case is incremental.** A new walk is applied once to `item_order_memory` with IO4's rules: learned rows move, and each walk that contradicts a manual place counts toward its three-trip override.
+- **A replay starts from the seed and the manual places.** When a taught walk is removed, changes store, or is reshaped by a rerun, the touched store is rebuilt. The rebuild starts from the seed. IO4 keeps the seed in a `seed_position` column, written by its migration, so it survives learning. Then, in time order, it applies every walk of the store's non-removed trips and every current manual place at its `updated_at`. It counts the three-trip override along the way, as live learning would have. Learned rows are rewritten. A manual row stays manual unless the replayed override lifts it. So no manual place and no seed is lost. Store memory is rebuilt from the stored proposals the same way.
+- **The running trip holds the order** (IO4's sync rule). Detection runs only after 10 minutes without a tick, so nothing reorders under a shopper's thumb.
+- **The learner changes.** This report's learner (F8: the walk's keys trade places among the positions they hold, halfway) replaces IO4's "moves each key's position toward its rank in the trip", and the shuffle gate (F9) is new. Evidence: same detector, IO4's learner vs F8, split-couple 73 → 85 %, slow-unpacker 75 → 84 %, the others within 2 points. That is TD-Q16 for job 352 and 347's design.
 
 **Tests.** The simulator here is the reference for the rule. Port the cases in `sim/detect_test.ts` to pgTAP cases of the SQL function, plus: a rerun after a late earlier tick leaves one trip; a removed trip stays removed after a rerun; an edited trip keeps its ticks.
 
 ## Legal notes
 
 - **New derived data.** Inferred store visits: who shopped, where, on which day, for how long, and in what order they ticked. Until now a trip was recorded only when someone started it. A detected trip is recorded without that act. It needs a row in `docs/PRIVACY_DATA_MAP.md` and a sentence in the privacy notice: Snacklist recognizes shopping trips from the times items are ticked, without location.
-- **Inside the household, today already.** Every member can read every member's `item_events` rows through the API (`item_events_select`, `foundation.sql:419`): who ticked what, with the server time to the microsecond. The review proved it on the local stack. So "other members see the day, not clock times" holds on screen only, and the new `client_at` would be readable the same way. No app code and no edge function reads `item_events` directly. Proposal for job 352: revoke `select` on `public.item_events` from `authenticated` and read it only through `security definer` functions (detection, export, history), which return the day and the store to other members, not times. That closes today's exposure too. Until then, Legal should treat clock times of ticks as visible to all members.
+- **Inside the household, today already.** Every member can read every member's `item_events` rows through the API (`item_events_select`, `foundation.sql:419`). That covers who ticked what, with the server time to the microsecond. The review proved it on the local stack. So "other members see the day, not clock times" holds on screen only, and the new `client_at` would be readable the same way.
+- **Who reads `item_events` as a member.** No app code reads the table directly. But `public.suggest_items` (the add sheet's usuals, called at `list_repository.dart:540`) is `security invoker` and reads it as the member. Review 1 ran a plain revoke and got "permission denied for table item_events" from `suggest_items`. A scan of every function's latest definition in `supabase/migrations` (functions without a `security` clause count as invokers) finds one other invoker reader: `merge_duplicate_categories`. Its execute right is revoked from every role, and it ran once in its migration. No view reads the table. The test tools (`fg sync` at `cli/sync.ts:248`, the scenario fixtures, e2e's admin client) read and patch it with the service role (`cli/target.ts:133`: no token means the service role), so a revoke from `authenticated` leaves them working.
+- **Proposal for job 352, in one migration.**
+  1. `suggest_items` becomes `security definer` and starts with an explicit `is_household_member(p_household)` check that raises `not_a_member`. Today its `items` read relies on RLS, which a definer function bypasses, so the check must guard the whole function, not only the events part.
+  2. `revoke select on public.item_events from authenticated`.
+  3. pgTAP cases: a member still gets usuals, an outsider gets `not_a_member`, and a member's `select` on `item_events` is refused.
+
+  A column-level revoke (`created_at`, `actor`, `client_at`) is not enough on its own, because `suggest_items` reads `created_at` as the member. After the change, members still see `last_used` per name from `suggest_items`: the household's latest purchase time of an item, without who bought it. Until the migration ships, Legal should treat tick times as visible to all members.
 - **Mitigations proposed.** Other members see the day and the store of a detected trip, not clock times (and, with the revoke above, cannot read them elsewhere either); a per-person switch turns detection off for one's own ticks; any member can remove a trip (GL-3). Legal should confirm that this is enough (TD-Q3).
 - **No location.** Detection uses tick times and the store the user tagged. No GPS, no Wi-Fi, no geofence. The copy says so.
 - **Pharmacies (GL-2).** No detected trip, no order learning and no store memory at a pharmacy. Tick events at a pharmacy are already stored today; nothing new derives from them.
@@ -360,16 +380,17 @@ A removed trip keeps its row (with `removed_at`) only as a tombstone, without li
 
 - **TD-Q1 (Peter).** H2: a burst of fast ticks is a trip in history only from 5 ticks, and never teaches order. Recommendation: accept. Alternative: no bursts as trips at all (fewest phantoms, but recall falls to 63 %, and a household that ticks at the checkout gets almost no history).
 - **TD-Q2 (Peter).** T1a: the same person at the same store again within 30 minutes continues the trip. Recommendation: accept.
-- **TD-Q3 (Legal).** Are a per-person opt-out, no clock times on others' detected trips, and revoking members' direct read of `item_events` enough for inferred visits inside a household? Is a privacy notice sentence enough, or does detection need an explicit yes first?
+- **TD-Q3 (Legal).** Are a per-person opt-out, no clock times on others' detected trips, and revoking members' direct read of `item_events` (with `suggest_items` made `security definer`) enough for inferred visits inside a household? Is a privacy notice sentence enough, or does detection need an explicit yes first?
 - **TD-Q4 (Peter).** No live "Looks like you're at Rewe" hint; the trip question asks once per shop instead of on every tick. Recommendation: accept. Alternative: the live line above replaces the question for people who said „Nein" three times.
 - **TD-Q5 (Peter).** After „Nein, nur abgehakt", that shop is still detected: the order learns and Verlauf shows the trip with "Aus deinen Häkchen erkannt". Recommendation: accept, since „Nein" today means "no stopwatch", not "this was not a shop". Alternative: no Verlauf trip for that shop, order still learns.
 - **TD-Q6 (job 352).** A partner who walks the store from the back hands the learner reverse pairs (16 % wrong in split-couple). Per-person direction would fix it, at the cost of a second order. Measure on real trips first.
 - **TD-Q7 (job 352).** A device id on each event would let the clock offset be per device rather than per person. It matters only for people with two devices and different clocks.
 - **TD-Q8 (lead).** Calibration needs a read-only path that returns only aggregates: the distribution of gaps between one person's consecutive app ticks (bucketed), burst sizes, the share of ticks with a commit time more than 10 s after the tap (once `client_at` exists), and how well a household's walks at one store agree with each other (for the 60 % shuffle gate). Should one be built, for example a `security definer` function that returns histograms only? Until then the pace rule (20 s) and the gate (60 % after 3 walks) are synthetic guesses, and slow unpacking or slow catch-ups can teach the first walks at a store.
 - **TD-Q9 (job 352).** Delivery unpacking shows up as a trip with no duration. Should a household be able to mark a store as a delivery service, so its bursts and walks never show as trips or teach?
-- **TD-Q10 (Peter).** H1: a walk needs 3 steps (ticks under 6 s apart count as one) and a median of at least 20 s between them. Approved: 3 ticks under 5 min apart. Recommendation: accept (numbers in "Changes").
+- **TD-Q10 (Peter).** H1: a walk needs 3 steps (ticks under 6 s apart count as one) and a median of at least 20 s between them, and ticks up to 10 minutes apart stay one run (T1a's quiet time). Approved: 3 ticks under 5 min apart. Recommendation: accept (numbers in "Changes").
 - **TD-Q11 (Peter).** T1a: ticking the store's last item no longer ends the trip; only 10 minutes of quiet do. Recommendation: accept; the difference is small (precision 88 → 90 %).
 - **TD-Q12 (Peter).** T3a: a change of store needs 2 minutes without a tick. Recommendation: accept.
 - **TD-Q13 (Peter).** Times come from the phone's tap, corrected by its usual offset, instead of the server's commit. Recommendation: accept; it needs the app to send the tap time.
 - **TD-Q14 (Peter).** T4a: an item moves to another store in store memory only after the second walk that bought it there, and never from a shuffle. Approved: at once. Recommendation: accept; the cost is one more walk before an item moves.
 - **TD-Q15 (Peter).** Without Premium a detected trip shows no rows, so "New trip from here" cannot work. Should corrections of a detected trip show its rows to Free members (an exception to PB3a), or stay Premium?
+- **TD-Q16 (job 352, 347's design).** The learner: F8 (the walk's keys trade places among the positions they hold, halfway) plus the shuffle gate, instead of IO4's move toward the rank in the trip. Recommendation: accept. It changes only how a walk updates `item_order_memory`; the table, manual places, the three-trip override and the seed stay as IO4 designs them.

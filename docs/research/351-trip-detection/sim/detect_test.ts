@@ -316,3 +316,48 @@ Deno.test("T1a as approved: ticking the store's last item ends the trip", () => 
     'approved (no pause): two',
   );
 });
+
+Deno.test('a phone clock an hour ahead is corrected too, offline walks included', () => {
+  const offline = run(6, 90 * SECOND, 0, { skew: HOUR }).map((s, i) => ({ ...s, server: 20 * MINUTE + i * 400 }));
+  const online = run(4, 3 * HOUR, 2 * HOUR, { skew: HOUR }, 10);
+  const d = finalRule(household([...offline, ...online]));
+  assert(Math.abs((d.trips[0]?.start ?? 0) - T0) <= 2 * SECOND, 'the walk at its true time');
+  assert(d.segments[0]?.clumps.length === 6, 'and taught from the tap times');
+});
+
+Deno.test('a tap time beyond the stored bounds falls back to the commit time', () => {
+  const offline = run(6, 90 * SECOND, 0, { skew: 2 * DAY }).map((s, i) => ({ ...s, server: 20 * MINUTE + i * 400 }));
+  const d = finalRule(household(offline));
+  assert(d.segments.length === 0, 'two days ahead: commit times, a sync burst, nothing taught');
+  const near = run(6, 90 * SECOND, 0, { skew: HOUR }).map((s, i) => ({ ...s, server: 20 * MINUTE + i * 400 }));
+  assert(finalRule(household(near)).segments.length === 1, 'an hour ahead: within the bounds');
+  assert(
+    finalRule(household(near), { ...FINAL, clientAfter: 5 * MINUTE }).segments.length === 0,
+    'the first proposal (5 min ahead) would have dropped it',
+  );
+});
+
+Deno.test('two slow steps at a store with items left are no walk (H1: three steps)', () => {
+  const d = finalRule(household(run(2, MINUTE)));
+  assert(d.trips.length === 0 && d.segments.length === 0, 'nothing');
+});
+
+Deno.test('a 7-minute gap inside a walk keeps one walk (the run gap is 10 minutes)', () => {
+  const d = finalRule(household([...run(4, MINUTE), ...run(4, MINUTE, 10 * MINUTE, {}, 4)]));
+  assert(d.segments.length === 1 && d.segments[0]?.clumps.length === 8, 'one walk of eight');
+});
+
+Deno.test('steps 30 s apart are a walk (pace 20 s)', () => {
+  const d = finalRule(household(run(6, 30 * SECOND)));
+  assert(d.segments.length === 1, 'taught');
+});
+
+Deno.test('a walk synced three days later keeps its tap times', () => {
+  const late = run(6, 90 * SECOND).map((s, i) => ({ ...s, server: 3 * DAY + i * 400 }));
+  const online = run(4, 3 * HOUR, 4 * DAY, {}, 10);
+  const d = finalRule(household([...late, ...online]));
+  assert(
+    d.segments[0]?.clumps.length === 6 && Math.abs((d.trips[0]?.start ?? 0) - T0) <= 2 * SECOND,
+    'taught at its time',
+  );
+});
