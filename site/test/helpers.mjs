@@ -16,6 +16,12 @@ export const REPO_DIR = join(SITE_DIR, '..');
 export const REAL_RECORD = readFileSync(join(REPO_DIR, 'releases/releases.json'), 'utf8');
 export const REAL_PUBSPEC = readFileSync(join(REPO_DIR, 'app/pubspec.yaml'), 'utf8');
 export const REAL_FLAGS = readFileSync(join(REPO_DIR, 'releases/flags.json'), 'utf8');
+// The real flags with public-api set to `rollout`: tests of the API-off and API-on builds state it, so they don't follow the live rollout.
+export function flagsWithPublicApi(rollout) {
+  const data = JSON.parse(REAL_FLAGS);
+  data.flags['public-api'].rollout = rollout;
+  return JSON.stringify(data);
+}
 export const REAL_OPENAPI = readFileSync(join(REPO_DIR, 'docs/api/openapi.yaml'), 'utf8');
 
 const temps = [];
@@ -29,7 +35,7 @@ export function tempDir() {
 
 // The files the build reads from outside site/: the real ones unless given, null for missing.
 // `drafts` maps a file name in releases/changelog/ to its text (today's repo has none).
-export function repoDir({ record = REAL_RECORD, pubspec = REAL_PUBSPEC, flags = REAL_FLAGS, openapi = REAL_OPENAPI, drafts = {} } = {}) {
+export function repoDir({ record = REAL_RECORD, pubspec = REAL_PUBSPEC, flags = flagsWithPublicApi('off'), openapi = REAL_OPENAPI, drafts = {} } = {}) {
   const dir = tempDir();
   const draftFiles = Object.entries(drafts).map(([name, text]) => [`releases/changelog/${name}`, text]);
   const files = [['releases/releases.json', record], ['app/pubspec.yaml', pubspec], ['releases/flags.json', flags], ['docs/api/openapi.yaml', openapi], ...draftFiles];

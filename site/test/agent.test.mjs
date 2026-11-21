@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import { cpSync, existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { CHECKS, checkAgentSite, readStage, readVercel } from '../agent.mjs';
-import { buildSite, serve, tempDir, REAL_FLAGS, REAL_OPENAPI, SITE_DIR } from './helpers.mjs';
+import { buildSite, serve, tempDir, flagsWithPublicApi, REAL_OPENAPI, SITE_DIR } from './helpers.mjs';
 
 const SITE = 'https://snacklist.app';
-const FLAGS_ON = JSON.stringify({ ...JSON.parse(REAL_FLAGS), flags: { 'public-api': { ...JSON.parse(REAL_FLAGS).flags['public-api'], rollout: 'full' } } });
+const FLAGS_ON = flagsWithPublicApi('full');
 const VERCEL = readVercel();
 const VERCEL_INDEXABLE = {
   ...VERCEL,
