@@ -1979,7 +1979,11 @@ it about 2.6 s after opening (web). Details, evidence and test results: `docs/do
 
 ## Job 331: public API and MCP tested live and reviewed, 2026-11-21
 
-Verdict READY-AFTER-FIXES: the API can be switched on once the draft PR lands. Every endpoint and
+Verdict READY-AFTER-FIXES: nothing in the API's code blocks it once the draft PR lands. With
+`integration_lock` off (production today, PX1) the API would be free for everyone, though CS1 makes it
+Premium. The order is Peter's call: free during the beta (#590, `public_api`, the `public-api` flag,
+smoke), or Premium (#590 and #583, the PURCHASES.md "Integration lock" go-live steps, `integration_lock`,
+then `public_api` and the flag). Every endpoint and
 tool was run over HTTP against the job's local stack with synthetic households: 158 of 159 checks as
 expected on the branch, the remaining one is MCP's missing rate limit (J1). Report, test log and
 probe in the ops job dir (`out/`); summary in `docs/done/331.md`. The draft PR fixes MCP leaking and
