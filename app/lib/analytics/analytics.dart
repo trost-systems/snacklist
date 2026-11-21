@@ -108,7 +108,13 @@ class const AnalyticsConfig({
 
   /// Flags on without PostHog ([Flags.forced]).
   final Set<String> forcedFlags = const {},
-});
+}) {
+  /// The build number of [appVersion] (`1023`), null without one.
+  int? get appBuild => switch (appVersion.split('+')) {
+    [_, final build] => int.tryParse(build),
+    _ => null,
+  };
+}
 
 /// Product analytics, error tracking and feature flags for PostHog EU, on
 /// the posthog_flutter SDK (docs/ANALYTICS.md).
@@ -528,13 +534,20 @@ class Analytics(
             debugPrint('analytics: context not registered: ${e.runtimeType}');
           }),
     );
-    // Flags may be released to internal installs only (docs/ANALYTICS.md).
+    // Flags may be released to internal installs only, or from a build on
+    // (docs/ANALYTICS.md). Only installs with a yes send `app_build`, so a
+    // version condition never matches the shared request (Legal §18 L2).
     final internal = internalNow;
     if (internal != _flagsInternal) {
       _flagsInternal = internal;
       unawaited(
         posthog
-            .flagProperties({'is_internal': internal})
+            .flagProperties({
+              'is_internal': internal,
+              'platform': _config.platform,
+              'app_version': _config.appVersion,
+              'app_build': ?_config.appBuild,
+            })
             .then((_) => _refreshFlags())
             .catchError((Object e) {
               _flagsInternal = null;

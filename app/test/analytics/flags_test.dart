@@ -319,7 +319,7 @@ void main() {
     expect(analytics.flags.isOn('shared-thing'), isFalse);
   });
 
-  group('targeting by is_internal', () {
+  group('targeting by is_internal and build', () {
     late Analytics analytics;
 
     setUp(() async {
@@ -332,17 +332,20 @@ void main() {
     List<Object?> sent() => [
       for (final c in native.calls)
         if (c.method == 'setPersonPropertiesForFlags')
-          (c.arguments as Map)['userProperties'],
+          ((c.arguments as Map)['userProperties'] as Map)['is_internal'],
     ];
 
-    test('after the yes PostHog evaluates flags with is_internal, as a '
-        'flag property only', () async {
+    test('after the yes PostHog evaluates flags with is_internal and the '
+        'build, as flag properties only', () async {
       analytics.setUser(customer);
       await analytics.decide(granted: true);
       await pumpEventQueue();
-      expect(sent(), [
-        {'is_internal': false},
-      ]);
+      expect(native.flagProperties, {
+        'is_internal': false,
+        'platform': 'web',
+        'app_version': '0.1.0+7',
+        'app_build': 7,
+      });
       expect(analytics.flags.isOn('internal-only'), isFalse);
       expect(native.methods, isNot(contains('setPersonProperties')));
       expect(native.methods, isNot(contains('identify')));
@@ -360,11 +363,7 @@ void main() {
       await pumpEventQueue();
       await analytics.markInternalInstall(internal: false);
       await pumpEventQueue();
-      expect(sent(), [
-        {'is_internal': false},
-        {'is_internal': true},
-        {'is_internal': false},
-      ]);
+      expect(sent(), [false, true, false]);
       expect(analytics.flags.isOn('internal-only'), isFalse);
     });
 
@@ -380,13 +379,28 @@ void main() {
       expect(
         server.requests.last.body,
         sharedFlagsBody,
-        reason: 'no is_internal',
+        reason:
+            'no is_internal and no app_build: no version condition '
+            'matches without consent',
       );
       await analytics.decide(granted: true);
       await pumpEventQueue();
-      expect(native.flagProperties, {'is_internal': true});
+      expect(native.flagProperties, containsPair('is_internal', true));
+      expect(native.flagProperties, containsPair('app_build', 7));
       expect(analytics.flags.isOn('internal-only'), isTrue);
     });
+  });
+
+  test('the build number goes only where the version has one', () {
+    AnalyticsConfig version(String v) => AnalyticsConfig(
+      releaseBuild: true,
+      householdGroups: false,
+      platform: 'ios',
+      appVersion: v,
+    );
+    expect(version('1.4.0+1414').appBuild, 1414);
+    expect(version('1.4.0').appBuild, isNull);
+    expect(version('0').appBuild, isNull);
   });
 
   test('a build without a key has every flag off, cached ones too', () async {

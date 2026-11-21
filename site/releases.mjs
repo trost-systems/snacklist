@@ -255,6 +255,23 @@ const parseJson = (text, source) => {
   }
 };
 
+// A flag's lowest app version, which scripts/posthog/sync-flags.ts turns into PostHog conditions
+// (job 332, docs/ANALYTICS.md): "1.4.0" or "1.4.0+1420" for every platform, or an object with
+// `default` and a version per platform. plan.ts parses the same shape.
+const REQUIREMENT = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(\+[1-9]\d*)?$/;
+const MIN_VERSION_PLATFORMS = ['android', 'ios', 'linux', 'macos', 'web', 'windows'];
+const checkMinVersion = (c, value, path) => {
+  const requirement = (v, at) => c.matches(typeof v === 'string' && REQUIREMENT.test(v), v, at, 'a version "MAJOR.MINOR.PATCH" or "MAJOR.MINOR.PATCH+BUILD"');
+  if (typeof value === 'string') return requirement(value, path);
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) c.fail(path, 'must be a version or an object with "default"');
+  if (!('default' in value)) c.fail(`${path}.default`, 'missing (the version for every other platform)');
+  for (const [platform, v] of Object.entries(value)) {
+    if (platform !== 'default' && !MIN_VERSION_PLATFORMS.includes(platform)) c.fail(`${path}.${platform}`, `unknown platform (allowed: default, ${MIN_VERSION_PLATFORMS.join(', ')})`);
+    requirement(v, `${path}.${platform}`);
+  }
+  return value;
+};
+
 // releases/flags.json: the rollout of each feature flag and the state of each hold. An item is
 // public only when its flag is `full` and its hold `released`. `match` lists words that, while
 // the hold is not released, hold back every item mentioning them (the Alexa skill).
@@ -265,9 +282,10 @@ export function parseGates(text, source = 'releases/flags.json') {
   c.object(data.flags, 'flags', Object.keys(data.flags ?? {}));
   for (const [key, flag] of Object.entries(data.flags)) {
     gateKey(c, key, `flags.${key}`);
-    c.object(flag, `flags.${key}`, ['rollout', 'note']);
+    c.object(flag, `flags.${key}`, ['rollout', 'note', ...(typeof flag === 'object' && flag !== null && 'min_version' in flag ? ['min_version'] : [])]);
     c.matches(ROLLOUTS.includes(flag.rollout), flag.rollout, `flags.${key}.rollout`, `one of ${ROLLOUTS.join(', ')}`);
     c.string(flag.note, `flags.${key}.note`);
+    if ('min_version' in flag) checkMinVersion(c, flag.min_version, `flags.${key}.min_version`);
   }
   c.object(data.holds, 'holds', Object.keys(data.holds ?? {}));
   for (const [key, hold] of Object.entries(data.holds)) {

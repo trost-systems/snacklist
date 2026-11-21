@@ -411,7 +411,8 @@ Runtime toggles are PostHog feature flags, read in one place: `Analytics.flags.i
   condition on them would target installs without consent by property; a negative condition
   (`is_internal` is not `true`) would match `no-consent` too. A flag meant for everyone gets one
   unconditional condition at 0 % or 100 %; internal-only flags use `is_internal = true`, which
-  never matches `no-consent`.
+  never matches `no-consent`. The version conditions the flag sync writes (job 332, below) keep
+  this rule: each one needs `app_build`, which only installs with a yes send.
 - **Forcing a flag locally.** `--dart-define=FLAGS_ON=public-api` (comma-separated keys,
   `Environment.flagsOn`) turns flags on whatever PostHog serves, only in a build whose
   `POSTHOG_HOST` is not PostHog EU (local, fg, e2e and verify-snacklist builds); store and
@@ -424,7 +425,9 @@ Runtime toggles are PostHog feature flags, read in one place: `Analytics.flags.i
 - **Reading a flag sends nothing** (`sendFeatureFlagEvent` off, no `$feature_flag_called`).
   After a yes flags are read with `getAllFeatureFlags()` after the SDK starts and whenever it
   reports new ones.
-- **Keys and rollouts live in PostHog** (project 319492); the Lead creates them. The app reads
+- **Keys and rollouts live in PostHog** (project 319492). A new key in `flags.dart` reaches
+  PostHog by itself once it is on main ("Flags from main and minimum versions" below); the Lead
+  sets rollouts beyond internal installs by hand. The app reads
   `public-api` (the API keys under Zugänge, job 73), `grocery-log` (the Verlauf tab, job 199),
   `prices-and-trip-total` (prices and the trip total, job 190), `default-list-voice-target`
   (the list Siri, Alexa and AI add to without a named list, on the household page and sheet,
@@ -435,14 +438,107 @@ Runtime toggles are PostHog feature flags, read in one place: `Analytics.flags.i
   Einstellungen, job 267). A flag gates code paths only; it never gates consent, data or legal texts.
 - **Targeting internal installs.** A flag may be released by the person property
   `is_internal`, so that only internal installs get it (Peter's TestFlight build, marked
-  internal under More). The app sends `{'is_internal': Analytics.internalNow}` with
-  `setPersonPropertiesForFlags` when the SDK starts and whenever the value changes, then
-  reads the flags again (`PostHogClient.flagProperties`). It clears the value on a no. No
-  person profile is created: the property goes only with the flag request.
+  internal under More). After a yes the app sends `{'is_internal', 'platform', 'app_version',
+  'app_build'}` with `setPersonPropertiesForFlags` when the SDK starts and whenever a value
+  changes, then reads the flags again (`PostHogClient.flagProperties`). It clears them on a no.
+  No person profile is created: the properties go only with the flag request. `app_build` (the
+  build number, a whole number) goes only here, never with the shared no-consent request, which
+  sends `platform` and `app_version`. So a condition that needs `app_build` never matches an
+  install without consent (Legal §18 L2).
 - **`releases/flags.json` is not this.** It only says which changelog items wait for a rollout
   or a hold (job 40, docs/CHANGELOG.md, "Gated items"). A feature behind a PostHog flag gets its
   key there too (`"rollout": "off"`, `partial`, `full`), set by hand when the PostHog rollout
   changes, so its changelog item goes public once everyone has it.
+
+### Flags from main and minimum versions (job 332)
+
+The workflow `posthog-flag-sync.yml` runs `scripts/posthog/sync-flags.ts` every 15 minutes and
+after every push to main that changes `app/lib/analytics/flags.dart`, `releases/flags.json` or
+`scripts/posthog/`. It only creates flags and adds conditions. It never deletes a flag, never switches one off and
+never changes a rollout.
+
+**A new flag.** Add a constant to `app/lib/analytics/flags.dart`, with a `///` comment that says
+what the flag shows:
+
+```dart
+/// The flag that shows the pantry tab (job 400).
+const pantryFlag = 'pantry';
+```
+
+Once the PR is on main, PostHog has the flag `pantry`: active, named after the comment, with one
+condition `is_internal = true` at 100 %. Only internal installs get it. To release it further,
+add a condition in PostHog by hand. The sync does nothing else to a flag that already exists,
+active or not. A flag deleted in PostHog comes back at the next run while its key is in
+`flags.dart`.
+
+**A minimum version.** A flag in `releases/flags.json` can carry `min_version`, the app version in
+which the feature became complete; older versions never get the flag. Set it once when the feature
+ships and leave it: a later release does not move it (Peter, t1100u). A feature complete in 1.1.0
+keeps `>= 1.1.0` when another one ships in 1.3.0 with `>= 1.3.0`:
+
+```json
+"pantry": { "rollout": "partial", "note": "...", "min_version": "1.4.0" }
+"pantry": { "rollout": "partial", "note": "...", "min_version": "1.4.0+1420" }
+"pantry": { "rollout": "partial", "note": "...",
+            "min_version": { "default": "1.4.0", "ios": "1.4.1+1420", "android": "1.4.0" } }
+```
+
+A version is `MAJOR.MINOR.PATCH`, optionally `+BUILD`. The object form needs `default`; its
+other keys are platforms (`ios`, `android`, `web`, `macos`, `linux`, `windows`). The site's
+`parseGates` and `plan_test.ts` reject anything else, so a bad value fails CI on the PR.
+
+The sync adds the version to every condition of the flag in PostHog except the internal ones
+(`is_internal = true`), which it leaves as they are:
+
+- `"1.4.0"`: `app_version` semver ≥ `1.4.0` and `app_build` is set.
+- `"1.4.0+1420"`: `app_version` semver ≥ `1.4.0` and `app_build` ≥ 1420.
+- An object: a condition without a `platform` condition is split once into one per named
+  platform (`platform` = `ios` and its version) and one more for every other platform
+  (`platform` is not `ios`, `android`) with the `default` version. Each keeps its rollout
+  percentage and variant. A condition that already names its platform (`platform` = `web`, by
+  hand or from an earlier split) gets that platform's version and is never split again.
+
+The sync owns one pair per condition: `app_version` semver ≥ directly followed by `app_build` ≥
+(or is set). Later runs replace only that pair. Everything else in a condition stays as it is: a
+rollout raised on the iOS half of a split, a `platform` condition set by hand, or a version
+condition set by hand, such as `app_version` is not `1.5.0` for a broken release or `app_build` ≥
+1600 for a newer build; it stays ANDed with the pair, so it can only narrow the flag. A platform that gets its own version after a split is added as a new condition next to the
+`platform is not` one, which then also excludes it.
+
+Each flag carries its own conditions, not a shared cohort, so a flag shows its version on its own
+page. PostHog evaluates them on what the flag request sends. Every version condition needs
+`app_build`, which only installs with an analytics yes send, so none matches the no-consent request
+(Legal §18 L2). A flag with only internal conditions gets no version condition until someone adds
+another condition in PostHog; the next run then adds the version to it. So release a version-gated
+flag in this order: add the new condition at 0 %, run the workflow by hand (or wait for its
+quarter-hourly run) and check the flag shows the version conditions, then raise the percentage.
+Between the two steps no old version gets the flag. Removing `min_version` from `flags.json` leaves
+the conditions in PostHog: remove them there by hand. A group-based flag
+(`aggregation_group_type_index`) with a `min_version` fails the run and stays as it is.
+
+**Which version to write.** `deno run --allow-read=. scripts/posthog/latest-store.ts` prints the
+newest public App Store and Google Play release from `releases/releases.json` as a `min_version`
+value, or the version in `app/pubspec.yaml` while there is none. Every store build has been
+`0.1.0` so far, so a build number (`+1420`, the TestFlight or Play build that carries the feature)
+is what tells builds apart today.
+
+**Running it.** The workflow also runs every 15 minutes, so a condition added in PostHog gets its
+version soon without a push. Actions › PostHog flag sync › Run workflow runs it by hand; tick
+`dry_run` to see the plan without a change. Locally, with a personal API key (scopes
+`feature_flag:read` and `feature_flag:write` on project 319492) in `POSTHOG_PERSONAL_API_KEY`:
+
+```sh
+deno run --allow-read=. --allow-env --allow-net=eu.posthog.com \
+  scripts/posthog/sync-flags.ts --dry-run
+```
+
+`POSTHOG_API_HOST` and `POSTHOG_PROJECT_ID` override `https://eu.posthog.com` and `319492`.
+The workflow reads the key from the secret `POSTHOG_PERSONAL_API_KEY` of the `ops` environment.
+Without it the run says so in a notice and passes. A plan error (a bad flag) fails a push or a
+run by hand red after the other flags are synced; a scheduled run only warns, so a bad condition
+in PostHog does not fail every 15 minutes. An HTTP error stops the run at once, and a rerun picks
+up where it stopped. Right before it changes a flag the sync reads that flag again and plans it
+anew, so an edit made in PostHog since the run started is not overwritten.
 
 ## Configuration
 
