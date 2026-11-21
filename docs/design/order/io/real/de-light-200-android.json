@@ -1,0 +1,309 @@
+{
+ "lang": "de",
+ "scale": 2,
+ "android": true,
+ "viewport": {
+  "width": 360,
+  "height": 640
+ },
+ "cats": {
+  "bananas": "produce",
+  "apples": "produce",
+  "tomatoes": "produce",
+  "cucumber": "produce",
+  "bread": "bakery",
+  "pretzels": "bakery",
+  "mince": "meat",
+  "milk": "chilled",
+  "butter": "chilled",
+  "eggs": "chilled",
+  "yogurt": "chilled",
+  "pasta": "pantry",
+  "flour": "pantry",
+  "passata": "pantry",
+  "chocolate": "sweets",
+  "pizza": "frozen",
+  "water": "drinks",
+  "dishsoap": "household",
+  "tealights": "household",
+  "frame": "household",
+  "spoon": "household",
+  "napkins": "household",
+  "meatballs": "other",
+  "cushion": "other",
+  "boxes": "other",
+  "plant": "household",
+  "shelf": "other",
+  "batteries": "household",
+  "card": "household"
+ },
+ "top": [
+  {
+   "role": "button",
+   "label": "Einkaufsliste · Brandt family",
+   "top": 10,
+   "bottom": 58,
+   "left": 16,
+   "right": 179.984375
+  },
+  {
+   "role": "button",
+   "label": "Anpassen",
+   "top": 10,
+   "bottom": 58,
+   "left": 203.99212646484375,
+   "right": 343.99212646484375
+  },
+  {
+   "role": "button",
+   "label": "EDEKA, 18 Artikel",
+   "top": 72,
+   "bottom": 124,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "heading",
+   "label": "Obst & Gemüse",
+   "top": 124,
+   "bottom": 156,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "checkbox",
+   "label": "Bananen\n6",
+   "top": 156,
+   "bottom": 255,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "button",
+   "label": "Preis für Bananen",
+   "top": 156,
+   "bottom": 254,
+   "left": 225.462646484375,
+   "right": 343.993896484375
+  },
+  {
+   "role": "checkbox",
+   "label": "Äpfel\n1 kg",
+   "top": 255,
+   "bottom": 354,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "button",
+   "label": "Preis für Äpfel",
+   "top": 255,
+   "bottom": 353,
+   "left": 225.462646484375,
+   "right": 343.993896484375
+  },
+  {
+   "role": "checkbox",
+   "label": "Tomaten",
+   "top": 354,
+   "bottom": 410,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "button",
+   "label": "Preis für Tomaten",
+   "top": 354,
+   "bottom": 409,
+   "left": 225.462646484375,
+   "right": 343.993896484375
+  },
+  {
+   "role": "checkbox",
+   "label": "Gurke",
+   "top": 410,
+   "bottom": 465,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "button",
+   "label": "Preis für Gurke",
+   "top": 410,
+   "bottom": 465,
+   "left": 225.462646484375,
+   "right": 343.993896484375
+  },
+  {
+   "role": "heading",
+   "label": "Brot & Backwaren",
+   "top": 465,
+   "bottom": 497,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "checkbox",
+   "label": "Brot",
+   "top": 497,
+   "bottom": 553,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "button",
+   "label": "Preis für Brot",
+   "top": 497,
+   "bottom": 552,
+   "left": 225.462646484375,
+   "right": 343.993896484375
+  },
+  {
+   "role": "checkbox",
+   "label": "Brezeln\n4",
+   "top": 553,
+   "bottom": 640,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "button",
+   "label": "Preis für Brezeln",
+   "top": 553,
+   "bottom": 640,
+   "left": 225.462646484375,
+   "right": 343.993896484375
+  },
+  {
+   "role": "heading",
+   "label": "Fleisch/Wurst/Fisch",
+   "top": 651,
+   "bottom": 703,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "checkbox",
+   "label": "Hackfleisch\n500 g",
+   "top": 703,
+   "bottom": 801,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "button",
+   "label": "Preis für Hackfleisch",
+   "top": 703,
+   "bottom": 801,
+   "left": 225.462646484375,
+   "right": 343.993896484375
+  },
+  {
+   "role": "heading",
+   "label": "Kühlregal",
+   "top": 801,
+   "bottom": 833,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "checkbox",
+   "label": "Milch\n2",
+   "top": 833,
+   "bottom": 889,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "button",
+   "label": "Preis für Milch",
+   "top": 833,
+   "bottom": 888,
+   "left": 225.462646484375,
+   "right": 343.993896484375
+  },
+  {
+   "role": "checkbox",
+   "label": "Butter",
+   "top": 889,
+   "bottom": 890,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "button",
+   "label": "Preis für Butter",
+   "top": 889,
+   "bottom": 890,
+   "left": 225.462646484375,
+   "right": 343.993896484375
+  },
+  {
+   "role": "tab",
+   "label": "Liste",
+   "top": 576,
+   "bottom": 628,
+   "left": 30,
+   "right": 218
+  },
+  {
+   "role": "tab",
+   "label": "Verlauf",
+   "top": 576,
+   "bottom": 628,
+   "left": 218,
+   "right": 274
+  },
+  {
+   "role": "tab",
+   "label": "Mehr",
+   "top": 576,
+   "bottom": 628,
+   "left": 274,
+   "right": 330
+  }
+ ],
+ "barBottom": 58,
+ "fieldTop": 516,
+ "visibleRows": [
+  "Bananen\n6",
+  "Äpfel\n1 kg",
+  "Tomaten",
+  "Gurke"
+ ],
+ "order": [
+  "button:EDEKA, 18 Artikel",
+  "heading:Obst & Gemüse",
+  "checkbox:Bananen\n6",
+  "checkbox:Äpfel\n1 kg",
+  "checkbox:Tomaten",
+  "checkbox:Gurke",
+  "heading:Brot & Backwaren",
+  "checkbox:Brot",
+  "checkbox:Brezeln\n4",
+  "heading:Fleisch/Wurst/Fisch",
+  "checkbox:Hackfleisch\n500 g",
+  "heading:Kühlregal",
+  "checkbox:Milch\n2",
+  "checkbox:Butter",
+  "checkbox:Eier\n10",
+  "checkbox:Joghurt",
+  "heading:Vorrat & Konserven",
+  "checkbox:Nudeln",
+  "checkbox:Mehl",
+  "checkbox:Passierte Tomaten",
+  "heading:Süßes & Snacks",
+  "checkbox:Schokolade",
+  "heading:Tiefkühl",
+  "checkbox:Tiefkühlpizza\n2",
+  "heading:Getränke",
+  "checkbox:Mineralwasser\n6",
+  "heading:Haushalt",
+  "checkbox:Spülmittel",
+  "button:IKEA, 9 Artikel",
+  "checkbox:Teelichter",
+  "checkbox:Bilderrahmen",
+  "checkbox:Kochlöffel",
+  "checkbox:Servietten"
+ ]
+}

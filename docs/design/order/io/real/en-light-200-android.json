@@ -1,0 +1,299 @@
+{
+ "lang": "en",
+ "scale": 2,
+ "android": true,
+ "viewport": {
+  "width": 360,
+  "height": 640
+ },
+ "cats": {
+  "bananas": "produce",
+  "apples": "produce",
+  "tomatoes": "produce",
+  "cucumber": "produce",
+  "bread": "bakery",
+  "pretzels": "other",
+  "mince": "other",
+  "milk": "chilled",
+  "butter": "chilled",
+  "eggs": "chilled",
+  "yogurt": "chilled",
+  "pasta": "pantry",
+  "flour": "pantry",
+  "passata": "pantry",
+  "chocolate": "sweets",
+  "pizza": "frozen",
+  "water": "drinks",
+  "dishsoap": "household",
+  "tealights": "pantry",
+  "frame": "other",
+  "spoon": "other",
+  "napkins": "other",
+  "meatballs": "other",
+  "cushion": "other",
+  "boxes": "other",
+  "plant": "other",
+  "shelf": "other",
+  "batteries": "household",
+  "card": "other"
+ },
+ "top": [
+  {
+   "role": "button",
+   "label": "Shopping list · Brandt family",
+   "top": 10,
+   "bottom": 58,
+   "left": 16,
+   "right": 196.390625
+  },
+  {
+   "role": "button",
+   "label": "Edit",
+   "top": 10,
+   "bottom": 58,
+   "left": 268.5097961425781,
+   "right": 343.9941711425781
+  },
+  {
+   "role": "button",
+   "label": "EDEKA, 18 items",
+   "top": 72,
+   "bottom": 124,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "heading",
+   "label": "Fruit & veg",
+   "top": 124,
+   "bottom": 156,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "checkbox",
+   "label": "Bananas\n6",
+   "top": 156,
+   "bottom": 255,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "button",
+   "label": "Price for Bananas",
+   "top": 156,
+   "bottom": 254,
+   "left": 223.863037109375,
+   "right": 343.988037109375
+  },
+  {
+   "role": "checkbox",
+   "label": "Apples\n1 kg",
+   "top": 255,
+   "bottom": 354,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "button",
+   "label": "Price for Apples",
+   "top": 255,
+   "bottom": 353,
+   "left": 223.863037109375,
+   "right": 343.988037109375
+  },
+  {
+   "role": "checkbox",
+   "label": "Tomatoes",
+   "top": 354,
+   "bottom": 453,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "button",
+   "label": "Price for Tomatoes",
+   "top": 354,
+   "bottom": 452,
+   "left": 223.863037109375,
+   "right": 343.988037109375
+  },
+  {
+   "role": "checkbox",
+   "label": "Cucumber",
+   "top": 453,
+   "bottom": 551,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "button",
+   "label": "Price for Cucumber",
+   "top": 453,
+   "bottom": 551,
+   "left": 223.863037109375,
+   "right": 343.988037109375
+  },
+  {
+   "role": "heading",
+   "label": "Bread & bakery",
+   "top": 551,
+   "bottom": 583,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "checkbox",
+   "label": "Bread",
+   "top": 583,
+   "bottom": 638,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "button",
+   "label": "Price for Bread",
+   "top": 583,
+   "bottom": 638,
+   "left": 223.863037109375,
+   "right": 343.988037109375
+  },
+  {
+   "role": "heading",
+   "label": "Chilled",
+   "top": 638,
+   "bottom": 640,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "checkbox",
+   "label": "Milk\n2",
+   "top": 670,
+   "bottom": 726,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "button",
+   "label": "Price for Milk",
+   "top": 670,
+   "bottom": 725,
+   "left": 223.863037109375,
+   "right": 343.988037109375
+  },
+  {
+   "role": "checkbox",
+   "label": "Butter",
+   "top": 726,
+   "bottom": 782,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "button",
+   "label": "Price for Butter",
+   "top": 726,
+   "bottom": 781,
+   "left": 223.863037109375,
+   "right": 343.988037109375
+  },
+  {
+   "role": "checkbox",
+   "label": "Eggs\n10",
+   "top": 782,
+   "bottom": 838,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "button",
+   "label": "Price for Eggs",
+   "top": 782,
+   "bottom": 837,
+   "left": 223.863037109375,
+   "right": 343.988037109375
+  },
+  {
+   "role": "checkbox",
+   "label": "Yogurt",
+   "top": 838,
+   "bottom": 890,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "button",
+   "label": "Price for Yogurt",
+   "top": 838,
+   "bottom": 890,
+   "left": 223.863037109375,
+   "right": 343.988037109375
+  },
+  {
+   "role": "tab",
+   "label": "List",
+   "top": 576,
+   "bottom": 628,
+   "left": 30,
+   "right": 113
+  },
+  {
+   "role": "tab",
+   "label": "History",
+   "top": 576,
+   "bottom": 628,
+   "left": 113,
+   "right": 232
+  },
+  {
+   "role": "tab",
+   "label": "More",
+   "top": 576,
+   "bottom": 628,
+   "left": 232,
+   "right": 330
+  }
+ ],
+ "barBottom": 58,
+ "fieldTop": 516,
+ "visibleRows": [
+  "Bananas\n6",
+  "Apples\n1 kg",
+  "Tomatoes"
+ ],
+ "order": [
+  "button:EDEKA, 18 items",
+  "heading:Fruit & veg",
+  "checkbox:Bananas\n6",
+  "checkbox:Apples\n1 kg",
+  "checkbox:Tomatoes",
+  "checkbox:Cucumber",
+  "heading:Bread & bakery",
+  "checkbox:Bread",
+  "heading:Chilled",
+  "checkbox:Milk\n2",
+  "checkbox:Butter",
+  "checkbox:Eggs\n10",
+  "checkbox:Yogurt",
+  "heading:Pantry",
+  "checkbox:Pasta",
+  "checkbox:Flour",
+  "checkbox:Passata",
+  "heading:Sweets & snacks",
+  "checkbox:Chocolate",
+  "heading:Frozen",
+  "checkbox:Frozen pizza\n2",
+  "heading:Drinks",
+  "checkbox:Sparkling water\n6",
+  "heading:Household",
+  "checkbox:Dish soap",
+  "heading:Other",
+  "checkbox:Pretzels\n4",
+  "checkbox:Minced meat\n500 g",
+  "button:IKEA, 9 items",
+  "checkbox:Tea lights",
+  "checkbox:Picture frame",
+  "checkbox:Wooden spoon"
+ ]
+}

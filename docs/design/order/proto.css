@@ -1,0 +1,230 @@
+@font-face { font-family: "Bricolage Grotesque"; src: url("../../../site/public/fonts/bricolage-grotesque-latin-standard-normal.woff2") format("woff2"); font-weight: 200 800; }
+@font-face { font-family: "Inter"; src: url("../../../site/public/fonts/inter-latin-wght-normal.woff2") format("woff2"); font-weight: 100 900; }
+
+/* The phone's text: the app's own font files (app/pubspec.yaml); the site's variable Inter sets about 5 % narrower. */
+@font-face { font-family: "App Inter"; src: url("../../../app/assets/fonts/Inter-Regular.ttf") format("truetype"); font-weight: 400; }
+@font-face { font-family: "App Inter"; src: url("../../../app/assets/fonts/Inter-Medium.ttf") format("truetype"); font-weight: 500; }
+@font-face { font-family: "App Inter"; src: url("../../../app/assets/fonts/Inter-SemiBold.ttf") format("truetype"); font-weight: 600; }
+@font-face { font-family: "App Inter"; src: url("../../../app/assets/fonts/Inter-Bold.ttf") format("truetype"); font-weight: 700; }
+@font-face { font-family: "App Bricolage"; src: url("../../../app/assets/fonts/BricolageGrotesque-Bold.ttf") format("truetype"); font-weight: 700; }
+@font-face { font-family: "App Bricolage"; src: url("../../../app/assets/fonts/BricolageGrotesque-ExtraBold.ttf") format("truetype"); font-weight: 800; }
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--hl-color-surface-sunken); color: var(--hl-color-text); font: 15px/1.45 var(--hl-font-family-sans); }
+button { font: inherit; color: inherit; cursor: pointer; background: none; border: 0; padding: 0; text-align: left; }
+p { margin: 0; }
+a { color: var(--hl-color-brand); }
+.icon { width: 24px; height: 24px; fill: currentColor; flex: none; }
+.emo { font-family: "Apple Color Emoji", "Noto Color Emoji", "Segoe UI Emoji", sans-serif; }
+
+/* Page chrome (not the app). */
+.page-head { padding: 16px 16px 0; display: grid; gap: 8px; max-width: 2000px; margin: 0 auto; }
+.title-row { display: flex; flex-wrap: wrap; gap: 4px 16px; align-items: baseline; }
+.page-head h1 { font: 800 26px/1.1 var(--hl-font-family-display); letter-spacing: -0.03em; margin: 0; }
+.back-link { font-size: 13px; font-weight: 650; }
+.note { color: var(--hl-color-text-muted); font-size: 13.5px; max-width: 1050px; }
+.controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.controls .sep { width: 8px; }
+.controls .lbl { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--hl-color-text-muted); margin-right: 2px; }
+.controls button { padding: 6px 12px; border: 2px solid var(--hl-color-edge); border-radius: 8px; background: var(--hl-color-surface-raised); font-size: 13px; font-weight: 650; color: var(--hl-color-text); }
+.controls button[aria-pressed="true"] { background: var(--hl-color-honey); color: var(--hl-color-on-honey); }
+.view { max-width: 2000px; margin: 0 auto; padding: 16px; display: grid; gap: 40px; }
+.view > * { min-width: 0; }
+.option, .rec, .facts { display: grid; gap: 10px; }
+.option > h2, .rec > h2, .facts > h2 { margin: 0; font: 800 22px/1.2 var(--hl-font-family-display); letter-spacing: -0.02em; }
+.option > p, .facts p, .facts li { font-size: 14px; max-width: 1050px; }
+.facts ul, .rec ol, .rec ul { margin: 0; padding-left: 22px; display: grid; gap: 5px; max-width: 1100px; font-size: 14px; }
+.rec h3 { font: 700 18px/1.2 var(--hl-font-family-display); margin: 10px 0 0; }
+.frames { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start; }
+figure.cell { margin: 0; display: grid; gap: 6px; align-content: start; }
+figure.cell figcaption { font-size: 12.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--hl-color-text-muted); max-width: 390px; min-height: 2.9em; }
+figure.cell figcaption small { display: block; text-transform: none; letter-spacing: 0; font-weight: 500; }
+.meter { font-size: 13px; color: var(--hl-color-text-muted); max-width: 1050px; }
+.meter b { color: var(--hl-color-text); }
+.tag { display: inline-block; padding: 1px 8px; border-radius: 10px; font: 650 12px/1.5 var(--hl-font-family-sans); vertical-align: 3px; margin-left: 6px; }
+.tag.pick { background: var(--hl-color-honey); color: var(--hl-color-on-honey); }
+.tag.runner { background: var(--hl-color-mint-soft); color: var(--hl-color-text); }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; font-size: 13.5px; min-width: 900px; }
+th, td { border-bottom: 1px solid var(--hl-color-divider); padding: 8px 12px 8px 0; text-align: left; vertical-align: top; }
+th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--hl-color-text-muted); }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); gap: 16px; max-width: 1150px; }
+.ocard { display: grid; gap: 8px; align-content: start; padding: 16px; border: 2px solid var(--hl-color-border); border-radius: 18px; background: var(--hl-color-surface-raised); box-shadow: 0 3px 0 var(--hl-color-edge); color: var(--hl-color-text); text-decoration: none; }
+.ocard h2 { margin: 0; font: 800 20px/1.2 var(--hl-font-family-display); }
+.ocard p { font-size: 14px; }
+.live { display: grid; gap: 6px; }
+.live .hint { font-size: 12.5px; color: var(--hl-color-text-muted); max-width: 390px; }
+.live .states { display: flex; gap: 6px; flex-wrap: wrap; }
+.live .states button { font-size: 12.5px; font-weight: 700; color: var(--hl-color-brand); padding: 4px 8px; border: 1.5px solid var(--hl-color-divider); border-radius: 8px; }
+.live .states button[aria-pressed="true"] { border-color: var(--hl-color-brand); }
+
+/* The phone. Inside, the app's theme and text size (--ts); text heights are Material 3 bodyMedium's 20/14 and 0.25 px letter spacing. */
+.phone {
+  --ts: 1; --sb: 47px; --lh: 1.4286; width: 390px; height: 844px; position: relative; overflow: hidden; flex: none; isolation: isolate;
+  outline: 2px solid var(--hl-color-edge); border-radius: 44px; background: var(--hl-color-surface); color: var(--hl-color-text);
+  box-shadow: 0 8px 0 2px var(--hl-color-edge); display: flex; flex-direction: column; font-family: "App Inter", var(--hl-font-family-sans); font-size: calc(14px * var(--ts)); line-height: var(--lh); letter-spacing: 0.25px; text-align: left;
+}
+.phone.android { --sb: 24px; width: 360px; height: 640px; border-radius: 18px; }
+.phone.ts200 { --ts: 2; }
+.phone.ts310 { --ts: 3.1; }
+.status { height: var(--sb); flex: none; display: flex; align-items: center; padding: 6px 32px 0; font-size: 15px; font-weight: 650; line-height: 1.2; }
+.android .status { padding: 0 14px; font-size: 13px; }
+.status .sig { margin-left: auto; width: 64px; height: 12px; border-radius: 4px; background: linear-gradient(90deg, currentColor 0 18px, transparent 18px 24px, currentColor 24px 40px, transparent 40px 46px, currentColor 46px); opacity: 0.85; }
+.screen { position: relative; flex: 1; min-height: 0; }
+.scroll { position: absolute; inset: 0; overflow-y: auto; scrollbar-width: none; }
+.scroll::-webkit-scrollbar { display: none; }
+.content { padding: 0 16px; }
+.homeind { position: absolute; left: 0; right: 0; bottom: 0; height: 22px; z-index: 40; pointer-events: none; display: grid; place-items: end center; padding-bottom: 8px; }
+.homeind i { width: 134px; height: 5px; border-radius: 3px; background: var(--hl-color-text); }
+
+/* Top bar: see-through over the list (job 229): the household and list switcher, Edit. */
+.topbar { position: absolute; left: 0; right: 0; top: 0; z-index: 5; display: flex; flex-wrap: nowrap; align-items: flex-start; gap: 8px; padding: 10px 16px 8px;
+  background: linear-gradient(var(--hl-color-surface) 70%, color-mix(in srgb, var(--hl-color-surface) 0%, transparent)); }
+.topbar .switcher + * { margin-left: auto; }
+.hexbtn { --o: var(--hl-color-border); display: inline-flex; flex: none; max-width: 100%;
+  filter: drop-shadow(2px 0 0 var(--o)) drop-shadow(-2px 0 0 var(--o)) drop-shadow(0 2px 0 var(--o)) drop-shadow(0 -2px 0 var(--o)) drop-shadow(0 4px 0 var(--o)); }
+.hexbtn > span { --cut: 14px; min-height: 48px; display: inline-flex; align-items: center; gap: 6px; padding: 2px calc(var(--cut) + 6px); background: var(--hl-color-surface-raised);
+  clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% 50%, calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 50%); font-weight: 800; font-size: calc(15px * var(--tb)); line-height: 1.2; white-space: nowrap; }
+.th-light .hexbtn > span { background: #fff; }
+/* The top bar's text grows little with the system size (about 1.1× at 310 %); the list name gives way with an ellipsis. */
+.topbar { --tb: min(var(--ts), 1.1); }
+.hexbtn.switcher { flex: 0 1 auto; min-width: 0; }
+.hexbtn.switcher > span { min-width: 0; }
+.hexbtn .two { display: grid; min-width: 0; }
+.hexbtn .two > * { overflow: hidden; text-overflow: ellipsis; }
+.hexbtn .two small { font-size: calc(12px * var(--tb)); font-weight: 600; color: var(--hl-color-text-muted); }
+.hexbtn .two b { font-size: calc(15px * var(--tb)); }
+.hexbtn .updown { width: 20px; height: 20px; }
+.hexbtn.amt > span { --cut: 12px; padding: 2px calc(var(--cut) + 2px); font-variant-numeric: tabular-nums; }
+.hexbtn.amt .plus { font-style: normal; color: var(--hl-color-text-muted); margin-left: -5px; }
+
+/* Store divider, category head, item row with its price chip. */
+.store { padding-bottom: 20px; }
+.store:last-of-type { padding-bottom: 0; }
+.sdivider { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; min-height: 52px; padding: 4px 0; }
+.sdivider .dname { font-size: calc(17px * var(--ts)); color: var(--hl-color-text-muted); }
+.sdivider .dline { flex: 1 1 40px; height: 3px; background: var(--hl-color-brand); border-radius: 2px; }
+.sdivider .dtail { display: inline-flex; align-items: center; gap: 10px; margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
+.sdivider .dcount { font-size: calc(15px * var(--ts)); color: var(--hl-color-text-muted); }
+.sdivider .dcount b { color: var(--hl-color-text); font-weight: 800; }
+.sdivider .dsum { font-size: calc(15px * var(--ts)); font-weight: 800; font-variant-numeric: tabular-nums; }
+.sdivider .dchev { color: var(--hl-color-text-muted); margin-right: 4px; }
+.cat { display: flex; align-items: center; gap: 10px; min-height: 32px; font-size: calc(13px * var(--ts)); font-weight: 650; letter-spacing: 0.1em; text-transform: uppercase; color: var(--hl-color-text-muted); }
+.cat::after { content: ""; flex: 1; height: 1px; background: var(--hl-color-divider); }
+.item { position: relative; display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 0 0 4px; cursor: pointer; }
+.item.target { background: var(--hl-color-honey-soft); border-radius: 12px; }
+.item .emo { width: 22px; font-size: calc(20px * min(var(--ts), 1.6)); flex: none; text-align: center; }
+.item .nm { flex: 1; min-width: 0; font-size: calc(17px * var(--ts)); overflow-wrap: anywhere; }
+.item .nm b { font-weight: 800; }
+.item .nm .q { color: var(--hl-color-brand); }
+.chip { --o: var(--hl-color-text-muted); flex: none; filter: drop-shadow(2px 0 0 var(--o)) drop-shadow(-2px 0 0 var(--o)) drop-shadow(0 2px 0 var(--o)) drop-shadow(0 -2px 0 var(--o)); }
+.chip.set { --o: var(--hl-color-border); }
+.chip.open { --o: var(--hl-color-brand); }
+.chip > span { --cut: 9px; display: inline-flex; align-items: center; gap: 2px; height: 32px; overflow: hidden; padding: 0 calc(var(--cut) + 6px); font-weight: 800; font-size: calc(14px * var(--ts)); line-height: 1.2;
+  background: var(--hl-color-surface); color: var(--hl-color-text-muted); white-space: nowrap; font-variant-numeric: tabular-nums;
+  clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% 50%, calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 50%); }
+.chip.set > span { background: var(--hl-color-surface-raised); color: var(--hl-color-text); }
+.icon.tiny { width: 16px; height: 16px; }
+
+
+.used { display: flex; align-items: center; justify-content: space-between; min-height: 48px; margin-top: 20px; padding: 0 0 0 0; font-size: calc(16px * var(--ts)); }
+.used .icon { color: var(--hl-color-text-muted); margin-right: 4px; }
+
+/* Bottom band: the trip strip (while a trip runs), the floating add field and the tab bar. */
+.bottom { position: absolute; left: 16px; right: 16px; bottom: 12px; z-index: 6; display: grid; gap: 10px; }
+.ios .bottom { bottom: 30px; }
+.trip { --ts2: min(var(--ts), 1.3); display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 12px; border-radius: 14px; background: var(--hl-color-inverse); color: var(--hl-color-on-inverse); font-size: calc(13px * var(--ts2)); line-height: 1.2; white-space: nowrap; overflow: hidden; }
+.trip .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--hl-color-mint); flex: none; }
+.trip b { font: 800 calc(18px * var(--ts2))/1.2 "App Bricolage", var(--hl-font-family-display); }
+.trip span:not(.end):not(.pause) { flex: 1; font-weight: 700; letter-spacing: 0.08em; }
+.trip .pause { display: inline-flex; gap: 4px; padding: 10px 12px; border-radius: 10px; background: color-mix(in srgb, var(--hl-color-on-inverse) 15%, transparent); }
+.trip .pause i { width: 4px; height: 14px; background: currentColor; border-radius: 1px; }
+.trip .end > span { display: inline-block; padding: 8px 16px; background: var(--hl-color-honey); color: var(--hl-color-on-honey); font-weight: 800; clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 8px 100%, 0 50%); }
+.addfield { --o: var(--hl-color-border); filter: drop-shadow(2px 0 0 var(--o)) drop-shadow(-2px 0 0 var(--o)) drop-shadow(0 2px 0 var(--o)) drop-shadow(0 -2px 0 var(--o)) drop-shadow(0 3px 0 var(--o)); }
+.addfield > span { --cut: 16px; display: flex; align-items: center; height: 48px; overflow: hidden; white-space: nowrap; padding: 0 22px; font-size: calc(17px * var(--ts)); line-height: 1.2; color: var(--hl-color-text-muted); background: var(--hl-color-surface-raised);
+  clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% 50%, calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 50%); }
+.th-light .addfield > span { background: #fff; }
+.tabs { justify-self: center; display: flex; gap: 4px; padding: 4px 24px; --o: var(--hl-color-border); background: var(--hl-color-surface-raised); filter: drop-shadow(2px 0 0 var(--o)) drop-shadow(-2px 0 0 var(--o)) drop-shadow(0 2px 0 var(--o)) drop-shadow(0 -2px 0 var(--o)) drop-shadow(0 3px 0 var(--o));
+  clip-path: polygon(18px 0, calc(100% - 18px) 0, 100% 50%, calc(100% - 18px) 100%, 18px 100%, 0 50%); }
+.th-light .tabs { background: #fff; }
+.tab { display: flex; align-items: center; gap: 6px; padding: 0 14px; min-height: 44px; font-size: calc(14px * min(var(--ts), 1.3)); font-weight: 700; white-space: nowrap; line-height: 1.2; }
+.tab.on { background: var(--hl-color-honey); color: var(--hl-color-on-honey); clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 10px 100%, 0 50%); }
+
+
+.th-dark { color-scheme: dark; }
+.th-light { color-scheme: light; }
+
+/* Rows: a hairline under each row but a run's last, from the name on; the plain hexagon for an item without an icon. */
+.item:not(.last)::after { content: ""; position: absolute; left: 54px; right: 0; bottom: 0; height: 1px; background: var(--hl-color-divider); }
+.hexcell { display: inline-block; width: 18px; height: 20px; vertical-align: middle; background: var(--hl-color-text); clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); position: relative; }
+.hexcell::after { content: ""; position: absolute; inset: 1.5px; background: color-mix(in srgb, var(--hl-color-brand) 25%, var(--hl-color-surface)); clip-path: inherit; }
+.hexcell.big { width: 24px; height: 27px; }
+.hexcell.big::after { background: var(--hl-color-surface-raised); }
+/* IO5 with categories hidden: a quiet gap where the category changes, no words. */
+.gap { display: block; height: 12px; }
+
+/* IO3's sort mode: a handle (Icons.drag_handle, a 48 px target) instead of the price chip; the lifted row floats. */
+.handle { flex: none; display: grid; place-items: center; width: 48px; height: 48px; color: var(--hl-color-text-muted); cursor: grab; touch-action: none; }
+.sorting .item { cursor: default; }
+.item.lifted { z-index: 3; background: var(--hl-color-surface-raised); border-radius: 12px; box-shadow: 0 6px 18px rgb(0 0 0 / 0.22); }
+.item.lifted::after, .item.dragging::after { display: none; }
+.item.dragging { z-index: 4; background: var(--hl-color-surface-raised); border-radius: 12px; box-shadow: 0 6px 18px rgb(0 0 0 / 0.22); transition: none; }
+.item.shift { transition: transform 120ms ease; }
+.hexbtn.honey > span { background: var(--hl-color-honey) !important; color: var(--hl-color-on-honey); }
+.hexbtn.iconbtn > span { --cut: 12px; padding: 2px 14px; }
+.hexbtn.small > span { min-height: 44px; font-size: calc(15px * min(var(--ts), 1.6)); gap: 2px; padding: 2px 20px 2px 14px; }
+.topbar .iconbtn { margin-left: auto; }
+.topbar .iconbtn + .edit { margin-left: 0; }
+
+/* The edit sheet (replica of edit_item_sheet.dart at 390 × 844: 546 px, from the release build's screenshot). */
+.scrim { position: absolute; inset: 0; z-index: 20; background: rgb(0 0 0 / 0.38); }
+.esheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 21; max-height: calc(100% - 24px); overflow-y: auto; background: var(--hl-color-surface-raised); border-radius: 28px 28px 0 0; padding: 0 16px 34px; display: grid; gap: 6px; font-size: calc(16px * var(--ts)); }
+.th-light .esheet { background: #fff; }
+.esheet .grab { height: 22px; display: grid; place-items: center; }
+.esheet .grab i { width: 32px; height: 4px; border-radius: 2px; background: var(--hl-color-divider); }
+.esheet label { font-size: calc(13px * var(--ts)); font-weight: 650; color: var(--hl-color-text-muted); padding: 4px 16px 0; }
+.field { --o: var(--hl-color-text); flex: 1; filter: drop-shadow(1.5px 0 0 var(--o)) drop-shadow(-1.5px 0 0 var(--o)) drop-shadow(0 1.5px 0 var(--o)) drop-shadow(0 -1.5px 0 var(--o)); }
+.field > span { --cut: 14px; display: flex; align-items: center; min-height: 46px; padding: 0 22px; background: var(--hl-color-surface-raised); clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% 50%, calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 50%); font-size: calc(17px * var(--ts)); overflow-wrap: anywhere; }
+.th-light .field > span { background: #fff; }
+.field.muted > span { color: var(--hl-color-text-muted); }
+.qrow { display: flex; gap: 10px; align-items: center; }
+.hexkey { --o: var(--hl-color-text); flex: none; filter: drop-shadow(1.5px 0 0 var(--o)) drop-shadow(-1.5px 0 0 var(--o)) drop-shadow(0 1.5px 0 var(--o)) drop-shadow(0 -1.5px 0 var(--o)) drop-shadow(0 3px 0 var(--o)); }
+.hexkey > .icon { box-sizing: content-box; padding: 11px 18px; background: var(--hl-color-surface-raised); clip-path: polygon(14px 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 14px 100%, 0 50%); }
+.chips { display: flex; flex-wrap: wrap; gap: 12px; padding: 14px 0 10px; border-bottom: 1px solid var(--hl-color-divider); margin: 0 -16px; padding-left: 16px; padding-right: 16px; }
+.schip { --o: var(--hl-color-text); max-width: 100%; filter: drop-shadow(1.5px 0 0 var(--o)) drop-shadow(-1.5px 0 0 var(--o)) drop-shadow(0 1.5px 0 var(--o)) drop-shadow(0 -1.5px 0 var(--o)) drop-shadow(0 3px 0 var(--o)); }
+.schip > span { --cut: 14px; display: inline-flex; align-items: center; gap: 4px; min-height: 44px; padding: 2px 16px 2px 16px; background: var(--hl-color-surface-raised); font-weight: 650; font-size: calc(15px * var(--ts)); line-height: 1.2; clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% 50%, calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 50%); }
+.th-light .schip > span { background: #fff; }
+.schip.place { --o: var(--hl-color-brand); }
+.schip .drop { width: 20px; height: 20px; }
+.steps { display: flex; flex-wrap: wrap; gap: 10px; padding: 4px 0 6px; }
+.claim { display: flex; align-items: center; gap: 24px; min-height: 52px; padding: 0 4px; }
+.actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 0 0 4px; }
+.link { color: var(--hl-color-brand); font-weight: 700; font-size: calc(17px * var(--ts)); min-height: 48px; }
+.actions .hexbtn > span { min-height: 48px; padding: 2px 40px; font-size: calc(17px * min(var(--ts), 1.6)); }
+/* A chip's menu: the real one is a Material menu over the chip; here it rises from the chips. */
+.menu { position: absolute; left: 16px; right: 16px; bottom: 150px; max-height: 360px; overflow-y: auto; z-index: 2; background: var(--hl-color-surface-raised); border-radius: 12px; box-shadow: 0 8px 24px rgb(0 0 0 / 0.28); padding: 8px 0; }
+.th-light .menu { background: #fff; }
+.mi { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 4px 16px; font-size: calc(16px * var(--ts)); overflow-wrap: anywhere; }
+.mi.on { background: color-mix(in srgb, var(--hl-color-brand) 14%, transparent); font-weight: 750; }
+.mi .emo { width: 22px; text-align: center; flex: none; }
+
+/* IO5's stores screen with the categories switch. */
+.stores-screen { position: absolute; inset: 0; z-index: 10; background: var(--hl-color-surface); overflow-y: auto; padding: 8px 16px 140px; display: grid; gap: 12px; align-content: start; }
+.sbar { display: flex; align-items: center; gap: 12px; min-height: 56px; font-size: calc(22px * min(var(--ts), 1.3)); }
+.sbar .back { width: 48px; height: 48px; display: grid; place-items: center; }
+.switchrow { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 56px; padding: 4px 16px; border-radius: 16px; background: var(--hl-color-surface-raised); font-weight: 700; font-size: calc(17px * var(--ts)); }
+.th-light .switchrow { background: #fff; }
+.switch { flex: none; position: relative; width: 52px; height: 32px; border-radius: 16px; border: 2px solid var(--hl-color-text-muted); background: var(--hl-color-surface-sunken); }
+.switch > i { position: absolute; top: 6px; left: 6px; width: 16px; height: 16px; border-radius: 50%; background: var(--hl-color-text-muted); transition: all 120ms; }
+.switch.on { background: var(--hl-color-brand); border-color: var(--hl-color-brand); }
+.switch.on > i { left: 24px; top: 2px; width: 24px; height: 24px; background: #fff; }
+.shint { font-size: calc(15px * var(--ts)); color: var(--hl-color-text-muted); }
+.shint.small { font-size: calc(13px * var(--ts)); margin-top: -8px; padding-left: 16px; }
+.srow { display: flex; align-items: center; gap: 8px; }
+.srow .hexbtn { flex: 1; }
+.srow .hexbtn > span { width: 100%; }
+.srow .icon.muted { color: var(--hl-color-text-muted); width: 48px; height: 24px; }
+.hexbtn.sunk > span { background: var(--hl-color-surface-sunken) !important; color: var(--hl-color-text-muted); }
+.sadd { display: flex; justify-content: flex-end; }
+.trip .end { padding: 0; }
+.new { text-decoration: underline dotted color-mix(in srgb, currentColor 60%, transparent); text-underline-offset: 3px; }
