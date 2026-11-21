@@ -2,7 +2,7 @@
 -- B7). A short head such as gel or ent matches the end of any word, so a word it must not take is
 -- listed with its real category; a stem shared with another word (Topf, Topfen) is a homograph.
 begin;
-select plan(34);
+select plan(53);
 
 insert into auth.users (id, email) values ('00000000-0000-0000-0000-0000000349a1', 'tilda349@example.com');
 select set_config('role', 'authenticated', true);
@@ -49,6 +49,25 @@ select is(pg_temp.c('Spiegelei'), 'chilled', 'Spiegelei stays with the eggs, not
 select is(pg_temp.c('Topfpflanze'), 'garden', 'Topfpflanze stays garden');
 select is(pg_temp.c('Kühlpacks'), 'household', 'B6: Kühlpacks');
 select is(pg_temp.c('Spiegeleier'), 'chilled', 'Spiegeleier stay chilled');
+select is(pg_temp.c('Element'), 'other', 'a word that only ends in ent is not an Ente');
+select is(pg_temp.c('Pigment'), 'other', 'Pigment');
+select is(pg_temp.c('Dokument'), 'other', 'Dokument');
+select is(pg_temp.c('Instrument'), 'other', 'Instrument');
+select is(pg_temp.c('Vogel'), 'other', 'a word that ends in a vowel and gel is not a gel: Vogel');
+select is(pg_temp.c('Igel'), 'other', 'Igel');
+select is(pg_temp.c('Kegel'), 'other', 'Kegel');
+select is(pg_temp.c('Segel'), 'household', 'Segel is not a gel (it is one typo from Siegel)');
+select is(pg_temp.c('Siegel'), 'household', 'Siegel is not a typo of Spiegel or a gel');
+select is(pg_temp.c('Bräter'), 'household', 'Bräter is a roasting dish, not a Braten');
+select is(pg_temp.c('Bügeleisen'), 'household', 'Bügeleisen is not Eis');
+select is(pg_temp.c('Frischkäse'), 'chilled', 'Frischkäse still ends in käse');
+select is(pg_temp.c('Frischkase'), 'chilled', 'also typed without the umlaut');
+select is(pg_temp.c('Mülltüte'), 'household', 'Mülltüte still ends in tüte');
+select is(pg_temp.c('Zuckerrübe'), 'produce', 'Zuckerrübe still ends in rübe');
+select is(pg_temp.c('Blumenerde'), 'garden', 'Blumenerde still ends in erde');
+select is(pg_temp.c('Pekingente'), 'meat', 'Pekingente still ends in ente');
+select is(pg_temp.c('Entenbrust'), 'meat', 'Entenbrust');
+select is(pg_temp.c('Massagegel'), 'drugstore', 'Massagegel is still a gel');
 select is(pg_temp.c('Zangenschlüssel'), 'tools', 'Zange as a head of a tool word stays tools');
 select is(pg_temp.c('Gemüsepfanne'), 'frozen', 'Gemüsepfanne stays frozen');
 

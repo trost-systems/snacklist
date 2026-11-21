@@ -16978,3 +16978,24 @@ pinned above the field, other suggestions hidden); all of it stays behind `add-s
    typo rows. `suggest_parity.json` is rewritten and the pinned exceptions follow the test's own
    output. The server's category-store-off rows that agree with category-store-on get their own
    pin set (`categoryStoreOffExceptions`).
+
+## Job 349 review 0: a tail guard after all, 2026-11-21
+
+1. **Reverses item 1 of Job 349.** The brief asked for guards, and the review showed that a guard on
+   the *typed spelling* works where one on the folded key does not. `classify_item_detail` drops a
+   dictionary tail hit of a term with a key of 3 letters or fewer unless a typed word ends in it.
+   A term that lost its final e to the stem (ente, käse, tüte, rübe, erde, säge) needs its spelling
+   plus an optional ending (e, n, en, s, er, ern), umlauts read as their base letter: Pekingente,
+   Frischkäse, Mülltüte, Blumenerde match; Medikament, Element, Pigment, Dokument, Instrument do not.
+2. **gel has its own rule.** It is the whole term, not a folded key, so the spelling test does not
+   apply. A gel after a vowel (Spiegel, Kegel, Igel, Vogel, Segel, Schlegel, Siegel) is not a gel:
+   Duschgel, Haargel and Massagegel (fuzzy) stay Drogerie. Consonant cases such as Orgel, Mangel
+   and Engel still hit; no guard on letters can tell them from Duschgel, and none is a shopping word.
+3. **Data that stays.** Spiegel, Bügel, Bügeleisen (the `eis` tail, not covered by the guard),
+   Siegel (one typo from Spiegel, so it would have turned household by fuzzy matching), Bräter,
+   Pfanne, Topf and the rest of B1 to B7 keep their entries: they are real items with a category.
+   Segel is Haushalt by one typo from Siegel; it is not a gel either way.
+4. **Device guess.** The app's on-device guess has no typed text and keeps the tail; the parity
+   pins carry the five words where that differs (reason `_tailGuard`).
+5. **Not done.** English near-forms (cool pack, frying pan, mirror), a fixed parity sample, a
+   web journey for `cl-tail-guards`, and the on-device homographs: follow-ups, not part of B1 to B7.
