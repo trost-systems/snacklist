@@ -219,7 +219,7 @@ for (const [name, src] of [['RECOMMENDATION.md', rec], ['RECOMMENDATION.de.md', 
     check(c[4] === String(taps), `${name} ${key}: taps to fix Eggs (${c[4]} vs ${taps})`);
     const ik = ikeaCost(id, 'en');
     const ikDe = ikeaCost(id, 'de');
-    const want = ik.taps === null ? '–' : ik.trips ? '0, one trip' : ik.taps === ikDe.taps ? String(ik.taps) : `${ik.taps} (de ${ikDe.taps})`;
+    const want = ik.taps === null ? '–' : ik.trips ? (name.includes('.de.') ? '0, ein Einkauf' : '0, one trip') : ik.taps === ikDe.taps ? String(ik.taps) : `${ik.taps} (de ${ikDe.taps})`;
     check(c[5] === want, `${name} ${key}: whole IKEA list (${c[5]} vs ${want})`);
   }
 }

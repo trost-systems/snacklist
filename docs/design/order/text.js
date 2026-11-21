@@ -23,7 +23,7 @@ export const text = {
     scenes: { top: 'Supermarket', ikea: 'IKEA', add: '+ Ketchup', addIkea: '+ Hangers', trip: 'One trip', reset: 'Reset' },
     todayFacts: `<ul>
       <li>The list is sorted by three keys: the store (List → Edit), then the category in that store’s walk order, then the order the items were added. Everything is set by hand; nothing learns order, and since job 78 nothing on the list drags (<code>sections.dart:27</code>, <code>model.dart:561</code>, <code>model.dart:711</code>).</li>
-      <li>Each category with an item gets a small heading in capitals (<code>dividers.dart:277</code>). On the 18-item EDEKA list, 6 of the first screen’s slots go to them.</li>
+      <li>Each category with an item gets a small heading in capitals (<code>dividers.dart:277</code>). On the 18-item EDEKA list they cost the iPhone’s first screen 2 to 3 rows (the table below).</li>
       <li>A store the household adds itself, like IKEA, gets the supermarket route order. The classifier gives IKEA items Household or Other, and in English “Tea lights” land in Pantry.</li>
       <li>A wrong place is fixed with the category chip in the edit sheet (hold the row). The item goes to the end of its new category, and the household’s correction moves it in every store.</li>
       <li>The server can already place an item before or after another (<code>place_item</code>, job 15), and every tick is stored with its time (<code>item_events</code>), but neither is used for order today.</li>
@@ -68,7 +68,7 @@ export const text = {
     scenes: { top: 'Supermarkt', ikea: 'IKEA', add: '+ Ketchup', addIkea: '+ Kleiderbügel', trip: 'Ein Einkauf', reset: 'Zurücksetzen' },
     todayFacts: `<ul>
       <li>Die Liste sortiert nach drei Schlüsseln: Laden (Liste → Anpassen), dann die Kategorie im Laufweg dieses Ladens, dann die Reihenfolge des Hinzufügens. Alles wird von Hand gesetzt; nichts lernt, und seit Job 78 lässt sich auf der Liste nichts ziehen (<code>sections.dart:27</code>, <code>model.dart:561</code>, <code>model.dart:711</code>).</li>
-      <li>Jede Kategorie mit einem Artikel bekommt eine kleine Überschrift in Großbuchstaben (<code>dividers.dart:277</code>). Bei der EDEKA-Liste mit 18 Artikeln belegen sie 6 Plätze des ersten Bildschirms.</li>
+      <li>Jede Kategorie mit einem Artikel bekommt eine kleine Überschrift in Großbuchstaben (<code>dividers.dart:277</code>). Bei der EDEKA-Liste mit 18 Artikeln kosten sie den ersten Bildschirm des iPhones 2 bis 3 Zeilen (Tabelle unten).</li>
       <li>Ein selbst angelegter Laden wie IKEA bekommt die Supermarkt-Reihenfolge. Der Klassifizierer steckt IKEA-Artikel in Haushalt oder Sonstiges, auf Englisch landen „Tea lights“ in Vorrat.</li>
       <li>Ein falscher Platz wird mit dem Kategorie-Chip im Bearbeiten-Blatt korrigiert (Zeile halten). Der Artikel kommt ans Ende der neuen Kategorie, und die Korrektur des Haushalts verschiebt ihn in jedem Laden.</li>
       <li>Der Server kann einen Artikel schon vor oder hinter einen anderen setzen (<code>place_item</code>, Job 15), und jedes Abhaken wird mit Uhrzeit gespeichert (<code>item_events</code>); beides nutzt die Reihenfolge heute nicht.</li>
