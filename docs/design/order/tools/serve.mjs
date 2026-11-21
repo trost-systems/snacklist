@@ -12,8 +12,9 @@ export const serve = (root, port = 0) =>
       let file = join(root, path);
       try {
         if ((await stat(file)).isDirectory()) file = join(file, 'index.html');
+        const body = await readFile(file);
         res.writeHead(200, { 'content-type': types[extname(file)] ?? 'application/octet-stream' });
-        res.end(await readFile(file));
+        res.end(body);
       } catch {
         res.writeHead(404);
         res.end('not found');

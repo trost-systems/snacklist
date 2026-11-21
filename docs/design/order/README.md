@@ -4,7 +4,7 @@ A throwaway HTML sandbox for one decision: how the list puts items in the right 
 
 - `APPROACHES.md` holds the thinking: how order works today (with file and line), the five ordering models, how API and MCP read and set order, and the data, migration and sync.
 - `index.html` is the overview. The preview's root overview (#414's) links the round too (`tools/link-overview.mjs`).
-- `io/` is round IO. It starts with Today (the replica and the real app's screenshots), then IO1 to IO5. Each option has a live phone and frames for the supermarket, IKEA, a new item, fixing a place and the result. Then come the measured table and `io/RECOMMENDATION.md` (English) or `io/RECOMMENDATION.de.md` (German) with the pick (IO4), the runner-up (IO2) and IO-Q1 to IO-Q11.
+- `io/` is round IO. It starts with Today (the replica and the real app's screenshots), then IO1 to IO5. Each option has a live phone and frames for the supermarket, IKEA, a new item, fixing a place and the result. Then come the measured table and `io/RECOMMENDATION.md` (English) or `io/RECOMMENDATION.de.md` (German) with the pick (IO4), the runner-up (IO2) and IO-Q1 to IO-Q12.
 
 The controls set the language (`?lang=de`), the theme (`?theme=dark`), the text size (`?ts=200` or `?ts=310`) and the phone (`?device=android`, 360 × 640; the default is a 390 × 844 iPhone).
 

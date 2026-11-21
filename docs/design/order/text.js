@@ -12,6 +12,7 @@ export const text = {
       top: ['Supermarket', 'The first screen of the list.'],
       ikea: ['IKEA', 'The IKEA section. The household walks it: kitchen, textiles, frames, storage, candles, plants, warehouse, food shop.'],
       add: ['A new item', 'Ketchup, never bought at this EDEKA, just added (tinted here to point it out).'],
+      sheet: ['Hold the row', 'The edit sheet with its chips, before one is opened.'],
       fixing: ['Fixing a place', 'Eggs sit with the milk; at this EDEKA they stand next to the flour.'],
       fixed: ['Fixed', 'Where Eggs are after the fix.'],
       cats: ['Categories shown', 'The same list with the switch on.'],
@@ -23,7 +24,7 @@ export const text = {
     scenes: { top: 'Supermarket', ikea: 'IKEA', add: '+ Ketchup', addIkea: '+ Hangers', trip: 'One trip', reset: 'Reset' },
     todayFacts: `<ul>
       <li>The list is sorted by three keys: the store (List → Edit), then the category in that store’s walk order, then the order the items were added. Everything is set by hand; nothing learns order, and since job 78 nothing on the list drags (<code>sections.dart:27</code>, <code>model.dart:561</code>, <code>model.dart:711</code>).</li>
-      <li>Each category with an item gets a small heading in capitals (<code>dividers.dart:277</code>). On the 18-item EDEKA list they cost the iPhone’s first screen 2 to 3 rows (the table below).</li>
+      <li>Each category with an item gets a small heading in capitals (<code>dividers.dart:277</code>). On the 18-item EDEKA list they cost the iPhone’s first screen 3 rows (the table below).</li>
       <li>A store the household adds itself, like IKEA, gets the supermarket route order. The classifier gives IKEA items Household or Other, and in English “Tea lights” land in Pantry.</li>
       <li>A wrong place is fixed with the category chip in the edit sheet (hold the row). The item goes to the end of its new category, and the household’s correction moves it in every store.</li>
       <li>The server can already place an item before or after another (<code>place_item</code>, job 15), and every tick is stored with its time (<code>item_events</code>), but neither is used for order today.</li>
@@ -40,7 +41,7 @@ export const text = {
     ikeaText: (c) => (c.taps === null ? 'not possible item by item' : c.trips ? 'one trip, no taps' : `${c.taps} taps`),
     eggsWhere: { flour: 'right after Flour', passata: 'end of Pantry, after Passata (and Pantry for eggs in every store)', yogurt: 'unchanged until a trip' },
     tableTitle: 'Measured',
-    tableNote: 'Rows: item rows wholly visible between the top bar and the add field at the top of the list, measured in this page. Today’s rows sit within 3 px of the release web build at 100 % and within 5 % at large text (io/real). Taps: the clicks verify.mjs makes on the live phone; a drag is one. IKEA: the list in Today’s order brought into the walking order.',
+    tableNote: 'Rows: item rows wholly visible between the top bar and the add field at the top of the list, measured in this page, in the release web build’s window (390 × 844 or 360 × 640 of app; the status bar is drawn above it). Today’s rows sit within 3 px of the release web build at 100 % and within 5 % at large text, and it shows as many whole rows (io/real). Taps: the clicks verify.mjs makes on the live phone; a drag is one. IKEA: the list in Today’s order brought into the walking order.',
     tableHead: ['Option', 'Rows, iPhone 100 %', 'iPhone 310 %', 'Android 100 %', 'Android 200 %', 'Fix Eggs', 'Eggs end up', 'Whole IKEA list'],
     german: 'German',
     newWord: 'New word',
@@ -57,6 +58,7 @@ export const text = {
       top: ['Supermarkt', 'Der erste Bildschirm der Liste.'],
       ikea: ['IKEA', 'Der IKEA-Abschnitt. Die Familie geht: Küche, Textilien, Rahmen, Aufbewahrung, Kerzen, Pflanzen, Lager, Schwedenshop.'],
       add: ['Ein neuer Artikel', 'Ketchup, bei diesem EDEKA noch nie gekauft, gerade hinzugefügt (hier eingefärbt, damit man ihn sieht).'],
+      sheet: ['Zeile halten', 'Das Bearbeiten-Blatt mit seinen Chips, bevor einer geöffnet ist.'],
       fixing: ['Platz korrigieren', 'Eier stehen bei der Milch; in diesem EDEKA stehen sie neben dem Mehl.'],
       fixed: ['Korrigiert', 'Wo die Eier nach der Korrektur stehen.'],
       cats: ['Kategorien an', 'Dieselbe Liste mit eingeschaltetem Schalter.'],
@@ -68,7 +70,7 @@ export const text = {
     scenes: { top: 'Supermarkt', ikea: 'IKEA', add: '+ Ketchup', addIkea: '+ Kleiderbügel', trip: 'Ein Einkauf', reset: 'Zurücksetzen' },
     todayFacts: `<ul>
       <li>Die Liste sortiert nach drei Schlüsseln: Laden (Liste → Anpassen), dann die Kategorie im Laufweg dieses Ladens, dann die Reihenfolge des Hinzufügens. Alles wird von Hand gesetzt; nichts lernt, und seit Job 78 lässt sich auf der Liste nichts ziehen (<code>sections.dart:27</code>, <code>model.dart:561</code>, <code>model.dart:711</code>).</li>
-      <li>Jede Kategorie mit einem Artikel bekommt eine kleine Überschrift in Großbuchstaben (<code>dividers.dart:277</code>). Bei der EDEKA-Liste mit 18 Artikeln kosten sie den ersten Bildschirm des iPhones 2 bis 3 Zeilen (Tabelle unten).</li>
+      <li>Jede Kategorie mit einem Artikel bekommt eine kleine Überschrift in Großbuchstaben (<code>dividers.dart:277</code>). Bei der EDEKA-Liste mit 18 Artikeln kosten sie den ersten Bildschirm des iPhones 3 Zeilen (Tabelle unten).</li>
       <li>Ein selbst angelegter Laden wie IKEA bekommt die Supermarkt-Reihenfolge. Der Klassifizierer steckt IKEA-Artikel in Haushalt oder Sonstiges, auf Englisch landen „Tea lights“ in Vorrat.</li>
       <li>Ein falscher Platz wird mit dem Kategorie-Chip im Bearbeiten-Blatt korrigiert (Zeile halten). Der Artikel kommt ans Ende der neuen Kategorie, und die Korrektur des Haushalts verschiebt ihn in jedem Laden.</li>
       <li>Der Server kann einen Artikel schon vor oder hinter einen anderen setzen (<code>place_item</code>, Job 15), und jedes Abhaken wird mit Uhrzeit gespeichert (<code>item_events</code>); beides nutzt die Reihenfolge heute nicht.</li>
@@ -85,7 +87,7 @@ export const text = {
     ikeaText: (c) => (c.taps === null ? 'Artikel für Artikel nicht möglich' : c.trips ? 'ein Einkauf, kein Tippen' : `${c.taps}× tippen`),
     eggsWhere: { flour: 'direkt hinter Mehl', passata: 'Ende von Vorrat, hinter Passierte Tomaten (und Vorrat für Eier in jedem Laden)', yogurt: 'unverändert bis zum Einkauf' },
     tableTitle: 'Gemessen',
-    tableNote: 'Zeilen: Artikelzeilen, die am Anfang der Liste ganz zwischen oberer Leiste und Eingabefeld sichtbar sind, auf dieser Seite gemessen. Die Zeilen von „Heute“ liegen bei 100 % höchstens 3 px und bei großer Schrift höchstens 5 % neben denen des Release-Web-Builds (io/real). Tippen: die Klicks, die verify.mjs am Live-Telefon macht; Ziehen zählt als eins. IKEA: die Liste in heutiger Reihenfolge in die Laufweg-Reihenfolge bringen.',
+    tableNote: 'Zeilen: Artikelzeilen, die am Anfang der Liste ganz zwischen oberer Leiste und Eingabefeld sichtbar sind, auf dieser Seite gemessen, im Fenster des Release-Web-Builds (390 × 844 oder 360 × 640 App; die Statusleiste ist darüber gezeichnet). Die Zeilen von „Heute“ liegen bei 100 % höchstens 3 px und bei großer Schrift höchstens 5 % neben denen des Release-Web-Builds, mit gleich vielen ganzen Zeilen (io/real). Tippen: die Klicks, die verify.mjs am Live-Telefon macht; Ziehen zählt als eins. IKEA: die Liste in heutiger Reihenfolge in die Laufweg-Reihenfolge bringen.',
     tableHead: ['Option', 'Zeilen, iPhone 100 %', 'iPhone 310 %', 'Android 100 %', 'Android 200 %', 'Eier korrigieren', 'Eier landen', 'Ganze IKEA-Liste'],
     german: 'Deutsch',
     newWord: 'Neues Wort',

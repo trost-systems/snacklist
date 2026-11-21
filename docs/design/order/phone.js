@@ -132,7 +132,7 @@ export const phone = (s, opt, env, { live = false, show = '' } = {}) => {
       ${s.sheet?.kind === 'edit' ? editSheet(st, opt) : ''}
       ${s.screen === 'stores' ? storesScreen(st) : ''}
     </div>
-    ${env.device === 'ios' ? '<div class="homeind"><i></i></div>' : ''}</div>`;
+    </div>`;
 };
 
 // After layout: the list's top inset is the top bar's height and its end clears the bottom band. It is scrolled so

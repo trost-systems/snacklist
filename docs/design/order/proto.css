@@ -60,11 +60,11 @@ th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; color
 
 /* The phone. Inside, the app's theme and text size (--ts); text heights are Material 3 bodyMedium's 20/14 and 0.25 px letter spacing. */
 .phone {
-  --ts: 1; --sb: 47px; --lh: 1.4286; width: 390px; height: 844px; position: relative; overflow: hidden; flex: none; isolation: isolate;
+  --ts: 1; --sb: 47px; --lh: 1.4286; width: 390px; height: calc(844px + var(--sb)); position: relative; overflow: hidden; flex: none; isolation: isolate;
   outline: 2px solid var(--hl-color-edge); border-radius: 44px; background: var(--hl-color-surface); color: var(--hl-color-text);
   box-shadow: 0 8px 0 2px var(--hl-color-edge); display: flex; flex-direction: column; font-family: "App Inter", var(--hl-font-family-sans); font-size: calc(14px * var(--ts)); line-height: var(--lh); letter-spacing: 0.25px; text-align: left;
 }
-.phone.android { --sb: 24px; width: 360px; height: 640px; border-radius: 18px; }
+.phone.android { --sb: 24px; width: 360px; height: calc(640px + var(--sb)); border-radius: 18px; }
 .phone.ts200 { --ts: 2; }
 .phone.ts310 { --ts: 3.1; }
 .status { height: var(--sb); flex: none; display: flex; align-items: center; padding: 6px 32px 0; font-size: 15px; font-weight: 650; line-height: 1.2; }
@@ -133,7 +133,7 @@ th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; color
 /* Bottom band: the trip strip (while a trip runs), the floating add field and the tab bar. */
 .bottom { position: absolute; left: 16px; right: 16px; bottom: 12px; z-index: 6; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
 .addfield { min-width: 0; }
-.ios .bottom { bottom: 30px; }
+/* The app's window is the release web build's (390 × 844, 360 × 640), the status bar drawn above it: the add field and tab pill sit 12 px from its bottom, as there. */
 .trip { --ts2: min(var(--ts), 1.3); display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 12px; border-radius: 14px; background: var(--hl-color-inverse); color: var(--hl-color-on-inverse); font-size: calc(13px * var(--ts2)); line-height: 1.2; white-space: nowrap; overflow: hidden; }
 .trip .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--hl-color-mint); flex: none; }
 .trip b { font: 800 calc(18px * var(--ts2))/1.2 "App Bricolage", var(--hl-font-family-display); }
@@ -252,3 +252,14 @@ th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; color
 .srow .hexbtn > span { overflow: hidden; text-overflow: ellipsis; }
 .stores-screen .hexbtn > span { white-space: normal; overflow-wrap: anywhere; }
 .sadd .hexbtn { min-width: 0; max-width: 100%; }
+/* Opened on a phone: the page fits its width; the mock phones scale down to fit beside the page's margin. */
+@media (max-width: 460px) {
+  .view { padding: 12px 8px; overflow-wrap: anywhere; grid-template-columns: minmax(0, 1fr); }
+  .page-head { padding: 12px 8px 0; }
+  .frames .phone { zoom: 0.88; }
+  .option, .rec, .facts { grid-template-columns: minmax(0, 1fr); }
+  figure.cell { min-width: 0; max-width: 100%; }
+  .realshot { max-width: 100%; height: auto; }
+  .table-wrap, .controls { max-width: calc(100vw - 16px); }
+  .controls { overflow-x: auto; flex-wrap: nowrap; }
+}

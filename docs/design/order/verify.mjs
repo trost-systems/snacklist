@@ -45,12 +45,12 @@ const all = ['today', ...ids];
 // Rows wholly visible between the top bar and the add field, in a frame; and the rows' offsets from the screen top.
 const geometry = (page, sel) => page.locator(sel).evaluate((ph) => {
   const screen = ph.querySelector('.screen').getBoundingClientRect();
-  const bar = ph.querySelector('[data-topbar]').getBoundingClientRect().bottom;
+  const bar = ph.querySelector('[data-topbar] .switcher').getBoundingClientRect().bottom;
   const field = ph.querySelector('[data-addfield]').getBoundingClientRect().top;
   const rows = [...ph.querySelectorAll('.item')].map((r) => ({ id: r.dataset.row, top: r.getBoundingClientRect().top - screen.top, bottom: r.getBoundingClientRect().bottom - screen.top }));
   const whole = rows.filter((r) => r.top >= bar - screen.top - 1 && r.bottom <= field - screen.top + 1);
   const wide = [...ph.querySelectorAll('.screen *')].filter((e) => e.getBoundingClientRect().right > ph.getBoundingClientRect().right + 1 && !e.closest('.scroll') && !e.closest('.menu'));
-  return { whole: whole.map((r) => r.id), rows, fieldFromBottom: screen.bottom - field, wide: wide.length, heads: ph.querySelectorAll('.cat').length, gaps: ph.querySelectorAll('[data-gap]').length };
+  return { whole: whole.map((r) => r.id), rows, fieldTop: field - screen.top, barBottom: bar - screen.top, fieldFromBottom: screen.bottom - field, wide: wide.length, heads: ph.querySelectorAll('.cat').length, gaps: ph.querySelectorAll('[data-gap]').length };
 });
 const sectionOrder = (page, sel, store) => page.locator(sel).evaluate((ph, st) => [...ph.querySelectorAll(`[data-store="${st}"] .item`)].map((r) => r.dataset.row), store);
 
@@ -104,6 +104,10 @@ for (const lang of ['en', 'de']) {
         worst = Math.max(worst, ts === 100 ? d : d / Math.max(r.top, 1));
       });
       check(worst <= tol, `${tag} Today's rows sit where the release build puts them (worst ${worst.toFixed(ts === 100 ? 1 : 3)}, allowed ${tol})`);
+      // The window the rows are counted in is the release build's: the same top bar and add field, the same whole rows.
+      check(Math.abs(g.fieldTop - real.fieldTop) <= 3, `${tag} the add field sits where the release build puts it (${Math.round(g.fieldTop)} vs ${Math.round(real.fieldTop)})`);
+      check(Math.abs(g.barBottom - real.barBottom) <= 3, `${tag} the top bar ends where the release build's does (${Math.round(g.barBottom)} vs ${Math.round(real.barBottom)})`);
+      check(g.whole.length === real.visibleRows.length, `${tag} Today shows as many whole rows as the release build (${g.whole.length} vs ${real.visibleRows.length})`);
       check(Math.abs(real.cats ? Object.keys(real.cats).length : 0) > 0, `${tag} the capture read the categories`);
       if (ts === 100 && device === 'ios') {
         for (const [id, cat] of Object.entries(real.cats)) {
@@ -197,6 +201,16 @@ for (const lang of ['en', 'de']) {
   check(await page.locator('[data-live-phone="IO5"] .cat').count() > 0, `${lang} IO5: the switch brings the heads back`);
   // New words carry their marker; every other word on the phones comes from strings.js.
   check(await page.locator('#IO5 [data-frame="settings"] [data-proposed="showCategories"].new').count() === 1, `${lang} IO5: the new switch label is marked`);
+  await page.close();
+}
+
+// Opened on a 390 px phone, the page is no wider than the phone, in both languages.
+for (const lang of ['en', 'de']) {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  await page.goto(`${url}${pathArg}io/${lang === 'de' ? '?lang=de' : ''}`);
+  await page.waitForSelector('body[data-ready]');
+  const wide = await page.evaluate(() => document.documentElement.scrollWidth);
+  check(wide <= 390, `${lang}: on a 390 px phone the page is ${wide} px wide`);
   await page.close();
 }
 

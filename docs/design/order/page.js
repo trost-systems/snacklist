@@ -114,6 +114,7 @@ export const frameStates = (id) => {
     out.push(['fixing', run(s, path.slice(0, -1)), '']);
     out.push(['fixed', run(s, path), 'eggs']);
   } else {
+    out.push(['sheet', run(s, path.slice(0, 1)), '']);
     out.push(['fixing', run(s, path.slice(0, 2)), '']);
     out.push(['fixed', run(s, path), 'eggs']);
   }
