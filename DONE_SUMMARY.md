@@ -2079,3 +2079,7 @@ The flag sync skipped a flag declaration that `dart format` wraps over two lines
 word; it now reads it, and fails loudly on a declaration it cannot read. A hand-written `iOS`
 platform condition gets the iOS version. `docs/ANALYTICS.md` says a version-gated flag never
 reaches installs without an analytics yes. Details: `docs/done/332-posthog-flag-sync.md`.
+
+## Job 347: items in the right order without the category noise (round IO), 2026-11-21
+
+Draft PR, never merged. `docs/design/order/APPROACHES.md` compares five ordering models: hidden categories, learned from trip ticks, manual drag, a hybrid, and a show/hide setting. It covers how the API and MCP read and set order, and the data, migration and sync. Round IO (IO1 to IO5) puts each model on a phone, at https://family-groceries-design-fa1awr01t-peter-trost.vercel.app/order/io/ (protected preview; the lead mints the share link). Without category headings the iPhone's first screen shows 11 rows instead of 9 (German 8). Pick: IO4, a learned order plus "Next to" in the edit sheet (4 taps at any distance, no drag). Runner-up: IO2. `node docs/design/order/verify.mjs` ends `all checks passed (822)`. Details: `docs/done/347.md`.

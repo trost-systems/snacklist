@@ -29,4 +29,5 @@ python3 -m http.server 8771 --directory docs/design/h-satz-final/h-dist
 
 ## Feature prototypes
 
+- **Item order (job 347):** [`order/`](order/README.md): the thinking in [`order/APPROACHES.md`](order/APPROACHES.md) (today's order, five ordering models, API and MCP, data and migration) and round IO, five list views in walking order with little or no category noise, with [`io/RECOMMENDATION.md`](order/io/RECOMMENDATION.md). Not yet chosen.
 - **Grocery log (job 198):** [`grocery-log/`](grocery-log/), five interactive approaches behind one switcher, plus [`RECOMMENDATION.md`](grocery-log/RECOMMENDATION.md). Serve the repo root (`python3 -m http.server 4198 --bind 127.0.0.1`) and open `/docs/design/grocery-log/index.html`.

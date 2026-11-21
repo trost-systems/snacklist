@@ -175,6 +175,15 @@ for (const lang of ['en', 'de']) {
     await reset();
     await ph.locator('[data-row="bananas"] .nm').click();
     check(!(await ph.locator('[data-row="bananas"]').count()), `${lang} ${id}: a tap ticks a row`);
+    // Tick Pretzels before Bananas and end the trip: a learning option now starts EDEKA with Pretzels, the others keep their order.
+    await reset();
+    await ph.locator('[data-scroll]').evaluate((sc) => { sc.scrollTop = sc.querySelector('[data-row="pretzels"]').offsetTop - 200; });
+    await ph.locator('[data-row="pretzels"] .nm').click();
+    await ph.locator('[data-scroll]').evaluate((sc) => { sc.scrollTop = 0; });
+    await ph.locator('[data-row="bananas"] .nm').click();
+    await ph.locator('[data-act="endTrip"]').click();
+    const afterTrip = await sectionOrder(page, `[data-live-phone="${id}"] .phone`, 'edeka');
+    check(o.kind === 'learned' ? afterTrip[0] === 'pretzels' : afterTrip.join() === orderOf(initial(o.kind, lang), o.kind, 'edeka').join(), `${lang} ${id}: the trip's end ${o.kind === 'learned' ? 'teaches its order' : 'changes no order'} (${afterTrip.slice(0, 2).join(', ')})`);
   }
   // IO3: no ticking in sort mode; IO5: the switch.
   await page.locator('#IO3 [data-scene="reset"]').click();

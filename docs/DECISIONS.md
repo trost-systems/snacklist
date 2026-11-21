@@ -16953,3 +16953,18 @@ pinned above the field, other suggestions hidden); all of it stays behind `add-s
    PostHog with no sign. `const String xFlag` is read; other types throw with the line number.
 2. **Follow-up PR, not a reopened #589.** #589 was merged under the Legal GO; this change touches
    only the sync script, its tests and docs, no legal, ARB, store or consent text.
+
+## Job 347: item order prototypes (round IO), 2026-11-21
+
+Peter (t1119u): a session on lists in the right order without the category noise, with prototypes of how people and agents sort. Nothing ships. Draft PR, never merged.
+
+1. **A static HTML round, like rounds AS, AM and TE.** It uses production tokens, the app's fonts and its Material icons, which are read from Flutter's icon font. It needs no Flutter build. Its Today replica is checked against the release web build. `tools/capture-today.mjs` put the round's list into a verify-snacklist instance and recorded the row positions. The replica's rows sit within 3 px at 100 % and within 5 % at 200 and 310 %. Three replica values came from that capture rather than from job 343's replica: the 14 px gap under the top bar, the category heading's style (`HlSectionLabel.overline`: line height 1, a fixed 1.04 px letter spacing), and the row's line height at large text.
+2. **The mock categories are the classifier's.** The capture read back what each name got. Two of the German guesses were wrong (Zimmerpflanze and Geburtstagskarte are Household) and were fixed. English names do worse: eight of 29 land elsewhere ("Tea lights" in Pantry). The model keeps both languages, so the English Today is the English app.
+3. **Rows are counted on the device, not the web.** The iPhone replica has a 47 px status bar and the home-indicator inset, and the web build has neither. So Today shows 9 rows on the web and 9 (German 8) on the iPhone, for different reasons. The calibration compares positions from the screen's top.
+4. **The learning fixture.** EDEKA has seen every item but Eggs, and IKEA had one earlier trip. A "first trip" frame shows IKEA before any trip, which is Today's order. The fix scenario for every option is Eggs, sitting with the milk but standing next to the flour.
+5. **Tap counting.** A hold, a drag and a tap each count as one. IO2's trip ticks count zero, because they are the shopping itself. A category pick counts as a fix, and the page says where it really puts Eggs: at the end of Pantry, and in every store. Whole-IKEA costs use the fewest moves for drags, and a greedy run (each item stepped up from the top) for Move up and Move down.
+6. **IO3 drags only in a sort mode.** Job 78 took every drag off the list because of accidental drags and the conflict with hold-to-edit. The sort mode keeps the list itself drag-free.
+7. **In IO5, a Move across a category gap takes that category.** Otherwise an item would show under a heading it does not belong to once categories are switched back on.
+8. **New UI words are marked, not hidden.** "Next to {name}", "At the start", "Show categories" and "Order" are in `strings.js`'s `proposed` part, with a dotted underline on the phones. Every other word comes from the ARB files.
+9. **Pick IO4, runner-up IO2.** The order is learned from trip ticks, and "Next to" in the edit sheet fixes a place at any distance in 4 taps, without drag and with a screen reader. IO2 is the cheaper first step. IO-Q1 to IO-Q11 are in `docs/design/order/io/RECOMMENDATION.md`.
+10. **Preview.** It is built on the newest preview, `dpl_GppeUaJsdrkQ6XqDau4MJdG37Vwp`, whose 190 files were fetched byte for byte. Round IO is at `/order/io/`, and the root overview has a card for it.
