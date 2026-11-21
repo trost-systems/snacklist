@@ -2090,3 +2090,12 @@ logic changed, so no flag. Why no generic tail guard: DECISIONS Job 349. Tests: 
 `supabase/tests/classifier_misfires.test.sql` (30 checks), full pgTAP, sweep (353 match), wordlist
 (94.2 % misspellings, 1 false match as before), `scripts/gates/db.sh` classifier steps, parity test
 in Flutter. Ships with the next green main build; no flag.
+
+## Job 353: redesign without hexagons, round RD
+
+Ten designs away from the hexagons on today's palette (RD1 to RD10, plus Today), each with its own corner radii
+and menu, on the hide-categories list with the TE1 total; six frames each in light and dark, 100/200/310 %,
+English and German. Pick RD2 Pill dock (no tab bar, menu button beside the add field, +1 row), runner-up RD4 One
+screen (10 rows), RD1 tokens-only swap first. Hexagon inventory with file:line. Draft PR, never merged; protected
+preview on family-groceries-design (share link from the lead). `verify.mjs` 5834 checks; details
+`docs/done/353.md`.

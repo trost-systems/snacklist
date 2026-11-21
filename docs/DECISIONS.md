@@ -16978,3 +16978,27 @@ pinned above the field, other suggestions hidden); all of it stays behind `add-s
    typo rows. `suggest_parity.json` is rewritten and the pinned exceptions follow the test's own
    output. The server's category-store-off rows that agree with category-store-on get their own
    pin set (`categoryStoreOffExceptions`).
+
+## Job 353: redesign without hexagons, round RD, 2026-11-21
+
+1. **One data-driven renderer, not ten mock files.** Each option is a row in `options.js` (corners, menu, tick,
+   price and store style, taps) and a CSS block. The ten options share one list, one add sheet and one settings
+   page, so a difference on the page is a difference of design, not of mock content.
+2. **The phone is a 390 × 844 iPhone screen** with its status bar and home indicator. Row counts are lower than
+   job 347's (taken in the web build's window, about 80 px taller); Today is measured in the same phone.
+3. **The palette is enforced, not trusted.** `palette.css` is generated from `tokens.g.dart`, and verify fails
+   on any painted colour outside it, so no option drifts in a new shade. Only scrims mix in transparency.
+4. **Border contrast reads the larger of border and fill.** A honey tab's navy edge on a navy dark ground is 1.2:1,
+   but the honey fill is the boundary users see (WCAG 1.4.11). The first, border-only check flagged that falsely; it
+   also found a real fault (RD2's dark menu button, inverse on surface, 1.08:1), fixed by using brand.
+5. **Large text.** At 200 % and up every RD option moves the price under the name and stops headings at 200 %.
+   Without it, 310 % split names mid-word („Äpf/el“). Today keeps the app's layout. Broken words are reported,
+   not failed: long German words (Einkaufsliste) must break at 310 %.
+6. **The add button costs no extra tap.** Today's add field opens the sheet on a tap, so RD5's and RD10's round
+   button is the same tap; the loss is the visible prompt, not a tap.
+7. **Pick RD2, runner-up RD4, ship RD1 first** (RD-Q1). RD2 answers both asks (shape, menu) with the menu in thumb
+   reach and one more row; RD4 is densest (10 rows) but its menu sits at the top. RD1's tokens-only swap removes the
+   hexagons quickly; the inventory shows `HlHex.tip` → 0 covers `HexBorder`, while `PointyHex`, `HexRadio`,
+   `HexSwitch`, `HexSegmented` and `HexCheckbox` need rewrites.
+8. **Taps are counted from the menu design, not measured.** History costs 2 taps in RD2; whether that matters is
+   RD-Q2's PostHog check, an assumption until then.
