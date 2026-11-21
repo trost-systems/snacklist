@@ -3,8 +3,9 @@
    naming its own text colour so dark mode keeps the fields. Built on styles.css and tokens.css. */
 
 .landing main {
+  --slab-gap: var(--hl-space-6);
   display: grid;
-  gap: var(--hl-space-4);
+  gap: var(--slab-gap);
 }
 
 .display {
@@ -33,7 +34,7 @@
   font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.25rem);
   font-weight: var(--hl-font-weight-heavy);
   line-height: 1;
-  letter-spacing: -0.035em;
+  letter-spacing: var(--hl-type-headline-tracking);
   text-wrap: balance;
 }
 
@@ -135,28 +136,43 @@
   padding-bottom: var(--hl-space-6);
 }
 
+/* A flat static hexagon like the other tags (.hx); its height follows the text size so the label
+   never wraps against the points, and the check dot grows with it. */
 .chip {
-  --h: auto;
+  --h: max(40px, 2.6em);
+  max-inline-size: 100%;
   --line: var(--hl-color-ink);
   --face: var(--hl-color-on-cobalt);
-  min-height: 40px;
-  padding: var(--hl-space-1) var(--hl-space-4) var(--hl-space-1) var(--hl-space-2);
+  padding-inline: calc(var(--h) * var(--hl-shape-hex-tip) + var(--hl-space-1)) calc(var(--h) * var(--hl-shape-hex-tip) + var(--hl-space-3));
   color: var(--hl-color-ink);
   font-size: var(--hl-type-label-size);
   font-weight: var(--hl-font-weight-bold);
   line-height: var(--hl-type-label-line);
-  white-space: normal;
-}
-
-/* The chip wraps on phones, so its hexagon is a rounded pill there. */
-.chip::before,
-.chip::after {
-  mask: none;
-  border-radius: var(--hl-radius-full);
 }
 
 .chip .dot {
-  --s: 28px;
+  --s: calc(var(--h) - 12px);
+}
+
+/* When the reader's text size makes the one-line hexagon wider than a phone's hero (about 16em
+   of viewport at 150 % text and up), the label wraps and the hexagon becomes a rounded pill. */
+@media (max-width: 16em) {
+  .chip {
+    --h: auto;
+    min-height: 40px;
+    padding: var(--hl-space-1) var(--hl-space-4) var(--hl-space-1) var(--hl-space-2);
+    white-space: normal;
+  }
+
+  .chip::before,
+  .chip::after {
+    mask: none;
+    border-radius: var(--hl-radius-full);
+  }
+
+  .chip .dot {
+    --s: 28px;
+  }
 }
 
 .hero-actions {
@@ -181,11 +197,11 @@
 /* Features */
 .features .wrap {
   display: grid;
-  gap: var(--hl-space-4);
+  gap: var(--slab-gap);
 }
 
 .features .section-head {
-  margin: var(--hl-space-6) 0 var(--hl-space-2);
+  margin: var(--hl-space-6) 0 0;
 }
 
 .features .section-head .lead {
@@ -197,7 +213,7 @@
   gap: var(--hl-space-5);
   align-items: center;
   overflow: hidden;
-  padding: var(--hl-space-5) var(--hl-space-5) 0;
+  padding: var(--hl-space-6) var(--hl-space-5) 0;
 }
 
 .feature-copy {
@@ -734,6 +750,10 @@
 
 /* From 720 px: roomier blocks, a see-through hex cluster in the big blocks' empty corners. */
 @media (min-width: 720px) {
+  .landing main {
+    --slab-gap: var(--hl-space-7);
+  }
+
   .block {
     border-radius: var(--hl-radius-xl);
   }
@@ -753,8 +773,9 @@
     margin-inline: 0;
   }
 
+  /* The media frame's own bottom margin tops the bottom up to the other blocks' space-7. */
   .feature {
-    padding: var(--hl-space-6) var(--hl-space-6) var(--hl-space-1);
+    padding: var(--hl-space-7) var(--hl-space-7) var(--hl-space-5);
   }
 
   .voice .block {
@@ -811,7 +832,6 @@
   .feature {
     grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
     gap: var(--hl-space-7);
-    padding: var(--hl-space-6) var(--hl-space-6) var(--hl-space-1);
   }
 
   .feature--flip {

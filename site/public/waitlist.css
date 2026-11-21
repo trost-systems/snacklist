@@ -57,13 +57,35 @@
   margin-bottom: var(--hl-space-2);
 }
 
+/* The e-mail field is a hex field (styles.css): .wl-field draws it in the input's grid cell, as
+   an input has no ::before. The ring is the input's own outline, bevelled to the hexagon. */
+.wl-field:has(> .wl-input),
+.wl-option {
+  --face: var(--hl-color-surface);
+}
+
+.wl-field:has(> .wl-input)::before,
+.wl-field:has(> .wl-input)::after,
+.wl-input {
+  grid-area: 2 / 1;
+  align-self: start;
+}
+
+.wl-field:has(> .wl-input)::before {
+  height: calc(var(--h) + var(--d));
+}
+
+.wl-field:has(> .wl-input)::after {
+  height: calc(var(--h) - 2 * var(--b));
+  margin: var(--b) calc(var(--b) * 1.1547);
+}
+
 .wl-input {
   width: 100%;
-  min-height: var(--hl-size-target);
-  padding: var(--hl-space-2) var(--hl-space-3);
-  border: var(--hl-border-width) solid var(--hl-color-ink);
-  border-radius: var(--hl-radius-m);
-  background: var(--hl-color-surface);
+  height: var(--h);
+  padding: 0 calc(var(--h) * var(--hl-shape-hex-tip) / 2 + var(--hl-space-2));
+  border: 0;
+  background: none;
   color: var(--hl-color-text);
   font: inherit;
 }
@@ -74,20 +96,76 @@
 }
 
 .wl-input:focus-visible {
-  outline-offset: 2px;
+  outline-offset: var(--hl-focus-ring-gap);
+  border-radius: calc(var(--h) * var(--hl-shape-hex-tip)) / 50%;
+  corner-shape: bevel;
 }
 
-.wl-input[aria-invalid="true"] {
-  border-color: var(--hl-color-error);
-  box-shadow: inset 0 0 0 1px var(--hl-color-error);
+/* Without corner-shape (Firefox, Safari) that outline is an oval. There the focused input paints
+   the face itself, masked like ::after, and ::after becomes the ring: the hex field's silhouette
+   offset by gap + ring minus it offset by the gap. Masks composite in order: the outer shape,
+   inverted by the full box, plus the inner shape, inverted again. */
+@supports not (corner-shape: bevel) {
+  @media (forced-colors: none) {
+    .wl-input:focus-visible {
+      --cw: calc(var(--h) / 2 - var(--b));
+      --x: calc(var(--b) * 1.1547);
+      background: var(--face);
+      mask-image: var(--hex-img);
+      mask-repeat: no-repeat;
+      mask-size: var(--cw) calc(100% - 2 * var(--b)), var(--cw) calc(100% - 2 * var(--b)), calc(100% - 2 * var(--x) - 2 * var(--cw) + 2px) calc(100% - 2 * var(--b));
+      mask-position: left var(--x) top var(--b), right var(--x) top var(--b), center;
+    }
+
+    .wl-field:has(> .wl-input:focus-visible)::after {
+      --w: var(--hl-focus-ring-width);
+      --r: calc(var(--hl-focus-ring-gap) + var(--w));
+      --mo: calc(var(--h) + 2 * var(--r));
+      --mi: calc(var(--h) + 2 * var(--hl-focus-ring-gap));
+      --xw: calc(var(--w) * 1.1547);
+      --e: calc(var(--hl-shape-hex-corner-radius) * 0.1547);
+      --full: linear-gradient(#000 0 0);
+      height: calc(var(--h) + var(--d) + 2 * var(--r));
+      margin: calc(-1 * var(--r)) calc(-1.1547 * var(--r));
+      background: var(--ring);
+      mask-image: var(--full), var(--sweep-img), var(--full), var(--sweep-img);
+      mask-composite: exclude, add, add, add, add, add, add, exclude, add, add, add, add, add, add;
+      mask-size:
+        100% 100%,
+        calc(var(--mi) / 2) var(--mi), calc(var(--mi) / 2) var(--mi), calc(var(--mi) / 2) var(--mi), calc(var(--mi) / 2) var(--mi),
+        calc(100% - 2 * var(--xw) - var(--mi) + 2px) calc(100% - 2 * var(--w)),
+        calc(100% - 2 * var(--xw) - 2 * var(--e)) calc(100% - 2 * var(--w) - var(--mi)),
+        100% 100%,
+        calc(var(--mo) / 2) var(--mo), calc(var(--mo) / 2) var(--mo), calc(var(--mo) / 2) var(--mo), calc(var(--mo) / 2) var(--mo),
+        calc(100% - var(--mo) + 2px) 100%,
+        calc(100% - 2 * var(--e)) calc(100% - var(--mo));
+      mask-position:
+        0 0,
+        left var(--xw) top var(--w), right var(--xw) top var(--w), left var(--xw) bottom var(--w), right var(--xw) bottom var(--w),
+        center, center,
+        0 0,
+        left top, right top, left bottom, right bottom, center, center;
+    }
+  }
 }
 
+.wl-field:has(> .wl-input[aria-invalid="true"]) {
+  --line: var(--hl-color-error);
+  --b: calc(var(--hl-border-width) + 1px);
+}
+
+/* Fine print reads as small body text: label size, body leading, muted colour. */
 .wl-hint,
 .wl-small,
 .wl-consent {
   color: var(--hl-color-text-muted);
   font-size: var(--hl-type-label-size);
-  line-height: var(--hl-type-label-line);
+  line-height: var(--hl-type-body-l-line);
+}
+
+/* Under the button the fine print keeps a clear step away from it (form gap plus space-2). */
+.wl-form > .wl-consent {
+  margin-top: var(--hl-space-2);
 }
 
 .wl-error,
@@ -102,11 +180,11 @@
   display: none;
 }
 
-/* iPhone or Android: two equal tiles, one above the other when two would not fit (320 px
-   phones scrolled sideways by 7 px); the chosen one turns lemon. */
+/* iPhone or Android: two equal hex tiles (styles.css), stacked where both do not fit (320 px
+   phones, large text); the chosen one turns lemon. The ring is .hex's, on the tile. */
 .wl-options {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8.5rem), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5em), 1fr));
   gap: var(--hl-space-3);
 }
 
@@ -114,23 +192,16 @@
   display: flex;
   align-items: center;
   gap: var(--hl-space-3);
-  min-height: var(--hl-size-target);
-  padding: var(--hl-space-2) var(--hl-space-3);
-  border: var(--hl-border-width) solid var(--hl-color-ink);
-  border-radius: var(--hl-radius-m);
-  background: var(--hl-color-surface);
+  height: calc(var(--h) + var(--d));
+  padding: 0 calc(var(--h) * var(--hl-shape-hex-tip) + var(--hl-space-2)) var(--d);
   font-weight: var(--hl-font-weight-bold);
+  white-space: nowrap;
   cursor: pointer;
 }
 
 .wl-option:has(:checked) {
-  background: var(--hl-color-honey);
+  --face: var(--hl-color-honey);
   color: var(--hl-color-on-honey);
-}
-
-.wl-option:has(:focus-visible) {
-  outline: var(--hl-focus-ring-width) solid var(--ring);
-  outline-offset: 2px;
 }
 
 .wl-option,
@@ -199,7 +270,8 @@
 }
 
 .wl-platform:has([aria-invalid="true"]) .wl-option {
-  border-color: var(--hl-color-error);
+  --line: var(--hl-color-error);
+  --b: calc(var(--hl-border-width) + 1px);
 }
 
 .wl-check {
@@ -300,11 +372,4 @@
   .wl-check :checked + .wl-mark {
     background: CanvasText;
   }
-}
-
-/* Over the tile's contour too, so the target is the whole 48 px tile. */
-.wl-option input {
-  inset: calc(-1 * var(--hl-border-width));
-  width: calc(100% + 2 * var(--hl-border-width));
-  height: calc(100% + 2 * var(--hl-border-width));
 }

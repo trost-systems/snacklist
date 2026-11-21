@@ -483,7 +483,7 @@ ${agentHead(page, url)}<meta property="og:title" content="${title}">
 ${HEAD_ASSETS}${assets}</head>
 <body${landing ? ' class="landing"' : ''}>
 ${page.notices.map(banner).join('')}${siteHeader(page, { switches, copy, current, stage })}
-<main id="inhalt"${landing ? '' : ' class="wrap prose"'}>
+<main id="inhalt"${landing ? '' : ` class="wrap prose${page.emptyState ? ' empty-state' : ''}"`}>
 ${mainContent(page, guidesByLocale)}
 </main>
 ${siteFooter(page, { config, copy })}
@@ -501,7 +501,7 @@ const HEAD_ASSETS = `<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/styles.css">
 `;
 
-function standalonePage({ lang, title, head = '', body }) {
+function standalonePage({ lang, title, head = '', body, emptyState = false }) {
   return `<!doctype html>
 <html lang="${lang}">
 <head>
@@ -510,7 +510,7 @@ function standalonePage({ lang, title, head = '', body }) {
 <title>${title}</title>
 ${head}${HEAD_ASSETS}</head>
 <body>
-<main id="inhalt" class="wrap prose">
+<main id="inhalt" class="wrap prose${emptyState ? ' empty-state' : ''}">
 ${body}
 </main>
 </body>
@@ -541,6 +541,7 @@ function notFoundPage(config) {
     body: `<h1>Seite nicht gefunden <span lang="en">/ Page not found</span></h1>
 <p>Diese Seite gibt es nicht. <span lang="en">This page does not exist.</span></p>
 <ul class="guide-list">\n${indexLinks()}\n</ul>`,
+    emptyState: true,
   });
 }
 
@@ -755,6 +756,7 @@ function changelogPages(repoDir, production) {
     title: LOCALES[locale].ui.changelog.title,
     description: LOCALES[locale].ui.changelog.description,
     notices: [],
+    emptyState: entries.length === 0,
     body: changelogBody(entries, locale),
   }));
 }

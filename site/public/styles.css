@@ -36,18 +36,34 @@
   --ring-gap: var(--hl-color-surface);
   --foot: var(--hl-color-inverse);
   --on-foot: var(--hl-color-on-inverse);
+  /* The tokens' heading tracking set Bricolage's heavy weight so tight its letters touched; the
+     site opens it up. Phones keep the larger sizes' tracking: at 150 % text a looser one wrapped
+     guide and legal headings onto another line. */
+  --hl-type-title-tracking: -0.012em;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --sticker: var(--hl-shadow-night);
-    --sticker-l: var(--hl-shadow-night-l);
+    --sticker: 0 4px 0 0 var(--hl-color-surface-edge);
+    --sticker-l: 0 8px 0 0 var(--hl-color-surface-edge);
+  }
+}
+
+/* Hex labels open up with the headings from 720 px; on phones the extra width would push a
+   label into the hex points at large text. */
+@media (min-width: 720px) {
+  .hex .face {
+    letter-spacing: 0.01em;
   }
 }
 
 @media (min-width: 720px) {
   :root {
     --gutter: var(--hl-space-6);
+    --hl-type-display-tracking: -0.025em;
+    --hl-type-headline-l-tracking: -0.022em;
+    --hl-type-headline-tracking: -0.018em;
+    --hl-type-title-tracking: -0.01em;
   }
 }
 
@@ -77,6 +93,23 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+}
+
+/* German compounds ("Datenschutzerklärung") outgrow a phone line: hyphenate them by the page's
+   lang instead of the bare overflow-wrap break. Only words of 12+ letters split, only on phones. */
+@media (max-width: 719px) {
+  h1,
+  h2,
+  h3,
+  .headline,
+  .title-l,
+  .title {
+    -webkit-hyphens: auto;
+    hyphens: auto;
+    -webkit-hyphenate-limit-before: 5;
+    -webkit-hyphenate-limit-after: 5;
+    hyphenate-limit-chars: 12 5 5;
+  }
 }
 
 main {
@@ -305,7 +338,9 @@ a {
 
 /* Focus: a hexagonal ring from stacked drop shadows on the unmasked control, a gap in the ground's
    colour first, then the ring. The transparent outline shows in forced-colours mode. */
-.hex:focus-visible {
+.hex:focus-visible,
+.wl-option:has(:focus-visible),
+.empty-state > .guide-list a:focus-visible {
   --g: var(--hl-focus-ring-gap);
   --w: var(--hl-focus-ring-width);
   outline: 2px solid transparent;
@@ -323,6 +358,74 @@ a {
 
 .hex--small .face {
   padding-inline: calc(var(--h) * var(--hl-shape-hex-tip) + var(--hl-space-2));
+}
+
+/* Hex fields and tiles: the waitlist's e-mail field and platform tiles, the 404 page's language
+   links. The masks of .hex: ::before is the contour swept down by the edge depth (one colour, as
+   on .hex), ::after the face inset by the contour. The control is never masked, so its focus ring
+   shows; waitlist.css and the 404 rules below place the two layers. */
+.wl-field:has(> .wl-input),
+.wl-option,
+.empty-state > .guide-list a {
+  --h: max(var(--hl-size-target), 2.5em);
+  --d: var(--hl-depth-edge);
+  --b: var(--hl-border-width);
+  --line: var(--hl-color-border);
+  --face: var(--hl-color-surface-raised);
+  isolation: isolate;
+}
+
+.wl-field:has(> .wl-input)::before,
+.wl-field:has(> .wl-input)::after,
+.wl-option::before,
+.wl-option::after,
+.empty-state > .guide-list a::before,
+.empty-state > .guide-list a::after {
+  --cw: calc(var(--mh) / 2);
+  content: "";
+  z-index: -1;
+  mask-repeat: no-repeat;
+}
+
+.wl-field:has(> .wl-input)::before,
+.wl-option::before,
+.empty-state > .guide-list a::before {
+  --mh: var(--h);
+  --e: calc(var(--hl-shape-hex-corner-radius) * 0.1547);
+  background: var(--line);
+  mask-image: var(--sweep-img);
+  mask-size:
+    var(--cw) var(--mh), var(--cw) var(--mh), var(--cw) var(--mh), var(--cw) var(--mh),
+    calc(100% - 2 * var(--cw) + 2px) 100%,
+    calc(100% - 2 * var(--e)) calc(100% - var(--mh));
+  mask-position: left top, right top, left bottom, right bottom, center, center;
+}
+
+.wl-field:has(> .wl-input)::after,
+.wl-option::after,
+.empty-state > .guide-list a::after {
+  --mh: calc(var(--h) - 2 * var(--b));
+  background: var(--face);
+  mask-image: var(--hex-img);
+  mask-size: var(--cw) 100%, var(--cw) 100%, calc(100% - 2 * var(--cw) + 2px) 100%;
+  mask-position: left center, right center, center;
+}
+
+.wl-option::before,
+.wl-option::after,
+.empty-state > .guide-list a::before,
+.empty-state > .guide-list a::after {
+  position: absolute;
+}
+
+.wl-option::before,
+.empty-state > .guide-list a::before {
+  inset: 0;
+}
+
+.wl-option::after,
+.empty-state > .guide-list a::after {
+  inset: var(--b) calc(var(--b) * 1.1547) calc(var(--d) + var(--b));
 }
 
 /* Header */
@@ -401,6 +504,12 @@ a {
   text-underline-offset: 0.35em;
 }
 
+/* The language link follows the page links at their own spacing: the row gap would add to the
+   links' padding. */
+.site-header .nav + .lang {
+  margin-inline-start: calc(-1 * var(--hl-space-4));
+}
+
 /* Phones: brand and app button on the first row, the links below. */
 @media (max-width: 719px) {
   .site-header .nav {
@@ -410,7 +519,24 @@ a {
 
   .site-header .lang {
     order: 4;
-    margin-inline-start: auto;
+  }
+}
+
+/* Large text or a narrow phone (em follows the browser's font size): the three links no longer
+   fit one row, so the language link moves up beside the brand and the page links keep a row of
+   their own instead of leaving one link alone on a last row. */
+@media (max-width: 22em) {
+  .site-header .lang {
+    order: 1;
+    margin-inline-start: 0;
+  }
+
+  .site-header .header-cta {
+    order: 2;
+  }
+
+  .site-header .nav {
+    flex-basis: 100%;
   }
 }
 
@@ -504,11 +630,20 @@ a {
 
 .prose blockquote {
   margin: var(--hl-space-4) 0;
-  padding: var(--hl-space-3) var(--hl-space-4);
+  padding: var(--hl-space-4);
   border: var(--hl-border-width) solid var(--hl-color-border);
   border-radius: var(--hl-radius-m);
   background: var(--hl-color-surface-raised);
   box-shadow: var(--sticker);
+}
+
+.prose blockquote > :first-child {
+  margin-top: 0;
+}
+
+.prose blockquote > :last-child,
+.prose blockquote > :last-child > li:last-child {
+  margin-bottom: 0;
 }
 
 .prose code {
@@ -583,6 +718,121 @@ a {
 .guide-list p {
   margin: var(--hl-space-1) 0 0;
   color: var(--hl-color-text-muted);
+}
+
+/* Empty states (.empty-state, set by build.mjs): the changelog before the first public release
+   (h1, p) and the 404 page (h1, p, the language list). A honeycomb of three sticker hexagons sits
+   above the centred text: the ink silhouette, stretched down by the edge depth, under the faces.
+   Both layers are masked with hex-pointy.svg at the same three spots; --w is a pointy hexagon's
+   width at height --s. */
+.empty-state {
+  --s: 64px;
+  --w: calc(var(--s) * 0.866);
+  --g: 8px;
+  --d: var(--hl-depth-edge-l);
+  --b: var(--hl-border-width);
+  --x2: calc(var(--w) + var(--g));
+  --x3: calc(var(--x2) / 2);
+  --y3: calc(var(--s) * 0.75 + var(--g) * 0.866);
+  display: grid;
+  /* One track no wider than the column: an auto track grows to the longest word at large text. */
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  align-content: center;
+  text-align: center;
+  padding-block: var(--hl-space-7) var(--hl-space-8);
+}
+
+.empty-state > * {
+  max-inline-size: 100%;
+  hyphenate-limit-chars: 6 3 3;
+}
+
+.empty-state::before,
+.empty-state::after {
+  content: "";
+  grid-area: 1 / 1;
+  width: calc(2 * var(--w) + var(--g));
+  height: calc(var(--y3) + var(--s) + var(--d));
+  mask-image: var(--pointy-img), var(--pointy-img), var(--pointy-img), var(--pointy-img), var(--pointy-img), var(--pointy-img);
+  mask-repeat: no-repeat;
+}
+
+.empty-state::before {
+  background: var(--hl-color-edge);
+  mask-size: var(--w) var(--s);
+  mask-position:
+    0 0, 0 var(--d),
+    var(--x2) 0, var(--x2) var(--d),
+    var(--x3) var(--y3), var(--x3) calc(var(--y3) + var(--d));
+}
+
+.empty-state::after {
+  --fw: calc(var(--w) - 2 * var(--b));
+  --fh: calc(var(--s) - 2.3094 * var(--b));
+  --fy: calc(var(--b) * 1.1547);
+  background:
+    linear-gradient(var(--hl-color-honey) 0 0) var(--b) var(--fy) / var(--fw) var(--fh),
+    linear-gradient(var(--hl-color-mint) 0 0) calc(var(--x2) + var(--b)) var(--fy) / var(--fw) var(--fh),
+    linear-gradient(var(--hl-color-accent-soft) 0 0) calc(var(--x3) + var(--b)) calc(var(--y3) + var(--fy)) / var(--fw) var(--fh);
+  background-repeat: no-repeat;
+  mask-size: var(--fw) var(--fh);
+  mask-position:
+    var(--b) var(--fy), var(--b) var(--fy),
+    calc(var(--x2) + var(--b)) var(--fy), calc(var(--x2) + var(--b)) var(--fy),
+    calc(var(--x3) + var(--b)) calc(var(--y3) + var(--fy)), calc(var(--x3) + var(--b)) calc(var(--y3) + var(--fy));
+}
+
+.empty-state > h1 {
+  margin: var(--hl-space-6) 0 var(--hl-space-3);
+}
+
+.empty-state > p {
+  max-width: 34rem;
+  margin: 0;
+  color: var(--hl-color-text-muted);
+  font-size: var(--hl-type-body-l-size);
+  line-height: var(--hl-type-body-l-line);
+  text-wrap: pretty;
+}
+
+.empty-state > .guide-list {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: min(100%, 26rem);
+  margin: var(--hl-space-6) 0 0;
+}
+
+/* Its language links are hex tiles (the hex fields above), not guide cards. */
+.empty-state > .guide-list li {
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.empty-state > .guide-list a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(var(--h) + var(--d));
+  padding: 0 calc(var(--h) * var(--hl-shape-hex-tip) + var(--hl-space-2)) var(--d);
+  color: var(--hl-color-text);
+  font-family: var(--hl-type-label-family);
+  font-size: var(--hl-type-label-size);
+  font-weight: var(--hl-font-weight-heavy);
+  line-height: var(--hl-type-label-line);
+  letter-spacing: normal;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* Hover takes the honey face of the site's hex buttons. */
+@media (hover: hover) {
+  .empty-state > .guide-list a:hover {
+    --face: var(--hl-color-honey);
+    color: var(--hl-color-on-honey);
+  }
 }
 
 .updated,
@@ -768,21 +1018,33 @@ a {
   .hx::before,
   .hx::after,
   .hxp,
-  .hxp::before {
+  .hxp::before,
+  .wl-field:has(> .wl-input)::before,
+  .wl-field:has(> .wl-input)::after,
+  .wl-option::before,
+  .wl-option::after,
+  .empty-state > .guide-list a::before,
+  .empty-state > .guide-list a::after {
     forced-color-adjust: none;
   }
 
   .hex::before,
   .hex .face::before,
   .hx::before,
-  .hxp {
+  .hxp,
+  .wl-field:has(> .wl-input)::before,
+  .wl-option::before,
+  .empty-state > .guide-list a::before {
     background: CanvasText;
   }
 
   .hex::after,
   .hex .face::after,
   .hx::after,
-  .hxp::before {
+  .hxp::before,
+  .wl-field:has(> .wl-input)::after,
+  .wl-option::after,
+  .empty-state > .guide-list a::after {
     background: Canvas;
   }
 
@@ -792,7 +1054,9 @@ a {
     color: CanvasText;
   }
 
-  .hex:focus-visible {
+  .hex:focus-visible,
+  .wl-option:has(:focus-visible),
+  .empty-state > .guide-list a:focus-visible {
     filter: none;
     outline: 3px solid Highlight;
   }
