@@ -118,6 +118,9 @@ export const frameStates = (id) => {
     out.push(['fixing', run(s, path.slice(0, 2)), '']);
     out.push(['fixed', run(s, path), 'eggs']);
   }
+  // IO-Q3: a person who switches headings on in a learned household sees the shared order with a heading at every
+  // change of category, after the Eggs fix: Chilled heads a second run, the Eggs after the flour.
+  if (o.catsOverLearned) out.push(['catsLearned', act(run(s, path), 'showCats'), 'eggs']);
   if (o.settings) {
     out.push(['settings', act(s, 'screen:stores'), '']);
     out.push(['cats', act(s, 'showCats'), '']);
@@ -273,6 +276,7 @@ const realShots = () => {
 export const round = async () => {
   await themeCss('../../../../site/public/tokens.css');
   document.title = W.roundTitle;
+  document.documentElement.lang = env.lang;
   const m = await fetch('measured.json').then((r) => (r.ok ? r.json() : null)).catch(() => null);
   const todayFrames = frameStates('today').map(([key, st, show]) => cell(key, phone(st, options.today, env, { show }))).join('');
   document.body.innerHTML = `${head(W.roundTitle, true)}<main class="view">
@@ -291,6 +295,7 @@ export const round = async () => {
 export const overview = async () => {
   await themeCss('../../../site/public/tokens.css');
   document.title = W.overviewTitle;
+  document.documentElement.lang = env.lang;
   const m = await fetch('io/measured.json').then((r) => (r.ok ? r.json() : null)).catch(() => null);
   document.body.innerHTML = `${head(W.overviewTitle, false)}<main class="view"><div class="cards">
     <a class="ocard" href="io/${location.search}"><h2>${W.roundTitle}</h2><p>${W.roundBlurb}</p>

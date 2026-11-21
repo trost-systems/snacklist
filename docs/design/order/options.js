@@ -7,7 +7,7 @@ export const options = {
   IO1: { id: 'IO1', kind: 'categorical', heads: () => false, fix: 'category' },
   IO2: { id: 'IO2', kind: 'learned', heads: () => false, fix: 'none' },
   IO3: { id: 'IO3', kind: 'manual', heads: () => false, fix: 'drag', sortButton: true },
-  IO4: { id: 'IO4', kind: 'learned', heads: () => false, fix: 'nextTo' },
+  IO4: { id: 'IO4', kind: 'learned', heads: (s) => s.showCats, fix: 'nextTo', catsOverLearned: true },
   IO5: { id: 'IO5', kind: 'categorical', heads: (s) => s.showCats, gaps: (s) => !s.showCats, fix: 'step', settings: true },
 };
 export const ids = ['IO1', 'IO2', 'IO3', 'IO4', 'IO5'];

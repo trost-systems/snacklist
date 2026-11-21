@@ -18,7 +18,7 @@ The list is sorted by three keys: the store, then the category in that store's w
 
 **Inside a category.** `items.sort_key` (double) orders a group, and a group is (household, category, store) (`20261025212052_item_details.sql:12-14`). An insert, or a change of store or category, puts the item at the group's end, at max + 1024 (`20261121120100_items_created_at_bounds.sql:59-66`). `compareWalk` sorts by the key, then by creation time (`model.dart:711`). `place_item(item, anchor, 'before'|'after')` and `move_item(item, store, category)` exist on the server (`item_details.sql:581, 652`). Since job 78 the app sends neither. It keeps the `PlaceItem` and `MoveItem` ops only to read old offline queues (DECISIONS.md:6882-6886). So the order inside a category is in practice the order the items were added.
 
-**On screen.** With `list-declutter` (on for everyone), the list shows a store divider per section. Under it come category dividers: small, faded capitals with a hairline, no emoji, as level-2 headings (`app/lib/list/list_view/dividers.dart:277`). Then come the rows. The flag changes the top bar and the total, not the sort. On a 390 × 844 iPhone at 100 % text, Today shows 9 whole item rows (8 in German) on the first screen of the round's 18-item EDEKA list. Without the category dividers the same screen shows 11 (`io/measured.json`; the replica matches the release web build's row positions to the pixel at 100 %).
+**On screen.** With `list-declutter` (on for everyone), the list shows a store divider per section. Under it come category dividers: small, faded capitals with a hairline, no emoji, as level-2 headings (`app/lib/list/list_view/dividers.dart:277`). Then come the rows. The flag changes the top bar and the total, not the sort. On a 390 × 844 iPhone at 100 % text, Today shows 9 whole item rows on the first screen of the round's 18-item EDEKA list, in both languages. Without the category dividers, the same screen shows 12. Both counts are in the release web build's window (`io/measured.json`). The replica's row positions, add field and whole-row count match the release build's captures.
 
 **Ticking.** A tap ticks the row. It slides out, and the item shows under "Recently used" (newest first). The item keeps its `sort_key`, so an untick or a re-add puts it back in place (`app/lib/list/list_repository.dart:597`). With `trip-mode`, the first tick asks "Are you shopping right now?". A trip records its start, its pauses and the items planned. It records no tick times and no sequence (`app/lib/trip/model.dart:111-135, 202-240`), and it writes no order.
 
@@ -82,11 +82,11 @@ Model (b), plus a way to put one item in its place now. A manual place wins over
 
 ### (e) A view setting that shows or hides categories
 
-This is a setting, not an order. It works with any of (a) to (d). With categories shown, the list looks as today. With them hidden, rows run on under the store divider. Between two categories there can be a small gap that keeps the aisle rhythm without words.
+This is a setting, not an order. It works with any of (a) to (d). With categories shown in a household that keeps today's order (a), the list looks as today. With categories shown in a household with a learned order ((b) to (d)), the order stays the household's shared order. A heading is drawn wherever the category changes, so one category can head two runs. With Eggs placed after the flour, Chilled heads Milk, Butter and Yogurt near the entrance, and again Eggs between Pantry and Sweets. Round IO shows this as IO4's "Categories shown" frame. With them hidden, rows run on under the store divider. Between two categories there can be a small gap that keeps the aisle rhythm without words.
 
 - **Pros:** cheap to build. It keeps users who like categories (they can see why an item sits where it sits, and fix it with the category chip). It answers "other users might feel differently".
 - **Cons:** two looks to design, test and document. It leaves the order exactly as it was, so IKEA stays wrong unless (b) to (d) come with it. And a setting is a decision every user has to find.
-- **Per user or per household:** per user. It is how a person reads the list, like the folds, and the list's content does not change. Lea can keep categories while Peter hides them. It is stored on the device like `ListPrefs`. Syncing it across a user's devices is a nice-to-have.
+- **Per user or per household:** per user. It is how a person reads the list, like the folds, and it never changes the order. Lea can keep categories while Peter hides them, and both see the same items in the same order. Only the headings differ. So "Next to" works the same for both, against the same order. The price is that, in a learned household, a heading can repeat. Switching a person back to the category order would split one shared list into two orders and was rejected (IO-Q3). It is stored on the device like `ListPrefs`. Syncing it across a user's devices is a nice-to-have.
 - **Store headers:** stay. With categories hidden, they are the only grouping.
 
 ### What store headers still do in every model
@@ -113,7 +113,7 @@ An assistant needs to read the list in the order it is walked, put one item some
 
 **Read.**
 - Each item gains `position`, in both modes and at once: a 1-based rank inside its store's section, or inside "No store", in the household's current order. It is a rank, not the stored key, so clients never see floats or gaps. `category` stays in the answer. It is still data, and it is still the prior.
-- MCP `list_items` returns items grouped by store in store order, each store in its order, then "No store". In a `learned` household that is the walk order. In a `categories` household it is today's category order inside each store. Today it groups by route category and mixes stores. MCP has no paging, so nothing a client holds can break. Its text answer reads "in walk order" and lists per store.
+- MCP `list_items` in a `learned` household returns items grouped by store in store order, each store in its walk order, then "No store". In a `categories` household it keeps today's answer, which groups by route category and mixes stores, so assistants see no change before the household opts in. MCP has no paging, so nothing a client holds can break. Its text answer reads "in walk order" and lists per store.
 - `GET /v1/items` keeps its v1 default order (aisle order, `docs/API.md:113`) and its cursor shape, so a client paging across the switch keeps working. A new query value, `order=walk`, returns the store-first order above, paged on (store order, position, id). Its cursors carry the order they belong to. A cursor given with the other `order` is refused with 400 `invalid_cursor`, which only a client that changes `order` mid-paging can cause. In v2 `walk` becomes the default.
 
 **Write.**
@@ -130,7 +130,7 @@ An assistant needs to read the list in the order it is walked, put one item some
 
 **What changes for existing integrations.**
 - `GET /v1/items` without `order=walk` answers as today, cursors included. `position` is a new field, and no field is removed, so v1 stays compatible.
-- MCP `list_items` changes its order to store-first, for every household. Within a store it uses the household's mode. The einkauf connector and other MCP clients read it without a change, because MCP has no cursor.
+- MCP `list_items` changes its order only for `learned` households. The einkauf connector and other MCP clients read the new order without a change, because MCP has no cursor.
 - `docs/MCP.md:152` ("the order the app's drag and drop sets") gets corrected either way.
 
 ## Data, migration and sync

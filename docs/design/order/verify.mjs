@@ -89,6 +89,12 @@ for (const lang of ['en', 'de']) {
     const cats = await geometry(page, '#IO5 [data-frame="cats"] .phone');
     check(cats.heads > 0 && cats.gaps === 0, `${tag} IO5 with the switch on shows heads`);
     measured[lang][device][ts].IO5cats = cats.whole.length;
+    // IO-Q3: headings over a learned order keep the order and head every run, so Chilled heads two runs (the Eggs after the flour).
+    const learnedCats = page.locator('#IO4 [data-frame="catsLearned"] .phone');
+    const runs = await learnedCats.evaluate((ph) => [...ph.querySelectorAll('[data-store="edeka"] .cat')].map((c) => c.dataset.cat));
+    const fixedOrder = await sectionOrder(page, '#IO4 [data-frame="fixed"] .phone', 'edeka');
+    check(JSON.stringify(await sectionOrder(page, '#IO4 [data-frame="catsLearned"] .phone', 'edeka')) === JSON.stringify(fixedOrder), `${tag} IO4: headings on keep the learned order`);
+    check(runs.filter((c) => c === 'chilled').length === 2 && runs[runs.indexOf('pantry') + 1] === 'chilled', `${tag} IO4: headings on show Chilled twice, the second after Pantry (${runs.join(',')})`);
     // Today against the release web build: the rows' offsets from the screen top (the web build has no status bar).
     const realFile = join(dir, `io/real/${lang}-light-${ts}${device === 'android' ? '-android' : ''}.json`);
     if (existsSync(realFile)) {
@@ -246,6 +252,13 @@ for (const [name, src] of [['RECOMMENDATION.md', rec], ['RECOMMENDATION.de.md', 
     check(c[5] === want, `${name} ${key}: whole IKEA list (${c[5]} vs ${want})`);
   }
 }
+// APPROACHES.md quotes Today's and the headless options' rows on the iPhone at 100 %: the same in both languages.
+const approaches = doc('APPROACHES.md');
+const today100 = measured.en.ios[100].today;
+const headless100 = measured.en.ios[100].IO1;
+check(measured.de.ios[100].today === today100 && measured.de.ios[100].IO1 === headless100, 'the iPhone 100 % rows are the same in both languages, as APPROACHES.md says');
+const quoted = /Today shows (\d+) whole item rows[^.]*\. Without the category dividers, the same screen shows (\d+)\./.exec(approaches);
+check(Boolean(quoted) && Number(quoted[1]) === today100 && Number(quoted[2]) === headless100, `APPROACHES.md quotes the rows (${quoted?.slice(1).join(' → ')} vs ${today100} → ${headless100})`);
 const pick = /\*\*Pick: (IO\d)/.exec(rec)?.[1];
 const runner = /Runner-up: (IO\d)/.exec(rec)?.[1];
 check(Boolean(pick && runner), 'RECOMMENDATION.md names a pick and a runner-up');
