@@ -64,9 +64,12 @@ final class const OpenLink(
 /// chain's own site.
 ///
 /// Android: the app, else Play's app, else Play's web page. iOS: the app's
-/// universal link, if it has one, else the App Store; no URL schemes, so
-/// nothing to declare in Info.plist. The web app and desktops: the App
-/// Store's web page in an iPhone's browser, else Play's.
+/// universal link, if it has one, then the bare root of its URL scheme, if
+/// it has one, else the App Store. The scheme step may not be app-only: iOS
+/// opens only universal links that way. It needs nothing in Info.plist,
+/// since nothing asks first whether an app takes the scheme; iOS answers
+/// false when none does. The web app and desktops: the App Store's web page
+/// in an iPhone's browser, else Play's.
 List<StoreAppStep> storeAppPlan(RetailerApp? app, StoreAppPlatform platform) {
   if (app == null) {
     return const [];
@@ -88,6 +91,8 @@ List<StoreAppStep> storeAppPlan(RetailerApp? app, StoreAppPlatform platform) {
       if (Uri.tryParse(app.universalLink ?? '') case final link?
           when link.isScheme('https'))
         OpenLink(link, StoreAppOutcome.app, appOnly: true),
+      if (app.scheme case final scheme?)
+        OpenLink(Uri(scheme: scheme, host: ''), StoreAppOutcome.app),
       OpenLink(
         Uri.parse('itms-apps://apps.apple.com/app/id${app.ios}'),
         StoreAppOutcome.storePage,

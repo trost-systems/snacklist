@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updated": "2026-11-19",
+  "updated": "2026-11-21",
   "entries": [
     {
       "chain": "edeka",
@@ -13,7 +13,8 @@
           "name": "EDEKA",
           "android": "de.edeka.genuss",
           "ios": "1272688648",
-          "universalLink": null
+          "universalLink": null,
+          "scheme": "edeka"
         }
       ],
       "status": "verified",
@@ -24,7 +25,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.edeka.de",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.edeka.de&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "No universal link: www.edeka.de has no apple-app-site-association on Apple's CDN and no asset links."
+      "note": "No universal link: www.edeka.de has no apple-app-site-association on Apple's CDN and no asset links. Scheme edeka for the app (job 335, Android manifest: apkpure v5.14.1, certificate subject valuephone GmbH, activity MainActivity; the iOS app's Info.plist is not public): edeka is on the launcher MainActivity with app hosts (catalog_overview, ...); edekabeta is a self-scan test scheme and the old 1.3.2 build used edekagpapp."
     },
     {
       "chain": "rewe",
@@ -37,7 +38,8 @@
           "name": "REWE",
           "android": "de.rewe.app.mobile",
           "ios": "714121079",
-          "universalLink": "https://www.rewe.de/shop"
+          "universalLink": "https://www.rewe.de/shop",
+          "scheme": "rewe"
         }
       ],
       "status": "verified",
@@ -48,7 +50,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.rewe.de",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.rewe.de&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "No home path in the AASA; /shop opens the app's shop section."
+      "note": "No home path in the AASA; /shop opens the app's shop section. Scheme rewe for the app (job 335, Android manifest: apkpure v5.21.1, certificate subject REWE Digital GmbH, activity MainActivity; the iOS app's Info.plist is not public): rewe on the launcher MainActivity."
     },
     {
       "chain": "lidl",
@@ -61,7 +63,8 @@
           "name": "Lidl Plus",
           "android": "com.lidl.eci.lidlplus",
           "ios": "1238611143",
-          "universalLink": null
+          "universalLink": "https://app.lidlplus.com/",
+          "scheme": "lidlplus"
         }
       ],
       "status": "verified",
@@ -70,9 +73,10 @@
         "https://itunes.apple.com/lookup?id=1238611143&country=de",
         "https://play.google.com/store/apps/details?id=com.lidl.eci.lidlplus&hl=en&gl=DE",
         "https://app-site-association.cdn-apple.com/a/v1/www.lidl.de",
-        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.lidl.de&relation=delegate_permission/common.handle_all_urls"
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.lidl.de&relation=delegate_permission/common.handle_all_urls",
+        "https://app-site-association.cdn-apple.com/a/v1/app.lidlplus.com"
       ],
-      "note": "One Lidl Plus app for all countries (same iOS id and package everywhere). No universal link: the AASA claims only product, category, flyer, search and /prm/ paths, no home path."
+      "note": "One Lidl Plus app for all countries (same iOS id and package everywhere). Universal link for the app (job 335): app.lidlplus.com's AASA on Apple's CDN claims / for com.lidl.eci.lidl.plus. Scheme lidlplus for the app (job 335, Android manifest: apkpure v17.14.7, certificate subject Lidl E-Commerce International GmbH & Co. KG, activity StandardLauncher; the iOS app's Info.plist is not public): Ambiguous: lidlplus is on the launcher activities (StandardLauncher, MourningLauncher); lidlplus-app sits on AppLinkingActivity and com.lidlplus.app is the OAuth redirect; Lidl's web pages deep-link via https://lidlplus.com through Adjust, no scheme."
     },
     {
       "chain": "aldi-sued",
@@ -88,7 +92,8 @@
           "name": "ALDI SÜD",
           "android": "de.apptiv.business.android.aldi_de",
           "ios": "379054402",
-          "universalLink": "https://www.aldi-sued.de/homescreen"
+          "universalLink": "https://www.aldi-sued.de/homescreen",
+          "scheme": null
         }
       ],
       "status": "verified",
@@ -99,7 +104,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.aldi-sued.de",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.aldi-sued.de&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "ALDI SÜD (ALDI International Services) app; iOS bundle de.bjoerndemming.aldisued. /homescreen opens the app home."
+      "note": "ALDI SÜD (ALDI International Services) app; iOS bundle de.bjoerndemming.aldisued. /homescreen opens the app home. No scheme for the app (job 335): Only aldi-de, on AuthRedirectHandlerActivity with host callback: an OAuth redirect, not a launch scheme."
     },
     {
       "chain": "aldi-nord",
@@ -114,7 +119,8 @@
           "name": "ALDI Nord",
           "android": "de.aldiNord.android",
           "ios": "543651999",
-          "universalLink": "https://www.aldi-nord.de/app-only/dashboard.html"
+          "universalLink": "https://www.aldi-nord.de/app-only/dashboard.html",
+          "scheme": null
         }
       ],
       "status": "verified",
@@ -125,7 +131,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.aldi-nord.de",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.aldi-nord.de&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "ALDI Nord (ALDI Einkauf) app. /app-only/dashboard.html is claimed for the app and names its dashboard."
+      "note": "ALDI Nord (ALDI Einkauf) app. /app-only/dashboard.html is claimed for the app and names its dashboard. No scheme for the app (job 335): aldinord is declared by all four ALDI Nord country apps, so iOS could open another country's app; the universal link opens this one."
     },
     {
       "chain": "kaufland",
@@ -138,7 +144,8 @@
           "name": "Kaufland",
           "android": "com.kaufland.Kaufland",
           "ios": "1087780386",
-          "universalLink": null
+          "universalLink": null,
+          "scheme": "com.kaufland.iosapp"
         }
       ],
       "status": "verified",
@@ -149,7 +156,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.kaufland.de",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.kaufland.de&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "Same app as Kaufland PL. No universal link: the AASA claims only URLs carrying ivy_redirect=true (a redirect marker), no plain home path."
+      "note": "Same app as Kaufland PL. No universal link: the AASA claims only URLs carrying ivy_redirect=true (a redirect marker), no plain home path. Scheme com.kaufland.iosapp for the app (job 335): the iOS app's bundle id, which the Android app's AcceptInvitationActivity accepts as a scheme for invites from iPhones (apkpure, certificate subject Kaufland Informationssysteme); com.kaufland.corpapp on the Android launcher is not it."
     },
     {
       "chain": "netto-md",
@@ -165,7 +172,8 @@
           "name": "Netto",
           "android": "com.valuephone.vpnetto",
           "ios": "379404334",
-          "universalLink": null
+          "universalLink": "https://app.netto-online.de/",
+          "scheme": "netto-app"
         }
       ],
       "status": "verified",
@@ -174,9 +182,10 @@
         "https://itunes.apple.com/lookup?id=379404334&country=de",
         "https://play.google.com/store/apps/details?id=com.valuephone.vpnetto&hl=en&gl=DE",
         "https://app-site-association.cdn-apple.com/a/v1/www.netto-online.de",
-        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.netto-online.de&relation=delegate_permission/common.handle_all_urls"
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.netto-online.de&relation=delegate_permission/common.handle_all_urls",
+        "https://app-site-association.cdn-apple.com/a/v1/app.netto-online.de"
       ],
-      "note": "No universal link: www.netto-online.de has no AASA on Apple's CDN and no asset links."
+      "note": "Universal link for the app (job 335): app.netto-online.de's AASA on Apple's CDN claims / for com.valuephone.nettoOfferFinder. Scheme netto-app for the app (job 335, Android manifest: apkpure v9.3.0, certificate subject valuephone GmbH, activity MainActivity; the iOS app's Info.plist is not public): Ambiguous: netto and netto-app both on the launcher MainActivity; netto is also the AppAuth redirect, so netto-app picked."
     },
     {
       "chain": "penny",
@@ -189,7 +198,8 @@
           "name": "PENNY",
           "android": "de.penny.app",
           "ios": "1096204041",
-          "universalLink": null
+          "universalLink": "https://www.penny.de/app/",
+          "scheme": "penny"
         }
       ],
       "status": "verified",
@@ -200,7 +210,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.penny.de",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.penny.de&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "PENNY Germany app; PENNY Austria is a different app. No universal link: the AASA claims /app/*, /angebote/ and /markt, none documented as the app home."
+      "note": "PENNY Germany app; PENNY Austria is a different app. Universal link for the app (job 335): www.penny.de's AASA on Apple's CDN claims /app/ for de.penny.ios.app. Scheme penny for the app (job 335, Android manifest: apkpure v2036-83310, certificate subject Google Inc., activity MainActivity; the iOS app's Info.plist is not public): penny on the launcher MainActivity; penny-auth is the login redirect."
     },
     {
       "chain": "dm",
@@ -213,7 +223,8 @@
           "name": "Mein dm",
           "android": "de.dm.meindm.android",
           "ios": "1186271926",
-          "universalLink": null
+          "universalLink": "https://www.dm.de/applink/",
+          "scheme": "dm"
         }
       ],
       "status": "verified",
@@ -222,9 +233,10 @@
         "https://itunes.apple.com/lookup?id=1186271926&country=de",
         "https://play.google.com/store/apps/details?id=de.dm.meindm.android&hl=en&gl=DE",
         "https://app-site-association.cdn-apple.com/a/v1/www.dm.de",
-        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.dm.de&relation=delegate_permission/common.handle_all_urls"
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.dm.de&relation=delegate_permission/common.handle_all_urls",
+        "https://www.dm.at/ (href dm://couponslist, rendered with iPhone 13 UA)"
       ],
-      "note": "Mein dm, the same app in DE and AT. No universal link: the AASA claims only /applink/* and /p/d/* (product pages)."
+      "note": "Mein dm, the same app in DE and AT. Universal link for the app (job 335): www.dm.de's AASA on Apple's CDN claims /applink/ for de.dm.meindm. Scheme dm for the app (job 335, iOS evidence): dm.at (rendered as iPhone) links dm://couponslist and an Adjust deep_link=dm://couponslist; the Android launcher StartActivity declares dm too."
     },
     {
       "chain": "rossmann",
@@ -237,7 +249,8 @@
           "name": "Rossmann",
           "android": "de.rossmann.app.android",
           "ios": "1034309353",
-          "universalLink": null
+          "universalLink": null,
+          "scheme": "rossmann"
         }
       ],
       "status": "verified",
@@ -248,7 +261,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.rossmann.de",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.rossmann.de&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "Rossmann Germany app; Rossmann PL is a different app. No universal link: the AASA lists three legacy paths without a leading slash and no asset links."
+      "note": "Rossmann Germany app; Rossmann PL is a different app. No universal link: the AASA lists three legacy paths without a leading slash and no asset links. Scheme rossmann for the app (job 335, Android manifest: apkpure v5.11.1, certificate subject Dirk Rossmann GmbH, activity SplashScreen; the iOS app's Info.plist is not public): rossmann on the launcher SplashScreen; rossmannlegals is a legal-notes screen scheme."
     },
     {
       "chain": "billa",
@@ -261,13 +274,15 @@
           "name": "BILLA",
           "android": "at.billa.service",
           "ios": "378479081",
-          "universalLink": null
+          "universalLink": null,
+          "scheme": "billaaustria"
         },
         {
           "name": "jö Bonus Club",
           "android": "at.joeclub.app.joecard",
           "ios": "1456364903",
-          "universalLink": null
+          "universalLink": "https://www.joe-club.at/ul/home",
+          "scheme": "joeclub"
         }
       ],
       "status": "verified",
@@ -279,9 +294,10 @@
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.billa.at&relation=delegate_permission/common.handle_all_urls",
         "https://www.billa.at/",
         "https://itunes.apple.com/lookup?id=1456364903&country=at",
-        "https://play.google.com/store/apps/details?id=at.joeclub.app.joecard"
+        "https://play.google.com/store/apps/details?id=at.joeclub.app.joecard",
+        "https://app-site-association.cdn-apple.com/a/v1/www.joe-club.at"
       ],
-      "note": "billa.at links exactly the BILLA pair. Second app: the jö Bonus Club loyalty app (REWE group AT). Mein BILLA (at.billa.mapp) has no iOS app found and BILLA Scan & Go (iOS 1459386248) no Android one, so neither is listed. No universal link: no AASA on www.billa.at."
+      "note": "billa.at links exactly the BILLA pair. Second app: the jö Bonus Club loyalty app (REWE group AT). Mein BILLA (at.billa.mapp) has no iOS app found and BILLA Scan & Go (iOS 1459386248) no Android one, so neither is listed. Scheme billaaustria for BILLA (job 335, Android manifest: apkpure v26.43.0-1008259, certificate subject BILLA AG, activity MainActivity; the iOS app's Info.plist is not public): billaaustria on the launcher MainActivity; the rest are Klarna SDK schemes. Universal link for jö Bonus Club (job 335): www.joe-club.at's AASA on Apple's CDN claims /ul/home for at.joeclub.app. Scheme joeclub for jö Bonus Club (job 335, Android manifest: apkpure:https://d.apkpure.net/b/XAPK/at.joeclub.app.joecard?version=latest v5.4.1-1004279 signer L = Vienns activity .onboarding.Dispatcher; the iOS app's Info.plist is not public): Ambiguous: joeclub and joeclub-bc both on the launcher Dispatcher; joeclub picked as the plain brand scheme."
     },
     {
       "chain": "spar-at",
@@ -297,7 +313,8 @@
           "name": "SPAR",
           "android": "at.spar.app",
           "ios": "6448124258",
-          "universalLink": null
+          "universalLink": "https://www.spar.at/app/link/",
+          "scheme": null
         }
       ],
       "status": "verified",
@@ -308,7 +325,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.spar.at",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.spar.at&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "SPAR Österreich's own app; SPAR Croatia (hr.spar.app) and Slovenia (si.spar.plus) are separate apps. No universal link: the AASA claims only /app/link/* and /produktwelt/app/*."
+      "note": "SPAR Österreich's own app; SPAR Croatia (hr.spar.app) and Slovenia (si.spar.plus) are separate apps. Universal link for the app (job 335): www.spar.at's AASA on Apple's CDN claims /app/link/ for at.spar.mobile.spar-app. No scheme for the app (job 335): No APK on apkpure, Aptoide or APKMirror and no scheme on spar.at, so no evidence."
     },
     {
       "chain": "aldi-sued",
@@ -323,13 +340,15 @@
           "name": "HOFER",
           "android": "de.apptiv.business.android.aldi_at",
           "ios": "395677652",
-          "universalLink": "https://www.hofer.at/homescreen"
+          "universalLink": "https://www.hofer.at/homescreen",
+          "scheme": null
         },
         {
           "name": "Unser HOFER",
           "android": "com.hofer.unserhofer.android",
           "ios": "1529571062",
-          "universalLink": null
+          "universalLink": null,
+          "scheme": "staffbase-hofer"
         }
       ],
       "status": "verified",
@@ -342,7 +361,7 @@
         "https://itunes.apple.com/lookup?id=1529571062&country=at",
         "https://play.google.com/store/apps/details?id=com.hofer.unserhofer.android"
       ],
-      "note": "Hofer is ALDI SÜD in Austria with its own app (bundle com.aldisued.HoferAT), not the German ALDI SÜD app. Second app: Unser HOFER (iOS bundle at.hofer.unserhofer.at)."
+      "note": "Hofer is ALDI SÜD in Austria with its own app (bundle com.aldisued.HoferAT), not the German ALDI SÜD app. Second app: Unser HOFER (iOS bundle at.hofer.unserhofer.at). No scheme for HOFER (job 335): Only aldi-at, on AuthRedirectHandlerActivity with host callback: an OAuth redirect, not a launch scheme. Scheme staffbase-hofer for Unser HOFER (job 335, Android manifest: apkpure v2026.3.289403619, certificate subject mitarbeiterapp.de, activity MainActivity; the iOS app's Info.plist is not public): Ambiguous Staffbase employee app: staffbase-hofer and hofer-staffbase on MainActivity; first picked, generic staffbase avoided."
     },
     {
       "chain": "lidl",
@@ -355,7 +374,8 @@
           "name": "Lidl Plus",
           "android": "com.lidl.eci.lidlplus",
           "ios": "1238611143",
-          "universalLink": null
+          "universalLink": "https://app.lidlplus.com/",
+          "scheme": "lidlplus"
         }
       ],
       "status": "verified",
@@ -364,9 +384,10 @@
         "https://itunes.apple.com/lookup?id=1238611143&country=at",
         "https://play.google.com/store/apps/details?id=com.lidl.eci.lidlplus&hl=en&gl=AT",
         "https://app-site-association.cdn-apple.com/a/v1/www.lidl.at",
-        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.lidl.at&relation=delegate_permission/common.handle_all_urls"
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.lidl.at&relation=delegate_permission/common.handle_all_urls",
+        "https://app-site-association.cdn-apple.com/a/v1/app.lidlplus.com"
       ],
-      "note": "Same Lidl Plus app as DE. www.lidl.at claims only /prm/* and has no asset links."
+      "note": "Same Lidl Plus app as DE. www.lidl.at claims only /prm/* and has no asset links. Universal link for the app (job 335): app.lidlplus.com's AASA on Apple's CDN claims / for com.lidl.eci.lidl.plus. Scheme lidlplus for the app (job 335, Android manifest: apkpure v17.14.7, certificate subject Lidl E-Commerce International GmbH & Co. KG, activity StandardLauncher; the iOS app's Info.plist is not public): Ambiguous: lidlplus is on the launcher activities (StandardLauncher, MourningLauncher); lidlplus-app sits on AppLinkingActivity and com.lidlplus.app is the OAuth redirect; Lidl's web pages deep-link via https://lidlplus.com through Adjust, no scheme."
     },
     {
       "chain": "penny",
@@ -379,7 +400,8 @@
           "name": "PENNY",
           "android": "at.penny.app",
           "ios": "1176990925",
-          "universalLink": null
+          "universalLink": "https://www.penny.at/unser-penny/app-direkt/",
+          "scheme": "pennyaustria"
         }
       ],
       "status": "verified",
@@ -390,7 +412,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.penny.at",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.penny.at&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "PENNY Österreich, a different app from PENNY DE. No universal link: the AASA claims only /unser-penny/app-store/* and /unser-penny/app-direkt/*."
+      "note": "PENNY Österreich, a different app from PENNY DE. Universal link for the app (job 335): www.penny.at's AASA on Apple's CDN claims /unser-penny/app-direkt/ for penny.app.at. Scheme pennyaustria for the app (job 335, Android manifest: apkpure v26.43.0-1008259, certificate subject Google Inc., activity MainActivity; the iOS app's Info.plist is not public): pennyaustria on the launcher MainActivity."
     },
     {
       "chain": "mpreis",
@@ -403,7 +425,8 @@
           "name": "MPREIS",
           "android": "at.mpreis.app",
           "ios": "6462646115",
-          "universalLink": null
+          "universalLink": null,
+          "scheme": "mpreis"
         }
       ],
       "status": "verified",
@@ -415,7 +438,7 @@
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.mpreis.at&relation=delegate_permission/common.handle_all_urls",
         "https://www.mpreis.at/"
       ],
-      "note": "mpreis.at links exactly this pair. No universal link: no AASA on www.mpreis.at."
+      "note": "mpreis.at links exactly this pair. No universal link: no AASA on www.mpreis.at. Scheme mpreis for the app (job 335, Android manifest: apkpure v1.9.0, certificate subject Google Inc., activity MainActivity; the iOS app's Info.plist is not public): mpreis on MainActivity (Expo app; exp+mpreis is Expo's dev-client scheme)."
     },
     {
       "chain": "dm",
@@ -428,7 +451,8 @@
           "name": "Mein dm",
           "android": "de.dm.meindm.android",
           "ios": "1186271926",
-          "universalLink": null
+          "universalLink": "https://www.dm.at/applink/",
+          "scheme": "dm"
         }
       ],
       "status": "verified",
@@ -437,9 +461,10 @@
         "https://itunes.apple.com/lookup?id=1186271926&country=at",
         "https://play.google.com/store/apps/details?id=de.dm.meindm.android&hl=en&gl=AT",
         "https://app-site-association.cdn-apple.com/a/v1/www.dm.at",
-        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.dm.at&relation=delegate_permission/common.handle_all_urls"
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.dm.at&relation=delegate_permission/common.handle_all_urls",
+        "https://www.dm.at/ (href dm://couponslist, rendered with iPhone 13 UA)"
       ],
-      "note": "Same Mein dm app as DE; www.dm.at lists the same appID and package. No home path claimed."
+      "note": "Same Mein dm app as DE; www.dm.at lists the same appID and package. No home path claimed. Universal link for the app (job 335): www.dm.at's AASA on Apple's CDN claims /applink/ for de.dm.meindm. Scheme dm for the app (job 335, iOS evidence): dm.at (rendered as iPhone) links dm://couponslist and an Adjust deep_link=dm://couponslist; the Android launcher StartActivity declares dm too."
     },
     {
       "chain": "migros",
@@ -452,7 +477,8 @@
           "name": "Migros",
           "android": "ch.migros.app",
           "ios": "412845300",
-          "universalLink": "https://www.migros.ch/?universal_link=true"
+          "universalLink": "https://www.migros.ch/?universal_link=true",
+          "scheme": "migros"
         }
       ],
       "status": "verified",
@@ -463,7 +489,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.migros.ch",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.migros.ch&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "iOS bundle ch.migros.m-go, Android ch.migros.app. The AASA claims any path with universal_link=true, so the site root with that flag opens the app. It also claims /list/* (shopping lists)."
+      "note": "iOS bundle ch.migros.m-go, Android ch.migros.app. The AASA claims any path with universal_link=true, so the site root with that flag opens the app. It also claims /list/* (shopping lists). Scheme migros for the app (job 335, Android manifest: apkpure v2026.46.0, certificate subject Migros-Genossenschafts-Bund, activity MainActivity; the iOS app's Info.plist is not public): migros on MainActivity with app hosts (account.app, coupon.app, ...); ch.migros.app.dtsdk is the Datatrans payment SDK."
     },
     {
       "chain": "coop-ch",
@@ -476,13 +502,15 @@
           "name": "Coop",
           "android": "ch.coop.coopapp",
           "ios": "1459076427",
-          "universalLink": null
+          "universalLink": "https://www.coop.ch/",
+          "scheme": "coopch"
         },
         {
           "name": "Supercard",
           "android": "ch.coop.supercard",
           "ios": "397533053",
-          "universalLink": null
+          "universalLink": null,
+          "scheme": "ch.coop.supercard"
         }
       ],
       "status": "verified",
@@ -495,7 +523,7 @@
         "https://itunes.apple.com/lookup?id=397533053&country=ch",
         "https://play.google.com/store/apps/details?id=ch.coop.supercard"
       ],
-      "note": "Coop Switzerland (Coop Genossenschaft), unrelated to Coop Italia. Second app: Supercard, Coop's loyalty card. passabene is not listed. No universal link chosen: the AASA starts with a bare \"#*\" component, so whether the root is claimed depends on fragment matching."
+      "note": "Coop Switzerland (Coop Genossenschaft), unrelated to Coop Italia. Second app: Supercard, Coop's loyalty card. passabene is not listed. Universal link for Coop (job 335): www.coop.ch's AASA on Apple's CDN claims / for ch.coop.coopapp. Scheme coopch for Coop (job 335, Android manifest: apkpure v1.19.0, certificate subject Google Inc., activity MainActivity; the iOS app's Info.plist is not public): Ambiguous: coopch and ch.coop.coopapp both on the launcher MainActivity; ch.coop.coopapp doubles as the AppAuth redirect, so coopch picked. Scheme ch.coop.supercard for Supercard (job 335, Android manifest: apkpure v6.13.1, certificate subject coop, activity MainActivity; the iOS app's Info.plist is not public): Only candidate ch.coop.supercard is on the launcher MainActivity but is also the AppAuth redirect scheme (reversed package id)."
     },
     {
       "chain": "lidl",
@@ -508,7 +536,8 @@
           "name": "Lidl Plus",
           "android": "com.lidl.eci.lidlplus",
           "ios": "1238611143",
-          "universalLink": null
+          "universalLink": "https://app.lidlplus.com/",
+          "scheme": "lidlplus"
         }
       ],
       "status": "verified",
@@ -517,9 +546,10 @@
         "https://itunes.apple.com/lookup?id=1238611143&country=ch",
         "https://play.google.com/store/apps/details?id=com.lidl.eci.lidlplus&hl=en&gl=CH",
         "https://app-site-association.cdn-apple.com/a/v1/www.lidl.ch",
-        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.lidl.ch&relation=delegate_permission/common.handle_all_urls"
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.lidl.ch&relation=delegate_permission/common.handle_all_urls",
+        "https://app-site-association.cdn-apple.com/a/v1/app.lidlplus.com"
       ],
-      "note": "Same Lidl Plus app as DE. www.lidl.ch claims only /prm/* and has no asset links."
+      "note": "Same Lidl Plus app as DE. www.lidl.ch claims only /prm/* and has no asset links. Universal link for the app (job 335): app.lidlplus.com's AASA on Apple's CDN claims / for com.lidl.eci.lidl.plus. Scheme lidlplus for the app (job 335, Android manifest: apkpure v17.14.7, certificate subject Lidl E-Commerce International GmbH & Co. KG, activity StandardLauncher; the iOS app's Info.plist is not public): Ambiguous: lidlplus is on the launcher activities (StandardLauncher, MourningLauncher); lidlplus-app sits on AppLinkingActivity and com.lidlplus.app is the OAuth redirect; Lidl's web pages deep-link via https://lidlplus.com through Adjust, no scheme."
     },
     {
       "chain": "aldi-sued",
@@ -534,7 +564,8 @@
           "name": "ALDI SUISSE",
           "android": "de.apptiv.business.android.aldi_ch",
           "ios": "396867163",
-          "universalLink": "https://www.aldi-suisse.ch/de/homescreen"
+          "universalLink": "https://www.aldi-suisse.ch/de/homescreen",
+          "scheme": null
         }
       ],
       "status": "verified",
@@ -545,7 +576,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.aldi-suisse.ch",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.aldi-suisse.ch&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "ALDI SÜD group, own Swiss app (bundle com.aldisued.AldiSuisse). /de/, /fr/ and /it/homescreen are all claimed."
+      "note": "ALDI SÜD group, own Swiss app (bundle com.aldisued.AldiSuisse). /de/, /fr/ and /it/homescreen are all claimed. No scheme for the app (job 335): Only aldi-ch, on AuthRedirectHandlerActivity with host callback: an OAuth redirect, not a launch scheme."
     },
     {
       "chain": "denner",
@@ -558,7 +589,8 @@
           "name": "Denner",
           "android": "ch.denner",
           "ios": "534175822",
-          "universalLink": null
+          "universalLink": "https://www.denner.ch/de/services/app/deeplink",
+          "scheme": "dennermobile"
         }
       ],
       "status": "verified",
@@ -569,7 +601,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.denner.ch",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.denner.ch&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "Denner (Migros group) has its own app. No universal link: the AASA claims only /*/services/app/deeplink*."
+      "note": "Denner (Migros group) has its own app. Universal link for the app (job 335): www.denner.ch's AASA on Apple's CDN claims /de/services/app/deeplink for ch.denner.mobile.Denner. Scheme dennermobile for the app (job 335, Android manifest: apkpure v6.3.1, certificate subject Denner AG, activity MainActivity; the iOS app's Info.plist is not public): dennermobile on the launcher MainActivity (also used by the AppAuth redirect)."
     },
     {
       "chain": "lidl",
@@ -582,7 +614,8 @@
           "name": "Lidl Plus",
           "android": "com.lidl.eci.lidlplus",
           "ios": "1238611143",
-          "universalLink": null
+          "universalLink": "https://app.lidlplus.com/",
+          "scheme": "lidlplus"
         }
       ],
       "status": "verified",
@@ -591,9 +624,10 @@
         "https://itunes.apple.com/lookup?id=1238611143&country=fr",
         "https://play.google.com/store/apps/details?id=com.lidl.eci.lidlplus&hl=en&gl=FR",
         "https://app-site-association.cdn-apple.com/a/v1/www.lidl.fr",
-        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.lidl.fr&relation=delegate_permission/common.handle_all_urls"
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.lidl.fr&relation=delegate_permission/common.handle_all_urls",
+        "https://app-site-association.cdn-apple.com/a/v1/app.lidlplus.com"
       ],
-      "note": "Same Lidl Plus app as DE. No home path claimed."
+      "note": "Same Lidl Plus app as DE. No home path claimed. Universal link for the app (job 335): app.lidlplus.com's AASA on Apple's CDN claims / for com.lidl.eci.lidl.plus. Scheme lidlplus for the app (job 335, Android manifest: apkpure v17.14.7, certificate subject Lidl E-Commerce International GmbH & Co. KG, activity StandardLauncher; the iOS app's Info.plist is not public): Ambiguous: lidlplus is on the launcher activities (StandardLauncher, MourningLauncher); lidlplus-app sits on AppLinkingActivity and com.lidlplus.app is the OAuth redirect; Lidl's web pages deep-link via https://lidlplus.com through Adjust, no scheme."
     },
     {
       "chain": "carrefour",
@@ -606,7 +640,8 @@
           "name": "Carrefour",
           "android": "com.carrefour.fid.android",
           "ios": "378305156",
-          "universalLink": "https://www.carrefour.fr/"
+          "universalLink": "https://www.carrefour.fr/",
+          "scheme": "fr.carrefour"
         }
       ],
       "status": "verified",
@@ -617,7 +652,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.carrefour.fr",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.carrefour.fr&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "Carrefour & sa carte Club (Carrefour Groupe). Carrefour PL, IT and ES each have their own app. The AASA claims \"/\" for this app."
+      "note": "Carrefour & sa carte Club (Carrefour Groupe). Carrefour PL, IT and ES each have their own app. The AASA claims \"/\" for this app. Scheme fr.carrefour for the app (job 335, Android manifest: apkpure v23.9.4, certificate subject Carrefour, activity BottomNavActivity; the iOS app's Info.plist is not public): fr.carrefour on BottomNavActivity; fr.carrefourconnect is the OAuth redirect."
     },
     {
       "chain": "leclerc",
@@ -632,13 +667,15 @@
           "name": "E.Leclerc",
           "android": "com.infomil.bill",
           "ios": "756693888",
-          "universalLink": null
+          "universalLink": null,
+          "scheme": null
         },
         {
           "name": "Leclerc DRIVE",
           "android": "com.infomil.leclercdrive",
           "ios": "387709274",
-          "universalLink": null
+          "universalLink": null,
+          "scheme": "leclercdrive"
         }
       ],
       "status": "verified",
@@ -651,7 +688,7 @@
         "https://itunes.apple.com/lookup?id=387709274&country=fr",
         "https://play.google.com/store/apps/details?id=com.infomil.leclercdrive"
       ],
-      "note": "Mon E.Leclerc (Infomil). Second app: Leclerc DRIVE. No universal link: no AASA on www.e.leclerc."
+      "note": "Mon E.Leclerc (Infomil). Second app: Leclerc DRIVE. No universal link: no AASA on www.e.leclerc. No scheme for E.Leclerc (job 335): Current 11.0.2 manifest has only https app links; an old 4.5.6 build had leclercheyo, which is not evidence for today's app. Scheme leclercdrive for Leclerc DRIVE (job 335, Android manifest: apkpure v30.2.2, certificate subject Google Inc., activity MainActivity; the iOS app's Info.plist is not public): leclercdrive on the launcher MainActivity."
     },
     {
       "chain": "intermarche",
@@ -664,7 +701,8 @@
           "name": "Intermarché",
           "android": "fr.stime.mcommerce",
           "ios": "605305737",
-          "universalLink": "https://www.intermarche.com/accueil"
+          "universalLink": "https://www.intermarche.com/accueil",
+          "scheme": "monintermarche"
         }
       ],
       "status": "verified",
@@ -675,7 +713,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.intermarche.com",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.intermarche.com&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "Les Mousquetaires (STIME). /accueil is the home page and is claimed."
+      "note": "Les Mousquetaires (STIME). /accueil is the home page and is claimed. Scheme monintermarche for the app (job 335, Android manifest: apkpure v10.28.0, certificate subject Les Mousquetaires, activity LinkDispatcherActivity; the iOS app's Info.plist is not public): monintermarche on LinkDispatcherActivity; courbeiso is an address-autocomplete callback."
     },
     {
       "chain": "auchan",
@@ -688,7 +726,8 @@
           "name": "Auchan",
           "android": "com.auchan.android",
           "ios": "393068659",
-          "universalLink": "https://www.auchan.fr/"
+          "universalLink": "https://www.auchan.fr/",
+          "scheme": "myauchan"
         }
       ],
       "status": "verified",
@@ -699,7 +738,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.auchan.fr",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.auchan.fr&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "Auchan France app; Auchan PL and Alcampo ES are different apps. The AASA claims \"*\" after a list of exclusions."
+      "note": "Auchan France app; Auchan PL and Alcampo ES are different apps. The AASA claims \"*\" after a list of exclusions. Scheme myauchan for the app (job 335, Android manifest: apkpure:https://d.apkpure.net/b/XAPK/com.auchan.android?version=latest v14.58.1 signer CN = phoceis activity com.auchan.LaunchActivity; the iOS app's Info.plist is not public): myauchan on the launcher LaunchActivity with app hosts (also the OIDC redirect scheme)."
     },
     {
       "chain": "aldi-nord",
@@ -712,7 +751,8 @@
           "name": "ALDI",
           "android": "fr.aldi.android",
           "ios": "579350544",
-          "universalLink": "https://www.aldi.fr/app-only/dashboard.html"
+          "universalLink": "https://www.aldi.fr/app-only/dashboard.html",
+          "scheme": null
         }
       ],
       "status": "verified",
@@ -723,7 +763,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.aldi.fr",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.aldi.fr&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "ALDI France belongs to ALDI Nord (seller ALDI Einkauf), not ALDI SÜD."
+      "note": "ALDI France belongs to ALDI Nord (seller ALDI Einkauf), not ALDI SÜD. No scheme for the app (job 335): aldinord is declared by all four ALDI Nord country apps, so iOS could open another country's app; the universal link opens this one."
     },
     {
       "chain": "monoprix",
@@ -736,13 +776,15 @@
           "name": "Monoprix",
           "android": "snapp.snappfid.monoprix",
           "ios": "480953369",
-          "universalLink": null
+          "universalLink": null,
+          "scheme": "mmonoprix"
         },
         {
           "name": "Monoprix.fr Courses",
           "android": "fr.monoprix.ocommerce",
           "ios": "1495370014",
-          "universalLink": null
+          "universalLink": null,
+          "scheme": "monoprix-atm"
         }
       ],
       "status": "verified",
@@ -755,7 +797,7 @@
         "https://itunes.apple.com/lookup?id=1495370014&country=fr",
         "https://play.google.com/store/apps/details?id=fr.monoprix.ocommerce"
       ],
-      "note": "M' Monoprix (loyalty). Second app: Monoprix.fr Courses. No universal link: Apple's CDN has no applinks for www.monoprix.fr and no asset links."
+      "note": "M' Monoprix (loyalty). Second app: Monoprix.fr Courses. No universal link: Apple's CDN has no applinks for www.monoprix.fr and no asset links. Scheme mmonoprix for Monoprix (job 335, Android manifest: apkpure v5.8.4, certificate subject Snapp', activity MainActivity; the iOS app's Info.plist is not public): mmonoprix on the launcher MainActivity; reachfive is the identity SDK. Scheme monoprix-atm for Monoprix.fr Courses (job 335, Android manifest: apkpure vv0.484.1, certificate subject Google Inc., activity SplashScreenActivity; the iOS app's Info.plist is not public): monoprix-atm on the launcher SplashScreenActivity (Ocado platform)."
     },
     {
       "chain": "super-u",
@@ -771,13 +813,15 @@
           "name": "Courses U",
           "android": "com.coursesu.app",
           "ios": "557548411",
-          "universalLink": "https://www.coursesu.com/"
+          "universalLink": "https://www.coursesu.com/",
+          "scheme": "coursesu"
         },
         {
           "name": "Mon Magasin U",
           "android": "fr.magasinsu.app",
           "ios": "479847099",
-          "universalLink": null
+          "universalLink": "https://www.magasins-u.com/redirection/",
+          "scheme": "magasinu"
         }
       ],
       "status": "verified",
@@ -788,9 +832,10 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.coursesu.com",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.coursesu.com&relation=delegate_permission/common.handle_all_urls",
         "https://itunes.apple.com/lookup?id=479847099&country=fr",
-        "https://play.google.com/store/apps/details?id=fr.magasinsu.app"
+        "https://play.google.com/store/apps/details?id=fr.magasinsu.app",
+        "https://app-site-association.cdn-apple.com/a/v1/www.magasins-u.com"
       ],
-      "note": "Courses U (shopping and lists, Coopérative U). Second app: the Mon Magasin U loyalty app, whose domain claims only /redirection/*. coursesu.com claims \"/*\"."
+      "note": "Courses U (shopping and lists, Coopérative U). Second app: the Mon Magasin U loyalty app, whose domain claims only /redirection/*. coursesu.com claims \"/*\". Scheme coursesu for Courses U (job 335, Android manifest: apkpure v26.15.0, certificate subject Systeme U Centrale Nationale, activity SplashActivity; the iOS app's Info.plist is not public): coursesu on the launcher SplashActivity; MainActivity's generic deeplink scheme skipped. Universal link for Mon Magasin U (job 335): www.magasins-u.com's AASA on Apple's CDN claims /redirection/ for com.systemeu.magasinsu. Scheme magasinu for Mon Magasin U (job 335, Android manifest: apkpure v5.42.1, certificate subject Snapp', activity MainActivity; the iOS app's Info.plist is not public): magasinu on the launcher MainActivity (old 4.7.5 build had magasinsu)."
     },
     {
       "chain": "albert-heijn",
@@ -803,7 +848,8 @@
           "name": "Albert Heijn",
           "android": "com.icemobile.albertheijn",
           "ios": "327535329",
-          "universalLink": null
+          "universalLink": "https://www.ah.nl/shop",
+          "scheme": "appie"
         }
       ],
       "status": "verified",
@@ -814,7 +860,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.ah.nl",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.ah.nl&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "Appie app. No universal link chosen: the AASA claims about 150 section paths (bonus, favorieten, allerhande) but no home path."
+      "note": "Appie app. Universal link for the app (job 335): www.ah.nl's AASA on Apple's CDN claims /shop for nl.ah.Appie. Scheme appie for the app (job 335, Android manifest: apkpure v9.49.0, certificate subject IceMobile, activity StartActivity; the iOS app's Info.plist is not public): appie on StartActivity."
     },
     {
       "chain": "jumbo",
@@ -827,7 +873,8 @@
           "name": "Jumbo",
           "android": "com.icemobile.jumboclient",
           "ios": "936150402",
-          "universalLink": "https://www.jumbo.com/lijstjes"
+          "universalLink": "https://www.jumbo.com/lijstjes",
+          "scheme": "jumboapp"
         }
       ],
       "status": "verified",
@@ -836,9 +883,10 @@
         "https://itunes.apple.com/lookup?id=936150402&country=nl",
         "https://play.google.com/store/apps/details?id=com.icemobile.jumboclient&hl=en&gl=NL",
         "https://app-site-association.cdn-apple.com/a/v1/www.jumbo.com",
-        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.jumbo.com&relation=delegate_permission/common.handle_all_urls"
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.jumbo.com&relation=delegate_permission/common.handle_all_urls",
+        "https://www.jumbo.com/ (iosDeepLink jumboapp://www.jumbo.com/lijstjes/...)"
       ],
-      "note": "No home path in the AASA; /lijstjes* (lists) is claimed and opens the lists section."
+      "note": "No home path in the AASA; /lijstjes* (lists) is claimed and opens the lists section. Scheme jumboapp for the app (job 335, iOS evidence): jumbo.com serves iosDeepLink values jumboapp://www.jumbo.com/...; the current Android build declares jumbo instead (older 5.4.1 had jumboapp)."
     },
     {
       "chain": "lidl",
@@ -851,7 +899,8 @@
           "name": "Lidl Plus",
           "android": "com.lidl.eci.lidlplus",
           "ios": "1238611143",
-          "universalLink": null
+          "universalLink": "https://app.lidlplus.com/",
+          "scheme": "lidlplus"
         }
       ],
       "status": "verified",
@@ -860,9 +909,10 @@
         "https://itunes.apple.com/lookup?id=1238611143&country=nl",
         "https://play.google.com/store/apps/details?id=com.lidl.eci.lidlplus&hl=en&gl=NL",
         "https://app-site-association.cdn-apple.com/a/v1/www.lidl.nl",
-        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.lidl.nl&relation=delegate_permission/common.handle_all_urls"
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.lidl.nl&relation=delegate_permission/common.handle_all_urls",
+        "https://app-site-association.cdn-apple.com/a/v1/app.lidlplus.com"
       ],
-      "note": "Same Lidl Plus app as DE. No home path claimed."
+      "note": "Same Lidl Plus app as DE. No home path claimed. Universal link for the app (job 335): app.lidlplus.com's AASA on Apple's CDN claims / for com.lidl.eci.lidl.plus. Scheme lidlplus for the app (job 335, Android manifest: apkpure v17.14.7, certificate subject Lidl E-Commerce International GmbH & Co. KG, activity StandardLauncher; the iOS app's Info.plist is not public): Ambiguous: lidlplus is on the launcher activities (StandardLauncher, MourningLauncher); lidlplus-app sits on AppLinkingActivity and com.lidlplus.app is the OAuth redirect; Lidl's web pages deep-link via https://lidlplus.com through Adjust, no scheme."
     },
     {
       "chain": "aldi-nord",
@@ -875,13 +925,15 @@
           "name": "ALDI",
           "android": "nl.aldi.android",
           "ios": "587821440",
-          "universalLink": "https://www.aldi.nl/app-only/dashboard.html"
+          "universalLink": "https://www.aldi.nl/app-only/dashboard.html",
+          "scheme": null
         },
         {
           "name": "ALDI voor jou",
           "android": "com.aldinetherlands.aldivoorjou.android",
           "ios": "1576343529",
-          "universalLink": null
+          "universalLink": null,
+          "scheme": "staffbase-aldinetherlands"
         }
       ],
       "status": "verified",
@@ -894,7 +946,7 @@
         "https://itunes.apple.com/lookup?id=1576343529&country=nl",
         "https://play.google.com/store/apps/details?id=com.aldinetherlands.aldivoorjou.android"
       ],
-      "note": "ALDI Nederland, ALDI Nord group. Second app: ALDI voor jou (ALDI Business Services B.V.)."
+      "note": "ALDI Nederland, ALDI Nord group. Second app: ALDI voor jou (ALDI Business Services B.V.). No scheme for ALDI (job 335): aldinord is declared by all four ALDI Nord country apps, so iOS could open another country's app; the universal link opens this one. Scheme staffbase-aldinetherlands for ALDI voor jou (job 335, Android manifest: apkpure v2026.3.102321735, certificate subject Staffbase GmbH, activity MainActivity; the iOS app's Info.plist is not public): Ambiguous Staffbase employee app: staffbase-aldinetherlands and aldinetherlands-staffbase on MainActivity; first picked, generic staffbase avoided."
     },
     {
       "chain": "plus-nl",
@@ -907,7 +959,8 @@
           "name": "PLUS",
           "android": "com.mobgen.plus",
           "ios": "1078649625",
-          "universalLink": "https://www.plus.nl/"
+          "universalLink": "https://www.plus.nl/",
+          "scheme": "plusapp"
         }
       ],
       "status": "verified",
@@ -918,7 +971,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.plus.nl",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.plus.nl&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "The AASA claims \"/\"."
+      "note": "The AASA claims \"/\". Scheme plusapp for the app (job 335, Android manifest: apkpure:https://d.apkpure.net/b/XAPK/com.mobgen.plus?version=latest v12.6.0 signer CN = PLUS activity nl.plus.app.ui.MainActivity; the iOS app's Info.plist is not public): plusapp on the launcher MainActivity; nl.plus.app carries the auth host."
     },
     {
       "chain": "dirk",
@@ -931,7 +984,8 @@
           "name": "Dirk",
           "android": "nl.dirk.app",
           "ios": "6736762932",
-          "universalLink": null
+          "universalLink": null,
+          "scheme": null
         }
       ],
       "status": "verified",
@@ -942,7 +996,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.dirk.nl",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.dirk.nl&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "Asset links list nl.dirk.app on www.dirk.nl, but its AASA on Apple's CDN declares only an App Clip (appclips), no applinks, so no universal link."
+      "note": "Asset links list nl.dirk.app on www.dirk.nl, but its AASA on Apple's CDN declares only an App Clip (appclips), no applinks, so no universal link. No scheme for the app (job 335): Manifest has only https app links."
     },
     {
       "chain": "kruidvat",
@@ -955,7 +1009,8 @@
           "name": "Kruidvat",
           "android": "nl.kruidvat.voordeelkaart",
           "ios": "531631058",
-          "universalLink": "https://www.kruidvat.nl/kruidvatapp"
+          "universalLink": "https://www.kruidvat.nl/kruidvatapp",
+          "scheme": null
         }
       ],
       "status": "verified",
@@ -966,7 +1021,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.kruidvat.nl",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.kruidvat.nl&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "No home path; /kruidvatapp is the app's own landing path and is claimed. Which screen it opens is unverified."
+      "note": "No home path; /kruidvatapp is the app's own landing path and is claimed. Which screen it opens is unverified. No scheme for the app (job 335): Only SDK schemes (Adyen, OvoLogger, Insider login), no app scheme."
     },
     {
       "chain": "lidl",
@@ -979,7 +1034,8 @@
           "name": "Lidl Plus",
           "android": "com.lidl.eci.lidlplus",
           "ios": "1238611143",
-          "universalLink": null
+          "universalLink": "https://app.lidlplus.com/",
+          "scheme": "lidlplus"
         }
       ],
       "status": "verified",
@@ -988,9 +1044,10 @@
         "https://itunes.apple.com/lookup?id=1238611143&country=pl",
         "https://play.google.com/store/apps/details?id=com.lidl.eci.lidlplus&hl=en&gl=PL",
         "https://app-site-association.cdn-apple.com/a/v1/www.lidl.pl",
-        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.lidl.pl&relation=delegate_permission/common.handle_all_urls"
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.lidl.pl&relation=delegate_permission/common.handle_all_urls",
+        "https://app-site-association.cdn-apple.com/a/v1/app.lidlplus.com"
       ],
-      "note": "Same Lidl Plus app as DE. No home path claimed."
+      "note": "Same Lidl Plus app as DE. No home path claimed. Universal link for the app (job 335): app.lidlplus.com's AASA on Apple's CDN claims / for com.lidl.eci.lidl.plus. Scheme lidlplus for the app (job 335, Android manifest: apkpure v17.14.7, certificate subject Lidl E-Commerce International GmbH & Co. KG, activity StandardLauncher; the iOS app's Info.plist is not public): Ambiguous: lidlplus is on the launcher activities (StandardLauncher, MourningLauncher); lidlplus-app sits on AppLinkingActivity and com.lidlplus.app is the OAuth redirect; Lidl's web pages deep-link via https://lidlplus.com through Adjust, no scheme."
     },
     {
       "chain": "biedronka",
@@ -1003,7 +1060,8 @@
           "name": "Biedronka",
           "android": "pl.jmpolska.clos0.mojabiedronka",
           "ios": "1586839342",
-          "universalLink": null
+          "universalLink": null,
+          "scheme": null
         }
       ],
       "status": "verified",
@@ -1014,7 +1072,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.biedronka.pl",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.biedronka.pl&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "Jeronimo Martins Polska. No universal link: no AASA on www.biedronka.pl."
+      "note": "Jeronimo Martins Polska. No universal link: no AASA on www.biedronka.pl. No scheme for the app (job 335): Only the generic scheme app (host cma20.biedronka.pl) on MainActivity; app:// is not a brand scheme and could open any app."
     },
     {
       "chain": "zabka",
@@ -1027,13 +1085,15 @@
           "name": "Żappka",
           "android": "pl.zabka.apb2c",
           "ios": "1444267322",
-          "universalLink": null
+          "universalLink": null,
+          "scheme": "pl.zabka.apb2c"
         },
         {
           "name": "Żabka Jush",
           "android": "pl.jush.app",
           "ios": "1585639034",
-          "universalLink": null
+          "universalLink": null,
+          "scheme": null
         }
       ],
       "status": "verified",
@@ -1047,7 +1107,7 @@
         "https://itunes.apple.com/lookup?id=1585639034&country=pl",
         "https://play.google.com/store/apps/details?id=pl.jush.app"
       ],
-      "note": "Żappka; zabka.pl links pl.zabka.apb2c. Second app: Żabka Jush delivery. No universal link: no AASA on www.zabka.pl."
+      "note": "Żappka; zabka.pl links pl.zabka.apb2c. Second app: Żabka Jush delivery. No universal link: no AASA on www.zabka.pl. Scheme pl.zabka.apb2c for Żappka (job 335, Android manifest: apkpure:https://d.apkpure.net/b/XAPK/pl.zabka.apb2c?version=latest v4.51.2 signer C = PL activity pl.zabka.app.deeplink.DeepLinkActivity; the iOS app's Info.plist is not public): pl.zabka.apb2c on the app's own DeepLinkActivity (reversed package id, not an SDK activity); iapsdk and nanosdk are in-app SDK screens. No scheme for Żabka Jush (job 335): Only https app links and SDK schemes."
     },
     {
       "chain": "kaufland",
@@ -1060,7 +1120,8 @@
           "name": "Kaufland",
           "android": "com.kaufland.Kaufland",
           "ios": "1087780386",
-          "universalLink": null
+          "universalLink": null,
+          "scheme": "com.kaufland.iosapp"
         }
       ],
       "status": "verified",
@@ -1071,7 +1132,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.kaufland.pl",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.kaufland.pl&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "Same Kaufland app as DE (www.kaufland.pl serves the same AASA and asset links). No plain home path claimed."
+      "note": "Same Kaufland app as DE (www.kaufland.pl serves the same AASA and asset links). No plain home path claimed. Scheme com.kaufland.iosapp for the app (job 335): the iOS app's bundle id, which the Android app's AcceptInvitationActivity accepts as a scheme for invites from iPhones (apkpure, certificate subject Kaufland Informationssysteme); com.kaufland.corpapp on the Android launcher is not it."
     },
     {
       "chain": "carrefour",
@@ -1084,7 +1145,8 @@
           "name": "Carrefour",
           "android": "pl.carrefour.carrefourmobile",
           "ios": "820980454",
-          "universalLink": null
+          "universalLink": null,
+          "scheme": "carrefour"
         }
       ],
       "status": "verified",
@@ -1095,7 +1157,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.carrefour.pl",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.carrefour.pl&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "Mój Carrefour (Carrefour Polska), not the French app. No universal link: no AASA on www.carrefour.pl."
+      "note": "Mój Carrefour (Carrefour Polska), not the French app. No universal link: no AASA on www.carrefour.pl. Scheme carrefour for the app (job 335, Android manifest: apkpure v4.0.36, certificate subject k2, activity MainActivity; the iOS app's Info.plist is not public): carrefour on the launcher MainActivity; Carrefour Italia declares the same scheme, so iOS may open either if both are installed."
     },
     {
       "chain": "auchan",
@@ -1108,7 +1170,8 @@
           "name": "Auchan Zakupy Online",
           "android": "com.auchan.mobile.android",
           "ios": "6752720718",
-          "universalLink": null
+          "universalLink": null,
+          "scheme": "auchan-pl-atm"
         }
       ],
       "status": "verified",
@@ -1119,7 +1182,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.auchan.pl",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.auchan.pl&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "Auchan Polska online shop app. Alternative: \"Auchan Retail Shopping\" (iOS 1450287430, the same iOS app is \"Club Alcampo\" in ES; likely Android com.auchan.smi). No universal link: Apple's CDN has no applinks for www.auchan.pl."
+      "note": "Auchan Polska online shop app. Alternative: \"Auchan Retail Shopping\" (iOS 1450287430, the same iOS app is \"Club Alcampo\" in ES; likely Android com.auchan.smi). No universal link: Apple's CDN has no applinks for www.auchan.pl. Scheme auchan-pl-atm for the app (job 335, Android manifest: apkpure vv0.483.3, certificate subject Google Inc., activity SsoDeepLinkHandlerActivity; the iOS app's Info.plist is not public): auchan-pl-atm on the launcher SplashScreenActivity (Ocado platform)."
     },
     {
       "chain": "dino",
@@ -1148,7 +1211,8 @@
           "name": "Rossmann PL",
           "android": "pl.com.rossmann.centauros",
           "ios": "791525539",
-          "universalLink": "https://www.rossmann.pl/"
+          "universalLink": "https://www.rossmann.pl/",
+          "scheme": "ross"
         }
       ],
       "status": "verified",
@@ -1159,7 +1223,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.rossmann.pl",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.rossmann.pl&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "Rossmann Poland's own app, not the German one. www.rossmann.pl claims \"/\" and lists the package in asset links."
+      "note": "Rossmann Poland's own app, not the German one. www.rossmann.pl claims \"/\" and lists the package in asset links. Scheme ross for the app (job 335, Android manifest: apkpure v5.115.0, certificate subject Rossmann SDP sp. z o. o., activity DeepLinkingActivity; the iOS app's Info.plist is not public): ross on DeepLinkingActivity."
     },
     {
       "chain": "esselunga",
@@ -1172,13 +1236,15 @@
           "name": "Esselunga",
           "android": "it.esselunga.mobile",
           "ios": "472618543",
-          "universalLink": null
+          "universalLink": null,
+          "scheme": null
         },
         {
           "name": "Esselunga OnLine",
           "android": "it.esselunga.mobile.ecommerce",
           "ios": "1276117735",
-          "universalLink": null
+          "universalLink": null,
+          "scheme": "esselungaecom"
         }
       ],
       "status": "verified",
@@ -1192,7 +1258,7 @@
         "https://itunes.apple.com/lookup?id=1276117735&country=it",
         "https://play.google.com/store/apps/details?id=it.esselunga.mobile.ecommerce"
       ],
-      "note": "esselunga.it links both this app and the second one, Esselunga OnLine. No universal link: no AASA on www.esselunga.it."
+      "note": "esselunga.it links both this app and the second one, Esselunga OnLine. No universal link: no AASA on www.esselunga.it. No scheme for Esselunga (job 335): only an old 4.0.7 build declares esselungaist, the current one none. Scheme esselungaecom for Esselunga OnLine (job 335, Android manifest: apkpure v3.1.1, certificate subject Esselunga SpA, activity EcommerceSplashActivity; the iOS app's Info.plist is not public): esselungaecom on the launcher EcommerceSplashActivity."
     },
     {
       "chain": "conad",
@@ -1205,7 +1271,8 @@
           "name": "HeyConad",
           "android": "it.conad.mobileapp",
           "ios": "1462756725",
-          "universalLink": "https://www.conad.it/app-internal/home_page"
+          "universalLink": "https://www.conad.it/app-internal/home_page",
+          "scheme": null
         }
       ],
       "status": "verified",
@@ -1216,7 +1283,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.conad.it",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.conad.it&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "/app-internal/home_page is claimed and names the app home."
+      "note": "/app-internal/home_page is claimed and names the app home. No scheme for the app (job 335): No APK on apkpure, Aptoide or APKMirror and no scheme on conad.it, so no evidence."
     },
     {
       "chain": "coop-it",
@@ -1229,7 +1296,8 @@
           "name": "Coop",
           "android": "com.coopitalia.iCoopNew",
           "ios": "1514101765",
-          "universalLink": null
+          "universalLink": null,
+          "scheme": "coopitalia"
         }
       ],
       "status": "verified",
@@ -1240,7 +1308,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.e-coop.it",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.e-coop.it&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "Coop Italia, unrelated to Coop Switzerland. Regional cooperatives (Unicoop Firenze) have more apps. No universal link: no AASA on www.e-coop.it."
+      "note": "Coop Italia, unrelated to Coop Switzerland. Regional cooperatives (Unicoop Firenze) have more apps. No universal link: no AASA on www.e-coop.it. Scheme coopitalia for the app (job 335, Android manifest: apkpure v3.16.0, certificate subject Coop, activity RootActivity; the iOS app's Info.plist is not public): coopitalia on the launcher RootActivity."
     },
     {
       "chain": "lidl",
@@ -1253,7 +1321,8 @@
           "name": "Lidl Plus",
           "android": "com.lidl.eci.lidlplus",
           "ios": "1238611143",
-          "universalLink": null
+          "universalLink": "https://app.lidlplus.com/",
+          "scheme": "lidlplus"
         }
       ],
       "status": "verified",
@@ -1262,9 +1331,10 @@
         "https://itunes.apple.com/lookup?id=1238611143&country=it",
         "https://play.google.com/store/apps/details?id=com.lidl.eci.lidlplus&hl=en&gl=IT",
         "https://app-site-association.cdn-apple.com/a/v1/www.lidl.it",
-        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.lidl.it&relation=delegate_permission/common.handle_all_urls"
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.lidl.it&relation=delegate_permission/common.handle_all_urls",
+        "https://app-site-association.cdn-apple.com/a/v1/app.lidlplus.com"
       ],
-      "note": "Same Lidl Plus app as DE. www.lidl.it claims only /prm/* and has no asset links."
+      "note": "Same Lidl Plus app as DE. www.lidl.it claims only /prm/* and has no asset links. Universal link for the app (job 335): app.lidlplus.com's AASA on Apple's CDN claims / for com.lidl.eci.lidl.plus. Scheme lidlplus for the app (job 335, Android manifest: apkpure v17.14.7, certificate subject Lidl E-Commerce International GmbH & Co. KG, activity StandardLauncher; the iOS app's Info.plist is not public): Ambiguous: lidlplus is on the launcher activities (StandardLauncher, MourningLauncher); lidlplus-app sits on AppLinkingActivity and com.lidlplus.app is the OAuth redirect; Lidl's web pages deep-link via https://lidlplus.com through Adjust, no scheme."
     },
     {
       "chain": "carrefour",
@@ -1277,7 +1347,8 @@
           "name": "Carrefour Italia",
           "android": "it.carrefour.mycarrefour",
           "ios": "1496016087",
-          "universalLink": "https://www.carrefour.it/app-carrefour.html"
+          "universalLink": "https://www.carrefour.it/app-carrefour.html",
+          "scheme": "mycarrefour"
         }
       ],
       "status": "verified",
@@ -1288,7 +1359,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.carrefour.it",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.carrefour.it&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "Carrefour Italia (GS SpA), its own app. No home path; /app-carrefour.html is the app landing page and is claimed. Which screen it opens is unverified."
+      "note": "Carrefour Italia (GS SpA), its own app. No home path; /app-carrefour.html is the app landing page and is claimed. Which screen it opens is unverified. Scheme mycarrefour for the app (job 335, Android manifest: apkpure v4.18.1-prod, certificate subject GS SPA, activity MainActivity; the iOS app's Info.plist is not public): Ambiguous: carrefour and mycarrefour both on the launcher MainActivity; mycarrefour picked because carrefour is also Carrefour PL's scheme."
     },
     {
       "chain": "eurospin",
@@ -1301,7 +1372,8 @@
           "name": "Eurospin",
           "android": "it.eurospin.mobileapp",
           "ios": "1633038428",
-          "universalLink": null
+          "universalLink": null,
+          "scheme": "eurospin"
         }
       ],
       "status": "verified",
@@ -1312,7 +1384,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.eurospin.it",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.eurospin.it&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "Eurospin Family. No universal link: the AASA Apple's CDN serves for www.eurospin.it is not valid JSON (trailing comma)."
+      "note": "Eurospin Family. No universal link: the AASA Apple's CDN serves for www.eurospin.it is not valid JSON (trailing comma). Scheme eurospin for the app (job 335, Android manifest: apkpure v3.12.4, certificate subject Eurospin, activity MainActivity; the iOS app's Info.plist is not public): eurospin on the launcher MainActivity."
     },
     {
       "chain": "aldi-sued",
@@ -1325,7 +1397,8 @@
           "name": "ALDI Italia",
           "android": "de.apptiv.business.android.aldi_it",
           "ios": "1259906862",
-          "universalLink": "https://www.aldi.it/homescreen"
+          "universalLink": "https://www.aldi.it/homescreen",
+          "scheme": null
         }
       ],
       "status": "verified",
@@ -1336,7 +1409,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.aldi.it",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.aldi.it&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "ALDI Italia is ALDI SÜD (bundle com.aldisued.AldiIT), its own app."
+      "note": "ALDI Italia is ALDI SÜD (bundle com.aldisued.AldiIT), its own app. No scheme for the app (job 335): Only aldi-it, on AuthRedirectHandlerActivity with host callback: an OAuth redirect, not a launch scheme."
     },
     {
       "chain": "mercadona",
@@ -1349,7 +1422,8 @@
           "name": "Mercadona",
           "android": "es.mercadona.tienda",
           "ios": "1368037685",
-          "universalLink": "https://tienda.mercadona.es/"
+          "universalLink": "https://tienda.mercadona.es/",
+          "scheme": "mercadona"
         }
       ],
       "status": "verified",
@@ -1360,7 +1434,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/tienda.mercadona.es",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://tienda.mercadona.es&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "Mercadona has one app, the online shop. tienda.mercadona.es claims \"*\" minus legal pages."
+      "note": "Mercadona has one app, the online shop. tienda.mercadona.es claims \"*\" minus legal pages. Scheme mercadona for the app (job 335, Android manifest: apkpure v553, certificate subject Google Inc., activity StartupActivity; the iOS app's Info.plist is not public): mercadona on the launcher StartupActivity."
     },
     {
       "chain": "carrefour",
@@ -1373,7 +1447,8 @@
           "name": "Mi Carrefour",
           "android": "com.munrodev.crfmobile",
           "ios": "605788142",
-          "universalLink": null
+          "universalLink": "https://www.carrefour.es/supermercado/",
+          "scheme": "c4app"
         }
       ],
       "status": "verified",
@@ -1384,7 +1459,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.carrefour.es",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.carrefour.es&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "Mi Carrefour (Centros Comerciales Carrefour), its own app; iOS bundle es.carrefour.crfmobile. No universal link: the AASA claims only /supermercado/* and a download path."
+      "note": "Mi Carrefour (Centros Comerciales Carrefour), its own app; iOS bundle es.carrefour.crfmobile. Universal link for the app (job 335): www.carrefour.es's AASA on Apple's CDN claims /supermercado/ for es.carrefour.crfmobile. Scheme c4app for the app (job 335, Android manifest: apkpure v6.0.0, certificate subject Munro Comunicacion S.L., activity HostActivity; the iOS app's Info.plist is not public): c4app on HostActivity."
     },
     {
       "chain": "lidl",
@@ -1397,7 +1472,8 @@
           "name": "Lidl Plus",
           "android": "com.lidl.eci.lidlplus",
           "ios": "1238611143",
-          "universalLink": null
+          "universalLink": "https://app.lidlplus.com/",
+          "scheme": "lidlplus"
         }
       ],
       "status": "verified",
@@ -1406,9 +1482,10 @@
         "https://itunes.apple.com/lookup?id=1238611143&country=es",
         "https://play.google.com/store/apps/details?id=com.lidl.eci.lidlplus&hl=en&gl=ES",
         "https://app-site-association.cdn-apple.com/a/v1/www.lidl.es",
-        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.lidl.es&relation=delegate_permission/common.handle_all_urls"
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.lidl.es&relation=delegate_permission/common.handle_all_urls",
+        "https://app-site-association.cdn-apple.com/a/v1/app.lidlplus.com"
       ],
-      "note": "Same Lidl Plus app as DE. No home path claimed."
+      "note": "Same Lidl Plus app as DE. No home path claimed. Universal link for the app (job 335): app.lidlplus.com's AASA on Apple's CDN claims / for com.lidl.eci.lidl.plus. Scheme lidlplus for the app (job 335, Android manifest: apkpure v17.14.7, certificate subject Lidl E-Commerce International GmbH & Co. KG, activity StandardLauncher; the iOS app's Info.plist is not public): Ambiguous: lidlplus is on the launcher activities (StandardLauncher, MourningLauncher); lidlplus-app sits on AppLinkingActivity and com.lidlplus.app is the OAuth redirect; Lidl's web pages deep-link via https://lidlplus.com through Adjust, no scheme."
     },
     {
       "chain": "dia",
@@ -1421,7 +1498,8 @@
           "name": "Dia",
           "android": "es.dia",
           "ios": "660175630",
-          "universalLink": null
+          "universalLink": "https://www.dia.es/search",
+          "scheme": "oneappdiaes"
         }
       ],
       "status": "verified",
@@ -1430,9 +1508,10 @@
         "https://itunes.apple.com/lookup?id=660175630&country=es",
         "https://play.google.com/store/apps/details?id=es.dia&hl=en&gl=ES",
         "https://app-site-association.cdn-apple.com/a/v1/www.dia.es",
-        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.dia.es&relation=delegate_permission/common.handle_all_urls"
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.dia.es&relation=delegate_permission/common.handle_all_urls",
+        "https://www.dia.es/ (appBanner.appDeepLink oneappdiaes://)"
       ],
-      "note": "No universal link: the AASA claims product, category, order and search paths, no home path."
+      "note": "Universal link for the app (job 335): www.dia.es's AASA on Apple's CDN claims /search for es.mobile.dia. Scheme oneappdiaes for the app (job 335, iOS evidence): dia.es app-banner config sets appDeepLink oneappdiaes:// (separate androidCustomDeepLink Adjust link with deep_link=oneappdiaes://); no APK found."
     },
     {
       "chain": "eroski",
@@ -1445,7 +1524,8 @@
           "name": "EROSKI",
           "android": "com.tempos21.eroskiclub.pro",
           "ios": "1071407778",
-          "universalLink": null
+          "universalLink": null,
+          "scheme": "eroski"
         }
       ],
       "status": "verified",
@@ -1456,7 +1536,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.eroski.es",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.eroski.es&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "No universal link: no AASA on www.eroski.es."
+      "note": "No universal link: no AASA on www.eroski.es. Scheme eroski for the app (job 335, Android manifest: apkpure v4.8.0, certificate subject Eroski, activity HomeActivity; the iOS app's Info.plist is not public): eroski on HomeActivity."
     },
     {
       "chain": "auchan",
@@ -1471,7 +1551,8 @@
           "name": "Alcampo",
           "android": "com.osp.alcampo",
           "ios": "1639513224",
-          "universalLink": null
+          "universalLink": "https://www.compraonline.alcampo.es/",
+          "scheme": "alcampo-atm"
         }
       ],
       "status": "verified",
@@ -1482,7 +1563,7 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.compraonline.alcampo.es",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.compraonline.alcampo.es&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "Alcampo is Auchan in Spain. Alcampo Supermercado Online; the pair is confirmed by AASA and asset links on www.compraonline.alcampo.es. Alternative: Club Alcampo loyalty (iOS 1450287430, same iOS app as \"Auchan Retail Shopping\" in PL). No home path claimed."
+      "note": "Alcampo is Auchan in Spain. Alcampo Supermercado Online; the pair is confirmed by AASA and asset links on www.compraonline.alcampo.es. Alternative: Club Alcampo loyalty (iOS 1450287430, same iOS app as \"Auchan Retail Shopping\" in PL). No home path claimed. Universal link for the app (job 335): www.compraonline.alcampo.es's AASA on Apple's CDN claims / for com.osp.alcampo. Scheme alcampo-atm for the app (job 335, Android manifest: apkpure vv0.485.0, certificate subject Google Inc., activity SsoDeepLinkHandlerActivity; the iOS app's Info.plist is not public): alcampo-atm on the launcher SplashScreenActivity (Ocado platform)."
     },
     {
       "chain": "aldi-nord",
@@ -1495,13 +1576,15 @@
           "name": "ALDI",
           "android": "es.aldi.android",
           "ios": "669956906",
-          "universalLink": "https://www.aldi.es/app-only/dashboard.html"
+          "universalLink": "https://www.aldi.es/app-only/dashboard.html",
+          "scheme": null
         },
         {
           "name": "Con ALDI",
           "android": "com.aldi.conaldi.android",
           "ios": "1519446265",
-          "universalLink": null
+          "universalLink": null,
+          "scheme": "staffbase-conaldi"
         }
       ],
       "status": "verified",
@@ -1514,7 +1597,7 @@
         "https://itunes.apple.com/lookup?id=1519446265&country=es",
         "https://play.google.com/store/apps/details?id=com.aldi.conaldi.android"
       ],
-      "note": "ALDI Spain belongs to ALDI Nord (seller ALDI Einkauf), not ALDI SÜD. Second app: Con ALDI (ALDI Central de Compras)."
+      "note": "ALDI Spain belongs to ALDI Nord (seller ALDI Einkauf), not ALDI SÜD. Second app: Con ALDI (ALDI Central de Compras). No scheme for ALDI (job 335): aldinord is declared by all four ALDI Nord country apps, so iOS could open another country's app; the universal link opens this one. Scheme staffbase-conaldi for Con ALDI (job 335, Android manifest: apkpure v2026.4.143461448, certificate subject mitarbeiterapp.de, activity MainActivity; the iOS app's Info.plist is not public): Ambiguous Staffbase employee app: staffbase, eyoemployeeapp, staffbase-conaldi, conaldi-staffbase all on MainActivity; the brand-specific staffbase-conaldi picked (generic staffbase would hit any Staffbase app)."
     }
   ]
 }

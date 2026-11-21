@@ -133,6 +133,17 @@ void main() {
     expect(retailer.apps.map((a) => a.android), [lidlPlus.android]);
   });
 
+  test('a scheme comes through; one that is no bare scheme counts as '
+      'none', () {
+    RetailerApp? parse(Object? scheme) =>
+        RetailerApp.tryParse({...lidlPlus.toJson(), 'scheme': scheme});
+    expect(parse('lidlplus')?.scheme, 'lidlplus');
+    expect(RetailerApp.tryParse(lidlPlus.toJson())?.scheme, isNull);
+    for (final bad in ['', 'lidlplus://', 'Lidl Plus', '1app', 7]) {
+      expect(parse(bad)?.scheme, isNull, reason: '$bad');
+    }
+  });
+
   test('an empty universal link counts as none', () {
     final app = RetailerApp.tryParse({
       ...lidlPlus.toJson(),
