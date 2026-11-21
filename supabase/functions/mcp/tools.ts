@@ -9,12 +9,16 @@ import { asUser, ranOutOfTime, rowBusy, type Tx } from '../_shared/db.ts';
 import {
   addItems,
   categories,
+  getItem,
   listCatalog,
   listItems,
-  moveItem,
+  mergeItems,
+  removeItems,
   stores,
   tickItems,
   ToolError,
+  untickItems,
+  updateItem,
 } from '../_shared/list.ts';
 import { storedText } from '../_shared/stored_text.ts';
 import { telemetry } from './telemetry.ts';
@@ -146,7 +150,14 @@ function run(
       }
       if (gate && await gate(h) === 'locked') {
         await done(h, 'premium_required');
-        return { isError: true, content: [{ type: 'text', text: premiumRequired[lang] }] };
+        return {
+          isError: true,
+          content: [{ type: 'text', text: premiumRequired[lang] }],
+          structuredContent: {
+            error: 'premium_required',
+            details: { integration: 'mcp', unlock: 'app' },
+          },
+        };
       }
       const result = await asUser(auth.userId, (tx) => body(tx, h));
       await done(h, 'done');
@@ -250,7 +261,7 @@ export function buildServer(
   lang: Lang = 'de',
 ): McpServer {
   const server = new McpServer(
-    { name: 'snacklist', title: 'Snacklist', version: '1.0.0' },
+    { name: 'snacklist', title: 'Snacklist', version: '1.1.0' },
     { instructions: INSTRUCTIONS, cacheHints: CACHE_HINTS },
   );
   const asked = new Map<string, Promise<Access>>();
@@ -328,7 +339,9 @@ export function buildServer(
         'Synonym auf der Liste ("Karotten" und "Möhren"), wird der Eintrag trotzdem angelegt und unter ' +
         '"similarOnList" gemeldet (added: der neue Name, onList: höchstens drei der offenen ' +
         'Einträge, total: wie viele es sind); sag dem Nutzer dann, dass etwas Ähnliches schon auf ' +
-        'der Liste steht. Zusammengeführt wird nichts.',
+        'der Liste steht. Von selbst wird nichts zusammengeführt; will der Nutzer es, führt ' +
+        'merge_items (keep: der Eintrag aus onList, merge: der neue) beide zusammen wie ' +
+        '"Zusammenführen" in der App.',
       inputSchema: z.object({
         items: z.array(z.object({
           name: storedText.min(1).max(120).describe('Was gekauft werden soll, z. B. "Milch"'),
@@ -372,6 +385,26 @@ export function buildServer(
   );
 
   server.registerTool(
+    'untick_items',
+    {
+      title: 'Abhaken zurücknehmen',
+      description: 'Setzt abgehakte Einträge wieder auf die Liste. Ein Name findet den zuletzt ' +
+        'abgehakten Eintrag dieses Namens auf der Liste, außer er steht dort schon offen; eine id ' +
+        'findet ihn ohne "list" auf jeder ' +
+        'Liste des Haushalts. Nicht gefundene oder noch offene Einträge werden unter "notFound" ' +
+        'gemeldet, ein zweiter Aufruf ändert also nichts.',
+      inputSchema: z.object({
+        items: z.array(itemRef).min(1).max(50),
+        household: householdRef,
+        list: listRef,
+      }),
+      annotations: { destructiveHint: false, idempotentHint: true },
+    },
+    ({ items, household, list }) =>
+      call('untick_items', once, household, (tx, h) => untickItems(tx, h, items, list))(),
+  );
+
+  server.registerTool(
     'move_item',
     {
       title: 'Eintrag verschieben',
@@ -389,8 +422,112 @@ export function buildServer(
       }),
       annotations: { idempotentHint: true },
     },
-    ({ household, ...args }) =>
-      call('move_item', once, household, (tx, h) => moveItem(tx, h, args))(),
+    ({ household, item, list, category, store }) =>
+      call(
+        'move_item',
+        once,
+        household,
+        (tx, h) => updateItem(tx, h, { item, list }, { category, store }),
+      )(),
+  );
+
+  server.registerTool(
+    'update_item',
+    {
+      title: 'Eintrag ändern',
+      description:
+        'Ändert einen offenen Eintrag wie "Bearbeiten" in der App: nur die angegebenen ' +
+        'Felder. quantity, brand oder properties null (oder leer) löscht sie. category und store ' +
+        'wie bei move_item (der Haushalt merkt sie sich). "toList" setzt ihn auf eine andere Liste ' +
+        '(list_lists); "list" sagt, wo er jetzt steht. Steht nach der Änderung schon ein gleicher ' +
+        'offener Eintrag (Name, Marke, Eigenschaften) auf der Liste, ändert sich nichts und der ' +
+        'Aufruf meldet es.',
+      inputSchema: z.object({
+        item: itemRef,
+        name: storedText.trim().min(1).max(120).optional().describe(
+          'Neuer Name, z. B. "Hafermilch"',
+        ),
+        quantity: storedText.max(40).nullable().optional().describe(
+          'Menge, z. B. "2" oder "500 g"',
+        ),
+        brand: storedText.max(60).nullable().optional().describe('Marke, z. B. "Pampers"'),
+        properties: storedText.max(120).nullable().optional().describe(
+          'Eigenschaften, mit Komma getrennt, z. B. "Größe 3, Big Pack"',
+        ),
+        category: categoryName.optional(),
+        store: storeName.nullable().optional(),
+        toList: storedText.min(1).max(60).optional().describe(
+          'Liste, auf die der Eintrag umzieht (list_lists): ihre id oder ihr genauer Name',
+        ),
+        household: householdRef,
+        list: listRef,
+      }),
+      annotations: { destructiveHint: false, idempotentHint: true },
+    },
+    ({ household, item, list, toList, ...edit }) =>
+      call(
+        'update_item',
+        once,
+        household,
+        (tx, h) => updateItem(tx, h, { item, list }, { ...edit, list: toList }),
+      )(),
+  );
+
+  server.registerTool(
+    'remove_items',
+    {
+      title: 'Einträge löschen',
+      description: 'Löscht offene Einträge von der Liste, ohne sie abzuhaken (sie landen nicht ' +
+        'unter "Zuletzt verwendet"). Was der Haushalt über sie gelernt hat (Kategorie, Laden), ' +
+        'bleibt. Nicht gefundene Einträge werden unter "notFound" gemeldet, ein zweiter Aufruf ' +
+        'ändert also nichts. Nur auf ausdrücklichen Wunsch des Nutzers.',
+      inputSchema: z.object({
+        items: z.array(itemRef).min(1).max(50),
+        household: householdRef,
+        list: listRef,
+      }),
+      annotations: { destructiveHint: true, idempotentHint: true },
+    },
+    ({ items, household, list }) =>
+      call('remove_items', once, household, (tx, h) => removeItems(tx, h, items, list))(),
+  );
+
+  server.registerTool(
+    'get_item',
+    {
+      title: 'Eintrag anzeigen',
+      description: 'Zeigt einen Eintrag mit Status ("open" oder "ticked") und Zeitpunkt des ' +
+        'Hinzufügens. Eine id findet ihn auch abgehakt; ein Name nur unter den offenen Einträgen.',
+      inputSchema: z.object({ item: itemRef, household: householdRef, list: listRef }),
+      annotations: { readOnlyHint: true },
+    },
+    ({ item, household, list }) =>
+      call('get_item', once, household, (tx, h) => getItem(tx, h, item, list))(),
+  );
+
+  server.registerTool(
+    'merge_items',
+    {
+      title: 'Einträge zusammenführen',
+      description: 'Führt zwei offene Einträge zusammen wie "Zusammenführen" in der App, etwa ' +
+        'nach "similarOnList" von add_items, wenn der Nutzer es will: "keep" bleibt mit seinem ' +
+        'Namen, die Mengen werden addiert ("2" und "3" → "5"), fehlende Marke oder Eigenschaften ' +
+        'kommen von "merge", das gelöscht wird. Beide müssen auf derselben Liste stehen. ' +
+        'Antwort: "kept" wie er jetzt ist, "merged" wie der gelöschte war.',
+      inputSchema: z.object({
+        keep: itemRef.describe(
+          'Der Eintrag, der bleibt, meist der aus "onList" von similarOnList (Name oder id)',
+        ),
+        merge: itemRef.describe(
+          'Der Eintrag, der in "keep" aufgeht, meist der neu hinzugefügte (Name oder id)',
+        ),
+        household: householdRef,
+        list: listRef,
+      }),
+      annotations: { destructiveHint: true },
+    },
+    ({ keep, merge, household, list }) =>
+      call('merge_items', once, household, (tx, h) => mergeItems(tx, h, { keep, merge, list }))(),
   );
 
   server.registerTool('list_categories', {

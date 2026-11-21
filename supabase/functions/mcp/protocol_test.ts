@@ -14,13 +14,18 @@ const MODERN = '2026-07-28';
 const LEGACY = '2025-11-25';
 const TOOLS = [
   'add_items',
+  'get_item',
   'list_categories',
   'list_households',
   'list_items',
   'list_lists',
   'list_stores',
+  'merge_items',
   'move_item',
+  'remove_items',
   'tick_items',
+  'untick_items',
+  'update_item',
 ];
 
 const d: Deps = {

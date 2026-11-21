@@ -308,8 +308,8 @@ void main() {
     expect(inSheet('WAS CLAUDE DARF'), findsOneWidget);
     expect(
       inSheet(
-        'Einträge deiner Einkaufsliste lesen, hinzufügen, abhaken und '
-        'verschieben. Claude und sein Anbieter erhalten dabei die Inhalte '
+        'Einträge deiner Einkaufsliste lesen, hinzufügen, ändern, abhaken '
+        'und löschen. Claude und sein Anbieter erhalten dabei die Inhalte '
         'eurer Liste.',
       ),
       findsOneWidget,

@@ -54,6 +54,11 @@ export const mcpTools = [
   'add_items',
   'tick_items',
   'move_item',
+  'update_item',
+  'remove_items',
+  'untick_items',
+  'get_item',
+  'merge_items',
   'list_categories',
   'list_stores',
 ] as const;

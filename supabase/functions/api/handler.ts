@@ -1,5 +1,6 @@
 // HTTP face of the API: CORS, the key and its limits (public.api_begin), the route table, scopes,
-// the Premium gate, strict input, then the operation as the key's member, idempotent for POSTs.
+// the Premium gate, strict input, then the operation as the key's member, idempotent where the
+// route takes an Idempotency-Key.
 // Every answer carries X-Request-Id and, once the limits are known, X-RateLimit-*.
 import { PAT_PREFIX, sha256Hex } from '../_shared/auth.ts';
 import {
@@ -64,7 +65,7 @@ export type Deps = {
 
 const cors: Record<string, string> = {
   'access-control-allow-origin': '*',
-  'access-control-allow-methods': 'GET, POST, PATCH, OPTIONS',
+  'access-control-allow-methods': 'GET, POST, PATCH, DELETE, OPTIONS',
   'access-control-allow-headers': 'authorization, content-type, idempotency-key',
   'access-control-expose-headers':
     'x-ratelimit-limit, x-ratelimit-remaining, x-ratelimit-reset, retry-after, x-request-id, ' +
@@ -180,6 +181,7 @@ async function authorized(
       'premium_required',
       'You need Snacklist Premium to use the API. Unlock it in the Snacklist app. ' +
         'Nothing was read or changed.',
+      { integration: 'api', unlock: 'app' },
     );
   }
 
@@ -368,12 +370,19 @@ const UNAVAILABLE_STATES = /^(08|53|57P)/;
 function asApiError(e: unknown, deps: Deps): ApiError {
   if (e instanceof ApiError) return e;
   if (e instanceof ToolError) {
+    if (e.reason === 'conflict') {
+      return new ApiError(
+        409,
+        'conflict',
+        'An open item with this name, brand and details is already on the list.',
+      );
+    }
     if (e.subject === 'item' && e.reason === 'not_found') {
       return new ApiError(404, 'item_not_found', 'No such item in this household.');
     }
     if (
       (e.subject === 'store' || e.subject === 'category' || e.subject === 'list') &&
-      e.reason !== 'invalid'
+      (e.reason === 'not_found' || e.reason === 'ambiguous')
     ) {
       const kind = listErrors[e.subject];
       return new ApiError(

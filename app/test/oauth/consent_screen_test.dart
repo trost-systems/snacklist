@@ -104,8 +104,8 @@ void main() {
     expect(find.text('Angemeldet als peter@example.com'), findsOneWidget);
     expect(find.text('Haushalt: Trost'), findsOneWidget);
     const listAccess =
-        'Einträge deiner Einkaufsliste lesen, hinzufügen, abhaken und '
-        'verschieben. Claude und sein Anbieter erhalten dabei die Inhalte '
+        'Einträge deiner Einkaufsliste lesen, hinzufügen, ändern, abhaken '
+        'und löschen. Claude und sein Anbieter erhalten dabei die Inhalte '
         'eurer Liste.';
     for (final label in [
       listAccess,

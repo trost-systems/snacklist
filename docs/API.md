@@ -7,8 +7,10 @@ iOS Shortcuts, cron jobs, curl. The machine-readable contract is
 that its paths match the function's route table.
 
 The API and the MCP tools run the same code: `supabase/functions/_shared/list.ts` adds, lists,
-ticks and moves items for both, through the same database functions the app and Siri use
-(`public.add_list_item`, `public.move_item`, `public.classify_item`). A change there reaches both.
+ticks, edits and removes items for both, through the same database writes the app and Siri use
+(`public.add_list_item`, `public.move_item`, `public.classify_item`, and the app's own updates and
+deletes of `public.items`, whose triggers learn and guard against duplicates). A change there
+reaches both.
 
 - Function: `supabase/functions/api/` (`index.ts`, `handler.ts`, `routes.ts`, `limits.ts`).
 - Database: `supabase/migrations/20261102130000_public_api.sql` (API keys, rate counters,
@@ -63,8 +65,8 @@ Authorization: Bearer fgp_…
   Zugänge → API ("API-Schlüssel erstellen"), only from the app's own sign-in: an OAuth-connected
   app or another key cannot create one. The app shows the key once; the database keeps only its
   SHA-256 hash and its last four characters.
-- **Scopes**: `read` (every `GET`) and `write` (every `POST` and `PATCH`). A key has `read` or
-  `read` and `write`. A request outside the key's scopes gets `403 insufficient_scope`.
+- **Scopes**: `read` (every `GET`) and `write` (every `POST`, `PATCH` and `DELETE`). A key has
+  `read` or `read` and `write`. A request outside the key's scopes gets `403 insufficient_scope`.
 - **Household-bound**: a key acts as the member who created it, in the household it was created
   for, under the same row-level security as the app. It stops working when it is revoked
   (Zugänge → the key's delete button), when its creator leaves that household, or when the
@@ -75,8 +77,10 @@ Authorization: Bearer fgp_…
   stay free). While the server switch `integration_lock` is on, a key whose holder has no
   Premium (neither their own plan nor a grant of the key's household; another member's plan does
   not count) gets `402 premium_required` with the message "You need Snacklist Premium to use the
-  API. Unlock it in the Snacklist app. Nothing was read or changed."; the key keeps working once
-  its holder has Premium. While the switch is off (until the paywall release) everyone may use it.
+  API. Unlock it in the Snacklist app. Nothing was read or changed." and
+  `details: {"integration": "api", "unlock": "app"}`: the API is the locked integration, and it
+  unlocks in the app. The answer carries no link and no price (store rules). The key keeps working
+  once its holder has Premium. While the switch is off (until the paywall release) everyone may use it.
 
 OAuth access for third-party apps is not part of v1 (see "Later").
 
@@ -99,10 +103,15 @@ An **item** (an entry on the list):
 | `addedAt` | date-time | When it was added |
 | `listId` | uuid | The list it is on (`GET /v1/lists`) |
 
-A **category**, a **store** and a **list**: `{ "id", "name", "sortOrder" }`. A household has one
-or more lists (e.g. `Wocheneinkauf` and `Baumarkt`); an add without `list` goes to the key owner's
-default list (chosen in the app, else the first, the lowest `sortOrder`), where Siri and Alexa add
-too.
+A **category** and a **store**: `{ "id", "name", "sortOrder" }`. A **list**:
+`{ "id", "name", "sortOrder", "default" }`. A household has one or more lists (e.g. `Wocheneinkauf`
+and `Baumarkt`); an add without `list` goes to the key owner's default list (chosen in the app,
+else the first, the lowest `sortOrder`), where Siri and Alexa add too. `default` is `true` on that
+list and `false` on the others.
+
+The **household**: `{ "id", "name", "currency", "memberCount" }`. `currency` is the ISO 4217 code
+the app shows prices in (e.g. `EUR`). Members' names, email addresses and user ids are never part
+of it.
 
 Fields are camelCase, like the items in the MCP tools' results.
 
@@ -115,10 +124,12 @@ Fields are camelCase, like the items in the MCP tools' results.
 | `POST /v1/items` | write | Adds 1 to 50 items (batch) |
 | `POST /v1/items/{id}/tick` | write | Ticks an item (bought) |
 | `POST /v1/items/{id}/untick` | write | Puts a ticked item back on the list |
-| `PATCH /v1/items/{id}` | write | Moves an open item to another category and/or store |
+| `PATCH /v1/items/{id}` | write | Edits an open item: name, quantity, brand, properties, list, category, store |
+| `DELETE /v1/items/{id}` | write | Removes an item, open or ticked |
 | `GET /v1/categories` | read | The household's categories in aisle order |
 | `GET /v1/stores` | read | The household's stores |
-| `GET /v1/lists` | read | The household's lists in their order |
+| `GET /v1/lists` | read | The household's lists in their order, the default one marked |
+| `GET /v1/household` | read | The key's household: name, currency, how many members |
 
 ### GET /v1/items
 
@@ -169,7 +180,7 @@ the app. Without `store`, the item gets the store it was last bought in, an own 
 comes back under `alreadyOnList`. A spelling variant or synonym of an open item ("Karotten" next to
 "Möhren") is added and reported under `similarOnList`: `itemId` is the new item, `onList` the
 similar open items, at most three (the oldest first), and `total` how many there are. Nothing is
-merged.
+merged (the MCP tool `merge_items` does that on the user's word; the API has no merge yet).
 Items are added in order in one transaction: an unknown `store`, `category` or `list` anywhere fails
 the whole batch with `422` and adds nothing. So does a batch whose adds take longer than 5 seconds
 together (`503 timeout`). Each add looks through the list's open items, so on a list with many
@@ -183,25 +194,59 @@ nothing and returns the item: both are safe to repeat.
 ### PATCH /v1/items/{id}
 
 ```json
-{ "category": "Kühlregal", "store": null }
+{ "name": "Hafermilch", "quantity": "2", "brand": null, "category": "Kühlregal", "store": null }
 ```
 
-At least one of `category` (id or name) and `store` (id, name, or null to remove the store). The
-item goes to the end of its new group; the household remembers both for the next time the item is
-added (like a move in the app). Only open items: a ticked one is `404 item_not_found`.
+Edits an open item like the app's edit sheet. Every field is optional, but at least one must be
+there (else `400 validation_failed`, "Give at least one field to change"):
+
+| Field | Value | Does |
+| --- | --- | --- |
+| `name` | 1 to 120 characters | Renames the item; taken as it is, not split like an add |
+| `quantity` | up to 40 characters, or null | Menge; null or blank clears it |
+| `brand` | up to 60 characters, or null | Marke; null or blank clears it |
+| `properties` | up to 120 characters, or null | Eigenschaften; null or blank clears them |
+| `list` | id or exact name | Moves the item to that list; it keeps its category and store |
+| `category` | id or name | Moves the item to that category |
+| `store` | id, name, or null | Moves the item to that store; null removes the store |
+
+A new category or store puts the item at the end of its new group, and the household remembers
+both for the next time the item is added (like a move in the app). Answers `200` with the item as
+it is now. Only open items: a ticked one is `404 item_not_found`. A rename that would make the item
+the twin of another open item on its list (the same name, brand and properties) is
+`409 conflict`, "An open item with this name, brand and details is already on the list.", and
+changes nothing.
+
+### DELETE /v1/items/{id}
+
+No body. Removes the item, open or ticked, and answers `200` with the item as it was. An unknown
+id, or one of another household, is `404 item_not_found`. Send an `Idempotency-Key` to retry
+safely: a retry with the same key gets the same `200` instead of a `404`.
+
+A removed item is gone, like a delete in the app. What the household taught Snacklist about it
+stays: the next add of the same item gets the category and store it was moved to.
 
 ### GET /v1/categories, GET /v1/stores, GET /v1/lists
 
-`{ "data": [ { "id", "name", "sortOrder" } ], "nextCursor": null }`. These lists are short and
-always come whole; `nextCursor` is there so every list has the same shape.
+`{ "data": [ { "id", "name", "sortOrder" } ], "nextCursor": null }`; each list also carries
+`"default"`, `true` for the key owner's default list. These lists are short and always come whole;
+`nextCursor` is there so every list has the same shape.
+
+### GET /v1/household
+
+```json
+{ "data": { "id": "…", "name": "Familie Brandt", "currency": "EUR", "memberCount": 3 } }
+```
+
+The household the key works in. It names no member: no names, email addresses or user ids.
 
 ## Idempotency
 
-Every `POST` takes an `Idempotency-Key` header (1 to 255 printable ASCII characters, for example
-a UUID). The first successful response for a key is stored for 24 hours, per API key, and a retry
-with the same key and the same request gets the stored response again (with
-`Idempotent-Replayed: true`) instead of adding the items twice. The same key with a different
-method, path or body gets `422 idempotency_key_reused`. Two requests with one key at the same time
+Every `POST` and `DELETE` takes an `Idempotency-Key` header (1 to 255 printable ASCII characters,
+for example a UUID); `GET` and `PATCH` take none. The first successful response for a key is stored
+for 24 hours, per API key, and a retry with the same key and the same request gets the stored
+response again (with `Idempotent-Replayed: true`) instead of adding the items twice. The same key
+with a different method, path or body gets `422 idempotency_key_reused`. Two requests with one key at the same time
 are serialised: the second waits for the first and gets its response. An error response stores
 nothing (the request changed nothing), so a retry with the same key runs again.
 
@@ -226,12 +271,12 @@ optional.
 | 400 | `invalid_idempotency_key` | The key is empty, too long or not printable ASCII |
 | 401 | `missing_token` | No `Authorization: Bearer` header |
 | 401 | `invalid_token` | Unknown, revoked or not an API key |
-| 402 | `premium_required` | The key's holder needs Snacklist Premium for the API (integration lock on) |
+| 402 | `premium_required` | The key's holder needs Snacklist Premium for the API (integration lock on); `details: {integration: "api", unlock: "app"}` |
 | 403 | `insufficient_scope` | The key lacks the scope (`details.required`) |
 | 404 | `not_found` | No such endpoint |
 | 404 | `item_not_found` | No such item in this household (or not open, for `PATCH`) |
 | 405 | `method_not_allowed` | The path exists, the method does not (`Allow` header) |
-| 409 | `conflict` | A concurrent change got in the way (for example the `Idempotency-Key` was released at that moment); nothing was changed, retry |
+| 409 | `conflict` | A concurrent change got in the way (for example the `Idempotency-Key` was released at that moment); nothing was changed, retry. For `PATCH`: the new name would duplicate an open item on the list; nothing was changed, and a retry gets the same answer |
 | 413 | `payload_too_large` | The body is over 64 KiB |
 | 415 | `unsupported_media_type` | A body that is not `application/json` |
 | 422 | `store_not_found`, `category_not_found`, `list_not_found` | A named store, category or list does not exist (`details.candidates`) |
@@ -326,4 +371,4 @@ curl -s -X POST "$API/items/<id>/tick" -H "Authorization: Bearer $KEY"
   an integration like Zapier's would register as a client and get `read`/`write` scopes there.
 - **Webhooks** (outgoing events such as "item added"), so automations need not poll.
 - **A public domain** such as `api.snacklist.app` (Vercel rewrite like `mcp-proxy/`).
-- **Editing names and quantities** (`PATCH` of `name`, `quantity`, `brand`, `properties`).
+- **Merging items**, which the MCP tool `merge_items` does for assistants.

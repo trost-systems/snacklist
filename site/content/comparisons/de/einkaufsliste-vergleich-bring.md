@@ -75,7 +75,7 @@ Wenn du Rezepte, Prospekte oder Kundenkarten in deiner Einkaufs-App haben willst
 
 ## Mit KI-Assistenten verbinden (MCP)
 
-Du kannst Snacklist mit KI-Assistenten verbinden, die MCP unterstützen. Der Assistent kann offene Artikel lesen, Artikel hinzufügen (auch mehrere auf einmal, mit Mengen), als gekauft abhaken und in eine andere Kategorie oder einen anderen Laden verschieben. Außerdem kann er Kategorien und Läden lesen. Löschen, Abhaken rückgängig machen oder Umbenennen kann er nicht. Er kann auch keine Personen einladen oder entfernen und kommt nicht an Kontodaten.
+Du kannst Snacklist mit KI-Assistenten verbinden, die MCP unterstützen. Der Assistent kann Artikel lesen, hinzufügen (auch mehrere auf einmal, mit Mengen), ändern (Name, Menge, Marke, Eigenschaften), als gekauft abhaken, wieder auf die Liste setzen, mit einem ähnlichen Artikel zusammenführen, löschen und in eine andere Kategorie, einen anderen Laden oder eine andere Liste verschieben. Außerdem kann er Kategorien, Läden und Listen lesen. Er kann auch keine Personen einladen oder entfernen und kommt nicht an Kontodaten.
 
 In der Beta ist das für alle kostenlos. Nach dem öffentlichen Start sollen Extras wie die KI-Anbindung zu Snacklist Premium gehören, das dann kostenpflichtig ist.
 
@@ -113,7 +113,7 @@ Die Beta startet am 15. November 2026 für Freunde und Familie. Auf snacklist.ap
 Ja. Bei Snacklist sprichst du über das Mikrofon in der App, in der Sprache der App (Deutsch oder Englisch). Bring! nennt Eintragen per Sprachbefehl. (Quelle: Bring!-Store-Eintrag, Stand 04.11.2026)
 
 **Kann ich Snacklist mit einem KI-Assistenten nutzen?**
-Ja, mit KI-Assistenten, die MCP unterstützen. Sie können deine offenen Artikel lesen, Artikel hinzufügen, abhaken und verschieben, aber nichts löschen oder umbenennen. In der Beta ist das für alle kostenlos. Nach dem öffentlichen Start sollen Extras wie die KI-Anbindung zu Snacklist Premium gehören, das dann kostenpflichtig ist.
+Ja, mit KI-Assistenten, die MCP unterstützen. Sie können deine Artikel lesen, hinzufügen, ändern, abhaken, wieder auf die Liste setzen, zusammenführen und löschen. In der Beta ist das für alle kostenlos. Nach dem öffentlichen Start sollen Extras wie die KI-Anbindung zu Snacklist Premium gehören, das dann kostenpflichtig ist.
 
 **Gilt die Reihenfolge im Laden für den ganzen Haushalt?**
 Ja. Die Ladenreihenfolge gehört dem Haushalt und gilt für alle, die dazugehören.

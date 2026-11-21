@@ -9,7 +9,7 @@ updated: 2026-11-04
 
 # Connect Snacklist to Claude
 
-Claude can read your Snacklist, add items, tick them off and move them to another category or store. Just tell Claude what you need:
+Claude can read your Snacklist, add items, change them, tick them off, put them back, delete them and move them to another category, store or list. Just tell Claude what you need:
 
 > **You:** Put milk, two cucumbers and toilet paper on the Snacklist.
 > **Claude:** I've added milk, 2 cucumbers and toilet paper to your Snacklist.
@@ -46,7 +46,7 @@ Menu names in Claude may differ slightly between Claude versions.
 
 1. In the list of connectors, click **Connect** next to **Snacklist**. A new window opens Snacklist.
 2. Sign in if Snacklist asks, the same way you do in the app.
-3. Snacklist asks "Allow access?" and shows what Claude may do: read, add, tick off and move items on your shopping list. Check that it shows your household, then click **Allow**.
+3. Snacklist asks "Allow access?" and shows what Claude may do: read, add, change, tick off and remove items on your shopping list. Check that it shows your household, then click **Allow**.
 4. Claude then needs a few seconds to finish connecting. Meanwhile the window shows "Done, you can return to Claude." or stays blank for up to ten seconds. Wait until it closes or Claude shows the connector as connected.
 
 ## Step 3: Try it
@@ -63,6 +63,9 @@ Menu names in Claude may differ slightly between Claude versions.
 | What do I need at dm? | Everything for dm and everything without a store, in dm's order. |
 | Tick off milk and cucumbers. | Both leave the list and show up in the app under "Recently used". |
 | Move the oat milk to Getränke. | Snacklist remembers this for your household. Next time oat milk goes straight there. |
+| Make it 3 cucumbers. | The cucumbers' quantity is now 3. |
+| We still need the milk after all. | The milk you just ticked off is back on the list. |
+| Delete the sparkling wine. | The sparkling wine is gone. What Snacklist learned about it (category, store) stays. |
 
 Anything already on the list isn't added twice. Claude tells you it's already there. Snacklist was made for German shopping lists: its categories have German names such as Kühlregal or Obst & Gemüse, and it sorts German item names best. It knows common English words too, and Claude can write items in German for you if you ask.
 

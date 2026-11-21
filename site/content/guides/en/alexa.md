@@ -29,7 +29,7 @@ Alexa signs in with your Snacklist account, not with a token. There's nothing to
 1. Open the Alexa app, search the skill store for **Snacklist** and open the skill's page.
 2. Tap **Enable to use**. The Snacklist sign-in opens right after.
 3. Sign in when Snacklist asks, the same way as in the app.
-4. Snacklist asks "Allow access?" and shows what "Amazon Alexa" may do: read, add, tick off and move items on your shopping list. Tap **Allow**.
+4. Snacklist asks "Allow access?" and shows what "Amazon Alexa" may do: read, add, change, tick off and remove items on your shopping list. Tap **Allow**.
 5. The Alexa app shows that your account is linked.
 
 ## Step 2: try it

@@ -17034,3 +17034,45 @@ with a good reason; the item order stays. All of it behind the new PostHog flag 
    widgets (payload: name, quantity, store), and there is no list share-as-text.
 6. **Targeting.** The flag sync creates it with `is_internal = true` at 100 %, which covers Peter's
    phone and the internal tester group. Nobody else gets it until a condition is added in PostHog.
+
+## Job 344: API and MCP item operations (A1, A2, A3, A7, A10, A11, A12), 2026-11-21
+
+Peter's pick t1118u from job 331's additions; job 345 takes A4, A8 and A9.
+
+1. **The app's own writes, no migration.** An edit is the app's `EditItem` column update, a list
+   move its `MoveToList`, a delete its plain `DeleteItem`, a merge `public.merge_items`. The
+   triggers then learn, guard duplicates and enforce RLS exactly as for the app: a delete keeps
+   what the household taught the classifier (only the app's undo of an add forgets it), and a
+   rename that would make a second open copy is refused (`items_rename_duplicate`, 409 `conflict`
+   in the API, a tool error in MCP).
+2. **One edit path.** `_shared/list.ts` has one `ItemEdit` shape and one write path for PATCH
+   `/v1/items/{id}`, `update_item` and `move_item`; `moveItemById` is gone. PATCH's operationId
+   is `updateItem` now (was `moveItem`): the API is still behind `app_switches.public_api`, and an
+   operationId that says "move" for a rename would mislead every generated client.
+3. **Open items only for edits, any status for the API delete.** PATCH kept its rule (a ticked
+   item is not found). DELETE by id removes a ticked row too, as the app's history can. MCP's
+   `remove_items` works like `tick_items` (open items, names on the list, ids on any list), so a
+   name never reaches into the purchase history.
+4. **`untick_items` by name** looks among the list's ticked items, one per name (the latest
+   ticked), the 50 most recent names: "put the milk back" means the milk just bought, and the
+   not-found text stays short.
+5. **DELETE takes an Idempotency-Key.** A retry after a lost answer then gets the first 200
+   instead of a 404.
+6. **`GET /v1/household`: id, name, currency, memberCount.** Never member names, emails or user
+   ids (privacy §7 covers counts only).
+7. **Premium refusal details.** The 402 carries `details: {integration: "api", unlock: "app"}`,
+   the MCP refusal the same as `structuredContent` with `integration: "mcp"`. No link and no price
+   (store rules). The texts stay as they are: PR #583 rewords them (F9).
+8. **MCP `serverInfo.version` 1.1.0.** Clients cache the tool list for an hour; the version is the
+   signal that it changed (job 331 J7).
+9. **No new data category to third parties.** Everything here reads or changes entries, lists and
+   the household's name and currency, which privacy §7 already names. No legal, ARB or site
+   legal text changed, so the job lands itself.
+10. **Review 0: merge only on one list.** `merge_items` found both items by id on any list, so an
+    assistant could fold an entry of one list into another list's entry. The app merges only rows
+    of the list it shows; the tool now refuses two lists („… stehen auf verschiedenen Listen“) and
+    changes nothing.
+11. **Review 1: a repeated untick by name changes nothing.** Every purchase leaves a ticked row, so
+    a second `untick_items` of a name brought back an older ticked twin. A name whose item (same
+    name, brand and details) is open on that list already now goes to `notFound` („… steht schon
+    offen auf der Liste.“). An id still unticks exactly that row, as the API's untick does.

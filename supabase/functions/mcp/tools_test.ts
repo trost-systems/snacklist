@@ -41,10 +41,15 @@ const rpc = (
 /** The JSON-RPC message of a JSON or SSE answer. */
 interface Message {
   result: {
-    serverInfo: { name: string };
-    tools: { name: string; inputSchema: { properties?: Record<string, unknown> } }[];
+    serverInfo: { name: string; version: string };
+    tools: {
+      name: string;
+      inputSchema: { properties?: Record<string, unknown> };
+      annotations?: Record<string, boolean>;
+    }[];
     isError?: boolean;
     content: { type: string; text: string }[];
+    structuredContent?: unknown;
   };
   error?: unknown;
 }
@@ -82,6 +87,11 @@ const calls: [string, Record<string, unknown>][] = [
   ['add_items', { items: [{ name: 'Milch' }] }],
   ['tick_items', { items: ['Milch'] }],
   ['move_item', { item: 'Milch', store: 'dm' }],
+  ['update_item', { item: 'Milch', quantity: null }],
+  ['remove_items', { items: ['Milch'] }],
+  ['untick_items', { items: ['Milch'] }],
+  ['get_item', { item: 'Milch' }],
+  ['merge_items', { keep: 'Möhren', merge: 'Karotten' }],
   ['list_categories', {}],
   ['list_stores', {}],
 ];
@@ -94,7 +104,9 @@ Deno.test('locked: initialize and tools/list answer without asking the gate', as
     clientInfo: { name: 'test', version: '1' },
   }));
   assertEquals(init.status, 200);
-  assertEquals((await message(init)).result.serverInfo.name, 'snacklist');
+  const { serverInfo } = (await message(init)).result;
+  assertEquals(serverInfo.name, 'snacklist');
+  assertEquals(serverInfo.version, '1.1.0', 'tools changed since 1.0.0');
   const list = await s.handle(rpc('tools/list'));
   assertEquals(list.status, 200);
   assertEquals(
@@ -114,6 +126,10 @@ Deno.test('locked: every tool call is an isError result with HTTP 200, data unto
     assertEquals(error, undefined, `${name}: a tool result, not a JSON-RPC error`);
     assertEquals(result.isError, true, name);
     assertEquals(result.content, [{ type: 'text', text: premiumRequired.de }], name);
+    assertEquals(result.structuredContent, {
+      error: 'premium_required',
+      details: { integration: 'mcp', unlock: 'app' },
+    }, name);
     assertEquals(s.asked(), 1, name);
     assertEquals(s.households(), ['h'], `${name}: without "household" the credential's household`);
     assertEquals(s.reports, [{ tool: name, household: 'h', reason: 'premium_required' }], name);
@@ -193,8 +209,47 @@ Deno.test('job 169b W3: the item tools take an optional list', async () => {
   const takes = tools.filter((t) => Object.keys(t.inputSchema.properties ?? {}).includes('list'));
   assertEquals(
     takes.map((t) => t.name).sort(),
-    ['add_items', 'list_items', 'move_item', 'tick_items'],
+    [
+      'add_items',
+      'get_item',
+      'list_items',
+      'merge_items',
+      'move_item',
+      'remove_items',
+      'tick_items',
+      'untick_items',
+      'update_item',
+    ],
   );
+});
+
+Deno.test('job 344: the item tools say what they change', async () => {
+  const s = serve(locked);
+  const { tools } = (await message(await s.handle(rpc('tools/list')))).result;
+  const hints = Object.fromEntries(tools.map((t) => [t.name, t.annotations]));
+  assertEquals(hints.update_item, { destructiveHint: false, idempotentHint: true });
+  assertEquals(hints.remove_items, { destructiveHint: true, idempotentHint: true });
+  assertEquals(hints.untick_items, { destructiveHint: false, idempotentHint: true });
+  assertEquals(hints.get_item, { readOnlyHint: true });
+  assertEquals(hints.merge_items, { destructiveHint: true });
+});
+
+Deno.test('job 344: update_item takes the fields to change and the list to move to', async () => {
+  const s = serve(locked);
+  const { tools } = (await message(await s.handle(rpc('tools/list')))).result;
+  const update = tools.find((t) => t.name === 'update_item');
+  assertEquals(Object.keys(update?.inputSchema.properties ?? {}).sort(), [
+    'brand',
+    'category',
+    'household',
+    'item',
+    'list',
+    'name',
+    'properties',
+    'quantity',
+    'store',
+    'toList',
+  ]);
 });
 
 Deno.test('locked: English for a client that prefers it', async () => {

@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Snacklist API
-  version: 1.0.0
+  version: 1.1.0
   summary: One household's Snacklist shopping list over HTTP.
   description: >-
     The guide is docs/API.md in the family-groceries repository: authentication with API keys,
@@ -26,6 +26,7 @@ x-ok-headers: &ok
 tags:
   - name: items
   - name: catalog
+  - name: household
 paths:
   /v1/items:
     get:
@@ -152,31 +153,22 @@ paths:
         '429': { $ref: '#/components/responses/TooManyRequests' }
         default: { $ref: '#/components/responses/Error' }
     patch:
-      operationId: moveItem
+      operationId: updateItem
       tags: [items]
-      summary: Move an open item to another category and/or store
+      summary: Edit an open item
       description: >-
-        The item goes to the end of its new group, and the household remembers both for the next
-        time the item is added. Requires the write scope.
+        Changes any of the item's name, quantity, brand, properties, list, category and store, like
+        the app's edit sheet; at least one field. null or a blank text clears quantity, brand or
+        properties. A new list keeps the item's category and store. A new category or store puts
+        the item at the end of its new group, and the household remembers both for the next time
+        the item is added. Only open items: a ticked one is item_not_found. A rename that would
+        make the item the twin of another open item on its list (same name, brand and properties)
+        is a 409 conflict and changes nothing. Requires the write scope.
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              additionalProperties: false
-              minProperties: 1
-              properties:
-                category:
-                  description: A category id or name.
-                  type: string
-                  minLength: 1
-                  maxLength: 60
-                store:
-                  description: A store id or name; null removes the store.
-                  type: [string, 'null']
-                  minLength: 1
-                  maxLength: 60
+            schema: { $ref: '#/components/schemas/ItemEdit' }
       responses:
         '200': { $ref: '#/components/responses/OneItem' }
         '400': { $ref: '#/components/responses/BadRequest' }
@@ -184,8 +176,41 @@ paths:
         '402': { $ref: '#/components/responses/PremiumRequired' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/EditConflict' }
         '413': { $ref: '#/components/responses/PayloadTooLarge' }
         '415': { $ref: '#/components/responses/UnsupportedMediaType' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Error' }
+    delete:
+      operationId: deleteItem
+      tags: [items]
+      summary: Remove an item, open or ticked
+      description: >-
+        Removes the item like a delete in the app and answers with the item as it was. What the
+        household taught Snacklist about it (category, store) stays for the next add. With an
+        Idempotency-Key a retry gets the same answer instead of item_not_found. Requires the write
+        scope.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: The item as it was before it was removed.
+          headers: *ok
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/Item' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/PremiumRequired' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
         '422': { $ref: '#/components/responses/Unprocessable' }
         '429': { $ref: '#/components/responses/TooManyRequests' }
         default: { $ref: '#/components/responses/Error' }
@@ -252,9 +277,47 @@ paths:
       description: >-
         A household has one or more lists (for example "Wocheneinkauf" and "Baumarkt"). An add
         without list goes to the key owner's default list (chosen in the app, else the first, the
-        lowest sortOrder). Requires the read scope.
+        lowest sortOrder), the one marked default. Requires the read scope.
       responses:
-        '200': { $ref: '#/components/responses/Catalog' }
+        '200':
+          description: The whole list (short; nextCursor is always null).
+          headers: *ok
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [data, nextCursor]
+                properties:
+                  data: { type: array, items: { $ref: '#/components/schemas/List' } }
+                  nextCursor: { type: 'null' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/PremiumRequired' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Error' }
+  /v1/household:
+    get:
+      operationId: getHousehold
+      tags: [household]
+      summary: The key's household
+      description: >-
+        The household the key works in: its name, the currency the app shows prices in and how
+        many members it has. Never a member's name, email address or user id. Requires the read
+        scope.
+      responses:
+        '200':
+          description: The household.
+          headers: *ok
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/Household' }
         '400': { $ref: '#/components/responses/BadRequest' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '402': { $ref: '#/components/responses/PremiumRequired' }
@@ -372,6 +435,84 @@ components:
                     description: The similar open items, the oldest first.
                     items: { $ref: '#/components/schemas/Item' }
                   total: { type: integer, minimum: 1, description: How many similar open items there are. }
+    ItemEdit:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      description: At least one field. Fields left out stay as they are.
+      properties:
+        name:
+          description: The new name, taken as it is (not split like an add).
+          type: string
+          minLength: 1
+          maxLength: 120
+        quantity:
+          description: Menge; null or a blank text clears it.
+          type: [string, 'null']
+          maxLength: 40
+        brand:
+          description: Marke; null or a blank text clears it.
+          type: [string, 'null']
+          maxLength: 60
+        properties:
+          description: Eigenschaften, comma-separated; null or a blank text clears them.
+          type: [string, 'null']
+          maxLength: 120
+        list:
+          description: A list id or exact name (any case); moves the item to that list.
+          type: string
+          minLength: 1
+          maxLength: 60
+        category:
+          description: A category id or name.
+          type: string
+          minLength: 1
+          maxLength: 60
+        store:
+          description: A store id or name; null removes the store.
+          type: [string, 'null']
+          minLength: 1
+          maxLength: 60
+    Household:
+      type: object
+      additionalProperties: false
+      required: [id, name, currency, memberCount]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string, examples: [Familie Brandt] }
+        currency: { type: string, pattern: '^[A-Z]{3}$', description: ISO 4217 code., examples: [EUR] }
+        memberCount: { type: integer, minimum: 1 }
+    List:
+      type: object
+      additionalProperties: false
+      required: [id, name, sortOrder, default]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string, examples: [Wocheneinkauf] }
+        sortOrder: { type: integer }
+        default:
+          type: boolean
+          description: true for the key owner's default list, where adds without list go.
+    PremiumRequiredError:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          required: [code, message, details]
+          properties:
+            code: { type: string, const: premium_required }
+            message: { type: string, description: English text for a developer; may change. }
+            details:
+              type: object
+              additionalProperties: false
+              required: [integration, unlock]
+              description: Which integration is locked and where it unlocks. No link and no price.
+              properties:
+                integration: { type: string, const: api }
+                unlock: { type: string, const: app, description: Unlocked in the Snacklist app. }
     Counts:
       type: object
       additionalProperties: false
@@ -478,7 +619,7 @@ components:
       description: premium_required; the key's holder needs Snacklist Premium for the API (their own plan, or a grant of the key's household). Nothing was read or changed.
       content:
         application/json:
-          schema: { $ref: '#/components/schemas/Error' }
+          schema: { $ref: '#/components/schemas/PremiumRequiredError' }
     Forbidden:
       description: insufficient_scope (details.required names the scope).
       content:
@@ -491,6 +632,14 @@ components:
           schema: { $ref: '#/components/schemas/Error' }
     Conflict:
       description: conflict; a concurrent change got in the way, nothing was changed; retry.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    EditConflict:
+      description: >-
+        conflict; either a concurrent change got in the way (retry), or the new name would make the
+        item the twin of another open item on its list (a retry gets the same answer). Nothing was
+        changed.
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }

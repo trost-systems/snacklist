@@ -6,7 +6,8 @@
 // public.default_list: their choice, else the first list), where Siri and Alexa act too.
 import { oneRow, OutOfTime, type Tx } from './db.ts';
 
-export type ToolErrorReason = 'not_found' | 'ambiguous' | 'invalid';
+/** `conflict`: a write that clashes with the list's state, such as a rename onto an open twin. */
+export type ToolErrorReason = 'not_found' | 'ambiguous' | 'invalid' | 'conflict';
 
 /** What a name or id was meant to find. */
 export type Subject = 'item' | 'store' | 'category' | 'list';
@@ -244,14 +245,26 @@ async function itemsById(tx: Tx, ids: readonly string[]): Promise<Item[]> {
 const itemNotFound = (id: string) =>
   new ToolError(`Eintrag „${id}“ nicht gefunden.`, 'not_found', 'item', [], id);
 
-/** One item of the household by id, open or ticked. */
-export async function itemById(tx: Tx, household: string, id: string): Promise<ApiItem> {
+/** One item of the household by id, open or ticked; with [list], only on that list. */
+async function itemRow(
+  tx: Tx,
+  household: string,
+  id: string,
+  list: string | null = null,
+): Promise<ApiItem | undefined> {
   const [row] = await tx<ApiItem[]>`
     select ${apiColumns(tx)}
     from public.items i
     join public.categories c on c.id = i.category_id
     left join public.stores s on s.id = i.store_id
-    where i.id = ${id}::uuid and i.household_id = ${household}`;
+    where i.id = ${id}::uuid and i.household_id = ${household}
+      and (${list}::uuid is null or i.list_id = ${list}::uuid)`;
+  return row;
+}
+
+/** One item of the household by id, open or ticked. */
+export async function itemById(tx: Tx, household: string, id: string): Promise<ApiItem> {
+  const row = await itemRow(tx, household, id);
   if (!row) throw itemNotFound(id);
   return row;
 }
@@ -546,6 +559,32 @@ async function openItem(
   return resolve(active, ref, 'item');
 }
 
+type NotFound = { item: string; reason: string };
+
+/**
+ * The open items [refs] name, like tick_items finds them: on the list [list] names, else names on
+ * the default list and ids on any list of the household. A ref that finds none is in notFound.
+ */
+async function openIds(
+  tx: Tx,
+  household: string,
+  refs: readonly string[],
+  list: string | undefined,
+): Promise<{ ids: string[]; notFound: NotFound[] }> {
+  const active = await activeItems(tx, (await listOf(tx, household, list)).id);
+  const ids: string[] = [];
+  const notFound: NotFound[] = [];
+  for (const ref of refs) {
+    try {
+      ids.push((await openItem(tx, household, ref, list, active)).id);
+    } catch (e) {
+      if (!(e instanceof ToolError)) throw e;
+      notFound.push({ item: ref, reason: e.message });
+    }
+  }
+  return { ids, notFound };
+}
+
 /**
  * Ticks open items by name or id: on the list [list] names, else names on the default list and ids
  * on any list of the household.
@@ -555,22 +594,99 @@ export async function tickItems(
   household: string,
   refs: readonly string[],
   list?: string | undefined,
-): Promise<{ ticked: Item[]; notFound: { item: string; reason: string }[] }> {
-  const active = await activeItems(tx, (await listOf(tx, household, list)).id);
+): Promise<{ ticked: Item[]; notFound: NotFound[] }> {
+  const { ids, notFound } = await openIds(tx, household, refs, list);
+  if (ids.length > 0) {
+    await tx`update public.items set status = 'bought'
+             where id = any(${ids}::uuid[]) and household_id = ${household}`;
+  }
+  return { ticked: await itemsById(tx, ids), notFound };
+}
+
+/**
+ * Deletes open items found like tickItems finds them, the app's plain delete: the household keeps
+ * what it learned from them (only the app's undo of an add forgets). Answers the rows as they were.
+ */
+export async function removeItems(
+  tx: Tx,
+  household: string,
+  refs: readonly string[],
+  list?: string | undefined,
+): Promise<{ removed: Item[]; notFound: NotFound[] }> {
+  const { ids, notFound } = await openIds(tx, household, refs, list);
+  const removed = await itemsById(tx, ids);
+  if (ids.length > 0) {
+    await tx`delete from public.items where id = any(${ids}::uuid[]) and household_id = ${household}`;
+  }
+  return { removed, notFound };
+}
+
+/** How many ticked names untickItems resolves a name among: the most recently ticked. */
+const UNTICK_NAMES = 50;
+
+/**
+ * Unticks ticked items. An id finds one on the list [list] names, without [list] on any list of
+ * the household. A name finds the most recently ticked row of that name on the list [list] names,
+ * else on the default list, unless the item is open there already: a repeat changes nothing.
+ */
+export async function untickItems(
+  tx: Tx,
+  household: string,
+  refs: readonly string[],
+  list?: string | undefined,
+): Promise<{ unticked: Item[]; notFound: NotFound[] }> {
+  const shown = await listOf(tx, household, list);
+  const ticked = await tx<Named[]>`
+    select id, name from (
+      select distinct on (lower(name)) id, name, bought_at, created_at from public.items
+      where household_id = ${household} and list_id = ${shown.id} and status = 'bought'
+      order by lower(name), bought_at desc nulls last, created_at desc
+    ) latest
+    order by bought_at desc nulls last, created_at desc
+    limit ${UNTICK_NAMES}`;
   const ids: string[] = [];
-  const notFound: { item: string; reason: string }[] = [];
+  const notFound: NotFound[] = [];
   for (const ref of refs) {
+    const id = ref.trim().toLowerCase();
+    if (UUID.test(id)) {
+      const [row] = await tx<{ status: string }[]>`
+        select status from public.items
+        where id = ${id}::uuid and household_id = ${household}
+          and (${list === undefined}::boolean or list_id = ${shown.id}::uuid)`;
+      if (row?.status === 'bought') {
+        ids.push(id);
+        continue;
+      }
+      if (row) {
+        notFound.push({ item: ref, reason: `Eintrag „${ref}“ ist nicht abgehakt.` });
+        continue;
+      }
+    }
     try {
-      ids.push((await openItem(tx, household, ref, list, active)).id);
+      const row = resolve(ticked, ref, 'item');
+      // A repeat would otherwise bring back an older ticked twin: every purchase leaves one.
+      const [open] = await tx<Named[]>`
+        select o.id, o.name from public.items o, public.items t
+        where t.id = ${row.id} and o.household_id = ${household} and o.list_id = t.list_id
+          and o.status = 'active' and o.id <> t.id
+          and public.open_item_key(o.name, o.brand, o.properties) =
+            public.open_item_key(t.name, t.brand, t.properties)
+        limit 1`;
+      if (open) {
+        notFound.push({ item: ref, reason: `„${open.name}“ steht schon offen auf der Liste.` });
+        continue;
+      }
+      ids.push(row.id);
     } catch (e) {
       if (!(e instanceof ToolError)) throw e;
       notFound.push({ item: ref, reason: e.message });
     }
   }
   if (ids.length > 0) {
-    await tx`update public.items set status = 'bought' where id = any(${ids}::uuid[])`;
+    await tx`update public.items set status = 'active'
+             where id = any(${ids}::uuid[]) and household_id = ${household} and status = 'bought'`;
   }
-  return { ticked: await itemsById(tx, ids), notFound };
+  return { unticked: await itemsById(tx, ids), notFound };
 }
 
 /**
@@ -588,10 +704,42 @@ export async function setItemStatus(
   return await itemById(tx, household, id);
 }
 
+/**
+ * One item with its status: an id finds it open or ticked on the list [list] names, without
+ * [list] on any list of the household; a name finds an open item on that list or the default list.
+ */
+export async function getItem(
+  tx: Tx,
+  household: string,
+  ref: string,
+  list?: string | undefined,
+): Promise<Item & { status: 'open' | 'ticked'; addedAt: string }> {
+  const shown = await listOf(tx, household, list);
+  const id = ref.trim().toLowerCase();
+  const byId = UUID.test(id)
+    ? await itemRow(tx, household, id, list === undefined ? null : shown.id)
+    : undefined;
+  const row = byId ??
+    await itemById(tx, household, resolve(await activeItems(tx, shown.id), ref, 'item').id);
+  return { ...toItem(row), status: row.status, addedAt: row.addedAt };
+}
+
 export type Move = { category?: string | undefined; store?: string | null | undefined };
 
-const nothingToMove = () =>
-  new ToolError('Gib eine Kategorie oder einen Laden an.', 'invalid', null);
+/**
+ * A change to an open item, the app's edit, move and move to another list in one: the text
+ * fields given (null or blank clears quantity, brand and properties), the list a `list`
+ * reference names, and category and store as Move.
+ */
+export type ItemEdit = Move & {
+  name?: string | undefined;
+  quantity?: string | null | undefined;
+  brand?: string | null | undefined;
+  properties?: string | null | undefined;
+  list?: string | undefined;
+};
+
+const cleared = (value: string | null) => value?.trim() || null;
 
 /**
  * Changes category and/or store through public.move_item: the item goes to the end of its new
@@ -615,38 +763,148 @@ async function moveOpen(
 }
 
 /**
- * Moves an open item by name or id (the MCP tool): on the list [move.list] names, else a name on
- * the default list and an id on any list of the household.
+ * Edits an open item with the writes the app makes, so the triggers learn and guard alike: an
+ * update of the given text columns, one of list_id, then public.move_item. A rename or move that
+ * gives it the key of another open item on its list is a conflict (items_rename_duplicate).
  */
-export async function moveItem(
+async function editOpen(
   tx: Tx,
   household: string,
-  move: Move & { item: string; list?: string | undefined },
+  item: Named & { store_id: string | null },
+  edit: ItemEdit,
+): Promise<void> {
+  const columns: Record<string, string | null> = {};
+  if (edit.name !== undefined) columns.name = edit.name.trim();
+  if (edit.quantity !== undefined) columns.quantity = cleared(edit.quantity);
+  if (edit.brand !== undefined) columns.brand = cleared(edit.brand);
+  if (edit.properties !== undefined) columns.properties = cleared(edit.properties);
+  const moves = edit.category !== undefined || edit.store !== undefined;
+  if (Object.keys(columns).length === 0 && edit.list === undefined && !moves) {
+    throw new ToolError('Gib an, was sich ändern soll.', 'invalid', null);
+  }
+  const name = columns.name ?? item.name;
+  try {
+    if (Object.keys(columns).length > 0) {
+      await tx`update public.items set ${tx(columns)}
+               where id = ${item.id} and household_id = ${household}`;
+    }
+    if (edit.list !== undefined) {
+      const target = await listOf(tx, household, edit.list);
+      await tx`update public.items set list_id = ${target.id}
+               where id = ${item.id} and household_id = ${household} and list_id <> ${target.id}`;
+    }
+  } catch (e) {
+    const { name: kind, code, message } = (e ?? {}) as Record<string, unknown>;
+    if (kind === 'PostgresError' && code === '23505' && message === 'already_on_list') {
+      throw new ToolError(
+        `„${name}“ steht schon offen auf der Liste.`,
+        'conflict',
+        'item',
+        [],
+        name,
+      );
+    }
+    throw e;
+  }
+  if (moves) await moveOpen(tx, household, item, edit);
+}
+
+/**
+ * Edits an open item by name or id (the MCP tools): found on the list [at.list] names, else a name
+ * on the default list and an id on any list of the household. [edit.list] is where it moves.
+ */
+export async function updateItem(
+  tx: Tx,
+  household: string,
+  at: { item: string; list?: string | undefined },
+  edit: ItemEdit,
 ): Promise<Item> {
-  if (move.category === undefined && move.store === undefined) throw nothingToMove();
   const item = await openItem(
     tx,
     household,
-    move.item,
-    move.list,
-    await activeItems(tx, (await listOf(tx, household, move.list)).id),
+    at.item,
+    at.list,
+    await activeItems(tx, (await listOf(tx, household, at.list)).id),
   );
-  await moveOpen(tx, household, item, move);
-  return oneRow(await itemsById(tx, [item.id]), 'moved item');
+  await editOpen(tx, household, item, edit);
+  return oneRow(await itemsById(tx, [item.id]), 'edited item');
 }
 
-/** Moves an open item by id (the API); a ticked or unknown one is not found. */
-export async function moveItemById(
+/** Edits an open item by id (the API); a ticked or unknown one is not found. */
+export async function updateItemById(
   tx: Tx,
   household: string,
   id: string,
-  move: Move,
+  edit: ItemEdit,
 ): Promise<ApiItem> {
-  if (move.category === undefined && move.store === undefined) throw nothingToMove();
-  const [item] = await tx<{ id: string; store_id: string | null }[]>`
-    select id, store_id from public.items
+  const [item] = await tx<(Named & { store_id: string | null })[]>`
+    select id, name, store_id from public.items
     where id = ${id}::uuid and household_id = ${household} and status = 'active'`;
   if (!item) throw itemNotFound(id);
-  await moveOpen(tx, household, item, move);
+  await editOpen(tx, household, item, edit);
   return await itemById(tx, household, id);
+}
+
+/** Deletes an item of the household by id, open or ticked, like the app; answers it as it was. */
+export async function deleteItemById(tx: Tx, household: string, id: string): Promise<ApiItem> {
+  const item = await itemById(tx, household, id);
+  await tx`delete from public.items where id = ${id}::uuid and household_id = ${household}`;
+  return item;
+}
+
+/**
+ * Folds the open item [merge] names into the one [keep] names through public.merge_items, the
+ * app's "Zusammenführen": kept keeps its name, the quantities add up ("2" and "3" make "5"), a
+ * missing brand or properties come from the other, which is deleted. Both are found like tickItems
+ * finds them, and must be on the same list. Answers kept as it is now and merged as it was.
+ */
+export async function mergeItems(
+  tx: Tx,
+  household: string,
+  refs: { keep: string; merge: string; list?: string | undefined },
+): Promise<{ kept: Item; merged: Item }> {
+  const active = await activeItems(tx, (await listOf(tx, household, refs.list)).id);
+  const keep = await openItem(tx, household, refs.keep, refs.list, active);
+  const other = await openItem(tx, household, refs.merge, refs.list, active);
+  if (keep.id === other.id) {
+    throw new ToolError(
+      `„${refs.keep}“ und „${refs.merge}“ sind derselbe Eintrag.`,
+      'invalid',
+      'item',
+    );
+  }
+  const rows = await itemsById(tx, [keep.id, other.id]);
+  const kept = oneRow(rows.filter((r) => r.id === keep.id), 'item to keep');
+  const merged = oneRow(rows.filter((r) => r.id === other.id), 'item to merge');
+  // The app merges only rows of the list it shows; ids alone could reach two lists.
+  if (kept.listId !== merged.listId) {
+    throw new ToolError(
+      `„${refs.keep}“ und „${refs.merge}“ stehen auf verschiedenen Listen. Zusammengeführt wird ` +
+        'nur auf einer Liste.',
+      'invalid',
+      'item',
+    );
+  }
+  try {
+    await tx`select public.merge_items(gen_random_uuid(), ${keep.id}::uuid, ${other.id}::uuid)`;
+  } catch (e) {
+    const { name, code } = (e ?? {}) as Record<string, unknown>;
+    if (name === 'PostgresError' && code === '22001') {
+      throw new ToolError(
+        'Die zusammengeführte Menge wäre zu lang (höchstens 40 Zeichen).',
+        'invalid',
+        'item',
+      );
+    }
+    // Ticked or deleted by someone else since they were found.
+    if (name === 'PostgresError' && (code === 'P0002' || code === '22023')) {
+      throw new ToolError(
+        `„${refs.keep}“ oder „${refs.merge}“ ist nicht mehr offen.`,
+        'not_found',
+        'item',
+      );
+    }
+    throw e;
+  }
+  return { kept: oneRow(await itemsById(tx, [keep.id]), 'kept item'), merged };
 }

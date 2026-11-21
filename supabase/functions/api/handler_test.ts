@@ -178,6 +178,7 @@ Deno.test('a read key cannot write: 403 insufficient_scope names the scope', asy
       call('/items', { method: 'POST', body: JSON.stringify({ items: [{ name: 'Milch' }] }) }),
       call(`/items/${ID}/tick`, { method: 'POST' }),
       call(`/items/${ID}`, { method: 'PATCH', body: JSON.stringify({ store: null }) }),
+      call(`/items/${ID}`, { method: 'DELETE' }),
     ]
   ) {
     const deps = fake({ begin: ok(reader) });
@@ -199,7 +200,9 @@ Deno.test('a household without Premium under the lock gets 402 and nothing runs'
     deps,
   );
   assertEquals(res.status, 402);
-  assertEquals((await errorOf(res)).code, 'premium_required');
+  const error = await errorOf(res);
+  assertEquals(error.code, 'premium_required');
+  assertEquals(error.details, { integration: 'api', unlock: 'app' }, 'where to unlock, no link');
   assertEquals(deps.executed, []);
   assertRateHeaders(res, '20', '19');
 });
@@ -372,16 +375,62 @@ Deno.test('field limits: name 1 to 120, quantity non-empty, batch 1 to 50', asyn
   const items = Array.from({ length: 51 }, (_, i) => ({ name: `Item ${i}` }));
   await rejected(post(JSON.stringify({ items })), 400, 'validation_failed');
   await rejected(call('/items', { method: 'POST' }), 400, 'validation_failed');
-  await rejected(
-    call(`/items/${ID}`, { method: 'PATCH', body: '{}' }),
-    400,
-    'validation_failed',
-  );
 
   const deps = fake();
   const fifty = Array.from({ length: 50 }, (_, i) => ({ name: `Item ${i}` }));
   assertEquals((await handle(post(JSON.stringify({ items: fifty })), deps)).status, 200);
   assertEquals(deps.executed.length, 1, '50 items are fine');
+});
+
+const patch = (body: unknown) =>
+  call(`/items/${ID}`, { method: 'PATCH', body: JSON.stringify(body) });
+
+Deno.test('PATCH takes at least one known field; blank or null clears the optional text', async () => {
+  const empty = await rejected(patch({}), 400, 'validation_failed');
+  assertEquals(empty.details?.issues, [
+    { path: 'body', message: 'Give at least one field to change' },
+  ]);
+  await rejected(patch({ status: 'open' }), 400, 'validation_failed');
+  await rejected(patch({ name: '  ' }), 400, 'validation_failed');
+  await rejected(patch({ name: 'x'.repeat(121) }), 400, 'validation_failed');
+  await rejected(patch({ quantity: 'x'.repeat(41) }), 400, 'validation_failed');
+  await rejected(patch({ brand: 'x'.repeat(61) }), 400, 'validation_failed');
+  await rejected(patch({ properties: 'x'.repeat(121) }), 400, 'validation_failed');
+  await rejected(patch({ list: null }), 400, 'validation_failed');
+  await rejected(patch({ category: null }), 400, 'validation_failed');
+  for (
+    const body of [
+      { name: ' Hafermilch ' },
+      { quantity: null },
+      { quantity: '' },
+      { brand: null, properties: ' ' },
+      { list: 'Baumarkt' },
+      { store: null },
+      { name: 'Milch', quantity: '2', brand: 'Ja!', category: 'Kühlregal', store: 'dm' },
+    ]
+  ) {
+    const deps = fake();
+    const res = await handle(patch(body), deps);
+    assertEquals(res.status, 200, JSON.stringify(body));
+    assertEquals(deps.executed[0]?.idempotency, null, 'a PATCH takes no Idempotency-Key');
+  }
+});
+
+Deno.test('DELETE takes no query and no body, and an Idempotency-Key', async () => {
+  await rejected(call(`/items/${ID}?hard=1`, { method: 'DELETE' }), 400, 'validation_failed');
+  await rejected(
+    call(`/items/${ID}`, { method: 'DELETE', body: JSON.stringify({ id: ID }) }),
+    400,
+    'validation_failed',
+  );
+  await rejected(call('/items/milch', { method: 'DELETE' }), 400, 'invalid_id');
+  const deps = fake();
+  const res = await handle(
+    call(`/items/${ID}`, { method: 'DELETE', headers: { 'idempotency-key': 'd-1' } }),
+    deps,
+  );
+  assertEquals(res.status, 200);
+  assertEquals(deps.executed[0]?.idempotency?.key, 'd-1');
 });
 
 Deno.test('a body must be JSON, application/json and at most 64 KiB', async () => {
@@ -427,7 +476,10 @@ Deno.test('unknown paths are 404 not_found, wrong methods 405 with Allow', async
   assertEquals((await errorOf(res)).code, 'method_not_allowed');
   assertEquals(res.headers.get('allow'), 'GET, POST');
   const one = await handle(call(`/items/${ID}`, { method: 'PUT', body: '{}' }), fake());
-  assertEquals(one.headers.get('allow'), 'GET, PATCH');
+  assertEquals(one.headers.get('allow'), 'GET, PATCH, DELETE');
+  const household = await handle(call('/household', { method: 'POST', body: '{}' }), fake());
+  assertEquals(household.status, 405);
+  assertEquals(household.headers.get('allow'), 'GET');
 });
 
 Deno.test('a broken cursor is 400 invalid_cursor before anything runs', async () => {
@@ -570,6 +622,7 @@ Deno.test('list errors map to their codes; a unique violation is 409, out of tim
     [new ToolError('x', 'not_found', 'list', ['Einkaufsliste'], 'Baumarkt'), 422, 'list_not_found'],
     [new ToolError('x', 'ambiguous', 'list', ['a', 'b'], 'Fest'), 422, 'ambiguous_list'],
     [Object.assign(new Error('dup'), { name: 'PostgresError', code: '23505' }), 409, 'conflict'],
+    [new ToolError('x', 'conflict', 'item', [], 'Milch'), 409, 'conflict'],
     [
       Object.assign(new Error('gone'), { name: 'PostgresError', code: '57P01' }),
       503,
@@ -661,6 +714,10 @@ Deno.test('OPTIONS answers CORS for the API headers without touching the key', a
   const res = await handle(new Request(`${BASE}/items`, { method: 'OPTIONS' }), deps);
   assertEquals(res.status, 204);
   assert(res.headers.get('access-control-allow-headers')?.includes('idempotency-key'));
+  assertEquals(
+    res.headers.get('access-control-allow-methods'),
+    'GET, POST, PATCH, DELETE, OPTIONS',
+  );
   assert(res.headers.get('access-control-expose-headers')?.includes('x-ratelimit-remaining'));
   assertEquals(deps.begun, []);
 });
