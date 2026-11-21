@@ -37,6 +37,8 @@ await context.route(`${SB}/**`, (route) => {
   else if (url.pathname === '/rest/v1/household_members' && (url.searchParams.get('select') || '').includes('households')) body = (req.headers()['accept'] || '').includes('object') ? JSON.stringify({ households: household }) : JSON.stringify([{ households: household }]);
   else if (url.pathname === '/rest/v1/household_members') body = JSON.stringify([{ user_id: user.id, role: 'owner' }]);
   else if (url.pathname === '/rest/v1/profiles') body = JSON.stringify([{ id: user.id, display_name: 'Proof' }]);
+  // The proof's user is in the tester group internal, which shows „Testfehler senden“ (job 337).
+  else if (url.pathname === '/rest/v1/rpc/my_tester_groups') body = '["internal"]';
   else if (url.pathname.startsWith('/rest/v1/rpc/')) body = '[]';
   return route.fulfill({ status: 200, headers: cors, body });
 });
@@ -67,14 +69,11 @@ const beforeConsent = sent.length;
 await page.getByRole('button', { name: 'Erlauben', exact: true }).click();
 await page.getByRole('tab', { name: 'Mehr', exact: true }).or(page.getByRole('button', { name: 'Mehr Tab ' })).click();
 await page.waitForURL(/\/more$/);
-const version = page.getByText(/^Version /);
 await page.mouse.move(240, 400);
 for (let i = 0; i < 6; i++) { await page.mouse.wheel(0, 600); await page.waitForTimeout(200); }
 await page.waitForTimeout(800);
 await page.screenshot({ path: `${out}/ac11-02a-more-consent-on.png` });
-const box = await version.boundingBox();
-await page.mouse.move(box.x + box.width / 2, box.y + box.height - 7);
-await page.mouse.down(); await page.waitForTimeout(1200); await page.mouse.up();
+// The faked my_tester_groups says internal: the button shows without a long press (job 337).
 await page.getByRole('button', { name: 'Testfehler senden' }).waitFor();
 await page.screenshot({ path: `${out}/ac11-02-internal-install.png` });
 await page.getByRole('button', { name: 'Testfehler senden' }).click();

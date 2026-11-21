@@ -786,24 +786,22 @@ class const _AnalyticsSwitch() extends StatelessWidget {
   }
 }
 
-/// The version; a long press marks this install internal (or not), so a
-/// test phone's events are filtered out of the gate insights. An internal
-/// install can raise a test error for error tracking.
+/// The version, and where [Analytics.showsInternalTools] (a debug or
+/// profile build, the tester group `internal`) the install id to copy and a
+/// test error for error tracking.
 class const _Version() extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final internal = context.select<Analytics, bool>(
-      (a) => a.state.internalInstall,
+      (a) => a.showsInternalTools,
     );
     return Column(
       children: [
-        GestureDetector(
-          // The whole row, padding included, takes the long press.
-          behavior: HitTestBehavior.opaque,
-          onLongPress: () => unawaited(
-            context.read<Analytics>().markInternalInstall(internal: !internal),
-          ),
+        // Its own node: with the buttons below, the line would otherwise
+        // become their group's label on the web instead of text.
+        Semantics(
+          container: true,
           child: FutureBuilder(
             future: PackageInfo.fromPlatform(),
             builder: (context, snapshot) => Padding(
@@ -821,11 +819,6 @@ class const _Version() extends StatelessWidget {
           ),
         ),
         if (internal) ...[
-          Text(
-            l10n.internalInstall,
-            key: const ValueKey('more-internal'),
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
           if (context.read<Analytics>().flagInstallId case final id?)
             TextButton(
               key: const ValueKey('more-install-id'),

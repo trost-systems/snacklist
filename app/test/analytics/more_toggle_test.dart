@@ -199,25 +199,63 @@ void main() {
     });
   });
 
-  testWidgets('a long press on the version marks the install internal', (
-    tester,
-  ) async {
+  testWidgets('a long press on the version unlocks nothing; the tester '
+      'group internal shows the test error', (tester) async {
     final (analytics, _) = await consented();
     await pumpMore(tester, analytics: analytics, size: const Size(390, 2000));
     expect(find.byKey(const ValueKey('more-test-error')), findsNothing);
     await tester.longPress(version);
     await tester.pumpAndSettle();
-    expect(analytics.state.internalInstall, isTrue);
-    expect(find.text('Interne Installation'), findsOneWidget);
-    expect(find.byKey(const ValueKey('more-test-error')), findsOneWidget);
-    expect(find.byType(SnackBar), findsNothing);
-    await tester.longPress(version);
+    expect(analytics.internalNow, isFalse);
+    expect(find.byKey(const ValueKey('more-test-error')), findsNothing);
+    expect(find.byKey(const ValueKey('more-install-id')), findsNothing);
+    analytics.setTesterGroups({'internal'});
     await tester.pumpAndSettle();
-    expect(analytics.state.internalInstall, isFalse);
-    expect(find.text('Interne Installation'), findsNothing);
+    expect(find.byKey(const ValueKey('more-test-error')), findsOneWidget);
+    analytics.setTesterGroups({'beta-de'});
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('more-test-error')), findsNothing);
   });
 
-  testWidgets('an internal install copies the install id flags target', (
+  testWidgets('a release build shows no tools to the RevenueCat tester '
+      'household (App Review) or a test account, internal as they are', (
+    tester,
+  ) async {
+    final (analytics, _) = await consented();
+    analytics.testerHousehold = householdA;
+    await pumpMore(tester, analytics: analytics, size: const Size(390, 2000));
+    expect(analytics.internalNow, isTrue);
+    expect(find.byKey(const ValueKey('more-test-error')), findsNothing);
+    expect(find.byKey(const ValueKey('more-install-id')), findsNothing);
+    analytics
+      ..testerHousehold = null
+      ..setUser(
+        const AnalyticsUser(
+          email: 'review@example.com',
+          householdId: householdA,
+        ),
+      );
+    await tester.pumpAndSettle();
+    expect(analytics.internalNow, isTrue);
+    expect(find.byKey(const ValueKey('more-test-error')), findsNothing);
+  });
+
+  testWidgets('a debug or profile build shows the tools', (tester) async {
+    NativePostHog().install();
+    final analytics = await loadedAnalytics(
+      store,
+      config: const AnalyticsConfig(
+        releaseBuild: false,
+        householdGroups: false,
+        platform: 'web',
+        appVersion: '0.1.0+7',
+      ),
+    );
+    await pumpMore(tester, analytics: analytics, size: const Size(390, 2000));
+    expect(find.byKey(const ValueKey('more-test-error')), findsOneWidget);
+  });
+
+  testWidgets('an internal user copies the install id flags target', (
     tester,
   ) async {
     final clipboard = <String>[];
@@ -233,8 +271,8 @@ void main() {
     final (analytics, _) = await consented();
     await pumpMore(tester, analytics: analytics, size: const Size(390, 2000));
     final copy = find.byKey(const ValueKey('more-install-id'));
-    expect(copy, findsNothing, reason: 'only on an internal install');
-    await tester.longPress(version);
+    expect(copy, findsNothing, reason: 'only for an internal user');
+    analytics.setTesterGroups({'internal'});
     await tester.pumpAndSettle();
     expect(find.textContaining(store.id!), findsOneWidget);
     await tester.tap(copy);

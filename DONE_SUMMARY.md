@@ -2046,3 +2046,13 @@ member's own insert with `items.created_at` = infinity (or another date outside 
 gets the current time, so API paging no longer stops partway. Job 331's probe, with J1 and J2 checks
 added: 161 of 161 as expected on the branch. Switching on (`public_api`, the PostHog flag
 `public-api`) stays with the lead: NEEDS_LEAD "Job 336". Summary in `docs/done/336.md`.
+
+## Job 337: server-side tester groups, the long-press internal switch removed
+
+Nobody can make an install internal from the app any more: the long press under More is gone.
+Internal testers and opt-in groups (`beta-de`, …) live in `public.tester_groups`, written only by
+the lead's SQL; the app sends `is_internal` and `tester_groups` as flag properties after the
+analytics yes, next to job 332's `platform`, `app_version` and `app_build`. Flag targeting without
+consent was rejected by Legal (N-313): its switch stays off. More's test tools show only in debug
+builds and for the group `internal`, never for App Review's tester accounts (review 0). Landed
+after #589 with Legal's GO; nobody seeded. Details: `docs/done/337-tester-groups.md`.

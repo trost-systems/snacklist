@@ -68,12 +68,13 @@ Our guarantees sit on top of it (DECISIONS Job 44):
 | posthog-js on the web: loading, `init`, `before_send` | `app/lib/analytics/posthog_platform_web.dart` (`loadPostHogJs`), the pinned build in `app/web/posthog/` |
 | Deleting the native SDK's files at an off | `app/lib/analytics/posthog_platform_io.dart` (`forgetPostHogState`), Android: `MainActivity.forgetPostHog` (`familygroceries/posthog`) |
 | Event catalog and allow-list | `app/lib/analytics/events.dart` (`eventCatalog`, `checkEvent`, `contextKeys`, `webEventKeys`) |
-| `is_internal` rules | `app/lib/analytics/internal.dart` (`isInternal`) |
+| `is_internal` rules, the `tester_groups` property | `app/lib/analytics/internal.dart` (`isInternal`, `testerGroupsProperty`) |
+| Tester groups: read at sign-in and on return from the background, kept per user | `app/lib/analytics/tester_groups.dart` (`TesterGroupsSync`), `public.my_tester_groups()`, `DeviceCache` `analytics.tester_groups` |
 | Error type names and the scrubber | `app/lib/analytics/exceptions.dart` (`errorType`, `scrubMessage`, `scrubException`) |
 | Uncaught-error hooks, start-up from the build defines | `app/lib/analytics/setup.dart` (`reportUncaughtErrors`, `startAnalytics`, `allowedHost`); defines in `app/lib/core/environment.dart` |
 | Feature flags | `app/lib/analytics/flags.dart` (`Flags`, read as `Analytics.flags`) |
 | Consent screen | `app/lib/analytics/consent_screen.dart`, route `/analytics-consent` |
-| More switch, internal install | `app/lib/more/more_screen.dart` (`more-analytics`, long press on `more-version`) |
+| More switch; install id and test error for internal users | `app/lib/more/more_screen.dart` (`more-analytics`, `more-install-id`, `more-test-error`) |
 | Edge-function error tracking | `supabase/functions/_shared/telemetry.ts` (`withTelemetry`, `Telemetry`); its own sender, not posthog-node (DECISIONS Job 44, item 16) |
 | Purchase events | `supabase/functions/purchases/` (job 25), `supabase/functions/_shared/purchases.ts` |
 | HogQL and its reference | `analytics/queries/*.sql`, `analytics/metrics.ts`, tests in `analytics/metrics_test.ts` |
@@ -278,13 +279,19 @@ arrives (AC4, the lead runs it).
 
 ## `is_internal`
 
+In a build that can send, a debug or profile build and a user in the tester group `internal`
+see "Installations-ID kopieren" (after a yes) and "Testfehler senden" below the version line under
+More (`Analytics.showsInternalTools`). The other rules below only mark analytics: a test account
+or the RevenueCat tester household (App and Play Review's accounts) gets no tools.
+
 True when any of these holds (`isInternal`, `app/lib/analytics/internal.dart`):
 
 - a debug or profile build, or a Vercel preview deployment (`ANALYTICS_INTERNAL_BUILD`, set by
   `scripts/vercel.sh` for every deployment but production);
-- the install is marked internal: a long press on the version line under More (a snackbar says
-  so; "Interne Installation" shows below it, with a "Testfehler senden" button for error
-  tracking);
+- the signed-in user is in the tester group `internal` (`public.tester_groups`, "Tester groups"
+  below). There is no switch on the device: the long press on the version line that marked an
+  install internal is gone since job 337, and the app deletes the mark older builds kept
+  (`analytics.internal`) at start;
 - the household is in `ANALYTICS_INTERNAL_HOUSEHOLDS` (Peter's family; a build define, not in
   code);
 - the user's e-mail domain is a reserved test domain (`.test`, `.invalid`, `.example`,
@@ -298,6 +305,35 @@ Every gate query drops every event of an install or household that **ever** sent
 `is_internal = true` (`internal.sql`, AC10), so a phone marked internal late, or a tester in a
 household, leaves no trace. PostHog cohorts need person profiles, which the app does not create,
 so the filter is this pair of lists in each query rather than a saved cohort.
+
+### Tester groups
+
+Testers are segmented on the server only (job 337, Peter TG1). `public.tester_groups` holds one
+row per user and group: `user_id` (cascades with the account), `group_name` (`^[a-z0-9-]{2,32}$`)
+and `added_at`. A user reads only their own rows, through `public.my_tester_groups()` (a sorted
+`text[]`); no client can insert, change or delete one. The lead writes them with SQL as the
+service role (the Supabase SQL editor, or `psql` on the project's connection string):
+
+```sql
+-- Find the user (never commit the id).
+select id, email from auth.users where email = '<email>';
+-- Add them to a group: `internal` makes them internal; any other name is an opt-in group.
+insert into public.tester_groups (user_id, group_name)
+values ('<user-uuid>', '<group>') on conflict do nothing;
+-- Remove them from it.
+delete from public.tester_groups where user_id = '<user-uuid>' and group_name = '<group>';
+-- Who is in which group.
+select u.email, t.group_name, t.added_at
+from public.tester_groups t join auth.users u on u.id = t.user_id order by 2, 1;
+```
+
+The app reads the groups at every sign-in and whenever it comes back from the background
+(`TesterGroupsSync`), keeps the last user's in `analytics.tester_groups` for an offline start and
+deletes them at sign-out. A change reaches a running app at its next return from the background.
+
+`internal` makes the user internal (above). Every group goes to PostHog as the flag property
+`tester_groups` (below); nothing else depends on a group name. Name groups by what they test:
+`beta-de`, `alexa`, `trip-mode`.
 
 ### PostHog's "Filter out internal and test users"
 
@@ -410,9 +446,11 @@ Runtime toggles are PostHog feature flags, read in one place: `Analytics.flags.i
   or property targeting. `platform` and `app_version` go as `person_properties`, so a release
   condition on them would target installs without consent by property; a negative condition
   (`is_internal` is not `true`) would match `no-consent` too. A flag meant for everyone gets one
-  unconditional condition at 0 % or 100 %; internal-only flags use `is_internal = true`, which
-  never matches `no-consent`. The version conditions the flag sync writes (job 332, below) keep
-  this rule: each one needs `app_build`, which only installs with a yes send.
+  unconditional condition at 0 % or 100 %; internal-only flags use `is_internal = true`, and
+  group flags `tester_groups` contains `<group>`, which never match `no-consent` (Legal N-313
+  keeps both out of it, "Tester groups without consent"). The version conditions the flag sync
+  writes (job 332, below) keep this rule: each one needs `app_build`, which only installs with a
+  yes send.
 - **Forcing a flag locally.** `--dart-define=FLAGS_ON=public-api` (comma-separated keys,
   `Environment.flagsOn`) turns flags on whatever PostHog serves, only in a build whose
   `POSTHOG_HOST` is not PostHog EU (local, fg, e2e and verify-snacklist builds); store and
@@ -436,15 +474,33 @@ Runtime toggles are PostHog feature flags, read in one place: `Analytics.flags.i
   screenshot: the shake question on iOS and Android, the annotator, the form's Bildschirmname and
   Bildschirmfoto switches, More's „Bildschirmfoto hinzufügen“ and the shake switch under
   Einstellungen, job 267). A flag gates code paths only; it never gates consent, data or legal texts.
-- **Targeting internal installs.** A flag may be released by the person property
-  `is_internal`, so that only internal installs get it (Peter's TestFlight build, marked
-  internal under More). After a yes the app sends `{'is_internal', 'platform', 'app_version',
-  'app_build'}` with `setPersonPropertiesForFlags` when the SDK starts and whenever a value
-  changes, then reads the flags again (`PostHogClient.flagProperties`). It clears them on a no.
-  No person profile is created: the properties go only with the flag request. `app_build` (the
-  build number, a whole number) goes only here, never with the shared no-consent request, which
-  sends `platform` and `app_version`. So a condition that needs `app_build` never matches an
-  install without consent (Legal §18 L2).
+- **Targeting internal users and tester groups.** A flag may be released by the person
+  properties `is_internal` (internal users only: members of the group `internal`, debug and
+  profile builds, and the other `isInternal` rules) and `tester_groups` (the user's groups,
+  sorted and comma-joined, `''` for none: `alexa,beta-de,internal`). After a yes the app sends
+  `{'is_internal', 'tester_groups', 'platform', 'app_version', 'app_build'}` with
+  `setPersonPropertiesForFlags` when the SDK starts and whenever a value changes, then reads the
+  flags again (`PostHogClient.flagProperties`). It clears them on a no. No person profile is
+  created: the properties go only with the flag request. `app_build` (the build number, a whole
+  number) goes only here, never with the shared no-consent request, which sends `platform` and
+  `app_version`. So a condition that needs `app_build` never matches an install without consent
+  (Legal §18 L2).
+  - Internal only: release condition "person property `is_internal` equals `true`", rollout
+    100 %. Flags set up this way before job 337 keep working unchanged.
+  - One opt-in group: "person property `tester_groups` contains `beta-de`" (PostHog's
+    `icontains`), rollout 100 %. Pick group names that are not part of another one (`beta-de`
+    also matches `beta-de-2`), or use the regex operator `(^|,)beta-de(,|$)`.
+  - Internal or a group: two conditions in one flag (they are OR-ed).
+  - Never a negative condition on either (`is_internal` is not `true`, `tester_groups` does not
+    contain …): it matches `no-consent` (rule above).
+- **Tester groups without consent: rejected by Legal (N-313).** Without a current yes, personal
+  flags are not fetched (Legal §18 FL1'), so a tester who declined analytics gets only the shared
+  flags and none released to `is_internal` or a group. Job 337 proposed adding `is_internal` and
+  `tester_groups` (no id) to the shared `no-consent` request for testers. Legal rejected it
+  (N-313, Nov 21 2026): the no-consent flag request never carries `is_internal` or
+  `tester_groups`. The switch `sharedFlagsCarryTesterGroups` (`app/lib/analytics/posthog_client.dart`)
+  stays `false` and must not be turned on; with it off, every install's shared request is the
+  same (`app/test/analytics/flags_test.dart`, group "shared flags with tester groups").
 - **`releases/flags.json` is not this.** It only says which changelog items wait for a rollout
   or a hold (job 40, docs/CHANGELOG.md, "Gated items"). A feature behind a PostHog flag gets its
   key there too (`"rollout": "off"`, `partial`, `full`), set by hand when the PostHog rollout

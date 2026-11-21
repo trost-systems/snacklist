@@ -1703,8 +1703,9 @@ merge; these are the steps to see it and the one open legal question.
    person property `is_internal` equals `true`, rollout 100 %, everyone else off. The app sends
    `is_internal` only with the flag request (no person profile is created; docs/ANALYTICS.md,
    "Feature flags"). On the phone: the analytics yes must be given (More → Nutzungsdaten), and
-   the install must be internal: long-press the version line under More until "Interne
-   Installation" shows (or the household is in `ANALYTICS_INTERNAL_HOUSEHOLDS`); then restart the
+   the install must be internal: since job 337 the lead adds your account to the tester group
+   `internal` (docs/ANALYTICS.md, "Tester groups"; or the household is in
+   `ANALYTICS_INTERNAL_HOUSEHOLDS`); then restart the
    app. The next green `main` build after this merge carries the code to
    TestFlight (`release.yml`). Lea's install sees it too if it is internal; for you alone, add a
    second condition on the install's distinct id instead (PostHog → Activity, your events).
@@ -1732,7 +1733,8 @@ your install only. Flags load only after the analytics yes, so:
 
 1. On the TestFlight build that carries this change (the first green `main` build after it
    merges), say yes to Nutzungsdaten (More → Nutzungsdaten) if you have not.
-2. More → long press the version line at the bottom → "Interne Installation" appears. Tap
+2. More → at the bottom, below the version line (shown to internal users: since job 337 the
+   lead adds your account to the tester group `internal`), tap
    "Installations-ID kopieren: …" and send the id to the lead (it is the PostHog distinct id of
    this install, not your account; a reinstall makes a new one).
 3. Lead, in PostHog (project 319492): create the flag `prices-and-trip-total` if it does not
@@ -1971,8 +1973,8 @@ TestFlight:
 
 1. PostHog → Feature flags → `trip-mode` (the lead creates it): release condition
    `is_internal = true` (the person property job 199 added for flags), or "`distinct_id` equals
-   <your install id>" (More → long press on the version → „Installations-ID kopieren“).
-   Everyone else stays off.
+   <your install id>" (More → „Installations-ID kopieren“ below the version, for internal users
+   since job 337). Everyone else stays off.
 2. The summary's lines (planned, extra, prices) need Premium; the stopwatch, the question and
    the Free card work without. The prices in the summary need `prices-and-trip-total` on too, the
    Verlauf entries `grocery-log`. Keep all three internal until Legal's N-163 to N-168 land.
@@ -1997,8 +1999,8 @@ The add sheet's rows ranked on the device are merged behind the PostHog flag `on
 (off for everyone). To see them on TestFlight:
 
 1. PostHog → Feature flags → `on-device-catalog` (the lead creates it): release condition
-   `is_internal = true`, or "`distinct_id` equals <your install id>" (More → long press on the
-   version → „Installations-ID kopieren“). Everyone else stays off. It needs no other flag; it
+   `is_internal = true`, or "`distinct_id` equals <your install id>" (More → „Installations-ID
+   kopieren“ below the version, for internal users since job 337). Everyone else stays off. It needs no other flag; it
    brings job 272's rows that stay put with it.
 2. What to look for: type a word you bought before, letter by letter. From the second letter the
    sheet shows its full rows at once (bought before, catalogue words, brands) and they do not move
