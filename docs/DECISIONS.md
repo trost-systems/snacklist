@@ -16978,3 +16978,24 @@ pinned above the field, other suggestions hidden); all of it stays behind `add-s
    typo rows. `suggest_parity.json` is rewritten and the pinned exceptions follow the test's own
    output. The server's category-store-off rows that agree with category-store-on get their own
    pin set (`categoryStoreOffExceptions`).
+
+## Job 351: trip detection from plain ticks (research), 2026-11-21
+
+1. **Simulator in TypeScript under the research folder, checked by the lint gate.** It joins
+   `tool/lint/ts/pack.ts`'s projects (strict types) and `scripts/lint.sh` runs its 20 tests
+   (under 2 s). A test fails when the README's tables differ from the simulator's output, so the
+   numbers in the report cannot drift from the code job 352 ports.
+2. **Starting rule read literally.** H1 as "three ticks in a row with gaps under 5 min", T1a's end
+   at 10 min quiet or when the store's open items reach zero, T2a merging on overlap. Both rules
+   skip pharmacies (GL-2), which the brief's rule does not name, so the comparison measures the
+   heuristics only.
+3. **Learner swapped for the comparison, not only the detector.** Job 347's moving average of
+   ranks distorts partial walks (a couple splitting the list: 73 %); the trading-places variant
+   reaches 84 % and equals it elsewhere. The tables show both, so detection and learning effects
+   stay apart. Pairwise votes with the prior as one vote were measured and dropped (never beat the
+   prior: unseen items dilute every learned pair); a reverse-walk rule too (no gain).
+4. **Proposed changes to Peter's approved rule** (H2 bursts, T1a pause) are written as TD-Q1 and
+   TD-Q2 for his call, with the numbers; the rule as shipped by job 352 is his pick.
+5. **No real data.** The only production path is the full-access database password; the brief
+   allows real ticks only through an existing read-only path. The aggregates that would calibrate
+   the pace rule are TD-Q8.

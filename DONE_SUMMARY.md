@@ -2090,3 +2090,15 @@ logic changed, so no flag. Why no generic tail guard: DECISIONS Job 349. Tests: 
 `supabase/tests/classifier_misfires.test.sql` (30 checks), full pgTAP, sweep (353 match), wordlist
 (94.2 % misspellings, 1 false match as before), `scripts/gates/db.sh` classifier steps, parity test
 in Flutter. Ships with the next green main build; no flag.
+
+## Job 351: trip detection from plain ticks (research)
+
+Design and evidence for detecting "someone is in a store ticking" without a started trip, so learned
+order (job 347) learns from people who never start one. `docs/research/351-trip-detection/README.md`:
+the final rule as pseudo-code, 37 red-team cases (each tied to a test or a simulation row), the
+changes to Peter's approved rule with numbers, UX and copy (DE/EN), legal notes, TD-Q1 to TD-Q9.
+`sim/` holds a seeded generator of 7 chaotic household personas, both detectors, two learners and
+an evaluator; `deno test --allow-read` there runs 20 tests (also in the lint gate). Headline on
+synthetic data: wrong taught pairs 10-32 % → 1-4 % (16 % for opposite-direction couples), wrong
+store memory writes 273/1,818 → 0/822, order accuracy +6 to +14 points per household. No real
+data read (no read-only path). Draft PR, never merged; no app or database change, no flag.
