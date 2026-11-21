@@ -1,0 +1,83 @@
+// The page's own words (not the app's; the app's come from strings.js, new UI words from its `proposed`).
+export const text = {
+  en: {
+    overviewTitle: 'The list: prototypes',
+    roundTitle: 'Recently used, expanded (RU1–RU4)',
+    roundBlurb: 'Four ways to keep “Recently used” open under the list and set it apart from the open items, so a tick visibly lands there and one tap brings an item back.',
+    note: 'Prototype with mock data (the fictional Brandt family: an EDEKA and a dm list, 15 bought items). Nothing here ships and the app is unchanged. The base is today’s list with job 350’s hidden categories and job 348’s total (TE1). The phones use the app’s tokens, fonts and icons. Words marked with a dotted underline are new; every other word is the app’s own. Live phones: tap a row to tick it, tap a recent item to put it back.',
+    lang: 'Language', light: 'Light', dark: 'Dark', textSize: 'Text', androidMax: 'Android max', iosMax: 'iPhone max',
+    overview: 'Overview', pick: 'Pick', runner: 'Runner-up', today: 'Today',
+    real: 'The real app (release web build)',
+    frames: {
+      'short-0': ['Short list, nothing bought', '5 open items, Recently used is empty.'],
+      'short-3': ['Short list, 3 bought', '5 open items, 3 in Recently used.'],
+      'short-15': ['Short list, 15 bought', '5 open items, 15 in Recently used.'],
+      'long-15': ['Long list, 15 bought', '11 open items, 15 in Recently used.'],
+      scrolled: ['Long list, scrolled down', 'The section with 15 items, scrolled under the top bar (Today: tapped open).'],
+      open: ['Today, opened', 'The tile tapped open: the list’s own rows at 55 %.'],
+      'tick-start': ['Tick 1 of 3', 'Minced meat ticked: the check flashes (150 ms).'],
+      'tick-mid': ['Tick 2 of 3', 'The row folds away (250 ms).'],
+      'tick-landed': ['Tick 3 of 3', 'Landed first in Recently used, highlighted (fades in 700 ms); scrolled to the section.'],
+      back: ['Back on the list', 'One tap on Bananas: back at its place, highlighted.'],
+      all: ['Show all', 'All 15 after “Show all”.'],
+      peek: ['Long list, the peek', 'Scrolled to the top: the tray is below, the peek shows the newest item.'],
+    },
+    liveCap: 'Live: tap a row to tick it, tap a recent item to put it back.',
+    scenes: { 'short-0': 'Short · 0', 'short-3': 'Short · 3', 'short-15': 'Short · 15', 'long-3': 'Long · 3', 'long-15': 'Long · 15', reset: 'Reset' },
+    todayFacts: `<ul>
+      <li>Recently used is a folded <code>ExpansionTile</code> after the total (<code>shopping_list_view.dart</code>, <code>_usedRow</code>): open, it shows the list’s own rows at 55 % opacity, the newest 20 (<code>recentlyUsed()</code>, <code>model.dart</code>). A tap on one puts it back on the list (“Back on the list” for screen readers).</li>
+      <li>A tick slides the row out of the list. Folded, nothing shows where it went, so a tick looks like a delete.</li>
+      <li>Undo is a tap in that section; there is no undo button (SPEC).</li></ul>`,
+    options: {
+      today: { name: 'Today', what: 'The folded tile, as in main.' },
+      RU1: { name: 'Faded, as today, open', what: 'Today’s rows at 55 %, open by default, with a count and a one-line hint. Folding is remembered per device. Shows all (up to 20).' },
+      RU2: { name: 'Tinted tray with a peek', what: 'A panel in the sunken colour, “Ticked off” with a round check, compact muted rows ending in an undo arrow. While the tray is below the screen, a peek above the add field shows the newest item: one tap returns it.' },
+      RU3: { name: 'Chips', what: 'A dashed rule, the overline “Recently used”, a hint, and outlined pills that wrap. The most compact.' },
+      RU4: { name: 'Ticked with checkmarks', what: 'A labelled rule with the count; full-height rows with a filled round check and the name struck through. The newest 5, then “Show all”.' },
+    },
+    meterLine: (m) => `iPhone at 100 %, scroll top: short list with 3 bought shows <b>${m.s3.active}</b> open and <b>${m.s3.recent}</b> recent rows (first recent ${m.s3.to === null ? 'never shows' : m.s3.to === 0 ? 'on screen' : `${m.s3.to} px down`}); long list with 15 bought: <b>${m.l15.active}</b> open, <b>${m.l15.recent}</b> recent (first recent ${m.l15.to === null ? 'never shows' : m.l15.to === 0 ? 'on screen' : `${m.l15.to} px down`}). Section: ${m.l15.px} px.`,
+    tableTitle: 'Measured',
+    tableNote: 'Whole rows between the top bar and the bottom band (the add field, or RU2’s peek) at scroll top; “to first” is how far the list must scroll until the newest recent item is whole (— : it never shows without a tap). tools/measure.mjs writes ru/measured.json; verify.mjs compares a fresh run.',
+    tableHead: ['Option', 'Phone', 'Short · 3: open / recent / to first', 'Short · 15: open / recent / to first', 'Long · 15: open / recent / to first', 'Section px (short 3 / 15)'],
+  },
+  de: {
+    overviewTitle: 'Die Liste: Prototypen',
+    roundTitle: 'Zuletzt verwendet, aufgeklappt (RU1–RU4)',
+    roundBlurb: 'Vier Wege, „Zuletzt verwendet“ unter der Liste offen zu halten und von den offenen Artikeln abzusetzen, damit ein Haken sichtbar dort landet und ein Tipp den Artikel zurückholt.',
+    note: 'Prototyp mit Beispieldaten (die erfundene Familie Brandt: eine EDEKA- und eine dm-Liste, 15 gekaufte Artikel). Nichts davon wird ausgeliefert, die App bleibt unverändert. Grundlage ist die heutige Liste mit den ausgeblendeten Kategorien aus Job 350 und der Summe aus Job 348 (TE1). Die Handys nutzen Tokens, Schriften und Icons der App. Gepunktet unterstrichene Wörter sind neu, alle anderen stammen aus der App. Live-Handys: Zeile antippen hakt ab, einen zuletzt verwendeten Artikel antippen setzt ihn zurück.',
+    lang: 'Sprache', light: 'Hell', dark: 'Dunkel', textSize: 'Text', androidMax: 'Android max.', iosMax: 'iPhone max.',
+    overview: 'Übersicht', pick: 'Empfehlung', runner: 'Zweite Wahl', today: 'Heute',
+    real: 'Die echte App (Release-Web-Build)',
+    frames: {
+      'short-0': ['Kurze Liste, nichts gekauft', '5 offene Artikel, „Zuletzt verwendet“ ist leer.'],
+      'short-3': ['Kurze Liste, 3 gekauft', '5 offene Artikel, 3 in „Zuletzt verwendet“.'],
+      'short-15': ['Kurze Liste, 15 gekauft', '5 offene Artikel, 15 in „Zuletzt verwendet“.'],
+      'long-15': ['Lange Liste, 15 gekauft', '11 offene Artikel, 15 in „Zuletzt verwendet“.'],
+      scrolled: ['Lange Liste, hinuntergerollt', 'Der Abschnitt mit 15 Artikeln unter der Kopfleiste (Heute: aufgetippt).'],
+      open: ['Heute, aufgeklappt', 'Die Kachel aufgetippt: die Zeilen der Liste mit 55 %.'],
+      'tick-start': ['Abhaken 1 von 3', 'Hackfleisch abgehakt: der Haken blitzt (150 ms).'],
+      'tick-mid': ['Abhaken 2 von 3', 'Die Zeile klappt weg (250 ms).'],
+      'tick-landed': ['Abhaken 3 von 3', 'Oben in „Zuletzt verwendet“ gelandet, hervorgehoben (verblasst in 700 ms); zum Abschnitt gerollt.'],
+      back: ['Wieder auf der Liste', 'Ein Tipp auf Bananen: zurück an seinem Platz, hervorgehoben.'],
+      all: ['Alle zeigen', 'Alle 15 nach „Alle zeigen“.'],
+      peek: ['Lange Liste, die Vorschau', 'Ganz oben: das Fach liegt unten, die Vorschau zeigt den neuesten Artikel.'],
+    },
+    liveCap: 'Live: Zeile antippen hakt ab, einen zuletzt verwendeten Artikel antippen setzt ihn zurück.',
+    scenes: { 'short-0': 'Kurz · 0', 'short-3': 'Kurz · 3', 'short-15': 'Kurz · 15', 'long-3': 'Lang · 3', 'long-15': 'Lang · 15', reset: 'Zurücksetzen' },
+    todayFacts: `<ul>
+      <li>„Zuletzt verwendet“ ist eine zugeklappte <code>ExpansionTile</code> nach der Summe (<code>shopping_list_view.dart</code>, <code>_usedRow</code>): aufgeklappt zeigt sie die Zeilen der Liste mit 55 % Deckkraft, die neuesten 20 (<code>recentlyUsed()</code>, <code>model.dart</code>). Ein Tipp setzt den Artikel zurück auf die Liste („Wieder auf die Liste“ für Screenreader).</li>
+      <li>Ein Haken schiebt die Zeile aus der Liste. Zugeklappt sieht man nicht, wohin sie geht: ein Haken wirkt wie Löschen.</li>
+      <li>Rückgängig ist ein Tipp in diesem Abschnitt; einen Rückgängig-Knopf gibt es nicht (SPEC).</li></ul>`,
+    options: {
+      today: { name: 'Heute', what: 'Die zugeklappte Kachel wie in main.' },
+      RU1: { name: 'Blass, wie heute, offen', what: 'Die heutigen Zeilen mit 55 %, standardmäßig offen, mit Anzahl und einer Hinweiszeile. Zuklappen merkt sich das Gerät. Zeigt alle (bis 20).' },
+      RU2: { name: 'Getöntes Fach mit Vorschau', what: 'Eine Fläche in der vertieften Farbe, „Abgehakt“ mit rundem Haken, kompakte blasse Zeilen mit Rückgängig-Pfeil. Solange das Fach unter dem Bildschirm liegt, zeigt eine Vorschau über dem Eingabefeld den neuesten Artikel: ein Tipp holt ihn zurück.' },
+      RU3: { name: 'Chips', what: 'Eine gestrichelte Linie, die Überzeile „Zuletzt verwendet“, ein Hinweis und umrandete Pillen, die umbrechen. Am kompaktesten.' },
+      RU4: { name: 'Abgehakt mit Häkchen', what: 'Eine beschriftete Linie mit Anzahl; volle Zeilen mit gefülltem rundem Haken und durchgestrichenem Namen. Die neuesten 5, dann „Alle zeigen“.' },
+    },
+    meterLine: (m) => `iPhone bei 100 %, ganz oben: kurze Liste mit 3 gekauften zeigt <b>${m.s3.active}</b> offene und <b>${m.s3.recent}</b> zuletzt verwendete Zeilen (erster ${m.s3.to === null ? 'nie sichtbar' : m.s3.to === 0 ? 'im Bild' : `${m.s3.to} px tiefer`}); lange Liste mit 15: <b>${m.l15.active}</b> offen, <b>${m.l15.recent}</b> zuletzt verwendet (erster ${m.l15.to === null ? 'nie sichtbar' : m.l15.to === 0 ? 'im Bild' : `${m.l15.to} px tiefer`}). Abschnitt: ${m.l15.px} px.`,
+    tableTitle: 'Gemessen',
+    tableNote: 'Ganze Zeilen zwischen Kopfleiste und unterem Band (Eingabefeld oder die Vorschau von RU2), ganz oben; „bis erster“ ist, wie weit die Liste rollen muss, bis der neueste zuletzt verwendete Artikel ganz sichtbar ist (— : ohne Tipp nie). tools/measure.mjs schreibt ru/measured.json; verify.mjs vergleicht mit einem frischen Lauf.',
+    tableHead: ['Option', 'Handy', 'Kurz · 3: offen / zuletzt / bis erster', 'Kurz · 15: offen / zuletzt / bis erster', 'Lang · 15: offen / zuletzt / bis erster', 'Abschnitt px (kurz 3 / 15)'],
+  },
+};

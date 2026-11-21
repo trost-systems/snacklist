@@ -1,0 +1,1690 @@
+{
+ "lang": "de",
+ "scale": 1,
+ "viewport": {
+  "width": 390,
+  "height": 844
+ },
+ "top": [
+  {
+   "role": "button",
+   "label": "Einkaufsliste · Familie Brandt",
+   "expanded": null,
+   "top": 10,
+   "bottom": 58,
+   "left": 16,
+   "right": 178.140625,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "Anpassen",
+   "expanded": null,
+   "top": 10,
+   "bottom": 58,
+   "left": 268.48968505859375,
+   "right": 373.98968505859375,
+   "height": 48
+  },
+  {
+   "role": "group",
+   "label": "Einkaufssumme",
+   "expanded": null,
+   "top": 0,
+   "bottom": 844,
+   "left": 0,
+   "right": 390,
+   "height": 844
+  },
+  {
+   "role": "button",
+   "label": "EDEKA, 8 Artikel",
+   "expanded": "true",
+   "top": 72,
+   "bottom": 124,
+   "left": 0,
+   "right": 390,
+   "height": 52
+  },
+  {
+   "role": "heading",
+   "label": "Obst & Gemüse",
+   "expanded": null,
+   "top": 124,
+   "bottom": 156,
+   "left": 0,
+   "right": 390,
+   "height": 32
+  },
+  {
+   "role": "checkbox",
+   "label": "Bananen\n6",
+   "expanded": null,
+   "top": 156,
+   "bottom": 204,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "Preis für Bananen",
+   "expanded": null,
+   "top": 156,
+   "bottom": 203,
+   "left": 289.867919921875,
+   "right": 373.992919921875,
+   "height": 47
+  },
+  {
+   "role": "checkbox",
+   "label": "Äpfel\n1 kg",
+   "expanded": null,
+   "top": 204,
+   "bottom": 252,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "Preis für Äpfel",
+   "expanded": null,
+   "top": 204,
+   "bottom": 251,
+   "left": 289.867919921875,
+   "right": 373.992919921875,
+   "height": 47
+  },
+  {
+   "role": "checkbox",
+   "label": "Tomaten",
+   "expanded": null,
+   "top": 252,
+   "bottom": 300,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "Preis für Tomaten",
+   "expanded": null,
+   "top": 252,
+   "bottom": 300,
+   "left": 289.867919921875,
+   "right": 373.992919921875,
+   "height": 48
+  },
+  {
+   "role": "heading",
+   "label": "Brot & Backwaren",
+   "expanded": null,
+   "top": 300,
+   "bottom": 332,
+   "left": 0,
+   "right": 390,
+   "height": 32
+  },
+  {
+   "role": "checkbox",
+   "label": "Brot",
+   "expanded": null,
+   "top": 332,
+   "bottom": 380,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "Preis für Brot",
+   "expanded": null,
+   "top": 332,
+   "bottom": 380,
+   "left": 289.867919921875,
+   "right": 373.992919921875,
+   "height": 48
+  },
+  {
+   "role": "heading",
+   "label": "Kühlregal",
+   "expanded": null,
+   "top": 380,
+   "bottom": 412,
+   "left": 0,
+   "right": 390,
+   "height": 32
+  },
+  {
+   "role": "checkbox",
+   "label": "Milch\n2",
+   "expanded": null,
+   "top": 412,
+   "bottom": 460,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "Preis für Milch",
+   "expanded": null,
+   "top": 412,
+   "bottom": 459,
+   "left": 289.867919921875,
+   "right": 373.992919921875,
+   "height": 47
+  },
+  {
+   "role": "checkbox",
+   "label": "Butter",
+   "expanded": null,
+   "top": 460,
+   "bottom": 508,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "Preis für Butter",
+   "expanded": null,
+   "top": 460,
+   "bottom": 507,
+   "left": 289.867919921875,
+   "right": 373.992919921875,
+   "height": 47
+  },
+  {
+   "role": "checkbox",
+   "label": "Eier\n10",
+   "expanded": null,
+   "top": 508,
+   "bottom": 556,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "Preis für Eier",
+   "expanded": null,
+   "top": 508,
+   "bottom": 556,
+   "left": 289.867919921875,
+   "right": 373.992919921875,
+   "height": 48
+  },
+  {
+   "role": "heading",
+   "label": "Vorrat & Konserven",
+   "expanded": null,
+   "top": 556,
+   "bottom": 588,
+   "left": 0,
+   "right": 390,
+   "height": 32
+  },
+  {
+   "role": "checkbox",
+   "label": "Nudeln",
+   "expanded": null,
+   "top": 588,
+   "bottom": 636,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "Preis für Nudeln",
+   "expanded": null,
+   "top": 588,
+   "bottom": 636,
+   "left": 289.867919921875,
+   "right": 373.992919921875,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "dm, 3 Artikel",
+   "expanded": "true",
+   "top": 656,
+   "bottom": 708,
+   "left": 0,
+   "right": 390,
+   "height": 52
+  },
+  {
+   "role": "heading",
+   "label": "👶 Drogerie",
+   "expanded": null,
+   "top": 708,
+   "bottom": 740,
+   "left": 0,
+   "right": 390,
+   "height": 32
+  },
+  {
+   "role": "checkbox",
+   "label": "Zahnpasta",
+   "expanded": null,
+   "top": 740,
+   "bottom": 788,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "Preis für Zahnpasta",
+   "expanded": null,
+   "top": 740,
+   "bottom": 787,
+   "left": 289.867919921875,
+   "right": 373.992919921875,
+   "height": 47
+  },
+  {
+   "role": "checkbox",
+   "label": "Shampoo",
+   "expanded": null,
+   "top": 788,
+   "bottom": 836,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "Preis für Shampoo",
+   "expanded": null,
+   "top": 788,
+   "bottom": 836,
+   "left": 289.867919921875,
+   "right": 373.992919921875,
+   "height": 48
+  },
+  {
+   "role": "heading",
+   "label": "Haushalt",
+   "expanded": null,
+   "top": 836,
+   "bottom": 844,
+   "left": 0,
+   "right": 390,
+   "height": 8
+  },
+  {
+   "role": "checkbox",
+   "label": "Toilettenpapier",
+   "expanded": null,
+   "top": 868,
+   "bottom": 916,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "Preis für Toilettenpapier",
+   "expanded": null,
+   "top": 868,
+   "bottom": 916,
+   "left": 289.867919921875,
+   "right": 373.992919921875,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "EDEKA, 8 ohne Preis",
+   "expanded": null,
+   "top": 893,
+   "bottom": 941,
+   "left": 20,
+   "right": 370,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "dm, 3 ohne Preis",
+   "expanded": null,
+   "top": 941,
+   "bottom": 989,
+   "left": 20,
+   "right": 370,
+   "height": 48
+  },
+  {
+   "role": null,
+   "label": "Gesamt, 11 ohne Preis",
+   "expanded": null,
+   "top": 997,
+   "bottom": 1053,
+   "left": 20,
+   "right": 370,
+   "height": 56
+  },
+  {
+   "role": "tab",
+   "label": "Liste",
+   "expanded": null,
+   "top": 780,
+   "bottom": 832,
+   "left": 46.1396484375,
+   "right": 145.3740234375,
+   "height": 52
+  },
+  {
+   "role": "tab",
+   "label": "Verlauf",
+   "expanded": null,
+   "top": 780,
+   "bottom": 832,
+   "left": 145.3798828125,
+   "right": 244.6142578125,
+   "height": 52
+  },
+  {
+   "role": "tab",
+   "label": "Mehr",
+   "expanded": null,
+   "top": 780,
+   "bottom": 832,
+   "left": 244.6201171875,
+   "right": 343.8544921875,
+   "height": 52
+  }
+ ],
+ "collapsed": {
+  "scrollOffset": 511,
+  "lastOpenRow": {
+   "role": "checkbox",
+   "label": "Toilettenpapier",
+   "expanded": null,
+   "top": 357,
+   "bottom": 405,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  "openRowHeight": 48,
+  "between": [
+   {
+    "role": "button",
+    "label": "EDEKA, 8 ohne Preis",
+    "expanded": null,
+    "top": 454,
+    "bottom": 502,
+    "left": 20,
+    "right": 370,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "dm, 3 ohne Preis",
+    "expanded": null,
+    "top": 502,
+    "bottom": 550,
+    "left": 20,
+    "right": 370,
+    "height": 48
+   },
+   {
+    "role": null,
+    "label": "Gesamt, 11 ohne Preis",
+    "expanded": null,
+    "top": 558,
+    "bottom": 614,
+    "left": 20,
+    "right": 370,
+    "height": 56
+   }
+  ],
+  "tile": {
+   "role": "button",
+   "label": "Zuletzt verwendet",
+   "expanded": null,
+   "top": 635,
+   "bottom": 683,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  "tileHeight": 48,
+  "gapLastRowToTile": 230,
+  "gapAboveTile": 21,
+  "usedRows": [],
+  "usedRowHeight": null,
+  "tileBottomToFirstUsed": null,
+  "nodes": [
+   {
+    "role": "button",
+    "label": "Einkaufsliste · Familie Brandt",
+    "expanded": null,
+    "top": 10,
+    "bottom": 58,
+    "left": 16,
+    "right": 178.140625,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Anpassen",
+    "expanded": null,
+    "top": 10,
+    "bottom": 58,
+    "left": 268.48968505859375,
+    "right": 373.98968505859375,
+    "height": 48
+   },
+   {
+    "role": "group",
+    "label": "Einkaufssumme",
+    "expanded": null,
+    "top": 0,
+    "bottom": 844,
+    "left": 0,
+    "right": 390,
+    "height": 844
+   },
+   {
+    "role": "checkbox",
+    "label": "Tomaten",
+    "expanded": null,
+    "top": -250,
+    "bottom": -211,
+    "left": 0,
+    "right": 390,
+    "height": 39
+   },
+   {
+    "role": "button",
+    "label": "Preis für Tomaten",
+    "expanded": null,
+    "top": -250,
+    "bottom": -211,
+    "left": 289.867919921875,
+    "right": 373.992919921875,
+    "height": 39
+   },
+   {
+    "role": "heading",
+    "label": "Brot & Backwaren",
+    "expanded": null,
+    "top": -211,
+    "bottom": -179,
+    "left": 0,
+    "right": 390,
+    "height": 32
+   },
+   {
+    "role": "checkbox",
+    "label": "Brot",
+    "expanded": null,
+    "top": -179,
+    "bottom": -131,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Preis für Brot",
+    "expanded": null,
+    "top": -179,
+    "bottom": -131,
+    "left": 289.867919921875,
+    "right": 373.992919921875,
+    "height": 48
+   },
+   {
+    "role": "heading",
+    "label": "Kühlregal",
+    "expanded": null,
+    "top": -131,
+    "bottom": -99,
+    "left": 0,
+    "right": 390,
+    "height": 32
+   },
+   {
+    "role": "checkbox",
+    "label": "Milch\n2",
+    "expanded": null,
+    "top": -99,
+    "bottom": -51,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Preis für Milch",
+    "expanded": null,
+    "top": -99,
+    "bottom": -52,
+    "left": 289.867919921875,
+    "right": 373.992919921875,
+    "height": 47
+   },
+   {
+    "role": "checkbox",
+    "label": "Butter",
+    "expanded": null,
+    "top": -51,
+    "bottom": -3,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Preis für Butter",
+    "expanded": null,
+    "top": -51,
+    "bottom": -4,
+    "left": 289.867919921875,
+    "right": 373.992919921875,
+    "height": 47
+   },
+   {
+    "role": "checkbox",
+    "label": "Eier\n10",
+    "expanded": null,
+    "top": -3,
+    "bottom": 45,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Preis für Eier",
+    "expanded": null,
+    "top": -3,
+    "bottom": 45,
+    "left": 289.867919921875,
+    "right": 373.992919921875,
+    "height": 48
+   },
+   {
+    "role": "heading",
+    "label": "Vorrat & Konserven",
+    "expanded": null,
+    "top": 68,
+    "bottom": 77,
+    "left": 0,
+    "right": 390,
+    "height": 9
+   },
+   {
+    "role": "checkbox",
+    "label": "Nudeln",
+    "expanded": null,
+    "top": 77,
+    "bottom": 125,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Preis für Nudeln",
+    "expanded": null,
+    "top": 77,
+    "bottom": 125,
+    "left": 289.867919921875,
+    "right": 373.992919921875,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "dm, 3 Artikel",
+    "expanded": "true",
+    "top": 145,
+    "bottom": 197,
+    "left": 0,
+    "right": 390,
+    "height": 52
+   },
+   {
+    "role": "heading",
+    "label": "👶 Drogerie",
+    "expanded": null,
+    "top": 197,
+    "bottom": 229,
+    "left": 0,
+    "right": 390,
+    "height": 32
+   },
+   {
+    "role": "checkbox",
+    "label": "Zahnpasta",
+    "expanded": null,
+    "top": 229,
+    "bottom": 277,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Preis für Zahnpasta",
+    "expanded": null,
+    "top": 229,
+    "bottom": 276,
+    "left": 289.867919921875,
+    "right": 373.992919921875,
+    "height": 47
+   },
+   {
+    "role": "checkbox",
+    "label": "Shampoo",
+    "expanded": null,
+    "top": 277,
+    "bottom": 325,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Preis für Shampoo",
+    "expanded": null,
+    "top": 277,
+    "bottom": 325,
+    "left": 289.867919921875,
+    "right": 373.992919921875,
+    "height": 48
+   },
+   {
+    "role": "heading",
+    "label": "Haushalt",
+    "expanded": null,
+    "top": 325,
+    "bottom": 357,
+    "left": 0,
+    "right": 390,
+    "height": 32
+   },
+   {
+    "role": "checkbox",
+    "label": "Toilettenpapier",
+    "expanded": null,
+    "top": 357,
+    "bottom": 405,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Preis für Toilettenpapier",
+    "expanded": null,
+    "top": 357,
+    "bottom": 405,
+    "left": 289.867919921875,
+    "right": 373.992919921875,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "EDEKA, 8 ohne Preis",
+    "expanded": null,
+    "top": 454,
+    "bottom": 502,
+    "left": 20,
+    "right": 370,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "dm, 3 ohne Preis",
+    "expanded": null,
+    "top": 502,
+    "bottom": 550,
+    "left": 20,
+    "right": 370,
+    "height": 48
+   },
+   {
+    "role": null,
+    "label": "Gesamt, 11 ohne Preis",
+    "expanded": null,
+    "top": 558,
+    "bottom": 614,
+    "left": 20,
+    "right": 370,
+    "height": 56
+   },
+   {
+    "role": "button",
+    "label": "Zuletzt verwendet",
+    "expanded": null,
+    "top": 635,
+    "bottom": 683,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "tab",
+    "label": "Liste",
+    "expanded": null,
+    "top": 780,
+    "bottom": 832,
+    "left": 46.1396484375,
+    "right": 145.3740234375,
+    "height": 52
+   },
+   {
+    "role": "tab",
+    "label": "Verlauf",
+    "expanded": null,
+    "top": 780,
+    "bottom": 832,
+    "left": 145.3798828125,
+    "right": 244.6142578125,
+    "height": 52
+   },
+   {
+    "role": "tab",
+    "label": "Mehr",
+    "expanded": null,
+    "top": 780,
+    "bottom": 832,
+    "left": 244.6201171875,
+    "right": 343.8544921875,
+    "height": 52
+   }
+  ]
+ },
+ "addField": {
+  "x": 37.01240158081055,
+  "y": 720,
+  "width": 331.9687385559082,
+  "height": 54
+ },
+ "expandedInPlace": {
+  "scrollOffset": 511,
+  "lastOpenRow": {
+   "role": "checkbox",
+   "label": "Toilettenpapier",
+   "expanded": null,
+   "top": 357,
+   "bottom": 405,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  "openRowHeight": 48,
+  "between": [
+   {
+    "role": "button",
+    "label": "EDEKA, 8 ohne Preis",
+    "expanded": null,
+    "top": 454,
+    "bottom": 502,
+    "left": 20,
+    "right": 370,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "dm, 3 ohne Preis",
+    "expanded": null,
+    "top": 502,
+    "bottom": 550,
+    "left": 20,
+    "right": 370,
+    "height": 48
+   },
+   {
+    "role": null,
+    "label": "Gesamt, 11 ohne Preis",
+    "expanded": null,
+    "top": 558,
+    "bottom": 614,
+    "left": 20,
+    "right": 370,
+    "height": 56
+   }
+  ],
+  "tile": {
+   "role": "button",
+   "label": "Zuletzt verwendet",
+   "expanded": null,
+   "top": 635,
+   "bottom": 683,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  "tileHeight": 48,
+  "gapLastRowToTile": 230,
+  "gapAboveTile": 21,
+  "usedRows": [
+   {
+    "role": "button",
+    "label": "Joghurt\nWieder auf die Liste",
+    "expanded": null,
+    "top": 683,
+    "bottom": 731,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Käse\nWieder auf die Liste",
+    "expanded": null,
+    "top": 731,
+    "bottom": 779,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Kaffee\nWieder auf die Liste",
+    "expanded": null,
+    "top": 779,
+    "bottom": 827,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   }
+  ],
+  "usedRowHeight": 48,
+  "tileBottomToFirstUsed": 0,
+  "nodes": [
+   {
+    "role": "button",
+    "label": "Einkaufsliste · Familie Brandt",
+    "expanded": null,
+    "top": 10,
+    "bottom": 58,
+    "left": 16,
+    "right": 178.140625,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Anpassen",
+    "expanded": null,
+    "top": 10,
+    "bottom": 58,
+    "left": 268.48968505859375,
+    "right": 373.98968505859375,
+    "height": 48
+   },
+   {
+    "role": "group",
+    "label": "Einkaufssumme",
+    "expanded": null,
+    "top": 0,
+    "bottom": 844,
+    "left": 0,
+    "right": 390,
+    "height": 844
+   },
+   {
+    "role": "checkbox",
+    "label": "Tomaten",
+    "expanded": null,
+    "top": -250,
+    "bottom": -211,
+    "left": 0,
+    "right": 390,
+    "height": 39
+   },
+   {
+    "role": "button",
+    "label": "Preis für Tomaten",
+    "expanded": null,
+    "top": -250,
+    "bottom": -211,
+    "left": 289.867919921875,
+    "right": 373.992919921875,
+    "height": 39
+   },
+   {
+    "role": "heading",
+    "label": "Brot & Backwaren",
+    "expanded": null,
+    "top": -211,
+    "bottom": -179,
+    "left": 0,
+    "right": 390,
+    "height": 32
+   },
+   {
+    "role": "checkbox",
+    "label": "Brot",
+    "expanded": null,
+    "top": -179,
+    "bottom": -131,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Preis für Brot",
+    "expanded": null,
+    "top": -179,
+    "bottom": -131,
+    "left": 289.867919921875,
+    "right": 373.992919921875,
+    "height": 48
+   },
+   {
+    "role": "heading",
+    "label": "Kühlregal",
+    "expanded": null,
+    "top": -131,
+    "bottom": -99,
+    "left": 0,
+    "right": 390,
+    "height": 32
+   },
+   {
+    "role": "checkbox",
+    "label": "Milch\n2",
+    "expanded": null,
+    "top": -99,
+    "bottom": -51,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Preis für Milch",
+    "expanded": null,
+    "top": -99,
+    "bottom": -52,
+    "left": 289.867919921875,
+    "right": 373.992919921875,
+    "height": 47
+   },
+   {
+    "role": "checkbox",
+    "label": "Butter",
+    "expanded": null,
+    "top": -51,
+    "bottom": -3,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Preis für Butter",
+    "expanded": null,
+    "top": -51,
+    "bottom": -4,
+    "left": 289.867919921875,
+    "right": 373.992919921875,
+    "height": 47
+   },
+   {
+    "role": "checkbox",
+    "label": "Eier\n10",
+    "expanded": null,
+    "top": -3,
+    "bottom": 45,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Preis für Eier",
+    "expanded": null,
+    "top": -3,
+    "bottom": 45,
+    "left": 289.867919921875,
+    "right": 373.992919921875,
+    "height": 48
+   },
+   {
+    "role": "heading",
+    "label": "Vorrat & Konserven",
+    "expanded": null,
+    "top": 68,
+    "bottom": 77,
+    "left": 0,
+    "right": 390,
+    "height": 9
+   },
+   {
+    "role": "checkbox",
+    "label": "Nudeln",
+    "expanded": null,
+    "top": 77,
+    "bottom": 125,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Preis für Nudeln",
+    "expanded": null,
+    "top": 77,
+    "bottom": 125,
+    "left": 289.867919921875,
+    "right": 373.992919921875,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "dm, 3 Artikel",
+    "expanded": "true",
+    "top": 145,
+    "bottom": 197,
+    "left": 0,
+    "right": 390,
+    "height": 52
+   },
+   {
+    "role": "heading",
+    "label": "👶 Drogerie",
+    "expanded": null,
+    "top": 197,
+    "bottom": 229,
+    "left": 0,
+    "right": 390,
+    "height": 32
+   },
+   {
+    "role": "checkbox",
+    "label": "Zahnpasta",
+    "expanded": null,
+    "top": 229,
+    "bottom": 277,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Preis für Zahnpasta",
+    "expanded": null,
+    "top": 229,
+    "bottom": 276,
+    "left": 289.867919921875,
+    "right": 373.992919921875,
+    "height": 47
+   },
+   {
+    "role": "checkbox",
+    "label": "Shampoo",
+    "expanded": null,
+    "top": 277,
+    "bottom": 325,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Preis für Shampoo",
+    "expanded": null,
+    "top": 277,
+    "bottom": 325,
+    "left": 289.867919921875,
+    "right": 373.992919921875,
+    "height": 48
+   },
+   {
+    "role": "heading",
+    "label": "Haushalt",
+    "expanded": null,
+    "top": 325,
+    "bottom": 357,
+    "left": 0,
+    "right": 390,
+    "height": 32
+   },
+   {
+    "role": "checkbox",
+    "label": "Toilettenpapier",
+    "expanded": null,
+    "top": 357,
+    "bottom": 405,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Preis für Toilettenpapier",
+    "expanded": null,
+    "top": 357,
+    "bottom": 405,
+    "left": 289.867919921875,
+    "right": 373.992919921875,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "EDEKA, 8 ohne Preis",
+    "expanded": null,
+    "top": 454,
+    "bottom": 502,
+    "left": 20,
+    "right": 370,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "dm, 3 ohne Preis",
+    "expanded": null,
+    "top": 502,
+    "bottom": 550,
+    "left": 20,
+    "right": 370,
+    "height": 48
+   },
+   {
+    "role": null,
+    "label": "Gesamt, 11 ohne Preis",
+    "expanded": null,
+    "top": 558,
+    "bottom": 614,
+    "left": 20,
+    "right": 370,
+    "height": 56
+   },
+   {
+    "role": "button",
+    "label": "Zuletzt verwendet",
+    "expanded": null,
+    "top": 635,
+    "bottom": 683,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Joghurt\nWieder auf die Liste",
+    "expanded": null,
+    "top": 683,
+    "bottom": 731,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Käse\nWieder auf die Liste",
+    "expanded": null,
+    "top": 731,
+    "bottom": 779,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Kaffee\nWieder auf die Liste",
+    "expanded": null,
+    "top": 779,
+    "bottom": 827,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "tab",
+    "label": "Liste",
+    "expanded": null,
+    "top": 780,
+    "bottom": 832,
+    "left": 46.1396484375,
+    "right": 145.3740234375,
+    "height": 52
+   },
+   {
+    "role": "tab",
+    "label": "Verlauf",
+    "expanded": null,
+    "top": 780,
+    "bottom": 832,
+    "left": 145.3798828125,
+    "right": 244.6142578125,
+    "height": 52
+   },
+   {
+    "role": "tab",
+    "label": "Mehr",
+    "expanded": null,
+    "top": 780,
+    "bottom": 832,
+    "left": 244.6201171875,
+    "right": 343.8544921875,
+    "height": 52
+   }
+  ]
+ },
+ "expanded": {
+  "scrollOffset": 655,
+  "lastOpenRow": {
+   "role": "checkbox",
+   "label": "Toilettenpapier",
+   "expanded": null,
+   "top": 213,
+   "bottom": 261,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  "openRowHeight": 48,
+  "between": [
+   {
+    "role": "button",
+    "label": "EDEKA, 8 ohne Preis",
+    "expanded": null,
+    "top": 310,
+    "bottom": 358,
+    "left": 20,
+    "right": 370,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "dm, 3 ohne Preis",
+    "expanded": null,
+    "top": 358,
+    "bottom": 406,
+    "left": 20,
+    "right": 370,
+    "height": 48
+   },
+   {
+    "role": null,
+    "label": "Gesamt, 11 ohne Preis",
+    "expanded": null,
+    "top": 414,
+    "bottom": 470,
+    "left": 20,
+    "right": 370,
+    "height": 56
+   }
+  ],
+  "tile": {
+   "role": "button",
+   "label": "Zuletzt verwendet",
+   "expanded": null,
+   "top": 491,
+   "bottom": 539,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  "tileHeight": 48,
+  "gapLastRowToTile": 230,
+  "gapAboveTile": 21,
+  "usedRows": [
+   {
+    "role": "button",
+    "label": "Joghurt\nWieder auf die Liste",
+    "expanded": null,
+    "top": 539,
+    "bottom": 587,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Käse\nWieder auf die Liste",
+    "expanded": null,
+    "top": 587,
+    "bottom": 635,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Kaffee\nWieder auf die Liste",
+    "expanded": null,
+    "top": 635,
+    "bottom": 683,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   }
+  ],
+  "usedRowHeight": 48,
+  "tileBottomToFirstUsed": 0,
+  "nodes": [
+   {
+    "role": "button",
+    "label": "Einkaufsliste · Familie Brandt",
+    "expanded": null,
+    "top": 10,
+    "bottom": 58,
+    "left": 16,
+    "right": 178.140625,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Anpassen",
+    "expanded": null,
+    "top": 10,
+    "bottom": 58,
+    "left": 268.48968505859375,
+    "right": 373.98968505859375,
+    "height": 48
+   },
+   {
+    "role": "group",
+    "label": "Einkaufssumme",
+    "expanded": null,
+    "top": 0,
+    "bottom": 844,
+    "left": 0,
+    "right": 390,
+    "height": 844
+   },
+   {
+    "role": "heading",
+    "label": "Kühlregal",
+    "expanded": null,
+    "top": -250,
+    "bottom": -243,
+    "left": 0,
+    "right": 390,
+    "height": 7
+   },
+   {
+    "role": "checkbox",
+    "label": "Milch\n2",
+    "expanded": null,
+    "top": -243,
+    "bottom": -195,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Preis für Milch",
+    "expanded": null,
+    "top": -243,
+    "bottom": -196,
+    "left": 289.867919921875,
+    "right": 373.992919921875,
+    "height": 47
+   },
+   {
+    "role": "checkbox",
+    "label": "Butter",
+    "expanded": null,
+    "top": -195,
+    "bottom": -147,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Preis für Butter",
+    "expanded": null,
+    "top": -195,
+    "bottom": -148,
+    "left": 289.867919921875,
+    "right": 373.992919921875,
+    "height": 47
+   },
+   {
+    "role": "checkbox",
+    "label": "Eier\n10",
+    "expanded": null,
+    "top": -147,
+    "bottom": -99,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Preis für Eier",
+    "expanded": null,
+    "top": -147,
+    "bottom": -99,
+    "left": 289.867919921875,
+    "right": 373.992919921875,
+    "height": 48
+   },
+   {
+    "role": "heading",
+    "label": "Vorrat & Konserven",
+    "expanded": null,
+    "top": -99,
+    "bottom": -67,
+    "left": 0,
+    "right": 390,
+    "height": 32
+   },
+   {
+    "role": "checkbox",
+    "label": "Nudeln",
+    "expanded": null,
+    "top": -67,
+    "bottom": -19,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Preis für Nudeln",
+    "expanded": null,
+    "top": -67,
+    "bottom": -19,
+    "left": 289.867919921875,
+    "right": 373.992919921875,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "dm, 3 Artikel",
+    "expanded": "true",
+    "top": 1,
+    "bottom": 53,
+    "left": 0,
+    "right": 390,
+    "height": 52
+   },
+   {
+    "role": "heading",
+    "label": "👶 Drogerie",
+    "expanded": null,
+    "top": 68,
+    "bottom": 85,
+    "left": 0,
+    "right": 390,
+    "height": 17
+   },
+   {
+    "role": "checkbox",
+    "label": "Zahnpasta",
+    "expanded": null,
+    "top": 85,
+    "bottom": 133,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Preis für Zahnpasta",
+    "expanded": null,
+    "top": 85,
+    "bottom": 132,
+    "left": 289.867919921875,
+    "right": 373.992919921875,
+    "height": 47
+   },
+   {
+    "role": "checkbox",
+    "label": "Shampoo",
+    "expanded": null,
+    "top": 133,
+    "bottom": 181,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Preis für Shampoo",
+    "expanded": null,
+    "top": 133,
+    "bottom": 181,
+    "left": 289.867919921875,
+    "right": 373.992919921875,
+    "height": 48
+   },
+   {
+    "role": "heading",
+    "label": "Haushalt",
+    "expanded": null,
+    "top": 181,
+    "bottom": 213,
+    "left": 0,
+    "right": 390,
+    "height": 32
+   },
+   {
+    "role": "checkbox",
+    "label": "Toilettenpapier",
+    "expanded": null,
+    "top": 213,
+    "bottom": 261,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Preis für Toilettenpapier",
+    "expanded": null,
+    "top": 213,
+    "bottom": 261,
+    "left": 289.867919921875,
+    "right": 373.992919921875,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "EDEKA, 8 ohne Preis",
+    "expanded": null,
+    "top": 310,
+    "bottom": 358,
+    "left": 20,
+    "right": 370,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "dm, 3 ohne Preis",
+    "expanded": null,
+    "top": 358,
+    "bottom": 406,
+    "left": 20,
+    "right": 370,
+    "height": 48
+   },
+   {
+    "role": null,
+    "label": "Gesamt, 11 ohne Preis",
+    "expanded": null,
+    "top": 414,
+    "bottom": 470,
+    "left": 20,
+    "right": 370,
+    "height": 56
+   },
+   {
+    "role": "button",
+    "label": "Zuletzt verwendet",
+    "expanded": null,
+    "top": 491,
+    "bottom": 539,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Joghurt\nWieder auf die Liste",
+    "expanded": null,
+    "top": 539,
+    "bottom": 587,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Käse\nWieder auf die Liste",
+    "expanded": null,
+    "top": 587,
+    "bottom": 635,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "button",
+    "label": "Kaffee\nWieder auf die Liste",
+    "expanded": null,
+    "top": 635,
+    "bottom": 683,
+    "left": 0,
+    "right": 390,
+    "height": 48
+   },
+   {
+    "role": "tab",
+    "label": "Liste",
+    "expanded": null,
+    "top": 780,
+    "bottom": 832,
+    "left": 46.1396484375,
+    "right": 145.3740234375,
+    "height": 52
+   },
+   {
+    "role": "tab",
+    "label": "Verlauf",
+    "expanded": null,
+    "top": 780,
+    "bottom": 832,
+    "left": 145.3798828125,
+    "right": 244.6142578125,
+    "height": 52
+   },
+   {
+    "role": "tab",
+    "label": "Mehr",
+    "expanded": null,
+    "top": 780,
+    "bottom": 832,
+    "left": 244.6201171875,
+    "right": 343.8544921875,
+    "height": 52
+   }
+  ]
+ }
+}

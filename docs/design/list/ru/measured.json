@@ -1,0 +1,1568 @@
+{
+ "pick": "",
+ "runner": "",
+ "en": {
+  "ios": {
+   "100": {
+    "short-0": {
+     "today": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU1": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU2": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU3": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU4": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     }
+    },
+    "short-3": {
+     "today": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 49
+     },
+     "RU1": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": 89,
+      "sectionPx": 218
+     },
+     "RU2": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": 59,
+      "sectionPx": 184
+     },
+     "RU3": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": 71,
+      "sectionPx": 112
+     },
+     "RU4": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": 55,
+      "sectionPx": 216
+     }
+    },
+    "short-15": {
+     "today": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 49
+     },
+     "RU1": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": 89,
+      "sectionPx": 794
+     },
+     "RU2": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": 59,
+      "sectionPx": 664
+     },
+     "RU3": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": 71,
+      "sectionPx": 352
+     },
+     "RU4": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": 55,
+      "sectionPx": 360
+     }
+    },
+    "long-0": {
+     "today": {
+      "active": 10,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU1": {
+      "active": 10,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU2": {
+      "active": 10,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU3": {
+      "active": 10,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU4": {
+      "active": 10,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     }
+    },
+    "long-3": {
+     "today": {
+      "active": 10,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 49
+     },
+     "RU1": {
+      "active": 10,
+      "recent": 0,
+      "toFirstRecent": 377,
+      "sectionPx": 218
+     },
+     "RU2": {
+      "active": 9,
+      "recent": 0,
+      "toFirstRecent": 347,
+      "sectionPx": 184
+     },
+     "RU3": {
+      "active": 10,
+      "recent": 0,
+      "toFirstRecent": 359,
+      "sectionPx": 112
+     },
+     "RU4": {
+      "active": 10,
+      "recent": 0,
+      "toFirstRecent": 343,
+      "sectionPx": 216
+     }
+    },
+    "long-15": {
+     "today": {
+      "active": 10,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 49
+     },
+     "RU1": {
+      "active": 10,
+      "recent": 0,
+      "toFirstRecent": 377,
+      "sectionPx": 794
+     },
+     "RU2": {
+      "active": 9,
+      "recent": 0,
+      "toFirstRecent": 347,
+      "sectionPx": 664
+     },
+     "RU3": {
+      "active": 10,
+      "recent": 0,
+      "toFirstRecent": 359,
+      "sectionPx": 352
+     },
+     "RU4": {
+      "active": 10,
+      "recent": 0,
+      "toFirstRecent": 343,
+      "sectionPx": 360
+     }
+    }
+   },
+   "310": {
+    "short-0": {
+     "today": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU1": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU2": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU3": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU4": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     }
+    },
+    "short-3": {
+     "today": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 166
+     },
+     "RU1": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": 1726,
+      "sectionPx": 567
+     },
+     "RU2": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": 1453,
+      "sectionPx": 279
+     },
+     "RU3": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": 1652,
+      "sectionPx": 494
+     },
+     "RU4": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": 1510,
+      "sectionPx": 557
+     }
+    },
+    "short-15": {
+     "today": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 166
+     },
+     "RU1": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": 1726,
+      "sectionPx": 1519
+     },
+     "RU2": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": 1485,
+      "sectionPx": 1103
+     },
+     "RU3": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": 1652,
+      "sectionPx": 1407
+     },
+     "RU4": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": 1510,
+      "sectionPx": 782
+     }
+    },
+    "long-0": {
+     "today": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU1": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU2": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU3": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU4": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     }
+    },
+    "long-3": {
+     "today": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 166
+     },
+     "RU1": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": 2852,
+      "sectionPx": 567
+     },
+     "RU2": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": 2578,
+      "sectionPx": 279
+     },
+     "RU3": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": 2777,
+      "sectionPx": 494
+     },
+     "RU4": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": 2636,
+      "sectionPx": 557
+     }
+    },
+    "long-15": {
+     "today": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 166
+     },
+     "RU1": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": 2852,
+      "sectionPx": 1519
+     },
+     "RU2": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": 2610,
+      "sectionPx": 1103
+     },
+     "RU3": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": 2777,
+      "sectionPx": 1407
+     },
+     "RU4": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": 2636,
+      "sectionPx": 782
+     }
+    }
+   }
+  },
+  "android": {
+   "100": {
+    "short-0": {
+     "today": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU1": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU2": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU3": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU4": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     }
+    },
+    "short-3": {
+     "today": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 49
+     },
+     "RU1": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": 293,
+      "sectionPx": 218
+     },
+     "RU2": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": 263,
+      "sectionPx": 184
+     },
+     "RU3": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": 275,
+      "sectionPx": 160
+     },
+     "RU4": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": 259,
+      "sectionPx": 216
+     }
+    },
+    "short-15": {
+     "today": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 49
+     },
+     "RU1": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": 293,
+      "sectionPx": 794
+     },
+     "RU2": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": 263,
+      "sectionPx": 664
+     },
+     "RU3": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": 275,
+      "sectionPx": 400
+     },
+     "RU4": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": 259,
+      "sectionPx": 360
+     }
+    },
+    "long-0": {
+     "today": {
+      "active": 8,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU1": {
+      "active": 8,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU2": {
+      "active": 8,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU3": {
+      "active": 8,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU4": {
+      "active": 8,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     }
+    },
+    "long-3": {
+     "today": {
+      "active": 8,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 49
+     },
+     "RU1": {
+      "active": 8,
+      "recent": 0,
+      "toFirstRecent": 581,
+      "sectionPx": 218
+     },
+     "RU2": {
+      "active": 6,
+      "recent": 0,
+      "toFirstRecent": 551,
+      "sectionPx": 184
+     },
+     "RU3": {
+      "active": 8,
+      "recent": 0,
+      "toFirstRecent": 563,
+      "sectionPx": 160
+     },
+     "RU4": {
+      "active": 8,
+      "recent": 0,
+      "toFirstRecent": 547,
+      "sectionPx": 216
+     }
+    },
+    "long-15": {
+     "today": {
+      "active": 8,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 49
+     },
+     "RU1": {
+      "active": 8,
+      "recent": 0,
+      "toFirstRecent": 581,
+      "sectionPx": 794
+     },
+     "RU2": {
+      "active": 6,
+      "recent": 0,
+      "toFirstRecent": 551,
+      "sectionPx": 664
+     },
+     "RU3": {
+      "active": 8,
+      "recent": 0,
+      "toFirstRecent": 563,
+      "sectionPx": 400
+     },
+     "RU4": {
+      "active": 8,
+      "recent": 0,
+      "toFirstRecent": 547,
+      "sectionPx": 360
+     }
+    }
+   },
+   "200": {
+    "short-0": {
+     "today": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU1": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU2": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU3": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU4": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     }
+    },
+    "short-3": {
+     "today": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 65
+     },
+     "RU1": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": 871,
+      "sectionPx": 301
+     },
+     "RU2": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": 777,
+      "sectionPx": 196
+     },
+     "RU3": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": 869,
+      "sectionPx": 307
+     },
+     "RU4": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": 777,
+      "sectionPx": 299
+     }
+    },
+    "short-15": {
+     "today": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 65
+     },
+     "RU1": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": 871,
+      "sectionPx": 970
+     },
+     "RU2": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": 777,
+      "sectionPx": 725
+     },
+     "RU3": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": 869,
+      "sectionPx": 918
+     },
+     "RU4": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": 777,
+      "sectionPx": 459
+     }
+    },
+    "long-0": {
+     "today": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU1": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU2": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU3": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU4": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     }
+    },
+    "long-3": {
+     "today": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 65
+     },
+     "RU1": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": 1476,
+      "sectionPx": 301
+     },
+     "RU2": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": 1382,
+      "sectionPx": 196
+     },
+     "RU3": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": 1474,
+      "sectionPx": 307
+     },
+     "RU4": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": 1382,
+      "sectionPx": 299
+     }
+    },
+    "long-15": {
+     "today": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 65
+     },
+     "RU1": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": 1476,
+      "sectionPx": 970
+     },
+     "RU2": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": 1382,
+      "sectionPx": 725
+     },
+     "RU3": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": 1474,
+      "sectionPx": 918
+     },
+     "RU4": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": 1382,
+      "sectionPx": 459
+     }
+    }
+   }
+  }
+ },
+ "de": {
+  "ios": {
+   "100": {
+    "short-0": {
+     "today": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU1": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU2": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU3": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU4": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     }
+    },
+    "short-3": {
+     "today": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 49
+     },
+     "RU1": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": 109,
+      "sectionPx": 238
+     },
+     "RU2": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": 59,
+      "sectionPx": 184
+     },
+     "RU3": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": 71,
+      "sectionPx": 112
+     },
+     "RU4": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": 55,
+      "sectionPx": 236
+     }
+    },
+    "short-15": {
+     "today": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 49
+     },
+     "RU1": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": 109,
+      "sectionPx": 814
+     },
+     "RU2": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": 59,
+      "sectionPx": 664
+     },
+     "RU3": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": 71,
+      "sectionPx": 352
+     },
+     "RU4": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": 55,
+      "sectionPx": 380
+     }
+    },
+    "long-0": {
+     "today": {
+      "active": 10,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU1": {
+      "active": 10,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU2": {
+      "active": 10,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU3": {
+      "active": 10,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU4": {
+      "active": 10,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     }
+    },
+    "long-3": {
+     "today": {
+      "active": 10,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 49
+     },
+     "RU1": {
+      "active": 10,
+      "recent": 0,
+      "toFirstRecent": 397,
+      "sectionPx": 238
+     },
+     "RU2": {
+      "active": 9,
+      "recent": 0,
+      "toFirstRecent": 347,
+      "sectionPx": 184
+     },
+     "RU3": {
+      "active": 10,
+      "recent": 0,
+      "toFirstRecent": 359,
+      "sectionPx": 112
+     },
+     "RU4": {
+      "active": 10,
+      "recent": 0,
+      "toFirstRecent": 343,
+      "sectionPx": 236
+     }
+    },
+    "long-15": {
+     "today": {
+      "active": 10,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 49
+     },
+     "RU1": {
+      "active": 10,
+      "recent": 0,
+      "toFirstRecent": 397,
+      "sectionPx": 814
+     },
+     "RU2": {
+      "active": 9,
+      "recent": 0,
+      "toFirstRecent": 347,
+      "sectionPx": 664
+     },
+     "RU3": {
+      "active": 10,
+      "recent": 0,
+      "toFirstRecent": 359,
+      "sectionPx": 352
+     },
+     "RU4": {
+      "active": 10,
+      "recent": 0,
+      "toFirstRecent": 343,
+      "sectionPx": 380
+     }
+    }
+   },
+   "310": {
+    "short-0": {
+     "today": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU1": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU2": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU3": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU4": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     }
+    },
+    "short-3": {
+     "today": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 166
+     },
+     "RU1": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": 2068,
+      "sectionPx": 755
+     },
+     "RU2": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": 1606,
+      "sectionPx": 279
+     },
+     "RU3": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": 1919,
+      "sectionPx": 608
+     },
+     "RU4": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": 1664,
+      "sectionPx": 743
+     }
+    },
+    "short-15": {
+     "today": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 166
+     },
+     "RU1": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": 2068,
+      "sectionPx": 1778
+     },
+     "RU2": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": 1638,
+      "sectionPx": 1165
+     },
+     "RU3": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": 1919,
+      "sectionPx": 1580
+     },
+     "RU4": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": 1664,
+      "sectionPx": 968
+     }
+    },
+    "long-0": {
+     "today": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU1": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU2": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU3": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU4": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     }
+    },
+    "long-3": {
+     "today": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 166
+     },
+     "RU1": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": 3123,
+      "sectionPx": 755
+     },
+     "RU2": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": 2661,
+      "sectionPx": 279
+     },
+     "RU3": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": 2975,
+      "sectionPx": 608
+     },
+     "RU4": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": 2719,
+      "sectionPx": 743
+     }
+    },
+    "long-15": {
+     "today": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 166
+     },
+     "RU1": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": 3123,
+      "sectionPx": 1778
+     },
+     "RU2": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": 2693,
+      "sectionPx": 1165
+     },
+     "RU3": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": 2975,
+      "sectionPx": 1580
+     },
+     "RU4": {
+      "active": 2,
+      "recent": 0,
+      "toFirstRecent": 2719,
+      "sectionPx": 968
+     }
+    }
+   }
+  },
+  "android": {
+   "100": {
+    "short-0": {
+     "today": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU1": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU2": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU3": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU4": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     }
+    },
+    "short-3": {
+     "today": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 49
+     },
+     "RU1": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": 313,
+      "sectionPx": 238
+     },
+     "RU2": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": 263,
+      "sectionPx": 184
+     },
+     "RU3": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": 275,
+      "sectionPx": 160
+     },
+     "RU4": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": 259,
+      "sectionPx": 236
+     }
+    },
+    "short-15": {
+     "today": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 49
+     },
+     "RU1": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": 313,
+      "sectionPx": 814
+     },
+     "RU2": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": 263,
+      "sectionPx": 664
+     },
+     "RU3": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": 275,
+      "sectionPx": 400
+     },
+     "RU4": {
+      "active": 5,
+      "recent": 0,
+      "toFirstRecent": 259,
+      "sectionPx": 380
+     }
+    },
+    "long-0": {
+     "today": {
+      "active": 8,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU1": {
+      "active": 8,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU2": {
+      "active": 8,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU3": {
+      "active": 8,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU4": {
+      "active": 8,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     }
+    },
+    "long-3": {
+     "today": {
+      "active": 8,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 49
+     },
+     "RU1": {
+      "active": 8,
+      "recent": 0,
+      "toFirstRecent": 601,
+      "sectionPx": 238
+     },
+     "RU2": {
+      "active": 6,
+      "recent": 0,
+      "toFirstRecent": 551,
+      "sectionPx": 184
+     },
+     "RU3": {
+      "active": 8,
+      "recent": 0,
+      "toFirstRecent": 563,
+      "sectionPx": 160
+     },
+     "RU4": {
+      "active": 8,
+      "recent": 0,
+      "toFirstRecent": 547,
+      "sectionPx": 236
+     }
+    },
+    "long-15": {
+     "today": {
+      "active": 8,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 49
+     },
+     "RU1": {
+      "active": 8,
+      "recent": 0,
+      "toFirstRecent": 601,
+      "sectionPx": 814
+     },
+     "RU2": {
+      "active": 6,
+      "recent": 0,
+      "toFirstRecent": 551,
+      "sectionPx": 664
+     },
+     "RU3": {
+      "active": 8,
+      "recent": 0,
+      "toFirstRecent": 563,
+      "sectionPx": 400
+     },
+     "RU4": {
+      "active": 8,
+      "recent": 0,
+      "toFirstRecent": 547,
+      "sectionPx": 380
+     }
+    }
+   },
+   "200": {
+    "short-0": {
+     "today": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU1": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU2": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU3": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU4": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     }
+    },
+    "short-3": {
+     "today": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 65
+     },
+     "RU1": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": 891,
+      "sectionPx": 367
+     },
+     "RU2": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": 732,
+      "sectionPx": 196
+     },
+     "RU3": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": 864,
+      "sectionPx": 347
+     },
+     "RU4": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": 764,
+      "sectionPx": 372
+     }
+    },
+    "short-15": {
+     "today": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 65
+     },
+     "RU1": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": 909,
+      "sectionPx": 1053
+     },
+     "RU2": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": 732,
+      "sectionPx": 725
+     },
+     "RU3": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": 864,
+      "sectionPx": 902
+     },
+     "RU4": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": 764,
+      "sectionPx": 531
+     }
+    },
+    "long-0": {
+     "today": {
+      "active": 4,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU1": {
+      "active": 4,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU2": {
+      "active": 4,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU3": {
+      "active": 4,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     },
+     "RU4": {
+      "active": 4,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 0
+     }
+    },
+    "long-3": {
+     "today": {
+      "active": 4,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 65
+     },
+     "RU1": {
+      "active": 4,
+      "recent": 0,
+      "toFirstRecent": 1565,
+      "sectionPx": 367
+     },
+     "RU2": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": 1406,
+      "sectionPx": 196
+     },
+     "RU3": {
+      "active": 4,
+      "recent": 0,
+      "toFirstRecent": 1538,
+      "sectionPx": 347
+     },
+     "RU4": {
+      "active": 4,
+      "recent": 0,
+      "toFirstRecent": 1438,
+      "sectionPx": 372
+     }
+    },
+    "long-15": {
+     "today": {
+      "active": 4,
+      "recent": 0,
+      "toFirstRecent": null,
+      "sectionPx": 65
+     },
+     "RU1": {
+      "active": 4,
+      "recent": 0,
+      "toFirstRecent": 1583,
+      "sectionPx": 1053
+     },
+     "RU2": {
+      "active": 3,
+      "recent": 0,
+      "toFirstRecent": 1406,
+      "sectionPx": 725
+     },
+     "RU3": {
+      "active": 4,
+      "recent": 0,
+      "toFirstRecent": 1538,
+      "sectionPx": 902
+     },
+     "RU4": {
+      "active": 4,
+      "recent": 0,
+      "toFirstRecent": 1438,
+      "sectionPx": 531
+     }
+    }
+   }
+  }
+ }
+}
