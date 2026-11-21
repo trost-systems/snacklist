@@ -28,7 +28,7 @@ export const options = {
     recent: (s) => {
       if (!s.recent.length) return '';
       const rows = s.recent.map((id, k) => row(s, id, { recent: true, last: k === s.recent.length - 1, cls: ' faded', tail: '' })).join('');
-      return `<section class="ru ru1" data-recent-section><div class="ruhead" data-act="fold" role="button" data-head><span class="rutitle">${esc(w(s.lang, 'recentlyUsed'))}</span>${count(s.recent.length)}${chev(!s.folded)}</div>
+      return `<section class="ru ru1" data-recent-section><div class="ruhead" data-act="fold" role="button" data-head><span class="htext"><span class="rutitle">${esc(w(s.lang, 'recentlyUsed'))}</span> ${count(s.recent.length)}</span>${chev(!s.folded)}</div>
         ${s.folded ? '' : `<p class="ruhint">${nw(s.lang, 'ruHintTap')}</p>${rows}`}</section>`;
     },
   },
@@ -44,7 +44,7 @@ export const options = {
         const hi = s.hi?.id === id && s.hi.where === 'recent' ? ' hi' : '';
         return `<div class="citem${hi}" data-recent="${id}" data-act="back:${id}">${cell(item)}<span class="nm">${nameHtml(s, item)}</span>${ic('undo', 'icon undo')}</div>`;
       }).join('');
-      return `<section class="ru tray" data-recent-section><div class="trayhead" data-act="fold" role="button" data-head data-tray-head>${ic('check_circle', 'icon tcheck')}<span class="rutitle">${nw(s.lang, 'ruTicked')}</span>${count(s.recent.length)}${chev(!s.folded)}</div>
+      return `<section class="ru tray" data-recent-section><div class="trayhead" data-act="fold" role="button" data-head data-tray-head>${ic('check_circle', 'icon tcheck')}<span class="htext"><span class="rutitle">${nw(s.lang, 'ruTicked')}</span> ${count(s.recent.length)}</span>${chev(!s.folded)}</div>
         ${s.folded ? '' : `<div class="crows">${rows}</div>`}</section>`;
     },
     peek: (s) => {

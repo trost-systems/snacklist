@@ -240,14 +240,14 @@
      "RU1": {
       "active": 3,
       "recent": 0,
-      "toFirstRecent": 1726,
-      "sectionPx": 567
+      "toFirstRecent": 1718,
+      "sectionPx": 559
      },
      "RU2": {
       "active": 2,
       "recent": 0,
-      "toFirstRecent": 1453,
-      "sectionPx": 279
+      "toFirstRecent": 1517,
+      "sectionPx": 343
      },
      "RU3": {
       "active": 3,
@@ -272,14 +272,14 @@
      "RU1": {
       "active": 3,
       "recent": 0,
-      "toFirstRecent": 1726,
-      "sectionPx": 1519
+      "toFirstRecent": 1718,
+      "sectionPx": 1511
      },
      "RU2": {
       "active": 2,
       "recent": 0,
-      "toFirstRecent": 1485,
-      "sectionPx": 1103
+      "toFirstRecent": 1517,
+      "sectionPx": 1136
      },
      "RU3": {
       "active": 3,
@@ -336,14 +336,14 @@
      "RU1": {
       "active": 2,
       "recent": 0,
-      "toFirstRecent": 2852,
-      "sectionPx": 567
+      "toFirstRecent": 2844,
+      "sectionPx": 559
      },
      "RU2": {
       "active": 2,
       "recent": 0,
-      "toFirstRecent": 2578,
-      "sectionPx": 279
+      "toFirstRecent": 2643,
+      "sectionPx": 343
      },
      "RU3": {
       "active": 2,
@@ -368,14 +368,14 @@
      "RU1": {
       "active": 2,
       "recent": 0,
-      "toFirstRecent": 2852,
-      "sectionPx": 1519
+      "toFirstRecent": 2844,
+      "sectionPx": 1511
      },
      "RU2": {
       "active": 2,
       "recent": 0,
-      "toFirstRecent": 2610,
-      "sectionPx": 1103
+      "toFirstRecent": 2643,
+      "sectionPx": 1136
      },
      "RU3": {
       "active": 2,
@@ -1022,8 +1022,8 @@
      "RU1": {
       "active": 2,
       "recent": 0,
-      "toFirstRecent": 2068,
-      "sectionPx": 755
+      "toFirstRecent": 1996,
+      "sectionPx": 683
      },
      "RU2": {
       "active": 2,
@@ -1054,14 +1054,14 @@
      "RU1": {
       "active": 2,
       "recent": 0,
-      "toFirstRecent": 2068,
-      "sectionPx": 1778
+      "toFirstRecent": 2060,
+      "sectionPx": 1770
      },
      "RU2": {
       "active": 2,
       "recent": 0,
-      "toFirstRecent": 1638,
-      "sectionPx": 1165
+      "toFirstRecent": 1671,
+      "sectionPx": 1198
      },
      "RU3": {
       "active": 2,
@@ -1118,8 +1118,8 @@
      "RU1": {
       "active": 2,
       "recent": 0,
-      "toFirstRecent": 3123,
-      "sectionPx": 755
+      "toFirstRecent": 3051,
+      "sectionPx": 683
      },
      "RU2": {
       "active": 2,
@@ -1150,14 +1150,14 @@
      "RU1": {
       "active": 2,
       "recent": 0,
-      "toFirstRecent": 3123,
-      "sectionPx": 1778
+      "toFirstRecent": 3115,
+      "sectionPx": 1770
      },
      "RU2": {
       "active": 2,
       "recent": 0,
-      "toFirstRecent": 2693,
-      "sectionPx": 1165
+      "toFirstRecent": 2726,
+      "sectionPx": 1198
      },
      "RU3": {
       "active": 2,
@@ -1412,8 +1412,8 @@
      "RU1": {
       "active": 3,
       "recent": 0,
-      "toFirstRecent": 891,
-      "sectionPx": 367
+      "toFirstRecent": 901,
+      "sectionPx": 376
      },
      "RU2": {
       "active": 3,
@@ -1444,8 +1444,8 @@
      "RU1": {
       "active": 3,
       "recent": 0,
-      "toFirstRecent": 909,
-      "sectionPx": 1053
+      "toFirstRecent": 901,
+      "sectionPx": 1045
      },
      "RU2": {
       "active": 3,
@@ -1508,8 +1508,8 @@
      "RU1": {
       "active": 4,
       "recent": 0,
-      "toFirstRecent": 1565,
-      "sectionPx": 367
+      "toFirstRecent": 1575,
+      "sectionPx": 376
      },
      "RU2": {
       "active": 3,
@@ -1540,8 +1540,8 @@
      "RU1": {
       "active": 4,
       "recent": 0,
-      "toFirstRecent": 1583,
-      "sectionPx": 1053
+      "toFirstRecent": 1575,
+      "sectionPx": 1045
      },
      "RU2": {
       "active": 3,

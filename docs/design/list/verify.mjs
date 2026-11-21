@@ -22,7 +22,7 @@ let passed = 0;
 const failed = [];
 const ok = (cond, name, detail = '') => {
   if (cond) passed += 1;
-  else failed.push(`${name}${detail ? `: ${detail}` : ''}`);
+  else failed.push(`${name}${detail ? ` -- ${detail}` : ''}`);
 };
 
 const arbDir = [join(root, 'app/l10n'), join(here, '../../../app/l10n')].find((d) => existsSync(join(d, 'app_en.arb')));
@@ -74,6 +74,16 @@ for (const lang of ['en', 'de']) {
 }
 
 const ru = ['RU1', 'RU2', 'RU3', 'RU4'];
+// A click a person could make; one that cannot happen fails the named check instead of the run.
+const click = async (loc, name) => {
+  try {
+    await loc.click({ timeout: 3000 });
+    return true;
+  } catch (e) {
+    ok(false, name, `cannot click: ${String(e.message).split('\n')[0]}`);
+    return false;
+  }
+};
 const rowsIn = (page, sel, attr) => page.locator(`${sel} .phone`).first().evaluate((ph, a) => [...ph.querySelectorAll(`[${a}]`)].filter((e) => e.getBoundingClientRect().height > 0).map((e) => e.getAttribute(a)), attr);
 
 {
@@ -95,13 +105,13 @@ const acceptance = async (reducedMotion) => {
   for (const id of ru) {
     const sel = `#${id} [data-live-phone]`;
     const before = await rowsIn(page, sel, 'data-row');
-    await page.locator(`${sel} [data-row="mince"]`).click();
+    if (!await click(page.locator(`${sel} [data-row="mince"]`), `${id}: a tick on an active row (${reducedMotion})`)) continue;
     await page.waitForFunction((s) => !document.querySelector(s).dataset.busy && !document.querySelector(`${s} [data-row="mince"]`), sel, { timeout: 3000 }).catch(() => {});
     const afterRows = await rowsIn(page, sel, 'data-row');
     const afterRecent = await rowsIn(page, sel, 'data-recent');
     ok(!afterRows.includes('mince'), `${id}: a tick takes the item off the active rows (${reducedMotion})`);
     ok(afterRecent[0] === 'mince', `${id}: the ticked item is first in the section (${reducedMotion})`, `first is ${afterRecent[0]}`);
-    await page.locator(`${sel} [data-recent="mince"]`).click();
+    if (!await click(page.locator(`${sel} [data-recent="mince"]`), `${id}: one tap on the ticked item in the section (${reducedMotion})`)) continue;
     const backRows = await rowsIn(page, sel, 'data-row');
     const backRecent = await rowsIn(page, sel, 'data-recent');
     ok(isDeepStrictEqual(backRows, before), `${id}: one tap puts it back at its place (${reducedMotion})`, `${backRows.join(',')} vs ${before.join(',')}`);
@@ -122,17 +132,17 @@ await acceptance('reduce');
   ok(await pill.count() === 1, 'RU2: the peek shows on the long list at the top');
   const pid = await pill.getAttribute('data-peek-pill');
   ok(pid === 'milk', 'RU2: the peek holds the newest item', pid);
-  await pill.click();
+  await click(pill, 'RU2: one click on the peek pill');
   const rows = await rowsIn(page, sel, 'data-row');
   const rec = await rowsIn(page, sel, 'data-recent');
   ok(rows.includes('milk') && !rec.includes('milk') && rec.length === 14, 'RU2: one click on the peek pill returns the newest item', `rows ${rows.length}, recent ${rec.length}`);
 
   await page.locator('#RU4 [data-scene="short-15"]').click();
   ok((await rowsIn(page, '#RU4 [data-live-phone]', 'data-recent')).length === 5, 'RU4: shows the newest 5 before Show all');
-  await page.locator('#RU4 [data-live-phone] [data-show-all]').click();
+  await click(page.locator('#RU4 [data-live-phone] [data-show-all]'), 'RU4: Show all is there to click');
   ok((await rowsIn(page, '#RU4 [data-live-phone]', 'data-recent')).length === 15, 'RU4: Show all reveals all 15');
 
-  await page.locator('#RU1 [data-live-phone] [data-head]').click();
+  await click(page.locator('#RU1 [data-live-phone] [data-head]'), 'RU1: the header is there to click');
   ok((await rowsIn(page, '#RU1 [data-live-phone]', 'data-recent')).length === 0, 'RU1: the header folds the section');
   await page.reload();
   await page.waitForSelector('body[data-ready]');
