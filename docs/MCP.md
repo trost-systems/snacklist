@@ -108,6 +108,19 @@ They matter for one case only: a tool call that sends no byte for 120 s
 fails on mcp.snacklist.app (and mcp.hummlist.com) with `ROUTER_EXTERNAL_TARGET_ERROR`. The tools
 answer in well under a second, and the supabase.co URL has no such limit.
 
+## Limits
+
+Per signed-in user, over all MCP requests after authentication (any household,
+OAuth or access token): a token bucket of 20 requests refilled at 60 a minute,
+and 1000 requests a UTC day. Over either, the function answers `429` with
+`Retry-After` (seconds) and a JSON-RPC error `-32000` "Rate limit reached.
+Retry later." without reading the request. A request while the account is
+being deleted gets `503`. The numbers are `BURST`, `PER_MINUTE` and `PER_DAY`
+in `supabase/functions/mcp/handler.ts`; `public.mcp_take_call` counts in
+`public.mcp_rate` (one row per user, service only), and `purge_mcp_rate()`
+deletes rows unused for a day (pg_cron `purge-mcp-rate`, 03:43 UTC). Before
+job 336, 60 concurrent calls with one token were all served (job 331 F5).
+
 ## Tools
 
 A user can be in several households (job 169b). Without the optional
@@ -135,7 +148,7 @@ person's promise, not an agent's.
 | Tool | Input | What it does |
 | --- | --- | --- |
 | `list_households` | none | The user's households as `[{id, name, members, default}]` in joining order; `default` marks where calls without `household` go. A personal access token sees only its own household. Not behind the Premium lock: it lists only the user's own households, so a locked default can find an unlocked one. |
-| `list_lists` | `household?` | The household's lists as `[{id, name, default}]` in their order; `default` marks the first, where calls without `list` go. |
+| `list_lists` | `household?` | The household's lists as `[{id, name, default}]` in their order; `default` marks the caller's default list (chosen in the app, else the first), where calls without `list` go. |
 | `list_items` | `store?`, `category?`, `household?`, `list?` | Open items of one list (`list` in the answer names it) in aisle order, and inside a category in the household's walk order (`sort_key`, the order the app's drag and drop sets), then by age. With `store`: that store's items plus untagged ones, in that store's order. Next to `items`, `counts: {open, checkedLast24h}` counts that whole list whatever the filter: open items, and items ticked in the last 24 hours (one query on `items_household_status_idx`). |
 | `add_items` | `items: [{name, quantity?, brand?, properties?, category?, store?}]` (1–50), `household?`, `list?` | Adds items to the list through `public.add_list_item`, the add path Siri shares. The name is split by the parser (`public.parse_item`): "Windeln Pampers Größe 3" becomes name "Windeln", brand "Pampers", properties "Größe 3"; "2 Gurken" becomes name "Gurken", quantity "2". A non-blank `quantity` (max 40), `brand` (max 60) or `properties` (max 120, comma-separated) replaces the parsed value. The category comes from the household's learned corrections, then the German dictionary. The store comes from where the item was last bought, else a store brand's store (Balea: dm), else dm for drugstore items. Items already on the list come back under `alreadyOnList` instead of being duplicated: name, brand and properties are compared, so "Gurke" is "2 Gurken" but "Windeln Größe 5" is not "Windeln Größe 4". An explicit `category` is learned like a correction. A new item whose spelling variant or synonym is already open ("Karotten" with "Möhren", `public.similar_items`, job 32b) is still added and reported under `similarOnList: [{added, onList: [item], total}]`: `onList` holds at most three of the similar open items, oldest first, `total` says how many there are; nothing is merged. A call whose adds take longer than 5 seconds ends with a tool error and adds nothing. Calls of one user wait for each other; one that waited 5 seconds ends with the same tool error. |
 | `tick_items` | `items: [name or id]` (1–50), `household?`, `list?` | Ticks items off; they move to "Zuletzt verwendet". Unresolvable or already ticked names come back under `notFound` with the reason, so a repeated call changes nothing. |
@@ -150,6 +163,10 @@ ambiguous names) come back as tool errors (`isError: true`) with a German
 message that lists the valid options. A call that arrives while its household is being changed
 (a member leaves, a role changes, an account is deleted) and would write the Premium check's record
 ends with a tool error that says nothing was changed and to try again (`busyNow` in `tools.ts`).
+Any other failure is reported to error tracking and answered with a tool error that says nothing
+was changed (`failedNow`); the failure's own text (a database message, say) never reaches the
+client. Text arguments with U+0000, which Postgres cannot store, fail the input check like the
+API's.
 
 **Integration lock (job 50, off).** With the server switch `integration_lock` on, a user
 without Snacklist Premium (neither their own plan nor a grant of the household the call acts in;

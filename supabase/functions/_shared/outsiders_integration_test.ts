@@ -105,6 +105,7 @@ const NO_ROW = [
   'invite_attempts',
   'invite_preview_rate',
   'invite_preview_salt',
+  'mcp_rate',
   'oauth_app_devices',
   'oauth_cimd_clients',
   'oauth_cimd_rate',

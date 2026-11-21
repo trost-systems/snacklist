@@ -19,6 +19,7 @@ import {
   stores,
   UUID,
 } from '../_shared/list.ts';
+import { storedText } from '../_shared/stored_text.ts';
 import { ApiError } from './errors.ts';
 import { BATCH, PAGE_DEFAULT, PAGE_MAX } from './limits.ts';
 import type { Operation } from './routes.ts';
@@ -60,9 +61,6 @@ function idOf(raw: Raw): string {
 
 const noQuery = z.object({}).strict();
 const noBody = z.object({}).strict();
-
-/** Text as Postgres stores it: any character but U+0000. */
-const storedText = z.string().refine((s) => !s.includes('\u0000'), 'Must not contain U+0000');
 
 /** A store, category or list, by id or name. */
 const ref = storedText.trim().min(1).max(60);

@@ -95,6 +95,10 @@ export async function handle(req: Request, deps: Deps = defaultDeps): Promise<Re
     ...cors,
     ...reply.headers,
     'content-type': 'application/json; charset=utf-8',
+    // A shopping list is personal: no shared cache keeps it, and no browser reads it as anything
+    // but JSON (job 241 L5).
+    'cache-control': 'no-store',
+    'x-content-type-options': 'nosniff',
     'x-request-id': requestId,
   });
   return new Response(JSON.stringify(reply.body), { status: reply.status, headers });

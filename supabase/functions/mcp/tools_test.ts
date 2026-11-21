@@ -11,6 +11,7 @@ import {
   buildServer,
   busyNow,
   type CallReason,
+  failedNow,
   type Gate,
   langOf,
   premiumRequired,
@@ -209,10 +210,42 @@ Deno.test('locked: English for a client that prefers it', async () => {
 Deno.test('the check fails: no premium answer (an error, like any database failure)', async () => {
   const s = serve(() => Promise.reject(new Error('connection refused')));
   const res = await s.handle(rpc('tools/call', { name: 'list_items', arguments: {} }));
-  const text = JSON.stringify(await message(res));
-  assertFalse(text.includes('Premium'));
-  assert(text.includes('error') || text.includes('isError'));
+  const { result } = await message(res);
+  assertEquals(result.isError, true);
+  assertEquals(result.content[0]?.text, failedNow.de);
   assertEquals(s.reports, [{ tool: 'list_items', household: 'h', reason: 'server' }]);
+});
+
+Deno.test("a failure's own message never reaches the client", async () => {
+  const internal = Object.assign(new Error('invalid byte sequence for encoding "UTF8": 0x00'), {
+    name: 'PostgresError',
+    code: '22021',
+  });
+  const s = serve(() => Promise.reject(internal));
+  const res = await s.handle(
+    rpc('tools/call', { name: 'list_items', arguments: {} }, 'en-US,en;q=0.9'),
+  );
+  const text = JSON.stringify(await message(res));
+  assertFalse(text.includes('UTF8'));
+  assert(text.includes(failedNow.en));
+});
+
+Deno.test('U+0000 in any text argument is refused before the database sees it', async () => {
+  const s = serve(locked);
+  for (
+    const [name, args] of [
+      ['add_items', { items: [{ name: 'Milch\u0000' }] }],
+      ['add_items', { items: [{ name: 'Milch', brand: 'Ja\u0000' }] }],
+      ['list_items', { store: 'dm\u0000' }],
+      ['tick_items', { items: ['Milch\u0000'] }],
+      ['list_lists', { household: 'Zuhause\u0000' }],
+    ] as const
+  ) {
+    const { result } = await message(await s.handle(rpc('tools/call', { name, arguments: args })));
+    assertEquals(result.isError, true, name);
+    assert(result.content[0]?.text.includes('U+0000'), `${name}: ${result.content[0]?.text}`);
+  }
+  assertEquals(s.reports, []);
 });
 
 Deno.test('a call that ran out of its time is a tool error saying so, not a server failure', async () => {

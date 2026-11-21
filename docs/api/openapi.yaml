@@ -8,7 +8,7 @@ info:
     scopes, idempotency, errors, rate limits and versioning. Every response carries
     X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset and X-Request-Id.
   contact:
-    url: https://github.com/trost-systems/family-groceries/blob/main/docs/API.md
+    url: https://github.com/trost-systems/snacklist/blob/main/docs/API.md
 servers:
   - url: https://jdwqrallbpdbshrdhenk.supabase.co/functions/v1/api
     description: Production
@@ -490,7 +490,7 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
     Conflict:
-      description: conflict; the change clashes with the list's current state.
+      description: conflict; a concurrent change got in the way, nothing was changed; retry.
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }

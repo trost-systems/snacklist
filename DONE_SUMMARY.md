@@ -2024,3 +2024,25 @@ the analytics context's own `platform` (`ios`, `android`, `web`) overwrites it o
 is gone; the insight breaks down by the context value, and a test now fails when an event's rules
 name a context key. Also: a dotted-scheme plan test (`com.kaufland.iosapp://`), "certificate
 subject" instead of "signed" in the registry notes, and README lines on shared and short schemes.
+
+## Job 331: public API and MCP tested live and reviewed, 2026-11-21
+
+Verdict READY-AFTER-FIXES: nothing in the API's code blocks it once the draft PR lands. With
+`integration_lock` off (production today, PX1) the API would be free for everyone, though CS1 makes it
+Premium. The order is Peter's call: free during the beta (#590, `public_api`, the `public-api` flag,
+smoke), or Premium (#590 and #583, the PURCHASES.md "Integration lock" go-live steps, `integration_lock`,
+then `public_api` and the flag). Every endpoint and
+tool was run over HTTP against the job's local stack with synthetic households: 158 of 159 checks as
+expected on the branch, the remaining one is MCP's missing rate limit (J1). Report, test log and
+probe in the ops job dir (`out/`); summary in `docs/done/331.md`. The draft PR fixes MCP leaking and
+not reporting database errors, U+0000 in MCP arguments, missing `no-store`/`nosniff` on API answers,
+and three doc errors. Not merged by brief; no new endpoints, flags or switches.
+
+## Job 336: the public API ready for the beta, 2026-11-21
+
+Job 331's fixes (#590) land together with the two open adjustments. MCP now has limits like the API:
+per user 20 requests at once, one more a second, 1000 a UTC day, then 429 with `Retry-After`. A
+member's own insert with `items.created_at` = infinity (or another date outside 2000 .. tomorrow) now
+gets the current time, so API paging no longer stops partway. Job 331's probe, with J1 and J2 checks
+added: 161 of 161 as expected on the branch. Switching on (`public_api`, the PostHog flag
+`public-api`) stays with the lead: NEEDS_LEAD "Job 336". Summary in `docs/done/336.md`.

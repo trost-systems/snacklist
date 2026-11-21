@@ -63,6 +63,7 @@ function deps(clients: Record<string, MappedClient | CimdError> = {}, tokenAllow
       allowTokenRequest: () => Promise.resolve(tokenAllowed),
     },
     authenticate: () => Promise.reject(new AuthError('missing_token', 'fehlt')),
+    takeCall: () => Promise.resolve(null),
     serve: () => Promise.resolve(new Response('served')),
     allowedOriginHosts: () => [],
   };
