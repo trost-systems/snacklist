@@ -1,0 +1,219 @@
+{
+ "lang": "en",
+ "scale": 3.1,
+ "android": false,
+ "viewport": {
+  "width": 390,
+  "height": 844
+ },
+ "cats": {
+  "bananas": "produce",
+  "apples": "produce",
+  "tomatoes": "produce",
+  "cucumber": "produce",
+  "bread": "bakery",
+  "pretzels": "other",
+  "mince": "other",
+  "milk": "chilled",
+  "butter": "chilled",
+  "eggs": "chilled",
+  "yogurt": "chilled",
+  "pasta": "pantry",
+  "flour": "pantry",
+  "passata": "pantry",
+  "chocolate": "sweets",
+  "pizza": "frozen",
+  "water": "drinks",
+  "dishsoap": "household",
+  "tealights": "pantry",
+  "frame": "other",
+  "spoon": "other",
+  "napkins": "other",
+  "meatballs": "other",
+  "cushion": "other",
+  "boxes": "other",
+  "plant": "other",
+  "shelf": "other",
+  "batteries": "household",
+  "card": "other"
+ },
+ "top": [
+  {
+   "role": "button",
+   "label": "Shopping list · Brandt family",
+   "top": 10,
+   "bottom": 58,
+   "left": 16,
+   "right": 212.890625
+  },
+  {
+   "role": "button",
+   "label": "Edit",
+   "top": 10,
+   "bottom": 58,
+   "left": 298.5097961425781,
+   "right": 373.9941711425781
+  },
+  {
+   "role": "button",
+   "label": "EDEKA, 18 items",
+   "top": 72,
+   "bottom": 150,
+   "left": 0,
+   "right": 390
+  },
+  {
+   "role": "heading",
+   "label": "Fruit & veg",
+   "top": 150,
+   "bottom": 190,
+   "left": 0,
+   "right": 390
+  },
+  {
+   "role": "checkbox",
+   "label": "Bananas\n6",
+   "top": 190,
+   "bottom": 401,
+   "left": 0,
+   "right": 390
+  },
+  {
+   "role": "button",
+   "label": "Price for Bananas",
+   "top": 190,
+   "bottom": 400,
+   "left": 215.1609649658203,
+   "right": 373.98907470703125
+  },
+  {
+   "role": "checkbox",
+   "label": "Apples\n1 kg",
+   "top": 401,
+   "bottom": 612,
+   "left": 0,
+   "right": 390
+  },
+  {
+   "role": "button",
+   "label": "Price for Apples",
+   "top": 401,
+   "bottom": 611,
+   "left": 215.1609649658203,
+   "right": 373.98907470703125
+  },
+  {
+   "role": "checkbox",
+   "label": "Tomatoes",
+   "top": 612,
+   "bottom": 757,
+   "left": 0,
+   "right": 390
+  },
+  {
+   "role": "button",
+   "label": "Price for Tomatoes",
+   "top": 612,
+   "bottom": 756,
+   "left": 215.1609649658203,
+   "right": 373.98907470703125
+  },
+  {
+   "role": "checkbox",
+   "label": "Cucumber",
+   "top": 757,
+   "bottom": 844,
+   "left": 0,
+   "right": 390
+  },
+  {
+   "role": "button",
+   "label": "Price for Cucumber",
+   "top": 757,
+   "bottom": 844,
+   "left": 215.1609649658203,
+   "right": 373.98907470703125
+  },
+  {
+   "role": "heading",
+   "label": "Bread & bakery",
+   "top": 901,
+   "bottom": 981,
+   "left": 0,
+   "right": 390
+  },
+  {
+   "role": "checkbox",
+   "label": "Bread",
+   "top": 981,
+   "bottom": 1094,
+   "left": 0,
+   "right": 390
+  },
+  {
+   "role": "button",
+   "label": "Price for Bread",
+   "top": 981,
+   "bottom": 1094,
+   "left": 215.1609649658203,
+   "right": 373.98907470703125
+  },
+  {
+   "role": "tab",
+   "label": "List",
+   "top": 780,
+   "bottom": 832,
+   "left": 30,
+   "right": 122.515625
+  },
+  {
+   "role": "tab",
+   "label": "History",
+   "top": 780,
+   "bottom": 832,
+   "left": 122.52336120605469,
+   "right": 252.0546112060547
+  },
+  {
+   "role": "tab",
+   "label": "More",
+   "top": 780,
+   "bottom": 832,
+   "left": 252.0560760498047,
+   "right": 359.99359130859375
+  }
+ ],
+ "barBottom": 58,
+ "fieldTop": 720,
+ "visibleRows": [
+  "Bananas\n6",
+  "Apples\n1 kg"
+ ],
+ "order": [
+  "button:EDEKA, 18 items",
+  "heading:Fruit & veg",
+  "checkbox:Bananas\n6",
+  "checkbox:Apples\n1 kg",
+  "checkbox:Tomatoes",
+  "checkbox:Cucumber",
+  "heading:Bread & bakery",
+  "checkbox:Bread",
+  "heading:Chilled",
+  "checkbox:Milk\n2",
+  "checkbox:Butter",
+  "checkbox:Eggs\n10",
+  "checkbox:Yogurt",
+  "heading:Pantry",
+  "checkbox:Pasta",
+  "checkbox:Flour",
+  "checkbox:Passata",
+  "heading:Sweets & snacks",
+  "checkbox:Chocolate",
+  "heading:Frozen",
+  "checkbox:Frozen pizza\n2",
+  "heading:Drinks",
+  "checkbox:Sparkling water\n6",
+  "heading:Household",
+  "checkbox:Dish soap"
+ ]
+}

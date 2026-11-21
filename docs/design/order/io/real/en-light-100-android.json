@@ -1,0 +1,468 @@
+{
+ "lang": "en",
+ "scale": 1,
+ "android": true,
+ "viewport": {
+  "width": 360,
+  "height": 640
+ },
+ "cats": {
+  "bananas": "produce",
+  "apples": "produce",
+  "tomatoes": "produce",
+  "cucumber": "produce",
+  "bread": "bakery",
+  "pretzels": "other",
+  "mince": "other",
+  "milk": "chilled",
+  "butter": "chilled",
+  "eggs": "chilled",
+  "yogurt": "chilled",
+  "pasta": "pantry",
+  "flour": "pantry",
+  "passata": "pantry",
+  "chocolate": "sweets",
+  "pizza": "frozen",
+  "water": "drinks",
+  "dishsoap": "household",
+  "tealights": "pantry",
+  "frame": "other",
+  "spoon": "other",
+  "napkins": "other",
+  "meatballs": "other",
+  "cushion": "other",
+  "boxes": "other",
+  "plant": "other",
+  "shelf": "other",
+  "batteries": "household",
+  "card": "other"
+ },
+ "top": [
+  {
+   "role": "button",
+   "label": "Shopping list · Brandt family",
+   "top": 10,
+   "bottom": 58,
+   "left": 16,
+   "right": 179
+  },
+  {
+   "role": "button",
+   "label": "Edit",
+   "top": 10,
+   "bottom": 58,
+   "left": 280,
+   "right": 344
+  },
+  {
+   "role": "button",
+   "label": "EDEKA, 18 items",
+   "top": 72,
+   "bottom": 124,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "heading",
+   "label": "Fruit & veg",
+   "top": 124,
+   "bottom": 156,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "checkbox",
+   "label": "Bananas\n6",
+   "top": 156,
+   "bottom": 204,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "button",
+   "label": "Price for Bananas",
+   "top": 156,
+   "bottom": 203,
+   "left": 259.068115234375,
+   "right": 343.989990234375
+  },
+  {
+   "role": "checkbox",
+   "label": "Apples\n1 kg",
+   "top": 204,
+   "bottom": 252,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "button",
+   "label": "Price for Apples",
+   "top": 204,
+   "bottom": 251,
+   "left": 259.068115234375,
+   "right": 343.989990234375
+  },
+  {
+   "role": "checkbox",
+   "label": "Tomatoes",
+   "top": 252,
+   "bottom": 300,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "button",
+   "label": "Price for Tomatoes",
+   "top": 252,
+   "bottom": 299,
+   "left": 259.068115234375,
+   "right": 343.989990234375
+  },
+  {
+   "role": "checkbox",
+   "label": "Cucumber",
+   "top": 300,
+   "bottom": 348,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "button",
+   "label": "Price for Cucumber",
+   "top": 300,
+   "bottom": 348,
+   "left": 259.068115234375,
+   "right": 343.989990234375
+  },
+  {
+   "role": "heading",
+   "label": "Bread & bakery",
+   "top": 348,
+   "bottom": 380,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "checkbox",
+   "label": "Bread",
+   "top": 380,
+   "bottom": 428,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "button",
+   "label": "Price for Bread",
+   "top": 380,
+   "bottom": 428,
+   "left": 259.068115234375,
+   "right": 343.989990234375
+  },
+  {
+   "role": "heading",
+   "label": "Chilled",
+   "top": 428,
+   "bottom": 460,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "checkbox",
+   "label": "Milk\n2",
+   "top": 460,
+   "bottom": 508,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "button",
+   "label": "Price for Milk",
+   "top": 460,
+   "bottom": 507,
+   "left": 259.068115234375,
+   "right": 343.989990234375
+  },
+  {
+   "role": "checkbox",
+   "label": "Butter",
+   "top": 508,
+   "bottom": 556,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "button",
+   "label": "Price for Butter",
+   "top": 508,
+   "bottom": 555,
+   "left": 259.068115234375,
+   "right": 343.989990234375
+  },
+  {
+   "role": "checkbox",
+   "label": "Eggs\n10",
+   "top": 556,
+   "bottom": 604,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "button",
+   "label": "Price for Eggs",
+   "top": 556,
+   "bottom": 603,
+   "left": 259.068115234375,
+   "right": 343.989990234375
+  },
+  {
+   "role": "checkbox",
+   "label": "Yogurt",
+   "top": 604,
+   "bottom": 640,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "button",
+   "label": "Price for Yogurt",
+   "top": 604,
+   "bottom": 640,
+   "left": 259.068115234375,
+   "right": 343.989990234375
+  },
+  {
+   "role": "heading",
+   "label": "Pantry",
+   "top": 652,
+   "bottom": 684,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "checkbox",
+   "label": "Pasta",
+   "top": 684,
+   "bottom": 732,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "button",
+   "label": "Price for Pasta",
+   "top": 684,
+   "bottom": 731,
+   "left": 259.068115234375,
+   "right": 343.989990234375
+  },
+  {
+   "role": "checkbox",
+   "label": "Flour",
+   "top": 732,
+   "bottom": 780,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "button",
+   "label": "Price for Flour",
+   "top": 732,
+   "bottom": 779,
+   "left": 259.068115234375,
+   "right": 343.989990234375
+  },
+  {
+   "role": "checkbox",
+   "label": "Passata",
+   "top": 780,
+   "bottom": 828,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "button",
+   "label": "Price for Passata",
+   "top": 780,
+   "bottom": 828,
+   "left": 259.068115234375,
+   "right": 343.989990234375
+  },
+  {
+   "role": "heading",
+   "label": "Sweets & snacks",
+   "top": 828,
+   "bottom": 860,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "checkbox",
+   "label": "Chocolate",
+   "top": 860,
+   "bottom": 890,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "button",
+   "label": "Price for Chocolate",
+   "top": 860,
+   "bottom": 890,
+   "left": 259.068115234375,
+   "right": 343.989990234375
+  },
+  {
+   "role": "tab",
+   "label": "List",
+   "top": 576,
+   "bottom": 628,
+   "left": 30,
+   "right": 116.984375
+  },
+  {
+   "role": "tab",
+   "label": "History",
+   "top": 576,
+   "bottom": 628,
+   "left": 116.98884582519531,
+   "right": 231.8482208251953
+  },
+  {
+   "role": "tab",
+   "label": "More",
+   "top": 576,
+   "bottom": 628,
+   "left": 231.85873413085938,
+   "right": 329.9993591308594
+  }
+ ],
+ "barBottom": 58,
+ "fieldTop": 516,
+ "visibleRows": [
+  "Bananas\n6",
+  "Apples\n1 kg",
+  "Tomatoes",
+  "Cucumber",
+  "Bread",
+  "Milk\n2"
+ ],
+ "order": [
+  "button:EDEKA, 18 items",
+  "heading:Fruit & veg",
+  "checkbox:Bananas\n6",
+  "checkbox:Apples\n1 kg",
+  "checkbox:Tomatoes",
+  "checkbox:Cucumber",
+  "heading:Bread & bakery",
+  "checkbox:Bread",
+  "heading:Chilled",
+  "checkbox:Milk\n2",
+  "checkbox:Butter",
+  "checkbox:Eggs\n10",
+  "checkbox:Yogurt",
+  "heading:Pantry",
+  "checkbox:Pasta",
+  "checkbox:Flour",
+  "checkbox:Passata",
+  "heading:Sweets & snacks",
+  "checkbox:Chocolate",
+  "heading:Frozen",
+  "checkbox:Frozen pizza\n2",
+  "heading:Drinks",
+  "checkbox:Sparkling water\n6",
+  "heading:Household",
+  "checkbox:Dish soap",
+  "heading:Other",
+  "checkbox:Pretzels\n4",
+  "checkbox:Minced meat\n500 g",
+  "button:IKEA, 9 items",
+  "checkbox:Tea lights",
+  "checkbox:Picture frame",
+  "checkbox:Wooden spoon",
+  "checkbox:Napkins",
+  "checkbox:Meatballs",
+  "checkbox:Cushion\n2",
+  "checkbox:Storage boxes\n3",
+  "checkbox:Plant",
+  "checkbox:Shelf",
+  "button:No store, 2 items",
+  "checkbox:Batteries",
+  "checkbox:Birthday card",
+  "button:EDEKA, 18 without price",
+  "button:IKEA, 9 without price",
+  "button:No store, 2 without price"
+ ],
+ "sheet": [
+  {
+   "role": "region",
+   "label": "Dialog",
+   "top": 0,
+   "bottom": 640,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "group",
+   "label": "Edit",
+   "top": 94,
+   "bottom": 640,
+   "left": 0,
+   "right": 360
+  },
+  {
+   "role": "button",
+   "label": "One less",
+   "top": 303,
+   "bottom": 351,
+   "left": 228,
+   "right": 284
+  },
+  {
+   "role": "button",
+   "label": "One more",
+   "top": 303,
+   "bottom": 351,
+   "left": 288,
+   "right": 344
+  },
+  {
+   "role": "button",
+   "label": "Store: EDEKA",
+   "top": 452,
+   "bottom": 500,
+   "left": 16,
+   "right": 122.796875
+  },
+  {
+   "role": "button",
+   "label": "Category: Chilled",
+   "top": 452,
+   "bottom": 500,
+   "left": 130.80796813964844,
+   "right": 237.41734313964844
+  },
+  {
+   "role": "checkbox",
+   "label": "I'll bring it",
+   "top": 514,
+   "bottom": 562,
+   "left": 0,
+   "right": 344
+  },
+  {
+   "role": "button",
+   "label": "Cancel",
+   "top": 572,
+   "bottom": 624,
+   "left": 16,
+   "right": 109.75
+  },
+  {
+   "role": "button",
+   "label": "Done",
+   "top": 572,
+   "bottom": 624,
+   "left": 212,
+   "right": 344
+  }
+ ]
+}

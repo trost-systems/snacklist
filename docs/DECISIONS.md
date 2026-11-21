@@ -16953,3 +16953,30 @@ pinned above the field, other suggestions hidden); all of it stays behind `add-s
    PostHog with no sign. `const String xFlag` is read; other types throw with the line number.
 2. **Follow-up PR, not a reopened #589.** #589 was merged under the Legal GO; this change touches
    only the sync script, its tests and docs, no legal, ARB, store or consent text.
+
+## Job 347: item order prototypes (round IO), 2026-11-21
+
+Peter (t1119u): a session on lists in the right order without the category noise, with prototypes of how people and agents sort. Nothing ships. Draft PR, never merged.
+
+1. **A static HTML round, like rounds AS, AM and TE.** It uses production tokens, the app's fonts and its Material icons, which are read from Flutter's icon font. It needs no Flutter build. Its Today replica is checked against the release web build. `tools/capture-today.mjs` put the round's list into a verify-snacklist instance and recorded the row positions. The replica's rows sit within 3 px at 100 % and within 5 % at 200 and 310 %. Three replica values came from that capture rather than from job 343's replica: the 14 px gap under the top bar, the category heading's style (`HlSectionLabel.overline`: line height 1, a fixed 1.04 px letter spacing), and the row's line height at large text.
+2. **The mock categories are the classifier's.** The capture read back what each name got. Two of the German guesses were wrong (Zimmerpflanze and Geburtstagskarte are Household) and were fixed. English names do worse: eight of 29 land elsewhere ("Tea lights" in Pantry). The model keeps both languages, so the English Today is the English app.
+3. **Rows are counted in the release build's window** (changed in review 0, below). The first version counted them under a status bar drawn inside the 844 px window, and that put Today 1 row below the release build in 4 of 10 captures.
+4. **The learning fixture.** EDEKA has seen every item but Eggs, and IKEA had one earlier trip. A "first trip" frame shows IKEA before any trip, which is Today's order. The fix scenario for every option is Eggs, sitting with the milk but standing next to the flour.
+5. **Tap counting.** A hold, a drag and a tap each count as one. IO2's trip ticks count zero, because they are the shopping itself. A category pick counts as a fix, and the page says where it really puts Eggs: at the end of Pantry, and in every store. Whole-IKEA costs use the fewest moves for drags, and a greedy run (each item stepped up from the top) for Move up and Move down.
+6. **IO3 drags only in a sort mode.** Job 78 took every drag off the list because of accidental drags and the conflict with hold-to-edit. The sort mode keeps the list itself drag-free.
+7. **In IO5, a Move across a category gap takes that category.** Otherwise an item would show under a heading it does not belong to once categories are switched back on.
+8. **New UI words are marked, not hidden.** "Next to {name}", "At the start", "Show categories" and "Order" are in `strings.js`'s `proposed` part, with a dotted underline on the phones. Every other word comes from the ARB files.
+9. **Pick IO4, runner-up IO2.** The order is learned from trip ticks, and "Next to" in the edit sheet fixes a place at any distance in 4 taps, without drag and with a screen reader. IO2 is the cheaper first step. IO-Q1 to IO-Q11 are in `docs/design/order/io/RECOMMENDATION.md`.
+10. **Preview.** It is built on the newest preview, `dpl_GppeUaJsdrkQ6XqDau4MJdG37Vwp`, whose 190 files were fetched byte for byte. Round IO is at `/order/io/`, and the root overview has a card for it.
+
+## Job 347 review 0: the row window, update_item, one read-order rule, 2026-11-21
+
+1. **Rows are counted in the release build's window.** The phones draw the status bar above a 390 × 844 or 360 × 640 app window instead of inside it, and the add field sits 12 px from the window's bottom, as in the release web build. That is the only window the round can measure against a real app. A real iPhone's status bar and home indicator take about 80 px more. That figure is an estimate, it costs every option about one row, and the recommendation says so. `verify.mjs` checks the add field, the top bar and the whole-row count against all ten captures.
+2. **The order mode is per household.** `households.order_mode` (`categories` or `learned`) is set by the app when the `learned-order` flag is on for a member, and the server reads it. The household shares one list, so the order cannot differ per member. The mode never resets by itself.
+3. **The API's v1 default order stays.** `GET /v1/items` pages with keyset cursors. Changing its default order would break a client paging across the switch. So `order=walk` opts in, and v2 makes it the default. MCP `list_items` has no cursor and follows the household's mode.
+4. **A category change alone does not move an item in a learned store.** In a store whose sequence has a place for the item, the category is only the classifier's lesson and the prior. A store change places the item at the new store's place for it, else the prior. This holds for `update_item` (344's design, which takes `category` and `store` through `moveOpen`), the PATCH and `move_item` alike.
+
+## Job 347 review 1: headings over a learned order, 2026-11-21
+
+1. **"Show categories" never changes the order.** In a household with a learned order, it draws a heading wherever the category changes over the shared order, so a heading can repeat (Chilled heads Milk, Butter and Yogurt, and again Eggs placed after the flour). The other way would switch that person to the category order, and then two members would see two orders of one list. Their "Next to" picks would then be made against an order the other member does not see. That contradicts review 0's "the household shares one list".
+2. **MCP `list_items` changes only for `learned` households.** A `categories` household's assistant keeps today's answer, so nobody sees a reorder before the household opts in.
