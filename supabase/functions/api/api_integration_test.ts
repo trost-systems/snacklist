@@ -1323,6 +1323,47 @@ test("job 345: GET /v1/suggestions answers public.suggest_items, the app's usual
     }
   }));
 
+test("job 365: GET /v1/suggestions?due=true is the app's due set, not the due ones among the top 10", () =>
+  withMembers(async (sql, [mine]) => {
+    const key = await mint(sql, mine, ['read', 'write']);
+    // Twelve daily usuals outrank three weekly-ish ones that are due (gap 10 days, last 10 days ago).
+    const daily = Array.from({ length: 12 }, (_, i) => `Tagesding${i}`);
+    const due = ['Käse', 'Milch', 'Joghurt'];
+    const res = await api(key.token, 'POST', '/items', {
+      body: { items: [...daily, ...due].map((name) => ({ name })) },
+    });
+    const added = (await res.json()).data.added as Item[];
+    assertEquals(added.length, 15);
+    // The burst limit is 20 calls, so the history goes in by SQL, not by ticking one by one.
+    for (const item of added) {
+      const days = daily.includes(item.name) ? [0, 1, 2, 3, 4] : [20, 10];
+      await sql`update public.items set status = 'bought', bought_at = now() where id = ${item.id}`;
+      await sql`delete from public.item_events where item_id = ${item.id} and action = 'bought'`;
+      for (const d of days) {
+        await sql`insert into public.item_events (household_id, item_id, action, item_name, actor, created_at)
+          values (${mine.householdId}, ${item.id}, 'bought', ${item.name}, ${mine.userId},
+                  now() - ${d} * interval '1 day' - interval '1 minute')`;
+      }
+    }
+    const names = async (query: string) => {
+      const res = await api(key.token, 'GET', `/suggestions${query}`);
+      assertEquals(res.status, 200, query);
+      return ((await res.json()).data as { name: string; due: boolean }[]);
+    };
+    const appDue = (await asUser(
+      mine.userId,
+      (tx) => tx`select name from public.suggest_items(${mine.householdId}, '', 200) where due`,
+    )).map((r) => r.name).sort();
+    assertEquals(appDue, [...due].sort(), 'the app marks all three due');
+    const top = await names('');
+    assertFalse(due.every((n) => top.some((u) => u.name === n && u.due)), 'the top 10 miss some');
+    const dueOnly = await names('?due=true');
+    assertEquals(dueOnly.map((u) => u.name).sort(), appDue);
+    assertEquals(dueOnly.every((u) => u.due), true);
+    assertEquals((await names('?due=true&limit=2')).length, 2);
+    assertEquals((await names('?due=false')).length, top.length);
+  }));
+
 type List = { id: string; name: string; sortOrder: number; default: boolean };
 
 test('job 345: POST and PATCH /v1/lists make and change lists like the app, up to 50', () =>

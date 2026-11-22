@@ -137,7 +137,7 @@ list store by store in that order.
 | `POST /v1/items/{id}/place` | write | Puts an open item right before or after another |
 | `DELETE /v1/items/{id}` | write | Removes an item, open or ticked |
 | `GET /v1/items/recent` | read | Recently ticked items, the app's „Zuletzt verwendet“ |
-| `GET /v1/suggestions` | read | What the household usually buys, ranked like the app's suggestions; `prefix` filter |
+| `GET /v1/suggestions` | read | What the household usually buys, ranked like the app's suggestions; `prefix`, `due=true` (only the due ones, from all usuals) |
 | `GET /v1/categories` | read | The household's categories in aisle order |
 | `GET /v1/stores` | read | The household's stores |
 | `POST /v1/stores` | write | Adds a store by its plain name |

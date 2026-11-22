@@ -688,12 +688,20 @@ export function buildServer(
         limit: z.number().int().min(1).max(50).optional().describe(
           'Wie viele höchstens, ohne Angabe 10',
         ),
+        due: z.boolean().optional().describe(
+          'Nur was fällig ist, auch wenn es nicht unter den ersten "limit" steht',
+        ),
         household: householdRef,
       }),
       annotations: { readOnlyHint: true },
     },
-    ({ prefix, limit, household }) =>
-      call('suggest_items', once, household, (tx, h) => usuals(tx, h, prefix ?? '', limit ?? 10))(),
+    ({ prefix, limit, due, household }) =>
+      call(
+        'suggest_items',
+        once,
+        household,
+        (tx, h) => usuals(tx, h, prefix ?? '', limit ?? 10, due ?? false),
+      )(),
   );
 
   if (switches.listsStores) {
