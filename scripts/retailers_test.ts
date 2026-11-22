@@ -17,7 +17,7 @@ const registry = (...entries: unknown[]) => ({ version: 2, updated: '2026-11-19'
 
 Deno.test('the repository registry parses and its newest migration is current', async () => {
   const parsed = await readRegistry();
-  const de = parsed.entries.filter((e) => e.country === 'DE').map((e) => `${e.name} (${e.apps[0]?.name})`);
+  const de = parsed.entries.filter((e) => e.country === 'DE' && e.chain !== 'ikea').map((e) => `${e.name} (${e.apps[0]?.name})`);
   // The onboarding chips' order (job 321): today's German chips, then Austria's most stores first.
   assertEquals(de, [
     'EDEKA (EDEKA)',
@@ -32,9 +32,11 @@ Deno.test('the repository registry parses and its newest migration is current', 
     'Rossmann (Rossmann)',
   ]);
   assertEquals(
-    parsed.entries.filter((e) => e.country === 'AT').map((e) => e.short ?? e.name),
+    parsed.entries.filter((e) => e.country === 'AT' && e.chain !== 'ikea').map((e) => e.short ?? e.name),
     ['BILLA', 'SPAR', 'Hofer', 'Lidl', 'PENNY', 'MPREIS', 'dm'],
   );
+  // IKEA is no chip (job 408): the app skips chain ikea, so its entries come after each country's chips.
+  assertEquals(parsed.entries.filter((e) => e.chain === 'ikea').map((e) => e.country).length, 22);
   assertEquals(parsed.entries.find((e) => e.chain === 'netto-md')?.short, 'Netto');
   assertEquals(await Deno.readTextFile(DART), dartFile(parsed));
   assertEquals(await Deno.readTextFile(COVERAGE), coverageFile(parsed));

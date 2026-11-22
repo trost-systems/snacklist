@@ -24,14 +24,20 @@ String phoneRegion() => switch (WidgetsBinding
 String? registryRegion() {
   final code = WidgetsBinding.instance.platformDispatcher.locale.countryCode
       ?.toUpperCase();
-  return retailerRegistry.any((r) => r.country == code) ? code : null;
+  return retailerRegistry.any((r) => r.country == code && !_noChip(r))
+      ? code
+      : null;
 }
+
+/// Chains that matching and the store's app key know but the onboarding never
+/// offers as a chip: IKEA is no grocery store.
+bool _noChip(Retailer r) => r.chain == 'ikea';
 
 /// The chains of [country] in the registry's order, the onboarding's chips;
 /// none for null.
 List<Retailer> registryChains(String? country) => [
   for (final r in retailerRegistry)
-    if (r.country == country) r,
+    if (r.country == country && !_noChip(r)) r,
 ];
 
 /// A name as matching compares it, as `public.retailer_key` does: lower

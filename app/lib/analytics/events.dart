@@ -153,6 +153,7 @@ const retailerChains = {
   'eroski',
   'esselunga',
   'eurospin',
+  'ikea',
   'intermarche',
   'jumbo',
   'kaufland',
@@ -174,7 +175,30 @@ const retailerChains = {
 };
 
 /// The countries of that registry, ISO 3166-1 alpha-2.
-const retailerCountries = {'AT', 'CH', 'DE', 'ES', 'FR', 'IT', 'NL', 'PL'};
+const retailerCountries = {
+  'AT',
+  'BE',
+  'CH',
+  'CZ',
+  'DE',
+  'DK',
+  'ES',
+  'FI',
+  'FR',
+  'HR',
+  'HU',
+  'IE',
+  'IT',
+  'LU',
+  'NL',
+  'NO',
+  'PL',
+  'PT',
+  'RO',
+  'SE',
+  'SI',
+  'SK',
+};
 
 /// Event name to its allowed properties. An event not in here is refused;
 /// so is a property not listed for it.

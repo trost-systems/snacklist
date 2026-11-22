@@ -146,6 +146,18 @@ const retailerRegistry = <Retailer>[
     ],
   ),
   Retailer(
+    chain: 'ikea',
+    country: 'DE',
+    name: 'IKEA',
+    apps: [
+      RetailerApp(
+        name: 'IKEA',
+        android: 'com.ingka.ikea.app',
+        ios: '1452164827',
+      ),
+    ],
+  ),
+  Retailer(
     chain: 'billa',
     country: 'AT',
     name: 'BILLA',
@@ -255,6 +267,18 @@ const retailerRegistry = <Retailer>[
     ],
   ),
   Retailer(
+    chain: 'ikea',
+    country: 'AT',
+    name: 'IKEA',
+    apps: [
+      RetailerApp(
+        name: 'IKEA',
+        android: 'com.ingka.ikea.app',
+        ios: '1452164827',
+      ),
+    ],
+  ),
+  Retailer(
     chain: 'migros',
     country: 'CH',
     name: 'Migros',
@@ -327,6 +351,18 @@ const retailerRegistry = <Retailer>[
         ios: '534175822',
         universalLink: 'https://www.denner.ch/de/services/app/deeplink',
         scheme: 'dennermobile',
+      ),
+    ],
+  ),
+  Retailer(
+    chain: 'ikea',
+    country: 'CH',
+    name: 'IKEA',
+    apps: [
+      RetailerApp(
+        name: 'IKEA',
+        android: 'com.ingka.ikea.app',
+        ios: '1452164827',
       ),
     ],
   ),
@@ -460,6 +496,18 @@ const retailerRegistry = <Retailer>[
     ],
   ),
   Retailer(
+    chain: 'ikea',
+    country: 'FR',
+    name: 'IKEA',
+    apps: [
+      RetailerApp(
+        name: 'IKEA',
+        android: 'com.ingka.ikea.app',
+        ios: '1452164827',
+      ),
+    ],
+  ),
+  Retailer(
     chain: 'albert-heijn',
     country: 'NL',
     name: 'Albert Heijn',
@@ -552,6 +600,18 @@ const retailerRegistry = <Retailer>[
         android: 'nl.kruidvat.voordeelkaart',
         ios: '531631058',
         universalLink: 'https://www.kruidvat.nl/kruidvatapp',
+      ),
+    ],
+  ),
+  Retailer(
+    chain: 'ikea',
+    country: 'NL',
+    name: 'IKEA',
+    apps: [
+      RetailerApp(
+        name: 'IKEA',
+        android: 'com.ingka.ikea.app',
+        ios: '1452164827',
       ),
     ],
   ),
@@ -654,6 +714,18 @@ const retailerRegistry = <Retailer>[
     ],
   ),
   Retailer(
+    chain: 'ikea',
+    country: 'PL',
+    name: 'IKEA',
+    apps: [
+      RetailerApp(
+        name: 'IKEA',
+        android: 'com.ingka.ikea.app',
+        ios: '1452164827',
+      ),
+    ],
+  ),
+  Retailer(
     chain: 'esselunga',
     country: 'IT',
     name: 'Esselunga',
@@ -748,6 +820,18 @@ const retailerRegistry = <Retailer>[
         android: 'de.apptiv.business.android.aldi_it',
         ios: '1259906862',
         universalLink: 'https://www.aldi.it/homescreen',
+      ),
+    ],
+  ),
+  Retailer(
+    chain: 'ikea',
+    country: 'IT',
+    name: 'IKEA',
+    apps: [
+      RetailerApp(
+        name: 'IKEA',
+        android: 'com.ingka.ikea.app',
+        ios: '1452164827',
       ),
     ],
   ),
@@ -851,6 +935,186 @@ const retailerRegistry = <Retailer>[
         android: 'com.aldi.conaldi.android',
         ios: '1519446265',
         scheme: 'staffbase-conaldi',
+      ),
+    ],
+  ),
+  Retailer(
+    chain: 'ikea',
+    country: 'ES',
+    name: 'IKEA',
+    apps: [
+      RetailerApp(
+        name: 'IKEA',
+        android: 'com.ingka.ikea.app',
+        ios: '1452164827',
+      ),
+    ],
+  ),
+  Retailer(
+    chain: 'ikea',
+    country: 'BE',
+    name: 'IKEA',
+    apps: [
+      RetailerApp(
+        name: 'IKEA',
+        android: 'com.ingka.ikea.app',
+        ios: '1452164827',
+      ),
+    ],
+  ),
+  Retailer(
+    chain: 'ikea',
+    country: 'HR',
+    name: 'IKEA',
+    apps: [
+      RetailerApp(
+        name: 'IKEA',
+        android: 'com.ingka.ikea.app',
+        ios: '1452164827',
+      ),
+    ],
+  ),
+  Retailer(
+    chain: 'ikea',
+    country: 'CZ',
+    name: 'IKEA',
+    apps: [
+      RetailerApp(
+        name: 'IKEA',
+        android: 'com.ingka.ikea.app',
+        ios: '1452164827',
+      ),
+    ],
+  ),
+  Retailer(
+    chain: 'ikea',
+    country: 'DK',
+    name: 'IKEA',
+    apps: [
+      RetailerApp(
+        name: 'IKEA',
+        android: 'com.ingka.ikea.app',
+        ios: '1452164827',
+      ),
+    ],
+  ),
+  Retailer(
+    chain: 'ikea',
+    country: 'FI',
+    name: 'IKEA',
+    apps: [
+      RetailerApp(
+        name: 'IKEA',
+        android: 'com.ingka.ikea.app',
+        ios: '1452164827',
+      ),
+    ],
+  ),
+  Retailer(
+    chain: 'ikea',
+    country: 'HU',
+    name: 'IKEA',
+    apps: [
+      RetailerApp(
+        name: 'IKEA',
+        android: 'com.ingka.ikea.app',
+        ios: '1452164827',
+      ),
+    ],
+  ),
+  Retailer(
+    chain: 'ikea',
+    country: 'IE',
+    name: 'IKEA',
+    apps: [
+      RetailerApp(
+        name: 'IKEA',
+        android: 'com.ingka.ikea.app',
+        ios: '1452164827',
+      ),
+    ],
+  ),
+  Retailer(
+    chain: 'ikea',
+    country: 'LU',
+    name: 'IKEA',
+    apps: [
+      RetailerApp(
+        name: 'IKEA',
+        android: 'com.ingka.ikea.app',
+        ios: '1452164827',
+      ),
+    ],
+  ),
+  Retailer(
+    chain: 'ikea',
+    country: 'NO',
+    name: 'IKEA',
+    apps: [
+      RetailerApp(
+        name: 'IKEA',
+        android: 'com.ingka.ikea.app',
+        ios: '1452164827',
+      ),
+    ],
+  ),
+  Retailer(
+    chain: 'ikea',
+    country: 'PT',
+    name: 'IKEA',
+    apps: [
+      RetailerApp(
+        name: 'IKEA',
+        android: 'com.ingka.ikea.app',
+        ios: '1452164827',
+      ),
+    ],
+  ),
+  Retailer(
+    chain: 'ikea',
+    country: 'RO',
+    name: 'IKEA',
+    apps: [
+      RetailerApp(
+        name: 'IKEA',
+        android: 'com.ingka.ikea.app',
+        ios: '1452164827',
+      ),
+    ],
+  ),
+  Retailer(
+    chain: 'ikea',
+    country: 'SK',
+    name: 'IKEA',
+    apps: [
+      RetailerApp(
+        name: 'IKEA',
+        android: 'com.ingka.ikea.app',
+        ios: '1452164827',
+      ),
+    ],
+  ),
+  Retailer(
+    chain: 'ikea',
+    country: 'SI',
+    name: 'IKEA',
+    apps: [
+      RetailerApp(
+        name: 'IKEA',
+        android: 'com.ingka.ikea.app',
+        ios: '1452164827',
+      ),
+    ],
+  ),
+  Retailer(
+    chain: 'ikea',
+    country: 'SE',
+    name: 'IKEA',
+    apps: [
+      RetailerApp(
+        name: 'IKEA',
+        android: 'com.ingka.ikea.app',
+        ios: '1452164827',
       ),
     ],
   ),
