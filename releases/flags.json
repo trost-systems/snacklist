@@ -82,9 +82,8 @@
       "note": "learned order (job 352, IO4) shows only while the PostHog flag learned-order is on: the app switches its household to order_mode learned (set_order_mode), the list runs each store as one walk order without category headings, the edit sheet's Neben/Ganz vorne chip places an item, the trip question says that after Nein (or a dismissal) it stays away for an hour, per person and device (job 357's snooze), and that this shop is not detected (decline_shop: that tick run makes no trip and teaches no order), Verlauf shows detected trips with Kein Einkauf, the list's first-detected-trip card and the Einstellungen switch Einkäufe aus meinen Häkchen erkennen; Peter-only: the flag targets the tester group learned-order (person property tester_groups), never is_internal, until the trip-detection privacy notice is live (Legal N-322); the flag sync creates it that way"
     },
     "recently-used-open": {
-      "rollout": "off",
-      "tester_group": "recently-used-open",
-      "note": "the list's Zuletzt verwendet section starts open (faded rows as before, no count, nothing added to the add field) and a fold the user makes is remembered per device, only while the PostHog flag recently-used-open is on (job 367, RU1); Peter-only: the flag targets the tester group recently-used-open (person property tester_groups), never is_internal; the flag sync creates it that way"
+      "rollout": "full",
+      "note": "the list's Zuletzt verwendet section starts open (faded rows as before, no count, nothing added to the add field) and a fold the user makes is remembered per device, only while the PostHog flag recently-used-open is on (job 367, RU1); on at 100 % for all testers since 2026-11-22 (Peter)"
     },
     "redesign-rd1": {
       "rollout": "off",
