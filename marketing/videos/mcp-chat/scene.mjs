@@ -4,18 +4,7 @@
 // Sam's real app shows the rows arrive and leave. The thread exits upwards at the end, so the
 // loop starts and ends on an empty chat and the same list.
 
-import { readFileSync } from 'node:fs';
 import { captions, esc, frames, ICONS, page, phone, t } from '../lib.mjs';
-
-const arb = (lang) => JSON.parse(readFileSync(new URL(`../../../app/l10n/app_${lang}.arb`, import.meta.url), 'utf8'));
-
-/** The app's own label for a seeded category (the household data is German). */
-function categoryLabel(name, lang) {
-  if (lang === 'de') return name;
-  const de = arb('de');
-  const key = Object.keys(de).find((k) => /^category[A-Z]/.test(k) && de[k] === name);
-  return key ? arb('en')[key] : name;
-}
 
 const toolJson = (result) => JSON.parse(result.content.find((c) => c.type === 'text').text);
 
@@ -30,7 +19,7 @@ export function plan(take, events, lang) {
   const exitAt = A2 + 2.0;
   const b = frames(exitAt + 0.65);
   const rel = (s) => frames(s - a);
-  const added = toolJson(take.measured.added).added.map((i) => ({ name: i.name, category: categoryLabel(i.category, lang) }));
+  const added = toolJson(take.measured.added).added.map((i) => ({ name: i.name }));
   const ticked = toolJson(take.measured.ticked).ticked.map((i) => ({ name: i.name }));
   const duration = frames(b - a);
   return {
@@ -103,7 +92,7 @@ export function compose({ fmt, lang, p }) {
   const work = (id, from, to) => msg(id, from, Math.max(1 / 30, Math.min(0.24, to - 0.06 - from)));
   // Scrolls the thread so the second request sits at the top (measured from the laid-out page).
   const shift = (at) => tw.push(`tl.to('#thread', { y: () => -document.getElementById('m2').offsetTop, duration: 0.32, ease: 'power2.inOut' }, ${at.toFixed(3)});`);
-  const rows = (items, done) => items.map((i) => `<li><span class="hxp hxp--mint ok"><b>${mi('check')}</b></span><span class="nm${done ? ' nm--done' : ''}">${esc(i.name)}</span>${i.category ? `<span class="cat">${esc(i.category)}</span>` : ''}</li>`).join('');
+  const rows = (items, done) => items.map((i) => `<li><span class="hxp hxp--mint ok"><b>${mi('check')}</b></span><span class="nm${done ? ' nm--done' : ''}">${esc(i.name)}</span></li>`).join('');
   const card = (id, title, items, done) => `<div class="msg card" id="${id}"><p class="card-h"><img src="assets/snacklist-icon.svg" alt=""><b>Snacklist</b><span>${esc(title)}</span></p><ul>${rows(items, done)}</ul></div>`;
   const thread = `
   <div class="thread" id="thread">

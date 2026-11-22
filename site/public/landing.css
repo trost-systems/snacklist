@@ -330,12 +330,10 @@
 
 /* Forced colours paint every hex face Canvas; the pressed store keeps a Highlight face. */
 @media (forced-colors: active) {
-  .store-chip[aria-pressed="true"] .face::after {
-    background: Highlight;
-  }
-
   .store-chip[aria-pressed="true"] .face {
     forced-color-adjust: none;
+    border-color: CanvasText;
+    background: Highlight;
     color: HighlightText;
   }
 }
@@ -387,10 +385,6 @@
 
 .store-route .step::after {
   content: counter(step);
-}
-
-.store-route .emo::before {
-  content: attr(data-emoji);
 }
 
 /* On the narrowest cards (phones of 320 to 360 px) the rows get smaller, so the widest still
@@ -565,8 +559,16 @@
   color: var(--hl-color-text);
 }
 
-.assistant--siri {
+.assistant--siri,
+.assistant--alexa {
   padding-bottom: var(--hl-space-5);
+}
+
+.assistant-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--hl-space-2) var(--hl-space-5);
+  font-weight: var(--hl-font-weight-bold);
 }
 
 .assistant-copy {
@@ -693,6 +695,11 @@
   list-style: none;
 }
 
+/* In the hero the two badges share a centre line; Google's PNG carries its own margin. */
+.hero-actions .store-cards {
+  align-items: center;
+}
+
 .store-card {
   display: grid;
   gap: var(--hl-space-3);
@@ -724,6 +731,11 @@
 .store-qr {
   display: none;
   margin: 0;
+}
+
+/* The browser app, the second way in, under the badges. */
+.web-app {
+  margin: var(--hl-space-2) 0 0;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -839,8 +851,14 @@
     order: 2;
   }
 
+  /* Siri and Alexa side by side under the two video cards. */
+  .voice-grid:has(.assistant--alexa) {
+    grid-template-columns: 1fr 1fr;
+  }
+
   .assistant--ai,
   .assistant--app {
+    grid-column: 1 / -1;
     grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
     gap: var(--hl-space-6);
     align-items: center;

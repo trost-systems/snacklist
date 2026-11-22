@@ -23,8 +23,9 @@ size or a half-finished set fails the build and names the file.
 | `<slot>-<locale>-wide[-dark].webp` | 16:9 (checked) | 1152 × 648 | Inside a framed card (radius 28 px, 2 px navy contour) |
 | `<slot>-<locale>-compact[-dark].webp` | 4:5 (checked) | 716 × 896 | Flush to the card's sides and bottom |
 
-WebP only, at twice the shown size, under 120 KB each. The posters here now are stills of the
-HTML scenes in `site/scenes/` (`node site/scenes/film-all.mjs` re-films them). A demo slot's
+WebP only, at twice the shown size, under 120 KB each. The hero is a still of `site/scenes/hero.html`
+around a capture of the real app (`site/scenes/capture-hero.sh`); the demo slots' posters are frames of their
+videos (`marketing/videos/build.mjs`). A demo slot's
 poster stays the reduced-motion and before-play picture once its video exists: replace it with a
 calm frame of the video (the beat that tells the story alone), same names and shapes.
 
@@ -55,7 +56,7 @@ it to say what the video shows, and list the change in `site/COPY_NEEDED.md`
 | `add-tick` | Add items in the add sheet, tick one off | Feature card "Eine Liste für alle" |
 | `household-sync` | One household, several members, live sync | Feature card "Der ganze Haushalt" |
 | `mcp-chat` | A generic AI chat adds items through MCP, they appear in the app | Voice block, card "Mit KI-Assistenten" |
-| `voice-add` | Tap the mic in the add field, say a sentence, the items land in their categories | Voice block, card "In der App" |
+| `voice-add` | Tap the mic in the add field, say a sentence, the items land on the list | Voice block, card "In der App" |
 
 Siri, Alexa and Google Assistant have no slot (Peter, 2026-10-31: no videos for them for now; job
 150 kept it so).

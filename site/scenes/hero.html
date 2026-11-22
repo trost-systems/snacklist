@@ -9,14 +9,16 @@
   :root { --ground: var(--hl-color-cobalt); }
 
   .phone { left: 72px; top: 72px; width: 356px; height: 520px; }
+  /* The real app's list screen (capture-hero.mjs), as wide as the screen, from the top. */
+  .shot { display: block; width: 100%; height: auto; }
 
   .sync { left: 22px; top: 26px; max-width: 250px; transform: rotate(-3deg); }
 
   @media (max-width: 400px) {
     .phone { left: 24px; top: 52px; width: 310px; height: 400px; }
-    .phone .app-head { padding-top: 30px; }
+    /* Room for the sticker above the app's header. */
+    .shot { margin-top: 26px; }
     .sync { left: 50%; top: 20px; translate: -50% 0; max-width: none; white-space: nowrap; }
-    .compact-hide { display: none; }
   }
 </style>
 </head>
@@ -24,53 +26,26 @@
 <div class="stage">
   <div class="phone">
     <div class="screen">
-      <div class="app-head">
-        <div>
-          <div class="hh" data-t="household"></div>
-          <div class="count" data-t="count"></div>
-        </div>
-        <div class="avs">
-          <span class="hxp av av--tomato">A</span>
-          <span class="hxp av av--honey">J</span>
-        </div>
-      </div>
-      <div class="list">
-        <div class="compact-hide">
-          <div class="store"><span class="store-name" data-t="market"></span><span class="store-rule"></span><span class="store-count" data-t="oneCount"></span></div>
-          <div class="store"><span class="store-name" data-t="bakery"></span><span class="store-rule"></span><span class="store-count" data-t="oneCount"></span></div>
-          <div class="store"><span class="store-name" data-t="drugstoreName"></span><span class="store-rule"></span><span class="store-count" data-t="oneCount"></span></div>
-          <div class="cat" data-t="drugstore"></div>
-          <div class="item"><span class="emo">🪥</span><span class="name" data-t="toothpaste"></span><span class="hxp cb"></span></div>
-        </div>
-        <div class="store"><span class="store-name" data-t="supermarket"></span><span class="store-rule"></span><span class="store-count" data-t="twoCount"></span></div>
-        <div class="cat" data-t="produce"></div>
-        <div class="item item--done"><span class="emo">🍌</span><span class="name"><span class="qty">6×</span> <span data-t="bananas"></span></span><span class="hxp cb"><i class="mi">&#xe156;</i></span></div>
-                <div class="cat" data-t="chilled"></div>
-        <div class="item item--fresh"><span class="emo">🥛</span><span class="name" data-t="oatmilk"></span><span class="hxp cb"></span></div>
-      </div>
-      <div class="compose hx"><span class="plus hxp"><i class="mi">&#xe047;</i></span><span data-t="hint"></span></div>
+      <picture>
+        <source data-shot="compact-dark" media="(max-width: 400px) and (prefers-color-scheme: dark)">
+        <source data-shot="compact" media="(max-width: 400px)">
+        <source data-shot="wide-dark" media="(prefers-color-scheme: dark)">
+        <img class="shot" data-shot="wide" alt="">
+      </picture>
     </div>
   </div>
   <p class="sticker sync"><span class="hxp av av--tomato">A</span><span data-t="sync"></span></p>
 </div>
 <script>
   globalThis.STRINGS = {
-    de: {
-      household: 'Unser Haushalt', count: '5 Artikel', oneCount: '<b>1</b> Artikel', twoCount: '<b>2</b> Artikel',
-      market: 'Wochenmarkt', bakery: 'Bäckerei', drugstoreName: 'Drogerie', supermarket: 'Supermarkt',
-      drugstore: 'Drogerie', toothpaste: 'Zahnpasta', produce: 'Obst &amp; Gemüse', bananas: 'Bananen',
-      chilled: 'Kühlregal', oatmilk: 'Hafermilch', hint: 'Was brauchst du?',
-      sync: 'Anna hat „Hafermilch“ hinzugefügt',
-    },
-    en: {
-      household: 'Our household', count: '5 items', oneCount: '<b>1</b> item', twoCount: '<b>2</b> items',
-      market: 'Farmers’ market', bakery: 'Bakery', drugstoreName: 'Drugstore', supermarket: 'Supermarket',
-      drugstore: 'Drugstore', toothpaste: 'Toothpaste', produce: 'Fruit &amp; veg', bananas: 'Bananas',
-      chilled: 'Chilled', oatmilk: 'Oat milk', hint: 'What do you need?',
-      sync: 'Anna added “Oat milk”',
-    },
+    de: { sync: 'Anna hat „Hafermilch“ hinzugefügt' },
+    en: { sync: 'Anna added “Oat milk”' },
   };
 </script>
 <script src="scene.js"></script>
+<script>
+  // scene.js's lang: the screen filmed in that language (hero-screen/, capture-hero.mjs).
+  for (const el of document.querySelectorAll('[data-shot]')) el[el.tagName === 'IMG' ? 'src' : 'srcset'] = `hero-screen/${lang}-${el.dataset.shot}.webp`;
+</script>
 </body>
 </html>

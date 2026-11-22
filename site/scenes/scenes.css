@@ -25,8 +25,6 @@
   --sticker-s: var(--hl-shadow-sticker-s);
   --sticker: var(--hl-shadow-sticker);
   --sticker-l: var(--hl-shadow-sticker-l);
-  --hex-img: url("../public/hex/hex-cap-l.svg"), url("../public/hex/hex-cap-r.svg"), linear-gradient(#000 0 0);
-  --pointy-img: url("../public/hex/hex-pointy.svg");
   --ground: var(--hl-color-surface-raised);
 }
 
@@ -89,46 +87,22 @@ p {
   text-align: center;
 }
 
-/* Horizontal hexagon: chips, the add field. Two caps half its height wide and a band. An
-   outline is a second hexagon inset by --b on top. */
+/* Soft rounded rectangle (launch look, RD1): chips and the add field. Outlined, no shadow;
+   only buttons (.hx--edge) get the hard drop edge. */
 .hx {
   --h: 32px;
-  --b: var(--hl-border-width);
   --line: var(--hl-color-border);
   --face: var(--hl-color-surface-raised);
-  position: relative;
-  isolation: isolate;
   display: inline-flex;
   align-items: center;
   gap: var(--hl-space-2);
   height: var(--h);
   min-width: var(--h);
-  padding-inline: calc(var(--h) * var(--hl-shape-hex-tip) + var(--hl-space-2));
-  white-space: nowrap;
-}
-
-.hx::before,
-.hx::after {
-  --cw: calc(var(--mh) / 2);
-  content: "";
-  position: absolute;
-  z-index: -1;
-  mask-image: var(--hex-img);
-  mask-size: var(--cw) 100%, var(--cw) 100%, calc(100% - 2 * var(--cw) + 2px) 100%;
-  mask-position: left center, right center, center;
-  mask-repeat: no-repeat;
-}
-
-.hx::before {
-  --mh: var(--h);
-  inset: 0;
-  background: var(--line);
-}
-
-.hx::after {
-  --mh: calc(var(--h) - 2 * var(--b));
-  inset: var(--b) calc(var(--b) * 1.1547);
+  padding-inline: var(--hl-space-3);
+  border: var(--hl-border-width) solid var(--line);
+  border-radius: var(--hl-shape-soft-md);
   background: var(--face);
+  white-space: nowrap;
 }
 
 .hx--honey {
@@ -137,41 +111,32 @@ p {
   color: var(--hl-color-on-honey);
 }
 
-/* A hexagon with depth: the edge as a hard drop shadow that follows the shape. */
 .hx--edge {
-  filter: drop-shadow(0 var(--hl-depth-edge) 0 var(--hl-color-edge));
+  box-shadow: 0 var(--hl-depth-edge) 0 var(--hl-color-edge);
 }
 
-/* Pointy-top hexagon: avatars, check boxes, step numbers, the plus. --s is its height. */
+/* Square with soft corners: check boxes, step numbers, the plus. --s is its height. Avatars
+   (.av) are circles. */
 .hxp {
   --s: 32px;
   --b: var(--hl-border-width);
   --line: var(--hl-color-ink);
   --face: var(--hl-color-honey);
-  position: relative;
-  isolation: isolate;
   display: grid;
   place-items: center;
   flex: none;
-  width: calc(var(--s) * 0.866);
+  width: var(--s);
   height: var(--s);
-  background: var(--line);
-  color: var(--hl-color-on-honey);
-  mask: var(--pointy-img) center / 100% 100% no-repeat;
-}
-
-.hxp::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  inset: calc(var(--b) * 1.1547) var(--b);
+  border: var(--b) solid var(--line);
+  border-radius: var(--hl-shape-soft-sm);
   background: var(--face);
-  mask: var(--pointy-img) center / 100% 100% no-repeat;
+  color: var(--hl-color-on-honey);
 }
 
 /* Members: each in their own colour. */
 .av {
   --s: 30px;
+  border-radius: 50%;
   font-family: var(--hl-font-family-display);
   font-size: 13px;
   font-weight: var(--hl-font-weight-heavy);
@@ -204,7 +169,7 @@ p {
   border: var(--hl-border-width) solid var(--hl-color-border);
   border-radius: var(--hl-radius-xl);
   background: var(--hl-color-ink);
-  box-shadow: var(--sticker-l);
+  box-shadow: 0 18px 40px rgba(15, 21, 48, 0.28);
 }
 
 .screen {
@@ -258,8 +223,15 @@ p {
 .store-name {
   font-family: var(--hl-font-family-display);
   font-size: 20px;
-  font-weight: var(--hl-font-weight-heavy);
+  font-weight: var(--hl-font-weight-medium);
   line-height: 1;
+}
+
+.store-count .mi {
+  vertical-align: middle;
+  margin-left: 2px;
+  font-size: 20px;
+  color: var(--hl-color-text);
 }
 
 .store-rule {
@@ -280,26 +252,6 @@ p {
   font-family: var(--hl-font-family-display);
   font-size: 15px;
   color: var(--hl-color-text);
-}
-
-.cat {
-  display: flex;
-  align-items: center;
-  gap: var(--hl-space-2);
-  padding: 10px var(--hl-space-4) 2px;
-  font-size: 11px;
-  font-weight: var(--hl-font-weight-heavy);
-  letter-spacing: 0.12em;
-  line-height: 1.2;
-  text-transform: uppercase;
-  color: var(--hl-color-text-muted);
-}
-
-.cat::after {
-  content: "";
-  flex: 1;
-  height: 1px;
-  background: var(--hl-color-divider);
 }
 
 .item {
@@ -391,7 +343,8 @@ p {
   --line: var(--hl-color-border);
   display: flex;
   margin: var(--hl-space-3) var(--hl-space-3) 0;
-  padding-inline: calc(var(--h) * var(--hl-shape-hex-tip) - var(--hl-space-1)) calc(var(--h) * var(--hl-shape-hex-tip) + var(--hl-space-1));
+  padding-inline: var(--hl-space-4);
+  border-radius: var(--hl-shape-soft-lg);
   font-size: 16px;
   font-weight: var(--hl-font-weight-medium);
   color: var(--hl-color-text-muted);
@@ -419,7 +372,7 @@ p {
   background: var(--hl-color-divider);
 }
 
-/* Sticker: a raised card with the navy contour and the sticker shadow. */
+/* Sticker: a card with the navy contour; no shadow (only buttons cast one). */
 .sticker {
   position: absolute;
   z-index: 3;
@@ -430,7 +383,6 @@ p {
   border: var(--hl-border-width) solid var(--hl-color-border);
   border-radius: var(--hl-radius-m);
   background: var(--hl-color-surface-raised);
-  box-shadow: var(--sticker);
   font-size: 15px;
   font-weight: var(--hl-font-weight-bold);
   line-height: 1.3;

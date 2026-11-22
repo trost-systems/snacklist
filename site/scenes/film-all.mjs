@@ -14,9 +14,8 @@ import { fileURLToPath } from 'node:url';
 
 const SCENES = {
   hero: { wide: [500, 540], compact: [358, 400] },
-  // add-tick's and household-sync's posters are frames of their videos (marketing/videos), so
-  // filming these scenes would put the old stills back.
-  'mcp-chat': { wide: [576, 324], compact: [358, 448] },
+  // The demo slots' posters (add-tick, household-sync, mcp-chat, voice-add) are frames of their
+  // videos (marketing/videos/build.mjs), so filming those scenes would put the old stills back.
 };
 const LOCALES = ['de', 'en'];
 const THEMES = ['light', 'dark'];

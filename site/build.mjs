@@ -12,7 +12,7 @@ import { HISTORY_ROUTES, HistoryCopyError, historyBody, t as historyText } from 
 import { ACTION_PAGES, actionPage, readConsent } from './waitlist.mjs';
 import { insertReportForm, reportForm, reportFormProblem } from './report.mjs';
 import { AgentError, agentHead, checkAgentSite, readPublicApi, readStage, readVercel, stageOverride, writeAgentFiles } from './agent.mjs';
-import { WEB_APP_URL } from './config/stores.mjs';
+import { ALEXA_SKILL_URLS, WEB_APP_URL } from './config/stores.mjs';
 
 const SITE_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_DIR = join(SITE_DIR, '..');
@@ -107,6 +107,27 @@ const FOOTER_LINKS = [
   { key: 'report', shown: () => true },
   { key: 'support', shown: (config) => config.supportPublished },
 ];
+
+// The trademark lines a page carries when its text names the mark (Legal N-366): the build adds
+// them to the footer, so no page can miss one.
+export const MARKS = [
+  {
+    mark: /\balexa/i,
+    de: 'Amazon, Alexa und alle zugehörigen Marken sind Marken von Amazon.com, Inc. oder seinen verbundenen Unternehmen.',
+    en: 'Amazon, Alexa, and all related marks are trademarks of Amazon.com, Inc. or its affiliates.',
+  },
+];
+
+// A Markdown link to `alexa-skill:<locale>` goes to that locale's skill page (config/stores.mjs)
+// while config.json's alexaPublished is on; off, only its text stays.
+function skillLinks(page, shown) {
+  const body = page.body.replace(/<a href="alexa-skill:([^"]*)">(.*?)<\/a>/g, (_, locale, label) => {
+    const url = ALEXA_SKILL_URLS[locale];
+    if (!url) fail(page.file, `link alexa-skill:${locale}: config/stores.mjs has skill URLs for ${Object.keys(ALEXA_SKILL_URLS).join(', ')}`);
+    return shown ? `<a href="${url}">${label}</a>` : label;
+  });
+  return { ...page, body };
+}
 
 // `draft: true` in the frontmatter: built with a banner and noindex in preview and local builds,
 // left out of Vercel production builds, so the path answers 404 there as before.
@@ -412,8 +433,9 @@ function siteHeader(page, { switches, copy, current, stage }) {
 </header>`;
 }
 
-function siteFooter(page, { config, copy }) {
+function siteFooter(page, { config, copy, text }) {
   const locale = LOCALES[page.locale];
+  const marks = MARKS.filter(({ mark }) => mark.test(text)).map((m) => `<p class="marks">${escapeHtml(m[page.locale])}</p>\n`).join('');
   const legal = FOOTER_LINKS.filter((link) => link.shown(config))
     .map(({ key }) => `<li><a href="${locale.footer[key].href}">${locale.footer[key].label}</a></li>`)
     .join('');
@@ -423,7 +445,7 @@ function siteFooter(page, { config, copy }) {
 <nav class="footer-site" aria-label="${locale.ui.siteNav}"><ul><li><a href="${locale.guidesBase}">${locale.ui.guides}</a></li><li><a href="${locale.footer.changelog.href}">${locale.footer.changelog.label}</a></li><li><a href="${locale.footer.history.href}">${escapeHtml(locale.footer.history.label)}</a></li></ul></nav>
 <nav class="footer-legal" aria-label="${locale.ui.footerNav}"><ul>${legal}</ul></nav>
 <p class="tagline" data-copy-id="footer.tagline">${escapeHtml(copy.get('footer.tagline')[page.locale])}</p>
-</div>
+${marks}</div>
 </footer>`;
 }
 
@@ -455,6 +477,7 @@ function renderPage(page, { config, groups, guidesByLocale, copy, stage }) {
   const noindex = page.notices.length > 0 || waitlistPage;
   const form = waitlistPage || (landing && stage !== 'launch');
   const report = page.report === true;
+  const main = mainContent(page, guidesByLocale);
   const assets = [
     landing && '<link rel="stylesheet" href="/landing.css">',
     (form || report) && '<link rel="stylesheet" href="/waitlist.css">',
@@ -487,9 +510,9 @@ ${HEAD_ASSETS}${assets}</head>
 <body${landing ? ' class="landing"' : ''}>
 ${page.notices.map(banner).join('')}${siteHeader(page, { switches, copy, current, stage })}
 <main id="inhalt"${landing ? '' : ' class="wrap prose"'}>
-${mainContent(page, guidesByLocale)}
+${main}
 </main>
-${siteFooter(page, { config, copy })}
+${siteFooter(page, { config, copy, text: `${page.title} ${page.description} ${main.replace(/<[^>]*>/g, ' ')}` })}
 </body>
 </html>
 `;
@@ -778,6 +801,7 @@ export function build({
   const pages = Object.keys(KINDS)
     .flatMap((kind) => KINDS[kind].files(contentDir).map((entry) => loadPage(kind, entry, contentDir, versions)))
     .filter((page) => !(versions.production && page.notices.length > 0))
+    .map((page) => skillLinks(page, config.alexaPublished))
     .concat(changelogPages(repoDir, versions.production), historyPages(repoDir));
   const landing = landingPages(contentDir, publicDir, config, stage);
   pages.push(...landing.pages);

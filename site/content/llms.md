@@ -1,6 +1,6 @@
 # Snacklist
 
-> Snacklist is a shared shopping list for one household: whatever one person adds, everyone else in the household sees right away, sorted into categories and by store.
+> Snacklist is a shared shopping list for one household: whatever one person adds, everyone else in the household sees right away, sorted by store and by your way through the shop.
 
 Snacklist runs on iPhone, Android and in the browser. This site has German and English pages, and every page has a Markdown version at its URL plus `.md`, for example https://snacklist.app/en/guides/claude.md.
 

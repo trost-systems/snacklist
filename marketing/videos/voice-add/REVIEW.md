@@ -54,28 +54,28 @@ As in add-tick: `line_unread` on the seam caption and Studio layout hints for th
 <!-- report -->
 | Cut | File | Codec | Size | fps | Duration | Bytes | Audio |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| de-wide | master (render) | h264 yuv420p | 1920x1080 | 30/1 | 11.17 s | 769 KB | none |
-| de-wide | voice-add-de-wide.mp4 | h264 yuv420p | 1920x1080 | 30/1 | 11.17 s | 324 KB | none |
-| de-wide | voice-add-de-wide.webm | vp9 yuv420p | 1920x1080 | 30/1 | 11.17 s | 341 KB | none |
-| de-compact | master (render) | h264 yuv420p | 1080x1350 | 30/1 | 11.17 s | 633 KB | none |
-| de-compact | voice-add-de-compact.mp4 | h264 yuv420p | 1080x1350 | 30/1 | 11.17 s | 277 KB | none |
-| de-compact | voice-add-de-compact.webm | vp9 yuv420p | 1080x1350 | 30/1 | 11.17 s | 317 KB | none |
-| en-wide | master (render) | h264 yuv420p | 1920x1080 | 30/1 | 11.53 s | 809 KB | none |
-| en-wide | voice-add-en-wide.mp4 | h264 yuv420p | 1920x1080 | 30/1 | 11.53 s | 337 KB | none |
-| en-wide | voice-add-en-wide.webm | vp9 yuv420p | 1920x1080 | 30/1 | 11.53 s | 358 KB | none |
-| en-compact | master (render) | h264 yuv420p | 1080x1350 | 30/1 | 11.53 s | 658 KB | none |
-| en-compact | voice-add-en-compact.mp4 | h264 yuv420p | 1080x1350 | 30/1 | 11.53 s | 288 KB | none |
-| en-compact | voice-add-en-compact.webm | vp9 yuv420p | 1080x1350 | 30/1 | 11.53 s | 329 KB | none |
+| de-wide | master (render) | h264 yuv420p | 1920x1080 | 30/1 | 11.63 s | 765 KB | none |
+| de-wide | voice-add-de-wide.mp4 | h264 yuv420p | 1920x1080 | 30/1 | 11.63 s | 308 KB | none |
+| de-wide | voice-add-de-wide.webm | vp9 yuv420p | 1920x1080 | 30/1 | 11.63 s | 335 KB | none |
+| de-compact | master (render) | h264 yuv420p | 1080x1350 | 30/1 | 11.63 s | 628 KB | none |
+| de-compact | voice-add-de-compact.mp4 | h264 yuv420p | 1080x1350 | 30/1 | 11.63 s | 275 KB | none |
+| de-compact | voice-add-de-compact.webm | vp9 yuv420p | 1080x1350 | 30/1 | 11.63 s | 315 KB | none |
+| en-wide | master (render) | h264 yuv420p | 1920x1080 | 30/1 | 10.67 s | 853 KB | none |
+| en-wide | voice-add-en-wide.mp4 | h264 yuv420p | 1920x1080 | 30/1 | 10.67 s | 321 KB | none |
+| en-wide | voice-add-en-wide.webm | vp9 yuv420p | 1920x1080 | 30/1 | 10.67 s | 330 KB | none |
+| en-compact | master (render) | h264 yuv420p | 1080x1350 | 30/1 | 10.67 s | 693 KB | none |
+| en-compact | voice-add-en-compact.mp4 | h264 yuv420p | 1080x1350 | 30/1 | 10.67 s | 289 KB | none |
+| en-compact | voice-add-en-compact.webm | vp9 yuv420p | 1080x1350 | 30/1 | 10.67 s | 314 KB | none |
 
 | Cut | Seam SSIM (first vs last frame) | Poster | Poster at |
 | --- | --- | --- | --- |
-| de-wide | 0.9985 | voice-add-de-wide.webp, 42 KB | 6.37 s |
-| de-compact | 0.9983 | voice-add-de-compact.webp, 42 KB | 6.37 s |
-| en-wide | 0.9985 | voice-add-en-wide.webp, 45 KB | 6.80 s |
-| en-compact | 0.9983 | voice-add-en-compact.webp, 46 KB | 6.80 s |
+| de-wide | 0.9741 | voice-add-de-wide.webp, 41 KB | 6.53 s |
+| de-compact | 0.9678 | voice-add-de-compact.webp, 41 KB | 6.53 s |
+| en-wide | 0.9775 | voice-add-en-wide.webp, 38 KB | 6.17 s |
+| en-compact | 0.9726 | voice-add-en-compact.webp, 38 KB | 6.17 s |
 
 Measured in the takes (Marionette polls, so an upper bound for the app side):
 
-- DE: tapToAddedMessageMs 4054 ms
-- EN: tapToAddedMessageMs 4473 ms
+- DE: tapToAddedMessageMs 4212 ms
+- EN: tapToAddedMessageMs 3833 ms
 <!-- /report -->

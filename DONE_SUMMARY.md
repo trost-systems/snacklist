@@ -2401,3 +2401,43 @@ learned-order first-trip card now also needs `grocery-log` and `trip-mode`, and 
 pins the users' flag set to show no Verlauf, prices, totals or trip mode. No copy changed. The
 PostHog flags must be switched off by hand (the sync never switches a flag off): the step is in
 `docs/done/401.md` and NEEDS_LEAD. Screenshots in `docs/screenshots/401/`.
+
+## Job 369: site, store listings and demo videos aligned to the launch build
+
+See [docs/done/369.md](docs/done/369.md). **Built.** The screenshot, preview and demo-video pipelines
+film the launch build (`marketing/CAPTURE_FLAGS` on top of the full-rollout flags); the de/en store
+screenshot sets, the App Store app previews and the four demo videos are re-made; the site's
+category, add-sheet and stores-card copy and scenes are fixed; store listing texts are written.
+**Flags on for the capture:** `hide-categories`, `add-sheet-compact`, `redesign-rd1` (all three
+`off` in `flags.json`, internal testers only: shown on, as the brief asked) and `list-declutter`
+(full). **Paths.** `marketing/store-assets/{screenshots,previews}/`, `site/public/media/`,
+`app/fastlane/metadata/`, `docs/store/LISTING.md`. **Missing.** Nothing is uploaded. The Wabenband
+and caption hexagons of the marketing frames stay (RD-Q4). Legal's hash GO is pending for the site
+copy and listing texts (NEEDS_LEAD "Job 369: PR ready, needs Legal"). The real consoles' current
+texts were not available, so the listing "diff" is whole new files.
+
+**Review 0 fixes (job 369).** Legal addendum 3: `test.help` -> „Fragen?" / "Questions?"; Beta/Warteliste copy replaced on the DE comparison page (Stand 22.11.2026) and on `/support`, `/en/support`; `privacy.website` unchanged because the waitlist API and its confirm/unsubscribe pages still exist; N-342 verified (imprint already says Snacklist); N-339: no `launch.countries` (no country limit evidence in the repo, confirm outside it). EN voice-add demo re-filmed with an English sentence (and the EN alt text updated); the App Store en-US voice preview is no longer held. Shadows: no offset shadow under the sticker card, speech bubble, chat, name tags or phone bezel in the site stills and videos (all demo videos, posters and hero stills re-rendered). The Play icon is the generator's file byte for byte. **Site preview (protected; the lead mints the share link):** https://family-groceries-design-633dx8gg8-peter-trost.vercel.app. **Still hexagonal, named for Peter:** the stores card's result list, the honeycomb band behind the store frames and the caption hexagon badges in the videos (RD-Q4). **Not done:** the mostly empty `3-add` frames (the compact sheet is short and the list behind it is dimmed); the stores card's "Wohin zuerst?" suggests tapping, the app reorders by dragging (Legal should see the interaction with the strings).
+
+**Review 1 fixes (job 369, addendum 4 / Legal partial GO at a578c277c).** N-351 and N-354 applied to all four long descriptions (LISTING.md counts updated; short fields and IAP files byte-identical to the GO hashes, checked with sha256sum); N-352/356/357 on the DE comparison page with Legal's pre-launch redlines (the builder's own "soll Teil von Premium werden" MCP sentence deleted, not kept); `/support` and `/en/support`: the false Alexa "Beta-Test / Einladungslink von Peter" sentence replaced (skill live since 2026-11-16), the install answer phrased pre-launch; N-358 `collect.sh` drops held files and the two Play voice frames are removed; N-359 was done in round 3. Site preview (protected, lead mints link): https://family-groceries-design-633dx8gg8-peter-trost.vercel.app (built before review 1; a new one is in NEEDS_LEAD). Left open from the nice-to-haves: the unnatural-looking capitalised EN dictation sentence (the parser keeps case, so a lower-case sentence shows lower-case rows), the cut-off "Shopping total" row at the preview's bottom edge, the grey placeholder icon for Joghurt in the `3-add` frames (an app gap, not capture), the mostly empty tablet `3-add` frames, and RD-Q4 (hexagons kept on the site cards, the band behind the store frames and the video caption badges).
+
+## Job 402: #637 reworked for HP2, Legal N-366 and Peter's preview review
+
+See [docs/done/402.md](docs/done/402.md). **Built.** PR #637 (not merged) now matches the HP2 launch:
+- Store listings without prices, totals, trip mode or History, with N-366's Alexa naming and
+  trademark notices.
+- The Premium paragraph tied to the `integration-lock` hold.
+- Screenshots, previews, site videos and a real-app hero re-made with the four HP2 flags off. One
+  capture flag rule (`marketing/capture-flags.mjs`) checks every build.
+- RD1 buttons on the site and launch-stage download CTAs (badges, plus a web-app link).
+- An Alexa card that uses the live skill's pages (toggle `alexaPublished`, default on).
+- Amazon's trademark line added by the build.
+
+**CTA placements proposed:** A, hero and closing block with a web-app text link; B, A plus a
+sticky store bar on phones; C, badges after every section. **Implemented:** A (docs/DECISIONS.md
+"Job 402"). **Preview (protected, launch stage):**
+https://family-groceries-design-mt6zotnnw-peter-trost.vercel.app; the lead mints the share link.
+**Open:**
+- Legal's hash re-GO.
+- Premium names no benefit while the lock is unreleased.
+- Privacy text vs the live Alexa skill (three mismatches).
+- The launch privacy line.

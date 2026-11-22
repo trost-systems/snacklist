@@ -9,8 +9,10 @@ export const LOCALES = {
 };
 
 /** Every shot in store order. A set carries all of them or the subset it names. */
-export const SHOTS = ['list', 'sync', 'add', 'order', 'voice', 'assist', 'invite'];
-const TABLET_SHOTS = ['list', 'sync', 'order', 'add'];
+export const SHOTS = ['list', 'sync', 'add', 'voice', 'assist', 'invite'];
+const TABLET_SHOTS = ['list', 'sync', 'add'];
+// The switcher sheet is a centred card on an iPad: the scrim around it leaves no clean cut for the frame.
+const IPAD_SHOTS = SHOTS.filter((s) => s !== 'invite');
 
 /** The store rules a set's size must keep (checked by `sizeProblems`). */
 const RULES = {
@@ -35,7 +37,7 @@ export const SETS = {
   'play-tablet7': { store: 'play', rule: [320, 3840], size: [1440, 2560], viewport: [600, 960], dpr: 2, shots: TABLET_SHOTS, text: false },
   'play-tablet10': { store: 'play', rule: [1080, 7680], size: [1800, 3200], viewport: [800, 1280], dpr: 2, shots: TABLET_SHOTS, text: false },
   'appstore-iphone69': { store: 'appstore', rule: ['1320x2868', '1290x2796'], size: [1320, 2868], viewport: [440, 956], dpr: 3, shots: SHOTS, text: true },
-  'appstore-ipad13': { store: 'appstore', rule: ['2064x2752', '2048x2732'], size: [2064, 2752], viewport: [768, 1024], dpr: 2.5, shots: SHOTS, text: true },
+  'appstore-ipad13': { store: 'appstore', rule: ['2064x2752', '2048x2732'], size: [2064, 2752], viewport: [768, 1024], dpr: 2.5, shots: IPAD_SHOTS, text: true },
 };
 
 export const FEATURE_GRAPHIC = { size: [1024, 500], store: 'play' };

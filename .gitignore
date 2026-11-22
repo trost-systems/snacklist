@@ -58,3 +58,4 @@ e2e/sync-evidence/
 alexa/.ask/
 .deno.strict*.json
 __pycache__/
+marketing/store-previews/out/

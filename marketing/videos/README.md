@@ -33,6 +33,17 @@ both videos took 18 min 43 s on the Hetzner runner (job 215): the Linux build wa
 to redo a part. A copy change in `copy.json` needs only `node build.mjs` (no new take); a change
 in the app or its design needs new takes.
 
+## The launch build
+
+The Linux build is the build users get at launch: `marketing/capture-flags.mjs` (the flags at full
+rollout in `releases/flags.json`, minus `marketing/CAPTURE_FLAGS_OFF`, plus `marketing/CAPTURE_FLAGS`),
+built in by `remake.sh` as `FLAGS_ON` (the stamp includes them). `remake.sh` then reads the list
+compiled into `lib/libapp.so` and stops when an off flag is on. So the footage has no category
+headings, the compact add sheet (no close key: Enter in the empty field closes it, `shots.ts`), the
+soft look, and no prices, totals, Verlauf tab or trip question. Each shot still ticks one item
+before filming, so „Zuletzt verwendet“ is there from the first frame (`tickBeforeFilming`); a build
+with `trip-mode` on gets its question answered „Nein“ there.
+
 ## How it works
 
 - `capture/driver.ts` starts each member's app as the profile build on its own Xvfb display at
@@ -44,8 +55,8 @@ in the app or its design needs new takes.
   in the add field (`app/test_driver/main_marionette.dart`). A shot's `dictation` is the sentence
   it hears: `test_driver/scripted_speech.dart` stands where the iOS and Android recognizers stand
   and reports it word by word; everything after it is the app's real dictation. Dictation follows
-  the app language (German or English) since #487; this take is still a German example, so
-  `voice-add` hears the same German sentence in both takes.
+  the app language (German or English) since #487, so each `voice-add` take hears a sentence in its own
+  language.
 - `capture/shots.ts` is what each video films; `capture/take.ts` runs one take and writes
   `<video>/footage/<lang>/` (not committed): one `.mkv` per member, `events.json` (every input on
   the recording clock), `take.json` (clock offsets, measured latencies, the real MCP results).

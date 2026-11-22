@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="scenes.css">
 <style>
   .lead { left: 48px; top: 24px; width: 296px; height: 420px; z-index: 1; }
-  .mate { left: 326px; top: 58px; width: 202px; height: 320px; z-index: 2; padding: 8px; box-shadow: var(--sticker); }
+  .mate { left: 326px; top: 58px; width: 202px; height: 320px; z-index: 2; padding: 8px; }
   .lead .app-head { padding-top: 36px; }
   .mate .screen { border-radius: calc(var(--hl-radius-xl) - 8px); }
 
@@ -46,7 +46,7 @@
           <span class="hxp av av--honey">J</span>
         </div>
       </div>
-      <div class="cat" data-t="chilled"></div>
+      <div class="store"><span class="store-name" data-t="supermarket"></span><span class="store-rule"></span></div>
       <div class="item"><span class="emo">🥚</span><span class="name"><span class="qty">10×</span> <span data-t="eggs"></span></span><span class="hxp cb"></span></div>
       <div class="item"><span class="emo">🧈</span><span class="name" data-t="butter"></span><span class="hxp cb"></span></div>
       <div class="item"><span class="emo">🧀</span><span class="bar" style="width: 52%"></span><span class="hxp cb"></span></div>
@@ -57,7 +57,7 @@
   <div class="phone mate">
     <div class="screen">
       <div class="mate-head"><span class="hxp av av--honey">J</span><span class="fresh-note" data-t="fresh"></span></div>
-      <div class="cat" data-t="chilled"></div>
+      <div class="store"><span class="store-name" data-t="supermarket"></span><span class="store-rule"></span></div>
       <div class="item item--arrived"><span class="emo">🥚</span><span class="name"><span class="qty">10×</span> <span data-t="eggs"></span></span><span class="hxp cb"></span></div>
       <div class="item"><span class="emo">🧈</span><span class="bar" style="width: 50%"></span><span class="hxp cb"></span></div>
       <div class="item"><span class="emo">🧀</span><span class="bar" style="width: 64%"></span><span class="hxp cb"></span></div>
@@ -68,11 +68,11 @@
 <script>
   globalThis.STRINGS = {
     de: {
-      household: 'Unser Haushalt', count: '6 Artikel', chilled: 'Kühlregal', eggs: 'Eier', butter: 'Butter',
+      household: 'Unser Haushalt', count: '6 Artikel', supermarket: 'Supermarkt', eggs: 'Eier', butter: 'Butter',
       fresh: '1 neu von Jonas',
     },
     en: {
-      household: 'Our Home', count: '6 items', chilled: 'Chilled', eggs: 'Eggs', butter: 'Butter',
+      household: 'Our Home', count: '6 items', supermarket: 'Supermarket', eggs: 'Eggs', butter: 'Butter',
       fresh: '1 new from Jonas',
     },
   };

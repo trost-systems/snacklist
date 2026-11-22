@@ -217,6 +217,23 @@ cd checks && node crawl.mjs ../dist-history --pages /history,/en/history
   `supportPublished` the Hilfe/Support one. Set a flag to `true` only together with its pages;
   a footer link to a missing page fails the build. Impressum and the report page are always linked.
 
+## Alexa
+
+The Snacklist skill for Alexa follows Legal N-366 (job 402):
+
+- `config/stores.mjs` `ALEXA_SKILL_URLS` holds the skill's page per language, the one place for
+  them. Markdown links them as `[Alexa Skill Store](alexa-skill:de)` (or `:en`); another locale
+  fails the build.
+- `config.json` `alexaPublished` (on) shows the landing page's Alexa card next to Siri's and turns
+  those links into links; off, the card is gone and the link text stays as plain text.
+- Every page whose text names Alexa gets Amazon's trademark line in its language in the footer and
+  its Markdown twin (`MARKS` in `build.mjs`); no page needs to carry it in its own text.
+- Name the skill „der Snacklist-Skill für Alexa“ / "the Snacklist skill for Alexa" and say what the
+  skill does, not what Alexa does. Every „Alexa, …“ on a page must be a sentence the skill
+  understands: an invocation docs/ALEXA.md names followed by a request matching a sample of the
+  de-DE or en-US model, or one of the two own-list sentences the guides warn about. Never
+  "Hey Alexa"; no Alexa logo, badge or Echo picture. `test/alexa.test.mjs` checks all of it.
+
 ## Report content
 
 `/inhalte-melden` and `/en/report` are the DSA notice route (job 275, Legal Addendum B): legal
@@ -260,7 +277,8 @@ link to a draft fails the production build.
 `config/stage.ts` holds the site's stage in one line, `export const stage: Stage = 'waitlist';`
 (the build reads that line as text; job 93's launch guard reads it too). Switching the stage is a
 one-line PR. It decides every call to action; only `launch` links the browser app, as „Web-App“ /
-"Web app" in the top nav (job 370). A preview or local build can pick a stage without touching the
+"Web app" in the top nav (job 370) and as „Snacklist im Browser öffnen“ / "Open Snacklist in your
+browser" under the store badges (job 402). A preview or local build can pick a stage without touching the
 file: `SITE_STAGE=launch npm run build` (ignored when `VERCEL_ENV=production`, and it skips the
 launch guard, so it never ships):
 
@@ -268,7 +286,7 @@ launch guard, so it never ships):
 | --- | --- | --- |
 | `waitlist` (now) | „Auf die Warteliste“ / "Join the waitlist", to `#warteliste` / `#waitlist` | the sign-up form |
 | `beta` | „Zur Beta anmelden“ / "Join the beta", same anchor | the sign-up form |
-| `launch` | „App laden“ / "Get the app", to `#app`; the hero shows the chip „Jetzt verfügbar“ and the store badges | each store's badge to its listing and, on desktops, a QR code of the listing URL under it |
+| `launch` | „App laden“ / "Get the app", to `#app`; the hero shows the chip „Jetzt verfügbar“, the store badges and the web app link | each store's badge to its listing and, on desktops, a QR code of the listing URL under it; the web app link |
 
 In `launch` the QR codes are drawn at build time (`qrSvg` in `landing.mjs`, no service). `public/get-app.js`
 sets `data-os` on `<html>` from the user agent: a phone shows only its store's badge, a desktop both

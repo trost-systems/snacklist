@@ -1,6 +1,6 @@
 ---
 title: "Snacklist with Alexa: set up the skill"
-description: "With the Snacklist skill for Amazon Alexa you add things to your Snacklist by voice: \"Alexa, ask Snacklist to add milk and eggs\". Here's how to set it up in a few minutes."
+description: "With the Snacklist skill for Alexa you can add things to your Snacklist by voice: \"Alexa, ask Snacklist to add milk and eggs\". Here's how to set it up in a few minutes."
 slug: alexa
 locale: en
 translation_key: alexa
@@ -9,12 +9,12 @@ updated: 2026-11-04
 
 # Snacklist with Alexa: set up the skill
 
-With the **Snacklist** skill for Amazon Alexa you add things to your Snacklist by voice, without opening the app. The skill is available to everyone in the Alexa Skill Store. You enable it and link your account, then it works like this:
+With the Snacklist skill for Alexa you can add things to your Snacklist by voice, without opening the app. The skill is available to everyone in the [Alexa Skill Store](alexa-skill:en). You enable it and link your account, then it works like this:
 
 > **You:** Alexa, ask Snacklist to add milk and eggs.
 > **Alexa:** I put milk and eggs on Snacklist.
 
-Alexa sends your sentence to Snacklist. Snacklist splits it into separate items, sorts each into its category, and the items show up on every device in your household right away. The skill understands English and German, depending on the language your Alexa device is set to. If your device is set to German, follow the German guide: [Snacklist per Alexa: Skill einrichten](/de/anleitungen/alexa)
+The skill sends your sentence to Snacklist. Snacklist splits it into separate items, puts each in the right spot on the list, and the items show up on every device in your household right away. The skill understands English and German, depending on the language your Alexa device is set to. If your device is set to German, follow the German guide: [Snacklist per Alexa: Skill einrichten](/de/anleitungen/alexa)
 
 ## What you need
 
@@ -24,7 +24,7 @@ Alexa sends your sentence to Snacklist. Snacklist splits it into separate items,
 
 ## Step 1: enable the skill and link your account
 
-Alexa signs in with your Snacklist account, not with a token. There's nothing to copy.
+The skill signs in with your Snacklist account, not with a token. There's nothing to copy.
 
 1. Open the Alexa app, search the skill store for **Snacklist** and open the skill's page.
 2. Tap **Enable to use**. The Snacklist sign-in opens right after.
@@ -35,7 +35,7 @@ Alexa signs in with your Snacklist account, not with a token. There's nothing to
 ## Step 2: try it
 
 1. Say to your Alexa device: "Alexa, ask Snacklist to add milk and eggs".
-2. Alexa answers "I put milk and eggs on Snacklist.", and the items are in the app.
+2. The skill answers "I put milk and eggs on Snacklist.", and the items are in the app.
 
 ## How Alexa reaches Snacklist {#reach-snacklist}
 
@@ -61,9 +61,9 @@ Say several things in one sentence with "and" between them. A pause alone doesn'
 | Alexa, ask Snacklist to add two liters of milk | 2 l milk |
 | Alexa, tell Snacklist we need bread, butter and cheese | bread · butter · cheese |
 
-Quantities like "two liters of milk" become one item with a quantity. Alexa tells you afterwards what went on the list. Things already on the list aren't added twice: Alexa says "Already on Snacklist: milk."
+Quantities like "two liters of milk" become one item with a quantity. The skill tells you afterwards what went on the list. Things already on the list aren't added twice: the skill says "Already on Snacklist: milk."
 
-Ask "Alexa, ask Snacklist what's on the list" and Alexa reads at most 10 open items, in the order of your list, then for example "… and 4 more."
+Ask "Alexa, ask Snacklist what's on the list" and the skill reads at most 10 open items, in the order of your list, then for example "… and 4 more."
 
 > **What happens to your voice**
 >
@@ -84,6 +84,6 @@ Ask "Alexa, ask Snacklist what's on the list" and Alexa reads at most 10 open it
 ## Turn Alexa off again
 
 - **In the Alexa app:** find the skill **Snacklist** and tap **Disable skill** on its page.
-- **In Snacklist:** tap **More**, then **Access**, and disconnect **Amazon Alexa** under connected apps. Alexa loses access to your list right away.
+- **In Snacklist:** tap **More**, then **Access**, and disconnect **Amazon Alexa** under connected apps. The skill loses access to your list right away.
 
 Questions or problems? Write to us in the app under **More** → **Send feedback**.

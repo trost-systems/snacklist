@@ -1,0 +1,6 @@
+# Off in every capture although releases/flags.json may roll them out: off for everyone at launch
+# (Peter, HP2). Read by marketing/capture-flags.mjs; one flag per line, # starts a comment.
+grocery-log            # the Verlauf tab
+prices-and-trip-total  # price chips, totals and subtotals
+trip-mode              # „Kaufst du gerade ein?“, the trip strip and its stopwatch
+total-priced-only      # the priced-only summary block (needs prices)

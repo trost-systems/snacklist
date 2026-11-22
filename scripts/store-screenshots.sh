@@ -42,6 +42,8 @@ for l in ${locales//,/ }; do [[ $l == de-DE || $l == en-US ]] || { echo "unknown
 for s in ${stores//,/ }; do [[ $s == play || $s == appstore ]] || { echo "unknown store $s ($usage)" >&2; exit 64; }; done
 
 shots="$REPO_ROOT/marketing/store-screenshots"
+# The listing shows the launch build (marketing/capture-flags.mjs).
+source "$REPO_ROOT/marketing/capture-web.sh"
 started=$SECONDS
 args=(--locales "$locales" --stores "$stores")
 [[ $premium == 1 ]] && args+=(--premium-label)
@@ -66,6 +68,7 @@ scenario=store-screenshots
 [[ $first == en-US ]] && scenario=store-screenshots-en
 # -o: the web server launch.sh leaves running must not inherit the e2e lock (job 73).
 flock -o /tmp/fg-e2e.lock "$VH_HELPERS/launch.sh" --scenario "$scenario" --fresh | tail -1
+capture_check_web_build
 
 
 (cd "$shots" && { [[ -d node_modules ]] || npm ci --no-audit --no-fund >/dev/null; })

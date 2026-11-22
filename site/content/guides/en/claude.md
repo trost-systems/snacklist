@@ -9,12 +9,12 @@ updated: 2026-11-04
 
 # Connect Snacklist to Claude
 
-Claude can read your Snacklist, add items, change them, tick them off, put them back, delete them and move them to another category, store or list. Just tell Claude what you need:
+Claude can read your Snacklist, add items, change them, tick them off, put them back, delete them and move them to another store or list. Just tell Claude what you need:
 
 > **You:** Put milk, two cucumbers and toilet paper on the Snacklist.
 > **Claude:** I've added milk, 2 cucumbers and toilet paper to your Snacklist.
 
-The items show up right away on every device in your household, sorted into their categories. Setting it up takes less than five minutes. You don't copy any key: Claude signs in with your Snacklist account.
+The items show up right away on every device in your household, in the right spot on the list. Setting it up takes less than five minutes. You don't copy any key: Claude signs in with your Snacklist account.
 
 ## What you need
 
@@ -58,22 +58,22 @@ Menu names in Claude may differ slightly between Claude versions.
 
 | You write | What happens |
 | --- | --- |
-| Put milk, 2 cucumbers and Pampers diapers size 3 on the Snacklist. | Three items, each in its category. The diapers keep "Pampers" as the brand. |
+| Put milk, 2 cucumbers and Pampers diapers size 3 on the Snacklist. | Three items, each in its spot. The diapers keep "Pampers" as the brand. |
 | What's on the Snacklist? | Claude lists the open items in your list's order and tells you how many there are. |
 | What do I need at dm? | Everything for dm and everything without a store, in dm's order. |
 | Tick off milk and cucumbers. | Both leave the list and show up in the app under "Recently used". |
 | Move the oat milk to Getränke. | Snacklist remembers this for your household. Next time oat milk goes straight there. |
 | Make it 3 cucumbers. | The cucumbers' quantity is now 3. |
 | We still need the milk after all. | The milk you just ticked off is back on the list. |
-| Delete the sparkling wine. | The sparkling wine is gone. What Snacklist learned about it (category, store) stays. |
+| Delete the sparkling wine. | The sparkling wine is gone. What Snacklist learned about it (for example the store) stays. |
 | What else do we often buy? | What you buy often that is not on the list now, like the suggestions in the app. |
 | What did we buy last? | What was ticked off last, like "Recently used" in the app. |
 
-Anything already on the list isn't added twice. Claude tells you it's already there. Snacklist was made for German shopping lists: its categories have German names such as Kühlregal or Obst & Gemüse, and it sorts German item names best. It knows common English words too, and Claude can write items in German for you if you ask.
+Anything already on the list isn't added twice. Claude tells you it's already there. Snacklist was made for German shopping lists: its built-in word list is German, so it sorts German item names best. It knows common English words too, and Claude can write items in German for you if you ask.
 
 > **What Claude sees**
 >
-> - Claude sees only your shopping list: items, categories and stores. Claude never gets your password.
+> - Claude sees only your shopping list: items and stores. Claude never gets your password.
 > - What you write to Claude and what Snacklist answers is processed by Anthropic under its own privacy policy.
 > - Read more in the [privacy policy](/en/privacy) under "Siri, Alexa and AI assistants".
 
@@ -85,7 +85,7 @@ Anything already on the list isn't added twice. Claude tells you it's already th
 | "This request is invalid or has expired. Start the connection again in your app." | Claude's request is a few minutes old or was used already. | Click **Connect** in Claude again. |
 | Claude says it can't access Snacklist. | Snacklist is turned off in this chat. | Turn on **Snacklist** in the tools and connectors menu. |
 | Claude can't find an item. | The name matches several items or none. | Write the name the way the app shows it. Claude gets the matching names to choose from. |
-| An item is in the wrong category. | Snacklist matched the word to another category. | Tell Claude, for example, "Move feta to Kühlregal". Snacklist remembers this for your household. |
+| An item is in the wrong store. | Snacklist put the item in a different store. | Tell Claude, for example, "Move feta to the farmers market". Snacklist remembers this for your household. |
 
 ## Disconnect Claude
 

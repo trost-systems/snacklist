@@ -39,19 +39,22 @@ api_url="$(sed -n 's/^API_URL="\(.*\)"$/\1/p' <<<"$status")"
 key="$(sed -n 's/^PUBLISHABLE_KEY="\(.*\)"$/\1/p' <<<"$status")"
 [[ -n $api_url && -n $key ]] || { echo "remake: no running stack in $workdir" >&2; exit 1; }
 
+# The launch build (marketing/capture-flags.mjs).
+capture_flags="$(node "$here/../capture-flags.mjs")"
 # The bundle has the stack's URL and key built in: rebuild when they or app/ changed.
 bundle="$REPO_ROOT/app/build/linux/x64/profile/bundle"
-stamp="$( { git -C "$REPO_ROOT" rev-parse HEAD:app; git -C "$REPO_ROOT" diff HEAD -- app; echo "$api_url $key"; flutter_dir; } | sha256sum | cut -c1-16)"
+stamp="$( { git -C "$REPO_ROOT" rev-parse HEAD:app; git -C "$REPO_ROOT" diff HEAD -- app; echo "$api_url $key"; flutter_dir; echo "$capture_flags"; } | sha256sum | cut -c1-16)"
 if [[ "$(cat "$bundle/.capture-stamp" 2>/dev/null)" != "$stamp" ]]; then
   command -v cmake >/dev/null || PATH="$REPO_ROOT/.cursor/skills/verify-family-groceries/linux-build:$PATH"
   build_log="$(mktemp -t remake-linux-build.XXXXXX)"
   log "flutter build linux --profile (Marionette entry point) against $api_url; log: $build_log"
   (cd "$REPO_ROOT/app" && flutter build linux --profile -t test_driver/main_marionette.dart \
     --dart-define=SUPABASE_URL="$api_url" --dart-define=SUPABASE_PUBLISHABLE_KEY="$key" \
-    --dart-define=FAKE_STORE=ok >"$build_log" 2>&1) \
+    --dart-define=FAKE_STORE=ok --dart-define=FLAGS_ON="$capture_flags" >"$build_log" 2>&1) \
     || { echo "remake: linux build failed; see $build_log" >&2; exit 1; }
   echo "$stamp" >"$bundle/.capture-stamp"
 fi
+node "$here/../capture-flags.mjs" --check-build "$bundle/lib/libapp.so"
 
 export CAPTURE_BUNDLE="$bundle/family_groceries"
 for v in "${videos[@]}"; do

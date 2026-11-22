@@ -10,3 +10,10 @@ export const GET_URL = 'https://snacklist.app/get';
 export const WEB_APP_URL = 'https://app.snacklist.app';
 
 export const storeUrlSet = (url) => url.startsWith('https://');
+
+// The Snacklist skill for Alexa (Legal N-366): its public page per site language, the one place
+// the site takes them from (the landing page's Alexa card, `alexa-skill:<locale>` links in Markdown).
+export const ALEXA_SKILL_URLS = {
+  de: 'https://www.amazon.de/dp/B0HRTTRGZ2',
+  en: 'https://www.amazon.com/dp/B0HRTTRGZ2',
+};

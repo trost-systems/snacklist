@@ -1,6 +1,6 @@
 ---
 title: "Snacklist per Alexa: Skill einrichten"
-description: "Mit dem Snacklist-Skill für Amazon Alexa setzt du Sachen per Sprache auf deine Snacklist: „Alexa, sag Snacklist, füg Milch und Eier hinzu“. So richtest du ihn in wenigen Minuten ein."
+description: "Mit dem Snacklist-Skill für Alexa kannst du Sachen per Sprache auf deine Snacklist setzen: „Alexa, sag Snacklist, füg Milch und Eier hinzu“. So richtest du ihn in wenigen Minuten ein."
 slug: alexa
 locale: de
 translation_key: alexa
@@ -9,12 +9,12 @@ updated: 2026-11-04
 
 # Snacklist per Alexa: Skill einrichten
 
-Mit dem **Snacklist**-Skill für Amazon Alexa setzt du Sachen per Sprache auf deine Snacklist, ohne die App zu öffnen. Der Skill ist im Alexa Skill Store für alle verfügbar. Du aktivierst ihn und verknüpfst dein Konto, danach läuft es so:
+Mit dem Snacklist-Skill für Alexa kannst du Sachen per Sprache auf deine Snacklist setzen, ohne die App zu öffnen. Der Skill ist im [Alexa Skill Store](alexa-skill:de) für alle verfügbar. Du aktivierst ihn und verknüpfst dein Konto, danach läuft es so:
 
 > **Du:** Alexa, sag Snacklist, füg Milch und Eier hinzu.
 > **Alexa:** Ich habe Milch und Eier auf die Snacklist gesetzt.
 
-Alexa schickt deinen Satz an Snacklist. Snacklist teilt ihn in einzelne Einträge auf, sortiert jeden in seine Kategorie ein, und die Einträge erscheinen sofort auf allen Geräten in eurem Haushalt. Der Skill versteht Deutsch und Englisch, je nachdem, auf welche Sprache dein Alexa-Gerät eingestellt ist.
+Der Skill schickt deinen Satz an Snacklist. Snacklist teilt ihn in einzelne Einträge auf, setzt jeden an die passende Stelle der Liste, und die Einträge erscheinen sofort auf allen Geräten in eurem Haushalt. Der Skill versteht Deutsch und Englisch, je nachdem, auf welche Sprache dein Alexa-Gerät eingestellt ist.
 
 ## Was du brauchst
 
@@ -24,7 +24,7 @@ Alexa schickt deinen Satz an Snacklist. Snacklist teilt ihn in einzelne Einträg
 
 ## Schritt 1: Skill aktivieren und Konto verknüpfen
 
-Alexa meldet sich mit deinem Snacklist-Konto an, nicht mit einem Token. Du musst nichts kopieren.
+Der Skill meldet sich mit deinem Snacklist-Konto an, nicht mit einem Token. Du musst nichts kopieren.
 
 1. Öffne die Alexa-App, such im Skill-Store nach **Snacklist** und öffne die Seite des Skills.
 2. Tippe auf **Zur Verwendung aktivieren**. Die Anmeldung von Snacklist öffnet sich gleich danach.
@@ -35,7 +35,7 @@ Alexa meldet sich mit deinem Snacklist-Konto an, nicht mit einem Token. Du musst
 ## Schritt 2: Ausprobieren
 
 1. Sag zu deinem Alexa-Gerät: „Alexa, sag Snacklist, füg Milch und Eier hinzu“.
-2. Alexa antwortet „Ich habe Milch und Eier auf die Snacklist gesetzt.“, und die Einträge stehen in der App.
+2. Der Skill antwortet „Ich habe Milch und Eier auf die Snacklist gesetzt.“, und die Einträge stehen in der App.
 
 Ab jetzt geht es ohne Hände, von jedem Alexa-Gerät in deinem Amazon-Konto.
 
@@ -71,20 +71,20 @@ Fang mit „Alexa, sag Snacklist, …“ an. Sag mehrere Sachen in einem Satz un
 | Alexa, sag Snacklist, setz ein Kilo Äpfel und eine Packung Eier auf die Liste | 1 kg Äpfel · 1 Packung Eier |
 | Alexa, sag Snacklist, wir brauchen noch Kaffee sowie Zucker | Kaffee · Zucker |
 
-Füllwörter wie „bitte“, „wir brauchen“ und „noch“ lässt Snacklist weg. Mengen wie „zwei Liter Milch“ werden ein einziger Eintrag mit Menge, die App zeigt die Menge vor dem Namen. Alexa sagt dir danach, was auf der Liste gelandet ist, bei einer Sache zum Beispiel „Ich habe 2 Liter Milch auf die Snacklist gesetzt.“
+Füllwörter wie „bitte“, „wir brauchen“ und „noch“ lässt Snacklist weg. Mengen wie „zwei Liter Milch“ werden ein einziger Eintrag mit Menge, die App zeigt die Menge vor dem Namen. Der Skill sagt dir danach, was auf der Liste gelandet ist, bei einer Sache zum Beispiel „Ich habe 2 Liter Milch auf die Snacklist gesetzt.“
 
-Was schon auf der Liste steht, kommt nicht doppelt dazu. Alexa sagt dann zum Beispiel „Schon auf der Snacklist: Milch.“ Steht etwas Ähnliches schon drauf, etwa Möhren, wenn du Karotten sagst, kommt der neue Eintrag trotzdem dazu, und Alexa sagt „Ich habe Karotten auf die Snacklist gesetzt. Schon auf der Snacklist: Möhren.“
+Was schon auf der Liste steht, kommt nicht doppelt dazu. Der Skill sagt dann zum Beispiel „Schon auf der Snacklist: Milch.“ Steht etwas Ähnliches schon drauf, etwa Möhren, wenn du Karotten sagst, kommt der neue Eintrag trotzdem dazu, und der Skill sagt „Ich habe Karotten auf die Snacklist gesetzt. Schon auf der Snacklist: Möhren.“
 
-Du kannst den Skill auch erst öffnen: „Alexa, öffne Snacklist“. Alexa fragt „Was soll auf die Liste?“, und du sagst nur noch „Milch und Eier“.
+Du kannst den Skill auch erst öffnen: „Alexa, öffne Snacklist“. Der Skill fragt „Was soll auf die Liste?“, und du sagst nur noch „Milch und Eier“.
 
-Hat Alexa nichts verstanden, fragt Alexa einmal nach: „Das habe ich nicht verstanden. Was soll auf die Liste?“ Klappt es auch dann nicht, kommt die Antwort „Das habe ich leider nicht verstanden. Ich habe nichts auf die Snacklist gesetzt.“ Snacklist trägt nie etwas ein, das nur geraten ist. Alles, was du hinzufügst, sehen alle in eurem Haushalt sofort.
+Hat der Skill nichts verstanden, fragt er einmal nach: „Das habe ich nicht verstanden. Was soll auf die Liste?“ Klappt es auch dann nicht, kommt die Antwort „Das habe ich leider nicht verstanden. Ich habe nichts auf die Snacklist gesetzt.“ Snacklist trägt nie etwas ein, das nur geraten ist. Alles, was du hinzufügst, sehen alle in eurem Haushalt sofort.
 
 ## Liste vorlesen lassen
 
 > **Du:** Alexa, frag Snacklist, was auf der Liste steht.
 > **Alexa:** Auf der Snacklist stehen 3 Sachen: 2 Liter Milch, Eier und Brot.
 
-Alexa liest höchstens 10 offene Einträge vor, in der Reihenfolge eurer Liste. Stehen mehr drauf, sagt Alexa am Ende zum Beispiel „… und 4 weitere.“ Ist die Liste leer, lautet die Antwort „Die Snacklist ist leer.“ Danach ist der Skill fertig, Alexa fragt nicht weiter nach. Dieselben Einträge erscheinen außerdem als Karte in der Alexa-App.
+Der Skill liest höchstens 10 offene Einträge vor, in der Reihenfolge eurer Liste. Stehen mehr drauf, sagt er am Ende zum Beispiel „… und 4 weitere.“ Ist die Liste leer, lautet die Antwort „Die Snacklist ist leer.“ Danach ist der Skill fertig und fragt nicht weiter nach. Dieselben Einträge erscheinen außerdem als Karte in der Alexa-App.
 
 Statt „was auf der Liste steht“ geht auch „Alexa, frag Snacklist, was brauchen wir?“ oder „Alexa, frag Snacklist, was muss ich kaufen?“
 
@@ -101,14 +101,14 @@ Statt „was auf der Liste steht“ geht auch „Alexa, frag Snacklist, was brau
 | „Mehr als dreißig auf einmal gehen nicht …“ | Du hast mehr als 30 Sachen in einem Satz gesagt. Die ersten 30 stehen auf der Liste. | Sag den Rest noch einmal. |
 | „Das waren gerade sehr viele Sachen auf einmal …“ | In einer Minute gehen höchstens 30 Sachen auf die Liste. | Warte eine Minute und sag es noch einmal. |
 | „Entschuldigung, das hat gerade nicht geklappt …“ | Snacklist ist gerade nicht erreichbar. | Versuch es gleich noch einmal. |
-| Ein Eintrag steht in der falschen Kategorie. | Snacklist hat das Wort einer anderen Kategorie zugeordnet. | Halte den Eintrag in der App kurz gedrückt. Tippe im Fenster, das sich öffnet, auf die Kategorie, wähle die richtige und tippe auf **Fertig**. Snacklist merkt sich das für euren ganzen Haushalt, auch für Einzahl und Mehrzahl desselben Worts. |
+| Ein Eintrag steht im falschen Laden. | Snacklist hat den Eintrag einem anderen Laden zugeordnet. | Halte den Eintrag in der App kurz gedrückt. Tippe im Fenster, das sich öffnet, auf den Laden, wähle den richtigen und tippe auf **Fertig**. Snacklist merkt sich das für euren ganzen Haushalt. |
 
 ## Alexa wieder abschalten
 
 Du hast zwei Möglichkeiten. Jede beendet die Verbindung:
 
-- **In der Alexa-App:** Tippe auf **Mehr**, such nach dem Skill **Snacklist** und tippe auf seiner Seite auf **Skill deaktivieren**. Oder sag „Alexa, deaktiviere Snacklist“.
-- **In Snacklist:** Tippe auf **Mehr** und dann auf **Zugänge**. Tippe unter **Verbundene Apps** neben **Amazon Alexa** auf das Symbol zum Trennen. Die App fragt „Amazon Alexa trennen?“. Bestätige mit **Trennen**. Alexa verliert sofort den Zugriff auf deine Liste.
+- **In der Alexa-App:** Tippe auf **Mehr**, such nach dem Skill **Snacklist** und tippe auf seiner Seite auf **Skill deaktivieren**.
+- **In Snacklist:** Tippe auf **Mehr** und dann auf **Zugänge**. Tippe unter **Verbundene Apps** neben **Amazon Alexa** auf das Symbol zum Trennen. Die App fragt „Amazon Alexa trennen?“. Bestätige mit **Trennen**. Der Skill verliert sofort den Zugriff auf deine Liste.
 
 Trennst du nur die Kontoverknüpfung in der Alexa-App, ohne den Skill zu deaktivieren, bleibt „Amazon Alexa“ unter **Mehr** → **Zugänge** stehen. Trenn es dann dort auch.
 

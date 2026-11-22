@@ -369,8 +369,11 @@ trust.
 names heard in lowercase); every en-* locale is English (`speech_en.ts`, `voice/parse_en.ts`,
 names stored as heard, like Siri in English). The five English models are one model
 (`skill_package_test.ts` keeps them identical). English one-shots: "Alexa, ask snacklist to add
-milk", "Alexa, tell snacklist we need milk", "Alexa, ask snacklist what's on the list"; "Alexa, add
-milk to Snacklist" goes to Alexa's own lists, as in German.
+milk", "Alexa, tell snacklist we need milk", "Alexa, ask snacklist what's on the list"; "Alexa, open
+snacklist" is the LaunchRequest, like „Alexa, öffne snacklist“; "Alexa, add milk to Snacklist"
+goes to Alexa's own lists, as in German („Alexa, setz Milch auf die Snacklist“). The site's
+`site/test/alexa.test.mjs` takes these invocation forms and the two own-list sentences from this
+paragraph and the Invocation line above.
 
 The invocation name is `snacklist` in every locale (S4 of the Hummlist → Snacklist rename,
 2026-11-10). Hummlist used the split form `humm list` (Q75 IN1, Peter, 2026-11-05), because German

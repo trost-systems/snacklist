@@ -4,7 +4,7 @@ The Play Store and App Store screenshots, the Play feature graphic and the Play 
 command. It films the real Snacklist web build against a local Supabase stack with the demo
 household „Unser Haushalt“ (Anna and Jonas, generic stores only) and frames the captures in the
 look Peter picked in job 214: FR2 Großschrift (honey, a two-line Bricolage headline, a subline,
-the app as a card with an ink border and hard shadow on the canvas foot) with FR1's Wabenband in
+the app as a card with an ink border, no shadow (Peter, job 369: only buttons cast one), on the canvas foot) with FR1's Wabenband in
 cobalt behind the cards. Nothing is uploaded anywhere.
 
 ## Run it
@@ -22,6 +22,16 @@ It needs what the verify-snacklist skill needs (Docker, the Supabase CLI, CI's F
 ffmpeg) and uses this checkout's port block in `supabase/config.toml` (CI uses the canonical
 543xx). The steps:
 
+0. The build is the launch build: `marketing/capture-flags.mjs` takes every flag at full rollout
+   in `releases/flags.json`, drops `marketing/CAPTURE_FLAGS_OFF` (`grocery-log`,
+   `prices-and-trip-total`, `trip-mode`, `total-priced-only`: off at launch, HP2) and adds
+   `marketing/CAPTURE_FLAGS` (`hide-categories`, `add-sheet-compact`, `redesign-rd1`).
+   `marketing/capture-web.sh` passes exactly that list to `launch.sh` (`VH_FLAGS_FULL=0`,
+   `VH_DEFINES`), so `flagOn` agrees; the demo videos' Linux build and the hero use the same
+   script. After the build the script reads the `FLAGS_ON` compiled into `main.dart.wasm` and
+   `main.dart.js` and stops if an off flag is on or a capture flag is off; each capture also stops
+   on a Verlauf tab or a price chip (`marketing/launch-look.mjs`). Change the two files when a flag
+   launches or retires, and say in the PR which flags were on.
 1. `.claude/skills/verify-snacklist/helpers/launch.sh` starts the stack, builds the release web
    app (wasm, production defines) when `app/` changed, and serves it.
 2. `marketing/store-screenshots/capture.mjs` films every shot under `/tmp/fg-e2e.lock` with one
@@ -45,11 +55,11 @@ uploads to a store.
 
 | Set | Size (px) | Viewport (dp) | Shots | Words |
 | --- | --- | --- | --- | --- |
-| `play-phone` | 1080 × 1920 | 432 × 960 | all 7 | headline, subline, sticker |
-| `play-tablet7` | 1440 × 2560 | 600 × 960 | list, sync, order, add | none (spec D4-B) |
-| `play-tablet10` | 1800 × 3200 | 800 × 1280 | list, sync, order, add | none |
-| `appstore-iphone69` | 1320 × 2868 | 440 × 956 | all 7 | headline, subline, sticker |
-| `appstore-ipad13` | 2064 × 2752 | 768 × 1024 | all 7 | headline, subline, sticker |
+| `play-phone` | 1080 × 1920 | 432 × 960 | all 6 | headline, subline, sticker |
+| `play-tablet7` | 1440 × 2560 | 600 × 960 | list, sync, add | none (spec D4-B) |
+| `play-tablet10` | 1800 × 3200 | 800 × 1280 | list, sync, add | none |
+| `appstore-iphone69` | 1320 × 2868 | 440 × 956 | all 6 | headline, subline, sticker |
+| `appstore-ipad13` | 2064 × 2752 | 768 × 1024 | all but invite | headline, subline, sticker |
 | `play/feature-graphic.png` | 1024 × 500 | | | the tagline only, no name or logo |
 | `play/icon-512.png` | 512 × 512 | | | `app/web/icons/Icon-512.png` on cobalt |
 
@@ -66,19 +76,17 @@ read it.
 | Shot | What it shows | How the data arrives |
 | --- | --- | --- |
 | `list` | Jonas's list, two honey rows under „2 neu von Anna“ | Anna's two inserts at the Wochenmarkt through the API, as her app writes them |
-| `sync` | Anna's list with Kaffee in honey, Jonas's „Hinzugefügt: Kaffee → Supermarkt“ as a sticker | Jonas types it in his add sheet |
-| `add` | the add sheet with „3 Jogh“ and „Joghurt · 3 · Schon mal gekauft“ | typed |
-| `order` | the Supermarkt's walking order, Kühlregal mid-drag | held and dragged |
+| `sync` | Anna's list with Kaffee in honey, Jonas's chip row (amount, store, details; the compact sheet has no „Hinzugefügt“ note) as a sticker | Jonas types it in his add sheet |
+| `add` | the compact add sheet with „3 Jogh“ and „Joghurt · 3 · Schon mal gekauft“, two earlier adds dimmed behind it | typed |
 | `voice` | Anna's list, the stores above the Supermarkt folded, three honey rows under „3 neu von Jonas“, a speech bubble with the sentence | the sentence sent to the local `voice` function with Jonas's personal access token, as the Siri Shortcut sends it |
 | `assist` | Anna's list as in `voice`, three honey rows under „3 neu von Jonas“, a chat sticker (request, reply, the items) | `add_items` on the local `mcp` function with Jonas's personal access token |
-| `invite` | the household page down to its join requests: members, „Leute einladen“, the lists Wocheneinkauf, Baumarkt, Geburtstag (the sections below, among them the voice default naming Siri and Alexa, stay out) | the lists made through `rename_list` and `create_list` |
+| `invite` | the household and list switcher sheet from the list's header: the household, „Einladen“, its members, the lists Wocheneinkauf, Baumarkt, Geburtstag (the sections below, among them the voice default naming Siri and Alexa, stay out); not on the iPad set, where the sheet is a centred card that leaves no clean cut | the lists made through `rename_list` and `create_list` |
 
 The chat sticker is our own 6b style (snacklist-ui-craft, "Generic AI chat"): no assistant's
 name, logo, layout or colours. The invite shot shows no code and no link.
 
 The scenarios are `test/fixtures/scenarios/store-screenshots.yaml` and
-`store-screenshots-en.yaml`. Shots that change data get a fresh `fg seed` run each; `add` and
-`order` share one run per locale, `invite` another one with the extra lists.
+`store-screenshots-en.yaml`. Shots that change data get a fresh `fg seed` run each; `invite` has its own run with the extra lists.
 
 ## Captions
 

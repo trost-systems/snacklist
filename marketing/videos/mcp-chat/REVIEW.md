@@ -71,28 +71,28 @@ microphone in the add field: the Linux capture build now starts with `FG_DICTATI
 <!-- report -->
 | Cut | File | Codec | Size | fps | Duration | Bytes | Audio |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| de-wide | master (render) | h264 yuv420p | 1920x1080 | 30/1 | 11.20 s | 1095 KB | none |
-| de-wide | mcp-chat-de-wide.mp4 | h264 yuv420p | 1920x1080 | 30/1 | 11.20 s | 387 KB | none |
-| de-wide | mcp-chat-de-wide.webm | vp9 yuv420p | 1920x1080 | 30/1 | 11.20 s | 404 KB | none |
-| de-compact | master (render) | h264 yuv420p | 1080x1350 | 30/1 | 11.20 s | 859 KB | none |
-| de-compact | mcp-chat-de-compact.mp4 | h264 yuv420p | 1080x1350 | 30/1 | 11.20 s | 298 KB | none |
-| de-compact | mcp-chat-de-compact.webm | vp9 yuv420p | 1080x1350 | 30/1 | 11.20 s | 324 KB | none |
-| en-wide | master (render) | h264 yuv420p | 1920x1080 | 30/1 | 10.83 s | 843 KB | none |
-| en-wide | mcp-chat-en-wide.mp4 | h264 yuv420p | 1920x1080 | 30/1 | 10.83 s | 320 KB | none |
-| en-wide | mcp-chat-en-wide.webm | vp9 yuv420p | 1920x1080 | 30/1 | 10.83 s | 323 KB | none |
-| en-compact | master (render) | h264 yuv420p | 1080x1350 | 30/1 | 10.83 s | 659 KB | none |
-| en-compact | mcp-chat-en-compact.mp4 | h264 yuv420p | 1080x1350 | 30/1 | 10.83 s | 249 KB | none |
-| en-compact | mcp-chat-en-compact.webm | vp9 yuv420p | 1080x1350 | 30/1 | 10.83 s | 262 KB | none |
+| de-wide | master (render) | h264 yuv420p | 1920x1080 | 30/1 | 12.37 s | 1006 KB | none |
+| de-wide | mcp-chat-de-wide.mp4 | h264 yuv420p | 1920x1080 | 30/1 | 12.37 s | 372 KB | none |
+| de-wide | mcp-chat-de-wide.webm | vp9 yuv420p | 1920x1080 | 30/1 | 12.37 s | 392 KB | none |
+| de-compact | master (render) | h264 yuv420p | 1080x1350 | 30/1 | 12.37 s | 782 KB | none |
+| de-compact | mcp-chat-de-compact.mp4 | h264 yuv420p | 1080x1350 | 30/1 | 12.37 s | 285 KB | none |
+| de-compact | mcp-chat-de-compact.webm | vp9 yuv420p | 1080x1350 | 30/1 | 12.37 s | 316 KB | none |
+| en-wide | master (render) | h264 yuv420p | 1920x1080 | 30/1 | 10.90 s | 805 KB | none |
+| en-wide | mcp-chat-en-wide.mp4 | h264 yuv420p | 1920x1080 | 30/1 | 10.90 s | 314 KB | none |
+| en-wide | mcp-chat-en-wide.webm | vp9 yuv420p | 1920x1080 | 30/1 | 10.90 s | 333 KB | none |
+| en-compact | master (render) | h264 yuv420p | 1080x1350 | 30/1 | 10.90 s | 603 KB | none |
+| en-compact | mcp-chat-en-compact.mp4 | h264 yuv420p | 1080x1350 | 30/1 | 10.90 s | 239 KB | none |
+| en-compact | mcp-chat-en-compact.webm | vp9 yuv420p | 1080x1350 | 30/1 | 10.90 s | 266 KB | none |
 
 | Cut | Seam SSIM (first vs last frame) | Poster | Poster at |
 | --- | --- | --- | --- |
-| de-wide | 0.9980 | mcp-chat-de-wide.webp, 49 KB | 4.77 s |
-| de-compact | 0.9982 | mcp-chat-de-compact.webp, 40 KB | 4.77 s |
-| en-wide | 0.9980 | mcp-chat-en-wide.webp, 43 KB | 4.07 s |
-| en-compact | 0.9981 | mcp-chat-en-compact.webp, 34 KB | 4.07 s |
+| de-wide | 0.9975 | mcp-chat-de-wide.webp, 46 KB | 4.50 s |
+| de-compact | 0.9981 | mcp-chat-de-compact.webp, 38 KB | 4.50 s |
+| en-wide | 0.9975 | mcp-chat-en-wide.webp, 42 KB | 4.03 s |
+| en-compact | 0.9982 | mcp-chat-en-compact.webp, 34 KB | 4.03 s |
 
 Measured in the takes (Marionette polls, so an upper bound for the app side):
 
-- DE: addAnswerMs 879 ms, tickAnswerMs 40 ms, addToAppMs 1291 ms, tickToAppMs 534 ms
-- EN: addAnswerMs 141 ms, tickAnswerMs 52 ms, addToAppMs 943 ms, tickToAppMs 1097 ms
+- DE: addAnswerMs 582 ms, tickAnswerMs 55 ms, addToAppMs 1661 ms, tickToAppMs 510 ms
+- EN: addAnswerMs 142 ms, tickAnswerMs 82 ms, addToAppMs 696 ms, tickToAppMs 688 ms
 <!-- /report -->
