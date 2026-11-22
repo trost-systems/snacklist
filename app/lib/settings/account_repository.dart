@@ -16,12 +16,7 @@ final class const FateKept(
 ) extends HouseholdFate;
 
 /// The user is the last member, so [householdName] goes too.
-final class const FateDeleted(
-  final String householdName, {
-
-  /// It has Snacklist Premium now, which ends with it (`leaves_unlocked`).
-  final bool unlocked = false,
-}) extends HouseholdFate;
+final class const FateDeleted(final String householdName) extends HouseholdFate;
 
 /// A household the user archived (job 43). It has no members, so it is
 /// deleted with the account (DECISIONS 43.11).
@@ -34,15 +29,7 @@ class const AccountFate(
   /// One per household the user is in; none without a household.
   final List<HouseholdFate> households, {
   final List<ArchivedFate> archived = const [],
-}) {
-  /// The households deleted with the account that have Snacklist Premium.
-  Iterable<FateDeleted> get deletedPremium =>
-      households.whereType<FateDeleted>().where((h) => h.unlocked);
-
-  /// Snacklist Premium of some household ends with the account.
-  bool get endsPremium =>
-      deletedPremium.isNotEmpty || archived.any((a) => a.unlocked);
-}
+});
 
 /// Whether the server revoked the app's Sign in with Apple grant.
 enum AppleUnlink(final String wire) {
@@ -171,13 +158,7 @@ class SupabaseAccountRepository(
           },
     ];
     if (others.isEmpty) {
-      return FateDeleted(
-        name,
-        unlocked: await _client.rpc<bool>(
-          'leaves_unlocked',
-          params: {'p_household': id},
-        ),
-      );
+      return FateDeleted(name);
     }
     return FateKept(name, [...others.where((n) => n.isNotEmpty)]);
   }

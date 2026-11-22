@@ -1220,29 +1220,17 @@ abstract class AppLocalizations {
   /// **'Mit „Meine Daten exportieren“ unter Konto kannst du vorher eine Kopie sichern.'**
   String get accountDeleteExportHint;
 
-  /// No description provided for @accountDeletePremium.
+  /// Account deletion: the deleting account has Snacklist Premium itself (Legal N-362)
   ///
   /// In de, this message translates to:
-  /// **'„{household}“ hat Snacklist Premium. Es gehört zum Haushalt und endet mit ihm. Archivieren geht hier nicht, denn ein archivierter Haushalt wird mit deinem Konto gelöscht. Soll der Haushalt mit Premium bleiben, lade vorher jemanden ein und lösche dein Konto erst, wenn die Person beigetreten ist.'**
-  String accountDeletePremium(String household);
-
-  /// Account deletion (job 104): the last member's household has Snacklist Premium, in builds without the archive UI; accountDeletePremium without its archive sentence
-  ///
-  /// In de, this message translates to:
-  /// **'„{household}“ hat Snacklist Premium. Das gehört zum Haushalt. Löschst du dein Konto, endet es. Soll es bleiben? Dann lad erst jemand ein. Warte, bis die Person beigetreten ist. Lösch dann dein Konto.'**
-  String accountDeletePremiumLastMember(String household);
+  /// **'Du hast Snacklist Premium. Es gehört zu deinem Konto und endet, wenn du es löschst. Hast du ein Jahresabo, rechnen Apple bzw. Google weiter ab: Kündige es vorher im App Store oder bei Google Play.'**
+  String get accountDeletePremium;
 
   /// names: quoted and joined, like „Ferien“ und „Büro“
   ///
   /// In de, this message translates to:
   /// **'{count, plural, =1{Dein archivierter Haushalt {names} wird mit deinem Konto gelöscht.} other{Deine archivierten Haushalte {names} werden mit deinem Konto gelöscht.}}'**
   String accountDeleteArchived(int count, String names);
-
-  /// No description provided for @accountDeleteArchivedPremium.
-  ///
-  /// In de, this message translates to:
-  /// **'{count, plural, =1{Dein archivierter Haushalt {names} wird mit deinem Konto gelöscht, und mit ihm sein Snacklist Premium.} other{Deine archivierten Haushalte {names} werden mit deinem Konto gelöscht, und mit ihnen ihr Snacklist Premium.}}'**
-  String accountDeleteArchivedPremium(int count, String names);
 
   /// A household name inside a sentence
   ///
@@ -2852,12 +2840,6 @@ abstract class AppLocalizations {
   /// **'Kauf wiederherstellen'**
   String get lifetimeRestore;
 
-  /// No description provided for @lifetimeUnlockedBody.
-  ///
-  /// In de, this message translates to:
-  /// **'Snacklist Lifetime ist für euren ganzen Haushalt freigeschaltet. Danke!'**
-  String get lifetimeUnlockedBody;
-
   /// Snacklist Lifetime: Ask to Buy or a Play payment that completes later
   ///
   /// In de, this message translates to:
@@ -2923,12 +2905,6 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Der Kauf hat nicht geklappt ({code}).'**
   String lifetimeStoreFailed(String code);
-
-  /// No description provided for @lifetimeWeb.
-  ///
-  /// In de, this message translates to:
-  /// **'Kaufen kannst du Snacklist Lifetime in der iPhone- oder Android-App. Danach ist es auch hier für deinen ganzen Haushalt freigeschaltet.'**
-  String get lifetimeWeb;
 
   /// Snacklist Lifetime: the household's unlock is not known yet (loading or offline); no Buy button meanwhile
   ///

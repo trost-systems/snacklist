@@ -56,24 +56,24 @@ Tap **More**, then **Account** and **Export my data**. You get everything stored
 
 ### How do I delete my account?
 
-Tap **More**, then **Account** and **Delete account**, and confirm by typing DELETE. Your account, your profile, your access tokens and connected apps are deleted right away. If others stay in the household, they keep the list; your items stay there without your name. If you are the last member, the whole household is deleted, Snacklist Lifetime included; the purchase can't be moved to another household. Whether you can get your money back is under "Can I get a refund for Snacklist Lifetime?". Households you archived are deleted too. If others stay in the household, Snacklist Lifetime stays with them. Deleted data stays in our encrypted backups for up to 90 more days, then it is gone there too.
+Tap **More**, then **Account** and **Delete account**, and confirm by typing DELETE. Your account, your profile, your access tokens and connected apps are deleted right away. If others stay in the household, they keep the list; your items stay there without your name. If you are the last member, the whole household is deleted. If you have Snacklist Premium, it ends with your account. Apple or Google keep billing a yearly subscription: cancel it first in the App Store or on Google Play. Whether you can get your money back is under "Can I get a refund for Snacklist Premium?". Households you archived are deleted too. Deleted data stays in our encrypted backups for up to 90 more days, then it is gone there too.
 
 Without the app: write to [support@snacklist.app](mailto:support@snacklist.app).
 
-### What happens to Snacklist Lifetime if I leave a household as its last member?
+### What happens to Snacklist Premium if I leave a household?
 
-Snacklist Lifetime belongs to the household and does not move with you. If you leave a household with Snacklist Lifetime as its last member, it is deleted. The app warns you first: Snacklist Lifetime ends with the household. For refunds, see "Can I get a refund for Snacklist Lifetime?".
+Snacklist Premium belongs to your account and applies in every household you are a member of. If you leave a household, you keep Premium. If you leave it as its last member, the household is deleted, but your Premium stays. For refunds, see "Can I get a refund for Snacklist Premium?".
 
-### Can I get a refund for Snacklist Lifetime?
+### Can I get a refund for Snacklist Premium?
 
-You buy Snacklist Lifetime from Apple or Google, not from us. So:
+You buy Snacklist Premium from Apple or Google, not from us. So:
 
 - **iPhone (App Store):** only Apple can refund. Request it at [reportaproblem.apple.com](https://reportaproblem.apple.com) ("I'd like to" › "Request a refund"); how it works: [Apple Support](https://support.apple.com/en-us/118223). We can't refund App Store purchases ourselves.
 - **Android (Google Play):** within 48 hours of buying, request the refund from Google directly; Google decides ([Google Play refund policies](https://support.google.com/googleplay/answer/15574908?hl=en)). After that, email us at [support@snacklist.app](mailto:support@snacklist.app) with the order number from Google's purchase confirmation (it starts with "GPA.") or the email address of your Google account. We look at each request individually and, where we agree, refund through Google Play.
 
-If a purchase is refunded, the unlock ends for the household it was bought for, for all its members, unless the household bought Snacklist Lifetime more than once.
+If a purchase is refunded, your Snacklist Premium ends, unless you still have it from another purchase.
 
-Our refunds after the 48 hours are voluntary. They don't affect your statutory rights, also after the 48 hours, for example if Snacklist Lifetime doesn't work as described or if you can withdraw from the purchase. You have these rights against Apple or Google, who sell you Snacklist Lifetime; details are in [Apple's terms](https://www.apple.com/legal/internet-services/itunes/) or [Google Play's terms](https://play.google.com/about/play-terms/). Feel free to write to us in that case too; we'll help.
+Our refunds after the 48 hours are voluntary. They don't affect your statutory rights, also after the 48 hours, for example if Snacklist Premium doesn't work as described or if you can withdraw from the purchase. You have these rights against Apple or Google, who sell you Snacklist Premium; details are in [Apple's terms](https://www.apple.com/legal/internet-services/itunes/) or [Google Play's terms](https://play.google.com/about/play-terms/). Feel free to write to us in that case too; we'll help.
 
 ### How do I turn off usage data?
 

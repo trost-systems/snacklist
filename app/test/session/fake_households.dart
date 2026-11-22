@@ -30,9 +30,6 @@ class FakeHouseholds(final FakeAuth fakeAuth)
   final memberships = <String, List<String>>{};
   final defaults = <String, String>{};
 
-  /// Households whose Snacklist Premium ends with their last member.
-  final unlocked = <String>{};
-
   /// Invite code to the household it leads to.
   final invites = <String, String>{};
 
@@ -235,8 +232,6 @@ class FakeHouseholds(final FakeAuth fakeAuth)
               'joined_at': '2026-11-08T10:00:00Z',
             },
         ];
-      case ('POST', 'rpc/leaves_unlocked'):
-        return unlocked.contains(household());
       case ('POST', 'rpc/archived_households'):
         return const <Object?>[];
       case ('POST', 'rpc/reorder_households'):
