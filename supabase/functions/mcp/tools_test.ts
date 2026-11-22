@@ -17,6 +17,8 @@ import {
   premiumRequired,
   type ReportCall,
   reportToolCalls,
+  SWITCHED_OFF,
+  type Switches,
   tookTooLong,
 } from './tools.ts';
 
@@ -60,7 +62,7 @@ async function message(res: Response): Promise<Message> {
   return JSON.parse(data ? data.slice(6) : text);
 }
 
-function serve(gate: Gate, lang?: string) {
+function serve(gate: Gate, lang?: string, switches: Switches = SWITCHED_OFF) {
   const asked: string[] = [];
   const counted: Gate = (household) => {
     asked.push(household);
@@ -73,7 +75,7 @@ function serve(gate: Gate, lang?: string) {
   };
   const handle = (req: Request) =>
     createMcpHandler(() =>
-      buildServer(auth, counted, report, langOf(req.headers.get('accept-language')))
+      buildServer(auth, counted, report, langOf(req.headers.get('accept-language')), switches)
     ).fetch(req);
   return { handle, asked: () => asked.length, households: () => asked, reports, lang };
 }
@@ -94,7 +96,20 @@ const calls: [string, Record<string, unknown>][] = [
   ['merge_items', { keep: 'Möhren', merge: 'Karotten' }],
   ['list_categories', {}],
   ['list_stores', {}],
+  ['list_recent', {}],
+  ['suggest_items', { prefix: 'Mi' }],
 ];
+
+/** The tools behind app_switches.mcp_lists_stores (job 345), served only while it is on. */
+const switched: [string, Record<string, unknown>][] = [
+  ['create_list', { name: 'Baumarkt' }],
+  ['rename_list', { list: 'Einkaufsliste', name: 'Wocheneinkauf' }],
+  ['add_store', { name: 'Rewe' }],
+  ['rename_store', { store: 'dm', name: 'dm Drogerie' }],
+  ['set_store_layout', { store: 'dm', categories: ['Drogerie'] }],
+];
+
+const ON: Switches = { listsStores: true };
 
 Deno.test('locked: initialize and tools/list answer without asking the gate', async () => {
   const s = serve(locked);
@@ -106,7 +121,7 @@ Deno.test('locked: initialize and tools/list answer without asking the gate', as
   assertEquals(init.status, 200);
   const { serverInfo } = (await message(init)).result;
   assertEquals(serverInfo.name, 'snacklist');
-  assertEquals(serverInfo.version, '1.1.0', 'tools changed since 1.0.0');
+  assertEquals(serverInfo.version, '1.2.0', 'tools changed since 1.1.0');
   const list = await s.handle(rpc('tools/list'));
   assertEquals(list.status, 200);
   assertEquals(
@@ -117,8 +132,8 @@ Deno.test('locked: initialize and tools/list answer without asking the gate', as
 });
 
 Deno.test('locked: every tool call is an isError result with HTTP 200, data untouched', async () => {
-  for (const [name, args] of calls) {
-    const s = serve(locked);
+  for (const [name, args] of [...calls, ...switched]) {
+    const s = serve(locked, undefined, ON);
     // The database is never reached: asUser would fail here without SUPABASE_DB_URL.
     const res = await s.handle(rpc('tools/call', { name, arguments: args }));
     assertEquals(res.status, 200, name);
@@ -136,8 +151,30 @@ Deno.test('locked: every tool call is an isError result with HTTP 200, data unto
   }
 });
 
+Deno.test('job 345: with mcp_lists_stores on, the list and store tools are listed too', async () => {
+  const s = serve(locked, undefined, ON);
+  const { tools } = (await message(await s.handle(rpc('tools/list')))).result;
+  assertEquals(
+    tools.map((t) => t.name).sort(),
+    ['list_households', ...calls.map(([name]) => name), ...switched.map(([name]) => name)].sort(),
+  );
+});
+
+Deno.test('job 345: with mcp_lists_stores off, a list or store write is no tool and runs nothing', async () => {
+  for (const [name, args] of switched) {
+    const s = serve(locked);
+    const { result, error } = await message(
+      await s.handle(rpc('tools/call', { name, arguments: args })),
+    );
+    const text = JSON.stringify(result ?? error);
+    assert(text.includes(name) && /not found|unknown/i.test(text), `${name}: ${text}`);
+    assertEquals(s.asked(), 0, `${name}: the gate is not asked`);
+    assertEquals(s.reports, [], `${name}: no tool call to report`);
+  }
+});
+
 Deno.test('job 195: mcp_tool_call can name every tool the server lists, no other', async () => {
-  const s = serve(locked);
+  const s = serve(locked, undefined, ON);
   const { tools } = (await message(await s.handle(rpc('tools/list')))).result;
   assertEquals(tools.map((t) => t.name).sort(), [...mcpTools].sort());
   assertEquals(s.reports, [], 'tools/list is no tool call');
@@ -213,6 +250,7 @@ Deno.test('job 169b W3: the item tools take an optional list', async () => {
       'add_items',
       'get_item',
       'list_items',
+      'list_recent',
       'merge_items',
       'move_item',
       'remove_items',

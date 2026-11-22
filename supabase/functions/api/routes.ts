@@ -4,6 +4,14 @@
 export const routes = [
   { operation: 'listItems', method: 'GET', path: '/v1/items', scope: 'read', idempotent: false },
   { operation: 'addItems', method: 'POST', path: '/v1/items', scope: 'write', idempotent: true },
+  // Before /v1/items/{id}: the first route that fits a path and method wins.
+  {
+    operation: 'recentItems',
+    method: 'GET',
+    path: '/v1/items/recent',
+    scope: 'read',
+    idempotent: false,
+  },
   { operation: 'getItem', method: 'GET', path: '/v1/items/{id}', scope: 'read', idempotent: false },
   {
     operation: 'updateItem',
@@ -41,7 +49,44 @@ export const routes = [
     idempotent: false,
   },
   { operation: 'listStores', method: 'GET', path: '/v1/stores', scope: 'read', idempotent: false },
+  { operation: 'addStore', method: 'POST', path: '/v1/stores', scope: 'write', idempotent: true },
+  {
+    operation: 'updateStore',
+    method: 'PATCH',
+    path: '/v1/stores/{id}',
+    scope: 'write',
+    idempotent: false,
+  },
+  {
+    operation: 'getStoreLayout',
+    method: 'GET',
+    path: '/v1/stores/{id}/layout',
+    scope: 'read',
+    idempotent: false,
+  },
+  {
+    operation: 'setStoreLayout',
+    method: 'PUT',
+    path: '/v1/stores/{id}/layout',
+    scope: 'write',
+    idempotent: false,
+  },
   { operation: 'listLists', method: 'GET', path: '/v1/lists', scope: 'read', idempotent: false },
+  { operation: 'createList', method: 'POST', path: '/v1/lists', scope: 'write', idempotent: true },
+  {
+    operation: 'updateList',
+    method: 'PATCH',
+    path: '/v1/lists/{id}',
+    scope: 'write',
+    idempotent: false,
+  },
+  {
+    operation: 'suggestItems',
+    method: 'GET',
+    path: '/v1/suggestions',
+    scope: 'read',
+    idempotent: false,
+  },
   {
     operation: 'getHousehold',
     method: 'GET',
@@ -51,7 +96,7 @@ export const routes = [
   },
 ] as const satisfies readonly {
   operation: string;
-  method: 'GET' | 'POST' | 'PATCH' | 'DELETE';
+  method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
   path: `/v1/${string}`;
   scope: 'read' | 'write';
   /** Takes an Idempotency-Key header. */

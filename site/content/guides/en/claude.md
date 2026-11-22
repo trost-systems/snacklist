@@ -66,6 +66,8 @@ Menu names in Claude may differ slightly between Claude versions.
 | Make it 3 cucumbers. | The cucumbers' quantity is now 3. |
 | We still need the milk after all. | The milk you just ticked off is back on the list. |
 | Delete the sparkling wine. | The sparkling wine is gone. What Snacklist learned about it (category, store) stays. |
+| What else do we often buy? | What you buy often that is not on the list now, like the suggestions in the app. |
+| What did we buy last? | What was ticked off last, like "Recently used" in the app. |
 
 Anything already on the list isn't added twice. Claude tells you it's already there. Snacklist was made for German shopping lists: its categories have German names such as Kühlregal or Obst & Gemüse, and it sorts German item names best. It knows common English words too, and Claude can write items in German for you if you ask.
 

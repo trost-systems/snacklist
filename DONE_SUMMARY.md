@@ -2126,3 +2126,14 @@ Review 0: `merge_items` merges only on one list, like the app. Review 1: `untick
 brings back no older ticked twin when the item is open already, so a repeat changes nothing.
 Live probe 239/239.
 Details: `docs/done/344-api-mcp-item-ops.md`.
+
+## Job 345: API and MCP additions A4, A8, A9
+
+Integrations can now read what the household usually buys (`GET /v1/suggestions`, MCP
+`suggest_items`, the app's `public.suggest_items` ranking) and what was ticked lately
+(`GET /v1/items/recent`, `list_recent`, the app's „Zuletzt verwendet“), and through the API make and
+rename lists (cap 50, like the app), add and rename stores (plain names only) and set a store's walk
+order (`GET`/`PUT /v1/stores/{id}/layout`). The MCP list and store writes are built behind
+`app_switches.mcp_lists_stores`, seeded off until Legal approves the §7 text in NEEDS_LEAD (stores
+too: a deviation from the brief). Probe 305/305, 284 Deno tests, the release web app shows the
+API's changes. Builds on #605 (job 344). Details: `docs/done/345-api-mcp-suggest-lists-stores.md`.

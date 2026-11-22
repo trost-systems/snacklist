@@ -716,7 +716,7 @@ Deno.test('OPTIONS answers CORS for the API headers without touching the key', a
   assert(res.headers.get('access-control-allow-headers')?.includes('idempotency-key'));
   assertEquals(
     res.headers.get('access-control-allow-methods'),
-    'GET, POST, PATCH, DELETE, OPTIONS',
+    'GET, POST, PATCH, PUT, DELETE, OPTIONS',
   );
   assert(res.headers.get('access-control-expose-headers')?.includes('x-ratelimit-remaining'));
   assertEquals(deps.begun, []);
@@ -727,4 +727,46 @@ Deno.test('the route path drops the hosted and the local function prefix', () =>
   assertEquals(routePath('/api/v1/items/x/tick'), '/v1/items/x/tick');
   assertEquals(routePath('/v1/items'), '/v1/items');
   assertEquals(routePath('/apix/v1/items'), '/apix/v1/items');
+});
+
+Deno.test('job 345: /items/recent is its own route; a layout takes GET and PUT', async () => {
+  const deps = fake();
+  const recent = await handle(call('/items/recent'), deps);
+  assertEquals(recent.status, 200);
+  assertEquals(deps.executed.length, 1, 'recent runs, not the item {id} route');
+  await rejected(call('/items/recent', { method: 'PATCH', body: '{}' }), 400, 'invalid_id');
+  const layout = await handle(call(`/stores/${ID}/layout`, { method: 'POST', body: '{}' }), fake());
+  assertEquals(layout.status, 405);
+  assertEquals(layout.headers.get('allow'), 'GET, PUT');
+  assertEquals(
+    (await handle(call('/lists', { method: 'DELETE' }), fake())).headers.get('allow'),
+    'GET, POST',
+  );
+  await rejected(call('/stores/rewe/layout'), 400, 'invalid_id');
+});
+
+Deno.test('job 345: new bodies are strict: no chain on a store, a list name of 1 to 60', async () => {
+  const post = (path: string, body: unknown, method = 'POST') =>
+    call(path, {
+      method,
+      body: JSON.stringify(body),
+      headers: { 'content-type': 'application/json' },
+    });
+  await rejected(post('/stores', { name: 'Rewe', chain: 'rewe' }), 400, 'validation_failed');
+  await rejected(post('/stores', { name: 'x'.repeat(41) }), 400, 'validation_failed');
+  await rejected(
+    post(`/stores/${ID}`, { name: 'Rewe', retailerApp: 'x' }, 'PATCH'),
+    400,
+    'validation_failed',
+  );
+  await rejected(post('/lists', { name: 'x'.repeat(61) }), 400, 'validation_failed');
+  await rejected(post('/lists', { name: '   ' }), 400, 'validation_failed');
+  await rejected(post(`/lists/${ID}`, {}, 'PATCH'), 400, 'validation_failed');
+  await rejected(post(`/lists/${ID}`, { position: 1.5 }, 'PATCH'), 400, 'validation_failed');
+  await rejected(post(`/stores/${ID}/layout`, {}, 'PUT'), 400, 'validation_failed');
+  await rejected(
+    post(`/stores/${ID}/layout`, { categories: 'Kühlregal' }, 'PUT'),
+    400,
+    'validation_failed',
+  );
 });

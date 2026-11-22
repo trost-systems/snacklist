@@ -22,6 +22,8 @@ export type ErrorCode =
   | 'ambiguous_category'
   | 'list_not_found'
   | 'ambiguous_list'
+  | 'too_many_lists'
+  | 'too_many_stores'
   | 'idempotency_key_reused'
   | 'rate_limited'
   | 'auth_throttled'

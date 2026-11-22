@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Snacklist API
-  version: 1.1.0
+  version: 1.2.0
   summary: One household's Snacklist shopping list over HTTP.
   description: >-
     The guide is docs/API.md in the family-groceries repository: authentication with API keys,
@@ -132,6 +132,45 @@ paths:
         '409': { $ref: '#/components/responses/Conflict' }
         '413': { $ref: '#/components/responses/PayloadTooLarge' }
         '415': { $ref: '#/components/responses/UnsupportedMediaType' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Error' }
+  /v1/items/recent:
+    get:
+      operationId: recentItems
+      tags: [items]
+      summary: Recently ticked items, the app's "Zuletzt verwendet"
+      description: >-
+        Ticked items, newest first, one per thing (its newest purchase; spelling variants of one
+        thing count as one), none for a thing that is open on the list again. Like the app's
+        "Zuletzt verwendet". With list, that list's; without, every list's at once. An item's id
+        works with POST /v1/items/{id}/untick. Requires the read scope.
+      parameters:
+        - name: list
+          in: query
+          description: A list's id or exact name (any case). Without it, every list.
+          schema: { type: string, minLength: 1, maxLength: 60 }
+        - name: limit
+          in: query
+          description: How many at most, 1 to 50; default 20, what the app shows.
+          schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+      responses:
+        '200':
+          description: The recently ticked items (one answer; nextCursor is always null).
+          headers: *ok
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [data, nextCursor]
+                properties:
+                  data: { type: array, items: { $ref: '#/components/schemas/RecentItem' } }
+                  nextCursor: { type: 'null' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/PremiumRequired' }
+        '403': { $ref: '#/components/responses/Forbidden' }
         '422': { $ref: '#/components/responses/Unprocessable' }
         '429': { $ref: '#/components/responses/TooManyRequests' }
         default: { $ref: '#/components/responses/Error' }
@@ -297,6 +336,62 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '429': { $ref: '#/components/responses/TooManyRequests' }
         default: { $ref: '#/components/responses/Error' }
+    post:
+      operationId: createList
+      tags: [catalog]
+      summary: Make a list
+      description: >-
+        A new list after the others, like in the app (public.create_list). Names need not be
+        unique. A household has at most 50 lists (409 too_many_lists). Send an Idempotency-Key to
+        retry without making a second list. Requires the write scope.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NewList' }
+      responses:
+        '201': { $ref: '#/components/responses/OneList' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/PremiumRequired' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/LimitReached' }
+        '413': { $ref: '#/components/responses/PayloadTooLarge' }
+        '415': { $ref: '#/components/responses/UnsupportedMediaType' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Error' }
+  /v1/lists/{id}:
+    parameters:
+      - $ref: '#/components/parameters/ListId'
+    patch:
+      operationId: updateList
+      tags: [catalog]
+      summary: Rename or move a list
+      description: >-
+        Renames the list and/or puts it at position (0 is first, past the end is last; the
+        household's lists are numbered 0, 1, 2... again), like in the app. A member who never
+        picked a default list in the app has the first one as default, so moving another list
+        first changes where their adds without list go. Another household's list, or none, is
+        404 list_not_found. Requires the write scope.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ListEdit' }
+      responses:
+        '200': { $ref: '#/components/responses/OneList' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/PremiumRequired' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '413': { $ref: '#/components/responses/PayloadTooLarge' }
+        '415': { $ref: '#/components/responses/UnsupportedMediaType' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Error' }
   /v1/household:
     get:
       operationId: getHousehold
@@ -338,6 +433,148 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '429': { $ref: '#/components/responses/TooManyRequests' }
         default: { $ref: '#/components/responses/Error' }
+    post:
+      operationId: addStore
+      tags: [catalog]
+      summary: Add a store
+      description: >-
+        A store by its plain name, like in the app (public.add_store); no chain or other retailer
+        field. dm, Lidl, Edeka and a Baumarkt get their aisle layout. A name the household has
+        already (any case, umlauts folded) answers that store with 200 instead of 201. A household
+        has at most 50 stores this way (409 too_many_stores). Requires the write scope.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/StoreName' }
+      responses:
+        '200': { $ref: '#/components/responses/OneStore' }
+        '201': { $ref: '#/components/responses/OneStore' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/PremiumRequired' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/LimitReached' }
+        '413': { $ref: '#/components/responses/PayloadTooLarge' }
+        '415': { $ref: '#/components/responses/UnsupportedMediaType' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Error' }
+  /v1/stores/{id}:
+    parameters:
+      - $ref: '#/components/parameters/StoreId'
+    patch:
+      operationId: updateStore
+      tags: [catalog]
+      summary: Rename a store
+      description: >-
+        Renames the store, like in the app (public.rename_store). A name another store of the
+        household has is a 409 conflict and changes nothing. Another household's store, or none,
+        is 404 store_not_found. Requires the write scope.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/StoreName' }
+      responses:
+        '200': { $ref: '#/components/responses/OneStore' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/PremiumRequired' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '413': { $ref: '#/components/responses/PayloadTooLarge' }
+        '415': { $ref: '#/components/responses/UnsupportedMediaType' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Error' }
+  /v1/stores/{id}/layout:
+    parameters:
+      - $ref: '#/components/parameters/StoreId'
+    get:
+      operationId: getStoreLayout
+      tags: [catalog]
+      summary: A store's walk order
+      description: >-
+        Every category of the household in the store's walk order, the order GET /v1/items?store=
+        shows. hidden marks the categories the store does not carry. Requires the read scope.
+      responses:
+        '200': { $ref: '#/components/responses/Layout' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/PremiumRequired' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Error' }
+    put:
+      operationId: setStoreLayout
+      tags: [catalog]
+      summary: Set a store's walk order
+      description: >-
+        Like the store screen in the app (public.set_store_layout). categories (ids or names) come
+        first, in that order; the others follow in their current order. hidden, when given, is
+        every category the store does not carry; without it they stay. A category named twice is
+        400 validation_failed. Answers the whole new order. Requires the write scope.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LayoutEdit' }
+      responses:
+        '200': { $ref: '#/components/responses/Layout' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/PremiumRequired' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '413': { $ref: '#/components/responses/PayloadTooLarge' }
+        '415': { $ref: '#/components/responses/UnsupportedMediaType' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Error' }
+  /v1/suggestions:
+    get:
+      operationId: suggestItems
+      tags: [items]
+      summary: What the household usually buys
+      description: >-
+        The household's usuals, ranked like the app's suggestions (public.suggest_items): bought
+        often and lately first; things open on a list are left out. With prefix, names starting
+        with it, then names with a word starting with it. uses counts the days with a use in the
+        last year; due is true when its usual interval since the last purchase is up. Requires the
+        read scope.
+      parameters:
+        - name: prefix
+          in: query
+          description: The start of a name, e.g. Mil. Without it, all usuals.
+          schema: { type: string, maxLength: 60 }
+        - name: limit
+          in: query
+          description: How many at most, 1 to 50; default 10.
+          schema: { type: integer, minimum: 1, maximum: 50, default: 10 }
+      responses:
+        '200':
+          description: The usuals in their rank (one answer; nextCursor is always null).
+          headers: *ok
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [data, nextCursor]
+                properties:
+                  data: { type: array, items: { $ref: '#/components/schemas/Usual' } }
+                  nextCursor: { type: 'null' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '402': { $ref: '#/components/responses/PremiumRequired' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        default: { $ref: '#/components/responses/Error' }
 components:
   securitySchemes:
     apiKey:
@@ -349,6 +586,16 @@ components:
         write. MCP tokens, Siri credentials and OAuth tokens are not accepted.
   parameters:
     ItemId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    ListId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    StoreId:
       name: id
       in: path
       required: true
@@ -493,6 +740,82 @@ components:
         default:
           type: boolean
           description: true for the key owner's default list, where adds without list go.
+    NewList:
+      type: object
+      additionalProperties: false
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 60, examples: [Baumarkt] }
+    ListEdit:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        name: { type: string, minLength: 1, maxLength: 60 }
+        position: { type: integer, minimum: 0, maximum: 1000, description: 0 is first. }
+    StoreName:
+      type: object
+      additionalProperties: false
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 40
+          description: The store's plain name; no chain or retailer field.
+          examples: [Rewe]
+    LayoutCategory:
+      type: object
+      additionalProperties: false
+      required: [id, name, sortOrder, hidden]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        sortOrder: { type: integer }
+        hidden: { type: boolean, description: The store does not carry it. }
+    LayoutEdit:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        categories:
+          type: array
+          maxItems: 200
+          items: { type: string, minLength: 1, maxLength: 60 }
+          description: Category ids or names, first in this order.
+        hidden:
+          type: array
+          maxItems: 200
+          items: { type: string, minLength: 1, maxLength: 60 }
+          description: Every category the store does not carry.
+    RecentItem:
+      type: object
+      additionalProperties: false
+      required: [id, name, brand, properties, quantity, category, categoryId, store, storeId, status, addedAt, listId, tickedAt]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string, examples: [Windeln] }
+        brand: { type: [string, 'null'], examples: [Pampers] }
+        properties: { type: [string, 'null'], examples: ['Größe 3, Big Pack'] }
+        quantity: { type: [string, 'null'], examples: ['2', '500 g'] }
+        category: { type: string, examples: [Drogerie] }
+        categoryId: { type: string, format: uuid }
+        store: { type: [string, 'null'], examples: [dm] }
+        storeId: { type: [string, 'null'], format: uuid }
+        status: { type: string, enum: [open, ticked] }
+        addedAt: { type: string, format: date-time, examples: ['2026-11-02T08:00:00.123456+00:00'] }
+        listId: { type: string, format: uuid, description: The list the item is on (GET /v1/lists). }
+        tickedAt: { type: string, format: date-time, description: When it was ticked. }
+    Usual:
+      type: object
+      additionalProperties: false
+      required: [name, quantity, uses, lastUsed, due]
+      properties:
+        name: { type: string, examples: [Milch] }
+        quantity: { type: [string, 'null'] }
+        uses: { type: integer, minimum: 1 }
+        lastUsed: { type: string, format: date-time }
+        due: { type: boolean }
     PremiumRequiredError:
       type: object
       additionalProperties: false
@@ -562,6 +885,8 @@ components:
                 - ambiguous_category
                 - list_not_found
                 - ambiguous_list
+                - too_many_lists
+                - too_many_stores
                 - idempotency_key_reused
                 - rate_limited
                 - auth_throttled
@@ -594,6 +919,47 @@ components:
             properties:
               data: { type: array, items: { $ref: '#/components/schemas/Named' } }
               nextCursor: { type: 'null' }
+    OneList:
+      description: The list.
+      headers: *ok
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [data]
+            properties:
+              data: { $ref: '#/components/schemas/List' }
+    OneStore:
+      description: The store (201 made, 200 one the household had by that name).
+      headers: *ok
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [data]
+            properties:
+              data: { $ref: '#/components/schemas/Named' }
+    Layout:
+      description: Every category in the store's walk order (nextCursor is always null).
+      headers: *ok
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [data, nextCursor]
+            properties:
+              data: { type: array, items: { $ref: '#/components/schemas/LayoutCategory' } }
+              nextCursor: { type: 'null' }
+    LimitReached:
+      description: >-
+        too_many_lists or too_many_stores (details.limit, 50); or conflict, a concurrent change got
+        in the way. Nothing was changed.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
     Error:
       description: >-
         An error. A 503 unavailable carries Retry-After; it is also the answer while the household
@@ -626,7 +992,7 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
     NotFound:
-      description: item_not_found.
+      description: item_not_found, or for a list or store in the path list_not_found or store_not_found.
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }

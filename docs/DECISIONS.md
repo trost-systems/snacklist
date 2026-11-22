@@ -17076,3 +17076,67 @@ Peter's pick t1118u from job 331's additions; job 345 takes A4, A8 and A9.
     a second `untick_items` of a name brought back an older ticked twin. A name whose item (same
     name, brand and details) is open on that list already now goes to `notFound` („… steht schon
     offen auf der Liste.“). An id still unticks exactly that row, as the API's untick does.
+
+## Job 345: API and MCP additions A4, A8, A9 (2026-11-22)
+
+1. **Built on job 344's branch.** #605 (job 344) was done but not merged (it waits on the lead for
+   ARB and site copy), and both jobs change the same handlers. This branch starts at #605's head and
+   is rebased onto main once #605 lands.
+2. **Suggestions are `public.suggest_items`, not a port.** The app's usuals (its add sheet, Siri's
+   suggestions) come from that function, so `GET /v1/suggestions` and the MCP tool `suggest_items`
+   call it as the member and return its rows in its order. A test compares the API's answer with
+   the function's, and the probe with the app's own PostgREST call.
+3. **Recent is a server port of the app's `recentlyUsed`.** The app builds „Zuletzt verwendet“ on
+   the device from its last 50 ticked rows. The server query (`recentItems` in `_shared/list.ts`)
+   follows the same rule: one row per `canonical_key` (else the name folded like `foldName`), its
+   newest purchase, none for a thing open again. It looks at all ticked rows of the list, not only
+   the newest 50 of the household; for an integration asking "what did we buy" that is the better
+   answer, and the first 20 are the same in practice. Without `list` the API looks at every list at
+   once (like `GET /v1/items`), the MCP tool at the default list (like `list_items`).
+4. **Lists go through `create_list`, `rename_list` and `move_list`.** The app's only list rule is
+   the server's cap of 50 per household (`too_many_lists`), so the API answers `409 too_many_lists`
+   and the MCP tool a tool error. Moving a list first makes it the default of a member who never
+   picked one, as in the app; documented, not changed. Deleting a list stays in the app.
+5. **Stores: plain names only, cap 50 for integrations.** `add_store` already answers the existing
+   store for a known name (any case), so `POST /v1/stores` answers `200` with it instead of a
+   conflict. The app has no store cap; the API and MCP stop at 50 because each store writes a layout
+   row per category and the household's 1000 requests a day would otherwise add 1000 stores. The
+   check runs after `add_store` and the throw rolls the insert back with the request's transaction.
+   Requests are strict, so no chain, country or app field gets in (retailer rules); the MCP tool
+   drops unknown arguments like every tool.
+6. **Walk order as a partial order.** The app's `set_store_layout` takes every category. The API
+   and MCP take the categories to put first; the rest follow in their current order, and `hidden`
+   stays unless given. That makes "Getränke first in Rewe" one call. Reading it back is
+   `GET /v1/stores/{id}/layout` and `list_categories` with `store`, the order `list_items` with
+   `store` walks. `PUT` because it replaces the order; no Idempotency-Key (a repeat sets the same).
+7. **A path id of another household is 404.** `PATCH /v1/lists/{id}` and the store routes answer
+   `404 list_not_found` / `store_not_found` for a list or store the household does not have, like
+   `item_not_found`, never `422` (that stays for a list or store named in a body or query).
+8. **MCP list and store writes behind `app_switches.mcp_lists_stores`, off.** The brief gates A8's
+   MCP tools on Legal: privacy §7's MCP paragraph says an assistant reads and changes the entries
+   of the list. Stores are no entries either, so A9's MCP writes go behind the same switch (a
+   deviation from the brief, reported in NEEDS_LEAD "Job 345: Legal text for A8 MCP" with the
+   proposed text). The function reads the switch per request (one more small query);
+   off or unreadable, the five tools are not registered, so they are absent from `tools/list` and
+   a call is an unknown tool. The API's routes need no switch: its paragraph names lists and
+   stores. The read tools (`list_recent`, `suggest_items`, `list_categories` with `store`) ship.
+9. **Version 1.2.0.** `serverInfo.version` and the OpenAPI `info.version` move to 1.2.0, so clients
+   caching `tools/list` fetch it again.
+10. **Review before push (an independent read of the diff).** A name of only whitespace that JS
+    `trim()` keeps but Postgres folds (U+0085) was a 500; the database's `invalid_name`,
+    `store_name_empty` and a list or store deleted between lookup and change are now `400
+    validation_failed` and `404`. The recent query groups the newest 200 ticked rows of its scope
+    (the app groups its newest 50). The store cap is
+    soft: two adds at 49 at the same moment can make 51, and two adds of one new name can both say
+    `created`; `add_store` takes no lock, and an abuse guard does not need one.
+11. **Review 0.** (a) A member of two households is the case where isolation rests on our
+    `household_id` filters, not on RLS; the cross-household tests used another user, whom RLS
+    refuses anyway. New tests make the key's user a member of both households (API) and use an OAuth
+    connection with and without `household` (MCP); removing the filter from `recentItems`, `lists`
+    or `stores` now fails them. (b) The API key dialog's „Lesen und schreiben“ sentence names only
+    items; a write key now also makes lists and stores. Proposed DE/EN copy is in NEEDS_LEAD for the
+    lead's copy review; no ARB change here. (c) `recentItems` takes the newest 200 ticked rows first
+    and folds names only for those; open items are matched in their own query. (d) Docs: the
+    suggestions match only starts of names and words (the add sheet also inner text and typos), a
+    category in both `categories` and `hidden` comes first and is hidden, and FEATURES-FOR-WRITERS
+    says the API is on.

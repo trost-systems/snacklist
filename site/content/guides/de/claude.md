@@ -66,6 +66,8 @@ Die Namen der Menüpunkte in Claude stehen hier auf Deutsch, in Klammern auf Eng
 | Mach bei den Gurken 3 draus. | Die Menge der Gurken steht jetzt auf 3. |
 | Die Milch brauchen wir doch noch. | Die gerade abgehakte Milch steht wieder auf der Liste. |
 | Streich den Sekt. | Der Sekt ist gelöscht. Was Snacklist über Sekt gelernt hat (Kategorie, Laden), bleibt. |
+| Was kaufen wir sonst noch oft? | Was ihr oft kauft und gerade nicht auf der Liste steht, wie die Vorschläge in der App. |
+| Was haben wir zuletzt gekauft? | Was zuletzt abgehakt wurde, wie „Zuletzt verwendet“ in der App. |
 
 Was schon auf der Liste steht, kommt nicht doppelt dazu. Claude sagt dir dann, dass es schon draufsteht. Snacklist sortiert deutsche Namen am besten ein. Häufige englische Wörter kennt es auch.
 

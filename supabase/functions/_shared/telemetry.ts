@@ -61,6 +61,13 @@ export const mcpTools = [
   'merge_items',
   'list_categories',
   'list_stores',
+  'list_recent',
+  'suggest_items',
+  'create_list',
+  'rename_list',
+  'add_store',
+  'rename_store',
+  'set_store_layout',
 ] as const;
 
 export type McpTool = typeof mcpTools[number];
