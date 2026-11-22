@@ -17331,3 +17331,11 @@ ein?“ stays away for 60 minutes in any store. Behind `trip-mode`, no new flag,
 
 - New flag `recently-used-open` (tester group of the same name, Peter only, no is_internal). On: the list's „Zuletzt verwendet“ starts open, faded rows, no count, no peek. A manual fold is remembered per device in `ListPrefs.folded` under `recently-used` (the flag-on default is open, so the key means closed). Off: unchanged (starts closed, no memory).
 - RU-Q answers are in DONE_SUMMARY.md.
+
+## Job 372: app icon without the hexagon, round AI (prototype, draft PR)
+
+- **The icon art is a module.** `design/app-icon/build.mjs` now takes `--art <module>` (default `art/today.mjs`, whose output is byte-identical to main: `--check` passes) and `--out <dir>`. Each option AI1 to AI5 is one module, and the same generator writes its full asset set and the page's previews. So Peter judges the shipped pixels, and the swap after the pick is one default change plus a build run.
+- **Five directions, not five variants**: AI1 soft tile (today minus the hexagon), AI2 a list glyph on paper, AI3 a bitten snack (RD10's motif, no check), AI4 a tote bag with the check, AI5 one big check on honey.
+- **Legibility is measured as local thickness**, not as a share of clean pixels. The first metric ranked the bold AI5 below AI1 because diagonal edges blend: it measured edge length, not legibility. Local thickness found what the declared stroke widths missed (AI1's check was 0.4 px from its tile's edge before it was recentred).
+- **Recommend AI1, runner-up AI3.** AI-Q1 to AI-Q8 carry defaults (RECOMMENDATION.md). AI-Q1: the icon ships to everyone with the Dec 1 build, because an icon cannot sit behind a flag.
+- The preview is built on dpl_6RCZRM97GbiFSj7MU986aU3JN7fH, the newest prototypes overview. The two newer deployments in the project (Nov 22 13:27) are site builds without the overview.

@@ -113,3 +113,55 @@ export function strokeBand(rings, width, closed) {
   }
   return out;
 }
+
+// A rectangle centred on (cx, cy), half sizes hw and hh, corners rounded by r.
+export const roundedRect = (cx, cy, hw, hh, r) => roundedPolygon([[cx - hw, cy - hh], [cx + hw, cy - hh], [cx + hw, cy + hh], [cx - hw, cy + hh]], r);
+export const square = (cx, cy, h, r) => roundedRect(cx, cy, h, h, r);
+
+const circlePoints = (cx, cy, r, n = 192) => Array.from({ length: n }, (_, i) => [cx + r * Math.cos((2 * Math.PI * i) / n), cy + r * Math.sin((2 * Math.PI * i) / n)]);
+const ringPath = (ring) => `M${ring.map(P).join(' L')} Z`;
+export const circle = (cx, cy, r) => {
+  const ring = circlePoints(cx, cy, r);
+  return { d: `M${P([cx + r, cy])} A${f(r)} ${f(r)} 0 1 1 ${P([cx - r, cy])} A${f(r)} ${f(r)} 0 1 1 ${P([cx + r, cy])} Z`, rings: [ring] };
+};
+
+function densify(ring, step) {
+  const out = [];
+  for (let i = 0; i < ring.length; i++) {
+    const a = ring[i];
+    const b = ring[(i + 1) % ring.length];
+    const n = Math.max(1, Math.ceil(len(sub(b, a)) / step));
+    for (let k = 0; k < n; k++) out.push(add(a, mul(sub(b, a), k / n)));
+  }
+  return out;
+}
+
+// `shape` with a round bite of radius r around (cx, cy) taken out of its edge. The circle must
+// cross the outline exactly twice.
+export function bite(shape, cx, cy, r) {
+  const ring = densify(shape.rings[0], 2);
+  const inside = ([x, y]) => Math.hypot(x - cx, y - cy) < r;
+  const start = ring.findIndex((p, i) => !inside(p) && inside(ring[(i + 1) % ring.length]));
+  if (start < 0) throw new Error('the bite misses the outline');
+  const rolled = [...ring.slice(start + 1), ...ring.slice(0, start + 1)];
+  const kept = rolled.filter((p) => !inside(p));
+  const enter = rolled.at(-1);
+  const exit = kept[0];
+  const a1 = Math.atan2(enter[1] - cy, enter[0] - cx);
+  let a2 = Math.atan2(exit[1] - cy, exit[0] - cx);
+  // The bite's arc runs through the shape's inside, which lies toward the shape's centre.
+  const mid = (a) => [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+  const ccw = a2 < a1 ? a2 + 2 * Math.PI : a2;
+  const cw = a2 > a1 ? a2 - 2 * Math.PI : a2;
+  const cxS = ring.reduce((s, p) => s + p[0], 0) / ring.length;
+  const cyS = ring.reduce((s, p) => s + p[1], 0) / ring.length;
+  const near = (to) => { const m = mid((a1 + to) / 2); return Math.hypot(m[0] - cxS, m[1] - cyS); };
+  a2 = near(ccw) < near(cw) ? ccw : cw;
+  const steps = 96;
+  const arc = Array.from({ length: steps - 1 }, (_, i) => mid(a1 + ((a2 - a1) * (i + 1)) / steps));
+  const out = [...arc, ...kept];
+  return { d: ringPath(out), rings: [out] };
+}
+
+// Several shapes as one (for a layer or the monochrome glyph).
+export const union = (...shapes) => ({ d: shapes.map((s) => s.d).join(' '), rings: shapes.flatMap((s) => s.rings) });

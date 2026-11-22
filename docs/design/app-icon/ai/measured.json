@@ -1,0 +1,176 @@
+{
+  "Today": {
+    "thinnest": "inner",
+    "thinnestArt": 41.65466562906901,
+    "thinnest29": 1.1796731476982434,
+    "thinnest48": 1.9525624513626099,
+    "contrastLight": {
+      "ratio": 1.2939460276739598,
+      "pair": "inner/outer"
+    },
+    "contrastDark": {
+      "ratio": 1.529726320973775,
+      "pair": "inner/outer"
+    },
+    "tileOnWall": {
+      "light": 7.550112387562181,
+      "dark": 1.0153074809830642
+    },
+    "keyLight": 8.865234922314945,
+    "keyDark": 9.52519869134164,
+    "monoThinnest29": 1.8187825034062066,
+    "tinted": {
+      "ios": 10.417033127281561,
+      "androidLight": 13.27782028608453,
+      "androidDark": 9.880397143942297
+    },
+    "reachDp": 25.3409483300598,
+    "inside": true,
+    "bg": "#1b3fae"
+  },
+  "AI1": {
+    "thinnest": "mark",
+    "thinnestArt": 71.55417378743489,
+    "thinnest29": 2.0264365623394647,
+    "thinnest48": 3.3541018962860107,
+    "contrastLight": {
+      "ratio": 1.2939460276739598,
+      "pair": "inner/outer"
+    },
+    "contrastDark": {
+      "ratio": 1.529726320973775,
+      "pair": "inner/outer"
+    },
+    "tileOnWall": {
+      "light": 7.550112387562181,
+      "dark": 1.0153074809830642
+    },
+    "keyLight": 8.865234922314945,
+    "keyDark": 9.52519869134164,
+    "monoThinnest29": 2.0264365623394647,
+    "tinted": {
+      "ios": 10.417033127281561,
+      "androidLight": 13.27782028608453,
+      "androidDark": 9.880397143942297
+    },
+    "reachDp": 29.319247131915233,
+    "inside": true,
+    "bg": "#1b3fae"
+  },
+  "AI2": {
+    "thinnest": "box",
+    "thinnestArt": 21.333333333333332,
+    "thinnest29": 0.6041666666666666,
+    "thinnest48": 1,
+    "contrastLight": {
+      "ratio": 1.2040659530273612,
+      "pair": "bg/box"
+    },
+    "contrastDark": {
+      "ratio": 9.52519869134164,
+      "pair": "bar/bg"
+    },
+    "tileOnWall": {
+      "light": 1.0926245306469013,
+      "dark": 1.0153074809830642
+    },
+    "keyLight": 8.249438003791484,
+    "keyDark": 9.52519869134164,
+    "monoThinnest29": 0.6041666666666666,
+    "tinted": {
+      "ios": 10.417033127281561,
+      "androidLight": 13.27782028608453,
+      "androidDark": 9.880397143942297
+    },
+    "reachDp": 28.367395508238136,
+    "inside": true,
+    "bg": "#f7f7f2"
+  },
+  "AI3": {
+    "thinnest": "bg",
+    "thinnestArt": 330.6666666666667,
+    "thinnest29": 9.364583333333334,
+    "thinnest48": 15.5,
+    "contrastLight": {
+      "ratio": 6.851317390920381,
+      "pair": "bg/snack"
+    },
+    "contrastDark": {
+      "ratio": 14.570947150650262,
+      "pair": "bg/snack"
+    },
+    "tileOnWall": {
+      "light": 7.550112387562181,
+      "dark": 1.0153074809830642
+    },
+    "keyLight": 6.851317390920381,
+    "keyDark": 14.570947150650262,
+    "monoThinnest29": 9.364583333333334,
+    "tinted": {
+      "ios": 10.417033127281561,
+      "androidLight": 13.27782028608453,
+      "androidDark": 9.880397143942297
+    },
+    "reachDp": 29.762482552906334,
+    "inside": true,
+    "bg": "#1b3fae"
+  },
+  "AI4": {
+    "thinnest": "handle",
+    "thinnestArt": 68.29999287923177,
+    "thinnest29": 1.9342771420876184,
+    "thinnest48": 3.2015621662139893,
+    "contrastLight": {
+      "ratio": 6.851317390920381,
+      "pair": "bg/handle"
+    },
+    "contrastDark": {
+      "ratio": 14.570947150650262,
+      "pair": "bg/handle"
+    },
+    "tileOnWall": {
+      "light": 7.550112387562181,
+      "dark": 1.0153074809830642
+    },
+    "keyLight": 6.851317390920381,
+    "keyDark": 14.570947150650262,
+    "monoThinnest29": 1.9342771420876184,
+    "tinted": {
+      "ios": 10.417033127281561,
+      "androidLight": 13.27782028608453,
+      "androidDark": 9.880397143942297
+    },
+    "reachDp": 25.323959140704254,
+    "inside": true,
+    "bg": "#1b3fae"
+  },
+  "AI5": {
+    "thinnest": "mark",
+    "thinnestArt": 139.5866902669271,
+    "thinnest29": 3.9531386892000837,
+    "thinnest48": 6.543126106262207,
+    "contrastLight": {
+      "ratio": 6.851317390920381,
+      "pair": "bg/mark"
+    },
+    "contrastDark": {
+      "ratio": 14.570947150650262,
+      "pair": "bg/mark"
+    },
+    "tileOnWall": {
+      "light": 1.1019942526043047,
+      "dark": 1.0153074809830642
+    },
+    "keyLight": 6.851317390920381,
+    "keyDark": 14.570947150650262,
+    "monoThinnest29": 3.9531386892000837,
+    "tinted": {
+      "ios": 10.417033127281561,
+      "androidLight": 13.27782028608453,
+      "androidDark": 9.880397143942297
+    },
+    "reachDp": 26.620320597761086,
+    "inside": true,
+    "bg": "#ffe24a"
+  }
+}
