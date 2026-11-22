@@ -677,7 +677,7 @@ abstract class AppLocalizations {
   /// OAuth consent: the list permission and that the client's provider receives the list (legal review H-17)
   ///
   /// In de, this message translates to:
-  /// **'Einträge deiner Einkaufsliste lesen, hinzufügen, ändern, abhaken und löschen. {client} und sein Anbieter erhalten dabei die Inhalte eurer Liste.'**
+  /// **'Einträge deiner Einkaufsliste lesen. Kann auch Einträge hinzufügen, ändern, abhaken und löschen, Listen und Läden anlegen und umbenennen und die Reihenfolge in einem Laden festlegen. {client} und sein Anbieter erhalten dabei die Inhalte eurer Liste.'**
   String consentListAccess(String client);
 
   /// No description provided for @scopeOpenid.
@@ -3395,7 +3395,7 @@ abstract class AppLocalizations {
   /// Create API key dialog: what the read-and-write choice allows
   ///
   /// In de, this message translates to:
-  /// **'Kann auch Einträge hinzufügen, ändern, abhaken und löschen.'**
+  /// **'Kann auch Einträge hinzufügen, ändern, abhaken und löschen, Listen und Läden anlegen und umbenennen und die Reihenfolge in einem Laden festlegen.'**
   String get apiScopeReadWriteBody;
 
   /// Dialog title right after an API key was created
