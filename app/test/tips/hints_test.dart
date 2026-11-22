@@ -283,14 +283,14 @@ void main() {
       expect(pick(days(3).note(Signal.storeAdded), c), isNull);
     });
 
-    test('dictation: 10 typed adds, phones only, above the add bar', () {
+    test('dictation: 10 typed adds, phones only, a card on the list', () {
       final c = context(members: 2, items: 0);
       var log = fresh();
       for (var i = 0; i < 10; i++) {
         log = log.record(Signal.typedAdd);
       }
       expect(pick(log, c)?.id, HintId.dictation);
-      expect(pick(log, c)?.place, HintPlace.aboveAddBar);
+      expect(pick(log, c)?.place, HintPlace.card);
       expect(
         pick(log, context(members: 2, items: 0, platform: HintPlatform.web)),
         isNull,

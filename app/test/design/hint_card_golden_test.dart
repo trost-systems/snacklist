@@ -49,7 +49,6 @@ void main() {
                     alignment: AlignmentDirectional.centerEnd,
                     child: HintCallout(
                       hint: hint(HintId.storeOrder),
-                      pointing: AxisDirection.up,
                       onAct: () {},
                       onDismiss: () {},
                     ),

@@ -56,9 +56,6 @@ enum HintPlace() {
 
   /// A callout under Anpassen, pointing up at it.
   belowEdit,
-
-  /// A callout above the add bar, pointing down at the microphone.
-  aboveAddBar,
 }
 
 /// A hint's one button.
@@ -231,7 +228,6 @@ final hints = <Hint>[
     title: (l10n) => l10n.hintDictationTitle,
     body: (l10n) => l10n.hintDictationBody,
     icon: Icons.mic_none,
-    place: HintPlace.aboveAddBar,
     platforms: const {HintPlatform.ios, HintPlatform.android},
     retiredBy: Signal.micUsed,
     when: (log, _, _) => log.count(Signal.typedAdd) >= 10,

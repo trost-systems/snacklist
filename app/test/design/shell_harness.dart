@@ -13,6 +13,7 @@ import 'package:family_groceries/core/theme.dart';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/invite_share.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
+import 'package:family_groceries/list/list_cache.dart';
 import 'package:family_groceries/list/list_screen.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/more/more_screen.dart';
@@ -20,6 +21,7 @@ import 'package:family_groceries/purchases/premium_server.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/shell/router.dart';
 import 'package:family_groceries/shell/shell.dart';
+import 'package:family_groceries/tips/usage_log.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -111,6 +113,12 @@ Future<FakeRepository> pumpShell(
 
   /// The status bar's height.
   double top = 0,
+
+  /// The hints' memory; a fresh log each session without it.
+  HintStore? hints,
+
+  /// The list's device settings for the first household.
+  ListPrefs? prefs,
 }) async {
   tester.view
     ..devicePixelRatio = 1
@@ -121,6 +129,10 @@ Future<FakeRepository> pumpShell(
   SharedPreferencesAsyncPlatform.instance =
       InMemorySharedPreferencesAsync.empty();
   final cache = DeviceCache(SharedPreferencesAsync());
+  if (prefs != null) {
+    await cache.remember('peter', households: households);
+    await cache.list('peter', households.first.id).savePrefs(prefs);
+  }
   final language = LanguageCubit(cache, AppLanguage.de);
   addTearDown(language.close);
   final session = FakeSession();
@@ -194,6 +206,7 @@ Future<FakeRepository> pumpShell(
                 ]),
         ),
         RepositoryProvider<InviteSharer>.value(value: FakeSharer()),
+        if (hints != null) RepositoryProvider<HintStore>.value(value: hints),
       ],
       child: MultiBlocProvider(
         providers: [

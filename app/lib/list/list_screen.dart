@@ -671,16 +671,6 @@ class _ShoppingListState() extends State<_ShoppingList> {
                     ),
                   ),
                 ),
-                // Above the add bar, which the body extends under.
-                PositionedDirectional(
-                  start: HlSpace.s3,
-                  end: HlSpace.s3,
-                  bottom: MediaQuery.paddingOf(context).bottom + HlSpace.s2,
-                  child: Align(
-                    alignment: AlignmentDirectional.bottomEnd,
-                    child: AddBarHint(hidden: open),
-                  ),
-                ),
               ],
             ),
             bottomNavigationBar: ValueListenableBuilder(

@@ -371,7 +371,7 @@ Each step ticks itself off when it happens; „Einladen“ (EN: "Invite") and �
 - That Snacklist sees a placed widget everywhere.
 - A tip that offers a second household: those tips are built but switched off; a second household is made from the household switcher („Neuer Haushalt“).
 
-**Last verified.** 19 November 2026, code version af0287cf, in the web app (German and English, dark).
+**Last verified.** 22 November 2026, branch job/386-fix-hint-card-behind-input, in the app's automatic tests: the voice tip „Sag einfach, was fehlt“ (EN: "Just say it", phones only) is a card at the top of the list like the other tips, no longer a bubble over the add field. 19 November 2026, code version af0287cf, in the web app (German and English, dark).
 
 ## Automatic category
 
