@@ -129,6 +129,10 @@ class TripCubit(
     ];
   }
 
+  /// After a no (or a dismissal) the question stays away this long, in any
+  /// store (job 357).
+  static const snooze = Duration(minutes: 60);
+
   /// How often the long-running rule runs while a trip runs.
   static const checkEvery = Duration(seconds: 30);
 
@@ -148,6 +152,9 @@ class TripCubit(
 
   /// The running trip's last end ("Weiter einkaufen"): its marks carry over.
   FinishedTrip? _previous;
+
+  /// Until when the question is snoozed; read from the device in [_ticked].
+  DateTime? _snoozedUntil;
 
   /// Device writes, one after the other.
   Future<void> _writes = Future.value();
@@ -197,9 +204,12 @@ class TripCubit(
     }
   }
 
-  /// „Nein, nur abgehakt“, or the sheet dismissed: nothing is remembered.
+  /// „Nein, nur abgehakt“, or the sheet dismissed: the question stays away
+  /// for [snooze].
   void no() {
     if (state is Asking) {
+      _snoozedUntil = _clock().add(snooze);
+      unawaited(_cache.snoozeTripPrompt(userId, _snoozedUntil!));
       _track('shop_asked', {'answer': ShopAnswer.no.wire});
       _set(const NoTrip());
       _tell(const QuestionAnswered(AskAnswer.no));
@@ -362,6 +372,16 @@ class TripCubit(
     ]);
     await _sync();
     if (isClosed || state is! NoTrip && state is! Ended) {
+      return;
+    }
+    // The device's value covers a no in another household or before a
+    // restart; this cubit's own covers a write still on its way.
+    final until = [_snoozedUntil, await _cache.tripPromptSnoozedUntil(userId)]
+        .nonNulls
+        .fold<DateTime?>(null, (a, b) => a == null || b.isAfter(a) ? b : a);
+    if (isClosed ||
+        state is! NoTrip && state is! Ended ||
+        until != null && _clock().isBefore(until)) {
       return;
     }
     _set(Asking(item: before, at: at, listId: listId, snapshot: snapshot));

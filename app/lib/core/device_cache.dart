@@ -128,6 +128,10 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
   /// one JSON value per user (`KeptTrips`); forgotten on sign-out.
   static const _tripPrefix = 'trip.';
 
+  /// When the trip question may ask again, one epoch value per user;
+  /// under [_tripPrefix], so [forget] removes it.
+  static const _tripSnoozePrefix = 'trip.snooze.';
+
   /// The users who tapped „Jetzt nicht“ on the name step (job 297), one
   /// `true` per user. Not under [forget]'s prefixes: the step asks once per
   /// device, also after signing in again.
@@ -176,6 +180,20 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
     () => json == null
         ? _prefs.remove('$_tripPrefix$userId')
         : _prefs.setString('$_tripPrefix$userId', json),
+  );
+
+  /// Until when [userId] answered no to „Kaufst du gerade ein?“ (job 357),
+  /// or null; per user and device, forgotten on sign-out.
+  Future<DateTime?> tripPromptSnoozedUntil(String userId) async {
+    final ms = await _prefs.getInt('$_tripSnoozePrefix$userId');
+    return ms == null ? null : DateTime.fromMillisecondsSinceEpoch(ms);
+  }
+
+  Future<void> snoozeTripPrompt(String userId, DateTime until) => _write(
+    () => _prefs.setInt(
+      '$_tripSnoozePrefix$userId',
+      until.millisecondsSinceEpoch,
+    ),
   );
 
   /// The grocery log's view as saved, or null.

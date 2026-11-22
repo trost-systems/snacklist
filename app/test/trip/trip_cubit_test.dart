@@ -203,7 +203,7 @@ void run(void Function(World w) body, {DeviceCache? cache}) =>
 Duration min(int n) => Duration(minutes: n);
 
 void main() {
-  test('every own tick asks while no trip runs, also after a no', () {
+  test('every own tick asks while no trip runs', () {
     run((w) {
       w.tick('milk');
       expect(w.state, isA<Asking>());
@@ -211,12 +211,35 @@ void main() {
       expect(asking.item.id, 'milk');
       expect(asking.at, w.now());
       expect(asking.snapshot.keys.toSet(), {'milk', 'bread', 'tea'});
-      w.trips.no();
-      expect(w.state, isA<NoTrip>());
-      w.tick('bread');
-      expect(w.state, isA<Asking>());
-      expect((w.state as Asking).snapshot.keys.toSet(), {'bread', 'tea'});
+    });
+  });
+
+  test('a no snoozes the question for 60 minutes, then it asks again', () {
+    run((w) {
+      w
+        ..tick('milk')
+        ..trips.no()
+        ..async.flushMicrotasks()
+        ..elapse(min(59))
+        ..tick('bread');
+      expect(w.state, isA<NoTrip>(), reason: 'within the hour');
+      w
+        ..elapse(min(1))
+        ..tick('tea');
+      expect(w.state, isA<Asking>(), reason: 'after the hour');
       expect(w.shopEvents(), ['shop_asked {answer: no}']);
+    });
+  });
+
+  test('the snooze survives a restart', () {
+    run((w) {
+      w
+        ..tick('milk')
+        ..trips.no()
+        ..async.flushMicrotasks()
+        ..restart()
+        ..tick('bread');
+      expect(w.state, isA<NoTrip>());
     });
   });
 
@@ -717,13 +740,16 @@ void main() {
         final heard = told(w);
         w
           ..tick('milk')
-          ..trips.no()
-          ..tick('bread')
           ..trips.takeBack()
-          ..tick('tea')
+          ..tick('bread')
           ..trips.yes();
         w.async.flushMicrotasks();
-        expect(heard, ['answered no', 'answered takeBack', 'answered yes']);
+        unawaited(w.trips.finish());
+        w.async.flushMicrotasks();
+        w.tick('tea');
+        w.trips.no();
+        w.async.flushMicrotasks();
+        expect(heard, ['answered takeBack', 'answered yes', 'answered no']);
       });
     });
 
