@@ -17564,3 +17564,28 @@ ending the beta grants at the launch and Spec #4's "no grandfathering" for the b
    first run, which contradicted Legal's text and the script header; running only after 5.4 would
    have left beta accounts without their grant while the sale was open, so T is fixed in advance
    instead. `--apply` was not run.
+
+## Job 348: TE1, the total shows only what has a price
+
+Peter picked TE1 from round TE (job 343, draft #602) on 21 Nov 2026 (t1119s4849) and accepted every
+TE-Q default. Built behind the new flag `total-priced-only`, on top of `list-declutter` and
+`prices-and-trip-total`; off, job 237's block is unchanged.
+
+1. **One model, two views.** `Summary` keeps every store for the sums and carries `pricedOnly`;
+   `lines` filters to the stores with a priced item, and `shown` / `perStore` read `lines`. The
+   floor, `≈`, the trip split and „Ohne Laden“ come from the same `Sum`s, so no rule had to be
+   rebuilt. The block hides when `lines` is empty: with the flag that is "no price anywhere".
+2. **TE-Q6.** The head and store lines need two lines with a price; one priced store among unpriced
+   ones shows „Einkaufssumme“ alone, as ST3 does with one store.
+3. **TE-Q3/Q5.** Store lines lose „<n> ohne Preis“; „Gesamt“ says only „<n> ohne Preis“ (no „mit
+   Preis“), during a trip after the split. The count is every item the block counts without a
+   price, the hidden stores' too.
+4. **TE-Q7/Q10.** A store bought in full without a price has no line; one with a price keeps
+   „alles gekauft“. A price in another currency counts as no price: no line for a store with only
+   such prices, and the item is in the count (flag off still leaves it out of the count, as
+   before).
+5. **TE-Q9 behind the flag too.** An amount wider than its 55 % share (measured with a
+   `TextPainter` at the device's text scale) goes under the name at full width, so at 310 % the
+   number no longer breaks („6,3 / 8 €“). It is a layout fix, but the brief says flag off is
+   today's behaviour, so it ships with TE1. The flag-off 310 % test pins the old break.
+6. **No new strings.** Every word was in the app already, so no ARB change and no legal review.

@@ -2319,3 +2319,13 @@ Pushed to PR #631 (not merged; Legal HOLD on `--apply` and on the copy until a n
 GO). `--apply` was not run, nor any grant. Details: `docs/done/371b.md`.
 Review 0 (FIX): the N-347 runbook now passes the public-launch cut-off, fixed in advance, in
 every `--apply` run, the first one included; journey extended and rerun (PASSED).
+
+## Job 348: TE1, the total shows only what has a price
+
+Behind the new flag `total-priced-only` (internal installs: Peter and the internal tester group;
+off for everyone else): no summary block while no item has a price; with some prices a line only
+for stores with a price and one „<n> ohne Preis“ under „Gesamt“ (no per-store count, no „mit
+Preis“); floor, ≈, „Ohne Laden“ and the trip split kept; at 310 % an amount too wide goes under its
+name whole. Flag off unchanged. No new strings. Tests: 20 flag on/off widget tests, list and trip
+suites green; web journey `total-priced-only.mjs` PASS on and off. Ships with the next green main
+build to TestFlight. Details: `docs/done/348-total-priced-only.md`.

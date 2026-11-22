@@ -503,6 +503,8 @@ Last verified (hidden categories): 21 November 2026, before it reached the main 
 
 You can type the price per piece or the total for the line: „pro Stück“ or „Gesamt“ (EN "per item" or "Total"). The app keeps the price per piece: if you typed 1,38 € „Gesamt“ for 2 yoghurts and later change it to 3, the line becomes 2,07 €. For loose fruit and vegetables, a planned weight on the list („846 g Bananen“) opens the price as „pro kg“; type the price per kg or, with „Gesamt“, the price on the scale's label, and the weighed amount („1,02 kg“) replaces the planned one. Units are „Stück“, „kg“ and „l“ (EN "Item", "kg", "l"); a screen reader hears the unit menu as „Einheit: Stück“ (EN "Unit: Item"). For counted items a „−“/„+“ next to the price changes how many you take, and only the count changes: „2 x 500 g“ becomes „3 x 500 g“. An amount like „1,5“, „1/2“ or „Bund“, or a weight priced per piece, gets no „−“/„+“ and stays as typed. Under the price the app shows the other value and the new total („Zusammen 2,38 € · Summe danach 2,38 €“), and, once the same item had a price on an earlier day, whether it got dearer („0,30 € teurer als zuletzt“). Only numbers go into the price field; letters are ignored. A price per item can be between −9.999,00 and 9.999,00, so also 0 or negative (a bottle deposit). Outside that range the app says „Zwischen … und … pro Artikel.“ (EN "Between … and … per item."), with the two limits filled in, in the household's currency. A weight can be up to 50 kg or 50 l. Prices count toward the total on the day they were entered; the next day the item offers „+ Preis“ again.
 
+**Being tried out (internal testers only, not for users yet).** A shorter total that shows only what has a price. With no price on the list there is no total block at all. With some prices only the stores with a price get a line, and „Gesamt“ says once how many items have none: „2 ohne Preis“ (EN "2 without price"), without „mit Preis“. „mind.“, „≈“ and the trip's „gekauft · offen“ stay. At the largest text a total that does not fit next to its name goes under it, so the number is never split. Don't describe this to users until it is released.
+
 The household picks its currency under „Währung“ (EN "Currency"): euro by default, 15 currencies such as CHF, GBP or USD. Anyone in the household can change it, for everyone.
 
 **How to get there.**
@@ -519,7 +521,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 - That a price entered in one currency is converted after a currency change. It keeps its own currency on its row and leaves the total until entered again.
 - Prices in Siri, Alexa, AI assistants or the API. They are only in the app.
 
-**Last verified.** 19 November 2026, code version af0287cf, in the web app (German): the „+ Preis“ chips and „Währung“; the totals block checked in the code. The count for an item priced per kg without a weight: 16 November 2026, code version 60ca438e, in the web app (German).
+**Last verified.** The shorter total for testers: 21 November 2026, branch job/348-total-priced-only-te1, in the web app with the test switch on (German at normal and largest text, English dark) and off (German). 19 November 2026, code version af0287cf, in the web app (German): the „+ Preis“ chips and „Währung“; the totals block checked in the code. The count for an item priced per kg without a weight: 16 November 2026, code version 60ca438e, in the web app (German).
 
 ## Live sync between household members
 

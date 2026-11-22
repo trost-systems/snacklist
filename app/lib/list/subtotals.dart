@@ -112,6 +112,11 @@ class const Summary({
 
   /// Whether bought and open are split: a trip runs on the list.
   required final bool split,
+
+  /// TE1 (job 348, flag `total-priced-only`): a line only for a store with
+  /// a price, one count of the items without one under the total, and no
+  /// block at all without a price.
+  final bool pricedOnly = false,
 }) {
   Sum get open => stores.fold(Sum.zero, (s, t) => s + t.open);
 
@@ -119,9 +124,20 @@ class const Summary({
 
   Sum get total => open + bought;
 
-  /// A line per store only with two groups or more: one would repeat the
+  /// The stores that get a line: with [pricedOnly] those with a price.
+  List<StoreTally> get lines => pricedOnly
+      ? [
+          for (final tally in stores)
+            if (!tally.sum.empty) tally,
+        ]
+      : stores;
+
+  /// Whether the block shows: with [pricedOnly] only with a price in it.
+  bool get shown => lines.isNotEmpty;
+
+  /// A line per store only with two lines or more: one would repeat the
   /// total.
-  bool get perStore => stores.length > 1;
+  bool get perStore => lines.length > 1;
 }
 
 /// The block for one list's [items] (open and ticked) in [catalog]'s
@@ -133,6 +149,7 @@ Summary summaryOf(
   Catalog catalog, {
   required DateTime now,
   bool Function(Item item)? onTrip,
+  bool pricedOnly = false,
 }) {
   final currency = catalog.currency;
   final storeIds = {for (final s in catalog.stores) s.id};
@@ -160,6 +177,7 @@ Summary summaryOf(
     ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
   return Summary(
     split: onTrip != null,
+    pricedOnly: pricedOnly,
     stores: [
       for (final store in [...stores, null])
         if (open.containsKey(store?.id) || bought.containsKey(store?.id))

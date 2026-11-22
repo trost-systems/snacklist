@@ -140,6 +140,14 @@ const recentlyUsedOpenFlag = 'recently-used-open';
 /// effect on the next start.
 const redesignRd1Flag = 'redesign-rd1';
 
+/// The flag that shows only what has a price in the list's total (job 348,
+/// TE1), on top of [listDeclutterFlag] and [pricesFlag]: no block while no
+/// item has a price, a line only for a store with one, a single „4 ohne
+/// Preis“ under Gesamt instead of one per store and no „mit Preis“ count,
+/// and an amount too wide for its line under the name. Off, the block as
+/// job 237 built it.
+const totalPricedOnlyFlag = 'total-priced-only';
+
 /// PostHog feature flags, the app's runtime toggles (job 44,
 /// docs/ANALYTICS.md "Feature flags"). Read a toggle with [isOn] wherever it
 /// matters; nothing else in the app reads PostHog flags.
