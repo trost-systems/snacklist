@@ -1,6 +1,7 @@
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/localizations.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
+import 'package:family_groceries/list/list_cache.dart' show recentlyUsedFoldKey;
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_screen.dart';
 import 'package:family_groceries/list/list_view/item_row.dart';
@@ -16,15 +17,27 @@ import 'memory_cache.dart';
 /// no count, a tick lands in it and a tap on its row unticks.
 void main() {
   late FakeRepository repo;
+  late Flags flags;
+  var cache = MemoryListCache();
 
-  Future<void> pumpList(WidgetTester tester, {required bool flag}) async {
+  Future<void> pumpList(
+    WidgetTester tester, {
+    required bool flag,
+    bool fresh = true,
+  }) async {
+    if (fresh) {
+      cache = MemoryListCache();
+    }
     tester.view
       ..devicePixelRatio = 3
       ..physicalSize = const Size(390, 1600) * 3;
     addTearDown(tester.view.reset);
-    repo = FakeRepository()
-      ..remoteAdd('Erbsen', categoryId: 'produce')
-      ..remoteAdd('Bohnen', categoryId: 'produce');
+    if (fresh) {
+      repo = FakeRepository()
+        ..remoteAdd('Erbsen', categoryId: 'produce')
+        ..remoteAdd('Bohnen', categoryId: 'produce');
+    }
+    flags = Flags(forced: {if (flag) recentlyUsedOpenFlag});
     await tester.pumpWidget(
       MaterialApp(
         localizationsDelegates: appLocalizationsDelegates,
@@ -32,12 +45,9 @@ void main() {
         locale: const Locale('de'),
         home: MultiBlocProvider(
           providers: [
+            BlocProvider.value(value: flags),
             BlocProvider(
-              create: (_) => Flags(forced: {if (flag) recentlyUsedOpenFlag}),
-            ),
-            BlocProvider(
-              create: (_) =>
-                  ListCubit(repo, MemoryListCache(), userId: 'peter')..start(),
+              create: (_) => ListCubit(repo, cache, userId: 'peter')..start(),
             ),
           ],
           child: const ShoppingList(),
@@ -64,8 +74,23 @@ void main() {
     expect(item('Bohnen').status, ItemStatus.bought);
     expect(usedRow('Bohnen'), findsOneWidget, reason: 'open without a tap');
     expect(find.text('Zuletzt verwendet'), findsOneWidget);
-    expect(find.textContaining('Zuletzt verwendet ·'), findsNothing);
-    expect(find.textContaining('(1)'), findsNothing);
+    final header = find.ancestor(
+      of: find.text('Zuletzt verwendet'),
+      matching: find.byType(ListTile),
+    );
+    expect(
+      find.descendant(of: header, matching: find.byType(Text)),
+      findsOneWidget,
+      reason: 'the title only: no count, badge or subtitle',
+    );
+    expect(
+      tester
+          .widget<Text>(
+            find.descendant(of: header, matching: find.byType(Text)),
+          )
+          .data,
+      'Zuletzt verwendet',
+    );
 
     await tester.tap(usedRow('Bohnen'));
     await tester.pumpAndSettle();
@@ -92,5 +117,33 @@ void main() {
     expect(item('Bohnen').status, ItemStatus.bought);
     expect(find.text('Zuletzt verwendet'), findsOneWidget);
     expect(usedRow('Bohnen'), findsNothing, reason: 'closed as before');
+  });
+  testWidgets('a flag that arrives after the section is mounted opens it, '
+      'and the next fold is stored as closed', (tester) async {
+    await pumpList(tester, flag: false);
+    await tick(tester, 'Bohnen');
+    expect(usedRow('Bohnen'), findsNothing);
+    flags.replace({recentlyUsedOpenFlag: true});
+    await tester.pumpAndSettle();
+    expect(usedRow('Bohnen'), findsOneWidget, reason: 'open by default now');
+    await tester.tap(find.text('Zuletzt verwendet'));
+    await tester.pumpAndSettle();
+    expect(usedRow('Bohnen'), findsNothing);
+    expect(cache.prefs?.folded, contains(recentlyUsedFoldKey));
+  });
+
+  testWidgets('a fold survives a restart on the same cache', (tester) async {
+    await pumpList(tester, flag: true);
+    await tick(tester, 'Bohnen');
+    await tester.tap(find.text('Zuletzt verwendet'));
+    await tester.pumpAndSettle();
+    await tester.pumpWidget(const SizedBox());
+    await pumpList(tester, flag: true, fresh: false);
+    expect(find.text('Zuletzt verwendet'), findsOneWidget);
+    expect(usedRow('Bohnen'), findsNothing, reason: 'still folded');
+    await tester.tap(find.text('Zuletzt verwendet'));
+    await tester.pumpAndSettle();
+    expect(usedRow('Bohnen'), findsOneWidget);
+    expect(cache.prefs?.folded, isNot(contains(recentlyUsedFoldKey)));
   });
 }

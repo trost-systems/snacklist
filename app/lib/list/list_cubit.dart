@@ -1548,6 +1548,15 @@ class ListCubit(
     _setPrefs(state.prefs.copyWith(folded: folded));
   }
 
+  /// Sets the section [key] folded or not, whatever it was.
+  void setFold(String key, {required bool folded}) {
+    final now = {...state.prefs.folded};
+    if (folded ? !now.add(key) : !now.remove(key)) {
+      return;
+    }
+    _setPrefs(state.prefs.copyWith(folded: now));
+  }
+
   void dismissHint() => _setPrefs(state.prefs.copyWith(hintDismissed: true));
 
   void closeStoreAppTip() {

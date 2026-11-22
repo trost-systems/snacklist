@@ -2186,15 +2186,23 @@ Flag `recently-used-open` (releases/flags.json, tester group `recently-used-open
 TestFlight: next green main build carries it. Targeting: flag is created by the flag sync for the person property `tester_groups` containing `recently-used-open` (Peter's account needs that group set); off for everyone else.
 
 RU-Q choices:
-1. Q1 Flag: yes, `recently-used-open`, Peter's tester group first.
+1. Q1 Flag (default: yes): yes, `recently-used-open`, Peter's tester group first.
 2. Q2 Fold: kept, remembered per device, open by default. The "still shows the peek" part dropped (no peek).
 3. Q3 Rows: today's faded rows (RU1), no RU2/RU4 rows (lines above win).
 4. Q4 Peek pill as undo: not built (no peek, no undo button).
-5. Q5 Whose ticks in the peek: n/a; the section shows everyone's, as today.
+5. Q5 Whose ticks in the peek (default: pill shows this device's newest; peek is out by Peter's "no peek"): n/a; the section shows everyone's, as today.
 6. Q6 Header word: unchanged „Zuletzt verwendet“ (renaming is RU2; no ARB change).
 7. Q7 Before/after total: after the total, as today.
 8. Q8 How many: 20, newest first, all shown in the open section.
 9. Q9 After a tap-back: item returns to its place, no scroll. The „Back on the list“ announcement is not added (needs a new ARB string; stays out).
-10. Q10 Trip mode and add sheet: no peek, so nothing changes.
-11. Q11 Reduced motion: no new motion added.
-12. Q12 Prices in the tray: none, as today.
+10. Q10 Trip mode and add sheet (default: peek above trip strip, hides in the add sheet; out with the peek): no peek, so nothing changes.
+11. Q11 Reduced motion (default: yes, no fly or fold; the fly is RU2's, so none built): no new motion added.
+12. Q12 Prices in the tray (default: none): none, as today.
+
+### Review 0 fixes (job 367)
+
+- Fold memory: the section's stored fold is now set from the tile's new state (`ListCubit.setFold`), not toggled, and the tile is keyed on the flag so a flag arriving after the first frame builds it again as the prefs say. Before, flag-late plus a tap stored the inverse. New tests: late flag, fold survives a restart on the same cache (both fail without the fix).
+- The no-count test now asserts the header holds exactly the title text.
+- `releases/flags.json`: the three `holds` `match` arrays reformatted by #626 are back to inline, so the file differs from before only by the new flag.
+- Targeting, plainly: the PostHog flag `recently-used-open` does not exist yet. The flag sync creates it, for the person property `tester_groups` matching `recently-used-open`, on its next run after #626. Peter's account needs a row in `public.tester_groups` with group `recently-used-open` (the lead adds it with SQL, docs/PRIVACY_DATA_MAP.md "Tester groups"); the app reads it at sign-in and on return from the background. Same mechanism as `learned-order`.
+- Not done: web build not driven (widget tests only; the feature file says so). `consent_screen.dart:83` analyze finding is on main too, not from this change.
