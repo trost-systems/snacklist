@@ -1,10 +1,13 @@
 begin;
-select plan(16);
+select plan(21);
 
-create function pg_temp.login(uid uuid) returns void language plpgsql as $$
+-- The app's own sign-in: its tokens carry a session_id and no client_id.
+create function pg_temp.login(uid uuid, extra jsonb default jsonb_build_object('session_id', gen_random_uuid()))
+returns void language plpgsql as $$
 begin
   perform set_config('role', 'authenticated', true);
-  perform set_config('request.jwt.claims', json_build_object('sub', uid, 'role', 'authenticated')::text, true);
+  perform set_config('request.jwt.claims',
+    (jsonb_build_object('sub', uid, 'role', 'authenticated') || extra)::text, true);
 end $$;
 
 create function pg_temp.as_postgres() returns void language plpgsql as $$
@@ -45,6 +48,22 @@ select throws_ok(
      select id, auth.uid(), 'x', repeat('0', 64), 'abcd' from ha $$,
   '42501', null, 'tokens are created only through the RPC'
 );
+
+-- An OAuth client (an MCP connection) gets a session_id and its client_id; a token that never
+-- expires would outlive the grant the user can revoke.
+select pg_temp.login('00000000-0000-0000-0000-0000000000a1',
+  '{"session_id": "00000000-0000-0000-0000-0000000a5e51", "client_id": "00000000-0000-0000-0000-00000000c11e"}');
+select throws_ok($$ select public.create_personal_access_token('x') $$, '42501', 'session_required',
+  'an OAuth-connected app cannot make a token');
+select throws_ok($$ select public.create_personal_access_token('x', (select id from ha)) $$, '42501',
+  'session_required', 'an OAuth-connected app cannot make a token for a named household');
+select pg_temp.login('00000000-0000-0000-0000-0000000000a1', '{}');
+select throws_ok($$ select public.create_personal_access_token('x') $$, '42501', 'session_required',
+  'a token without a session cannot make a token');
+select pg_temp.login('00000000-0000-0000-0000-0000000000a1', '{"session_id": ""}');
+select throws_ok($$ select public.create_personal_access_token('x') $$, '42501', 'session_required',
+  'an empty session_id is no session');
+select is((select count(*)::int from public.personal_access_tokens), 1, 'refused calls leave no token');
 
 select pg_temp.login('00000000-0000-0000-0000-0000000000a2');
 select public.join_household((select code from inv));

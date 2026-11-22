@@ -546,7 +546,8 @@ working until it expires.
 Personal access tokens live in `public.personal_access_tokens` (migration
 `*_personal_access_tokens.sql`). Only the hash is stored, plus the last four
 characters for the list in the app. `create_personal_access_token(p_name)`
-returns the plaintext once. Clients can read their own rows except the hash,
+returns the plaintext once, and only to the app's own sign-in: an OAuth client's
+token, or a call without a `session_id`, gets `session_required` (job 389). Clients can read their own rows except the hash,
 and can only set `revoked_at`, which a trigger keeps from being cleared (and
 stamps with the server's `now()`, whatever time the client sends). At
 most 20 active tokens exist per user.
