@@ -4,9 +4,13 @@
 -- pg_temp function and compared row for row (order included) on a generated household: a year of
 -- trips with undone ticks, deleted typos, names with numbers, umlauts and spelling variants,
 -- active items and history older than a year. Delete this file when suggest_items changes on
--- purpose.
+-- purpose. Job 352 did, in two ways compared around here: last_used comes to the day (both sides
+-- are cut to it), and an API caller's p_now is ignored (the comparisons run as postgres).
 begin;
-select plan(15);
+select plan(14);
+-- Job 352 revoked members' read of item_events; this file checks the history the trigger writes
+-- as a member reads it under the policy that still guards it.
+grant select on public.item_events to authenticated;
 
 create function pg_temp.login(uid uuid) returns void language plpgsql as $$
 begin
@@ -193,15 +197,18 @@ from plan p, lateral (values
 where e.keep;
 
 select pg_temp.login('00000000-0000-0000-0000-0000000106a1');
+set local role postgres;
 
 create function pg_temp.same_usuals(p_prefix text, p_limit int, p_after interval) returns text
 language sql as $$
-  select format($q$ select * from public.suggest_items(%L, %L, %s, %L) $q$,
+  select format($q$ select name, quantity, uses, date_trunc('day', last_used, 'Europe/Berlin'), due
+                    from public.suggest_items(%L, %L, %s, %L) $q$,
     (select id from h), p_prefix, p_limit, (select t from clock) + p_after);
 $$;
 create function pg_temp.old_usuals(p_prefix text, p_limit int, p_after interval) returns text
 language sql as $$
-  select format($q$ select * from pg_temp.suggest_items_old(%L, %L, %s, %L) $q$,
+  select format($q$ select name, quantity, uses, date_trunc('day', last_used, 'Europe/Berlin'), due
+                    from pg_temp.suggest_items_old(%L, %L, %s, %L) $q$,
     (select id from h), p_prefix, p_limit, (select t from clock) + p_after);
 $$;
 
@@ -229,9 +236,8 @@ select results_eq(pg_temp.same_usuals('zz', 10, '0'), pg_temp.old_usuals('zz', 1
   'suggest_items: no match, as before');
 
 select pg_temp.login('00000000-0000-0000-0000-0000000106b2');
-select is((select count(*) from public.suggest_items((select id from h), '', 200, (select t from clock))), 0::bigint,
-  'suggest_items: another household''s member still gets no rows');
-select results_eq(pg_temp.same_usuals('', 200, '0'), pg_temp.old_usuals('', 200, '0'),
-  'suggest_items: a non-member gets what the old body gave (nothing)');
+-- Job 352: suggest_items runs as its definer and refuses a non-member, where the old body gave nothing.
+select throws_ok($$ select public.suggest_items((select id from h), '', 200, (select t from clock)) $$, '42501',
+  'not_a_member', 'suggest_items: another household''s member is refused');
 select * from finish();
 rollback;

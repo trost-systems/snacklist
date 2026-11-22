@@ -94,6 +94,8 @@ const calls: [string, Record<string, unknown>][] = [
   ['untick_items', { items: ['Milch'] }],
   ['get_item', { item: 'Milch' }],
   ['merge_items', { keep: 'Möhren', merge: 'Karotten' }],
+  ['place_item', { item: 'Eier', after: 'Mehl' }],
+  ['set_store_order', { store: 'Rewe', items: ['Mehl', 'Eier'] }],
   ['list_categories', {}],
   ['list_stores', {}],
   ['list_recent', {}],
@@ -121,7 +123,7 @@ Deno.test('locked: initialize and tools/list answer without asking the gate', as
   assertEquals(init.status, 200);
   const { serverInfo } = (await message(init)).result;
   assertEquals(serverInfo.name, 'snacklist');
-  assertEquals(serverInfo.version, '1.2.0', 'tools changed since 1.1.0');
+  assertEquals(serverInfo.version, '1.3.0', 'tools changed since 1.2.0');
   const list = await s.handle(rpc('tools/list'));
   assertEquals(list.status, 200);
   assertEquals(
@@ -253,7 +255,9 @@ Deno.test('job 169b W3: the item tools take an optional list', async () => {
       'list_recent',
       'merge_items',
       'move_item',
+      'place_item',
       'remove_items',
+      'set_store_order',
       'tick_items',
       'untick_items',
       'update_item',
@@ -270,6 +274,8 @@ Deno.test('job 344: the item tools say what they change', async () => {
   assertEquals(hints.untick_items, { destructiveHint: false, idempotentHint: true });
   assertEquals(hints.get_item, { readOnlyHint: true });
   assertEquals(hints.merge_items, { destructiveHint: true });
+  assertEquals(hints.place_item, { destructiveHint: false, idempotentHint: true });
+  assertEquals(hints.set_store_order, { destructiveHint: false, idempotentHint: true });
 });
 
 Deno.test('job 344: update_item takes the fields to change and the list to move to', async () => {
@@ -331,6 +337,8 @@ Deno.test('U+0000 in any text argument is refused before the database sees it', 
       ['add_items', { items: [{ name: 'Milch', brand: 'Ja\u0000' }] }],
       ['list_items', { store: 'dm\u0000' }],
       ['tick_items', { items: ['Milch\u0000'] }],
+      ['place_item', { item: 'Eier', before: 'Mehl\u0000' }],
+      ['set_store_order', { store: 'Rewe', items: ['Mehl', 'Ei\u0000er'] }],
       ['list_lists', { household: 'Zuhause\u0000' }],
     ] as const
   ) {

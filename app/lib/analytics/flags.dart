@@ -118,6 +118,17 @@ const ratingTriggersV2Flag = 'rating-triggers-v2';
 /// categories still sort them underneath.
 const hideCategoriesFlag = 'hide-categories';
 
+/// The flag for the learned order (job 352, IO4): the household switches
+/// to `order_mode` learned, each store's items run as one walk order
+/// without category headings (whatever [hideCategoriesFlag] says), the
+/// edit sheet's „Neben …“ chip places an item, the trip question says that
+/// „Nein“ snoozes it for an hour (job 357's snooze, per person and device)
+/// and keeps that shop from being detected, which a „Nein“ or a dismissal
+/// then tells the server (`decline_shop`), Verlauf shows detected trips,
+/// the list's first-detected-trip card and Einstellungen' detection
+/// switch.
+const learnedOrderFlag = 'learned-order';
+
 /// PostHog feature flags, the app's runtime toggles (job 44,
 /// docs/ANALYTICS.md "Feature flags"). Read a toggle with [isOn] wherever it
 /// matters; nothing else in the app reads PostHog flags.

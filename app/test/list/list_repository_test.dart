@@ -1172,21 +1172,37 @@ void main() {
     group('item ops', () {
       final at = DateTime.utc(2026, 10, 28, 9);
 
-      test('ticking off at a store writes the status and the store', () async {
+      test('a tick at a store sets the store first, then ticks with '
+          'set_item_status at the tap time (job 352)', () async {
         final repo = server((_) => (200, [row('i1', status: 'bought')]));
         final rows = await repo.send(
           SetStatus('i1', ItemStatus.bought, at, storeId: 's1'),
         );
-        expect(route(sent.single), 'PATCH /rest/v1/items');
-        expect(sent.single.url.queryParameters['id'], 'eq.i1');
-        expect(params(sent.single), {'status': 'bought', 'store_id': 's1'});
+        expect(sent.map(route), [
+          'PATCH /rest/v1/items',
+          'POST /rest/v1/rpc/set_item_status',
+        ]);
+        expect(sent.first.url.queryParameters['id'], 'eq.i1');
+        expect(params(sent.first), {'store_id': 's1'});
+        expect(params(sent.last), {
+          'p_item': 'i1',
+          'p_status': 'bought',
+          'p_ticked_at': '2026-10-28T09:00:00.000Z',
+        });
         expect(rows['i1']!.status, ItemStatus.bought);
       });
 
-      test('ticking off without a store leaves the store alone', () async {
-        final repo = server((_) => (200, [row('i1', status: 'bought')]));
-        await repo.send(SetStatus('i1', ItemStatus.bought, at));
-        expect(params(sent.single), {'status': 'bought'});
+      test('a tick or untick without a store is set_item_status alone, the '
+          'tap time in UTC', () async {
+        final repo = server((_) => (200, [row('i1')]));
+        final tapped = DateTime(2026, 10, 28, 9, 30);
+        await repo.send(SetStatus('i1', ItemStatus.active, tapped));
+        expect(route(sent.single), 'POST /rest/v1/rpc/set_item_status');
+        expect(params(sent.single), {
+          'p_item': 'i1',
+          'p_status': 'active',
+          'p_ticked_at': tapped.toUtc().toIso8601String(),
+        });
       });
 
       test(
@@ -1205,12 +1221,49 @@ void main() {
         },
       );
 
-      test('an update that hits no row asks for the item: gone', () async {
+      test('on a backend without set_item_status (PGRST202) a tick is the '
+          'old PATCH of its status and store (job 352)', () async {
+        final repo = server(
+          (r) => r.url.path.endsWith('/set_item_status')
+              ? (404, {'code': 'PGRST202', 'message': 'Could not find'})
+              : (200, [row('i1', status: 'bought')]),
+        );
+        final rows = await repo.send(
+          SetStatus('i1', ItemStatus.bought, at, storeId: 's1'),
+        );
+        expect(sent.map(route), [
+          'PATCH /rest/v1/items',
+          'POST /rest/v1/rpc/set_item_status',
+          'PATCH /rest/v1/items',
+        ]);
+        expect(sent.last.url.queryParameters['id'], 'eq.i1');
+        expect(params(sent.last), {'status': 'bought', 'store_id': 's1'});
+        expect(rows['i1']!.status, ItemStatus.bought);
+      });
+
+      test('a tick of a gone item asks for the item: gone', () async {
         final repo = server((r) => (200, <Object>[]));
         expect(await repo.send(SetStatus('i1', ItemStatus.active, at)), {
           'i1': null,
         });
-        expect(sent.map(route), ['PATCH /rest/v1/items', 'GET /rest/v1/items']);
+        expect(sent.map(route), [
+          'POST /rest/v1/rpc/set_item_status',
+          'GET /rest/v1/items',
+        ]);
+      });
+
+      test('set_order_mode names the household and mode, and reads the mode '
+          'in force (job 352)', () async {
+        final repo = server((_) => (200, 'categories'));
+        expect(
+          await repo.setOrderMode(OrderMode.learned),
+          OrderMode.categories,
+        );
+        expect(route(sent.single), 'POST /rest/v1/rpc/set_order_mode');
+        expect(params(sent.single), {
+          'p_household': 'household',
+          'p_mode': 'learned',
+        });
       });
 
       test('a delete answers that the item is gone', () async {
@@ -1298,6 +1351,35 @@ void main() {
         await repo.send(const UnclaimItem('i1', userId: 'peter'));
         expect(route(sent[2]), 'POST /rest/v1/rpc/unclaim_item');
         expect(params(sent[2]), {'p_item': 'i1'});
+      });
+
+      test('TD-Q5: a declined shop calls decline_shop with the item and the '
+          'time in UTC, and changes no row (job 352)', () async {
+        final repo = server((_) => (204, null));
+        final rows = await repo.send(
+          DeclineShop('i1', DateTime.utc(2026, 11, 22, 9, 30)),
+        );
+        expect(sent.map(route), ['POST /rest/v1/rpc/decline_shop']);
+        expect(params(sent.single), {
+          'p_item': 'i1',
+          'p_at': '2026-11-22T09:30:00.000Z',
+        });
+        expect(rows, isEmpty);
+      });
+
+      test('TD-Q5: a refused decline (item gone, a backend without '
+          'decline_shop) is done; trouble is asked again', () async {
+        for (final code in ['P0002', 'PGRST202', '42501']) {
+          final repo = server((_) => (404, {'code': code, 'message': 'no'}));
+          expect(await repo.send(DeclineShop('i1', at)), isEmpty);
+        }
+        final down = server(
+          (_) => (503, {'code': 'PGRST002', 'message': 'schema cache'}),
+        );
+        await expectLater(
+          down.send(DeclineShop('i1', at)),
+          throwsA(isA<ServerTrouble>()),
+        );
       });
 
       test('the claims are the household’s', () async {

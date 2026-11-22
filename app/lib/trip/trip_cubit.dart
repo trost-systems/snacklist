@@ -113,6 +113,11 @@ class TripCubit(
 
   /// The `grocery-log` flag: an end writes its Verlauf trips.
   required final bool Function() logs,
+
+  /// The `learned-order` flag (job 352): the question says under its
+  /// buttons that a „Nein“ keeps it away ([snooze]) and that this shop is
+  /// not detected, and [no] tells the server so.
+  final bool Function() quiet = _never,
   final DateTime Function() clock = DateTime.now,
   final Analytics? analytics,
 }) extends Cubit<TripState> {
@@ -135,6 +140,12 @@ class TripCubit(
 
   /// How often the long-running rule runs while a trip runs.
   static const checkEvery = Duration(seconds: 30);
+
+  static bool _never() => false;
+
+  /// Whether the question tells that „Nein“ keeps it away (flag
+  /// `learned-order`).
+  bool get quietsAfterNo => quiet();
 
   late final List<StreamSubscription<Object?>> _subscriptions;
   Timer? _timer;
@@ -205,9 +216,13 @@ class TripCubit(
   }
 
   /// „Nein, nur abgehakt“, or the sheet dismissed: the question stays away
-  /// for [snooze].
+  /// for [snooze]; with `learned-order` the server also leaves this shop
+  /// out of trip detection.
   void no() {
-    if (state is Asking) {
+    if (state case Asking(:final item)) {
+      if (quiet()) {
+        _list.declineShop(item.id);
+      }
       _snoozedUntil = _clock().add(snooze);
       unawaited(_cache.snoozeTripPrompt(userId, _snoozedUntil!));
       _track('shop_asked', {'answer': ShopAnswer.no.wire});
@@ -286,11 +301,13 @@ class TripCubit(
   void keepShopping() {
     if (state case Ended(:final trip, :final from)) {
       final now = _clock();
+      // An end of this device's trip always has its times.
+      final endedAt = trip.endedAt ?? now;
       _previous = trip;
       _run(
         from.withPauses([
-          ...closePauses(from.pauses, trip.endedAt),
-          TripPause(from: trip.endedAt, to: now),
+          ...closePauses(from.pauses, endedAt),
+          TripPause(from: endedAt, to: now),
         ], resumedAt: now),
       );
     }

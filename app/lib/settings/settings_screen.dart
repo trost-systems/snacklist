@@ -19,7 +19,12 @@ import 'package:material_ui/material_ui.dart';
 /// [LanguageScreen]; on phones with the `feedback-fb2` flag, whether a
 /// shake opens feedback (job 267). All are kept on the device and apply at
 /// once.
-class const SettingsScreen({super.key}) extends StatelessWidget {
+class const SettingsScreen({
+  super.key,
+
+  /// The shell's trip detection section (job 352); none without it.
+  final Widget? tripDetection,
+}) extends StatelessWidget {
   /// A section overline over its group, at the group's inset.
   static const _labelPadding = EdgeInsets.fromLTRB(20, HlSpace.s5, 20, 0);
 
@@ -94,6 +99,7 @@ class const SettingsScreen({super.key}) extends StatelessWidget {
             ),
           ],
         ),
+        ?tripDetection,
         if (shake != null && fb2 && shakeHere) ...[
           HlSectionLabel(l10n.settingsFeedback, padding: _labelPadding),
           HlGroup(

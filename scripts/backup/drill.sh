@@ -87,6 +87,8 @@ check="$(sql -q -c "
   insert into public.items (household_id, name)
     select household_id, 'Butter' from public.household_members where user_id = '$lea';
   update public.items set status = 'bought' where name = 'Butter';
+  -- Members no longer read item_events (job 352).
+  select set_config('role', 'postgres', true);
   select (bought_by = '$lea')::text
          || ' ' || ((select max(id) from public.item_events) > $max_event)::text
          || ' ' || (category_id is not null)::text

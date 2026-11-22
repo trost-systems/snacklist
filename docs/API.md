@@ -99,6 +99,7 @@ An **item** (an entry on the list):
 | `categoryId` | uuid | |
 | `store` | string or null | Store name, e.g. `dm`; null: buyable anywhere |
 | `storeId` | uuid or null | |
+| `position` | integer or null | 1-based place among the open items of its list in its store (or among those without a store), in the household's order; null for a ticked item |
 | `status` | `open` or `ticked` | Ticked items leave the list |
 | `addedAt` | date-time | When it was added |
 | `listId` | uuid | The list it is on (`GET /v1/lists`) |
@@ -115,6 +116,14 @@ of it.
 
 Fields are camelCase, like the items in the MCP tools' results.
 
+**Order mode.** A household sorts its list in one of two ways. With `categories` (the default),
+items stand in the aisle order of their categories and, inside a category, in the household's walk
+order. With `learned` (switched on in the app; job 352), each store has its own order of items,
+learned from the household's shopping trips and set by hand (`POST /v1/items/{id}/place`,
+`PUT /v1/stores/{id}/order`); categories still exist and are the starting place of an item the
+store has not seen. `position` follows the household's mode. `GET /v1/items?order=walk` shows the
+list store by store in that order.
+
 ## Endpoints
 
 | Method and path | Scope | Does |
@@ -125,6 +134,7 @@ Fields are camelCase, like the items in the MCP tools' results.
 | `POST /v1/items/{id}/tick` | write | Ticks an item (bought) |
 | `POST /v1/items/{id}/untick` | write | Puts a ticked item back on the list |
 | `PATCH /v1/items/{id}` | write | Edits an open item: name, quantity, brand, properties, list, category, store |
+| `POST /v1/items/{id}/place` | write | Puts an open item right before or after another |
 | `DELETE /v1/items/{id}` | write | Removes an item, open or ticked |
 | `GET /v1/items/recent` | read | Recently ticked items, the app's „Zuletzt verwendet“ |
 | `GET /v1/suggestions` | read | What the household usually buys, ranked like the app's suggestions; `prefix` filter |
@@ -134,6 +144,7 @@ Fields are camelCase, like the items in the MCP tools' results.
 | `PATCH /v1/stores/{id}` | write | Renames a store |
 | `GET /v1/stores/{id}/layout` | read | A store's walk order: every category in that store's order |
 | `PUT /v1/stores/{id}/layout` | write | Sets a store's walk order and the categories it does not carry |
+| `PUT /v1/stores/{id}/order` | write | Sets the order of a store's open items (learned order only) |
 | `GET /v1/lists` | read | The household's lists in their order, the default one marked |
 | `POST /v1/lists` | write | Makes a list |
 | `PATCH /v1/lists/{id}` | write | Renames a list or moves it |
@@ -143,9 +154,14 @@ Fields are camelCase, like the items in the MCP tools' results.
 
 Query: `store` and `category` (an id or a name; names match like the MCP tools: any case,
 umlauts optional, a unique part is enough), `list` (an id or the exact name, any case; without
-it, every list's items), `limit` (1 to 100, default 50), `cursor`. With
-`store`, the list shows that store's items plus the ones without a store, in that store's aisle
-order; inside a category, the household's walk order.
+it, every list's items), `limit` (1 to 100, default 50), `cursor`, `order` (`aisle`, the
+default, or `walk`). With `store`, the list shows that store's items plus the ones without a store.
+
+- `aisle` (v1's default, in every household): categories in aisle order (with `store`, that
+  store's aisle order); inside a category, the household's walk order.
+- `walk`: store by store in the stores' order (`GET /v1/stores`), then the items without a
+  store; inside each, by `position`. This is the order the app shows in a household with the
+  learned order. In v2 it becomes the default.
 
 ```json
 {
@@ -159,8 +175,11 @@ order; inside a category, the household's walk order.
 
 `counts` is always the whole list's (with `list`, that list's; without, every list's), whatever
 the store or category filter. `nextCursor` is null on the last page.
-A cursor is opaque, belongs to the filter it came with (another filter: `400 invalid_cursor`) and
-is a position, not a page number: items added or ticked meanwhile do not shift the next page.
+A cursor is opaque, belongs to the filter and the `order` it came with (another filter or order:
+`400 invalid_cursor`) and is a place in the list, not a page number: items added or ticked
+meanwhile do not shift the next page. A `walk` cursor also belongs to the household's order mode:
+if the household switches between `categories` and `learned` while you page, the next request is
+`400 invalid_cursor`; start again without a cursor.
 
 ### POST /v1/items
 
@@ -197,7 +216,9 @@ hundreds of them send fewer items per request.
 ### POST /v1/items/{id}/tick, POST /v1/items/{id}/untick
 
 No body. Returns `{ "data": item }`. Ticking a ticked item, or unticking an open one, changes
-nothing and returns the item: both are safe to repeat.
+nothing and returns the item: both are safe to repeat. Ticks through the API are marked as an
+agent's: they never make a shopping trip and never teach the learned order, which only ticks in the
+app do.
 
 ### PATCH /v1/items/{id}
 
@@ -219,7 +240,10 @@ there (else `400 validation_failed`, "Give at least one field to change"):
 | `store` | id, name, or null | Moves the item to that store; null removes the store |
 
 A new category or store puts the item at the end of its new group, and the household remembers
-both for the next time the item is added (like a move in the app). Answers `200` with the item as
+both for the next time the item is added (like a move in the app). In a household with the learned
+order, an item that changes its store takes its place in the new store's order instead (the place
+that store has learned for it, else where its category starts); a new category alone keeps its
+place. Answers `200` with the item as
 it is now. Only open items: a ticked one is `404 item_not_found`. A rename that would make the item
 the twin of another open item on its list (the same name, brand and properties) is
 `409 conflict`, "An open item with this name, brand and details is already on the list.", and
@@ -258,12 +282,13 @@ it („br“ finds „Brot“, then „Bio-Brot“). The order is the app's; the
 (names that contain the text, and typos), the API only these two.
 
 ```json
-{ "data": [{ "name": "Milch", "quantity": "2", "uses": 14, "lastUsed": "2026-11-20T08:12:00+00:00",
+{ "data": [{ "name": "Milch", "quantity": "2", "uses": 14, "lastUsed": "2026-11-19T23:00:00+00:00",
              "due": true }], "nextCursor": null }
 ```
 
 `uses` counts the days in the last year on which it was added or bought; `lastUsed` is the last of
-them; `due` is `true` when its usual interval since the last purchase is up (bought at least twice).
+them, as the start of that day in Berlin (job 352: never the time of a member's tick); `due` is
+`true` when its usual interval since the last purchase is up (bought at least twice).
 The prefix is a query value, so it is in the gateway's access log like a filter (see
 [Privacy and logs](#privacy-and-logs)).
 
@@ -317,6 +342,43 @@ the order `GET /v1/items?store=` shows. `hidden` marks the categories the store 
 `hidden`, when given, is every category the store does not carry; without it they stay as they
 are. At least one of the two. A category in both comes first and is hidden. A category named twice (by name and by id, say) is
 `400 validation_failed`, an unknown one `422 category_not_found`. Answers the whole new order.
+In a household with the learned order the walk order is only the default order for new items:
+the open items' order in the store is what the household learned and what
+`POST /v1/items/{id}/place` and `PUT /v1/stores/{id}/order` set.
+
+### POST /v1/items/{id}/place
+
+```json
+{ "after": "…id of Mehl…" }
+```
+
+Exactly one of `before` and `after`: the id of another open item of the household (the anchor).
+Returns `{ "data": item }` with its new `position`.
+
+- Learned order: the item's place in its store is set by hand and kept until three trips in a
+  row disagree with it. The anchor must be in the same store (or both without a store), else
+  `422 anchor_in_other_store`; to change the store, `PATCH` first.
+- Categories order: the item takes the anchor's store and category, like dragging it in the app.
+
+Placing next to the same anchor again changes nothing. An anchor that is not an open item of the
+household is `422 anchor_not_found`; the item itself, `404 item_not_found`. Both also hold for a
+tick or delete that lands while the request runs, except that an anchor deleted then is
+`404 item_not_found`.
+
+### PUT /v1/stores/{id}/order
+
+```json
+{ "items": ["…id of Brot…", "…id of Mehl…", "…id of Eier…"] }
+```
+
+1 to 200 item ids, each once, every one an open item of that store (else
+`422 items_not_in_store`, `details.items` lists them). They come first in this order, as places set
+by hand; the store's other open items keep their order after them. Returns
+`{ "data": [ …items ] }`: the store's open items in their new order. Only in a household with the
+learned order: a `categories` household is `409 order_mode` (its order is its categories' aisle
+order; place single items with `POST /v1/items/{id}/place`). Sending the same order again
+changes nothing, so the request takes no `Idempotency-Key`. An unknown store is
+`404 store_not_found`.
 
 ### GET /v1/categories, GET /v1/stores, GET /v1/lists
 
@@ -359,7 +421,7 @@ optional.
 | --- | --- | --- |
 | 400 | `invalid_json` | The body is not JSON |
 | 400 | `validation_failed` | A field is missing, too long, of the wrong type, or unknown (`details.issues`) |
-| 400 | `invalid_cursor` | The cursor is broken or belongs to another filter |
+| 400 | `invalid_cursor` | The cursor is broken, belongs to another filter or `order`, or the household changed its order mode while paging |
 | 400 | `invalid_id` | The `{id}` in the path is not a UUID |
 | 400 | `invalid_idempotency_key` | The key is empty, too long or not printable ASCII |
 | 401 | `missing_token` | No `Authorization: Bearer` header |
@@ -367,15 +429,19 @@ optional.
 | 402 | `premium_required` | The key's holder needs Snacklist Premium for the API (integration lock on); `details: {integration: "api", unlock: "app"}` |
 | 403 | `insufficient_scope` | The key lacks the scope (`details.required`) |
 | 404 | `not_found` | No such endpoint |
-| 404 | `item_not_found` | No such item in this household (or not open, for `PATCH`) |
+| 404 | `item_not_found` | No such item in this household (or not open, for `PATCH` and `place`) |
 | 404 | `list_not_found`, `store_not_found` | The list or store in the path is not one of this household's |
 | 405 | `method_not_allowed` | The path exists, the method does not (`Allow` header) |
+| 409 | `order_mode` | A store order in a household that sorts by categories |
 | 409 | `conflict` | A concurrent change got in the way (for example the `Idempotency-Key` was released at that moment, or a category was added while a layout was set); nothing was changed, retry. For `PATCH` on an item: the new name would duplicate an open item on the list; on a store: another store has the name. Nothing was changed, and a retry gets the same answer |
 | 409 | `too_many_lists`, `too_many_stores` | The household has 50 lists or stores (`details.limit`); nothing was changed |
 | 413 | `payload_too_large` | The body is over 64 KiB |
 | 415 | `unsupported_media_type` | A body that is not `application/json` |
 | 422 | `store_not_found`, `category_not_found`, `list_not_found` | A named store, category or list does not exist (`details.candidates`) |
 | 422 | `ambiguous_store`, `ambiguous_category`, `ambiguous_list` | A name matches several (`details.candidates`) |
+| 422 | `anchor_not_found` | The `before` or `after` item is not an open item of this household |
+| 422 | `anchor_in_other_store` | Learned order: the `before` or `after` item is in another store |
+| 422 | `items_not_in_store` | Items of a store order that are not open items of that store (`details.items`) |
 | 422 | `idempotency_key_reused` | The key came with a different request |
 | 429 | `rate_limited` | Over a rate limit (`Retry-After`) |
 | 429 | `auth_throttled` | Too many unknown keys from this address (`Retry-After`); valid keys still work |
@@ -394,6 +460,7 @@ arguments, so that file is the one place to change them.
 | Per household | 1000 requests a day (UTC) | All the household's keys together |
 | Unknown keys per address | 20 per 10 minutes | Every key we have never issued; then `429 auth_throttled` for unknown keys from that address. A missing key, a revoked or otherwise ended key and a valid key never count and are never blocked, so an integration still polling with a revoked key does not block others behind the same address |
 | Batch | 50 items per `POST /v1/items` | |
+| Store order | 200 items per `PUT /v1/stores/{id}/order` | |
 | Similar items | 3 per added item in `similarOnList` | `total` counts them all |
 | Time | 5 seconds for the adds of one `POST /v1/items`, 8 seconds for any one database statement | `503 timeout`, nothing changed |
 | At once | One request per member: requests with one member's keys wait for each other | One that waited 5 seconds gets `503 timeout` |
@@ -425,6 +492,11 @@ fields, new error codes, new optional request fields. Clients should ignore unkn
 fields. Requests are strict (unknown fields are a `400`), so a new optional request field never
 changes what an old request means. A breaking change gets `/v2`, and v1 keeps running alongside
 it with a deprecation notice in this document and in a `Deprecation` header.
+
+One deliberate exception, for privacy: since job 352, `lastUsed` in `/v1/suggestions` (and MCP's
+suggestions) is cut to the day (midnight, Berlin) instead of the exact time. Members can no longer
+read each other's tick times, and an exact `lastUsed` would give them back to the microsecond. The
+field keeps its name and type; only its precision changed.
 
 ## Privacy and logs
 

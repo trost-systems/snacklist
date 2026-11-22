@@ -5,6 +5,8 @@ import { oneRow, type Tx } from '../_shared/db.ts';
 import {
   addItemIds,
   addStore,
+  type AisleKey,
+  anchorOf,
   type ApiItem,
   apiItemsById,
   categories,
@@ -13,22 +15,28 @@ import {
   createList,
   deleteItemById,
   itemById,
+  type Keyed,
   listEntries,
-  type OpenItem,
   openItems,
-  type Position,
+  openItemsInWalk,
+  type OrderMode,
+  orderMode,
+  placeItemById,
   RECENT_SHOWN,
   recentItems,
   renameStore,
   resolveFilter,
   setItemStatus,
   setStoreLayout,
+  setStoreOrderById,
+  STORE_ORDER_MAX,
   storeLayout,
   stores,
   ToolError,
   updateItemById,
   usuals,
   UUID,
+  type WalkKey,
 } from '../_shared/list.ts';
 import { storedText } from '../_shared/stored_text.ts';
 import { ApiError } from './errors.ts';
@@ -94,6 +102,7 @@ const listQuery = z.object({
   list: ref.optional(),
   limit: limitOf(PAGE_MAX).optional(),
   cursor: z.string().max(2048).optional(),
+  order: z.enum(['aisle', 'walk']).optional(),
 }).strict();
 
 const recentQuery = z.object({ list: ref.optional(), limit: limitOf(RECENT_MAX).optional() })
@@ -153,13 +162,33 @@ const editBody = z.object({
   message: 'Give at least one field to change',
 });
 
+const id = z.string().regex(UUID, 'Expected an item id').transform((s) => s.toLowerCase());
+
+const placeBody = z.object({ before: id.optional(), after: id.optional() }).strict()
+  .transform((b, ctx) => {
+    const placing = anchorOf(b);
+    if (placing) return placing;
+    ctx.addIssue({ code: 'custom', message: 'Give exactly one of before and after' });
+    return z.NEVER;
+  });
+
+const storeOrderBody = z.object({
+  items: z.array(id).min(1).max(STORE_ORDER_MAX)
+    .refine((ids) => new Set(ids).size === ids.length, 'Each item at most once'),
+}).strict();
+
 // Cursors ------------------------------------------------------------------------------------
 
 /**
  * What a page continues after, and the filter (resolved store, category and list ids) it belongs
- * to. The list id travels as `l`, absent in cursors made before lists (no list filter).
+ * to. The list id travels as `l`, absent in cursors made before lists (no list filter). A walk
+ * cursor (`o` "walk") carries the household's order mode (`m`) it was made in.
  */
-type Cursor = { filter: [string | null, string | null, string | null]; after: Position };
+type Filter = [string | null, string | null, string | null];
+
+type Cursor =
+  | { order: 'aisle'; filter: Filter; after: AisleKey }
+  | { order: 'walk'; mode: OrderMode; filter: Filter; after: WalkKey };
 
 const MOMENT = /^(?!0000)\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?[+-](0\d|1[0-5]):[0-5]\d$/;
 
@@ -170,18 +199,42 @@ function isMoment(text: string): boolean {
   return MOMENT.test(text) && !Number.isNaN(at) && new Date(at).toISOString().startsWith(local);
 }
 
-/**
- * A position exactly as openItems gives it out, so that every value is one Postgres can compare:
- * an int4, text, a float8 in its shortest decimal, a timestamptz, a uuid.
- */
-const cursorShape = z.object({
-  v: z.literal(1),
+const sortKey = z.string().max(32).refine((s) => String(Number(s)) === s);
+
+const filterShape = {
   f: z.tuple([z.string().regex(UUID).nullable(), z.string().regex(UUID).nullable()]),
   l: z.string().regex(UUID).nullable().optional(),
+};
+
+/**
+ * A key exactly as openItems and openItemsInWalk give it out, so that every value is one Postgres
+ * can compare: a boolean, an int4, text, a float8 in its shortest decimal, a timestamptz, a uuid.
+ */
+const aisleShape = z.object({
+  v: z.literal(1),
+  ...filterShape,
   k: z.tuple([
     z.int32(),
     storedText.max(200),
-    z.string().max(32).refine((s) => String(Number(s)) === s),
+    sortKey,
+    z.string().refine(isMoment),
+    z.string().regex(UUID),
+  ]),
+}).strict();
+
+const walkShape = z.object({
+  v: z.literal(1),
+  o: z.literal('walk'),
+  m: z.enum(['categories', 'learned']),
+  ...filterShape,
+  k: z.tuple([
+    z.boolean(),
+    z.int32(),
+    storedText.max(200),
+    z.string().regex(UUID),
+    z.int32(),
+    storedText.max(200),
+    sortKey,
     z.string().refine(isMoment),
     z.string().regex(UUID),
   ]),
@@ -198,18 +251,42 @@ const base64url = {
 };
 
 export function encodeCursor(cursor: Cursor): string {
-  const { rank, category, sortKey, addedAt, id } = cursor.after;
   const [store, cat, list] = cursor.filter;
+  const filter = { f: [store, cat], ...(list === null ? {} : { l: list }) };
+  if (cursor.order === 'aisle') {
+    const { rank, category, sortKey, addedAt, id } = cursor.after;
+    return base64url.encode(JSON.stringify({
+      v: 1,
+      ...filter,
+      k: [rank, category, sortKey, addedAt, id],
+    }));
+  }
+  const a = cursor.after;
   return base64url.encode(JSON.stringify({
     v: 1,
-    f: [store, cat],
-    ...(list === null ? {} : { l: list }),
-    k: [rank, category, sortKey, addedAt, id],
+    o: 'walk',
+    m: cursor.mode,
+    ...filter,
+    k: [
+      a.noStore,
+      a.storeRank,
+      a.storeName,
+      a.storeId,
+      a.rank,
+      a.category,
+      a.sortKey,
+      a.addedAt,
+      a.id,
+    ],
   }));
 }
 
 const invalidCursor = () =>
-  new ApiError(400, 'invalid_cursor', 'The cursor is broken or belongs to another filter.');
+  new ApiError(
+    400,
+    'invalid_cursor',
+    'The cursor is broken or belongs to another filter or order.',
+  );
 
 export function decodeCursor(text: string): Cursor {
   let value: unknown;
@@ -218,19 +295,31 @@ export function decodeCursor(text: string): Cursor {
   } catch {
     throw invalidCursor();
   }
-  const parsed = cursorShape.safeParse(value);
-  if (!parsed.success) throw invalidCursor();
-  const [rank, category, sortKey, addedAt, id] = parsed.data.k;
-  const [store, cat] = parsed.data.f;
+  const walk = walkShape.safeParse(value);
+  if (walk.success) {
+    const { f: [store, cat], l, m, k } = walk.data;
+    const [noStore, storeRank, storeName, storeId, rank, category, sortKey, addedAt, id] = k;
+    return {
+      order: 'walk',
+      mode: m,
+      filter: [store, cat, l ?? null],
+      after: { noStore, storeRank, storeName, storeId, rank, category, sortKey, addedAt, id },
+    };
+  }
+  const aisle = aisleShape.safeParse(value);
+  if (!aisle.success) throw invalidCursor();
+  const [rank, category, sortKey, addedAt, id] = aisle.data.k;
+  const [store, cat] = aisle.data.f;
   return {
-    filter: [store, cat, parsed.data.l ?? null],
+    order: 'aisle',
+    filter: [store, cat, aisle.data.l ?? null],
     after: { rank, category, sortKey, addedAt, id },
   };
 }
 
 // Operations ---------------------------------------------------------------------------------
 
-const item = ({ position: _, ...rest }: OpenItem): ApiItem => rest;
+const item = <K>({ key: _, ...rest }: Keyed<K>): ApiItem => rest;
 
 const ok = (body: unknown): Result => ({ status: 200, body });
 
@@ -254,30 +343,35 @@ const named = (rows: { id: string; name: string; sort_order: number }[]) =>
 
 export const operations: Record<Operation, Parse> = {
   listItems: (raw) => {
-    const query = strict(listQuery, raw.query, 'query');
+    const { order = 'aisle', ...query } = strict(listQuery, raw.query, 'query');
     const cursor = query.cursor === undefined ? null : decodeCursor(query.cursor);
     const limit = query.limit ?? PAGE_DEFAULT;
+    if (cursor && cursor.order !== order) throw invalidCursor();
     return async (tx, household) => {
       const { store, category, list } = await resolveFilter(tx, household, query);
-      const filter: [string | null, string | null, string | null] = [
-        store?.id ?? null,
-        category?.id ?? null,
-        list?.id ?? null,
-      ];
+      const filter: Filter = [store?.id ?? null, category?.id ?? null, list?.id ?? null];
       if (cursor && cursor.filter.some((id, i) => id !== filter[i])) throw invalidCursor();
-      const rows = await openItems(
-        tx,
-        household,
-        { storeId: filter[0], categoryId: filter[1], listId: filter[2] },
-        { after: cursor?.after ?? null, limit: limit + 1 },
-      );
-      const page = rows.slice(0, limit);
-      const last = rows.length > limit ? page.at(-1) : undefined;
-      return ok({
-        data: page.map(item),
-        counts: await counts(tx, household, filter[2]),
-        nextCursor: last ? encodeCursor({ filter, after: last.position }) : null,
-      });
+      const ids = { storeId: filter[0], categoryId: filter[1], listId: filter[2] };
+      let data: ApiItem[];
+      let nextCursor: string | null = null;
+      if (order === 'walk') {
+        const mode = await orderMode(tx, household);
+        if (cursor?.order === 'walk' && cursor.mode !== mode) throw invalidCursor();
+        const after = cursor?.order === 'walk' ? cursor.after : null;
+        const rows = await openItemsInWalk(tx, household, ids, { after, limit: limit + 1 });
+        const page = rows.slice(0, limit);
+        const last = rows.length > limit ? page.at(-1) : undefined;
+        data = page.map(item);
+        if (last) nextCursor = encodeCursor({ order, mode, filter, after: last.key });
+      } else {
+        const after = cursor?.order === 'aisle' ? cursor.after : null;
+        const rows = await openItems(tx, household, ids, { after, limit: limit + 1 });
+        const page = rows.slice(0, limit);
+        const last = rows.length > limit ? page.at(-1) : undefined;
+        data = page.map(item);
+        if (last) nextCursor = encodeCursor({ order, filter, after: last.key });
+      }
+      return ok({ data, counts: await counts(tx, household, filter[2]), nextCursor });
     };
   },
 
@@ -300,7 +394,7 @@ export const operations: Record<Operation, Parse> = {
     }));
     return async (tx, household) => {
       const { added, existing, similar } = await addItemIds(tx, household, wanted, list);
-      const rows = await apiItemsById(tx, [
+      const rows = await apiItemsById(tx, household, [
         ...added,
         ...existing,
         ...similar.flatMap((s) => s.onList),
@@ -350,6 +444,32 @@ export const operations: Record<Operation, Parse> = {
     strict(noQuery, raw.query, 'query');
     strict(noBody, raw.body ?? {}, 'body');
     return async (tx, household) => ok({ data: await deleteItemById(tx, household, id) });
+  },
+
+  placeItem: (raw) => {
+    const id = idOf(raw);
+    strict(noQuery, raw.query, 'query');
+    const { anchor, edge } = strict(placeBody, raw.body ?? {}, 'body');
+    if (anchor === id) {
+      throw new ApiError(400, 'validation_failed', 'The request body is not valid.', {
+        issues: [{ path: `body.${edge}`, message: 'An item cannot be placed next to itself' }],
+      });
+    }
+    return async (tx, household) =>
+      ok({ data: await placeItemById(tx, household, id, anchor, edge) });
+  },
+
+  setStoreOrder: (raw) => {
+    const id = idOf(raw);
+    strict(noQuery, raw.query, 'query');
+    const { items } = strict(storeOrderBody, raw.body ?? {}, 'body');
+    return async (tx, household) => {
+      const ordered = await setStoreOrderById(tx, household, id, items);
+      if (ordered === null) {
+        throw new ApiError(404, 'store_not_found', 'No such store in this household.');
+      }
+      return ok({ data: ordered });
+    };
   },
 
   listCategories: (raw) => {

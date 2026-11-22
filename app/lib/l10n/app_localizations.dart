@@ -6193,6 +6193,144 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Wieder auf der Liste: {item}'**
   String addMatchReadded(String item);
+
+  /// Job 352 (IO4, flag learned-order): the edit sheet's place chip and option label; name is the item the item stands after in its store's order
+  ///
+  /// In de, this message translates to:
+  /// **'Neben {name}'**
+  String placeNextTo(String name);
+
+  /// Job 352: the place chip when the item is first in its store's order, and the option that puts it there
+  ///
+  /// In de, this message translates to:
+  /// **'Ganz vorne'**
+  String get placeFirst;
+
+  /// Job 352: screen-reader name of the place chip; place is placeNextTo or placeFirst
+  ///
+  /// In de, this message translates to:
+  /// **'Platz in der Liste: {place}'**
+  String chipPlace(String place);
+
+  /// Job 352: hint of the filter field above the place options when the store has more than 15 other items
+  ///
+  /// In de, this message translates to:
+  /// **'Artikel suchen'**
+  String get placeFilter;
+
+  /// Job 352 (flag learned-order): under the trip question's buttons; after „Nein“ or a dismissal the question stays away for 60 minutes (TripCubit.snooze, job 357), and that tick run is not detected as a shopping trip (decline_shop, TD-Q5)
+  ///
+  /// In de, this message translates to:
+  /// **'Nach „Nein“ fragen wir eine Stunde lang nicht mehr, und dieser Einkauf wird nicht erkannt.'**
+  String get shopAskQuiet;
+
+  /// Job 352: Verlauf, secondary line under the store of a trip detected from the user's own ticks
+  ///
+  /// In de, this message translates to:
+  /// **'Aus deinen Häkchen erkannt'**
+  String get detectedOwn;
+
+  /// Job 352: Verlauf, a trip detected from another member's ticks
+  ///
+  /// In de, this message translates to:
+  /// **'Aus den Häkchen von {name} erkannt'**
+  String detectedOther(String name);
+
+  /// Job 352: Verlauf, a trip detected from the user's and another member's ticks
+  ///
+  /// In de, this message translates to:
+  /// **'Aus deinen Häkchen und denen von {name} erkannt'**
+  String detectedYouAndOther(String name);
+
+  /// Job 352: Verlauf, a trip detected from two other members' ticks
+  ///
+  /// In de, this message translates to:
+  /// **'Aus den Häkchen von {name1} und {name2} erkannt'**
+  String detectedTwoOthers(String name1, String name2);
+
+  /// Job 352: trip page title of a detected trip without a walk (ticks in one burst), where the duration would be
+  ///
+  /// In de, this message translates to:
+  /// **'Abgehakt, ohne Dauer'**
+  String get tripNoDuration;
+
+  /// Job 352: the trip page's action on a detected trip; any member may remove it
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Einkauf'**
+  String get tripNotShopping;
+
+  /// Job 352: the confirm dialog of tripNotShopping
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Einkauf? Die Häkchen bleiben, aber die Reihenfolge lernt nicht mehr daraus.'**
+  String get tripNotShoppingBody;
+
+  /// Job 352: the confirm dialog's button that removes the detected trip
+  ///
+  /// In de, this message translates to:
+  /// **'Entfernen'**
+  String get tripNotShoppingConfirm;
+
+  /// Job 352: snackbar in Verlauf after a detected trip was removed
+  ///
+  /// In de, this message translates to:
+  /// **'Entfernt'**
+  String get tripRemoved;
+
+  /// Job 352: snackbar when removing a detected trip failed
+  ///
+  /// In de, this message translates to:
+  /// **'Der Einkauf konnte nicht entfernt werden. Versuch es noch mal.'**
+  String get tripRemoveFailed;
+
+  /// Job 352: title of the list's card after the user's first detected trip, shown once per person
+  ///
+  /// In de, this message translates to:
+  /// **'Einkauf bei {store} erkannt'**
+  String detectedCardTitle(String store);
+
+  /// Job 352: the first-detected-trip card's title for a trip without a store
+  ///
+  /// In de, this message translates to:
+  /// **'Einkauf erkannt'**
+  String get detectedCardTitleNoStore;
+
+  /// Job 352: body of the first-detected-trip card; names the Settings switch detectTrips word for word
+  ///
+  /// In de, this message translates to:
+  /// **'Snacklist merkt sich, in welcher Reihenfolge du abhakst, und sortiert die Liste beim nächsten Mal so. Der Einkauf steht im Verlauf, für die anderen im Haushalt ohne Uhrzeit. Abschalten kannst du das in den Einstellungen unter „Einkäufe aus meinen Häkchen erkennen“.'**
+  String get detectedCardBody;
+
+  /// Job 352: the first-detected-trip card's button that opens the trip
+  ///
+  /// In de, this message translates to:
+  /// **'Ansehen'**
+  String get detectedCardView;
+
+  /// Job 352: the first-detected-trip card's button that closes it for good
+  ///
+  /// In de, this message translates to:
+  /// **'Verstanden'**
+  String get detectedCardGotIt;
+
+  /// Job 352: Einstellungen, section label over the trip detection switch
+  ///
+  /// In de, this message translates to:
+  /// **'Einkäufe'**
+  String get settingsTrips;
+
+  /// Job 352: Einstellungen switch; on, the server detects shopping trips from the user's own ticks and learns the list's order from them
+  ///
+  /// In de, this message translates to:
+  /// **'Einkäufe aus meinen Häkchen erkennen'**
+  String get detectTrips;
+
+  /// Job 352: under the detectTrips switch
+  ///
+  /// In de, this message translates to:
+  /// **'Nutzt nur, wann du abhakst. Kein Standort.'**
+  String get detectTripsHint;
 }
 
 class _AppLocalizationsDelegate

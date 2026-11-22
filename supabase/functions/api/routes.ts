@@ -42,6 +42,13 @@ export const routes = [
     idempotent: true,
   },
   {
+    operation: 'placeItem',
+    method: 'POST',
+    path: '/v1/items/{id}/place',
+    scope: 'write',
+    idempotent: true,
+  },
+  {
     operation: 'listCategories',
     method: 'GET',
     path: '/v1/categories',
@@ -68,6 +75,13 @@ export const routes = [
     operation: 'setStoreLayout',
     method: 'PUT',
     path: '/v1/stores/{id}/layout',
+    scope: 'write',
+    idempotent: false,
+  },
+  {
+    operation: 'setStoreOrder',
+    method: 'PUT',
+    path: '/v1/stores/{id}/order',
     scope: 'write',
     idempotent: false,
   },

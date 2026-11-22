@@ -621,6 +621,10 @@ Deno.test('list errors map to their codes; a unique violation is 409, out of tim
     [new ToolError('x', 'ambiguous', 'category', ['a', 'b'], 'x'), 422, 'ambiguous_category'],
     [new ToolError('x', 'not_found', 'list', ['Einkaufsliste'], 'Baumarkt'), 422, 'list_not_found'],
     [new ToolError('x', 'ambiguous', 'list', ['a', 'b'], 'Fest'), 422, 'ambiguous_list'],
+    [new ToolError('x', 'not_found', 'anchor', [], ID), 422, 'anchor_not_found'],
+    [new ToolError('x', 'anchor_in_other_store', 'anchor', [], ID), 422, 'anchor_in_other_store'],
+    [new ToolError('x', 'order_mode', null), 409, 'order_mode'],
+    [new ToolError('x', 'not_in_store', 'item', [ID]), 422, 'items_not_in_store'],
     [Object.assign(new Error('dup'), { name: 'PostgresError', code: '23505' }), 409, 'conflict'],
     [new ToolError('x', 'conflict', 'item', [], 'Milch'), 409, 'conflict'],
     [
@@ -643,6 +647,7 @@ Deno.test('list errors map to their codes; a unique violation is 409, out of tim
     const error = await errorOf(res);
     assertEquals(error.code, code);
     if (code === 'store_not_found') assertEquals(error.details, { candidates: ['dm', 'Lidl'] });
+    if (code === 'items_not_in_store') assertEquals(error.details, { items: [ID] });
   }
 });
 
@@ -727,6 +732,125 @@ Deno.test('the route path drops the hosted and the local function prefix', () =>
   assertEquals(routePath('/api/v1/items/x/tick'), '/v1/items/x/tick');
   assertEquals(routePath('/v1/items'), '/v1/items');
   assertEquals(routePath('/apix/v1/items'), '/apix/v1/items');
+});
+
+const OTHER = '55555555-5555-4555-8555-555555555555';
+
+const cursorOf = (value: unknown) =>
+  encodeURIComponent(
+    btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(value)))),
+  );
+
+Deno.test('order=walk takes only walk cursors, the default only aisle cursors', async () => {
+  const at = '2026-11-02T08:00:00.123456+00:00';
+  const aisle = cursorOf({ v: 1, f: [null, null], k: [10, 'Kühlregal', '1024', at, ID] });
+  const walk = (m: string, k: unknown[]) => cursorOf({ v: 1, o: 'walk', m, f: [null, null], k });
+  const inWalk = [false, 10, 'Rewe', OTHER, 0, '', '1024', at, ID];
+  const noStore = [true, 0, '', '00000000-0000-0000-0000-000000000000', 0, '', 'Infinity', at, ID];
+  for (
+    const path of [
+      `/items?order=walk&cursor=${walk('learned', inWalk)}`,
+      `/items?order=walk&cursor=${
+        walk('categories', [false, 10, 'dm', OTHER, 3, 'Drogerie', '1', at, ID])
+      }`,
+      `/items?order=walk&cursor=${walk('learned', noStore)}`,
+      `/items?order=aisle&cursor=${aisle}`,
+      `/items?order=walk&limit=5`,
+    ]
+  ) {
+    const deps = fake();
+    assertEquals((await handle(call(path), deps)).status, 200, path);
+    assertEquals(deps.executed.length, 1);
+  }
+  await rejected(call(`/items?order=walk&cursor=${aisle}`), 400, 'invalid_cursor');
+  await rejected(call(`/items?cursor=${walk('learned', inWalk)}`), 400, 'invalid_cursor');
+  await rejected(call(`/items?order=walk&cursor=${walk('sorted', inWalk)}`), 400, 'invalid_cursor');
+  for (
+    const k of [
+      ['false', ...inWalk.slice(1)],
+      [false, 10, 'Rewe', 'rewe', 0, '', '1024', at, ID],
+      [false, 10, 'Rewe', OTHER, 0, '', '1024.0', at, ID],
+      inWalk.slice(1),
+    ]
+  ) {
+    await rejected(call(`/items?order=walk&cursor=${walk('learned', k)}`), 400, 'invalid_cursor');
+  }
+  await rejected(call('/items?order=store'), 400, 'validation_failed');
+});
+
+const placing = (body: unknown, headers: Record<string, string> = {}) =>
+  call(`/items/${ID}/place`, { method: 'POST', body: JSON.stringify(body), headers });
+
+Deno.test('place: exactly one of before and after, another item, Idempotency-Key taken', async () => {
+  for (
+    const body of [
+      {},
+      { before: OTHER, after: OTHER },
+      { after: 'Mehl' },
+      { after: OTHER, category: 'Backen' },
+      { after: ID },
+      { before: ID.toUpperCase() },
+    ]
+  ) {
+    await rejected(placing(body), 400, 'validation_failed');
+  }
+  const self = await rejected(placing({ after: ID }), 400, 'validation_failed');
+  assertEquals(self.details, {
+    issues: [{ path: 'body.after', message: 'An item cannot be placed next to itself' }],
+  });
+  for (const body of [{ after: OTHER }, { before: OTHER.toUpperCase() }]) {
+    const deps = fake();
+    const res = await handle(placing(body, { 'idempotency-key': 'p-1' }), deps);
+    assertEquals(res.status, 200);
+    assertEquals(deps.executed[0]?.idempotency?.key, 'p-1');
+  }
+  await rejected(call('/items/mehl/place', { method: 'POST', body: '{}' }), 400, 'invalid_id');
+});
+
+const ordering = (body: unknown, headers: Record<string, string> = {}) =>
+  call(`/stores/${OTHER}/order`, { method: 'PUT', body: JSON.stringify(body), headers });
+
+Deno.test('store order: 1 to 200 item ids, each once; PUT takes no Idempotency-Key', async () => {
+  const ids = (n: number) =>
+    Array.from({ length: n }, (_, i) => `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`);
+  for (
+    const body of [
+      {},
+      { items: [] },
+      { items: ['Mehl'] },
+      { items: [ID, ID] },
+      { items: [ID, ID.toUpperCase()] },
+      { items: ids(201) },
+      { items: [ID], store: 'Rewe' },
+    ]
+  ) {
+    await rejected(ordering(body), 400, 'validation_failed');
+  }
+  const deps = fake();
+  assertEquals(
+    (await handle(ordering({ items: ids(200) }, { 'idempotency-key': 'o-1' }), deps)).status,
+    200,
+  );
+  assertEquals(deps.executed[0]?.idempotency, null);
+  await rejected(call('/stores/rewe/order', { method: 'PUT', body: '{}' }), 400, 'invalid_id');
+  const get = await handle(call(`/stores/${OTHER}/order`), fake());
+  assertEquals(get.status, 405);
+  assertEquals(get.headers.get('allow'), 'PUT');
+  const preflight = await handle(
+    new Request(`${BASE}/stores/${OTHER}/order`, { method: 'OPTIONS' }),
+    fake(),
+  );
+  assert(preflight.headers.get('access-control-allow-methods')?.includes('PUT'));
+});
+
+Deno.test('a read key can neither place nor order a store', async () => {
+  for (const req of [placing({ after: OTHER }), ordering({ items: [ID] })]) {
+    const deps = fake({ begin: ok(reader) });
+    const res = await handle(req, deps);
+    assertEquals(res.status, 403);
+    assertEquals((await errorOf(res)).details, { required: 'write' });
+    assertEquals(deps.executed, []);
+  }
 });
 
 Deno.test('job 345: /items/recent is its own route; a layout takes GET and PUT', async () => {

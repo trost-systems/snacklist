@@ -4,6 +4,7 @@ import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/purchases/premium_server.dart';
 import 'package:family_groceries/trip/ask_sheet.dart';
+import 'package:family_groceries/trip/detection.dart';
 import 'package:family_groceries/trip/ended_card.dart';
 import 'package:family_groceries/trip/model.dart';
 import 'package:family_groceries/trip/summary_view.dart';
@@ -281,6 +282,41 @@ void main() {
       );
     });
 
+    testWidgets('learned-order: one line under the buttons says it waits '
+        'for an hour and the shop is not detected; without, none (job 352)', (
+      tester,
+    ) async {
+      for (final quiet in [false, true]) {
+        await pumpPart(
+          tester,
+          Builder(
+            builder: (context) => TextButton(
+              onPressed: () =>
+                  showTripAsk(context, itemName: 'Milch', quiet: quiet),
+              child: const Text('open'),
+            ),
+          ),
+        );
+        await tester.tap(find.text('open'));
+        await tester.pumpAndSettle();
+        final line = find.text(
+          'Nach „Nein“ fragen wir eine Stunde lang nicht mehr, und dieser '
+          'Einkauf wird nicht erkannt.',
+        );
+        expect(line, quiet ? findsOneWidget : findsNothing);
+        if (quiet) {
+          expect(
+            tester.getTopLeft(line).dy,
+            greaterThan(tester.getBottomLeft(key('trip-ask-no')).dy),
+          );
+          expect(
+            find.descendant(of: key('trip-ask-no'), matching: line),
+            findsNothing,
+          );
+        }
+      }
+    });
+
     testWidgets('a scrim tap is Nein', (tester) async {
       expect(
         await ask(tester, () => tester.tapAt(const Offset(10, 10))),
@@ -326,7 +362,75 @@ void main() {
     expect(calls, ['keep', 'summary', 'dismiss']);
   });
 
+  testWidgets('first-trip card: its store, the Settings switch named, View '
+      'and Got it (job 352)', (tester) async {
+    final calls = <String>[];
+    await pumpPart(
+      tester,
+      DetectedTripCard(
+        storeName: 'Lidl',
+        onView: () => calls.add('view'),
+        onDone: () => calls.add('done'),
+      ),
+    );
+    expect(find.text('Einkauf bei Lidl erkannt'), findsOneWidget);
+    expect(
+      find.textContaining('unter „Einkäufe aus meinen Häkchen erkennen“'),
+      findsOneWidget,
+    );
+    final handle = tester.ensureSemantics();
+    expect(
+      tester.getSemantics(find.bySemanticsLabel('Einkauf bei Lidl erkannt')),
+      isSemantics(label: 'Einkauf bei Lidl erkannt', isHeader: true),
+      reason: 'the title alone is the heading; the whole card was a banner',
+    );
+    handle.dispose();
+    await tester.tap(find.text('Ansehen'));
+    await tester.tap(find.text('Verstanden'));
+    expect(calls, ['view', 'done']);
+  });
+
   group('summary', () {
+    /// `trip_session`'s answer for another member's detected trip: no
+    /// clock times, no pauses.
+    Map<String, Object?> theirs({bool? walked = true}) => {
+      ...finished(lines: shop).toJson(),
+      'source': 'detected',
+      'detected_by': ['lea'],
+      'walked': walked,
+      'mine': false,
+      'started_at': null,
+      'ended_at': null,
+      'pauses': null,
+      'end_reason': 'detected',
+    };
+
+    testWidgets("another member's detected trip: its day without times; "
+        'a burst without a walk has no duration (job 352)', (tester) async {
+      for (final walked in [true, false]) {
+        await pumpPart(
+          tester,
+          TripSummaryView(
+            trip: FinishedTrip.fromJson(theirs(walked: walked)),
+            catalog: catalog,
+            prices: true,
+          ),
+        );
+        expect(
+          tester.widget<Text>(key('trip-summary-when')).data,
+          'Sa., 14. Nov. · Lidl · Rewe',
+        );
+        expect(
+          find.text('Abgehakt, ohne Dauer'),
+          walked ? findsNothing : findsOneWidget,
+        );
+        expect(
+          find.text('25 Min. eingekauft'),
+          walked ? findsOneWidget : findsNothing,
+        );
+      }
+    });
+
     testWidgets('the duration rounds as the times do; seconds are under a '
         'minute', (tester) async {
       for (final (active, title) in [

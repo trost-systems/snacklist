@@ -45,6 +45,10 @@ class const Trip({
   /// The trip-mode trip it came from (job 234); its entry opens that
   /// trip's summary.
   final String? sessionId,
+
+  /// A trip detected from ticks (job 352, `trip_history_v2`): the members
+  /// whose ticks it came from; null for any other trip.
+  final List<String>? detectedBy,
 }) {
   factory fromJson(Map<String, Object?> json) => Trip(
     id: json['id']! as String,
@@ -58,6 +62,13 @@ class const Trip({
     loggedBy: json['logged_by'] as String?,
     sessionId: json['session_id'] as String?,
     createdAt: DateTime.parse(json['created_at']! as String).toLocal(),
+    detectedBy: switch (json) {
+      {'session_source': 'detected', 'detected_by': final List<Object?> by} => [
+        ...by.whereType<String>(),
+      ],
+      {'session_source': 'detected'} => const [],
+      _ => null,
+    },
   );
 }
 

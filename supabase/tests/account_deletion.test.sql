@@ -1,5 +1,8 @@
 begin;
 select plan(44);
+-- Job 352 revoked members' read of item_events; this file checks the history the trigger writes
+-- as a member reads it under the policy that still guards it.
+grant select on public.item_events to authenticated;
 
 create function pg_temp.login(uid uuid) returns void language plpgsql as $$
 begin
@@ -39,6 +42,7 @@ language sql as $$
   union all select 'category_memory', count(*)::int from public.category_memory where household_id = p_household
   union all select 'item_store_memory', count(*)::int from public.item_store_memory where household_id = p_household
   union all select 'item_store_cleared', count(*)::int from public.item_store_cleared where household_id = p_household
+  union all select 'item_order_memory', count(*)::int from public.item_order_memory where household_id = p_household
   union all select 'personal_access_tokens', count(*)::int from public.personal_access_tokens where household_id = p_household
   union all select 'household_brands', count(*)::int from public.household_brands where household_id = p_household
   union all select 'feedback', count(*)::int from public.feedback where household_id = p_household
@@ -52,6 +56,8 @@ language sql as $$
   union all select 'join_requests', count(*)::int from public.join_requests where household_id = p_household
   union all select 'trips', count(*)::int from public.trips where household_id = p_household
   union all select 'trip_sessions', count(*)::int from public.trip_sessions where household_id = p_household
+  union all select 'trip_detection_state', count(*)::int from public.trip_detection_state where household_id = p_household
+  union all select 'shop_declines', count(*)::int from public.shop_declines where household_id = p_household
   union all select 'feedback_idea_votes', count(*)::int from public.feedback_idea_votes where household_id = p_household;
 $$;
 
@@ -250,7 +256,13 @@ where name = 'Brot';
 select public.save_trip((select id from h), gen_random_uuid(), null, current_date, '[{"name": "Brot"}]');
 -- Job 234: and shopped in trip mode.
 select public.save_trip_session((select id from h), pg_temp.session('Brot'), false);
+-- Job 352: and the household sorts by learned order.
+select public.set_order_mode((select id from h), 'learned');
 select pg_temp.as_postgres();
+-- Job 352 (TD-Q5): Carl said „Nein, nur abgehakt" to the trip question for a tick.
+insert into public.shop_declines (household_id, user_id, tick_id)
+select id, '00000000-0000-0000-0000-0000000000c1',
+  (select max(e.id) from public.item_events e where e.household_id = h.id) from h;
 -- Job 25 (as of job 43, through RevenueCat): Carl bought Snacklist Lifetime for the household.
 select public.purchase_claim('00000000-0000-0000-0000-0000000000c1', (select id from h), 'apple', '2000000000002501');
 select public.purchase_record('apple', '2000000000002501', '2000000000002501', repeat('a', 64),
@@ -337,8 +349,8 @@ select is(
   (select array_agg(k order by k) from export, jsonb_object_keys(doc) k),
   array['access_tokens', 'account', 'alexa_links', 'analytics_decisions', 'archived_households', 'connected_apps', 'exported_at',
         'feedback', 'feedback_idea_votes', 'format', 'history', 'household', 'household_removals', 'households', 'invite_uses', 'invites_created', 'item_claims',
-        'items_added', 'join_requests', 'lists_created', 'profile', 'purchases', 'tester_groups', 'trip_sessions_started',
-        'trips_logged', 'version'],
+        'items_added', 'join_requests', 'lists_created', 'profile', 'purchases', 'tester_groups', 'trip_detection', 'trip_sessions_started',
+        'trips_detected', 'trips_logged', 'version'],
   'the export has the documented sections'
 );
 select is(
@@ -360,7 +372,7 @@ select is(
       'category', 'Obst & Gemüse', 'store', null, 'list', 'Einkaufsliste', 'created_at', now(), 'bought_at', null,
       'price_unit_micros', null, 'price_basis', null, 'price_per', null, 'price_currency', null, 'priced_at', null)),
     'history', jsonb_build_array(jsonb_build_object('action', 'added', 'item_name', 'Äpfel',
-      'category', 'Obst & Gemüse', 'created_at', now())),
+      'category', 'Obst & Gemüse', 'created_at', now(), 'client_at', null, 'source', null)),
     'access_tokens', jsonb_build_array(jsonb_build_object('name', 'Kurzbefehl',
       'token_hint', (select token_hint from public.personal_access_tokens where name = 'Kurzbefehl'),
       'created_at', now(), 'last_used_at', null, 'revoked_at', null)),
@@ -392,6 +404,9 @@ select is(
     'join_requests', '[]'::jsonb,
     -- Job 337: Emil is in no tester group (tester_groups.test.sql covers a tester's export).
     'tester_groups', '[]'::jsonb,
+    -- Job 352: no detected trip, detection never switched.
+    'trips_detected', '[]'::jsonb,
+    'trip_detection', null,
     -- Job 199: his trip, not Frida's.
     'trips_logged', jsonb_build_array(jsonb_build_object('household_id', (select id from he), 'store_name', null,
       'shopped_on', current_date, 'items', jsonb_build_array(jsonb_build_object('name', 'Äpfel', 'quantity', '1 kg')),

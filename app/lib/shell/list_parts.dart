@@ -25,6 +25,9 @@ final class const ShellListParts() implements ListParts {
   Widget tripEnded() => const TripEndedSlot();
 
   @override
+  Widget detectedTrip() => const DetectedTripSlot();
+
+  @override
   bool Function(Item item)? boughtOnTrip(
     BuildContext context,
     String? listId,

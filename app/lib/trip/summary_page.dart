@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/notices.dart';
@@ -96,8 +97,56 @@ class _TripSummaryPageState() extends State<TripSummaryPage> {
     }
   }
 
-  Future<FinishedTrip> _load() =>
-      _fetch ??= context.read<TripSessionRepository>().fetch(widget.id);
+  /// „Kein Einkauf“ on a detected trip (job 352): after a yes it leaves
+  /// Verlauf for everyone, its ticks stay, and the page leaves.
+  Future<void> _remove() async {
+    final l10n = AppLocalizations.of(context);
+    final notices = Notices.of(context);
+    final repo = context.read<TripSessionRepository>();
+    final sure = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: Text(l10n.tripNotShoppingBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            key: const ValueKey('trip-remove-confirm'),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(l10n.tripNotShoppingConfirm),
+          ),
+        ],
+      ),
+    );
+    if (sure != true || !mounted) {
+      return;
+    }
+    try {
+      await repo.removeDetected(widget.id);
+    } on Object {
+      notices.showSnackBar(SnackBar(content: Text(l10n.tripRemoveFailed)));
+      return;
+    }
+    notices.showSnackBar(SnackBar(content: Text(l10n.tripRemoved)));
+    if (mounted) {
+      _leave();
+    }
+  }
+
+  Future<FinishedTrip> _load() => _fetch ??= context
+      .read<TripSessionRepository>()
+      .fetch(widget.id)
+      .then((trip) {
+        if (mounted && trip.detected) {
+          setState(() => _loaded = trip);
+        }
+        return trip;
+      });
+
+  /// The server's trip once loaded, when it is a detected one.
+  FinishedTrip? _loaded;
 
   Future<void> _markFetched(String id, TripLine line, bool planned) async {
     final notices = Notices.of(context);
@@ -148,6 +197,8 @@ class _TripSummaryPageState() extends State<TripSummaryPage> {
       },
     );
     final Widget body;
+    // Known once loaded: a detected trip is removed, not deleted.
+    var detected = false;
     if (fresh != null) {
       final trips = context.read<TripCubit>();
       body = TripSummaryView(
@@ -172,6 +223,7 @@ class _TripSummaryPageState() extends State<TripSummaryPage> {
         refused: fresh.save == TripSave.refused,
       );
     } else {
+      detected = _loaded?.detected ?? false;
       body = FutureBuilder(
         future: _load(),
         builder: (context, snapshot) {
@@ -196,16 +248,24 @@ class _TripSummaryPageState() extends State<TripSummaryPage> {
             onMark: trip.lines == null
                 ? null
                 : (line, on) => unawaited(_markFetched(trip.id, line, on)),
+            onRemove: trip.detected ? () => unawaited(_remove()) : null,
           );
         },
       );
     }
+    // While the end is on its way, a delete could land before it. A
+    // detected trip is removed from its head instead.
+    final deletable = !detected && fresh?.save != TripSave.saving;
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.shopSummaryTitle),
+        toolbarHeight: _barHeight(
+          context,
+          l10n.shopSummaryTitle,
+          action: deletable,
+        ),
+        title: Text(l10n.shopSummaryTitle, softWrap: true, maxLines: 3),
         actions: [
-          // While the end is on its way, a delete could land before it.
-          if (fresh?.save != TripSave.saving)
+          if (deletable)
             IconButton(
               key: const ValueKey('trip-summary-delete'),
               tooltip: l10n.tripDelete,
@@ -226,6 +286,33 @@ class _TripSummaryPageState() extends State<TripSummaryPage> {
       ),
     );
   }
+}
+
+/// The bar's height for [title]: one line's bar, or as tall as the lines
+/// large text wraps it to (200 % on a 358 px phone), so it is never cut.
+double _barHeight(BuildContext context, String title, {required bool action}) {
+  // The title's width in the bar, a little less if anything: the back
+  // button, the spacing around the title and the delete button.
+  final width =
+      MediaQuery.sizeOf(context).width -
+      kToolbarHeight -
+      2 * NavigationToolbar.kMiddleSpacing -
+      (action ? kMinInteractiveDimension : 0);
+  final painter = TextPainter(
+    text: TextSpan(
+      text: title,
+      style: Theme.of(context).appBarTheme.titleTextStyle,
+    ),
+    textDirection: Directionality.of(context),
+    textScaler: MediaQuery.textScalerOf(context),
+    maxLines: 3,
+  )..layout(maxWidth: width);
+  final lines = painter.computeLineMetrics().length;
+  final height = painter.height;
+  painter.dispose();
+  return lines < 2
+      ? kToolbarHeight
+      : math.max(kToolbarHeight, height + 2 * HlSpace.s2);
 }
 
 class const _Failed({required final VoidCallback onRetry})

@@ -2138,6 +2138,27 @@ order (`GET`/`PUT /v1/stores/{id}/layout`). The MCP list and store writes are bu
 too: a deviation from the brief). Probe 305/305, 284 Deno tests, the release web app shows the
 API's changes. Builds on #605 (job 344). Details: `docs/done/345-api-mcp-suggest-lists-stores.md`.
 
+## Job 352: learned order from detected trips (IO4)
+
+Behind the new flag `learned-order` (internal installs once on main, so Peter and Lea): the list
+learns, per store, the order the household walks it. Trips are detected on the server from plain
+app ticks (job 351's final rule; Siri, Alexa, MCP and API ticks never teach). Categories stay
+hidden, and „Neben …“ in the edit sheet puts one item in its place at once. Detected trips show in
+Verlauf („Aus deinen Häkchen erkannt“), can be removed („Kein Einkauf“), and come with a one-time
+card and a per-person Settings switch. The server enforces Legal's N-319 to N-321 for detected
+trips (clock times only for a trip's sole detector, the card before others see a trip, the opt-out
+deletes unedited trips, tombstones and tap times, no item_events or learned-order reads, pharmacy
+ticks dropped before detection). Open for Legal: `items.bought_at`/`bought_by` still let members
+rebuild a trip's clock times (predates the job; options in DECISIONS "Job 352" point 11).
+Review 1: Peter's binding TD answers are in. A run answered „Nein, nur abgehakt“ (or dismissed) is
+not detected and teaches nothing (TD-Q5: the app sends the answer as a retried op, the server keeps
+it 15 days). Ticking at the same store within 30 minutes continues the trip, bursts included (TD-Q2).
+A burst counts only from 5 ticks and never teaches (TD-Q1), and there is no live store hint (TD-Q4).
+The question's snooze is job 357's 60 minutes. Each answer has tests named after it. MCP and the API gain `position`, walk order, `place_item` and `set_store_order`.
+The SQL matches 351's simulator exactly (0 differences, and the learner to 1e-9). PR #616 is ready
+but not merged: new strings, new agent tools and inferred visits need Legal's hash GO (NEEDS_LEAD
+"Job 352: PR ready, needs Legal"). Details: `docs/done/352-learned-order-io4.md`.
+
 ## Job 358: writers doc, API status and key dialog wording
 
 FEATURES-FOR-WRITERS.md (API section): on for everyone was already right (checked: `releases/flags.json`, #598), now quotes the approved EN "Lesen und schreiben" dialog sentence and says #605/#615 are live (review fix: the deploy-token caveat is gone). ARB files untouched and still on the older sentence; the app needs the EN sentence plus a DE one. NEEDS_LEAD "Job 358: merged" added. Docs only, no app change; not driven. Landed in #617 and a follow-up.

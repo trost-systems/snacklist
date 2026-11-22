@@ -23,6 +23,7 @@ import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/shell/list_parts.dart';
 import 'package:family_groceries/shell/list_scope.dart' show TripCubitSignals;
 import 'package:family_groceries/shell/router.dart';
+import 'package:family_groceries/trip/detection.dart';
 import 'package:family_groceries/trip/model.dart';
 import 'package:family_groceries/trip/summary_page.dart';
 import 'package:family_groceries/trip/trip_cubit.dart';
@@ -92,6 +93,9 @@ Future<Shop> pumpList(
 
   /// The rating prompt the list's trigger feeds, with this cubit's trips.
   ReviewPrompt? reviewPrompt,
+
+  /// The person's trip detection (job 352).
+  TripDetectionCubit? detection,
 }) async {
   tester.view
     ..devicePixelRatio = 3
@@ -123,6 +127,7 @@ Future<Shop> pumpList(
     householdId: 'home',
     enabled: () => shownFlags.isOn(tripModeFlag),
     logs: () => shownFlags.isOn(groceryLogFlag),
+    quiet: () => shownFlags.isOn(learnedOrderFlag),
     clock: clock,
   );
   addTearDown(trips.close);
@@ -186,6 +191,7 @@ Future<Shop> pumpList(
           BlocProvider.value(value: trips),
           BlocProvider.value(value: entitlements),
           BlocProvider<SessionCubit>.value(value: testSession),
+          if (detection != null) BlocProvider.value(value: detection),
         ],
         child: MaterialApp.router(
           routerConfig: router,
@@ -328,6 +334,52 @@ void main() {
     await answer(tester, 'trip-ask-no');
   });
 
+  testWidgets('TD-Q4: ticking a walk through the store with learned-order '
+      'shows no live "looks like you are at Lidl" hint, only the trip '
+      'question (job 352)', (tester) async {
+    final shop = await pumpList(
+      tester,
+      flags: const {tripModeFlag, learnedOrderFlag, groceryLogFlag},
+      seed: (repo) {
+        for (final name in ['Milch', 'Brot', 'Butter', 'Käse', 'Eier']) {
+          repo.remoteAdd(name, storeId: 'lidl');
+        }
+      },
+    );
+    Set<String> texts() => {
+      for (final t in tester.widgetList<Text>(find.byType(Text)))
+        ?t.data ?? t.textSpan?.toPlainText(),
+    };
+    final before = texts();
+    void nothingLive(String after) {
+      expect(find.byType(SnackBar), findsNothing, reason: after);
+      expect(find.byType(MaterialBanner), findsNothing, reason: after);
+      expect(find.byType(BottomSheet), findsNothing, reason: after);
+      expect(
+        texts().difference(before).where((t) => t.contains('Lidl')),
+        isEmpty,
+        reason: after,
+      );
+      expect(find.textContaining('erkannt'), findsNothing, reason: after);
+    }
+
+    await tick(tester, 'Milch');
+    expect(asked, findsOneWidget);
+    await answer(tester, 'trip-ask-no');
+    nothingLive('Milch');
+    for (final name in ['Brot', 'Butter', 'Käse', 'Eier']) {
+      shop.wait(const Duration(minutes: 2));
+      await tick(tester, name);
+      nothingLive(name);
+    }
+    expect(
+      shop.list.state.allItems.values.where(
+        (i) => i.status == ItemStatus.bought,
+      ),
+      hasLength(5),
+    );
+  });
+
   testWidgets('a dismissed sheet is Nein', (tester) async {
     final shop = await pumpList(tester);
     await tick(tester, 'Milch');
@@ -335,6 +387,61 @@ void main() {
     await tester.pumpAndSettle();
     expect(asked, findsNothing);
     expect(shop.trips.state, isA<NoTrip>());
+  });
+
+  group('TD-Q5: with learned-order a „Nein“ keeps the shop from being '
+      'detected (job 352)', () {
+    const flags = {tripModeFlag, learnedOrderFlag};
+    List<DeclineShop> declines(Shop shop) =>
+        shop.repo.sent.whereType<DeclineShop>().toList();
+    String idOf(Shop shop, String name) =>
+        shop.list.state.allItems.values.firstWhere((i) => i.name == name).id;
+
+    testWidgets('Nein sends decline_shop for the asked item, after its tick', (
+      tester,
+    ) async {
+      final shop = await pumpList(tester, flags: flags);
+      await tick(tester, 'Milch');
+      await answer(tester, 'trip-ask-no');
+      final milk = idOf(shop, 'Milch');
+      expect(declines(shop), [
+        isA<DeclineShop>().having((d) => d.itemId, 'item', milk),
+      ]);
+      final sent = shop.repo.sent;
+      expect(
+        sent.indexWhere((op) => op is SetStatus && op.itemId == milk),
+        lessThan(sent.indexWhere((op) => op is DeclineShop)),
+      );
+    });
+
+    testWidgets('a dismissed sheet sends it too', (tester) async {
+      final shop = await pumpList(tester, flags: flags);
+      await tick(tester, 'Milch');
+      await tester.tapAt(const Offset(20, 40));
+      await tester.pumpAndSettle();
+      expect(asked, findsNothing);
+      expect(declines(shop).map((d) => d.itemId), [idOf(shop, 'Milch')]);
+    });
+
+    testWidgets('Ja and Zurücknehmen send none', (tester) async {
+      final shop = await pumpList(tester, flags: flags);
+      await tick(tester, 'Milch');
+      await answer(tester, 'trip-ask-take-back');
+      await tester.pumpAndSettle();
+      await tick(tester, 'Brot');
+      await answer(tester, 'trip-ask-yes');
+      expect(declines(shop), isEmpty);
+    });
+
+    testWidgets('without the flag a Nein sends none', (tester) async {
+      final shop = await pumpList(tester);
+      await tick(tester, 'Milch');
+      await answer(tester, 'trip-ask-no');
+      await tick(tester, 'Seife');
+      expect(asked, findsNothing);
+      expect(shop.repo.sent.whereType<SetStatus>(), hasLength(2));
+      expect(declines(shop), isEmpty);
+    });
   });
 
   testWidgets('Zurücknehmen puts the item back and starts nothing', (

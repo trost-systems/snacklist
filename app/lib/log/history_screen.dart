@@ -303,6 +303,30 @@ String _dayLabel(BuildContext context, DateTime day, DateTime today) {
 String _locale(BuildContext context) =>
     Localizations.localeOf(context).toLanguageTag();
 
+/// A detected trip's line under its store (job 352): whose ticks it came
+/// from, the user's own first; null for any other trip.
+String? detectedLine(
+  AppLocalizations l10n,
+  List<String>? by, {
+  required String me,
+  required String Function(String userId) nameOf,
+}) {
+  if (by == null || by.isEmpty) {
+    return null;
+  }
+  final others = [
+    for (final id in by)
+      if (id != me) nameOf(id),
+  ];
+  return switch ((by.contains(me), others)) {
+    (true, []) => l10n.detectedOwn,
+    (true, [final name, ...]) => l10n.detectedYouAndOther(name),
+    (false, [final name]) => l10n.detectedOther(name),
+    (false, [final a, final b, ...]) => l10n.detectedTwoOthers(a, b),
+    (false, []) => null,
+  };
+}
+
 /// "Milch, Eier, Äpfel und 1 mehr".
 String _summary(AppLocalizations l10n, List<TripItem> items) {
   final names = [for (final item in items) item.name];
@@ -617,6 +641,16 @@ class const _TripTile({
     final l10n = AppLocalizations.of(context);
     final t = SnacklistColors.of(Theme.of(context).brightness);
     final count = l10n.tripItemCount(trip.items.length);
+    final list = context.read<ListCubit>();
+    final detected = detectedLine(
+      l10n,
+      trip.detectedBy,
+      me: list.userId,
+      nameOf: (id) => switch (list.state.catalog.member(id)?.displayName) {
+        final name? when name.trim().isNotEmpty => name,
+        _ => l10n.claimSomeone,
+      },
+    );
     return MergeSemantics(
       child: Semantics(
         button: true,
@@ -663,6 +697,12 @@ class const _TripTile({
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
+                      if (detected != null)
+                        Text(
+                          detected,
+                          key: ValueKey('log-trip-detected-${trip.id}'),
+                          style: HlType.caption.copyWith(color: t.textMuted),
+                        ),
                       Text(
                         _summary(l10n, trip.items),
                         maxLines: 2,

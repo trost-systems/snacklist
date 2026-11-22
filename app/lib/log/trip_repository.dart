@@ -18,12 +18,18 @@ abstract interface class TripRepository() {
 
 class SupabaseTripRepository(
   final SupabaseClient _client,
-  final String householdId,
-) implements TripRepository {
+  final String householdId, {
+
+  /// The flag `learned-order` (job 352): `trip_history_v2`, which also
+  /// answers detected trips.
+  final bool Function() detected = _off,
+}) implements TripRepository {
+  static bool _off() => false;
+
   @override
   Future<TripHistory> fetch(DateTime today) async => TripHistory.fromJson(
     await _client.rpc<Object?>(
-      'trip_history',
+      detected() ? 'trip_history_v2' : 'trip_history',
       params: {'p_household': householdId, 'p_today': wireDay(today)},
     ),
   );

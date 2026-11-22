@@ -84,8 +84,8 @@ test('MCP over OAuth 2.1: discovery, registration, consent with PKCE, then tools
   expect(tools.map((t) => t.name).sort()).toEqual(
     [
       'add_items', 'get_item', 'list_categories', 'list_households', 'list_items', 'list_lists', 'list_recent',
-      'list_stores', 'merge_items', 'move_item', 'remove_items', 'suggest_items', 'tick_items', 'untick_items',
-      'update_item',
+      'list_stores', 'merge_items', 'move_item', 'place_item', 'remove_items', 'set_store_order', 'suggest_items',
+      'tick_items', 'untick_items', 'update_item',
     ],
   );
 

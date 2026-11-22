@@ -309,7 +309,7 @@ class _ShoppingListViewState()
   /// The section of [storeId] with open items, if any.
   StoreSection? _sectionOf(String storeId) {
     final state = _cubit.state;
-    return shownSections(sectionsOf(state.items.values, state.catalog))
+    return shownSections(_sectionsOf(state))
         .where((s) => s.store?.id == storeId && s.count > 0)
         .firstOrNull;
   }
@@ -349,7 +349,7 @@ class _ShoppingListViewState()
   /// A store line of the summary block: its section, unfolded, at the top.
   void _jump(String key) {
     final state = _cubit.state;
-    final section = shownSections(sectionsOf(state.items.values, state.catalog))
+    final section = shownSections(_sectionsOf(state))
         .where((s) => s.key == key)
         .firstOrNull;
     if (section != null) {
@@ -380,9 +380,7 @@ class _ShoppingListViewState()
       return;
     }
     final state = _cubit.state;
-    final resting = shownSections(
-      sectionsOf(state.items.values, state.catalog),
-    );
+    final resting = shownSections(_sectionsOf(state));
     final weight = _weightIn(state);
     final column = columnsOf(
       resting,
@@ -402,11 +400,21 @@ class _ShoppingListViewState()
     );
   }
 
+  /// Flag `learned-order`, and the server switched the household to it
+  /// (job 352): each store's items in one walk order, no category headings.
+  bool _learned(ListState state) =>
+      (context.read<Flags?>()?.isOn(learnedOrderFlag) ?? false) &&
+      state.prefs.learnedOrder;
+
+  List<StoreSection> _sectionsOf(ListState state) =>
+      sectionsOf(state.items.values, state.catalog, learned: _learned(state));
+
   /// How tall a section stands in its column, roughly: a folded one a
-  /// divider, an open one its rows and, unless [hideCategoriesFlag] is on,
-  /// its category dividers too.
+  /// divider, an open one its rows and, unless [hideCategoriesFlag] is on
+  /// or the order is learned, its category dividers too.
   double Function(StoreSection section) _weightIn(ListState state) {
     final dividers =
+        !_learned(state) &&
         !(context.read<Flags?>()?.isOn(hideCategoriesFlag) ?? false);
     return (s) => state.prefs.folded.contains(s.key)
         ? 1
@@ -523,6 +531,7 @@ class _ShoppingListViewState()
     final state = cubit.state;
     final claims = state.claims[item.id] ?? const <Claim>[];
     final flags = context.read<Flags?>();
+    final learned = _learned(state);
     final edit = await showEditItemSheet(
       context,
       item: item,
@@ -530,7 +539,14 @@ class _ShoppingListViewState()
       hexQuantity:
           (flags?.isOn(addFeedbackListFlag) ?? false) &&
           (flags?.isOn(addSheetCompactFlag) ?? false),
-      categories: !(flags?.isOn(hideCategoriesFlag) ?? false),
+      categories: !learned && !(flags?.isOn(hideCategoriesFlag) ?? false),
+      placeRun: learned && item.status == ItemStatus.active
+          ? [
+              for (final section in _sectionsOf(state))
+                for (final block in section.blocks)
+                  if (block.items.any((i) => i.id == item.id)) ...block.items,
+            ]
+          : null,
       catalog: state.catalog,
       onCreateStore: cubit.addStore,
       chains: flags?.isOn(openStoreAppFlag) ?? false
@@ -555,6 +571,9 @@ class _ShoppingListViewState()
       case Unclaimed():
         cubit.unclaim(item.id);
       case null:
+    }
+    if (edit.place case final place?) {
+      cubit.place(item.id, place);
     }
     if (edit.listId case final listId?) {
       cubit.moveToList(item.id, listId);
@@ -601,7 +620,13 @@ class _ShoppingListViewState()
     final used = recentlyUsed(state.items.values);
     // Never more columns than sections: one store with items reads as one
     // centred column.
-    final shown = shownSections(sectionsOf(state.items.values, state.catalog));
+    final learned = context.select<Flags?, bool>(
+      (flags) =>
+          (flags?.isOn(learnedOrderFlag) ?? false) && state.prefs.learnedOrder,
+    );
+    final shown = shownSections(
+      sectionsOf(state.items.values, state.catalog, learned: learned),
+    );
     final frame = ShoppingListView.frameOf(width, shown.length);
     final columnCount = frame.columns;
     final side = frame.side;
@@ -637,9 +662,11 @@ class _ShoppingListViewState()
     final glide = context.select<Flags?, bool>(
       (flags) => flags?.isOn(addFeedbackListFlag) ?? false,
     );
-    final categories = context.select<Flags?, bool>(
-      (flags) => !(flags?.isOn(hideCategoriesFlag) ?? false),
-    );
+    final categories =
+        !learned &&
+        context.select<Flags?, bool>(
+          (flags) => !(flags?.isOn(hideCategoriesFlag) ?? false),
+        );
     final summary = behind == null && declutter && prices
         ? summaryOf(
             state.items.values,
@@ -804,6 +831,7 @@ class _ShoppingListViewState()
                 const SliverToBoxAdapter(child: ListHints()),
                 const SliverToBoxAdapter(child: ChainCard()),
                 SliverToBoxAdapter(child: listParts(context).tripEnded()),
+                SliverToBoxAdapter(child: listParts(context).detectedTrip()),
                 const SliverToBoxAdapter(child: SizedBox(height: 4)),
               ],
               body,

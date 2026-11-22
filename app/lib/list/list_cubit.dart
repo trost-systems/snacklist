@@ -262,6 +262,10 @@ class ListCubit(
   /// fetches the household's index too.
   bool Function() householdIndex = _off,
 
+  /// Whether the flag `learned-order` is on (job 352): the list switches
+  /// the household to the learned order once ([learnOrder]).
+  bool Function() learnedOrder = _off,
+
   /// The country whose chains a store name matches first (job 313).
   String Function() region = phoneRegion,
 }) extends Cubit<ListState> {
@@ -270,6 +274,11 @@ class ListCubit(
   static bool _off() => false;
 
   final _householdIndex = householdIndex;
+  final _learnedOrder = learnedOrder;
+
+  /// `set_order_mode` in flight or answered: asked once per list; a failed
+  /// ask is tried again with the next resync.
+  Future<void>? _ordering;
   final _region = region;
 
   final DateTime Function() _clock = clock ?? DateTime.now;
@@ -947,6 +956,50 @@ class ListCubit(
     }
   }
 
+  /// Puts [id] at [place] in its store's learned order (job 352): next to
+  /// the anchor with `place_item`, the midpoint of the gap as its key until
+  /// the server answers, so the row moves at once.
+  void place(String id, Placement place) {
+    final items = state.allItems;
+    final item = items[id];
+    if (item == null) {
+      return;
+    }
+    final run = [
+      for (final other in items.values)
+        if (other.status == ItemStatus.active &&
+            other.id != id &&
+            other.storeId == item.storeId)
+          other,
+    ]..sort(compareWalk);
+    final (anchor, edge) = switch (place) {
+      PlaceFirst() => (run.firstOrNull, Edge.before),
+      PlaceAfter(:final anchorId) => (
+        run.where((i) => i.id == anchorId).firstOrNull,
+        Edge.after,
+      ),
+    };
+    if (anchor == null) {
+      return;
+    }
+    final at = run.indexOf(anchor) + (edge == Edge.after ? 1 : -1);
+    final neighbour = at >= 0 && at < run.length ? run[at] : null;
+    _enqueue(
+      PlaceItem(
+        id,
+        anchorId: anchor.id,
+        edge: edge,
+        categoryId: item.categoryId ?? anchor.categoryId,
+        storeId: item.storeId,
+        sortKey: switch ((anchor.sortKey, neighbour?.sortKey)) {
+          (null, _) => null,
+          (final a?, final b?) => (a + b) / 2,
+          (final a?, null) => edge == Edge.after ? a + 1024 : a - 1024,
+        },
+      ),
+    );
+  }
+
   /// Puts a ticked item back: no analytics event.
   void untick(String id) =>
       _enqueue(SetStatus(id, ItemStatus.active, _clock()));
@@ -1386,6 +1439,10 @@ class ListCubit(
 
   /// Takes the user's claim on the item back.
   void unclaim(String itemId) => _enqueue(UnclaimItem(itemId, userId: userId));
+
+  /// The trip question after the user's tick of [itemId] was answered
+  /// „Nein“ or dismissed (job 352, TD-Q5): that shop is not detected.
+  void declineShop(String itemId) => _enqueue(DeclineShop(itemId, _clock()));
 
   /// Shows the list [listId] on this device (job 169b K).
   void showList(String listId) {
@@ -1945,8 +2002,40 @@ class ListCubit(
     if (_householdIndex()) {
       unawaited(_refreshHouseholdIndex());
     }
+    unawaited(learnOrder());
     if (unsure) {
       unawaited(resync());
+    }
+  }
+
+  /// With the flag `learned-order`, switches the household to the learned
+  /// order (job 352), once: the list sorts by it only while the server
+  /// answers learned.
+  Future<void> learnOrder() async {
+    if (_learnedOrder()) {
+      await (_ordering ??= _askOrder());
+    }
+  }
+
+  Future<void> _askOrder() async {
+    try {
+      final mode = await _repo.setOrderMode(OrderMode.learned);
+      // The switch gave the rows new sort keys: sorted by learned order, the
+      // rows held so far would jumble until their updates arrive.
+      if (mode == OrderMode.learned &&
+          !state.prefs.learnedOrder &&
+          !isClosed &&
+          !await resync()) {
+        _ordering = null;
+        return;
+      }
+      if (!isClosed) {
+        _setPrefs(
+          state.prefs.copyWith(learnedOrder: mode == OrderMode.learned),
+        );
+      }
+    } on Object {
+      _ordering = null;
     }
   }
 

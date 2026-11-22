@@ -74,6 +74,12 @@ select public.answer_store_retailer(pg_temp.store((select id from fx where key =
   'de.dm.meindm.android');
 select public.answer_store_retailer(pg_temp.store((select id from fx where key = 'home'), 'Wochenmarkt'), null, null);
 select public.create_personal_access_token('Claude Desktop');
+-- Job 352: the household sorts by learned order (item_order_memory), Spülmittel placed by hand.
+select public.set_order_mode((select id from fx where key = 'home'), 'learned');
+select public.place_item(
+  (select id from public.items where household_id = (select id from fx where key = 'home') and name = 'Spülmittel'),
+  (select id from public.items where household_id = (select id from fx where key = 'home') and name = 'Joghurt'),
+  'after');
 -- Job 21: feedback as the app sends it; household_id and is_internal come from the trigger.
 insert into public.feedback (id, message, category, contact_ok, app_version, build, platform, os_version, locale, screen)
 values (gen_random_uuid(), 'Der Haken reagiert erst beim zweiten Tippen.', 'bug', true, '0.1.0', '42', 'android',
@@ -193,6 +199,18 @@ select id, '00000000-0000-4000-8000-0000000b0080', 'Chrome · macOS' from auth.u
 -- Job 337: Peter is in a tester group, as the lead's SQL puts him there.
 insert into public.tester_groups (user_id, group_name)
 select id, 'internal' from auth.users where email = 'peter@backup.test';
+
+-- Job 352: Peter has seen the first detected trip card (detection on since always); Carl switched
+-- detection off.
+insert into public.trip_detection_settings (user_id, detect_ticks_from, detected_card_at)
+select id, '-infinity'::timestamptz, now() from auth.users where email = 'peter@backup.test'
+union all
+select id, null::timestamptz, null::timestamptz from auth.users where email = 'carl@backup.test';
+-- Job 352 (TD-Q5): Lea said „Nein, nur abgehakt" to the trip question for her tick of Milch.
+insert into public.shop_declines (household_id, user_id, tick_id, client_at)
+select e.household_id, e.actor, e.id, now() from public.item_events e
+where e.actor = (select id from auth.users where email = 'lea@backup.test') and e.action = 'bought'
+  and e.item_name = 'Milch';
 
 -- Job 82: a confirmed waitlist sign-up, a proof record and a rate counter (test addresses only).
 insert into public.waitlist (email, email_hmac, platform, locale, launch_news, consent_text_version,

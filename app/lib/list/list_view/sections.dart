@@ -24,7 +24,13 @@ class const StoreSection({
 /// Every store in household order, then the section without a store. A
 /// category is one block per section, never repeated; empty ones are left
 /// out. Unclassified items come first, items of unknown categories last.
-List<StoreSection> sectionsOf(Iterable<Item> items, Catalog catalog) {
+/// [learned] (job 352): each section is one block without a category, its
+/// items in walk order ([compareWalk]).
+List<StoreSection> sectionsOf(
+  Iterable<Item> items,
+  Catalog catalog, {
+  bool learned = false,
+}) {
   final byStore = <String?, List<Item>>{};
   final storeIds = {for (final s in catalog.stores) s.id};
   for (final item in items) {
@@ -37,18 +43,22 @@ List<StoreSection> sectionsOf(Iterable<Item> items, Catalog catalog) {
   }
   final stores = [...catalog.stores]
     ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+  List<CategoryBlock> blocks(List<Item> items, String? storeId) =>
+      learned ? _walk(items) : _blocks(items, catalog, storeId);
   return [
     for (final store in stores)
       StoreSection(
         store: store,
-        blocks: _blocks(byStore[store.id] ?? const [], catalog, store.id),
+        blocks: blocks(byStore[store.id] ?? const [], store.id),
       ),
-    StoreSection(
-      store: null,
-      blocks: _blocks(byStore[null] ?? const [], catalog, null),
-    ),
+    StoreSection(store: null, blocks: blocks(byStore[null] ?? const [], null)),
   ];
 }
+
+/// One run in walk order, or none for no items.
+List<CategoryBlock> _walk(List<Item> items) => [
+  if (items.isNotEmpty) CategoryBlock(null, [...items]..sort(compareWalk)),
+];
 
 List<CategoryBlock> _blocks(
   List<Item> items,

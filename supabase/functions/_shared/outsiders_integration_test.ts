@@ -118,6 +118,7 @@ const NO_ROW = [
   'revenuecat_events',
   'revenuecat_households',
   'tester_groups',
+  'trip_detection_settings',
   'user_entitlements',
   'waitlist',
   'waitlist_consent_proof',
@@ -159,7 +160,8 @@ function values(type: string, household: Household, outsider: Outsider): string[
     uuid: all.map(uuid),
     'uuid[]': [`array[${all.map(uuid).join(', ')}]`],
     // A name, then the words the functions take (roles, kinds of invite, how to join, where to
-    // place an item, a catalog version) and the household's invite code.
+    // place an item, a catalog version, an order mode, an item's status) and the household's
+    // invite code.
     text: [
       ...[
         'Milch',
@@ -171,6 +173,9 @@ function values(type: string, household: Household, outsider: Outsider): string[
         'before',
         'after',
         '0123456789abcdef',
+        'categories',
+        'learned',
+        'bought',
       ].map((t) => `'${t}'::text`),
       codeOf(household),
     ],
@@ -532,6 +537,8 @@ async function fill(
     );
     await tx`select public.create_personal_access_token('test')`;
     await tx`select public.create_invite(${household}, 'person')`;
+    // Job 352: the learned order (item_order_memory).
+    await tx`select public.set_order_mode(${household}, 'learned')`;
     await tx`insert into public.feedback
                (id, message, app_version, build, platform, os_version, locale, screen)
              values (gen_random_uuid(), 'Test', '0.1.0', '1', 'web', 'Chrome', 'de', 'list')`;
@@ -547,6 +554,9 @@ async function fill(
             values (${household}, 'siri', now())`;
   await sql`insert into public.api_household_days (household_id, day, requests)
             values (${household}, current_date, 3)`;
+  // Job 352 (TD-Q5): the owner said „Nein, nur abgehakt" to the trip question (decline_shop).
+  await sql`insert into public.shop_declines (household_id, user_id, tick_id)
+            select ${household}, ${owner}, max(id) from public.item_events where household_id = ${household}`;
   await sql`insert into public.entitlements (household_id, kind, source, premium_source)
             values (${household}, 'premium', 'promotional', 'promotional')`;
   await sql`insert into public.purchase_claims (store, transaction_id, user_id, claimed_for)

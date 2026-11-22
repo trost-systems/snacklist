@@ -95,7 +95,8 @@ select is((select s from saved),
     'active_seconds', 1200, 'end_reason', 'user', 'source', 'ask', 'currency', 'EUR',
     'shopped_on', current_date, 'pauses', jsonb_build_array(jsonb_build_object(
       'from', '2026-11-14T09:10:00+00:00', 'to', '2026-11-14T09:15:00+00:00', 'auto', false)),
-    'lines', null, 'bought', 3, 'stores', jsonb_build_array('Lidl', 'Rewe', null), 'premium', false),
+    'lines', null, 'bought', 3, 'stores', jsonb_build_array('Lidl', 'Rewe', null), 'premium', false,
+    'detected_by', null, 'walked', null, 'mine', true),
   'save_trip_session returns the session; Free: no lines, but the bought count and the stores in store order');
 select is((select lines from pg_temp.sessions() where id = :s1),
   (select jsonb_set(l, '{0,name}', '"Milch"') from lines),

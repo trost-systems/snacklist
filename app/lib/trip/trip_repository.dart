@@ -25,6 +25,11 @@ abstract interface class TripSessionRepository() {
 
   /// Deletes the trip and its log entries; a missing one is no error.
   Future<void> delete(String id);
+
+  /// „Kein Einkauf“ on a detected trip (job 352, `remove_detected_trip`):
+  /// it leaves Verlauf and the order no longer learns from it; its ticks
+  /// stay.
+  Future<void> removeDetected(String id);
 }
 
 class SupabaseTripSessionRepository(
@@ -75,5 +80,10 @@ class SupabaseTripSessionRepository(
   @override
   Future<void> delete(String id) async {
     await _client.rpc<void>('delete_trip_session', params: {'p_id': id});
+  }
+
+  @override
+  Future<void> removeDetected(String id) async {
+    await _client.rpc<void>('remove_detected_trip', params: {'p_id': id});
   }
 }

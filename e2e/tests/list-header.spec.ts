@@ -32,9 +32,10 @@ test('the bar above the list keeps its height in every sync state and names the 
   // Hold every item write until released: the tick stays pending, and online that shows nothing.
   let release!: () => void;
   const held = new Promise<void>((resolve) => { release = resolve; });
-  const items = '**/rest/v1/items**';
+  // A tick is the RPC set_item_status (job 352).
+  const items = '**/rest/v1/rpc/set_item_status';
   await page.route(items, async (route) => {
-    if (route.request().method() !== 'GET') await held;
+    await held;
     await route.fallback();
   });
   await tick(page, 'Milch');
@@ -86,8 +87,9 @@ test('a server that answers with errors shows sync failing, keeps the change and
   let hold: ((route: Route) => void) | undefined;
   await page.route(writes, async (route) => {
     if (route.request().method() === 'GET') return route.fallback();
-    // Each resync also POSTs rpc/suggest_items; only the tick's item write is timed and held.
-    if (!route.request().url().includes('/rest/v1/items')) return route.fulfill(unavailable);
+    // Each resync also POSTs rpc/suggest_items; only the tick's write (set_item_status, job 352) is timed
+    // and held.
+    if (!route.request().url().includes('/rest/v1/rpc/set_item_status')) return route.fulfill(unavailable);
     if (hold) {
       hold(route);
       hold = undefined;

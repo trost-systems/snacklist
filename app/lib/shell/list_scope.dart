@@ -17,6 +17,7 @@ import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/shell/list_parts.dart';
 import 'package:family_groceries/siri/siri_channel.dart';
 import 'package:family_groceries/siri/siri_suggestions.dart';
+import 'package:family_groceries/trip/detection.dart';
 import 'package:family_groceries/trip/model.dart';
 import 'package:family_groceries/trip/trip_cubit.dart';
 import 'package:family_groceries/trip/trip_repository.dart';
@@ -47,6 +48,9 @@ class const ListScope({
 
   /// Overrides the Supabase trip-mode trips per household, for tests.
   final TripSessionRepository Function(String householdId)? tripSessions,
+
+  /// Overrides the Supabase trip detection (job 352), for tests.
+  final TripDetectionRepository? tripDetection,
 }) extends StatefulWidget {
   @override
   State<ListScope> createState() => _ListScopeState();
@@ -152,6 +156,7 @@ class _ListScopeState() extends State<ListScope> implements ListHolds {
       analytics: context.read<Analytics>(),
       network: context.read<NetworkWatch?>()?.watch(),
       householdIndex: () => flags?.isOn(onDeviceCatalogFlag) ?? false,
+      learnedOrder: () => flags?.isOn(learnedOrderFlag) ?? false,
     )..start();
   }
 
@@ -234,7 +239,14 @@ class _ListScopeState() extends State<ListScope> implements ListHolds {
                   SupabaseTripRepository(
                     Supabase.instance.client,
                     household.id,
+                    detected: () =>
+                        context.read<Flags?>()?.isOn(learnedOrderFlag) ?? false,
                   ),
+            ),
+            RepositoryProvider<TripDetectionRepository>(
+              create: (_) =>
+                  widget.tripDetection ??
+                  SupabaseTripDetection(Supabase.instance.client),
             ),
             RepositoryProvider<TripSessionRepository>(
               create: (_) =>
@@ -282,6 +294,10 @@ class _ScopeState() extends State<_Scope> {
 
   /// Trip mode (job 234): asks after own ticks, runs the user's trip.
   late final TripCubit _trips;
+
+  /// The person's trip detection (job 352): the first-trip card and
+  /// Einstellungen' switch.
+  late final TripDetectionCubit _detection;
   late final _signals = TripCubitSignals(_trips);
   StreamSubscription<Map<String, bool>>? _flags;
 
@@ -317,21 +333,36 @@ class _ScopeState() extends State<_Scope> {
       householdId: widget.householdId,
       enabled: () => flag(tripModeFlag),
       logs: () => flag(groceryLogFlag),
+      quiet: () => flag(learnedOrderFlag),
       analytics: context.read<Analytics>(),
     );
     unawaited(_trips.start());
+    _detection = TripDetectionCubit(
+      () => context.read<TripDetectionRepository>(),
+      enabled: () => flag(learnedOrderFlag),
+    );
+    unawaited(_detection.refresh());
     var tripMode = flag(tripModeFlag);
+    var learned = flag(learnedOrderFlag);
     _flags = flags?.stream.listen((_) {
       if (!tripMode && flag(tripModeFlag)) {
         unawaited(_trips.check());
       }
       tripMode = flag(tripModeFlag);
+      if (!learned && flag(learnedOrderFlag)) {
+        // The flag's first answer may come after the list's first resync.
+        unawaited(cubit.learnOrder());
+        unawaited(_detection.refresh());
+      }
+      learned = flag(learnedOrderFlag);
     });
     _lifecycle = AppLifecycleListener(
       onHide: cubit.hidden,
       onResume: () async {
         await cubit.resumed();
         await _trips.check();
+        // A trip detected meanwhile brings its card.
+        await _detection.refresh();
       },
     );
     _rejections = cubit.rejections.listen((rejection) {
@@ -355,6 +386,7 @@ class _ScopeState() extends State<_Scope> {
     unawaited(_homeWidgets?.cancel());
     unawaited(_flags?.cancel());
     unawaited(_trips.close());
+    unawaited(_detection.close());
     // After the rows' ticks: they ended before this, and tick in a
     // microtask of their own.
     final holds = _holds;
@@ -369,7 +401,13 @@ class _ScopeState() extends State<_Scope> {
       RepositoryProvider.value(value: _notices),
       RepositoryProvider<TripSignals>.value(value: _signals),
     ],
-    child: BlocProvider.value(value: _trips, child: widget.child),
+    child: MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: _trips),
+        BlocProvider.value(value: _detection),
+      ],
+      child: widget.child,
+    ),
   );
 }
 
@@ -415,4 +453,7 @@ class _LazyTripSessions(final TripSessionRepository Function() _find)
 
   @override
   Future<void> delete(String id) => _repo.delete(id);
+
+  @override
+  Future<void> removeDetected(String id) => _repo.removeDetected(id);
 }

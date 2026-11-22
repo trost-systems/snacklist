@@ -167,10 +167,11 @@ for (const spec of config.clients) {
   c.page = await context.newPage();
   c.page.on('response', (/** @type {any} */ res) => {
     const req = res.request();
-    // Item writes only (an add is the put_item RPC): the app also POSTs RPCs (suggest_items) that
-    // are no ack of an action.
+    // Item writes only (an add is the put_item RPC, a tick set_item_status): the app also POSTs
+    // RPCs (suggest_items) that are no ack of an action.
     const path = new URL(req.url()).pathname;
-    if (req.method() !== 'GET' && (path === '/rest/v1/items' || path === '/rest/v1/rpc/put_item') && req.url().startsWith(supabaseUrl)) {
+    const write = path === '/rest/v1/items' || path === '/rest/v1/rpc/put_item' || path === '/rest/v1/rpc/set_item_status';
+    if (req.method() !== 'GET' && write && req.url().startsWith(supabaseUrl)) {
       c.writes.push({ at: Date.now(), method: req.method(), path: path.replace('/rest/v1/', ''), status: res.status() });
     }
   });
