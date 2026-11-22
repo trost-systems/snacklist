@@ -50,7 +50,7 @@
 .row .emo { width: 28px; flex: none; font-size: calc(18px * var(--ts)); display: flex; justify-content: center; line-height: calc(21.25px * var(--ts)); text-align: center;
   font-family: "Apple Color Emoji", "Noto Color Emoji", "Segoe UI Emoji", sans-serif; }
 .row .name { font: 700 calc(17px * var(--ts))/calc(21.25px * var(--ts)) Bricolage; min-width: 0; overflow-wrap: anywhere; }
-.row .q { font-weight: 800; color: var(--brand); }
+.row .q { font-weight: 800; color: var(--brand); font-feature-settings: 'tnum'; }
 .row.recent { opacity: 0.55; }
 .row.recent .q { color: var(--muted); }
 .recent-head { border-top: 1px solid var(--edge); min-height: 48px; display: flex; align-items: center; justify-content: space-between;

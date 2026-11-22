@@ -2378,5 +2378,8 @@ both sides' reviewed text through its rebase.
 Five cards for the top of the list once a store's last item is ticked and its "Open app" key is gone, on the launch
 list (RD1, categories hidden, compact add, `open-store-app` on; no prices, totals, trips or log), in states (a) to
 (e), English and German, light and dark, 100 % and 310 %, iPhone and a small Android phone. Calibrated against the
-release web build with the launch flags. **Pick SC1, runner-up SC3.** Preview `dpl_DXk3qtWM7M9VXyBgJm5rYgrijDHA`
+release web build with the launch flags. **Pick SC1, runner-up SC3.** Preview `dpl_4VcSwXvcGSUy5a9d3DMYpCqYZXQR`
 (share link to be minted by the lead). Details: `docs/done/400.md`.
+Review 0 fix: verify.mjs failed about 2 runs in 5 because the page measured phones before Bricolage had loaded. It now
+loads every face first; 10 of 10 consecutive runs end `all checks passed (2203)`, and the calibration covers the whole
+capture, the German one included.

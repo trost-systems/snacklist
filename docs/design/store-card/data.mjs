@@ -41,6 +41,8 @@ export const states = {
   b: { done: ['dm'], open: [] },
   c: { done: ['rewe', 'lidl'], open: ['dm'] },
   d: { done: ['netto'], open: ['lidl', 'dm'] },
+  // Only on the storyboard: Lidl finished while REWE, above it in list order, is still open; dm comes after Lidl.
+  f: { done: ['lidl'], open: ['rewe', 'dm'] },
 };
 export const stateKeys = ['a', 'b', 'c', 'd'];
 export const storeById = (id) => stores.find((s) => s.id === id);

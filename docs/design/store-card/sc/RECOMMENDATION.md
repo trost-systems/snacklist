@@ -2,7 +2,7 @@
 
 **Pick: SC1 Compact identity. Runner-up: SC3 Recap and undo.**
 
-SC1 gives back exactly what the tick took away, the "Open REWE" key, for the least room: 88 px at 100 % and 302 px at 310 %, the smallest of the five at both sizes. It needs no new data, no deep link and no session concept, so the launch list stays as simple as it is today. SC3 is the runner-up because "Undo last tick" fixes the one real mistake at the till (the last item ticked by accident hides the section and its key), but it costs 144 px and 498 px, and Recently used already puts an item back with one tap.
+SC1 gives back exactly what the tick took away, the "Open REWE" key, for the least room (88 px at 100 %, 302 px at 310 %) and needs no deep link, recap data or session, so the launch list stays as simple as today. SC3 is the runner-up: "Undo last tick" fixes the mistick at the till, but it costs 144 px and 498 px, and Recently used already puts an item back with one tap.
 
 ## Measured
 
@@ -17,6 +17,8 @@ iPhone 390×844, English, light theme, at scroll top. Rows are whole open item r
 | SC4 | 7 | 0 | 3 | 140 px | 424 px | 140 px | Android, (d) in German |
 | SC5 | 7 | 0 | 3 | 124 px | 386 px | 228 px | none |
 
+The rows are counted on the replica iPhone, which has a 47 px status bar and a 34 px home indicator. The web capture has neither, so the real web build shows 10 rows for Today (a), not 9. Compare the counts between options, not with the web build.
+
 What the numbers say:
 - Every card costs the same 2 rows in (a). Today's 9 rows are Lidl's 7 and dm's first 2; any card of 88 px or more pushes dm's 2 out, and Lidl's 7 stay in view under all five. The height is what separates the options, and SC1 is 36 px to 56 px smaller than the rest at 100 %.
 - In (b) the list is empty, so the card costs nothing. In (c) dm's 3 rows stay in view under every card.
@@ -25,7 +27,7 @@ What the numbers say:
 
 Why not the others:
 - **SC2** needs a deep link to the customer card. None is verified for any chain (job 314 dropped DL2–DL4; the registry's links open the app's start screen). Without it the build would hide the button, and SC2 becomes SC1 with 46 px more.
-- **SC4**'s "Next: Lidl" scrolls nowhere in (a) and (d), where Lidl already starts under the card. It helps only when the next store is below the fold, and the auto-dismiss after "Open" removes the key the user may need again if a scan fails.
+- **SC4**'s "Next: Lidl" scrolls nowhere in (a) and (d), where Lidl already starts under the card. It helps only when the next store is below the fold: the storyboard shows Lidl finished while REWE, earlier in the list, is still open, and "Next: dm" jumps past REWE's 9 items to dm under the add field. The auto-dismiss after "Open" removes the key the user may need again if a scan fails.
 - **SC5** asks "Finished at REWE?" and offers "I'm done", which writes nothing with trips off. It is a question with no consequence, and it reads like trip mode, which is off at launch.
 
 ## Open questions

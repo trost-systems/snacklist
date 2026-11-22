@@ -37,6 +37,7 @@ const T = {
       SC3: 'SC3 “Undo last tick”: Apples and the REWE section with its key are back; the card is gone.',
       SC4: 'SC4 “Open REWE”: the card closes, a snackbar offers Undo (4 s). Back from the REWE app, the list shows no card.',
       SC4next: 'SC4 in (a) and (d): Lidl already starts right under the card, so “Next: Lidl” scrolls nowhere. It helps only when the next store is below the fold.',
+      SC4below: 'SC4 where “Next” helps: Lidl finished while REWE, earlier in the list, is still open. “Next: dm” jumps past REWE’s 9 items to dm, which starts below the add field.',
     },
     measured: 'Measured (iPhone 390×844, English, light)',
     measuredNote: 'Rows: whole open item rows between the list’s top and the add field at scroll top. Extra: the card slot’s height (card plus 8 px above and below), which pushes every row down. Extra (c): the same with two stores finished. Last column: the states (state, language, phone) where the primary “Open” button sits under the add field at 310 % until the user scrolls. No card has text or a button outside it, overlapping, or under 44 px anywhere. Read by verify.mjs from these phones.',
@@ -70,6 +71,7 @@ const T = {
       SC3: 'SC3 „Letzten Haken zurücknehmen“: Äpfel und der REWE-Abschnitt mit seinem Knopf sind zurück, die Karte ist weg.',
       SC4: 'SC4 „REWE öffnen“: die Karte schließt sich, eine Snackbar bietet Rückgängig (4 s). Zurück aus der REWE-App zeigt die Liste keine Karte.',
       SC4next: 'SC4 in (a) und (d): Lidl beginnt schon direkt unter der Karte, „Weiter: Lidl“ scrollt nirgendwohin. Es hilft nur, wenn der nächste Laden unter dem sichtbaren Bereich liegt.',
+      SC4below: 'SC4, wo „Weiter“ hilft: Lidl ist fertig, REWE, weiter oben in der Liste, noch offen. „Weiter: dm“ springt über REWEs 9 Artikel zu dm, das unter dem Eingabefeld beginnt.',
     },
     measured: 'Gemessen (iPhone 390×844, Englisch, hell)',
     measuredNote: 'Zeilen: ganze offene Artikelzeilen zwischen Listenanfang und Eingabefeld, ganz oben gescrollt. Zusätzlich: die Höhe des Kartenplatzes (Karte plus je 8 px darüber und darunter), um die jede Zeile nach unten rutscht. Zusätzlich (c): dasselbe mit zwei fertigen Läden. Letzte Spalte: die Fälle (Zustand, Sprache, Telefon), in denen der Hauptknopf „öffnen“ bei 310 % unter dem Eingabefeld liegt, bis man scrollt. Keine Karte hat Text oder Knöpfe außerhalb, überlappend oder unter 44 px. verify.mjs liest das aus diesen Telefonen.',
@@ -154,7 +156,7 @@ async function render() {
     </header>
     <section class="opt" id="today"><h2>${t.today}</h2><p>${t.todayBlurb}</p><div class="frames">${frame(t.before, { opt: 'before', state: 'a' })}${states.map((s) => frame(t.states[s], { opt: 'today', state: s })).join('')}${frame(t.states.e, { opt: 'today', state: 'a', ts: 3.1 })}</div></section>
     ${optionIds.map((o) => `<section class="opt" id="${o}"><h2>${o} ${t.opts[o][0]}</h2><p>${t.opts[o][1]}</p>${o === 'SC2' ? `<p class="note">${t.sc2Note}</p>` : ''}<div class="frames">${optFrames(o)}</div></section>`).join('')}
-    <section class="opt" id="next"><h2>${t.next}</h2><div class="frames">${frame(t.nexts.SC3, { opt: 'SC3', state: 'a', frame: 'undone' })}${frame(t.nexts.SC4, { opt: 'SC4', state: 'a', frame: 'opened' })}${frame(t.nexts.SC4next, { opt: 'SC4', state: 'd' })}</div></section>
+    <section class="opt" id="next"><h2>${t.next}</h2><div class="frames">${frame(t.nexts.SC3, { opt: 'SC3', state: 'a', frame: 'undone' })}${frame(t.nexts.SC4, { opt: 'SC4', state: 'a', frame: 'opened' })}${frame(t.nexts.SC4next, { opt: 'SC4', state: 'd' })}${frame(t.nexts.SC4below, { opt: 'SC4', state: 'f' })}</div></section>
     <section class="doc" id="measured"><h2>${t.measured}</h2><p class="muted">${t.measuredNote}</p>${table}</section>
     <section class="doc" id="copy"><h2>${t.copyTitle}</h2><p class="muted">${t.copyNote}</p><table><thead><tr><th>key</th><th>EN</th><th>DE</th><th></th></tr></thead><tbody>${newWords.map((w) => `<tr>${w.map((c) => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></section>
     <section class="doc" id="rec"><h2>${t.rec}</h2>${rec}</section>`;
@@ -171,9 +173,12 @@ globalThis.show = (opts) => {
 };
 globalThis.multi = multi;
 
+// Every face loads before anything is measured or shown: a font loads only once text uses it, so a phone drawn
+// right after `ready` was laid out in the fallback font and wrapped differently from load to load.
+const faces = Promise.all([...document.fonts].map((f) => f.load()));
 if (params.get('measure') === '1') {
   document.body.classList.add('measuring');
-  document.body.dataset.ready = '1';
+  faces.then(() => { document.body.dataset.ready = '1'; });
 } else {
-  render();
+  faces.then(render);
 }

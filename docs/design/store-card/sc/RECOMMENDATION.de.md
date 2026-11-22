@@ -2,7 +2,7 @@
 
 **Wahl: SC1 Kompakt mit Laden. Zweite Wahl: SC3 Rückblick und Zurücknehmen.**
 
-SC1 gibt genau das zurück, was der Haken weggenommen hat, den Knopf „REWE öffnen“, und braucht dafür am wenigsten Platz: 88 px bei 100 % und 302 px bei 310 %, bei beiden Größen das Kleinste der fünf. Sie braucht keine neuen Daten, keinen Deep Link und keinen Einkaufsbegriff, die Liste zum Start bleibt so einfach wie heute. SC3 ist zweite Wahl, weil „Letzten Haken zurücknehmen“ den einen echten Fehler an der Kasse behebt (der letzte Artikel aus Versehen abgehakt blendet den Abschnitt und seinen Knopf aus). Sie kostet aber 144 px und 498 px, und „Zuletzt verwendet“ holt einen Artikel schon mit einem Tipp zurück.
+SC1 gibt genau das zurück, was der Haken weggenommen hat, den Knopf „REWE öffnen“, mit dem wenigsten Platz (88 px bei 100 %, 302 px bei 310 %) und braucht keinen Deep Link, keine Rückblick-Daten und keinen Einkaufsbegriff, die Liste zum Start bleibt so einfach wie heute. SC3 ist zweite Wahl: „Letzten Haken zurücknehmen“ behebt den Fehlhaken an der Kasse, kostet aber 144 px und 498 px, und „Zuletzt verwendet“ holt einen Artikel schon mit einem Tipp zurück.
 
 ## Gemessen
 
@@ -17,6 +17,8 @@ iPhone 390×844, Englisch, hell, ganz oben gescrollt. Zeilen sind ganze offene A
 | SC4 | 7 | 0 | 3 | 140 px | 424 px | 140 px | Android, (d) auf Deutsch |
 | SC5 | 7 | 0 | 3 | 124 px | 386 px | 228 px | nie |
 
+Die Zeilen sind auf dem nachgebauten iPhone gezählt, mit 47 px Statusleiste und 34 px Home-Balken. Die Web-Aufnahme hat beides nicht, darum zeigt der echte Web-Build für Heute (a) 10 Zeilen statt 9. Die Zahlen vergleichen Optionen untereinander, nicht mit dem Web-Build.
+
 Was die Zahlen sagen:
 - Jede Karte kostet in (a) dieselben 2 Zeilen. Die 9 Zeilen von heute sind Lidls 7 und die ersten 2 von dm; jede Karte ab 88 px schiebt die 2 von dm hinaus, Lidls 7 bleiben unter allen fünf sichtbar. Die Höhe unterscheidet die Optionen, und SC1 ist bei 100 % 36 px bis 56 px kleiner als die anderen.
 - In (b) ist die Liste leer, die Karte kostet nichts. In (c) bleiben die 3 Zeilen von dm unter jeder Karte sichtbar.
@@ -25,7 +27,7 @@ Was die Zahlen sagen:
 
 Warum nicht die anderen:
 - **SC2** braucht einen Deep Link zur Kundenkarte. Für keine Kette ist einer geprüft (Job 314 hat DL2–DL4 gestrichen; die Links im Register öffnen den Startbildschirm der App). Ohne ihn würde der Build den Knopf ausblenden, und SC2 wird zu SC1 mit 46 px mehr.
-- **SC4**s „Weiter: Lidl“ scrollt in (a) und (d) nirgendwohin, weil Lidl schon unter der Karte beginnt. Es hilft nur, wenn der nächste Laden unter dem sichtbaren Bereich liegt, und das automatische Schließen nach „öffnen“ nimmt den Knopf weg, den man nach einem fehlgeschlagenen Scan wieder braucht.
+- **SC4**s „Weiter: Lidl“ scrollt in (a) und (d) nirgendwohin, weil Lidl schon unter der Karte beginnt. Es hilft nur, wenn der nächste Laden unter dem sichtbaren Bereich liegt: das Storyboard zeigt Lidl fertig, während REWE weiter oben noch offen ist, und „Weiter: dm“ springt über REWEs 9 Artikel zu dm unter dem Eingabefeld. Das automatische Schließen nach „öffnen“ nimmt den Knopf weg, den man nach einem fehlgeschlagenen Scan wieder braucht.
 - **SC5** fragt „Fertig bei REWE?“ und bietet „Ich bin fertig“, das mit ausgeschalteten Einkäufen nichts speichert. Eine Frage ohne Folge, die nach Einkaufsmodus klingt, der zum Start aus ist.
 
 ## Offene Fragen

@@ -4,7 +4,7 @@
 // the add field 11 px over the tab bar. The card takes HintCard's slot and look (app/lib/tips/hint_views.dart).
 import { copy } from './copy.mjs';
 import { icon } from './icons.mjs';
-import { items, itemsOf, states, storeById } from './data.mjs';
+import { items, itemsOf, states, storeById, stores } from './data.mjs';
 
 export const devices = {
   iphone: { w: 390, h: 844, top: 47, bottom: 34, clock: '9:41' },
@@ -47,7 +47,9 @@ function cards(opt, done, open, lang, links, ts) {
   const a = copy[lang].app;
   const s = storeById(done.at(-1));
   const open1 = btn(a.storeAppOpen(s.app), 'primary', 'openInNew');
-  const nextId = open[0];
+  // The next store in list order after the one just finished, else the first open one.
+  const order = stores.map((x) => x.id);
+  const nextId = open.find((id) => order.indexOf(id) > order.indexOf(s.id)) ?? open[0];
   switch (opt) {
     case 'SC1': {
       const one = (st) => `<div class="card c1" data-card>${lead('store')}

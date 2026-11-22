@@ -17667,3 +17667,15 @@ TE-Q default. Built behind the new flag `total-priced-only`, on top of `list-dec
   name on the 360 px Android phone and is listed per option; every other layout problem fails verify.mjs.
 - **Pick SC1, runner-up SC3** (sc/RECOMMENDATION.md): SC1 is the smallest at both text sizes (88 px, 302 px) and
   needs no deep link, recap data or session.
+
+## Job 400 review 0: deterministic verify (2026-11-22)
+
+- **Cause of the flaky 310 % row.** In measure mode the page drew nothing before `document.fonts.ready`, so only Inter
+  400 had loaded; `show()` laid rows out in a fallback font and "6× Sparkling water" wrapped on 2 or 3 lines depending
+  on load timing. The page now loads every face before it reports ready (and before it renders), and the row wraps on
+  3 lines (210.6 px, real 211) on every load. No tolerance changed; `measured.json` did not move.
+- **Calibration covers the whole capture.** The `< 700` filters are gone, so the before frame checks the rows the
+  real capture has, and the German dark capture is calibrated too. A real row the web build cuts at the 844 px
+  viewport (its semantics box ends there) must be at least that tall in the replica.
+- **SC4's next store** is the next open store after the finished one in list order (else the first open). A
+  storyboard frame shows where "Next" helps: Lidl finished while REWE is still open above, "Next: dm" below the fold.

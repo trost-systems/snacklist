@@ -51,15 +51,17 @@ const boxes = () => page.evaluate(() => {
   return { heads: pick('[data-head]'), rows: pick('[data-row]') };
 });
 
-// 1. Today against the release web build: store headers and rows at the same offsets from the screen's top.
-for (const [file, ts, tol] of [['en-100', 1, 2], ['en-310', 3.1, 4]]) {
+// 1. Today against the release web build: every store header and row the capture has (it records nodes that start
+// above 844 px), at the same offsets from the screen's top.
+for (const [file, ts, tol, qs] of [['en-100', 1, 2, 'lang=en'], ['en-310', 3.1, 4, 'lang=en'], ['de-100-dark', 1, 2, 'lang=de&theme=dark']]) {
   const real = JSON.parse(readFileSync(join(here, 'sc/real', `${file}.json`), 'utf8'));
-  await open('lang=en');
+  await open(qs);
   for (const [frame, opt] of [['before', 'before'], ['after', 'today']]) {
     await show({ opt, state: 'a', ts });
     const mine = await boxes();
-    const realHeads = real[frame].filter((n) => n.role === 'button' && /, \d+ items?$/.test(n.label) && n.top < 700);
-    const realRows = real[frame].filter((n) => n.role === 'checkbox' && n.bottom < 700);
+    const realHeads = real[frame].filter((n) => n.role === 'button' && /, \d+ (items?|Artikel)$/.test(n.label));
+    const realRows = real[frame].filter((n) => n.role === 'checkbox');
+    check(realHeads.length >= 1 && realRows.length >= 3, `calibration ${file} ${frame}: the capture has ${realHeads.length} headers, ${realRows.length} rows`);
     for (const h of realHeads) {
       const name = h.label.split(',')[0];
       const m = mine.heads.find((x) => x.text.startsWith(name));
@@ -68,7 +70,9 @@ for (const [file, ts, tol] of [['en-100', 1, 2], ['en-310', 3.1, 4]]) {
     for (const r of realRows) {
       const name = r.label.split('\n')[0];
       const m = mine.rows.find((x) => x.text.includes(name));
-      check(m && Math.abs(m.top - r.top) <= tol && Math.abs(m.h - r.height) <= tol, `calibration ${file} ${frame}: row ${name} at ${m?.top}/${m?.h}, real ${r.top}/${r.height}`);
+      // The web build clips a node's box at the 844 px viewport: a row cut there is at least that tall.
+      const cut = r.bottom >= 844 - 0.5;
+      check(m && Math.abs(m.top - r.top) <= tol && (cut ? m.h >= r.height - tol : Math.abs(m.h - r.height) <= tol), `calibration ${file} ${frame}: row ${name} at ${m?.top}/${m?.h}, real ${r.top}/${r.height}${cut ? ' (cut at 844)' : ''}`);
     }
   }
 }
@@ -142,6 +146,13 @@ for (const lang of ['en', 'de']) {
       check(undone[0] === 'rewe' && (await cardText()) === '', `SC3 undo ${lang} ${theme} ${device}: REWE back first, card gone (${undone})`);
       const m4 = await show({ opt: 'SC4', state: 'a', frame: 'opened' });
       check(m4.cards === 0 && (await text()).includes(a.hidden('REWE')) && (await text()).includes(a.undo), `SC4 open ${lang} ${theme} ${device}: card gone, snackbar with undo`);
+      await show({ opt: 'SC4', state: 'f' });
+      const dmBelow = await page.evaluate(() => {
+        const head = document.querySelector('#stage [data-sec="dm"] [data-head]').getBoundingClientRect();
+        return head.top >= document.querySelector('#stage [data-add]').getBoundingClientRect().top;
+      });
+      const c4 = await cardText();
+      check(c4.includes(a.next('dm')) && c4.includes(a.left(3)) && dmBelow, `SC4 below the fold ${lang} ${theme} ${device}: "Next: dm" while dm starts under the add field`);
     }
   }
 }
@@ -180,7 +191,7 @@ for (const lang of ['en', 'de']) {
   await page.goto(`${url}${base}sc/?lang=${lang}`);
   await page.waitForFunction(() => document.body.dataset.ready === '1');
   const info = await page.evaluate(() => ({ phones: document.querySelectorAll('.frame .phone').length, table: document.querySelectorAll('#measured table.m tbody tr').length, rec: document.querySelector('#rec')?.innerText.length ?? 0, sections: [...document.querySelectorAll('section.opt h2')].map((h) => h.textContent) }));
-  check(info.phones === 6 + 5 * 5 + 3, `page ${lang}: ${info.phones} phones`);
+  check(info.phones === 6 + 5 * 5 + 4, `page ${lang}: ${info.phones} phones`);
   check(info.table === 6, `page ${lang}: measurement table has Today and SC1-SC5`);
   check(info.rec > 1500, `page ${lang}: recommendation rendered`);
   check(optionIds.every((o) => info.sections.some((s) => s.startsWith(o))), `page ${lang}: a section per option`);
