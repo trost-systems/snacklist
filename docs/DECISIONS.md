@@ -17429,3 +17429,38 @@ Peter (22 Nov 2026): prepare the public launch, no waitlist, straight to the app
   (lines 19, 59, 80, 88, 110, 116) still says Beta from 15 Nov and „Warteliste“, and `/support`,
   `/en/support` carry the TestFlight beta FAQ and the waitlist mention. Not changed here (every new
   string needs Legal's GO): listed with proposed wording in the NEEDS_LEAD section for the launch-day PR.
+
+## Job 385: the app icon AI1 Soft tile ships (Peter's pick, 2026-11-22)
+
+- **What.** Peter picked AI1 Soft tile from round AI (job 372, draft PR #630, never merged). Every
+  production icon file now comes from `design/app-icon/art/ai1.mjs` through `build.mjs`. The 57
+  files of job 372's `docs/design/app-icon/ai/assets/AI1/` set equal the generated ones byte for
+  byte, so they are not copied into the repo a second time.
+- **Ported from #630, no more.** `build.mjs` (art modules, `--art`, `--out`), `geom.mjs`'s rounded
+  squares and `union`, and `art/ai1.mjs`. Not ported: `today.mjs`, AI2 to AI5, the page, its tools
+  and `verify.mjs` (they test the prototype round: "today's files unchanged" fails by design once
+  the swap lands). The AI1 half of `verify.mjs` (the generated set equals the committed one, the
+  App Store icon has no alpha) ran against #630's assets for the PR.
+- **Subtracted.** The 6b hexagon splash mark (`MARK`, its stroke bands, the `hex-mark` branches)
+  and `geom.mjs`'s unused hexagon, circle and bite helpers: nothing draws them any more. No other
+  hexagon icon file was left: every tracked icon, favicon and brand PNG is a generator output.
+- **The generator writes the copies too.** The site's `favicon.svg`, `favicon.png` and
+  `apple-touch-icon.png`, the MCP page's `logo.svg` and the store icons
+  `marketing/store-icons/app-store-1024.png` and `play-512.png`, so the lint gate's `--check`
+  keeps them in step instead of a hand copy.
+- **AI questions (RECOMMENDATION.md defaults):**
+  - AI-Q1 ships to everyone with the build that carries it (Dec 1 submission); an icon is no flag.
+  - AI-Q2 splash: the icon on its rounded tile, 128 pt, on the surface colour.
+  - AI-Q3 brand block, web icons, email logo, Alexa icons change with the icon.
+  - AI-Q4 site favicon, PNG and touch icon (and the MCP page's logo, the same file) change too,
+    now written by the generator.
+  - AI-Q5 the Play icon in the store screenshots reads `marketing/store-icons/play-512.png`; the
+    screenshot frames keep their hexagon band until RD-Q4's round.
+  - AI-Q6 the dark icon keeps the app's dark surface `#0b1024` behind honey.
+  - AI-Q7 iOS 26 Clear: rendered by the phone from the Icon Composer layers; check on Peter's
+    iPhone in the first TestFlight build with the icon (NEEDS_PETER).
+  - AI-Q8 no notification icon: the app sends no push notifications.
+- **Evidence without a phone.** No simulator or emulator on the runners: the Home Screen pictures
+  in `docs/screenshots/385/` place the generator's own masked renders (the `--previews` images)
+  on a mocked Home Screen. The iOS build is CI's ios gate (it checks the AppIcon light, dark and
+  tinted and the Icon Composer stacks in `Assets.car`); the Android release build ran on hz.

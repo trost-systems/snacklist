@@ -10,7 +10,7 @@ import 'package:family_groceries/shell/router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// The first screen signed out (job 168b): the hex mark and wordmark, what
+/// The first screen signed out (job 168b): the app icon and wordmark, what
 /// Snacklist is, „Los geht's“ into the guided start (the usage-data question
 /// first, unless this install answered it), „Schon ein Konto? Anmelden“
 /// and „Einladung einfügen“ for a join link copied before the install. With

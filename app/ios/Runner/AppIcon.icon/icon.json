@@ -71,7 +71,7 @@
           ]
         }
       ],
-      "name" : "Wabe innen"
+      "name" : "Kachel innen"
     },
     {
       "layers" : [
@@ -99,7 +99,7 @@
           "name" : "outer"
         }
       ],
-      "name" : "Wabe außen"
+      "name" : "Kachel außen"
     }
   ],
   "supported-platforms" : {

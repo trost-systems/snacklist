@@ -2270,3 +2270,11 @@ cached flags hold no tester answers); with the analytics yes the look holds.
 ## Job 370: website launch mode
 
 See [docs/done/370.md](docs/done/370.md).
+
+## Job 385: the app icon AI1 Soft tile
+
+**Built.** Peter's pick from round AI replaces the hexagon icon everywhere it appears. `design/app-icon/build.mjs` (ported from job 372) draws the art module `design/app-icon/art/ai1.mjs` and writes the iOS AppIcon set (light, dark, tinted) and Icon Composer bundle, Android's adaptive foreground, background and monochrome plus legacy mipmaps, the splash screens (the icon on a rounded tile), the web favicon, PWA and touch icons, the brand block, the email logo, the Alexa icons, the site's and the MCP page's copies, and the store icons `marketing/store-icons/app-store-1024.png` and `play-512.png`. The hexagon splash mark and the unused hexagon geometry are gone. AI-Q1 to AI-Q8 took their defaults (docs/DECISIONS.md, job 385).
+
+**Verified.** `build.mjs --check` passes; the 57 files of job 372's AI1 asset set equal the generated ones byte for byte; the App Store icon has no alpha; the app's design tests pass with six updated goldens (start, login, the invite sheet: they show the brand block); `flutter build apk --release` passes on hz; the iOS build is CI's ios gate. Home Screen pictures in `docs/screenshots/385/`.
+
+**Missing.** No phone on the runners: iOS 26 Clear and the real Home Screens are checked on the first TestFlight build (NEEDS_PETER). The store listing icons are uploaded by hand.

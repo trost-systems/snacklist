@@ -48,8 +48,8 @@ generated into `site/public/tokens.css` (`--hl-*`) and `app/lib/design/tokens.g.
   in light (`--hl-shadow-sticker*`), lighter raised surfaces plus night shadows in dark.
 - **Contrast rules:** yellow controls on light surfaces and tomato buttons on yellow need
   the 2 px navy contour; never white text on yellow; never tomato text.
-- **Logo:** app icon #5 Wabenstapel (cobalt ground, yellow ring, white inner hex, cobalt
-  check; dark: `#0b1024`, `#ffe24a`, `#9fb6ff`). Never redraw it; use the generated asset.
+- **Logo:** the app icon AI1 Soft tile (cobalt ground, yellow rounded-square ring, white inner
+  tile, cobalt check; dark: `#0b1024`, `#ffe24a`, `#9fb6ff`). Never redraw it; use the generated asset.
 - **Name:** always "Snacklist" in full, never shortened. German du-form on DE screens.
 - **Never:** a bee mascot; other brands' logos; stock-AI sparkles, wands, gradients or
   purple; a look-alike of Claude's, ChatGPT's or any vendor's chat UI; Apple Liquid Glass or

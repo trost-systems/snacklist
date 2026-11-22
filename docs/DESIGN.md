@@ -243,10 +243,10 @@ quarter into its line and struck rows, one wrapped.
 - `HexPill`, `HexStep` (`hex_pill.dart`): settings rows (store layout,
   categories, Läden) as hex pills on a 4 px edge, lifted with `sticker-l`
   while dragged; the walk-order number a 32 px pointy honey hex.
-- `BrandBlock` (`brand_block.dart`): app icon #5 at 56 dp (exported by
+- `BrandBlock` (`brand_block.dart`): the app icon at 56 dp (exported by
   `design/app-icon/build.mjs` to `app/assets/brand/`) over the wordmark, on
   the start screen, login and welcome. The dark icon has the deep `#0b1024`
-  ground, so on the dark surface it shows as the ring and the inner hex without a tile.
+  ground, so on the dark surface it shows as the ring and the inner tile without a tile behind.
 - Sign-in with Google and Apple keep the providers' own buttons: Google's
   outlined (light) or dark pill with its "G", Apple's black or white button
   drawn per Apple's rules (DECISIONS job 57 item 15). Only "Weiter mit
@@ -340,60 +340,67 @@ rounded rectangle and only buttons cast a shadow; the layout, the words and the 
   screen's rows lose theirs (rows are tiles). The lint `shadows-only-on-buttons` routes every
   shadow through those helpers, and `app/test/design/rd1_shadows_test.dart` walks the screens'
   render trees for any shadow.
-- Not yet soft: the app icon and brand mark (`BrandBlock`), the Home Screen widgets, the web join
-  page, the site and the store frames (RD-Q4: their own round).
+- Not yet soft: the Home Screen widgets, the web join page, the site and the store frames (RD-Q4:
+  their own round). The app icon and the brand mark (`BrandBlock`) lost their hexagons for everyone
+  in job 385 (below), since an icon cannot sit behind a flag.
 
 ## App icon and splash
 
-Icon #5 **Wabenstapel**: a lemon hex ring, inside it a hex with a check.
-`design/app-icon/build.mjs` draws it from the geometry of design job 45 and
-the colours in the token file, and writes every platform's files. It is plain
-Node with its own rasterizer and PNG encoder (`raster.mjs`), so the output is
-the same bytes on every machine.
+Icon **AI1 Soft tile** (job 385, Peter's pick from round AI, job 372): icon #5
+Wabenstapel with RD1's rounded squares in place of the hexagons. A honey ring
+tile on cobalt, inside it a white tile with a cobalt check.
+`design/app-icon/build.mjs` draws the art module `design/app-icon/art/ai1.mjs`
+in the colours of the token file and writes every platform's files. It is
+plain Node with its own rasterizer and PNG encoder (`raster.mjs`), so the
+output is the same bytes on every machine. `--art <module>` draws another
+module (round AI's five options live on branch `job/372-app-icon-prototypes`).
 
 ```sh
 node design/app-icon/build.mjs             # writes the platform files
 node design/app-icon/build.mjs --check     # exits 1 when one differs (lint gate)
-node design/app-icon/build.mjs --previews   # docs/screenshots/52/icon/ plus the numbers below
+node design/app-icon/build.mjs --previews   # docs/screenshots/385/icon/ plus the numbers below
 ```
 
 | | Light | Dark |
 | --- | --- | --- |
 | Background | cobalt `#1b3fae` | deep `#0b1024` |
-| Ring | lemon `#ffe24a` | lemon `#ffe24a` |
-| Inner hex | white `#ffffff` | `#9fb6ff` |
+| Ring | honey `#ffe24a` | honey `#ffe24a` |
+| Inner tile | white `#ffffff` | `#9fb6ff` |
 | Check | cobalt `#1b3fae` | deep `#0b1024` |
 
 Monochrome (Android themed icons, iOS tinted): the ring and the check, without
-the inner hex.
+the inner tile.
 
 | Pair | Light | Dark |
 | --- | --- | --- |
 | Background / ring | 6.85 | 14.57 |
-| Background / inner hex | 8.87 | 9.53 |
-| Inner hex / check | 8.87 | 9.53 |
-| Ring / inner hex | 1.29 | 1.53 |
+| Background / inner tile | 8.87 | 9.53 |
+| Inner tile / check | 8.87 | 9.53 |
+| Ring / inner tile | 1.29 | 1.53 |
 
-The ring and the inner hex never touch: 20 of 1024 units of background lie
-between them. The foreground reaches 25.3 dp from the centre, inside
-Android's 33 dp safe circle (the build fails if a shape leaves it). At 29 pt
-(29 and 87 px) and 48 dp the check reads clearly. At 16 px a lemon ring with a
-light core and a dot of check remains
-(`docs/screenshots/52/icon/small-sheet.png`).
+The ring and the inner tile never touch: 14 of 1024 units of background lie
+between them. The foreground reaches 29.3 dp from the centre, inside
+Android's 33 dp safe circle (the build fails if a shape leaves it). Its
+thinnest part at 29 pt @1x is 2.0 px (icon #5: 1.2 px), the tinted glyph's
+too (job 372's measurements). Small sizes side by side:
+`docs/screenshots/385/icon/small-sheet.png`.
 
 | Platform | Files |
 | --- | --- |
-| iOS | `Runner/AppIcon.icon` (Icon Composer bundle, the layered iOS 26 icon) and `Assets.xcassets/AppIcon.appiconset` (one 1024 icon, light, dark and tinted, for older iOS), both named `AppIcon` |
+| iOS | `Runner/AppIcon.icon` (Icon Composer bundle, the layered iOS 26 icon) and `Assets.xcassets/AppIcon.appiconset` (one 1024 icon, light, dark and tinted, for older iOS), both named `AppIcon`. The HomeWidget extension has no icon of its own |
 | Android | `mipmap-anydpi-v26/ic_launcher.xml` and `ic_launcher_round.xml` (background, foreground and monochrome vector drawables), legacy `mipmap-*/ic_launcher.png` and `ic_launcher_round.png` |
 | Web | `favicon.png`, `favicon.svg`, `icons/Icon-192.png`, `Icon-512.png`, the maskable pair, `icons/apple-touch-icon.png`; `manifest.json` colours |
+| Site and MCP page | `site/public/favicon.svg`, `favicon.png`, `apple-touch-icon.png`, `site/public/email/snacklist-icon-96.png` (the email header), `mcp-proxy/public/static/logo.svg` |
 | Alexa | `alexa/skill-package/assets/images/de-DE_smallIconUri.png` (108 px) and `de-DE_largeIconUri.png` (512 px): the light icon full bleed, like the App Store icon. Should Amazon crop it to a circle, the art stays inside |
+| Stores | `marketing/store-icons/app-store-1024.png` (no alpha, for App Store Connect) and `play-512.png` (full bleed, Play rounds it), uploaded by hand; the store screenshots' Play icon reads `play-512.png` |
 
 `scripts/gates/ios.sh` (CI, xcode-27) checks that the built app's
 `Assets.car` holds the AppIcon in light, dark and tinted, the icon stacks
 compiled from `AppIcon.icon`, and the launch screen's colour and mark.
 
-The splash screens show the 6b mark (cobalt hex, white check, lemon cell)
-centred on the surface colour, `#f7f7f2` or `#0b1024`: iOS
+The splash screens show the icon on a rounded tile, 128 pt, centred on the
+surface colour, `#f7f7f2` or `#0b1024` (in dark the tile is the surface, so the
+ring stands on its own): iOS
 `LaunchScreen.storyboard` with the `LaunchBackground` colour and
 `LaunchImage` set, Android `launch_background.xml` with night variants and
 `windowSplashScreen*` from API 31, and the web's `#splash` in `index.html`

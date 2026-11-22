@@ -49,6 +49,7 @@ Keep implementation details out of the map. Name only user paths, stable handles
 
 Getting started
 
+- [app-icon](./app-icon.md): the app icon (AI1 Soft tile) on iOS, Android, the web, the splash screens, the brand block and the store files.
 - [sign-in](./sign-in.md): email and password, sign-up with email confirmation, the sign-in link by email (no code), Google and Apple, the invite sheet „Konto erstellen“ or „Anmelden“, sign-out.
 - [privacy-consent](./privacy-consent.md): the usage-data question as the guided start's first step or after the first sign-in on a device, its exact text, and changing it later under Mehr → Nutzungsdaten.
 - [display-name](./display-name.md): the name step „Wie sollen wir dich nennen?“ after sign-in (required before a household is made or joined, once with „Jetzt nicht“ for an e-mail-prefix name) and Mehr › Konto › „Dein Name“.

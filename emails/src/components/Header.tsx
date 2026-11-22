@@ -6,7 +6,7 @@ export const LOGO_URL = 'https://snacklist.app/email/snacklist-icon-96.png';
 const LOGO = ui.space[7];
 
 /**
- * App icon #5 and the "Snacklist" wordmark as live text. The icon's alt is empty because the
+ * The app icon and the "Snacklist" wordmark as live text. The icon's alt is empty because the
  * wordmark next to it already says the name; with images blocked the slot keeps its size and
  * the brand colour, so the header still reads as logo plus name.
  */

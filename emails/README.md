@@ -52,7 +52,7 @@ footer below the card.
 
 | Component | Props | Notes |
 | --- | --- | --- |
-| `Header` | none | App icon #5 (`https://snacklist.app/email/snacklist-icon-96.png`, 48 px at 2x) and "Snacklist" as live text. The layouts add it. |
+| `Header` | none | The app icon (`https://snacklist.app/email/snacklist-icon-96.png`, 48 px at 2x) and "Snacklist" as live text. The layouts add it. |
 | `Heading` | `children` | The one headline. 36 px Bricolage, 22 px on phones. |
 | `Greeting` | `children` | The opening line: `<Greeting>Hi {name},</Greeting>`. |
 | `Paragraph` | `children` | Body text, 17 px Inter. Lead-ins in `<strong>`. |

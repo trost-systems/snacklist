@@ -17,7 +17,7 @@ A user signs in with email and password, creates an account with "Registrieren",
 
 ## How to get to it (user POV)
 
-- Open the app signed out. The login screen opens on the Snacklist brand block (app icon #5 and the wordmark, no title bar since job 57) and shows email and password fields (hex fields since job 57; a focused field gets a cobalt contour and a ring) and three buttons (five with the provider buttons, both 48 px with 15 px labels).
+- Open the app signed out. The login screen opens on the Snacklist brand block (the app icon and the wordmark, no title bar since job 57) and shows email and password fields (hex fields since job 57; a focused field gets a cobalt contour and a ring) and three buttons (five with the provider buttons, both 48 px with 15 px labels).
 - Signed in: tap "Mehr" in the tab bar, scroll down and tap "Abmelden".
 - Open the sign-in email on the phone and tap its link.
 
