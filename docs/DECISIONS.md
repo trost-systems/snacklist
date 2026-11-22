@@ -18257,3 +18257,10 @@ Tool descriptions, the server instructions and the parameter descriptions in `su
 ## Job 437: flake sweep 1
 
 Closed #312, #395, #68-#70, #65-#67 and #306 without a code change. Reason: each predates a fix already on main (#440 for the MCP hang, #540/#542 for StoreKit) or overlapped a recorded host pause, and a repeat run of both specs (5x, retries off, local stack) passed 80 of 80. A speculative change to the specs or to `supabase/functions/` (frozen) would hide a recurrence, not fix one. Evidence: `docs/done/437.md`.
+
+## Job 405: research on official AI connectors (2026-11-22)
+
+- Research only, one doc `docs/research/official-ai-connectors.md`. No code, no applications, no accounts.
+- Vendor claims come from the vendors' own pages (read 2026-11-22); third-party posts only as pointers. What could not be read is marked unknown, not guessed.
+- Recommended order Claude, ChatGPT, Gemini; default for the freeze is "all code after Nov 25".
+- The GPT Store was not researched (OC-Q8).
