@@ -2342,3 +2342,10 @@ Behind the flag `joiner-direct-list` (internal installs): an invite link or code
 (new string `joinerAccountWhy`, waiting for Legal, so not self-merged). Tests: widget tests on iOS
 and Android variants (no e2e spec: the budget was full, job 373). Details:
 `docs/done/356-invite-joiner-onboarding.md`.
+
+## Job 383: Premium copy per user (Legal N-348, N-349, N-350)
+
+`premiumHeroTitle`, `premiumWeb` and `premiumHousehold` now say Premium is the account's, as
+Legal wrote them. `premiumHousehold` shows before a new purchase, so it got the new text (not
+deleted). Tests, nine goldens and the feature map follow. Not merged (lead lands). Details:
+`docs/done/383.md`.

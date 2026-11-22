@@ -209,12 +209,7 @@ class const _PremiumView() extends StatelessWidget {
                 ),
               },
             if (household != null && cards.isNotEmpty)
-              _Plans(
-                cards: cards,
-                prices: prices,
-                household: household.name,
-                onBuy: buy,
-              ),
+              _Plans(cards: cards, prices: prices, onBuy: buy),
             // Only to someone who paid, once sales start, or bought twice:
             // before, it would suggest a purchase (Legal Review N-69); to a
             // promotional grant alone, a refund of nothing paid (N-346).
@@ -443,7 +438,7 @@ TextStyle _display(BuildContext context, double size, {Color? color}) {
   );
 }
 
-/// One buys, everyone has it: the household's members as hexes, what
+/// Premium for you (Legal N-348): the household's members as hexes, what
 /// Premium is for the household, and what it unlocks. No Siri or Alexa
 /// (both stay free, job 184 and Legal Review N-27).
 class const _Hero({
@@ -546,17 +541,14 @@ class const _Benefit(final IconData icon, final String text)
   }
 }
 
-/// The offered plans as tiles to pick from, the household the purchase
-/// binds to, one Buy for the picked plan with its terms, restore and the
-/// legal links. The pick lives in [PremiumPageCubit], so it survives the
-/// tiles scrolling out of the lazy list.
+/// The offered plans as tiles to pick from, that Premium is the
+/// account's (Legal N-350), one Buy for the picked plan with its terms,
+/// restore and the legal links. The pick lives in [PremiumPageCubit], so it
+/// survives the tiles scrolling out of the lazy list.
 class const _Plans({
   /// The plans on offer, each with a price in [prices]; never empty.
   required final List<PremiumPlan> cards,
   required final Map<PremiumPlan, StorePrice> prices,
-
-  /// The name of the household the purchase unlocks (Legal Review Q6).
-  required final String household,
   required final void Function(PremiumPlan plan) onBuy,
 }) extends StatelessWidget {
   @override
@@ -607,7 +599,7 @@ class const _Plans({
                 const SizedBox(width: HlSpace.s2),
                 Expanded(
                   child: Text(
-                    l10n.premiumHousehold(household),
+                    l10n.premiumHousehold,
                     style: theme.textTheme.bodySmall,
                   ),
                 ),

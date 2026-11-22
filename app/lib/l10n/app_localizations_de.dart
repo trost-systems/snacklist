@@ -1844,7 +1844,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get premiumTitle => 'Snacklist Premium';
 
   @override
-  String get premiumHeroTitle => 'Einer kauft. Alle haben es.';
+  String get premiumHeroTitle => 'Snacklist Premium für dich';
 
   @override
   String get premiumHeroBody =>
@@ -1928,9 +1928,8 @@ class AppLocalizationsDe extends AppLocalizations {
       'Snacklist Premium jährlich, Laufzeit 1 Jahr. Das Abo verlängert sich automatisch um ein Jahr, wenn du es nicht mindestens 24 Stunden vor Ende der Laufzeit kündigst. Bezahlt wird über dein Apple- bzw. Google-Konto, bei der Bestätigung des Kaufs und bei jeder Verlängerung. Verwalten und kündigen kannst du das Abo in den Abo-Einstellungen des App Store bzw. von Google Play.';
 
   @override
-  String premiumHousehold(String household) {
-    return 'Premium gehört dann zum Haushalt „$household“ und bleibt dort, auch wenn du den Haushalt später verlässt.';
-  }
+  String get premiumHousehold =>
+      'Premium gilt dann für dein Konto, in jedem Haushalt, in dem du Mitglied bist.';
 
   @override
   String get premiumBuyYearly => 'Jährlich abschließen';
@@ -1958,7 +1957,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get premiumWeb =>
-      'Snacklist Premium kaufst du in der iPhone- oder Android-App. Danach ist es auch hier für deinen ganzen Haushalt freigeschaltet.';
+      'Snacklist Premium kaufst du in der iPhone- oder Android-App. Danach ist es auch hier für dein Konto freigeschaltet.';
 
   @override
   String get premiumRefundYearly =>

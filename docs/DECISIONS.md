@@ -17627,3 +17627,16 @@ TE-Q default. Built behind the new flag `total-priced-only`, on top of `list-dec
    `joinerAccountWhy` (DE/EN). JH2's invite sheet and „Einladung gemerkt …“ are unchanged, as is
    `inviteJoinPageHint`. New sign-up copy, so the PR stops before the merge for Legal.
 6. **Copy (job 373).** N-331 `joinerAccountWhy` reworded; G1 `startLogIn` and `jh2StartHaveAccount` read „Ich habe schon ein Konto“ / "I already have an account".
+
+## Job 383: Premium copy per user (Legal N-348, N-349, N-350), 2026-11-22
+
+- **N-350 took the "set the text" option.** `premiumHousehold` sits in `_Plans`, directly above
+  the Buy button, and `_Plans` shows only with plan tiles on offer, so it shows before every new
+  purchase. It is not limited to household-bound legacy plans. The new text has no placeholder,
+  so `_Plans` loses its `household` argument. The `household != null` gate in front of `_Plans`
+  stays, since the change is copy only.
+- **Feature map updated, other copies listed.** The verify skills' feature files quote these
+  strings as what the app shows, and FEATURES-FOR-WRITERS is what emails are written from, so
+  they changed with the app (CLAUDE.md rule). Site, legal pages, docs and other ARB keys with
+  the same household promise were listed for the lead and not changed (the brief's rule).
+- **The code's "slogan" naming stays.** The heading is still shown only while sales are on (N-68).

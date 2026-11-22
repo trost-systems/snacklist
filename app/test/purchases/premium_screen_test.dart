@@ -81,7 +81,7 @@ void main() {
       'nothing (H-67)', (tester) async {
     final more = await openLifetime(tester);
     expect(key('lifetime-screen'), findsOneWidget);
-    expect(find.text('Einer kauft. Alle haben es.'), findsOneWidget);
+    expect(find.text('Snacklist Premium für dich'), findsOneWidget);
     expect(
       find.text(
         'Snacklist Premium gilt für dich, in jedem Haushalt, in dem du '
@@ -141,8 +141,8 @@ void main() {
     expect(key('premium-terms-lifetime'), findsNothing);
     expect(
       find.text(
-        'Premium gehört dann zum Haushalt „Zuhause“ und bleibt dort, auch '
-        'wenn du den Haushalt später verlässt.',
+        'Premium gilt dann für dein Konto, in jedem Haushalt, in dem du '
+        'Mitglied bist.',
       ),
       findsOneWidget,
     );
@@ -182,7 +182,7 @@ void main() {
 
   testWidgets('the hero in English', (tester) async {
     await openLifetime(tester, language: AppLanguage.en, flags: {'public-api'});
-    expect(find.text('One buys. Everyone has it.'), findsOneWidget);
+    expect(find.text('Snacklist Premium for you'), findsOneWidget);
     expect(
       find.text(
         'Snacklist Premium applies to you, in every household you are a '
@@ -200,8 +200,8 @@ void main() {
     );
     expect(
       find.text(
-        'Premium then belongs to the household “Zuhause” and stays there, '
-        'even if you leave it later.',
+        'Premium then applies to your account, in every household you are '
+        'a member of.',
       ),
       findsOneWidget,
     );
@@ -339,7 +339,7 @@ void main() {
   void expectBetaHero() {
     expect(key('premium-hero-body'), findsOneWidget);
     expect(key('premium-hero-title'), findsNothing);
-    expect(find.text('Einer kauft. Alle haben es.'), findsNothing);
+    expect(find.text('Snacklist Premium für dich'), findsNothing);
   }
 
   void expectNothingForSale() {
@@ -636,7 +636,7 @@ void main() {
     expect(
       find.text(
         'Snacklist Premium kaufst du in der iPhone- oder Android-App. Danach '
-        'ist es auch hier für deinen ganzen Haushalt freigeschaltet.',
+        'ist es auch hier für dein Konto freigeschaltet.',
       ),
       findsOneWidget,
     );
@@ -654,7 +654,7 @@ void main() {
     expect(
       find.text(
         'You can buy Snacklist Premium in the iPhone or Android app. It is '
-        'then unlocked here too, for your whole household.',
+        'then unlocked here too, for your account.',
       ),
       findsOneWidget,
     );
@@ -1316,7 +1316,7 @@ void main() {
         tester,
         entitlements: FakeEntitlementsSource()..offline = true,
       );
-      expect(find.text('Einer kauft. Alle haben es.'), findsOneWidget);
+      expect(find.text('Snacklist Premium für dich'), findsOneWidget);
       expect(key('premium-card-yearly'), findsNothing);
       expect(key('premium-card-lifetime'), findsNothing);
       expect(key('premium-price-yearly'), findsNothing);
