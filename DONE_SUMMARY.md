@@ -2575,3 +2575,7 @@ attached (it says 22 November, Europe/Berlin publish date, domain live; NEEDS_LE
 commit message follows it; NEEDS_LEAD "Job 397" points to "Job 397b" without a SHA; `tools_test.ts` pins
 Legal's exact N-410 sentences. Not done: the old N-410 quote in `docs/screenshots/397/{de,en}-journey.log`
 is a recorded run of an earlier build and stays as recorded; the journey needs a stack to rerun.
+
+## Job 407: privacy patch, Alexa mismatches and N-413
+
+Applied Legal's redlines N-413 to N-420 verbatim in `site/content/legal/datenschutz.md` and `privacy.md` (details: `docs/done/407.md`). Deferred: N-422; N-421 not applicable. `updated:` set to 2026-11-22 (N-279). Land #652 before #649 (job 399), or together: #649 must not reach main before this text is live. Not merged: waits for Legal's hash GO.
