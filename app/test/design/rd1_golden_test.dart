@@ -28,9 +28,10 @@ import 'components_grid.dart';
 import 'fonts.dart';
 import 'shell_harness.dart';
 
-/// The flags every user has on (`releases/flags.json` rollout full), so the
-/// screens are the ones the testers see; all but grocery-log, whose Verlauf
-/// tab the shell harness has no branch for.
+/// The flags testers had on when RD1 landed (job 368), so the shots keep
+/// prices and trip mode although HP2 turned them off for everyone (job
+/// 401); all but grocery-log, whose Verlauf tab the shell harness has no
+/// branch for. `test/launch/users_flags_test.dart` reads the users' set.
 const _usersFlags = {
   publicApiFlag,
   pricesFlag,

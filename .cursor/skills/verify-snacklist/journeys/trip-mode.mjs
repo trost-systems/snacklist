@@ -1,5 +1,7 @@
-// Feature trip-mode (job 234), on a plain launch (its flags roll out in full). Entry points: a tick on the
-// list (the question), Mehr › „Einkauf starten“, Verlauf's trip tiles, the list's ended card.
+// Feature trip-mode (job 234), launched with VH_DEFINES="FLAGS_ON=grocery-log,prices-and-trip-total,trip-mode"
+// (all three off for users since 2026-11-22, Peter HP2, job 401; a plain launch asks no question, so
+// it fails there). Entry points: a tick on the list (the question), Mehr › „Einkauf starten“,
+// Verlauf's trip tiles, the list's ended card.
 // On demo-familie it puts the 15 seeded items back on the list split over Lidl and Rewe, prices
 // Bananen (yesterday), Vollmilch (today) and Nudeln (yesterday), deletes the household's earlier
 // trips and sessions, and takes Mia's promotional Premium away. Then as Mia: tm-ask (Zurücknehmen,

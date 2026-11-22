@@ -233,11 +233,11 @@ export async function switchHousehold(page, L, from, to) {
 }
 
 /**
- * Answers „Kaufst du gerade ein?“, the question trip-mode (full rollout) asks after a member's own
- * tick while no trip runs, with the button of ARB key [key]: 'shopAskNo', 'shopAskYes' or
- * 'shopAskTakeBack'. Returns false when the question did not come within [timeout] ms (a
+ * Answers „Kaufst du gerade ein?“, the question trip-mode asks after a member's own tick while no
+ * trip runs (off for users since 2026-11-22, Peter HP2, job 401; `VH_DEFINES="FLAGS_ON=trip-mode"`
+ * turns it on), with the button of ARB key [key]: 'shopAskNo', 'shopAskYes' or 'shopAskTakeBack'. Returns false when the question did not come within [timeout] ms (a
  * pharmacy's item, a running trip, the hour after a 'shopAskNo' in this browser context, a
- * `VH_FLAGS_FULL=0` build).
+ * build without trip-mode, a plain launch included).
  */
 export async function answerShopAsk(page, L, key = 'shopAskNo', timeout = 3_000) {
   const button = page.getByRole('button', { name: L(key), exact: true });

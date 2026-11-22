@@ -2391,3 +2391,13 @@ for marked requests and drops the marker before its strict query check. The app 
 URL under Zugänge only with the PostHog flag `api-snacklist-app` (rollout off). Lead: attach
 `api.snacklist.app` to Vercel project `hummlist-mcp`, then `scripts/api-proxy-smoke.sh` with a
 read key. Details: `docs/done/398.md`.
+
+## Job 401: HP2 flags off (Peter's decision HP2, 22 Nov 2026)
+
+Peter decided HP2 on 22 Nov 2026: `grocery-log`, `prices-and-trip-total`, `trip-mode` and
+`total-priced-only` are off for everyone at launch, his accounts and internal installs included.
+`releases/flags.json` says `off` for all four (no tester group on `total-priced-only`), the
+learned-order first-trip card now also needs `grocery-log` and `trip-mode`, and a widget test
+pins the users' flag set to show no Verlauf, prices, totals or trip mode. No copy changed. The
+PostHog flags must be switched off by hand (the sync never switches a flag off): the step is in
+`docs/done/401.md` and NEEDS_LEAD. Screenshots in `docs/screenshots/401/`.

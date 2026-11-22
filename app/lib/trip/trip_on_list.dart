@@ -176,13 +176,18 @@ class const TripEndedSlot({super.key}) extends StatelessWidget {
 }
 
 /// The list's card after the person's first detected trip (job 352): with
-/// the flag `learned-order`, while it is unseen and the trip is in this
-/// household. Either button sees it for good; „Ansehen“ opens the trip.
+/// the flags `learned-order`, `grocery-log` and `trip-mode` (its words point
+/// to the trip in Verlauf, job 401), while it is unseen and the trip is in
+/// this household. Either button sees it for good; „Ansehen“ opens the trip.
 class const DetectedTripSlot({super.key}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final flag = context.select<Flags?, bool>(
-      (flags) => flags?.isOn(learnedOrderFlag) ?? false,
+      (flags) =>
+          flags != null &&
+          flags.isOn(learnedOrderFlag) &&
+          flags.isOn(groceryLogFlag) &&
+          flags.isOn(tripModeFlag),
     );
     final detection = context.watch<TripDetectionCubit?>();
     final card = detection?.state?.card;

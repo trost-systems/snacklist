@@ -1,5 +1,6 @@
 // Sub-feature ld-total of list-declutter (job 237, ST3): the summary block above „Zuletzt
-// verwendet“, on a plain launch (its flags roll out in full).
+// verwendet“, launched with VH_DEFINES="FLAGS_ON=prices-and-trip-total,trip-mode" (both off for
+// users since 2026-11-22, Peter HP2, job 401; a plain launch has no block and no trip question).
 // On demo-familie it ticks off every open item a day ago, then puts on Mia's list: at Lidl Milch
 // 1,19 €, Brot 2,49 €, Käse without a price and 846 g Bananen at 1,79 €/kg typed per kg (≈ 1,51 €);
 // at dm Seife 0,95 €; at „Wochenmarkt am Kollwitzplatz (Samstag)“ 2 kg Kartoffeln from the label's

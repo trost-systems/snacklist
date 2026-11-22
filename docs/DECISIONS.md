@@ -17703,3 +17703,30 @@ TE-Q default. Built behind the new flag `total-priced-only`, on top of `list-dec
    Once the domain is attached, `scripts/api-proxy-smoke.sh` with a read key proves that the
    marker and the caller's query arrive (`?via=smoke` answers 200, `?limit=abc` 400). From one
    machine it cannot prove separate budgets per caller; only the tests do.
+
+## Job 401: HP2, grocery-log, prices, totals and trip mode off for everyone (2026-11-22)
+
+Peter decided HP2 on 22 Nov 2026: `grocery-log`, `prices-and-trip-total`, `trip-mode` and
+`total-priced-only` are off at launch for everyone, his accounts and internal installs included.
+
+1. **flags.json says `off`, PostHog is switched by hand.** The four entries read
+   `"rollout": "off"`, `total-priced-only` loses its `tester_group`. The flag sync only creates
+   flags and adds version conditions (job 332), so it leaves the existing flags as they are in
+   PostHog. Switching them off there is a manual step for the lead (NEEDS_LEAD). No new PostHog
+   write path. The box's PostHog key has no `feature_flag:read` scope (403), so this job could not
+   read the flags' current conditions either.
+2. **The first-detected-trip card needs all three flags.** Its text sends the user to the trip in
+   Verlauf, so `DetectedTripSlot` shows only with `learned-order`, `grocery-log` and `trip-mode`
+   on. `learned-order` itself is unchanged.
+3. **One test reads the users' flag set from flags.json.** `app/test/launch/users_flags_test.dart`
+   pumps the real router with exactly the full-rollout flags and checks that no Verlauf tab, price
+   chip, „+ Preis“, summary block, total, subtotal, „Gesamt“, „Einkauf starten“, trip question or
+   trip strip shows, and that `/history` goes to the list. The same checks with the four flags
+   added all find their widget, so none passes by finding nothing. A later flip back to `full`
+   fails it, which is the point: that is a product decision, and the test names it.
+4. **The RD1 goldens keep their flag set.** They are design shots from job 368 with prices and
+   trip mode on. Regenerating them without those would change the shots, not the app; their doc
+   comment now says so instead of claiming to be the users' set.
+5. **No copy changes.** ARB strings, store listings, site and legal texts are untouched (brief).
+   The verify-snacklist feature map and FEATURES-FOR-WRITERS now say the four are off for users,
+   since emails and site copy are written from them.
