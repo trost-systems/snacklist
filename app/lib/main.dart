@@ -27,6 +27,7 @@ import 'package:family_groceries/purchases/purchase_cubit.dart';
 import 'package:family_groceries/purchases/setup.dart';
 import 'package:family_groceries/purchases/store_prices.dart';
 import 'package:family_groceries/push/firebase_push.dart';
+import 'package:family_groceries/push/household_add_alert.dart';
 import 'package:family_groceries/push/push_registration.dart';
 import 'package:family_groceries/report/report_repository.dart';
 import 'package:family_groceries/review/review_gates.dart';
@@ -250,6 +251,13 @@ Future<void> _main(WidgetsBinding Function() binding) async {
         platform: defaultTargetPlatform,
       ),
       pushTaps: push?.taps,
+      householdAdd: switch (push) {
+        final push? => HouseholdAddAlert(
+          push,
+          SupabaseHouseholdAddPrefs(client),
+        ),
+        null => null,
+      },
       network: networkWatchFor(web: kIsWeb, platform: defaultTargetPlatform),
     ),
   );

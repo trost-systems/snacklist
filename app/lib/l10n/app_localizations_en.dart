@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -68,27 +67,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dictationListening => 'Listening…';
 
   @override
-  String get dictationUnavailable =>
-      'Voice input isn\'t available. Allow microphone and speech recognition in Settings.';
+  String get dictationUnavailable => 'Voice input isn\'t available. Allow microphone and speech recognition in Settings.';
 
   @override
-  String get dictationNoOfflineSpeech =>
-      'Dictation only works offline, so your voice stays on the device. This device is missing English offline speech recognition. Download it in the system settings or type the item instead.';
+  String get dictationNoOfflineSpeech => 'Dictation only works offline, so your voice stays on the device. This device is missing English offline speech recognition. Download it in the system settings or type the item instead.';
 
   @override
-  String get dictationOfflineSpeechDownloading =>
-      'Dictation only works offline, so your voice stays on the device. Snacklist asked Android to download English offline speech recognition. Try again once it\'s installed, or type the item instead.';
+  String get dictationOfflineSpeechDownloading => 'Dictation only works offline, so your voice stays on the device. Snacklist asked Android to download English offline speech recognition. Try again once it\'s installed, or type the item instead.';
 
   @override
   String get dictationNothingHeard => 'I didn\'t hear anything.';
 
   @override
-  String get dictationNothingUnderstood =>
-      'I didn\'t catch anything for the list.';
+  String get dictationNothingUnderstood => 'I didn\'t catch anything for the list.';
 
   @override
-  String get dictationSplitFailed =>
-      'No connection. The text is in the field; check it and tap Add.';
+  String get dictationSplitFailed => 'No connection. The text is in the field; check it and tap Add.';
 
   @override
   String dictationAdded(String items) {
@@ -101,8 +95,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get dictationTooMany =>
-      'More than thirty at once doesn\'t work; please say the rest again.';
+  String get dictationTooMany => 'More than thirty at once doesn\'t work; please say the rest again.';
 
   @override
   String get undo => 'Undo';
@@ -163,12 +156,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncOffline => 'Offline';
 
   @override
-  String get syncOfflineLine =>
-      'Your changes will sync once you\'re back online.';
+  String get syncOfflineLine => 'Your changes will sync once you\'re back online.';
 
   @override
-  String get syncOfflineLabel =>
-      'Offline: Your changes will sync once you\'re back online.';
+  String get syncOfflineLabel => 'Offline: Your changes will sync once you\'re back online.';
 
   @override
   String get syncFailing => 'Sync failing';
@@ -180,8 +171,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncFailingLine => 'Your changes are saved on this device.';
 
   @override
-  String get syncFailingLabel =>
-      'Sync failing: Your changes are saved on this device.';
+  String get syncFailingLabel => 'Sync failing: Your changes are saved on this device.';
 
   @override
   String get syncRetrying => 'Trying again';
@@ -213,8 +203,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inviteTitle => 'Invite member';
 
   @override
-  String get inviteBody =>
-      'Enter this code in the app or share the link. The invite works for one person and is valid for 7 days.';
+  String get inviteBody => 'Enter this code in the app or share the link. The invite works for one person and is valid for 7 days.';
 
   @override
   String get inviteCodeLabel => 'Code';
@@ -250,12 +239,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sendMagicLink => 'Email me a sign-in link';
 
   @override
-  String get magicLinkSent =>
-      'We sent you a sign-in link. Open it on this device.';
+  String get magicLinkSent => 'We sent you a sign-in link. Open it on this device.';
 
   @override
-  String get signUpCheckEmail =>
-      'Please confirm your email address with the link we sent you.';
+  String get signUpCheckEmail => 'Please confirm your email address with the link we sent you.';
 
   @override
   String get invalidEmail => 'Please enter a valid email address';
@@ -287,8 +274,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingTitle => 'Welcome to Snacklist';
 
   @override
-  String get onboardingBody =>
-      'Snacklist shares one shopping list with everyone in your household. Create a new household or accept an invite.';
+  String get onboardingBody => 'Snacklist shares one shopping list with everyone in your household. Create a new household or accept an invite.';
 
   @override
   String get householdName => 'Household name';
@@ -386,8 +372,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get consentInvalid =>
-      'This request is invalid or has expired. Start the connection again in your app.';
+  String get consentInvalid => 'This request is invalid or has expired. Start the connection again in your app.';
 
   @override
   String get consentErrorTitle => 'Connection expired';
@@ -402,8 +387,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mcpServer => 'MCP server';
 
   @override
-  String get mcpServerBody =>
-      'For Claude, ChatGPT and other AI assistants. Connect by signing in (OAuth) or with an access token.';
+  String get mcpServerBody => 'For Claude, ChatGPT and other AI assistants. Connect by signing in (OAuth) or with an access token.';
 
   @override
   String get accessTokens => 'Access tokens';
@@ -517,8 +501,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get revokeSiriTitle => 'Revoke Siri access?';
 
   @override
-  String get revokeSiriBody =>
-      'Siri on that iPhone can no longer add items. Snacklist sets Siri up again the next time it starts there.';
+  String get revokeSiriBody => 'Siri on that iPhone can no longer add items. Snacklist sets Siri up again the next time it starts there.';
 
   @override
   String connectedOn(DateTime date) {
@@ -545,8 +528,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get disconnectBody => 'The app loses access to your list right away.';
 
   @override
-  String get categoriesHint =>
-      'Items without a store, and stores without their own order, follow this order. Tap a category to rename it.';
+  String get categoriesHint => 'Items without a store, and stores without their own order, follow this order. Tap a category to rename it.';
 
   @override
   String get categoryName => 'Name';
@@ -587,8 +569,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tooManyLists => 'A household can have up to 50 lists.';
 
   @override
-  String get storeLayoutHint =>
-      'Order the categories the way you walk through the store. Tap a category to rename it.';
+  String get storeLayoutHint => 'Order the categories the way you walk through the store. Tap a category to rename it.';
 
   @override
   String newItemsFrom(int count, String name) {
@@ -652,8 +633,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountExport => 'Export my data';
 
   @override
-  String get accountExportBody =>
-      'Everything stored about you, as a JSON file.';
+  String get accountExportBody => 'Everything stored about you, as a JSON file.';
 
   @override
   String get accountDelete => 'Delete account';
@@ -662,8 +642,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountDeleteTitle => 'Delete account?';
 
   @override
-  String get accountDeleteWhat =>
-      'Your account, profile, access tokens and connected apps will be deleted for good. This can\'t be undone.';
+  String get accountDeleteWhat => 'Your account, profile, access tokens and connected apps will be deleted for good. This can\'t be undone.';
 
   @override
   String accountDeleteKept(String household, String names) {
@@ -686,16 +665,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get accountDeleteNone =>
-      'You\'re not in a household, so there\'s no shared data.';
+  String get accountDeleteNone => 'You\'re not in a household, so there\'s no shared data.';
 
   @override
-  String get accountDeleteExportHint =>
-      'To keep a copy first, use “Export my data” under Account.';
+  String get accountDeleteExportHint => 'To keep a copy first, use “Export my data” under Account.';
 
   @override
-  String get accountDeletePremium =>
-      'You have Snacklist Premium. It belongs to your account and ends when you delete it. If you have a yearly subscription, Apple or Google keep billing you: cancel it first in the App Store or on Google Play.';
+  String get accountDeletePremium => 'You have Snacklist Premium. It belongs to your account and ends when you delete it. If you have a yearly subscription, Apple or Google keep billing you: cancel it first in the App Store or on Google Play.';
 
   @override
   String accountDeleteArchived(int count, String names) {
@@ -714,8 +690,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get accountDeletePremiumAck =>
-      'I know: Premium ends. I will not get my money back on its own.';
+  String get accountDeletePremiumAck => 'I know: Premium ends. I will not get my money back on its own.';
 
   @override
   String get accountDeleteConfirmLabel => 'Type DELETE to confirm';
@@ -724,8 +699,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountDeleteConfirm => 'Delete for good';
 
   @override
-  String get accountDeleteOffline =>
-      'No internet connection. Your account was not deleted. Try again once you\'re online.';
+  String get accountDeleteOffline => 'No internet connection. Your account was not deleted. Try again once you\'re online.';
 
   @override
   String accountDeleteFailed(String code) {
@@ -736,8 +710,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountDeleteCanceled => 'Canceled. Your account was not deleted.';
 
   @override
-  String get accountFateOffline =>
-      'No internet connection. Couldn\'t load what happens to your household.';
+  String get accountFateOffline => 'No internet connection. Couldn\'t load what happens to your household.';
 
   @override
   String accountFateFailed(String code) {
@@ -748,8 +721,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountDeletedNotice => 'Your account was deleted.';
 
   @override
-  String get accountDeletedApple =>
-      'If you signed in with Apple, remove “Snacklist” on your iPhone under Settings › [your name] › Sign-In & Security › Sign in with Apple.';
+  String get accountDeletedApple => 'If you signed in with Apple, remove “Snacklist” on your iPhone under Settings › [your name] › Sign-In & Security › Sign in with Apple.';
 
   @override
   String get exportDone => 'Data exported';
@@ -760,8 +732,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get exportOffline =>
-      'No internet connection. Your data was not exported.';
+  String get exportOffline => 'No internet connection. Your data was not exported.';
 
   @override
   String exportFailed(String code) {
@@ -869,8 +840,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteCategoryEverywhere => 'It disappears from every store.';
 
   @override
-  String get storesHint =>
-      'Drag the stores into the order you want on the list. Tap a store to rename it and order its categories.';
+  String get storesHint => 'Drag the stores into the order you want on the list. Tap a store to rename it and order its categories.';
 
   @override
   String dragStore(String store) {
@@ -923,12 +893,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get storesNeedConnection =>
-      'Adding, renaming or deleting stores needs a connection.';
+  String get storesNeedConnection => 'Adding, renaming or deleting stores needs a connection.';
 
   @override
-  String get storesEmpty =>
-      'No stores yet. Add one and the list sorts your items in the order you walk through it.';
+  String get storesEmpty => 'No stores yet. Add one and the list sorts your items in the order you walk through it.';
 
   @override
   String storeDeleteBody(int count) {
@@ -989,8 +957,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get updatePatchTitle => 'Update ready';
 
   @override
-  String get updatePatchBody =>
-      'Snacklist has downloaded improvements. Restart the app to use them.';
+  String get updatePatchBody => 'Snacklist has downloaded improvements. Restart the app to use them.';
 
   @override
   String get updatePatchAction => 'Restart';
@@ -1072,8 +1039,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get analyticsConsentTitle => 'May Snacklist collect usage data?';
 
   @override
-  String get analyticsConsentBody =>
-      'Snacklist (run by Peter Trost) wants to see which features are used, find bugs, measure whether Snacklist pays for itself and switch new features on step by step. For that, Snacklist stores a random ID on this device and uses it to send pseudonymous usage data (for example about items, households and setup, which tips you see and how you use Siri, connected apps and AI assistants via MCP, and API keys), error reports, your household\'s ID and technical details of your device or browser to our service provider PostHog (servers in the EU). List contents, names and e-mail addresses are never sent. You can withdraw any time under More → Usage data. More in the';
+  String get analyticsConsentBody => 'Snacklist (run by Peter Trost) wants to see which features are used, find bugs, measure whether Snacklist pays for itself and switch new features on step by step. For that, Snacklist stores a random ID on this device and uses it to send pseudonymous usage data (for example about items, households and setup, which tips you see and how you use Siri, connected apps and AI assistants via MCP, and API keys), error reports, your household\'s ID and technical details of your device or browser to our service provider PostHog (servers in the EU). List contents, names and e-mail addresses are never sent. You can withdraw any time under More → Usage data. More in the';
 
   @override
   String get analyticsConsentPrivacyLink => 'privacy policy';
@@ -1091,8 +1057,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get analyticsToggle => 'Send usage data and error reports';
 
   @override
-  String get analyticsToggleHint =>
-      'Applies to this device. Turning it off deletes the ID on this device.';
+  String get analyticsToggleHint => 'Applies to this device. Turning it off deletes the ID on this device.';
 
   @override
   String copyInstallId(String id) {
@@ -1133,8 +1098,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get feedbackContact => 'Snacklist Support may contact me about this';
 
   @override
-  String get feedbackAttached =>
-      'App version, device and language. No list items.';
+  String get feedbackAttached => 'App version, device and language. No list items.';
 
   @override
   String get feedbackAttachedTitle => 'Included:';
@@ -1155,8 +1119,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get feedbackFailed => 'Not sent. Check your connection and try again.';
 
   @override
-  String get feedbackScreenshotRefused =>
-      'The screenshot wasn\'t accepted. Switch it off to send your message without it.';
+  String get feedbackScreenshotRefused => 'The screenshot wasn\'t accepted. Switch it off to send your message without it.';
 
   @override
   String feedbackTooLong(int max) {
@@ -1181,8 +1144,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get feedbackScreenshot => 'Screenshot';
 
   @override
-  String get feedbackScreenshotNote =>
-      'Shows everything that was on screen, including items and names from your household. Cover anything we shouldn\'t see first.';
+  String get feedbackScreenshotNote => 'Shows everything that was on screen, including items and names from your household. Cover anything we shouldn\'t see first.';
 
   @override
   String get feedbackScreenshotPreview => 'Screenshot preview';
@@ -1203,8 +1165,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get feedbackShakeOffHint => 'Turn shaking off: More › Settings';
 
   @override
-  String get feedbackAnnotateHint =>
-      'Mark what\'s wrong. Cover anything nobody should see.';
+  String get feedbackAnnotateHint => 'Mark what\'s wrong. Cover anything nobody should see.';
 
   @override
   String get feedbackToolPen => 'Pen';
@@ -1237,8 +1198,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shakeToFeedback => 'Shake to send feedback';
 
   @override
-  String get shakeToFeedbackHint =>
-      'Shake your phone to report a problem with the screen.';
+  String get shakeToFeedbackHint => 'Shake your phone to report a problem with the screen.';
 
   @override
   String get feedbackHubRow => 'Feedback & ideas';
@@ -1261,8 +1221,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get feedbackYourNotes => 'Your notes';
 
   @override
-  String get feedbackNoNotes =>
-      'No notes yet. What you write shows up here, with its status and the reply.';
+  String get feedbackNoNotes => 'No notes yet. What you write shows up here, with its status and the reply.';
 
   @override
   String get feedbackLoadFailed => 'Couldn\'t load.';
@@ -1345,8 +1304,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get feedbackNoteMissing => 'This note can\'t be found.';
 
   @override
-  String get onboardingCreateHint =>
-      'Start a new list, then invite the people you shop with.';
+  String get onboardingCreateHint => 'Start a new list, then invite the people you shop with.';
 
   @override
   String get onboardingJoin => 'Join with an invite';
@@ -1361,8 +1319,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get storesChoice => 'Stores';
 
   @override
-  String get onboardingStoresHint =>
-      'Pick the stores you shop at. Your list shows them in this order.';
+  String get onboardingStoresHint => 'Pick the stores you shop at. Your list shows them in this order.';
 
   @override
   String get storeAddOwn => 'Add your own store';
@@ -1374,16 +1331,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get skipStores => 'Skip';
 
   @override
-  String get skipStoresHint =>
-      'Start without stores. You can add them later under List → Edit.';
+  String get skipStoresHint => 'Start without stores. You can add them later under List → Edit.';
 
   @override
-  String get householdOffline =>
-      'No internet connection. Try again once you\'re online.';
+  String get householdOffline => 'No internet connection. Try again once you\'re online.';
 
   @override
-  String get householdArchiveDisabled =>
-      'Archiving isn\'t available right now. Your household stays as it is.';
+  String get householdArchiveDisabled => 'Archiving isn\'t available right now. Your household stays as it is.';
 
   @override
   String get tooManyAttempts => 'Too many attempts. Please try again later.';
@@ -1395,8 +1349,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get invitePreview => 'Household invitation';
 
   @override
-  String get invitePartnerBody =>
-      'Share the link or the code with the people you shop with. Each invite works for one person and is valid for 7 days.';
+  String get invitePartnerBody => 'Share the link or the code with the people you shop with. Each invite works for one person and is valid for 7 days.';
 
   @override
   String get later => 'Later';
@@ -1408,8 +1361,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get startTagline => 'Your shopping list. Live on every phone.';
 
   @override
-  String get startWelcome =>
-      'Welcome! In two minutes your shared list is ready, with everything you need right now.';
+  String get startWelcome => 'Welcome! In two minutes your shared list is ready, with everything you need right now.';
 
   @override
   String get startGo => 'Get started';
@@ -1421,8 +1373,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginNew => 'New to Snacklist? Get started';
 
   @override
-  String get joinerAccountWhy =>
-      'You need an account so the shared list stays in sync with the household you were invited to.';
+  String get joinerAccountWhy => 'You need an account so the shared list stays in sync with the household you were invited to.';
 
   @override
   String onboardingProgress(int step, int count) {
@@ -1445,8 +1396,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingExitTitle => 'Leave setup?';
 
   @override
-  String get onboardingExitBody =>
-      'What you\'ve entered so far stays saved on this device.';
+  String get onboardingExitBody => 'What you\'ve entered so far stays saved on this device.';
 
   @override
   String get onboardingExitLogIn => 'Sign in instead';
@@ -1461,8 +1411,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get whoTitle => 'Who do you shop with?';
 
   @override
-  String get whoBody =>
-      'Pick all that apply. We use this for the name, the invite and your first tips.';
+  String get whoBody => 'Pick all that apply. We use this for the name, the invite and your first tips.';
 
   @override
   String get kindPartner => 'Partner';
@@ -1497,8 +1446,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nameTitle => 'What should your household be called?';
 
   @override
-  String get nameBody =>
-      'Everyone you invite sees this name. You can change it later.';
+  String get nameBody => 'Everyone you invite sees this name. You can change it later.';
 
   @override
   String get householdNameFamily => 'Our family';
@@ -1522,8 +1470,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get needBody => 'Tap what should go on the list, or type it below.';
 
   @override
-  String get needStaples =>
-      'Milk,Bread,Eggs,Butter,Cheese,Bananas,Apples,Tomatoes,Pasta,Coffee,Yogurt,Toilet paper';
+  String get needStaples => 'Milk,Bread,Eggs,Butter,Cheese,Bananas,Apples,Tomatoes,Pasta,Coffee,Yogurt,Toilet paper';
 
   @override
   String get needFieldLabel => 'Anything else?';
@@ -1560,8 +1507,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountStepTitle => 'Create your account';
 
   @override
-  String get accountStepBody =>
-      'Almost done. Create an account to save your list and invite someone.';
+  String get accountStepBody => 'Almost done. Create an account to save your list and invite someone.';
 
   @override
   String get setupBusy => 'Setting up your household…';
@@ -1582,12 +1528,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inviteStepOther => 'Invite someone';
 
   @override
-  String get inviteStepBody =>
-      'Share the link with the person you shop with. Each invite works for one person and is valid for 7 days.';
+  String get inviteStepBody => 'Share the link with the person you shop with. Each invite works for one person and is valid for 7 days.';
 
   @override
-  String get inviteStepBodyClub =>
-      'Send each member their own link. Everyone sees the same list.';
+  String get inviteStepBodyClub => 'Send each member their own link. Everyone sees the same list.';
 
   @override
   String inviteStepWaiting(int count) {
@@ -1665,15 +1609,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lifetimeRowHint => 'Support Snacklist';
 
   @override
-  String get lifetimeBody =>
-      'One purchase for your whole household: Snacklist Lifetime supports the development of Snacklist.';
+  String get lifetimeBody => 'One purchase for your whole household: Snacklist Lifetime supports the development of Snacklist.';
 
   @override
   String get lifetimeBuy => 'Continue to purchase';
 
   @override
-  String get lifetimePriceInStore =>
-      'The App Store or Google Play shows you the price before you buy.';
+  String get lifetimePriceInStore => 'The App Store or Google Play shows you the price before you buy.';
 
   @override
   String get lifetimeRestore => 'Restore purchase';
@@ -1682,19 +1624,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lifetimePending => 'Waiting for approval';
 
   @override
-  String get lifetimePendingBody =>
-      'Snacklist Lifetime is unlocked as soon as the purchase is approved. This can take a while.';
+  String get lifetimePendingBody => 'Snacklist Lifetime is unlocked as soon as the purchase is approved. This can take a while.';
 
   @override
   String get lifetimeUnlocking => 'Unlocking…';
 
   @override
-  String get lifetimeUnlockDelayed =>
-      'Your purchase went through; unlocking just takes longer than usual. It appears here by itself, so please don\'t buy again.';
+  String get lifetimeUnlockDelayed => 'Your purchase went through; unlocking just takes longer than usual. It appears here by itself, so please don\'t buy again.';
 
   @override
-  String get lifetimeBoughtTwice =>
-      'Your household bought Snacklist Lifetime more than once. One of the purchases can be refunded.';
+  String get lifetimeBoughtTwice => 'Your household bought Snacklist Lifetime more than once. One of the purchases can be refunded.';
 
   @override
   String get lifetimeCanceled => 'Purchase canceled.';
@@ -1703,12 +1642,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lifetimeComingSoon => 'Snacklist Lifetime is coming soon.';
 
   @override
-  String get lifetimeStoreOffline =>
-      'The store can\'t be reached right now. Check your connection.';
+  String get lifetimeStoreOffline => 'The store can\'t be reached right now. Check your connection.';
 
   @override
-  String get lifetimeUsedElsewhere =>
-      'This purchase belongs to another, earlier household and stays there. It unlocks nothing here.';
+  String get lifetimeUsedElsewhere => 'This purchase belongs to another, earlier household and stays there. It unlocks nothing here.';
 
   @override
   String get lifetimeNothingRestored => 'No earlier purchase found.';
@@ -1719,31 +1656,25 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get lifetimeChecking =>
-      'Checking whether your household has Snacklist Lifetime already…';
+  String get lifetimeChecking => 'Checking whether your household has Snacklist Lifetime already…';
 
   @override
-  String get lifetimeRefundLink =>
-      'Bought it twice? How to get your money back';
+  String get lifetimeRefundLink => 'Bought it twice? How to get your money back';
 
   @override
   String get refundHelpTitle => 'Request a refund';
 
   @override
-  String get refundHelpBody =>
-      'Snacklist Lifetime always belongs to the household it was bought in. Only Apple refunds App Store purchases. For Google Play, ask Google within 48 hours of buying; after that, email us at support@snacklist.app and we\'ll look at your request. Your statutory rights are not affected.';
+  String get refundHelpBody => 'Snacklist Lifetime always belongs to the household it was bought in. Only Apple refunds App Store purchases. For Google Play, ask Google within 48 hours of buying; after that, email us at support@snacklist.app and we\'ll look at your request. Your statutory rights are not affected.';
 
   @override
-  String get refundHelpApple =>
-      'iPhone: open reportaproblem.apple.com, sign in with your Apple Account, choose “Request a refund”, then Snacklist Lifetime.';
+  String get refundHelpApple => 'iPhone: open reportaproblem.apple.com, sign in with your Apple Account, choose “Request a refund”, then Snacklist Lifetime.';
 
   @override
-  String get refundHelpGoogle =>
-      'Android, within 48 hours: open Google Play, tap your profile picture, then “Payments & subscriptions”, “Budget & order history”, choose Snacklist Lifetime and “Report a problem”. After that, email us with the order number (it starts with “GPA.”) or your Google account\'s email address.';
+  String get refundHelpGoogle => 'Android, within 48 hours: open Google Play, tap your profile picture, then “Payments & subscriptions”, “Budget & order history”, choose Snacklist Lifetime and “Report a problem”. After that, email us with the order number (it starts with “GPA.”) or your Google account\'s email address.';
 
   @override
-  String get refundHelpReason =>
-      'As the reason you can write: “My household was already unlocked.”';
+  String get refundHelpReason => 'As the reason you can write: “My household was already unlocked.”';
 
   @override
   String get refundHelpAppleLink => 'Ask Apple';
@@ -1755,12 +1686,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get refundHelpFaqLink => 'More in the FAQ';
 
   @override
-  String get joinTargetUnlocked =>
-      'This household has Snacklist Lifetime. You don\'t need to buy anything.';
+  String get joinTargetUnlocked => 'This household has Snacklist Lifetime. You don\'t need to buy anything.';
 
   @override
-  String get joinRefundLink =>
-      'Bought Snacklist Lifetime recently? How to request a refund';
+  String get joinRefundLink => 'Bought Snacklist Lifetime recently? How to request a refund';
 
   @override
   String get joinLifetimeRefundLink => 'Ask Apple or Google for a refund';
@@ -1802,12 +1731,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumHeroTitle => 'Snacklist Premium for you';
 
   @override
-  String get premiumHeroBody =>
-      'Snacklist Premium applies to you, in every household you are a member of.';
+  String get premiumHeroBody => 'Snacklist Premium applies to you, in every household you are a member of.';
 
   @override
-  String get premiumBenefitAi =>
-      'Connect AI assistants that support MCP to your list';
+  String get premiumBenefitAi => 'Connect AI assistants that support MCP to your list';
 
   @override
   String get premiumBenefitApi => 'Your own automations with the Snacklist API';
@@ -1840,28 +1767,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumBetaPrivacyLink => 'More in the privacy policy';
 
   @override
-  String get premiumBetaBody =>
-      'You pay nothing, and nothing renews automatically. We\'ll let you know at least 4 weeks before the free unlock ends.';
+  String get premiumBetaBody => 'You pay nothing, and nothing renews automatically. We\'ll let you know at least 4 weeks before the free unlock ends.';
 
   @override
-  String get premiumStatusFree =>
-      'Unlocked free of charge (testing and app review)';
+  String get premiumStatusFree => 'Unlocked free of charge (testing and app review)';
 
   @override
-  String get premiumStatusBeta =>
-      'Free in the beta, until Snacklist Premium launches';
+  String get premiumStatusBeta => 'Free in the beta, until Snacklist Premium launches';
 
   @override
-  String get premiumStatusBetaLifetime =>
-      'Snacklist Premium Lifetime, free as a thank-you for the beta';
+  String get premiumStatusBetaLifetime => 'Snacklist Premium Lifetime, free as a thank-you for the beta';
 
   @override
-  String get premiumBetaLifetimeBody =>
-      'You pay nothing, and nothing renews automatically. It is not a purchase. The unlock applies to your account for as long as it exists and we run Snacklist. If you delete the account, it ends. There is nothing to refund, because you paid nothing.';
+  String get premiumBetaLifetimeBody => 'You pay nothing, and nothing renews automatically. It is not a purchase. The unlock applies to your account for as long as it exists and we run Snacklist. If you delete the account, it ends. There is nothing to refund, because you paid nothing.';
 
   @override
-  String get premiumChecking =>
-      'Checking whether your household already has Snacklist Premium…';
+  String get premiumChecking => 'Checking whether your household already has Snacklist Premium…';
 
   @override
   String get premiumYearlyTitle => 'Yearly';
@@ -1879,12 +1800,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumLifetimeValue => 'Pay once, no subscription.';
 
   @override
-  String get premiumYearlyTerms =>
-      'Snacklist Premium yearly, 1 year. The plan renews automatically for another year unless you cancel it at least 24 hours before the end of the period. Your Apple or Google account is charged when you confirm the purchase and at every renewal. You can manage and cancel the plan in the App Store\'s or Google Play\'s subscription settings.';
+  String get premiumYearlyTerms => 'Snacklist Premium yearly, 1 year. The plan renews automatically for another year unless you cancel it at least 24 hours before the end of the period. Your Apple or Google account is charged when you confirm the purchase and at every renewal. You can manage and cancel the plan in the App Store\'s or Google Play\'s subscription settings.';
 
   @override
-  String get premiumHousehold =>
-      'Premium then applies to your account, in every household you are a member of.';
+  String get premiumHousehold => 'Premium then applies to your account, in every household you are a member of.';
 
   @override
   String get premiumBuyYearly => 'Subscribe yearly';
@@ -1893,8 +1812,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumBuyLifetime => 'Buy Lifetime';
 
   @override
-  String get premiumUnavailable =>
-      'Snacklist Premium is not available right now.';
+  String get premiumUnavailable => 'Snacklist Premium is not available right now.';
 
   @override
   String get premiumTermsLink => 'Terms of Use (EULA)';
@@ -1903,27 +1821,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumPrivacyLink => 'Privacy policy';
 
   @override
-  String get premiumUsedElsewhereYearly =>
-      'Your Apple or Google account already pays a yearly plan for another household. Someone else in this household can subscribe to Snacklist Premium.';
+  String get premiumUsedElsewhereYearly => 'Your Apple or Google account already pays a yearly plan for another household. Someone else in this household can subscribe to Snacklist Premium.';
 
   @override
-  String get premiumTwoYearly =>
-      'Your household has two yearly plans. Each can only be cancelled by whoever took it out.';
+  String get premiumTwoYearly => 'Your household has two yearly plans. Each can only be cancelled by whoever took it out.';
 
   @override
-  String get premiumWeb =>
-      'You can buy Snacklist Premium in the iPhone or Android app. It is then unlocked here too, for your account.';
+  String get premiumWeb => 'You can buy Snacklist Premium in the iPhone or Android app. It is then unlocked here too, for your account.';
 
   @override
-  String get premiumRefundYearly =>
-      'The same goes for the yearly plan. Cancelling only stops the renewal; the current year is not refunded automatically.';
+  String get premiumRefundYearly => 'The same goes for the yearly plan. Cancelling only stops the renewal; the current year is not refunded automatically.';
 
   @override
   String get premiumManage => 'Manage or cancel subscription';
 
   @override
-  String get premiumManageWeb =>
-      'You manage your yearly plan in the App Store or on Google Play.';
+  String get premiumManageWeb => 'You manage your yearly plan in the App Store or on Google Play.';
 
   @override
   String get premiumManageApple => 'App Store';
@@ -1940,23 +1853,19 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get premiumLifetimeWhileYearly =>
-      'Your household already has a yearly plan. It keeps running and being billed after the one-time purchase until it is cancelled; the rest of the plan year isn\'t refunded automatically. Only the person who took out the plan can cancel it, in [Manage subscriptions]. Snacklist can\'t cancel it.';
+  String get premiumLifetimeWhileYearly => 'Your household already has a yearly plan. It keeps running and being billed after the one-time purchase until it is cancelled; the rest of the plan year isn\'t refunded automatically. Only the person who took out the plan can cancel it, in [Manage subscriptions]. Snacklist can\'t cancel it.';
 
   @override
-  String get premiumLifetimeWhileYearlySubscriber =>
-      'Your household already has a yearly plan. It keeps running and being billed after the one-time purchase until it is cancelled; the rest of the plan year isn\'t refunded automatically. You can cancel it in [Manage subscription]. Snacklist can\'t cancel it.';
+  String get premiumLifetimeWhileYearlySubscriber => 'Your household already has a yearly plan. It keeps running and being billed after the one-time purchase until it is cancelled; the rest of the plan year isn\'t refunded automatically. You can cancel it in [Manage subscription]. Snacklist can\'t cancel it.';
 
   @override
   String get premiumBuyAnyway => 'Buy anyway';
 
   @override
-  String get premiumBillingContinues =>
-      'Your Snacklist Premium yearly plan keeps running and is billed to your Apple or Google account until you cancel it. Deleting or leaving doesn\'t cancel it.';
+  String get premiumBillingContinues => 'Your Snacklist Premium yearly plan keeps running and is billed to your Apple or Google account until you cancel it. Deleting or leaving doesn\'t cancel it.';
 
   @override
-  String get premiumBillingContinuesOther =>
-      'A yearly plan for this household keeps running until it is cancelled.';
+  String get premiumBillingContinuesOther => 'A yearly plan for this household keeps running until it is cancelled.';
 
   @override
   String get premiumManageSubscription => 'Manage subscription';
@@ -1968,15 +1877,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get integrationPremiumTitle => 'Part of Snacklist Premium';
 
   @override
-  String get integrationPremiumBody =>
-      'AI assistants are part of Snacklist Premium. Your connections stay saved and work again as soon as you have Snacklist Premium.';
+  String get integrationPremiumBody => 'AI assistants are part of Snacklist Premium. Your connections stay saved and work again as soon as you have Snacklist Premium.';
 
   @override
   String get integrationPremiumAi => 'AI assistants that support MCP';
 
   @override
-  String get integrationPremiumLater =>
-      'Later: Google Assistant and Apple Watch';
+  String get integrationPremiumLater => 'Later: Google Assistant and Apple Watch';
 
   @override
   String get integrationPremiumBuy => 'Unlock Snacklist Premium';
@@ -1991,8 +1898,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get apiHeader => 'API';
 
   @override
-  String get apiBody =>
-      'For your own scripts and automations: read and change your list over HTTP with an API key.';
+  String get apiBody => 'For your own scripts and automations: read and change your list over HTTP with an API key.';
 
   @override
   String get apiDocs => 'API documentation';
@@ -2010,15 +1916,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get apiScopeRead => 'Read only';
 
   @override
-  String get apiScopeReadBody =>
-      'Reads the list, categories and stores. Changes nothing.';
+  String get apiScopeReadBody => 'Reads the list, categories and stores. Changes nothing.';
 
   @override
   String get apiScopeReadWrite => 'Read and write';
 
   @override
-  String get apiScopeReadWriteBody =>
-      'Can also add, change, tick off and remove items, create and rename lists and stores, and set the order in a store.';
+  String get apiScopeReadWriteBody => 'Can also add, change, tick off and remove items, create and rename lists and stores, and set the order in a store.';
 
   @override
   String get apiKeyCreated => 'API key created';
@@ -2036,23 +1940,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tooManyApiKeys => 'At most 10 active API keys. Revoke one first.';
 
   @override
-  String get apiKeySessionRequired =>
-      'You can only create API keys here in the app while you\'re signed in.';
+  String get apiKeySessionRequired => 'You can only create API keys here in the app while you\'re signed in.';
 
   @override
   String get apiDisabled => 'The API isn\'t available yet.';
 
   @override
-  String get apiPremium =>
-      'The Snacklist API is part of Snacklist Premium. Your keys stay and work again as soon as you have Premium.';
+  String get apiPremium => 'The Snacklist API is part of Snacklist Premium. Your keys stay and work again as soon as you have Premium.';
 
   @override
-  String get accessTokensHint =>
-      'Use a token to build your own automations that manage your list, like a script or an assistant on the MCP server.';
+  String get accessTokensHint => 'Use a token to build your own automations that manage your list, like a script or an assistant on the MCP server.';
 
   @override
-  String get accessTokensHintWithApi =>
-      'Use a token to build your own automations on the MCP server that manage your list. For programs without MCP, use the API below.';
+  String get accessTokensHintWithApi => 'Use a token to build your own automations on the MCP server that manage your list. For programs without MCP, use the API below.';
 
   @override
   String accessKeysHousehold(String household) {
@@ -2104,22 +2004,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tipEditTitle => 'Edit an item';
 
   @override
-  String get tipEditBody =>
-      'Press and hold an item to change its quantity, brand, store and more.';
+  String get tipEditBody => 'Press and hold an item to change its quantity, brand, store and more.';
 
   @override
   String get tipAmountsTitle => 'Type the amount too';
 
   @override
-  String get tipAmountsBody =>
-      'Write “2 cucumbers” or “milk 2 l” and Snacklist picks up the amount.';
+  String get tipAmountsBody => 'Write “2 cucumbers” or “milk 2 l” and Snacklist picks up the amount.';
 
   @override
   String get tipDismiss => 'Hide tip';
 
   @override
-  String get tooManyHouseholds =>
-      'You are in 20 households already. Leave one before you create or join another.';
+  String get tooManyHouseholds => 'You are in 20 households already. Leave one before you create or join another.';
 
   @override
   String get householdSwitch => 'Switch household';
@@ -2168,12 +2065,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get voiceDefaultTitle => 'Default for Siri, Alexa & AI';
 
   @override
-  String get voiceDefaultBody =>
-      'What you tell Siri, Alexa or an AI assistant goes into this household.';
+  String get voiceDefaultBody => 'What you tell Siri, Alexa or an AI assistant goes into this household.';
 
   @override
-  String get voiceDefaultOn =>
-      'Siri, Alexa and AI assistants use this household.';
+  String get voiceDefaultOn => 'Siri, Alexa and AI assistants use this household.';
 
   @override
   String voiceDefaultOff(String household) {
@@ -2212,12 +2107,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get leaveShared =>
-      'The other members keep the list. You can only come back with a new invite.';
+  String get leaveShared => 'The other members keep the list. You can only come back with a new invite.';
 
   @override
-  String get leaveLast =>
-      'You are the last member. The household is deleted with its list, history, categories and stores.';
+  String get leaveLast => 'You are the last member. The household is deleted with its list, history, categories and stores.';
 
   @override
   String leaveLifetimeEnds(String household) {
@@ -2269,15 +2162,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get invitePersonBody => 'A link for one person, valid for 7 days.';
 
   @override
-  String get inviteJoinPageHint =>
-      'Anyone with the link or code sees your name, the household\'s name and a few numbers about it before joining. Only share them with people you want to invite.';
+  String get inviteJoinPageHint => 'Anyone with the link or code sees your name, the household\'s name and a few numbers about it before joining. Only share them with people you want to invite.';
 
   @override
   String get inviteGroupTitle => 'Group link';
 
   @override
-  String get inviteGroupBody =>
-      'For up to 50 people, valid for 30 days. Show the QR code or share the link.';
+  String get inviteGroupBody => 'For up to 50 people, valid for 30 days. Show the QR code or share the link.';
 
   @override
   String get inviteGroupCreate => 'Create group link';
@@ -2288,12 +2179,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get inviteGroupFull =>
-      'This link is full: no one else can join with it.';
+  String get inviteGroupFull => 'This link is full: no one else can join with it.';
 
   @override
-  String get inviteGroupRevoked =>
-      'Link revoked: no one can join with it any more.';
+  String get inviteGroupRevoked => 'Link revoked: no one can join with it any more.';
 
   @override
   String get inviteGroupRevoke => 'Revoke link';
@@ -2305,8 +2194,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inviteGroupRevokeTitle => 'Revoke the group link?';
 
   @override
-  String get inviteGroupRevokeBody =>
-      'No one can join with the link any more. Everyone who joined stays in the household.';
+  String get inviteGroupRevokeBody => 'No one can join with the link any more. Everyone who joined stays in the household.';
 
   @override
   String get inviteGroupRevokeConfirm => 'Revoke';
@@ -2315,8 +2203,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inviteGroupRenewTitle => 'Create a new link?';
 
   @override
-  String get inviteGroupRenewBody =>
-      'The current link stops working. Everyone who joined stays in the household.';
+  String get inviteGroupRenewBody => 'The current link stops working. Everyone who joined stays in the household.';
 
   @override
   String get inviteGroupQr => 'QR code of the group link';
@@ -2337,19 +2224,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String inviteShareKind(String kind, String name, String link, String code) {
-    String _temp0 = intl.Intl.selectLogic(kind, {
-      'partner':
-          'I\'ve set up our shopping list in Snacklist. Join me: $link · Code: $code',
-      'family':
-          'Our family shopping list “$name” is on Snacklist now. Join us: $link · Code: $code',
-      'flat':
-          'Our flat\'s shopping list “$name” is on Snacklist now. Join us: $link · Code: $code',
-      'club':
-          'We\'re planning the shopping for “$name” in Snacklist. Join in: $link · Code: $code',
-      'solo':
-          'I\'m sharing my shopping list “$name” in Snacklist with you: $link · Code: $code',
-      'other': 'Join our Snacklist household: $link · Code: $code',
-    });
+    String _temp0 = intl.Intl.selectLogic(
+      kind,
+      {
+        'partner': 'I\'ve set up our shopping list in Snacklist. Join me: $link · Code: $code',
+        'family': 'Our family shopping list “$name” is on Snacklist now. Join us: $link · Code: $code',
+        'flat': 'Our flat\'s shopping list “$name” is on Snacklist now. Join us: $link · Code: $code',
+        'club': 'We\'re planning the shopping for “$name” in Snacklist. Join in: $link · Code: $code',
+        'solo': 'I\'m sharing my shopping list “$name” in Snacklist with you: $link · Code: $code',
+        'other': 'Join our Snacklist household: $link · Code: $code',
+      },
+    );
     return '$_temp0';
   }
 
@@ -2406,15 +2291,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get invitePaste => 'Paste invite';
 
   @override
-  String get invitePasteNothing =>
-      'There\'s no invite link or code on the clipboard.';
+  String get invitePasteNothing => 'There\'s no invite link or code on the clipboard.';
 
   @override
   String get invitePasteWaiting => 'Invite saved. Sign in to join.';
 
   @override
-  String get householdNotOwner =>
-      'Only the household\'s owner can make people admins.';
+  String get householdNotOwner => 'Only the household\'s owner can make people admins.';
 
   @override
   String get listsTitle => 'Lists';
@@ -2465,8 +2348,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get listsNeedConnection =>
-      'Lists can only be added, renamed, sorted or deleted with a connection.';
+  String get listsNeedConnection => 'Lists can only be added, renamed, sorted or deleted with a connection.';
 
   @override
   String onListAlready(String name, String list) {
@@ -2512,8 +2394,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get joinDeclinedRecently =>
-      'Your request to join this household was declined recently. You can ask again after 24 hours.';
+  String get joinDeclinedRecently => 'Your request to join this household was declined recently. You can ask again after 24 hours.';
 
   @override
   String get joinRequestWithdraw => 'Withdraw request';
@@ -2572,8 +2453,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get joinRequestApprove => 'Approve';
 
   @override
-  String get joinRequestInviteFull =>
-      'The invite for this request is full. Send a new link. Once it\'s opened, you can let them in.';
+  String get joinRequestInviteFull => 'The invite for this request is full. Send a new link. Once it\'s opened, you can let them in.';
 
   @override
   String get joinRequestDecline => 'Decline';
@@ -2591,8 +2471,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hintStoreOrderTitle => 'Sorted like your store';
 
   @override
-  String get hintStoreOrderBody =>
-      'Here you can sort the categories in the order you walk through the store.';
+  String get hintStoreOrderBody => 'Here you can sort the categories in the order you walk through the store.';
 
   @override
   String get hintAddStoreTitle => 'Another store?';
@@ -2604,15 +2483,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hintDictationTitle => 'Just say it';
 
   @override
-  String get hintDictationBody =>
-      'Tap the mic and say: “milk, two cucumbers and toilet paper”.';
+  String get hintDictationBody => 'Tap the mic and say: “milk, two cucumbers and toilet paper”.';
 
   @override
   String get hintAssistantTitle => 'Even better with AI & automation';
 
   @override
-  String get hintAssistantBody =>
-      'Let your AI assistant manage your list, or use the API to build automations.';
+  String get hintAssistantBody => 'Let your AI assistant manage your list, or use the API to build automations.';
 
   @override
   String get hintAssistantAction => 'Manage access';
@@ -2621,29 +2498,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hintSiriTitle => 'Add with Siri';
 
   @override
-  String get hintSiriBody =>
-      'Say “Hey Siri, add to Snacklist” when your hands are full.';
+  String get hintSiriBody => 'Say “Hey Siri, add to Snacklist” when your hands are full.';
 
   @override
   String get hintWidgetTitle => 'Your list on the home screen';
 
   @override
-  String get hintWidgetBody =>
-      'Add the Snacklist widget by pressing and holding your phone\'s home screen.';
+  String get hintWidgetBody => 'Add the Snacklist widget by pressing and holding your phone\'s home screen.';
 
   @override
   String get hintOwnHouseholdTitle => 'A list of your own';
 
   @override
-  String get hintOwnHouseholdBody =>
-      'Someone else created this household. You can create your own too, for example just for you.';
+  String get hintOwnHouseholdBody => 'Someone else created this household. You can create your own too, for example just for you.';
 
   @override
   String get hintSecondHouseholdTitle => 'Another list?';
 
   @override
-  String get hintSecondHouseholdBody =>
-      'For your club or flat: create a second household.';
+  String get hintSecondHouseholdBody => 'For your club or flat: create a second household.';
 
   @override
   String get hintAddHouseholdAction => 'Create a household';
@@ -2673,22 +2546,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String checklistInvite(String kind) {
-    String _temp0 = intl.Intl.selectLogic(kind, {
-      'partner': 'Invite your partner',
-      'family': 'Invite your family',
-      'flat': 'Invite your flatmates',
-      'club': 'Invite members',
-      'other': 'Invite someone',
-    });
+    String _temp0 = intl.Intl.selectLogic(
+      kind,
+      {
+        'partner': 'Invite your partner',
+        'family': 'Invite your family',
+        'flat': 'Invite your flatmates',
+        'club': 'Invite members',
+        'other': 'Invite someone',
+      },
+    );
     return '$_temp0';
   }
 
   @override
   String checklistInviteBody(String kind) {
-    String _temp0 = intl.Intl.selectLogic(kind, {
-      'club': 'Everyone sees the same list and can add to it.',
-      'other': 'They see your items right away and can add their own.',
-    });
+    String _temp0 = intl.Intl.selectLogic(
+      kind,
+      {
+        'club': 'Everyone sees the same list and can add to it.',
+        'other': 'They see your items right away and can add their own.',
+      },
+    );
     return '$_temp0';
   }
 
@@ -2699,8 +2578,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get checklistAssistant => 'Connect an AI assistant';
 
   @override
-  String get checklistAssistantBody =>
-      'Under More → Access. It can add things to your list.';
+  String get checklistAssistantBody => 'Under More → Access. It can add things to your list.';
 
   @override
   String get checklistOpen => 'Open';
@@ -2737,8 +2615,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get historyEmptyTitle => 'No trips yet';
 
   @override
-  String get historyEmptyBody =>
-      'After shopping, log what you bought. Later you can look up what you got where, and when.';
+  String get historyEmptyBody => 'After shopping, log what you bought. Later you can look up what you got where, and when.';
 
   @override
   String get historyLoadFailed => 'The history couldn\'t be loaded.';
@@ -2844,12 +2721,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tripDeleteTitle => 'Delete this trip?';
 
   @override
-  String get tripDeleteBody =>
-      'The trip disappears from everyone\'s history in the household.';
+  String get tripDeleteBody => 'The trip disappears from everyone\'s history in the household.';
 
   @override
-  String get tripDeleteFailed =>
-      'The trip couldn\'t be deleted. Please try again.';
+  String get tripDeleteFailed => 'The trip couldn\'t be deleted. Please try again.';
 
   @override
   String get tripSaveFailed => 'The trip couldn\'t be saved. Please try again.';
@@ -3009,8 +2884,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get currencyTitle => 'Currency';
 
   @override
-  String get currencyHint =>
-      'For prices and the shopping total, for everyone in the household';
+  String get currencyHint => 'For prices and the shopping total, for everyone in the household';
 
   @override
   String get currencyPick => 'Choose currency';
@@ -3047,8 +2921,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shopAskTitle => 'Are you shopping right now?';
 
   @override
-  String get shopAskBody =>
-      'Snacklist times your trip, and at the end you see what was planned and what you added.';
+  String get shopAskBody => 'Snacklist times your trip, and at the end you see what was planned and what you added.';
 
   @override
   String get shopAskYes => 'Yes, start a trip';
@@ -3186,8 +3059,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shopMarkPlanned => 'Was planned';
 
   @override
-  String get shopMarkPlannedHint =>
-      '“Was planned” counts an item as on the list when it was agreed but not written down.';
+  String get shopMarkPlannedHint => '“Was planned” counts an item as on the list when it was agreed but not written down.';
 
   @override
   String shopPlannedPrice(String amount) {
@@ -3240,8 +3112,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get shopTotalsNote =>
-      'Paid counts only items with a price. The difference compares only items with a planned and a paid price.';
+  String get shopTotalsNote => 'Paid counts only items with a price. The difference compares only items with a planned and a paid price.';
 
   @override
   String get shopKeepShopping => 'Keep shopping';
@@ -3264,8 +3135,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shopLockedTitle => 'What was planned, what did you add?';
 
   @override
-  String get shopLockedBody =>
-      'After every trip, Snacklist Premium shows what was on the list and what got added along the way, also by others in the household.';
+  String get shopLockedBody => 'After every trip, Snacklist Premium shows what was on the list and what got added along the way, also by others in the household.';
 
   @override
   String get shopLockedButton => 'See Snacklist Premium';
@@ -3277,8 +3147,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shopStartByHand => 'Start a trip';
 
   @override
-  String get shopStartByHandHint =>
-      'The clock runs from now; the list as it is now counts as planned.';
+  String get shopStartByHandHint => 'The clock runs from now; the list as it is now counts as planned.';
 
   @override
   String get shopByOther => 'added by someone else';
@@ -3361,8 +3230,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get jh2JoinCodeHeading => 'Enter your invite code';
 
   @override
-  String get jh2JoinCodeHelp =>
-      'The 8 characters from your invite. Once they\'re all in, you\'ll see the household.';
+  String get jh2JoinCodeHelp => 'The 8 characters from your invite. Once they\'re all in, you\'ll see the household.';
 
   @override
   String get jh2JoinCodeJoin => 'Join';
@@ -3411,12 +3279,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get jh2PreviewPremium => 'Premium covers everyone in the household';
 
   @override
-  String get jh2CodeUnavailable =>
-      'This invite no longer works. Ask for a new invite.';
+  String get jh2CodeUnavailable => 'This invite no longer works. Ask for a new invite.';
 
   @override
-  String get jh2CodeRateLimited =>
-      'Too many tries right now. Try again in a while.';
+  String get jh2CodeRateLimited => 'Too many tries right now. Try again in a while.';
 
   @override
   String get jh2InviteSheetBody => 'Do you already have a Snacklist account?';
@@ -3454,8 +3320,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get yourNameTitle => 'What should we call you?';
 
   @override
-  String get yourNameBody =>
-      'Everyone in your household sees this name. The people you invite see your first name. You can change it later.';
+  String get yourNameBody => 'Everyone in your household sees this name. The people you invite see your first name. You can change it later.';
 
   @override
   String get yourNameLabel => 'Your name';
@@ -3476,15 +3341,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get yourNameLoadFailed => 'Couldn\'t load your name.';
 
   @override
-  String get yourNameOffline =>
-      'No internet connection. Your name was not saved.';
+  String get yourNameOffline => 'No internet connection. Your name was not saved.';
 
   @override
   String get yourNameAdd => 'Add your name';
 
   @override
-  String get yourNameEditBody =>
-      'Everyone in your household sees this name. People you invite see your first name.';
+  String get yourNameEditBody => 'Everyone in your household sees this name. People you invite see your first name.';
 
   @override
   String get yourNameSaved => 'Name saved';
@@ -3496,12 +3359,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportContent => 'Report content';
 
   @override
-  String get reportEntryHint =>
-      'Only we read the report, nobody in your household.';
+  String get reportEntryHint => 'Only we read the report, nobody in your household.';
 
   @override
-  String get reportIntro =>
-      'Use this form to report content in Snacklist that you believe is illegal, for example an item, a list, a household name or a photo. For questions or bugs, please use feedback or support@snacklist.app. This form is not an emergency service: if someone is in immediate danger, call your local emergency number now (112 in the EU).';
+  String get reportIntro => 'Use this form to report content in Snacklist that you believe is illegal, for example an item, a list, a household name or a photo. For questions or bugs, please use feedback or support@snacklist.app. This form is not an emergency service: if someone is in immediate danger, call your local emergency number now (112 in the EU).';
 
   @override
   String get reportRequired => 'required';
@@ -3516,8 +3377,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportCategoryHate => 'Insults, threats or hate';
 
   @override
-  String get reportCategoryPersonalRights =>
-      'Violation of my personal rights or privacy (e.g. a photo of me)';
+  String get reportCategoryPersonalRights => 'Violation of my personal rights or privacy (e.g. a photo of me)';
 
   @override
   String get reportCategoryIp => 'Copyright or trade mark';
@@ -3535,16 +3395,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportWhere => 'Where is the content?';
 
   @override
-  String get reportWhereHelp =>
-      'In the app we select the item, list or photo for you – please check it.';
+  String get reportWhereHelp => 'In the app we select the item, list or photo for you – please check it.';
 
   @override
-  String get reportWhereChooseHelp =>
-      'Choose the item, list or household name. The more exact, the faster we can find it.';
+  String get reportWhereChooseHelp => 'Choose the item, list or household name. The more exact, the faster we can find it.';
 
   @override
-  String get reportWhereElsewhereHelp =>
-      'Describe where it is: the household and list name and the exact text of the item. The more exact, the faster we can find it.';
+  String get reportWhereElsewhereHelp => 'Describe where it is: the household and list name and the exact text of the item. The more exact, the faster we can find it.';
 
   @override
   String get reportWhereChoose => 'Choose';
@@ -3556,17 +3413,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportWhy => 'Why is this content illegal?';
 
   @override
-  String get reportWhyHelp =>
-      'Please explain as precisely as you can which right is violated and why. If it concerns your own rights, tell us how you are connected to the content.';
+  String get reportWhyHelp => 'Please explain as precisely as you can which right is violated and why. If it concerns your own rights, tell us how you are connected to the content.';
 
   @override
   String reportCounter(int count, int max) {
-    final intl.NumberFormat countNumberFormat =
-        intl.NumberFormat.decimalPattern(localeName);
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.decimalPattern(localeName);
     final String countString = countNumberFormat.format(count);
-    final intl.NumberFormat maxNumberFormat = intl.NumberFormat.decimalPattern(
-      localeName,
-    );
+    final intl.NumberFormat maxNumberFormat = intl.NumberFormat.decimalPattern(localeName);
     final String maxString = maxNumberFormat.format(max);
 
     return '$countString / $maxString';
@@ -3579,26 +3432,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportEmail => 'Your e-mail address';
 
   @override
-  String get reportContactHelp =>
-      'We need your name and e-mail address to confirm receipt and tell you our decision. Without them we still review the report, but can\'t reply.';
+  String get reportContactHelp => 'We need your name and e-mail address to confirm receipt and tell you our decision. Without them we still review the report, but can\'t reply.';
 
   @override
-  String get reportCsamNote =>
-      'For child sexual abuse material you can report without your name and e-mail address.';
+  String get reportCsamNote => 'For child sexual abuse material you can report without your name and e-mail address.';
 
   @override
   String get reportCsamAdd => 'Add my name and e-mail address';
 
   @override
-  String get reportGoodFaith =>
-      'I believe in good faith that the information and allegations in this report are accurate and complete.';
+  String get reportGoodFaith => 'I believe in good faith that the information and allegations in this report are accurate and complete.';
 
   @override
   String get reportScreenshot => 'Attach screenshot (optional)';
 
   @override
-  String get reportScreenshotHelp =>
-      'Cover anything that has nothing to do with the report.';
+  String get reportScreenshotHelp => 'Cover anything that has nothing to do with the report.';
 
   @override
   String get reportScreenshotAttached => 'Screenshot attached';
@@ -3636,20 +3485,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportErrorGoodFaith => 'Please confirm this to send the report.';
 
   @override
-  String get reportFailedRateLimited =>
-      'Your report was not sent because too many reports are arriving right now. Your details are still here. Please try again in an hour or e-mail them to our point of contact support@snacklist.app: what it is about, where the content is and why it is illegal. We handle your report that way too.';
+  String get reportFailedRateLimited => 'Your report was not sent because too many reports are arriving right now. Your details are still here. Please try again in an hour or e-mail them to our point of contact support@snacklist.app: what it is about, where the content is and why it is illegal. We handle your report that way too.';
 
   @override
-  String get reportFailedUnavailable =>
-      'The report couldn\'t be sent just now. Please try again shortly or write to support@snacklist.app.';
+  String get reportFailedUnavailable => 'The report couldn\'t be sent just now. Please try again shortly or write to support@snacklist.app.';
 
   @override
-  String get reportFailedOffline =>
-      'No connection. Your details are still here: please try again shortly.';
+  String get reportFailedOffline => 'No connection. Your details are still here: please try again shortly.';
 
   @override
-  String get reportFailedScreenshotTooLarge =>
-      'The screenshot is too large. Remove it and send the report again.';
+  String get reportFailedScreenshotTooLarge => 'The screenshot is too large. Remove it and send the report again.';
 
   @override
   String get reportPickerSearch => 'Search items and lists';
@@ -3708,12 +3553,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get reportNotMailed =>
-      'You gave no e-mail address, so we can\'t reply. Keep the number if you want to ask about it.';
+  String get reportNotMailed => 'You gave no e-mail address, so we can\'t reply. Keep the number if you want to ask about it.';
 
   @override
-  String get reportNotInNotes =>
-      'Reports don\'t appear under Your notes and nobody in your household sees them.';
+  String get reportNotInNotes => 'Reports don\'t appear under Your notes and nobody in your household sees them.';
 
   @override
   String get reportDone => 'Done';
@@ -3725,17 +3568,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String countryName(String code) {
-    String _temp0 = intl.Intl.selectLogic(code, {
-      'DE': 'Germany',
-      'AT': 'Austria',
-      'CH': 'Switzerland',
-      'FR': 'France',
-      'NL': 'Netherlands',
-      'PL': 'Poland',
-      'IT': 'Italy',
-      'ES': 'Spain',
-      'other': '$code',
-    });
+    String _temp0 = intl.Intl.selectLogic(
+      code,
+      {
+        'DE': 'Germany',
+        'AT': 'Austria',
+        'CH': 'Switzerland',
+        'FR': 'France',
+        'NL': 'Netherlands',
+        'PL': 'Poland',
+        'IT': 'Italy',
+        'ES': 'Spain',
+        'other': '$code',
+      },
+    );
     return '$_temp0';
   }
 
@@ -3838,8 +3684,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get storeChainPickerEmpty => 'No chain found.';
 
   @override
-  String get migrateBody =>
-      'Recognised stores can show a button for their app. Names stay as you wrote them.';
+  String get migrateBody => 'Recognised stores can show a button for their app. Names stay as you wrote them.';
 
   @override
   String get migrateDone => 'Matched';
@@ -3869,8 +3714,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get placeFilter => 'Search items';
 
   @override
-  String get shopAskQuiet =>
-      'If you say No, we won\'t ask again for an hour, and this shop won\'t be detected.';
+  String get shopAskQuiet => 'If you say No, we won\'t ask again for an hour, and this shop won\'t be detected.';
 
   @override
   String get detectedOwn => 'Detected from your ticks';
@@ -3897,8 +3741,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tripNotShopping => 'Not a shopping trip';
 
   @override
-  String get tripNotShoppingBody =>
-      'Not a shopping trip? The ticks stay, but the order no longer learns from it.';
+  String get tripNotShoppingBody => 'Not a shopping trip? The ticks stay, but the order no longer learns from it.';
 
   @override
   String get tripNotShoppingConfirm => 'Remove';
@@ -3907,8 +3750,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tripRemoved => 'Removed';
 
   @override
-  String get tripRemoveFailed =>
-      'The trip couldn\'t be removed. Please try again.';
+  String get tripRemoveFailed => 'The trip couldn\'t be removed. Please try again.';
 
   @override
   String detectedCardTitle(String store) {
@@ -3919,8 +3761,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get detectedCardTitleNoStore => 'Shopping trip detected';
 
   @override
-  String get detectedCardBody =>
-      'Snacklist remembers the order you tick in and sorts the list that way next time. The trip is in History, for the others in your household without times. You can turn this off in Settings under “Detect trips from my ticks”.';
+  String get detectedCardBody => 'Snacklist remembers the order you tick in and sorts the list that way next time. The trip is in History, for the others in your household without times. You can turn this off in Settings under “Detect trips from my ticks”.';
 
   @override
   String get detectedCardView => 'View';
@@ -3936,4 +3777,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get detectTripsHint => 'Uses only when you tick. No location.';
+
+  @override
+  String get settingsPush => 'Notifications';
+
+  @override
+  String get pushHouseholdAdd => 'When someone adds something';
+
+  @override
+  String get pushHouseholdAddHint => 'A notification with the name and the item, e.g. “Lea added milk”. Several in a short time come as one.';
+
+  @override
+  String get pushBlocked => 'Notifications are turned off for Snacklist. Allow them in your device\'s settings.';
 }

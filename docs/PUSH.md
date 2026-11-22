@@ -210,3 +210,52 @@ nothing real goes in the repo):
    its key JSON is the Supabase secret `FCM_SERVICE_ACCOUNT_JSON`.
 6. A random `PUSH_SEND_SECRET` as a Supabase secret, and wherever the
    callers (P1, P2) need it.
+
+## Household add (job 377, P1)
+
+When another member adds an item, the members who switched the alert on get
+a push (flag `push-household-add`, off until Legal's GO). The app side is
+the switch under Einstellungen › Mitteilungen
+(`app/lib/push/household_add_settings.dart`); the decisions are in the
+database (`supabase/migrations/20261122213000_push_household_add.sql`,
+`supabase/tests/push_household_add.test.sql`).
+
+- **Opt-in, per person.** `public.push_preferences.household_add` defaults
+  off (no row is off). The switch calls `set_push_household_add(on,
+  language)`; turning it on first asks the OS for permission
+  (`PushRegistration.optIn()`), and a refusal leaves it off. `language` is the
+  app's (`de` or `en`), because the server knows no locale; the app writes it
+  again when it opens and the language changed.
+- **Never my own adds, on any device.** Recipients are members of the
+  household other than the adder, and a push goes to every device of a
+  recipient, never to a device of the adder (the push function picks tokens by
+  recipient user).
+- **Only while someone wants it.** The items trigger queues an add
+  (`push_add_queue`: household, list, adder, item name) only when the server
+  switch `app_switches.push_household_add` is on and at least one other member
+  switched the alert on. Nothing is stored otherwise.
+- **Not while the adder shops (d).** No row is queued when the adder has an
+  app tick (`bought` or `restored`, `item_events.source = 'app'`) in the
+  household within the last 10 minutes: the "a trip may still be going on"
+  rule of trip detection (`detect_due_households`, T1a). The running trip of
+  trip mode lives on the device only, so this is the server's only trip
+  signal; no second one was added. An add during a trip is never pushed, also
+  not afterwards.
+- **Batching (b).** A group (household, list, adder) goes out when its newest
+  add is 2 minutes old, or its oldest 5 minutes (`push_add_take`). One add:
+  „Lea hat Milch hinzugefügt“ / "Lea added Milk"; several: „Lea hat 4
+  Einträge hinzugefügt“ / "Lea added 4 items". Title `Snacklist`. A name the
+  profile does not have reads „Jemand“ / "Someone".
+- **Sending.** `push_add_flush()` runs every minute (pg_cron job
+  `push-household-add`) and posts what `push_add_take()` returns to the
+  `push` function with `pg_net`, using the vault secrets `push_send_secret`
+  and `push_url`. The post is fire and forget: a failure drops that push (a
+  notification this late is not worth a retry); queue rows older than an hour
+  are deleted unsent. TTL 1 hour.
+- **Tap (e).** The data of the message is P0's: it opens that household's
+  list (`push_taps.dart`).
+- **Switching on (Ops, after Legal's GO).** In the vault: `select
+  vault.create_secret('<PUSH_SEND_SECRET>', 'push_send_secret');`, then as
+  the service role `select public.push_household_add_set(true, '<push function
+  URL>');`; `push_household_add_set(false)` switches it off and stops the cron
+  job. Then the PostHog flag `push-household-add` for the app's switch.

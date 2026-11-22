@@ -1341,5 +1341,9 @@
   "detectedCardGotIt": "Got it",
   "settingsTrips": "Shopping trips",
   "detectTrips": "Detect trips from my ticks",
-  "detectTripsHint": "Uses only when you tick. No location."
+  "detectTripsHint": "Uses only when you tick. No location.",
+  "settingsPush": "Notifications",
+  "pushHouseholdAdd": "When someone adds something",
+  "pushHouseholdAddHint": "A notification with the name and the item, e.g. “Lea added milk”. Several in a short time come as one.",
+  "pushBlocked": "Notifications are turned off for Snacklist. Allow them in your device's settings."
 }

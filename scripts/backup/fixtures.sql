@@ -205,6 +205,10 @@ select id, 'internal' from auth.users where email = 'peter@backup.test';
 insert into public.push_tokens (user_id, token, platform)
 select id, 'test-token-backup-lea', 'ios' from auth.users where email = 'lea@backup.test';
 
+-- Job 377: Lea switched the household-add alert on, in English.
+insert into public.push_preferences (user_id, household_add, language)
+select id, true, 'en' from auth.users where email = 'lea@backup.test';
+
 -- Job 352: Peter has seen the first detected trip card (detection on since always); Carl switched
 -- detection off.
 insert into public.trip_detection_settings (user_id, detect_ticks_from, detected_card_at)
@@ -216,6 +220,13 @@ insert into public.shop_declines (household_id, user_id, tick_id, client_at)
 select e.household_id, e.actor, e.id, now() from public.item_events e
 where e.actor = (select id from auth.users where email = 'lea@backup.test') and e.action = 'bought'
   and e.item_name = 'Milch';
+
+-- Job 377: Lea's add of Milch waits to be pushed.
+insert into public.push_add_queue (household_id, list_id, actor, item_name)
+select (select id from fx where key = 'home'),
+  (select l.id from public.lists l where l.household_id = (select id from fx where key = 'home') limit 1),
+  u.id, 'Milch'
+from auth.users u where u.email = 'lea@backup.test';
 
 -- Job 82: a confirmed waitlist sign-up, a proof record and a rate counter (test addresses only).
 insert into public.waitlist (email, email_hmac, platform, locale, launch_news, consent_text_version,

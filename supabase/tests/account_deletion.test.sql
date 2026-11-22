@@ -57,6 +57,7 @@ language sql as $$
   union all select 'trips', count(*)::int from public.trips where household_id = p_household
   union all select 'trip_sessions', count(*)::int from public.trip_sessions where household_id = p_household
   union all select 'trip_detection_state', count(*)::int from public.trip_detection_state where household_id = p_household
+  union all select 'push_add_queue', count(*)::int from public.push_add_queue where household_id = p_household
   union all select 'shop_declines', count(*)::int from public.shop_declines where household_id = p_household
   union all select 'feedback_idea_votes', count(*)::int from public.feedback_idea_votes where household_id = p_household;
 $$;
@@ -263,6 +264,9 @@ select pg_temp.as_postgres();
 insert into public.shop_declines (household_id, user_id, tick_id)
 select id, '00000000-0000-0000-0000-0000000000c1',
   (select max(e.id) from public.item_events e where e.household_id = h.id) from h;
+-- Job 377: an add waiting to be pushed.
+insert into public.push_add_queue (household_id, actor, item_name)
+select id, '00000000-0000-0000-0000-0000000000c1', 'Milch' from h;
 -- Job 25 (as of job 43, through RevenueCat): Carl bought Snacklist Lifetime for the household.
 select public.purchase_claim('00000000-0000-0000-0000-0000000000c1', (select id from h), 'apple', '2000000000002501');
 select public.purchase_record('apple', '2000000000002501', '2000000000002501', repeat('a', 64),
@@ -349,7 +353,7 @@ select is(
   (select array_agg(k order by k) from export, jsonb_object_keys(doc) k),
   array['access_tokens', 'account', 'alexa_links', 'analytics_decisions', 'archived_households', 'connected_apps', 'exported_at',
         'feedback', 'feedback_idea_votes', 'format', 'history', 'household', 'household_removals', 'households', 'invite_uses', 'invites_created', 'item_claims',
-        'items_added', 'join_requests', 'lists_created', 'profile', 'purchases', 'push_devices', 'tester_groups', 'trip_detection', 'trip_sessions_started',
+        'items_added', 'join_requests', 'lists_created', 'profile', 'purchases', 'push_devices', 'push_preferences', 'tester_groups', 'trip_detection', 'trip_sessions_started',
         'trips_detected', 'trips_logged', 'version'],
   'the export has the documented sections'
 );
@@ -406,6 +410,8 @@ select is(
     'tester_groups', '[]'::jsonb,
     -- Job 376: Emil registered no device for push (push_tokens.test.sql covers one).
     'push_devices', '[]'::jsonb,
+    -- Job 377: Emil never switched an alert on.
+    'push_preferences', null,
     -- Job 352: no detected trip, detection never switched.
     'trips_detected', '[]'::jsonb,
     'trip_detection', null,

@@ -17721,3 +17721,36 @@ TE-Q default. Built behind the new flag `total-priced-only`, on top of `list-dec
 11. **Only FCM's `UNREGISTERED` deletes a device on a 404;** a bare 404 (wrong project id or URL)
     is a failure, so a misconfiguration cannot wipe every device. A dry run echoes `<title>` and
     `<body>`, not the text: pg_net keeps answers.
+
+## Job 377: P1 household add alert (flag `push-household-add`)
+
+1. **Stacked on job 376's branch (#643, not merged).** The push function, `push_tokens` and the
+   deep link are its; this job's PR is based on `job/376-push-foundation` and rebases onto main
+   once 376 lands.
+2. **The decisions live in the database, not in the app or an edge function.** An items trigger
+   queues adds (`push_add_queue`), `push_add_take()` batches and writes the text, `push_add_flush()`
+   (pg_cron, every minute) posts the requests to P0's `push` function with pg_net. Reason: the add
+   comes from the app, Siri, MCP and the API alike; the trigger sees all of them, and pgTAP can test
+   every rule without FCM.
+3. **(d) "the adder has an active trip" = an app tick of theirs in the household within the last 10
+   minutes.** Trip mode's running trip is on the device only (`trip_sessions` are saved at the end),
+   and detection finds trips afterwards. The one server-side "a trip may still be going on" signal
+   is `detect_due_households`' 10 minutes since the last app tick (job 352, T1a); `on_a_trip` reuses
+   it instead of adding a second signal. Consequence: a shopper who adds something before their
+   first tick is pushed; adds during the walk are not, and are never pushed later.
+4. **Default OFF.** The text names a member and an item (Legal recommendation, NEEDS_LEAD). No row
+   in `push_preferences` is off. The first yes asks the OS (P0's `optIn`); a refusal leaves it off.
+5. **The language is the app's, written with the switch.** The server has no locale, so
+   `set_push_household_add(on, language)` stores `de` or `en`, and the app writes it again at the
+   next look when the language changed.
+6. **Batching: 2 minutes quiet, 5 minutes at most.** Per household, list and adder. "A few minutes"
+   in the brief; short enough to feel like news, long enough to merge a burst of adds.
+7. **Nothing is stored when nobody wants it.** The trigger queues only with the server switch on and
+   another member with the alert on. Queue rows live until sent, at most an hour; the post is fire and
+   forget (a failed push is dropped, TTL 1 hour).
+8. **Two switches, both off.** The server switch `app_switches.push_household_add` (set with
+   `push_household_add_set`, which also needs the vault secrets and schedules the cron job) and the
+   PostHog flag `push-household-add` (the app's switch). Neither is touched in this job.
+9. **No ARB or legal text goes live by itself.** Four new ARB strings and the privacy deltas are in
+   NEEDS_LEAD for Legal; `docs/PRIVACY_DATA_MAP.md` has the new rows. The site's legal pages are not
+   edited here.

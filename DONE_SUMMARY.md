@@ -2391,3 +2391,13 @@ until Ops sets `PUSH_SEND_SECRET` and `FCM_SERVICE_ACCOUNT_JSON`), the app side 
 build defines, opt-in-only prompt, sign-out cleanup, a tap opens the named list) and the native
 config. Privacy drafts wait behind the hold `push-notifications`. Contract `docs/PUSH.md`, details
 `docs/done/376.md`.
+
+## Job 377: P1 household add alert (PR on job 376's branch, not merged: needs Legal)
+
+A push "Lea hat Milch hinzugefügt" / "Lea added Milk" to household members who switched it on
+(default off), batched (2 min quiet, 5 min cap) into "Lea hat 4 Einträge hinzugefügt", never for
+one's own adds, none while the adder shops (an app tick in the last 10 minutes, trip detection's
+rule). Database decisions with pgTAP, the Einstellungen switch with widget tests, flag
+`push-household-add` off, server switch `push_household_add` off. TestFlight build: next green main
+build after 376 and this land; flag targeting is for the lead after Legal's hash GO (none set here).
+Details `docs/done/377.md`, contract `docs/PUSH.md`.

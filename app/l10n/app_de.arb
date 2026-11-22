@@ -1839,5 +1839,13 @@
   "detectTrips": "Einkäufe aus meinen Häkchen erkennen",
   "@detectTrips": {"description": "Job 352: Einstellungen switch; on, the server detects shopping trips from the user's own ticks and learns the list's order from them"},
   "detectTripsHint": "Nutzt nur, wann du abhakst. Kein Standort.",
-  "@detectTripsHint": {"description": "Job 352: under the detectTrips switch"}
+  "@detectTripsHint": {"description": "Job 352: under the detectTrips switch"},
+  "settingsPush": "Mitteilungen",
+  "@settingsPush": {"description": "Job 377: Einstellungen section label above the push switch"},
+  "pushHouseholdAdd": "Wenn jemand etwas hinzufügt",
+  "@pushHouseholdAdd": {"description": "Job 377 (flag push-household-add): Einstellungen switch, off by default; on, the user gets a push when another member adds an item"},
+  "pushHouseholdAddHint": "Mitteilung mit Name und Eintrag, z. B. „Lea hat Milch hinzugefügt“. Mehrere kurz nacheinander kommen zusammen.",
+  "@pushHouseholdAddHint": {"description": "Job 377: under the pushHouseholdAdd switch; the example names a member and an item, as the push does"},
+  "pushBlocked": "Mitteilungen sind für Snacklist ausgeschaltet. Erlaube sie in den Einstellungen deines Geräts.",
+  "@pushBlocked": {"description": "Job 377: snackbar when the switch is turned on but the OS refuses notifications"}
 }
