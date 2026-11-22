@@ -31,7 +31,7 @@ const unlocked = (page: Page) => page.getByText(/^Snacklist Premium (Lifetime|ak
 /** Job 87: PW-P4's hero body, on every state of the page, the web's included. */
 const hero = (page: Page) => page.getByText('Snacklist Premium gilt für dich, in jedem Haushalt, in dem du Mitglied bist.');
 /** Its buying slogan, only while sales are on (Legal Review N-68): never on the e2e stack. */
-const slogan = (page: Page) => page.getByText('Einer kauft. Alle haben es.');
+const slogan = (page: Page) => page.getByText('Snacklist Premium für dich', { exact: true });
 
 test('the web shows the unlock live for both partners, sells nothing, and a refund locks again', async ({ browser }) => {
   const peterEmail = newEmail('iap-peter');
@@ -176,7 +176,7 @@ test.describe('in English', () => {
     await expect(page.getByRole('textbox', { name: 'What do you need?' })).toBeVisible();
     await page.goto('/more/lifetime');
     await expect(page.getByText('Snacklist Premium applies to you, in every household you are a member of.')).toBeVisible();
-    await expect(page.getByText('One buys. Everyone has it.')).toHaveCount(0);
+    await expect(page.getByText('Snacklist Premium for you', { exact: true })).toHaveCount(0);
     await expect(page.getByText(/^You can buy Snacklist Premium in the iPhone or Android app\./),
       'nothing about buying before sales start').toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Restore purchase' })).toHaveCount(0);

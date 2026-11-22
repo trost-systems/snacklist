@@ -3056,10 +3056,10 @@ abstract class AppLocalizations {
   /// **'Snacklist Premium'**
   String get premiumTitle;
 
-  /// Premium page (PW-P4, job 87): the hero's title; one member buys, the household has it
+  /// Premium page (PW-P4, job 87): the hero's title. Legal N-348 (job 383): Premium is per account; the title must never promise sharing
   ///
   /// In de, this message translates to:
-  /// **'Einer kauft. Alle haben es.'**
+  /// **'Snacklist Premium für dich'**
   String get premiumHeroTitle;
 
   /// Premium page (PW-P4, job 87): under the hero title; Premium is per account (Legal Review N-345)
@@ -3182,11 +3182,11 @@ abstract class AppLocalizations {
   /// **'Snacklist Premium jährlich, Laufzeit 1 Jahr. Das Abo verlängert sich automatisch um ein Jahr, wenn du es nicht mindestens 24 Stunden vor Ende der Laufzeit kündigst. Bezahlt wird über dein Apple- bzw. Google-Konto, bei der Bestätigung des Kaufs und bei jeder Verlängerung. Verwalten und kündigen kannst du das Abo in den Abo-Einstellungen des App Store bzw. von Google Play.'**
   String get premiumYearlyTerms;
 
-  /// LEGAL REVIEW Q6 (job 87): the household binding, shown before purchase. Wording pending Legal Review.
+  /// Legal N-350 (job 383): shown above the buy button, before purchase; Premium belongs to the buyer's account
   ///
   /// In de, this message translates to:
-  /// **'Premium gehört dann zum Haushalt „{household}“ und bleibt dort, auch wenn du den Haushalt später verlässt.'**
-  String premiumHousehold(String household);
+  /// **'Premium gilt dann für dein Konto, in jedem Haushalt, in dem du Mitglied bist.'**
+  String get premiumHousehold;
 
   /// PLACEHOLDER (job 49): Snacklist Launch / Legal Review K.13 write the final copy (NEEDS_LEAD Job 49). Premium page: buy the yearly plan; RevenueCat starts only on this tap (H-67)
   ///
@@ -3233,7 +3233,7 @@ abstract class AppLocalizations {
   /// PLACEHOLDER (job 49): Snacklist Launch / Legal Review K.13 write the final copy (NEEDS_LEAD Job 49). Premium page on the web: no sales on the web
   ///
   /// In de, this message translates to:
-  /// **'Snacklist Premium kaufst du in der iPhone- oder Android-App. Danach ist es auch hier für deinen ganzen Haushalt freigeschaltet.'**
+  /// **'Snacklist Premium kaufst du in der iPhone- oder Android-App. Danach ist es auch hier für dein Konto freigeschaltet.'**
   String get premiumWeb;
 
   /// PLACEHOLDER (job 49): Snacklist Launch / Legal Review K.13 write the final copy (NEEDS_LEAD Job 49). Refund help: a short note for the yearly plan below the H-76 texts, which name only Lifetime (NEEDS_LEAD Job 49)
