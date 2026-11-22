@@ -8,17 +8,26 @@ import type { UserEvent } from '../_shared/user_events.ts';
 import { asUser, ranOutOfTime, rowBusy, type Tx } from '../_shared/db.ts';
 import {
   addItems,
+  addStore,
   categories,
+  changeList,
+  createList,
   getItem,
   listCatalog,
   listItems,
+  listRecent,
   mergeItems,
+  RECENT_SHOWN,
   removeItems,
+  renameStore,
+  setStoreLayout,
+  storeLayout,
   stores,
   tickItems,
   ToolError,
   untickItems,
   updateItem,
+  usuals,
 } from '../_shared/list.ts';
 import { storedText } from '../_shared/stored_text.ts';
 import { telemetry } from './telemetry.ts';
@@ -34,7 +43,8 @@ Wer in mehreren Haushalten ist, findet sie mit list_households; die Listen-Werkz
 "household" (id oder Name), ohne Angabe gilt der Standardhaushalt.
 Ein Haushalt kann mehrere Listen haben (list_lists, z. B. "Wocheneinkauf" und "Baumarkt"); die
 Werkzeuge nehmen dann "list" (id oder genauer Name), ohne Angabe gilt die Standardliste des Nutzers
-(in der App gewählt, sonst die erste Liste).`;
+(in der App gewählt, sonst die erste Liste).
+Was der Haushalt oft kauft, zeigt suggest_items; was zuletzt abgehakt wurde, list_recent.`;
 
 /**
  * `ttlMs`/`cacheScope` on 2026-era list results (SEP-2549). The tool list and the server's
@@ -254,14 +264,35 @@ export async function listLists(tx: Tx, household: string): Promise<ListEntry[]>
   return options.map((l) => ({ id: l.id, name: l.name, default: l.id === defaultList.id }));
 }
 
+/**
+ * Server switches (public.app_switches) a request reads before the tools are built. Off, a tool
+ * behind a switch is not registered: absent from tools/list, and a call is an unknown tool.
+ */
+export type Switches = {
+  /**
+   * mcp_lists_stores (job 345): create_list, rename_list, add_store, rename_store and
+   * set_store_layout. Off until privacy section 7 names lists and stores for assistants.
+   */
+  listsStores: boolean;
+};
+
+export const SWITCHED_OFF: Switches = { listsStores: false };
+
+/** The switches a request reads, by their app_switches keys. */
+export const switchKeys = { listsStores: 'mcp_lists_stores' } as const satisfies Record<
+  keyof Switches,
+  string
+>;
+
 export function buildServer(
   auth: Auth,
   gate: Gate,
   report: ReportCall,
   lang: Lang = 'de',
+  switches: Switches = SWITCHED_OFF,
 ): McpServer {
   const server = new McpServer(
-    { name: 'snacklist', title: 'Snacklist', version: '1.1.0' },
+    { name: 'snacklist', title: 'Snacklist', version: '1.2.0' },
     { instructions: INSTRUCTIONS, cacheHints: CACHE_HINTS },
   );
   const asked = new Map<string, Promise<Access>>();
@@ -530,12 +561,173 @@ export function buildServer(
       call('merge_items', once, household, (tx, h) => mergeItems(tx, h, { keep, merge, list }))(),
   );
 
-  server.registerTool('list_categories', {
-    title: 'Kategorien anzeigen',
-    description: 'Listet die Kategorien des Haushalts in Gang-Reihenfolge.',
-    inputSchema: z.object({ household: householdRef }),
+  server.registerTool(
+    'list_categories',
+    {
+      title: 'Kategorien anzeigen',
+      description: 'Listet die Kategorien des Haushalts in Gang-Reihenfolge. Mit "store" in der ' +
+        'Laufweg-Reihenfolge dieses Ladens (wie list_items mit "store"); "hidden" markiert ' +
+        'Kategorien, die der Laden nicht führt.',
+      inputSchema: z.object({ store: storeName.optional(), household: householdRef }),
+      annotations: { readOnlyHint: true },
+    },
+    ({ store, household }) =>
+      call(
+        'list_categories',
+        once,
+        household,
+        async (tx, h) =>
+          store === undefined
+            ? await categories(tx, h)
+            : (await storeLayout(tx, h, store)).categories.map((c) => ({
+              id: c.id,
+              name: c.name,
+              sort_order: c.sortOrder,
+              hidden: c.hidden,
+            })),
+      )(),
+  );
+
+  server.registerTool('list_recent', {
+    title: 'Zuletzt verwendet',
+    description: 'Zeigt, was zuletzt abgehakt wurde, wie "Zuletzt verwendet" in der App: das ' +
+      'Neueste zuerst, jedes Ding einmal (sein letzter Kauf), nichts, was wieder offen auf der ' +
+      'Liste steht. "tickedAt" ist der Zeitpunkt des Abhakens. Mit untick_items (id) kommt ein ' +
+      'Eintrag zurück auf die Liste.',
+    inputSchema: z.object({
+      limit: z.number().int().min(1).max(50).optional().describe(
+        `Wie viele höchstens, ohne Angabe ${RECENT_SHOWN}`,
+      ),
+      household: householdRef,
+      list: listRef,
+    }),
     annotations: { readOnlyHint: true },
-  }, ({ household }) => call('list_categories', once, household, (tx, h) => categories(tx, h))());
+  }, ({ limit, household, list }) =>
+    call(
+      'list_recent',
+      once,
+      household,
+      (tx, h) => listRecent(tx, h, list, limit ?? RECENT_SHOWN),
+    )());
+
+  server.registerTool(
+    'suggest_items',
+    {
+      title: 'Vorschläge',
+      description: 'Was der Haushalt oft kauft, wie die Vorschläge in der App: oft und zuletzt ' +
+        'Gekauftes zuerst, nichts, was gerade offen auf einer Liste steht. Mit "prefix" nur Namen, ' +
+        'die damit beginnen, dann Namen mit einem Wort, das damit beginnt. "uses": an wie vielen ' +
+        'Tagen im letzten Jahr; "due": sein üblicher Abstand seit dem letzten Kauf ist um, er wird ' +
+        'wohl bald gebraucht.',
+      inputSchema: z.object({
+        prefix: storedText.max(60).optional().describe('Anfang des Namens, z. B. "Mil"'),
+        limit: z.number().int().min(1).max(50).optional().describe(
+          'Wie viele höchstens, ohne Angabe 10',
+        ),
+        household: householdRef,
+      }),
+      annotations: { readOnlyHint: true },
+    },
+    ({ prefix, limit, household }) =>
+      call('suggest_items', once, household, (tx, h) => usuals(tx, h, prefix ?? '', limit ?? 10))(),
+  );
+
+  if (switches.listsStores) {
+    const listName = storedText.trim().min(1).max(60).describe('Name der Liste, z. B. "Baumarkt"');
+    const storeNew = storedText.trim().min(1).max(40).describe(
+      'Name des Ladens, nur der Name, z. B. "Rewe" oder "Wochenmarkt"',
+    );
+
+    server.registerTool('create_list', {
+      title: 'Liste anlegen',
+      description: 'Legt eine neue Einkaufsliste am Ende der Listen an, wie in der App. ' +
+        'Höchstens 50 Listen je Haushalt. Nur auf ausdrücklichen Wunsch des Nutzers.',
+      inputSchema: z.object({ name: listName, household: householdRef }),
+      annotations: { destructiveHint: false },
+    }, ({ name, household }) =>
+      call('create_list', once, household, async (tx, h) => {
+        const { id, name: created } = await createList(tx, h, name);
+        return { id, name: created };
+      })());
+
+    server.registerTool('rename_list', {
+      title: 'Liste umbenennen',
+      description: 'Benennt eine Einkaufsliste um. Ein zweiter Aufruf ändert nichts.',
+      inputSchema: z.object({
+        list: storedText.min(1).max(60).describe(
+          'Die Liste (list_lists): ihre id oder ihr genauer Name',
+        ),
+        name: listName.describe('Neuer Name der Liste'),
+        household: householdRef,
+      }),
+      annotations: { destructiveHint: false, idempotentHint: true },
+    }, ({ list, name, household }) =>
+      call('rename_list', once, household, async (tx, h) => {
+        const { id, name: renamed } = await changeList(tx, h, list, { name });
+        return { id, name: renamed };
+      })());
+
+    server.registerTool('add_store', {
+      title: 'Laden anlegen',
+      description: 'Legt einen Laden an, wie in der App. Nur der Name, keine Handelskette. ' +
+        'Gibt es den Namen schon (Groß- und Kleinschreibung, Umlaute egal), antwortet es mit ' +
+        'diesem Laden und "created": false. Höchstens 50 Läden je Haushalt.',
+      inputSchema: z.object({ name: storeNew, household: householdRef }),
+      annotations: { destructiveHint: false, idempotentHint: true },
+    }, ({ name, household }) =>
+      call('add_store', once, household, async (tx, h) => {
+        const { store, created } = await addStore(tx, h, name);
+        return { id: store.id, name: store.name, created };
+      })());
+
+    server.registerTool('rename_store', {
+      title: 'Laden umbenennen',
+      description: 'Benennt einen Laden um. Heißt schon ein anderer Laden so, ändert sich nichts ' +
+        'und der Aufruf meldet es.',
+      inputSchema: z.object({
+        store: storeName,
+        name: storeNew.describe('Neuer Name des Ladens, nur der Name'),
+        household: householdRef,
+      }),
+      annotations: { destructiveHint: false, idempotentHint: true },
+    }, ({ store, name, household }) =>
+      call('rename_store', once, household, async (tx, h) => {
+        const { id, name: renamed } = await renameStore(tx, h, store, name);
+        return { id, name: renamed };
+      })());
+
+    server.registerTool(
+      'set_store_layout',
+      {
+        title: 'Laufweg eines Ladens',
+        description:
+          'Legt fest, in welcher Reihenfolge die Kategorien in einem Laden kommen (der ' +
+          'Laufweg, wie in der App unter dem Laden). "categories": die genannten zuerst, in dieser ' +
+          'Reihenfolge, die übrigen danach in ihrer bisherigen. "hidden": alle Kategorien, die der ' +
+          'Laden nicht führt; ohne Angabe bleiben sie. Antwort: der ganze Laufweg (wie ' +
+          'list_categories mit "store").',
+        inputSchema: z.object({
+          store: storeName,
+          categories: z.array(categoryName).max(200).optional(),
+          hidden: z.array(categoryName).max(200).optional(),
+          household: householdRef,
+        }),
+        annotations: { destructiveHint: false, idempotentHint: true },
+      },
+      ({ store, categories: order, hidden, household }) =>
+        call('set_store_layout', once, household, async (tx, h) => {
+          const layout = await setStoreLayout(tx, h, store, { order, hidden });
+          return {
+            store: layout.store.name,
+            categories: layout.categories.map((c) => ({
+              id: c.id,
+              name: c.name,
+              hidden: c.hidden,
+            })),
+          };
+        })(),
+    );
+  }
 
   server.registerTool('list_stores', {
     title: 'Läden anzeigen',

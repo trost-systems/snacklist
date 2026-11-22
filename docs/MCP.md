@@ -159,17 +159,37 @@ person's promise, not an agent's.
 | `untick_items` | `items: [name or id]` (1–50), `household?`, `list?` | Puts ticked items back on the list. An id finds a ticked item on any list of the household (or on `list`); an open one comes back under `notFound` with `Eintrag „<id>“ ist nicht abgehakt.` A name looks among the list's ticked items, the most recently ticked row of each name, of the 50 most recently ticked names; open items are not candidates, and a name whose item is open on the list already comes back under `notFound` with `„<Name>“ steht schon offen auf der Liste.` (every purchase leaves a ticked row, so a repeat would otherwise bring back an older one). Returns `{unticked, notFound}`, so a repeated call changes nothing. |
 | `get_item` | `item`, `household?`, `list?` | One item with `status` (`open` or `ticked`) and `addedAt`. An id finds it in any status on any list of the household (or on `list`); a name looks among the list's open items. |
 | `merge_items` | `keep`, `merge`, `household?`, `list?` | Folds `merge` into `keep`, like the app's „Zusammenführen“, through `public.merge_items`. Both must be open items, found like `tick_items` finds them; usually `keep` is the `onList` item of a `similarOnList` and `merge` the new one. `keep` keeps its name; the quantities add up („2“ and „3“ make „5“, `public.merge_quantities`); brand and properties are `keep`'s, else `merge`'s; the `merge` row is deleted. Two items on different lists are refused as in the app, which merges only on the list it shows: „<keep>“ und „<merge>“ stehen auf verschiedenen Listen. Zusammengeführt wird nur auf einer Liste.“ One item for both is a tool error, and so is a merged quantity over 40 characters: „Die zusammengeführte Menge wäre zu lang (höchstens 40 Zeichen).“ Returns `{kept, merged}`, `merged` as it was before. |
-| `list_categories` | `household?` | Categories in aisle order. |
+| `list_categories` | `store?`, `household?` | Categories in aisle order. With `store`, every category in that store's walk order (the order `list_items` with `store` shows), each with `hidden` (the store does not carry it). |
 | `list_stores` | `household?` | Stores. |
+| `list_recent` | `limit?` (1–50, default 20), `household?`, `list?` | The app's „Zuletzt verwendet“ for one list (`list` in the answer names it): ticked items, newest first, one per thing (`canonical_key`, else the folded name; its newest purchase), none for a thing that is open on the list again. Each item carries `tickedAt`; its id works with `untick_items`. The same query as the API's `GET /v1/items/recent` (`recentItems` in `_shared/list.ts`), a port of the app's `recentlyUsed`. |
+| `suggest_items` | `prefix?` (up to 60), `limit?` (1–50, default 10), `household?` | The household's usuals through `public.suggest_items`, the ranking the app's add sheet shows: `[{name, quantity, uses, lastUsed, due}]`, bought often and lately first, things open on a list left out; with `prefix`, names starting with it, then names with a word starting with it (the add sheet also matches inner text and typos on the device; this tool does not). `due`: its usual interval since the last purchase is up. |
+| `create_list` (switch) | `name` (1–60), `household?` | A new list after the others through `public.create_list`, the app's path. At most 50 lists per household: the 51st is the tool error „Der Haushalt hat schon 50 Listen, mehr gehen nicht.“ Returns `{id, name}`. |
+| `rename_list` (switch) | `list` (id or exact name), `name` (1–60), `household?` | Renames a list through `public.rename_list`. Another household's list is not found. Returns `{id, name}`. |
+| `add_store` (switch) | `name` (1–40), `household?` | A store by its plain name through `public.add_store` (dm, Lidl, Edeka and a Baumarkt get their layout); no chain, country or app field: an extra argument is dropped. A name the household has (any case, umlauts folded) returns that store with `created: false`. At most 50 stores this way („Der Haushalt hat schon 50 Läden, mehr gehen nicht.“). Returns `{id, name, created}`. |
+| `rename_store` (switch) | `store`, `name` (1–40), `household?` | Renames a store through `public.rename_store`; a name another store has is the tool error „Ein anderer Laden heißt schon „<Name>“.“ and changes nothing. Returns `{id, name}`. |
+| `set_store_layout` (switch) | `store`, `categories?`, `hidden?`, `household?` | A store's walk order through `public.set_store_layout`, like the store screen in the app: `categories` first in that order, the others after in their current order; `hidden`, when given, every category the store does not carry (else they stay). A category named twice is a tool error. Returns `{store, categories: [{id, name, hidden}]}`, the whole order. |
 
-Each tool tells the client what kind it is (MCP tool annotations): the `list_*` tools and
-`get_item` only read (`readOnlyHint`). `tick_items`, `untick_items` and `update_item` change the
+The five tools marked (switch) are served only while `app_switches.mcp_lists_stores` is on (job
+345; migration `20261121222637_mcp_lists_stores_switch.sql`, seeded off). Privacy section 7 says a
+connected assistant reads and changes the entries of the list; lists and stores need its new text
+first (NEEDS_LEAD "Job 345: Legal text for A8 MCP"). The function reads the switch once per request
+(`readSwitches` in `mcp/handler.ts`; unreadable counts as off). Off, the tools are not registered:
+`tools/list` leaves them out and a call is an unknown tool. To turn them on, after Legal's yes:
+`update public.app_switches set enabled = true where key = 'mcp_lists_stores'` with the service
+role. The API's list and store routes need no switch: section 7's API paragraph names lists and
+stores.
+
+Each tool tells the client what kind it is (MCP tool annotations): the `list_*` tools,
+`suggest_items` and `get_item` only read (`readOnlyHint`). `tick_items`, `untick_items`,
+`update_item`, `rename_list`, `add_store`, `rename_store` and `set_store_layout` change the
 list but destroy nothing and can be repeated (`destructiveHint: false`, `idempotentHint: true`);
+`create_list` destroys nothing but makes a new list on every call (`destructiveHint: false`);
 `move_item` can be repeated too (`idempotentHint`). `remove_items` deletes and can be repeated
 (`destructiveHint: true`, `idempotentHint: true`); `merge_items` deletes the folded-in row
 (`destructiveHint: true`). A client may ask the user before a destructive call.
 
-The server names itself `snacklist` with `serverInfo.version` `1.1.0` (job 344 added five tools).
+The server names itself `snacklist` with `serverInfo.version` `1.2.0` (job 344 added five tools,
+job 345 seven).
 Clients cache `tools/list` for an hour; the version moves whenever the tools change, so a new
 version says the list is worth fetching again.
 
@@ -653,6 +673,11 @@ stack or the hosted project, not only the docs:
 
 - `mcp/tools_test.ts` (Deno): the tool list, each tool's annotations and the Premium refusal's
   `structuredContent`.
+- `mcp/lists_stores_integration_test.ts` (db gate): `list_recent` once per thing and not what is
+  open again, `suggest_items` against the household's history, the list and store tools with
+  their caps and another household's list or store not found, a chain argument dropped, the walk
+  order `list_items` then shows, and the switch: off, the five tools are unknown and change
+  nothing; production reads `app_switches.mcp_lists_stores` per request.
 - `mcp/item_ops_integration_test.ts` (db gate, `FG_DB_TEST=1`): per item operation the happy
   path, another household's id not found, a rename onto an open twin refused, learning kept after
   a remove, the merged quantity („2“ and „3“ make „5“), untick by name picking the latest ticked

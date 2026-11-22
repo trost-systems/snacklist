@@ -4,26 +4,42 @@ import { z } from 'zod';
 import { oneRow, type Tx } from '../_shared/db.ts';
 import {
   addItemIds,
+  addStore,
   type ApiItem,
   apiItemsById,
   categories,
+  changeList,
   counts,
+  createList,
   deleteItemById,
   itemById,
-  listCatalog,
-  lists,
+  listEntries,
   type OpenItem,
   openItems,
   type Position,
+  RECENT_SHOWN,
+  recentItems,
+  renameStore,
   resolveFilter,
   setItemStatus,
+  setStoreLayout,
+  storeLayout,
   stores,
+  ToolError,
   updateItemById,
+  usuals,
   UUID,
 } from '../_shared/list.ts';
 import { storedText } from '../_shared/stored_text.ts';
 import { ApiError } from './errors.ts';
-import { BATCH, PAGE_DEFAULT, PAGE_MAX } from './limits.ts';
+import {
+  BATCH,
+  PAGE_DEFAULT,
+  PAGE_MAX,
+  RECENT_MAX,
+  SUGGEST_DEFAULT,
+  SUGGEST_MAX,
+} from './limits.ts';
 import type { Operation } from './routes.ts';
 
 /** A request as the router hands it over: the path's id, the query, the parsed JSON body. */
@@ -67,14 +83,48 @@ const noBody = z.object({}).strict();
 /** A store, category or list, by id or name. */
 const ref = storedText.trim().min(1).max(60);
 
+/** A query's `limit`: a whole number from 1 to [max]. */
+const limitOf = (max: number) =>
+  z.string().regex(/^[0-9]{1,3}$/, 'Expected a whole number').transform(Number)
+    .pipe(z.number().int().min(1).max(max));
+
 const listQuery = z.object({
   store: ref.optional(),
   category: ref.optional(),
   list: ref.optional(),
-  limit: z.string().regex(/^[0-9]{1,3}$/, 'Expected a whole number').transform(Number)
-    .pipe(z.number().int().min(1).max(PAGE_MAX)).optional(),
+  limit: limitOf(PAGE_MAX).optional(),
   cursor: z.string().max(2048).optional(),
 }).strict();
+
+const recentQuery = z.object({ list: ref.optional(), limit: limitOf(RECENT_MAX).optional() })
+  .strict();
+
+const suggestQuery = z.object({
+  prefix: storedText.max(60).optional(),
+  limit: limitOf(SUGGEST_MAX).optional(),
+}).strict();
+
+/** A list name as public.list_name takes it. */
+const listName = storedText.trim().min(1).max(60);
+
+const listBody = z.object({ name: listName }).strict();
+
+const listEdit = z.object({
+  name: listName.optional(),
+  position: z.number().int().min(0).max(1000).optional(),
+}).strict().refine((b) => b.name !== undefined || b.position !== undefined, {
+  message: 'Give at least one field to change',
+});
+
+/** A store's plain name as public.store_name takes it; no chain or other retailer field. */
+const storeBody = z.object({ name: storedText.trim().min(1).max(40) }).strict();
+
+const layoutBody = z.object({
+  categories: z.array(ref).max(200).optional(),
+  hidden: z.array(ref).max(200).optional(),
+}).strict().refine((b) => b.categories !== undefined || b.hidden !== undefined, {
+  message: 'Give the categories in order, the hidden ones, or both',
+});
 
 const newItem = z.object({
   name: storedText.trim().min(1).max(120),
@@ -183,6 +233,18 @@ export function decodeCursor(text: string): Cursor {
 const item = ({ position: _, ...rest }: OpenItem): ApiItem => rest;
 
 const ok = (body: unknown): Result => ({ status: 200, body });
+
+/** The store or list the path's {id} names: one of another household, or none, is a 404. */
+async function inPath<T>(subject: 'store' | 'list', work: Promise<T>): Promise<T> {
+  try {
+    return await work;
+  } catch (e) {
+    if (e instanceof ToolError && e.subject === subject && e.reason === 'not_found') {
+      throw new ApiError(404, `${subject}_not_found`, `No such ${subject} in this household.`);
+    }
+    throw e;
+  }
+}
 
 const named = (rows: { id: string; name: string; sort_order: number }[]) =>
   ok({
@@ -302,20 +364,86 @@ export const operations: Record<Operation, Parse> = {
 
   listLists: (raw) => {
     strict(noQuery, raw.query, 'query');
+    return async (tx, household) =>
+      ok({ data: await listEntries(tx, household), nextCursor: null });
+  },
+
+  createList: (raw) => {
+    strict(noQuery, raw.query, 'query');
+    const { name } = strict(listBody, raw.body ?? {}, 'body');
+    return async (tx, household) => ({
+      status: 201,
+      body: { data: await createList(tx, household, name) },
+    });
+  },
+
+  updateList: (raw) => {
+    const id = idOf(raw);
+    strict(noQuery, raw.query, 'query');
+    const change = strict(listEdit, raw.body ?? {}, 'body');
+    return async (tx, household) =>
+      ok({ data: await inPath('list', changeList(tx, household, id, change)) });
+  },
+
+  recentItems: (raw) => {
+    const query = strict(recentQuery, raw.query, 'query');
     return async (tx, household) => {
-      const [rows, { defaultList }] = await Promise.all([
-        lists(tx, household),
-        listCatalog(tx, household),
-      ]);
-      return ok({
-        data: rows.map((l) => ({
-          id: l.id,
-          name: l.name,
-          sortOrder: l.position,
-          default: l.id === defaultList.id,
-        })),
+      const { list } = await resolveFilter(tx, household, { list: query.list });
+      const rows = await recentItems(
+        tx,
+        household,
+        list?.id ?? null,
+        query.limit ?? RECENT_SHOWN,
+      );
+      return ok({ data: rows, nextCursor: null });
+    };
+  },
+
+  suggestItems: (raw) => {
+    const query = strict(suggestQuery, raw.query, 'query');
+    return async (tx, household) =>
+      ok({
+        data: await usuals(tx, household, query.prefix ?? '', query.limit ?? SUGGEST_DEFAULT),
         nextCursor: null,
       });
+  },
+
+  addStore: (raw) => {
+    strict(noQuery, raw.query, 'query');
+    const { name } = strict(storeBody, raw.body ?? {}, 'body');
+    return async (tx, household) => {
+      const { store, created } = await addStore(tx, household, name);
+      return { status: created ? 201 : 200, body: { data: store } };
+    };
+  },
+
+  updateStore: (raw) => {
+    const id = idOf(raw);
+    strict(noQuery, raw.query, 'query');
+    const { name } = strict(storeBody, raw.body ?? {}, 'body');
+    return async (tx, household) =>
+      ok({ data: await inPath('store', renameStore(tx, household, id, name)) });
+  },
+
+  getStoreLayout: (raw) => {
+    const id = idOf(raw);
+    strict(noQuery, raw.query, 'query');
+    return async (tx, household) => {
+      const { categories } = await inPath('store', storeLayout(tx, household, id));
+      return ok({ data: categories, nextCursor: null });
+    };
+  },
+
+  setStoreLayout: (raw) => {
+    const id = idOf(raw);
+    strict(noQuery, raw.query, 'query');
+    const change = strict(layoutBody, raw.body ?? {}, 'body');
+    return async (tx, household) => {
+      const { categories } = await inPath(
+        'store',
+        setStoreLayout(tx, household, id, { order: change.categories, hidden: change.hidden }),
+      );
+      return ok({ data: categories, nextCursor: null });
     };
   },
 

@@ -12,7 +12,7 @@ import {
   rowBusy,
   serviceDb,
 } from '../_shared/db.ts';
-import { ToolError } from '../_shared/list.ts';
+import { LIST_CAP, STORE_CAP, ToolError } from '../_shared/list.ts';
 import { type Access, requirePremiumWith } from '../_shared/premium.ts';
 import { userEvents } from '../_shared/user_events.ts';
 import { ApiError, internalError, noSuchEndpoint, timedOut, unavailable } from './errors.ts';
@@ -65,7 +65,7 @@ export type Deps = {
 
 const cors: Record<string, string> = {
   'access-control-allow-origin': '*',
-  'access-control-allow-methods': 'GET, POST, PATCH, DELETE, OPTIONS',
+  'access-control-allow-methods': 'GET, POST, PATCH, PUT, DELETE, OPTIONS',
   'access-control-allow-headers': 'authorization, content-type, idempotency-key',
   'access-control-expose-headers':
     'x-ratelimit-limit, x-ratelimit-remaining, x-ratelimit-reset, retry-after, x-request-id, ' +
@@ -363,6 +363,17 @@ const listErrors = {
   list: { not_found: 'list_not_found', ambiguous: 'ambiguous_list', label: 'List' },
 } as const;
 
+const conflicts = {
+  item: 'An open item with this name, brand and details is already on the list.',
+  store: 'Another store of the household has this name.',
+  category: 'The categories changed meanwhile. Nothing was changed; retry.',
+} as const;
+
+const limits = {
+  list: { code: 'too_many_lists', cap: LIST_CAP },
+  store: { code: 'too_many_stores', cap: STORE_CAP },
+} as const;
+
 /** SQLSTATE classes of a database that is down, full or shutting down. */
 const UNAVAILABLE_STATES = /^(08|53|57P)/;
 
@@ -374,8 +385,33 @@ function asApiError(e: unknown, deps: Deps): ApiError {
       return new ApiError(
         409,
         'conflict',
-        'An open item with this name, brand and details is already on the list.',
+        conflicts[e.subject === 'store' || e.subject === 'category' ? e.subject : 'item'],
       );
+    }
+    // What a schema cannot see: a category named twice (by name and by id), or a name the
+    // database finds blank (whitespace JS trim keeps, such as U+0085).
+    if (e.reason === 'invalid') {
+      return new ApiError(400, 'validation_failed', 'The request body is not valid.', {
+        issues: [{
+          path: e.subject === 'category' ? 'body.categories' : 'body.name',
+          message: e.subject === 'category' ? 'A category is named twice' : 'Blank or too long',
+        }],
+      });
+    }
+    if (e.reason === 'limit' && (e.subject === 'list' || e.subject === 'store')) {
+      const { code, cap } = limits[e.subject];
+      return new ApiError(
+        409,
+        code,
+        `The household has ${cap} ${e.subject}s, as many as it may. Nothing was changed.`,
+        { limit: cap },
+      );
+    }
+    if (
+      (e.subject === 'list' || e.subject === 'store') && e.reason === 'not_found' &&
+      e.query === undefined
+    ) {
+      return new ApiError(404, `${e.subject}_not_found`, `No such ${e.subject} in this household.`);
     }
     if (e.subject === 'item' && e.reason === 'not_found') {
       return new ApiError(404, 'item_not_found', 'No such item in this household.');

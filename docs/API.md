@@ -126,9 +126,17 @@ Fields are camelCase, like the items in the MCP tools' results.
 | `POST /v1/items/{id}/untick` | write | Puts a ticked item back on the list |
 | `PATCH /v1/items/{id}` | write | Edits an open item: name, quantity, brand, properties, list, category, store |
 | `DELETE /v1/items/{id}` | write | Removes an item, open or ticked |
+| `GET /v1/items/recent` | read | Recently ticked items, the app's „Zuletzt verwendet“ |
+| `GET /v1/suggestions` | read | What the household usually buys, ranked like the app's suggestions; `prefix` filter |
 | `GET /v1/categories` | read | The household's categories in aisle order |
 | `GET /v1/stores` | read | The household's stores |
+| `POST /v1/stores` | write | Adds a store by its plain name |
+| `PATCH /v1/stores/{id}` | write | Renames a store |
+| `GET /v1/stores/{id}/layout` | read | A store's walk order: every category in that store's order |
+| `PUT /v1/stores/{id}/layout` | write | Sets a store's walk order and the categories it does not carry |
 | `GET /v1/lists` | read | The household's lists in their order, the default one marked |
+| `POST /v1/lists` | write | Makes a list |
+| `PATCH /v1/lists/{id}` | write | Renames a list or moves it |
 | `GET /v1/household` | read | The key's household: name, currency, how many members |
 
 ### GET /v1/items
@@ -226,6 +234,90 @@ safely: a retry with the same key gets the same `200` instead of a `404`.
 A removed item is gone, like a delete in the app. What the household taught Snacklist about it
 stays: the next add of the same item gets the category and store it was moved to.
 
+### GET /v1/items/recent
+
+Query: `list` (an id or the exact name, any case; without it, every list at once) and `limit` (1 to
+50, default 20, what the app shows). The app's „Zuletzt verwendet“: ticked items, newest first,
+one per thing (its newest purchase; spelling variants that share a key count as one thing) among the newest 200 ticked rows, and
+none for a thing that is open on the list again. Each is an item with `status` `ticked` and
+`tickedAt`, when it was ticked; its id works with `POST /v1/items/{id}/untick`.
+
+```json
+{ "data": [{ "id": "…", "name": "Milch", …, "status": "ticked", "tickedAt": "2026-11-21T17:40:12.5+00:00" }],
+  "nextCursor": null }
+```
+
+### GET /v1/suggestions
+
+Query: `prefix` (up to 60 characters; without it, every usual) and `limit` (1 to 50, default 10).
+What the household usually buys, ranked like the suggestions in the app's add sheet
+(`public.suggest_items`, the same function): bought often and lately first, a tick undone within 10
+minutes and an item added and deleted without a purchase not counted. Things open on any list are
+left out. With `prefix`, names starting with it come first, then names with a word starting with
+it („br“ finds „Brot“, then „Bio-Brot“). The order is the app's; the add sheet matches more on the device
+(names that contain the text, and typos), the API only these two.
+
+```json
+{ "data": [{ "name": "Milch", "quantity": "2", "uses": 14, "lastUsed": "2026-11-20T08:12:00+00:00",
+             "due": true }], "nextCursor": null }
+```
+
+`uses` counts the days in the last year on which it was added or bought; `lastUsed` is the last of
+them; `due` is `true` when its usual interval since the last purchase is up (bought at least twice).
+The prefix is a query value, so it is in the gateway's access log like a filter (see
+[Privacy and logs](#privacy-and-logs)).
+
+### POST /v1/lists, PATCH /v1/lists/{id}
+
+```json
+{ "name": "Baumarkt" }
+```
+
+`POST` makes a list after the others, like the app, and answers `201` with it. A name has 1 to 60
+characters (spaces in a row become one); names need not be unique. A household has at most 50
+lists, the app's limit: the 51st is `409 too_many_lists` (`details.limit`). Send an
+`Idempotency-Key` to retry without making a second list.
+
+`PATCH` takes `name` and/or `position` (0 is first; past the end is last; the lists are numbered 0,
+1, 2... again) and answers `200` with the list. A member who never picked a default list in the
+app has the first list as default, so moving another list first changes where their adds without
+`list` go, as it does in the app. Another household's list, or none, is `404 list_not_found`.
+Deleting a list (with its items) stays in the app.
+
+### POST /v1/stores, PATCH /v1/stores/{id}
+
+```json
+{ "name": "Rewe" }
+```
+
+A store is its plain name (1 to 40 characters) and nothing else: no chain, country, store app or
+logo. `POST` adds it like the app (dm, Lidl, Edeka and a Baumarkt get their aisle layout) and
+answers `201`; a name the household already has (any case, umlauts folded: „rewe“, „REWE“) answers
+that store with `200` and adds nothing. A household has at most 50 stores this way (the 51st is
+`409 too_many_stores`; a known name still answers `200`). `PATCH` renames it; a name another store
+has is `409 conflict` and changes nothing. Another household's store, or none, is
+`404 store_not_found`. Deleting a store stays in the app.
+
+### GET /v1/stores/{id}/layout, PUT /v1/stores/{id}/layout
+
+A store's walk order: every category of the household in the order you meet them in that store,
+the order `GET /v1/items?store=` shows. `hidden` marks the categories the store does not carry.
+
+```json
+{ "data": [{ "id": "…", "name": "Getränke", "sortOrder": 10, "hidden": false }, …], "nextCursor": null }
+```
+
+`PUT` sets it like the store screen in the app:
+
+```json
+{ "categories": ["Getränke", "Kühlregal"], "hidden": ["Drogerie"] }
+```
+
+`categories` (ids or names) come first, in that order; the others follow in their current order.
+`hidden`, when given, is every category the store does not carry; without it they stay as they
+are. At least one of the two. A category in both comes first and is hidden. A category named twice (by name and by id, say) is
+`400 validation_failed`, an unknown one `422 category_not_found`. Answers the whole new order.
+
 ### GET /v1/categories, GET /v1/stores, GET /v1/lists
 
 `{ "data": [ { "id", "name", "sortOrder" } ], "nextCursor": null }`; each list also carries
@@ -243,7 +335,8 @@ The household the key works in. It names no member: no names, email addresses or
 ## Idempotency
 
 Every `POST` and `DELETE` takes an `Idempotency-Key` header (1 to 255 printable ASCII characters,
-for example a UUID); `GET` and `PATCH` take none. The first successful response for a key is stored
+for example a UUID); `GET`, `PATCH` and `PUT` take none (a repeated `PATCH` or `PUT` sets the same
+state again). The first successful response for a key is stored
 for 24 hours, per API key, and a retry with the same key and the same request gets the stored
 response again (with `Idempotent-Replayed: true`) instead of adding the items twice. The same key
 with a different method, path or body gets `422 idempotency_key_reused`. Two requests with one key at the same time
@@ -275,8 +368,10 @@ optional.
 | 403 | `insufficient_scope` | The key lacks the scope (`details.required`) |
 | 404 | `not_found` | No such endpoint |
 | 404 | `item_not_found` | No such item in this household (or not open, for `PATCH`) |
+| 404 | `list_not_found`, `store_not_found` | The list or store in the path is not one of this household's |
 | 405 | `method_not_allowed` | The path exists, the method does not (`Allow` header) |
-| 409 | `conflict` | A concurrent change got in the way (for example the `Idempotency-Key` was released at that moment); nothing was changed, retry. For `PATCH`: the new name would duplicate an open item on the list; nothing was changed, and a retry gets the same answer |
+| 409 | `conflict` | A concurrent change got in the way (for example the `Idempotency-Key` was released at that moment, or a category was added while a layout was set); nothing was changed, retry. For `PATCH` on an item: the new name would duplicate an open item on the list; on a store: another store has the name. Nothing was changed, and a retry gets the same answer |
+| 409 | `too_many_lists`, `too_many_stores` | The household has 50 lists or stores (`details.limit`); nothing was changed |
 | 413 | `payload_too_large` | The body is over 64 KiB |
 | 415 | `unsupported_media_type` | A body that is not `application/json` |
 | 422 | `store_not_found`, `category_not_found`, `list_not_found` | A named store, category or list does not exist (`details.candidates`) |
@@ -304,6 +399,8 @@ arguments, so that file is the one place to change them.
 | At once | One request per member: requests with one member's keys wait for each other | One that waited 5 seconds gets `503 timeout` |
 | Body | 64 KiB | `413` |
 | Page size | 1 to 100, default 50 | |
+| Recent, suggestions | 1 to 50; default 20 recent items, 10 suggestions | |
+| Lists, stores | 50 each per household | `409 too_many_lists`, `too_many_stores` |
 | Idempotency keys | kept 24 hours | |
 | API keys | 10 active per member | `create_api_token` refuses an 11th (`too_many_tokens`); with the API switched off it refuses all (`api_disabled`) |
 
@@ -347,7 +444,8 @@ it with a deprecation notice in this document and in a `Deprecation` header.
 - Every answer carries `Cache-Control: no-store` (no shared cache keeps a list) and
   `X-Content-Type-Options: nosniff`.
 - The gateway in front of the function keeps its own access log: each request's URL with its query
-  string, so a `store` or `category` filter and a cursor (which carries the filter) appear there.
+  string, so a `store`, `category` or `list` filter, a cursor (which carries the filter) and a
+  suggestions `prefix` (the start of an item name) appear there.
   Send the key in the `Authorization` header only; in a URL it is refused and would stay in that
   log.
 
@@ -372,3 +470,5 @@ curl -s -X POST "$API/items/<id>/tick" -H "Authorization: Bearer $KEY"
 - **Webhooks** (outgoing events such as "item added"), so automations need not poll.
 - **A public domain** such as `api.snacklist.app` (Vercel rewrite like `mcp-proxy/`).
 - **Merging items**, which the MCP tool `merge_items` does for assistants.
+- **Deleting a list or a store**: it takes its items or its place on items with it, so it stays a
+  decision in the app.

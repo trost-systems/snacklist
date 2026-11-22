@@ -27,7 +27,14 @@ import {
 } from './cimd_clients.ts';
 import { type OAuthDeps, oauthRoute } from './oauth.ts';
 import { telemetry } from './telemetry.ts';
-import { buildServer, langOf, reportToolCalls } from './tools.ts';
+import {
+  buildServer,
+  langOf,
+  reportToolCalls,
+  SWITCHED_OFF,
+  type Switches,
+  switchKeys,
+} from './tools.ts';
 
 /**
  * Per user, over all MCP requests (job 336, like the API's per key, docs/MCP.md "Limits"): a token
@@ -350,6 +357,18 @@ function supabaseAuthServerMetadata(): Promise<Record<string, unknown>> {
 const requirePremium = requirePremiumWith(telemetry);
 const sendEvent = userEvents(telemetry);
 
+/** The tools' server switches, read per request; unreadable, they count as off. */
+async function readSwitches(): Promise<Switches> {
+  try {
+    const [row] = await serviceDb()<{ listsStores: boolean }[]>`
+      select public.app_switch(${switchKeys.listsStores}) as "listsStores"`;
+    return row ?? SWITCHED_OFF;
+  } catch (e) {
+    if (!rowBusy(e)) telemetry.exception(e);
+    return SWITCHED_OFF;
+  }
+}
+
 export const productionDeps: Deps = {
   endpoints: projectEndpoints,
   authServerMetadata: supabaseAuthServerMetadata,
@@ -403,15 +422,18 @@ export const productionDeps: Deps = {
       throw e;
     }
   },
-  serve: (req, auth) =>
-    createMcpHandler(() =>
+  serve: async (req, auth) => {
+    const switches = await readSwitches();
+    return await createMcpHandler(() =>
       buildServer(
         auth,
         (householdId) => requirePremium({ userId: auth.userId, householdId }, 'mcp'),
         reportToolCalls(sendEvent, auth.userId),
         langOf(req.headers.get('accept-language')),
+        switches,
       )
-    ).fetch(req),
+    ).fetch(req);
+  },
   allowedOriginHosts: () =>
     (Deno.env.get('MCP_ALLOWED_ORIGIN_HOSTS') ?? '').split(',').map((h) => h.trim()).filter(
       Boolean,

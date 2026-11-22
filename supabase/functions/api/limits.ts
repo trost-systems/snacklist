@@ -19,3 +19,8 @@ export const PAGE_DEFAULT = 50;
 export const PAGE_MAX = 100;
 /** How long a POST's first successful response is replayed for its Idempotency-Key. */
 export const IDEMPOTENCY_HOURS = 24;
+/** Ticked things per GET /v1/items/recent (default: list.ts RECENT_SHOWN, the app's number). */
+export const RECENT_MAX = 50;
+/** Usuals per GET /v1/suggestions. */
+export const SUGGEST_DEFAULT = 10;
+export const SUGGEST_MAX = 50;

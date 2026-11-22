@@ -6,8 +6,11 @@
 // public.default_list: their choice, else the first list), where Siri and Alexa act too.
 import { oneRow, OutOfTime, type Tx } from './db.ts';
 
-/** `conflict`: a write that clashes with the list's state, such as a rename onto an open twin. */
-export type ToolErrorReason = 'not_found' | 'ambiguous' | 'invalid' | 'conflict';
+/**
+ * `conflict`: a write that clashes with the list's state, such as a rename onto an open twin.
+ * `limit`: the household has as many lists or stores as it may.
+ */
+export type ToolErrorReason = 'not_found' | 'ambiguous' | 'invalid' | 'conflict' | 'limit';
 
 /** What a name or id was meant to find. */
 export type Subject = 'item' | 'store' | 'category' | 'list';
@@ -907,4 +910,335 @@ export async function mergeItems(
     throw e;
   }
   return { kept: oneRow(await itemsById(tx, [keep.id]), 'kept item'), merged };
+}
+
+/** The message of a Postgres error (the exception's name in our functions), else undefined. */
+const raised = (e: unknown): unknown =>
+  (e as { name?: unknown } | null)?.name === 'PostgresError'
+    ? (e as { message?: unknown }).message
+    : undefined;
+
+/**
+ * A list or store write refused by the database for its name (blank once Postgres folds whitespace
+ * JS trim keeps, such as U+0085) or because the row went meanwhile, as the ToolError it is.
+ */
+function refusedWrite(e: unknown, subject: 'list' | 'store'): ToolError | undefined {
+  switch (raised(e)) {
+    case 'invalid_name':
+    case 'store_name_empty':
+    case 'store_name_too_long':
+      return new ToolError('Der Name ist leer oder zu lang.', 'invalid', subject);
+    case 'list_not_found':
+    case 'not_a_member':
+      return new ToolError(`${LABELS[subject]} nicht gefunden.`, 'not_found', subject);
+  }
+  return undefined;
+}
+
+/** A ticked item as "Zuletzt verwendet" shows it, with when it was ticked. */
+export type RecentItem = ApiItem & { tickedAt: string };
+
+/** How many things the app's "Zuletzt verwendet" shows (recentlyUsed in app/lib/list/model.dart). */
+export const RECENT_SHOWN = 20;
+
+/**
+ * The newest ticked rows recentItems groups (the app groups the household's newest 50 it loaded).
+ * Only these are folded and compared; finding them is still a top-N sort over the scope's ticked
+ * rows, which grows with the household's history (about 0.2 s at 50,000, review 0).
+ */
+const RECENT_WINDOW = 200;
+
+/**
+ * The app's "Zuletzt verwendet" (recentlyUsed in app/lib/list/model.dart) on the server: ticked
+ * items, newest first, one per thing (canonical_key, else the name folded like the app's
+ * foldName), its newest purchase, and none for a thing that is open again, among the newest
+ * RECENT_WINDOW ticked rows. A null [listId] looks at every list of the household at once.
+ */
+export async function recentItems(
+  tx: Tx,
+  household: string,
+  listId: string | null,
+  limit: number,
+): Promise<RecentItem[]> {
+  const thing = (column: string) =>
+    tx.unsafe(`coalesce(${column}.canonical_key, regexp_replace(
+      replace(replace(replace(replace(lower(btrim(${column}.name)), 'ä', 'ae'), 'ö', 'oe'),
+        'ü', 'ue'), 'ß', 'ss'), '\\s+', ' ', 'g'))`);
+  return await tx<RecentItem[]>`
+    with bought as materialized (
+      select i.id, i.canonical_key, i.name, coalesce(i.bought_at, i.updated_at) as at
+      from public.items i
+      where i.household_id = ${household} and i.status = 'bought'
+        and (${listId}::uuid is null or i.list_id = ${listId}::uuid)
+      order by coalesce(i.bought_at, i.updated_at) desc, i.id
+      limit ${RECENT_WINDOW}
+    ), open as (
+      select ${thing('o')} as thing
+      from public.items o
+      where o.household_id = ${household} and o.status = 'active'
+        and (${listId}::uuid is null or o.list_id = ${listId}::uuid)
+    ), latest as (
+      select distinct on (${thing('b')}) b.id, b.at
+      from bought b
+      where ${thing('b')} not in (select open.thing from open)
+      order by ${thing('b')}, b.at desc, b.id
+    )
+    select ${apiColumns(tx)}, to_json(l.at) #>> '{}' as "tickedAt"
+    from latest l
+    join public.items i on i.id = l.id
+    join public.categories c on c.id = i.category_id
+    left join public.stores s on s.id = i.store_id
+    order by l.at desc, i.id
+    limit ${limit}`;
+}
+
+/** recentItems for the MCP tools: the list [list] names, else the default list. */
+export async function listRecent(
+  tx: Tx,
+  household: string,
+  list: string | undefined,
+  limit: number,
+): Promise<{ list: string; items: (Item & { tickedAt: string })[] }> {
+  const shown = await listOf(tx, household, list);
+  const rows = await recentItems(tx, household, shown.id, limit);
+  return { list: shown.name, items: rows.map((r) => ({ ...toItem(r), tickedAt: r.tickedAt })) };
+}
+
+/** Something the household buys again and again; `due` when its usual interval is up. */
+export type Usual = {
+  name: string;
+  quantity: string | null;
+  uses: number;
+  lastUsed: string;
+  due: boolean;
+};
+
+/**
+ * The household's usuals through public.suggest_items, the ranking the app's add sheet shows
+ * (often and recently used first; with a prefix, names starting with it, then names with a word
+ * starting with it). Things open on a list are left out.
+ */
+export async function usuals(
+  tx: Tx,
+  household: string,
+  prefix: string,
+  limit: number,
+): Promise<Usual[]> {
+  return await tx<Usual[]>`
+    select name, quantity, uses, to_json(last_used) #>> '{}' as "lastUsed", due
+    from public.suggest_items(${household}, ${prefix}, ${limit})`;
+}
+
+/** A list as the API shows it; `default` is where an add without a list goes. */
+export type ListEntry = { id: string; name: string; sortOrder: number; default: boolean };
+
+/** The household's lists in their order, the caller's default list marked. */
+export async function listEntries(tx: Tx, household: string): Promise<ListEntry[]> {
+  const [rows, { defaultList }] = await Promise.all([
+    lists(tx, household),
+    listCatalog(tx, household),
+  ]);
+  return rows.map((l) => ({
+    id: l.id,
+    name: l.name,
+    sortOrder: l.position,
+    default: l.id === defaultList.id,
+  }));
+}
+
+async function listEntry(tx: Tx, household: string, id: string): Promise<ListEntry> {
+  return oneRow((await listEntries(tx, household)).filter((l) => l.id === id), 'list');
+}
+
+/** Lists per household, public.create_list's guard. */
+export const LIST_CAP = 50;
+
+/** A new list after the others through public.create_list, the app's path. */
+export async function createList(tx: Tx, household: string, name: string): Promise<ListEntry> {
+  let id: string;
+  try {
+    const rows = await tx<{ id: string }[]>`
+      select id from public.create_list(${household}, ${name}, gen_random_uuid())`;
+    id = oneRow(rows, 'created list').id;
+  } catch (e) {
+    if (raised(e) === 'too_many_lists') {
+      throw new ToolError(
+        `Der Haushalt hat schon ${LIST_CAP} Listen, mehr gehen nicht.`,
+        'limit',
+        'list',
+      );
+    }
+    throw refusedWrite(e, 'list') ?? e;
+  }
+  return await listEntry(tx, household, id);
+}
+
+/**
+ * Renames the list [ref] names and/or moves it to [position] (0 is first, past the end is last),
+ * through public.rename_list and public.move_list like the app.
+ */
+export async function changeList(
+  tx: Tx,
+  household: string,
+  ref: string,
+  change: { name?: string | undefined; position?: number | undefined },
+): Promise<ListEntry> {
+  if (change.name === undefined && change.position === undefined) {
+    throw new ToolError('Gib an, was sich ändern soll.', 'invalid', null);
+  }
+  const list = await listOf(tx, household, ref);
+  try {
+    if (change.name !== undefined) {
+      await tx`select from public.rename_list(${list.id}, ${change.name})`;
+    }
+    if (change.position !== undefined) {
+      await tx`select from public.move_list(${list.id}, ${change.position})`;
+    }
+  } catch (e) {
+    throw refusedWrite(e, 'list') ?? e;
+  }
+  return await listEntry(tx, household, list.id);
+}
+
+/** A store as the API shows it: its plain name only, never a chain (retailer rules). */
+export type StoreEntry = { id: string; name: string; sortOrder: number };
+
+const storeEntry = ({ id, name, sort_order }: Named & { sort_order: number }): StoreEntry => ({
+  id,
+  name,
+  sortOrder: sort_order,
+});
+
+/**
+ * Stores per household that the API and the MCP tools add up to. The app has no cap; this one
+ * keeps an automation from filling the household, each store writing a layout row per category.
+ */
+export const STORE_CAP = 50;
+
+/**
+ * A store through public.add_store, the app's path: dm, Lidl, Edeka and a Baumarkt get their
+ * layout. A name the household has already (any case, umlauts folded) answers that store, with
+ * `created` false.
+ */
+export async function addStore(
+  tx: Tx,
+  household: string,
+  name: string,
+): Promise<{ store: StoreEntry; created: boolean }> {
+  const before = await stores(tx, household);
+  const rows = await tx<{ id: string }[]>`select public.add_store(${household}, ${name}) as id`
+    .catch((e) => {
+      throw refusedWrite(e, 'store') ?? e;
+    });
+  const id = oneRow(rows, 'added store').id;
+  const created = !before.some((s) => s.id === id);
+  // The throw rolls the insert back with the caller's transaction.
+  if (created && before.length >= STORE_CAP) {
+    throw new ToolError(
+      `Der Haushalt hat schon ${STORE_CAP} Läden, mehr gehen nicht.`,
+      'limit',
+      'store',
+    );
+  }
+  const after = await stores(tx, household);
+  return { store: storeEntry(oneRow(after.filter((s) => s.id === id), 'store')), created };
+}
+
+/** Renames the store [ref] names through public.rename_store; a name another store has is a conflict. */
+export async function renameStore(
+  tx: Tx,
+  household: string,
+  ref: string,
+  name: string,
+): Promise<StoreEntry> {
+  const store = resolve(await stores(tx, household), ref, 'store');
+  try {
+    await tx`select from public.rename_store(${store.id}, ${name})`;
+  } catch (e) {
+    if (raised(e) === 'store_name_taken') {
+      throw new ToolError(
+        `Ein anderer Laden heißt schon „${name.trim()}“.`,
+        'conflict',
+        'store',
+        [],
+        name,
+      );
+    }
+    throw refusedWrite(e, 'store') ?? e;
+  }
+  const after = await stores(tx, household);
+  return storeEntry(oneRow(after.filter((s) => s.id === store.id), 'store'));
+}
+
+/** A category in a store's walk order; `hidden`: the store does not carry it. */
+export type LayoutEntry = { id: string; name: string; sortOrder: number; hidden: boolean };
+
+/** Every category of the household in the store's walk order, the order list_items uses. */
+async function layoutOf(tx: Tx, household: string, store: string): Promise<LayoutEntry[]> {
+  return await tx<LayoutEntry[]>`
+    select c.id, c.name, coalesce(o.sort_order, c.sort_order) as "sortOrder",
+           coalesce(o.hidden, false) as hidden
+    from public.categories c
+    left join public.store_category_order o on o.store_id = ${store} and o.category_id = c.id
+    where c.household_id = ${household}
+    order by coalesce(o.sort_order, c.sort_order), c.name`;
+}
+
+/** The walk order of the store [ref] names. */
+export async function storeLayout(
+  tx: Tx,
+  household: string,
+  ref: string,
+): Promise<{ store: StoreEntry; categories: LayoutEntry[] }> {
+  const store = resolve(await stores(tx, household), ref, 'store');
+  return { store: storeEntry(store), categories: await layoutOf(tx, household, store.id) };
+}
+
+/**
+ * Sets the walk order of the store [ref] names through public.set_store_layout, the app's store
+ * screen: the [order] categories first, in that order, then the others in their current order.
+ * [hidden], when given, are all the categories the store does not carry; else they stay.
+ */
+export async function setStoreLayout(
+  tx: Tx,
+  household: string,
+  ref: string,
+  change: { order?: readonly string[] | undefined; hidden?: readonly string[] | undefined },
+): Promise<{ store: StoreEntry; categories: LayoutEntry[] }> {
+  if (change.order === undefined && change.hidden === undefined) {
+    throw new ToolError(
+      'Gib eine Reihenfolge oder die ausgeblendeten Kategorien an.',
+      'invalid',
+      null,
+    );
+  }
+  const store = resolve(await stores(tx, household), ref, 'store');
+  const current = await layoutOf(tx, household, store.id);
+  const pick = (refs: readonly string[]) => {
+    const found = refs.map((r) => resolve(current, r, 'category'));
+    const twice = found.find((c, i) => found.findIndex((d) => d.id === c.id) !== i);
+    if (twice) {
+      throw new ToolError(`Kategorie „${twice.name}“ steht doppelt.`, 'invalid', 'category');
+    }
+    return found.map((c) => c.id);
+  };
+  const first = pick(change.order ?? []);
+  const ids = [...first, ...current.map((c) => c.id).filter((id) => !first.includes(id))];
+  const hidden = change.hidden === undefined
+    ? current.filter((c) => c.hidden).map((c) => c.id)
+    : pick(change.hidden);
+  try {
+    await tx`select from public.set_store_layout(${store.id}, ${ids}::uuid[], ${hidden}::uuid[])`;
+  } catch (e) {
+    // A category added or deleted since the read.
+    if (raised(e) === 'invalid_category_order') {
+      throw new ToolError(
+        'Die Kategorien haben sich gerade geändert. Versuch es noch einmal.',
+        'conflict',
+        'category',
+      );
+    }
+    throw e;
+  }
+  return { store: storeEntry(store), categories: await layoutOf(tx, household, store.id) };
 }
