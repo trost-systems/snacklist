@@ -176,6 +176,11 @@ abstract interface class ListCache() {
 /// [ListPrefs.folded] next to store ids.
 const noStoreKey = 'none';
 
+/// The key of „Zuletzt verwendet“ in [ListPrefs.folded] while the flag
+/// `recently-used-open` is on: the section starts open, so the key means the
+/// user closed it.
+const recentlyUsedFoldKey = 'recently-used';
+
 /// How the user left the list on this device: which sections are folded
 /// (store ids and [noStoreKey]; ids of deleted stores are ignored), whether
 /// the explainer card was dismissed, and which of the household's lists

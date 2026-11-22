@@ -2178,3 +2178,23 @@ Recorded, no fix: the API/MCP cap a household at 50 stores (`STORE_CAP = 50`, `s
 - The tests build their own households (12 daily usuals plus Käse, Milch, Joghurt); they do not use the heavy-history fixture. The reviewer drove that fixture by hand: `due=true` gave the same 11 due as the SQL, and the app's sheet shows 10 of them (its cap).
 - openapi `due`: `false` means no filter; default limit 10 matches the add sheet. `USUALS_SCAN = 200` copies the app's 200 (commented).
 - New sha256 (supersedes the ones above): `docs/api/openapi.yaml` 8881352b39dc3b86b79353a2cee1d3b2a4b5f9104f49749c60e918c955e2b199; `supabase/functions/mcp/tools.ts` dbd3ff323f32937233e682404ea79c24634c5511103e7657b8c2324f9f0c7742.
+
+## Job 367: Recently used open by default (RU1)
+
+Flag `recently-used-open` (releases/flags.json, tester group `recently-used-open`, rollout off). On: „Zuletzt verwendet“ on the list starts open with today's faded rows, no count, no peek or other element. Ticks still move there, a tap on the row there unticks, no undo button. A manual fold is remembered per device (`ListPrefs.folded`). Code: `shopping_list_view.dart` (ExpansionTile), `list_cache.dart` (`recentlyUsedFoldKey`), `flags.dart`. Tests: `app/test/list/recently_used_open_test.dart` (open by default, no count, tick lands there, tap unticks, fold remembered, flag off closed). No ARB string added or changed, so no Legal stop.
+
+TestFlight: next green main build carries it. Targeting: flag is created by the flag sync for the person property `tester_groups` containing `recently-used-open` (Peter's account needs that group set); off for everyone else.
+
+RU-Q choices:
+1. Q1 Flag: yes, `recently-used-open`, Peter's tester group first.
+2. Q2 Fold: kept, remembered per device, open by default. The "still shows the peek" part dropped (no peek).
+3. Q3 Rows: today's faded rows (RU1), no RU2/RU4 rows (lines above win).
+4. Q4 Peek pill as undo: not built (no peek, no undo button).
+5. Q5 Whose ticks in the peek: n/a; the section shows everyone's, as today.
+6. Q6 Header word: unchanged „Zuletzt verwendet“ (renaming is RU2; no ARB change).
+7. Q7 Before/after total: after the total, as today.
+8. Q8 How many: 20, newest first, all shown in the open section.
+9. Q9 After a tap-back: item returns to its place, no scroll. The „Back on the list“ announcement is not added (needs a new ARB string; stays out).
+10. Q10 Trip mode and add sheet: no peek, so nothing changes.
+11. Q11 Reduced motion: no new motion added.
+12. Q12 Prices in the tray: none, as today.

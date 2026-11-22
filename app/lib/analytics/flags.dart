@@ -129,6 +129,11 @@ const hideCategoriesFlag = 'hide-categories';
 /// switch.
 const learnedOrderFlag = 'learned-order';
 
+/// The flag for the list's „Zuletzt verwendet“ section (job 367, RU1): it
+/// starts open, faded as before, and a fold the user makes is remembered on
+/// the device. Off, it starts closed every time the list shows.
+const recentlyUsedOpenFlag = 'recently-used-open';
+
 /// PostHog feature flags, the app's runtime toggles (job 44,
 /// docs/ANALYTICS.md "Feature flags"). Read a toggle with [isOn] wherever it
 /// matters; nothing else in the app reads PostHog flags.

@@ -13,6 +13,7 @@ import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/chain_suggestions.dart';
 import 'package:family_groceries/list/claims.dart';
 import 'package:family_groceries/list/edit_item_sheet.dart';
+import 'package:family_groceries/list/list_cache.dart' show recentlyUsedFoldKey;
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_link.dart';
 import 'package:family_groceries/list/list_parts.dart';
@@ -618,6 +619,10 @@ class _ShoppingListViewState()
   Widget _scrollView(BuildContext context, ListState state, double width) {
     _panelPlaced = false;
     final used = recentlyUsed(state.items.values);
+    final openByDefault = context.select<Flags?, bool>(
+      (flags) => flags?.isOn(recentlyUsedOpenFlag) ?? false,
+    );
+    final usedFolded = state.prefs.folded.contains(recentlyUsedFoldKey);
     // Never more columns than sections: one store with items reads as one
     // centred column.
     final learned = context.select<Flags?, bool>(
@@ -853,6 +858,12 @@ class _ShoppingListViewState()
                     padding: const EdgeInsets.only(top: 20),
                     child: ExpansionTile(
                       key: const ValueKey('recently-used'),
+                      initiallyExpanded: openByDefault && !usedFolded,
+                      onExpansionChanged: openByDefault
+                          ? (_) => context.read<ListCubit>().toggleFold(
+                              recentlyUsedFoldKey,
+                            )
+                          : null,
                       title: Text(l10n.recentlyUsed),
                       children: [
                         for (final (i, item) in used.indexed)
