@@ -17389,3 +17389,16 @@ Peter's pick (2026-11-22 13:06): "Let's go with RD1 for now", from round RD (job
 
 - `consentListAccess` starts with "Read your shopping list." (DE „Einträge deiner Einkaufsliste lesen.“), then the approved sentence from the brief ("Can also add, … set the order in a store."), then the unchanged provider sentence (H-17). The approved sentence begins "Can also", so it cannot follow "Read, add, …" as one clause. `apiScopeReadWriteBody` is the approved sentence verbatim.
 - `shop_declines` SELECT policy is now `user_id = auth.uid() and is_household_member(household_id)` (migration 20261122030000). No grant added; pgTAP grants SELECT inside its transaction to prove another member still sees nothing.
+
+## Job 388: one credential for MCP and the API, and an API domain (research, 2026-11-22)
+
+1. **Research only, report in `docs/research/388-auth-unify-api-domain.md`, draft PR never
+   merged** (brief). No code, migration or Vercel change.
+2. **Recommended AU1 and AD2.** MCP tokens and API keys are already rows of one table with one
+   format and hash, told apart only by `kind`; AU1 drops the two `kind` filters and adds the API's
+   scopes to MCP. AD2 copies the working `mcp.snacklist.app` rewrite for `api.snacklist.app`
+   (wildcard DNS already points at Vercel, no project owns the host). AD3 needs Supabase Pro
+   ($25 + $10 a month), against the free-tier rule, and keeps the `/functions/v1` path.
+3. **Flagged, not fixed:** `create_personal_access_token` lacks `create_api_token`'s
+   `session_required` check (inferred from the code, not run). Fixing it is a code change, out of
+   scope for a research job; proposed as its own small job before launch.
