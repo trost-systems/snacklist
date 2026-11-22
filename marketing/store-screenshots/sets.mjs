@@ -39,7 +39,7 @@ export const SETS = {
 };
 
 export const FEATURE_GRAPHIC = { size: [1024, 500], store: 'play' };
-export const ICON = { size: [512, 512], store: 'play', source: 'app/web/icons/Icon-512.png' };
+export const ICON = { size: [512, 512], store: 'play', source: 'marketing/store-icons/play-512.png' };
 export const STORES = ['play', 'appstore'];
 
 /** What breaks a set's store rule, if anything. */

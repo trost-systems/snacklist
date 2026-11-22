@@ -639,10 +639,23 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 
 **Never claim.**
 - That it is available to everyone, or that it is coming soon.
-- That the app icon, the Home Screen widgets, the website or the store pictures changed (they still show hexagons).
+- That the Home Screen widgets, the website or the store pictures changed (they still show hexagons). The app icon did change, for everyone: see „App icon“ below.
 - That anything moved or was renamed: only shapes and shadows changed.
 
 **Last verified.** 22 November 2026, code version 62a33a4da, in the web app with the test switch on (German light, English dark, the list at 200 % text) and in the app's goldens (German and English, light and dark, smallest and largest text).
+
+## App icon
+
+**What it does.** Snacklist has a new app icon for everyone from the version that carries it (planned for the 1 December release): a yellow ring with rounded corners on blue, inside it a white tile with a blue tick. It replaces the hexagon icon. The same icon shows in the browser tab, on the start and sign-in screens, in emails, in the Alexa skill and in the app stores. On iPhone it has a dark and a tinted version, on Android a themed one that takes the phone's colours.
+
+**How to get there.** Nothing to do: it comes with the app update.
+
+**Never claim.**
+- That the rest of the app lost its hexagons for everyone: the new look of the screens is still switched on only for testers (see „A look without hexagons“).
+- That the website's pictures, the store screenshots or the Home Screen widgets changed (they still show hexagons).
+- That users can choose between icons. There is one icon.
+
+**Last verified.** 22 November 2026, code version 1ea8a0ef9 with job 385's icon files, from the generated icon files and their previews (iOS light, dark and tinted, Android themed light and dark) and the app's goldens; not yet on a phone.
 
 ## App language
 

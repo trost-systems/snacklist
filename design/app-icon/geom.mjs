@@ -1,4 +1,4 @@
-// Shapes for the app icon and the splash mark. A shape is { d, rings }: SVG path data with
+// Shapes for the app icon and the splash tile. A shape is { d, rings }: SVG path data with
 // M, L, A and Z only (Android vector drawables read the same) and the outline flattened to
 // polygons for the rasterizer. Ported from the job 45 prototype's geom.mjs.
 
@@ -61,14 +61,6 @@ export function roundedPolygon(points, radius) {
   return { d: `${d}Z`, rings: [ring] };
 }
 
-// Pointy-top hexagon with circumradius R.
-export const hexPoints = (cx, cy, R) => Array.from({ length: 6 }, (_, i) => {
-  const a = ((-90 + 60 * i) * Math.PI) / 180;
-  return [cx + R * Math.cos(a), cy + R * Math.sin(a)];
-});
-// Corner radius 2R/6, the 3b Hex Soft rounding the icon was drawn with.
-export const hex = (cx, cy, R, radius = (2 * R) / 6) => roundedPolygon(hexPoints(cx, cy, R), radius);
-
 // The outline of a stroked polyline (round caps, mitred joins).
 export function strokeOutline(pts, width) {
   const h = width / 2;
@@ -91,25 +83,9 @@ export function strokeOutline(pts, width) {
 export const checkPoints = (x, y, s) => [[x, y + 0.5 * s], [x + 0.36 * s, y + 0.86 * s], [x + s, y]];
 export const check = (x, y, s, width) => strokeOutline(checkPoints(x, y, s), width);
 
-// The band a stroke of `width` paints along closed or open rings, for the rasterizer: one quad
-// per segment and a disc at every vertex (round joins and caps), all wound the same way so a
-// non-zero fill unions them.
-export function strokeBand(rings, width, closed) {
-  const h = width / 2;
-  const disc = ([cx, cy]) => Array.from({ length: 32 }, (_, i) => [cx + h * Math.cos((i * Math.PI) / 16), cy + h * Math.sin((i * Math.PI) / 16)]);
-  const out = [];
-  for (const ring of rings) {
-    const n = closed ? ring.length : ring.length - 1;
-    for (let i = 0; i < n; i++) {
-      const p = ring[i];
-      const q = ring[(i + 1) % ring.length];
-      if (len(sub(q, p)) < 1e-9) continue;
-      const o = mul(normal(unit(sub(q, p))), h);
-      const quad = [add(p, o), add(q, o), sub(q, o), sub(p, o)];
-      const area = quad.reduce((s, a, k) => s + cross(a, quad[(k + 1) % 4]), 0);
-      out.push(area > 0 ? quad : quad.reverse());
-    }
-    out.push(...ring.map(disc));
-  }
-  return out;
-}
+// A rectangle centred on (cx, cy), half sizes hw and hh, corners rounded by r.
+export const roundedRect = (cx, cy, hw, hh, r) => roundedPolygon([[cx - hw, cy - hh], [cx + hw, cy - hh], [cx + hw, cy + hh], [cx - hw, cy + hh]], r);
+export const square = (cx, cy, h, r) => roundedRect(cx, cy, h, h, r);
+
+// Several shapes as one (for a layer or the monochrome glyph).
+export const union = (...shapes) => ({ d: shapes.map((s) => s.d).join(' '), rings: shapes.flatMap((s) => s.rings) });

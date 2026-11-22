@@ -2056,3 +2056,14 @@ needed. `docs/MODERATION.md` is the runbook.
 Invalid access token`. Replace `SUPABASE_ACCESS_TOKEN` in the `ops` environment, rerun
 `supabase-deploy.yml` on main and check that `scripts/smoke-remote.sh` passed in that run. The
 classifier runs on the server, so users see the fix only after that deploy.
+
+## Job 385: check the new app icon on your iPhone (iOS 26 Clear)
+
+The first TestFlight build after job 385's merge carries the AI1 Soft tile icon. On the iPhone:
+long-press the Home Screen → Edit → Customize, and look at Default, Dark, Clear and Tinted. Clear
+is rendered by iOS from the Icon Composer layers and could not be checked on the runners. If one
+looks wrong, say which, and a follow-up job adjusts `design/app-icon/art/ai1.mjs`.
+
+Store listings: the App Store and Play Console icons are uploaded by hand from
+`marketing/store-icons/app-store-1024.png` and `marketing/store-icons/play-512.png` (Ops does it
+with the next release).

@@ -1,17 +1,20 @@
 #!/usr/bin/env node
-// Writes the Snacklist app icon (5 "Wabenstapel") and the splash screens for iOS, Android and
-// the web, and the Alexa skill's icons, from the geometry below and the colours in design/tokens/snacklist.tokens.json.
-// Node only, no packages and no network.
+// Writes the Snacklist app icon and the splash screens for iOS, Android and the web, the
+// Alexa skill's icons, the site's and the MCP page's copies and the store listing icons, from an
+// art module (art/ai1.mjs, "Soft tile", unless --art names another) and the colours in
+// design/tokens/snacklist.tokens.json. Node only, no packages and no network.
 //   node design/app-icon/build.mjs             writes every platform file
 //   node design/app-icon/build.mjs --check     writes nothing, exits 1 when a file differs
-//   node design/app-icon/build.mjs --previews  writes docs/screenshots/52/icon/ and prints the
+//   node design/app-icon/build.mjs --previews  writes docs/screenshots/385/icon/ and prints the
 //                                              contrast and safe-zone numbers
+//   --art <module>  draws another art module (job 372's options: branch job/372-app-icon-prototypes)
+//   --out <dir>     writes under <dir> instead of the repo
 import { Buffer } from 'node:buffer';
 import process from 'node:process';
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { hex, hexPoints, roundedPolygon, check, strokeBand } from './geom.mjs';
+import { dirname, join, resolve as absolute } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { roundedPolygon } from './geom.mjs';
 import { Canvas, coverage, png } from './raster.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -20,37 +23,24 @@ const tokens = JSON.parse(readFileSync(join(root, 'design/tokens/snacklist.token
 const resolve = (v) => (typeof v === 'string' && /^\{.+\}$/.test(v) ? resolve(v.slice(1, -1).split('.').reduce((n, k) => n[k], tokens).$value) : v);
 const color = (mode, name) => resolve(tokens.color[mode][name].$value).hex.toLowerCase();
 const MODES = ['light', 'dark'];
+const args = process.argv.slice(2);
+const arg = (name) => (args.includes(name) ? args[args.indexOf(name) + 1] : undefined);
+const artPath = arg('--art') ?? join(here, 'art/ai1.mjs');
+const outRoot = arg('--out');
+const art = (await import(pathToFileURL(absolute(artPath)).href)).default({ color });
 
 // ---- The art ----
-// A 1024 canvas, which is Android's 72 dp visible area. Two foreground groups over a
-// background fill; Icon Composer and Android's foreground take the groups as they are.
+// A 1024 canvas, which is Android's 72 dp visible area. Foreground groups over a background
+// fill; Icon Composer and Android's foreground take the groups as they are. MONO is the one-colour
+// glyph (Android monochrome, iOS tinted).
 const C = 512;
 const ART = 1024;
-const outer = hex(C, C, 380);
-const hole = hex(C, C, 250);
-const inner = hex(C, C, 230);
-const tick = check(406, 452, 212, 66);
-const GROUPS = [
-  { name: 'Wabe außen', slug: 'wabe-aussen', els: [{ shape: outer, role: 'outer' }] },
-  { name: 'Wabe innen', slug: 'wabe-innen', els: [{ shape: inner, role: 'inner' }, { shape: tick, role: 'mark' }] },
-];
-// One colour (Android monochrome, iOS tinted): the ring and the check; the inner hexagon stays
-// out, so the check stands free in the ring's opening. Even-odd: the hole cuts the ring.
-const MONO = { d: `${outer.d} ${hole.d} ${tick.d}`, rings: [...outer.rings, ...hole.rings, ...tick.rings] };
+const GROUPS = art.groups;
+const MONO = art.mono;
+const MONO_RULE = art.monoEvenOdd ? 'evenodd' : 'nonzero';
+const ICON = art.colors;
+const ELS = GROUPS.flatMap((g) => g.els);
 
-const ICON = {
-  light: { bg: color('light', 'cobalt'), outer: color('light', 'honey'), inner: color('light', 'on-cobalt'), mark: color('light', 'cobalt') },
-  dark: { bg: color('dark', 'surface'), outer: color('dark', 'honey'), inner: color('dark', 'brand'), mark: color('dark', 'on-brand') },
-};
-
-// The 6b brand mark (option-6b assets/mark.svg) on a 64 box, for the splash screens.
-const MARK_BOX = 64;
-const MARK = {
-  body: roundedPolygon(hexPoints(30, 34, 27), 7),
-  tick: [[18.5, 35], [26, 42.5], [40, 27.5]],
-  cell: roundedPolygon(hexPoints(50, 14, 11), 3),
-};
-const markColors = (mode) => ({ body: color(mode, 'cobalt'), edge: color(mode, 'edge'), tick: color(mode, 'on-cobalt'), cell: color(mode, 'honey') });
 const SPLASH = { light: color('light', 'surface'), dark: color('dark', 'surface') };
 // The mark's box on every splash, in pt, dp and CSS px.
 const SPLASH_MARK = 128;
@@ -89,47 +79,44 @@ const render = (size, paint, opts) => png(size, size, rgba(size, paint, opts));
 const paintIcon = (mode, { background = true } = {}) => (fill) => {
   const c = ICON[mode];
   if (background) fill(FULL, c.bg);
-  for (const g of GROUPS) for (const e of g.els) fill(e.shape.rings, c[e.role]);
+  for (const e of ELS) fill(e.shape.rings, c[e.role], e.evenOdd ? 'evenodd' : 'nonzero');
 };
 const paintMono = (bg, glyph) => (fill) => {
   if (bg) fill(FULL, bg);
-  fill(MONO.rings, glyph, 'evenodd');
+  fill(MONO.rings, glyph, MONO_RULE);
 };
 const icon = (mode, size, opts = {}) => render(size, paintIcon(mode, opts), opts);
 
-// The mark, its 64 box scaled to `box` px and centred on a `size` px canvas.
+// The splash mark: the icon itself on a rounded tile.
+const TILE = roundedPolygon([[0, 0], [ART, 0], [ART, ART], [0, ART]], 184);
+
+// The mark, its box scaled to `box` px and centred on a `size` px canvas.
 function renderMark(mode, size, box, bg) {
-  const s = box / MARK_BOX;
   const o = (size - box) / 2;
-  const m = markColors(mode);
   return render(size, (fill) => {
     if (bg) fill(FULL, bg);
-    fill(MARK.body.rings, m.body);
-    fill(strokeBand(MARK.body.rings, 3, true), m.edge);
-    fill(strokeBand([MARK.tick], 6, false), m.tick);
-    fill(MARK.cell.rings, m.cell);
-    fill(strokeBand(MARK.cell.rings, 3, true), m.edge);
-  }, { place: [s, o, o] });
+    fill(TILE.rings, ICON[mode].bg);
+    for (const e of ELS) fill(e.shape.rings, ICON[mode][e.role], e.evenOdd ? 'evenodd' : 'nonzero');
+  }, { place: [box / ART, o, o] });
 }
 
 // ---- Text formats ----
 const rgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
-const f = (n) => `${Number(n.toFixed(2))}`;
 const json = (v) => `${JSON.stringify(v, null, 2)}\n`;
 const svgDoc = (body, viewBox = `0 0 ${ART} ${ART}`) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}">${body}</svg>\n`;
-const markD = (pts) => `M${pts.map(([x, y]) => `${f(x)} ${f(y)}`).join(' L')}`;
 
+const fillRule = (e) => (e.evenOdd ? ' fill-rule="evenodd"' : '');
 function markSvg(mode) {
-  const m = markColors(mode);
-  return svgDoc(`<title>Snacklist</title><path d="${MARK.body.d}" fill="${m.body}" stroke="${m.edge}" stroke-width="3" stroke-linejoin="round"/><path d="${markD(MARK.tick)}" fill="none" stroke="${m.tick}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="${MARK.cell.d}" fill="${m.cell}" stroke="${m.edge}" stroke-width="3"/>`, `0 0 ${MARK_BOX} ${MARK_BOX}`);
+  const c = ICON[mode];
+  return svgDoc(`<title>Snacklist</title><path fill="${c.bg}" d="${TILE.d}"/>${ELS.map((e) => `<path fill="${c[e.role]}"${fillRule(e)} d="${e.shape.d}"/>`).join('')}`);
 }
 
 // The favicon follows the browser's colour scheme on its own.
 function faviconSvg() {
-  const cls = ['bg', 'outer', 'inner', 'mark'];
+  const cls = Object.keys(ICON.light);
   const rules = (mode) => cls.map((k) => `.${k}{fill:${ICON[mode][k]}}`).join('');
   const r = 184;
-  return svgDoc(`<style>${rules('light')}@media (prefers-color-scheme:dark){${rules('dark')}}</style><rect class="bg" width="${ART}" height="${ART}" rx="${r}"/>${GROUPS.flatMap((g) => g.els).map((e) => `<path class="${e.role}" d="${e.shape.d}"/>`).join('')}`);
+  return svgDoc(`<style>${rules('light')}@media (prefers-color-scheme:dark){${rules('dark')}}</style><rect class="bg" width="${ART}" height="${ART}" rx="${r}"/>${ELS.map((e) => `<path class="${e.role}"${fillRule(e)} d="${e.shape.d}"/>`).join('')}`);
 }
 
 // Android vector drawables on the 108 dp canvas; the art sits in the middle 72 dp.
@@ -160,14 +147,10 @@ const adaptive = `<?xml version="1.0" encoding="utf-8"?>
 // Android 12's splash icon is 288 dp with the visible part inside a 192 dp circle; the mark
 // sits in the middle at SPLASH_MARK dp, and pre-12 launch_background draws the same drawable.
 function splashVector(mode) {
-  const m = markColors(mode);
-  const s = SPLASH_MARK / MARK_BOX;
+  const c = ICON[mode];
+  const s = SPLASH_MARK / ART;
   const o = (288 - SPLASH_MARK) / 2;
-  return vector([
-    `${vdFill(m.body, MARK.body.d)} android:strokeColor="${m.edge}" android:strokeWidth="3" android:strokeLineJoin="round"`,
-    `android:fillColor="#00000000" android:pathData="${markD(MARK.tick)}" android:strokeColor="${m.tick}" android:strokeWidth="6" android:strokeLineCap="round" android:strokeLineJoin="round"`,
-    `${vdFill(m.cell, MARK.cell.d)} android:strokeColor="${m.edge}" android:strokeWidth="3"`,
-  ], { size: 288, viewport: 288, group: `android:translateX="${o}" android:translateY="${o}" android:scaleX="${s}" android:scaleY="${s}"` });
+  return vector([vdFill(c.bg, TILE.d), ...ELS.map((e) => vdFill(c[e.role], e.shape.d, e.evenOdd))], { size: 288, viewport: 288, group: `android:translateX="${o}" android:translateY="${o}" android:scaleX="${s}" android:scaleY="${s}"` });
 }
 const colorsXml = (mode) => `<?xml version="1.0" encoding="utf-8"?>
 <!-- Generated by design/app-icon/build.mjs. Do not edit. -->
@@ -192,6 +175,7 @@ const RES = 'app/android/app/src/main/res';
 const WEB = 'app/web';
 const BRAND = 'app/assets/brand';
 const ALEXA = 'alexa/skill-package/assets/images';
+const STORE = 'marketing/store-icons';
 const BRAND_SIZE = 56;
 const DENSITIES = { mdpi: 1, hdpi: 1.5, xhdpi: 2, xxhdpi: 3, xxxhdpi: 4 };
 
@@ -227,8 +211,8 @@ function outputs() {
   for (const [path, content] of iconComposer()) add(`${IOS}/AppIcon.icon/${path}`, content);
 
   add(`${RES}/drawable/ic_launcher_background.xml`, vector([vdFill(ICON.light.bg, `M${-PAD} ${-PAD} L${ART + PAD} ${-PAD} L${ART + PAD} ${ART + PAD} L${-PAD} ${ART + PAD} Z`)]));
-  add(`${RES}/drawable/ic_launcher_foreground.xml`, vector(GROUPS.flatMap((g) => g.els).map((e) => vdFill(ICON.light[e.role], e.shape.d))));
-  add(`${RES}/drawable/ic_launcher_monochrome.xml`, vector([vdFill('#FF000000', MONO.d, true)]));
+  add(`${RES}/drawable/ic_launcher_foreground.xml`, vector(ELS.map((e) => vdFill(ICON.light[e.role], e.shape.d, e.evenOdd))));
+  add(`${RES}/drawable/ic_launcher_monochrome.xml`, vector([vdFill('#FF000000', MONO.d, art.monoEvenOdd)]));
   add(`${RES}/mipmap-anydpi-v26/ic_launcher.xml`, adaptive);
   add(`${RES}/mipmap-anydpi-v26/ic_launcher_round.xml`, adaptive);
   // Android 7 (API 24, 25) has no adaptive icons and takes these as they are.
@@ -249,6 +233,11 @@ function outputs() {
 
   add(`${WEB}/favicon.svg`, faviconSvg());
   add(`${WEB}/favicon.png`, icon('light', 48, { mask: 'rounded' }));
+  // The site's and the MCP page's copies of the web icons.
+  add('site/public/favicon.svg', faviconSvg());
+  add('site/public/favicon.png', icon('light', 48, { mask: 'rounded' }));
+  add('site/public/apple-touch-icon.png', icon('light', 180));
+  add('mcp-proxy/public/static/logo.svg', faviconSvg());
   add(`${WEB}/icons/Icon-192.png`, icon('light', 192, { mask: 'rounded' }));
   add(`${WEB}/icons/Icon-512.png`, icon('light', 512, { mask: 'rounded' }));
   // Maskable: the whole image is the 108 dp canvas, like Android's adaptive icon, so the art
@@ -277,24 +266,30 @@ html { background: ${SPLASH.light}; }
   manifest.background_color = SPLASH.light;
   manifest.theme_color = ICON.light.bg;
   add(`${WEB}/manifest.json`, `${JSON.stringify(manifest, null, 4)}\n`);
+  // The store listings: App Store Connect takes the 1024 icon without alpha, Play the 512 one
+  // full bleed (Play rounds it).
+  add(`${STORE}/app-store-1024.png`, icon('light', 1024));
+  add(`${STORE}/play-512.png`, icon('light', 512));
   return out;
 }
 
 // Icon Composer (iOS 26): one SVG per layer, the fills per appearance in icon.json. Groups and
-// layers list front to back. Tinted (Icon Composer's "Mono") keeps the 5o one-colour shape:
-// the ring and the check in white, the inner hexagon hidden.
+// layers list front to back. Tinted (Icon Composer's "Mono"): every layer white unless the art's
+// `tinted` hides a role or gives it another grey (AI1: the inner tile hidden).
 const icSrgb = (h) => `srgb:${rgb(h).map((v) => (v / 255).toFixed(5)).join(',')},1.00000`;
 const icFill = (light, darkColor) => [{ value: { solid: icSrgb(light) } }, { appearance: 'dark', value: { solid: icSrgb(darkColor) } }];
 const icJson = (v) => `${JSON.stringify(v, null, 2).replace(/"([^"]+)": /g, '"$1" : ')}\n`;
 function iconComposer() {
   const files = [];
   const layer = (e) => {
-    files.push([`Assets/${e.role}.svg`, svgDoc(`<path fill="${ICON.light[e.role]}" d="${e.shape.d}"/>`)]);
-    const tinted = e.role === 'inner'
+    files.push([`Assets/${e.role}.svg`, svgDoc(`<path fill="${ICON.light[e.role]}"${fillRule(e)} d="${e.shape.d}"/>`)]);
+    const tint = art.tinted[e.role];
+    const tinted = tint === 'hide'
       ? { 'opacity-specializations': [{ value: 1 }, { appearance: 'tinted', value: 0 }] }
       : {};
+    const gray = typeof tint === 'number' ? tint : 1;
     return {
-      'fill-specializations': [...icFill(ICON.light[e.role], ICON.dark[e.role]), { appearance: 'tinted', value: { solid: 'extended-gray:1.00000,1.00000' } }],
+      'fill-specializations': [...icFill(ICON.light[e.role], ICON.dark[e.role]), { appearance: 'tinted', value: { solid: `extended-gray:${gray.toFixed(5)},1.00000` } }],
       'image-name': `${e.role}.svg`,
       name: e.role,
       ...tinted,
@@ -320,7 +315,7 @@ const contrast = (a, b) => {
 };
 
 function previews() {
-  const dir = 'docs/screenshots/52/icon';
+  const dir = 'docs/screenshots/385/icon';
   const out = [];
   const add = (name, content) => out.push([`${dir}/${name}`, content]);
   for (const mode of MODES) add(`apple-${mode}.png`, icon(mode, 1024, { mask: 'apple' }));
@@ -362,13 +357,12 @@ function report() {
   for (const mode of MODES) {
     const c = ICON[mode];
     console.log(`${mode}: ${pairs.map(([a, b]) => `${a} ${c[a]} / ${b} ${c[b]} ${contrast(c[a], c[b]).toFixed(2)}:1`).join(', ')}`);
-    const m = markColors(mode);
-    console.log(`${mode} splash on ${SPLASH[mode]}: body ${m.body} ${contrast(m.body, SPLASH[mode]).toFixed(2)}:1, edge ${m.edge} ${contrast(m.edge, SPLASH[mode]).toFixed(2)}:1, cell ${m.cell} ${contrast(m.cell, SPLASH[mode]).toFixed(2)}:1, tick/body ${contrast(m.tick, m.body).toFixed(2)}:1`);
+    console.log(`${mode} splash tile ${c.bg} on ${SPLASH[mode]}: ${contrast(c.bg, SPLASH[mode]).toFixed(2)}:1`);
   }
-  const far = Math.max(...GROUPS.flatMap((g) => g.els).flatMap((e) => e.shape.rings.flat()).map(([x, y]) => Math.hypot(x - C, y - C)));
+  const far = Math.max(...ELS.flatMap((e) => e.shape.rings.flat()).map(([x, y]) => Math.hypot(x - C, y - C)));
   console.log(`foreground reaches ${(far / (ART / 72)).toFixed(2)} dp from the centre (safe circle 33 dp)`);
-  const markFar = Math.max(...[...MARK.body.rings.flat(), ...MARK.cell.rings.flat(), ...MARK.tick].map(([x, y]) => Math.hypot(x - 32, y - 32))) + 1.5;
-  console.log(`splash mark reaches ${(markFar * (SPLASH_MARK / MARK_BOX)).toFixed(1)} dp from the centre (Android 12 circle 96 dp)`);
+  const tileFar = Math.max(...TILE.rings.flat().map(([x, y]) => Math.hypot(x - C, y - C)));
+  console.log(`splash tile reaches ${(tileFar * (SPLASH_MARK / ART)).toFixed(1)} dp from the centre (Android 12 circle 96 dp)`);
 }
 
 // Android crops the adaptive icon to as little as the 66 dp circle; nothing may reach past it.
@@ -377,12 +371,11 @@ for (const g of GROUPS) for (const e of g.els) for (const [x, y] of e.shape.ring
   if (Math.hypot(x - C, y - C) > SAFE) throw new Error(`${g.name} leaves the 66 dp safe circle`);
 }
 
-const args = process.argv.slice(2);
 const checkOnly = args.includes('--check');
 const files = args.includes('--previews') ? previews() : outputs();
 let stale = 0;
 for (const [path, content] of files) {
-  const file = join(root, path);
+  const file = join(outRoot ?? root, path);
   const want = Buffer.from(content);
   if (existsSync(file) && readFileSync(file).equals(want)) continue;
   if (checkOnly) {
