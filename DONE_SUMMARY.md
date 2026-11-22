@@ -2450,4 +2450,4 @@ across both columns. Screenshots in `docs/screenshots/406/`. Preview: dpl_1Aexeq
 
 ## Job 408: IKEA in the retailer registry
 
-IKEA entries (app "IKEA", Android `com.ingka.ikea.app`, iOS 1452164827) for AT BE CH CZ DE DK ES FI FR HR HU IE IT LU NL NO PL PT RO SE SI SK. Left out (no app in the storefront): BG CY EE GR IS LV LI LT MT. Migration `20261122213336_retailers_data.sql`, registry copy and coverage regenerated, `--verify` 90 apps / 0 failed. Unit and pgTAP cases for "IKEA"/"Ikea". Details: docs/done/408.md; open question in NEEDS_LEAD. PR and merge SHA: filled in below at land.
+IKEA entries (app "IKEA", Android `com.ingka.ikea.app`, iOS 1452164827) for AT BE CH CZ DE DK ES FI FR HR HU IE IT LU NL NO PL PT RO SE SI SK. Left out: BG CY GR IS EE LV LT have a different Inter IKEA franchise app (ids in docs/done/408.md); MT and LI have none. Migration `20261122213336_retailers_data.sql`, registry copy and coverage regenerated, `--verify` 90 apps / 0 failed. Unit and pgTAP cases for "IKEA"/"Ikea". Details: docs/done/408.md; open question in NEEDS_LEAD. PR #654, merged as 874a3e5a15b2c0b6b5d3596f10b37dda616988f1.

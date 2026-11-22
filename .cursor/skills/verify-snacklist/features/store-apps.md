@@ -41,4 +41,4 @@ Preconditions: on this skill's build, `VH_DEFINES="FLAGS_ON=open-store-app" help
 - Adding stores needs a connection; offline no chains are offered and typing works as before.
 - The registry is `supabase/retailers/retailers.json` (59 entries, 68 apps); a chain's or country's id must also be in the app's analytics allow-list (the lint gate checks).
 
-- IKEA (job 408): a store named „IKEA“ / „Ikea“ matches the chain `ikea` in the 22 countries where the IKEA app is offered and gets the key „IKEA öffnen“ in its header; the setup's chips never include it (unit test `retailer_registry_test.dart`, pgTAP `retailers.test.sql`).
+- IKEA (job 408): a store named „IKEA“ / „Ikea“ matches the chain `ikea` in the 22 countries where Inter IKEA's main IKEA app is offered (Greece, Cyprus, Bulgaria, Iceland and the Baltics have their own IKEA apps, not covered) and gets the key „IKEA öffnen“ in its header; the setup's chips never include it (unit test `retailer_registry_test.dart`, pgTAP `retailers.test.sql`).

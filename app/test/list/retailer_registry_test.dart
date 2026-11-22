@@ -1,5 +1,6 @@
 import 'package:family_groceries/analytics/events.dart';
 import 'package:family_groceries/l10n/app_localizations_de.dart';
+import 'package:family_groceries/l10n/app_localizations_en.dart';
 import 'package:family_groceries/list/retailer.dart';
 import 'package:family_groceries/list/retailer_registry.g.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -91,9 +92,10 @@ void main() {
   });
 
   test('every registry country has a name, not its code', () {
-    final l10n = AppLocalizationsDe();
-    for (final code in retailerCountries) {
-      expect(l10n.countryName(code), isNot(code), reason: code);
+    for (final l10n in [AppLocalizationsDe(), AppLocalizationsEn()]) {
+      for (final code in retailerCountries) {
+        expect(l10n.countryName(code), isNot(code), reason: code);
+      }
     }
   });
 }
