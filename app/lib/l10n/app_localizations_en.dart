@@ -3950,4 +3950,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get detectTripsHint => 'Uses only when you tick. No location.';
+
+  @override
+  String get settingsPush => 'Notifications';
+
+  @override
+  String get pushHouseholdAdd => 'When someone adds something';
+
+  @override
+  String get pushHouseholdAddHint =>
+      'A notification with the name and the item, e.g. “Lea added milk”. For items from a pharmacy or drugstore, no item name, e.g. “Lea added something to the list”. Several in a short time come as one.';
+
+  @override
+  String get pushBlocked =>
+      'Notifications are turned off for Snacklist. Allow them in your device\'s settings.';
+
+  @override
+  String get pushNameHidden => 'Leave my name out of notifications';
+
+  @override
+  String get pushNameHiddenHint =>
+      'Others then see “Someone added milk”, even if you have not turned notifications on yourself.';
 }

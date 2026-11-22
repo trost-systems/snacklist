@@ -210,3 +210,102 @@ nothing real goes in the repo):
    its key JSON is the Supabase secret `FCM_SERVICE_ACCOUNT_JSON`.
 6. A random `PUSH_SEND_SECRET` as a Supabase secret, and wherever the
    callers (P1, P2) need it.
+
+## Household add (job 377, P1)
+
+When another member adds an item, the members who switched the alert on get
+a push (flag `push-household-add`, off until Legal's GO). The app side is
+the switch under Einstellungen › Mitteilungen
+(`app/lib/push/household_add_settings.dart`); the decisions are in the
+database (`supabase/migrations/20261122232004_push_household_add.sql`,
+`supabase/tests/push_household_add.test.sql` and `..._privacy.test.sql`).
+
+- **Opt-in, per person.** `public.push_preferences.household_add` defaults
+  off (no row is off). The switch calls `set_push_household_add(on,
+  language)`; turning it on first asks the OS for permission
+  (`PushRegistration.optIn()`), and a refusal leaves it off. Turning it off
+  runs `PushRegistration.forget()` (before the save, so an off that cannot
+  reach the server still takes this device off push), the path of a sign-out
+  (unregister, delete at FCM, offline catch-up; Legal N-401). `language` is
+  the app's (`de` or `en`), because the server knows no locale. The settings
+  read the choice each time they open (and write the language again when it
+  changed); another account signing in on the device starts with none. The
+  switch reads „on“ only while the server's row is on **and** this device is
+  opted in: the row is the account's, so after a sign-out and in, or on a
+  second phone, it reads off until that device's own yes.
+- **Art. 21 (N-401).** `push_preferences.name_hidden`
+  (`set_push_name_hidden`, the second switch): the member's name reads
+  „Jemand“ / "Someone" in others' pushes, whether or not they switched the
+  alert on.
+- **Never my own adds, on any device.** Recipients are members of the
+  household other than the adder; the push function picks tokens by recipient.
+- **What counts as an add.** An insert of an active item, and an item put back
+  from „Zuletzt verwendet“ (an update bought → active more than 10 minutes
+  after the tick, the app's undo window). Not: an item that arrives ticked, an
+  item re-inserted within 10 minutes of its deletion (the undo of a delete), a
+  tick's undo within 10 minutes. Retried `put_item` calls insert once.
+- **Only while someone wants it.** The items trigger queues an add
+  (`push_add_queue`: household, list, item id, adder, time) only when the
+  server switch `app_switches.push_household_add` is on and at least one other
+  member switched the alert on. The item name is not stored: it is read from the
+  item when the group is sent, so an item deleted, ticked or edited meanwhile
+  drops out or is sent as it is then, and a group with nothing left sends
+  nothing.
+- **Not while the adder shops (d).** No row when the adder has an app tick
+  (`bought` or `restored`, `item_events.source = 'app'`) in the household
+  within the last 10 minutes (`recent_app_tick`, the one function trip
+  detection's `detect_due_households` uses for „a trip may still be going on“,
+  T1a). Trip mode's running trip lives on the device only, so this is the
+  server's only trip signal. It reads the ticks of people whose trip
+  detection is off too; its only effect is a push left out. It is checked again
+  when the group is sent, so an adder who started ticking after the add is not
+  announced either.
+- **Pharmacy and drugstore (Legal N-401, rule N-423, permanent).** An item is
+  never named when any of these holds (`push_item_sensitive`, read from the
+  live item when the group is sent, so a move to a pharmacy meanwhile counts):
+  (1) its category's `seed_key`, or one it absorbed, is `drugstore`; (2) its
+  store's name or `seed_key` holds `apotheke`, `pharmacy`, `pharmacie`,
+  `farmacia`, `apteka`, `eczane` or `docmorris` (`Store.pharmacyWords`,
+  pinned to the SQL list through `supabase/tests/pharmacy_words.json`); (3) its store's
+  `retailer_chain` or `seed_key` is dm, rossmann or kruidvat (add a chain id
+  here when the registry gains a drugstore chain), or its name says Müller,
+  Budni or Drogerie; (4) its category or store name says Drogerie or Drugstore, or its category name a pharmacy word;
+  (5) its name says a medicine or contraception (Insulin, Pille, Ovulationstest,
+  Schwangerschaftstest, Kondom, …) although the classifier files some of them
+  under „Sonstiges“: a stopgap name list in the same function until the
+  dictionary lists them as Drogerie. The pharmacy words of (2) are pinned to
+  `supabase/tests/pharmacy_words.json` by an app test and a server test.
+  The name stopgap list (medicine and contraception words in the item's own name, whole words so a cooking recipe or a dishwasher tablet is not caught) is an extra beyond N-423. Legal's next rule replaces the body of that one function. Queue hygiene
+  (N-428): every minute flush deletes rows older than an hour, also while the
+  alert is off; the ops switch off empties the queue; a group whose adder left
+  the household is dropped unsent. Last alert off (N-427): the switch's off
+  forgets the device unless `otherAlertsOn` says another alert needs it (the
+  hook for the shopping-day reminder).
+- **Batching (b).** A group (household, list, adder; adds to two lists within the
+  window are two pushes) goes out when its newest
+  add is 2 minutes old, or its oldest 5 minutes (`push_add_take`). Title
+  `Snacklist`; the body lines, which Legal reviews here with the ARB strings:
+
+  | Case | DE | EN |
+  | --- | --- | --- |
+  | one item | „Lea hat Milch hinzugefügt“ | "Lea added Milk" |
+  | one drugstore or pharmacy item | „Lea hat etwas zur Liste hinzugefügt“ | "Lea added something to the list" |
+  | several, none drugstore or pharmacy | „Lea hat 4 Einträge hinzugefügt“ | "Lea added 4 items" |
+  | several, any drugstore or pharmacy (N-440) | „Lea hat etwas zur Liste hinzugefügt“ | "Lea added something to the list" |
+  | no name, or hidden | „Jemand hat …“ | "Someone added …" |
+
+  ARB: `settingsPush`, `pushHouseholdAdd`, `pushHouseholdAddHint`,
+  `pushBlocked`, `pushNameHidden`, `pushNameHiddenHint`.
+- **Sending.** `push_add_flush()` runs every minute (pg_cron job
+  `push-household-add`) and posts what `push_add_take()` returns to the
+  `push` function with `pg_net`, using the vault secrets `push_send_secret`
+  and `push_url`. The post is fire and forget: a failure drops that push (a
+  notification this late is not worth a retry); queue rows older than an hour
+  are deleted unsent. TTL 1 hour.
+- **Tap (e).** The data of the message is P0's: it opens that household's
+  list (`push_taps.dart`).
+- **Switching on (Ops, after Legal's GO).** In the vault: `select
+  vault.create_secret('<PUSH_SEND_SECRET>', 'push_send_secret');`, then as
+  the service role `select public.push_household_add_set(true, '<push function
+  URL>');`; `push_household_add_set(false)` switches it off and stops the cron
+  job. Then the PostHog flag `push-household-add` for the app's switch.

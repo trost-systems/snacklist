@@ -172,7 +172,7 @@ function values(type: string, household: Household, outsider: Outsider): string[
     uuid: all.map(uuid),
     'uuid[]': [`array[${all.map(uuid).join(', ')}]`],
     // A name, then the words the functions take (roles, kinds of invite, how to join, where to
-    // place an item, a catalog version, an order mode, an item's status, a device's platform),
+    // place an item, a catalog version, an order mode, an item's status, a device's platform, a language),
     // the household's invite code and its owner's push token.
     text: [
       ...[
@@ -189,6 +189,7 @@ function values(type: string, household: Household, outsider: Outsider): string[
         'learned',
         'bought',
         'ios',
+        'de',
       ].map((t) => `'${t}'::text`),
       codeOf(household),
       `'${pushTokenOf(household.id)}'::text`,
@@ -577,6 +578,11 @@ async function fill(
   // Job 352 (TD-Q5): the owner said „Nein, nur abgehakt" to the trip question (decline_shop).
   await sql`insert into public.shop_declines (household_id, user_id, tick_id)
             select ${household}, ${owner}, max(id) from public.item_events where household_id = ${household}`;
+  // Job 377: the owner wants the household-add alert; an add waits to be pushed.
+  await sql`insert into public.push_preferences (user_id, household_add) values (${owner}, true)`;
+  await sql`insert into public.push_add_queue (household_id, list_id, item_id, actor)
+            select ${household}, id, gen_random_uuid(), ${owner} from public.lists
+            where household_id = ${household} limit 1`;
   await sql`insert into public.entitlements (household_id, kind, source, premium_source)
             values (${household}, 'premium', 'promotional', 'promotional')`;
   await sql`insert into public.purchase_claims (store, transaction_id, user_id, claimed_for)

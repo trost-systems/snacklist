@@ -27,6 +27,7 @@ import 'package:family_groceries/purchases/premium_screen.dart';
 import 'package:family_groceries/purchases/premium_server.dart';
 import 'package:family_groceries/purchases/purchase_cubit.dart';
 import 'package:family_groceries/purchases/purchase_repository.dart';
+import 'package:family_groceries/push/household_add_settings.dart';
 import 'package:family_groceries/review/store_review.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/settings/access_screen.dart';
@@ -211,6 +212,7 @@ class const _Page(
     MorePage.premium => PremiumScreen(entry: paywallEntry),
     MorePage.settings => const SettingsScreen(
       tripDetection: DetectTripsSettings(),
+      pushAlerts: HouseholdAddSettings(),
     ),
     MorePage.language => const LanguageScreen(),
     MorePage.usageData => const _UsageDataPage(),

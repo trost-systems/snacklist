@@ -32,6 +32,7 @@ import 'package:family_groceries/purchases/entitlements.dart';
 import 'package:family_groceries/purchases/premium_server.dart';
 import 'package:family_groceries/purchases/purchase_cubit.dart';
 import 'package:family_groceries/purchases/store_prices.dart';
+import 'package:family_groceries/push/household_add_alert.dart';
 import 'package:family_groceries/push/push_target.dart';
 import 'package:family_groceries/report/report_repository.dart';
 import 'package:family_groceries/review/review_prompt.dart';
@@ -140,6 +141,9 @@ class const App({
 
   /// The lists that tapped notifications name; null without push.
   final Stream<PushTarget>? pushTaps,
+
+  /// The household-add alert's switch (job 377); null without push.
+  final HouseholdAddAlert? householdAdd,
 
   /// The OS's network, which the list follows; null where it is not
   /// watched.
@@ -388,6 +392,8 @@ class _AppState() extends State<App> {
         BlocProvider.value(value: _theme),
         BlocProvider.value(value: _integrationLock),
         BlocProvider.value(value: _itemIcons),
+        if (widget.householdAdd case final alert?)
+          BlocProvider.value(value: alert),
         if (widget.catalog case final catalog?)
           BlocProvider.value(value: catalog),
       ],

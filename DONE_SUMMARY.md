@@ -2486,3 +2486,31 @@ until Ops sets `PUSH_SEND_SECRET` and `FCM_SERVICE_ACCOUNT_JSON`), the app side 
 build defines, opt-in-only prompt, sign-out cleanup, a tap opens the named list) and the native
 config. Privacy drafts wait behind the hold `push-notifications`. Contract `docs/PUSH.md`, details
 `docs/done/376.md`.
+
+## Job 377: P1 household add alert (PR #650 on job 376's branch, not merged: needs Legal)
+
+A push "Lea hat Milch hinzugefügt" / "Lea added Milk" to household members who switched it on
+(default off), batched (2 min quiet, 5 min cap) into "Lea hat 4 Einträge hinzugefügt", never for
+one's own adds, none while the adder shops (an app tick in the last 10 minutes, trip detection's
+rule). Review 0 round: items of the Drogerie category or of pharmacies and drugstores (dm,
+Rossmann, Müller, Budni) are never named („etwas zur Liste“), the off switch forgets the device
+like a sign-out, a second switch leaves a member's name out (Art. 21), the privacy redlines N-397
+to N-400 and the N-399 §5 text are applied behind the `push-notifications` hold, only real adds
+push (not ticked inserts, delete or tick undos; „Zuletzt verwendet“ re-adds do), an add deleted
+before the send is not sent, and another account signing in no longer sees the previous one's
+switch. Database decisions with pgTAP (`push_household_add*.test.sql`), the switch with widget
+tests, flag `push-household-add` off, server switch `push_household_add` off. Still owed once
+Firebase is configured: a check on a real iPhone and Android phone (none run here). TestFlight
+build: next green main build after 376 and this land; flag targeting is for the lead after
+Legal's hash GO (none set here). Details `docs/done/377.md`, contract `docs/PUSH.md`.
+
+Review 1 round: the lint failure from a Flutter test reading a migration is gone (the pharmacy words
+live in `supabase/tests/pharmacy_words.json`, pinned by an app test and a server test); the switch
+reads on only while this device is opted in (sign-out/in and second phone read off until their own
+yes); medicines the classifier files as „Sonstiges“ (Insulin, Antibabypille, Ovulationstest) are
+not named either (stopgap name list in `push_item_sensitive`, classifier follow-up in NEEDS_LEAD);
+the Art. 21 name switch exists on every platform; (d) is checked again at the send; an off the
+server cannot be told of still takes the device off push. CI: lint fails only on job 376's
+migration timestamp (`20261122183000_push_tokens.sql` sorts before main's newest); job 376 must
+rename it. Consolidated Legal hand-off in NEEDS_LEAD "Job 377: P1 ready, needs Legal". Still owed:
+a device check once Firebase is configured.

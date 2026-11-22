@@ -30,6 +30,11 @@ const listDeclutterFlag = 'list-declutter';
 /// up a screenshot, the form sends it, and Einstellungen' shake switch.
 const feedbackFb2Flag = 'feedback-fb2';
 
+/// The flag that offers the household-add alert (job 377): the switch under
+/// Einstellungen' Mitteilungen for a push when another member adds an item.
+/// Off by default for each person.
+const pushHouseholdAddFlag = 'push-household-add';
+
 /// The flag that turns on Feedback & ideas (job 268, FB4): More's row opens
 /// a page with the user's own notes, their status and Snacklist Support's
 /// replies, a badge for new answers, and the ideas the household can +1.
