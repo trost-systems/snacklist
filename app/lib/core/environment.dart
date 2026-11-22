@@ -137,6 +137,14 @@ abstract final class Environment() {
   /// The public REST API's base URL (job 73, docs/API.md "Base URL").
   static const apiUrl = '$supabaseUrl/functions/v1/api/v1';
 
+  /// The API's base URL behind the flag `api-snacklist-app` (job 398): for
+  /// the production project its own domain, a Vercel proxy to the edge
+  /// function (docs/DEPLOY.md, mcp-proxy/README.md); for any other project
+  /// (the local stack) [apiUrl].
+  static const proxiedApiUrl = supabaseUrl == _productionUrl
+      ? 'https://api.snacklist.app/v1'
+      : apiUrl;
+
   /// Feature flags on whatever PostHog says, comma-separated
   /// (`FLAGS_ON=public-api`), for local builds and screenshots. A build that
   /// sends to PostHog EU ignores it (`startAnalytics`), so no store or

@@ -108,6 +108,12 @@ class const _Access({required final bool onIphone}) extends StatelessWidget {
     final apiOffered = context.select<Flags?, bool>(
       (flags) => flags?.isOn(publicApiFlag) ?? false,
     );
+    final apiUrl =
+        context.select<Flags?, bool>(
+          (flags) => flags?.isOn(apiSnacklistAppFlag) ?? false,
+        )
+        ? Environment.proxiedApiUrl
+        : Environment.apiUrl;
     final access = _accessOf(context);
     final paused = access is IntegrationsLocked;
     // With several households, the one new keys act in (job 169b).
@@ -217,6 +223,7 @@ class const _Access({required final bool onIphone}) extends StatelessWidget {
               ..._apiSection(
                 context,
                 apiKeys: apiKeys,
+                url: apiUrl,
                 offered: apiOffered,
                 paused: paused,
               ),
@@ -538,6 +545,7 @@ const _alexaClientName = 'Amazon Alexa';
 List<Widget> _apiSection(
   BuildContext context, {
   required List<AccessToken> apiKeys,
+  required String url,
   required bool offered,
   required bool paused,
 }) {
@@ -551,12 +559,12 @@ List<Widget> _apiSection(
     if (offered) ...[
       ListTile(
         key: const ValueKey('api-url'),
-        title: const SelectionArea(child: Text(Environment.apiUrl)),
+        title: SelectionArea(child: Text(url)),
         subtitle: Text(l10n.apiBody),
         trailing: IconButton(
           tooltip: l10n.copy,
           icon: const Icon(Icons.copy),
-          onPressed: () => _copy(context, Environment.apiUrl),
+          onPressed: () => _copy(context, url),
         ),
       ),
       Padding(

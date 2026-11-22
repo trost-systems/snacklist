@@ -7,6 +7,16 @@
   "cleanUrls": true,
   "rewrites": [
     {
+      "source": "/:path*",
+      "destination": "https://jdwqrallbpdbshrdhenk.supabase.co/functions/v1/api/:path*?via=api-snacklist",
+      "has": [
+        {
+          "type": "host",
+          "value": "api.snacklist.app"
+        }
+      ]
+    },
+    {
       "source": "/.well-known/oauth-protected-resource",
       "destination": "https://jdwqrallbpdbshrdhenk.supabase.co/functions/v1/mcp/.well-known/oauth-protected-resource?via=mcp-snacklist",
       "has": [

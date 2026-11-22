@@ -143,6 +143,65 @@ Deno.test("the address is the gateway's X-Real-IP; a forged X-Forwarded-For chan
   assertEquals(hashes, [await sha256Hex('203.0.113.7'), await sha256Hex('203.0.113.7')]);
 });
 
+const VIA = 'via=api-snacklist';
+
+async function addressHash(path: string, headers: Record<string, string>): Promise<string> {
+  const deps = fake({ begin: invalid });
+  await handle(call(path, { token: TOKEN, headers }), deps);
+  const [begun] = deps.begun;
+  assertExists(begun);
+  return begun.ipHash;
+}
+
+Deno.test('through api.snacklist.app the address is the first x-vercel-forwarded-for entry', async () => {
+  const vercel = { 'x-real-ip': '76.76.21.21' };
+  const one = await addressHash(`/items?${VIA}`, {
+    ...vercel,
+    'x-vercel-forwarded-for': '198.51.100.1, 10.0.0.1',
+  });
+  const two = await addressHash(`/items?${VIA}`, {
+    ...vercel,
+    'x-vercel-forwarded-for': '198.51.100.2',
+  });
+  assertEquals(one, await sha256Hex('198.51.100.1'));
+  assertEquals(two, await sha256Hex('198.51.100.2'));
+  assertEquals(
+    await addressHash(`/items?${VIA}`, vercel),
+    await sha256Hex('76.76.21.21'),
+    'without the header, the gateway address',
+  );
+});
+
+Deno.test('a direct request ignores a forged x-vercel-forwarded-for', async () => {
+  assertEquals(
+    await addressHash('/items', {
+      'x-real-ip': '203.0.113.7',
+      'x-vercel-forwarded-for': '198.51.100.1',
+    }),
+    await sha256Hex('203.0.113.7'),
+  );
+});
+
+Deno.test("the proxy's via marker never reaches the query's validation", async () => {
+  for (
+    const path of [
+      `/items?limit=1&${VIA}`,
+      `/items?${VIA}&limit=1`,
+      `/items?${VIA}&limit=1&${VIA}`,
+      `/items?via=x&limit=1&${VIA}`,
+      `/categories?${VIA}`,
+    ]
+  ) {
+    const deps = fake();
+    const res = await handle(call(path), deps);
+    assertEquals(res.status, 200, path);
+    assertEquals(deps.executed.length, 1, `${path}: the operation ran`);
+  }
+  await rejected(call(`/items?limit=abc&${VIA}`), 400, 'validation_failed');
+  await rejected(call('/items?via=x'), 400, 'validation_failed');
+  await rejected(call('/items?via=mcp-snacklist'), 400, 'validation_failed');
+});
+
 Deno.test('a throttled address gets 429 auth_throttled with Retry-After', async () => {
   const deps = fake({
     begin: { outcome: 'blocked', rate: { limit: 20, remaining: 0, reset: 312 }, retryAfter: 312 },
