@@ -39,7 +39,8 @@ All names and examples are fictional (the Brandt family, „Oma Ruth“).
    the account step says so before the user chooses.
 10. **Abuse.** Every guard reads `auth.users.is_anonymous` on the server. Anonymous users get one
     household, capped lists and items, capped feedback, and none of the credentials above. No
-    captcha in step one (it would add a processor); a kill switch and a daily count instead.
+    captcha in step one (it would add a processor; a future one needs its own Legal GO, Q6); a kill
+    switch and a daily count instead.
 11. **Purge.** A nightly job deletes anonymous users after 90 days without use (30 for helper-only,
     7 for neither), through today's `delete_account`.
 12. **Legal.** No new processor. New processing: anonymous accounts, linking, the transfer code,
@@ -223,7 +224,7 @@ feedback.
 This design allows them while anonymous, because the reply lives in the same account as the note
 and is lost only with it, and a gate would only stop people from telling us what is wrong. If
 Peter or Legal want the research's rule, the build gates the replies list (not sending) behind the
-upgrade: question 10.
+upgrade: question 10 (Legal decided Q10a: GO, with F1).
 
 ### 4.6 Sign-out, reinstall, browser, second device
 
@@ -243,12 +244,13 @@ loses the list. Revisit with data from the upgrade funnel.
 
 For a relative who adds a few things now and then, in a browser, without an app or account.
 
-**Member side (full account; with `join_approval` on, owners and admins):** under the invite sheet, „Helferlink teilen“. The member
-picks the list (default: the open one) and types who it is for (label, e.g. „Oma Ruth“; 1-40
+**Member side (full account; with `join_approval` on, only owners and admins create a link):** under
+the invite sheet, „Helferlink teilen“. The member picks the list (default: the open one) and types who it is for (label, e.g. „Oma Ruth“; 1-40
 characters; optional, default „Helferlink“). The link `https://app.snacklist.app/h/<code>` goes out
 through the share sheet like any invite link (N-18: user-shared, Snacklist sends nothing). Valid 30
-days. With „Beitritte bestätigen“ (`join_approval`) on, only owners and admins create or end helper
-links (N-384, build condition, see section 13 for the conflict note); any member sees the household's helper links under Mehr › Haushalt › Helferlinks, with label,
+days. With „Beitritte bestätigen“ (`join_approval`) on, only owners and admins create helper links
+(N-384, build condition; ending stays open to every member, since it only reduces exposure); any
+member sees the household's helper links under Mehr › Haushalt › Helferlinks, with label,
 list, days left, the number of browsers using it, and „Beenden“.
 
 **Helper side:** the link opens the web app at `/h/<code>`. Not claimed by the native apps, so it
@@ -377,7 +379,7 @@ Refusals raise `account_required` (errcode `42501`), in the style of `session_re
 | Content reports, `F/report` `/report/app` | `APP_LIMITS = { perUserHour: 5, perHour: 200 }` and a confirmation mail to any address in the body (`supabase/functions/report/handler.ts:58,289-299`). Fresh anonymous ids would give 150 reports an hour per IP, nearly the global 200, and mail to addresses of the sender's choice | Reports stay open to anonymous users (DSA Art. 16), with three changes for them: `email` is dropped server-side (the app hides the field; no confirmation mail), their own global bucket of 20 an hour (`anonPerHour`) so the 200 for everyone else cannot be used up by them, and 2 per user an hour. The form says that a confirmation by email comes with the web form (`/inhalte-melden`), which keeps its own limits. Function tests for each; Legal question 10. **Legal conditions (N-377):** the categories `danger` and `csam` are exempt from `anonPerHour` (20 an hour) and `perUserHour` (2 an hour); when rate-limited the app shows the same `support@snacklist.app` fallback copy as `inhalte-melden.md:41`; after sending, the app always shows the `{ref}` report number on screen and the anonymous report sheet has a 1-tap link to `/inhalte-melden` (`/en/report`): „Für Bestätigung und Entscheidung per E-Mail: Web-Formular öffnen“ / „For confirmation and decision by e-mail: open web form“. Addendum: the web form `/report` must **offer** name and e-mail fields (needed for the receipt confirmation and the decision notice under Art. 16(4)-(5) DSA) but never make them mandatory for `csam`, and should not block a report without them in other categories |
 | New: `prepare_account_transfer`, `claim_account_transfer` | none | 4.3. `claim_account_transfer` is rate-limited and the transfer code is never logged (N-390) |
 | New: `begin_email_upgrade` | none | 4.2: 3 email upgrade attempts per anonymous user a day, counted in the daily total |
-| New: `create_helper_link`, `end_helper_link`, `household_helper_links`, `claim_helper_link`, `helper_list`, `helper_put_item`, `helper_delete_item` | none | 4.7; all `security definer`, membership or grant checked inside; full accounts only for the member functions; with `join_approval` on, `create_helper_link` (and `end_helper_link`) only for owners and admins (N-384) |
+| New: `create_helper_link`, `end_helper_link`, `household_helper_links`, `claim_helper_link`, `helper_list`, `helper_put_item`, `helper_delete_item` | none | 4.7; all `security definer`, membership or grant checked inside; full accounts only for the member functions; with `join_approval` on, `create_helper_link` only for owners and admins; `end_helper_link` stays open to every member (N-384) |
 | Config | `config.toml:184,186` | Local on in the build; hosted through a new converging script beside `auth_urls.ts`, run after Legal's GO |
 
 pgTAP (in `supabase/tests/`): direct-insert cases for every table an anonymous member can write
@@ -440,11 +442,12 @@ Keys are proposals for the build job; nothing is added to the ARB files now.
 | H8 | Ended link | Dieser Helferlink gilt nicht mehr. Frag nach einem neuen. | This helper link no longer works. Ask for a new one. |
 | H9 | Item details, members | über Helferlink „{label}“ | via helper link "{label}" |
 | H10 | Helper links list | Helferlinks · noch {days} Tage · {count} Browser · [Beenden] | Helper links · {days} days left · {count} browsers · [End] |
+| H12 | Helper page, confirmation after „Löschen“ (N-381) | Deine Daten auf dieser Seite löschen? Deine Einträge bleiben ohne Bezug zu dir auf der Liste. | Delete your data on this page? Your entries stay on the list with no link to you. |
 | H11 | Helper, burst limit (N-394) | Gerade sind zu viele Einträge auf einmal eingegangen. Versuch es gleich noch einmal. | Too many additions arrived at once. Please try again in a moment. |
 | F1 | Anonymous in-app feedback form, below the message box (N-389) | Ohne Konto antworten wir nur hier in der App, solange dieses Konto besteht. | Without an account we reply only here in the app while this account exists. |
 
 H7 gets „Nutzungsbedingungen“ / „Terms“ only once the terms leave `draft: true` (N-374); H7's „Löschen“
-keeps its name with a clear confirmation (N-381). H8 is reused for the 10-browser cap and the
+keeps its name with the confirmation H12 (N-381). H8 is reused for the 10-browser cap and the
 `helper_links` switch (N-394). U3 names Alexa and AI assistants generically; no brand outside functional help (brand-names lint).
 The name step's copy (`yourName*`) is reused unchanged. A refused item op reaches the user through
 today's `RejectedOp` notice (`app/lib/list/list_repository.dart:211-219`), which shows C1 for the
@@ -476,8 +479,8 @@ run `delete_account` again for IDs that were purged or deleted.
 
 - Apple 5.1.1(v): account deletion is offered to every account, anonymous ones included
   („Liste und Konto löschen“, N-381). Apple's App Privacy answers do not change (no new data types).
-- Google Play data safety: the account-creation answer becomes "optional"; the deletion URL page
-  (`konto-loeschen.html`) gets one paragraph for use without an account (redline R9).
+- Google Play data safety: the account-creation answer becomes "optional"; the deletion URL pages
+  (`konto-loeschen.html` and `delete-account.html`) get one paragraph for use without an account (redline R9).
 - Store listings and review notes (constraint, Q8, N-391): „in der App ohne Konto starten/nutzen“
   may be mentioned only once `anonymous-start` is on for 100 % of users, and must then name the
   features that need an account (inviting, Siri, Alexa, AI assistants, Premium). Never „anonym“,
@@ -491,7 +494,7 @@ run `delete_account` again for IDs that were purged or deleted.
 | Job | Scope | Proof |
 | --- | --- | --- |
 | AN1-1 | Server guards, caps, `caller_is_anonymous`, kill switch, local config on | pgTAP matrix of section 6 |
-| AN1-2 | Session `account`, `authRedirect` rules, account step, gate sheet, sign-out dialog, Konto page, flag `anonymous-start` | router and widget tests; verify-family-groceries drive on Android and Linux |
+| AN1-2 | Session `account`, `authRedirect` rules, account step, gate sheet, sign-out dialog, Konto page, flag `anonymous-start` | router and widget tests; verify-family-groceries drive on Android and Linux; a screenshot at 390×844 and at 200 % text proves the `LegalFooter` (Impressum, Datenschutz) stays visible below A2 and the longer A3 (N-374) |
 | AN1-3 | Upgrade (email, Google, Apple), name step after link, list card | e2e (web build with the flag forced for tests), Marionette drive |
 | AN1-4 | Transfer for taken emails and identities | pgTAP, e2e |
 | AN1-5 | Purge, export fields, keepalive count | pgTAP with stale fixtures |
@@ -679,7 +682,8 @@ and ARB strings come back for a hash GO in AN1-7.
 3. Guards read `auth.users.is_anonymous`, not the JWT claim.
 4. Anonymous users may export and delete; they may not invite, join, mint credentials, consent to
    OAuth, buy, restore or vote.
-5. No captcha in step one; caps, kill switch and a daily count instead.
+5. No captcha in step one; caps, kill switch and a daily count instead. A future captcha needs its
+   own Legal GO first (Q6).
 6. Purge windows 90 / 30 / 7 days (Legal decided Q3: the 90 days stay, stated in A3 and U2).
 7. No Keychain persistence in step one.
 8. The display-name trigger stays; the name step right after the link covers it.
@@ -688,7 +692,7 @@ and ARB strings come back for a hash GO in AN1-7.
 10. Transfers re-point every row keyed to the anonymous user, derived from the foreign keys, before
     deleting it.
 11. Anonymous users may send feedback (3 a day) and read in-app replies; no reply by email. This
-    deviates from the research's account-only list; Legal question 10.
+    deviates from the research's account-only list; Legal question 10 (Q10a: GO, with F1).
 12. Anonymous content reports: no email, own bucket of 20 an hour, 2 per user an hour; `danger` and
     `csam` are exempt from both caps (N-377).
 13. The kill switch sits in the household cap trigger, so it covers every `create_household`
@@ -754,7 +758,7 @@ lists every finding, where it landed, and the redlines that belong to other file
 | N-381 | SHOULD | „Liste und Konto löschen“, `delete-account.html` parity, support FAQ line | U5, R7, R9, section 9, 13.4 |
 | N-382 | SHOULD | 16+ in A3 and § 17 | A3, R10 |
 | N-383 | SHOULD | Art. 9 caution in H2 and H4 | H2, H4 |
-| N-384 | SHOULD | With `join_approval` on, only owners and admins create or end helper links | 4.7, section 6; conflict note 13.5 |
+| N-384 | SHOULD | With `join_approval` on, only owners and admins create helper links; ending stays open to every member | 4.7, section 6; conflict note 13.5 |
 | N-385 | SHOULD | Helper code out of Vercel path logs and referrers | 4.7; conflict note 13.5 |
 | N-386 | SHOULD | Session time-box, hashed deletion ledger, 90-day backup note | section 8, R2, R8 |
 | N-387 | SHOULD | DSA Art. 14 content rules in the draft terms (§ 14a) | 13.4 |
@@ -946,6 +950,10 @@ written by Legal unless the lead says otherwise.
 
 ### 13.6 Build, operations and lawyer follow-ups
 
+- **Push series (P1, job 377, and the later push jobs):** a push for a helper's add would carry the
+  helper label („über Helferlink „Oma Ruth““) and item names in FCM/APNs payloads. That bears on N-383
+  (labels with health details) and on R4's list of who sees a label; the push job must decide and
+  take it to Legal before helper items trigger a push.
 - **N-392:** write and save the LIA notes for P4/P5 and P7; add P1 to P9 to the Art. 30 register
   before launch.
 - **N-393:** an app or integration test, like the PostHog test in 4.7(5): no request to RevenueCat

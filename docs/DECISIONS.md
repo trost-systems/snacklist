@@ -17667,7 +17667,9 @@ made without a human (the doc's section 12 has the same list):
     MUST as the brief says. The analytics value `discarded` becomes `deleted` to match U7's new
     button. N-373 and N-378 depend on #584 and are recorded as dependencies, #584 is not edited. The
     Q6 rule (a future captcha needs its own Legal GO) and the Q8 store-copy rule are constraints in
-    the doc. N-384 (admins only with `join_approval`), N-385 (helper code out of the URL path) and
-    N-381 (button names) may collide with Peter's AN1/PS2/IH2 picks, which are not in this checkout;
-    they are listed in 13.5 and left for the lead. Still design only: nothing built, PR #642 stays a
-    draft.
+    the doc. N-384 (with `join_approval` on, only owners and admins create a helper link; ending
+    stays open to every member, because Legal's texts say members can end a link and ending only
+    reduces exposure), N-385 (helper code out of the URL path) and N-381 (button names) were checked
+    against the 375 and 379 briefs: no conflict, and no "PS2" source exists (13.5). A push for a
+    helper's add is flagged for the push jobs (13.6). Still design only: nothing built, PR #642 stays
+    a draft.

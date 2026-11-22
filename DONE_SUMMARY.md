@@ -2355,4 +2355,6 @@ Design docs only, draft PR #642 (not merged). Legal's N-370 to N-395 are applied
 is marked still to be written, N-384 is one consistent rule (4.7, R4), stale decisions 12.6 and 12.12
 and the Q6 captcha rule are aligned, the N-373 anchor note and the picks check are added. New head and
 hashes are in the ops NEEDS_LEAD "Job 396".
-
+Review 1 (FIX): only creating a helper link is restricted by `join_approval` (ending stays open to
+every member, so Legal's texts stay true), DECISIONS item 13 matches 13.5, H12 confirmation copy, footer
+proof for AN1-2, a push-series note, stale Q10a and Q6 pointers fixed.
