@@ -6,6 +6,8 @@ How the family-groceries UI came to be. Reference material only, not app code. A
 - **Round 2:** "Satz" variants E–G (`e-satz-zeilen`, `f-satz-etikett`, `g-satz-fliesstext`).
 - **Round 3 / final:** H, "Satz · Laufweg" (`h-satz-final`): one sentence-style composer, list grouped by store in walking order.
 
+- **Anonymous start (job 375):** design and Legal draft for step one (anonymous sign-in, upgrade, web helper links) in [`anonymous-start/AN1.md`](anonymous-start/AN1.md). Not built; waits for Legal's GO.
+
 - **Prices and trip total (job 189):** five price-entry prototypes and a recommendation in [`prices-trip/`](prices-trip/README.md). Not yet chosen (job 190).
 
 Rounds 1 to 3 live in [`h-satz-final/`](h-satz-final/): sources (`sandbox-src/`), built previews (`h-dist/`, `r2-dist/`), screenshots (`shots/`), and the round-3 brief and review (`design-job-round3/`). Design rationale: `h-satz-final/sandbox-src/DESIGN_NOTES.md`.

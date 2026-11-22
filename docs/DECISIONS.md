@@ -17610,3 +17610,54 @@ TE-Q default. Built behind the new flag `total-priced-only`, on top of `list-dec
   `scripts/backup/fixtures.sql`, `outsiders_integration_test.ts`) now carry one, as a real app
   token does. `personal_access_tokens.test.sql` has five new cases (OAuth client, both forms; no
   session; empty session; no row left), which fail on main.
+
+## Job 375: AN1 anonymous start, design and Legal draft (no build)
+
+Design: `docs/design/anonymous-start/AN1.md`. Nothing built, no flag or config changed. The calls
+made without a human (the doc's section 12 has the same list):
+
+1. **Web own-household anonymous start is out of step one.** WebKit deletes a site's
+   script-writable storage after 7 days of browser use without a visit, so an anonymous web list
+   would vanish without a word. The apps keep their session in app storage. Helpers are in: they
+   own nothing, so losing a browser session costs them only reopening the link.
+2. **Helpers are a per-list grant, not a membership and not an RLS path.** `security definer`
+   functions check the grant; `is_household_member` stays the only way into household tables. So
+   "an invite must not join under an anonymous id" holds for helpers too. Cost: no Realtime for
+   helpers (it needs an RLS select policy); the page reads on focus and every 15 s.
+3. **Guards read `auth.users.is_anonymous`, not the JWT claim.** The column flips at link time;
+   a JWT stays stale for up to its lifetime, and whether OAuth access tokens carry the claim is
+   unchecked. One primary-key lookup per guarded call.
+4. **Anonymous users may export and delete.** Refusing either would leave a person without
+   Art. 15/17/20 and Apple 5.1.1(v); sign-out for an anonymous user becomes "create an account or
+   delete the list", so nothing is orphaned by sign-out.
+5. **No captcha in step one.** Supabase's captcha applies to every auth call (the apps' sign-ins
+   too) and adds a processor. Caps (1 household, 3 lists, 1,000 items, 3 feedback notes a day), a
+   kill switch and a daily count instead; Legal question 6.
+6. **Purge 90 / 30 / 7 days** (household / helper only / neither), through `delete_account`.
+7. **No iOS Keychain persistence in step one.** One platform, more device storage for Legal, and a
+   cleared Keychain still loses the list.
+8. **The display-name trigger stays.** Gaining an email re-derives the name as for any email
+   sign-up; the name step follows the link at once.
+9. **Draft PR only, no CI run.** The brief says open a draft and stop. A draft runs no CI, and
+   `push-pr.sh` would mark it ready, so the docs-only change was checked locally with the gitleaks,
+   lint and changelog gates instead.
+10. **Review 0 (in-session reviewer) fixes, all taken.** Privacy section 16 needed a redline (R12);
+    the helper page must not run `startAnalytics` (`main.dart:113` asks PostHog for flags even
+    without consent), so the build skips it on `/h/*` and tests it; Supabase Auth's per-session IP
+    and user agent are now in P1, P5, R2 and R4; helpers get „Meine Daten“ and „Löschen“; the
+    transfer re-points every user-keyed row; every overload of the guarded RPCs is named;
+    `items.helper_link_id` carries the label; a join deletes the joiner's helper grants there.
+11. **Review 0 (FIX), all must-fixes taken.** Anonymous app content reports carry no email and get
+    their own bucket of 20 an hour (DSA reports stay open, the 200 for everyone stays theirs). The
+    kill switch moves into the household cap trigger, so it covers both `create_household`
+    overloads and joins. On the web, an anonymous session outside `/h/*` and the upgrade goes to
+    the last helper link or `/upgrade`, before the consent and `/welcome` rules. Feedback replies
+    for anonymous users are kept but named as a deviation from the research (Legal question 10).
+12. **Review 1 (FIX): store and category caps move into table triggers.** `stores` and
+    `categories` have `for all` member policies and keep insert for `authenticated`
+    (`foundation.sql:410,412,438`), so caps in `add_store`/`create_category` alone would be
+    bypassed by `POST /rest/v1/stores`. `before insert` triggers cap both, as the items trigger
+    does. `store_category_order` is bounded by its primary key. A pgTAP case fails on any future
+    member insert policy without a cap trigger. Also taken: cap-hit copy (C1-C4, items count open and
+    ticked rows), a separate `helper_links` switch, the screenshot refusal inside the storage
+    policy's function, H6 naming cleared browser data, and the 11.2 analytics sentence.

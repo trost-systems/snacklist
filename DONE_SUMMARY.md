@@ -2333,3 +2333,16 @@ build to TestFlight. Details: `docs/done/348-total-priced-only.md`.
 ## Job 389: only the app's own sign-in makes personal access tokens
 
 See [docs/done/389.md](docs/done/389.md).
+
+## Job 375: AN1 anonymous start, design and Legal draft
+
+Design only, draft PR, not merged: `docs/design/anonymous-start/AN1.md`. It covers anonymous start
+in the apps, an upgrade that keeps the same id (plus a transfer when the email or identity is taken),
+account-only features refused on the server, web helper links without membership, the purge, copy
+in DE and EN, Legal redlines R0-R12 and 10 questions. Nothing is built or switched on. It waits for
+Legal's hash GO. Details: `docs/done/375.md`.
+Review 0 (FIX): content reports from anonymous users, the kill switch on every
+`create_household` overload, web routing for helper sessions, and feedback replies as a named
+deviation (Legal question 10) are now in the doc; refreshed hashes in the ops NEEDS_LEAD.
+Review 1 (FIX): store and category caps are table triggers (direct inserts were possible), plus
+cap-hit copy and a separate helper switch; hashes refreshed again.

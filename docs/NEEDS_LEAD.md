@@ -2559,3 +2559,11 @@ needs a valid token in the ops env.
 
 **Run at launch:** `docs/PAYWALL_RELEASE.md` 5.3a. Never revoke a beta household's grant; no
 launch step did.
+
+## NEEDS_LEAD Job 375: AN1 design ready, needs Legal (2026-11-22)
+
+Draft PR (not merged, nothing built, no flag or auth setting changed). The doc for Legal's hash GO
+is `docs/design/anonymous-start/AN1.md`. Section 11 holds the new processing (P1-P9), the redlines
+R0-R12 for `datenschutz.md`, `konto-loeschen.html` and the purchases page, and 10 questions. Section
+7 holds the copy drafts (DE and EN). No ARB file changed. The PR URL, the head SHA and the sha256 of
+each doc are in the ops NEEDS_LEAD section of the same name.
