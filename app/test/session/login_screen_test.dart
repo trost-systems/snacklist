@@ -564,4 +564,56 @@ void main() {
       expect(find.byKey(const ValueKey('invite-paste')), findsOneWidget);
     });
   });
+
+  group('why a joiner needs an account (job 356)', () {
+    const whyDe =
+        'Ein Konto brauchst du, damit die gemeinsame Liste mit dem Haushalt '
+        'synchron bleibt, zu dem du eingeladen wurdest.';
+    const whyEn =
+        'You need an account so the shared list stays in sync with the '
+        'household you were invited to.';
+    Flags joinerDirect() => Flags(forced: {joinerDirectListFlag});
+
+    for (final (locale, line) in [
+      (const Locale('de'), whyDe),
+      (const Locale('en'), whyEn),
+    ]) {
+      testWidgets('$locale: the sign-in for an invite says it under the logo', (
+        tester,
+      ) async {
+        await pumpLogin(
+          tester,
+          invite: 'ABCD2345',
+          locale: locale,
+          flags: joinerDirect(),
+        );
+        expect(find.text(line), findsOneWidget);
+        expect(
+          tester.getTopLeft(find.text(line)).dy,
+          lessThan(
+            tester.getTopLeft(find.byKey(const ValueKey('sign-in-google'))).dy,
+          ),
+        );
+      });
+    }
+
+    testWidgets('it shows with JH2 too, behind its sheet', (tester) async {
+      await pumpLogin(
+        tester,
+        invite: 'ABCD2345',
+        flags: Flags(forced: {joinerDirectListFlag, joinHouseholdJh2Flag}),
+      );
+      expect(find.text(whyDe), findsOneWidget);
+    });
+
+    testWidgets('not without an invite', (tester) async {
+      await pumpLogin(tester, flags: joinerDirect());
+      expect(find.text(whyDe), findsNothing);
+    });
+
+    testWidgets('not with the flag off', (tester) async {
+      await pumpLogin(tester, invite: 'ABCD2345');
+      expect(find.text(whyDe), findsNothing);
+    });
+  });
 }

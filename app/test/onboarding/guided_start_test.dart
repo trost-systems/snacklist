@@ -61,7 +61,7 @@ void main() {
       );
       expect(location(o), '/start');
       expect(find.text("Los geht's"), findsOneWidget);
-      expect(find.text('Schon ein Konto? Anmelden'), findsOneWidget);
+      expect(find.text('Ich habe schon ein Konto'), findsOneWidget);
       expect(find.text('Einladung einfügen'), findsOneWidget);
       await tapKey(tester, 'start-log-in');
       expect(location(o), '/login');
@@ -734,7 +734,7 @@ void main() {
         locale: const Locale('en'),
       );
       expect(find.text('Get started'), findsOneWidget);
-      expect(find.text('Already have an account? Sign in'), findsOneWidget);
+      expect(find.text('I already have an account'), findsOneWidget);
       await tapKey(tester, 'start-go');
       expect(find.text('Who do you shop with?'), findsOneWidget);
       await tapKey(tester, 'onboarding-kind-club');

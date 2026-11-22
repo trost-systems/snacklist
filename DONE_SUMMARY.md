@@ -2333,3 +2333,12 @@ build to TestFlight. Details: `docs/done/348-total-priced-only.md`.
 ## Job 389: only the app's own sign-in makes personal access tokens
 
 See [docs/done/389.md](docs/done/389.md).
+
+## Job 356: invite joiners land on the shared list
+
+Behind the flag `joiner-direct-list` (internal installs): an invite link or code leads through sign-in, the usage question
+(once per install) and the name step straight to the shared list, with no setup step and no
+„Haushalt beitreten“ tap, JH2 on or off. The sign-in for an invite says why an account is needed
+(new string `joinerAccountWhy`, waiting for Legal, so not self-merged). Tests: widget tests on iOS
+and Android variants (no e2e spec: the budget was full, job 373). Details:
+`docs/done/356-invite-joiner-onboarding.md`.

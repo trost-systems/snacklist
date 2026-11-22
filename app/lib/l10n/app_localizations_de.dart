@@ -1450,10 +1450,14 @@ class AppLocalizationsDe extends AppLocalizations {
   String get startGo => 'Los geht\'s';
 
   @override
-  String get startLogIn => 'Schon ein Konto? Anmelden';
+  String get startLogIn => 'Ich habe schon ein Konto';
 
   @override
   String get loginNew => 'Neu bei Snacklist? Los geht\'s';
+
+  @override
+  String get joinerAccountWhy =>
+      'Ein Konto brauchst du, damit die gemeinsame Liste mit dem Haushalt synchron bleibt, zu dem du eingeladen wurdest.';
 
   @override
   String onboardingProgress(int step, int count) {
@@ -3399,7 +3403,7 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get jh2StartHaveAccount => 'Schon ein Konto';
+  String get jh2StartHaveAccount => 'Ich habe schon ein Konto';
 
   @override
   String get jh2JoinExisting => 'Bestehendem Haushalt beitreten';

@@ -17610,3 +17610,20 @@ TE-Q default. Built behind the new flag `total-priced-only`, on top of `list-dec
   `scripts/backup/fixtures.sql`, `outsiders_integration_test.ts`) now carry one, as a real app
   token does. `personal_access_tokens.test.sql` has five new cases (OAuth client, both forms; no
   session; empty session; no row left), which fail on main.
+
+## Job 356: invite joiners land on the shared list, 2026-11-21
+
+1. **One flag, both JH2 states.** `joiner-direct-list` works with `join-household-jh2` on or off,
+   because which JH2 state the testers have is PostHog's, not the repo's (job 354 B3). Off, every
+   screen is as before for both JH2 values (widget tests pin it; no e2e spec, the e2e budget was full, job 373).
+2. **No start-screen code button (Peter, Nov 22, job 373).** The first version had a third button „Mit Code beitreten“ with a `code_first` draft; it was removed. A code is typed behind „Los geht's“ in „Bestehendem Haushalt beitreten“ (JH2), as before. After the code, it is the link's way: sign-in with the invite, name, list.
+3. **Joining asks nothing, also without JH2.** The link's auto-join (JH-Q6) now runs when either flag
+   is on. `/join/<code>` still shows for the moment of the join, with its spinner; a household with
+   „Beitritte bestätigen“ keeps its request wait (an admin has to let the person in).
+4. **The usage-data question stays.** It is the once-per-install analytics consent (Legal), not a
+   household step; a joiner from the start screen answers it after the sign-in, as a link joiner
+   always has. The name step stays (Peter's update: it shows who added what).
+5. **The why line sits on the sign-in, under the logo, only with an invite.** One new ARB string
+   `joinerAccountWhy` (DE/EN). JH2's invite sheet and „Einladung gemerkt …“ are unchanged, as is
+   `inviteJoinPageHint`. New sign-up copy, so the PR stops before the merge for Legal.
+6. **Copy (job 373).** N-331 `joinerAccountWhy` reworded; G1 `startLogIn` and `jh2StartHaveAccount` read „Ich habe schon ein Konto“ / "I already have an account".

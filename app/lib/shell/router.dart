@@ -68,7 +68,7 @@ const welcomePath = '/welcome';
 const joinWaitingPath = '/welcome/waiting';
 
 /// The guided start (job 168b): the first screen signed out, „Los geht's“
-/// or „Schon ein Konto? Anmelden“.
+/// or „Ich habe schon ein Konto“.
 const startPath = '/start';
 
 /// The guided start's step [step], at `/start/<step>`.

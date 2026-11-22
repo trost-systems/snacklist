@@ -93,6 +93,10 @@
       "rollout": "off",
       "tester_group": "internal",
       "note": "TE1 for the list's summary block (on top of list-declutter and prices-and-trip-total): no block while no item has a price, a line only for a store with a price, one „N ohne Preis“ under Gesamt instead of one per store and no „mit Preis“ count, an amount too wide beside its name under it, only while the PostHog flag total-priced-only is on (job 348); the flag targets the tester group internal (person property tester_groups, Peter's TestFlight accounts); the flag sync creates it that way"
+    },
+    "joiner-direct-list": {
+      "rollout": "partial",
+      "note": "joining straight to the shared list (an invite link joins after the sign-in and the name step without asking again, also with join-household-jh2 off, and so does a code typed in the guided start (JH2); the sign-in for an invite says in one line why an account is needed) shows only while the PostHog flag joiner-direct-list is on (job 356); internal installs only (Peter and the internal testers) until Legal approves the sign-in line"
     }
   },
   "holds": {

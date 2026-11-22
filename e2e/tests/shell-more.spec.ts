@@ -256,7 +256,7 @@ test.describe('with an English browser', () => {
     await expect(page).toHaveURL(/\/start$/);
     await expect(page.getByRole('button', { name: 'Get started' })).toBeVisible();
     await expectNoGerman(page, 'first screen', german);
-    await page.getByRole('button', { name: 'Already have an account? Sign in' }).click();
+    await page.getByRole('button', { name: 'I already have an account' }).click();
     await expect(page).toHaveURL(/\/login$/);
     await expect(page.getByRole('button', { name: 'Continue with email' })).toBeVisible();
     await expectNoGerman(page, 'login', german);

@@ -1,7 +1,7 @@
 # Onboarding
 
 Signed out, the app opens on the start screen (job 168b): „Los geht's“ starts the guided start,
-„Schon ein Konto? Anmelden“ opens the sign-in. The guided start asks, one step each: the
+„Ich habe schon ein Konto“ opens the sign-in. The guided start asks, one step each: the
 usage-data question (builds with a PostHog key, once per install), "Mit wem kaufst du ein?",
 the household name, the stores, "Was fehlt gerade?", and only then the account. The answers are
 kept on the device until the household exists. Once signed in, the app creates the household
@@ -14,7 +14,7 @@ skips all of it. A user who already has a household goes straight to the list.
 ## Sub-features
 
 - `ob-order` signed out: the start screen (`/start`), the steps (`/start/<step>`), the account, the setup, the invite step, the list. Signed in without a household: the analytics consent (builds with a key, if not answered yet), then `/welcome`, or the draft's step while a guided start is under way. The sign-in (`/login`) comes first after a sign-out, an account deletion, for an invite link and for a `next` link. Routes: `/start`, `/start/usage|who|name|stores|need|account|setup|invite`, `/welcome`, `/join`, `/join/<code>`; in a household the switcher's `/households/new` and `/households/new/invite`. The only gate is `authRedirect` in `app/lib/shell/router.dart`; a step's screen moves on by changing the draft, never by going to a path.
-- `ob-start` (`start-screen`): `start-go` („Los geht's“) starts the draft; `start-log-in` („Schon ein Konto? Anmelden“) opens the sign-in, where `login-new` („Neu bei Snacklist? Los geht's“, not with an invite or a `next`) leads back.
+- `ob-start` (`start-screen`): `start-go` („Los geht's“) starts the draft; `start-log-in` („Ich habe schon ein Konto“) opens the sign-in, where `login-new` („Neu bei Snacklist? Los geht's“, not with an invite or a `next`) leads back.
 - `ob-steps` each step's list is `onboarding-<step>`; `onboarding-next` („Weiter“), `onboarding-skip` („Überspringen“, on „Mit wem“ and the stores), the X `onboarding-exit` (every step but the invite step), the back arrow („Zurück“) on name, stores, need and account. Above the content „Schritt N von 7“ and a bar.
 - `ob-who` chips `onboarding-kind-partner|family|flat|club|solo|other`, any number; `other` adds `onboarding-kind-other-text`; two or more show `onboarding-kinds-several` („Wir starten mit „<first>“. Die anderen merken wir uns für später.“). `onboarding-next` is off until one is picked. The first pick becomes `households.kind`; the others are kept per user on the device (`onboarding.later.<user>`) for job 169.
 - `ob-name` `household-name`, prefilled from the first kind: "Unsere Familie", "Unsere WG", "Unser Verein", "Meine Liste" (solo), the „Andere“ words, else "Unser Haushalt". 1 to 80 characters.
