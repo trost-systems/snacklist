@@ -17326,3 +17326,8 @@ ein?“ stays away for 60 minutes in any store. Behind `trip-mode`, no new flag,
 ## Job 366: learned-order flag stays Peter-only in the flag sync
 
 - `releases/flags.json` flags may carry `tester_group`. The PostHog flag sync then creates a missing flag for the person property `tester_groups` matching that group (regex `(^|,)<group>(,|$)`, 100 %) instead of `is_internal`. `learned-order` has it, so a deleted flag is not recreated for Lea and other internal testers until the trip-detection privacy notice is live (Legal N-322). Existing flags are never rewritten for it. PostHog live state is untouched.
+
+## Job 367: Recently used open by default (RU1)
+
+- New flag `recently-used-open` (tester group of the same name, Peter only, no is_internal). On: the list's „Zuletzt verwendet“ starts open, faded rows, no count, no peek. A manual fold is remembered per device in `ListPrefs.folded` under `recently-used` (the flag-on default is open, so the key means closed). Off: unchanged (starts closed, no memory).
+- RU-Q answers are in DONE_SUMMARY.md.
