@@ -61,13 +61,15 @@ final class const _LoadingFate() extends _Step;
 final class const _FateFailed(final AccountError error) extends _Step;
 
 final class const _Confirming(
-  final AccountFate fate, [
+  final AccountFate fate,
+  final MyPremium premium, [
 
   /// Why the last attempt deleted nothing.
   final AccountError? error,
 ]) extends _Step;
 
-final class const _Deleting(final AccountFate fate) extends _Step;
+final class const _Deleting(final AccountFate fate, final MyPremium premium)
+    extends _Step;
 
 /// Pops with the [AccountDeleted] answer once the server deleted the
 /// account.
@@ -75,9 +77,7 @@ class const DeleteAccountDialog({
   required final AccountRepository repository,
   super.key,
 
-  /// Name the archived households that go with the account, and why the
-  /// last member cannot archive instead (job 68). Without them the last
-  /// member of a household with premium is still warned (job 104).
+  /// Name the archived households that go with the account (job 68).
   final bool archiveTexts = false,
 }) extends StatefulWidget {
   @override
@@ -104,19 +104,21 @@ class _DeleteAccountDialogState() extends State<DeleteAccountDialog> {
   }
 
   Future<void> _loadFate() async {
+    final server = context.read<PremiumServer>();
     _Step next;
     try {
-      next = _Confirming(await widget.repository.fate());
-    } on AccountError catch (e) {
-      next = _FateFailed(e);
+      final fate = await widget.repository.fate();
+      next = _Confirming(fate, await server.myPremium());
+    } on Object catch (e) {
+      next = _FateFailed(accountErrorOf(e));
     }
     if (mounted) {
       setState(() => _step = next);
     }
   }
 
-  Future<void> _delete(AccountFate fate) async {
-    setState(() => _step = _Deleting(fate));
+  Future<void> _delete(AccountFate fate, MyPremium premium) async {
+    setState(() => _step = _Deleting(fate, premium));
     try {
       final deleted = await widget.repository.delete();
       if (mounted) {
@@ -124,15 +126,10 @@ class _DeleteAccountDialogState() extends State<DeleteAccountDialog> {
       }
     } on AccountError catch (e) {
       if (mounted) {
-        setState(() => _step = _Confirming(fate, e));
+        setState(() => _step = _Confirming(fate, premium, e));
       }
     }
   }
-
-  /// Archived households are only named with the archive texts, so only
-  /// then does their premium ask for the tick.
-  bool _endsPremium(AccountFate fate) =>
-      widget.archiveTexts ? fate.endsPremium : fate.deletedPremium.isNotEmpty;
 
   @override
   Widget build(BuildContext context) {
@@ -154,9 +151,10 @@ class _DeleteAccountDialogState() extends State<DeleteAccountDialog> {
       _Confirming(error: AppleReauthCanceled()) => l10n.accountDeleteCanceled,
       _Confirming(error: null) || _LoadingFate() || _Deleting() => null,
     };
-    final fate = switch (step) {
-      _Confirming(:final fate) || _Deleting(:final fate) => fate,
-      _LoadingFate() || _FateFailed() => null,
+    final (fate, premium) = switch (step) {
+      _Confirming(:final fate, :final premium) ||
+      _Deleting(:final fate, :final premium) => (fate, premium),
+      _LoadingFate() || _FateFailed() => (null, MyPremium.none),
     };
     return PopScope(
       canPop: !deleting,
@@ -187,11 +185,10 @@ class _DeleteAccountDialogState() extends State<DeleteAccountDialog> {
                     _archivedText(l10n, fate.archived),
                   ),
                 ],
-                if (_endsPremium(fate)) ...[
+                if (premium != MyPremium.none) ...[
                   const SizedBox(height: 12),
                   _PremiumWarning(
-                    fate: fate,
-                    archiveTexts: widget.archiveTexts,
+                    billed: premium == MyPremium.billed,
                     acknowledged: _premiumAcknowledged,
                     onChanged: deleting
                         ? null
@@ -238,10 +235,10 @@ class _DeleteAccountDialogState() extends State<DeleteAccountDialog> {
             key: const ValueKey('account-delete-confirm'),
             style: dangerButtonStyle(context),
             onPressed: switch (step) {
-              _Confirming(:final fate)
+              _Confirming(:final fate, :final premium)
                   when isDeleteConfirmation(_confirmation.text) &&
-                      (_premiumAcknowledged || !_endsPremium(fate)) =>
-                () => unawaited(_delete(fate)),
+                      (_premiumAcknowledged || premium == MyPremium.none) =>
+                () => unawaited(_delete(fate, premium)),
               _ => null,
             },
             child: Text(l10n.accountDeleteConfirm),
@@ -264,16 +261,16 @@ String _archivedText(AppLocalizations l10n, List<ArchivedFate> archived) {
   final names = _joinNames(l10n, [
     for (final a in archived) l10n.quotedName(a.name),
   ]);
-  return archived.any((a) => a.unlocked)
-      ? l10n.accountDeleteArchivedPremium(archived.length, names)
-      : l10n.accountDeleteArchived(archived.length, names);
+  return l10n.accountDeleteArchived(archived.length, names);
 }
 
-/// What ends with the account and that it is not refunded, with the refund
-/// help and the box the user ticks before Delete works.
+/// The account's own Snacklist Premium ends with it and is not refunded;
+/// a yearly plan that renews is still billed (Legal N-362). With the
+/// store's subscription management for it, the refund help and the box the
+/// user ticks before Delete works.
 class const _PremiumWarning({
-  required final AccountFate fate,
-  required final bool archiveTexts,
+  /// A yearly plan of the account renews.
+  required final bool billed,
   required final bool acknowledged,
   required final ValueChanged<bool>? onChanged,
 }) extends StatelessWidget {
@@ -290,14 +287,20 @@ class const _PremiumWarning({
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            for (final FateDeleted(:householdName) in fate.deletedPremium)
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: Text(
-                  archiveTexts
-                      ? l10n.accountDeletePremium(householdName)
-                      : l10n.accountDeletePremiumLastMember(householdName),
-                  style: TextStyle(color: scheme.onErrorContainer),
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Text(
+                l10n.accountDeletePremium,
+                style: TextStyle(color: scheme.onErrorContainer),
+              ),
+            ),
+            if (billed)
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: TextButton(
+                  key: const ValueKey('account-delete-manage'),
+                  onPressed: () => unawaited(openManageSubscriptions(context)),
+                  child: Text(l10n.premiumManageSubscription),
                 ),
               ),
             RefundHelpLink(

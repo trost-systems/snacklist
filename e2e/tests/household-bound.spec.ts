@@ -236,10 +236,11 @@ test.describe('in English', () => {
   });
 });
 
-// Job 68: deleting the account as the last member of an unlocked household, or with an unlocked
-// archived household, says that Snacklist Premium ends and is not refunded; Delete waits for the
-// tick. Neither household is archived: an archive would go with the account (DECISIONS 68).
-test('account deletion: the last member of an unlocked household confirms that Premium is not refunded', async ({ browser }) => {
+// Job 68, per account since job 392 (Legal N-362): deleting an account that has Snacklist Premium
+// itself says that Premium ends with the account and is not refunded; Delete waits for the tick. A
+// household's Premium, here household-bound Lifetime, no longer shows the warning. Neither household
+// is archived: an archive would go with the account (DECISIONS 68).
+test('account deletion: an account with its own Premium confirms that it ends and is not refunded', async ({ browser }) => {
   const email = newEmail('acct68');
   const page = await newPage(browser);
   await signUpWithHousehold(page, email);
@@ -256,12 +257,24 @@ test('account deletion: the last member of an unlocked household confirms that P
 
   await page.reload();
   await openMore(page, 'Konto');
-  await page.getByRole('button', { name: 'Konto löschen', exact: true }).click();
-  await expect(page.getByRole('group', { name: /^„Zuhause“ hat Snacklist Premium\. Es gehört zum Haushalt und endet mit ihm\. Archivieren geht hier nicht/ })).toBeVisible();
+  const deleteAccount = page.getByRole('button', { name: 'Konto löschen', exact: true });
+  await deleteAccount.click();
   // The dialog's paragraphs reach the screen reader as one text.
-  await expect(page.getByText(/Dein archivierter Haushalt „Unser Haushalt“ wird mit deinem Konto gelöscht, und mit ihm sein Snacklist Premium\./)).toBeVisible();
+  await expect(page.getByText(/Dein archivierter Haushalt „Unser Haushalt“ wird mit deinem Konto gelöscht\./)).toBeVisible();
   const ack = page.getByRole('checkbox', { name: 'Ich weiß: Premium endet. Ich bekomme mein Geld nicht von selbst zurück.' });
+  await expect(ack, "a household's Premium is not the account's").toHaveCount(0);
+  await page.getByRole('button', { name: 'Abbrechen' }).click();
+
+  // A free unlock for good granted to the account at RevenueCat, as the beta thanks (job 371).
+  const { data: { user } } = await api.auth.getUser();
+  if (!user) throw new Error('signed out');
+  const { error: grant } = await adminClient().from('user_entitlements')
+    .insert({ user_id: user.id, source: 'promotional', premium_source: 'promotional' });
+  expect(grant).toBeNull();
+  await deleteAccount.click();
+  await expect(page.getByRole('group', { name: /^Du hast Snacklist Premium\. Es gehört zu deinem Konto und endet, wenn du es löschst\. Hast du ein Jahresabo/ })).toBeVisible();
   await expect(ack).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Abo verwalten' }), 'no yearly plan to manage').toHaveCount(0);
   // Scroll the dialog in Flutter first: a click on the field below the fold would land on the
   // canvas where the box is now.
   await page.mouse.move(195, 400);

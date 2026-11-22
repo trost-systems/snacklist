@@ -17650,3 +17650,28 @@ TE-Q default. Built behind the new flag `total-priced-only`, on top of `list-dec
 - Policy date 23 November 2026, not 22: main already says 22 November for the N-323 text, and this
   PR waits for Legal, so the earliest realistic merge day is the next one. A later merge bumps it
   again.
+
+## Job 392: per-account Premium leftovers (Legal N-362 to N-365), 2026-11-22
+
+1. **One key for the deletion warning.** `accountDeletePremium` holds Legal's N-362 text, with no
+   placeholder; `accountDeletePremiumLastMember` is gone. The new text names no household and has
+   no archive sentence, so the two keys no longer differ.
+2. **"The account has Premium" is its own `user_entitlements` rows.** RevenueCat's events and
+   grants write those rows for the account (job 185), and the app judges them by the rule it
+   already uses for them (`unlocksOf(own: true)`, `Unlocks.premiumAt`, the server's
+   `user_premium()`). The dialog reads them on open through `PremiumServer.myPremium()`. It does
+   not ask the RevenueCat SDK: that would configure RevenueCat during a deletion and note the
+   account as a RevenueCat customer (Legal C3), and the web has no SDK. A failed read shows the
+   fate error, so the warning is never skipped silently.
+3. **A household's Premium no longer shows the card.** Household-bound Lifetime and beta
+   household unlocks are not the account's Premium, so the card would be false for them. The
+   `leaves_unlocked` read leaves the deletion fate; the archived-households line still names an
+   archived household's Premium (archive builds only).
+4. **The manage button shows only while the account's yearly plan renews.** "Abo verwalten" opens
+   StoreKit's sheet on iOS, else the App Store or Google Play subscriptions page
+   (`openManageSubscriptions`, as in the billing notice). A Lifetime or free-unlock account has
+   nothing to cancel there.
+5. **Support FAQ: only the cross-references moved with the renamed heading.** N-363 gives l.63 to
+   65 and the refund heading; l.59 quoted that heading, so it quotes the new one. The rest of l.59
+   and the refund FAQ body still describe household Lifetime; they are listed for Legal, not
+   rewritten here.

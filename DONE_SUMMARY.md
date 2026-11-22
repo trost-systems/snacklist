@@ -2372,3 +2372,13 @@ and the new date.
 **Not done.** Merge waits for Legal (NEEDS_LEAD "Job 380"). If it merges on another day, bump
 the date to that day. Job 374 (#584) edits the same two files: whichever lands second carries
 both sides' reviewed text through its rebase.
+
+## Job 392: per-account Premium leftovers (Legal N-362 to N-365)
+
+The account-deletion warning shows only when the deleting account has Premium itself (its own
+RevenueCat-written `user_entitlements` rows, by the existing rule), with Legal's N-362 text in one
+key and „Abo verwalten“ while its yearly plan renews. Support FAQ l.63 to 65 and the refund
+heading use Legal's N-363 words. The two draft purchase privacy pages and the dead keys
+`lifetimeWeb` and `lifetimeUnlockedBody` are deleted. Tests, the job 68 e2e test, the feature map
+and FEATURES-FOR-WRITERS follow. Screenshots DE and EN in `docs/screenshots/392/`. Not merged
+(lead). Details: `docs/done/392.md`.

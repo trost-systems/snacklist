@@ -149,11 +149,14 @@ Map<String, dynamic> yearlyRow({
   'auto_renew': renews,
 };
 
-/// The server's switch and the caller's own yearly plan; [calls] lists the
-/// `offer` and `mine` reads.
+/// The server's switch, the caller's own yearly plan and own premium;
+/// [calls] lists the `offer`, `mine` and `premium` reads.
 class FakePremiumServer({
   var bool offer = true,
   var MyYearlyPlan mine = const MyYearlyPlan(),
+
+  /// The account's own premium (`user_entitlements`).
+  var MyPremium premium = MyPremium.none,
 
   /// The `integration_lock` switch (job 50).
   var bool lock = false,
@@ -165,6 +168,9 @@ class FakePremiumServer({
 
   /// premium_offer cannot be read (offline) while set.
   var offerFails = false;
+
+  /// The account's own premium cannot be read (offline) while set.
+  var premiumFails = false;
 
   @override
   Future<OfferSwitch> offerSwitch() async {
@@ -188,6 +194,15 @@ class FakePremiumServer({
       throw Exception('offline');
     }
     return mine;
+  }
+
+  @override
+  Future<MyPremium> myPremium() async {
+    calls.add('premium');
+    if (premiumFails) {
+      throw Exception('offline');
+    }
+    return premium;
   }
 }
 

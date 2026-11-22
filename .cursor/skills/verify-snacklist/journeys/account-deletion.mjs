@@ -2,7 +2,8 @@
 // plain text with a copy button. Proves the button's accessible name, the clipboard content and
 // the „Kopiert“ snackbar. With --dialog it opens „Konto löschen“ instead (sub-feature
 // acct-premium, job 104) and proves the Premium tick box is there (premium) or not (none); it
-// cancels, so nothing is deleted. Export and deletion: e2e/tests/account-*.spec.ts.
+// cancels, so nothing is deleted. Since job 392 the card shows for the account's own Premium only,
+// with „Abo verwalten“ while the account's yearly plan renews. Export and deletion: e2e/tests/account-*.spec.ts.
 //
 //   node journeys/account-deletion.mjs <evidence dir> [--lang de|en] [--dialog premium|none]
 import process from 'node:process';
@@ -37,6 +38,12 @@ try {
     await field.waitFor({ timeout: 15_000 });
     const shown = await box.isVisible();
     log(`deletion dialog for ${user.handle}: Premium tick box ${shown ? 'shown' : 'not shown'}`);
+    if (shown) {
+      // The card's text and buttons reach the screen reader as one group (job 392, Legal N-362).
+      await page.getByRole('group', { name: L('accountDeletePremium') }).waitFor({ timeout: 5_000 });
+      const manage = await page.getByRole('button', { name: L('premiumManageSubscription'), exact: true }).isVisible();
+      log(`card text accountDeletePremium shown; „${L('premiumManageSubscription')}“ ${manage ? 'shown' : 'not shown'}`);
+    }
     await capture(page, dir, `01-delete-dialog-${dialog}`);
     await page.getByRole('button', { name: L('cancel'), exact: true }).click();
     if (shown !== (dialog === 'premium')) throw new Error(`expected the Premium warning to be ${dialog === 'premium' ? 'shown' : 'absent'}`);

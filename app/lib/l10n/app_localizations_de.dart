@@ -702,14 +702,8 @@ class AppLocalizationsDe extends AppLocalizations {
       'Mit „Meine Daten exportieren“ unter Konto kannst du vorher eine Kopie sichern.';
 
   @override
-  String accountDeletePremium(String household) {
-    return '„$household“ hat Snacklist Premium. Es gehört zum Haushalt und endet mit ihm. Archivieren geht hier nicht, denn ein archivierter Haushalt wird mit deinem Konto gelöscht. Soll der Haushalt mit Premium bleiben, lade vorher jemanden ein und lösche dein Konto erst, wenn die Person beigetreten ist.';
-  }
-
-  @override
-  String accountDeletePremiumLastMember(String household) {
-    return '„$household“ hat Snacklist Premium. Das gehört zum Haushalt. Löschst du dein Konto, endet es. Soll es bleiben? Dann lad erst jemand ein. Warte, bis die Person beigetreten ist. Lösch dann dein Konto.';
-  }
+  String get accountDeletePremium =>
+      'Du hast Snacklist Premium. Es gehört zu deinem Konto und endet, wenn du es löschst. Hast du ein Jahresabo, rechnen Apple bzw. Google weiter ab: Kündige es vorher im App Store oder bei Google Play.';
 
   @override
   String accountDeleteArchived(int count, String names) {
@@ -719,19 +713,6 @@ class AppLocalizationsDe extends AppLocalizations {
       other:
           'Deine archivierten Haushalte $names werden mit deinem Konto gelöscht.',
       one: 'Dein archivierter Haushalt $names wird mit deinem Konto gelöscht.',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String accountDeleteArchivedPremium(int count, String names) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other:
-          'Deine archivierten Haushalte $names werden mit deinem Konto gelöscht, und mit ihnen ihr Snacklist Premium.',
-      one:
-          'Dein archivierter Haushalt $names wird mit deinem Konto gelöscht, und mit ihm sein Snacklist Premium.',
     );
     return '$_temp0';
   }
@@ -1715,10 +1696,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get lifetimeRestore => 'Kauf wiederherstellen';
 
   @override
-  String get lifetimeUnlockedBody =>
-      'Snacklist Lifetime ist für euren ganzen Haushalt freigeschaltet. Danke!';
-
-  @override
   String get lifetimePending => 'Wartet auf Bestätigung';
 
   @override
@@ -1757,10 +1734,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String lifetimeStoreFailed(String code) {
     return 'Der Kauf hat nicht geklappt ($code).';
   }
-
-  @override
-  String get lifetimeWeb =>
-      'Kaufen kannst du Snacklist Lifetime in der iPhone- oder Android-App. Danach ist es auch hier für deinen ganzen Haushalt freigeschaltet.';
 
   @override
   String get lifetimeChecking =>

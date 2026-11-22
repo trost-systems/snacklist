@@ -56,24 +56,24 @@ Tippe auf **Mehr**, dann auf **Konto** und auf **Meine Daten exportieren**. Du b
 
 ### Wie lösche ich mein Konto?
 
-Tippe auf **Mehr**, dann auf **Konto** und auf **Konto löschen**, und bestätige mit dem Wort LÖSCHEN. Dein Konto, dein Profil, deine Zugriffstoken und verbundenen Apps werden sofort gelöscht. Bleiben andere im Haushalt, behalten sie die Liste; deine Einträge stehen dort ohne deinen Namen. Bist du das letzte Mitglied, wird der ganze Haushalt gelöscht, auch mit Snacklist Lifetime; der Kauf lässt sich nicht auf einen anderen Haushalt übertragen. Ob du dein Geld zurückbekommen kannst, steht unter „Kann ich Snacklist Lifetime zurückgeben?“. Auch Haushalte, die du archiviert hast, werden gelöscht. Bleiben andere im Haushalt, bleibt Snacklist Lifetime bei ihnen. In unseren verschlüsselten Sicherungen bleiben gelöschte Daten noch bis zu 90 Tage, danach sind sie auch dort weg.
+Tippe auf **Mehr**, dann auf **Konto** und auf **Konto löschen**, und bestätige mit dem Wort LÖSCHEN. Dein Konto, dein Profil, deine Zugriffstoken und verbundenen Apps werden sofort gelöscht. Bleiben andere im Haushalt, behalten sie die Liste; deine Einträge stehen dort ohne deinen Namen. Bist du das letzte Mitglied, wird der ganze Haushalt gelöscht. Hast du Snacklist Premium, endet es mit deinem Konto. Ein Jahresabo rechnen Apple bzw. Google weiter ab: Kündige es vorher im App Store oder bei Google Play. Ob du dein Geld zurückbekommen kannst, steht unter „Kann ich Snacklist Premium zurückgeben?“. Auch Haushalte, die du archiviert hast, werden gelöscht. In unseren verschlüsselten Sicherungen bleiben gelöschte Daten noch bis zu 90 Tage, danach sind sie auch dort weg.
 
 Ohne App geht es auch: Schreib an [support@snacklist.app](mailto:support@snacklist.app).
 
-### Was passiert mit Snacklist Lifetime, wenn ich als letztes Mitglied einen Haushalt verlasse?
+### Was passiert mit Snacklist Premium, wenn ich einen Haushalt verlasse?
 
-Snacklist Lifetime gehört zum Haushalt und zieht nicht mit um. Verlässt du einen Haushalt mit Snacklist Lifetime als letztes Mitglied, wird er gelöscht. Die App warnt dich vorher: Snacklist Lifetime endet mit dem Haushalt. Zu Erstattungen siehe „Kann ich Snacklist Lifetime zurückgeben?“.
+Snacklist Premium gehört zu deinem Konto und gilt in jedem Haushalt, in dem du Mitglied bist. Verlässt du einen Haushalt, behältst du Premium. Verlässt du ihn als letztes Mitglied, wird der Haushalt gelöscht, dein Premium bleibt. Zu Erstattungen siehe „Kann ich Snacklist Premium zurückgeben?“.
 
-### Kann ich Snacklist Lifetime zurückgeben?
+### Kann ich Snacklist Premium zurückgeben?
 
-Snacklist Lifetime kaufst du bei Apple oder Google, nicht bei uns. Deshalb gilt:
+Snacklist Premium kaufst du bei Apple oder Google, nicht bei uns. Deshalb gilt:
 
 - **iPhone (App Store):** Erstattungen macht nur Apple. Beantrage sie unter [reportaproblem.apple.com](https://reportaproblem.apple.com) („Ich möchte“ › „Eine Rückerstattung beantragen“); so geht's: [Apple Support](https://support.apple.com/de-de/118223). Wir selbst können Käufe im App Store nicht erstatten.
 - **Android (Google Play):** In den ersten 48 Stunden nach dem Kauf beantragst du die Erstattung direkt bei Google; Google entscheidet darüber ([Erstattungsrichtlinien von Google Play](https://support.google.com/googleplay/answer/15574908?hl=de)). Danach schreib uns an [support@snacklist.app](mailto:support@snacklist.app) und nenne die Bestellnummer aus der Kaufbestätigung von Google (sie beginnt mit „GPA.“) oder die E-Mail-Adresse deines Google-Kontos. Wir prüfen jede Anfrage einzeln und erstatten gegebenenfalls über Google Play.
 
-Wird ein Kauf erstattet, endet die Freischaltung des Haushalts, für den er gekauft wurde, für alle Mitglieder, außer der Haushalt hat Snacklist Lifetime ein weiteres Mal gekauft.
+Wird ein Kauf erstattet, endet dein Snacklist Premium, außer du hast es noch aus einem anderen Kauf.
 
-Unsere Erstattungen nach den 48 Stunden sind freiwillig. Deine gesetzlichen Rechte bleiben davon unberührt, auch nach den 48 Stunden, etwa wenn Snacklist Lifetime nicht wie beschrieben funktioniert oder du den Kauf widerrufen kannst. Diese Rechte hast du gegenüber Apple bzw. Google, die dir Snacklist Lifetime verkaufen; Einzelheiten stehen in den [Bedingungen von Apple](https://www.apple.com/legal/internet-services/itunes/de/terms.html) bzw. [von Google Play](https://play.google.com/intl/de_de/about/play-terms/). Schreib uns auch dann gern, wir helfen dir weiter.
+Unsere Erstattungen nach den 48 Stunden sind freiwillig. Deine gesetzlichen Rechte bleiben davon unberührt, auch nach den 48 Stunden, etwa wenn Snacklist Premium nicht wie beschrieben funktioniert oder du den Kauf widerrufen kannst. Diese Rechte hast du gegenüber Apple bzw. Google, die dir Snacklist Premium verkaufen; Einzelheiten stehen in den [Bedingungen von Apple](https://www.apple.com/legal/internet-services/itunes/de/terms.html) bzw. [von Google Play](https://play.google.com/intl/de_de/about/play-terms/). Schreib uns auch dann gern, wir helfen dir weiter.
 
 ### Wie schalte ich die Nutzungsdaten aus?
 

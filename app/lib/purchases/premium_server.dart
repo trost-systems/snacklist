@@ -1,4 +1,5 @@
 import 'package:family_groceries/core/guides.dart';
+import 'package:family_groceries/purchases/entitlements.dart';
 import 'package:family_groceries/purchases/purchase_repository.dart';
 import 'package:flutter/foundation.dart' show TargetPlatform, immutable;
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -47,8 +48,20 @@ enum OfferSwitch() {
   unreadable,
 }
 
-/// The two server reads the Premium page and the billing warnings make;
-/// neither touches a store or RevenueCat.
+/// The signed-in account's own Snacklist Premium: its `user_entitlements`
+/// rows, which RevenueCat's events write, by `user_premium()`'s rule. A
+/// household's premium is not the account's.
+enum MyPremium() {
+  none,
+  active,
+
+  /// Active, and a yearly plan of the account still renews: the store keeps
+  /// billing it.
+  billed,
+}
+
+/// The server reads the Premium page, the billing warnings and the account
+/// deletion make; none touches a store or RevenueCat.
 abstract interface class PremiumServer() {
   /// The server switch `premium_offer` (seeded off): whether Snacklist
   /// Premium may be offered at all.
@@ -61,6 +74,9 @@ abstract interface class PremiumServer() {
   /// The server switch `integration_lock` (job 50, seeded off): Siri and MCP
   /// need Snacklist Premium; Alexa stays free. False when it cannot be read.
   Future<bool> integrationLock();
+
+  /// Throws when it cannot be read.
+  Future<MyPremium> myPremium();
 }
 
 class const SupabasePremiumServer(final SupabaseClient _client)
@@ -92,6 +108,22 @@ class const SupabasePremiumServer(final SupabaseClient _client)
     } on Object {
       return false;
     }
+  }
+
+  @override
+  Future<MyPremium> myPremium() async {
+    final user = _client.auth.currentUser ?? (throw StateError('signed out'));
+    final rows = await _client.rest
+        .from('user_entitlements')
+        .select('kind, source, premium_source, expires_at, auto_renew')
+        .eq('user_id', user.id);
+    final unlocks = unlocksOf(rows, own: true);
+    final now = DateTime.now();
+    return switch (unlocks.premiumAt(now)) {
+      NoPremium() => MyPremium.none,
+      ActivePremium() when unlocks.yearlyBilledAt(now) => MyPremium.billed,
+      ActivePremium() => MyPremium.active,
+    };
   }
 }
 

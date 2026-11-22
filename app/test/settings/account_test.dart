@@ -45,6 +45,7 @@ void main() {
     WidgetTester tester,
     Widget home, {
     FakePremiumServer? premium,
+    FakeStorePrices? prices,
     FakeEntitlementsSource? rows,
     Locale locale = const Locale('de'),
   }) async {
@@ -75,7 +76,7 @@ void main() {
             value: premium ?? FakePremiumServer(),
           ),
           RepositoryProvider<StorePriceReader>.value(
-            value: FakeStorePrices(fakeStorePrices),
+            value: prices ?? FakeStorePrices(fakeStorePrices),
           ),
           RepositoryProvider.value(
             value: SocialSignIn(
@@ -543,12 +544,164 @@ void main() {
     });
   });
 
-  group('Snacklist Premium that ends with the account (job 68)', () {
+  group("the account's own Snacklist Premium ends with it (Legal N-362)", () {
+    const premiumText =
+        'Du hast Snacklist Premium. Es gehört zu deinem Konto und endet, wenn '
+        'du es löschst. Hast du ein Jahresabo, rechnen Apple bzw. Google '
+        'weiter ab: Kündige es vorher im App Store oder bei Google Play.';
+    const ackText =
+        'Ich weiß: Premium endet. Ich bekomme mein Geld nicht von selbst '
+        'zurück.';
+    final card = find.byKey(const ValueKey('account-delete-premium'));
+    final ack = find.byKey(const ValueKey('account-delete-premium-ack'));
+    final manage = find.byKey(const ValueKey('account-delete-manage'));
+
+    /// The dialog from the account page, for an account with [premium].
+    Future<void> openFor(
+      WidgetTester tester,
+      MyPremium premium, {
+      FakeStorePrices? prices,
+      bool offer = true,
+    }) async {
+      await pump(
+        tester,
+        settings(),
+        premium: FakePremiumServer(premium: premium, offer: offer),
+        prices: prices,
+      );
+      await tapKey(tester, 'account-delete');
+    }
+
+    testWidgets('an account with Premium confirms that it is not refunded '
+        'before Delete works', (tester) async {
+      await openFor(tester, MyPremium.active);
+      expect(find.text(premiumText), findsOneWidget);
+      expect(find.text(ackText), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('account-delete-refund-help')),
+        findsOneWidget,
+      );
+      expect(manage, findsNothing, reason: 'no plan of the account renews');
+      await confirm(tester);
+      expect(confirmEnabled(tester), isFalse, reason: 'not acknowledged yet');
+
+      await tapKey(tester, 'account-delete-premium-ack');
+      expect(confirmEnabled(tester), isTrue);
+      await tapKey(tester, 'account-delete-confirm');
+      expect(account.deleteCalls, 1);
+    });
+
+    testWidgets("a renewing yearly plan offers the store's subscription "
+        'management, and still asks for the tick', (tester) async {
+      final prices = FakeStorePrices(fakeStorePrices, manages: true);
+      await openFor(tester, MyPremium.billed, prices: prices);
+      expect(find.text(premiumText), findsOneWidget);
+      expect(
+        find.descendant(of: manage, matching: find.text('Abo verwalten')),
+        findsOneWidget,
+      );
+      await tapKey(tester, 'account-delete-manage');
+      expect(prices.manageCalls, 1);
+      expect(
+        find.byKey(const ValueKey('account-delete-dialog')),
+        findsOneWidget,
+        reason: 'the deletion waits for the user',
+      );
+      await confirm(tester);
+      expect(confirmEnabled(tester), isFalse);
+      await tapKey(tester, 'account-delete-premium-ack');
+      expect(confirmEnabled(tester), isTrue);
+    });
+
+    testWidgets('the card shows whatever happens to the households', (
+      tester,
+    ) async {
+      account.fateResult = const [];
+      await openFor(tester, MyPremium.active);
+      expect(card, findsOneWidget);
+      expect(ack, findsOneWidget);
+    });
+
+    for (final offer in [true, false]) {
+      testWidgets('without Premium of its own the last member is asked '
+          "nothing more (sale ${offer ? 'open' : 'closed'})", (tester) async {
+        account.fateResult = const [FateDeleted('Zuhause')];
+        await openFor(tester, MyPremium.none, offer: offer);
+        expect(card, findsNothing);
+        expect(ack, findsNothing);
+        await confirm(tester);
+        expect(confirmEnabled(tester), isTrue);
+      });
+    }
+
+    testWidgets('when its Premium cannot be read, the dialog says so and '
+        'offers no Delete', (tester) async {
+      await pump(
+        tester,
+        settings(),
+        premium: FakePremiumServer(premium: MyPremium.active)
+          ..premiumFails = true,
+      );
+      await tapKey(tester, 'account-delete');
+      expect(
+        find.textContaining(
+          'Was mit deinem Haushalt passiert, konnte nicht geladen werden',
+        ),
+        findsOneWidget,
+      );
+      expect(card, findsNothing);
+      expect(
+        find.byKey(const ValueKey('account-delete-confirm-field')),
+        findsNothing,
+      );
+      expect(confirmEnabled(tester), isFalse);
+    });
+
+    testWidgets('the refund help opens from the card', (tester) async {
+      await openFor(tester, MyPremium.active);
+      await tapKey(tester, 'account-delete-refund-help');
+      expect(find.textContaining('reportaproblem.apple.com'), findsWidgets);
+    });
+
+    testWidgets('unticking the box disables Delete again', (tester) async {
+      await openFor(tester, MyPremium.active);
+      await confirm(tester);
+      await tapKey(tester, 'account-delete-premium-ack');
+      await tapKey(tester, 'account-delete-premium-ack');
+      expect(confirmEnabled(tester), isFalse);
+    });
+
+    testWidgets('in English', (tester) async {
+      await pump(
+        tester,
+        settings(),
+        premium: FakePremiumServer(premium: MyPremium.billed),
+        locale: const Locale('en'),
+      );
+      await tapKey(tester, 'account-delete');
+      expect(
+        find.text(
+          'You have Snacklist Premium. It belongs to your account and ends '
+          'when you delete it. If you have a yearly subscription, Apple or '
+          'Google keep billing you: cancel it first in the App Store or on '
+          'Google Play.',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.text(
+          'I know: Premium ends. I will not get my money back on its own.',
+        ),
+        findsOneWidget,
+      );
+    });
+  });
+
+  group('archived households go with the account (job 68)', () {
     /// The dialog alone, with the archive UI's flag as [archiveTexts].
     Future<void> openWith(
       WidgetTester tester, {
       required bool archiveTexts,
-      Locale locale = const Locale('de'),
     }) async {
       await pump(
         tester,
@@ -567,113 +720,14 @@ void main() {
             ),
           ),
         ),
-        locale: locale,
       );
       await tapKey(tester, 'open');
     }
 
-    const premiumText =
-        '„Zuhause“ hat Snacklist Premium. Es gehört zum Haushalt und endet mit '
-        'ihm. Archivieren geht hier nicht, denn ein archivierter Haushalt wird '
-        'mit deinem Konto gelöscht. Soll der Haushalt mit Premium bleiben, '
-        'lade vorher jemanden ein und lösche dein Konto erst, wenn die Person '
-        'beigetreten ist.';
-    const releaseText =
-        '„Zuhause“ hat Snacklist Premium. Das gehört zum Haushalt. Löschst du '
-        'dein Konto, endet es. Soll es bleiben? Dann lad erst jemand ein. '
-        'Warte, bis die Person beigetreten ist. Lösch dann dein Konto.';
     final ack = find.byKey(const ValueKey('account-delete-premium-ack'));
 
-    testWidgets('the last member of an unlocked household confirms that '
-        'Premium is not refunded before Delete works', (tester) async {
-      account.fateResult = const [FateDeleted('Zuhause', unlocked: true)];
-      await openWith(tester, archiveTexts: true);
-
-      expect(find.text(premiumText), findsOneWidget);
-      expect(
-        find.text(
-          'Ich weiß: Premium endet. Ich bekomme mein Geld nicht von selbst '
-          'zurück.',
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey('account-delete-refund-help')),
-        findsOneWidget,
-      );
-      await confirm(tester);
-      expect(confirmEnabled(tester), isFalse, reason: 'not acknowledged yet');
-
-      await tapKey(tester, 'account-delete-premium-ack');
-      expect(confirmEnabled(tester), isTrue);
-      await tapKey(tester, 'account-delete-confirm');
-      expect(account.deleteCalls, 1);
-    });
-
-    testWidgets('the refund help opens from the warning', (tester) async {
-      account.fateResult = const [FateDeleted('Zuhause', unlocked: true)];
-      await openWith(tester, archiveTexts: true);
-      await tapKey(tester, 'account-delete-refund-help');
-      expect(find.textContaining('reportaproblem.apple.com'), findsWidgets);
-    });
-
-    testWidgets('unticking the box disables Delete again', (tester) async {
-      account.fateResult = const [FateDeleted('Zuhause', unlocked: true)];
-      await openWith(tester, archiveTexts: true);
-      await confirm(tester);
-      await tapKey(tester, 'account-delete-premium-ack');
-      await tapKey(tester, 'account-delete-premium-ack');
-      expect(confirmEnabled(tester), isFalse);
-    });
-
-    testWidgets('a household without premium asks nothing more', (
-      tester,
-    ) async {
-      account.fateResult = const [FateDeleted('Zuhause')];
-      await openWith(tester, archiveTexts: true);
-      expect(find.text(premiumText), findsNothing);
-      expect(ack, findsNothing);
-      await confirm(tester);
-      expect(confirmEnabled(tester), isTrue);
-    });
-
-    testWidgets('with the archive UI off the last member is still warned, '
-        'without archived households or the archive sentence (job 104)', (
-      tester,
-    ) async {
-      account
-        ..fateResult = const [FateDeleted('Zuhause', unlocked: true)]
-        ..archived = [const ArchivedFate('Ferien', unlocked: true)];
-      await openWith(tester, archiveTexts: false);
-      expect(find.text(premiumText), findsNothing);
-      expect(find.text(releaseText), findsOneWidget);
-      expect(ack, findsOneWidget);
-      expect(
-        find.byKey(const ValueKey('account-delete-archived')),
-        findsNothing,
-      );
-      await confirm(tester);
-      expect(confirmEnabled(tester), isFalse);
-      await tapKey(tester, 'account-delete-premium-ack');
-      expect(confirmEnabled(tester), isTrue);
-    });
-
-    testWidgets('with the archive UI off an archived household with premium '
-        'asks nothing', (tester) async {
-      account
-        ..fateResult = const [
-          FateKept('Zuhause', ['Lea']),
-        ]
-        ..archived = [const ArchivedFate('Ferien', unlocked: true)];
-      await openWith(tester, archiveTexts: false);
-      expect(ack, findsNothing);
-      await confirm(tester);
-      expect(confirmEnabled(tester), isTrue);
-    });
-
-    testWidgets('an unlocked archived household goes too, and asks the same', (
-      tester,
-    ) async {
+    testWidgets("an archived household's premium is not named (Legal N-369), "
+        "and only the account's own asks for the tick", (tester) async {
       account
         ..fateResult = const [
           FateKept('Zuhause', ['Lea']),
@@ -683,15 +737,29 @@ void main() {
       expect(
         find.text(
           'Dein archivierter Haushalt „Ferien“ wird mit deinem Konto '
-          'gelöscht, und mit ihm sein Snacklist Premium.',
+          'gelöscht.',
         ),
         findsOneWidget,
       );
-      expect(find.text(premiumText), findsNothing, reason: 'Lea keeps it');
+      expect(ack, findsNothing);
       await confirm(tester);
-      expect(confirmEnabled(tester), isFalse);
-      await tapKey(tester, 'account-delete-premium-ack');
       expect(confirmEnabled(tester), isTrue);
+    });
+
+    testWidgets('with the archive UI off archived households are not named', (
+      tester,
+    ) async {
+      account
+        ..fateResult = const [
+          FateKept('Zuhause', ['Lea']),
+        ]
+        ..archived = [const ArchivedFate('Ferien', unlocked: true)];
+      await openWith(tester, archiveTexts: false);
+      expect(
+        find.byKey(const ValueKey('account-delete-archived')),
+        findsNothing,
+      );
+      expect(ack, findsNothing);
     });
 
     testWidgets('archived households without premium are named, nothing '
@@ -711,106 +779,6 @@ void main() {
       expect(ack, findsNothing);
       await confirm(tester);
       expect(confirmEnabled(tester), isTrue);
-    });
-
-    for (final (offer, text) in [(true, premiumText), (false, releaseText)]) {
-      testWidgets('from the account page with the Premium sale '
-          '${offer ? 'open' : 'closed'} and the archive UI off, the warning '
-          'is shown${offer ? '' : ' without the archive sentence'}', (
-        tester,
-      ) async {
-        account.fateResult = const [FateDeleted('Zuhause', unlocked: true)];
-        await pump(
-          tester,
-          settings(),
-          premium: FakePremiumServer(offer: offer),
-        );
-        await tapKey(tester, 'account-delete');
-        expect(find.text(text), findsOneWidget);
-        await confirm(tester);
-        expect(confirmEnabled(tester), isFalse);
-      });
-    }
-
-    // Job 104: release builds (archive UI and Premium sale off) warn whenever
-    // the household has premium now. The dialog only gets leaves_unlocked()'s
-    // answer; that gifted, Lifetime and yearly all count is proven in
-    // supabase/tests/leaves_unlocked.test.sql.
-    for (final (premium, fate, warned) in [
-      (
-        'premium of any kind',
-        const FateDeleted('Zuhause', unlocked: true),
-        true,
-      ),
-      ('no premium', const FateDeleted('Zuhause'), false),
-      ('premium, but Lea stays', const FateKept('Zuhause', ['Lea']), false),
-    ]) {
-      testWidgets('in a release build, deleting with $premium '
-          '${warned ? 'warns' : 'does not warn'}', (tester) async {
-        account.fateResult = [fate];
-        await pump(
-          tester,
-          settings(),
-          premium: FakePremiumServer(offer: false),
-        );
-        await tapKey(tester, 'account-delete');
-        expect(find.text(releaseText), warned ? findsOneWidget : findsNothing);
-        expect(ack, warned ? findsOneWidget : findsNothing);
-        expect(
-          find.byKey(const ValueKey('account-delete-refund-help')),
-          warned ? findsOneWidget : findsNothing,
-        );
-        await confirm(tester);
-        expect(confirmEnabled(tester), !warned);
-        if (warned) {
-          await tapKey(tester, 'account-delete-premium-ack');
-          await tapKey(tester, 'account-delete-confirm');
-          expect(account.deleteCalls, 1);
-        }
-      });
-    }
-
-    testWidgets('in English, without the archive texts (job 104)', (
-      tester,
-    ) async {
-      account.fateResult = const [FateDeleted('Home', unlocked: true)];
-      await openWith(tester, archiveTexts: false, locale: const Locale('en'));
-      expect(
-        find.text(
-          '“Home” has Snacklist Premium. It belongs to the household. If you '
-          'delete your account, it ends. Do you want to keep it? Then ask '
-          'someone to join first. Wait until they have joined. Then delete '
-          'your account.',
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.text(
-          'I know: Premium ends. I will not get my money back on its own.',
-        ),
-        findsOneWidget,
-      );
-    });
-
-    testWidgets('in English', (tester) async {
-      account.fateResult = const [FateDeleted('Home', unlocked: true)];
-      await openWith(tester, archiveTexts: true, locale: const Locale('en'));
-      expect(
-        find.text(
-          '“Home” has Snacklist Premium. It belongs to the household and ends '
-          "with it. Archiving isn't possible here, because an archived "
-          'household is deleted with your account. To keep the household '
-          'with Premium, invite someone first and delete your account only '
-          'after they have joined.',
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.text(
-          'I know: Premium ends. I will not get my money back on its own.',
-        ),
-        findsOneWidget,
-      );
     });
   });
 }

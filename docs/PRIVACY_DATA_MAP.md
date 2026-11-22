@@ -149,8 +149,9 @@ uninstall removes it. Hint and checklist events go to PostHog only after the ana
 
 Apple and Google take the payment as independent controllers (Apple as commissionaire, Google as
 merchant of record); Snacklist gets no payment data and no store account name or email. Docs:
-`docs/PURCHASES.md`. Policy text: draft section 5a (`site/content/legal/datenschutz-kaeufe.md`,
-`privacy-purchases.md`), until Peter approves it into the policy.
+`docs/PURCHASES.md`. Policy text: the per-account purchase section of the privacy policy (Legal
+N-326); the old household drafts `datenschutz-kaeufe.md` and `privacy-purchases.md` were deleted
+(Legal N-364).
 
 | Data | Where | Purpose | Basis | Kept | Processor / region | Deletion | Source |
 | --- | --- | --- | --- | --- | --- | --- | --- |

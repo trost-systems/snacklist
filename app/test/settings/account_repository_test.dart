@@ -104,8 +104,7 @@ void main() {
     final server = FakeHouseholds(auth)
       ..member('peter', 'home', 'Zuhause')
       ..member('lea', 'home', 'Zuhause')
-      ..member('peter', 'club', 'Sommerfest')
-      ..unlocked.add('club');
+      ..member('peter', 'club', 'Sommerfest');
     final fate = await SupabaseAccountRepository(server).fate();
     expect(fate.households, hasLength(2));
     expect(
@@ -118,11 +117,8 @@ void main() {
     );
     expect(
       fate.households.last,
-      isA<FateDeleted>()
-          .having((f) => f.householdName, 'name', 'Sommerfest')
-          .having((f) => f.unlocked, 'unlocked', isTrue),
+      isA<FateDeleted>().having((f) => f.householdName, 'name', 'Sommerfest'),
     );
-    expect(fate.endsPremium, isTrue);
     expect(
       server.calls.where((c) => c.startsWith('household_members')),
       isEmpty,
