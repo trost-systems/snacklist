@@ -2266,3 +2266,10 @@ letter, „Schütteln für Feedback“ breaks mid-word; at 200 % on the web the 
 is clipped at the bottom. RD-Q6 is the round for these. A tester without the analytics yes who
 starts offline, or closes the app before PostHog answers, gets hex at the next start (the shared
 cached flags hold no tester answers); with the analytics yes the look holds.
+
+## Job 384: land #631, #612, #633 (2026-11-22)
+- Landed under the merge lock: #631 as 077a62630e7acf5caaf001524358f1dc50c0f9ce (PR head d2f24bf4b), #612 as 70fb429857bbb35c4ef994867a229a9f0fa01d51 (PR head a2509bf3c), #633 as 7d270be13a5aa855242416ae07334626f4d376c5 (PR head bf2a2cf2e). The grant script (--apply) was not run.
+- #633: only the date lines changed, to 22 November 2026; datenschutz.md 65f2d930ede53c84f96bac4e3d621e1392c407644c3b5da94b0b242132c5a851, privacy.md 64622e5cc519ecd0bc59941d851d4b5edb75aa91540049517617546cf36db1ee. Live on snacklist.app (/datenschutz#premium-beta, /en/privacy).
+- ARB check per PR: changed +/- lines of the rebased commit equal those of the GO'd head (whole-file hashes moved with #624 and #639). ARBs on main: de aa1bb9c4b66a05c0, en 9c00ee367f4e4c82.
+- Review 0 correction: #631 merged d2f24bf4b, not the GO'd 9764f98f. Job 371b had pushed a docs-only update (new N-347 cut-off rule, a fixed time T) that my second rebase carried in without a re-check against the GO. No ARB, app, supabase or site text changed. Reported to the lead in NEEDS_LEAD ("Job 384: correction after review"), who decides on a Legal re-check before any --apply.
+- #612 conflicts (flags.dart, flags.json, start goldens) resolved without text changes; goldens regenerated and green on CI.
