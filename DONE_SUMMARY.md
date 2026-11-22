@@ -2137,3 +2137,7 @@ order (`GET`/`PUT /v1/stores/{id}/layout`). The MCP list and store writes are bu
 `app_switches.mcp_lists_stores`, seeded off until Legal approves the §7 text in NEEDS_LEAD (stores
 too: a deviation from the brief). Probe 305/305, 284 Deno tests, the release web app shows the
 API's changes. Builds on #605 (job 344). Details: `docs/done/345-api-mcp-suggest-lists-stores.md`.
+
+## Job 358: writers doc, API status and key dialog wording
+
+FEATURES-FOR-WRITERS.md (API section): on for everyone was already right (checked: `releases/flags.json`, #598), now quotes the approved EN "Lesen und schreiben" dialog sentence and says #605/#615 are live (review fix: the deploy-token caveat is gone). ARB files untouched and still on the older sentence; the app needs the EN sentence plus a DE one. NEEDS_LEAD "Job 358: merged" added. Docs only, no app change; not driven. Landed in #617 and a follow-up.
