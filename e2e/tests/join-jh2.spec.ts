@@ -151,7 +151,7 @@ test('name step: a typed code shows who invites at the eighth character; a dead 
   const email = newEmail('jh2-code-lea');
 
   await page.goto('/start');
-  await expect(page.getByRole('button', { name: 'Schon ein Konto', exact: true })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole('button', { name: 'Ich habe schon ein Konto', exact: true })).toBeVisible({ timeout: 15_000 });
   await expect(page.getByRole('button', { name: 'Einladung einfügen' }), 'no Paste invite').toBeHidden();
   await screenshot(page, '271-de-light-start');
 
@@ -202,7 +202,7 @@ test('flag off: the start screen, Paste invite and the sign-in for an invite sta
   const owner = await serverHousehold('jh2-off', 'Familie Brandt', 'Peter Trost');
   const page = await newPage(browser, { on: false });
   await page.goto('/start');
-  await expect(page.getByRole('button', { name: 'Schon ein Konto? Anmelden', exact: true })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole('button', { name: 'Ich habe schon ein Konto', exact: true })).toBeVisible({ timeout: 15_000 });
   await expect(page.getByRole('button', { name: 'Einladung einfügen' })).toBeVisible();
 
   await openJoinLink(page, `/join/${owner.code}`);

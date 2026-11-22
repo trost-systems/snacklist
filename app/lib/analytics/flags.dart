@@ -148,6 +148,13 @@ const redesignRd1Flag = 'redesign-rd1';
 /// job 237 built it.
 const totalPricedOnlyFlag = 'total-priced-only';
 
+/// The flag that takes a joiner straight to the shared list (job 356): the
+/// invite link (also without JH2) or a code typed in the guided start (JH2)
+/// joins after the sign-in and the name step without asking again, and the
+/// sign-in for an invite says in one line why an account is needed. Off,
+/// joining works as before.
+const joinerDirectListFlag = 'joiner-direct-list';
+
 /// PostHog feature flags, the app's runtime toggles (job 44,
 /// docs/ANALYTICS.md "Feature flags"). Read a toggle with [isOn] wherever it
 /// matters; nothing else in the app reads PostHog flags.

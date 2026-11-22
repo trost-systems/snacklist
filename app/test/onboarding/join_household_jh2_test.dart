@@ -431,7 +431,7 @@ void main() {
   });
 
   group('the start screens', () {
-    testWidgets("with JH2: Los geht's and Schon ein Konto, no paste", (
+    testWidgets("with JH2: Los geht's and Ich habe schon ein Konto, no paste", (
       tester,
     ) async {
       final o = await pumpOnboarding(
@@ -442,7 +442,7 @@ void main() {
       );
       expect(location(o), '/start');
       expect(find.text("Los geht's"), findsOneWidget);
-      expect(find.text('Schon ein Konto'), findsOneWidget);
+      expect(find.text('Ich habe schon ein Konto'), findsOneWidget);
       expect(key('invite-paste'), findsNothing);
       await tapKey(tester, 'start-log-in');
       expect(location(o), '/login');

@@ -89,7 +89,7 @@ Future<void> _pumpLogin(WidgetTester tester, Brightness brightness) async {
   await tester.pumpAndSettle();
 }
 
-/// The signed-out start screen with "Already have an account?" and the
+/// The signed-out start screen with "I already have an account" and the
 /// paste-invite button below the primary action.
 Future<void> _pumpStart(
   WidgetTester tester,

@@ -64,6 +64,10 @@ class _LoginScreenState() extends State<LoginScreen> {
     final jh2 = context.select<Flags?, bool>(
       (f) => f?.isOn(joinHouseholdJh2Flag) ?? false,
     );
+    final joinerWhy = context.select<Flags?, bool>(
+      (f) => f?.isOn(joinerDirectListFlag) ?? false,
+    );
+    final theme = Theme.of(context);
     if (jh2 && invite != null && !_askedIntent) {
       _askIntent();
     }
@@ -92,7 +96,22 @@ class _LoginScreenState() extends State<LoginScreen> {
               : Uri(path: '/', queryParameters: {'invite': invite}).toString(),
       },
       intent: _intent,
-      header: const BrandBlock(),
+      header: joinerWhy && invite != null
+          ? Column(
+              children: [
+                const BrandBlock(),
+                const SizedBox(height: HlSpace.s3),
+                Text(
+                  l10n.joinerAccountWhy,
+                  key: const ValueKey('joiner-account-why'),
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: SnacklistColors.of(theme.brightness).textMuted,
+                  ),
+                ),
+              ],
+            )
+          : const BrandBlock(),
       // Job 168b: back to the guided start (resumed if under way); not for
       // an invite or a link, which want this account. Inside the form, so
       // it never takes the form's height (a phone turned sideways).

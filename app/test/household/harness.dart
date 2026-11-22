@@ -742,6 +742,10 @@ Future<Onboarding> pumpOnboarding(
 
   /// The PostHog flags; all off by default.
   Flags? flags,
+
+  /// Whether the router asks „Wie sollen wir dich nennen?“ (`/your-name`,
+  /// a stub here); set it false to say the name was given.
+  ValueNotifier<bool>? askName,
 }) async {
   tester.view
     ..devicePixelRatio = 1
@@ -790,6 +794,7 @@ Future<Onboarding> pumpOnboarding(
       _SessionListenable(testSession),
       _SessionListenable(onboarding),
       _SessionListenable(analytics),
+      ?askName,
     ]),
     redirect: (_, state) {
       if (inviteIn(state.uri) case final code?) {
@@ -801,6 +806,7 @@ Future<Onboarding> pumpOnboarding(
         pendingInvite: pending.code,
         draft: onboarding.state,
         askConsent: analytics.asksConsent,
+        askName: askName?.value ?? false,
       );
     },
     routes: [
@@ -817,6 +823,7 @@ Future<Onboarding> pumpOnboarding(
         ),
       ),
       GoRoute(path: consentPath, builder: (_, _) => const Text('CONSENT')),
+      GoRoute(path: yourNamePath, builder: (_, _) => const Text('YOUR NAME')),
       GoRoute(
         path: invitesPath,
         builder: (_, _) => const Scaffold(body: InvitesPage()),

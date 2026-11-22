@@ -66,10 +66,11 @@ class const JoinState({
 /// the field as typed, says why (one answer for made-up, expired, revoked
 /// and used codes; the rate limit; no connection) and can be retried.
 ///
-/// With JH2 on ([flags], job 271) the [link]'s household is joined as soon
-/// as it is previewed, without asking again (JH-Q6), also when the flag
-/// comes on after the preview. A guided start not set up yet is dropped
-/// first ([onboarding]): its setup must not run into that household.
+/// With JH2 (job 271) or joiner-direct-list (job 356) on ([flags]) the
+/// [link]'s household is joined as soon as it is previewed, without asking
+/// again (JH-Q6), also when a flag comes on after the preview. A guided
+/// start not set up yet is dropped first ([onboarding]): its setup must not
+/// run into that household.
 class JoinCubit(
   final InviteRepository _invites,
   final SessionCubit _session, {
@@ -95,9 +96,12 @@ class JoinCubit(
 
   Future<void> _joinLink() async {
     final link = this.link;
+    final withoutAsking =
+        (flags?.isOn(joinHouseholdJh2Flag) ?? false) ||
+        (flags?.isOn(joinerDirectListFlag) ?? false);
     if (_linkJoined ||
         link == null ||
-        !(flags?.isOn(joinHouseholdJh2Flag) ?? false) ||
+        !withoutAsking ||
         state.phase != JoinPhase.previewed ||
         state.problem != null ||
         _checked != normalizeInviteCode(link)) {

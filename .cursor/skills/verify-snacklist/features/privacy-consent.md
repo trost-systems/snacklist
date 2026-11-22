@@ -17,7 +17,7 @@ Builds that carry an analytics key (the web app, TestFlight and Play builds) ask
 ## How to get to it (user POV)
 
 - Signed out on a new device: „Los geht's“ on the start screen; the question is the first step.
-- Or right after the first sign-in or sign-up on a device (from „Schon ein Konto“, an invite link or a link to a screen): the question appears before the name step (display-name), „Willkommen bei Snacklist“ and the list.
+- Or right after the first sign-in or sign-up on a device (from „Ich habe schon ein Konto“, an invite link or a link to a screen): the question appears before the name step (display-name), „Willkommen bei Snacklist“ and the list.
 - Later: tab „Mehr“ / "More" → „Nutzungsdaten“ / "Usage data" → the switch. This is the path the consent text names.
 - The privacy page: the link „Datenschutzerklärung“ / "privacy policy" in the question, or More → „Datenschutzerklärung“ / "Privacy policy" (in the group below „Hilfe & Kontakt“).
 

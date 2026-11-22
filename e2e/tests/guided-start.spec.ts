@@ -69,7 +69,7 @@ test('signed out: the questions first, kept across a reload, then the account; t
   const email = newEmail('guided');
   await page.goto('/');
   await expect(page).toHaveURL(/\/start$/);
-  await expect(page.getByRole('button', { name: 'Schon ein Konto? Anmelden', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Ich habe schon ein Konto', exact: true })).toBeVisible();
   await screenshot(page, '168b-01-start');
 
   await letsGo(page);

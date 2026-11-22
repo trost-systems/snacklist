@@ -2423,7 +2423,7 @@ abstract class AppLocalizations {
   /// Guided start, first screen: secondary button to the sign-in
   ///
   /// In de, this message translates to:
-  /// **'Schon ein Konto? Anmelden'**
+  /// **'Ich habe schon ein Konto'**
   String get startLogIn;
 
   /// Sign-in screen: link back to the guided start
@@ -2431,6 +2431,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Neu bei Snacklist? Los geht\'s'**
   String get loginNew;
+
+  /// Sign-in screen for an invite, under the logo: why a joiner needs an account (job 356, flag joiner-direct-list). New joiner sign-in copy, pending Legal
+  ///
+  /// In de, this message translates to:
+  /// **'Ein Konto brauchst du, damit die gemeinsame Liste mit dem Haushalt synchron bleibt, zu dem du eingeladen wurdest.'**
+  String get joinerAccountWhy;
 
   /// Guided start: progress under the title
   ///
@@ -5417,7 +5423,7 @@ abstract class AppLocalizations {
   /// Job 271 JH2: the start screen's second button, to the sign-in
   ///
   /// In de, this message translates to:
-  /// **'Schon ein Konto'**
+  /// **'Ich habe schon ein Konto'**
   String get jh2StartHaveAccount;
 
   /// Job 271 JH2: the household-name step's second button, to the code step

@@ -12,10 +12,10 @@ import 'package:material_ui/material_ui.dart';
 
 /// The first screen signed out (job 168b): the app icon and wordmark, what
 /// Snacklist is, „Los geht's“ into the guided start (the usage-data question
-/// first, unless this install answered it), „Schon ein Konto? Anmelden“
+/// first, unless this install answered it), „Ich habe schon ein Konto“
 /// and „Einladung einfügen“ for a join link copied before the install. With
-/// JH2 (job 271) only „Los geht's“ and „Schon ein Konto“: joining is the
-/// name step's. The router moves on once the draft exists.
+/// JH2 (job 271) only „Los geht's“ and „Ich habe schon ein Konto“:
+/// joining is the name step's. The router moves on once the draft exists.
 class const StartScreen({super.key}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
