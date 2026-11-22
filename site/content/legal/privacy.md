@@ -4,13 +4,13 @@ description: "Privacy policy of Snacklist: which data the app and the website pr
 locale: en
 path: /en/privacy
 translation_key: privacy
-updated: 2026-11-21
+updated: 2026-11-22
 ---
 
 # Privacy policy
 
 This is a translation. The [German version](/datenschutz) is authoritative.
-Last updated: 21 November 2026
+Last updated: 22 November 2026
 
 This page explains which personal data Snacklist processes, why, on what legal basis, who receives it and what rights you have. Snacklist is a shopping-list app for households on iPhone, Android and in the browser (app.snacklist.app), with the website snacklist.app.
 
@@ -62,6 +62,8 @@ You can be a member of several households. We store what you enter in Snacklist:
 Prices and trips: You can add a price to an item. We store it with the item, with unit, currency and time, but not who entered it, plus the household's currency (euro to start with). All members of the household see the prices, the list's total and the total per store. In the "History" tab you can log shopping trips; each store is its own trip. For each trip we store the store (with its name at that time), the day, a copy of the ticked items (name and quantity, no price) and who logged it. If you start a trip in the app, we also store its start, end, pauses and duration, who started it and, for each item, its name, quantity, store, whether it was planned and bought, the planned and the paid price, whether another member ticked it and who added it. All members of the household see the trips and can delete them; trips logged by hand can also be edited. Without Snacklist Premium the app shows the trips of the last 4 weeks and only a summary of started trips; older trips and the items stay stored and are visible with Premium. Whatever is on the list ends up in the history the same way, for example drugstore or pharmacy items; for stores whose name marks them as a pharmacy, the app does not suggest logging a trip and leaves their items out of started trips. We do not analyse trips and share them with no one but the members of the household. We keep prices on items until a member deletes the price or the item, and trips (for started trips, with their prices) until a member deletes them, in each case at most until the household is deleted.
 
 Legal basis: Art. 6(1)(b) GDPR.
+
+If you don't start a trip, Snacklist also detects trips from the times you tick items and the store your household gave the item, without location, Wi-Fi or other sensors. For this we also store the time you tapped on your device, but only for this detection and only for ticks in the app; we do not use ticks made through Siri, Alexa, AI assistants or the API for it. From that order the list learns how your household walks a store and sorts itself that way. Other members of the household see the day, store, duration and items of your detected trips in History, but not the trip's start, end or pauses; a trip several people shopped together shows those times to nobody. The time of each tick stays visible on the item to the members as it does today. Others see a detected trip only after you have seen the note about your first detected trip. Snacklist detects no trips at pharmacies and learns nothing from them; this follows from the store's name. If you answer "Are you shopping right now?" with "No, just tick it off", or you dismiss the question, Snacklist detects no trip from those ticks and learns nothing from them; we keep that answer for 15 days. The legal basis is our legitimate interest in showing you a list in your store's order and in giving you a history (Art. 6(1)(f) GDPR). You can object at any time: turn off "Detect trips from my ticks" under More › Settings. Snacklist then stops detecting trips from your ticks and deletes the detected ones nobody has edited, the stored tap times and the stored "No" answers; they do not come back if you turn it on again. Any member can remove a detected trip with "Not a shopping trip". Detected trips are kept until they are removed or the household is deleted, and they are part of your data export.
 
 With "I'll bring it" you say on an open item that you will bring it, with an amount if you like (for example "2 cakes"). We store who brings which item, the amount and when. All members of the household see this with your display name. The claim ends and we delete it when you take it back, the item is ticked off or deleted, its list is deleted, you leave the household or are removed, or you delete your account.
 Legal basis: Art. 6(1)(b) GDPR.
