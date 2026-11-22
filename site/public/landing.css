@@ -681,11 +681,18 @@
   --wall: var(--hl-color-tomato-edge);
 }
 
-/* Launch: the official store badges, Apple's at its minimum height of 40 px with a quarter of it
-   clear around; Google's PNG is drawn 60 px tall so its visible badge is at least Apple's height,
-   with the same clear space. A QR code shows only for desktop visitors with a mouse (data-os,
-   public/get-app.js); an unknown touch browser gets both badges only. */
+/* Launch: the official store badges, drawn --badge-h tall with a quarter of that clear around. Google's
+   PNGs carry their own margin and differ per locale: the visible badge is --play-vis of 250 px tall
+   (en 168, de 192, measured from the alpha), so the image is drawn 250/--play-vis times --badge-h and
+   centred in the same box as Apple's: both visible badges are exactly --badge-h tall. The en PNG has
+   a side margin of about a quarter already, the de one none (--play-pad). A QR code shows only for
+   desktop visitors with a mouse (data-os, public/get-app.js); an unknown touch browser gets both
+   badges only. */
 .store-cards {
+  --badge-h: 40px;
+  --badge-box: calc(var(--badge-h) * 1.5);
+  --play-vis: 168;
+  --play-pad: 0px;
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
@@ -695,15 +702,16 @@
   list-style: none;
 }
 
-/* In the hero the two badges share a centre line; Google's PNG carries its own margin. */
+/* In the hero the badges are larger and share a centre line. */
 .hero-actions .store-cards {
+  --badge-h: 56px;
   align-items: center;
 }
 
 .store-card {
   display: grid;
   gap: var(--hl-space-3);
-  justify-items: start;
+  justify-items: center;
 }
 
 [data-os="ios"] .store-card--play,
@@ -714,18 +722,33 @@
 .store-badge {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: var(--badge-box);
   min-height: var(--hl-size-target);
-  padding: 10px;
+}
+
+.store-card--app-store .store-badge {
+  padding-inline: calc(var(--badge-h) / 4);
+}
+
+.store-card--play .store-badge {
+  padding-inline: var(--play-pad);
 }
 
 .store-badge img {
   display: block;
   width: auto;
-  height: 40px;
+  height: var(--badge-h);
 }
 
 .store-card--play .store-badge img {
-  height: 60px;
+  height: calc(var(--badge-h) * 250 / var(--play-vis));
+}
+
+:lang(de) .store-cards {
+  --play-vis: 192;
+  --play-pad: calc(var(--badge-h) / 4);
 }
 
 .store-qr {
@@ -733,21 +756,40 @@
   margin: 0;
 }
 
+.store-qr figcaption {
+  text-align: center;
+}
+
 /* The browser app, the second way in, under the badges. */
 .web-app {
   margin: var(--hl-space-2) 0 0;
 }
 
+/* With QR codes the two cards share rows (badge, QR, caption), so each row lines up across them. */
 @media (hover: hover) and (pointer: fine) {
-  [data-os="desktop"] .store-qr {
+  [data-os="desktop"] .cta .store-cards {
     display: grid;
-    gap: var(--hl-space-2);
-    justify-items: start;
+    grid-template-columns: repeat(2, max-content);
+    grid-template-rows: auto auto auto;
+    gap: 0 var(--hl-space-6);
+    align-items: start;
   }
-}
 
-.store-card--app-store .store-qr {
-  padding-inline: 10px;
+  [data-os="desktop"] .cta .store-card {
+    display: grid;
+    grid-row: span 3;
+    grid-template-rows: subgrid;
+    row-gap: var(--hl-space-3);
+    justify-items: center;
+  }
+
+  [data-os="desktop"] .cta .store-qr {
+    display: contents;
+  }
+
+  [data-os="desktop"] .cta .store-qr figcaption {
+    max-width: 24ch;
+  }
 }
 
 .store-qr svg {
@@ -755,6 +797,25 @@
   height: 148px;
   border: var(--hl-border-width) solid var(--hl-color-ink);
   border-radius: var(--hl-radius-s);
+}
+
+@media (max-width: 37.5rem) {
+  .hero-actions .store-cards {
+    --badge-h: 48px;
+  }
+}
+
+/* Two columns need about 640 px with the longest (German) captions: stack below that. */
+@media (max-width: 640px) {
+  [data-os="desktop"] .cta .store-cards {
+    grid-template-columns: max-content;
+    justify-self: center;
+    row-gap: var(--hl-space-5);
+  }
+
+  [data-os="desktop"] .cta .store-qr figcaption {
+    text-align: center;
+  }
 }
 
 .landing .site-footer {

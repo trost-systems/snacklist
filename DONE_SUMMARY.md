@@ -2441,3 +2441,9 @@ https://family-groceries-design-mt6zotnnw-peter-trost.vercel.app; the lead mints
 - Premium names no benefit while the lock is unreleased.
 - Privacy text vs the live Alexa skill (three mismatches).
 - The launch privacy line.
+
+## Job 406: Get Snacklist grid and larger hero store badges
+
+CSS only (`site/public/landing.css`); detail and checks in `docs/done/406.md`. Hero badges 56 px
+(48 px under 600 px) and equal in EN and DE; the Get Snacklist badge, QR and caption rows are shared
+across both columns. Screenshots in `docs/screenshots/406/`. Preview: dpl_1AexeqFqszDRvMEqXyhpi5qcpnKy.
