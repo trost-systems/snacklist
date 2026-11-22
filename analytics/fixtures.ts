@@ -147,8 +147,9 @@ export const payingEvents: Event[] = [
   ev('purchase_completed', '2027-01-06T10:00:00Z', id(12), H11, lifetime('h')),
   ev('purchase_refunded', '2027-01-20T10:00:00Z', id(12), H11, lifetime('h')),
 
-  // H12: a tester household. A RevenueCat promotional grant (a tester's) unlocks it without a
-  // purchase, and from then on the app marks the household's events is_internal. Its first event
+  // H12: a tester household. A RevenueCat promotional grant (a tester's, or since job 371 a beta
+  // account's lifetime grant) unlocks it without a purchase, so no purchase event is ever sent,
+  // and from then on the app marks the household's events is_internal. Its first event
   // came before the grant reached the app; it goes too, from both numerator and denominator.
   ev('first_open', '2027-01-05T11:00:00Z', id(13), null),
   ev('household_created', '2027-01-05T11:01:00Z', id(13), H12),

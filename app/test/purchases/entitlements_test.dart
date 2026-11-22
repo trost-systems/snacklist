@@ -461,6 +461,119 @@ void main() {
     });
   });
 
+  group('whose free unlock it is (FreeUnlock, job 371)', () {
+    final now = DateTime.utc(2026, 11, 1, 12);
+    const lifetime = {
+      'kind': 'premium',
+      'source': 'purchase',
+      'premium_source': 'lifetime',
+    };
+    Premium premiumOf(
+      List<Map<String, dynamic>> household, [
+      List<Map<String, dynamic>> own = const [],
+    ]) => unlocksOf(household).merge(unlocksOf(own, own: true)).premiumAt(now);
+    Matcher free(FreeUnlock? kind, {PremiumSource? source}) =>
+        isA<ActivePremium>()
+            .having(
+              (p) => p.source,
+              'source',
+              source ?? PremiumSource.promotional,
+            )
+            .having((p) => p.free, 'free', kind);
+
+    test("the user's own grant to 2100: lifetime as thanks for the beta", () {
+      expect(premiumOf([], [lifetimeGrantRow]), free(FreeUnlock.betaLifetime));
+    });
+
+    test("the user's own grant without end: the same", () {
+      expect(premiumOf([], [promotionalRow()]), free(FreeUnlock.betaLifetime));
+    });
+
+    test("a household's grant to 2100 or without end: testers'", () {
+      expect(premiumOf([lifetimeGrantRow]), free(FreeUnlock.tester));
+      expect(premiumOf([promotionalRow()]), free(FreeUnlock.tester));
+    });
+
+    test("a household's grant with an end before 2100: the beta's", () {
+      expect(
+        premiumOf([
+          {...promotionalRow(), 'expires_at': '2027-03-31T00:00:00Z'},
+        ]),
+        free(FreeUnlock.beta),
+      );
+    });
+
+    test("the user's own grant wins over the household's beta and tester "
+        'grants', () {
+      expect(
+        premiumOf([promotionalRow(from: now)], [lifetimeGrantRow]),
+        free(FreeUnlock.betaLifetime),
+      );
+      expect(
+        premiumOf([promotionalRow()], [lifetimeGrantRow]),
+        free(FreeUnlock.betaLifetime),
+      );
+    });
+
+    test('a bought Lifetime still wins and shows Lifetime', () {
+      expect(
+        premiumOf([lifetime], [lifetimeGrantRow]),
+        free(null, source: PremiumSource.lifetime),
+      );
+    });
+
+    test('next to a running yearly plan the grant names it', () {
+      expect(
+        premiumOf([yearlyRow(from: now)], [lifetimeGrantRow]),
+        free(FreeUnlock.betaLifetime),
+      );
+    });
+
+    test('a yearly plan alone has no free unlock', () {
+      expect(
+        premiumOf([yearlyRow(from: now)]),
+        free(null, source: PremiumSource.yearly),
+      );
+    });
+
+    test("the source marks the user's rows own, not the household's", () async {
+      final rows = FakeEntitlementsSource()
+        ..rowsNow = [promotionalRow(from: now)]
+        ..userRows['peter'] = [lifetimeGrantRow];
+      final unlocks = await rows.unlocks('home', 'peter');
+      expect([for (final r in unlocks.rows) r.own], [false, true]);
+    });
+
+    test('nothing is offered next to it, even with a yearly plan running', () {
+      fakeAsync((async) {
+        final session = TestSession(
+          const InHousehold('peter', Household(id: 'home', name: 'Zuhause'), [
+            Household(id: 'home', name: 'Zuhause'),
+          ]),
+        );
+        final entitlements = Entitlements(
+          FakeEntitlementsSource()
+            ..rowsNow = [yearlyRow(from: now)]
+            ..userRows['peter'] = [lifetimeGrantRow],
+          session,
+          now: () => now,
+        );
+        async.flushMicrotasks();
+        expect(entitlements.premium, free(FreeUnlock.betaLifetime));
+        for (final plan in PremiumPlan.values) {
+          expect(
+            entitlements.canOffer(Entitlement.premium, plan),
+            isFalse,
+            reason: plan.name,
+          );
+        }
+        unawaited(entitlements.close());
+        unawaited(session.close());
+        async.flushMicrotasks();
+      });
+    });
+  });
+
   group('what may be offered (canOffer, H-84)', () {
     final now = DateTime.utc(2026, 11, 1, 12);
 

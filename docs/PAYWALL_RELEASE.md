@@ -289,6 +289,41 @@ household, or a fresh test household without a promotional grant:
 
 Turn `premium_offer` off again when the run ends.
 
+5.3a **Lead**: lifetime Premium for every beta account (Peter, 22 Nov 2026, L5: "all beta users
+get lifetime premium for free"; job 371). A beta account is every confirmed account created
+before the sale opens in 5.4: all accounts so far came through the beta. Each gets a RevenueCat
+promotional grant of `premium` on its own customer (App User ID = the account id, per-user
+Premium) until 2100-01-01. RevenueCat's API v2 needs an end, and the app and the server treat
+2100 as for good. It covers API and MCP under the integration lock (6.4) and shows on the Premium
+page as „Snacklist Premium Lifetime, kostenlos als Dank für die Beta“ (Legal's text). Needs
+`REVENUECAT_SECRET_KEY`, `REVENUECAT_PROJECT_ID`, `REVENUECAT_DELETIONS_SECRET` and
+`SUPABASE_ACCESS_TOKEN` from `~/groceries-ops/env`. The script prints counts only, never an id.
+
+The public-launch cut-off is the moment the sale opens, fixed before the launch day: one time T
+in ISO 8601 with `Z` or an offset (for example `2027-01-15T09:00:00+01:00`). The 5.4 `update` runs
+at T, never before it. The privacy notice promises the grant to "every confirmed account that
+existed before the public launch" (Legal Review N-344), so every grant run passes exactly T as
+`--created-before` (N-347). `--apply` refuses to run without `--created-before`; it never takes
+the moment of the run as its cut-off. T may still be in the future when a run starts: accounts
+created later are picked up by the next run with the same T.
+
+1. Before the launch day, and again right before T, the dry run. It changes nothing and prints
+   how many accounts there are, how many already have the grant, how many need only the
+   reconcile, and how many need a grant:
+   `deno run --allow-env --allow-net scripts/iap/beta-lifetime.ts --created-before <T>`
+2. Shortly before T, the first grant run:
+   `... beta-lifetime.ts --created-before <T> --apply`. A run that reports failures exits 1; run
+   it again, same command. It skips every account that is done, so a rerun only finishes the rest.
+3. At T, not earlier: 5.4.
+4. Right after 5.4, the same command again, `... beta-lifetime.ts --created-before <T> --apply`:
+   it grants the accounts created between step 2 and T and skips the rest. Every later run (a
+   rerun, 6.2's check) passes the same T, never another value.
+
+Never revoke a beta household's existing promotional grant, not at the launch and not later
+(`revoke_granted_entitlement` ends every promotional grant of that customer at once). These
+grants end by themselves on the date they were given with. The account's own grant from this
+step keeps Premium after that.
+
 5.4 **Lead, Peter's yes**: the sale opens, together with 4.1:
 
 ```sql
@@ -328,14 +363,17 @@ Alexa certification (job 69): the reviewer's household relies on the lock being 
 first (6.2, needs Peter). Job 72 takes Alexa out of the lock (Alexa is free, Legal N-27); once
 that is on main this note no longer applies.
 
-6.1 **Peter's yes**: the households that keep the integrations for free
-(beta households). Spec #4 says no grandfathering.
+6.1 Beta accounts keep the integrations: they have lifetime Premium since 5.3a (Peter, 22 Nov
+2026, L5). This replaces "Spec #4 says no grandfathering" for the beta. Accounts created after the
+launch get no grant.
 
-6.2 **Lead**: a promotional grant for each of them, a dry run first:
+6.2 **Lead**: before 6.4, run the 5.3a dry run once more with the public-launch cut-off T of
+5.3a (`--created-before <T>`, no `--apply`). It must report no account that
+needs a grant. Accounts created after the launch that need the integrations for a review get a
+grant of their own, a dry run first:
 `deno run --allow-env --allow-net scripts/iap/promotional.ts grant --household <uuid>`,
-then with `--apply`. The Alexa certification account and the App Review and
-Play Review households need a grant too, or they hear only the Premium
-answer.
+then with `--apply`: the Alexa certification account and the App Review and Play Review
+households, or they hear only the Premium answer.
 
 6.3 **Lead**: the cut-over count, read-only, in the SQL editor:
 `scripts/iap/integration-cutover.sql`. It lists every household without

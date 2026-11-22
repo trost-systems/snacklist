@@ -3,6 +3,7 @@ import {
   blockedEvents,
   events,
   H1,
+  H12,
   H15,
   H2,
   H20,
@@ -115,6 +116,14 @@ Deno.test('paying: a buyer without analytics consent leaves the household unpaid
     payingHouseholdsByDay35(onlyH15),
     new Map([['2027-01-04', { households: 1, payingByDay35: 0, share: 0 }]]),
   );
+});
+
+Deno.test('a free grant is no sale: no revenue, never paying (testers, beta lifetime, job 371)', () => {
+  const onlyH12 = payingEvents.filter((e) => e.properties.household_id === H12);
+  assertEquals(onlyH12.length > 0, true);
+  assertEquals(revenueByMonth(onlyH12), new Map());
+  assertEquals(payingShareOfWah(onlyH12), new Map());
+  assertEquals(payingHouseholdsByDay35(onlyH12), new Map());
 });
 
 Deno.test('premium by day 35: either product pays, a household once, a refund only its own', () => {

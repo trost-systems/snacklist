@@ -81,14 +81,15 @@ export function grantedForGood(p: PromotionalPremium): boolean {
 }
 
 /**
- * Grants [householdId]'s RevenueCat customer the premium entitlement until [testerGrantEnd]
- * (POST .../customers/{id}/actions/grant_entitlement). A customer RevenueCat doesn't know yet
- * (404: the household never opened the purchase screen) is created first (POST .../customers).
+ * Grants the RevenueCat customer [appUserId] (a household's or an account's id) the premium
+ * entitlement until [testerGrantEnd] (POST .../customers/{id}/actions/grant_entitlement). A customer
+ * RevenueCat doesn't know yet (404: it never opened the purchase screen) is created first
+ * (POST .../customers).
  * Throws [RevenueCatUnavailable] for a refusal, and when RevenueCat takes longer than [timeoutMs].
  */
 export async function grantEntitlement(
   key: RevenueCatKey,
-  householdId: string,
+  appUserId: string,
   untimed: Fetch,
   timeoutMs = revenueCatTimeoutMs,
 ): Promise<void> {
@@ -104,7 +105,7 @@ export async function grantEntitlement(
     'content-type': 'application/json',
   };
   const grant = () =>
-    fetch(`${project}/customers/${encodeURIComponent(householdId)}/actions/grant_entitlement`, {
+    fetch(`${project}/customers/${encodeURIComponent(appUserId)}/actions/grant_entitlement`, {
       method: 'POST',
       headers,
       body: JSON.stringify({
@@ -118,7 +119,7 @@ export async function grantEntitlement(
     const created = await fetch(`${project}/customers`, {
       method: 'POST',
       headers,
-      body: JSON.stringify({ id: householdId }),
+      body: JSON.stringify({ id: appUserId }),
     });
     await created.body?.cancel();
     if (created.status !== 201 && created.status !== 200 && created.status !== 409) {
@@ -130,24 +131,37 @@ export async function grantEntitlement(
   if (res.status !== 201 && res.status !== 200) throw new RevenueCatUnavailable(res.status);
 }
 
-async function reconcile(household: string): Promise<void> {
-  const res = await fetch(reconcileUrl((k) => Deno.env.get(k)), {
+/**
+ * Asks the purchases function at [url] to store [appUserId]'s promotional premium as RevenueCat has
+ * it now. The body field is named householdId for history; it takes any App User ID.
+ */
+export async function reconcile(
+  appUserId: string,
+  to: { url: string; secret: string },
+  fetch: Fetch = globalThis.fetch,
+): Promise<{ status: number; body: string }> {
+  const res = await fetch(to.url, {
     method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'x-deletions-secret': required('REVENUECAT_DELETIONS_SECRET'),
-    },
-    body: JSON.stringify({ householdId: household }),
+    headers: { 'content-type': 'application/json', 'x-deletions-secret': to.secret },
+    body: JSON.stringify({ householdId: appUserId }),
   });
-  const body = await res.text();
-  console.log(`purchases function: HTTP ${res.status} ${body.slice(0, 200)}`);
-  if (res.status !== 200) Deno.exit(1);
+  return { status: res.status, body: await res.text() };
 }
 
-function required(name: string): string {
+export function required(name: string): string {
   const v = Deno.env.get(name);
   if (!v) throw new Error(`set ${name}`);
   return v;
+}
+
+async function reconcileOrExit(household: string): Promise<void> {
+  const url = reconcileUrl((k) => Deno.env.get(k));
+  const { status, body } = await reconcile(household, {
+    url,
+    secret: required('REVENUECAT_DELETIONS_SECRET'),
+  });
+  console.log(`purchases function: HTTP ${status} ${body.slice(0, 200)}`);
+  if (status !== 200) Deno.exit(1);
 }
 
 if (import.meta.main) {
@@ -161,7 +175,7 @@ if (import.meta.main) {
     console.log(describe(now));
     if (command.action === 'reconcile') {
       if (!command.apply) console.log('dry run: --apply asks the purchases function to store this');
-      else await reconcile(command.household);
+      else await reconcileOrExit(command.household);
     } else if (command.action === 'grant') {
       if (grantedForGood(now)) {
         console.log(
@@ -174,7 +188,7 @@ if (import.meta.main) {
       } else {
         await grantEntitlement(key, command.household, fetch);
         console.log(describe(await fetchPromotional(key, command.household, fetch, new Date())));
-        await reconcile(command.household);
+        await reconcileOrExit(command.household);
       }
     }
   } catch (e) {

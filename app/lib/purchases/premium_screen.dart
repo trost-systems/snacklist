@@ -85,6 +85,14 @@ class const _PremiumView() extends StatelessWidget {
     ];
     final launched = page.launch == OfferSwitch.on;
     final selling = launched && sells;
+    // The store took money: a purchase row, or one on its way here or bound
+    // to another household.
+    final paid =
+        entitlements.purchased ||
+        switch (state.flow) {
+          FlowUnlocking() || FlowUnlockDelayed() || FlowUsedElsewhere() => true,
+          _ => false,
+        };
     final yearlyRuns =
         premium is ActivePremium && premium.source == PremiumSource.yearly ||
         entitlements.yearlyBilled;
@@ -119,25 +127,24 @@ class const _PremiumView() extends StatelessWidget {
               :final source,
               :final expiresAt,
               :final renews,
-              :final testerGrant,
+              :final free,
             ))
-              _Unlocked(
-                free: source == PremiumSource.promotional,
-                switch (source) {
-                  PremiumSource.yearly when renews => l10n.premiumStatusRenews(
-                    expiresAt!.toLocal(),
-                  ),
-                  PremiumSource.yearly => l10n.premiumStatusEnds(
-                    expiresAt!.toLocal(),
-                  ),
-                  PremiumSource.lifetime => l10n.premiumStatusLifetime,
-                  // A free unlock (Legal Review final texts, 2026-11-03): the
-                  // grant says whose it is, not the switch (N-70).
-                  PremiumSource.promotional when testerGrant =>
-                    l10n.premiumStatusFree,
-                  PremiumSource.promotional => l10n.premiumStatusBeta,
+              _Unlocked(free: free, switch (source) {
+                PremiumSource.yearly when renews => l10n.premiumStatusRenews(
+                  expiresAt!.toLocal(),
+                ),
+                PremiumSource.yearly => l10n.premiumStatusEnds(
+                  expiresAt!.toLocal(),
+                ),
+                PremiumSource.lifetime => l10n.premiumStatusLifetime,
+                // A free unlock (Legal Review final texts, 2026-11-03): the
+                // grant says whose it is, not the switch (N-70).
+                PremiumSource.promotional => switch (free) {
+                  FreeUnlock.tester => l10n.premiumStatusFree,
+                  FreeUnlock.betaLifetime => l10n.premiumStatusBetaLifetime,
+                  FreeUnlock.beta || null => l10n.premiumStatusBeta,
                 },
-              ),
+              }),
             if (mine case MyYearlyPlan(billingIssue: true, :final until?))
               _Note(
                 'premium-billing-issue',
@@ -208,9 +215,10 @@ class const _PremiumView() extends StatelessWidget {
                 household: household.name,
                 onBuy: buy,
               ),
-            // Only once sales start, or for a household that bought twice:
-            // before, it would suggest a purchase (Legal Review N-69).
-            if (launched || entitlements.boughtLifetimeTwice)
+            // Only to someone who paid, once sales start, or bought twice:
+            // before, it would suggest a purchase (Legal Review N-69); to a
+            // promotional grant alone, a refund of nothing paid (N-346).
+            if (launched && paid || entitlements.boughtLifetimeTwice)
               Padding(
                 padding: const EdgeInsets.fromLTRB(8, 16, 16, 0),
                 child: RefundHelpLink(
@@ -299,7 +307,7 @@ class const _Unlocked(
 
   /// A free unlock: what it costs and how it ends, and where the privacy
   /// policy explains it.
-  required final bool free,
+  required final FreeUnlock? free,
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -344,13 +352,19 @@ class const _Unlocked(
                           ),
                         ),
                       ),
-                      if (free) ...[
+                      if (free != null) ...[
                         const SizedBox(height: HlSpace.s1),
                         Semantics(
                           container: true,
                           child: Text(
-                            l10n.premiumBetaBody,
-                            key: const ValueKey('premium-beta-body'),
+                            free == FreeUnlock.betaLifetime
+                                ? l10n.premiumBetaLifetimeBody
+                                : l10n.premiumBetaBody,
+                            key: ValueKey(
+                              free == FreeUnlock.betaLifetime
+                                  ? 'premium-beta-lifetime-body'
+                                  : 'premium-beta-body',
+                            ),
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: t.onHoney,
                             ),

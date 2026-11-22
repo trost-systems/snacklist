@@ -1844,7 +1844,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get premiumHeroBody =>
-      'Snacklist Premium gilt für euren ganzen Haushalt, auch für alle, die später dazukommen.';
+      'Snacklist Premium gilt für dich, in jedem Haushalt, in dem du Mitglied bist.';
 
   @override
   String get premiumBenefitAi =>
@@ -1891,6 +1891,14 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get premiumStatusBeta =>
       'In der Beta kostenlos freigeschaltet, bis Snacklist Premium startet';
+
+  @override
+  String get premiumStatusBetaLifetime =>
+      'Snacklist Premium Lifetime, kostenlos als Dank für die Beta';
+
+  @override
+  String get premiumBetaLifetimeBody =>
+      'Du zahlst nichts, und nichts verlängert sich automatisch. Es ist kein Kauf. Die Freischaltung gilt für dein Konto, solange es besteht und wir Snacklist betreiben. Löschst du das Konto, endet sie. Es gibt nichts zu erstatten, weil du nichts gezahlt hast.';
 
   @override
   String get premiumChecking =>

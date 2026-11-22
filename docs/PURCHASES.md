@@ -82,8 +82,11 @@ reasons.
   delete the account (its text stays true; the copy review in NEEDS_PETER covers whether it
   should show on leaving).
 - **Promotional grants to a user customer** sync into `user_entitlements`
-  (`promotional_premium_sync_user`). `scripts/iap/promotional.ts` still grants households only:
-  the published privacy text describes household grants.
+  (`promotional_premium_sync_user`). `scripts/iap/promotional.ts` still grants households only.
+  `scripts/iap/beta-lifetime.ts` grants every beta account its own lifetime Premium at the launch
+  (job 371, `PAYWALL_RELEASE.md` step 5.3a; "Beta account" in the cases table below). The published privacy text
+  still describes household grants only, so Legal updates it before that run (NEEDS_LEAD "Job
+  371").
 - **Account deletion.** A trigger on `auth.users` marks the user's purchases (`user_deleted_at`;
   purged into tombstones 30 days later like a deleted household's) and queues the RevenueCat
   customer for deletion 30 days later, but only when `revenuecat_customers` says the account id
@@ -196,6 +199,7 @@ reasons.
 | Last member leaves an unlocked household (joins another) | Joining asks first. With `HOUSEHOLD_ARCHIVE` on: "Archivieren und beitreten" keeps the household archived (list and unlock kept, re-enabled under Mehr → Archivierte Haushalte, deleted 24 months after archiving otherwise); "Löschen und beitreten" asks once more ("… Snacklist Lifetime endet mit ihm, denn ein Kauf gehört zu seinem Haushalt …", refund help). With it off (releases, until the legal texts say so): that warning and "Trotzdem beitreten". Never blocked. The server archives only while its switch `household_archive` is on (job 47, H-70); off, an archiving call is refused with `archive_disabled` and changes nothing, and the app says "Archivieren ist gerade nicht möglich. Dein Haushalt bleibt, wie er ist." |
 | Joiner into an unlocked household | The join screen says "Dieser Haushalt hat Snacklist Lifetime. Du musst nichts kaufen." With their own purchase from the last 30 days that stands: a link to the refund help |
 | Promotional grant (RevenueCat dashboard) | Premium for the whole household until the grant's end (none: for good); nothing to buy, no Buy shown. Revoked or ended at RevenueCat: the row is deleted, premium ends at once. No `purchases` row, no analytics event |
+| Beta account (created before the sale opened) | Lifetime Premium for free (Peter, 22 Nov 2026): a RevenueCat promotional grant on the account's own customer until 2100-01-01 (`scripts/iap/beta-lifetime.ts`, `PAYWALL_RELEASE.md` 5.3a). Premium follows the account into every household, like a Lifetime bought by the user: API and MCP open under the integration lock, nothing offered for sale, the same household cap of 20. The Premium page says „Snacklist Premium Lifetime, kostenlos als Dank für die Beta“ (draft for Legal). Their household's own beta grant is never revoked and ends on its date. No `purchases` row, no revenue, no purchase event; the account counts as internal for analytics (`user_internal`), like a tester |
 | Tester | Their household gets a RevenueCat promotional grant until 2100 (`scripts/iap/promotional.ts grant`, "Testers"); it stays with that household like a purchase. Internal for analytics |
 | Archived household | No members, not readable by anyone, its invites lead nowhere; the archiving user alone sees and re-enables it (`archived_households`, `unarchive_household`), with "Wird am <Datum> gelöscht" per household. Deleted 24 months after archiving unless re-enabled (job 47, H-50), and at once with that user's account. Its purchases restore nowhere else, and in it again after re-enabling; re-enabling and archiving again start a new 24 months. Re-enabling works with the server switch off, unless it would archive the household the user leaves |
 | Family Sharing | Off at Apple; a webhook event with `is_family_share` is ignored |
@@ -568,6 +572,33 @@ it (`HouseholdUnlocks.tester`, `isInternal`'s `testerHousehold`). A tester's pur
 household without a grant is no longer internal (we no longer know who is a tester); Sandbox
 purchases (TestFlight, App Review, Play license testers) are internal as before (Peter,
 2026-10-31).
+
+### Beta accounts (job 371)
+
+Every account created before the sale opens gets lifetime Premium for free (Peter, 22 Nov 2026,
+L5). Unlike a tester's, the grant goes to the **account's** customer (App User ID = account id,
+per-user Premium), so it follows the person into every household and not the household's other
+members. `scripts/iap/beta-lifetime.ts` reads the accounts from the hosted database at run time
+(confirmed, not anonymous, created before the cut-off), asks RevenueCat which already have a grant
+to 2100 or without end, grants the rest until 2100-01-01 and asks the purchases function to store
+each grant (`reconcile`). An account whose grant is already stored is skipped, so a rerun finishes
+only what failed. Dry run unless `--apply`, which needs `--created-before` set to the public-launch
+cut-off, fixed in advance and the same in every run (Legal Review N-347); it prints counts, never an id. When it runs:
+`PAYWALL_RELEASE.md` step 5.3a.
+
+The app tells the grants apart by owner: the account's own grant for good shows „Snacklist Premium
+Lifetime, kostenlos als Dank für die Beta“ (`FreeUnlock.betaLifetime`), a household's grant for
+good the tester line, a household's grant with an end the beta line. The server needs no change:
+`user_premium` already counts a promotional row ending in 2100 as running, so `user_has_premium`,
+`integration_gate` (API, MCP) and the Premium page treat it like a bought Lifetime
+(`supabase/tests/beta_lifetime.test.sql`). The household cap is 20 for everyone.
+
+**Analytics.** A beta account is internal from its grant on, as a tester is: `user_internal` on
+the server, and in the app `Unlocks.tester` marks the household it shows (`testerHousehold`). The
+gate queries drop an internal household with all its events, so every household a beta account
+uses leaves every gate insight, members who joined after the launch included. The kill gate
+(`paying_share_wah`) then measures households without a beta account. A grant sends no purchase
+event and adds no revenue (`analytics/metrics_test.ts`, "a free grant is no sale").
 
 ### A second entitlement (model D, not built)
 
