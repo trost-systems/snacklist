@@ -19,7 +19,8 @@ import { execFileSync } from 'node:child_process';
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import process from 'node:process';
-import { addField, addSheet, apiAs, chromium, instance, itemRow, labels, openTab, repo, signIn, typeInto } from '../../.claude/skills/verify-snacklist/helpers/lib.mjs';
+import { addField, addSheet, apiAs, chromium, instance, itemRow, labels, repo, signIn, typeInto } from '../../.claude/skills/verify-snacklist/helpers/lib.mjs';
+import { launchLook } from '../launch-look.mjs';
 import { captionsFor } from './captions.mjs';
 import { LOCALES, SETS, plan } from './sets.mjs';
 
@@ -31,6 +32,7 @@ const INPUT = {
     stores: { market: 'Wochenmarkt', bakery: 'Bäckerei', super: 'Supermarkt' },
     annaAdds: ['Erdbeeren', 'Trauben'],
     jonasTypes: 'Kaffee',
+    first: ['Birnen', 'Bananen'],
     typed: '3 Jogh',
     // The rows the voice function makes of the sticker's sentence (the English parser keeps a
     // word's case, so the sticker capitalizes the items).
@@ -42,6 +44,7 @@ const INPUT = {
     stores: { market: 'Farmers market', bakery: 'Bakery', super: 'Supermarket' },
     annaAdds: ['Strawberries', 'Grapes'],
     jonasTypes: 'Coffee',
+    first: ['Pears', 'Bananas'],
     typed: '2 Coff',
     spoken: ['Bananas', 'Butter', 'Oats'],
     suggestion: /Coffee/,
@@ -145,6 +148,7 @@ async function open(run, handle, set, lang) {
   page.on('pageerror', (e) => errors.push(`${set} ${handle}: ${e.message}`));
   await page.clock.install({ time: run.seededAt });
   await signIn(page, labels(lang), run.members[handle]);
+  await launchLook(page, labels(lang), `${set} ${handle}`);
   await page.evaluate(() => document.fonts.ready);
   await page.waitForTimeout(1200);
   await park(page);
@@ -198,15 +202,6 @@ async function chromeTop(page, L, withAddBar = true) {
   return Math.floor(Math.min(...tops) * page.dpr) - 24;
 }
 
-/** The category's label in the UI language (the household's categories are stored in German). */
-function categoryLabel(name, lang) {
-  if (lang === 'de') return name;
-  const arb = (l) => JSON.parse(readFileSync(join(repo, `app/l10n/app_${l}.arb`), 'utf8'));
-  const de = arb('de');
-  const key = Object.keys(de).find((k) => /^category[A-Z]/.test(k) && de[k] === name);
-  return key ? arb('en')[key] : name;
-}
-
 async function storeId(api, name) {
   return (await must(api.from('stores').select('id').eq('name', name).single())).id;
 }
@@ -239,15 +234,16 @@ const SCENES = {
     await typeInto(addField(jonas, L), input.jonasTypes);
     await jonas.keyboard.press('Enter');
     const sheet = addSheet(jonas, L);
-    const confirm = sheet.getByText(L('addedTo', { name: input.jonasTypes, store: input.stores.super }));
-    await confirm.waitFor();
+    // The compact add sheet (add-sheet-compact) confirms an add with one row of chips: the amount,
+    // the store it remembered and the details.
+    const storeChip = sheet.getByRole('button', { name: new RegExp(`: ${input.stores.super}$`) });
+    await storeChip.waitFor();
     await pause(jonas);
     await caretOff(jonas);
-    const text = await box(confirm);
-    const undo = await box(jonas.getByRole('button', { name: L('undo'), exact: true }));
+    const chip = await box(storeChip);
     const sheetBox = await box(sheet);
-    const top = Math.min(text.y, undo.y) - 6;
-    const bottom = Math.max(text.y + text.height, undo.y + undo.height) + 6;
+    const top = chip.y - 10;
+    const bottom = chip.y + chip.height + 14;
     const sender = { file: 'sync-sender.png', ...pixels(jonas, [{ x: sheetBox.x + 8, y: top, width: sheetBox.width - 16, height: bottom - top }]) };
     await jonas.screenshot({ path: join(page.dir, sender.file) });
     await jonas.context().close();
@@ -259,8 +255,15 @@ const SCENES = {
   } },
 
   // „3 Jogh“ typed into the add sheet; the household's past trips suggest „Joghurt · 3“.
-  add: { async frame({ open, L, input }) {
+  add: { fresh: true, async frame({ open, L, input }) {
     const page = await open('anna');
+    // Two adds first: the compact sheet then shows the list behind it with the last two rows.
+    for (const name of input.first) {
+      await typeInto(addField(page, L), name);
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(700);
+    }
+    await addSheet(page, L).getByRole('button', { name: new RegExp(`^${L('chipStore', { name: '' })}`) }).waitFor();
     await typeInto(addField(page, L), input.typed);
     const sheet = addSheet(page, L);
     await sheet.getByRole('button', { name: input.suggestion }).first().waitFor();
@@ -268,30 +271,9 @@ const SCENES = {
     await pause(page);
     await page.keyboard.press('End');
     await step(page, 300);
-    return { page, lift: pixels(page, [await box(sheet)]), chrome: Math.floor(page.viewportSize().height * page.dpr) };
-  } },
-
-  // Anpassen → Supermarkt: its categories in walking order, Kühlregal held mid-drag.
-  order: { async frame({ open, L, input, lang }) {
-    const page = await open('anna');
-    const cold = categoryLabel('Kühlregal', lang);
-    await page.getByRole('button', { name: L('listEdit') }).click();
-    await page.getByRole('button', { name: input.stores.super, exact: true }).click();
-    const handle = page.getByText(L('dragCategory', { name: cold }));
-    await handle.waitFor();
-    await page.waitForTimeout(600);
-    const h = await box(handle);
-    const [hx, hy] = [h.x + h.width / 2, h.y + h.height / 2];
-    await page.mouse.move(hx, hy);
-    await page.mouse.down();
-    for (let i = 1; i <= 10; i++) {
-      await page.mouse.move(hx, hy + i * 4.5);
-      await page.waitForTimeout(30);
-    }
-    await page.waitForTimeout(500);
-    await pause(page);
-    await step(page, 400);
-    return { page, lift: pixels(page, [await box(page.getByRole('button', { name: cold, exact: true }))]), chrome: await chromeTop(page, L) };
+    const lift = pixels(page, [{ ...(await box(sheet)), y: (await box(sheet)).y - 110, height: (await box(sheet)).height + 110 }]);
+    // The frame starts at the rows behind the sheet, not at the scrim above them.
+    return { page, lift, floor: lift.y[0] - 100, chrome: Math.floor(page.viewportSize().height * page.dpr) };
   } },
 
   // Anna's list 1.4 s after Jonas said the sentence on the sticker: the voice function splits
@@ -316,16 +298,17 @@ const SCENES = {
   } },
 
   // The household page: members, „Leute einladen“ and three lists. No code, no link.
-  invite: { lists: true, async frame({ open, L, run }) {
+  invite: { lists: true, async frame({ open, L }) {
     const page = await open('anna');
-    await openTab(page, L, 'tabMore');
-    await page.getByRole('button', { name: new RegExp(`^${run.household}`) }).first().click();
+    await page.getByRole('button', { name: /Einkaufsliste|Weekly shop|Wocheneinkauf/ }).first().click();
     await page.getByText(L('listsTitle'), { exact: true }).waitFor();
     await page.waitForTimeout(800);
     await park(page);
     await pause(page);
     await step(page, 500);
-    const members = await box(page.getByText(L('householdMembersTitle'), { exact: true }));
+    // The household's name sits about 70 px above its Einladen key, in the sheet's first row.
+    const invite = await box(page.getByRole('button', { name: L('switcherInvite'), exact: true }));
+    const members = { x: 0, y: invite.y - 70, width: page.viewportSize().width, height: 70 };
     const newList = await box(page.getByRole('button', { name: L('listNew'), exact: true }).last());
     // The card may run on into the join requests, and ends before the voice default (it names
     // Siri and Alexa) or the currency, whichever shows first.
@@ -334,7 +317,7 @@ const SCENES = {
       const title = page.getByText(L(key), { exact: true });
       if (await title.isVisible()) ends.push(Math.floor((await box(title)).y * page.dpr) - 8);
     }
-    const chrome = Math.min(...ends, await chromeTop(page, L, false));
+    const chrome = Math.min(...ends, Math.floor(page.viewportSize().height * page.dpr));
     return { page, lift: pixels(page, [members, newList]), chrome };
   } },
 };
@@ -345,7 +328,7 @@ const SCENES = {
  */
 async function foldAbove(page, input) {
   for (const store of [input.stores.market, input.stores.bakery]) {
-    await page.getByRole('button', { name: new RegExp(`^${store}, `) }).click();
+    await page.getByRole('button', { name: new RegExp(`^${store}, \\d+ `) }).first().click();
   }
   await page.waitForTimeout(600);
   await park(page);

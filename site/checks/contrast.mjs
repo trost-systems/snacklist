@@ -107,8 +107,8 @@ for (const path of PAGES) {
       if (median < min) fails.push(`${name} text (pixels): ${sel} median ${fmt(median)} < ${min}`);
     }
 
-    // Non-text, from computed colours. A hex control's contour (.face::before) and its face
-    // (.face::after) against the block it sits on: the control's boundary needs 3:1 from one of
+    // Non-text, from computed colours. A button's contour (the face's border) and its face
+    // (the face's background) against the block it sits on: the control's boundary needs 3:1 from one of
     // them (WCAG 1.4.11), the contour on light grounds, the honey face on dark ones. Then every
     // focusable element's ring, focused with focus-visible, against the ground outside the ring.
     const ui = await p.evaluate(() => {
@@ -118,8 +118,8 @@ for (const path of PAGES) {
         if (!el.getClientRects().length) continue;
         const ground = bgOf(el.parentElement);
         const face = el.querySelector(':scope > .face');
-        out.push({ kind: 'hex contour', sel: globalThis.__kit.sel(el), fg: getComputedStyle(face, '::before').backgroundColor, bg: ground.color, ground: ground.sel });
-        out.push({ kind: 'hex face', sel: globalThis.__kit.sel(el), fg: getComputedStyle(face, '::after').backgroundColor, bg: ground.color, ground: ground.sel });
+        out.push({ kind: 'hex contour', sel: globalThis.__kit.sel(el), fg: getComputedStyle(face).borderTopColor, bg: ground.color, ground: ground.sel });
+        out.push({ kind: 'hex face', sel: globalThis.__kit.sel(el), fg: getComputedStyle(face).backgroundColor, bg: ground.color, ground: ground.sel });
       }
       for (const el of document.querySelectorAll('a[href], button, summary, input, select, textarea, [tabindex]:not([tabindex="-1"])')) {
         if (!el.getClientRects().length || el.closest('[hidden]')) continue;

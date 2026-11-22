@@ -3,7 +3,7 @@
  * it acts only through real input and returns what it measured.
  */
 
-import { type Client, find, gone, type Session, sleep } from './driver.ts';
+import { type Client, find, gone, type Session, sleep, type Target } from './driver.ts';
 
 type Lang = 'de' | 'en';
 type Clients = Record<string, Client>;
@@ -28,11 +28,10 @@ const items = {
   addTick: { de: ['Honig', 'Marmelade'], en: ['Honey', 'Jam'] },
   sync: { de: 'Eier', en: 'Eggs' },
   mcp: { de: ['Honig', 'Marmelade'], en: ['Honey', 'Jam'] },
-  // Dictation follows the app language (German or English) since #487; this take is still a German
-  // example, so the English take hears the German sentence too.
+  // Dictation follows the app language (German or English) since #487: each take hears its own.
   voice: {
-    said: 'Pizza, Orangensaft und zwei Packungen Fischstäbchen',
-    rows: ['Orangensaft', 'Pizza', 'Fischstäbchen'],
+    said: { de: 'Pizza, Orangensaft und zwei Packungen Fischstäbchen', en: 'Pizza, Orange juice and two packs of Cereal' },
+    rows: { de: ['Orangensaft', 'Pizza', 'Fischstäbchen'], en: ['Orange juice', 'Pizza', 'Cereal'] },
     added: { de: 'Hinzugefügt', en: 'Added' },
   },
 } as const;
@@ -90,20 +89,39 @@ async function until(s: Session, c: Client, text: string, since: number, isGone 
   return Math.round(ms);
 }
 
+const tickedFirst = { de: 'Tomaten', en: 'Tomatoes' } as const;
+
+/**
+ * Ticks one item before filming, so "Zuletzt verwendet" is there from the first frame and the
+ * loop's last frame matches its first. Trip mode is off at launch (marketing/CAPTURE_FLAGS_OFF);
+ * a build with it on asks "Kaufst du gerade ein?" on the first tick, answered "Nein" here, so the
+ * loop's own ticks run without it.
+ */
+async function tickBeforeFilming(s: Session, c: Client, target: Target, dx: number): Promise<void> {
+  await s.tap(c, target, { dx });
+  if (await find(c, { key: 'trip-ask-no' }, 4000).then(() => true, () => false)) {
+    await s.tap(c, { key: 'trip-ask-no' });
+    await gone(c, { key: 'trip-ask' });
+  }
+  await sleep(1500);
+}
+
 const now = () => performance.timeOrigin + performance.now();
 
 export const shots: Record<string, Shot> = {
   'add-tick': {
     scenario: { de: 'demo-haushalt', en: 'demo-household-en' },
     members: ['anna'],
+    async prepare(s, c, lang) {
+      await tickBeforeFilming(s, member(c, 'anna'), { contains: tickedFirst[lang] }, 210);
+    },
     async film(s, c, lang) {
       const anna = member(c, 'anna');
       const [first, second] = items.addTick[lang];
       await sleep(1500);
       s.mark('anna', 'open');
       await s.tap(anna, { key: 'add-item-field' }, { dx: 262 });
-      await find(anna, { key: 'add-sheet-close' });
-      await sleep(450);
+      await sleep(1100);
       await s.type(anna, first, 110);
       await sleep(500);
       await s.key(anna, 'Return');
@@ -113,9 +131,8 @@ export const shots: Record<string, Shot> = {
       await s.key(anna, 'Return');
       await sleep(1000);
       s.mark('anna', 'close');
-      await s.tap(anna, { key: 'add-sheet-close' });
-      await gone(anna, { key: 'add-sheet-close' });
-      await sleep(1300);
+      await s.key(anna, 'Return');
+      await sleep(1900);
       s.mark('anna', 'tick');
       await s.tap(anna, { text: first }, { dx: 210 });
       await sleep(900);
@@ -127,14 +144,16 @@ export const shots: Record<string, Shot> = {
   'household-sync': {
     scenario: { de: 'demo-haushalt', en: 'demo-household-en' },
     members: ['anna', 'jonas'],
+    async prepare(s, c, lang) {
+      await tickBeforeFilming(s, member(c, 'jonas'), { contains: tickedFirst[lang] }, 210);
+    },
     async film(s, c, lang) {
       const anna = member(c, 'anna');
       const jonas = member(c, 'jonas');
       const item = items.sync[lang];
       await sleep(1500);
       await s.tap(anna, { key: 'add-item-field' }, { dx: 262 });
-      await find(anna, { key: 'add-sheet-close' });
-      await sleep(450);
+      await sleep(1100);
       await s.type(anna, item, 120);
       await sleep(450);
       await s.key(anna, 'Return');
@@ -143,12 +162,11 @@ export const shots: Record<string, Shot> = {
       // Jonas's row stays honey for about 2.5 s: the sheet closes and the view reaches the top of
       // Anna's list while it is still fresh (the poster).
       await sleep(300);
-      // Anna closes the sheet with its close button, which stays in every crop (a tap on the list
-      // above the sheet would be off camera).
+      // The compact add sheet has no close key: Enter in the empty field closes it, which stays in
+      // every crop (a tap on the list above the sheet would be off camera).
       s.mark('anna', 'close');
-      await s.tap(anna, { key: 'add-sheet-close' });
-      await gone(anna, { key: 'add-sheet-close' });
-      await sleep(1600);
+      await s.key(anna, 'Return');
+      await sleep(2100);
       await s.tap(jonas, { text: item }, { dx: 118 });
       const ticked = now();
       const goneAnna = await until(s, anna, item, ticked, true);
@@ -160,7 +178,7 @@ export const shots: Record<string, Shot> = {
   'voice-add': {
     scenario: { de: 'demo-familie', en: 'demo-family-en' },
     members: ['mia'],
-    dictation: { de: items.voice.said, en: items.voice.said },
+    dictation: items.voice.said,
     async prepare(s, c, lang) {
       const mia = member(c, 'mia');
       // The drinks and the frozen section sit right above the add field, where the new rows land.
@@ -168,9 +186,8 @@ export const shots: Record<string, Shot> = {
       // One item bought before filming: "Zuletzt verwendet" is there from the first frame, so the
       // three ticks at the end don't add it and the loop's last frame matches its first.
       const bought = lang === 'de' ? 'Zahnpasta' : 'Toothpaste';
-      await s.tap(mia, { text: bought }, { dx: 150 });
+      await tickBeforeFilming(s, mia, { text: bought }, 150);
       await gone(mia, { text: bought });
-      await sleep(1500);
     },
     async film(s, c, lang) {
       const mia = member(c, 'mia');
@@ -188,7 +205,7 @@ export const shots: Record<string, Shot> = {
       await s.tap(mia, button);
       // The app's own message after the add; until then the field holds the words.
       const shown = await until(s, mia, items.voice.added[lang], tapped, false, true);
-      const rows = await Promise.all(items.voice.rows.map((n) => find(mia, { contains: n })));
+      const rows = await Promise.all(items.voice.rows[lang].map((n) => find(mia, { contains: n })));
       const newRows = { top: Math.min(...rows.map((r) => r.y)), bottom: Math.max(...rows.map((r) => r.y + r.height)) };
       await sleep(2400);
       s.mark('mia', 'tick');
@@ -199,7 +216,7 @@ export const shots: Record<string, Shot> = {
       }
       await sleep(2000);
       s.mark('mia', 'end');
-      return { addedMessageMs: shown, newRows, said: items.voice.said, added: items.voice.added[lang] };
+      return { addedMessageMs: shown, newRows, said: items.voice.said[lang], added: items.voice.added[lang] };
     },
   },
   'mcp-chat': {

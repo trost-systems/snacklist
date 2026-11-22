@@ -13,7 +13,8 @@ export function plan(take, events, lang) {
   const presses = events.filter((e) => e.kind === 'press' && e.t >= 0).map((e) => e.t / 1000);
   const open = presses[0];
   const close = at((e) => e.kind === 'mark' && e.text === 'close');
-  const closed = presses.find((s) => s > close);
+  // The compact sheet has no close key: Enter in the empty field closes it.
+  const closed = at((e) => e.kind === 'key' && e.t / 1000 >= close);
   const ticks = presses.slice(-2);
   // Calm list before the first tap. After the last tick its row leaves (260 ms), the view goes
   // back down to the add field and holds there: the frame the loop starts on.

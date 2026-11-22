@@ -2,5 +2,6 @@
   "siteUrl": "https://snacklist.app",
   "defaultLocale": "de",
   "privacyPublished": true,
-  "supportPublished": true
+  "supportPublished": true,
+  "alexaPublished": true
 }

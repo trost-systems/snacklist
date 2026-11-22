@@ -20,14 +20,16 @@ if (shots) mkdirSync(shots, { recursive: true });
 
 const ROUTES = {
   de: {
-    Drogerie: ['Drogerie', 'Vorrat & Konserven', 'Süßes & Snacks', 'Haushalt', 'Getränke'],
-    Getränkemarkt: ['Getränke', 'Süßes & Snacks', 'Kühlregal', 'Tiefkühl', 'Haushalt'],
-    Supermarkt: ['Obst & Gemüse', 'Brot & Backwaren', 'Kühlregal', 'Fleisch/Wurst/Fisch', 'Vorrat & Konserven'],
+    Wochenmarkt: ['Wochenmarkt', 'Bäckerei', 'Supermarkt', 'Drogerie'],
+    Bäckerei: ['Bäckerei', 'Wochenmarkt', 'Supermarkt', 'Drogerie'],
+    Supermarkt: ['Supermarkt', 'Wochenmarkt', 'Bäckerei', 'Drogerie'],
+    Drogerie: ['Drogerie', 'Wochenmarkt', 'Bäckerei', 'Supermarkt'],
   },
   en: {
-    Drugstore: ['Drugstore', 'Pantry', 'Sweets & snacks', 'Household', 'Drinks'],
-    'Drinks store': ['Drinks', 'Sweets & snacks', 'Chilled', 'Frozen', 'Household'],
-    Supermarket: ['Fruit & veg', 'Bread & bakery', 'Chilled', 'Meat & fish', 'Pantry'],
+    'Farmers’ market': ['Farmers’ market', 'Bakery', 'Supermarket', 'Drugstore'],
+    Bakery: ['Bakery', 'Farmers’ market', 'Supermarket', 'Drugstore'],
+    Supermarket: ['Supermarket', 'Farmers’ market', 'Bakery', 'Drugstore'],
+    Drugstore: ['Drugstore', 'Farmers’ market', 'Bakery', 'Supermarket'],
   },
 };
 
@@ -71,12 +73,12 @@ function state(card) {
 for (const locale of ['de', 'en']) {
   const routes = ROUTES[locale];
   const stores = Object.keys(routes);
-  const home = stores.at(-1);
+  const home = stores[2];
 
   const off = await open(locale, { js: false });
   const first = await state(off.card);
   expect(same(first.rows, routes[home]), `${locale} without JS: rows ${first.rows}, want ${home}'s`);
-  expect(same(first.pressed, [home]) && first.buttons === 3, `${locale} without JS: pressed ${first.pressed} of ${first.buttons} buttons`);
+  expect(same(first.pressed, [home]) && first.buttons === 4, `${locale} without JS: pressed ${first.pressed} of ${first.buttons} buttons`);
   expect(first.name === home, `${locale} without JS: list named ${first.name}`);
   if (shots) await off.card.screenshot({ path: join(shots, `${locale}-390-nojs.png`) });
   await off.close();
@@ -85,7 +87,7 @@ for (const locale of ['de', 'en']) {
     for (const scheme of ['light', 'dark']) {
       const run = `${locale} ${width} ${scheme}`;
       const { card, errors, close: done } = await open(locale, { width, scheme });
-      for (const store of [stores[1], stores[0], home]) {
+      for (const store of [stores[1], stores[3], stores[0], home]) {
         await card.getByRole('button', { name: store }).click();
         const now = await state(card);
         expect(same(now.rows, routes[store]), `${run} ${store}: rows ${now.rows}`);
@@ -114,14 +116,14 @@ for (const locale of ['de', 'en']) {
 
   const forced = await open(locale, { forced: 'active' });
   const faces = await forced.card.evaluate((el) => [...el.querySelectorAll('button')].map((b) => getComputedStyle(b.querySelector('.face'), '::after').backgroundColor));
-  expect(new Set(faces).size === 2 && faces.filter((f) => f === faces.at(-1)).length === 1, `${locale} forced colours: faces ${faces}, want the pressed one apart`);
+  expect(new Set(faces).size === 2 && faces.filter((f) => f === faces[2]).length === 1, `${locale} forced colours: faces ${faces}, want the pressed one apart`);
   if (shots) await forced.card.screenshot({ path: join(shots, `${locale}-390-forced.png`) });
   await forced.close();
 
   const moving = await open(locale, { width: 1440, motion: 'no-preference' });
   await moving.card.getByRole('button', { name: stores[1] }).click();
   const running = await moving.page.evaluate(() => document.querySelectorAll('.store-route li').values().map((li) => li.getAnimations().length).reduce((a, b) => a + b, 0));
-  expect(running === 5, `${locale} motion: ${running} rows animate, want 5`);
+  expect(running === 4, `${locale} motion: ${running} rows animate, want 4`);
   await moving.page.waitForFunction(() => document.getAnimations().length === 0, null, { timeout: 2000 }).catch(() => expect(false, `${locale} motion: still animating after 2 s`));
   const settled = await state(moving.card);
   expect(same(settled.rows, routes[stores[1]]), `${locale} motion: rows ${settled.rows}`);

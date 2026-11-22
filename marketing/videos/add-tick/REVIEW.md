@@ -92,23 +92,23 @@ Premium, no price.
 <!-- report -->
 | Cut | File | Codec | Size | fps | Duration | Bytes | Audio |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| de-wide | master (render) | h264 yuv420p | 1920x1080 | 30/1 | 12.50 s | 2735 KB | none |
-| de-wide | add-tick-de-wide.mp4 | h264 yuv420p | 1920x1080 | 30/1 | 12.50 s | 1046 KB | none |
-| de-wide | add-tick-de-wide.webm | vp9 yuv420p | 1920x1080 | 30/1 | 12.50 s | 689 KB | none |
-| de-compact | master (render) | h264 yuv420p | 1080x1350 | 30/1 | 12.50 s | 2323 KB | none |
-| de-compact | add-tick-de-compact.mp4 | h264 yuv420p | 1080x1350 | 30/1 | 12.50 s | 872 KB | none |
-| de-compact | add-tick-de-compact.webm | vp9 yuv420p | 1080x1350 | 30/1 | 12.50 s | 723 KB | none |
-| en-wide | master (render) | h264 yuv420p | 1920x1080 | 30/1 | 12.10 s | 2402 KB | none |
-| en-wide | add-tick-en-wide.mp4 | h264 yuv420p | 1920x1080 | 30/1 | 12.10 s | 885 KB | none |
-| en-wide | add-tick-en-wide.webm | vp9 yuv420p | 1920x1080 | 30/1 | 12.10 s | 638 KB | none |
-| en-compact | master (render) | h264 yuv420p | 1080x1350 | 30/1 | 12.10 s | 2128 KB | none |
-| en-compact | add-tick-en-compact.mp4 | h264 yuv420p | 1080x1350 | 30/1 | 12.10 s | 788 KB | none |
-| en-compact | add-tick-en-compact.webm | vp9 yuv420p | 1080x1350 | 30/1 | 12.10 s | 687 KB | none |
+| de-wide | master (render) | h264 yuv420p | 1920x1080 | 30/1 | 14.13 s | 1664 KB | none |
+| de-wide | add-tick-de-wide.mp4 | h264 yuv420p | 1920x1080 | 30/1 | 14.13 s | 623 KB | none |
+| de-wide | add-tick-de-wide.webm | vp9 yuv420p | 1920x1080 | 30/1 | 14.13 s | 500 KB | none |
+| de-compact | master (render) | h264 yuv420p | 1080x1350 | 30/1 | 14.13 s | 1465 KB | none |
+| de-compact | add-tick-de-compact.mp4 | h264 yuv420p | 1080x1350 | 30/1 | 14.13 s | 589 KB | none |
+| de-compact | add-tick-de-compact.webm | vp9 yuv420p | 1080x1350 | 30/1 | 14.13 s | 507 KB | none |
+| en-wide | master (render) | h264 yuv420p | 1920x1080 | 30/1 | 15.43 s | 1515 KB | none |
+| en-wide | add-tick-en-wide.mp4 | h264 yuv420p | 1920x1080 | 30/1 | 15.43 s | 580 KB | none |
+| en-wide | add-tick-en-wide.webm | vp9 yuv420p | 1920x1080 | 30/1 | 15.43 s | 461 KB | none |
+| en-compact | master (render) | h264 yuv420p | 1080x1350 | 30/1 | 15.43 s | 1343 KB | none |
+| en-compact | add-tick-en-compact.mp4 | h264 yuv420p | 1080x1350 | 30/1 | 15.43 s | 552 KB | none |
+| en-compact | add-tick-en-compact.webm | vp9 yuv420p | 1080x1350 | 30/1 | 15.43 s | 469 KB | none |
 
 | Cut | Seam SSIM (first vs last frame) | Poster | Poster at |
 | --- | --- | --- | --- |
-| de-wide | 0.9970 | add-tick-de-wide.webp, 30 KB | 7.83 s |
-| de-compact | 0.9967 | add-tick-de-compact.webp, 34 KB | 7.83 s |
-| en-wide | 0.9971 | add-tick-en-wide.webp, 26 KB | 7.47 s |
-| en-compact | 0.9968 | add-tick-en-compact.webp, 29 KB | 7.47 s |
+| de-wide | 0.9977 | add-tick-de-wide.webp, 28 KB | 8.43 s |
+| de-compact | 0.9968 | add-tick-de-compact.webp, 29 KB | 8.43 s |
+| en-wide | 0.9978 | add-tick-en-wide.webp, 27 KB | 8.30 s |
+| en-compact | 0.9972 | add-tick-en-compact.webp, 27 KB | 8.30 s |
 <!-- /report -->

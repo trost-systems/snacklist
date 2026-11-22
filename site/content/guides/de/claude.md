@@ -9,12 +9,12 @@ updated: 2026-11-04
 
 # Snacklist mit Claude verbinden
 
-Claude kann deine Snacklist lesen, Sachen draufsetzen, ändern, abhaken, wieder draufsetzen, löschen und in eine andere Kategorie, einen anderen Laden oder eine andere Liste verschieben. Du schreibst Claude einfach, was du brauchst:
+Claude kann deine Snacklist lesen, Sachen draufsetzen, ändern, abhaken, wieder draufsetzen, löschen und in einen anderen Laden oder eine andere Liste verschieben. Du schreibst Claude einfach, was du brauchst:
 
 > **Du:** Setz Milch, zwei Gurken und Klopapier auf die Snacklist.
 > **Claude:** Ich habe Milch, 2 Gurken und Klopapier auf die Snacklist gesetzt.
 
-Die Einträge stehen sofort auf allen Geräten in eurem Haushalt, sortiert in ihre Kategorien. Das Einrichten dauert keine fünf Minuten. Du musst keinen Schlüssel kopieren: Claude meldet sich mit deinem Snacklist-Konto an.
+Die Einträge stehen sofort auf allen Geräten in eurem Haushalt, an der passenden Stelle der Liste. Das Einrichten dauert keine fünf Minuten. Du musst keinen Schlüssel kopieren: Claude meldet sich mit deinem Snacklist-Konto an.
 
 ## Was du brauchst
 
@@ -58,14 +58,14 @@ Die Namen der Menüpunkte in Claude stehen hier auf Deutsch, in Klammern auf Eng
 
 | Du schreibst | Was passiert |
 | --- | --- |
-| Setz Milch, 2 Gurken und Windeln Pampers Größe 3 auf die Snacklist. | Drei Einträge, jeder in seiner Kategorie. Bei den Windeln stehen Marke „Pampers“ und „Größe 3“ dabei. |
+| Setz Milch, 2 Gurken und Windeln Pampers Größe 3 auf die Snacklist. | Drei Einträge, jeder an seiner Stelle. Bei den Windeln stehen Marke „Pampers“ und „Größe 3“ dabei. |
 | Was steht auf der Snacklist? | Claude zählt die offenen Einträge in der Reihenfolge eurer Liste auf und sagt, wie viele es sind. |
 | Was brauche ich bei dm? | Alles für dm und alles ohne Laden, in der Reihenfolge von dm. |
 | Hak Milch und Gurken ab. | Beide verschwinden von der Liste und stehen in der App unter „Zuletzt verwendet“. |
 | Verschieb die Hafermilch nach Getränke. | Snacklist merkt sich das für euren Haushalt. Beim nächsten Mal landet Hafermilch gleich dort. |
 | Mach bei den Gurken 3 draus. | Die Menge der Gurken steht jetzt auf 3. |
 | Die Milch brauchen wir doch noch. | Die gerade abgehakte Milch steht wieder auf der Liste. |
-| Streich den Sekt. | Der Sekt ist gelöscht. Was Snacklist über Sekt gelernt hat (Kategorie, Laden), bleibt. |
+| Streich den Sekt. | Der Sekt ist gelöscht. Was Snacklist über Sekt gelernt hat (zum Beispiel der Laden), bleibt. |
 | Was kaufen wir sonst noch oft? | Was ihr oft kauft und gerade nicht auf der Liste steht, wie die Vorschläge in der App. |
 | Was haben wir zuletzt gekauft? | Was zuletzt abgehakt wurde, wie „Zuletzt verwendet“ in der App. |
 
@@ -73,7 +73,7 @@ Was schon auf der Liste steht, kommt nicht doppelt dazu. Claude sagt dir dann, d
 
 > **Was Claude sieht**
 >
-> - Claude sieht nur eure Einkaufsliste: Einträge, Kategorien und Läden. Dein Passwort bekommt Claude nicht.
+> - Claude sieht nur eure Einkaufsliste: Einträge und Läden. Dein Passwort bekommt Claude nicht.
 > - Was du Claude schreibst und was Snacklist antwortet, verarbeitet Anthropic nach seinen eigenen Datenschutzbestimmungen.
 > - Alles Weitere steht in der [Datenschutzerklärung](/datenschutz) unter „Siri, Alexa und KI-Assistenten“.
 
@@ -85,7 +85,7 @@ Was schon auf der Liste steht, kommt nicht doppelt dazu. Claude sagt dir dann, d
 | „Diese Anfrage ist ungültig oder abgelaufen. Starte die Verbindung in deiner App neu.“ | Die Anfrage von Claude ist ein paar Minuten alt oder wurde schon benutzt. | Klicke in Claude noch einmal auf **Verbinden**. |
 | Claude sagt, es kann nicht auf Snacklist zugreifen. | Snacklist ist in diesem Chat ausgeschaltet. | Schalte **Snacklist** im Menü für Tools und Connectors ein. |
 | Claude findet einen Eintrag nicht. | Der Name passt auf mehrere Einträge oder auf keinen. | Schreib den Namen so, wie er in der App steht. Claude bekommt die passenden Namen zur Auswahl. |
-| Ein Eintrag steht in der falschen Kategorie. | Snacklist hat das Wort einer anderen Kategorie zugeordnet. | Schreib Claude zum Beispiel „Verschieb Feta nach Kühlregal“. Snacklist merkt sich das für euren Haushalt. |
+| Ein Eintrag steht im falschen Laden. | Snacklist hat den Eintrag einem anderen Laden zugeordnet. | Schreib Claude zum Beispiel „Verschieb Feta zum Wochenmarkt“. Snacklist merkt sich das für euren Haushalt. |
 
 ## Claude wieder trennen
 

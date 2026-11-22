@@ -59,6 +59,10 @@ deno test -q --config scripts/deno.json --allow-read --allow-write scripts/workf
 log "pinned dependencies"
 deno run --frozen --allow-read scripts/pinned-deps.ts
 deno test -q --frozen --config scripts/deno.json --allow-read --allow-write scripts/pinned-deps_test.ts
+log "store listings"
+# Job 402: limits, Legal's word rules (N-366 Alexa naming and trademark lines), HP2's cut features and the
+# integration lock's Premium block (docs/store/LISTING.md).
+deno run --allow-read app/fastlane/metadata/check.mjs >/dev/null
 log "retailer registry"
 # Job 313: supabase/retailers/retailers.json is valid and the newest retailers migration holds its rows.
 deno run --allow-read scripts/retailers.ts --check

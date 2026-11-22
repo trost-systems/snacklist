@@ -102,28 +102,28 @@ phones, Anna and Jonas, instead of the Brandt family's three (`demo-haushalt.yam
 <!-- report -->
 | Cut | File | Codec | Size | fps | Duration | Bytes | Audio |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| de-wide | master (render) | h264 yuv420p | 1920x1080 | 30/1 | 11.83 s | 1861 KB | none |
-| de-wide | household-sync-de-wide.mp4 | h264 yuv420p | 1920x1080 | 30/1 | 11.83 s | 840 KB | none |
-| de-wide | household-sync-de-wide.webm | vp9 yuv420p | 1920x1080 | 30/1 | 11.83 s | 668 KB | none |
-| de-compact | master (render) | h264 yuv420p | 1080x1350 | 30/1 | 11.83 s | 1184 KB | none |
-| de-compact | household-sync-de-compact.mp4 | h264 yuv420p | 1080x1350 | 30/1 | 11.83 s | 547 KB | none |
-| de-compact | household-sync-de-compact.webm | vp9 yuv420p | 1080x1350 | 30/1 | 11.83 s | 535 KB | none |
-| en-wide | master (render) | h264 yuv420p | 1920x1080 | 30/1 | 11.23 s | 1823 KB | none |
-| en-wide | household-sync-en-wide.mp4 | h264 yuv420p | 1920x1080 | 30/1 | 11.23 s | 861 KB | none |
-| en-wide | household-sync-en-wide.webm | vp9 yuv420p | 1920x1080 | 30/1 | 11.23 s | 676 KB | none |
-| en-compact | master (render) | h264 yuv420p | 1080x1350 | 30/1 | 11.23 s | 1165 KB | none |
-| en-compact | household-sync-en-compact.mp4 | h264 yuv420p | 1080x1350 | 30/1 | 11.23 s | 525 KB | none |
-| en-compact | household-sync-en-compact.webm | vp9 yuv420p | 1080x1350 | 30/1 | 11.23 s | 544 KB | none |
+| de-wide | master (render) | h264 yuv420p | 1920x1080 | 30/1 | 12.07 s | 1388 KB | none |
+| de-wide | household-sync-de-wide.mp4 | h264 yuv420p | 1920x1080 | 30/1 | 12.07 s | 637 KB | none |
+| de-wide | household-sync-de-wide.webm | vp9 yuv420p | 1920x1080 | 30/1 | 12.07 s | 511 KB | none |
+| de-compact | master (render) | h264 yuv420p | 1080x1350 | 30/1 | 12.07 s | 894 KB | none |
+| de-compact | household-sync-de-compact.mp4 | h264 yuv420p | 1080x1350 | 30/1 | 12.07 s | 417 KB | none |
+| de-compact | household-sync-de-compact.webm | vp9 yuv420p | 1080x1350 | 30/1 | 12.07 s | 400 KB | none |
+| en-wide | master (render) | h264 yuv420p | 1920x1080 | 30/1 | 12.43 s | 1383 KB | none |
+| en-wide | household-sync-en-wide.mp4 | h264 yuv420p | 1920x1080 | 30/1 | 12.43 s | 616 KB | none |
+| en-wide | household-sync-en-wide.webm | vp9 yuv420p | 1920x1080 | 30/1 | 12.43 s | 502 KB | none |
+| en-compact | master (render) | h264 yuv420p | 1080x1350 | 30/1 | 12.43 s | 886 KB | none |
+| en-compact | household-sync-en-compact.mp4 | h264 yuv420p | 1080x1350 | 30/1 | 12.43 s | 431 KB | none |
+| en-compact | household-sync-en-compact.webm | vp9 yuv420p | 1080x1350 | 30/1 | 12.43 s | 400 KB | none |
 
 | Cut | Seam SSIM (first vs last frame) | Poster | Poster at |
 | --- | --- | --- | --- |
-| de-wide | 0.9961 | household-sync-de-wide.webp, 48 KB | 6.40 s |
-| de-compact | 0.9972 | household-sync-de-compact.webp, 36 KB | 6.40 s |
-| en-wide | 0.9961 | household-sync-en-wide.webp, 47 KB | 5.80 s |
-| en-compact | 0.9972 | household-sync-en-compact.webp, 36 KB | 5.80 s |
+| de-wide | 0.9970 | household-sync-de-wide.webp, 42 KB | 6.27 s |
+| de-compact | 0.9977 | household-sync-de-compact.webp, 35 KB | 6.27 s |
+| en-wide | 0.9969 | household-sync-en-wide.webp, 43 KB | 6.17 s |
+| en-compact | 0.9976 | household-sync-en-compact.webp, 36 KB | 6.17 s |
 
 Measured in the takes (Marionette polls, so an upper bound for the app side):
 
-- DE: addToJonasMs 1210 ms, tickToAnnaMs 1304 ms
-- EN: addToJonasMs 673 ms, tickToAnnaMs 1235 ms
+- DE: addToJonasMs 1304 ms, tickToAnnaMs 1464 ms
+- EN: addToJonasMs 1119 ms, tickToAnnaMs 1708 ms
 <!-- /report -->

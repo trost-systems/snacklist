@@ -1,13 +1,13 @@
-// The stores card on the landing page (landing.mjs renders it with the supermarket's route): a
-// store button shows that store's route. Rows that stay slide from their old place to the new one
+// The stores card on the landing page (landing.mjs renders it with the supermarket first): a
+// store button moves that store to the top. Rows that stay slide from their old place to the new one
 // and rows that join fade in (FLIP), unless the visitor asked for reduced motion. Without this
-// file the card shows the supermarket's route.
+// file the card shows the supermarket first.
 const motionOk = matchMedia('(prefers-reduced-motion: no-preference)');
 const timing = { duration: 360, easing: 'cubic-bezier(0.2, 0, 0, 1)' };
 
 for (const card of document.querySelectorAll('[data-stores]')) {
   const list = card.querySelector('.store-route');
-  const rows = new Map([...list.children].map((li) => [li.dataset.category, li]));
+  const rows = new Map([...list.children].map((li) => [li.dataset.store, li]));
   const buttons = [...card.querySelectorAll('[data-route]')];
   card.classList.add('is-live');
 

@@ -145,7 +145,8 @@ const turndown = new TurndownService({ headingStyle: 'atx', codeBlockStyle: 'fen
 
 const absolute = (href, siteUrl, route) => (href.startsWith('#') ? `${siteUrl}${route}${href}` : href.startsWith('/') ? `${siteUrl}${href}` : href);
 
-// The page's <main> as Markdown: decoration out, links absolute, a demo video as its label.
+// The page's <main> as Markdown: decoration out, links absolute, a demo video as its label; then
+// the footer's trademark lines.
 export function markdownTwin(route, html, siteUrl) {
   const doc = parse(html);
   const main = doc.querySelector('main');
@@ -167,7 +168,9 @@ export function markdownTwin(route, html, siteUrl) {
     .map((l) => `Markdown (${l.getAttribute('hreflang')}): ${l.getAttribute('href')}.md`);
   // Turndown indents the blank lines of loose list items.
   const body = turndown.turndown(main.innerHTML).replace(/^[ \t]+$/gm, '');
-  return `# ${title}\n\n${body}\n\n---\n\n${[`Canonical URL: ${canonical}`, ...others].join('\n')}\n`;
+  // The footer's trademark lines (build.mjs MARKS) belong to the page's text.
+  const marks = doc.querySelectorAll('footer .marks').map((p) => `\n\n${p.text.trim()}`).join('');
+  return `# ${title}\n\n${body}${marks}\n\n---\n\n${[`Canonical URL: ${canonical}`, ...others].join('\n')}\n`;
 }
 
 // llms.txt sections in order; a published page lands in the first that takes it.

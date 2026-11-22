@@ -114,17 +114,17 @@ function frameHtml({ locale, set, index, shot, meta, words, rawDir, room = 0 }) 
 .head{left:${gutter}px;right:${gutter}px;top:${Math.round(96 * u)}px;display:flex;flex-direction:column;gap:${Math.round(26 * u)}px}
 .head .display{font-size:${Math.round(132 * u)}px}
 .head .sub{font-size:${Math.round(40 * u)}px;max-width:${Math.round(900 * u)}px}
-.head .premium{align-self:flex-start;font-size:${Math.round(32 * u)}px;font-weight:700;line-height:1.2;background:${C.white};border:${Math.round(4 * u)}px solid ${C.ink};border-radius:${Math.round(999 * u)}px;padding:${Math.round(10 * u)}px ${Math.round(26 * u)}px;box-shadow:0 ${Math.round(8 * u)}px 0 0 ${C.ink}}
-.card{border:${Math.round(5 * u)}px solid ${C.ink};border-bottom:0;border-radius:${Math.round(44 * u)}px ${Math.round(44 * u)}px 0 0;box-shadow:${Math.round(16 * u)}px ${Math.round(16 * u)}px 0 0 ${C.ink}}
-.sat{border:${Math.round(4 * u)}px solid ${C.ink};border-radius:${Math.round(26 * u)}px;box-shadow:0 ${Math.round(12 * u)}px 0 0 ${C.ink}}
+.head .premium{align-self:flex-start;font-size:${Math.round(32 * u)}px;font-weight:700;line-height:1.2;background:${C.white};border:${Math.round(4 * u)}px solid ${C.ink};border-radius:${Math.round(999 * u)}px;padding:${Math.round(10 * u)}px ${Math.round(26 * u)}px}
+.card{border:${Math.round(5 * u)}px solid ${C.ink};border-bottom:0;border-radius:${Math.round(44 * u)}px ${Math.round(44 * u)}px 0 0}
+.sat{border:${Math.round(4 * u)}px solid ${C.ink};border-radius:${Math.round(26 * u)}px}
 .say{display:flex;align-items:center}
-.bubble{display:flex;align-items:center;gap:${Math.round(18 * u)}px;background:${C.white};border:${Math.round(4 * u)}px solid ${C.ink};border-radius:${Math.round(34 * u)}px;box-shadow:0 ${Math.round(12 * u)}px 0 0 ${C.ink};padding:${Math.round(16 * u)}px ${Math.round(30 * u)}px ${Math.round(16 * u)}px ${Math.round(18 * u)}px;font-size:${Math.round(40 * u)}px;font-weight:650;line-height:1.2}
+.bubble{display:flex;align-items:center;gap:${Math.round(18 * u)}px;background:${C.white};border:${Math.round(4 * u)}px solid ${C.ink};border-radius:${Math.round(34 * u)}px;padding:${Math.round(16 * u)}px ${Math.round(30 * u)}px ${Math.round(16 * u)}px ${Math.round(18 * u)}px;font-size:${Math.round(40 * u)}px;font-weight:650;line-height:1.2}
 .hexicon{position:relative;display:inline-grid;place-items:center;flex:none}
 .hexicon svg{position:absolute;inset:0}
 .hexicon b{position:relative;display:grid;place-items:center}
 .chat{display:flex;flex-direction:column;align-items:flex-end;gap:${Math.round(18 * u)}px;font-size:${Math.round(34 * u)}px;line-height:1.25}
-.chat .me{max-width:82%;background:${C.cobalt};color:${C.white};font-weight:600;border:${Math.round(4 * u)}px solid ${C.ink};border-radius:${Math.round(30 * u)}px ${Math.round(30 * u)}px ${Math.round(8 * u)}px ${Math.round(30 * u)}px;padding:${Math.round(18 * u)}px ${Math.round(26 * u)}px;box-shadow:0 ${Math.round(10 * u)}px 0 0 ${C.ink}}
-.chat .reply{align-self:flex-start;background:${C.white};border:${Math.round(4 * u)}px solid ${C.ink};border-radius:${Math.round(8 * u)}px ${Math.round(30 * u)}px ${Math.round(30 * u)}px ${Math.round(30 * u)}px;padding:${Math.round(18 * u)}px ${Math.round(26 * u)}px;box-shadow:0 ${Math.round(10 * u)}px 0 0 ${C.ink}}
+.chat .me{max-width:82%;background:${C.cobalt};color:${C.white};font-weight:600;border:${Math.round(4 * u)}px solid ${C.ink};border-radius:${Math.round(30 * u)}px ${Math.round(30 * u)}px ${Math.round(8 * u)}px ${Math.round(30 * u)}px;padding:${Math.round(18 * u)}px ${Math.round(26 * u)}px}
+.chat .reply{align-self:flex-start;background:${C.white};border:${Math.round(4 * u)}px solid ${C.ink};border-radius:${Math.round(8 * u)}px ${Math.round(30 * u)}px ${Math.round(30 * u)}px ${Math.round(30 * u)}px;padding:${Math.round(18 * u)}px ${Math.round(26 * u)}px}
 .chat .reply p{font-weight:700;margin-bottom:${Math.round(10 * u)}px}
 .chat ul{list-style:none;padding:0;display:flex;gap:${Math.round(26 * u)}px}
 .chat li{display:flex;align-items:center;gap:${Math.round(16 * u)}px;font-weight:600}`;
@@ -151,7 +151,7 @@ function featureHtml(locale, words) {
 .t{left:72px;width:350px;top:0;bottom:70px;display:flex;align-items:center}
 .t .display{font-size:54px;white-space:normal;text-wrap:balance}
 .t em{font-style:normal;color:${C.cobalt}}
-.card{border:3px solid ${C.ink};border-right:0;border-bottom:0;border-radius:24px 0 0 0;box-shadow:-9px 9px 0 0 ${C.ink}}`;
+.card{border:3px solid ${C.ink};border-right:0;border-bottom:0;border-radius:24px 0 0 0}`;
   const tagline = esc(words.feature.tagline);
   const body = band({ x0: 0, w: W, h: H, y: (x) => 505 - 300 * Math.sin((Math.PI * x) / 2048), width: 62, contour: 4, cell: 17 })
     + `<div class="abs t"><div class="display tagline">${tagline}</div></div>`

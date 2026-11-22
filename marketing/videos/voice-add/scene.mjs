@@ -35,7 +35,7 @@ export function plan(take, events, lang) {
   // The captions file carries the sentence too, while it is said.
   const vttCues = [
     { text: cues[0].text, from: 0, to: wordAt[0] },
-    { text: `${t('voice-add.quote', lang).replace('%s', take.measured.said)}${lang === 'de' ? '' : ` ${t('voice-add.german', lang)}`}`, from: wordAt[0], to: saidTo },
+    { text: `${t('voice-add.quote', lang).replace('%s', take.measured.said)}`, from: wordAt[0], to: saidTo },
     ...cues.slice(1),
   ];
   return {
@@ -75,10 +75,9 @@ export function compose({ fmt, lang, events, p }) {
   // What Mia says, as a speech caption: the words come as the recognizer reports them.
   const [open, close] = t('voice-add.quote', lang).split('%s');
   const words = p.words.map((w, i) => `<span class="w" id="w-${i}">${esc(w)}</span>`).join(' ');
-  const note = lang === 'de' ? '' : `<span class="said-note" id="said-note">${esc(t('voice-add.german', lang))}</span>`;
   const said = `
   <div class="said${fmt === 'compact' ? ' said--center' : ''}" id="said" style="left:calc(${L.said.x} * var(--u));top:calc(${L.said.y} * var(--u));width:calc(${L.said.w} * var(--u))">
-    <p class="said-bubble" id="said-bubble"><i class="mi">&#x${ICONS.mic};</i><span><span class="w" id="w-open">${esc(open)}</span>${words}<span class="w" id="w-close">${esc(close)}</span></span></p>${note}
+    <p class="said-bubble" id="said-bubble"><i class="mi">&#x${ICONS.mic};</i><span><span class="w" id="w-open">${esc(open)}</span>${words}<span class="w" id="w-close">${esc(close)}</span></span></p>
   </div>`;
   const tw = [];
   const first = p.wordAt[0];
@@ -88,7 +87,6 @@ export function compose({ fmt, lang, events, p }) {
   p.wordAt.forEach((at, i) => {
     if (i > 0) tw.push(`tl.to('#w-${i}${i === p.wordAt.length - 1 ? ', #w-close' : ''}', { opacity: 1, duration: 0.12, ease: 'power1.out' }, ${at.toFixed(3)});`);
   });
-  if (note) tw.push(`tl.fromTo('#said-note', { opacity: 0 }, { opacity: 1, duration: 0.2 }, ${first.toFixed(3)});`);
   tw.push(`tl.to('#said', { opacity: 0, y: -14, duration: 0.2, ease: 'power1.in' }, ${(p.saidTo - 0.2).toFixed(3)});`);
   return page({
     fmt,

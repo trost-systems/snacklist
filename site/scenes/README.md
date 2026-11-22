@@ -8,8 +8,8 @@ the WebP stills that `film-all.mjs` writes to `site/public/media/`.
 ## Re-film
 
 ```sh
-node site/scenes/film-all.mjs            # hero and mcp-chat (16 stills), then one contact sheet per scene
-node site/scenes/film-all.mjs hero       # one scene
+site/scenes/capture-hero.sh              # the hero's phone screen from the real app, then film-all.mjs hero
+node site/scenes/film-all.mjs            # hero (8 stills) and its contact sheet
 node site/scenes/film-all.mjs --serve    # only serve, to look at http://127.0.0.1:57610/scenes/hero.html?lang=en
 ```
 
@@ -21,11 +21,22 @@ quality until it is under 120 KB. Needs `npm ci` in `e2e/` once, ffmpeg, and Flu
 the icons are the app's own Material Icons font from the Flutter SDK, served as
 `/scenes/material-icons.otf`, never redrawn and not copied into the repo.
 
+The hero's phone screen is the real app, not markup: `capture-hero.sh` launches this checkout's
+verify-snacklist instance with the launch flags (`marketing/capture-web.sh`: RD1,
+`hide-categories`, `add-sheet-compact`; no prices, totals, Verlauf or trip mode; it checks the
+compiled `FLAGS_ON`), and `capture-hero.mjs` films Jonas's list in „Unser Haushalt“ („Our Home“)
+1 to 2 s after Anna added Hafermilch (Oat milk) at the Wochenmarkt through the API, with the honey row
+under „1 neu von Anna“. It writes `hero-screen/<de|en>-<wide|compact>[-dark].webp` (360 px wide
+at 3x, cut 6 px under the add field so the tab bar stays out; committed, so `film-all.mjs hero`
+alone re-films the scene). Run it again when the list screen changes. Needs Docker, the Supabase
+CLI and CI's Flutter (as verify-snacklist); `--keep` leaves the stack and web server up.
+
 Files:
 
 - `scenes.css`: fonts, the 6b hex system, phone, list rows, stickers, chips, bubbles.
 - `scene.js`: reads `?lang=` and fills every `data-t` element from the page's string table.
 - `<scene>.html`: one per scene, with its markup and its `de` and `en` strings.
+- `capture-hero.sh`, `capture-hero.mjs`, `hero-screen/`: the hero's real app screen.
 
 The compact design switches at `max-width: 400px` inside each scene. Dark comes from
 `prefers-color-scheme: dark` through `site/public/tokens.css`.
@@ -33,15 +44,15 @@ The compact design switches at `max-width: 400px` inside each scene. Dark comes 
 All four are stills. `hero` stays a still on the page. The three video slots (`add-tick`,
 `household-sync`, `mcp-chat`) get job 54's real app footage; these are their placeholder
 posters, so nothing here loops. `add-tick` and `household-sync` take their posters from their
-videos since job 215 (`marketing/videos/remake.sh`), so `film-all.mjs` no longer films them;
+videos since job 215, `mcp-chat` too (`marketing/videos/remake.sh`), so `film-all.mjs` films only the hero;
 `emails/scripts/demo-screen.tsx` still shoots `add-tick.html`.
 
 ## Plan per scene
 
 ### hero (wide 500 x 540, compact 358 x 400)
 - Where: the bottom of the cobalt hero block, painted cobalt so it merges with the block.
-- Focal object: the list screen on one phone, run off the bottom edge.
-- Action: Anna (household „Unser Haushalt“, with Jonas) added Hafermilch on her phone; it sits in the list, freshly tinted.
+- Focal object: the real list screen (Jonas's) on one phone, run off the bottom edge.
+- Action: Anna (household „Unser Haushalt“, with Jonas) added Hafermilch at the Wochenmarkt; it sits in Jonas's list in honey under „1 neu von Anna“.
 - Payoff: the sync sticker "Anna hat „Hafermilch“ hinzugefügt" with Anna's avatar, straddling the phone.
 - Left out: tabs, status bar, settings, other satellites (no voice sticker, no logo cluster).
 
@@ -71,7 +82,7 @@ picks; store names are text in Snacklist colours only.
 
 ### stores (no longer a scene)
 Job 145 replaced the stores still with live HTML: `site/landing.mjs` renders the store buttons and
-the route, `site/public/stores.js` switches it, `site/checks/stores.mjs` drives it.
+the stores in order (a store button moves that store to the top), `site/public/stores.js` switches it, `site/checks/stores.mjs` drives it.
 
 ## Hand-over notes
 
@@ -80,6 +91,7 @@ dark), frames `/tmp/s53/scenes/<scene>-<locale>-<size>[-dark].png` at 2x. Every 
 29 to 50 KB at quality 90.
 
 ### hero
+Since job 402 the phone shows the real app (`capture-hero.mjs`); the notes below are the job 53 mock's.
 Plan: the list screen on one phone; Anna added Hafermilch; it sits honey-tinted in the list with the sync sticker; no tabs, status bar or second satellite.
 Layout: Block with gutters on the cobalt ground, gutter 72 (sides and top), phone off the bottom with the add field whole and 44 px of list under it (19 px at compact); sticker straddles the top-left corner, rotated -3°. Compact 358: phone 24 px from the sides, the Wochenmarkt, Bäckerei and Drogerie stores dropped, sticker stacked centred over the phone's top edge.
 Beats: still, stays a still on the page.

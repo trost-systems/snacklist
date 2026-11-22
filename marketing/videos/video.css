@@ -52,11 +52,6 @@ body {
   border: calc(2 * var(--u)) solid var(--hl-color-border);
   border-radius: calc(28 * var(--u));
   background: var(--hl-color-ink);
-  box-shadow: 0 calc(6 * var(--u)) 0 0 var(--hl-color-ink);
-}
-
-.phone--quiet {
-  box-shadow: 0 calc(4 * var(--u)) 0 0 var(--hl-color-ink);
 }
 
 .screen {
@@ -212,7 +207,6 @@ body {
   border: calc(2 * var(--u)) solid var(--hl-color-border);
   border-radius: 999px;
   background: var(--hl-color-surface-raised);
-  box-shadow: 0 calc(3 * var(--u)) 0 0 var(--hl-color-ink);
   font-size: calc(13 * var(--u));
   font-weight: 650;
   line-height: 1;
@@ -233,7 +227,6 @@ body {
   border: calc(2 * var(--u)) solid var(--hl-color-border);
   border-radius: calc(20 * var(--u));
   background: var(--hl-color-surface-raised);
-  box-shadow: 0 calc(6 * var(--u)) 0 0 var(--hl-color-ink);
   font-size: calc(13 * var(--u));
   line-height: 1.3;
 }
@@ -349,12 +342,6 @@ body {
 .nm--done {
   text-decoration: line-through;
   text-decoration-thickness: calc(1.5 * var(--u));
-}
-
-.cat {
-  margin-left: auto;
-  color: var(--hl-color-text-muted);
-  font-size: calc(11 * var(--u));
 }
 
 .composer {
@@ -481,7 +468,6 @@ body {
   border-radius: calc(16 * var(--u)) calc(16 * var(--u)) calc(16 * var(--u)) calc(4 * var(--u));
   background: var(--hl-color-cobalt);
   color: var(--hl-color-on-cobalt);
-  box-shadow: 0 calc(3 * var(--u)) 0 var(--hl-color-ink);
   font-family: "Inter", sans-serif;
   font-size: calc(15 * var(--u));
   font-weight: 650;
@@ -498,10 +484,3 @@ body {
   opacity: 0;
 }
 
-.said-note {
-  font-family: "Inter", sans-serif;
-  font-size: calc(12 * var(--u));
-  font-weight: 600;
-  color: var(--hl-color-text);
-  opacity: 0;
-}

@@ -22,7 +22,6 @@
     border: var(--hl-border-width) solid var(--hl-color-border);
     border-radius: var(--hl-radius-m) var(--hl-radius-m) var(--hl-radius-m) var(--hl-space-1);
     background: var(--hl-color-surface-raised);
-    box-shadow: var(--sticker-s);
     font-size: 15px;
     font-weight: var(--hl-font-weight-medium);
     line-height: 1.4;
@@ -49,7 +48,6 @@
     border: var(--hl-border-width) solid var(--hl-color-border);
     border-radius: var(--hl-radius-l);
     background: var(--hl-color-surface-raised);
-    box-shadow: var(--sticker);
     overflow: hidden;
   }
 
@@ -108,9 +106,9 @@
     <p class="bubble bubble--ask" data-t="ask"></p>
     <div class="card">
       <div class="card-head"><img src="../public/favicon.svg" alt=""><b>Snacklist</b><span data-t="added"></span></div>
-      <div class="item"><span class="emo">🥛</span><span class="name" data-t="milk"></span><span class="sub" data-t="chilled"></span><span class="hxp tick"><i class="mi">&#xe156;</i></span></div>
-      <div class="item"><span class="emo">🥚</span><span class="name" data-t="eggs"></span><span class="sub" data-t="chilled"></span><span class="hxp tick"><i class="mi">&#xe156;</i></span></div>
-      <div class="item"><span class="emo">🍎</span><span class="name" data-t="apples"></span><span class="sub" data-t="produce"></span><span class="hxp tick"><i class="mi">&#xe156;</i></span></div>
+      <div class="item"><span class="emo">🥛</span><span class="name" data-t="milk"></span><span class="sub" data-t="supermarket"></span><span class="hxp tick"><i class="mi">&#xe156;</i></span></div>
+      <div class="item"><span class="emo">🥚</span><span class="name" data-t="eggs"></span><span class="sub" data-t="supermarket"></span><span class="hxp tick"><i class="mi">&#xe156;</i></span></div>
+      <div class="item"><span class="emo">🍎</span><span class="name" data-t="apples"></span><span class="sub" data-t="supermarket"></span><span class="hxp tick"><i class="mi">&#xe156;</i></span></div>
     </div>
     <div class="bubble bubble--filler"><span class="bar" style="width: 72%"></span><span class="bar" style="width: 90%"></span><span class="bar" style="width: 84%"></span><span class="bar" style="width: 40%"></span></div>
   </div>
@@ -119,11 +117,11 @@
   globalThis.STRINGS = {
     de: {
       ask: 'Setz Milch, Eier und Äpfel auf unsere Einkaufsliste', added: '3 Artikel hinzugefügt',
-      milk: 'Milch', eggs: 'Eier', apples: 'Äpfel', chilled: 'Kühlregal', produce: 'Obst &amp; Gemüse',
+      milk: 'Milch', eggs: 'Eier', apples: 'Äpfel', supermarket: 'Supermarkt',
     },
     en: {
       ask: 'Put milk, eggs and apples on our shopping list', added: '3 items added',
-      milk: 'Milk', eggs: 'Eggs', apples: 'Apples', chilled: 'Chilled', produce: 'Fruit &amp; veg',
+      milk: 'Milk', eggs: 'Eggs', apples: 'Apples', supermarket: 'Supermarket',
     },
   };
 </script>

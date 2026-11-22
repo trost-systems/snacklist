@@ -95,12 +95,15 @@ test('COPY_NEEDED.md is generated from copy.yml and lists every draft', () => {
   assert.equal(COPY.get('voice.siri.now').status, 'draft');
 });
 
-test('the landing pages promise nothing that is not there: no prices, no Alexa, no Watch, no ChatGPT', () => {
+test('the landing pages promise nothing that is not there: no prices, no Watch, no ChatGPT, Alexa only in its card and trademark line', () => {
   const { page } = buildSite({ env: PROD });
   for (const locale of ['de', 'en']) {
-    const text = page(`/${locale}`).querySelector('body').text;
+    const body = page(`/${locale}`).querySelector('body');
+    const text = body.text;
     assert.doesNotMatch(text, /€|\$|\bpreis|\bprice|premium|lifetime|abo\b|subscription|kostenlos|\bfree\b/i, locale);
-    assert.doesNotMatch(text, /alexa|apple watch|chatgpt|openai|gemini/i, locale);
+    assert.doesNotMatch(text, /apple watch|chatgpt|openai|gemini/i, locale);
+    for (const el of body.querySelectorAll('.assistant--alexa, footer .marks')) el.remove();
+    assert.doesNotMatch(body.text, /alexa/i, locale);
     assert.doesNotMatch(text, /\bhumm\b(?!list)|biene|\bbee\b/i, locale);
     assert.doesNotMatch(text, /\[PETER/, locale);
   }
@@ -271,20 +274,17 @@ test('a poster without a dark variant shows the light one in dark mode', () => {
   assert.ok(sources.includes('/media/hero-de-compact-dark.webp'));
 });
 
-test('the stores card renders the supermarket route with a pressed button, ready for stores.js', () => {
+test('the stores card renders the stores with the supermarket first and a pressed button, ready for stores.js', () => {
   const { page } = buildSite();
-  const routes = {
-    drugstore: ['drugstore', 'pantry', 'sweets', 'household', 'drinks'],
-    'drinks-market': ['drinks', 'sweets', 'chilled', 'frozen', 'household'],
-    supermarket: ['produce', 'bakery', 'chilled', 'meat', 'pantry'],
-  };
+  const home = ['market', 'bakery', 'supermarket', 'drugstore'];
+  const routes = Object.fromEntries(home.map((store) => [store, [store, ...home.filter((s) => s !== store)]]));
   for (const locale of ['de', 'en']) {
     const doc = page(`/${locale}`);
     const card = doc.querySelector('.feature [data-stores]');
     assert.equal(card.querySelector('[role="group"]').getAttribute('aria-labelledby'), 'store-pick');
     const buttons = card.querySelectorAll('button');
-    assert.deepEqual(buttons.map((b) => b.querySelector('[data-copy-id]').getAttribute('data-copy-id').split('.').at(-1)), Object.keys(routes), locale);
-    assert.deepEqual(buttons.map((b) => [b.getAttribute('type'), b.getAttribute('aria-pressed')]), [['button', 'false'], ['button', 'false'], ['button', 'true']], locale);
+    assert.deepEqual(buttons.map((b) => b.querySelector('[data-copy-id]').getAttribute('data-copy-id').split('.').at(-1)), home, locale);
+    assert.deepEqual(buttons.map((b) => [b.getAttribute('type'), b.getAttribute('aria-pressed')]), [['button', 'false'], ['button', 'false'], ['button', 'true'], ['button', 'false']], locale);
     for (const b of buttons) {
       const store = b.querySelector('[data-copy-id]').getAttribute('data-copy-id').split('.').at(-1);
       assert.equal(b.getAttribute('data-route'), routes[store].join(' '), store);
@@ -292,30 +292,16 @@ test('the stores card renders the supermarket route with a pressed button, ready
     const list = card.querySelector('ol.store-route');
     assert.equal(list.getAttribute('aria-labelledby'), 'store-supermarket');
     assert.equal(card.querySelector('#store-supermarket').text, COPY.get('feature.stores.store.supermarket')[locale]);
-    const shown = list.querySelectorAll('li').filter((li) => !li.hasAttribute('hidden'));
-    assert.deepEqual(shown.map((li) => li.getAttribute('data-category')), routes.supermarket, 'without JS the supermarket route shows, in order');
-    const every = new Set(Object.values(routes).flat());
-    assert.deepEqual(new Set(list.querySelectorAll('li').map((li) => li.getAttribute('data-category'))), every, 'every row a store needs is in the page');
+    assert.deepEqual(list.querySelectorAll('li').map((li) => li.getAttribute('data-store')), routes.supermarket, 'without JS the supermarket comes first, the others in their order');
     for (const li of list.querySelectorAll('li')) {
-      assert.equal(li.querySelector('[data-copy-id]').getAttribute('data-copy-id'), `feature.stores.category.${li.getAttribute('data-category')}`);
-      assert.equal(li.querySelector('.emo').getAttribute('aria-hidden'), 'true');
+      assert.equal(li.querySelector('[data-copy-id]').getAttribute('data-copy-id'), `feature.stores.store.${li.getAttribute('data-store')}`);
     }
     assert.ok(doc.querySelector('script[type="module"][src="/stores.js"]'), 'stores.js ships with the landing page');
   }
 });
 
-test('the stores card names the app\'s own categories', () => {
-  const arb = (locale) => JSON.parse(readFileSync(join(SITE_DIR, `../app/l10n/app_${locale}.arb`), 'utf8'));
-  for (const locale of ['de', 'en']) {
-    const strings = arb(locale);
-    for (const [id, entry] of COPY) {
-      const key = id.match(/^feature\.stores\.category\.(.+)$/)?.[1];
-      if (!key) continue;
-      const app = strings[`category${key[0].toUpperCase()}${key.slice(1)}`];
-      // The drugstore's seeded name starts with its emoji (👶), which the card shows as the icon.
-      assert.equal(entry[locale], app.replace(/^\p{Extended_Pictographic}\s*/u, ''), `${id} ${locale}`);
-    }
-  }
+test('the stores card shows no category: the app hides categories', () => {
+  assert.deepEqual([...COPY.keys()].filter((id) => id.startsWith('feature.stores.category.')), []);
 });
 
 test('the HTML check allows only script files of this site and resources that exist', () => {

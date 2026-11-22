@@ -16,7 +16,7 @@ Mit einem Kurzbefehl setzt du Sachen per Siri auf deine Snacklist, ohne die App 
 > **Du:** Milch, zwei Gurken und Klopapier.
 > **Siri:** Hinzugefügt: Milch, 2 Gurken, Klopapier.
 
-Siri schickt deinen Satz an Snacklist. Snacklist teilt ihn in einzelne Einträge auf, sortiert jeden in seine Kategorie ein, und die Einträge erscheinen sofort auf allen Geräten in eurem Haushalt. Das Aufteilen funktioniert bisher nur auf Deutsch.
+Siri schickt deinen Satz an Snacklist. Snacklist teilt ihn in einzelne Einträge auf, setzt jeden an die passende Stelle der Liste, und die Einträge erscheinen sofort auf allen Geräten in eurem Haushalt. Das Aufteilen funktioniert bisher nur auf Deutsch.
 
 ## Ohne Einrichtung: Siri kennt Snacklist {#ohne-einrichtung since=1.0.0 once=native-siri}
 

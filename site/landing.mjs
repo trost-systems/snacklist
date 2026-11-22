@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import yaml from 'js-yaml';
 import MarkdownIt from 'markdown-it';
 import QRCode from 'qrcode';
-import { STORE_URLS } from './config/stores.mjs';
+import { ALEXA_SKILL_URLS, STORE_URLS, WEB_APP_URL } from './config/stores.mjs';
 import { signupForm } from './waitlist.mjs';
 
 const LOCALES = ['de', 'en'];
@@ -137,29 +137,21 @@ function picture({ posters }, alt, { className = '', eager = false, hidden = fal
   return `<picture${className ? ` class="${className}"` : ''}${hidden ? ' aria-hidden="true"' : ''}>${sources.join('')}<img src="${wide.light}" alt="${escapeAttr(alt)}" width="${w}" height="${h}" decoding="async"${loading}></picture>`;
 }
 
-// The stores card: each store's first stops, from the app's seeded categories (seed_household)
-// and their emoji (item_icon.dart; the drugstore's is the 👶 its seeded name starts with). The
-// Drogerie route is the researched dm layout the app shipped; Supermarkt is the order a new store
-// starts with. Supermarkt renders as the page loads; stores.js switches the route.
-const CATEGORY_EMOJI = {
-  produce: '🥕', bakery: '🥖', chilled: '🥛', meat: '🥩', pantry: '🥫', sweets: '🍫',
-  drinks: '🧃', frozen: '🧊', household: '🧽', drugstore: '👶',
-};
-export const STORE_ROUTES = {
-  drugstore: ['drugstore', 'pantry', 'sweets', 'household', 'drinks'],
-  'drinks-market': ['drinks', 'sweets', 'chilled', 'frozen', 'household'],
-  supermarket: ['produce', 'bakery', 'chilled', 'meat', 'pantry'],
-};
+// The stores card: the household's stores (the demo household's, as on the hero) as numbered
+// sections in the order the list shows them. A store button moves that store to the top and
+// keeps the others in their order; the app lets you put your stores in any order. Supermarkt
+// is selected as the page loads; stores.js switches the order.
+const HOME_ORDER = ['market', 'bakery', 'supermarket', 'drugstore'];
+export const STORE_ROUTES = Object.fromEntries(HOME_ORDER.map((store) => [store, [store, ...HOME_ORDER.filter((s) => s !== store)]]));
 const SELECTED_STORE = 'supermarket';
 
 function storeRoutes({ el }) {
   const route = STORE_ROUTES[SELECTED_STORE];
-  const rest = Object.keys(CATEGORY_EMOJI).filter((c) => !route.includes(c));
   const chips = Object.entries(STORE_ROUTES).map(([store, stops]) => {
     const pressed = store === SELECTED_STORE;
     return `<button type="button" class="hex hex--small store-chip" aria-pressed="${pressed}" data-route="${stops.join(' ')}"><span class="face">${el('span', `feature.stores.store.${store}`, `id="store-${store}"`)}</span></button>`;
   });
-  const rows = [...route, ...rest].map((c) => `<li class="hx"${route.includes(c) ? '' : ' hidden'} data-category="${c}"><span class="hxp step" aria-hidden="true"></span><span class="emo" data-emoji="${CATEGORY_EMOJI[c]}" aria-hidden="true"></span>${el('span', `feature.stores.category.${c}`)}</li>`);
+  const rows = route.map((c) => `<li class="hx" data-store="${c}"><span class="hxp step" aria-hidden="true"></span>${el('span', `feature.stores.store.${c}`)}</li>`);
   return `<div class="media-frame stores-demo" data-stores>
 <div class="stores-layout">
 <div class="store-pick" role="group" aria-labelledby="store-pick">
@@ -189,8 +181,8 @@ export function copyReader(copy, locale) {
 }
 
 // The calls to action per stage (site/config/stage.ts, docs/WAITLIST.md): `waitlist` and `beta`
-// send people to the sign-up form in the closing block, `launch` to the store badges. No stage
-// links the browser app.
+// send people to the sign-up form in the closing block, `launch` to the store badges, with the
+// browser app as the second way under them.
 export const STAGE_CTA = {
   waitlist: { id: 'waitlist.cta', anchor: { de: 'warteliste', en: 'waitlist' } },
   beta: { id: 'beta.cta', anchor: { de: 'warteliste', en: 'waitlist' } },
@@ -225,7 +217,7 @@ function getApp(locale, { text, el }, { qr }) {
 <a class="store-badge" href="${escapeAttr(url)}" data-copy-id="${badge}"><img src="${src}" alt="${escapeAttr(text(badge))}" ${size}></a>${figure}
 </li>`;
   });
-  return `<ul class="store-cards">\n${cards.join('\n')}\n</ul>`;
+  return `<ul class="store-cards">\n${cards.join('\n')}\n</ul>\n<p class="web-app">${el('span', 'launch.web-app-lead')} <a class="link-strong" href="${WEB_APP_URL}" data-copy-id="launch.web-app">${escapeAttr(text('launch.web-app'))}</a></p>`;
 }
 
 // The landing page as it was before the waitlist; only its calls to action follow the stage.
@@ -265,8 +257,20 @@ export function renderLanding({ locale, copy, config, publicDir, stage, consent 
     ? `<a class="link-strong" href="${locale === 'de' ? '/support' : '/en/support'}" data-copy-id="test.help">${md('test.help')}</a>`
     : (text('test.help'), '');
   const tick = `<span class="tick hxp" aria-hidden="true">${icon('check')}</span>`;
-  const privacyItems = ['privacy.frankfurt', 'privacy.consent', 'privacy.export', 'privacy.delete', 'privacy.website'];
   const launch = stage === 'launch';
+  // Without the sign-up form at launch, the website line has no email address to explain.
+  const privacyItems = ['privacy.frankfurt', 'privacy.consent', 'privacy.export', 'privacy.delete', launch ? 'privacy.website-launch' : 'privacy.website'];
+  // The Snacklist skill for Alexa (Legal N-366): shown while config.json's alexaPublished is on.
+  const alexa = config.alexaPublished
+    ? `<article class="assistant assistant--alexa" aria-labelledby="voice-alexa">
+<div class="assistant-head">
+${el('h3', 'voice.alexa.title', 'class="title" id="voice-alexa"')}
+</div>
+${el('p', 'voice.alexa.body')}
+<p class="assistant-links"><a href="${escapeAttr(ALEXA_SKILL_URLS[locale])}" data-copy-id="voice.alexa.store">${md('voice.alexa.store')}</a> <a href="${locale === 'de' ? '/de/anleitungen/alexa' : '/en/guides/alexa'}" data-copy-id="voice.alexa.guide">${md('voice.alexa.guide')}</a></p>
+</article>
+`
+    : (['voice.alexa.title', 'voice.alexa.body', 'voice.alexa.store', 'voice.alexa.guide'].forEach(text), '');
   const badgeId = launch ? 'hero.badge-launch' : 'hero.badge';
 
   const heroAction = launch
@@ -359,7 +363,7 @@ ${el('h3', 'voice.siri.title', 'class="title" id="voice-siri"')}
 </div>
 ${el('p', 'voice.siri.now')}
 </article>
-</div>
+${alexa}</div>
 </div>
 </section>
 <section class="section privacy-section" id="privacy" aria-labelledby="privacy-title">

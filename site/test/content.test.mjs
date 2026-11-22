@@ -19,7 +19,7 @@ test('each index lists only its own locale with title and description', () => {
   const de = listed(page('/de/anleitungen'));
   assert.deepEqual(de.map((g) => g.href), ['/de/anleitungen/widget', '/de/anleitungen/claude', '/de/anleitungen/alexa', '/de/anleitungen/siri-kurzbefehl']);
   assert.match(de[2].text, /Snacklist per Alexa: Skill einrichten/);
-  assert.match(de[2].text, /Mit dem Snacklist-Skill für Amazon Alexa setzt du Sachen per Sprache auf deine Snacklist/);
+  assert.match(de[2].text, /Mit dem Snacklist-Skill für Alexa kannst du Sachen per Sprache auf deine Snacklist setzen/);
   assert.match(de[0].text, /Snacklist auf dem Home-Bildschirm: das Widget/);
   assert.match(de[1].text, /Snacklist mit Claude verbinden/);
   assert.match(de[3].text, /Snacklist per Siri: Kurzbefehl einrichten/);

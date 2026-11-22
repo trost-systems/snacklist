@@ -1,0 +1,1 @@
+household,family,couple,roommates,groceries,checklist,voice,dictation,share,offline

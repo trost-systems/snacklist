@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { parse } from 'node-html-parser';
 import jsQR from 'jsqr';
 import { buildSite, htmlRoutes, legal, meta, serve, stageBuild, CONTENT_DIR, REPO_DIR, SITE_DIR } from './helpers.mjs';
-import { STORE_URLS } from '../config/stores.mjs';
+import { STORE_URLS, WEB_APP_URL } from '../config/stores.mjs';
 
 const PROD = { VERCEL_ENV: 'production' };
 const ACTION_ROUTES = ['/de/warteliste/bestaetigen', '/de/warteliste/abmelden', '/en/waitlist/confirm', '/en/waitlist/unsubscribe'];
@@ -48,6 +48,10 @@ test('every call to action follows the stage: waitlist and beta lead to the form
         for (const block of [doc.querySelector('.hero-actions'), target]) {
           assert.deepEqual(block.querySelectorAll('.store-badge img').map((img) => img.getAttribute('src')), [`/media/badges/app-store-${locale}.svg`, `/media/badges/google-play-${locale}.png`]);
           assert.deepEqual(block.querySelectorAll('.store-badge').map((a) => a.getAttribute('href')), [STORE_URLS.appStore, STORE_URLS.googlePlay], 'the badges go straight to the listings');
+        }
+        for (const block of [doc.querySelector('.hero-actions'), target]) {
+          const web = block.querySelector('.web-app a');
+          assert.deepEqual([web.text, web.getAttribute('href')], [locale === 'de' ? 'Snacklist im Browser öffnen' : 'Open Snacklist in your browser', WEB_APP_URL], 'the web app under the badges');
         }
         assert.equal(target.querySelectorAll('.store-qr svg').length, 2, 'both QR codes sit in the closing block');
         assert.equal(doc.querySelector('.hero-actions .store-qr'), null, 'not in the hero');
@@ -187,7 +191,7 @@ const LEGAL_MENTIONS = {
   '/en/privacy': ['(app.snacklist.app)', 'Web app app.snacklist.app', 'https://app.snacklist.app/konto-loeschen.html', 'snacklist.app, app.snacklist.app and mcp.snacklist.app'],
 };
 
-test('only the launch stage links app.snacklist.app, once in the header nav, and nothing comes from another server', () => {
+test('only the launch stage links app.snacklist.app, in the header nav and under the store badges, and nothing comes from another server', () => {
   for (const [stage, { outDir }] of Object.entries(STAGES)) {
     const files = readdirSync(outDir, { recursive: true }).filter((f) => /\.(html|css|js)$/.test(f));
     assert.ok(files.length > 20);
@@ -200,7 +204,7 @@ test('only the launch stage links app.snacklist.app, once in the header nav, and
       const doc = parse(text);
       for (const el of doc.querySelectorAll('*')) {
         for (const [name, value] of Object.entries(el.attributes)) {
-          const navLink = stage === 'launch' && el.tagName === 'A' && name === 'href' && value === 'https://app.snacklist.app' && el.closest('.nav');
+          const navLink = stage === 'launch' && el.tagName === 'A' && name === 'href' && value === 'https://app.snacklist.app' && (el.closest('.nav') || el.closest('.web-app'));
           if (!navLink) assert.doesNotMatch(value, /app\.(?:snacklist\.app|hummlist\.com)/i, `${stage} ${file}: <${el.tagName} ${name}>`);
           if (['src', 'srcset', 'poster', 'action', 'data'].includes(name) || (name === 'href' && el.tagName === 'LINK' && !['canonical', 'alternate'].includes(el.getAttribute('rel')))) {
             assert.doesNotMatch(value, /^(https?:)?\/\//i, `${stage} ${file}: <${el.tagName} ${name}="${value}"> loads from another server`);
@@ -261,6 +265,16 @@ test('the QR codes decode to the two store listings', () => {
     assert.deepEqual(svgs.map(decode), [STORE_URLS.appStore, STORE_URLS.googlePlay]);
     assert.match(svgs[0].getAttribute('aria-label'), /iPhone/);
   }
+});
+
+test('launch says nothing of the waitlist, the beta or November on the landing pages', () => {
+  for (const locale of ['de', 'en']) {
+    const body = launch.page(`/${locale}`).querySelector('body');
+    for (const el of body.querySelectorAll('script')) el.remove();
+    assert.doesNotMatch(body.text, /warteliste|waitlist|\bbeta\b|november|trägst du dich|if you sign up/i, locale);
+    assert.doesNotMatch(body.toString(), /warteliste|waitlist/i, `${locale}: no anchor or attribute either`);
+  }
+  assert.match(waitlist.page('/de').querySelector('main').text, /Nur für die Warteliste und die Einladung\./, 'the waitlist stage keeps Legal\'s line');
 });
 
 test('launch carries no waitlist form or script', () => {

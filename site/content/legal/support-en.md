@@ -4,7 +4,7 @@ description: "Help with Snacklist: how to reach us, and answers to common questi
 locale: en
 path: /en/support
 translation_key: support
-updated: 2026-11-17
+updated: 2026-11-22
 draft: false
 ---
 
@@ -24,23 +24,11 @@ Who is responsible for Snacklist is in the [imprint](/en/imprint). How Snacklist
 
 ### What happens with my email address?
 
-We use it for the waitlist and the beta invite, and, if you ticked the box, for one email when the app launches. For the invite it goes to Apple or Google. Details are in the [privacy policy](/en/privacy).
+If you sign in with email, we send a link to that address, and if you signed up for an email when the app launches and ticked the box, we send you that one email. Details are in the [privacy policy](/en/privacy).
 
-### How do I install the beta on iPhone?
+### How do I install Snacklist?
 
-Your invite comes by email from Apple (TestFlight), sent to the address you used for the waitlist. First, get Apple's free TestFlight app from the App Store. Then open the invite email on your iPhone, tap the button in it, and install Snacklist in TestFlight. There's no public link.
-
-### How do I install the beta on Android?
-
-Your invite email has a "Join the beta" button. Open it on your phone, with the Play Store signed in to the same Google account as the email address the invite went to. Accept there, then install Snacklist from the Play Store. After that, updates arrive as normal Play Store updates.
-
-### I signed up with the wrong email. What now?
-
-The invite only works with the email of your Apple ID (iPhone) or Google account (Android). Just sign up again on [snacklist.app/en](/en) with the right address.
-
-### My invite hasn't arrived. What can I do?
-
-Check your spam folder, and in Gmail the Promotions tab too. We send invites in waves. On iPhone, the TestFlight email comes from Apple, not from Snacklist. If it's still missing, write to [support@snacklist.app](mailto:support@snacklist.app).
+Snacklist comes to the App Store for iPhone and to Google Play for Android. Once the app is there, search for "Snacklist" and download it like any other app. Updates then arrive through the store.
 
 ### How do I invite someone?
 
@@ -91,12 +79,12 @@ Yes. On iPhone with iOS 17 or later you can do it directly with the Snacklist ap
 
 ### Can I add items with Alexa?
 
-Yes, with the Snacklist skill for Amazon Alexa. Enable it in the Alexa app and link it to your Snacklist account. Then say, for example, "Alexa, ask Snacklist to add milk and eggs" or "Alexa, ask Snacklist what's on the list". The skill understands English and German, depending on the language your Alexa device is set to. To end the connection, disable the skill in the Alexa app or disconnect **Amazon Alexa** in Snacklist under **More** → **Access**. The skill is still in a beta test and not yet available to everyone; Peter sends you the invitation link. The guide [Snacklist with Alexa](/en/guides/alexa) explains more.
+Yes, with the Snacklist skill for Alexa. Enable it in the Alexa app and link it to your Snacklist account. Then say, for example, "Alexa, ask Snacklist to add milk and eggs" or "Alexa, ask Snacklist what's on the list". The skill understands English and German, depending on the language your Alexa device is set to. To end the connection, disable the skill in the Alexa app or disconnect **Amazon Alexa** in Snacklist under **More** → **Access**. You find the skill in the [Alexa Skill Store](alexa-skill:en). The guide [Snacklist with Alexa](/en/guides/alexa) explains more.
 
 ### Can I use Snacklist with an AI assistant?
 
 Yes, with AI assistants that can add their own MCP servers, through Snacklist's MCP server. Whether your assistant can, and on which plan, is up to its provider. There's a step-by-step guide for [Claude](/en/guides/claude). Tap **More**, then **Access**. The MCP server's address is shown there. You connect the assistant by signing in or with an access token. Under **Connected apps** and **Access tokens** you see every connection and can revoke it at any time.
 
-### I test Snacklist through TestFlight or Google Play. What should I know?
+### I found a bug or have an idea. What do I do?
 
-Snacklist is still in a closed test for family and friends. On iPhone the app comes through TestFlight, on Android through Google Play's internal test; updates arrive there by themselves. Peter sends you the invite link to the test. Bugs and ideas are best sent straight from the app with **Send feedback**.
+Send it straight from the app: tap **More**, then **Send feedback**. You can also tell us there what's missing.

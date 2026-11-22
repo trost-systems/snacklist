@@ -17730,3 +17730,72 @@ Peter decided HP2 on 22 Nov 2026: `grocery-log`, `prices-and-trip-total`, `trip-
 5. **No copy changes.** ARB strings, store listings, site and legal texts are untouched (brief).
    The verify-snacklist feature map and FEATURES-FOR-WRITERS now say the four are off for users,
    since emails and site copy are written from them.
+
+## Job 369: site, store listings and demo videos aligned to the launch build
+
+- **One list of capture flags.** `marketing/CAPTURE_FLAGS` (`hide-categories`, `add-sheet-compact`,
+  `redesign-rd1`) is read by `scripts/store-screenshots.sh` (web build, as `VH_DEFINES`) and by
+  `marketing/videos/remake.sh` (Linux build, with every full-rollout flag from `releases/flags.json`
+  added, so the switcher sheet, trip mode, prices and the rest show as users get them). Peter's
+  "new list/household selection sheet" is `list-declutter`, already at full rollout, so it needs no
+  entry. `hide-categories`, `add-sheet-compact` and `redesign-rd1` are `off` in `flags.json` (internal
+  testers only): footage shows them on, and DONE_SUMMARY says so. If a flag launches the file
+  shrinks; if the launch build differs from this list the listing must be re-shot.
+- **The order shot is gone.** It showed the category walking order of a store, which the launch
+  build hides. The sets are 6 shots (list, sync, add, voice, assist, invite) and the Play tablets 3.
+  The `invite` shot now shows the household/list switcher sheet, opened from the list header, and
+  not the household page; the iPad set drops it (a centred card leaves no clean cut).
+- **Frames lose their shadows.** Peter's rule (only buttons cast a shadow) is applied to the store
+  frames too: the app card, the sync chip, the speech bubble, the chat and the Premium pill have none.
+  The Wabenband behind the cards and the hexagon badges in video captions stay: RD-Q4 keeps the
+  store frames and the site for their own round.
+- **Trip mode and the demo videos.** The first tick asks "Kaufst du gerade ein?". The shots tick
+  and answer one item before filming, so the loop shows what a user sees from the second tick on.
+- **Sheet closing.** The compact sheet has no close key, so the shots close it with Enter in the
+  empty field and the scenes read that key as the close moment.
+- **Listing texts.** `app/fastlane/metadata/` (fastlane layout, nothing uploads it) holds the App
+  Store, Play and in-app purchase texts; `docs/store/LISTING.md` lists limits, hashes and open
+  questions. The IAP texts say "für dein Konto", not "für deinen Haushalt": Premium is per user
+  (`docs/PURCHASES.md`, job 185), while the Premium page's own words still say household.
+- **Assets are committed.** The screenshot sets and app previews are copied to
+  `marketing/store-assets/` (not git-ignored) so Ops finds them; `marketing/store-screenshots/out/`
+  stays ignored. Nothing is uploaded to a console.
+
+- **Job 369 review 0.** Voice demo takes hear their own language (EN "Pizza, Orange juice and two packs of Cereal", capitalised because the English parser keeps case). The marketing videos and site scenes lose every non-button shadow too (speech bubble, chat, name tags, sticker card, phone bezel); the site's phone bezel keeps a soft blurred shadow, not an offset edge. The launch-stage copy of Legal's addendum 3 is done except `privacy.website` (waitlist API still live) and `launch.countries` (no evidence of a country limit).
+
+## Job 402: #637 reworked for HP2, Legal N-366 and Peter's preview review, 2026-11-22
+
+- **Why captures showed prices.** `marketing/CAPTURE_FLAGS` was not the whole flag set: the
+  verify-snacklist build (`helpers/env.sh`, `vh_defines`) and `marketing/videos/remake.sh` add
+  every `rollout: full` flag of `releases/flags.json`, and `prices-and-trip-total`, `trip-mode` and
+  `grocery-log` are still `full` there. This job must not change those rollouts (job 401 does), so
+  the capture environments drop the flags `marketing/CAPTURE_FLAGS_OFF` names and fail when one of
+  them still reaches the build.
+- **Alexa wording on by default.** The brief kept the Alexa panel and listing bullets behind a toggle
+  until Ops supplied the skill pages. Ops supplied them at 20:43 (appended to Legal's N-366 file:
+  skill live, de-DE and five English locales, `amazon.de/dp/B0HRTTRGZ2`, `amazon.com/dp/B0HRTTRGZ2`)
+  and asked for the Alexa wording as the default. So the toggle exists and defaults to on; Legal's
+  hash re-GO still gates the merge.
+- **Premium in the listings names no benefit.** HP2 removes the two Premium bullets (older trips,
+  planned-and-paid comparison). P3a leads with export, API and MCP, but there is no Premium export
+  (the account export is GDPR's, never Premium), no themes and no user photos in the code, and MCP
+  and the API need Premium only while `integration_lock` is on, which is unreleased. The listings
+  therefore name the plans only; `docs/store/LISTING.md` holds the paste-ready lock-on block, and
+  `check.mjs` (now in the lint gate) fails when the listing and the `integration-lock` hold disagree.
+- **Listing rules as a check, not prose.** `check.mjs` also refuses HP2's words (prices, totals,
+  trip mode, History), "Amazon Alexa", "Hey Alexa", and a description naming Alexa without N-366's
+  trademark notice at its end (App Store: Siri and Amazon; Play: Amazon only).
+- **Download CTAs (launch stage).** Proposed: A, store badges in the hero and the closing block with
+  the web app as a text link under them („Lieber im Browser? Snacklist im Browser öffnen“); B, A plus
+  a sticky store bar on phones; C, badges after every section. Picked A: one primary action in the
+  first screen and at the end, the web app one tap away without competing with the badges. B covers
+  the demo videos' play keys at 358 px and squeezes the badges under their minimum size and clear
+  space; C repeats four badge pairs on blocks where the black badges lose contrast.
+- **Alexa's trademark line comes from the build.** `site/build.mjs` adds Amazon's sentence to the
+  footer and the Markdown twin of every page that names Alexa, and `site/test/alexa.test.mjs` fails a
+  page without it, "Hey Alexa", or an „Alexa, …“ sentence the skill's models do not take. Legal pages
+  are not edited; their mismatches with the live skill go to NEEDS_LEAD.
+- **Hero from the real app.** The hero's phone shows captures of the web release build
+  (`site/scenes/capture-hero.sh`, inputs in `site/scenes/hero-screen/`), not an HTML list: the mock
+  had drifted (checkboxes the app no longer has). Anna's Hafermilch lands at the Wochenmarkt so the
+  row stays above the add field on the compact size.

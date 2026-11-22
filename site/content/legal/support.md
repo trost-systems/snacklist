@@ -4,7 +4,7 @@ description: "Hilfe zu Snacklist: so erreichst du uns, und Antworten auf häufig
 locale: de
 path: /support
 translation_key: support
-updated: 2026-11-17
+updated: 2026-11-22
 draft: false
 ---
 
@@ -24,23 +24,11 @@ Wer für Snacklist verantwortlich ist, steht im [Impressum](/impressum). Wie Sna
 
 ### Was passiert mit meiner E-Mail-Adresse?
 
-Wir nutzen sie für die Warteliste und die Einladung zur Beta, und, wenn du das angekreuzt hast, für eine E-Mail zum Start der App. Für die Einladung geht sie an Apple bzw. Google. Alles Weitere steht in der [Datenschutzerklärung](/datenschutz).
+Wenn du dich per E-Mail anmeldest, schicken wir dir einen Link an diese Adresse, und wenn du dich für eine E-Mail zum Start der App eingetragen und das angekreuzt hast, schicken wir dir diese eine Mail. Alles Weitere steht in der [Datenschutzerklärung](/datenschutz).
 
-### Wie installiere ich die Beta auf dem iPhone?
+### Wie installiere ich Snacklist?
 
-Deine Einladung kommt per E-Mail von Apple (TestFlight), an die Adresse, mit der du dich auf der Warteliste eingetragen hast. Lad dir zuerst Apples kostenlose App „TestFlight“ aus dem App Store. Öffne dann die Einladungsmail auf deinem iPhone, tipp auf den Knopf darin und installier Snacklist in TestFlight. Einen öffentlichen Link gibt es nicht.
-
-### Wie installiere ich die Beta auf Android?
-
-In deiner Einladungsmail ist ein Knopf „Beta beitreten“. Öffne ihn auf deinem Handy, und zwar mit dem Play Store im selben Google-Konto wie die E-Mail-Adresse, an die die Einladung ging. Bestätige dort die Teilnahme und installier Snacklist dann aus dem Play Store. Updates kommen danach ganz normal über den Play Store.
-
-### Ich habe mich mit der falschen E-Mail eingetragen. Was jetzt?
-
-Die Einladung klappt nur mit der E-Mail deiner Apple-ID (iPhone) bzw. deines Google-Kontos (Android). Trag dich auf [snacklist.app](/de) einfach noch mal mit der richtigen Adresse ein.
-
-### Meine Einladung ist nicht angekommen. Was kann ich tun?
-
-Schau im Spam-Ordner nach und bei Gmail auch im Tab „Werbung“. Wir verschicken die Einladungen in Wellen. Auf dem iPhone kommt die TestFlight-Mail von Apple, nicht von Snacklist. Fehlt sie dann immer noch, schreib an [support@snacklist.app](mailto:support@snacklist.app).
+Snacklist erscheint für das iPhone im App Store und für Android in Google Play. Sobald die App dort verfügbar ist, suchst du nach „Snacklist“ und lädst sie wie jede andere App. Updates kommen danach über den Store.
 
 ### Wie lade ich jemanden ein?
 
@@ -91,12 +79,12 @@ Ja. Auf dem iPhone geht das ab iOS 17 direkt mit der Snacklist-App, ohne eigenen
 
 ### Kann ich Sachen per Alexa auf die Liste setzen?
 
-Ja, mit dem Snacklist-Skill für Amazon Alexa. Aktiviere ihn in der Alexa-App und verknüpfe ihn mit deinem Snacklist-Konto. Dann geht zum Beispiel „Alexa, sag Snacklist, füg Milch und Eier hinzu“ oder „Alexa, frag Snacklist, was auf der Liste steht“. Der Skill versteht Deutsch und Englisch, je nachdem, auf welche Sprache dein Alexa-Gerät eingestellt ist. Die Verbindung beendest du, indem du den Skill in der Alexa-App deaktivierst oder in Snacklist unter **Mehr** → **Zugänge** „Amazon Alexa“ trennst. Der Skill ist noch im Beta-Test und noch nicht für alle verfügbar; den Einladungslink bekommst du von Peter. Wie du ihn einrichtest, steht in der Anleitung [Snacklist per Alexa: Skill einrichten](/de/anleitungen/alexa).
+Ja, mit dem Snacklist-Skill für Alexa. Aktiviere ihn in der Alexa-App und verknüpfe ihn mit deinem Snacklist-Konto. Dann geht zum Beispiel „Alexa, sag Snacklist, füg Milch und Eier hinzu“ oder „Alexa, frag Snacklist, was auf der Liste steht“. Der Skill versteht Deutsch und Englisch, je nachdem, auf welche Sprache dein Alexa-Gerät eingestellt ist. Die Verbindung beendest du, indem du den Skill in der Alexa-App deaktivierst oder in Snacklist unter **Mehr** → **Zugänge** „Amazon Alexa“ trennst. Den Skill findest du im [Alexa Skill Store](alexa-skill:de). Wie du ihn einrichtest, steht in der Anleitung [Snacklist per Alexa: Skill einrichten](/de/anleitungen/alexa).
 
 ### Kann ich Snacklist mit einem KI-Assistenten nutzen?
 
 Ja, mit KI-Assistenten, die eigene MCP-Server einbinden können, über den MCP-Server von Snacklist. Ob dein Assistent das kann und in welchem Tarif, legt sein Anbieter fest. Eine Schritt-für-Schritt-Anleitung gibt es für [Claude](/de/anleitungen/claude). Tippe auf **Mehr** und dann auf **Zugänge**. Dort steht die Adresse des MCP-Servers. Du verbindest den Assistenten per Anmeldung oder mit einem Zugriffstoken. Unter **Verbundene Apps** und **Zugriffstoken** siehst du jeden Zugang und kannst ihn jederzeit widerrufen.
 
-### Ich teste Snacklist über TestFlight oder Google Play. Was muss ich wissen?
+### Ich habe einen Fehler gefunden oder eine Idee. Was tun?
 
-Snacklist ist noch in einem geschlossenen Test für Familie und Freunde. Auf dem iPhone kommt die App über TestFlight, auf Android über den internen Test in Google Play; Updates kommen dort von selbst. Den Einladungslink zum Test bekommst du von Peter. Fehler und Ideen schickst du am besten direkt aus der App über **Feedback senden**.
+Schick sie am besten direkt aus der App: Tippe auf **Mehr** und dann auf **Feedback senden**. Dort kannst du auch beschreiben, was dir fehlt.

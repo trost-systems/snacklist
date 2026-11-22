@@ -41,11 +41,6 @@ de-DE:
       h: ["Kurz getippt,", "schon drauf."]
       s: Mit Menge und Vorschlägen aus euren Einkäufen.
       alt: Beim Tippen von „3 Jogh“ schlägt Snacklist „Joghurt · 3“ aus früheren Einkäufen vor.
-    order:
-      status: approved
-      h: ["Dein Laden,", "dein Weg."]
-      s: Halten und ziehen. Jeder Laden hat seine Reihenfolge.
-      alt: Die Kategorien im Supermarkt werden per Halten und Ziehen in die eigene Reihenfolge gebracht.
     voice:
       status: draft
       h: ["Gesagt,", "notiert."]
@@ -97,11 +92,6 @@ en-US:
       h: ["Type a little,", "and it’s on."]
       s: With amounts and suggestions from your past shops.
       alt: Typing “2 Coff” makes Snacklist suggest “Coffee · 2” from past shops.
-    order:
-      status: approved
-      h: ["Your store,", "your way."]
-      s: Hold and drag. Every store keeps its own order.
-      alt: The Supermarket’s categories are put in your own walking order by holding and dragging.
     voice:
       status: draft
       h: ["Say it,", "it’s on."]

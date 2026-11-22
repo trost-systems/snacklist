@@ -1,0 +1,31 @@
+Snacklist ist die Einkaufsliste für alle, die gemeinsam einkaufen: Paare, Familien, WGs und Vereine. Alle sehen dieselbe Liste. Was jemand hinzufügt oder abhakt, erscheint nach wenigen Sekunden bei den anderen.
+
+SCHNELL HINZUFÜGEN
+Tippe auf „Was brauchst du?“ und schreib los. Snacklist macht mit jedem Buchstaben Vorschläge, findet auch trotz Tippfehler, was du meinst, und liest Mengen heraus („2 l Milch“, „Eier x6“). Vorschläge und Mengen funktionieren auch ohne Verbindung. „Wieder fällig“ zeigt, was bei euch wohl bald ausgeht, und „Zuletzt verwendet“ holt Abgehaktes mit einem Tippen zurück.
+
+GEMEINSAM
+• Ein Haushalt, eine Liste: Einladung per Link oder Code
+• Mehrere Listen, zum Beispiel Wocheneinkauf und Baumarkt, und mehrere Haushalte
+• Neue Einträge der anderen sind hervorgehoben
+• Die Liste ist nach Läden gegliedert, eigene Läden legst du selbst an
+• Bei einer Feier: „Ich bringe das“ zeigt, wer was mitbringt
+
+UNTERWEGS
+• Läuft auch ohne Netz: Einträge hinzufügen, abhaken, ändern. Alles wird gesendet, sobald du wieder online bist.
+
+MIT DER STIMME
+• Diktieren in der iPhone- und Android-App: „Milch, zwei Gurken und Klopapier“ wird zu drei Einträgen. Die Spracherkennung läuft auf dem Gerät, deine Stimme wird nicht an einen Server geschickt.
+• Mit dem Snacklist-Skill für Alexa fügst du Einträge per Sprache hinzu und lässt dir die Liste vorlesen, auf Deutsch und Englisch.
+
+KI-ASSISTENTEN
+KI-Assistenten, die MCP unterstützen, können deine Liste lesen, Einträge hinzufügen und abhaken. Du verbindest sie in der App unter „Mehr“ → „Zugänge“ und kannst den Zugang jederzeit beenden.
+
+SNACKLIST PREMIUM (OPTIONALER IN-APP-KAUF)
+Snacklist Premium gibt es jährlich oder als einmaligen Kauf (Lifetime, mit denselben Inhalten wie das Jahresabo).
+Alexa und die Liste selbst brauchen kein Premium.
+
+Snacklist Premium jährlich: Laufzeit 1 Jahr. Das Abo verlängert sich automatisch um ein Jahr, wenn du es nicht mindestens 24 Stunden vor Ende der Laufzeit kündigst. Bezahlt wird über dein Google-Konto, bei der Bestätigung des Kaufs und bei jeder Verlängerung. Verwalten und kündigen kannst du das Abo in den Abo-Einstellungen von Google Play. Lifetime ist ein einmaliger Kauf ohne Abo.
+
+Datenschutzerklärung: https://snacklist.app/datenschutz
+
+Amazon, Alexa und alle zugehörigen Marken sind Marken von Amazon.com, Inc. oder seinen verbundenen Unternehmen.

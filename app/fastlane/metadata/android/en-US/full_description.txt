@@ -1,0 +1,31 @@
+Snacklist is the shopping list for people who shop together: couples, families, flatmates and clubs. Everyone sees the same list. What someone adds or ticks off shows up on the other phones within a few seconds.
+
+ADD IN A SECOND
+Tap "What do you need?" and start typing. Snacklist suggests as you type, finds what you meant despite a typo, and reads amounts out of what you write ("2 l milk", "eggs x6"). Suggestions and amounts work without a connection, too. "Due again" shows what is probably running out, and "Recently used" brings back what you ticked off with one tap.
+
+TOGETHER
+• One household, one list: invite by link or code
+• Several lists, such as weekly groceries and DIY store, and several households
+• New items from the others are highlighted
+• The list is split by store, and you can add your own stores
+• For a party: "I'll bring it" shows who brings what
+
+ON THE GO
+• Works without a connection: add, tick off and edit items. Everything is sent as soon as you are back online.
+
+WITH YOUR VOICE
+• Dictation in the iPhone and Android apps: "milk, two bananas and bread" becomes three items. Speech recognition runs on the device, your voice is not sent to a server.
+• With the Snacklist skill for Alexa you can add items by voice and have the list read aloud, in German and English.
+
+AI ASSISTANTS
+AI assistants that support MCP can read your list, add items and tick them off. You connect them in the app under "More" → "Access" and can end access at any time.
+
+SNACKLIST PREMIUM (OPTIONAL IN-APP PURCHASE)
+Snacklist Premium comes as a yearly subscription or a one-time purchase (Lifetime, with the same features as the yearly plan).
+Alexa and the list itself do not need Premium.
+
+Snacklist Premium Yearly: term 1 year. The subscription renews automatically for another year unless you cancel it at least 24 hours before the end of the term. Payment is charged to your Google account when you confirm the purchase and at each renewal. You can manage and cancel the subscription in the subscriptions settings of Google Play. Lifetime is a one-time purchase, not a subscription.
+
+Privacy policy: https://snacklist.app/en/privacy
+
+Amazon, Alexa, and all related marks are trademarks of Amazon.com, Inc. or its affiliates.

@@ -11,7 +11,10 @@ const PAN = 0.6;
 export function plan(take, events, lang) {
   const first = (pred) => events.find(pred).t / 1000;
   const presses = (who) => events.filter((e) => e.client === who && e.kind === 'press' && e.t >= 0).map((e) => e.t / 1000);
-  const [open, closed] = presses('anna');
+  const [open] = presses('anna');
+  // The compact sheet has no close key: Enter in the empty field closes it.
+  const closeMark = first((e) => e.client === 'anna' && e.kind === 'mark' && e.text === 'close');
+  const closed = first((e) => e.client === 'anna' && e.kind === 'key' && e.t / 1000 >= closeMark);
   const enter = first((e) => e.client === 'anna' && e.kind === 'key');
   const shown = first((e) => e.kind === 'mark' && e.text.startsWith('shown'));
   const tick = presses('jonas')[0];
