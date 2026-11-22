@@ -282,9 +282,10 @@ export function parseGates(text, source = 'releases/flags.json') {
   c.object(data.flags, 'flags', Object.keys(data.flags ?? {}));
   for (const [key, flag] of Object.entries(data.flags)) {
     gateKey(c, key, `flags.${key}`);
-    c.object(flag, `flags.${key}`, ['rollout', 'note', ...(typeof flag === 'object' && flag !== null && 'min_version' in flag ? ['min_version'] : [])]);
+    c.object(flag, `flags.${key}`, ['rollout', 'note', ...['min_version', 'tester_group'].filter((k) => typeof flag === 'object' && flag !== null && k in flag)]);
     c.matches(ROLLOUTS.includes(flag.rollout), flag.rollout, `flags.${key}.rollout`, `one of ${ROLLOUTS.join(', ')}`);
     c.string(flag.note, `flags.${key}.note`);
+    if ('tester_group' in flag) c.matches(typeof flag.tester_group === 'string' && /^[a-z0-9][a-z0-9-]*$/.test(flag.tester_group), flag.tester_group, `flags.${key}.tester_group`, 'a tester group name (lowercase, digits, hyphens)');
     if ('min_version' in flag) checkMinVersion(c, flag.min_version, `flags.${key}.min_version`);
   }
   c.object(data.holds, 'holds', Object.keys(data.holds ?? {}));

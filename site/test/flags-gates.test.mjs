@@ -26,3 +26,9 @@ test('a bad min_version fails with the flag and the field', () => {
   fails({ min_version: { default: '1.4.0', ios: 'v1.4.1' } }, /flags\.smart-sort\.min_version\.ios: must be a version/);
   fails({ minimum: '1.4.0' }, /flags\.smart-sort\.minimum: unknown field/);
 });
+
+test('a flag may carry a tester_group for the flag sync (job 366)', () => {
+  assert.equal(parseGates(gates({ tester_group: 'learned-order' })).flags['smart-sort'].tester_group, 'learned-order');
+  fails({ tester_group: 'Learned Order' }, /flags\.smart-sort\.tester_group/);
+  fails({ tester_group: 3 }, /flags\.smart-sort\.tester_group/);
+});
