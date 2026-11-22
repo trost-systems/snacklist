@@ -141,6 +141,34 @@ test('list_recent shows the ticked things once, newest first; suggest_items the 
     assertEquals((await ok<unknown[]>(theirs.auth, 'suggest_items', {})).length, 0);
   }));
 
+test("suggest_items due: true is the app's due set, not the due ones among the first limit", () =>
+  withTwo(async (sql, { auth, householdId }) => {
+    const daily = Array.from({ length: 12 }, (_, i) => `Tagesding${i}`);
+    const due = ['Käse', 'Milch', 'Joghurt'];
+    const { added } = await ok<{ added: Item[] }>(auth, 'add_items', {
+      items: [...daily, ...due].map((name) => ({ name })),
+    });
+    // Twelve daily usuals outrank three due ones (gap 10 days, last bought 10 days ago).
+    for (const item of added) {
+      const days = daily.includes(item.name) ? [0, 1, 2, 3, 4] : [20, 10];
+      await sql`update public.items set status = 'bought', bought_at = now() where id = ${item.id}`;
+      await sql`delete from public.item_events where item_id = ${item.id} and action = 'bought'`;
+      for (const d of days) {
+        await sql`insert into public.item_events (household_id, item_id, action, item_name, created_at)
+          values (${householdId}, ${item.id}, 'bought', ${item.name},
+                  now() - ${d} * interval '1 day' - interval '1 minute')`;
+      }
+    }
+    const usuals = (args: Record<string, unknown>) =>
+      ok<{ name: string; due: boolean }[]>(auth, 'suggest_items', args);
+    const top = await usuals({});
+    assert(!due.every((n) => top.some((u) => u.name === n && u.due)), 'the first 10 miss some');
+    const dueOnly = await usuals({ due: true });
+    assertEquals(dueOnly.map((u) => u.name).sort(), [...due].sort());
+    assert(dueOnly.every((u) => u.due));
+    assertEquals((await usuals({ due: true, limit: 2 })).length, 2);
+  }));
+
 test('create_list and rename_list make and change lists like the app, one household only', () =>
   withTwo(async (sql, { auth, householdId }, theirs) => {
     const made = await ok<{ id: string; name: string }>(auth, 'create_list', {

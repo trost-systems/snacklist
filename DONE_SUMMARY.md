@@ -2170,3 +2170,11 @@ Root cause: app and API call the same `public.suggest_items`, so the due rule wa
 sha256 (after this change): `docs/api/openapi.yaml` 9a5a232d23b46ab7435598b0e4112712603672dff8b0567c7f5efac8192d8863; `supabase/functions/mcp/tools.ts` b7675cb26c77df368041f21a47da0bfc9fa7e09ff06597a9e85baf31fc086080.
 
 Recorded, no fix: the API/MCP cap a household at 50 stores (`STORE_CAP = 50`, `supabase/functions/_shared/list.ts:1523`, enforced at `list.ts:1543`); the app has no cap.
+
+### Job 365, review 0 follow-up
+
+- MCP path now tested: `mcp/lists_stores_integration_test.ts` "suggest_items due: true" (3 due items behind 12 daily usuals; `due: true` returns them, the plain call misses some; `limit` applies after the filter).
+- Deliberate choice: the default answer stays as it was (rank order, first `limit`), so existing integrations see no change; callers that want the app's due set pass `due`. The MCP tool description now tells an agent asking what is due to set it. Lead may flip the default later.
+- The tests build their own households (12 daily usuals plus Käse, Milch, Joghurt); they do not use the heavy-history fixture. The reviewer drove that fixture by hand: `due=true` gave the same 11 due as the SQL, and the app's sheet shows 10 of them (its cap).
+- openapi `due`: `false` means no filter; default limit 10 matches the add sheet. `USUALS_SCAN = 200` copies the app's 200 (commented).
+- New sha256 (supersedes the ones above): `docs/api/openapi.yaml` 8881352b39dc3b86b79353a2cee1d3b2a4b5f9104f49749c60e918c955e2b199; `supabase/functions/mcp/tools.ts` dbd3ff323f32937233e682404ea79c24634c5511103e7657b8c2324f9f0c7742.

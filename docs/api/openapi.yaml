@@ -659,7 +659,8 @@ paths:
           in: query
           description: >-
             With true, only the usuals that are due, picked from all of them, not from the
-            first limit by rank (the app's "due again" rows).
+            first limit by rank (the app's "due again" rows; with the default limit of 10 the same rows as its
+            add sheet). false is the same as leaving it out: no filter.
           schema: { type: string, enum: ['true', 'false'] }
       responses:
         '200':
