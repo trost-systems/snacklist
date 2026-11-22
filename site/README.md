@@ -259,13 +259,21 @@ link to a draft fails the production build.
 
 `config/stage.ts` holds the site's stage in one line, `export const stage: Stage = 'waitlist';`
 (the build reads that line as text; job 93's launch guard reads it too). Switching the stage is a
-one-line PR. It decides every call to action; no stage links the browser app (job 82):
+one-line PR. It decides every call to action; only `launch` links the browser app, as „Web-App“ /
+"Web app" in the top nav (job 370). A preview or local build can pick a stage without touching the
+file: `SITE_STAGE=launch npm run build` (ignored when `VERCEL_ENV=production`, and it skips the
+launch guard, so it never ships):
 
 | Stage | Header button, hero button | Closing block (`#test`) |
 | --- | --- | --- |
 | `waitlist` (now) | „Auf die Warteliste“ / "Join the waitlist", to `#warteliste` / `#waitlist` | the sign-up form |
 | `beta` | „Zur Beta anmelden“ / "Join the beta", same anchor | the sign-up form |
-| `launch` | „App laden“ / "Get the app", to `#app`; the hero shows the store badges | badges and, from 720 px, a QR code for snacklist.app/get |
+| `launch` | „App laden“ / "Get the app", to `#app`; the hero shows the chip „Jetzt verfügbar“ and the store badges | each store's badge to its listing and, on desktops, a QR code of the listing URL under it |
+
+In `launch` the QR codes are drawn at build time (`qrSvg` in `landing.mjs`, no service). `public/get-app.js`
+sets `data-os` on `<html>` from the user agent: a phone shows only its store's badge, a desktop both
+with their QR codes, no script both badges. `checks/get-app.mjs` proves it in Chromium. The waitlist
+form and script are not rendered; `/api/waitlist*` stays up for old mail links.
 
 On other pages the header button links the landing page's anchor (`/de#warteliste`). The rest of
 the landing page is the same in every stage. The copy ids are `waitlist.cta`, `beta.cta` and

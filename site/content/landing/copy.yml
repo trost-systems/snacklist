@@ -25,6 +25,16 @@ hero.badge:
   en: "Beta in November"
   status: draft
   source: "Peter 2026-11-05 (Q88=B1, job 139): the waitlist page invites to the beta, not to the closed family test."
+hero.badge-launch:
+  de: "Jetzt verfügbar"
+  en: "Available now"
+  status: draft
+  source: "Job 370: the launch stage's chip, in place of hero.badge (Beta im November)."
+nav.web-app:
+  de: "Web-App"
+  en: "Web app"
+  status: draft
+  source: "Job 370 (Peter 2026-11-22): the launch stage's top nav link to the browser app at app.snacklist.app."
 hero.title:
   de: "Gemeinsam einkaufen, ohne Werbung"
   en: "Shop together, no ads"
@@ -324,16 +334,21 @@ launch.lead:
   en: "For iPhone and Android, no ads."
   status: draft
   source: "Job 82 Addendum 8: line under the download block's heading."
-launch.qr:
-  de: "Mit dem Handy scannen, dann landest du im passenden Store."
-  en: "Scan it with your phone to open the right store."
+launch.qr-app-store:
+  de: "Mit der iPhone-Kamera scannen"
+  en: "Scan with your iPhone camera"
   status: draft
-  source: "Job 82 Addendum 8: caption of the QR code (snacklist.app/get)."
+  source: "Job 370: caption and label of the App Store QR code (its listing URL); replaces launch.qr."
+launch.qr-play:
+  de: "Mit dem Android-Handy scannen"
+  en: "Scan with your Android phone"
+  status: draft
+  source: "Job 370: caption and label of the Google Play QR code (its listing URL); replaces launch.qr."
 launch.app-store:
-  de: "Download on the App Store"
+  de: "Laden im App Store"
   en: "Download on the App Store"
   status: draft
-  source: "Alt text = the words on Apple's badge (App Store Marketing Guidelines). Only Apple's English badge was reachable from the build box, so German uses it too until the German badge is downloaded."
+  source: "Alt text = the words on Apple's badge (App Store Marketing Guidelines); job 370 adds the German badge, so each language has its own."
 launch.google-play:
   de: "Jetzt bei Google Play"
   en: "Get it on Google Play"

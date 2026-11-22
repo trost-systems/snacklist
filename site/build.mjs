@@ -11,7 +11,8 @@ import { CopyError, STAGES, STAGE_CTA, copyReader, readCopy, renderLanding } fro
 import { HISTORY_ROUTES, HistoryCopyError, historyBody, t as historyText } from './history.mjs';
 import { ACTION_PAGES, actionPage, readConsent } from './waitlist.mjs';
 import { insertReportForm, reportForm, reportFormProblem } from './report.mjs';
-import { AgentError, agentHead, checkAgentSite, readPublicApi, readStage, readVercel, writeAgentFiles } from './agent.mjs';
+import { AgentError, agentHead, checkAgentSite, readPublicApi, readStage, readVercel, stageOverride, writeAgentFiles } from './agent.mjs';
+import { WEB_APP_URL } from './config/stores.mjs';
 
 const SITE_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_DIR = join(SITE_DIR, '..');
@@ -399,11 +400,12 @@ function siteHeader(page, { switches, copy, current, stage }) {
   const cta = STAGE_CTA[stage];
   const href = `${page.kind === 'landing' ? '' : locale.landing}#${cta.anchor[page.locale]}`;
   const link = (href, label) => `<li><a href="${href}"${current === href ? ' aria-current="page"' : ''}>${label}</a></li>`;
+  const webApp = stage === 'launch' ? `<li><a href="${WEB_APP_URL}" data-copy-id="nav.web-app">${escapeHtml(copy.get('nav.web-app')[page.locale])}</a></li>` : '';
   return `<a class="skip" href="#inhalt">${locale.ui.skip}</a>
 <header class="site-header">
 <div class="wrap">
 <a class="brand" href="${locale.landing}" aria-label="${locale.ui.home}"><span class="mark" aria-hidden="true"></span>${SITE_NAME}</a>
-<nav class="nav" aria-label="${locale.ui.mainNav}"><ul>${link(locale.guidesBase, locale.ui.guides)}${link(locale.footer.changelog.href, locale.footer.changelog.label)}</ul></nav>
+<nav class="nav" aria-label="${locale.ui.mainNav}"><ul>${link(locale.guidesBase, locale.ui.guides)}${link(locale.footer.changelog.href, locale.footer.changelog.label)}${webApp}</ul></nav>
 <nav class="lang" aria-label="${locale.ui.languageNav}">${switches}</nav>
 <a class="hex hex--small header-cta" href="${href}"><span class="face" data-copy-id="${cta.id}">${escapeHtml(copy.get(cta.id)[page.locale])}</span></a>
 </div>
@@ -459,6 +461,7 @@ function renderPage(page, { config, groups, guidesByLocale, copy, stage }) {
     report && '<link rel="stylesheet" href="/report.css">',
     landing && '<script src="/demo.js" defer></script>',
     landing && '<script type="module" src="/stores.js"></script>',
+    landing && stage === 'launch' && '<script src="/get-app.js" defer></script>',
     form && '<script src="/waitlist.js" defer></script>',
     report && '<script type="module" src="/report.js"></script>',
   ].filter(Boolean).map((line) => `${line}\n`).join('');
@@ -697,7 +700,7 @@ function landingPages(contentDir, publicDir, config, stage) {
   const copy = readCopy(contentDir);
   const consent = readConsent(contentDir);
   const confirmConsent = readConsent(contentDir, 'waitlist-confirm');
-  const used = new Set(['meta.title', 'meta.description', 'footer.tagline']);
+  const used = new Set(['meta.title', 'meta.description', 'footer.tagline', 'nav.web-app']);
   const pages = Object.keys(LOCALES).flatMap((locale) => {
     const render = (s) => renderLanding({ locale, copy, config, publicDir, stage: s, consent: consent[locale] });
     for (const other of STAGES) for (const id of render(other).used) used.add(id);
@@ -834,7 +837,7 @@ export function build({
   writeAgentFiles({ outDir, rendered, siteUrl: config.siteUrl, contentDir, repoDir, publicApi, stage });
 
   for (const file of htmlFiles(outDir)) checkHtml(file, readFileSync(file, 'utf8'), outDir, config.siteUrl, vercel.rewrites);
-  const { problems } = checkAgentSite({ dist: outDir, siteUrl: config.siteUrl, vercel, stage, publicApi });
+  const { problems } = checkAgentSite({ dist: outDir, siteUrl: config.siteUrl, vercel, stage, publicApi, previewStage: Boolean(env.SITE_STAGE) });
   if (problems.length > 0) throw new BuildError(`agent checks failed:\n  ${problems.map((p) => `${p.check}: ${p.file}: ${p.message}`).join('\n  ')}`);
 
   return { routes: ['/', ...pages.map((p) => p.route)], warnings, live };
@@ -842,7 +845,7 @@ export function build({
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   try {
-    const { routes, warnings, live } = build({ env: { VERCEL_ENV: process.env.VERCEL_ENV } });
+    const { routes, warnings, live } = build({ env: { VERCEL_ENV: process.env.VERCEL_ENV, SITE_STAGE: stageOverride() } });
     for (const w of warnings) console.warn(`warning: ${w}`);
     console.log(`live version: ${live.live} (from ${live.source})`);
     console.log(`built ${routes.length} pages into dist/`);

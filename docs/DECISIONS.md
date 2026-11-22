@@ -17389,3 +17389,43 @@ Peter's pick (2026-11-22 13:06): "Let's go with RD1 for now", from round RD (job
 
 - `consentListAccess` starts with "Read your shopping list." (DE „Einträge deiner Einkaufsliste lesen.“), then the approved sentence from the brief ("Can also add, … set the order in a store."), then the unchanged provider sentence (H-17). The approved sentence begins "Can also", so it cannot follow "Read, add, …" as one clause. `apiScopeReadWriteBody` is the approved sentence verbatim.
 - `shop_declines` SELECT policy is now `user_id = auth.uid() and is_household_member(household_id)` (migration 20261122030000). No grant added; pgTAP grants SELECT inside its transaction to prove another member still sees nothing.
+
+## Job 370: website launch mode
+
+Peter (22 Nov 2026): prepare the public launch, no waitlist, straight to the apps. Site only.
+
+- **The switch is the existing stage line.** `site/config/stage.ts` already had `waitlist | beta | launch`
+  (job 82, job 93's launch guard), so there is no second `SITE_MODE`. It stays `waitlist` (the live
+  beta mode); the launch day is the `stage.ts` line plus, in the same PR, removing the `X-Robots-Tag: noindex` entry from `site/vercel.json` (job 93's launch guard fails any launch build while it is there). For a preview, `SITE_STAGE=launch npm run
+  build` picks a stage without editing the file. It is ignored when `VERCEL_ENV=production` and
+  skips the launch guard (which wants `noindex` gone), so it cannot reach production.
+- **Launch renders**: the chip „Jetzt verfügbar“ / "Available now" instead of „Beta im November“
+  (BG1), each store's badge linking straight to its listing (App Store id 6832756448; Google Play
+  `com.snacklist.app`, from `applicationId` in `app/android/app/build.gradle.kts`), two build-time
+  SVG QR codes of those URLs for desktops, „Web-App“ / "Web app" in the top nav to
+  https://app.snacklist.app, no form and no `waitlist.js`. A phone sees only its own store's card:
+  `public/get-app.js` sets `data-os` from the user agent (iPadOS in desktop mode counts as iOS),
+  CSS does the rest; without the script both badges show and no QR. `/get` stays and now
+  redirects phones to the store from the merge on, in every stage (nothing links it yet; the App Store listing must be public by then). `/api/waitlist*` stays up in every stage; the waitlist code is untouched.
+- **Badge sources** (`site/public/media/badges/`): `app-store-de.svg` and `app-store-en.svg` are Apple's
+  official black "Download on the App Store" badges from
+  `https://tools.applemediaservices.com/api/badges/download-on-the-app-store/black/{de-de,en-us}?size=250x83`
+  (sha256 `4f2967e1…a614`, `a26fc5b3…9f` ), rendered 40 px high with 10 px clear space (a quarter of the
+  height). `google-play-de.png` and `google-play-en.png` are Google's official generic badges from
+  `https://play.google.com/intl/en_us/badges/static/images/badges/{de,en}_badge_web_generic.png`
+  (646×250 with transparent margins; drawn 60 px high, which shows the EN badge about 40 px and the DE badge about 46 px tall, with the same 10 px clear space as Apple's). Neither badge is altered.
+- **Cards carry no drop shadow** (Peter): removed `box-shadow` from the landing, guide, history, report
+  and waitlist cards; only the hex buttons keep their edge.
+- **Not touched, for Legal**: the launch landing page still says „Fragen zum Test?“ and the privacy
+  list item `privacy.website` mentions the waitlist and the invite emails; both stay true while the
+  waitlist API lives, but Legal may want them reworded for launch.
+- **Launch wording proposed for Legal** (not in the build, so no second round if they agree): the closing
+  block's „Fragen zum Test?“ / "Questions about the test?" could read „Fragen?“ / "Questions?" (the link goes to
+  support), and `privacy.website` could drop „Nur für die Warteliste und die Einladung.“ / its English twin
+  once the waitlist API is retired. Until then both are true and unchanged.
+- **Previews** went to the root of `family-groceries-design` as its newest deployments; prototype jobs
+  fetching the newest base (`fetch-base.mjs`) should use `dpl_6RCZRM97GbiFSj7MU986aU3JN7fH`.
+- **Review 1: beta text elsewhere in launch.** `site/content/comparisons/de/einkaufsliste-vergleich-bring.md`
+  (lines 19, 59, 80, 88, 110, 116) still says Beta from 15 Nov and „Warteliste“, and `/support`,
+  `/en/support` carry the TestFlight beta FAQ and the waitlist mention. Not changed here (every new
+  string needs Legal's GO): listed with proposed wording in the NEEDS_LEAD section for the launch-day PR.

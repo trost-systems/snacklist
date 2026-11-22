@@ -16,6 +16,7 @@ flock /tmp/fg-e2e.lock node lighthouse.mjs ../dist   # Lighthouse scores, JSON a
 flock /tmp/fg-e2e.lock node selftest.mjs ../dist     # proves crawl.mjs reports each breakage
 flock /tmp/fg-e2e.lock node waitlist.mjs ../dist     # the waitlist form and mail-link pages (waitlist build)
 flock /tmp/fg-e2e.lock node stores.mjs ../dist       # the landing page's stores card
+flock /tmp/fg-e2e.lock node get-app.mjs ../dist      # store badges and QR codes per device (SITE_STAGE=launch build)
 ```
 
 Every script takes `--port` (127.0.0.1 only) and `--pages /de,/en` to narrow it. On a shared host

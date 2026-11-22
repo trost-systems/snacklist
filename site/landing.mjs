@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import yaml from 'js-yaml';
 import MarkdownIt from 'markdown-it';
 import QRCode from 'qrcode';
-import { GET_URL, STORE_URLS, storeUrlSet } from './config/stores.mjs';
+import { STORE_URLS } from './config/stores.mjs';
 import { signupForm } from './waitlist.mjs';
 
 const LOCALES = ['de', 'en'];
@@ -198,7 +198,7 @@ export const STAGE_CTA = {
 };
 export const STAGES = Object.keys(STAGE_CTA);
 
-// The QR code of snacklist.app/get as inline SVG, drawn at build time: no script ships.
+// A store URL as a QR code in inline SVG, drawn at build time: no script ships and no service sees the URL.
 export function qrSvg(url, label) {
   const { modules } = QRCode.create(url, { errorCorrectionLevel: 'M' });
   const quiet = 4;
@@ -212,17 +212,20 @@ export function qrSvg(url, label) {
   return `<svg class="qr" viewBox="0 0 ${size} ${size}" role="img" aria-label="${escapeAttr(label)}" shape-rendering="crispEdges"><rect width="${size}" height="${size}" fill="#fff"/><path d="${path}" fill="#000"/></svg>`;
 }
 
-// The launch stage's way to the app: the official badges (to the store, or to /get while the
-// listing URL is a TODO) and, on wide screens, a QR code for snacklist.app/get.
+// The launch stage's way to the app: each store's official badge linking to its listing and, with
+// `qr`, a QR code of the same URL under it. public/get-app.js sets data-os on <html>: a phone sees
+// only its own store's card, a desktop both with their QR codes, without the script both badges.
 function getApp(locale, { text, el }, { qr }) {
-  const href = (url) => (storeUrlSet(url) ? url : GET_URL);
-  const badges = `<div class="store-badges">
-<a class="store-badge" href="${escapeAttr(href(STORE_URLS.appStore))}" data-copy-id="launch.app-store"><img src="/media/badges/app-store-en.svg" alt="${escapeAttr(text('launch.app-store'))}" width="120" height="40"></a>
-<a class="store-badge store-badge--play" href="${escapeAttr(href(STORE_URLS.googlePlay))}" data-copy-id="launch.google-play"><img src="/media/badges/google-play-${locale}.png" alt="${escapeAttr(text('launch.google-play'))}" width="150" height="58"></a>
-</div>`;
-  if (!qr) return badges;
-  return `${badges}
-<figure class="store-qr">${qrSvg(GET_URL, text('launch.qr'))}${el('figcaption', 'launch.qr')}</figure>`;
+  const cards = [
+    ['app-store', STORE_URLS.appStore, 'launch.app-store', 'launch.qr-app-store', `/media/badges/app-store-${locale}.svg`, 'width="120" height="40"'],
+    ['play', STORE_URLS.googlePlay, 'launch.google-play', 'launch.qr-play', `/media/badges/google-play-${locale}.png`, 'width="155" height="60"'],
+  ].map(([key, url, badge, caption, src, size]) => {
+    const figure = qr ? `\n<figure class="store-qr">${qrSvg(url, text(caption))}${el('figcaption', caption)}</figure>` : '';
+    return `<li class="store-card store-card--${key}">
+<a class="store-badge" href="${escapeAttr(url)}" data-copy-id="${badge}"><img src="${src}" alt="${escapeAttr(text(badge))}" ${size}></a>${figure}
+</li>`;
+  });
+  return `<ul class="store-cards">\n${cards.join('\n')}\n</ul>`;
 }
 
 // The landing page as it was before the waitlist; only its calls to action follow the stage.
@@ -264,6 +267,7 @@ export function renderLanding({ locale, copy, config, publicDir, stage, consent 
   const tick = `<span class="tick hxp" aria-hidden="true">${icon('check')}</span>`;
   const privacyItems = ['privacy.frankfurt', 'privacy.consent', 'privacy.export', 'privacy.delete', 'privacy.website'];
   const launch = stage === 'launch';
+  const badgeId = launch ? 'hero.badge-launch' : 'hero.badge';
 
   const heroAction = launch
     ? getApp(locale, reader, { qr: false })
@@ -287,7 +291,8 @@ ${helpLink}
   const html = `<section class="hero" aria-labelledby="hero-title">
 <div class="wrap block block--cobalt hero-block">
 <div class="hero-copy">
-${launch ? '' : `<p class="chip hx"><span class="dot hxp" aria-hidden="true">${icon('check')}</span><span data-copy-id="hero.badge">${md('hero.badge')}</span></p>\n`}${el('h1', 'hero.title', 'class="display" id="hero-title"')}
+<p class="chip hx"><span class="dot hxp" aria-hidden="true">${icon('check')}</span><span data-copy-id="${badgeId}">${md(badgeId)}</span></p>
+${el('h1', 'hero.title', 'class="display" id="hero-title"')}
 ${el('p', 'hero.lead', 'class="lead"')}
 <div class="hero-actions">
 ${heroAction}

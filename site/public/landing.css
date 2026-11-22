@@ -226,7 +226,6 @@
     margin: 0 0 var(--hl-space-5);
     border: var(--hl-border-width) solid var(--hl-color-ink);
     border-radius: var(--hl-radius-l);
-    box-shadow: var(--sticker);
     aspect-ratio: 16 / 9;
   }
 
@@ -564,7 +563,6 @@
   border-radius: var(--hl-radius-l);
   background: var(--hl-color-surface-raised);
   color: var(--hl-color-text);
-  box-shadow: 0 6px 0 var(--hl-color-ink);
 }
 
 .assistant--siri {
@@ -633,7 +631,6 @@
   border-radius: var(--hl-radius-l);
   background: var(--hl-color-surface-raised);
   color: var(--hl-color-text);
-  box-shadow: var(--sticker);
 }
 
 .checklist li {
@@ -682,19 +679,36 @@
   --wall: var(--hl-color-tomato-edge);
 }
 
-/* Launch: the official store badges, the same height; the QR code only on screens without a phone
-   in hand. Google's badge carries its own padding, so it is drawn taller and pulled in. */
-.store-badges {
+/* Launch: the official store badges, Apple's at its minimum height of 40 px with a quarter of it
+   clear around; Google's PNG is drawn 60 px tall so its visible badge is at least Apple's height,
+   with the same clear space. A QR code shows only for desktop visitors with a mouse (data-os,
+   public/get-app.js); an unknown touch browser gets both badges only. */
+.store-cards {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
+  gap: var(--hl-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.store-card {
+  display: grid;
   gap: var(--hl-space-3);
+  justify-items: start;
+}
+
+[data-os="ios"] .store-card--play,
+[data-os="android"] .store-card--app-store {
+  display: none;
 }
 
 .store-badge {
   display: inline-flex;
   align-items: center;
   min-height: var(--hl-size-target);
+  padding: 10px;
 }
 
 .store-badge img {
@@ -703,9 +717,8 @@
   height: 40px;
 }
 
-.store-badge--play img {
-  height: 58px;
-  margin: -9px;
+.store-card--play .store-badge img {
+  height: 60px;
 }
 
 .store-qr {
@@ -713,19 +726,23 @@
   margin: 0;
 }
 
-@media (min-width: 720px) {
-  .store-qr {
+@media (hover: hover) and (pointer: fine) {
+  [data-os="desktop"] .store-qr {
     display: grid;
     gap: var(--hl-space-2);
     justify-items: start;
   }
+}
 
-  .store-qr svg {
-    width: 148px;
-    height: 148px;
-    border: var(--hl-border-width) solid var(--hl-color-ink);
-    border-radius: var(--hl-radius-s);
-  }
+.store-card--app-store .store-qr {
+  padding-inline: 10px;
+}
+
+.store-qr svg {
+  width: 148px;
+  height: 148px;
+  border: var(--hl-border-width) solid var(--hl-color-ink);
+  border-radius: var(--hl-radius-s);
 }
 
 .landing .site-footer {

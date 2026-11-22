@@ -10,7 +10,6 @@
   border: var(--hl-border-width) solid var(--hl-color-ink);
   border-radius: var(--hl-radius-l);
   background: var(--hl-color-surface-raised);
-  box-shadow: var(--sticker);
 }
 
 .rf-card a:not(.hex) {

@@ -2487,3 +2487,32 @@ Status: open, the lead's call. Nothing here blocks the job's PR. The map and the
 ## NEEDS_LEAD Job 358: merged
 
 https://github.com/trost-systems/snacklist/pull/617 and a follow-up merged. #598 check: confirmed on for everyone (`public-api` full in `releases/flags.json`, `app_switches.public_api` on per #598), so no discrepancy. The writers file quotes the approved EN API key dialog sentence and says #605 and #615 are live. The ARB files on main still carry the older shorter `apiScopeReadWriteBody`; the app needs the approved EN sentence plus a DE one.
+
+## NEEDS_LEAD Job 370: PR ready, needs Legal (2026-11-22)
+
+PR #627 (https://github.com/trost-systems/snacklist/pull/627), site only, not merged, switch not flipped. Legal's hash GO is needed for these strings (`site/content/landing/copy.yml`), DE / EN:
+
+- `hero.badge-launch` (new, launch stage only): „Jetzt verfügbar“ / "Available now"
+- `nav.web-app` (new, launch stage only): „Web-App“ / "Web app"
+- `launch.qr-app-store` (new): „Mit der iPhone-Kamera scannen“ / "Scan with your iPhone camera"
+- `launch.qr-play` (new): „Mit dem Android-Handy scannen“ / "Scan with your Android phone"
+- `launch.qr` (removed; was „Mit dem Handy scannen, dann landest du im passenden Store.“ / "Scan it with your phone to open the right store.")
+- `launch.app-store` (changed, de only; alt text of Apple's German badge): „Download on the App Store“ → „Laden im App Store“
+- Unchanged but shown at launch, Legal may want them looked at: `launch.cta` „App laden“, `launch.title` „Hol dir Snacklist“, `launch.lead` „Für iPhone und Android, ohne Werbung.“, `launch.google-play`, `test.help` „Fragen zum Test?“ and `privacy.website` (mentions the waitlist and invite emails).
+
+sha256 of changed content files:
+- `site/content/landing/copy.yml` fef87f5cc9a1df904b3cab0537a1517b1a4699dcb05b2b04864198bc72a3e854 (as of the first PR commit; the squashed commit may differ only if copy.yml is edited again)
+- `site/COPY_NEEDED.md` f349b24efca4bb628d3f8b7c8e804b7fa0b64fd45633db15f17808178c777363
+- no legal markdown under `site/content/legal` changed.
+
+Previews (family-groceries-design, protected, one deployment per mode, preview only): beta/waitlist https://family-groceries-design-34hhp4x2x-peter-trost.vercel.app, launch https://family-groceries-design-95er5hct9-peter-trost.vercel.app. The lead mints share links.
+
+Launch day is NOT one line: change the `stage.ts` line AND remove the `X-Robots-Tag: noindex` entry from `site/vercel.json` in the same PR (job 93's guard fails otherwise). Also `/get` redirects phones to the store listings from the merge on, in every stage. Proposed launch wording (not built): „Fragen zum Test?“ → „Fragen?“ / "Questions?"; `privacy.website` without the waitlist sentence once the waitlist API is retired. The preview deployments sit at the root of family-groceries-design; prototype rounds should base on dpl_6RCZRM97GbiFSj7MU986aU3JN7fH.
+
+Launch-day inventory (review 1; none of it is changed in this PR, every new string needs Legal's GO). Proposed DE wording, EN to follow once DE is approved:
+- `site/content/comparisons/de/einkaufsliste-vergleich-bring.md` (sha256 1447d410daa1f146f1fc6fa9ad083208aa80bb199ec588b172fb1e6ea9b72655): line 19 „Snacklist startet am 15. November 2026 als Beta für Freunde und Familie.“ → „Snacklist gibt es für iPhone und Android.“; table row „Verfügbarkeit“ „Beta ab 15.11.2026 für Freunde und Familie, Warteliste“ → „Im App Store und bei Google Play“; lines 88 and 110 „Die Beta startet … Warteliste setzen.“ → „Snacklist gibt es im App Store und bei Google Play: snacklist.app.“; lines 80 and 116 „In der Beta ist das für alle kostenlos.“ needs Legal's call on the Premium wording.
+- `site/content/legal/support.md` and `support-en.md`: the TestFlight beta FAQ („Wie installiere ich die Beta …“) and the waitlist/beta-invite mention; the launch page's „Fragen zum Test?“ links there.
+- `site/content/llms-waitlist.md` is only included in the waitlist stage; `llms-full.txt` takes the comparison text above.
+Previews were redeployed from the review-1 head (landing.css and the Google badge size changed): URLs above are current.
+
+Deviations: no new `SITE_MODE`; the existing `stage` line is the switch (default stays `waitlist`, which is the live beta mode). Badge sources are in docs/DECISIONS.md "Job 370".

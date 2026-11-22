@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { parse } from 'node-html-parser';
 import jsQR from 'jsqr';
 import { buildSite, htmlRoutes, legal, meta, serve, stageBuild, CONTENT_DIR, REPO_DIR, SITE_DIR } from './helpers.mjs';
-import { GET_URL } from '../config/stores.mjs';
+import { STORE_URLS } from '../config/stores.mjs';
 
 const PROD = { VERCEL_ENV: 'production' };
 const ACTION_ROUTES = ['/de/warteliste/bestaetigen', '/de/warteliste/abmelden', '/en/waitlist/confirm', '/en/waitlist/unsubscribe'];
@@ -46,18 +46,28 @@ test('every call to action follows the stage: waitlist and beta lead to the form
       if (stage === 'launch') {
         assert.equal(doc.querySelectorAll('form').length, 0, 'no form at launch');
         for (const block of [doc.querySelector('.hero-actions'), target]) {
-          assert.deepEqual(block.querySelectorAll('.store-badge img').map((img) => img.getAttribute('src')), ['/media/badges/app-store-en.svg', `/media/badges/google-play-${locale}.png`]);
-          assert.deepEqual(block.querySelectorAll('.store-badge').map((a) => a.getAttribute('href')), ['https://snacklist.app/get', 'https://snacklist.app/get'], 'the listings are TODOs, so the badges go to /get');
+          assert.deepEqual(block.querySelectorAll('.store-badge img').map((img) => img.getAttribute('src')), [`/media/badges/app-store-${locale}.svg`, `/media/badges/google-play-${locale}.png`]);
+          assert.deepEqual(block.querySelectorAll('.store-badge').map((a) => a.getAttribute('href')), [STORE_URLS.appStore, STORE_URLS.googlePlay], 'the badges go straight to the listings');
         }
-        assert.ok(target.querySelector('.store-qr svg'), 'the QR code sits in the closing block');
+        assert.equal(target.querySelectorAll('.store-qr svg').length, 2, 'both QR codes sit in the closing block');
         assert.equal(doc.querySelector('.hero-actions .store-qr'), null, 'not in the hero');
+        assert.match(doc.querySelector('.hero .chip').text, locale === 'de' ? /Jetzt verfügbar/ : /Available now/);
+        assert.ok(doc.querySelector('script[src="/get-app.js"]'));
       } else {
         const hero = doc.querySelector('.hero-actions a.hex');
         assert.deepEqual([hero.text, hero.getAttribute('href')], [label, `#${anchor}`], `${stage} ${locale} hero`);
         assert.equal(target.querySelector('button[type="submit"] [data-when="idle"]').text, label, `${stage} ${locale} button`);
         assert.equal(doc.querySelectorAll('.store-badge').length, 0);
       }
-      for (const a of doc.querySelectorAll('a')) assert.doesNotMatch(a.getAttribute('href') ?? '', /app\.(?:snacklist\.app|hummlist\.com)/, `${stage} ${locale}`);
+      const webApp = doc.querySelectorAll('header a').filter((a) => (a.getAttribute('href') ?? '').startsWith('https://app.snacklist.app'));
+      if (stage === 'launch') {
+        assert.deepEqual(webApp.map((a) => [a.text, a.getAttribute('href')]), [[locale === 'de' ? 'Web-App' : 'Web app', 'https://app.snacklist.app']], `${stage} ${locale} nav`);
+        assert.ok(doc.querySelector('header .nav').querySelectorAll('a').some((a) => a === webApp[0]), 'in the top nav');
+      } else {
+        for (const a of doc.querySelectorAll('a')) assert.doesNotMatch(a.getAttribute('href') ?? '', /app\.(?:snacklist\.app|hummlist\.com)/, `${stage} ${locale}`);
+        assert.match(doc.querySelector('.hero .chip').text, locale === 'de' ? /Beta im November/ : /Beta in November/, `${stage} ${locale} keeps the beta chip`);
+        assert.equal(doc.querySelector('script[src="/get-app.js"]'), null);
+      }
     }
   }
 });
@@ -177,7 +187,7 @@ const LEGAL_MENTIONS = {
   '/en/privacy': ['(app.snacklist.app)', 'Web app app.snacklist.app', 'https://app.snacklist.app/konto-loeschen.html', 'snacklist.app, app.snacklist.app and mcp.snacklist.app'],
 };
 
-test('in no stage does a page link, load or name a URL of app.snacklist.app, and nothing comes from another server', () => {
+test('only the launch stage links app.snacklist.app, once in the header nav, and nothing comes from another server', () => {
   for (const [stage, { outDir }] of Object.entries(STAGES)) {
     const files = readdirSync(outDir, { recursive: true }).filter((f) => /\.(html|css|js)$/.test(f));
     assert.ok(files.length > 20);
@@ -190,7 +200,8 @@ test('in no stage does a page link, load or name a URL of app.snacklist.app, and
       const doc = parse(text);
       for (const el of doc.querySelectorAll('*')) {
         for (const [name, value] of Object.entries(el.attributes)) {
-          assert.doesNotMatch(value, /app\.(?:snacklist\.app|hummlist\.com)/i, `${stage} ${file}: <${el.tagName} ${name}>`);
+          const navLink = stage === 'launch' && el.tagName === 'A' && name === 'href' && value === 'https://app.snacklist.app' && el.closest('.nav');
+          if (!navLink) assert.doesNotMatch(value, /app\.(?:snacklist\.app|hummlist\.com)/i, `${stage} ${file}: <${el.tagName} ${name}>`);
           if (['src', 'srcset', 'poster', 'action', 'data'].includes(name) || (name === 'href' && el.tagName === 'LINK' && !['canonical', 'alternate'].includes(el.getAttribute('rel')))) {
             assert.doesNotMatch(value, /^(https?:)?\/\//i, `${stage} ${file}: <${el.tagName} ${name}="${value}"> loads from another server`);
           }
@@ -227,22 +238,53 @@ test('the site\'s CSP lets the form post to this origin and nothing else changed
   for (const route of ['/de', '/en/waitlist/confirm']) assert.equal(res[route].headers['content-security-policy'], csp, route);
 });
 
-test('the QR code decodes to snacklist.app/get', () => {
-  const svg = parse(launch.page('/de').querySelector('.store-qr').innerHTML).querySelector('svg');
-  const size = Number(svg.getAttribute('viewBox').split(' ')[2]);
-  const scale = 4;
-  const width = size * scale;
-  const pixels = new Uint8ClampedArray(width * width * 4).fill(255);
-  for (const [, x, y] of svg.querySelector('path').getAttribute('d').matchAll(/M(\d+) (\d+)h1v1h-1z/g)) {
-    for (let dy = 0; dy < scale; dy++) {
-      for (let dx = 0; dx < scale; dx++) {
-        const at = ((Number(y) * scale + dy) * width + Number(x) * scale + dx) * 4;
-        pixels.fill(0, at, at + 3);
+test('the QR codes decode to the two store listings', () => {
+  const decode = (svg) => {
+    const size = Number(svg.getAttribute('viewBox').split(' ')[2]);
+    const scale = 4;
+    const width = size * scale;
+    const pixels = new Uint8ClampedArray(width * width * 4).fill(255);
+    for (const [, x, y] of svg.querySelector('path').getAttribute('d').matchAll(/M(\d+) (\d+)h1v1h-1z/g)) {
+      for (let dy = 0; dy < scale; dy++) {
+        for (let dx = 0; dx < scale; dx++) {
+          const at = ((Number(y) * scale + dy) * width + Number(x) * scale + dx) * 4;
+          pixels.fill(0, at, at + 3);
+        }
       }
     }
+    return jsQR(pixels, width, width)?.data;
+  };
+  assert.equal(STORE_URLS.appStore, 'https://apps.apple.com/app/id6832756448');
+  assert.equal(STORE_URLS.googlePlay, 'https://play.google.com/store/apps/details?id=com.snacklist.app');
+  for (const locale of ['de', 'en']) {
+    const svgs = launch.page(`/${locale}`).querySelectorAll('.store-qr svg');
+    assert.deepEqual(svgs.map(decode), [STORE_URLS.appStore, STORE_URLS.googlePlay]);
+    assert.match(svgs[0].getAttribute('aria-label'), /iPhone/);
   }
-  assert.equal(jsQR(pixels, width, width)?.data, GET_URL);
-  assert.match(svg.getAttribute('aria-label'), /scan/i);
+});
+
+test('launch carries no waitlist form or script', () => {
+  for (const locale of ['de', 'en']) {
+    const doc = launch.page(`/${locale}`);
+    assert.equal(doc.querySelectorAll('form').length, 0);
+    assert.equal(doc.querySelector('script[src="/waitlist.js"]'), null);
+    assert.equal(doc.querySelector('.wl-card'), null);
+  }
+});
+
+test('get-app.js tells iPhone, Android and desktop apart', () => {
+  const code = readFileSync(join(SITE_DIR, 'public/get-app.js'), 'utf8');
+  const os = (userAgent, maxTouchPoints = 0) => {
+    const documentElement = { dataset: {} };
+    new Function('navigator', 'document', code)({ userAgent, maxTouchPoints }, { documentElement });
+    return documentElement.dataset.os;
+  };
+  assert.equal(os('Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1'), 'ios');
+  assert.equal(os('Mozilla/5.0 (iPad; CPU OS 17_6 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1'), 'ios');
+  assert.equal(os('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 Safari/605.1.15', 5), 'ios', 'iPadOS in desktop mode');
+  assert.equal(os('Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 Chrome/131.0.0.0 Mobile Safari/537.36'), 'android');
+  assert.equal(os('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36'), 'desktop');
+  assert.equal(os('Mozilla/5.0 (X11; Linux x86_64) Gecko/20100101 Firefox/133.0'), 'desktop');
 });
 
 test('public/waitlist.js checks addresses with the edge function\'s rules', () => {
