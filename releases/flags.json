@@ -90,6 +90,11 @@
       "rollout": "off",
       "tester_group": "redesign-rd1",
       "note": "RD1, the look without hexagons (job 368): every hexagon a soft rounded rectangle in RD1's radii (check boxes, badges and the item placeholder 6, chips 8, buttons, fields and tabs 12, cards, groups and the tab bar 20, sheets and dialogs 24), radios round, and a drop shadow only on buttons; read at start, so a change shows from the next start; the layout, the words and the app icon stay; the flag targets the tester group redesign-rd1 (person property tester_groups), never is_internal; the flag sync creates it that way"
+    },
+    "total-priced-only": {
+      "rollout": "off",
+      "tester_group": "internal",
+      "note": "TE1 for the list's summary block (on top of list-declutter and prices-and-trip-total): no block while no item has a price, a line only for a store with a price, one „N ohne Preis“ under Gesamt instead of one per store and no „mit Preis“ count, an amount too wide beside its name under it, only while the PostHog flag total-priced-only is on (job 348); the flag targets the tester group internal (person property tester_groups, Peter's TestFlight accounts); the flag sync creates it that way"
     }
   },
   "holds": {

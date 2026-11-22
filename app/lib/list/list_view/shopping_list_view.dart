@@ -672,6 +672,9 @@ class _ShoppingListViewState()
         context.select<Flags?, bool>(
           (flags) => !(flags?.isOn(hideCategoriesFlag) ?? false),
         );
+    final pricedOnly = context.select<Flags?, bool>(
+      (flags) => flags?.isOn(totalPricedOnlyFlag) ?? false,
+    );
     final summary = behind == null && declutter && prices
         ? summaryOf(
             state.items.values,
@@ -679,6 +682,7 @@ class _ShoppingListViewState()
             now: context.read<ListCubit>().now,
             onTrip: listParts(context)
                 .boughtOnTrip(context, state.shownList?.id),
+            pricedOnly: pricedOnly,
           )
         : null;
     SliverList column(List<StoreSection> run) {
@@ -842,9 +846,7 @@ class _ShoppingListViewState()
               body,
               // Without the flag the screen shows the total in a bar at the
               // bottom and each store's at its section's end.
-              if (behind == null &&
-                  summary != null &&
-                  summary.stores.isNotEmpty)
+              if (behind == null && summary != null && summary.shown)
                 SliverToBoxAdapter(
                   child: SummaryBlock(
                     summary: summary,

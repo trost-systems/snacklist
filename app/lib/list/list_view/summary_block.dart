@@ -54,13 +54,33 @@ String? sumText(
         spoken: spoken,
       );
 
+/// [span]'s width on one line in [style], as a [Text] would lay it out.
+double _width(BuildContext context, TextSpan span, TextStyle style) {
+  final painter = TextPainter(
+    text: TextSpan(
+      style: DefaultTextStyle.of(context).style.merge(style),
+      children: [span],
+    ),
+    textDirection: Directionality.of(context),
+    textScaler: MediaQuery.textScalerOf(context),
+    locale: Localizations.maybeLocaleOf(context),
+    maxLines: 1,
+  )..layout();
+  final width = painter.width;
+  painter.dispose();
+  return width;
+}
+
 /// A line's amount at most this share of its width: a long store name
 /// keeps the rest.
 const _amountShare = 0.55;
 
 /// [name] and [sum]'s amount on one line, the amount right and only as
-/// wide as it needs, up to [_amountShare]; „mind.“ and „≈“ in [marks].
+/// wide as it needs, up to [_amountShare]; „mind.“ and „≈“ in [marks]. When
+/// [stacks] and the amount needs more, it goes under the name, whole
+/// (TE-Q9): at the largest text it broke inside the number („6,3 / 8 €“).
 class const _Line({
+  required final bool stacks,
   required final Widget name,
   required final Sum sum,
   required final String currency,
@@ -81,31 +101,43 @@ class const _Line({
       currency: currency,
       locale: moneyLocale(context),
     );
+    final amountStyle = style.copyWith(fontFeatures: _figures);
+    final span = TextSpan(
+      children: [
+        if (before.isNotEmpty) TextSpan(text: before, style: marks),
+        TextSpan(text: money),
+        if (after.isNotEmpty) TextSpan(text: after, style: marks),
+      ],
+    );
+    final amount = Text.rich(
+      span,
+      key: amountKey,
+      textAlign: TextAlign.end,
+      style: amountStyle,
+    );
     return LayoutBuilder(
-      builder: (context, constraints) => Row(
-        spacing: HlSpace.s3,
-        children: [
-          Expanded(child: name),
-          if (!sum.empty)
-            ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: constraints.maxWidth * _amountShare,
+      builder: (context, constraints) {
+        final share = constraints.maxWidth * _amountShare;
+        if (!sum.empty &&
+            stacks &&
+            _width(context, span, amountStyle) > share) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [name, amount],
+          );
+        }
+        return Row(
+          spacing: HlSpace.s3,
+          children: [
+            Expanded(child: name),
+            if (!sum.empty)
+              ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: share),
+                child: amount,
               ),
-              child: Text.rich(
-                TextSpan(
-                  children: [
-                    if (before.isNotEmpty) TextSpan(text: before, style: marks),
-                    TextSpan(text: money),
-                    if (after.isNotEmpty) TextSpan(text: after, style: marks),
-                  ],
-                ),
-                key: amountKey,
-                textAlign: TextAlign.end,
-                style: style.copyWith(fontFeatures: _figures),
-              ),
-            ),
-        ],
-      ),
+          ],
+        );
+      },
     );
   }
 }
@@ -166,10 +198,14 @@ class const SummaryBlock({
                 ),
               ),
             ),
-            for (final tally in summary.stores)
+            for (final tally in summary.lines)
               _StoreLine(
                 tally: tally,
                 currency: currency,
+                stacks: summary.pricedOnly,
+                unpriced: summary.pricedOnly
+                    ? 0
+                    : (tally.bought ?? Sum.zero).unpriced + tally.open.unpriced,
                 onJump: tally.allBought ? null : () => onJump(tally.key),
               ),
             Divider(
@@ -186,14 +222,15 @@ class const SummaryBlock({
 }
 
 /// What a line says under its name: while a trip runs bought and open (or
-/// „alles gekauft“), then how many have no price. [spoken] for screen
-/// readers.
+/// „alles gekauft“), then how many have no price ([unpriced], none for 0).
+/// [spoken] for screen readers.
 List<String> _details(
   BuildContext context,
   Sum? bought,
   Sum open,
   String currency, {
   required bool allBought,
+  required int unpriced,
 
   /// Bought and open also when nothing was bought yet (Gesamt).
   bool split = false,
@@ -205,7 +242,6 @@ List<String> _details(
       formatMoney(0, currency: currency, locale: moneyLocale(context));
   // Items but no price among them: the count says so, not „0,00 € offen“.
   bool shows(Sum sum) => !sum.empty || !sum.floor;
-  final unpriced = (bought ?? Sum.zero).unpriced + open.unpriced;
   return [
     if (allBought)
       l10n.subtotalsAllBought
@@ -220,6 +256,8 @@ List<String> _details(
 class const _StoreLine({
   required final StoreTally tally,
   required final String currency,
+  required final bool stacks,
+  required final int unpriced,
 
   /// Null for a store bought in full: it has no section to go to.
   required final VoidCallback? onJump,
@@ -235,6 +273,7 @@ class const _StoreLine({
       tally.open,
       currency,
       allBought: tally.allBought,
+      unpriced: unpriced,
       spoken: spoken,
     );
     final shown = details();
@@ -242,6 +281,7 @@ class const _StoreLine({
       constraints: const BoxConstraints(minHeight: HlSize.target),
       padding: const EdgeInsets.symmetric(vertical: HlSpace.s1),
       child: _Line(
+        stacks: stacks,
         amountKey: ValueKey('subtotal-amount-${tally.key}'),
         sum: tally.sum,
         currency: currency,
@@ -323,9 +363,13 @@ class const _TotalLine({
     final t = SnacklistColors.of(Theme.of(context).brightness);
     final total = summary.total;
     final title = summary.perStore ? l10n.subtotalsTotal : l10n.tripTotal;
+    // TE1 counts a price in another currency as none (TE-Q10).
+    final unpriced = summary.pricedOnly
+        ? total.unpriced + total.foreign
+        : total.unpriced;
     // Without a trip the store lines' „ohne Preis“ (Peter's ST-Q6 answer,
     // job 242), never „offen“ or a zero count; with one „offen“ names the
-    // open amount.
+    // open amount. TE1 drops „mit Preis“: the amount says it (TE-Q5).
     List<String> details({bool spoken = false}) => summary.split
         ? _details(
             context,
@@ -333,12 +377,14 @@ class const _TotalLine({
             summary.open,
             currency,
             allBought: false,
+            unpriced: unpriced,
             split: true,
             spoken: spoken,
           )
         : [
-            if (total.priced > 0) l10n.subtotalsPriced(total.priced),
-            if (total.unpriced > 0) l10n.subtotalsUnpriced(total.unpriced),
+            if (total.priced > 0 && !summary.pricedOnly)
+              l10n.subtotalsPriced(total.priced),
+            if (unpriced > 0) l10n.subtotalsUnpriced(unpriced),
           ];
     return Semantics(
       key: const ValueKey('total-bar'),
@@ -358,6 +404,7 @@ class const _TotalLine({
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _Line(
+              stacks: summary.pricedOnly,
               amountKey: const ValueKey('total-amount'),
               sum: total,
               currency: currency,
