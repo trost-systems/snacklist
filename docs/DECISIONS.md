@@ -17331,3 +17331,56 @@ ein?“ stays away for 60 minutes in any store. Behind `trip-mode`, no new flag,
 
 - New flag `recently-used-open` (tester group of the same name, Peter only, no is_internal). On: the list's „Zuletzt verwendet“ starts open, faded rows, no count, no peek. A manual fold is remembered per device in `ListPrefs.folded` under `recently-used` (the flag-on default is open, so the key means closed). Off: unchanged (starts closed, no memory).
 - RU-Q answers are in DONE_SUMMARY.md.
+
+## Job 368: RD1, the look without hexagons, behind `redesign-rd1`
+
+Peter's pick (2026-11-22 13:06): "Let's go with RD1 for now", from round RD (job 353,
+`docs/design/redesign/rd/RECOMMENDATION.md` on the never-merged branch
+`job/353-redesign-no-hex-prototypes`). His rule for it: only buttons have a drop shadow.
+
+- **The look is fixed for one app run.** `startLook` reads a forced `redesign-rd1` or the flag's
+  last value on the device (`DeviceCache` `look.soft`) before `runApp`; `keepLook` saves every new
+  value, so a change shows from the next start. Every hex shape is a const `HexBorder`, and a
+  `RenderCustomClip` keeps its path until its size changes, so a live switch would leave old
+  hexagons on screen or need a rebuild that drops every screen's state; reading the flag's first
+  answer instead would flash the old look on each launch. Cost: the first start after the flag
+  turns on (or off) still shows the previous look. A tester without the analytics yes starts each run on
+  the shared cached flags, which never hold a tester's answer (job 337 keeps only everyone's), and
+  `keepLook` saves that off until PostHog's answer for the group arrives a moment later; a start
+  offline, or an app closed before that answer, makes the next start hex again. With the analytics
+  yes the SDK serves the tester's own cached answer, also offline.
+- **Tokens, not screens.** `shape.soft` (xs 6, sm 8, md 12, lg 20, xl 24) in the token file;
+  `HexBorder` draws a rounded rectangle with `softRadius(shorter side)` (< 28 xs, < 40 sm, < 60 md,
+  else lg), which reproduces RD1's per-component radii from the sizes the controls already have.
+  Every inset, padding and size stays, so no layout moves. `PointyHex` is a rounded square as wide
+  as the hexagon, centred in its old box; the radio is a circle; the check box a square; the item
+  placeholder RD1's filled 6 px square. Cards and snack bars 20, sheets and dialogs 24.
+- **Peter's shadow rule applies under the flag only.** Flag off stays today's look pixel for pixel
+  (every existing golden unchanged), so the hard sticker shadow of cards, groups, the tab bar, the
+  add bar, the list tabs, the status capsule and dragged rows goes only with the soft look, as do
+  Material elevation shadows (colour scheme `shadow` transparent, `HlSticker.elevation`). Buttons
+  keep their tactile edge, including the add sheet's Enter key and the sync retry cue, which are
+  buttons. The add bar is a field, so it has none (RD1's prototype gave it one). The stores
+  screen's rows (`HexPill`) are tappable but are rows, so they lose their edge and keep its room.
+  Popup menus get the 2 px contour so they still stand off the page.
+- **Guards.** Lint `shadows-only-on-buttons` (every shadow and elevation in `app/lib` goes through
+  the design helpers) and `rd1_shadows_test.dart` (the screens' render trees under the soft look
+  hold no shadow; it failed when a card's shadow or the theme's shadow colour came back).
+- **Targeting.** `releases/flags.json` `tester_group: redesign-rd1`: the flag sync creates the flag
+  for the person property `tester_groups`, never `is_internal`, so it is Peter's alone once the
+  lead puts his user in the group (no ids in the repo).
+- **Names stay.** `HexBorder`, `PointyHex`, `HexRadio` and the lint `no-label-in-hex-field` keep
+  their names while the hexagons are the default; rename them when the flag goes to everyone.
+- **RD questions decided (RECOMMENDATION.md defaults unless said):**
+  - RD-Q1 two steps: yes, RD1's token swap first (Peter's pick). RD2's dock is not started.
+  - RD-Q4 icon, brand mark, store frames, site: their own round. Not soft yet: the app icon and
+    `BrandBlock`'s mark, the Home Screen widgets (native, outside the app's flag), the web join
+    page, the site and the store frames.
+  - RD-Q5 the sticker shadow: RD1's mock kept it; Peter's rule drops it from everything but
+    buttons; the 2 px contour stays.
+  - RD-Q6 large text (price under the name and headings capped from 200 %): not in RD1. It moves
+    layout, which this job must not; the overflows at x3.1 are the same in both looks.
+  - RD-Q9 fields: labels stay above the field; the lint keeps its name (above).
+  - RD-Q10 empty state: RD1's own motif, the honey rounded square with the cart, not RD2's circle,
+    since RD2 is not shipped.
+  - RD-Q2, Q3, Q7, Q8 concern RD2's menu, price and tick and do not apply.

@@ -1,9 +1,13 @@
 import 'package:family_groceries/design/hex_border.dart';
+import 'package:family_groceries/design/look.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// The site's `.hxp`: a pointy-top hexagon with a face and the 2 px contour,
 /// its content centred. The add bar's "+" and the empty list's cart.
+///
+/// Under [Look.soft] the hexagon is a rounded square as wide as the
+/// hexagon, centred in the same box, so nothing around it moves.
 class const PointyHex({
   required final Color face,
 
@@ -21,9 +25,10 @@ class const PointyHex({
   @override
   Widget build(BuildContext context) {
     final t = SnacklistColors.of(Theme.of(context).brightness);
-    return Container(
-      width: size * aspect,
-      height: size,
+    final width = size * aspect;
+    final shape = Container(
+      width: width,
+      height: softLook ? width : size,
       alignment: Alignment.center,
       decoration: ShapeDecoration(
         color: face,
@@ -33,6 +38,14 @@ class const PointyHex({
         ),
       ),
       child: child,
+    );
+    if (!softLook) {
+      return shape;
+    }
+    return SizedBox(
+      width: width,
+      height: size,
+      child: Center(child: shape),
     );
   }
 }

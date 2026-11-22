@@ -1,0 +1,65 @@
+# Peter's rule for the soft look (job 368): only buttons cast a drop shadow; cards, groups, bars
+# and lifted rows keep their face and contour. Every other shadow goes through app/lib/design/:
+# HlSticker.shadow (none under the soft look) for a sticker's hard shadow, HlSticker.elevation
+# (0 under the soft look) for a Material elevation. The tactile buttons draw their edge in
+# app/lib/design/tactile.dart. rd1_shadows_test.dart checks the screens' render trees.
+id: shadows-only-on-buttons
+language: dart
+severity: error
+files:
+  - app/lib/**
+ignores:
+  - app/lib/design/**
+rule:
+  any:
+    - kind: identifier
+      regex: '^BoxShadow$'
+      inside:
+        kind: call_expression
+        field: function
+    - kind: type_identifier
+      regex: '^BoxShadow$'
+      inside:
+        kind: type
+        inside:
+          field: type
+          any:
+            - kind: const_object_expression
+            - kind: new_expression
+    - kind: identifier
+      regex: '^(?:drawShadow|kElevationToShadow)$'
+    - kind: named_argument
+      has:
+        kind: label
+        regex: '^(?:boxShadow|shadows)\s*:$'
+      not:
+        has:
+          kind: call_expression
+          regex: '^HlSticker\.shadow\s*\('
+          nthChild: 2
+    - kind: named_argument
+      has:
+        kind: label
+        regex: '^elevation\s*:$'
+      not:
+        any:
+          - regex: '^elevation\s*:\s*0(?:\.0)?$'
+          - has:
+              kind: call_expression
+              regex: '^HlSticker\.elevation\s*\('
+              nthChild: 2
+    # A dropdown's menu paints Material's elevation shadow itself (kElevationToShadow, default 8),
+    # whatever the colour scheme says, and no render-tree check sees it.
+    - kind: call_expression
+      has:
+        field: function
+        regex: '^DropdownButton(?:FormField)?(?:<.*>)?$'
+      not:
+        has:
+          field: arguments
+          has:
+            kind: named_argument
+            has:
+              kind: label
+              regex: '^elevation\s*:$'
+message: 'Only buttons cast a shadow (job 368): use HlSticker.shadow(brightness, depth) for a shadow and HlSticker.elevation(value) or 0 for an elevation, also on every DropdownButton (app/lib/design/sticker.dart), which the soft look turns off'

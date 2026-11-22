@@ -1,3 +1,4 @@
+import 'package:family_groceries/design/look.dart';
 import 'package:family_groceries/design/pointy_hex.dart';
 import 'package:family_groceries/design/sticker.dart';
 import 'package:family_groceries/design/tokens.g.dart';
@@ -18,7 +19,7 @@ class const HlGroup({
       child: HlSticker(
         depth: StickerDepth.s,
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(HlRadius.m - HlBorder.width),
+          borderRadius: BorderRadius.circular(cardRadius - HlBorder.width),
           child: Material(
             type: MaterialType.transparency,
             child: Column(

@@ -1,4 +1,5 @@
 import 'package:family_groceries/design/hex_border.dart';
+import 'package:family_groceries/design/look.dart';
 import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:material_ui/material_ui.dart';
@@ -8,6 +9,8 @@ import 'package:material_ui/material_ui.dart';
 /// outline, grows in its middle in [HlDuration.short] (at once with reduced
 /// motion). One of a [RadioGroup] above it, like Material's [Radio]: the
 /// group, keyboard, focus and the radio semantics come from [RawRadio].
+/// Under [Look.soft] the hex and its dot are circles, the outline as wide
+/// as the hex is tall.
 class const HexRadio<T>({
   required final T value,
   final bool enabled = true,
@@ -75,17 +78,28 @@ class _HexRadioPainter({
   /// From the outline to the dot: the contour and 3 px of lemon.
   static const _gap = HlBorder.width + 3;
 
+  /// The outline of [hex] moved out by [outset]: the hexagon, or under the
+  /// soft look the circle in its middle.
+  static Path _outline(Rect hex, {double outset = 0}) => softLook
+      ? (Path()..addOval(
+          Rect.fromCircle(
+            center: hex.center,
+            radius: hex.shortestSide / 2 + outset,
+          ),
+        ))
+      : _shape.pathFor(hex, outset: outset);
+
   @override
   void paint(Canvas canvas, Size size) {
     final hex = Alignment.center.inscribe(HexRadio.hex, Offset.zero & size);
     final p = picked.value;
     canvas
       ..drawPath(
-        _shape.pathFor(hex),
+        _outline(hex),
         Paint()..color = pickedFill.withValues(alpha: pickedFill.a * p),
       )
       ..drawPath(
-        _shape.pathFor(hex, outset: -HlBorder.width / 2),
+        _outline(hex, outset: -HlBorder.width / 2),
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = HlBorder.width
@@ -98,12 +112,12 @@ class _HexRadioPainter({
         ..translate(center.dx, center.dy)
         ..scale(p)
         ..translate(-center.dx, -center.dy)
-        ..drawPath(_shape.pathFor(hex, outset: -_gap), Paint()..color = dot)
+        ..drawPath(_outline(hex, outset: -_gap), Paint()..color = dot)
         ..restore();
     }
     if (focus case final focus?) {
       canvas.drawPath(
-        _shape.pathFor(hex, outset: HlFocus.ringGap + HlFocus.ringWidth / 2),
+        _outline(hex, outset: HlFocus.ringGap + HlFocus.ringWidth / 2),
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = HlFocus.ringWidth

@@ -11,6 +11,7 @@ import 'package:family_groceries/core/language.dart';
 import 'package:family_groceries/core/network.dart';
 import 'package:family_groceries/core/theme.dart';
 import 'package:family_groceries/design/fonts.dart';
+import 'package:family_groceries/design/look.dart';
 import 'package:family_groceries/feedback/feedback_repository.dart';
 import 'package:family_groceries/home_widget/home_widget_sync.dart';
 import 'package:family_groceries/home_widget/widget_launch.dart';
@@ -110,6 +111,8 @@ Future<void> _main(WidgetsBinding Function() binding) async {
   final cache = DeviceCache.onDevice();
   final storeReview = InAppStoreReview();
   final analytics = _analytics = await startAnalytics(cache);
+  appLook = await startLook(analytics.flags, cache);
+  keepLook(analytics.flags, cache);
   final reviewPrompt = _reviewPrompt = ReviewPrompt(
     cache,
     storeReview,

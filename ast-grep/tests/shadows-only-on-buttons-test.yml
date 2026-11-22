@@ -1,0 +1,46 @@
+id: shadows-only-on-buttons
+valid:
+  - |
+    final box = DecoratedBox(
+      decoration: ShapeDecoration(
+        shape: const HexBorder(),
+        shadows: HlSticker.shadow(brightness, StickerDepth.s),
+      ),
+    );
+  - |
+    final card = BoxDecoration(boxShadow: HlSticker.shadow(b, StickerDepth.m));
+  - |
+    final lifted = Material(
+      elevation: HlSticker.elevation(lerpDouble(0, 6, lift) ?? 0),
+      child: child,
+    );
+  - |
+    final theme = CardThemeData(elevation: 0);
+  - |
+    final menu = DropdownButtonFormField<String>(
+      elevation: HlSticker.elevation(8).round(),
+      items: items,
+    );
+invalid:
+  - |
+    final menu = DropdownButtonFormField<String>(items: items);
+  - |
+    final menu = DropdownButton(value: v, items: items);
+  - |
+    void paint(Canvas canvas) => canvas.drawShadow(path, color, 4, false);
+  - |
+    final card = BoxDecoration(boxShadow: HlSticker.shadow(b, StickerDepth.m) + extra);
+  - |
+    final card = Material(elevation: HlSticker.elevation(2) + 4, child: child);
+  - |
+    final box = BoxDecoration(
+      boxShadow: [BoxShadow(color: t.edge, offset: const Offset(0, 4))],
+    );
+  - |
+    const edge = [BoxShadow(color: Color(0xFF0F1530), offset: Offset(0, 2))];
+  - |
+    final box = ShapeDecoration(shape: const HexBorder(), shadows: shadows);
+  - |
+    final card = Material(elevation: 4, child: child);
+  - |
+    final menu = PopupMenuButton<int>(elevation: lift, itemBuilder: build);

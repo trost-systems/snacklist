@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/notices.dart';
+import 'package:family_groceries/design/look.dart';
 import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/pointy_hex.dart';
 import 'package:family_groceries/design/sticker.dart';
@@ -366,9 +367,7 @@ class const CalloutBorder({
     final edge = up ? box.top : box.bottom;
     final point = up ? rect.top : rect.bottom;
     return Path()
-      ..addRRect(
-        RRect.fromRectAndRadius(box, const Radius.circular(HlRadius.m)),
-      )
+      ..addRRect(RRect.fromRectAndRadius(box, Radius.circular(cardRadius)))
       ..moveTo(x - _tipHalfWidth, edge)
       ..lineTo(x, point)
       ..lineTo(x + _tipHalfWidth, edge)
@@ -387,7 +386,7 @@ class const CalloutBorder({
             rect.right,
             rect.bottom - (up ? 0 : tipHeight),
           ),
-          const Radius.circular(HlRadius.m),
+          Radius.circular(cardRadius),
         ),
       ),
       getOuterPath(rect, textDirection: textDirection),

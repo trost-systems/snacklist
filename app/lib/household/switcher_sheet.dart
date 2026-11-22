@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui' show lerpDouble;
 
 import 'package:family_groceries/design/motion.dart';
+import 'package:family_groceries/design/sticker.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/household/household_switcher.dart';
 import 'package:family_groceries/household/member_tiles.dart';
@@ -400,7 +401,7 @@ Widget liftedRow(Widget child, int index, Animation<double> animation) =>
         final theme = Theme.of(context);
         final lift = Curves.easeOut.transform(animation.value);
         return Material(
-          elevation: lerpDouble(0, 6, lift) ?? 0,
+          elevation: HlSticker.elevation(lerpDouble(0, 6, lift) ?? 0),
           color:
               theme.bottomSheetTheme.backgroundColor ??
               theme.colorScheme.surface,
