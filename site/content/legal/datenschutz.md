@@ -116,6 +116,15 @@ Freischaltung für dein Konto als Dank für die Beta: Jedes bestätigte Snacklis
 Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (um die zugesagte kostenlose Freischaltung für dein Konto zu erteilen und zu verwalten).
 Speicherdauer: Die Angabe bei uns löschen wir mit deinem Konto. Den Datensatz deines Kontos bei RevenueCat löschen wir 30 Tage nach dem Löschen deines Kontos.
 
+### Mitteilungen auf dem Smartphone {#mitteilungen once=push-notifications}
+
+In der App für iPhone und Android kannst du Mitteilungen einschalten, zum Beispiel wenn jemand etwas auf eine Liste setzt. Erst wenn du sie in der App einschaltest, fragt dein Smartphone, ob Snacklist dir Mitteilungen senden darf; beim ersten Start fragt die App nicht. Erlaubst du es, erhält die App über Firebase Cloud Messaging von Google eine Kennung für Mitteilungen (Token), die nur für Snacklist auf diesem Gerät gilt. Wir speichern den Token zu deinem Konto mit der Plattform (iOS oder Android) und den Zeitpunkten, zu denen er angelegt und zuletzt erneuert wurde, für höchstens 10 Geräte je Konto. Im Browser gibt es keine Mitteilungen.
+
+Für eine Mitteilung schickt unser Server den Token, Titel und Text der Mitteilung (zum Beispiel den Namen der Liste, den Anzeigenamen der Person, die etwas hinzugefügt hat, und Artikelnamen) und die Kennungen des Haushalts und der Liste an Google (Firebase Cloud Messaging, Abschnitte 12 und 13). Google stellt sie auf Android-Geräten zu und gibt sie für das iPhone an den Apple Push Notification Service weiter, über den Apple sie zustellt. Kann eine Mitteilung nicht zugestellt werden, etwa weil dein Gerät aus ist, verfällt sie nach höchstens 24 Stunden. Tippst du auf die Mitteilung, öffnet die App die genannte Liste. Mitteilungen über einen Haushalt bekommen nur seine Mitglieder.
+
+Meldest du dich in der App ab, löschen wir den Token auf unserem Server und lassen ihn bei Google löschen. Ist dein Smartphone dabei offline, holt die App das Löschen bei Google nach, sobald du sie wieder mit Internetverbindung startest oder dich anmeldest; den Eintrag auf unserem Server löschen wir dann bei der nächsten Mitteilung an dieses Gerät, spätestens nach 270 Tagen. Löschst du dein Konto, löschen wir den Token auf unserem Server sofort. Außerdem löschen wir ihn, wenn Google ihn als ungültig meldet und wenn die App ihn 270 Tage lang nicht erneuert hat (beim nächsten täglichen Aufräumen). Die Erlaubnis für Mitteilungen kannst du jederzeit in den Einstellungen deines Smartphones zurücknehmen.
+Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO; für das Speichern und Auslesen des Tokens auf deinem Gerät § 25 Abs. 2 Nr. 2 TDDDG.
+
 ## 6. Spracheingabe
 
 Wenn du in der App für iPhone oder Android einen Eintrag diktierst, wandelt die Spracherkennung deines Betriebssystems die Sprache in Text um, und zwar in der Sprache, in der du die App nutzt (Deutsch oder Englisch). Das geschieht nur auf deinem Gerät: Kann das Gerät die Sprache der App nicht ohne Internet erkennen, bietet Snacklist die Spracheingabe nicht an. Unter Android ab Version 13 bittet die App Android in diesem Fall, die Offline-Spracherkennung für diese Sprache herunterzuladen; Android kann dich vorher um Zustimmung fragen. Dafür teilt die App Android nur die Sprache mit (zum Beispiel „de-DE“), nie Audio oder Inhalte deiner Liste. Den Download übernimmt der Anbieter der Spracherkennung deines Geräts nach seinen eigenen Bestimmungen (Abschnitt 12); an uns geht dabei nichts. Im Browser gibt es keine Spracheingabe. Den erkannten Text schickt die App mit der Sprache an unseren Server, der daraus Einträge macht; Audio erhalten wir nicht.
@@ -157,6 +166,10 @@ Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.
 ## 8. Daten exportieren und Konto löschen
 
 Unter Konto › Meine Daten exportieren erhältst du deine Daten als JSON-Datei, mit allen Haushalten, in denen du Mitglied bist, den Einladungen, über die du beigetreten bist, den Listen, die du angelegt hast, deinen „Ich bringe“-Zusagen, deinen Beitrittsanfragen, den gespeicherten Entfernungen aus einem Haushalt (Abschnitt 5), deinen Rückmeldungen aus der App mit ihrem Stand und unseren Antworten, bei einem Bildschirmfoto mit seinem Dateinamen (das Bild selbst schicken wir dir auf Anfrage an support@snacklist.app), den +1-Stimmen deiner Haushalte für Ideen (Abschnitt 10), den Einkäufen, die du eingetragen oder gestartet hast, etwaigen Testgruppen, in die wir dich aufgenommen haben (Abschnitt 9), und bei jedem Eintrag, den du hinzugefügt hast, seiner Liste und, falls angegeben, seinem Preis. Unter Konto › Konto löschen löschst du dein Konto sofort. Was dabei mit gemeinsamen Haushalten passiert, steht unter https://app.snacklist.app/konto-loeschen.html.
+
+::: once push-notifications
+Der Export enthält auch die Geräte, die du für Mitteilungen angemeldet hast (Abschnitt 5), mit Plattform und Zeitpunkten, aber ohne den Token.
+:::
 
 ## 9. Nutzungsdaten (nur mit Einwilligung), Abfrage eingeschalteter Funktionen und Fehlerberichte
 
@@ -207,6 +220,10 @@ Wir setzen folgende Dienstleister ein, die Daten in unserem Auftrag und nach uns
 
 Eigenständig verantwortlich sind: Google bzw. Apple, wenn du dich darüber anmeldest; der Anbieter der Spracherkennung deines Betriebssystems; KI-Assistenten, die du selbst verbindest; Amazon, wenn du den Alexa-Skill nutzt (Abschnitt 7); Apple und Google als App-Stores sowie als Anbieter von TestFlight bzw. Google Play, wenn wir dich zur Beta einladen (Abschnitt 2a).
 
+::: once push-notifications
+Für Mitteilungen (Abschnitt 5) setzen wir außerdem Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland, mit Firebase Cloud Messaging als Auftragsverarbeiter ein (Zustellung von Mitteilungen an die App). Auf dem iPhone stellt Apple die Mitteilungen über den Apple Push Notification Service zu.
+:::
+
 ## 13. Übermittlung in Drittländer
 
 Einige Dienstleister haben ihren Sitz in den USA oder gehören zu US-Unternehmen. Die Server-Funktionen von Supabase können, außer der Funktion für Käufe, auch in Rechenzentren außerhalb der EU laufen (siehe Abschnitt 12). Soweit dabei Daten in die USA oder andere Drittländer übermittelt werden oder US-Behörden darauf zugreifen könnten, stützen wir uns auf folgende Grundlagen:
@@ -219,9 +236,17 @@ Einige Dienstleister haben ihren Sitz in den USA oder gehören zu US-Unternehmen
 
 Eine Kopie der Garantien erhältst du auf Anfrage an support@snacklist.app.
 
+::: once push-notifications
+Google Ireland Limited kann Daten für Firebase Cloud Messaging an Google LLC (USA) übermitteln. Google LLC ist nach dem EU-US Data Privacy Framework zertifiziert (Art. 45 DSGVO); zusätzlich gelten die Standardvertragsklauseln der Datenverarbeitungsbedingungen von Firebase (Art. 46 Abs. 2 lit. c DSGVO).
+:::
+
 ## 14. Speicherdauer
 
 Wir speichern deine Daten, solange du dein Konto hast. Löschst du dein Konto, löschen wir Konto, Profil, Mitgliedschaften, die Angaben, über welche Einladung du beigetreten bist, deine „Ich bringe“-Zusagen, Beitrittsanfragen und gespeicherten Entfernungen, Zugriffstoken, Verbindungen (auch zu Alexa) und deine Entscheidungen zu Nutzungsdaten sofort; bei Käufen entfernen wir die Verbindung zu deinem Konto. Den Datensatz eines Haushalts oder deines Kontos bei RevenueCat löschen wir 30 Tage nach dem Löschen des Haushalts bzw. deines Kontos (Abschnitt 5). Daten zur Alexa-Verbindung löschen wir außerdem, sobald die Verbindung endet (Abschnitt 7). Bist du das letzte Mitglied eines Haushalts, wird der Haushalt mit allem gelöscht, ebenso jeder Haushalt, den du archiviert hast. Du kannst auch einzelne Haushalte verlassen, ohne dein Konto zu löschen. Verlässt du einen Haushalt oder wirst entfernt, löschen wir die Angabe, über welche Einladung du beigetreten bist, und deine Zusagen in diesem Haushalt. Mit einem Haushalt löschen wir auch seine Listen, Einladungen, Beitrittsanfragen, gespeicherten Entfernungen und die Angaben, wer über die Einladungen beigetreten ist. Verlässt du einen Haushalt mit Snacklist Lifetime als letztes Mitglied, ohne dein Konto zu löschen, wird der Haushalt mit seinen Daten gelöscht. Snacklist Lifetime endet mit dem Haushalt. Sonst bleiben die Einträge (mit ihren Preisen), Listen, der Änderungsverlauf und die Einkäufe, die du eingetragen hast, für die anderen Mitglieder erhalten, aber ohne Bezug zu dir; die Artikelnamen bleiben dabei sichtbar. Das gilt auch, wenn du einen Haushalt verlässt oder entfernt wirst. Soll ein Einkauf nicht bleiben, lösche ihn vorher im Reiter „Verlauf“. Gemeinsame Haushaltsdaten, auch den Änderungsverlauf und die Einkäufe, speichern wir, solange der Haushalt besteht, auch archiviert. Die Prüfwerte der Beitrittsseite löschen wir nach Ablauf der Stunde, entschiedene Beitrittsanfragen nach 7 Tagen und die Angabe, dass jemand aus einem Haushalt entfernt wurde, nach 30 Tagen (Abschnitt 5). Protokolle unseres Datenbank-Anbieters werden nach höchstens 1 Tag gelöscht, Sicherungskopien nach 90 Tagen, Nutzungsdaten und Fehlerberichte bei PostHog nach 1 Jahr. Für die Warteliste gelten die Fristen in Abschnitt 2a.
+
+::: once push-notifications
+Tokens für Mitteilungen löschen wir mit deinem Konto sofort, sonst wie in Abschnitt 5 beschrieben.
+:::
 
 ## 15. Deine Rechte {#rechte}
 

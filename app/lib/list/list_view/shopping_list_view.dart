@@ -283,15 +283,27 @@ class _ShoppingListViewState()
 
   ListCubit get _cubit => context.read<ListCubit>();
 
-  /// A `/stores/<id>` link, once the list is loaded ([build] asks again
-  /// then, and once the first resync is over). A store the device's copy
-  /// lacks waits for that resync; without open items then (an unknown
-  /// store, an empty one, or no answer from the server) the list stays as
-  /// it is. After the frame: the router asks during its own work.
+  /// A `/stores/<id>` link or a notification's list, once the list is
+  /// loaded ([build] asks again then, and once the first resync is over).
+  /// A store or list the device's copy lacks waits for that resync; without
+  /// it then (an unknown store or list, a store without open items, or no
+  /// answer from the server) the list stays as it is. After the frame: the
+  /// router asks during its own work, and a household switch provides the
+  /// other household's list by then.
   void _linked() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || !_cubit.state.loaded) {
         return;
+      }
+      if (_links?.pending case ShowListLink(:final listId)) {
+        final known = _cubit.state.catalog.list(listId) != null;
+        if (!known && !_cubit.state.resynced) {
+          return;
+        }
+        _links?.take<ShowListLink>();
+        if (known) {
+          _cubit.showList(listId);
+        }
       }
       if (_links?.pending case StoreLink(:final storeId)) {
         final section = _sectionOf(storeId);

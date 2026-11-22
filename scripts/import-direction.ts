@@ -18,6 +18,7 @@ export const LAYERS: Readonly<Record<string, Layer>> = {
   l10n: 'core',
   analytics: 'core',
   session: 'core',
+  push: 'core',
   feedback: 'feature',
   'home_widget': 'feature',
   household: 'feature',

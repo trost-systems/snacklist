@@ -1,0 +1,24 @@
+id: firebase-only-in-firebase-push
+valid:
+  # The app goes through PushRegistration.
+  - |
+    import 'package:family_groceries/push/push_registration.dart';
+  # Named in a comment or a string, nothing is imported.
+  - |
+    /// firebase_messaging lives in firebase_push.dart.
+    const uri = 'package:firebase_messaging/firebase_messaging.dart';
+invalid:
+  # A settings toggle that asks the OS itself.
+  - |
+    import 'package:firebase_messaging/firebase_messaging.dart';
+  - |
+    import 'package:firebase_core/firebase_core.dart' show Firebase;
+  - |
+    import "package:firebase_messaging/firebase_messaging.dart" as fcm;
+  - |
+    export 'package:firebase_core/firebase_core.dart';
+  - |
+    import 'package:firebase_messaging_platform_interface/firebase_messaging_platform_interface.dart';
+  - |
+    import 'package:family_groceries/push/none.dart'
+        if (dart.library.io) 'package:firebase_messaging/firebase_messaging.dart';

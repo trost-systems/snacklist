@@ -9,6 +9,7 @@ import 'package:family_groceries/list/item_icons_remote.dart';
 import 'package:family_groceries/list/list_cache.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/onboarding/onboarding_cubit.dart';
+import 'package:family_groceries/push/push_registration.dart';
 import 'package:family_groceries/review/review_counters.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/session/your_name.dart';
@@ -31,7 +32,8 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
         CatalogStore,
         ReviewStore,
         OnboardingStore,
-        NamePostponements {
+        NamePostponements,
+        PushStore {
   /// On Linux, supabase_flutter's legacy SharedPreferences and
   /// SharedPreferencesAsync each rewrite the whole file from their own copy,
   /// so sharing shared_preferences.json loses the session. The other
@@ -128,6 +130,11 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
   /// under Einstellungen; absent is on. Kept across sign-outs: it belongs
   /// to the device.
   static const _shakeKey = 'feedback.shake';
+
+  /// What this device keeps about push (job 376): a [PushDevice] name,
+  /// absent for [PushDevice.off]. Not under [forget]'s prefixes: a token
+  /// left after a sign-out must outlive it until it is deleted.
+  static const _pushKey = 'push.device';
 
   /// The trip running on this device and its ends not yet saved (job 234),
   /// one JSON value per user (`KeptTrips`); forgotten on sign-out.
@@ -227,6 +234,24 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
 
   Future<void> saveShakeToFeedback({required bool on}) =>
       _write(() => _prefs.setBool(_shakeKey, on));
+
+  @override
+  Future<PushDevice> pushDevice() async {
+    try {
+      final name = await _prefs.getString(_pushKey);
+      return PushDevice.values.where((d) => d.name == name).firstOrNull ??
+          PushDevice.off;
+    } on Object {
+      return PushDevice.off;
+    }
+  }
+
+  @override
+  Future<void> savePushDevice(PushDevice device) => _write(
+    () => device == PushDevice.off
+        ? _prefs.remove(_pushKey)
+        : _prefs.setString(_pushKey, device.name),
+  );
 
   Future<void> saveLogView(String name) =>
       _write(() => _prefs.setString(_logViewKey, name));

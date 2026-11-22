@@ -1,0 +1,66 @@
+id: firebase-only-in-firebase-push
+snapshots:
+  "export 'package:firebase_core/firebase_core.dart';\n":
+    labels:
+    - source: export 'package:firebase_core/firebase_core.dart';
+      style: primary
+      start: 0
+      end: 50
+    - source: "'package:firebase_core/firebase_core.dart'"
+      style: secondary
+      start: 7
+      end: 49
+  "import \"package:firebase_messaging/firebase_messaging.dart\" as fcm;\n":
+    labels:
+    - source: import "package:firebase_messaging/firebase_messaging.dart" as fcm;
+      style: primary
+      start: 0
+      end: 67
+    - source: "\"package:firebase_messaging/firebase_messaging.dart\""
+      style: secondary
+      start: 7
+      end: 59
+  "import 'package:family_groceries/push/none.dart'\n    if (dart.library.io) 'package:firebase_messaging/firebase_messaging.dart';\n":
+    labels:
+    - source: |-
+        import 'package:family_groceries/push/none.dart'
+            if (dart.library.io) 'package:firebase_messaging/firebase_messaging.dart';
+      style: primary
+      start: 0
+      end: 127
+    - source: "'package:firebase_messaging/firebase_messaging.dart'"
+      style: secondary
+      start: 74
+      end: 126
+  "import 'package:firebase_core/firebase_core.dart' show Firebase;\n":
+    labels:
+    - source: import 'package:firebase_core/firebase_core.dart' show Firebase;
+      style: primary
+      start: 0
+      end: 64
+    - source: "'package:firebase_core/firebase_core.dart'"
+      style: secondary
+      start: 7
+      end: 49
+  "import 'package:firebase_messaging/firebase_messaging.dart';\n":
+    labels:
+    - source: import 'package:firebase_messaging/firebase_messaging.dart';
+      style: primary
+      start: 0
+      end: 60
+    - source: "'package:firebase_messaging/firebase_messaging.dart'"
+      style: secondary
+      start: 7
+      end: 59
+  "import 'package:firebase_messaging_platform_interface/firebase_messaging_platform_interface.dart';\n":
+    labels:
+    - source: >-
+        import
+        'package:firebase_messaging_platform_interface/firebase_messaging_platform_interface.dart';
+      style: primary
+      start: 0
+      end: 98
+    - source: "'package:firebase_messaging_platform_interface/firebase_messaging_platform_interface.dart'"
+      style: secondary
+      start: 7
+      end: 97

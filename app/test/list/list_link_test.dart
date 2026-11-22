@@ -195,4 +195,109 @@ void main() {
     expect(row('Ding 0-0'), findsOneWidget);
     expect(cache.prefs!.folded, {'s6'});
   });
+
+  group('a tapped notification (ShowListLink, job 376)', () {
+    const a1 = HouseholdList(id: 'a1', name: 'Einkauf', position: 0);
+    const a2 = HouseholdList(id: 'a2', name: 'Drogerie', position: 1);
+
+    void seedLists() {
+      repo
+        ..lists = const [a1, a2]
+        ..remoteAdd('Milch', listId: 'a1')
+        ..remoteAdd('Zahnpasta', listId: 'a2');
+    }
+
+    ListCubit cubit(WidgetTester tester) =>
+        tester.element(find.byType(ShoppingList)).read<ListCubit>();
+
+    testWidgets('while the list is open it shows the named list', (
+      tester,
+    ) async {
+      seedLists();
+      await pumpList(tester);
+      expect(row('Milch'), findsOneWidget);
+
+      links.pending = const ShowListLink('a2');
+      await tester.pumpAndSettle();
+
+      expect(cubit(tester).state.shownList?.id, 'a2');
+      expect(row('Zahnpasta'), findsOneWidget);
+      expect(row('Milch'), findsNothing);
+      expect(links.pending, isNull);
+    });
+
+    testWidgets('a cold start shows the named list once it is loaded', (
+      tester,
+    ) async {
+      seedLists();
+      links.pending = const ShowListLink('a2');
+      await pumpList(tester);
+
+      expect(cubit(tester).state.shownList?.id, 'a2');
+      expect(row('Zahnpasta'), findsOneWidget);
+    });
+
+    testWidgets('a list that is gone leaves the shown one', (tester) async {
+      seedLists();
+      await pumpList(tester);
+
+      links.pending = const ShowListLink('gone');
+      await tester.pumpAndSettle();
+
+      expect(cubit(tester).state.shownList?.id, 'a1');
+      expect(row('Milch'), findsOneWidget);
+      expect(links.pending, isNull);
+    });
+
+    testWidgets(
+      "a household switch shows the other household's list, not deciding "
+      'against the list it left',
+      (tester) async {
+        seedLists();
+        final work = FakeRepository()
+          ..lists = const [
+            HouseholdList(id: 'w1', name: 'Büro', position: 0),
+            HouseholdList(id: 'w2', name: 'Kaffeeküche', position: 1),
+          ]
+          ..remoteAdd('Toner', listId: 'w1')
+          ..remoteAdd('Kaffee', listId: 'w2');
+        final home = ListCubit(repo, cache, userId: 'peter')..start();
+        final shown = ValueNotifier(home);
+        addTearDown(shown.dispose);
+        await tester.pumpWidget(
+          RepositoryProvider.value(
+            value: links,
+            child: MaterialApp(
+              localizationsDelegates: appLocalizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              locale: const Locale('de'),
+              home: ValueListenableBuilder(
+                valueListenable: shown,
+                builder: (_, list, _) => BlocProvider.value(
+                  value: list,
+                  child: const ShoppingList(),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(home.state.resynced, isTrue);
+
+        // What PushTaps does: the switch, then the link, in one go.
+        shown.value = ListCubit(work, MemoryListCache(), userId: 'peter')
+          ..start();
+        links.pending = const ShowListLink('w2');
+        await tester.pumpAndSettle();
+
+        expect(shown.value.state.shownList?.id, 'w2');
+        expect(row('Kaffee'), findsOneWidget);
+        expect(home.state.shownList?.id, 'a1');
+        expect(links.pending, isNull);
+        await tester.pumpWidget(const SizedBox());
+        await home.close();
+        await shown.value.close();
+      },
+    );
+  });
 }

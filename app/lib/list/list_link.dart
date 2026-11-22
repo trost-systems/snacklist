@@ -1,12 +1,17 @@
 import 'package:flutter/foundation.dart';
 
 /// What an app link asks of the list (job 66): `/add` opens the add sheet,
-/// `/stores/<id>` shows that store's section.
+/// `/stores/<id>` shows that store's section. A tapped notification asks
+/// for a list ([ShowListLink], job 376).
 sealed class const ListLink();
 
 final class const AddLink() extends ListLink;
 
 final class const StoreLink(final String storeId) extends ListLink;
+
+/// Shows the household's list [listId]; one it does not have (gone, or
+/// another household's) leaves the shown one.
+final class const ShowListLink(final String listId) extends ListLink;
 
 /// The [ListLink] of a location, or null for any other.
 ListLink? listLinkOf(Uri uri) => switch (uri.pathSegments) {

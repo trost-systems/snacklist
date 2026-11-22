@@ -546,6 +546,12 @@ import_map = "./functions/deno.json"
 # (docs/FEEDBACK.md, "Screenshots").
 verify_jwt = false
 
+[functions.push]
+import_map = "./functions/deno.json"
+# Internal: callers send x-push-secret, which the function checks (docs/PUSH.md). Off until Ops
+# sets PUSH_SEND_SECRET and FCM_SERVICE_ACCOUNT_JSON.
+verify_jwt = false
+
 [functions.voice]
 import_map = "./functions/deno.json"
 # Siri and the app send personal access tokens or session JWTs; the function checks them itself.

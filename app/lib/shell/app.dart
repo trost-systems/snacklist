@@ -32,6 +32,7 @@ import 'package:family_groceries/purchases/entitlements.dart';
 import 'package:family_groceries/purchases/premium_server.dart';
 import 'package:family_groceries/purchases/purchase_cubit.dart';
 import 'package:family_groceries/purchases/store_prices.dart';
+import 'package:family_groceries/push/push_target.dart';
 import 'package:family_groceries/report/report_repository.dart';
 import 'package:family_groceries/review/review_prompt.dart';
 import 'package:family_groceries/review/store_review.dart';
@@ -41,6 +42,7 @@ import 'package:family_groceries/session/social_sign_in.dart';
 import 'package:family_groceries/session/your_name.dart';
 import 'package:family_groceries/settings/account_repository.dart';
 import 'package:family_groceries/settings/integration_lock.dart';
+import 'package:family_groceries/shell/push_taps.dart';
 import 'package:family_groceries/shell/router.dart';
 import 'package:family_groceries/tips/hint_host.dart';
 import 'package:family_groceries/tips/usage_log.dart';
@@ -136,6 +138,9 @@ class const App({
   /// Taps on the Home Screen widgets; null without widgets.
   final WidgetLaunches? widgetLaunches,
 
+  /// The lists that tapped notifications name; null without push.
+  final Stream<PushTarget>? pushTaps,
+
   /// The OS's network, which the list follows; null where it is not
   /// watched.
   final NetworkWatch? network,
@@ -200,6 +205,11 @@ class _AppState() extends State<App> {
       widget.feedbackDevice ?? PluginFeedbackDevice();
   final _addSheetRequest = AddSheetRequest();
   StreamSubscription<Uri?>? _widgetLaunches;
+  late final _pushTaps = PushTaps(
+    widget.session,
+    _listLinks,
+    () => _router.go(listPath),
+  );
   var _mailLanguageTriggers = const <StreamSubscription<Object?>>[];
 
   /// Sends what analytics has queued when the app goes to the background
@@ -247,6 +257,9 @@ class _AppState() extends State<App> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _onRoute());
     if (widget.widgetLaunches case final launches?) {
       _widgetLaunches = followWidgetLaunches(launches, _onWidgetLaunch);
+    }
+    if (widget.pushTaps case final taps?) {
+      _pushTaps.follow(taps);
     }
     if (widget.mailLanguage != null) {
       // On start (web: on load), on a sign-in and on a language pick; the
@@ -296,6 +309,7 @@ class _AppState() extends State<App> {
     _lifecycle.dispose();
     _reviewSessions.dispose();
     unawaited(_widgetLaunches?.cancel());
+    unawaited(_pushTaps.cancel());
     for (final trigger in _mailLanguageTriggers) {
       unawaited(trigger.cancel());
     }
