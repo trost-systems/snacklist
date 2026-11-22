@@ -11,7 +11,7 @@ import '../more/more_harness.dart';
 import '../purchases/fakes.dart';
 import 'fonts.dart';
 
-/// Tall enough for the whole offer, down to the refund link.
+/// Tall enough for the whole offer, down to the legal links.
 const _phone = Size(390, 1100);
 
 /// The 358 px compact design (snacklist-ui-craft).
@@ -78,6 +78,20 @@ void main() {
         );
       });
     }
+  }
+
+  // A beta account's own grant for good (job 371), once sales started.
+  for (final language in ['de', 'en']) {
+    testWidgets('premium-beta-lifetime-$language-light', (tester) async {
+      await golden(
+        tester,
+        'premium-beta-lifetime-$language-light',
+        mode: 'light',
+        language: language,
+        entitlements: FakeEntitlementsSource()
+          ..userRows['peter'] = [lifetimeGrantRow],
+      );
+    });
   }
 
   // The web build sells nothing (PurchasesUnsupported), as the page's own

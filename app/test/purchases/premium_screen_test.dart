@@ -84,8 +84,8 @@ void main() {
     expect(find.text('Einer kauft. Alle haben es.'), findsOneWidget);
     expect(
       find.text(
-        'Snacklist Premium gilt für euren ganzen Haushalt, auch für alle, die '
-        'später dazukommen.',
+        'Snacklist Premium gilt für dich, in jedem Haushalt, in dem du '
+        'Mitglied bist.',
       ),
       findsOneWidget,
     );
@@ -185,8 +185,8 @@ void main() {
     expect(find.text('One buys. Everyone has it.'), findsOneWidget);
     expect(
       find.text(
-        'Snacklist Premium covers your whole household, including everyone '
-        'who joins later.',
+        'Snacklist Premium applies to you, in every household you are a '
+        'member of.',
       ),
       findsOneWidget,
     );
@@ -567,7 +567,11 @@ void main() {
   });
 
   testWidgets('the refund help in English', (tester) async {
-    await openLifetime(tester, language: AppLanguage.en);
+    await openLifetime(
+      tester,
+      language: AppLanguage.en,
+      entitlements: FakeEntitlementsSource(unlockedNow: true),
+    );
     await tester.tap(key('lifetime-refund-help'));
     await tester.pumpAndSettle();
     expect(find.text('Request a refund'), findsOneWidget);
@@ -1181,6 +1185,69 @@ void main() {
       expect(key('premium-manage'), findsNothing);
     });
 
+    testWidgets("a beta account's own grant for good: Lifetime as thanks for "
+        'the beta, no end, nothing to buy (job 371)', (tester) async {
+      await openLifetime(
+        tester,
+        entitlements: FakeEntitlementsSource()
+          ..rowsNow = [promotionalRow(from: DateTime.now(), days: 60)]
+          ..userRows['peter'] = [lifetimeGrantRow],
+      );
+      shows({'lifetime-unlocked'});
+      expect(
+        find.text(
+          'Snacklist Premium Lifetime, kostenlos als Dank für die Beta',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.text(
+          'Du zahlst nichts, und nichts verlängert sich automatisch. Es ist '
+          'kein Kauf. Die Freischaltung gilt für dein Konto, solange es '
+          'besteht und wir Snacklist betreiben. Löschst du das Konto, endet '
+          'sie. Es gibt nichts zu erstatten, weil du nichts gezahlt hast.',
+        ),
+        findsOneWidget,
+      );
+      expect(key('premium-beta-lifetime-body'), findsOneWidget);
+      expect(key('premium-beta-body'), findsNothing);
+      expect(key('premium-beta-privacy'), findsOneWidget);
+      expect(find.textContaining('Test und App-Prüfung'), findsNothing);
+      expect(find.textContaining('In der Beta'), findsNothing);
+      expect(find.textContaining('4 Wochen'), findsNothing);
+      for (final plan in PremiumPlan.values) {
+        expect(key('premium-card-${plan.name}'), findsNothing);
+        expect(key('premium-buy-${plan.name}'), findsNothing);
+      }
+      expect(find.byType(FilledButton), findsNothing);
+    });
+
+    testWidgets("a beta account's own grant for good, in English", (
+      tester,
+    ) async {
+      await openLifetime(
+        tester,
+        language: AppLanguage.en,
+        entitlements: FakeEntitlementsSource()
+          ..userRows['peter'] = [lifetimeGrantRow],
+      );
+      expect(
+        find.text(
+          'Snacklist Premium Lifetime, free as a thank-you for the beta',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.text(
+          'You pay nothing, and nothing renews automatically. It is not a '
+          'purchase. The unlock applies to your account for as long as it '
+          'exists and we run Snacklist. If you delete the account, it ends. '
+          'There is nothing to refund, because you paid nothing.',
+        ),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('a grant without end is a tester grant, in English', (
       tester,
     ) async {
@@ -1385,7 +1452,7 @@ void main() {
     expect(key('premium-terms-lifetime'), findsOneWidget);
   });
 
-  group('Legal Review N-69: the refund link', () {
+  group('Legal Review N-69, N-346: the refund link', () {
     testWidgets('hidden before sales start', (tester) async {
       await openLifetime(tester, premium: FakePremiumServer(offer: false));
       expect(key('lifetime-refund-help'), findsNothing);
@@ -1416,8 +1483,75 @@ void main() {
       expect(key('lifetime-refund-help'), findsOneWidget);
     });
 
-    testWidgets('shown once sales start', (tester) async {
+    testWidgets('shown once sales start to a household that paid', (
+      tester,
+    ) async {
+      await openLifetime(
+        tester,
+        entitlements: FakeEntitlementsSource(unlockedNow: true),
+      );
+      expect(key('lifetime-refund-help'), findsOneWidget);
+    });
+
+    testWidgets('shown once sales start to a user who pays yearly', (
+      tester,
+    ) async {
+      await openLifetime(
+        tester,
+        entitlements: FakeEntitlementsSource()
+          ..userRows['peter'] = [yearlyRow(from: DateTime.now())],
+      );
+      expect(key('lifetime-refund-help'), findsOneWidget);
+    });
+
+    testWidgets('hidden once sales start to someone who bought nothing', (
+      tester,
+    ) async {
       await openLifetime(tester);
+      expect(key('premium-card-lifetime'), findsOneWidget);
+      expect(key('lifetime-refund-help'), findsNothing);
+    });
+
+    // Legal Review N-346: a refund of nothing paid.
+    for (final (who, entitlements) in [
+      (
+        "a beta account's own grant for good",
+        () => FakeEntitlementsSource()..userRows['peter'] = [lifetimeGrantRow],
+      ),
+      (
+        "a tester household's grant",
+        () => FakeEntitlementsSource()..rowsNow = [lifetimeGrantRow],
+      ),
+      (
+        "a beta household's grant with an end",
+        () =>
+            FakeEntitlementsSource()
+              ..rowsNow = [promotionalRow(from: DateTime.now(), days: 60)],
+      ),
+    ]) {
+      testWidgets('hidden once sales start to $who only', (tester) async {
+        await openLifetime(tester, entitlements: entitlements());
+        expect(key('lifetime-unlocked'), findsOneWidget);
+        expect(key('lifetime-refund-help'), findsNothing);
+        expect(find.textContaining('Doppelt gekauft'), findsNothing);
+      });
+    }
+
+    testWidgets('shown once sales start to a beta account that also paid', (
+      tester,
+    ) async {
+      await openLifetime(
+        tester,
+        entitlements: FakeEntitlementsSource()
+          ..rowsNow = [
+            {
+              'kind': 'premium',
+              'source': 'purchase',
+              'premium_source': 'lifetime',
+            },
+          ]
+          ..userRows['peter'] = [lifetimeGrantRow],
+      );
       expect(key('lifetime-refund-help'), findsOneWidget);
     });
   });

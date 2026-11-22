@@ -3056,10 +3056,10 @@ abstract class AppLocalizations {
   /// **'Einer kauft. Alle haben es.'**
   String get premiumHeroTitle;
 
-  /// Premium page (PW-P4, job 87): under the hero title
+  /// Premium page (PW-P4, job 87): under the hero title; Premium is per account (Legal Review N-345)
   ///
   /// In de, this message translates to:
-  /// **'Snacklist Premium gilt für euren ganzen Haushalt, auch für alle, die später dazukommen.'**
+  /// **'Snacklist Premium gilt für dich, in jedem Haushalt, in dem du Mitglied bist.'**
   String get premiumHeroBody;
 
   /// FINAL (Legal Review N-67, 2026-11-04; Peter 2026-10-31: no assistant brand named): Premium page, benefit line, AI assistants over MCP
@@ -3121,6 +3121,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'In der Beta kostenlos freigeschaltet, bis Snacklist Premium startet'**
   String get premiumStatusBeta;
+
+  /// DRAFT for Legal Review (job 371): Premium page: status of an account that existed before launch, with its own free lifetime unlock (a promotional grant to the account, as thanks for the beta)
+  ///
+  /// In de, this message translates to:
+  /// **'Snacklist Premium Lifetime, kostenlos als Dank für die Beta'**
+  String get premiumStatusBetaLifetime;
+
+  /// DRAFT for Legal Review (job 371): Premium page: under premiumStatusBetaLifetime, what it costs, that it is not a purchase and when it ends (Legal Review N-343)
+  ///
+  /// In de, this message translates to:
+  /// **'Du zahlst nichts, und nichts verlängert sich automatisch. Es ist kein Kauf. Die Freischaltung gilt für dein Konto, solange es besteht und wir Snacklist betreiben. Löschst du das Konto, endet sie. Es gibt nichts zu erstatten, weil du nichts gezahlt hast.'**
+  String get premiumBetaLifetimeBody;
 
   /// PLACEHOLDER (job 49): Snacklist Launch / Legal Review K.13 write the final copy (NEEDS_LEAD Job 49). Premium page: the household's rows are loading or offline; no Buy
   ///

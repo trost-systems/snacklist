@@ -2516,3 +2516,46 @@ Launch-day inventory (review 1; none of it is changed in this PR, every new stri
 Previews were redeployed from the review-1 head (landing.css and the Google badge size changed): URLs above are current.
 
 Deviations: no new `SITE_MODE`; the existing `stage` line is the switch (default stays `waitlist`, which is the live beta mode). Badge sources are in docs/DECISIONS.md "Job 370".
+
+## NEEDS_LEAD Job 371: PR ready, needs Legal (2026-11-22 14:25 CET)
+
+PR https://github.com/trost-systems/snacklist/pull/631 (lifetime Premium for every beta account).
+Not merged: it changes user-facing strings. `--apply` was not run.
+
+**New strings (drafts, Premium page, only for an account with its own grant for good):**
+
+| Key | DE | EN | sha256 DE / EN (value) |
+| --- | --- | --- | --- |
+| `premiumStatusBetaLifetime` | Snacklist Premium Lifetime, kostenlos als Dank für die Beta | Snacklist Premium Lifetime, free as a thank-you for the beta | b0a48f1b98f716f38bb4934c293944fbaa1bf6489af3a6f76c02fb6f708d9ffc / d16d27622a467b2ef08ac9b636f5a81a7a7081e79244f92d510aa76faababc46 |
+| `premiumBetaLifetimeBody` | Du zahlst nichts, und nichts verlängert sich automatisch. Die Freischaltung gehört zu deinem Konto und endet nicht. | You pay nothing, and nothing renews automatically. The unlock belongs to your account and does not end. | 8d9610de3f92d94c1fbb7e983a57522362d9a3e065da176294fe7aea29a470af / 8764b0fae16940ecfab6f350f31dd9a054d8a50ed963aec760db03a43c9fa1c3 |
+
+ARB files: `app/l10n/app_de.arb` sha256 520a1cf7345dc79c321aff275142aedc1bf7726d3312f326cb04a631d7c21778,
+`app/l10n/app_en.arb` sha256 3176b00083dd17f11ad439ca2be6104bf92461b7f718ad1405316dc8aba1aef7.
+The link under them stays „Mehr dazu in der Datenschutzerklärung“ (`/datenschutz#premium-beta`).
+
+**For Legal, besides the strings:**
+1. The privacy text blocks `--apply`. `/datenschutz#premium-beta` and the purchases page say a free
+   unlock goes to the household's id and RevenueCat gets no account ids. The beta grants go to
+   the account id (per-user Premium, as Peter's brief asks). The section needs per-account
+   wording before the run: the recipients (every account created before the launch), what
+   RevenueCat receives (the account id and the grant), the storage, and the deletion with the
+   account (30 days, as for purchases).
+2. The page's hero still says „Snacklist Premium gilt für euren ganzen Haushalt …“. An account's
+   grant covers that account only. This is the same open point as NEEDS_PETER "Job 185".
+3. With sales on, the refund link „Doppelt gekauft? …“ also shows for a free grant (already noted
+   in NEEDS_LEAD "Job 324c").
+
+**For Peter:** beta accounts stay "internal" for analytics, as testers are. Every household they
+use, later members included, leaves the gate insights, so the kill gate measures households
+without a beta account. DECISIONS 371.7. If he wants them counted, that is a follow-up, and it
+changes the privacy text too.
+
+**Dry run (read-only, production, 2026-11-22 12:51 UTC): 396 accounts** would get the grant
+(confirmed, not anonymous, created before now). 0 already stored. 414 auth rows in total, 18
+unconfirmed, 0 anonymous. RevenueCat was not checked: hz has no RevenueCat key. The hosted
+`SUPABASE_ACCESS_TOKEN` in the hz ops env answers 401 for any Management API call, so the
+count came from the script's query run read-only through the database pooler. The run itself
+needs a valid token in the ops env.
+
+**Run at launch:** `docs/PAYWALL_RELEASE.md` 5.3a. Never revoke a beta household's grant; no
+launch step did.

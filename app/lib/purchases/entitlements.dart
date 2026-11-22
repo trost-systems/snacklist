@@ -54,6 +54,9 @@ class const PremiumRow({
 
   /// Yearly only: the plan renews at [expiresAt].
   final bool? autoRenew,
+
+  /// A row of the signed-in user's own `user_entitlements`.
+  final bool own = false,
 }) {
   /// Never ends: Lifetime, a promotional grant without end.
   bool get endless =>
@@ -61,6 +64,25 @@ class const PremiumRow({
       (source == PremiumSource.promotional && expiresAt == null);
 
   bool activeAt(DateTime now) => endless || (expiresAt?.isAfter(now) ?? false);
+
+  /// A promotional grant for good: without end, or to [testerGrantEnd]
+  /// (RevenueCat's API needs an end).
+  bool get forGood =>
+      source == PremiumSource.promotional &&
+      !(expiresAt?.isBefore(testerGrantEnd) ?? false);
+}
+
+/// Whose free unlock (a RevenueCat promotional grant) premium comes from.
+enum FreeUnlock() {
+  /// A beta household's grant with an end (Legal Review N-70).
+  beta,
+
+  /// Testers and app review: a household's grant for good.
+  tester,
+
+  /// A beta account's own grant for good (job 371): lifetime, as thanks for
+  /// the beta.
+  betaLifetime,
 }
 
 /// Premium in the shown household at one moment: the server's rule
@@ -77,17 +99,13 @@ final class const ActivePremium(
 
   /// Yearly: one of the active plans renews.
   final bool renews = false,
-}) extends Premium {
-  /// A promotional grant for testers or app review: without end, or to
-  /// [testerGrantEnd] as `scripts/iap/promotional.ts grant` gives it. A beta
-  /// household's grant ends before (Legal Review N-70).
-  bool get testerGrant =>
-      source == PremiumSource.promotional &&
-      (expiresAt == null || !expiresAt!.isBefore(testerGrantEnd));
-}
 
-/// Where testers' and app review's promotional grants end
-/// (`testerGrantEnd` in scripts/iap/promotional.ts).
+  /// Promotional: whose free unlock it is; null for any other source.
+  final FreeUnlock? free,
+}) extends Premium;
+
+/// Where testers', app review's and beta accounts' promotional grants for
+/// good end (`testerGrantEnd` in scripts/iap/promotional.ts).
 final testerGrantEnd = DateTime.utc(2100);
 
 /// What the signed-in user has unlocked in the shown household, as the rows
@@ -120,6 +138,10 @@ class const Unlocks({
   /// Google can refund.
   final int lifetimePurchases = 0,
 
+  /// A row is a store purchase (yearly or Lifetime), not only promotional
+  /// grants: someone paid, so refund help applies (Legal Review N-346).
+  final bool purchased = false,
+
   /// Each owner's yearly plans: one owner's two running at once were bought
   /// from two store accounts. The household's plan next to the user's is
   /// not.
@@ -131,6 +153,7 @@ class const Unlocks({
     rows: [...rows, ...own.rows],
     tester: tester || own.tester,
     lifetimePurchases: max(lifetimePurchases, own.lifetimePurchases),
+    purchased: purchased || own.purchased,
     yearlyByOwner: [...yearlyByOwner, ...own.yearlyByOwner],
   );
 
@@ -152,7 +175,7 @@ class const Unlocks({
       PremiumSource.promotional,
     ]) {
       if (endless.contains(source)) {
-        return ActivePremium(source);
+        return ActivePremium(source, free: _freeAt(source, now));
       }
     }
     final ending = _ending(now);
@@ -173,7 +196,25 @@ class const Unlocks({
       renews:
           last.source == PremiumSource.yearly &&
           activeYearly(now).any((r) => r.autoRenew ?? false),
+      free: _freeAt(last.source, now),
     );
+  }
+
+  /// Whose free unlock premium from [source] is: the user's own grant for
+  /// good first, then a household's for good, else a beta household's.
+  FreeUnlock? _freeAt(PremiumSource source, DateTime now) {
+    if (source != PremiumSource.promotional) {
+      return null;
+    }
+    final forGood = [
+      for (final r in rows)
+        if (r.forGood && r.activeAt(now)) r,
+    ];
+    return forGood.any((r) => r.own)
+        ? FreeUnlock.betaLifetime
+        : forGood.isNotEmpty
+        ? FreeUnlock.tester
+        : FreeUnlock.beta;
   }
 
   /// The rows with an end that have not ended at [now].
@@ -263,6 +304,13 @@ class Entitlements(
   /// while unknown.
   bool get boughtLifetimeTwice => switch (state) {
     EntitlementsKnown(:final unlocks) => unlocks.lifetimePurchases >= 2,
+    EntitlementsUnknown() => false,
+  };
+
+  /// The household, or the user, has a store purchase; false while unknown
+  /// and for promotional grants only.
+  bool get purchased => switch (state) {
+    EntitlementsKnown(:final unlocks) => unlocks.purchased,
     EntitlementsUnknown() => false,
   };
 
@@ -374,8 +422,9 @@ class Entitlements(
 /// how many are Lifetime purchases. A row without `premium_source` (a server
 /// before job 49) is Lifetime; one with a source this build does not know is
 /// dropped. One owner's rows: the household's and the user's share these
-/// columns, each read on its own and joined with [Unlocks.merge].
-Unlocks unlocksOf(List<Map<String, dynamic>> rows) {
+/// columns, each read on its own and joined with [Unlocks.merge]; [own]
+/// marks the user's.
+Unlocks unlocksOf(List<Map<String, dynamic>> rows, {bool own = false}) {
   final premium = [
     for (final row in rows)
       if (Entitlement.parse(row['kind']) == Entitlement.premium) row,
@@ -394,22 +443,25 @@ Unlocks unlocksOf(List<Map<String, dynamic>> rows) {
             source: PremiumSource.yearly,
             expiresAt: end,
             autoRenew: row['auto_renew'] == true,
+            own: own,
           ),
           null => null,
         },
         // No end (null): the grant never ends.
         PremiumSource.promotional => switch (row['expires_at']) {
-          null => const PremiumRow(source: PremiumSource.promotional),
+          null => PremiumRow(source: PremiumSource.promotional, own: own),
           final at => switch (DateTime.tryParse('$at')) {
             final DateTime end => PremiumRow(
               source: PremiumSource.promotional,
               expiresAt: end,
+              own: own,
             ),
             null => null,
           },
         },
-        PremiumSource.lifetime => const PremiumRow(
+        PremiumSource.lifetime => PremiumRow(
           source: PremiumSource.lifetime,
+          own: own,
         ),
         null => null,
       },
@@ -430,6 +482,7 @@ Unlocks unlocksOf(List<Map<String, dynamic>> rows) {
               (row['premium_source'] ?? 'lifetime') == 'lifetime',
         )
         .length,
+    purchased: premium.any((row) => row['source'] == 'purchase'),
   );
 }
 
@@ -450,7 +503,7 @@ class const SupabaseEntitlementsSource(final SupabaseClient _client)
           .select(_columns)
           .eq('user_id', userId),
     ).wait;
-    return unlocksOf(household).merge(unlocksOf(own));
+    return unlocksOf(household).merge(unlocksOf(own, own: true));
   }
 
   @override

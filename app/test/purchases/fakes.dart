@@ -98,7 +98,7 @@ class FakeEntitlementsSource({var bool unlockedNow = false})
                 'premium_source': 'lifetime',
               },
           ],
-    ).merge(unlocksOf(userRows[userId] ?? []));
+    ).merge(unlocksOf(userRows[userId] ?? [], own: true));
   }
 
   @override
@@ -124,6 +124,16 @@ Map<String, dynamic> promotionalRow({DateTime? from, int days = 30}) => {
   'source': 'promotional',
   'premium_source': 'promotional',
   'expires_at': from?.add(Duration(days: days)).toUtc().toIso8601String(),
+  'auto_renew': null,
+};
+
+/// A RevenueCat promotional grant for good, to `testerGrantEnd`: a tester
+/// household's, or a beta account's own (job 371).
+const lifetimeGrantRow = <String, dynamic>{
+  'kind': 'premium',
+  'source': 'promotional',
+  'premium_source': 'promotional',
+  'expires_at': '2100-01-01T00:00:00Z',
   'auto_renew': null,
 };
 

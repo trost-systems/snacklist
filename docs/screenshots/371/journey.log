@@ -1,0 +1,11 @@
+[13:13:21.633Z] switches before: integration_lock=false,public_api=false
+[13:13:22.191Z] integration lock on, no grant: GET /items mia 402 premium_required, noah 402 premium_required
+[13:13:29.432Z] grant stored: granted; again: unchanged; rows: promotional/promotional/2100-01-01 00:00:00+00
+[13:13:29.547Z] the Mehr row appeared live after 115 ms
+[13:13:30.138Z] mia's page: status 1, lifetime body 1, 4-weeks body 0, tester line 0, privacy link 1, buy buttons 0
+[13:13:30.345Z] after the grant: GET /items mia 200, noah 402 premium_required
+[13:13:30.391Z] a tester grant on Familie Brandt: granted
+[13:13:31.136Z] mia still reads the beta-lifetime line next to the household tester grant
+[13:13:36.557Z] noah's page: tester line, beta-lifetime line 0
+[13:13:37.007Z] restored: switches integration_lock=false,public_api=false, mia rows 0
+[13:13:37.288Z] PASSED

@@ -2304,3 +2304,18 @@ before | after): `before-after-soft-open.png` (RD1 dark, recently used open, Pet
 
 **For Peter on TestFlight.** The next green main build carries it; no flag (the tip is for
 everyone on iOS and Android).
+
+## Job 371: lifetime Premium for every beta account
+
+Waits for Legal. The ops script `scripts/iap/beta-lifetime.ts` (dry run by default, counts only)
+grants every pre-launch account lifetime Premium through RevenueCat on its own customer. The
+Premium page shows a beta-thanks line for it (draft copy). pgTAP proves API and MCP open like a
+bought Lifetime. The runbook runs it right before `premium_offer` (PAYWALL_RELEASE 5.3a). The
+production dry run counts 396 accounts. `--apply` was not run. Details: `docs/done/371.md`.
+
+## Job 371b: Legal follow-ups on #631 (N-343, N-345, N-346, N-347)
+
+Pushed to PR #631 (not merged; Legal HOLD on `--apply` and on the copy until a new hash-bound
+GO). `--apply` was not run, nor any grant. Details: `docs/done/371b.md`.
+Review 0 (FIX): the N-347 runbook now passes the public-launch cut-off, fixed in advance, in
+every `--apply` run, the first one included; journey extended and rerun (PASSED).

@@ -194,7 +194,7 @@ test('the web says nothing about buying before sales start, also in English', as
     .toHaveCount(0);
   await openPremium(page);
   // Job 87, Legal Review's final texts: nothing about buying before sales start (premium_offer off).
-  await expect(page.getByText('Snacklist Premium gilt für euren ganzen Haushalt, auch für alle, die später dazukommen.')).toBeVisible();
+  await expect(page.getByText('Snacklist Premium gilt für dich, in jedem Haushalt, in dem du Mitglied bist.')).toBeVisible();
   await expect(page.getByText(/^Snacklist Premium kaufst du in der iPhone- oder Android-App\./)).toHaveCount(0);
   await expect(buyButton(page)).toHaveCount(0);
   await expect(page.getByRole('button', { name: /^Doppelt gekauft\?/ }), 'no refund link before sales start (N-69)')
@@ -219,7 +219,7 @@ test.describe('in English', () => {
     await page.getByRole('button', { name: 'Later', exact: true }).click();
     await expect(page.getByRole('textbox', { name: 'What do you need?' })).toBeVisible();
     await page.goto('/more/lifetime');
-    await expect(page.getByText('Snacklist Premium covers your whole household, including everyone who joins later.')).toBeVisible();
+    await expect(page.getByText('Snacklist Premium applies to you, in every household you are a member of.')).toBeVisible();
     await expect(page.getByText(/^You can buy Snacklist Premium in the iPhone or Android app\./)).toHaveCount(0);
     await screenshot(page, 'job43-web-en-390');
     // Before sales start the refund help shows only to a household that bought twice (N-69).

@@ -17489,3 +17489,78 @@ Peter (22 Nov 2026): prepare the public launch, no waitlist, straight to the app
   tabs, and moves with a scroll. All four failed on main (card bottom 758 vs field top 706). The
   hints' 10 s quiet start uses the wall clock, so the test waits it out in `runAsync` (a `Timer`,
   not `Future.delayed`): about 10 s per case.
+
+## Job 371: lifetime Premium for every beta account
+
+Peter (22 Nov 2026 13:34 CET, L5): "all beta users get lifetime premium for free." It replaces
+ending the beta grants at the launch and Spec #4's "no grandfathering" for the beta.
+
+1. **RevenueCat's promotional grant, per account.** No Premium code path of our own: a grant of
+   `premium` on the account's customer (App User ID = `auth.users.id`, per-user Premium), synced
+   into `user_entitlements` by the purchases function as for any user grant. Not per household:
+   a beta user's Premium then follows them into a household they join later, and members who
+   join a beta household after the launch get nothing for free.
+2. **Until 2100-01-01, not "lifetime".** RevenueCat's API v2 `grant_entitlement` requires
+   `expires_at` and has no lifetime duration; API v1's `duration: lifetime` needs a v1 key Ops
+   does not have. 2100-01-01 is `testerGrantEnd`, which the app, `promotional.ts` and Legal's N-70
+   rule already read as "for good".
+3. **Beta account = confirmed, not anonymous, created before the cut-off.** An unconfirmed
+   sign-up never reached the app, and its id should not go to RevenueCat. The cut-off is the run's
+   moment by default, or `--created-before`. It is not read from a switch, since "the launch
+   switch" could mean `premium_offer` or the site's launch mode. The runbook (PAYWALL_RELEASE
+   5.3a) runs it right before `premium_offer` goes on and once more with the time of that update.
+4. **Idempotent by state, not by a log.** Each run reads RevenueCat (`fetchPromotional`) and our
+   row: grant only where RevenueCat has no grant to 2100, reconcile only where our row is
+   missing, nothing where both are there. A failed account is counted and the run goes on. The
+   rerun converges. Output is counts only.
+5. **Nothing changes on the server.** `user_premium` already counts a promotional row ending in
+   2100 as running, so `integration_gate` (API, MCP), the Premium page offer and the household cap
+   (20 for everyone) already treat it like a bought Lifetime. `beta_lifetime.test.sql` pins it.
+6. **The Premium page needs new copy (Legal).** Without a change a beta account would read
+   „Kostenlos freigeschaltet (Test und App-Prüfung)“ and „Bevor die kostenlose Freischaltung
+   endet, sagen wir dir mindestens 4 Wochen vorher Bescheid.“, both wrong for a lifetime grant.
+   The app now tells the free unlocks apart by owner and end (`FreeUnlock`): the account's own
+   grant for good is `betaLifetime` with two draft strings; a household's grant keeps N-70's
+   tester and beta lines. The owner, not the date, separates beta accounts from testers, since
+   both grants end in 2100.
+7. **Analytics: beta accounts stay internal.** A promotional row makes the account internal
+   (`user_internal`), and in the app the household it shows (`Unlocks.tester`). Kept: the kill
+   gate then measures households that can buy, and the published privacy text already says grant
+   holders' usage data is marked internal. Cost: those households, later members included, leave
+   every gate insight. NEEDS_LEAD "Job 371" asks Peter whether that is what he wants.
+8. **No metric counts a grant as a sale.** The gate queries count `purchase_completed`, which a
+   grant never sends (the purchases function's promotional path stores no purchase and sends no
+   event). No query in `analytics/` weights Lifetime as 6 yearly plans: the brief's "P1" rule is
+   not in this repository. `metrics_test.ts` "a free grant is no sale" pins zero revenue and zero
+   paying for a grant household.
+9. **No launch step revoked the beta grants.** None of `PAYWALL_RELEASE.md`, `PURCHASES.md`,
+   `RELEASE.md` or the emails ends them. The runbook now says never to revoke them; they end on
+   their own date, and the account's grant keeps Premium. Steps 6.1 and 6.2 no longer ask Peter
+   which beta households to keep.
+10. **The privacy text blocks `--apply`.** `/datenschutz#premium-beta` and the purchases privacy
+    page say free grants go to the household's id and RevenueCat gets no account ids. Per-account
+    grants contradict that. Legal updates the text before the run (NEEDS_LEAD "Job 371").
+
+## Job 371b: Legal follow-ups on #631 (N-343, N-345, N-346, N-347)
+
+1. **Copy exactly as redlined.** `premiumBetaLifetimeBody` (N-343) and `premiumHeroBody` (N-345),
+   DE and EN, take Legal's sentences word for word. `premiumStatusBetaLifetime` stays. The other
+   N-308 strings (`invitePremiumShared`, `jh2PreviewPremium`, the store product line) are out of
+   scope; on the offer page the per-account hero now sits under „Einer kauft. Alle haben es.“ and
+   above the household plan note, which those follow-ups have to settle before `premium-launch`.
+2. **Refund link only for someone who paid (N-346).** Shown when sales are on and the store took
+   money (a `purchase` row of the household or the user, or a purchase that is unlocking or
+   belongs to another household), or when Lifetime was bought twice. A promotional grant alone,
+   with sales on, no longer shows it, and neither does a household without any purchase: the old
+   `launched` alone showed „Doppelt gekauft?“ to people who had bought nothing. `launched` stays
+   in the rule so N-69 (nothing before sales start) holds. A household's purchase counts for its
+   members, as Lifetime bought twice already did: the client cannot tell which member paid for
+   a household-bound row.
+3. **`--apply` refuses without `--created-before` (N-347).** The dry run still defaults to the
+   run's moment. `PAYWALL_RELEASE.md` 5.3a fixes the public-launch cut-off T in advance and runs
+   the 5.4 `update` at T, never before. Every grant run passes exactly T: the first one shortly
+   before T (a cut-off in the future is accepted), the same command right after 5.4 for the
+   accounts created in between. Review 0 found the first draft passing an earlier moment in the
+   first run, which contradicted Legal's text and the script header; running only after 5.4 would
+   have left beta accounts without their grant while the sale was open, so T is fixed in advance
+   instead. `--apply` was not run.
