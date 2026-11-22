@@ -17589,3 +17589,24 @@ TE-Q default. Built behind the new flag `total-priced-only`, on top of `list-dec
    number no longer breaks („6,3 / 8 €“). It is a layout fix, but the brief says flag off is
    today's behaviour, so it ships with TE1. The flag-off 310 % test pins the old break.
 6. **No new strings.** Every word was in the app already, so no ARB change and no legal review.
+
+## Job 389: only the app's own sign-in makes personal access tokens
+
+- **Real, proven on the local stack.** Job 388's finding 4 (draft PR #635) held: a fictional user
+  signed up, approved a dynamically registered OAuth client through the local OAuth server, and
+  that client's access token (`role: authenticated`, with `client_id` and `session_id`) called
+  `POST /rest/v1/rpc/create_personal_access_token` and got HTTP 200 and an `fgp_` token. The row
+  had no expiry and no session, so it outlived revoking the client's grant. Repro script and
+  output: `docs/done/389.md`.
+- **Fix.** `create_personal_access_token(text, uuid)` (the one-argument form delegates to it) now
+  raises `session_required` (42501) for a caller with a `client_id` claim or no `session_id`, the
+  same check `create_api_token` and `create_siri_credential` already had. Those two were already
+  closed: the same OAuth token got `session_required` from `create_api_token` with the API switch
+  on. Edge functions act as the user with `{sub, role}` only (`_shared/db.ts` `becomeUser`), so a
+  PAT, API key or OAuth call through `mcp` or `api` is refused too; none of them calls it today.
+- **No app change.** The app always calls with its own session. The error code is the one the app
+  already maps for API keys; for PATs it can only appear outside the app.
+- **Test fixtures** that faked a signed-in user without `session_id` (four pgTAP files,
+  `scripts/backup/fixtures.sql`, `outsiders_integration_test.ts`) now carry one, as a real app
+  token does. `personal_access_tokens.test.sql` has five new cases (OAuth client, both forms; no
+  session; empty session; no row left), which fail on main.

@@ -69,7 +69,7 @@ select pg_temp.login('00000000-0000-0000-0000-0000000e7bb1');
 update public.personal_access_tokens set revoked_at = null where id = (select id from ben_old);
 select pg_temp.as_postgres();
 select ok(pg_temp.ended((select id from ben_old)), 'revocation is still one-way');
-select pg_temp.login('00000000-0000-0000-0000-0000000e7aa1');
+select pg_temp.login('00000000-0000-0000-0000-0000000e7aa1', '{"session_id": "00000000-0000-0000-0000-00000e7a5e51"}');
 create temp table ada_future as select * from public.create_personal_access_token('Future');
 grant select on ada_future to authenticated;
 update public.personal_access_tokens set revoked_at = now() + interval '10 years' where id = (select id from ada_future);

@@ -9,7 +9,7 @@ create function pg_temp.login(uid uuid) returns void language plpgsql as $$
 begin
   perform set_config('role', 'authenticated', true);
   perform set_config('request.jwt.claims',
-    jsonb_build_object('sub', uid, 'role', 'authenticated')::text, true);
+    jsonb_build_object('sub', uid, 'role', 'authenticated', 'session_id', gen_random_uuid())::text, true);
 end $$;
 
 create function pg_temp.logout() returns void language plpgsql as $$

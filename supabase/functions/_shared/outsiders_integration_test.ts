@@ -535,6 +535,10 @@ async function fill(
       `select public.save_trip_session($1, ${session(crypto.randomUUID())}, false)`,
       [household],
     );
+    // Only the app's own sign-in makes tokens (job 389).
+    await tx`select set_config('request.jwt.claims', ${
+      JSON.stringify({ sub: owner, role: 'authenticated', session_id: crypto.randomUUID() })
+    }, true)`;
     await tx`select public.create_personal_access_token('test')`;
     await tx`select public.create_invite(${household}, 'person')`;
     // Job 352: the learned order (item_order_memory).

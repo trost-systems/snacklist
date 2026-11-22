@@ -2329,3 +2329,7 @@ Preis“); floor, ≈, „Ohne Laden“ and the trip split kept; at 310 % an amo
 name whole. Flag off unchanged. No new strings. Tests: 20 flag on/off widget tests, list and trip
 suites green; web journey `total-priced-only.mjs` PASS on and off. Ships with the next green main
 build to TestFlight. Details: `docs/done/348-total-priced-only.md`.
+
+## Job 389: only the app's own sign-in makes personal access tokens
+
+See [docs/done/389.md](docs/done/389.md).
