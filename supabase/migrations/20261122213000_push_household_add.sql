@@ -53,8 +53,11 @@ create table public.push_add_queue (
   household_id uuid not null references public.households (id) on delete cascade,
   list_id uuid,
   actor uuid not null references auth.users (id) on delete cascade,
-  item_name text not null,
-  created_at timestamptz not null default now()
+  -- Null for a health-sensitive add (push_item_is_sensitive): its name is never stored (job 377b).
+  item_name text,
+  sensitive boolean not null default false,
+  created_at timestamptz not null default now(),
+  check (sensitive = (item_name is null))
 );
 create index push_add_queue_group_idx on public.push_add_queue (household_id, actor, created_at);
 alter table public.push_add_queue enable row level security;
@@ -79,6 +82,27 @@ language sql stable set search_path = '' as $$
 $$;
 revoke execute on function public.on_a_trip(uuid, uuid) from public, anon, authenticated;
 
+-- THE decider of Legal's L1 rule (job 377b): an item added to a pharmacy or drugstore must never
+-- have its name in a push. True when the item's store is a drugstore chain of the retailer
+-- registry, or its store, category or list is a pharmacy or drugstore by name, or its category is
+-- the seeded 'drugstore' one. Legal's exact rule replaces this body and nothing else.
+create function public.push_item_is_sensitive(p_store uuid, p_category uuid, p_list uuid)
+returns boolean language sql stable set search_path = '' as $$
+  select exists (
+    select from public.stores s
+    where s.id = p_store
+      and (s.retailer_chain in ('dm', 'rossmann', 'kruidvat')
+        or s.name ~* '(apothek|pharmac|drogerie|drugstore)')
+  ) or exists (
+    select from public.categories c
+    where c.id = p_category and (c.seed_key = 'drugstore' or c.name ~* '(apothek|pharmac|drogerie|drugstore)')
+  ) or exists (
+    select from public.lists l
+    where l.id = p_list and l.name ~* '(apothek|pharmac|drogerie|drugstore)'
+  )
+$$;
+revoke execute on function public.push_item_is_sensitive(uuid, uuid, uuid) from public, anon, authenticated;
+
 create function public.items_push_add_enqueue() returns trigger
 language plpgsql security definer set search_path = '' as $$
 begin
@@ -97,8 +121,13 @@ begin
   if public.on_a_trip(new.household_id, new.added_by) then
     return null;
   end if;
-  insert into public.push_add_queue (household_id, list_id, actor, item_name)
-  values (new.household_id, new.list_id, new.added_by, left(new.name, 120));
+  if public.push_item_is_sensitive(new.store_id, new.category_id, new.list_id) then
+    insert into public.push_add_queue (household_id, list_id, actor, item_name, sensitive)
+    values (new.household_id, new.list_id, new.added_by, null, true);
+  else
+    insert into public.push_add_queue (household_id, list_id, actor, item_name)
+    values (new.household_id, new.list_id, new.added_by, left(new.name, 120));
+  end if;
   return null;
 end $$;
 revoke execute on function public.items_push_add_enqueue() from public, anon, authenticated;
@@ -117,6 +146,7 @@ language plpgsql security definer set search_path = '' as $$
 declare
   v_group record;
   v_names text[];
+  v_sensitive boolean;
   v_who text;
   v_recipients jsonb;
 begin
@@ -132,10 +162,12 @@ begin
       delete from public.push_add_queue q
       where q.household_id = v_group.household_id and q.list_id is not distinct from v_group.list_id
         and q.actor = v_group.actor
-      returning q.item_name, q.id
+      returning q.item_name, q.sensitive, q.id
     )
-    select array_agg(t.item_name order by t.id) into v_names from taken t;
+    select array_agg(t.item_name order by t.id), coalesce(bool_or(t.sensitive), false)
+    into v_names, v_sensitive from taken t;
     continue when v_names is null;
+    -- L1: a group with one health-sensitive add never names an item; one add is the generic text.
     select coalesce(nullif(btrim(p.display_name), ''), '') into v_who
     from public.profiles p where p.id = v_group.actor;
     v_who := coalesce(v_who, '');
@@ -145,10 +177,14 @@ begin
       'body', case
         when pr.language = 'en' then
           coalesce(nullif(v_who, ''), 'Someone') || ' added '
-          || case when cardinality(v_names) = 1 then v_names[1] else cardinality(v_names) || ' items' end
+          || case when cardinality(v_names) = 1 and v_sensitive then 'something to the list'
+                  when cardinality(v_names) = 1 then v_names[1]
+                  else cardinality(v_names) || ' items' end
         else
           coalesce(nullif(v_who, ''), 'Jemand') || ' hat '
-          || case when cardinality(v_names) = 1 then v_names[1] else cardinality(v_names) || ' Einträge' end
+          || case when cardinality(v_names) = 1 and v_sensitive then 'etwas zur Liste'
+                  when cardinality(v_names) = 1 then v_names[1]
+                  else cardinality(v_names) || ' Einträge' end
           || ' hinzugefügt'
       end) order by m.user_id)
     into v_recipients

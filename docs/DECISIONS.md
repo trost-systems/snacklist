@@ -17754,3 +17754,17 @@ TE-Q default. Built behind the new flag `total-priced-only`, on top of `list-dec
 9. **No ARB or legal text goes live by itself.** Four new ARB strings and the privacy deltas are in
    NEEDS_LEAD for Legal; `docs/PRIVACY_DATA_MAP.md` has the new rows. The site's legal pages are not
    edited here.
+
+## Job 377b: L1 health-safe text for the household add alert, 2026-11-22
+
+1. **One decider.** `push_item_is_sensitive(store, category, list)` holds Legal's L1 rule (Peter,
+   2026-11-22). Until Legal's exact rule arrives it is the registry drugstore chains (dm,
+   rossmann, kruidvat; the registry has no drugstore column, so the list is in the function) or a
+   store, category or list name matching Apotheke, Pharmacy, Drogerie or Drugstore, or the seeded
+   `drugstore` category.
+2. **A flag, not the name.** The queue stores no name for a sensitive add (`sensitive` true,
+   `item_name` null, a check keeps the two equal), so the name never reaches the database queue
+   either. The decision is made by the items trigger, the only place the item is at hand;
+   `push_add_take` reads the flag and writes the text. Cost: an item moved to a pharmacy within
+   5 minutes after its add keeps its name; accepted.
+3. **Text.** Single sensitive add: the generic form. A batch with one: the count form.

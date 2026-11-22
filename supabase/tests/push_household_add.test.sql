@@ -4,7 +4,7 @@
 -- server switch off, the adder shopping). The post to the push function is push_add_flush's one
 -- line; what it sends is push_add_take's result, which is checked here.
 begin;
-select plan(29);
+select plan(36);
 
 \set peter '''00000000-0000-0000-0000-000000377b01'''
 \set lea '''00000000-0000-0000-0000-000000377b02'''
@@ -133,6 +133,48 @@ delete from public.push_add_queue;
 update public.item_events set source = 'voice', created_at = now() - interval '1 minute' where item_name = 'Hafer';
 select pg_temp.add(:lea, 'Quark4');
 select is((select count(*)::int from public.push_add_queue), 1, 'a Siri tick is no trip (only app ticks count, as in detection)');
+
+-- L1 (job 377b): health-sensitive adds never put a name in a push ----------------------------------------
+
+delete from public.push_add_queue;
+insert into public.stores (household_id, name, sort_order) values ((select id from home), 'Apotheke am Markt', 900);
+insert into public.stores (household_id, name, sort_order, retailer_chain, retailer_country)
+values ((select id from home), 'Meine Kette', 901, 'rossmann', 'DE');
+create function pg_temp.add_in(p_who uuid, p_name text, p_store text) returns void language sql as $$
+  insert into public.items (household_id, list_id, name, added_by, store_id)
+  values ((select id from home), (select id from lst), p_name,  p_who,
+    (select id from public.stores where household_id = (select id from home) and name = p_store))
+$$;
+select pg_temp.add_in(:lea, 'Ibuprofen', 'Apotheke am Markt');
+select is((select (sensitive, item_name is null)::text from public.push_add_queue), '(t,t)',
+  'a pharmacy add is queued as a flag: its name is not stored');
+select pg_temp.age('3 minutes');
+select is((pg_temp.requests() -> 0 -> 'recipients' -> 0 ->> 'body'), 'Lea hat etwas zur Liste hinzugefügt',
+  'single sensitive add, German: generic text');
+select pg_temp.add_in(:lea, 'Zahnpasta', 'Meine Kette');
+select is((select sensitive from public.push_add_queue), true, 'a store linked to a drugstore chain (rossmann) is sensitive');
+delete from public.push_add_queue;
+select pg_temp.add_in(:lea, 'Aspirin', 'Apotheke am Markt');
+select pg_temp.add_in(:lea, 'Brot2', 'Meine Kette');
+select pg_temp.add(:lea, 'Quark9');
+select pg_temp.age('3 minutes');
+select is((pg_temp.requests() -> 0 -> 'recipients' -> 0 ->> 'body'), 'Lea hat 3 Einträge hinzugefügt',
+  'a batch with a sensitive add uses the count and no name');
+select pg_temp.add(:lea, 'Quark10'); select pg_temp.add(:lea, 'Quark11');
+select pg_temp.age('3 minutes');
+select is((pg_temp.requests() -> 0 -> 'recipients' -> 0 ->> 'body'), 'Lea hat 2 Einträge hinzugefügt',
+  'a batch without a sensitive add is as before');
+update public.profiles set display_name = '' where id = :lea;
+select pg_temp.add_in(:lea, 'Nasenspray', 'Apotheke am Markt');
+select pg_temp.age('3 minutes');
+select is((pg_temp.requests() -> 0 -> 'recipients' -> 0 ->> 'body'), 'Jemand hat etwas zur Liste hinzugefügt',
+  'no display name: "Jemand"');
+select pg_temp.login(:peter); select public.set_push_household_add(true, 'en'); select pg_temp.as_postgres();
+select pg_temp.add_in(:lea, 'Hustensaft', 'Apotheke am Markt');
+select pg_temp.age('3 minutes');
+select is((pg_temp.requests() -> 0 -> 'recipients' -> 0 ->> 'body'), 'Someone added something to the list',
+  'single sensitive add, English, no display name');
+update public.profiles set display_name = 'Lea' where id = :lea;
 
 -- Who is left out -------------------------------------------------------------------------------------
 

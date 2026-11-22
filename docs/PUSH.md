@@ -231,7 +231,8 @@ database (`supabase/migrations/20261122213000_push_household_add.sql`,
   recipient, never to a device of the adder (the push function picks tokens by
   recipient user).
 - **Only while someone wants it.** The items trigger queues an add
-  (`push_add_queue`: household, list, adder, item name) only when the server
+  (`push_add_queue`: household, list, adder, item name, or only a `sensitive` flag
+  for a health-sensitive add, see "Health-safe text (L1)") only when the server
   switch `app_switches.push_household_add` is on and at least one other member
   switched the alert on. Nothing is stored otherwise.
 - **Not while the adder shops (d).** No row is queued when the adder has an
@@ -246,6 +247,20 @@ database (`supabase/migrations/20261122213000_push_household_add.sql`,
   „Lea hat Milch hinzugefügt“ / "Lea added Milk"; several: „Lea hat 4
   Einträge hinzugefügt“ / "Lea added 4 items". Title `Snacklist`. A name the
   profile does not have reads „Jemand“ / "Someone".
+- **Health-safe text (L1, job 377b).** An item added to a pharmacy or drugstore
+  never has its name in a push. `public.push_item_is_sensitive(store, category,
+  list)` is the one place that decides: true when the store is a drugstore
+  chain of the retailer registry (dm, rossmann, kruidvat), or the store,
+  category or list name matches Apotheke, Pharmacy, Drogerie or Drugstore (case
+  insensitive), or the category is the seeded `drugstore` one. The items
+  trigger asks it when the item arrives and, for a sensitive add, stores no
+  name (`item_name` null, `sensitive` true). `push_add_take` then writes one
+  such add as „Lea hat etwas zur Liste hinzugefügt“ / "Lea added something to
+  the list" and any batch holding one as the count („hat 3 Einträge
+  hinzugefügt“ / "added 3 items"), never an item name. Without a profile name:
+  „Jemand“ / "Someone". An item moved to a pharmacy after it was added is not
+  caught (the name was kept at add time, for at most 5 minutes). Legal's exact
+  rule replaces the body of the function only.
 - **Sending.** `push_add_flush()` runs every minute (pg_cron job
   `push-household-add`) and posts what `push_add_take()` returns to the
   `push` function with `pg_net`, using the vault secrets `push_send_secret`
