@@ -2346,3 +2346,13 @@ Review 0 (FIX): content reports from anonymous users, the kill switch on every
 deviation (Legal question 10) are now in the doc; refreshed hashes in the ops NEEDS_LEAD.
 Review 1 (FIX): store and category caps are table triggers (direct inserts were possible), plus
 cap-hit copy and a separate helper switch; hashes refreshed again.
+
+## Job 396: AN1 Legal conditions applied
+
+Design docs only, draft PR #642 (not merged). Legal's N-370 to N-395 are applied in
+`docs/design/anonymous-start/AN1.md` (section 13 lists each finding and where it landed) and
+`docs/DECISIONS.md`. N-373 and N-378 are dependencies on #584, not edited here. Review 0 (FIX): the LIA
+is marked still to be written, N-384 is one consistent rule (4.7, R4), stale decisions 12.6 and 12.12
+and the Q6 captcha rule are aligned, the N-373 anchor note and the picks check are added. New head and
+hashes are in the ops NEEDS_LEAD "Job 396".
+

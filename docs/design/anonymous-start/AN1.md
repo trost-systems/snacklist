@@ -243,7 +243,7 @@ loses the list. Revisit with data from the upgrade funnel.
 
 For a relative who adds a few things now and then, in a browser, without an app or account.
 
-**Member side (full account, any role):** under the invite sheet, „Helferlink teilen“. The member
+**Member side (full account; with `join_approval` on, owners and admins):** under the invite sheet, „Helferlink teilen“. The member
 picks the list (default: the open one) and types who it is for (label, e.g. „Oma Ruth“; 1-40
 characters; optional, default „Helferlink“). The link `https://app.snacklist.app/h/<code>` goes out
 through the share sheet like any invite link (N-18: user-shared, Snacklist sends nothing). Valid 30
@@ -405,7 +405,7 @@ is a nuisance, not a takeover; the kill switch (`app_switch` plus the hosted tog
 count of new anonymous users are the response. The count runs as its own step in the `ops`
 environment with the service key, not in the public `health` function that `keepalive.yml` calls,
 and warns above 300 a day. Captcha (Turnstile or hCaptcha) would add a processor and a
-widget on every sign-in, so it waits for evidence (Legal question 6).
+widget on every sign-in, so it waits for evidence, and any future captcha needs its own Legal GO first (Q6, 13.1).
 
 ## 7. Copy (proposed, DE and EN)
 
@@ -517,7 +517,7 @@ Size: 6-10 jobs, as the research estimated.
 | P9 | No PostHog on the helper page | the helper page starts no PostHog client and asks no flags, unlike the rest of the web app without consent (section 9) | not applicable | not applicable | not applicable |
 
 No new processor or recipient. Supabase (auth, database), Resend (the confirmation email) and
-Vercel (the web app) are used as today. No captcha provider in step one.
+Vercel (the web app) are used as today. No captcha provider in step one; a future one needs its own Legal GO (Q6).
 
 ### 11.2 Proposed redlines (privacy policy, `site/content/legal/datenschutz.md`; `privacy.md` follows)
 
@@ -556,7 +556,7 @@ privacy files after #584 (section 13, N-373, N-378).
   account without an e-mail address,“
 - **R4, section 5, new subsection after „Rollen und Einladungen“, „Helferlinks“ {#helferlinks}
   (N-371, N-384, N-385; DE below):**
-  „Mitglieder können einen Helferlink zu einer Liste teilen. Wer ihn öffnet, sieht im Browser die
+  „Mitglieder (bei aktivem „Beitritte bestätigen“: Admins) können einen Helferlink zu einer Liste teilen. Wer ihn öffnet, sieht im Browser die
   offenen Einträge dieser Liste (Name, Menge, Kategorie), den Namen der Liste und des Haushalts,
   und kann Einträge hinzufügen und eigene noch offene Einträge ändern oder löschen, ohne Konto und
   ohne Mitglied zu werden. Wir speichern zum Link den Haushalt, die Liste, wer ihn erstellt hat,
@@ -572,7 +572,7 @@ privacy files after #584 (section 13, N-373, N-378).
   mehr ändern. Über „Meine Daten“ und „Löschen“ auf der Helferseite erhältst du deine Daten oder
   löschst die Kennung deines Browsers; deine Einträge bleiben dann ohne Bezug zu dir und ohne die
   Bezeichnung des Links auf der Liste.
-  Mitglieder können einen Link teilen (bei aktivem „Beitritte bestätigen“: Admins). Snacklist verschickt keine Helferlinks; ihr teilt sie selbst. Die Helferseite fragt nicht nach
+  Snacklist verschickt keine Helferlinks; ihr teilt sie selbst. Die Helferseite fragt nicht nach
   Nutzungsdaten, sendet nichts an PostHog und fragt dort auch nicht ab, welche Funktionen
   eingeschaltet sind.
   Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO für die Mitglieder; für die Person, die den Link nutzt
@@ -666,7 +666,7 @@ Legal answered all ten on 22 Nov 2026; the decisions are in section 13.1. The qu
 
 ### 11.4 What Legal's GO covers
 
-This file (sha256 in NEEDS_LEAD, job 375). A GO covers: the design's processing (11.1), the redlines
+This file (sha256 in NEEDS_LEAD, job 396). A GO covers: the design's processing (11.1), the redlines
 R0-R12 as the basis for the final text, and the copy in section 7 as drafts. The final privacy text
 and ARB strings come back for a hash GO in AN1-7.
 
@@ -680,7 +680,7 @@ and ARB strings come back for a hash GO in AN1-7.
 4. Anonymous users may export and delete; they may not invite, join, mint credentials, consent to
    OAuth, buy, restore or vote.
 5. No captcha in step one; caps, kill switch and a daily count instead.
-6. Purge windows 90 / 30 / 7 days (Legal question 3 may change the first).
+6. Purge windows 90 / 30 / 7 days (Legal decided Q3: the 90 days stay, stated in A3 and U2).
 7. No Keychain persistence in step one.
 8. The display-name trigger stays; the name step right after the link covers it.
 9. Helpers export and delete from the helper page; the helper page starts no PostHog client and no
@@ -689,7 +689,8 @@ and ARB strings come back for a hash GO in AN1-7.
     deleting it.
 11. Anonymous users may send feedback (3 a day) and read in-app replies; no reply by email. This
     deviates from the research's account-only list; Legal question 10.
-12. Anonymous content reports: no email, own bucket of 20 an hour, 2 per user an hour.
+12. Anonymous content reports: no email, own bucket of 20 an hour, 2 per user an hour; `danger` and
+    `csam` are exempt from both caps (N-377).
 13. The kill switch sits in the household cap trigger, so it covers every `create_household`
     overload and every join. Helpers have their own switch, `helper_links`.
 14. On the web, an anonymous session outside `/h/*` and the upgrade goes to the last helper link,
@@ -713,8 +714,8 @@ lists every finding, where it landed, and the redlines that belong to other file
 
 - **Q1** Helpers and a person named in a label: Art. 6 Abs. 1 lit. f DSGVO (not lit. b). R4 is
   approved with N-371, N-375, N-384, N-385. A notice above the add bar is required (H6). For a
-  person named in a label who never opens `/h/*`, Art. 14 Abs. 5 lit. b applies. The LIA is written
-  (N-392).
+  person named in a label who never opens `/h/*`, Art. 14 Abs. 5 lit. b applies. The LIA is still to be
+  written before launch (N-392, 13.6).
 - **Q2** Anonymous accounts: lit. b is right, provided Art. 13 information is reachable at the tap
   (`LegalFooter` on `_AccountStep`, A3 with N-372, N-374).
 - **Q3** The 90-day purge is stated explicitly in A3 and U2 (N-372).
@@ -772,6 +773,8 @@ lists every finding, where it landed, and the redlines that belong to other file
 #584 rebased onto `main` (N-326: trip detection and the per-account beta thank-you come back):
 
 - **N-373** (§ 4 of `datenschutz.md:74` / `privacy.md:55`, for every account; R2 drops its duplicate):
+  - Anchor note: the report quotes #584's wording; today's `main:datenschutz.md:74` reads „der sie über …“
+    instead of „die sie über …“. The build matches the sentence on whatever base it lands on.
   - DE: append after „… die sie über unseren Dienstleister Resend verschickt (Abschnitt 12).“, before
     „Rechtsgrundlage:“: „Zu jeder Anmeldesitzung speichert unser Dienstleister Supabase die
     IP-Adresse und die Browser- bzw. Gerätekennung (User-Agent), bis die Sitzung endet oder das Konto
@@ -821,7 +824,10 @@ lists every finding, where it landed, and the redlines that belong to other file
     Snacklist – items, lists, household names, photos, feedback – is seen by the members of your
     household and, if a member shares a helper link, by people with that link for the open items of
     the chosen list together with the list and household names (feedback only by us).“
-- **N-377, `inhalte-melden.md:55` / `report.md:55`:**
+- **N-377, `inhalte-melden.md:55` / `report.md:55`** (the website form already offers optional name and
+  e-mail, so the addendum's correction is met there; AN1 gives helpers no report entry yet; whether
+  the helper page links to `/inhalte-melden` / `/en/report` (Art. 16 Abs. 1 DSA, easy access) is open
+  for the build, with H7):
   - DE new: „Wer eine E-Mail-Adresse angibt, bekommt eine Eingangsbestätigung und unsere Entscheidung
     mit Begründung. In der App ohne Konto kannst du keine E-Mail-Adresse angeben; die Meldungsnummer
     siehst du dort auf dem Bildschirm. Möchtest du eine Bestätigung per E-Mail, nutze dieses
@@ -925,11 +931,12 @@ lists every finding, where it landed, and the redlines that belong to other file
 
 ### 13.5 Findings that may conflict with Peter's AN1, PS2 or IH2 picks
 
-The picks themselves are not in this checkout, so these are listed for the lead to confirm. All are
-taken into the doc as written by Legal unless the lead says otherwise.
+Checked against the 375 and 379 briefs (the AN1 picks of Peter and the PM, and IH2's invite hand-off):
+no conflict found; no "PS2" source exists. Listed so the lead can confirm. All are taken into the doc as
+written by Legal unless the lead says otherwise.
 
 - **N-384** changes who may create a helper link (with `join_approval` on, owners and admins only).
-  AN1 4.7 said „any role“. It touches the roles of the member sheet (H1) and of IH2's invite loop if
+  AN1 4.7 said „any role“ before this change (now fixed in 4.7 and R4). It touches the roles of the member sheet (H1) and of IH2's invite loop if
   that job reuses the sheet.
 - **N-385** may change the helper URL shape from `/h/<code>` to `/h#<code>` (or adds headers). It
   touches the deep-link row (DEEP_LINKS.md), the router's `/h/*` rule and the share text H5. Not a
