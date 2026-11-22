@@ -201,6 +201,10 @@ select id, '00000000-0000-4000-8000-0000000b0080', 'Chrome · macOS' from auth.u
 insert into public.tester_groups (user_id, group_name)
 select id, 'internal' from auth.users where email = 'peter@backup.test';
 
+-- Job 376: Lea's phone, registered for push (a placeholder token).
+insert into public.push_tokens (user_id, token, platform)
+select id, 'test-token-backup-lea', 'ios' from auth.users where email = 'lea@backup.test';
+
 -- Job 352: Peter has seen the first detected trip card (detection on since always); Carl switched
 -- detection off.
 insert into public.trip_detection_settings (user_id, detect_ticks_from, detected_card_at)

@@ -130,6 +130,10 @@
     "integration-lock": {
       "released": false,
       "note": "AI assistants and the API need Snacklist Premium only once Peter turns the integration lock on (the server switch integration_lock, which the app follows since job 328); Siri and Alexa stay free"
+    },
+    "push-notifications": {
+      "released": false,
+      "note": "push notifications (FCM, job 376 foundation; P1 job 377, P2 job 378) wait for Legal's GO on the privacy text and Ops' Firebase project"
     }
   }
 }

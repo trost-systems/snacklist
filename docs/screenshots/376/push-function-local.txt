@@ -1,0 +1,21 @@
+# The push function served by the local stack (port block 576), placeholder users; the list id is the local stack's.
+## dry run: member B (2 devices) and an outsider (1 device, not in the household)
+POST /functions/v1/push x-push-secret: <PUSH_SEND_SECRET> {"household_id":"00000000-0000-4000-8000-000000000311","list_id":"<list>","recipients":[{"user_id":"00000000-0000-4000-8000-000000000302","title":"Einkaufsliste","body":"A hat Milch hinzugefügt"},{"user_id":"00000000-0000-4000-8000-000000000303","title":"x","body":"y"}],"dry_run":true}
+{"status":"dry_run","devices":2,"message":{"token":"<token>","notification":{"title":"<title>","body":"<body>"},"data":{"kind":"list","v":"1","household_id":"00000000-0000-4000-8000-000000000311","list_id":"<list>"},"android":{"priority":"high","ttl":"86400s"},"apns":{"headers":{"apns-expiration":"1795464057"},"payload":{"aps":{"sound":"default"}}}}}
+HTTP 200
+
+## not a dry run, FCM not configured locally
+{"error":"not_configured"}
+HTTP 503
+
+## a list of another household
+{"error":"unknown_list"}
+HTTP 422
+
+## wrong secret
+{"error":"unauthorized"}
+HTTP 401
+
+## body that does not parse
+{"error":"invalid_request"}
+HTTP 400

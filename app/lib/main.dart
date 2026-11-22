@@ -26,6 +26,8 @@ import 'package:family_groceries/purchases/premium_server.dart';
 import 'package:family_groceries/purchases/purchase_cubit.dart';
 import 'package:family_groceries/purchases/setup.dart';
 import 'package:family_groceries/purchases/store_prices.dart';
+import 'package:family_groceries/push/firebase_push.dart';
+import 'package:family_groceries/push/push_registration.dart';
 import 'package:family_groceries/report/report_repository.dart';
 import 'package:family_groceries/review/review_gates.dart';
 import 'package:family_groceries/review/review_prompt.dart';
@@ -149,14 +151,34 @@ Future<void> _main(WidgetsBinding Function() binding) async {
     ),
     null => null,
   };
+  // Push only on iOS and Android in a build with the Firebase defines.
+  final push = switch (pushPluginFor(
+    web: kIsWeb,
+    platform: defaultTargetPlatform,
+  )) {
+    final plugin? => PushRegistration(
+      plugin,
+      cache,
+      SupabasePushTokens(client),
+    ),
+    null => null,
+  };
   final session = SessionCubit(
     client,
     cache,
     analytics: analytics,
     pendingInvite: pendingInvite,
-    beforeSignOut: siri?.signingOut,
+    // Push forgets the device even when Siri's step fails.
+    beforeSignOut: () async {
+      try {
+        await siri?.signingOut();
+      } finally {
+        await push?.forget();
+      }
+    },
   );
   siri?.follow(session);
+  push?.follow(session);
   TesterGroupsSync(
     SupabaseTesterGroupsSource(client),
     cache,
@@ -227,6 +249,7 @@ Future<void> _main(WidgetsBinding Function() binding) async {
         web: kIsWeb,
         platform: defaultTargetPlatform,
       ),
+      pushTaps: push?.taps,
       network: networkWatchFor(web: kIsWeb, platform: defaultTargetPlatform),
     ),
   );

@@ -2382,3 +2382,12 @@ heading use Legal's N-363 words. The two draft purchase privacy pages and the de
 `lifetimeWeb` and `lifetimeUnlockedBody` are deleted. Tests, the job 68 e2e test, the feature map
 and FEATURES-FOR-WRITERS follow. Screenshots DE and EN in `docs/screenshots/392/`. Not merged
 (lead). Details: `docs/done/392.md`.
+
+## Job 376: P0 push foundation (PR, not merged: needs Legal + Ops)
+
+Push tokens (`push_tokens`, RLS, register/unregister RPCs, 270-day purge, gone with the account),
+the internal `push` edge function (FCM HTTP v1, per-recipient text, 24 h expiry, dry run, off
+until Ops sets `PUSH_SEND_SECRET` and `FCM_SERVICE_ACCOUNT_JSON`), the app side (Firebase from
+build defines, opt-in-only prompt, sign-out cleanup, a tap opens the named list) and the native
+config. Privacy drafts wait behind the hold `push-notifications`. Contract `docs/PUSH.md`, details
+`docs/done/376.md`.

@@ -109,3 +109,31 @@ test('the Claude guides say AI access needs Premium only once integration-lock i
     assert.match(on.page(route).querySelector('main').innerHTML, premium);
   }
 });
+
+test('the privacy policies describe push notifications and Firebase Cloud Messaging only once push-notifications is released', () => {
+  const push = (released) => {
+    const data = JSON.parse(REAL_FLAGS);
+    data.holds['push-notifications'].released = released;
+    return JSON.stringify(data);
+  };
+  const pages = [['/datenschutz', 'mitteilungen'], ['/en/privacy', 'notifications']];
+  const off = buildSite({ env: PROD, repo: { flags: push(false) } });
+  const on = buildSite({ env: PROD, repo: { flags: push(true) } });
+  for (const [route, anchor] of pages) {
+    assert.doesNotMatch(off.page(route).querySelector('main').innerHTML, /Firebase Cloud Messaging/);
+    assert.equal(off.page(route).querySelector(`#${anchor}`), null);
+    const main = on.page(route).querySelector('main').innerHTML;
+    assert.equal((main.match(/Firebase Cloud Messaging/g) ?? []).length, 4);
+    assert.notEqual(on.page(route).querySelector(`#${anchor}`), null);
+  }
+});
+
+test("the privacy policies' 24 hours are the push function's longest ttl_seconds", () => {
+  const repo = new URL('../../', import.meta.url);
+  const handler = readFileSync(new URL('supabase/functions/push/handler.ts', repo), 'utf8');
+  assert.match(handler, /ttl_seconds: z\.int\(\)\.min\(60\)\.max\(86400\)/);
+  const de = readFileSync(new URL('site/content/legal/datenschutz.md', repo), 'utf8');
+  const en = readFileSync(new URL('site/content/legal/privacy.md', repo), 'utf8');
+  assert.match(de, /verfällt sie nach höchstens 24 Stunden/);
+  assert.match(en, /it expires after at most 24 hours/);
+});

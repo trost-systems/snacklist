@@ -349,7 +349,7 @@ select is(
   (select array_agg(k order by k) from export, jsonb_object_keys(doc) k),
   array['access_tokens', 'account', 'alexa_links', 'analytics_decisions', 'archived_households', 'connected_apps', 'exported_at',
         'feedback', 'feedback_idea_votes', 'format', 'history', 'household', 'household_removals', 'households', 'invite_uses', 'invites_created', 'item_claims',
-        'items_added', 'join_requests', 'lists_created', 'profile', 'purchases', 'tester_groups', 'trip_detection', 'trip_sessions_started',
+        'items_added', 'join_requests', 'lists_created', 'profile', 'purchases', 'push_devices', 'tester_groups', 'trip_detection', 'trip_sessions_started',
         'trips_detected', 'trips_logged', 'version'],
   'the export has the documented sections'
 );
@@ -404,6 +404,8 @@ select is(
     'join_requests', '[]'::jsonb,
     -- Job 337: Emil is in no tester group (tester_groups.test.sql covers a tester's export).
     'tester_groups', '[]'::jsonb,
+    -- Job 376: Emil registered no device for push (push_tokens.test.sql covers one).
+    'push_devices', '[]'::jsonb,
     -- Job 352: no detected trip, detection never switched.
     'trips_detected', '[]'::jsonb,
     'trip_detection', null,

@@ -60,6 +60,11 @@ ANALYTICS_DEFINES = %w[POSTHOG_PROJECT_API_KEY POSTHOG_HOST ANALYTICS_INTERNAL_H
 # follows the server switch integration_lock alone (job 328).
 PREMIUM_DEFINES = %w[REVENUECAT_PURCHASES REVENUECAT_APPLE_API_KEY REVENUECAT_GOOGLE_API_KEY].freeze
 
+# Push (job 376, docs/PUSH.md): Firebase's client config from the release environment's variables,
+# the iOS pair on the iOS build and the Android pair on the Android one. Unset, the build has no push.
+PUSH_DEFINES = %w[FIREBASE_PROJECT_ID FIREBASE_MESSAGING_SENDER_ID FIREBASE_IOS_APP_ID FIREBASE_IOS_API_KEY
+                  FIREBASE_ANDROID_APP_ID FIREBASE_ANDROID_API_KEY].freeze
+
 # releases/flags.json at the repo root: a hold released there switches its define on.
 FLAGS_JSON = File.expand_path("../../releases/flags.json", __dir__)
 
@@ -74,7 +79,7 @@ def hold_defines
 end
 
 def analytics_defines
-  (ANALYTICS_DEFINES + PREMIUM_DEFINES).reject { |name| ENV.fetch(name, "").empty? }
+  (ANALYTICS_DEFINES + PREMIUM_DEFINES + PUSH_DEFINES).reject { |name| ENV.fetch(name, "").empty? }
                                        .map { |name| "--dart-define=#{name}=#{ENV.fetch(name)}" } +
     hold_defines
 end

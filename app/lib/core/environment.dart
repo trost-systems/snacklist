@@ -118,6 +118,27 @@ abstract final class Environment() {
     'REVENUECAT_GOOGLE_API_KEY',
   );
 
+  /// Firebase Cloud Messaging's client config (job 376, docs/PUSH.md):
+  /// public like the publishable key, but kept out of the repo; release
+  /// builds pass them in. Without the project's and the platform's, the
+  /// build has no push and never starts Firebase.
+  static const firebaseProjectId = String.fromEnvironment(
+    'FIREBASE_PROJECT_ID',
+  );
+  static const firebaseMessagingSenderId = String.fromEnvironment(
+    'FIREBASE_MESSAGING_SENDER_ID',
+  );
+  static const firebaseIosAppId = String.fromEnvironment('FIREBASE_IOS_APP_ID');
+  static const firebaseIosApiKey = String.fromEnvironment(
+    'FIREBASE_IOS_API_KEY',
+  );
+  static const firebaseAndroidAppId = String.fromEnvironment(
+    'FIREBASE_ANDROID_APP_ID',
+  );
+  static const firebaseAndroidApiKey = String.fromEnvironment(
+    'FIREBASE_ANDROID_API_KEY',
+  );
+
   /// Replaces RevenueCat and the stores with a fake in debug and profile
   /// builds (release builds ignore it), also with REVENUECAT_PURCHASES off:
   /// `ok`, `pending` (Ask to Buy, approved after 8 s), `cancel`, `error`,
