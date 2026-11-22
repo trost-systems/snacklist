@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updated": "2026-11-21",
+  "updated": "2026-11-22",
   "entries": [
     {
       "chain": "edeka",
@@ -264,6 +264,30 @@
       "note": "Rossmann Germany app; Rossmann PL is a different app. No universal link: the AASA lists three legacy paths without a leading slash and no asset links. Scheme rossmann for the app (job 335, Android manifest: apkpure v5.11.1, certificate subject Dirk Rossmann GmbH, activity SplashScreen; the iOS app's Info.plist is not public): rossmann on the launcher SplashScreen; rossmannlegals is a legal-notes screen scheme."
     },
     {
+      "chain": "ikea",
+      "country": "DE",
+      "name": "IKEA",
+      "aliases": [],
+      "web": "www.ikea.com",
+      "apps": [
+        {
+          "name": "IKEA",
+          "android": "com.ingka.ikea.app",
+          "ios": "1452164827",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-22",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1452164827&country=de",
+        "https://play.google.com/store/apps/details?id=com.ingka.ikea.app&hl=en&gl=DE",
+        "https://app-site-association.cdn-apple.com/a/v1/www.ikea.com"
+      ],
+      "note": "The IKEA app (Inter IKEA Systems B.V., iOS bundle com.ingka.ikea.app), one app for every country; not the separate IKEA Home smart apps. No universal link: www.ikea.com's AASA claims only product, category, search and offer paths templated per country and language, no plain home path. No scheme: no evidence checked."
+    },
+    {
       "chain": "billa",
       "country": "AT",
       "name": "BILLA",
@@ -467,6 +491,30 @@
       "note": "Same Mein dm app as DE; www.dm.at lists the same appID and package. No home path claimed. Universal link for the app (job 335): www.dm.at's AASA on Apple's CDN claims /applink/ for de.dm.meindm. Scheme dm for the app (job 335, iOS evidence): dm.at (rendered as iPhone) links dm://couponslist and an Adjust deep_link=dm://couponslist; the Android launcher StartActivity declares dm too."
     },
     {
+      "chain": "ikea",
+      "country": "AT",
+      "name": "IKEA",
+      "aliases": [],
+      "web": "www.ikea.com",
+      "apps": [
+        {
+          "name": "IKEA",
+          "android": "com.ingka.ikea.app",
+          "ios": "1452164827",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-22",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1452164827&country=at",
+        "https://play.google.com/store/apps/details?id=com.ingka.ikea.app&hl=en&gl=AT",
+        "https://app-site-association.cdn-apple.com/a/v1/www.ikea.com"
+      ],
+      "note": "The IKEA app (Inter IKEA Systems B.V., iOS bundle com.ingka.ikea.app), one app for every country; not the separate IKEA Home smart apps. No universal link: www.ikea.com's AASA claims only product, category, search and offer paths templated per country and language, no plain home path. No scheme: no evidence checked."
+    },
+    {
       "chain": "migros",
       "country": "CH",
       "name": "Migros",
@@ -602,6 +650,30 @@
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.denner.ch&relation=delegate_permission/common.handle_all_urls"
       ],
       "note": "Denner (Migros group) has its own app. Universal link for the app (job 335): www.denner.ch's AASA on Apple's CDN claims /de/services/app/deeplink for ch.denner.mobile.Denner. Scheme dennermobile for the app (job 335, Android manifest: apkpure v6.3.1, certificate subject Denner AG, activity MainActivity; the iOS app's Info.plist is not public): dennermobile on the launcher MainActivity (also used by the AppAuth redirect)."
+    },
+    {
+      "chain": "ikea",
+      "country": "CH",
+      "name": "IKEA",
+      "aliases": [],
+      "web": "www.ikea.com",
+      "apps": [
+        {
+          "name": "IKEA",
+          "android": "com.ingka.ikea.app",
+          "ios": "1452164827",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-22",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1452164827&country=ch",
+        "https://play.google.com/store/apps/details?id=com.ingka.ikea.app&hl=en&gl=CH",
+        "https://app-site-association.cdn-apple.com/a/v1/www.ikea.com"
+      ],
+      "note": "The IKEA app (Inter IKEA Systems B.V., iOS bundle com.ingka.ikea.app), one app for every country; not the separate IKEA Home smart apps. No universal link: www.ikea.com's AASA claims only product, category, search and offer paths templated per country and language, no plain home path. No scheme: no evidence checked."
     },
     {
       "chain": "lidl",
@@ -838,6 +910,30 @@
       "note": "Courses U (shopping and lists, Coopérative U). Second app: the Mon Magasin U loyalty app, whose domain claims only /redirection/*. coursesu.com claims \"/*\". Scheme coursesu for Courses U (job 335, Android manifest: apkpure v26.15.0, certificate subject Systeme U Centrale Nationale, activity SplashActivity; the iOS app's Info.plist is not public): coursesu on the launcher SplashActivity; MainActivity's generic deeplink scheme skipped. Universal link for Mon Magasin U (job 335): www.magasins-u.com's AASA on Apple's CDN claims /redirection/ for com.systemeu.magasinsu. Scheme magasinu for Mon Magasin U (job 335, Android manifest: apkpure v5.42.1, certificate subject Snapp', activity MainActivity; the iOS app's Info.plist is not public): magasinu on the launcher MainActivity (old 4.7.5 build had magasinsu)."
     },
     {
+      "chain": "ikea",
+      "country": "FR",
+      "name": "IKEA",
+      "aliases": [],
+      "web": "www.ikea.com",
+      "apps": [
+        {
+          "name": "IKEA",
+          "android": "com.ingka.ikea.app",
+          "ios": "1452164827",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-22",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1452164827&country=fr",
+        "https://play.google.com/store/apps/details?id=com.ingka.ikea.app&hl=en&gl=FR",
+        "https://app-site-association.cdn-apple.com/a/v1/www.ikea.com"
+      ],
+      "note": "The IKEA app (Inter IKEA Systems B.V., iOS bundle com.ingka.ikea.app), one app for every country; not the separate IKEA Home smart apps. No universal link: www.ikea.com's AASA claims only product, category, search and offer paths templated per country and language, no plain home path. No scheme: no evidence checked."
+    },
+    {
       "chain": "albert-heijn",
       "country": "NL",
       "name": "Albert Heijn",
@@ -1022,6 +1118,30 @@
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.kruidvat.nl&relation=delegate_permission/common.handle_all_urls"
       ],
       "note": "No home path; /kruidvatapp is the app's own landing path and is claimed. Which screen it opens is unverified. No scheme for the app (job 335): Only SDK schemes (Adyen, OvoLogger, Insider login), no app scheme."
+    },
+    {
+      "chain": "ikea",
+      "country": "NL",
+      "name": "IKEA",
+      "aliases": [],
+      "web": "www.ikea.com",
+      "apps": [
+        {
+          "name": "IKEA",
+          "android": "com.ingka.ikea.app",
+          "ios": "1452164827",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-22",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1452164827&country=nl",
+        "https://play.google.com/store/apps/details?id=com.ingka.ikea.app&hl=en&gl=NL",
+        "https://app-site-association.cdn-apple.com/a/v1/www.ikea.com"
+      ],
+      "note": "The IKEA app (Inter IKEA Systems B.V., iOS bundle com.ingka.ikea.app), one app for every country; not the separate IKEA Home smart apps. No universal link: www.ikea.com's AASA claims only product, category, search and offer paths templated per country and language, no plain home path. No scheme: no evidence checked."
     },
     {
       "chain": "lidl",
@@ -1226,6 +1346,30 @@
       "note": "Rossmann Poland's own app, not the German one. www.rossmann.pl claims \"/\" and lists the package in asset links. Scheme ross for the app (job 335, Android manifest: apkpure v5.115.0, certificate subject Rossmann SDP sp. z o. o., activity DeepLinkingActivity; the iOS app's Info.plist is not public): ross on DeepLinkingActivity."
     },
     {
+      "chain": "ikea",
+      "country": "PL",
+      "name": "IKEA",
+      "aliases": [],
+      "web": "www.ikea.com",
+      "apps": [
+        {
+          "name": "IKEA",
+          "android": "com.ingka.ikea.app",
+          "ios": "1452164827",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-22",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1452164827&country=pl",
+        "https://play.google.com/store/apps/details?id=com.ingka.ikea.app&hl=en&gl=PL",
+        "https://app-site-association.cdn-apple.com/a/v1/www.ikea.com"
+      ],
+      "note": "The IKEA app (Inter IKEA Systems B.V., iOS bundle com.ingka.ikea.app), one app for every country; not the separate IKEA Home smart apps. No universal link: www.ikea.com's AASA claims only product, category, search and offer paths templated per country and language, no plain home path. No scheme: no evidence checked."
+    },
+    {
       "chain": "esselunga",
       "country": "IT",
       "name": "Esselunga",
@@ -1410,6 +1554,30 @@
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.aldi.it&relation=delegate_permission/common.handle_all_urls"
       ],
       "note": "ALDI Italia is ALDI SÜD (bundle com.aldisued.AldiIT), its own app. No scheme for the app (job 335): Only aldi-it, on AuthRedirectHandlerActivity with host callback: an OAuth redirect, not a launch scheme."
+    },
+    {
+      "chain": "ikea",
+      "country": "IT",
+      "name": "IKEA",
+      "aliases": [],
+      "web": "www.ikea.com",
+      "apps": [
+        {
+          "name": "IKEA",
+          "android": "com.ingka.ikea.app",
+          "ios": "1452164827",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-22",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1452164827&country=it",
+        "https://play.google.com/store/apps/details?id=com.ingka.ikea.app&hl=en&gl=IT",
+        "https://app-site-association.cdn-apple.com/a/v1/www.ikea.com"
+      ],
+      "note": "The IKEA app (Inter IKEA Systems B.V., iOS bundle com.ingka.ikea.app), one app for every country; not the separate IKEA Home smart apps. No universal link: www.ikea.com's AASA claims only product, category, search and offer paths templated per country and language, no plain home path. No scheme: no evidence checked."
     },
     {
       "chain": "mercadona",
@@ -1598,6 +1766,366 @@
         "https://play.google.com/store/apps/details?id=com.aldi.conaldi.android"
       ],
       "note": "ALDI Spain belongs to ALDI Nord (seller ALDI Einkauf), not ALDI SÜD. Second app: Con ALDI (ALDI Central de Compras). No scheme for ALDI (job 335): aldinord is declared by all four ALDI Nord country apps, so iOS could open another country's app; the universal link opens this one. Scheme staffbase-conaldi for Con ALDI (job 335, Android manifest: apkpure v2026.4.143461448, certificate subject mitarbeiterapp.de, activity MainActivity; the iOS app's Info.plist is not public): Ambiguous Staffbase employee app: staffbase, eyoemployeeapp, staffbase-conaldi, conaldi-staffbase all on MainActivity; the brand-specific staffbase-conaldi picked (generic staffbase would hit any Staffbase app)."
+    },
+    {
+      "chain": "ikea",
+      "country": "ES",
+      "name": "IKEA",
+      "aliases": [],
+      "web": "www.ikea.com",
+      "apps": [
+        {
+          "name": "IKEA",
+          "android": "com.ingka.ikea.app",
+          "ios": "1452164827",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-22",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1452164827&country=es",
+        "https://play.google.com/store/apps/details?id=com.ingka.ikea.app&hl=en&gl=ES",
+        "https://app-site-association.cdn-apple.com/a/v1/www.ikea.com"
+      ],
+      "note": "The IKEA app (Inter IKEA Systems B.V., iOS bundle com.ingka.ikea.app), one app for every country; not the separate IKEA Home smart apps. No universal link: www.ikea.com's AASA claims only product, category, search and offer paths templated per country and language, no plain home path. No scheme: no evidence checked."
+    },
+    {
+      "chain": "ikea",
+      "country": "BE",
+      "name": "IKEA",
+      "aliases": [],
+      "web": "www.ikea.com",
+      "apps": [
+        {
+          "name": "IKEA",
+          "android": "com.ingka.ikea.app",
+          "ios": "1452164827",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-22",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1452164827&country=be",
+        "https://play.google.com/store/apps/details?id=com.ingka.ikea.app&hl=en&gl=BE",
+        "https://app-site-association.cdn-apple.com/a/v1/www.ikea.com"
+      ],
+      "note": "The IKEA app (Inter IKEA Systems B.V., iOS bundle com.ingka.ikea.app), one app for every country; not the separate IKEA Home smart apps. No universal link: www.ikea.com's AASA claims only product, category, search and offer paths templated per country and language, no plain home path. No scheme: no evidence checked."
+    },
+    {
+      "chain": "ikea",
+      "country": "HR",
+      "name": "IKEA",
+      "aliases": [],
+      "web": "www.ikea.com",
+      "apps": [
+        {
+          "name": "IKEA",
+          "android": "com.ingka.ikea.app",
+          "ios": "1452164827",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-22",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1452164827&country=hr",
+        "https://play.google.com/store/apps/details?id=com.ingka.ikea.app&hl=en&gl=HR",
+        "https://app-site-association.cdn-apple.com/a/v1/www.ikea.com"
+      ],
+      "note": "The IKEA app (Inter IKEA Systems B.V., iOS bundle com.ingka.ikea.app), one app for every country; not the separate IKEA Home smart apps. No universal link: www.ikea.com's AASA claims only product, category, search and offer paths templated per country and language, no plain home path. No scheme: no evidence checked."
+    },
+    {
+      "chain": "ikea",
+      "country": "CZ",
+      "name": "IKEA",
+      "aliases": [],
+      "web": "www.ikea.com",
+      "apps": [
+        {
+          "name": "IKEA",
+          "android": "com.ingka.ikea.app",
+          "ios": "1452164827",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-22",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1452164827&country=cz",
+        "https://play.google.com/store/apps/details?id=com.ingka.ikea.app&hl=en&gl=CZ",
+        "https://app-site-association.cdn-apple.com/a/v1/www.ikea.com"
+      ],
+      "note": "The IKEA app (Inter IKEA Systems B.V., iOS bundle com.ingka.ikea.app), one app for every country; not the separate IKEA Home smart apps. No universal link: www.ikea.com's AASA claims only product, category, search and offer paths templated per country and language, no plain home path. No scheme: no evidence checked."
+    },
+    {
+      "chain": "ikea",
+      "country": "DK",
+      "name": "IKEA",
+      "aliases": [],
+      "web": "www.ikea.com",
+      "apps": [
+        {
+          "name": "IKEA",
+          "android": "com.ingka.ikea.app",
+          "ios": "1452164827",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-22",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1452164827&country=dk",
+        "https://play.google.com/store/apps/details?id=com.ingka.ikea.app&hl=en&gl=DK",
+        "https://app-site-association.cdn-apple.com/a/v1/www.ikea.com"
+      ],
+      "note": "The IKEA app (Inter IKEA Systems B.V., iOS bundle com.ingka.ikea.app), one app for every country; not the separate IKEA Home smart apps. No universal link: www.ikea.com's AASA claims only product, category, search and offer paths templated per country and language, no plain home path. No scheme: no evidence checked."
+    },
+    {
+      "chain": "ikea",
+      "country": "FI",
+      "name": "IKEA",
+      "aliases": [],
+      "web": "www.ikea.com",
+      "apps": [
+        {
+          "name": "IKEA",
+          "android": "com.ingka.ikea.app",
+          "ios": "1452164827",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-22",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1452164827&country=fi",
+        "https://play.google.com/store/apps/details?id=com.ingka.ikea.app&hl=en&gl=FI",
+        "https://app-site-association.cdn-apple.com/a/v1/www.ikea.com"
+      ],
+      "note": "The IKEA app (Inter IKEA Systems B.V., iOS bundle com.ingka.ikea.app), one app for every country; not the separate IKEA Home smart apps. No universal link: www.ikea.com's AASA claims only product, category, search and offer paths templated per country and language, no plain home path. No scheme: no evidence checked."
+    },
+    {
+      "chain": "ikea",
+      "country": "HU",
+      "name": "IKEA",
+      "aliases": [],
+      "web": "www.ikea.com",
+      "apps": [
+        {
+          "name": "IKEA",
+          "android": "com.ingka.ikea.app",
+          "ios": "1452164827",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-22",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1452164827&country=hu",
+        "https://play.google.com/store/apps/details?id=com.ingka.ikea.app&hl=en&gl=HU",
+        "https://app-site-association.cdn-apple.com/a/v1/www.ikea.com"
+      ],
+      "note": "The IKEA app (Inter IKEA Systems B.V., iOS bundle com.ingka.ikea.app), one app for every country; not the separate IKEA Home smart apps. No universal link: www.ikea.com's AASA claims only product, category, search and offer paths templated per country and language, no plain home path. No scheme: no evidence checked."
+    },
+    {
+      "chain": "ikea",
+      "country": "IE",
+      "name": "IKEA",
+      "aliases": [],
+      "web": "www.ikea.com",
+      "apps": [
+        {
+          "name": "IKEA",
+          "android": "com.ingka.ikea.app",
+          "ios": "1452164827",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-22",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1452164827&country=ie",
+        "https://play.google.com/store/apps/details?id=com.ingka.ikea.app&hl=en&gl=IE",
+        "https://app-site-association.cdn-apple.com/a/v1/www.ikea.com"
+      ],
+      "note": "The IKEA app (Inter IKEA Systems B.V., iOS bundle com.ingka.ikea.app), one app for every country; not the separate IKEA Home smart apps. No universal link: www.ikea.com's AASA claims only product, category, search and offer paths templated per country and language, no plain home path. No scheme: no evidence checked."
+    },
+    {
+      "chain": "ikea",
+      "country": "LU",
+      "name": "IKEA",
+      "aliases": [],
+      "web": "www.ikea.com",
+      "apps": [
+        {
+          "name": "IKEA",
+          "android": "com.ingka.ikea.app",
+          "ios": "1452164827",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-22",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1452164827&country=lu",
+        "https://play.google.com/store/apps/details?id=com.ingka.ikea.app&hl=en&gl=LU",
+        "https://app-site-association.cdn-apple.com/a/v1/www.ikea.com"
+      ],
+      "note": "The IKEA app (Inter IKEA Systems B.V., iOS bundle com.ingka.ikea.app), one app for every country; not the separate IKEA Home smart apps. No universal link: www.ikea.com's AASA claims only product, category, search and offer paths templated per country and language, no plain home path. No scheme: no evidence checked."
+    },
+    {
+      "chain": "ikea",
+      "country": "NO",
+      "name": "IKEA",
+      "aliases": [],
+      "web": "www.ikea.com",
+      "apps": [
+        {
+          "name": "IKEA",
+          "android": "com.ingka.ikea.app",
+          "ios": "1452164827",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-22",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1452164827&country=no",
+        "https://play.google.com/store/apps/details?id=com.ingka.ikea.app&hl=en&gl=NO",
+        "https://app-site-association.cdn-apple.com/a/v1/www.ikea.com"
+      ],
+      "note": "The IKEA app (Inter IKEA Systems B.V., iOS bundle com.ingka.ikea.app), one app for every country; not the separate IKEA Home smart apps. No universal link: www.ikea.com's AASA claims only product, category, search and offer paths templated per country and language, no plain home path. No scheme: no evidence checked."
+    },
+    {
+      "chain": "ikea",
+      "country": "PT",
+      "name": "IKEA",
+      "aliases": [],
+      "web": "www.ikea.com",
+      "apps": [
+        {
+          "name": "IKEA",
+          "android": "com.ingka.ikea.app",
+          "ios": "1452164827",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-22",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1452164827&country=pt",
+        "https://play.google.com/store/apps/details?id=com.ingka.ikea.app&hl=en&gl=PT",
+        "https://app-site-association.cdn-apple.com/a/v1/www.ikea.com"
+      ],
+      "note": "The IKEA app (Inter IKEA Systems B.V., iOS bundle com.ingka.ikea.app), one app for every country; not the separate IKEA Home smart apps. No universal link: www.ikea.com's AASA claims only product, category, search and offer paths templated per country and language, no plain home path. No scheme: no evidence checked."
+    },
+    {
+      "chain": "ikea",
+      "country": "RO",
+      "name": "IKEA",
+      "aliases": [],
+      "web": "www.ikea.com",
+      "apps": [
+        {
+          "name": "IKEA",
+          "android": "com.ingka.ikea.app",
+          "ios": "1452164827",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-22",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1452164827&country=ro",
+        "https://play.google.com/store/apps/details?id=com.ingka.ikea.app&hl=en&gl=RO",
+        "https://app-site-association.cdn-apple.com/a/v1/www.ikea.com"
+      ],
+      "note": "The IKEA app (Inter IKEA Systems B.V., iOS bundle com.ingka.ikea.app), one app for every country; not the separate IKEA Home smart apps. No universal link: www.ikea.com's AASA claims only product, category, search and offer paths templated per country and language, no plain home path. No scheme: no evidence checked."
+    },
+    {
+      "chain": "ikea",
+      "country": "SK",
+      "name": "IKEA",
+      "aliases": [],
+      "web": "www.ikea.com",
+      "apps": [
+        {
+          "name": "IKEA",
+          "android": "com.ingka.ikea.app",
+          "ios": "1452164827",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-22",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1452164827&country=sk",
+        "https://play.google.com/store/apps/details?id=com.ingka.ikea.app&hl=en&gl=SK",
+        "https://app-site-association.cdn-apple.com/a/v1/www.ikea.com"
+      ],
+      "note": "The IKEA app (Inter IKEA Systems B.V., iOS bundle com.ingka.ikea.app), one app for every country; not the separate IKEA Home smart apps. No universal link: www.ikea.com's AASA claims only product, category, search and offer paths templated per country and language, no plain home path. No scheme: no evidence checked."
+    },
+    {
+      "chain": "ikea",
+      "country": "SI",
+      "name": "IKEA",
+      "aliases": [],
+      "web": "www.ikea.com",
+      "apps": [
+        {
+          "name": "IKEA",
+          "android": "com.ingka.ikea.app",
+          "ios": "1452164827",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-22",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1452164827&country=si",
+        "https://play.google.com/store/apps/details?id=com.ingka.ikea.app&hl=en&gl=SI",
+        "https://app-site-association.cdn-apple.com/a/v1/www.ikea.com"
+      ],
+      "note": "The IKEA app (Inter IKEA Systems B.V., iOS bundle com.ingka.ikea.app), one app for every country; not the separate IKEA Home smart apps. No universal link: www.ikea.com's AASA claims only product, category, search and offer paths templated per country and language, no plain home path. No scheme: no evidence checked."
+    },
+    {
+      "chain": "ikea",
+      "country": "SE",
+      "name": "IKEA",
+      "aliases": [],
+      "web": "www.ikea.com",
+      "apps": [
+        {
+          "name": "IKEA",
+          "android": "com.ingka.ikea.app",
+          "ios": "1452164827",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-22",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1452164827&country=se",
+        "https://play.google.com/store/apps/details?id=com.ingka.ikea.app&hl=en&gl=SE",
+        "https://app-site-association.cdn-apple.com/a/v1/www.ikea.com"
+      ],
+      "note": "The IKEA app (Inter IKEA Systems B.V., iOS bundle com.ingka.ikea.app), one app for every country; not the separate IKEA Home smart apps. No universal link: www.ikea.com's AASA claims only product, category, search and offer paths templated per country and language, no plain home path. No scheme: no evidence checked."
     }
   ]
 }

@@ -1271,7 +1271,7 @@
   "storeAppOpen": "Open {app}",
   "@storeAppOpen": {"placeholders": {"app": {"type": "String"}}},
   "@countryName": {"placeholders": {"code": {"type": "String"}}},
-  "countryName": "{code, select, DE{Germany} AT{Austria} CH{Switzerland} FR{France} NL{Netherlands} PL{Poland} IT{Italy} ES{Spain} other{{code}}}",
+  "countryName": "{code, select, DE{Germany} AT{Austria} CH{Switzerland} FR{France} NL{Netherlands} PL{Poland} IT{Italy} ES{Spain} BE{Belgium} CZ{Czechia} DK{Denmark} FI{Finland} HR{Croatia} HU{Hungary} IE{Ireland} LU{Luxembourg} NO{Norway} PT{Portugal} RO{Romania} SE{Sweden} SI{Slovenia} SK{Slovakia} other{{code}}}",
   "chainQuestionOne": "Is this {chain} ({country})?",
   "@chainQuestionOne": {"placeholders": {"chain": {"type": "String"}, "country": {"type": "String"}}},
   "chainQuestionOneExisting": "Is your “{store}” the chain {chain} ({country})?",

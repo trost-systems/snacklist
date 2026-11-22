@@ -2447,3 +2447,7 @@ https://family-groceries-design-mt6zotnnw-peter-trost.vercel.app; the lead mints
 CSS only (`site/public/landing.css`); detail and checks in `docs/done/406.md`. Hero badges 56 px
 (48 px under 600 px) and equal in EN and DE; the Get Snacklist badge, QR and caption rows are shared
 across both columns. Screenshots in `docs/screenshots/406/`. Preview: dpl_1AexeqFqszDRvMEqXyhpi5qcpnKy.
+
+## Job 408: IKEA in the retailer registry
+
+IKEA entries (app "IKEA", Android `com.ingka.ikea.app`, iOS 1452164827) for AT BE CH CZ DE DK ES FI FR HR HU IE IT LU NL NO PL PT RO SE SI SK. Left out (no app in the storefront): BG CY EE GR IS LV LI LT MT. Migration `20261122213336_retailers_data.sql`, registry copy and coverage regenerated, `--verify` 90 apps / 0 failed. Unit and pgTAP cases for "IKEA"/"Ikea". Details: docs/done/408.md; open question in NEEDS_LEAD. PR and merge SHA: filled in below at land.

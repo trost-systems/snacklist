@@ -17811,3 +17811,9 @@ Peter decided HP2 on 22 Nov 2026: `grocery-log`, `prices-and-trip-total`, `trip-
   margin; `:lang(de)` sets `--play-vis` and a side padding so both visible badges equal Apple's height.
   Re-exporting the PNGs would be a media change, so it was not done.
 - **Captions capped at 24ch** so the German pair fits 640 px; they may wrap and the rows stay shared.
+
+## Job 408: IKEA stays out of the onboarding chips
+
+IKEA is a registry chain, so `registryChains` would have offered it as a grocery chip in every country and given
+Belgian, Czech etc. phones a one-chip picker. `retailer.dart` skips chain `ikea` for chips and the chip region
+(matching and the app key are unchanged). Peter's call whether IKEA should be a chip anywhere.

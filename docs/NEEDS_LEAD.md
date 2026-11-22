@@ -2559,3 +2559,14 @@ needs a valid token in the ops env.
 
 **Run at launch:** `docs/PAYWALL_RELEASE.md` 5.3a. Never revoke a beta household's grant; no
 launch step did.
+
+## NEEDS_LEAD Job 408: IKEA and the onboarding chips
+
+IKEA is in the registry for 22 countries (docs/done/408.md). To keep the setup's store step unchanged I made
+`registryChains`/`registryRegion` skip chain `ikea` (no IKEA chip, no one-chip picker for BE, CZ and the other new
+countries). Not asked for, so please confirm. Also: `phoneRegion()` now returns BE, CZ... for those phones (they
+joined `retailerCountries`), where it fell back to DE before; it only orders matches of typed names.
+Also: in the onboarding's store field a phone in a new country (BE, CZ...) matches typed names with no region (the
+chip region ignores IKEA), so "Ikea" lists every country's IKEA alphabetically. And no IKEA entry has a URL scheme
+(no APK manifest read, no universal link: the AASA paths are templated per country), so an iPhone with the app
+installed opens its App Store page ("Öffnen" there). A manifest check (`tool/retailers/app_schemes.py`) would fix that.

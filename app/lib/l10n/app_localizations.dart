@@ -6005,7 +6005,7 @@ abstract class AppLocalizations {
   /// Job 313: a chain's country by its ISO 3166-1 code, e.g. after a chain name: „REWE · Deutschland“
   ///
   /// In de, this message translates to:
-  /// **'{code, select, DE{Deutschland} AT{Österreich} CH{Schweiz} FR{Frankreich} NL{Niederlande} PL{Polen} IT{Italien} ES{Spanien} other{{code}}}'**
+  /// **'{code, select, DE{Deutschland} AT{Österreich} CH{Schweiz} FR{Frankreich} NL{Niederlande} PL{Polen} IT{Italien} ES{Spanien} BE{Belgien} CZ{Tschechien} DK{Dänemark} FI{Finnland} HR{Kroatien} HU{Ungarn} IE{Irland} LU{Luxemburg} NO{Norwegen} PT{Portugal} RO{Rumänien} SE{Schweden} SI{Slowenien} SK{Slowakei} other{{code}}}'**
   String countryName(String code);
 
   /// Job 313 SS2: asked once after saving a new store whose name is a chain's, e.g. „Ist das REWE (Deutschland)?“. {chain} is the chain's name, {country} the country's name
