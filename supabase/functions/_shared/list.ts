@@ -1417,18 +1417,24 @@ export type Usual = {
 /**
  * The household's usuals through public.suggest_items, the ranking the app's add sheet shows
  * (often and recently used first; with a prefix, names starting with it, then names with a word
- * starting with it). Things open on a list are left out.
+ * starting with it). Things open on a list are left out. With `dueOnly`, the due ones among all
+ * of them (the app reads 200 and shows the due ones), not among the first `limit` by rank.
  */
 export async function usuals(
   tx: Tx,
   household: string,
   prefix: string,
   limit: number,
+  dueOnly = false,
 ): Promise<Usual[]> {
-  return await tx<Usual[]>`
+  const rows = await tx<Usual[]>`
     select name, quantity, uses, to_json(last_used) #>> '{}' as "lastUsed", due
-    from public.suggest_items(${household}, ${prefix}, ${limit})`;
+    from public.suggest_items(${household}, ${prefix}, ${dueOnly ? USUALS_SCAN : limit})`;
+  return dueOnly ? rows.filter((u) => u.due).slice(0, limit) : rows;
 }
+
+/** How many usuals the app reads from suggest_items (its upper limit is 200). */
+const USUALS_SCAN = 200;
 
 /** A list as the API shows it; `default` is where an add without a list goes. */
 export type ListEntry = { id: string; name: string; sortOrder: number; default: boolean };

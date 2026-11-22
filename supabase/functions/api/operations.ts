@@ -111,6 +111,7 @@ const recentQuery = z.object({ list: ref.optional(), limit: limitOf(RECENT_MAX).
 const suggestQuery = z.object({
   prefix: storedText.max(60).optional(),
   limit: limitOf(SUGGEST_MAX).optional(),
+  due: z.enum(['true', 'false']).optional(),
 }).strict();
 
 /** A list name as public.list_name takes it. */
@@ -523,7 +524,13 @@ export const operations: Record<Operation, Parse> = {
     const query = strict(suggestQuery, raw.query, 'query');
     return async (tx, household) =>
       ok({
-        data: await usuals(tx, household, query.prefix ?? '', query.limit ?? SUGGEST_DEFAULT),
+        data: await usuals(
+          tx,
+          household,
+          query.prefix ?? '',
+          query.limit ?? SUGGEST_DEFAULT,
+          query.due === 'true',
+        ),
         nextCursor: null,
       });
   },

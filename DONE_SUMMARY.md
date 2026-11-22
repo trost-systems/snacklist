@@ -2162,3 +2162,11 @@ but not merged: new strings, new agent tools and inferred visits need Legal's ha
 ## Job 358: writers doc, API status and key dialog wording
 
 FEATURES-FOR-WRITERS.md (API section): on for everyone was already right (checked: `releases/flags.json`, #598), now quotes the approved EN "Lesen und schreiben" dialog sentence and says #605/#615 are live (review fix: the deploy-token caveat is gone). ARB files untouched and still on the older sentence; the app needs the EN sentence plus a DE one. NEEDS_LEAD "Job 358: merged" added. Docs only, no app change; not driven. Landed in #617 and a follow-up.
+
+## Job 365: suggest_items missed due items (API/MCP)
+
+Root cause: app and API call the same `public.suggest_items`, so the due rule was never different. The app reads 200 rows and keeps those with `due`; the API/MCP returned the first 10 by rank (often and recent first), and due items rank low, so only the due ones inside the top 10 showed (6 of 8 on heavy-history). Fix: optional `due=true` (API query) / `due: true` (MCP) filters the due ones from the 200 scanned, in `usuals()` (`_shared/list.ts`), one shared path. Response shape unchanged; default answer unchanged. Test: `api_integration_test.ts` "job 365" (3 due items ranked behind 12 daily usuals; API due set == the app's 200-row due set). Docs: openapi.yaml (new param), API.md, MCP.md, features/usuals.md.
+
+sha256 (after this change): `docs/api/openapi.yaml` 9a5a232d23b46ab7435598b0e4112712603672dff8b0567c7f5efac8192d8863; `supabase/functions/mcp/tools.ts` b7675cb26c77df368041f21a47da0bfc9fa7e09ff06597a9e85baf31fc086080.
+
+Recorded, no fix: the API/MCP cap a household at 50 stores (`STORE_CAP = 50`, `supabase/functions/_shared/list.ts:1523`, enforced at `list.ts:1543`); the app has no cap.
