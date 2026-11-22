@@ -17384,3 +17384,8 @@ Peter's pick (2026-11-22 13:06): "Let's go with RD1 for now", from round RD (job
   - RD-Q10 empty state: RD1's own motif, the honey rounded square with the cart, not RD2's circle,
     since RD2 is not shipped.
   - RD-Q2, Q3, Q7, Q8 concern RD2's menu, price and tick and do not apply.
+
+## Job 360: consent copy for store order, shop_declines own-row SELECT
+
+- `consentListAccess` starts with "Read your shopping list." (DE „Einträge deiner Einkaufsliste lesen.“), then the approved sentence from the brief ("Can also add, … set the order in a store."), then the unchanged provider sentence (H-17). The approved sentence begins "Can also", so it cannot follow "Read, add, …" as one clause. `apiScopeReadWriteBody` is the approved sentence verbatim.
+- `shop_declines` SELECT policy is now `user_id = auth.uid() and is_household_member(household_id)` (migration 20261122030000). No grant added; pgTAP grants SELECT inside its transaction to prove another member still sees nothing.

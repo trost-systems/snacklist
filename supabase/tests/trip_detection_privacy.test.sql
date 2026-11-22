@@ -2,7 +2,7 @@
 -- (set_item_status), removal, export, leaving, and outsiders. The rule itself:
 -- trip_detection.test.sql.
 begin;
-select plan(78);
+select plan(81);
 
 create function pg_temp.login(uid uuid) returns void language plpgsql as $$
 begin
@@ -390,6 +390,19 @@ select is((select count(*)::int from public.trip_sessions where :ute = any(detec
 select pg_temp.run(6, '1 day 7 hours', :ute, 0, p_created => now() + interval '1 minute');
 select pg_temp.detect();
 select is((select count(*)::int from public.trip_sessions where :ute = any(detected_by)), 1, 'later ones are');
+
+-- N-325: even with a client grant, a „Nein" answer stays with the person who gave it.
+select pg_temp.logout();
+insert into public.shop_declines (household_id, user_id, tick_id)
+select id, u, 990360 from home, unnest(array[:kim, :ute]::uuid[]) u;
+grant select on public.shop_declines to authenticated;
+select pg_temp.login(:kim);
+select is((select count(*)::int from public.shop_declines), 1, 'N-325: Kim sees one answer');
+select is((select user_id from public.shop_declines), :kim::uuid, 'N-325: and it is his own');
+select is((select count(*)::int from public.shop_declines where user_id = :ute), 0,
+  'N-325: Ute''s answer in the same household stays hidden from him');
+select pg_temp.logout();
+revoke all on public.shop_declines from authenticated;
 
 select * from finish();
 rollback;
