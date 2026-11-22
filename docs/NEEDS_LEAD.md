@@ -2570,3 +2570,10 @@ Also: in the onboarding's store field a phone in a new country (BE, CZ...) match
 chip region ignores IKEA), so "Ikea" lists every country's IKEA alphabetically. And no IKEA entry has a URL scheme
 (no APK manifest read, no universal link: the AASA paths are templated per country), so an iPhone with the app
 installed opens its App Store page ("Öffnen" there). A manifest check (`tool/retailers/app_schemes.py`) would fix that.
+
+## NEEDS_LEAD Job 408 follow-up: IKEA's franchise apps
+
+BG, CY, GR, IS (own apps) and EE, LV, LT (one shared app) have a different official IKEA app, ids in docs/done/408.md.
+Should they get entries? Their Android packages must be verified first. Note: `match_retailers('IKEA', 'GR')` today
+returns five foreign IKEAs (AT, BE, CH, CZ, DE), as Lidl does outside its countries; the app's `phoneRegion()` falls
+back to DE.
