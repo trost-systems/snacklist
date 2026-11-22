@@ -97,6 +97,15 @@ Unlock for your account as a thank-you for the beta: We unlock Snacklist Premium
 Legal basis: Art. 6(1)(b) GDPR (to grant and manage the promised free unlock for your account).
 Retention: we delete the entry on our side with your account. We delete your account's record at RevenueCat 30 days after your account is deleted.
 
+### Notifications on your phone {#notifications once=push-notifications}
+
+In the app for iPhone and Android you can turn on notifications, for example when someone puts something on a list. Only when you turn them on in the app does your phone ask whether Snacklist may send you notifications; the app does not ask on first launch. If you allow it, the app receives an identifier for notifications (a token) from Google through Firebase Cloud Messaging, valid only for Snacklist on this device. We store the token with your account, along with the platform (iOS or Android) and when it was created and last renewed, for at most 10 devices per account. There are no notifications in the browser.
+
+For a notification, our server sends the token, the notification's title and text (for example the list's name, the display name of the person who added something, and item names) and the IDs of the household and the list to Google (Firebase Cloud Messaging, sections 12 and 13). Google delivers it to Android devices and hands it on for the iPhone to the Apple Push Notification service, through which Apple delivers it. If a notification cannot be delivered, for example because your device is off, it expires after at most 24 hours. Tapping the notification opens the named list in the app. Only a household's members get notifications about it.
+
+When you sign out in the app, we delete the token on our server and have Google delete it. If your phone is offline at that moment, the app deletes it at Google as soon as you start the app or sign in with an internet connection again; we then delete the entry on our server with the next notification to that device, at the latest after 270 days. When you delete your account, we delete the token on our server immediately. We also delete it when Google reports it as invalid and when the app has not renewed it for 270 days (at the next daily clean-up). You can withdraw the permission for notifications at any time in your phone's settings.
+Legal basis: Art. 6(1)(b) GDPR; for storing and reading the token on your device, Section 25(2) no. 2 TDDDG.
+
 ## 6. Voice input
 
 When you dictate an item in the iPhone or Android app, your operating system's speech recognition turns speech into text, in the language you use the app in (German or English). This happens only on your device: if the device cannot recognise the app's language without the internet, Snacklist does not offer voice input. On Android 13 and later, the app then asks Android to download offline speech recognition for that language; Android may ask you to approve this first. For this the app tells Android only the language (for example "en-US"), never audio or anything on your list. The download is done by the provider of your device's speech recognition under its own terms (section 12); nothing about it reaches us. There is no voice input in the browser. The app sends the recognised text with the language to our server, which turns it into items; we never receive audio.
@@ -138,6 +147,10 @@ Legal basis: Art. 6(1)(b) GDPR.
 ## 8. Export your data and delete your account
 
 Account › Export my data gives you your data as a JSON file, with all households you are a member of, the invites you joined through, the lists you created, your "I'll bring it" claims, your join requests, the stored removals from a household (section 5), your in-app feedback with its status and our replies, for a screenshot its file name (we send you the picture itself on request to support@snacklist.app), your households' +1 votes for ideas (section 10), the trips you logged or started, any tester groups we added you to (section 9) and, for each item you added, its list and, if set, its price. Account › Delete account deletes your account immediately. What happens to shared households is explained at https://app.snacklist.app/konto-loeschen.html.
+
+::: once push-notifications
+The export also lists the devices you registered for notifications (section 5), with platform and times, but without the token.
+:::
 
 ## 9. Usage data (only with consent), feature switch requests and error reports
 
@@ -188,6 +201,10 @@ These service providers process data on our behalf and on our instructions (Art.
 
 Independent controllers: Google or Apple when you sign in with them; the provider of your operating system's speech recognition; AI assistants you connect yourself; Amazon, when you use the Alexa skill (section 7); Apple and Google as app stores and as providers of TestFlight and Google Play when we invite you to the beta (section 2a).
 
+::: once push-notifications
+For notifications (section 5) we also use Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Ireland, with Firebase Cloud Messaging as a processor (delivering notifications to the app). On iPhone, Apple delivers the notifications through the Apple Push Notification service.
+:::
+
 ## 13. Transfers outside the EU
 
 Some providers are based in the USA or belong to US companies. Supabase's server functions, except the one for purchases, can also run in data centres outside the EU (see section 12). Where data is transferred to the USA or other third countries or US authorities could access it, we rely on the following:
@@ -200,9 +217,17 @@ Some providers are based in the USA or belong to US companies. Supabase's server
 
 You can get a copy of the safeguards from support@snacklist.app.
 
+::: once push-notifications
+Google Ireland Limited may transfer data for Firebase Cloud Messaging to Google LLC (USA). Google LLC is certified under the EU-US Data Privacy Framework (Art. 45 GDPR); the Standard Contractual Clauses in Firebase's data processing terms also apply (Art. 46(2)(c) GDPR).
+:::
+
 ## 14. Retention
 
 We keep your data as long as you have an account. When you delete your account, we delete your account, profile, memberships, the record of which invite you joined through, your "I'll bring it" claims, join requests and stored removals, access tokens, connections (Alexa included) and your usage-data decisions immediately; for purchases we remove the link to your account. We delete a household's or your account's record at RevenueCat 30 days after the household or your account is deleted (section 5). We also delete Alexa connection data as soon as the connection ends (section 7). If you are the last member of a household, the household and everything in it is deleted, as is any household you archived. You can also leave single households without deleting your account. If you leave a household or are removed, we delete the record of which invite you joined through and your claims in that household. With a household we also delete its lists, invites, join requests, stored removals and the record of who joined through the invites. If you leave a household with Snacklist Lifetime as its last member without deleting your account, the household and its data are deleted. Snacklist Lifetime ends with the household. Otherwise the items (with their prices), lists, the change history and the trips you logged stay for the other members, without any link to you; the item names remain visible. This also applies if you leave a household or are removed. If you don't want a trip to stay, delete it first in the "History" tab. We keep shared household data, the change history and trips included, as long as the household exists, archived households included. We delete the join page's check values after the hour has ended, decided join requests after 7 days, and the record that someone was removed from a household after 30 days (section 5). Our database provider's logs are deleted after at most 1 day, backups after 90 days, and usage data and error reports at PostHog after 1 year. For the waitlist, the periods in section 2a apply.
+
+::: once push-notifications
+We delete tokens for notifications immediately with your account, otherwise as described in section 5.
+:::
 
 ## 15. Your rights {#rights}
 

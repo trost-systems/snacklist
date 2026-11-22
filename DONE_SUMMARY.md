@@ -2477,3 +2477,12 @@ See [docs/done/402.md](docs/done/402.md), "Review 1".
 - The launch preview is redeployed from #655's head.
 
 Still open, from the review's nice-to-haves: the media nits. The en-US add-tick take shows „Honig“ and should be re-filmed before upload.
+
+## Job 376: P0 push foundation (PR, not merged: needs Legal + Ops)
+
+Push tokens (`push_tokens`, RLS, register/unregister RPCs, 270-day purge, gone with the account),
+the internal `push` edge function (FCM HTTP v1, per-recipient text, 24 h expiry, dry run, off
+until Ops sets `PUSH_SEND_SECRET` and `FCM_SERVICE_ACCOUNT_JSON`), the app side (Firebase from
+build defines, opt-in-only prompt, sign-out cleanup, a tap opens the named list) and the native
+config. Privacy drafts wait behind the hold `push-notifications`. Contract `docs/PUSH.md`, details
+`docs/done/376.md`.

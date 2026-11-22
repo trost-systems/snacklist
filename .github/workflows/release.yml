@@ -278,6 +278,11 @@ jobs:
           # keeps the purchase screen off.
           REVENUECAT_PURCHASES: ${{ vars.REVENUECAT_PURCHASES }}
           REVENUECAT_APPLE_API_KEY: ${{ secrets.REVENUECAT_APPLE_API_KEY }}
+          # Push (docs/PUSH.md): Firebase's client config; unset, the build has no push.
+          FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
+          FIREBASE_MESSAGING_SENDER_ID: ${{ vars.FIREBASE_MESSAGING_SENDER_ID }}
+          FIREBASE_IOS_APP_ID: ${{ vars.FIREBASE_IOS_APP_ID }}
+          FIREBASE_IOS_API_KEY: ${{ vars.FIREBASE_IOS_API_KEY }}
           APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID || secrets.APPLE_TEAM_ID }}
           MATCH_GIT_URL: ${{ vars.MATCH_GIT_URL || secrets.MATCH_GIT_URL }}
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
@@ -353,6 +358,11 @@ jobs:
           ANALYTICS_INTERNAL_HOUSEHOLDS: ${{ vars.ANALYTICS_INTERNAL_HOUSEHOLDS }}
           REVENUECAT_PURCHASES: ${{ vars.REVENUECAT_PURCHASES }}
           REVENUECAT_GOOGLE_API_KEY: ${{ secrets.REVENUECAT_GOOGLE_API_KEY }}
+          # Push (docs/PUSH.md): Firebase's client config; unset, the build has no push.
+          FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
+          FIREBASE_MESSAGING_SENDER_ID: ${{ vars.FIREBASE_MESSAGING_SENDER_ID }}
+          FIREBASE_ANDROID_APP_ID: ${{ vars.FIREBASE_ANDROID_APP_ID }}
+          FIREBASE_ANDROID_API_KEY: ${{ vars.FIREBASE_ANDROID_API_KEY }}
       - name: Remove the upload keystore
         if: always()
         run: rm -f android/upload-keystore.jks android/key.properties

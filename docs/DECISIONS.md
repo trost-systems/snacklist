@@ -17832,3 +17832,49 @@ Belgian, Czech etc. phones a one-chip picker. `retailer.dart` skips chain `ikea`
   missing „sag Snacklist“ instead.
 - **The current `integration_gate` is in `20261115100000_key_checks_without_waiting.sql:196`.** The
   earlier "Job 402" section cites `20261113034530_siri_free.sql:17`; the logic is the same.
+
+## Job 376: P0 push foundation (FCM, APNs via FCM), 2026-11-22
+
+1. **Firebase from build defines, not from `google-services.json` / `GoogleService-Info.plist`.**
+   Ops has not created the Firebase project, and those files would add the Google services Gradle
+   plugin and a plist to the public repo. Six `FIREBASE_*` defines (`environment.dart`) come from
+   the `release` environment's variables; unset, the build has no push and never initializes
+   Firebase. One file imports Firebase (lint rule `firebase-only-in-firebase-push`).
+2. **Tokens are the user's, not the household's.** `push_tokens` has no `household_id`: the send
+   function picks recipients who are members of the named household at send time, and checks
+   that the list belongs to it. Leaving a household needs no cleanup. Writes only through
+   `register_push_token` / `unregister_push_token`; a token registered by another account moves
+   to the caller (one device, one account). Cap 10 devices per user, purge after 270 days
+   without registration (FCM drops such tokens), cascade on account deletion.
+3. **The caller writes the text per recipient.** `recipients: [{user_id, title, body}]`, so P1
+   and P2 can write each user's language; the function never logs or answers text, tokens or ids.
+   Every message expires after `ttl_seconds` (default and maximum 24 h), which the privacy draft
+   promises; a site test pins the two together.
+4. **Off by default in production.** The `push` function answers 503 until Ops sets
+   `PUSH_SEND_SECRET` and `FCM_SERVICE_ACCOUNT_JSON`; dry runs need only the secret. The app has
+   no opt-in caller yet (P1 and P2 add their toggles), so no build asks for the permission.
+5. **Tap handling is its own class** (`shell/push_taps.dart`): it waits for the session on a cold
+   start, switches household first, and hands the list a `ShowListLink`, which the list view takes
+   once that household's list has loaded, like `/stores/<id>`.
+6. **The outsider sweep may wait on a device's row only with its token.** Registering someone's
+   token moves their row, so that call waits on a held row, like joining with an invite code
+   (`WITH_TOKEN` next to `WITH_CODE`): only the device has the token.
+7. **`aps-environment` = `development` in the one Runner entitlements file.** Signing takes the
+   value of the profile, so the App Store profile ships `production`. The capability must be on
+   the App ID with renewed profiles before this merges (NEEDS_LEAD).
+8. **The privacy text waits behind a new hold `push-notifications`** (DE and EN §5, §8, §12, §13,
+   §14), since nothing is collected until P1/P2 roll out. No ARB string in this job.
+9. **`google_sign_in_ios` ^6.4.0 (GoogleSignIn-iOS 10).** Firebase iOS SDK 13.2 (firebase_messaging
+   17.1) needs gtm-session-fetcher 4 to <6, GoogleSignIn-iOS 9 needs <4: Swift Package Manager
+   could not resolve both (the first CI run's ios and ios-storekit jobs). 6.4.0 allows
+   GoogleSignIn 10, which takes gtm-session-fetcher 3.3 to <6 and app-check up to <13 (Firebase
+   needs 12.1 to <13). Its minimum is iOS 15; the app's is 17.
+10. **An offline sign-out leaves a remembered token, not a silent leak (review 1).** FCM's
+    `deleteToken` needs the network. Before, a failed delete still cleared the opt-in, so nothing
+    retried and the old account's row kept reaching the device. The device now keeps one of three
+    states (`PushDevice`: off, opted in, token left); a token left is deleted first at the next
+    start, sign-in, sign-out or opt-in. Unregister and delete are limited to 2 s and 3 s, so the
+    sign-out button never hangs on them. The privacy draft says when the deletion happens offline.
+11. **Only FCM's `UNREGISTERED` deletes a device on a 404;** a bare 404 (wrong project id or URL)
+    is a failure, so a misconfiguration cannot wipe every device. A dry run echoes `<title>` and
+    `<body>`, not the text: pg_net keeps answers.

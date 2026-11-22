@@ -1,0 +1,21 @@
+# Firebase is used in one file, app/lib/push/firebase_push.dart (job 376): it initializes Firebase
+# only on iOS and Android with the build's Firebase defines, and it is the only path to the OS
+# notification prompt, which PushRegistration.optIn() alone may open (never on first launch,
+# docs/PUSH.md). A second file with FirebaseMessaging at hand could prompt on start, register a
+# token without the opt-in, or keep a token past sign-out. Tests use a fake PushPlugin.
+#
+# Matched on the import or export URI, conditional ones included.
+id: firebase-only-in-firebase-push
+language: dart
+severity: error
+files:
+  - app/**
+ignores:
+  - app/lib/push/firebase_push.dart
+rule:
+  kind: import_or_export
+  has:
+    stopBy: end
+    kind: uri
+    regex: '^[''"]package:firebase_(core|messaging)(_[a-z_]+)?/'
+message: 'firebase_core or firebase_messaging is imported outside app/lib/push/firebase_push.dart: go through PushRegistration (optIn, the token, sign-out) and its PushPlugin; only firebase_push.dart may touch Firebase (docs/PUSH.md)'

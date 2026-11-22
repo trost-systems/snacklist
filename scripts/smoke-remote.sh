@@ -96,6 +96,16 @@ else
   fail "purchases claim without a session: want 401; $(got purchases_claim)"
 fi
 
+# Job 376: push sends nothing without the callers' secret: 503 until Ops sets PUSH_SEND_SECRET,
+# 401 after (docs/PUSH.md). The body is never read.
+request push -X POST "$fn/push" -H "x-push-secret: $bad_token" -H 'content-type: application/json' -d '{}'
+if { [[ $(status push) == 401 ]] && jq -e '.error == "unauthorized"' "$work/push.body" >/dev/null 2>&1; } ||
+  { [[ $(status push) == 503 ]] && jq -e '.error == "not_configured"' "$work/push.body" >/dev/null 2>&1; }; then
+  pass "push with a bad secret: $(status push)"
+else
+  fail "push with a bad secret: want 401 (or 503 unconfigured); $(got push)"
+fi
+
 # Job 241: the public API (docs/API.md). Without a key it answers 404 while app_switches.public_api
 # is off, 401 once it is on. SMOKE_PUBLIC_API=1, for the day it is switched on, wants the 401 and
 # then sends unknown keys, each from another made-up address in X-Forwarded-For and X-Real-IP,

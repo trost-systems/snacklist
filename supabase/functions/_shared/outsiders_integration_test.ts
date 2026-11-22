@@ -68,6 +68,18 @@ const uuid = (id: string) => `'${id}'::uuid`;
 const codeOf = (household: Household) => `'${household.code}'::text`;
 
 /**
+ * The push token of a household owner's device (job 376). Like the invite code it is a secret:
+ * only that device has it, and registering it moves the device's row to whoever signs in there,
+ * so that call waits for the row (WITH_TOKEN). Without the token nobody waits.
+ */
+const pushTokenOf = (household: string) => `outsiders-push-${household}`;
+
+const WITH_TOKEN: Record<Role, string[]> = {
+  authenticated: ['public.register_push_token'],
+  anon: [],
+};
+
+/**
  * The calls that may wait: whoever holds a household's invite code writes to it. Joining takes
  * the household's row, and the preview counts itself on the invite. Without the code nobody waits.
  */
@@ -160,8 +172,8 @@ function values(type: string, household: Household, outsider: Outsider): string[
     uuid: all.map(uuid),
     'uuid[]': [`array[${all.map(uuid).join(', ')}]`],
     // A name, then the words the functions take (roles, kinds of invite, how to join, where to
-    // place an item, a catalog version, an order mode, an item's status) and the household's
-    // invite code.
+    // place an item, a catalog version, an order mode, an item's status, a device's platform),
+    // the household's invite code and its owner's push token.
     text: [
       ...[
         'Milch',
@@ -176,8 +188,10 @@ function values(type: string, household: Household, outsider: Outsider): string[
         'categories',
         'learned',
         'bought',
+        'ios',
       ].map((t) => `'${t}'::text`),
       codeOf(household),
+      `'${pushTokenOf(household.id)}'::text`,
     ],
     'text[]': ["array['Milch']::text[]"],
     boolean: ['true', 'false'],
@@ -503,6 +517,8 @@ async function fill(
   member: string,
   guest: string,
 ): Promise<void> {
+  await sql`insert into public.push_tokens (user_id, token, platform)
+            values (${owner}, ${pushTokenOf(household)}, 'android')`;
   await sql`insert into public.household_members (household_id, user_id, role)
             values (${household}, ${member}, 'member')`;
   await asUser(owner, async (tx) => {
@@ -695,10 +711,18 @@ Deno.test({
               `as ${role}, the statements every call of which ended on its arguments`,
             );
             const invited = waited.filter((call) => call.includes(codeOf(household)));
+            const device = waited.filter((call) => call.includes(pushTokenOf(household.id)));
             assertEquals(
-              byStatement(waited.filter((call) => !invited.includes(call))),
+              byStatement(
+                waited.filter((call) => !invited.includes(call) && !device.includes(call)),
+              ),
               {},
-              `calls as ${role} without the household's invite code`,
+              `calls as ${role} without the household's invite code or its owner's push token`,
+            );
+            assertEquals(
+              Object.keys(byStatement(device)).sort(),
+              WITH_TOKEN[role],
+              `calls as ${role} with the household owner's push token`,
             );
             assertEquals(
               Object.keys(byStatement(invited)).sort(),
