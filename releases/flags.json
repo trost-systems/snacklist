@@ -91,17 +91,12 @@
     "alexa-certification": {
       "released": true,
       "note": "the Alexa skill passed Amazon certification and has been live worldwide since 2026-11-16",
-      "match": [
-        "alexa"
-      ]
+      "match": ["alexa"]
     },
     "premium-launch": {
       "released": false,
       "note": "Snacklist Premium (yearly and Lifetime) is not on sale yet: nothing is sold or gated",
-      "match": [
-        "lifetime",
-        "premium"
-      ]
+      "match": ["lifetime", "premium"]
     },
     "native-siri": {
       "released": false,
@@ -110,9 +105,7 @@
     "new-design": {
       "released": true,
       "note": "Peter switched the new design on (2026-11-01)",
-      "match": [
-        "design"
-      ]
+      "match": ["design"]
     },
     "home-widgets": {
       "released": false,

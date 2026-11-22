@@ -856,19 +856,25 @@ class _ShoppingListViewState()
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.only(top: 20),
-                    child: ExpansionTile(
-                      key: const ValueKey('recently-used'),
-                      initiallyExpanded: openByDefault && !usedFolded,
-                      onExpansionChanged: openByDefault
-                          ? (_) => context.read<ListCubit>().toggleFold(
-                              recentlyUsedFoldKey,
-                            )
-                          : null,
-                      title: Text(l10n.recentlyUsed),
-                      children: [
-                        for (final (i, item) in used.indexed)
-                          _usedRow(state, item, last: i == used.length - 1),
-                      ],
+                    // Keyed on the flag: when it arrives after the first frame
+                    // the tile is built again and starts as the prefs say.
+                    child: KeyedSubtree(
+                      key: ValueKey(openByDefault),
+                      child: ExpansionTile(
+                        key: const ValueKey('recently-used'),
+                        initiallyExpanded: openByDefault && !usedFolded,
+                        onExpansionChanged: openByDefault
+                            ? (expanded) => context.read<ListCubit>().setFold(
+                                recentlyUsedFoldKey,
+                                folded: !expanded,
+                              )
+                            : null,
+                        title: Text(l10n.recentlyUsed),
+                        children: [
+                          for (final (i, item) in used.indexed)
+                            _usedRow(state, item, last: i == used.length - 1),
+                        ],
+                      ),
                     ),
                   ),
                 ),
