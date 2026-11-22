@@ -2206,3 +2206,31 @@ RU-Q choices:
 - `releases/flags.json`: the three `holds` `match` arrays reformatted by #626 are back to inline, so the file differs from before only by the new flag.
 - Targeting, plainly: the PostHog flag `recently-used-open` does not exist yet. The flag sync creates it, for the person property `tester_groups` matching `recently-used-open`, on its next run after #626. Peter's account needs a row in `public.tester_groups` with group `recently-used-open` (the lead adds it with SQL, docs/PRIVACY_DATA_MAP.md "Tester groups"); the app reads it at sign-in and on return from the background. Same mechanism as `learned-order`.
 - Not done: web build not driven (widget tests only; the feature file says so). `consent_screen.dart:83` analyze finding is on main too, not from this change.
+
+## Job 372: app icon without the hexagon, round AI (prototype)
+
+- Draft PR (never merge): https://github.com/trost-systems/snacklist/pull/630
+- Preview: dpl_Bwp6TTMjH1omf95D8dhyz9ijd3t1, https://family-groceries-design-dg6bcbsqj-peter-trost.vercel.app/app-icon/ai/
+  (READY, SSO-protected, preview target). There is no Vercel connector on hz, so the share link is not minted: the
+  lead mints it, and it expires 23 h after minting. The build is on dpl_6RCZRM97GbiFSj7MU986aU3JN7fH (round RD's
+  overview), so every earlier round still works. The overview links round AI first.
+- Built: five icons in RD1's palette and shapes (production tokens), next to Today: AI1 Soft tile, AI2 The list,
+  AI3 Bite, AI4 Bag, AI5 Big check. Each is shown on iOS 26 (light, dark, tinted, clear as an approximation) and
+  Android (circle, squircle, themed light and dark, adaptive canvas with the 66 dp safe circle). Also at small
+  sizes (notification 24/48, Settings 29 pt, real pixels) and as App Store and Play tiles, next to generic
+  neighbour icons. English, with a German toggle and a light/dark page.
+- Measured per option: thinnest part at 29 pt and 48 px (local thickness), the same for the tinted/themed glyph,
+  main-shape and weakest-edge contrast in light and dark, tile against a light wallpaper, and Android reach
+  against the 33 dp safe radius.
+- Recommendation: **AI1 Soft tile** (2.0 px at 29 pt against today's 1.2 px; keeps the colours, ring, tile and
+  check; the cheapest swap). Runner-up **AI3 Bite** (the most distinctive, 9.4 px, no check). AI-Q1 to AI-Q8
+  carry defaults in docs/design/app-icon/ai/RECOMMENDATION.md. AI-Q1: the icon ships to everyone with the Dec 1
+  build, because an icon cannot be flagged.
+- Assets: `design/app-icon/build.mjs --art <module> --out <dir>` (the default today module is byte-identical, so
+  `--check` passes). The full set per option is in docs/design/app-icon/ai/assets/AI1..AI5. The swap after the
+  pick: make that module the default and run the build.
+- Verify: `node docs/design/app-icon/ai/verify.mjs` → all checks passed (378). Two mutations failed the right
+  checks (a moved check: 45; an edited quote: 1). `scripts/lint.sh` passed. Playwright: 144 images, none broken,
+  no errors, no overflow (EN/DE, light/dark, 390 px). Screenshots: docs/screenshots/372/.
+- Missing: the share link (the lead mints it). iOS 26 Clear is an approximation; the real one needs Icon
+  Composer and an iPhone (AI-Q7). No CI run: the PR stays a draft.
