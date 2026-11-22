@@ -1,0 +1,403 @@
+{
+ "lang": "en",
+ "scale": 3.1,
+ "dark": false,
+ "viewport": {
+  "width": 390,
+  "height": 844
+ },
+ "last": "Apples",
+ "withTip": [
+  {
+   "role": "button",
+   "label": "Shopping list · Brandt family",
+   "top": 10,
+   "bottom": 58,
+   "left": 16,
+   "right": 212.890625,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "Edit",
+   "top": 10,
+   "bottom": 58,
+   "left": 298.5097961425781,
+   "right": 373.9941711425781,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "REWE, 1 item",
+   "top": 72,
+   "bottom": 150,
+   "left": 0,
+   "right": 328,
+   "height": 78
+  },
+  {
+   "role": "button",
+   "label": "Open REWE",
+   "top": 87,
+   "bottom": 135,
+   "left": 338,
+   "right": 386,
+   "height": 48
+  },
+  {
+   "role": "group",
+   "label": "Opens the store's app.",
+   "top": 150,
+   "bottom": 274,
+   "left": 0,
+   "right": 390,
+   "height": 124
+  },
+  {
+   "role": "button",
+   "label": "Close",
+   "top": 192,
+   "bottom": 232,
+   "left": 346,
+   "right": 386,
+   "height": 40
+  },
+  {
+   "role": "checkbox",
+   "label": "Apples\n1 kg",
+   "top": 274,
+   "bottom": 352,
+   "left": 0,
+   "right": 390,
+   "height": 78
+  },
+  {
+   "role": "button",
+   "label": "Lidl, 7 items",
+   "top": 372,
+   "bottom": 450,
+   "left": 0,
+   "right": 328,
+   "height": 78
+  },
+  {
+   "role": "button",
+   "label": "Open Lidl Plus",
+   "top": 387,
+   "bottom": 435,
+   "left": 338,
+   "right": 386,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Bananas\n6",
+   "top": 450,
+   "bottom": 529,
+   "left": 0,
+   "right": 390,
+   "height": 79
+  },
+  {
+   "role": "checkbox",
+   "label": "Pasta",
+   "top": 529,
+   "bottom": 608,
+   "left": 0,
+   "right": 390,
+   "height": 79
+  },
+  {
+   "role": "checkbox",
+   "label": "Rice",
+   "top": 608,
+   "bottom": 687,
+   "left": 0,
+   "right": 390,
+   "height": 79
+  },
+  {
+   "role": "checkbox",
+   "label": "Cookies",
+   "top": 687,
+   "bottom": 766,
+   "left": 0,
+   "right": 390,
+   "height": 79
+  },
+  {
+   "role": "checkbox",
+   "label": "Sparkling water\n6",
+   "top": 766,
+   "bottom": 844,
+   "left": 0,
+   "right": 390,
+   "height": 78
+  },
+  {
+   "role": "tab",
+   "label": "List",
+   "top": 780,
+   "bottom": 832,
+   "left": 91,
+   "right": 195,
+   "height": 52
+  },
+  {
+   "role": "tab",
+   "label": "More",
+   "top": 780,
+   "bottom": 832,
+   "left": 195,
+   "right": 299,
+   "height": 52
+  }
+ ],
+ "before": [
+  {
+   "role": "button",
+   "label": "Shopping list · Brandt family",
+   "top": 10,
+   "bottom": 58,
+   "left": 16,
+   "right": 212.890625,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "Edit",
+   "top": 10,
+   "bottom": 58,
+   "left": 298.5097961425781,
+   "right": 373.9941711425781,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "REWE, 1 item",
+   "top": 72,
+   "bottom": 150,
+   "left": 0,
+   "right": 328,
+   "height": 78
+  },
+  {
+   "role": "button",
+   "label": "Open REWE",
+   "top": 87,
+   "bottom": 135,
+   "left": 338,
+   "right": 386,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Apples\n1 kg",
+   "top": 150,
+   "bottom": 228,
+   "left": 0,
+   "right": 390,
+   "height": 78
+  },
+  {
+   "role": "button",
+   "label": "Lidl, 7 items",
+   "top": 248,
+   "bottom": 326,
+   "left": 0,
+   "right": 328,
+   "height": 78
+  },
+  {
+   "role": "button",
+   "label": "Open Lidl Plus",
+   "top": 263,
+   "bottom": 311,
+   "left": 338,
+   "right": 386,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Bananas\n6",
+   "top": 326,
+   "bottom": 405,
+   "left": 0,
+   "right": 390,
+   "height": 79
+  },
+  {
+   "role": "checkbox",
+   "label": "Pasta",
+   "top": 405,
+   "bottom": 484,
+   "left": 0,
+   "right": 390,
+   "height": 79
+  },
+  {
+   "role": "checkbox",
+   "label": "Rice",
+   "top": 484,
+   "bottom": 563,
+   "left": 0,
+   "right": 390,
+   "height": 79
+  },
+  {
+   "role": "checkbox",
+   "label": "Cookies",
+   "top": 563,
+   "bottom": 642,
+   "left": 0,
+   "right": 390,
+   "height": 79
+  },
+  {
+   "role": "checkbox",
+   "label": "Sparkling water\n6",
+   "top": 642,
+   "bottom": 844,
+   "left": 0,
+   "right": 390,
+   "height": 202
+  },
+  {
+   "role": "tab",
+   "label": "List",
+   "top": 780,
+   "bottom": 832,
+   "left": 91,
+   "right": 195,
+   "height": 52
+  },
+  {
+   "role": "tab",
+   "label": "More",
+   "top": 780,
+   "bottom": 832,
+   "left": 195,
+   "right": 299,
+   "height": 52
+  }
+ ],
+ "after": [
+  {
+   "role": "button",
+   "label": "Shopping list · Brandt family",
+   "top": 10,
+   "bottom": 58,
+   "left": 16,
+   "right": 212.890625,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "Edit",
+   "top": 10,
+   "bottom": 58,
+   "left": 298.5097961425781,
+   "right": 373.9941711425781,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "Lidl, 7 items",
+   "top": 72,
+   "bottom": 150,
+   "left": 0,
+   "right": 328,
+   "height": 78
+  },
+  {
+   "role": "button",
+   "label": "Open Lidl Plus",
+   "top": 87,
+   "bottom": 135,
+   "left": 338,
+   "right": 386,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Bananas\n6",
+   "top": 150,
+   "bottom": 229,
+   "left": 0,
+   "right": 390,
+   "height": 79
+  },
+  {
+   "role": "checkbox",
+   "label": "Pasta",
+   "top": 229,
+   "bottom": 308,
+   "left": 0,
+   "right": 390,
+   "height": 79
+  },
+  {
+   "role": "checkbox",
+   "label": "Rice",
+   "top": 308,
+   "bottom": 387,
+   "left": 0,
+   "right": 390,
+   "height": 79
+  },
+  {
+   "role": "checkbox",
+   "label": "Cookies",
+   "top": 387,
+   "bottom": 466,
+   "left": 0,
+   "right": 390,
+   "height": 79
+  },
+  {
+   "role": "checkbox",
+   "label": "Sparkling water\n6",
+   "top": 466,
+   "bottom": 677,
+   "left": 0,
+   "right": 390,
+   "height": 211
+  },
+  {
+   "role": "checkbox",
+   "label": "Ice cream",
+   "top": 677,
+   "bottom": 756,
+   "left": 0,
+   "right": 390,
+   "height": 79
+  },
+  {
+   "role": "checkbox",
+   "label": "Frozen peas",
+   "top": 756,
+   "bottom": 834,
+   "left": 0,
+   "right": 390,
+   "height": 78
+  },
+  {
+   "role": "tab",
+   "label": "List",
+   "top": 780,
+   "bottom": 832,
+   "left": 91,
+   "right": 195,
+   "height": 52
+  },
+  {
+   "role": "tab",
+   "label": "More",
+   "top": 780,
+   "bottom": 832,
+   "left": 195,
+   "right": 299,
+   "height": 52
+  }
+ ]
+}

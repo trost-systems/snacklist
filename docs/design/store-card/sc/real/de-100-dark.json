@@ -1,0 +1,619 @@
+{
+ "lang": "de",
+ "scale": 1,
+ "dark": true,
+ "viewport": {
+  "width": 390,
+  "height": 844
+ },
+ "last": "Äpfel",
+ "withTip": [
+  {
+   "role": "button",
+   "label": "Einkaufsliste · Brandt family",
+   "top": 10,
+   "bottom": 58,
+   "left": 16,
+   "right": 178.140625,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "Anpassen",
+   "top": 10,
+   "bottom": 58,
+   "left": 268.48968505859375,
+   "right": 373.98968505859375,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "REWE, 1 Artikel",
+   "top": 72,
+   "bottom": 124,
+   "left": 0,
+   "right": 328,
+   "height": 52
+  },
+  {
+   "role": "button",
+   "label": "REWE öffnen",
+   "top": 74,
+   "bottom": 122,
+   "left": 338,
+   "right": 386,
+   "height": 48
+  },
+  {
+   "role": "group",
+   "label": "Öffnet die App des Ladens.",
+   "top": 124,
+   "bottom": 164,
+   "left": 0,
+   "right": 390,
+   "height": 40
+  },
+  {
+   "role": "button",
+   "label": "Schließen",
+   "top": 124,
+   "bottom": 164,
+   "left": 346,
+   "right": 386,
+   "height": 40
+  },
+  {
+   "role": "checkbox",
+   "label": "Äpfel\n1 kg",
+   "top": 164,
+   "bottom": 212,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "Lidl, 7 Artikel",
+   "top": 232,
+   "bottom": 284,
+   "left": 0,
+   "right": 328,
+   "height": 52
+  },
+  {
+   "role": "button",
+   "label": "Lidl Plus öffnen",
+   "top": 234,
+   "bottom": 282,
+   "left": 338,
+   "right": 386,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Bananen\n6",
+   "top": 284,
+   "bottom": 332,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Nudeln",
+   "top": 332,
+   "bottom": 380,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Reis",
+   "top": 380,
+   "bottom": 428,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Kekse",
+   "top": 428,
+   "bottom": 476,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Mineralwasser\n6",
+   "top": 476,
+   "bottom": 524,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Eis",
+   "top": 524,
+   "bottom": 572,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Erbsen, TK",
+   "top": 572,
+   "bottom": 620,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "dm, 3 Artikel",
+   "top": 640,
+   "bottom": 692,
+   "left": 0,
+   "right": 328,
+   "height": 52
+  },
+  {
+   "role": "button",
+   "label": "Mein dm öffnen",
+   "top": 642,
+   "bottom": 690,
+   "left": 338,
+   "right": 386,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Zahnpasta",
+   "top": 692,
+   "bottom": 740,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Duschgel",
+   "top": 740,
+   "bottom": 788,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Spülmittel",
+   "top": 788,
+   "bottom": 836,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "tab",
+   "label": "Liste",
+   "top": 780,
+   "bottom": 832,
+   "left": 91,
+   "right": 195,
+   "height": 52
+  },
+  {
+   "role": "tab",
+   "label": "Mehr",
+   "top": 780,
+   "bottom": 832,
+   "left": 195,
+   "right": 299,
+   "height": 52
+  }
+ ],
+ "before": [
+  {
+   "role": "button",
+   "label": "Einkaufsliste · Brandt family",
+   "top": 10,
+   "bottom": 58,
+   "left": 16,
+   "right": 178.140625,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "Anpassen",
+   "top": 10,
+   "bottom": 58,
+   "left": 268.48968505859375,
+   "right": 373.98968505859375,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "REWE, 1 Artikel",
+   "top": 72,
+   "bottom": 124,
+   "left": 0,
+   "right": 328,
+   "height": 52
+  },
+  {
+   "role": "button",
+   "label": "REWE öffnen",
+   "top": 74,
+   "bottom": 122,
+   "left": 338,
+   "right": 386,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Äpfel\n1 kg",
+   "top": 124,
+   "bottom": 172,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "Lidl, 7 Artikel",
+   "top": 192,
+   "bottom": 244,
+   "left": 0,
+   "right": 328,
+   "height": 52
+  },
+  {
+   "role": "button",
+   "label": "Lidl Plus öffnen",
+   "top": 194,
+   "bottom": 242,
+   "left": 338,
+   "right": 386,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Bananen\n6",
+   "top": 244,
+   "bottom": 292,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Nudeln",
+   "top": 292,
+   "bottom": 340,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Reis",
+   "top": 340,
+   "bottom": 388,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Kekse",
+   "top": 388,
+   "bottom": 436,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Mineralwasser\n6",
+   "top": 436,
+   "bottom": 484,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Eis",
+   "top": 484,
+   "bottom": 532,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Erbsen, TK",
+   "top": 532,
+   "bottom": 580,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "dm, 3 Artikel",
+   "top": 600,
+   "bottom": 652,
+   "left": 0,
+   "right": 328,
+   "height": 52
+  },
+  {
+   "role": "button",
+   "label": "Mein dm öffnen",
+   "top": 602,
+   "bottom": 650,
+   "left": 338,
+   "right": 386,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Zahnpasta",
+   "top": 652,
+   "bottom": 700,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Duschgel",
+   "top": 700,
+   "bottom": 748,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Spülmittel",
+   "top": 748,
+   "bottom": 796,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "Zuletzt verwendet",
+   "top": 817,
+   "bottom": 844,
+   "left": 0,
+   "right": 390,
+   "height": 27
+  },
+  {
+   "role": "tab",
+   "label": "Liste",
+   "top": 780,
+   "bottom": 832,
+   "left": 91,
+   "right": 195,
+   "height": 52
+  },
+  {
+   "role": "tab",
+   "label": "Mehr",
+   "top": 780,
+   "bottom": 832,
+   "left": 195,
+   "right": 299,
+   "height": 52
+  }
+ ],
+ "after": [
+  {
+   "role": "button",
+   "label": "Einkaufsliste · Brandt family",
+   "top": 10,
+   "bottom": 58,
+   "left": 16,
+   "right": 178.140625,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "Anpassen",
+   "top": 10,
+   "bottom": 58,
+   "left": 268.48968505859375,
+   "right": 373.98968505859375,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "Lidl, 7 Artikel",
+   "top": 72,
+   "bottom": 124,
+   "left": 0,
+   "right": 328,
+   "height": 52
+  },
+  {
+   "role": "button",
+   "label": "Lidl Plus öffnen",
+   "top": 74,
+   "bottom": 122,
+   "left": 338,
+   "right": 386,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Bananen\n6",
+   "top": 124,
+   "bottom": 172,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Nudeln",
+   "top": 172,
+   "bottom": 220,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Reis",
+   "top": 220,
+   "bottom": 268,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Kekse",
+   "top": 268,
+   "bottom": 316,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Mineralwasser\n6",
+   "top": 316,
+   "bottom": 364,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Eis",
+   "top": 364,
+   "bottom": 412,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Erbsen, TK",
+   "top": 412,
+   "bottom": 460,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "dm, 3 Artikel",
+   "top": 480,
+   "bottom": 532,
+   "left": 0,
+   "right": 328,
+   "height": 52
+  },
+  {
+   "role": "button",
+   "label": "Mein dm öffnen",
+   "top": 482,
+   "bottom": 530,
+   "left": 338,
+   "right": 386,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Zahnpasta",
+   "top": 532,
+   "bottom": 580,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Duschgel",
+   "top": 580,
+   "bottom": 628,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "checkbox",
+   "label": "Spülmittel",
+   "top": 628,
+   "bottom": 676,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "Zuletzt verwendet",
+   "top": 697,
+   "bottom": 745,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "Äpfel\n1 kg\nWieder auf die Liste",
+   "top": 745,
+   "bottom": 793,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "Tomaten\nWieder auf die Liste",
+   "top": 793,
+   "bottom": 841,
+   "left": 0,
+   "right": 390,
+   "height": 48
+  },
+  {
+   "role": "button",
+   "label": "Kaffee\nWieder auf die Liste",
+   "top": 841,
+   "bottom": 844,
+   "left": 0,
+   "right": 390,
+   "height": 3
+  },
+  {
+   "role": "tab",
+   "label": "Liste",
+   "top": 780,
+   "bottom": 832,
+   "left": 91,
+   "right": 195,
+   "height": 52
+  },
+  {
+   "role": "tab",
+   "label": "Mehr",
+   "top": 780,
+   "bottom": 832,
+   "left": 195,
+   "right": 299,
+   "height": 52
+  }
+ ]
+}

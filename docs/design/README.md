@@ -30,3 +30,4 @@ python3 -m http.server 8771 --directory docs/design/h-satz-final/h-dist
 ## Feature prototypes
 
 - **Grocery log (job 198):** [`grocery-log/`](grocery-log/), five interactive approaches behind one switcher, plus [`RECOMMENDATION.md`](grocery-log/RECOMMENDATION.md). Serve the repo root (`python3 -m http.server 4198 --bind 127.0.0.1`) and open `/docs/design/grocery-log/index.html`.
+- **After a store's last item: the card (job 400, round SC):** [`store-card/`](store-card/README.md), five cards for the top of the list once a store's "Open app" key is gone, measured against the release web build, plus [`sc/RECOMMENDATION.md`](store-card/sc/RECOMMENDATION.md). `node docs/design/store-card/tools/serve.mjs` serves it.

@@ -1,0 +1,80 @@
+{
+ "options": {
+  "today": {
+   "rows": {
+    "a": 9,
+    "b": 0,
+    "c": 3
+   },
+   "extra100": 0,
+   "extra310": 0,
+   "extraC": 0,
+   "overflow310": []
+  },
+  "SC1": {
+   "rows": {
+    "a": 7,
+    "b": 0,
+    "c": 3
+   },
+   "extra100": 88,
+   "extra310": 302,
+   "extraC": 168,
+   "overflow310": [
+    "d de android"
+   ]
+  },
+  "SC2": {
+   "rows": {
+    "a": 7,
+    "b": 0,
+    "c": 3
+   },
+   "extra100": 134,
+   "extra310": 442,
+   "extraC": 190,
+   "overflow310": [
+    "d de android"
+   ]
+  },
+  "SC3": {
+   "rows": {
+    "a": 7,
+    "b": 0,
+    "c": 3
+   },
+   "extra100": 144,
+   "extra310": 498,
+   "extraC": 200,
+   "overflow310": [
+    "d en android",
+    "d de android"
+   ]
+  },
+  "SC4": {
+   "rows": {
+    "a": 7,
+    "b": 0,
+    "c": 3
+   },
+   "extra100": 140,
+   "extra310": 424,
+   "extraC": 140,
+   "overflow310": [
+    "d de android"
+   ]
+  },
+  "SC5": {
+   "rows": {
+    "a": 7,
+    "b": 0,
+    "c": 3
+   },
+   "extra100": 124,
+   "extra310": 386,
+   "extraC": 228,
+   "overflow310": []
+  }
+ },
+ "sc2WithoutLink": 134
+}

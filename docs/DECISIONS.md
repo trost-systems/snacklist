@@ -17650,3 +17650,20 @@ TE-Q default. Built behind the new flag `total-priced-only`, on top of `list-dec
 - Policy date 23 November 2026, not 22: main already says 22 November for the N-323 text, and this
   PR waits for Legal, so the earliest realistic merge day is the next one. A later merge bumps it
   again.
+
+## Job 400: round SC, the card after a store's last item (2026-11-22)
+
+- **Store identity without logos or colours.** The brief's SC1 asks for "store colour/logo + name". Legal Addendum D
+  allows retailers as plain text names with neutral icons only, so every card shows the Material store icon and the
+  plain name. Recorded on the page.
+- **Calibrated against the release web build with the launch flags.** verify-snacklist's launch.sh with
+  `VH_FLAGS_OFF=grocery-log,prices-and-trip-total,trip-mode VH_DEFINES="FLAGS_ON=open-store-app"` (port block 624,
+  stack stopped). The replica's headers and rows sit within 2 px at 100 % and 4 px at 310 % (verify.mjs).
+- **Own folder `docs/design/store-card/`.** `/list/` in the preview holds job 355's round RU files, which SC would
+  have overwritten.
+- **SC2's customer card button is drawn as if a deep link existed, with a "Today" switch that hides it.** No chain has
+  a verified deep link (job 314), so the build would hide it; the page says so.
+- **A primary button under the add field at 310 % is a measured result, not a failure.** It happens only for the long
+  name on the 360 px Android phone and is listed per option; every other layout problem fails verify.mjs.
+- **Pick SC1, runner-up SC3** (sc/RECOMMENDATION.md): SC1 is the smallest at both text sizes (88 px, 302 px) and
+  needs no deep link, recap data or session.

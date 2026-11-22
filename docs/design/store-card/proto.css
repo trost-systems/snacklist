@@ -1,0 +1,105 @@
+/* Round SC. Phone colours are app/lib/design/tokens.g.dart's SnacklistColors (light, dark); fonts are the app's own
+   (app/assets/fonts, copied to ./fonts by build.sh, served from there by tools/serve.mjs). */
+@font-face { font-family: Inter; src: url(fonts/Inter-Regular.ttf); font-weight: 400; }
+@font-face { font-family: Inter; src: url(fonts/Inter-Medium.ttf); font-weight: 500; }
+@font-face { font-family: Inter; src: url(fonts/Inter-SemiBold.ttf); font-weight: 600; }
+@font-face { font-family: Inter; src: url(fonts/Inter-Bold.ttf); font-weight: 700; }
+@font-face { font-family: Bricolage; src: url(fonts/BricolageGrotesque-Bold.ttf); font-weight: 700; }
+@font-face { font-family: Bricolage; src: url(fonts/BricolageGrotesque-ExtraBold.ttf); font-weight: 800; }
+
+.light { --surface: #F7F7F2; --raised: #FFFFFF; --sunken: #ECEFF6; --text: #0F1530; --muted: #4B536C; --border: #0F1530; --edge: #0F1530;
+  --divider: #D3D8E6; --brand: #1B3FAE; --honey: #FFE24A; --on-honey: #0F1530; --inverse: #0F1530; --on-inverse: #F3F6FF; --chipface: #FFFFFF; }
+.dark { --surface: #0B1024; --raised: #151C3A; --sunken: #111735; --text: #EFF3FF; --muted: #B0B9D8; --border: #7F8CC4; --edge: #7F8CC4;
+  --divider: #2F3A66; --brand: #9FB6FF; --honey: #FFE24A; --on-honey: #0B1024; --inverse: #EFF3FF; --on-inverse: #0B1024; --chipface: #151C3A; }
+
+.phone { --ts: 1; width: var(--w); height: var(--h); flex: none; display: flex; flex-direction: column; overflow: hidden; position: relative;
+  background: var(--surface); color: var(--text); font-family: Inter, system-ui, sans-serif; border-radius: 44px; outline: 10px solid #1d1d22;
+  -webkit-font-smoothing: antialiased; text-align: left; }
+.phone.android { border-radius: 18px; outline-width: 6px; }
+.phone .ic { fill: currentColor; flex: none; display: block; }
+.status { height: var(--top); box-sizing: border-box; flex: none; display: flex; align-items: center; padding: 8px 34px 0; font: 600 15px/1 Inter; }
+.android .status { padding: 0 14px; font-size: 13px; }
+.status .sig { margin-left: auto; width: 64px; height: 12px; border-radius: 4px; opacity: 0.85;
+  background: linear-gradient(90deg, currentColor 0 18px, transparent 18px 24px, currentColor 24px 40px, transparent 40px 46px, currentColor 46px); }
+.screen { position: relative; flex: 1; min-height: 0; }
+.scroll { position: absolute; inset: 0; overflow: hidden; padding-top: 72px; }
+.endpad { height: 140px; }
+
+.topbar { position: absolute; top: 10px; left: 16px; right: 16px; display: flex; justify-content: space-between; align-items: flex-start; }
+.chip, .ebtn { height: 44px; box-sizing: border-box; border: 2px solid var(--edge); border-radius: 16px; background: var(--chipface);
+  box-shadow: 0 4px 0 var(--edge); display: flex; align-items: center; color: var(--text); }
+.chip { padding: 0 12px 0 24px; gap: 8px; max-width: 210px; }
+.chip .cl { display: flex; flex-direction: column; min-width: 0; line-height: 1.15; }
+.chip small { font: 500 calc(12px * min(var(--ts), 1.45)) Inter; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chip b { font: 700 calc(15px * min(var(--ts), 1.45)) Inter; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ebtn { padding: 0 16px; font: 700 calc(15px * min(var(--ts), 1.45)) Inter; }
+
+.head { min-height: 52px; display: flex; align-items: center; gap: 10px; padding: 2px 4px 2px 18px; box-sizing: border-box; }
+.head .sname { font: 400 calc(16px * var(--ts))/1.5 Inter; letter-spacing: 0.5px; max-width: 60%; overflow-wrap: anywhere; }
+.head .rule { flex: 1 1 0; min-width: 0; height: 3px; border-radius: 9px; background: var(--brand); }
+.head .cnt { font: 500 calc(13px * var(--ts)) Inter; color: var(--muted); white-space: nowrap; }
+.head .cnt b { font: 800 calc(15px * var(--ts)) Bricolage; color: var(--text); }
+.phone[data-ts="3.1"] .head .word, .phone[data-ts="2"] .head .word { display: none; }
+.head .chev { color: var(--muted); }
+.head .key { width: 48px; height: 48px; display: grid; place-items: center; color: var(--brand); margin-left: 0; }
+.sec { margin-bottom: 20px; }
+
+.row { min-height: 48px; box-sizing: border-box; padding: 6px 16px 7px; display: flex; gap: 10px; align-items: center; position: relative; }
+.row::after { content: ''; position: absolute; left: 54px; right: 16px; bottom: 0; height: 1px; background: var(--divider); }
+.row.last::after { display: none; }
+.row .emo { width: 28px; flex: none; font-size: calc(18px * var(--ts)); display: flex; justify-content: center; line-height: calc(21.25px * var(--ts)); text-align: center;
+  font-family: "Apple Color Emoji", "Noto Color Emoji", "Segoe UI Emoji", sans-serif; }
+.row .name { font: 700 calc(17px * var(--ts))/calc(21.25px * var(--ts)) Bricolage; min-width: 0; overflow-wrap: anywhere; }
+.row .q { font-weight: 800; color: var(--brand); }
+.row.recent { opacity: 0.55; }
+.row.recent .q { color: var(--muted); }
+.recent-head { border-top: 1px solid var(--edge); min-height: 48px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 16px; font: 400 calc(16px * var(--ts)) Inter; color: var(--text); fill: var(--muted); }
+.empty { margin: 8px 24px 28px; font: 400 calc(16px * var(--ts))/1.5 Inter; color: var(--muted); }
+
+.add { position: absolute; left: 16px; right: 16px; bottom: calc(var(--bot) + 52px + 11px); height: 51px; box-sizing: border-box;
+  border: 2px solid var(--edge); border-radius: 16px; background: var(--raised); display: flex; align-items: center; padding: 0 20px;
+  overflow: hidden; color: var(--muted); font: 400 calc(17px * var(--ts)) Inter; white-space: nowrap; }
+.tabs { position: absolute; bottom: var(--bot); left: 50%; transform: translateX(-50%); width: 234px; height: 52px; box-sizing: border-box;
+  border: 2px solid var(--edge); border-radius: 16px; background: var(--raised); display: flex; align-items: center; padding: 0 4px; gap: 8px; }
+.tab { flex: 1; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;
+  font: 700 calc(15px * min(var(--ts), 1.3)) Inter; color: var(--text); }
+.tab.on { background: var(--honey); color: var(--on-honey); border: 2px solid var(--edge); }
+.homebar { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); width: 134px; height: 5px; border-radius: 3px; background: var(--text); }
+.snack { position: absolute; left: 12px; right: 12px; bottom: calc(var(--bot) + 52px + 11px + 51px + 8px); min-height: 48px; box-sizing: border-box;
+  border-radius: 14px; background: var(--inverse); color: var(--on-inverse); display: flex; align-items: center; gap: 8px; padding: 6px 8px 6px 16px;
+  font: 400 calc(14px * var(--ts)) Inter; }
+.snack span:first-child { flex: 1; }
+.snack .sa { font-weight: 700; padding: 0 8px; min-height: 36px; display: flex; align-items: center; }
+
+/* The card: HintCard's slot (12 px sides, 8 px above and below) and face (raised surface, 2 px contour, 20 px corners,
+   no shadow under the soft look). Buttons are the only things with a shadow (rule shadows-only-on-buttons). */
+.slot { padding: 8px 12px; display: flex; flex-direction: column; gap: 8px; }
+.card { background: var(--raised); border: 2px solid var(--border); border-radius: 20px; padding: 4px 0 4px 12px; box-sizing: border-box; }
+.card .t { margin: 0; font: 700 calc(14px * var(--ts))/1.3 Inter; color: var(--text); overflow-wrap: anywhere; }
+.card .sub { margin: 2px 0 0; font: 400 calc(13px * var(--ts))/1.35 Inter; color: var(--muted);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.card .lead { color: var(--brand); padding-top: 12px; flex: none; }
+.x { width: 48px; height: 48px; display: grid; place-items: center; color: var(--muted); flex: none; }
+.btn { min-height: 44px; box-sizing: border-box; margin-bottom: 4px; border: 2px solid var(--edge); border-radius: 14px; box-shadow: 0 4px 0 var(--edge);
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px 6px 10px; font: 700 calc(15px * var(--ts))/1.2 Inter; flex: none; max-width: 100%; }
+.btn .bl { min-width: 0; overflow-wrap: anywhere; }
+.btn.primary { background: var(--honey); color: var(--on-honey); }
+.btn.secondary { background: var(--raised); color: var(--text); }
+.btn.secondary .ic { color: var(--brand); }
+
+.c1, .c4 { display: flex; flex-wrap: wrap; align-items: flex-start; column-gap: 12px; }
+.c1 .body, .c4 .body { flex: 1 1 0; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; column-gap: 10px; row-gap: 6px; padding: 8px 0 4px; }
+.c1 .body .t, .c4 .body .t { flex: 1 1 auto; padding: 6px 0; }
+.c1 .x, .c4 .x { margin-top: 2px; }
+.c4 .next { flex: 0 0 calc(100% + 12px); box-sizing: border-box; display: flex; align-items: center; gap: 10px; min-height: 48px; margin: 4px 0 0 -12px; padding: 0 16px 0 12px;
+  border-top: 1px solid var(--divider); color: var(--brand); font: 700 calc(15px * var(--ts))/1.25 Inter; }
+.c4 .next .nl { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.c4 .next .left { color: var(--muted); font-weight: 500; }
+.c2 .top, .c3 .top, .c5 .top { display: flex; align-items: flex-start; gap: 12px; }
+.c2 .top .t, .c3 .top .tt, .c5 .top .t { flex: 1; min-width: 0; padding: 14px 0 6px; }
+.c5 .top .t { padding-right: 12px; }
+.c3 .top .tt .t { padding: 0; }
+.acts { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 8px 6px 34px; }
+.c5 .sline { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 10px; padding: 2px 12px 2px 34px; }
+.c5 .sline .sn { font: 600 calc(15px * var(--ts))/1.3 Inter; overflow-wrap: anywhere; min-width: 0; }

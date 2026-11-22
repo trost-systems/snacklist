@@ -1,0 +1,26 @@
+body { margin: 0; padding: 16px 20px 64px; font: 15px/1.5 Inter, system-ui, sans-serif; color: #0F1530; background: #EEF0F5; }
+.back a { color: #1B3FAE; }
+.top h1 { font: 800 26px/1.2 Bricolage, Inter, sans-serif; margin: 4px 0 8px; }
+.top p { max-width: 900px; margin: 6px 0; }
+.muted { color: #4B536C; }
+.note { max-width: 900px; background: #FFF2A8; border-radius: 10px; padding: 8px 12px; }
+.ctl { display: flex; flex-wrap: wrap; gap: 10px 18px; margin: 14px 0 6px; position: sticky; top: 0; background: #EEF0F5; padding: 8px 0; z-index: 2; }
+.seg { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.seg span { font-weight: 600; margin-right: 4px; }
+.seg a { padding: 6px 10px; border-radius: 10px; border: 2px solid #0F1530; color: #0F1530; text-decoration: none; background: #fff; font-size: 14px; }
+.seg a.on { background: #FFE24A; font-weight: 700; }
+.opt, .doc { margin-top: 34px; }
+.opt h2, .doc h2 { font: 800 21px/1.2 Bricolage, Inter, sans-serif; margin: 0 0 4px; }
+.opt > p { max-width: 900px; margin: 4px 0 10px; }
+.frames { display: flex; gap: 30px; overflow-x: auto; padding: 14px 12px 18px; }
+.frame { margin: 0; flex: none; }
+.frame figcaption { font-size: 13px; font-weight: 600; max-width: calc(390px * 0.62); min-height: 40px; margin-bottom: 10px; }
+.frame .ph { zoom: 0.62; }
+.doc table { border-collapse: collapse; margin: 8px 0; background: #fff; }
+.doc th, .doc td { border: 1px solid #C3CAE0; padding: 6px 10px; text-align: left; vertical-align: top; font-size: 14px; }
+.doc ol li, .doc ul li { margin: 4px 0; max-width: 900px; }
+.doc p { max-width: 900px; }
+#stage { position: absolute; left: 0; top: 0; }
+body.measuring { padding: 0; }
+body.measuring .back { display: none; }
+@media (max-width: 600px) { .frame .ph { zoom: 0.5; } .frame figcaption { max-width: 195px; } body { padding: 12px; } }

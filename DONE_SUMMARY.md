@@ -2372,3 +2372,11 @@ and the new date.
 **Not done.** Merge waits for Legal (NEEDS_LEAD "Job 380"). If it merges on another day, bump
 the date to that day. Job 374 (#584) edits the same two files: whichever lands second carries
 both sides' reviewed text through its rebase.
+
+## Job 400: round SC, the card after a store's last item (prototype, draft PR, never merge)
+
+Five cards for the top of the list once a store's last item is ticked and its "Open app" key is gone, on the launch
+list (RD1, categories hidden, compact add, `open-store-app` on; no prices, totals, trips or log), in states (a) to
+(e), English and German, light and dark, 100 % and 310 %, iPhone and a small Android phone. Calibrated against the
+release web build with the launch flags. **Pick SC1, runner-up SC3.** Preview `dpl_DXk3qtWM7M9VXyBgJm5rYgrijDHA`
+(share link to be minted by the lead). Details: `docs/done/400.md`.
