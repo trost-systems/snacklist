@@ -135,7 +135,7 @@ test('jsonld: support pages carry their FAQ, guides a TechArticle, landing pages
     acceptedAnswer: { '@type': 'Answer', text: 'Tap More, then Invite people. Share the link or the code. An invite is valid for one person. You can revoke open invites there too.' },
   });
   assert.deepEqual(faq.mainEntity.map((q) => q.name), base.page('/en/support').querySelectorAll('main h3').map((h) => h.text));
-  assert.deepEqual(ld('/de/anleitungen/alexa').map((d) => [d['@type'], d.dateModified, d.inLanguage]), [['TechArticle', '2026-11-04', 'de']]);
+  assert.deepEqual(ld('/de/anleitungen/alexa').map((d) => [d['@type'], d.dateModified, d.inLanguage]), [['TechArticle', '2026-11-22', 'de']]);
   assert.deepEqual(ld('/en'), [{ '@context': 'https://schema.org', '@type': 'WebSite', name: 'Snacklist', url: `${SITE}/en`, inLanguage: 'en' }]);
 });
 

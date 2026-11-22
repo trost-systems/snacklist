@@ -277,6 +277,19 @@ test('launch says nothing of the waitlist, the beta or November on the landing p
   assert.match(waitlist.page('/de').querySelector('main').text, /Nur für die Warteliste und die Einladung\./, 'the waitlist stage keeps Legal\'s line');
 });
 
+test('the stage gate: launch pages outside the legal texts say nothing of a beta or an upcoming start, the waitlist stage still does (job 402)', () => {
+  const text = (site, route) => site.page(route).querySelector('main').text;
+  const compare = '/de/einkaufsliste-vergleich-bring';
+  assert.match(text(waitlist, compare), /Beta für Freunde und Familie/);
+  assert.doesNotMatch(text(launch, compare), /\bbeta\b|steht bevor/i);
+  assert.match(text(launch, compare), /im App Store, bei Google Play und im Browser/);
+  const legalRoutes = new Set(['/datenschutz', '/en/privacy', ...ACTION_ROUTES]);
+  for (const route of htmlRoutes(launch.outDir).filter((r) => !legalRoutes.has(r))) {
+    const main = launch.page(route).querySelector('main');
+    if (main) assert.doesNotMatch(main.text, /\bbeta\b|steht bevor|warteliste|waitlist/i, route);
+  }
+});
+
 test('launch carries no waitlist form or script', () => {
   for (const locale of ['de', 'en']) {
     const doc = launch.page(`/${locale}`);

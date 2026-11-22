@@ -60,6 +60,18 @@ for (const f of all) {
   const hp2 = t.match(HP2);
   if (hp2) errors.push(`${f}: "${hp2[0]}" names a feature that is off at launch (HP2: prices, totals, trip mode, History)`);
 }
+// N-366 (Apple 2.3.7): no "Alexa" in the name, subtitle, short description or keywords, in any form; and in the
+// long descriptions the skill does things, never "Alexa does".
+for (const l of locales) for (const f of [`${l}/name.txt`, `${l}/subtitle.txt`, `${l}/keywords.txt`, `android/${l}/title.txt`, `android/${l}/short_description.txt`]) {
+  if (/alexa/i.test(read(f))) errors.push(`${f}: names Alexa (N-366: only the long descriptions may)`);
+}
+// German puts the verb first after a fronted word: „Dann trägt Alexa es ein.“
+const ALEXA_DOES_DE = /\b(?!mit\b|nicht\b)[a-zäöüß]+t Alexa\b/;
+const ALEXA_DOES = /\bAlexa (?:sagt|antwortet|sucht|versteht|fragt|liest|schickt|setzt|fügt|says|answers|asks|reads|searches|understands|puts|sends|adds)\b/;
+for (const l of locales) for (const f of [`${l}/description.txt`, `android/${l}/full_description.txt`]) {
+  const m = read(f).match(ALEXA_DOES) ?? read(f).match(ALEXA_DOES_DE);
+  if (m) errors.push(`${f}: "${m[0]}" (N-366: say what the Snacklist skill for Alexa does)`);
+}
 // N-366: a description naming Alexa ends with the trademark notice; the App Store's names Siri first, Play's only Amazon.
 for (const l of locales) for (const [f, store] of [[`${l}/description.txt`, "appstore"], [`android/${l}/full_description.txt`, "play"]]) {
   const t = read(f);

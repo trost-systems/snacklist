@@ -4,7 +4,7 @@ description: "Mit dem Snacklist-Skill für Alexa kannst du Sachen per Sprache au
 slug: alexa
 locale: de
 translation_key: alexa
-updated: 2026-11-04
+updated: 2026-11-22
 ---
 
 # Snacklist per Alexa: Skill einrichten
@@ -12,7 +12,7 @@ updated: 2026-11-04
 Mit dem Snacklist-Skill für Alexa kannst du Sachen per Sprache auf deine Snacklist setzen, ohne die App zu öffnen. Der Skill ist im [Alexa Skill Store](alexa-skill:de) für alle verfügbar. Du aktivierst ihn und verknüpfst dein Konto, danach läuft es so:
 
 > **Du:** Alexa, sag Snacklist, füg Milch und Eier hinzu.
-> **Alexa:** Ich habe Milch und Eier auf die Snacklist gesetzt.
+> **Der Skill:** Ich habe Milch und Eier auf die Snacklist gesetzt.
 
 Der Skill schickt deinen Satz an Snacklist. Snacklist teilt ihn in einzelne Einträge auf, setzt jeden an die passende Stelle der Liste, und die Einträge erscheinen sofort auf allen Geräten in eurem Haushalt. Der Skill versteht Deutsch und Englisch, je nachdem, auf welche Sprache dein Alexa-Gerät eingestellt ist.
 
@@ -45,9 +45,9 @@ Ab jetzt geht es ohne Hände, von jedem Alexa-Gerät in deinem Amazon-Konto.
 > - Deine Sprache nimmt Amazon auf und wandelt sie in Text um. Das geschieht nach den Alexa-Nutzungsbedingungen und der Datenschutzerklärung von Amazon. Wie lange Amazon Sprachaufnahmen aufbewahrt und wie du sie löschst, stellst du in der Alexa-App ein.
 > - Alles Weitere steht in der [Datenschutzerklärung](/datenschutz) unter „Siri, Alexa und KI-Assistenten“.
 
-## Damit Alexa Snacklist erreicht {#snacklist-erreichen}
+## Damit dein Satz beim Snacklist-Skill ankommt {#snacklist-erreichen}
 
-Alexa hat eigene Einkaufslisten. Damit dein Satz bei Snacklist ankommt und nicht dort, muss „sag Snacklist“, „frag Snacklist“ oder „öffne Snacklist“ darin vorkommen:
+Die Alexa-App hat eigene Einkaufslisten. Damit dein Satz bei Snacklist ankommt und nicht dort, muss „sag Snacklist“, „frag Snacklist“ oder „öffne Snacklist“ darin vorkommen:
 
 - „Alexa, sag Snacklist, ich brauche Milch.“
 - „Alexa, sag Snacklist, füge Milch hinzu.“
@@ -55,13 +55,13 @@ Alexa hat eigene Einkaufslisten. Damit dein Satz bei Snacklist ankommt und nicht
 - „Alexa, frag Snacklist, was auf der Liste steht.“
 - „Alexa, öffne Snacklist.“ Danach sagst du, was auf die Liste soll.
 
-Sag nicht „Alexa, setz Milch auf die Snacklist“. Diesen Satz behandelt Alexa ohne Snacklist: Alexa sucht in den Listen der Alexa-App eine namens „Snacklist“ und antwortet zum Beispiel „Ich konnte keine Liste finden unter Snacklist“, oder setzt die Milch auf die Einkaufsliste der Alexa-App.
+Fehlt „sag Snacklist“, „frag Snacklist“ oder „öffne Snacklist“, kommt der Satz nicht beim Snacklist-Skill an, sondern landet in den Listen der Alexa-App.
 
-Alexa versteht den Namen am besten, wenn du ihn deutlich in zwei Silben sagst: „Snack-list“. Antwortet Alexa mit der Einkaufsliste der Alexa-App oder mit „Ich weiß nicht“, sag zuerst „Alexa, öffne Snacklist“ und dann, was auf die Liste soll.
+Der Name wird am besten erkannt, wenn du ihn deutlich in zwei Silben sagst: „Snack-list“. Kommt die Antwort von der Einkaufsliste der Alexa-App oder lautet sie „Ich weiß nicht“, sag zuerst „Alexa, öffne Snacklist“ und dann, was auf die Liste soll.
 
 ## So kannst du sprechen
 
-Fang mit „Alexa, sag Snacklist, …“ an. Sag mehrere Sachen in einem Satz und sag zwischen ihnen „und“. Eine Pause allein trennt nicht: Aus „Butter, Brot und Käse“ wird bei Alexa „Butter brot“ und „Käse“. Statt „und“ gehen auch „sowie“, „noch“, „auch“, „außerdem“ und „plus“.
+Fang mit „Alexa, sag Snacklist, …“ an. Sag mehrere Sachen in einem Satz und sag zwischen ihnen „und“. Eine Pause allein trennt nicht: Aus „Butter, Brot und Käse“ wird „Butter brot“ und „Käse“. Statt „und“ gehen auch „sowie“, „noch“, „auch“, „außerdem“ und „plus“.
 
 | Du sagst | Auf der Liste |
 | --- | --- |
@@ -82,7 +82,7 @@ Hat der Skill nichts verstanden, fragt er einmal nach: „Das habe ich nicht ver
 ## Liste vorlesen lassen
 
 > **Du:** Alexa, frag Snacklist, was auf der Liste steht.
-> **Alexa:** Auf der Snacklist stehen 3 Sachen: 2 Liter Milch, Eier und Brot.
+> **Der Skill:** Auf der Snacklist stehen 3 Sachen: 2 Liter Milch, Eier und Brot.
 
 Der Skill liest höchstens 10 offene Einträge vor, in der Reihenfolge eurer Liste. Stehen mehr drauf, sagt er am Ende zum Beispiel „… und 4 weitere.“ Ist die Liste leer, lautet die Antwort „Die Snacklist ist leer.“ Danach ist der Skill fertig und fragt nicht weiter nach. Dieselben Einträge erscheinen außerdem als Karte in der Alexa-App.
 
@@ -92,10 +92,10 @@ Statt „was auf der Liste steht“ geht auch „Alexa, frag Snacklist, was brau
 
 | Was passiert | Woran es liegt | Was hilft |
 | --- | --- | --- |
-| Alexa kennt den Skill „Snacklist“ nicht, oder du findest ihn nicht in der Alexa-App. | Du hast den Skill noch nicht aktiviert, oder dein Alexa-Gerät hängt an einem anderen Amazon-Konto als die Alexa-App. | Such in der Alexa-App im Skill-Store nach „Snacklist“ und aktiviere ihn (Schritt 1), mit dem Amazon-Konto, das dein Gerät nutzt. |
-| Alexa kennt den Skill nicht, obwohl du ihn aktiviert hast. | Dein Alexa-Gerät ist auf eine Sprache eingestellt, die der Skill nicht kann. Er kann Deutsch (Deutschland) und Englisch (USA, Großbritannien, Australien, Kanada, Indien). | Stell die Sprache des Geräts auf Deutsch oder Englisch (USA, Großbritannien, Australien, Kanada oder Indien): Alexa-App → **Mehr** → **Einstellungen** → **Geräteeinstellungen** → dein Gerät → Zahnrad oben rechts → unter **Allgemein** auf **Sprache**. |
-| Alexa sagt „Ich konnte keine Liste finden unter Snacklist“ oder setzt die Sache auf die Einkaufsliste der Alexa-App. | Im Satz fehlte „sag Snacklist“, zum Beispiel bei „Setz Milch auf die Snacklist“. Dann landet er in den Listen der Alexa-App. | Sag „Alexa, sag Snacklist, setz Milch drauf“ oder erst „Alexa, öffne Snacklist“ (siehe [Damit Alexa Snacklist erreicht](#snacklist-erreichen)). |
-| Alexa antwortet „Ich weiß nicht“ oder versteht einen anderen Namen. | Alexa hat „Snacklist“ nicht erkannt. | Sag den Namen deutlich in zwei Silben, „Snack-list“, oder fang mit „Alexa, öffne Snacklist“ an. |
+| Der Skill „Snacklist“ startet nicht, oder du findest ihn nicht in der Alexa-App. | Du hast den Skill noch nicht aktiviert, oder dein Alexa-Gerät hängt an einem anderen Amazon-Konto als die Alexa-App. | Such in der Alexa-App im Skill-Store nach „Snacklist“ und aktiviere ihn (Schritt 1), mit dem Amazon-Konto, das dein Gerät nutzt. |
+| Der Skill startet nicht, obwohl du ihn aktiviert hast. | Dein Alexa-Gerät ist auf eine Sprache eingestellt, die der Skill nicht kann. Er kann Deutsch (Deutschland) und Englisch (USA, Großbritannien, Australien, Kanada, Indien). | Stell die Sprache des Geräts auf Deutsch oder Englisch (USA, Großbritannien, Australien, Kanada oder Indien): Alexa-App → **Mehr** → **Einstellungen** → **Geräteeinstellungen** → dein Gerät → Zahnrad oben rechts → unter **Allgemein** auf **Sprache**. |
+| Die Antwort lautet „Ich konnte keine Liste finden unter Snacklist“, oder die Sache landet auf der Einkaufsliste der Alexa-App. | Im Satz fehlte „sag Snacklist“. Dann landet er in den Listen der Alexa-App. | Sag „Alexa, sag Snacklist, setz Milch drauf“ oder erst „Alexa, öffne Snacklist“ (siehe [Damit dein Satz beim Snacklist-Skill ankommt](#snacklist-erreichen)). |
+| Die Antwort lautet „Ich weiß nicht“, oder ein anderer Name wird verstanden. | „Snacklist“ wurde nicht erkannt. | Sag den Namen deutlich in zwei Silben, „Snack-list“, oder fang mit „Alexa, öffne Snacklist“ an. |
 | „Bitte verknüpfe zuerst dein Snacklist-Konto in der Alexa-App. Ich habe dir dort eine Karte dazu geschickt.“ | Der Skill ist nicht oder nicht mehr mit deinem Snacklist-Konto verknüpft. | Tippe auf der Seite des Skills in der Alexa-App auf **Konto verknüpfen** und mach weiter wie in Schritt 1. |
 | „Du bist noch in keinem Haushalt …“ | Dein Snacklist-Konto gehört zu keinem Haushalt. | Leg in der App einen Haushalt an oder tritt einem bei. |
 | „Mehr als dreißig auf einmal gehen nicht …“ | Du hast mehr als 30 Sachen in einem Satz gesagt. Die ersten 30 stehen auf der Liste. | Sag den Rest noch einmal. |
@@ -103,7 +103,7 @@ Statt „was auf der Liste steht“ geht auch „Alexa, frag Snacklist, was brau
 | „Entschuldigung, das hat gerade nicht geklappt …“ | Snacklist ist gerade nicht erreichbar. | Versuch es gleich noch einmal. |
 | Ein Eintrag steht im falschen Laden. | Snacklist hat den Eintrag einem anderen Laden zugeordnet. | Halte den Eintrag in der App kurz gedrückt. Tippe im Fenster, das sich öffnet, auf den Laden, wähle den richtigen und tippe auf **Fertig**. Snacklist merkt sich das für euren ganzen Haushalt. |
 
-## Alexa wieder abschalten
+## Den Skill wieder abschalten
 
 Du hast zwei Möglichkeiten. Jede beendet die Verbindung:
 

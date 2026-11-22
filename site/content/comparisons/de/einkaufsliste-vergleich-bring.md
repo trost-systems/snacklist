@@ -16,7 +16,14 @@ Die Angaben zu Bring! stammen aus einer datierten Quelle: dem Google-Play-Store-
 
 - Snacklist ist eine gemeinsame Einkaufsliste für den Haushalt, ohne Werbung. Deine Liste folgt dem Weg durch den Laden, und du bringst deine Läden in deine Reihenfolge.
 - Bring! hat heute den größeren Funktionsumfang: Rezepte, Angebote und Prospekte, Kundenkarten und Fotos an Artikeln.
-- Bring! ist öffentlich verfügbar. Snacklist ist als Beta für Freunde und Familie gestartet; der öffentliche Start in App Store und Google Play steht bevor.
+
+::: until launch-stage
+Bring! ist öffentlich verfügbar. Snacklist ist als Beta für Freunde und Familie gestartet; der öffentliche Start in App Store und Google Play steht bevor.
+:::
+
+::: once launch-stage
+Beide Apps sind öffentlich verfügbar. Snacklist gibt es im App Store, bei Google Play und im Browser.
+:::
 
 ## Die gemeinsame Liste
 
@@ -56,7 +63,6 @@ Das gibt es bei Bring!, aber nicht in Snacklist (Stand: 22.11.2026):
 | Benachrichtigungen bei Änderungen | Keine Push-Benachrichtigungen; neue Einträge werden in der Liste markiert | Automatische Benachrichtigungen über Änderungen |
 | Dringlichkeit markieren | Nicht enthalten | Dringlichkeit markieren |
 | Kachel- oder Listenansicht | Nur Listenansicht | Kachel- oder Listenansicht |
-| Verfügbarkeit | Beta für Freunde und Familie; öffentlicher Start steht bevor | Öffentlich verfügbar |
 
 Quelle: Bring! Einkaufsliste & Rezepte, Google Play Store-Eintrag (de-DE), abgerufen am 22.11.2026, https://play.google.com/store/apps/details?id=ch.publisheria.bring&hl=de&gl=DE
 
@@ -83,7 +89,13 @@ Zugriff beenden: in der App unter Mehr > Zugänge > „Verbundene Apps“ das Tr
 
 ## Wann gibt es Snacklist?
 
+::: until launch-stage
 Snacklist kommt für iPhone und Android. Die Beta für Freunde und Familie läuft; der öffentliche Start in den Stores steht bevor.
+:::
+
+::: once launch-stage
+Jetzt: im App Store für iPhone, bei Google Play für Android und im Browser.
+:::
 
 ## Stand, Quelle, Korrektur
 
@@ -99,13 +111,25 @@ Alle genannten Marken gehören ihren jeweiligen Inhabern. Snacklist ist ein unab
 Snacklist sortiert deine Artikel automatisch nach Laden und in der Reihenfolge, in der du durch den Laden gehst, und merkt sich, in welchen Laden was gehört. Bring! gruppiert und sortiert automatisch, und du kannst die Kategorien an die Gänge in deinem Supermarkt anpassen. (Quelle: Bring!-Store-Eintrag, Stand 22.11.2026)
 
 **Wo bietet Bring! heute mehr?**
+::: until launch-stage
 Bei Rezepten, saisonalen Vorschlägen, Angeboten und Prospekten, Kundenkarten und eigenen Fotos an Artikeln. Außerdem ist Bring! öffentlich verfügbar. (Quelle: Bring!-Store-Eintrag, Stand 22.11.2026)
+:::
+
+::: once launch-stage
+Bei Rezepten, saisonalen Vorschlägen, Angeboten und Prospekten, Kundenkarten und eigenen Fotos an Artikeln. (Quelle: Bring!-Store-Eintrag, Stand 22.11.2026)
+:::
 
 **Hat Snacklist Werbung?**
 Nein, Snacklist hat keine Werbung. Der Store-Eintrag von Bring! nennt „Enthält Werbung“ und „In-App-Käufe“. (Quelle: Bring!-Store-Eintrag, Stand 22.11.2026)
 
 **Kann ich Snacklist schon nutzen?**
+::: until launch-stage
 Die Beta für Freunde und Familie läuft. Der öffentliche Start in App Store und Google Play steht bevor.
+:::
+
+::: once launch-stage
+Ja. Snacklist gibt es im App Store, bei Google Play und im Browser.
+:::
 
 **Kann ich mit beiden Apps per Sprache eintragen?**
 Ja. Bei Snacklist sprichst du über das Mikrofon in der App, in der Sprache der App (Deutsch oder Englisch). Bring! nennt Eintragen per Sprachbefehl. (Quelle: Bring!-Store-Eintrag, Stand 22.11.2026)

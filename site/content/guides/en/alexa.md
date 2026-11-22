@@ -4,7 +4,7 @@ description: "With the Snacklist skill for Alexa you can add things to your Snac
 slug: alexa
 locale: en
 translation_key: alexa
-updated: 2026-11-04
+updated: 2026-11-22
 ---
 
 # Snacklist with Alexa: set up the skill
@@ -12,7 +12,7 @@ updated: 2026-11-04
 With the Snacklist skill for Alexa you can add things to your Snacklist by voice, without opening the app. The skill is available to everyone in the [Alexa Skill Store](alexa-skill:en). You enable it and link your account, then it works like this:
 
 > **You:** Alexa, ask Snacklist to add milk and eggs.
-> **Alexa:** I put milk and eggs on Snacklist.
+> **The skill:** I put milk and eggs on Snacklist.
 
 The skill sends your sentence to Snacklist. Snacklist splits it into separate items, puts each in the right spot on the list, and the items show up on every device in your household right away. The skill understands English and German, depending on the language your Alexa device is set to. If your device is set to German, follow the German guide: [Snacklist per Alexa: Skill einrichten](/de/anleitungen/alexa)
 
@@ -37,7 +37,7 @@ The skill signs in with your Snacklist account, not with a token. There's nothin
 1. Say to your Alexa device: "Alexa, ask Snacklist to add milk and eggs".
 2. The skill answers "I put milk and eggs on Snacklist.", and the items are in the app.
 
-## How Alexa reaches Snacklist {#reach-snacklist}
+## How your sentence reaches the Snacklist skill {#reach-snacklist}
 
 The Alexa app has shopping lists of its own. For your sentence to reach Snacklist and not those, it has to contain "ask Snacklist", "tell Snacklist" or "open Snacklist":
 
@@ -47,9 +47,9 @@ The Alexa app has shopping lists of its own. For your sentence to reach Snacklis
 - "Alexa, ask Snacklist what's on the list."
 - "Alexa, open Snacklist." Then say what should go on the list.
 
-Don't say "Alexa, add milk to Snacklist". Alexa handles that sentence without Snacklist: Alexa looks for a list called "Snacklist" in the Alexa app and either can't find it or puts the milk on the Alexa shopping list.
+Without "ask Snacklist", "tell Snacklist" or "open Snacklist" the sentence doesn't reach the Snacklist skill; it goes to the lists in the Alexa app.
 
-Alexa recognizes the name best when you say it clearly as two syllables: "Snack-list". If Alexa answers with the Alexa shopping list or doesn't know the name, say "Alexa, open Snacklist" first and then what should go on the list.
+The name is recognized best when you say it clearly as two syllables: "Snack-list". If the answer comes from the Alexa shopping list or the name isn't recognized, say "Alexa, open Snacklist" first and then what should go on the list.
 
 ## How to talk to it
 
@@ -75,13 +75,13 @@ Ask "Alexa, ask Snacklist what's on the list" and the skill reads at most 10 ope
 
 | What happens | Why | What helps |
 | --- | --- | --- |
-| Alexa doesn't know the skill, although you enabled it. | Your Alexa device is set to a language the skill doesn't support. It supports German (Germany) and English (US, UK, Australia, Canada, India). | Set the device language to one of these: Alexa app → **More** → **Settings** → **Device Settings** → your device → gear icon at the top right → under **General**, tap **Language**. |
-| Alexa can't find a list called Snacklist, or puts the item on the Alexa shopping list. | The sentence didn't contain "ask Snacklist", for example "Add milk to Snacklist". It went to the lists in the Alexa app. | Say "Alexa, ask Snacklist to add milk" or first "Alexa, open Snacklist" (see [How Alexa reaches Snacklist](#reach-snacklist)). |
-| Alexa doesn't know the name, or hears another name. | Alexa didn't recognize "Snacklist". | Say the name clearly as two syllables, "Snack-list", or start with "Alexa, open Snacklist". |
+| The skill doesn't start, although you enabled it. | Your Alexa device is set to a language the skill doesn't support. It supports German (Germany) and English (US, UK, Australia, Canada, India). | Set the device language to one of these: Alexa app → **More** → **Settings** → **Device Settings** → your device → gear icon at the top right → under **General**, tap **Language**. |
+| The answer says no list called Snacklist was found, or the item lands on the Alexa shopping list. | The sentence didn't contain "ask Snacklist". It went to the lists in the Alexa app. | Say "Alexa, ask Snacklist to add milk" or first "Alexa, open Snacklist" (see [How your sentence reaches the Snacklist skill](#reach-snacklist)). |
+| The name isn't recognized, or another name is understood. | "Snacklist" wasn't recognized. | Say the name clearly as two syllables, "Snack-list", or start with "Alexa, open Snacklist". |
 | "Please link your Snacklist account in the Alexa app first." | The skill isn't, or is no longer, linked to your Snacklist account. | On the skill's page in the Alexa app tap **Link account** and continue as in step 1. |
 | "You're not in a household yet …" | Your Snacklist account isn't in a household. | Create a household in the app or join one. |
 
-## Turn Alexa off again
+## Turn the skill off again
 
 - **In the Alexa app:** find the skill **Snacklist** and tap **Disable skill** on its page.
 - **In Snacklist:** tap **More**, then **Access**, and disconnect **Amazon Alexa** under connected apps. The skill loses access to your list right away.

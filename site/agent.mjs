@@ -22,6 +22,19 @@ export class AgentError extends Error {}
 const escapeHtml = (s) =>
   String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
+// The trademark lines a page carries when its text names the mark (Legal N-366): the build adds
+// them to the footer, so no page can miss one, and to llms.txt and llms-full.txt.
+export const MARKS = [
+  {
+    mark: /\balexa/i,
+    de: 'Amazon, Alexa und alle zugehörigen Marken sind Marken von Amazon.com, Inc. oder seinen verbundenen Unternehmen.',
+    en: 'Amazon, Alexa, and all related marks are trademarks of Amazon.com, Inc. or its affiliates.',
+  },
+];
+
+// The lines, in both languages, of the marks an agent file (llms.txt, llms-full.txt) names.
+const marksIn = (text) => MARKS.filter(({ mark }) => mark.test(text)).flatMap((m) => [m.en, m.de]);
+
 export const twinPath = (route) => `${route}.md`;
 
 // Node 22 runs CI and can't import TypeScript, so the stage line is read as text.
@@ -168,7 +181,7 @@ export function markdownTwin(route, html, siteUrl) {
     .map((l) => `Markdown (${l.getAttribute('hreflang')}): ${l.getAttribute('href')}.md`);
   // Turndown indents the blank lines of loose list items.
   const body = turndown.turndown(main.innerHTML).replace(/^[ \t]+$/gm, '');
-  // The footer's trademark lines (build.mjs MARKS) belong to the page's text.
+  // The footer's trademark lines (MARKS) belong to the page's text.
   const marks = doc.querySelectorAll('footer .marks').map((p) => `\n\n${p.text.trim()}`).join('');
   return `# ${title}\n\n${body}${marks}\n\n---\n\n${[`Canonical URL: ${canonical}`, ...others].join('\n')}\n`;
 }
@@ -221,9 +234,12 @@ export function writeAgentFiles({ outDir, rendered, siteUrl, contentDir, repoDir
   // While the waitlist is open, assistants also read how a sign-up works (Legal L-1, job 82).
   const waitlist = stage === 'waitlist' ? `\n${readFileSync(join(contentDir, 'llms-waitlist.md'), 'utf8')}` : '';
   const head = `${readFileSync(join(contentDir, 'llms.md'), 'utf8').trimEnd()}\n${waitlist}`;
-  const llms = llmsTxt(head, published, siteUrl, publicApi);
+  const plain = llmsTxt(head, published, siteUrl, publicApi);
+  // llms.txt's sections hold only links, so its trademark lines close the head.
+  const marks = marksIn(plain.text);
+  const llms = marks.length === 0 ? plain : llmsTxt(`${head.trimEnd()}\n\n${marks.join('\n')}\n`, published, siteUrl, publicApi);
   writeFileSync(join(outDir, 'llms.txt'), llms.text);
-  writeFileSync(join(outDir, 'llms-full.txt'), `${head.trim()}\n${llms.twins.map((url) => `\n---\n\nURL: ${url}\n\n${twins.get(url)}`).join('')}`);
+  writeFileSync(join(outDir, 'llms-full.txt'), `${head.trim()}${marks.length === 0 ? '' : `\n\n${marks.join('\n')}`}\n${llms.twins.map((url) => `\n---\n\nURL: ${url}\n\n${twins.get(url)}`).join('')}`);
   const urls = published.map((p) => `<url><loc>${escapeXml(siteUrl + p.route)}</loc>${p.updated ? `<lastmod>${p.updated}</lastmod>` : ''}</url>`);
   writeFileSync(join(outDir, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>\n`);
   writeFileSync(join(outDir, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${siteUrl}/sitemap.xml\n`);
