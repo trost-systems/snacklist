@@ -483,6 +483,50 @@ test('limits: the burst runs out into 429, unknown keys from one address into au
     }
   }));
 
+test('through api.snacklist.app each caller has its own unknown-key budget', () =>
+  withMembers(async (sql, [mine]) => {
+    const key = await mint(sql, mine, ['read']);
+    const address = (net: string) =>
+      `${net}.${Math.floor(Math.random() * 250)}-${crypto.randomUUID()}`;
+    const [vercel, first, second] = [
+      address('76.76.21'),
+      address('198.51.100'),
+      address('203.0.113'),
+    ];
+    const from = (client: string) => ({
+      headers: { 'x-real-ip': vercel, 'x-vercel-forwarded-for': client },
+    });
+    try {
+      const bad = 'fgp_' + 'x'.repeat(43);
+      for (let i = 0; i < 20; i++) {
+        const res = await api(bad, 'GET', '/items?via=api-snacklist', from(first));
+        assertEquals(res.status, 401);
+        await res.body?.cancel();
+      }
+      const blocked = await api(bad, 'GET', '/items?via=api-snacklist', from(first));
+      assertEquals(blocked.status, 429);
+      await blocked.body?.cancel();
+      const other = await api(bad, 'GET', '/items?via=api-snacklist', from(second));
+      assertEquals(other.status, 401, 'another caller behind the same Vercel address');
+      assertEquals(other.headers.get('x-ratelimit-remaining'), '19');
+      await other.body?.cancel();
+      await refill(sql, key.id);
+      const page = await api(
+        key.token,
+        'GET',
+        '/items?limit=1&via=api-snacklist',
+        from(first),
+      );
+      assertEquals(page.status, 200, 'the marker is not part of the query');
+      await page.body?.cancel();
+    } finally {
+      const hashes = await Promise.all([vercel, first, second].map((a) => sha256Hex(a)));
+      await sql`delete from public.api_auth_failures where ip_hash in (
+                  select encode(extensions.digest(s.salt || convert_to(a, 'UTF8'), 'sha256'), 'hex')
+                  from public.invite_preview_salt s, unnest(${hashes}::text[]) a)`;
+    }
+  }));
+
 test('a revoked key is 401; the integration lock without Premium is 402 until it is off', () =>
   withMembers(async (sql, [mine]) => {
     const key = await mint(sql, mine, ['read', 'write']);

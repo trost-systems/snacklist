@@ -6,6 +6,7 @@ import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/settings/access_repository.dart';
 import 'package:family_groceries/settings/access_screen.dart';
 import 'package:family_groceries/siri/siri_channel.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -475,6 +476,41 @@ void main() {
         findsOneWidget,
       );
       expect(key('api-premium'), findsNothing);
+    });
+
+    testWidgets('api-snacklist-app: the own domain, shown and copied', (
+      tester,
+    ) async {
+      final copied = <Object?>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (call) async {
+          if (call.method == 'Clipboard.setData') {
+            copied.add((call.arguments as Map<Object?, Object?>)['text']);
+          }
+          return null;
+        },
+      );
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.platform,
+          null,
+        ),
+      );
+      await pumpAccess(tester, flags: {'public-api', 'api-snacklist-app'});
+      expect(find.text('https://api.snacklist.app/v1'), findsOneWidget);
+      expect(
+        find.text(
+          'https://jdwqrallbpdbshrdhenk.supabase.co/functions/v1/api/v1',
+        ),
+        findsNothing,
+      );
+
+      await tester.tap(
+        find.descendant(of: key('api-url'), matching: find.byIcon(Icons.copy)),
+      );
+      await tester.pump();
+      expect(copied, ['https://api.snacklist.app/v1']);
     });
 
     testWidgets('a read-only key by default, shown once', (tester) async {

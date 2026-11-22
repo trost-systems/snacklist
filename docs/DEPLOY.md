@@ -238,6 +238,19 @@ the same function ([`MCP.md`](MCP.md#public-url-mcpsnacklistapp)). It needs no
 deploy of its own beyond Vercel building `mcp-proxy/` from `main`; check it
 with `scripts/mcp-smoke.sh https://mcp.snacklist.app`.
 
+The same Vercel project, `hummlist-mcp`, serves the public REST API at
+`https://api.snacklist.app/v1`: its first rewrite sends every path on that host to the `api`
+function with the marker `via=api-snacklist` ([`mcp-proxy/README.md`](../mcp-proxy/README.md#apisnacklistapp)).
+One step by hand, once: the lead adds the domain `api.snacklist.app` to `hummlist-mcp` in the
+Vercel dashboard (Settings, Domains). The wildcard DNS record already points at Vercel; until the
+domain is attached the host answers `DEPLOYMENT_NOT_FOUND`. Then check it with
+`scripts/api-proxy-smoke.sh https://api.snacklist.app/v1`: without a key, `GET /items` gets 401
+`missing_token` (404 `not_found` while `app_switches.public_api` is off) with
+`Cache-Control: no-store` and no cache hit; with `API_SMOKE_KEY=fgp_…` (a read key, never printed)
+also `/categories?via=smoke` answers 200 (the proxy's marker arrives, so every `via` is dropped)
+and `/items?limit=abc` 400 `validation_failed` (the caller's query arrives). It cannot show from
+one machine that callers get separate unknown-key budgets; the api tests cover that.
+
 Run it from any machine with `curl` and `jq`:
 
 ```bash

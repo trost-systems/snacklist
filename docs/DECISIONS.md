@@ -17675,3 +17675,31 @@ TE-Q default. Built behind the new flag `total-priced-only`, on top of `list-dec
    65 and the refund heading; l.59 quoted that heading, so it quotes the new one. The rest of l.59
    and the refund FAQ body still describe household Lifetime; they are listed for Legal, not
    rewritten here.
+
+## Job 398: api.snacklist.app in front of the API (AD2), 2026-11-22
+
+1. **One rule, first in `mcp-proxy/vercel.json`.** Host `api.snacklist.app`, every path, to
+   `/functions/v1/api/:path*?via=api-snacklist`. First, so the MCP page rules for `/` never
+   apply on that host. Vercel serves `public/` before any rewrite, so `/de`, `/en` and
+   `/static/...` still show the MCP page's files there; the API has no such paths, so no rule
+   tries to hide them. Caching stays off through the existing `/(.*)` header rule.
+2. **The marker is dropped before the query check.** The API's query schemas are strict, and
+   Vercel does not document whether the destination's query comes before or after the caller's
+   (its docs say nothing either way, read 2026-11-22). The handler drops every `via` once one of
+   them is `api-snacklist`; a direct call with `via=x` still gets 400 as before.
+3. **Address for the unknown-key guard.** Marked requests hash the first entry of
+   `x-vercel-forwarded-for`, then `X-Real-IP`, then `no-address`. Direct requests are unchanged
+   and still never read `X-Forwarded-For`. MCP's `clientAddress` was not shared: it falls back to
+   `X-Forwarded-For`, which the API deliberately ignores. A direct caller who adds the marker can
+   pick its bucket, the tradeoff MCP already accepted; keys are 43 random characters, so the
+   guard limits noise, not guessing.
+4. **App behind `api-snacklist-app`, rollout off.** `Environment.proxiedApiUrl` switches like
+   `mcpUrl` (production: `https://api.snacklist.app/v1`, else the function URL); Zugänge shows
+   and copies it only with the flag on. No ARB, privacy or `docs/API.md` / OpenAPI change, so the
+   job merges itself (brief); job 397's Legal round adds `api.snacklist.app` to the Vercel hosts
+   in the privacy text before the flag or the docs advertise the URL.
+5. **Not proven here: Vercel itself.** The domain is not attached (the lead does that), so the
+   query merge and `x-vercel-forwarded-for` are proven only on the local gateway and in tests.
+   Once the domain is attached, `scripts/api-proxy-smoke.sh` with a read key proves that the
+   marker and the caller's query arrive (`?via=smoke` answers 200, `?limit=abc` 400). From one
+   machine it cannot prove separate budgets per caller; only the tests do.

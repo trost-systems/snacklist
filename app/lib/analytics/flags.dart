@@ -155,6 +155,10 @@ const totalPricedOnlyFlag = 'total-priced-only';
 /// joining works as before.
 const joinerDirectListFlag = 'joiner-direct-list';
 
+/// The flag that shows and copies the API's own domain under Zugänge
+/// (`Environment.proxiedApiUrl`, job 398) instead of the function URL.
+const apiSnacklistAppFlag = 'api-snacklist-app';
+
 /// PostHog feature flags, the app's runtime toggles (job 44,
 /// docs/ANALYTICS.md "Feature flags"). Read a toggle with [isOn] wherever it
 /// matters; nothing else in the app reads PostHog flags.

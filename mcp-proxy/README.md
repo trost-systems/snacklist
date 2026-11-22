@@ -5,7 +5,9 @@ The Vercel project `hummlist-mcp` serves this directory at
 at `https://mcp.hummlist.com`, the old address that connected assistants
 keep using until R1. It has no build and no secrets. `vercel.json`
 rewrites every request to the `mcp` edge function, except a person opening
-the URL in a browser, who gets a static page from `public/`:
+the URL in a browser, who gets a static page from `public/`. The same project
+also serves the public REST API at `https://api.snacklist.app/v1` (see
+"api.snacklist.app" below):
 
 | Request on mcp.snacklist.app or mcp.hummlist.com | Goes to (on `https://jdwqrallbpdbshrdhenk.supabase.co` unless a file) |
 | --- | --- |
@@ -15,6 +17,11 @@ the URL in a browser, who gets a static page from `public/`:
 | `/` from a browser, any other language | `public/en.html` |
 | `/` | `/functions/v1/mcp` |
 | `/<path>` | `/functions/v1/mcp/<path>` |
+
+| Request on api.snacklist.app | Goes to |
+| --- | --- |
+| `/de`, `/en`, `/static/...` | the files in `public/`, as on every host |
+| `/<path>`, `/` included, from any client | `/functions/v1/api/<path>?via=api-snacklist` |
 
 ## The page for people
 
@@ -47,9 +54,39 @@ gateway replaces that header before it reaches the function, so the marker
 is what works (`docs/DECISIONS.md`, Job 26, item 11). The authorization
 server stays Supabase Auth on supabase.co.
 
-`x-vercel-enable-rewrite-caching: 0` keeps Vercel from caching any response
-(Vercel caches external rewrites by default for projects created after
+`x-vercel-enable-rewrite-caching: 0` keeps Vercel from caching any response,
+on every host (Vercel caches external rewrites by default for projects created after
 2026-04-06).
+
+## api.snacklist.app
+
+The first rewrite sends every path on `api.snacklist.app` to the `api`
+function, so `https://api.snacklist.app/v1/items` is
+`/functions/v1/api/v1/items` (`docs/API.md`). It comes before the page rules,
+so a browser opening `/` gets the API's JSON, never the MCP page. Vercel
+serves the filesystem before any rewrite, whatever the host, so `/de`, `/en`
+and `/static/...` still answer with the MCP page's files there; the API has
+no such paths.
+
+The destination carries `via=api-snacklist`. The function drops every `via`
+from the query when one of them is that marker, since its query check is
+strict and Vercel does not document whether the destination's query comes
+before or after the caller's (`supabase/functions/api/handler.ts`, `queryOf`).
+The marker also picks the address for the limit on unknown keys: through the
+proxy Supabase's gateway sees Vercel, so `X-Real-IP` would put every caller
+in one bucket. Marked requests use the first entry of
+`x-vercel-forwarded-for`, which Vercel sets to the client and overwrites
+when a client sends its own; without it, `X-Real-IP`. Direct requests keep
+`X-Real-IP` (the API never reads `X-Forwarded-For`, which hosted Supabase
+passes on as the client wrote it). A direct caller adding the marker can
+pick its own bucket, which only gets around this limit as many addresses
+would; the same tradeoff as MCP's `clientAddress`.
+
+The API answers `Cache-Control: no-store` itself; the header above keeps
+Vercel's rewrite cache off on this host too.
+
+The domain is attached to the project once, by hand (`docs/DEPLOY.md`,
+"Smoke test"). Until then the host answers `DEPLOYMENT_NOT_FOUND`.
 
 ## Check it
 
@@ -58,6 +95,8 @@ scripts/mcp-smoke.sh https://mcp.snacklist.app
 scripts/mcp-smoke.sh https://mcp.hummlist.com
 MCP_SMOKE_TOKEN=fgp_… scripts/mcp-smoke.sh https://mcp.snacklist.app   # also initialize + tools/list
 MCP_SMOKE_PAGE=1 scripts/mcp-smoke.sh https://mcp.snacklist.app         # also the page, DE and EN
+scripts/api-proxy-smoke.sh https://api.snacklist.app/v1
+API_SMOKE_KEY=fgp_… scripts/api-proxy-smoke.sh   # also categories?via=smoke, items?limit=abc
 ```
 
 `npx vercel build` in a copy of this directory, with a hand-written

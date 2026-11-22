@@ -108,7 +108,7 @@ export async function handle(req: Request, deps: Deps = defaultDeps): Promise<Re
 async function serve(req: Request, deps: Deps, trace: Trace): Promise<Reply> {
   let begun: Begin;
   try {
-    begun = await deps.begin(await tokenHash(req), await ipHash(req));
+    begun = await deps.begin(await tokenHash(req), await ipHash(req, viaProxy(new URL(req.url))));
   } catch (e) {
     if (!rowBusy(e)) deps.report(e);
     return errorReply(unavailable());
@@ -189,7 +189,7 @@ async function authorized(
   const used = deps.used(key, route.scope);
   try {
     const idempotencyKey = route.idempotent ? idempotencyKeyOf(req) : null;
-    const raw: Raw = { id, query: queryOf(url), body: await bodyOf(req) };
+    const raw: Raw = { id, query: queryOf(url, viaProxy(url)), body: await bodyOf(req) };
     const run = operations[route.operation](raw);
     const idempotency = idempotencyKey === null ? null : {
       key: idempotencyKey,
@@ -249,11 +249,16 @@ function match(method: string, path: string): { route: Route; id: string | null 
 
 // Input --------------------------------------------------------------------------------------
 
-/** The query as one value per name; a name given twice is a validation failure. */
-function queryOf(url: URL): Record<string, string> {
+/**
+ * The query as one value per name; a name given twice is a validation failure. Through the proxy
+ * every `via` is the proxy's own marker (or a client's next to it, in an order Vercel doesn't
+ * document), never the caller's input.
+ */
+function queryOf(url: URL, proxied: boolean): Record<string, string> {
   const query: Record<string, string> = {};
   const repeated: string[] = [];
   for (const [name, value] of url.searchParams) {
+    if (proxied && name === 'via') continue;
     if (Object.hasOwn(query, name)) repeated.push(name);
     query[name] = value;
   }
@@ -339,16 +344,30 @@ async function tokenHash(req: Request): Promise<string | null> {
   return token?.startsWith(PAT_PREFIX) ? await sha256Hex(token) : null;
 }
 
+/** The query marker mcp-proxy/vercel.json adds to every request it forwards from api.snacklist.app. */
+const PROXY_MARKER = 'api-snacklist';
+
+function viaProxy(url: URL): boolean {
+  return url.searchParams.getAll('via').includes(PROXY_MARKER);
+}
+
 /**
  * SHA-256 of the caller's address, never the address itself; api_begin salts it with the database's
  * secret before it stores anything (N-255), so the stored key can't be reversed by hashing every IPv4
- * address. X-Real-IP is what the gateway saw: hosted Supabase and the local Kong overwrite whatever
- * a client sends in it, while hosted Supabase passes X-Forwarded-For on exactly as the client wrote
- * it (checked 2026-11-02, DECISIONS "Job 73"). Without the header every caller shares one budget,
- * so the throttle is never off.
+ * address. Directly on supabase.co, X-Real-IP is what the gateway saw: hosted Supabase and the local
+ * Kong overwrite whatever a client sends in it, while hosted Supabase passes X-Forwarded-For on
+ * exactly as the client wrote it (checked 2026-11-02, DECISIONS "Job 73"), so it is never read.
+ * Through api.snacklist.app the gateway sees Vercel, so X-Real-IP would put every proxied caller in
+ * one bucket; Vercel sets x-vercel-forwarded-for to the client and overwrites a client's own. A
+ * direct caller adding the marker can pick its own bucket, which only gets around this guard as
+ * many addresses would (the same tradeoff as MCP, mcp-proxy/README.md). Without an address every
+ * caller shares one budget, so the throttle is never off.
  */
-async function ipHash(req: Request): Promise<string> {
-  return await sha256Hex(req.headers.get('x-real-ip')?.trim() || 'no-address');
+async function ipHash(req: Request, proxied: boolean): Promise<string> {
+  const client = proxied
+    ? req.headers.get('x-vercel-forwarded-for')?.split(',')[0]?.trim()
+    : undefined;
+  return await sha256Hex(client || req.headers.get('x-real-ip')?.trim() || 'no-address');
 }
 
 // Errors -------------------------------------------------------------------------------------

@@ -2382,3 +2382,12 @@ heading use Legal's N-363 words. The two draft purchase privacy pages and the de
 `lifetimeWeb` and `lifetimeUnlockedBody` are deleted. Tests, the job 68 e2e test, the feature map
 and FEATURES-FOR-WRITERS follow. Screenshots DE and EN in `docs/screenshots/392/`. Not merged
 (lead). Details: `docs/done/392.md`.
+
+## Job 398: api.snacklist.app/v1 through Vercel (AD2)
+
+**What.** `mcp-proxy/vercel.json` forwards host `api.snacklist.app` to the `api` function with
+the marker `via=api-snacklist`; the API takes the caller's address from `x-vercel-forwarded-for`
+for marked requests and drops the marker before its strict query check. The app shows the new
+URL under Zugänge only with the PostHog flag `api-snacklist-app` (rollout off). Lead: attach
+`api.snacklist.app` to Vercel project `hummlist-mcp`, then `scripts/api-proxy-smoke.sh` with a
+read key. Details: `docs/done/398.md`.

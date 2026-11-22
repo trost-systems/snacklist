@@ -97,6 +97,10 @@
     "joiner-direct-list": {
       "rollout": "partial",
       "note": "joining straight to the shared list (an invite link joins after the sign-in and the name step without asking again, also with join-household-jh2 off, and so does a code typed in the guided start (JH2); the sign-in for an invite says in one line why an account is needed) shows only while the PostHog flag joiner-direct-list is on (job 356); internal installs only (Peter and the internal testers) until Legal approves the sign-in line"
+    },
+    "api-snacklist-app": {
+      "rollout": "off",
+      "note": "Zugänge shows and copies https://api.snacklist.app/v1, the Vercel proxy (mcp-proxy/), instead of the supabase.co function URL while the PostHog flag api-snacklist-app is on (job 398); off until the domain is attached and the privacy text names api.snacklist.app"
     }
   },
   "holds": {

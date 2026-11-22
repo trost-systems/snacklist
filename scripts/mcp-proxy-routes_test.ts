@@ -1,5 +1,6 @@
 // mcp-proxy/vercel.json decides per request whether mcp.snacklist.app shows the page for people
-// (mcp-proxy/public) or forwards to the mcp function. This replays real browser and MCP client
+// (mcp-proxy/public) or forwards to the mcp function, and forwards all of api.snacklist.app to the
+// api function. This replays real browser and MCP client
 // requests through its rewrites the way Vercel's router reads them: the filesystem first, then
 // the first rewrite whose source, `has` and `missing` match. Vercel does not document whether a
 // `value` regex must match the whole header, so every case runs both ways and must agree.
@@ -22,14 +23,26 @@ interface Rewrite {
 type Anchoring = 'whole value' | 'substring';
 
 const proxyDir = new URL('../mcp-proxy/', import.meta.url);
-const config: { outputDirectory: string; cleanUrls: boolean; rewrites: Rewrite[] } = JSON.parse(
+interface HeaderRule {
+  source: string;
+  has?: Condition[];
+  headers: { key: string; value: string }[];
+}
+
+const config: {
+  outputDirectory: string;
+  cleanUrls: boolean;
+  rewrites: Rewrite[];
+  headers: HeaderRule[];
+} = JSON.parse(
   Deno.readTextFileSync(new URL('vercel.json', proxyDir)),
 );
 const publicDir = new URL(`${config.outputDirectory}/`, proxyDir);
 const fn = 'https://jdwqrallbpdbshrdhenk.supabase.co/functions/v1/mcp';
+const apiFn = 'https://jdwqrallbpdbshrdhenk.supabase.co/functions/v1/api';
 
 function sourceMatches(source: string, path: string): boolean {
-  if (source === '/:path*') return true;
+  if (source === '/:path*' || source === '/(.*)') return true;
   assert(!source.includes(':'), `this test reads literal sources and /:path* only, not ${source}`);
   return source === path;
 }
@@ -66,6 +79,7 @@ function staticFile(path: string): string | undefined {
 const DEFAULT_HOST = 'mcp.snacklist.app';
 // Kept until R1: clients set up before the rename still connect through the old host.
 const OLD_HOST = 'mcp.hummlist.com';
+const API_HOST = 'api.snacklist.app';
 
 function forwardedDestination(destination: string, path: string): string {
   return destination.replace(':path*', path.slice(1));
@@ -87,7 +101,7 @@ function route(
     if ((rule.missing ?? []).some((c) => holds(c, headers, anchoring, host))) continue;
     if (rule.destination.startsWith('https://')) {
       return forwardedDestination(rule.destination, path).replace(
-        /\?via=mcp-(?:hummlist|snacklist)$/,
+        /\?via=(?:mcp-hummlist|mcp-snacklist|api-snacklist)$/,
         '',
       );
     }
@@ -188,6 +202,62 @@ Deno.test('each host forwards to the function with its own via marker', () => {
     ) {
       const dest = rewriteDestination(path, headers, host);
       assert(dest.endsWith(`?via=${marker}`), `${host} ${path} → ${dest}`);
+    }
+  }
+});
+
+const apiCases: [string, string, Record<string, string>, string][] = [
+  ['list items', '/v1/items', { accept: 'application/json', authorization: 'Bearer fgp_x' }, `${apiFn}/v1/items`],
+  ['tick an item', '/v1/items/abc/tick', { 'content-type': 'application/json' }, `${apiFn}/v1/items/abc/tick`],
+  ['the root in a German browser', '/', { accept: chrome, 'accept-language': 'de-DE,de;q=0.9' }, `${apiFn}/`],
+  ['the root from curl', '/', { accept: '*/*' }, `${apiFn}/`],
+  ['/de: the page file, filesystem first on every host', '/de', { accept: chrome }, 'public/de.html'],
+  [
+    'the MCP metadata path',
+    '/.well-known/oauth-protected-resource',
+    { accept: chrome },
+    `${apiFn}/.well-known/oauth-protected-resource`,
+  ],
+];
+
+for (const anchoring of ['whole value', 'substring'] as const) {
+  for (const [name, path, headers, want] of apiCases) {
+    Deno.test(`${API_HOST}: ${name} (${anchoring} regex): ${path} → ${want}`, () => {
+      assertEquals(route(path, headers, anchoring, API_HOST), want);
+    });
+  }
+}
+
+Deno.test(`${API_HOST} forwards to the api function with its via marker`, () => {
+  for (const [, path, headers] of apiCases) {
+    const dest = rewriteDestination(path, headers, API_HOST);
+    assert(dest.startsWith(`${apiFn}/`), `${path} → ${dest}`);
+    assert(dest.endsWith('?via=api-snacklist'), `${path} → ${dest}`);
+  }
+});
+
+Deno.test('no request on the MCP hosts reaches the api function', () => {
+  for (const host of [DEFAULT_HOST, OLD_HOST]) {
+    for (const [, path, headers] of [...cases, ...apiCases]) {
+      const dest = rewriteDestination(path, headers, host);
+      assert(!dest.startsWith(apiFn), `${host} ${path} → ${dest}`);
+    }
+  }
+});
+
+Deno.test('Vercel caches no rewritten response, on any host', () => {
+  for (const host of [DEFAULT_HOST, OLD_HOST, API_HOST]) {
+    for (const path of ['/', '/v1/items', '/.well-known/oauth-protected-resource']) {
+      const set = config.headers
+        .filter((rule) => sourceMatches(rule.source, path))
+        .filter((rule) =>
+          (rule.has ?? []).every((c) => holds(c, new Headers(), 'whole value', host))
+        )
+        .flatMap((rule) => rule.headers);
+      assert(
+        set.some((h) => h.key === 'x-vercel-enable-rewrite-caching' && h.value === '0'),
+        `${host} ${path}`,
+      );
     }
   }
 });
