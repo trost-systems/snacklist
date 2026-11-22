@@ -17661,3 +17661,13 @@ made without a human (the doc's section 12 has the same list):
     member insert policy without a cap trigger. Also taken: cap-hit copy (C1-C4, items count open and
     ticked rows), a separate `helper_links` switch, the screenshot refusal inside the storage
     policy's function, H6 naming cleared browser data, and the 11.2 analytics sentence.
+13. **Legal conditions applied (job 396, 22 Nov 2026 review: GO with conditions).** All of
+    N-370 to N-395 are in `AN1.md` (section 13 lists each: where it landed, word for word from the
+    report). Calls made: the SHOULD and OPTIONAL items are all taken; N-389 and N-390 are treated as
+    MUST as the brief says. The analytics value `discarded` becomes `deleted` to match U7's new
+    button. N-373 and N-378 depend on #584 and are recorded as dependencies, #584 is not edited. The
+    Q6 rule (a future captcha needs its own Legal GO) and the Q8 store-copy rule are constraints in
+    the doc. N-384 (admins only with `join_approval`), N-385 (helper code out of the URL path) and
+    N-381 (button names) may collide with Peter's AN1/PS2/IH2 picks, which are not in this checkout;
+    they are listed in 13.5 and left for the lead. Still design only: nothing built, PR #642 stays a
+    draft.
