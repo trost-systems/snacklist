@@ -2,14 +2,15 @@
 // Zugänge. Gives the member a connected app the way an approval leaves it (a client registered over
 // DCR, the grant, a session and the consent page's device label, written as postgres since a real approval
 // needs an MCP client: e2e/tests/mcp.spec.ts drives that), then proves the row names the device
-// and the last activity, the token hint, and the details sheet in plain words.
+// and the last activity, the token hint (the one that points at the API section when public-api is on),
+// and the details sheet in plain words.
 //
 //   node journeys/ai-assistants.mjs <evidence dir> [--lang de|en]
 import process from 'node:process';
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { apiAs, capture, instance, logger, member, openApp, openTab, repo, signIn } from '../helpers/lib.mjs';
+import { apiAs, capture, flagOn, instance, logger, member, openApp, openTab, repo, signIn } from '../helpers/lib.mjs';
 
 const [dir, ...rest] = process.argv.slice(2);
 const lang = rest.includes('--lang') ? rest[rest.indexOf('--lang') + 1] : 'de';
@@ -49,8 +50,9 @@ try {
   await signIn(page, L, user);
   await openTab(page, L, 'tabMore');
   await page.getByRole('button', { name: new RegExp(`^${L('accessTitle')}`) }).first().click();
-  await page.getByText(L('accessTokensHint')).waitFor({ timeout: 15_000 });
-  log(`token hint shown: „${L('accessTokensHint')}“`);
+  const hint = flagOn('public-api') ? 'accessTokensHintWithApi' : 'accessTokensHint';
+  await page.getByText(L(hint)).waitFor({ timeout: 15_000 });
+  log(`token hint shown (${hint}): „${L(hint)}“`);
   const row = page.getByRole('button', { name: /^Claude Chrome · macOS · / });
   await row.waitFor({ timeout: 15_000 });
   log(`row: „${await row.getAttribute('aria-label') ?? await row.textContent()}“`);

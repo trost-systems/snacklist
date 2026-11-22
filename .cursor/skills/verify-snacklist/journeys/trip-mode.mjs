@@ -2,9 +2,9 @@
 // list (the question), Mehr › „Einkauf starten“, Verlauf's trip tiles, the list's ended card.
 // On demo-familie it puts the 15 seeded items back on the list split over Lidl and Rewe, prices
 // Bananen (yesterday), Vollmilch (today) and Nudeln (yesterday), deletes the household's earlier
-// trips and sessions, and takes Mia's promotional Premium away. Then as Mia: tm-ask (Nein, ask again,
-// Zurücknehmen), tm-strip (Ja, Pause, Weiter), a paid price and Noah's Kaffee during the trip,
-// tm-free (Beenden, the locked card), tm-history (two Verlauf trips with the session id, a tile
+// trips and sessions, and takes Mia's promotional Premium away. Then as Mia: tm-ask (Zurücknehmen,
+// GL-2, Nein and no question on the next tick, the snooze cleared), tm-strip (Ja, Pause, Weiter), a
+// paid price and Noah's Kaffee during the trip, tm-free (Beenden, the locked card), tm-history (two Verlauf trips with the session id, a tile
 // opens the summary), tm-summary as Premium (Mia's promotional grant, the local stack's
 // RevenueCat sync, removed afterwards), tm-manual-start, and in a second browser on Playwright's
 // clock tm-long-running (45 min: paused at the last tick; 4 h: ended there, the card).
@@ -157,22 +157,14 @@ try {
   await signIn(page, L, mia);
   log(`signed in as mia (${lang}${dark ? ', dark' : ''}${compact ? ', 358 px' : ''}) on ${inst.webUrl}`);
 
-  // tm-ask
-  await tick('Äpfel');
-  await until(sheetUp, `„${L('shopAskTitle')}“ after ticking Äpfel`);
+  // tm-ask: „Zurücknehmen“ first, since a no snoozes the question for an hour (#618).
+  await tick('Brötchen');
+  await until(sheetUp, `„${L('shopAskTitle')}“ after ticking Brötchen`);
   const sheet = await aria();
-  for (const text of [L('itemTicked', { name: 'Äpfel' }), L('shopAskTitle'), L('shopAskBody'), L('shopAskNo'), L('shopAskMistake'), L('shopAskTakeBack')]) {
+  for (const text of [L('itemTicked', { name: 'Brötchen' }), L('shopAskTitle'), L('shopAskBody'), L('shopAskNo'), L('shopAskMistake'), L('shopAskTakeBack')]) {
     check(sheet.includes(flat(text)), `the sheet says „${text}“`);
   }
   await shot('01-ask-sheet');
-  await button(L('shopAskNo')).click();
-  await until(async () => !(await sheetUp()), 'the sheet gone after Nein');
-  await page.waitForTimeout(800);
-  check(!(await stripUp()), `no strip after „${L('shopAskNo')}“`);
-  check(status('Äpfel') === 'bought', 'Äpfel stays ticked off');
-
-  await tick('Brötchen');
-  await until(sheetUp, 'the sheet again on the next tick (Brötchen)');
   await button(L('shopAskTakeBack')).click();
   await until(() => status('Brötchen') === 'active', 'Brötchen back on the list in the database');
   await until(async () => (await itemRow(page, 'Brötchen').count()) === 1, 'Brötchen back on the screen');
@@ -183,6 +175,25 @@ try {
   await tick('Aspirin');
   await page.waitForTimeout(1500);
   check(!(await sheetUp()), 'no question on ticking Aspirin at „APOTHEKE am Markt“ (GL-2)');
+
+  await tick('Äpfel');
+  await until(sheetUp, `„${L('shopAskTitle')}“ after ticking Äpfel`);
+  await button(L('shopAskNo')).click();
+  await until(async () => !(await sheetUp()), 'the sheet gone after Nein');
+  await page.waitForTimeout(800);
+  check(!(await stripUp()), `no strip after „${L('shopAskNo')}“`);
+  check(status('Äpfel') === 'bought', 'Äpfel stays ticked off');
+
+  await tick('Brötchen');
+  await page.waitForTimeout(2000);
+  check(!(await sheetUp()), `no question on ticking Brötchen within the hour after „${L('shopAskNo')}“`);
+  sql(`update public.items set status = 'active', bought_by = null, bought_at = null where household_id = '${household}' and name = 'Brötchen'`);
+  await until(async () => (await itemRow(page, 'Brötchen').count()) === 1, 'Brötchen back on the screen');
+  // Stands in for the hour passing: the snooze lives on the device (DeviceCache, trip.snooze.<user>).
+  const cleared = await page.evaluate(() => Object.keys(localStorage).filter((k) => k.includes('trip.snooze.')).map((k) => (localStorage.removeItem(k), k)));
+  check(cleared.length === 1, `the snooze kept on the device (${cleared.join(', ')}); cleared it and reloaded`);
+  await page.reload();
+  await itemRow(page, 'Bananen').first().waitFor({ timeout: 30_000 });
 
   // tm-strip
   const planned = active();
