@@ -17799,3 +17799,15 @@ Peter decided HP2 on 22 Nov 2026: `grocery-log`, `prices-and-trip-total`, `trip-
   (`site/scenes/capture-hero.sh`, inputs in `site/scenes/hero-screen/`), not an HTML list: the mock
   had drifted (checkboxes the app no longer has). Anna's Hafermilch lands at the Wochenmarkt so the
   row stays above the add field on the compact size.
+
+## Job 406: store badge layout
+
+- **Subgrid, not fixed heights.** Both cards span three shared rows (badge, QR, caption), so text that
+  wraps in one locale moves both columns' rows together. Grid rules live under `.cta` so the hero is
+  untouched.
+- **Stack below 640 px**, not 480: two columns need about 640 px with the German captions and 481-600 px
+  overflowed (review 0).
+- **Per-locale Google ratio.** The de PNG's visible badge is 192 of 250 px tall (en 168) and has no side
+  margin; `:lang(de)` sets `--play-vis` and a side padding so both visible badges equal Apple's height.
+  Re-exporting the PNGs would be a media change, so it was not done.
+- **Captions capped at 24ch** so the German pair fits 640 px; they may wrap and the rows stay shared.
