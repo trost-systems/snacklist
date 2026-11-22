@@ -1,0 +1,98 @@
+id: shadows-only-on-buttons
+snapshots:
+  "const edge = [BoxShadow(color: Color(0xFF0F1530), offset: Offset(0, 2))];\n":
+    labels:
+    - source: BoxShadow
+      style: primary
+      start: 14
+      end: 23
+    - source: "BoxShadow(color: Color(0xFF0F1530), offset: Offset(0, 2))"
+      style: secondary
+      start: 14
+      end: 71
+  "final box = BoxDecoration(\n  boxShadow: [BoxShadow(color: t.edge, offset: const Offset(0, 4))],\n);\n":
+    labels:
+    - source: "boxShadow: [BoxShadow(color: t.edge, offset: const Offset(0, 4))]"
+      style: primary
+      start: 29
+      end: 94
+    - source: "boxShadow:"
+      style: secondary
+      start: 29
+      end: 39
+  "final box = ShapeDecoration(shape: const HexBorder(), shadows: shadows);\n":
+    labels:
+    - source: "shadows: shadows"
+      style: primary
+      start: 54
+      end: 70
+    - source: "shadows:"
+      style: secondary
+      start: 54
+      end: 62
+  "final card = BoxDecoration(boxShadow: HlSticker.shadow(b, StickerDepth.m) + extra);\n":
+    labels:
+    - source: "boxShadow: HlSticker.shadow(b, StickerDepth.m) + extra"
+      style: primary
+      start: 27
+      end: 81
+    - source: "boxShadow:"
+      style: secondary
+      start: 27
+      end: 37
+  "final card = Material(elevation: 4, child: child);\n":
+    labels:
+    - source: "elevation: 4"
+      style: primary
+      start: 22
+      end: 34
+    - source: "elevation:"
+      style: secondary
+      start: 22
+      end: 32
+  "final card = Material(elevation: HlSticker.elevation(2) + 4, child: child);\n":
+    labels:
+    - source: "elevation: HlSticker.elevation(2) + 4"
+      style: primary
+      start: 22
+      end: 59
+    - source: "elevation:"
+      style: secondary
+      start: 22
+      end: 32
+  "final menu = DropdownButton(value: v, items: items);\n":
+    labels:
+    - source: "DropdownButton(value: v, items: items)"
+      style: primary
+      start: 13
+      end: 51
+    - source: DropdownButton
+      style: secondary
+      start: 13
+      end: 27
+  "final menu = DropdownButtonFormField<String>(items: items);\n":
+    labels:
+    - source: "DropdownButtonFormField<String>(items: items)"
+      style: primary
+      start: 13
+      end: 58
+    - source: DropdownButtonFormField<String>
+      style: secondary
+      start: 13
+      end: 44
+  "final menu = PopupMenuButton<int>(elevation: lift, itemBuilder: build);\n":
+    labels:
+    - source: "elevation: lift"
+      style: primary
+      start: 34
+      end: 49
+    - source: "elevation:"
+      style: secondary
+      start: 34
+      end: 44
+  "void paint(Canvas canvas) => canvas.drawShadow(path, color, 4, false);\n":
+    labels:
+    - source: drawShadow
+      style: primary
+      start: 36
+      end: 46

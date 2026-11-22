@@ -1,4 +1,5 @@
 import 'package:family_groceries/design/hex_border.dart';
+import 'package:family_groceries/design/look.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -13,6 +14,9 @@ import 'package:material_ui/material_ui.dart';
 /// (`ItemIcon`), so it shares the emoji's centre line and optical size
 /// (Noto's ink is about 1.1 times the font size, the hex's 1.0 with a
 /// filled face). Decorative: screen readers skip it.
+///
+/// Under [Look.soft] it is RD1's placeholder: a square as wide as the cell
+/// on the same face, rounded with [HlSoft.xs], without the contour.
 class const ItemIconFallback({required final double size, super.key})
     extends StatelessWidget {
   @override
@@ -45,8 +49,15 @@ class const _CellPainter({
     final cell = Rect.fromCenter(
       center: size.center(Offset.zero),
       width: height * 0.866,
-      height: height,
+      height: softLook ? height * 0.866 : height,
     );
+    if (softLook) {
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(cell, const Radius.circular(HlSoft.xs)),
+        Paint()..color = face,
+      );
+      return;
+    }
     canvas
       ..drawPath(_shape.pathFor(cell), Paint()..color = face)
       ..drawPath(

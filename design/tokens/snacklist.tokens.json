@@ -1739,6 +1739,44 @@
         },
         "$description": "Hex Soft: every corner rounded with this radius at reference-height (48 px), scaled with the control's height"
       }
+    },
+    "soft": {
+      "$type": "dimension",
+      "xs": {
+        "$value": {
+          "value": 6,
+          "unit": "px"
+        },
+        "$description": "Check boxes, count badges, the item placeholder: shapes under 28 px"
+      },
+      "sm": {
+        "$value": {
+          "value": 8,
+          "unit": "px"
+        },
+        "$description": "Chips: shapes 28 to 40 px"
+      },
+      "md": {
+        "$value": {
+          "value": 12,
+          "unit": "px"
+        },
+        "$description": "Buttons, icon buttons, fields, switcher, tabs: shapes 40 to 60 px"
+      },
+      "lg": {
+        "$value": {
+          "value": 20,
+          "unit": "px"
+        },
+        "$description": "Tab bar capsule, cards, groups, the empty list's motif: from 60 px"
+      },
+      "xl": {
+        "$value": {
+          "value": 24,
+          "unit": "px"
+        },
+        "$description": "Sheets and dialogs"
+      }
     }
   },
   "depth": {

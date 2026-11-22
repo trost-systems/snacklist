@@ -134,6 +134,12 @@ const learnedOrderFlag = 'learned-order';
 /// the device. Off, it starts closed every time the list shows.
 const recentlyUsedOpenFlag = 'recently-used-open';
 
+/// The flag for RD1, the look without hexagons (job 368): soft rounded
+/// rectangles in RD1's radii instead of every hexagon, and a drop shadow
+/// only on buttons. Read once at start (`startLook`): a change takes
+/// effect on the next start.
+const redesignRd1Flag = 'redesign-rd1';
+
 /// PostHog feature flags, the app's runtime toggles (job 44,
 /// docs/ANALYTICS.md "Feature flags"). Read a toggle with [isOn] wherever it
 /// matters; nothing else in the app reads PostHog flags.

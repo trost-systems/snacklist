@@ -317,6 +317,32 @@ disabled). Both load the real fonts
 cd app && flutter test --update-goldens test/design/
 ```
 
+`app/test/design/rd1_golden_test.dart` renders RD1's soft look (below) for the list, the add
+sheet, the household sheet, the empty list, More, Einstellungen, Läden and the components, light
+and dark, German and English, at text x0.85 and x3.1 (`goldens/rd1/`).
+
+### RD1, the look without hexagons (job 368, flag `redesign-rd1`)
+
+Peter picked RD1 of round RD (job 353) on 2026-11-22. Behind the flag every hexagon is a soft
+rounded rectangle and only buttons cast a shadow; the layout, the words and the app icon stay.
+
+- `app/lib/design/look.dart`: `Look.hex` (today) or `Look.soft`, fixed for one app run.
+  `startLook` (`core/theme.dart`) picks it before `runApp` from a forced flag or the flag's value
+  the device saw last (`DeviceCache` `look.soft`); `keepLook` saves each new value for the next
+  start. A live switch would leave const shapes and clip caches in the old look.
+- Radii are tokens: `shape.soft` in `design/tokens/snacklist.tokens.json` (`HlSoft`): xs 6 check
+  boxes, badges and the item placeholder; sm 8 chips; md 12 buttons, fields and tabs; lg 20 cards,
+  groups and the tab bar; xl 24 sheets and dialogs. `HexBorder` takes `softRadius` of its shorter
+  side, so every hex widget follows without a change at its call sites; `PointyHex` becomes a
+  rounded square centred in its old box, the radio a circle.
+- Shadows: `HlSticker.shadow` is empty and `HlSticker.elevation` 0 under the soft look, and the
+  colour scheme's `shadow` is transparent. The tactile buttons keep their hard edge; the stores
+  screen's rows lose theirs (rows are tiles). The lint `shadows-only-on-buttons` routes every
+  shadow through those helpers, and `app/test/design/rd1_shadows_test.dart` walks the screens'
+  render trees for any shadow.
+- Not yet soft: the app icon and brand mark (`BrandBlock`), the Home Screen widgets, the web join
+  page, the site and the store frames (RD-Q4: their own round).
+
 ## App icon and splash
 
 Icon #5 **Wabenstapel**: a lemon hex ring, inside it a hex with a check.

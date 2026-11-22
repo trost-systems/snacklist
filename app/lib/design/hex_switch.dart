@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:family_groceries/design/hex_border.dart';
 import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/tokens.g.dart';
@@ -170,9 +168,9 @@ class _HexSwitchPainter({
       ..drawPath(_shape.pathFor(track), Paint()..color = colors.track)
       ..drawPath(_shape.pathFor(track, outset: inset), stroke(colors.contour));
 
-    // A thumb whose tip sits this far in from the track's has its slanted
-    // sides [_gap] from the track's (see [HexBorder.pathFor]).
-    final along = _gap / math.sin(math.atan(1 / (2 * HlHex.tip)));
+    // A thumb whose ends sit this far in from the track's has its sides
+    // [_gap] from the track's (see [HexBorder.alongFor]).
+    final along = HexBorder.alongFor(_gap);
     final height = track.height - 2 * _gap;
     final width = height * (2 * HlHex.tip + 0.5) + _stretch * press.value;
     final left = track.left + along;

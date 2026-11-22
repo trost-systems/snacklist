@@ -1,4 +1,5 @@
 import 'package:family_groceries/design/hex_border.dart';
+import 'package:family_groceries/design/look.dart';
 import 'package:family_groceries/design/sticker.dart';
 import 'package:family_groceries/design/tactile.dart';
 import 'package:family_groceries/design/tokens.g.dart';
@@ -7,7 +8,8 @@ import 'package:material_ui/material_ui.dart';
 /// A settings row as the site's stores scene draws it: a horizontal hex with
 /// the 2 px contour on a raised face, resting on its [HlDepth.edge] edge. The
 /// row being dragged is lifted instead: no edge, the sticker-l shadow
-/// ([HexPill.lift] wraps a reorderable list's proxy).
+/// ([HexPill.lift] wraps a reorderable list's proxy). Under [Look.soft] a
+/// row is a tile, not a button: no edge, the same room below it (job 368).
 class const HexPill({
   required final Widget child,
   final VoidCallback? onTap,
@@ -72,7 +74,7 @@ class const HexPill({
           ),
           child: face,
         ),
-        false when raisedFaces => Stack(
+        false when raisedFaces && !softLook => Stack(
           children: [
             Positioned.fill(
               top: HlDepth.edge,

@@ -42,8 +42,8 @@ class const HexSegmented<T>({
     final t = SnacklistColors.of(Theme.of(context).brightness);
     final enabled = onChanged != null;
     final picked = segments.indexWhere((s) => s.value == value);
-    // The indicator's slanted sides sit [_gap] from the track's.
-    final along = _gap / math.sin(math.atan(1 / (2 * HlHex.tip)));
+    // The indicator's sides sit [_gap] from the track's.
+    final along = HexBorder.alongFor(_gap);
     final slide = hlMotion(context, HlDuration.medium);
     final scaler = MediaQuery.textScalerOf(context);
     // The picked weight, the widest a label gets.

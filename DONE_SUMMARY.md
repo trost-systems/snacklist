@@ -2206,3 +2206,63 @@ RU-Q choices:
 - `releases/flags.json`: the three `holds` `match` arrays reformatted by #626 are back to inline, so the file differs from before only by the new flag.
 - Targeting, plainly: the PostHog flag `recently-used-open` does not exist yet. The flag sync creates it, for the person property `tester_groups` matching `recently-used-open`, on its next run after #626. Peter's account needs a row in `public.tester_groups` with group `recently-used-open` (the lead adds it with SQL, docs/PRIVACY_DATA_MAP.md "Tester groups"); the app reads it at sign-in and on return from the background. Same mechanism as `learned-order`.
 - Not done: web build not driven (widget tests only; the feature file says so). `consent_screen.dart:83` analyze finding is on main too, not from this change.
+
+## Job 368: RD1, the look without hexagons (flag `redesign-rd1`)
+
+Peter's pick from round RD (job 353): RD1, the token swap. Merged as: the next commit on main
+(PR "RD1: the look without hexagons, behind redesign-rd1").
+
+**What users (testers) see.** With the flag on, every hexagon in the app is a soft rounded
+rectangle in RD1's radii: check boxes, badges and the item placeholder 6 px, chips 8, buttons,
+fields and tabs 12, cards, groups and the tab bar 20, sheets and dialogs 24; radios are round.
+Only buttons keep their hard drop edge: cards, More's groups, the tab bar, the add field, the list
+tabs, popup menus and dragged or store rows lie flat with their 2 px outline. Layout, words and
+the app icon are unchanged. Flag off is today's look pixel for pixel. The look is chosen at start,
+so the flag's value shows from the next app start.
+
+**Where.** `app/lib/design/look.dart` (the look), `design/tokens/snacklist.tokens.json`
+`shape.soft` (`HlSoft`), `hex_border.dart` (soft path), `pointy_hex.dart`, `hex_checkbox.dart`,
+`hex_radio.dart`, `hex_switch.dart`, `hex_segmented.dart`, `hex_pill.dart`, `sticker.dart`,
+`group_card.dart`, `item_icon_fallback.dart`, `core/theme.dart` (`startLook`, `keepLook`, radii,
+shadow colour), `core/device_cache.dart` (`look.soft`), `main.dart`, `analytics/flags.dart`,
+`releases/flags.json` (`tester_group: redesign-rd1`). Shadow guards: lint
+`shadows-only-on-buttons` (also a dropdown without `elevation:`, whose menu paints its own shadow), `app/test/design/rd1_shadows_test.dart`. Decisions: docs/DECISIONS.md
+"Job 368"; design notes: docs/DESIGN.md "RD1".
+
+**RD questions decided** (RECOMMENDATION.md defaults unless said): RD-Q1 yes, RD1 first. RD-Q4 the
+icon, brand mark, Home Screen widgets, web join page, site and store frames stay hex for their own
+round. RD-Q5 the sticker shadow goes from everything but buttons (Peter's rule; RD1's mock kept
+it). RD-Q6 large-text layout not applied (layout change, out of RD1). RD-Q9 labels stay above
+fields, lint name kept. RD-Q10 the empty list keeps RD1's honey rounded square with the cart.
+RD-Q2, Q3, Q7, Q8 are RD2's and do not apply.
+
+**Review.** An Opus review of the PR (FIX) found the dropdown menu's self-painted shadow
+outside both guards and the missing NEEDS_LEAD entry; both fixed, plus `drawShadow` in the lint
+and the hint callout's corners following the card radius. The add sheet's Enter keycap and the
+sync retry cue keep their edge: they are drawn as buttons.
+
+**Tests.** 60 new goldens (`app/test/design/goldens/rd1/`: list, add sheet, household sheet,
+empty list, More, Einstellungen, Läden, light and dark, de and en, text x0.85 and x3.1; the
+components grid, whose labels are German only, in de; only its fixed cells may overflow at x3.1). Every existing golden
+unchanged. `rd1_shadows_test.dart` (16 tests; it failed when a card shadow or the theme's shadow
+colour came back), `look_test.dart`, `hex_border_test.dart` soft cases. `scripts/verify.sh --only
+gitleaks,lint,changelog,site,functions,flutter` passed (461 s); full `flutter test` +4251 passed
+(delegate run); `deno test scripts/posthog` 29 passed.
+
+**Verified on the web build** (verify-snacklist, `journeys/theme-rd1.mjs`, port block 523): with
+`FLAGS_ON=redesign-rd1` in German light, German dark, English light and English dark: list, tick
+question, switcher sheet, add sheet, More, Einstellungen, Läden, list at 200 %; on a plain build
+the same screens in today's hexagons. Screenshots: `docs/screenshots/368/`.
+
+**For Peter on TestFlight.** The next green main build carries it (release.yml after the merge).
+The flag sync creates the PostHog flag `redesign-rd1` for the person property `tester_groups`
+matching `redesign-rd1` (never is_internal). Peter's user needs a row in `public.tester_groups`
+with group `redesign-rd1` (lead, SQL; NEEDS_LEAD "Job 368"). Then open the app, close it fully
+and open it again: the look switches at the start after the app learned the flag.
+
+**Not done / known.** Pre-existing in both looks, not touched (RD1 must not move layout): at
+x3.1 the add field's hint is cut, the household page wraps its name beside „Einladen“ letter by
+letter, „Schütteln für Feedback“ breaks mid-word; at 200 % on the web the „+ Preis“ chip's text
+is clipped at the bottom. RD-Q6 is the round for these. A tester without the analytics yes who
+starts offline, or closes the app before PostHog answers, gets hex at the next start (the shared
+cached flags hold no tester answers); with the analytics yes the look holds.

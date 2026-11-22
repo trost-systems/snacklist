@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:family_groceries/design/look.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:flutter/widgets.dart';
 
@@ -19,6 +20,9 @@ enum HexOrientation() {
 /// radius is [HlHex.cornerRadius] at [HlHex.referenceHeight] and scales with
 /// the height, so a small chip is as round, relative to its size, as a large
 /// button.
+///
+/// Under [Look.soft] it is a rounded rectangle instead, with [softRadius] of
+/// its shorter side (job 368); every hex control keeps its size and insets.
 class const HexBorder({
   final HexOrientation orientation = HexOrientation.horizontal,
   super.side,
@@ -28,14 +32,22 @@ class const HexBorder({
   /// along their normal and every fillet radius grows by [outset]. Focus
   /// rings and strokes use it.
   Path pathFor(Rect rect, {double outset = 0}) {
+    if (softLook) {
+      final radius = math.max<double>(
+        0,
+        softRadius(rect.shortestSide) + outset,
+      );
+      return Path()..addRRect(
+        RRect.fromRectAndRadius(rect.inflate(outset), Radius.circular(radius)),
+      );
+    }
     final across = orientation == HexOrientation.horizontal
         ? rect.height
         : rect.width;
     // Every vertex keeps its angle under an offset, so the outset hexagon has
     // the same tip ratio and only the rect grows: by [outset] across the flat
     // sides and by outset / sin(phi) towards the tips.
-    final phi = math.atan(1 / (2 * HlHex.tip));
-    final along = outset / math.sin(phi);
+    final along = alongFor(outset);
     final grown = orientation == HexOrientation.horizontal
         ? Rect.fromLTRB(
             rect.left - along,
@@ -55,6 +67,13 @@ class const HexBorder({
     );
     return _roundedPolygon(_vertices(grown), radius);
   }
+
+  /// How far the ends of a horizontal shape move when its outline moves by
+  /// [outset]: `outset / sin(phi)` along a hexagon's slanted sides, [outset]
+  /// for a soft rectangle. Thumbs, indicators and focus rings nested in a
+  /// track use it to stay parallel to the track.
+  static double alongFor(double outset) =>
+      softLook ? outset : outset / math.sin(math.atan(1 / (2 * HlHex.tip)));
 
   List<Offset> _vertices(Rect r) {
     switch (orientation) {

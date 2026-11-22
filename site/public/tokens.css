@@ -120,6 +120,11 @@
   --hl-shape-hex-tip: 0.2887;
   --hl-shape-hex-reference-height: 48px;
   --hl-shape-hex-corner-radius: 8px;
+  --hl-shape-soft-xs: 6px;
+  --hl-shape-soft-sm: 8px;
+  --hl-shape-soft-md: 12px;
+  --hl-shape-soft-lg: 20px;
+  --hl-shape-soft-xl: 24px;
   --hl-depth-edge: 4px;
   --hl-depth-edge-l: 6px;
   --hl-depth-lift: 2px;

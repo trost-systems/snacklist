@@ -1,4 +1,5 @@
 import 'package:family_groceries/design/hex_border.dart';
+import 'package:family_groceries/design/look.dart';
 import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:material_ui/material_ui.dart';
@@ -12,7 +13,8 @@ import 'package:material_ui/material_ui.dart';
 ///
 /// Built on [ToggleableStateMixin] like Material's check box: keyboard
 /// activation, focus, hover and the checked semantics come from Flutter. Its
-/// box is [HlSize.target] square.
+/// box is [HlSize.target] square. Under [Look.soft] the hex is a rounded
+/// square as wide as the hex.
 class const HexCheckbox({
   required final bool value,
   required final ValueChanged<bool>? onChanged,
@@ -92,7 +94,9 @@ class _HexCheckboxPainter({
   void paint(Canvas canvas, Size size) {
     const height = HexCheckbox.height;
     final hex = Alignment.center.inscribe(
-      const Size(height * 0.866, height),
+      softLook
+          ? const Size.square(height * 0.866)
+          : const Size(height * 0.866, height),
       Offset.zero & size,
     );
     final p = checked.value;

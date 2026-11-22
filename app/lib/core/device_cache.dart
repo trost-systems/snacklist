@@ -56,6 +56,11 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
   /// follows the device. Kept across sign-outs like the language.
   static const _themeKey = 'theme';
 
+  /// The last value of the `redesign-rd1` flag (job 368), which the next
+  /// start draws its look from; absent is off. Kept across sign-outs like
+  /// the theme: it belongs to the device.
+  static const _softLookKey = 'look.soft';
+
   /// Analytics (job 19): the install id, the consent decision and the
   /// version of the consent text it was given under, the install id
   /// `first_open` went out for, and the flags served without consent (JSON
@@ -171,6 +176,18 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
         ? _prefs.remove(_themeKey)
         : _prefs.setString(_themeKey, name),
   );
+
+  /// Whether the last start saw `redesign-rd1` on.
+  Future<bool> softLook() async {
+    try {
+      return await _prefs.getBool(_softLookKey) ?? false;
+    } on Object {
+      return false;
+    }
+  }
+
+  Future<void> saveSoftLook({required bool on}) =>
+      _write(() => _prefs.setBool(_softLookKey, on));
 
   /// [userId]'s kept trips as saved, or null.
   Future<String?> keptTrips(String userId) =>

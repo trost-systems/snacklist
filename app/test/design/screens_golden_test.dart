@@ -4,247 +4,46 @@
 import 'dart:async';
 import 'dart:ui' show SemanticsHitTestBehavior;
 
-import 'package:bloc_test/bloc_test.dart';
-import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/analytics/flags.dart';
-import 'package:family_groceries/core/device_cache.dart';
-import 'package:family_groceries/core/language.dart';
 import 'package:family_groceries/core/localizations.dart';
 import 'package:family_groceries/core/theme.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/household/household_kind.dart';
 import 'package:family_groceries/household/invite_repository.dart';
-import 'package:family_groceries/household/invite_share.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/edit_item_sheet.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_repository.dart';
-import 'package:family_groceries/list/list_screen.dart';
 import 'package:family_groceries/list/list_view/item_row.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/name_dialog.dart';
 import 'package:family_groceries/list/sync_indicator.dart';
 import 'package:family_groceries/more/app_update.dart';
-import 'package:family_groceries/more/more_screen.dart';
 import 'package:family_groceries/onboarding/onboarding_cubit.dart';
 import 'package:family_groceries/onboarding/start_screen.dart';
-import 'package:family_groceries/purchases/premium_server.dart';
 import 'package:family_groceries/session/login_screen.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/session/social_sign_in.dart';
 import 'package:family_groceries/shell/router.dart';
-import 'package:family_groceries/shell/shell.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:mocktail/mocktail.dart' show when;
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
-import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'
     show AuthChangeEvent, AuthState;
 
 import '../analytics/fakes.dart' show MemoryAnalyticsStore, loadedAnalytics;
-import '../household/harness.dart'
-    show FakeInvites, FakeSharer, MemoryOnboardingStore;
+import '../household/harness.dart' show FakeInvites, MemoryOnboardingStore;
 import '../list/fake_repository.dart';
 import '../more/more_harness.dart';
-import '../purchases/fakes.dart';
 import '../session/fake_auth.dart';
 import 'fonts.dart';
-
-const _phone = Size(390, 844);
-const _desktop = Size(1280, 800);
-
-/// The 358 px compact design (snacklist-ui-craft).
-const _compact = Size(358, 780);
-
-Item _item(
-  String id,
-  String name,
-  String store,
-  String category, {
-  String? quantity,
-}) {
-  final at = DateTime.utc(2026, 10, 31, 12);
-  return Item(
-    id: id,
-    name: name,
-    quantity: quantity,
-    status: ItemStatus.active,
-    createdAt: at,
-    updatedAt: at,
-    storeId: store,
-    categoryId: category,
-    sortKey: id.hashCode.toDouble(),
-  );
-}
-
-/// Enough rows that the list scrolls under the add field.
-const _longList = [
-  'Äpfel',
-  'Birnen',
-  'Gurke',
-  'Tomaten',
-  'Paprika',
-  'Zucchini',
-  'Möhren',
-  'Kartoffeln',
-  'Zwiebeln',
-  'Knoblauch',
-  'Salat',
-  'Spinat',
-  'Brokkoli',
-  'Zitronen',
-  'Avocado',
-  'Ingwer',
-];
-
-/// The shell with List and More as the app builds it, a few items on the
-/// list, in [brightness].
-Future<FakeRepository> _pumpShell(
-  WidgetTester tester,
-  Brightness brightness, {
-  Size size = _phone,
-  bool empty = false,
-  bool long = false,
-  Locale locale = const Locale('de'),
-
-  /// The home indicator's or gesture bar's height.
-  double inset = 0,
-
-  /// The user's households, the first one shown (job 169b).
-  List<Household> households = const [
-    Household(id: 'home', name: 'Zuhause', isDefault: true),
-  ],
-  String initialLocation = listPath,
-
-  /// The household's invites and members; Peter and Lea by default.
-  FakeInvites? invites,
-
-  /// Sets the server up further (lists, claims) before the app starts.
-  void Function(FakeRepository repo)? seed,
-
-  /// PostHog flags on, as a `FLAGS_ON` build has them.
-  Set<String> flags = const {},
-
-  /// The status bar's height.
-  double top = 0,
-}) async {
-  tester.view
-    ..devicePixelRatio = 1
-    ..physicalSize = size
-    ..padding = FakeViewPadding(top: top, bottom: inset)
-    ..viewPadding = FakeViewPadding(top: top, bottom: inset);
-  addTearDown(tester.view.reset);
-  SharedPreferencesAsyncPlatform.instance =
-      InMemorySharedPreferencesAsync.empty();
-  final cache = DeviceCache(SharedPreferencesAsync());
-  final language = LanguageCubit(cache, AppLanguage.de);
-  addTearDown(language.close);
-  final session = FakeSession();
-  whenListen(
-    session,
-    const Stream<Session>.empty(),
-    initialState: InHousehold('peter', households.first, households),
-  );
-  when(session.refresh).thenAnswer((_) => Future.value());
-  final repo = FakeRepository();
-  for (final item in [
-    if (!empty) ...[
-      _item('1', 'Zahnpasta', 'dm', 'other'),
-      _item('2', 'Bananen', 'lidl', 'produce', quantity: '6×'),
-      _item('3', 'Vollmilch', 'lidl', 'chilled', quantity: '2 l'),
-      _item('4', 'Butter', 'lidl', 'chilled'),
-    ],
-    if (long)
-      for (final (i, name) in _longList.indexed)
-        _item('l$i', name, 'lidl', 'produce'),
-  ]) {
-    repo.rows[item.id] = item;
-  }
-  seed?.call(repo);
-  final router = GoRouter(
-    initialLocation: initialLocation,
-    routes: [
-      StatefulShellRoute.indexedStack(
-        builder: (_, _, shell) =>
-            AppShell(shell: shell, repositories: (_) => repo),
-        branches: [
-          StatefulShellBranch(
-            routes: [
-              GoRoute(path: listPath, builder: (_, _) => const ListScreen()),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: morePath,
-                builder: (_, _) => const MoreScreen(),
-                routes: [
-                  GoRoute(
-                    path: 'household',
-                    builder: (_, _) =>
-                        const MoreScreen(page: MorePage.household),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
-      ),
-    ],
-  );
-  addTearDown(router.dispose);
-  final purchases = TestPurchases(session: session);
-  addTearDown(purchases.close);
-  await tester.pumpWidget(
-    MultiRepositoryProvider(
-      providers: [
-        RepositoryProvider.value(value: cache),
-        RepositoryProvider<PremiumServer>.value(value: purchases.premium),
-        RepositoryProvider<InviteRepository>.value(
-          value:
-              invites ??
-              (FakeInvites()
-                ..memberLists['home'] = const [
-                  HouseholdMember(userId: 'peter', displayName: 'Peter'),
-                  HouseholdMember(userId: 'lea', displayName: 'Lea'),
-                ]),
-        ),
-        RepositoryProvider<InviteSharer>.value(value: FakeSharer()),
-      ],
-      child: MultiBlocProvider(
-        providers: [
-          BlocProvider<SessionCubit>.value(value: session),
-          BlocProvider.value(value: language),
-          BlocProvider.value(value: Analytics.off(cache)),
-          BlocProvider.value(value: purchases.entitlements),
-          BlocProvider.value(value: purchases.purchases),
-          if (flags.isNotEmpty)
-            BlocProvider(create: (_) => Flags(forced: flags)),
-        ],
-        child: MaterialApp.router(
-          debugShowCheckedModeBanner: false,
-          theme: appTheme(brightness),
-          localizationsDelegates: appLocalizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          locale: locale,
-          routerConfig: router,
-        ),
-      ),
-    ),
-  );
-  await tester.pumpAndSettle();
-  return repo;
-}
+import 'shell_harness.dart';
 
 /// The sign-in screen with Google and Apple, the e-mail field focused.
 Future<void> _pumpLogin(WidgetTester tester, Brightness brightness) async {
   tester.view
     ..devicePixelRatio = 1
-    ..physicalSize = _phone;
+    ..physicalSize = shellPhone;
   addTearDown(tester.view.reset);
   final auth = FakeAuth();
   addTearDown(auth.close);
@@ -300,7 +99,7 @@ Future<void> _pumpStart(
 }) async {
   tester.view
     ..devicePixelRatio = 1
-    ..physicalSize = _phone;
+    ..physicalSize = shellPhone;
   addTearDown(tester.view.reset);
   final onboarding = OnboardingCubit(MemoryOnboardingStore());
   addTearDown(onboarding.close);
@@ -336,9 +135,9 @@ Future<void> _pumpStart(
 Future<void> _pumpEditSheet(WidgetTester tester, Brightness brightness) async {
   tester.view
     ..devicePixelRatio = 1
-    ..physicalSize = _phone;
+    ..physicalSize = shellPhone;
   addTearDown(tester.view.reset);
-  final item = _item('1', 'Vollmilch', 'lidl', 'chilled', quantity: '2');
+  final item = shellItem('1', 'Vollmilch', 'lidl', 'chilled', quantity: '2');
   await tester.pumpWidget(
     MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -387,7 +186,7 @@ Future<void> _pumpNameDialog(
 ) async {
   tester.view
     ..devicePixelRatio = 1
-    ..physicalSize = _phone
+    ..physicalSize = shellPhone
     ..viewInsets = const FakeViewPadding(bottom: _keyboard);
   addTearDown(tester.view.reset);
   await tester.pumpWidget(
@@ -448,7 +247,7 @@ void main() {
   testWidgets('the add sheet keeps its two chips on one line at 390 px', (
     tester,
   ) async {
-    await _pumpShell(tester, Brightness.light);
+    await pumpShell(tester, Brightness.light);
     final field = find.byKey(const ValueKey('add-item-field'));
     await tester.tap(field);
     await tester.enterText(field, 'Spülmittel');
@@ -464,7 +263,7 @@ void main() {
   ) async {
     tester.platformDispatcher.textScaleFactorTestValue = 1.5;
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-    await _pumpShell(
+    await pumpShell(
       tester,
       Brightness.light,
       size: const Size(375, 667),
@@ -492,7 +291,7 @@ void main() {
   });
 
   testWidgets('the list scrolls under the floating add field', (tester) async {
-    await _pumpShell(tester, Brightness.light, long: true);
+    await pumpShell(tester, Brightness.light, long: true);
     final hex = tester.getRect(
       find.ancestor(
         of: find.byKey(const ValueKey('add-item-field')),
@@ -503,7 +302,7 @@ void main() {
     );
     // The rows' own 16 px inset on both sides.
     expect(hex.left, 16);
-    expect(hex.right, _phone.width - 16);
+    expect(hex.right, shellPhone.width - 16);
     // A row runs on under the field. A near miss beside the hex counts as
     // a tap on the field and leaves that hidden row alone.
     final under = Offset(8, hex.center.dy);
@@ -612,7 +411,7 @@ void main() {
     ]) {
       for (final kind in SyncTrouble.values) {
         testWidgets('sync $kind, $lang, $mode', (tester) async {
-          final repo = await _pumpShell(tester, brightness, locale: locale);
+          final repo = await pumpShell(tester, brightness, locale: locale);
           final cubit = BlocProvider.of<ListCubit>(
             tester.element(find.byKey(const ValueKey('list-header'))),
           );
@@ -663,7 +462,7 @@ void main() {
       Household(id: 'parents', name: 'Eltern'),
     ];
     testWidgets('household sheet, $mode', (tester) async {
-      await _pumpShell(tester, brightness, households: households);
+      await pumpShell(tester, brightness, households: households);
       await tester.tap(find.byKey(const ValueKey('household-chip')));
       await tester.pumpAndSettle();
       await expectLater(
@@ -673,7 +472,7 @@ void main() {
     });
 
     testWidgets('household page, $mode', (tester) async {
-      await _pumpShell(
+      await pumpShell(
         tester,
         brightness,
         households: households,
@@ -742,7 +541,7 @@ void main() {
     }
 
     testWidgets('household page with roles, $mode', (tester) async {
-      await _pumpShell(
+      await pumpShell(
         tester,
         brightness,
         households: owned,
@@ -756,7 +555,7 @@ void main() {
     });
 
     testWidgets('invite sheet, $mode', (tester) async {
-      await _pumpShell(
+      await pumpShell(
         tester,
         brightness,
         households: owned,
@@ -774,10 +573,10 @@ void main() {
     // Job 178 (Legal N-112): the join page hint above the controls at
     // 358 px, the sheet scrolled to its top.
     testWidgets('invite sheet, compact, $mode', (tester) async {
-      await _pumpShell(
+      await pumpShell(
         tester,
         brightness,
-        size: _compact,
+        size: shellCompact,
         households: owned,
         invites: crew(),
         initialLocation: householdPath,
@@ -810,10 +609,10 @@ void main() {
           ],
         ];
       for (final item in [
-        _item('p1', 'Kuchen', 'lidl', 'other', quantity: '3'),
-        _item('p2', 'Grillwürste', 'lidl', 'chilled', quantity: '40'),
-        _item('p3', 'Apfelschorle', 'lidl', 'other', quantity: '2 Kisten'),
-        _item('p4', 'Servietten', 'dm', 'other'),
+        shellItem('p1', 'Kuchen', 'lidl', 'other', quantity: '3'),
+        shellItem('p2', 'Grillwürste', 'lidl', 'chilled', quantity: '40'),
+        shellItem('p3', 'Apfelschorle', 'lidl', 'other', quantity: '2 Kisten'),
+        shellItem('p4', 'Servietten', 'dm', 'other'),
       ]) {
         repo.rows[item.id] = item.copyWith(listId: 'party');
       }
@@ -838,7 +637,7 @@ void main() {
     }
 
     testWidgets('list with tabs, $mode', (tester) async {
-      await _pumpShell(tester, brightness, seed: party);
+      await pumpShell(tester, brightness, seed: party);
       await showParty(tester);
       await expectLater(
         find.byType(MaterialApp),
@@ -847,10 +646,10 @@ void main() {
     });
 
     testWidgets('list with tabs, compact, $mode', (tester) async {
-      await _pumpShell(
+      await pumpShell(
         tester,
         brightness,
-        size: _compact,
+        size: shellCompact,
         seed: (repo) => party(repo, many: true),
       );
       await showParty(tester);
@@ -861,7 +660,7 @@ void main() {
     });
 
     testWidgets('household page lists, $mode', (tester) async {
-      await _pumpShell(
+      await pumpShell(
         tester,
         brightness,
         initialLocation: householdPath,
@@ -879,7 +678,7 @@ void main() {
     });
 
     testWidgets('list, $mode', (tester) async {
-      await _pumpShell(tester, brightness);
+      await pumpShell(tester, brightness);
       await expectLater(
         find.byType(MaterialApp),
         matchesGoldenFile('goldens/list-$mode.png'),
@@ -888,7 +687,7 @@ void main() {
 
     // The honey hex with the cart, no emoji (Peter, job 56 item 31).
     testWidgets('list empty, $mode', (tester) async {
-      await _pumpShell(tester, brightness, empty: true);
+      await pumpShell(tester, brightness, empty: true);
       await expectLater(
         find.byType(MaterialApp),
         matchesGoldenFile('goldens/list-empty-$mode.png'),
@@ -898,7 +697,7 @@ void main() {
     // The list's columns, the explainer and the add field in one frame
     // (job 57 item 27).
     testWidgets('list wide, $mode', (tester) async {
-      await _pumpShell(tester, brightness, size: _desktop);
+      await pumpShell(tester, brightness, size: shellDesktop);
       await expectLater(
         find.byType(MaterialApp),
         matchesGoldenFile('goldens/list-wide-$mode.png'),
@@ -908,7 +707,7 @@ void main() {
     // The add field floats with the rows' inset; the list scrolls on
     // under it (job 135).
     testWidgets('list scrolled under the add field, $mode', (tester) async {
-      await _pumpShell(tester, brightness, long: true);
+      await pumpShell(tester, brightness, long: true);
       await tester.drag(find.text('Zwiebeln'), const Offset(0, -300));
       await tester.pumpAndSettle();
       await expectLater(
@@ -921,11 +720,11 @@ void main() {
     // (iPhone, 34 px) or the gesture bar (Android, 24 px); the list runs on
     // behind it.
     for (final (phone, size, inset) in const [
-      ('iphone', _phone, 34.0),
+      ('iphone', shellPhone, 34.0),
       ('android', Size(412, 915), 24.0),
     ]) {
       testWidgets('tab pill on $phone, $mode', (tester) async {
-        await _pumpShell(
+        await pumpShell(
           tester,
           brightness,
           size: size,
@@ -940,7 +739,7 @@ void main() {
     }
 
     testWidgets('add sheet wide, $mode', (tester) async {
-      await _pumpShell(tester, brightness, size: _desktop);
+      await pumpShell(tester, brightness, size: shellDesktop);
       final field = find.byKey(const ValueKey('add-item-field'));
       await tester.tap(field);
       await tester.enterText(field, 'Milch');
@@ -952,7 +751,7 @@ void main() {
     });
 
     testWidgets('add sheet, $mode', (tester) async {
-      await _pumpShell(tester, brightness);
+      await pumpShell(tester, brightness);
       final field = find.byKey(const ValueKey('add-item-field'));
       await tester.tap(field);
       await tester.enterText(field, 'Milch');
@@ -966,7 +765,7 @@ void main() {
     // Job 288, flag `add-feedback-list`: no chip row, the list's top bar
     // away and its rows up to the status bar.
     testWidgets('add sheet feedback, $mode', (tester) async {
-      await _pumpShell(
+      await pumpShell(
         tester,
         brightness,
         flags: {addFeedbackListFlag},
@@ -982,7 +781,7 @@ void main() {
 
     // Job 288: the added item's details, store and category among them.
     testWidgets('add sheet feedback details, $mode', (tester) async {
-      await _pumpShell(
+      await pumpShell(
         tester,
         brightness,
         flags: {addFeedbackListFlag},
@@ -1003,7 +802,7 @@ void main() {
 
     // Job 78: the chips share their line with Schließen, also at 358 px.
     testWidgets('add sheet compact, $mode', (tester) async {
-      await _pumpShell(tester, brightness, size: _compact);
+      await pumpShell(tester, brightness, size: shellCompact);
       final field = find.byKey(const ValueKey('add-item-field'));
       await tester.tap(field);
       await tester.enterText(field, 'Milch');
@@ -1016,7 +815,7 @@ void main() {
 
     // Job 58: "+ Neuer Laden" turned into its field, a name typed.
     testWidgets('add sheet new store, $mode', (tester) async {
-      await _pumpShell(tester, brightness);
+      await pumpShell(tester, brightness);
       final field = find.byKey(const ValueKey('add-item-field'));
       await tester.tap(field);
       await tester.enterText(field, 'Milch');

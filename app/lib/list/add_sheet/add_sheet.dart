@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/environment.dart';
 import 'package:family_groceries/core/theme.dart';
+import 'package:family_groceries/design/look.dart';
 import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/tactile.dart';
 import 'package:family_groceries/design/tokens.g.dart';
@@ -338,14 +339,10 @@ class const _Surface({
       key: const ValueKey('add-sheet-surface'),
       decoration: BoxDecoration(
         color: scheme.surfaceContainerLow,
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(HlRadius.l),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(sheetRadius)),
       ),
       child: ClipRRect(
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(HlRadius.l),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(sheetRadius)),
         // Reduced motion: the surface takes its size at once.
         child: still
             ? sized

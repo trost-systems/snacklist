@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/design/field_border.dart';
 import 'package:family_groceries/design/hex_pill.dart';
+import 'package:family_groceries/design/sticker.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/category_names.dart';
@@ -342,6 +343,8 @@ class _DeleteDialogState() extends State<_DeleteDialog> {
             field: DropdownButtonFormField<String>(
               initialValue: target,
               isExpanded: true,
+              // Material's default, which the soft look drops.
+              elevation: HlSticker.elevation(8).round(),
               decoration: const InputDecoration(),
               items: [
                 for (final c in widget.catalog.categories)

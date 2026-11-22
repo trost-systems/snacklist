@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Writes the Snacklist design tokens for the app and the site from snacklist.tokens.json:
 //   app/lib/design/tokens.g.dart  colours (light and dark) as a ThemeExtension, type, space,
-//                                 radius, depth, shape, focus and motion constants
+//                                 radius, depth, shape (hex and soft), focus and motion constants
 //   site/public/tokens.css        the same as --hl-* custom properties, dark under
 //                                 prefers-color-scheme
 //   app/web/join/tokens.css       the same file for the web app's join page (job 169b)
@@ -64,6 +64,7 @@ function cssLines() {
   for (const [k, n] of groups(tokens.motion.duration)) { const d = value(n); out.push([`motion-duration-${k}`, `${d.value}${d.unit}`]); }
   for (const [k, n] of groups(tokens.motion.easing)) out.push([`motion-easing-${k}`, `cubic-bezier(${value(n).join(', ')})`]);
   for (const [k, n] of groups(tokens.shape.hex)) { const v = value(n); out.push([`shape-hex-${k}`, typeof v === 'number' ? `${v}` : cssLength(v)]); }
+  for (const [k, n] of groups(tokens.shape.soft)) out.push([`shape-soft-${k}`, cssLength(value(n))]);
   for (const [k, n] of groups(tokens.depth)) out.push([`depth-${k}`, cssLength(value(n))]);
   for (const [k, n] of groups(tokens.focus.ring)) out.push([`focus-ring-${k}`, cssLength(value(n))]);
   for (const [k, n] of groups(tokens.size)) out.push([`size-${k}`, cssLength(value(n))]);
@@ -199,6 +200,11 @@ abstract final class HlHex {
 ${doc(hex.tip)}  static const double tip = ${num(value(hex.tip))};
 ${doc(hex['reference-height'])}  static const double referenceHeight = ${num(px(value(hex['reference-height'])))};
 ${doc(hex['corner-radius'])}  static const double cornerRadius = ${num(px(value(hex['corner-radius'])))};
+}
+
+/// RD1's radii (job 368): what the hex shapes become under the soft look.
+abstract final class HlSoft {
+${dims('HlSoft', tokens.shape.soft)}
 }
 
 abstract final class HlDuration {

@@ -409,6 +409,24 @@ abstract final class HlHex {
   static const double cornerRadius = 8;
 }
 
+/// RD1's radii (job 368): what the hex shapes become under the soft look.
+abstract final class HlSoft {
+  /// Check boxes, count badges, the item placeholder: shapes under 28 px
+  static const double xs = 6;
+
+  /// Chips: shapes 28 to 40 px
+  static const double sm = 8;
+
+  /// Buttons, icon buttons, fields, switcher, tabs: shapes 40 to 60 px
+  static const double md = 12;
+
+  /// Tab bar capsule, cards, groups, the empty list's motif: from 60 px
+  static const double lg = 20;
+
+  /// Sheets and dialogs
+  static const double xl = 24;
+}
+
 abstract final class HlDuration {
   static const short = Duration(milliseconds: 180);
   static const medium = Duration(milliseconds: 260);

@@ -85,6 +85,11 @@
       "rollout": "off",
       "tester_group": "recently-used-open",
       "note": "the list's Zuletzt verwendet section starts open (faded rows as before, no count, nothing added to the add field) and a fold the user makes is remembered per device, only while the PostHog flag recently-used-open is on (job 367, RU1); Peter-only: the flag targets the tester group recently-used-open (person property tester_groups), never is_internal; the flag sync creates it that way"
+    },
+    "redesign-rd1": {
+      "rollout": "off",
+      "tester_group": "redesign-rd1",
+      "note": "RD1, the look without hexagons (job 368): every hexagon a soft rounded rectangle in RD1's radii (check boxes, badges and the item placeholder 6, chips 8, buttons, fields and tabs 12, cards, groups and the tab bar 20, sheets and dialogs 24), radios round, and a drop shadow only on buttons; read at start, so a change shows from the next start; the layout, the words and the app icon stay; the flag targets the tester group redesign-rd1 (person property tester_groups), never is_internal; the flag sync creates it that way"
     }
   },
   "holds": {

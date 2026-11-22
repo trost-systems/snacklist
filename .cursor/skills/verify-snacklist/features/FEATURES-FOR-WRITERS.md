@@ -631,6 +631,19 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 
 **Last verified.** 19 November 2026, code version af0287cf, in the web app (German): „Dunkel“ chosen and kept after a reload. Earlier: 18 November 2026, code version 0ca5dcc9, in the web app (German).
 
+## A look without hexagons (built, not switched on)
+
+**What it does.** Not for users yet: it is switched on only for testers, and it is not announced. The app's controls and cards lose their hexagon shapes and get soft rounded corners: buttons, fields, chips, tabs, check boxes, badges, the cards on „Mehr“ (EN "More") and the sheets. Radio buttons are round. Only buttons still stand on a dark edge; cards, the tab bar and the add field lie flat with their outline. Everything stays where it was, with the same words, in light and dark. A tester sees the new look the next time the app starts after it was switched on.
+
+**How to get there.** Nothing to do: it shows on every screen for testers who have it.
+
+**Never claim.**
+- That it is available to everyone, or that it is coming soon.
+- That the app icon, the Home Screen widgets, the website or the store pictures changed (they still show hexagons).
+- That anything moved or was renamed: only shapes and shadows changed.
+
+**Last verified.** 22 November 2026, code version 62a33a4da, in the web app with the test switch on (German light, English dark, the list at 200 % text) and in the app's goldens (German and English, light and dark, smallest and largest text).
+
 ## App language
 
 **What it does.** The app is available in German and English. It follows the device language by default (English if the device uses neither); the user can override that. The switch is instant, covers the whole app and is remembered on that device. Sign-in and confirmation emails come in the language the app last showed on that account, German or English.

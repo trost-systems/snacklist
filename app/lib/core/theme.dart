@@ -1,9 +1,11 @@
 import 'dart:async';
 
+import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/device_cache.dart';
 import 'package:family_groceries/design/field_border.dart';
 import 'package:family_groceries/design/fonts.dart';
 import 'package:family_groceries/design/hex_border.dart';
+import 'package:family_groceries/design/look.dart';
 import 'package:family_groceries/design/tactile.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -58,7 +60,9 @@ ColorScheme snacklistColorScheme(Brightness brightness) {
     ),
     outline: t.border,
     outlineVariant: t.divider,
-    shadow: t.edge,
+    // Material's elevation shadows; under the soft look only buttons have
+    // one, and those draw their own.
+    shadow: softLook ? Colors.transparent : t.edge,
     scrim: const Color(0xFF000000),
     inverseSurface: light ? t.inverse : t.text,
     onInverseSurface: light ? t.onInverse : t.surface,
@@ -226,21 +230,21 @@ ThemeData appTheme(Brightness brightness) {
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       shape: rounded(
-        HlRadius.m,
+        cardRadius,
         BorderSide(color: t.border, width: HlBorder.width),
       ),
     ),
     dialogTheme: DialogThemeData(
       backgroundColor: t.surfaceRaised,
       surfaceTintColor: Colors.transparent,
-      shape: rounded(HlRadius.l, contour),
+      shape: rounded(sheetRadius, contour),
       titleTextStyle: text.headlineSmall!.copyWith(color: t.text),
     ),
     bottomSheetTheme: BottomSheetThemeData(
       backgroundColor: t.surfaceRaised,
       surfaceTintColor: Colors.transparent,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(HlRadius.l)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(sheetRadius)),
       ),
       dragHandleColor: t.textMuted,
       modalBarrierColor: sheetBarrier,
@@ -252,7 +256,7 @@ ThemeData appTheme(Brightness brightness) {
       contentTextStyle: text.titleSmall!.copyWith(color: t.text),
       actionTextColor: t.brand,
       insetPadding: const EdgeInsets.all(HlSpace.s3),
-      shape: rounded(HlRadius.m, contour),
+      shape: rounded(cardRadius, contour),
     ),
     navigationRailTheme: NavigationRailThemeData(
       backgroundColor: scheme.surfaceContainer,
@@ -266,6 +270,15 @@ ThemeData appTheme(Brightness brightness) {
       ),
       unselectedLabelTextStyle: text.labelMedium!.copyWith(color: t.textMuted),
     ),
+    // Under the soft look a menu has no shadow; the contour sets it off.
+    popupMenuTheme: softLook
+        ? PopupMenuThemeData(
+            shape: rounded(
+              HlSoft.lg,
+              BorderSide(color: t.border, width: HlBorder.width),
+            ),
+          )
+        : null,
     progressIndicatorTheme: ProgressIndicatorThemeData(color: t.brand),
     listTileTheme: ListTileThemeData(iconColor: t.textMuted),
     inputDecorationTheme: fieldTheme(t, FieldShape.hex),
@@ -302,6 +315,25 @@ ButtonStyle dangerButtonStyle(BuildContext context) {
       fontWeight: FontWeight.w700,
     ),
   );
+}
+
+/// The look for this run (job 368): soft when [flags] forces
+/// [redesignRd1Flag] on or the flag was on when the device last heard of
+/// it, else today's hexagons. `main.dart` sets `appLook` from it before
+/// `runApp`.
+Future<Look> startLook(Flags flags, DeviceCache cache) async =>
+    flags.forced.contains(redesignRd1Flag) || await cache.softLook()
+    ? Look.soft
+    : Look.hex;
+
+/// Saves [redesignRd1Flag]'s value now (once flags are known) and on every
+/// change, for the next start's [startLook].
+StreamSubscription<Map<String, bool>> keepLook(Flags flags, DeviceCache cache) {
+  void save() => unawaited(cache.saveSoftLook(on: flags.isOn(redesignRd1Flag)));
+  if (flags.state.isNotEmpty) {
+    save();
+  }
+  return flags.stream.listen((_) => save());
 }
 
 /// How a stored theme choice reads: `light`, `dark`, or anything else for
