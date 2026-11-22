@@ -39,16 +39,16 @@ Connect and the Play Console after Legal's check.
     Alexa, and all related marks are trademarks of Amazon.com, Inc. or its affiliates." Play: only the Amazon sentence.
   - Text only: no Alexa logo, no "Just Ask Alexa" badge, no Echo image in any screenshot, feature graphic or preview. Store videos show no
     Alexa until Amazon's review of them; at most a still of Snacklist's own "Amazon Alexa" connection screen.
-  - The skill pages (support pages and the site) are `site/config/alexa.mjs`'s, not the listing's.
+  - The skill pages (support pages and the site) come from `ALEXA_SKILL_URLS` in `site/config/stores.mjs`, not the listing.
 - Alexa is free in the launch build: the newest `public.integration_gate` never locks `'siri'` or `'alexa'`
-  (`supabase/migrations/20261113034530_siri_free.sql`), and the alexa function never asks for Premium. Hence
+  (`supabase/migrations/20261115100000_key_checks_without_waiting.sql:196`), and the alexa function never asks for Premium. Hence
   „Siri, Alexa und die Liste selbst brauchen kein Premium.“ (Play: „Alexa und die Liste selbst …“).
 - Premium, see the next section.
 
 ## Snacklist Premium in the listing
 
-Premium's pitch leads with export, the API and AI assistants (P3a, `docs/PRODUCT_FEATURE_MAP.md`). A listing claims only what the launch
-build gates:
+A listing claims only what the launch build gates. Peter's pitch (P3a, `docs/PRODUCT_FEATURE_MAP.md`) also names an export, which the
+app does not have as a Premium feature, so no field names one:
 
 - History and the planned-and-paid comparison, the earlier Premium bullets, are off (HP2) and gone.
 - AI assistants (MCP) and the API need Premium only while the server switch `integration_lock` is on, which Peter turns on when he releases
@@ -127,11 +127,9 @@ Reason: `docs/PURCHASES.md` "Per-user Premium" (job 185) has the buyer hold Prem
 
 ## Open questions for Legal and Peter
 
-1. Household or account. The Premium page (`premiumHeroBody` "Snacklist Premium gilt für euren ganzen Haushalt ...",
-   `premiumHousehold` "Premium gehört dann zum Haushalt ...") still says household, while per-user Premium (job 185) gives the buyer
-   Premium in every household they are in, and other members do not see it. Whether Premium also unlocks shared views for the household
-   is open. The in-app product texts say "Für dein Konto" / "For your account", the listings say nothing about households. The app's ARB
-   was not edited. Legal and Peter decide the one wording for the page, the products and the listings.
+1. Household or account. Settled for the page by Legal N-348 to N-350 and N-362 to N-365: `premiumHeroBody` „Snacklist Premium gilt
+   für dich, in jedem Haushalt, in dem du Mitglied bist.“ The in-app product texts say "Für dein Konto" / "For your account"; the listings
+   say nothing about households.
 2. AI assistants inside Premium. Still unreleased (`integration-lock`): see "Snacklist Premium in the listing". With HP2 the launch
    Premium paragraph names no benefit at all; Peter decides whether the lock goes on at launch (then paste the block) or Premium waits.
 3. The Snacklist API. The Premium page also lists "Eigene Automationen mit der Snacklist API", which the lock covers. The listings leave
@@ -151,4 +149,10 @@ Reason: `docs/PURCHASES.md` "Per-user Premium" (job 185) has the buyer hold Prem
    real device ("Unverified"). Verify on an iPhone and an Android phone before upload.
 9. Age rating. The listing assumes 16+ in the consoles; no text names the age.
 10. Promotional text may change without a new review on the App Store; the other fields need a version.
-11. The English description says "History" for „Verlauf“ and "Access" for „Zugänge“, as the English app does; check them on the release build.
+11. The English description says "Access" for „Zugänge“, as the English app does; check it on the release build.
+
+## Store-upload gate list
+
+Open items that must be closed before any store upload:
+
+- N-438: re-film the en-US `1-add-tick.mp4` (it shows the German suggestion „Honig“ at about 4.6 s), plus any site clip cut from the same take, before upload.

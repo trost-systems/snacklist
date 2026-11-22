@@ -17817,3 +17817,18 @@ Peter decided HP2 on 22 Nov 2026: `grocery-log`, `prices-and-trip-total`, `trip-
 IKEA is a registry chain, so `registryChains` would have offered it as a grocery chip in every country and given
 Belgian, Czech etc. phones a one-chip picker. `retailer.dart` skips chain `ikea` for chips and the chip region
 (matching and the app key are unchanged). Peter's call whether IKEA should be a chip anywhere.
+
+## Job 402 review 0: a stage gate for Markdown, Alexa in the agent files, 2026-11-22
+
+- **`launch-stage` gates Markdown on the site's stage.** The DE Bring! comparison said „Beta … steht
+  bevor“ in every stage. A release hold doesn't fit, because the stage is the site's own switch
+  (`config/stage.ts`, `SITE_STAGE`). `::: once launch-stage` / `::: until launch-stage` reuse the hold
+  blocks. Unlike a hold, every build shows only its stage's side, with no banner, so a launch preview
+  reads as launch.
+- **Agent files carry the trademark lines in their head.** `llms.txt` sections may hold only links,
+  so the lines close the head. `llms-full.txt` keeps the same place.
+- **Quoted Alexa sentences must work.** The guides' "don't say „Alexa, setz Milch auf die Snacklist“"
+  examples quoted sentences that don't reach the skill, which N-366 rules out. The tips now name the
+  missing „sag Snacklist“ instead.
+- **The current `integration_gate` is in `20261115100000_key_checks_without_waiting.sql:196`.** The
+  earlier "Job 402" section cites `20261113034530_siri_free.sql:17`; the logic is the same.

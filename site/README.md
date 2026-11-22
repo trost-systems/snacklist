@@ -135,6 +135,12 @@ the other side too, under the banner "Erst wenn native-siri freigegeben ist, noc
 the hold in flags.json is the only change the site needs; `test/gates.test.mjs` fails if any
 native-Siri wording renders while `native-siri` is held.
 
+`launch-stage` gates on the site's stage instead (`config/stage.ts`, `SITE_STAGE` in previews):
+`::: once launch-stage` shows only in the `launch` stage, `::: until launch-stage` in the others.
+Every build, production or not, renders only its stage's side, without a banner. The DE Bring!
+comparison uses it for availability; `test/waitlist.test.mjs` fails a launch page outside the legal
+texts that still names a beta or an upcoming start.
+
 ## Live version
 
 The build reads the live version from outside `site/`: the newest public release in

@@ -2451,3 +2451,29 @@ across both columns. Screenshots in `docs/screenshots/406/`. Preview: dpl_1Aexeq
 ## Job 408: IKEA in the retailer registry
 
 IKEA entries (app "IKEA", Android `com.ingka.ikea.app`, iOS 1452164827) for AT BE CH CZ DE DK ES FI FR HR HU IE IT LU NL NO PL PT RO SE SI SK. Left out: BG CY GR IS EE LV LT have a different Inter IKEA franchise app (ids in docs/done/408.md); MT and LI have none. Migration `20261122213336_retailers_data.sql`, registry copy and coverage regenerated, `--verify` 90 apps / 0 failed. Unit and pgTAP cases for "IKEA"/"Ikea". Details: docs/done/408.md; open question in NEEDS_LEAD. PR #654, merged as 874a3e5a15b2c0b6b5d3596f10b37dda616988f1.
+
+## Job 402 review 0: launch-stage comparison, Alexa in llms files and guides
+
+#637 was merged at `b59e0b17c`, so these fixes are a follow-up PR (see [docs/done/402.md](docs/done/402.md), "Review 0").
+- The DE Bring! comparison follows the site stage (`::: once|until launch-stage`), so launch pages say
+  nothing of a beta.
+- `llms.txt` and `llms-full.txt` carry Amazon's trademark lines.
+- The Alexa guides say what the skill does and quote only sentences that work.
+- `docs/store/LISTING.md` lines are corrected.
+- `check.mjs` has two more N-366 rules.
+- The launch screenshots are re-taken.
+
+**Not done, from the review's nice-to-haves:** none of the video nits is re-filmed: the German
+„Honig“ suggestion in the EN add-tick take, the clipped item count in the voice previews, the still
+endings of the App Store previews, and the tap ring over a caption. The demo videos' play key is
+still a hexagon.
+
+## Job 402 review 1: full head SHA, guide dates, German word order in the Alexa checks
+
+See [docs/done/402.md](docs/done/402.md), "Review 1".
+- NEEDS_LEAD now has the full 40-hex head SHA.
+- The Alexa guides are dated 22 November.
+- The listing check and the site test also catch German verb-first sentences like „Dann trägt Alexa es ein.“
+- The launch preview is redeployed from #655's head.
+
+Still open, from the review's nice-to-haves: the media nits. The en-US add-tick take shows „Honig“ and should be re-filmed before upload.

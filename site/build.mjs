@@ -11,7 +11,7 @@ import { CopyError, STAGES, STAGE_CTA, copyReader, readCopy, renderLanding } fro
 import { HISTORY_ROUTES, HistoryCopyError, historyBody, t as historyText } from './history.mjs';
 import { ACTION_PAGES, actionPage, readConsent } from './waitlist.mjs';
 import { insertReportForm, reportForm, reportFormProblem } from './report.mjs';
-import { AgentError, agentHead, checkAgentSite, readPublicApi, readStage, readVercel, stageOverride, writeAgentFiles } from './agent.mjs';
+import { AgentError, MARKS, agentHead, checkAgentSite, readPublicApi, readStage, readVercel, stageOverride, writeAgentFiles } from './agent.mjs';
 import { ALEXA_SKILL_URLS, WEB_APP_URL } from './config/stores.mjs';
 
 const SITE_DIR = dirname(fileURLToPath(import.meta.url));
@@ -108,16 +108,6 @@ const FOOTER_LINKS = [
   { key: 'support', shown: (config) => config.supportPublished },
 ];
 
-// The trademark lines a page carries when its text names the mark (Legal N-366): the build adds
-// them to the footer, so no page can miss one.
-export const MARKS = [
-  {
-    mark: /\balexa/i,
-    de: 'Amazon, Alexa und alle zugehörigen Marken sind Marken von Amazon.com, Inc. oder seinen verbundenen Unternehmen.',
-    en: 'Amazon, Alexa, and all related marks are trademarks of Amazon.com, Inc. or its affiliates.',
-  },
-];
-
 // A Markdown link to `alexa-skill:<locale>` goes to that locale's skill page (config/stores.mjs)
 // while config.json's alexaPublished is on; off, only its text stays.
 function skillLinks(page, shown) {
@@ -144,9 +134,12 @@ const banner = (text) => `<p class="draft-banner" role="note"><strong>${escapeHt
 // `once` content waits for a hold in releases/flags.json to be released, `until` content goes when
 // it is: what users see follows the release decision, not the app version. Production renders only
 // the side that is current; preview and local builds show the other side too, with a banner.
+// `launch-stage` is no hold but the site's stage (site/config/stage.ts, SITE_STAGE in previews): a
+// page says what is true in the stage it is built for, so every build shows only that side (job 402).
+const STAGE_GATE = 'launch-stage';
 function checkGate(mode, key, file, holds, where) {
-  if (!Object.hasOwn(holds, key)) fail(file, `${where} "${mode}" names the hold "${key}", but releases/flags.json has only ${Object.keys(holds).join(', ')}`);
-  return { mode, key, shown: mode === 'once' ? holds[key] : !holds[key] };
+  if (!Object.hasOwn(holds, key)) fail(file, `${where} "${mode}" names the hold "${key}", but releases/flags.json has only ${Object.keys(holds).filter((k) => k !== STAGE_GATE).join(', ')} (and the stage gate ${STAGE_GATE})`);
+  return { mode, key, shown: mode === 'once' ? holds[key] : !holds[key], strict: key === STAGE_GATE };
 }
 
 function checkSince(value, file, kind, where) {
@@ -227,7 +220,7 @@ md.core.ruler.push('since', (state) => {
         if (token.level !== 0) fail(file, `heading attribute "${since === undefined ? gate.mode : 'since'}" only works on headings outside lists, quotes and blocks`);
         const depth = Number(token.tag[1]);
         const next = tokens.findIndex((t, j) => j > i && t.type === 'heading_open' && t.level === 0 && Number(t.tag[1]) <= depth);
-        if ((!released(since, versions) || gate?.shown === false) && versions.production) hide(i, (next === -1 ? tokens.length : next) - 1);
+        if ((!released(since, versions) || gate?.shown === false) && (versions.production || gate?.strict)) hide(i, (next === -1 ? tokens.length : next) - 1);
         else insert(i + 2, [...(since === undefined ? [] : notices(since)), ...gateBanner(gate)]);
       }
       if (token.tag === 'h1' && !h1Seen) {
@@ -255,7 +248,7 @@ md.core.ruler.push('since', (state) => {
       if (gate ? gate.shown : released(since, versions)) {
         unwrapped.add(i).add(close);
         insert(i, gate ? [] : inner(since));
-      } else if (versions.production) hide(i, close);
+      } else if (versions.production || gate?.strict) hide(i, close);
       else {
         token.attrSet('class', 'since-block');
         insert(i, gate ? gateBanner(gate) : notices(since));
@@ -797,6 +790,7 @@ export function build({
 } = {}) {
   const live = liveVersion(repoDir);
   const holds = Object.fromEntries(Object.entries(parseGates(readRepoFile(repoDir, 'releases/flags.json')).holds).map(([key, hold]) => [key, hold.released]));
+  holds[STAGE_GATE] = stage === 'launch';
   const versions = { live: live.live, firstPublic: live.firstPublic, production: isProduction(env), holds };
   const pages = Object.keys(KINDS)
     .flatMap((kind) => KINDS[kind].files(contentDir).map((entry) => loadPage(kind, entry, contentDir, versions)))
