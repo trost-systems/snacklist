@@ -2266,3 +2266,7 @@ letter, „Schütteln für Feedback“ breaks mid-word; at 200 % on the web the 
 is clipped at the bottom. RD-Q6 is the round for these. A tester without the analytics yes who
 starts offline, or closes the app before PostHog answers, gets hex at the next start (the shared
 cached flags hold no tester answers); with the analytics yes the look holds.
+
+## Job 370: website launch mode
+
+See [docs/done/370.md](docs/done/370.md).

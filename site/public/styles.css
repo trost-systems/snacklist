@@ -508,7 +508,6 @@ a {
   border: var(--hl-border-width) solid var(--hl-color-border);
   border-radius: var(--hl-radius-m);
   background: var(--hl-color-surface-raised);
-  box-shadow: var(--sticker);
 }
 
 .prose code {
@@ -570,7 +569,6 @@ a {
   border: var(--hl-border-width) solid var(--hl-color-border);
   border-radius: var(--hl-radius-m);
   background: var(--hl-color-surface-raised);
-  box-shadow: var(--sticker);
 }
 
 .guide-list a {
@@ -621,7 +619,6 @@ a {
   border: var(--hl-border-width) solid var(--hl-color-border);
   border-radius: var(--hl-radius-m);
   background: var(--hl-color-surface-raised);
-  box-shadow: var(--sticker);
 }
 
 /* The entry's mark on the rail. */

@@ -20,7 +20,7 @@ waitlist"):
 | --- | --- | --- |
 | `waitlist` (now) | „Auf die Warteliste“ / "Join the waitlist" | the sign-up form |
 | `beta` (built, off) | „Zur Beta anmelden“ / "Join the beta" | the sign-up form |
-| `launch` (built, off) | „App laden“ / "Get the app"; store badges in the hero | badges and a QR code for snacklist.app/get |
+| `launch` (built, off) | „App laden“ / "Get the app"; chip „Jetzt verfügbar“, store badges in the hero, „Web-App“ in the nav | each store's badge to its listing and, on desktops, a QR code per store |
 
 `/get` (`site/api/get.mjs`) sends an iPhone or iPad to the App Store and Android to Google Play once
 `site/config/stores.mjs` has their URLs, and everything else to the landing page.

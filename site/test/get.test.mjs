@@ -8,7 +8,8 @@ const IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebK
 const IPAD = 'Mozilla/5.0 (iPad; CPU OS 17_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Mobile/15E148 Safari/604.1';
 const ANDROID = 'Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36';
 const DESKTOP = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
-const LISTED = { appStore: 'https://apps.apple.com/app/id0000000000', googlePlay: 'https://play.google.com/store/apps/details?id=com.snacklist.app' };
+const LISTED = STORE_URLS;
+const UNLISTED = { appStore: 'TODO: not public', googlePlay: 'TODO: not public' };
 
 const go = (ua, lang, urls) => getApp(new Request('https://snacklist.app/get', { headers: { 'user-agent': ua, ...(lang ? { 'accept-language': lang } : {}) } }), urls);
 
@@ -21,14 +22,13 @@ test('/get sends a phone to its store once the listing is public', () => {
   }
 });
 
-test('/get sends a desktop, an unknown agent and every phone while the listings are TODOs to the landing page', () => {
-  assert.ok(Object.values(STORE_URLS).every((url) => url.startsWith('TODO')), 'the listings are not public yet');
+test('/get sends a desktop, an unknown agent and every phone without a public listing to the landing page', () => {
   for (const [ua, lang, urls, want] of [
     [DESKTOP, 'de-DE,de;q=0.9', LISTED, '/de'],
     [DESKTOP, 'en-US', LISTED, '/en'],
     ['curl/8.5.0', undefined, LISTED, '/de'],
-    [IPHONE, 'en-GB', STORE_URLS, '/en'],
-    [ANDROID, 'de', STORE_URLS, '/de'],
+    [IPHONE, 'en-GB', UNLISTED, '/en'],
+    [ANDROID, 'de', UNLISTED, '/de'],
   ]) {
     assert.equal(go(ua, lang, urls).headers.get('location'), want, `${ua} ${lang}`);
   }

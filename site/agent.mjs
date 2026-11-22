@@ -25,7 +25,17 @@ const escapeHtml = (s) =>
 export const twinPath = (route) => `${route}.md`;
 
 // Node 22 runs CI and can't import TypeScript, so the stage line is read as text.
-export function readStage(siteDir = SITE_DIR) {
+// SITE_STAGE overrides it in preview and local builds only (job 370), so a preview can show the
+// launch stage while the one-line change in stage.ts stays the production switch.
+export function stageOverride(env = process.env) {
+  const override = env.VERCEL_ENV === 'production' ? undefined : env.SITE_STAGE || undefined;
+  if (override && !STAGES.includes(override)) throw new AgentError(`SITE_STAGE=${override}: allowed are ${STAGES.join(', ')}`);
+  return override;
+}
+
+export function readStage(siteDir = SITE_DIR, env = process.env) {
+  const override = stageOverride(env);
+  if (override) return override;
   const file = join(siteDir, 'config/stage.ts');
   const stage = /^export const stage: Stage = '([a-z]+)';$/m.exec(readFileSync(file, 'utf8'))?.[1];
   if (!STAGES.includes(stage)) throw new AgentError(`${file}: needs the line "export const stage: Stage = '<${STAGES.join('|')}>';"`);
@@ -619,11 +629,14 @@ export const CHECKS = [
 ];
 
 // Runs every check on dist/: { problems: [{ check, file, message }], skipped: [{ check, reason }] }.
+// `previewStage`: the stage came from SITE_STAGE (a preview build), so the launch guard, which
+// protects the real launch, has nothing to say.
 export function checkAgentSite(opts) {
   const site = loadSite(opts);
   const problems = [];
   const skipped = [];
   for (const { id, skip, run } of CHECKS) {
+    if (id === 'launch' && opts.previewStage) continue;
     const reason = skip?.(site);
     if (reason) skipped.push({ check: id, reason });
     else problems.push(...run(site).map((p) => ({ check: id, ...p })));
