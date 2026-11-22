@@ -1,8 +1,10 @@
 // Feature tick-and-undo, entry point: a tap on a list row, then a tap on it under „Zuletzt
 // verwendet“ (sub-features tu-tick, tu-tick-a11y, tu-used-section, tu-put-back). Proves the row is
 // a checkbox, strikes and leaves without a snackbar, is stored as bought, and comes back. On the
-// users' build (trip-mode full) the tick asks „Kaufst du gerade ein?“: it answers „Nein, nur
-// abgehakt“, then ticks a second item and takes it back with „Zurücknehmen“.
+// users' build (trip-mode full) the tick asks „Kaufst du gerade ein?“: it first ticks the second item
+// and takes it back with „Zurücknehmen“ (no snooze), then answers „Nein, nur abgehakt“ for the item,
+// and proves the next tick asks nothing for the hour after that no (#618). The second item goes back
+// on the list through the API at the end.
 //
 //   node journeys/tick-and-undo.mjs <evidence dir> [--lang de|en] [--item Butter] [--second Reis]
 import process from 'node:process';
@@ -31,25 +33,47 @@ try {
   if (await row.isChecked()) throw new Error(`"${name}" starts checked`);
   await capture(page, dir, '01-before');
 
+  const tickAway = async (item) => {
+    const r = itemRow(page, item).first();
+    await reveal(page, r);
+    await r.click();
+    await itemRow(page, item).waitFor({ state: 'detached', timeout: 10_000 });
+  };
+  const waitStatus = async (item, want) => {
+    for (let i = 0; i < 20 && (await statusOf(item))?.[0] !== want; i++) await page.waitForTimeout(250);
+    return (await statusOf(item))?.[0] === want;
+  };
+
+  await tickAway(second);
+  const asked = await answerShopAsk(page, L, 'shopAskTakeBack');
+  if (asked) {
+    await itemRow(page, second).first().waitFor({ timeout: 10_000 });
+    const back = await waitStatus(second, 'active');
+    log(`ticked "${second}", „${L('shopAskTitle')}“ came, „${L('shopAskTakeBack')}“ put it back; database: ${JSON.stringify(await statusOf(second))}`);
+    if (!back) throw new Error(`„${L('shopAskTakeBack')}“ did not put "${second}" back on the server`);
+    await capture(page, dir, '01b-taken-back');
+  } else {
+    log(`no „${L('shopAskTitle')}“ (a build without trip-mode)`);
+    if (!(await waitStatus(second, 'bought'))) throw new Error(`the tick of "${second}" did not reach the server`);
+    await api.from('items').update({ status: 'active', bought_by: null, bought_at: null }).eq('household_id', user.householdId).eq('name', second);
+  }
+
   await row.click();
   await page.waitForTimeout(60);
   await page.screenshot({ path: `${dir}/02-striking.png`, animations: 'allow' });
   log(`tapped "${name}": mid-tick screenshot 02-striking.png`);
   await itemRow(page, name).waitFor({ state: 'detached', timeout: 10_000 });
-  const askTitle = page.getByText(L('shopAskTitle'), { exact: true });
-  const asked = await askTitle.waitFor({ timeout: 3_000 }).then(() => true, () => false);
   if (asked) {
+    await page.getByText(L('shopAskTitle'), { exact: true }).waitFor({ timeout: 3_000 });
     await capture(page, dir, '02b-trip-question');
     await answerShopAsk(page, L, 'shopAskNo');
     log(`„${L('shopAskTitle')}“ came; answered „${L('shopAskNo')}“`);
-  } else {
-    log(`no „${L('shopAskTitle')}“ (a build without trip-mode)`);
   }
   const undo = await page.getByRole('button', { name: L('undo'), exact: true }).count();
   if (undo) throw new Error('a tick showed an undo button');
-  for (let i = 0; i < 20 && (await status())?.[0] !== 'bought'; i++) await page.waitForTimeout(250);
+  const bought = await waitStatus(name, 'bought');
   log(`row gone, no „${L('undo')}“; database: ${JSON.stringify(await status())}`);
-  if ((await status())?.[0] !== 'bought') throw new Error('the tick did not reach the server');
+  if (!bought) throw new Error('the tick did not reach the server');
   await capture(page, dir, '03-after-tick');
 
   const section = page.getByRole('button', { name: L('recentlyUsed') });
@@ -60,22 +84,19 @@ try {
   await capture(page, dir, '04-recently-used');
   await used.click();
   await itemRow(page, name).first().waitFor({ timeout: 10_000 });
-  for (let i = 0; i < 20 && (await status())?.[0] !== 'active'; i++) await page.waitForTimeout(250);
+  const active = await waitStatus(name, 'active');
   log(`put back from „${L('recentlyUsed')}“; database: ${JSON.stringify(await status())}`);
-  if ((await status())?.[0] !== 'active') throw new Error('putting it back did not reach the server');
+  if (!active) throw new Error('putting it back did not reach the server');
   await capture(page, dir, '05-put-back');
 
   if (asked) {
-    const other = itemRow(page, second).first();
-    await reveal(page, other);
-    await other.click();
-    await itemRow(page, second).waitFor({ state: 'detached', timeout: 10_000 });
-    if (!(await answerShopAsk(page, L, 'shopAskTakeBack'))) throw new Error(`no „${L('shopAskTitle')}“ after ticking "${second}"`);
-    await itemRow(page, second).first().waitFor({ timeout: 10_000 });
-    for (let i = 0; i < 20 && (await statusOf(second))?.[0] !== 'active'; i++) await page.waitForTimeout(250);
-    log(`ticked "${second}", „${L('shopAskTakeBack')}“ put it back; database: ${JSON.stringify(await statusOf(second))}`);
-    if ((await statusOf(second))?.[0] !== 'active') throw new Error(`„${L('shopAskTakeBack')}“ did not put "${second}" back on the server`);
-    await capture(page, dir, '06-taken-back');
+    await tickAway(second);
+    if (await answerShopAsk(page, L, 'shopAskNo')) throw new Error(`„${L('shopAskTitle')}“ came again within the hour after „${L('shopAskNo')}“`);
+    const ticked = await waitStatus(second, 'bought');
+    log(`ticked "${second}" again: no „${L('shopAskTitle')}“ (snoozed after the no); database: ${JSON.stringify(await statusOf(second))}`);
+    if (!ticked) throw new Error(`the tick of "${second}" did not reach the server`);
+    await capture(page, dir, '06-snoozed');
+    await api.from('items').update({ status: 'active', bought_by: null, bought_at: null }).eq('household_id', user.householdId).eq('name', second);
   }
   if (errors.length) throw new Error(`page errors: ${errors.join('; ')}`);
 } catch (error) {

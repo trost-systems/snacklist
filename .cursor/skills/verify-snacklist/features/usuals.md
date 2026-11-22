@@ -1,6 +1,6 @@
 # Usuals and due items
 
-Snacklist learns what the household buys regularly from its ticked-off history. When the add sheet is open with the field empty, it offers the items that are due again as rows labelled „Wieder fällig“ / "Due again" (with a 🔁 icon). A tap on such a row adds the item with the quantity it had last time. An item counts as due when it was bought on at least two different days and the usual gap between purchases has passed. There is no other place that shows due items: not the list, not a notification, not an email.
+Snacklist learns what the household buys regularly from its ticked-off history. When the add sheet is open with the field empty, it offers the items that are due again as rows labelled „Wieder fällig“ / "Due again" (with a 🔁 icon). A tap on such a row adds the item with the quantity it had last time. An item counts as due when it was bought on at least two different days and the usual gap between purchases has passed. No other app screen shows due items: not the list, not a notification, not an email. An integration can read them: the public API's `GET /v1/suggestions` and the MCP tool `suggest_items` answer the household's usuals, often and recently used first (10 by default), each with `due` (job 345). That is not the add sheet's order, which puts the due ones first: on `heavy-history` (2026-11-22, 746d8d09) the sheet showed 8 „Wieder fällig“ rows for Jo, while `suggest_items` led with four usuals that are not due and marked 6 of its 10 `due`.
 
 ## Sub-features
 

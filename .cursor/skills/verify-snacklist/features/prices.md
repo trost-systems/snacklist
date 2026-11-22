@@ -55,4 +55,4 @@ Preconditions:
 - A price saved yesterday no longer counts: a run that crosses midnight, or a seed with an old `priced_at`, shows „+ Preis“ and a lower total.
 - While the editor is open on a 480x900 window, the floating tab pill sits over the total bar's left side and hides part of „Einkaufssumme“ and the counts (seen in `docs/screenshots/190/prices-02-editor.png`, 2026-11-13).
 - The unit menu's button is named „Einheit: Stück“ (ARB `priceUnitLabel` and the unit, `priceUnitPiece` / `priceUnitKg` / `priceUnitLitre`), with no tooltip text before it (the menu passes an empty tooltip): `page.getByRole('button', { name: /^Einheit: / })` (driven 2026-11-14 on the release web build with `FLAGS_ON=grocery-log,prices-and-trip-total`).
-- Prices are not in the public API, MCP, Siri or Alexa answers (from code: no function reads the price columns, 2026-11-13).
+- Prices are not in the public API, MCP, Siri or Alexa answers (from code: no function reads the price columns, 2026-11-13). The household's currency is: `GET /v1/household` returns `currency` (job 344, #605).

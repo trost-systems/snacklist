@@ -45,6 +45,15 @@ export function labels(lang) {
   };
 }
 
+/** Whether the build has a PostHog flag on: env.sh's FLAGS_ON from the same VH_* variables doctor.sh checks the build against. */
+export function flagOn(key) {
+  const { flags } = JSON.parse(readFileSync(join(repo, 'releases/flags.json'), 'utf8'));
+  const off = (process.env.VH_FLAGS_OFF ?? '').split(',').map((s) => s.trim());
+  const full = process.env.VH_FLAGS_FULL === '0' ? [] : Object.keys(flags).filter((k) => flags[k].rollout === 'full' && !off.includes(k));
+  const extra = (process.env.VH_DEFINES ?? '').split(/\s+/).filter((p) => p.startsWith('FLAGS_ON=')).flatMap((p) => p.slice('FLAGS_ON='.length).split(','));
+  return [...full, ...extra].includes(key);
+}
+
 /** The add field, found like a user finds it: by its hint. */
 export const addField = (page, L) => page.getByRole('textbox', { name: L('addFieldHint') });
 
@@ -227,7 +236,8 @@ export async function switchHousehold(page, L, from, to) {
  * Answers „Kaufst du gerade ein?“, the question trip-mode (full rollout) asks after a member's own
  * tick while no trip runs, with the button of ARB key [key]: 'shopAskNo', 'shopAskYes' or
  * 'shopAskTakeBack'. Returns false when the question did not come within [timeout] ms (a
- * pharmacy's item, a running trip, a `VH_FLAGS_FULL=0` build).
+ * pharmacy's item, a running trip, the hour after a 'shopAskNo' in this browser context, a
+ * `VH_FLAGS_FULL=0` build).
  */
 export async function answerShopAsk(page, L, key = 'shopAskNo', timeout = 3_000) {
   const button = page.getByRole('button', { name: L(key), exact: true });
