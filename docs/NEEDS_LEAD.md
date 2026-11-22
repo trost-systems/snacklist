@@ -2483,3 +2483,9 @@ Status: open, the lead's call. Nothing here blocks the job's PR. The map and the
 ## NEEDS_LEAD Job 295: re-film the voice-add English video (2026-11-17)
 
 `site/public/media/voice-add-en-*.mp4/.webm/.webp` still show the burned-in caption "Snacklist listens in German." while `voice-add-en.vtt` and `marketing/videos/copy.json` now say "Dictation follows the app language." Re-film with `marketing/videos` (README) so video and captions match. The caption wording (DE "Diktat folgt der App-Sprache.", EN "Dictation follows the app language.") is Engineering's own: PM's answer for job 295 gave no replacement text for it, so PM may want to confirm it.
+
+## NEEDS_LEAD Job 358: #598 discrepancy
+
+None. #598 (merged 2026-11-21) set `public-api` to `full` in `releases/flags.json`; its description says the lead switched on `app_switches.public_api` and the PostHog flag at 100 % and that the production smoke passed. The writers file already said "on for everyone"; this job added the deploy-token note for #605 and #615.
+
+Dialog wording: on main, `apiScopeReadWriteBody` in `app_en.arb` and `app_de.arb` still has the older shorter sentence (items only). The writers file now quotes the approved EN sentence; no approved DE sentence was given, so the writers file has none. ARB files are untouched (applying the copy is a separate job).
