@@ -280,7 +280,7 @@ void main() {
     expect(key('trip-prompt-dm'), findsNothing);
   });
 
-  testWidgets('every tick asks, also right after Nein', (tester) async {
+  testWidgets('Nein snoozes the question for 60 minutes', (tester) async {
     final shop = await pumpList(tester);
     await tick(tester, 'Milch');
     expect(asked, findsOneWidget);
@@ -292,8 +292,11 @@ void main() {
       isA<Item>().having((i) => i.status, 'status', ItemStatus.bought),
     ]);
     await tick(tester, 'Brot');
-    expect(asked, findsOneWidget, reason: 'Nein is not remembered');
-    expect(find.text('Brot abgehakt'), findsOneWidget);
+    expect(asked, findsNothing, reason: 'Nein holds for an hour');
+    shop.wait(const Duration(minutes: 60));
+    await tick(tester, 'Seife');
+    expect(asked, findsOneWidget);
+    expect(find.text('Seife abgehakt'), findsOneWidget);
     await answer(tester, 'trip-ask-no');
     expect(shop.trips.state, isA<NoTrip>());
   });
@@ -319,6 +322,7 @@ void main() {
     await tick(tester, 'Seife');
     expect(asked, findsOneWidget, reason: 'a drugstore is no pharmacy');
     await answer(tester, 'trip-ask-no');
+    shop.wait(const Duration(minutes: 60));
     await tick(tester, 'Zahnpasta');
     expect(asked, findsOneWidget);
     await answer(tester, 'trip-ask-no');
@@ -446,10 +450,11 @@ void main() {
 
     testWidgets('the question after the emptying tick keeps the moment; Nein '
         'asks 3 s later (ST2)', (tester) async {
-      await pumpList(tester, reviewPrompt: due());
+      final shop = await pumpList(tester, reviewPrompt: due());
       for (final name in ['Milch', 'Brot']) {
         await tick(tester, name);
         await answer(tester, 'trip-ask-no');
+        shop.wait(const Duration(minutes: 60));
       }
       await tick(tester, 'Seife');
       expect(asked, findsOneWidget);

@@ -17140,3 +17140,16 @@ Peter's pick t1118u from job 331's additions; job 345 takes A4, A8 and A9.
     suggestions match only starts of names and words (the add sheet also inner text and typos), a
     category in both `categories` and `hidden` comes first and is hidden, and FEATURES-FOR-WRITERS
     says the API is on.
+
+## Job 357: 60-minute snooze after „Nein“ on the trip question
+
+Peter's N2 (via Snacklist PM, 22 Nov 2026): after „Nein“ (or a dismissed sheet) „Kaufst du gerade
+ein?“ stays away for 60 minutes in any store. Behind `trip-mode`, no new flag, no new string.
+
+- **Stored in `DeviceCache`, per user, as epoch milliseconds** (`trip.snooze.<userId>`), not in the
+  kept-trips JSON and not on the server. It is forgotten on sign-out with the other trip keys and
+  survives a restart. The cubit reads it at each tick and also keeps its own value, so a no whose
+  write is still queued counts; the later of the two wins, which covers a no in another household.
+- **Only „Nein“ and dismissal snooze.** „Zurücknehmen“ and „Ja“ do not. The pharmacy exemption and
+  the other do-not-ask paths run before the snooze check, unchanged.
+- Tests: `trip_cubit_test.dart` (59 minutes asks nothing, the 60th asks again, survives a restart).
