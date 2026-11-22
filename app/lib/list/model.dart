@@ -817,6 +817,43 @@ enum Edge() {
   after,
 }
 
+/// Where an item stands in its store's learned order (job 352, IO4): first,
+/// or right after another open item of the same section.
+@immutable
+sealed class const Placement();
+
+/// „Ganz vorne“.
+final class const PlaceFirst() extends Placement {
+  @override
+  bool operator ==(Object other) => other is PlaceFirst;
+
+  @override
+  int get hashCode => 0;
+}
+
+/// „Neben {name}“: right after the item [anchorId].
+final class const PlaceAfter(final String anchorId) extends Placement {
+  @override
+  bool operator ==(Object other) =>
+      other is PlaceAfter && other.anchorId == anchorId;
+
+  @override
+  int get hashCode => anchorId.hashCode;
+}
+
+/// Where [itemId] stands in [run], its section's open items in walk order.
+Placement placementIn(List<Item> run, String itemId) {
+  final index = run.indexWhere((i) => i.id == itemId);
+  return index <= 0 ? const PlaceFirst() : PlaceAfter(run[index - 1].id);
+}
+
+/// How the household's list is ordered (`households.order_mode`, job 352):
+/// by its stores' category walks, or by the walk it learned from trips.
+enum OrderMode() {
+  categories,
+  learned,
+}
+
 /// What `public.parse_item` makes of one typed entry. [deviceParsed]: the
 /// device split it alone (offline), into name and quantity only; the
 /// server splits off brand and details when the add syncs.
@@ -902,7 +939,7 @@ sealed class const ItemOp(final String itemId) {
         id,
         anchorId: json['anchor_id']! as String,
         edge: Edge.values.byName(json['edge']! as String),
-        categoryId: json['category_id']! as String,
+        categoryId: json['category_id'] as String?,
         storeId: json['store_id'] as String?,
         sortKey: (json['sort_key'] as num?)?.toDouble(),
       ),
@@ -929,6 +966,7 @@ sealed class const ItemOp(final String itemId) {
         at: DateTime.parse(json['at']! as String),
       ),
       'unclaim' => UnclaimItem(id, userId: json['user_id']! as String),
+      'decline' => DeclineShop(id, DateTime.parse(json['at']! as String)),
       'price' => SetPrice(
         id,
         price: switch (json['price']) {
@@ -990,6 +1028,7 @@ sealed class const ItemOp(final String itemId) {
         at: at,
       ),
       UnclaimItem(:final userId) => UnclaimItem(kept, userId: userId),
+      DeclineShop(:final at) => DeclineShop(kept, at),
       // An undone delete's price is that copy's: a partner's open twin
       // keeps its own.
       SetPrice(restored: true) => null,
@@ -1107,6 +1146,7 @@ sealed class const ItemOp(final String itemId) {
         'at': at.toIso8601String(),
       },
       UnclaimItem(:final userId) => {'op': 'unclaim', 'user_id': userId},
+      DeclineShop(:final at) => {'op': 'decline', 'at': at.toIso8601String()},
       SetPrice(:final price, :final quantity, :final restored) => {
         'op': 'price',
         'price': price?.toColumns(),
@@ -1221,7 +1261,10 @@ final class const PlaceItem(
   super.itemId, {
   required final String anchorId,
   required final Edge edge,
-  required final String categoryId,
+
+  /// Null when neither the item nor the anchor has one: the learned order
+  /// needs none.
+  required final String? categoryId,
   required final String? storeId,
 
   /// Null when the anchor had no key yet.
@@ -1265,6 +1308,15 @@ final class const ClaimItem(
 /// Takes [userId]'s claim back: `unclaim_item`.
 final class const UnclaimItem(super.itemId, {required final String userId})
     extends ItemOp {
+  @override
+  Item? apply(Item? current) => current;
+}
+
+/// The user answered the trip question after ticking [itemId] with
+/// „Nein, nur abgehakt“ or dismissed it, at [at] (job 352, TD-Q5):
+/// `decline_shop` keeps that tick's run out of trip detection. Queued after
+/// the tick, so the server finds it.
+final class const DeclineShop(super.itemId, final DateTime at) extends ItemOp {
   @override
   Item? apply(Item? current) => current;
 }

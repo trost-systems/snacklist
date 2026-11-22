@@ -59,6 +59,8 @@ export const mcpTools = [
   'untick_items',
   'get_item',
   'merge_items',
+  'place_item',
+  'set_store_order',
   'list_categories',
   'list_stores',
   'list_recent',

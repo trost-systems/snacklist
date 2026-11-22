@@ -22,6 +22,9 @@ abstract interface class ListParts() {
   /// The list's card after a trip ended on its own.
   Widget tripEnded();
 
+  /// The list's card after the person's first detected trip (job 352).
+  Widget detectedTrip();
+
   /// In build: counts an item as bought on the trip running on [listId];
   /// null when none runs.
   bool Function(Item item)? boughtOnTrip(BuildContext context, String? listId);
@@ -46,6 +49,9 @@ final class const _NoParts() implements ListParts {
 
   @override
   Widget tripEnded() => const SizedBox.shrink();
+
+  @override
+  Widget detectedTrip() => const SizedBox.shrink();
 
   @override
   bool Function(Item item)? boughtOnTrip(

@@ -11,6 +11,7 @@ import 'package:family_groceries/list/entry.dart';
 import 'package:family_groceries/list/foldout_chips.dart';
 import 'package:family_groceries/list/list_names.dart';
 import 'package:family_groceries/list/model.dart';
+import 'package:family_groceries/list/place_options.dart';
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -25,8 +26,13 @@ class const ItemEdit({
 
   /// Null when the user's claim stays as it was.
   final ClaimChange? claim,
+
+  /// Its new place in its store's learned order (job 352); null when it
+  /// stays.
+  final Placement? place,
 }) {
-  bool get isEmpty => changes.isEmpty && listId == null && claim == null;
+  bool get isEmpty =>
+      changes.isEmpty && listId == null && claim == null && place == null;
 }
 
 /// The user's claim, said or taken back in the edit sheet.
@@ -59,6 +65,11 @@ Future<ItemEdit?> showEditItemSheet(
 
   /// The category chip; off with flag `hide-categories`.
   bool categories = true,
+
+  /// The learned order (job 352): the item's section, its open items in walk
+  /// order, the item among them. The place chip („Neben …“) then stands
+  /// where the category chip would; null without it.
+  List<Item>? placeRun,
 }) => showModalBottomSheet<ItemEdit>(
   context: context,
   // Over the whole app, tabs included: the sheet stands on the bottom edge.
@@ -83,6 +94,7 @@ Future<ItemEdit?> showEditItemSheet(
     chains: chains,
     hexQuantity: hexQuantity,
     categories: categories,
+    placeRun: placeRun,
   ),
 );
 
@@ -96,6 +108,7 @@ class const _EditItemSheet({
   required final StoreChains? chains,
   required final bool hexQuantity,
   required final bool categories,
+  required final List<Item>? placeRun,
 }) extends StatefulWidget {
   @override
   State<_EditItemSheet> createState() => _EditItemSheetState();
@@ -118,6 +131,14 @@ class _EditItemSheetState() extends State<_EditItemSheet> {
       ?.id;
   late String? _storeId = _originalStore;
   late String? _categoryId = widget.item.categoryId;
+
+  late final Placement? _placedAt = switch (widget.placeRun) {
+    final run? => placementIn(run, widget.item.id),
+    null => null,
+  };
+
+  /// The place picked in the sheet; null while it stays.
+  Placement? _place;
 
   /// The catalog as opened, plus the stores made in the sheet.
   late Catalog _catalog = widget.catalog;
@@ -195,8 +216,39 @@ class _EditItemSheetState() extends State<_EditItemSheet> {
       changes: _changes(),
       listId: _listId == widget.listId ? null : _listId,
       claim: _claim(),
+      // Placed in its old store's order: a new store gives it its place
+      // there.
+      place: _storeId == _originalStore && _place != _placedAt ? _place : null,
     );
     Navigator.of(context).pop(edit.isEmpty ? null : edit);
+  }
+
+  /// The place chip and its options, in the item's section as opened; none
+  /// once another store is picked.
+  ChipFold? _placeFold(AppLocalizations l10n) {
+    final run = widget.placeRun;
+    final at = _place ?? _placedAt;
+    if (run == null || at == null || _storeId != _originalStore) {
+      return null;
+    }
+    final label = placementLabel(l10n, at, run);
+    return ChipFold(
+      chipKey: const ValueKey('chip-place'),
+      icon: Icons.swap_vert,
+      label: label,
+      semanticsLabel: l10n.chipPlace(label),
+      panel: (foldBack) => PlaceOptions(
+        others: [
+          for (final i in run)
+            if (i.id != widget.item.id) i,
+        ],
+        selected: at,
+        onPick: (place) {
+          setState(() => _place = place);
+          foldBack();
+        },
+      ),
+    );
   }
 
   @override
@@ -282,9 +334,10 @@ class _EditItemSheetState() extends State<_EditItemSheet> {
                     onCreateStore: _createStore,
                     chains: _chains,
                     onStore: (id) => setState(() => _storeId = id),
-                    onCategory: widget.categories
+                    onCategory: widget.categories && widget.placeRun == null
                         ? (id) => setState(() => _categoryId = id)
                         : null,
+                    fold: _placeFold(l10n),
                   ),
                 ),
               ),

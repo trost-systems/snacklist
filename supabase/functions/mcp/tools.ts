@@ -9,6 +9,7 @@ import { asUser, ranOutOfTime, rowBusy, type Tx } from '../_shared/db.ts';
 import {
   addItems,
   addStore,
+  anchorOf,
   categories,
   changeList,
   createList,
@@ -17,10 +18,13 @@ import {
   listItems,
   listRecent,
   mergeItems,
+  placeItem,
   RECENT_SHOWN,
   removeItems,
   renameStore,
   setStoreLayout,
+  setStoreOrder,
+  STORE_ORDER_MAX,
   storeLayout,
   stores,
   tickItems,
@@ -292,7 +296,7 @@ export function buildServer(
   switches: Switches = SWITCHED_OFF,
 ): McpServer {
   const server = new McpServer(
-    { name: 'snacklist', title: 'Snacklist', version: '1.2.0' },
+    { name: 'snacklist', title: 'Snacklist', version: '1.3.0' },
     { instructions: INSTRUCTIONS, cacheHints: CACHE_HINTS },
   );
   const asked = new Map<string, Promise<Access>>();
@@ -335,12 +339,16 @@ export function buildServer(
     'list_items',
     {
       title: 'Einkaufsliste anzeigen',
-      description: 'Zeigt die offenen Einträge der Einkaufsliste mit Marke und Eigenschaften, in ' +
-        'Gang-Reihenfolge und innerhalb einer Kategorie in der Laufweg-Reihenfolge des Haushalts. Mit "store" ' +
-        'nur, was in diesem Laden gekauft werden kann (seine Einträge plus alle ohne Laden), in der ' +
-        'Reihenfolge dieses Ladens. Mit "category" nur eine Kategorie. "counts" gilt immer für die ' +
-        'ganze Liste, auch mit Filter: "open" offene Einträge, "checkedLast24h" in den letzten 24 ' +
-        'Stunden abgehakte. "list" in der Antwort nennt die gezeigte Liste.',
+      description: 'Zeigt die offenen Einträge der Einkaufsliste mit Marke und Eigenschaften. ' +
+        '"order" in der Antwort sagt, wie sortiert ist: "walk" (gelernte Reihenfolge) heißt Laden ' +
+        'für Laden in der Reihenfolge der Läden, dann die Einträge ohne Laden, jeweils in ' +
+        'Laufweg-Reihenfolge; "aisle" heißt in Gang-Reihenfolge der Kategorien und innerhalb einer ' +
+        'Kategorie im Laufweg. "position" ist der Platz eines Eintrags in seinem Laden (oder unter ' +
+        '"ohne Laden"), ab 1. Mit "store" nur, was in diesem Laden gekauft werden kann (seine ' +
+        'Einträge plus alle ohne Laden), in der Reihenfolge dieses Ladens. Mit "category" nur eine ' +
+        'Kategorie. "counts" gilt immer für die ganze Liste, auch mit Filter: "open" offene ' +
+        'Einträge, "checkedLast24h" in den letzten 24 Stunden abgehakte. "list" in der Antwort ' +
+        'nennt die gezeigte Liste.',
       inputSchema: z.object({
         store: storeName.optional(),
         category: categoryName.optional(),
@@ -440,8 +448,9 @@ export function buildServer(
     {
       title: 'Eintrag verschieben',
       description:
-        'Ändert die Kategorie und/oder den Laden eines Eintrags; er kommt ans Ende seiner neuen ' +
-        'Gruppe im Laufweg. Beides merkt sich der Haushalt: ' +
+        'Ändert die Kategorie und/oder den Laden eines Eintrags. Bei gelernter Reihenfolge ' +
+        '(list_items "order": "walk") nimmt er im neuen Laden seinen Platz ein, sonst kommt er ans ' +
+        'Ende seiner neuen Gruppe im Laufweg. Beides merkt sich der Haushalt: ' +
         'derselbe Eintrag landet beim nächsten Hinzufügen in dieser Kategorie und diesem Laden. ' +
         'store: null entfernt den Laden (dann in jedem Laden kaufbar) und vergisst ihn.',
       inputSchema: z.object({
@@ -463,13 +472,68 @@ export function buildServer(
   );
 
   server.registerTool(
+    'place_item',
+    {
+      title: 'Eintrag einsortieren',
+      description:
+        'Setzt einen offenen Eintrag direkt vor ("before") oder hinter ("after") einen anderen, ' +
+        'z. B. "die Eier hinter das Mehl"; genau eines von beiden angeben. Bei gelernter ' +
+        'Reihenfolge (list_items "order": "walk") merkt sich der Haushalt den Platz im Laden; ' +
+        'der andere Eintrag muss dann im selben Laden stehen (den Laden ändert move_item). Sonst ' +
+        'übernimmt der Eintrag Laden und Kategorie des anderen, wie beim Ziehen in der App. Ein ' +
+        'zweiter gleicher Aufruf ändert nichts.',
+      inputSchema: z.object({
+        item: itemRef,
+        before: itemRef.optional(),
+        after: itemRef.optional(),
+        household: householdRef,
+        list: listRef,
+      }),
+      annotations: { destructiveHint: false, idempotentHint: true },
+    },
+    ({ household, item, before, after, list }) =>
+      call('place_item', once, household, (tx, h) => {
+        const placing = anchorOf({ before, after });
+        if (!placing) {
+          throw new ToolError('Gib genau eines von "before" und "after" an.', 'invalid', 'anchor');
+        }
+        return placeItem(tx, h, { item, ...placing, list });
+      })(),
+  );
+
+  server.registerTool(
+    'set_store_order',
+    {
+      title: 'Reihenfolge eines Ladens setzen',
+      description:
+        'Legt fest, in welcher Reihenfolge die offenen Einträge eines Ladens auf der Liste ' +
+        'stehen, z. B. "so laufe ich bei IKEA: …". Die genannten Einträge kommen in dieser ' +
+        'Reihenfolge nach vorn, die übrigen des Ladens behalten ihre Reihenfolge dahinter. Jeder ' +
+        'genannte Eintrag muss offen und in diesem Laden sein. Nur bei gelernter Reihenfolge ' +
+        '(list_items "order": "walk"); sonst einzelne Einträge mit place_item. Gibt die offenen ' +
+        'Einträge des Ladens in der neuen Reihenfolge zurück; ein zweiter gleicher Aufruf ändert ' +
+        'nichts.',
+      inputSchema: z.object({
+        store: storeName,
+        items: z.array(itemRef).min(1).max(STORE_ORDER_MAX),
+        household: householdRef,
+        list: listRef,
+      }),
+      annotations: { destructiveHint: false, idempotentHint: true },
+    },
+    ({ household, ...args }) =>
+      call('set_store_order', once, household, (tx, h) => setStoreOrder(tx, h, args))(),
+  );
+
+  server.registerTool(
     'update_item',
     {
       title: 'Eintrag ändern',
       description:
         'Ändert einen offenen Eintrag wie "Bearbeiten" in der App: nur die angegebenen ' +
         'Felder. quantity, brand oder properties null (oder leer) löscht sie. category und store ' +
-        'wie bei move_item (der Haushalt merkt sie sich). "toList" setzt ihn auf eine andere Liste ' +
+        'wie bei move_item (der Haushalt merkt sie sich; bei gelernter Reihenfolge nimmt er im ' +
+        'neuen Laden seinen Platz ein). "toList" setzt ihn auf eine andere Liste ' +
         '(list_lists); "list" sagt, wo er jetzt steht. Steht nach der Änderung schon ein gleicher ' +
         'offener Eintrag (Name, Marke, Eigenschaften) auf der Liste, ändert sich nichts und der ' +
         'Aufruf meldet es.',
@@ -704,8 +768,10 @@ export function buildServer(
           'Legt fest, in welcher Reihenfolge die Kategorien in einem Laden kommen (der ' +
           'Laufweg, wie in der App unter dem Laden). "categories": die genannten zuerst, in dieser ' +
           'Reihenfolge, die übrigen danach in ihrer bisherigen. "hidden": alle Kategorien, die der ' +
-          'Laden nicht führt; ohne Angabe bleiben sie. Antwort: der ganze Laufweg (wie ' +
-          'list_categories mit "store").',
+          'Laden nicht führt; ohne Angabe bleiben sie. Bei gelernter Reihenfolge (list_items ' +
+          '"order": "walk") ist der Laufweg nur die Ausgangsreihenfolge für neue Einträge; die ' +
+          'Reihenfolge der Einträge im Laden setzen place_item und set_store_order. Antwort: der ' +
+          'ganze Laufweg (wie list_categories mit "store").',
         inputSchema: z.object({
           store: storeName,
           categories: z.array(categoryName).max(200).optional(),

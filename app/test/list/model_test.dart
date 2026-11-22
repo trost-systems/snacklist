@@ -256,6 +256,7 @@ void main() {
         sortKey: null,
       ),
       const DeleteItem('x'),
+      DeclineShop('x', at),
       const MergeItems(
         'x',
         mergeId: 'm',

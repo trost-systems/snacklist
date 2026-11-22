@@ -35,6 +35,7 @@ import 'package:family_groceries/settings/settings_screen.dart';
 import 'package:family_groceries/shell/router.dart';
 import 'package:family_groceries/shell/shell.dart';
 import 'package:family_groceries/tips/tips_page.dart';
+import 'package:family_groceries/trip/detection.dart';
 import 'package:family_groceries/trip/trip_cubit.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -208,7 +209,9 @@ class const _Page(
     MorePage.invites => const InvitesPage(),
     MorePage.household => const HouseholdPage(),
     MorePage.premium => PremiumScreen(entry: paywallEntry),
-    MorePage.settings => const SettingsScreen(),
+    MorePage.settings => const SettingsScreen(
+      tripDetection: DetectTripsSettings(),
+    ),
     MorePage.language => const LanguageScreen(),
     MorePage.usageData => const _UsageDataPage(),
     MorePage.tips => const TipsPage(),

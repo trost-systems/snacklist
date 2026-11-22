@@ -5,6 +5,7 @@ import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_view/shopping_list_view.dart';
 import 'package:family_groceries/shell/router.dart' show tripSummaryPath;
 import 'package:family_groceries/trip/ask_sheet.dart';
+import 'package:family_groceries/trip/detection.dart';
 import 'package:family_groceries/trip/ended_card.dart';
 import 'package:family_groceries/trip/model.dart' show AskAnswer, RunningTrip;
 import 'package:family_groceries/trip/trip_cubit.dart';
@@ -56,7 +57,11 @@ class _TripOnListState() extends State<TripOnList> {
   }
 
   Future<void> _ask(TripCubit trips, Asking asking) async {
-    final answer = await showTripAsk(context, itemName: asking.item.name);
+    final answer = await showTripAsk(
+      context,
+      itemName: asking.item.name,
+      quiet: trips.quietsAfterNo,
+    );
     if (!identical(trips.state, asking)) {
       return;
     }
@@ -156,15 +161,44 @@ class const TripEndedSlot({super.key}) extends StatelessWidget {
         _ => null,
       },
     );
-    if (!on || ended == null) {
+    final endedAt = ended?.trip.endedAt;
+    if (!on || ended == null || endedAt == null) {
       return const SizedBox.shrink();
     }
     final trips = context.read<TripCubit>();
     return TripEndedCard(
-      endedAt: ended.trip.endedAt,
+      endedAt: endedAt,
       onKeepGoing: trips.keepShopping,
       onShowSummary: () => context.go(tripSummaryPath(ended.trip.id)),
       onDismiss: trips.dismissEnded,
+    );
+  }
+}
+
+/// The list's card after the person's first detected trip (job 352): with
+/// the flag `learned-order`, while it is unseen and the trip is in this
+/// household. Either button sees it for good; „Ansehen“ opens the trip.
+class const DetectedTripSlot({super.key}) extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final flag = context.select<Flags?, bool>(
+      (flags) => flags?.isOn(learnedOrderFlag) ?? false,
+    );
+    final detection = context.watch<TripDetectionCubit?>();
+    final card = detection?.state?.card;
+    if (!flag ||
+        detection == null ||
+        card == null ||
+        card.householdId != context.read<TripCubit?>()?.householdId) {
+      return const SizedBox.shrink();
+    }
+    return DetectedTripCard(
+      storeName: card.storeName,
+      onView: () {
+        unawaited(detection.seenCard());
+        context.go(tripSummaryPath(card.id));
+      },
+      onDone: () => unawaited(detection.seenCard()),
     );
   }
 }

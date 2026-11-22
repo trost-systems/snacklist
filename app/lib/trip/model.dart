@@ -16,6 +16,9 @@ enum AskAnswer() {
 enum TripSource() {
   ask,
   manual,
+
+  /// Found in the ticks by the server (job 352); never runs on a device.
+  detected,
 }
 
 /// How a trip ended: the user's Beenden, or the long-running rule
@@ -321,8 +324,11 @@ class const TripLine({
 class const FinishedTrip({
   required final String id,
   required final String householdId,
-  required final DateTime startedAt,
-  required final DateTime endedAt,
+
+  /// Null, with [endedAt], on another member's detected trip: the server
+  /// sends no clock times (job 352).
+  required final DateTime? startedAt,
+  required final DateTime? endedAt,
 
   /// The stopwatch at the end: [endedAt] minus [startedAt] minus pauses.
   required final Duration active,
@@ -350,6 +356,13 @@ class const FinishedTrip({
 
   /// The pauses, closed, for "Weiter einkaufen" after an end.
   final List<TripPause> pauses = const [],
+
+  /// A detected trip's members whose ticks it came from (job 352).
+  final List<String> detectedBy = const [],
+
+  /// False for a detected trip whose ticks came in one burst: it has no
+  /// duration. Null for the others.
+  final bool? walked,
 }) {
   /// What `trip_session` and `save_trip_session` answer.
   factory fromJson(Map<String, Object?> json) => FinishedTrip(
@@ -357,10 +370,12 @@ class const FinishedTrip({
     householdId: json['household_id']! as String,
     listId: json['list_id'] as String?,
     startedBy: json['started_by'] as String?,
-    startedAt: DateTime.parse(json['started_at']! as String),
-    endedAt: DateTime.parse(json['ended_at']! as String),
-    active: Duration(seconds: json['active_seconds']! as int),
-    end: TripEnd.values.byName(json['end_reason']! as String),
+    startedAt: _time(json['started_at']),
+    endedAt: _time(json['ended_at']),
+    active: Duration(seconds: json['active_seconds'] as int? ?? 0),
+    // A detected trip's end is the server's; one this app does not know
+    // reads as the user's.
+    end: TripEnd.values.asNameMap()[json['end_reason']] ?? TripEnd.user,
     source: TripSource.values.byName(json['source']! as String),
     currency: json['currency']! as String,
     day: parseDay(json['shopped_on']! as String),
@@ -379,7 +394,20 @@ class const FinishedTrip({
       for (final s in (json['stores'] as List<Object?>?) ?? const [])
         s as String?,
     ],
+    detectedBy: [
+      ...((json['detected_by'] as List<Object?>?) ?? const [])
+          .whereType<String>(),
+    ],
+    walked: json['walked'] as bool?,
   );
+
+  static DateTime? _time(Object? json) => switch (json) {
+    final String at => DateTime.parse(at),
+    _ => null,
+  };
+
+  /// Detected by the server from ticks (job 352).
+  bool get detected => source == TripSource.detected;
 
   /// What `save_trip_session` takes as `p_trip`. The server ignores
   /// household_id, started_by, bought and stores: it takes the household
@@ -389,8 +417,8 @@ class const FinishedTrip({
     'household_id': householdId,
     'list_id': listId,
     'started_by': startedBy,
-    'started_at': startedAt.toUtc().toIso8601String(),
-    'ended_at': endedAt.toUtc().toIso8601String(),
+    'started_at': startedAt?.toUtc().toIso8601String(),
+    'ended_at': endedAt?.toUtc().toIso8601String(),
     'active_seconds': active.inSeconds,
     'end_reason': end.name,
     'source': source.name,
@@ -407,8 +435,10 @@ class const FinishedTrip({
       other is FinishedTrip &&
       other.id == id &&
       other.householdId == householdId &&
-      other.startedAt.isAtSameMomentAs(startedAt) &&
-      other.endedAt.isAtSameMomentAs(endedAt) &&
+      other.startedAt?.microsecondsSinceEpoch ==
+          startedAt?.microsecondsSinceEpoch &&
+      other.endedAt?.microsecondsSinceEpoch ==
+          endedAt?.microsecondsSinceEpoch &&
       other.active == active &&
       other.end == end &&
       other.source == source &&
@@ -419,8 +449,10 @@ class const FinishedTrip({
       listEquals(other.stores, stores) &&
       other.listId == listId &&
       other.startedBy == startedBy &&
-      listEquals(other.pauses, pauses);
+      listEquals(other.pauses, pauses) &&
+      listEquals(other.detectedBy, detectedBy) &&
+      other.walked == walked;
 
   @override
-  int get hashCode => Object.hash(id, endedAt.microsecondsSinceEpoch, bought);
+  int get hashCode => Object.hash(id, endedAt?.microsecondsSinceEpoch, bought);
 }

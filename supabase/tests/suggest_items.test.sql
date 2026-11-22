@@ -97,6 +97,8 @@ select pg_temp.event(k.id, 'bought', 'Kaffee', at)
 from k, (values ('2026-06-10 23:30:00+00'::timestamptz), ('2026-06-11 08:00:00+00')) as e (at);
 
 select pg_temp.login('00000000-0000-0000-0000-0000000000c1');
+-- Peter's claims, but as postgres: an API caller's p_now is ignored (job 352), the tests' clock is not.
+set local role postgres;
 
 create function pg_temp.names(p_prefix text, p_limit int default 5, p_now timestamptz default null)
 returns text[] language sql as $$
@@ -131,14 +133,14 @@ select results_eq(
 select is(pg_temp.names('windeln'), array['Windeln Größe 4', 'Windeln Größe 5'], 'Windeln Größe 4 and 5 are two rows');
 select results_eq(
   $$ select uses, last_used from public.suggest_items((select id from h), 'kaffee', 5, (select t from clock)) $$,
-  $$ values (1, '2026-06-11 08:00:00+00'::timestamptz) $$,
-  'uses count Berlin days, not UTC dates'
+  $$ values (1, '2026-06-10 22:00:00+00'::timestamptz) $$,
+  'uses count Berlin days, not UTC dates; last_used is that day'
 );
 
 -- What does not count.
 select results_eq(
   $$ select uses, last_used from public.suggest_items((select id from h), 'mehl', 5, (select t from clock)) $$,
-  $$ select 1, t - interval '20 days' from clock $$,
+  $$ select 1, date_trunc('day', t - interval '20 days', 'Europe/Berlin') from clock $$,
   'an edited event is no use'
 );
 select is(pg_temp.names('senf'), '{}'::text[], 'an item with only edited events is not suggested');
@@ -172,7 +174,8 @@ select is(pg_temp.names('zimt'), '{}'::text[], 'history older than a year is not
 
 -- Members only.
 select pg_temp.login('00000000-0000-0000-0000-0000000000c2');
-select is(cardinality(pg_temp.names('', 200)), 0, 'another household''s member gets no rows');
+select throws_ok($$ select pg_temp.names('', 200) $$, '42501', 'not_a_member',
+  'another household''s member is refused');
 
 select * from finish();
 rollback;

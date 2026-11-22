@@ -3,6 +3,9 @@
 -- duplicate rule is per list; lists are created, renamed, moved and deleted with their items.
 begin;
 select plan(61);
+-- Job 352 revoked members' read of item_events; this file checks the history the trigger writes
+-- as a member reads it under the policy that still guards it.
+grant select on public.item_events to authenticated;
 
 create function pg_temp.login(uid uuid) returns void language plpgsql as $$
 begin

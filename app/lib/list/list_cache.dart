@@ -189,12 +189,17 @@ class const ListPrefs({
   /// The tip under the first store's app key was closed or the key used
   /// (job 313).
   final bool storeAppTipClosed = false,
+
+  /// `set_order_mode` last answered learned for the household (job 352):
+  /// the list starts in that order before the server answers again.
+  final bool learnedOrder = false,
 }) {
   factory fromJson(Map<String, Object?> json) => ListPrefs(
     folded: {...(json['folded'] as List<Object?>? ?? const []).cast<String>()},
     hintDismissed: json['hint_dismissed'] as bool? ?? false,
     shownList: json['shown_list'] as String?,
     storeAppTipClosed: json['store_app_tip_closed'] as bool? ?? false,
+    learnedOrder: json['learned_order'] as bool? ?? false,
   );
 
   Map<String, Object?> toJson() => {
@@ -202,6 +207,7 @@ class const ListPrefs({
     'hint_dismissed': hintDismissed,
     'shown_list': ?shownList,
     if (storeAppTipClosed) 'store_app_tip_closed': true,
+    if (learnedOrder) 'learned_order': true,
   };
 
   ListPrefs copyWith({
@@ -209,10 +215,12 @@ class const ListPrefs({
     bool? hintDismissed,
     String? shownList,
     bool? storeAppTipClosed,
+    bool? learnedOrder,
   }) => ListPrefs(
     folded: folded ?? this.folded,
     hintDismissed: hintDismissed ?? this.hintDismissed,
     shownList: shownList ?? this.shownList,
     storeAppTipClosed: storeAppTipClosed ?? this.storeAppTipClosed,
+    learnedOrder: learnedOrder ?? this.learnedOrder,
   );
 }

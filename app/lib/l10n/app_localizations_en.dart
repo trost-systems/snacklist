@@ -3867,4 +3867,89 @@ class AppLocalizationsEn extends AppLocalizations {
   String addMatchReadded(String item) {
     return 'Back on the list: $item';
   }
+
+  @override
+  String placeNextTo(String name) {
+    return 'Next to $name';
+  }
+
+  @override
+  String get placeFirst => 'At the start';
+
+  @override
+  String chipPlace(String place) {
+    return 'Place on the list: $place';
+  }
+
+  @override
+  String get placeFilter => 'Search items';
+
+  @override
+  String get shopAskQuiet =>
+      'If you say No, we won\'t ask again for an hour, and this shop won\'t be detected.';
+
+  @override
+  String get detectedOwn => 'Detected from your ticks';
+
+  @override
+  String detectedOther(String name) {
+    return 'Detected from $name\'s ticks';
+  }
+
+  @override
+  String detectedYouAndOther(String name) {
+    return 'Detected from your and $name\'s ticks';
+  }
+
+  @override
+  String detectedTwoOthers(String name1, String name2) {
+    return 'Detected from $name1\'s and $name2\'s ticks';
+  }
+
+  @override
+  String get tripNoDuration => 'Ticked, no duration';
+
+  @override
+  String get tripNotShopping => 'Not a shopping trip';
+
+  @override
+  String get tripNotShoppingBody =>
+      'Not a shopping trip? The ticks stay, but the order no longer learns from it.';
+
+  @override
+  String get tripNotShoppingConfirm => 'Remove';
+
+  @override
+  String get tripRemoved => 'Removed';
+
+  @override
+  String get tripRemoveFailed =>
+      'The trip couldn\'t be removed. Please try again.';
+
+  @override
+  String detectedCardTitle(String store) {
+    return 'Shopping at $store detected';
+  }
+
+  @override
+  String get detectedCardTitleNoStore => 'Shopping trip detected';
+
+  @override
+  String get detectedCardBody =>
+      'Snacklist remembers the order you tick in and sorts the list that way next time. The trip is in History, for the others in your household without times. You can turn this off in Settings under “Detect trips from my ticks”.';
+
+  @override
+  String get detectedCardView => 'View';
+
+  @override
+  String get detectedCardGotIt => 'Got it';
+
+  @override
+  String get settingsTrips => 'Shopping trips';
+
+  @override
+  String get detectTrips => 'Detect trips from my ticks';
+
+  @override
+  String get detectTripsHint => 'Uses only when you tick. No location.';
 }

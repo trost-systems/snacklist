@@ -47,6 +47,10 @@ abstract interface class ListRepository() {
   /// malformed.
   Future<HouseholdIndex?> fetchSuggestIndex();
 
+  /// Switches the household's order to [mode] (`set_order_mode`, job 352)
+  /// and answers the mode now in force.
+  Future<OrderMode> setOrderMode(OrderMode mode);
+
   /// Applies [op] on the server and returns the rows it touched, by id: the
   /// resulting row, or null when the item no longer exists. One row for most
   /// ops; a merge and its undo answer for both items.
@@ -554,6 +558,21 @@ class SupabaseListRepository(
   );
 
   @override
+  Future<OrderMode> setOrderMode(OrderMode mode) async {
+    final answer = await _client.rpc<Object?>(
+      'set_order_mode',
+      params: {'p_household': householdId, 'p_mode': mode.name},
+    );
+    return switch (OrderMode.values.asNameMap()[answer]) {
+      final mode? => mode,
+      null => throw FormatException(
+        'set_order_mode: unexpected answer',
+        answer,
+      ),
+    };
+  }
+
+  @override
   Future<Map<String, Item?>> send(ItemOp op) async => switch (op) {
     MergeItems(:final mergeId, :final otherId) => await _merge(
       'merge_items',
@@ -568,8 +587,25 @@ class SupabaseListRepository(
       merged: merged.id,
     ),
     AddItem() => await _add(op),
+    DeclineShop() => await _decline(op),
     _ => {op.itemId: await _sendOne(op)},
   };
+
+  /// `decline_shop` changes no row. A refusal (the item gone, a backend
+  /// without the function) leaves nothing the user could do: done too.
+  Future<Map<String, Item?>> _decline(DeclineShop op) async {
+    try {
+      await _client.rpc<void>(
+        'decline_shop',
+        params: {'p_item': op.itemId, 'p_at': op.at.toUtc().toIso8601String()},
+      );
+    } on PostgrestException catch (e) {
+      if (_isTrouble(e)) {
+        throw ServerTrouble(e.message);
+      }
+    }
+    return const {};
+  }
 
   /// `put_item` answers with the row the add is: its own, or the open item
   /// that was already on the list (then this id is gone, answered as null).
@@ -647,7 +683,25 @@ class SupabaseListRepository(
     final items = _client.rest.from('items');
     final List<Map<String, dynamic>> rows;
     switch (op) {
-      case SetStatus(:final status, :final storeId):
+      case SetStatus(:final status, :final at, :final storeId):
+        // set_item_status takes no store: the store goes first, so the
+        // tick's event records the store it was ticked at.
+        if (storeId != null) {
+          await items.update({'store_id': storeId}).eq('id', op.itemId);
+        }
+        try {
+          return await _rpcItem(op, 'set_item_status', {
+            'p_item': op.itemId,
+            'p_status': status.name,
+            'p_ticked_at': at.toUtc().toIso8601String(),
+          });
+        } on PostgrestException catch (e) {
+          // A store build can reach a backend whose deploy has not yet
+          // added set_item_status: tick as builds before it did.
+          if (e.code != 'PGRST202') {
+            rethrow;
+          }
+        }
         rows = await items
             .update({'status': status.name, 'store_id': ?storeId})
             .eq('id', op.itemId)
@@ -694,8 +748,8 @@ class SupabaseListRepository(
       case DeleteItem():
         await items.delete().eq('id', op.itemId).select('id');
         return null;
-      case AddItem() || MergeItems() || UnmergeItems():
-        throw StateError('$op goes through _add or _merge');
+      case AddItem() || MergeItems() || UnmergeItems() || DeclineShop():
+        throw StateError('$op goes through send');
     }
     // No row back: the item is gone.
     return rows.isEmpty

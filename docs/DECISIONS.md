@@ -17141,6 +17141,175 @@ Peter's pick t1118u from job 331's additions; job 345 takes A4, A8 and A9.
     category in both `categories` and `hidden` comes first and is hidden, and FEATURES-FOR-WRITERS
     says the API is on.
 
+## Job 352: learned order from detected trips (IO4), 2026-11-22
+
+Peter approved IO4 (round IO, job 347) with its defaults, learning from trips detected in plain
+ticks by job 351's final rule (t1121u/t1122u, 21 Nov 2026). Legal (Review 21 Nov 2026 on #610,
+TD-Q3): legitimate interest with a per-person objection switch, N-318 to N-321. Everything is
+behind the PostHog flag `learned-order` (the sync makes it internal-only; `releases/flags.json`
+rollout `off`). Interface and scope: the job's design.md (ops dir).
+
+1. **One switch on the server.** `households.order_mode` (`categories` | `learned`). The app sets
+   `learned` through `set_order_mode` when the flag is on for a member; nothing switches back by
+   itself. Detection, learning, the new place rules and MCP's walk order run only for `learned`
+   households, so every other household keeps today's behaviour, server side included.
+2. **One source of truth for order.** `items.sort_key` means "place inside the store" in a learned
+   household; `item_order_memory` remembers it per (store, canonical key), so a re-add returns to its
+   place. The switch seeds it from today's walk order (category walk rank × 1e6 + rank in the
+   group): the first learned list looks exactly like the old one. A new key starts at the end of
+   its category's block (the prior), a category change alone keeps the place, a store change takes
+   the new store's place. `place_item` checks both items' stores again once it holds the order
+   lock, and its neighbour is the next other place (an anchor's twin on another list shares the
+   anchor's key, the item's own twins move with it), so a place lands strictly between two others
+   and the same place twice changes nothing. An item write's `updated_at` is strictly after the
+   row's previous one (`greatest(now(), old + 1 µs)`): the app keeps the newer of two echoes, and a
+   replay or a tick whose transaction began before the last write committed would otherwise lose.
+3. **One learner, replayed.** `replay_store_order` rebuilds a store from the seeds, then applies its
+   stored walks (`trip_sessions.walks`) and manual places in time order: 351's F8 trade (step 0.5)
+   with the shuffle gate (after 3 taught walks, agreement under 60 % teaches nothing), TD-Q16's
+   default. A manual place ("Neben …", `place_item`, `set_store_order`) holds until three walks in a
+   row order it against its place (IO-Q5); an agreeing walk resets the count. Replaying instead of
+   applying walks incrementally keeps one code path and makes removals and late ticks exact.
+   One change against 351's F8: keys of different steps that a walk's move leaves on one position
+   are spread in walk order by a tiny offset (|position| × 1e-12 + 1e-9; keys of one step stay
+   tied), because two swapped neighbours both land on their midpoint and F8 kept them tied through
+   every later walk, so a swap never showed on the list.
+   A differential test runs random walks through 351's TypeScript `trade` (with that spread) and
+   the SQL and compares positions to 1e-9.
+4. **Detection in SQL, compared with the simulator.** `detect_trips(household)` ports `finalRule`
+   function by function and reconciles as 351's "For job 352" says (window of 36 h widened to every
+   unfrozen trip it overlaps; frozen and removed trips keep their ticks out). The window also
+   reaches back to every tick committed up to 36 h before the earliest new one, whose clock offset
+   the new ticks move; it never reaches before the household's switch to `learned` (no
+   retroactive detection) nor more than 14 days before the newest tick (a backlog costs quadratic
+   time; the review measured 21 s for 7,200 ticks); older trips stay as they are. A new trip takes the id of the
+   replaced trip it shares the most ticks with, so an open trip page and the first-trip card keep
+   their trip. Where detection stands lives in `trip_detection_state` (no client access), not on
+   `households`, which members read and realtime sends. pg_cron calls the procedure
+   `detect_due_trips_each()` every 5 minutes for learned households with an app tick after the
+   last run and none in the last 10 minutes; it commits after each household, so a run holds one
+   household's locks at a time (`detect_due_trips()` runs them in one transaction for tests).
+   351's simulator is in `supabase/functions/_shared/trip_sim/`; an integration test loads
+   9 personas × 2 seeds × 4 weeks into a stack day by day and week by week, running detection after
+   each batch, and finds no difference between `detect_trips` and `finalRule`. One deliberate
+   change to `finalRule` (GL-2 above parity with 351, review 0): ticks at a pharmacy are dropped
+   before the rule, in both, instead of judging a piece by its majority store; 351 let a lone
+   pharmacy tick join the walk around it. It changes 1 of the 18 simulated households
+   (offline-wrong-clock, seed 0: 8 to 9 trips, 6 to 7 walks).
+5. **Tick capture.** The app ticks and unticks only through `set_item_status(item, status,
+   ticked_at)`, for every user (one path; e2e's `tickSaved` waits for it). `item_events` gains
+   `client_at` (kept within 7 days before to 24 hours after the commit, and only for people with
+   detection on: for everyone else it is processing they objected to or never saw), `source`
+   (`app`, `voice`,
+   `agent`; MCP and the API set `fg.tick_source = 'agent'`, Siri and Alexa never tick), `store_id`
+   and `store_open_after` (T3a's "last open items of its store"). `source` stays for everyone: it
+   is no time, and it tells a Siri or agent tick from the person's own. A tick without a source by a
+   signed-in user counts as `app` (one by a JWT with a `client_id`, an app connected over OAuth
+   calling PostgREST itself, as `agent`, whatever it says), so older app builds are detected on commit times (an offline
+   walk then becomes a burst that teaches nothing, the safe failure 351 names).
+6. **Privacy enforced in SQL (N-319, N-320, N-321).** Members can no longer read `item_events`
+   directly (`suggest_items` became `security definer` with its own membership check; for an API
+   caller it ignores `p_now` and gives `last_used` to the day, else moving `p_now` would walk back
+   every member's tick times). A detected trip that is not the caller's alone
+   (`detected_by = {caller}`) comes without start, end and pauses (`trip_session`), with its log
+   row dated at midnight UTC (`trip_history_v2`), and in the export without them: a shared trip's
+   start and end are the other person's ticks too. It shows not at all until everyone else in it
+   has seen the first-trip card, a co-detected member included. `trip_history` (older app builds) leaves detected trips out. Switching detection
+   off deletes the person's unedited detected trips in every household and keeps their ticks out
+   from then on; switching on counts from that moment only. Nobody is detected before their app
+   has shown the switch: without a settings row a person is not detected, and the flagged app's
+   first `my_trip_detection` call adds the row, counting ticks from then on. Switching off locks
+   each of the person's households after writing the switch, so a run already going either
+   finishes first and is cleaned up, or reads the switch. The switch and the card time live in
+   `trip_detection_settings` (no client access), not in `profiles`, which co-members read.
+   Pharmacy ticks never reach the rule, so they make no trip and join no other store's trip, walk
+   or order. A detected trip stays detected: a client save onto its id is refused, a delete
+   becomes a removal (else the next run would detect it again), and a marked line or an edit of
+   its Verlauf row (`save_trip`, which History opens without trip mode) freezes it.
+7. **Open questions.** Peter answered TD-Q1, TD-Q2, TD-Q4 and TD-Q5 (22 Nov 2026, binding; point
+   12 says how each is built and tested): TD-Q1 fast bursts count as a trip only from 5 ticks and
+   never teach; TD-Q2 ticking at the same store again within 30 minutes continues the trip;
+   TD-Q4 no live „Looks like you're at <store>“ hint; TD-Q5 „Nein, nur abgehakt“ means that run is
+   not detected and teaches nothing. The trip question's snooze is job 357's: 60 minutes after
+   „Nein“ or a dismissal, any store, per person and device; this job's own 30-minute quiet is gone.
+   Defaults taken for the rest (the brief: use the recommended default and list it): TD-Q10 to
+   TD-Q14 the proposed rule; TD-Q16 F8 plus the gate; IO-Q1 flag, IO-Q4 replaced by detection,
+   IO-Q5 three trips, IO-Q6 one shared order, IO-Q9 the API/MCP shape, IO-Q10 categories stay
+   underneath, IO-Q12 a filter above 15 items.
+8. **Not built here (follow-ups).** Store memory from walks (351 step 5, TD-Q14); IO-Q11 (a new
+   store starting from the household's average order: it starts from its category walk order);
+   the "Show categories" switch (IO-Q3; job 350's flag hides categories); fixing a detected trip by
+   changing its store, splitting or merging it (only „Kein Einkauf“ is built; TD-Q15); „after three
+   „Nein“ stop asking“ and its Settings switch; per-person walk direction (TD-Q6); per-device clock
+   offsets (TD-Q7); calibration aggregates (TD-Q8); delivery stores (TD-Q9). In learned mode a gap
+   between neighbours halves with each place into it and is never renumbered (about 29 places into
+   one gap before two items tie).
+9. **Merged with jobs 344 and 345.** Their new agent tick paths (MCP `untick_items`, besides
+   `tick_items` and the API's tick and untick) mark `fg.tick_source = 'agent'` too, so no agent
+   tick makes a trip or teaches. `update_item` and `PATCH /v1/items/{id}` change a store through
+   `public.move_item`, so in a learned household the item takes its place in the new store (their
+   descriptions say so); `set_store_layout` and `PUT /v1/stores/{id}/layout` say that with the
+   learned order the walk order is only the default order for new items. `place_item` and
+   `set_store_order` are not behind job 345's `mcp_lists_stores` switch: they change the order of
+   entries, which privacy section 7 covers. MCP `serverInfo.version` and OpenAPI `info.version`
+   1.3.0.
+10. **Review 0 (worker J).** Switching off also clears the person's tap times
+    (`item_events.client_at`) and deletes their „Kein Einkauf“ tombstones (a shared one only loses
+    them): once someone objected, neither serves a purpose. `trip_detection_settings` has no
+    default switch time and `seen_detected_trip_card` only updates a row `my_trip_detection` made,
+    so the card alone switches nothing on. Members no longer read `item_order_memory` (the app
+    never did; `manual_at` and `updated_at` told when someone placed an item or a trip ended); the
+    policy stays for the schema check. Leaving, a removal and an account deletion take the
+    household's detection lock before the household row, as detect runs and the switch do: a run
+    holds item and trip rows they update and needs a key share on that row for its inserts, so
+    each waited for the other. `my_trip_detection`'s first trip is one the caller can open when
+    there is one; else a shared one, so two people whose only trips are shared still get their
+    cards. API `lastUsed` to the day is a named exception in API.md's Versioning section. MCP
+    `place_item` and `set_store_order` say `destructiveHint: false`. The app: the card of a trip
+    without a store says „Einkauf erkannt“, a refused switch says so (`catalogSaveFailed`),
+    Einstellungen asks again for an unknown switch, a read from before a switch no longer undoes
+    it, and a place needs no category.
+11. **N-321 is not met for `items.bought_at` and `bought_by` (open for Legal, review 0).** Every
+    member reads, live over realtime, the exact commit time and the buyer of every tick. Joining a
+    detected trip's item names (Verlauf) to those rows rebuilds the trip's clock times, which undoes
+    the masking in point 6. It predates this job (the list's own "bought" state), and older store
+    builds read `bought_at` for „Zuletzt verwendet“, so it is not revoked here. Options for Legal:
+    (a) accept it as existing list data; (b) a follow-up gives other members `bought_at` coarsened
+    to the day (or hidden) through a new column, view or RPC for new builds, and keeps the raw
+    column until older builds age out. The PR does not claim N-321 for these columns.
+12. **Review 1: Peter's TD answers in SQL (worker K).**
+    - **TD-Q5.** The app sends „Nein, nur abgehakt“ (and a dismissed question, which job 357's
+      snooze treats alike) as `decline_shop(p_item uuid, p_at timestamptz) returns void`, queued
+      after the tick. It stores one row in `shop_declines` (household, person, the caller's latest
+      `bought` event of that item, server and device time; idempotent per person and tick). It
+      stores nothing in a household without the learned order, for a person whose detection is off,
+      or without a tick of theirs; another household's item is `item_not_found`. `detect_trips`
+      leaves out the declined tick and the same person's ticks after it up to their first gap of
+      more than 30 minutes (TD-Q2's trip), before anything else: no trip, no joining a trip, no
+      walk, no change in the learned order; other people's ticks are untouched, and a run after a
+      longer gap is detected. Pharmacy ticks count for the gaps, then leave as before. An answer that
+      arrives after a run moves `detected_through` back, so the next run takes the trip back
+      (unless it was edited or removed). Rows go after 15 days (pg_cron `purge-shop-declines`;
+      detection never looks back more than 14 days), when the person switches detection off, leaves
+      or is removed from the household, or deletes the account; the export lists them under
+      `trip_detection.shops_declined`. No client reads the table.
+    - **TD-Q2.** A person's next piece at the same store within 30 minutes of the trip's last tick
+      continues it, walk or burst, in either order (351 joined only a walk, or a later burst, to a
+      walk). A burst with no store joins as before. Only walks teach. The same change is in
+      `trip_sim/detect.ts` `finalRule`, so the differential test still finds no difference; against
+      the previous rule it changes 6 of the 18 simulated households (13 trips gain 32 ticks of short
+      bursts before or between walks; trip and walk counts unchanged).
+    - **TD-Q1.** A trip without a walk needs 5 ticks in all. Two bursts of 3 at one store within 30
+      minutes are therefore a trip of 6 that teaches nothing; for the lead, as one reading of
+      „fast bursts count as a trip only from 5 ticks“.
+    - **T3a, for the lead.** One or two ticks within 5 minutes that leave their store no open item
+      are a walk (351's small-store rule), even 10 s apart, so two such ticks teach a 2-step walk.
+      Peter's „fast bursts never teach“ could be read to cover them; it is unchanged here.
+    - **Same-day order (N-321).** `trip_history_v2` puts others' detected trips after the day's
+      other trips, by id, so their order no longer tells which came first.
+    - **Tests** carry the question in their names (`TD-Q1: …`, `TD-Q2: …`, `TD-Q5: …`) in
+      `trip_detection.test.sql` and `trip_detection_privacy.test.sql`.
+
 ## Job 357: 60-minute snooze after „Nein“ on the trip question
 
 Peter's N2 (via Snacklist PM, 22 Nov 2026): after „Nein“ (or a dismissed sheet) „Kaufst du gerade

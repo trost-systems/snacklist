@@ -1,5 +1,5 @@
 begin;
-select plan(132);
+select plan(144);
 
 create function pg_temp.login(uid uuid) returns void language plpgsql as $$
 begin
@@ -31,6 +31,8 @@ create temp table alice_category as
   select id from public.categories where household_id = (select id from ha) and seed_key = 'drinks';
 -- Job 15: a learned brand and an item to place, move and reorder around.
 update public.items set brand = 'Lillydoo' where household_id = (select id from ha) and name = 'Milch';
+-- Job 352: Alice's household sorts by learned order (item_order_memory rows).
+select public.set_order_mode((select id from ha), 'learned');
 create temp table alice_item as select id, sort_key from public.items where household_id = (select id from ha) and name = 'Milch';
 -- Job 8: a bought and then deleted item stays in Alice's history as a suggestion.
 insert into public.items (household_id, name) select id, 'Kaffee' from ha;
@@ -66,11 +68,11 @@ select is((select count(*)::int from public.store_category_order where household
 select is((select count(*)::int from public.household_members where household_id = (select id from ha)), 0,
   'members of another household are invisible');
 select is((select count(*)::int from public.invites), 0, 'invites of another household are invisible');
-select is((select count(*)::int from public.item_events where household_id = (select id from ha)), 0,
-  'history of another household is invisible');
+select throws_ok($$ select from public.item_events $$, '42501', null,
+  'history is read through suggest_items only (job 352), so not that of another household');
 select is((select count(*)::int from public.profiles), 1, 'profiles outside the household are invisible');
-select is((select count(*)::int from public.suggest_items((select id from ha), '', 200)), 0,
-  'suggestions from another household''s history are empty');
+select throws_ok($$ select from public.suggest_items((select id from ha), '', 200) $$, '42501', 'not_a_member',
+  'suggestions from another household''s history are refused');
 select is((select count(*)::int from public.item_merges where household_id = (select id from ha)), 0,
   'duplicate-hint merges of another household are invisible');
 select throws_ok($$ select public.unmerge_items('32b00000-0000-4000-8000-0000000000a1') $$, '42501', null,
@@ -164,6 +166,29 @@ select throws_ok($$ select public.place_item((select id from alice_item), (selec
   'P0002', 'item_not_found', 'placing another household''s item is denied');
 select throws_ok($$ select public.place_item((select id from bob_item), (select id from alice_item), 'after') $$,
   'P0002', 'item_not_found', 'an anchor in another household is not found');
+select throws_ok($$ select from public.item_order_memory where household_id = (select id from ha) $$,
+  '42501', null, 'the learned order of another household is no client''s to read');
+select throws_ok($$ select from public.item_order_memory where household_id = (select id from hb) $$,
+  '42501', null, 'nor the own household''s');
+select throws_ok($$ insert into public.item_order_memory (household_id, item_key, position, seed_position, source)
+  select id, 'brot', 1, 1, 'manual' from hb $$,
+  '42501', null, 'the learned order cannot be written directly, even in the own household');
+select throws_ok($$ select from public.trip_detection_state where household_id = (select id from ha) $$,
+  '42501', null, 'where trip detection stands is no client''s to read, another household''s included');
+select throws_ok($$ select from public.trip_detection_state where household_id = (select id from hb) $$,
+  '42501', null, 'nor the own household''s');
+select throws_ok($$ select from public.shop_declines where household_id = (select id from ha) $$,
+  '42501', null, 'who said „Nein, nur abgehakt" is no client''s to read, another household''s included');
+select throws_ok($$ select from public.shop_declines where household_id = (select id from hb) $$,
+  '42501', null, 'nor the own household''s');
+select throws_ok($$ select public.decline_shop((select id from alice_item), now()) $$,
+  'P0002', 'item_not_found', 'declining a shop for another household''s item is denied');
+select throws_ok($$ select public.set_order_mode((select id from ha), 'categories') $$,
+  '42501', 'not_a_member', 'switching another household''s order is denied');
+select throws_ok($$ select public.set_store_order((select id from ha), (select id from alice_store), array[(select id from alice_item)]) $$,
+  '42501', 'not_a_member', 'ordering another household''s store is denied');
+select throws_ok($$ select public.replay_store_order((select id from ha), (select id from alice_store)) $$,
+  '42501', null, 'replaying is internal');
 select throws_ok($$ select public.move_item((select id from alice_item), null, null) $$,
   'P0002', 'item_not_found', 'moving another household''s item is denied');
 select throws_ok($$ select public.move_item((select id from bob_item), null, (select id from alice_category)) $$,
@@ -177,6 +202,16 @@ select results_eq(
   $$ values ('milch'), ('milch') $$,
   'Alice''s memories are intact'
 );
+-- As the owner: members do not read item_order_memory.
+select set_config('role', 'postgres', true);
+select results_eq(
+  $$ select h.order_mode, m.source from public.households h
+     join public.item_order_memory m on m.household_id = h.id and m.store_id = (select id from alice_store) and m.item_key = 'milch'
+     where h.id = (select id from ha) $$,
+  $$ values ('learned', 'learned') $$,
+  'Alice''s learned order is intact'
+);
+select pg_temp.login('00000000-0000-0000-0000-0000000000a1');
 select is((select count(*)::int from public.store_category_order where store_id = (select id from alice_store) and hidden), 0,
   'the other user''s layout update changed nothing');
 select results_eq(

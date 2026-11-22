@@ -477,6 +477,39 @@ class FakeRepository() implements ListRepository {
     return rows.values.toList();
   }
 
+  /// The household's order mode (job 352); `set_order_mode` sets it.
+  OrderMode orderMode = OrderMode.categories;
+
+  /// When set, `set_order_mode` answers this mode and changes nothing.
+  OrderMode? orderModeAnswer;
+
+  /// The modes `set_order_mode` was asked for, in order.
+  final orderModeAsks = <OrderMode>[];
+
+  /// How many more asks of `set_order_mode` fail like a dropped connection.
+  var orderModeFails = 0;
+
+  /// Runs when `set_order_mode` switches to learned: the server's replay,
+  /// which gives the rows new sort keys without a realtime event here.
+  void Function()? onLearned;
+
+  @override
+  Future<OrderMode> setOrderMode(OrderMode mode) async {
+    _ensureOnline();
+    orderModeAsks.add(mode);
+    if (orderModeFails > 0) {
+      orderModeFails--;
+      throw Exception('offline');
+    }
+    if (orderModeAnswer case final answer?) {
+      return answer;
+    }
+    if (mode == OrderMode.learned && orderMode != OrderMode.learned) {
+      onLearned?.call();
+    }
+    return orderMode = mode;
+  }
+
   @override
   Future<HouseholdIndex?> fetchSuggestIndex() async {
     householdIndexCalls++;
@@ -569,6 +602,9 @@ class FakeRepository() implements ListRepository {
       case UnclaimItem(:final userId):
         claims.remove((op.itemId, userId));
         touched = {op.itemId: rows[op.itemId]};
+      case DeclineShop():
+        // decline_shop: no row changes.
+        touched = const {};
       default:
         return {op.itemId: _sendOne(op)};
     }
@@ -792,6 +828,17 @@ class FakeRepository() implements ListRepository {
     final anchor = rows[anchorId];
     if (current == null || anchor == null) {
       return current;
+    }
+    // Learned (job 352): within its store's section, its category kept.
+    if (orderMode == OrderMode.learned) {
+      final section = [
+        for (final row in rows.values)
+          if (row.id != current.id &&
+              row.status == ItemStatus.active &&
+              row.storeId == current.storeId)
+            row,
+      ]..sort(compareWalk);
+      return current.copyWith(sortKey: () => _keyNextTo(section, anchor, edge));
     }
     final moved = current.copyWith(
       categoryId: anchor.categoryId,

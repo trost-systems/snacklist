@@ -5,10 +5,13 @@ import 'package:family_groceries/trip/model.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// The question after an own tick while no trip runs (job 234, TM2's
-/// sheet). [itemName] is the item just ticked off.
+/// sheet). [itemName] is the item just ticked off. [quiet]: a line under
+/// the buttons says that „Nein“ snoozes it for an hour (job 357's snooze)
+/// and keeps this shop from being detected (job 352).
 Future<AskAnswer> showTripAsk(
   BuildContext context, {
   required String itemName,
+  bool quiet = false,
 }) async =>
     await showModalBottomSheet<AskAnswer>(
       context: context,
@@ -16,12 +19,15 @@ Future<AskAnswer> showTripAsk(
       isScrollControlled: true,
       useSafeArea: true,
       showDragHandle: true,
-      builder: (_) => TripAskSheet(itemName: itemName),
+      builder: (_) => TripAskSheet(itemName: itemName, quiet: quiet),
     ) ??
     AskAnswer.no;
 
-class const TripAskSheet({required final String itemName, super.key})
-    extends StatelessWidget {
+class const TripAskSheet({
+  required final String itemName,
+  final bool quiet = false,
+  super.key,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -78,6 +84,15 @@ class const TripAskSheet({required final String itemName, super.key})
               onPressed: () => answer(AskAnswer.no),
               child: Text(l10n.shopAskNo),
             ),
+            if (quiet) ...[
+              const SizedBox(height: HlSpace.s2),
+              Text(
+                l10n.shopAskQuiet,
+                key: const ValueKey('trip-ask-quiet'),
+                textAlign: TextAlign.center,
+                style: HlType.caption.copyWith(color: t.textMuted),
+              ),
+            ],
             const SizedBox(height: HlSpace.s3),
             Wrap(
               alignment: WrapAlignment.center,

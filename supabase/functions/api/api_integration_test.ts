@@ -604,6 +604,18 @@ test('a read key reads on every route and changes nothing; a read-write key does
     });
     const [milk] = (await added.json()).data.added as Item[];
     assertExists(milk);
+    const others = await api(writer.token, 'POST', '/items', {
+      body: { items: [{ name: 'Tee' }, { name: 'Zahnpasta', store: 'dm' }] },
+    });
+    const [tea, paste] = (await others.json()).data.added as (Item & { storeId: string })[];
+    assertExists(tea);
+    assertExists(paste);
+    (await api(writer.token, 'PATCH', `/items/${tea.id}`, { body: { store: null } })).body
+      ?.cancel();
+    await asUser(
+      mine.userId,
+      (tx) => tx`select public.set_order_mode(${mine.householdId}, 'learned')`,
+    );
     const bodies: Record<string, unknown> = {
       addItems: { items: [{ name: 'Brot' }] },
       updateItem: { store: null },
@@ -612,6 +624,8 @@ test('a read key reads on every route and changes nothing; a read-write key does
       addStore: { name: 'Rewe' },
       updateStore: { name: 'dm' },
       setStoreLayout: { categories: [] },
+      placeItem: { after: tea.id },
+      setStoreOrder: { items: [paste.id] },
     };
     const [[list], [store]] = await Promise.all([
       sql<{ id: string }[]>`select id from public.lists where household_id = ${mine.householdId}`,
@@ -622,10 +636,16 @@ test('a read key reads on every route and changes nothing; a read-write key does
     assertExists(store);
     const idFor = (path: string) =>
       path.startsWith('/v1/lists/') ? list.id : path.startsWith('/v1/stores/') ? store.id : milk.id;
-    const call = (token: string, route: (typeof routes)[number]) =>
-      api(token, route.method, route.path.replace('/v1', '').replace('{id}', idFor(route.path)), {
-        body: bodies[route.operation],
-      });
+    // More routes than a burst: each call starts from a full bucket.
+    const call = async (key: { id: string; token: string }, route: (typeof routes)[number]) => {
+      await refill(sql, key.id);
+      return await api(
+        key.token,
+        route.method,
+        route.path.replace('/v1', '').replace('{id}', idFor(route.path)),
+        { body: bodies[route.operation] },
+      );
+    };
     const state = async () =>
       (await Promise.all([
         sql`select id, name, status, store_id, category_id, updated_at from public.items
@@ -640,7 +660,7 @@ test('a read key reads on every route and changes nothing; a read-write key does
 
     const before = await state();
     for (const route of routes) {
-      const res = await call(reader.token, route);
+      const res = await call(reader, route);
       const where = `${route.method} ${route.path}`;
       if (route.scope === 'read') {
         assertEquals(res.status, 200, where);
@@ -658,7 +678,7 @@ test('a read key reads on every route and changes nothing; a read-write key does
       Number(a.method === 'DELETE') - Number(b.method === 'DELETE')
     );
     for (const route of deleteLast) {
-      const res = await call(writer.token, route);
+      const res = await call(writer, route);
       assert(res.ok, `${route.method} ${route.path} with a read-write key: ${res.status}`);
       await res.body?.cancel();
     }
@@ -1001,6 +1021,9 @@ test('an add answers within its size and time whatever is on the list', () =>
     const first = await post(1);
     assertEquals(first.status, 201);
     await seedVarieties(sql, mine, 51, 1000);
+    // As autovacuum would soon after: right after the other tests emptied items, the planner
+    // believes the table empty and the add's reads loop over 1050 rows per row.
+    await sql`analyze public.items`;
     const later = await post(1001);
 
     assert(

@@ -3891,4 +3891,89 @@ class AppLocalizationsDe extends AppLocalizations {
   String addMatchReadded(String item) {
     return 'Wieder auf der Liste: $item';
   }
+
+  @override
+  String placeNextTo(String name) {
+    return 'Neben $name';
+  }
+
+  @override
+  String get placeFirst => 'Ganz vorne';
+
+  @override
+  String chipPlace(String place) {
+    return 'Platz in der Liste: $place';
+  }
+
+  @override
+  String get placeFilter => 'Artikel suchen';
+
+  @override
+  String get shopAskQuiet =>
+      'Nach „Nein“ fragen wir eine Stunde lang nicht mehr, und dieser Einkauf wird nicht erkannt.';
+
+  @override
+  String get detectedOwn => 'Aus deinen Häkchen erkannt';
+
+  @override
+  String detectedOther(String name) {
+    return 'Aus den Häkchen von $name erkannt';
+  }
+
+  @override
+  String detectedYouAndOther(String name) {
+    return 'Aus deinen Häkchen und denen von $name erkannt';
+  }
+
+  @override
+  String detectedTwoOthers(String name1, String name2) {
+    return 'Aus den Häkchen von $name1 und $name2 erkannt';
+  }
+
+  @override
+  String get tripNoDuration => 'Abgehakt, ohne Dauer';
+
+  @override
+  String get tripNotShopping => 'Kein Einkauf';
+
+  @override
+  String get tripNotShoppingBody =>
+      'Kein Einkauf? Die Häkchen bleiben, aber die Reihenfolge lernt nicht mehr daraus.';
+
+  @override
+  String get tripNotShoppingConfirm => 'Entfernen';
+
+  @override
+  String get tripRemoved => 'Entfernt';
+
+  @override
+  String get tripRemoveFailed =>
+      'Der Einkauf konnte nicht entfernt werden. Versuch es noch mal.';
+
+  @override
+  String detectedCardTitle(String store) {
+    return 'Einkauf bei $store erkannt';
+  }
+
+  @override
+  String get detectedCardTitleNoStore => 'Einkauf erkannt';
+
+  @override
+  String get detectedCardBody =>
+      'Snacklist merkt sich, in welcher Reihenfolge du abhakst, und sortiert die Liste beim nächsten Mal so. Der Einkauf steht im Verlauf, für die anderen im Haushalt ohne Uhrzeit. Abschalten kannst du das in den Einstellungen unter „Einkäufe aus meinen Häkchen erkennen“.';
+
+  @override
+  String get detectedCardView => 'Ansehen';
+
+  @override
+  String get detectedCardGotIt => 'Verstanden';
+
+  @override
+  String get settingsTrips => 'Einkäufe';
+
+  @override
+  String get detectTrips => 'Einkäufe aus meinen Häkchen erkennen';
+
+  @override
+  String get detectTripsHint => 'Nutzt nur, wann du abhakst. Kein Standort.';
 }

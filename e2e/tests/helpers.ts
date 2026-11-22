@@ -177,8 +177,8 @@ export async function tickSaved(page: Page, name: string): Promise<void> {
   let saved = false;
   const seen = (r: PageResponse): void => {
     const request = r.request();
-    saved ||= r.ok() && request.method() === 'PATCH' && new URL(r.url()).pathname === '/rest/v1/items' &&
-      request.postDataJSON()?.status === 'bought';
+    saved ||= r.ok() && request.method() === 'POST' && new URL(r.url()).pathname === '/rest/v1/rpc/set_item_status' &&
+      request.postDataJSON()?.p_status === 'bought';
   };
   page.on('response', seen);
   try {

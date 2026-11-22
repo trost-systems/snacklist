@@ -71,9 +71,12 @@ class FakeSessions() implements TripSessionRepository {
         : FinishedTrip.fromJson({...trip.toJson(), 'lines': null});
   }
 
+  /// What `trip_session` answers, by id.
+  final served = <String, FinishedTrip>{};
+
   @override
-  Future<FinishedTrip> fetch(String id) =>
-      throw UnimplementedError('not used by the cubit');
+  Future<FinishedTrip> fetch(String id) async =>
+      served[id] ?? (throw StateError('no trip $id'));
 
   @override
   Future<void> markPlanned(
@@ -95,6 +98,16 @@ class FakeSessions() implements TripSessionRepository {
       throw Exception('offline');
     }
     deleted.add(id);
+  }
+
+  final removed = <String>[];
+
+  @override
+  Future<void> removeDetected(String id) async {
+    if (fail) {
+      throw Exception('offline');
+    }
+    removed.add(id);
   }
 }
 
@@ -142,6 +155,9 @@ class World(
   final sessions = FakeSessions();
   final tracked = Tracked();
   var flag = true;
+
+  /// The `learned-order` flag (job 352).
+  var quiet = false;
   var jumped = Duration.zero;
   late final ListCubit list;
   late TripCubit trips;
@@ -159,6 +175,7 @@ class World(
       householdId: household,
       enabled: () => flag,
       logs: () => true,
+      quiet: () => quiet,
       clock: now,
       analytics: tracked,
     );
@@ -228,6 +245,80 @@ void main() {
         ..tick('tea');
       expect(w.state, isA<Asking>(), reason: 'after the hour');
       expect(w.shopEvents(), ['shop_asked {answer: no}']);
+    });
+  });
+
+  test('learned-order: the question says that „Nein“ keeps it away '
+      '(job 352)', () {
+    run((w) {
+      expect(w.trips.quietsAfterNo, isFalse);
+      w.quiet = true;
+      expect(w.trips.quietsAfterNo, isTrue);
+    });
+  });
+
+  group('TD-Q5: with learned-order a „Nein“ tells the server (job 352)', () {
+    List<DeclineShop> declines(World w) =>
+        w.repo.sent.whereType<DeclineShop>().toList();
+
+    test('decline_shop with the item and the answer time, after the tick', () {
+      run((w) {
+        w
+          ..quiet = true
+          ..tick('milk')
+          ..elapse(const Duration(seconds: 20));
+        final answered = w.now();
+        w
+          ..trips.no()
+          ..async.flushMicrotasks();
+        expect(w.repo.sent.map((op) => (op.runtimeType, op.itemId)), [
+          (SetStatus, 'milk'),
+          (DeclineShop, 'milk'),
+        ]);
+        expect(declines(w).single.at, answered);
+        expect(w.list.state.pending, isEmpty);
+      });
+    });
+
+    test('offline it waits in the queue behind the tick and goes out once '
+        'online, retried until acknowledged', () {
+      run((w) {
+        w
+          ..quiet = true
+          ..repo.online = false
+          ..tick('milk');
+        final answered = w.now();
+        w
+          ..trips.no()
+          ..elapse(const Duration(seconds: 30));
+        expect(w.repo.sent, isEmpty);
+        expect(w.list.state.pending.map((op) => op.runtimeType), [
+          SetStatus,
+          DeclineShop,
+        ]);
+        w.repo
+          ..online = true
+          ..loseNextAnswer = true;
+        w.elapse(const Duration(seconds: 30));
+        expect(w.repo.sent.map((op) => (op.runtimeType, op.itemId)), [
+          (SetStatus, 'milk'),
+          (SetStatus, 'milk'),
+          (DeclineShop, 'milk'),
+        ], reason: 'the lost answer sends the tick again, then the decline');
+        expect(declines(w).single.at, answered);
+        expect(w.list.state.pending, isEmpty);
+      });
+    });
+
+    test('without the flag a Nein sends nothing', () {
+      run((w) {
+        w
+          ..tick('milk')
+          ..trips.no()
+          ..async.flushMicrotasks()
+          ..elapse(const Duration(seconds: 30));
+        expect(w.repo.sent.map((op) => op.runtimeType), [SetStatus]);
+      });
     });
   });
 

@@ -39,7 +39,14 @@ void main() {
   });
 
   test('the trip events admit every source and end', () {
-    expect(allowed('shop_started', 'source'), names(trip.TripSource.values));
+    expect(
+      allowed('shop_started', 'source'),
+      names([
+        for (final s in trip.TripSource.values)
+          if (s != trip.TripSource.detected) s,
+      ]),
+      reason: 'a detected trip (job 352) never starts on a device',
+    );
     expect(allowed('shop_ended', 'reason'), names(trip.TripEnd.values));
     expect(allowed('trip_logged', 'source'), names(log.TripSource.values));
   });

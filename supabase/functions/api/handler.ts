@@ -381,6 +381,28 @@ const UNAVAILABLE_STATES = /^(08|53|57P)/;
 function asApiError(e: unknown, deps: Deps): ApiError {
   if (e instanceof ApiError) return e;
   if (e instanceof ToolError) {
+    switch (e.reason) {
+      case 'anchor_in_other_store':
+        return new ApiError(
+          422,
+          'anchor_in_other_store',
+          'The anchor is in another store section. Move the item to that store first (PATCH).',
+        );
+      case 'order_mode':
+        return new ApiError(
+          409,
+          'order_mode',
+          'This household sorts by categories; a store order needs the learned order. ' +
+            'Place single items with POST /v1/items/{id}/place.',
+        );
+      case 'not_in_store':
+        return new ApiError(
+          422,
+          'items_not_in_store',
+          'Some items are not open items of this store.',
+          { items: e.candidates },
+        );
+    }
     if (e.reason === 'conflict') {
       return new ApiError(
         409,
@@ -415,6 +437,9 @@ function asApiError(e: unknown, deps: Deps): ApiError {
     }
     if (e.subject === 'item' && e.reason === 'not_found') {
       return new ApiError(404, 'item_not_found', 'No such item in this household.');
+    }
+    if (e.subject === 'anchor' && e.reason === 'not_found') {
+      return new ApiError(422, 'anchor_not_found', 'The anchor is no open item of this household.');
     }
     if (
       (e.subject === 'store' || e.subject === 'category' || e.subject === 'list') &&

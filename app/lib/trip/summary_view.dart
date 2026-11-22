@@ -42,6 +42,9 @@ class const TripSummaryView({
 
   /// The server refused the end for good: not saved, and no retry.
   final bool refused = false,
+
+  /// A detected trip: „Kein Einkauf“ under the head; null: not offered.
+  final VoidCallback? onRemove,
   super.key,
 }) extends StatelessWidget {
   @override
@@ -61,11 +64,15 @@ class const TripSummaryView({
         ? null
         : tripReport(lines, catalog.stores);
     final stores = [for (final name in trip.stores) ?name];
-    final when = l10n.shopSummaryWhen(
-      DateFormat.MMMEd(locale).format(trip.startedAt.toLocal()),
-      hm.format(trip.startedAt.toLocal()),
-      hm.format(trip.endedAt.toLocal()),
-    );
+    // Another member's detected trip comes without clock times (job 352).
+    final when = switch ((trip.startedAt, trip.endedAt)) {
+      (final from?, final to?) => l10n.shopSummaryWhen(
+        DateFormat.MMMEd(locale).format(from.toLocal()),
+        hm.format(from.toLocal()),
+        hm.format(to.toLocal()),
+      ),
+      _ => DateFormat.MMMEd(locale).format(trip.day),
+    };
     final totals = report?.totals;
     final lede = switch (totals) {
       null => l10n.shopTicked(trip.bought),
@@ -105,7 +112,9 @@ class const TripSummaryView({
         Semantics(
           header: true,
           child: Text(
-            l10n.shopShoppedFor(_duration(l10n, trip.active)),
+            trip.walked == false
+                ? l10n.tripNoDuration
+                : l10n.shopShoppedFor(_duration(l10n, trip.active)),
             style: HlType.headline.copyWith(color: t.text, fontSize: 28),
           ),
         ),
@@ -118,12 +127,29 @@ class const TripSummaryView({
             fontWeight: FontWeight.w600,
           ),
         ),
-        if (trip.end == TripEnd.auto)
+        if ((trip.end, trip.endedAt) case (TripEnd.auto, final endedAt?))
           Padding(
             padding: const EdgeInsets.only(top: HlSpace.s1),
             child: Text(
-              l10n.shopAutoEndHint(hm.format(trip.endedAt.toLocal())),
+              l10n.shopAutoEndHint(hm.format(endedAt.toLocal())),
               style: HlType.body.copyWith(color: t.textMuted),
+            ),
+          ),
+        if (onRemove case final remove?)
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: Padding(
+              padding: const EdgeInsets.only(top: HlSpace.s2),
+              child: TextButton(
+                key: const ValueKey('trip-remove'),
+                // Its words on the head's left edge, as the lines above.
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  alignment: AlignmentDirectional.centerStart,
+                ),
+                onPressed: remove,
+                child: Text(l10n.tripNotShopping),
+              ),
             ),
           ),
         if (onRetrySave != null || refused)
