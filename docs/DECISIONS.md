@@ -17640,3 +17640,13 @@ TE-Q default. Built behind the new flag `total-priced-only`, on top of `list-dec
   they changed with the app (CLAUDE.md rule). Site, legal pages, docs and other ARB keys with
   the same household promise were listed for the lead and not changed (the brief's rule).
 - **The code's "slogan" naming stays.** The heading is still shown only while sales are on (N-68).
+
+## Job 380: N-344 per-account Premium beta notice
+
+- The redline's new `#premium-beta` text goes in as one block of three lines (text, legal basis,
+  retention) after a blank line, like the tester block above it, which puts its Rechtsgrundlage
+  and Speicherdauer lines directly under the text. The review quotes them as separate paragraphs;
+  the words are unchanged.
+- Policy date 23 November 2026, not 22: main already says 22 November for the N-323 text, and this
+  PR waits for Legal, so the earliest realistic merge day is the next one. A later merge bumps it
+  again.
