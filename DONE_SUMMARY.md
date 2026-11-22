@@ -3048,3 +3048,17 @@ Details: [docs/done/437.md](docs/done/437.md). No code change: the mcp hangs (#3
 ## Job 441: review 0 follow-up
 
 Follow-up (review 0): #613 was merged on `ci-ok` before the review verdict, a process breach recorded in `docs/done/441.md`, which also states which gates ran after the second rebase and that the change ships with the next green main build.
+
+## Job 405: research, official connectors for Claude, ChatGPT and Gemini (docs only)
+
+Full report: [docs/research/official-ai-connectors.md](docs/research/official-ai-connectors.md). Nothing applied for, submitted, created or sent; no code changed.
+
+- **Claude:** developer portal `claude.ai/directory/manage`, any paid Claude plan, no company needed, no cost or review time stated; auto-scan lists a Community connector, Verified is optional. Gap: `add_items` has no annotations (`tools.ts:365`), `move_item` lacks `destructiveHint: false`.
+- **ChatGPT:** apps are submitted inside a plugin ZIP via the Plugins portal, verified individual or business identity, 5 positive + 3 negative cases, demo video, reviewer account without MFA or magic links. Gap: `openWorldHint` is set on none of the 22 tools. No subscription or upgrade promotion allowed. EU availability of the directory is unknown.
+- **Gemini:** custom apps are US-only, English-only, 18+ (useless for German users); Connected Apps Platform is a phased preview with an apply form, requirements mostly unknown.
+- **MCP gating:** free today (`integration_lock` off); neither Claude nor ChatGPT requires a free tier, OpenAI forbids upgrade promotion.
+- **Legal:** the "no marketing strings naming Claude" rule and the `brand-names` lint conflict with any listing; vendor directory terms are contracts; age 16+ against OpenAI's 13 to 17; no DPA needed if vendors stay independent controllers (Legal's call).
+- **Order:** Claude (about 1 job), ChatGPT (1.5 to 2 jobs, after checking EU availability), Gemini (apply now, build later).
+- **Freeze:** docs and Peter's account steps can happen before Nov 25; all code after.
+- **Verify:** claims were checked against the vendors' own pages read on 2026-11-22; unverifiable items are marked unknown. `scripts/verify.sh --only gitleaks,lint` for the docs.
+- **Not done:** nothing blocked; open questions OC-Q1 to OC-Q9 are in NEEDS_LEAD.

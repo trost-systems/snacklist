@@ -2615,3 +2615,20 @@ PR for English MCP tool descriptions and the L24-10 / ChatGPT listing redlines. 
 The PR title carries "DO NOT MERGE (Legal)" until Legal says GO.
 
 Job 432, Claude re-sync: `docs/connectors/claude-listing.md:40` ("its descriptions in German") is the approved Claude text and is wrong after this deploys. Also, `move_item` and `place_item` are now `destructiveHint: true` (server 1.7.0) after OpenAI's scan finding; Claude's listing may show the new hint after a re-sync.
+
+## NEEDS_LEAD Job 405: research ready, decisions needed (2026-11-22)
+
+PR (draft, docs only): https://github.com/trost-systems/snacklist/pull/645. Report: `docs/research/official-ai-connectors.md`.
+
+**Recommendation.** Claude first (about 1 job: annotation fixes, English docs page, listing text, reviewer account; Peter submits in the portal), ChatGPT second (1.5 to 2 jobs, only after confirming the directory is open to German users), Gemini last (apply for the Connected Apps preview now, build nothing). All code after the Nov 25 freeze.
+
+Open questions, default in brackets:
+- OC-Q1. MCP free or Premium when listed? [free for now; reviewer account gets a Premium grant if the lock goes on]
+- OC-Q2. Server and proxy changes before Nov 25? [no, after]
+- OC-Q3. Which Legal items need a yes before any listing (brand-name rule exception, vendor terms, age 16+, sensitive free text, support contact)? [Legal reviews section 4 first; no submission before a written yes]
+- OC-Q4. Do ChatGPT if its directory is not open in the EU? [check first with a Developer Mode test; defer if EEA excluded]
+- OC-Q5. Who submits? [Peter Trost as natural person, as in the imprint]
+- OC-Q6. Annotation policy for overwrites (`update_item`, `rename_*`, `set_store_order`, `set_store_layout`). [follow OpenAI's reading: overwrites are destructive]
+- OC-Q7. English tool text? [keep German; English listing and docs page]
+- OC-Q8. Research the GPT Store? [no]
+- OC-Q9. Claude plugin bundle with skills after the connector? [later, if traction]
