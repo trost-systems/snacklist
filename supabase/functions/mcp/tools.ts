@@ -689,7 +689,8 @@ export function buildServer(
           'Wie viele höchstens, ohne Angabe 10',
         ),
         due: z.boolean().optional().describe(
-          'Nur was fällig ist, auch wenn es nicht unter den ersten "limit" steht',
+          'Nur was fällig ist (wie "Wieder fällig" in der App), auch wenn es nicht unter den ersten ' +
+            '"limit" steht. Wer wissen will, was fällig ist, setzt dies auf true.',
         ),
         household: householdRef,
       }),
