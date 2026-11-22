@@ -322,6 +322,26 @@ void main() {
       await pump(tester, unseen(), shown: const {tripModeFlag});
       expect(key('detected-card'), findsNothing);
     });
+
+    testWidgets('none with learned-order on but grocery-log or trip-mode off', (
+      tester,
+    ) async {
+      await pump(
+        tester,
+        unseen(),
+        shown: const {learnedOrderFlag, tripModeFlag},
+      );
+      expect(key('detected-card'), findsNothing, reason: 'no Verlauf');
+      expect(find.textContaining('im Verlauf'), findsNothing);
+      await pump(
+        tester,
+        unseen(),
+        shown: const {learnedOrderFlag, groceryLogFlag},
+      );
+      expect(key('detected-card'), findsNothing, reason: 'no trip mode');
+      await pump(tester, unseen(), shown: const {learnedOrderFlag});
+      expect(key('detected-card'), findsNothing, reason: 'neither');
+    });
   });
 
   group('the Settings switch', () {

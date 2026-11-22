@@ -71,7 +71,7 @@ Preconditions:
 ## Gotchas
 
 - `VH_FLAGS_FULL=0` builds the flag-off sheet (what the e2e specs see): there, while the server answers slowly, „Wie getippt“ can still show an older text („K“ while the field says „Kefir“), and a tap adds that text. `input-stable-rows.mjs --expect off` reproduces it on purpose (driven 2026-11-16 on c2183ca6).
-- While a trip runs, the trip strip sits right above the add field and hides while the add sheet, a price panel or the keyboard is up (trip-mode `tm-strip`). Users have no „Einkaufssumme“ bar above the add bar: the totals come after the open items (list-declutter `ld-total`; the bar shows only with `VH_FLAGS_OFF=list-declutter`).
+- While a trip runs (flag `trip-mode`, off for users since 2026-11-22), the trip strip sits right above the add field and hides while the add sheet, a price panel or the keyboard is up (trip-mode `tm-strip`). Users have no „Einkaufssumme“ bar above the add bar: with `prices-and-trip-total` (also off for users since 2026-11-22) the totals come after the open items (list-declutter `ld-total`; the bar shows only with `VH_FLAGS_OFF=list-declutter`).
 - The mouse wheel scrolls the list anywhere, the add band and the tab pill included (job 159: `ScrollThrough` hands their wheel events to the page under them). `reveal` still points above the band.
 - Use `typeInto` for typing: synthetic key events drop umlauts. Click the field first so the sheet is open, then type (text inserted during the opening tap can land in the DOM input but not in the app).
 - While the sheet is open the list under the dimmed layer is out of reach; a click there closes the sheet. Close the sheet (Escape) before acting on list rows. Escape takes focus away from the field.

@@ -2,8 +2,9 @@
 // summary block shows only what has a price.
 // On demo-familie it ticks off every open item a day ago, then puts on Mia's list Käse and Milch at
 // Lidl, Seife at dm and Pinsel without a store, none priced. With --expect on (launched with
-// VH_DEFINES="FLAGS_ON=total-priced-only") there is no block; with --expect off (a plain launch)
-// the block lists every store with „1 ohne Preis“. Then Milch gets 1,19 €, 846 g Bananen at
+// VH_DEFINES="FLAGS_ON=total-priced-only,prices-and-trip-total,trip-mode") there is no block; with
+// --expect off (launched with VH_DEFINES="FLAGS_ON=prices-and-trip-total,trip-mode": all three are
+// off for users since 2026-11-22, Peter HP2, job 401, so a plain launch fails both) the block lists every store with „1 ohne Preis“. Then Milch gets 1,19 €, 846 g Bananen at
 // 1,79 €/kg (≈ 1,51 €) join Lidl and Pinsel gets 3,00 €: on, only Lidl and „Ohne Laden“ get a line
 // and Gesamt says „2 ohne Preis“ once. Last it ticks Milch and starts a trip („Ja“): Lidl splits
 // bought and open, Gesamt adds the count. It deletes the trip and its items at the end.

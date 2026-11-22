@@ -1,6 +1,6 @@
 # Trip mode
 
-On for all users (flag `trip-mode`, rolled out in full, with prices and Verlauf also on), ticking an item off asks „Kaufst du gerade ein?“ / "Are you shopping right now?". „Ja, Einkauf starten“ starts a trip: a dark strip above the add field shows a stopwatch, whether the trip runs, a pause button and „Beenden“. A trip can also be started by hand under Mehr. Beenden opens „Geplant und gekauft“ / "Planned and bought", a summary of the trip with one section per store: what was on the list at the start (bought or „nicht gekauft“), what came in since (with who added it), and what was paid against the planned prices. A trip that sees no tick for 45 minutes pauses itself; after 4 hours it ends itself at the last tick. The end writes one Verlauf trip per store, and those trips open the same summary. Without Snacklist Premium (not on sale yet, so every Free household) the summary shows only the head and a locked card. The running trip lives on the device; the ended trip is saved for the household.
+Off for everyone since 2026-11-22, Peter's accounts and internal installs included (flag `trip-mode`, Peter HP2, job 401; before that rolled out in full, with prices and Verlauf). With the flag on, ticking an item off asks „Kaufst du gerade ein?“ / "Are you shopping right now?". „Ja, Einkauf starten“ starts a trip: a dark strip above the add field shows a stopwatch, whether the trip runs, a pause button and „Beenden“. A trip can also be started by hand under Mehr. Beenden opens „Geplant und gekauft“ / "Planned and bought", a summary of the trip with one section per store: what was on the list at the start (bought or „nicht gekauft“), what came in since (with who added it), and what was paid against the planned prices. A trip that sees no tick for 45 minutes pauses itself; after 4 hours it ends itself at the last tick. The end writes one Verlauf trip per store, and those trips open the same summary. Without Snacklist Premium (not on sale yet, so every Free household) the summary shows only the head and a locked card. The running trip lives on the device; the ended trip is saved for the household.
 
 ## Sub-features
 
@@ -17,7 +17,7 @@ On for all users (flag `trip-mode`, rolled out in full, with prices and Verlauf 
 
 ## How to get to it (user POV)
 
-- A plain `helpers/launch.sh` build has it, with Verlauf and the amounts.
+- A plain `helpers/launch.sh` build no longer has it (no question after a tick, no „Einkauf starten“ under Mehr). Launch with `VH_DEFINES="FLAGS_ON=grocery-log,prices-and-trip-total,trip-mode"` for it with Verlauf and the amounts, and export the same for `doctor.sh` and `drive.sh`.
 - Tab „Liste“ / "List" → tick an item → the sheet → „Ja, Einkauf starten“ / "Yes, start a trip".
 - Tab „Mehr“ / "More" → „Einkauf starten“ / "Start a trip".
 - The strip → „Beenden“ / "End" → „Geplant und gekauft“ (route `/trip/<id>`).
@@ -28,7 +28,7 @@ On for all users (flag `trip-mode`, rolled out in full, with prices and Verlauf 
 
 Preconditions:
 
-- A plain `helpers/launch.sh` (on the Hetzner runner also `FLUTTER_DIR=~/flutter-3.50.0`), on `demo-familie`. Mia is Free.
+- `VH_DEFINES="FLAGS_ON=grocery-log,prices-and-trip-total,trip-mode" helpers/launch.sh` (a plain launch has none of the three flags, so the journey fails there; export the same `VH_DEFINES` for `doctor.sh` and `drive.sh`; on the Hetzner runner also `FLUTTER_DIR=~/flutter-3.50.0`), on `demo-familie`. Mia is Free.
 - `drive.sh trip-mode [--lang en] [--dark] [--compact]` runs everything below (`journeys/trip-mode.mjs`; `--compact` is 358 × 760 and also checks the strip's controls fit). It resets the household first: the 15 seeded items open again, Lidl (Bananen, Äpfel, Brötchen, Vollmilch, Schokolade, Mineralwasser, Apfelsaft) and Rewe (the rest) added and set, prices on Bananen (0,25 €/St., yesterday), Vollmilch (1,09 €/St., today) and Nudeln (1,29 €, yesterday), every trip session and Verlauf trip of the household deleted, Kaffee deleted, Mia's promotional Premium removed. It deletes Verlauf trips, so drive grocery-log after it, not before.
 - Second view: `apiAs(inst, mia).rpc('trip_session', { p_household, p_id })` returns the session with `bought`, `stores`, `premium` and `lines` (null without Premium); `trip_history` trips carry `session_id`. The database (`psql` on port `<prefix>22`) has `public.trip_sessions` with `source` (`ask`, `manual`), `end_reason` (`user`, `auto`), `ended_at`.
 - Premium on the local stack: `select public.promotional_premium_sync_user('<user id>', true, null)` (RevenueCat's promotional sync, as `supabase/tests/trip_mode.test.sql` does), `false` to remove it; reload the page after.
@@ -47,7 +47,7 @@ Preconditions:
 
 ## Gotchas
 
-- `VH_FLAGS_FULL=0` builds the flag-off screen (what the e2e specs see): no question, no strip, no Mehr row, the Verlauf tab gone; `VH_FLAGS_OFF=trip-mode` leaves out only this flag. `VH_DEFINES` and the `VH_FLAGS_*` are part of the build stamp, so `doctor.sh` and `drive.sh` need the same ones exported, or they report the build as stale.
+- A plain launch, like `VH_FLAGS_FULL=0` (what the e2e specs see), builds the flag-off screen: no question, no strip, no Mehr row, the Verlauf tab gone. `VH_DEFINES` and the `VH_FLAGS_*` are part of the build stamp, so `doctor.sh` and `drive.sh` need the same ones exported, or they report the build as stale.
 - The running trip is kept per browser profile: every `openApp` context starts with no trip. A trip left running in one context does not show in the next.
 - The stopwatch is drawn, not in the accessibility tree: the strip's text is „Einkauf läuft, seit weniger als einer Minute“ (minutes only). Prove the ticking with two pictures, as above.
 - On the flag-off screen of `list-declutter` (`VH_FLAGS_OFF=list-declutter`), the strip and the „Einkaufssumme“ bar read as one text run in the ARIA snapshot; match with `includes`, not exact text.
@@ -55,7 +55,7 @@ Preconditions:
 - The summary is a lazy list. A check for a row far down is vacuous until the page has been wheeled there; `getByRole('button', { name: 'Fertig' })` is not found until the page is at its end.
 - Free: „Snacklist Premium ansehen“ shows only where Mehr lists Snacklist Premium, which the local stack doesn't (`premium_offer` off). The button is covered by widget tests.
 - In the ARIA snapshot a section's rows and labels read as one `text:` run inside the page's group; they are separate nodes (each row one), Playwright only joins sibling text.
-- Flag off (no sheet, no strip, no Mehr row, the Verlauf tile opens the edit sheet) is covered by widget tests; with `VH_FLAGS_FULL=0` More has no „Einkauf starten“ and `/trip/x` opens the list (driven 2026-11-15 on c3ea4261, when that was the plain build).
+- Flag off (no sheet, no strip, no Mehr row, the Verlauf tile opens the edit sheet) is covered by widget tests; with `VH_FLAGS_FULL=0` More has no „Einkauf starten“ and `/trip/x` opens the list (driven 2026-11-15 on c3ea4261, when that was the plain build). A plain launch again shows no question after a tick and no „Einkauf starten“ (job 401, 2026-11-22).
 - `journeys/grocery-log.mjs` runs after this journey on the same build: it answers „Nein, nur abgehakt“ and moves the other items off Lidl first.
 - The trip is not on the public API or MCP.
 - After „Nein“ (or a dismissal) the question stays away for 60 minutes for everyone, per person and device, also across a reload (job 357): a drive that expects a question at every tick needs a fresh browser profile or a clock moved an hour on. With `learned-order` a „Nein“ also sends `decline_shop`. `journeys/learned-order.mjs` captures the quiet line (`352-09-trip-question-quiet.png`).

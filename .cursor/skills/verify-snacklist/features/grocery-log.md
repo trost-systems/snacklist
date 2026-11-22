@@ -1,6 +1,6 @@
 # Grocery log (Verlauf)
 
-On for all users (flag `grocery-log`, rolled out in full), a third tab „Verlauf“ / "History" sits between „Liste“ and „Mehr“. It lists the household's shopping trips: one trip is one shop at one store on one day, with the items bought. By default it is a journal by date (G1) under a month calendar whose days carry overlapping dots, one per trip in its store's colour, at most three. One button at the top switches to a timeline by store (G2) and back; the device remembers the choice. A tap on a past calendar day shows only that day's trips. Trips are logged by hand with „Einkauf eintragen“ (store, day, items with an optional amount; edit and delete later) or by trip mode; the list shows no card about logging. A trip keeps the items as they were saved, never a link to the list's rows. A Free member sees the last 4 weeks (28 days, today included); older trips are kept and show with Snacklist Premium (the household's, or the member's own), behind a quiet lock row and locked calendar days. Premium is not on sale yet, so every Free household sees the lock today. Logging stays unlimited for everyone. Verlauf itself shows no prices, totals or spending; a trip written by trip mode opens the trip's summary, which can (trip-mode, Premium).
+Off for everyone since 2026-11-22, Peter's accounts and internal installs included (flag `grocery-log`, Peter HP2, job 401; before that rolled out in full). With the flag on, a third tab „Verlauf“ / "History" sits between „Liste“ and „Mehr“. It lists the household's shopping trips: one trip is one shop at one store on one day, with the items bought. By default it is a journal by date (G1) under a month calendar whose days carry overlapping dots, one per trip in its store's colour, at most three. One button at the top switches to a timeline by store (G2) and back; the device remembers the choice. A tap on a past calendar day shows only that day's trips. Trips are logged by hand with „Einkauf eintragen“ (store, day, items with an optional amount; edit and delete later) or by trip mode; the list shows no card about logging. A trip keeps the items as they were saved, never a link to the list's rows. A Free member sees the last 4 weeks (28 days, today included); older trips are kept and show with Snacklist Premium (the household's, or the member's own), behind a quiet lock row and locked calendar days. Premium is not on sale yet, so every Free household sees the lock today. Logging stays unlimited for everyone. Verlauf itself shows no prices, totals or spending; a trip written by trip mode opens the trip's summary, which can (trip-mode, Premium).
 
 ## Sub-features
 
@@ -17,7 +17,7 @@ On for all users (flag `grocery-log`, rolled out in full), a third tab „Verlau
 
 ## How to get to it (user POV)
 
-- A plain `helpers/launch.sh` build has it.
+- A plain `helpers/launch.sh` build no longer has it (no Verlauf tab, `/history` goes to the list). Launch with `VH_DEFINES="FLAGS_ON=grocery-log,prices-and-trip-total,trip-mode"` and export the same for `doctor.sh` and `drive.sh`.
 - Tab „Verlauf“ / "History" (the middle tab), route `/history`.
 - „Eintragen“ / "Log" in the Verlauf top bar → sheet „Einkauf eintragen“ / "Log a trip".
 - Verlauf → a trip row → „Einkauf bearbeiten“ / "Edit trip" → „Einkauf löschen“ / "Delete trip".
@@ -29,7 +29,7 @@ On for all users (flag `grocery-log`, rolled out in full), a third tab „Verlau
 
 Preconditions:
 
-- A plain `helpers/launch.sh` (on the Hetzner runner also `FLUTTER_DIR=~/flutter-3.50.0`, the SDK main builds with), on `demo-familie`. Mia is Free.
+- `VH_DEFINES="FLAGS_ON=grocery-log,prices-and-trip-total,trip-mode" helpers/launch.sh` (a plain launch has no Verlauf tab, so the journey fails there; export the same `VH_DEFINES` for `doctor.sh` and `drive.sh`; on the Hetzner runner also `FLUTTER_DIR=~/flutter-3.50.0`, the SDK main builds with), on `demo-familie`. Mia is Free.
 - `drive.sh grocery-log [--lang en] [--dark]` runs everything below (`journeys/grocery-log.mjs`), `drive.sh grocery-log --compact` the 358 × 760 checks. It adds the stores Lidl and Rewe if missing and saves eleven trips through `save_trip` with fixed ids (a rerun saves the same ones): yesterday at Lidl, three on one day (Lidl twice, Rewe once), five on a day 8 days ago (under „Letzte Woche“ or, early in the week, a month heading), one 20 days ago, one 40 days ago. It deletes the household's other visible trips first and puts Butter, Nudeln and Reis back on the list under Lidl.
 - Second view: `apiAs(inst, mia).rpc('trip_history', { p_household, p_today: 'YYYY-MM-DD' })` returns `{ trips, premium, since, locked }`; trips' `items` are `{ name, quantity, canonical_key }`, and a trip written by trip mode carries its `session_id`.
 
@@ -46,7 +46,7 @@ Preconditions:
 
 ## Gotchas
 
-- `VH_FLAGS_FULL=0` builds the flag-off screen (what the e2e specs see): no Verlauf tab; `VH_FLAGS_OFF=grocery-log` leaves out only this flag. `VH_DEFINES` and the `VH_FLAGS_*` are part of the build stamp, so `doctor.sh` and `drive.sh` need the same ones exported, or they report the build as stale.
+- A plain launch, like `VH_FLAGS_FULL=0` (what the e2e specs see), builds the flag-off screen: no Verlauf tab. `VH_DEFINES` and the `VH_FLAGS_*` are part of the build stamp, so `doctor.sh` and `drive.sh` need the same ones exported, or they report the build as stale.
 - On the Hetzner runner `env.sh` sources `env.hz`, which puts `~/flutter` (3.47.8) first; export `FLUTTER_DIR=~/flutter-3.50.0` or the build uses the old SDK and rewrites `app/pubspec.lock`.
 - The Free window counts in the device's local days: `p_today` comes from the browser (Europe/Berlin in `openApp`), clamped by the server to its date ± 1. Seeds near midnight can land a day off.
 - The window opens with the household's Premium (household-bound Lifetime, promotional or tester grant) or the member's own (job 185), as the integrations do: Noah does not see Mia's older trips through her own plan, but does through a household grant.
@@ -57,4 +57,4 @@ Preconditions:
 - Before sales start (`premium_offer` off, the local stack's default) the lock row is plain text, not a button: assert it with `getByText`, and that no „kaufst du“ or „bald verfügbar“ text shows (job 87's pre-sales rule). Its tap to the Premium page is covered by widget tests only.
 - Trips are not live: another member's new trip shows when the tab is opened again, not while it is open.
 - The trips are not on the public API or MCP.
-- A detected trip opens the hand-log sheet „Einkauf bearbeiten“ when `trip-mode` is off (its page's route needs that flag); users have trip-mode.
+- A detected trip opens the hand-log sheet „Einkauf bearbeiten“ when `trip-mode` is off (its page's route needs that flag); trip-mode is off for users too since 2026-11-22.

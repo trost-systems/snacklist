@@ -1,10 +1,12 @@
 // Feature tick-and-undo, entry point: a tap on a list row, then a tap on it under „Zuletzt
 // verwendet“ (sub-features tu-tick, tu-tick-a11y, tu-used-section, tu-put-back). Proves the row is
-// a checkbox, strikes and leaves without a snackbar, is stored as bought, and comes back. On the
-// users' build (trip-mode full) the tick asks „Kaufst du gerade ein?“: it first ticks the second item
-// and takes it back with „Zurücknehmen“ (no snooze), then answers „Nein, nur abgehakt“ for the item,
-// and proves the next tick asks nothing for the hour after that no (#618). The second item goes back
-// on the list through the API at the end.
+// a checkbox, strikes and leaves without a snackbar, is stored as bought, and comes back. With
+// trip-mode on (off for users since 2026-11-22, Peter HP2, job 401; VH_DEFINES="FLAGS_ON=trip-mode")
+// the tick asks „Kaufst du gerade ein?“: it first ticks the second item and takes it back with
+// „Zurücknehmen“ (no snooze), then answers „Nein, nur abgehakt“ for the item, and proves the next
+// tick asks nothing for the hour after that no (#618). Without the question (a plain launch) it
+// skips those steps and logs a build without trip-mode. The second item goes back on the list
+// through the API at the end.
 //
 //   node journeys/tick-and-undo.mjs <evidence dir> [--lang de|en] [--item Butter] [--second Reis]
 import process from 'node:process';

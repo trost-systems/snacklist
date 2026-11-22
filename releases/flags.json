@@ -5,12 +5,12 @@
       "note": "the Snacklist API keys under Mehr > Zugänge show only while the PostHog flag public-api is on (job 73); on at 100 % for everyone since 2026-11-21 14:08 CET (flag id 373927, app_switches.public_api on) after job 336 (#590) and a green production smoke"
     },
     "grocery-log": {
-      "rollout": "full",
-      "note": "the Verlauf tab (the grocery log: logged trips by date and by store, Einkauf eintragen) shows only while the PostHog flag grocery-log is on (job 199); the lead targets it to internal installs"
+      "rollout": "off",
+      "note": "the Verlauf tab (the grocery log: logged trips by date and by store, Einkauf eintragen) shows only while the PostHog flag grocery-log is on (job 199); off for everyone, Peter's accounts and internal installs included, since 2026-11-22 (Peter HP2, job 401)"
     },
     "prices-and-trip-total": {
-      "rollout": "full",
-      "note": "prices on the list's rows, the list's total with per-store subtotals and the household's currency show only while the PostHog flag prices-and-trip-total is on (job 190); free for everyone; the lead targets it to internal installs"
+      "rollout": "off",
+      "note": "prices on the list's rows, the list's total with per-store subtotals and the household's currency show only while the PostHog flag prices-and-trip-total is on (job 190; free, not Premium); off for everyone, Peter's accounts and internal installs included, since 2026-11-22 (Peter HP2, job 401)"
     },
     "default-list-voice-target": {
       "rollout": "full",
@@ -21,8 +21,8 @@
       "note": "the decluttered list (one switcher for household and list in a see-through header, with prices-and-trip-total also on, the totals block after the open items with a subtotal per store (job 237; the bought/open split needs trip-mode on too), the switcher sheet with a page per household and its members) shows only while the PostHog flag list-declutter is on (jobs 229, 237)"
     },
     "trip-mode": {
-      "rollout": "full",
-      "note": "trip mode (the question on a tick, the trip strip with its stopwatch, pause and end, and the trip's summary per store) shows only while the PostHog flag trip-mode is on (job 234); the lead targets it to internal installs"
+      "rollout": "off",
+      "note": "trip mode (the question on a tick, the trip strip with its stopwatch, pause and end, and the trip's summary per store) shows only while the PostHog flag trip-mode is on (job 234); off for everyone, Peter's accounts and internal installs included, since 2026-11-22 (Peter HP2, job 401)"
     },
     "feedback-fb2": {
       "rollout": "full",
@@ -91,8 +91,7 @@
     },
     "total-priced-only": {
       "rollout": "off",
-      "tester_group": "internal",
-      "note": "TE1 for the list's summary block (on top of list-declutter and prices-and-trip-total): no block while no item has a price, a line only for a store with a price, one „N ohne Preis“ under Gesamt instead of one per store and no „mit Preis“ count, an amount too wide beside its name under it, only while the PostHog flag total-priced-only is on (job 348); the flag targets the tester group internal (person property tester_groups, Peter's TestFlight accounts); the flag sync creates it that way"
+      "note": "TE1 for the list's summary block (on top of list-declutter and prices-and-trip-total): no block while no item has a price, a line only for a store with a price, one „N ohne Preis“ under Gesamt instead of one per store and no „mit Preis“ count, an amount too wide beside its name under it, only while the PostHog flag total-priced-only is on (job 348); off for everyone, Peter's accounts and internal installs included, since 2026-11-22 (Peter HP2, job 401); no tester group"
     },
     "joiner-direct-list": {
       "rollout": "partial",
