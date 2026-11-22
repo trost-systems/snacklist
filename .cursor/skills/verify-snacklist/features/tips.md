@@ -1,6 +1,6 @@
 # Tips on the list (hints) and „Erste Schritte“
 
-The List tab has one slot at the top of the list (job 168b, H2 trigger hints; before: job 80's fixed tip queue and the gesture card). While it is open, the slot holds the „Erste Schritte“ card („First steps“), shown only while the list has an active item (while the checklist is open, an empty list stays clean and shows neither the card nor a hint); after that, at most one hint per app start, chosen by what the user has done. A hint is a flat card at the top of the list, or a callout under „Anpassen“ or above the add field. Every hint can be read again under Mehr → „Tipps“.
+The List tab has one slot at the top of the list (job 168b, H2 trigger hints; before: job 80's fixed tip queue and the gesture card). While it is open, the slot holds the „Erste Schritte“ card („First steps“), shown only while the list has an active item (while the checklist is open, an empty list stays clean and shows neither the card nor a hint); after that, at most one hint per app start, chosen by what the user has done. A hint is a flat card at the top of the list, or a callout under „Anpassen“. Every hint can be read again under Mehr → „Tipps“.
 
 ## Sub-features
 
@@ -11,7 +11,7 @@ The List tab has one slot at the top of the list (job 168b, H2 trigger hints; be
   - clubs only: „KI-Assistenten verbinden“ („Mehr → Zugänge. Er setzt Dinge auf eure Liste.“) with „Öffnen“ (opens Mehr → Zugänge). Done once the user has a connected AI app, an MCP token or an API key (asked once per start while open).
   A done item is struck through and says „…, erledigt“ to a screen reader. The X hides the card for this household on this device until sign-out (the gesture card's flag, `listprefs.<user>.<household>`, wiped on sign-out; driven 2026-11-14: after sign-out and sign-in the card was back). It also leaves once every item is done. While it is open, no hint shows.
 - `hint-card` a hint as a flat card (key `tip-<id>`): icon, bold title, one or two sentences, an optional button (key `tip-action-<id>`), and an X (tooltip „Tipp ausblenden“ / "Hide tip", key `tip-dismiss`).
-- `hint-callout` a hint as a flat bubble with a tip: under „Anpassen“ pointing up (`store-order`, `add-store`), or above the add field pointing down at the microphone (`dictation`, phones only; hidden while the add sheet is open).
+- `hint-callout` a hint as a flat bubble with a tip under „Anpassen“, pointing up (`store-order`, `add-store`). Until job 386 `dictation` was a callout above the add field; it covered the field and the tabs (TestFlight 1472) and is a card since.
 - `hint-dismiss` the X hides the hint for good on this device for this user, and a snackbar says „Alle Tipps unter Mehr → Tipps.“ / "All tips under More → Tips." for 3 s. No other hint shows until the next app start.
 - `hint-rules` (`nextHint` in `app/lib/tips/hints.dart`): one hint or the checklist on screen; at most one hint per app start, and a hint that never showed before at most once per 24 h; none in the first 10 s after the start, none while a sheet, dialog or the keyboard is open or the List tab is not on screen, none in the user's first session while the list is empty. A hint retires when its feature is used, on X, on its button, or after three app starts that showed it. Three X in a row pause every hint for 14 days. A hint that showed before comes back before a new one.
 - `hint-catalogue` the hints, most useful first:
@@ -23,7 +23,7 @@ The List tab has one slot at the top of the list (job 168b, H2 trigger hints; be
   | `quick-add-amounts` | „Menge gleich mittippen“ | 5 typed adds without an amount | an add with an amount | card | all |
   | `store-order` | „Sortiert wie dein Laden“ | one of the user's own ticks emptied the list once (a trip-mode end does not count), the household has a store | a category reorder | under „Anpassen“ | all |
   | `add-store` | „Noch ein Laden?“ | 3 active days, no store | a store in the household | under „Anpassen“ | all |
-  | `dictation` | „Sag einfach, was fehlt“ | 10 typed adds | an add by dictation | above the add field | iOS, Android |
+  | `dictation` | „Sag einfach, was fehlt“ | 10 typed adds | an add by dictation | card | iOS, Android |
   | `ai-assistant` | „Noch besser mit KI & Automatisierung“ + „Zugriffe verwalten“ | a club, or 7 active days on the web or a computer | an AI app, MCP token or API key | card | all |
   | `siri` | „Mit Siri hinzufügen“ | 3 active days | (not visible to the app) | card | none today: iOS only once the `native-siri` hold is released (a build define the store builds leave off) |
   | `home-widget` | „Liste auf dem Home-Bildschirm“ | 5 active days | a widget placed (asked once per start) | card | iOS, Android |
@@ -48,7 +48,7 @@ Preconditions: `signIn` from helpers/lib.mjs dismisses the checklist („Erste S
 - **Hint.** After a reload with 5 or more open items, within 15 s the ARIA snapshot contains „Artikel bearbeiten Halte einen Artikel gedrückt …“ (title and text are one merged node). „Tipp ausblenden“ hides it and shows „Alle Tipps unter Mehr → Tipps.“; after another reload no hint comes back for 24 h.
 - **Tipps page.** `/more/tips` lists the cards. On the web exactly six (driven 2026-11-09): „Gemeinsam einkaufen“ with „Einladen“, „Artikel bearbeiten“, „Menge gleich mittippen“, „Sortiert wie dein Laden“, „Noch ein Laden?“, „Noch besser mit KI & Automatisierung“ with „Zugriffe verwalten“ (no `dictation`, `siri`, `home-widget`; `own-household` and `second-household` are off on every platform, see Gotchas).
 - **Scripted.** `helpers/drive.sh tips [--lang en] [--dark]` (`journeys/tips.mjs`; passed 2026-11-19 on af0287cf, DE and EN dark). „Einmal einkaufen“: `cd .cursor/skills/verify-snacklist && node journeys/tips-first-shop.mjs <dir> [--lang en]` after `launch.sh --fresh` (not through `drive.sh`: no feature has that id) (Mia ticks one item and answers „Kaufst du gerade ein?“ with „Nein, nur abgehakt“, tick-and-undo `tu-shop-ask`; Noah on a fresh device saves one edit; each time the card leaves with items still open).
-- Widget and unit tests: `app/test/tips/` (`hints_test.dart` the rules and catalogue, `hints_cubit_test.dart` signals and events, `hint_views_test.dart` the flat card, X and snackbar, the checklist per kind, `tips_page_test.dart`); goldens `app/test/design/hint_card_golden_test.dart`.
+- Widget and unit tests: `app/test/tips/` (`hints_test.dart` the rules and catalogue, `hints_cubit_test.dart` signals and events, `hint_views_test.dart` the flat card, X and snackbar, the checklist per kind, `tips_page_test.dart`); goldens `app/test/design/hint_card_golden_test.dart`; `dictation_hint_place_test.dart` the dictation card at the top of the shell's list, clear of the add field and the tabs, in both looks and with „Zuletzt verwendet“ open or folded.
 
 ## Gotchas
 

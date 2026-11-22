@@ -154,7 +154,6 @@ class const ListHints({super.key}) extends StatelessWidget {
           alignment: AlignmentDirectional.centerEnd,
           child: HintCallout(
             hint: hint,
-            pointing: AxisDirection.up,
             onDismiss: () => dismissHint(context),
             onAct: () => actOnHint(context, hint),
           ),
@@ -193,28 +192,6 @@ class const ListHints({super.key}) extends StatelessWidget {
             alignment: Alignment.topCenter,
             child: switcher,
           );
-  }
-}
-
-/// The dictation hint above the add bar, pointing at the microphone; empty
-/// for any other hint or while [hidden].
-class const AddBarHint({required final bool hidden, super.key})
-    extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final hint = context.watch<HintsCubit?>()?.state.hint;
-    return AnimatedSwitcher(
-      duration: hlMotion(context, HlDuration.short),
-      child: hint != null && hint.place == HintPlace.aboveAddBar && !hidden
-          ? HintCallout(
-              key: ValueKey('tip-${hint.id.wire}'),
-              hint: hint,
-              pointing: AxisDirection.down,
-              onDismiss: () => dismissHint(context),
-              onAct: () => actOnHint(context, hint),
-            )
-          : const SizedBox.shrink(),
-    );
   }
 }
 
@@ -291,17 +268,15 @@ class const HintCard({
   );
 }
 
-/// One hint as a flat callout whose tip points at the control it is about:
-/// up at Anpassen, down at the microphone.
+/// One hint as a flat callout whose tip points up at the control it is
+/// about, Anpassen.
 class const HintCallout({
   required final Hint hint,
-  required final AxisDirection pointing,
   required final VoidCallback onAct,
   required final VoidCallback onDismiss,
   super.key,
 }) extends StatelessWidget {
-  /// From the callout's end edge to its tip's middle: under Anpassen, or
-  /// over the microphone at the add bar's end.
+  /// From the callout's end edge to its tip's middle, under Anpassen.
   static const tipFromEnd = 52.0;
 
   @override
@@ -316,17 +291,11 @@ class const HintCallout({
             color: t.surfaceRaised,
             shape: CalloutBorder(
               side: BorderSide(color: t.border, width: HlBorder.width),
-              up: pointing == AxisDirection.up,
               tipFromEnd: tipFromEnd,
             ),
           ),
           child: Padding(
-            padding: EdgeInsets.only(
-              top: pointing == AxisDirection.up ? CalloutBorder.tipHeight : 0,
-              bottom: pointing == AxisDirection.down
-                  ? CalloutBorder.tipHeight
-                  : 0,
-            ),
+            padding: const EdgeInsets.only(top: CalloutBorder.tipHeight),
             child: _HintContent(hint: hint, onAct: onAct, onDismiss: onDismiss),
           ),
         ),
@@ -335,12 +304,11 @@ class const HintCallout({
   }
 }
 
-/// A rounded box with the 2 px contour and a small tip on its top ([up])
-/// or bottom edge, [tipFromEnd] from its end edge.
+/// A rounded box with the 2 px contour and a small tip on its top edge,
+/// [tipFromEnd] from its end edge.
 @immutable
 class const CalloutBorder({
   required final BorderSide side,
-  required final bool up,
   required final double tipFromEnd,
 }) extends ShapeBorder {
   static const tipHeight = 8.0;
@@ -357,20 +325,18 @@ class const CalloutBorder({
   Path getOuterPath(Rect rect, {TextDirection? textDirection}) {
     final box = Rect.fromLTRB(
       rect.left,
-      rect.top + (up ? tipHeight : 0),
+      rect.top + tipHeight,
       rect.right,
-      rect.bottom - (up ? 0 : tipHeight),
+      rect.bottom,
     );
     final x = textDirection == TextDirection.rtl
         ? rect.left + tipFromEnd
         : rect.right - tipFromEnd;
-    final edge = up ? box.top : box.bottom;
-    final point = up ? rect.top : rect.bottom;
     return Path()
       ..addRRect(RRect.fromRectAndRadius(box, Radius.circular(cardRadius)))
-      ..moveTo(x - _tipHalfWidth, edge)
-      ..lineTo(x, point)
-      ..lineTo(x + _tipHalfWidth, edge)
+      ..moveTo(x - _tipHalfWidth, box.top)
+      ..lineTo(x, rect.top)
+      ..lineTo(x + _tipHalfWidth, box.top)
       ..close();
   }
 
@@ -382,9 +348,9 @@ class const CalloutBorder({
         RRect.fromRectAndRadius(
           Rect.fromLTRB(
             rect.left,
-            rect.top + (up ? tipHeight : 0),
+            rect.top + tipHeight,
             rect.right,
-            rect.bottom - (up ? 0 : tipHeight),
+            rect.bottom,
           ),
           Radius.circular(cardRadius),
         ),
@@ -396,7 +362,7 @@ class const CalloutBorder({
 
   @override
   ShapeBorder scale(double t) =>
-      CalloutBorder(side: side.scale(t), up: up, tipFromEnd: tipFromEnd);
+      CalloutBorder(side: side.scale(t), tipFromEnd: tipFromEnd);
 }
 
 class const _HintContent({

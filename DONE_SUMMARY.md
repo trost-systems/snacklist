@@ -2278,3 +2278,29 @@ See [docs/done/370.md](docs/done/370.md).
 **Verified.** `build.mjs --check` passes; the 57 files of job 372's AI1 asset set equal the generated ones byte for byte; the App Store icon has no alpha; the app's design tests pass with six updated goldens (start, login, the invite sheet: they show the brand block); `flutter build apk --release` passes on hz; the iOS build is CI's ios gate. Home Screen pictures in `docs/screenshots/385/`.
 
 **Missing.** No phone on the runners: iOS 26 Clear and the real Home Screens are checked on the first TestFlight build (NEEDS_PETER). The store listing icons are uploaded by hand.
+
+## Job 386: the dictation tip floated over the add field
+
+**What was broken.** On a phone, after 10 typed adds, the voice tip „Sag einfach, was fehlt“ /
+"Just say it" showed as a bubble over the add field, the List/More tabs and the list's last rows
+(Peter, TestFlight 1472).
+
+**Cause (one sentence).** Since #331 the tip was positioned with `MediaQuery.paddingOf(context)`
+from the list State's context, above the list's own Scaffold, so it cleared only the shell's tab
+band and not the add bar; neither RD1 (#629) nor recently-used-open (#626/#628) touched it (the
+same test gives the same overlap before both and with every flag off).
+
+**Fix.** The dictation tip is a card at the top of the list, like the other tips, and scrolls with
+it. The add-bar callout path (`HintPlace.aboveAddBar`, `AddBarHint`, the down-pointing callout)
+is deleted. No string changed. DECISIONS "Job 386".
+
+**Tests.** `app/test/tips/dictation_hint_place_test.dart`: hex and RD1 looks × „Zuletzt
+verwendet“ open and folded, in the real shell; all four failed on main (card bottom 758, field top
+706) and pass now. `flutter test test/tips test/design/hint_card_golden_test.dart`: 75 passed.
+
+**Screenshots** (`docs/screenshots/386/`, widget-test renders at 390 × 844 with a 34 px inset,
+before | after): `before-after-soft-open.png` (RD1 dark, recently used open, Peter's setup) and
+`before-after-hex-folded.png`.
+
+**For Peter on TestFlight.** The next green main build carries it; no flag (the tip is for
+everyone on iOS and Android).

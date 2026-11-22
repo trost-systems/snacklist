@@ -150,12 +150,7 @@ void main() {
       app(
         Align(
           alignment: Alignment.topRight,
-          child: HintCallout(
-            hint: order,
-            pointing: AxisDirection.up,
-            onAct: () {},
-            onDismiss: () {},
-          ),
+          child: HintCallout(hint: order, onAct: () {}, onDismiss: () {}),
         ),
       ),
     );
@@ -173,7 +168,7 @@ void main() {
                     .decoration
                 as ShapeDecoration)
             .shape;
-    expect(shape, isA<CalloutBorder>().having((b) => b.up, 'up', isTrue));
+    expect(shape, isA<CalloutBorder>());
     expect(find.byTooltip('Tipp ausblenden'), findsOneWidget);
   });
 

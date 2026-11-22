@@ -17464,3 +17464,28 @@ Peter (22 Nov 2026): prepare the public launch, no waitlist, straight to the app
   in `docs/screenshots/385/` place the generator's own masked renders (the `--previews` images)
   on a mocked Home Screen. The iOS build is CI's ios gate (it checks the AppIcon light, dark and
   tinted and the Icon Composer stacks in `Assets.car`); the Android release build ran on hz.
+
+## Job 386: the dictation tip floated over the add field
+
+- **Cause.** Since #331 (job 168b) the `dictation` hint was a callout placed by
+  `PositionedDirectional(bottom: MediaQuery.paddingOf(context).bottom + s2)` in the list
+  screen's body Stack. That `context` is the list State's, above the list's own Scaffold, so the
+  padding was only the shell's tab band (78 px on a 390 × 844 phone with a 34 px inset), not the
+  band plus the add bar. The callout's bottom sat 4 px below the field's: over the field, the tabs
+  and the list's last rows. Not #629 (RD1) and not #626/#628 (recently used open): the same widget
+  test gives the same rects on 4d32fe93d, before both, and with every flag off. It surfaced on
+  TestFlight 1472 because Peter reached 10 typed adds on a phone, the hint's trigger; no test or
+  golden had ever pumped it in the shell.
+- **Fix: a card, not a better callout.** Peter asked for the tip at the top of the list, scrolling
+  with it. A callout correctly placed above the add bar would still cover the list's last rows
+  (his complaint about „Zuletzt verwendet“). So `dictation` is a plain card hint
+  (`HintPlace.card`), shown in `ListHints`' slot at the top of the list like the others. With no
+  hint left at the add bar, `HintPlace.aboveAddBar`, `AddBarHint`, its `Positioned` and the
+  down-pointing branch of `HintCallout` / `CalloutBorder` are gone. No string changed; the two
+  ARB descriptions now say "card at the top of the list".
+- **Test.** `app/test/tips/dictation_hint_place_test.dart` pumps the real shell (`pumpShell`, now
+  with `hints:` and `prefs:`) with a usage log that has the hint due, for hex and soft looks ×
+  recently used open / folded, and checks the card is above the first row, the add field and the
+  tabs, and moves with a scroll. All four failed on main (card bottom 758 vs field top 706). The
+  hints' 10 s quiet start uses the wall clock, so the test waits it out in `runAsync` (a `Timer`,
+  not `Future.delayed`): about 10 s per case.

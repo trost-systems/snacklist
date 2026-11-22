@@ -4274,13 +4274,13 @@ abstract class AppLocalizations {
   /// **'Hier kannst du weitere Läden anlegen, bei denen du einkaufst.'**
   String get hintAddStoreBody;
 
-  /// Hint dictation (job 168b, iPhone and Android): title of the callout above the add bar
+  /// Hint dictation (job 168b, iPhone and Android): title of the card at the top of the list
   ///
   /// In de, this message translates to:
   /// **'Sag einfach, was fehlt'**
   String get hintDictationTitle;
 
-  /// Hint dictation: callout pointing at the microphone after 10 typed adds
+  /// Hint dictation: card at the top of the list after 10 typed adds
   ///
   /// In de, this message translates to:
   /// **'Tipp aufs Mikrofon und sprich: „Milch, zwei Gurken und Klopapier“.'**
