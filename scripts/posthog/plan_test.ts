@@ -491,3 +491,52 @@ Deno.test("the repo's real flags.dart, flags.json and releases.json parse and pl
     flags.length,
   );
 });
+
+Deno.test('a flag with a tester_group is created for that group, never for is_internal (N-322)', () => {
+  const flags = desiredFlags(
+    "const aFlag = 'learned-order';",
+    JSON.stringify({
+      flags: { 'learned-order': { rollout: 'off', note: '', tester_group: 'learned-order' } },
+      holds: {},
+    }),
+  );
+  const result = plan(flags, []);
+  assertEquals(result.errors, []);
+  assertEquals(result.actions, [{
+    kind: 'create-flag',
+    key: 'learned-order',
+    body: {
+      key: 'learned-order',
+      name: 'learned-order',
+      active: true,
+      filters: {
+        groups: [{
+          properties: [{
+            key: 'tester_groups',
+            type: 'person',
+            operator: 'regex',
+            value: '(^|,)learned-order(,|$)',
+          }],
+          'rollout_percentage': 100,
+        }],
+      },
+    },
+  }]);
+  const regex = new RegExp('(^|,)learned-order(,|$)');
+  assertEquals(['learned-order', 'a,learned-order', 'x-learned-order'].map((v) => regex.test(v)), [
+    true,
+    true,
+    false,
+  ]);
+});
+
+Deno.test('a tester_group for a flag flags.dart lacks is an input error', () => {
+  assertThrows(
+    () =>
+      desiredFlags(
+        "const aFlag = 'other';",
+        JSON.stringify({ flags: { 'learned-order': { tester_group: 'learned-order' } } }),
+      ),
+    InputError,
+  );
+});

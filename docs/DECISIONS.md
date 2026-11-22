@@ -17322,3 +17322,7 @@ ein?“ stays away for 60 minutes in any store. Behind `trip-mode`, no new flag,
 - **Only „Nein“ and dismissal snooze.** „Zurücknehmen“ and „Ja“ do not. The pharmacy exemption and
   the other do-not-ask paths run before the snooze check, unchanged.
 - Tests: `trip_cubit_test.dart` (59 minutes asks nothing, the 60th asks again, survives a restart).
+
+## Job 366: learned-order flag stays Peter-only in the flag sync
+
+- `releases/flags.json` flags may carry `tester_group`. The PostHog flag sync then creates a missing flag for the person property `tester_groups` matching that group (regex `(^|,)<group>(,|$)`, 100 %) instead of `is_internal`. `learned-order` has it, so a deleted flag is not recreated for Lea and other internal testers until the trip-detection privacy notice is live (Legal N-322). Existing flags are never rewritten for it. PostHog live state is untouched.

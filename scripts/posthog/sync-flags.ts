@@ -106,7 +106,11 @@ const describeGroups = (groups: readonly Group[] | undefined): string =>
 function describe(action: Action): string {
   switch (action.kind) {
     case 'create-flag':
-      return `create flag ${action.key} (is_internal = true, 100 %)`;
+      return `create flag ${action.key} (${
+        action.body.filters.groups[0]?.properties?.[0]?.key === 'tester_groups'
+          ? 'tester group'
+          : 'is_internal = true'
+      }, 100 %)`;
     case 'update-flag-filters':
       return `update flag ${action.key}: ${describeGroups(action.before.groups)} -> ${
         describeGroups(action.after.groups)

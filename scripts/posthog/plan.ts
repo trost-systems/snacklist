@@ -20,6 +20,8 @@ export interface DesiredFlag {
   readonly key: string;
   readonly description: string;
   readonly minVersion?: MinVersion;
+  /** A new flag targets this tester group (person property tester_groups), not is_internal. */
+  readonly testerGroup?: string;
 }
 
 /** The newest public release in each store, from releases/releases.json (latest-store.ts). */
@@ -178,7 +180,21 @@ export function desiredFlags(flagsDart: string, flagsJson: string): readonly Des
   const data = parseJson(flagsJson, 'releases/flags.json');
   const entries = isRecord(data) && isRecord(data['flags']) ? data['flags'] : {};
   const minVersions = new Map<string, MinVersion>();
+  const testerGroups = new Map<string, string>();
   for (const [key, entry] of Object.entries(entries)) {
+    if (isRecord(entry) && 'tester_group' in entry) {
+      const group = entry['tester_group'];
+      const where = `releases/flags.json flags.${key}.tester_group`;
+      if (typeof group !== 'string' || !FLAG_KEY.test(group)) {
+        throw new InputError(`${where}: not a tester group name matching ${FLAG_KEY}`);
+      }
+      if (!fromDart.some((f) => f.key === key)) {
+        throw new InputError(
+          `${where}: app/lib/analytics/flags.dart has no flag '${key}' (a const <name>Flag)`,
+        );
+      }
+      testerGroups.set(key, group);
+    }
     if (!isRecord(entry) || !('min_version' in entry)) continue;
     const where = `releases/flags.json flags.${key}.min_version`;
     if (!fromDart.some((f) => f.key === key)) {
@@ -190,7 +206,12 @@ export function desiredFlags(flagsDart: string, flagsJson: string): readonly Des
   }
   return fromDart.map((flag) => {
     const minVersion = minVersions.get(flag.key);
-    return minVersion === undefined ? flag : { ...flag, minVersion };
+    const testerGroup = testerGroups.get(flag.key);
+    return {
+      ...flag,
+      ...(minVersion === undefined ? {} : { minVersion }),
+      ...(testerGroup === undefined ? {} : { testerGroup }),
+    };
   });
 }
 
@@ -316,6 +337,14 @@ const INTERNAL: PropertyFilter = {
   operator: 'exact',
   value: ['true'],
 };
+
+/** The group tester_groups regex (comma list, e.g. `a,learned-order`) that admits one tester group. */
+export const testerGroupFilter = (group: string): PropertyFilter => ({
+  key: 'tester_groups',
+  type: 'person',
+  operator: 'regex',
+  value: `(^|,)${group}(,|$)`,
+});
 
 export const isInternalGroup = (group: Group): boolean =>
   (group.properties ?? []).some((p) =>
@@ -448,7 +477,14 @@ export function plan(
           key: flag.key,
           name: flag.description,
           active: true,
-          filters: { groups: [{ properties: [INTERNAL], 'rollout_percentage': 100 }] },
+          filters: {
+            groups: [{
+              properties: [
+                flag.testerGroup === undefined ? INTERNAL : testerGroupFilter(flag.testerGroup),
+              ],
+              'rollout_percentage': 100,
+            }],
+          },
         },
       });
       continue;
