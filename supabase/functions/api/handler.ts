@@ -589,7 +589,17 @@ const defaultDeps: Deps = {
         ${PER_DAY}, ${AUTH_FAILURES}, ${AUTH_FAILURE_WINDOW_SECONDS})`;
     return beginOf(oneRow(rows, 'api_begin'));
   },
-  premium: (key) => requirePremium({ userId: key.userId, householdId: key.householdId }, 'api'),
+  premium: async (key) => {
+    const access = await requirePremium(
+      { userId: key.userId, householdId: key.householdId },
+      'api',
+    );
+    // A request the plan gate refuses does not use up the account's day (job 419).
+    if (access === 'locked') {
+      await serviceDb()`select public.account_day_refund(${key.userId}::uuid, 1)`;
+    }
+    return access;
+  },
   used: (key, scope) => sendEvent(key.userId, key.householdId, 'api_key_used', { scope }),
   execute: async (execution) => {
     const { idempotency } = execution;

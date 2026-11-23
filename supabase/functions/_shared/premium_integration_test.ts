@@ -251,7 +251,7 @@ test('switch on: Siri and Alexa add and read without premium (free, jobs 184 and
     }
   }));
 
-test('a yearly plan opens MCP with the same credentials; its lapse locks it and deletes nothing, Siri stays open', () =>
+test("job 419: a household's yearly plan alone opens no MCP; Siri and Alexa stay open, the user's own plan opens it", () =>
   withHousehold(true, async (m, sql) => {
     const t = recorder();
     const tx = `y50-${m.householdId.slice(0, 8)}`;
@@ -264,25 +264,11 @@ test('a yearly plan opens MCP with the same credentials; its lapse locks it and 
     await yearly(sql, m, tx);
     assertEquals((await voice(m, t)('Milch')).body.speech, 'Hinzugefügt: Milch.');
     assertEquals(await alexa(m, t)('Eier'), 'Ich habe Eier auf die Snacklist gesetzt.');
-    assertFalse((await mcp(m, t)('list_items')).isError);
-
-    await sql`select public.purchase_lifecycle('apple', ${tx}, now() + interval '1 second',
-                now() - interval '1 minute', false, false)`;
-    assertEquals((await mcp(m, t)('list_items')).isError, true);
+    const locked = await mcp(m, t)('list_items');
     assertEquals(
-      (await voice(m, t)('Brot')).body.outcome,
-      'added',
-      'lapsed: Siri stays open',
-    );
-    assertEquals(
-      await alexa(m, t)('Käse'),
-      'Ich habe Käse auf die Snacklist gesetzt.',
-      'lapsed: Alexa stays open',
-    );
-    assertEquals(
-      await items(sql, m.householdId),
-      ['Milch', 'Eier', 'Brot', 'Käse'],
-      'the list is kept',
+      [locked.isError, locked.content[0]?.text],
+      [true, premiumRequired.de],
+      'the household plan does not unlock MCP',
     );
     const [kept] = await sql<{ tokens: number; rows: number }[]>`
       select (select count(*)::int from public.personal_access_tokens
@@ -290,9 +276,8 @@ test('a yearly plan opens MCP with the same credentials; its lapse locks it and 
              (select count(*)::int from public.entitlements where household_id = ${m.householdId}) as rows`;
     assertEquals(kept, { tokens: 1, rows: 1 }, 'the token and the plan row stay');
 
-    await sql`select public.purchase_lifecycle('apple', ${tx}, now() + interval '2 seconds',
-                now() + interval '365 days', true, false)`;
-    assert(!(await mcp(m, t)('list_items')).isError, 'renewed: open again, nothing to relink');
+    await ownYearly(sql, m, `o419-${m.userId.slice(0, 8)}`);
+    assert(!(await mcp(m, t)('list_items')).isError, "the user's own plan opens it");
   }));
 
 test("job 185: a user's own yearly plan opens MCP; its lapse locks it, Siri, Alexa and the list stay", () =>

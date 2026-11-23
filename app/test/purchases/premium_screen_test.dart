@@ -91,7 +91,8 @@ void main() {
     );
     expect(
       find.text(
-        'KI-Assistenten, die MCP unterstützen, mit eurer Liste verbinden',
+        'KI-Assistenten, die MCP unterstützen, mit eurer Liste verbinden '
+        '(bis zu 1.000 Anfragen pro Konto und Tag, 60 pro Minute)',
       ),
       findsOneWidget,
     );
@@ -174,7 +175,10 @@ void main() {
         '(${on ? 'on' : 'off'})', (tester) async {
       await openLifetime(tester, flags: {if (on) 'public-api'});
       expect(
-        find.text('Eigene Automationen mit der Snacklist API'),
+        find.text(
+          'Eigene Automationen mit der Snacklist API '
+          '(bis zu 1.000 Anfragen pro Konto und Tag, 60 pro Minute)',
+        ),
         on ? findsOneWidget : findsNothing,
       );
     });
@@ -191,11 +195,17 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.text('Connect AI assistants that support MCP to your list'),
+      find.text(
+        'Connect AI assistants that support MCP to your list '
+        '(up to 1,000 requests per account a day, 60 a minute)',
+      ),
       findsOneWidget,
     );
     expect(
-      find.text('Your own automations with the Snacklist API'),
+      find.text(
+        'Your own automations with the Snacklist API '
+        '(up to 1,000 requests per account a day, 60 a minute)',
+      ),
       findsOneWidget,
     );
     expect(
@@ -481,7 +491,7 @@ void main() {
     await openLifetime(
       tester,
       entitlements: FakeEntitlementsSource()
-        ..rowsNow = [
+        ..userRows['peter'] = [
           {'kind': 'lifetime', 'source': 'purchase'},
           {'kind': 'lifetime', 'source': 'purchase'},
         ],
@@ -489,8 +499,8 @@ void main() {
     shows({'lifetime-unlocked', 'lifetime-bought-twice'});
     expect(
       find.text(
-        'Euer Haushalt hat Snacklist Lifetime mehr als einmal gekauft. Einen '
-        'der Käufe kannst du dir erstatten lassen.',
+        'Snacklist Lifetime wurde mehr als einmal gekauft. Einen der Käufe '
+        'kannst du dir erstatten lassen.',
       ),
       findsOneWidget,
     );
@@ -552,15 +562,15 @@ void main() {
       tester,
       language: AppLanguage.en,
       entitlements: FakeEntitlementsSource()
-        ..rowsNow = [
+        ..userRows['peter'] = [
           {'kind': 'lifetime', 'source': 'purchase'},
           {'kind': 'lifetime', 'source': 'purchase'},
         ],
     );
     expect(
       find.text(
-        'Your household bought Snacklist Lifetime more than once. One of the '
-        'purchases can be refunded.',
+        'Snacklist Lifetime was bought more than once. One of the purchases '
+        'can be refunded.',
       ),
       findsOneWidget,
     );
@@ -966,7 +976,7 @@ void main() {
       await openLifetime(
         tester,
         entitlements: FakeEntitlementsSource()
-          ..rowsNow = [yearlyRow(from: DateTime.now())],
+          ..userRows['peter'] = [yearlyRow(from: DateTime.now())],
         prices: FakeStorePrices(
           const PricesRead({PremiumPlan.yearly: StorePrice(r'$9.99', 'USD')}),
         ),
@@ -1025,7 +1035,7 @@ void main() {
       final more = await openLifetime(
         tester,
         entitlements: FakeEntitlementsSource()
-          ..rowsNow = [yearlyRow(from: now)],
+          ..userRows['peter'] = [yearlyRow(from: now)],
         prices: FakeStorePrices(fakeStorePrices, manages: true),
       );
       expect(key('premium-card-yearly'), findsNothing);
@@ -1048,7 +1058,7 @@ void main() {
       final more = await openLifetime(
         tester,
         entitlements: FakeEntitlementsSource()
-          ..rowsNow = [yearlyRow(from: DateTime.now())],
+          ..userRows['peter'] = [yearlyRow(from: DateTime.now())],
         store: FakePurchaseRepository(bought: const Canceled()),
       );
       await tester.tap(key('premium-buy-lifetime'));
@@ -1056,7 +1066,7 @@ void main() {
       expect(key('premium-lifetime-warning'), findsOneWidget);
       expect(
         find.text(
-          'Euer Haushalt hat schon ein Jahresabo. Es läuft nach dem '
+          'Es läuft schon ein Jahresabo. Es läuft nach dem '
           'Einmalkauf weiter und wird weiter abgerechnet, bis es gekündigt '
           'wird; das restliche Abojahr wird nicht automatisch erstattet. '
           'Kündigen kann nur, wer das Abo abgeschlossen hat, unter Abos '
@@ -1086,7 +1096,7 @@ void main() {
         tester,
         language: AppLanguage.en,
         entitlements: FakeEntitlementsSource()
-          ..rowsNow = [yearlyRow(from: DateTime.now())],
+          ..userRows['peter'] = [yearlyRow(from: DateTime.now())],
         premium: FakePremiumServer(
           mine: const MyYearlyPlan(subscriber: true, renewing: true),
         ),
@@ -1109,7 +1119,9 @@ void main() {
       final more = await openLifetime(
         tester,
         entitlements: FakeEntitlementsSource()
-          ..rowsNow = [yearlyRow(from: DateTime.now(), renews: false)],
+          ..userRows['peter'] = [
+            yearlyRow(from: DateTime.now(), renews: false),
+          ],
         store: FakePurchaseRepository(bought: const Canceled()),
       );
       expect(
@@ -1128,7 +1140,7 @@ void main() {
         tester,
         prices: FakeStorePrices(fakeStorePrices, manages: true),
         entitlements: FakeEntitlementsSource()
-          ..rowsNow = [
+          ..userRows['peter'] = [
             yearlyRow(from: DateTime.now()),
             {
               'kind': 'premium',
@@ -1260,6 +1272,31 @@ void main() {
         find.text('Unlocked free of charge (testing and app review)'),
         findsOneWidget,
       );
+    });
+
+    testWidgets("a household's unlock says it is not the user's Premium; "
+        'their own grant does not need the note (job 419)', (tester) async {
+      await openLifetime(
+        tester,
+        entitlements: FakeEntitlementsSource()..rowsNow = [promotionalRow()],
+      );
+      expect(key('premium-household-only'), findsOneWidget);
+      expect(
+        find.text(
+          'Diese Freischaltung gilt für euren Haushalt. Snacklist Premium '
+          'selbst gilt für dein Konto.',
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('no household note next to the own grant', (tester) async {
+      await openLifetime(
+        tester,
+        entitlements: FakeEntitlementsSource()
+          ..userRows['peter'] = [lifetimeGrantRow],
+      );
+      expect(key('premium-household-only'), findsNothing);
     });
 
     testWidgets('a failed renewal: only the subscriber is told', (
@@ -1443,7 +1480,7 @@ void main() {
     final more = await openLifetime(tester);
     expect(key('premium-buy-yearly'), findsOneWidget);
     more.purchases.rows
-      ..rowsNow = [yearlyRow(from: DateTime.now())]
+      ..userRows['peter'] = [yearlyRow(from: DateTime.now())]
       ..change();
     await tester.pumpAndSettle();
     expect(key('premium-card-yearly'), findsNothing);
@@ -1466,7 +1503,7 @@ void main() {
         tester,
         premium: FakePremiumServer(offer: false),
         entitlements: FakeEntitlementsSource()
-          ..rowsNow = [
+          ..userRows['peter'] = [
             {
               'kind': 'premium',
               'source': 'purchase',
@@ -1568,7 +1605,8 @@ void main() {
       expect(find.text(siri), findsNothing);
       expect(
         find.text(
-          'KI-Assistenten, die MCP unterstützen, mit eurer Liste verbinden',
+          'KI-Assistenten, die MCP unterstützen, mit eurer Liste verbinden '
+          '(bis zu 1.000 Anfragen pro Konto und Tag, 60 pro Minute)',
         ),
         findsOneWidget,
       );

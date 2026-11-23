@@ -50,12 +50,12 @@ async function englishPage(browser: Browser, baseURL: string | undefined): Promi
   return context.newPage();
 }
 
-test('DE: the invite names inviter, household, members, open items and Premium; the button joins in the browser', async ({ page }) => {
+test('DE: the invite names inviter, household, members and open items, nothing of Premium (job 419); the button joins in the browser', async ({ page }) => {
   const { calls, cspErrors } = await joinPage(page, okAnswer);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Peter lädt dich zu „Familie Brandt“ ein');
   await expect(page.locator('html')).toHaveAttribute('lang', 'de');
   await expect(page.getByText('3 Mitglieder · 12 offene Einträge')).toBeVisible();
-  await expect(page.getByText('Premium gilt für alle im Haushalt')).toBeVisible();
+  await expect(page.getByText('Premium gilt für alle im Haushalt')).toHaveCount(0);
   await expect(page.getByRole('link', { name: 'Im Browser beitreten' })).toHaveAttribute('href', `/?invite=${code}`);
   await expect(page.getByText('ABCD-2345')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Code kopieren' })).toBeVisible();
@@ -84,7 +84,7 @@ test('EN, dark: the invite in English', async ({ browser, baseURL }) => {
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Peter invites you to “Familie Brandt”');
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   await expect(page.getByText('3 members · 12 open items')).toBeVisible();
-  await expect(page.getByText('Premium covers everyone in the household')).toBeVisible();
+  await expect(page.getByText('Premium covers everyone in the household')).toHaveCount(0);
   await expect(page.getByRole('link', { name: 'Join in the browser' })).toHaveAttribute('href', `/?invite=${code}`);
   await expect(page.getByRole('button', { name: 'Copy code' })).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });

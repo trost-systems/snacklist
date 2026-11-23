@@ -92,7 +92,10 @@ export async function run(deps: Deps, opts: Options): Promise<Tally> {
   };
   const accounts = await deps.accounts(opts.cutoff);
   tally.accounts = accounts.length;
-  deps.log(`accounts created before ${opts.cutoff.toISOString()}: ${accounts.length}`);
+  deps.log(selectionRule);
+  deps.log(
+    `accounts created before ${opts.cutoff.toISOString()} or using MCP or the API: ${accounts.length}`,
+  );
   const read = deps.atRevenueCat;
   if (!read) {
     if (opts.apply) throw new Error('--apply needs RevenueCat');
@@ -177,7 +180,21 @@ export function parseArgs(args: string[], now: Date): { cutoff: Date; apply: boo
   return { cutoff: cutoff ?? now, apply };
 }
 
-/** The accounts created before [cutoff], each with whether its lifetime row is stored. */
+/** What the run selects, printed with every run (docs/DECISIONS.md "Job 419"). */
+export const selectionRule =
+  'selection: every confirmed, non-anonymous, non-deleted account created before the cut-off, ' +
+  'plus every such account that used MCP or the API (a used token, an OAuth connection, or a ' +
+  'counted request: personal_access_tokens.last_used_at, auth.sessions of an OAuth client, ' +
+  'mcp_rate, account_days)';
+
+/**
+ * The accounts created before [cutoff] or that used MCP or the API, each with whether its
+ * lifetime row is stored. Use is read from what the server keeps: a token's last_used_at (set by
+ * every API and MCP request with a key), an OAuth connection (the only way a connector reaches
+ * MCP), and the per-account counters (mcp_rate from job 336, account_days from job 419). An
+ * account that used MCP or the API gets Lifetime whenever it was created: the lock is not on yet
+ * (Legal Review, must-fix 17).
+ */
 export function accountsQuery(cutoff: Date): string {
   return `select u.id, exists (
   select 1 from public.user_entitlements e
@@ -185,7 +202,13 @@ export function accountsQuery(cutoff: Date): string {
     and (e.expires_at is null or e.expires_at >= '${testerGrantEnd.toISOString()}'::timestamptz)
 ) as stored
 from auth.users u
-where u.created_at < '${cutoff.toISOString()}'::timestamptz
+where (u.created_at < '${cutoff.toISOString()}'::timestamptz
+    or exists (select 1 from public.personal_access_tokens t
+               where t.user_id = u.id and t.kind in ('pat', 'api') and t.last_used_at is not null)
+    or exists (select 1 from auth.sessions s
+               where s.user_id = u.id and s.oauth_client_id is not null)
+    or exists (select 1 from public.mcp_rate r where r.user_id = u.id)
+    or exists (select 1 from public.account_days d where d.user_id = u.id))
   and u.is_anonymous is not true
   and u.deleted_at is null
   and u.confirmed_at is not null

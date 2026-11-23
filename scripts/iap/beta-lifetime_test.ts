@@ -7,6 +7,7 @@ import {
   parseArgs,
   reconciled,
   run,
+  selectionRule,
   stepFor,
   type Tally,
 } from './beta-lifetime.ts';
@@ -120,7 +121,10 @@ Deno.test('run: a dry run without RevenueCat keys only counts the accounts', asy
   assertEquals(tally.accounts, 5);
   assertEquals(tally.done + tally.reconcile + tally.grant, 0);
   assertStringIncludes(f.lines.join('\n'), 'RevenueCat not checked');
-  assertStringIncludes(f.lines.join('\n'), 'before 2026-12-01T00:00:00.000Z: 5');
+  assertStringIncludes(
+    f.lines.join('\n'),
+    'before 2026-12-01T00:00:00.000Z or using MCP or the API: 5',
+  );
 });
 
 Deno.test('run --apply grants and reconciles what is missing; a failure is counted and skipped', async () => {
@@ -204,6 +208,29 @@ Deno.test('accountsQuery: confirmed real accounts before the cutoff, with the li
     `(e.expires_at is null or e.expires_at >= '2100-01-01T00:00:00.000Z'::timestamptz)`,
   );
   assertStringIncludes(sql, 'order by u.created_at');
+});
+
+Deno.test('accountsQuery: an account that used MCP or the API is selected whenever it was created', () => {
+  const sql = accountsQuery(new Date('2026-12-01T00:00:00Z'));
+  assertStringIncludes(sql, `t.kind in ('pat', 'api') and t.last_used_at is not null`);
+  assertStringIncludes(sql, 's.oauth_client_id is not null');
+  assertStringIncludes(sql, 'public.mcp_rate r where r.user_id = u.id');
+  assertStringIncludes(sql, 'public.account_days d where d.user_id = u.id');
+  // The creation cut-off and the use signals are alternatives, the account checks apply to both.
+  assertStringIncludes(
+    sql,
+    `where (u.created_at < '2026-12-01T00:00:00.000Z'::timestamptz\n    or exists`,
+  );
+  assertStringIncludes(sql, `)\n  and u.is_anonymous is not true`);
+});
+
+Deno.test('run: a dry run prints the selection rule and counts, no id', async () => {
+  const { accounts, state } = mixed();
+  const f = fake(accounts, state);
+  await run(f.deps, { cutoff, apply: false, pauseMs: 0 });
+  assertStringIncludes(f.lines.join('\n'), selectionRule);
+  assertStringIncludes(f.lines.join('\n'), 'dry run: 1 done, 1 to reconcile, 3 to grant');
+  noIds(f.lines);
 });
 
 Deno.test('parseAccounts: a malformed row stops the run without echoing it', () => {

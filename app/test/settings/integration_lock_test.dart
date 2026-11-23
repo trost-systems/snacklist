@@ -176,7 +176,7 @@ void main() {
     expect(more.purchases.repository.calls, isEmpty, reason: 'no purchase');
   });
 
-  testWidgets('a purchase hides the card and the pause within one sync, '
+  testWidgets('the own premium hides the card and the pause within one sync, '
       'without leaving the page', (tester) async {
     final more = await access(tester);
     expect(key('integration-buy'), findsOneWidget);
@@ -190,14 +190,25 @@ void main() {
 
   for (final (name, rows) in [
     (
-      'a yearly plan',
+      "the user's own yearly plan",
       () =>
-          FakeEntitlementsSource()..rowsNow = [yearlyRow(from: DateTime.now())],
+          FakeEntitlementsSource()
+            ..userRows['peter'] = [yearlyRow(from: DateTime.now())],
     ),
-    ('Lifetime', () => FakeEntitlementsSource(unlockedNow: true)),
     (
-      "a tester's grant (RevenueCat promotional)",
-      () => FakeEntitlementsSource()..rowsNow = [promotionalRow()],
+      "the user's own Lifetime",
+      () => FakeEntitlementsSource()
+        ..userRows['peter'] = [
+          {
+            'kind': 'premium',
+            'source': 'purchase',
+            'premium_source': 'lifetime',
+          },
+        ],
+    ),
+    (
+      "a tester's own grant (RevenueCat promotional)",
+      () => FakeEntitlementsSource()..userRows['peter'] = [promotionalRow()],
     ),
     (
       'rows that cannot be read (offline)',
@@ -225,13 +236,39 @@ void main() {
       expect(find.text('Kurzbefehl'), findsOneWidget);
     });
 
-    testWidgets('on, Premium: no card, nothing paused', (tester) async {
+    testWidgets('on, own Premium: no card, nothing paused', (tester) async {
       await access(tester, rows: FakeEntitlementsSource(unlockedNow: true));
       expect(key('integration-premium'), findsNothing);
       expect(key('integration-buy'), findsNothing);
       expect(key('access-paused'), findsNothing);
       expect(find.text('Kurzbefehl'), findsOneWidget);
     });
+
+    for (final (name, rows) in [
+      (
+        "the household's Lifetime",
+        () => FakeEntitlementsSource()
+          ..rowsNow = [
+            {
+              'kind': 'premium',
+              'source': 'purchase',
+              'premium_source': 'lifetime',
+            },
+          ],
+      ),
+      (
+        "the household's grant (testers, beta)",
+        () => FakeEntitlementsSource()..rowsNow = [promotionalRow()],
+      ),
+    ]) {
+      testWidgets('on, only $name: the card and the pause, as the server '
+          'refuses (job 419)', (tester) async {
+        await access(tester, rows: rows());
+        expect(key('integration-premium'), findsOneWidget);
+        expect(key('integration-buy'), findsOneWidget);
+        expect(key('access-paused'), findsOneWidget);
+      });
+    }
 
     testWidgets('on, Free: the card, Buy to the Premium page, the token '
         'paused', (tester) async {

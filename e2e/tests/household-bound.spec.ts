@@ -22,7 +22,7 @@ const newPage = async (browser: Browser) => {
 /** The status tile: its title says which Premium the household has (job 49). */
 const unlocked = (page: Page) => page.getByText(/^Snacklist Premium (Lifetime|aktiv|über)/);
 const buyButton = (page: Page) => page.getByRole('button', { name: /Weiter zum Kauf|kaufen/ });
-const BOUGHT_TWICE = /^Euer Haushalt hat Snacklist Lifetime mehr als einmal gekauft\./;
+const BOUGHT_TWICE = /^Snacklist Lifetime wurde mehr als einmal gekauft\./;
 
 async function inviteCode(email: string): Promise<string> {
   const { data, error } = await (await apiAs(email)).rpc('create_invite', {

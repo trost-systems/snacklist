@@ -9,9 +9,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 @immutable
 class const ServerLock({
   /// `integration_lock` is on: MCP and the API refuse a user without
-  /// Snacklist Premium (their own or the household's; another member's plan
-  /// does not count). Siri (job 184) and Alexa (Legal Review N-27) stay
-  /// free.
+  /// Snacklist Premium of their own (neither the household's nor another
+  /// member's plan counts, job 419). Siri (job 184) and Alexa (Legal Review
+  /// N-27) stay free.
   required final bool enforced,
 
   /// `premium_offer` is on, or could not be read: the card links to the
@@ -63,8 +63,9 @@ enum LockOffer() {
 }
 
 /// The one decision: locked only when the server enforces the lock and
-/// [Entitlements.canOffer] says the user has no premium (it is false while
-/// unknown, so an unlocked user never sees Buy).
+/// [Entitlements.canOffer] says the user has no premium of their own (it is
+/// false while unknown, so an unlocked user never sees Buy; a household's
+/// plan does not count, as on the server).
 IntegrationAccess integrationAccess({
   required ServerLock? server,
   required Entitlements entitlements,

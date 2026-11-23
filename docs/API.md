@@ -494,7 +494,7 @@ arguments, so that file is the one place to change them.
 | Limit | Value | Counted |
 | --- | --- | --- |
 | Per API key | 20 requests burst, refilled at 60 a minute (one a second) | Token bucket, every authenticated request |
-| Per household | 1000 requests a day (UTC) | All the household's keys together |
+| Per account | 1000 requests a day (UTC) | All the member's keys, and their MCP requests, together (`public.account_days`, job 419); a household's other members have their own 1000 |
 | Unknown keys per address | 20 per 10 minutes | Every key we have never issued; then `429 auth_throttled` for unknown keys from that address. A missing key, a revoked or otherwise ended key and a valid key never count and are never blocked, so an integration still polling with a revoked key does not block others behind the same address |
 | Batch | 50 items per `POST /v1/items` | |
 | Store order | 200 items per `PUT /v1/stores/{id}/order` | |
@@ -511,13 +511,13 @@ arguments, so that file is the one place to change them.
 Every response says where the caller stands:
 
 - `X-RateLimit-Limit`: the size of the limit closest to running out: the key's bucket (20) or the
-  household's day (1000). For an unauthenticated response, the failed-authentication budget (20).
+  account's day (1000). For an unauthenticated response, the failed-authentication budget (20).
 - `X-RateLimit-Remaining`: requests left in it after this one.
 - `X-RateLimit-Reset`: seconds until it is full again (the bucket refilled, the next UTC day, the
   failure window over).
 - `Retry-After` (on `429` and `503 unavailable`): seconds until the next request can succeed.
 
-A refused request (`429`) does not count against the limits. Every other authenticated request
+A refused request (`429`) does not count against the limits. A `402 premium_required` answer is given back (`account_day_refund`) and does not use up the account's day. Every other authenticated request
 does, errors included: a `400`, `403` or `404` uses up a request like a `200`. `X-Request-Id` (a UUID) comes with every response;
 the rate headers are missing only on a `503` from a database that could not count the request
 and while the API is [switched off](#switched-off).

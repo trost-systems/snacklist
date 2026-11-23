@@ -7,6 +7,7 @@ import { sha256Hex } from '../_shared/auth.ts';
 import { asUser, databaseUrl } from '../_shared/db.ts';
 import { ADD_BUDGET_MS, SIMILAR_SHOWN } from '../_shared/list.ts';
 import { handle } from './handler.ts';
+import { productionDeps } from '../mcp/handler.ts';
 import { routes } from './routes.ts';
 
 const enabled = Deno.env.get('FG_DB_TEST') === '1';
@@ -544,11 +545,17 @@ test('a revoked key is 401; the integration lock without Premium is 402 until it
     );
     const rows = await sql`select from public.items where household_id = ${mine.householdId}`;
     assertEquals(rows.length, 0, 'nothing was changed');
+    const day = async () =>
+      (await sql<{ requests: number }[]>`
+        select coalesce(sum(requests), 0)::int as requests from public.account_days
+        where user_id = ${mine.userId}`)[0]?.requests;
+    assertEquals(await day(), 0, "a 402 does not use up the account's day (job 419)");
 
     await sql`update public.app_switches set enabled = false where key = 'integration_lock'`;
     const open = await api(key.token, 'GET', '/items');
     assertEquals(open.status, 200, 'the same key works once the household may use the API');
     await open.body?.cancel();
+    assertEquals(await day(), 1, 'an answered request is one');
 
     await sql`update public.personal_access_tokens set revoked_at = now() where id = ${key.id}`;
     const revoked = await api(key.token, 'GET', '/items');
@@ -1736,4 +1743,21 @@ test("job 345 review 0: a member of two households: the new routes stay in the k
       "made in the key's household",
     );
     assertEquals(await theirState(), before, 'the other household is as it was');
+  }));
+
+test("job 419: one day of 1000 for MCP and the API together; the 1001st has each one's own shape", () =>
+  withMembers(async (sql, [mine]) => {
+    const key = await mint(sql, mine, ['read', 'write']);
+    await sql`insert into public.account_days (user_id, day, requests)
+              values (${mine.userId}, (now() at time zone 'utc')::date, 998)`;
+    assertEquals(await productionDeps.takeCall(mine.userId, 1), null, 'MCP tool call 999');
+    const last = await api(key.token, 'GET', '/items');
+    assertEquals(last.status, 200, 'API request 1000');
+    await last.body?.cancel();
+    const refused = await api(key.token, 'GET', '/items');
+    assertEquals(refused.status, 429, 'API request 1001');
+    assertEquals((await refused.json()).error.code, 'rate_limited');
+    assert(Number(refused.headers.get('retry-after')) > 1);
+    const wait = await productionDeps.takeCall(mine.userId, 1);
+    assert(wait !== null && wait > 1, 'MCP tool call 1001 waits for the next UTC day');
   }));

@@ -2741,3 +2741,42 @@ Review 1 found the Globus code correct and driven in the web app. Must-fix: #674
 ## Job 415 review 1 follow-up
 
 Review 1 said FIX (LEAD 10:15 items I had skipped). Done in one PR (#681), Opus review of its head PASS before landing: MCP `structuredContent.error` is `plan_required` (telemetry keeps `premium_required`); the info pages are `unlisted` (new frontmatter key, test); the seed sets display name "Alex (Testkonto)" and links the stores to their chains, rerun-safe (checked); DECISIONS item 4 corrected (those items were required, not optional); IKEA no longer lists "Für die Katze"; `toolAnnotations` comment rewrapped. Review 0 landed as `e026ca1a3`, not `5efbf6b6b` (the PR head). Not done: literal title text per tool in the test (optional).
+
+
+## Job 419: per-account daily cap, per-account Premium gate, limits on the paywall
+
+**Built.** Migration `20261123100000_per_account_cap_and_gate.sql`: `account_days` (1,000 requests per user account and UTC day, shared by `api_begin` and `mcp_take_call`, purged by `purge_mcp_rate`); `integration_gate` opens only for `user_has_premium`. Old `api_household_days` left unused (note on the table). Paywall benefit lines for MCP and the API now show 1,000 a day per account and 60 a minute, DE + EN (`app_de.arb`, `app_en.arb`). Comments in `mcp/tools.ts` and `_shared/premium.ts`, `docs/API.md`, `docs/MCP.md`, `docs/PURCHASES.md`, `docs/PRIVACY_DATA_MAP.md` updated. DECISIONS and NEEDS_LEAD "Job 419".
+
+**Tests.** pgTAP all pass (`api.test.sql`: API and MCP share the day, the 1001st is limited, household Premium alone locks; `mcp_rate.test.sql`; `integration_lock.test.sql`). `premium_screen_test.dart` passes. `scripts/lint.sh` passes.
+
+**AC4, Terms menu paths (in/2026-11-23-snacklist-terms.md), checked in app code (`more_screen.dart`, `account_screen.dart`, `access_screen.dart`):**
+- "Mehr › Konto › Konto löschen" (§ end of use): matches (Mehr tab, row Konto, row Konto löschen). EN "More › Account › Delete account" matches the ARB.
+- "Konto › Meine Daten exportieren" (shutdown clause): matches, but Konto is under Mehr; the text omits "Mehr ›".
+- „Abo verwalten oder kündigen“ (the cancel section): the row `premiumManage` on the Premium page, shown only on iOS and Android while a yearly plan runs; never on the web (the web says where to buy and manage instead).
+- "lösche ihn in der App" (API key, §5): the app calls it widerrufen / revoke (Mehr › Zugänge, trash icon, dialog "API-Schlüssel widerrufen?"); the API section shows only while flag `public-api` is on.
+- Terms §5 limits (20 burst, 60 a minute, 1,000 a day per account across keys and MCP) match the code now.
+
+**Not done / for the lead.** NEEDS_LEAD "Job 419": launch order (beta-lifetime before lock; old store builds that still create household-bound purchases). "One MCP tool call = one request": the function counts every request, as before (a tool call is one POST; initialize and list calls also count). Not run locally: full e2e and `verify.sh` (CI). TestFlight: next green main build; no flag.
+
+### Job 419 review 0 fixes (PR #682)
+
+1. **db gate.** `account_days` is in `NO_ROW` (outsiders test) and has a row in `scripts/backup/fixtures.sql` (the backup drill passes). The household-yearly MCP test in `premium_integration_test.ts` is rewritten: a household plan alone leaves MCP locked (neutral answer), Siri and Alexa stay open, the user's own plan opens it. Full `*_integration_test.ts` run: 225 passed; pgTAP on a freshly reset stack: PASS; functions gate unit tests: 891 passed.
+2. **Goldens.** The 14 premium goldens are regenerated with Flutter 3.50 (CI's); the compact DE wrap is three lines and clean.
+3. **e2e.** `integration-lock.spec.ts` now grants per user (`promotional_premium_sync_user`): only the granted member opens (the other stays locked and keeps the card), a household grant alone opens nothing, a tester's own grant works.
+4. **App follows the server.** `Entitlements.ownPremium` (user rows only); `integrationAccess` and `canOffer` (Buy) go by it, so a user with only a household plan or grant sees the card and paused tiles and can buy their own Premium. Tests: entitlements (household alone: both plans offered), integration lock (own opens; household Lifetime or grant alone locks). The purchase and premium screen tests that used a household row for "the user has it" now use the user's rows (a purchase belongs to the buyer since job 185). Full Flutter suite on 3.50: only those 21 tests failed before the conversion; purchases, settings, more and goldens pass after.
+5. **`scripts/iap/integration-cutover.sql`** counts users by `user_has_premium` and lists users with MCP tokens, API keys or OAuth connections the lock would refuse.
+6. **FEATURES-FOR-WRITERS.md:** the 746d8d09 entry is restored, a new entry for this job (review 0's drive of 60d670b8f) is added; `premium.md` has the new lines and the own-Premium rule.
+7. **Docs:** PURCHASES.md (three places and the tester runbook), PAYWALL_RELEASE.md, PRIVACY_DATA_MAP.md.
+
+Also done from the nice-to-haves: `mcp/handler.ts` imports `BURST`, `PER_MINUTE`, `PER_DAY` from `api/limits.ts` (one constant); API.md says a 402 counts against the day; `promotional.ts` takes `--user` (and `--household`); `api.test.sql` header; NEEDS_LEAD adds old store builds. Not done: a handler-level integration test of both 429 shapes (SQL tests pin the sharing; review's drive showed the shapes), and the "one tool call = one request" wording stays for the lead to decide.
+
+### Job 419 review 1 fixes (PR #682)
+
+1. **Only tool calls count (LEAD 20:40).** `mcp_take(user, burst, per_minute, per_day, calls)` takes the bucket for every request and the day only for `tools/call` messages (each one of a batch, `toolCallsIn` in `mcp/handler.ts`); a batch the day cannot hold is refused as one. Tests: `toolCallsIn` table, pgTAP (`mcp_rate.test.sql`: protocol request leaves no row, a batch of two adds two, refund, never below 0, 2 calls with one left wait), `rate_integration_test.ts` through `productionDeps`. DECISIONS, MCP.md updated.
+2. **Refused calls give the day back.** API 402 and the locked MCP answer call `account_day_refund`; 401 and 429 never counted. Pinned: `api_integration_test.ts` (a 402 leaves the day at 0, an answered request is 1), `refundLocked` unit test. API.md corrected.
+3. **AC7.** `scripts/iap/beta-lifetime.ts` (job 371, already idempotent, RevenueCat API, dry run by default, counts only) is extended: the selection also takes every confirmed account that used MCP or the API (token `last_used_at`, OAuth connection, `mcp_rate`, `account_days`), whenever created. The dry run prints the rule and counts, no id. Tests: query signals, rule line, no id. Rule in DECISIONS "Job 419". Not run against production; both SQL statements ran on a local stack.
+4. **AC6.** `PurchaseCubit._arrived` reads `ownPremium` (the double purchase you proved is covered by a new test). The Premium page shows a note under a household's unlock when the user has none of their own („Diese Freischaltung gilt für euren Haushalt. Snacklist Premium selbst gilt für dein Konto.“); the two "für alle im Haushalt" notes are removed; the checking, bought-twice, two-yearly and lifetime-while-yearly texts no longer say "your household" (the billing-continues-for-this-household line stays: it is a billing fact). Beta goldens regenerated. Left (NEEDS_LEAD): Verlauf and trip locks still household-or-user; Legal should read the reworded texts.
+5. **AC9.** Lock seeded off (pgTAP), table comment on `app_switches`, PAYWALL_RELEASE 6.4 hard precondition (grants ran, Terms accepted), NEEDS_LEAD line.
+6. **Nice-to-have:** MCP.md names `api/limits.ts`; AC4 list has „Abo verwalten oder kündigen“; handler-level 1,000 test through API and MCP (`api_integration_test.ts`); `promotional.ts` field is `appUserId`; NEEDS_LEAD line corrected (`grant --user`).
+
+Also in review 1: the static web join page (`app/web/join`) lost the same "Premium covers everyone in the household" line; e2e specs `join-page` (18), `household-bound` (6), `premium-yearly` (5, regexes for the reworded notes), `public-api` (3) and `integration-lock` (3) pass locally; db gate integration tests 227 passed and the backup drill passes; the full Flutter suite (3.50) passes after the six invite goldens were regenerated; functions unit tests 893 passed.

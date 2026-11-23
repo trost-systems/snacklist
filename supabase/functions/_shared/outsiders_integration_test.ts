@@ -95,6 +95,7 @@ const WITH_CODE: Record<Role, string[]> = {
  * the caller passes is not seen here. A new table is held, or it is added with that in mind.
  */
 const NO_ROW = [
+  'account_days',
   'alexa_links',
   'alexa_rate',
   'analytics_consents',

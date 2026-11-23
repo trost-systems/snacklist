@@ -103,9 +103,10 @@ class PurchaseCubit(
     SessionLoading() || SignedOut() => null,
   };
 
-  /// The rows show what [_plan] unlocks: any premium for the yearly plan,
-  /// Lifetime itself for Lifetime (bought next to a running yearly plan).
-  bool get _arrived => switch (_entitlements.premium) {
+  /// The user's own rows show what [_plan] unlocks: any premium for the
+  /// yearly plan, Lifetime itself for Lifetime (bought next to a running
+  /// yearly plan). A household's plan or grant is not the purchase arriving.
+  bool get _arrived => switch (_entitlements.ownPremium) {
     ActivePremium(:final source) =>
       _plan == PremiumPlan.yearly || source.lasting,
     _ => false,

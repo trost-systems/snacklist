@@ -376,10 +376,15 @@ then with `--apply`: the Alexa certification account and the App Review and Play
 households, or they hear only the Premium answer.
 
 6.3 **Lead**: the cut-over count, read-only, in the SQL editor:
-`scripts/iap/integration-cutover.sql`. It lists every household without
-Premium that uses an integration now. Peter sees the numbers before 6.4.
+`scripts/iap/integration-cutover.sql`. It lists every user without
+Premium of their own (job 419: a household's plan does not count) who uses MCP or the API now. Peter sees the numbers before 6.4.
 
-6.4 **Lead, Peter's yes**, after 4.3:
+6.4 **Lead, Peter's yes**, after 4.3. **Hard precondition (job 419, Legal must-fix 7 and 17):
+never before the public launch and a lead decision, and only when (a) the Lifetime grants ran
+(`scripts/iap/beta-lifetime.ts --apply --created-before <cut-off>`: every confirmed beta account
+plus every account that used MCP or the API; the 6.3 count shows who would still be refused) and
+(b) users accepted the new Terms in the app.** The switch is seeded off, and a pgTAP test and the
+`app_switches` table comment pin that:
 
 ```sql
 update public.app_switches set enabled = true, changed_at = now() where key = 'integration_lock';

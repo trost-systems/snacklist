@@ -6,6 +6,8 @@ import {
   handle,
   publicOriginFromEnv,
   publicOriginsFromEnv,
+  refundLocked,
+  toolCallsIn,
 } from './handler.ts';
 
 function headerOf(res: Response, name: string): string {
@@ -49,6 +51,7 @@ function deps(auth: Auth | AuthError): Deps {
       allowTokenRequest: () => Promise.resolve(true),
     },
     authenticate: () => auth instanceof AuthError ? Promise.reject(auth) : Promise.resolve(auth),
+    refundCalls: () => Promise.resolve(),
     takeCall: () => Promise.resolve(null),
     serve: (_req, a) => Promise.resolve(Response.json({ served: a.via })),
     allowedOriginHosts: () => ['inspector.example'],
@@ -167,6 +170,7 @@ Deno.test('a request over the limit gets 429 with Retry-After and is not served'
   let served = 0;
   const d: Deps = {
     ...deps({ ...USER, via: 'pat', scopes: ['read', 'write'] as const }),
+    refundCalls: () => Promise.resolve(),
     takeCall: (userId) => {
       taken.push(userId);
       return Promise.resolve(taken.length > 2 ? 7 : null);
@@ -191,6 +195,7 @@ Deno.test('a request whose account row is busy gets 503; other count failures th
   const busy = Object.assign(new Error('busy'), { name: 'PostgresError', code: '55P03' });
   const res = await handle(post(), {
     ...deps({ ...USER, via: 'pat', scopes: ['read', 'write'] as const }),
+    refundCalls: () => Promise.resolve(),
     takeCall: () => Promise.reject(busy),
   });
   assertEquals(res.status, 503);
@@ -200,6 +205,7 @@ Deno.test('a request whose account row is busy gets 503; other count failures th
   try {
     await handle(post(), {
       ...deps({ ...USER, via: 'pat', scopes: ['read', 'write'] as const }),
+      refundCalls: () => Promise.resolve(),
       takeCall: () => Promise.reject(broken),
     });
   } catch (e) {
@@ -211,6 +217,7 @@ Deno.test('a request whose account row is busy gets 503; other count failures th
 Deno.test('an account deleted between authentication and the count gets the 401 challenge', async () => {
   const res = await handle(post(), {
     ...deps({ ...USER, via: 'pat', scopes: ['read', 'write'] as const }),
+    refundCalls: () => Promise.resolve(),
     takeCall: () => Promise.reject(new AuthError('user_deleted', 'Dieses Konto ist gelöscht.')),
   });
   assertEquals(res.status, 401);
@@ -221,6 +228,7 @@ Deno.test('a request that fails authentication is not counted', async () => {
   let counted = 0;
   const res = await handle(post(), {
     ...deps(new AuthError('invalid_token', 'abgelaufen')),
+    refundCalls: () => Promise.resolve(),
     takeCall: () => {
       counted++;
       return Promise.resolve(null);
@@ -427,4 +435,55 @@ Deno.test("the client address: Vercel's header through the proxy, X-Real-IP dire
     '192.0.2.1',
   );
   assertEquals(clientAddress(req({}), true), 'unknown');
+});
+
+Deno.test('toolCallsIn: only tools/call counts, each one of a batch', async () => {
+  const post = (body: string) =>
+    new Request('https://x.test/mcp', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body,
+    });
+  const call = { jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'list_items' } };
+  assertEquals(await toolCallsIn(post(JSON.stringify(call))), 1);
+  assertEquals(await toolCallsIn(post(JSON.stringify({ ...call, method: 'initialize' }))), 0);
+  assertEquals(await toolCallsIn(post(JSON.stringify({ ...call, method: 'tools/list' }))), 0);
+  assertEquals(await toolCallsIn(post(JSON.stringify({ ...call, method: 'ping' }))), 0);
+  assertEquals(
+    await toolCallsIn(
+      post(JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' })),
+    ),
+    0,
+  );
+  assertEquals(
+    await toolCallsIn(
+      post(JSON.stringify([call, { ...call, id: 2 }, { ...call, method: 'ping' }])),
+    ),
+    2,
+  );
+  assertEquals(await toolCallsIn(post('not json')), 0);
+  assertEquals(await toolCallsIn(new Request('https://x.test/mcp')), 0);
+});
+
+Deno.test('refundLocked: a call the plan gate refused is given back, any other stays counted', async () => {
+  const log: string[] = [];
+  const report = refundLocked(
+    (c) => {
+      log.push(`report ${c.reason}`);
+      return Promise.resolve();
+    },
+    () => {
+      log.push('refund');
+      return Promise.resolve();
+    },
+  );
+  await report({ tool: 'list_items', household: 'h', reason: 'premium_required' });
+  await report({ tool: 'list_items', household: 'h', reason: 'done' });
+  await report({ tool: 'list_items', household: 'h', reason: 'tool_error' });
+  assertEquals(log, [
+    'refund',
+    'report premium_required',
+    'report done',
+    'report tool_error',
+  ]);
 });
