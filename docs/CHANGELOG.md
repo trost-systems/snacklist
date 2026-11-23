@@ -269,6 +269,8 @@ held item named Siri, which stays free since job 184), give it new wording in
 ```
 
 - `item` counts the items of that commit's note from 1, in the order written.
+- An item users never saw (a fix that changed nothing) is taken out with
+  `"drop": true` instead of `de` and `en`; `why` says what was wrong.
 - Only `de` and `en` change. The category, the flag or hold, the PR and the
   commit stay the note's, so a held item stays held.
 - `draft` and `record.mjs` (for items merged after a draft) read the new

@@ -508,6 +508,7 @@ export function collect({ previous, sha, skip = [], rewords = loadRewords(change
     if (stray) refuse(`releases/changelog/${REWORDS_FILE} rewords item ${stray.item} of ${hash.slice(0, 7)} "${subject}", but its note has ${note.length}; fix the entry's "item"`);
     note.forEach((item, i) => {
       const reword = rewords.find((r) => r.sha === hash && r.item === i + 1);
+      if (reword?.drop) return;
       items.push({ ...item, ...(reword ? { de: reword.de, en: reword.en } : {}), pr, sha: hash });
     });
   }

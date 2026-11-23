@@ -244,7 +244,7 @@ test('a phone browser: the Open card on every load, closed until the next one; n
   await expect(desktop.getByRole('button', { name: 'Öffnen', exact: true }), 'no card on a desktop browser').toBeHidden();
 });
 
-// Job 379 (IH2): the magic link opens in another browser than the one the invite began in; the
+// Job 379 (IH2), a regression pin: this already held before job 379 (the invite rides in the link). The magic link opens in another browser than the one the invite began in; the
 // invite rides in the link, so the person lands on the invite's sign-in, joins, and never sees the
 // guided start.
 test('invite begun in browser A, magic link opened in browser B: joins, no guided start', async ({ browser }) => {

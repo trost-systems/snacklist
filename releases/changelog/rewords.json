@@ -13,6 +13,12 @@
       "why": "job 322 reverted job 315's take-back before any release (Peter t1071u): Undo after an add keeps the store and category picked in its details",
       "de": "„Rückgängig“ direkt nach dem Hinzufügen nimmt den Artikel wieder von der Liste; Laden und Kategorie, die du dafür gewählt hast, merkt sich Snacklist trotzdem fürs nächste Mal.",
       "en": "Undo right after adding an item takes it off the list again; Snacklist still remembers the store and category you picked for it next time."
+    },
+    {
+      "sha": "e2bc46ec3527ee61f29a39ac9e9f6e2d7263a052",
+      "item": 1,
+      "why": "job 379 changed nothing users could see: the invite already rode in the sign-in link (job 379 review 0)",
+      "drop": true
     }
   ]
 }
