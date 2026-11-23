@@ -2727,3 +2727,7 @@ Code and docs only; nothing submitted or created, production untouched. Details 
 - **Open:** AC1 "for anyone" depends on the Job 401 manual PostHog step (runner key cannot read flags). The Free 4-week lock (`historyLocked*`, `historyDayLocked`, 28-day `trip_history`) must be removed before `grocery-log` goes on (History returns free). Legal must review the two privacy hunks.
 
 Review 1 (job 413): DECISIONS items 2 and 4 and `docs/done/413.md` now agree with the audit about the two privacy hunks (needs Legal); the writers' never-claim list names export explicitly. Main carries #664 as `90b34bcc7`.
+
+## Job 410, review 1 fixes (docs only)
+
+Review 1 found the Globus code correct and driven in the web app. Must-fix: #674 merged (09:28) before its Opus review and after the builder's own review had failed; now stated in DECISIONS (the false "waits for review PASS" sentence is corrected, a review 1 section added), here, and as a NEEDS_LEAD line for the lead (the land step ignored the review gate twice, both times after a "commit and push" prompt). `docs/done/410.md` now quotes the real list card („Welche Kette ist dein „Globus“?“, buttons „Globus“, „Globus Baumarkt“, „Keins davon“). Also: the feature map says the question was driven; run command header in `scripts/retailers_test.ts`. This PR waits for review PASS before merge. PR and merge SHA: filled in below at land.
