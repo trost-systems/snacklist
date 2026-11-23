@@ -14,12 +14,14 @@ import {
   failedNow,
   type Gate,
   langOf,
+  planInfoUrl,
   premiumRequired,
   type ReportCall,
   reportToolCalls,
   SWITCHED_OFF,
   type Switches,
   tookTooLong,
+  toolAnnotations,
   toolScopes,
   writeScopeRequired,
 } from './tools.ts';
@@ -53,6 +55,7 @@ interface Message {
     serverInfo: { name: string; version: string };
     tools: {
       name: string;
+      title?: string;
       inputSchema: { properties?: Record<string, unknown> };
       annotations?: Record<string, boolean>;
     }[];
@@ -130,7 +133,7 @@ Deno.test('locked: initialize and tools/list answer without asking the gate', as
   assertEquals(init.status, 200);
   const { serverInfo } = (await message(init)).result;
   assertEquals(serverInfo.name, 'snacklist');
-  assertEquals(serverInfo.version, '1.3.0', 'tools changed since 1.2.0');
+  assertEquals(serverInfo.version, '1.4.0', 'annotations changed since 1.3.0');
   const list = await s.handle(rpc('tools/list'));
   assertEquals(list.status, 200);
   assertEquals(
@@ -152,7 +155,7 @@ Deno.test('locked: every tool call is an isError result with HTTP 200, data unto
     assertEquals(result.content, [{ type: 'text', text: premiumRequired.de }], name);
     assertEquals(result.structuredContent, {
       error: 'premium_required',
-      details: { integration: 'mcp', unlock: 'app' },
+      details: { integration: 'mcp', info: planInfoUrl.de },
     }, name);
     assertEquals(s.asked(), 1, name);
     assertEquals(s.households(), ['h'], `${name}: without "household" the credential's household`);
@@ -272,17 +275,34 @@ Deno.test('job 169b W3: the item tools take an optional list', async () => {
   );
 });
 
-Deno.test('job 344: the item tools say what they change', async () => {
-  const s = serve(locked);
+Deno.test('job 415: every tool declares all four hints, as toolAnnotations says', async () => {
+  const s = serve(locked, undefined, ON);
+  const { tools } = (await message(await s.handle(rpc('tools/list')))).result;
+  assertEquals(tools.length, Object.keys(toolAnnotations).length);
+  for (const tool of tools) {
+    const want = toolAnnotations[tool.name as keyof typeof toolAnnotations];
+    assertEquals(tool.annotations, want, tool.name);
+    assertEquals(typeof tool.title, 'string', `${tool.name}: title`);
+  }
+});
+
+Deno.test('job 415: the hints are honest for the tools a review looks at', async () => {
+  const s = serve(locked, undefined, ON);
   const { tools } = (await message(await s.handle(rpc('tools/list')))).result;
   const hints = Object.fromEntries(tools.map((t) => [t.name, t.annotations]));
-  assertEquals(hints.update_item, { destructiveHint: false, idempotentHint: true });
-  assertEquals(hints.remove_items, { destructiveHint: true, idempotentHint: true });
-  assertEquals(hints.untick_items, { destructiveHint: false, idempotentHint: true });
-  assertEquals(hints.get_item, { readOnlyHint: true });
-  assertEquals(hints.merge_items, { destructiveHint: true });
-  assertEquals(hints.place_item, { destructiveHint: false, idempotentHint: true });
-  assertEquals(hints.set_store_order, { destructiveHint: false, idempotentHint: true });
+  const write = { readOnlyHint: false, openWorldHint: false };
+  assertEquals(hints.add_items, { ...write, destructiveHint: false, idempotentHint: false });
+  assertEquals(hints.move_item, { ...write, destructiveHint: false, idempotentHint: true });
+  assertEquals(hints.tick_items, { ...write, destructiveHint: false, idempotentHint: true });
+  assertEquals(hints.update_item, { ...write, destructiveHint: true, idempotentHint: true });
+  assertEquals(hints.remove_items, { ...write, destructiveHint: true, idempotentHint: true });
+  assertEquals(hints.merge_items, { ...write, destructiveHint: true, idempotentHint: false });
+  assertEquals(hints.get_item, {
+    readOnlyHint: true,
+    destructiveHint: false,
+    idempotentHint: true,
+    openWorldHint: false,
+  });
 });
 
 Deno.test('job 344: update_item takes the fields to change and the list to move to', async () => {
@@ -309,8 +329,14 @@ Deno.test('locked: English for a client that prefers it', async () => {
     rpc('tools/call', { name: 'list_items', arguments: {} }, 'en-US,en;q=0.9,de;q=0.5'),
   );
   assertEquals((await message(res)).result.content[0]?.text, premiumRequired.en);
-  assert(premiumRequired.en.includes('Snacklist Premium'));
-  assert(premiumRequired.de.includes('Snacklist Premium'));
+  for (const lang of ['de', 'en'] as const) {
+    const text = premiumRequired[lang];
+    assert(text.includes(planInfoUrl[lang]), `${lang}: links the info page`);
+    assertFalse(
+      /premium|€|eur|preis|price|kauf|buy|upgrade|freischalt|unlock|abo|subscri/i.test(text),
+      `${lang}: neutral, no price or call to action: ${text}`,
+    );
+  }
 });
 
 Deno.test('the check fails: no premium answer (an error, like any database failure)', async () => {
@@ -447,7 +473,7 @@ Deno.test('job 397: a read-only key reaches every read tool', async () => {
     const { result } = await message(await s.handle(rpc('tools/call', { name, arguments: args })));
     assertEquals(result.structuredContent, {
       error: 'premium_required',
-      details: { integration: 'mcp', unlock: 'app' },
+      details: { integration: 'mcp', info: planInfoUrl.de },
     }, `${name}: past the scope check, at the gate`);
   }
 });

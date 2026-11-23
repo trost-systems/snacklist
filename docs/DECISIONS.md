@@ -18153,3 +18153,12 @@ above ("Plain Globus stays without an exact match") is superseded. Existing stor
 linked silently: there was no grocery match to keep. `retailers_test.ts` pins the set of names two chains share in a
 country (Aldi DE, Globus DE). The review also found that #662 merged before its Opus review ran; this fix waits for
 review PASS before merge-pr.sh.
+
+## Job 415: MCP directory readiness
+
+1. **One annotations table.** `toolAnnotations` (`Record<McpTool, ...>`) instead of per-tool literals, so every tool declares all four hints and a missing one is a type error. Pinned tool by tool in `tools_test.ts`.
+2. **destructiveHint follows OpenAI's definition** (false only for additive writes; reversibility alone is not enough), read narrowly: true where a call deletes or overwrites text the user typed (`remove_items`, `merge_items`, `update_item`, `rename_list`, `rename_store`). Ticks, category moves and orders keep every value and stay false. Claude then asks before the true ones; accepted, they are the rare calls. `openWorldHint` false everywhere.
+3. **Locked answer neutral, not removed.** The Premium refusal stays (the server switch is off today) but names no plan, price or action and links an information page, per OpenAI 5.1. The error code `premium_required` stays for telemetry and clients; `details.unlock` became `details.info`. It is a tool-result field no shipped app reads (grep).
+4. **Information page as two guides** on the site (`/de/anleitungen/ki-assistenten-tarif`, `/en/guides/ai-assistants-plan`) rather than a legal page, so the PR touches no privacy or terms text and lands without Legal. It makes no claim about prices or where to see a plan (I had one and removed it: not verifiable). Listed in NEEDS_LEAD for a Legal look.
+5. **Seed script is bash + psql**, acting as the user through `request.jwt.claims` and the same functions the app calls, so classifier and store layouts behave as for a real user. Idempotency: household by a request id derived from the user id, stores `on conflict do nothing`, `add_item` returns an open duplicate.
+6. **No code change for the reviewer sign-in**: the app sends only email and password and skips analytics consent and the name step on the consent path.

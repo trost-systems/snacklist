@@ -181,16 +181,20 @@ first (NEEDS_LEAD "Job 345: Legal text for A8 MCP"). The function reads the swit
 role. The API's list and store routes need no switch: section 7's API paragraph names lists and
 stores.
 
-Each tool tells the client what kind it is (MCP tool annotations): the `list_*` tools,
-`suggest_items` and `get_item` only read (`readOnlyHint`). `tick_items`, `untick_items`,
-`update_item`, `rename_list`, `add_store`, `rename_store` and `set_store_layout` change the
-list but destroy nothing and can be repeated (`destructiveHint: false`, `idempotentHint: true`);
-`create_list` destroys nothing but makes a new list on every call (`destructiveHint: false`);
-`move_item`, `place_item` and `set_store_order` can be repeated too (`idempotentHint`). `remove_items` deletes and can be repeated
-(`destructiveHint: true`, `idempotentHint: true`); `merge_items` deletes the folded-in row
-(`destructiveHint: true`). A client may ask the user before a destructive call.
+Each tool tells the client what kind it is (MCP tool annotations). Since job 415 every tool
+declares all four hints, explicit, in one table (`toolAnnotations` in `tools.ts`) that
+`tools_test.ts` pins tool by tool, because the directories' reviews reject a tool that leaves one
+to the spec's defaults. `openWorldHint` is false everywhere: a tool reaches only the caller's
+household. The `list_*` tools, `suggest_items` and `get_item` only read (`readOnlyHint: true`,
+`destructiveHint: false`, `idempotentHint: true`). `add_items` and `create_list` add on every call
+(`destructiveHint: false`, `idempotentHint: false`). `tick_items`, `untick_items`, `move_item`,
+`place_item`, `set_store_order`, `set_store_layout` and `add_store` change the list and keep every
+value the user typed, so repeating them changes nothing more (`destructiveHint: false`,
+`idempotentHint: true`). `destructiveHint: true` is for a call that deletes or overwrites text the
+user typed: `remove_items` and `update_item` and the two renames (repeatable, `idempotentHint:
+true`), and `merge_items` (not repeatable). A client may ask the user before a destructive call.
 
-The server names itself `snacklist` with `serverInfo.version` `1.3.0` (job 344 added five tools,
+The server names itself `snacklist` with `serverInfo.version` `1.4.0` (job 415 made every annotation explicit; job 344 added five tools,
 job 345 seven, job 352 two).
 Clients cache `tools/list` for an hour; the version moves whenever the tools change, so a new
 version says the list is worth fetching again.
@@ -213,12 +217,16 @@ API's.
 **Integration lock (job 50, off).** With the server switch `integration_lock` on, a user
 without Snacklist Premium (neither their own plan nor a grant of the household the call acts in;
 another member's plan does not count) can still discover the server, run OAuth, `initialize` and `tools/list`,
-but every `tools/call` answers HTTP 200 with a tool result `{isError: true}` and "Du brauchst
-Snacklist Premium für den Zugang über KI-Assistenten. Schalte es in der Snacklist-App frei.
-Es wurde nichts gelesen oder geändert." (English for a client whose `Accept-Language` prefers it;
-placeholder copy, `tools.ts` `premiumRequired`), and `structuredContent: {error: "premium_required",
-details: {integration: "mcp", unlock: "app"}}` for a client that acts on it: the locked
-integration and where it unlocks, with no link and no price (store rules). Never 401 or 403: the client keeps its token or
+but every `tools/call` answers HTTP 200 with a tool result `{isError: true}` and, since job 415,
+a neutral text that names no plan, price or action: "Dafür brauchst du einen anderen
+Snacklist-Tarif. Infos: https://snacklist.app/de/anleitungen/ki-assistenten-tarif Es wurde nichts
+gelesen oder geändert." (English for a client whose `Accept-Language` prefers it, with
+`https://snacklist.app/en/guides/ai-assistants-plan`; `tools.ts` `premiumRequired` and
+`planInfoUrl`), and `structuredContent: {error: "premium_required", details: {integration: "mcp",
+info: <that URL>}}` for a client that acts on it. OpenAI's rule (section 5.1): a connector may say
+a feature needs another plan and link to an information page, never show plans or prices, start a
+purchase or promote an upgrade. The page is plain information with no checkout, and `tools_test.ts`
+pins the text free of price and call-to-action words. Never 401 or 403: the client keeps its token or
 PAT, and once the user has Premium the same connection works without signing in again. The
 check (`requirePremium`, `_shared/premium.ts`, once per request and household, for the household
 the call acts in) reads nothing else; a failing check is an error like any database failure. No change to
