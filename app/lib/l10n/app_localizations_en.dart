@@ -3950,4 +3950,56 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get detectTripsHint => 'Uses only when you tick. No location.';
+
+  @override
+  String get accessKeys => 'Access keys';
+
+  @override
+  String get accessKeysUnifiedHint =>
+      'An access key connects AI assistants on the MCP server and your own scripts on the API to your list. One key works for both and can read only, or read and write.';
+
+  @override
+  String accessKeysUnifiedHousehold(String household) {
+    return 'New keys work in “$household”, the household open now.';
+  }
+
+  @override
+  String get accessKeysMcpBody =>
+      'For AI assistants: connect by signing in (OAuth) or with an access key.';
+
+  @override
+  String get accessKeysApiBody =>
+      'For your own scripts and automations: read and, if you allow it, change your list over HTTP with an access key.';
+
+  @override
+  String get noAccessKeys => 'No active access key.';
+
+  @override
+  String get createAccessKey => 'Create key';
+
+  @override
+  String get accessKeyNameHint =>
+      'e.g. AI assistant, Shortcuts or Home Assistant';
+
+  @override
+  String get accessKeyCreated => 'Access key created';
+
+  @override
+  String get accessKeyShownOnce =>
+      'Copy the key now. It won\'t be shown again.';
+
+  @override
+  String get revokeAccessKeyTitle => 'Revoke access key?';
+
+  @override
+  String get revokeAccessKeyBody =>
+      'Assistants and scripts using it lose access right away.';
+
+  @override
+  String get tooManyAccessKeys =>
+      'At most 20 active access keys. Revoke one first.';
+
+  @override
+  String get accessKeySessionRequired =>
+      'You can only create access keys here in the app while you\'re signed in.';
 }

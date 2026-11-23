@@ -2,6 +2,7 @@ import { assertEquals, assertMatch } from '@std/assert';
 import { AuthError } from '../_shared/auth.ts';
 import type { ListCatalog } from '../_shared/list.ts';
 import { type Added, type Caller, confirmation, createHandler, type Deps } from './handler.ts';
+import { copy } from './copy.ts';
 import type { ParsedItem } from './parse.ts';
 
 const caller: Caller = { userId: 'u1', householdId: 'h1' };
@@ -29,6 +30,9 @@ function fakeDeps(overrides: Partial<Deps> = {}) {
       if (token === 'Bearer app-session') return Promise.resolve({ ...caller, via: 'session' });
       if (token === 'Bearer fgp_siri') return Promise.resolve({ ...caller, via: 'siri' });
       if (token === 'Bearer mcp-client') return Promise.resolve({ ...caller, via: 'oauth' });
+      if (token === 'Bearer fgp_read') {
+        return Promise.resolve({ ...caller, via: 'pat', scopes: ['read'] as const });
+      }
       return Promise.reject(fail(401));
     },
     // u1 is in h1 (the default) and h2.
@@ -262,6 +266,25 @@ Deno.test('job 213: an OAuth client token (MCP, AI assistants) is refused, nothi
     assertEquals((await res.json()).error, 'unauthorized', mode);
     assertEquals(calls, [], mode);
   }
+});
+
+Deno.test('job 397: a read-only key cannot add; it may read and parse', async () => {
+  for (const lang of ['de', 'en'] as const) {
+    const { handle, calls } = fakeDeps({ lists: () => Promise.reject(new Error('not asked')) });
+    const res = await handle(post({ text: 'Milch', lang }, { token: 'fgp_read' }));
+    assertEquals(res.status, 403, lang);
+    const body = await res.json();
+    assertEquals(body.error, 'read_only', lang);
+    assertEquals(body.speech, copy[lang].failures.read_only, lang);
+    assertEquals(calls, [], `${lang}: nothing added`);
+  }
+  const { handle } = fakeDeps({ readItems: () => Promise.resolve([]) });
+  const read = await handle(post({ mode: 'read', lang: 'de' }, { token: 'fgp_read' }));
+  assertEquals(read.status, 200);
+  const parse = await handle(
+    post({ text: 'Milch', mode: 'parse', lang: 'de' }, { token: 'fgp_read' }),
+  );
+  assertEquals(parse.status, 200);
 });
 
 Deno.test('parse mode without split answers as before, for installed apps', async () => {

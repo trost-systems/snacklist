@@ -31,7 +31,14 @@ const deps: AuthDeps = {
   householdOf: (userId) => Promise.resolve(userId === USER ? HOUSEHOLD : null),
   sessionActive: ({ id }) => Promise.resolve(id !== ENDED),
   resolvePat: async (hash) => {
-    if (hash === await sha256Hex(PAT)) return { userId: USER, householdId: HOUSEHOLD, kind: 'pat' };
+    if (hash === await sha256Hex(PAT)) {
+      return {
+        userId: USER,
+        householdId: HOUSEHOLD,
+        kind: 'pat',
+        scopes: ['read', 'write'] as const,
+      };
+    }
     if (hash === await sha256Hex(SIRI)) {
       return { userId: USER, householdId: HOUSEHOLD, kind: 'siri' };
     }
@@ -95,6 +102,7 @@ Deno.test('a personal access token authenticates by its hash', async () => {
     userId: USER,
     householdId: HOUSEHOLD,
     via: 'pat',
+    scopes: ['read', 'write'],
   });
 });
 

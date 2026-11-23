@@ -3974,4 +3974,56 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get detectTripsHint => 'Nutzt nur, wann du abhakst. Kein Standort.';
+
+  @override
+  String get accessKeys => 'Zugriffsschlüssel';
+
+  @override
+  String get accessKeysUnifiedHint =>
+      'Ein Zugriffsschlüssel verbindet KI-Assistenten über den MCP-Server und eigene Skripte über die API mit eurer Liste. Ein Schlüssel gilt für beides und darf nur lesen oder lesen und schreiben.';
+
+  @override
+  String accessKeysUnifiedHousehold(String household) {
+    return 'Neue Schlüssel gelten für „$household“, den Haushalt, der gerade offen ist.';
+  }
+
+  @override
+  String get accessKeysMcpBody =>
+      'Für KI-Assistenten: Verbinde per Anmeldung (OAuth) oder mit einem Zugriffsschlüssel.';
+
+  @override
+  String get accessKeysApiBody =>
+      'Für eigene Skripte und Automationen: Lies und, wenn du es erlaubst, ändere eure Liste über HTTP, mit einem Zugriffsschlüssel.';
+
+  @override
+  String get noAccessKeys => 'Kein aktiver Zugriffsschlüssel.';
+
+  @override
+  String get createAccessKey => 'Schlüssel erstellen';
+
+  @override
+  String get accessKeyNameHint =>
+      'z. B. KI-Assistent, Kurzbefehle oder Home Assistant';
+
+  @override
+  String get accessKeyCreated => 'Zugriffsschlüssel erstellt';
+
+  @override
+  String get accessKeyShownOnce =>
+      'Kopiere den Schlüssel jetzt. Er wird nicht noch einmal angezeigt.';
+
+  @override
+  String get revokeAccessKeyTitle => 'Zugriffsschlüssel widerrufen?';
+
+  @override
+  String get revokeAccessKeyBody =>
+      'Assistenten und Skripte, die ihn benutzen, verlieren sofort den Zugriff.';
+
+  @override
+  String get tooManyAccessKeys =>
+      'Höchstens 20 aktive Zugriffsschlüssel. Widerrufe erst einen.';
+
+  @override
+  String get accessKeySessionRequired =>
+      'Zugriffsschlüssel kannst du nur hier in der App erstellen, während du angemeldet bist.';
 }

@@ -1,7 +1,7 @@
 // The MCP server: one per request, bound to the authenticated caller.
 import { type CallToolResult, McpServer } from '@modelcontextprotocol/server';
 import { z } from 'zod';
-import type { Auth } from '../_shared/auth.ts';
+import { allows, type Auth, type Scope } from '../_shared/auth.ts';
 import type { Access } from '../_shared/premium.ts';
 import type { McpTool } from '../_shared/telemetry.ts';
 import type { UserEvent } from '../_shared/user_events.ts';
@@ -96,6 +96,44 @@ export const premiumRequired: Record<Lang, string> = {
     'Nothing was read or changed.',
 };
 
+/**
+ * Job 397: what a call with a read-only personal key gets from a tool that writes. A tool result
+ * like premiumRequired, naming the scope the key lacks.
+ */
+export const writeScopeRequired: Record<Lang, string> = {
+  de: 'Dieser Zugriffsschlüssel darf nur lesen. Erstelle in der ' +
+    'Snacklist-App unter Mehr › Zugänge einen Schlüssel zum Lesen und Schreiben. Es wurde nichts ' +
+    'geändert.',
+  en: 'This access key can only read. Create a key that can read and ' +
+    'write in the Snacklist app under More › Access. Nothing was changed.',
+};
+
+/** The scope each tool needs; a personal key without it gets writeScopeRequired. */
+export const toolScopes = {
+  list_households: 'read',
+  list_lists: 'read',
+  list_items: 'read',
+  get_item: 'read',
+  list_categories: 'read',
+  list_stores: 'read',
+  list_recent: 'read',
+  suggest_items: 'read',
+  add_items: 'write',
+  tick_items: 'write',
+  untick_items: 'write',
+  move_item: 'write',
+  update_item: 'write',
+  remove_items: 'write',
+  merge_items: 'write',
+  place_item: 'write',
+  set_store_order: 'write',
+  create_list: 'write',
+  rename_list: 'write',
+  add_store: 'write',
+  rename_store: 'write',
+  set_store_layout: 'write',
+} as const satisfies Record<McpTool, Scope>;
+
 export type Lang = 'de' | 'en';
 
 /** English when the client prefers it to German (Accept-Language), else German like the tools. */
@@ -142,14 +180,15 @@ export function reportToolCalls(send: UserEvent, userId: string): ReportCall {
 }
 
 /**
- * A tool body: runs as the caller in one transaction once the household (the [household]
- * argument, else the one the credential acts in) may use MCP; ToolErrors become tool-level
+ * A tool body: runs as the caller in one transaction once the credential has [scope] and the
+ * household (the [household] argument, else the one the credential acts in) may use MCP; ToolErrors become tool-level
  * errors. A failing check fails the call like any database error: reported, answered with
  * failedNow. A null [gate] is no check. Every call ends with one [done], in the household it
  * resolved to (the credential's while unresolved).
  */
 function run(
   auth: Auth,
+  scope: Scope,
   gate: Gate | null,
   lang: Lang,
   household: string | undefined,
@@ -158,6 +197,14 @@ function run(
 ) {
   return async (): Promise<CallToolResult> => {
     let h = auth.householdId;
+    if (!allows(auth, scope)) {
+      await done(h, 'tool_error');
+      return {
+        isError: true,
+        content: [{ type: 'text', text: writeScopeRequired[lang] }],
+        structuredContent: { error: 'insufficient_scope', details: { required: scope } },
+      };
+    }
     try {
       if (household !== undefined) {
         h = await asUser(auth.userId, (tx) => householdNamed(tx, auth, household));
@@ -313,7 +360,15 @@ export function buildServer(
     household: string | undefined,
     body: (tx: Tx, household: string) => Promise<unknown>,
   ) =>
-    run(auth, gate, lang, household, body, (h, reason) => report({ tool, household: h, reason }));
+    run(
+      auth,
+      toolScopes[tool],
+      gate,
+      lang,
+      household,
+      body,
+      (h, reason) => report({ tool, household: h, reason }),
+    );
 
   server.registerTool('list_households', {
     title: 'Haushalte anzeigen',

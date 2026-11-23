@@ -187,8 +187,8 @@ test('noindex: every page says it by header or in the page until the launch PR l
 // The privacy policy names the web app in its wording (sections 1, 3 and 12, and the deletion page
 // in section 8); Legal decides those sentences, so only the links went.
 const LEGAL_MENTIONS = {
-  '/datenschutz': ['(app.snacklist.app)', 'Web-App app.snacklist.app', 'https://app.snacklist.app/konto-loeschen.html', 'snacklist.app, app.snacklist.app, mcp.snacklist.app'],
-  '/en/privacy': ['(app.snacklist.app)', 'Web app app.snacklist.app', 'https://app.snacklist.app/konto-loeschen.html', 'snacklist.app, app.snacklist.app and mcp.snacklist.app'],
+  '/datenschutz': ['(app.snacklist.app)', 'Web-App app.snacklist.app', 'https://app.snacklist.app/konto-loeschen.html', 'snacklist.app, app.snacklist.app, mcp.snacklist.app, api.snacklist.app'],
+  '/en/privacy': ['(app.snacklist.app)', 'Web app app.snacklist.app', 'https://app.snacklist.app/konto-loeschen.html', 'snacklist.app, app.snacklist.app, mcp.snacklist.app and api.snacklist.app'],
 };
 
 test('only the launch stage links app.snacklist.app, in the header nav and under the store badges, and nothing comes from another server', () => {

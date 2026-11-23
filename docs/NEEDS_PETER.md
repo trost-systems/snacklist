@@ -2067,3 +2067,24 @@ looks wrong, say which, and a follow-up job adjusts `design/app-icon/art/ai1.mjs
 Store listings: the App Store and Play Console icons are uploaded by hand from
 `marketing/store-icons/app-store-1024.png` and `marketing/store-icons/play-512.png` (Ops does it
 with the next release).
+
+## Job 397: switch on one key for MCP and the API (after Legal's GO)
+
+Job 397 (#647) ships dark. The server switch changes what every existing key can do at once, so
+the privacy text goes live first. After Legal's GO and the merge:
+
+1. Release the hold: set `holds.unified-keys.released` to `true` in `releases/flags.json` (a small
+   PR), so snacklist.app shows the merged privacy paragraphs. Wait for the
+   site's production deploy.
+2. In production, as the service role (SQL editor or Management API):
+   `update public.app_switches set enabled = true where key = 'unified_keys';`
+   From then on MCP tokens work on the API and API keys on MCP and the Shortcut, each with its
+   scopes. Old screens keep working.
+3. In PostHog, target the flag `unified-keys` to your install first (More shows the install id),
+   check Mehr › Zugänge on TestFlight: one „Zugriffsschlüssel“ list, both URLs, „Schlüssel
+   erstellen“ with „Nur lesen“ / „Lesen und schreiben“. Then roll it out to everyone.
+4. Once everyone has the flag: in `releases/flags.json` set the flag's `rollout` to `full` and
+   `holds.unified-keys-guides.released` to `true` (a small PR), so the Claude and Siri guides show
+   the „Zugriffsschlüssel“ steps. Not earlier: until then most apps still show „Zugriffstoken“.
+
+To undo: `enabled = false`. Keys stay; API keys stop working on MCP and MCP tokens on the API.

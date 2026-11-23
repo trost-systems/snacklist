@@ -96,7 +96,10 @@ Deno.test('serves Protected Resource Metadata at the well-known suffix', async (
   for (
     const path of ['/mcp/.well-known/oauth-protected-resource', '/mcp/oauth-protected-resource']
   ) {
-    const res = await handle(new Request(`http://edge${path}`), deps({ ...USER, via: 'pat' }));
+    const res = await handle(
+      new Request(`http://edge${path}`),
+      deps({ ...USER, via: 'pat', scopes: ['read', 'write'] as const }),
+    );
     assertEquals(res.status, 200);
     assertEquals(res.headers.get('access-control-allow-origin'), '*');
     const body = await res.json();
@@ -151,6 +154,7 @@ Deno.test('OAuth and PAT credentials reach the MCP server', async () => {
     const auth of [{ ...USER, via: 'oauth', clientId: 'c', sessionId: 's' }, {
       ...USER,
       via: 'pat',
+      scopes: ['read', 'write'],
     }] as const
   ) {
     const res = await handle(post(), deps(auth));
@@ -162,7 +166,7 @@ Deno.test('a request over the limit gets 429 with Retry-After and is not served'
   const taken: string[] = [];
   let served = 0;
   const d: Deps = {
-    ...deps({ ...USER, via: 'pat' }),
+    ...deps({ ...USER, via: 'pat', scopes: ['read', 'write'] as const }),
     takeCall: (userId) => {
       taken.push(userId);
       return Promise.resolve(taken.length > 2 ? 7 : null);
@@ -186,7 +190,7 @@ Deno.test('a request over the limit gets 429 with Retry-After and is not served'
 Deno.test('a request whose account row is busy gets 503; other count failures throw', async () => {
   const busy = Object.assign(new Error('busy'), { name: 'PostgresError', code: '55P03' });
   const res = await handle(post(), {
-    ...deps({ ...USER, via: 'pat' }),
+    ...deps({ ...USER, via: 'pat', scopes: ['read', 'write'] as const }),
     takeCall: () => Promise.reject(busy),
   });
   assertEquals(res.status, 503);
@@ -195,7 +199,7 @@ Deno.test('a request whose account row is busy gets 503; other count failures th
   let thrown: unknown;
   try {
     await handle(post(), {
-      ...deps({ ...USER, via: 'pat' }),
+      ...deps({ ...USER, via: 'pat', scopes: ['read', 'write'] as const }),
       takeCall: () => Promise.reject(broken),
     });
   } catch (e) {
@@ -206,7 +210,7 @@ Deno.test('a request whose account row is busy gets 503; other count failures th
 
 Deno.test('an account deleted between authentication and the count gets the 401 challenge', async () => {
   const res = await handle(post(), {
-    ...deps({ ...USER, via: 'pat' }),
+    ...deps({ ...USER, via: 'pat', scopes: ['read', 'write'] as const }),
     takeCall: () => Promise.reject(new AuthError('user_deleted', 'Dieses Konto ist gelöscht.')),
   });
   assertEquals(res.status, 401);
@@ -227,7 +231,7 @@ Deno.test('a request that fails authentication is not counted', async () => {
 });
 
 Deno.test('browser origins outside the allowlist get 403; listed and absent origins pass', async () => {
-  const pat = deps({ ...USER, via: 'pat' });
+  const pat = deps({ ...USER, via: 'pat', scopes: ['read', 'write'] as const });
   assertEquals((await handle(post({ origin: 'https://evil.example' }), pat)).status, 403);
   for (
     const origin of [
@@ -342,7 +346,7 @@ Deno.test('MCP_PUBLIC_URL replaces the public origin', async () => {
 });
 
 Deno.test('the public origin is an allowed browser origin', async () => {
-  const pat = deps({ ...USER, via: 'pat' });
+  const pat = deps({ ...USER, via: 'pat', scopes: ['read', 'write'] as const });
   assertEquals((await handle(post({ origin: PUBLIC }), pat)).status, 200);
   assertEquals((await handle(post({ origin: PUBLIC_SNACK }), pat)).status, 200);
   for (const { headers, query } of [{}, ...PROXIED]) {
@@ -390,7 +394,7 @@ Deno.test('serves Supabase Auth metadata at the discovery paths without a token'
 });
 
 Deno.test('auth metadata: other methods get 405, an upstream failure 502', async () => {
-  const d = deps({ ...USER, via: 'pat' });
+  const d = deps({ ...USER, via: 'pat', scopes: ['read', 'write'] as const });
   const put = await handle(
     new Request('http://edge/mcp/.well-known/openid-configuration', { method: 'POST', body: '{}' }),
     d,

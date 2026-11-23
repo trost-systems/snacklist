@@ -149,8 +149,8 @@ select is(public.purchase_lifecycle('apple', 'g1', now() + interval '3 seconds',
 select is(public.household_has_premium((select id from hg)), false, 'ends premium');
 
 -- Integrations of the household, to show expiry touches none of them.
-insert into public.personal_access_tokens (household_id, user_id, name, token_hash, token_hint)
-values ((select id from hp), '00000000-0000-0000-0000-0000000049a1', 'Kurzbefehl', repeat('4', 64), '4949');
+insert into public.personal_access_tokens (household_id, user_id, name, token_hash, token_hint, scopes)
+values ((select id from hp), '00000000-0000-0000-0000-0000000049a1', 'Kurzbefehl', repeat('4', 64), '4949', '{read,write}');
 insert into public.alexa_links (alexa_user_hash, session_id, user_id)
 values (repeat('9', 64), gen_random_uuid(), '00000000-0000-0000-0000-0000000049b1');
 create temp table before_expiry as

@@ -121,7 +121,12 @@ async function tool(
   name: string,
   args: Record<string, unknown> = {},
 ): Promise<{ ok: true; value: unknown } | { ok: false; text: string }> {
-  const auth = { userId: h.userId, householdId: h.householdId, via: 'pat' as const };
+  const auth = {
+    userId: h.userId,
+    householdId: h.householdId,
+    via: 'pat' as const,
+    scopes: ['read', 'write'] as const,
+  };
   const res = await createMcpHandler(() => buildServer(auth, open, () => Promise.resolve())).fetch(
     new Request('http://edge/mcp', {
       method: 'POST',

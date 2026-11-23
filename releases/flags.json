@@ -4,6 +4,10 @@
       "rollout": "full",
       "note": "the Snacklist API keys under Mehr > Zugänge show only while the PostHog flag public-api is on (job 73); on at 100 % for everyone since 2026-11-21 14:08 CET (flag id 373927, app_switches.public_api on) after job 336 (#590) and a green production smoke"
     },
+    "unified-keys": {
+      "rollout": "off",
+      "note": "one list of Zugriffsschlüssel under Mehr > Zugänge (each key works for the MCP server and the API, read-only or read and write, at most 20 per member) shows only while the PostHog flag unified-keys is on (job 397); it also needs the server switch app_switches.unified_keys on; waits for the Legal GO on the privacy text"
+    },
     "grocery-log": {
       "rollout": "off",
       "note": "the Verlauf tab (the grocery log: logged trips by date and by store, Einkauf eintragen) shows only while the PostHog flag grocery-log is on (job 199); off for everyone, Peter's accounts and internal installs included, since 2026-11-22 (Peter HP2, job 401)"
@@ -137,6 +141,14 @@
     "push-notifications": {
       "released": false,
       "note": "push notifications (FCM, job 376 foundation; P1 job 377, P2 job 378) wait for Legal's GO on the privacy text and Ops' Firebase project"
+    },
+    "unified-keys": {
+      "released": false,
+      "note": "one access key for MCP, the API and the Siri Shortcut (job 397): the privacy text's merged key paragraphs show once released (the guides wait for unified-keys-guides); release it after Legal's GO and before the server switch unified_keys goes on, since the switch widens every existing key at once"
+    },
+    "unified-keys-guides": {
+      "released": false,
+      "note": "the Claude and Siri-Kurzbefehl guides' steps for the one Zugriffsschlüssel list (job 397); release only when the flag unified-keys reaches everyone (rollout full), since until then most apps still show Zugriffstoken and API"
     }
   }
 }

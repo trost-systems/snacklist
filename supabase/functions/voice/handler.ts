@@ -13,7 +13,7 @@
 // Job 207: an add goes to the list `list` names (an id or a spoken name) or the text ends with
 // ("Luftballons zur Geburtstag Liste"), else to the caller's default list there; an unknown or
 // ambiguous name adds to the default list and says so. Every add answer names the list in `list`.
-import { AuthError, type Via } from '../_shared/auth.ts';
+import { AuthError, type Scope, type Via } from '../_shared/auth.ts';
 import { corsHeaders, json, preflight } from '../_shared/http.ts';
 import type { ListCatalog } from '../_shared/list.ts';
 import {
@@ -33,6 +33,8 @@ export interface Caller {
   householdId: string;
   /** How the caller signed in; events go only to Siri (siri) and Shortcut (pat) calls. */
   via?: Via;
+  /** A personal key's scopes (job 397): adding needs `write`. Absent for other credentials. */
+  scopes?: readonly Scope[];
 }
 
 /** A heard item split like a typed one (public.parse_item): "Windeln", "Pampers", "Größe 3". */
@@ -99,6 +101,7 @@ export const maxTextLength = 1000;
 const statuses: Record<FailureCode, number> = {
   method: 405,
   unauthorized: 401,
+  read_only: 403,
   no_household: 403,
   no_text: 400,
   too_long: 413,
@@ -414,6 +417,7 @@ export function createHandler<C extends Caller>(deps: Deps<C>) {
     };
 
     const adding = body.mode === 'add';
+    if (adding && caller.scopes && !caller.scopes.includes('write')) return fail('read_only');
     const refuse = async (error: FailureCode, count = 0) => {
       if (adding) await track('siri_add', error, count);
       return fail(error);

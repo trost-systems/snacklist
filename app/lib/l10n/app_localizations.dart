@@ -6325,6 +6325,90 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Nutzt nur, wann du abhakst. Kein Standort.'**
   String get detectTripsHint;
+
+  /// Job 397: Zugänge, header of the one section of access keys (MCP and API) while the unified-keys flag and server switch are on
+  ///
+  /// In de, this message translates to:
+  /// **'Zugriffsschlüssel'**
+  String get accessKeys;
+
+  /// Job 397: Zugänge, under the accessKeys header: what an access key is for
+  ///
+  /// In de, this message translates to:
+  /// **'Ein Zugriffsschlüssel verbindet KI-Assistenten über den MCP-Server und eigene Skripte über die API mit eurer Liste. Ein Schlüssel gilt für beides und darf nur lesen oder lesen und schreiben.'**
+  String get accessKeysUnifiedHint;
+
+  /// Job 397: as accessKeysHousehold in the access keys section
+  ///
+  /// In de, this message translates to:
+  /// **'Neue Schlüssel gelten für „{household}“, den Haushalt, der gerade offen ist.'**
+  String accessKeysUnifiedHousehold(String household);
+
+  /// Job 397: access keys section, under the MCP server URL
+  ///
+  /// In de, this message translates to:
+  /// **'Für KI-Assistenten: Verbinde per Anmeldung (OAuth) oder mit einem Zugriffsschlüssel.'**
+  String get accessKeysMcpBody;
+
+  /// Job 397: access keys section, under the API URL (public-api flag on)
+  ///
+  /// In de, this message translates to:
+  /// **'Für eigene Skripte und Automationen: Lies und, wenn du es erlaubst, ändere eure Liste über HTTP, mit einem Zugriffsschlüssel.'**
+  String get accessKeysApiBody;
+
+  /// Job 397: access keys section, empty list
+  ///
+  /// In de, this message translates to:
+  /// **'Kein aktiver Zugriffsschlüssel.'**
+  String get noAccessKeys;
+
+  /// Job 397: access keys section, button and dialog title for a new access key
+  ///
+  /// In de, this message translates to:
+  /// **'Schlüssel erstellen'**
+  String get createAccessKey;
+
+  /// Job 397: new access key dialog, hint in the name field
+  ///
+  /// In de, this message translates to:
+  /// **'z. B. KI-Assistent, Kurzbefehle oder Home Assistant'**
+  String get accessKeyNameHint;
+
+  /// Job 397: dialog title after a new access key was made
+  ///
+  /// In de, this message translates to:
+  /// **'Zugriffsschlüssel erstellt'**
+  String get accessKeyCreated;
+
+  /// Job 397: new access key dialog: the secret is shown only now
+  ///
+  /// In de, this message translates to:
+  /// **'Kopiere den Schlüssel jetzt. Er wird nicht noch einmal angezeigt.'**
+  String get accessKeyShownOnce;
+
+  /// Job 397: confirm dialog title before revoking an access key
+  ///
+  /// In de, this message translates to:
+  /// **'Zugriffsschlüssel widerrufen?'**
+  String get revokeAccessKeyTitle;
+
+  /// Job 397: confirm dialog body before revoking an access key
+  ///
+  /// In de, this message translates to:
+  /// **'Assistenten und Skripte, die ihn benutzen, verlieren sofort den Zugriff.'**
+  String get revokeAccessKeyBody;
+
+  /// Job 397: snack bar, the member already has 20 active access keys (MCP and API together)
+  ///
+  /// In de, this message translates to:
+  /// **'Höchstens 20 aktive Zugriffsschlüssel. Widerrufe erst einen.'**
+  String get tooManyAccessKeys;
+
+  /// Job 397: snack bar, the server refused to create an access key outside the app's own sign-in (session_required)
+  ///
+  /// In de, this message translates to:
+  /// **'Zugriffsschlüssel kannst du nur hier in der App erstellen, während du angemeldet bist.'**
+  String get accessKeySessionRequired;
 }
 
 class _AppLocalizationsDelegate

@@ -75,8 +75,8 @@ select results_eq(
   $$ select 'api'::text, '{read,write}'::text[], right(token, 4) from ka $$,
   'the owner reads kind, scopes and hint of the key'
 );
-select is((select scopes from public.personal_access_tokens where id = (select id from pat)), null,
-  'an MCP token has no scopes');
+select is((select scopes from public.personal_access_tokens where id = (select id from pat)),
+  '{read,write}'::text[], 'an MCP token reads and writes (job 397)');
 select throws_ok($$ select public.create_api_token('x', '{write}') $$, '22023', 'invalid_scopes',
   'write alone is no scope set');
 select throws_ok($$ select public.create_api_token('x', '{}') $$, '22023', 'invalid_scopes',

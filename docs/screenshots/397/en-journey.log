@@ -1,0 +1,10 @@
+[21:03:08.406Z] an MCP token „Claude“ made as an older app build does (create_personal_access_token)
+[21:03:12.030Z] switch off, flag on: the two sections as before („Create token“, no „Create key“)
+[21:03:13.788Z] switch on: one section, hint „An access key connects AI assistants on the MCP server and your own scripts on the API to your list. One key works for both and can read only, or read and write.“, the old token listed as „Read and write“
+[21:03:15.125Z] „Access key created“ shows the key once
+[21:03:15.563Z] rows: [{"name":"Home Assistant","kind":"api","scopes":["read"]},{"name":"Claude","kind":"pat","scopes":["read","write"]}]
+[21:03:15.618Z] MCP list_items with the read-only key: HTTP 200, a result
+[21:03:15.643Z] MCP add_items with the read-only key: HTTP 200, tool error „This access key can only read (it lacks the "write" scope). Create a key that can read and write in the Snacklist app under More › Access. Nothing was changed.“, {"error":"insufficient_scope","details":{"required":"write"}}
+[21:03:15.763Z] API with the old MCP token: GET 200, POST 201; with the read-only key: POST 403 insufficient_scope
+[21:03:16.445Z] after the revoke the key gets HTTP 401 on MCP
+[21:03:16.803Z] PASS

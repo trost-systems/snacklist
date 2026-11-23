@@ -28,7 +28,8 @@ so a new database, the local stack and production start without the API. While i
 - every request answers `404 not_found`, the same answer as an unknown path, without rate
   headers. Nothing is read, counted or written, and no key is marked as used;
 - the app cannot create API keys: `create_api_token` raises `api_disabled` (SQLSTATE `42501`) and
-  the app shows "Die API ist noch nicht freigeschaltet.";
+  the app shows "Die API ist noch nicht freigeschaltet."; with `unified_keys` on it can, since the
+  same key works on the MCP server;
 - members can still list and revoke the keys they have. MCP, Siri and Alexa do not read the
   switch.
 
@@ -42,6 +43,34 @@ update public.app_switches set enabled = true where key = 'public_api';
 Then turn on the PostHog flag `public-api`, which shows the API section in the app. Setting
 `enabled = false` switches the API off again. Keys made in between stay and work again when it is
 back on.
+
+## One key for MCP and the API
+
+Job 397 (AU1, `docs/research/388-auth-unify-api-domain.md`). The server switch
+`app_switches.unified_keys` (seeded off) makes MCP access tokens and API keys one thing:
+
+| | `unified_keys` off | `unified_keys` on |
+| --- | --- | --- |
+| API (`api_begin`) | API keys only | API keys and MCP access tokens (always `read` and `write`) |
+| MCP server and Siri Shortcut (`authenticate_key`) | MCP access tokens only | MCP access tokens and API keys, with their scopes |
+| `create_api_token` | needs `public_api` on; 10 per member | works with `public_api` off; 20 per member, MCP tokens counted |
+| `create_personal_access_token` (older app builds) | an MCP token, 20 per member | an MCP token with `read` and `write`, under the shared cap of 20 |
+| App, More → Zugänge | "Zugriffstoken" and "API", two lists | one "Zugriffsschlüssel" list, while the PostHog flag `unified-keys` is on too |
+
+`personal_access_tokens.kind` stays as it was (`pat` for keys made as MCP tokens, `api` for keys
+made since); the scopes decide what a key may do. Every MCP access token has `{read,write}`. On
+the MCP server a `read` key may call the reading tools; a writing tool answers with a tool error
+naming the missing `write` scope (`structuredContent: {"error": "insufficient_scope", "details":
+{"required": "write"}}`). Siri's Shortcut adds only with a `write` key. A `pat` row restored from a backup older than job 397 has no scopes and counts as `read` and `write`.
+
+To switch on in production, after the Legal GO and once the hold `unified-keys` in `releases/flags.json` is released (the privacy text must be live first: the switch widens every existing key at once):
+
+```sql
+update public.app_switches set enabled = true where key = 'unified_keys';
+```
+
+Then target the PostHog flag `unified-keys`. Switching off again returns to two kinds: API keys
+stop working on the MCP server and MCP tokens on the API; no key is deleted.
 
 ## Base URL
 
@@ -71,8 +100,16 @@ Authorization: Bearer fgp_…
   for, under the same row-level security as the app. It stops working when it is revoked
   (Zugänge → the key's delete button), when its creator leaves that household, or when the
   account is deleted. Ended keys are deleted 30 days later (`purge_access_tokens`, Legal N-4).
-- **Other credentials do not work here.** MCP tokens, Siri credentials, OAuth access tokens and
-  app sessions get `401 invalid_token`; API keys do not work on the MCP server or Siri.
+- **One key for MCP and the API** (job 397, while the server switch `unified_keys` is on): every
+  personal key works here and on the [MCP server](MCP.md) with its scopes. The app then shows one
+  list, "Zugriffsschlüssel" (More → Zugänge, while the PostHog flag `unified-keys` is on too):
+  create a key with a name and "Nur lesen" or "Lesen und schreiben". An MCP access token made
+  before is a `read` and `write` key and works here too. A key used on both counts in each
+  surface's own limits (below, and the MCP server's per user). See
+  [One key for MCP and the API](#one-key-for-mcp-and-the-api).
+- **Other credentials do not work here.** Siri credentials, OAuth access tokens and app sessions
+  get `401 invalid_token`. While `unified_keys` is off, MCP access tokens get it too, and API keys
+  do not work on the MCP server or Siri.
 - **Snacklist Premium**: the API is a Premium integration like the MCP server (Siri and Alexa
   stay free). While the server switch `integration_lock` is on, a key whose holder has no
   Premium (neither their own plan nor a grant of the key's household; another member's plan does
@@ -469,7 +506,7 @@ arguments, so that file is the one place to change them.
 | Recent, suggestions | 1 to 50; default 20 recent items, 10 suggestions | |
 | Lists, stores | 50 each per household | `409 too_many_lists`, `too_many_stores` |
 | Idempotency keys | kept 24 hours | |
-| API keys | 10 active per member | `create_api_token` refuses an 11th (`too_many_tokens`); with the API switched off it refuses all (`api_disabled`) |
+| API keys | 10 active per member; with `unified_keys` on, 20 personal keys (MCP tokens and API keys together) | `create_api_token` refuses one more (`too_many_tokens`); with the API switched off it refuses all (`api_disabled`), unless `unified_keys` is on |
 
 Every response says where the caller stands:
 

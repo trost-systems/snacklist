@@ -112,8 +112,8 @@ select ok(not pg_temp.works((select token from ben_pat)), 'rejoining does not br
 alter table public.household_members disable trigger household_members_end_access_tokens;
 delete from public.household_members where user_id = '00000000-0000-0000-0000-0000000e7bb1';
 alter table public.household_members enable trigger household_members_end_access_tokens;
-insert into public.personal_access_tokens (household_id, user_id, name, token_hash, token_hint)
-values ((select id from h), '00000000-0000-0000-0000-0000000e7bb1', 'Stray', repeat('e', 64), 'eeee');
+insert into public.personal_access_tokens (household_id, user_id, name, token_hash, token_hint, scopes)
+values ((select id from h), '00000000-0000-0000-0000-0000000e7bb1', 'Stray', repeat('e', 64), 'eeee', '{read,write}');
 select public.purge_access_tokens();
 select ok(
   (select revoked_at is not null from public.personal_access_tokens where name = 'Stray'),

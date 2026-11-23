@@ -688,8 +688,10 @@ components:
       scheme: bearer
       bearerFormat: fgp_ followed by 43 base64url characters
       description: >-
-        An API key from the Snacklist app (More, Zugänge, API) with the scope read, or read and
-        write. MCP tokens, Siri credentials and OAuth tokens are not accepted.
+        A personal key from the Snacklist app (More, Zugänge) with the scope read, or read and
+        write. While the server switch unified_keys is on, the same key works on the MCP server,
+        and an MCP access token made earlier works here with read and write; while it is off,
+        only API keys are accepted. Siri credentials and OAuth tokens are never accepted.
   parameters:
     ItemId:
       name: id
