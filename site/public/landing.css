@@ -770,6 +770,8 @@
   [data-os="desktop"] .cta .store-cards {
     display: grid;
     grid-template-columns: repeat(2, max-content);
+    justify-content: space-between;
+    justify-self: stretch;
     grid-template-rows: auto auto auto;
     gap: 0 var(--hl-space-6);
     align-items: start;
@@ -780,7 +782,11 @@
     grid-row: span 3;
     grid-template-rows: subgrid;
     row-gap: var(--hl-space-3);
-    justify-items: center;
+    justify-items: start;
+  }
+
+  [data-os="desktop"] .cta .store-card--play {
+    justify-items: end;
   }
 
   [data-os="desktop"] .cta .store-qr {
@@ -789,6 +795,11 @@
 
   [data-os="desktop"] .cta .store-qr figcaption {
     max-width: 24ch;
+    text-align: start;
+  }
+
+  [data-os="desktop"] .cta .store-card--play .store-qr figcaption {
+    text-align: end;
   }
 }
 
@@ -810,10 +821,16 @@
   [data-os="desktop"] .cta .store-cards {
     grid-template-columns: max-content;
     justify-self: center;
-    row-gap: var(--hl-space-5);
+    row-gap: var(--hl-space-6);
   }
 
-  [data-os="desktop"] .cta .store-qr figcaption {
+  [data-os="desktop"] .cta .store-card,
+  [data-os="desktop"] .cta .store-card--play {
+    justify-items: center;
+  }
+
+  [data-os="desktop"] .cta .store-qr figcaption,
+  [data-os="desktop"] .cta .store-card--play .store-qr figcaption {
     text-align: center;
   }
 }
