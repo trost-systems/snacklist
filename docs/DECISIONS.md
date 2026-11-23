@@ -18151,8 +18151,8 @@ gets the grocery Globus (Mein Globus, DE) and Globus Baumarkt also carries the a
 matches both exactly and the household picks (`Welches Globus?`), the choice stored on the store. The earlier entry
 above ("Plain Globus stays without an exact match") is superseded. Existing stores named Globus are asked once, never
 linked silently: there was no grocery match to keep. `retailers_test.ts` pins the set of names two chains share in a
-country (Aldi DE, Globus DE). The review also found that #662 merged before its Opus review ran; this fix waits for
-review PASS before merge-pr.sh.
+country (Aldi DE, Globus DE). The review also found that #662 merged before its Opus review ran. (Corrected after
+review 1: #674 did not wait either, see the Job 410 (review 1) section.)
 
 ## Job 415: MCP directory readiness
 
@@ -18162,3 +18162,12 @@ review PASS before merge-pr.sh.
 4. **Information page as two guides** on the site (`/de/anleitungen/ki-assistenten-tarif`, `/en/guides/ai-assistants-plan`) rather than a legal page, so the PR touches no privacy or terms text and lands without Legal. It makes no claim about prices or where to see a plan (I had one and removed it: not verifiable). Listed in NEEDS_LEAD for a Legal look.
 5. **Seed script is bash + psql**, acting as the user through `request.jwt.claims` and the same functions the app calls, so classifier and store layouts behave as for a real user. Idempotency: household by a request id derived from the user id, stores `on conflict do nothing`, `add_item` returns an open duplicate.
 6. **No code change for the reviewer sign-in**: the app sends only email and password and skips analytics consent and the name step on the consent path.
+
+## Job 410 (review 1): the land step ignored the review gate twice
+
+#662 merged at 08:24 and #674 (the Globus fix) at 09:28, both before their Opus review (review 0 started 08:29, review
+1 at 09:52). The builder's own review of #674 had returned FAIL on a docs sentence, which a later docs commit fixed
+without a second review. The code was correct both times; the record was not, and the sentence "this fix waits for review
+PASS before merge-pr.sh" in the review 0 section was false (now corrected). Cause, as far as the builder can tell: the
+fix prompts say "commit and push" and the builder treated landing as part of that, with no stop between push-pr.sh and
+merge-pr.sh. This docs fix waits for review PASS before it lands. NEEDS_LEAD has the line for the lead.

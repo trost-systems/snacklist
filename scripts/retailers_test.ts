@@ -1,3 +1,4 @@
+// Run: deno test --config supabase/functions/deno.json --allow-read scripts/retailers_test.ts
 import { assertEquals, assertThrows } from '@std/assert';
 import { blockOf, COVERAGE, coverageFile, DART, dartFile, dataBlock, newestWithBlock, parseRegistry, readMigrations, readRegistry, type Registry } from './retailers.ts';
 
