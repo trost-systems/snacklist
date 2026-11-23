@@ -115,11 +115,12 @@ void main() {
     expect(find.text(joinPageHintEn).hitTestable(), findsOneWidget);
   });
 
-  testWidgets('with Premium it says that Premium covers everyone', (
+  testWidgets('with Premium it says nothing of the household (Terms §6)', (
     tester,
   ) async {
     await _openSheet(tester, _home(premium: true));
-    expect(find.text('Premium gilt für alle im Haushalt.'), findsOneWidget);
+    expect(find.text('Premium gilt für alle im Haushalt.'), findsNothing);
+    expect(_key('invite-premium'), findsNothing);
   });
 
   testWidgets('an admin makes the group link: QR code, 0 of 50, no one yet', (
@@ -317,7 +318,7 @@ void main() {
     expect(find.text('Invite people'), findsWidgets);
     expect(
       find.text('Premium covers everyone in the household.'),
-      findsOneWidget,
+      findsNothing,
     );
     await _scrollTo(tester, 'invite-group-uses');
     expect(find.text('12 of 50 joined'), findsOneWidget);

@@ -20,7 +20,6 @@ const texts = {
     invited: (household) => `Du bist zu „${household}“ eingeladen`,
     members: (n) => (n === 1 ? '1 Mitglied' : `${n} Mitglieder`),
     openItems: (n) => (n === 1 ? '1 offener Eintrag' : `${n} offene Einträge`),
-    premium: 'Premium gilt für alle im Haushalt',
     join: 'Im Browser beitreten',
     enterCode: 'Code im Browser eingeben',
     codeLabel: 'Einladungscode',
@@ -44,7 +43,6 @@ const texts = {
     invited: (household) => `You’re invited to “${household}”`,
     members: (n) => (n === 1 ? '1 member' : `${n} members`),
     openItems: (n) => (n === 1 ? '1 open item' : `${n} open items`),
-    premium: 'Premium covers everyone in the household',
     join: 'Join in the browser',
     enterCode: 'Enter a code in the browser',
     codeLabel: 'Invite code',
@@ -133,8 +131,6 @@ function render(t, code, preview) {
   show('title', title);
   show('body', body);
   show('facts', ok ? `${t.members(preview.members)} · ${t.openItems(preview.openItems)}` : null);
-  byId('premium').hidden = !(ok && preview.premium);
-  byId('premium-text').textContent = t.premium;
 
   const join = byId('join');
   join.hidden = false;

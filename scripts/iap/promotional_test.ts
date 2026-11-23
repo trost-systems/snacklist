@@ -14,12 +14,12 @@ const HOME = 'eb021cef-9284-4e67-91a8-2c63780db5ae';
 Deno.test('parseArgs: a household id, dry run unless --apply', () => {
   assertEquals(parseArgs(['status', '--household', HOME]), {
     action: 'status',
-    household: HOME,
+    appUserId: HOME,
     apply: false,
   });
   assertEquals(parseArgs(['reconcile', '--household', HOME.toUpperCase(), '--apply']), {
     action: 'reconcile',
-    household: HOME,
+    appUserId: HOME,
     apply: true,
   });
   assertThrows(() => parseArgs(['status', '--household', HOME, '--apply']));
@@ -115,4 +115,12 @@ Deno.test('grantEntitlement: RevenueCat never answering times out as RevenueCatU
     () => grantEntitlement({ secretKey: 'sk_test', projectId: 'proj1' }, HOME, hang, 20),
     RevenueCatUnavailable,
   );
+});
+
+Deno.test('parseArgs: --user takes an account id like --household', () => {
+  assertEquals(parseArgs(['grant', '--user', HOME, '--apply']), {
+    action: 'grant',
+    appUserId: HOME,
+    apply: true,
+  });
 });

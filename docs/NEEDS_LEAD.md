@@ -2585,3 +2585,12 @@ back to DE.
 3. **Two new guide pages** (`site/content/guides/{de,en}/ki-assistenten-tarif.md`, `ai-assistants-plan.md`) say an assistant may need a different plan and point to support. They hold no price or checkout and no legal text I know of; Legal may want a look because they describe plan terms. Hash after merge: `git log -1 --format=%H -- site/content/guides/en/ai-assistants-plan.md`.
 4. **Brand names in `docs/connectors/`** (Claude, ChatGPT) are outside the `brand-names` lint (docs only); the listing texts name the vendors only where the form needs it. Legal confirms that fits N-80..N-86 before submission.
 5. **Ops step**: confirm captcha is off in production Auth (not readable from the runner), see `docs/done/415.md` FOR OPS A3.
+
+## NEEDS_LEAD Job 419: household-only Premium no longer opens MCP and the API
+
+- **Order at launch.** Run `scripts/iap/beta-lifetime.ts` (every beta account's own lifetime Premium) before `integration_lock` goes on. Until then a household's free unlock or old household-bound purchase opens nothing for MCP and the API when the lock is on.
+- **Old store builds** that still use a household id as RevenueCat App User ID can create household-bound purchases; those open nothing for MCP and the API. Sales are held until the launch, so none should exist.
+- **Tester and reviewer grants** must be per-user RevenueCat grants: `scripts/iap/promotional.ts grant --user <uuid>` (a household id no longer unlocks MCP or the API).
+- **Verlauf and trip locks** still open for a household's Premium or the user's (server `household_has_premium or user_has_premium`, app `has()`). The Terms speak of MCP and the API only; say if Terms §6 should cover them too.
+- **Lifetime grants before the lock** (AC7, AC9): `scripts/iap/beta-lifetime.ts` (see DECISIONS "Job 419"), dry run first; the lock needs your decision and the Terms accepted in the app.
+- **App follows the server (review 0).** `integrationAccess` and Buy (`Entitlements.canOffer`) now go by the user's own Premium (`Entitlements.ownPremium`). A user with only a household plan or grant sees the card and paused tiles, and may buy their own.

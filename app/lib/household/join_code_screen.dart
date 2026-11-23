@@ -203,14 +203,6 @@ class const InvitePreviewCard({
                     color: t.textMuted,
                   ),
                 ),
-              if (fields.premium && invite.premium)
-                Row(
-                  spacing: HlSpace.s2,
-                  children: [
-                    Icon(Icons.workspace_premium_outlined, color: t.brand),
-                    Expanded(child: Text(l10n.jh2PreviewPremium)),
-                  ],
-                ),
             ],
           ),
         ),

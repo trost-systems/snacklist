@@ -4,7 +4,7 @@
 -- deletes nothing; renewing opens again with the same tokens and links. Alexa is never locked
 -- (20261102120000_alexa_free.sql), nor Siri (20261113034530_siri_free.sql, job 184).
 begin;
-select plan(37);
+select plan(43);
 
 create function pg_temp.login(uid uuid) returns void language plpgsql as $$
 begin
@@ -24,9 +24,9 @@ create function pg_temp.yearly(p_tx text, p_household uuid, p_days int) returns 
     'DE', p_household, now(), now() + make_interval(days => p_days), true, false)
 $$;
 
-create function pg_temp.gate(p_household uuid, p_integration text) returns text language sql as $$
+create function pg_temp.gate(p_household uuid, p_integration text, p_user uuid default null) returns text language sql as $$
   select case when not locked then 'open' when report then 'locked, report' else 'locked' end
-  from public.integration_gate(p_household, p_integration)
+  from public.integration_gate(p_household, p_integration, p_user)
 $$;
 
 -- What a household has connected and written: none of it may change because of the lock.
@@ -64,6 +64,8 @@ select pg_temp.as_postgres();
 
 select is((select enabled from public.app_switches where key = 'integration_lock'), false,
   'integration_lock is seeded off');
+select matches(obj_description('public.app_switches'::regclass), 'NEVER switch integration_lock on before the public launch and a lead decision',
+  'the table says the lock never flips without a lead decision (Legal must-fix 17)');
 select is(pg_temp.gate((select id from hj), 'siri'), 'open', 'switch off: a household without premium uses Siri');
 select is(pg_temp.gate((select id from hj), 'alexa'), 'open', 'and Alexa');
 select is(pg_temp.gate((select id from hj), 'mcp'), 'open', 'and MCP');
@@ -119,12 +121,18 @@ values (repeat('a', 64), '00000000-0000-4000-8000-0000000050e1', '00000000-0000-
 select is(pg_temp.yearly('y50', (select id from hi), 365) ->> 'outcome', 'granted', 'Ida''s household buys a yearly plan');
 select is(pg_temp.gate((select id from hi), 'siri'), 'open', 'yearly active: Siri is open');
 select is(pg_temp.gate((select id from hi), 'alexa'), 'open', 'Alexa too');
-select is(pg_temp.gate((select id from hi), 'mcp'), 'open', 'and MCP, for every member at once');
+select is(pg_temp.gate((select id from hi), 'mcp', '00000000-0000-0000-0000-0000000050a1'), 'locked',
+  'but MCP stays locked: a household''s plan does not unlock it (job 419, per account)');
+select is(public.promotional_premium_sync_user('00000000-0000-0000-0000-0000000050a1', true, '2100-01-01T00:00:00Z'), 'granted',
+  'Ida gets a Premium grant of her own');
+select is(pg_temp.gate((select id from hi), 'mcp', '00000000-0000-0000-0000-0000000050a1'), 'open', 'MCP is open for Ida');
+select is(pg_temp.gate((select id from hi), 'mcp', '00000000-0000-0000-0000-0000000050b1'), 'locked',
+  'and locked for Ian in the same household');
 
 create temp table before_lapse as select pg_temp.integrations((select id from hi)) as v;
 select is(public.purchase_lifecycle('apple', 'y50', now() + interval '1 second', now() - interval '1 minute', false, false) ->> 'outcome',
   'updated', 'the yearly plan expires (EXPIRATION)');
-select is(pg_temp.gate((select id from hi), 'mcp'), 'locked', 'lapsed: MCP is locked at read time (reported within the hour already)');
+select is(pg_temp.gate((select id from hi), 'mcp', '00000000-0000-0000-0000-0000000050b1'), 'locked', 'lapsed: MCP is locked at read time (reported within the hour already)');
 select is(pg_temp.gate((select id from hi), 'alexa'), 'open', 'Alexa stays open after the lapse');
 select is(pg_temp.integrations((select id from hi)), (select v from before_lapse),
   'the lapse deleted no token, Alexa link, session, item or entitlement row');
@@ -132,7 +140,7 @@ select is(pg_temp.integrations((select id from hi)), (select v from before_lapse
 select is(public.purchase_lifecycle('apple', 'y50', now() + interval '2 seconds', now() + interval '365 days', true, false) ->> 'outcome',
   'updated', 'the plan renews (RENEWAL)');
 select is(pg_temp.gate((select id from hi), 'siri'), 'open', 'renewed: Siri is open again');
-select is(pg_temp.gate((select id from hi), 'mcp'), 'open', 'and MCP');
+select is(pg_temp.gate((select id from hi), 'mcp', '00000000-0000-0000-0000-0000000050b1'), 'locked', 'MCP stays locked for a member without Premium of their own');
 select is(pg_temp.integrations((select id from hi)), (select v from before_lapse),
   'with the same tokens and links, nothing to set up again');
 
@@ -148,7 +156,11 @@ create temp table ht as select id from public.create_household('Tess');
 select pg_temp.as_postgres();
 select is(public.promotional_premium_sync((select id from ht), true, '2100-01-01T00:00:00Z'), 'granted',
   'Tess''s household has a promotional grant');
-select is(pg_temp.gate((select id from ht), 'mcp'), 'open', 'and uses MCP with the switch on');
+select is(pg_temp.gate((select id from ht), 'mcp', '00000000-0000-0000-0000-0000000050d1'), 'locked, report',
+  'which no longer opens MCP (job 419)');
+select is(public.promotional_premium_sync_user('00000000-0000-0000-0000-0000000050d1', true, '2100-01-01T00:00:00Z'), 'granted',
+  'a tester''s grant is a per-user RevenueCat grant');
+select is(pg_temp.gate((select id from ht), 'mcp', '00000000-0000-0000-0000-0000000050d1'), 'open', 'and opens MCP with the switch on');
 
 update public.app_switches set enabled = false where key = 'integration_lock';
 select is(pg_temp.gate((select id from hi), 'siri') || ', ' || pg_temp.gate((select id from hj), 'mcp'), 'open, open',

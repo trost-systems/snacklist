@@ -1,4 +1,4 @@
-// A household's free Snacklist Premium from RevenueCat promotional grants (docs/PURCHASES.md,
+// A user's (since job 419) or a household's free Snacklist Premium from RevenueCat promotional grants (docs/PURCHASES.md,
 // "Free premium: RevenueCat promotional grants", and "Testers"). The grant lives in RevenueCat (its
 // dashboard, Customer → Entitlements → Grant, or `grant` below); the purchases function stores it on
 // RevenueCat's webhook. `status` reads RevenueCat's state; `reconcile --apply` asks the function to
@@ -7,9 +7,10 @@
 // household premium until 2100-01-01 through API v2 grant_entitlement (only if it has no such grant
 // yet, so a rerun changes nothing) and then reconciles.
 //
-//   deno run --allow-env --allow-net scripts/iap/promotional.ts status --household <uuid>
-//   ... promotional.ts reconcile --household <uuid> [--apply]
-//   ... promotional.ts grant --household <uuid> [--apply]
+//   deno run --allow-env --allow-net scripts/iap/promotional.ts status --user <uuid>
+//   ... promotional.ts reconcile --user <uuid> [--apply]
+//   ... promotional.ts grant --user <uuid> [--apply]
+// (--user: an account id, what MCP and the API need; --household: the same flag for an old household grant)
 //
 // Dry run by default. Needs REVENUECAT_SECRET_KEY and REVENUECAT_PROJECT_ID (API v2; read, and for
 // grant --apply customer_information:customers:read_write), and for --apply
@@ -30,7 +31,8 @@ import {
 
 export type Command = {
   action: 'status' | 'reconcile' | 'grant';
-  household: string;
+  /** The RevenueCat App User ID: an account's id (job 419) or, for old grants, a household's. */
+  appUserId: string;
   apply: boolean;
 };
 
@@ -39,23 +41,25 @@ export const premiumEntitlementId = 'entl654efcfce4';
 /** A tester's grant ends here: RevenueCat's grants need an end; this one is "for good". */
 export const testerGrantEnd = new Date('2100-01-01T00:00:00Z');
 
-const usage = 'usage: promotional.ts status --household <uuid> | ' +
-  'reconcile --household <uuid> [--apply] | grant --household <uuid> [--apply]';
+const usage = 'usage: promotional.ts status --user <uuid> | ' +
+  'reconcile --user <uuid> [--apply] | grant --user <uuid> [--apply] ' +
+  '(--user: an account id, what MCP and the API need since job 419; --household: a household id)';
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 export function parseArgs(args: string[]): Command {
   const [action, ...rest] = args;
   if (action !== 'status' && action !== 'reconcile' && action !== 'grant') throw new Error(usage);
-  let household: string | null = null;
+  let appUserId: string | null = null;
   let apply = false;
   for (let i = 0; i < rest.length; i++) {
     if (rest[i] === '--apply' && action !== 'status') apply = true;
-    else if (rest[i] === '--household' && rest[i + 1] !== undefined) household = rest[++i];
-    else throw new Error(usage);
+    else if ((rest[i] === '--user' || rest[i] === '--household') && rest[i + 1] !== undefined) {
+      appUserId = rest[++i];
+    } else throw new Error(usage);
   }
-  household = household?.toLowerCase() ?? null;
-  if (!household || !uuid.test(household)) throw new Error('--household: a household id (uuid)');
-  return { action, household, apply };
+  appUserId = appUserId?.toLowerCase() ?? null;
+  if (!appUserId || !uuid.test(appUserId)) throw new Error('--user or --household: an id (uuid)');
+  return { action, appUserId, apply };
 }
 
 export function describe(p: PromotionalPremium): string {
@@ -154,9 +158,9 @@ export function required(name: string): string {
   return v;
 }
 
-async function reconcileOrExit(household: string): Promise<void> {
+async function reconcileOrExit(appUserId: string): Promise<void> {
   const url = reconcileUrl((k) => Deno.env.get(k));
-  const { status, body } = await reconcile(household, {
+  const { status, body } = await reconcile(appUserId, {
     url,
     secret: required('REVENUECAT_DELETIONS_SECRET'),
   });
@@ -171,11 +175,11 @@ if (import.meta.main) {
       secretKey: required('REVENUECAT_SECRET_KEY'),
       projectId: required('REVENUECAT_PROJECT_ID'),
     };
-    const now = await fetchPromotional(key, command.household, fetch, new Date());
+    const now = await fetchPromotional(key, command.appUserId, fetch, new Date());
     console.log(describe(now));
     if (command.action === 'reconcile') {
       if (!command.apply) console.log('dry run: --apply asks the purchases function to store this');
-      else await reconcileOrExit(command.household);
+      else await reconcileOrExit(command.appUserId);
     } else if (command.action === 'grant') {
       if (grantedForGood(now)) {
         console.log(
@@ -186,9 +190,9 @@ if (import.meta.main) {
           `dry run: --apply grants premium until ${testerGrantEnd.toISOString()}, then reconciles`,
         );
       } else {
-        await grantEntitlement(key, command.household, fetch);
-        console.log(describe(await fetchPromotional(key, command.household, fetch, new Date())));
-        await reconcileOrExit(command.household);
+        await grantEntitlement(key, command.appUserId, fetch);
+        console.log(describe(await fetchPromotional(key, command.appUserId, fetch, new Date())));
+        await reconcileOrExit(command.appUserId);
       }
     }
   } catch (e) {

@@ -36,7 +36,7 @@ const manageOnWeb = (page: Page) =>
   page.getByRole('group', { name: 'Dein Jahresabo verwaltest du im App Store oder bei Google Play.' });
 /** The note after Lifetime: its sentence as text, the store page as a link of its own. */
 const lifetimeWhileYearly = (page: Page, rest: RegExp) =>
-  page.getByText(new RegExp(`^Euer Haushalt hat schon ein Jahresabo\\..*${rest.source}`));
+  page.getByText(new RegExp(`^(Es läuft schon|Du hast schon) ein Jahresabo\\..*${rest.source}`));
 const billingContinues = (page: Page) =>
   page.getByText(/^Dein Jahresabo für Snacklist Premium läuft weiter und wird über dein Apple- bzw\. Google-Konto/);
 const billingOther = (page: Page) =>
@@ -128,7 +128,7 @@ test('Lifetime while a yearly plan runs: Lifetime wins, the plan keeps billing a
   await expect(lifetimeWhileYearly(lea, /Kündigen kann nur, wer das Abo abgeschlossen hat, unter Abos verwalten/))
     .toBeVisible();
   // The note itself is text, not one big link (the inline link is a tap on the span; widget tests tap it).
-  await expect(lea.getByRole('link', { name: /^Euer Haushalt/ })).toHaveCount(0);
+  await expect(lea.getByRole('link', { name: /^(Es läuft schon|Du hast schon) ein Jahresabo/ })).toHaveCount(0);
   // Peter took the plan out: his variant.
   await expect(lifetimeWhileYearly(peter, /Du kannst es unter Abo verwalten kündigen/))
     .toBeVisible({ timeout: 10_000 });

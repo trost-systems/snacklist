@@ -1,7 +1,7 @@
 -- Job 336: MCP requests per user (mcp_rate, mcp_take_call, purge_mcp_rate) and items.created_at
 -- kept within 2000-01-01 .. tomorrow (items_before_write).
 begin;
-select plan(20);
+select plan(33);
 
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-0000000336a1', 'peter336@example.com'),
@@ -23,7 +23,7 @@ select is(
   array(select public.mcp_take_call('00000000-0000-0000-0000-0000000336a1', 3, 60, 1000) from generate_series(1, 4)),
   array[null, null, null, 1]::integer[],
   'a burst of 3 passes, the 4th waits a second');
-select is((select requests from public.mcp_rate where user_id = '00000000-0000-0000-0000-0000000336a1'), 3,
+select is((select requests from public.account_days where user_id = '00000000-0000-0000-0000-0000000336a1'), 3,
   'a refused call is not counted');
 select is(public.mcp_take_call('00000000-0000-0000-0000-0000000336b1', 3, 60, 1000), null,
   'another user has a bucket of their own');
@@ -36,23 +36,59 @@ select is(
 
 -- The day ----------------------------------------------------------------------------------
 
-update public.mcp_rate set requests = 1000, tokens = 3 where user_id = '00000000-0000-0000-0000-0000000336a1';
+update public.mcp_rate set tokens = 3 where user_id = '00000000-0000-0000-0000-0000000336a1';
+update public.account_days set requests = 1000 where user_id = '00000000-0000-0000-0000-0000000336a1';
 select cmp_ok(public.mcp_take_call('00000000-0000-0000-0000-0000000336a1', 3, 60, 1000), '>', 1,
   'a used-up day waits for the next UTC day, though the bucket is full');
 select is(public.mcp_take_call('00000000-0000-0000-0000-0000000336a1', 3, 60, 1000),
   ceil(extract(epoch from (((now() at time zone 'utc')::date + 1)::timestamp at time zone 'utc') - now()))::integer,
   'exactly until the next UTC day');
-update public.mcp_rate set day = day - 1 where user_id = '00000000-0000-0000-0000-0000000336a1';
+update public.account_days set day = day - 1 where user_id = '00000000-0000-0000-0000-0000000336a1';
 select is(public.mcp_take_call('00000000-0000-0000-0000-0000000336a1', 3, 60, 1000), null,
   'a new day starts a new count');
-select is((select requests from public.mcp_rate where user_id = '00000000-0000-0000-0000-0000000336a1'), 1,
+select is((select requests from public.account_days where user_id = '00000000-0000-0000-0000-0000000336a1' and day = (now() at time zone 'utc')::date), 1,
   'counted from one');
+
+-- One day for MCP and the API together (api_begin, api.test.sql) ---------------------------------
+
+insert into public.account_days (user_id, day, requests) values ('00000000-0000-0000-0000-0000000336a1', (now() at time zone 'utc')::date - 5, 1)
+on conflict do nothing;
+update public.account_days set requests = 999 where user_id = '00000000-0000-0000-0000-0000000336a1' and day = (now() at time zone 'utc')::date;
+update public.mcp_rate set tokens = 3 where user_id = '00000000-0000-0000-0000-0000000336a1';
+select is(public.mcp_take_call('00000000-0000-0000-0000-0000000336a1', 3, 60, 1000), null, 'the 1000th request of the day passes');
+select cmp_ok(public.mcp_take_call('00000000-0000-0000-0000-0000000336a1', 3, 60, 1000), '>', 1,
+  'the 1001st, whether MCP or API counted the first 1000, waits for the next UTC day');
+
+-- mcp_take: the day takes tool calls only, a refund gives one back ----------------------------
+
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000336b1","role":"authenticated"}', true);
+select throws_ok($$ select public.mcp_take('00000000-0000-0000-0000-0000000336b1', 20, 60, 1000, 1) $$,
+  '42501', null, 'clients cannot call mcp_take');
+select throws_ok($$ select public.account_day_refund('00000000-0000-0000-0000-0000000336b1', 1) $$,
+  '42501', null, 'nor refund');
+reset role;
+insert into auth.users (id, email) values ('00000000-0000-0000-0000-0000000419a1', 'tools419@example.com');
+select is(public.mcp_take('00000000-0000-0000-0000-0000000419a1', 20, 60, 1000, 0), null,
+  'a protocol request (initialize, tools/list, ping) passes');
+select is((select count(*)::int from public.account_days where user_id = '00000000-0000-0000-0000-0000000419a1'), 0,
+  'and leaves the day without a row');
+select is(public.mcp_take('00000000-0000-0000-0000-0000000419a1', 20, 60, 1000, 2), null, 'a batch of two tool calls passes');
+select is((select requests from public.account_days where user_id = '00000000-0000-0000-0000-0000000419a1'), 2,
+  'each tool call is one');
+select lives_ok($$ select public.account_day_refund('00000000-0000-0000-0000-0000000419a1', 1) $$, 'a refused call is refunded');
+select is((select requests from public.account_days where user_id = '00000000-0000-0000-0000-0000000419a1'), 1, 'one given back');
+select lives_ok($$ select public.account_day_refund('00000000-0000-0000-0000-0000000419a1', 5) $$, 'more than counted');
+select is((select requests from public.account_days where user_id = '00000000-0000-0000-0000-0000000419a1'), 0, 'never goes below 0');
+update public.account_days set requests = 999 where user_id = '00000000-0000-0000-0000-0000000419a1';
+select cmp_ok(public.mcp_take('00000000-0000-0000-0000-0000000419a1', 20, 60, 1000, 2), '>', 1,
+  'two tool calls over a day with one left wait for the next UTC day, as one');
 
 -- Retention --------------------------------------------------------------------------------
 
 update public.mcp_rate set refilled_at = now() - interval '25 hours'
 where user_id = '00000000-0000-0000-0000-0000000336b1';
-select is(public.purge_mcp_rate(), 1, 'the daily purge takes a counter unused for a day');
+select is(public.purge_mcp_rate(), 2, 'the daily purge takes a counter unused for a day and a day before yesterday');
 select ok(exists (select from public.mcp_rate where user_id = '00000000-0000-0000-0000-0000000336a1'),
   'and leaves a fresh one');
 select is((select count(*)::int from cron.job where jobname = 'purge-mcp-rate'), 1, 'scheduled once');

@@ -2819,7 +2819,7 @@ abstract class AppLocalizations {
   /// No description provided for @lifetimeBody.
   ///
   /// In de, this message translates to:
-  /// **'Ein Kauf, für euren ganzen Haushalt: Snacklist Lifetime unterstützt die Entwicklung von Snacklist.'**
+  /// **'Ein Kauf, für dein Konto: Snacklist Lifetime unterstützt die Entwicklung von Snacklist.'**
   String get lifetimeBody;
 
   /// Snacklist Lifetime: the buy button; the store's sheet shows the price (no store call before this tap, H-67)
@@ -2867,7 +2867,7 @@ abstract class AppLocalizations {
   /// Snacklist Lifetime: the household has two or more store purchases; the refund help link is on the page
   ///
   /// In de, this message translates to:
-  /// **'Euer Haushalt hat Snacklist Lifetime mehr als einmal gekauft. Einen der Käufe kannst du dir erstatten lassen.'**
+  /// **'Snacklist Lifetime wurde mehr als einmal gekauft. Einen der Käufe kannst du dir erstatten lassen.'**
   String get lifetimeBoughtTwice;
 
   /// No description provided for @lifetimeCanceled.
@@ -2927,7 +2927,7 @@ abstract class AppLocalizations {
   /// No description provided for @refundHelpBody.
   ///
   /// In de, this message translates to:
-  /// **'Snacklist Lifetime gehört immer zu dem Haushalt, in dem es gekauft wurde. Käufe im App Store erstattet nur Apple. Bei Google Play beantragst du die Erstattung in den ersten 48 Stunden bei Google; danach schreib uns an support@snacklist.app, wir prüfen jede Anfrage einzeln. Deine gesetzlichen Rechte bleiben unberührt.'**
+  /// **'Snacklist Lifetime gehört zu deinem Konto. Käufe im App Store erstattet nur Apple. Bei Google Play beantragst du die Erstattung in den ersten 48 Stunden bei Google; danach schreib uns an support@snacklist.app, wir prüfen jede Anfrage einzeln. Deine gesetzlichen Rechte bleiben unberührt.'**
   String get refundHelpBody;
 
   /// No description provided for @refundHelpApple.
@@ -3047,13 +3047,13 @@ abstract class AppLocalizations {
   /// FINAL (Legal Review N-67, 2026-11-04; Peter 2026-10-31: no assistant brand named): Premium page, benefit line, AI assistants over MCP
   ///
   /// In de, this message translates to:
-  /// **'KI-Assistenten, die MCP unterstützen, mit eurer Liste verbinden'**
+  /// **'KI-Assistenten, die MCP unterstützen, mit eurer Liste verbinden (bis zu 1.000 Anfragen pro Konto und Tag, 60 pro Minute)'**
   String get premiumBenefitAi;
 
   /// Premium page (PW-P4, job 87): benefit line, the public API; only while the public-api flag is on
   ///
   /// In de, this message translates to:
-  /// **'Eigene Automationen mit der Snacklist API'**
+  /// **'Eigene Automationen mit der Snacklist API (bis zu 1.000 Anfragen pro Konto und Tag, 60 pro Minute)'**
   String get premiumBenefitApi;
 
   /// PLACEHOLDER (job 49): Snacklist Launch / Legal Review K.13 write the final copy (NEEDS_LEAD Job 49). Premium page: an active yearly plan that renews
@@ -3119,8 +3119,14 @@ abstract class AppLocalizations {
   /// PLACEHOLDER (job 49): Snacklist Launch / Legal Review K.13 write the final copy (NEEDS_LEAD Job 49). Premium page: the household's rows are loading or offline; no Buy
   ///
   /// In de, this message translates to:
-  /// **'Wir prüfen, ob euer Haushalt Snacklist Premium schon hat …'**
+  /// **'Wir prüfen, ob du Snacklist Premium schon hast …'**
   String get premiumChecking;
+
+  /// Job 419 (Terms §6): under a household's free unlock (beta or tester grant) when the user has no Premium of their own: the household's unlock is not the user's Snacklist Premium, so MCP and the API do not open for them
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Freischaltung gilt für euren Haushalt. Snacklist Premium selbst gilt für dein Konto.'**
+  String get premiumHouseholdOnly;
 
   /// PLACEHOLDER (job 49): Snacklist Launch / Legal Review K.13 write the final copy (NEEDS_LEAD Job 49). Premium page: the yearly plan's card title, offered first
   ///
@@ -3146,7 +3152,7 @@ abstract class AppLocalizations {
   /// **'einmalig'**
   String get premiumOneTime;
 
-  /// Wording from Legal N-302 (2026-11-19, job 317): no "für immer", Lifetime ends with the household. Premium page: the line under the Lifetime tile. No amount and no ratio to the yearly price: the store sets both prices (Peter, t788u, 11 Nov 2026, supersedes Spec #4 AC9's three-years framing)
+  /// Wording from Legal N-302 (2026-11-19, job 317): no "für immer", Lifetime belongs to the account (privacy §14). Premium page: the line under the Lifetime tile. No amount and no ratio to the yearly price: the store sets both prices (Peter, t788u, 11 Nov 2026, supersedes Spec #4 AC9's three-years framing)
   ///
   /// In de, this message translates to:
   /// **'Einmal zahlen, kein Abo.'**
@@ -3203,7 +3209,7 @@ abstract class AppLocalizations {
   /// PLACEHOLDER (job 49): Snacklist Launch / Legal Review K.13 write the final copy (NEEDS_LEAD Job 49). Premium page: two yearly plans run at once (H-84); followed by the manage link
   ///
   /// In de, this message translates to:
-  /// **'Euer Haushalt hat zwei Jahresabos. Kündigen kann jedes nur, wer es abgeschlossen hat.'**
+  /// **'Es laufen zwei Jahresabos. Kündigen kann jedes nur, wer es abgeschlossen hat.'**
   String get premiumTwoYearly;
 
   /// PLACEHOLDER (job 49): Snacklist Launch / Legal Review K.13 write the final copy (NEEDS_LEAD Job 49). Premium page on the web: no sales on the web
@@ -3251,13 +3257,13 @@ abstract class AppLocalizations {
   /// Legal Review K.13 (job 49 ADDENDUM 2), word for word: do not reword. Before buying Lifetime while a yearly plan runs, and after (H-84). The part in [brackets] is the link to the store's subscription page; the app shows it without the brackets
   ///
   /// In de, this message translates to:
-  /// **'Euer Haushalt hat schon ein Jahresabo. Es läuft nach dem Einmalkauf weiter und wird weiter abgerechnet, bis es gekündigt wird; das restliche Abojahr wird nicht automatisch erstattet. Kündigen kann nur, wer das Abo abgeschlossen hat, unter [Abos verwalten]. Snacklist kann das Abo nicht kündigen.'**
+  /// **'Es läuft schon ein Jahresabo. Es läuft nach dem Einmalkauf weiter und wird weiter abgerechnet, bis es gekündigt wird; das restliche Abojahr wird nicht automatisch erstattet. Kündigen kann nur, wer das Abo abgeschlossen hat, unter [Abos verwalten]. Snacklist kann das Abo nicht kündigen.'**
   String get premiumLifetimeWhileYearly;
 
   /// Legal Review K.13 (job 49 ADDENDUM 2), word for word: do not reword. premiumLifetimeWhileYearly for the subscriber (H-84). [brackets]: the store link
   ///
   /// In de, this message translates to:
-  /// **'Euer Haushalt hat schon ein Jahresabo. Es läuft nach dem Einmalkauf weiter und wird weiter abgerechnet, bis es gekündigt wird; das restliche Abojahr wird nicht automatisch erstattet. Du kannst es unter [Abo verwalten] kündigen. Snacklist kann das Abo nicht kündigen.'**
+  /// **'Du hast schon ein Jahresabo. Es läuft nach dem Einmalkauf weiter und wird weiter abgerechnet, bis es gekündigt wird; das restliche Abojahr wird nicht automatisch erstattet. Du kannst es unter [Abo verwalten] kündigen. Snacklist kann das Abo nicht kündigen.'**
   String get premiumLifetimeWhileYearlySubscriber;
 
   /// Legal Review K.13 (job 49 ADDENDUM 2), word for word: do not reword. Lifetime-while-yearly warning: opens the store sheet (RevenueCat starts only here, H-67). EN: Lead wording, PLACEHOLDER
@@ -3751,12 +3757,6 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Leute in {name} einladen'**
   String inviteSheetOpen(String name);
-
-  /// Job 169b W2 (moment 5): in the invite sheet when the household has Premium
-  ///
-  /// In de, this message translates to:
-  /// **'Premium gilt für alle im Haushalt.'**
-  String get invitePremiumShared;
 
   /// Job 169b W2: section of the invite sheet for a one-person invite
   ///
@@ -5461,12 +5461,6 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'{count, plural, =1{1 offener Eintrag} other{{count} offene Einträge}}'**
   String jh2PreviewOpenItems(int count);
-
-  /// Job 271 JH2: the preview's line when the household has Premium
-  ///
-  /// In de, this message translates to:
-  /// **'Premium gilt für alle im Haushalt'**
-  String get jh2PreviewPremium;
 
   /// Job 271 JH2: the code step for any code that leads nowhere (made up, expired, revoked, used, full): one answer for all
   ///

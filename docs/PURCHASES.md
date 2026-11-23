@@ -73,7 +73,8 @@ reasons.
   features (the list, Alexa, and later price entry, trip totals and barcode scanning) never ask
   for Premium: `integration_gate` knows only `siri`, `alexa`, `mcp` and `api`.
 - **Integration gate.** `integration_gate(household, integration, user)` opens for the
-  household's premium or the caller's own (`user_has_premium`); MCP and the API pass the
+  caller's own premium only (`user_has_premium`; a household's plan does not unlock it since job
+  419, so a tester's or reviewer's grant is a per-user RevenueCat grant); MCP and the API pass the
   caller (`_shared/premium.ts`, `Integration` is `'mcp' | 'api'`). The two-argument form stays for function deploys that still call
   it.
 - **Billing notes follow the subscriber.** `my_yearly_plan()` counts the caller's own yearly plan
@@ -150,8 +151,8 @@ reasons.
    a yearly or promotional row whose end lies ahead. The page's status line: „Snacklist Premium
    aktiv (jährlich, verlängert sich am …)“, „… läuft am … aus“ (auto-renew off), „Snacklist Premium
    Lifetime“, „Snacklist Premium geschenkt (bis …)“
-   (promotional; placeholder copy for K.13). The server's check for the integrations is `household_has_premium()`
-   (same rule).
+   (promotional; placeholder copy for K.13). The server's check for the integrations is `user_has_premium()` (same
+   rule, the user's own rows only since job 419).
 8. While the household has an active yearly plan the page shows „Abo verwalten oder kündigen“
    (StoreKit's manage sheet on iOS, Play's subscription page on Android, a line with both pages on
    the web). Only the subscriber sees a failed renewal: „Apple bzw. Google konnten dein Jahresabo
@@ -317,7 +318,9 @@ https://www.revenuecat.com/docs/dashboard-and-metrics/customer-profile#granting-
    grant left: the row is deleted. RevenueCat unreachable: 502, the event id is not kept and
    RevenueCat retries.
 5. Check: Mehr → Snacklist Premium shows „Snacklist Premium geschenkt …“, and
-   `select public.household_has_premium('<household id>');` (service role) is true. A grant made
+   `select public.household_has_premium('<household id>');` (service role) is true for the page;
+   MCP and the API open only for a per-user grant (job 419): grant the tester's own user id
+   (`promotional.ts grant --user <user id>`) and check `select public.user_has_premium('<user id>');`. A grant made
    before this existed, or a webhook that never arrived:
    `deno run --allow-env --allow-net --allow-read scripts/iap/promotional.ts reconcile --household <id> [--apply]`
    (dry run: what RevenueCat grants; `--apply`: the reconcile route stores it).
@@ -475,7 +478,8 @@ RevenueCat retries, the app retries the claim.
 | `purchase_rate` | service connection | `purchase_take_call` | per-user window for claims |
 
 Functions for others to call: `household_premium(household)` (source and end) and
-`household_has_premium(household)`, server-only, the check the integrations use (job 50);
+`household_has_premium(household)`, server-only, what the app's household page reads (the
+integrations use `user_has_premium(user)` since job 419);
 `household_internal(household)`, server-only, whether its purchases are internal (a promotional
 grant);
 `my_yearly_plan()` (members: the caller's own subscriber facts) and `premium_offer()` (members:
@@ -548,8 +552,11 @@ households, not people: a tester who starts a second household needs a second gr
 about the tester (user id, e-mail, name) goes to RevenueCat or into a list of ours.
 
 ```
-deno run --allow-env --allow-net scripts/iap/promotional.ts grant --household <uuid> [--apply]
+deno run --allow-env --allow-net scripts/iap/promotional.ts grant --user <user id> [--apply]
 ```
+
+Since job 419 MCP and the API need the account's own Premium, so testers and reviewers get a
+grant per user (`--user`). `--household` is the legacy form: it no longer opens MCP or the API.
 
 Dry run unless `--apply`; a household that already has a grant to 2100 or without end is left
 alone, so a rerun changes nothing. `--apply` calls API v2 `grant_entitlement` (entitlement
@@ -630,8 +637,8 @@ Snacklist Premium; the list, sync, categories, the app, the web app, Siri (job 1
 - **Server:** `app_switches.integration_lock` (seeded off). Off, every integration works as it did
   before job 50, for every household. On, the mcp function (tool calls) and the api function
   refuse a caller without premium, as `public.integration_gate(household, integration, user)`
-  decides with job 49's `household_has_premium` or job 185's `user_has_premium` of the caller
-  (yearly not ended, Lifetime or a running promotional grant, testers' included; read at request
+  decides: only `user_has_premium` of the caller since job 419 (a household's plan or grant
+  opens nothing; yearly not ended, Lifetime or a running promotional grant, testers' included; read at request
   time). Nothing the app sends counts.
 - **App:** follows the server switch (`integration_lock()`, read when Zugänge opens); no define
   and no PostHog flag since job 328 (#577 put a flag `premium-gate-integrations` in front of the

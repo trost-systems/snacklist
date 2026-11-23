@@ -159,7 +159,6 @@ void main() {
         [
           'Peter lädt dich zu „Familie Trost“ ein',
           '1 Mitglied · 12 offene Einträge',
-          'Premium gilt für alle im Haushalt',
         ],
       ),
       (
@@ -168,7 +167,6 @@ void main() {
         [
           'Du bist zu „Familie Trost“ eingeladen',
           '1 Mitglied · 12 offene Einträge',
-          'Premium gilt für alle im Haushalt',
         ],
       ),
       (
@@ -177,26 +175,17 @@ void main() {
         [
           'Peter lädt dich in einen Haushalt ein',
           '1 Mitglied · 12 offene Einträge',
-          'Premium gilt für alle im Haushalt',
         ],
       ),
       (
         'no members',
         const InvitePreviewFields(members: false),
-        [
-          'Peter lädt dich zu „Familie Trost“ ein',
-          '12 offene Einträge',
-          'Premium gilt für alle im Haushalt',
-        ],
+        ['Peter lädt dich zu „Familie Trost“ ein', '12 offene Einträge'],
       ),
       (
         'no open items',
         const InvitePreviewFields(openItems: false),
-        [
-          'Peter lädt dich zu „Familie Trost“ ein',
-          '1 Mitglied',
-          'Premium gilt für alle im Haushalt',
-        ],
+        ['Peter lädt dich zu „Familie Trost“ ein', '1 Mitglied'],
       ),
       (
         'no Premium',

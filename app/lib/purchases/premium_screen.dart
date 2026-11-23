@@ -145,6 +145,14 @@ class const _PremiumView() extends StatelessWidget {
                   FreeUnlock.beta || null => l10n.premiumStatusBeta,
                 },
               }),
+            // A household's unlock is not the user's Premium (Terms §6).
+            if (premium is ActivePremium &&
+                entitlements.ownPremium is NoPremium)
+              _Note(
+                'premium-household-only',
+                Icons.info_outline,
+                l10n.premiumHouseholdOnly,
+              ),
             if (mine case MyYearlyPlan(billingIssue: true, :final until?))
               _Note(
                 'premium-billing-issue',

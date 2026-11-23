@@ -1666,7 +1666,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lifetimeBody =>
-      'One purchase for your whole household: Snacklist Lifetime supports the development of Snacklist.';
+      'One purchase for your account: Snacklist Lifetime supports the development of Snacklist.';
 
   @override
   String get lifetimeBuy => 'Continue to purchase';
@@ -1694,7 +1694,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lifetimeBoughtTwice =>
-      'Your household bought Snacklist Lifetime more than once. One of the purchases can be refunded.';
+      'Snacklist Lifetime was bought more than once. One of the purchases can be refunded.';
 
   @override
   String get lifetimeCanceled => 'Purchase canceled.';
@@ -1731,7 +1731,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get refundHelpBody =>
-      'Snacklist Lifetime always belongs to the household it was bought in. Only Apple refunds App Store purchases. For Google Play, ask Google within 48 hours of buying; after that, email us at support@snacklist.app and we\'ll look at your request. Your statutory rights are not affected.';
+      'Snacklist Lifetime belongs to your account. Only Apple refunds App Store purchases. For Google Play, ask Google within 48 hours of buying; after that, email us at support@snacklist.app and we\'ll look at your request. Your statutory rights are not affected.';
 
   @override
   String get refundHelpApple =>
@@ -1807,10 +1807,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumBenefitAi =>
-      'Connect AI assistants that support MCP to your list';
+      'Connect AI assistants that support MCP to your list (up to 1,000 requests per account a day, 60 a minute)';
 
   @override
-  String get premiumBenefitApi => 'Your own automations with the Snacklist API';
+  String get premiumBenefitApi =>
+      'Your own automations with the Snacklist API (up to 1,000 requests per account a day, 60 a minute)';
 
   @override
   String premiumStatusRenews(DateTime date) {
@@ -1861,7 +1862,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumChecking =>
-      'Checking whether your household already has Snacklist Premium…';
+      'Checking whether you already have Snacklist Premium…';
+
+  @override
+  String get premiumHouseholdOnly =>
+      'This unlock applies to your household. Snacklist Premium itself applies to your account.';
 
   @override
   String get premiumYearlyTitle => 'Yearly';
@@ -1908,7 +1913,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumTwoYearly =>
-      'Your household has two yearly plans. Each can only be cancelled by whoever took it out.';
+      'Two yearly plans are running. Each can only be cancelled by whoever took it out.';
 
   @override
   String get premiumWeb =>
@@ -1941,11 +1946,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumLifetimeWhileYearly =>
-      'Your household already has a yearly plan. It keeps running and being billed after the one-time purchase until it is cancelled; the rest of the plan year isn\'t refunded automatically. Only the person who took out the plan can cancel it, in [Manage subscriptions]. Snacklist can\'t cancel it.';
+      'A yearly plan is already running. It keeps running and being billed after the one-time purchase until it is cancelled; the rest of the plan year isn\'t refunded automatically. Only the person who took out the plan can cancel it, in [Manage subscriptions]. Snacklist can\'t cancel it.';
 
   @override
   String get premiumLifetimeWhileYearlySubscriber =>
-      'Your household already has a yearly plan. It keeps running and being billed after the one-time purchase until it is cancelled; the rest of the plan year isn\'t refunded automatically. You can cancel it in [Manage subscription]. Snacklist can\'t cancel it.';
+      'You already have a yearly plan. It keeps running and being billed after the one-time purchase until it is cancelled; the rest of the plan year isn\'t refunded automatically. You can cancel it in [Manage subscription]. Snacklist can\'t cancel it.';
 
   @override
   String get premiumBuyAnyway => 'Buy anyway';
@@ -2258,9 +2263,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String inviteSheetOpen(String name) {
     return 'Invite people to $name';
   }
-
-  @override
-  String get invitePremiumShared => 'Premium covers everyone in the household.';
 
   @override
   String get invitePersonTitle => 'For one person';
@@ -3406,9 +3408,6 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
-
-  @override
-  String get jh2PreviewPremium => 'Premium covers everyone in the household';
 
   @override
   String get jh2CodeUnavailable =>
