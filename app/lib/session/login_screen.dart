@@ -76,25 +76,7 @@ class _LoginScreenState() extends State<LoginScreen> {
       _ => null,
     };
     final panel = SignInPanel(
-      returnPath: switch (next) {
-        final next? when Uri.parse(next).path == consentPath => next,
-        // Back at the root, which the apps don't claim: a claimed link
-        // would open the app with a code only this browser can redeem. An
-        // invite comes back the same way: /join/<code> is claimed too, and
-        // on the web it is the static join page (job 169b).
-        final next? => Uri(
-          path: '/',
-          queryParameters: {'next': next},
-        ).toString(),
-        // Back here, not at the root, which opens the guided start (job
-        // 168b): a cancelled or failed provider sign-in says so here. An
-        // invite comes back at the root: /join/<code> is claimed by the
-        // apps, and on the web it is the static join page (job 169b).
-        null =>
-          invite == null
-              ? signInReturnPath
-              : Uri(path: '/', queryParameters: {'invite': invite}).toString(),
-      },
+      returnPath: signInReturn(invite: invite, next: next),
       intent: _intent,
       header: joinerWhy && invite != null
           ? Column(
@@ -216,6 +198,27 @@ Future<SignInIntent?> showInviteSignInSheet(BuildContext context) =>
         );
       },
     );
+
+/// Where a web redirect or magic link of the sign-in lands. The invite
+/// rides in the link itself, so a magic link opened in another browser than
+/// the one that began the sign-in still joins (job 379).
+String signInReturn({String? invite, String? next}) => switch (next) {
+  final next? when Uri.parse(next).path == consentPath => next,
+  // Back at the root, which the apps don't claim: a claimed link would open
+  // the app with a code only this browser can redeem. An invite comes back
+  // the same way: /join/<code> is claimed too, and on the web it is the
+  // static join page (job 169b).
+  final next? => Uri(
+    path: '/',
+    queryParameters: {'next': next, 'invite': ?invite},
+  ).toString(),
+  // Back here, not at the root, which opens the guided start (job 168b): a
+  // cancelled or failed provider sign-in says so here.
+  null =>
+    invite == null
+        ? signInReturnPath
+        : Uri(path: '/', queryParameters: {'invite': invite}).toString(),
+};
 
 /// Every sign-in method: Google, Apple, email and password, magic link.
 /// Where a build offers Google or Apple, the email form waits behind
