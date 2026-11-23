@@ -342,8 +342,12 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String consentListAccess(String client) {
-    return 'Einträge deiner Einkaufsliste lesen. Kann auch Einträge hinzufügen, ändern, abhaken und löschen, Listen und Läden anlegen und umbenennen und die Reihenfolge in einem Laden festlegen. $client und sein Anbieter erhalten dabei die Inhalte eurer Liste.';
+  String consentListAccess(String client, String listsStores) {
+    String _temp0 = intl.Intl.selectLogic(listsStores, {
+      'on': ', Listen und Läden anlegen und umbenennen und die Reihenfolge in einem Laden festlegen',
+      'other': '',
+    });
+    return 'Einträge deiner Einkaufsliste lesen. Kann auch Einträge hinzufügen, ändern, abhaken und löschen$_temp0. $client und sein Anbieter erhalten dabei die Inhalte eurer Liste.';
   }
 
   @override

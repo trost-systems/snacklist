@@ -677,8 +677,8 @@ abstract class AppLocalizations {
   /// OAuth consent: the list permission and that the client's provider receives the list (legal review H-17)
   ///
   /// In de, this message translates to:
-  /// **'Einträge deiner Einkaufsliste lesen. Kann auch Einträge hinzufügen, ändern, abhaken und löschen, Listen und Läden anlegen und umbenennen und die Reihenfolge in einem Laden festlegen. {client} und sein Anbieter erhalten dabei die Inhalte eurer Liste.'**
-  String consentListAccess(String client);
+  /// **'Einträge deiner Einkaufsliste lesen. Kann auch Einträge hinzufügen, ändern, abhaken und löschen{listsStores, select, on{, Listen und Läden anlegen und umbenennen und die Reihenfolge in einem Laden festlegen} other{}}. {client} und sein Anbieter erhalten dabei die Inhalte eurer Liste.'**
+  String consentListAccess(String client, String listsStores);
 
   /// No description provided for @scopeOpenid.
   ///

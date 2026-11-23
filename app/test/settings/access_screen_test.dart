@@ -29,6 +29,7 @@ class FakeAccessRepository() implements AccessRepository {
 
   /// The server switch `app_switches.unified_keys` (job 397).
   var unified = false;
+  var listsStoresOn = false;
 
   /// The name of every API key asked for.
   final apiNames = <String>[];
@@ -92,6 +93,9 @@ class FakeAccessRepository() implements AccessRepository {
 
   @override
   Future<bool> unifiedKeys() async => unified;
+
+  @override
+  Future<bool> listsStores() async => listsStoresOn;
 }
 
 const apiSecret = 'fgp_apikeyapikeyapikeyapikeyapikeyapike9876';
@@ -309,7 +313,9 @@ void main() {
   ) async {
     await pumpAccess(
       tester,
-      seed: (r) => r.apps.add(claude(device: 'Safari · iOS')),
+      seed: (r) => r
+        ..listsStoresOn = true
+        ..apps.add(claude(device: 'Safari · iOS')),
     );
     await tapText(tester, 'Claude');
     final details = find.byKey(const ValueKey('app-details'));
@@ -341,6 +347,21 @@ void main() {
     expect(details, findsNothing, reason: 'the sheet closes once it is gone');
     expect(find.text('Noch keine App verbunden.'), findsOneWidget);
   });
+
+  testWidgets(
+    'the details leave out lists and stores while the switch is off',
+    (tester) async {
+      await pumpAccess(tester, seed: (r) => r.apps.add(claude()));
+      await tapText(tester, 'Claude');
+      expect(
+        find.textContaining(
+          'Kann auch Einträge hinzufügen, ändern, abhaken und löschen.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Listen und Läden'), findsNothing);
+    },
+  );
 
   testWidgets('the details in English; cancelling keeps the sheet', (
     tester,

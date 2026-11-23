@@ -109,6 +109,11 @@ abstract interface class AccessRepository() {
   /// one key works for the MCP server and the API. False when it cannot be
   /// read.
   Future<bool> unifiedKeys();
+
+  /// Job 420: the server switch `app_switches.mcp_lists_stores`, under which
+  /// the MCP server serves the list and store tools. False when it cannot be
+  /// read.
+  Future<bool> listsStores();
 }
 
 /// [household]: the one new tokens and API keys are bound to, the
@@ -223,6 +228,16 @@ class SupabaseAccessRepository(
       return await _client.rpc<bool>('unified_keys');
     } on Object catch (e) {
       debugPrint('unified_keys: $e');
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> listsStores() async {
+    try {
+      return await _client.rpc<bool>('mcp_lists_stores');
+    } on Object catch (e) {
+      debugPrint('mcp_lists_stores: $e');
       return false;
     }
   }

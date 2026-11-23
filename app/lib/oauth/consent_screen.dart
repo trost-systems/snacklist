@@ -26,6 +26,10 @@ final class const NeedsConsent({
   required final List<String> scopes,
   final String? clientUri,
   final String? email,
+
+  /// The server switch `app_switches.mcp_lists_stores`: the list and store
+  /// tools are served, so the page may name them (job 420).
+  final bool listsStores = false,
 }) extends ConsentRequest;
 
 /// Supabase Auth's OAuth server, as the consent screen needs it. Approve and
@@ -47,26 +51,40 @@ class SupabaseConsentApi(final SupabaseClient _client) implements ConsentApi {
   GoTrueOAuthApi get _oauth => _client.auth.oauth;
 
   @override
-  Future<ConsentRequest> getDetails(String authorizationId) async =>
-      switch (await _oauth.getAuthorizationDetails(authorizationId)) {
-        OAuthAuthorizationRedirectResponse(:final redirectUrl) =>
-          AlreadyApproved(Uri.parse(redirectUrl)),
-        OAuthAuthorizationDetailsResponse(
-          :final client,
-          :final user,
-          :final scope,
-        ) =>
-          NeedsConsent(
-            clientId: client.clientId,
-            clientName: client.clientName ?? client.clientId,
-            clientUri: client.clientUri,
-            email: user.email,
-            scopes: (scope ?? '')
-                .split(' ')
-                .where((s) => s.isNotEmpty)
-                .toList(),
-          ),
-      };
+  Future<ConsentRequest> getDetails(String authorizationId) async {
+    final (listsStores, details) = await (
+      _listsStores(),
+      _oauth.getAuthorizationDetails(authorizationId),
+    ).wait;
+    return switch (details) {
+      OAuthAuthorizationRedirectResponse(:final redirectUrl) => AlreadyApproved(
+        Uri.parse(redirectUrl),
+      ),
+      OAuthAuthorizationDetailsResponse(
+        :final client,
+        :final user,
+        :final scope,
+      ) =>
+        NeedsConsent(
+          clientId: client.clientId,
+          clientName: client.clientName ?? client.clientId,
+          clientUri: client.clientUri,
+          email: user.email,
+          listsStores: listsStores,
+          scopes: (scope ?? '').split(' ').where((s) => s.isNotEmpty).toList(),
+        ),
+    };
+  }
+
+  /// False when the switch cannot be read: the page then promises less.
+  Future<bool> _listsStores() async {
+    try {
+      return await _client.rpc<bool>('mcp_lists_stores');
+    } on Object catch (e) {
+      debugPrint('oauth consent: mcp_lists_stores: $e');
+      return false;
+    }
+  }
 
   @override
   Future<Uri> approve(
@@ -325,7 +343,10 @@ class _ConsentViewState() extends State<ConsentView> {
         style: theme.textTheme.titleMedium,
       ),
       for (final permission in [
-        l10n.consentListAccess(request.clientName),
+        l10n.consentListAccess(
+          request.clientName,
+          request.listsStores ? 'on' : 'off',
+        ),
         for (final scope in request.scopes) scopeLabel(l10n, scope),
       ])
         ListTile(

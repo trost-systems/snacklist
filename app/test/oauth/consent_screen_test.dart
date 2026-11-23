@@ -54,6 +54,7 @@ void main() {
     clientUri: 'https://claude.ai',
     email: 'peter@example.com',
     scopes: ['openid', 'email', 'offline_access', 'custom:thing'],
+    listsStores: true,
   );
   late FakeConsentApi api;
   late List<Uri> visited;
@@ -63,6 +64,7 @@ void main() {
     ConsentRequest details = request,
     String? id = 'auth-1',
     Exception? failure,
+    String language = 'de',
   }) async {
     api = FakeConsentApi(details: details)..failure = failure;
     visited = [];
@@ -70,7 +72,7 @@ void main() {
       MaterialApp(
         localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        locale: const Locale('de'),
+        locale: Locale(language),
         home: ConsentView(
           authorizationId: id,
           household: const Household(id: 'h', name: 'Trost'),
@@ -119,6 +121,53 @@ void main() {
     }
     expect(visited, isEmpty);
   });
+
+  const withLists = NeedsConsent(
+    clientId: 'client-claude',
+    clientName: 'Claude',
+    scopes: [],
+    listsStores: true,
+  );
+  const withoutLists = NeedsConsent(
+    clientId: 'client-claude',
+    clientName: 'Claude',
+    scopes: [],
+  );
+
+  const deOff =
+      'Einträge deiner Einkaufsliste lesen. Kann auch Einträge hinzufügen, '
+      'ändern, abhaken und löschen. Claude und sein Anbieter erhalten '
+      'dabei die Inhalte eurer Liste.';
+  const deOn =
+      'Einträge deiner Einkaufsliste lesen. Kann auch Einträge hinzufügen, '
+      'ändern, abhaken und löschen, Listen und Läden anlegen und '
+      'umbenennen und die Reihenfolge in einem Laden festlegen. Claude '
+      'und sein Anbieter erhalten dabei die Inhalte eurer Liste.';
+  const enOff =
+      'Read your shopping list. Can also add, change, tick off and remove '
+      'items. Claude and its provider will receive your list contents.';
+  const enOn =
+      'Read your shopping list. Can also add, change, tick off and remove '
+      'items, create and rename lists and stores, and set the order in '
+      'a store. Claude and its provider will receive your list contents.';
+
+  for (final (language, details, texts) in [
+    ('de', withoutLists, [deOff, 'Zugriff erlauben?', 'Erlauben', 'Ablehnen']),
+    ('de', withLists, [deOn, 'Zugriff erlauben?', 'Erlauben', 'Ablehnen']),
+    ('en', withoutLists, [enOff, 'Allow access?', 'Allow', 'Deny']),
+    ('en', withLists, [enOn, 'Allow access?', 'Allow', 'Deny']),
+  ]) {
+    testWidgets(
+      'the page in $language names list and store tools only with the switch '
+      '(${details.listsStores ? 'on' : 'off'})',
+      (tester) async {
+        await pumpConsent(tester, details: details, language: language);
+        for (final text in texts) {
+          expect(find.text(text), findsOneWidget);
+        }
+      },
+    );
+  }
 
   testWidgets('allow approves and follows the redirect', (tester) async {
     await pumpConsent(tester);

@@ -784,7 +784,11 @@ class const _AppTile({
         useSafeArea: true,
         builder: (_) => BlocProvider.value(
           value: context.read<AccessCubit>(),
-          child: _AppDetails(app: app, paused: paused),
+          child: _AppDetails(
+            app: app,
+            paused: paused,
+            listsStores: context.read<AccessCubit>().state.listsStores,
+          ),
         ),
       ),
       trailing: IconButton(
@@ -822,6 +826,7 @@ Future<bool> _disconnectApp(BuildContext context, ConnectedApp app) async {
 class const _AppDetails({
   required final ConnectedApp app,
   required final bool paused,
+  required final bool listsStores,
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -832,7 +837,7 @@ class const _AppDetails({
     );
     final lastUsed = app.lastUsedAt;
     final can = [
-      l10n.consentListAccess(app.name),
+      l10n.consentListAccess(app.name, listsStores ? 'on' : 'off'),
       for (final scope in app.scopes)
         ?switch (scope) {
           'email' => l10n.appCanEmail,
