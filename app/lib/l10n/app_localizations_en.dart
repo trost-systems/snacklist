@@ -3971,4 +3971,15 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get pushNameHiddenHint =>
       'Others then see “Someone added milk”, even if you have not turned notifications on yourself.';
+
+  @override
+  String get shoppingDayTitle => 'Shopping-day reminder';
+
+  @override
+  String get shoppingDayHint =>
+      'Pick your shopping days. The evening before, at 7 pm in your device\'s time zone, Snacklist sends a reminder to your phone.';
+
+  @override
+  String get shoppingDayBlocked =>
+      'Notifications are turned off for Snacklist. Turn them on in your phone\'s settings.';
 }

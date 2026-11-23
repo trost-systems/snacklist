@@ -5,6 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 /// 73) and its line on the Premium page (job 87).
 const publicApiFlag = 'public-api';
 
+/// The flag that offers the shopping-day reminder (job 378, P2): Einstellungen'
+/// weekdays, and the server push at 19:00 local the evening before. Needs push
+/// in the build (docs/PUSH.md) and stays off until Legal's GO.
+const shoppingDayFlag = 'push-shopping-day';
+
 /// The flag that shows the Verlauf tab, the grocery log (job 199).
 const groceryLogFlag = 'grocery-log';
 

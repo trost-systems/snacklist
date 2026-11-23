@@ -128,12 +128,27 @@ test('the privacy policies describe push notifications and Firebase Cloud Messag
   }
 });
 
-test("the privacy policies' 24 hours are the push function's longest ttl_seconds", () => {
+test("the privacy policies' expiry times are the ttl_seconds the senders use (Legal N-424)", () => {
   const repo = new URL('../../', import.meta.url);
-  const handler = readFileSync(new URL('supabase/functions/push/handler.ts', repo), 'utf8');
-  assert.match(handler, /ttl_seconds: z\.int\(\)\.min\(60\)\.max\(86400\)/);
-  const de = readFileSync(new URL('site/content/legal/datenschutz.md', repo), 'utf8');
-  const en = readFileSync(new URL('site/content/legal/privacy.md', repo), 'utf8');
-  assert.match(de, /verfällt sie nach höchstens 24 Stunden/);
-  assert.match(en, /it expires after at most 24 hours/);
+  const read = (path) => readFileSync(new URL(path, repo), 'utf8');
+  assert.match(read('supabase/functions/push/handler.ts'), /ttl_seconds: z\.int\(\)\.min\(60\)\.max\(86400\)/);
+  assert.match(read('supabase/migrations/20261122232004_push_household_add.sql'), /'ttl_seconds', 3600\)/);
+  assert.match(read('supabase/migrations/20261123000000_shopping_day_reminder.sql'), /'ttl_seconds', 14400\)/);
+  const de = read('site/content/legal/datenschutz.md');
+  const en = read('site/content/legal/privacy.md');
+  assert.match(de, /verfällt, wenn sie nicht zugestellt werden kann, nach einer Stunde/);
+  assert.match(de, /verfällt, wenn sie nicht zugestellt werden kann, nach vier Stunden/);
+  assert.match(en, /it expires after one hour/);
+  assert.match(en, /it expires after four hours/);
+  assert.doesNotMatch(de, /nach höchstens 24 Stunden/);
+  assert.doesNotMatch(en, /after at most 24 hours/);
+});
+
+test('the privacy policies name Google LLC, not Google Ireland Limited, as the FCM processor (Legal N-397, N-398)', () => {
+  const repo = new URL('../../', import.meta.url);
+  for (const file of ['site/content/legal/datenschutz.md', 'site/content/legal/privacy.md']) {
+    const text = readFileSync(new URL(file, repo), 'utf8');
+    assert.match(text, /Google LLC, 1600 Amphitheatre Parkway/);
+    assert.doesNotMatch(text, /Google Ireland Limited/);
+  }
 });

@@ -104,6 +104,10 @@
     "push-household-add": {
       "rollout": "off",
       "note": "the Mitteilungen switch under Einstellungen (a push when another household member adds an item, \"Lea hat Milch hinzugefügt\"; off for each person until they switch it on) shows only while the PostHog flag push-household-add is on (job 377); also needs the server switch push_household_add (docs/PUSH.md, \"Household add\"); off for everyone, testers included, until Legal's hash GO"
+    },
+    "push-shopping-day": {
+      "rollout": "off",
+      "note": "the shopping-day reminder (Einstellungen > Einkaufstag-Erinnerung: weekdays, a push at 19:00 local the evening before; job 378, P2) shows only while the PostHog flag push-shopping-day is on, and the server sends only after the switch push_shopping_day is on (docs/PUSH.md); waits for Legal's GO on the new strings and privacy text and Ops' Firebase project, off for everyone including testers"
     }
   },
   "holds": {

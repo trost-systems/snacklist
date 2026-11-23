@@ -2514,3 +2514,60 @@ server cannot be told of still takes the device off push. CI: lint fails only on
 migration timestamp (`20261122183000_push_tokens.sql` sorts before main's newest); job 376 must
 rename it. Consolidated Legal hand-off in NEEDS_LEAD "Job 377: P1 ready, needs Legal". Still owed:
 a device check once Firebase is configured.
+
+## Job 378: P2 shopping-day reminder (flag `push-shopping-day`, off)
+
+Details: `docs/done/378.md`, contract `docs/PUSH.md` ("Shopping-day reminder"), decisions `docs/DECISIONS.md` "Job 378".
+
+- **Built.** A per-person, opt-in reminder: pick weekdays, get a push at 19:00 local the evening before
+  ("Morgen ist Einkaufstag" / "Shopping day tomorrow"). Table `shopping_day_reminders` (off by default, own
+  row only, IANA zone stored), one pg_cron job every 10 minutes that sends when the person's local clock reads
+  19:00 to 19:29 on the day before a picked weekday (Postgres handles DST), sent through job 376's `push`
+  function over pg_net. Tap opens the list (376's `kind: list`). iOS and Android; no web push.
+- **Open-item count: included** (one indexed count of the default list's open items, no names).
+- **Where.** `supabase/migrations/20261123000000_shopping_day_reminder.sql`, `app/lib/settings/shopping_day.dart`,
+  `releases/flags.json` (`push-shopping-day`, `rollout: off`).
+- **Verified.** pgTAP `shopping_day_reminder.test.sql` 51/51 (Berlin winter and summer, both clock changes,
+  window edges, New York, once per evening, deep-link ids in the request, export, deletion); Flutter tests
+  for the service and section; `scripts/verify.sh` passed lint, changelog, site, functions, db, flutter.
+- **Blocked / missing.** Not merged and not enabled: Legal's GO on the new strings and privacy text, Ops'
+  Firebase project and secrets, the vault secret `push_send_secret` and `shopping_day_set(true, url)`.
+  No device here: the real FCM delivery and the tap are job 376's and untested on hardware. This PR stacks on
+  #643 (job 376); land that first. Flag on for testers is not done by design.
+- **TestFlight.** The next green main build after both PRs land carries it; the flag `push-shopping-day`
+  needs targeting to Peter only, after Legal's GO.
+
+### Job 378, review 0 fixes
+
+- Weekday chips are usable with a screen reader (own button and selected semantics, full day name as label; widget test).
+- The chips follow `PushRegistration`: signed out and in again, or notifications refused, shows them off; a pick asks again (tests).
+- N-401: unpicking the last weekday runs `PushRegistration.forget()` (the sign-out path, offline catch-up included); tested. NEEDS_LEAD lists N-397..N-401 and the 377 caveat.
+- Export has `last_sent_on`; the app saves zone and language again when Einstellungen opens; a save never moves `last_sent_on` back. pgTAP now 55 (no household, saved late/early).
+- Privacy redline drafted in NEEDS_LEAD. `_load` failure: hidden until reopened (DECISIONS 13).
+- verify: lint, changelog, flutter, db passed.
+
+### Job 378, review 1 fixes
+
+- Days are per person: a device without push shows no days, but a pick saves `saved ∪ {day}`, so a second device or a re-sign-in never wipes them (tests, incl. second device).
+- Migration renamed `20261123000000_shopping_day_reminder.sql` (sorts after main's `20261122213336`). Job 376's `20261122183000_push_tokens.sql` has the same problem and is 376's to rename; lint fails on it until then (not on 378's file). If 376 picks a later stamp, rename 378's again. `export_my_data` is not redefined on main.
+- Page-open refresh is its own `refresh_shopping_day_reminder` (never touches days or `last_sent_on`); pgTAP 58.
+- Bare-offset zone ids (`GMT+01:00`) map to `Etc/GMT∓n` (`ianaZone`, tested).
+- verify: changelog, flutter, db, functions passed; lint passes for this job's files, fails only on 376's migration order.
+
+### Job 378b: Legal fixes and the combined push privacy text (PR #653)
+
+- **N-424.** The held `#mitteilungen` / `#notifications` bodies, the section 8 export line and the section 14 line are Legal's combined text, DE and EN, plus the five grafts of the #650 addendum (device memory clause, in-app name switch and ten-minute tick sentence, `name_hidden` in storage, the offline in-app-off retry sentences, the export line). A script builds the expected text from the two reports and compares it with the pages byte for byte. The 24 h wording is gone; the site test pins one hour and four hours to `push_add_take` (3600) and `shopping_day_run` (14400).
+- **N-435.** The hint says 19:00 is in the device's time zone.
+- **N-434.** The P2 migration redefines `export_my_data` from #650's body plus `shopping_day_reminder`; pgTAP asserts `push_devices`, `push_preferences` and `shopping_day_reminder` in one export.
+- **N-436 and N-439 for P2.** Clearing the last weekday, with the household-add alert off, runs `PushRegistration.forget()` before the save (sign-out path, offline catch-up). The alert's off asks the shopping-day reminder through `PushAlertRegistry`. A state that cannot be read counts as off, so a phone that cannot be asked is taken off push (review 0: the first version kept the token). A clear the server did not take is kept on the device with its account (`DeviceCache.pendingShoppingDayClear`) and sent again at the next start or sign-in of that account, or when Einstellungen opens. Tests: last type off, mixed case (P1 on or P2 days picked: token stays), whole phone offline both ways, FCM offline catch-up, pending kept, retried, not sent for another account, dropped by a later save.
+- **Data map.** Google LLC (USA, Firebase Cloud Messaging processor) in every push row, the shopping-day rows, TTL 1 h / 4 h, the alert's off conditional on no other type.
+- **Verified.** `verify.sh --only lint,site,changelog,flutter,functions` and `scripts/gates/db.sh` on the final head (see NEEDS_LEAD for the head, hashes and the #650 head it pairs with).
+- **For Legal.** (1) `last_sent_on` is exported but named in neither section 5 nor section 8. (2) Graft 3 (name switch in storage) sits in its own sentence, "Auch ohne dass du die Mitteilung selbst einschaltest, speichern wir zu deinem Konto, ob dein Name in Mitteilungen weggelassen wird", because it is stored even when the person never turns the alert on. (3) EN section 14 reads "an "someone added something" notification" (verbatim). (4) The map says the queue keeps the item id, not the name; section 5 says the name is kept up to an hour (conservative). (5) Clearing the days on one phone forgets that phone's token only.
+
+### Job 378b, review 1 fixes
+
+- Section 12 and 13: the Google LLC lines (processor, direct transfer to Google LLC) are carried from #650's earlier head `2966c0f46` byte for byte, DE and EN, because 377b removed its legal-page edits; the site test pins "Google LLC, 1600 Amphitheatre Parkway" and no "Google Ireland Limited".
+- Data map: #650's current rows are kept as they are (legal basis of the queue row, the L1 and N-440 wording of the alert text row); only the Google LLC cells, the conditional forget, the 1 h / 4 h TTL and the two shopping-day rows differ from `c3fa813b9`.
+- A pending clear's retry is serialized with a pick (`save` awaits an in-flight retry) and needs no zone (it sends `UTC`: the row is deleted).
+- pgTAP `shopping_day_reminder` filters its assertions to its own fictional users, so a stray row on a seeded stack does not fail it.
+- CI does run for #653 (a `pull_request` run on the stacked branch); the earlier "no CI on a stacked PR" claim was wrong. NEEDS_LEAD is replaced at `ci-ok`.

@@ -178,6 +178,75 @@ set. Only `firebase_push.dart` imports Firebase (lint rule
   arrives while the app is open is not shown (the foundation's default;
   a feature may change it).
 
+## Shopping-day reminder (job 378, P2, flag `push-shopping-day`)
+
+A person picks one or more weekdays; the evening before each at 19:00 in
+their own time zone the push function sends „Morgen ist Einkaufstag“ /
+"Shopping day tomorrow" to their devices. Server push, no local
+notifications.
+
+- **Off by default, per person.** No row in `public.shopping_day_reminders`
+  means off. The row is the person's, not a household's: weekdays (ISO,
+  1 Monday to 7 Sunday), the device's IANA time zone, the language (`de` or
+  `en`) and `last_sent_on`. A user reads their own row; writes go through
+  `set_shopping_day_reminder(p_weekdays, p_time_zone, p_locale)` only (no
+  weekday deletes the row). The list and household it names are the
+  person's default household and its default list (else its first list),
+  read at send time.
+- **Time zone and DST.** The app sends the device's IANA zone
+  (`flutter_timezone`) with each save. One pg_cron job
+  (`shopping-day-reminder`, every 10 minutes, UTC) calls
+  `shopping_day_run`. A reminder is due when `now() at time zone <zone>`
+  reads 19:00 to 19:29 on the day before a picked weekday and nothing was
+  sent that local date. Postgres applies the zone's DST rules, so 19:00
+  stays 19:00 local across a clock change (pgTAP covers Europe/Berlin
+  around both changes and America/New_York). One frequent job beats a job
+  per zone: it reads only the rows of people who opted in, and the
+  30-minute window lets a late or failed run still send within the evening.
+  A reminder is marked sent before it is posted, so it goes at most once an
+  evening; a failed send is not retried. Saved at or after 19:00 local, the
+  evening counts as sent, so turning it on late does not ping at once.
+- **Open items.** The body names the number of open items of that list
+  (`1 Artikel steht auf der Liste. Schau kurz rein.`, none: `Schau kurz auf
+  die Liste.`). It is one indexed `count(*)` (`items_list_idx`) per due
+  person, never item names. The texts are in `shopping_day_text`.
+- **Tap.** The message is the foundation's: `data.kind = list` with the
+  household and list id, so a tap opens the list (`push_taps.dart`). The
+  ttl is 4 hours: a reminder that reaches an offline phone after bedtime is
+  dropped.
+- **Switch.** The job exists only while the server switch `push_shopping_day`
+  is on: `select public.shopping_day_set(true, '<https URL of /functions/v1/push>')`
+  needs the vault secret `push_send_secret` (the function's
+  `PUSH_SEND_SECRET`: `select vault.create_secret('<secret>', 'push_send_secret')`);
+  `shopping_day_set(false)` removes the job. Both are owner-only. Turn it on
+  after Legal's GO and Ops' Firebase setup, together with the PostHog flag.
+- **Zone refresh.** Opening Einstellungen with days saved and push on here calls
+  `refresh_shopping_day_reminder(zone, locale)`: zone and language only, never the days or
+  `last_sent_on`, so it cannot cancel an evening's reminder. A device that reports a bare offset
+  (`GMT+01:00`) sends the fixed zone `Etc/GMT-1` (`ianaZone`); an offset of no whole hour fails the save.
+- **Per person, not per device.** The days are the person's. A device without push shows no days, but a
+  pick there adds to the saved days (after the permission), so a second device never wipes them.
+- **Off in the app (last type, Legal N-436, N-401).** Unpicking the last weekday, when the
+  household-add alert is off too, runs `PushRegistration.forget()` first (the sign-out path with
+  its offline catch-up) and then saves no weekday, so a clear that cannot reach the server still
+  takes this device off push, as the alert's off does. The other type's state is read from the
+  server (`HouseholdAddAlert.isOn`); unreadable counts as off, so a phone that cannot be asked
+  is taken off push rather than left registered. The alert's off asks the other way
+  (`ShoppingDayService.hasDays`, unreadable counts as none).
+  A clear the server did not take is kept on the device with its account
+  (`DeviceCache.pendingShoppingDayClear`) and sent again at the next start or
+  sign-in of that account, or when Einstellungen opens (N-439, as for the alert).
+- **App.** Einstellungen shows the section with the flag on, on iOS and
+  Android in a build with push. Picking the first weekday asks for the OS
+  permission (`PushRegistration.optIn`). With push off on this device the chips show off
+  even if the server has days (no push, no reminder). Refused: nothing is saved and a
+  notice says why. `app/lib/settings/shopping_day.dart`.
+- The hint says 19:00 is in the device's time zone (N-435).
+- Data: the weekday choice, time zone and language in the export as
+  `shopping_day_reminder` (next to `push_devices` and `push_preferences`:
+  this migration sorts after the household-add one and carries its
+  `export_my_data`, N-434); the account's deletion removes the row.
+
 ## Native
 
 - iOS: `aps-environment` = `development` in `Runner.entitlements`, the
@@ -279,8 +348,9 @@ database (`supabase/migrations/20261122232004_push_household_add.sql`,
   (N-428): every minute flush deletes rows older than an hour, also while the
   alert is off; the ops switch off empties the queue; a group whose adder left
   the household is dropped unsent. Last alert off (N-427): the switch's off
-  forgets the device unless `otherAlertsOn` says another alert needs it (the
-  hook for the shopping-day reminder).
+  forgets the device unless `otherAlertsOn` says another alert needs it: the
+  shopping-day reminder has a weekday picked (`ShoppingDayService.hasDays`,
+  read from the server; unreadable counts as none, the device is forgotten).
 - **Batching (b).** A group (household, list, adder; adds to two lists within the
   window are two pushes) goes out when its newest
   add is 2 minutes old, or its oldest 5 minutes (`push_add_take`). Title

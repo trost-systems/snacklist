@@ -17964,3 +17964,73 @@ Belgian, Czech etc. phones a one-chip picker. `retailer.dart` skips chain `ikea`
    Dart test and a Deno test, instead of a Flutter test reading the migration (which turned the app
    switch on for lint).
 
+
+## Job 378: P2 shopping-day reminder (flag `push-shopping-day`)
+
+1. **Stacked on job 376's branch** (`job/376-push-foundation`, PR #643, not merged): `push_tokens`
+   and the `push` function are not on main yet. Rebase onto main once #643 lands; PR base is the 376
+   branch until then.
+2. **One frequent cron, not a schedule per zone.** `shopping-day-reminder` runs every 10 minutes
+   (UTC); `shopping_day_due` compares `now() at time zone <stored IANA zone>` with 19:00 to 19:29
+   local, so Postgres owns the DST rules and nothing is computed in the app. It reads only the
+   rows of people who opted in. The 30-minute window lets a late or failed run still send that
+   evening; `last_sent_on` (local date) keeps it to one. A zone with a 30 or 45 minute offset still
+   has a :00 local on the 10-minute grid.
+3. **At most once, no retry.** The row is marked before the pg_net post. A reminder that failed is
+   lost rather than sent twice or late. The ttl is 4 hours (FCM drops it after that).
+4. **Saved after 19:00 local counts as sent that evening**, so turning it on at 19:40 does not ping.
+5. **Open-item count included (acceptance d):** one `count(*)` on `items_list_idx` per due person,
+   only for the default list; names never go in the text. Texts live in SQL (`shopping_day_text`),
+   not ARB, because the function writes them per recipient in their language (`de` or `en`, saved
+   with the reminder; any other app language gets English).
+6. **Default household and list.** The reminder names the person's default household and its default
+   list (else the first list). Per-person, not per-household, as the brief asks; it follows the
+   default if the person switches it.
+7. **The chip UI has no master switch:** no weekday picked is off. The first pick asks for the OS
+   permission (`PushRegistration.optIn`); refused, nothing is saved. Weekday names come from
+   `intl`, so only three ARB strings are new.
+8. **Two gates, both off:** the PostHog flag `push-shopping-day` (UI, `releases/flags.json`
+   `rollout: off`) and the server switch `push_shopping_day` (`shopping_day_set(true, url)`, needs
+   the vault secret `push_send_secret`). Neither is turned on here.
+9. **New plugin `flutter_timezone`** for the device's IANA zone (Dart only has abbreviations).
+   Touches the native projects' plugin list, so the PR needs the long ios CI window.
+
+### Job 378, review 0
+
+10. **The chips follow the device (a reminder that cannot come is not shown).** Einstellungen resumes
+    `PushRegistration` (no prompt) before showing the saved days; with push off here (signed out and in
+    again, notifications refused since) the chips show off, and a pick asks for permission again. With
+    days saved and push on, the device's zone and the app language are saved again when the section
+    opens, so a move or a language switch does not keep the old zone and text.
+11. **Last weekday unpicked = the sign-out path (Legal N-401).** After the server took the empty
+    choice, `PushRegistration.forget()` runs: token unregistered, deleted at FCM, opt-in forgotten,
+    with the offline catch-up (`PushDevice.tokenLeft`). When job 377 (household add) lands, call
+    `forget` only if no other push feature is still on for the person.
+12. **A save never moves `last_sent_on` back** (`greatest`), so a new zone cannot send a second
+    reminder for an evening that already had one. Saving in a zone where it is already 19:00 or later
+    marks that local date sent.
+13. **A failed first read leaves the section hidden** until Einstellungen opens again (the page builds
+    a fresh state, which reads again). No retry loop.
+14. Weekday chips keep the chip's own button and selected semantics; the full weekday name is the
+    label of its text (a widget test pins selected state and the tap action through semantics).
+
+### Job 378, review 1
+
+15. **Days are per person, shown per device.** With push off here the chips show off, but the saved days
+    are kept in state and a pick saves `saved ∪ {day}`: a tablet that never opted in cannot wipe the
+    phone's Monday and Thursday.
+16. **Migration renamed `20261123000000_shopping_day_reminder.sql`** to sort after main's newest
+    (`20261122213336`) and, by guess, after job 376's file once it is renamed (376's to fix). Rebase and
+    rename again if 376 picks a later stamp.
+17. **The page-open refresh has its own function** (`refresh_shopping_day_reminder`): it never touches
+    weekdays or `last_sent_on`, so opening Einstellungen at 19:05 cannot cancel that evening's reminder.
+18. **Non-IANA zone ids** (`GMT+01:00`) map to `Etc/GMT∓n` by the device's current offset; an offset of no
+    whole hour fails the save with the usual notice.
+
+## Job 378b: the P2 Legal fixes and the combined push text
+
+1. **A state that cannot be read counts as "off" for the other type.** Review 0: with the phone offline the alert's off found the reminder unreadable, counted it as picked, and left the token while the server row stayed on. A phone that cannot be asked is taken off push; the cost is a possible re-opt-in, the benefit is that an in-app off always stops this device.
+2. **The shopping-day clear forgets before the save**, like the alert's off, and a clear the server did not take is kept per account on the device and retried (N-439 analogue; `DeviceCache.pendingShoppingDayClear`, not the alert's `PendingOffStore`, to keep `settings` from importing `push`).
+3. **`PushAlertRegistry` is asynchronous.** The reminder's days live on the server; its source reads them when the alert is switched off.
+4. **Graft 3 sits in its own sentence** in section 5 so it stays true for a person who never turned the alert on; flagged to Legal.
+5. **The site test pins the expiry times** to the ttl values of the two senders instead of 24 h.
