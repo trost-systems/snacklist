@@ -271,6 +271,10 @@ fails the build with the file and the key. Strings are inline Markdown (links).
 
 ## Drafts
 
+`unlisted: true` in a guide's frontmatter (job 415) keeps a published guide out of the guide index, the
+sitemap and llms.txt and marks it noindex; it still builds and answers at its URL, for a page only a
+link points to (the AI assistants' plan page).
+
 `draft: true` in a page's or guide's frontmatter keeps it unpublished: preview and local builds
 show it with a banner ("ENTWURF: Freigabe durch Peter" / "DRAFT: pending Peter's approval"), an
 HTML comment and `noindex`; Vercel production builds (`VERCEL_ENV=production`) leave it out, so

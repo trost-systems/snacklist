@@ -223,7 +223,7 @@ a neutral text that names no plan, price or action: "Dafür brauchst du einen an
 Snacklist-Tarif. Infos: https://snacklist.app/de/anleitungen/ki-assistenten-tarif Es wurde nichts
 gelesen oder geändert." (English for a client whose `Accept-Language` prefers it, with
 `https://snacklist.app/en/guides/ai-assistants-plan`; `tools.ts` `premiumRequired` and
-`planInfoUrl`), and `structuredContent: {error: "premium_required", details: {integration: "mcp",
+`planInfoUrl`), and `structuredContent: {error: "plan_required", details: {integration: "mcp",
 info: <that URL>}}` for a client that acts on it. OpenAI's rule (section 5.1): a connector may say
 a feature needs another plan and link to an information page, never show plans or prices, start a
 purchase or promote an upgrade. The page is plain information with no checkout, and `tools_test.ts`

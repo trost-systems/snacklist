@@ -54,11 +54,21 @@ select public.set_store_layout(
    from public.categories c
    where c.household_id = s.household_id
      and regexp_replace(c.name, '^[^[:alnum:]]+', '') = any (array[
-       'Obst & Gemüse', 'Brot & Backwaren', 'Kühlregal', 'Fleisch/Wurst/Fisch', 'Drogerie',
-       'Für die Katze']))
+       'Obst & Gemüse', 'Brot & Backwaren', 'Kühlregal', 'Fleisch/Wurst/Fisch', 'Drogerie']))
 )
 from public.stores s
 where s.household_id = :'household'::uuid and public.store_name_key(s.name) = public.store_name_key('IKEA');
+
+-- Like the app: the display name the name step saves (not over a name the user chose) and the
+-- stores linked to their chains (not over an answer already given).
+select public.set_display_name('Alex (Testkonto)')
+from public.profiles p where p.id = :'uid'::uuid and p.display_name_chosen_at is null;
+
+select public.answer_store_retailer(s.id, v.chain, 'DE')
+from public.stores s
+join (values ('dm', 'dm'), ('Lidl', 'lidl'), ('Edeka', 'edeka'), ('IKEA', 'ikea')) as v (name, chain)
+  on public.store_name_key(s.name) = public.store_name_key(v.name)
+where s.household_id = :'household'::uuid and not s.retailer_answered;
 \o
 
 reset role;

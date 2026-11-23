@@ -17,22 +17,33 @@ test('real content builds every route', () => {
 test('each index lists only its own locale with title and description', () => {
   const { page } = buildSite();
   const de = listed(page('/de/anleitungen'));
-  assert.deepEqual(de.map((g) => g.href), ['/de/anleitungen/ki-assistenten-tarif', '/de/anleitungen/widget', '/de/anleitungen/claude', '/de/anleitungen/alexa', '/de/anleitungen/siri-kurzbefehl']);
-  assert.match(de[0].text, /KI-Assistenten und dein Snacklist-Tarif/);
-  assert.match(de[3].text, /Snacklist per Alexa: Skill einrichten/);
-  assert.match(de[3].text, /Mit dem Snacklist-Skill für Alexa kannst du Sachen per Sprache auf deine Snacklist setzen/);
-  assert.match(de[1].text, /Snacklist auf dem Home-Bildschirm: das Widget/);
-  assert.match(de[2].text, /Snacklist mit Claude verbinden/);
-  assert.match(de[4].text, /Snacklist per Siri: Kurzbefehl einrichten/);
-  assert.match(de[4].text, /Mit einem Kurzbefehl setzt du per Siri Sachen auf deine Snacklist/);
+  assert.deepEqual(de.map((g) => g.href), ['/de/anleitungen/widget', '/de/anleitungen/claude', '/de/anleitungen/alexa', '/de/anleitungen/siri-kurzbefehl']);
+  assert.match(de[2].text, /Snacklist per Alexa: Skill einrichten/);
+  assert.match(de[2].text, /Mit dem Snacklist-Skill für Alexa kannst du Sachen per Sprache auf deine Snacklist setzen/);
+  assert.match(de[0].text, /Snacklist auf dem Home-Bildschirm: das Widget/);
+  assert.match(de[1].text, /Snacklist mit Claude verbinden/);
+  assert.match(de[3].text, /Snacklist per Siri: Kurzbefehl einrichten/);
+  assert.match(de[3].text, /Mit einem Kurzbefehl setzt du per Siri Sachen auf deine Snacklist/);
   const en = listed(page('/en/guides'));
-  assert.deepEqual(en.map((g) => g.href), ['/en/guides/ai-assistants-plan', '/en/guides/claude', '/en/guides/widget', '/en/guides/alexa', '/en/guides/siri-shortcut']);
-  assert.match(en[0].text, /AI assistants and your Snacklist plan/);
-  assert.match(en[1].text, /Connect Snacklist to Claude/);
-  assert.match(en[3].text, /Snacklist with Alexa: set up the skill/);
-  assert.match(en[2].text, /Snacklist on your Home Screen: the widget/);
-  assert.match(en[4].text, /Snacklist with Siri \(German only for now\)/);
-  assert.match(en[4].text, /works in German only for now/);
+  assert.deepEqual(en.map((g) => g.href), ['/en/guides/claude', '/en/guides/widget', '/en/guides/alexa', '/en/guides/siri-shortcut']);
+  assert.match(en[0].text, /Connect Snacklist to Claude/);
+  assert.match(en[2].text, /Snacklist with Alexa: set up the skill/);
+  assert.match(en[1].text, /Snacklist on your Home Screen: the widget/);
+  assert.match(en[3].text, /Snacklist with Siri \(German only for now\)/);
+  assert.match(en[3].text, /works in German only for now/);
+});
+
+test('an unlisted guide builds at its route but is not on the index, the sitemap or llms.txt (job 415)', () => {
+  const { page, outDir } = buildSite({
+    files: { 'guides/de/nur-per-link.md': guide({ locale: 'de', slug: 'nur-per-link', title: 'Nur per Link', description: 'Nur über einen Link erreichbar.' }).replace('\n---\n', '\nunlisted: true\n---\n') },
+  });
+  assert.equal(page('/de/anleitungen/nur-per-link').querySelector('h1').text, 'Nur per Link');
+  assert.ok(!hrefs(page('/de/anleitungen')).includes('/de/anleitungen/nur-per-link'));
+  assert.match(page('/de/anleitungen/nur-per-link').querySelector('head').innerHTML, /name="robots" content="noindex"/);
+  for (const f of ['sitemap.xml', 'llms.txt']) assert.ok(!readFileSync(join(outDir, f), 'utf8').includes('nur-per-link'), f);
+  const real = buildSite();
+  assert.ok(!hrefs(real.page('/en/guides')).includes('/en/guides/ai-assistants-plan'));
+  assert.equal(real.page('/en/guides/ai-assistants-plan').querySelector('h1').text, 'AI assistants and your Snacklist plan');
 });
 
 test('a new guide file appears at its route and on its index', () => {
@@ -41,7 +52,7 @@ test('a new guide file appears at its route and on its index', () => {
   });
   assert.equal(page('/de/anleitungen/einkauf-teilen').querySelector('h1').text, 'Einkauf teilen');
   const de = listed(page('/de/anleitungen'));
-  assert.deepEqual(de.map((g) => g.href), ['/de/anleitungen/einkauf-teilen', '/de/anleitungen/ki-assistenten-tarif', '/de/anleitungen/widget', '/de/anleitungen/claude', '/de/anleitungen/alexa', '/de/anleitungen/siri-kurzbefehl'], 'sorted by title');
+  assert.deepEqual(de.map((g) => g.href), ['/de/anleitungen/einkauf-teilen', '/de/anleitungen/widget', '/de/anleitungen/claude', '/de/anleitungen/alexa', '/de/anleitungen/siri-kurzbefehl'], 'sorted by title');
   assert.match(de[0].text, /So teilst du die Liste\./);
   assert.ok(!hrefs(page('/en/guides')).includes('/de/anleitungen/einkauf-teilen'));
 });
