@@ -2761,3 +2761,14 @@ PR head SHA: given in the PR comment and the job reply (a SHA cannot be written 
 - (b) Premium gate: `public.integration_gate(p_household, p_integration, p_user)` unlocks if `household_has_premium(p_household)` OR `user_has_premium(p_user)` (`migrations/20261115100000_key_checks_without_waiting.sql:189-199`), so it is household OR account, not account only. In practice the household path is household-bound entitlements: legacy purchases and promotional grants (`migrations/20261101150000_testers_via_revenuecat.sql:87`). MCP calls it with user and household (`_shared/premium.ts:46-52`); the `mcp/tools.ts:99` comment says "per user", which the SQL does not enforce. Messages: MCP `premiumRequired` neutral, no plan name (`mcp/tools.ts:103-109`: "Dafür brauchst du einen anderen Snacklist-Tarif. … Es wurde nichts gelesen oder geändert."); API 402 `premium_required` "You need Snacklist Premium to use the API. Unlock it in the Snacklist app. Nothing was read or changed." (`api/handler.ts:178-185`).
 - (c) Limits on the paywall: no. `app/l10n/app_de.arb` benefit lines (:800-803) name MCP and API with no 1000/day, 60/min or burst numbers; the limits live only in `docs/API.md`, `docs/MCP.md`.
 - (d) "Abo verwalten oder kündigen": yes. `premiumManage` (`app/l10n/app_de.arb:858`) shown as the `premium-manage` tile (`app/lib/purchases/premium_screen.dart:176-183`), opening the store sheet via `openManageSubscriptions` (`premium_dialogs.dart:17`) when `manage` is true; web has `_ManageOnWeb` (:186).
+
+## Job 417b: G2 revision of the Terms of Use (PR #679), NO MERGE
+
+Terms §11 loses the MCP/API-to-Premium reason and its cost exception, §12 is now one sentence (DE and EN, verbatim from the report's sections 4 and 5; both bodies diff-equal to the report). Privacy §14 (datenschutz.md, privacy.md) now says Lifetime belongs to the account and is not affected when the last member leaves a household (P-T1, verbatim). The hash test pins the new terms hashes; site build and all 262 site tests pass. `termsPublished` is unchanged. Not merged.
+
+sha256 (the head SHA is posted as a PR comment):
+
+- `nutzungsbedingungen.md` a6607353c8a5ac0fa60ff94332d8c9707499c8baa2fd848060c071b0695794a7
+- `terms.md` aba7ceb14d6f8649b48e72a190484152b689941f1c54ea5c3f6943a3183ea329
+- `datenschutz.md` 40e4e5bee43065e899152a1d4202ae49aa5ceb05e801d840318b5a86f46ede4d
+- `privacy.md` 4d60eb4e3abf01364e12cd6371d12c804414e976460feff8dcf2f96a80ccaa3d

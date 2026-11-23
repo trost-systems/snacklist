@@ -114,20 +114,15 @@ Beyond that, we change Snacklist only for a valid reason. Valid reasons are:
 - Apple, Google, Amazon or the providers of AI assistants change their interfaces or rules,
 - the security of Snacklist or of your data,
 - legal or regulatory requirements,
-- adapting to a new technical environment, for example new versions of iOS or Android,
-- moving MCP and the API to Premium (section 12).
+- adapting to a new technical environment, for example new versions of iOS or Android.
 
-Except for the move in section 12, such changes cost you nothing. We tell you about them clearly.
+Such changes cost you nothing. We tell you about them clearly.
 
 If a change affects your access to Snacklist or its usability more than only slightly, we write to you reasonably in advance by e-mail to the address of your account. We tell you what changes and from when. You can then end the contract free of charge within 30 days. This doesn't apply if you can keep using the unchanged offer at no extra cost. The period starts when the e-mail reaches you. If the change happens only after that, it starts with the change. You must also cancel a yearly plan in the store (section 8). Any further statutory rights, including refunds, are not affected.
 
-## 12. MCP and API: move to Premium
+## 12. MCP and the API
 
-From the Premium start date, MCP and the API are Premium features. Until then they are free. We will tell you the Premium start date in advance in the app and by e-mail.
-
-If you used MCP or the API for free before the start date, we write to you at least six weeks before the lock by e-mail to the address of your account. The e-mail says what changes and from when. It also says that you can end the contract free of charge within 30 days, for example by deleting your account (section 16).
-
-After the lock, you need Snacklist Premium for MCP and the API. You don't have to buy anything: without Premium you keep using Snacklist, just without MCP and the API. The app, shared lists in households, the Alexa skill, Siri and the data export stay free.
+Until the Premium start date, MCP and the API are free.
 
 ## 13. End of Snacklist
 

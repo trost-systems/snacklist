@@ -166,6 +166,6 @@ test('the terms files are the text Legal approved (a changed byte needs a new ha
   const { createHash } = await import('node:crypto');
   const { readFileSync } = await import('node:fs');
   const hash = (f) => createHash('sha256').update(readFileSync(new URL(`../content/legal/${f}`, import.meta.url))).digest('hex');
-  assert.equal(hash('nutzungsbedingungen.md'), '73a8c29d86091ab0c8a8a99348907fa2f36618a872d1728abec7bf3a9d9d9f4a');
-  assert.equal(hash('terms.md'), 'ffec1484f4c18c6d6e3c54f34ea8016b1cc22b4557b2919aef9192801e4d0e18');
+  assert.equal(hash('nutzungsbedingungen.md'), 'a6607353c8a5ac0fa60ff94332d8c9707499c8baa2fd848060c071b0695794a7');
+  assert.equal(hash('terms.md'), 'aba7ceb14d6f8649b48e72a190484152b689941f1c54ea5c3f6943a3183ea329');
 });

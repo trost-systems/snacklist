@@ -114,20 +114,15 @@ Darüber hinaus ändern wir Snacklist nur aus einem triftigen Grund. Triftige Gr
 - Apple, Google, Amazon oder die Anbieter von KI-Assistenten ändern ihre Schnittstellen oder Regeln,
 - die Sicherheit von Snacklist oder deiner Daten,
 - gesetzliche oder behördliche Vorgaben,
-- die Anpassung an eine neue technische Umgebung, zum Beispiel neue Versionen von iOS oder Android,
-- die Umstellung von MCP und API auf Premium (Abschnitt 12).
+- die Anpassung an eine neue technische Umgebung, zum Beispiel neue Versionen von iOS oder Android.
 
-Außer bei der Umstellung in Abschnitt 12 kosten dich solche Änderungen nichts. Wir informieren dich klar und verständlich darüber.
+Solche Änderungen kosten dich nichts. Wir informieren dich klar und verständlich darüber.
 
 Beeinträchtigt eine Änderung deinen Zugang zu Snacklist oder seine Nutzbarkeit mehr als nur unerheblich, schreiben wir dir vorher mit angemessener Frist eine E-Mail an die Adresse deines Kontos. Wir sagen dir, was sich ändert und ab wann. Du kannst den Vertrag dann innerhalb von 30 Tagen kostenlos beenden. Das gilt nicht, wenn du das unveränderte Angebot ohne zusätzliche Kosten weiter nutzen kannst. Die Frist beginnt mit dem Zugang der E-Mail. Erfolgt die Änderung erst danach, beginnt sie mit der Änderung. Ein Jahresabo musst du zusätzlich im Store kündigen (Abschnitt 8). Weitergehende gesetzliche Rechte, auch zur Erstattung, bleiben unberührt.
 
-## 12. MCP und API: Umstellung auf Premium
+## 12. MCP und API
 
-MCP und API sind ab dem Premium-Startdatum Premium-Funktionen. Bis dahin sind sie kostenlos. Das Premium-Startdatum nennen wir dir vorher in der App und per E-Mail.
-
-Hast du MCP oder die API vor dem Startdatum kostenlos genutzt, schreiben wir dir mindestens sechs Wochen vor der Sperre eine E-Mail an die Adresse deines Kontos. Darin steht, was sich ändert und ab wann. Dort steht auch, dass du den Vertrag innerhalb von 30 Tagen kostenlos beenden kannst, zum Beispiel indem du dein Konto löschst (Abschnitt 16).
-
-Nach der Sperre brauchst du für MCP und API Snacklist Premium. Kaufen musst du nichts: Ohne Premium nutzt du Snacklist weiter, nur ohne MCP und API. Die App, gemeinsame Listen in Haushalten, der Alexa-Skill, Siri und der Datenexport bleiben kostenlos.
+Bis zum Premium-Startdatum sind MCP und API kostenlos.
 
 ## 13. Ende von Snacklist
 

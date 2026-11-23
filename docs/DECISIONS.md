@@ -18186,8 +18186,6 @@ merge-pr.sh. This docs fix waits for review PASS before it lands. NEEDS_LEAD has
 3. **Seed**: display name "Alex (Testkonto)" via `set_display_name` (only if the user has not chosen a name), stores linked through `answer_store_retailer` (dm, lidl, edeka, ikea, DE; only if unanswered). Two runs: same rows. "Für die Katze" dropped from IKEA's hidden list (a new household has no such category).
 4. Not done: literal title text per tool in the test table (optional; titles are checked to be strings).
 
-4. **Not done:** a neutral machine code instead of `premium_required` (it also names the telemetry reason, the e2e specs and clients; the code shows only while the lock is on, which is off); keeping the info page out of the guide indexes (no unlisted mechanism in the site build; the page holds no price); a display name and retailer-chain links for the reviewer.
-
 ## Job 417: Terms of Use paths
 
 The German terms page lives at `/nutzungsbedingungen`, like `/datenschutz` (and `docs/PAYWALL_RELEASE.md`); Legal's report planned `/de/nutzungsbedingungen`, which now redirects there permanently (`site/vercel.json`), as does `/terms` to `/en/terms`. Legal should link `https://snacklist.app/nutzungsbedingungen` and `https://snacklist.app/en/terms`. A test pins both files' sha256 to Legal's approved text.
