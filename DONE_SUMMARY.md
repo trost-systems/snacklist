@@ -2717,3 +2717,13 @@ Code and docs only; nothing submitted or created, production untouched. Details 
 - The locked answer is neutral (no plan, price or call to action) and links a new information page on the site (two guides, DE and EN).
 - Submission pack in `docs/connectors/`; reviewer account notes and the sign-in check (email and password only, no code change); idempotent `scripts/seed-ai-reviewer.sh` (proved twice on a local stack).
 - Open: no Terms page exists (blocks ChatGPT), captcha-off in production is for Ops to confirm, review texts for Legal in NEEDS_LEAD. Premium unchanged.
+
+## Job 413: hide History and planned-vs-added for launch (PR #664)
+
+- **Found:** both features were already off in the repo (job 401): flags `grocery-log` and `trip-mode` off, routes redirect to the list, nothing in MCP/API. Audit: `docs/done/413-audit.md`.
+- **Changed (docs and legal text only):** FEATURES-FOR-WRITERS.md and premium.md no longer describe Premium locks for them; the privacy policy sentence promising older trips „mit Premium“ (datenschutz.md l.81, privacy.md l.62) is cut to „Ältere Einkäufe und die Einträge bleiben gespeichert.“ (needs Legal). No app code, no migration, no flags.json change, no #639 string.
+- **AC5:** no Premium surface names export; free „Meine Daten exportieren“ unchanged.
+- **Verify:** `git diff origin/main...HEAD`; ci-ok green; review 0 drove the web build in DE and EN: only Liste and Mehr, `/history`, `/history/trip/<id>`, `/trip/<id>` go to `/`, no Einkauf starten.
+- **Open:** AC1 "for anyone" depends on the Job 401 manual PostHog step (runner key cannot read flags). The Free 4-week lock (`historyLocked*`, `historyDayLocked`, 28-day `trip_history`) must be removed before `grocery-log` goes on (History returns free). Legal must review the two privacy hunks.
+
+Review 1 (job 413): DECISIONS items 2 and 4 and `docs/done/413.md` now agree with the audit about the two privacy hunks (needs Legal); the writers' never-claim list names export explicitly. Main carries #664 as `90b34bcc7`.

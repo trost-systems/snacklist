@@ -879,6 +879,7 @@ Since 10 November 2026 the skill is called Snacklist, with the invocation „sna
 - That beta users already have Premium for good (the grants are given at the launch), or that other members of their household get it too.
 - The line „Snacklist Premium für dich“ (EN "Snacklist Premium for you") in the web app. It never shows there, also not once sales start. It is only in the iPhone and Android apps.
 - That Mehr shows Snacklist Premium to everyone (it does once Premium is on sale).
+- That Premium includes an export: the only export is the free „Meine Daten exportieren“ (job 414).
 - That Premium unlocks „Verlauf“, older trips or the planned-and-added comparison: those are off for everyone, not locked.
 
 **When it goes on sale.** Nothing changes for users until Peter says go. Ask Peter for the launch copy's source; don't write it from this section.
