@@ -341,8 +341,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String consentListAccess(String client) {
-    return 'Read your shopping list. Can also add, change, tick off and remove items, create and rename lists and stores, and set the order in a store. $client and its provider will receive your list contents.';
+  String consentListAccess(String client, String listsStores) {
+    String _temp0 = intl.Intl.selectLogic(listsStores, {
+      'on':
+          ', create and rename lists and stores, and set the order in a store',
+      'other': '',
+    });
+    return 'Read your shopping list. Can also add, change, tick off and remove items$_temp0. $client and its provider will receive your list contents.';
   }
 
   @override

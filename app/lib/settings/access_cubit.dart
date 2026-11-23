@@ -23,6 +23,10 @@ class const AccessState({
 
   /// Job 397: the server makes keys for the MCP server and the API alike.
   final bool unified = false,
+
+  /// Job 420: the server serves the list and store tools, so a connected
+  /// app's list says it may use them.
+  final bool listsStores = false,
 });
 
 class AccessCubit(
@@ -33,8 +37,13 @@ class AccessCubit(
 }) extends Cubit<AccessState> {
   this : super(const AccessState());
 
-  Future<void> load() =>
-      Future.wait([_loadTokens(), _loadApps(), _loadSiri(), _loadUnified()]);
+  Future<void> load() => Future.wait([
+    _loadTokens(),
+    _loadApps(),
+    _loadSiri(),
+    _loadUnified(),
+    _loadListsStores(),
+  ]);
 
   /// Throws [AccessError], e.g. `too_many_tokens`.
   Future<NewToken> create(String name) async {
@@ -69,6 +78,7 @@ class AccessCubit(
           apps: state.apps,
           siriHere: state.siriHere,
           unified: state.unified,
+          listsStores: state.listsStores,
         ),
       );
     }
@@ -83,6 +93,7 @@ class AccessCubit(
           apps: apps,
           siriHere: state.siriHere,
           unified: state.unified,
+          listsStores: state.listsStores,
         ),
       );
     }
@@ -103,6 +114,7 @@ class AccessCubit(
           apps: state.apps,
           siriHere: id,
           unified: state.unified,
+          listsStores: state.listsStores,
         ),
       );
     }
@@ -117,6 +129,22 @@ class AccessCubit(
           apps: state.apps,
           siriHere: state.siriHere,
           unified: true,
+          listsStores: state.listsStores,
+        ),
+      );
+    }
+  }
+
+  Future<void> _loadListsStores() async {
+    final listsStores = await _repo.listsStores();
+    if (!isClosed && listsStores) {
+      emit(
+        AccessState(
+          tokens: state.tokens,
+          apps: state.apps,
+          siriHere: state.siriHere,
+          unified: state.unified,
+          listsStores: true,
         ),
       );
     }
