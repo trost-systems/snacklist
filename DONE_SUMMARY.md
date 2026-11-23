@@ -2741,3 +2741,34 @@ Review 1 found the Globus code correct and driven in the web app. Must-fix: #674
 ## Job 415 review 1 follow-up
 
 Review 1 said FIX (LEAD 10:15 items I had skipped). Done in one PR (#681), Opus review of its head PASS before landing: MCP `structuredContent.error` is `plan_required` (telemetry keeps `premium_required`); the info pages are `unlisted` (new frontmatter key, test); the seed sets display name "Alex (Testkonto)" and links the stores to their chains, rerun-safe (checked); DECISIONS item 4 corrected (those items were required, not optional); IKEA no longer lists "Für die Katze"; `toolAnnotations` comment rewrapped. Review 0 landed as `e026ca1a3`, not `5efbf6b6b` (the PR head). Not done: literal title text per tool in the test (optional).
+
+## Job 417: Terms of Use pages (Legal L23-2), NO MERGE (hashes superseded by 417b)
+
+Built `/nutzungsbedingungen` (`/de/nutzungsbedingungen` redirects) and `/en/terms` from `in/2026-11-23-snacklist-terms.md` (sections 4 and 5, 18 sections each, dated 23 Nov 2026). Text verbatim (diffed against the source, ignoring blank lines; review 0 found the EN §18 closing paragraph missing in the first push, restored in the fix round, hashes below are the corrected ones); §12 as written. Same legal-page layout, a language switch via `translation_key: terms`, footer link next to Privacy/Datenschutz (flag `termsPublished` in `site/config.json`). Noindex follows the existing rules (none on these pages, like privacy). Because the text names ChatGPT and Claude, two entries went into `scripts/brand-names.allow.json` (Legal approved the text).
+
+Source files, sha256:
+
+```
+73a8c29d86091ab0c8a8a99348907fa2f36618a872d1728abec7bf3a9d9d9f4a  site/content/legal/nutzungsbedingungen.md  (superseded by 417b)
+ffec1484f4c18c6d6e3c54f34ea8016b1cc22b4557b2919aef9192801e4d0e18  site/content/legal/terms.md  (superseded by 417b)
+```
+
+PR head SHA: given in the PR comment and the job reply (a SHA cannot be written into a file of the commit it names). Not merged. The German page is at `/nutzungsbedingungen` (like `/datenschutz`); `/de/nutzungsbedingungen` and `/terms` redirect (docs/DECISIONS.md). A test pins both files' hashes. `docs/ALEXA_CERTIFICATION.md:22` still says the terms URLs 404: update with the `termsOfUseUrl` follow-up. Screenshots: `docs/screenshots/417/` (de/en, desktop/mobile). Tests: `npm run build` and `npm test` in `site/`, `scripts/lint.sh` pass.
+
+### AC5 report (main at 7aa558797, no code changes)
+
+- (a) Daily cap: MCP is per user account (`supabase/functions/mcp/handler.ts:41-45` PER_DAY=1000; `mcp_take_call(userId…)` at :416, table keyed by `user_id`, `migrations/20261121120000_mcp_rate.sql`). API is per household: `supabase/functions/api/limits.ts:8-9` "Per household and UTC day, all its keys together", `api_household_days` keyed by household (handler.ts:589). So Terms §7 wording needs both models, not "per account" for the API.
+- (b) Premium gate: `public.integration_gate(p_household, p_integration, p_user)` unlocks if `household_has_premium(p_household)` OR `user_has_premium(p_user)` (`migrations/20261115100000_key_checks_without_waiting.sql:189-199`), so it is household OR account, not account only. In practice the household path is household-bound entitlements: legacy purchases and promotional grants (`migrations/20261101150000_testers_via_revenuecat.sql:87`). MCP calls it with user and household (`_shared/premium.ts:46-52`); the `mcp/tools.ts:99` comment says "per user", which the SQL does not enforce. Messages: MCP `premiumRequired` neutral, no plan name (`mcp/tools.ts:103-109`: "Dafür brauchst du einen anderen Snacklist-Tarif. … Es wurde nichts gelesen oder geändert."); API 402 `premium_required` "You need Snacklist Premium to use the API. Unlock it in the Snacklist app. Nothing was read or changed." (`api/handler.ts:178-185`).
+- (c) Limits on the paywall: no. `app/l10n/app_de.arb` benefit lines (:800-803) name MCP and API with no 1000/day, 60/min or burst numbers; the limits live only in `docs/API.md`, `docs/MCP.md`.
+- (d) "Abo verwalten oder kündigen": yes. `premiumManage` (`app/l10n/app_de.arb:858`) shown as the `premium-manage` tile (`app/lib/purchases/premium_screen.dart:176-183`), opening the store sheet via `openManageSubscriptions` (`premium_dialogs.dart:17`) when `manage` is true; web has `_ManageOnWeb` (:186).
+
+## Job 417b: G2 revision of the Terms of Use (PR #679), NO MERGE
+
+Terms §11 loses the MCP/API-to-Premium reason and its cost exception, §12 is now one sentence (DE and EN, verbatim from the report's sections 4 and 5; both bodies diff-equal to the report). Privacy §14 (datenschutz.md, privacy.md) now says Lifetime belongs to the account and is not affected when the last member leaves a household (P-T1, verbatim). The hash test pins the new terms hashes; site build and all 262 site tests pass. `termsPublished` is unchanged. Not merged.
+
+sha256 (the head SHA is posted as a PR comment):
+
+- `nutzungsbedingungen.md` a6607353c8a5ac0fa60ff94332d8c9707499c8baa2fd848060c071b0695794a7
+- `terms.md` aba7ceb14d6f8649b48e72a190484152b689941f1c54ea5c3f6943a3183ea329
+- `datenschutz.md` 40e4e5bee43065e899152a1d4202ae49aa5ceb05e801d840318b5a86f46ede4d
+- `privacy.md` 4d60eb4e3abf01364e12cd6371d12c804414e976460feff8dcf2f96a80ccaa3d

@@ -18185,3 +18185,11 @@ merge-pr.sh. This docs fix waits for review PASS before it lands. NEEDS_LEAD has
 2. **`unlisted: true` guide frontmatter** (site build): the guide builds and answers at its URL, is noindex (the launch check allows it through a `snacklist-unlisted` meta marker), and is left out of the guide index, the sitemap and llms.txt (`site/test/content.test.mjs` pins it). Both plan-info pages use it, since only the locked answer links them.
 3. **Seed**: display name "Alex (Testkonto)" via `set_display_name` (only if the user has not chosen a name), stores linked through `answer_store_retailer` (dm, lidl, edeka, ikea, DE; only if unanswered). Two runs: same rows. "Für die Katze" dropped from IKEA's hidden list (a new household has no such category).
 4. Not done: literal title text per tool in the test table (optional; titles are checked to be strings).
+
+## Job 417: Terms of Use paths
+
+The German terms page lives at `/nutzungsbedingungen`, like `/datenschutz` (and `docs/PAYWALL_RELEASE.md`); Legal's report planned `/de/nutzungsbedingungen`, which now redirects there permanently (`site/vercel.json`), as does `/terms` to `/en/terms`. Legal should link `https://snacklist.app/nutzungsbedingungen` and `https://snacklist.app/en/terms`. A test pins both files' sha256 to Legal's approved text.
+
+## Job 417b: G2 revision
+
+The terms hashes in the test are updated for G2 (terms §11 and §12) and P-T1 (privacy §14, Lifetime belongs to the account). Legal's hash-bound GO for the new hashes is pending; the PR stays unmerged.
