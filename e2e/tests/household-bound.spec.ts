@@ -76,7 +76,7 @@ test('joining an unlocked household: nothing to buy, the refund help; the purcha
   await screenshot(ben, 'job43-join-unlocked-de-390');
   await refundLink.click();
   await expect(ben.getByText('Kauf zurückfordern', { exact: true })).toBeVisible();
-  await expect(ben.getByText(/^Snacklist Lifetime gehört immer zu dem Haushalt, in dem es gekauft wurde\. Käufe im App Store erstattet nur Apple\./)).toBeVisible();
+  await expect(ben.getByText(/^Snacklist Lifetime gehört zu deinem Konto\. Käufe im App Store erstattet nur Apple\./)).toBeVisible();
   await expect(ben.getByRole('link', { name: 'Mehr in den häufigen Fragen' })).toHaveAttribute('href', 'https://snacklist.app/support');
   await expect(ben.getByRole('link', { name: 'Bei Apple anfragen' })).toHaveAttribute('href', 'https://reportaproblem.apple.com/');
   await expect(ben.getByRole('link', { name: 'Bei Google anfragen' })).toHaveAttribute(

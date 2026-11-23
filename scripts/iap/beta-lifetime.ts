@@ -7,10 +7,14 @@
 // otherwise: grant until 2100-01-01 (API v2 grants need an end; the app treats 2100 as for good),
 // then reconcile. A rerun skips what is done, so after a failure just run it again.
 //
-//   deno run --allow-env --allow-net scripts/iap/beta-lifetime.ts [--created-before <iso>] [--apply]
+//   deno run --allow-env --allow-net scripts/iap/beta-lifetime.ts [--created-before <iso>]
+//     [--used-before <iso>] [--apply]
 //
-// Accounts: confirmed, not anonymous, not deleted, created before --created-before (ISO 8601 with
-// Z or an offset), read through the Management API
+// Accounts: confirmed, not anonymous, not deleted, and either created before --created-before
+// (ISO 8601 with Z or an offset) or having used MCP or the API before --used-before (default: the
+// moment the integration_lock switch was flipped on, if it is on, else now; use after the lock is
+// refused or paid for, so it never earns Lifetime). --apply refuses while integration_lock is on:
+// the grants run before the lock (PAYWALL_RELEASE.md 6.2 to 6.4). Read through the Management API
 // (SUPABASE_ACCESS_TOKEN, SUPABASE_PROJECT_REF: default the hosted project). Dry run by default:
 // with REVENUECAT_SECRET_KEY and REVENUECAT_PROJECT_ID it reads each account's RevenueCat state and
 // counts the steps, without them it counts the accounts; without --created-before it counts up to
@@ -63,7 +67,9 @@ export interface Tally {
 }
 
 export interface Deps {
-  accounts(cutoff: Date): Promise<Account[]>;
+  accounts(cutoff: Date, usedBefore: Date): Promise<Account[]>;
+  /** The integration_lock switch: whether it is on, and when it last changed (null: no row). */
+  lock(): Promise<{ on: boolean; since: Date | null }>;
   /** null: no RevenueCat keys; a dry run then only counts the accounts. */
   atRevenueCat: ((id: string) => Promise<PromotionalPremium>) | null;
   grant(id: string): Promise<void>;
@@ -75,6 +81,9 @@ export interface Deps {
 
 export interface Options {
   cutoff: Date;
+  /** Use of MCP or the API counts only before this; null: the lock's flip time, else [now]. */
+  usedBefore: Date | null;
+  now: Date;
   apply: boolean;
   /** Between accounts, to stay under RevenueCat's rate limit. */
   pauseMs: number;
@@ -90,11 +99,17 @@ export async function run(deps: Deps, opts: Options): Promise<Tally> {
     reconciled: 0,
     failed: 0,
   };
-  const accounts = await deps.accounts(opts.cutoff);
+  const lock = await deps.lock();
+  if (opts.apply && lock.on) {
+    throw new Error('--apply refused: integration_lock is on; grants run before the lock');
+  }
+  const usedBefore = opts.usedBefore ?? (lock.on ? lock.since : null) ?? opts.now;
+  const accounts = await deps.accounts(opts.cutoff, usedBefore);
   tally.accounts = accounts.length;
   deps.log(selectionRule);
   deps.log(
-    `accounts created before ${opts.cutoff.toISOString()} or using MCP or the API: ${accounts.length}`,
+    `accounts created before ${opts.cutoff.toISOString()} or using MCP or the API before ` +
+      `${usedBefore.toISOString()}: ${accounts.length}`,
   );
   const read = deps.atRevenueCat;
   if (!read) {
@@ -153,11 +168,15 @@ function failure(e: unknown): string {
 
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const usage =
-  'usage: beta-lifetime.ts [--created-before <ISO 8601 with Z or offset>] [--apply, needs --created-before]';
+  'usage: beta-lifetime.ts [--created-before <ISO 8601 with Z or offset>] [--used-before <ISO>] [--apply, needs --created-before]';
 const isoWithZone = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d{1,9})?)?(Z|[+-]\d{2}:\d{2})$/;
 
-export function parseArgs(args: string[], now: Date): { cutoff: Date; apply: boolean } {
+export function parseArgs(
+  args: string[],
+  now: Date,
+): { cutoff: Date; usedBefore: Date | null; apply: boolean } {
   let cutoff: Date | undefined;
+  let usedBefore: Date | null = null;
   let apply = false;
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
@@ -170,6 +189,13 @@ export function parseArgs(args: string[], now: Date): { cutoff: Date; apply: boo
       }
       cutoff = d;
       i++;
+    } else if (arg === '--used-before' && value !== undefined) {
+      const d = new Date(value);
+      if (!isoWithZone.test(value) || Number.isNaN(d.getTime())) {
+        throw new Error('--used-before: an ISO 8601 time with Z or an offset');
+      }
+      usedBefore = d;
+      i++;
     } else throw new Error(usage);
   }
   if (apply && cutoff === undefined) {
@@ -177,13 +203,14 @@ export function parseArgs(args: string[], now: Date): { cutoff: Date; apply: boo
       '--apply needs --created-before <the public-launch cut-off> (Legal Review N-347)',
     );
   }
-  return { cutoff: cutoff ?? now, apply };
+  return { cutoff: cutoff ?? now, usedBefore, apply };
 }
 
 /** What the run selects, printed with every run (docs/DECISIONS.md "Job 419"). */
 export const selectionRule =
   'selection: every confirmed, non-anonymous, non-deleted account created before the cut-off, ' +
-  'plus every such account that used MCP or the API (a used token, an OAuth connection, or a ' +
+  'plus every such account that used MCP or the API before --used-before (default: when ' +
+  'integration_lock was flipped on, else now) (a used token, an OAuth connection, or a ' +
   'counted request: personal_access_tokens.last_used_at, auth.sessions of an OAuth client, ' +
   'mcp_rate, account_days)';
 
@@ -192,10 +219,13 @@ export const selectionRule =
  * lifetime row is stored. Use is read from what the server keeps: a token's last_used_at (set by
  * every API and MCP request with a key), an OAuth connection (the only way a connector reaches
  * MCP), and the per-account counters (mcp_rate from job 336, account_days from job 419). An
- * account that used MCP or the API gets Lifetime whenever it was created: the lock is not on yet
- * (Legal Review, must-fix 17).
+ * account that used MCP or the API before [usedBefore] gets Lifetime whenever it was created
+ * (Legal Review, must-fix 17). Later use is not counted: once the lock is on, an attempt is refused
+ * or paid for, and the request counters (mcp_rate, account_days) hold even a refused one. The day
+ * counter is compared by whole UTC days, so the flip day itself never counts.
  */
-export function accountsQuery(cutoff: Date): string {
+export function accountsQuery(cutoff: Date, usedBefore: Date): string {
+  const used = `'${usedBefore.toISOString()}'::timestamptz`;
   return `select u.id, exists (
   select 1 from public.user_entitlements e
   where e.user_id = u.id and e.kind = 'premium' and e.source = 'promotional'
@@ -204,15 +234,28 @@ export function accountsQuery(cutoff: Date): string {
 from auth.users u
 where (u.created_at < '${cutoff.toISOString()}'::timestamptz
     or exists (select 1 from public.personal_access_tokens t
-               where t.user_id = u.id and t.kind in ('pat', 'api') and t.last_used_at is not null)
+               where t.user_id = u.id and t.kind in ('pat', 'api') and t.last_used_at < ${used})
     or exists (select 1 from auth.sessions s
-               where s.user_id = u.id and s.oauth_client_id is not null)
-    or exists (select 1 from public.mcp_rate r where r.user_id = u.id)
-    or exists (select 1 from public.account_days d where d.user_id = u.id))
+               where s.user_id = u.id and s.oauth_client_id is not null
+                 and s.created_at < ${used})
+    or exists (select 1 from public.mcp_rate r where r.user_id = u.id and r.refilled_at < ${used})
+    or exists (select 1 from public.account_days d
+               where d.user_id = u.id and d.day < (${used} at time zone 'UTC')::date))
   and u.is_anonymous is not true
   and u.deleted_at is null
   and u.confirmed_at is not null
 order by u.created_at`;
+}
+
+/** No row: the switch is off (app_switch reads a missing key as off). */
+export function parseLock(rows: unknown[]): { on: boolean; since: Date | null } {
+  const r = rows[0] as { enabled?: unknown; changed_at?: unknown } | undefined;
+  if (r === undefined) return { on: false, since: null };
+  const since = typeof r.changed_at === 'string' ? new Date(r.changed_at) : null;
+  if (typeof r.enabled !== 'boolean' || (since !== null && Number.isNaN(since.getTime()))) {
+    throw new Error('lock: a row without enabled or changed_at');
+  }
+  return { on: r.enabled, since };
 }
 
 export function parseAccounts(rows: unknown[]): Account[] {
@@ -272,8 +315,16 @@ if (import.meta.main) {
     const query = managementApi(ref, token);
     const timedFetch: Fetch = within(fetch, reconcileTimeoutMs);
     const tally = await run({
-      accounts: async (cutoff) => {
-        const rows = await query(accountsQuery(cutoff)).catch((e: unknown) => {
+      lock: async () => {
+        const rows = await query(
+          `select enabled, changed_at from public.app_switches where key = 'integration_lock'`,
+        ).catch(() => {
+          throw new Error('lock: Management API unreachable');
+        });
+        return parseLock(rows);
+      },
+      accounts: async (cutoff, usedBefore) => {
+        const rows = await query(accountsQuery(cutoff, usedBefore)).catch((e: unknown) => {
           const status = /^Management API (\d+)/.exec(e instanceof Error ? e.message : '')?.[1];
           throw new Error(`accounts: Management API ${status ?? 'unreachable'}`);
         });
@@ -291,7 +342,7 @@ if (import.meta.main) {
       },
       pause: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
       log: (line) => console.log(line),
-    }, { ...opts, pauseMs });
+    }, { ...opts, now: new Date(), pauseMs });
     if (tally.failed > 0) Deno.exit(1);
   } catch (e) {
     console.error(e instanceof Error ? e.message : String(e));

@@ -2819,7 +2819,7 @@ abstract class AppLocalizations {
   /// No description provided for @lifetimeBody.
   ///
   /// In de, this message translates to:
-  /// **'Ein Kauf, für euren ganzen Haushalt: Snacklist Lifetime unterstützt die Entwicklung von Snacklist.'**
+  /// **'Ein Kauf, für dein Konto: Snacklist Lifetime unterstützt die Entwicklung von Snacklist.'**
   String get lifetimeBody;
 
   /// Snacklist Lifetime: the buy button; the store's sheet shows the price (no store call before this tap, H-67)
@@ -2927,7 +2927,7 @@ abstract class AppLocalizations {
   /// No description provided for @refundHelpBody.
   ///
   /// In de, this message translates to:
-  /// **'Snacklist Lifetime gehört immer zu dem Haushalt, in dem es gekauft wurde. Käufe im App Store erstattet nur Apple. Bei Google Play beantragst du die Erstattung in den ersten 48 Stunden bei Google; danach schreib uns an support@snacklist.app, wir prüfen jede Anfrage einzeln. Deine gesetzlichen Rechte bleiben unberührt.'**
+  /// **'Snacklist Lifetime gehört zu deinem Konto. Käufe im App Store erstattet nur Apple. Bei Google Play beantragst du die Erstattung in den ersten 48 Stunden bei Google; danach schreib uns an support@snacklist.app, wir prüfen jede Anfrage einzeln. Deine gesetzlichen Rechte bleiben unberührt.'**
   String get refundHelpBody;
 
   /// No description provided for @refundHelpApple.
@@ -3152,7 +3152,7 @@ abstract class AppLocalizations {
   /// **'einmalig'**
   String get premiumOneTime;
 
-  /// Wording from Legal N-302 (2026-11-19, job 317): no "für immer", Lifetime ends with the household. Premium page: the line under the Lifetime tile. No amount and no ratio to the yearly price: the store sets both prices (Peter, t788u, 11 Nov 2026, supersedes Spec #4 AC9's three-years framing)
+  /// Wording from Legal N-302 (2026-11-19, job 317): no "für immer", Lifetime belongs to the account (privacy §14). Premium page: the line under the Lifetime tile. No amount and no ratio to the yearly price: the store sets both prices (Peter, t788u, 11 Nov 2026, supersedes Spec #4 AC9's three-years framing)
   ///
   /// In de, this message translates to:
   /// **'Einmal zahlen, kein Abo.'**

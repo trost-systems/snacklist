@@ -510,8 +510,8 @@ void main() {
     expect(find.text('Kauf zurückfordern'), findsOneWidget);
     expect(
       find.text(
-        'Snacklist Lifetime gehört immer zu dem Haushalt, in dem es gekauft '
-        'wurde. Käufe im App Store erstattet nur Apple. Bei Google Play '
+        'Snacklist Lifetime gehört zu deinem Konto. Käufe im App Store erstattet '
+        'nur Apple. Bei Google Play '
         'beantragst du die Erstattung in den ersten 48 Stunden bei Google; '
         'danach schreib uns an support@snacklist.app, wir prüfen jede Anfrage '
         'einzeln. Deine gesetzlichen Rechte bleiben unberührt.',
@@ -587,7 +587,7 @@ void main() {
     expect(find.text('Request a refund'), findsOneWidget);
     expect(
       find.text(
-        'Snacklist Lifetime always belongs to the household it was bought in. '
+        'Snacklist Lifetime belongs to your account. '
         'Only Apple refunds App Store purchases. For Google Play, ask Google '
         'within 48 hours of buying; after that, email us at '
         "support@snacklist.app and we'll look at your request. Your statutory "

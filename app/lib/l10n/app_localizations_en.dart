@@ -1666,7 +1666,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lifetimeBody =>
-      'One purchase for your whole household: Snacklist Lifetime supports the development of Snacklist.';
+      'One purchase for your account: Snacklist Lifetime supports the development of Snacklist.';
 
   @override
   String get lifetimeBuy => 'Continue to purchase';
@@ -1731,7 +1731,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get refundHelpBody =>
-      'Snacklist Lifetime always belongs to the household it was bought in. Only Apple refunds App Store purchases. For Google Play, ask Google within 48 hours of buying; after that, email us at support@snacklist.app and we\'ll look at your request. Your statutory rights are not affected.';
+      'Snacklist Lifetime belongs to your account. Only Apple refunds App Store purchases. For Google Play, ask Google within 48 hours of buying; after that, email us at support@snacklist.app and we\'ll look at your request. Your statutory rights are not affected.';
 
   @override
   String get refundHelpApple =>

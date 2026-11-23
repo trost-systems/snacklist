@@ -1683,7 +1683,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get lifetimeBody =>
-      'Ein Kauf, für euren ganzen Haushalt: Snacklist Lifetime unterstützt die Entwicklung von Snacklist.';
+      'Ein Kauf, für dein Konto: Snacklist Lifetime unterstützt die Entwicklung von Snacklist.';
 
   @override
   String get lifetimeBuy => 'Weiter zum Kauf';
@@ -1748,7 +1748,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get refundHelpBody =>
-      'Snacklist Lifetime gehört immer zu dem Haushalt, in dem es gekauft wurde. Käufe im App Store erstattet nur Apple. Bei Google Play beantragst du die Erstattung in den ersten 48 Stunden bei Google; danach schreib uns an support@snacklist.app, wir prüfen jede Anfrage einzeln. Deine gesetzlichen Rechte bleiben unberührt.';
+      'Snacklist Lifetime gehört zu deinem Konto. Käufe im App Store erstattet nur Apple. Bei Google Play beantragst du die Erstattung in den ersten 48 Stunden bei Google; danach schreib uns an support@snacklist.app, wir prüfen jede Anfrage einzeln. Deine gesetzlichen Rechte bleiben unberührt.';
 
   @override
   String get refundHelpApple =>

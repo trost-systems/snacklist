@@ -2756,7 +2756,7 @@ Review 1 said FIX (LEAD 10:15 items I had skipped). Done in one PR (#681), Opus 
 - "lösche ihn in der App" (API key, §5): the app calls it widerrufen / revoke (Mehr › Zugänge, trash icon, dialog "API-Schlüssel widerrufen?"); the API section shows only while flag `public-api` is on.
 - Terms §5 limits (20 burst, 60 a minute, 1,000 a day per account across keys and MCP) match the code now.
 
-**Not done / for the lead.** NEEDS_LEAD "Job 419": launch order (beta-lifetime before lock; old store builds that still create household-bound purchases). "One MCP tool call = one request": the function counts every request, as before (a tool call is one POST; initialize and list calls also count). Not run locally: full e2e and `verify.sh` (CI). TestFlight: next green main build; no flag.
+**Not done / for the lead.** NEEDS_LEAD "Job 419": launch order (beta-lifetime before lock; old store builds that still create household-bound purchases). ~~"One MCP tool call = one request": the function counts every request, as before (a tool call is one POST; initialize and list calls also count).~~ Stale since review 1: only `tools/call` messages count, see "Job 419 review 1 fixes". Not run locally: full e2e and `verify.sh` (CI). TestFlight: next green main build; no flag.
 
 ### Job 419 review 0 fixes (PR #682)
 
@@ -2780,3 +2780,15 @@ Also done from the nice-to-haves: `mcp/handler.ts` imports `BURST`, `PER_MINUTE`
 6. **Nice-to-have:** MCP.md names `api/limits.ts`; AC4 list has „Abo verwalten oder kündigen“; handler-level 1,000 test through API and MCP (`api_integration_test.ts`); `promotional.ts` field is `appUserId`; NEEDS_LEAD line corrected (`grant --user`).
 
 Also in review 1: the static web join page (`app/web/join`) lost the same "Premium covers everyone in the household" line; e2e specs `join-page` (18), `household-bound` (6), `premium-yearly` (5, regexes for the reworded notes), `public-api` (3) and `integration-lock` (3) pass locally; db gate integration tests 227 passed and the backup drill passes; the full Flutter suite (3.50) passes after the six invite goldens were regenerated; functions unit tests 893 passed.
+
+### Job 419b: grant script bound, stale lines, copy (PR #682)
+
+1. **AC1.** `scripts/iap/beta-lifetime.ts`: `--apply` refuses while `integration_lock` is on; `--used-before` (default: the lock flip time, else now) bounds the use signals. Unit tests for both. DECISIONS "Job 419b". Header comment updated; PAYWALL_RELEASE 6.3/6.4 mention it. Not run against production.
+2. **AC2.** The "every request" line in "Job 419 / Not done" is struck and points at review 1.
+3. **AC3.** Exact strings (for Legal), `app_de.arb` / `app_en.arb`:
+   - `lifetimeBody` DE: „Ein Kauf, für euren ganzen Haushalt: Snacklist Lifetime unterstützt …" → „Ein Kauf, für dein Konto: Snacklist Lifetime unterstützt …"
+   - `lifetimeBody` EN: "One purchase for your whole household: Snacklist Lifetime supports …" → "One purchase for your account: Snacklist Lifetime supports …"
+   - `refundHelpBody` DE: „Snacklist Lifetime gehört immer zu dem Haushalt, in dem es gekauft wurde." → „Snacklist Lifetime gehört zu deinem Konto."
+   - `refundHelpBody` EN: "Snacklist Lifetime always belongs to the household it was bought in." → "Snacklist Lifetime belongs to your account."
+   - `premiumLifetimeValue` (visible text „Einmal zahlen, kein Abo." / "Pay once, no subscription." unchanged); its DE description said "Lifetime ends with the household" → "Lifetime belongs to the account (privacy §14)".
+   - Tests (`premium_screen_test.dart`, e2e `household-bound.spec.ts`) follow the new text.

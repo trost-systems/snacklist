@@ -5,6 +5,7 @@ import {
   type Deps,
   parseAccounts,
   parseArgs,
+  parseLock,
   reconciled,
   run,
   selectionRule,
@@ -20,6 +21,8 @@ const user = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0
 const forGood: PromotionalPremium = { active: true, expiresAt: new Date('2100-01-01T00:00:00Z') };
 const none: PromotionalPremium = { active: false };
 const cutoff = new Date('2026-12-01T00:00:00Z');
+const now = new Date('2026-12-02T09:00:00Z');
+const base = { cutoff, usedBefore: null, now, pauseMs: 0 };
 
 Deno.test('stepFor: done only when RevenueCat grants for good and the row is stored', () => {
   assertEquals(stepFor({ active: true, expiresAt: null }, true), 'done');
@@ -37,14 +40,22 @@ Deno.test('stepFor: done only when RevenueCat grants for good and the row is sto
 function fake(
   accounts: Account[],
   state: Map<string, PromotionalPremium>,
-  opts: { grantFails?: string; reconcileAnswers?: Map<string, number>; revenueCat?: boolean } = {},
+  opts: {
+    grantFails?: string;
+    reconcileAnswers?: Map<string, number>;
+    revenueCat?: boolean;
+    lock?: { on: boolean; since: Date | null };
+    usedBefores?: Date[];
+  } = {},
 ) {
   const calls: string[] = [];
   const lines: string[] = [];
   const stored = new Set(accounts.filter((a) => a.stored).map((a) => a.id));
   const deps: Deps = {
-    accounts: (c) => {
+    lock: () => Promise.resolve(opts.lock ?? { on: false, since: null }),
+    accounts: (c, u) => {
       assertEquals(c, cutoff);
+      opts.usedBefores?.push(u);
       return Promise.resolve(accounts.map((a) => ({ id: a.id, stored: stored.has(a.id) })));
     },
     atRevenueCat: opts.revenueCat === false ? null : (id) => Promise.resolve(state.get(id) ?? none),
@@ -96,7 +107,7 @@ const noIds = (lines: string[]) => {
 Deno.test('run: a dry run reads RevenueCat and writes nothing', async () => {
   const { accounts, state } = mixed();
   const f = fake(accounts, state);
-  const tally = await run(f.deps, { cutoff, apply: false, pauseMs: 0 });
+  const tally = await run(f.deps, { ...base, apply: false });
   assertEquals(f.calls, []);
   assertEquals(
     tally,
@@ -116,14 +127,14 @@ Deno.test('run: a dry run reads RevenueCat and writes nothing', async () => {
 Deno.test('run: a dry run without RevenueCat keys only counts the accounts', async () => {
   const { accounts, state } = mixed();
   const f = fake(accounts, state, { revenueCat: false });
-  const tally = await run(f.deps, { cutoff, apply: false, pauseMs: 0 });
+  const tally = await run(f.deps, { ...base, apply: false });
   assertEquals(f.calls, []);
   assertEquals(tally.accounts, 5);
   assertEquals(tally.done + tally.reconcile + tally.grant, 0);
   assertStringIncludes(f.lines.join('\n'), 'RevenueCat not checked');
   assertStringIncludes(
     f.lines.join('\n'),
-    'before 2026-12-01T00:00:00.000Z or using MCP or the API: 5',
+    'before 2026-12-01T00:00:00.000Z or using MCP or the API before 2026-12-02T09:00:00.000Z: 5',
   );
 });
 
@@ -133,7 +144,7 @@ Deno.test('run --apply grants and reconciles what is missing; a failure is count
     grantFails: user(4),
     reconcileAnswers: new Map([[user(5), 502]]),
   });
-  const tally = await run(f.deps, { cutoff, apply: true, pauseMs: 0 });
+  const tally = await run(f.deps, { ...base, apply: true });
   assertEquals(f.calls, [
     `reconcile ${user(2)}`,
     `grant ${user(3)}`,
@@ -159,12 +170,12 @@ Deno.test('run --apply grants and reconciles what is missing; a failure is count
   noIds(f.lines);
 
   const rerun = fake(f.accountsNow(), state);
-  const again = await run(rerun.deps, { cutoff, apply: true, pauseMs: 0 });
+  const again = await run(rerun.deps, { ...base, apply: true });
   assertEquals(rerun.calls, [`grant ${user(4)}`, `reconcile ${user(4)}`, `reconcile ${user(5)}`]);
   assertEquals(again.failed, 0);
 
   const last = fake(rerun.accountsNow(), state);
-  assertEquals((await run(last.deps, { cutoff, apply: true, pauseMs: 0 })).done, 5);
+  assertEquals((await run(last.deps, { ...base, apply: true })).done, 5);
   assertEquals(last.calls, []);
   noIds([...rerun.lines, ...last.lines]);
 });
@@ -175,7 +186,7 @@ Deno.test('run: a RevenueCat read that fails or times out is counted, the run go
   if (!read) throw new Error('the fake reads RevenueCat');
   f.deps.atRevenueCat = (id) =>
     id === user(1) ? Promise.reject(new DOMException('slow', 'TimeoutError')) : read(id);
-  const tally = await run(f.deps, { cutoff, apply: true, pauseMs: 0 });
+  const tally = await run(f.deps, { ...base, apply: true });
   assertEquals(tally.failed, 1);
   assertEquals(f.calls, [`grant ${user(2)}`, `reconcile ${user(2)}`]);
   assertStringIncludes(f.lines.join('\n'), 'read failed: timeout');
@@ -183,12 +194,19 @@ Deno.test('run: a RevenueCat read that fails or times out is counted, the run go
 
 Deno.test('parseArgs: dry run until now by default; a cutoff needs a zone', () => {
   const now = new Date('2026-11-22T10:00:00Z');
-  assertEquals(parseArgs([], now), { cutoff: now, apply: false });
+  assertEquals(parseArgs([], now), { cutoff: now, usedBefore: null, apply: false });
   assertThrows(() => parseArgs(['--apply'], now), Error, '--apply needs --created-before');
   assertEquals(parseArgs(['--apply', '--created-before', '2026-12-01T00:00:00+01:00'], now), {
     cutoff: new Date('2026-11-30T23:00:00Z'),
+    usedBefore: null,
     apply: true,
   });
+  assertEquals(
+    parseArgs(['--used-before', '2026-12-01T10:00:00Z'], now).usedBefore,
+    new Date('2026-12-01T10:00:00Z'),
+  );
+  assertThrows(() => parseArgs(['--used-before', '2026-12-01'], now));
+  assertThrows(() => parseArgs(['--used-before'], now));
   assertThrows(() => parseArgs(['--created-before', '2026-12-01'], now));
   assertThrows(() => parseArgs(['--created-before', '2026-12-01T00:00:00'], now));
   assertThrows(() => parseArgs(['--created-before', '2026-13-45T00:00:00Z'], now));
@@ -197,7 +215,7 @@ Deno.test('parseArgs: dry run until now by default; a cutoff needs a zone', () =
 });
 
 Deno.test('accountsQuery: confirmed real accounts before the cutoff, with the lifetime row', () => {
-  const sql = accountsQuery(new Date('2026-12-01T00:00:00+01:00'));
+  const sql = accountsQuery(new Date('2026-12-01T00:00:00+01:00'), now);
   assertStringIncludes(sql, `u.created_at < '2026-11-30T23:00:00.000Z'::timestamptz`);
   assertStringIncludes(sql, 'u.is_anonymous is not true');
   assertStringIncludes(sql, 'u.deleted_at is null');
@@ -211,11 +229,20 @@ Deno.test('accountsQuery: confirmed real accounts before the cutoff, with the li
 });
 
 Deno.test('accountsQuery: an account that used MCP or the API is selected whenever it was created', () => {
-  const sql = accountsQuery(new Date('2026-12-01T00:00:00Z'));
-  assertStringIncludes(sql, `t.kind in ('pat', 'api') and t.last_used_at is not null`);
+  const sql = accountsQuery(new Date('2026-12-01T00:00:00Z'), now);
+  assertStringIncludes(
+    sql,
+    `t.kind in ('pat', 'api') and t.last_used_at < '2026-12-02T09:00:00.000Z'::timestamptz`,
+  );
   assertStringIncludes(sql, 's.oauth_client_id is not null');
+  assertStringIncludes(sql, `s.created_at < '2026-12-02T09:00:00.000Z'::timestamptz`);
+  assertStringIncludes(sql, `r.refilled_at < '2026-12-02T09:00:00.000Z'::timestamptz`);
+  assertStringIncludes(
+    sql,
+    `d.day < ('2026-12-02T09:00:00.000Z'::timestamptz at time zone 'UTC')::date`,
+  );
   assertStringIncludes(sql, 'public.mcp_rate r where r.user_id = u.id');
-  assertStringIncludes(sql, 'public.account_days d where d.user_id = u.id');
+  assertStringIncludes(sql, 'public.account_days d\n               where d.user_id = u.id');
   // The creation cut-off and the use signals are alternatives, the account checks apply to both.
   assertStringIncludes(
     sql,
@@ -227,7 +254,7 @@ Deno.test('accountsQuery: an account that used MCP or the API is selected whenev
 Deno.test('run: a dry run prints the selection rule and counts, no id', async () => {
   const { accounts, state } = mixed();
   const f = fake(accounts, state);
-  await run(f.deps, { cutoff, apply: false, pauseMs: 0 });
+  await run(f.deps, { ...base, apply: false });
   assertStringIncludes(f.lines.join('\n'), selectionRule);
   assertStringIncludes(f.lines.join('\n'), 'dry run: 1 done, 1 to reconcile, 3 to grant');
   noIds(f.lines);
@@ -247,4 +274,40 @@ Deno.test('reconciled: stored only on 200 with an outcome that keeps the premium
   assertEquals(reconciled(200, '{"status":"no_user"}').stored, false);
   assertEquals(reconciled(503, '{"error":"unavailable"}').stored, false);
   assertEquals(reconciled(200, 'not json').stored, false);
+});
+
+Deno.test('run: --apply refuses while integration_lock is on, before reading or granting', async () => {
+  const { accounts, state } = mixed();
+  const f = fake(accounts, state, { lock: { on: true, since: new Date('2026-12-01T12:00:00Z') } });
+  const e = await run(f.deps, { ...base, apply: true }).catch((x: unknown) => x);
+  assert(e instanceof Error);
+  assertStringIncludes(e.message, 'integration_lock is on');
+  assertEquals(f.calls, []);
+});
+
+Deno.test('run: use counts before --used-before, else the lock flip time, else now', async () => {
+  const flip = new Date('2026-12-01T12:00:00Z');
+  const explicit = new Date('2026-12-01T06:00:00Z');
+  const cases: [Parameters<typeof fake>[2], Date | null, Date][] = [
+    [{ lock: { on: true, since: flip } }, null, flip],
+    [{ lock: { on: true, since: flip } }, explicit, explicit],
+    [{ lock: { on: false, since: flip } }, null, now],
+  ];
+  for (const [opts, usedBefore, want] of cases) {
+    const seen: Date[] = [];
+    const { accounts, state } = mixed();
+    const f = fake(accounts, state, { ...opts, usedBefores: seen });
+    await run(f.deps, { ...base, usedBefore, apply: false });
+    assertEquals(seen, [want]);
+  }
+});
+
+Deno.test('parseLock: no row is off; a malformed row stops the run', () => {
+  assertEquals(parseLock([]), { on: false, since: null });
+  assertEquals(parseLock([{ enabled: true, changed_at: '2026-12-01T12:00:00+00:00' }]), {
+    on: true,
+    since: new Date('2026-12-01T12:00:00Z'),
+  });
+  assertThrows(() => parseLock([{ enabled: 'yes', changed_at: '2026-12-01T12:00:00Z' }]));
+  assertThrows(() => parseLock([{ enabled: true, changed_at: 'x' }]));
 });
