@@ -17,7 +17,8 @@ import 'package:material_ui/material_ui.dart';
 /// More's Einstellungen (`/more/settings`): the theme as one segmented
 /// control, System, Hell or Dunkel; the language, a row that opens
 /// [LanguageScreen]; on phones with the `feedback-fb2` flag, whether a
-/// shake opens feedback (job 267). All are kept on the device and apply at
+/// shake opens feedback (job 267); with push, the shopping-day reminder
+/// (job 378). All are kept on the device and apply at
 /// once.
 class const SettingsScreen({
   super.key,
@@ -27,6 +28,9 @@ class const SettingsScreen({
 
   /// The Mitteilungen section (job 377); none without push.
   final Widget? pushAlerts,
+
+  /// The shopping-day reminder's section (job 378); none without it.
+  final Widget? shoppingDay,
 }) extends StatelessWidget {
   /// A section overline over its group, at the group's inset.
   static const _labelPadding = EdgeInsets.fromLTRB(20, HlSpace.s5, 20, 0);
@@ -104,6 +108,7 @@ class const SettingsScreen({
         ),
         ?tripDetection,
         ?pushAlerts,
+        ?shoppingDay,
         if (shake != null && fb2 && shakeHere) ...[
           HlSectionLabel(l10n.settingsFeedback, padding: _labelPadding),
           HlGroup(

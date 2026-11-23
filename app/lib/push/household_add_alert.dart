@@ -59,15 +59,23 @@ enum HouseholdAddResult() {
 }
 
 /// The in-app push types other than the household-add alert that are on for
-/// the signed-in user, as each type reports it. The shopping-day reminder
-/// registers its check here when it lands; the household-add off keeps the
-/// device registered while any is on (Legal N-427).
+/// the signed-in user, as each type reports it (the shopping-day reminder
+/// reads its days from the server; one that cannot be read reports off, so a
+/// phone that cannot be asked is taken off push). The household-add off keeps
+/// the device registered while any is on (Legal N-427, N-436).
 class PushAlertRegistry() {
-  final _sources = <bool Function()>[];
+  final _sources = <FutureOr<bool> Function()>[];
 
-  void register(bool Function() isOn) => _sources.add(isOn);
+  void register(FutureOr<bool> Function() isOn) => _sources.add(isOn);
 
-  bool get anyOn => _sources.any((isOn) => isOn());
+  Future<bool> get anyOn async {
+    for (final isOn in _sources) {
+      if (await isOn()) {
+        return true;
+      }
+    }
+    return false;
+  }
 }
 
 /// What the signed-in user chose about the household-add alert.
@@ -108,6 +116,19 @@ class HouseholdAddAlert(
     PushOn() || PushBlocked() => true,
     PushOff() || null => false,
   };
+
+  /// Whether the alert is on for this user on this device, read from the
+  /// server. False when it cannot be read: the shopping-day reminder's last
+  /// day off then takes the device off push (N-436) rather than leave the
+  /// token of a phone that cannot be asked.
+  Future<bool> isOn() async {
+    try {
+      final saved = await _prefs.load();
+      return (saved?.on ?? false) && _deviceOptedIn;
+    } on Object {
+      return false;
+    }
+  }
 
   /// Forgets the choice of whoever was signed in before when the user
   /// changes; the settings read it again each time they open.
@@ -183,7 +204,7 @@ class HouseholdAddAlert(
       return HouseholdAddResult.blocked;
     }
     final user = _userId;
-    if (!on && !(alerts?.anyOn ?? false)) {
+    if (!on && !(await alerts?.anyOn ?? false)) {
       // Before the save: an off that cannot reach the server still takes
       // this device off push, as a sign-out does. The server's row stays
       // on, which this device shows as off.

@@ -6457,6 +6457,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Andere sehen dann „Jemand hat Milch hinzugefügt“, auch wenn du selbst keine Mitteilungen eingeschaltet hast.'**
   String get pushNameHiddenHint;
+
+  /// Job 378: Einstellungen, section label over the weekday chips of the shopping-day reminder
+  ///
+  /// In de, this message translates to:
+  /// **'Einkaufstag-Erinnerung'**
+  String get shoppingDayTitle;
+
+  /// Job 378: above the weekday chips; the reminder is a push at 19:00 local the evening before a picked weekday, none picked means off
+  ///
+  /// In de, this message translates to:
+  /// **'Wähle deine Einkaufstage. Am Abend davor um 19 Uhr in der Zeitzone deines Geräts schickt Snacklist dir einen Hinweis aufs Handy.'**
+  String get shoppingDayHint;
+
+  /// Job 378: snackbar when a weekday was picked but the OS refuses notifications; nothing is saved
+  ///
+  /// In de, this message translates to:
+  /// **'Mitteilungen sind für Snacklist ausgeschaltet. Schalte sie in den Einstellungen deines Handys ein.'**
+  String get shoppingDayBlocked;
 }
 
 class _AppLocalizationsDelegate

@@ -33,6 +33,7 @@ import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/settings/access_screen.dart';
 import 'package:family_groceries/settings/account_screen.dart';
 import 'package:family_groceries/settings/settings_screen.dart';
+import 'package:family_groceries/settings/shopping_day.dart';
 import 'package:family_groceries/shell/router.dart';
 import 'package:family_groceries/shell/shell.dart';
 import 'package:family_groceries/tips/tips_page.dart';
@@ -213,6 +214,7 @@ class const _Page(
     MorePage.settings => const SettingsScreen(
       tripDetection: DetectTripsSettings(),
       pushAlerts: HouseholdAddSettings(),
+      shoppingDay: ShoppingDaySettings(),
     ),
     MorePage.language => const LanguageScreen(),
     MorePage.usageData => const _UsageDataPage(),
