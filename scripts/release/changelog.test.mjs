@@ -799,6 +799,16 @@ describe('rewords.json', () => {
     assert.doesNotMatch(r.stdout, /Siri and AI assistants/);
   });
 
+  test('a dropped item leaves the draft; the others stay', () => {
+    rewords([{ sha, item: 2, why: 'users saw no change', drop: true }]);
+    const r = run('draft', '--version', '9.0.0', '--sha', 'main', '--dry-run');
+    assert.equal(r.code, 0, r.stderr);
+    const draft = dryDraft(r.stdout);
+    assert.deepEqual(draft.held, []);
+    assert.deepEqual(draft.items.fixed.map((i) => i.en), ['Checks stay set.']);
+    assert.doesNotMatch(r.stdout, /Siri and AI assistants/);
+  });
+
   test('a reword of an item the note does not have refuses the draft', () => {
     rewords([reword({ item: 3 })]);
     const r = run('draft', '--version', '9.0.0', '--sha', 'main', '--dry-run');

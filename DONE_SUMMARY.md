@@ -2579,3 +2579,7 @@ is a recorded run of an earlier build and stays as recorded; the journey needs a
 ## Job 407: privacy patch, Alexa mismatches and N-413
 
 Applied Legal's redlines N-413 to N-420 verbatim in `site/content/legal/datenschutz.md` and `privacy.md` (details: `docs/done/407.md`). Deferred: N-422; N-421 not applicable. `updated:` set to 2026-11-22 (N-279). Land #652 before #649 (job 399), or together: #649 must not reach main before this text is live. Not merged: waits for Legal's hash GO.
+
+## Job 379: IH2 invite hand-off across browsers
+
+Review 0 showed #657 changed nothing users can reach: the invite already survived a magic link in another browser on web (the e2e passed on the pre-change build). The follow-up removes the dead branch and its unit test, keeps the e2e as a regression pin, corrects the feature doc, and drops #657's false "fixed" item from the public changelog (`drop: true` in `rewords.json`, new). Not solved, and said so in NEEDS_LEAD "Job 379": the link does not sign in across browsers (PKCE), browser B says nothing about it, and the Q1 cause is not reproduced by a browser switch (likeliest: install-from-store loses the invite). Details: `docs/done/379.md`. No flag; no change for users.

@@ -17933,3 +17933,9 @@ Belgian, Czech etc. phones a one-chip picker. `retailer.dart` skips chain `ikea`
 - **Flag off looks as today in this build** (review 0 nice-to-have): a scope is printed outside
   the one list only on API keys. Older store builds still print the backfilled
   „Lesen und schreiben“ on MCP tokens; that cannot be changed from here and is accurate.
+
+## Job 379: IH2 invite across browsers (review 0)
+
+- **No fix, a pin.** On web the invite already rides in the sign-in return link, so a magic link in another browser lands on `/login?invite=`, not the guided start. #657's extra branch (invite next to `next`) was unreachable and is reverted; the e2e stays as a named regression pin.
+- **`drop: true` in rewords.json** is the one persistent way to keep a merged item users never saw out of the changelog (a commit message cannot change; `--skip` lasts one run). Used on #657.
+- **Not done, needs Legal and a product call:** signing in across browsers (`token_hash` link, or implicit flow), a message in browser B.
