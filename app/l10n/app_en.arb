@@ -1365,5 +1365,8 @@
   "pushHouseholdAddHint": "A notification with the name and the item, e.g. “Lea added milk”. For items from a pharmacy or drugstore, no item name, e.g. “Lea added something to the list”. Several in a short time come as one.",
   "pushBlocked": "Notifications are turned off for Snacklist. Allow them in your device's settings.",
   "pushNameHidden": "Leave my name out of notifications",
-  "pushNameHiddenHint": "Others then see “Someone added milk”, even if you have not turned notifications on yourself."
+  "pushNameHiddenHint": "Others then see “Someone added milk”, even if you have not turned notifications on yourself.",
+  "shoppingDayTitle": "Shopping-day reminder",
+  "shoppingDayHint": "Pick your shopping days. The evening before, at 7 pm in your device's time zone, Snacklist sends a reminder to your phone.",
+  "shoppingDayBlocked": "Notifications are turned off for Snacklist. Turn them on in your phone's settings."
 }

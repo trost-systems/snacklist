@@ -1883,5 +1883,11 @@
   "pushNameHidden": "Meinen Namen in Mitteilungen weglassen",
   "@pushNameHidden": {"description": "Job 377 (N-401, Art. 21): Einstellungen switch under Mitteilungen; on, the user's display name is left out of other members' pushes"},
   "pushNameHiddenHint": "Andere sehen dann „Jemand hat Milch hinzugefügt“, auch wenn du selbst keine Mitteilungen eingeschaltet hast.",
-  "@pushNameHiddenHint": {"description": "Job 377: under the pushNameHidden switch"}
+  "@pushNameHiddenHint": {"description": "Job 377: under the pushNameHidden switch"},
+  "shoppingDayTitle": "Einkaufstag-Erinnerung",
+  "@shoppingDayTitle": {"description": "Job 378: Einstellungen, section label over the weekday chips of the shopping-day reminder"},
+  "shoppingDayHint": "Wähle deine Einkaufstage. Am Abend davor um 19 Uhr in der Zeitzone deines Geräts schickt Snacklist dir einen Hinweis aufs Handy.",
+  "@shoppingDayHint": {"description": "Job 378: above the weekday chips; the reminder is a push at 19:00 local the evening before a picked weekday, none picked means off"},
+  "shoppingDayBlocked": "Mitteilungen sind für Snacklist ausgeschaltet. Schalte sie in den Einstellungen deines Handys ein.",
+  "@shoppingDayBlocked": {"description": "Job 378: snackbar when a weekday was picked but the OS refuses notifications; nothing is saved"}
 }

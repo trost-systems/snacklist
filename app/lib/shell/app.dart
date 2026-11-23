@@ -43,6 +43,7 @@ import 'package:family_groceries/session/social_sign_in.dart';
 import 'package:family_groceries/session/your_name.dart';
 import 'package:family_groceries/settings/account_repository.dart';
 import 'package:family_groceries/settings/integration_lock.dart';
+import 'package:family_groceries/settings/shopping_day.dart';
 import 'package:family_groceries/shell/push_taps.dart';
 import 'package:family_groceries/shell/router.dart';
 import 'package:family_groceries/tips/hint_host.dart';
@@ -144,6 +145,9 @@ class const App({
 
   /// The household-add alert's switch (job 377); null without push.
   final HouseholdAddAlert? householdAdd,
+
+  /// The shopping-day reminder (job 378); none without push in the build.
+  final ShoppingDayService? shoppingDay,
 
   /// The OS's network, which the list follows; null where it is not
   /// watched.
@@ -371,6 +375,7 @@ class _AppState() extends State<App> {
       RepositoryProvider.value(value: widget.reviewPrompt),
       RepositoryProvider.value(value: widget.storeReview),
       RepositoryProvider.value(value: widget.storeApps),
+      RepositoryProvider<ShoppingDayService?>.value(value: widget.shoppingDay),
       if (widget.homeWidgets case final homeWidgets?)
         RepositoryProvider.value(value: homeWidgets),
       if (widget.network case final network?)

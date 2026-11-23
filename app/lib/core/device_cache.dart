@@ -141,6 +141,7 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
   /// (Legal N-439). Outside [forget]'s prefixes: it must outlive the
   /// sign-out that follows, to be sent when that account is back.
   static const _pendingOffKey = 'push.pendingOff';
+  static const _pendingShoppingDayClearKey = 'push.pendingShoppingDayClear';
 
   /// The trip running on this device and its ends not yet saved (job 234),
   /// one JSON value per user (`KeptTrips`); forgotten on sign-out.
@@ -264,6 +265,32 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
                 '${off.userId}\t${off.language}',
               ),
       );
+
+  /// A clear of the shopping-day reminder the server has not taken yet, with
+  /// its account and language (Legal N-439, as [pendingOff]).
+  Future<({String userId, String language})?> pendingShoppingDayClear() async {
+    try {
+      final parts = (await _prefs.getString(_pendingShoppingDayClearKey))
+          ?.split('\t');
+      return switch (parts) {
+        [final userId, final language] => (userId: userId, language: language),
+        _ => null,
+      };
+    } on Object {
+      return null;
+    }
+  }
+
+  Future<void> savePendingShoppingDayClear(
+    ({String userId, String language})? clear,
+  ) => _write(
+    () => clear == null
+        ? _prefs.remove(_pendingShoppingDayClearKey)
+        : _prefs.setString(
+            _pendingShoppingDayClearKey,
+            '${clear.userId}\t${clear.language}',
+          ),
+  );
 
   @override
   Future<PushDevice> pushDevice() async {

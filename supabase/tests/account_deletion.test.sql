@@ -354,7 +354,7 @@ select is(
   (select array_agg(k order by k) from export, jsonb_object_keys(doc) k),
   array['access_tokens', 'account', 'alexa_links', 'analytics_decisions', 'archived_households', 'connected_apps', 'exported_at',
         'feedback', 'feedback_idea_votes', 'format', 'history', 'household', 'household_removals', 'households', 'invite_uses', 'invites_created', 'item_claims',
-        'items_added', 'join_requests', 'lists_created', 'profile', 'purchases', 'push_devices', 'push_preferences', 'tester_groups', 'trip_detection', 'trip_sessions_started',
+        'items_added', 'join_requests', 'lists_created', 'profile', 'purchases', 'push_devices', 'push_preferences', 'shopping_day_reminder', 'tester_groups', 'trip_detection', 'trip_sessions_started',
         'trips_detected', 'trips_logged', 'version'],
   'the export has the documented sections'
 );
@@ -413,6 +413,8 @@ select is(
     'push_devices', '[]'::jsonb,
     -- Job 377: Emil never switched an alert on.
     'push_preferences', null,
+    -- Job 378: Emil set no shopping-day reminder (shopping_day_reminder.test.sql covers one).
+    'shopping_day_reminder', null,
     -- Job 352: no detected trip, detection never switched.
     'trips_detected', '[]'::jsonb,
     'trip_detection', null,

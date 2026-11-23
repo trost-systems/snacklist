@@ -40,6 +40,7 @@ import 'package:family_groceries/session/social_sign_in.dart';
 import 'package:family_groceries/session/your_name.dart';
 import 'package:family_groceries/settings/access_repository.dart';
 import 'package:family_groceries/settings/account_repository.dart';
+import 'package:family_groceries/settings/shopping_day.dart';
 import 'package:family_groceries/shell/app.dart';
 import 'package:family_groceries/siri/siri_channel.dart';
 import 'package:family_groceries/siri/siri_credentials.dart';
@@ -190,6 +191,25 @@ Future<void> _main(WidgetsBinding Function() binding) async {
     alerts: pushAlerts,
     pending: cache,
   )..follow(session);
+  final shoppingDay = switch (push) {
+    final push? => ShoppingDayService(
+      SupabaseShoppingDayRepository(client),
+      const FlutterDeviceTimeZone(),
+      push.optIn,
+      () async {
+        await push.resume();
+        return push.state is PushOn;
+      },
+      push.forget,
+      householdAdd.isOn,
+      readPending: cache.pendingShoppingDayClear,
+      writePending: cache.savePendingShoppingDayClear,
+    )..follow(session),
+    null => null,
+  };
+  if (shoppingDay != null) {
+    pushAlerts.register(shoppingDay.hasDays);
+  }
   TesterGroupsSync(
     SupabaseTesterGroupsSource(client),
     cache,
@@ -262,6 +282,7 @@ Future<void> _main(WidgetsBinding Function() binding) async {
       ),
       pushTaps: push?.taps,
       householdAdd: householdAdd,
+      shoppingDay: shoppingDay,
       network: networkWatchFor(web: kIsWeb, platform: defaultTargetPlatform),
     ),
   );

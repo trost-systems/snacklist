@@ -20,6 +20,7 @@ dependencies:
   flutter_bloc: ^9.1.1
   flutter_localizations:
     sdk: flutter
+  flutter_timezone: ^5.1.1
   flutter_web_plugins:
     sdk: flutter
   go_router: ^18.1.1

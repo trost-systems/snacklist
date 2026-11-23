@@ -4055,4 +4055,15 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get pushNameHiddenHint =>
       'Andere sehen dann „Jemand hat Milch hinzugefügt“, auch wenn du selbst keine Mitteilungen eingeschaltet hast.';
+
+  @override
+  String get shoppingDayTitle => 'Einkaufstag-Erinnerung';
+
+  @override
+  String get shoppingDayHint =>
+      'Wähle deine Einkaufstage. Am Abend davor um 19 Uhr in der Zeitzone deines Geräts schickt Snacklist dir einen Hinweis aufs Handy.';
+
+  @override
+  String get shoppingDayBlocked =>
+      'Mitteilungen sind für Snacklist ausgeschaltet. Schalte sie in den Einstellungen deines Handys ein.';
 }

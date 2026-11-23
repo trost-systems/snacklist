@@ -321,4 +321,8 @@ values ((select id from public.content_reports where ref = 'M-BACK-0281'),
 insert into public.content_report_app_senders (user_id, at)
 values ('00000000-0000-4000-8000-0000000b0281', now());
 
+-- Job 378: Lea gets a shopping-day reminder on Thursday evenings.
+insert into public.shopping_day_reminders (user_id, weekdays, time_zone, locale)
+select id, array[4]::smallint[], 'Europe/Berlin', 'de' from auth.users where email = 'lea@backup.test';
+
 commit;

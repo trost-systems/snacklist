@@ -10,6 +10,11 @@ const publicApiFlag = 'public-api';
 /// together with the server switch `app_switches.unified_keys`.
 const unifiedKeysFlag = 'unified-keys';
 
+/// The flag that offers the shopping-day reminder (job 378, P2): Einstellungen'
+/// weekdays, and the server push at 19:00 local the evening before. Needs push
+/// in the build (docs/PUSH.md) and stays off until Legal's GO.
+const shoppingDayFlag = 'push-shopping-day';
+
 /// The flag that shows the Verlauf tab, the grocery log (job 199).
 const groceryLogFlag = 'grocery-log';
 

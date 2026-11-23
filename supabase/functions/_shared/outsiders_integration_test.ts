@@ -172,7 +172,8 @@ function values(type: string, household: Household, outsider: Outsider): string[
     uuid: all.map(uuid),
     'uuid[]': [`array[${all.map(uuid).join(', ')}]`],
     // A name, then the words the functions take (roles, kinds of invite, how to join, where to
-    // place an item, a catalog version, an order mode, an item's status, a device's platform, a language),
+    // place an item, a catalog version, an order mode, an item's status, a device's platform, a time zone,
+    // a language),
     // the household's invite code and its owner's push token.
     text: [
       ...[
@@ -189,12 +190,14 @@ function values(type: string, household: Household, outsider: Outsider): string[
         'learned',
         'bought',
         'ios',
+        'Europe/Berlin',
         'de',
       ].map((t) => `'${t}'::text`),
       codeOf(household),
       `'${pushTokenOf(household.id)}'::text`,
     ],
     'text[]': ["array['Milch']::text[]"],
+    'integer[]': ['array[1]::integer[]'],
     boolean: ['true', 'false'],
     integer: ['1'],
     'double precision': ['1::double precision'],
@@ -520,6 +523,8 @@ async function fill(
 ): Promise<void> {
   await sql`insert into public.push_tokens (user_id, token, platform)
             values (${owner}, ${pushTokenOf(household)}, 'android')`;
+  await sql`insert into public.shopping_day_reminders (user_id, weekdays, time_zone, locale)
+            values (${owner}, array[4]::smallint[], 'Europe/Berlin', 'de')`;
   await sql`insert into public.household_members (household_id, user_id, role)
             values (${household}, ${member}, 'member')`;
   await asUser(owner, async (tx) => {
