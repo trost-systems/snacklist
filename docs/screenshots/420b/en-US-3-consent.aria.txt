@@ -1,0 +1,6 @@
+https://app.snacklist.app/oauth/consent?authorization_id=tzqrptlnpobkessw7hfjrxwhquljqcxp
+- heading "Allow access?" [level=2]
+- group:
+  - text: "Claude https://claude.ai Signed in as sam.c420b@fg-test.invalid Household: Sams Wohnung Claude wants to: Read your shopping list. Can also add, change, tick off and remove items. Claude and its provider will receive your list contents. Confirm your sign-in"
+  - button "Deny"
+  - button "Allow"
