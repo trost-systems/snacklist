@@ -6409,6 +6409,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Zugriffsschlüssel kannst du nur hier in der App erstellen, während du angemeldet bist.'**
   String get accessKeySessionRequired;
+
+  /// Job 399 SC1: the card at the list's top after the user ticked the last open item of a store linked to a chain app, e.g. „Lidl ist erledigt“. {store} is the household's store name
+  ///
+  /// In de, this message translates to:
+  /// **'{store} ist erledigt'**
+  String storeDoneTitle(String store);
+
+  /// Job 399 SC1: the done card's button that opens the store's chain app (its screen-reader name is storeAppOpen with the app's name)
+  ///
+  /// In de, this message translates to:
+  /// **'App öffnen'**
+  String get storeDoneOpen;
 }
 
 class _AppLocalizationsDelegate

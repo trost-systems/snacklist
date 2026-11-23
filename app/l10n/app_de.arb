@@ -1867,5 +1867,9 @@
   "tooManyAccessKeys": "Höchstens 20 aktive Zugriffsschlüssel. Widerrufe erst einen.",
   "@tooManyAccessKeys": {"description": "Job 397: snack bar, the member already has 20 active access keys (MCP and API together)"},
   "accessKeySessionRequired": "Zugriffsschlüssel kannst du nur hier in der App erstellen, während du angemeldet bist.",
-  "@accessKeySessionRequired": {"description": "Job 397: snack bar, the server refused to create an access key outside the app's own sign-in (session_required)"}
+  "@accessKeySessionRequired": {"description": "Job 397: snack bar, the server refused to create an access key outside the app's own sign-in (session_required)"},
+  "storeDoneTitle": "{store} ist erledigt",
+  "@storeDoneTitle": {"description": "Job 399 SC1: the card at the list's top after the user ticked the last open item of a store linked to a chain app, e.g. „Lidl ist erledigt“. {store} is the household's store name", "placeholders": {"store": {"type": "String"}}},
+  "storeDoneOpen": "App öffnen",
+  "@storeDoneOpen": {"description": "Job 399 SC1: the done card's button that opens the store's chain app (its screen-reader name is storeAppOpen with the app's name)"}
 }

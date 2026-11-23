@@ -25,6 +25,7 @@ import 'package:family_groceries/list/list_view/item_row.dart';
 import 'package:family_groceries/list/list_view/leaving_rows.dart';
 import 'package:family_groceries/list/list_view/price_views.dart';
 import 'package:family_groceries/list/list_view/sections.dart';
+import 'package:family_groceries/list/list_view/store_done_card.dart';
 import 'package:family_groceries/list/list_view/summary_block.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/store_app.dart';
@@ -849,6 +850,7 @@ class _ShoppingListViewState()
             slivers: [
               if (!(behind?.lastTwo ?? false)) ...[
                 const SliverToBoxAdapter(child: OpenAppSlot()),
+                const SliverToBoxAdapter(child: StoreDoneCard()),
                 const SliverToBoxAdapter(child: ListHints()),
                 const SliverToBoxAdapter(child: ChainCard()),
                 SliverToBoxAdapter(child: listParts(context).tripEnded()),
@@ -975,6 +977,7 @@ class _ShoppingListViewState()
         store,
         opener: context.read<StoreAppOpener>(),
         analytics: context.read<Analytics?>(),
+        source: StoreAppSource.header,
       ),
     );
   }

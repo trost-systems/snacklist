@@ -236,9 +236,9 @@ class SupabaseListRepository(
 
   static const _itemColumns =
       'id, name, quantity, brand, properties, category_id, store_id, '
-      'sort_key, status, created_at, updated_at, bought_at, added_by, '
-      'categorized_via, canonical_key, list_id, price_unit_micros, '
-      'price_basis, price_per, price_currency, priced_at';
+      'sort_key, status, created_at, updated_at, bought_at, bought_by, '
+      'added_by, categorized_via, canonical_key, list_id, '
+      'price_unit_micros, price_basis, price_per, price_currency, priced_at';
 
   static const _storeColumns =
       'id, name, sort_order, seed_key, retailer_app, retailer_answered, '

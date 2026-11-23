@@ -190,5 +190,6 @@ class const StoreChainSection(final Store store, {super.key})
     store,
     opener: context.read<StoreAppOpener>(),
     analytics: context.read<Analytics?>(),
+    source: StoreAppSource.store,
   );
 }

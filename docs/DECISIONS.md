@@ -17939,3 +17939,35 @@ Belgian, Czech etc. phones a one-chip picker. `retailer.dart` skips chain `ikea`
 - **No fix, a pin.** On web the invite already rides in the sign-in return link, so a magic link in another browser lands on `/login?invite=`, not the guided start. #657's extra branch (invite next to `next`) was unreachable and is reverted; the e2e stays as a named regression pin.
 - **`drop: true` in rewords.json** is the one persistent way to keep a merged item users never saw out of the changelog (a commit message cannot change; `--skip` lasts one run). Used on #657.
 - **Not done, needs Legal and a product call:** signing in across browsers (`token_hash` link, or implicit flow), a message in browser B.
+
+## Job 399: the „… ist erledigt“ card (SC1, Peter's pick t1180u), 2026-11-22
+
+- **Who ticked comes from `items.bought_by`, so the STOP rule (addendum point 4) did not apply.** The items
+  trigger has set `bought_by := auth.uid()` on every tick since the foundation migration, realtime already
+  sends the whole row to every member's device, and PRIVACY_DATA_MAP line 34 lists the column. The app now
+  also reads it in its REST select (`_itemColumns`) and keeps it on `Item`. That adds no column, table, RPC,
+  sync payload or analytics. A tick still waiting for the server counts as the device user's own (a pending
+  `SetStatus(bought)` op), because its row has no `bought_by` yet.
+- **The rule is one pure function, `storeDoneCard` (`app/lib/list/store_done.dart`).** A store with an app
+  and no open item, finished at `at` (its newest `bought_at`), shows to a member with an own tick there in
+  [`at` − 30 min, `at`] (`storeDoneTickWindow`; exactly 30 min is in), while `now − at` < 60 min
+  (`storeDoneShowFor`, SC-Q6). Of several, the latest `at` (SC-Q3).
+- **A dismissal is keyed to the store's bought item ids (device prefs `store_done_dismissed`: store id →
+  the finish time and the ids).** The card stays closed while the store's finishing item is one of them, so
+  only a new item ticked off brings it back (SC-Q2); unticking and reticking the same item does not, and
+  neither does a re-add from Zuletzt verwendet (same item id). Review 0 found that keying it on the tick's
+  time failed: a tick still pending when X was tapped gets the server's own `bought_at` (the items trigger's
+  `now()`), so the card came back after an offline close. Entries older than 60 min are dropped on the next
+  dismissal. It is per device, as SC-Q2's default says.
+- **The 30- and 60-minute rules compare the server's `bought_at` with the device clock.** A device clock off
+  by minutes shifts both windows by as much. Accepted for v1.
+- **„App öffnen“ does not dismiss** (SC-Q1 in the addendum overrides the first brief's "also dismisses").
+- **`store_app_opened.source` is `header`, `card` or `store`.** Peter named `header` and `card`. The store
+  screen's „Öffnen“ also opens the app, so it gets `store` and no tap goes unlabelled. PRIVACY_DATA_MAP's
+  event row covers every property `eventCatalog` allows, so no map line was needed. No legal or privacy
+  file changed. The privacy policy's sentence on „Laden-App geöffnet“ lists chain, country and result
+  only. Legal's N-413 adds where the tap was, in job 407's privacy PR, so this PR merges only after it.
+- **The card does not reuse `HintCard`.** `list/` may not import `tips/` (import-direction). It copies the
+  tip card's flat sticker, padding and title style. The card's semantics group is named by its title, and
+  the button's screen-reader name is „<App> öffnen“ (`storeAppOpen`), while its visible label stays
+  „App öffnen“.

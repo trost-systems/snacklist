@@ -209,25 +209,29 @@ void main() {
       retailer: lidl,
     );
 
-    test('reports the chain, its country and what opened, never the '
-        'store', () async {
-      final tracked = _Tracked();
-      final outcome = await openStoreApp(
-        store,
-        opener: _Opener((t) => t.startsWith('market:')),
-        analytics: tracked,
-        platform: StoreAppPlatform.android,
-      );
-      expect(outcome, StoreAppOutcome.storePage);
-      final (event, properties) = tracked.events.single;
-      expect(event, 'store_app_opened');
-      expect(properties, {
-        'chain': 'lidl',
-        'country': 'DE',
-        'outcome': 'store_page',
+    for (final source in StoreAppSource.values) {
+      test('reports the chain, its country, what opened and the tap '
+          '(${source.wire}), never the store', () async {
+        final tracked = _Tracked();
+        final outcome = await openStoreApp(
+          store,
+          opener: _Opener((t) => t.startsWith('market:')),
+          analytics: tracked,
+          source: source,
+          platform: StoreAppPlatform.android,
+        );
+        expect(outcome, StoreAppOutcome.storePage);
+        final (event, properties) = tracked.events.single;
+        expect(event, 'store_app_opened');
+        expect(properties, {
+          'chain': 'lidl',
+          'country': 'DE',
+          'outcome': 'store_page',
+          'source': source.wire,
+        });
+        expect(() => checkEvent(event, properties), returnsNormally);
       });
-      expect(() => checkEvent(event, properties), returnsNormally);
-    });
+    }
 
     test('reports nothing when nothing opened', () async {
       final tracked = _Tracked();
@@ -236,6 +240,7 @@ void main() {
           store,
           opener: _Opener((_) => false),
           analytics: tracked,
+          source: StoreAppSource.header,
           platform: StoreAppPlatform.ios,
         ),
         isNull,
@@ -249,6 +254,7 @@ void main() {
         await openStoreApp(
           const Store(id: 's', name: 'Wochenmarkt', sortOrder: 10),
           opener: opener,
+          source: StoreAppSource.store,
         ),
         isNull,
       );
