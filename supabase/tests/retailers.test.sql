@@ -2,7 +2,7 @@
 -- <chain>?" (answer_store_retailer), the questions for older stores (retailer_questions), and who
 -- reads the registry.
 begin;
-select plan(37);
+select plan(43);
 
 create function pg_temp.login(uid uuid) returns void language plpgsql as $$
 begin
@@ -35,6 +35,12 @@ select is(pg_temp.found('Lidl', 'DE'), 'lidl/DE', 'Lidl is the German Lidl only'
 select is(pg_temp.found('IKEA', 'DE'), 'ikea/DE', 'IKEA matches the chain (job 408)');
 select is(pg_temp.found('Ikea', 'DE'), 'ikea/DE', 'Ikea in any case matches it too');
 select is(pg_temp.found('ikea Hofheim', 'BE'), 'ikea/BE', 'a store name after the chain still matches, in Belgium too');
+select is(pg_temp.found('Hornbach', 'DE'), 'hornbach/DE', 'Hornbach matches the chain (job 410)');
+select is(pg_temp.found('OBI Markt Köln', 'DE'), 'obi/DE', 'OBI and a place matches OBI');
+select is(pg_temp.found('Toom', 'DE'), 'toom/DE', 'Toom matches through its alias');
+select is(pg_temp.found('hagebau', 'DE'), 'hagebau/DE', 'hagebau matches hagebaumarkt through its alias');
+select is(pg_temp.found('Globus Bau', 'DE'), 'globus-baumarkt/DE', 'Globus Bau is Globus Baumarkt');
+select is(pg_temp.found('Globus Markt', 'DE'), '', 'a Globus grocery name matches no exact chain');
 select is(pg_temp.found('  lidl   am Markt ', 'DE'), 'lidl/DE', 'a chain name and a space, then anything, is that chain');
 select is(pg_temp.found('Aldi', 'DE'), 'aldi-nord/DE aldi-sued/DE', 'Aldi is both German Aldis');
 select is(pg_temp.found('aldi süd am bahnhof', 'DE'), 'aldi-sued/DE', 'the longest alias wins over plain "aldi"');

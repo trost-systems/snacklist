@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updated": "2026-11-22",
+  "updated": "2026-11-23",
   "entries": [
     {
       "chain": "edeka",
@@ -2126,6 +2126,626 @@
         "https://app-site-association.cdn-apple.com/a/v1/www.ikea.com"
       ],
       "note": "The IKEA app (Inter IKEA Systems B.V., iOS bundle com.ingka.ikea.app), one app for every country; not the separate IKEA Home smart apps. No universal link: www.ikea.com's AASA claims only product, category, search and offer paths templated per country and language, no plain home path. No scheme: no evidence checked."
+    },
+    {
+      "chain": "obi",
+      "country": "DE",
+      "name": "OBI",
+      "aliases": [],
+      "web": "www.obi.de",
+      "apps": [
+        {
+          "name": "heyOBI",
+          "android": "de.obi.app",
+          "ios": "1331431911",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-23",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1331431911&country=de",
+        "https://play.google.com/store/apps/details?id=de.obi.app&hl=en&gl=DE",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.obi.de&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "heyOBI, the OBI customer app (OBI GmbH & Co. Deutschland KG, iOS bundle de.obi.companion), one app for every country. Android package de.obi.app from the asset links of the country site. Not OBI PRO (business app) and not oneOBI (careers and company news). No universal link and no scheme: not evaluated (job 410)."
+    },
+    {
+      "chain": "obi",
+      "country": "AT",
+      "name": "OBI",
+      "aliases": [],
+      "web": "www.obi.at",
+      "apps": [
+        {
+          "name": "heyOBI",
+          "android": "de.obi.app",
+          "ios": "1331431911",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-23",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1331431911&country=at",
+        "https://play.google.com/store/apps/details?id=de.obi.app&hl=en&gl=AT",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.obi.at&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "heyOBI, the OBI customer app (OBI GmbH & Co. Deutschland KG, iOS bundle de.obi.companion), one app for every country. Android package de.obi.app from the asset links of the country site. Not OBI PRO (business app) and not oneOBI (careers and company news). No universal link and no scheme: not evaluated (job 410)."
+    },
+    {
+      "chain": "obi",
+      "country": "CH",
+      "name": "OBI",
+      "aliases": [],
+      "web": "www.obi.ch",
+      "apps": [
+        {
+          "name": "heyOBI",
+          "android": "de.obi.app",
+          "ios": "1331431911",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-23",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1331431911&country=ch",
+        "https://play.google.com/store/apps/details?id=de.obi.app&hl=en&gl=CH",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.obi.ch&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "heyOBI, the OBI customer app (OBI GmbH & Co. Deutschland KG, iOS bundle de.obi.companion), one app for every country. Android package de.obi.app from the asset links of the country site. Not OBI PRO (business app) and not oneOBI (careers and company news). No universal link and no scheme: not evaluated (job 410)."
+    },
+    {
+      "chain": "obi",
+      "country": "CZ",
+      "name": "OBI",
+      "aliases": [],
+      "web": "www.obi.cz",
+      "apps": [
+        {
+          "name": "heyOBI",
+          "android": "de.obi.app",
+          "ios": "1331431911",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-23",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1331431911&country=cz",
+        "https://play.google.com/store/apps/details?id=de.obi.app&hl=en&gl=CZ",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.obi.cz&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "heyOBI, the OBI customer app (OBI GmbH & Co. Deutschland KG, iOS bundle de.obi.companion), one app for every country. Android package de.obi.app from the asset links of the country site. Not OBI PRO (business app) and not oneOBI (careers and company news). No universal link and no scheme: not evaluated (job 410)."
+    },
+    {
+      "chain": "obi",
+      "country": "HU",
+      "name": "OBI",
+      "aliases": [],
+      "web": "www.obi.hu",
+      "apps": [
+        {
+          "name": "heyOBI",
+          "android": "de.obi.app",
+          "ios": "1331431911",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-23",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1331431911&country=hu",
+        "https://play.google.com/store/apps/details?id=de.obi.app&hl=en&gl=HU",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.obi.hu&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "heyOBI, the OBI customer app (OBI GmbH & Co. Deutschland KG, iOS bundle de.obi.companion), one app for every country. Android package de.obi.app from the asset links of the country site. Not OBI PRO (business app) and not oneOBI (careers and company news). No universal link and no scheme: not evaluated (job 410)."
+    },
+    {
+      "chain": "obi",
+      "country": "PL",
+      "name": "OBI",
+      "aliases": [],
+      "web": "www.obi.pl",
+      "apps": [
+        {
+          "name": "heyOBI",
+          "android": "de.obi.app",
+          "ios": "1331431911",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-23",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1331431911&country=pl",
+        "https://play.google.com/store/apps/details?id=de.obi.app&hl=en&gl=PL",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.obi.pl&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "heyOBI, the OBI customer app (OBI GmbH & Co. Deutschland KG, iOS bundle de.obi.companion), one app for every country. Android package de.obi.app from the asset links of the country site. Not OBI PRO (business app) and not oneOBI (careers and company news). No universal link and no scheme: not evaluated (job 410)."
+    },
+    {
+      "chain": "hornbach",
+      "country": "DE",
+      "name": "HORNBACH",
+      "aliases": [],
+      "web": "www.hornbach.de",
+      "apps": [
+        {
+          "name": "HORNBACH",
+          "android": "de.hornbach",
+          "ios": "948194412",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-23",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=948194412&country=de",
+        "https://play.google.com/store/apps/details?id=de.hornbach&hl=en&gl=DE",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.hornbach.de&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "The HORNBACH app (Hornbach Baumarkt AG), one app for every country; not SMART HOME by hornbach. Android package de.hornbach from the asset links of the country site. No universal link and no scheme: not evaluated (job 410)."
+    },
+    {
+      "chain": "hornbach",
+      "country": "AT",
+      "name": "HORNBACH",
+      "aliases": [],
+      "web": "www.hornbach.at",
+      "apps": [
+        {
+          "name": "HORNBACH",
+          "android": "de.hornbach",
+          "ios": "948194412",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-23",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=948194412&country=at",
+        "https://play.google.com/store/apps/details?id=de.hornbach&hl=en&gl=AT",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.hornbach.at&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "The HORNBACH app (Hornbach Baumarkt AG), one app for every country; not SMART HOME by hornbach. Android package de.hornbach from the asset links of the country site. No universal link and no scheme: not evaluated (job 410)."
+    },
+    {
+      "chain": "hornbach",
+      "country": "CH",
+      "name": "HORNBACH",
+      "aliases": [],
+      "web": "www.hornbach.ch",
+      "apps": [
+        {
+          "name": "HORNBACH",
+          "android": "de.hornbach",
+          "ios": "948194412",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-23",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=948194412&country=ch",
+        "https://play.google.com/store/apps/details?id=de.hornbach&hl=en&gl=CH",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.hornbach.ch&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "The HORNBACH app (Hornbach Baumarkt AG), one app for every country; not SMART HOME by hornbach. Android package de.hornbach from the asset links of the country site. No universal link and no scheme: not evaluated (job 410)."
+    },
+    {
+      "chain": "hornbach",
+      "country": "NL",
+      "name": "HORNBACH",
+      "aliases": [],
+      "web": "www.hornbach.nl",
+      "apps": [
+        {
+          "name": "HORNBACH",
+          "android": "de.hornbach",
+          "ios": "948194412",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-23",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=948194412&country=nl",
+        "https://play.google.com/store/apps/details?id=de.hornbach&hl=en&gl=NL",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.hornbach.nl&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "The HORNBACH app (Hornbach Baumarkt AG), one app for every country; not SMART HOME by hornbach. Android package de.hornbach from the asset links of the country site. No universal link and no scheme: not evaluated (job 410)."
+    },
+    {
+      "chain": "hornbach",
+      "country": "CZ",
+      "name": "HORNBACH",
+      "aliases": [],
+      "web": "www.hornbach.cz",
+      "apps": [
+        {
+          "name": "HORNBACH",
+          "android": "de.hornbach",
+          "ios": "948194412",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-23",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=948194412&country=cz",
+        "https://play.google.com/store/apps/details?id=de.hornbach&hl=en&gl=CZ",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.hornbach.cz&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "The HORNBACH app (Hornbach Baumarkt AG), one app for every country; not SMART HOME by hornbach. Android package de.hornbach from the asset links of the country site. No universal link and no scheme: not evaluated (job 410)."
+    },
+    {
+      "chain": "hornbach",
+      "country": "SK",
+      "name": "HORNBACH",
+      "aliases": [],
+      "web": "www.hornbach.sk",
+      "apps": [
+        {
+          "name": "HORNBACH",
+          "android": "de.hornbach",
+          "ios": "948194412",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-23",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=948194412&country=sk",
+        "https://play.google.com/store/apps/details?id=de.hornbach&hl=en&gl=SK",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.hornbach.sk&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "The HORNBACH app (Hornbach Baumarkt AG), one app for every country; not SMART HOME by hornbach. Android package de.hornbach from the asset links of the country site. No universal link and no scheme: not evaluated (job 410)."
+    },
+    {
+      "chain": "hornbach",
+      "country": "SE",
+      "name": "HORNBACH",
+      "aliases": [],
+      "web": "www.hornbach.se",
+      "apps": [
+        {
+          "name": "HORNBACH",
+          "android": "de.hornbach",
+          "ios": "948194412",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-23",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=948194412&country=se",
+        "https://play.google.com/store/apps/details?id=de.hornbach&hl=en&gl=SE",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.hornbach.se&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "The HORNBACH app (Hornbach Baumarkt AG), one app for every country; not SMART HOME by hornbach. Android package de.hornbach from the asset links of the country site. No universal link and no scheme: not evaluated (job 410)."
+    },
+    {
+      "chain": "hornbach",
+      "country": "LU",
+      "name": "HORNBACH",
+      "aliases": [],
+      "web": "www.hornbach.lu",
+      "apps": [
+        {
+          "name": "HORNBACH",
+          "android": "de.hornbach",
+          "ios": "948194412",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-23",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=948194412&country=lu",
+        "https://play.google.com/store/apps/details?id=de.hornbach&hl=en&gl=LU",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.hornbach.lu&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "The HORNBACH app (Hornbach Baumarkt AG), one app for every country; not SMART HOME by hornbach. Android package de.hornbach from the asset links of the country site. No universal link and no scheme: not evaluated (job 410)."
+    },
+    {
+      "chain": "hornbach",
+      "country": "RO",
+      "name": "HORNBACH",
+      "aliases": [],
+      "web": "www.hornbach.ro",
+      "apps": [
+        {
+          "name": "HORNBACH",
+          "android": "de.hornbach",
+          "ios": "948194412",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-23",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=948194412&country=ro",
+        "https://play.google.com/store/apps/details?id=de.hornbach&hl=en&gl=RO",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.hornbach.ro&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "The HORNBACH app (Hornbach Baumarkt AG), one app for every country; not SMART HOME by hornbach. Android package de.hornbach from the asset links of the country site. No universal link and no scheme: not evaluated (job 410)."
+    },
+    {
+      "chain": "bauhaus",
+      "country": "DE",
+      "name": "BAUHAUS",
+      "aliases": [],
+      "web": "www.bauhaus.info",
+      "apps": [
+        {
+          "name": "BAUHAUS",
+          "android": "info.bauhaus.bauhaus",
+          "ios": "1615566534",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-23",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1615566534&country=de",
+        "https://play.google.com/store/apps/details?id=info.bauhaus.bauhaus&hl=en&gl=DE",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.bauhaus.info&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "BAUHAUS App (BAUHAUS AG, iOS bundle info.bauhaus.capp), one app for every country where it is in the storefront. Android package info.bauhaus.bauhaus from the asset links of the country site. Other Bauhaus countries have no app in the storefront. No universal link and no scheme: not evaluated (job 410)."
+    },
+    {
+      "chain": "bauhaus",
+      "country": "AT",
+      "name": "BAUHAUS",
+      "aliases": [],
+      "web": "www.bauhaus.at",
+      "apps": [
+        {
+          "name": "BAUHAUS",
+          "android": "info.bauhaus.bauhaus",
+          "ios": "1615566534",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-23",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1615566534&country=at",
+        "https://play.google.com/store/apps/details?id=info.bauhaus.bauhaus&hl=en&gl=AT",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.bauhaus.at&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "BAUHAUS App (BAUHAUS AG, iOS bundle info.bauhaus.capp), one app for every country where it is in the storefront. Android package info.bauhaus.bauhaus from the asset links of the country site. Other Bauhaus countries have no app in the storefront. No universal link and no scheme: not evaluated (job 410)."
+    },
+    {
+      "chain": "bauhaus",
+      "country": "HR",
+      "name": "BAUHAUS",
+      "aliases": [],
+      "web": "www.bauhaus.hr",
+      "apps": [
+        {
+          "name": "BAUHAUS",
+          "android": "info.bauhaus.bauhaus",
+          "ios": "1615566534",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-23",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1615566534&country=hr",
+        "https://play.google.com/store/apps/details?id=info.bauhaus.bauhaus&hl=en&gl=HR",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.bauhaus.hr&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "BAUHAUS App (BAUHAUS AG, iOS bundle info.bauhaus.capp), one app for every country where it is in the storefront. Android package info.bauhaus.bauhaus from the asset links of the country site. Other Bauhaus countries have no app in the storefront. No universal link and no scheme: not evaluated (job 410)."
+    },
+    {
+      "chain": "bauhaus",
+      "country": "ES",
+      "name": "BAUHAUS",
+      "aliases": [],
+      "web": "www.bauhaus.es",
+      "apps": [
+        {
+          "name": "BAUHAUS",
+          "android": "info.bauhaus.bauhaus",
+          "ios": "1615566534",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-23",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1615566534&country=es",
+        "https://play.google.com/store/apps/details?id=info.bauhaus.bauhaus&hl=en&gl=ES",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.bauhaus.es&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "BAUHAUS App (BAUHAUS AG, iOS bundle info.bauhaus.capp), one app for every country where it is in the storefront. Android package info.bauhaus.bauhaus from the asset links of the country site. Other Bauhaus countries have no app in the storefront. No universal link and no scheme: not evaluated (job 410)."
+    },
+    {
+      "chain": "toom",
+      "country": "DE",
+      "name": "toom Baumarkt",
+      "aliases": [
+        "toom"
+      ],
+      "web": "www.toom.de",
+      "apps": [
+        {
+          "name": "toom",
+          "android": "de.toom.app",
+          "ios": "1518750532",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-23",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1518750532&country=de",
+        "https://play.google.com/store/apps/details?id=de.toom.app&hl=en&gl=DE",
+        "https://www.toom.de/"
+      ],
+      "note": "The toom app (toom Baumarkt GmbH, REWE Group); www.toom.de links the App Store and Play pages. The app is in many storefronts but toom has stores in Germany only. No universal link and no scheme: not evaluated (job 410)."
+    },
+    {
+      "chain": "hagebau",
+      "country": "DE",
+      "name": "hagebaumarkt",
+      "aliases": [
+        "hagebau"
+      ],
+      "web": "www.hagebau.de",
+      "apps": [
+        {
+          "name": "hagebau",
+          "android": "de.hagebau.shop",
+          "ios": "1156107220",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-23",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1156107220&country=de",
+        "https://play.google.com/store/apps/details?id=de.hagebau.shop&hl=en&gl=DE",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.hagebau.de&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "The hagebau app (hagebau connect GmbH & Co KG, iOS name \"Hagebau App\"); www.hagebau.de/app links the App Store page. Android package de.hagebau.shop from the asset links of the site. Separate local apps (hagebau Wallner, hugo) are not the chain app. No universal link and no scheme: not evaluated (job 410)."
+    },
+    {
+      "chain": "hagebau",
+      "country": "AT",
+      "name": "hagebaumarkt",
+      "aliases": [
+        "hagebau"
+      ],
+      "web": "www.hagebau.at",
+      "apps": [
+        {
+          "name": "hagebau",
+          "android": "de.hagebau.shop",
+          "ios": "1156107220",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-23",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1156107220&country=at",
+        "https://play.google.com/store/apps/details?id=de.hagebau.shop&hl=en&gl=AT",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.hagebau.at&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "The hagebau app (hagebau connect GmbH & Co KG, iOS name \"Hagebau App\"); www.hagebau.de/app links the App Store page. Android package de.hagebau.shop from the asset links of the site. Separate local apps (hagebau Wallner, hugo) are not the chain app. No universal link and no scheme: not evaluated (job 410)."
+    },
+    {
+      "chain": "globus-baumarkt",
+      "country": "DE",
+      "name": "Globus Baumarkt",
+      "aliases": [
+        "globus bau"
+      ],
+      "web": "www.globus-baumarkt.de",
+      "apps": [
+        {
+          "name": "Globus Baumarkt",
+          "android": "de.fabrik19.globus",
+          "ios": "971250247",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-23",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=971250247&country=de",
+        "https://play.google.com/store/apps/details?id=de.fabrik19.globus&hl=en&gl=DE",
+        "https://www.globus-baumarkt.de/",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.globus-baumarkt.de&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "The Globus Baumarkt app (Globus Fachmaerkte GmbH & Co KG); www.globus-baumarkt.de links the App Store and Play pages, its asset links list de.fabrik19.globus. Only \"Globus Baumarkt\" and \"Globus Bau\" match: plain \"Globus\" is the grocery hypermarket, not this chain. Not Mein Globus (that app is the hypermarket). No universal link and no scheme: not evaluated (job 410)."
+    },
+    {
+      "chain": "sonderpreis-baumarkt",
+      "country": "DE",
+      "name": "Sonderpreis Baumarkt",
+      "aliases": [],
+      "web": "www.sonderpreis-baumarkt.de",
+      "apps": [
+        {
+          "name": "Macher-App",
+          "android": "com.fishbull.sonderpreisbaumarkt",
+          "ios": "1548677475",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-23",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1548677475&country=de",
+        "https://play.google.com/store/apps/details?id=com.fishbull.sonderpreisbaumarkt&hl=en&gl=DE",
+        "https://www.sonderpreis-baumarkt.de/macherwerkstatt/macher-app",
+        "https://de.wikipedia.org/api/rest_v1/page/summary/Sonderpreis_Baumarkt"
+      ],
+      "note": "The Macher-App of Sonderpreis Baumarkt (Fishbull Franz Fischer, 358 stores per Wikipedia); the chain page /macherwerkstatt/macher-app links both store pages. No universal link and no scheme: not evaluated (job 410)."
+    },
+    {
+      "chain": "hellweg",
+      "country": "DE",
+      "name": "HELLWEG",
+      "aliases": [],
+      "web": "www.hellweg.de",
+      "apps": [],
+      "status": "no-app",
+      "verified": "2026-11-23",
+      "sources": [
+        "https://itunes.apple.com/search?term=hellweg&country=de&entity=software&limit=10",
+        "https://www.hellweg.de/app",
+        "https://www.hellweg.de/"
+      ],
+      "note": "No HELLWEG app found: iTunes Search DE returns none by HELLWEG, www.hellweg.de links no store and has no asset links (2026-11-23)."
+    },
+    {
+      "chain": "b1-discount",
+      "country": "DE",
+      "name": "B1 Discount Baumarkt",
+      "aliases": [
+        "b1 discount"
+      ],
+      "web": "www.b1-discount.de",
+      "apps": [],
+      "status": "no-app",
+      "verified": "2026-11-23",
+      "sources": [
+        "https://itunes.apple.com/search?term=B1%20Discount%20Baumarkt&country=de&entity=software&limit=10",
+        "https://www.b1-discount.de/",
+        "https://de.wikipedia.org/api/rest_v1/page/summary/B1_Discount_Baumarkt"
+      ],
+      "note": "No B1 Discount app found: iTunes Search DE returns none and www.b1-discount.de links no store (2026-11-23). Part of toom Baumarkt, whose toom app is not the B1 app."
     }
   ]
 }

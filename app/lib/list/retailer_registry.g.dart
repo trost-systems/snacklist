@@ -1118,4 +1118,239 @@ const retailerRegistry = <Retailer>[
       ),
     ],
   ),
+  Retailer(
+    chain: 'obi',
+    country: 'DE',
+    name: 'OBI',
+    apps: [
+      RetailerApp(name: 'heyOBI', android: 'de.obi.app', ios: '1331431911'),
+    ],
+  ),
+  Retailer(
+    chain: 'obi',
+    country: 'AT',
+    name: 'OBI',
+    apps: [
+      RetailerApp(name: 'heyOBI', android: 'de.obi.app', ios: '1331431911'),
+    ],
+  ),
+  Retailer(
+    chain: 'obi',
+    country: 'CH',
+    name: 'OBI',
+    apps: [
+      RetailerApp(name: 'heyOBI', android: 'de.obi.app', ios: '1331431911'),
+    ],
+  ),
+  Retailer(
+    chain: 'obi',
+    country: 'CZ',
+    name: 'OBI',
+    apps: [
+      RetailerApp(name: 'heyOBI', android: 'de.obi.app', ios: '1331431911'),
+    ],
+  ),
+  Retailer(
+    chain: 'obi',
+    country: 'HU',
+    name: 'OBI',
+    apps: [
+      RetailerApp(name: 'heyOBI', android: 'de.obi.app', ios: '1331431911'),
+    ],
+  ),
+  Retailer(
+    chain: 'obi',
+    country: 'PL',
+    name: 'OBI',
+    apps: [
+      RetailerApp(name: 'heyOBI', android: 'de.obi.app', ios: '1331431911'),
+    ],
+  ),
+  Retailer(
+    chain: 'hornbach',
+    country: 'DE',
+    name: 'HORNBACH',
+    apps: [
+      RetailerApp(name: 'HORNBACH', android: 'de.hornbach', ios: '948194412'),
+    ],
+  ),
+  Retailer(
+    chain: 'hornbach',
+    country: 'AT',
+    name: 'HORNBACH',
+    apps: [
+      RetailerApp(name: 'HORNBACH', android: 'de.hornbach', ios: '948194412'),
+    ],
+  ),
+  Retailer(
+    chain: 'hornbach',
+    country: 'CH',
+    name: 'HORNBACH',
+    apps: [
+      RetailerApp(name: 'HORNBACH', android: 'de.hornbach', ios: '948194412'),
+    ],
+  ),
+  Retailer(
+    chain: 'hornbach',
+    country: 'NL',
+    name: 'HORNBACH',
+    apps: [
+      RetailerApp(name: 'HORNBACH', android: 'de.hornbach', ios: '948194412'),
+    ],
+  ),
+  Retailer(
+    chain: 'hornbach',
+    country: 'CZ',
+    name: 'HORNBACH',
+    apps: [
+      RetailerApp(name: 'HORNBACH', android: 'de.hornbach', ios: '948194412'),
+    ],
+  ),
+  Retailer(
+    chain: 'hornbach',
+    country: 'SK',
+    name: 'HORNBACH',
+    apps: [
+      RetailerApp(name: 'HORNBACH', android: 'de.hornbach', ios: '948194412'),
+    ],
+  ),
+  Retailer(
+    chain: 'hornbach',
+    country: 'SE',
+    name: 'HORNBACH',
+    apps: [
+      RetailerApp(name: 'HORNBACH', android: 'de.hornbach', ios: '948194412'),
+    ],
+  ),
+  Retailer(
+    chain: 'hornbach',
+    country: 'LU',
+    name: 'HORNBACH',
+    apps: [
+      RetailerApp(name: 'HORNBACH', android: 'de.hornbach', ios: '948194412'),
+    ],
+  ),
+  Retailer(
+    chain: 'hornbach',
+    country: 'RO',
+    name: 'HORNBACH',
+    apps: [
+      RetailerApp(name: 'HORNBACH', android: 'de.hornbach', ios: '948194412'),
+    ],
+  ),
+  Retailer(
+    chain: 'bauhaus',
+    country: 'DE',
+    name: 'BAUHAUS',
+    apps: [
+      RetailerApp(
+        name: 'BAUHAUS',
+        android: 'info.bauhaus.bauhaus',
+        ios: '1615566534',
+      ),
+    ],
+  ),
+  Retailer(
+    chain: 'bauhaus',
+    country: 'AT',
+    name: 'BAUHAUS',
+    apps: [
+      RetailerApp(
+        name: 'BAUHAUS',
+        android: 'info.bauhaus.bauhaus',
+        ios: '1615566534',
+      ),
+    ],
+  ),
+  Retailer(
+    chain: 'bauhaus',
+    country: 'HR',
+    name: 'BAUHAUS',
+    apps: [
+      RetailerApp(
+        name: 'BAUHAUS',
+        android: 'info.bauhaus.bauhaus',
+        ios: '1615566534',
+      ),
+    ],
+  ),
+  Retailer(
+    chain: 'bauhaus',
+    country: 'ES',
+    name: 'BAUHAUS',
+    apps: [
+      RetailerApp(
+        name: 'BAUHAUS',
+        android: 'info.bauhaus.bauhaus',
+        ios: '1615566534',
+      ),
+    ],
+  ),
+  Retailer(
+    chain: 'toom',
+    country: 'DE',
+    name: 'toom Baumarkt',
+    aliases: ['toom'],
+    apps: [
+      RetailerApp(name: 'toom', android: 'de.toom.app', ios: '1518750532'),
+    ],
+  ),
+  Retailer(
+    chain: 'hagebau',
+    country: 'DE',
+    name: 'hagebaumarkt',
+    aliases: ['hagebau'],
+    apps: [
+      RetailerApp(
+        name: 'hagebau',
+        android: 'de.hagebau.shop',
+        ios: '1156107220',
+      ),
+    ],
+  ),
+  Retailer(
+    chain: 'hagebau',
+    country: 'AT',
+    name: 'hagebaumarkt',
+    aliases: ['hagebau'],
+    apps: [
+      RetailerApp(
+        name: 'hagebau',
+        android: 'de.hagebau.shop',
+        ios: '1156107220',
+      ),
+    ],
+  ),
+  Retailer(
+    chain: 'globus-baumarkt',
+    country: 'DE',
+    name: 'Globus Baumarkt',
+    aliases: ['globus bau'],
+    apps: [
+      RetailerApp(
+        name: 'Globus Baumarkt',
+        android: 'de.fabrik19.globus',
+        ios: '971250247',
+      ),
+    ],
+  ),
+  Retailer(
+    chain: 'sonderpreis-baumarkt',
+    country: 'DE',
+    name: 'Sonderpreis Baumarkt',
+    apps: [
+      RetailerApp(
+        name: 'Macher-App',
+        android: 'com.fishbull.sonderpreisbaumarkt',
+        ios: '1548677475',
+      ),
+    ],
+  ),
+  Retailer(chain: 'hellweg', country: 'DE', name: 'HELLWEG'),
+  Retailer(
+    chain: 'b1-discount',
+    country: 'DE',
+    name: 'B1 Discount Baumarkt',
+    aliases: ['b1 discount'],
+  ),
 ];

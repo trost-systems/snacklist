@@ -48,6 +48,52 @@ void main() {
     );
   });
 
+  test('DIY chains match by name and alias, in any case', () {
+    const typed = {
+      'Hornbach': 'hornbach/DE',
+      'HORNBACH Köln': 'hornbach/DE',
+      'OBI': 'obi/DE',
+      'obi markt': 'obi/DE',
+      'Toom': 'toom/DE',
+      'toom Baumarkt': 'toom/DE',
+      'Bauhaus': 'bauhaus/DE',
+      'Hellweg': 'hellweg/DE',
+      'Hagebau': 'hagebau/DE',
+      'hagebaumarkt': 'hagebau/DE',
+      'Globus Baumarkt': 'globus-baumarkt/DE',
+      'Globus Bau': 'globus-baumarkt/DE',
+      'Sonderpreis Baumarkt': 'sonderpreis-baumarkt/DE',
+      'B1 Discount': 'b1-discount/DE',
+    };
+    for (final MapEntry(:key, :value) in typed.entries) {
+      expect(found(key, 'DE'), value, reason: key);
+    }
+    expect(found('Hornbach', 'NL'), 'hornbach/NL');
+    expect(found('Bauhaus', 'ES'), 'bauhaus/ES');
+  });
+
+  test('plain Globus is not the DIY chain', () {
+    expect(found('Globus', 'DE'), 'globus-baumarkt/DE~');
+    expect(
+      matchRegistry('Globus', 'DE').where((m) => m.exact),
+      isEmpty,
+      reason: 'only a typing suggestion, never an exact match',
+    );
+    expect(found('Globus Hypermarkt Bous', 'DE'), '');
+    expect(found('Globus Markt', 'DE'), '');
+  });
+
+  test('DIY chains are no onboarding chips', () {
+    final chips = registryChains('DE').map((r) => r.chain).toSet();
+    for (final chain in ['obi', 'hornbach', 'bauhaus', 'toom', 'hagebau']) {
+      expect(chips, isNot(contains(chain)), reason: chain);
+    }
+    expect(
+      registryChains('NL').map((r) => r.chain),
+      isNot(contains('hornbach')),
+    );
+  });
+
   test('IKEA is no onboarding chip', () {
     expect([for (final r in registryChains('BE')) r.label], isEmpty);
     expect(registryChains('DE').map((r) => r.chain), isNot(contains('ikea')));
