@@ -17971,3 +17971,89 @@ Belgian, Czech etc. phones a one-chip picker. `retailer.dart` skips chain `ikea`
   tip card's flat sticker, padding and title style. The card's semantics group is named by its title, and
   the button's screen-reader name is „<App> öffnen“ (`storeAppOpen`), while its visible label stays
   „App öffnen“.
+
+## Job 377: P1 household add alert (flag `push-household-add`)
+
+1. **Stacked on job 376's branch (#643, not merged).** The push function, `push_tokens` and the
+   deep link are its; this job's PR is based on `job/376-push-foundation` and rebases onto main
+   once 376 lands.
+2. **The decisions live in the database, not in the app or an edge function.** An items trigger
+   queues adds (`push_add_queue`, item id only), `push_add_take()` batches and writes the text, `push_add_flush()`
+   (pg_cron, every minute) posts the requests to P0's `push` function with pg_net. Reason: the add
+   comes from the app, Siri, MCP and the API alike; the trigger sees all of them, and pgTAP can test
+   every rule without FCM.
+3. **(d) "the adder has an active trip" = an app tick of theirs in the household within the last 10
+   minutes (`recent_app_tick`, shared with `detect_due_households`, review 0).** Trip mode's running trip is on the device only (`trip_sessions` are saved at the end),
+   and detection finds trips afterwards. The one server-side "a trip may still be going on" signal
+   is `detect_due_households`' 10 minutes since the last app tick (job 352, T1a); `on_a_trip` reuses
+   it instead of adding a second signal. Consequence: a shopper who adds something before their
+   first tick is pushed; adds during the walk are not, and are never pushed later.
+4. **Default OFF.** The text names a member and an item (Legal recommendation, NEEDS_LEAD). No row
+   in `push_preferences` is off. The first yes asks the OS (P0's `optIn`); a refusal leaves it off.
+5. **The language is the app's, written with the switch.** The server has no locale, so
+   `set_push_household_add(on, language)` stores `de` or `en`, and the app writes it again at the
+   next look when the language changed.
+6. **Batching: 2 minutes quiet, 5 minutes at most.** Per household, list and adder. "A few minutes"
+   in the brief; short enough to feel like news, long enough to merge a burst of adds.
+7. **Nothing is stored when nobody wants it.** The trigger queues only with the server switch on and
+   another member with the alert on. Queue rows live until sent, at most an hour; the post is fire and
+   forget (a failed push is dropped, TTL 1 hour).
+8. **Two switches, both off.** The server switch `app_switches.push_household_add` (set with
+   `push_household_add_set`, which also needs the vault secrets and schedules the cron job) and the
+   PostHog flag `push-household-add` (the app's switch). Neither is touched in this job.
+9. **No ARB or legal text goes live by itself.** Four new ARB strings and the privacy deltas are in
+   NEEDS_LEAD for Legal; `docs/PRIVACY_DATA_MAP.md` has the new rows. The site's legal pages are not
+   edited here.
+10. **Review 0 (Legal addendum, N-401).** (a) Items of the Drogerie category or of a pharmacy or
+    drugstore store (dm, Rossmann, Müller, Budni) are never named, decided when the group is sent
+    from the item's current category and store; a single such add reads „etwas zur Liste“, a mixed
+    batch is a count. (b) The queue holds the item id, not the name; items deleted, ticked or edited
+    before the send drop out or are read as they are then. (c) The in-app off switch saves, then
+    runs `PushRegistration.forget()`. With P2 (job 378) there will be a second push switch: forget
+    only when every push switch is off, otherwise a device stops receiving the other alert.
+    (d) `push_preferences.name_hidden` and a second switch are the Art. 21 handling for a member's
+    display name in others' pushes. (e) N-397..N-400 and the N-399 §5 text are applied in
+    `datenschutz.md`, `privacy.md` and `PRIVACY_DATA_MAP.md` behind the `push-notifications` hold;
+    the N-279 date bump belongs to the PR that flips the hold, not this one.
+11. **What is an add.** Inserts of active items, and a bought → active update more than 10 minutes
+    after the tick (a re-add from „Zuletzt verwendet“, the app's own rule, `ListCubit.readd`). Not
+    pushed: items that arrive ticked, a delete's undo (same id within 10 minutes), a tick's undo.
+12. **The alert's choice is per signed-in user, read on every open.** The cubit follows the
+    session and forgets the choice when the user changes; a late answer for the old user is dropped.
+
+
+## Job 377b: Legal's N-423 rule for the household add alert, 2026-11-22
+
+1. **One decider.** Job 377's `push_item_sensitive` (item read at send time, no name queued) is
+   Legal's N-423 now: category `drugstore` (or absorbed), the seven `Store.pharmacyWords`
+   (inline, so the Dart pin has one list to read), dm, rossmann and
+   kruidvat by chain or seed key, Drogerie and Drugstore in a name; Müller and Budni stay as extras; a category named like a pharmacy counts too.
+   `pharmacy_words_test.dart` pins the Dart list to the seven words and the pgTAP file tests each one (a Flutter test reading the migration would turn the app gates on for any migration edit).
+2. **Text.** One sensitive item: the generic form. Any batch of two or more: the count form
+   (LEAD's instruction). Legal's N-423 redline says a mixed batch reads the generic form without a
+   count. A count shows no content; if Legal insists, it is one `case` branch in `push_add_take`.
+3. **N-427** the off forgets the device unless `otherAlertsOn`. **N-428** hourly purge by every
+   flush, queue emptied on switch off, departed adders dropped. **N-430** pgTAP asserts
+   `push_preferences` and `push_devices` in the export (`shopping_day_reminder` joins when #653
+   lands).
+
+## Job 377 review 1
+
+1. **Medicines the classifier files as Sonstiges (Insulin, Antibabypille, Ovulationstest).** Not
+   fixed in `classify_item`: a dictionary change regenerates the migration, the bundled catalog, the
+   icons and the parity tables, which is its own job and its own review. `push_item_sensitive` takes
+   the item's name too and matches a stopgap list of medicine and contraception words; an
+   over-match only costs a generic line. Follow-up: list these in the dictionary as Drogerie.
+2. **The switch reads on only with this device opted in** (a second phone, or the same phone after
+   a sign-out and in, reads off until its own yes). The server row is the account's.
+3. **An off forgets the device before the save**, so an off made offline still stops pushes here;
+   the app reports the failed save and the server row stays on until the next off or on. The §5
+   text promises the FCM half of the catch-up only.
+4. **The name switch (Art. 21) is built on every platform** and shown while the flag is on for the
+   user. A member whose flag is off cannot reach it, so the flag goes to everyone at once.
+5. **(d) is checked again at the send** (`recent_app_tick` in `push_add_take`): an add before the
+   adder's first tick is dropped once the tick is there.
+6. **The pharmacy pin lives in a shared file** (`supabase/tests/pharmacy_words.json`) read by the
+   Dart test and a Deno test, instead of a Flutter test reading the migration (which turned the app
+   switch on for lint).
+

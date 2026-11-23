@@ -6421,6 +6421,42 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'App öffnen'**
   String get storeDoneOpen;
+
+  /// Job 377: Einstellungen section label above the push switch
+  ///
+  /// In de, this message translates to:
+  /// **'Mitteilungen'**
+  String get settingsPush;
+
+  /// Job 377 (flag push-household-add): Einstellungen switch, off by default; on, the user gets a push when another member adds an item
+  ///
+  /// In de, this message translates to:
+  /// **'Wenn jemand etwas hinzufügt'**
+  String get pushHouseholdAdd;
+
+  /// Job 377: under the pushHouseholdAdd switch; the example names a member and an item, as the push does
+  ///
+  /// In de, this message translates to:
+  /// **'Mitteilung mit Name und Eintrag, z. B. „Lea hat Milch hinzugefügt“. Bei Artikeln aus der Apotheke oder Drogerie ohne Artikelnamen, etwa „Lea hat etwas zur Liste hinzugefügt“. Mehrere kurz nacheinander kommen zusammen.'**
+  String get pushHouseholdAddHint;
+
+  /// Job 377: snackbar when the switch is turned on but the OS refuses notifications
+  ///
+  /// In de, this message translates to:
+  /// **'Mitteilungen sind für Snacklist ausgeschaltet. Erlaube sie in den Einstellungen deines Geräts.'**
+  String get pushBlocked;
+
+  /// Job 377 (N-401, Art. 21): Einstellungen switch under Mitteilungen; on, the user's display name is left out of other members' pushes
+  ///
+  /// In de, this message translates to:
+  /// **'Meinen Namen in Mitteilungen weglassen'**
+  String get pushNameHidden;
+
+  /// Job 377: under the pushNameHidden switch
+  ///
+  /// In de, this message translates to:
+  /// **'Andere sehen dann „Jemand hat Milch hinzugefügt“, auch wenn du selbst keine Mitteilungen eingeschaltet hast.'**
+  String get pushNameHiddenHint;
 }
 
 class _AppLocalizationsDelegate
