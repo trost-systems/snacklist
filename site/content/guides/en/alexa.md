@@ -9,7 +9,7 @@ updated: 2026-11-22
 
 # Snacklist with Alexa: set up the skill
 
-With the Snacklist skill for Alexa you can add things to your Snacklist by voice, without opening the app. The skill is available to everyone in the [Alexa Skill Store](alexa-skill:en). You enable it and link your account, then it works like this:
+With the Snacklist skill for Alexa you can add things to your Snacklist by voice, without opening the app. You find the skill in the [Alexa Skill Store](alexa-skill:en). You enable it and link your account, then it works like this:
 
 > **You:** Alexa, ask Snacklist to add milk and eggs.
 > **The skill:** I put milk and eggs on Snacklist.
