@@ -5,8 +5,8 @@
       "note": "the Snacklist API keys under Mehr > Zugänge show only while the PostHog flag public-api is on (job 73); on at 100 % for everyone since 2026-11-21 14:08 CET (flag id 373927, app_switches.public_api on) after job 336 (#590) and a green production smoke"
     },
     "unified-keys": {
-      "rollout": "off",
-      "note": "one list of Zugriffsschlüssel under Mehr > Zugänge (each key works for the MCP server and the API, read-only or read and write, at most 20 per member) shows only while the PostHog flag unified-keys is on (job 397); it also needs the server switch app_switches.unified_keys on; waits for the Legal GO on the privacy text"
+      "rollout": "full",
+      "note": "one list of Zugriffsschlüssel under Mehr > Zugänge (each key works for the MCP server and the API, read-only or read and write, at most 20 per member) shows only while the PostHog flag unified-keys is on (job 397); it also needs the server switch app_switches.unified_keys on; on at 100 % for everyone from 2026-11-23 (job 411c) after the server switch unified_keys went on and a production check with a synthetic account"
     },
     "grocery-log": {
       "rollout": "off",
@@ -155,7 +155,7 @@
       "note": "one access key for MCP, the API and the Siri Shortcut (job 397): the privacy text's merged key paragraphs show once released (the guides wait for unified-keys-guides); release it after Legal's GO and before the server switch unified_keys goes on, since the switch widens every existing key at once"
     },
     "unified-keys-guides": {
-      "released": false,
+      "released": true,
       "note": "the Claude and Siri-Kurzbefehl guides' steps for the one Zugriffsschlüssel list (job 397); release only when the flag unified-keys reaches everyone (rollout full), since until then most apps still show Zugriffstoken and API"
     }
   }
