@@ -112,13 +112,17 @@ answer in well under a second, and the supabase.co URL has no such limit.
 
 Per signed-in user, over all MCP requests after authentication (any household,
 OAuth or access token): a token bucket of 20 requests refilled at 60 a minute,
-and 1000 requests a UTC day. Over either, the function answers `429` with
+and, since job 419, 1000 requests a UTC day per account that MCP and the API (`docs/API.md`)
+share: one tool call (`tools/call`, each one of a batch) or one API request counts one;
+`initialize`, `tools/list`, `ping` and notifications use the bucket only, and a tool call the plan
+gate refuses (the locked answer) is given back. Over either limit, the function answers `429` with
 `Retry-After` (seconds) and a JSON-RPC error `-32000` "Rate limit reached.
 Retry later." without reading the request. A request while the account is
 being deleted gets `503`. The numbers are `BURST`, `PER_MINUTE` and `PER_DAY`
-in `supabase/functions/mcp/handler.ts`; `public.mcp_take_call` counts in
-`public.mcp_rate` (one row per user, service only), and `purge_mcp_rate()`
-deletes rows unused for a day (pg_cron `purge-mcp-rate`, 03:43 UTC). Before
+in `supabase/functions/api/limits.ts`, one place for MCP and the API; `public.mcp_take` counts the bucket in
+`public.mcp_rate` (one row per user, service only) and the day in `public.account_days` (one row
+per user and day, shared with `api_begin`), and `purge_mcp_rate()`
+deletes buckets unused for a day and days before yesterday (pg_cron `purge-mcp-rate`, 03:43 UTC). Before
 job 336, 60 concurrent calls with one token were all served (job 331 F5).
 
 ## Tools

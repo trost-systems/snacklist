@@ -157,6 +157,15 @@ class const Unlocks({
     yearlyByOwner: [...yearlyByOwner, ...own.yearlyByOwner],
   );
 
+  /// Premium from the user's own rows only (`user_premium`): what the
+  /// integration gate counts. A household's plan or grant is not in it.
+  Premium ownPremiumAt(DateTime now) => Unlocks(
+    rows: [
+      for (final r in rows)
+        if (r.own) r,
+    ],
+  ).premiumAt(now);
+
   /// One owner has two yearly plans running at [now].
   bool twoYearlyAt(DateTime now) => yearlyByOwner.any(
     (plans) => plans.where((r) => r.activeAt(now)).length >= 2,
@@ -296,6 +305,14 @@ class Entitlements(
     EntitlementsUnknown() => null,
   };
 
+  /// The signed-in user's own premium now; null while unknown. Premium
+  /// belongs to the account (Terms §6): the integration gate and Buy go by
+  /// this, not by [premium], which also counts the household's rows.
+  Premium? get ownPremium => switch (state) {
+    EntitlementsKnown(:final unlocks) => unlocks.ownPremiumAt(now()),
+    EntitlementsUnknown() => null,
+  };
+
   /// [entitlement] is unlocked in the shown household now; false while
   /// unknown.
   bool has(Entitlement entitlement) => premium is ActivePremium;
@@ -334,12 +351,14 @@ class Entitlements(
   /// yearly plan, H-84); with Lifetime or a promotional grant (testers' too)
   /// nothing. While unknown (loading, offline) the answer is no, so no member
   /// pays twice. Every paywall entry point asks this, never [has].
-  bool canOffer(Entitlement entitlement, PremiumPlan plan) => switch (premium) {
-    null => false,
-    NoPremium() => true,
-    ActivePremium(source: PremiumSource.yearly) => plan == PremiumPlan.lifetime,
-    ActivePremium() => false,
-  };
+  bool canOffer(Entitlement entitlement, PremiumPlan plan) =>
+      switch (ownPremium) {
+        null => false,
+        NoPremium() => true,
+        ActivePremium(source: PremiumSource.yearly) =>
+          plan == PremiumPlan.lifetime,
+        ActivePremium() => false,
+      };
 
   void _follow(Session session) {
     final scope = switch (session) {

@@ -27,9 +27,11 @@ import {
 } from './cimd_clients.ts';
 import { type OAuthDeps, oauthRoute } from './oauth.ts';
 import { telemetry } from './telemetry.ts';
+import { BURST, PER_DAY, PER_MINUTE } from '../api/limits.ts';
 import {
   buildServer,
   langOf,
+  type ReportCall,
   reportToolCalls,
   SWITCHED_OFF,
   type Switches,
@@ -38,11 +40,36 @@ import {
 
 /**
  * Per user, over all MCP requests (job 336, like the API's per key, docs/MCP.md "Limits"): a token
- * bucket of BURST refilled at PER_MINUTE a minute, and PER_DAY a UTC day.
+ * bucket of BURST refilled at PER_MINUTE a minute, and PER_DAY a UTC day. The numbers are the
+ * API's (api/limits.ts): the day's count is one per account, shared by both (job 419).
  */
-export const BURST = 20;
-export const PER_MINUTE = 60;
-export const PER_DAY = 1000;
+export { BURST, PER_DAY, PER_MINUTE };
+
+/**
+ * The tools/call messages of a request (each one of a batch counts): only they use up the
+ * account's day (job 419); initialize, tools/list, ping and notifications do not. A body that is
+ * not JSON-RPC counts none; the server answers it.
+ */
+export async function toolCallsIn(req: Request): Promise<number> {
+  if (req.method !== 'POST') return 0;
+  try {
+    const body: unknown = await req.clone().json();
+    const messages = Array.isArray(body) ? body : [body];
+    return messages.filter((m) =>
+      typeof m === 'object' && m !== null && (m as { method?: unknown }).method === 'tools/call'
+    ).length;
+  } catch {
+    return 0;
+  }
+}
+
+/** Gives a call back to the day when the plan gate refused it. */
+export function refundLocked(report: ReportCall, refund: () => Promise<void>): ReportCall {
+  return async (call) => {
+    if (call.reason === 'premium_required') await refund();
+    await report(call);
+  };
+}
 
 const PRM_SUFFIXES = ['/.well-known/oauth-protected-resource', '/oauth-protected-resource'];
 
@@ -102,10 +129,13 @@ export type Deps = {
   oauth: Omit<OAuthDeps, 'authServerMetadata'>;
   authenticate: (req: Request) => Promise<Auth>;
   /**
-   * Counts one request for the user: null when it may go ahead, else seconds to wait. Throws
-   * AuthError user_deleted when the account went after authentication.
+   * Takes one request from the user's bucket and [calls] tool calls from the account's day: null
+   * when it may go ahead, else seconds to wait. Throws AuthError user_deleted when the account
+   * went after authentication.
    */
-  takeCall: (userId: string) => Promise<number | null>;
+  takeCall: (userId: string, calls: number) => Promise<number | null>;
+  /** Gives back [calls] of today's count: the plan gate refused them. Never throws. */
+  refundCalls: (userId: string, calls: number) => Promise<void>;
   serve: (req: Request, auth: Auth) => Promise<Response>;
   allowedOriginHosts: () => string[];
 };
@@ -181,7 +211,7 @@ export async function handle(req: Request, deps: Deps = productionDeps): Promise
         'App-Sitzungen gelten hier nicht: per OAuth verbinden oder einen Zugriffstoken nutzen.',
       );
     }
-    retryAfter = await deps.takeCall(auth.userId);
+    retryAfter = await deps.takeCall(auth.userId, await toolCallsIn(req));
   } catch (e) {
     if (rowBusy(e)) return withCors(refused(503, 'Temporarily unavailable. Retry later.', 1));
     if (!(e instanceof AuthError)) throw e;
@@ -410,10 +440,17 @@ export const productionDeps: Deps = {
   },
   publicOrigins: publicOriginsFromEnv,
   authenticate,
-  takeCall: async (userId) => {
+  refundCalls: async (userId, calls) => {
+    try {
+      await serviceDb()`select public.account_day_refund(${userId}::uuid, ${calls}::integer)`;
+    } catch (e) {
+      console.error('mcp: day refund failed', (e as Error)?.name);
+    }
+  },
+  takeCall: async (userId, calls) => {
     try {
       const [row] = await serviceDb()<{ retry: number | null }[]>`
-        select public.mcp_take_call(${userId}::uuid, ${BURST}, ${PER_MINUTE}, ${PER_DAY}) as retry`;
+        select public.mcp_take(${userId}::uuid, ${BURST}, ${PER_MINUTE}, ${PER_DAY}, ${calls}::integer) as retry`;
       return row?.retry ?? null;
     } catch (e) {
       if ((e as { code?: unknown })?.code === 'P0002') {
@@ -428,7 +465,8 @@ export const productionDeps: Deps = {
       buildServer(
         auth,
         (householdId) => requirePremium({ userId: auth.userId, householdId }, 'mcp'),
-        reportToolCalls(sendEvent, auth.userId),
+        refundLocked(reportToolCalls(sendEvent, auth.userId), () =>
+          productionDeps.refundCalls(auth.userId, 1)),
         langOf(req.headers.get('accept-language')),
         switches,
       )

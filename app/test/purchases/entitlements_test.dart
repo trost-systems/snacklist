@@ -585,7 +585,7 @@ void main() {
       );
       addTearDown(session.close);
       final entitlements = Entitlements(
-        FakeEntitlementsSource()..rowsNow = rows,
+        FakeEntitlementsSource()..userRows['peter'] = rows,
         session,
         now: () => now,
       );
@@ -598,6 +598,25 @@ void main() {
       for (final plan in PremiumPlan.values)
         if (e.canOffer(Entitlement.premium, plan)) plan,
     ];
+
+    test("only the household's plan or grant: both plans (job 419)", () async {
+      final session = TestSession(
+        const InHousehold('peter', Household(id: 'home', name: 'Zuhause'), [
+          Household(id: 'home', name: 'Zuhause'),
+        ]),
+      );
+      addTearDown(session.close);
+      final e = Entitlements(
+        FakeEntitlementsSource()..rowsNow = [promotionalRow()],
+        session,
+        now: () => now,
+      );
+      addTearDown(e.close);
+      await pumpEventQueue();
+      expect(e.premium, isA<ActivePremium>());
+      expect(e.ownPremium, isA<NoPremium>());
+      expect(offered(e), PremiumPlan.values);
+    });
 
     test('no premium: both plans', () async {
       expect(offered(await known([])), PremiumPlan.values);

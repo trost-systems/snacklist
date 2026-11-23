@@ -5,7 +5,7 @@
 export const BURST = 20;
 /** ...refilled at this many requests a minute. */
 export const PER_MINUTE = 60;
-/** Per household and UTC day, all its keys together. */
+/** Per user account and UTC day, all their keys and their MCP requests together (job 419). */
 export const PER_DAY = 1000;
 /** Failed authentications per address (salted SHA-256 of the IP) in one window... */
 export const AUTH_FAILURES = 20;

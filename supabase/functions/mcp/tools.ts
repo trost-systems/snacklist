@@ -96,8 +96,8 @@ export const planInfoUrl: Record<Lang, string> = {
 /**
  * Job 50, reworded in job 415: what a tool call of a user without access gets while the lock is
  * on. A tool result, not a 401/403: the client keeps its token and needs no new sign-in once the
- * plan changes. Premium is per user (PB2): another member's plan does not unlock the caller (job
- * 328 review 0). Neutral by rule (job 415): no plan or product name, no price, no call to action;
+ * plan changes. Only the caller's own Premium (user_has_premium) unlocks;
+ * neither another member's plan nor the household's does (job 419). Neutral by rule (job 415): no plan or product name, no price, no call to action;
  * a test pins it.
  */
 export const premiumRequired: Record<Lang, string> = {

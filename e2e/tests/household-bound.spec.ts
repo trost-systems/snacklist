@@ -22,7 +22,7 @@ const newPage = async (browser: Browser) => {
 /** The status tile: its title says which Premium the household has (job 49). */
 const unlocked = (page: Page) => page.getByText(/^Snacklist Premium (Lifetime|aktiv|über)/);
 const buyButton = (page: Page) => page.getByRole('button', { name: /Weiter zum Kauf|kaufen/ });
-const BOUGHT_TWICE = /^Euer Haushalt hat Snacklist Lifetime mehr als einmal gekauft\./;
+const BOUGHT_TWICE = /^Snacklist Lifetime wurde mehr als einmal gekauft\./;
 
 async function inviteCode(email: string): Promise<string> {
   const { data, error } = await (await apiAs(email)).rpc('create_invite', {
@@ -76,7 +76,7 @@ test('joining an unlocked household: nothing to buy, the refund help; the purcha
   await screenshot(ben, 'job43-join-unlocked-de-390');
   await refundLink.click();
   await expect(ben.getByText('Kauf zurückfordern', { exact: true })).toBeVisible();
-  await expect(ben.getByText(/^Snacklist Lifetime gehört immer zu dem Haushalt, in dem es gekauft wurde\. Käufe im App Store erstattet nur Apple\./)).toBeVisible();
+  await expect(ben.getByText(/^Snacklist Lifetime gehört zu deinem Konto\. Käufe im App Store erstattet nur Apple\./)).toBeVisible();
   await expect(ben.getByRole('link', { name: 'Mehr in den häufigen Fragen' })).toHaveAttribute('href', 'https://snacklist.app/support');
   await expect(ben.getByRole('link', { name: 'Bei Apple anfragen' })).toHaveAttribute('href', 'https://reportaproblem.apple.com/');
   await expect(ben.getByRole('link', { name: 'Bei Google anfragen' })).toHaveAttribute(

@@ -1,9 +1,9 @@
 -- Job 73: the public API's database side (migration 20261102130000_public_api.sql). API keys are
 -- made from the app's session only, with {read} or {read,write}; api_begin takes one request from
--- the key's bucket and the household's day, throttles an address after failed authentications,
+-- the key's bucket and the account's day, throttles an address after failed authentications,
 -- and reaches only the key's own household; MCP and Siri never take an API key.
 begin;
-select plan(68);
+select plan(76);
 
 -- The API is switched off after the migrations (public_api_switch.test.sql); these run with it on.
 update public.app_switches set enabled = true where key = 'public_api';
@@ -139,8 +139,10 @@ select results_eq(
   $$ select 'limited'::text, (select id from ha), '{read,write}'::text[], 20, 0, 20, 1 $$,
   'the 21st is limited: retry in a second, full in 20'
 );
-select is((select requests from public.api_household_days where household_id = (select id from ha)), 21,
-  'a limited request takes nothing from the household''s day (20 of Ada, 1 of Cem)');
+select is((select requests from public.account_days where user_id = '00000000-0000-0000-0000-0000000073a1'), 20,
+  'a limited request takes nothing from the account''s day (20 of Ada)');
+select is((select requests from public.account_days where user_id = '00000000-0000-0000-0000-0000000073c1'), 1,
+  'a household member''s key counts on their own account (Cem 1)');
 update public.api_token_buckets set refilled_at = refilled_at - interval '3 seconds'
 where token_id = (select id from ka);
 select is(pg_temp.outcome((select token from ka)), 'ok', 'three seconds later it refilled');
@@ -150,22 +152,29 @@ select results_eq(
   'another key of the household has its own bucket'
 );
 
--- The household's day: 1000 for all its keys.
-update public.api_household_days set requests = 998 where household_id = (select id from ha);
+-- The account's day: 1000 for all its keys (and MCP, mcp_rate.test.sql), not for its household.
+update public.account_days set requests = 998 where user_id = '00000000-0000-0000-0000-0000000073a1';
 select results_eq(
-  $$ select o, l, r, re > 0 and re <= 86400 from pg_temp.begin_((select token from kc))
+  $$ select o, l, r, re > 0 and re <= 86400 from pg_temp.begin_((select token from kr))
        as (o text, h uuid, s text[], l int, r int, re int, ra int) $$,
   $$ values ('ok'::text, 1000, 1, true) $$,
-  'near the day''s end the headers show the household''s 1000'
+  'near the day''s end the headers show the account''s 1000'
 );
-select is(pg_temp.outcome((select token from kc)), 'ok', 'the 1000th goes through');
+select is(pg_temp.outcome((select token from ka)), 'ok', 'the 1000th goes through, on another key');
 select results_eq(
-  $$ select o, l, r, ra = re and ra > 0 from pg_temp.begin_((select token from kc))
+  $$ select o, l, r, ra = re and ra > 0 from pg_temp.begin_((select token from kr))
        as (o text, h uuid, s text[], l int, r int, re int, ra int) $$,
   $$ values ('limited'::text, 1000, 0, true) $$,
   'the 1001st is limited until the next UTC day'
 );
-select is(pg_temp.outcome((select token from kb)), 'ok', 'Ben''s household has its own day');
+select cmp_ok(public.mcp_take_call('00000000-0000-0000-0000-0000000073a1', 20, 60, 1000), '>', 1,
+  'MCP shares the account''s day: after 1000 API requests its first call waits for the next UTC day');
+update public.account_days set requests = 999 where user_id = '00000000-0000-0000-0000-0000000073a1';
+select is(public.mcp_take_call('00000000-0000-0000-0000-0000000073a1', 20, 60, 1000), null,
+  'and the 1000th call may be MCP''s');
+select is(pg_temp.outcome((select token from kr)), 'limited', 'after which the API is limited too');
+select is(pg_temp.outcome((select token from kc)), 'ok', 'a household member has their own day');
+select is(pg_temp.outcome((select token from kb)), 'ok', 'Ben''s account has its own day');
 
 -- Failed authentications per address.
 select results_eq(
@@ -220,8 +229,8 @@ select is((select count(*)::int from public.api_auth_failures where ip_hash in (
 
 -- Clients read none of it; the household day is the member's own at most.
 select pg_temp.login('00000000-0000-0000-0000-0000000073b1', '{"session_id": "00000000-0000-0000-0000-0000000073b5"}');
-select throws_ok($$ select * from public.api_household_days $$, '42501', null,
-  'members do not read the household counters');
+select throws_ok($$ select * from public.account_days $$, '42501', null,
+  'members do not read the day counters');
 select throws_ok($$ select * from public.api_token_buckets $$, '42501', null, 'nor the buckets');
 select throws_ok($$ select * from public.api_auth_failures $$, '42501', null, 'nor the failures');
 select throws_ok($$ select * from public.api_idempotency $$, '42501', null, 'nor the idempotency records');
@@ -247,22 +256,28 @@ select is((select locked from public.integration_gate((select id from hb), 'mcp'
   'MCP is locked for it');
 select is(public.promotional_premium_sync((select id from ha), true, '2100-01-01T00:00:00Z'), 'granted',
   'Ada''s household gets Premium');
-select is((select locked from public.integration_gate((select id from ha), 'api')), false,
-  'with Premium the API is open while the lock is on');
+select is((select locked from public.integration_gate((select id from ha), 'api', '00000000-0000-0000-0000-0000000073a1')), true,
+  'a household''s Premium alone no longer opens the API');
+select is(public.promotional_premium_sync_user('00000000-0000-0000-0000-0000000073a1', true, '2100-01-01T00:00:00Z'), 'granted',
+  'Ada gets Premium of her own');
+select is((select locked from public.integration_gate((select id from ha), 'api', '00000000-0000-0000-0000-0000000073a1')), false,
+  'with her own Premium the API is open while the lock is on');
+select is((select locked from public.integration_gate((select id from ha), 'api', '00000000-0000-0000-0000-0000000073c1')), true,
+  'and stays locked for the household member without one');
 update public.app_switches set enabled = false where key = 'integration_lock';
 
 -- Retention and cascades.
 insert into public.api_idempotency (token_id, key, request_hash, status, body, created_at)
 values ((select id from kb), 'old', repeat('a', 64), 201, '{}', now() - interval '25 hours'),
        ((select id from kb), 'new', repeat('b', 64), 201, '{}', now());
-insert into public.api_household_days (household_id, day, requests)
-values ((select id from hb), (now() at time zone 'utc')::date - 2, 5),
-       ((select id from hb), (now() at time zone 'utc')::date - 1, 5);
+insert into public.account_days (user_id, day, requests)
+values ('00000000-0000-0000-0000-0000000073b1', (now() at time zone 'utc')::date - 2, 5),
+       ('00000000-0000-0000-0000-0000000073b1', (now() at time zone 'utc')::date - 1, 5);
 update public.api_auth_failures set window_start = now() - interval '25 hours' where ip_hash = pg_temp.ip_key('ip-2');
-select ok(public.purge_api_rate() >= 3, 'the daily job deletes the old idempotency record, day and failure window');
+select ok(public.purge_api_rate() >= 2 and public.purge_mcp_rate() >= 1, 'the daily job deletes the old idempotency record, day and failure window');
 select results_eq(
   $$ select (select count(*)::int from public.api_idempotency where token_id = (select id from kb)),
-            (select count(*)::int from public.api_household_days where household_id = (select id from hb)),
+            (select count(*)::int from public.account_days where user_id = '00000000-0000-0000-0000-0000000073b1'),
             (select count(*)::int from public.api_auth_failures where ip_hash in (select pg_temp.ip_key(a) from unnest(array['ip-1', 'ip-2', 'ip-3', 'ip-4']) a)) $$,
   $$ values (1, 2, 1) $$, 'and keeps yesterday, today and fresh records'
 );

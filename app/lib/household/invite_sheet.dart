@@ -171,10 +171,6 @@ class const InvitePanel({
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (household.premium) ...[
-          const SizedBox(height: HlSpace.s4),
-          const _PremiumNote(),
-        ],
         const SizedBox(height: HlSpace.s3),
         const InviteJoinPageHint(),
         PersonInviteSection(household: household, origin: origin),
@@ -194,38 +190,6 @@ class const InvitePanel({
 
 /// Section labels inside the panel: flush with its text.
 const _labelPadding = EdgeInsets.fromLTRB(0, HlSpace.s5, 0, HlSpace.s2);
-
-/// "Premium gilt für alle im Haushalt.": one mint line, so the inviter can
-/// say it.
-class const _PremiumNote() extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final t = SnacklistColors.of(theme.brightness);
-    return DecoratedBox(
-      key: const ValueKey('invite-premium'),
-      decoration: BoxDecoration(
-        color: t.mintSoft,
-        borderRadius: const BorderRadius.all(Radius.circular(HlRadius.s)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(HlSpace.s3),
-        child: Row(
-          spacing: HlSpace.s3,
-          children: [
-            Icon(Icons.workspace_premium_outlined, size: 20, color: t.text),
-            Expanded(
-              child: Text(
-                AppLocalizations.of(context).invitePremiumShared,
-                style: theme.textTheme.bodyMedium?.copyWith(color: t.text),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 /// A person invite: "Neue Einladung" makes one (the apps open the share
 /// sheet at once), and each open one shows as an [InviteCard] to share,

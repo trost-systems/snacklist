@@ -135,6 +135,22 @@ void main() {
       expect(p.entitlements.has(Entitlement.premium), isTrue);
     });
 
+    test("a household's plan is not the purchase arriving: still unlocking, "
+        'no second Buy (job 419)', () async {
+      final rows = FakeEntitlementsSource()..rowsNow = [promotionalRow()];
+      final p = await started(rows: rows);
+      await p.purchases.buy(PremiumPlan.yearly);
+      expect(p.repository.calls, ['buy peter yearly']);
+      expect(p.purchases.state.flow, isA<FlowUnlocking>());
+      await p.purchases.buy(PremiumPlan.yearly);
+      expect(p.repository.calls, ['buy peter yearly'], reason: 'no second tap');
+      rows
+        ..userRows['peter'] = [yearlyRow(from: DateTime.now())]
+        ..change();
+      await pumpEventQueue();
+      expect(p.purchases.state.flow, isA<FlowIdle>());
+    });
+
     test('no unlock in time: idle again', () {
       fakeAsync((async) {
         late TestPurchases p;
@@ -183,7 +199,7 @@ void main() {
         await p.purchases.buy(PremiumPlan.yearly);
         expect(p.purchases.state.flow, isA<FlowAwaitingApproval>());
         p.rows
-          ..rowsNow = [yearlyRow(from: DateTime.now())]
+          ..userRows['peter'] = [yearlyRow(from: DateTime.now())]
           ..change();
         await pumpEventQueue();
         expect(p.purchases.state.flow, isA<FlowIdle>());
@@ -194,7 +210,7 @@ void main() {
       'Ask to Buy for Lifetime next to a yearly plan waits for Lifetime',
       () async {
         final rows = FakeEntitlementsSource()
-          ..rowsNow = [yearlyRow(from: DateTime.now())];
+          ..userRows['peter'] = [yearlyRow(from: DateTime.now())];
         final p = await started(
           rows: rows,
           store: FakePurchaseRepository(bought: const Pending()),
@@ -205,7 +221,7 @@ void main() {
         expect(p.purchases.state.flow, isA<FlowAwaitingApproval>());
         p.unlock();
         rows
-          ..rowsNow = null
+          ..userRows['peter'] = []
           ..change();
         await pumpEventQueue();
         expect(p.purchases.state.flow, isA<FlowIdle>());
@@ -464,7 +480,7 @@ void main() {
       expect(p.repository.calls, ['buy peter yearly']);
       expect(p.purchases.state.flow, isA<FlowUnlocking>());
       p.rows
-        ..rowsNow = [yearlyRow(from: DateTime.now())]
+        ..userRows['peter'] = [yearlyRow(from: DateTime.now())]
         ..change();
       await pumpEventQueue();
       expect(p.purchases.state.flow, isA<FlowIdle>());
@@ -472,7 +488,7 @@ void main() {
 
     test('never a second yearly plan; Lifetime is the one upgrade', () async {
       final rows = FakeEntitlementsSource()
-        ..rowsNow = [yearlyRow(from: DateTime.now())];
+        ..userRows['peter'] = [yearlyRow(from: DateTime.now())];
       final p = await started(rows: rows);
       await p.purchases.buy(PremiumPlan.yearly);
       expect(p.repository.calls, isEmpty);
@@ -481,7 +497,7 @@ void main() {
       // The running yearly plan is no Lifetime: it waits for that row.
       expect(p.purchases.state.flow, isA<FlowUnlocking>());
       rows
-        ..rowsNow = [
+        ..userRows['peter'] = [
           yearlyRow(from: DateTime.now()),
           {
             'kind': 'premium',

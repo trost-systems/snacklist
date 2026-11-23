@@ -304,7 +304,9 @@ in ISO 8601 with `Z` or an offset (for example `2027-01-15T09:00:00+01:00`). The
 at T, never before it. The privacy notice promises the grant to "every confirmed account that
 existed before the public launch" (Legal Review N-344), so every grant run passes exactly T as
 `--created-before` (N-347). `--apply` refuses to run without `--created-before`; it never takes
-the moment of the run as its cut-off. T may still be in the future when a run starts: accounts
+the moment of the run as its cut-off. `--apply` also needs `--used-before <U>`, the planned
+flip time of the integration lock (6.4), fixed with T: use of MCP or the API after U never earns
+the grant, and the script refuses `--apply` once the lock is on. T may still be in the future when a run starts: accounts
 created later are picked up by the next run with the same T.
 
 1. Before the launch day, and again right before T, the dry run. It changes nothing and prints
@@ -312,10 +314,10 @@ created later are picked up by the next run with the same T.
    reconcile, and how many need a grant:
    `deno run --allow-env --allow-net scripts/iap/beta-lifetime.ts --created-before <T>`
 2. Shortly before T, the first grant run:
-   `... beta-lifetime.ts --created-before <T> --apply`. A run that reports failures exits 1; run
+   `... beta-lifetime.ts --created-before <T> --used-before <U> --apply`. A run that reports failures exits 1; run
    it again, same command. It skips every account that is done, so a rerun only finishes the rest.
 3. At T, not earlier: 5.4.
-4. Right after 5.4, the same command again, `... beta-lifetime.ts --created-before <T> --apply`:
+4. Right after 5.4, the same command again, `... beta-lifetime.ts --created-before <T> --used-before <U> --apply`:
    it grants the accounts created between step 2 and T and skips the rest. Every later run (a
    rerun, 6.2's check) passes the same T, never another value.
 
@@ -371,15 +373,21 @@ launch get no grant.
 5.3a (`--created-before <T>`, no `--apply`). It must report no account that
 needs a grant. Accounts created after the launch that need the integrations for a review get a
 grant of their own, a dry run first:
-`deno run --allow-env --allow-net scripts/iap/promotional.ts grant --household <uuid>`,
+`deno run --allow-env --allow-net scripts/iap/promotional.ts grant --user <user id>`,
 then with `--apply`: the Alexa certification account and the App Review and Play Review
-households, or they hear only the Premium answer.
+accounts (a household grant no longer opens MCP or the API), or they hear only the Premium answer.
 
 6.3 **Lead**: the cut-over count, read-only, in the SQL editor:
-`scripts/iap/integration-cutover.sql`. It lists every household without
-Premium that uses an integration now. Peter sees the numbers before 6.4.
+`scripts/iap/integration-cutover.sql`. It lists every user without
+Premium of their own (job 419: a household's plan does not count) who uses MCP or the API now. Peter sees the numbers before 6.4.
 
-6.4 **Lead, Peter's yes**, after 4.3:
+6.4 **Lead, Peter's yes**, after 4.3. **Hard precondition (job 419, Legal must-fix 7 and 17):
+never before the public launch and a lead decision, and only when (a) the Lifetime grants ran
+(`scripts/iap/beta-lifetime.ts --apply --created-before <cut-off> --used-before <flip time>`
+for every confirmed beta account plus every account that used MCP or the API before the flip; it
+refuses once the lock is on; the 6.3 count shows who would still be refused) and
+(b) users accepted the new Terms in the app.** The switch is seeded off, and a pgTAP test and the
+`app_switches` table comment pin that:
 
 ```sql
 update public.app_switches set enabled = true, changed_at = now() where key = 'integration_lock';
@@ -422,7 +430,7 @@ releasing the hold.
 | --- | --- | --- |
 | Anything with the sale (wrong price, store problem, a bug) | `update public.app_switches set enabled = false, changed_at = now() where key = 'premium_offer';` | At once, on every build: no card, no Buy, no store price query. What was bought stays unlocked |
 | A price drifted | The same statement, then fix the price (Ops, Peter's yes) | As above |
-| The integration lock refuses the wrong households | `update public.app_switches set enabled = false, changed_at = now() where key = 'integration_lock';` | At once: every integration open for every household, and the app hides the card in every build (it reads the switch) |
+| The integration lock refuses the wrong households | `update public.app_switches set enabled = false, changed_at = now() where key = 'integration_lock';` | At once: every integration open for every household, and the app hides the card in every build (it reads the switch). Rerun `beta-lifetime.ts --apply` only with `--used-before <the first flip time>`: the lock row's `changed_at` is now the rollback |
 | A build should not sell at all | Unset `REVENUECAT_PURCHASES`, and let the next Release run ship | The next builds show "bald verfügbar". Installed builds follow the server switch |
 | The privacy text must come back | Revert the #153 commit on main in a PR | snacklist.app redeploys from main |
 | A webhook secret leaked | Rotate `REVENUECAT_WEBHOOK_AUTH` in RevenueCat and the function secrets together. Never rotate `REVENUECAT_TOMBSTONE_HMAC_KEY` | Deliveries between the two changes fail and are retried |

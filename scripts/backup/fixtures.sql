@@ -189,6 +189,9 @@ insert into public.api_auth_failures (ip_hash, window_start, failures) values (r
 -- Job 336: Peter's MCP request counter.
 insert into public.mcp_rate (user_id, tokens, refilled_at, day, requests)
 select id, 17.5, now(), current_date, 4 from auth.users where email = 'peter@backup.test';
+-- Job 419: Peter's requests of the day over MCP and the API.
+insert into public.account_days (user_id, day, requests)
+select id, current_date, 9 from auth.users where email = 'peter@backup.test';
 insert into public.api_idempotency (token_id, key, request_hash, status, body)
 select id, 'backup-drill', repeat('f', 64), 201, '{"data":{"added":[]}}'
 from public.personal_access_tokens where token_hash = repeat('d', 64);

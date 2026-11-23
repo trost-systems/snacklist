@@ -58,8 +58,9 @@ class FakePurchaseRepository({
 
 class FakeEntitlementsSource({var bool unlockedNow = false})
     implements EntitlementsSource {
-  /// The household's rows as the server has them; null: one Lifetime
-  /// purchase's row while [unlockedNow].
+  /// The household's rows as the server has them; null: none, and while
+  /// [unlockedNow] the user's own Lifetime purchase (since job 185 a purchase
+  /// belongs to the buyer; a household's plan opens nothing, job 419).
   List<Map<String, dynamic>>? rowsNow;
 
   /// Reads fail (offline) while set.
@@ -88,17 +89,17 @@ class FakeEntitlementsSource({var bool unlockedNow = false})
       heldReads.add(answer);
       return await answer.future;
     }
-    return unlocksOf(
-      rowsNow ??
-          [
-            if (unlockedNow)
-              {
-                'kind': 'premium',
-                'source': 'purchase',
-                'premium_source': 'lifetime',
-              },
-          ],
-    ).merge(unlocksOf(userRows[userId] ?? [], own: true));
+    return unlocksOf(rowsNow ?? []).merge(
+      unlocksOf([
+        ...?userRows[userId],
+        if (unlockedNow && rowsNow == null)
+          {
+            'kind': 'premium',
+            'source': 'purchase',
+            'premium_source': 'lifetime',
+          },
+      ], own: true),
+    );
   }
 
   @override

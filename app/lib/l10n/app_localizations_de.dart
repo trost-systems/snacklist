@@ -1683,7 +1683,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get lifetimeBody =>
-      'Ein Kauf, für euren ganzen Haushalt: Snacklist Lifetime unterstützt die Entwicklung von Snacklist.';
+      'Ein Kauf, für dein Konto: Snacklist Lifetime unterstützt die Entwicklung von Snacklist.';
 
   @override
   String get lifetimeBuy => 'Weiter zum Kauf';
@@ -1711,7 +1711,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get lifetimeBoughtTwice =>
-      'Euer Haushalt hat Snacklist Lifetime mehr als einmal gekauft. Einen der Käufe kannst du dir erstatten lassen.';
+      'Snacklist Lifetime wurde mehr als einmal gekauft. Einen der Käufe kannst du dir erstatten lassen.';
 
   @override
   String get lifetimeCanceled => 'Kauf abgebrochen.';
@@ -1748,7 +1748,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get refundHelpBody =>
-      'Snacklist Lifetime gehört immer zu dem Haushalt, in dem es gekauft wurde. Käufe im App Store erstattet nur Apple. Bei Google Play beantragst du die Erstattung in den ersten 48 Stunden bei Google; danach schreib uns an support@snacklist.app, wir prüfen jede Anfrage einzeln. Deine gesetzlichen Rechte bleiben unberührt.';
+      'Snacklist Lifetime gehört zu deinem Konto. Käufe im App Store erstattet nur Apple. Bei Google Play beantragst du die Erstattung in den ersten 48 Stunden bei Google; danach schreib uns an support@snacklist.app, wir prüfen jede Anfrage einzeln. Deine gesetzlichen Rechte bleiben unberührt.';
 
   @override
   String get refundHelpApple =>
@@ -1825,10 +1825,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get premiumBenefitAi =>
-      'KI-Assistenten, die MCP unterstützen, mit eurer Liste verbinden';
+      'KI-Assistenten, die MCP unterstützen, mit eurer Liste verbinden (bis zu 1.000 Anfragen pro Konto und Tag, 60 pro Minute)';
 
   @override
-  String get premiumBenefitApi => 'Eigene Automationen mit der Snacklist API';
+  String get premiumBenefitApi =>
+      'Eigene Automationen mit der Snacklist API (bis zu 1.000 Anfragen pro Konto und Tag, 60 pro Minute)';
 
   @override
   String premiumStatusRenews(DateTime date) {
@@ -1879,7 +1880,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get premiumChecking =>
-      'Wir prüfen, ob euer Haushalt Snacklist Premium schon hat …';
+      'Wir prüfen, ob du Snacklist Premium schon hast …';
+
+  @override
+  String get premiumHouseholdOnly =>
+      'Diese Freischaltung gilt für euren Haushalt. Snacklist Premium selbst gilt für dein Konto.';
 
   @override
   String get premiumYearlyTitle => 'Jährlich';
@@ -1926,7 +1931,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get premiumTwoYearly =>
-      'Euer Haushalt hat zwei Jahresabos. Kündigen kann jedes nur, wer es abgeschlossen hat.';
+      'Es laufen zwei Jahresabos. Kündigen kann jedes nur, wer es abgeschlossen hat.';
 
   @override
   String get premiumWeb =>
@@ -1959,11 +1964,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get premiumLifetimeWhileYearly =>
-      'Euer Haushalt hat schon ein Jahresabo. Es läuft nach dem Einmalkauf weiter und wird weiter abgerechnet, bis es gekündigt wird; das restliche Abojahr wird nicht automatisch erstattet. Kündigen kann nur, wer das Abo abgeschlossen hat, unter [Abos verwalten]. Snacklist kann das Abo nicht kündigen.';
+      'Es läuft schon ein Jahresabo. Es läuft nach dem Einmalkauf weiter und wird weiter abgerechnet, bis es gekündigt wird; das restliche Abojahr wird nicht automatisch erstattet. Kündigen kann nur, wer das Abo abgeschlossen hat, unter [Abos verwalten]. Snacklist kann das Abo nicht kündigen.';
 
   @override
   String get premiumLifetimeWhileYearlySubscriber =>
-      'Euer Haushalt hat schon ein Jahresabo. Es läuft nach dem Einmalkauf weiter und wird weiter abgerechnet, bis es gekündigt wird; das restliche Abojahr wird nicht automatisch erstattet. Du kannst es unter [Abo verwalten] kündigen. Snacklist kann das Abo nicht kündigen.';
+      'Du hast schon ein Jahresabo. Es läuft nach dem Einmalkauf weiter und wird weiter abgerechnet, bis es gekündigt wird; das restliche Abojahr wird nicht automatisch erstattet. Du kannst es unter [Abo verwalten] kündigen. Snacklist kann das Abo nicht kündigen.';
 
   @override
   String get premiumBuyAnyway => 'Trotzdem kaufen';
@@ -2280,9 +2285,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String inviteSheetOpen(String name) {
     return 'Leute in $name einladen';
   }
-
-  @override
-  String get invitePremiumShared => 'Premium gilt für alle im Haushalt.';
 
   @override
   String get invitePersonTitle => 'Für eine Person';
@@ -3429,9 +3431,6 @@ class AppLocalizationsDe extends AppLocalizations {
     );
     return '$_temp0';
   }
-
-  @override
-  String get jh2PreviewPremium => 'Premium gilt für alle im Haushalt';
 
   @override
   String get jh2CodeUnavailable =>
