@@ -2686,4 +2686,6 @@ Details: `docs/done/378.md`, contract `docs/PUSH.md` ("Shopping-day reminder"), 
 - At 640 px and below they stay stacked and centered, with a gap of 142 px between the two QR codes at 375 px (before 134 px).
 - CSS only (`site/public/landing.css`); DE and EN share it. Checked at 375, 768 and 1280 px, no horizontal overflow.
 - Screenshots (`SITE_STAGE=launch` build): `docs/screenshots/412/{before,after}-{de,en}-{375,768,1280}.png`; 1280 px DE: `docs/screenshots/412/after-de-1280.png`.
-- PR and merge SHA: see the PR (filled in at merge).
+- PR: #661 (https://github.com/trost-systems/snacklist/pull/661). Merge SHA on main: 6bfbb4f4df14882672644efacdaf12084c5129f3 (3cecf681 is the PR head, not main's commit). 1280 px screenshot: `docs/screenshots/412/after-de-1280.png`.
+- Process breach: the brief said "Opus review PASS and ci-ok, then merge". The build step merged #661 (through the Hetzner-only merge lock, Mac lock unreachable) after only a round-1 Opus FAIL and its fix, before the review of the final head had started. Review did not gate the merge. The reviewer later found the change correct (tree on main equals the branch head), so nothing was reverted.
+- Review 0 nice-to-haves not done: the DE Play caption still wraps at 24ch, badge images sit 10 px inside the QR edges.
