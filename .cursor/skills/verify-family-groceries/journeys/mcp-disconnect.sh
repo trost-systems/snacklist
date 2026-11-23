@@ -39,7 +39,8 @@ mcp_status() {
 
 step "peter is signed in"
 run doctor >/dev/null
-if [[ "$(run find --key login-email | jq -r '.count')" != 0 ]]; then run login peter >/dev/null; fi
+# Signed out, the client shows the start screen (start-screen) or the login form; fg login handles both.
+if (( $("$fg" find --key start-screen | jq -r .count) + $("$fg" find --key login-email | jq -r .count) )); then run login peter >/dev/null; fi
 # Tokens stay out of the log: these two calls bypass run's echo.
 user_token="$("$fg" login peter --api | jq -r .accessToken)"
 

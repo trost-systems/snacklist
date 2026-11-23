@@ -1,10 +1,11 @@
 // Features list-manage and quick-add: screenshots of the list, the add sheet, More, the stores
-// screen, one store's details and the "Ohne Laden" categories, for before/after evidence. Adds two
+// screen, one store's details and the "Ohne Laden" categories (only with hide-categories off:
+// VH_FLAGS_OFF=hide-categories), for before/after evidence. Adds two
 // generic stores (Wochenmarkt, Bäckerei) to the household first; no retailer names (Legal N-23).
 //
 //   node journeys/list-manage.mjs <evidence dir> [--lang de|en] [--dark]
 import process from 'node:process';
-import { addField, addSheet, apiAs, capture, instance, logger, member, openApp, openTab, signIn, typeInto } from '../helpers/lib.mjs';
+import { addField, addSheet, apiAs, capture, flagOn, instance, logger, member, openApp, openTab, signIn, typeInto } from '../helpers/lib.mjs';
 
 const [dir, ...rest] = process.argv.slice(2);
 const lang = rest.includes('--lang') ? rest[rest.indexOf('--lang') + 1] : 'de';
@@ -50,9 +51,13 @@ try {
 
   const back = () => page.getByRole('button', { name: lang === 'de' ? 'Zurück' : 'Back', exact: true }).click();
   await back();
-  await page.getByRole('button', { name: new RegExp(`^${L('noStore')}`) }).first().click();
-  await page.waitForTimeout(600);
-  await capture(page, dir, '06-no-store-categories');
+  if (flagOn('hide-categories')) {
+    log(`no „${L('noStore')}“ categories screen (hide-categories on, as users have it)`);
+  } else {
+    await page.getByRole('button', { name: new RegExp(`^${L('noStore')}`) }).first().click();
+    await page.waitForTimeout(600);
+    await capture(page, dir, '06-no-store-categories');
+  }
   if (errors.length) throw new Error(`page errors: ${errors.join('; ')}`);
 } catch (error) {
   failed = error;

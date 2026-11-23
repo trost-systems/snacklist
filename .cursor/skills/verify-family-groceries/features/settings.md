@@ -1,6 +1,6 @@
 # Settings: theme and language
 
-Mehr → Einstellungen (`/more/settings`) holds what belongs to the device, not the account: the theme ("Darstellung": one hex segmented control, System / Hell / Dunkel) and the language ("Sprache", a row that opens a list of languages). Both apply at once, are kept on the device and outlive restarts and sign-out. Both default to the device's own setting. Light and dark are the 6b Hex Frische palette (job 52, `docs/DESIGN.md`): every screen, sheet, dialog and snackbar follows it, yellow buttons sink when pressed, the theme picker, switches and radio rows are hex controls (`HexSegmented`, `HexSwitch`, `HexRadio`, job 57), and the store dividers keep their store colour, lightened where it would not read on dark (Aldi, Edeka).
+Mehr → Einstellungen (`/more/settings`) holds what belongs to the device, not the account: the theme ("Darstellung": one segmented control, hexagonal in fg's flag-off app and rounded for users (`redesign-rd1`), System / Hell / Dunkel) and the language ("Sprache", a row that opens a list of languages). Both apply at once, are kept on the device and outlive restarts and sign-out. Both default to the device's own setting. Light and dark are the 6b Hex Frische palette (job 52, `docs/DESIGN.md`): every screen, sheet, dialog and snackbar follows it, yellow buttons sink when pressed, the theme picker, switches and radio rows are hex controls (`HexSegmented`, `HexSwitch`, `HexRadio`, job 57), and the store dividers keep their store colour, lightened where it would not read on dark (Aldi, Edeka).
 
 ## Sub-features
 
@@ -28,6 +28,7 @@ Preconditions: baseline from `features/README.md`; peter signed in on the list. 
 ## Gotchas
 
 - More is a lazy list: `more-settings` is not built until you scroll (`fg marionette -- scroll-to --key more-settings`).
+- „Wie Gerät“ follows the app's locale, which fg sets from `FG_LOCALE` (default `de_DE.UTF-8`, the app's `LC_ALL`), not from the host: so `language-system` gives German ("Wie Gerät (Deutsch)") on a `C.UTF-8` host too. With `FG_LOCALE=en_US.UTF-8` it gives English and the German recipes fail. Checked 2026-11-23: „Mehr“ by default, "More" with `FG_LOCALE=en_US.UTF-8`, both from a `C.UTF-8` shell.
 - After a language switch every text match changes language; recipes that match German text need `language-system` (or `language-de`) back. Keys stay the same.
 - `fg find` does not list text inside the switch and radio rows; tap them by key.
 - The theme is per device: peter's and lea's clients each keep their own. Pick `theme-system` again at the end so later recipes' screenshots match.

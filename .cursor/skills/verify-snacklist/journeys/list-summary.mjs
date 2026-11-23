@@ -12,7 +12,7 @@
 //   node journeys/list-summary.mjs <evidence dir> [--lang de|en] [--dark] [--scale 1.6] [--compact]
 import process from 'node:process';
 import { execFileSync } from 'node:child_process';
-import { apiAs, capture, instance, itemRow, logger, member, openApp, reveal, signIn } from '../helpers/lib.mjs';
+import { apiAs, capture, foldRecentlyUsed, instance, itemRow, logger, member, openApp, reveal, signIn } from '../helpers/lib.mjs';
 
 const [dir, ...rest] = process.argv.slice(2);
 const arg = (name, fallback) => (rest.includes(name) ? rest[rest.indexOf(name) + 1] : fallback);
@@ -108,6 +108,7 @@ const toEnd = async () => {
 let failed = null;
 try {
   await signIn(page, L, mia);
+  if (await foldRecentlyUsed(page, L)) log(`folded „${L('recentlyUsed')}“ (it starts open)`);
   log(`signed in as mia (${tag}) on ${inst.webUrl}`);
   await until(async () => (await itemRow(page, 'Pinsel').count()) === 1, 'Pinsel on the list');
   const chip = page.getByRole('button', { name: flat(L('priceChipSet', { name: 'Bananen', amount: about(money(151)) })) });

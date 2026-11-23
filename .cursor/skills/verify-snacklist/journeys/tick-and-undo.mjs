@@ -1,6 +1,8 @@
 // Feature tick-and-undo, entry point: a tap on a list row, then a tap on it under „Zuletzt
 // verwendet“ (sub-features tu-tick, tu-tick-a11y, tu-used-section, tu-put-back). Proves the row is
 // a checkbox, strikes and leaves without a snackbar, is stored as bought, and comes back. With
+// recently-used-open (full since 2026-11-22) „Zuletzt verwendet“ starts open: it proves that, folds
+// the section with a tap and opens it again before the put-back. With
 // trip-mode on (off for users since 2026-11-22, Peter HP2, job 401; VH_DEFINES="FLAGS_ON=trip-mode")
 // the tick asks „Kaufst du gerade ein?“: it first ticks the second item and takes it back with
 // „Zurücknehmen“ (no snooze), then answers „Nein, nur abgehakt“ for the item, and proves the next
@@ -10,7 +12,7 @@
 //
 //   node journeys/tick-and-undo.mjs <evidence dir> [--lang de|en] [--item Butter] [--second Reis]
 import process from 'node:process';
-import { answerShopAsk, apiAs, capture, instance, itemRow, logger, member, openApp, reveal, signIn } from '../helpers/lib.mjs';
+import { answerShopAsk, apiAs, capture, flagOn, instance, itemRow, logger, member, openApp, reveal, signIn } from '../helpers/lib.mjs';
 
 const [dir, ...rest] = process.argv.slice(2);
 const opt = (name, def) => (rest.includes(`--${name}`) ? rest[rest.indexOf(`--${name}`) + 1] : def);
@@ -80,8 +82,15 @@ try {
 
   const section = page.getByRole('button', { name: L('recentlyUsed') });
   await reveal(page, section);
-  await section.click();
   const used = page.getByRole('button', { name: new RegExp(`^${name}( .*)? ${L('readd')}$`) });
+  if (flagOn('recently-used-open')) {
+    if (!(await used.count())) throw new Error(`„${L('recentlyUsed')}“ did not start open`);
+    await section.click();
+    await used.waitFor({ state: 'detached', timeout: 5_000 });
+    log(`„${L('recentlyUsed')}“ started open (recently-used-open); a tap on it folds it`);
+    await capture(page, dir, '03b-used-folded');
+  }
+  await section.click();
   await reveal(page, used);
   await capture(page, dir, '04-recently-used');
   await used.click();

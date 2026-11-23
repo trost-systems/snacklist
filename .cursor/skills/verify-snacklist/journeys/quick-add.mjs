@@ -1,10 +1,13 @@
 // Feature quick-add, entry point: the add bar, a typed prefix and a tap on a catalogue suggestion
-// (sub-features qa-sheet, qa-rows, qa-tap-row, qa-added, qa-close). Proves the item lands under
-// its category heading in the list and as an active row in the household's items.
+// (sub-features qa-sheet, qa-rows, qa-tap-row, qa-added, qa-close). Proves the item lands on the
+// list and as an active row in the household's items. On the users' build (add-sheet-compact and
+// hide-categories full) the add shows the chip row, Enter in the empty field closes the sheet and
+// the list has no category heading; with either flag off, the added note, „Schließen“ and the
+// heading above the row, matched against the stored category.
 //
 //   node journeys/quick-add.mjs <evidence dir> [--lang de|en] [--prefix Joghu]
 import process from 'node:process';
-import { accessibleName, addField, addSheet, apiAs, capture, headingAbove, instance, itemRow, logger, member, openApp, reveal, signIn, typeInto } from '../helpers/lib.mjs';
+import { accessibleName, addField, addSheet, apiAs, capture, flagOn, headingAbove, instance, itemRow, logger, member, openApp, reveal, signIn, typeInto } from '../helpers/lib.mjs';
 
 const [dir, ...rest] = process.argv.slice(2);
 const opt = (name, def) => (rest.includes(`--${name}`) ? rest[rest.indexOf(`--${name}`) + 1] : def);
@@ -33,16 +36,25 @@ try {
   await capture(page, dir, '02-suggestions');
 
   await catalogRow.click();
-  const note = addSheet(page, L).getByText(new RegExp(`^✓ ${L('addedItem', { name: '' }).trim()} ${name}`));
-  await note.waitFor({ timeout: 10_000 });
-  log(`note: "${await note.textContent()}"`);
-  await capture(page, dir, '03-added-note');
-
-  await addSheet(page, L).getByRole('button', { name: L('close'), exact: true }).click();
+  const compact = flagOn('add-feedback-list') && flagOn('add-sheet-compact');
+  if (compact) {
+    await addSheet(page, L).getByRole('button', { name: L('quantityPlus'), exact: true }).waitFor({ timeout: 10_000 });
+    const notes = await addSheet(page, L).getByText(new RegExp(`^✓ ${L('addedItem', { name: '' }).trim()}`)).count();
+    if (notes) throw new Error('the compact sheet shows an added note');
+    log('added: the chip row (Menge, store, details), no added note (add-sheet-compact)');
+    await capture(page, dir, '03-added-chips');
+    await addField(page, L).press('Enter');
+  } else {
+    const note = addSheet(page, L).getByText(new RegExp(`^✓ ${L('addedItem', { name: '' }).trim()} ${name}`));
+    await note.waitFor({ timeout: 10_000 });
+    log(`note: "${await note.textContent()}"`);
+    await capture(page, dir, '03-added-note');
+    await addSheet(page, L).getByRole('button', { name: L('close'), exact: true }).click();
+  }
   await addSheet(page, L).waitFor({ state: 'detached', timeout: 10_000 });
   await reveal(page, itemRow(page, name).first());
-  const heading = await headingAbove(page, itemRow(page, name).first());
-  log(`list: "${name}" sits under the heading "${heading}"`);
+  const heading = flagOn('hide-categories') ? null : await headingAbove(page, itemRow(page, name).first());
+  log(heading ? `list: "${name}" sits under the heading "${heading}"` : `list: "${name}" is on the list (no category headings: hide-categories)`);
   await capture(page, dir, '04-list-after');
 
   const { data, error } = await api.from('items').select('name, status, added_by, categories(name)')
@@ -51,7 +63,7 @@ try {
   log(`database: ${JSON.stringify(data)}`);
   if (data.length !== 1) throw new Error(`expected one active "${name}" in the household, found ${data.length}`);
   if (data[0].added_by !== user.id) throw new Error(`added_by is ${data[0].added_by}, not ${user.handle}`);
-  if (lang === 'de' && data[0].categories?.name !== heading) {
+  if (heading && lang === 'de' && data[0].categories?.name !== heading) {
     throw new Error(`the list shows "${name}" under "${heading}", the database files it under "${data[0].categories?.name}"`);
   }
   if (errors.length) throw new Error(`page errors: ${errors.join('; ')}`);

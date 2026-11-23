@@ -21,8 +21,10 @@ step "both apps are healthy"
 run doctor >/dev/null
 
 for who in peter lea; do
-  screen="$("$fg" find --key login-email --client "$who" | jq -r '.count')"
-  if [[ "$screen" != 0 ]]; then run login "$who" >/dev/null; fi
+  # Signed out, a client shows the start screen (start-screen) or the login form; fg login handles both.
+  if (( $("$fg" find --key start-screen --client "$who" | jq -r .count) + $("$fg" find --key login-email --client "$who" | jq -r .count) )); then
+    run login "$who" >/dev/null
+  fi
 done
 
 step "precondition: neither test item is on the active list (earlier runs marked bought)"

@@ -12,7 +12,7 @@
 //   node journeys/total-priced-only.mjs <evidence dir> [--expect on|off] [--lang de|en] [--dark] [--scale 3.1]
 import process from 'node:process';
 import { execFileSync } from 'node:child_process';
-import { apiAs, capture, instance, itemRow, logger, member, openApp, reveal, signIn } from '../helpers/lib.mjs';
+import { apiAs, capture, foldRecentlyUsed, instance, itemRow, logger, member, openApp, reveal, signIn } from '../helpers/lib.mjs';
 
 const [dir, ...rest] = process.argv.slice(2);
 const arg = (name, fallback) => (rest.includes(name) ? rest[rest.indexOf(name) + 1] : fallback);
@@ -104,6 +104,7 @@ const has = (snapshot, text) => snapshot.includes(flat(text));
 let failed = null;
 try {
   await signIn(page, L, mia);
+  if (await foldRecentlyUsed(page, L)) log(`folded „${L('recentlyUsed')}“ (it starts open)`);
   log(`signed in as mia (${tag}) on ${inst.webUrl}`);
   // After the sign-in: at large text the analytics question's buttons sit below the fold.
   if (scale !== 1) await page.evaluate((s) => { document.documentElement.style.fontSize = `${s * 100}%`; }, scale);

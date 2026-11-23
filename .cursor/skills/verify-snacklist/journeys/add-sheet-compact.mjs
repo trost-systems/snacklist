@@ -1,16 +1,17 @@
 // Feature quick-add, sub-features qa-compact, qa-compact-chips, qa-compact-behind and
 // qa-compact-close (flag add-sheet-compact on top of add-feedback-list, job 322, AS1), on
 // demo-familie. After an add the sheet shows one row of chips under the grab handle (Menge with −
-// and +, store, category, details) and no added note, Undo or close key; each pick or step is saved
-// at once and lands in the database. The list behind the sheet is empty before the first add, then
+// and +, store, category unless hide-categories is on, details) and no added note, Undo or close
+// key; each pick or step is saved at once and lands in the database. The list behind the sheet is empty before the first add, then
 // shows only the last two adds. An add of what is on the list keeps today's "already on the list"
 // note. Enter in the empty field closes the sheet, and so does a tap on the list behind it, also on
 // one of the two rows there, which stays as it is.
 //
-//   VH_DEFINES="FLAGS_ON=add-sheet-compact" helpers/launch.sh
+//   helpers/launch.sh   (add-sheet-compact and hide-categories are full since 2026-11-22;
+//                        VH_FLAGS_OFF=hide-categories brings the category chip back)
 //   node journeys/add-sheet-compact.mjs <evidence dir> [--lang de|en]
 import process from 'node:process';
-import { addField, addSheet, apiAs, capture, instance, logger, member, openApp, signIn, typeInto } from '../helpers/lib.mjs';
+import { addField, addSheet, apiAs, capture, flagOn, instance, logger, member, openApp, signIn, typeInto } from '../helpers/lib.mjs';
 
 const [dir, ...rest] = process.argv.slice(2);
 const lang = rest.includes('--lang') ? rest[rest.indexOf('--lang') + 1] : 'de';
@@ -95,17 +96,23 @@ try {
   const moved = await until(`store ${target.name} saved`, async () => ((await stored(names[0]))?.store_id === target.id ? stored(names[0]) : null));
   log(`store picked: ${moved.stores?.name}`);
 
-  await sheet.getByRole('button', { name: new RegExp(`^${L('chipCategory', { name: '' })}`) }).first().click();
-  await page.waitForTimeout(400);
-  await capture(page, dir, '04-category-options-one-line');
-  const categories = must(await api.from('categories').select('id, name').eq('household_id', user.householdId));
-  // Stored by its German name, shown in the app's language.
-  const category = categories.find((c) => c.name === 'Getränke');
-  const option = sheet.getByRole('button', { name: lang === 'de' ? 'Getränke' : 'Drinks', exact: true });
-  await option.scrollIntoViewIfNeeded();
-  await option.click();
-  const filed = await until(`category ${category.name} saved`, async () => ((await stored(names[0]))?.category_id === category.id ? stored(names[0]) : null));
-  log(`category picked: ${filed.categories?.name}`);
+  const categoryChip = sheet.getByRole('button', { name: new RegExp(`^${L('chipCategory', { name: '' })}`) });
+  if (flagOn('hide-categories')) {
+    if (await categoryChip.count()) throw new Error('hide-categories is on, yet the chips offer a category');
+    log('no category chip (hide-categories on, as users have it)');
+  } else {
+    await categoryChip.first().click();
+    await page.waitForTimeout(400);
+    await capture(page, dir, '04-category-options-one-line');
+    const categories = must(await api.from('categories').select('id, name').eq('household_id', user.householdId));
+    // Stored by its German name, shown in the app's language.
+    const category = categories.find((c) => c.name === 'Getränke');
+    const option = sheet.getByRole('button', { name: lang === 'de' ? 'Getränke' : 'Drinks', exact: true });
+    await option.scrollIntoViewIfNeeded();
+    await option.click();
+    const filed = await until(`category ${category.name} saved`, async () => ((await stored(names[0]))?.category_id === category.id ? stored(names[0]) : null));
+    log(`category picked: ${filed.categories?.name}`);
+  }
 
   await sheet.getByRole('button', { name: new RegExp(`^${L('fieldProperties')}`) }).click();
   const field = sheet.getByRole('textbox', { name: L('fieldProperties') });
