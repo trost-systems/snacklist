@@ -18135,3 +18135,11 @@ A chain gets an entry only where it has stores and its app is in that storefront
 are in 21 storefronts, but the chains trade in Germany). Plain "Globus" stays without an exact match: the registry
 holds no grocery Globus, and the Baumarkt's name is longer, so "Globus" is only a typing suggestion. Details and
 what was left out: `docs/done/410.md`.
+
+## Job 413: hide History and planned-vs-added for launch (2026-11-23)
+
+1. **No code change.** Job 401 (#648) already gates both behind `grocery-log` and `trip-mode`, off in `releases/flags.json`, with the routes redirecting to the list. MCP and API expose neither. The audit is `docs/done/413-audit.md`.
+2. **Copy.** The writers' feature map and `premium.md` told writers that two Premium locks (older trips, planned-and-added) exist; they now say nothing is locked and neither is a Premium benefit. No app string, legal file, #639 string or `flags.json` is touched, so nothing needs Legal.
+3. **No hard-coded kill.** Forcing the two flags off in `Flags.isOn` would hide the features regardless of PostHog but break AC4 (turn back on with a flag). The residual risk is the PostHog state, still a manual step of NEEDS_LEAD "Job 401".
+4. **Lead update 07:46 (Peter): History returns free, older than 4 weeks included.** Premium copy never listed History, and the writers' docs no longer do. The two lock surfaces left in the code (the quiet row `historyLocked*` / `historyDayLocked` in Verlauf and the 4-week window of `trip_history`) sit behind `grocery-log`, unreachable. Deleting them is part of the PR that turns `grocery-log` on, not of this one: do not flip the flag before it lands, or Free households get the 4-week lock back. No cutoff gate is built.
+5. **Review 0 fixes.** The privacy policy's „Prices and trips“ paragraph (DE and EN) promised History and the trip summary as Premium; that one sentence is cut to „Ältere Einkäufe und die Einträge bleiben gespeichert.“ (needs Legal, listed in the audit). The audit no longer says Premium includes export (AC5: no surface names it). AC1 depends on the Job 401 PostHog step.
