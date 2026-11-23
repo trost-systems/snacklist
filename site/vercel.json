@@ -35,7 +35,9 @@
       "permanent": false
     },
     { "source": "/", "destination": "/de", "permanent": false },
-    { "source": "/privacy", "destination": "/en/privacy", "permanent": true }
+    { "source": "/privacy", "destination": "/en/privacy", "permanent": true },
+    { "source": "/terms", "destination": "/en/terms", "permanent": true },
+    { "source": "/de/nutzungsbedingungen", "destination": "/nutzungsbedingungen", "permanent": true }
   ],
   "headers": [
     {

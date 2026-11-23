@@ -27,6 +27,7 @@ export const LOCALES = {
     footer: {
       imprint: { label: 'Impressum', href: '/impressum' },
       privacy: { label: 'Datenschutz', href: '/datenschutz' },
+      terms: { label: 'Nutzungsbedingungen', href: '/nutzungsbedingungen' },
       report: { label: 'Inhalte melden', href: '/inhalte-melden' },
       support: { label: 'Hilfe', href: '/support' },
       changelog: { label: 'Neuigkeiten', href: '/de/changelog' },
@@ -65,6 +66,7 @@ export const LOCALES = {
     footer: {
       imprint: { label: 'Imprint', href: '/en/imprint' },
       privacy: { label: 'Privacy', href: '/en/privacy' },
+      terms: { label: 'Terms', href: '/en/terms' },
       report: { label: 'Report content', href: '/en/report' },
       support: { label: 'Support', href: '/en/support' },
       changelog: { label: "What's new", href: '/en/changelog' },
@@ -103,6 +105,7 @@ const SITE_NAME = 'Snacklist';
 const FOOTER_LINKS = [
   { key: 'imprint', shown: () => true },
   { key: 'privacy', shown: (config) => config.privacyPublished },
+  { key: 'terms', shown: (config) => config.termsPublished },
   // The DSA notice route (Art. 16 DSA, job 275) must always be reachable.
   { key: 'report', shown: () => true },
   { key: 'support', shown: (config) => config.supportPublished },
