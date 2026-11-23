@@ -2689,3 +2689,12 @@ Details: `docs/done/378.md`, contract `docs/PUSH.md` ("Shopping-day reminder"), 
 - PR: #661 (https://github.com/trost-systems/snacklist/pull/661). Merge SHA on main: 6bfbb4f4df14882672644efacdaf12084c5129f3 (3cecf681 is the PR head, not main's commit). 1280 px screenshot: `docs/screenshots/412/after-de-1280.png`.
 - Process breach: the brief said "Opus review PASS and ci-ok, then merge". The build step merged #661 (through the Hetzner-only merge lock, Mac lock unreachable) after only a round-1 Opus FAIL and its fix, before the review of the final head had started. Review did not gate the merge. The reviewer later found the change correct (tree on main equals the branch head), so nothing was reverted.
 - Review 0 nice-to-haves not done: the DE Play caption still wraps at 24ch, badge images sit 10 px inside the QR edges.
+
+## Job 411: enable unified-keys (blocked at step 3)
+
+- Step 1 done: PR #660, merge SHA c8fc4f203126e8223a8a40899af36aeb1c307dba. Hold `unified-keys` released, `unified-keys-guides` still false, privacy dates already 23 November 2026.
+- sha256 after the merge: datenschutz.md 6b0c3ae91ddc2b0b6a2f24bc669a9d17439f6cf39d1952f1056c6e7fffe1bfb6, privacy.md cf2968262fa38c5d79e07b3ed62a9b32932b26677321e89c656dd9ac829e33ee, flags.json d087d3d55f9302146c0c47da004e2ed1197f9bb2ea912dbb751e9ec6a001ab7f.
+- Step 2 done: both live pages show the section 7 `once unified-keys` text and the right date (details in `docs/done/411.md`).
+- Step 3 not done: switch readback is still false (production untouched). The Management API rejects `SUPABASE_ACCESS_TOKEN` (401). The pooler with `SUPABASE_DB_PASSWORD` would work; it waits for the lead's OK (NEEDS_LEAD "Job 411 (update after review 0)").
+- PostHog: untouched. Peter's t1203u update replaced targeting: after the switch, synthetic-account end-to-end, then one PR for full rollout plus `unified-keys-guides`. Not run.
+- Review 0 must-fix items 1 and 2 are written into NEEDS_LEAD, item 3 into this section and `docs/done/411.md`; the remaining steps stay open.
