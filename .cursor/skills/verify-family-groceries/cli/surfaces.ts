@@ -144,6 +144,8 @@ async function launchLinuxApp(ctx: Ctx, inst: Instance, name: ClientName, displa
       XDG_CONFIG_HOME: `${dir}/config`,
       XDG_CACHE_HOME: `${dir}/cache`,
       NO_AT_BRIDGE: '1',
+      // The app takes the host's locale, English on a C.UTF-8 host; the journeys and maps are German.
+      LC_ALL: Deno.env.get('FG_LOCALE') ?? 'de_DE.UTF-8',
     },
   });
   const vm = await vmService(ctx.sh, () => ctx.sh.readText(log), log);

@@ -100,7 +100,9 @@ try {
     expect === 'on' ? '„Ja“ matched Lidl am Markt on the server' : 'Lidl am Markt stays unmatched');
 
   await storeRow('Lidl am Markt').click();
-  const linked = page.getByText(new RegExp(`^${L('storeChainLinked', { chain: 'Lidl', country: 'XX' }).replace('XX', '.+')}$`));
+  // The chain line is read out in the App card's group, „App Lidl Plus Zugeordnet: Lidl · Deutschland“.
+  const linked = page.getByText(new RegExp(`^${L('storeChainLinked', { chain: 'Lidl', country: 'XX' }).replace('XX', '.+')}$`))
+    .or(page.getByRole('group', { name: new RegExp(`${L('storeChainLinked', { chain: 'Lidl', country: 'XX' }).replace('XX', '.+')}$`) }));
   const openKey = page.getByRole('button', { name: L('storeAppOpen', { app: 'Lidl Plus' }) });
   if (expect === 'on') {
     await linked.waitFor({ timeout: 10_000 });

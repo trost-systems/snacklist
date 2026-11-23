@@ -1,10 +1,12 @@
 # Feedback
 
-Mehr → "Feedback senden" (`more-feedback`) opens a sheet where the user writes a short note (1 to 2,000 characters), optionally picks Bug, Idee or Sonstiges and ticks "Snacklist Support darf mich dazu kontaktieren", and sends it. The note goes into `public.feedback` with the app version, build, platform, OS version, app language (no screen name since job 259), and nothing from the list. Clients can only insert; reading is for the service role (`docs/FEEDBACK.md`). On success the sheet closes and "Danke!" shows; on a failure the note stays with "Erneut senden".
+Mehr → "Feedback senden" (`more-feedback`) opens a sheet where the user writes a short note (1 to 2,000 characters), optionally picks Bug, Idee or Sonstiges and ticks "Snacklist Support darf mich dazu kontaktieren", and sends it. The note goes into `public.feedback` with the app version, build, platform, OS version, app language (no screen name since job 259), and nothing from the list. Clients insert, and since FB4 the sender reads their own notes (policy `feedback_select_own`, only the columns the app shows: id, created_at, message, category, status, fixed_in, reply, replied_at, answered_at, seen_at; not over an OAuth app's token); nobody updates or deletes (`docs/FEEDBACK.md`). On success the sheet closes and "Danke!" shows; on a failure the note stays with "Erneut senden".
+
+This is the sheet fg's debug app shows: it builds with every PostHog flag off. Users have `feedback-fb4` (full), so More's row reads „Feedback & Ideen“ and opens a page with their notes, replies and ideas (`more-feedback-badge` for new answers): `.cursor/skills/verify-snacklist/features/feedback.md`.
 
 ## Sub-features
 
-- `fb-open` `more-feedback` (first in the group below Einstellungen and Nutzungsdaten, with "Hilfe & Kontakt" below it and the legal rows after the group) opens the sheet. Its key `feedback-sheet` sits on a layout widget that `fg find` and `fg wait` don't list; wait for `feedback-message` instead.
+- `fb-open` `more-feedback` (in the group Tipps, Feedback, „Snacklist bewerten“ on phones, „Hilfe & Kontakt“, below Einstellungen and Nutzungsdaten; the legal rows form the next group) opens the sheet. Its key `feedback-sheet` sits on a layout widget that `fg find` and `fg wait` don't list; wait for `feedback-message` instead.
 - `fb-send` `feedback-message` takes the note; `feedback-send` ("Senden") is enabled once it has a non-blank character. One row lands; the sheet closes; the snackbar `feedback-thanks` reads "Danke!".
 - `fb-options` `feedback-category-bug` / `-idea` / `-other` (a second tap unpicks), `feedback-contact` (off by default; a pointy hex `HexCheckboxListTile` since job 57, still role checkbox). `feedback-attached` names what goes along.
 - `fb-limits` from 1,800 characters `feedback-counter` shows "N / 2000"; over 2,000 the field says "Höchstens 2000 Zeichen" and Send is disabled. Blank notes can't be sent.
@@ -24,7 +26,7 @@ Preconditions: the baseline from `features/README.md`; peter signed in on the li
 - **`fb-options`.** Open the sheet again (it is blank after a send), type a note, `fg tap --key feedback-category-bug`, `fg tap --key feedback-contact`, `fg tap --key feedback-send`; the newest row has category `bug`, contact_ok true.
 - **`fb-limits`.** `fg tap --key feedback-message`, `fg type --input "   "`: `fg find --key feedback-send` is disabled. A 2,001-character input (`fg type --input "$(printf 'a%.0s' {1..2001})"`) shows `feedback-counter` "2001 / 2000" and "Höchstens 2000 Zeichen".
 - **`fb-retry`.** Not reliably drivable on linux (fg can't cut one client off the local stack); the web e2e tests "offline: …" and "a lost answer: …" (`e2e/tests/feedback.spec.ts`) and the widget test `test/feedback/feedback_sheet_test.dart` cover it. Report it as skipped with that pointer.
-- **RLS.** `fg db query "select count(*) from feedback" --as peter` fails with permission denied: the sender can't read their own notes from the table (their data export, `features/account.md`, does include them).
+- **RLS.** `fg db query "select message, status from feedback" --as peter` returns peter's own notes only (FB4's `feedback_select_own`); a column outside the grant (`select platform from feedback`) fails with permission denied. Their data export (`features/account.md`) includes them too.
 - **Proof.** Screenshots `fb-more`, `fb-empty`, `fb-filled`, `fb-thanks` and the db query output.
 
 ## Daily digest (server only, off by default)

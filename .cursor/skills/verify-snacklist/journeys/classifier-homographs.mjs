@@ -1,10 +1,12 @@
 // Feature classifier, sub-feature cl-homographs (job 282): words the stemmer folds onto another
 // word land in their own category. Types each word in the add bar, takes the typed row with Enter,
-// and checks the heading above the row and the category in the database.
+// and checks the category in the database and, where the list shows category headings (with
+// hide-categories off: VH_FLAGS_OFF=hide-categories), the heading above the row. On the users'
+// build (add-sheet-compact full) an add shows the chip row instead of the added note.
 //
 //   node journeys/classifier-homographs.mjs <evidence dir>
 import process from 'node:process';
-import { addField, addSheet, apiAs, capture, headingAbove, instance, itemRow, logger, member, openApp, reveal, signIn, typeInto } from '../helpers/lib.mjs';
+import { addField, addSheet, apiAs, capture, flagOn, headingAbove, instance, itemRow, logger, member, openApp, reveal, signIn, typeInto } from '../helpers/lib.mjs';
 
 const [dir] = process.argv.slice(2);
 if (!dir) throw new Error('usage: classifier-homographs.mjs <evidence dir>');
@@ -30,15 +32,26 @@ const user = member(inst);
 const api = await apiAs(inst, user);
 const { browser, page, L, errors } = await openApp(inst, { lang: 'de' });
 const wrong = [];
+const compact = flagOn('add-feedback-list') && flagOn('add-sheet-compact');
+const headings = !flagOn('hide-categories');
 try {
   await signIn(page, L, user);
   for (const [word] of words) {
     await typeInto(addField(page, L), word);
     await addSheet(page, L).getByRole('button', { name: new RegExp(`^${word}(,|$)`) }).first().waitFor({ timeout: 10_000 });
     await page.keyboard.press('Enter');
-    await addSheet(page, L).getByText(new RegExp(`^✓ ${L('addedItem', { name: '' }).trim()} ${word}`)).waitFor({ timeout: 10_000 });
+    if (compact) {
+      for (let i = 0; i < 40; i++) {
+        const { data: added } = await api.from('items').select('id').eq('household_id', user.householdId).eq('status', 'active').eq('name', word);
+        if (added?.length) break;
+        await page.waitForTimeout(250);
+      }
+    } else {
+      await addSheet(page, L).getByText(new RegExp(`^✓ ${L('addedItem', { name: '' }).trim()} ${word}`)).waitFor({ timeout: 10_000 });
+    }
   }
-  await addSheet(page, L).getByRole('button', { name: L('close'), exact: true }).click();
+  if (compact) await addField(page, L).press('Enter');
+  else await addSheet(page, L).getByRole('button', { name: L('close'), exact: true }).click();
   await addSheet(page, L).waitFor({ state: 'detached', timeout: 10_000 });
 
   const { data, error } = await api.from('items').select('name, categorized_via, categories(name)')
@@ -47,10 +60,10 @@ try {
   for (const [word, want] of words) {
     const row = itemRow(page, word).first();
     await reveal(page, row);
-    const heading = await headingAbove(page, row);
+    const heading = headings ? await headingAbove(page, row) : null;
     const db = data.find((d) => d.name === word);
-    const ok = heading === want && db?.categories?.name === want;
-    log(`${ok ? 'ok  ' : 'FAIL'} ${word}: list "${heading}", database "${db?.categories?.name}" (${db?.categorized_via}), want "${want}"`);
+    const ok = (!headings || heading === want) && db?.categories?.name === want;
+    log(`${ok ? 'ok  ' : 'FAIL'} ${word}: list ${headings ? `"${heading}"` : 'without headings'}, database "${db?.categories?.name}" (${db?.categorized_via}), want "${want}"`);
     if (!ok) wrong.push(word);
   }
   await page.mouse.wheel(0, -10_000);

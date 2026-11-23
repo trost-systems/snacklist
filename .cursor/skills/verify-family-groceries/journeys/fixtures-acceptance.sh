@@ -19,7 +19,8 @@ for s in $("$fg" scenario list | jq -r '.scenarios[].name'); do
     "$(jq '.checks.passed' "$out/seed-$s.json")" "$(jq '.checks.passed + (.checks.failed | length)' "$out/seed-$s.json")" \
     "$(jq '.members | length' "$out/seed-$s.json")" "$(jq .seconds "$out/seed-$s.json")"
 done
-[[ ${#runs[@]} -eq 7 ]] || fail "expected 7 scenarios, seeded ${#runs[@]}"
+shipped="$(find "$(dirname "$fg")/../test/fixtures/scenarios" -maxdepth 1 -name '*.yaml' | wc -l)"
+[[ ${#runs[@]} -eq $shipped ]] || fail "expected $shipped scenarios (test/fixtures/scenarios), seeded ${#runs[@]}"
 
 # Two runs at once: a member of each sees nothing of the other.
 mid="$(jq -r .run "$out/seed-household-3-mid-shop.json")"

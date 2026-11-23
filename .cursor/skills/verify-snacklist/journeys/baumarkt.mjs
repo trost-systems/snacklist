@@ -75,7 +75,8 @@ try {
     await addSheet(page, L).getByRole('button', { name: new RegExp(`, ${L('suggestionTyped')}(,|$)`) }).first().waitFor({ timeout: 10_000 });
     if (item === 'Schrauben') await capture(page, dir, '04-add-sheet-schrauben');
     await page.keyboard.press('Enter');
-    await addSheet(page, L).getByText(/^✓ /).first().waitFor({ timeout: 10_000 });
+    // The added note, or on the compact sheet (add-sheet-compact, full) the chip row.
+    await addSheet(page, L).getByText(/^✓ /).first().or(addSheet(page, L).getByRole('button', { name: L('quantityPlus'), exact: true })).waitFor({ timeout: 10_000 });
     await page.keyboard.press('Escape');
     await addSheet(page, L).waitFor({ state: 'detached', timeout: 10_000 });
   }

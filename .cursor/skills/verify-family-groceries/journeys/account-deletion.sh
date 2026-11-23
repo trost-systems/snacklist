@@ -58,7 +58,10 @@ confirm_delete() {
 
 step "both apps are healthy; peter is on the list"
 run doctor >/dev/null
-[[ "$("$fg" find --key login-email --client peter | jq -r .count)" == 0 ]] || run login peter >/dev/null
+# Signed out, the client shows the start screen (start-screen) or the login form; fg login handles both.
+if (( $("$fg" find --key start-screen --client peter | jq -r .count) + $("$fg" find --key login-email --client peter | jq -r .count) )); then
+  run login peter >/dev/null
+fi
 run wait --key add-item-field --client peter >/dev/null
 step "earlier items are bought, so the new item's row is on screen (find and wait see built rows only)"
 run db query "update items set status = 'bought' where status = 'active' and household_id = (select id from households where name = 'Familie Test')" --write >/dev/null

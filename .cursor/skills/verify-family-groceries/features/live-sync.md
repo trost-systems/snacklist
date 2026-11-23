@@ -1,13 +1,15 @@
 # Live sync
 
-Two members of one household see each other's changes without reloading. An item added on one phone appears on the other, and an item ticked off on one disappears from the other immediately. Edits and moves sync the same way: a partner's drag to another place, category or store shows on the other phone. Partner items added since this device last looked are tinted, with "N neu von <name>" in the bar above the list, until they have been on screen for 3 seconds.
+Two members of one household see each other's changes without reloading. An item added on one phone appears on the other, and an item ticked off on one disappears from the other immediately. Edits and moves sync the same way: a partner's move to another store or category (in the edit sheet; nothing on the list drags since job 78) shows on the other phone. Partner items added since this device last looked are tinted, with "N neu von <name>" in the bar above the list, until they have been on screen for 3 seconds.
+
+fg's debug app builds with every PostHog flag off, so its add sheet shows „✓ Hinzugefügt: …“ (users have the compact sheet without a note) and its shapes are hexes (users: rounded). The sync itself is the same.
 
 ## Sub-features
 
 - `sync-add` shows an item added by one member on the other member's list.
 - `sync-tick` removes an item from the other member's list when one member ticks it.
 - `sync-edit` shows a renamed or recategorized item on the other list.
-- `sync-move` shows an item a partner dragged (to another row, category or store) in its new place on the other list (`features/list-walk-order.md`, Partner move).
+- `sync-move` shows an item a partner moved in the edit sheet (to another category or store) in its new place on the other list (`features/list-walk-order.md`, Partner move).
 - `sync-delete` removes an item deleted by one member from the other list.
 - `sync-reconnect` catches up after the connection comes back: changes made while offline go out, changes made by others come in. An offline add of an item someone else added meanwhile becomes their item (no second row, theirs stays as it is), and an offline tick or edit of it goes to theirs (job 64b, `put_item`; e2e `already-on-list.spec.ts`).
 - `sync-after-sleep`: a phone that sleeps through a dropped connection and a partner's add catches up on waking (the item shows, the channel is live again, adds go both ways). e2e: live-sync.spec "a phone that sleeps through a dropped connection ...", which freezes the page with CDP `Page.setWebLifecycleState` and closes its Realtime socket meanwhile.
@@ -37,13 +39,13 @@ Preconditions for the Marionette clients (Linux desktop app, peter and lea):
 - For `sync-new`, peter's app shows the list (the 3 s clock runs only while the item is on screen).
 - Neither test item is active: `fg db query "update items set status = 'bought' where status = 'active' and name in ('Milch', 'Butter', 'Hafer', 'Hafermilch') and household_id = (select id from households where name = 'Familie Test')" --write`.
 
-- **One command.** Run `.cursor/skills/verify-family-groceries/journeys/quick-add-live-sync.sh`. It adds Milch on peter through the autofocused field, waits for it on lea, ticks it on lea with a tap on its row, waits for it to leave peter, and checks the stored row (bought, by lea). It records both screens and prints `PASS` with both timings and the evidence directory.
+- **One command.** Run `.cursor/skills/verify-family-groceries/journeys/quick-add-live-sync.sh`. It adds Milch on peter through the autofocused field, waits for it on lea, ticks it on lea with a tap on its row, waits for it to leave peter, and checks the stored row (bought, by lea). It signs a client in when it shows the start screen or the login form. Passed 2026-11-23 on d023441d („Milch“ on lea after 322 ms, gone on peter 1136 ms after lea's tick). It records both screens and prints `PASS` with both timings and the evidence directory.
 - **Add on one, see on the other.** Run `fg type --key add-item-field --input Butter --submit --client lea` and `fg wait --contains "Hinzugefügt: Butter" --client lea`. Then run `fg wait --text Butter --client peter --timeout 5`, which succeeds with `elapsedMs`.
 - **Tick on one, gone on the other.** Run `fg tap --text Butter --client peter` (a tap on the row ticks it). Then `fg wait --text Butter --gone --client lea --timeout 5` succeeds.
 - **Edit on one.** On peter, run `fg marionette -- long-press --text Milch` (with Milch on the list), `fg wait --key edit-sheet`, `fg type --key edit-name --input Hafermilch` and `fg tap --key edit-done`. `fg wait --text Hafermilch --client lea` succeeds.
 - **Delete on one.** The app has no delete button since job 149; delete as lea through the database: with Butter on the list, run `fg db query "delete from items where name = 'Butter' and status = 'active'" --write --as lea`. `fg wait --text Butter --gone --client peter --timeout 10` succeeds.
 - **"neu".** With peter's list open, run `fg peer lea add Hafer`, then at once `fg wait --text Hafer` and `fg screenshot --name sync-new-live`: the row is tinted and the bar above the list reads "1 neu von Lea" (`fg find --key new-items-subtitle`). Rows carry no partner initial (job 15). `fg wait --key new-items-subtitle --gone --timeout 8` succeeds within about 3 s and the tint is gone.
-- **Stays seen.** Run `fg restart` (and `fg login peter` if the login screen shows). `fg wait --text Hafer` matches and `fg find --contains neu` returns count 0.
+- **Stays seen.** Run `fg restart` (and `fg login peter` if the start screen or the login screen shows). `fg wait --text Hafer` matches and `fg find --contains neu` returns count 0.
 - **Independent observer.** In a second shell, run `fg peer lea watch --until Butter --timeout 20 2>watch.err` and make the change only after `watch.err` shows `watch live after <n> ms`. It prints the realtime INSERT and UPDATE events that lea's session receives, with timestamps (`atMs`, and `liveAtMs` for the moment it went live).
 - **Reconnect.** On the Linux clients fg cannot take one client offline, so drive `sync-reconnect` with `fg sync` (`B offline` ... `B online`, above) on web. The e2e test "a tick made while offline syncs when the connection returns" (`e2e/tests/live-sync.spec.ts`) covers it in CI too.
 - **Proof.** Record both clients (`fg record start --name sync-peter --client peter` and `--name sync-lea --client lea`). Screenshot the observing client after each change, and show the stored row with `fg db query`.
@@ -59,7 +61,7 @@ Preconditions for the Marionette clients (Linux desktop app, peter and lea):
 - `elapsedMs` from `fg wait` is an upper bound: polling every 0.5 s plus about 0.2 s per Marionette call.
 - A delete from the app (the row's screen-reader action) hides the row on the acting client at once (optimistic); the server delete lands about 1 to 3 s later, and only then does the other client drop the row. Use `--timeout 10` for deletes.
 - A precondition written with `fg db query --write` also syncs live, because it is a real update. Write preconditions before you start recording.
-- Both apps must be signed in to the same household. A client left on another account from an earlier recipe shows a different list. The list names no household (job 29a): check an item only that household has, or the household in the database.
+- Both apps must be signed in to the same household. A client left on another account from an earlier recipe shows a different list. The household chip at the top left (`household-chip`) names the household; check it, an item only that household has, or the household in the database.
 - Realtime joins a channel before its Postgres listener is live (the `system` message "Subscribed to PostgreSQL" follows ~2.5 s later). The list resyncs on that message too (job 2b), so a change made right after opening still appears. The web e2e test "a change made before the channel is live still shows up" holds that message back to prove it.
 - `fg peer watch` reports nothing that was written before its `watch live` line: starting it in the background and writing at once loses the event, and it then fails with `timeout`. A delete reaches the watcher as no event at all; prove deletes on the other client or with `fg db query`.
 - The "neu" tint lasts only 3 s on screen. Take its screenshot in the same command chain as the wait, and prove "cleared" with `fg find --contains neu` (count 0) rather than a sleep.

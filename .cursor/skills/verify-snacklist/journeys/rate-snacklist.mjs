@@ -8,7 +8,7 @@
 //
 //   node journeys/rate-snacklist.mjs <evidence dir> [--lang de|en]
 import process from 'node:process';
-import { addField, answerShopAsk, capture, instance, logger, member, openApp, openTab, reveal, signIn, typeInto } from '../helpers/lib.mjs';
+import { addField, answerShopAsk, capture, flagOn, instance, logger, member, openApp, openTab, reveal, signIn, typeInto } from '../helpers/lib.mjs';
 
 const [dir, ...rest] = process.argv.slice(2);
 const lang = rest.includes('--lang') ? rest[rest.indexOf('--lang') + 1] : 'de';
@@ -83,8 +83,9 @@ try {
   // The tick's undo: put one item back from „Zuletzt verwendet“ and tick it again. Same trip.
   const section = page.getByRole('button', { name: L('recentlyUsed') });
   await reveal(page, section);
-  await section.click();
   const used = page.getByRole('button', { name: new RegExp(` ${L('readd')}$`) }).first();
+  // With recently-used-open (full since 2026-11-22) the section starts open and a tap folds it.
+  if (!flagOn('recently-used-open')) await section.click();
   await reveal(page, used);
   await used.click();
   const back = page.getByRole('checkbox', { checked: false }).first();

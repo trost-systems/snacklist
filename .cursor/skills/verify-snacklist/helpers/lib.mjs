@@ -251,6 +251,22 @@ export async function answerShopAsk(page, L, key = 'shopAskNo', timeout = 3_000)
   return true;
 }
 
+/**
+ * Folds „Zuletzt verwendet“ when it is open, as it starts with recently-used-open (full since
+ * 2026-11-22). A journey that scrolls to the list's end needs it: the open section's rows push the
+ * summary block and the store sections out of the rows the list builds. The fold is kept per device.
+ */
+export async function foldRecentlyUsed(page, L) {
+  const section = page.getByRole('button', { name: L('recentlyUsed'), exact: true });
+  const rows = page.getByRole('button', { name: new RegExp(` ${escape(L('readd'))}$`) });
+  await rows.first().waitFor({ state: 'attached', timeout: 5_000 }).catch(() => {});
+  if (!(await section.count()) || !(await rows.count())) return false;
+  await reveal(page, section);
+  await section.click();
+  await rows.first().waitFor({ state: 'detached', timeout: 5_000 });
+  return true;
+}
+
 /** A tab of the shell by its ARB key ('tabList' or 'tabMore'): the bottom bar on phones, the rail from 840 px. */
 export async function openTab(page, L, key) {
   await page.getByRole('tab', { name: L(key), exact: true }).click();

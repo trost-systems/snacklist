@@ -1,6 +1,6 @@
 # App language
 
-The app speaks German or English. By default it follows the device's preferred languages (English when the device prefers neither, job 245; a French phone with German further down its list reads German). Under Mehr → Einstellungen → Sprache the user can pick „Deutsch“ or „English“ instead. The switch applies live to the whole UI (labels, snackbars, category names of the default categories) without a restart and is stored on the device, also across sign-out. The account keeps only the mail language: the language the app shows is saved as `mail_locale`, so sign-in and confirmation mails follow it (sign-in, `mail-language`).
+The app speaks German or English. By default it follows the device's preferred languages (English when the device prefers neither, job 245; a French phone with German further down its list reads German). Under Mehr → Einstellungen → Sprache the user can pick „Deutsch“ or „English“ instead. The switch applies live to the whole UI (labels, snackbars, and the default categories' names where categories show, which on the users' build is nowhere: `hide-categories`) without a restart and is stored on the device, also across sign-out. The account keeps only the mail language: the language the app shows is saved as `mail_locale`, so sign-in and confirmation mails follow it (sign-in, `mail-language`).
 
 ## Sub-features
 
@@ -22,7 +22,7 @@ Preconditions:
 
 - **Open the list.** `openMore(page, 'Einstellungen')`, then click `getByRole('button',{name:/^Sprache Wie Gerät \(Deutsch\)/})`. Observable: URL `/more/settings/language`, `getByRole('radio',{name:/^Wie Gerät/})` checked.
 - **Switch to English.** Click `getByRole('radio',{name:'English', exact:true})`. Observable, live: `getByRole('heading',{name:'Language'})`, `getByRole('tab',{name:'List'})` visible.
-- **Persist.** `page.reload()`: heading still "Language". Back (`getByRole('button',{name:'Back'})`): `getByRole('button',{name:/^Language English/})`. List: `getByRole('textbox',{name:'What do you need?'})`, and the default category shows its English name (`getByText('Chilled')`).
+- **Persist.** `page.reload()`: heading still "Language". Back (`getByRole('button',{name:'Back'})`): `getByRole('button',{name:/^Language English/})`. List: `getByRole('textbox',{name:'What do you need?'})` and `getByRole('tab',{name:'List'})`. (The default category's English name, `getByText('Chilled')`, shows only on a `VH_FLAGS_OFF=hide-categories` build: users see no category headings.)
 - **Back to German.** Tab `More` (it returns to the More page you left); on Settings click `button /^Language/`; then `getByRole('radio',{name:'Deutsch', exact:true})`: heading „Sprache“.
 - **English browser.** With `test.use({locale:'en-US'})` the app starts in English without any pick, and no German UI text shows (see the second describe in the spec).
 - Spec: `scripts/verify.sh --only e2e -- tests/shell-more.spec.ts`.

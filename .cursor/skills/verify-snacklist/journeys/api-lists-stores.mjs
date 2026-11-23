@@ -9,7 +9,7 @@ import process from 'node:process';
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { apiAs, capture, instance, itemRow, logger, member, openApp, repo, reveal, signIn } from '../helpers/lib.mjs';
+import { apiAs, capture, flagOn, instance, itemRow, logger, member, openApp, repo, reveal, signIn } from '../helpers/lib.mjs';
 
 const [dir, ...rest] = process.argv.slice(2);
 const lang = rest.includes('--lang') ? rest[rest.indexOf('--lang') + 1] : 'de';
@@ -85,7 +85,8 @@ try {
 
   const recentButton = page.getByRole('button', { name: L('recentlyUsed'), exact: true }).first();
   await reveal(page, recentButton);
-  await recentButton.click();
+  // With recently-used-open (full since 2026-11-22) the section starts open and a tap folds it.
+  if (!flagOn('recently-used-open')) await recentButton.click();
   const kerzenRow = page.getByRole('button', { name: new RegExp(`^Kerzen ${L('readd')}`) }).first();
   await kerzenRow.waitFor({ timeout: 15_000 });
   for (let i = 0; i < 12; i++) await page.mouse.wheel(0, 900);
