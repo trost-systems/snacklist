@@ -2731,3 +2731,9 @@ Review 1 (job 413): DECISIONS items 2 and 4 and `docs/done/413.md` now agree wit
 ## Job 410, review 1 fixes (docs only)
 
 Review 1 found the Globus code correct and driven in the web app. Must-fix: #674 merged (09:28) before its Opus review and after the builder's own review had failed; now stated in DECISIONS (the false "waits for review PASS" sentence is corrected, a review 1 section added), here, and as a NEEDS_LEAD line for the lead (the land step ignored the review gate twice, both times after a "commit and push" prompt). `docs/done/410.md` now quotes the real list card („Welche Kette ist dein „Globus“?“, buttons „Globus“, „Globus Baumarkt“, „Keins davon“). Also: the feature map says the question was driven; run command header in `scripts/retailers_test.ts`. This PR waits for review PASS before merge. PR and merge SHA: filled in below at land.
+
+## Job 415 review 0 follow-up
+
+- Must-fix 1: `tools_test.ts` now holds a literal table of the four hints for all 22 tools; flipping `rename_store.destructiveHint` fails it (run, then restored). `set_store_order` and `set_store_layout` became destructive (review nice-to-have 1).
+- Must-fix 2: `scripts/seed-ai-reviewer.sh` sets IKEA's walk order (furnishings first, fresh food and drugstore hidden); two runs on a local stack gave identical layout rows.
+- Also: Claude listing no longer says "free", info-page descriptions reworded, N2 notes the PAT message. Not done, with reasons: neutral machine code, unlisted info page, reviewer display name and chain links (`docs/DECISIONS.md`, "Job 415 review 0").

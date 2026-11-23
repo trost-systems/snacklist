@@ -74,7 +74,7 @@ German one-liner: `Die gemeinsame Einkaufsliste deines Haushalts: Einträge hinz
 
 ## What users need first
 
-A Snacklist account (free, iOS, Android or web at `https://app.snacklist.app`) and a household with
+A Snacklist account (iOS, Android or web at `https://app.snacklist.app`) and a household with
 a list. No other setup. Do not mention plans here.
 
 ## Authentication and data handling (portal fields)

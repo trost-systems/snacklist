@@ -188,11 +188,12 @@ to the spec's defaults. `openWorldHint` is false everywhere: a tool reaches only
 household. The `list_*` tools, `suggest_items` and `get_item` only read (`readOnlyHint: true`,
 `destructiveHint: false`, `idempotentHint: true`). `add_items` and `create_list` add on every call
 (`destructiveHint: false`, `idempotentHint: false`). `tick_items`, `untick_items`, `move_item`,
-`place_item`, `set_store_order`, `set_store_layout` and `add_store` change the list and keep every
+`place_item` and `add_store` change the list and keep every
 value the user typed, so repeating them changes nothing more (`destructiveHint: false`,
 `idempotentHint: true`). `destructiveHint: true` is for a call that deletes or overwrites text the
-user typed: `remove_items` and `update_item` and the two renames (repeatable, `idempotentHint:
-true`), and `merge_items` (not repeatable). A client may ask the user before a destructive call.
+user typed or replaces a store's whole order: `remove_items`, `update_item`, the two renames,
+`set_store_order` and `set_store_layout` (repeatable, `idempotentHint: true`), and `merge_items`
+(not repeatable). A client may ask the user before a destructive call.
 
 The server names itself `snacklist` with `serverInfo.version` `1.4.0` (job 415 made every annotation explicit; job 344 added five tools,
 job 345 seven, job 352 two).
