@@ -155,6 +155,7 @@ const retailerChains = {
   'eroski',
   'esselunga',
   'eurospin',
+  'globus',
   'globus-baumarkt',
   'hagebau',
   'hellweg',

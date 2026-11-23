@@ -87,4 +87,16 @@ void main() {
     expect(find.text('HOFER (Austria)'), findsOne);
     expect(find.text('ALDI SÜD (Germany)'), findsOne);
   });
+
+  testWidgets('Globus asks which one: the supermarket or the Baumarkt', (
+    tester,
+  ) async {
+    final globus = [for (final m in matchRegistry('Globus', 'DE')) m.retailer];
+    await pump(tester, globus, store: 'Globus');
+    expect(find.text('Welches Globus?'), findsOne);
+    expect(find.widgetWithText(OutlinedButton, 'Globus'), findsOne);
+    expect(find.widgetWithText(OutlinedButton, 'Globus Baumarkt'), findsOne);
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Globus Baumarkt'));
+    expect(answers.single?.chain, 'globus-baumarkt');
+  });
 }
