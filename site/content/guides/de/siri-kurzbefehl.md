@@ -56,6 +56,7 @@ Den Kurzbefehl unten brauchst du nur noch, wenn du einen eigenen Satz wie „Ein
 
 ## Schritt 1: Zugriffstoken in Snacklist erstellen
 
+::: until unified-keys-guides
 Der Kurzbefehl meldet sich mit einem persönlichen Zugriffstoken an, nicht mit deinem Passwort.
 
 1. Öffne die Snacklist-App.
@@ -63,6 +64,17 @@ Der Kurzbefehl meldet sich mit einem persönlichen Zugriffstoken an, nicht mit d
 3. Tippe unter **Zugriffstoken** auf **Token erstellen**.
 4. Gib als Name `Siri` ein und tippe auf **Erstellen**.
 5. Kopiere den Token. Er beginnt mit `fgp_`.
+:::
+
+::: once unified-keys-guides
+Der Kurzbefehl meldet sich mit einem persönlichen Zugriffsschlüssel an, nicht mit deinem Passwort. In dieser Anleitung heißt er kurz Token.
+
+1. Öffne die Snacklist-App.
+2. Tippe auf **Mehr** und dann auf **Zugänge**.
+3. Tippe unter **Zugriffsschlüssel** auf **Schlüssel erstellen**.
+4. Gib als Name `Siri` ein, wähle **Lesen und schreiben** und tippe auf **Erstellen**. Mit **Nur lesen** kann der Kurzbefehl nichts auf die Liste setzen.
+5. Kopiere den Schlüssel. Er beginnt mit `fgp_`.
+:::
 
 Die App zeigt den Token nur dieses eine Mal an. Füge ihn am besten direkt in Schritt 2 ein. Wenn du ihn kurz in einer Notiz zwischenspeicherst, lösch die Notiz danach.
 

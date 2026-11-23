@@ -1,0 +1,10 @@
+[21:04:22.800Z] an MCP token „Claude“ made as an older app build does (create_personal_access_token)
+[21:04:26.470Z] switch off, flag on: the two sections as before („Token erstellen“, no „Schlüssel erstellen“)
+[21:04:28.242Z] switch on: one section, hint „Ein Zugriffsschlüssel verbindet KI-Assistenten über den MCP-Server und eigene Skripte über die API mit eurer Liste. Ein Schlüssel gilt für beides und darf nur lesen oder lesen und schreiben.“, the old token listed as „Lesen und schreiben“
+[21:04:29.598Z] „Zugriffsschlüssel erstellt“ shows the key once
+[21:04:30.013Z] rows: [{"name":"Home Assistant","kind":"api","scopes":["read"]},{"name":"Claude","kind":"pat","scopes":["read","write"]}]
+[21:04:30.771Z] MCP list_items with the read-only key: HTTP 200, a result
+[21:04:30.798Z] MCP add_items with the read-only key: HTTP 200, tool error „Dieser Zugriffsschlüssel darf nur lesen (ihm fehlt der Bereich "write"). Erstelle in der Snacklist-App unter Mehr › Zugänge einen Schlüssel zum Lesen und Schreiben. Es wurde nichts geändert.“, {"error":"insufficient_scope","details":{"required":"write"}}
+[21:04:31.240Z] API with the old MCP token: GET 200, POST 201; with the read-only key: POST 403 insufficient_scope
+[21:04:32.840Z] after the revoke the key gets HTTP 401 on MCP
+[21:04:33.938Z] PASS

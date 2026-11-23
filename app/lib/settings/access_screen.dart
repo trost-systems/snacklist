@@ -114,6 +114,13 @@ class const _Access({required final bool onIphone}) extends StatelessWidget {
         )
         ? Environment.proxiedApiUrl
         : Environment.apiUrl;
+    // Job 397: one list of keys for the MCP server and the API, once the
+    // flag and the server switch are both on.
+    final unified =
+        state.unified &&
+        context.select<Flags?, bool>(
+          (flags) => flags?.isOn(unifiedKeysFlag) ?? false,
+        );
     final access = _accessOf(context);
     final paused = access is IntegrationsLocked;
     // With several households, the one new keys act in (job 169b).
@@ -125,6 +132,21 @@ class const _Access({required final bool onIphone}) extends StatelessWidget {
         _ => null,
       },
     );
+    final siri = [
+      if (onIphone || siriTokens.isNotEmpty)
+        HlSectionLabel(
+          l10n.siriHeader,
+          padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+        ),
+      if (onIphone) _SiriCard(shortcutTokens: shortcutTokens),
+      for (final token in siriTokens)
+        _TokenTile(
+          token: token,
+          label: token.id == state.siriHere
+              ? l10n.siriThisIphone
+              : l10n.siriOtherIphone,
+        ),
+    ];
     return Align(
       alignment: Alignment.topCenter,
       child: ConstrainedBox(
@@ -139,94 +161,94 @@ class const _Access({required final bool onIphone}) extends StatelessWidget {
           children: [
             if (access case IntegrationsLocked(:final offer))
               _PremiumCard(offer: offer),
-            HlSectionLabel(
-              l10n.mcpServer,
-              padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-            ),
-            ListTile(
-              title: const SelectionArea(child: Text(Environment.mcpUrl)),
-              subtitle: Text(l10n.mcpServerBody),
-              trailing: IconButton(
-                tooltip: l10n.copy,
-                icon: const Icon(Icons.copy),
-                onPressed: () => _copy(context, Environment.mcpUrl),
+            if (unified) ...[
+              ..._keysSection(
+                context,
+                state.tokens,
+                apiOffered: apiOffered,
+                apiUrl: apiUrl,
+                paused: paused,
+                household: shownOfSeveral,
               ),
-            ),
-            if (onIphone || siriTokens.isNotEmpty)
+              ...siri,
+            ] else ...[
               HlSectionLabel(
-                l10n.siriHeader,
+                l10n.mcpServer,
                 padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
               ),
-            if (onIphone) _SiriCard(shortcutTokens: shortcutTokens),
-            for (final token in siriTokens)
-              _TokenTile(
-                token: token,
-                label: token.id == state.siriHere
-                    ? l10n.siriThisIphone
-                    : l10n.siriOtherIphone,
-              ),
-            HlSectionLabel(
-              l10n.accessTokens,
-              padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-            ),
-            Padding(
-              key: const ValueKey('access-tokens-hint'),
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
-              // Points at the API only where the API section offers it.
-              child: Text(
-                apiOffered
-                    ? l10n.accessTokensHintWithApi
-                    : l10n.accessTokensHint,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ListTile(
+                title: const SelectionArea(child: Text(Environment.mcpUrl)),
+                subtitle: Text(l10n.mcpServerBody),
+                trailing: IconButton(
+                  tooltip: l10n.copy,
+                  icon: const Icon(Icons.copy),
+                  onPressed: () => _copy(context, Environment.mcpUrl),
                 ),
               ),
-            ),
-            if (shownOfSeveral case final household?)
+              ...siri,
+              HlSectionLabel(
+                l10n.accessTokens,
+                padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+              ),
               Padding(
-                key: const ValueKey('access-keys-household'),
+                key: const ValueKey('access-tokens-hint'),
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+                // Points at the API only where the API section offers it.
                 child: Text(
                   apiOffered
-                      ? l10n.accessKeysHouseholdWithApi(household)
-                      : l10n.accessKeysHousehold(household),
+                      ? l10n.accessTokensHintWithApi
+                      : l10n.accessTokensHint,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
               ),
-            ..._section(
-              context,
-              switch (state.tokens) {
-                SectionLoaded(:final value) => SectionLoaded([
-                  for (final t in value)
-                    if (t.kind == AccessKind.pat) t,
-                ]),
-                final other => other,
-              },
-              empty: l10n.noTokens,
-              tile: (token) =>
-                  _TokenTile(token: token, label: token.name, paused: paused),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: FilledButton.tonalIcon(
-                  icon: const Icon(Icons.add),
-                  label: Text(l10n.createToken),
-                  onPressed: () => unawaited(_createToken(context)),
+              if (shownOfSeveral case final household?)
+                Padding(
+                  key: const ValueKey('access-keys-household'),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+                  child: Text(
+                    apiOffered
+                        ? l10n.accessKeysHouseholdWithApi(household)
+                        : l10n.accessKeysHousehold(household),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ..._section(
+                context,
+                switch (state.tokens) {
+                  SectionLoaded(:final value) => SectionLoaded([
+                    for (final t in value)
+                      if (t.kind == AccessKind.pat) t,
+                  ]),
+                  final other => other,
+                },
+                empty: l10n.noTokens,
+                tile: (token) =>
+                    _TokenTile(token: token, label: token.name, paused: paused),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: FilledButton.tonalIcon(
+                    icon: const Icon(Icons.add),
+                    label: Text(l10n.createToken),
+                    onPressed: () => unawaited(_createToken(context)),
+                  ),
                 ),
               ),
-            ),
-            if (apiOffered || apiKeys.isNotEmpty)
-              ..._apiSection(
-                context,
-                apiKeys: apiKeys,
-                url: apiUrl,
-                offered: apiOffered,
-                paused: paused,
-              ),
+              if (apiOffered || apiKeys.isNotEmpty)
+                ..._apiSection(
+                  context,
+                  apiKeys: apiKeys,
+                  url: apiUrl,
+                  offered: apiOffered,
+                  paused: paused,
+                ),
+            ],
             HlSectionLabel(
               l10n.connectedApps,
               padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
@@ -290,17 +312,24 @@ void _copy(BuildContext context, String text) {
   ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).copied)));
 }
 
-String _errorText(AppLocalizations l10n, Object error, AccessKind kind) =>
-    switch ((error, kind)) {
-      (AccessError(code: 'too_many_tokens'), AccessKind.api) =>
-        l10n.tooManyApiKeys,
-      (AccessError(code: 'too_many_tokens'), _) => l10n.tooManyTokens,
-      (AccessError(code: 'session_required'), AccessKind.api) =>
-        l10n.apiKeySessionRequired,
-      (AccessError(code: 'api_disabled'), AccessKind.api) => l10n.apiDisabled,
-      (AccessError(:final code), _) => l10n.genericError(code),
-      _ => l10n.genericError('$error'),
-    };
+String _errorText(
+  AppLocalizations l10n,
+  Object error,
+  AccessKind kind, {
+  required bool unified,
+}) => switch ((error, kind)) {
+  (AccessError(code: 'too_many_tokens'), _) when unified =>
+    l10n.tooManyAccessKeys,
+  (AccessError(code: 'session_required'), _) when unified =>
+    l10n.accessKeySessionRequired,
+  (AccessError(code: 'too_many_tokens'), AccessKind.api) => l10n.tooManyApiKeys,
+  (AccessError(code: 'too_many_tokens'), _) => l10n.tooManyTokens,
+  (AccessError(code: 'session_required'), AccessKind.api) =>
+    l10n.apiKeySessionRequired,
+  (AccessError(code: 'api_disabled'), AccessKind.api) => l10n.apiDisabled,
+  (AccessError(:final code), _) => l10n.genericError(code),
+  _ => l10n.genericError('$error'),
+};
 
 Future<bool> _confirm(
   BuildContext context, {
@@ -335,13 +364,16 @@ Future<void> _attempt(
   BuildContext context,
   Future<void> Function() action, {
   AccessKind kind = AccessKind.pat,
+  bool unified = false,
 }) async {
   final l10n = AppLocalizations.of(context);
   final messenger = Notices.of(context);
   try {
     await action();
   } on Object catch (e) {
-    messenger.showSnackBar(SnackBar(content: Text(_errorText(l10n, e, kind))));
+    messenger.showSnackBar(
+      SnackBar(content: Text(_errorText(l10n, e, kind, unified: unified))),
+    );
   }
 }
 
@@ -366,23 +398,28 @@ Future<void> _createToken(BuildContext context) async {
   });
 }
 
-Future<void> _createApiKey(BuildContext context) async {
+/// [unified]: a key for the MCP server and the API alike (job 397).
+Future<void> _createApiKey(BuildContext context, {bool unified = false}) async {
   final cubit = context.read<AccessCubit>();
   final picked = await showDialog<(String, ApiScopes)>(
     context: context,
-    builder: (_) => const _ApiKeyDialog(),
+    builder: (_) => _ApiKeyDialog(unified: unified),
   );
   if (picked == null || !context.mounted) {
     return;
   }
   final (name, scopes) = picked;
-  await _attempt(context, kind: AccessKind.api, () async {
+  await _attempt(context, kind: AccessKind.api, unified: unified, () async {
     final token = await cubit.createApi(name, scopes);
     if (context.mounted) {
       await showDialog<void>(
         context: context,
         barrierDismissible: false,
-        builder: (_) => _NewTokenDialog(token: token, kind: AccessKind.api),
+        builder: (_) => _NewTokenDialog(
+          token: token,
+          kind: AccessKind.api,
+          unified: unified,
+        ),
       );
     }
   });
@@ -483,6 +520,9 @@ class const _TokenTile({
 
   /// The household is locked (job 50): the token stays, unused for now.
   final bool paused = false,
+
+  /// An access key of job 397's one list, for the MCP server and the API.
+  final bool unified = false,
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -491,6 +531,7 @@ class const _TokenTile({
     return ListTile(
       key: token.kind == AccessKind.api ? const ValueKey('api-key-tile') : null,
       leading: Icon(switch (token.kind) {
+        _ when unified => Icons.key,
         AccessKind.pat => Icons.key,
         AccessKind.siri => Icons.mic_none,
         AccessKind.api => Icons.api,
@@ -499,7 +540,11 @@ class const _TokenTile({
       subtitle: _Subtitle(
         [
           l10n.tokenHint(token.hint),
-          if (token.scopes case final scopes?) _scopesLabel(l10n, scopes),
+          // An MCP token is always read-and-write; it says so only in the
+          // one list, next to keys that may only read (job 397).
+          if (token.scopes case final scopes?
+              when unified || token.kind == AccessKind.api)
+            _scopesLabel(l10n, scopes),
           l10n.createdOn(token.createdAt),
           if (lastUsed == null) l10n.neverUsed else l10n.lastUsedOn(lastUsed),
         ].join(' · '),
@@ -517,6 +562,7 @@ class const _TokenTile({
     final l10n = AppLocalizations.of(context);
     final cubit = context.read<AccessCubit>();
     final (title, body) = switch (token.kind) {
+      _ when unified => (l10n.revokeAccessKeyTitle, l10n.revokeAccessKeyBody),
       AccessKind.pat => (l10n.revokeTokenTitle, l10n.revokeTokenBody),
       AccessKind.siri => (l10n.revokeSiriTitle, l10n.revokeSiriBody),
       AccessKind.api => (l10n.revokeApiKeyTitle, l10n.revokeApiKeyBody),
@@ -605,6 +651,105 @@ List<Widget> _apiSection(
           ),
         ),
       ),
+  ];
+}
+
+/// Job 397: every key of the MCP server and the API in one list, with both
+/// URLs; the API's only while the `public-api` flag is on. [household]: the
+/// one new keys act in, named when the user has several.
+List<Widget> _keysSection(
+  BuildContext context,
+  Section<List<AccessToken>> tokens, {
+  required bool apiOffered,
+  required String apiUrl,
+  required bool paused,
+  required String? household,
+}) {
+  final l10n = AppLocalizations.of(context);
+  final muted = Theme.of(context).textTheme.bodyMedium
+      ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant);
+  return [
+    HlSectionLabel(
+      key: const ValueKey('access-keys-section'),
+      l10n.accessKeys,
+      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+    ),
+    Padding(
+      key: const ValueKey('access-keys-hint'),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+      child: Text(l10n.accessKeysUnifiedHint, style: muted),
+    ),
+    if (household != null)
+      Padding(
+        key: const ValueKey('access-keys-household'),
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+        child: Text(l10n.accessKeysUnifiedHousehold(household), style: muted),
+      ),
+    ListTile(
+      title: const SelectionArea(child: Text(Environment.mcpUrl)),
+      subtitle: Text(l10n.accessKeysMcpBody),
+      trailing: IconButton(
+        tooltip: l10n.copy,
+        icon: const Icon(Icons.copy),
+        onPressed: () => _copy(context, Environment.mcpUrl),
+      ),
+    ),
+    if (apiOffered) ...[
+      ListTile(
+        key: const ValueKey('api-url'),
+        title: SelectionArea(child: Text(apiUrl)),
+        subtitle: Text(l10n.accessKeysApiBody),
+        trailing: IconButton(
+          tooltip: l10n.copy,
+          icon: const Icon(Icons.copy),
+          onPressed: () => _copy(context, apiUrl),
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: LegalLink(
+            key: const ValueKey('api-docs'),
+            url: _apiDocs,
+            builder: (context, open) => TextButton.icon(
+              icon: const Icon(Icons.open_in_new),
+              onPressed: open,
+              label: Text(l10n.apiDocs),
+            ),
+          ),
+        ),
+      ),
+    ],
+    ..._Access._section(
+      context,
+      switch (tokens) {
+        SectionLoaded(:final value) => SectionLoaded([
+          for (final t in value)
+            if (t.kind != AccessKind.siri) t,
+        ]),
+        final other => other,
+      },
+      empty: l10n.noAccessKeys,
+      tile: (token) => _TokenTile(
+        token: token,
+        label: token.name,
+        paused: paused,
+        unified: true,
+      ),
+    ),
+    Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: FilledButton.tonalIcon(
+          key: const ValueKey('access-key-create'),
+          icon: const Icon(Icons.add),
+          label: Text(l10n.createAccessKey),
+          onPressed: () => unawaited(_createApiKey(context, unified: true)),
+        ),
+      ),
+    ),
   ];
 }
 
@@ -884,8 +1029,9 @@ class _NameDialogState() extends State<_NameDialog> {
   }
 }
 
-/// A new API key's name and what it may do; pops both.
-class const _ApiKeyDialog() extends StatefulWidget {
+/// A new API key's name and what it may do; pops both. [unified]: an
+/// access key for the MCP server and the API (job 397).
+class const _ApiKeyDialog({final bool unified = false}) extends StatefulWidget {
   @override
   State<_ApiKeyDialog> createState() => _ApiKeyDialogState();
 }
@@ -909,7 +1055,7 @@ class _ApiKeyDialogState() extends State<_ApiKeyDialog> {
     final l10n = AppLocalizations.of(context);
     return AlertDialog(
       scrollable: true,
-      title: Text(l10n.createApiKey),
+      title: Text(widget.unified ? l10n.createAccessKey : l10n.createApiKey),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -921,7 +1067,11 @@ class _ApiKeyDialogState() extends State<_ApiKeyDialog> {
               controller: _name,
               autofocus: true,
               maxLength: 60,
-              decoration: InputDecoration(hintText: l10n.apiKeyNameHint),
+              decoration: InputDecoration(
+                hintText: widget.unified
+                    ? l10n.accessKeyNameHint
+                    : l10n.apiKeyNameHint,
+              ),
               onSubmitted: (_) => _submit(),
             ),
           ),
@@ -966,13 +1116,18 @@ class const _NewTokenDialog({
 
   /// An MCP token or an API key, as the dialog calls it.
   required final AccessKind kind,
+
+  /// An access key for the MCP server and the API (job 397).
+  final bool unified = false,
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final (title, shownOnce) = kind == AccessKind.api
-        ? (l10n.apiKeyCreated, l10n.apiKeyShownOnce)
-        : (l10n.tokenCreated, l10n.tokenShownOnce);
+    final (title, shownOnce) = switch (kind) {
+      _ when unified => (l10n.accessKeyCreated, l10n.accessKeyShownOnce),
+      AccessKind.api => (l10n.apiKeyCreated, l10n.apiKeyShownOnce),
+      _ => (l10n.tokenCreated, l10n.tokenShownOnce),
+    };
     return AlertDialog(
       title: Text(title),
       content: Column(

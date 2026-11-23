@@ -10,7 +10,7 @@ updated: 2026-11-23
 # Privacy policy
 
 This is a translation. The [German version](/datenschutz) is authoritative.
-Last updated: 22 November 2026
+Last updated: 23 November 2026
 
 This page explains which personal data Snacklist processes, why, on what legal basis, who receives it and what rights you have. Snacklist is a shopping-list app for households on iPhone, Android and in the browser (app.snacklist.app), with the website snacklist.app.
 
@@ -113,14 +113,34 @@ Legal basis: Art. 6(1)(b) GDPR.
 
 ## 7. Siri, Alexa and AI assistants
 
+::: until unified-keys
 You can connect Snacklist to AI assistants (for example through the Model Context Protocol at mcp.snacklist.app) or to Siri through a shortcut you set up yourself. This only happens if you create an access token or approve a connection yourself. For Siri directly in the iPhone app, see "Siri on iPhone" below. The connected service can then read and change your list items, and its provider processes that content under its own privacy terms. An access token works only for the household you created it in. An approved connection works in your default household (section 5). It also sees the names of your other households and their number of members, and can read and change their items if the service names one of these households, for example because you ask it to. For each token we store a name, a hash, its last four characters and when it was last used. For each approved connection we also store a short device label such as "Chrome · macOS", which your device derives from the platform and browser; it contains neither the full browser identifier (user agent) nor the IP address. It is shown under More › Access as "Approved on Chrome · macOS" and is deleted with the connection. When a token ends, for example because you revoke it or leave the household it works for, we delete this data at the next daily clean-up 30 days later. You can revoke tokens and connections in the app at any time.
+:::
+
+::: once unified-keys
+You can connect Snacklist to AI assistants (for example through the Model Context Protocol at mcp.snacklist.app), to your own programs and automations through our interface (API, see below) or to Siri through a shortcut you set up yourself. This only happens if you create an access key or approve a connection yourself. For Siri directly in the iPhone app, see "Siri on iPhone" below. The connected service can then read your list items and, if you allow it, change them, and its provider processes that content under its own privacy terms. An access key works only for the household you created it in, and it works for AI assistants through MCP, for the API and for a Siri shortcut. When you create it, you choose whether it may only read or also change. Access tokens you created earlier for AI assistants are such access keys and may read and change; so they also work for the API. An approved connection works in your default household (section 5). It also sees the names of your other households and their number of members, and can read and change their items if the service names one of these households, for example because you ask it to. For each access key we store who created it and for which household, the name you give it, a hash of the key, its last four characters, whether it may only read or also change, and when it was created, last used and revoked. For each approved connection we also store a short device label such as "Chrome · macOS", which your device derives from the platform and browser; it contains neither the full browser identifier (user agent) nor the IP address. It is shown under More › Access as "Approved on Chrome · macOS" and is deleted with the connection. When an access key ends, for example because you revoke it or leave the household it works for, we delete this data at the next daily clean-up 30 days later. You can revoke access keys and connections in the app under More › Access at any time.
+:::
 Legal basis: Art. 6(1)(b) GDPR.
 
 ### Interface for your own programs (API) {#api}
 
+::: until unified-keys
 For your own programs and automations you can create an API key in the app under More › Access › API. The app shows the key only once. For each API key we store who created it and for which household, the name you give it, a hash of the key, its last four characters, whether it may only read or also change, and when it was created, last used and revoked. Whoever has the key can use it to read, in your name, the items, lists, stores and categories of that one household and, if you allow it when creating the key, change them. If you give the key to a program or service, its provider processes this content under its own privacy terms. An API key ends when you revoke it, leave the household or delete your account; we delete its data at the next daily clean-up 30 days later.
+:::
+
+::: once unified-keys
+For your own programs and automations you use an access key (above), which you create in the app under More › Access. The app shows the key only once. Whoever has the key can use it to read, in your name, the items, lists, stores and categories of that one household and, if you allow it when creating the key, change them, through the API as through MCP. If you give the key to a program or service, its provider processes this content under its own privacy terms. What we store for an access key and when we delete it is described above.
+:::
+
+::: until unified-keys
 If a program sends items to Snacklist with an API key, it can give the request its own ID so that a retry doesn't add anything twice. For this we store the first successful response to that request (it contains the names of the items added) with a check value of the request. Once it is older than 24 hours, we delete it at the next daily clean-up; with the key, the household or your account, at once. Legal basis for API keys and stored responses: Art. 6(1)(b) GDPR.
 So that nobody overloads the interface or the MCP server or finds API keys by trying them out, we count requests per key and per household and day, and for connections through MCP (mcp.snacklist.app) per account and day. If a request comes with a key that doesn't exist, we store, for the IP address it came from, a check value (SHA-256 hash with a secret added value) with the number of such failed attempts and the start of the time window, not the IP address itself. We delete counters and check values at the next daily clean-up once they are older than one day, and the daily counters per household on the day after next. Legal basis: Art. 6(1)(f) GDPR (our legitimate interest in secure and stable operation).
+:::
+
+::: once unified-keys
+If a program sends items to Snacklist with an access key, it can give the request its own ID so that a retry doesn't add anything twice. For this we store the first successful response to that request (it contains the names of the items added) with a check value of the request. Once it is older than 24 hours, we delete it at the next daily clean-up; with the key, the household or your account, at once. Legal basis for access keys and stored responses: Art. 6(1)(b) GDPR.
+So that nobody overloads the interface or the MCP server or finds access keys by trying them out, we count requests per key and per household and day, and for connections through MCP (mcp.snacklist.app) per account and day. If a request comes with a key that doesn't exist, we store, for the IP address it came from, a check value (SHA-256 hash with a secret added value) with the number of such failed attempts and the start of the time window, not the IP address itself. We delete counters and check values at the next daily clean-up once they are older than one day, and the daily counters per household on the day after next. Legal basis: Art. 6(1)(f) GDPR (our legitimate interest in secure and stable operation).
+:::
 
 ### Siri on iPhone
 
@@ -194,7 +214,7 @@ These service providers process data on our behalf and on our instructions (Art.
 - Supabase Pte. Ltd., Singapore (database, sign-in, triggering the sign-in e-mails, server functions; the database is in a data centre in Frankfurt am Main, the server functions run at the location nearest the request, including outside the EU; the server function for purchases always runs in Frankfurt am Main)
 - Plus Five Five, Inc. ("Resend"), San Francisco, USA (sending our emails, including the sign-in and confirmation emails, the waitlist and the confirmations and decisions on reports; sent from Ireland, stores emails and delivery logs in the USA and deletes them after 30 days)
 - RevenueCat, Inc., Brandon (Florida), USA (free Snacklist Premium unlock for testers, for app review and, as a thank-you for the beta, for existing accounts (section 5), and, once Snacklist Premium is sold, in-app purchases: checking and managing the unlock; servers at Amazon Web Services in the USA)
-- Vercel Inc. (hosting of snacklist.app, app.snacklist.app and mcp.snacklist.app; domain and DNS)
+- Vercel Inc. (hosting of snacklist.app, app.snacklist.app, mcp.snacklist.app and api.snacklist.app; domain and DNS)
 - PostHog Inc. (usage data, error reports and feature switch requests, servers in the EU; only as described in section 9)
 - GitHub Inc. (encrypted backups)
 - Google Cloud EMEA Limited, Dublin, Ireland (Google Workspace, e-mail)

@@ -20,6 +20,9 @@ class const AccessState({
   /// The Siri credential in this iPhone's keychain, which the list calls
   /// "this iPhone".
   final String? siriHere,
+
+  /// Job 397: the server makes keys for the MCP server and the API alike.
+  final bool unified = false,
 });
 
 class AccessCubit(
@@ -30,7 +33,8 @@ class AccessCubit(
 }) extends Cubit<AccessState> {
   this : super(const AccessState());
 
-  Future<void> load() => Future.wait([_loadTokens(), _loadApps(), _loadSiri()]);
+  Future<void> load() =>
+      Future.wait([_loadTokens(), _loadApps(), _loadSiri(), _loadUnified()]);
 
   /// Throws [AccessError], e.g. `too_many_tokens`.
   Future<NewToken> create(String name) async {
@@ -60,7 +64,12 @@ class AccessCubit(
     final tokens = await _section(_repo.fetchTokens);
     if (!isClosed) {
       emit(
-        AccessState(tokens: tokens, apps: state.apps, siriHere: state.siriHere),
+        AccessState(
+          tokens: tokens,
+          apps: state.apps,
+          siriHere: state.siriHere,
+          unified: state.unified,
+        ),
       );
     }
   }
@@ -69,7 +78,12 @@ class AccessCubit(
     final apps = await _section(_repo.fetchApps);
     if (!isClosed) {
       emit(
-        AccessState(tokens: state.tokens, apps: apps, siriHere: state.siriHere),
+        AccessState(
+          tokens: state.tokens,
+          apps: apps,
+          siriHere: state.siriHere,
+          unified: state.unified,
+        ),
       );
     }
   }
@@ -83,7 +97,28 @@ class AccessCubit(
       return;
     }
     if (!isClosed && id != null) {
-      emit(AccessState(tokens: state.tokens, apps: state.apps, siriHere: id));
+      emit(
+        AccessState(
+          tokens: state.tokens,
+          apps: state.apps,
+          siriHere: id,
+          unified: state.unified,
+        ),
+      );
+    }
+  }
+
+  Future<void> _loadUnified() async {
+    final unified = await _repo.unifiedKeys();
+    if (!isClosed && unified) {
+      emit(
+        AccessState(
+          tokens: state.tokens,
+          apps: state.apps,
+          siriHere: state.siriHere,
+          unified: true,
+        ),
+      );
     }
   }
 

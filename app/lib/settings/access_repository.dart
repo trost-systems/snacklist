@@ -104,6 +104,11 @@ abstract interface class AccessRepository() {
   Future<List<ConnectedApp>> fetchApps();
 
   Future<void> disconnect(String clientId);
+
+  /// Job 397: the server switch `app_switches.unified_keys`, under which
+  /// one key works for the MCP server and the API. False when it cannot be
+  /// read.
+  Future<bool> unifiedKeys();
 }
 
 /// [household]: the one new tokens and API keys are bound to, the
@@ -211,6 +216,16 @@ class SupabaseAccessRepository(
   @override
   Future<void> disconnect(String clientId) =>
       _guard(() => _client.auth.oauth.revokeGrant(clientId));
+
+  @override
+  Future<bool> unifiedKeys() async {
+    try {
+      return await _client.rpc<bool>('unified_keys');
+    } on Object catch (e) {
+      debugPrint('unified_keys: $e');
+      return false;
+    }
+  }
 
   Future<T> _guard<T>(Future<T> Function() call) async {
     try {

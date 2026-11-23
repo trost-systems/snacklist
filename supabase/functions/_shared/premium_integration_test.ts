@@ -124,7 +124,12 @@ function alexa(m: Member, telemetry: Telemetry) {
 function mcp(m: Member, telemetry: Telemetry) {
   const gate = requirePremiumWith(telemetry);
   const send = userEvents(telemetry);
-  const auth = { userId: m.userId, householdId: m.householdId, via: 'pat' as const };
+  const auth = {
+    userId: m.userId,
+    householdId: m.householdId,
+    via: 'pat' as const,
+    scopes: ['read', 'write'] as const,
+  };
   return async (name: string) => {
     const res = await createMcpHandler(() =>
       buildServer(
@@ -250,10 +255,10 @@ test('a yearly plan opens MCP with the same credentials; its lapse locks it and 
   withHousehold(true, async (m, sql) => {
     const t = recorder();
     const tx = `y50-${m.householdId.slice(0, 8)}`;
-    await sql`insert into public.personal_access_tokens (household_id, user_id, name, token_hash, token_hint)
+    await sql`insert into public.personal_access_tokens (household_id, user_id, name, token_hash, token_hint, scopes)
               values (${m.householdId}, ${m.userId}, 'Kurzbefehl', ${
       crypto.randomUUID().replaceAll('-', '').padEnd(64, '5')
-    }, '5050')`;
+    }, '5050', '{read,write}')`;
     assertEquals((await mcp(m, t)('list_items')).isError, true);
 
     await yearly(sql, m, tx);

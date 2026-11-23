@@ -9,6 +9,8 @@ export type Lang = 'de' | 'en';
 export const failureCodes = [
   'method',
   'unauthorized',
+  /** Job 397: an add with a personal key that may only read. */
+  'read_only',
   'no_household',
   'no_text',
   'too_long',
@@ -58,6 +60,8 @@ export const copy: Record<Lang, Copy> = {
       method: 'Bitte schick den Text per POST.',
       unauthorized:
         'Der Zugriffstoken fehlt oder ist ungültig. Erstelle in der Snacklist-App unter Mehr, Zugänge einen neuen.',
+      read_only:
+        'Dieser Zugriffsschlüssel darf nur lesen, also wurde nichts hinzugefügt. Erstelle in der Snacklist-App unter Mehr, Zugänge einen zum Lesen und Schreiben.',
       no_household:
         'Du bist noch in keinem Haushalt. Leg in der Snacklist-App einen an oder tritt einem bei.',
       no_text: `Ich habe keinen Text bekommen. ${exampleDe}`,
@@ -97,6 +101,8 @@ export const copy: Record<Lang, Copy> = {
       method: 'Please send the text with POST.',
       unauthorized:
         "I couldn't sign in to Snacklist, so nothing was added. Open Snacklist and sign in again.",
+      read_only:
+        'This access key can only read, so nothing was added. Create one that can read and write in the Snacklist app under More, Access.',
       no_household:
         "You're not in a household yet, so nothing was added. Create one or join one in the Snacklist app.",
       no_text: `I didn't get any text, so nothing was added. ${exampleEn}`,

@@ -110,8 +110,8 @@ select pg_temp.as_postgres();
 
 -- Premium opens, a lapse locks and deletes nothing, renewing opens with the same links -------------
 
-insert into public.personal_access_tokens (household_id, user_id, name, token_hash, token_hint)
-values ((select id from hi), '00000000-0000-0000-0000-0000000050a1', 'Kurzbefehl', repeat('5', 64), '5050');
+insert into public.personal_access_tokens (household_id, user_id, name, token_hash, token_hint, scopes)
+values ((select id from hi), '00000000-0000-0000-0000-0000000050a1', 'Kurzbefehl', repeat('5', 64), '5050', '{read,write}');
 insert into auth.sessions (id, user_id) values ('00000000-0000-4000-8000-0000000050e1', '00000000-0000-0000-0000-0000000050b1');
 insert into public.alexa_links (alexa_user_hash, session_id, user_id)
 values (repeat('a', 64), '00000000-0000-4000-8000-0000000050e1', '00000000-0000-0000-0000-0000000050b1');

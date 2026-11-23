@@ -44,6 +44,13 @@ mit deinem Passwort.
    nächsten Schritt in den Kurzbefehl ein, oder lege ihn kurz in einer
    Notiz ab und lösche die Notiz danach.
 
+Mit einem Schlüssel für MCP und API (job 397: Server-Schalter `unified_keys` und
+PostHog-Flag `unified-keys` an) heißt der Abschnitt **Zugriffsschlüssel**: Tippe dort
+auf **Schlüssel erstellen**, gib `Siri` ein und wähle **Lesen und schreiben**. Ein
+Schlüssel mit **Nur lesen** kann vorlesen, aber nichts hinzufügen; der Kurzbefehl sagt
+dann „Dieser Zugriffsschlüssel darf nur lesen, also wurde nichts hinzugefügt. …“
+(HTTP 403, `error: "read_only"`).
+
 Wenn das iPhone verloren geht, widerrufe den Token in der App unter
 **Mehr** → **Zugänge**: Tippe neben dem Token auf den Papierkorb
 (**Siri widerrufen**) und bestätige mit **Widerrufen**. Der Kurzbefehl
@@ -163,6 +170,7 @@ auf der Liste: Möhren.“ Zusammenführen geht in der App.
 | --- | --- | --- |
 | „Der Zugriffstoken fehlt oder ist ungültig …“ | Token fehlt, ist falsch kopiert oder widerrufen | Header prüfen: `Bearer `, Leerzeichen, dann der ganze Token. Sonst neuen Token erstellen (Schritt 1). |
 | „Du bist noch in keinem Haushalt …“ | Das Konto, zu dem der Token gehört, ist in keinem Haushalt | In der App einen Haushalt anlegen oder beitreten. |
+| „Dieser Zugriffsschlüssel darf nur lesen …“ | Der Schlüssel wurde mit **Nur lesen** erstellt | Einen Schlüssel mit **Lesen und schreiben** erstellen (Schritt 1) und im Kurzbefehl einsetzen. |
 | „Ich habe nichts verstanden, was auf die Liste soll …“ | Das Diktat war leer oder bestand nur aus Füllwörtern | Noch einmal versuchen, zum Beispiel „Milch und Brot“. |
 | „Das war zu lang …“ | Mehr als 1000 Zeichen | Weniger auf einmal sagen (höchstens 30 Dinge). |
 | „Das hat leider nicht geklappt …“ | Server nicht erreichbar | Später noch einmal versuchen. |
@@ -176,7 +184,8 @@ die Erinnerungen-App, gib dem Kurzbefehl einen eindeutigeren Namen, etwa
 - Endpunkt: `POST https://jdwqrallbpdbshrdhenk.supabase.co/functions/v1/voice`
 - Anmeldung: `Authorization: Bearer <Zugriffstoken>` (oder ein Sitzungstoken
   der App). OAuth-Tokens verbundener KI-Assistenten (MCP) bekommen 401
-  (Job 213).
+  (Job 213). Mit `unified_keys` an geht jeder persönliche Schlüssel; hinzufügen
+  (`mode` `add`) nur einer mit `write`, sonst 403 `read_only` (Job 397).
 - Anfrage: JSON `{"text": "Milch, zwei Gurken und Klopapier"}`; ein
   reiner Text-Hauptteil geht auch. Optional `"list"`: die id oder der Name
   einer Liste des Haushalts (Job 207). Ohne `list` landen die Sachen auf

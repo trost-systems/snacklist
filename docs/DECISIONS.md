@@ -17878,3 +17878,58 @@ Belgian, Czech etc. phones a one-chip picker. `retailer.dart` skips chain `ikea`
 11. **Only FCM's `UNREGISTERED` deletes a device on a 404;** a bare 404 (wrong project id or URL)
     is a failure, so a misconfiguration cannot wipe every device. A dry run echoes `<title>` and
     `<body>`, not the text: pg_net keeps answers.
+
+## Job 397: AU1, one personal key for MCP and the API, 2026-11-22
+
+- **Two switches, one for the server and one for the screen.** `app_switches.unified_keys`
+  (seeded off) changes what the server takes; the PostHog flag `unified-keys` (rollout off) shows
+  the one „Zugriffsschlüssel“ section. The app shows it only while both are on (`unified_keys()`
+  RPC, read on every visit). Server on and flag off is safe: the old two sections keep working
+  and refuse nothing new. Flag on and server off would make keys that MCP does not take, so the
+  app does not show the new section then (the job 328 lesson: the app must not promise what the
+  server refuses).
+- **A new lookup instead of changing the old one.** `authenticate_key` returns the scopes and,
+  with the switch on, `api` keys. `authenticate_access_token` and
+  `authenticate_personal_access_token` stay as they were: a rolled-back function checks no
+  scope, so they must never return a key that may be read-only. Every `pat` row is `{read,write}`
+  (backfilled; the check constraint now requires scopes for `pat` and `api`), so `api_begin` can
+  take `pat` rows without a scope question.
+- **`kind` is history.** New keys from the new section are `api` (`create_api_token`); old app
+  builds still call `create_personal_access_token`, which keeps making `pat` keys, now
+  `{read,write}`, so an old build lists them where it always did. No row changes kind (AU2 not
+  done).
+- **One cap, one lock.** With the switch on, both create functions count `pat` and `api` keys
+  together against 20 (`key_cap_reached`) under the same advisory lock, so two calls that arrive
+  together from an old and a new build cannot pass 20.
+- **Scopes on MCP from one table.** `toolScopes` in `mcp/tools.ts` maps each tool to `read` or
+  `write`; a test keeps it equal to the tools' `readOnlyHint`. A read-only key gets a tool error
+  naming the missing `write` scope, before the Premium check. `tools/list` still lists every tool:
+  the brief asks for a tool error, and a client that filtered tools by key would hide why.
+- **Siri's Shortcut takes the same keys.** The voice function used `authenticate` with MCP
+  tokens all along, and the Shortcut guide tells users to make one. A read-only key may read the
+  list aloud and parse, but an add answers 403 `read_only` with its own sentence, not the
+  „Zugriffstoken fehlt“ one, which would send the user looking for a typo. The refusal sends no
+  `siri_add` event, so the analytics catalog is unchanged.
+- **Default scope in the new dialog stays „Nur lesen“**, as the API dialog has it: least privilege,
+  and a read-only key on MCP says exactly what is missing. The guides say to pick „Lesen und
+  schreiben“ for the Shortcut and for programs that change the list.
+- **Texts dark until Legal.** Privacy section 7 and its API part, the Siri and Claude guides
+  carry both wordings behind the hold `unified-keys` (`::: until` / `::: once`), released in
+  `releases/flags.json` when the switch goes on for everyone. `api.snacklist.app` joined the
+  Vercel host list now (job 398's proxy, #644, is on main; the domain attach is the lead's), so
+  Legal sees both in one round. The AVV/DPA
+  draft's forwarding line ("Weiterleitung von mcp.snacklist.app") stays: that draft is unpublished
+  and waits for its own Legal round (NEEDS_LEAD "Job 397" names it).
+- **Rate limits stay per surface** (the report's default): on MCP a key counts in its user's
+  bucket, on the API in its own bucket and the household's day.
+- **Old backups still restore** (review): the constraint lets a `pat` row have null scopes, which a
+  backup dumped before this migration holds; `authenticate_key` and `api_begin` read a `pat` row
+  as `{read,write}` whatever it stores, and `pat` can never be stored read-only.
+- **Rollout order: text, then switch, then flag.** The switch widens every existing key at once
+  (an MCP token starts working on the API), so the privacy hold is released before it goes on.
+- **The guides have their own hold** (review 0): `unified-keys-guides`, released only at full
+  rollout, since until then most apps still show „Zugriffstoken“ and „Token erstellen“. A site gate
+  test pins that the privacy text and the guides switch on their own holds.
+- **Flag off looks as today in this build** (review 0 nice-to-have): a scope is printed outside
+  the one list only on API keys. Older store builds still print the backfilled
+  „Lesen und schreiben“ on MCP tokens; that cannot be changed from here and is accurate.

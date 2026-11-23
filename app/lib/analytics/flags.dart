@@ -5,6 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 /// 73) and its line on the Premium page (job 87).
 const publicApiFlag = 'public-api';
 
+/// The flag that shows one list of access keys under Zugänge, each for the
+/// MCP server and the API, read-only or read and write (job 397). Only
+/// together with the server switch `app_switches.unified_keys`.
+const unifiedKeysFlag = 'unified-keys';
+
 /// The flag that shows the Verlauf tab, the grocery log (job 199).
 const groceryLogFlag = 'grocery-log';
 

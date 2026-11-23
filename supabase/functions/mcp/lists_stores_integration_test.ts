@@ -90,7 +90,10 @@ async function withTwo(
         assertExists(row);
         return row.id;
       });
-      members.push({ auth: { userId, householdId, via: 'pat' } as Auth, householdId });
+      members.push({
+        auth: { userId, householdId, via: 'pat', scopes: ['read', 'write'] as const } as Auth,
+        householdId,
+      });
     }
     const [mine, theirs] = members;
     assertExists(mine);

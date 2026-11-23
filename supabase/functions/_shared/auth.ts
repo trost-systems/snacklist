@@ -5,7 +5,8 @@
 // Both JWT kinds are accepted only while their Supabase session exists, so disconnecting an app
 // in "Zugänge" (revokeGrant deletes its sessions) or signing out cuts access off at once instead
 // of when the access token expires.
-//   pat     - a personal access token (fgp_...), checked by hash against the database;
+//   pat     - a personal key (fgp_...), checked by hash against the database: an MCP token, or
+//             an API key while app_switches.unified_keys is on (job 397), with its scopes;
 //   siri    - the app's "Siri on this iPhone" credential: the same token format, valid while the
 //             session that minted it exists. Only functions that pass { siri: true } take it.
 // authenticateSession accepts only the app's own session token, household or not: for account
@@ -41,12 +42,21 @@ export type Auth =
   & (
     /** sessionId: the Supabase session behind the token (Alexa revokes it, job 31). */
     | { via: 'oauth'; clientId: string; sessionId: string }
-    | { via: 'pat' }
+    /** What the key may do; a tool or mode that writes needs `write` (job 397). */
+    | { via: 'pat'; scopes: readonly Scope[] }
     | { via: 'siri' }
     | { via: 'session' }
   );
 
 export type Via = Auth['via'];
+
+/** What a personal key may do, as personal_access_tokens.scopes says. */
+export type Scope = 'read' | 'write';
+
+/** Whether [auth] may do what [scope] covers. Only a personal key is limited. */
+export function allows(auth: Auth, scope: Scope): boolean {
+  return auth.via !== 'pat' || auth.scopes.includes(scope);
+}
 
 export type AuthFailure =
   | 'missing_token'
@@ -105,7 +115,9 @@ export type AuthDeps = {
   resolvePat: (tokenHash: string) => Promise<ResolvedToken | null>;
 };
 
-export type ResolvedToken = { userId: string; householdId: string; kind: 'pat' | 'siri' };
+export type ResolvedToken =
+  & { userId: string; householdId: string }
+  & ({ kind: 'pat'; scopes: readonly Scope[] } | { kind: 'siri' });
 
 export type AuthOptions = { siri?: boolean };
 
@@ -133,7 +145,9 @@ export async function authenticate(
     if (!owner || (owner.kind === 'siri' && !options.siri)) {
       throw new AuthError('invalid_token', 'Token unbekannt oder widerrufen.', 'unknown_key');
     }
-    return { userId: owner.userId, householdId: owner.householdId, via: owner.kind };
+    return owner.kind === 'siri'
+      ? { userId: owner.userId, householdId: owner.householdId, via: 'siri' }
+      : { userId: owner.userId, householdId: owner.householdId, via: 'pat', scopes: owner.scopes };
   }
 
   const claims = await verifyJwt(token, deps);

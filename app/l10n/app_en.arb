@@ -1341,5 +1341,20 @@
   "detectedCardGotIt": "Got it",
   "settingsTrips": "Shopping trips",
   "detectTrips": "Detect trips from my ticks",
-  "detectTripsHint": "Uses only when you tick. No location."
+  "detectTripsHint": "Uses only when you tick. No location.",
+  "accessKeys": "Access keys",
+  "accessKeysUnifiedHint": "An access key connects AI assistants on the MCP server and your own scripts on the API to your list. One key works for both and can read only, or read and write.",
+  "accessKeysUnifiedHousehold": "New keys work in “{household}”, the household open now.",
+  "@accessKeysUnifiedHousehold": {"placeholders": {"household": {"type": "String"}}},
+  "accessKeysMcpBody": "For AI assistants: connect by signing in (OAuth) or with an access key.",
+  "accessKeysApiBody": "For your own scripts and automations: read and, if you allow it, change your list over HTTP with an access key.",
+  "noAccessKeys": "No active access key.",
+  "createAccessKey": "Create key",
+  "accessKeyNameHint": "e.g. AI assistant, Shortcuts or Home Assistant",
+  "accessKeyCreated": "Access key created",
+  "accessKeyShownOnce": "Copy the key now. It won't be shown again.",
+  "revokeAccessKeyTitle": "Revoke access key?",
+  "revokeAccessKeyBody": "Assistants and scripts using it lose access right away.",
+  "tooManyAccessKeys": "At most 20 active access keys. Revoke one first.",
+  "accessKeySessionRequired": "You can only create access keys here in the app while you're signed in."
 }

@@ -152,7 +152,12 @@ test('a household the user is not in, or a loose name, is a tool error naming th
 
 test('a personal access token stays in the household it was made in', () =>
   withPeter(async ({ peter, ids }) => {
-    const auth: Auth = { userId: peter, householdId: ids.Sommerfest ?? '', via: 'pat' };
+    const auth: Auth = {
+      userId: peter,
+      householdId: ids.Sommerfest ?? '',
+      via: 'pat',
+      scopes: ['read', 'write'] as const,
+    };
     const listed = await call(auth, open, 'list_households');
     assertEquals(JSON.parse(listed.content[0]?.text ?? '[]'), [
       { id: ids.Sommerfest, name: 'Sommerfest', members: 2, default: true },

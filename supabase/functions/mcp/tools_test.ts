@@ -20,9 +20,16 @@ import {
   SWITCHED_OFF,
   type Switches,
   tookTooLong,
+  toolScopes,
+  writeScopeRequired,
 } from './tools.ts';
 
-const auth: Auth = { userId: 'u', householdId: 'h', via: 'pat' };
+const auth: Auth = {
+  userId: 'u',
+  householdId: 'h',
+  via: 'pat',
+  scopes: ['read', 'write'] as const,
+};
 
 const rpc = (
   method: string,
@@ -62,7 +69,7 @@ async function message(res: Response): Promise<Message> {
   return JSON.parse(data ? data.slice(6) : text);
 }
 
-function serve(gate: Gate, lang?: string, switches: Switches = SWITCHED_OFF) {
+function serve(gate: Gate, lang?: string, switches: Switches = SWITCHED_OFF, caller: Auth = auth) {
   const asked: string[] = [];
   const counted: Gate = (household) => {
     asked.push(household);
@@ -75,7 +82,7 @@ function serve(gate: Gate, lang?: string, switches: Switches = SWITCHED_OFF) {
   };
   const handle = (req: Request) =>
     createMcpHandler(() =>
-      buildServer(auth, counted, report, langOf(req.headers.get('accept-language')), switches)
+      buildServer(caller, counted, report, langOf(req.headers.get('accept-language')), switches)
     ).fetch(req);
   return { handle, asked: () => asked.length, households: () => asked, reports, lang };
 }
@@ -400,4 +407,59 @@ Deno.test('langOf: English only when preferred over German', () => {
   assertEquals(langOf('de;q=0.4,en;q=0.9'), 'en');
   assertEquals(langOf('fr'), 'de');
   assertEquals(langOf('en;q=0'), 'de');
+});
+
+const readOnly: Auth = { userId: 'u', householdId: 'h', via: 'pat', scopes: ['read'] as const };
+
+const legalWriteScopeText = {
+  de:
+    'Dieser Zugriffsschlüssel darf nur lesen. Erstelle in der Snacklist-App unter Mehr › Zugänge einen Schlüssel zum Lesen und Schreiben. Es wurde nichts geändert.',
+  en:
+    'This access key can only read. Create a key that can read and write in the Snacklist app under More › Access. Nothing was changed.',
+} as const;
+
+Deno.test('job 397: a read-only key gets a tool error saying it can only read, data untouched', async () => {
+  for (const lang of ['de', 'en'] as const) {
+    for (const [name, args] of [...calls, ...switched]) {
+      if (toolScopes[name as keyof typeof toolScopes] !== 'write') continue;
+      const s = serve(locked, lang, ON, readOnly);
+      const res = await s.handle(rpc('tools/call', { name, arguments: args }, lang));
+      assertEquals(res.status, 200, name);
+      const { result, error } = await message(res);
+      assertEquals(error, undefined, `${name}: a tool result, not a JSON-RPC error`);
+      assertEquals(result.isError, true, name);
+      assertEquals(result.content, [{ type: 'text', text: writeScopeRequired[lang] }], name);
+      assertEquals(writeScopeRequired[lang], legalWriteScopeText[lang], 'Legal N-410 wording');
+      assertEquals(result.structuredContent, {
+        error: 'insufficient_scope',
+        details: { required: 'write' },
+      }, name);
+      assertEquals(s.asked(), 0, `${name}: refused before the Premium check`);
+      assertEquals(s.reports, [{ tool: name, household: 'h', reason: 'tool_error' }], name);
+    }
+  }
+});
+
+Deno.test('job 397: a read-only key reaches every read tool', async () => {
+  for (const [name, args] of calls) {
+    if (toolScopes[name as keyof typeof toolScopes] !== 'read') continue;
+    const s = serve(locked, undefined, ON, readOnly);
+    const { result } = await message(await s.handle(rpc('tools/call', { name, arguments: args })));
+    assertEquals(result.structuredContent, {
+      error: 'premium_required',
+      details: { integration: 'mcp', unlock: 'app' },
+    }, `${name}: past the scope check, at the gate`);
+  }
+});
+
+Deno.test('job 397: a tool needs read exactly when it is marked read-only', async () => {
+  const s = serve(locked, undefined, ON);
+  const { tools } = (await message(await s.handle(rpc('tools/list')))).result;
+  for (const tool of tools) {
+    assertEquals(
+      toolScopes[tool.name as keyof typeof toolScopes],
+      tool.annotations?.readOnlyHint ? 'read' : 'write',
+      tool.name,
+    );
+  }
 });

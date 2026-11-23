@@ -113,6 +113,12 @@ url = "https://mcp.snacklist.app"
 codex mcp login snacklist
 ```
 
+::: until unified-keys-guides
 For scripts and programs that can't sign in, create an access token in the app under **More** → **Access** → **Create token**. It's shown only once. Send it as `Authorization: Bearer fgp_…`.
+:::
+
+::: once unified-keys-guides
+For scripts and programs that can't sign in, create an access key in the app under **More** → **Access** → **Create key**. Choose **Read and write** if the program should change your list. It's shown only once. Send it as `Authorization: Bearer fgp_…`. The same key also works for the Snacklist API.
+:::
 
 Questions or problems? Write to me in the app under **More** → **Send feedback**.

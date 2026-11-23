@@ -85,7 +85,7 @@ Snacklist may develop the measures further as long as the level of protection do
 The club permits Snacklist to engage these sub-processors:
 
 - Supabase Pte. Ltd., Singapore: database, sign-in, server functions. The database is in Frankfurt am Main; server functions run at the location nearest the request, including outside the EU. Basis for transfers: Standard Contractual Clauses in Supabase's data processing agreement.
-- Vercel Inc., USA: delivery of the web app and the join page, forwarding of mcp.snacklist.app. Basis: EU-US Data Privacy Framework and Standard Contractual Clauses.
+- Vercel Inc., USA: delivery of the web app and the join page, forwarding of mcp.snacklist.app and api.snacklist.app. Basis: EU-US Data Privacy Framework and Standard Contractual Clauses.
 - GitHub Inc., USA: storage of the encrypted backups. Basis: EU-US Data Privacy Framework.
 
 Snacklist binds each sub-processor by contract to obligations that correspond to this agreement (Art. 28(4) GDPR). If Snacklist wants to add or replace a sub-processor, Snacklist informs the club beforehand in text form (for example e-mail). The club can object within 30 days. If it objects, it can terminate this agreement.

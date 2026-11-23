@@ -11,7 +11,7 @@ function `mcp` and speaks MCP over streamable HTTP.
 | Endpoint (local stack) | `http://127.0.0.1:54321/functions/v1/mcp` |
 | Protected Resource Metadata | `<endpoint>/.well-known/oauth-protected-resource` |
 | Authorization server | Supabase Auth, `https://jdwqrallbpdbshrdhenk.supabase.co/auth/v1` |
-| Credentials | OAuth 2.1 access token, or a personal access token (`fgp_…`) |
+| Credentials | OAuth 2.1 access token, or a personal access token (`fgp_…`); with the switch `unified_keys` on, any personal key with its scopes ([below](#scopes-one-key-for-mcp-and-the-api)) |
 | Protocol versions | 2026-07-28 (`server/discover`, stateless) and 2025-11-25 down to 2024-11-05 (`initialize`), chosen per request by `MCP-Protocol-Version` |
 | Authorization server, 2025-11-25 and older | Supabase Auth (dynamic client registration) |
 | Authorization server, 2026-07-28 | `<endpoint>/oauth`, Supabase Auth behind a front that adds Client ID Metadata Documents ([below](#protocol-2026-07-28-client-id-metadata-documents)); dynamic registration works there too |
@@ -240,7 +240,27 @@ URL works the same way. Two ways to authenticate:
 - **Personal access token.** For clients without OAuth support, scripts and
   the Siri shortcut. Create one under **Zugänge → Token erstellen**. It is
   shown once; copy it then. Send it as `Authorization: Bearer fgp_…`. Revoke
-  it under **Zugänge**; requests with it get `401` immediately.
+  it under **Zugänge**; requests with it get `401` immediately. With one key
+  for MCP and the API switched on, it is **Zugänge → Zugriffsschlüssel →
+  Schlüssel erstellen**, with "Lesen und schreiben" for an assistant that
+  should change the list ([Scopes](#scopes-one-key-for-mcp-and-the-api)).
+
+### Scopes: one key for MCP and the API
+
+Job 397 (AU1). While the server switch `app_switches.unified_keys` is on (seeded off;
+docs/API.md, "One key for MCP and the API"), every personal key works on the MCP server and on
+the [API](API.md), with the API's scopes: `read`, or `read` and `write`. MCP access tokens made
+before are `read` and `write`, so they keep doing what they did. A `read` key may call the tools
+marked `readOnlyHint` (`list_households`, `list_lists`, `list_items`, `get_item`,
+`list_categories`, `list_stores`, `list_recent`, `suggest_items`); every other tool answers HTTP
+200 with a tool result `{isError: true}`, "Dieser Zugriffsschlüssel darf nur lesen. Erstelle in
+der Snacklist-App unter Mehr › Zugänge einen Schlüssel zum Lesen und Schreiben. Es wurde nichts
+geändert." (English for an English `Accept-Language`, `tools.ts` `writeScopeRequired`),
+and `structuredContent: {error: "insufficient_scope", details: {required: "write"}}`, before the
+Premium check and without touching data. The table is `toolScopes` in `tools.ts`; a test keeps it
+equal to the tools' `readOnlyHint`. `tools/list` still lists every tool. Rate limits stay per
+surface: on MCP a key counts in its user's bucket (below), on the API in the key's own. OAuth
+connections and the app's Siri credential have no scopes and are not limited by them.
 
 ### Claude (claude.ai, Desktop, mobile)
 
@@ -439,8 +459,10 @@ The function (`supabase/functions/mcp/handler.ts`):
      for the app's own calls (the voice endpoint), but refused by the MCP
      endpoint, so a token issued to the app cannot be replayed at it.
    - **Personal access token** (`fgp_` + 43 base64url characters). Its
-     SHA-256 hash is looked up with
-     `public.authenticate_personal_access_token`. The lookup fails when the
+     SHA-256 hash is looked up with `public.authenticate_key` (job 397;
+     before it `authenticate_access_token`, which older function versions
+     still call), which returns the key's scopes, and API keys too while
+     `unified_keys` is on. The lookup fails when the
      token is revoked or its creator has left the household, and it records
      `last_used_at`.
 5. Runs every tool in one database transaction as the user
@@ -557,7 +579,7 @@ most 20 active tokens exist per user.
 Every access key, kind `pat` or `siri`, is deleted 30 days after it ended
 (privacy policy §7; Legal Review 2026-11-01, N-4 (b);
 `supabase/migrations/20261101100000_access_key_retention.sql`). A key works
-while all of these hold (`authenticate_access_token`): `revoked_at` is null,
+while all of these hold (`authenticate_key`): `revoked_at` is null,
 its creator is a member of the key's household (for `siri`: of any household),
 and for `siri` its session
 is in `auth.sessions` and `not_after` has not passed. It has ended once one

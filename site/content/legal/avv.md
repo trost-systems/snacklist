@@ -84,7 +84,7 @@ Snacklist darf die Maßnahmen weiterentwickeln, solange das Schutzniveau nicht s
 Der Verein erlaubt Snacklist, diese Unterauftragsverarbeiter einzusetzen:
 
 - Supabase Pte. Ltd., Singapur: Datenbank, Anmeldung, Server-Funktionen. Die Datenbank liegt in Frankfurt am Main; Server-Funktionen laufen am Standort, der dem Aufruf am nächsten liegt, auch außerhalb der EU. Grundlage für Übermittlungen: Standardvertragsklauseln im Auftragsverarbeitungsvertrag von Supabase.
-- Vercel Inc., USA: Auslieferung der Web-App und der Beitrittsseite, Weiterleitung von mcp.snacklist.app. Grundlage: EU-US Data Privacy Framework und Standardvertragsklauseln.
+- Vercel Inc., USA: Auslieferung der Web-App und der Beitrittsseite, Weiterleitung von mcp.snacklist.app und api.snacklist.app. Grundlage: EU-US Data Privacy Framework und Standardvertragsklauseln.
 - GitHub Inc., USA: Speicherort der verschlüsselten Sicherungskopien. Grundlage: EU-US Data Privacy Framework.
 
 Snacklist bindet jeden Unterauftragsverarbeiter vertraglich an Pflichten, die diesem Vertrag entsprechen (Art. 28 Abs. 4 DSGVO). Will Snacklist einen Unterauftragsverarbeiter hinzufügen oder ersetzen, informiert Snacklist den Verein vorher in Textform. Der Verein kann innerhalb von 30 Tagen widersprechen. Widerspricht er, kann er den Vertrag kündigen.

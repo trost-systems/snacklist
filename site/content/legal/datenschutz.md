@@ -9,7 +9,7 @@ updated: 2026-11-23
 
 # Datenschutzerklärung
 
-Stand: 22. November 2026
+Stand: 23. November 2026
 
 Hier steht, welche personenbezogenen Daten Snacklist verarbeitet, wozu, auf welcher Rechtsgrundlage, an wen sie gehen und welche Rechte du hast. Snacklist ist eine Einkaufslisten-App für Haushalte für iPhone, Android und Browser (app.snacklist.app) mit der Website snacklist.app.
 
@@ -132,14 +132,34 @@ Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.
 
 ## 7. Siri, Alexa und KI-Assistenten
 
+::: until unified-keys
 Du kannst Snacklist mit KI-Assistenten (zum Beispiel über das Model Context Protocol unter mcp.snacklist.app) oder über einen selbst erstellten Kurzbefehl mit Siri verbinden. Das geschieht nur, wenn du selbst einen Zugriffstoken erstellst oder eine Verbindung erlaubst. Für Siri direkt in der iPhone-App gilt der Abschnitt „Siri auf dem iPhone“. Der verbundene Dienst kann dann die Einträge deiner Liste lesen und ändern; sein Anbieter verarbeitet diese Inhalte nach seinen eigenen Datenschutzbestimmungen. Ein Zugriffstoken gilt nur für den Haushalt, in dem du ihn erstellt hast. Eine erlaubte Verbindung arbeitet in deinem Standardhaushalt (Abschnitt 5). Sie sieht außerdem die Namen deiner anderen Haushalte und deren Mitgliederzahl und kann deren Einträge lesen und ändern, wenn der Dienst einen dieser Haushalte angibt, etwa weil du ihn darum bittest. Wir speichern zu jedem Token einen Namen, einen Hash, seine letzten vier Zeichen und den Zeitpunkt der letzten Nutzung. Zu jeder erlaubten Verbindung speichern wir außerdem eine kurze Gerätebezeichnung wie „Chrome · macOS“, die dein Gerät aus Plattform und Browser ableitet; sie enthält weder die vollständige Browserkennung (User-Agent) noch die IP-Adresse. Sie erscheint unter Mehr › Zugänge als „Freigegeben auf Chrome · macOS“ und wird mit der Verbindung gelöscht. Endet ein Token, etwa weil du ihn widerrufst oder den Haushalt verlässt, für den er gilt, löschen wir diese Angaben 30 Tage danach beim nächsten täglichen Aufräumen. Du kannst Tokens und Verbindungen jederzeit in der App widerrufen.
+:::
+
+::: once unified-keys
+Du kannst Snacklist mit KI-Assistenten (zum Beispiel über das Model Context Protocol unter mcp.snacklist.app), mit eigenen Programmen und Automationen über unsere Schnittstelle (API, siehe unten) oder über einen selbst erstellten Kurzbefehl mit Siri verbinden. Das geschieht nur, wenn du selbst einen Zugriffsschlüssel erstellst oder eine Verbindung erlaubst. Für Siri direkt in der iPhone-App gilt der Abschnitt „Siri auf dem iPhone“. Der verbundene Dienst kann dann die Einträge deiner Liste lesen und, wenn du es erlaubst, ändern; sein Anbieter verarbeitet diese Inhalte nach seinen eigenen Datenschutzbestimmungen. Ein Zugriffsschlüssel gilt nur für den Haushalt, in dem du ihn erstellt hast, und funktioniert für KI-Assistenten über MCP, für die API und für einen Kurzbefehl mit Siri. Beim Erstellen legst du fest, ob er nur lesen oder auch ändern darf. Zugriffstoken, die du früher für KI-Assistenten erstellt hast, sind solche Zugriffsschlüssel und dürfen lesen und ändern; sie funktionieren deshalb auch für die API. Eine erlaubte Verbindung arbeitet in deinem Standardhaushalt (Abschnitt 5). Sie sieht außerdem die Namen deiner anderen Haushalte und deren Mitgliederzahl und kann deren Einträge lesen und ändern, wenn der Dienst einen dieser Haushalte angibt, etwa weil du ihn darum bittest. Zu jedem Zugriffsschlüssel speichern wir, wer ihn erstellt hat und für welchen Haushalt, den Namen, den du ihm gibst, einen Hash des Schlüssels, seine letzten vier Zeichen, ob er nur lesen oder auch ändern darf und wann er erstellt, zuletzt genutzt und widerrufen wurde. Zu jeder erlaubten Verbindung speichern wir außerdem eine kurze Gerätebezeichnung wie „Chrome · macOS“, die dein Gerät aus Plattform und Browser ableitet; sie enthält weder die vollständige Browserkennung (User-Agent) noch die IP-Adresse. Sie erscheint unter Mehr › Zugänge als „Freigegeben auf Chrome · macOS“ und wird mit der Verbindung gelöscht. Endet ein Zugriffsschlüssel, etwa weil du ihn widerrufst oder den Haushalt verlässt, für den er gilt, löschen wir diese Angaben 30 Tage danach beim nächsten täglichen Aufräumen. Du kannst Zugriffsschlüssel und Verbindungen jederzeit in der App unter Mehr › Zugänge widerrufen.
+:::
 Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.
 
 ### Schnittstelle für eigene Programme (API) {#api}
 
+::: until unified-keys
 Für eigene Programme und Automationen kannst du in der App unter Mehr › Zugänge › API einen API-Schlüssel erstellen. Die App zeigt den Schlüssel nur einmal an. Zu jedem API-Schlüssel speichern wir, wer ihn erstellt hat und für welchen Haushalt, den Namen, den du ihm gibst, einen Hash des Schlüssels, seine letzten vier Zeichen, ob er nur lesen oder auch ändern darf und wann er erstellt, zuletzt genutzt und widerrufen wurde. Wer den Schlüssel hat, kann damit in deinem Namen die Einträge, Listen, Läden und Kategorien dieses einen Haushalts lesen und, wenn du es beim Erstellen erlaubst, ändern. Gibst du den Schlüssel an ein Programm oder einen Dienst weiter, verarbeitet dessen Anbieter diese Inhalte nach seinen eigenen Datenschutzbestimmungen. Ein API-Schlüssel endet, wenn du ihn widerrufst, den Haushalt verlässt oder dein Konto löschst; seine Angaben löschen wir 30 Tage danach beim nächsten täglichen Aufräumen.
+:::
+
+::: once unified-keys
+Für eigene Programme und Automationen nutzt du einen Zugriffsschlüssel (oben), den du in der App unter Mehr › Zugänge erstellst. Die App zeigt den Schlüssel nur einmal an. Wer den Schlüssel hat, kann damit in deinem Namen die Einträge, Listen, Läden und Kategorien dieses einen Haushalts lesen und, wenn du es beim Erstellen erlaubst, ändern, über die API wie über MCP. Gibst du den Schlüssel an ein Programm oder einen Dienst weiter, verarbeitet dessen Anbieter diese Inhalte nach seinen eigenen Datenschutzbestimmungen. Welche Angaben wir zu einem Zugriffsschlüssel speichern und wann wir sie löschen, steht oben.
+:::
+
+::: until unified-keys
 Schickt ein Programm mit einem API-Schlüssel Einträge an Snacklist, kann es der Anfrage eine eigene Kennung mitgeben, damit eine Wiederholung nichts doppelt einträgt. Dafür speichern wir die erste erfolgreiche Antwort auf diese Anfrage (sie enthält die Namen der hinzugefügten Einträge) mit einem Prüfwert der Anfrage. Sobald sie älter als 24 Stunden ist, löschen wir sie beim nächsten täglichen Aufräumen; mit dem Schlüssel, dem Haushalt oder deinem Konto sofort. Rechtsgrundlage für API-Schlüssel und gespeicherte Antworten: Art. 6 Abs. 1 lit. b DSGVO.
 Damit niemand die Schnittstelle oder den MCP-Server überlastet oder API-Schlüssel durch Ausprobieren findet, zählen wir Anfragen je Schlüssel und je Haushalt und Tag, bei Verbindungen über MCP (mcp.snacklist.app) je Konto und Tag. Kommt eine Anfrage mit einem Schlüssel, den es nicht gibt, speichern wir zur IP-Adresse, von der sie kam, einen Prüfwert (SHA-256-Hash mit einem geheimen Zusatzwert) mit der Zahl solcher Fehlversuche und dem Beginn des Zeitfensters, nicht die IP-Adresse selbst. Zähler und Prüfwerte löschen wir beim nächsten täglichen Aufräumen, sobald sie älter als einen Tag sind, die Tageszähler je Haushalt am übernächsten Tag. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (unser berechtigtes Interesse an einem sicheren und stabilen Betrieb).
+:::
+
+::: once unified-keys
+Schickt ein Programm mit einem Zugriffsschlüssel Einträge an Snacklist, kann es der Anfrage eine eigene Kennung mitgeben, damit eine Wiederholung nichts doppelt einträgt. Dafür speichern wir die erste erfolgreiche Antwort auf diese Anfrage (sie enthält die Namen der hinzugefügten Einträge) mit einem Prüfwert der Anfrage. Sobald sie älter als 24 Stunden ist, löschen wir sie beim nächsten täglichen Aufräumen; mit dem Schlüssel, dem Haushalt oder deinem Konto sofort. Rechtsgrundlage für Zugriffsschlüssel und gespeicherte Antworten: Art. 6 Abs. 1 lit. b DSGVO.
+Damit niemand die Schnittstelle oder den MCP-Server überlastet oder Zugriffsschlüssel durch Ausprobieren findet, zählen wir Anfragen je Schlüssel und je Haushalt und Tag, bei Verbindungen über MCP (mcp.snacklist.app) je Konto und Tag. Kommt eine Anfrage mit einem Schlüssel, den es nicht gibt, speichern wir zur IP-Adresse, von der sie kam, einen Prüfwert (SHA-256-Hash mit einem geheimen Zusatzwert) mit der Zahl solcher Fehlversuche und dem Beginn des Zeitfensters, nicht die IP-Adresse selbst. Zähler und Prüfwerte löschen wir beim nächsten täglichen Aufräumen, sobald sie älter als einen Tag sind, die Tageszähler je Haushalt am übernächsten Tag. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (unser berechtigtes Interesse an einem sicheren und stabilen Betrieb).
+:::
 
 ### Siri auf dem iPhone
 
@@ -213,7 +233,7 @@ Wir setzen folgende Dienstleister ein, die Daten in unserem Auftrag und nach uns
 - Supabase Pte. Ltd., Singapur (Datenbank, Anmeldung, Auslösen der Anmelde-E-Mails, Server-Funktionen; die Datenbank liegt im Rechenzentrum Frankfurt am Main, die Server-Funktionen laufen am Standort, der dem Aufruf am nächsten liegt, auch außerhalb der EU; die Server-Funktion für Käufe läuft immer in Frankfurt am Main)
 - Plus Five Five, Inc. („Resend“), San Francisco, USA (Versand unserer E-Mails, darunter die Anmelde- und Bestätigungs-E-Mails, die Warteliste und die Eingangsbestätigungen und Entscheidungen zu Meldungen; versendet aus Irland, speichert E-Mails und Versandprotokolle in den USA und löscht sie nach 30 Tagen)
 - RevenueCat, Inc., Brandon (Florida), USA (kostenlose Freischaltung von Snacklist Premium für Tester, für die App-Prüfung und als Dank für die Beta für bestehende Konten (Abschnitt 5) und, sobald Snacklist Premium verkauft wird, Käufe in der App: Prüfung und Verwaltung der Freischaltung; Server bei Amazon Web Services in den USA)
-- Vercel Inc. (Hosting von snacklist.app, app.snacklist.app, mcp.snacklist.app; Domain und DNS)
+- Vercel Inc. (Hosting von snacklist.app, app.snacklist.app, mcp.snacklist.app, api.snacklist.app; Domain und DNS)
 - PostHog Inc. (Nutzungsdaten, Fehlerberichte und Abfrage eingeschalteter Funktionen, Server in der EU; nur wie in Abschnitt 9 beschrieben)
 - GitHub Inc. (verschlüsselte Sicherungskopien)
 - Google Cloud EMEA Limited, Dublin, Irland (Google Workspace, E-Mail)

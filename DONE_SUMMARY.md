@@ -2486,3 +2486,92 @@ until Ops sets `PUSH_SEND_SECRET` and `FCM_SERVICE_ACCOUNT_JSON`), the app side 
 build defines, opt-in-only prompt, sign-out cleanup, a tap opens the named list) and the native
 config. Privacy drafts wait behind the hold `push-notifications`. Contract `docs/PUSH.md`, details
 `docs/done/376.md`.
+
+## Job 397: AU1, one personal key for MCP and the API
+
+One key for MCP, the API and the Siri Shortcut with read or read-and-write scopes, behind
+`app_switches.unified_keys` and the flag `unified-keys` (both off); one „Zugriffsschlüssel“ list in
+Zugänge. Review 0 fixes: the guides wait for their own hold `unified-keys-guides` (full rollout),
+the released privacy text uses one term, flag-off rows look as today. Waits for Legal's GO, not
+merged. [docs/done/397.md](docs/done/397.md).
+
+### Job 397b: Legal conditions (N-406 to N-411, N-408) for #647
+
+Applied on top of job 397's own review round (32dbb7a3b, which already wrapped the idempotency and
+rate-limit sentences, N-411, and added the hold `unified-keys-guides`), rebased on main with #648:
+`grocery-log`, `prices-and-trip-total`, `trip-mode`, `total-priced-only` and `unified-keys` stay `off`,
+the holds stay `released: false` (#643 is not on main). Changes:
+
+- N-407: `updated`, „Stand“ and "Last updated" in datenschutz.md and privacy.md are **22 November 2026**
+  (`TZ=Europe/Berlin date +%F` at the push: 2026-11-22).
+- N-406: docs/done/397.md rollout line replaced word for word; NEEDS_PETER "Job 397" already has the
+  order hold, live check, switch, flag.
+- N-409: `accessKeysApiBody` DE and EN (the older `apiBody` stays as it was), l10n regenerated.
+  N-410: `writeScopeRequired` without the `write` jargon; its test asserts the jargon is gone.
+- N-408: avv.md and dpa.md name api.snacklist.app next to mcp.snacklist.app (still `draft: true`).
+
+Production render (`VERCEL_ENV=production node build.mjs`, holds off), main 7394adf17 against this
+head. There is no „Stand“ line in the diff: main's „Stand“ already read 22 November (only its
+frontmatter `updated` said 23, hence the sitemap lines). Per language, the hidden `until`/`once`
+blocks split the HTML into extra `<p>`s: §7's legal-basis sentence becomes its own `<p>` and the
+idempotency sentences their own `<p>`; same words. Also `/openapi.yaml` and `llms-full.txt` (from
+docs/api/openapi.yaml, part of #647) describe the personal key and the `unified_keys` switch in the
+auth sentence; flagged for Legal. `diff` of the HTML and sitemap (long lines cut in the middle):
+
+```
+=== datenschutz.html
+114,115c114,115
+< <p>Du kannst Snacklist mit KI-Assistenten (zum Beispiel üb … del Context Protocol unter mcp.snacklist
+< Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.</p>
+---
+> <p>Du kannst Snacklist mit KI-Assistenten (zum Beispiel üb … del Context Protocol unter mcp.snacklist
+> <p>Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.</p>
+117,118c117,118
+< <p>Für eigene Programme und Automationen kannst du in der  … unter Mehr › Zugänge › API einen API-Sch
+< Schickt ein Programm mit einem API-Schlüssel Einträge an S … , kann es der Anfrage eine eigene Kennun
+---
+> <p>Für eigene Programme und Automationen kannst du in der  … unter Mehr › Zugänge › API einen API-Sch
+> <p>Schickt ein Programm mit einem API-Schlüssel Einträge a … ist, kann es der Anfrage eine eigene Ken
+160c160
+< <li>Vercel Inc. (Hosting von snacklist.app, app.snacklist. …  mcp.snacklist.app; Domain und DNS)</li>
+---
+> <li>Vercel Inc. (Hosting von snacklist.app, app.snacklist. … nacklist.app, api.snacklist.app; Domain 
+=== en/privacy.html
+97,98c97,98
+< <p>You can connect Snacklist to AI assistants (for example … he Model Context Protocol at mcp.snackli
+< Legal basis: Art. 6(1)(b) GDPR.</p>
+---
+> <p>You can connect Snacklist to AI assistants (for example … he Model Context Protocol at mcp.snackli
+> <p>Legal basis: Art. 6(1)(b) GDPR.</p>
+100,101c100,101
+< <p>For your own programs and automations you can create an … ey in the app under More › Access › API.
+< If a program sends items to Snacklist with an API key, it  … he request its own ID so that a retry do
+---
+> <p>For your own programs and automations you can create an … ey in the app under More › Access › API.
+> <p>If a program sends items to Snacklist with an API key,  … e the request its own ID so that a retry
+143c143
+< <li>Vercel Inc. (hosting of snacklist.app, app.snacklist.a …  mcp.snacklist.app; domain and DNS)</li>
+---
+> <li>Vercel Inc. (hosting of snacklist.app, app.snacklist.a … acklist.app and api.snacklist.app; domai
+=== sitemap.xml
+9c9
+< <url><loc>https://snacklist.app/datenschutz</loc><lastmod>2026-11-23</lastmod></url>
+---
+> <url><loc>https://snacklist.app/datenschutz</loc><lastmod>2026-11-22</lastmod></url>
+13c13
+< <url><loc>https://snacklist.app/en/privacy</loc><lastmod>2026-11-23</lastmod></url>
+---
+> <url><loc>https://snacklist.app/en/privacy</loc><lastmod>2026-11-22</lastmod></url>
+```
+
+Since 32dbb7a3b this build no longer shows „· Lesen und schreiben ·“ on MCP token rows while the
+switch or flag is off (older store builds still do; N-412). Against 40db754cf the file set also drops
+`e2e/tests/mcp.spec.ts` and adds avv.md, dpa.md and `site/test/gates.test.mjs`.
+Review 0 fixes: the old N-410 quote in docs/MCP.md and the ai-assistants feature file, wording in
+docs/done/397.md, the test name and the journey comment.
+
+Review 1 fixes (397b): the PR body no longer says "24 November" or that the domain still has to be
+attached (it says 22 November, Europe/Berlin publish date, domain live; NEEDS_LEAD "Job 397b"), the
+commit message follows it; NEEDS_LEAD "Job 397" points to "Job 397b" without a SHA; `tools_test.ts` pins
+Legal's exact N-410 sentences. Not done: the old N-410 quote in `docs/screenshots/397/{de,en}-journey.log`
+is a recorded run of an earlier build and stays as recorded; the journey needs a stack to rerun.

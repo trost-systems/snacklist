@@ -137,3 +137,39 @@ test("the privacy policies' 24 hours are the push function's longest ttl_seconds
   assert.match(de, /verfällt sie nach höchstens 24 Stunden/);
   assert.match(en, /it expires after at most 24 hours/);
 });
+
+test('job 397: the privacy text follows unified-keys, the guides follow unified-keys-guides alone', () => {
+  const holds = (privacy, guides) => {
+    const data = JSON.parse(REAL_FLAGS);
+    data.holds['unified-keys'].released = privacy;
+    data.holds['unified-keys-guides'].released = guides;
+    return JSON.stringify(data);
+  };
+  const main = (site, route) => site.page(route).querySelector('main').innerHTML;
+  const before = buildSite({ env: PROD, repo: { flags: holds(false, false) } });
+  const text = buildSite({ env: PROD, repo: { flags: holds(true, false) } });
+  const all = buildSite({ env: PROD, repo: { flags: holds(true, true) } });
+
+  assert.match(main(before, '/datenschutz'), /Ein Zugriffstoken gilt nur für den Haushalt/);
+  assert.doesNotMatch(main(before, '/datenschutz'), /Zugriffsschlüssel/);
+  assert.doesNotMatch(main(before, '/en/privacy'), /access key/);
+  for (const site of [text, all]) {
+    assert.match(main(site, '/datenschutz'), /Ein Zugriffsschlüssel gilt nur für den Haushalt/);
+    // Section 9's analytics event keeps its name „API-Schlüssel genutzt“ (consent text, unchanged).
+    assert.doesNotMatch(main(site, '/datenschutz'), /mit einem API-Schlüssel|Rechtsgrundlage für API-Schlüssel|Ein Zugriffstoken gilt/);
+    assert.match(main(site, '/en/privacy'), /An access key works only for the household/);
+    assert.doesNotMatch(main(site, '/en/privacy'), /with an API key|Legal basis for API keys|An access token works/);
+  }
+
+  // Most apps still show „Zugriffstoken“ until the flag reaches everyone.
+  for (const site of [before, text]) {
+    assert.match(main(site, '/de/anleitungen/siri-kurzbefehl'), /Token erstellen/);
+    assert.doesNotMatch(main(site, '/de/anleitungen/siri-kurzbefehl'), /Schlüssel erstellen/);
+    assert.match(main(site, '/de/anleitungen/claude'), /Token erstellen/);
+    assert.match(main(site, '/en/guides/claude'), /Create token/);
+  }
+  assert.match(main(all, '/de/anleitungen/siri-kurzbefehl'), /Schlüssel erstellen/);
+  assert.doesNotMatch(main(all, '/de/anleitungen/siri-kurzbefehl'), /Token erstellen/);
+  assert.match(main(all, '/de/anleitungen/claude'), /Schlüssel erstellen/);
+  assert.match(main(all, '/en/guides/claude'), /Create key/);
+});

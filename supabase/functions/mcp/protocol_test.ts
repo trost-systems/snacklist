@@ -9,7 +9,12 @@ import type { Access } from '../_shared/premium.ts';
 import { type Deps, handle } from './handler.ts';
 import { buildServer } from './tools.ts';
 
-const auth: Auth = { userId: 'u', householdId: 'h', via: 'pat' };
+const auth: Auth = {
+  userId: 'u',
+  householdId: 'h',
+  via: 'pat',
+  scopes: ['read', 'write'] as const,
+};
 const MODERN = '2026-07-28';
 const LEGACY = '2025-11-25';
 const TOOLS = [

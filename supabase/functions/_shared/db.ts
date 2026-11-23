@@ -2,6 +2,7 @@
 // authenticated, auth.uid() = the user), so RLS, triggers and classify_item behave exactly as
 // they do for the app. Only credential lookups run with the connection's own privileges.
 import postgres from 'postgres';
+import type { ResolvedToken, Scope } from './auth.ts';
 
 export type Sql = postgres.Sql;
 export type Tx = postgres.TransactionSql;
@@ -174,13 +175,21 @@ export async function sessionActive(
 }
 
 /** A PAT or Siri credential by its hash; nothing when unknown, revoked or no longer valid. */
-export async function resolveAccessToken(
-  tokenHash: string,
-): Promise<{ userId: string; householdId: string; kind: 'pat' | 'siri' } | null> {
-  const sql = db();
-  const [row] = await sql<{ user_id: string; household_id: string; kind: 'pat' | 'siri' }[]>`
-    select user_id, household_id, kind from public.authenticate_access_token(${tokenHash})`;
-  return row ? { userId: row.user_id, householdId: row.household_id, kind: row.kind } : null;
+export async function resolveAccessToken(tokenHash: string): Promise<ResolvedToken | null> {
+  const [row] = await db()<
+    {
+      user_id: string;
+      household_id: string;
+      kind: 'pat' | 'api' | 'siri';
+      scopes: string[] | null;
+    }[]
+  >`select user_id, household_id, kind, scopes from public.authenticate_key(${tokenHash})`;
+  if (!row) return null;
+  const owner = { userId: row.user_id, householdId: row.household_id };
+  if (row.kind === 'siri') return { ...owner, kind: 'siri' };
+  // An MCP token and an API key are one personal key (job 397); the kind stays for history.
+  const scopes = (row.scopes ?? []).filter((s): s is Scope => s === 'read' || s === 'write');
+  return { ...owner, kind: 'pat', scopes };
 }
 
 export async function userExists(userId: string): Promise<boolean> {

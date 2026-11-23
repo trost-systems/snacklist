@@ -27,6 +27,12 @@ class FakeAccessRepository() implements AccessRepository {
   /// The scopes of every API key asked for.
   final apiScopes = <ApiScopes>[];
 
+  /// The server switch `app_switches.unified_keys` (job 397).
+  var unified = false;
+
+  /// The name of every API key asked for.
+  final apiNames = <String>[];
+
   @override
   Future<List<AccessToken>> fetchTokens() async => [
     for (final t in tokens.reversed)
@@ -43,6 +49,8 @@ class FakeAccessRepository() implements AccessRepository {
       AccessToken(
         id: 't${tokens.length}',
         name: name,
+        // The server makes every MCP token read-and-write (job 397).
+        scopes: ApiScopes.readWrite,
         hint: '1234',
         createdAt: DateTime(2026, 10, 22),
       ),
@@ -53,6 +61,7 @@ class FakeAccessRepository() implements AccessRepository {
   @override
   Future<NewToken> createApiToken(String name, ApiScopes scopes) async {
     apiScopes.add(scopes);
+    apiNames.add(name);
     if (apiRefusal case final code?) {
       throw AccessError(code);
     }
@@ -80,6 +89,9 @@ class FakeAccessRepository() implements AccessRepository {
 
   @override
   Future<void> disconnect(String clientId) async => disconnected.add(clientId);
+
+  @override
+  Future<bool> unifiedKeys() async => unified;
 }
 
 const apiSecret = 'fgp_apikeyapikeyapikeyapikeyapikeyapike9876';
@@ -801,6 +813,187 @@ void main() {
       await tester.pumpAndSettle();
       await shrink(tester);
       expectFits(tester);
+    });
+  });
+
+  group('job 397: one list of access keys', () {
+    Finder key(String k) => find.byKey(ValueKey(k));
+    const apiUrl =
+        'https://jdwqrallbpdbshrdhenk.supabase.co/functions/v1/api/v1';
+
+    void unifiedWithKeys(FakeAccessRepository r) {
+      r.unified = true;
+      r.tokens.addAll([
+        AccessToken(
+          id: 'mcp',
+          name: 'KI-Assistent',
+          scopes: ApiScopes.readWrite,
+          hint: 'aaaa',
+          createdAt: DateTime(2026, 11, 20),
+        ),
+        AccessToken(
+          id: 'api',
+          name: 'Dashboard',
+          kind: AccessKind.api,
+          scopes: ApiScopes.read,
+          hint: 'bbbb',
+          createdAt: DateTime(2026, 11, 21),
+        ),
+      ]);
+    }
+
+    Future<void> create(
+      WidgetTester tester,
+      String name, {
+      String? scope,
+    }) async {
+      await tester.scrollUntilVisible(key('access-key-create'), 200);
+      await tester.tap(key('access-key-create'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.widgetWithText(LabeledField, 'Name'), name);
+      if (scope != null) {
+        await tester.tap(key(scope));
+        await tester.pumpAndSettle();
+      }
+      await tapText(tester, 'Erstellen');
+    }
+
+    void expectTwoSections() {
+      expect(find.text('ZUGRIFFSTOKEN'), findsOneWidget);
+      expect(find.text('Token erstellen'), findsOneWidget);
+      expect(find.text('MCP-SERVER'), findsOneWidget);
+      expect(key('access-keys-section'), findsNothing);
+      expect(key('access-key-create'), findsNothing);
+    }
+
+    testWidgets('flag and switch on: one section lists MCP tokens and API '
+        'keys with their scopes', (tester) async {
+      await pumpAccess(tester, seed: unifiedWithKeys, flags: {'unified-keys'});
+      expect(find.text('ZUGRIFFSSCHLÜSSEL'), findsOneWidget);
+      expect(key('access-keys-hint'), findsOneWidget);
+      expect(find.text('ZUGRIFFSTOKEN'), findsNothing);
+      expect(find.text('MCP-SERVER'), findsNothing);
+      expect(find.text('API'), findsNothing);
+      expect(find.text('Token erstellen'), findsNothing);
+      expect(find.text('https://mcp.snacklist.app'), findsOneWidget);
+      expect(find.text(apiUrl), findsNothing);
+      expect(key('api-docs'), findsNothing);
+      expect(find.text('KI-Assistent'), findsOneWidget);
+      expect(
+        find.text(
+          '…aaaa · Lesen und schreiben · Erstellt am 20.11.2026 · '
+          'Noch nie benutzt',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Dashboard'), findsOneWidget);
+      expect(
+        find.text(
+          '…bbbb · Nur lesen · Erstellt am 21.11.2026 · Noch nie benutzt',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Schlüssel erstellen'), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Dashboard widerrufen'));
+      await tester.pumpAndSettle();
+      expect(find.text('Zugriffsschlüssel widerrufen?'), findsOneWidget);
+      await tapText(tester, 'Widerrufen');
+      expect(repo.revoked, ['api']);
+      expect(find.text('Dashboard'), findsNothing);
+    });
+
+    testWidgets('with public-api on, the API URL and docs too', (tester) async {
+      await pumpAccess(
+        tester,
+        seed: (r) => r.unified = true,
+        flags: {'unified-keys', 'public-api'},
+      );
+      expect(find.text('https://mcp.snacklist.app'), findsOneWidget);
+      expect(find.text(apiUrl), findsOneWidget);
+      expect(key('api-docs'), findsOneWidget);
+      expect(find.text('Kein aktiver Zugriffsschlüssel.'), findsOneWidget);
+      expect(key('api-section'), findsNothing);
+    });
+
+    testWidgets('with api-snacklist-app on, the own domain in the list', (
+      tester,
+    ) async {
+      await pumpAccess(
+        tester,
+        seed: (r) => r.unified = true,
+        flags: {'unified-keys', 'public-api', 'api-snacklist-app'},
+      );
+      expect(find.text('https://api.snacklist.app/v1'), findsOneWidget);
+      expect(find.text(apiUrl), findsNothing);
+    });
+
+    testWidgets('a new key gets the name and scopes picked, shown once', (
+      tester,
+    ) async {
+      await pumpAccess(
+        tester,
+        seed: (r) => r.unified = true,
+        flags: {'unified-keys'},
+      );
+      await create(tester, 'Home Assistant', scope: 'api-scope-write');
+
+      expect(repo.apiNames, ['Home Assistant']);
+      expect(repo.apiScopes, [ApiScopes.readWrite]);
+      expect(find.text('Zugriffsschlüssel erstellt'), findsOneWidget);
+      expect(find.text(apiSecret), findsOneWidget);
+      await tapText(tester, 'Fertig');
+      expect(find.text(apiSecret), findsNothing);
+      expect(find.textContaining('Lesen und schreiben'), findsOneWidget);
+    });
+
+    testWidgets('read only by default', (tester) async {
+      await pumpAccess(
+        tester,
+        seed: (r) => r.unified = true,
+        flags: {'unified-keys'},
+      );
+      await create(tester, 'Dashboard');
+      expect(repo.apiScopes, [ApiScopes.read]);
+    });
+
+    testWidgets('the limit of 20 keys is explained', (tester) async {
+      await pumpAccess(
+        tester,
+        seed: (r) => r
+          ..unified = true
+          ..apiRefusal = 'too_many_tokens',
+        flags: {'unified-keys'},
+      );
+      await create(tester, 'Twenty-first');
+      expect(
+        find.text(
+          'Höchstens 20 aktive Zugriffsschlüssel. Widerrufe erst einen.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text(apiSecret), findsNothing);
+    });
+
+    testWidgets('flag on, server switch off: two sections as before', (
+      tester,
+    ) async {
+      await pumpAccess(tester, flags: {'unified-keys'});
+      expectTwoSections();
+    });
+
+    testWidgets('server switch on, flag off: two sections as before', (
+      tester,
+    ) async {
+      await pumpAccess(tester, seed: (r) => r.unified = true, flags: {});
+      expectTwoSections();
+    });
+
+    testWidgets('server switch on, no Flags: two sections as before', (
+      tester,
+    ) async {
+      await pumpAccess(tester, seed: (r) => r.unified = true);
+      expectTwoSections();
     });
   });
 }
