@@ -352,6 +352,7 @@ function loadPage(kindName, { file, expect }, contentDir, versions) {
     if (fm[field] !== expected) fail(name, `frontmatter field "${field}" is "${fm[field]}" but the file location requires "${expected}"`);
   }
   if (fm.draft !== undefined && typeof fm.draft !== 'boolean') fail(name, `frontmatter field "draft" must be true or false, got ${JSON.stringify(fm.draft)}`);
+  if (fm.unlisted !== undefined && (typeof fm.unlisted !== 'boolean' || kindName !== 'guide')) fail(name, 'frontmatter field "unlisted" must be true or false and is only allowed on guides');
   if (fm.since !== undefined) checkSince(fm.since, name, kindName, 'frontmatter field');
   if (kindName === 'page' && !/^\/[a-z0-9/-]*[a-z0-9]$/.test(fm.path)) fail(name, `frontmatter field "path" must look like /some/path, got "${fm.path}"`);
   if (fm.form !== undefined) {
@@ -372,6 +373,7 @@ function loadPage(kindName, { file, expect }, contentDir, versions) {
     updated: fm.updated,
     // Why the page is not published: production leaves out a page with any notice.
     notices: [...(fm.draft === true ? [ui.draft] : []), ...(released(fm.since, versions) ? [] : [ui.unreleased(fm.since)])],
+    unlisted: fm.unlisted === true,
     report: fm.form !== undefined,
     body: pageBody(content, fm, { file: name, kind: kindName, locale: fm.locale, versions, since: fm.since }),
   };
@@ -467,7 +469,7 @@ function renderPage(page, { config, groups, guidesByLocale, copy, stage }) {
   // The pages behind the mail links are never indexed; the sign-up form ships with the landing
   // page while the stage has one.
   const waitlistPage = page.kind === 'waitlist';
-  const noindex = page.notices.length > 0 || waitlistPage;
+  const noindex = page.notices.length > 0 || waitlistPage || page.unlisted;
   const form = waitlistPage || (landing && stage !== 'launch');
   const report = page.report === true;
   const main = mainContent(page, guidesByLocale);
@@ -486,7 +488,7 @@ function renderPage(page, { config, groups, guidesByLocale, copy, stage }) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-${comments}${noindex ? '<meta name="robots" content="noindex">\n' : ''}<title>${landing || page.kind === 'comparison' ? title : `${title} | ${SITE_NAME}`}</title>
+${comments}${noindex ? '<meta name="robots" content="noindex">\n' : ''}${page.unlisted ? '<meta name="snacklist-unlisted" content="true">\n' : ''}<title>${landing || page.kind === 'comparison' ? title : `${title} | ${SITE_NAME}`}</title>
 <meta name="description" content="${description}">
 <link rel="canonical" href="${url}">
 ${alternates}
@@ -817,7 +819,7 @@ export function build({
   const guidesByLocale = Object.fromEntries(
     Object.keys(LOCALES).map((code) => [
       code,
-      pages.filter((p) => p.kind === 'guide' && p.locale === code).sort((a, b) => a.title.localeCompare(b.title, code)),
+      pages.filter((p) => p.kind === 'guide' && p.locale === code && !p.unlisted).sort((a, b) => a.title.localeCompare(b.title, code)),
     ]),
   );
 

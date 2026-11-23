@@ -18177,4 +18177,11 @@ merge-pr.sh. This docs fix waits for review PASS before it lands. NEEDS_LEAD has
 1. **Per-tool test is a literal table** (`expected` in `tools_test.ts`), not derived from `toolAnnotations`; flipping `rename_store.destructiveHint` fails it (run).
 2. **`set_store_order` and `set_store_layout` now `destructiveHint: true`**: each call replaces a store's whole order (layout also hides categories) and the old order cannot be restored; OpenAI's "reversibility alone doesn't justify false" and the research's OC-Q6 side with true, and a rejection costs more than an extra confirmation. Supersedes the narrower reading in 415.2 for those two.
 3. **The seed sets IKEA's walk order itself** through `public.set_store_layout` (furnishings first, fresh food, drugstore hidden); re-running leaves the same rows (checked).
-4. **Not done:** a neutral machine code instead of `premium_required` (it also names the telemetry reason, the e2e specs and clients; the code shows only while the lock is on, which is off); keeping the info page out of the guide indexes (no unlisted mechanism in the site build; the page holds no price); a display name and retailer-chain links for the reviewer.
+4. **Not done in that round:** the lead's 10:15 update (neutral error code, unlisted info page, reviewer display name, chain links) was required, not optional; I skipped it wrongly and the PR landed before review. Done in the review 1 round below.
+
+## Job 415 review 1 (follow-up)
+
+1. **MCP error code `plan_required`**: `structuredContent.error` no longer carries the word "Premium" (OpenAI 5.1). `CallReason` and the telemetry reason keep `premium_required`; nothing reads the MCP code (grep of `e2e`, `app/lib`). The REST API's 402 `premium_required` is a separate contract, untouched.
+2. **`unlisted: true` guide frontmatter** (site build): the guide builds and answers at its URL, is noindex (the launch check allows it through a `snacklist-unlisted` meta marker), and is left out of the guide index, the sitemap and llms.txt (`site/test/content.test.mjs` pins it). Both plan-info pages use it, since only the locked answer links them.
+3. **Seed**: display name "Alex (Testkonto)" via `set_display_name` (only if the user has not chosen a name), stores linked through `answer_store_retailer` (dm, lidl, edeka, ikea, DE; only if unanswered). Two runs: same rows. "Für die Katze" dropped from IKEA's hidden list (a new household has no such category).
+4. Not done: literal title text per tool in the test table (optional; titles are checked to be strings).

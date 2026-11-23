@@ -153,7 +153,7 @@ Deno.test('locked: every tool call is an isError result with HTTP 200, data unto
     assertEquals(result.isError, true, name);
     assertEquals(result.content, [{ type: 'text', text: premiumRequired.de }], name);
     assertEquals(result.structuredContent, {
-      error: 'premium_required',
+      error: 'plan_required',
       details: { integration: 'mcp', info: planInfoUrl.de },
     }, name);
     assertEquals(s.asked(), 1, name);
@@ -484,7 +484,7 @@ Deno.test('job 397: a read-only key reaches every read tool', async () => {
     const s = serve(locked, undefined, ON, readOnly);
     const { result } = await message(await s.handle(rpc('tools/call', { name, arguments: args })));
     assertEquals(result.structuredContent, {
-      error: 'premium_required',
+      error: 'plan_required',
       details: { integration: 'mcp', info: planInfoUrl.de },
     }, `${name}: past the scope check, at the gate`);
   }

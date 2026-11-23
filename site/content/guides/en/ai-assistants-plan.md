@@ -5,6 +5,7 @@ slug: ai-assistants-plan
 locale: en
 translation_key: ai-assistants-plan
 updated: 2026-11-23
+unlisted: true
 ---
 
 # AI assistants and your Snacklist plan

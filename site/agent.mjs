@@ -230,7 +230,7 @@ export function writeAgentFiles({ outDir, rendered, siteUrl, contentDir, repoDir
     twins.set(siteUrl + twinPath(page.route), text);
   }
   // The pages behind the waitlist's mail links (job 82) are noindex and no content to list.
-  const published = rendered.map((r) => r.page).filter((p) => p.notices.length === 0 && p.kind !== 'waitlist');
+  const published = rendered.map((r) => r.page).filter((p) => p.notices.length === 0 && !p.unlisted && p.kind !== 'waitlist');
   // While the waitlist is open, assistants also read how a sign-up works (Legal L-1, job 82).
   const waitlist = stage === 'waitlist' ? `\n${readFileSync(join(contentDir, 'llms-waitlist.md'), 'utf8')}` : '';
   const head = `${readFileSync(join(contentDir, 'llms.md'), 'utf8').trimEnd()}\n${waitlist}`;
@@ -473,8 +473,8 @@ export const CHECKS = [
       return [
         ...rules.map((rule) => at('site/vercel.json', `stage is launch (site/config/stage.ts), so remove the X-Robots-Tag noindex header of the rule "${rule.source}"`)),
         ...site.content
-          // The pages behind the waitlist's mail links (job 82) stay noindex for good.
-          .filter((p) => p.noindex && !p.doc.querySelector('.draft-banner') && !p.doc.querySelector('.wl-page'))
+          // The pages behind the waitlist's mail links (job 82) and an unlisted guide (job 415) stay noindex for good.
+          .filter((p) => p.noindex && !p.doc.querySelector('.draft-banner') && !p.doc.querySelector('.wl-page') && !p.doc.querySelector('meta[name="snacklist-unlisted"]'))
           .map((p) => at(p.file, 'stage is launch (site/config/stage.ts), but this page has <meta name="robots" content="noindex"> without a draft or unreleased banner')),
       ];
     },

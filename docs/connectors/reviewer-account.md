@@ -17,7 +17,9 @@ through their secure forms or email (see `docs/done/415.md`, "FOR OPS").
    ```
    It creates "Haushalt Beispiel (Testkonto)" with the stores dm, Lidl and Edeka in their usual
    sections and IKEA with a walk order the script sets itself (furnishings first, fresh food and
-   drugstore hidden; the app has no seeded IKEA layout), and 11 invented items (test-cases.md lists them). Running it again adds nothing that is already open;
+   drugstore hidden; the app has no seeded IKEA layout), and 11 invented items (test-cases.md lists them). It also saves the display name "Alex (Testkonto)"
+   (so the app does not ask for a name) and links the stores to their chains (dm, Lidl, Edeka, IKEA),
+   as the app does, each only where the user has not chosen otherwise. Running it again adds nothing that is already open;
    it does not move an item a reviewer moved or remove one a reviewer added, so for a clean slate
    after review delete the household and run it again. It refuses a user id that does not exist (exit 3). It was proved on
    a local stack: two runs, one household, 4 stores, 11 items.

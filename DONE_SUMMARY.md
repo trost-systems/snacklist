@@ -2737,3 +2737,7 @@ Review 1 found the Globus code correct and driven in the web app. Must-fix: #674
 - Must-fix 1: `tools_test.ts` now holds a literal table of the four hints for all 22 tools; flipping `rename_store.destructiveHint` fails it (run, then restored). `set_store_order` and `set_store_layout` became destructive (review nice-to-have 1).
 - Must-fix 2: `scripts/seed-ai-reviewer.sh` sets IKEA's walk order (furnishings first, fresh food and drugstore hidden); two runs on a local stack gave identical layout rows.
 - Also: Claude listing no longer says "free", info-page descriptions reworded, N2 notes the PAT message. Not done, with reasons: neutral machine code, unlisted info page, reviewer display name and chain links (`docs/DECISIONS.md`, "Job 415 review 0").
+
+## Job 415 review 1 follow-up
+
+Review 1 said FIX (LEAD 10:15 items I had skipped). Done in one PR (#681), Opus review of its head PASS before landing: MCP `structuredContent.error` is `plan_required` (telemetry keeps `premium_required`); the info pages are `unlisted` (new frontmatter key, test); the seed sets display name "Alex (Testkonto)" and links the stores to their chains, rerun-safe (checked); DECISIONS item 4 corrected (those items were required, not optional); IKEA no longer lists "Für die Katze"; `toolAnnotations` comment rewrapped. Review 0 landed as `e026ca1a3`, not `5efbf6b6b` (the PR head). Not done: literal title text per tool in the test (optional).

@@ -5,6 +5,7 @@ slug: ki-assistenten-tarif
 locale: de
 translation_key: ai-assistants-plan
 updated: 2026-11-23
+unlisted: true
 ---
 
 # KI-Assistenten und dein Snacklist-Tarif

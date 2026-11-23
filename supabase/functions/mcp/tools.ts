@@ -149,9 +149,10 @@ export const toolScopes = {
  * Job 415: the four hints every tool declares, explicit because Claude's and ChatGPT's directory
  * reviews reject a tool that leaves one to the spec's defaults. openWorldHint is false throughout:
  * a tool reaches only the caller's household. destructiveHint is true where a call deletes data or
- * overwrites text the user typed (remove_items, merge_items, update_item, the renames, and the two that replace a store's whole order), false for
- * additive writes and for changes that keep every value (ticking, categories, orders); clients
- * ask the user before a destructive call. idempotentHint is false where a repeat adds again.
+ * overwrites text the user typed (remove_items, merge_items, update_item, the renames) or replaces
+ * a store's whole order (set_store_order, set_store_layout), false for additive writes and for
+ * changes that keep every value (ticking, categories, single positions); clients ask the user
+ * before a destructive call. idempotentHint is false where a repeat adds again.
  */
 export const toolAnnotations = {
   list_households: {
@@ -369,7 +370,7 @@ function run(
           isError: true,
           content: [{ type: 'text', text: premiumRequired[lang] }],
           structuredContent: {
-            error: 'premium_required',
+            error: 'plan_required',
             details: { integration: 'mcp', info: planInfoUrl[lang] },
           },
         };
