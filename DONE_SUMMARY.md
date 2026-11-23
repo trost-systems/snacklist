@@ -2709,3 +2709,11 @@ Entries for OBI (DE AT CH CZ HU PL), HORNBACH (DE AT CH NL CZ SK SE LU RO), BAUH
 ## Job 410, review 0 fixes
 
 Peter's 07:53 update (ambiguous names ask) was missed in the first land (#662, 88e73bc61; #667 4e776b34b). Now: grocery Globus (Mein Globus, `de.globus.meinglobus`, iOS 1405626786, DE) added; plain "Globus" matches it and Globus Baumarkt equally, so „Welches Globus?“ asks and the choice is stored; "Globus Baumarkt"/"Globus Bau" stay the DIY chain alone. Whole-registry check of shared names (Aldi DE, Globus DE). Unit, widget and pgTAP cases; docs/done/410.md, the feature map and DECISIONS follow the new rule; OBI SI listed as left out. PR and merge SHA: filled in below at land.
+
+## Job 415: MCP directory readiness (Claude and ChatGPT)
+
+Code and docs only; nothing submitted or created, production untouched. Details and the FOR OPS steps: `docs/done/415.md`.
+- Every MCP tool declares all four annotation hints from one typed table (`toolAnnotations`), pinned per tool in tests; `add_items`, `move_item` and the missing `openWorldHint` fixed; server 1.4.0.
+- The locked answer is neutral (no plan, price or call to action) and links a new information page on the site (two guides, DE and EN).
+- Submission pack in `docs/connectors/`; reviewer account notes and the sign-in check (email and password only, no code change); idempotent `scripts/seed-ai-reviewer.sh` (proved twice on a local stack).
+- Open: no Terms page exists (blocks ChatGPT), captcha-off in production is for Ops to confirm, review texts for Legal in NEEDS_LEAD. Premium unchanged.

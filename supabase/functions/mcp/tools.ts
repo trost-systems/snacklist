@@ -1,5 +1,5 @@
 // The MCP server: one per request, bound to the authenticated caller.
-import { type CallToolResult, McpServer } from '@modelcontextprotocol/server';
+import { type CallToolResult, McpServer, type ToolAnnotations } from '@modelcontextprotocol/server';
 import { z } from 'zod';
 import { allows, type Auth, type Scope } from '../_shared/auth.ts';
 import type { Access } from '../_shared/premium.ts';
@@ -84,15 +84,26 @@ export const failedNow: Record<Lang, string> = {
 };
 
 /**
- * Job 50: what a tool call of a user without Snacklist Premium gets while the lock is on. A tool
- * result, not a 401/403: the client keeps its token and needs no new sign-in once the user
- * unlocks. Premium is per user (PB2): another member's plan does not unlock the caller (job 328
- * review 0). PLACEHOLDER copy (Spec #4); the final text comes from Snacklist PM.
+ * Info pages (site/content/guides) a locked call points to. Plain information, no price, no
+ * checkout: OpenAI's rules (section 5.1) let a connector say a feature needs another plan and
+ * link to such a page, never show plans, start a purchase or promote an upgrade.
+ */
+export const planInfoUrl: Record<Lang, string> = {
+  de: 'https://snacklist.app/de/anleitungen/ki-assistenten-tarif',
+  en: 'https://snacklist.app/en/guides/ai-assistants-plan',
+};
+
+/**
+ * Job 50, reworded in job 415: what a tool call of a user without access gets while the lock is
+ * on. A tool result, not a 401/403: the client keeps its token and needs no new sign-in once the
+ * plan changes. Premium is per user (PB2): another member's plan does not unlock the caller (job
+ * 328 review 0). Neutral by rule (job 415): no plan or product name, no price, no call to action;
+ * a test pins it.
  */
 export const premiumRequired: Record<Lang, string> = {
-  de: 'Du brauchst Snacklist Premium für den Zugang über KI-Assistenten. Schalte es in der ' +
-    'Snacklist-App frei. Es wurde nichts gelesen oder geändert.',
-  en: 'You need Snacklist Premium for AI assistant access. Unlock it in the Snacklist app. ' +
+  de: `Dafür brauchst du einen anderen Snacklist-Tarif. Infos: ${planInfoUrl.de} ` +
+    'Es wurde nichts gelesen oder geändert.',
+  en: `This needs a different Snacklist plan. Info: ${planInfoUrl.en} ` +
     'Nothing was read or changed.',
 };
 
@@ -133,6 +144,149 @@ export const toolScopes = {
   rename_store: 'write',
   set_store_layout: 'write',
 } as const satisfies Record<McpTool, Scope>;
+
+/**
+ * Job 415: the four hints every tool declares, explicit because Claude's and ChatGPT's directory
+ * reviews reject a tool that leaves one to the spec's defaults. openWorldHint is false throughout:
+ * a tool reaches only the caller's household. destructiveHint is true where a call deletes data or
+ * overwrites text the user typed (remove_items, merge_items, update_item, the renames), false for
+ * additive writes and for changes that keep every value (ticking, categories, orders); clients
+ * ask the user before a destructive call. idempotentHint is false where a repeat adds again.
+ */
+export const toolAnnotations = {
+  list_households: {
+    readOnlyHint: true,
+    destructiveHint: false,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
+  list_lists: {
+    readOnlyHint: true,
+    destructiveHint: false,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
+  list_items: {
+    readOnlyHint: true,
+    destructiveHint: false,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
+  get_item: {
+    readOnlyHint: true,
+    destructiveHint: false,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
+  list_categories: {
+    readOnlyHint: true,
+    destructiveHint: false,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
+  list_stores: {
+    readOnlyHint: true,
+    destructiveHint: false,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
+  list_recent: {
+    readOnlyHint: true,
+    destructiveHint: false,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
+  suggest_items: {
+    readOnlyHint: true,
+    destructiveHint: false,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
+  add_items: {
+    readOnlyHint: false,
+    destructiveHint: false,
+    idempotentHint: false,
+    openWorldHint: false,
+  },
+  tick_items: {
+    readOnlyHint: false,
+    destructiveHint: false,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
+  untick_items: {
+    readOnlyHint: false,
+    destructiveHint: false,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
+  move_item: {
+    readOnlyHint: false,
+    destructiveHint: false,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
+  update_item: {
+    readOnlyHint: false,
+    destructiveHint: true,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
+  remove_items: {
+    readOnlyHint: false,
+    destructiveHint: true,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
+  merge_items: {
+    readOnlyHint: false,
+    destructiveHint: true,
+    idempotentHint: false,
+    openWorldHint: false,
+  },
+  place_item: {
+    readOnlyHint: false,
+    destructiveHint: false,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
+  set_store_order: {
+    readOnlyHint: false,
+    destructiveHint: false,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
+  create_list: {
+    readOnlyHint: false,
+    destructiveHint: false,
+    idempotentHint: false,
+    openWorldHint: false,
+  },
+  rename_list: {
+    readOnlyHint: false,
+    destructiveHint: true,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
+  add_store: {
+    readOnlyHint: false,
+    destructiveHint: false,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
+  rename_store: {
+    readOnlyHint: false,
+    destructiveHint: true,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
+  set_store_layout: {
+    readOnlyHint: false,
+    destructiveHint: false,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
+} as const satisfies Record<McpTool, ToolAnnotations>;
 
 export type Lang = 'de' | 'en';
 
@@ -216,7 +370,7 @@ function run(
           content: [{ type: 'text', text: premiumRequired[lang] }],
           structuredContent: {
             error: 'premium_required',
-            details: { integration: 'mcp', unlock: 'app' },
+            details: { integration: 'mcp', info: planInfoUrl[lang] },
           },
         };
       }
@@ -343,7 +497,7 @@ export function buildServer(
   switches: Switches = SWITCHED_OFF,
 ): McpServer {
   const server = new McpServer(
-    { name: 'snacklist', title: 'Snacklist', version: '1.3.0' },
+    { name: 'snacklist', title: 'Snacklist', version: '1.4.0' },
     { instructions: INSTRUCTIONS, cacheHints: CACHE_HINTS },
   );
   const asked = new Map<string, Promise<Access>>();
@@ -375,7 +529,7 @@ export function buildServer(
     description: 'Listet die Haushalte, in denen der Nutzer ist, mit Mitgliederzahl. "default" ' +
       'markiert den Standardhaushalt, in dem die anderen Werkzeuge ohne "household" arbeiten. ' +
       'Mit einem Zugriffstoken nur dessen Haushalt.',
-    annotations: { readOnlyHint: true },
+    annotations: toolAnnotations.list_households,
     // Ungated: it lists only the user's own households, so a locked default can still find an
     // unlocked one.
   }, () => call('list_households', null, undefined, (tx) => households(tx, auth))());
@@ -387,7 +541,7 @@ export function buildServer(
       'die Standardliste des Nutzers, in der die anderen Werkzeuge ohne "list" arbeiten (auch Siri ' +
       'und Alexa); ohne eigene Wahl in der App ist das die erste Liste.',
     inputSchema: z.object({ household: householdRef }),
-    annotations: { readOnlyHint: true },
+    annotations: toolAnnotations.list_lists,
   }, ({ household }) => call('list_lists', once, household, (tx, h) => listLists(tx, h))());
 
   server.registerTool(
@@ -410,7 +564,7 @@ export function buildServer(
         household: householdRef,
         list: listRef,
       }),
-      annotations: { readOnlyHint: true },
+      annotations: toolAnnotations.list_items,
     },
     ({ household, ...args }) =>
       call('list_items', once, household, (tx, h) => listItems(tx, h, args))(),
@@ -432,10 +586,11 @@ export function buildServer(
         'angelegt und unter "alreadyOnList" gemeldet. Steht schon eine andere Schreibweise oder ein ' +
         'Synonym auf der Liste ("Karotten" und "Möhren"), wird der Eintrag trotzdem angelegt und unter ' +
         '"similarOnList" gemeldet (added: der neue Name, onList: höchstens drei der offenen ' +
-        'Einträge, total: wie viele es sind); sag dem Nutzer dann, dass etwas Ähnliches schon auf ' +
-        'der Liste steht. Von selbst wird nichts zusammengeführt; will der Nutzer es, führt ' +
+        'Einträge, total: wie viele es sind); das bedeutet, etwas Ähnliches steht schon auf ' +
+        'der Liste. Von selbst wird nichts zusammengeführt; will der Nutzer es, führt ' +
         'merge_items (keep: der Eintrag aus onList, merge: der neue) beide zusammen wie ' +
         '"Zusammenführen" in der App.',
+      annotations: toolAnnotations.add_items,
       inputSchema: z.object({
         items: z.array(z.object({
           name: storedText.min(1).max(120).describe('Was gekauft werden soll, z. B. "Milch"'),
@@ -472,7 +627,7 @@ export function buildServer(
         household: householdRef,
         list: listRef,
       }),
-      annotations: { destructiveHint: false, idempotentHint: true },
+      annotations: toolAnnotations.tick_items,
     },
     ({ items, household, list }) =>
       call('tick_items', once, household, (tx, h) => tickItems(tx, h, items, list))(),
@@ -492,7 +647,7 @@ export function buildServer(
         household: householdRef,
         list: listRef,
       }),
-      annotations: { destructiveHint: false, idempotentHint: true },
+      annotations: toolAnnotations.untick_items,
     },
     ({ items, household, list }) =>
       call('untick_items', once, household, (tx, h) => untickItems(tx, h, items, list))(),
@@ -515,7 +670,7 @@ export function buildServer(
         household: householdRef,
         list: listRef,
       }),
-      annotations: { idempotentHint: true },
+      annotations: toolAnnotations.move_item,
     },
     ({ household, item, list, category, store }) =>
       call(
@@ -544,7 +699,7 @@ export function buildServer(
         household: householdRef,
         list: listRef,
       }),
-      annotations: { destructiveHint: false, idempotentHint: true },
+      annotations: toolAnnotations.place_item,
     },
     ({ household, item, before, after, list }) =>
       call('place_item', once, household, (tx, h) => {
@@ -574,7 +729,7 @@ export function buildServer(
         household: householdRef,
         list: listRef,
       }),
-      annotations: { destructiveHint: false, idempotentHint: true },
+      annotations: toolAnnotations.set_store_order,
     },
     ({ household, ...args }) =>
       call('set_store_order', once, household, (tx, h) => setStoreOrder(tx, h, args))(),
@@ -612,7 +767,7 @@ export function buildServer(
         household: householdRef,
         list: listRef,
       }),
-      annotations: { destructiveHint: false, idempotentHint: true },
+      annotations: toolAnnotations.update_item,
     },
     ({ household, item, list, toList, ...edit }) =>
       call(
@@ -636,7 +791,7 @@ export function buildServer(
         household: householdRef,
         list: listRef,
       }),
-      annotations: { destructiveHint: true, idempotentHint: true },
+      annotations: toolAnnotations.remove_items,
     },
     ({ items, household, list }) =>
       call('remove_items', once, household, (tx, h) => removeItems(tx, h, items, list))(),
@@ -649,7 +804,7 @@ export function buildServer(
       description: 'Zeigt einen Eintrag mit Status ("open" oder "ticked") und Zeitpunkt des ' +
         'Hinzufügens. Eine id findet ihn auch abgehakt; ein Name nur unter den offenen Einträgen.',
       inputSchema: z.object({ item: itemRef, household: householdRef, list: listRef }),
-      annotations: { readOnlyHint: true },
+      annotations: toolAnnotations.get_item,
     },
     ({ item, household, list }) =>
       call('get_item', once, household, (tx, h) => getItem(tx, h, item, list))(),
@@ -674,7 +829,7 @@ export function buildServer(
         household: householdRef,
         list: listRef,
       }),
-      annotations: { destructiveHint: true },
+      annotations: toolAnnotations.merge_items,
     },
     ({ keep, merge, household, list }) =>
       call('merge_items', once, household, (tx, h) => mergeItems(tx, h, { keep, merge, list }))(),
@@ -688,7 +843,7 @@ export function buildServer(
         'Laufweg-Reihenfolge dieses Ladens (wie list_items mit "store"); "hidden" markiert ' +
         'Kategorien, die der Laden nicht führt.',
       inputSchema: z.object({ store: storeName.optional(), household: householdRef }),
-      annotations: { readOnlyHint: true },
+      annotations: toolAnnotations.list_categories,
     },
     ({ store, household }) =>
       call(
@@ -720,7 +875,7 @@ export function buildServer(
       household: householdRef,
       list: listRef,
     }),
-    annotations: { readOnlyHint: true },
+    annotations: toolAnnotations.list_recent,
   }, ({ limit, household, list }) =>
     call(
       'list_recent',
@@ -749,7 +904,7 @@ export function buildServer(
         ),
         household: householdRef,
       }),
-      annotations: { readOnlyHint: true },
+      annotations: toolAnnotations.suggest_items,
     },
     ({ prefix, limit, due, household }) =>
       call(
@@ -771,7 +926,7 @@ export function buildServer(
       description: 'Legt eine neue Einkaufsliste am Ende der Listen an, wie in der App. ' +
         'Höchstens 50 Listen je Haushalt. Nur auf ausdrücklichen Wunsch des Nutzers.',
       inputSchema: z.object({ name: listName, household: householdRef }),
-      annotations: { destructiveHint: false },
+      annotations: toolAnnotations.create_list,
     }, ({ name, household }) =>
       call('create_list', once, household, async (tx, h) => {
         const { id, name: created } = await createList(tx, h, name);
@@ -788,7 +943,7 @@ export function buildServer(
         name: listName.describe('Neuer Name der Liste'),
         household: householdRef,
       }),
-      annotations: { destructiveHint: false, idempotentHint: true },
+      annotations: toolAnnotations.rename_list,
     }, ({ list, name, household }) =>
       call('rename_list', once, household, async (tx, h) => {
         const { id, name: renamed } = await changeList(tx, h, list, { name });
@@ -801,7 +956,7 @@ export function buildServer(
         'Gibt es den Namen schon (Groß- und Kleinschreibung, Umlaute egal), antwortet es mit ' +
         'diesem Laden und "created": false. Höchstens 50 Läden je Haushalt.',
       inputSchema: z.object({ name: storeNew, household: householdRef }),
-      annotations: { destructiveHint: false, idempotentHint: true },
+      annotations: toolAnnotations.add_store,
     }, ({ name, household }) =>
       call('add_store', once, household, async (tx, h) => {
         const { store, created } = await addStore(tx, h, name);
@@ -817,7 +972,7 @@ export function buildServer(
         name: storeNew.describe('Neuer Name des Ladens, nur der Name'),
         household: householdRef,
       }),
-      annotations: { destructiveHint: false, idempotentHint: true },
+      annotations: toolAnnotations.rename_store,
     }, ({ store, name, household }) =>
       call('rename_store', once, household, async (tx, h) => {
         const { id, name: renamed } = await renameStore(tx, h, store, name);
@@ -842,7 +997,7 @@ export function buildServer(
           hidden: z.array(categoryName).max(200).optional(),
           household: householdRef,
         }),
-        annotations: { destructiveHint: false, idempotentHint: true },
+        annotations: toolAnnotations.set_store_layout,
       },
       ({ store, categories: order, hidden, household }) =>
         call('set_store_layout', once, household, async (tx, h) => {
@@ -863,7 +1018,7 @@ export function buildServer(
     title: 'Läden anzeigen',
     description: 'Listet die Läden des Haushalts.',
     inputSchema: z.object({ household: householdRef }),
-    annotations: { readOnlyHint: true },
+    annotations: toolAnnotations.list_stores,
   }, ({ household }) => call('list_stores', once, household, (tx, h) => stores(tx, h))());
 
   return server;

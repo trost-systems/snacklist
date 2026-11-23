@@ -768,7 +768,7 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 4. To end access: the bin icon „<Name> widerrufen“ (EN: "Revoke <name>") then „Widerrufen“, or „<App> trennen“ (EN: "Disconnect <app>") then „Trennen“.
 
 **Never claim.**
-- That it needs Premium today. It doesn't. Once Peter switches on the Premium requirement for AI assistants, an assistant tells a household without Premium „Dieser Haushalt braucht Snacklist Premium für den Zugang über KI-Assistenten …“. The Claude guides say so only from then.
+- That it needs Premium today. It doesn't. Once Peter switches on the Premium requirement for AI assistants, an assistant tells a household without Premium „Dafür brauchst du einen anderen Snacklist-Tarif. Infos: …“ with a link to the guide „KI-Assistenten und dein Snacklist-Tarif“ (neutral by design, job 415: no plan name, price or call to action; last verified in code and tests 2026-11-23). The Claude guides say so only from then.
 - That the assistant sees more than the list (it reads and changes shopping items, categories and stores only).
 - That the assistant tidies up or merges entries by itself. It merges, removes or changes an entry only when asked.
 - That an assistant can make or rename lists or stores, or change a store's aisle order. That is built but switched off until the privacy policy names it. Through the API (with a key that may write) scripts can do it already.

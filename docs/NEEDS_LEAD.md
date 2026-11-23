@@ -2577,3 +2577,11 @@ BG, CY, GR, IS (own apps) and EE, LV, LT (one shared app) have a different offic
 Should they get entries? Their Android packages must be verified first. Note: `match_retailers('IKEA', 'GR')` today
 returns five foreign IKEAs (AT, BE, CH, CZ, DE), as Lidl does outside its countries; the app's `phoneRegion()` falls
 back to DE.
+
+## NEEDS_LEAD Job 415: MCP directory submission blockers
+
+1. **No Terms of service page exists on the site** (`site/content/legal/` has privacy, imprint, support, report, dpa). ChatGPT's submission requires a `termsOfServiceURL`, so Peter cannot submit there until Legal writes it. Claude's form does not ask for one. This PR adds no legal text.
+2. **Privacy section 7 and the listings.** It calls assistants "AI assistants you connect yourself" (independent controllers). A directory listing promotes the connection; Legal decides whether a sentence on listing in the vendors' directories is needed, and accepts the vendors' directory terms (Anthropic Software Directory Terms, OpenAI usage policies) for Peter as operator.
+3. **Two new guide pages** (`site/content/guides/{de,en}/ki-assistenten-tarif.md`, `ai-assistants-plan.md`) say an assistant may need a different plan and point to support. They hold no price or checkout and no legal text I know of; Legal may want a look because they describe plan terms. Hash after merge: `git log -1 --format=%H -- site/content/guides/en/ai-assistants-plan.md`.
+4. **Brand names in `docs/connectors/`** (Claude, ChatGPT) are outside the `brand-names` lint (docs only); the listing texts name the vendors only where the form needs it. Legal confirms that fits N-80..N-86 before submission.
+5. **Ops step**: confirm captcha is off in production Auth (not readable from the runner), see `docs/done/415.md` FOR OPS A3.

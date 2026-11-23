@@ -30,7 +30,7 @@ import { connectWithToken } from './mcp-helpers';
 test.describe.configure({ mode: 'serial' });
 
 const mcpPremium =
-  'Du brauchst Snacklist Premium für den Zugang über KI-Assistenten. Schalte es in der Snacklist-App frei. Es wurde nichts gelesen oder geändert.';
+  'Dafür brauchst du einen anderen Snacklist-Tarif. Infos: https://snacklist.app/de/anleitungen/ki-assistenten-tarif Es wurde nichts gelesen oder geändert.';
 
 async function lockSwitch(enabled: boolean) {
   const { error } = await adminClient().from('app_switches').update({ enabled }).eq('key', 'integration_lock');
