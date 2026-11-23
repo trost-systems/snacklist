@@ -18208,3 +18208,7 @@ merge-pr.sh. This docs fix waits for review PASS before it lands. NEEDS_LEAD has
 - **Copy.** `refundHelpBody` and `lifetimeBody` (DE and EN) and the `premiumLifetimeValue` description now say Lifetime belongs to the account, matching privacy §14. Strings in DONE_SUMMARY.
 - Tests: `beta-lifetime_test.ts` (apply refused, `--used-before` default and override, query bounds, `parseLock`). Not run against production.
 - **Review 0.** `--apply` also requires `--used-before`. The default (lock flip time) only works while the lock is on: PAYWALL_RELEASE's rollback sets `changed_at = now()`, after which a default of "now" would count every refused attempt of the locked window. The planned flip time is fixed in advance like `--created-before`; the rollback row says to rerun with the first flip time. A lock-on dry run can undercount (last-use times), erring against granting. 6.2 and PURCHASES "Testers" now say `grant --user`.
+
+## Job 420b: live check of the consent page
+
+AC1 to AC3 matched on production and AC4's stop rule did not trigger, so nothing was fixed. The live pass used the existing public "Claude" OAuth client (no registration) and a throwaway hosted test account (torn down). Record: Job 420 section of DONE_SUMMARY.md.

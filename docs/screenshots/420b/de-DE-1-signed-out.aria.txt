@@ -1,0 +1,11 @@
+https://app.snacklist.app/login?next=%2Foauth%2Fconsent%3Fauthorization_id%3Dppt645gapkcqlrwbq3mvsxtx5ldhg4ee
+- group:
+  - text: Snacklist
+  - button "Mit Google anmelden"
+  - button "Mit Apple anmelden"
+  - button "Weiter mit E-Mail"
+  - button "Einladung einfügen"
+- link "Impressum":
+  - /url: https://snacklist.app/impressum
+- link "Datenschutz":
+  - /url: https://snacklist.app/datenschutz

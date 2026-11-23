@@ -1,0 +1,6 @@
+https://app.snacklist.app/oauth/consent?authorization_id=ppt645gapkcqlrwbq3mvsxtx5ldhg4ee
+- heading "Zugriff erlauben?" [level=2]
+- group:
+  - text: "Claude https://claude.ai Angemeldet als sam.c420b@fg-test.invalid Haushalt: Sams Wohnung Claude möchte: Einträge deiner Einkaufsliste lesen. Kann auch Einträge hinzufügen, ändern, abhaken und löschen. Claude und sein Anbieter erhalten dabei die Inhalte eurer Liste. Deine Anmeldung bestätigen"
+  - button "Ablehnen"
+  - button "Erlauben"
