@@ -30,8 +30,21 @@ String? registryRegion() {
 }
 
 /// Chains that matching and the store's app key know but the onboarding never
-/// offers as a chip: IKEA is no grocery store.
-bool _noChip(Retailer r) => r.chain == 'ikea';
+/// offers as a chip: IKEA and the DIY chains are no grocery stores.
+const _noChipChains = {
+  'ikea',
+  'obi',
+  'hornbach',
+  'bauhaus',
+  'toom',
+  'hagebau',
+  'globus-baumarkt',
+  'sonderpreis-baumarkt',
+  'hellweg',
+  'b1-discount',
+};
+
+bool _noChip(Retailer r) => _noChipChains.contains(r.chain);
 
 /// The chains of [country] in the registry's order, the onboarding's chips;
 /// none for null.

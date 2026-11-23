@@ -2698,3 +2698,9 @@ Details: `docs/done/378.md`, contract `docs/PUSH.md` ("Shopping-day reminder"), 
 - Step 3 not done: switch readback is still false (production untouched). The Management API rejects `SUPABASE_ACCESS_TOKEN` (401). The pooler with `SUPABASE_DB_PASSWORD` would work; it waits for the lead's OK (NEEDS_LEAD "Job 411 (update after review 0)").
 - PostHog: untouched. Peter's t1203u update replaced targeting: after the switch, synthetic-account end-to-end, then one PR for full rollout plus `unified-keys-guides`. Not run.
 - Review 0 must-fix items 1 and 2 are written into NEEDS_LEAD, item 3 into this section and `docs/done/411.md`; the remaining steps stay open.
+
+- PR and merge SHA: see the PR (filled in at merge).
+
+## Job 410: German DIY chains in the retailer registry
+
+Entries for OBI (DE AT CH CZ HU PL), HORNBACH (DE AT CH NL CZ SK SE LU RO), BAUHAUS (DE AT HR ES), toom, Globus Baumarkt, Sonderpreis Baumarkt (DE), hagebaumarkt (DE AT), plus HELLWEG and B1 Discount as no-app (DE). Left out: BayWa (no consumer app) and unverified countries; see docs/done/410.md. `--verify` 114 apps, 0 failed. Plain "Globus" is not matched to the DIY chain. PR and merge SHA: filled in at land.

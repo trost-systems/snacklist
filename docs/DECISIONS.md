@@ -18127,3 +18127,11 @@ Belgian, Czech etc. phones a one-chip picker. `retailer.dart` skips chain `ikea`
 3. **`PushAlertRegistry` is asynchronous.** The reminder's days live on the server; its source reads them when the alert is switched off.
 4. **Graft 3 sits in its own sentence** in section 5 so it stays true for a person who never turned the alert on; flagged to Legal.
 5. **The site test pins the expiry times** to the ttl values of the two senders instead of 24 h.
+
+## Job 410: DIY chains are matched, never chips; countries where the chain trades
+
+The German DIY chains join IKEA in `_noChipChains` (`retailer.dart`), so no chip and no chip region comes from them.
+A chain gets an entry only where it has stores and its app is in that storefront (toom's and Globus Baumarkt's apps
+are in 21 storefronts, but the chains trade in Germany). Plain "Globus" stays without an exact match: the registry
+holds no grocery Globus, and the Baumarkt's name is longer, so "Globus" is only a typing suggestion. Details and
+what was left out: `docs/done/410.md`.
