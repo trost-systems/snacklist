@@ -27,6 +27,7 @@ import 'package:family_groceries/purchases/purchase_cubit.dart';
 import 'package:family_groceries/purchases/setup.dart';
 import 'package:family_groceries/purchases/store_prices.dart';
 import 'package:family_groceries/push/firebase_push.dart';
+import 'package:family_groceries/push/household_add_alert.dart';
 import 'package:family_groceries/push/push_registration.dart';
 import 'package:family_groceries/report/report_repository.dart';
 import 'package:family_groceries/review/review_gates.dart';
@@ -179,6 +180,16 @@ Future<void> _main(WidgetsBinding Function() binding) async {
   );
   siri?.follow(session);
   push?.follow(session);
+  // The name switch (Art. 21) exists everywhere; the alert's switch needs push.
+  // Each in-app push type that joins registers itself with [pushAlerts]: the
+  // alert's off keeps the device registered while another is on (N-427).
+  final pushAlerts = PushAlertRegistry();
+  final householdAdd = HouseholdAddAlert(
+    push,
+    SupabaseHouseholdAddPrefs(client),
+    alerts: pushAlerts,
+    pending: cache,
+  )..follow(session);
   TesterGroupsSync(
     SupabaseTesterGroupsSource(client),
     cache,
@@ -250,6 +261,7 @@ Future<void> _main(WidgetsBinding Function() binding) async {
         platform: defaultTargetPlatform,
       ),
       pushTaps: push?.taps,
+      householdAdd: householdAdd,
       network: networkWatchFor(web: kIsWeb, platform: defaultTargetPlatform),
     ),
   );

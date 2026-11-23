@@ -24,6 +24,9 @@ class const SettingsScreen({
 
   /// The shell's trip detection section (job 352); none without it.
   final Widget? tripDetection,
+
+  /// The Mitteilungen section (job 377); none without push.
+  final Widget? pushAlerts,
 }) extends StatelessWidget {
   /// A section overline over its group, at the group's inset.
   static const _labelPadding = EdgeInsets.fromLTRB(20, HlSpace.s5, 20, 0);
@@ -100,6 +103,7 @@ class const SettingsScreen({
           ],
         ),
         ?tripDetection,
+        ?pushAlerts,
         if (shake != null && fb2 && shakeHere) ...[
           HlSectionLabel(l10n.settingsFeedback, padding: _labelPadding),
           HlGroup(

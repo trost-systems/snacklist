@@ -33,7 +33,8 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
         ReviewStore,
         OnboardingStore,
         NamePostponements,
-        PushStore {
+        PushStore,
+        PendingOffStore {
   /// On Linux, supabase_flutter's legacy SharedPreferences and
   /// SharedPreferencesAsync each rewrite the whole file from their own copy,
   /// so sharing shared_preferences.json loses the session. The other
@@ -136,6 +137,11 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
   /// left after a sign-out must outlive it until it is deleted.
   static const _pushKey = 'push.device';
 
+  /// A household-add off the server has not taken yet, `user id TAB language`
+  /// (Legal N-439). Outside [forget]'s prefixes: it must outlive the
+  /// sign-out that follows, to be sent when that account is back.
+  static const _pendingOffKey = 'push.pendingOff';
+
   /// The trip running on this device and its ends not yet saved (job 234),
   /// one JSON value per user (`KeptTrips`); forgotten on sign-out.
   static const _tripPrefix = 'trip.';
@@ -234,6 +240,30 @@ class DeviceCache(final SharedPreferencesAsync _prefs)
 
   Future<void> saveShakeToFeedback({required bool on}) =>
       _write(() => _prefs.setBool(_shakeKey, on));
+
+  @override
+  Future<({String userId, String language})?> pendingOff() async {
+    try {
+      final parts = (await _prefs.getString(_pendingOffKey))?.split('\t');
+      return switch (parts) {
+        [final userId, final language] => (userId: userId, language: language),
+        _ => null,
+      };
+    } on Object {
+      return null;
+    }
+  }
+
+  @override
+  Future<void> savePendingOff(({String userId, String language})? off) =>
+      _write(
+        () => off == null
+            ? _prefs.remove(_pendingOffKey)
+            : _prefs.setString(
+                _pendingOffKey,
+                '${off.userId}\t${off.language}',
+              ),
+      );
 
   @override
   Future<PushDevice> pushDevice() async {

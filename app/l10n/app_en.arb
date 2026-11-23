@@ -1359,5 +1359,11 @@
   "accessKeySessionRequired": "You can only create access keys here in the app while you're signed in.",
   "storeDoneTitle": "{store} is done",
   "@storeDoneTitle": {"placeholders": {"store": {"type": "String"}}},
-  "storeDoneOpen": "Open app"
+  "storeDoneOpen": "Open app",
+  "settingsPush": "Notifications",
+  "pushHouseholdAdd": "When someone adds something",
+  "pushHouseholdAddHint": "A notification with the name and the item, e.g. “Lea added milk”. For items from a pharmacy or drugstore, no item name, e.g. “Lea added something to the list”. Several in a short time come as one.",
+  "pushBlocked": "Notifications are turned off for Snacklist. Allow them in your device's settings.",
+  "pushNameHidden": "Leave my name out of notifications",
+  "pushNameHiddenHint": "Others then see “Someone added milk”, even if you have not turned notifications on yourself."
 }

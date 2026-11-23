@@ -1,5 +1,5 @@
 begin;
-select plan(144);
+select plan(147);
 
 create function pg_temp.login(uid uuid) returns void language plpgsql as $$
 begin
@@ -514,6 +514,17 @@ select is(
        select from pg_index i where i.indrelid = c.oid and a.attnum = any(i.indkey)
          and ((c.relreplident = 'd' and i.indisprimary) or (c.relreplident = 'i' and i.indisreplident))))),
   '', 'no realtime delete event names a user');
+
+-- Job 377: the household-add alert's queue and preferences. Members of another household read
+-- neither, and a user reads only their own preference.
+select pg_temp.login('00000000-0000-0000-0000-0000000000a1');
+select public.set_push_household_add(true, 'de');
+select pg_temp.login('00000000-0000-0000-0000-0000000000b1');
+select throws_ok($$ select from public.push_add_queue $$, '42501', null, 'the push queue is no client''s to read');
+select is((select count(*)::int from public.push_preferences), 0, 'push preferences of another household''s member are invisible');
+select throws_ok($$ insert into public.push_add_queue (household_id, list_id, item_id, actor)
+  values ((select id from ha), gen_random_uuid(), gen_random_uuid(), '00000000-0000-0000-0000-0000000000b1') $$, '42501', null,
+  'and no client writes it, in any household');
 
 select * from finish();
 rollback;

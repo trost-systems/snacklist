@@ -4034,4 +4034,25 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get storeDoneOpen => 'App öffnen';
+
+  @override
+  String get settingsPush => 'Mitteilungen';
+
+  @override
+  String get pushHouseholdAdd => 'Wenn jemand etwas hinzufügt';
+
+  @override
+  String get pushHouseholdAddHint =>
+      'Mitteilung mit Name und Eintrag, z. B. „Lea hat Milch hinzugefügt“. Bei Artikeln aus der Apotheke oder Drogerie ohne Artikelnamen, etwa „Lea hat etwas zur Liste hinzugefügt“. Mehrere kurz nacheinander kommen zusammen.';
+
+  @override
+  String get pushBlocked =>
+      'Mitteilungen sind für Snacklist ausgeschaltet. Erlaube sie in den Einstellungen deines Geräts.';
+
+  @override
+  String get pushNameHidden => 'Meinen Namen in Mitteilungen weglassen';
+
+  @override
+  String get pushNameHiddenHint =>
+      'Andere sehen dann „Jemand hat Milch hinzugefügt“, auch wenn du selbst keine Mitteilungen eingeschaltet hast.';
 }

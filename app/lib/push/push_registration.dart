@@ -42,6 +42,14 @@ abstract interface class PushStore() {
   Future<void> savePushDevice(PushDevice device);
 }
 
+/// An off of the household-add alert the server has not taken yet, kept on
+/// the device with the account it belongs to (Legal N-439).
+abstract interface class PendingOffStore() {
+  Future<({String userId, String language})?> pendingOff();
+
+  Future<void> savePendingOff(({String userId, String language})? off);
+}
+
 /// The signed-in user's devices on the server (`public.push_tokens`).
 abstract interface class PushTokens() {
   Future<void> register(String token, PushPlatform platform);
