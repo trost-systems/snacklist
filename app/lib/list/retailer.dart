@@ -30,9 +30,11 @@ String? registryRegion() {
 }
 
 /// Chains that matching and the store's app key know but the onboarding never
-/// offers as a chip: IKEA and the DIY chains are no grocery stores.
+/// offers as a chip: IKEA and the DIY chains are no grocery stores; Globus is
+/// only asked about, as its name is shared with a DIY chain.
 const _noChipChains = {
   'ikea',
+  'globus',
   'obi',
   'hornbach',
   'bauhaus',

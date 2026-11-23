@@ -72,20 +72,27 @@ void main() {
     expect(found('Bauhaus', 'ES'), 'bauhaus/ES');
   });
 
-  test('plain Globus is not the DIY chain', () {
-    expect(found('Globus', 'DE'), 'globus-baumarkt/DE~');
+  test('plain Globus is both Globus chains, an explicit name is one', () {
+    expect(found('Globus', 'DE'), 'globus/DE globus-baumarkt/DE');
+    expect(found('globus Bous', 'DE'), 'globus/DE globus-baumarkt/DE');
+    expect(found('Globus Baumarkt', 'DE'), 'globus-baumarkt/DE');
+    expect(found('Globus Bau Saarbrücken', 'DE'), 'globus-baumarkt/DE');
     expect(
-      matchRegistry('Globus', 'DE').where((m) => m.exact),
-      isEmpty,
-      reason: 'only a typing suggestion, never an exact match',
+      matchRegistry('Globus', 'DE').map((m) => m.retailer.apps.single.android),
+      ['de.globus.meinglobus', 'de.fabrik19.globus'],
     );
-    expect(found('Globus Hypermarkt Bous', 'DE'), '');
-    expect(found('Globus Markt', 'DE'), '');
   });
 
   test('DIY chains are no onboarding chips', () {
     final chips = registryChains('DE').map((r) => r.chain).toSet();
-    for (final chain in ['obi', 'hornbach', 'bauhaus', 'toom', 'hagebau']) {
+    for (final chain in [
+      'obi',
+      'hornbach',
+      'bauhaus',
+      'toom',
+      'hagebau',
+      'globus',
+    ]) {
       expect(chips, isNot(contains(chain)), reason: chain);
     }
     expect(

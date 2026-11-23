@@ -2,7 +2,7 @@
 -- <chain>?" (answer_store_retailer), the questions for older stores (retailer_questions), and who
 -- reads the registry.
 begin;
-select plan(43);
+select plan(46);
 
 create function pg_temp.login(uid uuid) returns void language plpgsql as $$
 begin
@@ -23,7 +23,7 @@ create temp table other as select id from public.create_household(p_name => 'Ott
 grant select on other to authenticated;
 select pg_temp.login('00000000-0000-0000-0000-000000313a01');
 create temp table home as
-  select id from public.create_household(p_name => 'Rita', p_stores => array['Lidl', 'Aldi', 'Wochenmarkt', 'REWE']);
+  select id from public.create_household(p_name => 'Rita', p_stores => array['Lidl', 'Aldi', 'Wochenmarkt', 'REWE', 'Globus']);
 grant select on home to authenticated;
 
 create function pg_temp.store(p_name text) returns uuid language sql as $$
@@ -40,7 +40,8 @@ select is(pg_temp.found('OBI Markt Köln', 'DE'), 'obi/DE', 'OBI and a place mat
 select is(pg_temp.found('Toom', 'DE'), 'toom/DE', 'Toom matches through its alias');
 select is(pg_temp.found('hagebau', 'DE'), 'hagebau/DE', 'hagebau matches hagebaumarkt through its alias');
 select is(pg_temp.found('Globus Bau', 'DE'), 'globus-baumarkt/DE', 'Globus Bau is Globus Baumarkt');
-select is(pg_temp.found('Globus Markt', 'DE'), '', 'a Globus grocery name matches no exact chain');
+select is(pg_temp.found('Globus', 'DE'), 'globus/DE globus-baumarkt/DE', 'plain Globus is the grocery and the DIY chain: the household picks');
+select is(pg_temp.found('Globus Baumarkt Bous', 'DE'), 'globus-baumarkt/DE', 'an explicit Globus Baumarkt is the DIY chain alone');
 select is(pg_temp.found('  lidl   am Markt ', 'DE'), 'lidl/DE', 'a chain name and a space, then anything, is that chain');
 select is(pg_temp.found('Aldi', 'DE'), 'aldi-nord/DE aldi-sued/DE', 'Aldi is both German Aldis');
 select is(pg_temp.found('aldi süd am bahnhof', 'DE'), 'aldi-sued/DE', 'the longest alias wins over plain "aldi"');
@@ -65,8 +66,8 @@ select is(
 select is(
   (select string_agg(s.name || ':' || q.chain, ' ' order by s.name, q.chain)
    from public.retailer_questions((select id from home), 'DE') q join public.stores s on s.id = q.store_id),
-  'Aldi:aldi-nord Aldi:aldi-sued Lidl:lidl REWE:rewe',
-  'every unlinked, unanswered store with an exact chain is asked about; Wochenmarkt is not'
+  'Aldi:aldi-nord Aldi:aldi-sued Globus:globus Globus:globus-baumarkt Lidl:lidl REWE:rewe',
+  'every unlinked, unanswered store with an exact chain is asked about, Globus about both of its chains; Wochenmarkt is not'
 );
 
 -- Answers.
@@ -100,6 +101,14 @@ select lives_ok(
 select is(
   (select coalesce(retailer_chain, '-') || ' ' || retailer_answered from public.stores where id = pg_temp.store('REWE')),
   '- true', 'no leaves the store unlinked but answered'
+);
+select lives_ok(
+  format($$ select public.answer_store_retailer(%L, 'globus-baumarkt', 'DE') $$, pg_temp.store('Globus')),
+  'the household picks the DIY chain for a store named Globus (job 410)'
+);
+select is(
+  (select retailer_chain || ' ' || retailer_answered || ' ' || (retailer_app is null) from public.stores where id = pg_temp.store('Globus')),
+  'globus-baumarkt true true', 'the choice is stored on the store, with the chain''s default app'
 );
 select is((select count(*)::int from public.retailer_questions((select id from home), 'DE')), 0,
   'linked and answered stores are not asked about again');

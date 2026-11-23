@@ -18143,3 +18143,13 @@ what was left out: `docs/done/410.md`.
 3. **No hard-coded kill.** Forcing the two flags off in `Flags.isOn` would hide the features regardless of PostHog but break AC4 (turn back on with a flag). The residual risk is the PostHog state, still a manual step of NEEDS_LEAD "Job 401".
 4. **Lead update 07:46 (Peter): History returns free, older than 4 weeks included.** Premium copy never listed History, and the writers' docs no longer do. The two lock surfaces left in the code (the quiet row `historyLocked*` / `historyDayLocked` in Verlauf and the 4-week window of `trip_history`) sit behind `grocery-log`, unreachable. Deleting them is part of the PR that turns `grocery-log` on, not of this one: do not flip the flag before it lands, or Free households get the 4-week lock back. No cutoff gate is built.
 5. **Review 0 fixes.** The privacy policy's „Prices and trips“ paragraph (DE and EN) promised History and the trip summary as Premium; that one sentence is cut to „Ältere Einkäufe und die Einträge bleiben gespeichert.“ (needs Legal, listed in the audit). The audit no longer says Premium includes export (AC5: no surface names it). AC1 depends on the Job 401 PostHog step.
+
+## Job 410 (review 0): an ambiguous name asks, Globus is the first case after Aldi
+
+Peter's update of 07:53 (t1204u) replaced the Globus rule of the brief, and the first land missed it. The registry
+gets the grocery Globus (Mein Globus, DE) and Globus Baumarkt also carries the alias `globus`, so a store named Globus
+matches both exactly and the household picks (`Welches Globus?`), the choice stored on the store. The earlier entry
+above ("Plain Globus stays without an exact match") is superseded. Existing stores named Globus are asked once, never
+linked silently: there was no grocery match to keep. `retailers_test.ts` pins the set of names two chains share in a
+country (Aldi DE, Globus DE). The review also found that #662 merged before its Opus review ran; this fix waits for
+review PASS before merge-pr.sh.

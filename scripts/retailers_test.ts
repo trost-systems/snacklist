@@ -23,6 +23,7 @@ const NO_CHIP = [
   'bauhaus',
   'toom',
   'hagebau',
+  'globus',
   'globus-baumarkt',
   'sonderpreis-baumarkt',
   'hellweg',
@@ -95,4 +96,18 @@ Deno.test('the app copy keeps a short name and lays out as dart format does', ()
     ),
     true,
   );
+});
+
+Deno.test('names that match more than one chain in a country are the known ones', async () => {
+  const fold = (t: string) => t.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '').replace(/ß/g, 'ss').replace(/[^a-z0-9]+/g, ' ').trim();
+  const chains = new Map<string, Set<string>>();
+  for (const e of (await readRegistry()).entries) {
+    for (const key of [e.name, ...e.aliases].map(fold)) {
+      const at = `${e.country}:${key}`;
+      chains.set(at, (chains.get(at) ?? new Set()).add(e.chain));
+    }
+  }
+  const shared = [...chains].filter(([, c]) => c.size > 1).map(([at, c]) => `${at} ${[...c].sort().join('+')}`).sort();
+  // Each of these asks "which one?" (chainQuestionWhich): add a name here only on purpose (job 410).
+  assertEquals(shared, ['DE:aldi aldi-nord+aldi-sued', 'DE:globus globus+globus-baumarkt']);
 });

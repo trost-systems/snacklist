@@ -2666,6 +2666,7 @@
       "country": "DE",
       "name": "Globus Baumarkt",
       "aliases": [
+        "globus",
         "globus bau"
       ],
       "web": "www.globus-baumarkt.de",
@@ -2686,7 +2687,7 @@
         "https://www.globus-baumarkt.de/",
         "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.globus-baumarkt.de&relation=delegate_permission/common.handle_all_urls"
       ],
-      "note": "The Globus Baumarkt app (Globus Fachmaerkte GmbH & Co KG); www.globus-baumarkt.de links the App Store and Play pages, its asset links list de.fabrik19.globus. Only \"Globus Baumarkt\" and \"Globus Bau\" match: plain \"Globus\" is the grocery hypermarket, not this chain. Not Mein Globus (that app is the hypermarket). No universal link and no scheme: not evaluated (job 410)."
+      "note": "The Globus Baumarkt app (Globus Fachmaerkte GmbH & Co KG); www.globus-baumarkt.de links the App Store and Play pages, its asset links list de.fabrik19.globus. \"Globus Baumarkt\" and \"Globus Bau\" match this chain alone; plain \"Globus\" matches it and the grocery Globus equally (alias globus), so the household picks (job 410, review 0). Not Mein Globus (that app is the hypermarket). No universal link and no scheme: not evaluated (job 410)."
     },
     {
       "chain": "sonderpreis-baumarkt",
@@ -2746,6 +2747,31 @@
         "https://de.wikipedia.org/api/rest_v1/page/summary/B1_Discount_Baumarkt"
       ],
       "note": "No B1 Discount app found: iTunes Search DE returns none and www.b1-discount.de links no store (2026-11-23). Part of toom Baumarkt, whose toom app is not the B1 app."
+    },
+    {
+      "chain": "globus",
+      "country": "DE",
+      "name": "Globus",
+      "aliases": [],
+      "web": "www.globus.de",
+      "apps": [
+        {
+          "name": "Mein Globus",
+          "android": "de.globus.meinglobus",
+          "ios": "1405626786",
+          "universalLink": null,
+          "scheme": null
+        }
+      ],
+      "status": "verified",
+      "verified": "2026-11-23",
+      "sources": [
+        "https://itunes.apple.com/lookup?id=1405626786&country=de",
+        "https://play.google.com/store/apps/details?id=de.globus.meinglobus&hl=en&gl=DE",
+        "https://www.globus.de/",
+        "https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://www.globus.de&relation=delegate_permission/common.handle_all_urls"
+      ],
+      "note": "Mein Globus (Globus SB-Warenhaus Holding GmbH & Co. KG, iOS bundle de.globus.meinglobus), the grocery hypermarket app; www.globus.de links the Play page and its asset links list de.globus.meinglobus. Plain \"Globus\" is ambiguous with Globus Baumarkt, so a store named Globus asks which one. No universal link: the AASA claims only /mobile/payback/* paths. No scheme: not evaluated (job 410). Globus CZ has its own app (Můj Globus) and is not added."
     }
   ]
 }

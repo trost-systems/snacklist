@@ -1325,7 +1325,7 @@ const retailerRegistry = <Retailer>[
     chain: 'globus-baumarkt',
     country: 'DE',
     name: 'Globus Baumarkt',
-    aliases: ['globus bau'],
+    aliases: ['globus', 'globus bau'],
     apps: [
       RetailerApp(
         name: 'Globus Baumarkt',
@@ -1352,5 +1352,17 @@ const retailerRegistry = <Retailer>[
     country: 'DE',
     name: 'B1 Discount Baumarkt',
     aliases: ['b1 discount'],
+  ),
+  Retailer(
+    chain: 'globus',
+    country: 'DE',
+    name: 'Globus',
+    apps: [
+      RetailerApp(
+        name: 'Mein Globus',
+        android: 'de.globus.meinglobus',
+        ios: '1405626786',
+      ),
+    ],
   ),
 ];
