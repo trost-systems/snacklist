@@ -2,6 +2,8 @@
 # Seeds the account the AI directory reviewers sign in with (job 415, docs/connectors/README.md):
 # one household with the stores dm, Lidl, Edeka and IKEA, each in its usual sections, and synthetic
 # sample items. The user must exist already (created confirmed, with a password, by Ops).
+# IKEA has no seeded layout in the app, so its walk order is set here: furnishings first, fresh food
+# and drugstore hidden.
 # Safe to run again: the household is found by a request id derived from the user id, a store that
 # exists is kept, and an item already open on the list is not added twice.
 # Never run against production from CI. The lead runs it by hand after merge.
@@ -41,6 +43,22 @@ from (values
 ) as i (text, store)
 join public.stores st on st.household_id = :'household'::uuid
   and public.store_name_key(st.name) = public.store_name_key(i.store);
+
+select public.set_store_layout(
+  s.id,
+  (select array_agg(c.id order by coalesce(array_position(
+      array['Haushalt', 'Sonstiges', 'Süßes & Snacks', 'Getränke', 'Tiefkühl'],
+      regexp_replace(c.name, '^[^[:alnum:]]+', '')), 99), c.sort_order, c.name)
+   from public.categories c where c.household_id = s.household_id),
+  (select coalesce(array_agg(c.id), '{}')
+   from public.categories c
+   where c.household_id = s.household_id
+     and regexp_replace(c.name, '^[^[:alnum:]]+', '') = any (array[
+       'Obst & Gemüse', 'Brot & Backwaren', 'Kühlregal', 'Fleisch/Wurst/Fisch', 'Drogerie',
+       'Für die Katze']))
+)
+from public.stores s
+where s.household_id = :'household'::uuid and public.store_name_key(s.name) = public.store_name_key('IKEA');
 \o
 
 reset role;

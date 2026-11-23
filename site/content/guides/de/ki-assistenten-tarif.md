@@ -1,6 +1,6 @@
 ---
 title: "KI-Assistenten und dein Snacklist-Tarif"
-description: "Welchen Snacklist-Tarif ein KI-Assistent braucht, um deine Einkaufsliste zu lesen und zu ändern, und was du tun kannst, wenn er einen anderen braucht."
+description: "Was es bedeutet, wenn ein KI-Assistent meldet, dass er einen anderen Snacklist-Tarif braucht, und dass deine Liste unverändert bleibt."
 slug: ki-assistenten-tarif
 locale: de
 translation_key: ai-assistants-plan

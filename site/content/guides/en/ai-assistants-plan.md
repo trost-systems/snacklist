@@ -1,6 +1,6 @@
 ---
 title: "AI assistants and your Snacklist plan"
-description: "Which Snacklist plan an AI assistant needs to read and change your shopping list, and what to do when it says it needs a different one."
+description: "What it means when an AI assistant tells you it needs a different Snacklist plan, and that your list stays as it is."
 slug: ai-assistants-plan
 locale: en
 translation_key: ai-assistants-plan

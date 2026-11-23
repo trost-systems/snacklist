@@ -53,7 +53,8 @@ Every tool declares `readOnlyHint`, `destructiveHint`, `idempotentHint` and `ope
 explicit booleans (`toolAnnotations` in `supabase/functions/mcp/tools.ts`, pinned per tool by
 `tools_test.ts`). `openWorldHint` is false on all: a tool reaches only the user's own household.
 `destructiveHint` is true for deleting or overwriting what the user typed (`remove_items`,
-`merge_items`, `update_item`, `rename_list`, `rename_store`) and false otherwise. Each operation is
+`merge_items`, `update_item`, `rename_list`, `rename_store`, and `set_store_order` and
+`set_store_layout`, which replace a store's whole order) and false otherwise. Each operation is
 its own tool (guideline 6.2b). `add_items` and `create_list` carry `idempotentHint: false`, the
 cautious value: a repeated `create_list` makes another list, and `add_items` creates a new entry
 for a different spelling or size, though an item already open is reported under `alreadyOnList`

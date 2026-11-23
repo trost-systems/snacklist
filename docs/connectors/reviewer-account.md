@@ -16,8 +16,8 @@ through their secure forms or email (see `docs/done/415.md`, "FOR OPS").
      scripts/seed-ai-reviewer.sh <the user's id from the Users page>
    ```
    It creates "Haushalt Beispiel (Testkonto)" with the stores dm, Lidl and Edeka in their usual
-   sections and IKEA with the default layout (the app has seed layouts for those three only), and 11
-   invented items (test-cases.md lists them). Running it again adds nothing that is already open;
+   sections and IKEA with a walk order the script sets itself (furnishings first, fresh food and
+   drugstore hidden; the app has no seeded IKEA layout), and 11 invented items (test-cases.md lists them). Running it again adds nothing that is already open;
    it does not move an item a reviewer moved or remove one a reviewer added, so for a clean slate
    after review delete the household and run it again. It refuses a user id that does not exist (exit 3). It was proved on
    a local stack: two runs, one household, 4 stores, 11 items.

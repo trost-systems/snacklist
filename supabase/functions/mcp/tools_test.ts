@@ -21,7 +21,6 @@ import {
   SWITCHED_OFF,
   type Switches,
   tookTooLong,
-  toolAnnotations,
   toolScopes,
   writeScopeRequired,
 } from './tools.ts';
@@ -275,34 +274,47 @@ Deno.test('job 169b W3: the item tools take an optional list', async () => {
   );
 });
 
-Deno.test('job 415: every tool declares all four hints, as toolAnnotations says', async () => {
-  const s = serve(locked, undefined, ON);
-  const { tools } = (await message(await s.handle(rpc('tools/list')))).result;
-  assertEquals(tools.length, Object.keys(toolAnnotations).length);
-  for (const tool of tools) {
-    const want = toolAnnotations[tool.name as keyof typeof toolAnnotations];
-    assertEquals(tool.annotations, want, tool.name);
-    assertEquals(typeof tool.title, 'string', `${tool.name}: title`);
-  }
+/** The hints each tool must declare, written out here on purpose: not derived from toolAnnotations. */
+const expectedHints = (kind: 'read' | 'add' | 'safe' | 'overwrite' | 'merge') => ({
+  readOnlyHint: kind === 'read',
+  destructiveHint: kind === 'overwrite' || kind === 'merge',
+  idempotentHint: kind !== 'add' && kind !== 'merge',
+  openWorldHint: false,
 });
 
-Deno.test('job 415: the hints are honest for the tools a review looks at', async () => {
+const expected = {
+  'list_households': expectedHints('read'),
+  'list_lists': expectedHints('read'),
+  'list_items': expectedHints('read'),
+  'get_item': expectedHints('read'),
+  'list_categories': expectedHints('read'),
+  'list_stores': expectedHints('read'),
+  'list_recent': expectedHints('read'),
+  'suggest_items': expectedHints('read'),
+  'add_items': expectedHints('add'),
+  'create_list': expectedHints('add'),
+  'tick_items': expectedHints('safe'),
+  'untick_items': expectedHints('safe'),
+  'move_item': expectedHints('safe'),
+  'place_item': expectedHints('safe'),
+  'add_store': expectedHints('safe'),
+  'update_item': expectedHints('overwrite'),
+  'remove_items': expectedHints('overwrite'),
+  'rename_list': expectedHints('overwrite'),
+  'rename_store': expectedHints('overwrite'),
+  'set_store_order': expectedHints('overwrite'),
+  'set_store_layout': expectedHints('overwrite'),
+  'merge_items': expectedHints('merge'),
+};
+
+Deno.test('job 415: each of the 22 tools declares exactly the hints it should, and a title', async () => {
   const s = serve(locked, undefined, ON);
   const { tools } = (await message(await s.handle(rpc('tools/list')))).result;
-  const hints = Object.fromEntries(tools.map((t) => [t.name, t.annotations]));
-  const write = { readOnlyHint: false, openWorldHint: false };
-  assertEquals(hints.add_items, { ...write, destructiveHint: false, idempotentHint: false });
-  assertEquals(hints.move_item, { ...write, destructiveHint: false, idempotentHint: true });
-  assertEquals(hints.tick_items, { ...write, destructiveHint: false, idempotentHint: true });
-  assertEquals(hints.update_item, { ...write, destructiveHint: true, idempotentHint: true });
-  assertEquals(hints.remove_items, { ...write, destructiveHint: true, idempotentHint: true });
-  assertEquals(hints.merge_items, { ...write, destructiveHint: true, idempotentHint: false });
-  assertEquals(hints.get_item, {
-    readOnlyHint: true,
-    destructiveHint: false,
-    idempotentHint: true,
-    openWorldHint: false,
-  });
+  assertEquals(tools.map((t) => t.name).sort(), Object.keys(expected).sort());
+  for (const tool of tools) {
+    assertEquals(tool.annotations, expected[tool.name as keyof typeof expected], tool.name);
+    assertEquals(typeof tool.title, 'string', `${tool.name}: title`);
+  }
 });
 
 Deno.test('job 344: update_item takes the fields to change and the list to move to', async () => {

@@ -23,7 +23,7 @@ Edeka: Nudeln, Tomaten, Brot. IKEA: Kerzen, Bilderrahmen.
 | # | Prompt | Expected |
 | --- | --- | --- |
 | N1 | `Order everything on my list for delivery from Lidl.` | No tool can do it. The assistant says it cannot order or pay; the list is unchanged. The connector has no commerce tool. |
-| N2 | `Show me the shopping list of the household "Müller".` | `list_items` with `household: "Müller"` returns a tool error "Kein Haushalt "Müller". Deine Haushalte: Haushalt Beispiel (Testkonto)". Nothing is read from another household. |
+| N2 | `Show me the shopping list of the household "Müller".` | `list_items` with `household: "Müller"` returns a tool error "Kein Haushalt "Müller". Deine Haushalte: Haushalt Beispiel (Testkonto)". Nothing is read from another household. (That is the text an OAuth token gets, which reviewers use. A personal access token, e.g. with `scripts/mcp-smoke.sh`, gets "Dieser Zugriffstoken gilt nur für den Haushalt …" instead.) |
 | N3 | `Tick off the unicorn costume.` | `tick_items` reports it under `notFound`; nothing changes. |
 
 A fourth check for submitters, not one of the eight: without signing in, the server answers `401`
