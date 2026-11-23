@@ -2679,3 +2679,11 @@ Details: `docs/done/378.md`, contract `docs/PUSH.md` ("Shopping-day reminder"), 
 - A pending clear's retry is serialized with a pick (`save` awaits an in-flight retry) and needs no zone (it sends `UTC`: the row is deleted).
 - pgTAP `shopping_day_reminder` filters its assertions to its own fictional users, so a stray row on a seeded stack does not fail it.
 - CI does run for #653 (a `pull_request` run on the stacked branch); the earlier "no CI on a stacked PR" claim was wrong. NEEDS_LEAD is replaced at `ci-ok`.
+
+## Job 412: Get Snacklist QR codes far apart
+
+- Desktop and tablet (hover + fine pointer, above 640 px): the App Store column sits at the left edge of the section's content area, left-aligned, the Google Play column at the right edge, right-aligned. Badge, QR and caption rows stay shared (same y). At 1280 px the QR codes are 768 px apart (before 144 px), at 768 px 312 px (before 144 px).
+- At 640 px and below they stay stacked and centered, with a gap of 142 px between the two QR codes at 375 px (before 134 px).
+- CSS only (`site/public/landing.css`); DE and EN share it. Checked at 375, 768 and 1280 px, no horizontal overflow.
+- Screenshots (`SITE_STAGE=launch` build): `docs/screenshots/412/{before,after}-{de,en}-{375,768,1280}.png`; 1280 px DE: `docs/screenshots/412/after-de-1280.png`.
+- PR and merge SHA: see the PR (filled in at merge).
