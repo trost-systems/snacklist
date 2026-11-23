@@ -9,7 +9,7 @@ updated: 2026-11-22
 
 # Snacklist per Alexa: Skill einrichten
 
-Mit dem Snacklist-Skill für Alexa kannst du Sachen per Sprache auf deine Snacklist setzen, ohne die App zu öffnen. Der Skill ist im [Alexa Skill Store](alexa-skill:de) für alle verfügbar. Du aktivierst ihn und verknüpfst dein Konto, danach läuft es so:
+Mit dem Snacklist-Skill für Alexa kannst du Sachen per Sprache auf deine Snacklist setzen, ohne die App zu öffnen. Den Skill findest du im [Alexa Skill Store](alexa-skill:de). Du aktivierst ihn und verknüpfst dein Konto, danach läuft es so:
 
 > **Du:** Alexa, sag Snacklist, füg Milch und Eier hinzu.
 > **Der Skill:** Ich habe Milch und Eier auf die Snacklist gesetzt.
