@@ -192,6 +192,8 @@ void main() {
         {'chain': 'lidl', 'country': 'DE', 'outcome': outcome},
       ),
     ('store_app_opened', {'chain': 'aldi-sued', 'country': 'AT'}),
+    for (final source in ['header', 'card', 'store'])
+      ('store_app_opened', {'chain': 'lidl', 'source': source}),
   ]) {
     test('allows $event $properties', () {
       expect(() => checkEvent(event, properties), returnsNormally);
@@ -305,6 +307,8 @@ void main() {
     ('store_app_opened', {'chain': 'Lidl am Markt'}, "the store's name"),
     ('store_app_opened', {'store': 'Lidl'}, 'the store'),
     ('store_app_opened', {'country': 'de'}, 'a country in lower case'),
+    ('store_app_opened', {'source': 'Lidl'}, 'a store name as source'),
+    ('store_app_opened', {'source': 'list'}, 'a tap the app has not'),
     ('store_app_opened', {'outcome': 'storePage'}, "the enum's name"),
     ('store_app_opened', {'app': 'com.lidl.eci.lidlplus'}, 'the package'),
   ];

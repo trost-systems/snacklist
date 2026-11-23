@@ -340,12 +340,14 @@ final eventCatalog = <String, Map<String, PropertyRule>>{
     'source': OneOf({'manual', 'prompt'}),
   },
   // Job 313 (DL1): a store's chain app, its store page or the chain's site
-  // opened from the list or the store's screen. The chain and its country,
+  // opened; job 399: from the list's header key (`header`), the done card
+  // (`card`) or the store's screen (`store`). The chain and its country,
   // never the store's name.
   'store_app_opened': const {
     'chain': OneOf(retailerChains),
     'country': OneOf(retailerCountries),
     'outcome': OneOf({'app', 'store_page'}),
+    'source': OneOf({'header', 'card', 'store'}),
   },
   // Job 21: after the server took a note, once per note. Never its text.
   // Job 267: whether a screenshot went along, never the image or its name.

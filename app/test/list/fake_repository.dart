@@ -109,6 +109,10 @@ class FakeRepository() implements ListRepository {
   /// What the items trigger reports as `categorized_via` for a new row.
   String? categorizedVia;
 
+  /// How much later than the device's tick the server stamps `bought_at`
+  /// (the items trigger writes its own `now()`).
+  var boughtAtDelay = Duration.zero;
+
   /// Applies the next op, then fails as if its answer was lost.
   var loseNextAnswer = false;
 
@@ -722,6 +726,7 @@ class FakeRepository() implements ListRepository {
     createdAt: item.createdAt,
     updatedAt: _tick(),
     boughtAt: item.boughtAt,
+    boughtBy: item.boughtBy,
     addedBy: item.addedBy,
     categorizedVia: item.categorizedVia,
     canonicalKey: item.canonicalKey,
@@ -794,7 +799,17 @@ class FakeRepository() implements ListRepository {
       status: next.status,
       createdAt: next.createdAt,
       updatedAt: _tick(),
-      boughtAt: next.boughtAt,
+      boughtAt:
+          current?.status != ItemStatus.bought &&
+              next.status == ItemStatus.bought
+          ? next.boughtAt?.add(boughtAtDelay)
+          : next.boughtAt,
+      // The items trigger: who ticked it.
+      boughtBy: switch ((current?.status, next.status)) {
+        (ItemStatus.bought, ItemStatus.bought) => current?.boughtBy,
+        (_, ItemStatus.bought) => me,
+        _ => null,
+      },
       addedBy: next.addedBy,
       categorizedVia: next.categorizedVia,
       canonicalKey: next.name == current?.name

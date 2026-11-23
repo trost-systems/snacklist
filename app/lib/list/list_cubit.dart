@@ -14,6 +14,7 @@ import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/pricing.dart';
 import 'package:family_groceries/list/quantity.dart';
 import 'package:family_groceries/list/retailer.dart';
+import 'package:family_groceries/list/store_done.dart';
 import 'package:family_groceries/list/subtotals.dart';
 import 'package:flutter/foundation.dart' show immutable, listEquals, setEquals;
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -1563,6 +1564,35 @@ class ListCubit(
     if (!state.prefs.storeAppTipClosed) {
       _setPrefs(state.prefs.copyWith(storeAppTipClosed: true));
     }
+  }
+
+  /// The „… ist erledigt“ card to show now ([storeDoneCard]).
+  StoreDone? storeDone() => storeDoneCard(
+    items: state.items.values,
+    catalog: state.catalog,
+    userId: userId,
+    tickedHere: {
+      for (final op in state.pending)
+        if (op is SetStatus && op.status == ItemStatus.bought) op.itemId,
+    },
+    dismissed: state.prefs.storeDoneDismissed,
+    now: _clock(),
+  );
+
+  /// Closes [done]'s card until the store is finished again; closings
+  /// whose card has run out anyway are forgotten.
+  void dismissStoreDone(StoreDone done) {
+    final now = _clock();
+    _setPrefs(
+      state.prefs.copyWith(
+        storeDoneDismissed: {
+          for (final MapEntry(:key, :value)
+              in state.prefs.storeDoneDismissed.entries)
+            if (now.difference(value.at) < storeDoneShowFor) key: value,
+          done.store.id: StoreDoneDismissal(done.at, done.bought),
+        },
+      ),
+    );
   }
 
   void _setPrefs(ListPrefs prefs) {

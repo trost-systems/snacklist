@@ -2583,3 +2583,14 @@ Applied Legal's redlines N-413 to N-420 verbatim in `site/content/legal/datensch
 ## Job 379: IH2 invite hand-off across browsers
 
 Review 0 showed #657 changed nothing users can reach: the invite already survived a magic link in another browser on web (the e2e passed on the pre-change build). The follow-up removes the dead branch and its unit test, keeps the e2e as a regression pin, corrects the feature doc, and drops #657's false "fixed" item from the public changelog (`drop: true` in `rewords.json`, new). Not solved, and said so in NEEDS_LEAD "Job 379": the link does not sign in across browsers (PKCE), browser B says nothing about it, and the Q1 cause is not reproduced by a browser switch (likeliest: install-from-store loses the invite). Details: `docs/done/379.md`. No flag; no change for users.
+
+## Job 399: the „… ist erledigt“ card (SC1)
+
+With the flag `open-store-app`, a member who ticks off the last open item of a store with an app link
+gets a card at the top of the list: „Lidl ist erledigt“ with „App öffnen“ below it and an X. Only members
+who ticked in that store in the 30 minutes before see it. It reads the existing `items.bought_by`, so no
+new field, table or payload. New ARB keys: `storeDoneTitle`, `storeDoneOpen`. `store_app_opened` gains
+`source` (`header`, `card`, `store`). No legal or privacy file changed. It waits for job 407's privacy
+sentence on `source` (Legal N-413) before it merges. Review 0: a card closed before the server confirmed
+the tick came back; it is now keyed on item ids, proven offline on the web build. Long-name tests added.
+Details: `docs/done/399.md`.

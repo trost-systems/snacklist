@@ -600,6 +600,11 @@ class const Item({
   final double? sortKey,
   final DateTime? boughtAt,
 
+  /// The member who ticked it, as the server's items trigger records it;
+  /// null while it is open, until the server confirms the tick, and in
+  /// snapshots older than the field.
+  final String? boughtBy,
+
   /// The member who added it; null until the server confirms the add, and
   /// in snapshots older than the field.
   final String? addedBy,
@@ -639,6 +644,7 @@ class const Item({
       final String at => DateTime.parse(at),
       _ => null,
     },
+    boughtBy: json['bought_by'] as String?,
     addedBy: json['added_by'] as String?,
     categorizedVia: json['categorized_via'] as String?,
     canonicalKey: json['canonical_key'] as String?,
@@ -660,6 +666,7 @@ class const Item({
     'created_at': createdAt.toIso8601String(),
     'updated_at': updatedAt.toIso8601String(),
     'bought_at': boughtAt?.toIso8601String(),
+    'bought_by': boughtBy,
     'added_by': addedBy,
     'categorized_via': categorizedVia,
     'canonical_key': canonicalKey,
@@ -677,6 +684,7 @@ class const Item({
     double? Function()? sortKey,
     ItemStatus? status,
     DateTime? Function()? boughtAt,
+    String? Function()? boughtBy,
     String? listId,
     Price? Function()? price,
   }) => Item(
@@ -692,6 +700,7 @@ class const Item({
     createdAt: createdAt,
     updatedAt: updatedAt,
     boughtAt: boughtAt == null ? this.boughtAt : boughtAt(),
+    boughtBy: boughtBy == null ? this.boughtBy : boughtBy(),
     addedBy: addedBy,
     categorizedVia: categorizedVia,
     canonicalKey: canonicalKey,
@@ -1214,6 +1223,7 @@ final class const SetStatus(
   Item? apply(Item? current) => current?.copyWith(
     status: status,
     boughtAt: () => status == ItemStatus.bought ? at : null,
+    boughtBy: status == ItemStatus.active ? () => null : null,
     storeId: storeId == null ? null : () => storeId,
   );
 }

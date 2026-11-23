@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:family_groceries/list/catalog/household_index.dart';
 import 'package:family_groceries/list/model.dart';
+import 'package:family_groceries/list/store_done.dart';
 import 'package:flutter/foundation.dart' show immutable;
 
 typedef _Json = Map<String, Object?>;
@@ -198,6 +199,10 @@ class const ListPrefs({
   /// `set_order_mode` last answered learned for the household (job 352):
   /// the list starts in that order before the server answers again.
   final bool learnedOrder = false,
+
+  /// The „… ist erledigt“ cards closed (job 399): store id to its bought
+  /// items then, so a new item ticked off shows a card again.
+  final Map<String, StoreDoneDismissal> storeDoneDismissed = const {},
 }) {
   factory fromJson(Map<String, Object?> json) => ListPrefs(
     folded: {...(json['folded'] as List<Object?>? ?? const []).cast<String>()},
@@ -205,6 +210,18 @@ class const ListPrefs({
     shownList: json['shown_list'] as String?,
     storeAppTipClosed: json['store_app_tip_closed'] as bool? ?? false,
     learnedOrder: json['learned_order'] as bool? ?? false,
+    storeDoneDismissed: {
+      for (final MapEntry(:key, :value)
+          in (json['store_done_dismissed'] as Map<String, Object?>? ?? const {})
+              .entries)
+        if (value case {
+          'at': final String at,
+          'items': final List<Object?> items,
+        })
+          key: StoreDoneDismissal(DateTime.parse(at), {
+            ...items.whereType<String>(),
+          }),
+    },
   );
 
   Map<String, Object?> toJson() => {
@@ -213,6 +230,14 @@ class const ListPrefs({
     'shown_list': ?shownList,
     if (storeAppTipClosed) 'store_app_tip_closed': true,
     if (learnedOrder) 'learned_order': true,
+    if (storeDoneDismissed.isNotEmpty)
+      'store_done_dismissed': {
+        for (final MapEntry(:key, :value) in storeDoneDismissed.entries)
+          key: {
+            'at': value.at.toIso8601String(),
+            'items': [...value.items],
+          },
+      },
   };
 
   ListPrefs copyWith({
@@ -221,11 +246,13 @@ class const ListPrefs({
     String? shownList,
     bool? storeAppTipClosed,
     bool? learnedOrder,
+    Map<String, StoreDoneDismissal>? storeDoneDismissed,
   }) => ListPrefs(
     folded: folded ?? this.folded,
     hintDismissed: hintDismissed ?? this.hintDismissed,
     shownList: shownList ?? this.shownList,
     storeAppTipClosed: storeAppTipClosed ?? this.storeAppTipClosed,
     learnedOrder: learnedOrder ?? this.learnedOrder,
+    storeDoneDismissed: storeDoneDismissed ?? this.storeDoneDismissed,
   );
 }

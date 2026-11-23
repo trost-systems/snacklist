@@ -1356,5 +1356,8 @@
   "revokeAccessKeyTitle": "Revoke access key?",
   "revokeAccessKeyBody": "Assistants and scripts using it lose access right away.",
   "tooManyAccessKeys": "At most 20 active access keys. Revoke one first.",
-  "accessKeySessionRequired": "You can only create access keys here in the app while you're signed in."
+  "accessKeySessionRequired": "You can only create access keys here in the app while you're signed in.",
+  "storeDoneTitle": "{store} is done",
+  "@storeDoneTitle": {"placeholders": {"store": {"type": "String"}}},
+  "storeDoneOpen": "Open app"
 }

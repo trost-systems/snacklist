@@ -40,6 +40,18 @@ enum StoreAppOutcome(final String wire) {
   storePage('store_page'),
 }
 
+/// Where the tap came from, as `store_app_opened` reports it ([wire]).
+enum StoreAppSource(final String wire) {
+  /// The key in the list's store header.
+  header('header'),
+
+  /// „App öffnen“ on the „… ist erledigt“ card (job 399).
+  card('card'),
+
+  /// „Öffnen“ on the store's screen.
+  store('store'),
+}
+
 /// One way to open the app; a plan tries them in order until one works.
 sealed class const StoreAppStep(final StoreAppOutcome outcome);
 
@@ -169,13 +181,14 @@ Future<StoreAppOutcome?> runStoreAppPlan(
   return null;
 }
 
-/// The tap on a store's app key or „Öffnen“: opens the chain's app the
-/// store picked, else its store page, and reports
-/// `store_app_opened` with the chain, never the store. Null when nothing
-/// opened, or the store has no chain.
+/// The tap on a store's app key, „App öffnen“ or „Öffnen“ ([source]):
+/// opens the chain's app the store picked, else its store page, and reports
+/// `store_app_opened` with the chain and [source], never the store. Null
+/// when nothing opened, or the store has no chain.
 Future<StoreAppOutcome?> openStoreApp(
   Store store, {
   required StoreAppOpener opener,
+  required StoreAppSource source,
   Analytics? analytics,
   StoreAppPlatform? platform,
 }) async {
@@ -192,6 +205,7 @@ Future<StoreAppOutcome?> openStoreApp(
       'chain': retailer.chain,
       'country': retailer.country,
       'outcome': outcome.wire,
+      'source': source.wire,
     });
   }
   return outcome;

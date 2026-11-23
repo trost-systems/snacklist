@@ -4002,4 +4002,12 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get accessKeySessionRequired =>
       'You can only create access keys here in the app while you\'re signed in.';
+
+  @override
+  String storeDoneTitle(String store) {
+    return '$store is done';
+  }
+
+  @override
+  String get storeDoneOpen => 'Open app';
 }

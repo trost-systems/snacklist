@@ -4026,4 +4026,12 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get accessKeySessionRequired =>
       'Zugriffsschlüssel kannst du nur hier in der App erstellen, während du angemeldet bist.';
+
+  @override
+  String storeDoneTitle(String store) {
+    return '$store ist erledigt';
+  }
+
+  @override
+  String get storeDoneOpen => 'App öffnen';
 }
