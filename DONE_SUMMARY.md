@@ -2708,7 +2708,7 @@ Entries for OBI (DE AT CH CZ HU PL), HORNBACH (DE AT CH NL CZ SK SE LU RO), BAUH
 
 ## Job 410, review 0 fixes
 
-Peter's 07:53 update (ambiguous names ask) was missed in the first land (#662, 88e73bc61; #667 4e776b34b). Now: grocery Globus (Mein Globus, `de.globus.meinglobus`, iOS 1405626786, DE) added; plain "Globus" matches it and Globus Baumarkt equally, so „Welches Globus?“ asks and the choice is stored; "Globus Baumarkt"/"Globus Bau" stay the DIY chain alone. Whole-registry check of shared names (Aldi DE, Globus DE). Unit, widget and pgTAP cases; docs/done/410.md, the feature map and DECISIONS follow the new rule; OBI SI listed as left out. PR and merge SHA: filled in below at land.
+Peter's 07:53 update (ambiguous names ask) was missed in the first land (#662, 88e73bc61; #667 4e776b34b). Now: grocery Globus (Mein Globus, `de.globus.meinglobus`, iOS 1405626786, DE) added; plain "Globus" matches it and Globus Baumarkt equally, so „Welches Globus?“ asks and the choice is stored; "Globus Baumarkt"/"Globus Bau" stay the DIY chain alone. Whole-registry check of shared names (Aldi DE, Globus DE). Unit, widget and pgTAP cases; docs/done/410.md, the feature map and DECISIONS follow the new rule; OBI SI listed as left out. PR #674, merge SHA on main 0afd72e458125ae48a5d11949352cd323ee35345.
 
 ## Job 415: MCP directory readiness (Claude and ChatGPT)
 
