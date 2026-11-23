@@ -7,7 +7,7 @@
 import { type Browser, expect, type Locator, type Page, test } from './fixtures';
 import {
   addField, adminClient, answerConsent, apiAs, fakeCollector, itemRow, must, newEmail, openEmailSignIn, openJoinLink,
-  password, screenshot, typeInto,
+  latestLinkFor, password, screenshot, typeInto,
 } from './helpers';
 
 const phone = { width: 390, height: 844 };
@@ -242,4 +242,35 @@ test('a phone browser: the Open card on every load, closed until the next one; n
   await answerConsent(desktop, 'decline');
   await onListOf(desktop, 'Familie Brandt');
   await expect(desktop.getByRole('button', { name: 'Öffnen', exact: true }), 'no card on a desktop browser').toBeHidden();
+});
+
+// Job 379 (IH2): the magic link opens in another browser than the one the invite began in; the
+// invite rides in the link, so the person lands on the invite's sign-in, joins, and never sees the
+// guided start.
+test('invite begun in browser A, magic link opened in browser B: joins, no guided start', async ({ browser }) => {
+  const owner = await serverHousehold('ih2-owner', 'Familie Brandt', 'Peter Trost');
+  const invited = newEmail('ih2-ben');
+  const { error } = await adminClient().auth.admin.createUser({ email: invited, password, email_confirm: true });
+  if (error) throw error;
+  const a = await newPage(browser);
+  await openJoinLink(a, `/join/${owner.code}`);
+  await answerInviteSheet(a, 'Anmelden');
+  await openEmailSignIn(a);
+  await typeInto(a.getByRole('textbox', { name: 'E-Mail' }), invited);
+  await a.getByRole('button', { name: 'Anmeldelink per E-Mail senden' }).click();
+  await expect(a.getByText(/Anmeldelink geschickt/).first()).toBeVisible();
+  await a.context().close();
+
+  const b = await newPage(browser);
+  await b.goto(await latestLinkFor(invited));
+  // The link's code exchange needs the verifier browser A holds, so B is not signed in; the
+  // invite in the link keeps it on the invite's sign-in, not the household-name start.
+  await expect(b).toHaveURL(/\/login\?invite=/, { timeout: 20_000 });
+  await expect(b.getByText('Wie soll euer Haushalt heißen?'), 'never the guided start').toBeHidden();
+  await answerInviteSheet(b, 'Anmelden');
+  await emailForm(b, invited, /^Anmelden$/);
+  await answerConsent(b, 'decline');
+  await onListOf(b, 'Familie Brandt');
+  await expect(b.getByText('Wie soll euer Haushalt heißen?'), 'never the guided start').toBeHidden();
+  expect(await householdsOf(invited)).toEqual(['Familie Brandt']);
 });

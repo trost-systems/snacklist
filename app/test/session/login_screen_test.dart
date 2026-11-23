@@ -5,6 +5,7 @@ import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/session/login_screen.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/session/social_sign_in.dart';
+import 'package:family_groceries/shell/router.dart' show signInReturnPath;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -19,6 +20,7 @@ import 'fake_auth.dart';
 import 'fake_households.dart';
 
 void main() {
+  signInReturnTests();
   late FakeAuth auth;
   late FakeNativeSignIn native;
   late SessionCubit session;
@@ -614,6 +616,27 @@ void main() {
     testWidgets('not with the flag off', (tester) async {
       await pumpLogin(tester, invite: 'ABCD2345');
       expect(find.text(whyDe), findsNothing);
+    });
+  });
+}
+
+void signInReturnTests() {
+  group('where a magic link lands (job 379)', () {
+    test('an invite comes back at the root in the link itself', () {
+      expect(signInReturn(invite: 'ABCD2345'), '/?invite=ABCD2345');
+    });
+
+    test('a link and an invite keep both', () {
+      final back = Uri.parse(signInReturn(invite: 'ABCD2345', next: '/list'));
+      expect(back.path, '/');
+      expect(back.queryParameters, {'next': '/list', 'invite': 'ABCD2345'});
+    });
+
+    test('no invite, no extra parameter', () {
+      expect(signInReturn(), signInReturnPath);
+      expect(Uri.parse(signInReturn(next: '/list')).queryParameters, {
+        'next': '/list',
+      });
     });
   });
 }
