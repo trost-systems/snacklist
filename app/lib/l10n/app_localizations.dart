@@ -785,19 +785,19 @@ abstract class AppLocalizations {
   /// No description provided for @mcpServerBody.
   ///
   /// In de, this message translates to:
-  /// **'Für Claude, ChatGPT und andere KI-Assistenten. Verbinde per Anmeldung (OAuth) oder mit einem Zugriffstoken.'**
+  /// **'Für Claude, ChatGPT und andere KI-Assistenten. Verbinde per Anmeldung (OAuth) oder mit einem Zugriffsschlüssel.'**
   String get mcpServerBody;
 
   /// No description provided for @accessTokens.
   ///
   /// In de, this message translates to:
-  /// **'Zugriffstoken'**
+  /// **'Zugriffsschlüssel'**
   String get accessTokens;
 
   /// No description provided for @noTokens.
   ///
   /// In de, this message translates to:
-  /// **'Kein aktiver Token.'**
+  /// **'Kein aktiver Zugriffsschlüssel.'**
   String get noTokens;
 
   /// No description provided for @tokenHint.
@@ -827,7 +827,7 @@ abstract class AppLocalizations {
   /// No description provided for @createToken.
   ///
   /// In de, this message translates to:
-  /// **'Token erstellen'**
+  /// **'Zugriffsschlüssel erstellen'**
   String get createToken;
 
   /// No description provided for @create.
@@ -851,13 +851,13 @@ abstract class AppLocalizations {
   /// No description provided for @tokenCreated.
   ///
   /// In de, this message translates to:
-  /// **'Token erstellt'**
+  /// **'Zugriffsschlüssel erstellt'**
   String get tokenCreated;
 
   /// No description provided for @tokenShownOnce.
   ///
   /// In de, this message translates to:
-  /// **'Kopiere den Token jetzt. Er wird nicht noch einmal angezeigt.'**
+  /// **'Kopiere den Zugriffsschlüssel jetzt. Er wird nicht noch einmal angezeigt.'**
   String get tokenShownOnce;
 
   /// No description provided for @done.
@@ -875,7 +875,7 @@ abstract class AppLocalizations {
   /// No description provided for @revokeTokenTitle.
   ///
   /// In de, this message translates to:
-  /// **'Token widerrufen?'**
+  /// **'Zugriffsschlüssel widerrufen?'**
   String get revokeTokenTitle;
 
   /// No description provided for @revokeTokenBody.
@@ -893,7 +893,7 @@ abstract class AppLocalizations {
   /// No description provided for @tooManyTokens.
   ///
   /// In de, this message translates to:
-  /// **'Höchstens 20 aktive Tokens.'**
+  /// **'Höchstens 20 aktive Zugriffsschlüssel.'**
   String get tooManyTokens;
 
   /// No description provided for @connectedApps.
@@ -941,7 +941,7 @@ abstract class AppLocalizations {
   /// No description provided for @siriOldShortcutHint.
   ///
   /// In de, this message translates to:
-  /// **'Den alten Kurzbefehl brauchst du nicht mehr. Seinen Token „{name}“ kannst du unten löschen.'**
+  /// **'Den alten Kurzbefehl brauchst du nicht mehr. Seinen Zugriffsschlüssel „{name}“ kannst du unten löschen.'**
   String siriOldShortcutHint(String name);
 
   /// No description provided for @siriPhrasesTitle.
@@ -1181,7 +1181,7 @@ abstract class AppLocalizations {
   /// No description provided for @accountDeleteWhat.
   ///
   /// In de, this message translates to:
-  /// **'Dein Konto, dein Profil, deine Zugangs-Tokens und deine verbundenen Apps werden endgültig gelöscht. Das lässt sich nicht rückgängig machen.'**
+  /// **'Dein Konto, dein Profil, deine Zugriffsschlüssel und deine verbundenen Apps werden endgültig gelöscht. Das lässt sich nicht rückgängig machen.'**
   String get accountDeleteWhat;
 
   /// No description provided for @accountDeleteKept.
@@ -3455,25 +3455,25 @@ abstract class AppLocalizations {
   /// Zugänge, under the access token heading while the public API is hidden (job 80)
   ///
   /// In de, this message translates to:
-  /// **'Mit einem Token baust du eigene Automationen, die eure Liste pflegen, etwa ein Skript oder einen Assistenten am MCP-Server.'**
+  /// **'Mit einem Zugriffsschlüssel baust du eigene Automationen, die eure Liste pflegen, etwa ein Skript oder einen Assistenten am MCP-Server.'**
   String get accessTokensHint;
 
   /// Zugänge, under the access token heading while the public-api flag is on (job 80)
   ///
   /// In de, this message translates to:
-  /// **'Mit einem Token baust du eigene Automationen am MCP-Server, die eure Liste pflegen. Für Programme ohne MCP gibt es unten die API.'**
+  /// **'Mit einem Zugriffsschlüssel baust du eigene Automationen am MCP-Server, die eure Liste pflegen. Für Programme ohne MCP gibt es unten die API.'**
   String get accessTokensHintWithApi;
 
   /// Job 169b: Zugänge, under the token hint when the user is in several households: the household a new token acts in
   ///
   /// In de, this message translates to:
-  /// **'Ein neuer Token gilt für „{household}“, den Haushalt, der gerade offen ist.'**
+  /// **'Ein neuer Zugriffsschlüssel gilt für „{household}“, den Haushalt, der gerade offen ist.'**
   String accessKeysHousehold(String household);
 
   /// Job 169b: as accessKeysHousehold while the public-api flag is on
   ///
   /// In de, this message translates to:
-  /// **'Neue Token und API-Schlüssel gelten für „{household}“, den Haushalt, der gerade offen ist.'**
+  /// **'Neue Zugriffsschlüssel und API-Schlüssel gelten für „{household}“, den Haushalt, der gerade offen ist.'**
   String accessKeysHouseholdWithApi(String household);
 
   /// Zugänge, connected app row and details: the newest token refresh of the app (job 80)

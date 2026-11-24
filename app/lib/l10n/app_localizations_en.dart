@@ -408,13 +408,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mcpServerBody =>
-      'For Claude, ChatGPT and other AI assistants. Connect by signing in (OAuth) or with an access token.';
+      'For Claude, ChatGPT and other AI assistants. Connect by signing in (OAuth) or with an access key.';
 
   @override
-  String get accessTokens => 'Access tokens';
+  String get accessTokens => 'Access keys';
 
   @override
-  String get noTokens => 'No active token.';
+  String get noTokens => 'No active access key.';
 
   @override
   String tokenHint(String hint) {
@@ -441,7 +441,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get neverUsed => 'Never used';
 
   @override
-  String get createToken => 'Create token';
+  String get createToken => 'Create access key';
 
   @override
   String get create => 'Create';
@@ -453,10 +453,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tokenNameHint => 'e.g. Claude or Shortcuts';
 
   @override
-  String get tokenCreated => 'Token created';
+  String get tokenCreated => 'Access key created';
 
   @override
-  String get tokenShownOnce => 'Copy the token now. It won\'t be shown again.';
+  String get tokenShownOnce =>
+      'Copy the access key now. It won\'t be shown again.';
 
   @override
   String get done => 'Done';
@@ -467,7 +468,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get revokeTokenTitle => 'Revoke token?';
+  String get revokeTokenTitle => 'Revoke access key?';
 
   @override
   String get revokeTokenBody => 'Apps using it lose access right away.';
@@ -476,7 +477,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get revoke => 'Revoke';
 
   @override
-  String get tooManyTokens => 'At most 20 active tokens.';
+  String get tooManyTokens => 'At most 20 active access keys.';
 
   @override
   String get connectedApps => 'Connected apps';
@@ -501,7 +502,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String siriOldShortcutHint(String name) {
-    return 'You no longer need the old shortcut. You can delete its token “$name” below.';
+    return 'You no longer need the old shortcut. You can delete its access key “$name” below.';
   }
 
   @override
@@ -668,7 +669,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountDeleteWhat =>
-      'Your account, profile, access tokens and connected apps will be deleted for good. This can\'t be undone.';
+      'Your account, profile, access keys and connected apps will be deleted for good. This can\'t be undone.';
 
   @override
   String accountDeleteKept(String household, String names) {
@@ -2061,20 +2062,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accessTokensHint =>
-      'Use a token to build your own automations that manage your list, like a script or an assistant on the MCP server.';
+      'Use an access key to build your own automations that manage your list, like a script or an assistant on the MCP server.';
 
   @override
   String get accessTokensHintWithApi =>
-      'Use a token to build your own automations on the MCP server that manage your list. For programs without MCP, use the API below.';
+      'Use an access key to build your own automations on the MCP server that manage your list. For programs without MCP, use the API below.';
 
   @override
   String accessKeysHousehold(String household) {
-    return 'A new token works in “$household”, the household open now.';
+    return 'A new access key works in “$household”, the household open now.';
   }
 
   @override
   String accessKeysHouseholdWithApi(String household) {
-    return 'New tokens and API keys work in “$household”, the household open now.';
+    return 'New access keys and API keys work in “$household”, the household open now.';
   }
 
   @override

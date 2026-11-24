@@ -28,6 +28,7 @@ Siri, Alexa und die Liste selbst brauchen kein Premium.
 Snacklist Premium jährlich: Laufzeit 1 Jahr. Das Abo verlängert sich automatisch um ein Jahr, wenn du es nicht mindestens 24 Stunden vor Ende der Laufzeit kündigst. Bezahlt wird über dein Apple-Konto, bei der Bestätigung des Kaufs und bei jeder Verlängerung. Verwalten und kündigen kannst du das Abo in den Abo-Einstellungen deines Apple-Kontos. Lifetime ist ein einmaliger Kauf ohne Abo.
 
 Datenschutzerklärung: https://snacklist.app/datenschutz
-Nutzungsbedingungen (EULA): https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
+Nutzungsbedingungen: https://snacklist.app/nutzungsbedingungen
+Standard-Lizenzvertrag von Apple (Licensed Application End User License Agreement): https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
 
 Siri ist eine Marke von Apple Inc. Amazon, Alexa und alle zugehörigen Marken sind Marken von Amazon.com, Inc. oder seinen verbundenen Unternehmen.

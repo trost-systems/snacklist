@@ -150,20 +150,21 @@ void main() {
     expect(find.text('MCP-SERVER'), findsOneWidget);
     // Tests build for the production project, whose MCP URL is the proxy.
     expect(find.text('https://mcp.snacklist.app'), findsOneWidget);
-    expect(find.text('Kein aktiver Token.'), findsOneWidget);
+    expect(find.text('Kein aktiver Zugriffsschlüssel.'), findsOneWidget);
     expect(find.text('Noch keine App verbunden.'), findsOneWidget);
   });
 
   testWidgets('a new token is shown once, then only its hint', (tester) async {
     await pumpAccess(tester);
-    await tapText(tester, 'Token erstellen');
+    await tapText(tester, 'Zugriffsschlüssel erstellen');
     await tester.enterText(find.widgetWithText(LabeledField, 'Name'), 'Claude');
     await tapText(tester, 'Erstellen');
 
     expect(find.text(secret), findsOneWidget);
     expect(
       find.text(
-        'Kopiere den Token jetzt. Er wird nicht noch einmal angezeigt.',
+        'Kopiere den Zugriffsschlüssel jetzt. '
+        'Er wird nicht noch einmal angezeigt.',
       ),
       findsOneWidget,
     );
@@ -204,8 +205,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(
       find.text(
-        'Ein neuer Token gilt für „Zuhause“, den Haushalt, der gerade offen '
-        'ist.',
+        'Ein neuer Zugriffsschlüssel gilt für „Zuhause“, den Haushalt, '
+        'der gerade offen ist.',
       ),
       findsOneWidget,
     );
@@ -213,12 +214,12 @@ void main() {
     await tester.pumpAndSettle();
     expect(
       find.text(
-        'Ein neuer Token gilt für „Sommerfest“, den Haushalt, der gerade '
-        'offen ist.',
+        'Ein neuer Zugriffsschlüssel gilt für „Sommerfest“, den Haushalt, '
+        'der gerade offen ist.',
       ),
       findsOneWidget,
     );
-    await tapText(tester, 'Token erstellen');
+    await tapText(tester, 'Zugriffsschlüssel erstellen');
     await tester.enterText(find.widgetWithText(LabeledField, 'Name'), 'Skript');
     await tapText(tester, 'Erstellen');
     await tapText(tester, 'Fertig');
@@ -233,10 +234,10 @@ void main() {
 
   testWidgets('the token limit is explained', (tester) async {
     await pumpAccess(tester, seed: (r) => r.limitReached = true);
-    await tapText(tester, 'Token erstellen');
+    await tapText(tester, 'Zugriffsschlüssel erstellen');
     await tester.enterText(find.widgetWithText(LabeledField, 'Name'), 'Siri');
     await tapText(tester, 'Erstellen');
-    expect(find.text('Höchstens 20 aktive Tokens.'), findsOneWidget);
+    expect(find.text('Höchstens 20 aktive Zugriffsschlüssel.'), findsOneWidget);
     expect(find.textContaining('fgp_'), findsNothing);
   });
 
@@ -260,7 +261,7 @@ void main() {
 
     await tester.tap(find.byTooltip('Siri widerrufen'));
     await tester.pumpAndSettle();
-    expect(find.text('Token widerrufen?'), findsOneWidget);
+    expect(find.text('Zugriffsschlüssel widerrufen?'), findsOneWidget);
     await tapText(tester, 'Abbrechen');
     expect(repo.revoked, isEmpty);
 
@@ -269,7 +270,7 @@ void main() {
     await tapText(tester, 'Widerrufen');
     expect(repo.revoked, ['siri']);
     expect(find.text('Siri'), findsNothing);
-    expect(find.text('Kein aktiver Token.'), findsOneWidget);
+    expect(find.text('Kein aktiver Zugriffsschlüssel.'), findsOneWidget);
   });
 
   ConnectedApp claude({String? device, DateTime? lastUsedAt}) => ConnectedApp(
@@ -441,8 +442,9 @@ void main() {
       expect(key('api-create'), findsNothing);
       expect(
         find.text(
-          'Mit einem Token baust du eigene Automationen, die eure Liste '
-          'pflegen, etwa ein Skript oder einen Assistenten am MCP-Server.',
+          'Mit einem Zugriffsschlüssel baust du eigene Automationen, die eure '
+          'Liste pflegen, etwa ein Skript oder einen Assistenten am '
+          'MCP-Server.',
         ),
         findsOneWidget,
         reason: 'the token hint names no API while it is hidden',
@@ -477,7 +479,7 @@ void main() {
         findsOneWidget,
       );
       expect(
-        find.text('Kein aktiver Token.'),
+        find.text('Kein aktiver Zugriffsschlüssel.'),
         findsOneWidget,
         reason: 'API keys are not MCP tokens',
       );
@@ -503,8 +505,9 @@ void main() {
       expect(find.text('Kein aktiver API-Schlüssel.'), findsOneWidget);
       expect(
         find.text(
-          'Mit einem Token baust du eigene Automationen am MCP-Server, die '
-          'eure Liste pflegen. Für Programme ohne MCP gibt es unten die API.',
+          'Mit einem Zugriffsschlüssel baust du eigene Automationen am '
+          'MCP-Server, die eure Liste pflegen. Für Programme ohne MCP gibt es '
+          'unten die API.',
         ),
         findsOneWidget,
       );
@@ -570,7 +573,7 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(find.text('Kein aktiver Token.'), findsOneWidget);
+      expect(find.text('Kein aktiver Zugriffsschlüssel.'), findsOneWidget);
     });
 
     testWidgets('a read-and-write key, in English', (tester) async {
@@ -671,7 +674,7 @@ void main() {
       );
       expect(find.text('Siri (dieses iPhone)'), findsOneWidget);
       expect(find.text('Siri (anderes iPhone)'), findsOneWidget);
-      expect(find.text('Kein aktiver Token.'), findsOneWidget);
+      expect(find.text('Kein aktiver Zugriffsschlüssel.'), findsOneWidget);
       expect(find.byKey(const ValueKey('siri-legacy-hint')), findsNothing);
 
       await tapText(tester, 'Siri-Sätze anzeigen');
@@ -749,7 +752,7 @@ void main() {
       expect(
         find.text(
           'Den alten Kurzbefehl brauchst du nicht mehr. '
-          'Seinen Token „Mein Kurzbefehl“ kannst du unten löschen.',
+          'Seinen Zugriffsschlüssel „Mein Kurzbefehl“ kannst du unten löschen.',
         ),
         findsOneWidget,
       );
@@ -814,7 +817,7 @@ void main() {
       tester,
     ) async {
       await pumpAccess(tester);
-      await tapText(tester, 'Token erstellen');
+      await tapText(tester, 'Zugriffsschlüssel erstellen');
       await shrink(tester);
       expectFits(tester);
       final field = tester.getRect(find.widgetWithText(LabeledField, 'Name'));
@@ -880,8 +883,9 @@ void main() {
     }
 
     void expectTwoSections() {
-      expect(find.text('ZUGRIFFSTOKEN'), findsOneWidget);
-      expect(find.text('Token erstellen'), findsOneWidget);
+      expect(find.text('ZUGRIFFSSCHLÜSSEL'), findsOneWidget);
+      expect(key('access-tokens-hint'), findsOneWidget);
+      expect(find.text('Zugriffsschlüssel erstellen'), findsOneWidget);
       expect(find.text('MCP-SERVER'), findsOneWidget);
       expect(key('access-keys-section'), findsNothing);
       expect(key('access-key-create'), findsNothing);
@@ -892,10 +896,10 @@ void main() {
       await pumpAccess(tester, seed: unifiedWithKeys, flags: {'unified-keys'});
       expect(find.text('ZUGRIFFSSCHLÜSSEL'), findsOneWidget);
       expect(key('access-keys-hint'), findsOneWidget);
-      expect(find.text('ZUGRIFFSTOKEN'), findsNothing);
+      expect(key('access-tokens-hint'), findsNothing);
       expect(find.text('MCP-SERVER'), findsNothing);
       expect(find.text('API'), findsNothing);
-      expect(find.text('Token erstellen'), findsNothing);
+      expect(find.text('Zugriffsschlüssel erstellen'), findsNothing);
       expect(find.text('https://mcp.snacklist.app'), findsOneWidget);
       expect(find.text(apiUrl), findsNothing);
       expect(key('api-docs'), findsNothing);
