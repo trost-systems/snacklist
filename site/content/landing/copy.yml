@@ -21,15 +21,15 @@ footer.tagline:
   source: "Job 82: no browser mention (Addendum 1)."
 
 hero.badge:
-  de: "Beta im November"
-  en: "Beta in November"
+  de: "Jetzt in der Beta"
+  en: "Now in beta"
   status: draft
   source: "Peter 2026-11-05 (Q88=B1, job 139): the waitlist page invites to the beta, not to the closed family test."
 hero.badge-launch:
   de: "Jetzt verfügbar"
   en: "Available now"
   status: draft
-  source: "Job 370: the launch stage's chip, in place of hero.badge (Beta im November)."
+  source: "Job 370: the launch stage's chip, in place of hero.badge (Jetzt in der Beta)."
 nav.web-app:
   de: "Web-App"
   en: "Web app"
