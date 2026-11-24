@@ -146,7 +146,7 @@ export const toolScopes = {
 } as const satisfies Record<McpTool, Scope>;
 
 /**
- * Job 415: the four hints every tool declares, explicit because Claude's and ChatGPT's directory
+ * Job 415: the four hints, and job 421's English `title`, every tool declares, explicit because Claude's and ChatGPT's directory
  * reviews reject a tool that leaves one to the spec's defaults. openWorldHint is false throughout:
  * a tool reaches only the caller's household. destructiveHint is true where a call deletes data or
  * overwrites text the user typed (remove_items, merge_items, update_item, the renames) or replaces
@@ -156,138 +156,160 @@ export const toolScopes = {
  */
 export const toolAnnotations = {
   list_households: {
+    title: 'List Households',
     readOnlyHint: true,
     destructiveHint: false,
     idempotentHint: true,
     openWorldHint: false,
   },
   list_lists: {
+    title: 'List Shopping Lists',
     readOnlyHint: true,
     destructiveHint: false,
     idempotentHint: true,
     openWorldHint: false,
   },
   list_items: {
+    title: 'List Items',
     readOnlyHint: true,
     destructiveHint: false,
     idempotentHint: true,
     openWorldHint: false,
   },
   get_item: {
+    title: 'Get Item',
     readOnlyHint: true,
     destructiveHint: false,
     idempotentHint: true,
     openWorldHint: false,
   },
   list_categories: {
+    title: 'List Categories',
     readOnlyHint: true,
     destructiveHint: false,
     idempotentHint: true,
     openWorldHint: false,
   },
   list_stores: {
+    title: 'List Stores',
     readOnlyHint: true,
     destructiveHint: false,
     idempotentHint: true,
     openWorldHint: false,
   },
   list_recent: {
+    title: 'List Recent Items',
     readOnlyHint: true,
     destructiveHint: false,
     idempotentHint: true,
     openWorldHint: false,
   },
   suggest_items: {
+    title: 'Suggest Items',
     readOnlyHint: true,
     destructiveHint: false,
     idempotentHint: true,
     openWorldHint: false,
   },
   add_items: {
+    title: 'Add Items',
     readOnlyHint: false,
     destructiveHint: false,
     idempotentHint: false,
     openWorldHint: false,
   },
   tick_items: {
+    title: 'Check Off Items',
     readOnlyHint: false,
     destructiveHint: false,
     idempotentHint: true,
     openWorldHint: false,
   },
   untick_items: {
+    title: 'Uncheck Items',
     readOnlyHint: false,
     destructiveHint: false,
     idempotentHint: true,
     openWorldHint: false,
   },
   move_item: {
+    title: 'Move Item',
     readOnlyHint: false,
     destructiveHint: false,
     idempotentHint: true,
     openWorldHint: false,
   },
   update_item: {
+    title: 'Update Item',
     readOnlyHint: false,
     destructiveHint: true,
     idempotentHint: true,
     openWorldHint: false,
   },
   remove_items: {
+    title: 'Remove Items',
     readOnlyHint: false,
     destructiveHint: true,
     idempotentHint: true,
     openWorldHint: false,
   },
   merge_items: {
+    title: 'Merge Items',
     readOnlyHint: false,
     destructiveHint: true,
     idempotentHint: false,
     openWorldHint: false,
   },
   place_item: {
+    title: 'Reorder Item',
     readOnlyHint: false,
     destructiveHint: false,
     idempotentHint: true,
     openWorldHint: false,
   },
   set_store_order: {
+    title: 'Set Item Order in Store',
     readOnlyHint: false,
     destructiveHint: true,
     idempotentHint: true,
     openWorldHint: false,
   },
   create_list: {
+    title: 'Create List',
     readOnlyHint: false,
     destructiveHint: false,
     idempotentHint: false,
     openWorldHint: false,
   },
   rename_list: {
+    title: 'Rename List',
     readOnlyHint: false,
     destructiveHint: true,
     idempotentHint: true,
     openWorldHint: false,
   },
   add_store: {
+    title: 'Add Store',
     readOnlyHint: false,
     destructiveHint: false,
     idempotentHint: true,
     openWorldHint: false,
   },
   rename_store: {
+    title: 'Rename Store',
     readOnlyHint: false,
     destructiveHint: true,
     idempotentHint: true,
     openWorldHint: false,
   },
   set_store_layout: {
+    title: 'Set Store Aisle Order',
     readOnlyHint: false,
     destructiveHint: true,
     idempotentHint: true,
     openWorldHint: false,
   },
-} as const satisfies Record<McpTool, ToolAnnotations>;
+} as const satisfies Record<McpTool, ToolAnnotations & { title: string }>;
 
 export type Lang = 'de' | 'en';
 
@@ -498,7 +520,7 @@ export function buildServer(
   switches: Switches = SWITCHED_OFF,
 ): McpServer {
   const server = new McpServer(
-    { name: 'snacklist', title: 'Snacklist', version: '1.4.0' },
+    { name: 'snacklist', title: 'Snacklist', version: '1.5.0' },
     { instructions: INSTRUCTIONS, cacheHints: CACHE_HINTS },
   );
   const asked = new Map<string, Promise<Access>>();
@@ -526,7 +548,7 @@ export function buildServer(
     );
 
   server.registerTool('list_households', {
-    title: 'Haushalte anzeigen',
+    title: toolAnnotations.list_households.title,
     description: 'Listet die Haushalte, in denen der Nutzer ist, mit Mitgliederzahl. "default" ' +
       'markiert den Standardhaushalt, in dem die anderen Werkzeuge ohne "household" arbeiten. ' +
       'Mit einem Zugriffstoken nur dessen Haushalt.',
@@ -536,7 +558,7 @@ export function buildServer(
   }, () => call('list_households', null, undefined, (tx) => households(tx, auth))());
 
   server.registerTool('list_lists', {
-    title: 'Listen anzeigen',
+    title: toolAnnotations.list_lists.title,
     description:
       'Listet die Einkaufslisten des Haushalts in ihrer Reihenfolge. "default" markiert ' +
       'die Standardliste des Nutzers, in der die anderen Werkzeuge ohne "list" arbeiten (auch Siri ' +
@@ -548,7 +570,7 @@ export function buildServer(
   server.registerTool(
     'list_items',
     {
-      title: 'Einkaufsliste anzeigen',
+      title: toolAnnotations.list_items.title,
       description: 'Zeigt die offenen Einträge der Einkaufsliste mit Marke und Eigenschaften. ' +
         '"order" in der Antwort sagt, wie sortiert ist: "walk" (gelernte Reihenfolge) heißt Laden ' +
         'für Laden in der Reihenfolge der Läden, dann die Einträge ohne Laden, jeweils in ' +
@@ -574,7 +596,7 @@ export function buildServer(
   server.registerTool(
     'add_items',
     {
-      title: 'Einträge hinzufügen',
+      title: toolAnnotations.add_items.title,
       description:
         'Setzt einen oder mehrere Einträge auf die Liste. Der Name wird zerlegt: "Windeln Pampers ' +
         'Größe 3" → name "Windeln", Marke "Pampers", Eigenschaften "Größe 3"; "2 Gurken" → name ' +
@@ -618,7 +640,7 @@ export function buildServer(
   server.registerTool(
     'tick_items',
     {
-      title: 'Einträge abhaken',
+      title: toolAnnotations.tick_items.title,
       description:
         'Hakt einen oder mehrere Einträge als gekauft ab; sie verschwinden von der Liste und ' +
         'landen unter "Zuletzt verwendet". Nicht gefundene oder schon abgehakte Einträge werden ' +
@@ -637,7 +659,7 @@ export function buildServer(
   server.registerTool(
     'untick_items',
     {
-      title: 'Abhaken zurücknehmen',
+      title: toolAnnotations.untick_items.title,
       description: 'Setzt abgehakte Einträge wieder auf die Liste. Ein Name findet den zuletzt ' +
         'abgehakten Eintrag dieses Namens auf der Liste, außer er steht dort schon offen; eine id ' +
         'findet ihn ohne "list" auf jeder ' +
@@ -657,7 +679,7 @@ export function buildServer(
   server.registerTool(
     'move_item',
     {
-      title: 'Eintrag verschieben',
+      title: toolAnnotations.move_item.title,
       description:
         'Ändert die Kategorie und/oder den Laden eines Eintrags. Bei gelernter Reihenfolge ' +
         '(list_items "order": "walk") nimmt er im neuen Laden seinen Platz ein, sonst kommt er ans ' +
@@ -685,7 +707,7 @@ export function buildServer(
   server.registerTool(
     'place_item',
     {
-      title: 'Eintrag einsortieren',
+      title: toolAnnotations.place_item.title,
       description:
         'Setzt einen offenen Eintrag direkt vor ("before") oder hinter ("after") einen anderen, ' +
         'z. B. "die Eier hinter das Mehl"; genau eines von beiden angeben. Bei gelernter ' +
@@ -715,7 +737,7 @@ export function buildServer(
   server.registerTool(
     'set_store_order',
     {
-      title: 'Reihenfolge eines Ladens setzen',
+      title: toolAnnotations.set_store_order.title,
       description:
         'Legt fest, in welcher Reihenfolge die offenen Einträge eines Ladens auf der Liste ' +
         'stehen, z. B. "so laufe ich bei IKEA: …". Die genannten Einträge kommen in dieser ' +
@@ -739,7 +761,7 @@ export function buildServer(
   server.registerTool(
     'update_item',
     {
-      title: 'Eintrag ändern',
+      title: toolAnnotations.update_item.title,
       description:
         'Ändert einen offenen Eintrag wie "Bearbeiten" in der App: nur die angegebenen ' +
         'Felder. quantity, brand oder properties null (oder leer) löscht sie. category und store ' +
@@ -782,7 +804,7 @@ export function buildServer(
   server.registerTool(
     'remove_items',
     {
-      title: 'Einträge löschen',
+      title: toolAnnotations.remove_items.title,
       description: 'Löscht offene Einträge von der Liste, ohne sie abzuhaken (sie landen nicht ' +
         'unter "Zuletzt verwendet"). Was der Haushalt über sie gelernt hat (Kategorie, Laden), ' +
         'bleibt. Nicht gefundene Einträge werden unter "notFound" gemeldet, ein zweiter Aufruf ' +
@@ -801,7 +823,7 @@ export function buildServer(
   server.registerTool(
     'get_item',
     {
-      title: 'Eintrag anzeigen',
+      title: toolAnnotations.get_item.title,
       description: 'Zeigt einen Eintrag mit Status ("open" oder "ticked") und Zeitpunkt des ' +
         'Hinzufügens. Eine id findet ihn auch abgehakt; ein Name nur unter den offenen Einträgen.',
       inputSchema: z.object({ item: itemRef, household: householdRef, list: listRef }),
@@ -814,7 +836,7 @@ export function buildServer(
   server.registerTool(
     'merge_items',
     {
-      title: 'Einträge zusammenführen',
+      title: toolAnnotations.merge_items.title,
       description: 'Führt zwei offene Einträge zusammen wie "Zusammenführen" in der App, etwa ' +
         'nach "similarOnList" von add_items, wenn der Nutzer es will: "keep" bleibt mit seinem ' +
         'Namen, die Mengen werden addiert ("2" und "3" → "5"), fehlende Marke oder Eigenschaften ' +
@@ -839,7 +861,7 @@ export function buildServer(
   server.registerTool(
     'list_categories',
     {
-      title: 'Kategorien anzeigen',
+      title: toolAnnotations.list_categories.title,
       description: 'Listet die Kategorien des Haushalts in Gang-Reihenfolge. Mit "store" in der ' +
         'Laufweg-Reihenfolge dieses Ladens (wie list_items mit "store"); "hidden" markiert ' +
         'Kategorien, die der Laden nicht führt.',
@@ -864,7 +886,7 @@ export function buildServer(
   );
 
   server.registerTool('list_recent', {
-    title: 'Zuletzt verwendet',
+    title: toolAnnotations.list_recent.title,
     description: 'Zeigt, was zuletzt abgehakt wurde, wie "Zuletzt verwendet" in der App: das ' +
       'Neueste zuerst, jedes Ding einmal (sein letzter Kauf), nichts, was wieder offen auf der ' +
       'Liste steht. "tickedAt" ist der Zeitpunkt des Abhakens. Mit untick_items (id) kommt ein ' +
@@ -888,7 +910,7 @@ export function buildServer(
   server.registerTool(
     'suggest_items',
     {
-      title: 'Vorschläge',
+      title: toolAnnotations.suggest_items.title,
       description: 'Was der Haushalt oft kauft, wie die Vorschläge in der App: oft und zuletzt ' +
         'Gekauftes zuerst, nichts, was gerade offen auf einer Liste steht. Mit "prefix" nur Namen, ' +
         'die damit beginnen, dann Namen mit einem Wort, das damit beginnt. "uses": an wie vielen ' +
@@ -923,7 +945,7 @@ export function buildServer(
     );
 
     server.registerTool('create_list', {
-      title: 'Liste anlegen',
+      title: toolAnnotations.create_list.title,
       description: 'Legt eine neue Einkaufsliste am Ende der Listen an, wie in der App. ' +
         'Höchstens 50 Listen je Haushalt. Nur auf ausdrücklichen Wunsch des Nutzers.',
       inputSchema: z.object({ name: listName, household: householdRef }),
@@ -935,7 +957,7 @@ export function buildServer(
       })());
 
     server.registerTool('rename_list', {
-      title: 'Liste umbenennen',
+      title: toolAnnotations.rename_list.title,
       description: 'Benennt eine Einkaufsliste um. Ein zweiter Aufruf ändert nichts.',
       inputSchema: z.object({
         list: storedText.min(1).max(60).describe(
@@ -952,7 +974,7 @@ export function buildServer(
       })());
 
     server.registerTool('add_store', {
-      title: 'Laden anlegen',
+      title: toolAnnotations.add_store.title,
       description: 'Legt einen Laden an, wie in der App. Nur der Name, keine Handelskette. ' +
         'Gibt es den Namen schon (Groß- und Kleinschreibung, Umlaute egal), antwortet es mit ' +
         'diesem Laden und "created": false. Höchstens 50 Läden je Haushalt.',
@@ -965,7 +987,7 @@ export function buildServer(
       })());
 
     server.registerTool('rename_store', {
-      title: 'Laden umbenennen',
+      title: toolAnnotations.rename_store.title,
       description: 'Benennt einen Laden um. Heißt schon ein anderer Laden so, ändert sich nichts ' +
         'und der Aufruf meldet es.',
       inputSchema: z.object({
@@ -983,7 +1005,7 @@ export function buildServer(
     server.registerTool(
       'set_store_layout',
       {
-        title: 'Laufweg eines Ladens',
+        title: toolAnnotations.set_store_layout.title,
         description:
           'Legt fest, in welcher Reihenfolge die Kategorien in einem Laden kommen (der ' +
           'Laufweg, wie in der App unter dem Laden). "categories": die genannten zuerst, in dieser ' +
@@ -1016,7 +1038,7 @@ export function buildServer(
   }
 
   server.registerTool('list_stores', {
-    title: 'Läden anzeigen',
+    title: toolAnnotations.list_stores.title,
     description: 'Listet die Läden des Haushalts.',
     inputSchema: z.object({ household: householdRef }),
     annotations: toolAnnotations.list_stores,

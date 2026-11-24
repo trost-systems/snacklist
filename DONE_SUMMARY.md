@@ -2823,3 +2823,13 @@ Also in review 1: the static web join page (`app/web/join`) lost the same "Premi
 1. **Must-fix 1.** The branch is rebuilt as one docs-only commit on `origin/main` (19 files, nothing under `app/` or `supabase/`); the earlier head was an amended copy of Job 420's commit and would not rebase.
 2. **Nice to have, done.** DECISIONS wording: AC1 to AC3 matched, AC4's stop rule did not trigger.
 3. **For the lead (not done here).** No standing production test account with a household exists, so a live check seeds a throwaway `@fg-test.invalid` one; the orphan hosted fixture `fx-1031-2042-r5wc` (2026-10-31, no manifest) is still listed by `fg runs --target hosted`.
+
+## Job 421: MCP tool titles
+
+Every tool carries `title` and `annotations.title` (equal), English Title Case, from one `toolAnnotations` table in `supabase/functions/mcp/tools.ts`; the four hints are unchanged. `serverInfo.version` is 1.5.0. `docs/MCP.md` says both places must stay. Tests: `supabase/functions/mcp/tools_test.ts` (both titles per tool, version), `deno test -A mcp/` 77 passed, 0 failed, 28 ignored.
+
+The 17 live titles (switch OFF; review 0 read them from a local stack's `tools/list`, with Review 0's two renames applied here): List Households, List Shopping Lists, List Items, Add Items, Check Off Items, Uncheck Items, Move Item, Reorder Item, Set Item Order in Store, Update Item, Remove Items, Get Item, Merge Items, List Categories, List Recent Items, Suggest Items, List Stores. Hidden behind `mcp_lists_stores` (switch stays OFF): Create List, Rename List, Add Store, Rename Store, Set Store Aisle Order.
+
+Before-state on production (read 2026-11-24, protocol 2025-11-25, throwaway hosted `@fg-test.invalid` account with a personal token): 17 tools, each with a German top-level `title` and no `annotations.title`. The account was torn down with `fg teardown --target hosted` (`nonTestCountsUnchanged`), the token then got 401, and no `j421` run is left in `fg runs --target hosted`. A unit case pins the switch-OFF set (17 names, both titles equal).
+
+Not done: the after-deploy `tools/list` on production and the final title list read from there; they follow review PASS and deploy. The reviewer account (`secrets/ai-connectors`) is not on this runner: NEEDS_LEAD Job 421 asks the lead to sync it or approve the same throwaway fixture. Then replace the local-stack list above with the live one and copy this file to the job dir again.

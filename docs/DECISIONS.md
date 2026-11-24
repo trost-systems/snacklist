@@ -18212,3 +18212,11 @@ merge-pr.sh. This docs fix waits for review PASS before it lands. NEEDS_LEAD has
 ## Job 420b: live check of the consent page
 
 AC1 to AC3 matched on production and AC4's stop rule did not trigger, so nothing was fixed. The live pass used the existing public "Claude" OAuth client (no registration) and a throwaway hosted test account (torn down). Record: Job 420 section of DONE_SUMMARY.md.
+
+## Job 421: MCP tool titles in both places
+
+AC1, read on production before the deploy (2026-11-24, `tools/list` on `https://mcp.snacklist.app`, protocol 2025-11-25, with a personal token of a throwaway hosted `@fg-test.invalid` account): 17 tools, every one with a German top-level `Tool.title` ("Haushalte anzeigen" ... "Läden anzeigen") and no `annotations.title`, which is what the portal's "Missing title annotation" points at. The throwaway account was torn down (`fg teardown`, left nothing, `nonTestCountsUnchanged`) and its token then got 401. Both now carry one short English Title Case title per tool, taken from the `title` field of that tool's entry in `toolAnnotations` (`mcp/tools.ts`, one table with the four hints, no casts). `serverInfo.version` moves to 1.5.0 so clients refetch `tools/list` despite the one-hour cache. `tools_test.ts` asserts both titles per tool and that they match. The titles are not translated: German users of a connected Claude see English tool names, accepted because the directory wants English; Changelog stays `none` as the connector is gated off for users until the Dec 1 launch.
+
+The 17 live tools are the 22 minus the five behind `mcp_lists_stores` (`create_list`, `rename_list`, `add_store`, `rename_store`, `set_store_layout`), which get titles too, stay unregistered with the switch OFF, and are untouched. `list_stores` is always registered and live. Review 0 titles: `move_item` is "Move Item" (it changes category and/or store) and `place_item` "Reorder Item" (it puts an item before or after another).
+
+Blocked, AC4's reviewer-account run: `secrets/ai-connectors` is not on this runner (only `~/groceries-ops/secrets/supabase`). Deviation for the after-deploy check: the same throwaway hosted fixture as above (`fg seed solo-long-list --target hosted`, a token from `create_personal_access_token`, `tools/list`, `fg teardown`), unless the lead syncs the secret. NEEDS_LEAD Job 421 asks for either.

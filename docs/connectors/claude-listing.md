@@ -36,8 +36,8 @@ Everything you change appears at once on the phones of everyone in your househol
 Sign in with your Snacklist account when Claude asks. You see what Claude may do and allow or
 decline it. You can disconnect it any time in the Snacklist app under More, Access.
 
-Snacklist is available in German and English. The connector's tool names and descriptions are in
-German; Claude answers in your language.
+Snacklist is available in German and English. The connector's tool titles are in English and
+its descriptions in German; Claude answers in your language.
 ```
 
 German version (if the form takes a second language):
