@@ -80,13 +80,13 @@ const SITE_LINKS = {
 };
 const footer = (doc) => doc.querySelectorAll('footer nav a').map((a) => [a.text, a.getAttribute('href')]);
 
-const LEGAL_PATHS = ['/datenschutz', '/en/privacy', '/privacy', '/support', '/en/support'];
+const LEGAL_PATHS = ['/datenschutz', '/en/privacy', '/nutzungsbedingungen', '/en/terms', '/privacy', '/support', '/en/support'];
 
 // The DSA notice route is linked from every page, whatever else is published (job 275).
 const REPORT = { de: ['Inhalte melden', '/inhalte-melden'], en: ['Report content', '/en/report'] };
 
 test('with nothing published the footer links only the imprint and the report page', () => {
-  const { outDir, page } = buildSite({ config: { privacyPublished: false, supportPublished: false } });
+  const { outDir, page } = buildSite({ config: { privacyPublished: false, termsPublished: false, supportPublished: false } });
   assert.deepEqual(footer(page('/de/anleitungen/siri-kurzbefehl')), [...SITE_LINKS.de, ['Impressum', '/impressum'], REPORT.de]);
   assert.deepEqual(footer(page('/en/guides')), [...SITE_LINKS.en, ['Imprint', '/en/imprint'], REPORT.en]);
   assert.deepEqual(footer(page('/de')), [...SITE_LINKS.de, ['Impressum', '/impressum'], REPORT.de]);
@@ -98,12 +98,12 @@ test('with nothing published the footer links only the imprint and the report pa
 });
 
 test('the published privacy policy is in the footer of every page, support is not', () => {
-  const { outDir, page } = buildSite({ config: { privacyPublished: true, supportPublished: false } });
+  const { outDir, page } = buildSite({ config: { privacyPublished: true, termsPublished: true, supportPublished: false } });
   for (const route of htmlRoutes(outDir).filter((r) => r !== '/' && r !== '/404')) {
     const locale = page(route).querySelector('html').getAttribute('lang');
     const expected = locale === 'de'
-      ? [...SITE_LINKS.de, ['Impressum', '/impressum'], ['Datenschutz', '/datenschutz'], REPORT.de]
-      : [...SITE_LINKS.en, ['Imprint', '/en/imprint'], ['Privacy', '/en/privacy'], REPORT.en];
+      ? [...SITE_LINKS.de, ['Impressum', '/impressum'], ['Datenschutz', '/datenschutz'], ['Nutzungsbedingungen', '/nutzungsbedingungen'], REPORT.de]
+      : [...SITE_LINKS.en, ['Imprint', '/en/imprint'], ['Privacy', '/en/privacy'], ['Terms', '/en/terms'], REPORT.en];
     assert.deepEqual(footer(page(route)), expected, route);
   }
 });
@@ -119,11 +119,11 @@ test('the privacy policy pair switches language and has the rights anchor', () =
 
 test('with support published and its page present the footer links it too', () => {
   const { page } = buildSite({
-    config: { privacyPublished: true, supportPublished: true },
+    config: { privacyPublished: true, termsPublished: true, supportPublished: true },
     files: { 'legal/support.md': legal({ locale: 'de', path: '/support', key: 'support' }) },
   });
-  assert.deepEqual(footer(page('/de/anleitungen')), [...SITE_LINKS.de, ['Impressum', '/impressum'], ['Datenschutz', '/datenschutz'], REPORT.de, ['Hilfe', '/support']]);
-  assert.deepEqual(footer(page('/en/guides')), [...SITE_LINKS.en, ['Imprint', '/en/imprint'], ['Privacy', '/en/privacy'], REPORT.en, ['Support', '/en/support']]);
+  assert.deepEqual(footer(page('/de/anleitungen')), [...SITE_LINKS.de, ['Impressum', '/impressum'], ['Datenschutz', '/datenschutz'], ['Nutzungsbedingungen', '/nutzungsbedingungen'], REPORT.de, ['Hilfe', '/support']]);
+  assert.deepEqual(footer(page('/en/guides')), [...SITE_LINKS.en, ['Imprint', '/en/imprint'], ['Privacy', '/en/privacy'], ['Terms', '/en/terms'], REPORT.en, ['Support', '/en/support']]);
 });
 
 test('a published flag without its page fails the build on the broken link', () => {
@@ -141,4 +141,31 @@ test('a broken internal link in content fails the build', () => {
     () => buildSite({ files: { 'guides/de/kaputt.md': guide({ locale: 'de', slug: 'kaputt', body }) } }),
     /de\/anleitungen\/kaputt\.html: broken internal link \/de\/anleitungen\/gibt-es-nicht#teil/,
   );
+});
+
+test('the terms pair switches language and shows 18 sections', () => {
+  const { page } = buildSite({ config: { termsPublished: true } });
+  assert.equal(switchLink(page('/nutzungsbedingungen')).href, '/en/terms');
+  assert.equal(switchLink(page('/en/terms')).href, '/nutzungsbedingungen');
+  assert.equal(page('/nutzungsbedingungen').querySelectorAll('main h2').length, 18);
+  assert.equal(page('/en/terms').querySelectorAll('main h2').length, 18);
+});
+
+test('the terms pages end with the consumer arbitration paragraph and redirect from their other paths', async () => {
+  const { page } = buildSite({ config: { termsPublished: true } });
+  const last = (route) => page(route).querySelectorAll('main p').at(-1).text;
+  assert.match(last('/nutzungsbedingungen'), /^Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen\./);
+  assert.match(last('/en/terms'), /^We are neither willing nor obliged to take part in dispute resolution proceedings before a consumer arbitration board\./);
+  const { redirects } = JSON.parse((await import('node:fs')).readFileSync(new URL('../vercel.json', import.meta.url), 'utf8'));
+  for (const [source, destination] of [['/terms', '/en/terms'], ['/de/nutzungsbedingungen', '/nutzungsbedingungen']]) {
+    assert.deepEqual(redirects.find((r) => r.source === source), { source, destination, permanent: true });
+  }
+});
+
+test('the terms files are the text Legal approved (a changed byte needs a new hash-bound GO)', async () => {
+  const { createHash } = await import('node:crypto');
+  const { readFileSync } = await import('node:fs');
+  const hash = (f) => createHash('sha256').update(readFileSync(new URL(`../content/legal/${f}`, import.meta.url))).digest('hex');
+  assert.equal(hash('nutzungsbedingungen.md'), '4a2f1029bd2dcf09a1aa98e24128dd4cb09f9e20548f39ae16b8efe8c4cda481');
+  assert.equal(hash('terms.md'), '78056c03f91a65b7fe1d6279a788cefdc2591fd7554fc823276e87ed7d7473dd');
 });

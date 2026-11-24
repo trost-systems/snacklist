@@ -2897,3 +2897,59 @@ Head SHA, sha256 and patch-id per file are in the ops copy of this summary (a re
 
 #### Job 427b: rebased onto main after #691
 Rebased with push-pr.sh; the only conflicts were the two logs (both sides kept). Legal checks only the three site files (`einkaufsliste-vergleich-bring.md`, `support.md`, `support-en.md`); `DONE_SUMMARY.md` is a log. Head SHA, sha256 and patch-id per file are in the ops NEEDS_LEAD "Job 427b".
+
+## Job 417: Terms of Use pages (Legal L23-2), NO MERGE (hashes superseded by 417b)
+
+Built `/nutzungsbedingungen` (`/de/nutzungsbedingungen` redirects) and `/en/terms` from `in/2026-11-23-snacklist-terms.md` (sections 4 and 5, 18 sections each, dated 23 Nov 2026). Text verbatim (diffed against the source, ignoring blank lines; review 0 found the EN §18 closing paragraph missing in the first push, restored in the fix round, hashes below are the corrected ones); §12 as written. Same legal-page layout, a language switch via `translation_key: terms`, footer link next to Privacy/Datenschutz (flag `termsPublished` in `site/config.json`). Noindex follows the existing rules (none on these pages, like privacy). Because the text names ChatGPT and Claude, two entries went into `scripts/brand-names.allow.json` (Legal approved the text).
+
+Source files, sha256:
+
+```
+73a8c29d86091ab0c8a8a99348907fa2f36618a872d1728abec7bf3a9d9d9f4a  site/content/legal/nutzungsbedingungen.md  (superseded by 417b)
+ffec1484f4c18c6d6e3c54f34ea8016b1cc22b4557b2919aef9192801e4d0e18  site/content/legal/terms.md  (superseded by 417b)
+```
+
+PR head SHA: given in the PR comment and the job reply (a SHA cannot be written into a file of the commit it names). Not merged. The German page is at `/nutzungsbedingungen` (like `/datenschutz`); `/de/nutzungsbedingungen` and `/terms` redirect (docs/DECISIONS.md). A test pins both files' hashes. `docs/ALEXA_CERTIFICATION.md:22` still says the terms URLs 404: update with the `termsOfUseUrl` follow-up. Screenshots: `docs/screenshots/417/` (de/en, desktop/mobile). Tests: `npm run build` and `npm test` in `site/`, `scripts/lint.sh` pass.
+
+### AC5 report (main at 7aa558797, no code changes)
+
+- (a) Daily cap: MCP is per user account (`supabase/functions/mcp/handler.ts:41-45` PER_DAY=1000; `mcp_take_call(userId…)` at :416, table keyed by `user_id`, `migrations/20261121120000_mcp_rate.sql`). API is per household: `supabase/functions/api/limits.ts:8-9` "Per household and UTC day, all its keys together", `api_household_days` keyed by household (handler.ts:589). So Terms §7 wording needs both models, not "per account" for the API.
+- (b) Premium gate: `public.integration_gate(p_household, p_integration, p_user)` unlocks if `household_has_premium(p_household)` OR `user_has_premium(p_user)` (`migrations/20261115100000_key_checks_without_waiting.sql:189-199`), so it is household OR account, not account only. In practice the household path is household-bound entitlements: legacy purchases and promotional grants (`migrations/20261101150000_testers_via_revenuecat.sql:87`). MCP calls it with user and household (`_shared/premium.ts:46-52`); the `mcp/tools.ts:99` comment says "per user", which the SQL does not enforce. Messages: MCP `premiumRequired` neutral, no plan name (`mcp/tools.ts:103-109`: "Dafür brauchst du einen anderen Snacklist-Tarif. … Es wurde nichts gelesen oder geändert."); API 402 `premium_required` "You need Snacklist Premium to use the API. Unlock it in the Snacklist app. Nothing was read or changed." (`api/handler.ts:178-185`).
+- (c) Limits on the paywall: no. `app/l10n/app_de.arb` benefit lines (:800-803) name MCP and API with no 1000/day, 60/min or burst numbers; the limits live only in `docs/API.md`, `docs/MCP.md`.
+- (d) "Abo verwalten oder kündigen": yes. `premiumManage` (`app/l10n/app_de.arb:858`) shown as the `premium-manage` tile (`app/lib/purchases/premium_screen.dart:176-183`), opening the store sheet via `openManageSubscriptions` (`premium_dialogs.dart:17`) when `manage` is true; web has `_ManageOnWeb` (:186).
+
+## Job 417b: G2 revision of the Terms of Use (PR #679), NO MERGE
+
+Terms §11 loses the MCP/API-to-Premium reason and its cost exception, §12 is now one sentence (DE and EN, verbatim from the report's sections 4 and 5; both bodies diff-equal to the report). Privacy §14 (datenschutz.md, privacy.md) now says Lifetime belongs to the account and is not affected when the last member leaves a household (P-T1, verbatim). The hash test pins the new terms hashes; site build and all 262 site tests pass. `termsPublished` is unchanged. Not merged.
+
+sha256 (the head SHA is posted as a PR comment):
+
+- `nutzungsbedingungen.md` a6607353c8a5ac0fa60ff94332d8c9707499c8baa2fd848060c071b0695794a7
+- `terms.md` aba7ceb14d6f8649b48e72a190484152b689941f1c54ea5c3f6943a3183ea329
+- `datenschutz.md` 40e4e5bee43065e899152a1d4202ae49aa5ceb05e801d840318b5a86f46ede4d
+- `privacy.md` 4d60eb4e3abf01364e12cd6371d12c804414e976460feff8dcf2f96a80ccaa3d
+
+## Job 423: Terms say MCP and API are Premium now (PR #679), NO MERGE
+
+Peter: MCP and the API are Premium features already; testers with Lifetime via RevenueCat are not named in the Terms. The only passage with free-until-Premium wording was §12 (no tester mention anywhere in either Terms; privacy/datenschutz say nothing like it, so unchanged). §6, §7 already say Premium covers MCP and the API. Everything else is byte-identical to e352760f. Hash pins in `site/test/links.test.mjs` updated. Not merged: Legal hash-bound GO needed.
+
+DE §12, old -> new:
+- `Bis zum Premium-Startdatum sind MCP und API kostenlos.`
+- `MCP und API gehören zu Snacklist Premium (Abschnitt 6). Du brauchst Premium, um sie zu nutzen.`
+
+EN §12, old -> new:
+- `Until the Premium start date, MCP and the API are free.`
+- `MCP and the API are part of Snacklist Premium (section 6). You need Premium to use them.`
+
+sha256 (the head SHA is in the ops copy of this file and a PR comment; a commit cannot hold its own SHA):
+
+- `nutzungsbedingungen.md` 4a2f1029bd2dcf09a1aa98e24128dd4cb09f9e20548f39ae16b8efe8c4cda481
+- `terms.md` 78056c03f91a65b7fe1d6279a788cefdc2591fd7554fc823276e87ed7d7473dd
+- `datenschutz.md`, `privacy.md` unchanged (hashes as in Job 417b)
+
+`git patch-id --stable` per file:
+
+- vs e352760f: `nutzungsbedingungen.md` 989206940d2aa14c6bb7c5219caa6fa2463b4d02, `terms.md` 84b9d7d71caf112b217a0d58d14c45f9091d7c29
+- vs main (whole file): `nutzungsbedingungen.md` 78eb71f4bd84b9b98f554b359e43bf212f054d69, `terms.md` 6c31493add1db5384c58ed04ad2f98e7b2f0f031, `datenschutz.md` 9fcde488162dccf8a0b2473a6fe64bec26beebdb, `privacy.md` e35cbf288194128dfaa86fccfe42fce4d3b99f9e
+
+Replaces #679 (the 417 worktree was dirty). Privacy's "once Premium is sold" timing words are raised in NEEDS_LEAD, not edited.
