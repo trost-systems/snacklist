@@ -102,7 +102,7 @@ test('More opens every entry; Nutzungsdaten is a page; the legal rows sit on Mor
   await expect(page).toHaveURL(/\/more$/);
   await expect(page.getByRole('heading', { name: 'Mehr' })).toBeVisible();
 
-  const legalRows = ['Impressum', 'Datenschutzerklärung', 'Nutzungsbedingungen (EULA)', 'Lizenzen'];
+  const legalRows = ['Impressum', 'Datenschutzerklärung', 'Nutzungsbedingungen', 'Lizenzen'];
   const signOut = page.getByRole('button', { name: /^Abmelden/ });
   await wheelTo(page, signOut);
   await screenshot(page, 'more-07-legal');
@@ -130,8 +130,8 @@ test('More opens every entry; Nutzungsdaten is a page; the legal rows sit on Mor
     await expect(page, 'the app stays on More').toHaveURL(/\/more$/);
   }
   await opensSitePage('Datenschutzerklärung', 'https://snacklist.app/datenschutz');
-  // Apple's EULA on iOS; the web build links the support page until there are terms of our own.
-  await opensSitePage('Nutzungsbedingungen (EULA)', 'https://snacklist.app/support');
+  // The web build links the terms on snacklist.app.
+  await opensSitePage('Nutzungsbedingungen', 'https://snacklist.app/nutzungsbedingungen');
 
   await page.getByRole('button', { name: 'Lizenzen', exact: true }).click();
   await expect.poll(() => page.locator('body').ariaSnapshot(), { message: 'the licenses page names the app and lists packages' })
@@ -330,7 +330,7 @@ test.describe('with an English browser', () => {
     await expectNoGerman(page, 'usage data', german);
     await page.getByRole('button', { name: 'Back' }).click();
     await wheelTo(page, page.getByRole('button', { name: /^Sign out/ }));
-    for (const name of ['Imprint', 'Privacy policy', 'Terms of Use (EULA)', 'Licenses']) {
+    for (const name of ['Imprint', 'Privacy policy', 'Terms of Use', 'Licenses']) {
       await expect(page.getByRole('button', { name, exact: true }), `${name} on More`).toBeVisible();
     }
     await expect(page.getByRole('heading', { name: 'Legal', exact: true }), 'no label above the legal rows').toHaveCount(0);

@@ -648,9 +648,16 @@ class const _Plans({
               _Link(
                 'premium-terms',
                 l10n.premiumTermsLink,
-                termsUrl(defaultTargetPlatform, language),
+                termsUrl(language),
                 small: true,
               ),
+              if (appleEulaShown(web: kIsWeb, platform: defaultTargetPlatform))
+                _Link(
+                  'premium-apple-eula',
+                  l10n.premiumAppleEulaLink,
+                  appleEulaUrl,
+                  small: true,
+                ),
               _Link(
                 'premium-privacy',
                 l10n.premiumPrivacyLink,

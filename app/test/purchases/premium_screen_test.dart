@@ -904,7 +904,7 @@ void main() {
         tester.widget<LegalLink>(key('premium-privacy')).url,
         Uri.parse('https://snacklist.app/datenschutz'),
       );
-      expect(find.text('Nutzungsbedingungen (EULA)'), findsOneWidget);
+      expect(find.text('Nutzungsbedingungen'), findsOneWidget);
     });
 
     for (final (currency, yearly, lifetime) in [
@@ -1518,18 +1518,59 @@ void main() {
     });
   });
 
-  testWidgets("on iOS the terms are Apple's standard EULA", (tester) async {
-    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
-    addTearDown(() => debugDefaultTargetPlatformOverride = null);
-    await openLifetime(tester);
-    expect(
-      tester.widget<LegalLink>(key('premium-terms')).url,
-      Uri.parse(
-        'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/',
+  for (final (platform, language, terms, privacy, apple) in [
+    for (final platform in [TargetPlatform.iOS, TargetPlatform.android]) ...[
+      (
+        platform,
+        AppLanguage.de,
+        'https://snacklist.app/nutzungsbedingungen',
+        'https://snacklist.app/datenschutz',
+        'Lizenzvertrag von Apple (EULA)',
       ),
-    );
-    debugDefaultTargetPlatformOverride = null;
-  });
+      (
+        platform,
+        AppLanguage.en,
+        'https://snacklist.app/en/terms',
+        'https://snacklist.app/en/privacy',
+        'Apple’s License Agreement (EULA)',
+      ),
+    ],
+  ]) {
+    testWidgets('$platform, ${language.name}: terms and privacy open '
+        "snacklist.app; Apple's EULA only on iOS", (tester) async {
+      debugDefaultTargetPlatformOverride = platform;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+      await openLifetime(tester, language: language);
+      expect(
+        tester.widget<LegalLink>(key('premium-terms')).url,
+        Uri.parse(terms),
+      );
+      expect(
+        tester.widget<LegalLink>(key('premium-privacy')).url,
+        Uri.parse(privacy),
+      );
+      if (platform == TargetPlatform.iOS) {
+        expect(
+          tester.widget<LegalLink>(key('premium-apple-eula')).url,
+          Uri.parse(
+            'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/',
+          ),
+        );
+        expect(find.text(apple), findsOneWidget);
+        final terms = tester.getTopLeft(key('premium-terms'));
+        final eula = tester.getTopLeft(key('premium-apple-eula'));
+        expect(
+          eula.dy > terms.dy || (eula.dy == terms.dy && eula.dx > terms.dx),
+          isTrue,
+          reason: 'directly after the terms link',
+        );
+      } else {
+        expect(key('premium-apple-eula'), findsNothing);
+        expect(find.text(apple), findsNothing);
+      }
+      debugDefaultTargetPlatformOverride = null;
+    });
+  }
 
   testWidgets('the picked plan stays picked when the tiles scroll away and '
       'back', (tester) async {

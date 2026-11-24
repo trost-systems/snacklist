@@ -185,13 +185,13 @@ void main() {
       const Locale('de', 'DE'),
       'https://snacklist.app/impressum',
       'https://snacklist.app/datenschutz',
-      'https://snacklist.app/support',
+      'https://snacklist.app/nutzungsbedingungen',
     ),
     (
       const Locale('en', 'US'),
       'https://snacklist.app/en/imprint',
       'https://snacklist.app/en/privacy',
-      'https://snacklist.app/en/support',
+      'https://snacklist.app/en/terms',
     ),
   ]) {
     testWidgets('$device: the legal rows on More open the site in the '
@@ -210,22 +210,55 @@ void main() {
     });
   }
 
-  testWidgets("on iOS Nutzungsbedingungen is Apple's standard EULA", (
-    tester,
-  ) async {
-    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
-    addTearDown(() => debugDefaultTargetPlatformOverride = null);
-    final launcher = fakeLauncher();
-    await pumpMore(tester);
-    await tapKey(tester, 'more-terms');
-    expect(launcher.opened, [
-      (
-        'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/',
-        PreferredLaunchMode.externalApplication,
-      ),
-    ]);
-    debugDefaultTargetPlatformOverride = null;
-  });
+  const appleEula =
+      'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
+  for (final (device, label, terms, apple) in [
+    (
+      const Locale('de', 'DE'),
+      'Lizenzvertrag von Apple (EULA)',
+      'https://snacklist.app/nutzungsbedingungen',
+      appleEula,
+    ),
+    (
+      const Locale('en', 'US'),
+      'Apple’s License Agreement (EULA)',
+      'https://snacklist.app/en/terms',
+      appleEula,
+    ),
+  ]) {
+    testWidgets('$device: on iOS Terms and the Apple EULA are two rows', (
+      tester,
+    ) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+      final launcher = fakeLauncher();
+      await pumpMore(tester, size: const Size(390, 2600), device: [device]);
+      await tester.scrollUntilVisible(key('more-apple-eula'), 200);
+      expect(
+        find.descendant(of: key('more-apple-eula'), matching: find.text(label)),
+        findsOneWidget,
+      );
+      await tapKey(tester, 'more-terms');
+      await tapKey(tester, 'more-apple-eula');
+      expect(launcher.opened, [
+        (terms, PreferredLaunchMode.externalApplication),
+        (apple, PreferredLaunchMode.externalApplication),
+      ]);
+      debugDefaultTargetPlatformOverride = null;
+    });
+
+    testWidgets('$device: on Android there is no Apple EULA row', (
+      tester,
+    ) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+      await pumpMore(tester, size: const Size(390, 2600), device: [device]);
+      expect(key('more-terms'), findsOneWidget);
+      expect(key('more-apple-eula'), findsNothing);
+      expect(find.text(label), findsNothing);
+      debugDefaultTargetPlatformOverride = null;
+    });
+  }
 
   // DDG §5: the imprint is reachable at once, from the list in two taps.
   testWidgets('from the list: Mehr, then Impressum opens the imprint', (

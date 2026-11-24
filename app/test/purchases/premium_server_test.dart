@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:family_groceries/purchases/premium_server.dart';
+import 'package:flutter/foundation.dart' show TargetPlatform;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' show Response;
 import 'package:http/testing.dart';
@@ -95,5 +96,16 @@ void main() {
       SupabasePremiumServer(_Server(auth, const [])).myPremium(),
       throwsA(anything),
     );
+  });
+
+  test("Apple's EULA link is for the iPhone app only", () {
+    for (final platform in TargetPlatform.values) {
+      expect(
+        appleEulaShown(web: false, platform: platform),
+        platform == TargetPlatform.iOS,
+        reason: '$platform',
+      );
+    }
+    expect(appleEulaShown(web: true, platform: TargetPlatform.iOS), isFalse);
   });
 }

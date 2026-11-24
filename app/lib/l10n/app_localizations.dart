@@ -3188,11 +3188,17 @@ abstract class AppLocalizations {
   /// **'Snacklist Premium ist gerade nicht verfügbar.'**
   String get premiumUnavailable;
 
-  /// PLACEHOLDER (job 49): Snacklist Launch / Legal Review K.13 write the final copy (NEEDS_LEAD Job 49). Premium page: link to the terms; Apple's standard EULA on iOS, a placeholder page elsewhere (no Snacklist terms exist, H-93)
+  /// Premium page and More: link to the terms of use on snacklist.app (Legal L24-7: label without EULA, the Apple link has its own)
   ///
   /// In de, this message translates to:
-  /// **'Nutzungsbedingungen (EULA)'**
+  /// **'Nutzungsbedingungen'**
   String get premiumTermsLink;
+
+  /// iOS only, on the Premium page and in More, right after the terms link: opens Apple's standard license agreement (EULA), which App Store rules require next to the subscription terms (Legal L24-7)
+  ///
+  /// In de, this message translates to:
+  /// **'Lizenzvertrag von Apple (EULA)'**
+  String get premiumAppleEulaLink;
 
   /// PLACEHOLDER (job 49): Snacklist Launch / Legal Review K.13 write the final copy (NEEDS_LEAD Job 49). Premium page: link to the privacy policy
   ///
