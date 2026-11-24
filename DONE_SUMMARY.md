@@ -3006,3 +3006,7 @@ Changes: L24-6 lines in both fastlane descriptions (privacy line kept above, tra
 **Tests.** `cd emails && npm run build && npm test`: 15 pass, 0 fail.
 
 **Status.** PR, head and merge SHAs, and the apply result are appended below when they exist.
+
+## Job 432: English MCP tool texts, Legal L24-10 and ChatGPT listing fixes
+
+Details, hashes, patch-ids and the German/English table: [docs/done/432.md](docs/done/432.md). Not merged until Legal's GO.

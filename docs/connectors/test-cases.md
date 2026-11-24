@@ -2,7 +2,7 @@
 
 Run against the reviewer account (`reviewer-account.md`): household "Haushalt Beispiel (Testkonto)",
 stores dm, Lidl, Edeka, IKEA, 11 sample items. Tool names are the server's; their titles are English
-(since job 421) and their descriptions are German.
+(since job 421) and so are their descriptions (since job 432).
 Expected results are what the server does by its code and tests; they were not run through ChatGPT
 or Claude from this box. Whoever submits runs each once and corrects any line that differs.
 
