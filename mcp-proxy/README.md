@@ -12,6 +12,7 @@ also serves the public REST API at `https://api.snacklist.app/v1` (see
 | Request on mcp.snacklist.app or mcp.hummlist.com | Goes to (on `https://jdwqrallbpdbshrdhenk.supabase.co` unless a file) |
 | --- | --- |
 | `/de`, `/en`, `/static/...` | the files in `public/` (`de.html`, `en.html`, CSS, JS, logo, fonts) |
+| `/.well-known/openai-apps-challenge` | the file in `public/.well-known/openai-apps-challenge` (plain-text OpenAI domain verification) |
 | `/.well-known/oauth-protected-resource` | `/functions/v1/mcp/.well-known/oauth-protected-resource` |
 | `/` from a browser, German first in `Accept-Language` | `public/de.html` |
 | `/` from a browser, any other language | `public/en.html` |
@@ -30,7 +31,8 @@ A browser request is one whose `Accept` names `text/html` and that has no
 `Mcp-Session-Id` and no `MCP-Protocol-Version`. Every MCP POST carries a JSON
 `Content-Type`, and the GET for the event stream asks for
 `text/event-stream`, so MCP clients never get the page. Only `/` serves it;
-`/.well-known/...`, `/mcp` and every other path still go to the function.
+`/.well-known/oauth-*`, `/mcp` and every other path still go to the function, except
+`/.well-known/openai-apps-challenge`, which is the static challenge file.
 `scripts/mcp-proxy-routes_test.ts` (lint gate) replays browser and MCP
 client requests through these rules.
 
