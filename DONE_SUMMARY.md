@@ -2855,3 +2855,13 @@ Not changed: "Zugriffsschlüssel" in the Siri guide. The earlier note that the b
 - FEATURES-FOR-WRITERS: dropped "and it can see the order a store's aisles come in" (a category read the consent text doesn't name), so "What it does" and the never-claim line agree; "Last verified" updated.
 - Head SHA and per-file sha256 and patch-id are in the ops copy of this file and in `~/groceries-ops/NEEDS_LEAD.md` (a repo file can't hold its own hash).
 - For the lead: the server can still do what the Bring page no longer says (`move_item` takes `category`, `list_categories` is unswitched). The Bring page's "Mehr > Zugänge > MCP-Server" address hint is stale with the unified key on; the legal support pages still say "Feedback senden". All three belong in Legal's next round.
+
+## Job 418: manage or cancel subscription entry (test-only PR)
+
+Main already has the entry, so the feature code is unchanged. Review 0 found the first report's test claim false; corrected here.
+
+- Row: `app/lib/purchases/premium_screen.dart:177` (`premium-manage`, "Abo verwalten oder kündigen" / "Manage or cancel subscription"), shown when `manage = !kIsWeb && yearlyRuns` (line 99). Reached from More › Snacklist Premium (`more_screen.dart:408`). Plain ListTile.
+- Action: `openManageSubscriptions` (`premium_dialogs.dart:15`): StoreKit's sheet on iOS (Apple's subscriptions page as fallback), Play's subscription page for `com.snacklist.app.yearly` on Android. No billing code of our own.
+- Tests added in `app/test/purchases/premium_screen_test.dart` (after "after Lifetime the yearly plan still bills"): no Premium, no row; own Lifetime only (`userRows`), `lifetime-unlocked` and no row; own yearly (`userRows`), row and text shown. Existing row tests: yearly plus Lifetime (shown), lapsed yearly and tester grant (absent). Run: 81 passed (78 before).
+- Not done: the row is on the Premium page, not More › Einstellungen; NEEDS_LEAD asks the lead to confirm. A non-subscribing member of a legacy household-bound yearly plan sees the row (near-unreachable, nothing sold; new purchases bind to the user).
+- AC2 deviation (RevenueCat `showManageSubscriptions`): recorded in DECISIONS.

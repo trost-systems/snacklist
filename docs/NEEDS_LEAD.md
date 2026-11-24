@@ -2599,3 +2599,7 @@ back to DE.
 
 - The PM brief says the unified key ("Zugriffsschlüssel") is not switched on. The repo says otherwise: `releases/flags.json` has `holds.unified-keys-guides.released: true` (#672), so the live Siri guide shows "Zugriffsschlüssel" twice, and `docs/done/411.md` lines 36 and 66 record `app_switches.unified_keys` reading true. The app shows "Zugriffsschlüssel" while that switch is on and "Zugriffstoken" while it is off.
 - Please confirm the production value of `app_switches.unified_keys`. If it is off, set `holds.unified-keys-guides.released` back to `false` (both the Siri and Claude guides then show the "Zugriffstoken" steps); if it is on, the guide is right and nothing changes. Left as is in job 424.
+
+## NEEDS_LEAD Job 418: where the manage-subscription row lives
+
+The "Abo verwalten oder kündigen" row is on More › Snacklist Premium, not in More › Einstellungen. Legal N-129 allows "or equivalent". Please confirm before the Nov 25 build, or ask for a second row in Einstellungen.

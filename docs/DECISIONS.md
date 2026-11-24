@@ -18220,3 +18220,9 @@ AC1, read on production before the deploy (2026-11-24, `tools/list` on `https://
 The 17 live tools are the 22 minus the five behind `mcp_lists_stores` (`create_list`, `rename_list`, `add_store`, `rename_store`, `set_store_layout`), which get titles too, stay unregistered with the switch OFF, and are untouched. `list_stores` is always registered and live. Review 0 titles: `move_item` is "Move Item" (it changes category and/or store) and `place_item` "Reorder Item" (it puts an item before or after another).
 
 Blocked, AC4's reviewer-account run: `secrets/ai-connectors` is not on this runner (only `~/groceries-ops/secrets/supabase`). Deviation for the after-deploy check: the same throwaway hosted fixture as above (`fg seed solo-long-list --target hosted`, a token from `create_personal_access_token`, `tools/list`, `fg teardown`), unless the lead syncs the secret. NEEDS_LEAD Job 421 asks for either.
+
+## Job 418: manage or cancel subscription
+
+- The entry already existed (Premium page, `premium-manage`); the job added tests only (no Premium, own Lifetime, own yearly).
+- Deviation from the brief's AC2: no `purchases_flutter` `showManageSubscriptions`/`managementURL`. RevenueCat may start only on Buy or Restore (H-67) and the package is lint-banned outside `revenuecat_repository.dart`. StoreKit's own sheet runs over the `store_prices` channel, Play gets its deep link for the yearly plan.
+- Location: More › Snacklist Premium counts as "account settings or equivalent" (Legal N-129); lead to confirm (NEEDS_LEAD).
