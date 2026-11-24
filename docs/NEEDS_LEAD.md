@@ -2607,3 +2607,11 @@ The "Abo verwalten oder kündigen" row is on More › Snacklist Premium, not in 
 ## NEEDS_LEAD Job 423: privacy timing words
 
 The Terms now say MCP and the API are Premium already. The privacy pages still imply Premium is not on sale yet: `datenschutz.md` "sobald Snacklist Premium verkauft wird" and "vor dem Verkaufsstart", `privacy.md` "once Snacklist Premium is sold" and "before sales start". Not edited under this brief (the beta RevenueCat unlock stays as a GDPR disclosure). Please have Legal decide. Also close #679 once Legal accepts #689.
+
+## NEEDS_LEAD Job 432: Legal GO before merge
+
+PR for English MCP tool descriptions and the L24-10 / ChatGPT listing redlines. Do not merge until Legal reviews the English strings, the privacy §7/§12 edits and the listing texts (hashes and patch-ids in `docs/done/432.md`). After the deploy, Claude's already approved listing sees English descriptions: see "Claude re-sync" in `docs/done/432.md`. Left for others: C-1 countries (Peter), the optional A-1 reviewer note, and Engineering's call on `destructiveHint: false` for `tick_items` and `untick_items` (OpenAI guideline 6.3; `move_item` and `place_item` are now true).
+
+The PR title carries "DO NOT MERGE (Legal)" until Legal says GO.
+
+Job 432, Claude re-sync: `docs/connectors/claude-listing.md:40` ("its descriptions in German") is the approved Claude text and is wrong after this deploys. Also, `move_item` and `place_item` are now `destructiveHint: true` (server 1.7.0) after OpenAI's scan finding; Claude's listing may show the new hint after a re-sync.

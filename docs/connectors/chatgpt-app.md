@@ -24,16 +24,22 @@ read 2026-11-22; the flow moves, recheck). Guidelines: `https://developers.opena
 ## Long description (max 4000)
 
 ```
-Snacklist is the shared shopping list of one household. Connect it and ChatGPT can read your list,
-add items, tick them off, change them and delete them.
+Snacklist is the shared shopping list of one household. Connect it and ChatGPT can read your list, add items, tick them off, change them and delete them.
 
-Say what you need in your own words. "Two cucumbers, Pampers size 3 and toilet paper" becomes three
-entries with quantity and brand, each sorted into its section and into the store where you usually
-buy it. Ask what is still missing at Lidl, move candles to another store, or ask what your household buys
-often. Everything you change shows up at once on the phones of everyone in your household.
+What it does:
+- Shows what is on your list, by store or by section, in the order you walk through the store.
+- Adds items from plain sentences. "Two cucumbers, Pampers size 3 and toilet paper" becomes three entries with quantity and brand, each sorted into its section and the store where you usually buy it.
+- Ticks items off, puts them back, changes them or deletes them.
+- Moves an item to another store or section. Snacklist remembers the correction.
+- Suggests what your household buys often and shows what was ticked off recently.
 
-You sign in with your Snacklist account and see what ChatGPT may do before you allow it. You can
-disconnect at any time in the Snacklist app. Snacklist works in German and English.
+Everything you change shows up at once on the phones of everyone in your household.
+
+Who it is for: people who already use Snacklist (iOS, Android or web) and share a list with their household. You need a Snacklist account.
+
+Limits: it only reads and changes the shopping lists of the households you belong to. It cannot order, pay or deliver anything, and it cannot see households you are not a member of. What you add is shared with your household, and ChatGPT (OpenAI) receives what it reads or changes on your list. ChatGPT answers in your language.
+
+You sign in with your Snacklist account and see what ChatGPT may do before you allow it. You can disconnect at any time in the Snacklist app under More, Access.
 ```
 
 No pricing, plan, trial or discount words (guideline 1.3). The name carries no "MCP" or "Plugin".
@@ -53,7 +59,7 @@ Every tool declares `readOnlyHint`, `destructiveHint`, `idempotentHint` and `ope
 explicit booleans (`toolAnnotations` in `supabase/functions/mcp/tools.ts`, pinned per tool by
 `tools_test.ts`). `openWorldHint` is false on all: a tool reaches only the user's own household.
 `destructiveHint` is true for deleting or overwriting what the user typed (`remove_items`,
-`merge_items`, `update_item`, `rename_list`, `rename_store`, and `set_store_order` and
+`merge_items`, `update_item`, `rename_list`, `rename_store`, `move_item` and `place_item` (they overwrite an item's store, category or place, job 432), and `set_store_order` and
 `set_store_layout`, which replace a store's whole order) and false otherwise. Each operation is
 its own tool (guideline 6.2b). `add_items` and `create_list` carry `idempotentHint: false`, the
 cautious value: a repeated `create_list` makes another list, and `add_items` creates a new entry
