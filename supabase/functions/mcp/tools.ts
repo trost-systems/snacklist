@@ -36,19 +36,19 @@ import {
 import { storedText } from '../_shared/stored_text.ts';
 import { telemetry } from './telemetry.ts';
 
-const INSTRUCTIONS = `Snacklist: die gemeinsame Einkaufsliste eines Haushalts (deutsch).
-Einträge haben einen Namen (z. B. "Windeln"), optional eine Marke ("Pampers"), Eigenschaften
-("Größe 3, Big Pack"), eine Menge ("2", "500 g"), eine Kategorie (Gang im Laden, z. B.
-"Kühlregal") und optional einen Laden (z. B. "dm"). Neue Einträge werden automatisch zerlegt und
-einsortiert; gib eine Kategorie nur an, wenn der Nutzer sie ausdrücklich nennt.
-Einträge, Kategorien und Läden lassen sich per Name (ungefähr, ohne Umlaute) oder per id angeben.
-Abgehakte Einträge verschwinden aus der Liste.
-Wer in mehreren Haushalten ist, findet sie mit list_households; die Listen-Werkzeuge nehmen dann
-"household" (id oder Name), ohne Angabe gilt der Standardhaushalt.
-Ein Haushalt kann mehrere Listen haben (list_lists, z. B. "Wocheneinkauf" und "Baumarkt"); die
-Werkzeuge nehmen dann "list" (id oder genauer Name), ohne Angabe gilt die Standardliste des Nutzers
-(in der App gewählt, sonst die erste Liste).
-Was der Haushalt oft kauft, zeigt suggest_items; was zuletzt abgehakt wurde, list_recent.`;
+const INSTRUCTIONS = `Snacklist: a household's shared shopping list (item content is mostly German).
+Items have a name (e.g. "Windeln"), optionally a brand ("Pampers"), properties
+("Größe 3, Big Pack"), a quantity ("2", "500 g"), a category (aisle in the store, e.g.
+"Kühlregal") and optionally a store (e.g. "dm"). New items are split and sorted into a
+category automatically; give a category only if the user names it explicitly.
+Items, categories and stores can be given by name (approximately, umlauts optional) or by id.
+Ticked-off items disappear from the list.
+Anyone in several households finds them with list_households; the list tools then take
+"household" (id or name), and without it the default household applies.
+A household can have several lists (list_lists, e.g. "Wocheneinkauf" and "Baumarkt"); the
+tools then take "list" (id or exact name), and without it the user's default list applies
+(chosen in the app, otherwise the first list).
+suggest_items shows what the household often buys; list_recent shows what was ticked off last.`;
 
 /**
  * `ttlMs`/`cacheScope` on 2026-era list results (SEP-2549). The tool list and the server's
@@ -149,9 +149,10 @@ export const toolScopes = {
  * Job 415: the four hints, and job 421's English `title`, every tool declares, explicit because Claude's and ChatGPT's directory
  * reviews reject a tool that leaves one to the spec's defaults. openWorldHint is false throughout:
  * a tool reaches only the caller's household. destructiveHint is true where a call deletes data or
- * overwrites text the user typed (remove_items, merge_items, update_item, the renames) or replaces
- * a store's whole order (set_store_order, set_store_layout), false for additive writes and for
- * changes that keep every value (ticking, categories, single positions); clients ask the user
+ * overwrites text the user typed (remove_items, merge_items, update_item, the renames), replaces
+ * a store's whole order (set_store_order, set_store_layout) or overwrites an item's store,
+ * category or hand-placed position (move_item, place_item, job 432: moving resets the position),
+ * false for additive writes and for ticking; clients ask the user
  * before a destructive call. idempotentHint is false where a repeat adds again.
  */
 export const toolAnnotations = {
@@ -235,7 +236,7 @@ export const toolAnnotations = {
   move_item: {
     title: 'Move Item',
     readOnlyHint: false,
-    destructiveHint: false,
+    destructiveHint: true,
     idempotentHint: true,
     openWorldHint: false,
   },
@@ -263,7 +264,7 @@ export const toolAnnotations = {
   place_item: {
     title: 'Reorder Item',
     readOnlyHint: false,
-    destructiveHint: false,
+    destructiveHint: true,
     idempotentHint: true,
     openWorldHint: false,
   },
@@ -468,20 +469,20 @@ export async function householdNamed(tx: Tx, auth: Auth, ref: string): Promise<s
 }
 
 const itemRef = storedText.min(1).max(120).describe(
-  'Name des Eintrags auf der Liste (z. B. "Milch") oder seine id; eine id findet ihn ohne "list" ' +
-    'auf jeder Liste des Haushalts',
+  'Name of the item on the list (e.g. "Milch") or its id; an id finds it without "list" ' +
+    'on any list of the household',
 );
 const storeName = storedText.min(1).max(60).describe(
-  'Ein Laden des Haushalts (list_stores), z. B. "dm", "Lidl" oder ein eigener wie "Rewe"',
+  'A store of the household (list_stores), e.g. "dm", "Lidl" or a custom one like "Rewe"',
 );
 const categoryName = storedText.min(1).max(60).describe(
-  'Kategorie, z. B. "Obst & Gemüse" oder "Kühlregal"',
+  'Category, e.g. "Obst & Gemüse" or "Kühlregal"',
 );
 const householdRef = storedText.min(1).max(80).optional().describe(
-  'Haushalt (list_households): seine id oder sein Name. Ohne Angabe der Standardhaushalt.',
+  'Household (list_households): its id or name. Without it, the default household.',
 );
 const listRef = storedText.min(1).max(60).optional().describe(
-  'Liste des Haushalts (list_lists): ihre id oder ihr genauer Name. Ohne Angabe die Standardliste.',
+  'List of the household (list_lists): its id or exact name. Without it, the default list.',
 );
 
 /** A list of the household; `default` is where a call without "list" goes. */
@@ -520,7 +521,7 @@ export function buildServer(
   switches: Switches = SWITCHED_OFF,
 ): McpServer {
   const server = new McpServer(
-    { name: 'snacklist', title: 'Snacklist', version: '1.5.0' },
+    { name: 'snacklist', title: 'Snacklist', version: '1.7.0' },
     { instructions: INSTRUCTIONS, cacheHints: CACHE_HINTS },
   );
   const asked = new Map<string, Promise<Access>>();
@@ -549,9 +550,9 @@ export function buildServer(
 
   server.registerTool('list_households', {
     title: toolAnnotations.list_households.title,
-    description: 'Listet die Haushalte, in denen der Nutzer ist, mit Mitgliederzahl. "default" ' +
-      'markiert den Standardhaushalt, in dem die anderen Werkzeuge ohne "household" arbeiten. ' +
-      'Mit einem Zugriffstoken nur dessen Haushalt.',
+    description: 'Lists the households the user belongs to, with member counts. "default" ' +
+      'marks the default household, which the other tools use when "household" is omitted. ' +
+      "With an access key, only that key's household.",
     annotations: toolAnnotations.list_households,
     // Ungated: it lists only the user's own households, so a locked default can still find an
     // unlocked one.
@@ -560,9 +561,9 @@ export function buildServer(
   server.registerTool('list_lists', {
     title: toolAnnotations.list_lists.title,
     description:
-      'Listet die Einkaufslisten des Haushalts in ihrer Reihenfolge. "default" markiert ' +
-      'die Standardliste des Nutzers, in der die anderen Werkzeuge ohne "list" arbeiten (auch Siri ' +
-      'und Alexa); ohne eigene Wahl in der App ist das die erste Liste.',
+      'Lists the household\'s shopping lists in their order. "default" marks the user\'s default ' +
+      'list, which the other tools use when "list" is omitted (Siri and Alexa too); without a ' +
+      'choice in the app, that is the first list.',
     inputSchema: z.object({ household: householdRef }),
     annotations: toolAnnotations.list_lists,
   }, ({ household }) => call('list_lists', once, household, (tx, h) => listLists(tx, h))());
@@ -571,16 +572,16 @@ export function buildServer(
     'list_items',
     {
       title: toolAnnotations.list_items.title,
-      description: 'Zeigt die offenen Einträge der Einkaufsliste mit Marke und Eigenschaften. ' +
-        '"order" in der Antwort sagt, wie sortiert ist: "walk" (gelernte Reihenfolge) heißt Laden ' +
-        'für Laden in der Reihenfolge der Läden, dann die Einträge ohne Laden, jeweils in ' +
-        'Laufweg-Reihenfolge; "aisle" heißt in Gang-Reihenfolge der Kategorien und innerhalb einer ' +
-        'Kategorie im Laufweg. "position" ist der Platz eines Eintrags in seinem Laden (oder unter ' +
-        '"ohne Laden"), ab 1. Mit "store" nur, was in diesem Laden gekauft werden kann (seine ' +
-        'Einträge plus alle ohne Laden), in der Reihenfolge dieses Ladens. Mit "category" nur eine ' +
-        'Kategorie. "counts" gilt immer für die ganze Liste, auch mit Filter: "open" offene ' +
-        'Einträge, "checkedLast24h" in den letzten 24 Stunden abgehakte. "list" in der Antwort ' +
-        'nennt die gezeigte Liste.',
+      description: 'Shows the open items on the shopping list with brand and properties. ' +
+        '"order" in the answer says how it is sorted: "walk" (learned order) means store by ' +
+        'store in the order of the stores, then the items without a store, each in walking-route ' +
+        'order; "aisle" means in the aisle order of the categories and, within a category, in ' +
+        'walking-route order. "position" is an item\'s place in its store (or under "no store"), ' +
+        'starting at 1. With "store", only what can be bought in that store (its items plus all ' +
+        'items without a store), in the order of that store. With "category", only one category. ' +
+        '"counts" always covers the whole list, even with a filter: "open" open items, ' +
+        '"checkedLast24h" items ticked off in the last 24 hours. "list" in the answer names the ' +
+        'list shown.',
       inputSchema: z.object({
         store: storeName.optional(),
         category: categoryName.optional(),
@@ -598,35 +599,34 @@ export function buildServer(
     {
       title: toolAnnotations.add_items.title,
       description:
-        'Setzt einen oder mehrere Einträge auf die Liste. Der Name wird zerlegt: "Windeln Pampers ' +
-        'Größe 3" → name "Windeln", Marke "Pampers", Eigenschaften "Größe 3"; "2 Gurken" → name ' +
-        '"Gurken", Menge "2". Was in "quantity", "brand" oder "properties" steht, ersetzt den ' +
-        'zerlegten Wert. Jeder Eintrag wird automatisch einer Kategorie zugeordnet; dabei gelten ' +
-        'zuerst die Korrekturen des Haushalts (move_item oder in der App), dann ein Wörterbuch. Ohne ' +
-        '"store" bekommt er den Laden, in dem er zuletzt gekauft wurde, sonst den Laden einer ' +
-        'Eigenmarke (Balea → dm) oder dm für Drogerieartikel. Was schon auf der Liste steht ("Gurke" ' +
-        '= "2 Gurken"; eine andere Größe oder Marke ist ein anderer Eintrag), wird nicht doppelt ' +
-        'angelegt und unter "alreadyOnList" gemeldet. Steht schon eine andere Schreibweise oder ein ' +
-        'Synonym auf der Liste ("Karotten" und "Möhren"), wird der Eintrag trotzdem angelegt und unter ' +
-        '"similarOnList" gemeldet (added: der neue Name, onList: höchstens drei der offenen ' +
-        'Einträge, total: wie viele es sind); das bedeutet, etwas Ähnliches steht schon auf ' +
-        'der Liste. Von selbst wird nichts zusammengeführt; will der Nutzer es, führt ' +
-        'merge_items (keep: der Eintrag aus onList, merge: der neue) beide zusammen wie ' +
-        '"Zusammenführen" in der App.',
+        'Puts one or more items on the list. The name is split: "Windeln Pampers Größe 3" → ' +
+        'name "Windeln", brand "Pampers", properties "Größe 3"; "2 Gurken" → name "Gurken", ' +
+        'quantity "2". What is given in "quantity", "brand" or "properties" replaces the split ' +
+        "value. Each item is assigned a category automatically; the household's corrections " +
+        '(move_item or in the app) apply first, then a dictionary. Without "store", it gets the ' +
+        'store where it was last bought, otherwise the store of a store brand (Balea → dm), or ' +
+        'dm for drugstore items. What is already on the list ("Gurke" = "2 Gurken"; another size ' +
+        'or brand is a different item) is not added twice and is reported under "alreadyOnList". ' +
+        'If another spelling or a synonym is already on the list ("Karotten" and "Möhren"), the ' +
+        'item is still added and reported under "similarOnList" (added: the new name, onList: at ' +
+        'most three of the open items, total: how many there are); this means something similar ' +
+        'is already on the list. Nothing is merged automatically; if the user wants it, ' +
+        'merge_items (keep: the item from onList, merge: the new one) merges both like "Merge" ' +
+        'in the app.',
       annotations: toolAnnotations.add_items,
       inputSchema: z.object({
         items: z.array(z.object({
-          name: storedText.min(1).max(120).describe('Was gekauft werden soll, z. B. "Milch"'),
-          quantity: storedText.max(40).optional().describe('Menge, z. B. "2" oder "500 g"'),
-          brand: storedText.max(60).optional().describe('Marke, z. B. "Pampers" oder "Ja!"'),
+          name: storedText.min(1).max(120).describe('What should be bought, e.g. "Milch"'),
+          quantity: storedText.max(40).optional().describe('Quantity, e.g. "2" or "500 g"'),
+          brand: storedText.max(60).optional().describe('Brand, e.g. "Pampers" or "Ja!"'),
           properties: storedText.max(120).optional().describe(
-            'Eigenschaften, mit Komma getrennt, z. B. "Größe 3, Big Pack" oder "1,5 %"',
+            'Properties, comma-separated, e.g. "Größe 3, Big Pack" or "1,5 %"',
           ),
           category: categoryName.optional().describe(
-            'Nur angeben, wenn der Nutzer eine Kategorie ausdrücklich nennt; wird wie eine Korrektur gemerkt',
+            'Give only if the user explicitly names a category; it is remembered like a correction',
           ),
           store: storeName.optional().describe(
-            'Nur angeben, wenn es in einem bestimmten Laden sein soll',
+            'Give only if it should be in a specific store',
           ),
         })).min(1).max(50),
         household: householdRef,
@@ -642,9 +642,9 @@ export function buildServer(
     {
       title: toolAnnotations.tick_items.title,
       description:
-        'Hakt einen oder mehrere Einträge als gekauft ab; sie verschwinden von der Liste und ' +
-        'landen unter "Zuletzt verwendet". Nicht gefundene oder schon abgehakte Einträge werden ' +
-        'unter "notFound" gemeldet, ein zweiter Aufruf ändert also nichts.',
+        'Ticks off one or more items as bought; they disappear from the list and appear under ' +
+        '"Recently used". Items that are not found or already ticked off are reported under ' +
+        '"notFound", so a second call changes nothing.',
       inputSchema: z.object({
         items: z.array(itemRef).min(1).max(50),
         household: householdRef,
@@ -660,11 +660,10 @@ export function buildServer(
     'untick_items',
     {
       title: toolAnnotations.untick_items.title,
-      description: 'Setzt abgehakte Einträge wieder auf die Liste. Ein Name findet den zuletzt ' +
-        'abgehakten Eintrag dieses Namens auf der Liste, außer er steht dort schon offen; eine id ' +
-        'findet ihn ohne "list" auf jeder ' +
-        'Liste des Haushalts. Nicht gefundene oder noch offene Einträge werden unter "notFound" ' +
-        'gemeldet, ein zweiter Aufruf ändert also nichts.',
+      description: 'Puts ticked-off items back on the list. A name finds the most recently ' +
+        'ticked-off item of that name on the list, unless it is already open there; an id finds ' +
+        'it on any list of the household without "list". Items that are not found or still open ' +
+        'are reported under "notFound", so a second call changes nothing.',
       inputSchema: z.object({
         items: z.array(itemRef).min(1).max(50),
         household: householdRef,
@@ -681,11 +680,15 @@ export function buildServer(
     {
       title: toolAnnotations.move_item.title,
       description:
-        'Ändert die Kategorie und/oder den Laden eines Eintrags. Bei gelernter Reihenfolge ' +
-        '(list_items "order": "walk") nimmt er im neuen Laden seinen Platz ein, sonst kommt er ans ' +
-        'Ende seiner neuen Gruppe im Laufweg. Beides merkt sich der Haushalt: ' +
-        'derselbe Eintrag landet beim nächsten Hinzufügen in dieser Kategorie und diesem Laden. ' +
-        'store: null entfernt den Laden (dann in jedem Laden kaufbar) und vergisst ihn.',
+        'Changes the category and/or the store of an item. With learned order (list_items ' +
+        '"order": "walk"), it takes its place in the new store; otherwise it goes to the end of ' +
+        'its new group in the walking route. The household remembers both: the same item lands ' +
+        'in this category and this store the next time it is added. store: null removes the ' +
+        'store (the item can then be bought in any store) and deletes every ' +
+        'store the household remembered for this item. The item itself is not deleted and ' +
+        'keeps its name, brand, properties and quantity, but the call overwrites its previous ' +
+        'store and category and, with aisle order, its hand-placed position; moving it back ' +
+        'does not restore that position or what was remembered (other stores, how often).',
       inputSchema: z.object({
         item: itemRef,
         category: categoryName.optional(),
@@ -709,12 +712,17 @@ export function buildServer(
     {
       title: toolAnnotations.place_item.title,
       description:
-        'Setzt einen offenen Eintrag direkt vor ("before") oder hinter ("after") einen anderen, ' +
-        'z. B. "die Eier hinter das Mehl"; genau eines von beiden angeben. Bei gelernter ' +
-        'Reihenfolge (list_items "order": "walk") merkt sich der Haushalt den Platz im Laden; ' +
-        'der andere Eintrag muss dann im selben Laden stehen (den Laden ändert move_item). Sonst ' +
-        'übernimmt der Eintrag Laden und Kategorie des anderen, wie beim Ziehen in der App. Ein ' +
-        'zweiter gleicher Aufruf ändert nichts.',
+        'Puts an open item directly before ("before") or after ("after") another one, e.g. ' +
+        '"the eggs after the flour"; give exactly one of the two. With learned order ' +
+        '(list_items "order": "walk"), the household remembers the place in the store; the other ' +
+        'item must then be in the same store (move_item changes the store). Otherwise the item ' +
+        'takes the store and category of the other one, as when dragging in the app. A second ' +
+        'identical call changes nothing. The item itself is not deleted, but the call overwrites the ' +
+        'remembered place of the item (with learned order) or its store and category ' +
+        "(otherwise); next to an item without a store, it removes the item's store and deletes " +
+        'what the household remembered about it. To undo ' +
+        'it, place the item next to its old neighbour (learned order) or move it back with ' +
+        'move_item and place it again.',
       inputSchema: z.object({
         item: itemRef,
         before: itemRef.optional(),
@@ -739,13 +747,12 @@ export function buildServer(
     {
       title: toolAnnotations.set_store_order.title,
       description:
-        'Legt fest, in welcher Reihenfolge die offenen Einträge eines Ladens auf der Liste ' +
-        'stehen, z. B. "so laufe ich bei IKEA: …". Die genannten Einträge kommen in dieser ' +
-        'Reihenfolge nach vorn, die übrigen des Ladens behalten ihre Reihenfolge dahinter. Jeder ' +
-        'genannte Eintrag muss offen und in diesem Laden sein. Nur bei gelernter Reihenfolge ' +
-        '(list_items "order": "walk"); sonst einzelne Einträge mit place_item. Gibt die offenen ' +
-        'Einträge des Ladens in der neuen Reihenfolge zurück; ein zweiter gleicher Aufruf ändert ' +
-        'nichts.',
+        'Sets the order in which a store\'s open items appear on the list, e.g. "this is how I ' +
+        'walk through IKEA: …". The items named move to the front in that order; the store\'s ' +
+        'other items keep their order behind them. Every item named must be open and in this ' +
+        'store. Only with learned order (list_items "order": "walk"); otherwise use place_item ' +
+        "for single items. Returns the store's open items in the new order; a second identical " +
+        'call changes nothing.',
       inputSchema: z.object({
         store: storeName,
         items: z.array(itemRef).min(1).max(STORE_ORDER_MAX),
@@ -763,29 +770,28 @@ export function buildServer(
     {
       title: toolAnnotations.update_item.title,
       description:
-        'Ändert einen offenen Eintrag wie "Bearbeiten" in der App: nur die angegebenen ' +
-        'Felder. quantity, brand oder properties null (oder leer) löscht sie. category und store ' +
-        'wie bei move_item (der Haushalt merkt sie sich; bei gelernter Reihenfolge nimmt er im ' +
-        'neuen Laden seinen Platz ein). "toList" setzt ihn auf eine andere Liste ' +
-        '(list_lists); "list" sagt, wo er jetzt steht. Steht nach der Änderung schon ein gleicher ' +
-        'offener Eintrag (Name, Marke, Eigenschaften) auf der Liste, ändert sich nichts und der ' +
-        'Aufruf meldet es.',
+        'Changes an open item like "Edit" in the app: only the fields given. quantity, brand ' +
+        'or properties null (or empty) deletes them. category and store work as in move_item ' +
+        '(the household remembers them; with learned order, the item takes its place in the new ' +
+        'store). "toList" moves it to another list (list_lists); "list" says where it is now. ' +
+        'If an identical open item (name, brand, properties) is already on the list after the ' +
+        'change, nothing changes and the call reports it.',
       inputSchema: z.object({
         item: itemRef,
         name: storedText.trim().min(1).max(120).optional().describe(
-          'Neuer Name, z. B. "Hafermilch"',
+          'New name, e.g. "Hafermilch"',
         ),
         quantity: storedText.max(40).nullable().optional().describe(
-          'Menge, z. B. "2" oder "500 g"',
+          'Quantity, e.g. "2" or "500 g"',
         ),
-        brand: storedText.max(60).nullable().optional().describe('Marke, z. B. "Pampers"'),
+        brand: storedText.max(60).nullable().optional().describe('Brand, e.g. "Pampers"'),
         properties: storedText.max(120).nullable().optional().describe(
-          'Eigenschaften, mit Komma getrennt, z. B. "Größe 3, Big Pack"',
+          'Properties, comma-separated, e.g. "Größe 3, Big Pack"',
         ),
         category: categoryName.optional(),
         store: storeName.nullable().optional(),
         toList: storedText.min(1).max(60).optional().describe(
-          'Liste, auf die der Eintrag umzieht (list_lists): ihre id oder ihr genauer Name',
+          'List the item moves to (list_lists): its id or exact name',
         ),
         household: householdRef,
         list: listRef,
@@ -805,10 +811,11 @@ export function buildServer(
     'remove_items',
     {
       title: toolAnnotations.remove_items.title,
-      description: 'Löscht offene Einträge von der Liste, ohne sie abzuhaken (sie landen nicht ' +
-        'unter "Zuletzt verwendet"). Was der Haushalt über sie gelernt hat (Kategorie, Laden), ' +
-        'bleibt. Nicht gefundene Einträge werden unter "notFound" gemeldet, ein zweiter Aufruf ' +
-        'ändert also nichts. Nur auf ausdrücklichen Wunsch des Nutzers.',
+      description: 'Deletes open items from the list without ticking them off (they do not ' +
+        'appear under "Recently used"). What the household has learned about them (category, ' +
+        'store) is kept, except what adding them taught when they are removed within 10 minutes ' +
+        'of being added. Items that are not found are reported under "notFound", so a second ' +
+        "call changes nothing. Only at the user's explicit request.",
       inputSchema: z.object({
         items: z.array(itemRef).min(1).max(50),
         household: householdRef,
@@ -824,8 +831,8 @@ export function buildServer(
     'get_item',
     {
       title: toolAnnotations.get_item.title,
-      description: 'Zeigt einen Eintrag mit Status ("open" oder "ticked") und Zeitpunkt des ' +
-        'Hinzufügens. Eine id findet ihn auch abgehakt; ein Name nur unter den offenen Einträgen.',
+      description: 'Shows an item with its status ("open" or "ticked") and the time it was ' +
+        'added. An id also finds it when ticked off; a name only among the open items.',
       inputSchema: z.object({ item: itemRef, household: householdRef, list: listRef }),
       annotations: toolAnnotations.get_item,
     },
@@ -837,17 +844,17 @@ export function buildServer(
     'merge_items',
     {
       title: toolAnnotations.merge_items.title,
-      description: 'Führt zwei offene Einträge zusammen wie "Zusammenführen" in der App, etwa ' +
-        'nach "similarOnList" von add_items, wenn der Nutzer es will: "keep" bleibt mit seinem ' +
-        'Namen, die Mengen werden addiert ("2" und "3" → "5"), fehlende Marke oder Eigenschaften ' +
-        'kommen von "merge", das gelöscht wird. Beide müssen auf derselben Liste stehen. ' +
-        'Antwort: "kept" wie er jetzt ist, "merged" wie der gelöschte war.',
+      description: 'Merges two open items like "Merge" in the app, for example after ' +
+        '"similarOnList" from add_items when the user wants it: "keep" stays with its name, the ' +
+        'quantities are added ("2" and "3" → "5"), a missing brand or properties come from ' +
+        '"merge", which is deleted. Both must be on the same list. Answer: "kept" as it is now, ' +
+        '"merged" as the deleted one was.',
       inputSchema: z.object({
         keep: itemRef.describe(
-          'Der Eintrag, der bleibt, meist der aus "onList" von similarOnList (Name oder id)',
+          'The item that stays, usually the one from "onList" of similarOnList (name or id)',
         ),
         merge: itemRef.describe(
-          'Der Eintrag, der in "keep" aufgeht, meist der neu hinzugefügte (Name oder id)',
+          'The item that is absorbed into "keep", usually the newly added one (name or id)',
         ),
         household: householdRef,
         list: listRef,
@@ -862,9 +869,9 @@ export function buildServer(
     'list_categories',
     {
       title: toolAnnotations.list_categories.title,
-      description: 'Listet die Kategorien des Haushalts in Gang-Reihenfolge. Mit "store" in der ' +
-        'Laufweg-Reihenfolge dieses Ladens (wie list_items mit "store"); "hidden" markiert ' +
-        'Kategorien, die der Laden nicht führt.',
+      description: 'Lists the household\'s categories in aisle order. With "store", in the ' +
+        'walking-route order of that store (like list_items with "store"); "hidden" marks ' +
+        'categories that the store does not carry.',
       inputSchema: z.object({ store: storeName.optional(), household: householdRef }),
       annotations: toolAnnotations.list_categories,
     },
@@ -887,13 +894,13 @@ export function buildServer(
 
   server.registerTool('list_recent', {
     title: toolAnnotations.list_recent.title,
-    description: 'Zeigt, was zuletzt abgehakt wurde, wie "Zuletzt verwendet" in der App: das ' +
-      'Neueste zuerst, jedes Ding einmal (sein letzter Kauf), nichts, was wieder offen auf der ' +
-      'Liste steht. "tickedAt" ist der Zeitpunkt des Abhakens. Mit untick_items (id) kommt ein ' +
-      'Eintrag zurück auf die Liste.',
+    description: 'Shows what was ticked off last, like "Recently used" in the app: newest ' +
+      'first, each thing once (its last purchase), nothing that is open on the list again. ' +
+      '"tickedAt" is the time it was ticked off. With untick_items (id), an item comes back ' +
+      'onto the list.',
     inputSchema: z.object({
       limit: z.number().int().min(1).max(50).optional().describe(
-        `Wie viele höchstens, ohne Angabe ${RECENT_SHOWN}`,
+        `At most how many, ${RECENT_SHOWN} if omitted`,
       ),
       household: householdRef,
       list: listRef,
@@ -911,19 +918,19 @@ export function buildServer(
     'suggest_items',
     {
       title: toolAnnotations.suggest_items.title,
-      description: 'Was der Haushalt oft kauft, wie die Vorschläge in der App: oft und zuletzt ' +
-        'Gekauftes zuerst, nichts, was gerade offen auf einer Liste steht. Mit "prefix" nur Namen, ' +
-        'die damit beginnen, dann Namen mit einem Wort, das damit beginnt. "uses": an wie vielen ' +
-        'Tagen im letzten Jahr; "due": sein üblicher Abstand seit dem letzten Kauf ist um, er wird ' +
-        'wohl bald gebraucht.',
+      description: 'What the household often buys, like the suggestions in the app: often and ' +
+        'recently bought first, nothing that is currently open on a list. With "prefix", only ' +
+        'names that begin with it, then names with a word that begins with it. "uses": on how ' +
+        'many days in the last year; "due": its usual interval since the last purchase has ' +
+        'passed, so it will probably be needed soon.',
       inputSchema: z.object({
-        prefix: storedText.max(60).optional().describe('Anfang des Namens, z. B. "Mil"'),
+        prefix: storedText.max(60).optional().describe('Beginning of the name, e.g. "Mil"'),
         limit: z.number().int().min(1).max(50).optional().describe(
-          'Wie viele höchstens, ohne Angabe 10',
+          'At most how many, 10 if omitted',
         ),
         due: z.boolean().optional().describe(
-          'Nur was fällig ist (wie "Wieder fällig" in der App), auch wenn es nicht unter den ersten ' +
-            '"limit" steht. Wer wissen will, was fällig ist, setzt dies auf true.',
+          'Only what is due (like "Due again" in the app), even if it is not among the first ' +
+            '"limit". Anyone who wants to know what is due sets this to true.',
         ),
         household: householdRef,
       }),
@@ -939,15 +946,15 @@ export function buildServer(
   );
 
   if (switches.listsStores) {
-    const listName = storedText.trim().min(1).max(60).describe('Name der Liste, z. B. "Baumarkt"');
+    const listName = storedText.trim().min(1).max(60).describe('Name of the list, e.g. "Baumarkt"');
     const storeNew = storedText.trim().min(1).max(40).describe(
-      'Name des Ladens, nur der Name, z. B. "Rewe" oder "Wochenmarkt"',
+      'Name of the store, only the name, e.g. "Rewe" or "Wochenmarkt"',
     );
 
     server.registerTool('create_list', {
       title: toolAnnotations.create_list.title,
-      description: 'Legt eine neue Einkaufsliste am Ende der Listen an, wie in der App. ' +
-        'Höchstens 50 Listen je Haushalt. Nur auf ausdrücklichen Wunsch des Nutzers.',
+      description: 'Creates a new shopping list at the end of the lists, as in the app. At ' +
+        "most 50 lists per household. Only at the user's explicit request.",
       inputSchema: z.object({ name: listName, household: householdRef }),
       annotations: toolAnnotations.create_list,
     }, ({ name, household }) =>
@@ -958,12 +965,12 @@ export function buildServer(
 
     server.registerTool('rename_list', {
       title: toolAnnotations.rename_list.title,
-      description: 'Benennt eine Einkaufsliste um. Ein zweiter Aufruf ändert nichts.',
+      description: 'Renames a shopping list. A second call changes nothing.',
       inputSchema: z.object({
         list: storedText.min(1).max(60).describe(
-          'Die Liste (list_lists): ihre id oder ihr genauer Name',
+          'The list (list_lists): its id or exact name',
         ),
-        name: listName.describe('Neuer Name der Liste'),
+        name: listName.describe('New name of the list'),
         household: householdRef,
       }),
       annotations: toolAnnotations.rename_list,
@@ -975,9 +982,9 @@ export function buildServer(
 
     server.registerTool('add_store', {
       title: toolAnnotations.add_store.title,
-      description: 'Legt einen Laden an, wie in der App. Nur der Name, keine Handelskette. ' +
-        'Gibt es den Namen schon (Groß- und Kleinschreibung, Umlaute egal), antwortet es mit ' +
-        'diesem Laden und "created": false. Höchstens 50 Läden je Haushalt.',
+      description: 'Creates a store, as in the app. Only the name, not a retail chain. If the ' +
+        'name already exists (upper and lower case and umlauts do not matter), it answers with ' +
+        'that store and "created": false. At most 50 stores per household.',
       inputSchema: z.object({ name: storeNew, household: householdRef }),
       annotations: toolAnnotations.add_store,
     }, ({ name, household }) =>
@@ -988,11 +995,11 @@ export function buildServer(
 
     server.registerTool('rename_store', {
       title: toolAnnotations.rename_store.title,
-      description: 'Benennt einen Laden um. Heißt schon ein anderer Laden so, ändert sich nichts ' +
-        'und der Aufruf meldet es.',
+      description: 'Renames a store. If another store already has that name, nothing changes ' +
+        'and the call reports it.',
       inputSchema: z.object({
         store: storeName,
-        name: storeNew.describe('Neuer Name des Ladens, nur der Name'),
+        name: storeNew.describe('New name of the store, only the name'),
         household: householdRef,
       }),
       annotations: toolAnnotations.rename_store,
@@ -1007,13 +1014,13 @@ export function buildServer(
       {
         title: toolAnnotations.set_store_layout.title,
         description:
-          'Legt fest, in welcher Reihenfolge die Kategorien in einem Laden kommen (der ' +
-          'Laufweg, wie in der App unter dem Laden). "categories": die genannten zuerst, in dieser ' +
-          'Reihenfolge, die übrigen danach in ihrer bisherigen. "hidden": alle Kategorien, die der ' +
-          'Laden nicht führt; ohne Angabe bleiben sie. Bei gelernter Reihenfolge (list_items ' +
-          '"order": "walk") ist der Laufweg nur die Ausgangsreihenfolge für neue Einträge; die ' +
-          'Reihenfolge der Einträge im Laden setzen place_item und set_store_order. Antwort: der ' +
-          'ganze Laufweg (wie list_categories mit "store").',
+          'Sets the order in which the categories come in a store (the walking route, as in ' +
+          'the app under the store). "categories": those named first, in this order, the others ' +
+          'after them in their previous order. "hidden": all categories that the store does not ' +
+          'carry; if omitted, they stay as they are. With learned order (list_items "order": ' +
+          '"walk"), the walking route is only the starting order for new items; place_item and ' +
+          'set_store_order set the order of the items in the store. Answer: the whole walking ' +
+          'route (like list_categories with "store").',
         inputSchema: z.object({
           store: storeName,
           categories: z.array(categoryName).max(200).optional(),
@@ -1039,7 +1046,7 @@ export function buildServer(
 
   server.registerTool('list_stores', {
     title: toolAnnotations.list_stores.title,
-    description: 'Listet die Läden des Haushalts.',
+    description: "Lists the household's stores.",
     inputSchema: z.object({ household: householdRef }),
     annotations: toolAnnotations.list_stores,
   }, ({ household }) => call('list_stores', once, household, (tx, h) => stores(tx, h))());

@@ -81,6 +81,22 @@
         "ChatGPT",
         "Claude"
       ]
+    },
+    {
+      "file": "site/content/legal/datenschutz.md",
+      "reason": "Legal L24-8 P-1/P-2 (review 2026-11-24): the privacy policy names OpenAI and ChatGPT as the independent controller and as the example of what an assistant provider receives. Other brands in it still fail.",
+      "brands": [
+        "ChatGPT",
+        "OpenAI"
+      ]
+    },
+    {
+      "file": "site/content/legal/privacy.md",
+      "reason": "Legal L24-8 P-1/P-2 (review 2026-11-24): the privacy policy names OpenAI and ChatGPT as the independent controller and as the example of what an assistant provider receives. Other brands in it still fail.",
+      "brands": [
+        "ChatGPT",
+        "OpenAI"
+      ]
     }
   ]
 }

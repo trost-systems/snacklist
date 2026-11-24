@@ -132,7 +132,7 @@ Deno.test('locked: initialize and tools/list answer without asking the gate', as
   assertEquals(init.status, 200);
   const { serverInfo } = (await message(init)).result;
   assertEquals(serverInfo.name, 'snacklist');
-  assertEquals(serverInfo.version, '1.5.0', 'titles changed since 1.4.0');
+  assertEquals(serverInfo.version, '1.7.0', 'move_item, place_item destructive since 1.7.0');
   const list = await s.handle(rpc('tools/list'));
   assertEquals(list.status, 200);
   assertEquals(
@@ -295,8 +295,8 @@ const expected = {
   'create_list': expectedHints('add'),
   'tick_items': expectedHints('safe'),
   'untick_items': expectedHints('safe'),
-  'move_item': expectedHints('safe'),
-  'place_item': expectedHints('safe'),
+  'move_item': expectedHints('overwrite'),
+  'place_item': expectedHints('overwrite'),
   'add_store': expectedHints('safe'),
   'update_item': expectedHints('overwrite'),
   'remove_items': expectedHints('overwrite'),
