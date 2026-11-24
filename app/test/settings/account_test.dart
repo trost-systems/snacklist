@@ -395,7 +395,7 @@ void main() {
       expect(find.byKey(const ValueKey('account-export')), findsOneWidget);
       expect(find.byKey(const ValueKey('account-delete')), findsOneWidget);
       expect(find.text('MCP-SERVER'), findsNothing);
-      expect(find.text('Zugriffstoken'), findsNothing);
+      expect(find.byKey(const ValueKey('access-tokens-hint')), findsNothing);
     });
 
     testWidgets('the address is copied with its button, not selected', (

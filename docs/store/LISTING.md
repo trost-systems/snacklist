@@ -85,7 +85,7 @@ end of the KI-ASSISTENTEN / AI ASSISTANTS paragraph. The bullets are the Premium
 | `de-DE/subtitle.txt` | chars | 25 | 30 |
 | `de-DE/keywords.txt` | chars | 83 | 100 |
 | `de-DE/promotional_text.txt` | chars | 118 | 170 |
-| `de-DE/description.txt` | chars | 2610 | 4000 |
+| `de-DE/description.txt` | chars | 2729 | 4000 |
 | `android/de-DE/title.txt` | chars | 24 | 30 |
 | `android/de-DE/short_description.txt` | chars | 67 | 80 |
 | `android/de-DE/full_description.txt` | chars | 2366 | 4000 |
@@ -93,7 +93,7 @@ end of the KI-ASSISTENTEN / AI ASSISTANTS paragraph. The bullets are the Premium
 | `en-US/subtitle.txt` | chars | 22 | 30 |
 | `en-US/keywords.txt` | chars | 83 | 100 |
 | `en-US/promotional_text.txt` | chars | 130 | 170 |
-| `en-US/description.txt` | chars | 2453 | 4000 |
+| `en-US/description.txt` | chars | 2534 | 4000 |
 | `android/en-US/title.txt` | chars | 24 | 30 |
 | `android/en-US/short_description.txt` | chars | 64 | 80 |
 | `android/en-US/full_description.txt` | chars | 2237 | 4000 |
@@ -138,8 +138,15 @@ Reason: `docs/PURCHASES.md` "Per-user Premium" (job 185) has the buyer hold Prem
    says nothing is on sale yet; the listing must go live only with the purchase screen (`premium_offer`, `REVENUECAT_PURCHASES`).
 5. Subscription disclosure block. The auto-renewal paragraph is the app's `premiumYearlyTerms` text, adapted per store (Apple account or
    Google account, the store's subscription settings). It is marked pending in the ARB; Legal approves it. The App Store needs a working privacy
-   policy link and a terms link; the description carries `https://snacklist.app/datenschutz` (EN `/en/privacy`) and Apple's standard EULA,
-   which the app links on iOS next to Snacklist's own terms. Google Play takes the privacy policy in the Play Console field; the
+   policy link and a terms link. Per Legal L24-6 (option A) the en-US and de-DE App Store descriptions carry these two lines
+   (verbatim, U+2019 in "Apple’s"), directly under the privacy policy line (URL unchanged) and directly before the Siri/Alexa trademark
+   notice of item 6, which stays the last line (Legal, 24 Nov 2026; N-366). `app/fastlane/metadata/{en-US,de-DE}/description.txt` carry them:
+   en-US: `Terms of Use: https://snacklist.app/en/terms` and
+   `Apple’s Licensed Application End User License Agreement: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/`.
+   de-DE: `Nutzungsbedingungen: https://snacklist.app/nutzungsbedingungen` and
+   `Standard-Lizenzvertrag von Apple (Licensed Application End User License Agreement): https://www.apple.com/legal/internet-services/itunes/dev/stdeula/`.
+   The custom EULA field in App Store Connect stays empty (our terms are not pasted into it). The privacy policy goes in the App
+   Privacy URL field. Google Play takes the privacy policy in the Play Console field; the
    link in the text is a convenience. The English page paths are from `site/content/legal`; confirm they are live on release.
 6. Trademarks. Settled by Legal N-366 (22 Nov 2026): the notice wording, the skill's name and the Alexa bullet as above; Legal re-checks
    the hashes before upload.

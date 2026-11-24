@@ -81,7 +81,7 @@ async function serverUser(tag: string, household = 'Verein Grün', kind: string 
 
 async function createTokenInSettings(page: Page, name: string): Promise<string> {
   await openMore(page, 'Zugänge');
-  await page.getByRole('button', { name: 'Token erstellen' }).click();
+  await page.getByRole('button', { name: 'Zugriffsschlüssel erstellen' }).click();
   await typeInto(page.getByRole('textbox', { name: 'Name' }), name);
   await page.getByRole('button', { name: 'Erstellen' }).click();
   const shown = page.getByText(/^fgp_[A-Za-z0-9_-]{43}$/);

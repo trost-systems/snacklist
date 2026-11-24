@@ -409,13 +409,13 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get mcpServerBody =>
-      'Für Claude, ChatGPT und andere KI-Assistenten. Verbinde per Anmeldung (OAuth) oder mit einem Zugriffstoken.';
+      'Für Claude, ChatGPT und andere KI-Assistenten. Verbinde per Anmeldung (OAuth) oder mit einem Zugriffsschlüssel.';
 
   @override
-  String get accessTokens => 'Zugriffstoken';
+  String get accessTokens => 'Zugriffsschlüssel';
 
   @override
-  String get noTokens => 'Kein aktiver Token.';
+  String get noTokens => 'Kein aktiver Zugriffsschlüssel.';
 
   @override
   String tokenHint(String hint) {
@@ -442,7 +442,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get neverUsed => 'Noch nie benutzt';
 
   @override
-  String get createToken => 'Token erstellen';
+  String get createToken => 'Zugriffsschlüssel erstellen';
 
   @override
   String get create => 'Erstellen';
@@ -454,11 +454,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get tokenNameHint => 'z. B. Claude oder Kurzbefehle';
 
   @override
-  String get tokenCreated => 'Token erstellt';
+  String get tokenCreated => 'Zugriffsschlüssel erstellt';
 
   @override
   String get tokenShownOnce =>
-      'Kopiere den Token jetzt. Er wird nicht noch einmal angezeigt.';
+      'Kopiere den Zugriffsschlüssel jetzt. Er wird nicht noch einmal angezeigt.';
 
   @override
   String get done => 'Fertig';
@@ -469,7 +469,7 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get revokeTokenTitle => 'Token widerrufen?';
+  String get revokeTokenTitle => 'Zugriffsschlüssel widerrufen?';
 
   @override
   String get revokeTokenBody =>
@@ -479,7 +479,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get revoke => 'Widerrufen';
 
   @override
-  String get tooManyTokens => 'Höchstens 20 aktive Tokens.';
+  String get tooManyTokens => 'Höchstens 20 aktive Zugriffsschlüssel.';
 
   @override
   String get connectedApps => 'Verbundene Apps';
@@ -505,7 +505,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String siriOldShortcutHint(String name) {
-    return 'Den alten Kurzbefehl brauchst du nicht mehr. Seinen Token „$name“ kannst du unten löschen.';
+    return 'Den alten Kurzbefehl brauchst du nicht mehr. Seinen Zugriffsschlüssel „$name“ kannst du unten löschen.';
   }
 
   @override
@@ -675,7 +675,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get accountDeleteWhat =>
-      'Dein Konto, dein Profil, deine Zugangs-Tokens und deine verbundenen Apps werden endgültig gelöscht. Das lässt sich nicht rückgängig machen.';
+      'Dein Konto, dein Profil, deine Zugriffsschlüssel und deine verbundenen Apps werden endgültig gelöscht. Das lässt sich nicht rückgängig machen.';
 
   @override
   String accountDeleteKept(String household, String names) {
@@ -2081,20 +2081,20 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get accessTokensHint =>
-      'Mit einem Token baust du eigene Automationen, die eure Liste pflegen, etwa ein Skript oder einen Assistenten am MCP-Server.';
+      'Mit einem Zugriffsschlüssel baust du eigene Automationen, die eure Liste pflegen, etwa ein Skript oder einen Assistenten am MCP-Server.';
 
   @override
   String get accessTokensHintWithApi =>
-      'Mit einem Token baust du eigene Automationen am MCP-Server, die eure Liste pflegen. Für Programme ohne MCP gibt es unten die API.';
+      'Mit einem Zugriffsschlüssel baust du eigene Automationen am MCP-Server, die eure Liste pflegen. Für Programme ohne MCP gibt es unten die API.';
 
   @override
   String accessKeysHousehold(String household) {
-    return 'Ein neuer Token gilt für „$household“, den Haushalt, der gerade offen ist.';
+    return 'Ein neuer Zugriffsschlüssel gilt für „$household“, den Haushalt, der gerade offen ist.';
   }
 
   @override
   String accessKeysHouseholdWithApi(String household) {
-    return 'Neue Token und API-Schlüssel gelten für „$household“, den Haushalt, der gerade offen ist.';
+    return 'Neue Zugriffsschlüssel und API-Schlüssel gelten für „$household“, den Haushalt, der gerade offen ist.';
   }
 
   @override

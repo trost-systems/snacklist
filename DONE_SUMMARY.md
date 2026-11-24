@@ -2960,3 +2960,24 @@ Replaces #679 (the 417 worktree was dirty). Privacy's "once Premium is sold" tim
 - Part A, rebased on main with #690 and #693 both merged: `docs/PURCHASES.md:192`, `verify-family-groceries/features/purchases.md:22` and `verify-snacklist/features/premium.md:10` now use #690's `premiumUsedElsewhereYearly` wording ("on another account"). `PURCHASES.md:22,31,164` and `purchases.md:49` are about Lifetime or the plan group and stay.
 - Verify: `grep -ci "zugriffstoken\|access token" site/content/legal/support*.md` is 0; `grep -c "für einen anderen Haushalt" docs/PURCHASES.md` is 0.
 - Follow-up for Legal (app string, needs a changelog, out of scope): the delete-account dialog (`accountDeleteWhat`, DE "Zugangs-Tokens", EN "access tokens") and EN `accessTokens` still say token.
+
+## Job 433: Legal token wording and L24-6 listing lines (fix round 3, Legal answers)
+
+PR: https://github.com/trost-systems/snacklist/pull/696 (not merged; do not merge). Head sha: in the ops DONE_SUMMARY (an in-repo file cannot name its own sha).
+Changes: L24-6 lines in both fastlane descriptions (privacy line kept above, trademark notice stays last); LISTING.md says so; every user-visible Token/Zugriffstoken in the access section, mcpServerBody and the deletion text is Zugriffsschlüssel / access key (ARB, generated l10n, tests, e2e button names, feature map). Descriptions 2729 (de) and 2534 (en) chars, under 4000. Out of scope: privacy §16, N-RC90, job 432's MCP texts.
+
+- `app/l10n/app_de.arb`
+  - sha256: 9d409dd2927a3b973a843010eeebc7682f3a7084ed1c8b6f0d57eaddbeb04c37
+  - patch-id: 83dcb3513bf62932c63dadc1eac60d1b27974b0c
+- `app/l10n/app_en.arb`
+  - sha256: bec4ddf833a7c3d83c0b18a491188f37f2bacb9f4c1bee75a6a5c4de1c46829c
+  - patch-id: 3b8b20d9eaf386250393feab73dcce88fb79ef01
+- `docs/store/LISTING.md`
+  - sha256: 3bcf8c6f186fa60ae0581f0670894e0ce4bc67115fcefb72a4a14c65339c5091
+  - patch-id: 6c9e2f19ce8651db6bb7c2eeb11b76441c92163a
+- `app/fastlane/metadata/en-US/description.txt`
+  - sha256: 9abe85b95c9786439ed10ce36b549a87d6daab010c7cb697b208096b60f091c1
+  - patch-id: 02a90fa3c5056d3fdb62b66152251bc30e8d977a
+- `app/fastlane/metadata/de-DE/description.txt`
+  - sha256: c0de465bf7b21681e4ad76c00fe4e8ffb1c66f417d7d3d8dd5a06f1ade18a280
+  - patch-id: 9128a9d3977726f68ea7e7d948bbe4d14b832727
