@@ -2088,3 +2088,5 @@ the privacy text goes live first. After Legal's GO and the merge:
    the „Zugriffsschlüssel“ steps. Not earlier: until then most apps still show „Zugriffstoken“.
 
 To undo: `enabled = false`. Keys stay; API keys stop working on MCP and MCP tokens on the API.
+
+**Update, job 434 (2026-11-24).** Steps 4 and 5 are done: the reason lines are confirmed and `auth_mail.ts` put the six templates and `smtp_sender_name` = `Snacklist` on the hosted project; a second dry-run reports nothing left to change. The seven security notices stay off. Sending yourself a sign-in link in each language is still the one check left.

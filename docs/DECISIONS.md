@@ -18245,3 +18245,7 @@ The edit is a new PR (#689) instead of a push to #679: the job 417 worktree held
 - RD1: the mail radii read `shape.soft` (cards lg 20, buttons and the logo tile md 12, tip box sm 8, phone frame xl 24) instead of `radius.s/m/l`. The card has no shadow; the button keeps its hard edge.
 - `auth_mail.ts` also sets `smtp_sender_name` to `Snacklist`. It is a project auth config key (Management API), so the repo can own it; the address stays hello@snacklist.app. The waitlist and feedback digest keep `"Peter · Snacklist"` in code (Resend From headers, not Auth config; waitlist is Legal-bound).
 - Waitlist, DSA report and digest mails are untouched: no Legal-bound file changed.
+
+## Job 434 follow-up: applied
+
+`auth_mail.ts` ran on 2026-11-24 from main's content: 7 keys updated (`smtp_sender_name` and the six `mailer_templates_*_content`), a second dry-run reported none. `docs/EMAIL.md` and "Job 177" in `docs/NEEDS_PETER.md` now say so.
