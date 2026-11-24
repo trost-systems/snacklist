@@ -4,7 +4,7 @@ Every mail Snacklist sends is built from one React Email source in `emails/`, wi
 from `design/tokens/snacklist.tokens.json`. The same components make the Supabase Auth
 templates (`supabase/templates/`), the onboarding mails Snacklist PM writes, and the service
 notices. Job 55 built it, job 177 brought it to Snacklist and to AL4's German and English auth
-mails. Nothing of it is live yet (docs/NEEDS_PETER.md, "Job 177").
+mails. The six Auth templates and the sender name `Snacklist` went live on the hosted project on 2026-11-24 (job 434, `auth_mail.ts`).
 
 - Component reference with props and examples: [`emails/README.md`](../emails/README.md).
 - What Snacklist PM still has to write: [`emails/COPY_NEEDED.md`](../emails/COPY_NEEDED.md).
