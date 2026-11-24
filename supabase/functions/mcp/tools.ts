@@ -685,10 +685,11 @@ export function buildServer(
         'its new group in the walking route. The household remembers both: the same item lands ' +
         'in this category and this store the next time it is added. store: null removes the ' +
         'store (the item can then be bought in any store) and deletes every ' +
-        'store the household remembered for this item. The item itself is not deleted and ' +
-        'keeps its name, brand, properties and quantity, but the call overwrites its previous ' +
-        'store and category and, with aisle order, its hand-placed position; moving it back ' +
-        'does not restore that position or what was remembered (other stores, how often).',
+        'store the household remembered for this item and how often. The item itself is not ' +
+        'deleted and keeps its name, brand, properties and quantity, but the call overwrites ' +
+        'its previous store and category. Moving it back to a store that already has a ' +
+        'remembered place restores that place; it does not restore the other stores it ' +
+        'remembered or how often.',
       inputSchema: z.object({
         item: itemRef,
         category: categoryName.optional(),
@@ -714,15 +715,15 @@ export function buildServer(
       description:
         'Puts an open item directly before ("before") or after ("after") another one, e.g. ' +
         '"the eggs after the flour"; give exactly one of the two. With learned order ' +
-        '(list_items "order": "walk"), the household remembers the place in the store; the other ' +
-        'item must then be in the same store (move_item changes the store). Otherwise the item ' +
-        'takes the store and category of the other one, as when dragging in the app. A second ' +
-        'identical call changes nothing. The item itself is not deleted, but the call overwrites the ' +
-        'remembered place of the item (with learned order) or its store and category ' +
-        "(otherwise); next to an item without a store, it removes the item's store and deletes " +
-        'what the household remembered about it. To undo ' +
-        'it, place the item next to its old neighbour (learned order) or move it back with ' +
-        'move_item and place it again.',
+        '(list_items "order": "walk"), the other item must be in the same store, including when ' +
+        'both have no store (move_item changes the store). Nothing is deleted in learned order; ' +
+        'only a manual walk position is written. In categories / aisle mode the item takes the ' +
+        'store and category of the other one, as when dragging in the app. Only when that other ' +
+        "item has no store does this remove the item's store, and then it deletes every store " +
+        'the household remembered for this item and how often (as move_item with store: null). ' +
+        'Category memory and walk-order positions are not deleted. A second identical call ' +
+        'changes nothing. The item itself is not deleted. To undo it, place the item next to ' +
+        'its old neighbour (learned order) or move it back with move_item and place it again.',
       inputSchema: z.object({
         item: itemRef,
         before: itemRef.optional(),
@@ -771,11 +772,15 @@ export function buildServer(
       title: toolAnnotations.update_item.title,
       description:
         'Changes an open item like "Edit" in the app: only the fields given. quantity, brand ' +
-        'or properties null (or empty) deletes them. category and store work as in move_item ' +
-        '(the household remembers them; with learned order, the item takes its place in the new ' +
-        'store). "toList" moves it to another list (list_lists); "list" says where it is now. ' +
-        'If an identical open item (name, brand, properties) is already on the list after the ' +
-        'change, nothing changes and the call reports it.',
+        'or properties null (or empty) deletes them. category and store work as in move_item, ' +
+        'including that store: null removes the store (the item can then be bought in any ' +
+        'store) and deletes every store the household remembered for this item and how often. ' +
+        'Moving it back to a store that already has a remembered place restores that place; it ' +
+        'does not restore the other stores it remembered or how often. With learned order, the ' +
+        'item takes its place in the new store. "toList" moves it to another list ' +
+        '(list_lists); "list" says where it is now. If an identical open item (name, brand, ' +
+        'properties) is already on the list after the change, nothing changes and the call ' +
+        'reports it.',
       inputSchema: z.object({
         item: itemRef,
         name: storedText.trim().min(1).max(120).optional().describe(
