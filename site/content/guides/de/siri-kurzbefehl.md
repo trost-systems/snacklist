@@ -179,4 +179,4 @@ Startet Siri bei „Einkaufsliste“ nicht deinen Kurzbefehl? Prüf, ob er genau
 
 Damit ist die Verbindung getrennt.
 
-Fragen oder Probleme? Schreib mir in der App über **Mehr** → **Feedback senden**.
+Fragen oder Probleme? Schreib mir in der App über **Mehr** → **Feedback & Ideen**.

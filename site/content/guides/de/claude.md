@@ -121,4 +121,4 @@ Für Skripte und Programme ohne Anmeldung erstellst du in der App unter **Mehr**
 Für Skripte und Programme ohne Anmeldung erstellst du in der App unter **Mehr** → **Zugänge** → **Schlüssel erstellen** einen Zugriffsschlüssel. Wähle **Lesen und schreiben**, wenn das Programm die Liste ändern soll. Er wird nur einmal angezeigt. Schick ihn als `Authorization: Bearer fgp_…` mit. Derselbe Schlüssel funktioniert auch für die Snacklist-API.
 :::
 
-Fragen oder Probleme? Schreib mir in der App über **Mehr** → **Feedback senden**.
+Fragen oder Probleme? Schreib mir in der App über **Mehr** → **Feedback & Ideen**.

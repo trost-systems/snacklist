@@ -2594,3 +2594,8 @@ back to DE.
 - **Verlauf and trip locks** still open for a household's Premium or the user's (server `household_has_premium or user_has_premium`, app `has()`). The Terms speak of MCP and the API only; say if Terms §6 should cover them too.
 - **Lifetime grants before the lock** (AC7, AC9): `scripts/iap/beta-lifetime.ts` (see DECISIONS "Job 419"), dry run first; the lock needs your decision and the Terms accepted in the app.
 - **App follows the server (review 0).** `integrationAccess` and Buy (`Entitlements.canOffer`) now go by the user's own Premium (`Entitlements.ownPremium`). A user with only a household plan or grant sees the card and paused tiles, and may buy their own.
+
+## NEEDS_LEAD Job 424: is the unified access key on in production?
+
+- The PM brief says the unified key ("Zugriffsschlüssel") is not switched on. The repo says otherwise: `releases/flags.json` has `holds.unified-keys-guides.released: true` (#672), so the live Siri guide shows "Zugriffsschlüssel" twice, and `docs/done/411.md` lines 36 and 66 record `app_switches.unified_keys` reading true. The app shows "Zugriffsschlüssel" while that switch is on and "Zugriffstoken" while it is off.
+- Please confirm the production value of `app_switches.unified_keys`. If it is off, set `holds.unified-keys-guides.released` back to `false` (both the Siri and Claude guides then show the "Zugriffstoken" steps); if it is on, the guide is right and nothing changes. Left as is in job 424.

@@ -2833,3 +2833,25 @@ The 17 live titles (switch OFF; review 0 read them from a local stack's `tools/l
 Before-state on production (read 2026-11-24, protocol 2025-11-25, throwaway hosted `@fg-test.invalid` account with a personal token): 17 tools, each with a German top-level `title` and no `annotations.title`. The account was torn down with `fg teardown --target hosted` (`nonTestCountsUnchanged`), the token then got 401, and no `j421` run is left in `fg runs --target hosted`. A unit case pins the switch-OFF set (17 names, both titles equal).
 
 Not done: the after-deploy `tools/list` on production and the final title list read from there; they follow review PASS and deploy. The reviewer account (`secrets/ai-connectors`) is not on this runner: NEEDS_LEAD Job 421 asks the lead to sync it or approve the same throwaway fixture. Then replace the local-stack list above with the live one and copy this file to the job dir again.
+
+## Job 424: site copy truth fixes
+
+Legal-reviewed page changed (`site/content/comparisons/de/einkaufsliste-vergleich-bring.md`): PR #691 is a draft titled "DO NOT MERGE (Legal)". Not to be landed.
+
+DE old → new (`/de/einkaufsliste-vergleich-bring`, section "Mit KI-Assistenten verbinden (MCP)"):
+- Old: "… löschen und in eine andere Kategorie, einen anderen Laden oder eine andere Liste verschieben. Außerdem kann er Kategorien, Läden und Listen lesen."
+- New: "… löschen und in einen anderen Laden oder eine andere Liste verschieben. Außerdem kann er Läden und Listen lesen."
+
+The rest of that sentence (move to another store or list, read stores and lists) is true: `move_item`, `list_lists` and `list_stores` are registered without a switch.
+
+Other changes:
+- Feedback label: "Mehr → Feedback senden" is now "Mehr → Feedback & Ideen" (EN "Feedback & ideas") in the DE Siri guide and the DE and EN Claude and Alexa guides (`feedbackHubRow`). The legal support pages still say "Feedback senden"; they need Legal's hash process.
+- FEATURES-FOR-WRITERS, "AI assistants and access keys": "What it does" quotes the consent text literally (with the lists and stores switch off), "remove items" is no longer said twice, and the never-claim line says the assistant reads and changes the list's items only (no categories).
+- `releases/flags.json`: the `feedback-fb4` note no longer says "internal installs only" (rollout is `full`).
+
+Not changed: "Zugriffsschlüssel" in the Siri guide. The earlier note that the block is hidden in production was wrong. `holds.unified-keys-guides.released` is `true` (since #672), so production shows the block "Zugriffsschlüssel" and the app shows it while `app_switches.unified_keys` is on (`docs/done/411.md` lines 36 and 66). The brief says the switch is off. See NEEDS_LEAD Job 424.
+
+#### Job 424 review 1 fixes
+- FEATURES-FOR-WRITERS: dropped "and it can see the order a store's aisles come in" (a category read the consent text doesn't name), so "What it does" and the never-claim line agree; "Last verified" updated.
+- Head SHA and per-file sha256 and patch-id are in the ops copy of this file and in `~/groceries-ops/NEEDS_LEAD.md` (a repo file can't hold its own hash).
+- For the lead: the server can still do what the Bring page no longer says (`move_item` takes `category`, `list_categories` is unswitched). The Bring page's "Mehr > Zugänge > MCP-Server" address hint is stale with the unified key on; the legal support pages still say "Feedback senden". All three belong in Legal's next round.

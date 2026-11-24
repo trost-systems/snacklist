@@ -86,4 +86,4 @@ Ask "Alexa, ask Snacklist what's on the list" and the skill reads at most 10 ope
 - **In the Alexa app:** find the skill **Snacklist** and tap **Disable skill** on its page.
 - **In Snacklist:** tap **More**, then **Access**, and disconnect **Amazon Alexa** under connected apps. The skill loses access to your list right away.
 
-Questions or problems? Write to us in the app under **More** → **Send feedback**.
+Questions or problems? Write to us in the app under **More** → **Feedback & ideas**.

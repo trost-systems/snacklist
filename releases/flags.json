@@ -34,7 +34,7 @@
     },
     "feedback-fb4": {
       "rollout": "full",
-      "note": "Feedback & ideas (More's row opens a page with the user's own notes, their status Sent, Read, Planned or Fixed in <version>, Snacklist Support's replies, a badge for new answers, and listed ideas the household can +1) shows only while the PostHog flag feedback-fb4 is on (job 268); internal installs only until the privacy policy covers replies, status and votes"
+      "note": "Feedback & ideas (More's row opens a page with the user's own notes, their status Sent, Read, Planned or Fixed in <version>, Snacklist Support's replies, a badge for new answers, and listed ideas the household can +1) shows only while the PostHog flag feedback-fb4 is on (job 268); on for everyone"
     },
     "join-household-jh2": {
       "rollout": "full",
