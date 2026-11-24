@@ -112,4 +112,4 @@ Du hast zwei Möglichkeiten. Jede beendet die Verbindung:
 
 Trennst du nur die Kontoverknüpfung in der Alexa-App, ohne den Skill zu deaktivieren, bleibt „Amazon Alexa“ unter **Mehr** → **Zugänge** stehen. Trenn es dann dort auch.
 
-Fragen oder Probleme? Schreib mir in der App über **Mehr** → **Feedback senden**.
+Fragen oder Probleme? Schreib mir in der App über **Mehr** → **Feedback & Ideen**.

@@ -81,7 +81,7 @@ Wenn du Rezepte, Prospekte oder Kundenkarten in deiner Einkaufs-App haben willst
 
 ## Mit KI-Assistenten verbinden (MCP)
 
-Du kannst Snacklist mit KI-Assistenten verbinden, die MCP unterstützen. Der Assistent kann Artikel lesen, hinzufügen (auch mehrere auf einmal, mit Mengen), ändern (Name, Menge, Marke, Eigenschaften), als gekauft abhaken, wieder auf die Liste setzen, mit einem ähnlichen Artikel zusammenführen, löschen und in eine andere Kategorie, einen anderen Laden oder eine andere Liste verschieben. Außerdem kann er Kategorien, Läden und Listen lesen. Er kann auch keine Personen einladen oder entfernen und kommt nicht an Kontodaten.
+Du kannst Snacklist mit KI-Assistenten verbinden, die MCP unterstützen. Der Assistent kann Artikel lesen, hinzufügen (auch mehrere auf einmal, mit Mengen), ändern (Name, Menge, Marke, Eigenschaften), als gekauft abhaken, wieder auf die Liste setzen, mit einem ähnlichen Artikel zusammenführen, löschen und in einen anderen Laden oder eine andere Liste verschieben. Außerdem kann er Läden und Listen lesen. Er kann auch keine Personen einladen oder entfernen und kommt nicht an Kontodaten.
 
 Die Schritt-für-Schritt-Anleitung findest du hier: [Anleitung: Snacklist mit Claude verbinden](https://snacklist.app/de/anleitungen/claude). Die Adresse zum Eintragen findest du in der App unter Mehr > Zugänge > MCP-Server.
 
