@@ -1907,7 +1907,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Snacklist Premium is not available right now.';
 
   @override
-  String get premiumTermsLink => 'Terms of Use (EULA)';
+  String get premiumTermsLink => 'Terms of Use';
+
+  @override
+  String get premiumAppleEulaLink => 'Apple’s License Agreement (EULA)';
 
   @override
   String get premiumPrivacyLink => 'Privacy policy';

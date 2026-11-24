@@ -1,4 +1,3 @@
-import 'package:family_groceries/core/guides.dart';
 import 'package:family_groceries/purchases/entitlements.dart';
 import 'package:family_groceries/purchases/purchase_repository.dart';
 import 'package:flutter/foundation.dart' show TargetPlatform, immutable;
@@ -150,17 +149,15 @@ final googleSubscriptionsUrl = Uri.parse(
   'https://play.google.com/store/account/subscriptions',
 );
 
-/// Apple's standard EULA, linked as the terms of use on iOS until Snacklist
-/// has its own (H-93: needs a lawyer; NEEDS_LEAD Job 49).
+/// Apple's standard EULA, linked on iOS next to Snacklist's own terms.
 final appleEulaUrl = Uri.parse(
   'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/',
 );
 
-/// The terms of use for [platform]: on Android and the web a placeholder,
-/// the support page, until Legal Review supplies Snacklist's terms
-/// (NEEDS_LEAD Job 49 lists it).
-Uri termsUrl(TargetPlatform platform, String language) =>
-    platform == TargetPlatform.iOS ? appleEulaUrl : supportUrl(language);
+/// Whether the link to [appleEulaUrl] is shown: only in the iPhone app, not
+/// on Android and not on the web (even in iOS Safari).
+bool appleEulaShown({required bool web, required TargetPlatform platform}) =>
+    !web && platform == TargetPlatform.iOS;
 
 /// Whether Snacklist Premium is offered to this user: More lists it and the
 /// history's locked row opens it (job 199). Before the launch nobody sees it

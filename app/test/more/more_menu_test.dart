@@ -140,7 +140,7 @@ void main() {
       'Hilfe & Kontakt',
       'Impressum',
       'Datenschutzerklärung',
-      'Nutzungsbedingungen (EULA)',
+      'Nutzungsbedingungen',
       'Lizenzen',
       'Abmelden',
     ];
@@ -177,7 +177,7 @@ void main() {
       'Help & contact',
       'Imprint',
       'Privacy policy',
-      'Terms of Use (EULA)',
+      'Terms of Use',
       'Licenses',
       'Sign out',
     ];

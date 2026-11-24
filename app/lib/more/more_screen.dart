@@ -244,6 +244,7 @@ enum _Item(final IconData icon, final String key, final _Tint tint) {
   imprint(Icons.info_outline, 'more-imprint', _Tint.plain),
   privacyPolicy(Icons.privacy_tip_outlined, 'more-privacy-policy', _Tint.plain),
   terms(Icons.article_outlined, 'more-terms', _Tint.plain),
+  appleEula(Icons.article_outlined, 'more-apple-eula', _Tint.plain),
   licenses(Icons.description_outlined, 'more-licenses', _Tint.plain),
   signOut(Icons.logout, 'more-sign-out', _Tint.plain);
 
@@ -257,7 +258,7 @@ enum _Item(final IconData icon, final String key, final _Tint tint) {
     [access],
     [settings, usageData],
     [tips, feedback, rate, help],
-    [imprint, privacyPolicy, terms, licenses],
+    [imprint, privacyPolicy, terms, appleEula, licenses],
     [signOut],
   ];
 }
@@ -333,6 +334,10 @@ class _MoreListState() extends State<_MoreList> {
           _Item.archived => widget.showArchived,
           _Item.help => widget.showHelp,
           _Item.rate => storeListingShown(
+            web: kIsWeb,
+            platform: defaultTargetPlatform,
+          ),
+          _Item.appleEula => appleEulaShown(
             web: kIsWeb,
             platform: defaultTargetPlatform,
           ),
@@ -491,7 +496,13 @@ class _MoreListState() extends State<_MoreList> {
         item,
         label: l10n.premiumTermsLink,
         trailing: _Trailing.external,
-        onTap: () => web(termsUrl(defaultTargetPlatform, lang)),
+        onTap: () => web(termsUrl(lang)),
+      ),
+      _Item.appleEula => _Row(
+        item,
+        label: l10n.premiumAppleEulaLink,
+        trailing: _Trailing.external,
+        onTap: () => web(appleEulaUrl),
       ),
       _Item.licenses => _Row(
         item,

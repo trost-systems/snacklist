@@ -226,11 +226,10 @@ from the PR's checkout.
 4.2 **Legal, Peter's yes**: the terms of use (`nutzungsbedingungen.md`,
 `terms.md`). They stay `draft: true` until a lawyer has cleared the
 ⟦NEEDS A LAWYER BEFORE PUBLISHING⟧ markers. Until then the Premium page
-links Apple's standard EULA on iOS and the support page on Android and the
-web (`termsUrl` in `app/lib/purchases/premium_server.dart`). Once the page is
-published, a one-line PR points `termsUrl` at `/nutzungsbedingungen` and
-`/en/terms` on Android and the web. Apple's EULA can stay on iOS, or the
-terms page can replace it there too (Legal decides).
+links the terms on snacklist.app (`termsUrl` in `app/lib/core/guides.dart`,
+`/nutzungsbedingungen` or `/en/terms`) on every platform. On iOS only, a
+second link right after it opens Apple's standard EULA (`appleEulaUrl`,
+Legal L24-7). Done in PR 695.
 
 4.3 **Legal**: privacy section 9 names `paywall_viewed` and
 `integration_blocked` (and the Siri events), and section 7 says that AI

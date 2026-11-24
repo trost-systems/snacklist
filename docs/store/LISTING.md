@@ -139,7 +139,7 @@ Reason: `docs/PURCHASES.md` "Per-user Premium" (job 185) has the buyer hold Prem
 5. Subscription disclosure block. The auto-renewal paragraph is the app's `premiumYearlyTerms` text, adapted per store (Apple account or
    Google account, the store's subscription settings). It is marked pending in the ARB; Legal approves it. The App Store needs a working privacy
    policy link and a terms link; the description carries `https://snacklist.app/datenschutz` (EN `/en/privacy`) and Apple's standard EULA,
-   which the app uses until Snacklist has its own terms (H-93). Google Play takes the privacy policy in the Play Console field; the
+   which the app links on iOS next to Snacklist's own terms. Google Play takes the privacy policy in the Play Console field; the
    link in the text is a convenience. The English page paths are from `site/content/legal`; confirm they are live on release.
 6. Trademarks. Settled by Legal N-366 (22 Nov 2026): the notice wording, the skill's name and the Alexa bullet as above; Legal re-checks
    the hashes before upload.

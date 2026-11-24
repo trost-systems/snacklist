@@ -28,6 +28,14 @@ Uri privacyPolicyUrl(String languageCode) => Uri.parse(
       : '$guidesBaseUrl/en/privacy',
 );
 
+/// The terms of use on snacklist.app (`site/content/legal/`), German or
+/// English. Every terms link in the app goes here, on every platform.
+Uri termsUrl(String languageCode) => Uri.parse(
+  languageCode == 'de'
+      ? '$guidesBaseUrl/nutzungsbedingungen'
+      : '$guidesBaseUrl/en/terms',
+);
+
 /// Whether the help and contact page is live on snacklist.app. Peter
 /// approved its text on 2026-10-30, so `site/content/legal/support.md` and
 /// `support-en.md` are no longer drafts (docs/NEEDS_PETER.md, Job 24).
