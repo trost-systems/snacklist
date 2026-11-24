@@ -149,7 +149,7 @@ built commit (what TestFlight and Play internal testers get), so today everythin
 have shows. `../releases/README.md` explains the record. It logs the version before the page count:
 
 ~~~text
-live version: 0.1.0 (from app/pubspec.yaml, no public release yet)
+live version: 1.0.0 (from app/pubspec.yaml, no public release yet)
 live version: 1.4.0 (from public release record)
 ~~~
 
