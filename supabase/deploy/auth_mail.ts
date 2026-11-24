@@ -1,4 +1,4 @@
-// Puts the auth mail subjects and templates from supabase/config.toml ([auth.email.template.*])
+// Puts the auth mail sender name, subjects and templates from supabase/config.toml ([auth.email.template.*])
 // onto the hosted project, so production sends the same German or English mails as the local
 // stack (docs/AUTH.md "Mail language"). Converges: rerunning changes nothing.
 //
@@ -17,6 +17,9 @@ export const templates = [
   'reauthentication',
 ] as const;
 
+/** The From display name Auth mail goes out under. */
+export const senderName = 'Snacklist';
+
 type Config = {
   auth?: { email?: { template?: Record<string, { subject?: string; content_path?: string }> } };
 };
@@ -28,7 +31,8 @@ export async function desired(
   const config = parse(
     await Deno.readTextFile(new URL('supabase/config.toml', root)),
   ) as Config;
-  const out: Record<string, string> = {};
+  // The From display name of every Auth mail; the address stays hello@ (Resend, docs/AUTH.md).
+  const out: Record<string, string> = { 'smtp_sender_name': senderName };
   for (const name of templates) {
     const t = config.auth?.email?.template?.[name];
     if (!t?.subject || !t.content_path) {

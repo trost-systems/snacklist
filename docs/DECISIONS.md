@@ -18238,3 +18238,10 @@ The terms hashes in the test are updated for G2 (terms §11 and §12) and P-T1 (
 ## Job 423: Terms §12 says MCP and the API are Premium
 
 The edit is a new PR (#689) instead of a push to #679: the job 417 worktree held uncommitted changes. §12 now points to §6 (MCP and the API are Premium, you need Premium) instead of "free until the Premium start date". Testers are not named in the Terms. Legal's hash-bound GO is pending; neither PR is merged.
+
+## Job 434: style the Auth mails with RD1 and put them live
+
+- Root cause confirmed: #362 built and merged the styled templates, but merging does not change the hosted project, and the draft reason lines of five Auth templates were never confirmed, so `auth_mail.ts` would have refused them. Peter's 2026-11-10 review and his 2026-11-24 "style all transactional emails before launch" count as approval; the lines are confirmed word for word. The seven security notices keep their draft reason line (disabled, not applied by `auth_mail.ts`).
+- RD1: the mail radii read `shape.soft` (cards lg 20, buttons and the logo tile md 12, tip box sm 8, phone frame xl 24) instead of `radius.s/m/l`. The card has no shadow; the button keeps its hard edge.
+- `auth_mail.ts` also sets `smtp_sender_name` to `Snacklist`. It is a project auth config key (Management API), so the repo can own it; the address stays hello@snacklist.app. The waitlist and feedback digest keep `"Peter · Snacklist"` in code (Resend From headers, not Auth config; waitlist is Legal-bound).
+- Waitlist, DSA report and digest mails are untouched: no Legal-bound file changed.

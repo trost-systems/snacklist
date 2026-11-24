@@ -33,7 +33,7 @@ function Shell({ lang, title, preview, footer, children }: ShellProps) {
                 <div style={{ maxWidth: CONTAINER, margin: '0 auto', textAlign: 'left' }}>
                   <Header />
                   <table role="presentation" width="100%" cellPadding={0} cellSpacing={0} border={0} className="hl-card" bgcolor={ui.light['surface-raised']}
-                    style={{ backgroundColor: ui.light['surface-raised'], border: `${ui.border.width}px solid ${ui.light.border}`, borderRadius: ui.radius.m }}>
+                    style={{ backgroundColor: ui.light['surface-raised'], border: `${ui.border.width}px solid ${ui.light.border}`, borderRadius: ui.radius.lg }}>
                     <tbody>
                       <tr>
                         <td className="hl-card-pad" style={{ padding: `${ui.space[6]}px ${ui.space[6]}px ${ui.space[2]}px ${ui.space[6]}px` }}>{children}</td>

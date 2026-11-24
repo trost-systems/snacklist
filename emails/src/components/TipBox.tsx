@@ -8,7 +8,7 @@ export function TipBox({ title, children }: { title?: string; children: ReactNod
       <tbody>
         <tr>
           <td className="hl-tip" bgcolor={ui.light['honey-soft']}
-            style={{ backgroundColor: ui.light['honey-soft'], borderLeft: `${ui.depth.edge}px solid ${ui.light.honey}`, borderRadius: ui.radius.s, padding: `${ui.space[4]}px ${ui.space[4]}px ${ui.space[1]}px ${ui.space[4]}px` }}>
+            style={{ backgroundColor: ui.light['honey-soft'], borderLeft: `${ui.depth.edge}px solid ${ui.light.honey}`, borderRadius: ui.radius.sm, padding: `${ui.space[4]}px ${ui.space[4]}px ${ui.space[1]}px ${ui.space[4]}px` }}>
             {title ? <p className="hl-text" style={text.stepTitle}>{title}</p> : null}
             {children}
           </td>
@@ -26,7 +26,7 @@ export function CodeBox({ children }: { children: string }): ReactElement {
         <tr>
           <td className="hl-sunken hl-text" bgcolor={ui.light['surface-sunken']}
             style={{
-              backgroundColor: ui.light['surface-sunken'], border: `${ui.border.thin}px solid ${ui.light.divider}`, borderRadius: ui.radius.s,
+              backgroundColor: ui.light['surface-sunken'], border: `${ui.border.thin}px solid ${ui.light.divider}`, borderRadius: ui.radius.sm,
               padding: `${ui.space[3]}px ${ui.space[5]}px`, fontFamily: ui.font.display, fontSize: `${ui.typography.headline.size}px`,
               fontWeight: ui.weight.heavy, letterSpacing: '0.12em', color: ui.light.text,
             }}>

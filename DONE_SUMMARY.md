@@ -2981,3 +2981,28 @@ Changes: L24-6 lines in both fastlane descriptions (privacy line kept above, tra
 - `app/fastlane/metadata/de-DE/description.txt`
   - sha256: c0de465bf7b21681e4ad76c00fe4e8ffb1c66f417d7d3d8dd5a06f1ade18a280
   - patch-id: 9128a9d3977726f68ea7e7d948bbe4d14b832727
+
+## Job 434: transactional mails in the RD1 look, Auth templates live
+
+**Root cause (confirmed).** #362 merged styled DE/EN Auth templates (`supabase/templates/`, `[auth.email.template.*]`), but merging does not change the hosted Auth project (`supabase/deploy/auth_mail.ts`, by hand), and five templates' reason lines were still `draft`, which makes the script refuse. Hosted Auth therefore kept AL4's plain mails. Fixed: confirmation, recovery, email_change, invite and reauthentication reason lines (DE+EN) confirmed as-is; magic_link already was.
+
+**Changes.** Mail radii read RD1 `shape.soft` (cards 20, buttons and logo tile 12); no card shadow, the button keeps its hard edge; the Header still uses `https://snacklist.app/email/snacklist-icon-96.png` (live, sha256 equals `site/public/email/snacklist-icon-96.png`, AI1 tile in a rounded square). Templates rebuilt (13 files, under 17 KB each). `auth_mail.ts` also sets `smtp_sender_name` = `Snacklist`. The preview script renders dark for every mail and writes `.txt`. Test for the production refusal now uses a security notice (still draft). No Legal-bound file changed (footers, imprint, waitlist, DSA).
+
+| Mail | Styled today | Template | Sent? | This job |
+| --- | --- | --- | --- | --- |
+| Auth: confirmation, magic_link, recovery, email_change, reauthentication (DE+EN) | yes (RD1) | `emails/src/emails/auth.tsx` -> `supabase/templates/`, `config.toml` | hosted, by app flows; was AL4 plain until the apply | reason lines confirmed, RD1 radii, rebuilt, applied (below) |
+| Auth: invite | yes | same | unused (app never calls `inviteUserByEmail`; Legal N-18) | confirmed, rebuilt, applied as a template only |
+| Auth: 7 security notices (password, email, phone, MFA x2, identity x2) | yes | same | disabled on hosted and locally | rebuilt only; draft reason line stays; not enabled |
+| Waitlist confirmation, welcome, beta invite (DE+EN) | own plain HTML, system fonts, no images | `supabase/functions/waitlist/mail.ts` | Resend, live | unchanged (Legal M-1/M-2, footers); From still `"Peter · Snacklist"` |
+| DSA report receipt and decision | plain, Legal wording, no links/images | `supabase/functions/report/mail.ts`, `scripts/moderation/notify.ts` | Resend; From `"Snacklist Support" <no-reply@>` | unchanged |
+| Feedback digest | plain, Peter only | `supabase/functions/feedback-digest/mail.ts` | live | unchanged; From `"Peter · Snacklist"` (fine for one reader) |
+| Onboarding drafts (welcome, nudge, partner-joined), account-deleted | styled drafts | `emails/src/emails/onboarding.tsx`, `notices.tsx` | not sent (no sender, unsubscribe or consent store) | rebuilt with RD1, previews updated |
+| Household invites | n/a | in-app share link | not mail (Legal N-18) | none |
+
+**Hosted (dry-run only so far).** `--dry-run` on 2026-11-24 listed `smtp_sender_name` and the six template contents as changing; nothing applied yet. Apply happens from merged main (see Status below). Sender display name: `smtp_sender_name` is a Management API key, so it is set to `Snacklist`; the address and Resend/DNS are Ops-owned and unchanged.
+
+**Screenshots.** `~/groceries-ops/jobs/434-style-transactional-emails/out/email-templates/` and `/workspace/hummlist/research/434-style-transactional-emails/`: `<mail>-<lang>-light.png`, `-dark.png`, `-desktop(-dark).png`, `-mobile(-dark).png`, plus `.html`, `.txt`, `index.html`. Reviewed by eye: confirmation-de light, recovery-en dark mobile (rounded tile, card without shadow, honey button with hard edge, wording unchanged). Local Mailpit and a hosted confirm mail were not done.
+
+**Tests.** `cd emails && npm run build && npm test`: 15 pass, 0 fail.
+
+**Status.** PR, head and merge SHAs, and the apply result are appended below when they exist.
