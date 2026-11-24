@@ -1164,6 +1164,38 @@ void main() {
       expect(key('premium-card-yearly'), findsNothing);
     });
 
+    testWidgets('no Premium: no manage row', (tester) async {
+      await openLifetime(tester);
+      expect(key('premium-card-yearly'), findsOneWidget);
+      expect(key('premium-manage'), findsNothing);
+    });
+
+    testWidgets('own Lifetime only: no manage row', (tester) async {
+      await openLifetime(
+        tester,
+        entitlements: FakeEntitlementsSource()
+          ..userRows['peter'] = [
+            {
+              'kind': 'premium',
+              'source': 'purchase',
+              'premium_source': 'lifetime',
+            },
+          ],
+      );
+      shows({'lifetime-unlocked'});
+      expect(key('premium-manage'), findsNothing);
+    });
+
+    testWidgets('own yearly plan: the manage row', (tester) async {
+      await openLifetime(
+        tester,
+        entitlements: FakeEntitlementsSource()
+          ..userRows['peter'] = [yearlyRow(from: DateTime.now())],
+      );
+      expect(key('premium-manage'), findsOneWidget);
+      expect(find.text('Abo verwalten oder kündigen'), findsOneWidget);
+    });
+
     testWidgets('a lapsed yearly plan: both plans again', (tester) async {
       await openLifetime(
         tester,
