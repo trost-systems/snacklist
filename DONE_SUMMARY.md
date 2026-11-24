@@ -2888,3 +2888,12 @@ Fix PR #690 on `main` after #682 and #684. Strings are the verbatim ones of `in/
   - `app_en.arb` sha256 `7fd31ad7a0d069fd18875da4aeec85493623b9e9987d5278f04257ffa91dfbc9`, patch-id `058cb860a18d13e7af80c4bc1f2508a42664d2c4`.
 - Not merged, as instructed.
 - Follow-up for the lead: `docs/PURCHASES.md:192` still quotes the old DE sentence; left out of this PR ("no other changes").
+
+## Job 427: site SHOULDs from #691 review
+
+PR #693, **do not merge** (Legal-reviewed Bring page). #691 has landed; this branch is one commit on main. Changes: Bring page path line now "Mehr > Zugänge, unter „Zugriffsschlüssel“"; support.md / support-en.md say "Feedback & Ideen" / "Feedback & ideas".
+
+Head SHA, sha256 and patch-id per file are in the ops copy of this summary (a repo file cannot hold its own head SHA).
+
+#### Job 427b: rebased onto main after #691
+Rebased with push-pr.sh; the only conflicts were the two logs (both sides kept). Legal checks only the three site files (`einkaufsliste-vergleich-bring.md`, `support.md`, `support-en.md`); `DONE_SUMMARY.md` is a log. Head SHA, sha256 and patch-id per file are in the ops NEEDS_LEAD "Job 427b".

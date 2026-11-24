@@ -14,7 +14,7 @@ Snacklist is a shared shopping list for one household. Whatever one person adds,
 
 ## How to get help
 
-- **In the app:** tap **More**, then **Send feedback**. Describe what happened or what you are missing. The app version, device and language are sent along, but no list items. This is the fastest way.
+- **In the app:** tap **More**, then **Feedback & ideas**. Describe what happened or what you are missing. The app version, device and language are sent along, but no list items. This is the fastest way.
 - **By email:** [support@snacklist.app](mailto:support@snacklist.app). Please say which device you use (iPhone, Android or browser).
 - **Report illegal content:** use the [Report content](/en/report) form, no account needed.
 
@@ -87,4 +87,4 @@ Yes, with AI assistants that can add their own MCP servers, through Snacklist's 
 
 ### I found a bug or have an idea. What do I do?
 
-Send it straight from the app: tap **More**, then **Send feedback**. You can also tell us there what's missing.
+Send it straight from the app: tap **More**, then **Feedback & ideas**. You can also tell us there what's missing.

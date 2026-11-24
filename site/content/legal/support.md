@@ -14,7 +14,7 @@ Snacklist ist eine gemeinsame Einkaufsliste für einen Haushalt. Was einer eintr
 
 ## So bekommst du Hilfe
 
-- **In der App:** Tippe auf **Mehr** und dann auf **Feedback senden**. Schreib, was passiert ist oder was dir fehlt. Mitgeschickt werden App-Version, Gerät und Sprache, aber keine Listeneinträge. Das ist der schnellste Weg.
+- **In der App:** Tippe auf **Mehr** und dann auf **Feedback & Ideen**. Schreib, was passiert ist oder was dir fehlt. Mitgeschickt werden App-Version, Gerät und Sprache, aber keine Listeneinträge. Das ist der schnellste Weg.
 - **Per E-Mail:** [support@snacklist.app](mailto:support@snacklist.app). Schreib bitte dazu, welches Gerät du nutzt (iPhone, Android oder Browser).
 - **Rechtswidrige Inhalte melden:** über das Formular [Inhalte melden](/inhalte-melden), auch ohne Konto.
 
@@ -87,4 +87,4 @@ Ja, mit KI-Assistenten, die eigene MCP-Server einbinden können, über den MCP-S
 
 ### Ich habe einen Fehler gefunden oder eine Idee. Was tun?
 
-Schick sie am besten direkt aus der App: Tippe auf **Mehr** und dann auf **Feedback senden**. Dort kannst du auch beschreiben, was dir fehlt.
+Schick sie am besten direkt aus der App: Tippe auf **Mehr** und dann auf **Feedback & Ideen**. Dort kannst du auch beschreiben, was dir fehlt.
