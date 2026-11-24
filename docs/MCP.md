@@ -188,7 +188,9 @@ stores.
 Each tool tells the client what kind it is (MCP tool annotations). Since job 415 every tool
 declares all four hints, explicit, in one table (`toolAnnotations` in `tools.ts`) that
 `tools_test.ts` pins tool by tool, because the directories' reviews reject a tool that leaves one
-to the spec's defaults. `openWorldHint` is false everywhere: a tool reaches only the caller's
+to the spec's defaults. Since job 421 each entry also carries a short English `title`, published in
+both `Tool.title` and `annotations.title` (the Claude portal flagged "Missing title annotation" when only the first
+existed); keep both. `openWorldHint` is false everywhere: a tool reaches only the caller's
 household. The `list_*` tools, `suggest_items` and `get_item` only read (`readOnlyHint: true`,
 `destructiveHint: false`, `idempotentHint: true`). `add_items` and `create_list` add on every call
 (`destructiveHint: false`, `idempotentHint: false`). `tick_items`, `untick_items`, `move_item`,
@@ -199,7 +201,7 @@ user typed or replaces a store's whole order: `remove_items`, `update_item`, the
 `set_store_order` and `set_store_layout` (repeatable, `idempotentHint: true`), and `merge_items`
 (not repeatable). A client may ask the user before a destructive call.
 
-The server names itself `snacklist` with `serverInfo.version` `1.4.0` (job 415 made every annotation explicit; job 344 added five tools,
+The server names itself `snacklist` with `serverInfo.version` `1.5.0` (job 421 added the titles; job 415 made every annotation explicit; job 344 added five tools,
 job 345 seven, job 352 two).
 Clients cache `tools/list` for an hour; the version moves whenever the tools change, so a new
 version says the list is worth fetching again.

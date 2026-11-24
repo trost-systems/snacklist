@@ -56,7 +56,7 @@ interface Message {
       name: string;
       title?: string;
       inputSchema: { properties?: Record<string, unknown> };
-      annotations?: Record<string, boolean>;
+      annotations?: Record<string, boolean | string>;
     }[];
     isError?: boolean;
     content: { type: string; text: string }[];
@@ -132,7 +132,7 @@ Deno.test('locked: initialize and tools/list answer without asking the gate', as
   assertEquals(init.status, 200);
   const { serverInfo } = (await message(init)).result;
   assertEquals(serverInfo.name, 'snacklist');
-  assertEquals(serverInfo.version, '1.4.0', 'annotations changed since 1.3.0');
+  assertEquals(serverInfo.version, '1.5.0', 'titles changed since 1.4.0');
   const list = await s.handle(rpc('tools/list'));
   assertEquals(list.status, 200);
   assertEquals(
@@ -312,8 +312,10 @@ Deno.test('job 415: each of the 22 tools declares exactly the hints it should, a
   const { tools } = (await message(await s.handle(rpc('tools/list')))).result;
   assertEquals(tools.map((t) => t.name).sort(), Object.keys(expected).sort());
   for (const tool of tools) {
-    assertEquals(tool.annotations, expected[tool.name as keyof typeof expected], tool.name);
-    assertEquals(typeof tool.title, 'string', `${tool.name}: title`);
+    const { title: annotationTitle, ...hints } = tool.annotations ?? {};
+    assertEquals(hints, expected[tool.name as keyof typeof expected], tool.name);
+    assert(tool.title && tool.title.length > 0, `${tool.name}: Tool.title`);
+    assertEquals(annotationTitle, tool.title, `${tool.name}: annotations.title`);
   }
 });
 
@@ -499,5 +501,20 @@ Deno.test('job 397: a tool needs read exactly when it is marked read-only', asyn
       tool.annotations?.readOnlyHint ? 'read' : 'write',
       tool.name,
     );
+  }
+});
+
+Deno.test('job 421: with the switch off, the 17 live tools each have the same title in both places', async () => {
+  const s = serve(locked);
+  const { tools } = (await message(await s.handle(rpc('tools/list')))).result;
+  const hidden = ['create_list', 'rename_list', 'add_store', 'rename_store', 'set_store_layout'];
+  assertEquals(
+    tools.map((t) => t.name).sort(),
+    Object.keys(expected).filter((n) => !hidden.includes(n)).sort(),
+  );
+  assertEquals(tools.length, 17);
+  for (const tool of tools) {
+    assert(tool.title && tool.title.length > 0, `${tool.name}: Tool.title`);
+    assertEquals(tool.annotations?.title, tool.title, tool.name);
   }
 });

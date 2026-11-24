@@ -60,6 +60,9 @@ cautious value: a repeated `create_list` makes another list, and `add_items` cre
 for a different spelling or size, though an item already open is reported under `alreadyOnList`
 and not added twice.
 
+Every tool also has a short English `title`, in both `Tool.title` and `annotations.title` (job 421;
+Claude's portal flags a tool without the second).
+
 ## Plans and purchases (guideline 5.1)
 
 The connector never shows plans or prices, never starts a purchase and never promotes an upgrade. If

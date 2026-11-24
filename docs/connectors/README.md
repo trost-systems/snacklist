@@ -20,8 +20,8 @@ exact click path are in `docs/done/415.md`, section "FOR OPS".
   shows while the server switch `integration_lock` is on. It is off in production today.
 - No name ends in "MCP" or "Plugin". No claim of an official partnership; Claude's "Community" label
   and ChatGPT's listing are not endorsements.
-- English first. The tools' own titles and descriptions are German (decision OC-Q7 left open in the
-  research; see "Open points" below).
+- English first. The tools' titles are English (`Tool.title` and `annotations.title`, since job 421); their
+  descriptions stay German (decision OC-Q7, see "Open points" below).
 
 ## URLs
 
@@ -65,7 +65,7 @@ exact click path are in `docs/done/415.md`, section "FOR OPS".
    connect yourself". A listing makes it a promoted feature; Legal decides if a sentence is needed.
 3. **Brand names.** The listings below name Claude and ChatGPT only where the vendor's form needs it.
    The site's `brand-names` lint is not touched; these files live in `docs/`.
-4. **Tool language.** Titles and descriptions stay German. Reviewers read English; the test cases give
-   the German names the tools show. A later job can add English titles by `Accept-Language`.
+4. **Tool language.** Settled for titles: since job 421 they are English in `Tool.title` and
+   `annotations.title`. Descriptions stay German; a later job can localize them by `Accept-Language`.
 5. **ChatGPT in the EU.** Whether the directory reaches German users is unknown (research OC-Q4).
    Do not promise the listing in store or site copy until known.
