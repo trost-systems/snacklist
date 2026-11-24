@@ -2865,3 +2865,26 @@ Main already has the entry, so the feature code is unchanged. Review 0 found the
 - Tests added in `app/test/purchases/premium_screen_test.dart` (after "after Lifetime the yearly plan still bills"): no Premium, no row; own Lifetime only (`userRows`), `lifetime-unlocked` and no row; own yearly (`userRows`), row and text shown. Existing row tests: yearly plus Lifetime (shown), lapsed yearly and tester grant (absent). Run: 81 passed (78 before).
 - Not done: the row is on the Premium page, not More › Einstellungen; NEEDS_LEAD asks the lead to confirm. A non-subscribing member of a legacy household-bound yearly plan sees the row (near-unreachable, nothing sold; new purchases bind to the user).
 - AC2 deviation (RevenueCat `showManageSubscriptions`): recorded in DECISIONS.
+
+## Job 422: legal strings of #682 and #684 (L24-1, 2026-11-24)
+
+Fix PR #690 on `main` after #682 and #684. Strings are the verbatim ones of `in/legal-682-684.md`. **Not merged: waits for a hash-bound Legal GO.**
+
+- **ARB (F1 to F5, SHOULD):** `leaveLifetimeEnds`, `leaveArchiveOffer`, `refundHelpReason`, `joinTargetUnlocked`, `lifetimeUsedElsewhere`, `archivedUnlocked`. `lifetimeChecking` stays unused and unwired.
+- **Gating:** no refund link on the leave dialog or the join screen for an account-Lifetime holder (bought, or the beta-thanks grant) or while the user's Premium is not known yet (`Entitlements.accountLifetimeOrUnknown`). `FlowUsedElsewhere` carries the plan of the Buy: the yearly-household subtitle shows only after a yearly Buy (a Lifetime Buy or a restore gets the title alone). The leave dialog's content scrolls (the longer text overflowed).
+- **Tests, one per entry point:** leave (bought and beta Lifetime), join (bought and beta), refund help and account deletion (string-only: no household wording, new reason), Premium page of a Lifetime holder in a household with a leftover unlock (no household wording), used-elsewhere subtitle only for a yearly Buy. Old strings updated in widget tests, `e2e/tests/household-bound.spec.ts`, `docs/PURCHASES.md` and the feature map.
+- **Test results:** household, purchases, settings and more suites pass locally (Flutter 3.47 on this box) except `default_list_test.dart` (10 tests, pending-timer assertions), which fails the same way on an untouched `origin/main` checkout here; CI's flutter gate (3.50) passed. Review 0 live drive on the release web build at `52427b134`: leave, join and account deletion for a bought-Lifetime account OK; the beta-Lifetime refund link it found is fixed in this head and covered by tests (not re-driven live).
+- **Hashes at the final head** (patch-ids from `git diff origin/main...HEAD -- <file> | git patch-id --stable`; the earlier ids used a stale local `main` and were wrong):
+  - Head SHA: see below (the repo copy cannot hold its own SHA; the ops copy and the PR comment do).
+  - `app_de.arb` sha256 `4a51fc09e4e9e91118326af8856a8d8781446306a0fa0e1775090a0f0f3f342c`, patch-id `6dd6ee5a2e60cb19ff268fc110332979645d0cdf`.
+  - `app_en.arb` sha256 `27a5ffa17abe6869f8a90c74759c59a84d212b5ab9cf3ce5dd8abf02986063e4`, patch-id `f98ee7c09df803ce36ee489cb1716ae638b64263`.
+- **For Legal:** (1) a last member whose household has only a promotional leftover and who holds no Lifetime still gets the refund link on the leave dialog (the gate is "not an account-Lifetime holder", not "household has a purchase"). (2) After a refused yearly Buy bound to another account, the subtitle still says "für einen anderen Haushalt".
+
+## Job 422b: yearly "used elsewhere" string (fix on #690)
+
+- Changed only the key `premiumUsedElsewhereYearly` (de and en, text verbatim from the brief) and its `@` description in `app_de.arb` (it no longer says PLACEHOLDER). The committed generated l10n files carry the same three lines; they were edited by hand because `~/flutter` is 3.47.8 and regenerates them wholesale (`~/flutter-3.50.0`, CI's SDK, gives no diff). One test asserted the old text: `premium_screen_test.dart` (two `textContaining` checks, the yearly-subtitle case and the lifetime guard) now uses `Jahresabo über ein anderes Konto`. This also closes the Job 422 "For Legal (2)" point that the subtitle still says "für einen anderen Haushalt".
+- Hashes (unchanged by the test fix, which touches no ARB):
+  - `app_de.arb` sha256 `e3fdc253dcc90557c09bbcc99f55f8f690191ee83a8eddb8bee3f961d983f6f1`, patch-id `220d7cc88a548bce5d82c78c53c6fc1d08ea1e1d`.
+  - `app_en.arb` sha256 `7fd31ad7a0d069fd18875da4aeec85493623b9e9987d5278f04257ffa91dfbc9`, patch-id `058cb860a18d13e7af80c4bc1f2508a42664d2c4`.
+- Not merged, as instructed.
+- Follow-up for the lead: `docs/PURCHASES.md:192` still quotes the old DE sentence; left out of this PR ("no other changes").

@@ -52,11 +52,11 @@ void main() {
   for (final (language, text) in [
     (
       AppLanguage.de,
-      'Mit Snacklist Lifetime\nWird am 31. Oktober 2028 gelöscht',
+      'Mit früherer Freischaltung\nWird am 31. Oktober 2028 gelöscht',
     ),
     (
       AppLanguage.en,
-      'With Snacklist Lifetime\nWill be deleted on October 31, 2028',
+      'With an earlier unlock\nWill be deleted on October 31, 2028',
     ),
   ]) {
     testWidgets('each says when it is deleted (${language.name})', (
@@ -99,7 +99,7 @@ void main() {
     await tester.tap(key('more-archived'));
     await tester.pumpAndSettle();
     expect(find.text('Altbau'), findsOneWidget);
-    expect(find.text('Mit Snacklist Lifetime'), findsOneWidget);
+    expect(find.text('Mit früherer Freischaltung'), findsOneWidget);
     await tester.tap(key('archived-restore'));
     await tester.pumpAndSettle();
     expect(find.text('„Altbau“ wieder aktivieren?'), findsOneWidget);

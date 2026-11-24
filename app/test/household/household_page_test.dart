@@ -232,13 +232,51 @@ void main() {
       await tester.tap(_key('household-leave'));
       await tester.pumpAndSettle();
       expect(
-        find.textContaining('Snacklist Lifetime endet mit ihm'),
+        find.textContaining('Diese frühere Freischaltung endet mit ihm'),
         findsOneWidget,
       );
       expect(_key('household-leave-refund-help'), findsOneWidget);
       await tester.tap(_key('household-leave-confirm'));
       await tester.pumpAndSettle();
       expect(o.session.leaves, [('home', false)]);
+    });
+
+    testWidgets("an account's own Lifetime is not touched and gets no refund "
+        'prompt', (tester) async {
+      await pumpOnboarding(
+        tester,
+        location: householdPath,
+        session: _peterIn(home),
+        invites: unlocked(),
+        entitlements: FakeEntitlementsSource(unlockedNow: true),
+      );
+      await tester.tap(_key('household-leave'));
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining(
+          'Snacklist Lifetime, das zu deinem Konto gehört, bleibt davon '
+          'unberührt.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Snacklist Lifetime endet'), findsNothing);
+      expect(_key('household-leave-refund-help'), findsNothing);
+    });
+
+    testWidgets("a beta account's Lifetime grant gets no refund prompt "
+        'either', (tester) async {
+      await pumpOnboarding(
+        tester,
+        location: householdPath,
+        session: _peterIn(home),
+        invites: unlocked(),
+        entitlements: FakeEntitlementsSource()
+          ..userRows['peter'] = [lifetimeGrantRow],
+      );
+      await tester.tap(_key('household-leave'));
+      await tester.pumpAndSettle();
+      expect(_key('household-leave-dialog'), findsOneWidget);
+      expect(_key('household-leave-refund-help'), findsNothing);
     });
 
     testWidgets('with archiving: archive and leave keeps it', (tester) async {

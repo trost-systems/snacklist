@@ -591,6 +591,29 @@ void main() {
       expect(account.deleteCalls, 1);
     });
 
+    testWidgets('an account-Lifetime holder reads no household Lifetime '
+        'wording, in the dialog or its refund help', (tester) async {
+      await openFor(tester, MyPremium.active);
+      await tapKey(tester, 'account-delete-refund-help');
+      expect(find.byKey(const ValueKey('refund-help')), findsOneWidget);
+      expect(
+        find.textContaining('Snacklist Lifetime gehört zu deinem Konto.'),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('Ich habe Snacklist Lifetime mehr als einmal'),
+        findsOneWidget,
+      );
+      for (final old in [
+        'Mein Haushalt war schon freigeschaltet',
+        'gehört immer zu dem Haushalt',
+        'euer Haushalt',
+        'Haushalt hat Snacklist Lifetime',
+      ]) {
+        expect(find.textContaining(old), findsNothing, reason: old);
+      }
+    });
+
     testWidgets("a renewing yearly plan offers the store's subscription "
         'management, and still asks for the tick', (tester) async {
       final prices = FakeStorePrices(fakeStorePrices, manages: true);

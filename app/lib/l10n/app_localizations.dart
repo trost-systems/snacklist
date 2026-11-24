@@ -2891,7 +2891,7 @@ abstract class AppLocalizations {
   /// No description provided for @lifetimeUsedElsewhere.
   ///
   /// In de, this message translates to:
-  /// **'Dieser Kauf gehört zu einem anderen, früheren Haushalt und bleibt dort. Hier schaltet er nichts frei.'**
+  /// **'Dieser Kauf gehört zu einem anderen Konto oder zu einem früheren Haushalt und bleibt dort. Hier schaltet er nichts frei.'**
   String get lifetimeUsedElsewhere;
 
   /// No description provided for @lifetimeNothingRestored.
@@ -2945,7 +2945,7 @@ abstract class AppLocalizations {
   /// No description provided for @refundHelpReason.
   ///
   /// In de, this message translates to:
-  /// **'Als Grund kannst du schreiben: „Mein Haushalt war schon freigeschaltet.“'**
+  /// **'Als Grund kannst du schreiben: „Ich habe Snacklist Lifetime mehr als einmal gekauft.“'**
   String get refundHelpReason;
 
   /// No description provided for @refundHelpAppleLink.
@@ -2969,7 +2969,7 @@ abstract class AppLocalizations {
   /// No description provided for @joinTargetUnlocked.
   ///
   /// In de, this message translates to:
-  /// **'Dieser Haushalt hat Snacklist Lifetime. Du musst nichts kaufen.'**
+  /// **'Dieser Haushalt hat eine frühere Freischaltung. Snacklist Premium selbst gilt für dein Konto.'**
   String get joinTargetUnlocked;
 
   /// No description provided for @joinRefundLink.
@@ -2999,7 +2999,7 @@ abstract class AppLocalizations {
   /// No description provided for @archivedUnlocked.
   ///
   /// In de, this message translates to:
-  /// **'Mit Snacklist Lifetime'**
+  /// **'Mit früherer Freischaltung'**
   String get archivedUnlocked;
 
   /// Archived households: the household is deleted 24 months after archiving unless re-enabled
@@ -3200,10 +3200,10 @@ abstract class AppLocalizations {
   /// **'Datenschutzerklärung'**
   String get premiumPrivacyLink;
 
-  /// PLACEHOLDER (job 49): Snacklist Launch / Legal Review K.13 write the final copy (NEEDS_LEAD Job 49). Premium page: after lifetimeUsedElsewhere when the yearly plan belongs to another household (one subscription per Apple ID and group)
+  /// Premium page: shown after a refused yearly buy when the store account already pays a yearly plan bound to another Snacklist account
   ///
   /// In de, this message translates to:
-  /// **'Dein Apple- bzw. Google-Konto zahlt schon ein Jahresabo für einen anderen Haushalt. Jemand anderes aus diesem Haushalt kann Snacklist Premium abschließen.'**
+  /// **'Dein Apple- bzw. Google-Konto zahlt schon ein Jahresabo über ein anderes Konto. Dieses Jahresabo gilt für dieses andere Konto, nicht für das, mit dem du hier angemeldet bist.'**
   String get premiumUsedElsewhereYearly;
 
   /// PLACEHOLDER (job 49): Snacklist Launch / Legal Review K.13 write the final copy (NEEDS_LEAD Job 49). Premium page: two yearly plans run at once (H-84); followed by the manage link
@@ -3701,13 +3701,13 @@ abstract class AppLocalizations {
   /// Job 169b: leave dialog, last member of a household with Lifetime, archive off
   ///
   /// In de, this message translates to:
-  /// **'„{household}“ hat Snacklist Lifetime. Du bist das letzte Mitglied: Verlässt du ihn, wird der Haushalt gelöscht. Snacklist Lifetime endet mit ihm, denn ein Kauf gehört zu seinem Haushalt.'**
+  /// **'„{household}“ hat eine frühere Freischaltung, die zum Haushalt gehört. Du bist das letzte Mitglied: Verlässt du ihn, wird der Haushalt gelöscht. Diese frühere Freischaltung endet mit ihm. Snacklist Lifetime, das zu deinem Konto gehört, bleibt davon unberührt.'**
   String leaveLifetimeEnds(String household);
 
   /// Job 169b: leave dialog, last member of a household with Lifetime, archive on
   ///
   /// In de, this message translates to:
-  /// **'„{household}“ hat Snacklist Lifetime. Du bist das letzte Mitglied. Archiviere den Haushalt, statt ihn zu löschen: Liste und Snacklist Lifetime bleiben erhalten, und du kannst ihn später unter „Mehr“ wieder aktivieren. Aktivierst du ihn nicht innerhalb von 24 Monaten wieder, wird er gelöscht.'**
+  /// **'„{household}“ hat eine frühere Freischaltung, die zum Haushalt gehört. Du bist das letzte Mitglied. Archiviere den Haushalt, statt ihn zu löschen: Liste und diese frühere Freischaltung bleiben erhalten, und du kannst ihn später unter „Mehr“ wieder aktivieren. Aktivierst du ihn nicht innerhalb von 24 Monaten wieder, wird er gelöscht. Snacklist Lifetime, das zu deinem Konto gehört, bleibt davon unberührt.'**
   String leaveArchiveOffer(String household);
 
   /// Job 169b: leave dialog button that archives the household

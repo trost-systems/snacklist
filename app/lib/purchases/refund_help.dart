@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:family_groceries/core/guides.dart';
 import 'package:family_groceries/core/legal_links.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
+import 'package:family_groceries/purchases/entitlements.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Apple's refund requests (support.apple.com/118223): sign in, "Request a
@@ -96,6 +98,13 @@ class const RefundHelp({super.key}) extends StatelessWidget {
     );
   }
 }
+
+/// The signed-in user's own Snacklist Lifetime stands, or is not known yet: a
+/// household's leftover unlock is no reason to prompt them for a refund.
+/// [listen] rebuilds the caller when it changes.
+bool holdsAccountLifetime(BuildContext context, {bool listen = false}) => listen
+    ? context.select<Entitlements, bool>((e) => e.accountLifetimeOrUnknown)
+    : context.read<Entitlements>().accountLifetimeOrUnknown;
 
 /// "Paid twice?" as a small link that opens [showRefundHelp].
 class const RefundHelpLink({required final String label, super.key})

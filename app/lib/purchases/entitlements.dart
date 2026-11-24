@@ -313,6 +313,19 @@ class Entitlements(
     EntitlementsUnknown() => null,
   };
 
+  /// The signed-in user's own Snacklist Lifetime, bought or the beta thanks,
+  /// stands now. Household-Lifetime
+  /// wording and refund prompts never go to them (Terms §6); false while
+  /// unknown.
+  bool get accountLifetime => switch (ownPremium) {
+    ActivePremium(source: PremiumSource.lifetime) ||
+    ActivePremium(free: FreeUnlock.betaLifetime) => true,
+    _ => false,
+  };
+
+  /// [accountLifetime], or not known yet: no refund prompt on a guess.
+  bool get accountLifetimeOrUnknown => ownPremium == null || accountLifetime;
+
   /// [entitlement] is unlocked in the shown household now; false while
   /// unknown.
   bool has(Entitlement entitlement) => premium is ActivePremium;
