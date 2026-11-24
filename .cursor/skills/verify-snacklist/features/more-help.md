@@ -61,7 +61,7 @@ Preconditions:
 - **Licenses.** On More click `getByRole('button',{name:'Lizenzen', exact:true})`. Observable: `page.locator('body').ariaSnapshot()` matches `/Snacklist[\s\S]*Flutter[\s\S]*bloc/`; „Zurück“ returns to More.
 - **Version.** `page.getByText(/^Version \d+\.\d+\.\d+/)` visible at the end of the list.
 - **Sign out.** Click `getByRole('button',{name:/^Abmelden/})`. Observable: `getByRole('textbox',{name:'E-Mail'})` visible, URL contains `/login`.
-- **Wide layout.** `page.setViewportSize({width:1366,height:1024})`, click `getByRole('tab',{name:'Mehr',exact:true})`. Observable: the entries and `getByText('MCP-Server',{exact:true})` side by side; „Zurück“ buttons absent; clicking the button „Konto“ (exact) shows Konto alone (URL `/more/account`). At 820 px the tab pill returns.
+- **Wide layout.** `page.setViewportSize({width:1366,height:1024})`, click `getByRole('tab',{name:'Mehr',exact:true})`. Observable: the entries and Zugänge's first section heading (`getByText('Zugriffsschlüssel',{exact:true})` on the users' build; „MCP-Server“ with the switch `unified_keys` off) side by side; „Zurück“ buttons absent; clicking the button „Konto“ (exact) shows Konto alone (URL `/more/account`). At 820 px the tab pill returns.
 - Specs to run: `scripts/verify.sh --only e2e -- tests/shell-more.spec.ts`, `tests/help.spec.ts`, `tests/legal.spec.ts`.
 
 ## Gotchas

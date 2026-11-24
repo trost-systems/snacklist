@@ -24,6 +24,11 @@ migrations_match() {
   [[ $applied == "$files" ]]
 }
 check "migrations applied = files in supabase/migrations" "supabase db reset in the repo, then helpers/launch.sh --fresh" migrations_match
+user_switches_on() {
+  [[ "$(docker exec "supabase_db_$VH_PROJECT_ID" psql -U postgres -tAc \
+    "select count(*) from public.app_switches where key in ($VH_USER_SWITCHES) and not enabled")" == 0 ]]
+}
+check "server switches users have are on ($VH_USER_SWITCHES)" "helpers/launch.sh (turns them on), or restore what a journey left off" user_switches_on
 check "functions answer ($(vh_json apiUrl 2>/dev/null)/functions/v1/health)" "helpers/cleanup.sh, then helpers/launch.sh (restarts the stack)" \
   curl -fsS -m 5 "$(vh_json apiUrl)/functions/v1/health"
 own_server() {

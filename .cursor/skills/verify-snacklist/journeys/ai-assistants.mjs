@@ -2,8 +2,9 @@
 // Zugänge. Gives the member a connected app the way an approval leaves it (a client registered over
 // DCR, the grant, a session and the consent page's device label, written as postgres since a real approval
 // needs an MCP client: e2e/tests/mcp.spec.ts drives that), then proves the row names the device
-// and the last activity, the token hint (the one that points at the API section when public-api is on),
-// and the details sheet in plain words.
+// and the last activity, the keys' hint (the one list of „Zugriffsschlüssel“ users have with
+// unified-keys and its server switch on; else the token hint, pointing at the API section when
+// public-api is on), and the details sheet in plain words.
 //
 //   node journeys/ai-assistants.mjs <evidence dir> [--lang de|en]
 import process from 'node:process';
@@ -50,8 +51,13 @@ try {
   await signIn(page, L, user);
   await openTab(page, L, 'tabMore');
   await page.getByRole('button', { name: new RegExp(`^${L('accessTitle')}`) }).first().click();
-  const hint = flagOn('public-api') ? 'accessTokensHintWithApi' : 'accessTokensHint';
+  // The screen shows the token sections until the switch's answer arrives, so wait for the hint
+  // the switch picks, and make sure the other one is gone.
+  const unified = flagOn('unified-keys') && (await api.rpc('unified_keys')).data === true;
+  const hint = unified ? 'accessKeysUnifiedHint' : flagOn('public-api') ? 'accessTokensHintWithApi' : 'accessTokensHint';
   await page.getByText(L(hint)).waitFor({ timeout: 15_000 });
+  const other = unified ? (flagOn('public-api') ? 'accessTokensHintWithApi' : 'accessTokensHint') : 'accessKeysUnifiedHint';
+  if ((await page.getByText(L(other)).count()) > 0) throw new Error(`„${L(other)}“ still shows next to „${L(hint)}“`);
   log(`token hint shown (${hint}): „${L(hint)}“`);
   const row = page.getByRole('button', { name: /^Claude Chrome · macOS · / });
   await row.waitFor({ timeout: 15_000 });

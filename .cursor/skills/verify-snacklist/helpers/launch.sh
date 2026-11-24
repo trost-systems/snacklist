@@ -47,6 +47,10 @@ if ! stack_running; then
   started_stack=true
 fi
 supabase_up >/dev/null
+# The migrations seed every server switch off; production has these two on for everyone
+# (releases/flags.json: public-api since 2026-11-21, unified-keys since 2026-11-23).
+docker exec -i "supabase_db_$VH_PROJECT_ID" psql -U postgres -v ON_ERROR_STOP=1 -qtA \
+  -c "update public.app_switches set enabled = true where key in ($VH_USER_SWITCHES)" >/dev/null
 
 if [[ $build == 1 ]]; then
   log "flutter build web (release, wasm) against $SUPABASE_URL"
