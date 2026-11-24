@@ -44,7 +44,7 @@ Tippe auf **Mehr**, dann auf **Konto** und auf **Meine Daten exportieren**. Du b
 
 ### Wie lösche ich mein Konto?
 
-Tippe auf **Mehr**, dann auf **Konto** und auf **Konto löschen**, und bestätige mit dem Wort LÖSCHEN. Dein Konto, dein Profil, deine Zugriffstoken und verbundenen Apps werden sofort gelöscht. Bleiben andere im Haushalt, behalten sie die Liste; deine Einträge stehen dort ohne deinen Namen. Bist du das letzte Mitglied, wird der ganze Haushalt gelöscht. Hast du Snacklist Premium, endet es mit deinem Konto. Ein Jahresabo rechnen Apple bzw. Google weiter ab: Kündige es vorher im App Store oder bei Google Play. Ob du dein Geld zurückbekommen kannst, steht unter „Kann ich Snacklist Premium zurückgeben?“. Auch Haushalte, die du archiviert hast, werden gelöscht. In unseren verschlüsselten Sicherungen bleiben gelöschte Daten noch bis zu 90 Tage, danach sind sie auch dort weg.
+Tippe auf **Mehr**, dann auf **Konto** und auf **Konto löschen**, und bestätige mit dem Wort LÖSCHEN. Dein Konto, dein Profil, deine Zugriffsschlüssel und verbundenen Apps werden sofort gelöscht. Bleiben andere im Haushalt, behalten sie die Liste; deine Einträge stehen dort ohne deinen Namen. Bist du das letzte Mitglied, wird der ganze Haushalt gelöscht. Hast du Snacklist Premium, endet es mit deinem Konto. Ein Jahresabo rechnen Apple bzw. Google weiter ab: Kündige es vorher im App Store oder bei Google Play. Ob du dein Geld zurückbekommen kannst, steht unter „Kann ich Snacklist Premium zurückgeben?“. Auch Haushalte, die du archiviert hast, werden gelöscht. In unseren verschlüsselten Sicherungen bleiben gelöschte Daten noch bis zu 90 Tage, danach sind sie auch dort weg.
 
 Ohne App geht es auch: Schreib an [support@snacklist.app](mailto:support@snacklist.app).
 
@@ -83,7 +83,7 @@ Ja, mit dem Snacklist-Skill für Alexa. Aktiviere ihn in der Alexa-App und verkn
 
 ### Kann ich Snacklist mit einem KI-Assistenten nutzen?
 
-Ja, mit KI-Assistenten, die eigene MCP-Server einbinden können, über den MCP-Server von Snacklist. Ob dein Assistent das kann und in welchem Tarif, legt sein Anbieter fest. Eine Schritt-für-Schritt-Anleitung gibt es für [Claude](/de/anleitungen/claude). Tippe auf **Mehr** und dann auf **Zugänge**. Dort steht die Adresse des MCP-Servers. Du verbindest den Assistenten per Anmeldung oder mit einem Zugriffstoken. Unter **Verbundene Apps** und **Zugriffstoken** siehst du jeden Zugang und kannst ihn jederzeit widerrufen.
+Ja, mit KI-Assistenten, die eigene MCP-Server einbinden können, über den MCP-Server von Snacklist. Ob dein Assistent das kann und in welchem Tarif, legt sein Anbieter fest. Eine Schritt-für-Schritt-Anleitung gibt es für [Claude](/de/anleitungen/claude). Tippe auf **Mehr** und dann auf **Zugänge**. Dort steht die Adresse des MCP-Servers. Du verbindest den Assistenten per Anmeldung oder mit einem Zugriffsschlüssel. Unter **Verbundene Apps** und **Zugriffsschlüssel** siehst du jeden Zugang und kannst ihn jederzeit widerrufen.
 
 ### Ich habe einen Fehler gefunden oder eine Idee. Was tun?
 

@@ -44,7 +44,7 @@ Tap **More**, then **Account** and **Export my data**. You get everything stored
 
 ### How do I delete my account?
 
-Tap **More**, then **Account** and **Delete account**, and confirm by typing DELETE. Your account, your profile, your access tokens and connected apps are deleted right away. If others stay in the household, they keep the list; your items stay there without your name. If you are the last member, the whole household is deleted. If you have Snacklist Premium, it ends with your account. Apple or Google keep billing a yearly subscription: cancel it first in the App Store or on Google Play. Whether you can get your money back is under "Can I get a refund for Snacklist Premium?". Households you archived are deleted too. Deleted data stays in our encrypted backups for up to 90 more days, then it is gone there too.
+Tap **More**, then **Account** and **Delete account**, and confirm by typing DELETE. Your account, your profile, your access keys and connected apps are deleted right away. If others stay in the household, they keep the list; your items stay there without your name. If you are the last member, the whole household is deleted. If you have Snacklist Premium, it ends with your account. Apple or Google keep billing a yearly subscription: cancel it first in the App Store or on Google Play. Whether you can get your money back is under "Can I get a refund for Snacklist Premium?". Households you archived are deleted too. Deleted data stays in our encrypted backups for up to 90 more days, then it is gone there too.
 
 Without the app: write to [support@snacklist.app](mailto:support@snacklist.app).
 
@@ -83,7 +83,7 @@ Yes, with the Snacklist skill for Alexa. Enable it in the Alexa app and link it 
 
 ### Can I use Snacklist with an AI assistant?
 
-Yes, with AI assistants that can add their own MCP servers, through Snacklist's MCP server. Whether your assistant can, and on which plan, is up to its provider. There's a step-by-step guide for [Claude](/en/guides/claude). Tap **More**, then **Access**. The MCP server's address is shown there. You connect the assistant by signing in or with an access token. Under **Connected apps** and **Access tokens** you see every connection and can revoke it at any time.
+Yes, with AI assistants that can add their own MCP servers, through Snacklist's MCP server. Whether your assistant can, and on which plan, is up to its provider. There's a step-by-step guide for [Claude](/en/guides/claude). Tap **More**, then **Access**. The MCP server's address is shown there. You connect the assistant by signing in or with an access key. Under **Connected apps** and **Access keys** you see every connection and can revoke it at any time.
 
 ### I found a bug or have an idea. What do I do?
 

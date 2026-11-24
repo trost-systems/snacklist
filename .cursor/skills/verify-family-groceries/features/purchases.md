@@ -19,7 +19,7 @@ Mehr → Snacklist Premium sells Premium to the signed-in user (per account sinc
 - `iap-pending` shows `lifetime-pending` for Ask to Buy or a Play pending payment, until the unlock arrives.
 - `iap-restore-lapsed`: Restore with only a lapsed plan says nothing to restore, and Buy stays (job 67; `revenuecat_repository_test.dart`).
 - `iap-states` after a tap on Buy: `lifetime-canceled`, `lifetime-error`, `lifetime-unavailable` (product missing), `lifetime-offline`.
-- `iap-elsewhere`: `lifetime-used-elsewhere` with the yearly hint (the store account pays a plan for another household).
+- `iap-elsewhere`: `lifetime-used-elsewhere` with the yearly hint (`premiumUsedElsewhereYearly`: "Your Apple or Google account already pays a yearly plan on another account. That yearly plan applies to that other account, not to the one you are signed in with here.").
 - `iap-twice`: `lifetime-bought-twice` for two Lifetime purchases; `lifetime-refund-help` opens the refund help (`refund-help`, H-76 texts plus the yearly note).
 - `iap-refund`: a refund (`CANCELLATION` with `CUSTOMER_SUPPORT`) locks that purchase; a yearly cancellation without refund keeps premium to the end.
 - `iap-join`, `iap-archive`: as in job 43/47 (`join-target-unlocked`, `join-archive`, `archived-households`; "unlocked" now means "has premium now").
