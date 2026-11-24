@@ -18226,3 +18226,15 @@ Blocked, AC4's reviewer-account run: `secrets/ai-connectors` is not on this runn
 - The entry already existed (Premium page, `premium-manage`); the job added tests only (no Premium, own Lifetime, own yearly).
 - Deviation from the brief's AC2: no `purchases_flutter` `showManageSubscriptions`/`managementURL`. RevenueCat may start only on Buy or Restore (H-67) and the package is lint-banned outside `revenuecat_repository.dart`. StoreKit's own sheet runs over the `store_prices` channel, Play gets its deep link for the yearly plan.
 - Location: More › Snacklist Premium counts as "account settings or equivalent" (Legal N-129); lead to confirm (NEEDS_LEAD).
+
+## Job 417: Terms of Use paths
+
+The German terms page lives at `/nutzungsbedingungen`, like `/datenschutz` (and `docs/PAYWALL_RELEASE.md`); Legal's report planned `/de/nutzungsbedingungen`, which now redirects there permanently (`site/vercel.json`), as does `/terms` to `/en/terms`. Legal should link `https://snacklist.app/nutzungsbedingungen` and `https://snacklist.app/en/terms`. A test pins both files' sha256 to Legal's approved text.
+
+## Job 417b: G2 revision
+
+The terms hashes in the test are updated for G2 (terms §11 and §12) and P-T1 (privacy §14, Lifetime belongs to the account). Legal's hash-bound GO for the new hashes is pending; the PR stays unmerged.
+
+## Job 423: Terms §12 says MCP and the API are Premium
+
+The edit is a new PR (#689) instead of a push to #679: the job 417 worktree held uncommitted changes. §12 now points to §6 (MCP and the API are Premium, you need Premium) instead of "free until the Premium start date". Testers are not named in the Terms. Legal's hash-bound GO is pending; neither PR is merged.

@@ -2,6 +2,7 @@
   "siteUrl": "https://snacklist.app",
   "defaultLocale": "de",
   "privacyPublished": true,
+  "termsPublished": true,
   "supportPublished": true,
   "alexaPublished": true
 }

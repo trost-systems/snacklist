@@ -2603,3 +2603,7 @@ back to DE.
 ## NEEDS_LEAD Job 418: where the manage-subscription row lives
 
 The "Abo verwalten oder kündigen" row is on More › Snacklist Premium, not in More › Einstellungen. Legal N-129 allows "or equivalent". Please confirm before the Nov 25 build, or ask for a second row in Einstellungen.
+
+## NEEDS_LEAD Job 423: privacy timing words
+
+The Terms now say MCP and the API are Premium already. The privacy pages still imply Premium is not on sale yet: `datenschutz.md` "sobald Snacklist Premium verkauft wird" and "vor dem Verkaufsstart", `privacy.md` "once Snacklist Premium is sold" and "before sales start". Not edited under this brief (the beta RevenueCat unlock stays as a GDPR disclosure). Please have Legal decide. Also close #679 once Legal accepts #689.

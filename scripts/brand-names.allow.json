@@ -65,6 +65,22 @@
       "file": "site/content/comparisons/de/einkaufsliste-vergleich-bring.md",
       "contains": "Die Schritt-für-Schritt-Anleitung findest du hier: [Anleitung: Snacklist mit Claude verbinden](https://snacklist.app/de/anleitungen/claude).",
       "reason": "Link to the Claude guide (Legal N-81, referential use). Peter approved publishing BP1 (lead chat 2026-11-05 18:12 CET)."
+    },
+    {
+      "file": "site/content/legal/nutzungsbedingungen.md",
+      "reason": "Terms of Use, Legal-approved text (L23-2) pasted verbatim: names ChatGPT and Claude as examples of MCP assistants. Other brands in it still fail.",
+      "brands": [
+        "ChatGPT",
+        "Claude"
+      ]
+    },
+    {
+      "file": "site/content/legal/terms.md",
+      "reason": "Terms of Use, Legal-approved text (L23-2) pasted verbatim: names ChatGPT and Claude as examples of MCP assistants. Other brands in it still fail.",
+      "brands": [
+        "ChatGPT",
+        "Claude"
+      ]
     }
   ]
 }
