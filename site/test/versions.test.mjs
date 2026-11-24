@@ -25,7 +25,7 @@ const pair = (since = '1.4.0', extra = {}) => ({
 test('the live version is the newest public release, else app/pubspec.yaml', () => {
   const pubspecVersion = /^version:\s*(\d+\.\d+\.\d+)\+/m.exec(REAL_PUBSPEC)[1];
   assert.deepEqual(buildSite().live, { live: pubspecVersion, firstPublic: null, source: 'app/pubspec.yaml, no public release yet' });
-  assert.equal(pubspecVersion, '0.1.0', 'today no public release exists and the app is 0.1.0');
+  assert.equal(pubspecVersion, '1.0.0', 'today no public release exists and the app is 1.0.0');
   assert.deepEqual(buildSite({ repo: { pubspec: 'name: x\nversion: 2.3.4+17\n' } }).live.live, '2.3.4');
   assert.deepEqual(buildSite({ repo: { record: record(['1.0.0', '1.2.0', '1.10.0']), pubspec: 'version: 9.9.9+1\n' } }).live, {
     live: '1.10.0',
@@ -49,7 +49,7 @@ test('the CLI logs the live version and reports a bad record as a build failure'
   writeFileSync(join(root, 'releases/releases.json'), REAL_RECORD);
   let out = run();
   assert.equal(out.status, 0, out.stderr);
-  assert.match(out.stdout, /^live version: 0\.1\.0 \(from app\/pubspec\.yaml, no public release yet\)\nbuilt \d+ pages into dist\/\n$/);
+  assert.match(out.stdout, /^live version: 1\.0\.0 \(from app\/pubspec\.yaml, no public release yet\)\nbuilt \d+ pages into dist\/\n$/);
 
   writeFileSync(join(root, 'releases/releases.json'), record(['1.0.0', '1.4.0']));
   assert.match(run().stdout, /^live version: 1\.4\.0 \(from public release record\)\n/);

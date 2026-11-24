@@ -492,7 +492,7 @@ to 1010 so that the next run (3) builds 1013, above both. The plan job fails
 a run whose number is not above TestFlight's highest; Play rejects a version
 code it already has, and the offset is the fix for both.
 
-The version name comes from `version` in `app/pubspec.yaml` (`0.1.0+1`; the
+The version name comes from `version` in `app/pubspec.yaml` (`1.0.0+1`; the
 `+1` is ignored because the lanes pass `--build-number`). To bump it, change
 `version` in a PR, for example to `0.2.0+1`. The next run uploads 0.2.0 with
 the next build number. TestFlight groups builds by version; Play shows the
