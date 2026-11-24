@@ -111,14 +111,14 @@ void main() {
   test('the archive offer on leaving names the 24 months', () {
     expect(
       de.leaveArchiveOffer('Zuhause'),
-      endsWith(
+      contains(
         'Aktivierst du ihn nicht innerhalb von 24 Monaten wieder, wird er '
         'gelöscht.',
       ),
     );
     expect(
       en.leaveArchiveOffer('Home'),
-      endsWith("If you don't bring it back within 24 months, it is deleted."),
+      contains("If you don't bring it back within 24 months, it is deleted."),
     );
   });
 

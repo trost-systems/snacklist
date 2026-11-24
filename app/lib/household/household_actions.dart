@@ -69,6 +69,7 @@ Future<bool> leaveHousehold(
   if (!context.mounted) {
     return false;
   }
+  final accountLifetime = holdsAccountLifetime(context);
   final choice = await showDialog<_Leave>(
     context: context,
     builder: (_) => _LeaveDialog(
@@ -76,6 +77,7 @@ Future<bool> leaveHousehold(
       alone: alone,
       unlocked: unlocked,
       archiveOffered: archiveOffered,
+      accountLifetime: accountLifetime,
     ),
   );
   if (choice == null ||
@@ -163,6 +165,9 @@ class const _LeaveDialog({
   required final bool alone,
   required final bool unlocked,
   required final bool archiveOffered,
+
+  /// The user's own Lifetime: no refund prompt for a household leftover.
+  required final bool accountLifetime,
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -172,24 +177,26 @@ class const _LeaveDialog({
     return AlertDialog(
       key: const ValueKey('household-leave-dialog'),
       title: Text(l10n.leaveTitle(household)),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(switch ((alone, unlocked)) {
-            (false, _) => l10n.leaveShared,
-            (true, false) => l10n.leaveLast,
-            (true, true) when archiveOffered => l10n.leaveArchiveOffer(
-              household,
-            ),
-            (true, true) => l10n.leaveLifetimeEnds(household),
-          }),
-          if (alone && unlocked && !archiveOffered)
-            RefundHelpLink(
-              key: const ValueKey('household-leave-refund-help'),
-              label: l10n.joinLifetimeRefundLink,
-            ),
-        ],
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(switch ((alone, unlocked)) {
+              (false, _) => l10n.leaveShared,
+              (true, false) => l10n.leaveLast,
+              (true, true) when archiveOffered => l10n.leaveArchiveOffer(
+                household,
+              ),
+              (true, true) => l10n.leaveLifetimeEnds(household),
+            }),
+            if (alone && unlocked && !archiveOffered && !accountLifetime)
+              RefundHelpLink(
+                key: const ValueKey('household-leave-refund-help'),
+                label: l10n.joinLifetimeRefundLink,
+              ),
+          ],
+        ),
       ),
       actions: [
         TextButton(

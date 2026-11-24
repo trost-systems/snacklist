@@ -1729,7 +1729,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get lifetimeUsedElsewhere =>
-      'Dieser Kauf gehört zu einem anderen, früheren Haushalt und bleibt dort. Hier schaltet er nichts frei.';
+      'Dieser Kauf gehört zu einem anderen Konto oder zu einem früheren Haushalt und bleibt dort. Hier schaltet er nichts frei.';
 
   @override
   String get lifetimeNothingRestored => 'Kein früherer Kauf gefunden.';
@@ -1764,7 +1764,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get refundHelpReason =>
-      'Als Grund kannst du schreiben: „Mein Haushalt war schon freigeschaltet.“';
+      'Als Grund kannst du schreiben: „Ich habe Snacklist Lifetime mehr als einmal gekauft.“';
 
   @override
   String get refundHelpAppleLink => 'Bei Apple anfragen';
@@ -1777,7 +1777,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get joinTargetUnlocked =>
-      'Dieser Haushalt hat Snacklist Lifetime. Du musst nichts kaufen.';
+      'Dieser Haushalt hat eine frühere Freischaltung. Snacklist Premium selbst gilt für dein Konto.';
 
   @override
   String get joinRefundLink =>
@@ -1794,7 +1794,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get archivedEmpty => 'Du hast keinen Haushalt archiviert.';
 
   @override
-  String get archivedUnlocked => 'Mit Snacklist Lifetime';
+  String get archivedUnlocked => 'Mit früherer Freischaltung';
 
   @override
   String archivedDeletesOn(DateTime date) {
@@ -1931,7 +1931,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get premiumUsedElsewhereYearly =>
-      'Dein Apple- bzw. Google-Konto zahlt schon ein Jahresabo für einen anderen Haushalt. Jemand anderes aus diesem Haushalt kann Snacklist Premium abschließen.';
+      'Dein Apple- bzw. Google-Konto zahlt schon ein Jahresabo über ein anderes Konto. Dieses Jahresabo gilt für dieses andere Konto, nicht für das, mit dem du hier angemeldet bist.';
 
   @override
   String get premiumTwoYearly =>
@@ -2252,12 +2252,12 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String leaveLifetimeEnds(String household) {
-    return '„$household“ hat Snacklist Lifetime. Du bist das letzte Mitglied: Verlässt du ihn, wird der Haushalt gelöscht. Snacklist Lifetime endet mit ihm, denn ein Kauf gehört zu seinem Haushalt.';
+    return '„$household“ hat eine frühere Freischaltung, die zum Haushalt gehört. Du bist das letzte Mitglied: Verlässt du ihn, wird der Haushalt gelöscht. Diese frühere Freischaltung endet mit ihm. Snacklist Lifetime, das zu deinem Konto gehört, bleibt davon unberührt.';
   }
 
   @override
   String leaveArchiveOffer(String household) {
-    return '„$household“ hat Snacklist Lifetime. Du bist das letzte Mitglied. Archiviere den Haushalt, statt ihn zu löschen: Liste und Snacklist Lifetime bleiben erhalten, und du kannst ihn später unter „Mehr“ wieder aktivieren. Aktivierst du ihn nicht innerhalb von 24 Monaten wieder, wird er gelöscht.';
+    return '„$household“ hat eine frühere Freischaltung, die zum Haushalt gehört. Du bist das letzte Mitglied. Archiviere den Haushalt, statt ihn zu löschen: Liste und diese frühere Freischaltung bleiben erhalten, und du kannst ihn später unter „Mehr“ wieder aktivieren. Aktivierst du ihn nicht innerhalb von 24 Monaten wieder, wird er gelöscht. Snacklist Lifetime, das zu deinem Konto gehört, bleibt davon unberührt.';
   }
 
   @override

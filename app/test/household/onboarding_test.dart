@@ -306,7 +306,8 @@ void main() {
       );
       expect(
         find.text(
-          'Dieser Haushalt hat Snacklist Lifetime. Du musst nichts kaufen.',
+          'Dieser Haushalt hat eine frühere Freischaltung. Snacklist Premium '
+          'selbst gilt für dein Konto.',
         ),
         findsOneWidget,
       );
@@ -342,6 +343,37 @@ void main() {
       expect(o.session.joins, [('ABCD2345', JoinMethod.link)]);
     });
 
+    testWidgets('an account-Lifetime buyer is not asked to refund for a '
+        "household's leftover unlock", (tester) async {
+      await pumpOnboarding(
+        tester,
+        location: '/join/ABCD2345',
+        session: inHome,
+        entitlements: FakeEntitlementsSource(unlockedNow: true),
+        invites: says(
+          const JoinLifetime(targetUnlocked: true, recentPurchase: true),
+        ),
+      );
+      expect(key('join-target-unlocked'), findsOneWidget);
+      expect(key('join-refund-help'), findsNothing);
+    });
+
+    testWidgets("a beta account's Lifetime grant gets no refund link at the "
+        'join', (tester) async {
+      await pumpOnboarding(
+        tester,
+        location: '/join/ABCD2345',
+        session: inHome,
+        entitlements: FakeEntitlementsSource()
+          ..userRows['peter'] = [lifetimeGrantRow],
+        invites: says(
+          const JoinLifetime(targetUnlocked: true, recentPurchase: true),
+        ),
+      );
+      expect(key('join-target-unlocked'), findsOneWidget);
+      expect(key('join-refund-help'), findsNothing);
+    });
+
     testWidgets('a recent purchase alone links nothing', (tester) async {
       await pumpOnboarding(
         tester,
@@ -365,8 +397,8 @@ void main() {
       );
       expect(
         find.text(
-          'This household has Snacklist Lifetime. '
-          "You don't need to buy anything.",
+          'This household has an earlier unlock. '
+          'Snacklist Premium itself applies to your account.',
         ),
         findsOneWidget,
       );

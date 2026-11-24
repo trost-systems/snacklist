@@ -136,7 +136,7 @@ class _ArchivedHouseholdsState() extends State<ArchivedHouseholds> {
     );
   }
 
-  /// With Snacklist Lifetime, and when it is deleted unless brought back.
+  /// With an earlier unlock, and when it is deleted unless brought back.
   static Widget? _subtitle(AppLocalizations l10n, ArchivedHousehold household) {
     final deletesAt = household.deletesAt;
     final lines = [

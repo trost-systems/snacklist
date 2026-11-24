@@ -1713,7 +1713,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lifetimeUsedElsewhere =>
-      'This purchase belongs to another, earlier household and stays there. It unlocks nothing here.';
+      'This purchase belongs to another account or to an earlier household and stays there. It unlocks nothing here.';
 
   @override
   String get lifetimeNothingRestored => 'No earlier purchase found.';
@@ -1748,7 +1748,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get refundHelpReason =>
-      'As the reason you can write: “My household was already unlocked.”';
+      'As the reason you can write: “I bought Snacklist Lifetime more than once.”';
 
   @override
   String get refundHelpAppleLink => 'Ask Apple';
@@ -1761,7 +1761,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get joinTargetUnlocked =>
-      'This household has Snacklist Lifetime. You don\'t need to buy anything.';
+      'This household has an earlier unlock. Snacklist Premium itself applies to your account.';
 
   @override
   String get joinRefundLink =>
@@ -1777,7 +1777,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get archivedEmpty => 'You haven\'t archived a household.';
 
   @override
-  String get archivedUnlocked => 'With Snacklist Lifetime';
+  String get archivedUnlocked => 'With an earlier unlock';
 
   @override
   String archivedDeletesOn(DateTime date) {
@@ -1914,7 +1914,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumUsedElsewhereYearly =>
-      'Your Apple or Google account already pays a yearly plan for another household. Someone else in this household can subscribe to Snacklist Premium.';
+      'Your Apple or Google account already pays a yearly plan on another account. That yearly plan applies to that other account, not to the one you are signed in with here.';
 
   @override
   String get premiumTwoYearly =>
@@ -2231,12 +2231,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String leaveLifetimeEnds(String household) {
-    return '“$household” has Snacklist Lifetime. You are the last member: if you leave, the household is deleted. Snacklist Lifetime ends with it, because a purchase belongs to its household.';
+    return '“$household” has an earlier unlock that belongs to the household. You are the last member: if you leave, the household is deleted. That earlier unlock ends with it. Snacklist Lifetime that belongs to your account is not affected.';
   }
 
   @override
   String leaveArchiveOffer(String household) {
-    return '“$household” has Snacklist Lifetime. You are the last member. Archive the household instead of deleting it: the list and Snacklist Lifetime are kept, and you can bring it back under “More” later. If you don\'t bring it back within 24 months, it is deleted.';
+    return '“$household” has an earlier unlock that belongs to the household. You are the last member. Archive the household instead of deleting it: the list and that earlier unlock are kept, and you can bring it back under “More” later. If you don\'t bring it back within 24 months, it is deleted. Snacklist Lifetime that belongs to your account is not affected.';
   }
 
   @override

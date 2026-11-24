@@ -271,13 +271,15 @@ class const _PremiumView() extends StatelessWidget {
         Icons.schedule,
         l10n.premiumUnavailable,
       ),
-      FlowUsedElsewhere() => Semantics(
+      FlowUsedElsewhere(:final plan) => Semantics(
         container: true,
         child: ListTile(
           key: const ValueKey('lifetime-used-elsewhere'),
           leading: const Icon(Icons.home_outlined),
           title: Text(l10n.lifetimeUsedElsewhere),
-          subtitle: Text(l10n.premiumUsedElsewhereYearly),
+          subtitle: plan == PremiumPlan.yearly
+              ? Text(l10n.premiumUsedElsewhereYearly)
+              : null,
         ),
       ),
       FlowNothingRestored() => _Note(

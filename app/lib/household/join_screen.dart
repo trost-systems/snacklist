@@ -103,6 +103,7 @@ class _JoinViewState() extends State<_JoinView> {
             ? () => unawaited(cubit.join())
             : () => unawaited(cubit.check(_code.text));
         final lifetime = state.lifetime;
+        final accountLifetime = holdsAccountLifetime(context, listen: true);
         return OnboardingPage(
           title: inHousehold ? l10n.joinTitle : l10n.onboardingJoin,
           listKey: const ValueKey('join-screen'),
@@ -152,7 +153,7 @@ class _JoinViewState() extends State<_JoinView> {
                   ),
                 ),
               ],
-              if (lifetime.refundHelp)
+              if (lifetime.refundHelp && !accountLifetime)
                 RefundHelpLink(
                   key: const ValueKey('join-refund-help'),
                   label: l10n.joinRefundLink,

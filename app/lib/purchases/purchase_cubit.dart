@@ -37,8 +37,10 @@ final class const FlowNotAvailable() extends PurchaseFlow;
 final class const FlowFailed(final FailureKind kind, final String code)
     extends PurchaseFlow;
 
-/// The store purchase belongs to another account, for good (H-56).
-final class const FlowUsedElsewhere() extends PurchaseFlow;
+/// The store purchase belongs to another account or an earlier household,
+/// for good (H-56). [plan] is the plan whose Buy it was; null for a restore.
+final class const FlowUsedElsewhere([final PremiumPlan? plan])
+    extends PurchaseFlow;
 
 /// A restore found no purchase.
 final class const FlowNothingRestored() extends PurchaseFlow;
@@ -97,6 +99,9 @@ class PurchaseCubit(
   /// The plan bought or restored last: the unlock it waits for.
   PremiumPlan _plan = PremiumPlan.yearly;
 
+  /// The plan of the Buy under way; null for a restore.
+  PremiumPlan? _buying;
+
   static RevenueCatUserId? _userOf(Session session) => switch (session) {
     InHousehold(:final userId) ||
     NeedsHousehold(:final userId) => RevenueCatUserId(userId),
@@ -148,6 +153,7 @@ class PurchaseCubit(
       return;
     }
     _plan = plan;
+    _buying = plan;
     _emit(flow: const FlowBuying());
     final outcome = await _store.buy(user, plan);
     if (isClosed || user != _user) {
@@ -181,6 +187,7 @@ class PurchaseCubit(
       return;
     }
     _plan = PremiumPlan.yearly;
+    _buying = null;
     _emit(flow: const FlowRestoring());
     final outcome = await _store.restore(user);
     if (isClosed || user != _user) {
@@ -218,7 +225,7 @@ class PurchaseCubit(
 
   void _failed(StoreProblem problem) => _emit(
     flow: switch (problem) {
-      BelongsElsewhere() => const FlowUsedElsewhere(),
+      BelongsElsewhere() => FlowUsedElsewhere(_buying),
       StoreFailed(:final code) => FlowFailed(FailureKind.store, code),
       StoreOffline() => const FlowFailed(FailureKind.offline, 'offline'),
     },

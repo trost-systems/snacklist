@@ -424,14 +424,35 @@ void main() {
       shows({'lifetime-used-elsewhere'});
       expect(
         find.text(
-          'Dieser Kauf gehört zu einem anderen, früheren Haushalt und bleibt '
-          'dort. Hier schaltet er nichts frei.',
+          'Dieser Kauf gehört zu einem anderen Konto oder zu einem früheren '
+          'Haushalt und bleibt dort. Hier schaltet er nichts frei.',
         ),
         findsOneWidget,
+      );
+      expect(
+        find.textContaining('Jahresabo über ein anderes Konto'),
+        findsNothing,
+        reason: 'the yearly-plan subtitle is for a yearly Buy only',
       );
       expect(key('lifetime-refund-help'), findsOneWidget);
     });
   }
+
+  testWidgets('a yearly Buy used elsewhere keeps the yearly-plan subtitle', (
+    tester,
+  ) async {
+    await openLifetime(
+      tester,
+      store: FakePurchaseRepository(bought: const BelongsElsewhere()),
+    );
+    await tester.tap(key('premium-buy-yearly'));
+    await tester.pumpAndSettle();
+    shows({'lifetime-used-elsewhere'});
+    expect(
+      find.textContaining('Jahresabo über ein anderes Konto'),
+      findsOneWidget,
+    );
+  });
 
   testWidgets("the store says the purchase is elsewhere's", (tester) async {
     await openLifetime(
@@ -531,7 +552,9 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.textContaining('Mein Haushalt war schon freigeschaltet'),
+      find.textContaining(
+        'Ich habe Snacklist Lifetime mehr als einmal gekauft',
+      ),
       findsOneWidget,
     );
     expect(key('refund-apple'), findsOneWidget);
@@ -1227,6 +1250,27 @@ void main() {
       expect(key('premium-card-lifetime'), findsNothing);
       expect(key('premium-card-yearly'), findsNothing);
       expect(key('premium-manage'), findsNothing);
+    });
+
+    testWidgets('an account-Lifetime holder in a household with a leftover '
+        'unlock reads no household Lifetime wording', (tester) async {
+      await openLifetime(
+        tester,
+        entitlements: FakeEntitlementsSource()
+          ..rowsNow = [promotionalRow(from: DateTime.now(), days: 60)]
+          ..userRows['peter'] = [lifetimeGrantRow],
+      );
+      shows({'lifetime-unlocked'});
+      expect(key('premium-household-only'), findsNothing);
+      for (final old in [
+        'Haushalt hat Snacklist Lifetime',
+        'Du musst nichts kaufen',
+        'euer Haushalt',
+        'Euer Haushalt',
+        'für euren ganzen Haushalt',
+      ]) {
+        expect(find.textContaining(old), findsNothing, reason: old);
+      }
     });
 
     testWidgets("a beta account's own grant for good: Lifetime as thanks for "

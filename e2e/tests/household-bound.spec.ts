@@ -69,7 +69,7 @@ test('joining an unlocked household: nothing to buy, the refund help; the purcha
   // Ben opens Anna's invite link as the last member of his unlocked household. Joining adds a
   // household (job 169b), so the join screen no longer offers to archive or delete his own.
   await ben.goto(invitePath(await inviteCode(annaEmail)));
-  await expect(ben.getByText('Dieser Haushalt hat Snacklist Lifetime. Du musst nichts kaufen.')).toBeVisible();
+  await expect(ben.getByText('Dieser Haushalt hat eine frühere Freischaltung. Snacklist Premium selbst gilt für dein Konto.')).toBeVisible();
   await expect(ben.getByText(/Archiviere den Haushalt/), 'nothing about his own household').toHaveCount(0);
   const refundLink = ben.getByRole('button', { name: /vor Kurzem gekauft\? So forderst du den Kauf zurück/ });
   await expect(refundLink).toBeVisible();
@@ -168,7 +168,7 @@ test('the last member archives an unlocked household, its purchase stays its own
   deletes.setMonth(deletes.getMonth() + 24);
   // In the browser's zone (playwright.config.ts): on a UTC runner just before midnight the day differs.
   const date = deletes.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Berlin' });
-  await expect(frank.getByRole('group', { name: new RegExp(`Mit Snacklist Lifetime\\s+Wird am ${date} gelöscht$`) }))
+  await expect(frank.getByRole('group', { name: new RegExp(`Mit früherer Freischaltung\\s+Wird am ${date} gelöscht$`) }))
     .toBeVisible();
   await screenshot(frank, 'job43-archived-de-390');
   await screenshot(frank, 'job47-archived-deletes-de-390');
