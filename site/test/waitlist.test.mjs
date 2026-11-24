@@ -69,7 +69,7 @@ test('every call to action follows the stage: waitlist and beta lead to the form
         assert.ok(doc.querySelector('header .nav').querySelectorAll('a').some((a) => a === webApp[0]), 'in the top nav');
       } else {
         for (const a of doc.querySelectorAll('a')) assert.doesNotMatch(a.getAttribute('href') ?? '', /app\.(?:snacklist\.app|hummlist\.com)/, `${stage} ${locale}`);
-        assert.match(doc.querySelector('.hero .chip').text, locale === 'de' ? /Beta im November/ : /Beta in November/, `${stage} ${locale} keeps the beta chip`);
+        assert.match(doc.querySelector('.hero .chip').text, locale === 'de' ? /Jetzt in der Beta/ : /Now in beta/, `${stage} ${locale} keeps the beta chip`);
         assert.equal(doc.querySelector('script[src="/get-app.js"]'), null);
       }
     }

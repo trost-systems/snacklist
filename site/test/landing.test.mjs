@@ -125,7 +125,7 @@ test('the landing pages hold no date but the badge\'s beta month, no app instruc
       const doc = page(`/${locale}`);
       const badge = doc.querySelector('[data-copy-id="hero.badge"]');
       if (stage === 'launch') assert.equal(badge, null);
-      else assert.equal(badge.text, { de: 'Beta im November', en: 'Beta in November' }[locale]);
+      else assert.equal(badge.text, { de: 'Jetzt in der Beta', en: 'Now in beta' }[locale]);
       const text = `${doc.querySelector('head').toString()} ${doc.querySelector('body').text.replace(badge?.text ?? '', '')}`;
       assert.doesNotMatch(text, /januar|februar|märz|april|\bmai\b|juni|juli|august|september|oktober|november|dezember|january|february|march|\bmay\b|june|july|october|december/i, `${stage} ${locale}: a month`);
       // "as soon as you are back online" describes the offline sync, it promises nothing.
