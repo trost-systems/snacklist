@@ -1,6 +1,6 @@
 # Snacklist mails
 
-Every mail Snacklist sends is built from one React Email source in `emails/`, with the 6b tokens
+Every mail Snacklist sends is built from one React Email source in `emails/`, with the RD1 tokens
 from `design/tokens/snacklist.tokens.json`. The same components make the Supabase Auth
 templates (`supabase/templates/`), the onboarding mails Snacklist PM writes, and the service
 notices. Job 55 built it, job 177 brought it to Snacklist and to AL4's German and English auth

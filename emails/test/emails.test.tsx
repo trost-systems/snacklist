@@ -142,7 +142,7 @@ test('a mail has one primary button', async () => {
 });
 
 test('a production render refuses draft lines and the demo unsubscribe link', async () => {
-  const draft = renderedMail('confirmation-de').email.element;
+  const draft = renderedMail('password_changed_notification-de').email.element;
   await assert.rejects(renderEmail(draft, { production: true }), /reason line, Launch to confirm/);
   const demo = renderedMail('nudge-de').email.element;
   await assert.rejects(renderEmail(demo, { production: true }), /demo one/);

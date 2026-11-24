@@ -1,5 +1,5 @@
 // Renders every mail to PNG with Playwright's Chromium: 600 px (desktop) and 375 px (mobile),
-// light; dark for the magic link and welcome-android-de; one with images blocked; both footers on a
+// light and dark (every mail but the catalog); one with images blocked; both footers on a
 // phone; then a contact sheet and index.html, one review page with every mail's subject, PNGs,
 // HTML and plain text. Requests to https://snacklist.app/ are served from site/public, so
 // the previews show the assets this branch ships before they are deployed. No other network.
@@ -30,7 +30,6 @@ const only = new Set(args);
 const sitePublic = fileURLToPath(new URL('../../site/public/', import.meta.url));
 
 const WIDTHS = { desktop: 600, mobile: 375 } as const;
-const DARK = new Set(['magic_link-de', 'magic_link-en', 'welcome-android-de']);
 const BLOCKED = 'welcome-android-de';
 const FOOTERS = {
   'partner-joined-de': 'transactional-footer-de-mobile', 'partner-joined-en': 'transactional-footer-en-mobile',
@@ -73,10 +72,11 @@ for (const email of sheetOnly ? [] : emails) {
   const shown = fillDemo(html, email.demo);
   const first = shots.length;
   writeFileSync(join(out, `${base(email)}.html`), shown);
+  writeFileSync(join(out, `${base(email)}.txt`), fillDemo(text, email.demo));
   for (const [device, width] of Object.entries(WIDTHS)) {
     const name = `${base(email)}-${device}`;
     await shoot(email, shown, name, width);
-    if (DARK.has(email.id)) await shoot(email, shown, `${name}-dark`, width, { dark: true });
+    if (email.kind !== 'catalog') await shoot(email, shown, `${name}-dark`, width, { dark: true });
   }
   if (email.id === BLOCKED) await shoot(email, shown, `${base(email)}-mobile-images-blocked`, WIDTHS.mobile, { blockImages: true });
   const footer = FOOTERS[email.id as keyof typeof FOOTERS];

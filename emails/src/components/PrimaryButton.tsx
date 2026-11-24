@@ -27,14 +27,14 @@ export function PrimaryButton({ href, children, fallbackLabel }: { href: string;
           <tr>
             <td align="center" bgcolor={ui.light.honey} className="hl-honey"
               style={{
-                backgroundColor: ui.light.honey, border: `${border}px solid ${ui.light.ink}`, borderRadius: ui.radius.s,
+                backgroundColor: ui.light.honey, border: `${border}px solid ${ui.light.ink}`, borderRadius: ui.radius.md,
                 boxShadow: `0 ${ui.depth.edge}px 0 ${ui.light.ink}`,
               }}>
               <a href={href} target="_blank" className="hl-honey"
                 style={{
                   display: 'block', padding: `0 ${ui.space[6]}px`, lineHeight: `${HEIGHT - 2 * border}px`, minHeight: HEIGHT - 2 * border,
                   fontFamily: ui.font.body, fontSize: `${ui.typography.body.size}px`, fontWeight: ui.weight.bold,
-                  color: ui.light['on-honey'], textDecoration: 'none', textAlign: 'center', borderRadius: ui.radius.s,
+                  color: ui.light['on-honey'], textDecoration: 'none', textAlign: 'center', borderRadius: ui.radius.md,
                 }}>
                 {children}
               </a>
