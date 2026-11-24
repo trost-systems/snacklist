@@ -2,9 +2,9 @@
 // own customer (App User ID = her user id) until 2100-01-01, stored through the server's real sync
 // (promotional_premium_sync_user, what the webhook and scripts/iap/beta-lifetime.ts's reconcile
 // call). With the integration lock on, the API refuses Mia before the grant and serves her after
-// it; Noah in Familie Brandt stays refused and sees nothing of it. Mia's
-// Premium page shows the beta-lifetime line; a tester grant on the household then shows Noah the
-// tester line and leaves Mia's. Everything is undone at the end.
+// it; Noah in Familie Brandt stays refused and sees nothing of it. Mia's Premium page shows the
+// beta-lifetime line; a tester grant on the household then shows Noah the tester line with the
+// household-only note (job 419) and leaves Mia's. Everything is undone at the end.
 //
 //   node journeys/premium-beta-lifetime.mjs <evidence dir>
 import process from 'node:process';
@@ -94,8 +94,9 @@ try {
   const buy = await page.getByRole('button', { name: new RegExp(`^(${L('premiumBuyYearly')}|${L('premiumBuyLifetime')})`) }).count();
   const heroOff = await page.getByText(L('premiumHeroBody'), { exact: true }).count();
   const refundOff = await page.getByRole('button', { name: L('lifetimeRefundLink') }).count();
-  log(`mia's page: status 1, lifetime body ${body}, 4-weeks body ${oldBody}, tester line ${testerLine}, privacy link ${privacy}, buy buttons ${buy}, hero ${heroOff}, refund link ${refundOff}`);
-  if (body !== 1 || oldBody || testerLine || privacy !== 1 || buy || heroOff !== 1 || refundOff) throw new Error('mia\'s page is wrong');
+  const householdNote = await page.getByText(L('premiumHouseholdOnly'), { exact: true }).count();
+  log(`mia's page: status 1, lifetime body ${body}, 4-weeks body ${oldBody}, tester line ${testerLine}, privacy link ${privacy}, buy buttons ${buy}, hero ${heroOff}, refund link ${refundOff}, household-only note ${householdNote}`);
+  if (body !== 1 || oldBody || testerLine || privacy !== 1 || buy || heroOff !== 1 || refundOff || householdNote) throw new Error('mia\'s page is wrong');
   await capture(page, dir, '03-mia-page-beta-lifetime');
 
   // Legal Review N-345, N-346: with sales on, the per-account hero, and no refund link for a grant alone.
@@ -133,8 +134,10 @@ try {
   await noahApp.page.goto('/more/lifetime');
   await noahApp.page.getByText(noahApp.L('premiumStatusFree'), { exact: true }).waitFor({ timeout: 15_000 });
   const noahLifetime = await noahApp.page.getByText(noahApp.L('premiumStatusBetaLifetime'), { exact: true }).count();
-  log(`noah's page: tester line, beta-lifetime line ${noahLifetime}`);
+  const noahNote = await noahApp.page.getByText(noahApp.L('premiumHouseholdOnly'), { exact: true }).count();
+  log(`noah's page: tester line, beta-lifetime line ${noahLifetime}, household-only note ${noahNote}`);
   if (noahLifetime) throw new Error('Noah sees Mia\'s own grant');
+  if (noahNote !== 1) throw new Error('Noah\'s household grant lacks „' + noahApp.L('premiumHouseholdOnly') + '“');
   await capture(noahApp.page, dir, '05-noah-page-tester');
 } catch (e) {
   failed = e;

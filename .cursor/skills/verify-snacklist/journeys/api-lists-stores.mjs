@@ -2,7 +2,8 @@
 // the public API. An integration with a read-write key makes a list and a store, sets the store's
 // walk order, adds items there and ticks one; then the app shows the list in the switcher, the
 // store's items in the new order and the ticked item under „Zuletzt verwendet“, and the API's
-// recent and suggestions answers match what the app shows. Switches the local public_api on.
+// recent and suggestions answers match what the app shows. Switches the local public_api on and
+// back to what it was.
 //
 //   node journeys/api-lists-stores.mjs <evidence dir> [--lang de|en]
 import process from 'node:process';
@@ -24,6 +25,7 @@ const sql = (query) =>
     input: query,
     encoding: 'utf8',
   }).trim();
+const publicApiWas = sql(`select enabled from public.app_switches where key = 'public_api'`) === 't';
 sql(`update public.app_switches set enabled = true where key = 'public_api'`);
 
 const client = await apiAs(inst, user);
@@ -111,7 +113,7 @@ try {
   await capture(page, dir, '99-failure').catch(() => {});
 } finally {
   await browser.close();
-  sql(`update public.app_switches set enabled = false where key = 'public_api'`);
+  sql(`update public.app_switches set enabled = ${publicApiWas} where key = 'public_api'`);
 }
 if (failed) {
   console.log(`FAIL: ${failed.message}`);
