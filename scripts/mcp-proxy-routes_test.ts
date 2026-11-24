@@ -162,6 +162,18 @@ const cases: [string, string, Record<string, string>, string][] = [
     `${fn}/.well-known/openid-configuration`,
   ],
   ['/mcp in a browser', '/mcp', { accept: chrome }, `${fn}/mcp`],
+  [
+    'OpenAI domain verification, curl',
+    '/.well-known/openai-apps-challenge',
+    { accept: '*/*' },
+    'public/.well-known/openai-apps-challenge',
+  ],
+  [
+    'OpenAI domain verification, browser',
+    '/.well-known/openai-apps-challenge',
+    { accept: chrome },
+    'public/.well-known/openai-apps-challenge',
+  ],
 ];
 
 for (const anchoring of ['whole value', 'substring'] as const) {
@@ -217,6 +229,12 @@ const apiCases: [string, string, Record<string, string>, string][] = [
     '/.well-known/oauth-protected-resource',
     { accept: chrome },
     `${apiFn}/.well-known/oauth-protected-resource`,
+  ],
+  [
+    'OpenAI domain verification: the file, filesystem first on every host',
+    '/.well-known/openai-apps-challenge',
+    { accept: '*/*' },
+    'public/.well-known/openai-apps-challenge',
   ],
 ];
 
@@ -281,4 +299,25 @@ Deno.test('each page is noindex in its own language', () => {
     assert(html.includes(`<html lang="${lang}"`), `${lang}.html: lang="${lang}"`);
     assert(/<meta name="robots" content="noindex/.test(html), `${lang}.html: robots noindex`);
   }
+});
+
+Deno.test('the OpenAI challenge file is the token only, with no newline', () => {
+  const bytes = Deno.readFileSync(new URL('.well-known/openai-apps-challenge', publicDir));
+  assertEquals(bytes.byteLength, 43);
+  assert(!bytes.includes(10) && !bytes.includes(13), 'challenge file must not contain a newline');
+});
+
+Deno.test('the OpenAI challenge path is served as text/plain and is not cached', () => {
+  const path = '/.well-known/openai-apps-challenge';
+  const set = config.headers
+    .filter((rule) => sourceMatches(rule.source, path))
+    .flatMap((rule) => rule.headers);
+  assert(
+    set.some((h) => h.key === 'Content-Type' && h.value.startsWith('text/plain')),
+    'Content-Type text/plain',
+  );
+  assert(
+    set.some((h) => h.key === 'Cache-Control' && h.value === 'no-store'),
+    'Cache-Control no-store',
+  );
 });
