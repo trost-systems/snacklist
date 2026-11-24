@@ -2953,3 +2953,10 @@ sha256 (the head SHA is in the ops copy of this file and a PR comment; a commit 
 - vs main (whole file): `nutzungsbedingungen.md` 78eb71f4bd84b9b98f554b359e43bf212f054d69, `terms.md` 6c31493add1db5384c58ed04ad2f98e7b2f0f031, `datenschutz.md` 9fcde488162dccf8a0b2473a6fe64bec26beebdb, `privacy.md` e35cbf288194128dfaa86fccfe42fce4d3b99f9e
 
 Replaces #679 (the 417 worktree was dirty). Privacy's "once Premium is sold" timing words are raised in NEEDS_LEAD, not edited.
+
+## Job 429: Legal SHOULD wording (support pages)
+
+- Part B only: "Zugriffstoken"/"access tokens" became "Zugriffsschlüssel"/"access keys" in `site/content/legal/support.md` and `support-en.md` (lines 47 and 86), Legal's text verbatim.
+- Part A, rebased on main with #690 and #693 both merged: `docs/PURCHASES.md:192`, `verify-family-groceries/features/purchases.md:22` and `verify-snacklist/features/premium.md:10` now use #690's `premiumUsedElsewhereYearly` wording ("on another account"). `PURCHASES.md:22,31,164` and `purchases.md:49` are about Lifetime or the plan group and stay.
+- Verify: `grep -ci "zugriffstoken\|access token" site/content/legal/support*.md` is 0; `grep -c "für einen anderen Haushalt" docs/PURCHASES.md` is 0.
+- Follow-up for Legal (app string, needs a changelog, out of scope): the delete-account dialog (`accountDeleteWhat`, DE "Zugangs-Tokens", EN "access tokens") and EN `accessTokens` still say token.
