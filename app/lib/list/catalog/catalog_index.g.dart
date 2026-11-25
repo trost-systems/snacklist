@@ -2,7 +2,7 @@
 // Do not edit; rerun the script after a classifier or item parser migration.
 
 /// public.catalog_version() of [catalogTerms], [catalogForms] and [catalogBrands].
-const catalogVersion = '18bc1465b6697bae';
+const catalogVersion = '68d2a0aeef557068';
 
 /// public.classifier_terms: (term, key, category seed key).
 const catalogTerms = <(String, String, String)>[
@@ -1935,6 +1935,7 @@ const catalogForms = <(String, String, String, bool)>[
   ('duschvorhang', 'duschvorhang', 'plumbing', false),
   ('edamam', 'edamam', 'frozen', false),
   ('edamer', 'edamer', 'chilled', false),
+  ('egg roll', 'frulingsrol', 'frozen', true),
   ('eggs', 'eier', 'chilled', true),
   ('ei', 'ei', 'chilled', false),
   ('eichblatsalat', 'eichblatsalat', 'produce', false),
@@ -2962,6 +2963,8 @@ const catalogForms = <(String, String, String, bool)>[
   ('schalter', 'schalter', 'electrical', false),
   ('scharnier', 'scharnier', 'fasteners', false),
   ('schaufel', 'schaufel', 'garden', false),
+  ('schauferl', 'schaufele', 'meat', true),
+  ('schauferla', 'schaufele', 'meat', true),
   ('schaum', 'schaum', 'drugstore', false),
   ('schaumkus', 'schaumkus', 'sweets', false),
   ('schaumzuker', 'schaumzuker', 'sweets', false),
@@ -3105,6 +3108,7 @@ const catalogForms = <(String, String, String, bool)>[
   ('spizpaprika', 'spizpaprika', 'produce', false),
   ('spray', 'spray', 'drugstore', false),
   ('spreizdubel', 'spreizdubel', 'fasteners', false),
+  ('spring roll', 'frulingsrol', 'frozen', true),
   ('springform', 'springform', 'household', false),
   ('sprit', 'sprit', 'drinks', false),
   ('spros', 'spros', 'produce', false),
