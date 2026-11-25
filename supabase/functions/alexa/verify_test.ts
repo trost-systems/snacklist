@@ -242,6 +242,50 @@ Deno.test('a body changed after signing, or a bad signature, is refused', async 
   }
 });
 
+Deno.test('a chain that passed is checked again once a certificate in it expired', async () => {
+  const day = 86_400_000;
+  const other = await makeTestCa({ intermediateNotAfter: new Date(now.getTime() + 2 * day) });
+  const at = (ms: number) => new Date(now.getTime() + ms);
+  const d = (when: Date) => ({
+    anchors: [other.root],
+    fetchChain: () => Promise.resolve(other.chainPem),
+    skillIds: [testSkillId],
+    now: () => when,
+  });
+  const anchors = [other.root];
+  const request = async (when: Date, sign = other.sign) => {
+    const body = envelope({ timestamp: when.toISOString() });
+    const headers = new Headers({
+      signaturecertchainurl: testCertUrl,
+      'signature-256': await sign(body),
+    });
+    return () => verifyRequest(headers, bytes(body), { ...d(when), anchors });
+  };
+  await (await request(now))();
+  await (await request(at(day)))();
+  // The signature is checked on every request, also with a chain that passed.
+  const stranger = await makeTestCa();
+  await refused('bad_signature', await request(at(day), stranger.sign));
+  // The intermediate expired on day 2, the leaf on day 7: the same chain no longer passes.
+  await refused('cert_untrusted', await request(at(3 * day)));
+  await refused('cert_expired', await request(at(8 * day)));
+  // A pass against these anchors is not one against others.
+  await refused(
+    'cert_untrusted',
+    async () => {
+      const body = envelope();
+      return verifyRequest(
+        new Headers({
+          signaturecertchainurl: testCertUrl,
+          'signature-256': await other.sign(body),
+        }),
+        bytes(body),
+        { ...d(now), anchors: parseCertificates(amazonRootsPem) },
+      );
+    },
+  );
+});
+
 Deno.test('a timestamp more than 150 s away is refused, an hour for skill events', async () => {
   const d = await deps();
   const at = (ms: number) => new Date(now.getTime() + ms).toISOString();

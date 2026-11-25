@@ -20,6 +20,7 @@ Deno.test('every registered doc on main parses to its known numbers', async () =
     'hc-tests': [10.36, 19.2368, 2],
     'hc-ui-app': [6.5, 6.5, 0],
     'hc-ui-perf': [7.479, 6.598, 1],
+    'hc-voice-perf': [51.5, 38.01, 1],
   });
 });
 

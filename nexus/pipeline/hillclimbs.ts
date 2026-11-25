@@ -80,6 +80,13 @@ export const hillClimbDocs: readonly HillClimbDoc[] = [
     baseline: /\*\*Baseline ([\d.]+), band/,
     target: null,
   },
+  {
+    id: 'hc-voice-perf',
+    metric: 'HTTP warm p50 latency, geometric mean (ms)',
+    direction: 'lower',
+    baseline: /^Baseline \*\*([\d.]+)\*\*/m,
+    target: null,
+  },
 ];
 
 /** Cells of one Markdown table row; a `|` inside backticks or escaped stays in its cell. */
