@@ -3044,3 +3044,7 @@ See `docs/done/440.md`. Fixes #703 (`pub-cache: false` on the ios jobs; confirme
 ## Job 437: flake sweep 1 (mcp, live-sync, StoreKit certificate)
 
 Details: [docs/done/437.md](docs/done/437.md). No code change: the mcp hangs (#312, #395) were fixed by #440, the rest were host pauses. 80 of 80 repeat runs of `mcp.spec.ts` and `live-sync.spec.ts` passed with retries off; no `ios-storekit` failure since job 304/306.
+
+## Job 441: review 0 follow-up
+
+Follow-up (review 0): #613 was merged on `ci-ok` before the review verdict, a process breach recorded in `docs/done/441.md`, which also states which gates ran after the second rebase and that the change ships with the next green main build.
