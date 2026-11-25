@@ -13,8 +13,8 @@ since 2026-11-16. The beta passages below describe the pre-launch setup and stay
 | | |
 | --- | --- |
 | Skill name, invocation name | `Snacklist`, `snacklist` in all six locales (S4 rename; `skill_package_test.ts` fails on any Hummlist left in the package except the old host `app.hummlist.com` in the account-linking domains) |
-| Skill ids | Hummlist `amzn1.ask.skill.fee316d1-e9c1-44a4-a06e-955fbda63a1b` (job 31b), Snacklist `amzn1.ask.skill.ad766331-e979-4a6e-95f1-30198b0a34cb` (job 174, development only). The hosted `ALEXA_SKILL_ID` lists both |
-| Endpoint (and skill events) | `https://jdwqrallbpdbshrdhenk.supabase.co/functions/v1/alexa` (`sslCertificateType: Wildcard`) |
+| Skill ids | Hummlist `amzn1.ask.skill.fee316d1-e9c1-44a4-a06e-955fbda63a1b` (job 31b, development only), Snacklist `amzn1.ask.skill.ad766331-e979-4a6e-95f1-30198b0a34cb` (job 174; live since 2026-11-16, plus a development stage for changes). The hosted `ALEXA_SKILL_ID` lists both |
+| Endpoint (and skill events) | `https://jdwqrallbpdbshrdhenk.supabase.co/functions/v1/alexa?forceFunctionRegion=eu-central-1` (`sslCertificateType: Wildcard`). The query parameter pins the function to Frankfurt, next to the database ([Regional Invocations](https://supabase.com/docs/guides/functions/regional-invocation)). The live Snacklist skill still has the unpinned URL until a certification submission copies the development manifest; see [Keep-warm](#keep-warm) |
 | Function | [`supabase/functions/alexa/`](../supabase/functions/alexa/) |
 | Replies | The quoted replies below are the Snacklist wording of the speech PR #353 (deployed 2026-11-10) |
 | Skill package | [`alexa/skill-package/`](../alexa/skill-package/) (`skill.json`, `interactionModels/custom/de-DE.json` and the five identical `en-*.json`, icons from `design/app-icon/build.mjs`), [`alexa/ask-resources.json`](../alexa/ask-resources.json) |
@@ -25,7 +25,39 @@ since 2026-11-16. The beta passages below describe the pre-launch setup and stay
 | Decisions | [DECISIONS.md](DECISIONS.md), "Job 31" |
 | Manual steps | [NEEDS_PETER.md](NEEDS_PETER.md), "Job 31" |
 
+## Keep-warm
+
+Alexa's first request after a quiet spell can take 2–3 s: the edge isolate starts in the caller's
+region (often `eu-west-1` or a US region) and then talks to Postgres in `eu-central-1`. The skill
+endpoint is pinned to Frankfurt, and `public.alexa_keep_warm_set` can schedule an unsigned POST
+every five minutes so that isolate stays warm. The function answers `400 {"error":"missing_signature"}`
+and logs `alexa: … -> refused missing_signature`; it queues no PostHog events. No secrets and no
+user data go in the request.
+
+The migration creates the setter and does not turn the job on (same pattern as the feedback digest
+and the shopping-day reminder), so a local stack never pings the hosted project. On the hosted
+project:
+
+```sql
+select public.alexa_keep_warm_set(
+  true,
+  'https://jdwqrallbpdbshrdhenk.supabase.co/functions/v1/alexa?forceFunctionRegion=eu-central-1'
+);
+```
+
+The job is named `alexa-keep-warm`. Off: `select public.alexa_keep_warm_set(false);`. The URL must
+be https (plain http only for localhost, 127.0.0.1 or kong) and end with
+`/functions/v1/alexa?forceFunctionRegion=eu-central-1`.
+
+This does not update the live Snacklist skill. Amazon does not allow editing a live manifest;
+store users keep the unpinned endpoint until Snacklist Ops / Peter submit the development skill
+for certification and the new version is published
+([Revise and update your skill after certification](https://developer.amazon.com/en-US/docs/alexa/devconsole/test-and-submit-your-skill.html#revise-and-update-your-skill-after-certification)).
+Do not submit that from this change alone. The developer account's development enablement, and
+the Hummlist development skill, already use the pinned URL.
+
 ## How a request flows
+
 
 ```
 Echo ──> Alexa (speech to text, intent "AddItemIntent", slot items = "milch und eier")

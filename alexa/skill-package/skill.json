@@ -126,7 +126,7 @@
     "apis": {
       "custom": {
         "endpoint": {
-          "uri": "https://jdwqrallbpdbshrdhenk.supabase.co/functions/v1/alexa",
+          "uri": "https://jdwqrallbpdbshrdhenk.supabase.co/functions/v1/alexa?forceFunctionRegion=eu-central-1",
           "sslCertificateType": "Wildcard"
         },
         "interfaces": []
@@ -134,7 +134,7 @@
     },
     "events": {
       "endpoint": {
-        "uri": "https://jdwqrallbpdbshrdhenk.supabase.co/functions/v1/alexa",
+        "uri": "https://jdwqrallbpdbshrdhenk.supabase.co/functions/v1/alexa?forceFunctionRegion=eu-central-1",
         "sslCertificateType": "Wildcard"
       },
       "subscriptions": [
