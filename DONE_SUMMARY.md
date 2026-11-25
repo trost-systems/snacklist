@@ -3014,3 +3014,7 @@ Details, hashes, patch-ids and the German/English table: [docs/done/432.md](docs
 ## Job 435: dismiss the store done card when the app backgrounds
 
 Details: [docs/done/435.md](docs/done/435.md).
+
+## Job 436: pin the onboarding progress bar to a fixed top position
+
+Details: [docs/done/436.md](docs/done/436.md).
