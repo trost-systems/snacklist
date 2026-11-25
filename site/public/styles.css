@@ -640,6 +640,15 @@ a {
   grid-column: 1 / -1;
 }
 
+/* A short stat's value sits on one line across the row, even when a label wraps. */
+.history-stats div:not(.wide) {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--hl-space-1);
+  min-width: 0;
+}
+
 .history-stats dt {
   color: var(--hl-color-text-muted);
   font-size: var(--hl-type-label-size);
@@ -667,6 +676,16 @@ a {
 
 .prose .history-people li {
   margin: 0;
+}
+
+/* The commit count stays together and reads as a detail of the name. */
+.history-people li {
+  overflow-wrap: anywhere;
+}
+
+.history-people span {
+  font-weight: var(--hl-font-weight-regular);
+  white-space: nowrap;
 }
 
 .history-languages {

@@ -27,5 +27,9 @@ cd checks
 npm ci --no-audit --no-fund
 # CI runners install the browser's system libraries with sudo; a local run has them already.
 if [[ -n ${CI:-} ]]; then npx playwright install --with-deps chromium; else npx playwright install chromium; fi
+log "history page: nothing scrolls sideways, even with a very long contributor name"
+node ../scripts/history-fixture.mjs ../dist-history/long --long-name
+node history-shots.mjs ../dist-history/long
+rm -rf ../dist-history
 log "served site and waitlist form"
 node --test agent-http.test.mjs agent-forms.test.mjs
