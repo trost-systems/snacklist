@@ -558,6 +558,11 @@ class const _AccountStep() extends StatelessWidget {
           top: false,
           child: Column(
             children: [
+              // The same place as [OnboardingPage.pinned]
+              // (test/onboarding/progress_bar_test.dart).
+              const PinnedHeader(
+                OnboardingProgress(step: OnboardingStep.account),
+              ),
               Expanded(
                 child: Center(
                   child: SignInPanel(
@@ -569,8 +574,6 @@ class const _AccountStep() extends StatelessWidget {
                     header: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const OnboardingProgress(step: OnboardingStep.account),
-                        const SizedBox(height: HlSpace.s5),
                         OnboardingHeading(l10n.accountStepTitle),
                         const SizedBox(height: HlSpace.s3),
                         Text(l10n.accountStepBody),

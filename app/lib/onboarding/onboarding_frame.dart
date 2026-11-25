@@ -23,10 +23,10 @@ const _counted = [
 ];
 
 /// One step of the guided start (job 168b): [OnboardingPage] titled with
-/// the progress („Schritt 3 von 7“, which always fits the bar), the bar,
-/// the step's question as the page's heading (it wraps), a back button to
-/// [back] (none on the first question), and the X that leaves the guided
-/// start ([OnboardingExitButton]).
+/// the progress („Schritt 3 von 7“, which always fits the bar), the bar
+/// pinned under the app bar, the step's question as the page's heading (it
+/// wraps), a back button to [back] (none on the first question), and the X
+/// that leaves the guided start ([OnboardingExitButton]).
 class const OnboardingStepPage({
   required final OnboardingStep step,
   required final List<Widget> children,
@@ -50,9 +50,8 @@ class const OnboardingStepPage({
       null => null,
     },
     actions: [if (exit) const OnboardingExitButton()],
+    pinned: OnboardingProgress(step: step),
     children: [
-      OnboardingProgress(step: step),
-      const SizedBox(height: HlSpace.s5),
       if (title case final title?) ...[
         OnboardingHeading(title),
         const SizedBox(height: HlSpace.s3),
