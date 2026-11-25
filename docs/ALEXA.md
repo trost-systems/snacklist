@@ -30,7 +30,7 @@ since 2026-11-16. The beta passages below describe the pre-launch setup and stay
 Alexa's first request after a quiet spell can take 2–3 s: the edge isolate starts in the caller's
 region (often `eu-west-1` or a US region) and then talks to Postgres in `eu-central-1`. The skill
 endpoint is pinned to Frankfurt, and `public.alexa_keep_warm_set` can schedule an unsigned POST
-every five minutes so that isolate stays warm. The function answers `400 {"error":"missing_signature"}`
+every minute so that isolate stays warm. The function answers `400 {"error":"missing_signature"}`
 and logs `alexa: … -> refused missing_signature`; it queues no PostHog events. No secrets and no
 user data go in the request.
 
