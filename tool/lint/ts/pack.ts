@@ -240,6 +240,7 @@ export const projects: readonly Project[] = [
   { dir: 'analytics', checker: 'deno' },
   { dir: '.cursor/skills/verify-family-groceries/cli', checker: 'deno' },
   { dir: 'tool/lint/ts', checker: 'deno' },
+  { dir: 'tool/hillclimb/hc-voice-perf', checker: 'deno' },
   { dir: 'scripts', checker: 'deno' },
   { dir: 'marketing/videos/capture', checker: 'deno' },
   { dir: 'site/config', checker: 'deno' },

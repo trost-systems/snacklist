@@ -111,12 +111,28 @@ const signedBy = (cert: x509.X509Certificate, issuer: x509.X509Certificate) =>
 const isCa = (cert: x509.X509Certificate) =>
   cert.getExtension(x509.BasicConstraintsExtension)?.ca === true;
 
+/** A chain that passed rule 2: its leaf and when every certificate the check needed is valid. */
+interface Passed {
+  leaf: x509.X509Certificate;
+  /** The latest notBefore and the earliest notAfter of the leaf and the CAs walked through. */
+  from: number;
+  until: number;
+}
+
 /** Rule 2. Returns the leaf (the signer) of a chain that passes. */
 export async function checkChain(
   pem: string,
   anchors: readonly x509.X509Certificate[],
   at: Date,
 ): Promise<x509.X509Certificate> {
+  return (await walkChain(pem, anchors, at)).leaf;
+}
+
+async function walkChain(
+  pem: string,
+  anchors: readonly x509.X509Certificate[],
+  at: Date,
+): Promise<Passed> {
   let chain: x509.X509Certificate[];
   try {
     chain = x509.PemConverter.decode(pem).map((der) => new x509.X509Certificate(der));
@@ -130,17 +146,60 @@ export async function checkChain(
   if (!names.some((n) => n.type === 'dns' && n.value.toLowerCase() === signerHost)) {
     throw new VerificationError('cert_wrong_host');
   }
+  let from = leaf.notBefore.getTime();
+  let until = leaf.notAfter.getTime();
   // Walk up: each certificate is signed by a pinned root, or by the next one in the chain,
   // which must be a CA valid now. The chain may go on past a pinned root (a cross-signature).
   for (let i = 0; i < chain.length && i < 6; i++) {
     const cert = chain[i];
     for (const anchor of anchors) {
-      if (await signedBy(cert, anchor)) return leaf;
+      if (await signedBy(cert, anchor)) return { leaf, from, until };
     }
     const next = chain[i + 1];
     if (!next || !isCa(next) || !validAt(next, at) || !await signedBy(cert, next)) break;
+    from = Math.max(from, next.notBefore.getTime());
+    until = Math.min(until, next.notAfter.getTime());
   }
   throw new VerificationError('cert_untrusted');
+}
+
+interface Signer {
+  key: CryptoKey;
+  from: number;
+  until: number;
+}
+
+/** Real chains are a handful; the cap bounds what one worker keeps. */
+const MAX_PASSED_CHAINS = 16;
+
+/** Chains that passed rule 2, per set of anchors, by their PEM text. */
+const passed = new WeakMap<readonly x509.X509Certificate[], Map<string, Signer>>();
+
+/**
+ * Rule 2 and the key for rule 3. A chain that passed against these anchors is not parsed and
+ * walked again while every certificate the walk needed is still valid: the outcome depends only on
+ * the PEM text, the anchors and the time. Outside that window it is checked from scratch, so an
+ * expired leaf or intermediate is refused as before. Only passes are kept.
+ */
+async function signerKey(
+  pem: string,
+  anchors: readonly x509.X509Certificate[],
+  at: Date,
+): Promise<CryptoKey> {
+  let kept = passed.get(anchors);
+  const hit = kept?.get(pem);
+  if (hit && hit.from <= at.getTime() && at.getTime() <= hit.until) return hit.key;
+  const { leaf, from, until } = await walkChain(pem, anchors, at);
+  const key = await publicKeyOf(leaf);
+  if (!key) throw new VerificationError('bad_signature');
+  if (!kept) passed.set(anchors, kept = new Map());
+  kept.delete(pem);
+  if (kept.size >= MAX_PASSED_CHAINS) {
+    const oldest = kept.keys().next().value;
+    if (oldest !== undefined) kept.delete(oldest);
+  }
+  kept.set(pem, { key, from, until });
+  return key;
 }
 
 function base64Bytes(text: string): Uint8Array<ArrayBuffer> | null {
@@ -151,19 +210,28 @@ function base64Bytes(text: string): Uint8Array<ArrayBuffer> | null {
   }
 }
 
+const publicKeyOf = (leaf: x509.X509Certificate): Promise<CryptoKey | null> =>
+  leaf.publicKey.export({ name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, ['verify'])
+    .catch(() => null);
+
 /** Rule 3. */
 export async function signatureMatches(
   leaf: x509.X509Certificate,
   signature: string,
   body: Uint8Array<ArrayBuffer>,
 ): Promise<boolean> {
+  const key = await publicKeyOf(leaf);
+  return key !== null && await signedWith(key, signature, body);
+}
+
+async function signedWith(
+  key: CryptoKey,
+  signature: string,
+  body: Uint8Array<ArrayBuffer>,
+): Promise<boolean> {
   const bytes = base64Bytes(signature);
   if (!bytes || bytes.length === 0) return false;
   try {
-    const key = await leaf.publicKey.export(
-      { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
-      ['verify'],
-    );
     return await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, bytes, body);
   } catch {
     return false;
@@ -217,8 +285,8 @@ export async function verifyRequest(
   } catch {
     throw new VerificationError('cert_unavailable');
   }
-  const leaf = await checkChain(pem, deps.anchors, deps.now());
-  if (!await signatureMatches(leaf, signature, body)) {
+  const key = await signerKey(pem, deps.anchors, deps.now());
+  if (!await signedWith(key, signature, body)) {
     throw new VerificationError('bad_signature');
   }
   const envelope = parseEnvelope(body);

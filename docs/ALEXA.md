@@ -240,7 +240,9 @@ Amazon requires it of every skill hosted outside Lambda; `verify.ts`, unit-teste
    next one (a CA, valid now) until one is signed by a pinned root: Amazon Root CA 1-4 and
    Starfield Services Root CA - G2 ([`anchors.ts`](../supabase/functions/alexa/anchors.ts)). A test
    checks Amazon's real `echo-api-cert-12` chain against them. **If Amazon moves to another root,
-   add it there.**
+   add it there.** A chain that passed is not parsed and walked again while its leaf and every CA
+   the walk went through are still valid (at most 16 per worker); after that it is checked from
+   scratch. Rule 3 runs on every request.
 3. `Signature-256`: RSA PKCS#1 v1.5 with SHA-256 over the raw body bytes.
 4. `request.timestamp` at most 150 s from now; one hour for `AlexaSkillEvent.*` (they are delivered
    later and retried, as the ASK SDK allows).

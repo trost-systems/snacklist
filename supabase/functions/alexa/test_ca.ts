@@ -27,6 +27,8 @@ export interface LeafOptions {
   notAfter?: Date;
   /** The intermediate is not a CA (basicConstraints false). */
   intermediateNotCa?: boolean;
+  /** When the intermediate expires (30 days by default). */
+  intermediateNotAfter?: Date;
 }
 
 const keys = () => crypto.subtle.generateKey(rsa, true, ['sign', 'verify']);
@@ -49,7 +51,7 @@ export async function makeTestCa(options: LeafOptions = {}): Promise<TestCa> {
     subject: 'CN=Snacklist Test Intermediate',
     issuer: root.subject,
     notBefore: new Date(now - day),
-    notAfter: new Date(now + 30 * day),
+    notAfter: options.intermediateNotAfter ?? new Date(now + 30 * day),
     signingAlgorithm: rsa,
     publicKey: midKeys.publicKey,
     signingKey: rootKeys.privateKey,
