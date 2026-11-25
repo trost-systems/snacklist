@@ -181,3 +181,10 @@ test('every history string has German and English, and the placeholders resolve'
   const copyNeeded = readFileSync(join(SITE_DIR, 'COPY_NEEDED.md'), 'utf8');
   for (const id of Object.keys(HISTORY_COPY)) assert.match(copyNeeded, new RegExp(`\\| \`${id}\` \\|`), `${id} in COPY_NEEDED.md`);
 });
+
+test('a top contributor is a bold name and a separate count span, so the count stays whole (job 444)', () => {
+  const { page } = buildSite({ env: PROD, repo: { record: FIXTURE } });
+  const li = page(EN).querySelector('.history-people li');
+  assert.equal(li.querySelector('b').text, 'Peter Trost (@peter-trost):');
+  assert.equal(li.querySelector('span').text, '90 commits');
+});

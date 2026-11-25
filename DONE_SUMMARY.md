@@ -3037,3 +3037,11 @@ Details: [docs/done/436.md](docs/done/436.md).
 ## Job 441: land PR 613
 
 Rebased the gel-compounds PR onto main and moved its two migrations after main's newest. db, flutter and lint gates pass. Details: [docs/done/441.md](docs/done/441.md).
+
+## Job 444: /history and /en/history for 1.0 readiness
+
+PR open, **not merged** (Peter reviews). Layout fixes for the populated page at 390 px, overflow and contrast checks, release-record audit (below: the Dec 1 record needs the 1.0.0 draft PR first); `releases.json` still empty. Details and screenshots: [docs/done/444.md](docs/done/444.md), `docs/screenshots/444/`.
+
+Copy still `draft` in `site/COPY_NEEDED.md` for /history (Peter to approve): history.footer, history.title, history.description, history.intro, history.empty, history.version, history.day, history.commits-since, history.commits-first, history.contributors, history.loc, history.top, history.top-commits, history.top-commit, history.automation, history.automation-commits, history.languages, history.changelog-link, history.note. This job changed no copy.
+
+Review round 0 fixes (job 444): the contributor name now wraps (a 37-character login overflowed at 390 px before), covered by `history-fixture.mjs --long-name` and an overflow check in the site-agent gate. The audit finding: the Dec 1 record will refuse until the 1.0.0 draft PR (`changelog.mjs draft --version 1.0.0 --sha <main>`) exists; Hummlist-worded items (#188, #217, #232, #236) need rewords, and `1.0.0.override.md` names Claude/ChatGPT (Legal Addendum D) for Peter and Legal to confirm. See docs/done/444.md.

@@ -92,7 +92,7 @@ function entry(release, previous, locale) {
   ];
   const top = humans.slice(0, TOP_CONTRIBUTORS).map((p) => {
     const commits = p.commits === 1 ? t('history.top-commit', locale) : t('history.top-commits', locale, { n: formatNumber(p.commits, locale) });
-    return `<li>${escapeHtml(personLabel(p))}: ${escapeHtml(commits)}</li>`;
+    return `<li><b>${escapeHtml(personLabel(p))}:</b> <span>${escapeHtml(commits)}</span></li>`;
   });
   const wide = [
     ...(top.length > 0 ? [stat(t('history.top', locale), `<ol class="history-people">${top.join('')}</ol>`, 'wide')] : []),
