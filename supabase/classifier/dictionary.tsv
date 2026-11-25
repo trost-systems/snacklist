@@ -1178,6 +1178,7 @@ abschminkpads	drugstore
 abschminktücher	drugstore
 after sun	drugstore
 aftershave	drugstore
+aloegel	drugstore
 anfangsmilch	drugstore
 antitranspirant	drugstore
 aronal	drugstore
@@ -1207,6 +1208,7 @@ brillenputztücher	drugstore
 colgate	drugstore
 concealer	drugstore
 creme	drugstore
+cremegel	drugstore
 deo	drugstore
 deodorant	drugstore
 deoroller	drugstore
@@ -1217,13 +1219,17 @@ duschgel	drugstore
 duschhaube	drugstore
 einlage	drugstore
 elmex	drugstore
+energiegel	drugstore
 entferner	drugstore
 eyeliner	drugstore
 fa	drugstore
+kältegel	drugstore
+massagegel	drugstore
 medikament	drugstore
 nagelfeile	drugstore
 hornhautfeile	drugstore
 glasfeile	drugstore
+pflegegel	drugstore
 sandblattfeile	drugstore
 fußfeile	drugstore
 festiger	drugstore
@@ -1403,6 +1409,7 @@ wattestäbchen	drugstore
 windel	drugstore
 windelbeutel	drugstore
 wundschutzcreme	drugstore
+wärmegel	drugstore
 zahnbürste	drugstore
 zahnpasta	drugstore
 zahnpaste	drugstore

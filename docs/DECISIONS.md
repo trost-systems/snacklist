@@ -16989,7 +16989,7 @@ pinned above the field, other suggestions hidden); all of it stays behind `add-s
    Frischkäse, Mülltüte, Blumenerde match; Medikament, Element, Pigment, Dokument, Instrument do not.
 2. **gel has its own rule.** It is the whole term, not a folded key, so the spelling test does not
    apply. A gel after a vowel (Spiegel, Kegel, Igel, Vogel, Segel, Schlegel, Siegel) is not a gel:
-   Duschgel, Haargel and Massagegel (fuzzy) stay Drogerie. Consonant cases such as Orgel, Mangel
+   Duschgel and Haargel stay Drogerie. Review 1 found that the rule also rejects real gels whose first part ends in a vowel (Pflegegel, Energiegel, Aloegel; Massagegel only survived as a fuzzy match to Massageöl), so those and Wärmegel, Cremegel and Kältegel are listed as terms. Consonant cases such as Orgel, Mangel
    and Engel still hit; no guard on letters can tell them from Duschgel, and none is a shopping word.
 3. **Data that stays.** Spiegel, Bügel, Bügeleisen (the `eis` tail, not covered by the guard),
    Siegel (one typo from Spiegel, so it would have turned household by fuzzy matching), Bräter,

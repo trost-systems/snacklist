@@ -93,6 +93,16 @@ const _categoryExceptions = <String, String>{
   'Kräuterto|Kräuterto': _partial,
   'Colate|Colate': _partial,
   'Chef Select|Chef Select': _tailGuard,
+  'Nagelknip|Nagelknip': _typo,
+  'Nagelknips|Nagelknips': _typo,
+  'Nagelknipse|Nagelknipse': _typo,
+  'Fliesch|Fliesch': _typo,
+  'Geflgel|Geflgel': _typo,
+  'Gefülgel|Gefülgel': _typo,
+  'Geflegel|Geflegel': _typo,
+  'Kaiseremüse|Kaiseremüse': _typo,
+  'Kaisegremüse|Kaisegremüse': _typo,
+  'Kaisereemüse|Kaisereemüse': _typo,
   'Catrice|Catrice': _brandAlone,
 };
 

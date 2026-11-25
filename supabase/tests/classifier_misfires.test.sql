@@ -2,7 +2,7 @@
 -- B7). A short head such as gel or ent matches the end of any word, so a word it must not take is
 -- listed with its real category; a stem shared with another word (Topf, Topfen) is a homograph.
 begin;
-select plan(53);
+select plan(60);
 
 insert into auth.users (id, email) values ('00000000-0000-0000-0000-0000000349a1', 'tilda349@example.com');
 select set_config('role', 'authenticated', true);
@@ -68,6 +68,13 @@ select is(pg_temp.c('Blumenerde'), 'garden', 'Blumenerde still ends in erde');
 select is(pg_temp.c('Pekingente'), 'meat', 'Pekingente still ends in ente');
 select is(pg_temp.c('Entenbrust'), 'meat', 'Entenbrust');
 select is(pg_temp.c('Massagegel'), 'drugstore', 'Massagegel is still a gel');
+select is((public.classify_item_detail((select id from h), 'Massagegel')).via, 'exact', 'Massagegel is listed, not a fuzzy guess');
+select is(pg_temp.c('Pflegegel'), 'drugstore', 'Pflegegel is still a gel');
+select is((public.classify_item_detail((select id from h), 'Pflegegel')).via, 'exact', 'Pflegegel is listed, not a fuzzy guess');
+select is(pg_temp.c('Energiegel'), 'drugstore', 'Energiegel is still a gel');
+select is((public.classify_item_detail((select id from h), 'Energiegel')).via, 'exact', 'Energiegel is listed, not a fuzzy guess');
+select is(pg_temp.c('Aloegel'), 'drugstore', 'Aloegel is still a gel');
+select is((public.classify_item_detail((select id from h), 'Aloegel')).via, 'exact', 'Aloegel is listed, not a fuzzy guess');
 select is(pg_temp.c('Zangenschlüssel'), 'tools', 'Zange as a head of a tool word stays tools');
 select is(pg_temp.c('Gemüsepfanne'), 'frozen', 'Gemüsepfanne stays frozen');
 
