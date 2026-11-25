@@ -39,8 +39,8 @@ select is(public.alexa_keep_warm_set(true, 'http://kong:8000/functions/v1/alexa?
 select is(public.alexa_keep_warm_set(true, 'https://fn.test/functions/v1/alexa?forceFunctionRegion=eu-central-1'),
   'on', 'on with a pinned https URL');
 select is((select count(*)::int from cron.job where jobname = 'alexa-keep-warm'), 1, 'one job');
-select is((select schedule from cron.job where jobname = 'alexa-keep-warm'), '*/5 * * * *',
-  'every five minutes');
+select is((select schedule from cron.job where jobname = 'alexa-keep-warm'), '* * * * *',
+  'every minute');
 select ok((select command like '%net.http_post(url := ''https://fn.test/functions/v1/alexa?forceFunctionRegion=eu-central-1''%'
   from cron.job where jobname = 'alexa-keep-warm'), 'the job posts to the given URL');
 select ok((select position('vault' in lower(command)) = 0
