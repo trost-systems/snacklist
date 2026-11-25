@@ -128,7 +128,8 @@ Deno.test('worldwide, with a privacy policy per locale and no terms until the pa
 });
 
 Deno.test('the manifest points Alexa and skill events at the alexa function', () => {
-  const endpoint = 'https://jdwqrallbpdbshrdhenk.supabase.co/functions/v1/alexa';
+  const endpoint =
+    'https://jdwqrallbpdbshrdhenk.supabase.co/functions/v1/alexa?forceFunctionRegion=eu-central-1';
   assertEquals(skill.manifest.apis.custom.endpoint, {
     uri: endpoint,
     sslCertificateType: 'Wildcard',
