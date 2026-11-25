@@ -27,9 +27,28 @@ class const StoreDoneCard({super.key}) extends StatefulWidget {
 class _StoreDoneCardState() extends State<StoreDoneCard> {
   Timer? _expiry;
   StoreDone? _timed;
+  late final AppLifecycleListener _lifecycle;
+
+  @override
+  void initState() {
+    super.initState();
+    _lifecycle = AppLifecycleListener(
+      onStateChange: (state) {
+        if (state
+            case AppLifecycleState.paused ||
+                AppLifecycleState.hidden ||
+                AppLifecycleState.detached) {
+          if (mounted) {
+            setState(() {});
+          }
+        }
+      },
+    );
+  }
 
   @override
   void dispose() {
+    _lifecycle.dispose();
     _expiry?.cancel();
     super.dispose();
   }

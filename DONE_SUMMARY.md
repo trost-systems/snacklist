@@ -3010,3 +3010,7 @@ Changes: L24-6 lines in both fastlane descriptions (privacy line kept above, tra
 ## Job 432: English MCP tool texts, Legal L24-10 and ChatGPT listing fixes
 
 Details, hashes, patch-ids and the German/English table: [docs/done/432.md](docs/done/432.md). Not merged until Legal's GO.
+
+## Job 435: dismiss the store done card when the app backgrounds
+
+Details: [docs/done/435.md](docs/done/435.md).

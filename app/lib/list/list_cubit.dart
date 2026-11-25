@@ -453,6 +453,12 @@ class ListCubit(
   /// the tap on ([willTick]), enqueued when the row has closed ([tick]).
   final _promised = <String, SetStatus>{};
 
+  /// The stores the user ticked in during this foreground session: only
+  /// theirs may show the „… ist erledigt“ card (never restored from items).
+  /// Any tick adds its store; [storeDoneCard] still wants a last item and
+  /// the tick window.
+  final _tickedStores = <String>{};
+
   Stream<Rejected> get rejections => _rejections.stream;
 
   /// A new add of something already open under another spelling, once its
@@ -937,6 +943,9 @@ class ListCubit(
       _tripTicked.add(id);
     }
     final ticked = _tripTicked.length;
+    if (before?.storeId case final store?) {
+      _tickedStores.add(store);
+    }
     _enqueue(
       _promised.remove(id) ?? SetStatus(id, ItemStatus.bought, _clock()),
     );
@@ -1568,7 +1577,10 @@ class ListCubit(
 
   /// The „… ist erledigt“ card to show now ([storeDoneCard]).
   StoreDone? storeDone() => storeDoneCard(
-    items: state.items.values,
+    items: [
+      for (final i in state.items.values)
+        if (_tickedStores.contains(i.storeId)) i,
+    ],
     catalog: state.catalog,
     userId: userId,
     tickedHere: {
@@ -1578,6 +1590,9 @@ class ListCubit(
     dismissed: state.prefs.storeDoneDismissed,
     now: _clock(),
   );
+
+  /// The app left the screen: the card is gone until the next tick.
+  void endStoreDoneSession() => _tickedStores.clear();
 
   /// Closes [done]'s card until the store is finished again; closings
   /// whose card has run out anyway are forgotten.
