@@ -3037,3 +3037,6 @@ Details: [docs/done/436.md](docs/done/436.md).
 ## Job 441: land PR 613
 
 Rebased the gel-compounds PR onto main and moved its two migrations after main's newest. db, flutter and lint gates pass. Details: [docs/done/441.md](docs/done/441.md).
+
+## Job 440: MCP docs, Auth draft guard, nightly ios post step
+See `docs/done/440.md`. Fixes #703 (`pub-cache: false` on the ios jobs; confirmed only by the next nightly), guard `scripts/checks/auth-templates-no-draft.sh` in lint, `docs/MCP.md` store/remove wording.

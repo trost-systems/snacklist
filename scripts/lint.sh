@@ -50,6 +50,9 @@ python3 scripts/siri-vocabulary-test.py
 log "App Shortcuts bundle check"
 python3 scripts/app-shortcuts-bundle-test.py
 
+log "Auth templates carry no draft line"
+scripts/checks/auth-templates-no-draft-test.sh
+scripts/checks/auth-templates-no-draft.sh
 log "AI brand names"
 deno run --allow-read scripts/brand-names.ts
 deno test -q --config scripts/deno.json --allow-read --allow-write scripts/brand-names_test.ts
