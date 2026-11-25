@@ -15,6 +15,7 @@ import 'package:family_groceries/list/store_app.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
@@ -78,6 +79,7 @@ void main() {
     bool flag = true,
     String? addedBy = 'lea',
     String lidlName = 'Lidl',
+    bool compact = false,
   }) async {
     repo = FakeRepository()
       ..retailers = const [_lidl]
@@ -100,15 +102,32 @@ void main() {
       ..prefs = const ListPrefs(hintDismissed: true, storeAppTipClosed: true);
     opener = _Opener();
     tracked = _Tracked();
+    Widget app(Widget home) => compact
+        ? MaterialApp.router(
+            localizationsDelegates: appLocalizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('de'),
+            routerConfig: GoRouter(
+              routes: [GoRoute(path: '/', builder: (_, _) => home)],
+            ),
+          )
+        : MaterialApp(
+            localizationsDelegates: appLocalizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('de'),
+            home: home,
+          );
     await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: appLocalizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        locale: const Locale('de'),
-        home: MultiBlocProvider(
+      app(
+        MultiBlocProvider(
           providers: [
             BlocProvider(
-              create: (_) => Flags(forced: {if (flag) openStoreAppFlag}),
+              create: (_) => Flags(
+                forced: {
+                  if (flag) openStoreAppFlag,
+                  if (compact) ...{addFeedbackListFlag, addSheetCompactFlag},
+                },
+              ),
             ),
             BlocProvider(
               create: (_) => ListCubit(repo, cache, userId: 'peter')..start(),
@@ -119,7 +138,7 @@ void main() {
               RepositoryProvider<StoreAppOpener>.value(value: opener),
               RepositoryProvider<Analytics>.value(value: tracked),
             ],
-            child: const ShoppingList(),
+            child: const Scaffold(body: ShoppingList()),
           ),
         ),
       ),
@@ -261,6 +280,103 @@ void main() {
       ],
     );
     expect(card(), findsOneWidget);
+  });
+
+  Future<void> leave(WidgetTester tester) async {
+    final binding = tester.binding;
+    [
+      AppLifecycleState.inactive,
+      AppLifecycleState.hidden,
+      AppLifecycleState.paused,
+    ].forEach(binding.handleAppLifecycleStateChanged);
+    await tester.pumpAndSettle();
+    [
+      AppLifecycleState.hidden,
+      AppLifecycleState.inactive,
+      AppLifecycleState.resumed,
+    ].forEach(binding.handleAppLifecycleStateChanged);
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('gone after background and resume; inactive alone keeps it', (
+    tester,
+  ) async {
+    await pumpList(tester);
+    await tick(tester, 'Milch');
+    await tick(tester, 'Butter');
+    expect(card(), findsOneWidget);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pumpAndSettle();
+    expect(card(), findsOneWidget, reason: 'control center is still the app');
+    await leave(tester);
+    expect(card(), findsNothing);
+    await tick(tester, 'Seife');
+    expect(card(), findsNothing, reason: 'another store: not Lidl again');
+  });
+
+  testWidgets('left while the add sheet hides the card: still gone when it '
+      'closes', (tester) async {
+    await pumpList(tester, compact: true);
+    await tick(tester, 'Milch');
+    await tick(tester, 'Butter');
+    expect(card(), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('add-item-field')));
+    await tester.pumpAndSettle();
+    expect(card(), findsNothing, reason: 'the compact sheet hides the card');
+    await leave(tester);
+    await tester.tap(find.byKey(const ValueKey('add-sheet-grabber')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('add-sheet')), findsNothing);
+    expect(card(), findsNothing);
+  });
+
+  testWidgets('opening the store app takes the card away on return', (
+    tester,
+  ) async {
+    await pumpList(tester);
+    await tick(tester, 'Milch');
+    await tick(tester, 'Butter');
+    await tester.tap(find.byKey(const ValueKey('store-done-open')));
+    await tester.pumpAndSettle();
+    await leave(tester);
+    expect(card(), findsNothing);
+  });
+
+  testWidgets('cold start: a store finished a minute ago shows no card', (
+    tester,
+  ) async {
+    await pumpList(tester);
+    await tick(tester, 'Milch');
+    await tick(tester, 'Butter');
+    expect(card(), findsOneWidget);
+    final saved = repo.rows.values.where((i) => i.storeId == 'lidl').toList();
+    expect(saved.every((i) => i.status == ItemStatus.bought), isTrue);
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: appLocalizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('de'),
+        home: MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (_) => Flags(forced: {openStoreAppFlag})),
+            BlocProvider(
+              create: (_) => ListCubit(repo, cache, userId: 'peter')..start(),
+            ),
+          ],
+          child: MultiRepositoryProvider(
+            providers: [
+              RepositoryProvider<StoreAppOpener>.value(value: opener),
+              RepositoryProvider<Analytics>.value(value: tracked),
+            ],
+            child: const ShoppingList(),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(card(), findsNothing);
   });
 
   testWidgets('a member who only added the items sees no card', (tester) async {

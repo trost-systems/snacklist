@@ -178,6 +178,12 @@ class _ShoppingListViewState()
     _lifecycle = AppLifecycleListener(
       onStateChange: (state) {
         _onScreen = _shows(state);
+        if (state
+            case AppLifecycleState.paused ||
+                AppLifecycleState.hidden ||
+                AppLifecycleState.detached) {
+          context.read<ListCubit>().endStoreDoneSession();
+        }
         if (_onScreen) {
           _visibleFresh.forEach(_armSeen);
         } else {

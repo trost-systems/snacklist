@@ -2,9 +2,11 @@
 // FLAGS_ON=open-store-app). On demo-familie: Noah adds Haferkekse and Leinsamen to a store „Lidl am Markt“
 // linked to Lidl, and Senf to an unlinked „Hofladen“. Mia ticks Haferkekse and Leinsamen in the list: the
 // card „Lidl am Markt ist erledigt“ shows with „App öffnen“ below the title, which opens Lidl Plus'
-// Play page and leaves the card. Noah, who only added, sees no card. Mia ticks Senf: the unlinked
+// Play page; the card stays there, since a headless page is never hidden by the new tab. Noah, who only added, sees no card. Mia ticks Senf: the unlinked
 // store gets none. At 310 % text the button is still below the title and inside the card. X hides
-// it, also after a reload; Noah adds Milch there, Mia ticks it and the card is back. Offline, Mia
+// it, also after a reload; Noah adds Milch there, Mia ticks it and the card is back, then the page
+// goes hidden and visible again (visibilitychange, as a real tab switch does) and the card is gone.
+// Offline, Mia
 // ticks Essig, closes the card and goes online: it stays closed. Deletes the stores and items it made.
 //
 //   node journeys/store-done.mjs <evidence dir>
@@ -110,7 +112,7 @@ try {
   await tab.close();
   check(url === playLidl, `„App öffnen“ opens ${url}`);
   await page.waitForTimeout(1_000);
-  check(await title.count() === 1, 'the card stays after „App öffnen“');
+  check(await title.count() === 1, 'the card stays after „App öffnen“ (headless: the opener tab is not hidden)');
 
   await page.evaluate(() => { document.documentElement.style.fontSize = '310%'; });
   await page.waitForTimeout(1_500);
@@ -152,6 +154,18 @@ try {
   await title.waitFor({ timeout: 10_000 });
   await capture(page, dir, '06-back-after-new-item');
   log('ok: a new item at Lidl am Markt, ticked off, brings the card back');
+
+  const visibility = (v) =>
+    page.evaluate((v) => {
+      Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => v });
+      document.dispatchEvent(new Event('visibilitychange'));
+    }, v);
+  await visibility('hidden');
+  await page.waitForTimeout(1_000);
+  await visibility('visible');
+  await title.waitFor({ state: 'detached', timeout: 5_000 });
+  await capture(page, dir, '06b-gone-after-hidden');
+  log('ok: the card is gone after the page was hidden and shown again');
 
   await add(lidl, 'Essig');
   await itemRow(page, 'Essig').first().waitFor({ timeout: 15_000 });
