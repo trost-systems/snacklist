@@ -3040,3 +3040,7 @@ Rebased the gel-compounds PR onto main and moved its two migrations after main's
 
 ## Job 440: MCP docs, Auth draft guard, nightly ios post step
 See `docs/done/440.md`. Fixes #703 (`pub-cache: false` on the ios jobs; confirmed only by the next nightly), guard `scripts/checks/auth-templates-no-draft.sh` in lint, `docs/MCP.md` store/remove wording.
+
+## Job 437: flake sweep 1 (mcp, live-sync, StoreKit certificate)
+
+Details: [docs/done/437.md](docs/done/437.md). No code change: the mcp hangs (#312, #395) were fixed by #440, the rest were host pauses. 80 of 80 repeat runs of `mcp.spec.ts` and `live-sync.spec.ts` passed with retries off; no `ios-storekit` failure since job 304/306.
