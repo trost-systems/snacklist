@@ -2080,6 +2080,7 @@ word; it now reads it, and fails loudly on a declaration it cannot read. A hand-
 platform condition gets the iOS version. `docs/ANALYTICS.md` says a version-gated flag never
 reaches installs without an analytics yes. Details: `docs/done/332-posthog-flag-sync.md`.
 
+
 ## Job 349: classifier misfires B1 to B7
 
 Spiegel, Kleiderbügel, Bratpfanne, Topf, Medikament, tea lights, Kühlpack and Zeckenzange land in
@@ -2090,6 +2091,7 @@ logic changed, so no flag. Why no generic tail guard: DECISIONS Job 349. Tests: 
 `supabase/tests/classifier_misfires.test.sql` (30 checks), full pgTAP, sweep (353 match), wordlist
 (94.2 % misspellings, 1 false match as before), `scripts/gates/db.sh` classifier steps, parity test
 in Flutter. Not live yet: the production deploy of #606 failed with a 401 (expired `SUPABASE_ACCESS_TOKEN`), see docs/NEEDS_PETER.md.
+
 
 ### Job 349, review 0 fixes
 
@@ -3018,3 +3020,20 @@ Details: [docs/done/435.md](docs/done/435.md).
 ## Job 436: pin the onboarding progress bar to a fixed top position
 
 Details: [docs/done/436.md](docs/done/436.md).
+
+### Job 349, review 1 fixes
+
+- **Gel compounds.** The gel-after-a-vowel rule had also rejected Pflegegel, Energiegel and Aloegel;
+  Massagegel only survived as a fuzzy match to Massageöl. They and Wärmegel, Cremegel and Kältegel
+  are now dictionary terms, with pgTAP rows that check the category and `via = exact`. DECISIONS and
+  the feature file no longer cite Massagegel as proof of the rule. pgTAP (79 files), sweep (353),
+  wordlist (94.2 %, one old false match) and the parity test pass.
+- **Record.** NEEDS_LEAD has one section for #606, #609, both failed deploys (401) and the single
+  rerun that deploys all three PRs. Nothing is live until smoke-remote passes in that rerun.
+- **Not done.** `cl-tail-guards` journey, the pre-existing misses the review lists (Hartkäse, Besen,
+  Crème Brûlée, Kreis, Truthahn), accented-word splitting in the guard, a fixed parity sample.
+
+
+## Job 441: land PR 613
+
+Rebased the gel-compounds PR onto main and moved its two migrations after main's newest. db, flutter and lint gates pass. Details: [docs/done/441.md](docs/done/441.md).
