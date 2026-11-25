@@ -8,11 +8,11 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
 final url = Uri.parse('https://snacklist.app/data/item-icons.v1.json');
-const bundled = 5;
+const bundled = 6;
 
 String file({
   Object? schema = 1,
-  Object? revision = 6,
+  Object? revision = 7,
   Map<String, Object?> entries = const {'snacklist': '🐝', 'banane': ''},
 }) => jsonEncode({'schema': schema, 'revision': revision, 'entries': entries});
 
@@ -66,7 +66,7 @@ void main() {
   group('parseItemIconsFile', () {
     test('reads schema 1', () {
       final parsed = parseItemIconsFile(file());
-      expect(parsed?.revision, 6);
+      expect(parsed?.revision, 7);
       expect(parsed?.entries, {'snacklist': '🐝', 'banane': ''});
     });
 
@@ -93,10 +93,10 @@ void main() {
       ('schema as text', file(schema: '1')),
       ('revision 0', file(revision: 0)),
       ('revision 1.5', file(revision: 1.5)),
-      ('revision as text', file(revision: '6')),
+      ('revision as text', file(revision: '7')),
       (
         'entries a list',
-        jsonEncode({'schema': 1, 'revision': 6, 'entries': <Object?>[]}),
+        jsonEncode({'schema': 1, 'revision': 7, 'entries': <Object?>[]}),
       ),
       ('a key with digits', file(entries: {'7up': '🥤'})),
       ('a key with a hyphen', file(entries: {'coca-cola': '🥤'})),
@@ -146,7 +146,7 @@ void main() {
   test('a revision not above the bundled one is ignored', () async {
     final before = cubit.state;
     await start(
-      (_) async => http.Response.bytes(utf8.encode(file(revision: 5)), 200),
+      (_) async => http.Response.bytes(utf8.encode(file(revision: 6)), 200),
     );
     expect(cubit.state, same(before));
     expect(store.cached?.body, isNotNull);

@@ -3062,3 +3062,11 @@ Full report: [docs/research/official-ai-connectors.md](docs/research/official-ai
 - **Freeze:** docs and Peter's account steps can happen before Nov 25; all code after.
 - **Verify:** claims were checked against the vendors' own pages read on 2026-11-22; unverifiable items are marked unknown. `scripts/verify.sh --only gitleaks,lint` for the docs.
 - **Not done:** nothing blocked; open questions OC-Q1 to OC-Q9 are in NEEDS_LEAD.
+## Job 282 review 0: the duplicate hint no longer joins homographs
+
+Follow-up PR to #523 (merged before review). `canonical_key(name)` now reads the typed spelling like
+the classifier, so a renamed "beer" is not Beeren for the duplicate hint, and Schäufele has a key of
+its own, not Schaufel's. Also: spring and egg rolls are Frühlingsrollen, Schäuferle/Schäuferla are
+Schäufele. Still no flag. Details: [docs/done/282.md](docs/done/282.md), section "Review 0 fixes".
+Ships with the next green main build to TestFlight.
+
