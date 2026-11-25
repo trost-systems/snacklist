@@ -324,6 +324,9 @@ jobs:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
+          # The post step hashes '**/pubspec.lock' again after the build; over the iOS build's
+          # files that ran past hashFiles' 120 s and failed the job (#703). The gate runs pub get.
+          pub-cache: false
       - run: scripts/gates/ios.sh
 
   # Job 304: the StoreKit tests on their iOS 26.2 simulator, beside the ios job instead of after
@@ -343,6 +346,9 @@ jobs:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
+          # The post step hashes '**/pubspec.lock' again after the build; over the iOS build's
+          # files that ran past hashFiles' 120 s and failed the job (#703). The gate runs pub get.
+          pub-cache: false
       - run: scripts/gates/ios-storekit.sh
 
   # Job 13: GitHub never turns a schedule back on that it disabled for 60 days of inactivity, so
