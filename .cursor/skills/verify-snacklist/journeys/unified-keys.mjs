@@ -139,7 +139,13 @@ try {
   await revoke.click();
   await page.getByText(L('revokeAccessKeyTitle')).waitFor();
   await capture(page, dir, '05-revoke');
+  // Probe only after the server answered the revoke: the row's button leaves the semantics tree as
+  // soon as the dialog covers the page, before the PATCH lands (review 1: a false "still works").
+  const revoked = page.waitForResponse((r) => r.url().includes('/rest/v1/personal_access_tokens') && r.request().method() === 'PATCH', { timeout: 15_000 });
   await page.getByRole('button', { name: L('revoke'), exact: true }).click();
+  const answer = await revoked;
+  log(`the revoke's PATCH answered ${answer.status()}`);
+  if (!answer.ok()) throw new Error(`the revoke failed: HTTP ${answer.status()}`);
   await page.getByRole('button', { name: L('revokeToken', { name: 'Home Assistant' }) }).waitFor({ state: 'detached' });
   const after = await mcp(secret, 'list_items', {});
   log(`after the revoke the key gets HTTP ${after.status} on MCP`);
