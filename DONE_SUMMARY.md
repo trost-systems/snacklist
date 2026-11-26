@@ -3098,3 +3098,13 @@ Docs and comments only; details in `docs/done/449.md`. Verify: `scripts/verify.s
 ## Job 464: switches and pickers change at once
 
 Two rules in `AGENTS.md` (Conventions): optimistic UI for controls without a loading state, and app links opening the installed app with their files kept in lockstep. Audit of every server-backed switch, radio and menu pick: trip detection, join approval, usage data, currency and store controls already change at once; the default household dialog and the default list menu waited and now change at once, reverting with a snackbar on failure. The notification switches Peter noticed belong to job 463 and are untouched here. Tests: two widget tests that fail on the old code and pass on the new. Ships to TestFlight with the next green main build; no flag (the two pickers show where `list-declutter` is off and on the `/more/household` page). Details: [docs/done/464.md](docs/done/464.md).
+
+## Job 455: competitor pain points (research, docs only)
+
+Report: [docs/research/competitor-pain-points.md](docs/research/competitor-pain-points.md) (also
+`/workspace/snacklist/research/competitor-pain-points.md`). 5,536 App Store reviews of Bring!, AnyList, OurGroceries,
+Out of Milk and Listonic, German press comments and Apple Community threads, mapped onto the enabled feature set only.
+Top finding: accidental ticks (a Bring! review describes Snacklist's own „Zuletzt verwendet“ pattern); one simple
+copy fix (teach where ticked items go) and four needs-Peter questions (tick feedback, order within a store, a real-phone
+screen reader pass, an English catalog). No Reddit or Google Play evidence (blocked from hz). No app change, so no
+TestFlight build carries anything. Details: [docs/done/455.md](docs/done/455.md).
