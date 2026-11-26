@@ -64,6 +64,33 @@ class SpeakingDictation() implements Dictation {
   Future<void> stop() async {}
 }
 
+/// Gets ready only when the test completes `ready`, as the recognizer
+/// does while it asks for the microphone or checks the offline model.
+class SlowDictation() implements Dictation {
+  final ready = Completer<void>();
+  final finish = Completer<Dictated>();
+  var prepares = 0;
+  var listens = 0;
+
+  @override
+  Future<DictationProblem?> prepare(SpokenLanguage language) async {
+    prepares++;
+    await ready.future;
+    return null;
+  }
+
+  @override
+  Future<Dictated> listen({
+    required void Function(String words) onWords,
+  }) async {
+    listens++;
+    return finish.future;
+  }
+
+  @override
+  Future<void> stop() async {}
+}
+
 void main() {
   late FakeRepository repo;
 
@@ -245,6 +272,26 @@ void main() {
       find.text('Hinzugefügt: Brot. Schon auf der Liste: Milch.'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('a second tap while the recognizer gets ready starts no '
+      'second session (job 457)', (tester) async {
+    final dictation = SlowDictation();
+    await pumpList(tester, dictation);
+    await tester.tap(find.byTooltip('Diktieren'));
+    await tester.pump();
+    await tester.tap(find.byTooltip('Diktieren'));
+    await tester.pump();
+    dictation.ready.complete();
+    await tester.pump();
+    expect(dictation.prepares, 1);
+    expect(dictation.listens, 1);
+    expect(find.byTooltip('Diktat beenden'), findsOneWidget);
+
+    dictation.finish.complete(Heard('Milch und Brot'));
+    await tester.pumpAndSettle();
+    expect(repo.rows.values.map((i) => i.name), ['Milch', 'Brot']);
+    expect(find.byTooltip('Diktieren'), findsOneWidget);
   });
 
   testWidgets('offline, the sentence stays in the field', (tester) async {

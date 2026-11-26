@@ -28,6 +28,11 @@ class const DictationButton({
 class _DictationButtonState() extends State<DictationButton> {
   var _listening = false;
 
+  /// Between a tap and listening: the recognizer asks for the microphone
+  /// or checks its offline model, and a second tap would start a second
+  /// session.
+  var _preparing = false;
+
   void _setListening(bool listening) {
     setState(() => _listening = listening);
     widget.onListening(listening);
@@ -39,13 +44,26 @@ class _DictationButtonState() extends State<DictationButton> {
       await dictation.stop();
       return;
     }
+    if (_preparing) {
+      return;
+    }
     final l10n = AppLocalizations.of(context);
     final cubit = context.read<ListCubit>();
     final language = SpokenLanguage.of(Localizations.localeOf(context));
-    if (await dictation.prepare(language) case final problem?) {
+    _preparing = true;
+    final DictationProblem? problem;
+    try {
+      problem = await dictation.prepare(language);
+    } finally {
+      _preparing = false;
+    }
+    if (problem != null) {
       if (mounted) {
         widget.onMessage(_problem(l10n, problem));
       }
+      return;
+    }
+    if (!mounted) {
       return;
     }
     _setListening(true);
