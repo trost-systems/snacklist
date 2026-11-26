@@ -638,7 +638,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get collapseSection => 'Collapse';
 
   @override
-  String get listHint => 'Tap to tick off · Hold to edit';
+  String get listHint =>
+      'Tap to tick off · Hold to edit. Tapped by mistake? Get it back under “Recently used” below.';
 
   @override
   String get reorderNeedsConnection => 'Reordering needs a connection.';

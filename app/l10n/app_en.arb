@@ -210,7 +210,7 @@
   "@itemsWord": {"placeholders": {"count": {"type": "int"}}},
   "expandSection": "Expand",
   "collapseSection": "Collapse",
-  "listHint": "Tap to tick off · Hold to edit",
+  "listHint": "Tap to tick off · Hold to edit. Tapped by mistake? Get it back under “Recently used” below.",
   "reorderNeedsConnection": "Reordering needs a connection.",
   "suggestion": "Suggestion: {label}",
   "@suggestion": {"placeholders": {"label": {"type": "String"}}},

@@ -3265,3 +3265,11 @@ next green main build to TestFlight and Play internal. Verified with widget test
 [docs/done/461.md](docs/done/461.md), including two copy notes for job 456 and three unbuilt
 prototype candidates.
 Land: the rebase onto #739 (which also registered a hill climb with nexus) needed `warnings.length` raised to 12 in `nexus/test/build_test.ts` (main registered other hill climbs meanwhile), so every doc is counted. That is the only change since review 0 passed on 7a496d989.
+
+## Job 469: explain where ticked items go
+
+The „Erste Schritte“ line under „Einmal einkaufen“ now adds „Vertippt? Unten unter „Zuletzt
+verwendet“ zurückholen.“ (EN "Tapped by mistake? Get it back under “Recently used” below."). It
+teaches before the first tick and goes with that step, so it is no help after a mistaken tick
+(NEEDS_LEAD Job 469). Copy, tests, goldens and feature docs only; no flag,
+next green main build. Details: `docs/done/469.md`.

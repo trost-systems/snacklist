@@ -186,7 +186,7 @@ void main() {
     final scrim = key('list-status-bar-scrim');
     expect(scrim, findsNothing, reason: 'nothing under the clock yet');
 
-    await tester.drag(row('Artikel 5'), const Offset(0, -300));
+    await tester.drag(row('Artikel 5'), const Offset(0, -400));
     await tester.pumpAndSettle();
     final under = [
       for (var i = 0; i < 30; i++)

@@ -952,7 +952,13 @@ void main() {
   testWidgets('the Erste Schritte card is dismissed for good', (tester) async {
     await pumpList(tester, seed: (repo) => repo.remoteAdd('Brot'));
     expect(find.text('Erste Schritte'), findsOneWidget);
-    expect(find.text('Tippen hakt ab · Halten bearbeitet'), findsOneWidget);
+    expect(
+      find.text(
+        'Tippen hakt ab · Halten bearbeitet. '
+        'Vertippt? Unten unter „Zuletzt verwendet“ zurückholen.',
+      ),
+      findsOneWidget,
+    );
     await tester.tap(find.byTooltip('Erste Schritte ausblenden'));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('list-hint')), findsNothing);

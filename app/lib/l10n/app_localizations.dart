@@ -1127,7 +1127,7 @@ abstract class AppLocalizations {
   /// No description provided for @listHint.
   ///
   /// In de, this message translates to:
-  /// **'Tippen hakt ab · Halten bearbeitet'**
+  /// **'Tippen hakt ab · Halten bearbeitet. Vertippt? Unten unter „Zuletzt verwendet“ zurückholen.'**
   String get listHint;
 
   /// No description provided for @reorderNeedsConnection.

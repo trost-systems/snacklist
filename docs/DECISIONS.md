@@ -18646,3 +18646,19 @@ with Siri"; "What's on my Snacklist?" got a question whether to turn on Snacklis
    The two copies of `maxHouseholdName`/`validHouseholdName` became one in
    `app/lib/session/household_name.dart`, below both features, as the import-direction rule wants.
 5. **Port block 571xx.** The brief's 661xx is above 65535.
+
+## Job 469: the „Erste Schritte“ line says where a ticked item went
+
+- **One key, a second sentence.** `listHint` keeps „Tippen hakt ab · Halten bearbeitet“ and adds
+  „Vertippt? Unten unter „Zuletzt verwendet“ zurückholen.“ (EN "Tapped by mistake? Get it back
+  under “Recently used” below."). A period, not another `·`: the question reads as its own
+  sentence. No `\n`: the line wraps by itself (DE two rows at 358 px, golden `hint_cards_*`; EN three).
+- **EN says "below"** like the German „Unten“: „Zuletzt verwendet“ is the list's last section.
+- **Taught ahead, not after.** A step's line shows only while the step is open
+  (`_ChecklistRow`), and any tick, the mistaken one too, closes „Einmal einkaufen“. So the line
+  tells a new user before their first tick where a ticked item goes; it is gone after it. It does
+  not cover the brief's "still recoverable from the copy once the undo snackbar is gone": that needs
+  the line to stay on a done step or a hint after a tick, a layout or behaviour change the brief
+  rules out, so it went to the lead (NEEDS_LEAD Job 469). The copy names neither job 471's undo
+  snackbar nor its absence, so it stays true either way.
+- The line sits under its step title in the card, outside any control (hints-outside-controls).
