@@ -3186,3 +3186,15 @@ build (TestFlight/Play internal); no flag needed.
 
 No code change. `scripts/ci-e2e.sh` ran the five specs `--repeat-each=5 --retries=0` (box lock queue too long): 115 passed, 0 flaky ([run 45802627551](https://github.com/trost-systems/snacklist/actions/runs/45802627551)). The local 646xx run was skipped: it waited about 2 h for the e2e lock and never got it. `ci.yml` runs created since 20 Nov (`gh run list --workflow ci.yml --created ">=2026-11-20" --limit 1000`, 704 runs at 26 Nov 12:00 CET): 487 finished, 297 ran the e2e shards, 292 all green, 5 with a failed shard: `shell-more.spec.ts:18` (run 44883963105, issue #744), `household-bound.spec.ts:243` (45057043571, #743), `stores-add.spec.ts:81` (45141112834, #735), `integration-lock.spec.ts:94` (45160654568), and 44986694068 (no spec failed; the `fg sync` smoke step failed: "no latency measured"; its first log read was empty). None of the five failures is in the five specs, among the runs that ran the shards. #74, #75, #64, #62 are closed on evidence (5/5 clean repeats; for #75 and #62 the failures were stall-attributed); #341 and #302 are single CI failures that did not reproduce, so `Refs` only and no speculative patch. Details: [docs/done/445.md](docs/done/445.md). No app change, so no TestFlight build carries anything for it.
 - Job 473, add-sheet match rows read homographs as the server does (Schäufele is not Schaufel): [docs/done/473.md](docs/done/473.md)
+
+## Job 457: hill climb of the add sheet and dictation
+
+A bounded climb on the add flow users have today (4 steps, 49 minutes). The measure is
+`tool/hillclimb/hc-add-item-voice/measure.sh`: per-key and per-Enter time in the add sheet,
+how soon the device ranking finds an item, and about 400 add-path tests. Two microphone bugs were
+fixed with tests. A second tap while the recognizer got ready started a second session. A tap
+while the server split a sentence starts the next one, as before, but the first sentence's
+answer no longer empties the field under the new words or moves the focus. Two speed steps were reverted, because neither cleared this host's noise.
+Four interaction ideas went to `docs/hillclimb/prototype-candidates/hc-add-item-voice.md`. One
+copy error was found and left for job 456: the offline dictation message says to tap
+„Hinzufügen“, which the compact sheet doesn't show. Details: [docs/done/457.md](docs/done/457.md).

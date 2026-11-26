@@ -17,6 +17,13 @@ export interface HillClimbDoc {
 
 export const hillClimbDocs: readonly HillClimbDoc[] = [
   {
+    id: 'hc-add-item-voice',
+    metric: 'add sheet key and Enter ms, ranking and add-path tests',
+    direction: 'lower',
+    baseline: /^Baseline \*\*([\d.]+)\*\*/m,
+    target: null,
+  },
+  {
     id: 'hc-backend-perf',
     metric: 'p95 latency, geometric mean (ms)',
     direction: 'lower',
