@@ -8,6 +8,7 @@
 # first push runs no CI, and this marks the PR ready after its push.
 # The description needs a `## Changelog` section (docs/CHANGELOG.md); when it has none and the PR
 # changes nothing in the app builds (or is Dependabot's), this adds "## Changelog\nnone" to the PR first.
+# PUSH_PR_KEEP_DRAFT=1 leaves a draft a draft (scripts/hold-flip-draft.sh: its PR waits for Legal).
 # Before the push it runs scripts/push-checks.sh (lint.sh, and format and analyze where the branch
 # changes the app) and stops when one fails; PUSH_PR_SKIP_CHECKS=1 skips them.
 #
@@ -72,6 +73,7 @@ fi
 # on the commit pushed here is its first. Marked ready only after that push, so that
 # ready_for_review, which starts no run, follows it.
 ready_pr() {
+  [[ ${PUSH_PR_KEEP_DRAFT:-} != 1 ]] || return 0
   [[ "$(gh pr view "$pr" --json isDraft -q .isDraft)" == true ]] || return 0
   gh pr ready "$pr" >/dev/null
   log "marked #$pr ready for review"

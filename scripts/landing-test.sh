@@ -5,7 +5,9 @@
 # changes), MERGE_WAIT_MINUTES takes whole minutes only, merge-pr.sh waits for GitHub's record
 # of the PR to name the pushed head (job 218), and its wait for ci-ok goes on when a signal ends
 # only its sleep (job 219); push-pr.sh pushes nothing when scripts/push-checks.sh fails (here a
-# stub) and marks a draft PR ready only after its push (job 307). Run by the lint gate.
+# stub) and marks a draft PR ready only after its push (job 307), unless PUSH_PR_KEEP_DRAFT=1; merge-pr.sh
+# refuses a PR labelled do-not-merge and starts scripts/hold-flip-draft.sh after a merge (job 476).
+# Run by the lint gate.
 set -euo pipefail
 source "$(dirname "$0")/lib.sh"
 
@@ -57,6 +59,7 @@ case "$1 $2" in
       title) cat "$pr/title" ;;
       body) cat "$pr/body" ;;
       isDraft) [[ -e $pr/draft ]] && echo true || echo false ;;
+      labels) cat "$pr/labels" 2>/dev/null || true ;;
       *) echo "fake gh: no answer for $*" >&2; exit 1 ;;
     esac ;;
   "pr checks") cat "$pr/ci" ;;
@@ -168,6 +171,12 @@ expect_eq "push-pr.sh marks the draft ready after its push" "$(cat "$tmp/pr/read
 touch "$tmp/pr/draft"
 scripts/push-pr.sh >/dev/null
 [[ ! -e $tmp/pr/draft ]] || fail "push-pr.sh with nothing to push left the draft PR a draft"
+# Job 476: a hold flip's draft waits for Legal.
+open_pr k3
+touch "$tmp/pr/draft"
+PUSH_PR_KEEP_DRAFT=1 scripts/push-pr.sh >/dev/null
+[[ -e $tmp/pr/draft ]] || fail "PUSH_PR_KEEP_DRAFT=1 marked the draft ready"
+rm "$tmp/pr/draft"
 
 # Job 39: the changelog section. p1 above had none and only non-app files: "none" was added.
 expect_eq "push-pr.sh adds none once, also after a description edit" "$(body_of p1 | grep -c '^## Changelog$')" 1
@@ -239,7 +248,16 @@ expect_eq "merge-pr.sh refuses a head whose body is not the current description"
 [[ $out == *"the PR description changed since the last push; run scripts/push-pr.sh"* ]] || fail "edited description gave: $out"
 [[ ! -e $tmp/pr/merged ]] || fail "merge-pr.sh merged a stale description"
 mv "$tmp/pr/body.pushed" "$tmp/pr/body"
+printf 'needs-peter-legal-ok\ndo-not-merge\n' >"$tmp/pr/labels"
+out="$(scripts/merge-pr.sh --wait 7 2>&1)" && status=0 || status=$?
+expect_eq "merge-pr.sh refuses a PR labelled do-not-merge (job 476)" "$status" 1
+[[ $out == *"#7 is labelled do-not-merge; not merging"* ]] || fail "do-not-merge gave: $out"
+[[ ! -e $tmp/pr/merged ]] || fail "merge-pr.sh merged a PR labelled do-not-merge"
+printf 'do-not-merge\nlegal-go\n' >"$tmp/pr/labels"
+if out="$(scripts/merge-pr.sh --dry-run 7 2>&1)"; then fail "do-not-merge with legal-go was not refused: $out"; fi
+rm "$tmp/pr/labels"
 out="$(MERGE_WAIT_MINUTES=08 scripts/merge-pr.sh --wait 7 2>&1)" || fail "MERGE_WAIT_MINUTES=08 did not merge: $out"
+[[ $out == *"scripts/hold-flip-draft.sh 7 runs in the background"* ]] || fail "merge-pr.sh started no hold flip after the merge: $out"
 expect_eq "MERGE_WAIT_MINUTES=08 merges once ci-ok passes" "$(cat "$tmp/pr/merged" 2>/dev/null)" \
   "merged $(git --git-dir="$tmp/origin.git" rev-parse refs/heads/p6)"
 

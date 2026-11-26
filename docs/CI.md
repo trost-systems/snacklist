@@ -484,6 +484,59 @@ intervals while scrolling a 200-item list (DECISIONS job 28, 7).
    logged and the wait goes on. The 21st such sleep of one wait stops it
    with exit 1, a sleep that fails without a signal with the sleep's status.
 
+### Hold flips after a merge (job 476)
+
+Legal text behind a hold goes live only when a later PR releases the hold.
+#643 merged the push privacy text on 23 November, and its flip PR (#710)
+was opened only on 25 November. Nobody owned it for two days. Now the merge
+opens the flip itself.
+
+After every merge, `scripts/merge-pr.sh` starts
+`scripts/hold-flip-draft.sh <n>` in the background (`run_detached` in
+`lib.sh`) and returns. The child keeps none of the caller's files open, so
+the merge lock is free at once. The output goes to
+`.git/hold-flip-draft.log` in the clone. A failure there never changes the
+merge's exit code.
+
+The script reads the lines the merge added or changed in
+`site/content/legal/*.md`. It acts when a line sits inside a
+`::: once <hold>` or `::: until <hold>` block, or under a heading with
+`once=<hold>` or `until=<hold>` (the gates of `site/build.mjs`), and main
+still has `holds.<hold>.released` false in `releases/flags.json`. For each
+such hold without an open PR on `hold-flip/<hold>`, it:
+
+1. Branches from `origin/main` and makes the flip Legal reviewed in #710:
+   `released` true (the note stays), and the date lines (front matter
+   `updated:`, `Stand: <D>. <Monat> <YYYY>`, `Last updated: <D> <Month>
+   <YYYY>`) set to today in Europe/Berlin. It changes only the legal files
+   that hold a block for that hold.
+2. Opens a draft PR, `Hold flip: <hold> (draft, waits for Legal GO)`, with
+   the label `do-not-merge`. The body names the merged PR, lists the legal
+   files with their sha256, and has the checklist: Legal's GO, Peter's yes,
+   Legal's live check.
+3. Appends the enable-checklist line for the hold to `docs/NEEDS_LEAD.md`,
+   once per hold, and pushes with `PUSH_PR_KEEP_DRAFT=1 scripts/push-pr.sh`.
+   The draft stays a draft, and CI runs on its head.
+
+A rerun finds the open PR. It only finishes what an earlier run left undone,
+and comments once on the open PR when a later merge changed the hold's text
+again. The script never merges and never changes a rollout. merge-pr.sh
+refuses a PR labelled `do-not-merge`, and so does the box's
+`bin/legal-go-merge`. Remove the label by hand once Legal's GO and Peter's
+yes are recorded, then land the PR as usual.
+
+Only merges through merge-pr.sh start the script. Legal PRs that the box's
+`bin/legal-go-merge` merges (`gh pr merge`, since 26 November) open no flip
+until that script calls it too (NEEDS_LEAD, job 476). Until then, run it by
+hand after such a merge. Guides carry `::: once` blocks too; they are not
+legal text and open no flip.
+
+By hand, for a merge made before this existed or a run that failed:
+`scripts/hold-flip-draft.sh <pr-or-commit>`. `--dry-run` prints the holds,
+the flip's diff and the PR body without pushing. `--base <rev>` checks the
+holds against another main, for example the merge commit itself.
+Tests: `scripts/hold-flip-draft-test.sh` (lint gate).
+
 ### Checks before the push (job 307)
 
 `scripts/push-checks.sh` runs the quick checks of the lint and flutter gates

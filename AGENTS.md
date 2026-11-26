@@ -186,6 +186,9 @@ reasons are in [`docs/DECISIONS.md`](docs/DECISIONS.md).
      The pre-push hook warns when a PR branch goes up as several commits.
   3. Under the merge lock: `scripts/merge-pr.sh --wait <n>` waits for
      `ci-ok` on that commit and rebase-merges it. One CI run per merge.
+     It refuses a PR labelled `do-not-merge`. After a merge it opens a draft hold flip in the
+     background when the PR changed legal text behind an unreleased hold (`scripts/hold-flip-draft.sh`,
+     `docs/CI.md` "Hold flips after a merge").
      It gives up after 30 minutes. A run with the ios job can take longer:
      land a PR that changes the native projects, the pubspec, `scripts/gates/android.sh`,
      `ios.sh` or `ios-storekit.sh`, `scripts/ios/build-for-testing.sh`, the ios gate's two Python checks, `scripts/lib.sh` or the CI definition
