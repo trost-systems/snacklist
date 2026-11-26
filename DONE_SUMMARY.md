@@ -3094,3 +3094,7 @@ Legal GO carried over from dc318acc to 6aab3f68; publish dates set to 26 Novembe
 ## Job 449: stale non-legal docs and comments
 
 Docs and comments only; details in `docs/done/449.md`. Verify: `scripts/verify.sh --only gitleaks,lint`.
+
+## Job 464: switches and pickers change at once
+
+Two rules in `AGENTS.md` (Conventions): optimistic UI for controls without a loading state, and app links opening the installed app with their files kept in lockstep. Audit of every server-backed switch, radio and menu pick: trip detection, join approval, usage data, currency and store controls already change at once; the default household dialog and the default list menu waited and now change at once, reverting with a snackbar on failure. The notification switches Peter noticed belong to job 463 and are untouched here. Tests: two widget tests that fail on the old code and pass on the new. Ships to TestFlight with the next green main build; no flag (the two pickers show where `list-declutter` is off and on the `/more/household` page). Details: [docs/done/464.md](docs/done/464.md).

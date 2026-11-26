@@ -38,7 +38,7 @@ What users see (flag `list-declutter`, rolled out in full): the list screen has 
 
 ## Gotchas
 
-- `VH_FLAGS_FULL=0` builds the flag-off screen (what the e2e specs see): list tabs, More's household and invite rows, the „Einkaufssumme“ bar ([prices](./prices.md)); `VH_FLAGS_OFF=list-declutter` leaves out only this flag. Without the flag the household sheet keeps „Siri, Alexa & KI nutzen: …“ (a dialog) and „Liste: …“ (a menu).
+- `VH_FLAGS_FULL=0` builds the flag-off screen (what the e2e specs see): list tabs, More's household and invite rows, the „Einkaufssumme“ bar ([prices](./prices.md)); `VH_FLAGS_OFF=list-declutter` leaves out only this flag. Without the flag the household sheet keeps „Siri, Alexa & KI nutzen: …“ (a dialog) and „Liste: …“ (a menu); both check the tap at once and put the old pick back, with the reason in a snackbar, when the save fails (job 464).
 - A first list stored as „Einkaufsliste“ shows as "Shopping list" in English (`listName`): compare what the switcher shows, not the database name.
 - `ReorderableDelayedDragStartListener` needs the hold to stay still for the long-press time; a mouse drag without the hold scrolls the sheet instead.
 

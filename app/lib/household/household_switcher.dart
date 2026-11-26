@@ -396,14 +396,17 @@ class const _DefaultPicker() extends StatefulWidget {
 }
 
 class _DefaultPickerState() extends State<_DefaultPicker> {
-  var _busy = false;
+  /// The household tapped while the server saves it, shown checked at once;
+  /// a refusal puts the check back.
+  String? _picked;
 
   Future<void> _pick(String householdId) async {
     final l10n = AppLocalizations.of(context);
     final notices = Notices.of(context);
-    setState(() => _busy = true);
+    final session = context.read<SessionCubit>();
+    setState(() => _picked = householdId);
     try {
-      await context.read<SessionCubit>().setDefault(householdId);
+      await session.setDefault(householdId);
       if (mounted) {
         popIfCurrent(context);
       }
@@ -412,7 +415,7 @@ class _DefaultPickerState() extends State<_DefaultPicker> {
         SnackBar(content: Text(householdProblemText(l10n, e.problem))),
       );
       if (mounted) {
-        setState(() => _busy = false);
+        setState(() => _picked = null);
       }
     }
   }
@@ -439,9 +442,9 @@ class _DefaultPickerState() extends State<_DefaultPicker> {
             ),
             const SizedBox(height: HlSpace.s2),
             IgnorePointer(
-              ignoring: _busy,
+              ignoring: _picked != null,
               child: RadioGroup<String>(
-                groupValue: session.defaultHousehold.id,
+                groupValue: _picked ?? session.defaultHousehold.id,
                 onChanged: (id) {
                   if (id != null && id != session.defaultHousehold.id) {
                     unawaited(_pick(id));

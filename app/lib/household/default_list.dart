@@ -69,6 +69,13 @@ class _PickerState() extends State<_Picker> {
   List<HouseholdList>? _fetched;
   String? _pick;
 
+  /// The pick the server last confirmed, what a refusal puts back.
+  String? _saved;
+
+  /// Picks still waiting for the server; once none is, the row shows
+  /// [_saved].
+  var _saving = 0;
+
   /// Counts reads and picks: an older answer does not overwrite a newer one.
   var _asked = 0;
 
@@ -103,7 +110,7 @@ class _PickerState() extends State<_Picker> {
       if (mounted && asked == _asked) {
         setState(() {
           _fetched = lists ?? _fetched;
-          _pick = pick;
+          _pick = _saved = pick;
         });
       }
     } on HouseholdError {
@@ -111,19 +118,28 @@ class _PickerState() extends State<_Picker> {
     }
   }
 
+  /// Shows [listId] at once; a refusal puts the pick back.
   Future<void> _choose(String listId) async {
     final notices = Notices.of(context);
     final l10n = AppLocalizations.of(context);
+    final session = context.read<SessionCubit>();
     final asked = ++_asked;
+    _saving++;
+    setState(() => _pick = listId);
+    var failed = false;
     try {
-      await context.read<SessionCubit>().setDefaultList(listId);
-      if (mounted && asked == _asked) {
-        setState(() => _pick = listId);
-      }
+      await session.setDefaultList(listId);
+      _saved = listId;
     } on HouseholdError catch (e) {
+      failed = true;
       notices.showSnackBar(
         SnackBar(content: Text(householdProblemText(l10n, e.problem))),
       );
+    } finally {
+      _saving--;
+    }
+    if (mounted && (_saving == 0 || (failed && asked == _asked))) {
+      setState(() => _pick = _saved);
     }
   }
 

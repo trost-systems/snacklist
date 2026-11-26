@@ -143,6 +143,18 @@ reasons are in [`docs/DECISIONS.md`](docs/DECISIONS.md).
   `app/lib/list/model.dart`) applied optimistically and retried until the
   server acknowledges them; the screen shows server rows with pending ops
   folded on top. Add new mutations as new `ItemOp` variants.
+- A control without its own loading state (a switch, radio, checkbox, menu
+  pick) shows the user's change at once, then calls the server; a failure
+  puts the old value back and says so in a snackbar (`Notices`). Show a
+  spinner only where the control has one, never just to wait (job 464). A
+  widget test covers the immediate change and the revert.
+- Paths the app handles on `app.snacklist.app` and `snacklist.app` (join,
+  list and household links, guides, other product screens) open the
+  installed app, the browser only when it is not installed. `appLinks` in
+  `app/lib/core/deep_links.dart` (or its successor), the AASA, `assetlinks.json`, the Android
+  `autoVerify` filter, the iOS entitlements and the router change together
+  (`docs/DEEP_LINKS.md`). Never claim a browser-only path: the web sign-in
+  redeem, OAuth, login, welcome and consent, the legal pages.
 - Analytics events pass the allow-list in `app/lib/analytics/events.dart`
   (`eventCatalog`): a new event or property gets a rule there, a test and a
   row in `docs/ANALYTICS.md`. Never list text, names or free text.

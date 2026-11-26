@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/core/device_cache.dart';
 import 'package:family_groceries/core/language.dart';
@@ -319,6 +321,47 @@ void main() {
       (s.session.state as InHousehold).household.id,
       'home',
       reason: 'the shown household stays',
+    );
+  });
+
+  testWidgets('the default picker checks the tap at once; a refusal puts '
+      'the check back and says why', (tester) async {
+    final s = await _pumpShell(tester);
+    await _openSheet(tester);
+    await tester.tap(_key('household-default-row'));
+    await tester.pumpAndSettle();
+    final answer = s.session.hold = Completer<void>();
+    s.session.fail = HouseholdProblem.offline;
+    await tester.tap(_key('household-default-club'));
+    await tester.pump();
+    expect(
+      tester.getSemantics(_key('household-default-club')),
+      isSemantics(isChecked: true),
+    );
+    expect(
+      tester.getSemantics(_key('household-default-home')),
+      isSemantics(isChecked: false),
+    );
+    answer.complete();
+    await tester.pumpAndSettle();
+    expect(_key('household-default-picker'), findsOneWidget);
+    expect(
+      tester.getSemantics(_key('household-default-home')),
+      isSemantics(isChecked: true),
+    );
+    expect(
+      tester.getSemantics(_key('household-default-club')),
+      isSemantics(isChecked: false),
+    );
+    expect(
+      find.descendant(
+        of: find.byType(SnackBar),
+        matching: find.text(
+          'Keine Internetverbindung. Versuche es erneut, sobald du online '
+          'bist.',
+        ),
+      ),
+      findsOneWidget,
     );
   });
 

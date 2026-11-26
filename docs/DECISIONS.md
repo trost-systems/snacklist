@@ -18304,3 +18304,9 @@ PostHog's `Bad state: No element` in go_router's `_findCurrentNavigators` came f
 ## Job 453: no app workaround for the semantics `geometry!` crash
 
 The crash is flutter#195316 (fix flutter#192724 on master, in no stable or beta yet); the upstream test fails on our Flutter 3.50.0. The real list screen reaches the faulty branch but did not crash in about 1,000 fuzz runs, so there is no proven app trigger. Calls: ship no speculative change (replacing the add sheet's `ExcludeSemantics` would alter screen-reader output on a guess), no Flutter upgrade until a stable has the fix, and no committed canary test (the check is one curl, `docs/done/453.md`). Bug 1 stays open in NEEDS_LEAD "Job 453".
+
+## Job 464: optimistic switches and pickers
+
+- The rule covers any control that saves to the server without a loading state, not only switches: the default household dialog and the default list menu waited the same way, so they changed too. Rows with a spinner (the voice pages) keep it.
+- `HouseholdAddAlert` (notify on adds, hide my name) is used only in `household_add_settings.dart`, which job 463 owns, so this job leaves both alone; 463 applies the rule there.
+- The default household dialog keeps ignoring taps while a save runs, as before, so a second tap cannot race the first.
