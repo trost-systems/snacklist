@@ -1889,5 +1889,13 @@
   "shoppingDayHint": "Wähle deine Einkaufstage. Am Abend davor um 19 Uhr in der Zeitzone deines Geräts schickt Snacklist dir einen Hinweis aufs Handy.",
   "@shoppingDayHint": {"description": "Job 378: above the weekday chips; the reminder is a push at 19:00 local the evening before a picked weekday, none picked means off"},
   "shoppingDayBlocked": "Mitteilungen sind für Snacklist ausgeschaltet. Schalte sie in den Einstellungen deines Handys ein.",
-  "@shoppingDayBlocked": {"description": "Job 378: snackbar when a weekday was picked but the OS refuses notifications; nothing is saved"}
+  "@shoppingDayBlocked": {"description": "Job 378: snackbar when a weekday was picked but the OS refuses notifications; nothing is saved"},
+  "guideFailed": "Die Anleitung konnte nicht geladen werden. Bist du online?",
+  "@guideFailed": {"description": "Job 462: a guide from snacklist.app opened in the app could not be fetched (offline, server error)"},
+  "guidesFailed": "Die Anleitungen konnten nicht geladen werden. Bist du online?",
+  "@guidesFailed": {"description": "Job 462: the guide index from snacklist.app could not be fetched"},
+  "guideMissing": "Diese Anleitung gibt es nicht mehr.",
+  "@guideMissing": {"description": "Job 462: the guide link points to a guide the site no longer has (404)"},
+  "guidesAll": "Alle Anleitungen",
+  "@guidesAll": {"description": "Job 462: button on a missing guide, opens the guide index in the guide's language"}
 }

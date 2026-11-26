@@ -3124,3 +3124,19 @@ Opening Mehr › Zugänge showed the old „MCP-Server“ and „Zugriffsschlüs
 ## Job 463: Mitteilungen as its own More item
 
 More has a row „Mitteilungen“ / "Notifications" below Einstellungen (`/more/notifications`). The household-add switches and the shopping-day weekdays moved there from Einstellungen. The switches move on tap and go back with a notice when the save or the OS permission fails. Shopping-day picks made during a save are no longer dropped. The row shows only where a section would: `push-household-add` (also on the web, for the name switch) or `push-shopping-day` in a phone build. Both flags are internal-only and push is held, so users see no change yet. It reaches TestFlight with the next green main build. To see it there, Peter's account needs `push-household-add` and/or `push-shopping-day` on (internal testers only, already their targeting). Widget tests and goldens cover it. Details: [docs/done/463.md](docs/done/463.md).
+
+## Job 462: app-routable links open the installed app
+
+PR #731. A link the app can show now opens the installed app. Without the app it stays in the browser.
+
+- **Links.** On app.snacklist.app every product screen: list, add, stores, More, join, Anpassen, Verlauf, trips and a new household. On snacklist.app the guides (`/de/anleitungen*`, `/en/guides*`), which the app shows in a native guide view from JSON the site build writes.
+- **"In der App öffnen".** The join page and guide pages show this link on iOS and Android, for when Safari or Chrome kept the page.
+- **Store build.** A new build is required for the guides, the new paths and the guide view. Expect it in the next green main build on TestFlight and Play internal. No flag.
+- **Invite links on 1541.** These already open the app when tapped. Typed or pasted into Safari they never do, which is likely what Peter hit. The join page's new link covers that case once the next `release` push lands, and on iOS it should work with 1541 too. That is inferred, not tested on a device.
+- **Site files.** These go live on merge.
+- **Verification.**
+  - Flutter: config, router and guides tests, and analyze is clean.
+  - Site: `npm test` passed 274 of 274.
+  - Join page: the e2e passed 21 of 21.
+  - Not covered: no device test; the 8 pixel goldens fail on the box on HEAD too.
+- **Details.** [docs/done/462.md](docs/done/462.md), `docs/DEEP_LINKS.md`.

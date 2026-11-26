@@ -5,7 +5,8 @@ The landing pages, guides, changelog and legal pages: static HTML from Markdown 
 the app on app.snacklist.app. The JavaScript is `public/demo.js`, which starts and pauses the
 landing pages' demo videos, `public/stores.js`, which switches the stores card's route when a
 store button is pressed, `public/waitlist.js`, the sign-up form and the pages behind the
-waitlist mails (below), and `public/report.js`, the report form (below).
+waitlist mails (below), `public/report.js`, the report form (below), and `public/open-in-app.js`,
+the guides' hand-off to the app (Data for the app, App links).
 
 ```bash
 npm ci
@@ -56,6 +57,47 @@ when `schema` is 1 and `revision` is above the bundled table's. A file it cannot
 nothing. `vercel.json` serves `/data/` to any origin (`Access-Control-Allow-Origin: *`, for the
 web app on app.snacklist.app) with a day's cache; Vercel sets the ETag. A new schema gets a new file
 name (`item-icons.v2.json`), so apps in the stores keep reading v1.
+
+### Guides as JSON
+
+The app shows the guides in its own view (job 462), so the build writes each guide it renders as
+`dist/data/guides/<locale>/<slug>.json` and each locale's list as `dist/data/guides/<locale>/index.json`,
+served at `https://snacklist.app/data/guides/...` with the `/data/` headers above. `guide-data.mjs`
+walks the same markdown-it tokens the page is rendered from, after the `since`, `once` and `until`
+gating and the `alexa-skill:` links, so the JSON holds what that build's page shows: production
+leaves out what its pages leave out, and no draft or gate banner gets in. A shown version note
+("Ab App-Version 1.4.0") is an `em` paragraph.
+
+```
+Guide  = { "schema": 1, "locale": "de"|"en", "slug", "title", "description", "updated": "YYYY-MM-DD",
+           "url": "https://snacklist.app/de/anleitungen/<slug>", "blocks": [Block] }   // no h1: that is "title"
+Block  = { "type": "heading", "level": 2..4, "id": string|null, "text": [Span] }
+       | { "type": "paragraph", "text": [Span] }
+       | { "type": "list", "ordered": bool, "items": [[Block]] }
+       | { "type": "quote", "blocks": [Block] }
+       | { "type": "code", "text": string }
+       | { "type": "table", "header": [[Span]], "rows": [[[Span]]] }
+Span   = { "text": string, "strong"?: true, "em"?: true, "code"?: true, "href"?: string }
+Index  = { "schema": 1, "locale", "title", "guides": [{ "slug", "title", "description", "url" }] }
+```
+
+`href` is absolute (a site-relative link gets `https://snacklist.app`), an in-page anchor stays
+`#id`. A line break inside a paragraph is `\n` in the text. The app skips block types it does not
+know, so a new type needs no new schema; a change to an existing shape does. `test/guide-data.test.mjs`
+pins the contract.
+
+### App links
+
+The app claims the guide indexes and guides on snacklist.app (job 462): `public/.well-known/apple-app-site-association`
+lists `/de/anleitungen`, `/en/guides` and the paths below them for `VCZSHMZY25.com.snacklist.app`,
+`public/.well-known/assetlinks.json` is the `com.snacklist.app` statement of the app host's file
+(`app/web/.well-known/assetlinks.json`; `test/app-links.test.mjs` fails when they differ).
+`vercel.json` serves the AASA as JSON, also at `/apple-app-site-association`. Keep both paths
+out of redirects. The link table is `app/lib/core/deep_links.dart`; a path claimed here must be
+in it. When the link opens the browser anyway, `public/open-in-app.js` shows "In der App öffnen" /
+"Open in the app" under a guide's or an index's title on iOS and Android: the app's
+`com.snacklist.app://open<path>` on iOS, an `intent://` URL with this page as its fallback on
+Android.
 
 ## Adding a guide
 

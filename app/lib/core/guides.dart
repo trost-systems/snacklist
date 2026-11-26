@@ -1,17 +1,10 @@
 import 'package:family_groceries/core/environment.dart';
 
-/// The public guides on snacklist.app (`site/` in this repo). Slugs are
-/// stable; the site serves German guides under /de/anleitungen and English
-/// ones under /en/guides.
+/// The public site, snacklist.app (`site/` in this repo). Its guides open
+/// in the app (`core/deep_links.dart`, `guides/`); the pages below open in
+/// the system browser (`openLegalPage`), so none of them may be claimed:
+/// on Android a claimed URL would come straight back to the app.
 const guidesBaseUrl = 'https://snacklist.app';
-
-/// The Siri Shortcut guide in the UI language: German for `de`, otherwise
-/// the English page, which points German readers to the German guide.
-Uri siriGuideUrl(String languageCode) => Uri.parse(
-  languageCode == 'de'
-      ? '$guidesBaseUrl/de/anleitungen/siri-kurzbefehl'
-      : '$guidesBaseUrl/en/guides/siri-shortcut',
-);
 
 /// The imprint on snacklist.app (`site/content/legal/`), German or English.
 Uri imprintUrl(String languageCode) => Uri.parse(

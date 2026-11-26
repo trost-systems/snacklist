@@ -4072,4 +4072,18 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get shoppingDayBlocked =>
       'Mitteilungen sind für Snacklist ausgeschaltet. Schalte sie in den Einstellungen deines Handys ein.';
+
+  @override
+  String get guideFailed =>
+      'Die Anleitung konnte nicht geladen werden. Bist du online?';
+
+  @override
+  String get guidesFailed =>
+      'Die Anleitungen konnten nicht geladen werden. Bist du online?';
+
+  @override
+  String get guideMissing => 'Diese Anleitung gibt es nicht mehr.';
+
+  @override
+  String get guidesAll => 'Alle Anleitungen';
 }

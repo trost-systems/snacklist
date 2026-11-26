@@ -22,10 +22,11 @@ void main() {
     }
   });
 
-  test('signed out, a trip summary goes to the start', () {
+  // Job 462: a trip link opens the app; sign-in continues there.
+  test('signed out, a trip summary link waits for sign-in', () {
     expect(
       authRedirect(const SignedOut(), Uri.parse(tripSummaryPath('abc'))),
-      startPath,
+      '/login?next=%2Ftrip%2Fabc',
     );
   });
 }

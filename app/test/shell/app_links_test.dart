@@ -6,6 +6,7 @@ import 'package:family_groceries/core/device_cache.dart';
 import 'package:family_groceries/core/language.dart';
 import 'package:family_groceries/core/localizations.dart';
 import 'package:family_groceries/core/notices.dart';
+import 'package:family_groceries/guides/source.dart';
 import 'package:family_groceries/household/pending_invite.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/list_link.dart';
@@ -17,6 +18,8 @@ import 'package:family_groceries/shell/router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
@@ -69,6 +72,10 @@ void main() {
           RepositoryProvider.value(value: cache),
           RepositoryProvider.value(value: links),
           RepositoryProvider<PremiumServer>.value(value: purchases.premium),
+          RepositoryProvider(
+            create: (_) =>
+                GuideSource(MockClient((_) async => http.Response('', 404))),
+          ),
           RepositoryProvider.value(
             value: SocialSignIn(
               auth,
@@ -155,6 +162,35 @@ void main() {
     sessions.add(const SignedOut());
     await tester.pumpAndSettle();
     expect(location(), '/login');
+    await unmount(tester);
+  });
+
+  // Job 462: what the platform hands the router when a link opens the app.
+  testWidgets('the browser handoff com.snacklist.app://open/join/<code> is '
+      'the invite link', (tester) async {
+    await pumpRouter(tester, const SignedOut());
+    await tester.pumpAndSettle();
+    await tester.binding.handlePushRoute(
+      'com.snacklist.app://open/join/ABCD2345',
+    );
+    await tester.pumpAndSettle();
+    expect(location(), '/login?invite=ABCD2345');
+    await unmount(tester);
+  });
+
+  testWidgets('a guide link signed out shows the guide, then the start', (
+    tester,
+  ) async {
+    await pumpRouter(tester, const SignedOut());
+    await tester.pumpAndSettle();
+    await tester.binding.handlePushRoute(
+      'https://snacklist.app/de/anleitungen/siri-kurzbefehl',
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Diese Anleitung gibt es nicht mehr.'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('guide-close')));
+    await tester.pumpAndSettle();
+    expect(location(), '/start');
     await unmount(tester);
   });
 }

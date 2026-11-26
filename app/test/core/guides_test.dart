@@ -1,33 +1,22 @@
-import 'dart:io';
-
+import 'package:family_groceries/core/deep_links.dart';
 import 'package:family_groceries/core/guides.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('German UI opens the German Siri guide', () {
-    expect(
-      siriGuideUrl('de').toString(),
-      'https://snacklist.app/de/anleitungen/siri-kurzbefehl',
-    );
-  });
-
-  test('any other UI language opens the English Siri guide', () {
-    for (final code in ['en', 'fr']) {
-      expect(
-        siriGuideUrl(code).toString(),
-        'https://snacklist.app/en/guides/siri-shortcut',
-      );
-    }
-  });
-
-  /// The site builds one page per Markdown file; a renamed slug would break
-  /// the app's link without failing anything else.
-  test('both guide pages exist in site/', () {
-    for (final path in [
-      '../site/content/guides/de/siri-kurzbefehl.md',
-      '../site/content/guides/en/siri-shortcut.md',
-    ]) {
-      expect(File(path).existsSync(), isTrue, reason: path);
+  /// Job 462: these open in the system browser. A claimed one would come
+  /// straight back to the app on Android, which has no page for it.
+  test('the site pages the app opens in the browser are not claimed', () {
+    for (final language in ['de', 'en']) {
+      for (final url in [
+        imprintUrl(language),
+        privacyPolicyUrl(language),
+        termsUrl(language),
+        supportUrl(language),
+        changelogUrl(language, '1.4.1'),
+      ]) {
+        expect(LinkHost.site.hosts, contains(url.host), reason: '$url');
+        expect(claims(LinkHost.site, url.path), isFalse, reason: '$url');
+      }
     }
   });
 }

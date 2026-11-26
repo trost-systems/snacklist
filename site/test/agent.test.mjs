@@ -151,7 +151,7 @@ test('jsonld: broken JSON, a missing property, an unknown type and FAQ questions
 
 test('structure: an index missing a guide, a guide without intro or date, a FAQ question without "?"', () => {
   assertCatches('structure', { 'en/guides.html': (t) => t.replace(/<li><a href="\/en\/guides\/claude">.*?<\/li>/s, '') }, /en\/guides\.html: guide index does not list \/en\/guides\/claude/);
-  assertCatches('structure', { 'en/guides/alexa.html': (t) => t.replace(/(<\/h1>\n)(?:<p>.*?<\/p>\n|<blockquote>[\s\S]*?<\/blockquote>\n)+/, '$1') }, /en\/guides\/alexa\.html: needs an intro paragraph/);
+  assertCatches('structure', { 'en/guides/alexa.html': (t) => t.replace(/(<\/h1>\n(?:<p class="open-in-app" hidden>.*<\/p>\n)?)(?:<p>.*?<\/p>\n|<blockquote>[\s\S]*?<\/blockquote>\n)+/, '$1') }, /en\/guides\/alexa\.html: needs an intro paragraph/);
   assertCatches('structure', { 'en/guides/alexa.html': (t) => t.replace(/<time datetime="[^"]*">/, '<time>') }, /needs the updated date as <time datetime/);
   assertCatches('structure', { 'en/support.html': (t) => t.replace('<h3>How do I export my data?</h3>', '<h3>How to export your data</h3>') }, /FAQ question "How to export your data" must end with "\?"/);
 });

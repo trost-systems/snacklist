@@ -203,11 +203,47 @@ test('a lower-case code and a trailing slash land on the same invite', async ({ 
   expect(calls).toHaveLength(1);
 });
 
+// Job 462: when the App Link or Universal Link did not fire, the page hands off to the installed app.
+const iPhoneAgent = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1';
+const androidAgent = 'Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36';
+
+async function phonePage(browser: Browser, baseURL: string | undefined, userAgent: string): Promise<Page> {
+  const context = await browser.newContext({ userAgent, locale: 'de-DE', baseURL: baseURL ?? '' });
+  return context.newPage();
+}
+
+test('"In der App öffnen": the app\'s scheme on an iPhone, an intent falling back to this page on Android, none on a desktop', async ({ browser, baseURL, page }) => {
+  const iphone = await phonePage(browser, baseURL, iPhoneAgent);
+  await joinPage(iphone, okAnswer, `/join/${code.toLowerCase()}`);
+  await expect(iphone.getByRole('link', { name: 'In der App öffnen' })).toHaveAttribute('href', `com.snacklist.app://open/join/${code}`);
+
+  const android = await phonePage(browser, baseURL, androidAgent);
+  await joinPage(android, okAnswer);
+  const here = new URL(android.url());
+  await expect(android.getByRole('link', { name: 'In der App öffnen' })).toHaveAttribute(
+    'href',
+    `intent://${here.host}/join/${code}#Intent;scheme=https;package=com.snacklist.app;S.browser_fallback_url=${encodeURIComponent(here.href)};end`,
+  );
+
+  await joinPage(page, okAnswer);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(/Peter/);
+  await expect(page.getByRole('link', { name: 'In der App öffnen' })).toHaveCount(0);
+  await expect(page.locator('#open-app')).toBeHidden();
+});
+
 test('no store button and no Smart App Banner while the listings are not public', async ({ page }) => {
   await joinPage(page, okAnswer);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(/Peter/);
   await expect(page.getByRole('link', { name: /App Store|Google Play/ })).toHaveCount(0);
   await expect(page.locator('meta[name="apple-itunes-app"]')).toHaveCount(0);
+});
+
+test("/join without a code, with or without its slash, opens the web app's code entry", async ({ page }) => {
+  await page.route((url) => url.pathname === '/', (route) => route.fulfill({ contentType: 'text/html', body: '<p>app</p>' }));
+  for (const path of ['/join', '/join/']) {
+    await page.goto(path);
+    await expect(page).toHaveURL(/\/\?next=%2Fjoin$/);
+  }
 });
 
 test('a sign-in that comes back to /join/<code> goes on to the app with its parameters', async ({ page }) => {

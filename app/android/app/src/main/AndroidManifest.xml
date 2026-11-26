@@ -54,7 +54,29 @@
                 <data android:pathPrefix="/stores/"/>
                 <data android:path="/more"/>
                 <data android:pathPrefix="/more/"/>
+                <data android:path="/join"/>
                 <data android:pathPrefix="/join/"/>
+                <data android:path="/edit"/>
+                <data android:pathPrefix="/edit/"/>
+                <data android:path="/history"/>
+                <data android:pathPrefix="/history/"/>
+                <data android:pathPrefix="/trip/"/>
+                <data android:path="/households/new"/>
+                <data android:pathPrefix="/households/new/"/>
+            </intent-filter>
+            <!-- The guides on snacklist.app open the app's own guide view. A filter of their
+                 own: Android pairs every host of a filter with every path of it, so sharing one
+                 would claim /more on the site and the guides on the web app.
+                 site/public/.well-known/assetlinks.json verifies the domain. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="https" android:host="snacklist.app"/>
+                <data android:path="/de/anleitungen"/>
+                <data android:pathPrefix="/de/anleitungen/"/>
+                <data android:path="/en/guides"/>
+                <data android:pathPrefix="/en/guides/"/>
             </intent-filter>
         </activity>
         <!-- The Home Screen widget (job 63, docs/HOME_WIDGETS.md). -->

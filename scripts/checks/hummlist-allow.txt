@@ -98,6 +98,7 @@ app/web/.well-known/apple-app-site-association  # 6: VCZSHMZY25.com.hummlist.app
 app/web/.well-known/assetlinks.json  # 6: com.hummlist.app App Links
 app/android/app/src/main/AndroidManifest.xml  # 6: App Links for app.hummlist.com invite links
 app/ios/Runner/Runner.entitlements  # 6: applinks:app.hummlist.com invite links
+app/lib/core/deep_links.dart  # 6: the link table names app.hummlist.com, claimed until R1
 app/test/core/deep_links_config_test.dart  # 6: tests of the old ids and host
 app/test/household/pending_invite_test.dart  # 6: an invite link sent from a Hummlist build
 e2e/web-smoke.mjs  # 6: checks the served AASA and assetlinks

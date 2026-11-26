@@ -20,6 +20,7 @@ export const LAYERS: Readonly<Record<string, Layer>> = {
   session: 'core',
   push: 'core',
   feedback: 'feature',
+  guides: 'feature',
   'home_widget': 'feature',
   household: 'feature',
   list: 'feature',

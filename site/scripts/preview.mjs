@@ -1,6 +1,6 @@
 // Serves dist/ with the parts of vercel.json this site uses, so redirects and headers can be
-// checked locally: headers, redirects with `has` header conditions, rewrites to functions, cleanUrls,
-// trailingSlash false.
+// checked locally: headers, redirects with `has` header conditions, rewrites to functions and files,
+// cleanUrls, trailingSlash false.
 // The site/api functions (waitlist, report, get) answer under /api/* with the env of this process.
 import process from 'node:process';
 import { Buffer } from 'node:buffer';
@@ -100,13 +100,15 @@ export function startPreview({ dir = join(SITE_DIR, 'dist'), port = 55990, host 
     if (FUNCTIONS[path]) {
       return callFunction(FUNCTIONS[path], req, res).catch(() => res.writeHead(500).end());
     }
-    const file = fileFor(root, path);
-    // Like Vercel: files first, then rewrites (only to functions here).
-    const rewrite = file ? null : (config.rewrites ?? []).find((rule) => matchesSource(rule.source, path) && FUNCTIONS[rule.destination]);
-    if (rewrite) return callFunction(FUNCTIONS[rewrite.destination], req, res).catch(() => res.writeHead(500).end());
+    // Like Vercel: files first, then rewrites.
+    const rewrite = fileFor(root, path) ? null : (config.rewrites ?? []).find((rule) => matchesSource(rule.source, path));
+    if (rewrite && FUNCTIONS[rewrite.destination]) return callFunction(FUNCTIONS[rewrite.destination], req, res).catch(() => res.writeHead(500).end());
+    const file = fileFor(root, rewrite ? rewrite.destination : path);
     const status = file ? 200 : 404;
     const body = file ?? join(root, '404.html');
-    res.writeHead(status, { 'Content-Type': TYPES[extname(body)] ?? 'application/octet-stream' });
+    // A Content-Type from vercel.json's headers wins, as on Vercel.
+    if (!res.hasHeader('Content-Type')) res.setHeader('Content-Type', TYPES[extname(body)] ?? 'application/octet-stream');
+    res.writeHead(status);
     res.end(req.method === 'HEAD' ? undefined : readFileSync(body));
   });
   return new Promise((resolve) => server.listen(port, host, () => resolve(server)));

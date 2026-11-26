@@ -36,8 +36,9 @@ files="$(git -c core.quotePath=false diff --name-only --no-renames "$1" "$2")"
 grep -qE '^(\.github/workflows/ci\.yml|\.github/actions/|scripts/ci-changes\.sh|scripts/lib\.sh|scripts/e2e-summary\.sh)' <<<"$files" && all
 
 # What the Flutter tests read outside app/ (job 309): parity tables and sources shared with the
-# server, the release runbook and consent texts, the guides. Documentation or not, it is the app's.
-app_reads='^supabase/(classifier/|tests/[^/]*\.(tsv|json)$|functions/_shared/(consent_version|http)\.ts$)|^docs/(RELEASE\.md$|consent/)|^site/content/guides/'
+# server, the release runbook and consent texts, the guides, the site's app-association files (job 462).
+# Documentation or not, it is the app's.
+app_reads='^supabase/(classifier/|tests/[^/]*\.(tsv|json)$|functions/_shared/(consent_version|http)\.ts$)|^docs/(RELEASE\.md$|consent/)|^site/content/guides/|^site/public/\.well-known/'
 # Documentation the nexus tests read (the hill-climb docs on main).
 gate_reads='^docs/hillclimb/'
 # Documentation: docs/ and Markdown, except the verify skill's files, which its CLI reads.
