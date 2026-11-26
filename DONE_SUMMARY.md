@@ -3124,3 +3124,17 @@ Opening Mehr › Zugänge showed the old „MCP-Server“ and „Zugriffsschlüs
 ## Job 463: Mitteilungen as its own More item
 
 More has a row „Mitteilungen“ / "Notifications" below Einstellungen (`/more/notifications`). The household-add switches and the shopping-day weekdays moved there from Einstellungen. The switches move on tap and go back with a notice when the save or the OS permission fails. Shopping-day picks made during a save are no longer dropped. The row shows only where a section would: `push-household-add` (also on the web, for the name switch) or `push-shopping-day` in a phone build. Both flags are internal-only and push is held, so users see no change yet. It reaches TestFlight with the next green main build. To see it there, Peter's account needs `push-household-add` and/or `push-shopping-day` on (internal testers only, already their targeting). Widget tests and goldens cover it. Details: [docs/done/463.md](docs/done/463.md).
+
+## Job 451: perf ports from #268 and #271 (PR open, DO NOT MERGE)
+
+A server write (realtime row, delete, ack) updates per-name counts of the open items instead of
+rebuilding the set of open names twice (#271 attempt 2). It runs in the users' build:
+`sync_batch` (300 rows) 417-690 -> 74-127 ms at 8,000 items, at a 300-open-item list 34-35 -> 15-21 ms per 300 rows (about 50 to 60 µs saved per row). `suggestUsuals` ranks
+through an index (#268): p50 0.85 -> 0.077 ms at 200 usuals, identical ranking. On the current
+feature set the add sheet ranks through `suggestEntries` (flags `on-device-catalog`,
+`input-stable-rows` at full rollout), so `suggestUsuals` runs only before the first flag answer or
+as its fallback. No change users see, no cache or wire format change. #270 and #271's cache-format
+steps stay out (a new snapshot version loses offline changes after a downgrade). Review 0 fixes:
+the reach wording above, the cold-call range, a household-size bench run, a doc line on
+`_setServer`'s ids. Numbers, tests and what was left out: [docs/done/451.md](docs/done/451.md).
+Waits for Peter (NEEDS_LEAD, job 451).

@@ -18378,3 +18378,27 @@ Peter asked for the push settings to leave Einstellungen (t1309u). The household
 3. **Optimistic switches.** The alert's switches show the tapped value at once (`_on` / `_nameHidden` in the widget) and hand back to `HouseholdAddAlert`'s state when the save answers. A refused save, or notifications refused in the OS, leaves the cubit's old state, so the switch goes back, with `catalogSaveFailed` or `pushBlocked`. Taps are queued, so a quick on and off reach the server in that order. Before, the switch waited for `optIn()` and the save. The cubit is unchanged: its emits after the save stay the truth, and job 464 owns the repo-wide rule.
 4. **Shopping-day chips stop dropping taps.** They already moved at once, but a second tap during a save was ignored. Picks are now queued, each saving the days shown when it was made. A refused last pick goes back to what the server last took, not just to the state before that tap.
 5. **Screen name** `notifications` joins `screenNames` (feedback's screen field; the database only checks the pattern).
+
+## Job 451: which hill-climb steps of #268, #271 and #270 go onto main
+
+- **Ported: #268's suggestion index and #271's open-name counts.** Both keep every output the
+  same (the frozen ranking file and a differential test for the first, the usuals reload test and
+  three mutants for the second) and both show a before/after on `main`'s code with `lib-ab.sh`:
+  `suggestUsuals` p50 0.85 -> 0.077 ms at 200 usuals, `sync_batch` 417-690 -> 74-127 ms at 8,000
+  items, at a 300-open-item list 34-35 -> 15-21 ms per 300 rows (about 50 to 60 µs saved per row) (`docs/done/451.md`).
+- **Reach (review 0).** The open-name counts run on every realtime row, delete and ack in the users'
+  build. `suggestUsuals` does not run in the users' add sheet: with `on-device-catalog` and
+  `input-stable-rows` at full rollout it ranks through `suggestEntries`. `suggestUsuals` runs only
+  with those flags off (a new install before PostHog's first flag answer) or as the fallback when
+  `suggestEntries` throws. #268 is kept because it is proven equal and cheap to carry, and its gain
+  is small where it applies.
+- **Left out: #270 and #271's cache-format steps (7, 9).** `main`'s snapshot version 4 already
+  means lists and claims; a version 5 would be refused by older builds, which drop the cache and
+  overwrite it (offline changes lost after a downgrade), and #270's shared string table would
+  encode every row on each tick again, undoing #470. Changing the stored format needs Peter's call
+  on the downgrade loss; the brief rules it out.
+- **Left out: #271 attempts 3 and 8.** 3 is on `main` as job 221's per-row JSON text; 8 is
+  superseded by #268's index.
+- **Harness names.** `main`'s `tool/hillclimb/hc-list-cpu/measure.sh` is job 221's Linux probe, so
+  #271's script is `bench.sh` beside it; #268's bench test is `suggest_usuals_bench_test.dart`
+  next to the catalog's `suggest_bench_test.dart`.

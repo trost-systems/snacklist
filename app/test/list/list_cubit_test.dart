@@ -2630,6 +2630,57 @@ void main() {
       });
     });
 
+    test('realtime rows refresh them only when the open names change', () {
+      fakeAsync((async) {
+        final watching = ListCubit(repo, MemoryListCache(), userId: 'peter')
+          ..start();
+        repo.emitStatus!(ConnectionStatus.online);
+        async.elapse(const Duration(seconds: 2));
+        final at = DateTime.utc(2026, 10, 22, 13);
+        var minute = 0;
+        Item row(String id, String name, ItemStatus status) => Item(
+          id: id,
+          name: name,
+          status: status,
+          createdAt: at,
+          updatedAt: at.add(Duration(minutes: ++minute)),
+        );
+        int refreshes(void Function() change) {
+          final before = repo.usualsCalls;
+          change();
+          async.elapse(const Duration(seconds: 2));
+          return repo.usualsCalls - before;
+        }
+
+        void heard(Item item) => repo.emitItem!(item);
+        expect(refreshes(() => heard(row('a', 'Milch', ItemStatus.active))), 1);
+        expect(
+          refreshes(() => heard(row('b', 'MILCH', ItemStatus.active))),
+          0,
+          reason: 'open already, in any case',
+        );
+        expect(
+          refreshes(() => heard(row('a', 'Milch', ItemStatus.bought))),
+          0,
+          reason: 'the other copy is still open',
+        );
+        expect(refreshes(() => repo.emitDelete!('b')), 1);
+        expect(
+          refreshes(() => heard(row('a', 'Milch', ItemStatus.active))),
+          1,
+          reason: 'back on the list',
+        );
+        expect(refreshes(() => heard(row('a', 'Brot', ItemStatus.active))), 1);
+        expect(
+          refreshes(() => heard(row('c', 'Brot', ItemStatus.bought))),
+          0,
+          reason: 'a bought row names nothing open',
+        );
+        unawaited(watching.close());
+        async.flushMicrotasks();
+      });
+    });
+
     for (final answered in [true, false]) {
       final what = answered ? 'answered' : 'that failed';
       test('a write $what while the list closes starts no refresh and no '
