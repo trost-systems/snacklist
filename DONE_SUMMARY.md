@@ -3312,3 +3312,9 @@ changelog `none`. Times (Europe/Berlin, 27 Nov): build 01:30-01:45.
 ## Job 458: hill-climb ticking, unticking and the undo
 
 A tap that ticks a row and its undo from „Zuletzt verwendet“ cost the UI isolate much less now; nothing on screen changed. Two kept steps: a save while only the queue changed reuses the rows' text, and the closed row's tick skips a save its tap already made. Score (n3000 tick + undo p50, 7 paired launches against main) 43,521 to 15,172 µs (−65 %); at 300 items a tick went 3.06 to 1.00 ms. Failures 0: the new frozen fixture `app/test/list/tick_undo_replay_test.dart` (tick, undo, retick, offline across a restart) passes 8 of 8 on main and the branch. Measure: `tool/hillclimb/hc-tick-untick/measure.sh`. Two design ideas for a mistaken tick are prototype candidates only (`docs/hillclimb/hc-tick-untick-prototype-candidates.md`). The rest of the cost is the cache format (#270), in NEEDS_LEAD. Review 0 fixes: the nexus page registers the new hill-climb doc (the missing entry failed `ci-ok`), the tick's skip flag covers only its emit, and a fourth cubit test pins a tap made before the device copy was read. Ships with the next green main build to TestFlight; no flag. Details: [docs/done/458.md](docs/done/458.md).
+
+## Job 482: the offline dictation message names the keyboard's send key
+
+Without a connection, dictation's message now says to tap Send on the keyboard instead of a
+„Hinzufügen“ button the add sheet doesn't show, and the sheet opens on the dictated text so Send
+really adds it (before, Send added nothing). Details: [docs/done/482.md](docs/done/482.md).
