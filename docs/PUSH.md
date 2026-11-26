@@ -84,8 +84,10 @@ is a list of that household.
 | `503 {"error":"not_configured"}` | no `PUSH_SEND_SECRET` (every request), or no `FCM_SERVICE_ACCOUNT_JSON` (every request but a dry run) |
 | `500 {"error":"failed"}` | the database failed; the log has its SQLSTATE |
 
-Answers and logs carry counts and fixed codes only: never a token, a user
-id or notification text.
+Logs carry counts and fixed codes only: never a token, a user id or
+notification text. A `dry_run: true` response also includes `household_id`,
+`list_id`, and a `message` object whose token and text are replaced by
+`<token>`, `<title>` and `<body>`.
 
 ### Secrets of the function
 
@@ -158,9 +160,12 @@ set. Only `firebase_push.dart` imports Firebase (lint rule
 - **Start and sign-in.** With the opt-in remembered and permission still
   granted, the app registers the current token again (no prompt), and
   again on every token refresh.
-- **Sign-out.** Before the session ends the app unregisters the token
-  (2 s at most), deletes it at FCM (3 s at most) and forgets the opt-in,
-  so the next account on the device starts without push. Account
+- **Sign-out.** A user-initiated sign-out runs `PushRegistration.forget()`
+  before the session ends: the app unregisters the token (2 s at most),
+  deletes it at FCM (3 s at most) and forgets the opt-in, so the next
+  account on the device starts without push. A remote sign-out or an OS
+  revocation cannot use that in-session path; the next start, sign-in or
+  opt-in retries any leftover FCM delete (`PushDevice.tokenLeft`). Account
   deletion removes the rows on the server (cascade) and the app forgets
   the same way. A delete FCM does not confirm (the phone is offline) is
   remembered on the device (`PushDevice.tokenLeft`) and tried again at

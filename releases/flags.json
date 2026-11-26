@@ -154,8 +154,8 @@
       "note": "AI assistants and the API need Snacklist Premium; Siri and Alexa stay free. The server switch integration_lock was turned on in production on 2026-11-24 11:46 CET (Peter TL-A); testers keep access via per-user Lifetime, and the app follows the switch since job 328. This changelog and store-listing hold stays unreleased until the Dec 1 go-live (N-193, N-354): listings must not advertise the Premium block until then"
     },
     "push-notifications": {
-      "released": false,
-      "note": "push notifications (FCM, job 376 foundation; P1 job 377, P2 job 378) stay held until Legal's enable GO. Peter on 2026-11-25 asked Legal for that GO and then to enable for everyone. Server switches push_household_add and push_shopping_day stay off until then. PostHog flags push-household-add and push-shopping-day stay is_internal-only (not rolled out to everyone) until the GO"
+      "released": true,
+      "note": "the privacy policy's push sections go live with this hold (26 November 2026, Europe/Berlin); sending stays off until Legal's hash-bound enable GO: the server switches push_household_add and push_shopping_day stay off, and the PostHog flags push-household-add and push-shopping-day stay is_internal-only (push-household-add then goes straight to full, the Art. 21 name switch is gated on it)"
     },
     "unified-keys": {
       "released": true,

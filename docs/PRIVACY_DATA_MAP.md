@@ -174,12 +174,12 @@ N-326); the old household drafts `datenschutz-kaeufe.md` and `privacy-purchases.
 | Server switch `premium_offer` (job 49): on/off, changed at | `public.app_switches` (service only; members read it through `premium_offer()`) | Offer Snacklist Premium for sale or not | (f) | Permanent | Supabase EU | n/a (no personal data) | `20261031214500_premium_yearly.sql` |
 | On the device: the RevenueCat SDK's storage (job 47, H-73): App User ID (household id), the household's CustomerInfo (purchased product ids, transaction ids, purchase dates, first seen, entitlements) with its timestamp, the product-to-entitlement mapping, the offerings response; on Android also SHA-1 hashes of sent purchase tokens and the storefront country. No device or advertising ids (collection off, lint rules) | iOS: UserDefaults suite `com.revenuecat.user_defaults` and files in the app's `RevenueCat/device-cache` directory; Android: SharedPreferences `com_revenuecat_purchases_preferences` and the offerings file (which Android Auto Backup may include: the app sets no `allowBackup`) | The purchase or restore the user started | (b); § 25 Abs. 2 Nr. 2 TDDDG (strictly necessary for the purchase the user started) | Written only after a tap on Buy or Restore. CustomerInfo is fresh for 5 min (foreground) or 25 h (background), the mapping 25 h; stale entries are refreshed, not removed. Everything stays until a Buy or Restore for another household replaces it, or the app is uninstalled | Device only | Sign-out and account deletion leave it (the app never calls `logOut`, which would create an anonymous RevenueCat customer; DECISIONS 47.6); uninstall removes it | `app/lib/purchases/revenuecat_repository.dart`; SDK facts checked for purchases_flutter 11.0.0, sources in docs/PURCHASES.md "What the SDK keeps on the device" |
 
-## Push notifications (job 376, not live: hold `push-notifications`)
+## Push notifications (job 376, live)
 
-Nothing here is collected until Ops creates the Firebase project and a feature that sends (P1 job
-377, P2 job 378) is rolled out after Legal's GO. The policy text waits behind the hold
-`push-notifications` (`releases/flags.json`), datenschutz §5 "Mitteilungen auf dem Smartphone",
-§8, §12, §13, §14 (privacy.md the same).
+The policy text is live (hold `push-notifications` released in `releases/flags.json`):
+datenschutz §5 "Mitteilungen auf dem Smartphone", §8, §12, §13, §14 (privacy.md the same).
+Sending still waits for Legal's ENABLE GO, then the server switches and the PostHog flags
+(P1 job 377, P2 job 378).
 
 | Data | Where | Purpose | Basis | Kept | Processor / region | Deletion | Source |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -202,7 +202,7 @@ Nothing here is collected until Ops creates the Firebase project and a feature t
 | GitHub (encrypted backups) | Processor | USA | DPF |
 | Plus Five Five, Inc. ("Resend"), San Francisco (the sign-in, confirmation and other auth mails through Auth SMTP, the waitlist mails and the report confirmations and decisions; Legal N-145) | Processor | Sent from Ireland; emails and delivery logs stored in the USA, deleted after 30 days | DPF; SCCs in the DPA |
 | Google Cloud EMEA Limited, Dublin (Workspace, support mail) | Processor | EU/US | DPF; SCCs if Google stops relying on it |
-| Google LLC, Mountain View, CA, USA (Firebase Cloud Messaging; not live, hold `push-notifications`, job 376) | Processor (Google APIs Terms of Service + Firebase Data Processing and Security Terms) | US (and Google global facilities) | EU-US DPF (Art. 45); Controller-to-Processor SCCs (Art. 46(2)(c)) if DPF unavailable |
+| Google LLC, Mountain View, CA, USA (Firebase Cloud Messaging; live, job 376) | Processor (Google APIs Terms of Service + Firebase Data Processing and Security Terms) | US (and Google global facilities) | EU-US DPF (Art. 45); Controller-to-Processor SCCs (Art. 46(2)(c)) if DPF unavailable |
 | Apple Distribution International Limited (Ireland) / Apple Inc. (USA) via APNs on iOS | Independent transmission service for notification content (mere conduit); independent controller for APNs infrastructure/routing | Ireland / US | Apple's SCCs per Apple Privacy Policy (Art. 46(2)(c)) |
 | Apple (App Store, TestFlight, Sign in with Apple), Google (Play, Google sign-in), Amazon (Alexa) | Independent controllers | | |
 

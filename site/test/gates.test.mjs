@@ -123,7 +123,7 @@ test('the privacy policies describe push notifications and Firebase Cloud Messag
     assert.doesNotMatch(off.page(route).querySelector('main').innerHTML, /Firebase Cloud Messaging/);
     assert.equal(off.page(route).querySelector(`#${anchor}`), null);
     const main = on.page(route).querySelector('main').innerHTML;
-    assert.equal((main.match(/Firebase Cloud Messaging/g) ?? []).length, 4);
+    assert.equal((main.match(/Firebase Cloud Messaging/g) ?? []).length, 5);
     assert.notEqual(on.page(route).querySelector(`#${anchor}`), null);
   }
 });
