@@ -3090,3 +3090,7 @@ Legal GO carried over from dc318acc to 6aab3f68; publish dates set to 26 Novembe
 | site/content/legal/privacy.md | e1b77a90ca9de7513f0f5ba8cc1aaa2242d891810cf6df43b28e29471e25b0a4 | 828d8936ff86477b3a7d25b22f58bafa11c16d0f |
 | app/web/konto-loeschen.html | 3132e0ee60dc5fec2294d16825fcb3e0f40252fa3d962a2e759731605d4abf74 | f7188903f572b067671957c148c9733ce54e0b9d |
 | app/web/delete-account.html | 04fc2293d6f3b84b14f721a6b1231b112cfcc8bdc8621c23012b8b0218184bed | c51898cdc9c934b4b6690edb14e30a8112ca6461 |
+
+## Job 449: stale non-legal docs and comments
+
+Docs and comments only; details in `docs/done/449.md`. Verify: `scripts/verify.sh --only gitleaks,lint`.

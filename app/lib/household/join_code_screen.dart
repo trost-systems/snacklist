@@ -22,6 +22,7 @@ class const InvitePreviewFields({
   final bool household = true,
   final bool members = true,
   final bool openItems = true,
+  // Read by no card: the preview shows no Premium line.
   final bool premium = true,
 });
 
@@ -150,7 +151,7 @@ class _JoinCodeViewState() extends State<_JoinCodeView> {
 }
 
 /// What a code leads to, as the join page shows it: „Peter lädt dich zu
-/// „Familie Trost“ ein“, „3 Mitglieder · 12 offene Einträge“ and Premium.
+/// „Familie Trost“ ein“, „3 Mitglieder · 12 offene Einträge“ (no Premium line).
 /// Only the [fields] that are on; the title reads well with either name
 /// off.
 class const InvitePreviewCard({

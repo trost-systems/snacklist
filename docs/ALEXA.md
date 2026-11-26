@@ -272,8 +272,8 @@ keeps its hash. It is never in the repo, the function's environment or a log.
   Alexa ids or tokens in any event or log; the server catalog allows nothing else.
 - Errors reach PostHog error tracking (project 319492) through `withTelemetry` and
   `telemetry.exception`, tagged `function_name: alexa`, scrubbed (no names, no tokens).
-- Amazon processes the voice audio and the transcript. The privacy policy must name the skill
-  before certification (NEEDS_PETER, Job 31).
+- Amazon processes the voice audio and the transcript. The privacy policy names the skill
+  (§7); the skill has been live since 2026-11-16.
 - "Meine Daten exportieren" lists the stored analytics answers and the Alexa links (last use).
 
 ## Request log
@@ -376,7 +376,7 @@ fault is in how Amazon routes that device's requests.
 | the same | `linked=true -> link invalid_token:issuer`, `:audience`, `:signature`, `:claims` or `:malformed` | The token is not a user token from this project's auth server: the Access Token URI points at another host or project, or the signing keys were rotated (`signature`) | Check the Authorization and Access Token URIs against [Account linking](#account-linking), then link again |
 | the same | `linked=true -> link invalid_token:unverified` | Snacklist could not check the token: its key set did not load | Try again. If it repeats, look for an auth outage in the function logs. Linking again does not help |
 | the same | `-> empty invalid_token:<check>` on `SkillAccountLinked` | Linking finished in the Alexa app, but Snacklist rejects the new token. Requests after it log `-> link` with the same reason | The row for that reason above |
-| Skill not found: no Snacklist in the Alexa app's skill search, or „Ich konnte den Skill nicht finden“ | No row | The skill is not live. Only beta testers can see it, through their invitation link, on amazon.de | Open the invitation link while signed in to the invited Amazon account (beta rules) |
+| Skill not found: no Snacklist in the Alexa app's skill search, or „Ich konnte den Skill nicht finden“ | No row | The skill is not live in that locale or marketplace (it has been live since 2026-11-16). Before launch only beta testers can see it, through their invitation link, on amazon.de | Open the invitation link while signed in to the invited Amazon account (beta rules) |
 | The Alexa app reports that linking failed | No new link in alexa_links | Check the Account linking section. A 403 `bad_jwt` on `authorization` means the Snacklist sign-in in the browser had expired, and the consent page asks to sign in again. A `token` row that is not 200 means a problem with the client secret or PKCE | Try linking again and sign in on the consent page. A token error: [Account linking](#account-linking) |
 
 **Beta rules.** All four must hold for the Echo that is being tested:
@@ -434,8 +434,8 @@ with no testers. Status and smoke results: [done/31b-alexa-deploy.md](done/31b-a
 The steps below are how it was done and how to redo it.
 
 Job 174 (2026-11-10) added a second skill, "Snacklist", with the id
-`amzn1.ask.skill.ad766331-e979-4a6e-95f1-30198b0a34cb`. It is in the development stage only, with
-the invocation „snacklist“ in all six locales, the same endpoint and the same account linking. Its
+`amzn1.ask.skill.ad766331-e979-4a6e-95f1-30198b0a34cb`. It was in the development stage only at first (live since
+2026-11-16, see the status above), with the invocation „snacklist“ in all six locales, the same endpoint and the same account linking. Its
 beta test ran with Lea and Max until the public launch. The hosted `ALEXA_SKILL_ID` is
 `amzn1.ask.skill.fee316d1-e9c1-44a4-a06e-955fbda63a1b,amzn1.ask.skill.ad766331-e979-4a6e-95f1-30198b0a34cb`,
 so the function takes requests from both skills. The scripts take one id in `ALEXA_SKILL_ID`; pass
