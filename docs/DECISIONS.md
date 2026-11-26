@@ -18552,3 +18552,39 @@ property. Choices made here, each reversible:
   card) is phones only and leaves out iPads and Android tablets on purpose; `join.js` and
   `open-in-app.js` hand off on tablets too. One table of UAs and hrefs would hold two rules, and
   the join page's case runs in Playwright, not in a unit harness. Review 1's item 3 stays as is.
+
+## Job 476: draft hold-flip PR right after gated legal text merges
+
+1. **Detached, not time-boxed.** merge-pr.sh runs inside `merge-lock`, which cannot run anything
+   after the lock comes off. So merge-pr.sh starts the script with `run_detached` and returns. The
+   child closes every inherited descriptor (merge-lock's flock, the ssh coproc to the Mac's lock),
+   so the lock is released when merge-pr.sh ends. A time box would hold the lock up to 60 s and
+   could stop a run halfway. The cost is that output goes to `.git/hold-flip-draft.log` instead of
+   the land's output. merge-pr.sh prints that path.
+2. **Converges instead of locking.** One run per hold: when no PR is open, push the flip branch with
+   a lease on the branch's observed state (a concurrent run loses there) and open the draft. Then
+   make sure the NEEDS_LEAD line is on the branch, and push with push-pr.sh until the head is the
+   landed commit `<title> (#n)`. A rerun after a crash finishes these steps. A clean rerun does nothing.
+3. **The note stays.** The brief allows changing the hold note only when it names a date. Only Legal
+   can say which date a note should carry (#710's note was Legal's wording). So the script never
+   edits the note. When the note names a date, the PR body quotes it for a check.
+4. **`until` blocks count.** Text added in an `until <hold>` block ends when the hold is released,
+   so the brief treats it as the same flip. Deleted lines count when both lines around the deletion
+   share the gate. Text removed together with its whole block counts for nothing.
+5. **push-checks skipped for the flip push.** The flip's diff is generated: one line of flags.json,
+   date lines, one NEEDS_LEAD line. CI runs on the draft's push-pr.sh push (only the opening push of
+   a draft skips CI). lint.sh in a detached temp worktree would add a minute and one more way to fail.
+6. **`do-not-merge` is enforced.** merge-pr.sh refuses a PR with that label, with no exception for
+   `legal-go`: that label follows Legal's GO alone, and a flip also needs Peter's yes. The label
+   comes off by hand, as `bin/legal-go-merge` expects too. Before this, the label was only a note.
+   No open PR carried it when this landed (review 0 removed a first `legal-go` exception).
+9. **`bin/legal-go-merge` merges legal PRs without merge-pr.sh** (since 26 Nov), so its merges start
+   no flip. The repo cannot change ops scripts; NEEDS_LEAD (job 476) asks the lead to call
+   `scripts/hold-flip-draft.sh <pr>` from it, detached, after each merge.
+7. **NEEDS_LEAD entry under its own heading.** The brief asks for one line. The append-log merge
+   driver needs a `##` heading before an appended entry, so the line goes under `## Enable
+   checklist: hold <hold>`. A grep on "Enable checklist for hold <hold>:" keeps it to one per hold.
+8. **Parsing in awk, JSON in node.** The gate parse is a line scan in POSIX awk. It reads fences,
+   container colons, and heading depth, but does not use site/build.mjs's markdown-it, which needs
+   `site/node_modules` that a land checkout may not have. flags.json is edited as text, so the
+   `ü` escapes and the formatting stay byte-for-byte, and node checks the result.

@@ -3224,3 +3224,20 @@ that is invalid or full. Tests and screenshots: [docs/done/462c.md](docs/done/46
 ## Job 452: safe Dependabot updates
 
 See docs/done/452.md. #201 and #658 merged; `purchases_flutter` 11.0.4 held back (SDK facts re-read needed, NEEDS_LEAD); #33 untouched.
+
+## Job 476: draft hold-flip PR when legal text merges behind a hold (FL7)
+
+When a PR that adds or changes legal text behind an unreleased hold (`::: once|until <hold>` or a
+heading gate) is merged, merge-pr.sh now starts `scripts/hold-flip-draft.sh <n>` in the background,
+after the merge lock is released. The script opens the draft `Hold flip: <hold> (draft, waits for
+Legal GO)` on `hold-flip/<hold>`, labelled `do-not-merge`. The draft carries `released` true, today's
+policy dates in the files with that hold's blocks, the file hashes and the checklist. It also adds
+one enable-checklist line to `docs/NEEDS_LEAD.md`. A rerun is safe. By hand:
+`scripts/hold-flip-draft.sh [--dry-run] [--base <rev>] <pr-or-commit>`. merge-pr.sh refuses
+any PR labelled `do-not-merge`; the label comes off by hand. Merges by the box's `bin/legal-go-merge`
+do not start the script yet (NEEDS_LEAD, job 476). For #643 (e907a9a44) with `--base e907a9a44`, the dry run
+gives the same `released` flip and date lines that #710 landed; it leaves the hold note alone.
+Tests: `scripts/hold-flip-draft-test.sh` (new) and `scripts/landing-test.sh` (lint gate). Details,
+dry run, and the comparison with #710: [docs/done/476.md](docs/done/476.md). No app change; changelog
+`none`. Times (Europe/Berlin, 26 Nov): build 16:35-16:49, review 0 16:50-17:00 (FIX), fix round
+from 16:56. The ops copy of this summary records CI and merge times.

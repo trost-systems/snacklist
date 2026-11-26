@@ -322,6 +322,26 @@ fg_on_repo_stack() {
   export FG_PORT_PREFIX FG_PROJECT_ID FG_STACK_WORKDIR FG_STATE_DIR
 }
 
+# run_detached <log> <command...>: starts the command in the background, its output appended to
+# the log, with no file of the caller open, and returns at once. A command run under a lock
+# (merge-lock's flock, its ssh to the Mac) that left a child holding the lock's descriptor would
+# keep the lock until that child ends.
+run_detached() {
+  local log_file="$1" fd
+  shift
+  (
+    for fd in /dev/fd/*; do
+      fd="${fd##*/}"
+      if ((fd > 2)); then eval "exec $fd>&-" 2>/dev/null || true; fi
+    done
+    if command -v setsid >/dev/null; then
+      exec setsid nohup "$@" </dev/null >>"$log_file" 2>&1
+    fi
+    exec nohup "$@" </dev/null >>"$log_file" 2>&1
+  ) &
+  disown 2>/dev/null || true
+}
+
 # The shell scripts the lint gate runs shellcheck on, one per line, relative to the repository
 # root (scripts/push-checks.sh checks the changed ones).
 shell_scripts() {

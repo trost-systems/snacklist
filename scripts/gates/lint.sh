@@ -22,6 +22,7 @@ scripts/check-gates.sh
 scripts/ci-changes-test.sh
 scripts/ci-main-reuse-test.sh
 scripts/landing-test.sh
+scripts/hold-flip-draft-test.sh
 scripts/push-checks-test.sh
 scripts/merge-append-log-test.sh
 scripts/e2e-gate-test.sh

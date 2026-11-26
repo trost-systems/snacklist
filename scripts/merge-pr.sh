@@ -18,6 +18,10 @@
 #   --dry-run checks everything and stops before the merge.
 #   --wait gives up after MERGE_WAIT_MINUTES (whole minutes, default 30), so a ci-ok that never
 #   reports can't hold the merge lock forever.
+#   A PR labelled do-not-merge is refused; the label comes off only by hand (a hold flip waits for
+#   Legal's GO and Peter's yes, job 476).
+#   After the merge it starts scripts/hold-flip-draft.sh for the PR in the background, with none of
+#   this process's files open, so the merge lock is released at once (log in .git/hold-flip-draft.log).
 #   A signal that ends only the wait's sleep (a kill by name elsewhere on the machine) does not
 #   end the wait: it is logged and the wait goes on, up to 20 times.
 set -euo pipefail
@@ -41,6 +45,10 @@ fi
 wait_minutes=$((10#$wait_minutes))
 
 cd "$REPO_ROOT"
+if gh pr view "$PR" --json labels -q '.labels[].name' | grep -qx do-not-merge; then
+  echo "#$PR is labelled do-not-merge; not merging. Remove the label by hand once what it waits for is recorded (a hold flip: Legal's GO and Peter's yes), then rerun" >&2
+  exit 1
+fi
 branch="$(gh pr view "$PR" --json headRefName -q .headRefName)"
 title="$(gh pr view "$PR" --json title -q .title)"
 subject="$title (#$PR)"
@@ -129,3 +137,6 @@ if [[ $dry_run == 1 ]]; then
 fi
 gh pr merge "$PR" --rebase --match-head-commit "$head"
 log "merged #$PR as $head ($AUTHOR_EMAIL)"
+hold_flip_log="$(git rev-parse --path-format=absolute --git-common-dir)/hold-flip-draft.log"
+run_detached "$hold_flip_log" scripts/hold-flip-draft.sh "$PR"
+log "scripts/hold-flip-draft.sh $PR runs in the background (a draft flip PR if #$PR changed legal text behind an unreleased hold); log: $hold_flip_log"
