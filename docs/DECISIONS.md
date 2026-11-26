@@ -18430,3 +18430,15 @@ Specs #71, #72, #60, #57, #58, #59, #78, #79 are closed as host-pause only: thei
   or renumber in `add_store`) would need a migration and was not worth it for a rare tie.
 - `walkingOrder` is cached per `Catalog` instance (an `Expando`): every catalog change builds a new
   `Catalog`, so the cache cannot go stale; lists inside are never mutated in place.
+
+## Job 456: copy audit of the enabled feature set
+
+- **Removed, not gated: the Zugänge card's „Später: Google Assistant und Apple Watch“.** FFW forbids
+  the claim, the line had one caller, and the Premium page already avoided it. Deleting the
+  parameter and the key beats a `later: false` that keeps a promise on the shelf.
+- **Code gates left to the lead.** The web „kaufst du in der App“ note before 1 Dec and the iPhone
+  Siri card without the native-siri hold need product calls; NEEDS_LEAD, not changed here.
+- **Legal's texts listed, not edited** (`docs/done/456-legal-findings.md`), including the stale
+  invite path on the support page.
+- **Tester mail day-3 tip** now points at ordering stores in „Anpassen“: the old tip asked users to
+  drag categories, which the app no longer shows.

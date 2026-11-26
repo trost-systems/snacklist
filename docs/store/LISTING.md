@@ -51,8 +51,9 @@ A listing claims only what the launch build gates. Peter's pitch (P3a, `docs/PRO
 app does not have as a Premium feature, so no field names one:
 
 - History and the planned-and-paid comparison, the earlier Premium bullets, are off (HP2) and gone.
-- AI assistants (MCP) and the API need Premium only while the server switch `integration_lock` is on, which Peter turns on when he releases
-  the `integration-lock` hold in `releases/flags.json`. Until then they work without Premium, so no field lists them under Premium (Legal N-354).
+- AI assistants (MCP) and the API need the account's own Premium: the server switch `integration_lock` is on in production since
+  2026-11-24 (testers keep access). The `integration-lock` hold in `releases/flags.json` stays unreleased until the 1 December go-live, and
+  until then no field lists them under Premium (Legal N-354).
   `check.mjs` reads the hold: unreleased, a Premium paragraph naming MCP or the API fails; released, one without them fails.
 - There is no Premium export. The account export „Meine Daten exportieren“ (`export_my_data`) is the GDPR copy everyone gets and is never a
   Premium benefit.
@@ -131,7 +132,7 @@ Reason: `docs/PURCHASES.md` "Per-user Premium" (job 185) has the buyer hold Prem
    für dich, in jedem Haushalt, in dem du Mitglied bist.“ The in-app product texts say "Für dein Konto" / "For your account"; the listings
    say nothing about households.
 2. AI assistants inside Premium. Still unreleased (`integration-lock`): see "Snacklist Premium in the listing". With HP2 the launch
-   Premium paragraph names no benefit at all; Peter decides whether the lock goes on at launch (then paste the block) or Premium waits.
+   Premium paragraph names no benefit at all. The lock is on (Peter TL-A, 24 Nov); paste the block when the hold is released on 1 December.
 3. The Snacklist API. The Premium page also lists "Eigene Automationen mit der Snacklist API", which the lock covers. The listings leave
    the API out (the earlier caption rules, N-187 to N-195, keep it out of the screenshots). Legal decides whether the description names it.
 4. Premium on sale. The texts name Premium as an optional in-app purchase and say nothing about a price, so they hold on any day. FEATURES-FOR-WRITERS

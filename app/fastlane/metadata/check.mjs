@@ -80,7 +80,7 @@ for (const l of locales) for (const [f, store] of [[`${l}/description.txt`, "app
   if (!t.endsWith(end)) errors.push(`${f}: does not end with the trademark notice "${end}"`);
 }
 // Premium may list AI assistants and the API only while the integration lock is released (releases/flags.json,
-// hold integration-lock); until then they work without Premium (Legal N-354). docs/store/LISTING.md has both blocks.
+// hold integration-lock); until then no listing names them under Premium, though the server lock is on (Legal N-354). docs/store/LISTING.md has both blocks.
 const lockReleased = JSON.parse(readFileSync(join(root, "../../../releases/flags.json"), "utf8")).holds["integration-lock"].released;
 for (const l of locales) for (const f of [`${l}/description.txt`, `android/${l}/full_description.txt`]) {
   const premium = read(f).split(/\n\n/).find((p) => /^SNACKLIST PREMIUM/.test(p)) ?? "";

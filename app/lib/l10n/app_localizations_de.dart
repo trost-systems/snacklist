@@ -694,7 +694,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String accountDeleteDeleted(String household) {
-    return 'Du bist das letzte Mitglied. Deshalb wird der Haushalt „$household“ mit Liste, Verlauf, Kategorien und Geschäften gelöscht.';
+    return 'Du bist das letzte Mitglied. Deshalb wird der Haushalt „$household“ mit Liste, Verlauf, Kategorien und Läden gelöscht.';
   }
 
   @override
@@ -2005,10 +2005,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get integrationPremiumAi => 'KI-Assistenten, die MCP unterstützen';
 
   @override
-  String get integrationPremiumLater =>
-      'Später: Google Assistant und Apple Watch';
-
-  @override
   String get integrationPremiumBuy => 'Snacklist Premium freischalten';
 
   @override
@@ -2251,7 +2247,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get leaveLast =>
-      'Du bist das letzte Mitglied. Der Haushalt wird mit Liste, Verlauf, Kategorien und Geschäften gelöscht.';
+      'Du bist das letzte Mitglied. Der Haushalt wird mit Liste, Verlauf, Kategorien und Läden gelöscht.';
 
   @override
   String leaveLifetimeEnds(String household) {
@@ -2643,14 +2639,14 @@ class AppLocalizationsDe extends AppLocalizations {
       'Tipp aufs Mikrofon und sprich: „Milch, zwei Gurken und Klopapier“.';
 
   @override
-  String get hintAssistantTitle => 'Noch besser mit KI & Automatisierung';
+  String get hintAssistantTitle => 'Noch besser mit KI & Automationen';
 
   @override
   String get hintAssistantBody =>
-      'Lass deinen KI-Assistenten deine Liste verwalten oder nutze die API, um Automatisierungen zu erstellen.';
+      'Lass deinen KI-Assistenten deine Liste verwalten oder nutze die API, um Automationen zu erstellen.';
 
   @override
-  String get hintAssistantAction => 'Zugriffe verwalten';
+  String get hintAssistantAction => 'Zugänge verwalten';
 
   @override
   String get hintSiriTitle => 'Mit Siri hinzufügen';
@@ -2709,7 +2705,7 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String checklistInvite(String kind) {
     String _temp0 = intl.Intl.selectLogic(kind, {
-      'partner': 'Partner einladen',
+      'partner': 'Partner·in einladen',
       'family': 'Familie einladen',
       'flat': 'Mitbewohner einladen',
       'club': 'Mitglieder einladen',

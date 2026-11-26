@@ -1205,7 +1205,7 @@ abstract class AppLocalizations {
   /// No description provided for @accountDeleteDeleted.
   ///
   /// In de, this message translates to:
-  /// **'Du bist das letzte Mitglied. Deshalb wird der Haushalt „{household}“ mit Liste, Verlauf, Kategorien und Geschäften gelöscht.'**
+  /// **'Du bist das letzte Mitglied. Deshalb wird der Haushalt „{household}“ mit Liste, Verlauf, Kategorien und Läden gelöscht.'**
   String accountDeleteDeleted(String household);
 
   /// No description provided for @accountDeleteNone.
@@ -3320,12 +3320,6 @@ abstract class AppLocalizations {
   /// **'KI-Assistenten, die MCP unterstützen'**
   String get integrationPremiumAi;
 
-  /// PLACEHOLDER (job 50): Snacklist Launch writes the final copy (NEEDS_LEAD Job 50). Integration settings, locked household: planned, not built yet
-  ///
-  /// In de, this message translates to:
-  /// **'Später: Google Assistant und Apple Watch'**
-  String get integrationPremiumLater;
-
   /// PLACEHOLDER (job 50): Snacklist Launch writes the final copy (NEEDS_LEAD Job 50). Integration settings, locked household: button that opens the Snacklist Premium page (only where it is sold)
   ///
   /// In de, this message translates to:
@@ -3701,7 +3695,7 @@ abstract class AppLocalizations {
   /// Job 169b: leave dialog body for the last member
   ///
   /// In de, this message translates to:
-  /// **'Du bist das letzte Mitglied. Der Haushalt wird mit Liste, Verlauf, Kategorien und Geschäften gelöscht.'**
+  /// **'Du bist das letzte Mitglied. Der Haushalt wird mit Liste, Verlauf, Kategorien und Läden gelöscht.'**
   String get leaveLast;
 
   /// Job 169b: leave dialog, last member of a household with Lifetime, archive off
@@ -4289,19 +4283,19 @@ abstract class AppLocalizations {
   /// Hint ai-assistant (job 168b): title
   ///
   /// In de, this message translates to:
-  /// **'Noch besser mit KI & Automatisierung'**
+  /// **'Noch besser mit KI & Automationen'**
   String get hintAssistantTitle;
 
   /// Hint ai-assistant: for clubs, or after 7 active days on the web or a computer
   ///
   /// In de, this message translates to:
-  /// **'Lass deinen KI-Assistenten deine Liste verwalten oder nutze die API, um Automatisierungen zu erstellen.'**
+  /// **'Lass deinen KI-Assistenten deine Liste verwalten oder nutze die API, um Automationen zu erstellen.'**
   String get hintAssistantBody;
 
   /// Hint ai-assistant: button that opens More → Zugänge
   ///
   /// In de, this message translates to:
-  /// **'Zugriffe verwalten'**
+  /// **'Zugänge verwalten'**
   String get hintAssistantAction;
 
   /// Hint siri (job 168b, iPhone): title
@@ -4403,7 +4397,7 @@ abstract class AppLocalizations {
   /// Checklist item: invite someone; kind is the household's answer to Mit wem kaufst du ein? (partner, family, flat, club, other)
   ///
   /// In de, this message translates to:
-  /// **'{kind, select, partner{Partner einladen} family{Familie einladen} flat{Mitbewohner einladen} club{Mitglieder einladen} other{Jemanden einladen}}'**
+  /// **'{kind, select, partner{Partner·in einladen} family{Familie einladen} flat{Mitbewohner einladen} club{Mitglieder einladen} other{Jemanden einladen}}'**
   String checklistInvite(String kind);
 
   /// Checklist item invite: the line under it; done once a second member joined

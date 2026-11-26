@@ -139,7 +139,7 @@ void main() {
     expect(
       find.text(
         'Du bist das letzte Mitglied. Der Haushalt wird mit Liste, Verlauf, '
-        'Kategorien und Geschäften gelöscht.',
+        'Kategorien und Läden gelöscht.',
       ),
       findsOneWidget,
     );
@@ -193,7 +193,7 @@ void main() {
     expect(
       find.text(
         'Du bist das letzte Mitglied. Der Haushalt wird mit Liste, Verlauf, '
-        'Kategorien und Geschäften gelöscht.',
+        'Kategorien und Läden gelöscht.',
       ),
       findsOneWidget,
     );

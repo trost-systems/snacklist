@@ -59,7 +59,7 @@ Say several things in one sentence with "and" between them. A pause alone doesn'
 | --- | --- |
 | Alexa, ask Snacklist to add milk and eggs | milk · eggs |
 | Alexa, ask Snacklist to add two liters of milk | 2 l milk |
-| Alexa, tell Snacklist we need bread, butter and cheese | bread · butter · cheese |
+| Alexa, tell Snacklist we need bread and butter and cheese | bread · butter · cheese |
 
 Quantities like "two liters of milk" become one item with a quantity. The skill tells you afterwards what went on the list. Things already on the list aren't added twice: the skill says "Already on Snacklist: milk."
 
@@ -86,4 +86,4 @@ Ask "Alexa, ask Snacklist what's on the list" and the skill reads at most 10 ope
 - **In the Alexa app:** find the skill **Snacklist** and tap **Disable skill** on its page.
 - **In Snacklist:** tap **More**, then **Access**, and disconnect **Amazon Alexa** under connected apps. The skill loses access to your list right away.
 
-Questions or problems? Write to us in the app under **More** → **Feedback & ideas**.
+Questions or problems? Write to me in the app under **More** → **Feedback & ideas**.

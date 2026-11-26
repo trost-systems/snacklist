@@ -23,7 +23,7 @@ Die Einträge stehen sofort auf allen Geräten in eurem Haushalt, an der passend
 - einen Browser, am besten am Computer. Der Connector steht danach auch in der Claude-App auf dem Handy und am Desktop zur Verfügung.
 
 ::: once integration-lock
-Der Zugang über KI-Assistenten braucht Snacklist Premium für deinen Haushalt.
+Der Zugang über KI-Assistenten braucht Snacklist Premium in deinem eigenen Konto.
 :::
 
 ## Schritt 1: Connector hinzufügen
@@ -62,7 +62,7 @@ Die Namen der Menüpunkte in Claude stehen hier auf Deutsch, in Klammern auf Eng
 | Was steht auf der Snacklist? | Claude zählt die offenen Einträge in der Reihenfolge eurer Liste auf und sagt, wie viele es sind. |
 | Was brauche ich bei dm? | Alles für dm und alles ohne Laden, in der Reihenfolge von dm. |
 | Hak Milch und Gurken ab. | Beide verschwinden von der Liste und stehen in der App unter „Zuletzt verwendet“. |
-| Verschieb die Hafermilch nach Getränke. | Snacklist merkt sich das für euren Haushalt. Beim nächsten Mal landet Hafermilch gleich dort. |
+| Verschieb die Hafermilch zu dm. | Die Hafermilch steht jetzt bei dm. Snacklist merkt sich das für euren Haushalt, beim nächsten Mal landet sie gleich dort. |
 | Mach bei den Gurken 3 draus. | Die Menge der Gurken steht jetzt auf 3. |
 | Die Milch brauchen wir doch noch. | Die gerade abgehakte Milch steht wieder auf der Liste. |
 | Streich den Sekt. | Der Sekt ist gelöscht. Was Snacklist über Sekt gelernt hat (zum Beispiel der Laden), bleibt. |

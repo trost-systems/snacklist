@@ -23,7 +23,7 @@ The items show up right away on every device in your household, in the right spo
 - a browser, ideally on a computer. Afterwards the connector is also available in the Claude apps on your phone and desktop.
 
 ::: once integration-lock
-AI assistant access needs Snacklist Premium for your household.
+AI assistant access needs Snacklist Premium on your own account.
 :::
 
 ## Step 1: Add the connector
@@ -62,7 +62,7 @@ Menu names in Claude may differ slightly between Claude versions.
 | What's on the Snacklist? | Claude lists the open items in your list's order and tells you how many there are. |
 | What do I need at dm? | Everything for dm and everything without a store, in dm's order. |
 | Tick off milk and cucumbers. | Both leave the list and show up in the app under "Recently used". |
-| Move the oat milk to Getränke. | Snacklist remembers this for your household. Next time oat milk goes straight there. |
+| Move the oat milk to dm. | The oat milk is now under dm. Snacklist remembers this for your household, so next time it goes straight there. |
 | Make it 3 cucumbers. | The cucumbers' quantity is now 3. |
 | We still need the milk after all. | The milk you just ticked off is back on the list. |
 | Delete the sparkling wine. | The sparkling wine is gone. What Snacklist learned about it (for example the store) stays. |
