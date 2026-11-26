@@ -8,8 +8,8 @@ export type WelcomeProps = { name: string; googleEmail: string; joinUrl: string;
 export type NudgeProps = { name: string; unsubscribeUrl: UnsubscribeUrl };
 
 const FEEDBACK = {
-  de: 'Feedback gern als Antwort auf diese Mail oder in der App unter Mehr > „Feedback senden“.',
-  en: 'Feedback is welcome as a reply to this email or in the app under More > “Send feedback”.',
+  de: 'Feedback gern als Antwort auf diese Mail oder in der App unter Mehr > „Feedback & Ideen“.',
+  en: 'Feedback is welcome as a reply to this email or in the app under More > “Feedback & ideas”.',
 };
 
 export function WelcomeAndroidDe({ name, googleEmail, joinUrl, unsubscribeUrl }: WelcomeProps): ReactElement {
@@ -29,7 +29,7 @@ export function WelcomeAndroidDe({ name, googleEmail, joinUrl, unsubscribeUrl }:
             </>
           ),
         },
-        { title: 'Anmelden', children: <Paragraph>Mit Google, E-Mail und Passwort oder per Anmelde-Link. Ob die App anonyme Nutzungsdaten sammeln darf, entscheidest du; eure Liste wird dafür nie übertragen.</Paragraph> },
+        { title: 'Anmelden', children: <Paragraph>Mit Google, E-Mail und Passwort oder per Anmeldelink. Ob die App anonyme Nutzungsdaten sammeln darf, entscheidest du; eure Liste wird dafür nie übertragen.</Paragraph> },
         { title: 'Haushalt', children: <Paragraph>Einer von euch erstellt einen Haushalt und lädt den anderen per Link oder Code ein. Die Einladung gilt 7 Tage und funktioniert einmal.</Paragraph> },
       ]} />
       <TipBox>
@@ -77,7 +77,7 @@ export function NudgeDe({ name, unsubscribeUrl }: NudgeProps): ReactElement {
     <OnboardingLayout lang="de" title="Ein Tipp für deinen nächsten Einkauf" preview="Ein Tipp für deinen nächsten Einkauf." unsubscribeUrl={unsubscribeUrl} footerNote={FEEDBACK.de}>
       <Greeting>Hi {name},</Greeting>
       <TipBox title="Ein Tipp für deinen nächsten Einkauf">
-        <Paragraph>Schieb die Kategorien einmal in die Reihenfolge, in der du durch deinen Laden läufst. Dann gehst du die Liste im Laden einfach von oben nach unten durch.</Paragraph>
+        <Paragraph>Tipp auf der Liste oben rechts auf „Anpassen“ und zieh deine Läden einmal in die Reihenfolge, in der du sie besuchst. Dann gehst du die Liste beim Einkaufen einfach von oben nach unten durch.</Paragraph>
       </TipBox>
       <Paragraph><strong>Und:</strong> Wie lief's bisher? Ein kurzer Satz als Antwort reicht völlig.</Paragraph>
       <Signature />
@@ -90,7 +90,7 @@ export function NudgeEn({ name, unsubscribeUrl }: NudgeProps): ReactElement {
     <OnboardingLayout lang="en" title="One tip for your next grocery run" preview="One tip for your next grocery run." unsubscribeUrl={unsubscribeUrl} footerNote={FEEDBACK.en}>
       <Greeting>Hi {name},</Greeting>
       <TipBox title="One tip for your next grocery run">
-        <Paragraph>Drag the categories into the order you walk through your store, just once. Then you simply go down the list from top to bottom.</Paragraph>
+        <Paragraph>Tap “Edit” at the top right of the list and drag your stores into the order you visit them, just once. Then you simply go down the list from top to bottom.</Paragraph>
       </TipBox>
       <Paragraph><strong>And:</strong> How's it going so far? A quick sentence in reply is plenty.</Paragraph>
       <Signature />

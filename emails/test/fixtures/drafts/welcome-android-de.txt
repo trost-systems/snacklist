@@ -7,7 +7,7 @@ Wichtig: Der Play Store muss mit {{GOOGLE_EMAIL}} angemeldet sein (oben rechts a
 Tipp auf „Tester werden“ und installier die App dann ganz normal aus dem Play Store. Nicht wundern: Sie heißt dort evtl. noch „com.snacklist.app“, und der Installieren-Knopf kann ein paar Minuten brauchen. Updates kommen danach automatisch.
 
 2. Anmelden
-Mit Google, E-Mail und Passwort oder per Anmelde-Link. Ob die App anonyme Nutzungsdaten sammeln darf, entscheidest du; eure Liste wird dafür nie übertragen.
+Mit Google, E-Mail und Passwort oder per Anmeldelink. Ob die App anonyme Nutzungsdaten sammeln darf, entscheidest du; eure Liste wird dafür nie übertragen.
 
 3. Haushalt
 Einer von euch erstellt einen Haushalt und lädt den anderen per Link oder Code ein. Die Einladung gilt 7 Tage und funktioniert einmal.
@@ -20,4 +20,4 @@ Wenn's beim Installieren hakt, machen wir's kurz zusammen.
 Peter
 
 -- 
-Feedback gern als Antwort auf diese Mail oder in der App unter Mehr > „Feedback senden“.
+Feedback gern als Antwort auf diese Mail oder in der App unter Mehr > „Feedback & Ideen“.

@@ -68,12 +68,12 @@ Quelle: Bring! Einkaufsliste & Rezepte, Google Play Store-Eintrag (de-DE), abger
 
 Zur Verfügbarkeit sagt Bring! über sich selbst: „Kostenlos und für alle Geräte verfügbar“. (Quelle: Bring! Einkaufsliste & Rezepte, Google Play Store-Eintrag (de-DE), abgerufen am 22.11.2026, https://play.google.com/store/apps/details?id=ch.publisheria.bring&hl=de&gl=DE)
 
-Wenn du Rezepte, Prospekte oder Kundenkarten in deiner Einkaufs-App haben willst, bekommst du das heute bei Bring!. Wenn du eine Liste ohne Werbung willst, die genau deinem Weg durch den Laden folgt, ist Snacklist dafür gedacht.
+Wenn du Rezepte, Prospekte oder Kundenkarten in deiner Einkaufs-App haben willst, bekommst du das heute bei Bring!. Wenn du eine Liste ohne Werbung willst, die deinem Weg durch den Laden folgt, ist Snacklist dafür gedacht.
 
 ## Was Snacklist ausmacht
 
 - **Reihenfolge deines Ladens:** Snacklist sortiert deine Artikel automatisch nach Laden und in der Reihenfolge, in der du durch den Laden gehst, und merkt sich, in welchen Laden was gehört. Die Läden ziehst du in die Reihenfolge, in der du sie besuchst; die Reihenfolge gilt für den ganzen Haushalt. Optional gibt es deutsche Standard-Läden als Startpunkt, und eigene Läden legst du selbst an.
-- **Eine Liste für den Haushalt:** Alle sehen Änderungen live auf jedem Gerät. Jedes Haushaltsmitglied kann einladen: in der App unter Mehr > „Leute einladen“, mit einem 8-stelligen Code oder einem Link.
+- **Eine Liste für den Haushalt:** Alle sehen Änderungen live auf jedem Gerät. Jedes Haushaltsmitglied kann einladen: oben links in der Liste auf den Namen des Haushalts tippen, dann auf „Einladen“, mit einem 8-stelligen Code oder einem Link.
 - **Schnell eintragen:** Mengen und Vorschläge, dazu Einsprechen mit dem Mikrofon in der App, auf Deutsch oder Englisch.
 - **Datenschutz:** Nutzungsdaten werden nur mit deiner Einwilligung erfasst.
 - **Sprachen:** Deutsch und Englisch.
@@ -81,7 +81,7 @@ Wenn du Rezepte, Prospekte oder Kundenkarten in deiner Einkaufs-App haben willst
 
 ## Mit KI-Assistenten verbinden (MCP)
 
-Du kannst Snacklist mit KI-Assistenten verbinden, die MCP unterstützen. Der Assistent kann Artikel lesen, hinzufügen (auch mehrere auf einmal, mit Mengen), ändern (Name, Menge, Marke, Eigenschaften), als gekauft abhaken, wieder auf die Liste setzen, mit einem ähnlichen Artikel zusammenführen, löschen und in einen anderen Laden oder eine andere Liste verschieben. Außerdem kann er Läden und Listen lesen. Er kann auch keine Personen einladen oder entfernen und kommt nicht an Kontodaten.
+Du kannst Snacklist mit KI-Assistenten verbinden, die MCP unterstützen. Der Assistent kann Artikel lesen, hinzufügen (auch mehrere auf einmal, mit Mengen), ändern (Name, Menge, Marke, Eigenschaften), als gekauft abhaken, wieder auf die Liste setzen, mit einem ähnlichen Artikel zusammenführen, löschen und in einen anderen Laden oder eine andere Liste verschieben. Außerdem kann er Läden und Listen lesen. Personen einladen oder entfernen kann er nicht, und an Kontodaten kommt er nicht.
 
 Die Schritt-für-Schritt-Anleitung findest du hier: [Anleitung: Snacklist mit Claude verbinden](https://snacklist.app/de/anleitungen/claude). Die Adresse zum Eintragen findest du in der App unter Mehr > Zugänge, unter „Zugriffsschlüssel“.
 

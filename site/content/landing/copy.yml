@@ -46,8 +46,8 @@ hero.lead:
   status: draft
   source: "6b prototype hero; English new."
 hero.image:
-  de: "Die Snacklist-App mit der Liste von „Unser Haushalt“, dazu Wochenmarkt, Bäckerei, Drogerie und Supermarkt: Zahnpasta bei der Drogerie, im Supermarkt sind die Bananen abgehakt und die Hafermilch ist neu. Darüber die Meldung „Anna hat ‚Hafermilch‘ hinzugefügt“."
-  en: "The Snacklist app with the list of “Our household”, with farmers’ market, bakery, drugstore and supermarket: toothpaste at the drugstore, at the supermarket the bananas are ticked off and the oat milk is new. Above it the note “Anna added ‘Oat milk’”."
+  de: "Die Snacklist-App mit der Einkaufsliste von „Unser Haushalt“: oben Äpfel, Tomaten und die neue Hafermilch mit dem Hinweis „1 neu von Anna“, darunter Bäckerei und Supermarkt. Darüber das Etikett „Anna hat ‚Hafermilch‘ hinzugefügt“."
+  en: "The Snacklist app with the shopping list of “Our Home”: at the top apples, tomatoes and the new oat milk with “1 new from Anna”, below them bakery and supermarket. Above it the label “Anna added ‘Oat milk’”."
   status: draft
   source: "New: text alternative of the hero illustration; must match site/public/media/hero-*."
 
@@ -68,8 +68,8 @@ feature.list.title:
   status: draft
   source: "Job 82 Addendum 5 (Peter 2026-11-03): the heading says what the card says (input field, suggestions, one-tap tick, undo); was „Eine Liste für alle“ / \"One list for everyone\"."
 feature.list.body:
-  de: "Das Eingabefeld ist sofort bereit, unten am Daumen. Vorschläge kommen aus dem, was ihr schon gekauft habt. Abgehakt ist mit einem Tipp, und wer sich beim Abhaken vertippt, nimmt es gleich zurück."
-  en: "The input field is ready right away, down by your thumb. Suggestions come from what you have bought before. One tap ticks an item off, and a slip of the finger when ticking is undone just as fast."
+  de: "Das Eingabefeld ist sofort bereit, unten am Daumen. Vorschläge kommen aus dem, was ihr schon gekauft habt. Abgehakt ist mit einem Tipp, und was du aus Versehen abhakst, holst du unten unter „Zuletzt verwendet“ mit einem Tipp zurück."
+  en: "The input field is ready right away, down by your thumb. Suggestions come from what you have bought before. One tap ticks an item off, and anything ticked off by mistake comes back with one tap from “Recently used” at the bottom."
   status: draft
   source: "6b prototype feature „App auf, tippen, fertig“, merged into this card; English new."
 feature.household.title:
@@ -93,8 +93,8 @@ feature.stores.title:
   status: draft
   source: "6b prototype; English new."
 feature.stores.body:
-  de: "Jeder Artikel landet von selbst im passenden Laden, vom Wochenmarkt bis zur Drogerie. Lege deine Läden an und bring sie in deine Reihenfolge, so geht die Liste mit dir von Laden zu Laden. Snacklist merkt sich, wo du was meistens kaufst."
-  en: "Every item lands in the right store by itself, from the farmers’ market to the drugstore. Add your stores and put them in your order, so the list follows you from store to store. Snacklist remembers where you usually buy what."
+  de: "Artikel landen von selbst in dem Laden, in dem ihr sie sonst kauft, vom Wochenmarkt bis zur Drogerie. Lege deine Läden an und bring sie in deine Reihenfolge, so geht die Liste mit dir von Laden zu Laden. Snacklist merkt sich, wo du was meistens kaufst."
+  en: "Items land by themselves in the store where you usually buy them, from the farmers’ market to the drugstore. Add your stores and put them in your order, so the list follows you from store to store. Snacklist remembers where you usually buy what."
   status: draft
   source: "6b prototype; English new. Generic store types only, no retailer names (N-23)."
 feature.stores.more:

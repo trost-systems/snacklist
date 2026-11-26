@@ -3169,3 +3169,15 @@ at its new place at once instead of jumping when the server answers; stores on t
 one order on every device; regrouping after an add is about 30 % faster (A/B pairs). Frozen measure
 `tool/hillclimb/hc-category-sorting/measure.sh` (stability failures 75 → 0, correctness 0/8 both).
 No flag; next green main build. Review round 1: registered the hc doc for nexus (the CI failure), moved the prototype candidates to `docs/hillclimb/hc-category-sorting/`, and the order fixture now runs in every test run. Details: [docs/done/459.md](docs/done/459.md).
+
+## Job 456: copy audit of the enabled feature set
+
+Fixed user-facing copy that contradicted the app as it is switched on today, in DE and EN: the
+Zugänge Premium card no longer promises Google Assistant and Apple Watch; app wording („Läden“,
+„Zugänge verwalten“, „Partner·in einladen“, „Automationen“); the landing page's hero alt text,
+tick-undo and store claims; the Claude, Siri and Alexa guides, `llms.md` and the Bring comparison
+(invite path); the tester mails (feedback path, store-order tip); a changelog reword promising Undo
+after an add; stale store-listing notes. Details and the not-changed table: `docs/done/456.md`.
+Legal's texts unchanged, findings in `docs/done/456-legal-findings.md`. Verified with the site,
+emails, lint, changelog and flutter gates (ARB parity included). Ships with the next green main
+build (TestFlight/Play internal); no flag needed.

@@ -10,9 +10,8 @@
     {
       "sha": "4dd8b715ba5bbd85f0190d831a9a611c51e17393",
       "item": 1,
-      "why": "job 322 reverted job 315's take-back before any release (Peter t1071u): Undo after an add keeps the store and category picked in its details",
-      "de": "„Rückgängig“ direkt nach dem Hinzufügen nimmt den Artikel wieder von der Liste; Laden und Kategorie, die du dafür gewählt hast, merkt sich Snacklist trotzdem fürs nächste Mal.",
-      "en": "Undo right after adding an item takes it off the list again; Snacklist still remembers the store and category you picked for it next time."
+      "why": "the compact add sheet (add-sheet-compact, full since 2026-11-22) has no Undo after an add, and categories are hidden (hide-categories): the item describes nothing users see (job 456)",
+      "drop": true
     },
     {
       "sha": "e2bc46ec3527ee61f29a39ac9e9f6e2d7263a052",

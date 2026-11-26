@@ -162,7 +162,7 @@ try {
   });
   check((questions ?? []).length === 0, 'the first list has no chain question to ask');
 
-  // „Partner einladen“ offers „Später“ until an invite exists.
+  // „Partner·in einladen“ offers „Später“ until an invite exists.
   await button(L('later')).click();
   await at('/');
   await page.waitForTimeout(2000);

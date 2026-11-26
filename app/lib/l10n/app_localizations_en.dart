@@ -1989,10 +1989,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get integrationPremiumAi => 'AI assistants that support MCP';
 
   @override
-  String get integrationPremiumLater =>
-      'Later: Google Assistant and Apple Watch';
-
-  @override
   String get integrationPremiumBuy => 'Unlock Snacklist Premium';
 
   @override

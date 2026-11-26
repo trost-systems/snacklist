@@ -108,6 +108,11 @@ void main() {
     expect(key('integration-premium'), findsOneWidget);
     expect(find.text('Teil von Snacklist Premium'), findsOneWidget);
     expect(
+      find.textContaining('Google Assistant'),
+      findsNothing,
+      reason: 'nothing planned is promised (FEATURES-FOR-WRITERS, job 456)',
+    );
+    expect(
       find.textContaining('Siri'),
       findsNothing,
       reason: 'Siri stays free (job 184)',

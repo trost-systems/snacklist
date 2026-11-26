@@ -1,10 +1,10 @@
 Hi {{NAME}},
 
-One tip for your next grocery run: Drag the categories into the order you walk through your store, just once. Then you simply go down the list from top to bottom.
+One tip for your next grocery run: Tap “Edit” at the top right of the list and drag your stores into the order you visit them, just once. Then you simply go down the list from top to bottom.
 
 And: How's it going so far? A quick sentence in reply is plenty.
 
 Peter
 
 -- 
-Feedback is welcome as a reply to this email or in the app under More > “Send feedback”.
+Feedback is welcome as a reply to this email or in the app under More > “Feedback & ideas”.

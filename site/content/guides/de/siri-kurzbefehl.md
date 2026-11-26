@@ -54,7 +54,7 @@ Den Kurzbefehl unten brauchst du nur noch, wenn du einen eigenen Satz wie „Ein
 - die Snacklist-App, in der du angemeldet bist und zu einem Haushalt gehörst
 - etwa fünf Minuten
 
-## Schritt 1: Zugriffstoken in Snacklist erstellen
+## Schritt 1: Zugriffsschlüssel in Snacklist erstellen
 
 ::: until unified-keys-guides
 Der Kurzbefehl meldet sich mit einem persönlichen Zugriffstoken an, nicht mit deinem Passwort.
@@ -143,7 +143,7 @@ Ab jetzt geht es ohne Hände: „Hey Siri, Einkaufsliste“ (oder „Siri, Einka
 >
 > - Teile den fertigen Kurzbefehl nicht mit anderen. Dein Token steckt darin, und wer ihn hat, kann Sachen auf deine Liste setzen.
 > - Zeig deinen Token niemandem und schick ihn nicht per Nachricht oder Mail.
-> - Wenn dein iPhone verloren geht oder du glaubst, jemand kennt deinen Token: Widerrufe ihn in der App: **Mehr** → **Zugänge**, tippe auf **Siri widerrufen** (oder „[Name] widerrufen“, wenn du den Token anders genannt hast). Die App fragt „Token widerrufen?“. Bestätige mit **Widerrufen**. Danach hat der Kurzbefehl keinen Zugriff mehr.
+> - Wenn dein iPhone verloren geht oder du glaubst, jemand kennt deinen Token: Widerrufe ihn in der App: **Mehr** → **Zugänge**, tippe auf **Siri widerrufen** (oder „[Name] widerrufen“, wenn du den Token anders genannt hast). Die App fragt „Zugriffsschlüssel widerrufen?“. Bestätige mit **Widerrufen**. Danach hat der Kurzbefehl keinen Zugriff mehr.
 
 ## So kannst du sprechen
 
@@ -158,7 +158,7 @@ Sag mehrere Dinge in einem Satz. Trenne sie mit einer kurzen Pause, mit „und�
 | Eine Packung Eier sowie zwei Flaschen Wein | 1 Packung Eier · 2 Flaschen Wein |
 | Einen Kasten Wasser, auch Kaffee | 1 Kasten Wasser · Kaffee |
 
-Füllwörter wie „bitte“, „wir brauchen“, „schreib auf“, „noch“, „auf die Liste“ und Artikel lässt Snacklist weg. Zahlwörter werden zu Ziffern („zwei“ wird 2). Mengen bleiben als Menge am Eintrag, die App zeigt sie vor dem Namen („2× Gurken“, „1 kg Äpfel“). Was schon auf der Liste steht, kommt nicht doppelt dazu. Siri sagt dann zum Beispiel „Schon auf der Liste: Milch.“ Steht etwas Ähnliches schon drauf, etwa Möhren, wenn du Karotten sagst, kommt der neue Eintrag trotzdem dazu, und Siri sagt „Möhren steht schon auf der Liste.“
+Füllwörter wie „bitte“, „wir brauchen“, „schreib auf“, „noch“, „auf die Liste“ und Artikel lässt Snacklist weg. Zahlwörter werden zu Ziffern („zwei“ wird 2). Mengen bleiben als Menge am Eintrag, die App zeigt sie vor dem Namen („2× Gurken“, „1 kg Äpfel“). Was schon auf der Liste steht, kommt nicht doppelt dazu. Siri sagt dann zum Beispiel „Schon auf der Liste: Milch.“ Steht etwas Ähnliches schon drauf, etwa Möhren, wenn du Karotten sagst, kommt der neue Eintrag trotzdem dazu, und Siri sagt „Hinzugefügt: Karotten. Schon auf der Liste: Möhren.“
 
 ## Wenn es nicht klappt
 
@@ -175,7 +175,7 @@ Startet Siri bei „Einkaufsliste“ nicht deinen Kurzbefehl? Prüf, ob er genau
 ## Siri wieder abschalten {#siri-wieder-abschalten}
 
 1. Lösch den Kurzbefehl in der Kurzbefehle-App: Leg den Finger auf **Einkaufsliste**, tippe auf **Löschen** und bestätige.
-2. Widerrufe den Token in Snacklist: **Mehr** → **Zugänge**, tippe auf **Siri widerrufen** (oder „[Name] widerrufen“, wenn du den Token anders genannt hast). Die App fragt „Token widerrufen?“. Bestätige mit **Widerrufen**.
+2. Widerrufe den Token in Snacklist: **Mehr** → **Zugänge**, tippe auf **Siri widerrufen** (oder „[Name] widerrufen“, wenn du den Token anders genannt hast). Die App fragt „Zugriffsschlüssel widerrufen?“. Bestätige mit **Widerrufen**.
 
 Damit ist die Verbindung getrennt.
 

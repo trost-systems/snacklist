@@ -177,7 +177,7 @@ void main() {
       (
         const FateDeleted('Zuhause'),
         'Du bist das letzte Mitglied. Deshalb wird der Haushalt „Zuhause“ mit '
-            'Liste, Verlauf, Kategorien und Geschäften gelöscht.',
+            'Liste, Verlauf, Kategorien und Läden gelöscht.',
       ),
       (null, 'Du bist in keinem Haushalt, geteilte Daten gibt es nicht.'),
     ]) {

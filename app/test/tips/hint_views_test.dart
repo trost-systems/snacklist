@@ -198,7 +198,7 @@ void main() {
       expect(find.text('Erste Schritte'), findsOneWidget);
       expect(find.text('1 von 3'), findsOneWidget);
       expect(find.text('Liste angelegt'), findsOneWidget);
-      expect(find.text('Partner einladen'), findsOneWidget);
+      expect(find.text('Partner·in einladen'), findsOneWidget);
       expect(find.text('Einmal einkaufen'), findsOneWidget);
       expect(find.text('Tippen hakt ab · Halten bearbeitet'), findsOneWidget);
       expect(find.text('KI-Assistenten verbinden'), findsNothing);
