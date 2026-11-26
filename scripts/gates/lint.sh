@@ -26,6 +26,7 @@ scripts/push-checks-test.sh
 scripts/merge-append-log-test.sh
 scripts/e2e-gate-test.sh
 scripts/verify-test.sh
+scripts/supabase-start-test.sh
 scripts/flutter-sdk-test.sh
 scripts/vercel-ignore-test.sh
 scripts/ci/download-test.sh

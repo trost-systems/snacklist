@@ -139,13 +139,16 @@ recipe_field() {
 # The recipes of a gate whose signal the failed run's output has. A match is a question, not a
 # verdict: the recipe says how to tell, and the gate has failed either way.
 seen_before() {
-  local gate="$1" output="$2" recipe signal found=()
+  local gate="$1" output="$2" recipe signal count found=()
   for recipe in "$RECIPES"/*.md; do
     [[ -r $recipe && "$(recipe_field "$recipe" gate)" == "$gate" ]] || continue
     signal="$(recipe_field "$recipe" signal)"
     [[ -n $signal ]] || continue
-    # -c reads to the end: no closed pipe for sed, whose failure would hide a match.
-    if sed $'s/\033\\[[0-9;]*[A-Za-z]//g' "$output" | grep -Ec -- "$signal" >/dev/null 2>&1; then
+    # A grep that exits before sed has written everything (a signal that is not a regex, or
+    # /dev/null as its stdout, where it stops at the first match) leaves sed a closed pipe, and
+    # its "couldn't flush stdout" lands in the verdict (job 446). sed's errors are not wanted here.
+    count="$(sed $'s/\033\\[[0-9;]*[A-Za-z]//g' "$output" 2>/dev/null | grep -Ec -- "$signal" 2>/dev/null || true)"
+    if [[ ${count:-0} -gt 0 ]]; then
       found+=("${recipe#"$REPO_ROOT/"}")
     fi
   done

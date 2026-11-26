@@ -3140,3 +3140,10 @@ PR #731. A link the app can show now opens the installed app. Without the app it
   - Join page: the e2e passed 21 of 21.
   - Not covered: no device test; the 8 pixel goldens fail on the box on HEAD too.
 - **Details.** [docs/done/462.md](docs/done/462.md), `docs/DEEP_LINKS.md`.
+
+## Job 446: flake sweep 3 (offline start, auth, account, voice, harness)
+
+- **Built.** `scripts/verify.sh`: sed's closed pipe no longer lands in the verdict (#574: grep exited before sed finished, with a signal that is no regex or on `/dev/null`); `scripts/lib.sh`: `supabase_start_retrying` retries `supabase start` on the docker networking error (#517); `scripts/supabase-start-test.sh` in the lint gate.
+- **Specs.** #71, #72, #60, #57, #58, #59, #78, #79: no code change. Failures were host pauses of the box's VM (Oct 25 to 28). CI stress with retries off: 224 passed, 0 failed, 0 flaky (run 45792993914); last 13 main PR/nightly e2e runs clean.
+- **Verify.** `bash scripts/verify-test.sh` (new case fails on main's verify.sh, passes now), `bash scripts/supabase-start-test.sh`.
+- **Missing.** Nothing. Details in `docs/done/446.md`. App change: none; changelog `none`.

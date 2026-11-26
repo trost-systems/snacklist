@@ -323,6 +323,16 @@ echo 1 >"$STUBS/exit"
 verify --only lint
 [[ $code == 1 && "$(last)" == "[verify] FAILED: lint (exit 1) after "*" s; its output: $VERIFY_LOG_DIR/lint."*".log" ]] || fail "a failure without a recipe's signal: exit $code, $(last)"
 [[ "$(own)" == "[verify] gate: lint"$'\n'"$(flake lint pass)"$'\n[verify] took: lint N s\n[verify] FAILED: lint (exit 1) after N s; its output: LOG/lint.log' && "$(rest)" == "$(sort "$STUBS/output")" ]] || fail "a failure without a recipe's signal says more than without recipes: $out"
+# A grep that exits before sed has written everything leaves sed a closed pipe: a signal that is not
+# a regex (no-pattern.md above), or /dev/null as its stdout. With SIGPIPE ignored, as in some CI
+# shells, sed's error lands in the verdict (job 446).
+cp "$VERIFY_LEDGER" "$tmp/ledger.before"
+{ echo checking; seq 1 200000; } >"$STUBS/output"
+echo 1 >"$STUBS/exit"
+(trap '' PIPE; verify --only lint; printf '%s\n' "$out" >"$tmp/closed-pipe.out")
+if grep -q 'Broken pipe\|flush stdout' "$tmp/closed-pipe.out"; then fail "sed wrote a closed-pipe error into the verdict: $(grep 'Broken pipe\|flush stdout' "$tmp/closed-pipe.out")"; fi
+cp "$tmp/ledger.before" "$VERIFY_LEDGER"
+printf 'checking\nno files left unformatted\n' >"$STUBS/output"
 # Without VERIFY_RECIPES the recipes are the skill's, named by their path in the checkout.
 unset VERIFY_RECIPES
 mkdir -p "$repo/.cursor/skills/verify-snacklist/recipes"
