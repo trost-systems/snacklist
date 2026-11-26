@@ -152,6 +152,12 @@ abstract class AppLocalizations {
   /// **'{name} abgehakt'**
   String itemTicked(String name);
 
+  /// No description provided for @itemTickedUndo.
+  ///
+  /// In de, this message translates to:
+  /// **'Abgehakt: {name}'**
+  String itemTickedUndo(String name);
+
   /// No description provided for @alreadyOnList.
   ///
   /// In de, this message translates to:

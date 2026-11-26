@@ -441,19 +441,20 @@ class _ShoppingListViewState()
         : 1 + s.count + (dividers ? 0.6 * s.blocks.length : 0);
   }
 
-  void _snack(String text, {VoidCallback? undo}) {
+  ScaffoldFeatureController<SnackBar, SnackBarClosedReason> _snack(
+    String text, {
+    VoidCallback? undo,
+  }) {
     final l10n = AppLocalizations.of(context);
-    Notices.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(text),
-          persist: false,
-          action: undo == null
-              ? null
-              : SnackBarAction(label: l10n.undo, onPressed: undo),
-        ),
-      );
+    return (Notices.of(context)..hideCurrentSnackBar()).showSnackBar(
+      SnackBar(
+        content: Text(text),
+        persist: false,
+        action: undo == null
+            ? null
+            : SnackBarAction(label: l10n.undo, onPressed: undo),
+      ),
+    );
   }
 
   /// A fresh item counts as seen after three seconds on screen while the
@@ -492,9 +493,12 @@ class _ShoppingListViewState()
     _seenTimers.clear();
   }
 
-  /// No snackbar: a tap on the item under "Zuletzt verwendet" undoes a
-  /// tick (job 29b). A row that went away while it closed ticks here after
-  /// its end, maybe after this view's: [cubit] is the list it was built on.
+  /// `Abgehakt: <name>` with Rückgängig, which puts back this last tick
+  /// only (CP1, job 471); once it is gone, a tap under "Zuletzt verwendet"
+  /// still does. It goes as soon as the item is open again by any other way
+  /// (the trip question's Zurücknehmen, a partner, a refused tick). A row
+  /// that went away while it closed ticks here after its end, maybe after
+  /// this view's: [cubit] is the list it was built on.
   void _tick(ListCubit cubit, Item item) {
     if (mounted) {
       widget.onInteract?.call();
@@ -503,6 +507,16 @@ class _ShoppingListViewState()
       }
     }
     cubit.tick(item.id);
+    if (mounted) {
+      final snack = _snack(
+        AppLocalizations.of(context).itemTickedUndo(item.name),
+        undo: () => cubit.untick(item.id),
+      );
+      final open = cubit.stream
+          .where((s) => s.allItems[item.id]?.status == ItemStatus.active)
+          .listen((_) => snack.close());
+      unawaited(snack.closed.whenComplete(open.cancel));
+    }
   }
 
   /// Opens the price editor of [item], or closes it when it is open.

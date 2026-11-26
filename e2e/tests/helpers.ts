@@ -91,8 +91,8 @@ export const usedRow = (page: Page, name: string): Locator =>
   page.getByRole('button', { name: new RegExp(`^${escape(name)}( .*)? ${usedAction}$`) });
 
 /**
- * Puts a ticked item back with a tap on it under "Zuletzt verwendet", the tick's undo since the
- * tick has no snackbar (job 29b); opens the section first if it is closed.
+ * Puts a ticked item back with a tap on it under "Zuletzt verwendet", the tick's undo once its
+ * snackbar is gone; opens the section first if it is closed.
  */
 export async function putBack(page: Page, name: string): Promise<void> {
   const section = page.getByRole('button', { name: 'Zuletzt verwendet' });
@@ -168,8 +168,8 @@ export async function reveal(page: Page, target: Locator, margin = 0): Promise<v
 
 /**
  * Ticks an item off: a tap on its row (design H has no check box). The row strikes through and
- * closes for 440 ms before the tick commits, so this waits for the row to go (the tick has no
- * snackbar since job 29b): an add of the same name before then finds the item still on the list.
+ * closes for 440 ms before the tick commits, so this waits for the row to go (its undo snackbar
+ * „Abgehakt: <name>“ shows then): an add of the same name before then finds the item still on the list.
  */
 export async function tick(page: Page, name: string): Promise<void> {
   await reveal(page, itemRow(page, name));

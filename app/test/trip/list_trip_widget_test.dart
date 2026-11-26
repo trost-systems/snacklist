@@ -352,7 +352,20 @@ void main() {
     };
     final before = texts();
     void nothingLive(String after) {
-      expect(find.byType(SnackBar), findsNothing, reason: after);
+      // Only the tick's own undo snackbar (job 471).
+      expect(
+        find.descendant(
+          of: find.byType(SnackBar),
+          matching: find.byWidgetPredicate(
+            (w) =>
+                w is Text &&
+                !(w.data ?? '').startsWith('Abgehakt: ') &&
+                w.data != 'Rückgängig',
+          ),
+        ),
+        findsNothing,
+        reason: after,
+      );
       expect(find.byType(MaterialBanner), findsNothing, reason: after);
       expect(find.byType(BottomSheet), findsNothing, reason: after);
       expect(
@@ -451,6 +464,11 @@ void main() {
     await tick(tester, 'Milch');
     await answer(tester, 'trip-ask-take-back');
     await tester.pumpAndSettle();
+    expect(
+      find.text('Abgehakt: Milch'),
+      findsNothing,
+      reason: 'no undo left for an item that is back',
+    );
     expect(strip, findsNothing);
     expect(shop.trips.state, isA<NoTrip>());
     expect(

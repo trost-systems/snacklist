@@ -3630,6 +3630,13 @@ void main() {
         expect(reopened(), 1, reason: 'still the same emptying');
       });
 
+      test("the tick snackbar's undo reopens it too", () async {
+        final ids = await emptied(['Milch', 'Brot']);
+        clocked.untick(ids.last);
+        await settle();
+        expect(reopened(), 1);
+      });
+
       test('not once the list has new items', () async {
         final ids = await emptied(['Milch', 'Brot', 'Eier']);
         clocked.addEntry(parseEntry('Butter'));

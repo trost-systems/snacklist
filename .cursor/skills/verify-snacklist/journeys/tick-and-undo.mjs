@@ -1,6 +1,8 @@
 // Feature tick-and-undo, entry point: a tap on a list row, then a tap on it under „Zuletzt
-// verwendet“ (sub-features tu-tick, tu-tick-a11y, tu-used-section, tu-put-back). Proves the row is
-// a checkbox, strikes and leaves without a snackbar, is stored as bought, and comes back. With
+// verwendet“ (sub-features tu-tick, tu-tick-undo, tu-tick-a11y, tu-used-section, tu-put-back). Proves
+// the row is a checkbox, strikes and leaves, is stored as bought, that the snackbar „Abgehakt: <name>“
+// takes it back with „Rückgängig“ (job 471; not checked under the trip question's sheet), that the
+// snackbar goes by itself, and that the item comes back from „Zuletzt verwendet“. With
 // recently-used-open (full since 2026-11-22) „Zuletzt verwendet“ starts open: it proves that, folds
 // the section with a tap and opens it again before the put-back. With
 // trip-mode on (off for users since 2026-11-22, Peter HP2, job 401; VH_DEFINES="FLAGS_ON=trip-mode")
@@ -73,10 +75,24 @@ try {
     await answerShopAsk(page, L, 'shopAskNo');
     log(`„${L('shopAskTitle')}“ came; answered „${L('shopAskNo')}“`);
   }
-  const undo = await page.getByRole('button', { name: L('undo'), exact: true }).count();
-  if (undo) throw new Error('a tick showed an undo button');
+  // A snackbar with an action keeps its text in a group's aria-label (e2e/tests/helpers.ts actionSnackBar).
+  const snack = page.getByRole('group', { name: L('itemTickedUndo', { name }), exact: true });
+  if (!asked) {
+    await snack.waitFor({ timeout: 5_000 });
+    if (!(await waitStatus(name, 'bought'))) throw new Error('the tick did not reach the server');
+    await capture(page, dir, '02c-undo-snackbar');
+    await snack.getByRole('button', { name: L('undo'), exact: true }).click();
+    await itemRow(page, name).first().waitFor({ timeout: 10_000 });
+    const undone = await waitStatus(name, 'active');
+    log(`„${L('itemTickedUndo', { name })}“ with „${L('undo')}“ came; „${L('undo')}“ put it back; database: ${JSON.stringify(await status())}`);
+    if (!undone) throw new Error(`„${L('undo')}“ did not put "${name}" back on the server`);
+    await tickAway(name);
+    await snack.waitFor({ timeout: 5_000 });
+    await snack.waitFor({ state: 'detached', timeout: 15_000 });
+    log(`ticked "${name}" again; its snackbar went away by itself`);
+  }
   const bought = await waitStatus(name, 'bought');
-  log(`row gone, no „${L('undo')}“; database: ${JSON.stringify(await status())}`);
+  log(`row gone; database: ${JSON.stringify(await status())}`);
   if (!bought) throw new Error('the tick did not reach the server');
   await capture(page, dir, '03-after-tick');
 

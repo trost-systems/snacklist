@@ -41,6 +41,11 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String itemTickedUndo(String name) {
+    return 'Abgehakt: $name';
+  }
+
+  @override
   String alreadyOnList(String name) {
     return '$name steht schon auf der Liste';
   }

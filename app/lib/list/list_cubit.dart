@@ -1034,22 +1034,14 @@ class ListCubit(
     );
   }
 
-  /// Puts a ticked item back: no analytics event.
-  void untick(String id) =>
-      _enqueue(SetStatus(id, ItemStatus.active, _clock()));
-
-  /// Puts a bought item from "recently used" back on the list: an add, or
-  /// the tick's undo within [undoWindow] of the tick (job 29b: the tick has
-  /// no undo snackbar any more), which sends nothing, as `suggest_items`
-  /// does not count it as a purchase.
-  void readd(String id) {
-    final item = state.allItems[id];
-    final bought = item?.status == ItemStatus.bought;
-    final boughtAt = item?.boughtAt;
+  /// Puts a ticked item back at its place: no analytics event. The tick
+  /// snackbar's Rückgängig (job 471) and [readd] both come here, so either
+  /// reopens the trip of a list the tick emptied.
+  void untick(String id) {
+    final bought = state.allItems[id]?.status == ItemStatus.bought;
     final now = _clock();
-    final undo = boughtAt != null && now.difference(boughtAt) <= undoWindow;
     final emptied = !_hasOpenItem(state.items);
-    untick(id);
+    _enqueue(SetStatus(id, ItemStatus.active, now));
     if (_tripDoneAt case final done?
         when bought &&
             emptied &&
@@ -1058,6 +1050,19 @@ class ListCubit(
       _reopenedTrip = done;
       _tell(const TripReopened());
     }
+  }
+
+  /// Puts a bought item from "recently used" back on the list: an add, or,
+  /// within [undoWindow] of the tick, the tick's undo once its snackbar is
+  /// gone, which sends nothing, as `suggest_items` does not count it as a
+  /// purchase.
+  void readd(String id) {
+    final item = state.allItems[id];
+    final bought = item?.status == ItemStatus.bought;
+    final boughtAt = item?.boughtAt;
+    final undo =
+        boughtAt != null && _clock().difference(boughtAt) <= undoWindow;
+    untick(id);
     if (bought && !undo) {
       _track('item_added', {'source': AddSource.suggestion.name, ..._actor()});
       _tell(

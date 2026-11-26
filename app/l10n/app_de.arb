@@ -11,6 +11,8 @@
   "@itemDeleted": {"placeholders": {"name": {"type": "String"}}},
   "itemTicked": "{name} abgehakt",
   "@itemTicked": {"placeholders": {"name": {"type": "String"}}},
+  "itemTickedUndo": "Abgehakt: {name}",
+  "@itemTickedUndo": {"placeholders": {"name": {"type": "String"}}},
   "alreadyOnList": "{name} steht schon auf der Liste",
   "@alreadyOnList": {"placeholders": {"name": {"type": "String"}}},
   "dedupeMerge": "Zusammenführen",
