@@ -576,6 +576,7 @@ a {
 
 .updated,
 .since-note,
+.open-in-app,
 .release-date {
   color: var(--hl-color-text-muted);
   font-size: var(--hl-type-label-size);
@@ -587,6 +588,12 @@ a {
 
 .release-date {
   margin-top: 0;
+}
+
+.open-in-app a {
+  display: inline-block;
+  min-height: var(--hl-size-target);
+  line-height: var(--hl-size-target);
 }
 
 .release-title {

@@ -35,7 +35,10 @@ async function head(path) {
 const httpChecks = !process.env.SMOKE_BROWSER_ONLY;
 for (const path of httpChecks ? ['/', '/oauth/consent', '/join/ABC123', '/settings', '/join/AB.CD', '/lists/a.b',
   // Job 66: every app link (docs/DEEP_LINKS.md) opens the web app where the app is not installed.
-  '/list', '/add', '/stores/4f9c2e1a-7b3d-4c8e-9a6f-2d1e0b5c8a7f', '/more', '/more/invites', '/more/settings'] : []) {
+  '/list', '/add', '/stores/4f9c2e1a-7b3d-4c8e-9a6f-2d1e0b5c8a7f', '/more', '/more/invites', '/more/settings',
+  // Job 462: the screens the app host claims since (`/join` is the join page's folder, which hands
+  // it to the web app).
+  '/edit', '/edit/none', '/history', '/history/trip/4f9c2e1a', '/trip/4f9c2e1a', '/households/new'] : []) {
   const r = await head(path);
   check(r.status === 200 && r.type.startsWith('text/html') && r.body.includes('flutter_bootstrap.js'), `${path} serves index.html (${r.status}, ${r.type})`);
   check(/no-cache/.test(r.cache), `${path} Cache-Control: ${r.cache}`);
@@ -59,6 +62,10 @@ if (httpChecks) {
   check(aasa.type.startsWith('application/json') && ['VCZSHMZY25.com.snacklist.app', 'VCZSHMZY25.com.hummlist.app'].every((id) => details?.appIDs.includes(id))
     && details.components.some((c) => c['/'] === '/more/*'),
     `/.well-known/apple-app-site-association ${aasa.status}, ${aasa.type}, claims /more/*`);
+  // Job 462: older iOS versions ask at the root; the same file there, never index.html or a redirect.
+  const rootAasa = await head('/apple-app-site-association');
+  check(rootAasa.status === 200 && rootAasa.type.startsWith('application/json') && rootAasa.body === aasa.body,
+    `/apple-app-site-association ${rootAasa.status}, ${rootAasa.type}, the same file`);
   const links = await head('/.well-known/assetlinks.json');
   check(links.status === 200 && links.type.startsWith('application/json') && JSON.parse(links.body).map((l) => l.target.package_name).join() === 'com.snacklist.app,com.hummlist.app',
     `/.well-known/assetlinks.json ${links.status}, ${links.type}`);

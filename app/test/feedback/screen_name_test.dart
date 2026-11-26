@@ -13,6 +13,13 @@ void main() {
       '/edit': 'stores',
       '/edit/none': 'stores',
       '/edit/3f0c-Hafermilch': 'stores',
+      // Job 462: the guides, never a guide's slug.
+      '/de/anleitungen': 'guides',
+      '/en/guides/': 'guides',
+      '/de/anleitungen/siri-kurzbefehl': 'guide',
+      '/en/guides/siri-shortcut': 'guide',
+      '/en/guides/Siri': 'guides',
+      '/de/anleitungen/alexa.md': 'guide',
       '/more/usage-data': 'usage_data',
       '/more/tips': 'tips',
       // Gone in job 85: the switch moved, the legal rows sit on More.

@@ -38,5 +38,8 @@ const screenNames = {
   'your_name',
   'oauth_consent',
   'join',
+  // A guide or a locale's guide index (job 462), never the slug.
+  'guide',
+  'guides',
   'other',
 };

@@ -5,6 +5,8 @@ import 'package:family_groceries/analytics/consent_screen.dart';
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/deep_links.dart';
 import 'package:family_groceries/core/notices.dart';
+import 'package:family_groceries/guides/guide_page.dart';
+import 'package:family_groceries/guides/model.dart';
 import 'package:family_groceries/household/create_household_screen.dart';
 import 'package:family_groceries/household/invite_partner_screen.dart';
 import 'package:family_groceries/household/join_request_waiting.dart';
@@ -233,6 +235,8 @@ String _screenNameOfPath(Uri location) => switch (location.path) {
   consentPath => 'oauth_consent',
   joinWaitingPath => 'join',
   _ when location.pathSegments.firstOrNull == 'join' => 'join',
+  _ when GuideRef.ofPath(location.path)?.slug != null => 'guide',
+  _ when GuideRef.ofPath(location.path) != null => 'guides',
   _ => 'other',
 };
 
@@ -338,6 +342,17 @@ String? authRedirect(
   OnboardingDraft? draft,
   bool askName = false,
 }) {
+  // Job 462: the guides are public; their page leads to `/` on close. Any
+  // other path below a locale's guides (a `.md` twin, a deeper path) shows
+  // that guide or the index.
+  if (GuideRef.ofPath(uri.path) case final guide?) {
+    return guide.path == uri.path
+        ? null
+        : Uri(
+            path: guide.path,
+            fragment: uri.hasFragment ? uri.fragment : null,
+          ).toString();
+  }
   final invite = inviteIn(uri) ?? pendingInvite;
   final consent = uri.path == consentPath
       ? uri.toString()
@@ -407,6 +422,12 @@ String? authRedirect(
     NeedsHousehold(requests: [_, ...]) when uri.path == welcomePath => carry(
       joinWaitingPath,
     ),
+    // A link to the code entry is a step before a household itself.
+    NeedsHousehold()
+        when consent == null &&
+            link != null &&
+            Uri.parse(link).path == joinCodePath =>
+      link,
     NeedsHousehold() when _beforeHousehold.contains(uri.path) => carry(
       uri.path,
     ),
@@ -465,12 +486,17 @@ String? _vetted(String? next, bool Function(Uri next) allowed) {
 }
 
 /// An app link sign-in continues to, if it leads to a screen: an invite
-/// link goes by its code.
+/// link goes by its code, and one more household ([newHouseholdPath]) is
+/// none to continue to: an account without one sets its first up.
 bool _continues(Uri location) =>
     isAppLink(location) &&
     (location.path == listLinkPath ||
         listLinkOf(location) != null ||
-        inMoreTab(location));
+        inMoreTab(location) ||
+        inListTab(location) ||
+        location.path == historyPath ||
+        inTripSummary(location) ||
+        location.path == joinCodePath);
 
 /// [uri] itself as a `next`, without the platform's scheme and host, if it
 /// is a link sign-in continues to.
@@ -519,7 +545,13 @@ class RedirectMemory() {
       askName: askName,
     );
     // Signed in, the link is in the location now (or was the location).
-    if (session is InHousehold) {
+    // The code entry is reached without a household: kept, it would come
+    // back on every `/` until one is joined.
+    final remembered = _next;
+    if (session is InHousehold ||
+        (target == null &&
+            remembered != null &&
+            Uri.parse(remembered).path == uri.path)) {
       _next = null;
     }
     return target;
@@ -722,6 +754,7 @@ List<RouteBase> appRoutes({
     path: '/join/:code',
     builder: (_, state) => JoinScreen(link: state.pathParameters['code']),
   ),
+  ...guideRoutes(),
 ];
 
 GoRouter buildRouter(

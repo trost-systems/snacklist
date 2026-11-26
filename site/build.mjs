@@ -13,6 +13,7 @@ import { ACTION_PAGES, actionPage, readConsent } from './waitlist.mjs';
 import { insertReportForm, reportForm, reportFormProblem } from './report.mjs';
 import { AgentError, MARKS, agentHead, checkAgentSite, readPublicApi, readStage, readVercel, stageOverride, writeAgentFiles } from './agent.mjs';
 import { ALEXA_SKILL_URLS, WEB_APP_URL } from './config/stores.mjs';
+import { writeGuideData } from './guide-data.mjs';
 
 const SITE_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_DIR = join(SITE_DIR, '..');
@@ -42,6 +43,7 @@ export const LOCALES = {
       home: 'Snacklist, zur Startseite',
       skip: 'Zum Inhalt',
       guides: 'Anleitungen',
+      openInApp: 'In der App öffnen',
       draft: 'ENTWURF: Freigabe durch Peter',
       unreleased: (v) => `Ab Version ${v}, noch nicht im Store`,
       since: (v) => `Ab App-Version ${v}`,
@@ -81,6 +83,7 @@ export const LOCALES = {
       home: 'Snacklist, home',
       skip: 'Skip to content',
       guides: 'Guides',
+      openInApp: 'Open in the app',
       draft: "DRAFT: pending Peter's approval",
       unreleased: (v) => `From version ${v}, not in the stores yet`,
       since: (v) => `From app version ${v}`,
@@ -110,17 +113,6 @@ const FOOTER_LINKS = [
   { key: 'report', shown: () => true },
   { key: 'support', shown: (config) => config.supportPublished },
 ];
-
-// A Markdown link to `alexa-skill:<locale>` goes to that locale's skill page (config/stores.mjs)
-// while config.json's alexaPublished is on; off, only its text stays.
-function skillLinks(page, shown) {
-  const body = page.body.replace(/<a href="alexa-skill:([^"]*)">(.*?)<\/a>/g, (_, locale, label) => {
-    const url = ALEXA_SKILL_URLS[locale];
-    if (!url) fail(page.file, `link alexa-skill:${locale}: config/stores.mjs has skill URLs for ${Object.keys(ALEXA_SKILL_URLS).join(', ')}`);
-    return shown ? `<a href="${url}">${label}</a>` : label;
-  });
-  return { ...page, body };
-}
 
 // `draft: true` in the frontmatter: built with a banner and noindex in preview and local builds,
 // left out of Vercel production builds, so the path answers 404 there as before.
@@ -192,8 +184,9 @@ md.core.ruler.push('since', (state) => {
   const { tokens } = state;
   const lines = state.src.split('\n');
   const ui = LOCALES[locale].ui;
-  const html = (content) => Object.assign(new state.Token('html_block', '', 0), { content });
-  const note = (since) => (noted(since, versions) ? [html(`<p class="since-note">${escapeHtml(ui.since(since))}</p>\n`)] : []);
+  // `meta.note` marks the one notice production shows, for the guide JSON.
+  const html = (content, meta = null) => Object.assign(new state.Token('html_block', '', 0), { content, meta });
+  const note = (since) => (noted(since, versions) ? [html(`<p class="since-note">${escapeHtml(ui.since(since))}</p>\n`, { note: ui.since(since) })] : []);
   // A section or block repeats no note its guide already shows; unreleased content shows the banner instead.
   const inner = (since) => (pageSince !== undefined && compareVersions(since, pageSince) <= 0 ? [] : note(since));
   const notices = (since) => (released(since, versions) ? inner(since) : [html(banner(ui.unreleased(since)))]);
@@ -263,6 +256,29 @@ md.core.ruler.push('since', (state) => {
   const empty = (t, next) => t.nesting === 1 && next?.nesting === -1 && next.type === t.type.replace(/_open$/, '_close');
   for (let k = kept.length - 2; k >= 0; k--) if (empty(kept[k], kept[k + 1])) kept.splice(k, 2);
   state.tokens = kept;
+});
+
+// A Markdown link to `alexa-skill:<locale>` goes to that locale's skill page (config/stores.mjs)
+// while config.json's alexaPublished is on; off, only its text stays.
+md.core.ruler.push('skill-links', (state) => {
+  for (const token of state.tokens) {
+    if (token.type !== 'inline') continue;
+    let dropClose = false;
+    token.children = token.children.filter((child) => {
+      if (child.type === 'link_close' && dropClose) {
+        dropClose = false;
+        return false;
+      }
+      const href = child.type === 'link_open' ? child.attrGet('href') : null;
+      if (!href?.startsWith('alexa-skill:')) return true;
+      const locale = href.slice('alexa-skill:'.length);
+      const url = ALEXA_SKILL_URLS[locale];
+      if (!url) fail(state.env.file, `link alexa-skill:${locale}: config/stores.mjs has skill URLs for ${Object.keys(ALEXA_SKILL_URLS).join(', ')}`);
+      child.attrSet('href', url);
+      dropClose = state.env.skills !== true;
+      return !dropClose;
+    });
+  }
 });
 
 function markdownFiles(dir) {
@@ -337,7 +353,7 @@ function normalizeDate(value, file) {
   fail(file, `frontmatter field "updated" must be a date (YYYY-MM-DD), got ${JSON.stringify(value)}`);
 }
 
-function loadPage(kindName, { file, expect }, contentDir, versions) {
+function loadPage(kindName, { file, expect }, contentDir, versions, skills) {
   const kind = KINDS[kindName];
   const name = relative(contentDir, file);
   const { data, content } = matter(readFileSync(file, 'utf8'));
@@ -354,6 +370,9 @@ function loadPage(kindName, { file, expect }, contentDir, versions) {
   for (const [field, expected] of Object.entries(expect)) {
     if (fm[field] !== expected) fail(name, `frontmatter field "${field}" is "${fm[field]}" but the file location requires "${expected}"`);
   }
+  // The apps open a guide by its slug (app/lib/guides/model.dart, GuideRef); any other would show the index.
+  if (kindName === 'guide' && !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(fm.slug)) fail(name, `frontmatter field "slug" must be lowercase words joined by hyphens (the apps open guides by it), got "${fm.slug}"`);
+  if (kindName === 'guide' && fm.slug === 'index') fail(name, 'frontmatter field "slug" must not be "index": data/guides/<locale>/index.json is the index');
   if (fm.draft !== undefined && typeof fm.draft !== 'boolean') fail(name, `frontmatter field "draft" must be true or false, got ${JSON.stringify(fm.draft)}`);
   if (fm.unlisted !== undefined && (typeof fm.unlisted !== 'boolean' || kindName !== 'guide')) fail(name, 'frontmatter field "unlisted" must be true or false and is only allowed on guides');
   if (fm.since !== undefined) checkSince(fm.since, name, kindName, 'frontmatter field');
@@ -371,6 +390,7 @@ function loadPage(kindName, { file, expect }, contentDir, versions) {
     group: kind.group(fm),
     ogType: kind.ogType,
     locale: fm.locale,
+    slug: fm.slug,
     title: fm.title,
     description: fm.description,
     updated: fm.updated,
@@ -378,15 +398,17 @@ function loadPage(kindName, { file, expect }, contentDir, versions) {
     notices: [...(fm.draft === true ? [ui.draft] : []), ...(released(fm.since, versions) ? [] : [ui.unreleased(fm.since)])],
     unlisted: fm.unlisted === true,
     report: fm.form !== undefined,
-    body: pageBody(content, fm, { file: name, kind: kindName, locale: fm.locale, versions, since: fm.since }),
+    ...pageBody(content, fm, { file: name, kind: kindName, locale: fm.locale, versions, since: fm.since, skills }),
   };
 }
 
+// The tokens are what the HTML shows, gating done; a guide's JSON for the app is built from them.
 // A legal page with `form:` in its front matter gets the report form (job 275, report.mjs).
 function pageBody(content, fm, env) {
-  const body = md.render(content, env);
-  if (fm.form === undefined) return body;
-  return insertReportForm(body, reportForm(fm.form, { locale: fm.locale, inline: (text) => md.renderInline(text, env) }));
+  const tokens = md.parse(content, env);
+  const body = md.renderer.render(tokens, md.options, env);
+  if (fm.form === undefined) return { tokens, body };
+  return { tokens, body: insertReportForm(body, reportForm(fm.form, { locale: fm.locale, inline: (text) => md.renderInline(text, env) })) };
 }
 
 const escapeHtml = (s) =>
@@ -396,17 +418,21 @@ function formatDate(iso, locale) {
   return new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(iso));
 }
 
+// The app claims the guide paths (public/.well-known); open-in-app.js shows this on phones.
+const openInApp = (locale) => `<p class="open-in-app" hidden><a data-open-in-app>${LOCALES[locale].ui.openInApp}</a></p>\n`;
+
 function mainContent(page, guidesByLocale) {
   if (page.kind === 'index') {
     const items = guidesByLocale[page.locale]
       .map((g) => `<li><a href="${g.route}">${escapeHtml(g.title)}</a><p>${escapeHtml(g.description)}</p></li>`)
       .join('\n');
-    return `<h1>${escapeHtml(page.title)}</h1>\n${page.body}<ul class="guide-list">\n${items}\n</ul>`;
+    return `<h1>${escapeHtml(page.title)}</h1>\n${openInApp(page.locale)}${page.body}<ul class="guide-list">\n${items}\n</ul>`;
   }
   if (page.kind === 'landing') return page.body;
   if (page.kind === 'guide') {
     const label = LOCALES[page.locale].ui.updated;
-    return `${page.body}<p class="updated">${label}: <time datetime="${page.updated}">${formatDate(page.updated, page.locale)}</time></p>`;
+    const body = page.body.replace(/(<\/h1>\n(?:<p class="since-note">.*<\/p>\n)?)/, `$1${openInApp(page.locale)}`);
+    return `${body}<p class="updated">${label}: <time datetime="${page.updated}">${formatDate(page.updated, page.locale)}</time></p>`;
   }
   return page.body;
 }
@@ -485,6 +511,7 @@ function renderPage(page, { config, groups, guidesByLocale, copy, stage }) {
     landing && stage === 'launch' && '<script src="/get-app.js" defer></script>',
     form && '<script src="/waitlist.js" defer></script>',
     report && '<script type="module" src="/report.js"></script>',
+    (page.kind === 'guide' || page.kind === 'index') && '<script src="/open-in-app.js" defer></script>',
   ].filter(Boolean).map((line) => `${line}\n`).join('');
   return `<!doctype html>
 <html lang="${page.locale}">
@@ -798,9 +825,8 @@ export function build({
   holds[STAGE_GATE] = stage === 'launch';
   const versions = { live: live.live, firstPublic: live.firstPublic, production: isProduction(env), holds };
   const pages = Object.keys(KINDS)
-    .flatMap((kind) => KINDS[kind].files(contentDir).map((entry) => loadPage(kind, entry, contentDir, versions)))
+    .flatMap((kind) => KINDS[kind].files(contentDir).map((entry) => loadPage(kind, entry, contentDir, versions, config.alexaPublished)))
     .filter((page) => !(versions.production && page.notices.length > 0))
-    .map((page) => skillLinks(page, config.alexaPublished))
     .concat(changelogPages(repoDir, versions.production), historyPages(repoDir));
   const landing = landingPages(contentDir, publicDir, config, stage);
   pages.push(...landing.pages);
@@ -854,6 +880,7 @@ export function build({
     writeFileSync(file, html);
   };
   for (const { page, html } of rendered) write(page.route, html);
+  writeGuideData({ outDir, pages, guidesByLocale, siteUrl: config.siteUrl });
   write('/', rootPage(config));
   write('/404', notFoundPage(config));
   const publicApi = readPublicApi(repoDir);

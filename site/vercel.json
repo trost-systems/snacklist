@@ -8,7 +8,10 @@
   "regions": ["fra1"],
   "cleanUrls": true,
   "trailingSlash": false,
-  "rewrites": [{ "source": "/get", "destination": "/api/get" }],
+  "rewrites": [
+    { "source": "/get", "destination": "/api/get" },
+    { "source": "/apple-app-site-association", "destination": "/.well-known/apple-app-site-association" }
+  ],
   "redirects": [
     {
       "source": "/((?!data/|api/).*)",
@@ -67,6 +70,14 @@
         { "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=604800" },
         { "key": "Content-Type", "value": "application/json; charset=utf-8" }
       ]
+    },
+    {
+      "source": "/.well-known/apple-app-site-association",
+      "headers": [{ "key": "Content-Type", "value": "application/json" }]
+    },
+    {
+      "source": "/apple-app-site-association",
+      "headers": [{ "key": "Content-Type", "value": "application/json" }]
     },
     {
       "source": "/(llms|llms-full)\\.txt",

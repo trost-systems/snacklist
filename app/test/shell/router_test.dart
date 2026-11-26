@@ -54,7 +54,8 @@ void main() {
     (NeedsHousehold('u'), '/households/new', '/welcome'),
     (SignedOut(), '/households/new', '/start'),
     (SignedOut(), '/welcome', '/start'),
-    (SignedOut(), '/join', '/start'),
+    // Job 462: an app link to the code entry, after sign-in.
+    (SignedOut(), '/join', '/login?next=%2Fjoin'),
     (household, '/login', '/'),
     (household, '/welcome', '/'),
     // An invite in any location opens the join screen.
@@ -78,8 +79,8 @@ void main() {
     (household, '/edit/lidl', null),
     (household, '/edit/none', null),
     (household, '/edit/lidl/more', '/'),
-    (NeedsHousehold('u'), '/edit/lidl', '/welcome'),
-    (SignedOut(), '/edit', '/start'),
+    (NeedsHousehold('u'), '/edit/lidl', '/welcome?next=%2Fedit%2Flidl'),
+    (SignedOut(), '/edit', '/login?next=%2Fedit'),
     (household, '/more/access', null),
     (household, '/more/account', null),
     (household, '/more/account?invite=ABCD2345', '/join/ABCD2345'),
@@ -327,12 +328,146 @@ void main() {
       '/welcome?next=%2F%2Fevil.example%2Fmore',
       '/welcome',
     ),
+    // Job 462: the screens the app host claims since, signed out after
+    // sign-in, and without a household after setting one up.
+    (SignedOut(), '/edit/lidl', '/login?next=%2Fedit%2Flidl'),
+    (SignedOut(), '/edit/lidl/more', '/start'),
+    (SignedOut(), '/history', '/login?next=%2Fhistory'),
+    (SignedOut(), '/history/trip/t1', '/login?next=%2Fhistory%2Ftrip%2Ft1'),
+    (SignedOut(), '/trip/t1', '/login?next=%2Ftrip%2Ft1'),
+    (household, '/login?next=%2Fedit%2Flidl', '/edit/lidl'),
+    (household, '/login?next=%2Fhistory', '/history'),
+    (household, '/login?next=%2Fhistory%2Ftrip%2Ft1', '/history/trip/t1'),
+    (household, '/login?next=%2Ftrip%2Ft1', '/trip/t1'),
+    (household, '/history', null),
+    (household, '/history/trip/t1', null),
+    (household, '/trip/t1', null),
+    (NeedsHousehold('u'), '/history', '/welcome?next=%2Fhistory'),
+    (household, '/welcome?next=%2Ftrip%2Ft1', '/trip/t1'),
+    // The code entry is a step before a household: straight there.
+    (household, '/login?next=%2Fjoin', '/join'),
+    (NeedsHousehold('u'), '/login?next=%2Fjoin', '/join'),
+    (NeedsHousehold('u'), '/analytics-consent?next=%2Fjoin', '/join'),
+    // One more household is none to continue to: without one the guided
+    // start sets up the first.
+    (SignedOut(), '/households/new/invite', '/start'),
+    (SignedOut(), '/login?next=%2Fhouseholds%2Fnew', '/login'),
+    (household, '/login?next=%2Fhouseholds%2Fnew', '/'),
   ];
   for (final (session, from, to) in links) {
     test('link: ${session.runtimeType} at $from goes to ${to ?? 'stays'}', () {
       expect(authRedirect(session, Uri.parse(from)), to);
     });
   }
+
+  // Job 462: the guides of snacklist.app open in the app; public, they
+  // show as they are, before any gate.
+  const guides = [
+    '/de/anleitungen',
+    '/de/anleitungen/siri-kurzbefehl',
+    '/en/guides',
+    '/en/guides/siri-shortcut',
+    'https://snacklist.app/de/anleitungen/alexa',
+    'com.snacklist.app://open/en/guides/widget',
+  ];
+  for (final session in const <Session>[
+    SessionLoading(),
+    SignedOut(),
+    NeedsHousehold('u'),
+    waiting,
+    household,
+  ]) {
+    test('a guide shows ${session.runtimeType}, before any gate', () {
+      for (final path in guides) {
+        expect(authRedirect(session, Uri.parse(path)), isNull, reason: path);
+        expect(
+          authRedirect(
+            session,
+            Uri.parse(path),
+            askConsent: true,
+            askName: true,
+            pendingInvite: 'ABCD2345',
+          ),
+          isNull,
+          reason: path,
+        );
+      }
+    });
+  }
+
+  test('only the guides paths are guides', () {
+    for (final path in ['/de/guides', '/fr/guides', '/en/anleitungen', '/de']) {
+      expect(authRedirect(const SignedOut(), Uri.parse(path)), '/start');
+    }
+  });
+
+  test("the join page hands a bare /join to the web app's code entry", () {
+    final handed = Uri.parse('/?next=%2Fjoin');
+    expect(authRedirect(const SignedOut(), handed), '/login?next=%2Fjoin');
+    expect(authRedirect(const NeedsHousehold('u'), handed), '/join');
+    expect(authRedirect(household, handed), '/join');
+  });
+
+  test('a Markdown twin opens its guide, a deeper path the index', () {
+    for (final session in const [SignedOut(), household]) {
+      expect(
+        authRedirect(session, Uri.parse('/de/anleitungen/alexa.md')),
+        '/de/anleitungen/alexa',
+      );
+      expect(authRedirect(session, Uri.parse('/en/guides/a/b')), '/en/guides');
+      expect(
+        authRedirect(session, Uri.parse('/de/anleitungen/alexa.html#setup')),
+        '/de/anleitungen/alexa#setup',
+      );
+    }
+  });
+
+  test('a guide is never a link sign-in continues to', () {
+    expect(
+      authRedirect(const SignedOut(), Uri.parse('/login?next=%2Fen%2Fguides')),
+      '/login',
+    );
+  });
+
+  // Decision C: the browser's "Open in the app" on iOS uses the sign-in
+  // scheme with the host `open`; it routes like the https link.
+  test('com.snacklist.app://open/join/<code> routes like the invite link', () {
+    for (final session in const <Session>[
+      SignedOut(),
+      NeedsHousehold('u'),
+      waiting,
+      household,
+    ]) {
+      final https = authRedirect(
+        session,
+        Uri.parse('https://app.snacklist.app/join/ABCD2345'),
+      );
+      expect(
+        authRedirect(
+          session,
+          Uri.parse('com.snacklist.app://open/join/ABCD2345'),
+        ),
+        https,
+        reason: '${session.runtimeType}',
+      );
+      expect(https, switch (session) {
+        SignedOut() => '/login?invite=ABCD2345',
+        _ => '/join/ABCD2345',
+      });
+    }
+    expect(
+      inviteIn(Uri.parse('com.snacklist.app://open/join/ABCD2345')),
+      'ABCD2345',
+    );
+  });
+
+  test('the sign-in callback is no link and no invite', () {
+    final callback = Uri.parse('com.snacklist.app://login-callback?code=abc');
+    expect(inviteIn(callback), isNull);
+    expect(authRedirect(const SignedOut(), callback), '/start');
+    expect(authRedirect(const NeedsHousehold('u'), callback), '/welcome');
+    expect(authRedirect(household, callback), '/');
+  });
 
   test('a link next is asked for consent first, and carried', () {
     expect(
@@ -426,6 +561,29 @@ void main() {
         memory.redirect(const SignedOut(), Uri.parse('/stores/s1')),
         '/login?next=%2Fstores%2Fs1',
       );
+    });
+
+    test('a /join link without a household opens the code entry once', () {
+      final memory = RedirectMemory();
+      expect(
+        memory.redirect(const SignedOut(), Uri.parse('/join')),
+        '/login?next=%2Fjoin',
+      );
+      expect(
+        memory.redirect(const NeedsHousehold('u'), Uri.parse('/')),
+        '/join',
+      );
+      expect(
+        memory.redirect(const NeedsHousehold('u'), Uri.parse('/join')),
+        isNull,
+      );
+      // Back from the code entry goes to `/`: the welcome screen, not a trap.
+      expect(
+        memory.redirect(const NeedsHousehold('u'), Uri.parse('/')),
+        '/welcome',
+      );
+      // Joined, the list opens, not the code entry again.
+      expect(memory.redirect(household, Uri.parse('/')), isNull);
     });
 
     test('a sign-out before the link was used drops it', () {

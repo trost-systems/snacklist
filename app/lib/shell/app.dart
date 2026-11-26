@@ -15,6 +15,7 @@ import 'package:family_groceries/feedback/feedback_repository.dart';
 import 'package:family_groceries/feedback/screen_capture.dart';
 import 'package:family_groceries/feedback/screen_tracker.dart';
 import 'package:family_groceries/feedback/shake.dart';
+import 'package:family_groceries/guides/source.dart';
 import 'package:family_groceries/home_widget/home_widget_sync.dart';
 import 'package:family_groceries/home_widget/widget_launch.dart';
 import 'package:family_groceries/household/invite_repository.dart';
@@ -51,6 +52,7 @@ import 'package:family_groceries/tips/hint_host.dart';
 import 'package:family_groceries/tips/usage_log.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
 import 'package:material_ui/material_ui.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide Session;
 
@@ -379,6 +381,10 @@ class _AppState() extends State<App> {
       RepositoryProvider.value(value: widget.storeReview),
       RepositoryProvider.value(value: widget.storeApps),
       RepositoryProvider<ShoppingDayService?>.value(value: widget.shoppingDay),
+      RepositoryProvider(
+        create: (_) => GuideSource(http.Client()),
+        dispose: (guides) => guides.client.close(),
+      ),
       if (widget.homeWidgets case final homeWidgets?)
         RepositoryProvider.value(value: homeWidgets),
       if (widget.network case final network?)

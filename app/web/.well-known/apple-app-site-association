@@ -9,7 +9,15 @@
           { "/": "/stores/*", "comment": "The list at one store's section." },
           { "/": "/more", "comment": "The More tab." },
           { "/": "/more/*", "comment": "A page of the More tab, e.g. /more/invites." },
-          { "/": "/join/*", "comment": "Invite links open the app's join screen." }
+          { "/": "/join", "comment": "The join screen for a typed code." },
+          { "/": "/join/*", "comment": "Invite links open the app's join screen." },
+          { "/": "/edit", "comment": "The List tab's stores (Anpassen)." },
+          { "/": "/edit/*", "comment": "One store's details." },
+          { "/": "/history", "comment": "The Verlauf tab." },
+          { "/": "/history/*", "comment": "A trip's summary in Verlauf." },
+          { "/": "/trip/*", "comment": "A trip's summary in the List tab." },
+          { "/": "/households/new", "comment": "One more household." },
+          { "/": "/households/new/*", "comment": "Its invite step." }
         ]
       }
     ]

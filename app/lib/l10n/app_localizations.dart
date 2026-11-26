@@ -6475,6 +6475,30 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Mitteilungen sind für Snacklist ausgeschaltet. Schalte sie in den Einstellungen deines Handys ein.'**
   String get shoppingDayBlocked;
+
+  /// Job 462: a guide from snacklist.app opened in the app could not be fetched (offline, server error)
+  ///
+  /// In de, this message translates to:
+  /// **'Die Anleitung konnte nicht geladen werden. Bist du online?'**
+  String get guideFailed;
+
+  /// Job 462: the guide index from snacklist.app could not be fetched
+  ///
+  /// In de, this message translates to:
+  /// **'Die Anleitungen konnten nicht geladen werden. Bist du online?'**
+  String get guidesFailed;
+
+  /// Job 462: the guide link points to a guide the site no longer has (404)
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Anleitung gibt es nicht mehr.'**
+  String get guideMissing;
+
+  /// Job 462: button on a missing guide, opens the guide index in the guide's language
+  ///
+  /// In de, this message translates to:
+  /// **'Alle Anleitungen'**
+  String get guidesAll;
 }
 
 class _AppLocalizationsDelegate

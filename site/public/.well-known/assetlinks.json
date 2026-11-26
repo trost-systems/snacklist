@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.snacklist.app",
+      "sha256_cert_fingerprints": [
+        "C8:6F:D9:57:C8:05:6B:68:E1:C1:7C:BC:1B:C5:50:A3:45:36:59:0A:9B:F4:9E:25:4E:18:63:0C:8F:91:2A:EB",
+        "2C:9B:48:6D:AF:1B:94:AB:3F:92:38:49:CC:0F:C3:42:EF:09:64:2C:32:40:74:97:69:25:61:74:0C:BA:84:F5"
+      ]
+    }
+  }
+]

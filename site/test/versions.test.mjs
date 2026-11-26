@@ -38,7 +38,7 @@ test('the CLI logs the live version and reports a bad record as a build failure'
   const root = tempDir();
   const site = join(root, 'site');
   mkdirSync(site);
-  for (const f of ['build.mjs', 'releases.mjs', 'landing.mjs', 'waitlist.mjs', 'report.mjs', 'agent.mjs', 'history.mjs', 'api', 'config.json', 'vercel.json', 'package.json', 'config', 'scripts', 'public', 'content']) cpSync(join(SITE_DIR, f), join(site, f), { recursive: true });
+  for (const f of ['build.mjs', 'releases.mjs', 'landing.mjs', 'waitlist.mjs', 'report.mjs', 'agent.mjs', 'history.mjs', 'guide-data.mjs', 'api', 'config.json', 'vercel.json', 'package.json', 'config', 'scripts', 'public', 'content']) cpSync(join(SITE_DIR, f), join(site, f), { recursive: true });
   symlinkSync(join(SITE_DIR, 'node_modules'), join(site, 'node_modules'));
   mkdirSync(join(root, 'releases'));
   mkdirSync(join(root, 'app'));

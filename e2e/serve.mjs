@@ -64,7 +64,10 @@ function resolve(decodedPath) {
   const path = normalize(join(root, decodedPath));
   if (!path.startsWith(normalize(root))) return null;
   try {
-    if (statSync(path).isFile()) return path;
+    const stat = statSync(path);
+    if (stat.isFile()) return path;
+    // Vercel serves a folder's index.html for the folder's path (`/join` is the join page's).
+    if (stat.isDirectory() && statSync(join(path, 'index.html')).isFile()) return join(path, 'index.html');
   } catch {
     return null;
   }

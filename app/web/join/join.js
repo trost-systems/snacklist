@@ -15,6 +15,7 @@ const codePattern = /^[A-HJ-NP-Z2-9]{8}$/;
 const texts = {
   de: {
     title: 'Einladung · Snacklist',
+    openApp: 'In der App öffnen',
     loading: 'Einladung wird geladen …',
     invitedBy: (inviter, household) => `${inviter} lädt dich zu „${household}“ ein`,
     invited: (household) => `Du bist zu „${household}“ eingeladen`,
@@ -38,6 +39,7 @@ const texts = {
   },
   en: {
     title: 'Invite · Snacklist',
+    openApp: 'Open in the app',
     loading: 'Loading the invite…',
     invitedBy: (inviter, household) => `${inviter} invites you to “${household}”`,
     invited: (household) => `You’re invited to “${household}”`,
@@ -169,6 +171,32 @@ function renderStores(t) {
   byId('stores').hidden = false;
 }
 
+/**
+ * Where "Open in the app" goes when the App Link or Universal Link did not fire (job 462): the
+ * app's scheme on iOS, an intent on Android that stays on this page without the app; null on a
+ * desktop, where the link stays hidden.
+ */
+function appLink(code) {
+  const agent = navigator.userAgent;
+  // iPadOS reports itself as a Mac; only the touch screen tells them apart.
+  const ios = /iPhone|iPad|iPod/.test(agent) || (/Macintosh/.test(agent) && navigator.maxTouchPoints > 1);
+  if (ios) return `com.snacklist.app://open/join/${code}`;
+  if (/Android/.test(agent)) {
+    const fallback = encodeURIComponent(location.href);
+    return `intent://${location.host}/join/${code}#Intent;scheme=https;package=${playPackage};S.browser_fallback_url=${fallback};end`;
+  }
+  return null;
+}
+
+function showOpenApp(t, code) {
+  const href = code && appLink(code);
+  if (!href) return;
+  const link = byId('open-app-link');
+  link.href = href;
+  link.textContent = t.openApp;
+  byId('open-app').hidden = false;
+}
+
 function addSmartAppBanner(code) {
   if (!storeListings.appStore || !code) return;
   const meta = document.createElement('meta');
@@ -212,6 +240,12 @@ function codeFromPath(pathname) {
 }
 
 async function main() {
+  // Vercel serves this folder for /join itself too: that is the app's code entry, which the web app
+  // opens after its sign-in (docs/DEEP_LINKS.md).
+  if (/^\/join\/?$/.test(location.pathname)) {
+    location.replace('/?next=%2Fjoin');
+    return;
+  }
   const code = codeFromPath(location.pathname);
 
   // Query or fragment on a join link belong to the app: an OAuth or email sign-in that started on
@@ -229,6 +263,7 @@ async function main() {
   document.title = t.title;
   document.getElementById('title').textContent = t.loading;
   addSmartAppBanner(code);
+  showOpenApp(t, code);
   wireCopy(t, code ?? '');
   render(t, code, code ? await fetchPreview(code) : { status: 'invalid' });
 }

@@ -1,0 +1,1438 @@
+{
+ "schema": 1,
+ "locale": "de",
+ "slug": "siri-kurzbefehl",
+ "title": "Snacklist per Siri: Kurzbefehl einrichten",
+ "description": "Mit einem Kurzbefehl setzt du per Siri Sachen auf deine Snacklist: „Hey Siri, Einkaufsliste“. So richtest du ihn in etwa fünf Minuten ein.",
+ "updated": "2026-10-30",
+ "url": "https://snacklist.app/de/anleitungen/siri-kurzbefehl",
+ "blocks": [
+  {
+   "type": "paragraph",
+   "text": [
+    {
+     "text": "Mit einem Kurzbefehl setzt du Sachen per Siri auf deine Snacklist, ohne die App zu öffnen. Das ist kein fertiger Knopf in der App: Du legst den Kurzbefehl einmal selbst in der Kurzbefehle-App an. Danach läuft es so:"
+    }
+   ]
+  },
+  {
+   "type": "quote",
+   "blocks": [
+    {
+     "type": "paragraph",
+     "text": [
+      {
+       "text": "Du:",
+       "strong": true
+      },
+      {
+       "text": " Hey Siri, Einkaufsliste.\n"
+      },
+      {
+       "text": "Siri:",
+       "strong": true
+      },
+      {
+       "text": " Was soll auf die Liste?\n"
+      },
+      {
+       "text": "Du:",
+       "strong": true
+      },
+      {
+       "text": " Milch, zwei Gurken und Klopapier.\n"
+      },
+      {
+       "text": "Siri:",
+       "strong": true
+      },
+      {
+       "text": " Hinzugefügt: Milch, 2 Gurken, Klopapier."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": [
+    {
+     "text": "Siri schickt deinen Satz an Snacklist. Snacklist teilt ihn in einzelne Einträge auf, setzt jeden an die passende Stelle der Liste, und die Einträge erscheinen sofort auf allen Geräten in eurem Haushalt. Das Aufteilen funktioniert bisher nur auf Deutsch."
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 2,
+   "id": null,
+   "text": [
+    {
+     "text": "Was du brauchst"
+    }
+   ]
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    [
+     {
+      "type": "paragraph",
+      "text": [
+       {
+        "text": "ein iPhone mit der App "
+       },
+       {
+        "text": "Kurzbefehle",
+        "strong": true
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "type": "paragraph",
+      "text": [
+       {
+        "text": "die Snacklist-App, in der du angemeldet bist und zu einem Haushalt gehörst"
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "type": "paragraph",
+      "text": [
+       {
+        "text": "etwa fünf Minuten"
+       }
+      ]
+     }
+    ]
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 2,
+   "id": null,
+   "text": [
+    {
+     "text": "Schritt 1: Zugriffstoken in Snacklist erstellen"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": [
+    {
+     "text": "Der Kurzbefehl meldet sich mit einem persönlichen Zugriffsschlüssel an, nicht mit deinem Passwort. In dieser Anleitung heißt er kurz Token."
+    }
+   ]
+  },
+  {
+   "type": "list",
+   "ordered": true,
+   "items": [
+    [
+     {
+      "type": "paragraph",
+      "text": [
+       {
+        "text": "Öffne die Snacklist-App."
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "type": "paragraph",
+      "text": [
+       {
+        "text": "Tippe auf "
+       },
+       {
+        "text": "Mehr",
+        "strong": true
+       },
+       {
+        "text": " und dann auf "
+       },
+       {
+        "text": "Zugänge",
+        "strong": true
+       },
+       {
+        "text": "."
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "type": "paragraph",
+      "text": [
+       {
+        "text": "Tippe unter "
+       },
+       {
+        "text": "Zugriffsschlüssel",
+        "strong": true
+       },
+       {
+        "text": " auf "
+       },
+       {
+        "text": "Schlüssel erstellen",
+        "strong": true
+       },
+       {
+        "text": "."
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "type": "paragraph",
+      "text": [
+       {
+        "text": "Gib als Name "
+       },
+       {
+        "text": "Siri",
+        "code": true
+       },
+       {
+        "text": " ein, wähle "
+       },
+       {
+        "text": "Lesen und schreiben",
+        "strong": true
+       },
+       {
+        "text": " und tippe auf "
+       },
+       {
+        "text": "Erstellen",
+        "strong": true
+       },
+       {
+        "text": ". Mit "
+       },
+       {
+        "text": "Nur lesen",
+        "strong": true
+       },
+       {
+        "text": " kann der Kurzbefehl nichts auf die Liste setzen."
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "type": "paragraph",
+      "text": [
+       {
+        "text": "Kopiere den Schlüssel. Er beginnt mit "
+       },
+       {
+        "text": "fgp_",
+        "code": true
+       },
+       {
+        "text": "."
+       }
+      ]
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": [
+    {
+     "text": "Die App zeigt den Token nur dieses eine Mal an. Füge ihn am besten direkt in Schritt 2 ein. Wenn du ihn kurz in einer Notiz zwischenspeicherst, lösch die Notiz danach."
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 2,
+   "id": null,
+   "text": [
+    {
+     "text": "Schritt 2: Kurzbefehl anlegen"
+    }
+   ]
+  },
+  {
+   "type": "list",
+   "ordered": true,
+   "items": [
+    [
+     {
+      "type": "paragraph",
+      "text": [
+       {
+        "text": "Öffne die App "
+       },
+       {
+        "text": "Kurzbefehle",
+        "strong": true
+       },
+       {
+        "text": " und tippe oben rechts auf "
+       },
+       {
+        "text": "Hinzufügen",
+        "strong": true
+       },
+       {
+        "text": " ("
+       },
+       {
+        "text": "+",
+        "strong": true
+       },
+       {
+        "text": ")."
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "type": "paragraph",
+      "text": [
+       {
+        "text": "Tippe oben auf "
+       },
+       {
+        "text": "Neuer Kurzbefehl",
+        "strong": true
+       },
+       {
+        "text": " und dann auf "
+       },
+       {
+        "text": "Umbenennen",
+        "strong": true
+       },
+       {
+        "text": ". Gib "
+       },
+       {
+        "text": "Einkaufsliste",
+        "code": true
+       },
+       {
+        "text": " ein und tippe auf "
+       },
+       {
+        "text": "Fertig",
+        "strong": true
+       },
+       {
+        "text": ". Dieser Name ist der Satz, auf den Siri hört."
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "type": "paragraph",
+      "text": [
+       {
+        "text": "Füge die drei Aktionen unten in dieser Reihenfolge hinzu. Du findest jede über "
+       },
+       {
+        "text": "Aktion hinzufügen",
+        "strong": true
+       },
+       {
+        "text": " oder das Suchfeld unten."
+       }
+      ]
+     }
+    ]
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "id": null,
+   "text": [
+    {
+     "text": "Aktion 1: Text diktieren"
+    }
+   ]
+  },
+  {
+   "type": "list",
+   "ordered": true,
+   "items": [
+    [
+     {
+      "type": "paragraph",
+      "text": [
+       {
+        "text": "Füge "
+       },
+       {
+        "text": "Text diktieren",
+        "strong": true
+       },
+       {
+        "text": " hinzu."
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "type": "paragraph",
+      "text": [
+       {
+        "text": "Tippe in der Aktion auf "
+       },
+       {
+        "text": "Mehr anzeigen",
+        "strong": true
+       },
+       {
+        "text": " (den Pfeil "
+       },
+       {
+        "text": ">",
+        "strong": true
+       },
+       {
+        "text": ") und stelle ein:"
+       }
+      ]
+     },
+     {
+      "type": "list",
+      "ordered": false,
+      "items": [
+       [
+        {
+         "type": "paragraph",
+         "text": [
+          {
+           "text": "Sprache:",
+           "strong": true
+          },
+          {
+           "text": " "
+          },
+          {
+           "text": "Deutsch (Deutschland)",
+           "code": true
+          }
+         ]
+        }
+       ],
+       [
+        {
+         "type": "paragraph",
+         "text": [
+          {
+           "text": "Aufnahme beenden:",
+           "strong": true
+          },
+          {
+           "text": " "
+          },
+          {
+           "text": "Nach Pause",
+           "code": true
+          }
+         ]
+        }
+       ],
+       [
+        {
+         "type": "paragraph",
+         "text": [
+          {
+           "text": "Eingabeaufforderung:",
+           "strong": true
+          },
+          {
+           "text": " "
+          },
+          {
+           "text": "Was soll auf die Liste?",
+           "code": true
+          }
+         ]
+        }
+       ]
+      ]
+     }
+    ]
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "id": null,
+   "text": [
+    {
+     "text": "Aktion 2: Inhalte von URL abrufen"
+    }
+   ]
+  },
+  {
+   "type": "list",
+   "ordered": true,
+   "items": [
+    [
+     {
+      "type": "paragraph",
+      "text": [
+       {
+        "text": "Füge "
+       },
+       {
+        "text": "Inhalte von URL abrufen",
+        "strong": true
+       },
+       {
+        "text": " hinzu."
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "type": "paragraph",
+      "text": [
+       {
+        "text": "Tippe auf "
+       },
+       {
+        "text": "URL",
+        "strong": true
+       },
+       {
+        "text": " und gib genau diese Adresse ein:"
+       }
+      ]
+     },
+     {
+      "type": "code",
+      "text": "https://jdwqrallbpdbshrdhenk.supabase.co/functions/v1/voice?format=text"
+     }
+    ],
+    [
+     {
+      "type": "paragraph",
+      "text": [
+       {
+        "text": "Tippe auf "
+       },
+       {
+        "text": "Mehr anzeigen",
+        "strong": true
+       },
+       {
+        "text": " (den Pfeil "
+       },
+       {
+        "text": ">",
+        "strong": true
+       },
+       {
+        "text": ") und stelle ein:"
+       }
+      ]
+     },
+     {
+      "type": "list",
+      "ordered": false,
+      "items": [
+       [
+        {
+         "type": "paragraph",
+         "text": [
+          {
+           "text": "Methode:",
+           "strong": true
+          },
+          {
+           "text": " "
+          },
+          {
+           "text": "POST",
+           "code": true
+          }
+         ]
+        }
+       ],
+       [
+        {
+         "type": "paragraph",
+         "text": [
+          {
+           "text": "Header:",
+           "strong": true
+          },
+          {
+           "text": " Tippe auf "
+          },
+          {
+           "text": "Neuen Header hinzufügen",
+           "strong": true
+          },
+          {
+           "text": "."
+          }
+         ]
+        },
+        {
+         "type": "list",
+         "ordered": false,
+         "items": [
+          [
+           {
+            "type": "paragraph",
+            "text": [
+             {
+              "text": "Schlüssel: "
+             },
+             {
+              "text": "Authorization",
+              "code": true
+             }
+            ]
+           }
+          ],
+          [
+           {
+            "type": "paragraph",
+            "text": [
+             {
+              "text": "Text: "
+             },
+             {
+              "text": "Bearer ",
+              "code": true
+             },
+             {
+              "text": " (mit Leerzeichen), direkt danach dein Token. Das sieht dann so aus: "
+             },
+             {
+              "text": "Bearer fgp_…",
+              "code": true
+             }
+            ]
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        {
+         "type": "paragraph",
+         "text": [
+          {
+           "text": "Haupttext anfordern:",
+           "strong": true
+          },
+          {
+           "text": " "
+          },
+          {
+           "text": "JSON",
+           "code": true
+          }
+         ]
+        },
+        {
+         "type": "list",
+         "ordered": false,
+         "items": [
+          [
+           {
+            "type": "paragraph",
+            "text": [
+             {
+              "text": "Tippe auf "
+             },
+             {
+              "text": "Neues Feld hinzufügen",
+              "strong": true
+             },
+             {
+              "text": " und wähle "
+             },
+             {
+              "text": "Text",
+              "strong": true
+             },
+             {
+              "text": "."
+             }
+            ]
+           }
+          ],
+          [
+           {
+            "type": "paragraph",
+            "text": [
+             {
+              "text": "Schlüssel: "
+             },
+             {
+              "text": "text",
+              "code": true
+             }
+            ]
+           }
+          ],
+          [
+           {
+            "type": "paragraph",
+            "text": [
+             {
+              "text": "Wert: Tippe in das Feld und wähle über der Tastatur die Variable "
+             },
+             {
+              "text": "Diktierter Text",
+              "strong": true
+             },
+             {
+              "text": " aus."
+             }
+            ]
+           }
+          ]
+         ]
+        }
+       ]
+      ]
+     }
+    ]
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "id": null,
+   "text": [
+    {
+     "text": "Aktion 3: Text sprechen"
+    }
+   ]
+  },
+  {
+   "type": "list",
+   "ordered": true,
+   "items": [
+    [
+     {
+      "type": "paragraph",
+      "text": [
+       {
+        "text": "Füge "
+       },
+       {
+        "text": "Text sprechen",
+        "strong": true
+       },
+       {
+        "text": " hinzu."
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "type": "paragraph",
+      "text": [
+       {
+        "text": "Als Text muss die Variable "
+       },
+       {
+        "text": "Inhalte der URL",
+        "strong": true
+       },
+       {
+        "text": " dastehen. Meist setzt Kurzbefehle sie von selbst ein. Falls nicht, tippe auf das Feld und wähle sie aus."
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "type": "paragraph",
+      "text": [
+       {
+        "text": "Optional: Tippe auf "
+       },
+       {
+        "text": "Mehr anzeigen",
+        "strong": true
+       },
+       {
+        "text": " (den Pfeil "
+       },
+       {
+        "text": ">",
+        "strong": true
+       },
+       {
+        "text": ") und wähle als "
+       },
+       {
+        "text": "Sprache",
+        "strong": true
+       },
+       {
+        "text": " "
+       },
+       {
+        "text": "Deutsch (Deutschland)",
+        "code": true
+       },
+       {
+        "text": "."
+       }
+      ]
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": [
+    {
+     "text": "Tippe oben rechts auf "
+    },
+    {
+     "text": "Fertig",
+     "strong": true
+    },
+    {
+     "text": "."
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": [
+    {
+     "text": "So sieht der fertige Kurzbefehl aus:"
+    }
+   ]
+  },
+  {
+   "type": "code",
+   "text": "Text diktieren          (Deutsch, nach Pause, „Was soll auf die Liste?“)\n↓ Diktierter Text\nInhalte von URL abrufen (POST …/functions/v1/voice?format=text,\n                         Authorization: Bearer fgp_…,\n                         JSON { text: Diktierter Text })\n↓ Inhalte der URL\nText sprechen           (Inhalte der URL)"
+  },
+  {
+   "type": "heading",
+   "level": 2,
+   "id": null,
+   "text": [
+    {
+     "text": "Schritt 3: Ausprobieren"
+    }
+   ]
+  },
+  {
+   "type": "list",
+   "ordered": true,
+   "items": [
+    [
+     {
+      "type": "paragraph",
+      "text": [
+       {
+        "text": "Tippe in der Kurzbefehle-App auf den Kurzbefehl "
+       },
+       {
+        "text": "Einkaufsliste",
+        "strong": true
+       },
+       {
+        "text": ". Beim ersten Mal fragt iOS, ob der Kurzbefehl Daten an "
+       },
+       {
+        "text": "jdwqrallbpdbshrdhenk.supabase.co",
+        "code": true
+       },
+       {
+        "text": " senden darf. Tippe auf "
+       },
+       {
+        "text": "Immer erlauben",
+        "strong": true
+       },
+       {
+        "text": ". Dann fragt iOS beim nächsten Mal nicht mehr."
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "type": "paragraph",
+      "text": [
+       {
+        "text": "Sag: „Milch, zwei Gurken und Klopapier“."
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "type": "paragraph",
+      "text": [
+       {
+        "text": "Siri antwortet „Hinzugefügt: Milch, 2 Gurken, Klopapier.“, und die Einträge stehen in der App."
+       }
+      ]
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": [
+    {
+     "text": "Ab jetzt geht es ohne Hände: „Hey Siri, Einkaufsliste“ (oder „Siri, Einkaufsliste“, je nachdem, worauf Siri bei dir hört)."
+    }
+   ]
+  },
+  {
+   "type": "quote",
+   "blocks": [
+    {
+     "type": "paragraph",
+     "text": [
+      {
+       "text": "Wichtig: Dein Token ist wie ein Schlüssel zu deiner Liste",
+       "strong": true
+      }
+     ]
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      [
+       {
+        "type": "paragraph",
+        "text": [
+         {
+          "text": "Teile den fertigen Kurzbefehl nicht mit anderen. Dein Token steckt darin, und wer ihn hat, kann Sachen auf deine Liste setzen."
+         }
+        ]
+       }
+      ],
+      [
+       {
+        "type": "paragraph",
+        "text": [
+         {
+          "text": "Zeig deinen Token niemandem und schick ihn nicht per Nachricht oder Mail."
+         }
+        ]
+       }
+      ],
+      [
+       {
+        "type": "paragraph",
+        "text": [
+         {
+          "text": "Wenn dein iPhone verloren geht oder du glaubst, jemand kennt deinen Token: Widerrufe ihn in der App: "
+         },
+         {
+          "text": "Mehr",
+          "strong": true
+         },
+         {
+          "text": " → "
+         },
+         {
+          "text": "Zugänge",
+          "strong": true
+         },
+         {
+          "text": ", tippe auf "
+         },
+         {
+          "text": "Siri widerrufen",
+          "strong": true
+         },
+         {
+          "text": " (oder „[Name] widerrufen“, wenn du den Token anders genannt hast). Die App fragt „Token widerrufen?“. Bestätige mit "
+         },
+         {
+          "text": "Widerrufen",
+          "strong": true
+         },
+         {
+          "text": ". Danach hat der Kurzbefehl keinen Zugriff mehr."
+         }
+        ]
+       }
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 2,
+   "id": null,
+   "text": [
+    {
+     "text": "So kannst du sprechen"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": [
+    {
+     "text": "Sag mehrere Dinge in einem Satz. Trenne sie mit einer kurzen Pause, mit „und“, „sowie“, „noch“ oder „auch“."
+    }
+   ]
+  },
+  {
+   "type": "table",
+   "header": [
+    [
+     {
+      "text": "Du sagst"
+     }
+    ],
+    [
+     {
+      "text": "Auf der Liste"
+     }
+    ]
+   ],
+   "rows": [
+    [
+     [
+      {
+       "text": "Milch, zwei Gurken und Klopapier"
+      }
+     ],
+     [
+      {
+       "text": "Milch · 2× Gurken · Klopapier"
+      }
+     ]
+    ],
+    [
+     [
+      {
+       "text": "Wir brauchen noch Butter und Eier"
+      }
+     ],
+     [
+      {
+       "text": "Butter · Eier"
+      }
+     ]
+    ],
+    [
+     [
+      {
+       "text": "Schreib bitte Windeln auf die Liste"
+      }
+     ],
+     [
+      {
+       "text": "Windeln"
+      }
+     ]
+    ],
+    [
+     [
+      {
+       "text": "Ein Kilo Äpfel und 500 Gramm Hackfleisch"
+      }
+     ],
+     [
+      {
+       "text": "1 kg Äpfel · 500 g Hackfleisch"
+      }
+     ]
+    ],
+    [
+     [
+      {
+       "text": "Eine Packung Eier sowie zwei Flaschen Wein"
+      }
+     ],
+     [
+      {
+       "text": "1 Packung Eier · 2 Flaschen Wein"
+      }
+     ]
+    ],
+    [
+     [
+      {
+       "text": "Einen Kasten Wasser, auch Kaffee"
+      }
+     ],
+     [
+      {
+       "text": "1 Kasten Wasser · Kaffee"
+      }
+     ]
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": [
+    {
+     "text": "Füllwörter wie „bitte“, „wir brauchen“, „schreib auf“, „noch“, „auf die Liste“ und Artikel lässt Snacklist weg. Zahlwörter werden zu Ziffern („zwei“ wird 2). Mengen bleiben als Menge am Eintrag, die App zeigt sie vor dem Namen („2× Gurken“, „1 kg Äpfel“). Was schon auf der Liste steht, kommt nicht doppelt dazu. Siri sagt dann zum Beispiel „Schon auf der Liste: Milch.“ Steht etwas Ähnliches schon drauf, etwa Möhren, wenn du Karotten sagst, kommt der neue Eintrag trotzdem dazu, und Siri sagt „Möhren steht schon auf der Liste.“"
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 2,
+   "id": null,
+   "text": [
+    {
+     "text": "Wenn es nicht klappt"
+    }
+   ]
+  },
+  {
+   "type": "table",
+   "header": [
+    [
+     {
+      "text": "Siri sagt"
+     }
+    ],
+    [
+     {
+      "text": "Woran es liegt"
+     }
+    ],
+    [
+     {
+      "text": "Was hilft"
+     }
+    ]
+   ],
+   "rows": [
+    [
+     [
+      {
+       "text": "„Der Zugriffstoken fehlt oder ist ungültig. Erstelle in der Snacklist-App unter Mehr, Zugänge einen neuen.“"
+      }
+     ],
+     [
+      {
+       "text": "Der Token fehlt im Kurzbefehl, ist falsch kopiert oder wurde widerrufen."
+      }
+     ],
+     [
+      {
+       "text": "Erstell in Snacklist unter "
+      },
+      {
+       "text": "Mehr",
+       "strong": true
+      },
+      {
+       "text": " → "
+      },
+      {
+       "text": "Zugänge",
+       "strong": true
+      },
+      {
+       "text": " einen neuen Token (Schritt 1). Öffne dann den Kurzbefehl, geh in Aktion 2 zum Header "
+      },
+      {
+       "text": "Authorization",
+       "code": true
+      },
+      {
+       "text": " und ersetze den alten Token: "
+      },
+      {
+       "text": "Bearer ",
+       "code": true
+      },
+      {
+       "text": ", Leerzeichen, dann der ganze neue Token, also "
+      },
+      {
+       "text": "Bearer fgp_…",
+       "code": true
+      },
+      {
+       "text": "."
+      }
+     ]
+    ],
+    [
+     [
+      {
+       "text": "„Du bist noch in keinem Haushalt …“"
+      }
+     ],
+     [
+      {
+       "text": "Das Konto, zu dem der Token gehört, ist in keinem Haushalt."
+      }
+     ],
+     [
+      {
+       "text": "Leg in der App einen Haushalt an oder tritt einem bei."
+      }
+     ]
+    ],
+    [
+     [
+      {
+       "text": "„Ich habe nichts verstanden, was auf die Liste soll …“"
+      }
+     ],
+     [
+      {
+       "text": "Das Diktat war leer oder bestand nur aus Füllwörtern."
+      }
+     ],
+     [
+      {
+       "text": "Versuch es noch einmal, zum Beispiel mit „Milch und Brot“."
+      }
+     ]
+    ],
+    [
+     [
+      {
+       "text": "„Das war zu lang …“"
+      }
+     ],
+     [
+      {
+       "text": "Mehr als 1000 Zeichen."
+      }
+     ],
+     [
+      {
+       "text": "Sag weniger auf einmal (höchstens 30 Dinge)."
+      }
+     ]
+    ],
+    [
+     [
+      {
+       "text": "„Das hat leider nicht geklappt …“"
+      }
+     ],
+     [
+      {
+       "text": "Snacklist ist gerade nicht erreichbar."
+      }
+     ],
+     [
+      {
+       "text": "Versuch es später noch einmal."
+      }
+     ]
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": [
+    {
+     "text": "Startet Siri bei „Einkaufsliste“ nicht deinen Kurzbefehl? Prüf, ob er genau so heißt. Sonst gib ihm einen eindeutigeren Namen, etwa "
+    },
+    {
+     "text": "Einkauf notieren",
+     "code": true
+    },
+    {
+     "text": ", und sag „Hey Siri, Einkauf notieren“. Zum Umbenennen öffnest du den Kurzbefehl, tippst auf den Pfeil neben seinem Namen und dann auf "
+    },
+    {
+     "text": "Umbenennen",
+     "strong": true
+    },
+    {
+     "text": "."
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 2,
+   "id": "siri-wieder-abschalten",
+   "text": [
+    {
+     "text": "Siri wieder abschalten"
+    }
+   ]
+  },
+  {
+   "type": "list",
+   "ordered": true,
+   "items": [
+    [
+     {
+      "type": "paragraph",
+      "text": [
+       {
+        "text": "Lösch den Kurzbefehl in der Kurzbefehle-App: Leg den Finger auf "
+       },
+       {
+        "text": "Einkaufsliste",
+        "strong": true
+       },
+       {
+        "text": ", tippe auf "
+       },
+       {
+        "text": "Löschen",
+        "strong": true
+       },
+       {
+        "text": " und bestätige."
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "type": "paragraph",
+      "text": [
+       {
+        "text": "Widerrufe den Token in Snacklist: "
+       },
+       {
+        "text": "Mehr",
+        "strong": true
+       },
+       {
+        "text": " → "
+       },
+       {
+        "text": "Zugänge",
+        "strong": true
+       },
+       {
+        "text": ", tippe auf "
+       },
+       {
+        "text": "Siri widerrufen",
+        "strong": true
+       },
+       {
+        "text": " (oder „[Name] widerrufen“, wenn du den Token anders genannt hast). Die App fragt „Token widerrufen?“. Bestätige mit "
+       },
+       {
+        "text": "Widerrufen",
+        "strong": true
+       },
+       {
+        "text": "."
+       }
+      ]
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": [
+    {
+     "text": "Damit ist die Verbindung getrennt."
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": [
+    {
+     "text": "Fragen oder Probleme? Schreib mir in der App über "
+    },
+    {
+     "text": "Mehr",
+     "strong": true
+    },
+    {
+     "text": " → "
+    },
+    {
+     "text": "Feedback & Ideen",
+     "strong": true
+    },
+    {
+     "text": "."
+    }
+   ]
+  },
+  {
+   "type": "video",
+   "src": "https://snacklist.app/videos/siri.mp4"
+  },
+  {
+   "type": "paragraph",
+   "text": [
+    {
+     "text": "Zurück nach oben: "
+    },
+    {
+     "text": "zum Abschnitt",
+     "href": "#siri-wieder-abschalten"
+    },
+    {
+     "text": ", "
+    },
+    {
+     "text": "die Alexa-Anleitung",
+     "em": true,
+     "href": "https://snacklist.app/de/anleitungen/alexa"
+    },
+    {
+     "text": ", "
+    },
+    {
+     "text": "Datenschutz",
+     "href": "https://snacklist.app/datenschutz"
+    },
+    {
+     "text": " und "
+    },
+    {
+     "text": "kein Link",
+     "href": "javascript:alert(1)"
+    },
+    {
+     "text": "."
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "id": "zu-tief",
+   "text": [
+    {
+     "text": "Zu tief"
+    }
+   ]
+  }
+ ]
+}

@@ -166,8 +166,9 @@ export function markdownTwin(route, html, siteUrl) {
   const h1 = main.querySelector('h1');
   const title = h1.text.trim();
   h1.remove();
-  // The report form (job 275) is controls and messages; the page's text around it stays.
-  for (const el of main.querySelectorAll('svg, button, track, source, script, [aria-hidden="true"], [data-report]')) el.remove();
+  // The report form (job 275) is controls and messages, the app hand-off (job 462) a control for
+  // phones; the page's text around them stays.
+  for (const el of main.querySelectorAll('svg, button, track, source, script, [aria-hidden="true"], [data-report], .open-in-app')) el.remove();
   for (const video of main.querySelectorAll('video')) {
     const label = video.getAttribute('aria-label');
     video.replaceWith(label ? `<p>${escapeHtml(label)}</p>` : '');
@@ -567,7 +568,7 @@ export const CHECKS = [
           const children = main.childNodes.filter((n) => n.tagName);
           const h1 = children.findIndex((n) => n.tagName === 'H1');
           const h2 = children.findIndex((n) => n.tagName === 'H2');
-          const intro = children.slice(h1 + 1, h2 === -1 ? undefined : h2).some((n) => n.tagName === 'P' && n.text.trim() !== '');
+          const intro = children.slice(h1 + 1, h2 === -1 ? undefined : h2).some((n) => n.tagName === 'P' && !n.hasAttribute('hidden') && n.text.trim() !== '');
           const problems = [
             ...(guide.doc.querySelector('meta[name="description"]')?.getAttribute('content')?.trim() ? [] : ['needs <meta name="description">']),
             ...(h1 === -1 ? ['needs an h1 in <main>'] : []),

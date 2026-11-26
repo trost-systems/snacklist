@@ -167,6 +167,21 @@ h1 {
   mask: url("/join/hex/hex-pointy.svg") center / 100% 100% no-repeat;
 }
 
+/* The hand-off to the installed app, on phones only (job 462): quiet, under the title. */
+.open-app {
+  margin: var(--hl-space-2) 0 0;
+}
+
+.open-app a {
+  display: inline-block;
+  min-height: var(--hl-size-target);
+  line-height: var(--hl-size-target);
+  color: var(--hl-color-accent);
+  font-weight: var(--hl-font-weight-bold);
+  text-decoration-thickness: var(--hl-border-width);
+  text-underline-offset: 0.18em;
+}
+
 #join {
   margin-top: var(--hl-space-5);
 }
