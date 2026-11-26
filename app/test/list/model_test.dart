@@ -161,6 +161,32 @@ void main() {
     expect(const ItemChanges(properties: SetTo(null)).isEmpty, isFalse);
   });
 
+  test('an edit to another store or category goes last in its new group, '
+      'where the server puts it', () {
+    final server = {
+      'x': item('x', store: 'dm', key: 1),
+      'y': item('y', store: 'lidl', key: 2048),
+      'z': item('z', store: 'lidl', key: 4096),
+    };
+    List<String> lidl(ItemChanges changes) => [
+      for (final i in blocksOf(
+        visibleItems(server, [
+          EditItem('x', changes),
+        ]).values.where((i) => i.storeId == 'lidl'),
+      ).single.items)
+        i.id,
+    ];
+    expect(lidl(const ItemChanges(storeId: SetTo('lidl'))), ['y', 'z', 'x']);
+    final recategorized = visibleItems(server, [
+      const EditItem('y', ItemChanges(categoryId: 'b')),
+    ])['y']!;
+    expect(recategorized.sortKey, isNull, reason: 'last in group b');
+    final same = visibleItems(server, [
+      const EditItem('x', ItemChanges(storeId: SetTo('dm'), categoryId: 'a')),
+    ])['x']!;
+    expect(same.sortKey, 1, reason: 'the same group keeps its place');
+  });
+
   test('a move changes store and category and goes last', () {
     final server = {
       'x': item('x', store: 'dm', at: 3, key: 1),

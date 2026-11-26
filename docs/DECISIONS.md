@@ -18414,3 +18414,19 @@ Specs #71, #72, #60, #57, #58, #59, #78, #79 are closed as host-pause only: thei
 - **Harness names.** `main`'s `tool/hillclimb/hc-list-cpu/measure.sh` is job 221's Linux probe, so
   #271's script is `bench.sh` beside it; #268's bench test is `suggest_usuals_bench_test.dart`
   next to the catalog's `suggest_bench_test.dart`.
+
+## Job 459: hill-climb of the list's store sections and walk order
+
+- The frozen measure (`tool/hillclimb/hc-category-sorting/measure.sh`, `docs/hillclimb/hc-category-sorting.md`)
+  gates on order correctness and stability before speed: a faster order that is wrong or moves on
+  its own does not count. Stability includes the optimistic view against the server's answer,
+  since "within a store nothing moves" (job 455) is what users notice.
+- An edit that changes an item's store or category now clears its `sort_key` on the device, as
+  `MoveItem` did: the server's `items_before_write` puts it last in the new group (max + 1024), so
+  the item shows there at once instead of jumping on the answer.
+- Stores on the same `sort_order` sort by name key, then id. Ties come from two `add_store` calls
+  at once (max + 10, no lock). Name, not the server's `created_at`, because the app has no
+  `created_at` for stores; MCP and Alexa may order such a tie differently. A server-side fix (lock
+  or renumber in `add_store`) would need a migration and was not worth it for a rare tie.
+- `walkingOrder` is cached per `Catalog` instance (an `Expando`): every catalog change builds a new
+  `Catalog`, so the cache cannot go stale; lists inside are never mutated in place.

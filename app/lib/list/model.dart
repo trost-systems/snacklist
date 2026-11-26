@@ -559,7 +559,17 @@ typedef Stop = ({Category category, bool hidden});
 /// The categories in the order [storeId] walks them, or in route order for
 /// no store. A store's layout rows come first; categories it has no row for
 /// follow in route order.
-List<Stop> walkingOrder(Catalog catalog, String? storeId) {
+List<Stop> walkingOrder(Catalog catalog, String? storeId) =>
+    (_walkingOrders[catalog] ??= {}).putIfAbsent(
+      storeId,
+      () => List.unmodifiable(_walkingOrder(catalog, storeId)),
+    );
+
+/// Per catalog, which a list build keeps while only items change: the list
+/// regroups every section after each add or edit (job 459).
+final _walkingOrders = Expando<Map<String?, List<Stop>>>();
+
+List<Stop> _walkingOrder(Catalog catalog, String? storeId) {
   final route = [...catalog.categories]
     ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
   if (storeId == null) {
@@ -788,26 +798,41 @@ class const ItemChanges({
     if (storeId case SetTo(:final value)) 'store_id': value,
   };
 
-  Item apply(Item item) => item.copyWith(
-    name: name,
-    quantity: switch (quantity) {
-      SetTo(:final value) => () => value,
-      null => null,
-    },
-    brand: switch (brand) {
-      SetTo(:final value) => () => value,
-      null => null,
-    },
-    properties: switch (properties) {
-      SetTo(:final value) => () => value,
-      null => null,
-    },
-    categoryId: categoryId,
-    storeId: switch (storeId) {
-      SetTo(:final value) => () => value,
-      null => null,
-    },
-  );
+  /// A new store or category puts the item last in its new group, as the
+  /// server numbers it (items_before_write); a null key sorts last. In a
+  /// learned household the server re-places it only on a store change and
+  /// keeps the key on a category change: the learned order (flag off) would
+  /// need that distinction here.
+  Item apply(Item item) {
+    final store = switch (storeId) {
+      SetTo(:final value) => value,
+      null => item.storeId,
+    };
+    final regrouped =
+        store != item.storeId ||
+        (categoryId != null && categoryId != item.categoryId);
+    return item.copyWith(
+      name: name,
+      quantity: switch (quantity) {
+        SetTo(:final value) => () => value,
+        null => null,
+      },
+      brand: switch (brand) {
+        SetTo(:final value) => () => value,
+        null => null,
+      },
+      properties: switch (properties) {
+        SetTo(:final value) => () => value,
+        null => null,
+      },
+      categoryId: categoryId,
+      storeId: switch (storeId) {
+        SetTo(:final value) => () => value,
+        null => null,
+      },
+      sortKey: regrouped ? () => null : null,
+    );
+  }
 
   @override
   bool operator ==(Object other) =>

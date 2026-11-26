@@ -3161,3 +3161,11 @@ steps stay out (a new snapshot version loses offline changes after a downgrade).
 the reach wording above, the cold-call range, a household-size bench run, a doc line on
 `_setServer`'s ids. Numbers, tests and what was left out: [docs/done/451.md](docs/done/451.md).
 Waits for Peter (NEEDS_LEAD, job 451).
+
+## Job 459: hc-category-sorting
+
+Hill-climb of the list's store sections and walk order. An item moved to another store now shows
+at its new place at once instead of jumping when the server answers; stores on the same order keep
+one order on every device; regrouping after an add is about 30 % faster (A/B pairs). Frozen measure
+`tool/hillclimb/hc-category-sorting/measure.sh` (stability failures 75 → 0, correctness 0/8 both).
+No flag; next green main build. Review round 1: registered the hc doc for nexus (the CI failure), moved the prototype candidates to `docs/hillclimb/hc-category-sorting/`, and the order fixture now runs in every test run. Details: [docs/done/459.md](docs/done/459.md).

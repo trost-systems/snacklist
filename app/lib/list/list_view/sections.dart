@@ -41,8 +41,19 @@ List<StoreSection> sectionsOf(
     final storeId = storeIds.contains(item.storeId) ? item.storeId : null;
     byStore.putIfAbsent(storeId, () => []).add(item);
   }
+  // Two stores added at once can share a sort order (add_store takes the
+  // max + 10); the name decides then, so every device and every reload of
+  // the rows shows the same order.
   final stores = [...catalog.stores]
-    ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    ..sort(
+      (a, b) => switch (a.sortOrder.compareTo(b.sortOrder)) {
+        0 => switch (nameKey(a.name).compareTo(nameKey(b.name))) {
+          0 => a.id.compareTo(b.id),
+          final byName => byName,
+        },
+        final byOrder => byOrder,
+      },
+    );
   List<CategoryBlock> blocks(List<Item> items, String? storeId) =>
       learned ? _walk(items) : _blocks(items, catalog, storeId);
   return [

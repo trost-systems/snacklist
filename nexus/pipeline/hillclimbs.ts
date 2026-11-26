@@ -24,6 +24,13 @@ export const hillClimbDocs: readonly HillClimbDoc[] = [
     target: null,
   },
   {
+    id: 'hc-category-sorting',
+    metric: 'list regroup p50, order gates at 0 (µs)',
+    direction: 'lower',
+    baseline: /^Baseline \*\*([\d.]+)\*\*/m,
+    target: null,
+  },
+  {
     id: 'hc-design-v2-app',
     metric: 'weakest design aspect, blind council (harness v2, of 10)',
     direction: 'higher',
