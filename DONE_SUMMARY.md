@@ -3241,3 +3241,14 @@ Tests: `scripts/hold-flip-draft-test.sh` (new) and `scripts/landing-test.sh` (li
 dry run, and the comparison with #710: [docs/done/476.md](docs/done/476.md). No app change; changelog
 `none`. Times (Europe/Berlin, 26 Nov): build 16:35-16:49, review 0 16:50-17:00 (FIX), fix round
 from 16:56. The ops copy of this summary records CI and merge times.
+
+## Job 467: native Siri on TestFlight 1541, "hasn't added support"
+
+PR #747. On TestFlight 1541 Siri answered "Snacklist hasn't added support for that with Siri", or asked to turn on Snacklist's shortcuts.
+
+- **Cause.** The release build was fine: the IPA and a probe release archive carry the App Shortcuts and a trained phrase model per language. The app asked for "Use with Siri" only when it stored a new Siri credential, so an install that missed that moment was never asked again. Siri gives those two answers while an app's Siri switch is off (forum reports; inferred, not documented by Apple).
+- **Fix.** The iPhone app asks "Use with Siri" every time it becomes active until the user answers, from the first launch on (`AppDelegate.swift`, `SiriAuthorization` in `SiriBridge.swift`).
+- **Checks.** `scripts/siri-target.py` (lint) fails if the Siri Swift or the phrase catalog leaves the Runner target. `siri-phrases.ts` fails if a phrase spells the app's name. `app-shortcuts-bundle.py` requires the de/en phrase model on the built app and the IPA. RunnerTests has `SiriAuthorizationTests`.
+- **Ship.** No flag; the `native-siri` hold is unchanged. The fix reaches the next green main build on TestFlight.
+- **Open.** Peter's device retest is `docs/NEEDS_PETER.md` "Job 467". Run it on that build, not 1541.
+- **Details.** [docs/done/467.md](docs/done/467.md).

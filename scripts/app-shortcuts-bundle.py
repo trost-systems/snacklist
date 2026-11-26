@@ -4,7 +4,8 @@
 Metadata.appintents/extract.actionsdata must list the App Shortcuts of SnacklistShortcuts
 (AddItemsIntent, ReadListIntent, OpenListIntent) with phrase templates that each name the app,
 the negative phrases, and the item entity; the phrases and negative phrases must be localized for
-de and en; Siri says "Snacklist", and no German alternative name ends in "Liste".
+de and en, each language with the phrase model Xcode trained; Siri says "Snacklist", and no German
+alternative name ends in "Liste".
 
 Usage: scripts/app-shortcuts-bundle.py [Runner.app | Snacklist.ipa]
 """
@@ -49,8 +50,21 @@ def check(app: Path) -> tuple[list[str], list[str]]:
     if not negatives:
         found.append(f"{actions}: no negative phrases")
     found += localized(app, keys, negatives)
+    found += trained(app)
     found += spoken_names(app)
     return found, sorted(shortcuts)
+
+
+def trained(app: Path) -> list[str]:
+    """Each language carries the phrase model Xcode trains from the catalog,
+    <lang>.lproj/nlu.appintents/nlu.lzfse (about 10 KB; job 467 found it in debug and release builds
+    alike). Metadata.appintents/root.ssu.yaml is only in debug builds, so it is not required."""
+    found = []
+    for lang in LANGUAGES:
+        model = app / f"{lang}.lproj/nlu.appintents/nlu.lzfse"
+        if not model.is_file() or model.stat().st_size == 0:
+            found.append(f"{model} is missing or empty: Siri has no {lang} phrase model")
+    return found
 
 
 def spoken_names(app: Path) -> list[str]:

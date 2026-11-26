@@ -13,6 +13,14 @@ import UIKit
     // After every install or update, not only once a list has loaded and the app pushed its
     // suggestions: Siri trains the App Shortcut phrases with these parameters (job 92).
     SnacklistShortcuts.updateAppShortcutParameters()
+    // Each time the app comes forward until the user has answered: asking only when the app
+    // stored a new Siri credential left installs that kept theirs, or missed the question at
+    // sign-in, without "Use with Siri" (job 467).
+    NotificationCenter.default.addObserver(
+      forName: UIApplication.didBecomeActiveNotification, object: nil, queue: .main
+    ) { _ in
+      SiriAuthorization.askIfUndetermined()
+    }
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
