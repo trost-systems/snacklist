@@ -74,6 +74,8 @@ expect "heavy stack app" supabase/functions/voice/parse.ts tool/item_icons/build
 expect "heavy stack app" supabase/tests/suggest_parity.json
 expect "heavy stack app" supabase/classifier/synonyms.tsv
 expect "heavy app" docs/RELEASE.md
+expect "heavy app" docs/ANALYTICS.md
+expect "heavy stack app" supabase/functions/_shared/telemetry.ts
 expect "heavy app" site/content/guides/de/siri-kurzbefehl.md
 # Documentation a gate reads: the nexus tests read the hill-climb docs.
 expect heavy docs/hillclimb/hc-tests.md
