@@ -95,6 +95,31 @@ void main() {
       ]);
     });
 
+    test('stores on the same sort order keep one order, whatever order the '
+        'rows came in', () {
+      const tied = [
+        Store(id: 's2', name: 'rewe', sortOrder: 10),
+        Store(id: 's1', name: 'Aldi', sortOrder: 10),
+        Store(id: 's0', name: 'dm', sortOrder: 5),
+      ];
+      List<String?> order(List<Store> stores) => [
+        for (final s in sectionsOf(const [], Catalog(stores: stores)))
+          s.store?.id,
+      ];
+      expect(order(tied), ['s0', 's1', 's2', null]);
+      expect(order(tied.reversed.toList()), ['s0', 's1', 's2', null]);
+    });
+
+    test('a changed catalog walks its own order, not a remembered one', () {
+      List<String> route(Catalog c) => [
+        for (final s in walkingOrder(c, null)) s.category.id,
+      ];
+      final before = route(catalog);
+      final reordered = catalog.withRouteOrder(before.reversed.toList());
+      expect(route(reordered), before.reversed);
+      expect(route(catalog), before);
+    });
+
     test('an unknown store walks the route order', () {
       expect(
         [for (final s in walkingOrder(catalog, 'gone')) s.category.id],
