@@ -2090,3 +2090,12 @@ the privacy text goes live first. After Legal's GO and the merge:
 To undo: `enabled = false`. Keys stay; API keys stop working on MCP and MCP tokens on the API.
 
 **Update, job 434 (2026-11-24).** Steps 4 and 5 are done: the reason lines are confirmed and `auth_mail.ts` put the six templates and `smtp_sender_name` = `Snacklist` on the hosted project; a second dry-run reports nothing left to change. The seven security notices stay off. Sending yourself a sign-in link in each language is still the one check left.
+
+## Job 480: Play listing on 1 December (Ops runs it; Peter's K1 covers it)
+
+Nothing new for Peter to decide. On launch day, in this order ([RELEASE.md](RELEASE.md), "Store listing upload"):
+
+1. Publish production 1541 in Play Console's Publishing overview (MP1).
+2. Run `gh workflow run play-listing.yml -f mode=upload -f published_version_code=1541` from `main`. It refuses while the store page is still 404, so retry a few minutes after the publish if it does. It must end with "Play's listing equals the repo text".
+3. When Google approves the listing change, publish it in the Publishing overview. Then run `gh workflow run play-listing.yml -f mode=check` until it passes.
+4. Only then switch on the Premium purchase screen (Legal LK1).

@@ -1,0 +1,58 @@
+# Uploads the staged Play listing text (app/fastlane/metadata/android/*: title, short and full
+# description per locale; no bundle, track, image or screenshot) right after the production release
+# is published, and reads it back. Lanes `android listing` and `android listing_check`
+# (app/fastlane/Fastfile), docs/RELEASE.md section "Store listing upload".
+name: Play listing
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: validate (any day, nothing changes on Play), upload (only after the production release is published), check (read back Play and the store pages)
+        type: choice
+        options: [validate, upload, check]
+        default: validate
+      published_version_code:
+        description: versionCode of the production release just published (upload refuses unless production carries it, completed, and the store page is live)
+        type: string
+        default: ""
+
+concurrency:
+  group: play-listing
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  listing:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    # The service account trusts only the release environment's OIDC token.
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        shell: bash
+        working-directory: app
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      # No Actions cache in a job that names an environment (job 220).
+      - uses: ruby/setup-ruby@be3c7df29b3349ec6bcfc6b4792f1cf9f5237d18 # v1.343.0
+        with:
+          working-directory: app
+      - name: Install the gems from the lockfile
+        run: |
+          bundle config set --local deployment true
+          bundle install --jobs 4
+      - uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        with:
+          workload_identity_provider: projects/1023711338330/locations/global/workloadIdentityPools/github/providers/family-groceries
+          service_account: play-release@family-groceries-ci.iam.gserviceaccount.com
+      - run: bundle exec fastlane android "$LANE"
+        env:
+          LANE: ${{ inputs.mode == 'check' && 'listing_check' || 'listing' }}
+          RELEASE_UPLOAD: ${{ inputs.mode == 'upload' }}
+          PLAY_PUBLISHED_VERSION_CODE: ${{ inputs.published_version_code }}

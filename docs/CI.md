@@ -51,7 +51,7 @@ native gates; now 12 and 15 (`docs/done/309.md`).
 | `fg-cli` | Deno fmt, lint and tests for the verify skill's CLI | yes |
 | `flutter` | Generated l10n, format, `flutter analyze --fatal-infos`, tests; the same for the Widgetbook (`app/widgetbook/`) | yes |
 | `web-prod` | The production web build, into `app/build/web-prod` | yes |
-| `fastlane` | The Gemfile.lock installs and the Fastfile parses | yes |
+| `fastlane` | The Gemfile.lock installs, the Fastfile parses and the Play listing lane's tests pass | yes |
 | `e2e` | Playwright against the release web build and the local stack | yes, under `/tmp/fg-e2e.lock` |
 | `android` | Debug APK build (the app's Kotlin) and its JVM unit tests (`WidgetPayloadTest`) | `--only android` |
 | `ios` | Simulator build (the app's Swift); the built app holds the app icon (light, dark, tinted, the Icon Composer stacks) and the launch screen's assets; RunnerTests but the StoreKit tests; macOS only | no |
