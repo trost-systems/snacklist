@@ -421,6 +421,9 @@ class TestSession(super.initialState)
 
   /// Each leave: the household and whether it archives.
   final leaves = <(String, bool)>[];
+
+  /// Held after a leave emitted, as SessionCubit.leave's reload is.
+  Completer<void>? afterLeave;
   HouseholdProblem? fail;
   var refreshes = 0;
   Completer<void>? hold;
@@ -673,6 +676,7 @@ class TestSession(super.initialState)
         ),
       );
     }
+    await afterLeave?.future;
   }
 
   @override

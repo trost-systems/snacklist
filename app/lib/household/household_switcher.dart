@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:family_groceries/core/notices.dart';
+import 'package:family_groceries/core/pop_if_current.dart';
 import 'package:family_groceries/design/hex_radio.dart';
 import 'package:family_groceries/design/pointy_hex.dart';
 import 'package:family_groceries/design/tokens.g.dart';
@@ -400,11 +401,12 @@ class _DefaultPickerState() extends State<_DefaultPicker> {
   Future<void> _pick(String householdId) async {
     final l10n = AppLocalizations.of(context);
     final notices = Notices.of(context);
-    final navigator = Navigator.of(context);
     setState(() => _busy = true);
     try {
       await context.read<SessionCubit>().setDefault(householdId);
-      navigator.pop();
+      if (mounted) {
+        popIfCurrent(context);
+      }
     } on HouseholdError catch (e) {
       notices.showSnackBar(
         SnackBar(content: Text(householdProblemText(l10n, e.problem))),

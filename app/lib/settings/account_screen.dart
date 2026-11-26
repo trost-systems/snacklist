@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/notices.dart';
+import 'package:family_groceries/core/pop_if_current.dart';
 import 'package:family_groceries/household/onboarding_page.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/session/your_name.dart';
@@ -191,7 +192,7 @@ class _NameSheetState() extends State<_NameSheet> {
     try {
       await context.read<YourNameCubit>().save(_name.text);
       if (mounted) {
-        Navigator.of(context).pop(true);
+        popIfCurrent(context, true);
       }
     } on NameError catch (e) {
       if (mounted) {

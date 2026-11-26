@@ -442,6 +442,24 @@ void main() {
       await recover(tester);
     });
 
+    testWidgets('folding with semantics on flushes every frame without '
+        'throwing', (tester) async {
+      final semantics = tester.ensureSemantics();
+      phone(tester);
+      await pumpList(tester);
+      await goOffline(tester);
+      for (var round = 0; round < 2; round++) {
+        await tester.tap(node('Offline:'));
+        for (var ms = 0; ms < 480; ms += 8) {
+          await tester.pump(const Duration(milliseconds: 8));
+        }
+        await tester.pumpAndSettle();
+      }
+      expect(tester.takeException(), isNull);
+      await recover(tester);
+      semantics.dispose();
+    });
+
     testWidgets('a scroll of the list collapses the card at once', (
       tester,
     ) async {

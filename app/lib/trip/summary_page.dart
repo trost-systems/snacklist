@@ -50,7 +50,12 @@ class _TripSummaryPageState() extends State<TripSummaryPage> {
     super.dispose();
   }
 
+  /// Leaves the page, unless it was left already or covered during an await
+  /// (a pop would then close what lies above or below it, job 438).
   void _leave() {
+    if (!mounted || !(ModalRoute.of(context)?.isCurrent ?? false)) {
+      return;
+    }
     if (context.canPop()) {
       context.pop();
     } else {
@@ -92,9 +97,7 @@ class _TripSummaryPageState() extends State<TripSummaryPage> {
       notices.showSnackBar(SnackBar(content: Text(l10n.tripDeleteFailed)));
       return;
     }
-    if (mounted) {
-      _leave();
-    }
+    _leave();
   }
 
   /// „Kein Einkauf“ on a detected trip (job 352): after a yes it leaves
@@ -130,9 +133,7 @@ class _TripSummaryPageState() extends State<TripSummaryPage> {
       return;
     }
     notices.showSnackBar(SnackBar(content: Text(l10n.tripRemoved)));
-    if (mounted) {
-      _leave();
-    }
+    _leave();
   }
 
   Future<FinishedTrip> _load() => _fetch ??= context

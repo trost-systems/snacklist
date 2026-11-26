@@ -1,0 +1,76 @@
+# A popup the user closes during an `await` (system back, Escape, a barrier
+# tap, a drag) stays mounted for its exit animation, so `mounted` is still
+# true, but its route is no longer the current one. A pop after the await
+# then removes the route below it. Popups sit on the root navigator
+# (popups-on-root-navigator), whose only page is the tab shell: the pop
+# removes the shell, go_router's configuration goes empty, release builds
+# show a blank app, and the next system back throws `Bad state: No element`
+# in `_findCurrentNavigators` (job 438, PostHog bug 2; reproduced on the
+# account name sheet with the save held). popIfCurrent pops only while the
+# context's own route is current.
+#
+# The rule reports `Navigator.of(...).pop`, `Navigator.maybeOf(...)?.pop`,
+# `Navigator.pop(context)`, go_router's `context.pop()` and a navigator
+# captured from `Navigator.of(...)` in the same function, in a function
+# body that awaits anything (the nearest one: a sync callback inside an
+# async function is not reported).
+#
+# Limits of a syntactic rule (DECISIONS 12.4): it also reports a pop written
+# before the await (popIfCurrent is right there too), and it does not follow
+# a pop in a helper the function calls, or one in a Timer or `.then`
+# callback.
+id: pop-if-current-after-await
+language: dart
+severity: error
+files:
+  - app/lib/**
+ignores:
+  - app/lib/core/pop_if_current.dart
+utils:
+  function-body:
+    any:
+      - kind: function_body
+      - kind: function_expression_body
+  navigator-of:
+    regex: '^Navigator\s*\.\s*(?:maybeOf|of)\s*\('
+rule:
+  kind: call_expression
+  has:
+    field: function
+    any:
+      - kind: member_expression
+      - kind: null_aware_member_expression
+    all:
+      - has:
+          field: property
+          regex: '^pop$'
+      - has:
+          field: object
+          any:
+            - matches: navigator-of
+            - kind: identifier
+              regex: '^(?:Navigator|context)$'
+            - kind: identifier
+              pattern: $N
+              inside:
+                stopBy: end
+                matches: function-body
+                has:
+                  stopBy: end
+                  kind: initialized_variable_definition
+                  all:
+                    - has:
+                        field: name
+                        pattern: $N
+                    - has:
+                        field: value
+                        matches: navigator-of
+  inside:
+    stopBy:
+      matches: function-body
+    matches: function-body
+    has:
+      stopBy:
+        kind: function_expression
+      kind: await_expression
+message: 'A pop after an await removes the route below when the user closed this popup or page during the await (blank app, job 438): call popIfCurrent(context, result) from app/lib/core/pop_if_current.dart instead, with the popup''s own context and no navigator captured before the await'

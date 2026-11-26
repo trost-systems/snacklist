@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:family_groceries/core/pop_if_current.dart';
 import 'package:family_groceries/design/field_border.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
@@ -77,7 +78,7 @@ class _NameDialogState() extends State<_NameDialog> {
     }
     final name = typed.trim();
     if (name.isEmpty) {
-      Navigator.of(context).pop();
+      popIfCurrent(context);
       return;
     }
     if (widget.validate?.call(name) case final error?) {
@@ -90,7 +91,7 @@ class _NameDialogState() extends State<_NameDialog> {
       return;
     }
     if (saved) {
-      Navigator.of(context).pop();
+      popIfCurrent(context);
     } else {
       setState(() => _busy = false);
     }

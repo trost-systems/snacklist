@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:family_groceries/core/environment.dart';
 import 'package:family_groceries/core/notices.dart';
+import 'package:family_groceries/core/pop_if_current.dart';
 import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/section_label.dart';
 import 'package:family_groceries/design/tokens.g.dart';
@@ -108,7 +109,9 @@ class _SwitcherHouseholdState() extends State<SwitcherHousehold> {
       return;
     }
     _asking = true;
-    final navigator = Navigator.of(context);
+    // SessionCubit.leave emits the state without the household before its
+    // reload: this page fades out of the sheet meanwhile.
+    final sheet = ModalRoute.of(context);
     try {
       final left = await leaveHousehold(
         context,
@@ -118,7 +121,7 @@ class _SwitcherHouseholdState() extends State<SwitcherHousehold> {
         run: (call) => tellRefusal(context, call),
       );
       if (left) {
-        navigator.pop();
+        popRouteIfCurrent(sheet);
       }
     } finally {
       _asking = false;

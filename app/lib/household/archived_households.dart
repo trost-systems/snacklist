@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:family_groceries/core/pop_if_current.dart';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/onboarding_page.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
@@ -82,7 +83,7 @@ class _ArchivedHouseholdsState() extends State<ArchivedHouseholds> {
     try {
       await session.unarchive(household.id);
       if (mounted) {
-        Navigator.of(context).pop();
+        popIfCurrent(context);
       }
     } on HouseholdError catch (e) {
       if (mounted) {

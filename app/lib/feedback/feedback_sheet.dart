@@ -6,6 +6,7 @@ import 'dart:ui' as ui;
 import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/notices.dart';
+import 'package:family_groceries/core/pop_if_current.dart';
 import 'package:family_groceries/design/field_border.dart';
 import 'package:family_groceries/design/hex_checkbox.dart';
 import 'package:family_groceries/design/hex_switch.dart';
@@ -149,7 +150,7 @@ class _FeedbackFormState() extends State<FeedbackForm> {
       ),
     );
     if (ok && mounted) {
-      Navigator.of(context).pop(true);
+      popIfCurrent(context, true);
     }
   }
 

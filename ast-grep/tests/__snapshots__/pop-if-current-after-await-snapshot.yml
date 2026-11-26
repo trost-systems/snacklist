@@ -1,0 +1,213 @@
+id: pop-if-current-after-await
+snapshots:
+  "Future<void> _pick(String householdId) async {\n  final navigator = Navigator.of(context);\n  setState(() => _busy = true);\n  await context.read<SessionCubit>().setDefault(householdId);\n  navigator.pop();\n}\n":
+    labels:
+    - source: navigator.pop()
+      style: primary
+      start: 186
+      end: 201
+    - source: await context.read<SessionCubit>().setDefault(householdId)
+      style: secondary
+      start: 124
+      end: 182
+    - source: |-
+        async {
+          final navigator = Navigator.of(context);
+          setState(() => _busy = true);
+          await context.read<SessionCubit>().setDefault(householdId);
+          navigator.pop();
+        }
+      style: secondary
+      start: 39
+      end: 204
+    - source: pop
+      style: secondary
+      start: 196
+      end: 199
+    - source: navigator
+      style: secondary
+      start: 55
+      end: 64
+    - source: Navigator.of(context)
+      style: secondary
+      start: 67
+      end: 88
+    - source: final navigator = Navigator.of(context)
+      style: secondary
+      start: 49
+      end: 88
+    - source: |-
+        async {
+          final navigator = Navigator.of(context);
+          setState(() => _busy = true);
+          await context.read<SessionCubit>().setDefault(householdId);
+          navigator.pop();
+        }
+      style: secondary
+      start: 39
+      end: 204
+    - source: navigator
+      style: secondary
+      start: 186
+      end: 195
+    - source: navigator.pop
+      style: secondary
+      start: 186
+      end: 199
+  "Future<void> _save() async {\n  try {\n    await context.read<YourNameCubit>().save(_name.text);\n    if (mounted) {\n      Navigator.of(context).pop(true);\n    }\n  } on NameError catch (e) {\n    show(e);\n  }\n}\n":
+    labels:
+    - source: Navigator.of(context).pop(true)
+      style: primary
+      start: 120
+      end: 151
+    - source: await context.read<YourNameCubit>().save(_name.text)
+      style: secondary
+      start: 41
+      end: 93
+    - source: |-
+        async {
+          try {
+            await context.read<YourNameCubit>().save(_name.text);
+            if (mounted) {
+              Navigator.of(context).pop(true);
+            }
+          } on NameError catch (e) {
+            show(e);
+          }
+        }
+      style: secondary
+      start: 21
+      end: 206
+    - source: pop
+      style: secondary
+      start: 142
+      end: 145
+    - source: Navigator.of(context)
+      style: secondary
+      start: 120
+      end: 141
+    - source: Navigator.of(context).pop
+      style: secondary
+      start: 120
+      end: 145
+  "Future<void> f(BuildContext context) async {\n  await save();\n  Navigator.maybeOf(context)?.pop();\n}\n":
+    labels:
+    - source: Navigator.maybeOf(context)?.pop()
+      style: primary
+      start: 63
+      end: 96
+    - source: await save()
+      style: secondary
+      start: 47
+      end: 59
+    - source: |-
+        async {
+          await save();
+          Navigator.maybeOf(context)?.pop();
+        }
+      style: secondary
+      start: 37
+      end: 99
+    - source: pop
+      style: secondary
+      start: 91
+      end: 94
+    - source: Navigator.maybeOf(context)
+      style: secondary
+      start: 63
+      end: 89
+    - source: Navigator.maybeOf(context)?.pop
+      style: secondary
+      start: 63
+      end: 94
+  "Future<void> f(BuildContext context) async {\n  await save();\n  Navigator.pop(context, true);\n}\n":
+    labels:
+    - source: Navigator.pop(context, true)
+      style: primary
+      start: 63
+      end: 91
+    - source: await save()
+      style: secondary
+      start: 47
+      end: 59
+    - source: |-
+        async {
+          await save();
+          Navigator.pop(context, true);
+        }
+      style: secondary
+      start: 37
+      end: 94
+    - source: pop
+      style: secondary
+      start: 73
+      end: 76
+    - source: Navigator
+      style: secondary
+      start: 63
+      end: 72
+    - source: Navigator.pop
+      style: secondary
+      start: 63
+      end: 76
+  "Future<void> f(BuildContext context) async {\n  await save();\n  context.pop();\n}\n":
+    labels:
+    - source: context.pop()
+      style: primary
+      start: 63
+      end: 76
+    - source: await save()
+      style: secondary
+      start: 47
+      end: 59
+    - source: |-
+        async {
+          await save();
+          context.pop();
+        }
+      style: secondary
+      start: 37
+      end: 79
+    - source: pop
+      style: secondary
+      start: 71
+      end: 74
+    - source: context
+      style: secondary
+      start: 63
+      end: 70
+    - source: context.pop
+      style: secondary
+      start: 63
+      end: 74
+  "Widget build(BuildContext context) => TextButton(\n  onPressed: () async {\n    if (await disconnect(context)) {\n      Navigator.of(context).pop();\n    }\n  },\n  child: const Text('x'),\n);\n":
+    labels:
+    - source: Navigator.of(context).pop()
+      style: primary
+      start: 117
+      end: 144
+    - source: await disconnect(context)
+      style: secondary
+      start: 82
+      end: 107
+    - source: |-
+        async {
+            if (await disconnect(context)) {
+              Navigator.of(context).pop();
+            }
+          }
+      style: secondary
+      start: 66
+      end: 155
+    - source: pop
+      style: secondary
+      start: 139
+      end: 142
+    - source: Navigator.of(context)
+      style: secondary
+      start: 117
+      end: 138
+    - source: Navigator.of(context).pop
+      style: secondary
+      start: 117
+      end: 142
