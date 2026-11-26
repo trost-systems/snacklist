@@ -2,7 +2,8 @@
 // build has no store listing: proves More has no „Snacklist bewerten“ between „Feedback senden“ and
 // „Hilfe & Kontakt“, and that ticking every item counts one completed trip in this device's
 // counters (`review.state`: counts and dates only) without a page error or a prompt, and that
-// putting an item back from „Zuletzt verwendet“ and ticking it again is still that one trip. A
+// putting an item back from „Zuletzt verwendet“ takes that trip off the count (rating-triggers-v2,
+// full since 2026-11-25; with it off, ticking it again is still that one trip). A
 // tick 10 s offline is no sync failure; an add 70 s offline is one (`last_error_at`). The first
 // return from the background after the launch starts a new session.
 //
@@ -80,7 +81,8 @@ try {
   if (JSON.stringify(after).match(/Bananen|Butter|[0-9a-f]{8}-[0-9a-f]{4}-/)) throw new Error('review.state holds an item name or id');
   if ((after.requests ?? []).length) throw new Error('a web build asked for a rating');
 
-  // The tick's undo: put one item back from „Zuletzt verwendet“ and tick it again. Same trip.
+  // The tick's undo: put one item back from „Zuletzt verwendet“ and tick it again. Same trip (v1),
+  // or the trip taken back (v2).
   const section = page.getByRole('button', { name: L('recentlyUsed') });
   await reveal(page, section);
   const used = page.getByRole('button', { name: new RegExp(` ${L('readd')}$`) }).first();
@@ -97,7 +99,12 @@ try {
   await page.waitForTimeout(1_000);
   const undone = await counters();
   log(`put one back and ticked it again; review.state now: ${JSON.stringify(undone)}`);
-  if (undone?.completed_trips !== after.completed_trips) throw new Error('the undo and re-tick counted another trip');
+  if (flagOn('rating-triggers-v2')) {
+    // v2 (full since 2026-11-25, SA2): a put-back onto the emptied list takes that trip off the count,
+    // and the re-tick does not count it again.
+    if (undone?.completed_trips !== after.completed_trips - 1) throw new Error('the put-back did not take the trip off the count (v2, SA2)');
+    if (!undone?.last_reopened_at) throw new Error('the put-back left no last_reopened_at (v2, SA2)');
+  } else if (undone?.completed_trips !== after.completed_trips) throw new Error('the undo and re-tick counted another trip');
 
   // Offline past the 60 s grace is a sync failure the user saw.
   await page.context().setOffline(true);

@@ -4,7 +4,9 @@
 // needs an MCP client: e2e/tests/mcp.spec.ts drives that), then proves the row names the device
 // and the last activity, the keys' hint (the one list of „Zugriffsschlüssel“ users have with
 // unified-keys and its server switch on; else the token hint, pointing at the API section when
-// public-api is on), and the details sheet in plain words.
+// public-api is on), and the details sheet in plain words. With the server switch integration_lock on
+// (production since 2026-11-24, so a plain launch) and no Premium of the member's own, the card „Teil
+// von Snacklist Premium“ and the row's „Pausiert: braucht Snacklist Premium“; with it off, neither.
 //
 //   node journeys/ai-assistants.mjs <evidence dir> [--lang de|en]
 import process from 'node:process';
@@ -63,6 +65,19 @@ try {
   await row.waitFor({ timeout: 15_000 });
   log(`row: „${await row.getAttribute('aria-label') ?? await row.textContent()}“`);
   if ((await page.getByText(L('scopeOpenid')).count()) > 0) throw new Error('the scopes are still listed on the row');
+  const locked = sql(`select enabled from public.app_switches where key = 'integration_lock'`).trim() === 't';
+  const card = page.getByRole('heading', { name: L('integrationPremiumTitle') });
+  const paused = (await row.getAttribute('aria-label') ?? '').endsWith(L('integrationPaused'));
+  if (locked) {
+    await card.waitFor({ timeout: 10_000 });
+    if (!paused) throw new Error(`lock on: the row does not end with „${L('integrationPaused')}“`);
+    // The card is one semantics node: its text is in the group's aria-label.
+    const footer = page.locator(`[aria-label*="${L('premiumWeb').slice(0, 40)}"]`);
+    log(`lock on, no Premium of her own: „${L('integrationPremiumTitle')}“ card, row „${L('integrationPaused')}“; web footer „${L('premiumWeb')}“ shown: ${(await footer.count()) > 0}`);
+  } else {
+    if ((await card.count()) > 0 || paused) throw new Error('lock off: the Premium card or the paused line shows');
+    log('lock off: no Premium card, the row not paused');
+  }
   await page.mouse.wheel(0, 600);
   await capture(page, dir, '01-access-connected-app');
 

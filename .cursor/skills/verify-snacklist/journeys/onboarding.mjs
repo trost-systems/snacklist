@@ -28,8 +28,11 @@ const check = (ok, what) => {
   log(`ok: ${what}`);
 };
 
-const { browser, page, L, errors } = await openApp(inst, { lang, dark, videoDir: dir });
-const second = await openApp(inst, { lang, dark });
+// The store step offers the browser region's chains (open-store-app, full since 2026-11-25); en-US has
+// none, so the English run is an English browser in Germany.
+const locale = lang === 'en' ? 'en-DE' : 'de-DE';
+const { browser, page, L, errors } = await openApp(inst, { lang, locale, dark, videoDir: dir });
+const second = await openApp(inst, { lang, locale, dark });
 const button = (p, name) => p.getByRole('button', { name, exact: true });
 // display-name (users' build) asks the new account's own name after the usage question.
 const nameStep = async (p, name) => {

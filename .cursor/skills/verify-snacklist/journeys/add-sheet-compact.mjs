@@ -3,8 +3,8 @@
 // demo-familie. After an add the sheet shows one row of chips under the grab handle (Menge with −
 // and +, store, category unless hide-categories is on, details) and no added note, Undo or close
 // key; each pick or step is saved at once and lands in the database. The list behind the sheet is empty before the first add, then
-// shows only the last two adds. An add of what is on the list keeps today's "already on the list"
-// note. Enter in the empty field closes the sheet, and so does a tap on the list behind it, also on
+// shows only the last two adds. What is on the list shows as a match row while typing (add-match-rows,
+// full since 2026-11-25); with that flag off, its add keeps the "already on the list" note. Enter in the empty field closes the sheet, and so does a tap on the list behind it, also on
 // one of the two rows there, which stays as it is.
 //
 //   helpers/launch.sh   (add-sheet-compact and hide-categories are full since 2026-11-22;
@@ -142,11 +142,22 @@ try {
   await sheet.waitFor();
 
   await typeInto(addField(page, L), names[0]);
-  await page.keyboard.press('Enter');
-  const note = sheet.getByText(L('alreadyOnList', { name: names[0] }));
-  await note.waitFor({ timeout: 10_000 });
-  log(`duplicate: "${await note.textContent()}"`);
-  await capture(page, dir, '08-already-on-list');
+  if (flagOn('add-match-rows')) {
+    // The users' build: the open item shows as a merge row while typing, and Enter would add a
+    // separate one (quick-add `qa-match-rows`, journeys/add-match-rows.mjs), so the field is cleared.
+    const merge = sheet.getByRole('button', { name: new RegExp(`^${L('dedupeMerge')}, `) });
+    await merge.first().waitFor({ timeout: 10_000 });
+    log(`duplicate: the match row "${await merge.first().getAttribute('aria-label') ?? await merge.first().textContent()}"`);
+    await capture(page, dir, '08-already-on-list');
+    await addField(page, L).fill('');
+    await page.waitForTimeout(300);
+  } else {
+    await page.keyboard.press('Enter');
+    const note = sheet.getByText(L('alreadyOnList', { name: names[0] }));
+    await note.waitFor({ timeout: 10_000 });
+    log(`duplicate: "${await note.textContent()}"`);
+    await capture(page, dir, '08-already-on-list');
+  }
 
   await addField(page, L).click();
   await page.keyboard.press('Enter');

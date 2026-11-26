@@ -20,7 +20,7 @@ Behind the PostHog flag `open-store-app` (full since 2026-11-25, Peter OS-A; Leg
 
 ## How to get to it (user POV)
 
-- Users today: none of this (the flag is off). With the flag:
+- Users have all of it since 2026-11-25 (the flag is full):
 - List tab: the key at the end of a matched store's header; the card at the top asks about older stores; after the last item of a matched store is ticked, the „… ist erledigt“ card at the top.
 - Liste → „Anpassen“ → „Laden hinzufügen“: type, tap a chain or press Enter.
 - Add sheet: type an item, tap the store chip („Laden: …“), „Neuer Laden“ („Neuen Laden anlegen“), type the name.
@@ -28,7 +28,7 @@ Behind the PostHog flag `open-store-app` (full since 2026-11-25, Peter OS-A; Leg
 
 ## Driving it with Playwright
 
-Preconditions: on this skill's build, `VH_DEFINES="FLAGS_ON=open-store-app" helpers/launch.sh` (export the same `VH_DEFINES` for `doctor.sh` and `drive.sh`), then `helpers/drive.sh store-apps --expect on` (suggest, ask, the App card, the header key and tip; `journeys/store-apps.mjs`); `journeys/onboarding-store-chains.mjs` and `journeys/new-household-store-chains.mjs` for the region chips. On a plain launch (users' build) `drive.sh store-apps` checks that none of it shows. In the e2e specs: the flag on through the PostHog fake (`fakeCollector(context, { flags: { 'open-store-app': true } })` in `e2e/tests/helpers.ts`); the browser locale de-DE is the region. Route `https://play.google.com/**` and `https://apps.apple.com/**` in the context so a key's new tab stays local. `e2e/tests/store-apps.spec.ts` covers every sub-feature but `sa-large-text`, `sa-analytics`, `sa-ikea`, `sa-diy` and `sa-done-card` (those: unit and pgTAP tests, `journeys/store-done.mjs`, and the Globus question by hand) (widget tests: `app/test/list/store_header_test.dart`, `app/test/list/store_app_test.dart`).
+Preconditions: a plain `helpers/launch.sh` (the users' build has the flag), then `helpers/drive.sh store-apps` (`--expect on`, the default on that build) (suggest, ask, the App card, the header key and tip; `journeys/store-apps.mjs`); `journeys/onboarding-store-chains.mjs` and `journeys/new-household-store-chains.mjs` for the region chips. On a `VH_FLAGS_OFF=open-store-app` build `drive.sh store-apps --expect off` checks that none of it shows. In the e2e specs: the flag on through the PostHog fake (`fakeCollector(context, { flags: { 'open-store-app': true } })` in `e2e/tests/helpers.ts`); the browser locale de-DE is the region. Route `https://play.google.com/**` and `https://apps.apple.com/**` in the context so a key's new tab stays local. `e2e/tests/store-apps.spec.ts` covers every sub-feature but `sa-large-text`, `sa-analytics`, `sa-ikea`, `sa-diy` and `sa-done-card` (those: unit and pgTAP tests, `journeys/store-done.mjs`, and the Globus question by hand) (widget tests: `app/test/list/store_header_test.dart`, `app/test/list/store_app_test.dart`).
 
 - Suggest: „Laden hinzufügen“, `typeInto(getByRole('textbox', { name: 'Name des Ladens' }), 'Re')` → button „REWE (Deutschland) wählen“; click → row „REWE“ on „Läden“, no dialog.
 - Ask: type „Lidl am Markt“, Enter → text „Ist das Lidl (Deutschland)?“ → „Ja“; the store's details then read „Zugeordnet: Lidl · Deutschland“ and show „Lidl Plus“ with the button „Lidl Plus öffnen“.
@@ -41,7 +41,7 @@ Preconditions: on this skill's build, `VH_DEFINES="FLAGS_ON=open-store-app" help
 
 ## Gotchas
 
-- Flag off: no key, tip, card, suggestions, question, App card or chain line; the header's plain caret is everyone's (stores-walk-order).
+- Flag off (`VH_FLAGS_OFF=open-store-app`, or a new install before PostHog's first answer): no key, tip, card, suggestions, question, App card or chain line; the header's plain caret is everyone's (stores-walk-order).
 - The web app opens the app's store page, not an app; Android and iPhone behaviour is in the code and unit tests only (no device on the box). Unverified on a device: Android's launch without a package query, which screen the 43 universal links open, and whether the iOS apps register the 20 schemes read from the Android apps (job 335; `supabase/retailers/coverage.md` lists each app's way and source). On an iOS Simulator, `launchUrl` of a scheme root answers false without the app and opens an installed one, with nothing in Info.plist (job 335's probe).
 - The done card reads who ticked from `items.bought_by` (set by the items trigger). Its dismissals live in the device's list prefs (`store_done_dismissed`, store id to the store's bought item ids then), so another device of the same member still shows it, and a card closed offline stays closed when the server stamps its own `bought_at`.
 - Answers are per store: once a store is answered („Nein“ too), neither card nor question asks again; only the store screen's chain line changes it.

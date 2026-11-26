@@ -3,7 +3,8 @@
 // walk order, adds items there and ticks one; then the app shows the list in the switcher, the
 // store's items in the new order and the ticked item under „Zuletzt verwendet“, and the API's
 // recent and suggestions answers match what the app shows. Switches the local public_api on and
-// back to what it was.
+// integration_lock off (as for a member with Premium of their own; production has it on, and the
+// seeded members have no Premium) and both back to what they were.
 //
 //   node journeys/api-lists-stores.mjs <evidence dir> [--lang de|en]
 import process from 'node:process';
@@ -26,7 +27,9 @@ const sql = (query) =>
     encoding: 'utf8',
   }).trim();
 const publicApiWas = sql(`select enabled from public.app_switches where key = 'public_api'`) === 't';
+const lockWas = sql(`select enabled from public.app_switches where key = 'integration_lock'`) === 't';
 sql(`update public.app_switches set enabled = true where key = 'public_api'`);
+sql(`update public.app_switches set enabled = false where key = 'integration_lock'`);
 
 const client = await apiAs(inst, user);
 const minted = await client.rpc('create_api_token', {
@@ -114,6 +117,7 @@ try {
 } finally {
   await browser.close();
   sql(`update public.app_switches set enabled = ${publicApiWas} where key = 'public_api'`);
+  sql(`update public.app_switches set enabled = ${lockWas} where key = 'integration_lock'`);
 }
 if (failed) {
   console.log(`FAIL: ${failed.message}`);

@@ -1,6 +1,6 @@
 // Feature households, „Neuer Haushalt“ from the switcher with the flag open-store-app (job 321, OB-Q8):
 // the same store chips as the guided start, from the browser's region, without the hint lines; the
-// household is created with the tapped chains linked. Needs a build with FLAGS_ON=open-store-app.
+// household is created with the tapped chains linked. Plain launch (open-store-app is full since 2026-11-25).
 //
 //   node journeys/new-household-store-chains.mjs <evidence dir> [--locale de-AT]
 import process from 'node:process';

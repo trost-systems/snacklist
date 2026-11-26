@@ -22,7 +22,7 @@ VH_BUILD_DIR="$REPO_ROOT/app/build/verify-snacklist-web"
 VH_INSTANCE="$VH_STATE_DIR/instance.json"
 # Server switches (public.app_switches) production has on for everyone; launch.sh turns them on,
 # doctor.sh checks them. The migrations seed every switch off.
-VH_USER_SWITCHES="'public_api', 'unified_keys'"
+VH_USER_SWITCHES="'public_api', 'unified_keys', 'integration_lock'"
 export VH_HELPERS VH_SKILL VH_PREFIX VH_PROJECT_ID VH_STATE_DIR VH_EVIDENCE_DIR VH_WEB_PORT VH_WEB_URL VH_BUILD_DIR VH_INSTANCE VH_USER_SWITCHES
 
 # fg (seed, teardown, db query) on this checkout's stack, with its run files in our state dir.

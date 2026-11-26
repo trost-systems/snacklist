@@ -2,7 +2,7 @@
 // on a browser whose language names a region, the guided start to the store step, which shows that
 // region's chains as chips, without the two hint lines. The picked chips and an own store go
 // through sign-up, and the stores the server made are linked to their chains (the own one is not),
-// so the first list asks nothing. Needs a build with FLAGS_ON=open-store-app; signs up a fresh user.
+// so the first list asks nothing. Plain launch (open-store-app is full since 2026-11-25); signs up a fresh user.
 //
 //   node journeys/onboarding-store-chains.mjs <evidence dir> --scenario de|unlisted|at|us [--lang de|en] [--dark]
 import process from 'node:process';

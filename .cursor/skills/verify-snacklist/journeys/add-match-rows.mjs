@@ -5,7 +5,7 @@
 // is one tap and lands in the database. „Milch“ never offers „Hafermilch“. The list behind the
 // sheet does not scroll (widget test). Rows follow the list when another member deletes the item.
 //
-//   VH_DEFINES="FLAGS_ON=add-sheet-compact,add-match-rows" helpers/launch.sh
+//   helpers/launch.sh   (add-sheet-compact and add-match-rows are full since 2026-11-25)
 //   node journeys/add-match-rows.mjs <evidence dir> [--lang de|en]
 import process from 'node:process';
 import { addField, addSheet, apiAs, capture, instance, logger, member, openApp, signIn, typeInto } from '../helpers/lib.mjs';

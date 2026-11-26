@@ -1,5 +1,6 @@
 // Feature ai-assistants, sub-feature ai-unified-keys (job 397, AU1): one personal key for MCP and
-// the API. Launch with VH_DEFINES="FLAGS_ON=unified-keys" (the flag is off for users). With the
+// the API. Plain launch (the flag is full since 2026-11-23). It turns integration_lock off for the
+// run (what a member with Premium of their own gets; the seeded members have none). With the
 // server switch app_switches.unified_keys off, Zugänge keeps its two sections; on, one list
 // „Zugriffsschlüssel“ shows an MCP token made before (read and write) next to a new read-only key.
 // Over HTTP: the read-only key reads on MCP and gets a tool error saying it can only read on a
@@ -26,7 +27,7 @@ const sql = (query) =>
     input: query,
     encoding: 'utf8',
   }).trim();
-const switches = sql(`select string_agg(key || '=' || enabled, ',') from public.app_switches where key in ('unified_keys', 'public_api')`);
+const switches = sql(`select string_agg(key || '=' || enabled, ',') from public.app_switches where key in ('unified_keys', 'public_api', 'integration_lock')`);
 const setSwitch = (key, on) => sql(`update public.app_switches set enabled = ${on} where key = '${key}'`);
 
 async function mcp(token, name, args) {
@@ -59,6 +60,7 @@ const apiCall = async (token, method, body) => {
 };
 
 setSwitch('public_api', true);
+setSwitch('integration_lock', false);
 setSwitch('unified_keys', false);
 const api = await apiAs(inst, user);
 const made = await api.rpc('create_personal_access_token', { p_name: 'Claude', p_household: user.householdId });
