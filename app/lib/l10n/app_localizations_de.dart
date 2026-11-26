@@ -88,7 +88,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get dictationSplitFailed =>
-      'Keine Verbindung. Der Text steht im Feld; prüfe ihn und tippe auf Hinzufügen.';
+      'Keine Verbindung. Der Text steht im Feld; prüfe ihn und tippe auf der Tastatur auf Senden.';
 
   @override
   String dictationAdded(String items) {

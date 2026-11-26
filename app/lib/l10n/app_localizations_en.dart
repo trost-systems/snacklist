@@ -88,7 +88,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dictationSplitFailed =>
-      'No connection. The text is in the field; check it and tap Add.';
+      'No connection. The text is in the field; check it and tap Send on the keyboard.';
 
   @override
   String dictationAdded(String items) {

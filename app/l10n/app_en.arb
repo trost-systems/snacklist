@@ -26,7 +26,7 @@
   "dictationOfflineSpeechDownloading": "Dictation only works offline, so your voice stays on the device. Snacklist asked Android to download English offline speech recognition. Try again once it's installed, or type the item instead.",
   "dictationNothingHeard": "I didn't hear anything.",
   "dictationNothingUnderstood": "I didn't catch anything for the list.",
-  "dictationSplitFailed": "No connection. The text is in the field; check it and tap Add.",
+  "dictationSplitFailed": "No connection. The text is in the field; check it and tap Send on the keyboard.",
   "dictationAdded": "Added: {items}.",
   "@dictationAdded": {"placeholders": {"items": {"type": "String"}}},
   "dictationAlreadyOnList": "Already on the list: {items}.",

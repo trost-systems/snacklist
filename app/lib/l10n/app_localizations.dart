@@ -224,10 +224,10 @@ abstract class AppLocalizations {
   /// **'Ich habe nichts verstanden, was auf die Liste soll.'**
   String get dictationNothingUnderstood;
 
-  /// No description provided for @dictationSplitFailed.
+  /// Dictation heard a sentence but the server could not split it (no connection). Names the keyboard's send key: the add field's keyboard action is send, and the add sheet shows no add button (job 482).
   ///
   /// In de, this message translates to:
-  /// **'Keine Verbindung. Der Text steht im Feld; prüfe ihn und tippe auf Hinzufügen.'**
+  /// **'Keine Verbindung. Der Text steht im Feld; prüfe ihn und tippe auf der Tastatur auf Senden.'**
   String get dictationSplitFailed;
 
   /// No description provided for @dictationAdded.

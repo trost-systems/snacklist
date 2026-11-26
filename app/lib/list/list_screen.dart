@@ -719,9 +719,16 @@ class _ShoppingListState() extends State<_ShoppingList> {
                         onMessage: _snack,
                         onListening: (listening) =>
                             setState(() => _listening = listening),
-                        // The dictated text waits in the field; a tap opens it.
+                        // Text left in the field (offline, or nothing for
+                        // the list) opens the sheet on it, so the keyboard's
+                        // send key adds it (job 482).
                         onDone: () {
                           _openOnFocus = false;
+                          if (_input.text.trim().isNotEmpty) {
+                            context.read<AddSheetCubit>()
+                              ..show()
+                              ..type(_input.text);
+                          }
                           _inputFocus.requestFocus();
                         },
                       ),

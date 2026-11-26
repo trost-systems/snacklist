@@ -18723,3 +18723,22 @@ tests use.
    saves as before, so the copy on the device never differs from main's.
 4. **Stopped after 3 steps of 4.** What is left is under the noise band (the catalog's text, the queue folds) or the
    cache format (#270), which job 451 left to the lead.
+
+## Job 482: the offline dictation message names the keyboard's send key
+
+1. **„Senden“ on the keyboard, not „Hinzufügen“.** Neither add sheet shows a button with that name
+   (`addButton` is only the sheet's screen-reader label), and dictation exists only in the iOS and
+   Android apps, where the soft keyboard is up after the message. The add field's keyboard action is
+   `TextInputAction.send`, which iOS labels „Senden“ / "Send" and Android shows as a send arrow. The
+   tinted first row was the other candidate; it has no name to quote and a match row can lead it.
+2. **The sheet now opens on the text dictation leaves behind.** The copy alone would have been a false
+   promise: the dictated text was in the controller but not in `AddSheetCubit`, which learns text only
+   from the bar's tap (`show()` then `type`) and from typing. Send then added nothing, with the sheet
+   open or closed (`takeFirst` reads the cubit's text and needs an open sheet). `onDone` now opens the
+   sheet and types the field's text when any is left: the offline case and "nothing for the list".
+   A dictation that added its items empties the field and keeps the sheet as it was. The job-52 rule
+   "the dictated text waits in the field; a tap opens it" predates the compact sheet and the keyboard
+   coming up after dictation (job 457).
+3. **The test lives in `add_sheet_compact_test.dart`.** The compact sheet needs a Router, which that
+   file's harness has and `dictation_test.dart`'s doesn't. It runs both languages with the sheet open
+   and closed before the tap; all four failed before the `list_screen.dart` change.

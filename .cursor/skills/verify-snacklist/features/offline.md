@@ -27,7 +27,7 @@ Needs a connection, exact texts (DE / EN). A snackbar said while a dialog or she
 - Export your data: „Keine Internetverbindung. Deine Daten wurden nicht exportiert.“ / "No internet connection. Your data was not exported."
 - Delete account: „Keine Internetverbindung. Dein Konto wurde nicht gelöscht. Versuche es erneut, sobald du online bist.“ / "No internet connection. Your account was not deleted. Try again once you're online." and, when the household's fate cannot load: „Keine Internetverbindung. Was mit deinem Haushalt passiert, konnte nicht geladen werden.“ / "No internet connection. Couldn't load what happens to your household."
 - Feedback: „Nicht gesendet. Prüfe die Verbindung und versuch es noch einmal.“ / "Not sent. Check your connection and try again." (note stays, button „Erneut senden“ / "Retry").
-- Dictation text split: „Keine Verbindung. Der Text steht im Feld; prüfe ihn und tippe auf Hinzufügen.“ / "No connection. The text is in the field; check it and tap Add."
+- Dictation text split: „Keine Verbindung. Der Text steht im Feld; prüfe ihn und tippe auf der Tastatur auf Senden.“ / "No connection. The text is in the field; check it and tap Send on the keyboard."
 - Premium store (held; Premium is not on sale): „Der Store ist gerade nicht erreichbar. Prüfe die Verbindung.“ / "The store can't be reached right now. Check your connection."
 
 ## How to get to it (user POV)

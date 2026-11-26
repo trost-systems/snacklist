@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/localizations.dart';
 import 'package:family_groceries/core/theme.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/add_sheet/add_sheet_cubit.dart';
+import 'package:family_groceries/list/dictation.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_screen.dart';
 import 'package:family_groceries/list/list_view/item_row.dart';
@@ -37,6 +40,8 @@ void main() {
     double textScale = 1,
     double keyboard = 0,
     void Function(FakeRepository repo)? seed,
+    Locale locale = const Locale('de'),
+    Dictation? dictation,
   }) async {
     tester.view
       ..devicePixelRatio = 3
@@ -75,13 +80,14 @@ void main() {
           theme: appTheme(Brightness.light),
           localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          locale: const Locale('de'),
+          locale: locale,
           routerConfig: GoRouter(
             routes: [
               GoRoute(
                 path: '/',
                 // The shell's scaffold makes room for the keyboard.
-                builder: (_, _) => const Scaffold(body: ShoppingList()),
+                builder: (_, _) =>
+                    Scaffold(body: ShoppingList(dictation: dictation)),
               ),
             ],
           ),
@@ -634,6 +640,51 @@ void main() {
     }
   });
 
+  // Job 482: offline, dictation leaves its sentence in the field and opens
+  // the sheet on it. The compact sheet has no add button, so the message
+  // names the keyboard's send key, which adds the text as it stands.
+  for (final opened in [false, true]) {
+    for (final (locale, mic, message) in [
+      (
+        const Locale('de'),
+        'Diktieren',
+        'Keine Verbindung. Der Text steht im Feld; prüfe ihn und tippe auf der '
+            'Tastatur auf Senden.',
+      ),
+      (
+        const Locale('en'),
+        'Dictate',
+        'No connection. The text is in the field; check it and tap Send on the '
+            'keyboard.',
+      ),
+    ]) {
+      testWidgets('offline dictation (${locale.languageCode}, sheet '
+          "${opened ? 'open' : 'closed'}): the message names the keyboard's "
+          'send key, and send adds the text', (tester) async {
+        final dictation = _HearsOnce();
+        await pumpList(tester, locale: locale, dictation: dictation);
+        if (opened) {
+          await open(tester);
+        }
+        repo.online = false;
+        await tester.tap(find.byTooltip(mic));
+        dictation.heard.complete(Heard('Milch und Brot'));
+        await tester.pumpAndSettle();
+
+        expect(find.text(message), findsOneWidget);
+        expect(sheet(), findsOneWidget);
+        final input = tester.widget<TextField>(field());
+        expect(input.controller!.text, 'Milch und Brot');
+        expect(input.focusNode!.hasFocus, isTrue);
+        expect(input.textInputAction, TextInputAction.send);
+
+        await tester.testTextInput.receiveAction(TextInputAction.send);
+        await tester.pumpAndSettle();
+        expect(item(tester, 'Milch und Brot').status, ItemStatus.active);
+      });
+    }
+  }
+
   group('flag off', () {
     testWidgets('the close key, the added note with Rückgängig and „Gerade '
         'hinzugefügt“ stay', (tester) async {
@@ -663,3 +714,25 @@ bool _scrollsSideways(WidgetTester tester, Finder option) => find
     )
     .evaluate()
     .isNotEmpty;
+
+/// Hears what the test completes [heard] with.
+class _HearsOnce() implements Dictation {
+  final heard = Completer<Dictated>();
+
+  @override
+  Future<DictationProblem?> prepare(SpokenLanguage language) async => null;
+
+  @override
+  Future<Dictated> listen({
+    required void Function(String words) onWords,
+  }) async {
+    final dictated = await heard.future;
+    if (dictated case Heard(:final text)) {
+      onWords(text);
+    }
+    return dictated;
+  }
+
+  @override
+  Future<void> stop() async {}
+}
