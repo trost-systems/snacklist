@@ -1,9 +1,10 @@
 -- Job 274: catalog_delta answers a device the changes from the catalog version it bundles: none
 -- when it is current, puts and drops from a known version, every row from an unknown one. Only
 -- signed-in users may ask, only with versions, and no client reads or writes the snapshots. A
--- catalog change snapshots the version it replaces, once per transaction (review 0).
+-- catalog change snapshots the version it replaces, once per transaction (review 0). Job 473: an
+-- answer with tables also carries every homograph row, which apps before it ignore.
 begin;
-select plan(29);
+select plan(38);
 
 create function pg_temp.login(uid uuid) returns void language plpgsql as $$
 begin
@@ -67,6 +68,21 @@ select is(d -> 'brands' -> 'drop', '["tempo"]'::jsonb, 'the deleted brand is dro
 select is(d -> 'forms', '{"put": [], "drop": []}'::jsonb, 'an unchanged table has no changes') from changed;
 select ok(exists (select from public.catalog_snapshots s where s.version = public.catalog_version()),
   'the call snapshots the new version');
+select ok(public.catalog_rows() -> 'homographs' @> '[["schaufel", "schäufele", "schaufele", "meat", false]]',
+  'the catalog carries the lexicon''s homographs, a row per spelling');
+select is(d -> 'homographs', public.catalog_rows() -> 'homographs', 'an answer with changes has every homograph row')
+from changed;
+select ok(d ?& array['version', 'full', 'terms', 'forms', 'brands'], 'and still every key an older app reads')
+from changed;
+
+-- A snapshot taken before job 473 has no homographs; it still answers with changes.
+update public.catalog_snapshots s set homographs = null where s.version = (select version from v0);
+select pg_temp.login('00000000-0000-0000-0000-000000274a01');
+create temp table old_base as select public.catalog_delta((select version from v0)) as d;
+reset role;
+select is(d -> 'terms' -> 'drop', '["milch"]'::jsonb, 'a base snapshot without homographs still gets changes')
+from old_base;
+select is(d -> 'homographs', public.catalog_rows() -> 'homographs', 'and every homograph row') from old_base;
 
 insert into public.classifier_terms (term, category) values ('zwurbelbrot', 'bakery');
 select ok(not exists (select from public.catalog_snapshots s where s.current),
@@ -88,6 +104,8 @@ select is(
     (select count(*)::int from public.brands)],
   'every row of each table');
 select is(public.catalog_rows() -> 'terms', d -> 'terms' -> 'put', 'as catalog_rows lists them') from unknown;
+select is(d -> 'homographs', public.catalog_rows() -> 'homographs', 'the full catalog has the homographs too')
+from unknown;
 
 create temp table v1 as select public.catalog_version() as version;
 grant select on v1 to authenticated;
@@ -100,6 +118,18 @@ select is(public.catalog_delta('0123456789abcdef', (select version from v0)) -> 
 select is(public.catalog_delta((select version from v0), null) -> 'terms' -> 'drop', '["milch"]'::jsonb,
   'without p_have the changes come as before');
 reset role;
+
+-- The version covers the homographs: a change to them alone reaches the devices.
+create temp table v2 as select public.catalog_version() as version;
+grant select on v2 to authenticated;
+update public.classifier_lexicon set homographs = null where form = 'topf';
+select isnt(public.catalog_version(), (select version from v2), 'a homograph change alone makes a new version');
+select pg_temp.login('00000000-0000-0000-0000-000000274a01');
+create temp table h2 as select public.catalog_delta((select version from v2)) as d;
+reset role;
+select is(d -> 'forms', '{"put": [], "drop": []}'::jsonb, 'with no row changes') from h2;
+select ok(d -> 'homographs' @> '[["schaufel"]]' and not d -> 'homographs' @> '[["topf"]]',
+  'and the homographs as they are now') from h2;
 
 set local role anon;
 select throws_ok($$select public.catalog_delta('0123456789abcdef')$$, '42501', null, 'signed out, no catalog');

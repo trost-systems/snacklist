@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/analytics/events.dart';
 import 'package:family_groceries/analytics/flags.dart';
@@ -18,6 +20,11 @@ import 'package:material_ui/material_ui.dart';
 import '../design/fonts.dart';
 import 'fake_repository.dart';
 import 'memory_cache.dart';
+
+/// Job 473's review screenshots, only when it is set:
+///   SCREENSHOT_DIR=$PWD/../docs/screenshots/473 flutter test --update-goldens \
+///     test/list/add_match_rows_test.dart
+final _screenshots = Platform.environment['SCREENSHOT_DIR'];
 
 /// Every event the list sends, checked against the allow-list.
 class _Tracked() implements Analytics {
@@ -172,6 +179,15 @@ void main() {
     await tester.pumpAndSettle();
     await tester.enterText(field(), text);
     await tester.pumpAndSettle();
+  }
+
+  Future<void> shoot(String name) async {
+    if (_screenshots case final dir?) {
+      await expectLater(
+        find.byType(MaterialApp),
+        matchesGoldenFile(Uri.file('$dir/$name.png')),
+      );
+    }
   }
 
   Future<void> enter(WidgetTester tester) async {
@@ -560,16 +576,32 @@ void main() {
       ('Hafermilch', 'Milch'),
       ('Oat milk', 'Milk'),
       ('Milch', 'Hafermilch'),
+      ('Schaufel', 'Schäufele'),
+      ('Schäufele', 'Schaufel'),
+      ('beer', 'Beeren'),
     ]) {
       testWidgets('$onList open, $typedText typed: the rows as without the '
           'flag', (tester) async {
         await pumpList(tester, seed: (repo) => repo.remoteAdd(onList));
         await type(tester, typedText);
+        await shoot('no-match-$typedText');
         expect(key('match-0'), findsNothing);
         expect(key('add-suggestions'), findsOneWidget);
         expect(matchEvents(), isEmpty);
       });
     }
+  });
+
+  testWidgets('a near-duplicate still offers the merge: Tomate open, '
+      'Tomaten typed', (tester) async {
+    await pumpList(tester, seed: (repo) => repo.remoteAdd('Tomate'));
+    await type(tester, 'Tomaten');
+    await shoot('merge-Tomaten');
+    expect(textIn('match-0', '2× Tomate'), findsOneWidget);
+    await tester.tap(key('match-0'));
+    await tester.pumpAndSettle();
+    expect(active(tester, 'Tomate').single.quantity, '2');
+    expect(active(tester, 'Tomaten'), isEmpty);
   });
 
   testWidgets('flag off: no match rows; Enter says it is on the list and '

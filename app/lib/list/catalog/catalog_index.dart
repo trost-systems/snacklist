@@ -15,6 +15,17 @@ typedef CatalogForm = ({
   bool synonym,
 });
 
+/// A spelling of a form that words of different categories share, from
+/// public.classifier_lexicon.homographs: the spelling as public.surface_word
+/// writes it, the canonical and category's seed key it stands for, and
+/// whether it came from a synonym. public.homograph_pick reads them.
+typedef CatalogHomograph = ({
+  String surface,
+  String canonical,
+  String category,
+  bool synonym,
+});
+
 /// A row of public.brands: its brand key, the brand as written, the product
 /// it names alone ("Tempo": Taschentücher) and the store it is sold in.
 typedef CatalogBrand = ({
@@ -25,7 +36,7 @@ typedef CatalogBrand = ({
 });
 
 /// The global catalog the device ranks and guesses with (job 274): the
-/// three tables of public.catalog_rows() under their [version]
+/// tables of public.catalog_rows() under their [version]
 /// (public.catalog_version()), each keyed by its primary key in byte order.
 /// The bundled one comes from catalog_index.g.dart; [apply] lays the
 /// server's changes over it. Its maps are unmodifiable.
@@ -34,6 +45,7 @@ final class CatalogIndex._(
   required Map<String, CatalogTerm> terms,
   required Map<String, CatalogForm> forms,
   required Map<String, CatalogBrand> brands,
+  required Map<String, List<CatalogHomograph>> homographs,
 }) {
   /// The catalog the app was built with, made on first use.
   static final bundled = CatalogIndex._(
@@ -55,6 +67,7 @@ final class CatalogIndex._(
       for (final (key, brand, product, storeSeed) in catalogBrands)
         key: (key: key, brand: brand, product: product, storeSeed: storeSeed),
     },
+    homographs: _byForm(catalogHomographs),
   );
 
   /// By term.
@@ -66,6 +79,11 @@ final class CatalogIndex._(
   /// By brand key.
   final Map<String, CatalogBrand> brands = _sorted(brands);
 
+  /// By the form the spellings share.
+  final Map<String, List<CatalogHomograph>> homographs = Map.unmodifiable(
+    homographs,
+  );
+
   /// The forms of more than one word, which a name holds as a phrase.
   late final List<String> phraseForms = [
     for (final form in forms.keys)
@@ -74,7 +92,8 @@ final class CatalogIndex._(
 
   /// This index with [delta]'s changes, under its version. A full delta
   /// replaces every row. The changes are from the bundled version, so they
-  /// apply to [bundled] only.
+  /// apply to [bundled] only. Its homographs, when it has them, replace
+  /// these.
   CatalogIndex apply(CatalogDelta delta) {
     Map<String, T> next<T>(
       Map<String, T> rows,
@@ -88,7 +107,29 @@ final class CatalogIndex._(
       terms: next(terms, delta.terms, (row) => row.term),
       forms: next(forms, delta.forms, (row) => row.form),
       brands: next(brands, delta.brands, (row) => row.key),
+      homographs: switch (delta.homographs) {
+        final rows? => _byForm(rows),
+        null => homographs,
+      },
     );
+  }
+
+  static Map<String, List<CatalogHomograph>> _byForm(
+    List<(String, String, String, String, bool)> rows,
+  ) {
+    final byForm = <String, List<CatalogHomograph>>{};
+    for (final (form, surface, canonical, category, synonym) in rows) {
+      (byForm[form] ??= []).add((
+        surface: surface,
+        canonical: canonical,
+        category: category,
+        synonym: synonym,
+      ));
+    }
+    return {
+      for (final MapEntry(:key, :value) in byForm.entries)
+        key: List.unmodifiable(value),
+    };
   }
 
   /// In the order of collate "C" (code points), as public.catalog_rows
@@ -101,6 +142,8 @@ final class CatalogIndex._(
 /// What public.catalog_delta answered: the rows to put and the keys to drop
 /// per table, from the version the device asked about to [version]. [full]:
 /// the server had no snapshot of that version; the puts are every row.
+/// [homographs] are every homograph row (form, surface, canonical,
+/// category, synonym); null from a server that sends none.
 @immutable
 final class const CatalogDelta({
   required final String version,
@@ -108,6 +151,7 @@ final class const CatalogDelta({
   final CatalogChanges<CatalogTerm> terms = const CatalogChanges(),
   final CatalogChanges<CatalogForm> forms = const CatalogChanges(),
   final CatalogChanges<CatalogBrand> brands = const CatalogChanges(),
+  final List<(String, String, String, String, bool)>? homographs,
 });
 
 @immutable
@@ -133,7 +177,11 @@ CatalogDelta? parseCatalogDelta(Object? json) {
     final terms = _changes(json['terms'], full, _term);
     final forms = _changes(json['forms'], full, _form);
     final brands = _changes(json['brands'], full, _brand);
-    if (terms == null || forms == null || brands == null) {
+    final homographs = _homographs(json['homographs']);
+    if (terms == null ||
+        forms == null ||
+        brands == null ||
+        homographs == null) {
       return null;
     }
     return CatalogDelta(
@@ -142,7 +190,41 @@ CatalogDelta? parseCatalogDelta(Object? json) {
       terms: terms,
       forms: forms,
       brands: brands,
+      homographs: homographs.rows,
     );
+  }
+  return null;
+}
+
+/// The answer's homograph rows (none from a server that sends none), or
+/// null when any row is off.
+({List<(String, String, String, String, bool)>? rows})? _homographs(
+  Object? json,
+) {
+  if (json == null) {
+    return (rows: null);
+  }
+  if (json case final List<Object?> rows when rows.length <= _maxRows) {
+    final parsed = <(String, String, String, String, bool)>[];
+    for (final row in rows) {
+      if (row
+          case [
+            final String form,
+            final String surface,
+            final String canonical,
+            final String category,
+            final bool synonym,
+          ]
+          when _text(form) &&
+              _text(surface) &&
+              _text(canonical) &&
+              _text(category)) {
+        parsed.add((form, surface, canonical, category, synonym));
+      } else {
+        return null;
+      }
+    }
+    return (rows: parsed);
   }
   return null;
 }
