@@ -3273,3 +3273,26 @@ verwendet“ zurückholen.“ (EN "Tapped by mistake? Get it back under “Recen
 teaches before the first tick and goes with that step, so it is no help after a mistaken tick
 (NEEDS_LEAD Job 469). Copy, tests, goldens and feature docs only; no flag,
 next green main build. Details: `docs/done/469.md`.
+
+## Job 448: regression tests on the list, offline sync, add sheet and entitlements
+
+Tests only: no app, server or flag change, so no TestFlight build carries anything for it. Seven new
+test files (66 tests): `app/test/list/offline_replay_test.dart` (ops queued offline behind an add
+the server folds into the partner's item, a queued decline across a restart, a merge whose kept item
+went, the resync check after an answer, tick and untick before the answer),
+`move_to_list_test.dart` (one list holds an item once, decided offline too; claims),
+`add_sheet_merge_test.dart` (the match row's merge and its refusals), `suggest_entries_rules_test.dart`
+(the device's ranking: tiers, similarity, one brand row in the spelling bought last, details by
+latest purchase, sizes 1 to 8), `add_sheet_cubit_test.dart` (the sheet's state: stale rows, Enter
+while loading, carried rows, the details card, match rows, the duplicate hint's note and hand-over),
+`app/test/purchases/account_lifetime_test.dart` and `unlocks_test.dart` (whose Lifetime it is, who
+paid, what still bills, the next end, unknown answers no). They were chosen with the new
+`tool/mutate/mutate.py`: of 430 operator flips in the hot ranges 121 went unnoticed by their
+range's tests; the new tests kill 60, existing tests outside the ranges' sets kill 37, and 24 are
+equivalent or ties no rule decides. Review 0 found the first report's add sheet and ranking numbers
+false (the tool's copies lacked `../supabase`, which three tests read, so every mutant there read as
+killed); the tool now copies beside the repo and checks its baseline in a copy, and those ranges
+were run again. Open for Peter, not blocking: whether the wide layout should split equally tall
+columns the same way every time (now unspecified). Verify: `cd app && flutter test test/list
+test/purchases test/analytics` (2,151 passed, 78 skipped, rebased on main 4a3ceecba). Details:
+[docs/done/448.md](docs/done/448.md).
