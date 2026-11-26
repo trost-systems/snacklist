@@ -166,8 +166,8 @@ test('job 397: the privacy text follows unified-keys, the guides follow unified-
   const all = buildSite({ env: PROD, repo: { flags: holds(true, true) } });
 
   assert.match(main(before, '/datenschutz'), /Ein Zugriffstoken gilt nur für den Haushalt/);
-  assert.doesNotMatch(main(before, '/datenschutz'), /Zugriffsschlüssel/);
-  assert.doesNotMatch(main(before, '/en/privacy'), /access key/);
+  assert.doesNotMatch(main(before, '/datenschutz'), /Ein Zugriffsschlüssel gilt nur/);
+  assert.doesNotMatch(main(before, '/en/privacy'), /An access key works/);
   for (const site of [text, all]) {
     assert.match(main(site, '/datenschutz'), /Ein Zugriffsschlüssel gilt nur für den Haushalt/);
     // Section 9's analytics event keeps its name „API-Schlüssel genutzt“ (consent text, unchanged).

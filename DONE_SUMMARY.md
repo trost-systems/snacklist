@@ -3079,3 +3079,14 @@ Review 3: leaving a household from the switcher closes the sheet again when the 
 ## Job 453: PostHog bug 1 traced to upstream Flutter (docs only)
 
 Bug 1, the semantics `geometry!` TypeError, is Flutter bug flutter#195316, fixed on master by flutter#192724 and not yet in any stable or beta. Its upstream regression test fails on our Flutter 3.50.0; about 1,000 fuzz runs of the real list behind the add sheet, the edit sheet and a hidden tab found no app trigger, so no app change ships and bug 1 stays open until a store build from `release.yml` (with every workflow's `FLUTTER_VERSION`) moves to a Flutter stable with the fix and its reports stop (`docs/NEEDS_LEAD.md`, "Job 453"). `docs/done/438.md` now names #711's merge commit `630e77a7a`. Details: [docs/done/453.md](docs/done/453.md). No app change, so no TestFlight build carries anything for it.
+
+## Job 439: N-RC90 and Zugriffsschlüssel wording
+
+Legal GO carried over from dc318acc to 6aab3f68; publish dates set to 26 November 2026. The new wording is live on merge (hold `unified-keys` already released). Deferred by hard freeze: `supabase/functions/voice/copy.ts:62` stays untouched until the ChatGPT review `mcp` freeze ends. Flag for Legal: §14 keeps the 30-day RevenueCat sentence without the 90-day note. Details: [docs/done/439.md](docs/done/439.md). Nov 21 carry-over: unchanged texts keep prior approval. The head SHA is in the PR body and `NEEDS_LEAD.md` (a commit cannot hold its own SHA); the table leaves out `site/test/gates.test.mjs`, a test.
+
+| File | sha256 | patch-id (`git diff origin/main...HEAD -- <file> | git patch-id --stable`) |
+| --- | --- | --- |
+| site/content/legal/datenschutz.md | f23dde388804e029e8c53d01e08f389e632a1e0e45c89817582b01272e80f526 | 2b305058b9e185bc9e9b5868a3f441786e5f571c |
+| site/content/legal/privacy.md | e1b77a90ca9de7513f0f5ba8cc1aaa2242d891810cf6df43b28e29471e25b0a4 | 828d8936ff86477b3a7d25b22f58bafa11c16d0f |
+| app/web/konto-loeschen.html | 3132e0ee60dc5fec2294d16825fcb3e0f40252fa3d962a2e759731605d4abf74 | f7188903f572b067671957c148c9733ce54e0b9d |
+| app/web/delete-account.html | 04fc2293d6f3b84b14f721a6b1231b112cfcc8bdc8621c23012b8b0218184bed | c51898cdc9c934b4b6690edb14e30a8112ca6461 |
