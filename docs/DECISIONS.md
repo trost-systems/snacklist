@@ -18320,3 +18320,47 @@ The crash is flutter#195316 (fix flutter#192724 on master, in no stable or beta 
    sits in the job directory.
 3. **Tick feedback is ranked first but tagged needs Peter**, because Peter removed the tick's undo snackbar (job 29b).
    The copy-only hint about „Zuletzt verwendet“ is the simple fix that works with any outcome.
+
+## Job 454: T1 shared-axis slide for the counted onboarding steps (2026-11-26)
+
+Peter picked T1 with all defaults (OB-Q1 yes, OB-Q2 no, OB-Q3 yes). Spec: the prototype round
+`onboarding-transitions` (`src/data/transitions.ts`, `src/styles.css` `.ob-stage[data-t="t1"]`) and
+the research report's §3 and §4.A.
+
+1. **One page for the seven counted steps.** Every counted `/start/<step>` route builds a
+   `MaterialPage` with the same key (`onboarding-steps`), so a step change updates that page in
+   place instead of pushing a route; `OnboardingSteps` keeps the app bar, the progress bar and
+   the switching body. The URLs, deep links and `authRedirect` are unchanged. Entering from the
+   start screen and leaving for `join` or `setup` are still page changes with the platform
+   transition. A `ShellRoute` was not used: its nested navigator would still animate each step
+   as a page, and a switcher around it would need two copies of one navigator.
+2. **Own transition, no `package:animations`.** `SharedAxisTransition` slides 30 dp on
+   FastOutSlowIn and has no 120 ms linear dissolve, and a pubspec change puts the PR on the
+   70-minute iOS lane. The shell's own layers match the prototype: 300 ms, x ±28 dp on
+   `HlEasing.standard` (0.2, 0, 0, 1), out-fade over the first 30 % (0.3, 0, 1, 1), in-fade over
+   the last 70 % (0, 0, 0, 1). Direction is the steps' order (`countedSteps`): a lower index is
+   Back, so Zurück, the app bar arrow, Android's back and a redirect all get the mirrored slide;
+   RTL flips the sign.
+3. **Docked buttons.** The research report's common frame and the brief dock the step's buttons
+   under the body: they fade with their step but never slide. Weiter and Überspringen (who,
+   name with JH2's join button, stores with its hint, need), the account step's legal footer and
+   the invite step's „Später“ are docked. The usage question keeps its two answers in the body
+   (`ConsentQuestion` is shared with the consent screen), the account step its sign-in buttons
+   (`SignInPanel`), the invite step its invite buttons and cards. The prototype had its buttons
+   in the moving layer; the brief's "Continue stays in place" wins.
+4. **The back arrow's slot stays.** Steps without a back arrow (usage, who, invite) keep an empty
+   leading slot, so „Schritt N von 7“ does not jump 56 px between who and name.
+5. **Focus.** Weiter, Enter and Back unfocus in the frame that starts the transition (the shell's
+   `didUpdateWidget`), never waiting for the keyboard. The incoming layer is a semantics route
+   scope (`scopesRoute`), as a new page was: the web engine focuses its first node, the step's
+   heading (`SemanticRouteBase._setDefaultFocus`); iOS and Android treat a new route scope as a
+   screen change too (not checked on a device here: no simulators). The
+   outgoing layer is excluded from semantics and pointers, so there is one „Weiter“ for screen
+   readers and Playwright during the 300 ms.
+6. **Reduced motion.** `MediaQuery.disableAnimations || MediaQuery.reduceMotion` gives a 120 ms
+   linear crossfade with no translation; the bar tweens 120 ms linear (300 ms standard
+   otherwise), no overshoot. The controller uses `AnimationBehavior.preserve`: with the
+   platform's disableAnimations a normal controller runs at 5 %, about 6 ms.
+7. **A fresh step per visit.** Layers are keyed by step and visit count, so going back during
+   the 300 ms builds the step anew, as a new route did, instead of reusing the fading one's
+   State.

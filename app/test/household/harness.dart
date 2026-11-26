@@ -21,7 +21,6 @@ import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/onboarding/draft.dart';
 import 'package:family_groceries/onboarding/onboarding_cubit.dart';
 import 'package:family_groceries/onboarding/start_screen.dart';
-import 'package:family_groceries/onboarding/steps.dart';
 import 'package:family_groceries/purchases/entitlements.dart';
 import 'package:family_groceries/purchases/premium_server.dart';
 import 'package:family_groceries/purchases/store_prices.dart';
@@ -859,13 +858,7 @@ Future<Onboarding> pumpOnboarding(
       GoRoute(
         path: startPath,
         builder: (_, _) => const StartScreen(),
-        routes: [
-          for (final step in OnboardingStep.values)
-            GoRoute(
-              path: step.name,
-              builder: (_, _) => onboardingStepScreen(step),
-            ),
-        ],
+        routes: onboardingStepRoutes(),
       ),
       GoRoute(path: joinCodePath, builder: (_, _) => const JoinScreen()),
       GoRoute(

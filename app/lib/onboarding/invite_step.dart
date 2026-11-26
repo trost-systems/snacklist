@@ -131,7 +131,13 @@ class const _InviteStepView(final Household household) extends StatelessWidget {
     return OnboardingStepPage(
       step: OnboardingStep.invite,
       title: title,
-      exit: false,
+      footer: TextButton(
+        key: const ValueKey('invite-later'),
+        onPressed: () => context.read<OnboardingCubit>().finish(
+          invited: state.invites.isNotEmpty,
+        ),
+        child: Text(state.invites.isEmpty ? l10n.later : l10n.toTheList),
+      ),
       children: [
         Icon(
           Icons.person_add_outlined,
@@ -189,14 +195,6 @@ class const _InviteStepView(final Household household) extends StatelessWidget {
             householdProblemText(l10n, problem),
             key: const ValueKey('invite-problem'),
           ),
-        const SizedBox(height: HlSpace.s4),
-        TextButton(
-          key: const ValueKey('invite-later'),
-          onPressed: () => context.read<OnboardingCubit>().finish(
-            invited: state.invites.isNotEmpty,
-          ),
-          child: Text(state.invites.isEmpty ? l10n.later : l10n.toTheList),
-        ),
       ],
     );
   }
