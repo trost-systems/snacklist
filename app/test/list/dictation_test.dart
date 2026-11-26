@@ -68,7 +68,7 @@ class SpeakingDictation() implements Dictation {
 /// does while it asks for the microphone or checks the offline model.
 class SlowDictation() implements Dictation {
   final ready = Completer<void>();
-  final finish = Completer<Dictated>();
+  var finish = Completer<Dictated>();
   var prepares = 0;
   var listens = 0;
 
@@ -84,7 +84,7 @@ class SlowDictation() implements Dictation {
     required void Function(String words) onWords,
   }) async {
     listens++;
-    return finish.future;
+    return await finish.future;
   }
 
   @override
@@ -292,6 +292,31 @@ void main() {
     await tester.pumpAndSettle();
     expect(repo.rows.values.map((i) => i.name), ['Milch', 'Brot']);
     expect(find.byTooltip('Diktieren'), findsOneWidget);
+  });
+
+  testWidgets('a tap while the server splits the sentence starts no new '
+      'session, which the split would clear (job 457)', (tester) async {
+    final dictation = SlowDictation()..ready.complete();
+    await pumpList(tester, dictation);
+    final gate = repo.spokenGate = Completer<void>();
+    await tester.tap(find.byTooltip('Diktieren'));
+    await tester.pump();
+    dictation.finish.complete(Heard('Milch und Brot'));
+    await tester.pump();
+    await tester.tap(find.byTooltip('Diktieren'));
+    await tester.pump();
+    expect(dictation.listens, 1);
+
+    gate.complete();
+    await tester.pumpAndSettle();
+    expect(repo.rows.values.map((i) => i.name), ['Milch', 'Brot']);
+    expect(fieldText(tester), isEmpty);
+
+    dictation.finish = Completer<Dictated>();
+    await tester.tap(find.byTooltip('Diktieren'));
+    await tester.pump();
+    expect(dictation.listens, 2);
+    expect(find.byTooltip('Diktat beenden'), findsOneWidget);
   });
 
   testWidgets('offline, the sentence stays in the field', (tester) async {

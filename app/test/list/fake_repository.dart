@@ -883,6 +883,10 @@ class FakeRepository() implements ListRepository {
     };
   }
 
+  /// When set, [splitSpoken] answers once it completes: the server is
+  /// still splitting.
+  Completer<void>? spokenGate;
+
   /// The language of each [splitSpoken] call, in order.
   final spokenLanguages = <SpokenLanguage>[];
 
@@ -890,6 +894,7 @@ class FakeRepository() implements ListRepository {
   /// reads each part as [parse] does; at most 30, as the server.
   @override
   Future<SpokenSplit> splitSpoken(String text, SpokenLanguage language) async {
+    await spokenGate?.future;
     _ensureOnline();
     spokenLanguages.add(language);
     final entries = [

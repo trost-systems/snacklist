@@ -25,39 +25,54 @@ class const DictationButton({
   State<DictationButton> createState() => _DictationButtonState();
 }
 
+/// Where the button is in one sentence. A tap starts one when [idle] and
+/// stops it when [listening]; otherwise it does nothing, so a second tap
+/// while the recognizer gets ready or the server splits starts no second
+/// session.
+enum _Phase() {
+  idle,
+  preparing,
+  listening,
+  adding,
+}
+
 class _DictationButtonState() extends State<DictationButton> {
-  var _listening = false;
+  var _phase = _Phase.idle;
 
-  /// Between a tap and listening: the recognizer asks for the microphone
-  /// or checks its offline model, and a second tap would start a second
-  /// session.
-  var _preparing = false;
-
-  void _setListening(bool listening) {
-    setState(() => _listening = listening);
-    widget.onListening(listening);
+  void _enter(_Phase phase) {
+    final listening = phase == _Phase.listening;
+    final wasListening = _phase == _Phase.listening;
+    setState(() => _phase = phase);
+    if (listening != wasListening) {
+      widget.onListening(listening);
+    }
   }
 
   Future<void> _dictate() async {
+    switch (_phase) {
+      case _Phase.listening:
+        await widget.dictation.stop();
+        return;
+      case _Phase.preparing || _Phase.adding:
+        return;
+      case _Phase.idle:
+        try {
+          await _sentence();
+        } finally {
+          if (mounted) {
+            _enter(_Phase.idle);
+          }
+        }
+    }
+  }
+
+  Future<void> _sentence() async {
     final dictation = widget.dictation;
-    if (_listening) {
-      await dictation.stop();
-      return;
-    }
-    if (_preparing) {
-      return;
-    }
     final l10n = AppLocalizations.of(context);
     final cubit = context.read<ListCubit>();
     final language = SpokenLanguage.of(Localizations.localeOf(context));
-    _preparing = true;
-    final DictationProblem? problem;
-    try {
-      problem = await dictation.prepare(language);
-    } finally {
-      _preparing = false;
-    }
-    if (problem != null) {
+    _enter(_Phase.preparing);
+    if (await dictation.prepare(language) case final problem?) {
       if (mounted) {
         widget.onMessage(_problem(l10n, problem));
       }
@@ -66,14 +81,14 @@ class _DictationButtonState() extends State<DictationButton> {
     if (!mounted) {
       return;
     }
-    _setListening(true);
+    _enter(_Phase.listening);
     final dictated = await dictation.listen(
       onWords: (words) => widget.input.text = words,
     );
     if (!mounted) {
       return;
     }
-    _setListening(false);
+    _enter(_Phase.adding);
     final String text;
     switch (dictated) {
       case Heard(text: final heard):
@@ -137,11 +152,12 @@ class _DictationButtonState() extends State<DictationButton> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final listening = _phase == _Phase.listening;
     return IconButton(
       key: const ValueKey('dictation-button'),
-      tooltip: _listening ? l10n.dictationStop : l10n.dictationStart,
-      icon: Icon(_listening ? Icons.stop_circle : Icons.mic),
-      color: _listening ? Theme.of(context).colorScheme.error : null,
+      tooltip: listening ? l10n.dictationStop : l10n.dictationStart,
+      icon: Icon(listening ? Icons.stop_circle : Icons.mic),
+      color: listening ? Theme.of(context).colorScheme.error : null,
       onPressed: () => unawaited(_dictate()),
     );
   }

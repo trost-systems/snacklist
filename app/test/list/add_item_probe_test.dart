@@ -11,7 +11,6 @@ import 'package:family_groceries/list/catalog/suggest_entries.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_screen.dart';
 import 'package:family_groceries/list/model.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -31,17 +30,13 @@ void main() {
 
   setUpAll(loadAppFonts);
 
-  testWidgets('add sheet: per key and per Enter', skip: !probe, (
-    tester,
-  ) async {
+  testWidgets('add sheet: per key and per Enter', skip: !probe, (tester) async {
     tester.view
       ..devicePixelRatio = 3
       ..physicalSize = const Size(390, 844) * 3;
     addTearDown(tester.view.reset);
     final repo = FakeRepository();
-    for (final name in _open) {
-      repo.remoteAdd(name);
-    }
+    _open.forEach(repo.remoteAdd);
     final list = ListCubit(repo, MemoryListCache(), userId: 'peter')..start();
     final flags = Flags(
       forced: {
@@ -117,21 +112,19 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    final rank = _rankKeys();
+    final result = {
+      'key_us_p50': _p(keys, 50),
+      'key_us_p95': _p(keys, 95),
+      'enter_us_p50': _p(enters, 50),
+      'enter_us_p95': _p(enters, 95),
+      'keys_timed': keys.length,
+      'enters_timed': enters.length,
+      'adds': added,
+      'adds_expected': _lines.length * 2,
+      ..._rankKeys(),
+    };
     // ignore: avoid_print -- the probe's result
-    print(
-      'HC_ADD_PROBE ${jsonEncode({
-        'key_us_p50': _p(keys, 50),
-        'key_us_p95': _p(keys, 95),
-        'enter_us_p50': _p(enters, 50),
-        'enter_us_p95': _p(enters, 95),
-        'keys_timed': keys.length,
-        'enters_timed': enters.length,
-        'adds': added,
-        'adds_expected': _lines.length * 2,
-        ...rank,
-      })}',
-    );
+    print('HC_ADD_PROBE ${jsonEncode(result)}');
   });
 }
 
@@ -145,9 +138,9 @@ int _p(List<int> values, int percentile) {
 }
 
 /// Keys typed before the item meant is one of the first three rows, as a
-/// share of its length (1: only the whole name; 1.25: never), over every 25th catalog term with no
-/// history, then the same terms with the household having bought every
-/// fourth of them (the repeat buys).
+/// share of its length (1: only the whole name; 1.25: never), over every
+/// 25th catalog term with no history, then the same terms with the
+/// household having bought every fourth of them (the repeat buys).
 Map<String, Object> _rankKeys() {
   final catalog = CatalogIndex.bundled;
   final terms = [
@@ -199,8 +192,8 @@ Map<String, Object> _rankKeys() {
   }
 
   double mean(Iterable<double> values) =>
-      values.fold(0.0, (a, b) => a + b) / values.length;
-  final empty = HouseholdIndex(history: const []);
+      values.fold<double>(0, (a, b) => a + b) / values.length;
+  const empty = HouseholdIndex.empty;
   return {
     'rank_terms': terms.length,
     'rank_keys_new': double.parse(
@@ -223,7 +216,16 @@ const _open = [
 ];
 
 const _lines = [
-  'Milch', '2 Äpfel', 'Rote Bete', 'Hafermilch Barista', 'Spülmaschinentabs',
-  'Schokolade Zartbitter', 'Feta', 'Brokkoli', 'Kidneybohnen',
-  'Windeln Größe 4', 'Zitronen', 'Basilikum',
+  'Milch',
+  '2 Äpfel',
+  'Rote Bete',
+  'Hafermilch Barista',
+  'Spülmaschinentabs',
+  'Schokolade Zartbitter',
+  'Feta',
+  'Brokkoli',
+  'Kidneybohnen',
+  'Windeln Größe 4',
+  'Zitronen',
+  'Basilikum',
 ];
