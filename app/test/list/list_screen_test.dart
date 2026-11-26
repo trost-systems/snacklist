@@ -343,8 +343,9 @@ void main() {
     expect(find.text('Ohne Laden'), findsOneWidget);
   });
 
-  testWidgets('a tap ticks without a snackbar; a tap on it under "Zuletzt '
-      'verwendet" puts it back in its place', (tester) async {
+  testWidgets('a tap ticks with an undo snackbar; once it is gone, a tap on '
+      'the item under "Zuletzt verwendet" puts it back in its place, '
+      'without one', (tester) async {
     await pumpList(
       tester,
       seed: (repo) => repo
@@ -357,9 +358,12 @@ void main() {
     expect(row('Bohnen'), findsOneWidget, reason: 'it leaves first');
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pumpAndSettle();
-    expect(find.byType(SnackBar), findsNothing);
-    expect(find.text('Rückgängig'), findsNothing);
+    expect(find.text('Abgehakt: Bohnen'), findsOneWidget);
+    expect(find.text('Rückgängig'), findsOneWidget);
     expect(row('Bohnen'), findsNothing);
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pumpAndSettle();
+    expect(find.byType(SnackBar), findsNothing, reason: 'it timed out');
     expect(itemNamed('Bohnen').status, ItemStatus.bought);
 
     await showUsed(tester, 'Bohnen');
@@ -554,14 +558,25 @@ void main() {
     await pumpList(tester, seed: (repo) => repo.remoteAdd('Brot'));
     tester.platformDispatcher.accessibilityFeaturesTestValue =
         const FakeAccessibilityFeatures(disableAnimations: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
     await tester.pump();
+    final height = tester.getSize(row('Brot')).height;
     await tester.tap(row('Brot'));
     await tester.pump();
     expect(itemNamed('Brot').status, ItemStatus.active, reason: 'seen first');
+    for (var t = 0; t < 4; t++) {
+      await tester.pump(const Duration(milliseconds: 60));
+      expect(
+        tester.getSize(row('Brot')).height,
+        height,
+        reason: 'no close: the struck row holds its height',
+      );
+    }
     await tester.pump(HlDuration.medium);
     expect(itemNamed('Brot').status, ItemStatus.bought);
-    expect(tester.hasRunningAnimations, isFalse);
-    tester.platformDispatcher.clearAccessibilityFeaturesTestValue();
+    await tester.pump();
+    expect(row('Brot'), findsNothing, reason: 'gone in the next frame');
+    expect(find.text('Abgehakt: Brot'), findsOneWidget);
     await tester.pumpAndSettle();
   });
 

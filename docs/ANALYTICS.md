@@ -206,9 +206,9 @@ Rules that keep it one event per user action (AC3, AC9):
 - Events fire where the user acts (`ListCubit.tick`, `addParsed`, `readd`, the reorder methods,
   `SessionCubit.createHousehold` and `join`), never where ops are sent. An op retried after a
   reconnect, a realtime echo, or a resync sends nothing.
-- Undo sends nothing: the tick has no snackbar since job 29b, and a tap on the item under "Zuletzt
-  verwendet" within 10 minutes of the tick (`ListCubit.undoWindow`, the window in which
-  `suggest_items` drops the purchase too) is its undo, no `item_added`; the add sheet's undo deletes, a
+- Undo sends nothing: the tick snackbar's "Rückgängig" (`ListCubit.untick`, job 471) and a tap on
+  the item under "Zuletzt verwendet" within 10 minutes of the tick (`ListCubit.undoWindow`, the window in which
+  `suggest_items` drops the purchase too) are its undo, no `item_added`; the add sheet's undo deletes, a
   restored deletion re-inserts; none is an event. Ticking again after an undo is a new action and
   sends a new `item_ticked`.
 - A tick of an item that is not on the list, an add of something already on it, a reorder that

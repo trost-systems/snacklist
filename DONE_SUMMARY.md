@@ -3339,3 +3339,13 @@ After #755 the APP_HOLDS scan in `scripts/ci-changes-test.sh` found `scripts/hol
 and its test and failed lint on #752. The scan now leaves them out (they run after a merge and in
 the lint job), and a scratch-repo case proves a new unlisted reader still fails it. Details:
 `docs/done/475.md`.
+
+## Job 471: undo snackbar after a tick (CP1)
+
+A tick shows „Abgehakt: <Name>“ / "Ticked: <Name>" with „Rückgängig“ / "Undo" again (Peter's CP1,
+reversing job 29b), for the last tick only; Undo is `ListCubit.untick`. New ARB key
+`itemTickedUndo`. „Zuletzt verwendet“ and job 469's hint stay the fallback; `listHint` untouched.
+"No snackbar" wording updated in DECISIONS (new entry), SPEC, ANALYTICS, competitor research,
+tick-and-undo and quick-add feature files, FEATURES-FOR-WRITERS, the journey and the e2e spec.
+Screenshots DE/EN (widget goldens and the real web build) in `docs/screenshots/471-tick-undo-snackbar/`. Review 0: list-walk-order recipe fixed; the snackbar now closes when its item is open again another way (trip „Zurücknehmen“, partner, refusal). Details:
+[docs/done/471-tick-undo-snackbar.md](docs/done/471-tick-undo-snackbar.md).

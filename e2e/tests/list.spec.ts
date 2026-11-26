@@ -1,7 +1,7 @@
 import { expect, test } from './fixtures';
 import { groupHeadings } from './catalog';
 import {
-  addedNote, addField, addItem, closeSheet, editField, enterItem, itemRow, newEmail, openEdit, pickInSheet, putBack, saveEdit, screenshot,
+  actionSnackBar, addedNote, addField, addItem, closeSheet, editField, enterItem, itemRow, newEmail, openEdit, pickInSheet, putBack, saveEdit, screenshot,
   signUpWithHousehold, tick, tickSaved, typeInto, usedRow,
 } from './helpers';
 
@@ -22,16 +22,26 @@ test('adds are grouped by category in route order', async ({ page }) => {
   await screenshot(page, '02-grouped-list');
 });
 
-test('ticking removes the item without an undo snackbar; a tap on it under "Zuletzt verwendet" brings it back', async ({ page }) => {
+test('a tick shows "Abgehakt: <name>" with Rückgängig for the last tick; once it is gone, a tap under "Zuletzt verwendet" brings the item back', async ({ page }) => {
   await addItem(page, 'Joghurt');
   await addItem(page, '2 Bananen');
   await expect(itemRow(page, 'Joghurt')).toBeVisible();
 
   await tick(page, 'Joghurt');
-  await expect(itemRow(page, 'Joghurt')).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Rückgängig' }), 'no undo snackbar').toHaveCount(0);
-  await expect(page.getByText('Joghurt abgehakt')).toHaveCount(0);
+  const joghurt = actionSnackBar(page, 'Abgehakt: Joghurt');
+  await expect(joghurt).toBeVisible();
+  await screenshot(page, '03a-tick-undo-snackbar');
+  await joghurt.getByRole('button', { name: 'Rückgängig' }).click();
+  await expect(itemRow(page, 'Joghurt'), 'Rückgängig puts it back').toBeVisible();
+  await expect(joghurt).toHaveCount(0);
+
+  await tick(page, 'Joghurt');
   await tick(page, 'Bananen');
+  const bananen = actionSnackBar(page, 'Abgehakt: Bananen');
+  await expect(bananen, 'the last tick\'s snackbar replaces the one before').toBeVisible();
+  await expect(actionSnackBar(page, 'Abgehakt: Joghurt')).toHaveCount(0);
+  await expect(bananen, 'it goes away by itself').toHaveCount(0, { timeout: 15_000 });
+
   await page.getByRole('button', { name: 'Zuletzt verwendet' }).click();
   await expect(usedRow(page, 'Bananen'), 'the row reads like the list\'s, quantity included').toHaveAccessibleName('Bananen 2 Wieder auf die Liste');
   await expect(usedRow(page, 'Joghurt')).toBeVisible();

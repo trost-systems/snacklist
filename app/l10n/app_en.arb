@@ -11,6 +11,8 @@
   "@itemDeleted": {"placeholders": {"name": {"type": "String"}}},
   "itemTicked": "{name} ticked off",
   "@itemTicked": {"placeholders": {"name": {"type": "String"}}},
+  "itemTickedUndo": "Ticked: {name}",
+  "@itemTickedUndo": {"placeholders": {"name": {"type": "String"}}},
   "alreadyOnList": "{name} is already on the list",
   "@alreadyOnList": {"placeholders": {"name": {"type": "String"}}},
   "dedupeMerge": "Merge",

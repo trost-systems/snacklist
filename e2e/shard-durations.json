@@ -153,7 +153,7 @@
   "[chromium] › list.spec.ts › adding an item that is already on the list does not duplicate it": 9.6,
   "[chromium] › list.spec.ts › adds are grouped by category in route order": 14.9,
   "[chromium] › list.spec.ts › edit changes name, quantity and category, and they survive a reload": 13.8,
-  "[chromium] › list.spec.ts › ticking removes the item without an undo snackbar; a tap on it under \"Zuletzt verwendet\" brings it back": 18.4,
+  "[chromium] › list.spec.ts › a tick shows \"Abgehakt: <name>\" with Rückgängig for the last tick; once it is gone, a tap under \"Zuletzt verwendet\" brings the item back": 18.4,
   "[chromium] › live-sync.spec.ts › a change made before the channel is live still shows up": 7.3,
   "[chromium] › live-sync.spec.ts › a member of another household joins with a code from the household sheet and keeps both": 24.8,
   "[chromium] › live-sync.spec.ts › a phone that sleeps through a dropped connection and a partner's add catches up when it wakes and stays live": 10.2,

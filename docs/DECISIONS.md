@@ -18768,3 +18768,35 @@ tests use.
   `push-notifications`; the case wants exactly that key, so a new unlisted reader still fails.
   With no match the function prints nothing instead of ending the script through `set -e` without
   a message.
+
+## Job 471: the tick's undo snackbar is back (CP1), 2026-11-27
+
+Peter's CP1 (26 Nov 2026, Europe/Berlin): "CP1 yes I guess we can show a snackbar for that with
+an undo button. Double check texts and decisions to update those." This reverses the job 29b
+decision of 29 Oct 2026, "A tick shows nothing", and closes the **needs Peter** tag job 455 put
+on tick feedback (`docs/research/competitor-pain-points.md`, item 1: option (a), an undo for the
+last tick only). The job 29b and job 455 entries above stay as they were.
+
+1. **What shows.** After a tick the list's standard snackbar (`_snack` in
+   `shopping_list_view.dart`, through `Notices`, `persist: false`): „Abgehakt: <Name>“ /
+   "Ticked: <Name>" (new ARB key `itemTickedUndo`) with „Rückgängig“ / "Undo" (`undo`). A new
+   key, not `itemTicked` („<Name> abgehakt“), which stays the screen-reader announcement and the
+   add sheet's and trip sheet's line.
+2. **Only the last tick.** `_snack` hides the current snackbar before it shows the next, so a
+   series of ticks leaves the last one's, and its Undo puts back that item only.
+3. **Undo is `ListCubit.untick`.** Optimistic, in the item's old place, no analytics event.
+   `untick` now also tells `TripReopened` when it puts back an item whose tick emptied the list
+   within `undoWindow` (the logic `readd` had): otherwise a snackbar undo of the list's last
+   tick would leave the review prompt counting a finished trip the user took back. `readd`
+   calls `untick` and keeps its analytics rule.
+4. **Failures.** A refused tick or undo is dropped from the queue, so the screen shows the
+   server's row again, and its „Änderung abgelehnt: <Name>“ snackbar goes through the same
+   hide-then-show, replacing the undo snackbar.
+5. **„Zuletzt verwendet“ stays the fallback** once the snackbar is gone; its put-back still shows
+   no message (job 117). Job 469's hint about it in `listHint` is left to job 469.
+6. **Trip mode unchanged.** With `trip-mode` on, the question's sheet opens over the page's
+   snackbar; its own „Zurücknehmen“ is the undo there.
+7. **A stale undo goes (review 0).** The snackbar closes as soon as its item is open again by
+   another way: the trip question's „Zurücknehmen“ (which otherwise left „Abgehakt: Milch“ on
+   screen after the sheet closed), a partner's put-back, or a refused tick. `_tick` listens to the
+   list until its snackbar closes.
