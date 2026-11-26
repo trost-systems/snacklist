@@ -198,8 +198,8 @@ The bot rule: a contributor with `bot: true` in the record (the `identities` mar
 petertrost-bot and AI co-authors such as Claude, plus any `[bot]` login like dependabot) is never
 named, never counted as a contributor and never in the top list; `stats.automated_commits` is
 their one line. Before the first public release both pages show an empty state. All strings are
-`HISTORY_COPY` in `history.mjs`; `COPY_NEEDED.md` lists them under "Release timeline" until the
-copy review approves them. The footer of every page links the history of its language; like
+`HISTORY_COPY` in `history.mjs`; `COPY_NEEDED.md` lists them under "Release timeline" with
+`status` (`draft` until approved, then `reused`). The footer of every page links the history of its language; like
 every page it is served with `X-Robots-Tag: noindex` until the launch.
 
 To look at the page with releases, build against the fixture record

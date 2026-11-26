@@ -3116,3 +3116,11 @@ the progress bar and the docked buttons stay still, and only the step's body sli
 28 dp, mirrored on Back). With reduced motion it is a 120 ms fade instead. Weiter closes the
 keyboard, and focus goes to the new heading. PR #723. It ships in the next green main build to
 TestFlight, with no flag.
+
+## Job 444: /history and /en/history for 1.0 readiness
+
+PR open, **not merged** (Peter reviews). Layout fixes for the populated page at 390 px, overflow and contrast checks, release-record audit (below: the Dec 1 record needs the 1.0.0 draft PR first); `releases.json` still empty. Details and screenshots: [docs/done/444.md](docs/done/444.md), `docs/screenshots/444/`.
+
+Peter approved the 19 `history.*` keys on 2026-11-26 (H1, t1300u). They are `status: reused` in `HISTORY_COPY` and `site/COPY_NEEDED.md`. The 1.0 changelog's Claude/ChatGPT store lines still wait on Legal (H2, Addendum D) before this PR merges.
+
+Review round 0 fixes (job 444): the contributor name now wraps (a 37-character login overflowed at 390 px before), covered by `history-fixture.mjs --long-name` and an overflow check in the site-agent gate. The audit finding: the Dec 1 record will refuse until the 1.0.0 draft PR (`changelog.mjs draft --version 1.0.0 --sha <main>`) exists; Hummlist-worded items (#188, #217, #232, #236) need rewords, and `1.0.0.override.md` names Claude/ChatGPT (Legal Addendum D) for Peter and Legal to confirm. See docs/done/444.md.
