@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/localizations.dart';
 import 'package:family_groceries/household/household_page.dart';
@@ -116,12 +118,72 @@ void main() {
       );
     });
 
-    testWidgets('a refusal is told and the pick stays', (tester) async {
+    testWidgets('the pick shows before the server answers; a refusal puts '
+        'it back and says why', (tester) async {
       await pump(tester, const HouseholdPage());
+      final answer = session.hold = Completer<void>();
       session.fail = HouseholdProblem.offline;
       await choose(tester, 'household-default-list', 'party');
-      expect(find.byType(SnackBar), findsOneWidget);
+      expect(subtitle('Sommerfest'), findsOneWidget);
+      answer.complete();
+      await tester.pumpAndSettle();
       expect(subtitle('Wocheneinkauf'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(SnackBar),
+          matching: find.text(
+            'Keine Internetverbindung. Versuche es erneut, sobald du online '
+            'bist.',
+          ),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('two picks that both fail put back the saved one', (
+      tester,
+    ) async {
+      const camping = HouseholdList(id: 'camping', name: 'Zelten', position: 2);
+      await pump(
+        tester,
+        const HouseholdPage(),
+        lists: const [_weekly, _party, camping],
+      );
+      final first = session.hold = Completer<void>();
+      await choose(tester, 'household-default-list', 'party');
+      final second = session.hold = Completer<void>();
+      await choose(tester, 'household-default-list', 'camping');
+      expect(subtitle('Zelten'), findsOneWidget);
+      session.fail = HouseholdProblem.offline;
+      first.complete();
+      await tester.pumpAndSettle();
+      expect(subtitle('Zelten'), findsOneWidget, reason: 'still saving');
+      session.fail = HouseholdProblem.offline;
+      second.complete();
+      await tester.pumpAndSettle();
+      expect(subtitle('Wocheneinkauf'), findsOneWidget);
+    });
+
+    testWidgets('an older pick that saves after a newer one failed shows', (
+      tester,
+    ) async {
+      const camping = HouseholdList(id: 'camping', name: 'Zelten', position: 2);
+      await pump(
+        tester,
+        const HouseholdPage(),
+        lists: const [_weekly, _party, camping],
+      );
+      final first = session.hold = Completer<void>();
+      await choose(tester, 'household-default-list', 'party');
+      final second = session.hold = Completer<void>();
+      await choose(tester, 'household-default-list', 'camping');
+      session.fail = HouseholdProblem.offline;
+      second.complete();
+      await tester.pumpAndSettle();
+      expect(subtitle('Wocheneinkauf'), findsOneWidget);
+      first.complete();
+      await tester.pumpAndSettle();
+      expect(subtitle('Sommerfest'), findsOneWidget);
     });
 
     testWidgets('a rename shows at once', (tester) async {
