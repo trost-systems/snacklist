@@ -3198,3 +3198,5 @@ answer no longer empties the field under the new words or moves the focus. Two s
 Four interaction ideas went to `docs/hillclimb/prototype-candidates/hc-add-item-voice.md`. One
 copy error was found and left for job 456: the offline dictation message says to tap
 „Hinzufügen“, which the compact sheet doesn't show. Details: [docs/done/457.md](docs/done/457.md).
+
+- Job 480, the staged Play listing goes up right after the Dec 1 production publish, with read-back: [docs/done/480.md](docs/done/480.md)

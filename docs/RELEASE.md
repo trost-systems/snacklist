@@ -30,6 +30,11 @@ manual gate: a build that the internal testers have had, after a full
 end-to-end pass on it, weekly or more often once that is quick and reliable.
 It needs its own job and Peter's go.
 
+Update, 26 Nov 2026: Ops put build 1541 (1.0.0) on Play production by hand in
+Play Console; it is approved and held by managed publishing until the
+1 December launch (Peter MP1). No workflow touches production. The staged
+Play listing follows that publish, see [Store listing upload](#store-listing-upload).
+
 The reliability beta from 2026-11-15 (job 183) is not a public release.
 Beta testers get the same internal builds: TestFlight group "Familie" and
 the Play internal track, uploaded after every green `main` as above. Work
@@ -114,6 +119,9 @@ testers ([What to Test](#what-to-test)).
 
 ### After both stores have the build live
 
+- [ ] **Required: Play listing upload, then read-back** (Peter K1, Legal LK1; [Store listing upload](#store-listing-upload)). Right after the production release is published in Play Console, never before: `gh workflow run play-listing.yml -f mode=upload -f published_version_code=<versionCode>` (1 December 2026: `1541`). The run must end with "Play's listing equals the repo text"; it fails on any field whose sha256 differs.
+- [ ] Publish the listing change in Play Console's Publishing overview once Google approves it (managed publishing holds it otherwise), then `gh workflow run play-listing.yml -f mode=check` passes: Play's de-DE and en-US listing and the public store pages equal the repo files, and the de-DE page no longer has „Kostenlos, ohne Werbung, für den ganzen Haushalt.“
+- [ ] Only after that check passes: switch on the Premium purchase screen (`premium_offer`, `premium-launch`). Until the staged listing is live, nobody outside the internal testers may be able to buy Premium (Legal LK1).
 - [ ] Public release record workflow ran (see above).
 - [ ] Flag rollouts that wait for a live store build (list below): open each, refresh its dates, get Legal's hash GO, merge.
 
@@ -363,6 +371,68 @@ second edit that is deleted; the run fails if alpha then has no draft with
 the versionCode. Like a release run, it works from `main` only (the `release`
 environment).
 
+## Store listing upload
+
+`release.yml` never uploads the store listing (`android internal` skips it). The
+Play listing text staged in `app/fastlane/metadata/android/<locale>/`
+(`title.txt`, `short_description.txt`, `full_description.txt`; Legal owns the
+words, [`store/LISTING.md`](store/LISTING.md)) goes up with the Play listing
+workflow (`.github/workflows/play-listing.yml`, lanes `android listing` and
+`android listing_check`):
+
+```bash
+gh workflow run play-listing.yml                                   # validate only, any day
+gh workflow run play-listing.yml -f mode=upload -f published_version_code=1541
+gh workflow run play-listing.yml -f mode=check                     # read-back, any time
+```
+
+It runs right after the production release is published, never on its own
+before it (Peter K1, 26 Nov 2026). Production build 1541 is approved and held by
+managed publishing until 1 December; a listing edit committed before that would
+go out together with the held release. The publish itself is Play Console's
+(Publishing overview), so the listing cannot share its edit; it follows it.
+An upload refuses, before it changes anything, unless both hold:
+
+- Play's public store page for `com.snacklist.app` answers 200. It answers 404
+  until the app is published (checked 26 Nov 2026).
+- The edit's production track has a `completed` release carrying
+  `published_version_code`.
+
+What a run does:
+
+- **validate** (default): one edit sets every staged locale's title, short and
+  full description, validates the edit and deletes it. Nothing changes on Play.
+  It logs each locale's full description sha256 and whether an upload would
+  refuse now.
+- **upload** (`RELEASE_UPLOAD=true`): the same edit, committed, then a second
+  edit reads every field back and the run fails unless each equals the repo
+  file. The video link stays as it is. No bundle, track, release notes, image
+  or screenshot is touched. A locale folder holding anything else (images,
+  `video.txt`) refuses the run: none is staged, and LISTING.md and Legal N-354
+  decide when one may be.
+- **check**: reads Play's listing in an edit it deletes, and each locale's
+  public store page (de-DE with `hl=de&gl=DE`, en-US with `hl=en&gl=US`), and
+  fails unless both equal the repo text. The page renders line breaks as
+  markup, so it is compared with whitespace collapsed; the API read-back is
+  exact. The de-DE page must not have „Kostenlos, ohne Werbung, für den ganzen
+  Haushalt.“ (Legal LK1).
+
+The hash is Legal's: sha256 of the file's text without its trailing newline,
+`head -c -1 app/fastlane/metadata/android/de-DE/full_description.txt | sha256sum`
+(each file ends in exactly one newline). The commit sends the listing to
+Google's review; with managed publishing on, Play holds the approved change
+until someone publishes it in the Publishing overview. If Play refuses to send
+changes for review from the API, supply commits them without review; Play
+Console then shows the change as not sent, and someone sends it in the
+Publishing overview. An upload whose read-back fails has still committed: the
+log says so, and running it again sends the same text. Until `check` passes, the Premium purchase screen stays off (Legal
+LK1, [Store release checklist](#store-release-checklist)). Play keeps one edit
+current: a Release run that commits its internal upload while the listing edit
+is open makes Play refuse the listing commit, and a listing commit does the same
+to a Release run's open edit. The refused run deletes its edit and fails;
+running it again is safe. Start the listing run when no Release run is
+uploading. Like a release run, it works from `main` only (the `release` environment).
+
 ## Lanes
 
 Run lanes from `app/` with `bundle exec fastlane <platform> <lane>`.
@@ -376,12 +446,16 @@ Run lanes from `app/` with `bundle exec fastlane <platform> <lane>`.
 | `ios renew_profile` | Regenerates both App Store profiles (every identifier in the `Matchfile`) with the existing certificate `GN85KDC962` and pushes them to the match repo ([Capabilities](#capabilities)). |
 | `android build` | `flutter build appbundle`, signed with `android/key.properties`. |
 | `android play_access` | Gets a Google token for the service account (fails if that does not work), then tries to open a Play edit; writes `ok` or Play's refusal to `PLAY_ACCESS_FILE`. |
-| `android internal` | Uploads the AAB to the `internal` track with `PLAY_RELEASE_STATUS`, or validates it only (`RELEASE_UPLOAD` not `true`). Uploads no listing, changelog or images. |
+| `android internal` | Uploads the AAB to the `internal` track with `PLAY_RELEASE_STATUS`, or validates it only (`RELEASE_UPLOAD` not `true`). Uploads no listing, changelog or images. The listing goes up with `android listing`. |
+| `android listing` | Sets the staged Play listing text (title, short and full description of each locale) in one edit; with `RELEASE_UPLOAD=true` commits it only when the store page is live and production carries `PLAY_PUBLISHED_VERSION_CODE`, then reads it back and fails on any difference; otherwise validates and deletes the edit. [Store listing upload](#store-listing-upload). |
+| `android listing_check` | Read only: Play's listing and the public store pages must equal the repo text. |
 | `android promote_draft` | Sets `VERSION_CODE` (already in Play's bundle library) as the draft release of `PROMOTE_TRACK` (`alpha` only), keeping the track's other releases; commits with `PROMOTE_COMMIT=true`, else validates only. [Promote a build to closed testing](#promote-a-build-to-closed-testing). |
 
 The lint gate runs `scripts/release/test.sh` and shellchecks
 `scripts/release/`; CI's `fastlane` job checks that the Gemfile.lock installs
-and the Fastfile parses.
+and the Fastfile parses, and runs `app/fastlane/test/play_listing_test.rb` (the
+listing lane's gate, edit and read-back against a fake Play client, and Play's
+limits on the staged text). The lint gate's `check.mjs` holds the same limits.
 
 ## What to Test
 
