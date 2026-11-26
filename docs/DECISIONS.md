@@ -18662,3 +18662,24 @@ with Siri"; "What's on my Snacklist?" got a question whether to turn on Snacklis
   rules out, so it went to the lead (NEEDS_LEAD Job 469). The copy names neither job 471's undo
   snackbar nor its absence, so it stays true either way.
 - The line sits under its step title in the card, outside any control (hints-outside-controls).
+
+## Job 448: hot-path tests chosen by mutants, not by coverage
+
+The list, queue, add sheet and entitlements code already had 96-98 % line coverage, so a coverage
+gap could not say which tests were missing. Mutants did: `tool/mutate/mutate.py` flips one operator
+at a time and reports the flips no test notices; each new test was written against such a survivor
+and shown to kill it with `prove`. Re-implemented rather than taken from #287 (`hc-domain-tests`,
+not merged), whose measure scored a whole-suite sample. The tool lands in `tool/mutate/` so the next
+test job can rerun it. Each worker's copy of `app/` sits beside links to the rest of the repo, and
+the tests first run unmutated in such a copy: review 0 found that three add-sheet tests read
+`../supabase`, which an `app/`-only copy lacks, so every add sheet and ranking mutant had read as
+killed and the first report claimed both were already pinned. Re-run, they left 71 survivors: 26 die to
+add-sheet widget tests outside the range's set, 34 to the new `add_sheet_cubit_test.dart` and
+`suggest_entries_rules_test.dart`, and 11 are equivalent. New test
+files instead of appends to `list_cubit_test.dart` (3,600 lines) and `entitlements_test.dart`,
+which other jobs edit often. 24 survivors stay unpinned, each with its reason in
+`docs/done/448.md`: equivalent mutants, and two ties no rule decides (a brand's two spellings bought
+at one moment, as on the server; two equally tall column splits), where a test would pin an
+arbitrary choice.
+No seam was needed; the fakes (`FakeRepository`, `FakeEntitlementsSource`) already had what the
+tests use.

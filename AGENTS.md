@@ -84,6 +84,9 @@ reasons are in [`docs/DECISIONS.md`](docs/DECISIONS.md).
   replayed as rebases), `e2e-duplicates.mjs` (helpers copied between e2e specs) and `stale-head.py`
   (lands refused as "behind main" right after a push). Results:
   `docs/hillclimb/fable-improvement-2026-11.md`.
+- `tool/mutate/mutate.py`: which app logic no test pins. It flips operators in line ranges of
+  `app/lib` and runs chosen tests against each mutant (`run`), and shows new tests kill the
+  survivors (`prove`). `hotpaths.tsv` is the list, sync and entitlements spec (`docs/done/448.md`).
 
 ## Conventions
 
