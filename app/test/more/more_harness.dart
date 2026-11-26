@@ -24,11 +24,13 @@ import 'package:family_groceries/more/more_screen.dart';
 import 'package:family_groceries/purchases/premium_server.dart';
 import 'package:family_groceries/purchases/purchase_repository.dart';
 import 'package:family_groceries/purchases/store_prices.dart';
+import 'package:family_groceries/push/household_add_alert.dart';
 import 'package:family_groceries/report/report_repository.dart';
 import 'package:family_groceries/review/store_review.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/settings/account_repository.dart';
 import 'package:family_groceries/settings/integration_lock.dart';
+import 'package:family_groceries/settings/shopping_day.dart';
 import 'package:family_groceries/shell/list_scope.dart';
 import 'package:family_groceries/shell/router.dart';
 import 'package:flutter/services.dart';
@@ -231,6 +233,11 @@ Future<More> pumpMore(
   /// What a store's app key and Öffnen launch (job 313); one that takes
   /// every app by default.
   StoreAppOpener? storeApps,
+
+  /// The household-add alert and the shopping-day reminder as `App` gets
+  /// them; neither by default (a build without push, no alert).
+  HouseholdAddAlert? householdAdd,
+  ShoppingDayService? shoppingDay,
 }) async {
   tester.view
     ..devicePixelRatio = 1
@@ -349,6 +356,7 @@ Future<More> pumpMore(
         RepositoryProvider<StoreAppOpener>.value(
           value: storeApps ?? FakeStoreApps(),
         ),
+        RepositoryProvider<ShoppingDayService?>.value(value: shoppingDay),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -363,6 +371,7 @@ Future<More> pumpMore(
           BlocProvider.value(value: purchases.purchases),
           BlocProvider.value(value: lock),
           BlocProvider(create: (_) => Flags(forced: flags)),
+          if (householdAdd case final alert?) BlocProvider.value(value: alert),
         ],
         child: Builder(
           builder: (context) => MaterialApp.router(

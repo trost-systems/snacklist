@@ -15,6 +15,7 @@ const screenNames = {
   'lifetime',
   'settings',
   'language',
+  'notifications',
   'usage_data',
   'tips',
   'feedback',

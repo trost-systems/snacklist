@@ -21,6 +21,8 @@ import 'package:family_groceries/list/sync_indicator.dart';
 import 'package:family_groceries/more/app_update.dart';
 import 'package:family_groceries/onboarding/onboarding_cubit.dart';
 import 'package:family_groceries/onboarding/start_screen.dart';
+import 'package:family_groceries/push/household_add_alert.dart';
+import 'package:family_groceries/push/push_registration.dart';
 import 'package:family_groceries/session/login_screen.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/session/social_sign_in.dart';
@@ -35,7 +37,12 @@ import '../analytics/fakes.dart' show MemoryAnalyticsStore, loadedAnalytics;
 import '../household/harness.dart' show FakeInvites, MemoryOnboardingStore;
 import '../list/fake_repository.dart';
 import '../more/more_harness.dart';
+import '../push/household_add_alert_test.dart' show FakePrefs;
+import '../push/push_registration_test.dart'
+    show FakePushPlugin, FakePushTokens, MemoryPushStore, Sessions;
 import '../session/fake_auth.dart';
+import '../settings/shopping_day_test.dart'
+    show FakePush, FakeShoppingDayServer;
 import 'fonts.dart';
 import 'shell_harness.dart';
 
@@ -929,6 +936,58 @@ void main() {
       await expectLater(
         find.byType(MaterialApp),
         matchesGoldenFile('goldens/more-usage-data-$mode.png'),
+      );
+    });
+
+    // Job 463: More with the Mitteilungen row, below Einstellungen.
+    testWidgets('more with notifications, $mode', (tester) async {
+      final alert = HouseholdAddAlert(null, FakePrefs());
+      addTearDown(alert.close);
+      await pumpMore(
+        tester,
+        theme: ThemeMode.values.byName(mode),
+        flags: const {pushHouseholdAddFlag},
+        householdAdd: alert,
+      );
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('more-notifications')),
+        200,
+      );
+      await tester.pumpAndSettle();
+      await expectLater(
+        find.byType(MaterialApp),
+        matchesGoldenFile('goldens/more-notifications-row-$mode.png'),
+      );
+    });
+
+    // Job 463: Mitteilungen in a phone build with push, both flags on:
+    // the household-add switches, then the shopping-day reminder.
+    testWidgets('notifications, $mode', (tester) async {
+      final sessions = Sessions();
+      final plugin = FakePushPlugin();
+      final push = PushRegistration(
+        plugin,
+        MemoryPushStore(),
+        FakePushTokens(sessions),
+      );
+      final alert = HouseholdAddAlert(push, FakePrefs());
+      addTearDown(() async {
+        await alert.close();
+        await push.close();
+        await plugin.close();
+        await sessions.close();
+      });
+      await pumpMore(
+        tester,
+        location: notificationsPath,
+        theme: ThemeMode.values.byName(mode),
+        flags: const {pushHouseholdAddFlag, shoppingDayFlag},
+        householdAdd: alert,
+        shoppingDay: FakePush().service(FakeShoppingDayServer({2, 5})),
+      );
+      await expectLater(
+        find.byType(MaterialApp),
+        matchesGoldenFile('goldens/more-notifications-$mode.png'),
       );
     });
 

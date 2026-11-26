@@ -225,7 +225,7 @@ notifications.
   `PUSH_SEND_SECRET`: `select vault.create_secret('<secret>', 'push_send_secret')`);
   `shopping_day_set(false)` removes the job. Both are owner-only. Turn it on
   after Legal's GO and Ops' Firebase setup, together with the PostHog flag.
-- **Zone refresh.** Opening Einstellungen with days saved and push on here calls
+- **Zone refresh.** Opening Mitteilungen with days saved and push on here calls
   `refresh_shopping_day_reminder(zone, locale)`: zone and language only, never the days or
   `last_sent_on`, so it cannot cancel an evening's reminder. A device that reports a bare offset
   (`GMT+01:00`) sends the fixed zone `Etc/GMT-1` (`ianaZone`); an offset of no whole hour fails the save.
@@ -240,8 +240,8 @@ notifications.
   (`ShoppingDayService.hasDays`, unreadable counts as none).
   A clear the server did not take is kept on the device with its account
   (`DeviceCache.pendingShoppingDayClear`) and sent again at the next start or
-  sign-in of that account, or when Einstellungen opens (N-439, as for the alert).
-- **App.** Einstellungen shows the section with the flag on, on iOS and
+  sign-in of that account, or when Mitteilungen opens (N-439, as for the alert).
+- **App.** More's Mitteilungen page (`/more/notifications`, job 463) shows the section with the flag on, on iOS and
   Android in a build with push. Picking the first weekday asks for the OS
   permission (`PushRegistration.optIn`). With push off on this device the chips show off
   even if the server has days (no push, no reminder). Refused: nothing is saved and a
@@ -289,7 +289,7 @@ nothing real goes in the repo):
 
 When another member adds an item, the members who switched the alert on get
 a push (flag `push-household-add`, off until Legal's GO). The app side is
-the switch under Einstellungen › Mitteilungen
+the switch on More's Mitteilungen page (job 463)
 (`app/lib/push/household_add_settings.dart`); the decisions are in the
 database (`supabase/migrations/20261122232004_push_household_add.sql`,
 `supabase/tests/push_household_add.test.sql` and `..._privacy.test.sql`).

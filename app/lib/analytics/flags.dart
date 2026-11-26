@@ -10,7 +10,7 @@ const publicApiFlag = 'public-api';
 /// together with the server switch `app_switches.unified_keys`.
 const unifiedKeysFlag = 'unified-keys';
 
-/// The flag that offers the shopping-day reminder (job 378, P2): Einstellungen'
+/// The flag that offers the shopping-day reminder (job 378, P2): Mitteilungen'
 /// weekdays, and the server push at 19:00 local the evening before. Needs push
 /// in the build (docs/PUSH.md) and stays off until Legal's GO.
 const shoppingDayFlag = 'push-shopping-day';
@@ -40,9 +40,9 @@ const listDeclutterFlag = 'list-declutter';
 /// up a screenshot, the form sends it, and Einstellungen' shake switch.
 const feedbackFb2Flag = 'feedback-fb2';
 
-/// The flag that offers the household-add alert (job 377): the switch under
-/// Einstellungen' Mitteilungen for a push when another member adds an item.
-/// Off by default for each person.
+/// The flag that offers the household-add alert (job 377): the switch on
+/// More's Mitteilungen page (job 463) for a push when another member adds
+/// an item. Off by default for each person.
 const pushHouseholdAddFlag = 'push-household-add';
 
 /// The flag that turns on Feedback & ideas (job 268, FB4): More's row opens

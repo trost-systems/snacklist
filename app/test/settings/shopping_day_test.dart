@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/localizations.dart';
 import 'package:family_groceries/core/theme.dart';
@@ -21,6 +23,9 @@ class FakeShoppingDayServer(final Set<int> initial)
   var failing = false;
   var readFails = false;
 
+  /// Set, a save waits for it.
+  Completer<void>? hold;
+
   @override
   Future<Set<int>> read() async {
     if (readFails) {
@@ -36,6 +41,7 @@ class FakeShoppingDayServer(final Set<int> initial)
 
   @override
   Future<void> save(Set<int> weekdays, String timeZone, String locale) async {
+    await hold?.future;
     if (failing) {
       throw StateError('offline');
     }
@@ -526,6 +532,62 @@ void main() {
         );
       },
     );
+
+    testWidgets('a save the server refuses puts the chip back, with a notice', (
+      tester,
+    ) async {
+      final (server, _) = await pump(tester, days: {1});
+      server
+        ..failing = true
+        ..hold = Completer();
+      await tester.tap(chip(3));
+      await tester.pump();
+      expect(picked(tester, 3), isTrue, reason: 'at once');
+      server.hold!.complete();
+      await tester.pumpAndSettle();
+      expect(picked(tester, 3), isFalse);
+      expect(picked(tester, 1), isTrue);
+      expect(
+        find.text('Die Änderung konnte nicht gespeichert werden.'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('a pick while the one before saves is kept, saved after it', (
+      tester,
+    ) async {
+      final (server, _) = await pump(tester);
+      server.hold = Completer();
+      await tester.tap(chip(2));
+      await tester.pump();
+      await tester.tap(chip(5));
+      await tester.pump();
+      expect(picked(tester, 2), isTrue);
+      expect(picked(tester, 5), isTrue);
+      server.hold!.complete();
+      await tester.pumpAndSettle();
+      expect(server.calls, ['2 Europe/Berlin de', '2,5 Europe/Berlin de']);
+      expect(picked(tester, 2), isTrue);
+      expect(picked(tester, 5), isTrue);
+    });
+
+    testWidgets('a refused pick before a saved one goes back to what the '
+        'server has', (tester) async {
+      final (server, _) = await pump(tester, days: {1});
+      server
+        ..failing = true
+        ..hold = Completer();
+      await tester.tap(chip(2));
+      await tester.pump();
+      await tester.tap(chip(3));
+      await tester.pump();
+      server.hold!.complete();
+      await tester.pumpAndSettle();
+      expect(
+        [for (var d = 1; d <= 7; d++) picked(tester, d)],
+        [true, false, false, false, false, false, false],
+      );
+    });
 
     testWidgets('a screen reader hears the day, its state, and can toggle it', (
       tester,

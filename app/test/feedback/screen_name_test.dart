@@ -27,6 +27,7 @@ void main() {
       '/more/feedback/a/b': 'other',
       '/households/new': 'new_household',
       '/more/settings/language': 'language',
+      '/more/notifications': 'notifications',
       '/settings': 'access',
       '/settings?section=account': 'account',
       '/settings?section=Milch': 'access',

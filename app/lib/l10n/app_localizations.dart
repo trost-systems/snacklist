@@ -6422,7 +6422,7 @@ abstract class AppLocalizations {
   /// **'App öffnen'**
   String get storeDoneOpen;
 
-  /// Job 377: Einstellungen section label above the push switch
+  /// Job 463: More row and page title of the push settings (household-add alert, shopping-day reminder); was the Einstellungen section label of job 377
   ///
   /// In de, this message translates to:
   /// **'Mitteilungen'**
@@ -6458,7 +6458,7 @@ abstract class AppLocalizations {
   /// **'Andere sehen dann „Jemand hat Milch hinzugefügt“, auch wenn du selbst keine Mitteilungen eingeschaltet hast.'**
   String get pushNameHiddenHint;
 
-  /// Job 378: Einstellungen, section label over the weekday chips of the shopping-day reminder
+  /// Job 378: Mitteilungen page (job 463), section label over the weekday chips of the shopping-day reminder
   ///
   /// In de, this message translates to:
   /// **'Einkaufstag-Erinnerung'**
