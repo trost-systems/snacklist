@@ -3070,3 +3070,8 @@ its own, not Schaufel's. Also: spring and egg rolls are Frühlingsrollen, Schäu
 Schäufele. Still no flag. Details: [docs/done/282.md](docs/done/282.md), section "Review 0 fixes".
 Ships with the next green main build to TestFlight.
 
+
+## Job 438: PostHog reports (bug 2 fixed at its cause, bug 1 open)
+
+**Bug 2 (`Bad state: No element` on system back):** the cause was a pop after a popup was closed during a save, which removed the tab shell and blanked the app. `popIfCurrent` now pops only the popup's own current route at every such site, the ast-grep rule `pop-if-current-after-await` keeps new ones out, and `SafeBackDispatcher` sends back on an empty router to the list and reports it. Regression tests on the real account name sheet and name dialog fail without the fix. **Bug 1 (semantics `TypeError`) remains open:** not reproduced; smoke tests and leads only. Details: [docs/done/438.md](docs/done/438.md); `NEEDS_LEAD` section in `docs/NEEDS_LEAD.md`.
+Review 3: leaving a household from the switcher closes the sheet again when the reload is slow (pops the sheet's captured route, `popRouteIfCurrent`; test fails before, passes after); other converted pops audited. PostHog shows the back report as `Bad state: <w> on an empty <w>`.

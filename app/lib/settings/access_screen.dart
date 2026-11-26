@@ -4,6 +4,7 @@ import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/environment.dart';
 import 'package:family_groceries/core/legal_links.dart';
 import 'package:family_groceries/core/notices.dart';
+import 'package:family_groceries/core/pop_if_current.dart';
 import 'package:family_groceries/design/field_border.dart';
 import 'package:family_groceries/design/hex_radio.dart';
 import 'package:family_groceries/design/section_label.dart';
@@ -908,9 +909,8 @@ class const _AppDetails({
               icon: const Icon(Icons.link_off),
               label: Text(l10n.disconnectApp(app.name)),
               onPressed: () async {
-                final navigator = Navigator.of(context);
-                if (await _disconnectApp(context, app)) {
-                  navigator.pop();
+                if (await _disconnectApp(context, app) && context.mounted) {
+                  popIfCurrent(context);
                 }
               },
             ),

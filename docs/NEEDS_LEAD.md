@@ -2632,3 +2632,7 @@ Open questions, default in brackets:
 - OC-Q7. English tool text? [keep German; English listing and docs page]
 - OC-Q8. Research the GPT Store? [no]
 - OC-Q9. Claude plugin bundle with skills after the connector? [later, if traction]
+
+## NEEDS_LEAD Job 438: PostHog bug 1 (semantics TypeError) is still open
+
+Peter asked for both fixes. Bug 2 is fixed at its cause (a pop after a popup was closed during a save; `popIfCurrent`, a lint, and back on an empty router now returns to the list and reports it). Bug 1, `geometry!` in `_RenderObjectSemantics._updateSemanticsNodeGeometry`, has no repro in app code; see `docs/done/438.md` for what was audited and the leads (Flutter 3.50.0's deferred semantics geometry, upstream 368a6dc1 / flutter#192146; bug 2's shell teardown under a closing popup). If bug 1's reports stop on builds with this PR, the second lead was it. Needs the app build and platform of the four testers, or a repro, before a root-cause fix. Granting the PostHog key `query:read` would show the build and platform of the events.

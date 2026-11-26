@@ -921,6 +921,24 @@ void main() {
       expect(_key('switcher-sheet'), findsNothing);
     });
 
+    testWidgets('leave closes the sheet also when the reload after it is '
+        'slow (the page fades out first)', (tester) async {
+      final s = await _pump(tester);
+      s.session.afterLeave = Completer<void>();
+      await _open(tester);
+      await tester.ensureVisible(_key('switcher-leave'));
+      await tester.tap(_key('switcher-leave'));
+      await tester.pumpAndSettle();
+      await tester.tap(_key('household-leave-confirm'));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump(const Duration(seconds: 1));
+      s.session.afterLeave!.complete();
+      await tester.pumpAndSettle();
+      expect(s.session.leaves, [('home', false)]);
+      expect(_key('switcher-sheet'), findsNothing);
+    });
+
     testWidgets('leave: a double tap opens one dialog', (tester) async {
       await _pump(tester);
       await _open(tester);

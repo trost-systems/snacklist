@@ -46,6 +46,7 @@ import 'package:family_groceries/settings/integration_lock.dart';
 import 'package:family_groceries/settings/shopping_day.dart';
 import 'package:family_groceries/shell/push_taps.dart';
 import 'package:family_groceries/shell/router.dart';
+import 'package:family_groceries/shell/safe_back_dispatcher.dart';
 import 'package:family_groceries/tips/hint_host.dart';
 import 'package:family_groceries/tips/usage_log.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -176,6 +177,8 @@ class const App({
 class _AppState() extends State<App> {
   final _listLinks = ListLinks();
   final _popups = Popups();
+  late final _routerConfig = guardedBack(_router);
+
   late final GoRouter _router = buildRouter(
     widget.session,
     widget.analytics,
@@ -416,7 +419,7 @@ class _AppState() extends State<App> {
           },
           localeListResolutionCallback: (preferred, _) =>
               resolveLocale(preferred, null),
-          routerConfig: _router,
+          routerConfig: _routerConfig,
           builder: (context, child) {
             setDocumentLanguage(Localizations.localeOf(context).languageCode);
             // What a feedback screenshot shows: the app, popups included.

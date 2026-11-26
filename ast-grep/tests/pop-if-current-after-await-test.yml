@@ -1,0 +1,89 @@
+id: pop-if-current-after-await
+valid:
+  # The fix (job 438).
+  - |
+    Future<void> _save() async {
+      await context.read<YourNameCubit>().save(_name.text);
+      if (mounted) {
+        popIfCurrent(context, true);
+      }
+    }
+  # No await: the tap that pops is on the current route.
+  - |
+    void _cancel() {
+      Navigator.of(context).pop(false);
+    }
+  # A sync callback inside an async function: it runs on a later tap.
+  - |
+    Future<void> open(BuildContext context) async {
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (dialog) => TextButton(
+          onPressed: () => Navigator.of(dialog).pop(true),
+          child: const Text('x'),
+        ),
+      );
+      use(ok);
+    }
+  - |
+    Future<void> open(BuildContext context) async {
+      await showModalBottomSheet<void>(
+        context: context,
+        builder: (sheet) => Button(onTap: () {
+          Navigator.of(sheet).pop();
+        }),
+      );
+    }
+  # pop on something that is not a navigator.
+  - |
+    Future<void> f() async {
+      await load();
+      stack.pop();
+    }
+invalid:
+  # settings/account_screen.dart before job 438: the name sheet, closed
+  # during the save, popped the shell.
+  - |
+    Future<void> _save() async {
+      try {
+        await context.read<YourNameCubit>().save(_name.text);
+        if (mounted) {
+          Navigator.of(context).pop(true);
+        }
+      } on NameError catch (e) {
+        show(e);
+      }
+    }
+  # household/household_switcher.dart before job 438: a captured navigator.
+  - |
+    Future<void> _pick(String householdId) async {
+      final navigator = Navigator.of(context);
+      setState(() => _busy = true);
+      await context.read<SessionCubit>().setDefault(householdId);
+      navigator.pop();
+    }
+  # In an async callback.
+  - |
+    Widget build(BuildContext context) => TextButton(
+      onPressed: () async {
+        if (await disconnect(context)) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: const Text('x'),
+    );
+  - |
+    Future<void> f(BuildContext context) async {
+      await save();
+      Navigator.pop(context, true);
+    }
+  - |
+    Future<void> f(BuildContext context) async {
+      await save();
+      context.pop();
+    }
+  - |
+    Future<void> f(BuildContext context) async {
+      await save();
+      Navigator.maybeOf(context)?.pop();
+    }

@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:family_groceries/analytics/analytics.dart';
+import 'package:family_groceries/core/pop_if_current.dart';
 import 'package:family_groceries/design/field_border.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
@@ -258,7 +259,7 @@ class _TripSheetState() extends State<_TripSheet> {
       widget.analytics?.track('trip_logged', {'source': widget.source.name});
     }
     if (mounted) {
-      Navigator.of(context).pop(TripSaved(trip, created: before == null));
+      popIfCurrent(context, TripSaved(trip, created: before == null));
     }
   }
 
@@ -305,7 +306,7 @@ class _TripSheetState() extends State<_TripSheet> {
       return;
     }
     if (mounted) {
-      Navigator.of(context).pop(TripDeleted(trip.id));
+      popIfCurrent(context, TripDeleted(trip.id));
     }
   }
 

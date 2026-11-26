@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:family_groceries/core/environment.dart';
+import 'package:family_groceries/core/pop_if_current.dart';
 import 'package:family_groceries/core/theme.dart';
 import 'package:family_groceries/design/field_border.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
@@ -122,7 +123,7 @@ class _DeleteAccountDialogState() extends State<DeleteAccountDialog> {
     try {
       final deleted = await widget.repository.delete();
       if (mounted) {
-        Navigator.of(context).pop(deleted);
+        popIfCurrent(context, deleted);
       }
     } on AccountError catch (e) {
       if (mounted) {

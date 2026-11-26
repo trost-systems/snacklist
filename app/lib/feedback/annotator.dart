@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:family_groceries/core/localizations.dart';
+import 'package:family_groceries/core/pop_if_current.dart';
 import 'package:family_groceries/design/hex_segmented.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/feedback/screen_capture.dart';
@@ -160,9 +161,7 @@ class _AnnotatorState() extends State<Annotator> {
     // Its animation starts on the next frame.
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => _closing = Timer(_hideAnimation, () {
-        if (mounted) {
-          Navigator.of(context).pop(_result);
-        }
+        popIfCurrent(context, _result);
       }),
     );
   }
