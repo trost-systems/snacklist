@@ -1,0 +1,6 @@
+[14:29:51.491Z] ok   after "Schäufele": hint none, want none
+[14:29:53.495Z] renamed "Bier" to "beer" through the items table
+[14:29:56.815Z] ok   after "Beeren": hint none, want none
+[14:29:58.350Z] ok   after "Bier": hint "Zusammenführen, 2× beer", want "beer steht schon …"
+[14:29:58.678Z] database: [{"name":"Schaufel","canonical_key":"schaufel"},{"name":"beer","canonical_key":"bier"}]
+[14:29:58.703Z] PASS classifier-homographs-dup-hint (evidence: /tmp/ev473)

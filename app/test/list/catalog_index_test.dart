@@ -1,5 +1,6 @@
 import 'package:family_groceries/list/catalog/catalog_index.dart';
 import 'package:family_groceries/list/catalog/catalog_index.g.dart';
+import 'package:family_groceries/list/catalog/suggest_entries.dart';
 import 'package:family_groceries/list/category_guess.dart';
 import 'package:family_groceries/list/entry.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,12 +12,14 @@ Map<String, Object?> _delta({
   Map<String, Object?>? terms,
   Map<String, Object?>? forms,
   Map<String, Object?>? brands,
+  Object? homographs,
 }) => {
   'version': _next,
   'full': full,
   'terms': ?terms,
   'forms': ?forms,
   'brands': ?brands,
+  'homographs': ?homographs,
 };
 
 const _none = {'put': <Object?>[], 'drop': <Object?>[]};
@@ -32,6 +35,14 @@ void main() {
     expect(bundled.forms['milch']?.category, 'chilled');
     expect(bundled.brands['tempo']?.product, isNotNull);
     expect(bundled.phraseForms, everyElement(contains(' ')));
+    expect(
+      bundled.homographs.values.expand((spellings) => spellings),
+      hasLength(catalogHomographs.length),
+    );
+    expect(bundled.homographs['schaufel']?.map((h) => h.category), [
+      'garden',
+      'meat',
+    ]);
   });
 
   test('an unchanged answer keeps every row under the new version', () {
@@ -40,6 +51,34 @@ void main() {
     expect(next.terms, bundled.terms);
     expect(next.forms, bundled.forms);
     expect(next.brands, bundled.brands);
+    expect(next.homographs, bundled.homographs);
+  });
+
+  test("an answer's homographs replace the device's (job 473)", () {
+    bool same(String a, String b, CatalogIndex index) =>
+        canonicalKeyOf(a, index) == canonicalKeyOf(b, index);
+    expect(same('Schäufele', 'Schaufel', bundled), isFalse);
+    expect(same('Beeren', 'beer', bundled), isFalse);
+
+    final none = bundled.apply(
+      parseCatalogDelta(_delta(homographs: <Object?>[]))!,
+    );
+    expect(none.homographs, isEmpty);
+    expect(same('Schäufele', 'Schaufel', none), isTrue);
+
+    final schaufel = bundled.apply(
+      parseCatalogDelta(
+        _delta(
+          homographs: [
+            ['schaufel', 'schaufel', 'schaufel', 'garden', false],
+            ['schaufel', 'schäufele', 'schaufele', 'meat', false],
+          ],
+        ),
+      )!,
+    );
+    expect(same('Schäufele', 'Schaufel', schaufel), isFalse);
+    expect(same('Schäufele', 'Schäuferle', schaufel), isTrue);
+    expect(same('Beeren', 'beer', schaufel), isTrue, reason: 'beer is gone');
   });
 
   test('puts and drops change what the guess and the parser know', () {
@@ -150,6 +189,22 @@ void main() {
           'put': <Object?>[],
           'drop': [1],
         },
+      ),
+      'homographs that are no list': _delta(homographs: {'put': <Object?>[]}),
+      'a homograph row of the wrong length': _delta(
+        homographs: [
+          ['schaufel', 'schaufel', 'schaufel', 'garden'],
+        ],
+      ),
+      'a homograph row of the wrong types': _delta(
+        homographs: [
+          ['schaufel', 'schaufel', 'schaufel', 'garden', 'no'],
+        ],
+      ),
+      'an empty homograph spelling': _delta(
+        homographs: [
+          ['schaufel', '', 'schaufel', 'garden', false],
+        ],
       ),
       'too many rows': _delta(
         terms: {

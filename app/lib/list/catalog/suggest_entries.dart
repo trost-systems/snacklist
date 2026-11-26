@@ -987,11 +987,12 @@ const _plainDescriptors = {
 };
 
 /// public.canonical_key([name]) on the device: the key that spelling
-/// variants, synonyms and recognized typos of [name] share; empty for a
-/// name without one. The add sheet's match rows key both sides with it
-/// (job 324).
+/// variants, synonyms and recognized typos of [name] share, a homograph
+/// read by how [name] spells it (Schäufele is not Schaufel, job 473);
+/// empty for a name without one. The add sheet's match rows key both sides
+/// with it (job 324).
 String canonicalKeyOf(String name, CatalogIndex catalog) =>
-    _CatalogLookups.of(catalog).canonicalOfKey(itemKey(name));
+    _CatalogLookups.of(catalog)._canonicalOfKey(itemKey(name), name);
 
 /// What the ranking reads of a [CatalogIndex], built once per index.
 final class _CatalogLookups._(final CatalogIndex index) {
@@ -1189,12 +1190,13 @@ final class _CatalogLookups._(final CatalogIndex index) {
     if (_canonical.length >= 4096) {
       _canonical.clear();
     }
-    return _canonical[key] ??= _canonicalOfKey(key);
+    return _canonical[key] ??= _canonicalOfKey(key, null);
   }
 
   final _canonical = <String, String>{};
 
-  String _canonicalOfKey(String key) {
+  /// With [name], as public.classifier_words reads a homograph.
+  String _canonicalOfKey(String key, String? name) {
     var words = foldKey(key).split(' ').where((w) => w.isNotEmpty).toList();
     if (words.isEmpty) {
       return '';
@@ -1224,19 +1226,32 @@ final class _CatalogLookups._(final CatalogIndex index) {
         if (_phraseToken.firstMatch(word) case final m?)
           phrases[int.parse(m[1]!) - 1].canonical
         else
-          _canonicalOfWord(word),
+          _canonicalOfWord(word, name),
     ].join(' ');
   }
 
   /// A word's canonical: a typo's form, else the word with the longest
   /// form of 4+ letters it ends with (or itself) replaced by its
-  /// canonical, else the word.
-  String _canonicalOfWord(String word) {
+  /// canonical, else the word. A form [name] spells as one of its
+  /// homographs takes that one's canonical.
+  String _canonicalOfWord(String word, String? name) {
     CatalogForm? hit;
     for (var i = 0; i < math.max(word.length - 3, 1); i++) {
       if (index.forms[word.substring(i)] case final form?) {
         hit = form;
         break;
+      }
+    }
+    if ((hit, name) case (final form?, final name?)) {
+      if (index.homographs[form.form] case final spellings?) {
+        if (_homographPick(spellings, name, form.form) case final pick?) {
+          hit = (
+            form: form.form,
+            canonical: pick.canonical,
+            category: pick.category,
+            synonym: pick.synonym,
+          );
+        }
       }
     }
     if (hit == null || word.length - hit.form.length >= 4) {
@@ -1255,6 +1270,50 @@ final class _CatalogLookups._(final CatalogIndex index) {
 }
 
 final _phraseToken = RegExp(r'^#(\d+)$');
+
+/// public.homograph_pick: of [form]'s [spellings], the one the last word of
+/// [name] on [form] ends with, plus at most an inflection; the longest.
+CatalogHomograph? _homographPick(
+  List<CatalogHomograph> spellings,
+  String name,
+  String form,
+) {
+  final words = [
+    for (final w in _surfaceWord(name).split(_notSurfaceLetter))
+      if (w.isNotEmpty && foldKey(itemKey(w)).endsWith(form)) w,
+  ];
+  if (words.isEmpty) {
+    return null;
+  }
+  CatalogHomograph? pick;
+  for (final spelling in spellings) {
+    if (_inflections.any((i) => words.last.endsWith(spelling.surface + i)) &&
+        (pick == null || spelling.surface.length > pick.surface.length)) {
+      pick = spelling;
+    }
+  }
+  return pick;
+}
+
+const _inflections = ['', 'e', 'n', 'en', 's', 'es', 'er', 'ern', 'nen'];
+final _notSurfaceLetter = RegExp('[^a-zäöü]+');
+
+/// public.surface_word: [word] lower-case without accents, with its
+/// umlauts as typed or spelled out ("Saege" is "säge").
+String _surfaceWord(String word) {
+  const accents = 'àáâãåçèéêëìíîïñòóôõùúûýÿ';
+  const plain = 'aaaaaceeeeiiiinooooouuuyy';
+  return String.fromCharCodes(
+        word.toLowerCase().runes.map((r) {
+          final at = accents.indexOf(String.fromCharCode(r));
+          return at < 0 ? r : plain.codeUnitAt(at);
+        }),
+      )
+      .replaceAll('ß', 'ss')
+      .replaceAll('ae', 'ä')
+      .replaceAll('oe', 'ö')
+      .replaceAll('ue', 'ü');
+}
 
 /// Whether swapping two neighbouring letters of [word] makes [form].
 bool _isSwap(String word, String form) {

@@ -72,6 +72,30 @@ void main() {
       expect(open('Karotten', [item('Möhren')]), ['Möhren']);
     });
 
+    test('a homograph is another thing: the typed spelling decides, as '
+        'on the server (homograph_pick)', () {
+      expect(open('Schäufele', [item('Schaufel')]), isEmpty);
+      expect(open('Schaufel', [item('Schäufele')]), isEmpty);
+      expect(open('Beeren', [item('beer')]), isEmpty);
+      expect(open('beer', [item('Beeren')]), isEmpty);
+      expect(open('sage', [item('Säge')]), isEmpty);
+      expect(open('rolls', [item('Rolle')]), isEmpty);
+    });
+
+    test("a homograph's own spellings, plurals and synonyms still match", () {
+      expect(open('Schäuferle', [item('Schäufele')]), ['Schäufele']);
+      expect(open('Schaufeln', [item('Schaufel')]), ['Schaufel']);
+      expect(open('Bier', [item('beer')]), ['beer']);
+      expect(open('beers', [item('Bier')]), ['Bier']);
+      expect(open('Saege', [item('Säge')]), ['Säge']);
+      expect(open('Waldbeeren', [item('Waldbeere')]), ['Waldbeere']);
+    });
+
+    test('near-duplicates still match', () {
+      expect(open('Tomaten', [item('Tomate')]), ['Tomate']);
+      expect(open('Tomate', [item('Tomaten')]), ['Tomaten']);
+    });
+
     test('nothing for a name without a key', () {
       expect(open('', [item('Nudeln')]), isEmpty);
     });
