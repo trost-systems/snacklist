@@ -132,7 +132,7 @@ test('jsonld: support pages carry their FAQ, guides a TechArticle, landing pages
   assert.deepEqual(faq.mainEntity.find((q) => q.name === 'How do I invite someone?'), {
     '@type': 'Question',
     name: 'How do I invite someone?',
-    acceptedAnswer: { '@type': 'Answer', text: 'Tap More, then Invite people. Share the link or the code. An invite is valid for one person. You can revoke open invites there too.' },
+    acceptedAnswer: { '@type': 'Answer', text: "Tap your household's name at the top left of the list, then Invite. Share the link or the code. An invite is valid for one person. Revoke open invites on the members page under Open invites." },
   });
   assert.deepEqual(faq.mainEntity.map((q) => q.name), base.page('/en/support').querySelectorAll('main h3').map((h) => h.text));
   assert.deepEqual(ld('/de/anleitungen/alexa').map((d) => [d['@type'], d.dateModified, d.inLanguage]), [['TechArticle', '2026-11-22', 'de']]);

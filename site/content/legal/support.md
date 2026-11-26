@@ -4,13 +4,13 @@ description: "Hilfe zu Snacklist: so erreichst du uns, und Antworten auf häufig
 locale: de
 path: /support
 translation_key: support
-updated: 2026-11-22
+updated: 2026-11-26
 draft: false
 ---
 
 # Hilfe und Kontakt
 
-Snacklist ist eine gemeinsame Einkaufsliste für einen Haushalt. Was einer einträgt, sehen alle anderen im Haushalt sofort. Snacklist sortiert jeden Eintrag in seine Kategorie. Es gibt Snacklist für iPhone und Android.
+Snacklist ist eine gemeinsame Einkaufsliste für einen Haushalt. Was einer einträgt, sehen alle anderen im Haushalt sofort. Snacklist ordnet die Einträge nach deinen Läden, in der Reihenfolge deines Wegs durch den Laden. Es gibt Snacklist für iPhone und Android.
 
 ## So bekommst du Hilfe
 
@@ -32,11 +32,11 @@ Snacklist erscheint für das iPhone im App Store und für Android in Google Play
 
 ### Wie lade ich jemanden ein?
 
-Tippe auf **Mehr** und dann auf **Leute einladen**. Teile den Link oder den Code. Eine Einladung gilt für eine Person. Offene Einladungen kannst du dort auch widerrufen.
+Tippe oben links in der Liste auf den Namen deines Haushalts und dann auf **Einladen**. Teile den Link oder den Code. Eine Einladung gilt für eine Person. Offene Einladungen widerrufst du auf der Mitgliederseite unter **Offene Einladungen**.
 
 ### Wie trete ich mit einem Code einem Haushalt bei?
 
-Öffne den Einladungslink, den du bekommen hast, oder tippe oben in der Liste auf den Namen deines Haushalts, dann auf **Mit Code beitreten**, und gib den Code ein. Snacklist zeigt dir vorher, welchem Haushalt du beitrittst. Bist du noch ganz neu, wählst du gleich nach der Anmeldung **Haushalt beitreten**.
+Öffne den Einladungslink, den du bekommen hast, oder tippe oben links in der Liste auf den Namen deines Haushalts, dann auf **Haushalte** und auf **Mit Code beitreten**, und gib den Code ein. Snacklist zeigt dir vorher, welchem Haushalt du beitrittst. Bist du noch ganz neu, tippst du beim Einrichten unter **Wie soll euer Haushalt heißen?** auf **Bestehendem Haushalt beitreten** und gibst den Code ein.
 
 ### Wie exportiere ich meine Daten?
 
@@ -44,15 +44,25 @@ Tippe auf **Mehr**, dann auf **Konto** und auf **Meine Daten exportieren**. Du b
 
 ### Wie lösche ich mein Konto?
 
-Tippe auf **Mehr**, dann auf **Konto** und auf **Konto löschen**, und bestätige mit dem Wort LÖSCHEN. Dein Konto, dein Profil, deine Zugriffsschlüssel und verbundenen Apps werden sofort gelöscht. Bleiben andere im Haushalt, behalten sie die Liste; deine Einträge stehen dort ohne deinen Namen. Bist du das letzte Mitglied, wird der ganze Haushalt gelöscht. Hast du Snacklist Premium, endet es mit deinem Konto. Ein Jahresabo rechnen Apple bzw. Google weiter ab: Kündige es vorher im App Store oder bei Google Play. Ob du dein Geld zurückbekommen kannst, steht unter „Kann ich Snacklist Premium zurückgeben?“. Auch Haushalte, die du archiviert hast, werden gelöscht. In unseren verschlüsselten Sicherungen bleiben gelöschte Daten noch bis zu 90 Tage, danach sind sie auch dort weg.
+Tippe auf **Mehr**, dann auf **Konto** und auf **Konto löschen**, und bestätige mit dem Wort LÖSCHEN. Dein Konto, dein Profil, deine Zugriffsschlüssel und verbundenen Apps werden sofort gelöscht. Bleiben andere im Haushalt, behalten sie die Liste; deine Einträge stehen dort ohne deinen Namen. Bist du das letzte Mitglied, wird der ganze Haushalt gelöscht. Hast du Snacklist Premium, endet es mit deinem Konto.
+
+::: once premium-launch
+Ein Jahresabo rechnen Apple bzw. Google weiter ab: Kündige es vorher im App Store oder bei Google Play. Ob du dein Geld zurückbekommen kannst, steht unter „Kann ich Snacklist Premium zurückgeben?“.
+:::
+
+In unseren verschlüsselten Sicherungen bleiben gelöschte Daten noch bis zu 90 Tage, danach sind sie auch dort weg.
 
 Ohne App geht es auch: Schreib an [support@snacklist.app](mailto:support@snacklist.app).
 
 ### Was passiert mit Snacklist Premium, wenn ich einen Haushalt verlasse?
 
-Snacklist Premium gehört zu deinem Konto und gilt in jedem Haushalt, in dem du Mitglied bist. Verlässt du einen Haushalt, behältst du Premium. Verlässt du ihn als letztes Mitglied, wird der Haushalt gelöscht, dein Premium bleibt. Zu Erstattungen siehe „Kann ich Snacklist Premium zurückgeben?“.
+Snacklist Premium gehört zu deinem Konto und gilt in jedem Haushalt, in dem du Mitglied bist. Verlässt du einen Haushalt, behältst du Premium. Verlässt du ihn als letztes Mitglied, wird der Haushalt gelöscht, dein Premium bleibt.
 
-### Kann ich Snacklist Premium zurückgeben?
+::: once premium-launch
+Zu Erstattungen siehe „Kann ich Snacklist Premium zurückgeben?“.
+:::
+
+### Kann ich Snacklist Premium zurückgeben? {once=premium-launch}
 
 Snacklist Premium kaufst du bei Apple oder Google, nicht bei uns. Deshalb gilt:
 
@@ -65,7 +75,7 @@ Unsere Erstattungen nach den 48 Stunden sind freiwillig. Deine gesetzlichen Rech
 
 ### Wie schalte ich die Nutzungsdaten aus?
 
-Tippe auf **Mehr** und dann auf **Nutzungsdaten**. Schalte dort **Nutzungsdaten und Fehlerberichte senden** aus. Ab dann sendet die App nichts mehr an PostHog. Du kannst ihn jederzeit wieder einschalten.
+Tippe auf **Mehr** und dann auf **Nutzungsdaten**. Schalte dort **Nutzungsdaten und Fehlerberichte senden** aus. Ab dann sendet die App nichts mehr an PostHog. Du kannst sie jederzeit wieder einschalten.
 
 ### Kann ich Sachen per Siri auf die Liste setzen?
 

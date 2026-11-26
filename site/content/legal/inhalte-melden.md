@@ -4,7 +4,7 @@ description: "Rechtswidrige Inhalte in Snacklist melden, ohne Konto, und unsere 
 locale: de
 path: /inhalte-melden
 translation_key: report
-updated: 2026-11-18
+updated: 2026-11-26
 form:
   required: Pflicht
   recommended: empfohlen
@@ -19,7 +19,7 @@ form:
       other: Anderer Rechtsverstoß
   location:
     label: Wo ist der Inhalt?
-    help: "In der App wählen wir den Eintrag, die Liste oder das Foto für dich aus – bitte prüfe die Auswahl. Im Formular: Name des Haushalts und der Liste, der genaue Text des Eintrags und, wenn du ihn hast, der Einladungscode. Je genauer, desto schneller finden wir ihn."
+    help: "Im Formular: Name des Haushalts und der Liste, der genaue Text des Eintrags und, wenn du ihn hast, der Einladungscode. Je genauer, desto schneller finden wir ihn."
   reason:
     label: Warum ist der Inhalt rechtswidrig?
     help: "Erkläre bitte so genau wie möglich, welches Recht verletzt wird und warum. Wenn es um deine eigenen Rechte geht, sag uns, in welcher Beziehung du zum Inhalt stehst."
