@@ -1,5 +1,5 @@
-// Feature store-apps, the „… ist erledigt“ card (job 399, SC1; flag open-store-app, so a build with
-// FLAGS_ON=open-store-app). On demo-familie: Noah adds Haferkekse and Leinsamen to a store „Lidl am Markt“
+// Feature store-apps, the „… ist erledigt“ card (job 399, SC1; flag open-store-app, full since
+// 2026-11-25, so a plain launch). On demo-familie: Noah adds Haferkekse and Leinsamen to a store „Lidl am Markt“
 // linked to Lidl, and Senf to an unlinked „Hofladen“. Mia ticks Haferkekse and Leinsamen in the list: the
 // card „Lidl am Markt ist erledigt“ shows with „App öffnen“ below the title, which opens Lidl Plus'
 // Play page; the card stays there, since a headless page is never hidden by the new tab. Noah, who only added, sees no card. Mia ticks Senf: the unlinked

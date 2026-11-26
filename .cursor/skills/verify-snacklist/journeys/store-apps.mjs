@@ -1,19 +1,19 @@
-// Feature store-apps (flag open-store-app, off for users; job 313), on demo-familie. With
-// `--expect on` (a build with FLAGS_ON=open-store-app): Liste → Anpassen → „Laden hinzufügen“
+// Feature store-apps (flag open-store-app, full since 2026-11-25; job 313), on demo-familie. With
+// `--expect on` (the users' build, the default): Liste → Anpassen → „Laden hinzufügen“
 // offers REWE after „Re“ and a tap makes it without a question; „Lidl am Markt“ and Enter asks
 // „Ist das Lidl (Deutschland)?“, „Ja“ matches it (`stores.retailer_chain`), its details read
 // „Zugeordnet: Lidl · …“ and „Lidl Plus öffnen“ opens the Play page in a new tab; with Butter moved
 // to it, the list's store header has the key and the one-time tip, and the key opens the same page.
-// With `--expect off` (the users' build): no chain offered, no question, no chain line, no key.
+// With `--expect off` (a build with VH_FLAGS_OFF=open-store-app): no chain offered, no question, no chain line, no key.
 // Deletes the stores it made.
 //
 //   node journeys/store-apps.mjs <evidence dir> [--expect on|off]
 import process from 'node:process';
-import { apiAs, capture, instance, itemRow, logger, member, openApp, openTab, reveal, signIn, typeInto } from '../helpers/lib.mjs';
+import { apiAs, capture, flagOn, instance, itemRow, logger, member, openApp, openTab, reveal, signIn, typeInto } from '../helpers/lib.mjs';
 
 const [dir, ...rest] = process.argv.slice(2);
 const opt = (name, def) => (rest.includes(`--${name}`) ? rest[rest.indexOf(`--${name}`) + 1] : def);
-const expect = opt('expect', 'off');
+const expect = opt('expect', flagOn('open-store-app') ? 'on' : 'off');
 if (!dir || !['on', 'off'].includes(expect)) throw new Error('usage: store-apps.mjs <evidence dir> [--expect on|off]');
 
 const playLidl = 'https://play.google.com/store/apps/details?id=com.lidl.eci.lidlplus';

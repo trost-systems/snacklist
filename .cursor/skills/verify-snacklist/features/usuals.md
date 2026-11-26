@@ -37,5 +37,5 @@ Preconditions:
 - Due rows show only while the field is empty. After a character is typed the sheet switches to the typed rows.
 - The window closes: an item last bought more than four gaps ago is no longer due, so an item bought once a year never shows.
 - The interface string „Brauchen wir wieder?“ / "Need these again?" exists in the language files but no screen shows it today; do not look for it.
-- Not gated: no flag or Premium requirement.
+- Not gated in the app: no flag or Premium requirement. The API and MCP readers of the same usuals need the member's own Premium since 2026-11-24 (ai-assistants `ai-lock`).
 - After a tick the due and recent rows refresh about 1.5 s after the server confirms it; wait for the row by name. To make an item due without waiting weeks, backdate its `item_events` rows (`action` 'added' / 'bought', `created_at`) with `scripts/fg db query --write` and add a second purchase day a week earlier (driven 2026-11-04: „4× Brötchen, Wieder fällig“, one tap adds it with quantity 4).
