@@ -9,7 +9,7 @@ updated: 2026-11-23
 
 # Nutzungsbedingungen
 
-Stand: 23. November 2026
+Stand: {{updated}}
 
 Diese Bedingungen gelten für Snacklist: die Einkaufslisten-App für Haushalte (iOS, Android und Web), den MCP-Connector für KI-Assistenten (zum Beispiel ChatGPT und Claude), die öffentliche REST-API mit persönlichen API-Schlüsseln und Snacklist Premium. Wie wir mit deinen Daten umgehen, steht in der [Datenschutzerklärung](https://snacklist.app/datenschutz).
 

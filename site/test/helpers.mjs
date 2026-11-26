@@ -125,8 +125,9 @@ export function guide({ locale, slug, title = `Title ${slug}`, description = `De
   return `---\n${lines.join('\n')}\n---\n\n${body}`;
 }
 
-export function legal({ locale, path, key, title = `Legal ${key}`, body = `# ${title}\n\nText.\n` }) {
-  return `---\ntitle: "${title}"\ndescription: "About ${key}"\nlocale: ${locale}\npath: ${path}\ntranslation_key: ${key}\nupdated: 2026-10-01\n---\n\n${body}`;
+export function legal({ locale, path, key, title = `Legal ${key}`, body = `# ${title}\n\nText.\n`, updated = '2026-10-01' }) {
+  const updatedLine = updated === null ? '' : `updated: ${updated}\n`;
+  return `---\ntitle: "${title}"\ndescription: "About ${key}"\nlocale: ${locale}\npath: ${path}\ntranslation_key: ${key}\n${updatedLine}---\n\n${body}`;
 }
 
 export const hrefs = (doc, selector = 'a') => doc.querySelectorAll(selector).map((a) => a.getAttribute('href'));

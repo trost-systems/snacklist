@@ -10,7 +10,7 @@ updated: 2026-11-26
 # Privacy policy
 
 This is a translation. The [German version](/datenschutz) is authoritative.
-Last updated: 26 November 2026
+Last updated: {{updated}}
 
 This page explains which personal data Snacklist processes, why, on what legal basis, who receives it and what rights you have. Snacklist is a shopping-list app for households on iPhone, Android and in the browser (app.snacklist.app), with the website snacklist.app.
 

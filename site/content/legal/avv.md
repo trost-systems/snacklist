@@ -12,7 +12,7 @@ draft: true
 
 ENTWURF / DRAFT, nicht veröffentlicht, nicht verlinkt. Dieser Text wartet auf die Prüfung durch Legal (offene Fragen in `docs/legal/169b-privacy-draft.md`).
 
-Stand: 8. November 2026
+Stand: {{updated}}
 
 ## 1. Vertragsparteien
 

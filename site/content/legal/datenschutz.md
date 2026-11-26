@@ -9,7 +9,7 @@ updated: 2026-11-26
 
 # Datenschutzerklärung
 
-Stand: 26. November 2026
+Stand: {{updated}}
 
 Hier steht, welche personenbezogenen Daten Snacklist verarbeitet, wozu, auf welcher Rechtsgrundlage, an wen sie gehen und welche Rechte du hast. Snacklist ist eine Einkaufslisten-App für Haushalte für iPhone, Android und Browser (app.snacklist.app) mit der Website snacklist.app.
 
