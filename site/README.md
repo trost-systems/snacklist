@@ -261,6 +261,11 @@ cd checks && node crawl.mjs ../dist-history --pages /history,/en/history
   `/datenschutz` and `/en/privacy` (`/privacy` redirects there, `vercel.json`), and the help
   pages `/support` and `/en/support` (job 24). A heading ending in `{#id}` gets that anchor:
   `/datenschutz#rechte` is the stores' privacy-choices URL.
+- A policy's date line is `Stand: {{updated}}` (German) or `Last updated: {{updated}}` (English)
+  in the Markdown. The build writes the front matter's `updated:` there, as `26. November 2026`
+  or `26 November 2026` (day without a leading zero), so a date bump (Legal N-279) edits only
+  `updated:` (job 477). A legal page whose hand-written `Stand:` or `Last updated:` line differs
+  from `updated:` fails the build; so does `{{updated}}` on a page without a valid `updated:`.
 - `config.json`: `privacyPublished` shows the Datenschutz/Privacy footer links,
   `supportPublished` the Hilfe/Support one. Set a flag to `true` only together with its pages;
   a footer link to a missing page fails the build. Impressum and the report page are always linked.

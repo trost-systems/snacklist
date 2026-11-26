@@ -9,7 +9,7 @@ updated: 2026-11-23
 
 # Terms of Use
 
-Last updated: 23 November 2026
+Last updated: {{updated}}
 
 These terms apply to Snacklist: the grocery list app for households (iOS, Android and web), the MCP connector for AI assistants (for example ChatGPT and Claude), the public REST API with personal API keys, and Snacklist Premium. How we handle your data is explained in the [privacy policy](https://snacklist.app/en/privacy).
 

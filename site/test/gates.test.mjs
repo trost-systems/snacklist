@@ -217,3 +217,71 @@ test('the help pages answer refund questions only once premium-launch is release
     assert.ok(siteText(live.outDir).some(([f, text]) => f === file && text.includes(refund)));
   }
 });
+
+// Job 477: a legal page's "Stand:" / "Last updated:" line is written from `updated:`.
+const LABELS = { de: 'Stand', en: 'Last updated' };
+const longDate = (iso, locale) =>
+  new Intl.DateTimeFormat(locale === 'de' ? 'de-DE' : 'en-GB', { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(iso));
+const datedLegal = (locale, n, updated, line = `${LABELS[locale]}: {{updated}}`) =>
+  legal({ locale, path: `/dated-${locale}-${n}`, key: `dated-${locale}-${n}`, updated, body: `# Dated\n\nIntro.\n${line}\n\nText.\n` });
+const datedText = (site, locale, n) => site.page(`/dated-${locale}-${n}`).querySelector('main p').text.replace(/\s+/g, ' ');
+
+test('the policy date line is written from updated:, every month in both languages, the day without a zero', () => {
+  const files = {};
+  for (const locale of ['de', 'en']) {
+    for (let month = 1; month <= 12; month++) {
+      files[`legal/dated-${locale}-${month}.md`] = datedLegal(locale, month, `2026-${String(month).padStart(2, '0')}-${String(2 * month + 5).padStart(2, '0')}`);
+    }
+  }
+  const site = buildSite({ files });
+  assert.equal(datedText(site, 'de', 3), 'Intro. Stand: 11. März 2026');
+  assert.equal(datedText(site, 'en', 1), 'Intro. Last updated: 7 January 2026');
+  for (const locale of ['de', 'en']) {
+    for (let month = 1; month <= 12; month++) {
+      const iso = `2026-${String(month).padStart(2, '0')}-${String(2 * month + 5).padStart(2, '0')}`;
+      assert.equal(datedText(site, locale, month), `Intro. ${LABELS[locale]}: ${longDate(iso, locale)}`);
+    }
+  }
+});
+
+test("the real policies' date lines are the placeholder and render their updated:", () => {
+  const site = buildSite();
+  const dir = new URL('../content/legal/', import.meta.url);
+  const dated = readdirSync(dir).filter((f) => f.endsWith('.md') && readFileSync(new URL(f, dir), 'utf8').includes('{{updated}}'));
+  assert.deepEqual(dated.sort(), ['avv.md', 'datenschutz.md', 'dpa.md', 'nutzungsbedingungen.md', 'privacy.md', 'terms.md']);
+  for (const file of dated) {
+    const text = readFileSync(new URL(file, dir), 'utf8');
+    const field = (name) => text.match(new RegExp(`^${name}: (.*)$`, 'm'))[1];
+    const locale = field('locale');
+    const main = site.page(field('path')).querySelector('main').text;
+    assert.match(main, new RegExp(`^${LABELS[locale]}: ${longDate(field('updated'), locale)}$`, 'm'), file);
+    assert.doesNotMatch(main, /\{\{updated\}\}/, file);
+  }
+});
+
+test('a policy date line fails the build without a valid updated:', () => {
+  assert.throws(() => buildSite({ files: { 'legal/dated-de-1.md': datedLegal('de', 1, null) } }), /dated-de-1\.md: missing required frontmatter field "updated"/);
+  assert.throws(() => buildSite({ files: { 'legal/dated-de-1.md': datedLegal('de', 1, '2026-02-30') } }), /dated-de-1\.md: frontmatter field "updated" must be a date/);
+  const index = readFileSync(new URL('../content/indexes/de.md', import.meta.url), 'utf8').replace(/\n---\n/, '\n---\n\nStand: {{updated}}\n');
+  assert.throws(() => buildSite({ files: { 'indexes/de.md': index } }), /indexes\/de\.md: \{\{updated\}\} needs the frontmatter field "updated"/);
+});
+
+test('a hand-written policy date line that disagrees with updated: fails the build', () => {
+  assert.throws(
+    () => buildSite({ files: { 'legal/dated-de-1.md': datedLegal('de', 1, '2026-11-27', 'Stand: 26. November 2026') } }),
+    /dated-de-1\.md: "Stand: 26\. November 2026" disagrees with updated: 2026-11-27 \(27\. November 2026\); write "Stand: \{\{updated\}\}"/,
+  );
+  assert.throws(
+    () => buildSite({ files: { 'legal/dated-en-1.md': datedLegal('en', 1, '2026-11-27', 'Last updated: 26 November 2026') } }),
+    /dated-en-1\.md: "Last updated: 26 November 2026" disagrees with updated: 2026-11-27/,
+  );
+  const agreeing = buildSite({ files: { 'legal/dated-en-1.md': datedLegal('en', 1, '2026-11-27', 'Last updated: 27 November 2026') } });
+  assert.equal(datedText(agreeing, 'en', 1), 'Intro. Last updated: 27 November 2026');
+});
+
+test('updated: may be quoted, spaced or commented, and the date line may end in a hard break', () => {
+  const forms = ["'2026-11-27'", '"2026-11-27"', ' 2026-11-27', '2026-11-27 # Legal N-279'];
+  const files = Object.fromEntries(forms.map((updated, n) => [`legal/dated-de-${n}.md`, datedLegal('de', n, updated, 'Stand: {{updated}}  ')]));
+  const site = buildSite({ files });
+  forms.forEach((_, n) => assert.equal(datedText(site, 'de', n), 'Intro. Stand: 27. November 2026'));
+});

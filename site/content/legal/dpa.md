@@ -13,7 +13,7 @@ draft: true
 ENTWURF / DRAFT, not published, not linked. This text is waiting for review by Legal (open questions in `docs/legal/169b-privacy-draft.md`).
 
 This is a translation. The [German version](/avv) is authoritative.
-Last updated: 8 November 2026
+Last updated: {{updated}}
 
 ## 1. Parties
 

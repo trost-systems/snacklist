@@ -36,6 +36,7 @@ export const LOCALES = {
     },
     ui: {
       updated: 'Aktualisiert',
+      policyDate: { label: 'Stand', months: ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'], format: (d, month, y) => `${d}. ${month} ${y}` },
       languageNav: 'Sprache',
       mainNav: 'Hauptnavigation',
       footerNav: 'Rechtliches',
@@ -76,6 +77,7 @@ export const LOCALES = {
     },
     ui: {
       updated: 'Updated',
+      policyDate: { label: 'Last updated', months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'], format: (d, month, y) => `${d} ${month} ${y}` },
       languageNav: 'Language',
       mainNav: 'Main',
       footerNav: 'Legal',
@@ -349,20 +351,26 @@ function fail(file, reason) {
 
 function normalizeDate(value, file) {
   if (value instanceof Date && !Number.isNaN(value.getTime())) return value.toISOString().slice(0, 10);
-  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value))) return value;
+  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value)) && new Date(value).toISOString().startsWith(value)) return value;
   fail(file, `frontmatter field "updated" must be a date (YYYY-MM-DD), got ${JSON.stringify(value)}`);
 }
 
 function loadPage(kindName, { file, expect }, contentDir, versions, skills) {
   const kind = KINDS[kindName];
   const name = relative(contentDir, file);
-  const { data, content } = matter(readFileSync(file, 'utf8'));
+  const text = readFileSync(file, 'utf8');
+  const { data, content } = matter(text);
   for (const field of kind.fields) {
     const value = data[field];
     if (value === undefined || value === null || value === '') fail(name, `missing required frontmatter field "${field}"`);
   }
   const fm = { ...data };
   if (fm.updated !== undefined) fm.updated = normalizeDate(fm.updated, name);
+  const rawFrontMatter = text.slice(0, text.indexOf('\n---', 3));
+  // YAML rolls an impossible date over (2026-02-30 parses as 2026-03-02); the field must be the date it renders.
+  if (fm.updated !== undefined && !new RegExp(`^updated:[ \\t]+(['"]?)${fm.updated}\\1\\s*(#.*)?$`, 'm').test(rawFrontMatter)) {
+    fail(name, `frontmatter field "updated" must be a date (YYYY-MM-DD), got ${rawFrontMatter.match(/^updated:(.*)$/m)?.[1].trim()}`);
+  }
   for (const field of kind.fields.filter((f) => f !== 'updated')) {
     if (typeof fm[field] !== 'string') fail(name, `frontmatter field "${field}" must be a string`);
   }
@@ -398,8 +406,26 @@ function loadPage(kindName, { file, expect }, contentDir, versions, skills) {
     notices: [...(fm.draft === true ? [ui.draft] : []), ...(released(fm.since, versions) ? [] : [ui.unreleased(fm.since)])],
     unlisted: fm.unlisted === true,
     report: fm.form !== undefined,
-    ...pageBody(content, fm, { file: name, kind: kindName, locale: fm.locale, versions, since: fm.since, skills }),
+    ...pageBody(withPolicyDate(content, fm, kindName, name), fm, { file: name, kind: kindName, locale: fm.locale, versions, since: fm.since, skills }),
   };
+}
+
+// A legal page's date line ("Stand: …", "Last updated: …") is `{{updated}}` in the Markdown, written from
+// `updated:` so a date bump (Legal N-279) is one edit (job 477). A hand-written one must agree with it.
+const UPDATED_PLACEHOLDER = '{{updated}}';
+
+function withPolicyDate(content, fm, kindName, file) {
+  if (kindName !== 'page' && !content.includes(UPDATED_PLACEHOLDER)) return content;
+  if (fm.updated === undefined) fail(file, `${UPDATED_PLACEHOLDER} needs the frontmatter field "updated" (YYYY-MM-DD)`);
+  const { label, months, format } = LOCALES[fm.locale].ui.policyDate;
+  const [y, m, d] = fm.updated.split('-').map(Number);
+  const date = format(d, months[m - 1], y);
+  if (kindName === 'page') {
+    for (const [line, value] of content.matchAll(new RegExp(`^${label}: (.*?)[ \\t]*$`, 'gm'))) {
+      if (value !== UPDATED_PLACEHOLDER && value !== date) fail(file, `"${line}" disagrees with updated: ${fm.updated} (${date}); write "${label}: ${UPDATED_PLACEHOLDER}"`);
+    }
+  }
+  return content.replaceAll(UPDATED_PLACEHOLDER, date);
 }
 
 // The tokens are what the HTML shows, gating done; a guide's JSON for the app is built from them.
