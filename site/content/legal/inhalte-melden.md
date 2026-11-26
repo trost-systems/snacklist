@@ -46,11 +46,11 @@ form:
 
 # Inhalte melden
 
-Hier meldest du Inhalte in Snacklist, die du für rechtswidrig hältst, zum Beispiel einen Eintrag, eine Liste, einen Haushaltsnamen oder ein Foto. Für Fragen oder Fehler nutze bitte Feedback oder support@snacklist.app. Dieses Formular ist kein Notruf: Ist jemand in akuter Gefahr, ruf sofort den örtlichen Notruf an, in der EU die 112.
+Hier meldest du Inhalte in Snacklist, die du für rechtswidrig hältst, zum Beispiel einen Eintrag, eine Liste oder einen Haushaltsnamen. Für Fragen oder Fehler nutze bitte Feedback oder support@snacklist.app. Dieses Formular ist kein Notruf: Ist jemand in akuter Gefahr, ruf sofort den örtlichen Notruf an, in der EU die 112.
 
 ## Regeln für Inhalte und wie wir Meldungen bearbeiten {#regeln}
 
-Was du in Snacklist einträgst – Einträge, Listen, Haushaltsnamen, Fotos, Rückmeldungen –, sehen nur die Mitglieder deines Haushalts (Rückmeldungen nur wir). Trotzdem gilt: Speichere keine rechtswidrigen Inhalte, zum Beispiel Beleidigungen, Drohungen, fremde Fotos ohne Erlaubnis der abgebildeten Person oder Inhalte, an denen andere die Rechte haben, und nutze Snacklist nicht, um andere zu belästigen.
+Was du in Snacklist einträgst – Einträge, Listen, Haushaltsnamen, Rückmeldungen –, sehen nur die Mitglieder deines Haushalts (Rückmeldungen nur wir). Trotzdem gilt: Speichere keine rechtswidrigen Inhalte, zum Beispiel Beleidigungen, Drohungen oder Inhalte, an denen andere die Rechte haben, und nutze Snacklist nicht, um andere zu belästigen.
 
 **Wie wir Meldungen bearbeiten.** Jede Meldung liest und entscheidet Peter Trost, der Snacklist betreibt, selbst; wir setzen dafür keine automatischen Werkzeuge oder KI ein. Wir prüfen sorgfältig, unvoreingenommen und ohne Willkür, ob der Inhalt rechtswidrig ist oder gegen diese Regeln verstößt. Meldungen zu einer Gefahr für Leben oder Sicherheit und zu Darstellungen sexuellen Kindesmissbrauchs prüfen wir am selben Tag, alle anderen in der Regel innerhalb von 7 Tagen. Wer eine E-Mail-Adresse angibt, bekommt eine Eingangsbestätigung und unsere Entscheidung mit Begründung.
 
