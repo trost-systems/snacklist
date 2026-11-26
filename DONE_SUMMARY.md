@@ -3220,3 +3220,7 @@ See `docs/done/466.md`.
 The site's guides offer „In der App öffnen“ only from the `launch` stage, so an iPhone without
 the app no longer gets Safari's "address is invalid". The join page hides the link for an invite
 that is invalid or full. Tests and screenshots: [docs/done/462c.md](docs/done/462c.md).
+
+## Job 452: safe Dependabot updates
+
+See docs/done/452.md. #201 and #658 merged; `purchases_flutter` 11.0.4 held back (SDK facts re-read needed, NEEDS_LEAD); #33 untouched.
