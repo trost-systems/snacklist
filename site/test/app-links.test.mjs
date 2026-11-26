@@ -1,13 +1,15 @@
 // The guides open in the installed app (job 462): snacklist.app serves the association files for
-// the guide paths, and guide pages and indexes offer the hand-off on phones (public/open-in-app.js).
+// the guide paths, and from the launch stage guide pages and indexes offer the hand-off on phones
+// (public/open-in-app.js).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { buildSite, htmlRoutes, serve, REPO_DIR, SITE_DIR } from './helpers.mjs';
+import { buildSite, htmlRoutes, serve, stageBuild, REPO_DIR, SITE_DIR } from './helpers.mjs';
 import { LOCALES } from '../build.mjs';
 
 const site = buildSite();
+const launch = stageBuild('launch');
 const readJson = (rel) => JSON.parse(readFileSync(join(site.outDir, rel), 'utf8'));
 
 test('the AASA claims exactly the guide indexes and guides, for the Snacklist app only', () => {
@@ -37,12 +39,12 @@ test('the association files are served as JSON, the AASA also at the root path, 
   assert.deepEqual(JSON.parse(res['/apple-app-site-association'].body), readJson('.well-known/apple-app-site-association'));
 });
 
-test('guide pages and guide indexes carry the hidden hand-off below the title; no other page does', () => {
-  const routes = htmlRoutes(site.outDir);
+test('at launch, guide pages and guide indexes carry the hidden hand-off below the title; no other page does', () => {
+  const routes = htmlRoutes(launch.outDir);
   const guides = routes.filter((r) => Object.values(LOCALES).some(({ guidesBase }) => r === guidesBase || r.startsWith(`${guidesBase}/`)));
   assert.ok(guides.length >= 12, `${guides.length} guide pages and indexes`);
   for (const route of routes) {
-    const doc = site.page(route);
+    const doc = launch.page(route);
     const script = doc.querySelector('script[src="/open-in-app.js"]');
     const link = doc.querySelector('[data-open-in-app]');
     if (!guides.includes(route)) {
@@ -60,9 +62,20 @@ test('guide pages and guide indexes carry the hidden hand-off below the title; n
   }
 });
 
+// Before the launch most phones have no app: the scheme would end in Safari's "address is invalid".
+test('before the launch no page offers the hand-off', () => {
+  for (const build of [stageBuild('waitlist'), stageBuild('beta')]) {
+    for (const route of htmlRoutes(build.outDir)) {
+      const doc = build.page(route);
+      assert.equal(doc.querySelector('script[src="/open-in-app.js"]'), null, `${route} has no hand-off script`);
+      assert.equal(doc.querySelector('[data-open-in-app]'), null, `${route} has no hand-off link`);
+    }
+  }
+});
+
 test('the hand-off stays out of the Markdown twins', () => {
   for (const locale of Object.values(LOCALES)) {
-    const twin = readFileSync(join(site.outDir, `${locale.guidesBase.slice(1)}.md`), 'utf8');
+    const twin = readFileSync(join(launch.outDir, `${locale.guidesBase.slice(1)}.md`), 'utf8');
     assert.ok(!twin.includes(locale.ui.openInApp), locale.guidesBase);
   }
 });

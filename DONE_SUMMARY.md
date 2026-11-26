@@ -3214,3 +3214,9 @@ See `docs/done/466.md`.
 - **Verify.** `flutter test test/push` (58; the new delete test fails on main), `python3 scripts/ios-push-entitlements-test.py` (5). There was no device test, and the check has not yet read a real IPA. The next release run is its first.
 - **Peter.** Install the first TestFlight build after the merge. The owner turns the server switches back on (NEEDS_LEAD). Keep „Wenn jemand etwas hinzufügt“ on, lock the phone, and have someone else add an item. No reinstall or switch toggle is needed.
 - **Details.** [docs/done/468.md](docs/done/468.md) (audit table with doc links, production counts).
+
+## Job 462c: the app hand-off on dead invites and before the launch
+
+The site's guides offer „In der App öffnen“ only from the `launch` stage, so an iPhone without
+the app no longer gets Safari's "address is invalid". The join page hides the link for an invite
+that is invalid or full. Tests and screenshots: [docs/done/462c.md](docs/done/462c.md).

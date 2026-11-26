@@ -89,7 +89,9 @@ that); a guide inside the app is a route, not a URL.
 
 A URL typed or pasted into Safari, a link tapped on the same domain, or a choice of "open in
 browser" keeps the page in the browser. The join page and the site's guide pages then show a
-quiet "In der App öffnen" link, only on iOS and Android:
+quiet "In der App öffnen" link, only on iOS and Android. The join page hides it once the invite
+turns out invalid or full. The site renders it only in the `launch` stage (`site/config/stage.ts`):
+before that most phones have no app and Safari would answer the scheme with "address is invalid".
 
 - iOS: `com.snacklist.app://open/<path>` (the sign-in scheme with host `open`; supabase_flutter
   only reacts to links with auth parameters, the router routes the path like the universal link).
