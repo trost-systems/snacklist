@@ -4,13 +4,13 @@ description: "Help with Snacklist: how to reach us, and answers to common questi
 locale: en
 path: /en/support
 translation_key: support
-updated: 2026-11-22
+updated: 2026-11-26
 draft: false
 ---
 
 # Help and contact
 
-Snacklist is a shared shopping list for one household. Whatever one person adds, everyone else in the household sees right away. Snacklist sorts each item into its category. It runs on iPhone and Android.
+Snacklist is a shared shopping list for one household. Whatever one person adds, everyone else in the household sees right away. Snacklist groups your items by store, in the order you walk through it. It runs on iPhone and Android.
 
 ## How to get help
 
@@ -32,11 +32,11 @@ Snacklist comes to the App Store for iPhone and to Google Play for Android. Once
 
 ### How do I invite someone?
 
-Tap **More**, then **Invite people**. Share the link or the code. An invite is valid for one person. You can revoke open invites there too.
+Tap your household's name at the top left of the list, then **Invite**. Share the link or the code. An invite is valid for one person. Revoke open invites on the members page under **Open invites**.
 
 ### How do I join a household with a code?
 
-Open the invite link you received, or tap your household's name at the top of the list, then **Join with a code**, and enter the code. Snacklist shows you which household you are joining first. If you are brand new, choose **Join household** right after signing in.
+Open the invite link you received, or tap your household's name at the top left of the list, then **Households** and **Join with a code**, and enter the code. Snacklist shows you which household you are joining first. If you are brand new, on the **What should your household be called?** step tap **Join existing household** and enter the code.
 
 ### How do I export my data?
 
@@ -44,15 +44,25 @@ Tap **More**, then **Account** and **Export my data**. You get everything stored
 
 ### How do I delete my account?
 
-Tap **More**, then **Account** and **Delete account**, and confirm by typing DELETE. Your account, your profile, your access keys and connected apps are deleted right away. If others stay in the household, they keep the list; your items stay there without your name. If you are the last member, the whole household is deleted. If you have Snacklist Premium, it ends with your account. Apple or Google keep billing a yearly subscription: cancel it first in the App Store or on Google Play. Whether you can get your money back is under "Can I get a refund for Snacklist Premium?". Households you archived are deleted too. Deleted data stays in our encrypted backups for up to 90 more days, then it is gone there too.
+Tap **More**, then **Account** and **Delete account**, and confirm by typing DELETE. Your account, your profile, your access keys and connected apps are deleted right away. If others stay in the household, they keep the list; your items stay there without your name. If you are the last member, the whole household is deleted. If you have Snacklist Premium, it ends with your account.
+
+::: once premium-launch
+Apple or Google keep billing a yearly subscription: cancel it first in the App Store or on Google Play. Whether you can get your money back is under "Can I get a refund for Snacklist Premium?".
+:::
+
+Deleted data stays in our encrypted backups for up to 90 more days, then it is gone there too.
 
 Without the app: write to [support@snacklist.app](mailto:support@snacklist.app).
 
 ### What happens to Snacklist Premium if I leave a household?
 
-Snacklist Premium belongs to your account and applies in every household you are a member of. If you leave a household, you keep Premium. If you leave it as its last member, the household is deleted, but your Premium stays. For refunds, see "Can I get a refund for Snacklist Premium?".
+Snacklist Premium belongs to your account and applies in every household you are a member of. If you leave a household, you keep Premium. If you leave it as its last member, the household is deleted, but your Premium stays.
 
-### Can I get a refund for Snacklist Premium?
+::: once premium-launch
+For refunds, see "Can I get a refund for Snacklist Premium?".
+:::
+
+### Can I get a refund for Snacklist Premium? {once=premium-launch}
 
 You buy Snacklist Premium from Apple or Google, not from us. So:
 

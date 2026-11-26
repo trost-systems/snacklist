@@ -4,7 +4,7 @@ description: "Report illegal content in Snacklist, no account needed, and our co
 locale: en
 path: /en/report
 translation_key: report
-updated: 2026-11-18
+updated: 2026-11-26
 form:
   required: required
   recommended: recommended
@@ -19,7 +19,7 @@ form:
       other: Other illegal content
   location:
     label: Where is the content?
-    help: "In the app we select the item, list or photo for you – please check it. In the form: the household and list name, the exact text of the item and, if you have it, the invite code. The more exact, the faster we can find it."
+    help: "In the form: the household and list name, the exact text of the item and, if you have it, the invite code. The more exact, the faster we can find it."
   reason:
     label: Why is this content illegal?
     help: "Please explain as precisely as you can which right is violated and why. If it concerns your own rights, tell us how you are connected to the content."

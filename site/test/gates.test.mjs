@@ -188,3 +188,32 @@ test('job 397: the privacy text follows unified-keys, the guides follow unified-
   assert.match(main(all, '/de/anleitungen/claude'), /Schlüssel erstellen/);
   assert.match(main(all, '/en/guides/claude'), /Create key/);
 });
+
+test('the help pages answer refund questions only once premium-launch is released, and keep the leave-household answer (Legal 456 F6)', () => {
+  const launch = (released) => {
+    const data = JSON.parse(REAL_FLAGS);
+    data.holds['premium-launch'].released = released;
+    return JSON.stringify(data);
+  };
+  const pages = [
+    ['/support', 'support.html', 'Kann ich Snacklist Premium zurückgeben?', 'Was passiert mit Snacklist Premium, wenn ich einen Haushalt verlasse?', /reportaproblem\.apple\.com|Zu Erstattungen siehe|Jahresabo/],
+    ['/en/support', 'en/support.html', 'Can I get a refund for Snacklist Premium?', 'What happens to Snacklist Premium if I leave a household?', /reportaproblem\.apple\.com|For refunds, see|yearly subscription/],
+  ];
+  const questions = (site, route) => site.page(route).querySelectorAll('main h3').map((h) => h.text.trim());
+  const faqLd = (site, route) =>
+    site.page(route).querySelectorAll('script[type="application/ld+json"]').map((s) => JSON.parse(s.innerHTML)).find((d) => d['@type'] === 'FAQPage').mainEntity.map((q) => q.name);
+  const held = buildSite({ env: PROD, repo: { flags: launch(false) } });
+  const live = buildSite({ env: PROD, repo: { flags: launch(true) } });
+  for (const [route, file, refund, leave, refundText] of pages) {
+    assert.ok(questions(held, route).includes(leave), `${route} keeps the leave-household question`);
+    assert.ok(!questions(held, route).includes(refund), `${route} has no refund question while premium-launch is held`);
+    assert.ok(!faqLd(held, route).includes(refund), `${route} JSON-LD has no refund question while premium-launch is held`);
+    assert.deepEqual(faqLd(held, route), questions(held, route));
+    assert.ok(!siteText(held.outDir).some(([, text]) => text.includes(refund)), `no file mentions "${refund}" while premium-launch is held`);
+    assert.doesNotMatch(held.page(route).querySelector('main').innerHTML, refundText);
+    assert.ok(questions(live, route).includes(refund), `${route} answers the refund question once premium-launch is released`);
+    assert.deepEqual(faqLd(live, route), questions(live, route));
+    assert.match(live.page(route).querySelector('main').innerHTML, refundText);
+    assert.ok(siteText(live.outDir).some(([f, text]) => f === file && text.includes(refund)));
+  }
+});
