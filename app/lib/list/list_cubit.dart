@@ -440,6 +440,13 @@ class ListCubit(
   /// ignored.
   var _watchGeneration = 0;
 
+  /// Open items per lowercased name in [_countedServer], so a server write
+  /// that names the rows it changed ([_serverWrite]) tells whether the open
+  /// names changed without reading the whole list.
+  var _nameCounts = <String, int>{};
+  Map<String, Item>? _countedServer;
+  ({Map<String, Item> server, Iterable<String> ids})? _serverWrite;
+
   /// Set as [close] starts: `isClosed` turns true only once it has
   /// awaited the channel and the network, and a cache read or a rewatch may
   /// resume in between.
@@ -582,7 +589,7 @@ class ListCubit(
         if (current()) {
           _noteDuringResyncs({row.id: row}, answered: false);
           _heardInFlight?.add(row.id);
-          _setServer(mergeServerRow(state.server, row));
+          _setServer(mergeServerRow(state.server, row), [row.id]);
           // A new member or list: reload so the list can name them.
           if ((row.addedBy != null &&
                   state.catalog.member(row.addedBy) == null) ||
@@ -625,7 +632,7 @@ class ListCubit(
                 : at;
           }
           if (known != null) {
-            _setServer({...state.server}..remove(id));
+            _setServer({...state.server}..remove(id), [id]);
           }
         }
       },
@@ -2250,6 +2257,7 @@ class ListCubit(
     final kept = op is AddItem && row == null
         ? answer.keys.where((id) => id != op.itemId).firstOrNull
         : null;
+    _serverWrite = (server: server, ids: rows.keys);
     emit(
       state.copyWith(
         server: server,
@@ -2383,8 +2391,12 @@ class ListCubit(
     _ => state.server[op.itemId]?.name ?? '',
   };
 
-  void _setServer(Map<String, Item> server) =>
-      emit(state.copyWith(server: server));
+  /// [ids] must name every row in which [server] differs from
+  /// `state.server`: `_openNamesChanged` counts only those.
+  void _setServer(Map<String, Item> server, Iterable<String> ids) {
+    _serverWrite = (server: server, ids: ids);
+    emit(state.copyWith(server: server));
+  }
 
   void _goOffline() {
     _troubleRound = null;
@@ -2441,7 +2453,7 @@ class ListCubit(
     }
     if (!_closing &&
         !identical(next.server, before.server) &&
-        !setEquals(_activeNames(next.server), _activeNames(before.server))) {
+        _openNamesChanged(before.server, next.server)) {
       _usualsReload?.cancel();
       _usualsReload = Timer(
         const Duration(milliseconds: 1500),
@@ -2505,10 +2517,56 @@ class ListCubit(
     return false;
   }
 
-  static Set<String> _activeNames(Map<String, Item> server) => {
-    for (final item in server.values)
-      if (item.status == ItemStatus.active) item.name.toLowerCase(),
-  };
+  bool _openNamesChanged(Map<String, Item> before, Map<String, Item> next) {
+    final write = _serverWrite;
+    _serverWrite = null;
+    if (write == null ||
+        !identical(write.server, next) ||
+        !identical(_countedServer, before)) {
+      final names = identical(_countedServer, before)
+          ? _nameCounts.keys.toSet()
+          : {
+              for (final item in before.values)
+                if (item.status == ItemStatus.active) item.name.toLowerCase(),
+            };
+      _nameCounts = {};
+      for (final item in next.values) {
+        if (item.status == ItemStatus.active) {
+          final name = item.name.toLowerCase();
+          _nameCounts[name] = (_nameCounts[name] ?? 0) + 1;
+        }
+      }
+      _countedServer = next;
+      return !setEquals(names, _nameCounts.keys.toSet());
+    }
+    // Whether each name the write touched was open before it.
+    final touched = <String, bool>{};
+    void count(Item? item, int by) {
+      if (item == null || item.status != ItemStatus.active) {
+        return;
+      }
+      final name = item.name.toLowerCase();
+      final n = _nameCounts[name] ?? 0;
+      touched.putIfAbsent(name, () => n > 0);
+      if (n + by == 0) {
+        _nameCounts.remove(name);
+      } else {
+        _nameCounts[name] = n + by;
+      }
+    }
+
+    for (final id in write.ids) {
+      final (was, now) = (before[id], next[id]);
+      if (!identical(was, now)) {
+        count(was, -1);
+        count(now, 1);
+      }
+    }
+    _countedServer = next;
+    return touched.entries.any(
+      (e) => e.value != _nameCounts.containsKey(e.key),
+    );
+  }
 
   // Fetches and acks can land after the screen is gone.
   @override

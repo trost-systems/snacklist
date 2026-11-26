@@ -18391,3 +18391,26 @@ Peter opened `https://app.snacklist.app/join/<code>` on TestFlight 1541 and got 
 ## Job 446: flake sweep 3
 
 Specs #71, #72, #60, #57, #58, #59, #78, #79 are closed as host-pause only: their failures all overlap VM pauses of 25 to 28 Oct, and 224 runs (28 tests × 8, retries off) pass on GitHub Actions with no flaky and the last 13 main PR/nightly e2e runs are clean, so no spec patch. #574 was a real harness race (grep exiting before sed in `seen_before`), fixed in `verify.sh` with a failing-then-passing case. #517 gets a bounded retry of `supabase start` on the docker networking error only (`supabase_start_retrying`), tested with a stubbed CLI. Details: `docs/done/446.md`.
+## Job 451: which hill-climb steps of #268, #271 and #270 go onto main
+
+- **Ported: #268's suggestion index and #271's open-name counts.** Both keep every output the
+  same (the frozen ranking file and a differential test for the first, the usuals reload test and
+  three mutants for the second) and both show a before/after on `main`'s code with `lib-ab.sh`:
+  `suggestUsuals` p50 0.85 -> 0.077 ms at 200 usuals, `sync_batch` 417-690 -> 74-127 ms at 8,000
+  items, at a 300-open-item list 34-35 -> 15-21 ms per 300 rows (about 50 to 60 µs saved per row) (`docs/done/451.md`).
+- **Reach (review 0).** The open-name counts run on every realtime row, delete and ack in the users'
+  build. `suggestUsuals` does not run in the users' add sheet: with `on-device-catalog` and
+  `input-stable-rows` at full rollout it ranks through `suggestEntries`. `suggestUsuals` runs only
+  with those flags off (a new install before PostHog's first flag answer) or as the fallback when
+  `suggestEntries` throws. #268 is kept because it is proven equal and cheap to carry, and its gain
+  is small where it applies.
+- **Left out: #270 and #271's cache-format steps (7, 9).** `main`'s snapshot version 4 already
+  means lists and claims; a version 5 would be refused by older builds, which drop the cache and
+  overwrite it (offline changes lost after a downgrade), and #270's shared string table would
+  encode every row on each tick again, undoing #470. Changing the stored format needs Peter's call
+  on the downgrade loss; the brief rules it out.
+- **Left out: #271 attempts 3 and 8.** 3 is on `main` as job 221's per-row JSON text; 8 is
+  superseded by #268's index.
+- **Harness names.** `main`'s `tool/hillclimb/hc-list-cpu/measure.sh` is job 221's Linux probe, so
+  #271's script is `bench.sh` beside it; #268's bench test is `suggest_usuals_bench_test.dart`
+  next to the catalog's `suggest_bench_test.dart`.
