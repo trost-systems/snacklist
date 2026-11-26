@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:family_groceries/list/pricing.dart';
 import 'package:family_groceries/list/retailer.dart';
@@ -1543,65 +1544,241 @@ List<Usual> suggestUsuals(
   if (typed.isEmpty) {
     return const [];
   }
-  final ranked = [
-    for (final (order, usual) in _offList(usuals, visible).indexed)
-      if (suggestionMatch(typed, foldName(usual.name)) case final rank?)
-        (rank, order, usual),
-  ]..sort((a, b) => a.$1 != b.$1 ? a.$1 - b.$1 : a.$2 - b.$2);
-  return [for (final (_, _, usual) in ranked.take(limit)) usual];
+  final index = _UsualIndex.of(usuals);
+  final active = _activeNames(visible);
+  bool offList(int i) => !active.contains(usuals[i].name.toLowerCase());
+  if (index.startingWith(typed, offList, limit) case final found?) {
+    return [for (final i in found) usuals[i]];
+  }
+  // One list per rank, each in the usuals' order. Once [limit] usuals rank
+  // better than `below`, a later one ranking `below` or worse can't make it.
+  final byRank = [for (var rank = 0; rank < 5; rank++) <Usual>[]];
+  var below = 5;
+  for (var i = 0; i < usuals.length; i++) {
+    if (suggestionMatch(typed, index.names[i], below: below) case final rank?
+        when offList(i)) {
+      byRank[rank].add(usuals[i]);
+      for (var (r, found) = (0, 0); r < below; r++) {
+        if ((found += byRank[r].length) >= limit) {
+          below = r;
+        }
+      }
+    }
+  }
+  return byRank.expand((same) => same).take(limit).toList();
+}
+
+/// One usuals list's folded names by position, and where each name and each
+/// word after its first starts, sorted: what starts with the typed text is
+/// one range. Kept for the same usuals: each keystroke ranks them again.
+final class _UsualIndex._(
+  final List<Usual> _usuals,
+  final List<String> names,
+  final List<({String start, int position, bool whole})> _starts,
+) {
+  factory of(List<Usual> usuals) {
+    if (_last case final last? when _same(last._usuals, usuals)) {
+      return last;
+    }
+    final names = [for (final usual in usuals) foldName(usual.name)];
+    final starts = [
+      for (final (position, name) in names.indexed) ...[
+        (start: name, position: position, whole: true),
+        for (var at = 1; at < name.length; at++)
+          if (_isSeparator(name.codeUnitAt(at - 1)) &&
+              !_isSeparator(name.codeUnitAt(at)))
+            (start: name.substring(at), position: position, whole: false),
+      ],
+    ]..sort((a, b) => a.start.compareTo(b.start));
+    return _last = _UsualIndex._(
+      List.of(usuals, growable: false),
+      names,
+      starts,
+    );
+  }
+
+  /// The last index built. It keeps that usuals list alive (after a
+  /// household switch too) until another list is ranked: at most the 200
+  /// usuals `ListRepository.fetchUsuals` loads.
+  static _UsualIndex? _last;
+
+  /// The best [limit] positions (rank, then position) of usuals ranking 0 to
+  /// 2 for [typed] (`suggestionMatch`) that are [offList]; null when there
+  /// are fewer: then ranks 3 and 4 count too.
+  List<int>? startingWith(String typed, bool Function(int) offList, int limit) {
+    final words = !typed.contains(' ') && !typed.contains('-');
+    // Per rank the [limit] first positions. A position can sit in more
+    // than one bucket but counts once, at its best rank, so a later bucket
+    // loses at most as many entries as the ones before it hold; and those
+    // hold every position of their rank while they have fewer than [limit].
+    final byRank = [for (var rank = 0; rank < 3; rank++) <int>[]];
+    for (var at = _firstFrom(typed); at < _starts.length; at++) {
+      final (:start, :position, :whole) = _starts[at];
+      if (!start.startsWith(typed)) {
+        break;
+      }
+      if (whole || words) {
+        final same = byRank[whole ? (start == typed ? 0 : 1) : 2];
+        if (same.length < limit || (same.isNotEmpty && position < same.last)) {
+          final slot = _slot(same, position);
+          if ((slot == same.length || same[slot] != position) &&
+              offList(position)) {
+            same.insert(slot, position);
+            if (same.length > limit) {
+              same.removeLast();
+            }
+          }
+        }
+      }
+    }
+    final seen = <int>{};
+    final best = [
+      for (final same in byRank)
+        for (final position in same)
+          if (seen.add(position)) position,
+    ];
+    return best.length >= limit ? best.take(limit).toList() : null;
+  }
+
+  /// Where [position] goes in the sorted [positions].
+  static int _slot(List<int> positions, int position) {
+    var (low, high) = (0, positions.length);
+    while (low < high) {
+      final mid = (low + high) ~/ 2;
+      if (positions[mid] < position) {
+        low = mid + 1;
+      } else {
+        high = mid;
+      }
+    }
+    return low;
+  }
+
+  /// The first of [_starts] not sorting before [typed].
+  int _firstFrom(String typed) {
+    var (low, high) = (0, _starts.length);
+    while (low < high) {
+      final mid = (low + high) ~/ 2;
+      if (_starts[mid].start.compareTo(typed) < 0) {
+        low = mid + 1;
+      } else {
+        high = mid;
+      }
+    }
+    return low;
+  }
+}
+
+bool _same(List<Usual> a, List<Usual> b) {
+  if (a.length != b.length) {
+    return false;
+  }
+  for (var i = 0; i < a.length; i++) {
+    if (!identical(a[i], b[i])) {
+      return false;
+    }
+  }
+  return true;
 }
 
 /// How a folded [name] matches folded [typed] text, best first, as
 /// `public.suggest_match` on the server: 0 the same name, 1 it starts with
 /// it, 2 a word of it does, 3 it has it inside (from 4 letters), 4 a word of
 /// it or the whole name is a typo of it (from 3 letters: same first letter,
-/// one edit up to 5 letters, two from 6). Null: no match.
-int? suggestionMatch(String typed, String name) {
-  if (name == typed) {
+/// one edit up to 5 letters, two from 6). Null: no match, or none better
+/// than [below].
+int? suggestionMatch(String typed, String name, {int below = 5}) {
+  if (below > 0 && name == typed) {
     return 0;
   }
-  if (name.startsWith(typed)) {
+  if (below > 1 && name.startsWith(typed)) {
     return 1;
   }
-  final words = name.split(RegExp('[ -]+'));
-  if (words.any((w) => w.startsWith(typed))) {
+  if (below > 2 && _startsAWord(typed, name)) {
     return 2;
   }
   if (typed.length < 3) {
     return null;
   }
-  if (typed.length >= 4 && name.contains(typed)) {
+  if (below > 3 && typed.length >= 4 && name.contains(typed)) {
     return 3;
   }
+  if (below < 5) {
+    return null;
+  }
   final most = typed.length < 6 ? 1 : 2;
-  for (final word in {name, ...words}) {
-    if (word.isNotEmpty &&
-        word[0] == typed[0] &&
-        (word.length - typed.length).abs() <= most &&
-        _editDistance(typed, word) <= most) {
+  if (_isTypo(typed, name, 0, name.length, most)) {
+    return 4;
+  }
+  for (var start = 0, end = 0; start < name.length; start = end) {
+    while (start < name.length && _isSeparator(name.codeUnitAt(start))) {
+      start++;
+    }
+    end = start;
+    while (end < name.length && !_isSeparator(name.codeUnitAt(end))) {
+      end++;
+    }
+    if (end > start && _isTypo(typed, name, start, end, most)) {
       return 4;
     }
   }
   return null;
 }
 
-/// Inserts, deletes and replacements that turn [a] into [b].
-int _editDistance(String a, String b) {
-  var previous = [for (var j = 0; j <= b.length; j++) j];
+bool _isSeparator(int unit) => unit == 0x20 || unit == 0x2D;
+
+/// Whether `name.substring(from, to)` is a typo of [typed]: the same first
+/// letter, a length and an edit distance at most [most] apart.
+bool _isTypo(String typed, String name, int from, int to, int most) =>
+    to > from &&
+    name.codeUnitAt(from) == typed.codeUnitAt(0) &&
+    (to - from - typed.length).abs() <= most &&
+    _editDistance(typed, name, from, to) <= most;
+
+/// Whether a word of [name] (split at spaces and hyphens) starts with
+/// [typed], found without splitting: [typed] right after a separator.
+bool _startsAWord(String typed, String name) {
+  if (name.isEmpty || typed.contains(' ') || typed.contains('-')) {
+    return false;
+  }
+  for (
+    var at = name.indexOf(typed, 1);
+    at > 0;
+    at = name.indexOf(typed, at + 1)
+  ) {
+    if (name[at - 1] case ' ' || '-') {
+      return true;
+    }
+  }
+  return false;
+}
+
+/// Inserts, deletes and replacements that turn [a] into
+/// `b.substring(from, to)`, in two rows reused from call to call.
+int _editDistance(String a, String b, int from, int to) {
+  final length = to - from;
+  if (_rows.$1.length <= length) {
+    _rows = (Int32List(length + 1), Int32List(length + 1));
+  }
+  var (previous, current) = _rows;
+  for (var j = 0; j <= length; j++) {
+    previous[j] = j;
+  }
   for (var i = 1; i <= a.length; i++) {
-    final current = [i];
-    for (var j = 1; j <= b.length; j++) {
-      current.add(
-        min(
-          min(previous[j], current[j - 1]) + 1,
-          previous[j - 1] + (a[i - 1] == b[j - 1] ? 0 : 1),
-        ),
+    current[0] = i;
+    final unit = a.codeUnitAt(i - 1);
+    for (var j = 1; j <= length; j++) {
+      current[j] = min(
+        min(previous[j], current[j - 1]) + 1,
+        previous[j - 1] + (unit == b.codeUnitAt(from + j - 1) ? 0 : 1),
       );
     }
-    previous = current;
+    (previous, current) = (current, previous);
   }
-  return previous.last;
+  return previous[length];
 }
+
+var _rows = (Int32List(32), Int32List(32));
 
 /// The due [usuals] not on the list, in the server's order.
 List<Usual> dueUsualsOf(
@@ -1627,12 +1804,15 @@ List<Usual> recentUsualsOf(
 }
 
 Iterable<Usual> _offList(List<Usual> usuals, Iterable<Item> visible) {
-  final active = {
-    for (final item in visible)
-      if (item.status == ItemStatus.active) item.name.toLowerCase(),
-  };
+  final active = _activeNames(visible);
   return usuals.where((u) => !active.contains(u.name.toLowerCase()));
 }
+
+/// The names on the list in lower case: usuals with one of them are left out.
+Set<String> _activeNames(Iterable<Item> visible) => {
+  for (final item in visible)
+    if (item.status == ItemStatus.active) item.name.toLowerCase(),
+};
 
 /// How far a user has looked at partner adds: everything created up to
 /// [until] (null: from the beginning), plus the items in [ids] after it.

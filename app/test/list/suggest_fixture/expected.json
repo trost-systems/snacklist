@@ -1,0 +1,260 @@
+{
+ "m": [
+  "Milde Waschmittel",
+  "Müllbeutel Lindt",
+  "Milde-Klopapier",
+  "Möhren laktosefrei",
+  "Muskat Rewe Bio"
+ ],
+ "k": [
+  "Kürbis Jacobs",
+  "Kakao 4er Pack",
+  "Kalte-Tomaten",
+  "Käse geräuchert",
+  "Kalte-Limetten"
+ ],
+ "b": [
+  "Brühe dmBio",
+  "Brokkolihimbeeren",
+  "Batterien Big Pack",
+  "Backpulver Nivea",
+  "Bio-Kohlrabi"
+ ],
+ "ä": [
+  "Äpfel XXL",
+  "  Äpfel Gut & Günstig ",
+  "Äpfel classic",
+  "Äpfelpfeffer",
+  "Äpfel 500 g"
+ ],
+ "mi": [
+  "Milde Waschmittel",
+  "Milde-Klopapier",
+  "Mini-Waschmittel",
+  "Milde Weißkohl",
+  "Milchreisspeck"
+ ],
+ "kä": [
+  "Käse geräuchert",
+  "Käse Kerrygold",
+  "Käse Weihenstephan",
+  "Käse laktosefrei",
+  "Käse"
+ ],
+ "br": [
+  "Brühe dmBio",
+  "Brokkolihimbeeren",
+  "Brokkoli Balea",
+  "Brötchen 500 g",
+  "Brötchen Schwarzwaldmilch"
+ ],
+ "sc": [
+  "Schinken Familienpackung",
+  "  Schnittlauch Balea ",
+  "Schmand",
+  "  Schinken K-Classic ",
+  "Schmandwasser"
+ ],
+ "ö": [
+  "Öl 250 g",
+  "Öl Berchtesgadener",
+  "Öl Tempo",
+  "Öl XXL",
+  "Ölgouda"
+ ],
+ "mil": [
+  "Milde Waschmittel",
+  "Milde-Klopapier",
+  "Milde Weißkohl",
+  "Milchreisspeck",
+  "Milde-Frischhaltefolie"
+ ],
+ "käs": [
+  "Käse geräuchert",
+  "Käse Kerrygold",
+  "Käse Weihenstephan",
+  "Käse laktosefrei",
+  "Käse"
+ ],
+ "bröt": [
+  "Brötchen 500 g",
+  "Brötchen Schwarzwaldmilch",
+  "Brötchenspeck",
+  "Brötchen Barilla",
+  "Brötchen"
+ ],
+ "müs": [
+  "Müsli light",
+  "Müsli",
+  "Müslinutella",
+  "Müsli XXL",
+  "  müsli rügenwalder "
+ ],
+ "äpf": [
+  "Äpfel XXL",
+  "  Äpfel Gut & Günstig ",
+  "Äpfel classic",
+  "Äpfelpfeffer",
+  "Äpfel 500 g"
+ ],
+ "kür": [
+  "Kürbis Jacobs",
+  "Kürbis Familienpackung",
+  "kürbismuskat",
+  "Kürbispilze",
+  "Kürbis geräuchert"
+ ],
+ "öl": [
+  "Öl",
+  "Öl 250 g",
+  "Öl Berchtesgadener",
+  "Öl Tempo",
+  "Öl XXL"
+ ],
+ "süß": [
+  "Süße Kohlrabi extra",
+  "Süße-Brokkoli",
+  "Süße Pesto",
+  "Süße-Zahnpasta",
+  "Süße-Knoblauch"
+ ],
+ "weiß": [
+  "Weiße Bohnen essig",
+  "Weißkohl Lindt",
+  "Weißkohl Bärenmarke",
+  "Weißkohl Rewe Bio",
+  "Weiße Bohnen möhren"
+ ],
+ "grüne": [
+  "Grüne Deo",
+  "Grüner Tee sahne",
+  "Grüner Tee aubergine",
+  "Grüne Bohnen Jacobs",
+  "Grüner Tee Größe 4"
+ ],
+ "milch": [
+  "Milch",
+  "Milchreisspeck",
+  "Milchreis Lenor",
+  "Milch natur",
+  "Milchduschgel"
+ ],
+ "Käse": [
+  "Käse",
+  "Käse geräuchert",
+  "Käse Kerrygold",
+  "Käse Weihenstephan",
+  "Käse laktosefrei"
+ ],
+ "Brötchen": [
+  "Brötchen",
+  "Brötchen 500 g",
+  "Brötchen Schwarzwaldmilch",
+  "Brötchenspeck",
+  "Brötchen Barilla"
+ ],
+ "Hafermilch": [
+  "Hafermilch",
+  "  hafermilch bärenmarke ",
+  "Hafermilch Nachfüllpack",
+  "Hafermilchkäse",
+  "Hafermilch mild"
+ ],
+ "Tomate": [
+  "Tomate",
+  "Tomate mild",
+  "Tomatensoße Frosch",
+  "Tomaten Milka",
+  "Tomatensoße Tchibo"
+ ],
+ "Joghurt": [
+  "Joghurt",
+  "Joghurt Lindt",
+  "Joghurt Berchtesgadener",
+  "Joghurt Lenor",
+  "joghurt rewe bio"
+ ],
+ "spülmittel": [
+  "Spülmittel",
+  "Spülmittel Big Pack",
+  "Spülmittelrasierer",
+  "Spülmittel Gut & Günstig",
+  "spülmittel geräuchert"
+ ],
+ "rote bete": [
+  "Rote Bete",
+  "Rote Bete Lindt",
+  "rote bete 1,5 l",
+  "Rote Bete Knorr",
+  "Rote Bete geräuchert"
+ ],
+ "bio milch": [
+  "Bio Milch extra",
+  "Bio Milch 1 kg"
+ ],
+ "Frische Eier": [
+  "Frische Eis"
+ ],
+ "Windeln Größe 4": [
+  "Rote Windeln Größe 4",
+  "Windeln Größe 5"
+ ],
+ "milch weihenstephan": [],
+ "mlch": [
+  "Milch natur",
+  "Rote Milch",
+  "Frische-Milch",
+  "Feine Milch",
+  "Süße Milch"
+ ],
+ "jogurt": [
+  "Joghurt Lindt",
+  "Joghurt Berchtesgadener",
+  "Scharfe-Joghurt",
+  "Joghurt Lenor",
+  "Süße-Joghurt"
+ ],
+ "tomatn": [
+  "Kalte-Tomaten",
+  "Glutenfreie-Tomaten",
+  "Tomate mild",
+  "Tomaten Milka",
+  "Tomaten classic"
+ ],
+ "bannane": [
+  "Ungesalzene-Bananen",
+  "Gesalzene Bananen",
+  "Bananen Größe 4",
+  "Bananen Tchibo",
+  "Bananen mild"
+ ],
+ "brokoli": [
+  "Brokkoli Balea",
+  "Süße-Brokkoli",
+  "Ungesalzene Brokkoli",
+  "Brokkoli Knorr",
+  "Gelbe Brokkoli"
+ ],
+ "Spagetti": [
+  "Feine-Spaghetti",
+  "Spaghetti",
+  "Ungesalzene Spaghetti natur",
+  "Spaghetti Maggi",
+  "Spaghetti 500 g"
+ ],
+ "zuccini": [
+  "Zucchini Größe 3",
+  "Dunkle Zucchini 500 g",
+  "Heiße-Zucchini",
+  "Zucchini Berchtesgadener",
+  "Kalte Zucchini Nachfüllpack"
+ ],
+ "xyzq": [],
+ "  MILCH  ": [
+  "Milch",
+  "Milchreisspeck",
+  "Milchreis Lenor",
+  "Milch natur",
+  "Milchduschgel"
+ ]
+}

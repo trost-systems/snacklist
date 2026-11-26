@@ -3147,3 +3147,17 @@ PR #731. A link the app can show now opens the installed app. Without the app it
 - **Specs.** #71, #72, #60, #57, #58, #59, #78, #79: no code change. Failures were host pauses of the box's VM (Oct 25 to 28). CI stress with retries off: 224 passed, 0 failed, 0 flaky (run 45792993914); last 13 main PR/nightly e2e runs clean.
 - **Verify.** `bash scripts/verify-test.sh` (new case fails on main's verify.sh, passes now), `bash scripts/supabase-start-test.sh`.
 - **Missing.** Nothing. Details in `docs/done/446.md`. App change: none; changelog `none`.
+
+## Job 451: perf ports from #268 and #271 (PR open, DO NOT MERGE)
+
+A server write (realtime row, delete, ack) updates per-name counts of the open items instead of
+rebuilding the set of open names twice (#271 attempt 2). It runs in the users' build:
+`sync_batch` (300 rows) 417-690 -> 74-127 ms at 8,000 items, at a 300-open-item list 34-35 -> 15-21 ms per 300 rows (about 50 to 60 µs saved per row). `suggestUsuals` ranks
+through an index (#268): p50 0.85 -> 0.077 ms at 200 usuals, identical ranking. On the current
+feature set the add sheet ranks through `suggestEntries` (flags `on-device-catalog`,
+`input-stable-rows` at full rollout), so `suggestUsuals` runs only before the first flag answer or
+as its fallback. No change users see, no cache or wire format change. #270 and #271's cache-format
+steps stay out (a new snapshot version loses offline changes after a downgrade). Review 0 fixes:
+the reach wording above, the cold-call range, a household-size bench run, a doc line on
+`_setServer`'s ids. Numbers, tests and what was left out: [docs/done/451.md](docs/done/451.md).
+Waits for Peter (NEEDS_LEAD, job 451).
