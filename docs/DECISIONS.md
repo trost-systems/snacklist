@@ -18364,3 +18364,7 @@ the research report's §3 and §4.A.
 7. **A fresh step per visit.** Layers are keyed by step and visit count, so going back during
    the 300 ms builds the step anew, as a new route did, instead of reusing the fading one's
    State.
+
+## Job 447: Zugänge waits for the unified-keys switch instead of guessing
+
+`AccessState.unified` started as `false` and turned `true` only once the `unified_keys` RPC answered, so every visit painted the old sections („MCP-Server“, „Zugriffsschlüssel erstellen“) for one round trip before the one list of keys (vmaint-20261125). It is now `bool?`: null until read. With the `unified-keys` flag on and the switch unread, the page shows one spinner where the keys go (Siri and „Verbundene Apps“ below it, as in the unified order), then the layout the switch names. Defaulting to `true` was the other option the brief named; it would flash the unified section and then the old ones wherever the switch is off (local stacks, a rollback), so no. With the flag off nothing waits: the old sections show at once, as before.

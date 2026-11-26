@@ -22,7 +22,9 @@ class const AccessState({
   final String? siriHere,
 
   /// Job 397: the server makes keys for the MCP server and the API alike.
-  final bool unified = false,
+  /// Null until read, so the screen shows neither layout before it knows
+  /// which (vmaint-20261125).
+  final bool? unified,
 
   /// Job 420: the server serves the list and store tools, so a connected
   /// app's list says it may use them.
@@ -122,13 +124,13 @@ class AccessCubit(
 
   Future<void> _loadUnified() async {
     final unified = await _repo.unifiedKeys();
-    if (!isClosed && unified) {
+    if (!isClosed) {
       emit(
         AccessState(
           tokens: state.tokens,
           apps: state.apps,
           siriHere: state.siriHere,
-          unified: true,
+          unified: unified,
           listsStores: state.listsStores,
         ),
       );

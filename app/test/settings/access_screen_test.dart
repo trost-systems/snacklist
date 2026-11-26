@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/localizations.dart';
 import 'package:family_groceries/design/field_border.dart';
@@ -29,6 +31,9 @@ class FakeAccessRepository() implements AccessRepository {
 
   /// The server switch `app_switches.unified_keys` (job 397).
   var unified = false;
+
+  /// When set, [unifiedKeys] answers only once it completes.
+  Completer<bool>? unifiedAnswer;
   var listsStoresOn = false;
 
   /// The name of every API key asked for.
@@ -92,7 +97,7 @@ class FakeAccessRepository() implements AccessRepository {
   Future<void> disconnect(String clientId) async => disconnected.add(clientId);
 
   @override
-  Future<bool> unifiedKeys() async => unified;
+  Future<bool> unifiedKeys() async => await unifiedAnswer?.future ?? unified;
 
   @override
   Future<bool> listsStores() async => listsStoresOn;
@@ -111,6 +116,9 @@ void main() {
 
     /// The flags PostHog serves; none provided at all when null.
     Set<String>? flags,
+
+    /// False while a read is held open: its spinner never settles.
+    bool settle = true,
   }) async {
     // Tall enough for every section without scrolling.
     tester.view.physicalSize = const Size(800, 1400);
@@ -135,7 +143,11 @@ void main() {
         ),
       ),
     );
-    await tester.pumpAndSettle();
+    if (settle) {
+      await tester.pumpAndSettle();
+    } else {
+      await tester.pump();
+    }
   }
 
   Future<void> tapText(WidgetTester tester, String text) async {
@@ -998,6 +1010,52 @@ void main() {
         findsOneWidget,
       );
       expect(find.text(apiSecret), findsNothing);
+    });
+
+    /// Opens the page with the server switch still unread, checks that
+    /// neither layout shows, then answers [on].
+    Future<void> openBeforeSwitch(
+      WidgetTester tester, {
+      required bool on,
+    }) async {
+      final answer = Completer<bool>();
+      await pumpAccess(
+        tester,
+        seed: (r) => r.unifiedAnswer = answer,
+        flags: {'unified-keys'},
+        settle: false,
+      );
+      expect(find.text('MCP-SERVER'), findsNothing);
+      expect(key('access-tokens-hint'), findsNothing);
+      expect(key('access-keys-section'), findsNothing);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.text('Noch keine App verbunden.'), findsOneWidget);
+      answer.complete(on);
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('flag on: no layout flashes before the server switch is '
+        'read, then one section', (tester) async {
+      await openBeforeSwitch(tester, on: true);
+      expect(key('access-keys-section'), findsOneWidget);
+      expect(find.text('MCP-SERVER'), findsNothing);
+    });
+
+    testWidgets('flag on: no layout flashes before the server switch is '
+        'read, then two sections when it is off', (tester) async {
+      await openBeforeSwitch(tester, on: false);
+      expectTwoSections();
+    });
+
+    testWidgets('flag off: two sections at once, without waiting for the '
+        'server switch', (tester) async {
+      await pumpAccess(
+        tester,
+        seed: (r) => r.unifiedAnswer = Completer<bool>(),
+        flags: {},
+        settle: false,
+      );
+      expectTwoSections();
     });
 
     testWidgets('flag on, server switch off: two sections as before', (
