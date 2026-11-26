@@ -40,6 +40,8 @@ class AppShortcutsBundle(unittest.TestCase):
         for lang in ("de", "en"):
             self.write_phrases(lang, self.complete(lang))
         self.write_info()
+        for lang in ("de", "en"):
+            self.write_model(lang, b"model")
 
     @staticmethod
     def complete(lang: str) -> dict:
@@ -59,6 +61,11 @@ class AppShortcutsBundle(unittest.TestCase):
             table = dict(zip(variables, names.get(lang, names["en"])), CFBundleSpokenName=spoken)
             with path.open("wb") as f:
                 plistlib.dump(table, f, fmt=plistlib.FMT_BINARY)
+
+    def write_model(self, lang: str, data: bytes) -> None:
+        path = self.app / f"{lang}.lproj/nlu.appintents/nlu.lzfse"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
 
     def write_actions(self, data: dict) -> None:
         path = self.app / "Metadata.appintents/extract.actionsdata"
@@ -153,6 +160,13 @@ class AppShortcutsBundle(unittest.TestCase):
         (self.app / "de.lproj/AppShortcuts.strings").write_text("\n".join(lines), encoding="utf-16")
         result = self.run_check()
         self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_a_language_without_its_phrase_model_fails(self):
+        (self.app / "de.lproj/nlu.appintents/nlu.lzfse").unlink()
+        self.assertFails("Siri has no de phrase model")
+        self.write_model("de", b"model")
+        self.write_model("en", b"")
+        self.assertFails("Siri has no en phrase model")
 
     def test_a_template_without_german_phrases_fails(self):
         self.write_phrases("de", {"#!SET#!_Add to ${applicationName}[0]": "Füge etwas zu ${applicationName} hinzu"})

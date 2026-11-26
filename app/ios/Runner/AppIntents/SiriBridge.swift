@@ -21,7 +21,7 @@ final class SiriBridge: NSObject, FlutterPlugin {
       }
       do {
         try credentials.save(credential)
-        Self.askForSiri()
+        SiriAuthorization.askIfUndetermined()
         result(nil)
       } catch let failure as SiriCredentialStore.Failure {
         result(FlutterError(code: "keychain", message: "status \(failure.status)", details: nil))
@@ -45,15 +45,20 @@ final class SiriBridge: NSObject, FlutterPlugin {
     }
   }
 
-  /// SiriKit hands the app its Lists intents only once the user allowed Siri for it. Asked once,
-  /// when the app first sets Siri up (signed in, in a household); the answer lives in Settings.
-  private static func askForSiri() {
-    if INPreferences.siriAuthorizationStatus() == .notDetermined {
-      INPreferences.requestSiriAuthorization { _ in }
-    }
-  }
-
   private static func refreshShortcuts() {
     SnacklistShortcuts.updateAppShortcutParameters()
+  }
+}
+
+/// "Use with Siri" for the app. Unanswered, SiriKit hands the app no Lists intent, and on
+/// TestFlight 1541 Siri said "Snacklist hasn't added support for that with Siri" or asked to turn
+/// the app's shortcuts on (job 467). iOS shows its question once; answered, the choice lives in
+/// Settings and this asks nothing.
+enum SiriAuthorization {
+  static var status: () -> INSiriAuthorizationStatus = INPreferences.siriAuthorizationStatus
+  static var request: () -> Void = { INPreferences.requestSiriAuthorization { _ in } }
+
+  static func askIfUndetermined() {
+    if status() == .notDetermined { request() }
   }
 }

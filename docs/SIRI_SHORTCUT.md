@@ -357,8 +357,9 @@ The fix:
   back as tasks Siri reads). In-app, no Intents extension. Needs `com.apple.developer.siri`
   (`Runner.entitlements`, the App ID capability and match profiles from #221),
   `INIntentsSupported` and `NSSiriUsageDescription`. SiriKit routes intents only after the user
-  allowed Siri for the app: `SiriBridge` asks once (`INPreferences.requestSiriAuthorization`)
-  when the app stores the Siri credential after sign-in. A list name Siri hands over
+  allowed Siri for the app: `SiriAuthorization` (`SiriBridge.swift`) asks
+  (`INPreferences.requestSiriAuthorization`) each time the app becomes active while the answer is
+  undetermined, and when the app stores a new Siri credential (job 467, below). A list name Siri hands over
   (`targetTaskList`) goes to `voice` as `list` (job 207) and is matched like Alexa's list slot:
   "Einkaufsliste" or "Snacklist" mean the default list, an unknown name adds there. Siri speaks
   its own confirmation here, not `voice`'s sentence, so an unknown name is not said aloud on
@@ -372,6 +373,41 @@ The fix:
   Guide shows them. Every example names the app. German examples avoid
   „Einkaufsliste“. `scripts/siri-vocabulary.py` checks the source tree (lint gate), the built app
   (ios gate) and the signed IPA (Fastfile) against every intent an `Info.plist` declares.
+
+### TestFlight 1541: "hasn't added support" (job 467)
+
+Build 1541, English Siri, after sign-in: "Add milk to Snacklist" got "Snacklist hasn't added
+support for that with Siri", and "What's on my Snacklist?" got Siri's question whether to turn on
+Snacklist's shortcuts. Both are what Siri says while an app's Siri switch is off: with the app
+closed "hasn't added support", with it open "Turn on … shortcuts with Siri?" (developer forum
+reports, threads 794162 and 775638; Apple documents neither sentence). The release IPA carried the
+App Shortcuts and their de/en phrases (`app-shortcuts-bundle.py` in release run 531), so the phrases
+were there and the switch was off.
+
+Before job 467 the app asked for "Use with Siri" only when it stored a new Siri credential
+(`SiriBridge` `store`). An install that kept a valid credential, one whose credential call failed,
+or one that missed the question at sign-in was never asked again, and SiriKit's Lists fallback
+routes nothing until the user answers. Since job 467 `AppDelegate` asks on every
+`UIApplication.didBecomeActiveNotification` while `INPreferences.siriAuthorizationStatus()` is
+`.notDetermined`, from the first launch on; iOS shows the question once. A user who said no turns
+it on in Settings › Apps › Snacklist › Siri. Whether "Use with Siri" is the same switch Siri's
+"Turn on shortcuts" question sets is not documented and is part of the retest
+(`docs/NEEDS_PETER.md`, "Job 467").
+
+Checks added: `scripts/siri-target.py` (lint gate) fails when a file of `Runner/AppIntents`, the
+`AppShortcutsProvider` among them, leaves the Runner target's Sources, when `AppShortcuts.xcstrings`
+or `Localizable.xcstrings` leaves its Resources, or when another target compiles a provider;
+`scripts/siri-phrases.ts` fails a phrase that spells the app's name instead of
+`${applicationName}`; `scripts/app-shortcuts-bundle.py` (built app and signed IPA) also needs
+the phrase model Xcode trains per language (`de.lproj` and `en.lproj/nlu.appintents/nlu.lzfse`).
+
+Ruled out on the release path (job 467, a throwaway workflow building `flutter build ipa --release
+--no-codesign` next to `flutter build ios --simulator --debug` on the CI runner image): both apps
+carry the same `extract.actionsdata` (7,400 bytes, the three App Shortcuts), compiled
+`AppShortcuts.strings` for de and en, and a trained `nlu.appintents/nlu.lzfse` in Base, de and en
+(11,218 and 9,980 bytes in release, 11,251 and 10,000 in debug). Only debug also carries
+`Metadata.appintents/root.ssu.yaml`, the training source the ios gate greps; release builds leave
+it out. The provider is in the Runner target (`scripts/siri-target.py`).
 
 ### Gerätetest (job 97)
 

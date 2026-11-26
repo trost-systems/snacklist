@@ -2106,3 +2106,42 @@ Nothing new for Peter to decide. On launch day, in this order ([RELEASE.md](RELE
 2. Push is sent only while the server switches `push_household_add` (and, for the Friday reminder, `push_shopping_day`) are on. Both went off at 10:41 CET on 26 Nov 2026. Turning them back on is the owner's call: the brief said to leave them on, but the `push-notifications` hold in `releases/flags.json` keeps them off until Legal's enable GO (NEEDS_LEAD, job 468). Job 468 did not flip them.
 3. Signed in, check iOS Settings › Snacklist › Mitteilungen is allowed and the app's Mitteilungen has „Wenn jemand etwas hinzufügt“ on. No reinstall, no sign-out, no off/on toggle: your token is valid.
 4. Lock the phone or leave the app, then have someone else add an item. While Snacklist is open, iOS shows no notification.
+
+## Job 467: Siri retest on the first TestFlight build with the fix
+
+On TestFlight 1541 (English Siri) "Add milk to Snacklist" got "Snacklist hasn't added support for
+that with Siri", and "What's on my Snacklist?" got a question whether to turn on Snacklist's
+shortcuts. Job 467 makes the app ask "Use with Siri" when it opens, until you answer (before, it
+asked only when it stored a new Siri key). Retest on the **first TestFlight build that contains
+job 467**, not 1541. If Siri still behaves as on 1541, delete the app and install that build
+again.
+
+Setup: install the new TestFlight build; open Snacklist; sign in; open the list once; background
+the app. If iOS asks to allow Siri or to turn on shortcuts for Snacklist, allow it. Settings › Apps
+› Snacklist › Siri: **Use with Siri** and **Learn from this App** on (DE: **Mit Siri verwenden**,
+**Von dieser App lernen**). Settings › Siri › Siri Responses › **Always Show Speech**. Shortcuts
+app: the Snacklist tile lists **Add to Snacklist**, **Read my Snacklist**, **Open Snacklist** (DE:
+**Zu Snacklist hinzufügen**, **Meine Snacklist vorlesen**, **Snacklist öffnen**). Siri language
+English (United States) first, then Deutsch (Deutschland).
+
+Note while you set up: did iOS ask "Allow Snacklist to use Siri?" (DE „Darf Snacklist Siri
+verwenden?“) on the first open, before sign-in? Was **Use with Siri** off before you switched it
+on?
+
+English:
+
+- "Add to Snacklist" or "Add something to my Snacklist" → Siri asks what to add → "milk" → "Added
+  milk to Snacklist." (the App Shortcut without an item; milk need not be on the list already).
+- "What's on my Snacklist?" → Siri reads the open items. It must not ask to turn on shortcuts.
+- "Show my Snacklist" → the app opens on the list.
+- "Add milk to Snacklist" → adds in one sentence (the App Shortcut if milk was suggested,
+  otherwise SiriKit Lists). It must not say "Snacklist hasn't added support for that with Siri."
+
+Deutsch: „Füge etwas zu meiner Snacklist hinzu“ (then „Milch“), „Was steht auf meiner Snacklist?“,
+„Zeig meine Snacklist“, „Füge Milch zu Snacklist hinzu“. Same expectations; no „unterstützt das
+nicht“, no question to turn on shortcuts.
+
+If "Add to Snacklist" and "What's on my Snacklist?" work but a brand-new name in "Add X to
+Snacklist" still fails, record it as the item-suggestion limit, not as this bug again, and say
+whether SiriKit then adds it. Per phrase, note the build number and what Siri wrote (a screenshot of
+the transcript).

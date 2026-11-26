@@ -18588,3 +18588,43 @@ property. Choices made here, each reversible:
    container colons, and heading depth, but does not use site/build.mjs's markdown-it, which needs
    `site/node_modules` that a land checkout may not have. flags.json is edited as text, so the
    `ü` escapes and the formatting stay byte-for-byte, and node checks the result.
+
+## Job 467: native Siri on TestFlight 1541, "hasn't added support"
+
+Peter on 1541 (English Siri): "Add milk to Snacklist" got "Snacklist hasn't added support for that
+with Siri"; "What's on my Snacklist?" got a question whether to turn on Snacklist's shortcuts
+(t1327u, t1328u). No iPhone reaches hz, so each step below rests on build artifacts or code.
+
+1. **The release build carries the App Shortcuts and their training.** Release run 531 ran
+   `app-shortcuts-bundle.py` on the signed IPA (the three App Shortcuts, de/en phrase sets). A
+   throwaway workflow (branch `probe/467-release-appintents`, deleted) built `flutter build ipa
+   --release --no-codesign` next to a debug simulator build: the same `extract.actionsdata`, and a
+   trained `<lang>.lproj/nlu.appintents/nlu.lzfse` for Base, de and en in both (about 10 KB each).
+   Only `Metadata.appintents/root.ssu.yaml` is debug-only. So "not indexed on the release path" is
+   ruled out, and the provider is in the Runner target's Sources.
+2. **What the two answers mean.** Developer forum threads 794162 and 775638 report exactly these
+   two sentences while an app's Siri switch is off: app closed, "hasn't added support"; app open,
+   "Turn on … shortcuts with Siri?". Apple documents neither. The switch is "Use with Siri" for an
+   app with the Siri entitlement: inferred, not documented; the retest asks Peter what it showed.
+3. **The gap in the code.** The app asked for Siri (`INPreferences.requestSiriAuthorization`) only
+   when `SiriBridge` stored a *new* credential. A kept credential, a failed credential call or a
+   missed alert at sign-in left the answer undetermined for good, and SiriKit's Lists fallback
+   routes nothing until it is answered. Fix: `AppDelegate` asks on every
+   `UIApplication.didBecomeActiveNotification` while the status is `.notDetermined`, from the
+   first launch on (before sign-in, as the brief asks); iOS shows it once. The `store` path still
+   asks. A notification observer instead of overriding `FlutterSceneDelegate`'s
+   `sceneDidBecomeActive`: its public header declares no such method, and a wrong `override`
+   costs a macOS CI round (job 92).
+4. **Not changed.** `INIntentsSupported`, the Siri entitlement and the Lists fallback stay: nothing
+   shows they block App Shortcuts, and they carry unknown item names. `updateAppShortcutParameters`
+   stays at launch and after suggestions: no evidence a later call matters. The phrases stay.
+5. **Checks.** `scripts/siri-target.py` (lint) parses `project.pbxproj`: every
+   `Runner/AppIntents/*.swift` in the Runner target's Sources, `AppShortcuts.xcstrings` and
+   `Localizable.xcstrings` in its Resources, no provider in another target; its test edits copies
+   of the real project (provider moved to RunnerTests, a file dropped, the catalog dropped, a second
+   provider in HomeWidget). `siri-phrases.ts` rejects a phrase that spells "Snacklist" instead of
+   `${applicationName}` (the no-hummlist lint already rejects "Hummlist" in every file). `app-shortcuts-bundle.py` (ios gate and Fastfile's
+   IPA) requires the de and en `nlu.lzfse`. RunnerTests `SiriAuthorizationTests` posts the
+   became-active notification to the test host and checks the ask per status.
+6. **Changelog.** `fixed`, `hold: native-siri`: users of the store build don't see native Siri
+   announced, and the hold stays unreleased.

@@ -793,3 +793,31 @@ final class AppShortcutPhraseTests: XCTestCase {
     }
   }
 }
+
+/// "Use with Siri" is asked whenever the app comes forward unanswered, not only when the app
+/// stores a new credential (job 467). The test host's AppDelegate observes the notification.
+final class SiriAuthorizationTests: XCTestCase {
+  private let status = SiriAuthorization.status
+  private let request = SiriAuthorization.request
+
+  override func tearDown() {
+    SiriAuthorization.status = status
+    SiriAuthorization.request = request
+  }
+
+  private func asks(_ status: INSiriAuthorizationStatus, when act: () -> Void) -> Bool {
+    var asked = false
+    SiriAuthorization.status = { status }
+    SiriAuthorization.request = { asked = true }
+    act()
+    return asked
+  }
+
+  func testComingForwardAsksWhileUnanswered() {
+    let active = { NotificationCenter.default.post(name: UIApplication.didBecomeActiveNotification, object: nil) }
+    XCTAssertTrue(asks(.notDetermined, when: active))
+    for answered: INSiriAuthorizationStatus in [.authorized, .denied, .restricted] {
+      XCTAssertFalse(asks(answered, when: active), "status \(answered.rawValue)")
+    }
+  }
+}

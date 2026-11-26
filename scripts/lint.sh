@@ -44,6 +44,9 @@ scripts/ios-deployment-target.py
 python3 scripts/ios-deployment-target-test.py
 log "Siri phrases"
 deno run --allow-read scripts/siri-phrases.ts
+log "Siri in the release target"
+scripts/siri-target.py
+python3 scripts/siri-target-test.py
 log "SiriKit example phrases"
 scripts/siri-vocabulary.py app/ios
 python3 scripts/siri-vocabulary-test.py

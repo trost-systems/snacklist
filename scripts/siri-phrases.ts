@@ -73,6 +73,11 @@ if (shortcuts === 0 || shortcuts > 10) {
   );
 }
 for (const phrase of phrases) {
+  if (/snacklist/i.test(phrase)) {
+    problems.push(
+      `"${phrase}": spells the app's name; \\(.applicationName) says it`,
+    );
+  }
   if (!phrase.includes("${applicationName}")) {
     problems.push(`"${phrase}": every App Shortcut phrase names the app`);
   }
@@ -177,6 +182,11 @@ for (const lang of ["en", "de"]) {
       const where = `${catalogPath} ${lang} "${value}"`;
       known[lang].add(value.toLowerCase());
       expanded += parameters(value).length ? spokenItems : 1;
+      if (/snacklist/i.test(value)) {
+        problems.push(
+          `${where}: spells the app's name; \${applicationName} says it`,
+        );
+      }
       if (value.split("${applicationName}").length !== 2) {
         problems.push(
           `${where}: names the app ${
