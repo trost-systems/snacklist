@@ -116,12 +116,14 @@ class const _Access({required final bool onIphone}) extends StatelessWidget {
         ? Environment.proxiedApiUrl
         : Environment.apiUrl;
     // Job 397: one list of keys for the MCP server and the API, once the
-    // flag and the server switch are both on.
+    // flag and the server switch are both on. Null while the flag is on and
+    // the switch unread: a spinner, not the two sections (vmaint-20261125).
     final unified =
-        state.unified &&
         context.select<Flags?, bool>(
           (flags) => flags?.isOn(unifiedKeysFlag) ?? false,
-        );
+        )
+        ? state.unified
+        : false;
     final access = _accessOf(context);
     final paused = access is IntegrationsLocked;
     // With several households, the one new keys act in (job 169b).
@@ -162,7 +164,10 @@ class const _Access({required final bool onIphone}) extends StatelessWidget {
           children: [
             if (access case IntegrationsLocked(:final offer))
               _PremiumCard(offer: offer),
-            if (unified) ...[
+            if (unified == null) ...[
+              _loading,
+              ...siri,
+            ] else if (unified) ...[
               ..._keysSection(
                 context,
                 state.tokens,
@@ -292,12 +297,7 @@ class const _Access({required final bool onIphone}) extends StatelessWidget {
     required String empty,
     required Widget Function(T value) tile,
   }) => switch (section) {
-    SectionLoading() => const [
-      Padding(
-        padding: EdgeInsets.all(16),
-        child: Center(child: CircularProgressIndicator()),
-      ),
-    ],
+    SectionLoading() => const [_loading],
     SectionFailed(:final message) => [
       ListTile(title: Text(AppLocalizations.of(context).genericError(message))),
     ],
@@ -305,6 +305,11 @@ class const _Access({required final bool onIphone}) extends StatelessWidget {
     SectionLoaded(:final value) => [for (final v in value) tile(v)],
   };
 }
+
+const _loading = Padding(
+  padding: EdgeInsets.all(16),
+  child: Center(child: CircularProgressIndicator()),
+);
 
 void _copy(BuildContext context, String text) {
   unawaited(Clipboard.setData(ClipboardData(text: text)));

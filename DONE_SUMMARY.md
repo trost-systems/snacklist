@@ -3116,3 +3116,7 @@ the progress bar and the docked buttons stay still, and only the step's body sli
 28 dp, mirrored on Back). With reduced motion it is a 120 ms fade instead. Weiter closes the
 keyboard, and focus goes to the new heading. PR #723. It ships in the next green main build to
 TestFlight, with no flag.
+
+## Job 447: Zugänge no longer flashes the old sections
+
+Opening Mehr › Zugänge showed the old „MCP-Server“ and „Zugriffsschlüssel erstellen“ sections for one round trip before the one list of „Zugriffsschlüssel“. The cubit now keeps the server switch unread (null) until `unified_keys` answers, and the page shows a spinner in that time; with the flag off it does not wait. Widget tests fail on main's code and pass now (197 under `test/settings/`); a web drive with the RPC held 3 s shows the old sections on main and the spinner on the branch (`docs/screenshots/447/`). Details: [docs/done/447.md](docs/done/447.md). Ships with the next green main build to TestFlight; no flag change.
