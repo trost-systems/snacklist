@@ -46,11 +46,11 @@ form:
 
 # Report content
 
-Use this form to report content in Snacklist that you believe is illegal, for example an item, a list, a household name or a photo. For questions or bugs, please use feedback or support@snacklist.app. This form is not an emergency service: if someone is in immediate danger, call your local emergency number now (112 in the EU).
+Use this form to report content in Snacklist that you believe is illegal, for example an item, a list or a household name. For questions or bugs, please use feedback or support@snacklist.app. This form is not an emergency service: if someone is in immediate danger, call your local emergency number now (112 in the EU).
 
 ## Content rules and how we handle reports {#rules}
 
-What you put into Snacklist – items, lists, household names, photos, feedback – is seen only by the members of your household (feedback only by us). Still: don't store illegal content, for example insults, threats, photos of other people without their permission or content others hold the rights to, and don't use Snacklist to harass anyone.
+What you put into Snacklist – items, lists, household names, feedback – is seen only by the members of your household (feedback only by us). Still: don't store illegal content, for example insults, threats or content others hold the rights to, and don't use Snacklist to harass anyone.
 
 **How we handle reports.** Peter Trost, who runs Snacklist, reads and decides every report himself; we use no automated tools or AI for this. We check carefully, objectively and without arbitrariness whether the content is illegal or breaks these rules. We review reports about a threat to life or safety and about child sexual abuse material the same day, all others usually within 7 days. If you give an e-mail address, you get a confirmation of receipt and our decision with reasons.
 
