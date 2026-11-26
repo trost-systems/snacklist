@@ -288,9 +288,10 @@ Future<Analytics> loadedAnalytics(
   MemoryAnalyticsStore store, {
   AnalyticsConfig config = releaseConfig,
   FlagsServer? server,
+  AnalyticsUser? user,
 }) async {
   final analytics = Analytics(testClient(server), store, config);
-  await analytics.load();
+  await analytics.load(user: user);
   await analytics.flush();
   return analytics;
 }

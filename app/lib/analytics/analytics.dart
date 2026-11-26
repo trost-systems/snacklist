@@ -83,10 +83,15 @@ abstract interface class AnalyticsStore() {
   Future<void> saveSharedFlags(Map<String, bool> values);
 }
 
-/// Who is signed in, as analytics needs it. The e-mail only decides
-/// `is_internal` and is never sent.
+/// Who is signed in, as analytics needs it. The e-mail and the sign-in
+/// [providers] (`app_metadata.providers`) only decide `is_internal` and
+/// whether this is a test account ([isTestAccount]); they are never sent.
 @immutable
-class const AnalyticsUser({final String? email, final String? householdId});
+class const AnalyticsUser({
+  final String? email,
+  final String? householdId,
+  final Set<String> providers = const {},
+});
 
 /// Records this install's answer for the signed-in user on the server
 /// (`record_analytics_consent`, job 31), so server events such as an add over
@@ -171,6 +176,16 @@ class Analytics(
   String? _installId;
   AnalyticsUser? _user;
 
+  /// Who the auth client restored at start ([load]), until the session
+  /// says who is signed in ([setUser]); decides only [_testAccount].
+  AnalyticsUser? _restored;
+
+  /// The SDK waits for a signed-in user who is not a test account: one was
+  /// signed in on this run, or a yes is stored without an install id (one
+  /// given while a test account was signed in), so signing out starts
+  /// nothing.
+  var _held = false;
+
   /// The SDK is set up and not stopped.
   var _running = false;
 
@@ -208,6 +223,7 @@ class Analytics(
     testerGroups: state.testerGroups,
     householdId: _user?.householdId,
     email: _user?.email,
+    providers: _user?.providers ?? const {},
     internalHouseholds: _config.internalHouseholds,
     internalEmailDomains: _config.internalEmailDomains,
     testerHousehold: testerHousehold,
@@ -260,8 +276,10 @@ class Analytics(
   /// none, from a build before [consentTextVersion]) is no decision: it is
   /// deleted with the install id and the SDK's data on the device, as on a
   /// no, and the consent screen asks again. Call once before the first
-  /// frame.
-  Future<void> load() async {
+  /// frame, with the [user] the auth client restored, if any: a test
+  /// account's install then starts no SDK at all ([setUser]).
+  Future<void> load({AnalyticsUser? user}) async {
+    _restored = user;
     final (stored, decided, version, firstOpen, _) = await (
       _store.installId(),
       _store.consent(),
@@ -295,7 +313,10 @@ class Analytics(
         testerGroups: state.testerGroups,
       ),
     );
-    if (consent == true) {
+    _held =
+        _testAccount ||
+        (consent == true && _installId == null && _restored == null);
+    if (_sdkWanted) {
       unawaited(_serially(() => _start(fresh: false)));
     } else {
       await _loadSharedFlags();
@@ -303,10 +324,29 @@ class Analytics(
   }
 
   /// Signed in as [user], or signed out (null). Events need a user.
+  /// A test account ([isTestAccount]) in a release build stops the SDK as
+  /// a no would, without touching the answer, and gets the shared flags;
+  /// the next signed-in user who is not one starts it again, signing out
+  /// does not.
   void setUser(AnalyticsUser? user) {
+    final wanted = _sdkWanted;
     _user = user;
+    _restored = null;
     if (user == null) {
       _recorded = null;
+    }
+    if (_testAccount) {
+      _held = true;
+    } else if (user != null) {
+      _held = false;
+    }
+    if (wanted && !_sdkWanted) {
+      unawaited(_serially(_stop));
+      unawaited(_loadSharedFlags());
+    } else if (!wanted && _sdkWanted) {
+      unawaited(
+        _serially(() => _start(fresh: false)).then((_) => _sendFirstOpen()),
+      );
     }
     _syncConsent();
     _targetingChanged();
@@ -315,6 +355,17 @@ class Analytics(
       unawaited(_sendFirstOpen());
     }
   }
+
+  /// A test account is signed in to a release build: nothing is sent.
+  bool get _testAccount => switch (_user ?? _restored) {
+    final user? =>
+      _config.releaseBuild &&
+          isTestAccount(email: user.email, providers: user.providers),
+    null => false,
+  };
+
+  /// The SDK should run: a yes, and no test account signed in or [_held].
+  bool get _sdkWanted => state.consent == true && !_testAccount && !_held;
 
   /// The user's answer on the consent screen or the More toggle. Yes starts
   /// the SDK with a new install id (unless it runs already) and sends
@@ -337,6 +388,9 @@ class Analytics(
       await _serially(_stop);
       return;
     }
+    // A yes signed out (the guided start) starts the SDK even after a test
+    // account; one while a test account is signed in does not.
+    _held = _testAccount;
     // Queued before the first await, so an event tracked right after the
     // yes waits for the start.
     final starting = _serially(() => _start(fresh: true));
@@ -370,7 +424,7 @@ class Analytics(
   /// replaces it.
   Future<void> _start({required bool fresh}) async {
     final posthog = _posthog;
-    if (posthog == null || _running || state.consent != true || isClosed) {
+    if (posthog == null || _running || !_sdkWanted || isClosed) {
       return;
     }
     final seed = fresh ? const Uuid().v4() : _installId;
@@ -383,8 +437,8 @@ class Analytics(
       if (fresh && id != seed) {
         id = await posthog.newDistinctId();
       }
-      if (state.consent != true) {
-        // A no came while the SDK started.
+      if (!_sdkWanted) {
+        // A no or a test account came while the SDK started.
         await posthog.stop();
         return;
       }
@@ -432,7 +486,7 @@ class Analytics(
     try {
       final values = await posthog.flags();
       // Empty: no answer yet, so the shared flags stay until one comes.
-      if (_running && state.consent == true && values.isNotEmpty) {
+      if (_running && _sdkWanted && values.isNotEmpty) {
         flags.replace(values);
       }
     } on Object catch (e) {
@@ -445,7 +499,7 @@ class Analytics(
   /// yes or a newer request in between discards.
   Future<void> _loadSharedFlags() async {
     final posthog = _posthog;
-    if (posthog == null || state.consent == true) {
+    if (posthog == null || _sdkWanted) {
       return;
     }
     final request = ++_sharedRequest;
@@ -453,7 +507,7 @@ class Analytics(
         ? _sharedFlagTargeting()
         : const <String, Object>{};
     bool current() =>
-        request == _sharedRequest && state.consent != true && !flags.isClosed;
+        request == _sharedRequest && !_sdkWanted && !flags.isClosed;
     final cached = await _store.sharedFlags();
     if (current()) {
       flags.replace(cached);
@@ -481,7 +535,7 @@ class Analytics(
     _registerContext();
     if (_config.sharedFlagsTargeting &&
         state.loaded &&
-        state.consent != true &&
+        !_sdkWanted &&
         !mapEquals(_sharedFlagTargeting(), _sharedTargeting)) {
       unawaited(_loadSharedFlags());
     }
@@ -589,7 +643,7 @@ class Analytics(
   void _registerContext() {
     final posthog = _posthog;
     final id = _installId;
-    if (posthog == null || !_running || id == null) {
+    if (posthog == null || !_running || !_sdkWanted || id == null) {
       return;
     }
     unawaited(
@@ -639,9 +693,9 @@ class Analytics(
   }
 
   /// Events are taken: the build can send, the answer is yes, someone is
-  /// signed in.
+  /// signed in who is not a test account.
   bool get _willSend =>
-      _posthog != null && state.consent == true && _user != null && !isClosed;
+      _posthog != null && _sdkWanted && _user != null && !isClosed;
 
   /// And the SDK runs with the install id.
   bool get _live => _willSend && _running && _installId != null;
@@ -712,7 +766,12 @@ class Analytics(
     final record = recordConsent;
     final consent = state.consent;
     final user = _user;
-    if (!enabled || record == null || consent == null || user == null) {
+    // A test account's answer is not recorded: no server events for it.
+    if (!enabled ||
+        record == null ||
+        consent == null ||
+        user == null ||
+        _testAccount) {
       return;
     }
     // A yes always has an install id; a no keeps the one it had, if any.

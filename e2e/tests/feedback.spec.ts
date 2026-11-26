@@ -97,7 +97,7 @@ test('a note from More after the list: one row, no screen, the context, no list 
     platform: 'web',
     locale: 'de',
     screen: null,
-    // AC11: an @example.test account is a test account.
+    // AC11: an e2e account (an internal mail domain, newEmail) is internal.
     is_internal: true,
   });
   for (const field of ['app_version', 'build', 'os_version']) {

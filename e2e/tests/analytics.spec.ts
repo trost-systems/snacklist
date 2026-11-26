@@ -17,6 +17,7 @@ import {
   must,
   newEmail,
   openMore,
+  testAccountEmail,
   openTab,
   password,
   putBack,
@@ -293,7 +294,7 @@ test('accepting sends first_open once, then one event per action, no list text; 
     expect(e.properties.$process_person_profile).toBe(false);
     expect(e.properties.$geoip_disable).toBe(true);
     expect(e.properties.platform).toBe('web');
-    // A test account: e2e mail domains are reserved test domains.
+    // e2e accounts are on an internal mail domain (newEmail).
     expect(e.properties.is_internal).toBe(true);
     expect('$ip' in e.properties).toBe(false);
   }
@@ -345,6 +346,39 @@ test('accepting sends first_open once, then one event per action, no list text; 
   await showLog(log, 'Accepted; household, 3 adds, 3 ticks (one undone), reload; then switched off and ticked.\n' +
     `localStorage analytics.install_id after the yes: ${installId}; after switching off: ${await storedInstallId(page)}`, collector);
   await screenshot(log, 'analytics-06-collector-accepted');
+});
+
+test('a test account sends nothing after a yes, and the answer stays yes (job 466)', async ({ browser }) => {
+  const context = await browser.newContext();
+  const collector = await fakeCollector(context);
+  const page = await context.newPage();
+  await signUp(page, testAccountEmail('test-account'), '/', { consent: 'accept' });
+  await createHousehold(page, { name: 'Familie Geheim' });
+  await skipInvite(page);
+  await addItem(page, 'Hafermilch');
+  await tick(page, 'Hafermilch');
+  // A new start with the stored yes knows the restored account before the SDK would start.
+  const beforeReload = collector.flags.length;
+  await page.reload();
+  await expect(addField(page)).toBeVisible();
+  await quietFor(page, collector, { requests: 0, events: 0, flags: 0 });
+  expect(collector.flags.length, 'the new start asked for the shared flags').toBeGreaterThan(beforeReload);
+  expect(await storedInstallId(page), 'no install id: the SDK never started').toBeNull();
+  await expect(await analyticsSwitch(page)).toBeChecked();
+  await screenshot(page, 'analytics-test-account-switch-on');
+  // Signed out, and a cold start signed out: still nothing (Play's robot taps through More).
+  await openMore(page, 'Abmelden');
+  await expect(page).toHaveURL(/\/login$/);
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Weiter mit E-Mail' }).or(page.getByRole('textbox', { name: 'E-Mail' })).first())
+    .toBeVisible({ timeout: 15_000 });
+  await quietFor(page, collector, { requests: 0, events: 0, flags: 0 });
+  expect(await storedInstallId(page), 'no install id after the sign-out').toBeNull();
+  expect(collector.leaks).toEqual([]);
+  const log = await context.newPage();
+  await showLog(log, 'Test account (example.test), accepted; household, 1 add, 1 tick, reload, sign-out, reload: no event, only no-consent flags.\n' +
+    `requests: ${collector.requests.join(', ')}`, collector);
+  await screenshot(log, 'analytics-test-account-collector');
 });
 
 test('in English: the consent text links the English policy; the switch under More → Usage data', async ({ browser }) => {
@@ -462,7 +496,7 @@ test('an internal user sends a test error, scrubbed, to error tracking', async (
   const context = await browser.newContext();
   const collector = await fakeCollector(context);
   const page = await context.newPage();
-  // A test account (example.test) is internal for analytics but gets no tools in a release build
+  // An e2e account (an internal mail domain) is internal for analytics but gets no tools in a release build
   // (job 337: App Review's tester accounts must not see them). The server's tester group internal
   // shows "Testfehler senden" below the version; there is no long press any more.
   const email = newEmail('errors');

@@ -297,6 +297,41 @@ True when any of these holds (`isInternal`, `app/lib/analytics/internal.dart`):
 - the user's e-mail domain is a reserved test domain (`.test`, `.invalid`, `.example`,
   `.localhost`, `example.com/.net/.org`: the fixtures' `fg.test` and `fg-test.invalid`, e2e's
   `example.test`) or in `ANALYTICS_INTERNAL_EMAIL_DOMAINS`. The e-mail is read on the device only.
+- the user is a test account (below).
+
+### Test accounts send nothing
+
+Play's pre-launch robots and our fixtures are not people, so a release build sends them no
+analytics at all (job 466, Peter t1322u: "maybe we can filter that on-device"). A test account
+(`isTestAccount`, `app/lib/analytics/internal.dart`) is either:
+
+- an e-mail on a reserved test domain (the list above, without `ANALYTICS_INTERNAL_EMAIL_DOMAINS`,
+  whose addresses are people and keep sending, marked internal); or
+- a Google-only account (`app_metadata.providers` is exactly `google`) whose e-mail, trimmed and
+  lower-cased, matches `^[a-z]+[a-z]+\.[0-9]{5}@gmail\.com$`: the shape of Play's pre-launch test
+  accounts, the same pattern the purge of Google test users (DEL-G1) matches.
+
+While one is signed in to a release build, `Analytics` stops the SDK as a no would (no event, no
+error report, no native crash report, no flag request with the install id) and serves the shared
+flags (`sharedFlags`), but keeps the stored answer and the install id: the consent switch still
+shows the user's answer. Signing out starts nothing: the SDK waits for a signed-in user who is not
+a test account, who starts it again with the same id. A yes given while a test account is signed
+in stores the yes and starts nothing, and a stored yes without an install id (which only such a
+yes leaves) starts nothing at a signed-out start either. At a new start with a stored yes, `main.dart` hands the user the auth client restored to
+`Analytics.load` (`startAnalytics(user:)`), so a test account's install starts no SDK there either.
+The e-mail is read on the device only; no event or property says "test account".
+
+On the server: a test account's answer is not recorded (`record_analytics_consent` is not called
+while one is signed in), so no server event (Alexa, MCP, voice, API) follows a yes given on a test
+install; the server keeps that user's earlier answer, if any (least data). One contact is outside this rule: a yes before any account (the
+guided start's first step) starts the SDK, which asks PostHog for its flags with a fresh id before
+the account is known; it stops at the sign-in.
+
+Not stopped, only marked `is_internal`: debug and profile builds (also with a test account, so a
+local proof still sees its events), the tester group `internal`, `ANALYTICS_INTERNAL_HOUSEHOLDS`
+and the RevenueCat tester household. The e2e build lists `e2e.snacklist.app` in
+`ANALYTICS_INTERNAL_EMAIL_DOMAINS` (`app/config/e2e.json`) and `newEmail` uses it, so the specs'
+accounts keep sending; `testAccountEmail` makes an `example.test` one that sends nothing.
 
 Server events are internal when the `ANALYTICS_INTERNAL` function secret is `true` (local proofs)
 or when the install they are sent for was recorded internal with its consent answer

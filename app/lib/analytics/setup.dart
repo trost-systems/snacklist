@@ -7,8 +7,12 @@ import 'package:flutter/foundation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 /// Analytics for this build, loaded: on only with a PostHog project key
-/// and an allowed host built in (docs/ANALYTICS.md), off otherwise.
-Future<Analytics> startAnalytics(AnalyticsStore store) async {
+/// and an allowed host built in (docs/ANALYTICS.md), off otherwise. [user]
+/// is who the auth client restored ([Analytics.load]).
+Future<Analytics> startAnalytics(
+  AnalyticsStore store, {
+  AnalyticsUser? user,
+}) async {
   const key = Environment.posthogProjectKey;
   const host = Environment.posthogHost;
   final on = projectKeyLike(key) && allowedHost(host);
@@ -31,7 +35,7 @@ Future<Analytics> startAnalytics(AnalyticsStore store) async {
           : csvSet(Environment.flagsOn),
     ),
   );
-  await analytics.load();
+  await analytics.load(user: user);
   return analytics;
 }
 

@@ -43,7 +43,18 @@ export function firstOf<T>(rows: readonly T[] | null, what: string): T {
   return row;
 }
 
+/**
+ * A new account's address. Its domain is internal for analytics (`ANALYTICS_INTERNAL_EMAIL_DOMAINS`
+ * in app/config/e2e.json), so its events carry `is_internal` and still go out. The domain is the
+ * project's own: mail to it stays in the local stack's Mailpit, but a hosted stack would try to
+ * deliver it, so run the specs only against the local stack.
+ */
 export function newEmail(tag: string): string {
+  return `${tag}-${randomUUID().slice(0, 8)}@e2e.snacklist.app`;
+}
+
+/** A test account's address: a reserved test domain, so a release build sends no analytics for it (job 466). */
+export function testAccountEmail(tag: string): string {
   return `${tag}-${randomUUID().slice(0, 8)}@example.test`;
 }
 

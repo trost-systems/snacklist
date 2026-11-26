@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 /// Whether events from this install, user and household are ours (Peter's
 /// family, test accounts, development builds) rather than a customer's.
 /// Every gate insight filters `is_internal = true` out (docs/ANALYTICS.md).
@@ -14,7 +16,8 @@
 ///   domains `.test`, `.invalid`, `.example`, `.localhost` (the fixtures'
 ///   `fg.test`, `fg-test.invalid`, the e2e `example.test`) and the
 ///   reserved `example.com/.net/.org`, plus any domain in
-///   `ANALYTICS_INTERNAL_EMAIL_DOMAINS`.
+///   `ANALYTICS_INTERNAL_EMAIL_DOMAINS`;
+/// - a test account ([isTestAccount]).
 ///
 /// To add a rule, add a parameter here and a case to
 /// test/analytics/internal_test.dart. The e-mail is read on the device and
@@ -24,6 +27,7 @@ bool isInternal({
   required Set<String> testerGroups,
   required String? householdId,
   required String? email,
+  Set<String> providers = const {},
   Set<String> internalHouseholds = const {},
   Set<String> internalEmailDomains = const {},
   String? testerHousehold,
@@ -32,7 +36,32 @@ bool isInternal({
     testerGroups.contains(internalTesterGroup) ||
     (householdId != null && internalHouseholds.contains(householdId)) ||
     (householdId != null && householdId == testerHousehold) ||
-    (email != null && _testDomain(email, internalEmailDomains));
+    (email != null && _testDomain(email, internalEmailDomains)) ||
+    isTestAccount(email: email, providers: providers);
+
+/// Whether the signed-in account is a test account, whose installs send no
+/// analytics at all in a release build (job 466): Play's pre-launch robots
+/// and our fixtures, not people. Each rule is enough on its own:
+/// - an e-mail on a reserved test domain (`.test`, `.invalid`, `.example`,
+///   `.localhost`, `example.com/.net/.org`; not the
+///   `ANALYTICS_INTERNAL_EMAIL_DOMAINS`, which are people);
+/// - a Google-only account whose e-mail is the shape of Play's pre-launch
+///   test accounts, `<letters>.<five digits>@gmail.com`, the pattern the
+///   purge of Google test users (DEL-G1) matches.
+///
+/// [providers] are the account's sign-in providers (`app_metadata.providers`).
+/// The e-mail is read on the device and never sent.
+bool isTestAccount({required String? email, required Set<String> providers}) {
+  if (email == null) {
+    return false;
+  }
+  final address = email.trim().toLowerCase();
+  return _testDomain(address, const {}) ||
+      (setEquals(providers, const {'google'}) &&
+          _playTestAccount.hasMatch(address));
+}
+
+final _playTestAccount = RegExp(r'^[a-z]+[a-z]+\.[0-9]{5}@gmail\.com$');
 
 /// The tester group whose members count as internal (docs/ANALYTICS.md,
 /// "Tester groups").
