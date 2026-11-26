@@ -34,10 +34,6 @@ class const OnboardingPage({
   /// The list's scroll position, for a step that brings its field back
   /// into view.
   final ScrollController? controller,
-
-  /// Pinned under the app bar, outside the centred list: the same place on
-  /// every step, whatever the list's height.
-  final Widget? pinned,
   super.key,
 }) extends StatelessWidget {
   @override
@@ -59,46 +55,21 @@ class const OnboardingPage({
         leading: onBack == null ? null : BackButton(onPressed: onBack),
         actions: actions,
       ),
-      body: Column(
-        children: [
-          if (pinned case final pinned?) PinnedHeader(pinned),
-          Expanded(
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 420),
-                child: ListView(
-                  key: listKey,
-                  controller: controller,
-                  // Clear of the home indicator, and in the More tab of the
-                  // floating tab pill.
-                  padding: const EdgeInsets.all(24).add(
-                    EdgeInsets.only(
-                      bottom: MediaQuery.paddingOf(context).bottom,
-                    ),
-                  ),
-                  shrinkWrap: true,
-                  children: children,
-                ),
-              ),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: ListView(
+            key: listKey,
+            controller: controller,
+            // Clear of the home indicator, and in the More tab of the
+            // floating tab pill.
+            padding: const EdgeInsets.all(24).add(
+              EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom),
             ),
+            shrinkWrap: true,
+            children: children,
           ),
-        ],
-      ),
-    ),
-  );
-}
-
-/// [child] at the top of the page under the app bar, in the list's 420-wide
-/// column and side padding ([OnboardingPage.pinned], the account step).
-class const PinnedHeader(final Widget child, {super.key})
-    extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) => Center(
-    child: ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 420),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-        child: child,
+        ),
       ),
     ),
   );

@@ -96,7 +96,6 @@ onboarding/onboarding_cubit.dart -> household/invite_repository.dart
 onboarding/onboarding_cubit.dart -> list/entry.dart
 onboarding/onboarding_cubit.dart -> list/list_repository.dart
 onboarding/onboarding_cubit.dart -> list/model.dart
-onboarding/onboarding_frame.dart -> household/onboarding_page.dart
 onboarding/onboarding_frame.dart -> shell/router.dart
 onboarding/start_screen.dart -> household/paste_invite.dart
 onboarding/start_screen.dart -> shell/router.dart

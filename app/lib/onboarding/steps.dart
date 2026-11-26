@@ -33,20 +33,23 @@ bool validHouseholdName(String name) {
   return length >= 1 && length <= maxHouseholdName;
 }
 
-/// The screen of the guided start's [step].
-Widget onboardingStepScreen(OnboardingStep step) => _SignedInBackStays(
-  child: switch (step) {
-    OnboardingStep.usage => const _UsageStep(),
-    OnboardingStep.who => const _WhoStep(),
-    OnboardingStep.name => const _NameStep(),
-    OnboardingStep.join => const JoinCodeScreen(),
-    OnboardingStep.stores => const _StoresStep(),
-    OnboardingStep.need => const _NeedStep(),
-    OnboardingStep.account => const _AccountStep(),
-    OnboardingStep.setup => const _SetupStep(),
-    OnboardingStep.invite => const InviteStep(),
-  },
-);
+/// The screen of the guided start's [step]: the counted steps in their
+/// shared [OnboardingSteps], join and setup on their own.
+Widget onboardingStepScreen(OnboardingStep step) => countedSteps.contains(step)
+    ? OnboardingSteps(step: step, body: _step)
+    : _SignedInBackStays(child: _step(step));
+
+Widget _step(OnboardingStep step) => switch (step) {
+  OnboardingStep.usage => const _UsageStep(),
+  OnboardingStep.who => const _WhoStep(),
+  OnboardingStep.name => const _NameStep(),
+  OnboardingStep.join => const JoinCodeScreen(),
+  OnboardingStep.stores => const _StoresStep(),
+  OnboardingStep.need => const _NeedStep(),
+  OnboardingStep.account => const _AccountStep(),
+  OnboardingStep.setup => const _SetupStep(),
+  OnboardingStep.invite => const InviteStep(),
+};
 
 /// Android's back on a step without Zurück: signed out to the first
 /// screen, the route under every step. Signed in, that screen („Schon ein
@@ -170,6 +173,19 @@ class _WhoStepState() extends State<_WhoStep> {
     return OnboardingStepPage(
       step: OnboardingStep.who,
       title: l10n.whoTitle,
+      footer: _NextAndSkip(
+        nextLabel: l10n.onboardingNext,
+        onNext: draft.kinds.isEmpty
+            ? null
+            : () => onboarding.at(OnboardingStep.name),
+        onSkip: () => onboarding.update(
+          (d) => d.copyWith(
+            kinds: const [],
+            otherKind: '',
+            step: OnboardingStep.name,
+          ),
+        ),
+      ),
       children: [
         Text(l10n.whoBody),
         const SizedBox(height: HlSpace.s4),
@@ -214,20 +230,6 @@ class _WhoStepState() extends State<_WhoStep> {
             style: theme.textTheme.bodySmall?.copyWith(color: t.textMuted),
           ),
         ],
-        const SizedBox(height: HlSpace.s5),
-        _NextAndSkip(
-          nextLabel: l10n.onboardingNext,
-          onNext: draft.kinds.isEmpty
-              ? null
-              : () => onboarding.at(OnboardingStep.name),
-          onSkip: () => onboarding.update(
-            (d) => d.copyWith(
-              kinds: const [],
-              otherKind: '',
-              step: OnboardingStep.name,
-            ),
-          ),
-        ),
       ],
     );
   }
@@ -288,7 +290,23 @@ class _NameStepState() extends State<_NameStep> {
     return OnboardingStepPage(
       step: OnboardingStep.name,
       title: l10n.nameTitle,
-      back: OnboardingStep.who,
+      footer: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: HlSpace.s2,
+        children: [
+          _NextAndSkip(nextLabel: l10n.onboardingNext, onNext: _next),
+          if (context.select<Flags?, bool>(
+            (f) => f?.isOn(joinHouseholdJh2Flag) ?? false,
+          ))
+            OutlinedButton(
+              key: const ValueKey('onboarding-join-existing'),
+              // The name typed so far stays in the draft for the way back.
+              onPressed: () =>
+                  context.read<OnboardingCubit>().at(OnboardingStep.join),
+              child: Text(l10n.jh2JoinExisting, textAlign: TextAlign.center),
+            ),
+        ],
+      ),
       children: [
         Text(l10n.nameBody),
         const SizedBox(height: HlSpace.s4),
@@ -319,20 +337,6 @@ class _NameStepState() extends State<_NameStep> {
             ),
           ),
         ),
-        const SizedBox(height: HlSpace.s5),
-        _NextAndSkip(nextLabel: l10n.onboardingNext, onNext: _next),
-        if (context.select<Flags?, bool>(
-          (f) => f?.isOn(joinHouseholdJh2Flag) ?? false,
-        )) ...[
-          const SizedBox(height: HlSpace.s2),
-          OutlinedButton(
-            key: const ValueKey('onboarding-join-existing'),
-            // The name typed so far stays in the draft for the way back.
-            onPressed: () =>
-                context.read<OnboardingCubit>().at(OnboardingStep.join),
-            child: Text(l10n.jh2JoinExisting, textAlign: TextAlign.center),
-          ),
-        ],
       ],
     );
   }
@@ -353,7 +357,27 @@ class const _StoresStep() extends StatelessWidget {
     return OnboardingStepPage(
       step: OnboardingStep.stores,
       title: l10n.storesStepTitle,
-      back: OnboardingStep.name,
+      footer: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: HlSpace.s2,
+        children: [
+          _NextAndSkip(
+            nextLabel: l10n.onboardingNext,
+            onNext: () => onboarding.at(OnboardingStep.need),
+            onSkip: () => onboarding.update(
+              (d) => d.copyWith(stores: const [], step: OnboardingStep.need),
+            ),
+          ),
+          if (!linked)
+            Text(
+              l10n.skipStoresHint,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+        ],
+      ),
       children: [
         if (!linked) ...[
           Text(l10n.onboardingStoresHint),
@@ -365,25 +389,6 @@ class const _StoresStep() extends StatelessWidget {
               onboarding.update((d) => d.copyWith(stores: stores)),
           linked: linked,
         ),
-        const SizedBox(height: HlSpace.s5),
-        _NextAndSkip(
-          nextLabel: l10n.onboardingNext,
-          onNext: () => onboarding.at(OnboardingStep.need),
-          onSkip: () => onboarding.update(
-            (d) => d.copyWith(stores: const [], step: OnboardingStep.need),
-          ),
-        ),
-        if (!linked)
-          Padding(
-            padding: const EdgeInsets.only(top: HlSpace.s2),
-            child: Text(
-              l10n.skipStoresHint,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ),
       ],
     );
   }
@@ -446,7 +451,14 @@ class _NeedStepState() extends State<_NeedStep> {
     return OnboardingStepPage(
       step: OnboardingStep.need,
       title: l10n.needTitle,
-      back: OnboardingStep.stores,
+      footer: _NextAndSkip(
+        nextLabel: l10n.needNext(items.length),
+        // Signed in already (a household created from „Willkommen“): no
+        // account step.
+        onNext: () => onboarding.at(
+          signedIn ? OnboardingStep.setup : OnboardingStep.account,
+        ),
+      ),
       children: [
         Text(l10n.needBody),
         const SizedBox(height: HlSpace.s4),
@@ -516,15 +528,6 @@ class _NeedStepState() extends State<_NeedStep> {
             ],
           ),
         ],
-        const SizedBox(height: HlSpace.s5),
-        _NextAndSkip(
-          nextLabel: l10n.needNext(items.length),
-          // Signed in already (a household created from „Willkommen“): no
-          // account step.
-          onNext: () => onboarding.at(
-            signedIn ? OnboardingStep.setup : OnboardingStep.account,
-          ),
-        ),
       ],
     );
   }
@@ -537,56 +540,25 @@ class const _AccountStep() extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    void back() => context.read<OnboardingCubit>().at(OnboardingStep.need);
-    // Android's back too, as on the other steps ([OnboardingPage]); popped,
-    // it showed the first screen.
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) {
-          back();
-        }
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(onboardingProgressText(context, OnboardingStep.account)),
-          automaticallyImplyLeading: false,
-          leading: BackButton(onPressed: back),
-          actions: const [OnboardingExitButton()],
-        ),
-        body: SafeArea(
-          top: false,
-          child: Column(
+    return OnboardingStepLayout(
+      body: Center(
+        child: SignInPanel(
+          key: const ValueKey('onboarding-account'),
+          // Back at the root, where the router finds the draft (a web
+          // sign-in reloads the page, the apps return through their
+          // callback).
+          returnPath: '/',
+          header: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // The same place as [OnboardingPage.pinned]
-              // (test/onboarding/progress_bar_test.dart).
-              const PinnedHeader(
-                OnboardingProgress(step: OnboardingStep.account),
-              ),
-              Expanded(
-                child: Center(
-                  child: SignInPanel(
-                    key: const ValueKey('onboarding-account'),
-                    // Back at the root, where the router finds the draft
-                    // (a web sign-in reloads the page, the apps return through
-                    // their callback).
-                    returnPath: '/',
-                    header: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        OnboardingHeading(l10n.accountStepTitle),
-                        const SizedBox(height: HlSpace.s3),
-                        Text(l10n.accountStepBody),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const LegalFooter(),
+              OnboardingHeading(l10n.accountStepTitle),
+              const SizedBox(height: HlSpace.s3),
+              Text(l10n.accountStepBody),
             ],
           ),
         ),
       ),
+      footer: const LegalFooter(),
     );
   }
 }

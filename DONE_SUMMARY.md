@@ -3108,3 +3108,11 @@ Top finding: accidental ticks (a Bring! review describes Snacklist's own „Zule
 copy fix (teach where ticked items go) and four needs-Peter questions (tick feedback, order within a store, a real-phone
 screen reader pass, an English catalog). No Reddit or Google Play evidence (blocked from hz). No app change, so no
 TestFlight build carries anything. Details: [docs/done/455.md](docs/done/455.md).
+
+## Job 454: T1 shared-axis slide for the onboarding steps
+
+Details: [docs/done/454.md](docs/done/454.md). The seven counted steps share one page. The app bar,
+the progress bar and the docked buttons stay still, and only the step's body slides (300 ms,
+28 dp, mirrored on Back). With reduced motion it is a 120 ms fade instead. Weiter closes the
+keyboard, and focus goes to the new heading. PR #723. It ships in the next green main build to
+TestFlight, with no flag.

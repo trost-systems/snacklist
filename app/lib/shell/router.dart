@@ -22,6 +22,7 @@ import 'package:family_groceries/more/more_screen.dart';
 import 'package:family_groceries/oauth/consent_screen.dart';
 import 'package:family_groceries/onboarding/draft.dart';
 import 'package:family_groceries/onboarding/onboarding_cubit.dart';
+import 'package:family_groceries/onboarding/onboarding_frame.dart';
 import 'package:family_groceries/onboarding/start_screen.dart';
 import 'package:family_groceries/onboarding/steps.dart';
 import 'package:family_groceries/purchases/premium_page_cubit.dart';
@@ -32,9 +33,9 @@ import 'package:family_groceries/session/your_name_screen.dart';
 import 'package:family_groceries/shell/shell.dart';
 import 'package:family_groceries/trip/summary_page.dart';
 import 'package:family_groceries/trip/trip_repository.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
 const listPath = '/';
@@ -70,6 +71,22 @@ const joinWaitingPath = '/welcome/waiting';
 /// The guided start (job 168b): the first screen signed out, „Los geht's“
 /// or „Ich habe schon ein Konto“.
 const startPath = '/start';
+
+/// The guided start's steps under [startPath]. The counted ones are one
+/// page: a step changes it in place, so only the step's body moves
+/// ([OnboardingSteps]).
+List<RouteBase> onboardingStepRoutes() => [
+  for (final step in OnboardingStep.values)
+    GoRoute(
+      path: step.name,
+      pageBuilder: (_, state) => MaterialPage(
+        key: countedSteps.contains(step)
+            ? const ValueKey('onboarding-steps')
+            : state.pageKey,
+        child: onboardingStepScreen(step),
+      ),
+    ),
+];
 
 /// The guided start's step [step], at `/start/<step>`.
 String onboardingPath(OnboardingStep step) => '$startPath/${step.name}';
@@ -663,10 +680,7 @@ List<RouteBase> appRoutes({
   GoRoute(
     path: startPath,
     builder: (_, _) => const StartScreen(),
-    routes: [
-      for (final step in OnboardingStep.values)
-        GoRoute(path: step.name, builder: (_, _) => onboardingStepScreen(step)),
-    ],
+    routes: onboardingStepRoutes(),
   ),
   GoRoute(
     path: consentPath,
