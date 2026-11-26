@@ -311,7 +311,7 @@ From one question to the next, the title bar, the progress bar and the buttons a
 
 **Shown on snacklist.app.** The landing page's "In der App" / "In the app" card has a video of it: the real app with a scripted recognizer, „Pizza, Orangensaft und zwei Packungen Fischstäbchen“ landing under Getränke and Tiefkühl. The English video still shows the German sentence; it was filmed before the app listened in English. Since 17 November 2026 the card's text says the app listens in the app's language (German or English) and that on Android 13 and later it can ask Android to download offline speech recognition.
 
-**Last verified.** 18 November 2026, code version 0ca5dcc9: the server splitting an English and a German sentence, and no microphone in the web app. The app's English and German dictation with a scripted recognizer: 15 November 2026, in the Linux app, before it was merged. Real devices from the code.
+**Last verified.** 18 November 2026, code version 0ca5dcc9: the server splitting an English and a German sentence, and no microphone in the web app. The app's English and German dictation with a scripted recognizer: 15 November 2026, in the Linux app, before it was merged. Real devices from the code. 26 November 2026, job 457, widget tests: a second tap on the microphone while it gets ready does nothing, and a tap while the last sentence is being split starts the next sentence without losing either.
 
 ## Ticking items, "Zuletzt verwendet" and undo
 

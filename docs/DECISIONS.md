@@ -18452,3 +18452,26 @@ On the users' build (`add-match-rows` full) typed „Schäufele“ offered „Zu
 4. **The device port is literal.** `_homographPick` and `_surfaceWord` follow `public.homograph_pick` and `public.surface_word` line for line, applied where `classifier_words` applies it (a single word's hit with the typed name). `canonicalOfKey` (memory rows, key only) is unchanged, as on the server (`canonical_of_key`). Checked against the local stack: `canonicalKeyOf` equals `public.canonical_key` for all 1,811 dictionary terms, synonyms and homograph names; on main 15 differed.
 5. **Töpfe and Topf stay apart.** The server gives „Töpfe“ the canonical `topfe` (a term of a non-first category on a shared form keeps its own spelling), so the duplicate hint never joined them; the match rows now agree. Joining spellings of one category is a change to the server's canonical rule and the items backfill, left to a classifier job (DONE_SUMMARY follow-up).
 6. **The category guess is not part of this job.** `guessCategory` could read the same homographs now; its parity pins (`Topf`, `To`, `Schäufele`) stay until a job ports `classify_item_detail`'s homograph path.
+
+## Job 457: hill climb of the add sheet and dictation
+
+1. **No voice parse part in the score.** The app doesn't parse a dictated sentence.
+   `ListCubit.addSpoken` sends it to the `voice` function, which is frozen for this job. Dictation
+   counts only through proven bug fixes with tests.
+2. **The ranking parts are a guard, not a target.** `suggest_parity_test` holds the device ranking to
+   `public.suggest_entries` row for row, so a ranking change needs the server, its parity table and a
+   migration. That is more than a simple fix.
+3. **A tap while the server splits starts the next sentence, as on main.** The first version added an
+   `adding` phase in which a tap did nothing. Review 0 showed that it lost a second sentence spoken right
+   away, with no sign that the tap was ignored. A sentence's answer now clears the field only while the field
+   still holds that sentence's text. It calls `onDone`, which focuses the field, only while no sentence is
+   listening or getting ready, so the keyboard doesn't come up mid-listen. Review 1 replaced a per-tap
+   counter ("only the newest sentence") with this check. With the counter, a newer sentence that heard
+   nothing left the field without focus. A tap while the recognizer gets ready still does
+   nothing, because a second `prepare` and `listen` would run against the one recognizer. Cancelling the
+   split was rejected, since the server may already have added the items.
+4. **Enter on a ticked match keeps dropping a typed amount.** `qa-match-rows` documents it, so changing it
+   changes the interaction. It is a prototype candidate
+   (`docs/hillclimb/prototype-candidates/hc-add-item-voice.md`).
+5. **The `_AddBar` select was reverted.** It cut key time by about 12 % and rebuilds by 34 %, which is
+   inside this host's ±15-point noise band. The climb's rule is keep only past noise.

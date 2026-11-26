@@ -64,6 +64,36 @@ class SpeakingDictation() implements Dictation {
   Future<void> stop() async {}
 }
 
+/// Gets ready only when the test completes `ready`, as the recognizer
+/// does while it asks for the microphone or checks the offline model.
+class SlowDictation() implements Dictation {
+  final ready = Completer<void>();
+  var finish = Completer<Dictated>();
+  var prepares = 0;
+  var listens = 0;
+
+  @override
+  Future<DictationProblem?> prepare(SpokenLanguage language) async {
+    prepares++;
+    await ready.future;
+    return null;
+  }
+
+  void Function(String words) say = (_) {};
+
+  @override
+  Future<Dictated> listen({
+    required void Function(String words) onWords,
+  }) async {
+    listens++;
+    say = onWords;
+    return await finish.future;
+  }
+
+  @override
+  Future<void> stop() async {}
+}
+
 void main() {
   late FakeRepository repo;
 
@@ -245,6 +275,91 @@ void main() {
       find.text('Hinzugefügt: Brot. Schon auf der Liste: Milch.'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('a second tap while the recognizer gets ready starts no '
+      'second session (job 457)', (tester) async {
+    final dictation = SlowDictation();
+    await pumpList(tester, dictation);
+    await tester.tap(find.byTooltip('Diktieren'));
+    await tester.pump();
+    await tester.tap(find.byTooltip('Diktieren'));
+    await tester.pump();
+    dictation.ready.complete();
+    await tester.pump();
+    expect(dictation.prepares, 1);
+    expect(dictation.listens, 1);
+    expect(find.byTooltip('Diktat beenden'), findsOneWidget);
+
+    dictation.finish.complete(Heard('Milch und Brot'));
+    await tester.pumpAndSettle();
+    expect(repo.rows.values.map((i) => i.name), ['Milch', 'Brot']);
+    expect(find.byTooltip('Diktieren'), findsOneWidget);
+  });
+
+  testWidgets('a tap while the server splits the sentence starts the next '
+      'one, and the first answer leaves its live words alone (job 457)', (
+    tester,
+  ) async {
+    final dictation = SlowDictation()..ready.complete();
+    await pumpList(tester, dictation);
+    final gate = repo.spokenGate = Completer<void>();
+    await tester.tap(find.byTooltip('Diktieren'));
+    await tester.pump();
+    dictation.say('Milch und Brot');
+    dictation.finish.complete(Heard('Milch und Brot'));
+    await tester.pump();
+    expect(fieldText(tester), 'Milch und Brot');
+
+    dictation.finish = Completer<Dictated>();
+    await tester.tap(find.byTooltip('Diktieren'));
+    await tester.pump();
+    expect(find.byTooltip('Diktat beenden'), findsOneWidget);
+    dictation.say('Eier');
+    await tester.pump();
+
+    gate.complete();
+    await tester.pump();
+    await tester.pump();
+    expect(repo.rows.values.map((i) => i.name), ['Milch', 'Brot']);
+    expect(fieldText(tester), 'Eier', reason: 'the live words stay');
+    expect(
+      tester.widget<TextField>(addField()).focusNode!.hasFocus,
+      isFalse,
+      reason: 'no keyboard while the next sentence is heard',
+    );
+    expect(find.byTooltip('Diktat beenden'), findsOneWidget);
+
+    dictation.finish.complete(Heard('Eier'));
+    await tester.pumpAndSettle();
+    expect(repo.rows.values.map((i) => i.name), ['Milch', 'Brot', 'Eier']);
+    expect(fieldText(tester), isEmpty);
+    expect(find.byTooltip('Diktieren'), findsOneWidget);
+  });
+
+  testWidgets('when the next sentence hears nothing, the first answer '
+      'still hands the field back (job 457)', (tester) async {
+    final dictation = SlowDictation()..ready.complete();
+    await pumpList(tester, dictation);
+    final gate = repo.spokenGate = Completer<void>();
+    await tester.tap(find.byTooltip('Diktieren'));
+    await tester.pump();
+    dictation.say('Milch und Brot');
+    dictation.finish.complete(Heard('Milch und Brot'));
+    await tester.pump();
+
+    dictation.finish = Completer<Dictated>();
+    await tester.tap(find.byTooltip('Diktieren'));
+    await tester.pump();
+    dictation.finish.complete(NothingHeard());
+    await tester.pump();
+    expect(find.byTooltip('Diktieren'), findsOneWidget);
+
+    gate.complete();
+    await tester.pumpAndSettle();
+    expect(repo.rows.values.map((i) => i.name), ['Milch', 'Brot']);
+    expect(fieldText(tester), isEmpty);
+    expect(tester.widget<TextField>(addField()).focusNode!.hasFocus, isTrue);
   });
 
   testWidgets('offline, the sentence stays in the field', (tester) async {

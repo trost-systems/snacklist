@@ -28,6 +28,11 @@ class const DictationButton({
 class _DictationButtonState() extends State<DictationButton> {
   var _listening = false;
 
+  /// Between a tap and listening: the recognizer asks for the microphone
+  /// or checks its offline model, and a second tap would start a second
+  /// session.
+  var _preparing = false;
+
   void _setListening(bool listening) {
     setState(() => _listening = listening);
     widget.onListening(listening);
@@ -39,13 +44,26 @@ class _DictationButtonState() extends State<DictationButton> {
       await dictation.stop();
       return;
     }
+    if (_preparing) {
+      return;
+    }
     final l10n = AppLocalizations.of(context);
     final cubit = context.read<ListCubit>();
     final language = SpokenLanguage.of(Localizations.localeOf(context));
-    if (await dictation.prepare(language) case final problem?) {
+    _preparing = true;
+    final DictationProblem? problem;
+    try {
+      problem = await dictation.prepare(language);
+    } finally {
+      _preparing = false;
+    }
+    if (problem != null) {
       if (mounted) {
         widget.onMessage(_problem(l10n, problem));
       }
+      return;
+    }
+    if (!mounted) {
       return;
     }
     _setListening(true);
@@ -75,7 +93,9 @@ class _DictationButtonState() extends State<DictationButton> {
       if (results.isEmpty) {
         widget.onMessage(l10n.dictationNothingUnderstood);
       } else {
-        widget.input.clear();
+        if (widget.input.text == text) {
+          widget.input.clear();
+        }
         widget.onMessage(
           [
             _summary(l10n, results),
@@ -88,7 +108,11 @@ class _DictationButtonState() extends State<DictationButton> {
         widget.onMessage(l10n.dictationSplitFailed);
       }
     }
-    widget.onDone();
+    // A tap while the server split this sentence may have started the
+    // next one: the keyboard must not come up while it listens.
+    if (!_listening && !_preparing) {
+      widget.onDone();
+    }
   }
 
   static String _problem(AppLocalizations l10n, DictationProblem problem) =>
