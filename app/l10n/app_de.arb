@@ -221,7 +221,7 @@
   "@itemsWord": {"placeholders": {"count": {"type": "int"}}},
   "expandSection": "Aufklappen",
   "collapseSection": "Zuklappen",
-  "listHint": "Tippen hakt ab · Halten bearbeitet",
+  "listHint": "Tippen hakt ab · Halten bearbeitet. Vertippt? Unten unter „Zuletzt verwendet“ zurückholen.",
   "reorderNeedsConnection": "Die Reihenfolge lässt sich nur mit Verbindung ändern.",
   "suggestion": "Vorschlag: {label}",
   "@suggestion": {"placeholders": {"label": {"type": "String"}}},

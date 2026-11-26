@@ -135,7 +135,15 @@ void main() {
             flags: _usersFlags,
             seed: _groceries,
           );
-          // Zahnpasta, the first row, struck off and still leaving.
+          // Zahnpasta, the first row, struck off and still leaving. At 310 %
+          // the „Erste Schritte“ card fills the screen: scroll the row in.
+          if (find.text('Zahnpasta').evaluate().isEmpty) {
+            await tester.dragUntilVisible(
+              find.text('Zahnpasta'),
+              find.byType(Scrollable).first,
+              const Offset(0, -100),
+            );
+          }
           await tester.tap(find.text('Zahnpasta'));
           await tester.pump();
           await tester.pump(HlDuration.short);

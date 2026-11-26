@@ -643,7 +643,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get collapseSection => 'Zuklappen';
 
   @override
-  String get listHint => 'Tippen hakt ab · Halten bearbeitet';
+  String get listHint =>
+      'Tippen hakt ab · Halten bearbeitet. Vertippt? Unten unter „Zuletzt verwendet“ zurückholen.';
 
   @override
   String get reorderNeedsConnection =>

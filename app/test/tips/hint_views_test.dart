@@ -200,7 +200,13 @@ void main() {
       expect(find.text('Liste angelegt'), findsOneWidget);
       expect(find.text('Partner·in einladen'), findsOneWidget);
       expect(find.text('Einmal einkaufen'), findsOneWidget);
-      expect(find.text('Tippen hakt ab · Halten bearbeitet'), findsOneWidget);
+      expect(
+        find.text(
+          'Tippen hakt ab · Halten bearbeitet. '
+          'Vertippt? Unten unter „Zuletzt verwendet“ zurückholen.',
+        ),
+        findsOneWidget,
+      );
       expect(find.text('KI-Assistenten verbinden'), findsNothing);
       expect(find.byTooltip('Erste Schritte ausblenden'), findsOneWidget);
     });

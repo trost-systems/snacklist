@@ -50,7 +50,7 @@ async function householdOf(api: SupabaseClient): Promise<string> {
 test('stores and categories are dividers that scroll away, stores fold for good, the explainer goes for good', async ({ page }) => {
   const email = newEmail('walk-dividers');
   await signUpWithHousehold(page, email, { stores: chainStores });
-  const hint = 'Tippen hakt ab · Halten bearbeitet';
+  const hint = 'Tippen hakt ab · Halten bearbeitet. Vertippt? Unten unter „Zuletzt verwendet“ zurückholen.';
   await seed(page, email, lidl);
   // The Erste Schritte card waits for the first open item: an empty list stays clean.
   await expect(page.getByText(hint)).toBeVisible();
