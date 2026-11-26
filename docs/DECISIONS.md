@@ -18310,3 +18310,13 @@ The crash is flutter#195316 (fix flutter#192724 on master, in no stable or beta 
 - The rule covers any control that saves to the server without a loading state, not only switches: the default household dialog and the default list menu waited the same way, so they changed too. Rows with a spinner (the voice pages) keep it.
 - `HouseholdAddAlert` (notify on adds, hide my name) is used only in `household_add_settings.dart`, which job 463 owns, so this job leaves both alone; 463 applies the rule there.
 - The default household dialog keeps ignoring taps while a save runs, as before, so a second tap cannot race the first.
+
+## Job 455: competitor pain points research, 2026-11-26
+
+1. **App Store review feed as the main corpus.** Reddit answers the hz runner with 403 and Play reviews need
+   JavaScript, so Apple's public review feed (per storefront, sort and page) carries the user voice, with German press
+   comments for the home market. Every quote names its feed page; `verify_quotes.py` in the job directory checks them.
+2. **The raw review text stays out of the public repo.** Only the quotes the report cites are committed; the corpus
+   sits in the job directory.
+3. **Tick feedback is ranked first but tagged needs Peter**, because Peter removed the tick's undo snackbar (job 29b).
+   The copy-only hint about „Zuletzt verwendet“ is the simple fix that works with any outcome.
