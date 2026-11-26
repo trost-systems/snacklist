@@ -1132,12 +1132,7 @@ class SessionCubit(
     Map<String, Object> properties = const {},
   ]) {
     analytics
-      ?..setUser(
-        AnalyticsUser(
-          email: _client.auth.currentUser?.email,
-          householdId: householdId,
-        ),
-      )
+      ?..setUser(_analyticsUser(householdId))
       ..track(event, properties);
   }
 
@@ -1184,15 +1179,15 @@ class SessionCubit(
   void onChange(Change<Session> change) {
     super.onChange(change);
     analytics?.setUser(switch (change.nextState) {
-      NeedsHousehold() => AnalyticsUser(email: _client.auth.currentUser?.email),
-      InHousehold(:final household) => AnalyticsUser(
-        email: _client.auth.currentUser?.email,
-        householdId: household.id,
-      ),
+      NeedsHousehold() => _analyticsUser(null),
+      InHousehold(:final household) => _analyticsUser(household.id),
       SignedOut() || SessionLoading() => null,
     });
     _followRequests(change.nextState);
   }
+
+  AnalyticsUser _analyticsUser(String? householdId) =>
+      analyticsUserOf(_client.auth.currentUser, householdId: householdId);
 
   /// Realtime on the user's join requests while there are any: a decision
   /// shows at once, not only on the next refresh.
@@ -1255,3 +1250,15 @@ class SessionCubit(
     await super.close();
   }
 }
+
+/// [user] as analytics needs it: the e-mail and the sign-in providers
+/// (`app_metadata.providers`), which stay on the device.
+AnalyticsUser analyticsUserOf(User? user, {String? householdId}) =>
+    AnalyticsUser(
+      email: user?.email,
+      householdId: householdId,
+      providers: switch (user?.appMetadata['providers']) {
+        final List<Object?> providers => {...providers.whereType<String>()},
+        _ => const {},
+      },
+    );

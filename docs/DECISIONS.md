@@ -18483,3 +18483,46 @@ On the users' build (`add-match-rows` full) typed „Schäufele“ offered „Zu
 4. **Read-back by API, exact; public page, whitespace-collapsed.** The API returns the stored text, so `listing` compares sha256 per field right after the commit. The public page renders line breaks as `<br>`, so `listing_check` compares it with whitespace collapsed, and it must not contain Legal LK1's sentence. It parsed Google Keep's real de page correctly (1,891 characters, 16 lines). Our own page could not be tried yet (404).
 5. **Premium stays off until `check` passes.** The commit goes to Google's review and then waits for a publish under managed publishing. Legal LK1 requires the new listing to be live before anyone outside the testers can buy, so the release checklist orders the purchase screen after the check.
 6. **The CI test is a unit test with a fake Play client.** A real `validate_only` run needs the `release` environment, which PR runs never get. `app/fastlane/test/play_listing_test.rb` runs in the `fastlane` gate. A mutation check confirmed it: removing the gate's `raise` fails 2 of its 15 tests.
+
+## Job 466: test installs send no analytics (2026-11-26)
+
+Peter t1322u: "maybe we can filter that on-device". The lead's default: after sign-in the device
+checks the account's e-mail and, on a match, stops sending (opt-out, least data); no new event
+property. Choices made here, each reversible:
+
+1. **The spec file was not on the runner.** `/workspace/snacklist/briefs/test-install-filter.md`
+   does not exist on hz; the brief's summary (pattern, domains, exemptions, tests) is what this
+   job built from.
+2. **Stopped means the SDK stops, not only Dart events.** Native crash reports never pass the
+   Dart `beforeSend` (docs/ANALYTICS.md), so dropping events alone would still send a pre-launch
+   robot's crashes. While a test account is signed in to a release build, `Analytics` stops the
+   SDK as a no does and serves the shared flags; the stored answer and the install id stay, and
+   the next signed-in user who is not a test account starts the SDK again with the same id.
+3. **Release builds only.** "Do not stop for debug/profile builds": a debug or profile build
+   sends for a test account too (marked internal), so a local proof with the seeds still sees
+   events. Vercel previews (`ANALYTICS_INTERNAL_BUILD`) count as non-release as well.
+4. **`ANALYTICS_INTERNAL_EMAIL_DOMAINS` keeps sending.** The brief names the reserved domains;
+   the define's domains are people (Peter's), so they stay marked internal and sending.
+5. **Google-only from `app_metadata.providers`.** GoTrue keeps the account's providers there and
+   in the session's user; exactly `{google}` is Google-only, a linked e-mail or Apple identity is
+   not.
+6. **The e2e accounts moved to `e2e.snacklist.app`.** The e2e build is a release build and its
+   accounts were `example.test`, so every analytics, onboarding and feedback spec would have gone
+   silent. `app/config/e2e.json` lists the domain in `ANALYTICS_INTERNAL_EMAIL_DOMAINS` and
+   `newEmail` uses it: the specs keep sending, marked internal, as before. `testAccountEmail`
+   makes an `example.test` account for the new spec. Mail to it stays on the local stack.
+7. **The server record.** A test account's answer is not recorded (review 1): a row for it,
+   under an earlier user's install id, would let Alexa, MCP, voice or API events go out for it.
+   The server keeps that user's earlier answer, if any. No `supabase/functions` change.
+8. **A cold start knows the restored account (review 0).** `Analytics.load` ran before the
+   session existed, so a stored yes started posthog-js, which asked for flags with a fresh id on
+   every launch until the session stopped it. `main.dart` now hands the auth client's restored
+   user to `startAnalytics(user:)`; it decides only whether the SDK starts, events still wait for
+   the session's `setUser` as before. A yes in the guided start, before any account, still starts
+   the SDK until the sign-in: the brief's rule is "after sign-in".
+9. **Signing out keeps the SDK off (review 1).** A sign-out after a test account restarted the
+   SDK on the login screen: posthog-js seeded and stored a fresh id and asked for flags with it,
+   at every signed-out start after. Now the SDK waits for a signed-in user who is not a test
+   account; a stored yes without an install id (which only a yes given while a test account was
+   signed in leaves) waits the same way at a signed-out start. A yes given signed out (the guided
+   start) still starts it.

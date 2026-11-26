@@ -3200,3 +3200,7 @@ copy error was found and left for job 456: the offline dictation message says to
 „Hinzufügen“, which the compact sheet doesn't show. Details: [docs/done/457.md](docs/done/457.md).
 
 - Job 480, the staged Play listing goes up right after the Dec 1 production publish, with read-back: [docs/done/480.md](docs/done/480.md)
+
+## Job 466: test installs send no analytics
+
+See `docs/done/466.md`.

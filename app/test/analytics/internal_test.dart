@@ -97,6 +97,64 @@ void main() {
     );
   });
 
+  group('test accounts (job 466)', () {
+    const google = {'google'};
+    final cases = <(String?, Set<String>, bool)>[
+      // Play pre-launch: Google only, <letters>.<five digits>@gmail.com.
+      ('johnsmith.12345@gmail.com', google, true),
+      ('ab.00000@gmail.com', google, true),
+      ('  JohnSmith.12345@Gmail.COM ', google, true),
+      ('a.12345@gmail.com', google, false),
+      ('johnsmith.1234@gmail.com', google, false),
+      ('johnsmith.123456@gmail.com', google, false),
+      ('john.smith.12345@gmail.com', google, false),
+      ('john-smith.12345@gmail.com', google, false),
+      ('johnsmith12345@gmail.com', google, false),
+      ('johnsmith.12345@googlemail.com', google, false),
+      ('johnsmith.12345@gmail.com.example.de', google, false),
+      ('anna.mueller@gmail.com', google, false),
+      // Same shape, but not Google only.
+      ('johnsmith.12345@gmail.com', {'email'}, false),
+      ('johnsmith.12345@gmail.com', {'google', 'email'}, false),
+      ('johnsmith.12345@gmail.com', {'google', 'apple'}, false),
+      ('johnsmith.12345@gmail.com', {}, false),
+      // Reserved test domains, whatever the provider.
+      ('lea@fg-test.invalid', {'email'}, true),
+      ('peter@fg.test', {}, true),
+      ('e2e-1@example.test', {'email'}, true),
+      ('x@sub.example.com', google, true),
+      ('x@localhost', {'email'}, true),
+      ('anna@test.de', {'email'}, false),
+      (null, google, false),
+    ];
+    // Named by index: no e-mail in the test output.
+    for (final (index, (email, providers, expected)) in cases.indexed) {
+      test('case $index', () {
+        expect(isTestAccount(email: email, providers: providers), expected);
+      });
+    }
+
+    test('a test account is internal, in any build', () {
+      expect(
+        isInternal(
+          releaseBuild: true,
+          testerGroups: const {},
+          householdId: null,
+          email: 'johnsmith.12345@gmail.com',
+          providers: google,
+        ),
+        isTrue,
+      );
+    });
+
+    test('the extra internal domains are people, not test accounts', () {
+      expect(
+        isTestAccount(email: 'p@petertrost.com', providers: {'email'}),
+        isFalse,
+      );
+    });
+  });
+
   test('csvSet trims, lower-cases and drops blanks', () {
     expect(csvSet(' A, b ,,'), {'a', 'b'});
     expect(csvSet(''), isEmpty);

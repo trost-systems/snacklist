@@ -114,7 +114,11 @@ Future<void> _main(WidgetsBinding Function() binding) async {
   );
   final cache = DeviceCache.onDevice();
   final storeReview = InAppStoreReview();
-  final analytics = _analytics = await startAnalytics(cache);
+  final restored = client.auth.currentUser;
+  final analytics = _analytics = await startAnalytics(
+    cache,
+    user: restored == null ? null : analyticsUserOf(restored),
+  );
   appLook = await startLook(analytics.flags, cache);
   keepLook(analytics.flags, cache);
   final reviewPrompt = _reviewPrompt = ReviewPrompt(

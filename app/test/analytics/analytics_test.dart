@@ -632,20 +632,22 @@ void main() {
       );
     });
 
-    test('a test account is internal', () async {
+    test('a test account is internal', () {
       for (final email in [
         'peter@fg.test',
         'lea@fg-test.invalid',
         'e2e-1234@example.test',
       ]) {
-        expect(
-          await internalFor(
-            AnalyticsUser(email: email, householdId: householdA),
-          ),
-          isTrue,
-          reason: email,
-        );
+        analytics.setUser(AnalyticsUser(email: email, householdId: householdA));
+        expect(analytics.internalNow, isTrue);
       }
+      analytics.setUser(
+        const AnalyticsUser(
+          email: 'johnsmith.12345@gmail.com',
+          providers: {'google'},
+        ),
+      );
+      expect(analytics.internalNow, isTrue);
     });
 
     test('a listed household is internal', () async {
@@ -674,6 +676,245 @@ void main() {
       store.internalMark = true;
       expect(await internalFor(customer), isFalse);
       expect(store.internalMark, isFalse);
+    });
+  });
+
+  group('a test account sends nothing in a release build (job 466)', () {
+    const robot = AnalyticsUser(
+      email: 'johnsmith.12345@gmail.com',
+      householdId: householdA,
+      providers: {'google'},
+    );
+    const fixture = AnalyticsUser(
+      email: 'lea@fg-test.invalid',
+      householdId: householdA,
+      providers: {'email'},
+    );
+
+    /// Everything that went to the SDK or to PostHog's flags.
+    String sent() =>
+        '${native.calls.map((c) => c.arguments)} ${sharedRequests()}';
+
+    for (final (kind, user) in [('play robot', robot), ('fixture', fixture)]) {
+      test(
+        '$kind signs in after a yes: the SDK stops, the answer stays',
+        () async {
+          await analytics.decide(granted: true);
+          await analytics.flush();
+          final id = store.id;
+          expect(native.methods, contains('setup'));
+          final asked = server.requests.length;
+
+          analytics
+            ..setUser(user)
+            ..track('item_ticked')
+            ..captureException(StateError('boom'), StackTrace.current);
+          await analytics.flush();
+          await pumpEventQueue();
+
+          expect(native.events, isEmpty, reason: 'not even first_open');
+          expect(native.methods.last, 'close');
+          expect(analytics.state.consent, isTrue);
+          expect(store.decided, isTrue);
+          expect(store.id, allOf(isNotNull, id));
+          expect(server.requests.length, greaterThan(asked));
+          expect(sent(), isNot(contains(user.email!.split('@').first)));
+        },
+      );
+
+      test('$kind answers yes when signed in: no SDK at all', () async {
+        analytics.setUser(user);
+        await analytics.decide(granted: true);
+        analytics.track('item_ticked');
+        await analytics.flush();
+        await pumpEventQueue();
+
+        expect(native.calls, isEmpty);
+        expect(store.decided, isTrue);
+        expect(sent(), isNot(contains(user.email!.split('@').first)));
+      });
+    }
+
+    test('a stored yes and a restored test account: no SDK at the start, '
+        'not even a flag request with an id', () async {
+      const kept = '0b9f8e3c-1d2a-4c5b-8e7f-123456789abc';
+      final older = MemoryAnalyticsStore()
+        ..id = kept
+        ..decided = true
+        ..textVersion = consentTextVersion
+        ..firstOpen = kept;
+      final shared = FlagsServer();
+      final a = await loadedAnalytics(older, server: shared, user: robot);
+      a
+        ..setUser(robot)
+        ..track('item_ticked');
+      await a.flush();
+      await pumpEventQueue();
+      expect(native.calls, isEmpty);
+      expect(shared.requests, isNotEmpty, reason: 'the shared flags');
+      expect(a.state.consent, isTrue);
+      expect(older.id, kept);
+
+      // Signed out: still nothing, as on the login screen.
+      a.setUser(null);
+      await a.flush();
+      await pumpEventQueue();
+      expect(native.calls, isEmpty);
+
+      // The next user who is not a test account starts it with the id.
+      a.setUser(customer);
+      await a.flush();
+      expect((native.setup['bootstrap']! as Map)['distinctId'], kept);
+      await a.close();
+    });
+
+    test('a test account signs out: the SDK stays off, at this start and '
+        'the next one, until a real user signs in', () async {
+      analytics.setUser(robot);
+      await analytics.decide(granted: true);
+      analytics.setUser(null);
+      await analytics.flush();
+      await pumpEventQueue();
+      expect(native.calls, isEmpty);
+      expect(store.id, isNull);
+
+      final next = await loadedAnalytics(store);
+      await pumpEventQueue();
+      expect(native.calls, isEmpty, reason: 'a cold start signed out');
+      expect(store.id, isNull);
+
+      next
+        ..setUser(customer)
+        ..track('item_ticked');
+      await next.flush();
+      await pumpEventQueue();
+      expect(native.names, ['first_open', 'item_ticked']);
+      expect(store.id, isNotNull);
+      await next.close();
+    });
+
+    test('a yes signed out after a test account starts the SDK', () async {
+      analytics
+        ..setUser(robot)
+        ..setUser(null);
+      await analytics.decide(granted: true);
+      await analytics.flush();
+      expect(native.methods, contains('setup'));
+    });
+
+    test("a test account's answer is not recorded on the server", () async {
+      final recorded = <bool>[];
+      analytics.recordConsent = ({
+        required installId,
+        required consent,
+        required internal,
+        required answered,
+        required textVersion,
+      }) async => recorded.add(consent);
+      await analytics.decide(granted: true);
+      analytics.setUser(robot);
+      await analytics.decide(granted: false);
+      await analytics.decide(granted: true);
+      expect(recorded, isEmpty);
+    });
+
+    group('still sends, marked internal, in a release build', () {
+      for (final (index, (groups, config, tester)) in [
+        ({'internal'}, releaseConfig, null),
+        (
+          <String>{},
+          const AnalyticsConfig(
+            releaseBuild: true,
+            householdGroups: false,
+            platform: 'web',
+            appVersion: '0.1.0',
+            internalHouseholds: {householdA},
+          ),
+          null,
+        ),
+        (<String>{}, releaseConfig, householdA),
+      ].indexed) {
+        test('case $index', () async {
+          final a = await loadedAnalytics(store, config: config);
+          a
+            ..testerHousehold = tester
+            ..setTesterGroups(groups)
+            ..setUser(customer);
+          await a.decide(granted: true);
+          a.track('item_ticked');
+          await a.flush();
+          await a.close();
+          expect(native.names, ['first_open', 'item_ticked']);
+          expect(propsOf(native.events.last)['is_internal'], isTrue);
+        });
+      }
+    });
+
+    test(
+      'a restored customer starts the SDK at the start, as before',
+      () async {
+        final older = MemoryAnalyticsStore()
+          ..decided = true
+          ..textVersion = consentTextVersion;
+        final a = await loadedAnalytics(older, user: customer);
+        expect(native.methods, contains('setup'));
+        await a.close();
+      },
+    );
+
+    test('the next user who is no test account starts it again', () async {
+      await analytics.decide(granted: true);
+      analytics.setUser(robot);
+      await analytics.flush();
+      expect(native.methods.last, 'close');
+      analytics.setUser(null);
+      await analytics.flush();
+      analytics
+        ..setUser(customer)
+        ..track('item_ticked');
+      await analytics.flush();
+      await pumpEventQueue();
+
+      expect(native.names, ['first_open', 'item_ticked']);
+      expect(propsOf(native.events.last)['install_id'], store.id);
+      expect(propsOf(native.events.last)['is_internal'], isFalse);
+    });
+
+    test('the same address signed in with e-mail still sends', () async {
+      analytics.setUser(
+        const AnalyticsUser(
+          email: 'johnsmith.12345@gmail.com',
+          householdId: householdA,
+          providers: {'email'},
+        ),
+      );
+      await analytics.decide(granted: true);
+      analytics.track('item_ticked');
+      await analytics.flush();
+
+      expect(native.names, ['first_open', 'item_ticked']);
+      expect(propsOf(native.events.last)['is_internal'], isFalse);
+    });
+
+    test('a debug or profile build still sends, marked internal', () async {
+      final debug = await loadedAnalytics(
+        store,
+        config: const AnalyticsConfig(
+          releaseBuild: false,
+          householdGroups: false,
+          platform: 'web',
+          appVersion: '0.1.0',
+        ),
+      );
+      debug.setUser(robot);
+      await debug.decide(granted: true);
+      debug.track('item_ticked');
+      await debug.flush();
+      await debug.close();
+
+      expect(native.names, ['first_open', 'item_ticked']);
+      expect(propsOf(native.events.last)['is_internal'], isTrue);
+      expect(sent(), isNot(contains('johnsmith')));
     });
   });
 
