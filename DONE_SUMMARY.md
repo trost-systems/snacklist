@@ -3204,3 +3204,13 @@ copy error was found and left for job 456: the offline dictation message says to
 ## Job 466: test installs send no analytics
 
 See `docs/done/466.md`.
+
+## Job 468: iOS push via FCM and APNs on TestFlight
+
+- **Root cause.** No client or signing defect blocked TestFlight push. Peter's phone has a valid production token, and FCM accepted the one send (10:38 CET: `sent 1, failed 0`). At 10:41 CET both server switches went off and their cron jobs were removed, so nothing was sent after that. A notification that arrives while the app is open is not shown on iOS.
+- **Fixed on the way.** iOS `deleteToken` failed with `apns-token-not-set` after a restart. Auto-init was off, so the plugin never asked APNs for a token, and the offline sign-out catch-up never deleted the old account's token (`app/lib/push/firebase_push.dart`). Also added: the `remote-notification` background mode (FlutterFire setup), and a release check that the signed IPA carries `aps-environment=production` (`scripts/ios-push-entitlements.py`, run in `fastlane ios beta`).
+- **Review 0.** A delete that outlasted its caller's 3 s timeout could delete the token registered right after it. `token()` now waits for it, and a test proves this (red without the wait).
+- **Review 1.** Corrected the docs: production was read with `select`s only, and the session was not read-only (the pooler ignores `PGOPTIONS`). The FCM-error sentence is softened. Land with `MERGE_WAIT_MINUTES=70` (pubspec and Info.plist start the ios-storekit job).
+- **Verify.** `flutter test test/push` (58; the new delete test fails on main), `python3 scripts/ios-push-entitlements-test.py` (5). There was no device test, and the check has not yet read a real IPA. The next release run is its first.
+- **Peter.** Install the first TestFlight build after the merge. The owner turns the server switches back on (NEEDS_LEAD). Keep „Wenn jemand etwas hinzufügt“ on, lock the phone, and have someone else add an item. No reinstall or switch toggle is needed.
+- **Details.** [docs/done/468.md](docs/done/468.md) (audit table with doc links, production counts).

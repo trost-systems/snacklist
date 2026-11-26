@@ -256,7 +256,23 @@ notifications.
 
 - iOS: `aps-environment` = `development` in `Runner.entitlements`, the
   value Xcode writes for the capability. Signing takes the value of the
-  provisioning profile, so the App Store profile ships `production`. The
+  provisioning profile, so the App Store profile ships `production`
+  ([Apple](https://developer.apple.com/documentation/bundleresources/entitlements/aps-environment):
+  "Production provisioning profile and TestFlight use production"). The
+  release lane checks the signed IPA (`scripts/ios-push-entitlements.py`,
+  job 468): it stops before the upload when the app's signature carries
+  anything but `production`, or when Info.plist lacks the
+  `remote-notification` background mode, which
+  [FlutterFire's setup](https://firebase.google.com/docs/cloud-messaging/flutter/client)
+  asks for. No `FirebaseAppDelegateProxyEnabled` and no APNs code in
+  `AppDelegate`: firebase_messaging registers with APNs itself (also under
+  the scene delegate) and hands the device token to FCM, and FlutterFire
+  needs swizzling on. It asks APNs only while FCM auto-init is on, and
+  `getToken` and `deleteToken` throw until the APNs token is there, so
+  `FirebasePush` turns auto-init on and waits for it (5 s at most) before
+  either; `deleteToken` turns it off again after. A delete can outlast its
+  caller's timeout; `token()` waits for it to end, so it cannot delete the
+  token registered after it (`firebase_push_test.dart`). The
   App ID `com.snacklist.app` needs the Push Notifications capability and
   renewed App Store profiles before this lands, or the release run's
   `plan` stops with "Profile ... is INVALID" (`docs/RELEASE.md`,
@@ -264,8 +280,12 @@ notifications.
   push.
 - Android: `android.permission.POST_NOTIFICATIONS` (Android 13 and later
   ask at opt-in).
-- `app/test/push/push_native_config_test.dart` pins both, and the six
-  defines in the Fastfile and `release.yml`.
+- `app/test/push/push_native_config_test.dart` pins both, the background
+  mode, the release lane's IPA check, and the six defines in the Fastfile
+  and `release.yml`.
+- Delivery is checked on a TestFlight phone with the app in the
+  background or the phone locked: a notification that arrives while the
+  app is open is not shown ("The app", the item on taps).
 
 ## Ops setup
 

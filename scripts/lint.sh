@@ -49,6 +49,8 @@ scripts/siri-vocabulary.py app/ios
 python3 scripts/siri-vocabulary-test.py
 log "App Shortcuts bundle check"
 python3 scripts/app-shortcuts-bundle-test.py
+log "iOS push entitlements check"
+python3 scripts/ios-push-entitlements-test.py
 
 log "Auth templates carry no draft line"
 scripts/checks/auth-templates-no-draft-test.sh

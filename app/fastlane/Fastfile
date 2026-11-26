@@ -234,6 +234,8 @@ platform :ios do
     sh("python3", File.join(APP_DIR, "../scripts/siri-vocabulary.py"), ipa)
     # The App Shortcuts Siri matches, with their de and en phrases (job 97).
     sh("python3", File.join(APP_DIR, "../scripts/app-shortcuts-bundle.py"), ipa)
+    # TestFlight devices get push only from a build signed with aps-environment production (job 468).
+    sh("python3", File.join(APP_DIR, "../scripts/ios-push-entitlements.py"), ipa)
     upload? ? upload_ipa(api_key, ipa) : validate_ipa(ipa)
   end
 

@@ -18526,3 +18526,13 @@ property. Choices made here, each reversible:
    account; a stored yes without an install id (which only a yes given while a test account was
    signed in leaves) waits the same way at a signed-out start. A yes given signed out (the guided
    start) still starts it.
+
+## Job 468: iOS push via FCM and APNs
+
+- No `FirebaseAppDelegateProxyEnabled` and no APNs code in `AppDelegate`. FlutterFire requires swizzling on, and firebase_messaging 17.1.0 registers with APNs and forwards the token itself, under the scene delegate too.
+- `Runner.entitlements` keeps `development` (Xcode debug builds). The store value comes from the App Store profile, and the release lane now checks the signed IPA instead of trusting that. There is no separate Release entitlements file: it would duplicate what the profile already decides.
+- Only `remote-notification` is added to `UIBackgroundModes`, not FlutterFire's `fetch` too. The app does no background fetch, and a mode the app does not use invites a review question.
+- iOS `deleteToken` turns auto-init on and waits for APNs before deleting, then turns it off. Briefly enabling auto-init may fetch the token being deleted. That costs nothing, and it is the only way to get an APNs token from the plugin.
+- Production was read with `select`s only (counts and fixed answers). The session was not read-only: the Supavisor pooler ignores `PGOPTIONS='-c default_transaction_read_only=on'` (`show` reads `off`, review 1). A guarded read sets it as the first command of the same psql call: `-c "set default_transaction_read_only = on"`. The server switches found off were left off and reported (NEEDS_LEAD).
+- Review 0: an iOS delete could outlast its caller's timeout (`_deleteLeftToken`'s 3 s) while waiting for APNs, then delete the token registered right after it. `FirebasePush.token()` now waits for the last delete to end. That fixes the race whatever budget a caller sets. The budgets stay at 2 s (`forget`'s unregister) and 3 s (the delete): a longer delete budget would make an offline sign-out wait up to 10 s, and in a running, opted-in app the APNs token is already there. An outlasting delete still completes, and the `tokenLeft` it leaves only means one more harmless delete at the next start.
+- Review 1: `token()` waits for an abandoned delete without a bound. A bound would bring the race back whenever the delete outlasts it. Offline, the wait holds the push queue only as long as the native delete takes, which `_register`'s `getToken` could already do on main.

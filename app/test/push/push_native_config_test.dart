@@ -4,12 +4,36 @@ import 'package:flutter_test/flutter_test.dart';
 
 /// docs/PUSH.md, "Native": without these the OS never hands out a token.
 void main() {
+  // development is Xcode's value for debug builds; the store build is signed
+  // with the App Store profile's production, which the next test checks.
   test('iOS has the APNs entitlement', () {
     final entitlements = File('ios/Runner/Runner.entitlements')
         .readAsStringSync();
     expect(
       entitlements,
       matches(RegExp(r'<key>aps-environment</key>\s*<string>development<')),
+    );
+  });
+
+  test('the TestFlight build is checked for production APNs', () {
+    final fastfile = File('fastlane/Fastfile').readAsStringSync();
+    final beta = fastfile.substring(
+      fastfile.indexOf('lane :beta do'),
+      fastfile.indexOf('upload? ? upload_ipa'),
+    );
+    expect(beta, contains('scripts/ios-push-entitlements.py"), ipa)'));
+  });
+
+  test('iOS has the remote-notification background mode', () {
+    final info = File('ios/Runner/Info.plist').readAsStringSync();
+    expect(
+      info,
+      matches(
+        RegExp(
+          r'<key>UIBackgroundModes</key>\s*<array>[^/]*'
+          '<string>remote-notification</string>',
+        ),
+      ),
     );
   });
 

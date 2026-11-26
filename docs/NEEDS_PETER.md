@@ -2099,3 +2099,10 @@ Nothing new for Peter to decide. On launch day, in this order ([RELEASE.md](RELE
 2. Run `gh workflow run play-listing.yml -f mode=upload -f published_version_code=1541` from `main`. It refuses while the store page is still 404, so retry a few minutes after the publish if it does. It must end with "Play's listing equals the repo text".
 3. When Google approves the listing change, publish it in the Publishing overview. Then run `gh workflow run play-listing.yml -f mode=check` until it passes.
 4. Only then switch on the Premium purchase screen (Legal LK1).
+
+## Job 468: retest iOS push on TestFlight
+
+1. Install the TestFlight build from the first green main release after job 468's PR.
+2. Push is sent only while the server switches `push_household_add` (and, for the Friday reminder, `push_shopping_day`) are on. Both went off at 10:41 CET on 26 Nov 2026. Turning them back on is the owner's call: the brief said to leave them on, but the `push-notifications` hold in `releases/flags.json` keeps them off until Legal's enable GO (NEEDS_LEAD, job 468). Job 468 did not flip them.
+3. Signed in, check iOS Settings › Snacklist › Mitteilungen is allowed and the app's Mitteilungen has „Wenn jemand etwas hinzufügt“ on. No reinstall, no sign-out, no off/on toggle: your token is valid.
+4. Lock the phone or leave the app, then have someone else add an item. While Snacklist is open, iOS shows no notification.

@@ -52,6 +52,11 @@ class FirebasePush(
 ) implements PushPlugin {
   Future<FirebaseMessaging>? _started;
 
+  /// The last [deleteToken], which may still run after its caller's timeout
+  /// gave up on it (iOS waits for APNs first). [token] waits for it, so a
+  /// late delete cannot take the token registered after it.
+  Future<void>? _deleting;
+
   Future<FirebaseMessaging> get _messaging => _started ??= _start();
 
   Future<FirebaseMessaging> _start() async {
@@ -82,18 +87,26 @@ class FirebasePush(
   Future<PushPermission> requestPermission() async =>
       _of(await (await _messaging).requestPermission());
 
-  @override
-  Future<String?> token() async {
-    final messaging = await _messaging;
-    // [deleteToken] switched it off; on, a refreshed token arrives itself.
+  /// Turns auto-init on ([deleteToken] switched it off; on, a refreshed
+  /// token arrives itself). On iOS it then waits for the APNs token:
+  /// getToken and deleteToken throw until APNs has given the device one, and
+  /// the plugin asks APNs for it only while auto-init is on.
+  Future<void> _autoInitOn(FirebaseMessaging messaging) async {
     await messaging.setAutoInitEnabled(true);
     if (platform == PushPlatform.ios) {
-      // getToken throws until APNs has given the device its token, which
-      // takes a moment after the first permission.
       for (var i = 0; i < 10 && await messaging.getAPNSToken() == null; i++) {
         await Future<void>.delayed(const Duration(milliseconds: 500));
       }
     }
+  }
+
+  @override
+  Future<String?> token() async {
+    final messaging = await _messaging;
+    if (_deleting case final deleting?) {
+      await deleting;
+    }
+    await _autoInitOn(messaging);
     // Registration tokens are the server's contract (docs/PUSH.md); moving
     // to the installation ids that replace them is a later job.
     // ignore: deprecated_member_use -- see above.
@@ -108,8 +121,19 @@ class FirebasePush(
       );
 
   @override
-  Future<void> deleteToken() async {
+  Future<void> deleteToken() {
+    final deleting = _delete();
+    _deleting = deleting.then((_) {}, onError: (Object _) {});
+    return deleting;
+  }
+
+  Future<void> _delete() async {
     final messaging = await _messaging;
+    if (platform == PushPlatform.ios) {
+      // After a restart with auto-init off (a sign-out that could not
+      // delete), iOS has no APNs token, and the delete would fail each time.
+      await _autoInitOn(messaging);
+    }
     // Left on, Android makes a new token at the next start.
     await messaging.setAutoInitEnabled(false);
     // ignore: deprecated_member_use -- see [token].
