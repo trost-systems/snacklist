@@ -109,6 +109,26 @@ stack_migrations_diff() {
 # Starts the local Supabase stack if it is not running and exports its URLs and publishable key,
 # so the e2e tests and the web build talk to this checkout's stack whatever its port block.
 # The lock lets CI start the stack in the background early (ci.yml) while this waits for it.
+# `supabase start` fails now and then on a runner while docker programs a container's published
+# port ("failed to set up container networking: driver failed programming external connectivity",
+# issue 517: no test ran, the rerun passed). That error is the docker daemon's, not the stack's:
+# stop what half started and start again, twice at most. Any other failure stops the run.
+supabase_start_retrying() {
+  local attempt out rc
+  out="$(mktemp)"
+  for attempt in 1 2 3; do
+    rc=0
+    supabase start >"$out" 2>&1 || rc=$?
+    cat "$out"
+    if (( rc == 0 )); then rm -f "$out"; return 0; fi
+    if (( attempt == 3 )) || ! grep -q 'driver failed programming external connectivity\|failed to set up container networking' "$out"; then
+      rm -f "$out"; return "$rc"
+    fi
+    log "supabase start hit a docker networking error; stopping the half-started stack and starting again (attempt $((attempt + 1)) of 3)"
+    supabase stop --no-backup || true
+  done
+}
+
 supabase_up() {
   reserve_port_block
   # Job 31: the alexa function's test CA and skill id, in supabase/functions/.env before the start.
@@ -121,7 +141,7 @@ supabase_up() {
     # `supabase start` leaves a database started alone (`supabase db start`) as it is and
     # starts nothing else, so stop it first. Only this checkout's project is stopped.
     if docker ps -q --filter "name=^supabase_db_$(project_id)$" | grep -q .; then supabase stop --no-backup; fi
-    supabase start
+    supabase_start_retrying
   ) 7>"/tmp/fg-supabase-start-$(project_id).lock"
   local env
   env="$(cd "$REPO_ROOT" && supabase status -o env 2>/dev/null)"
