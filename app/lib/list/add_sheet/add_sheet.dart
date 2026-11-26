@@ -1540,7 +1540,7 @@ class _RenderReportHeight(ValueNotifier<double>? to) extends RenderProxyBox {
 
 /// The details of the item just added in place of the rows (flag
 /// `add-feedback-list`): the edit sheet's fields under the name, which was
-/// just picked; its store and category are the sheet's chips meanwhile.
+/// just picked; its store and category are the foldout chips under them.
 /// A stepper saves at once, typing after a pause, the next letter in the
 /// input or the sheet's closing (AddSheetCubit.editDetails).
 class const _AddedDetails({

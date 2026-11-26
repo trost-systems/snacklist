@@ -73,7 +73,7 @@ function language() {
 
 /**
  * The answer of preview_invite_public as one of the page's states:
- * { status: 'ok', household, inviter (null when unnamed), members, openItems, premium }, or
+ * { status: 'ok', household, inviter (null when unnamed), members, openItems, premium (parsed, not shown) }, or
  * { status: 'invalid' | 'full' | 'rate_limited' | 'error' }.
  */
 function parsePreview(body) {

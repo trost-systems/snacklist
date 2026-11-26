@@ -154,9 +154,9 @@ class _InvitesScopeState() extends State<InvitesScope> {
       BlocProvider.value(value: _cubit, child: widget.child);
 }
 
-/// Everything the invite sheet offers for [household]: that Premium covers
-/// everyone (moment 5), what the join page shows, a person invite (any
-/// member), and the group link with who joined (owner and admins).
+/// Everything the invite sheet offers for [household]: what the join page
+/// shows, a person invite (any member), and the group link with who joined
+/// (owner and admins).
 class const InvitePanel({
   required final Household household,
   required final InviteContext origin,
