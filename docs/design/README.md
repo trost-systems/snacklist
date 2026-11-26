@@ -30,3 +30,4 @@ python3 -m http.server 8771 --directory docs/design/h-satz-final/h-dist
 ## Feature prototypes
 
 - **Grocery log (job 198):** [`grocery-log/`](grocery-log/), five interactive approaches behind one switcher, plus [`RECOMMENDATION.md`](grocery-log/RECOMMENDATION.md). Serve the repo root (`python3 -m http.server 4198 --bind 127.0.0.1`) and open `/docs/design/grocery-log/index.html`.
+- **Shopping reminders, round SR (job 465):** [`rounds/`](rounds/README.md), Today and SR1–SR5 on a mocked Mitteilungen screen at `/reminders/sr/`, with the overview of all rounds at `/`, a click-counting verify script and the measured table. Recommendation SR2 `week-map`, runner-up SR1. Details: [`docs/done/465.md`](../done/465.md).

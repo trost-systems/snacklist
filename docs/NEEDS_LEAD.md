@@ -2640,3 +2640,12 @@ Peter asked for both fixes. Bug 2 is fixed at its cause (a pop after a popup was
 ## NEEDS_LEAD Job 453: PostHog bug 1 is upstream Flutter, waits for a Flutter release
 
 Follows "Job 438" above. Bug 1 (`geometry!` in `_updateSemanticsNodeGeometry`) is flutter#195316: a stale `firstAncestorNodeWithCleanGeometry` cache in `flushSemantics` while a branch is blocked (a dialog or sheet, or the add sheet's `ExcludeSemantics`, or an offstage tab). Fixed on Flutter master by flutter#192724 (24 Nov 2026); not in 3.50.1 stable or 3.51 beta. The upstream test fails on our 3.50.0. About 1,000 fuzz runs of the real list found no app trigger, so no app workaround ships. Action: once a stable has #192724 (check command in `docs/done/453.md`), bump `FLUTTER_VERSION:` in every workflow that pins it, `release.yml` included (it builds the store binaries; `check-gates.sh` syncs only `ci.yml` and `e2e.yml`). Close bug 1 only after a store build from the bumped `release.yml` has shipped and its reports stop. 438's 368a6dc1 lead is ruled out.
+
+## NEEDS_LEAD Job 465: mint the share link for the SR round preview
+
+The runner has no Vercel connector. Please mint a 23-hour share link with `get_access_to_vercel_url` for
+`https://family-groceries-design-5qb7txwh4-peter-trost.vercel.app/reminders/sr/` (`dpl_DNwhAAwKeetXC7P9kLTS4sbz6oyn`,
+project `family-groceries-design`, target preview, READY since 26 Nov 2026 10:43 CET) and write it with its expiry
+on the BOARD line and in DONE_SUMMARY. The round is not ready for Peter until then. Static output:
+`~/groceries-ops/jobs/465-shopping-reminders-prototypes/output/dist/`. Draft PR https://github.com/trost-systems/snacklist/pull/728 (never merge). Recommendation
+SR2 `week-map`, runner-up SR1 `reminder-list-sheet`; details in `docs/done/465.md`.

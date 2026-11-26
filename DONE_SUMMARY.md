@@ -3090,3 +3090,9 @@ Legal GO carried over from dc318acc to 6aab3f68; publish dates set to 26 Novembe
 | site/content/legal/privacy.md | e1b77a90ca9de7513f0f5ba8cc1aaa2242d891810cf6df43b28e29471e25b0a4 | 828d8936ff86477b3a7d25b22f58bafa11c16d0f |
 | app/web/konto-loeschen.html | 3132e0ee60dc5fec2294d16825fcb3e0f40252fa3d962a2e759731605d4abf74 | f7188903f572b067671957c148c9733ce54e0b9d |
 | app/web/delete-account.html | 04fc2293d6f3b84b14f721a6b1231b112cfcc8bdc8621c23012b8b0218184bed | c51898cdc9c934b4b6690edb14e30a8112ca6461 |
+
+## Job 465: shopping reminders, prototype round SR (draft, never merge)
+
+Draft PR https://github.com/trost-systems/snacklist/pull/728 (DO NOT MERGE).
+
+Today plus five ways to add several shopping reminders, each with its own day, "day before" or "on the day" and time, on a mocked Mitteilungen screen: SR1 `reminder-list-sheet`, SR2 `week-map`, SR3 `presets-first`, SR4 `multi-day-rules`, SR5 `next-up-timeline`. Sandbox `docs/design/rounds/` (`/reminders/sr/`, overview of every round at `/`). Measured by `scripts/verify-sr.mjs` (149 checks, real clicks): taps for "Saturday, day before, 20:00" then "Saturday, on the day, 9:15" are SR1 4+6, SR2 3+5, SR3 2+1, SR4 3+6, SR5 4+6; reminder section with three reminders 297, 341, 620, 297 and 404 px. Recommendation SR2, runner-up SR1. Open questions SR-Q1 to SR-Q12 with defaults; the backend and cron changes are flagged only (mcp freeze). Preview `dpl_DNwhAAwKeetXC7P9kLTS4sbz6oyn` is READY and protected; the lead mints the share link (NEEDS_LEAD "Job 465"). No app, backend or real user data. Details: [docs/done/465.md](docs/done/465.md).

@@ -18304,3 +18304,21 @@ PostHog's `Bad state: No element` in go_router's `_findCurrentNavigators` came f
 ## Job 453: no app workaround for the semantics `geometry!` crash
 
 The crash is flutter#195316 (fix flutter#192724 on master, in no stable or beta yet); the upstream test fails on our Flutter 3.50.0. The real list screen reaches the faulty branch but did not crash in about 1,000 fuzz runs, so there is no proven app trigger. Calls: ship no speculative change (replacing the add sheet's `ExcludeSemantics` would alter screen-reader output on a guess), no Flutter upgrade until a stable has the fix, and no committed canary test (the check is one curl, `docs/done/453.md`). Bug 1 stays open in NEEDS_LEAD "Job 453".
+
+## Job 465: shopping reminders round SR
+
+- **Sandbox location.** `docs/design/rounds/` holds both the new round and a copy of the T1–T5 sandbox, so one
+  preview serves the overview, `/round` (old link kept) and `/reminders/sr/`. Older rounds link to their draft
+  PRs; they were never on this deployment.
+- **Mitteilungen mock.** Job 463 has not landed. The mock keeps both production switches with their exact
+  production hints and icons and drops the "Notifications" section label, which would repeat the app bar title.
+  The switch block is 352 px and is the same in every option, so the table also reports the reminder section alone.
+- **One time picker for all options.** An hour grid and 5-minute chips (one tap each), so tap counts compare the
+  approaches and not the pickers. Flutter's dial would add an OK tap (SR-Q10).
+- **Tap counts are measured, not declared.** `verify-sr.mjs` clicks each path, checks the saved reminders and
+  fails when the page's table differs; a wrong table entry was shown to fail it.
+- **Honest heights.** An early build hid SR1/SR4's overflow (it measured the clamped `scrollHeight` and used a
+  shortened household hint). Now it measures the content element with the production strings: SR1 and SR4 miss
+  390×844 by 6 px, SR2 by 50 px, and only Today fits.
+- **Recommendation.** SR2 over SR1: fewer taps (3+5 vs 4+6) and the two Saturday reminders grouped under the
+  day, for 44 px more height. SR3 is fastest but tallest (620 px section).
