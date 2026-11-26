@@ -13,7 +13,7 @@ import process from 'node:process';
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { apiAs, capture, flagOn, instance, logger, member, openApp, openTab, repo, signIn } from '../helpers/lib.mjs';
+import { apiAs, capture, flagOn, instance, logger, member, openApp, openTab, repo, reveal, signIn } from '../helpers/lib.mjs';
 
 const [dir, ...rest] = process.argv.slice(2);
 const lang = rest.includes('--lang') ? rest[rest.indexOf('--lang') + 1] : 'de';
@@ -78,7 +78,8 @@ try {
     if ((await card.count()) > 0 || paused) throw new Error('lock off: the Premium card or the paused line shows');
     log('lock off: no Premium card, the row not paused');
   }
-  await page.mouse.wheel(0, 600);
+  // The row's last line („Pausiert …“ when locked) clear of the tab bar for the capture.
+  await reveal(page, row);
   await capture(page, dir, '01-access-connected-app');
 
   await row.click();

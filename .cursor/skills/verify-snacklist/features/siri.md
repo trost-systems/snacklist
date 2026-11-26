@@ -53,6 +53,8 @@ Preconditions:
 
 ## Gotchas
 
+- Siri stays free under the integration lock: on a plain `helpers/launch.sh` stack (`integration_lock` on, as in production) a key made in Zugänge by a member without Premium adds through `/voice` („Hinzugefügt: 2 Gurken, Klopapier.“) while the same key on MCP gets „Dafür brauchst du einen anderen Snacklist-Tarif …“ (driven 2026-11-26 on 2694ab4a). `scripts/verify.sh --only e2e -- tests/voice.spec.ts` on such a stack fails „Siri and MCP agree on what is already on the list“ and „a different size or type is a new item“: their MCP half is refused by the lock, not Siri. Turn the switch off for that run (`update public.app_switches set enabled = false where key = 'integration_lock'`, then back on) or run it on a stack the skill did not launch. alexa.spec.ts and alexa-en.spec.ts pass with it on.
+
 - Siri with Apple Intelligence (App Intents actions such as ticking items off by voice) is decided but not built (`docs/PRODUCT_FEATURE_MAP.md`, `siri-ai-app-actions`). No Siri path ticks items.
 
 - German device (job 71: build 1097 only opened the app for every German phrase): the checks are `docs/NEEDS_LEAD.md` "Job 71". Turn on Always Show Speech to see the words Siri heard for the app name, and type the phrase with Type to Siri to test the phrase without speech recognition. Without a device, `deno run --allow-read scripts/siri-phrases.ts` (lint gate) proves the tables, and the ios gate's log shows the German training (`Training '…' for de`, `Application name … for de`).

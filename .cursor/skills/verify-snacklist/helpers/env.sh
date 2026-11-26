@@ -21,7 +21,8 @@ VH_WEB_URL="http://127.0.0.1:$VH_WEB_PORT"
 VH_BUILD_DIR="$REPO_ROOT/app/build/verify-snacklist-web"
 VH_INSTANCE="$VH_STATE_DIR/instance.json"
 # Server switches (public.app_switches) production has on for everyone; launch.sh turns them on,
-# doctor.sh checks them. The migrations seed every switch off.
+# doctor.sh checks them. The migrations seed every switch off. Not listed: mcp_lists_stores, which
+# docs/MCP.md keeps off until Legal's privacy text names lists and stores (not read from production).
 VH_USER_SWITCHES="'public_api', 'unified_keys', 'integration_lock'"
 export VH_HELPERS VH_SKILL VH_PREFIX VH_PROJECT_ID VH_STATE_DIR VH_EVIDENCE_DIR VH_WEB_PORT VH_WEB_URL VH_BUILD_DIR VH_INSTANCE VH_USER_SWITCHES
 
