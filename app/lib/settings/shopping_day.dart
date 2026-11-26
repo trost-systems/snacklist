@@ -271,10 +271,12 @@ class ShoppingDayService(
   }
 }
 
-/// Einstellungen' section „Einkaufstag-Erinnerung“ (job 378) with the
-/// `push-shopping-day` flag: a chip for each weekday; the evening before
-/// each picked one at 19:00 local the server sends a push. Nothing shows
-/// on web or without push in the build (no [ShoppingDayService]).
+/// Mitteilungen' section „Einkaufstag-Erinnerung“ (job 378, its own More
+/// page since job 463) with the `push-shopping-day` flag: a chip for each
+/// weekday; the evening before each picked one at 19:00 local the server
+/// sends a push. A tap moves the chip at once; a save the server or the OS
+/// refuses puts it back, with a notice. Nothing shows on web or without
+/// push in the build (no [ShoppingDayService]).
 class const ShoppingDaySettings({super.key}) extends StatefulWidget {
   @override
   State<ShoppingDaySettings> createState() => _ShoppingDaySettingsState();
@@ -284,14 +286,21 @@ class _ShoppingDaySettingsState() extends State<ShoppingDaySettings> {
   /// Null until the server answered; the read is made once the section
   /// shows.
   ShoppingDayLoad? _state;
+
+  /// What the server last took, which a refused save goes back to.
+  ShoppingDayLoad? _saved;
   var _asked = false;
-  var _saving = false;
+
+  /// Picks reach the server one after another, each with the days shown
+  /// when it was made; [_taps] tells the last one.
+  Future<Object?> _queue = Future.value();
+  var _taps = 0;
 
   Future<void> _load(ShoppingDayService service, String locale) async {
     try {
       final state = await service.load(locale);
       if (mounted) {
-        setState(() => _state = state);
+        setState(() => _state = _saved = state);
       }
     } on Object {
       _asked = false;
@@ -300,25 +309,28 @@ class _ShoppingDaySettingsState() extends State<ShoppingDaySettings> {
 
   Future<void> _toggle(ShoppingDayService service, int weekday) async {
     final before = _state;
-    if (before == null || _saving) {
+    if (before == null) {
       return;
     }
     final l10n = AppLocalizations.of(context);
     final notices = Notices.of(context);
     final locale = _language(context);
-    final after = before.toggled(weekday);
-    setState(() {
-      _state = ShoppingDayLoad(saved: after, pushOn: true);
-      _saving = true;
-    });
-    final result = await service.save(after, locale);
+    final after = ShoppingDayLoad(saved: before.toggled(weekday), pushOn: true);
+    final tap = ++_taps;
+    setState(() => _state = after);
+    final saving = _queue
+        .then((_) => service.save(after.saved, locale))
+        .catchError((Object _) => ShoppingDaySaved.failed);
+    _queue = saving;
+    final result = await saving;
     if (!mounted) {
       return;
     }
     setState(() {
-      _saving = false;
-      if (result != ShoppingDaySaved.saved) {
-        _state = before;
+      if (result == ShoppingDaySaved.saved) {
+        _saved = after;
+      } else if (tap == _taps) {
+        _state = _saved;
       }
     });
     switch (result) {

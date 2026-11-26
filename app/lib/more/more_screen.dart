@@ -21,19 +21,18 @@ import 'package:family_groceries/household/household_page.dart';
 import 'package:family_groceries/household/invites_page.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/more/app_update.dart';
+import 'package:family_groceries/more/notifications_page.dart';
 import 'package:family_groceries/purchases/entitlements.dart';
 import 'package:family_groceries/purchases/premium_page_cubit.dart';
 import 'package:family_groceries/purchases/premium_screen.dart';
 import 'package:family_groceries/purchases/premium_server.dart';
 import 'package:family_groceries/purchases/purchase_cubit.dart';
 import 'package:family_groceries/purchases/purchase_repository.dart';
-import 'package:family_groceries/push/household_add_settings.dart';
 import 'package:family_groceries/review/store_review.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/settings/access_screen.dart';
 import 'package:family_groceries/settings/account_screen.dart';
 import 'package:family_groceries/settings/settings_screen.dart';
-import 'package:family_groceries/settings/shopping_day.dart';
 import 'package:family_groceries/shell/router.dart';
 import 'package:family_groceries/shell/shell.dart';
 import 'package:family_groceries/tips/tips_page.dart';
@@ -67,6 +66,10 @@ enum MorePage() {
 
   /// Theme and language (`/more/settings`).
   settings,
+
+  /// The push switches and the shopping-day reminder
+  /// (`/more/notifications`, job 463).
+  notifications,
 
   /// The language list below [settings] (`/more/settings/language`).
   language,
@@ -191,6 +194,7 @@ class const MoreScreen({
     MorePage.household => l10n.householdPageTitle,
     MorePage.premium => l10n.premiumTitle,
     MorePage.settings => l10n.settingsTitle,
+    MorePage.notifications => l10n.settingsPush,
     MorePage.language => l10n.language,
     MorePage.usageData => l10n.analyticsSection,
     MorePage.tips => l10n.hintsTitle,
@@ -213,9 +217,8 @@ class const _Page(
     MorePage.premium => PremiumScreen(entry: paywallEntry),
     MorePage.settings => const SettingsScreen(
       tripDetection: DetectTripsSettings(),
-      pushAlerts: HouseholdAddSettings(),
-      shoppingDay: ShoppingDaySettings(),
     ),
+    MorePage.notifications => const NotificationsPage(),
     MorePage.language => const LanguageScreen(),
     MorePage.usageData => const _UsageDataPage(),
     MorePage.tips => const TipsPage(),
@@ -236,6 +239,7 @@ enum _Item(final IconData icon, final String key, final _Tint tint) {
   archived(Icons.inventory_2_outlined, 'more-archived', _Tint.honey),
   access(Icons.key_outlined, 'more-access', _Tint.cobalt),
   settings(Icons.settings_outlined, 'more-settings', _Tint.mint),
+  notifications(Icons.notifications_none, 'more-notifications', _Tint.mint),
   usageData(Icons.insights_outlined, 'more-usage-data', _Tint.mint),
   tips(Icons.lightbulb_outline, 'more-tips', _Tint.plain),
   feedback(Icons.feedback_outlined, 'more-feedback', _Tint.plain),
@@ -256,7 +260,7 @@ enum _Item(final IconData icon, final String key, final _Tint tint) {
     [account, premium],
     [household, invite, archived],
     [access],
-    [settings, usageData],
+    [settings, notifications, usageData],
     [tips, feedback, rate, help],
     [imprint, privacyPolicy, terms, appleEula, licenses],
     [signOut],
@@ -318,6 +322,7 @@ class _MoreListState() extends State<_MoreList> {
     final report = context.select<Flags?, bool>(
       (flags) => flags?.isOn(reportContentEntryFlag) ?? false,
     );
+    final notifications = notificationsShown(context, context.watch<Flags?>());
     return FutureBuilder(
       future: _offer,
       builder: (context, offer) {
@@ -341,6 +346,7 @@ class _MoreListState() extends State<_MoreList> {
             web: kIsWeb,
             platform: defaultTargetPlatform,
           ),
+          _Item.notifications => notifications,
           _Item.usageData => context.read<Analytics>().enabled,
           _ => true,
         };
@@ -441,6 +447,12 @@ class _MoreListState() extends State<_MoreList> {
         selected:
             selected == MorePage.settings || selected == MorePage.language,
         onTap: () => go(appSettingsPath),
+      ),
+      _Item.notifications => _Row(
+        item,
+        label: l10n.settingsPush,
+        selected: selected == MorePage.notifications,
+        onTap: () => go(notificationsPath),
       ),
       _Item.usageData => _Row(
         item,

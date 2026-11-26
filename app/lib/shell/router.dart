@@ -19,6 +19,7 @@ import 'package:family_groceries/list/stores_screen.dart';
 import 'package:family_groceries/log/history_screen.dart';
 import 'package:family_groceries/log/trip_repository.dart';
 import 'package:family_groceries/more/more_screen.dart';
+import 'package:family_groceries/more/notifications_page.dart';
 import 'package:family_groceries/oauth/consent_screen.dart';
 import 'package:family_groceries/onboarding/draft.dart';
 import 'package:family_groceries/onboarding/onboarding_cubit.dart';
@@ -169,6 +170,10 @@ const appSettingsPath = '/more/settings';
 /// The language list below Einstellungen.
 const languagePath = '/more/settings/language';
 
+/// More's Mitteilungen (job 463): the push switches and the shopping-day
+/// reminder, while a flag offers one of them ([notificationsShown]).
+const notificationsPath = '/more/notifications';
+
 /// More's Nutzungsdaten: the usage-data switch.
 const usageDataPath = '/more/usage-data';
 
@@ -210,6 +215,7 @@ String _screenNameOfPath(Uri location) => switch (location.path) {
   premiumPath => 'lifetime',
   appSettingsPath => 'settings',
   languagePath => 'language',
+  notificationsPath => 'notifications',
   usageDataPath => 'usage_data',
   tipsPath => 'tips',
   feedbackPath => 'feedback',
@@ -245,6 +251,7 @@ bool inMoreTab(Uri location) =>
       premiumPath,
       appSettingsPath,
       languagePath,
+      notificationsPath,
       usageDataPath,
       tipsPath,
       feedbackPath,
@@ -587,6 +594,14 @@ List<RouteBase> moreTabRoutes() => [
             ),
           ),
         ],
+      ),
+      GoRoute(
+        path: 'notifications',
+        redirect: (context, _) =>
+            notificationsShown(context, context.read<Flags?>())
+            ? null
+            : morePath,
+        builder: (_, _) => const MoreScreen(page: MorePage.notifications),
       ),
       GoRoute(path: 'join', redirect: (_, _) => joinCodePath),
       GoRoute(path: 'legal', redirect: (_, _) => morePath),

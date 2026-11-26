@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/localizations.dart';
 import 'package:family_groceries/core/notices.dart';
@@ -21,6 +23,9 @@ class FakePrefs() implements HouseholdAddPrefs {
 
   /// The answer takes a moment, so a session change can come first.
   var slow = false;
+
+  /// Set, a save waits for it.
+  Completer<void>? hold;
   final saves = <String>[];
 
   @override
@@ -36,6 +41,7 @@ class FakePrefs() implements HouseholdAddPrefs {
 
   @override
   Future<void> save({required bool on, required String language}) async {
+    await hold?.future;
     if (offline) {
       throw Exception('offline');
     }
@@ -45,6 +51,7 @@ class FakePrefs() implements HouseholdAddPrefs {
 
   @override
   Future<void> saveNameHidden({required bool hidden}) async {
+    await hold?.future;
     if (offline) {
       throw Exception('offline');
     }
@@ -470,6 +477,97 @@ void main() {
     await tester.pumpAndSettle();
     expect(prefs.saves, ['hidden true']);
     expect(plugin.prompts, 0);
+  });
+
+  bool shown(WidgetTester tester, String key) =>
+      tester.widget<HexSwitchTile>(find.byKey(ValueKey(key))).value;
+
+  group('a tap moves the switch at once', () {
+    const alertKey = 'settings-push-household-add';
+    const nameKey = 'settings-push-name-hidden';
+    const failed = 'Die Änderung konnte nicht gespeichert werden.';
+
+    testWidgets('before the server answers', (tester) async {
+      await pump(tester, flags: const {pushHouseholdAddFlag}, deviceOn: true);
+      await tester.pumpAndSettle();
+      prefs.hold = Completer();
+      await tester.tap(find.byKey(const ValueKey(alertKey)));
+      await tester.pump();
+      expect(shown(tester, alertKey), isTrue);
+      expect(prefs.saves, isEmpty, reason: 'still saving');
+      prefs.hold!.complete();
+      await tester.pumpAndSettle();
+      expect(shown(tester, alertKey), isTrue);
+      expect(prefs.saves, ['true de']);
+      expect(find.text(failed), findsNothing);
+    });
+
+    testWidgets('a save the server refuses puts it back, with a notice', (
+      tester,
+    ) async {
+      await pump(tester, flags: const {pushHouseholdAddFlag}, deviceOn: true);
+      await tester.pumpAndSettle();
+      prefs
+        ..offline = true
+        ..hold = Completer();
+      await tester.tap(find.byKey(const ValueKey(alertKey)));
+      await tester.pump();
+      expect(shown(tester, alertKey), isTrue);
+      prefs.hold!.complete();
+      await tester.pumpAndSettle();
+      expect(shown(tester, alertKey), isFalse);
+      expect(find.text(failed), findsOneWidget);
+    });
+
+    testWidgets('notifications refused in the OS put it back, with a notice', (
+      tester,
+    ) async {
+      await pump(tester, flags: const {pushHouseholdAddFlag});
+      await tester.pumpAndSettle();
+      plugin.answer = PushPermission.denied;
+      await tester.tap(find.byKey(const ValueKey(alertKey)));
+      await tester.pumpAndSettle();
+      expect(plugin.prompts, 1);
+      expect(shown(tester, alertKey), isFalse);
+      expect(prefs.saves, isEmpty);
+      expect(
+        find.textContaining('Mitteilungen sind für Snacklist ausgeschaltet'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('the name switch too', (tester) async {
+      await pump(tester, flags: const {pushHouseholdAddFlag});
+      await tester.pumpAndSettle();
+      prefs
+        ..offline = true
+        ..hold = Completer();
+      await tester.tap(find.byKey(const ValueKey(nameKey)));
+      await tester.pump();
+      expect(shown(tester, nameKey), isTrue);
+      prefs.hold!.complete();
+      await tester.pumpAndSettle();
+      expect(shown(tester, nameKey), isFalse);
+      expect(find.text(failed), findsOneWidget);
+    });
+
+    testWidgets('quick taps are saved in their order and the last one shows', (
+      tester,
+    ) async {
+      await pump(tester, flags: const {pushHouseholdAddFlag}, deviceOn: true);
+      await tester.pumpAndSettle();
+      prefs.hold = Completer();
+      await tester.tap(find.byKey(const ValueKey(alertKey)));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey(alertKey)));
+      await tester.pump();
+      expect(shown(tester, alertKey), isFalse);
+      prefs.hold!.complete();
+      await tester.pumpAndSettle();
+      expect(prefs.saves, ['true de', 'false de']);
+      expect(shown(tester, alertKey), isFalse);
+      expect(alert.state?.on, isFalse);
+    });
   });
 
   testWidgets('a build without push shows the name switch alone', (

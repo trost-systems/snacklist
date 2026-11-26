@@ -1,6 +1,6 @@
 # Household add alert (flag `push-household-add`, off; job 377)
 
-Under Mehr → Einstellungen, in phone builds with push, a section „Mitteilungen“ / "Notifications" has the switch „Wenn jemand etwas hinzufügt“ / "When someone adds something". On (it is off for everyone until they switch it), the user gets a push when another household member adds an item: „Lea hat Milch hinzugefügt“ / "Lea added milk" (the item name as entered). Several adds within a few minutes come as one: „Lea hat 4 Einträge hinzugefügt“ / "Lea added 4 items". A tap opens that household's list. Not on the web (no web push). Needs the server switch `push_household_add`, which stays off until Legal's GO.
+Under Mehr → „Mitteilungen“ / "Notifications" (its own More page since job 463, `/more/notifications`; a section of Einstellungen before), in phone builds with push, the switch „Wenn jemand etwas hinzufügt“ / "When someone adds something". On (it is off for everyone until they switch it), the user gets a push when another household member adds an item: „Lea hat Milch hinzugefügt“ / "Lea added milk" (the item name as entered). Several adds within a few minutes come as one: „Lea hat 4 Einträge hinzugefügt“ / "Lea added 4 items". A tap opens that household's list. Not on the web (no web push). Needs the server switch `push_household_add`, which stays off until Legal's GO.
 
 ## Sub-features
 
@@ -16,13 +16,13 @@ Under Mehr → Einstellungen, in phone builds with push, a section „Mitteilung
 
 ## How to get to it (user POV)
 
-- Mehr → Einstellungen → „Mitteilungen“ / "Notifications", after „Sprache“ and before „Einkaufstag-Erinnerung“. Today nobody sees it (flag off). With the flag, the web shows the section with only „Meinen Namen in Mitteilungen weglassen“; the add switch needs a phone with push.
+- Mehr → „Mitteilungen“ / "Notifications", the row after „Einstellungen“; on the page the first group, with no label of its own (the page title says it), before „Einkaufstag-Erinnerung“. Today nobody sees it (flag off). With the flag, the web lists the row and its page shows only „Meinen Namen in Mitteilungen weglassen“; the add switch needs a phone with push. A tap moves either switch at once; a save the server refuses, or notifications refused by the OS, puts it back with a notice („Die Änderung konnte nicht gespeichert werden.“ or „Mitteilungen sind für Snacklist ausgeschaltet. …“). Quick taps are saved in their order.
 
 ## Driving it with Playwright
 
-Preconditions: `VH_DEFINES="FLAGS_ON=push-household-add" helpers/launch.sh` for the name switch; a plain launch for the control (no „Mitteilungen“ in Einstellungen).
+Preconditions: `VH_DEFINES="FLAGS_ON=push-household-add" helpers/launch.sh` for the name switch; a plain launch for the control (no „Mitteilungen“ row in More, and none in Einstellungen).
 
-- Name switch: Mehr → Einstellungen → switch `/^Meinen Namen in Mitteilungen weglassen/`, toggle it, read `push_preferences.name_hidden` through `apiAs` (own row only). No „Wenn jemand etwas hinzufügt“ on the web. Driven 2026-11-23 on d023441d with `VH_DEFINES="FLAGS_ON=push-household-add,push-shopping-day"`: the one switch under „Mitteilungen“, `name_hidden` true after the tap.
+- Name switch: `openMore(page, 'Mitteilungen')` → switch `/^Meinen Namen in Mitteilungen weglassen/`, toggle it, read `push_preferences.name_hidden` through `apiAs` (own row only). No „Wenn jemand etwas hinzufügt“ on the web. Driven 2026-11-23 on d023441d with `VH_DEFINES="FLAGS_ON=push-household-add,push-shopping-day"`: the one switch under „Mitteilungen“, `name_hidden` true after the tap.
 - The add push itself is not drivable in the web build (no FCM there). The decisions run in SQL: `supabase/tests/push_household_add.test.sql` (`supabase test db`), and the switch in `app/test/push/household_add_alert_test.dart`. The send path through pg_net to the `push` function is `public.push_add_flush()`; on the local stack it answers 503 `not_configured` without `PUSH_SEND_SECRET` (docs/PUSH.md, "Household add").
 
 ## Gotchas
