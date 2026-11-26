@@ -42,6 +42,7 @@ export const LOCALES = {
       home: 'Snacklist, zur Startseite',
       skip: 'Zum Inhalt',
       guides: 'Anleitungen',
+      openApp: 'In der App öffnen',
       draft: 'ENTWURF: Freigabe durch Peter',
       unreleased: (v) => `Ab Version ${v}, noch nicht im Store`,
       since: (v) => `Ab App-Version ${v}`,
@@ -81,6 +82,7 @@ export const LOCALES = {
       home: 'Snacklist, home',
       skip: 'Skip to content',
       guides: 'Guides',
+      openApp: 'Open in the app',
       draft: "DRAFT: pending Peter's approval",
       unreleased: (v) => `From version ${v}, not in the stores yet`,
       since: (v) => `From app version ${v}`,
@@ -476,6 +478,9 @@ function renderPage(page, { config, groups, guidesByLocale, copy, stage }) {
   const form = waitlistPage || (landing && stage !== 'launch');
   const report = page.report === true;
   const main = mainContent(page, guidesByLocale);
+  // The guides hand over to the app on a phone (job 462); outside <main>, so their Markdown twin,
+  // which the app shows, has no such button.
+  const openApp = page.kind === 'guide' || page.kind === 'index';
   const assets = [
     landing && '<link rel="stylesheet" href="/landing.css">',
     (form || report) && '<link rel="stylesheet" href="/waitlist.css">',
@@ -485,6 +490,7 @@ function renderPage(page, { config, groups, guidesByLocale, copy, stage }) {
     landing && stage === 'launch' && '<script src="/get-app.js" defer></script>',
     form && '<script src="/waitlist.js" defer></script>',
     report && '<script type="module" src="/report.js"></script>',
+    openApp && '<script src="/open-app.js" defer></script>',
   ].filter(Boolean).map((line) => `${line}\n`).join('');
   return `<!doctype html>
 <html lang="${page.locale}">
@@ -507,7 +513,7 @@ ${agentHead(page, url)}<meta property="og:title" content="${title}">
 ${HEAD_ASSETS}${assets}</head>
 <body${landing ? ' class="landing"' : ''}>
 ${page.notices.map(banner).join('')}${siteHeader(page, { switches, copy, current, stage })}
-<main id="inhalt"${landing ? '' : ' class="wrap prose"'}>
+${openApp ? `<div class="open-app" hidden><a class="hex hex--small hex--quiet" href="${page.route}"><span class="face">${locale.ui.openApp}</span></a></div>\n` : ''}<main id="inhalt"${landing ? '' : ' class="wrap prose"'}>
 ${main}
 </main>
 ${siteFooter(page, { config, copy, text: `${page.title} ${page.description} ${main.replace(/<[^>]*>/g, ' ')}` })}

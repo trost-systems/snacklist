@@ -210,6 +210,59 @@ test('no store button and no Smart App Banner while the listings are not public'
   await expect(page.locator('meta[name="apple-itunes-app"]')).toHaveCount(0);
 });
 
+const iPhone = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1';
+const androidPhone = 'Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36';
+const androidTablet = 'Mozilla/5.0 (Linux; Android 14; SM-X710) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
+const iPad = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15';
+
+async function pageAs(browser: Browser, baseURL: string | undefined, userAgent: string, locale = 'de-DE'): Promise<Page> {
+  const context = await browser.newContext({ userAgent, locale, baseURL: baseURL ?? '' });
+  return context.newPage();
+}
+
+// One test for the whole matrix (job 462): the static join page has no widget tests, and each
+// case is one fast page load.
+test('„In der App öffnen“ on phones only, while the invite is usable: the iPhone scheme, the Android intent (job 462)', async ({ page: desktop, browser, baseURL }) => {
+  const iPhonePage = await pageAs(browser, baseURL, iPhone);
+  const { cspErrors } = await joinPage(iPhonePage, okAnswer, `/join/${code.toLowerCase()}`);
+  const open = iPhonePage.getByRole('link', { name: 'In der App öffnen' });
+  await expect(open).toHaveAttribute('href', `com.snacklist.app://open/join/${code}`);
+  const joinBox = await iPhonePage.getByRole('link', { name: 'Im Browser beitreten' }).boundingBox();
+  const openBox = await open.boundingBox();
+  expect(openBox && joinBox && openBox.y > joinBox.y + joinBox.height, 'it sits below the join button').toBe(true);
+  expect(cspErrors).toEqual([]);
+  await iPhonePage.setViewportSize({ width: 390, height: 844 });
+  await screenshot(iPhonePage, 'join-page-open-app-ios');
+
+  const android = await pageAs(browser, baseURL, androidPhone, 'en-US');
+  await joinPage(android, okAnswer);
+  await expect(android.getByRole('link', { name: 'Open in the app' })).toHaveAttribute(
+    'href',
+    `intent://app.snacklist.app/join/${code}#Intent;scheme=https;package=com.snacklist.app;S.browser_fallback_url=${encodeURIComponent(android.url())};end`,
+  );
+
+  const unread = await pageAs(browser, baseURL, iPhone);
+  await joinPage(unread, 'network-error');
+  await expect(unread.getByRole('heading', { level: 1 })).toHaveText('Einladung nicht geladen');
+  await expect(unread.getByRole('link', { name: 'In der App öffnen' }), 'unread, as the join button').toHaveAttribute('href', `com.snacklist.app://open/join/${code}`);
+
+  await joinPage(desktop, okAnswer);
+  await expect(desktop.getByRole('link', { name: 'Im Browser beitreten' })).toBeVisible();
+  await expect(desktop.locator('#open-app'), 'desktop').toBeHidden();
+  for (const userAgent of [iPad, androidTablet]) {
+    const tablet = await pageAs(browser, baseURL, userAgent);
+    await joinPage(tablet, okAnswer);
+    await expect(tablet.getByRole('link', { name: 'Im Browser beitreten' })).toBeVisible();
+    await expect(tablet.locator('#open-app'), userAgent).toBeHidden();
+  }
+  for (const [answer, path] of [[{ status: 'invalid' }, `/join/${code}`], [{ status: 'full' }, `/join/${code}`], [okAnswer, '/join/not-a-code']] as const) {
+    const gone = await pageAs(browser, baseURL, iPhone);
+    await joinPage(gone, answer, path);
+    await expect(gone.getByRole('link', { name: 'Code im Browser eingeben' })).toBeVisible();
+    await expect(gone.locator('#open-app'), path).toBeHidden();
+  }
+});
+
 test('a sign-in that comes back to /join/<code> goes on to the app with its parameters', async ({ page }) => {
   await page.route((url) => url.pathname === '/', (route) => route.fulfill({ contentType: 'text/html', body: '<p>app</p>' }));
   await page.goto(`/join/${code}?code=pkce123#later`);

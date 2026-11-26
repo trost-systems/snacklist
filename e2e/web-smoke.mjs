@@ -3,6 +3,7 @@
 // screen in Chromium. Exits non-zero on the first failed check.
 // Usage: node e2e/web-smoke.mjs <base-url> [screenshot-dir]
 // SMOKE_BROWSER_ONLY=1 skips the HTTP checks (for e2e/serve.mjs, which has no Vercel rules).
+// SMOKE_SITE=https://snacklist.app also checks the site's association files (job 462).
 import { mkdirSync } from 'node:fs';
 import process from 'node:process';
 import { chromium } from '@playwright/test';
@@ -27,18 +28,24 @@ function check(ok, message) {
   if (!ok) process.exit(1);
 }
 
-async function head(path) {
-  const res = await fetch(new URL(path, base), { redirect: 'manual', headers: cookie ? { cookie } : {} });
+async function head(path, origin = base) {
+  const res = await fetch(new URL(path, origin), { redirect: 'manual', headers: cookie && origin === base ? { cookie } : {} });
   return { status: res.status, type: res.headers.get('content-type') ?? '', cache: res.headers.get('cache-control') ?? '', body: await res.text() };
 }
 
 const httpChecks = !process.env.SMOKE_BROWSER_ONLY;
-for (const path of httpChecks ? ['/', '/oauth/consent', '/join/ABC123', '/settings', '/join/AB.CD', '/lists/a.b',
-  // Job 66: every app link (docs/DEEP_LINKS.md) opens the web app where the app is not installed.
-  '/list', '/add', '/stores/4f9c2e1a-7b3d-4c8e-9a6f-2d1e0b5c8a7f', '/more', '/more/invites', '/more/settings'] : []) {
+const id = '4f9c2e1a-7b3d-4c8e-9a6f-2d1e0b5c8a7f';
+for (const path of httpChecks ? ['/', '/oauth/consent', '/settings', '/lists/a.b',
+  // Job 66 and 462: every app link (docs/DEEP_LINKS.md) opens the web app where the app is not installed.
+  '/list', '/add', `/stores/${id}`, '/more', '/more/invites', '/more/settings', '/history', `/history/trip/${id}`, '/edit', '/edit/none', `/trip/${id}`] : []) {
   const r = await head(path);
   check(r.status === 200 && r.type.startsWith('text/html') && r.body.includes('flutter_bootstrap.js'), `${path} serves index.html (${r.status}, ${r.type})`);
   check(/no-cache/.test(r.cache), `${path} Cache-Control: ${r.cache}`);
+}
+// Job 169b: an invite link opens the static join page, not the web app.
+for (const path of httpChecks ? ['/join/ABC123', '/join/AB.CD'] : []) {
+  const r = await head(path);
+  check(r.status === 200 && r.type.startsWith('text/html') && r.body.includes('/join/join.js') && !r.body.includes('flutter_bootstrap.js'), `${path} serves the join page (${r.status}, ${r.type})`);
 }
 for (const path of httpChecks ? ['/flutter_bootstrap.js', '/flutter_service_worker.js', '/version.json'] : []) {
   const r = await head(path);
@@ -54,11 +61,14 @@ if (httpChecks) {
   check(mjs.status === 200 && mjs.type.includes('javascript') && /max-age=0/.test(mjs.cache), `/main.dart.mjs ${mjs.status}, ${mjs.type}, Cache-Control: ${mjs.cache}`);
   // Job 22 and 66: universal links (iOS) and App Links (Android) for the paths of
   // docs/DEEP_LINKS.md. Apple fetches the association without following redirects and wants JSON.
-  const aasa = await head('/.well-known/apple-app-site-association');
-  const details = aasa.status === 200 ? JSON.parse(aasa.body).applinks.details[0] : null;
-  check(aasa.type.startsWith('application/json') && ['VCZSHMZY25.com.snacklist.app', 'VCZSHMZY25.com.hummlist.app'].every((id) => details?.appIDs.includes(id))
-    && details.components.some((c) => c['/'] === '/more/*'),
-    `/.well-known/apple-app-site-association ${aasa.status}, ${aasa.type}, claims /more/*`);
+  // Job 462: also at the root, where Apple looked before .well-known.
+  for (const path of ['/.well-known/apple-app-site-association', '/apple-app-site-association']) {
+    const aasa = await head(path);
+    const details = aasa.status === 200 ? JSON.parse(aasa.body).applinks.details[0] : null;
+    check(aasa.type.startsWith('application/json') && ['VCZSHMZY25.com.snacklist.app', 'VCZSHMZY25.com.hummlist.app'].every((id) => details?.appIDs.includes(id))
+      && details.components.some((c) => c['/'] === '/more/*'),
+      `${path} ${aasa.status}, ${aasa.type}, claims /more/*`);
+  }
   const links = await head('/.well-known/assetlinks.json');
   check(links.status === 200 && links.type.startsWith('application/json') && JSON.parse(links.body).map((l) => l.target.package_name).join() === 'com.snacklist.app,com.hummlist.app',
     `/.well-known/assetlinks.json ${links.status}, ${links.type}`);
@@ -66,6 +76,21 @@ if (httpChecks) {
     const missing = await head(path);
     check(missing.status === 404, `${path} is a 404, not index.html (${missing.status})`);
   }
+}
+
+// Job 462: snacklist.app's guides open the Snacklist app (not Hummlist), so the site serves its own files.
+if (process.env.SMOKE_SITE) {
+  const site = new URL(process.env.SMOKE_SITE).origin;
+  for (const path of ['/.well-known/apple-app-site-association', '/apple-app-site-association']) {
+    const aasa = await head(path, site);
+    const details = aasa.status === 200 ? JSON.parse(aasa.body).applinks.details[0] : null;
+    check(aasa.type.startsWith('application/json') && details?.appIDs.join() === 'VCZSHMZY25.com.snacklist.app'
+      && details.components.some((c) => c['/'] === '/en/guides/*'),
+      `${site}${path} ${aasa.status}, ${aasa.type}, claims /en/guides/*`);
+  }
+  const links = await head('/.well-known/assetlinks.json', site);
+  check(links.status === 200 && links.type.startsWith('application/json') && JSON.parse(links.body).map((l) => l.target.package_name).join() === 'com.snacklist.app',
+    `${site}/.well-known/assetlinks.json ${links.status}, ${links.type}`);
 }
 
 const browser = await chromium.launch();

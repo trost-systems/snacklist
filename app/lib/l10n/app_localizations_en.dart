@@ -4050,4 +4050,14 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get shoppingDayBlocked =>
       'Notifications are turned off for Snacklist. Turn them on in your phone\'s settings.';
+
+  @override
+  String get guideMissing => 'This guide doesn\'t exist (anymore).';
+
+  @override
+  String get guideAllGuides => 'All guides';
+
+  @override
+  String get guideFailed =>
+      'The guide didn\'t load. Check your connection and try again.';
 }

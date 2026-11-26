@@ -75,6 +75,8 @@ expect "heavy stack app" supabase/tests/suggest_parity.json
 expect "heavy stack app" supabase/classifier/synonyms.tsv
 expect "heavy app" docs/RELEASE.md
 expect "heavy app" site/content/guides/de/siri-kurzbefehl.md
+expect "heavy app" site/public/.well-known/assetlinks.json
+expect "heavy app" site/vercel.json
 # Documentation a gate reads: the nexus tests read the hill-climb docs.
 expect heavy docs/hillclimb/hc-tests.md
 # A non-ASCII name, which git quotes unless told not to, still matches its rule.

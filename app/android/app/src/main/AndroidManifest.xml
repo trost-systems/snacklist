@@ -39,10 +39,11 @@
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data android:scheme="com.snacklist.app" android:host="login-callback"/>
             </intent-filter>
-            <!-- App Links (docs/DEEP_LINKS.md): these app.snacklist.app paths (and app.hummlist.com,
-                 for old Hummlist invite links until R1) open the app,
-                 lib/core/deep_links.dart's table; app/web/.well-known/assetlinks.json
-                 verifies the domain. -->
+            <!-- App Links (docs/DEEP_LINKS.md), one verified filter per host's table, since a
+                 filter's hosts and paths combine: these app.snacklist.app paths (and
+                 app.hummlist.com, for old Hummlist invite links until R1) open the app,
+                 lib/core/deep_links.dart's appLinks; app/web/.well-known/assetlinks.json
+                 verifies the domains. -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
@@ -55,6 +56,23 @@
                 <data android:path="/more"/>
                 <data android:pathPrefix="/more/"/>
                 <data android:pathPrefix="/join/"/>
+                <data android:path="/history"/>
+                <data android:pathPrefix="/history/"/>
+                <data android:path="/edit"/>
+                <data android:pathPrefix="/edit/"/>
+                <data android:pathPrefix="/trip/"/>
+            </intent-filter>
+            <!-- The guides on snacklist.app (job 462), deep_links.dart's siteLinks, which the app
+                 shows itself; site/public/.well-known/assetlinks.json verifies the domain. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="https" android:host="snacklist.app"/>
+                <data android:path="/de/anleitungen"/>
+                <data android:pathPrefix="/de/anleitungen/"/>
+                <data android:path="/en/guides"/>
+                <data android:pathPrefix="/en/guides/"/>
             </intent-filter>
         </activity>
         <!-- The Home Screen widget (job 63, docs/HOME_WIDGETS.md). -->

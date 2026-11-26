@@ -5,6 +5,8 @@ import 'package:family_groceries/analytics/consent_screen.dart';
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/deep_links.dart';
 import 'package:family_groceries/core/notices.dart';
+import 'package:family_groceries/guides/guide_page.dart';
+import 'package:family_groceries/guides/guide_screen.dart';
 import 'package:family_groceries/household/create_household_screen.dart';
 import 'package:family_groceries/household/invite_partner_screen.dart';
 import 'package:family_groceries/household/join_request_waiting.dart';
@@ -210,6 +212,7 @@ String _screenNameOfPath(Uri location) => switch (location.path) {
   consentPath => 'oauth_consent',
   joinWaitingPath => 'join',
   _ when location.pathSegments.firstOrNull == 'join' => 'join',
+  _ when isSiteLink(location) => 'guide',
   _ => 'other',
 };
 
@@ -275,7 +278,9 @@ String? inviteIn(Uri uri) {
 /// one.
 const _beforeHousehold = {welcomePath, joinCodePath, joinWaitingPath};
 
-/// The only auth gate. An invite code from a `/join/<code>` link survives
+/// The only auth gate. A guide ([siteLinks]) opens for every session, as
+/// public as on snacklist.app: no sign-in, no consent question first. An
+/// invite code from a `/join/<code>` link survives
 /// sign-in, the analytics consent and onboarding as the `invite` query
 /// parameter and as [pendingInvite] (kept on the device, for when the
 /// location loses it: the mobile apps' sign-in callback, an app kill). The
@@ -314,6 +319,9 @@ String? authRedirect(
   OnboardingDraft? draft,
   bool askName = false,
 }) {
+  if (isSiteLink(uri)) {
+    return null;
+  }
   final invite = inviteIn(uri) ?? pendingInvite;
   final consent = uri.path == consentPath
       ? uri.toString()
@@ -441,12 +449,16 @@ String? _vetted(String? next, bool Function(Uri next) allowed) {
 }
 
 /// An app link sign-in continues to, if it leads to a screen: an invite
-/// link goes by its code.
+/// link goes by its code. The flags still decide what Verlauf and a trip
+/// summary show once there.
 bool _continues(Uri location) =>
     isAppLink(location) &&
     (location.path == listLinkPath ||
         listLinkOf(location) != null ||
-        inMoreTab(location));
+        inMoreTab(location) ||
+        inListTab(location) ||
+        inTripSummary(location) ||
+        location.path == historyPath);
 
 /// [uri] itself as a `next`, without the platform's scheme and host, if it
 /// is a link sign-in continues to.
@@ -689,6 +701,19 @@ List<RouteBase> appRoutes({
     builder: (_, _) => const InvitePartnerScreen(),
   ),
   GoRoute(path: joinCodePath, builder: (_, _) => const JoinScreen()),
+  // The public guides (job 462): a guide list and its guides, outside the
+  // shell, for every session ([authRedirect]). Side by side, not nested: a
+  // guide opened by a link has nothing under it, so back opens the list.
+  for (final path in const [
+    guidesDePath,
+    '$guidesDePath/:slug',
+    guidesEnPath,
+    '$guidesEnPath/:slug',
+  ])
+    GoRoute(
+      path: path,
+      builder: (_, state) => GuideScreen(page: guidePage(state.uri.path)),
+    ),
   GoRoute(
     path: '/join/:code',
     builder: (_, state) => JoinScreen(link: state.pathParameters['code']),

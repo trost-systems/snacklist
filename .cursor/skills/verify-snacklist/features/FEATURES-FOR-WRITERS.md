@@ -215,7 +215,7 @@ On Android the phone's back button goes one screen back, as the arrow in the tit
 
 ## Links into the app
 
-**What it does.** In the web app at app.snacklist.app (app.hummlist.com shows the same app) and in the test apps from 6 Nov on (see the Never-claims below), a link opens that screen of Snacklist: in the iPhone or Android app when it is installed, otherwise in the browser. A link can open the list, the add field, one store's part of the list, the More tab and its pages (for example „Einladungen“ / "Invites" or „Einstellungen“ / "Settings"), or an invite. In a browser an invite link (`app.snacklist.app/join/<code>`) shows a short page about the invite with „Im Browser beitreten“ (EN: "Join in the browser"), which opens the web app's join screen. Someone who is signed out signs in first and then lands on the linked screen. Someone without a household signs up, gives their name, creates a household through the guided start and then lands on the link's screen. The invite step is not skipped. It comes the next time they open the list, when Snacklist asks them to invite someone (step 7 of 7, titled by who they shop with, for example „Jemanden einladen“ / "Invite someone" or „Familie einladen“ / "Invite your family").
+**What it does.** In the web app at app.snacklist.app (app.hummlist.com shows the same app) and in the test apps from 6 Nov on (see the Never-claims below), a link opens that screen of Snacklist: in the iPhone or Android app when it is installed, otherwise in the browser. A link can open the list, the add field, one store's part of the list, the More tab and its pages (for example „Einladungen“ / "Invites" or „Einstellungen“ / "Settings"), an invite, „Anpassen“ / "Edit" of the list (the stores), or a guide from snacklist.app (the phone apps show guides in their own reading view, from the first test app after 26 November). In a browser an invite link (`app.snacklist.app/join/<code>`) shows a short page about the invite with „Im Browser beitreten“ (EN: "Join in the browser"), which opens the web app's join screen. On a phone the page also shows „In der App öffnen“ / "Open in the app": a tap opens the installed app at the invite. The same button sits above the guides on snacklist.app on a phone. Someone who is signed out signs in first and then lands on the linked screen. Someone without a household signs up, gives their name, creates a household through the guided start and then lands on the link's screen. The invite step is not skipped. It comes the next time they open the list, when Snacklist asks them to invite someone (step 7 of 7, titled by who they shop with, for example „Jemanden einladen“ / "Invite someone" or „Familie einladen“ / "Invite your family").
 
 **Links to use.**
 - The list: `https://app.snacklist.app/list`
@@ -225,17 +225,21 @@ On Android the phone's back button goes one screen back, as the arrow in the tit
 - The More tab: `https://app.snacklist.app/more`
 - Your household's page (members, lists, invites): `https://app.snacklist.app/more/household` (in the app the same things are on the household's page behind its name top left of the list; More has no row for this page or for the invites page)
 - All tips: `https://app.snacklist.app/more/tips`
+- Edit the list's stores („Anpassen“): `https://app.snacklist.app/edit`
+- A guide (opens in the app): `https://snacklist.app/de/anleitungen/<slug>` or `https://snacklist.app/en/guides/<slug>`
 - A store's part of the list: `https://app.snacklist.app/stores/<id>`. The id belongs to one household, so this link only works for its members; don't put it in emails to everyone.
 
 **Never claim.**
 - That these links (other than invite links) open the phone apps for everyone. Only the test apps from 6 Nov on (TestFlight, Google Play internal testing) have them, and that they open the app is not yet checked on a phone. The store apps get them with the first public release. Invite links already work everywhere and open the apps.
 - That app.snacklist.app links open an installed app for sure. The Snacklist test apps (from 10 Nov) are set up for both app.snacklist.app and app.hummlist.com, and both websites are set up to hand these links to the apps, but nobody has checked on a phone yet that a tap opens the app. The older Hummlist test apps open only app.hummlist.com links.
+- That guide links open the app today: only test apps built after 26 November show guides in the app; older ones keep them in the browser.
+- That „In der App öffnen“ works without the app: on an iPhone without Snacklist, Safari then says it cannot open the page.
 - Links that fill in an item ("add Milch") or tick something off: a link only opens a screen.
 - A link to „Verlauf“ (EN: "History") or to a shopping trip: both are switched off for everyone, and such links open the list.
 - That a link keeps working after the app was closed during sign-in on the phone: it then opens the list.
 - That a new user who opens a link never gets the invite step: it comes the next time they open the list.
 
-**Last verified.** 24 November 2026, code version 8290425e, in the web app (German): an invite link and `/more/join` opening the join screen. Earlier: 23 November 2026, code version d023441d, in the web app (German): a „Verlauf“ link opening the list, and an invites link while signed out going to the login first. 19 November 2026, code version af0287cf, in the web app (German): „Feedback & Ideen“, the household page, the invites page and the settings by link. Earlier: 16 November 2026, code version c2183ca6, in the web app (German).
+**Last verified.** 26 November 2026, job 462 branch (before merge): the join page's „In der App öffnen“ in a Playwright iPhone context, the site's guide button in a built site, the guide view in widget screenshots from the live guides' text. Earlier: 24 November 2026, code version 8290425e, in the web app (German): an invite link and `/more/join` opening the join screen. Earlier: 23 November 2026, code version d023441d, in the web app (German): a „Verlauf“ link opening the list, and an invites link while signed out going to the login first. 19 November 2026, code version af0287cf, in the web app (German): „Feedback & Ideen“, the household page, the invites page and the settings by link. Earlier: 16 November 2026, code version c2183ca6, in the web app (German).
 
 # The list
 

@@ -3090,3 +3090,14 @@ Legal GO carried over from dc318acc to 6aab3f68; publish dates set to 26 Novembe
 | site/content/legal/privacy.md | e1b77a90ca9de7513f0f5ba8cc1aaa2242d891810cf6df43b28e29471e25b0a4 | 828d8936ff86477b3a7d25b22f58bafa11c16d0f |
 | app/web/konto-loeschen.html | 3132e0ee60dc5fec2294d16825fcb3e0f40252fa3d962a2e759731605d4abf74 | f7188903f572b067671957c148c9733ce54e0b9d |
 | app/web/delete-account.html | 04fc2293d6f3b84b14f721a6b1231b112cfcc8bdc8621c23012b8b0218184bed | c51898cdc9c934b4b6690edb14e30a8112ca6461 |
+
+## Job 462: app-routable links open the installed app
+
+Invite links, list and More links, Anpassen, Verlauf, trip links (app.snacklist.app) and the guides
+on snacklist.app now open the installed app; without it they stay in the browser. Peter's
+`/join/<code>` case needed no file fix (AASA and 1541's entitlement were right): a pasted or
+same-domain link never fires universal links, so the join page and the site's guides now offer
+„In der App öffnen“ on phones. Guides render natively in the app from the site's Markdown twin.
+**Store build:** none needed for the join handoff (live with the next store upload's web move); the
+guide links and new claims need the next TestFlight / Play build. The site's association files go
+live with the merge. Details: [docs/done/462.md](docs/done/462.md).

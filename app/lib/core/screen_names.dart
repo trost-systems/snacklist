@@ -37,5 +37,7 @@ const screenNames = {
   'your_name',
   'oauth_consent',
   'join',
+  // A guide or guide list of snacklist.app, never its slug (job 462).
+  'guide',
   'other',
 };

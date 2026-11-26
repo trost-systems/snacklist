@@ -1,3 +1,4 @@
+import 'package:family_groceries/core/deep_links.dart';
 import 'package:family_groceries/core/screen_names.dart';
 import 'package:family_groceries/onboarding/draft.dart';
 import 'package:family_groceries/session/session_cubit.dart';
@@ -78,8 +79,9 @@ void main() {
     (household, '/edit/lidl', null),
     (household, '/edit/none', null),
     (household, '/edit/lidl/more', '/'),
-    (NeedsHousehold('u'), '/edit/lidl', '/welcome'),
-    (SignedOut(), '/edit', '/start'),
+    (NeedsHousehold('u'), '/edit/lidl', '/welcome?next=%2Fedit%2Flidl'),
+    // Job 462: an app link, sign-in continues there.
+    (SignedOut(), '/edit', '/login?next=%2Fedit'),
     (household, '/more/access', null),
     (household, '/more/account', null),
     (household, '/more/account?invite=ABCD2345', '/join/ABCD2345'),
@@ -327,12 +329,114 @@ void main() {
       '/welcome?next=%2F%2Fevil.example%2Fmore',
       '/welcome',
     ),
+    // Job 462: Verlauf, Anpassen and the trip summaries, like More. The
+    // flags decide on the route what opens there (the list when off).
+    (household, '/history', null),
+    (household, '/edit', null),
+    (household, '/edit/s1', null),
+    (household, '/trip/t1', null),
+    (household, '/history/trip/t1', null),
+    (SignedOut(), '/history', '/login?next=%2Fhistory'),
+    (SignedOut(), '/edit', '/login?next=%2Fedit'),
+    (SignedOut(), '/edit/s1', '/login?next=%2Fedit%2Fs1'),
+    (SignedOut(), '/trip/t1', '/login?next=%2Ftrip%2Ft1'),
+    (SignedOut(), '/history/trip/t1', '/login?next=%2Fhistory%2Ftrip%2Ft1'),
+    (household, '/login?next=%2Fhistory', '/history'),
+    (household, '/login?next=%2Fedit%2Fs1', '/edit/s1'),
+    (household, '/login?next=%2Ftrip%2Ft1', '/trip/t1'),
+    (household, '/login?next=%2Fhistory%2Ftrip%2Ft1', '/history/trip/t1'),
+    (NeedsHousehold('u'), '/history', '/welcome?next=%2Fhistory'),
+    (NeedsHousehold('u'), '/trip/t1', '/welcome?next=%2Ftrip%2Ft1'),
+    // Not a screen: no `next` to nowhere.
+    (SignedOut(), '/history/nope', '/start'),
+    (SignedOut(), '/edit/s1/nope', '/start'),
+    (SignedOut(), '/trip/t1/nope', '/start'),
   ];
   for (final (session, from, to) in links) {
     test('link: ${session.runtimeType} at $from goes to ${to ?? 'stays'}', () {
       expect(authRedirect(session, Uri.parse(from)), to);
     });
   }
+
+  // Job 462: the guides of snacklist.app are as public in the app as on
+  // the site: no sign-in, no consent question, no onboarding first.
+  const guides = [
+    '/de/anleitungen',
+    '/de/anleitungen/alexa',
+    '/en/guides',
+    '/en/guides/claude',
+  ];
+  for (final guide in guides) {
+    for (final session in const <Session>[
+      SessionLoading(),
+      SignedOut(),
+      NeedsHousehold('u'),
+      waiting,
+      household,
+    ]) {
+      test('guide: ${session.runtimeType} at $guide stays', () {
+        expect(authRedirect(session, Uri.parse(guide)), isNull);
+        expect(
+          authRedirect(session, Uri.parse(guide), askConsent: true),
+          isNull,
+        );
+        expect(authRedirect(session, Uri.parse(guide), askName: true), isNull);
+        expect(
+          authRedirect(session, Uri.parse(guide), pendingInvite: 'ABCD2345'),
+          isNull,
+        );
+      });
+    }
+    test('guide: $guide is never a link sign-in continues to', () {
+      final memory = RedirectMemory();
+      expect(memory.redirect(const SignedOut(), Uri.parse(guide)), isNull);
+      expect(memory.redirect(const SignedOut(), Uri.parse('/')), '/start');
+      expect(memory.redirect(household, Uri.parse('/')), isNull);
+      expect(
+        authRedirect(
+          const SignedOut(),
+          Uri.parse('/login?next=${Uri.encodeComponent(guide)}'),
+        ),
+        '/login',
+      );
+    });
+  }
+
+  test('a guide is the screen `guide`, never its slug', () {
+    for (final guide in guides) {
+      expect(screenNameOf(Uri.parse(guide)), 'guide');
+    }
+    expect(screenNames, contains('guide'));
+  });
+
+  // Every claimed path opens a screen of its own, not the fallback to the
+  // list: a route matches, and a member stays there (the list links are
+  // the list's steps).
+  test('every app and site link has a route', () {
+    final router = GoRouter(routes: appRoutes());
+    addTearDown(router.dispose);
+    String sample(AppLink link) => switch (link.path) {
+      '/join/' => '/join/ABCD2345',
+      '/more/' => '/more/invites',
+      '/history/' => '/history/trip/t1',
+      '/trip/' || '/stores/' || '/edit/' => '${link.path}x1',
+      final path when link.prefix => '${path}alexa',
+      final path => path,
+    };
+    for (final link in [...appLinks, ...siteLinks]) {
+      final path = sample(link);
+      expect(
+        router.configuration.findMatch(Uri.parse(path)).isError,
+        isFalse,
+        reason: path,
+      );
+      expect(
+        authRedirect(household, Uri.parse(path)),
+        const {'/list', '/add', '/stores/x1'}.contains(path) ? '/' : isNull,
+        reason: path,
+      );
+    }
+  });
 
   test('a link next is asked for consent first, and carried', () {
     expect(

@@ -18304,3 +18304,43 @@ PostHog's `Bad state: No element` in go_router's `_findCurrentNavigators` came f
 ## Job 453: no app workaround for the semantics `geometry!` crash
 
 The crash is flutter#195316 (fix flutter#192724 on master, in no stable or beta yet); the upstream test fails on our Flutter 3.50.0. The real list screen reaches the faulty branch but did not crash in about 1,000 fuzz runs, so there is no proven app trigger. Calls: ship no speculative change (replacing the add sheet's `ExcludeSemantics` would alter screen-reader output on a guess), no Flutter upgrade until a stable has the fix, and no committed canary test (the check is one curl, `docs/done/453.md`). Bug 1 stays open in NEEDS_LEAD "Job 453".
+
+## Job 462: app-routable links open the installed app
+
+Peter (t1309u, t1312u, 26 Nov 2026): `https://app.snacklist.app/join/<code>` opened Safari on his
+iPhone (TestFlight 1541, app closed), and every app-routable link on snacklist.app and
+app.snacklist.app should open the app. Calls made without him, each reversible:
+
+1. **Cause of the report.** Not a missing file: the AASA on app.snacklist.app and on Apple's CDN
+   listed `/join/*` for `com.snacklist.app`, and build 1541's entitlements (commit c8c1cd077) have
+   `applinks:app.snacklist.app`, signed with the match AppStore profile (a profile without the
+   capability fails the build). Universal links do not fire for an address typed or pasted into
+   Safari, a tap on a page of the same domain, or after "open in Safari" was chosen once, so the
+   fix is a handoff on the page itself, not only more claims. Not reproducible without an iPhone.
+2. **Handoff on a tap, never automatic.** „In der App öffnen“ on phones only. An automatic try on
+   load shows Safari's "address invalid" alert to every invitee without the app (most of them).
+   iPhone uses the app's scheme `com.snacklist.app://open<path>` (the web app's „Öffnen“ card,
+   job 271), Android an `intent://` with the page as fallback. A cross-domain universal link
+   (app.snacklist.app → snacklist.app) would avoid the alert but needs a new store build and a
+   redirect page on the site; the scheme works with 1541.
+3. **Guides render natively.** The app has no browser view (legal_links.dart, App Store "Unrestricted
+   Web Access: No"), so the guide view reads the site's Markdown twin (`<page>.md`) and renders it
+   with `package:markdown`. No second copy of the guides in the app; a draft or held section
+   stays hidden as on the site. Links to claimed URLs stay in the app: opening one in the system
+   browser would loop back into the app on Android.
+4. **Two route tables, two Android filters.** `appLinks` for the app hosts, `siteLinks` for
+   snacklist.app. One filter would claim every path on every host it names, so snacklist.app gets
+   its own filter.
+5. **Newly claimed on the app hosts:** `/history`, `/history/*`, `/edit`, `/edit/*`, `/trip/*`
+   (product screens the router already had); they now also survive sign-in as `next`. Left in the
+   browser: `/join` without a code, `/households/new`, `/start`, `/your-name` (flows, not link
+   targets), and on snacklist.app everything but the guides (legal pages, landing, changelog,
+   support, waitlist, comparisons).
+6. **No www.** www.snacklist.app 308-redirects to snacklist.app; Apple does not follow redirects for
+   the AASA, so it is not claimed.
+7. **`/apple-app-site-association` without `.well-known`** is served as the same JSON on both
+   projects (a rewrite), since the web app's SPA answered it with HTML. `http://` already 308s to
+   https (checked 26 Nov; the 500 seen earlier is gone).
+8. **No Vercel exception.** Apple's CDN fetched app.snacklist.app's file on 26 Nov although a curl
+   with `AASA-Bot/1.0` from hz got a 403 challenge; snacklist.app is checked after its deploy
+   (DONE_SUMMARY).

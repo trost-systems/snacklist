@@ -171,6 +171,10 @@ h1 {
   margin-top: var(--hl-space-5);
 }
 
+#open-app {
+  margin-top: var(--hl-space-3);
+}
+
 /* The code: a sunken well under a divider, read on its own, copied with one tap. */
 .code {
   margin-top: var(--hl-space-5);

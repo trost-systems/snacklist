@@ -1,0 +1,15 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["VCZSHMZY25.com.snacklist.app"],
+        "components": [
+          { "/": "/de/anleitungen", "comment": "The German guide list, shown by the app." },
+          { "/": "/de/anleitungen/*", "comment": "A German guide, shown by the app." },
+          { "/": "/en/guides", "comment": "The English guide list, shown by the app." },
+          { "/": "/en/guides/*", "comment": "An English guide, shown by the app." }
+        ]
+      }
+    ]
+  }
+}

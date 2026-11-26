@@ -4,11 +4,12 @@ import 'dart:io';
 import 'package:family_groceries/core/deep_links.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// Job 22 and 66: the app URL's paths in [appLinks] open the installed app.
-/// Five files must agree with that table, and a mismatch only shows on a
-/// device: the iOS entitlement, Android's verified intent filter, the two
-/// files the web build serves under `/.well-known/`, and Vercel's rules
-/// that serve them as JSON instead of the app's index.html.
+/// Job 22, 66 and 462: the app URL's paths in [appLinks] and snacklist.app's
+/// in [siteLinks] open the installed app. The files must agree with those
+/// tables, and a mismatch only shows on a device: the iOS entitlement,
+/// Android's two verified intent filters, the files the web build and the
+/// site serve under `/.well-known/`, and Vercel's rules that serve them as
+/// JSON instead of the app's index.html or the site's 404 page.
 void main() {
   final appUrl = Uri.parse(
     (jsonDecode(File('config/auth.json').readAsStringSync())
@@ -19,7 +20,50 @@ void main() {
   // Job 174: the Hummlist build stays installed until Snacklist replaces it,
   // so its app id and its host stay next to Snacklist's.
   const hummlistId = 'com.hummlist.app';
-  final hosts = {'app.snacklist.app', 'app.hummlist.com', appUrl.host};
+  final hosts = {...appLinkHosts, appUrl.host};
+
+  test('APP_URL is one of the app hosts', () {
+    expect(appLinkHosts, contains(appUrl.host));
+  });
+
+  List<String> components(String file) {
+    final aasa = jsonDecode(File(file).readAsStringSync()) as Map;
+    final details =
+        ((aasa['applinks']! as Map)['details']! as List).single as Map;
+    return [
+      for (final c in details['components']! as List)
+        (c as Map)['/']! as String,
+    ];
+  }
+
+  List<String> table(List<AppLink> links) => [
+    for (final link in links)
+      if (link.prefix) '${link.path}*' else link.path,
+  ];
+
+  /// The verified intent filters of the manifest: their hosts and paths.
+  List<({Set<String> hosts, List<AppLink> paths, String xml})> filters() {
+    final manifest = File('android/app/src/main/AndroidManifest.xml')
+        .readAsStringSync();
+    return [
+      for (final m in RegExp(
+        r'<intent-filter android:autoVerify="true">([\s\S]*?)</intent-filter>',
+      ).allMatches(manifest))
+        (
+          xml: m[1]!,
+          hosts: {
+            for (final h in RegExp('android:host="([^"]*)"').allMatches(m[1]!))
+              h[1]!,
+          },
+          paths: [
+            for (final p in RegExp(
+              'android:(path|pathPrefix)="([^"]*)"',
+            ).allMatches(m[1]!))
+              (path: p[2]!, prefix: p[1] == 'pathPrefix'),
+          ],
+        ),
+    ];
+  }
 
   String bundleId() => RegExp(r'PRODUCT_BUNDLE_IDENTIFIER = ([\w.]+);')
       .allMatches(
@@ -31,13 +75,15 @@ void main() {
   String applicationId() => RegExp(r'applicationId = "([\w.]+)"')
       .firstMatch(File('android/app/build.gradle.kts').readAsStringSync())![1]!;
 
-  test('the iOS app claims applinks for the app URL', () {
+  test('the iOS app claims applinks for the app URL and the site', () {
     final entitlements = File('ios/Runner/Runner.entitlements')
         .readAsStringSync();
     expect(entitlements, contains('com.apple.developer.associated-domains'));
-    for (final host in hosts) {
-      expect(entitlements, contains('<string>applinks:$host</string>'));
-    }
+    final claimed = RegExp('<string>applinks:([^<]*)</string>')
+        .allMatches(entitlements)
+        .map((m) => m[1]);
+    // Not www.snacklist.app: it redirects, and Apple does not follow that.
+    expect(claimed, unorderedEquals({...hosts, siteLinkHost}));
     // Sign in with Apple stays.
     expect(entitlements, contains('com.apple.developer.applesignin'));
   });
@@ -49,35 +95,65 @@ void main() {
     final details =
         ((aasa['applinks']! as Map)['details']! as List).single as Map;
     expect(details['appIDs'], ['$teamId.${bundleId()}', '$teamId.$hummlistId']);
-    expect((details['components']! as List).map((c) => (c as Map)['/']), [
-      for (final link in appLinks)
-        if (link.prefix) '${link.path}*' else link.path,
-    ]);
+    expect(
+      components('web/.well-known/apple-app-site-association'),
+      table(appLinks),
+    );
   });
 
-  test('Android verifies an https filter for the table on the app URL', () {
-    final manifest = File('android/app/src/main/AndroidManifest.xml')
-        .readAsStringSync();
-    final filter = RegExp(
-      r'<intent-filter android:autoVerify="true">([\s\S]*?)</intent-filter>',
-    ).firstMatch(manifest)![1]!;
-    expect(filter, contains('android.intent.action.VIEW'));
-    expect(filter, contains('android.intent.category.BROWSABLE'));
-    expect(filter, contains('android:scheme="https"'));
-    for (final host in hosts) {
-      expect(filter, contains('android:host="$host"'));
+  test(
+    "the site's apple-app-site-association names Snacklist and the guides",
+    () {
+      const file = '../site/public/.well-known/apple-app-site-association';
+      final aasa = jsonDecode(File(file).readAsStringSync()) as Map;
+      final details =
+          ((aasa['applinks']! as Map)['details']! as List).single as Map;
+      expect(details['appIDs'], ['$teamId.${bundleId()}']);
+      expect(components(file), table(siteLinks));
+    },
+  );
+
+  // A filter's hosts and paths combine, so each host's table needs its own
+  // filter: one filter would claim /list on snacklist.app.
+  test('Android verifies one https filter per host table', () {
+    final verified = filters();
+    expect(verified.map((f) => f.hosts), [
+      hosts,
+      {siteLinkHost},
+    ]);
+    expect(verified.map((f) => f.paths), [appLinks, siteLinks]);
+    for (final filter in verified) {
+      expect(filter.xml, contains('android.intent.action.VIEW'));
+      expect(filter.xml, contains('android.intent.category.BROWSABLE'));
+      expect(
+        RegExp('android:scheme="([^"]*)"')
+            .allMatches(filter.xml)
+            .map((m) => m[1]),
+        everyElement('https'),
+      );
     }
-    final paths = RegExp('android:(path|pathPrefix)="([^"]*)"')
-        .allMatches(filter)
-        .map((m) => (path: m[2]!, prefix: m[1] == 'pathPrefix'));
-    expect(paths, appLinks);
     // The sign-in callback keeps its own filter.
     expect(
-      manifest,
+      File('android/app/src/main/AndroidManifest.xml').readAsStringSync(),
       contains(
         'android:scheme="com.snacklist.app" android:host="login-callback"',
       ),
     );
+  });
+
+  test("the site's assetlinks.json is the app's Snacklist statement", () {
+    final app = jsonDecode(
+      File('web/.well-known/assetlinks.json').readAsStringSync(),
+    ) as List;
+    final site = jsonDecode(
+      File('../site/public/.well-known/assetlinks.json').readAsStringSync(),
+    );
+    expect(site, [
+      app.singleWhere(
+        (s) =>
+            ((s as Map)['target']! as Map)['package_name'] == applicationId(),
+      ),
+    ]);
   });
 
   test(
@@ -144,12 +220,48 @@ void main() {
     }
     expect(spa.hasMatch('/.well-known/apple-app-site-association'), isFalse);
     expect(spa.hasMatch('/.well-known/assetlinks.json'), isFalse);
-    final headers = (vercel['headers']! as List).cast<Map<String, Object?>>();
-    final aasa = headers.singleWhere(
-      (h) => h['source'] == '/.well-known/apple-app-site-association',
-    );
-    expect(aasa['headers'], [
-      {'key': 'Content-Type', 'value': 'application/json'},
-    ]);
+    expect(spa.hasMatch('/apple-app-site-association'), isTrue);
+    expectServesAasa(vercel, before: '/index.html');
   });
+
+  test('the site serves its association files as JSON', () {
+    final vercel =
+        jsonDecode(File('../site/vercel.json').readAsStringSync()) as Map;
+    expectServesAasa(vercel);
+    // No redirect for every host catches them (the hummlist.com ones are
+    // for that host).
+    final redirects = (vercel['redirects']! as List)
+        .cast<Map<String, Object?>>();
+    for (final redirect in redirects) {
+      if (redirect['has'] == null) {
+        final source = RegExp('^${redirect['source']}\$');
+        expect(source.hasMatch('/apple-app-site-association'), isFalse);
+        expect(source.hasMatch('/.well-known/assetlinks.json'), isFalse);
+      }
+    }
+  });
+}
+
+/// Both of [vercel]'s AASA paths are JSON, and the root one is the
+/// `.well-known` file, rewritten before the rewrite to [before].
+void expectServesAasa(Map<Object?, Object?> vercel, {String? before}) {
+  const file = '/.well-known/apple-app-site-association';
+  final rewrites = (vercel['rewrites']! as List).cast<Map<String, Object?>>();
+  final root = rewrites.indexWhere(
+    (r) => r['source'] == '/apple-app-site-association',
+  );
+  expect(root, isNot(-1));
+  expect(rewrites[root]['destination'], file);
+  if (before != null) {
+    expect(
+      root,
+      lessThan(rewrites.indexWhere((r) => r['destination'] == before)),
+    );
+  }
+  final headers = (vercel['headers']! as List).cast<Map<String, Object?>>();
+  for (final path in [file, '/apple-app-site-association']) {
+    expect(headers.singleWhere((h) => h['source'] == path)['headers'], [
+      {'key': 'Content-Type', 'value': 'application/json'},
+    ], reason: path);
+  }
 }

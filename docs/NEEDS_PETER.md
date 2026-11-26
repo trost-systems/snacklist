@@ -2090,3 +2090,24 @@ the privacy text goes live first. After Legal's GO and the merge:
 To undo: `enabled = false`. Keys stay; API keys stop working on MCP and MCP tokens on the API.
 
 **Update, job 434 (2026-11-24).** Steps 4 and 5 are done: the reason lines are confirmed and `auth_mail.ts` put the six templates and `smtp_sender_name` = `Snacklist` on the hosted project; a second dry-run reports nothing left to change. The seven security notices stay off. Sending yourself a sign-in link in each language is still the one check left.
+
+## Job 462: links open the installed app (device check)
+
+Nothing to set up in Apple's or Google's consoles: Associated Domains is already on for
+`com.snacklist.app`, and the snacklist.app domain is only named in the app (entitlement, manifest)
+and in the site's two files. Route tables: `docs/DEEP_LINKS.md`.
+
+1. **Invite link, now (TestFlight 1541 or later, no new build needed).** Send yourself an invite
+   link in Messages or Notes and tap it there: the app opens on the join screen. Paste the same
+   link into Safari's address bar instead: the invite page shows „In der App öffnen“ below „Im
+   Browser beitreten“ once the web app has this change (the next store upload moves app.snacklist.app);
+   tap it, confirm „Öffnen“: the app opens on the join screen.
+2. **Guides, with the first build after this change.** Tap
+   `https://snacklist.app/de/anleitungen/siri-kurzbefehl` in Messages: the app opens the guide.
+   Tap a link to another guide in it: it opens in the app. Tap the claude.ai link in the Claude
+   guide: Safari opens. Same on Android with `https://snacklist.app/en/guides/alexa`.
+3. **Other links:** `https://app.snacklist.app/edit` (Anpassen) opens the app with the first build
+   after this change.
+4. If Safari opens instead of the app for a tapped link (not a pasted one): long-press the link,
+   choose „In Snacklist öffnen“; iOS then opens the app for that domain again. Tell the lead which
+   link and phone.

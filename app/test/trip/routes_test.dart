@@ -22,10 +22,15 @@ void main() {
     }
   });
 
-  test('signed out, a trip summary goes to the start', () {
+  // Job 462: a trip summary is an app link; sign-in continues there.
+  test('signed out, a trip summary goes to the sign-in and on to it', () {
     expect(
       authRedirect(const SignedOut(), Uri.parse(tripSummaryPath('abc'))),
-      startPath,
+      '/login?next=%2Ftrip%2Fabc',
+    );
+    expect(
+      authRedirect(const SignedOut(), Uri.parse(historyTripPath('abc'))),
+      '/login?next=%2Fhistory%2Ftrip%2Fabc',
     );
   });
 }

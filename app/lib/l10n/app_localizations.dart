@@ -6475,6 +6475,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Mitteilungen sind für Snacklist ausgeschaltet. Schalte sie in den Einstellungen deines Handys ein.'**
   String get shoppingDayBlocked;
+
+  /// Job 462: a guide link (snacklist.app/de/anleitungen/<slug>) whose page the site does not have (404)
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Anleitung gibt es nicht (mehr).'**
+  String get guideMissing;
+
+  /// Job 462: button under guideMissing, opens the guide list in the app
+  ///
+  /// In de, this message translates to:
+  /// **'Alle Anleitungen'**
+  String get guideAllGuides;
+
+  /// Job 462: a guide could not be loaded (no connection, timeout, server error); a retry button follows
+  ///
+  /// In de, this message translates to:
+  /// **'Die Anleitung lädt gerade nicht. Prüf deine Verbindung und versuch es noch einmal.'**
+  String get guideFailed;
 }
 
 class _AppLocalizationsDelegate

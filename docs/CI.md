@@ -228,7 +228,7 @@ The `changes` job (`scripts/ci-changes.sh`) reads the PR's changed files:
   runs db and e2e, not the Flutter build and tests. The exception is what the
   Flutter tests read outside `app/`: the parity tables in `supabase/tests/`,
   `supabase/classifier/`, two shared sources in `supabase/functions/_shared/`,
-  `docs/RELEASE.md`, `docs/consent/` and the guides in `site/content/guides/`.
+  `docs/RELEASE.md`, `docs/consent/`, the guides in `site/content/guides/`, and the site's app link files (`site/public/.well-known/`, `site/vercel.json`).
   These turn `app` on (and `heavy`), not `stack`. `scripts/ci-changes-test.sh`
   finds every `'../...'` path literal in the Flutter tests and fails when one
   of them does not turn `app` on; a path built from a variable root is not

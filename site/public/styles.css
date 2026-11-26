@@ -454,6 +454,25 @@ a {
   }
 }
 
+/* A quiet button: a white face, the same contour and edge. */
+.hex--quiet {
+  --face: var(--hl-color-surface-raised);
+  --on-face: var(--hl-color-text);
+  --wall: var(--hl-color-surface-edge);
+}
+
+@media (prefers-color-scheme: dark) {
+  .hex--quiet {
+    --line: var(--hl-color-border);
+  }
+}
+
+/* The guides' „In der App öffnen“ (open-app.js shows it on phones), above the page's heading. */
+.open-app {
+  width: min(100% - 2 * var(--gutter), 44rem);
+  margin: var(--hl-space-3) auto 0;
+}
+
 /* Guides, legal pages, the changelog, 404 */
 .prose {
   width: min(100% - 2 * var(--gutter), 44rem);

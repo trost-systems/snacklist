@@ -21,6 +21,7 @@ const texts = {
     members: (n) => (n === 1 ? '1 Mitglied' : `${n} Mitglieder`),
     openItems: (n) => (n === 1 ? '1 offener Eintrag' : `${n} offene Einträge`),
     join: 'Im Browser beitreten',
+    openApp: 'In der App öffnen',
     enterCode: 'Code im Browser eingeben',
     codeLabel: 'Einladungscode',
     codeHint: 'Schon in der App? Gib den Code dort beim Beitreten ein.',
@@ -44,6 +45,7 @@ const texts = {
     members: (n) => (n === 1 ? '1 member' : `${n} members`),
     openItems: (n) => (n === 1 ? '1 open item' : `${n} open items`),
     join: 'Join in the browser',
+    openApp: 'Open in the app',
     enterCode: 'Enter a code in the browser',
     codeLabel: 'Invite code',
     codeHint: 'Already in the app? Enter the code there when you join.',
@@ -60,6 +62,21 @@ const texts = {
     error: ['Couldn’t load the invite', 'Check your connection and reload the page. You can also join directly.'],
   },
 };
+
+/**
+ * Where „In der App öffnen“ leads on a phone, or null on a tablet or desktop: the app at `path`
+ * (app/lib/core/open_app.dart, appOpening). Universal Links skip a pasted link and a page iOS
+ * was told to open in Safari, so the tap hands over itself. iPhone: the app's custom scheme;
+ * its router reads only the path, and a query could pass for a sign-in. Android: an intent for
+ * the App Link, back to `pageUrl` when no app takes it.
+ */
+function appOpeningHref(userAgent, path, pageUrl) {
+  if (/iPhone|iPod/.test(userAgent)) return `com.snacklist.app://open${path}`;
+  if (/Android/.test(userAgent) && /Mobile/.test(userAgent)) {
+    return `intent://app.snacklist.app${path}#Intent;scheme=https;package=${playPackage};S.browser_fallback_url=${encodeURIComponent(pageUrl)};end`;
+  }
+  return null;
+}
 
 /** The browser's first German or English language, else English, as the app picks. */
 function language() {
@@ -137,6 +154,15 @@ function render(t, code, preview) {
   join.href = code ? `/?invite=${code}` : '/';
   const usable = ok || preview.status === 'rate_limited' || preview.status === 'error';
   join.querySelector('.face').textContent = usable ? t.join : t.enterCode;
+
+  // Only a tap may open another app: on load iOS Safari would alert everyone without it.
+  const appHref = code && usable ? appOpeningHref(navigator.userAgent, `/join/${code}`, location.href) : null;
+  const openApp = byId('open-app');
+  openApp.hidden = appHref === null;
+  if (appHref !== null) {
+    openApp.href = appHref;
+    openApp.querySelector('.face').textContent = t.openApp;
+  }
 
   byId('code').hidden = !(code && usable);
   if (code) {

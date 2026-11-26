@@ -37,6 +37,8 @@ void main() {
       '/oauth/consent?authorization_id=abc': 'oauth_consent',
       '/join/ABCD2345': 'join',
       '/join/Milch%20und%20Brot': 'join',
+      '/de/anleitungen': 'guide',
+      '/en/guides/claude': 'guide',
       '/Hafermilch': 'other',
       '/more/Hafermilch': 'other',
     };
