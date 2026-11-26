@@ -212,10 +212,20 @@ async function phonePage(browser: Browser, baseURL: string | undefined, userAgen
   return context.newPage();
 }
 
-test('"In der App öffnen": the app\'s scheme on an iPhone, an intent falling back to this page on Android, none on a desktop', async ({ browser, baseURL, page }) => {
+test('"In der App öffnen": the app\'s scheme on an iPhone (not for a dead invite), an intent falling back to this page on Android, none on a desktop', async ({ browser, baseURL, page }) => {
   const iphone = await phonePage(browser, baseURL, iPhoneAgent);
   await joinPage(iphone, okAnswer, `/join/${code.toLowerCase()}`);
   await expect(iphone.getByRole('link', { name: 'In der App öffnen' })).toHaveAttribute('href', `com.snacklist.app://open/join/${code}`);
+
+  for (const failure of failures) {
+    await iphone.unrouteAll();
+    await joinPage(iphone, failure.answer);
+    await expect(iphone.getByRole('heading', { level: 1 })).toHaveText(failure.de);
+    await expect(iphone.locator('#open-app'), failure.de).toBeVisible({ visible: failure.showsCode });
+  }
+  await joinPage(iphone, okAnswer, '/join/not-a-code');
+  await expect(iphone.getByRole('heading', { level: 1 })).toHaveText('Diese Einladung gilt nicht mehr');
+  await expect(iphone.locator('#open-app')).toBeHidden();
 
   const android = await phonePage(browser, baseURL, androidAgent);
   await joinPage(android, okAnswer);

@@ -94,7 +94,7 @@ lists `/de/anleitungen`, `/en/guides` and the paths below them for `VCZSHMZY25.c
 (`app/web/.well-known/assetlinks.json`; `test/app-links.test.mjs` fails when they differ).
 `vercel.json` serves the AASA as JSON, also at `/apple-app-site-association`. Keep both paths
 out of redirects. The link table is `app/lib/core/deep_links.dart`; a path claimed here must be
-in it. When the link opens the browser anyway, `public/open-in-app.js` shows "In der App öffnen" /
+in it. From the `launch` stage on, when the link opens the browser anyway, `public/open-in-app.js` shows "In der App öffnen" /
 "Open in the app" under a guide's or an index's title on iOS and Android: the app's
 `com.snacklist.app://open<path>` on iOS, an `intent://` URL with this page as its fallback on
 Android.

@@ -418,20 +418,21 @@ function formatDate(iso, locale) {
   return new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(iso));
 }
 
-// The app claims the guide paths (public/.well-known); open-in-app.js shows this on phones.
+// The app claims the guide paths (public/.well-known); open-in-app.js shows this on phones. Only
+// from the launch stage: before it most phones have no app, and Safari calls the scheme invalid.
 const openInApp = (locale) => `<p class="open-in-app" hidden><a data-open-in-app>${LOCALES[locale].ui.openInApp}</a></p>\n`;
 
-function mainContent(page, guidesByLocale) {
+function mainContent(page, guidesByLocale, handOff) {
   if (page.kind === 'index') {
     const items = guidesByLocale[page.locale]
       .map((g) => `<li><a href="${g.route}">${escapeHtml(g.title)}</a><p>${escapeHtml(g.description)}</p></li>`)
       .join('\n');
-    return `<h1>${escapeHtml(page.title)}</h1>\n${openInApp(page.locale)}${page.body}<ul class="guide-list">\n${items}\n</ul>`;
+    return `<h1>${escapeHtml(page.title)}</h1>\n${handOff}${page.body}<ul class="guide-list">\n${items}\n</ul>`;
   }
   if (page.kind === 'landing') return page.body;
   if (page.kind === 'guide') {
     const label = LOCALES[page.locale].ui.updated;
-    const body = page.body.replace(/(<\/h1>\n(?:<p class="since-note">.*<\/p>\n)?)/, `$1${openInApp(page.locale)}`);
+    const body = page.body.replace(/(<\/h1>\n(?:<p class="since-note">.*<\/p>\n)?)/, `$1${handOff}`);
     return `${body}<p class="updated">${label}: <time datetime="${page.updated}">${formatDate(page.updated, page.locale)}</time></p>`;
   }
   return page.body;
@@ -501,7 +502,8 @@ function renderPage(page, { config, groups, guidesByLocale, copy, stage }) {
   const noindex = page.notices.length > 0 || waitlistPage || page.unlisted;
   const form = waitlistPage || (landing && stage !== 'launch');
   const report = page.report === true;
-  const main = mainContent(page, guidesByLocale);
+  const handOff = (page.kind === 'guide' || page.kind === 'index') && stage === 'launch';
+  const main = mainContent(page, guidesByLocale, handOff ? openInApp(page.locale) : '');
   const assets = [
     landing && '<link rel="stylesheet" href="/landing.css">',
     (form || report) && '<link rel="stylesheet" href="/waitlist.css">',
@@ -511,7 +513,7 @@ function renderPage(page, { config, groups, guidesByLocale, copy, stage }) {
     landing && stage === 'launch' && '<script src="/get-app.js" defer></script>',
     form && '<script src="/waitlist.js" defer></script>',
     report && '<script type="module" src="/report.js"></script>',
-    (page.kind === 'guide' || page.kind === 'index') && '<script src="/open-in-app.js" defer></script>',
+    handOff && '<script src="/open-in-app.js" defer></script>',
   ].filter(Boolean).map((line) => `${line}\n`).join('');
   return `<!doctype html>
 <html lang="${page.locale}">

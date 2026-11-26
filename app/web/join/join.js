@@ -139,6 +139,8 @@ function render(t, code, preview) {
   join.href = code ? `/?invite=${code}` : '/';
   const usable = ok || preview.status === 'rate_limited' || preview.status === 'error';
   join.querySelector('.face').textContent = usable ? t.join : t.enterCode;
+  // The app cannot join with a dead invite either.
+  if (!usable) byId('open-app').hidden = true;
 
   byId('code').hidden = !(code && usable);
   if (code) {

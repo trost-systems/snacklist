@@ -18536,3 +18536,19 @@ property. Choices made here, each reversible:
 - Production was read with `select`s only (counts and fixed answers). The session was not read-only: the Supavisor pooler ignores `PGOPTIONS='-c default_transaction_read_only=on'` (`show` reads `off`, review 1). A guarded read sets it as the first command of the same psql call: `-c "set default_transaction_read_only = on"`. The server switches found off were left off and reported (NEEDS_LEAD).
 - Review 0: an iOS delete could outlast its caller's timeout (`_deleteLeftToken`'s 3 s) while waiting for APNs, then delete the token registered right after it. `FirebasePush.token()` now waits for the last delete to end. That fixes the race whatever budget a caller sets. The budgets stay at 2 s (`forget`'s unregister) and 3 s (the delete): a longer delete budget would make an offline sign-out wait up to 10 s, and in a running, opted-in app the APNs token is already there. An outlasting delete still completes, and the `tokenLeft` it leaves only means one more harmless delete at the next start.
 - Review 1: `token()` waits for an abandoned delete without a bound. A bound would bring the race back whenever the delete outlasts it. Offline, the wait holds the push queue only as long as the native delete takes, which `_register`'s `getToken` could already do on main.
+## Job 462c: the app hand-off on dead invites and before the launch
+
+- **Guides: the stage, not a `since:` version.** The site renders „In der App öffnen“ and loads
+  `open-in-app.js` on guides and their indexes only when `site/config/stage.ts` says `launch`
+  (`SITE_STAGE=launch` in previews). A `since:` version would show it once a store build carries
+  the guide view, while the listings are still private and most phones have no app; Safari then
+  calls `com.snacklist.app://…` an invalid address. The stage is the switch that means "the app is
+  public". Beta testers on TestFlight lose the hand-off until then; their guide links still open
+  the app through the Universal Link and App Link.
+- **Join page: hidden for `invalid` and `full`.** Both are invites the app cannot join with
+  either, the same `usable` test that already hides the code. The link still shows while the
+  preview loads and for `rate_limited` and `error`, where the invite may well work.
+- **No shared UA fixture.** `phoneOsOf` (`app/lib/core/open_app.dart`, the web app's „Öffnen“
+  card) is phones only and leaves out iPads and Android tablets on purpose; `join.js` and
+  `open-in-app.js` hand off on tablets too. One table of UAs and hrefs would hold two rules, and
+  the join page's case runs in Playwright, not in a unit harness. Review 1's item 3 stays as is.
