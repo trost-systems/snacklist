@@ -236,6 +236,14 @@ No advertising, no sale of data, no location (PostHog GeoIP off), no contacts, n
 analytics without consent, no cookies or trackers on snacklist.app (`site/test/preview.test.mjs`).
 The web app's posthog-js sets no cookie and no localStorage key (job 44, memory persistence).
 
+## Art. 6(1)(f) balancing: database aggregate counts (Legal 2026-11-26, Appendix C)
+
+- **Purpose:** unbiased denominators for the kill gates (households created, members, paying households) because PostHog only holds consented installs, and paying-household counts after month 12.
+- **Necessity:** the consent sample is biased and loses data after 12 months; counts of existing records are the least intrusive way (no new data, no tracking).
+- **Interests:** data subjects expect a household app to count its households; the counts are totals with no per-person output, no ids leave the database, small cells are not shown outside Peter, no new data is collected; the operator's interest in knowing whether the product is used and pays for itself is concrete (kill gates).
+- **Safeguards:** totals only; no export of rows; objection (Art. 21) stays available and is stated in R7b; processing stays inside the existing database processor (Supabase, DPA in place); covered by Art. 6(4) as a compatible further use of data already held, with the Art. 13(3) notice given before the first run.
+- **Result:** balance favours the operator; revisit if any count could single out a household (k = 5 for anything shown outside Peter).
+
 ## Differences to the privacy policy (`site/content/legal/datenschutz.md`)
 
 Five open. Item prices and the household currency (job 190, flag `prices-and-trip-total`, off)

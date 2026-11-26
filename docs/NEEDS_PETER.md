@@ -751,8 +751,7 @@ keys make the consent screen appear for everyone.
    yet (Job 17 item above).
 3. **DPA with PostHog**: accept PostHog's data processing agreement in the organization settings
    of "Einkauf".
-4. **Data retention.** The free plan keeps 1 year; the spec's month-12 retention needs about 14
-   months. You said you'll upgrade before year end; until then the queries go to month 11.
+4. **Data retention.** The free plan keeps 1 year, which matches the privacy policy. Do not buy longer retention without Legal (policy change and a new consent text version). If you upgrade the plan for another reason, first set events retention to 12 months in the organisation and the project (a new paid plan defaults to 2 years).
 5. **Group analytics yes/no.** It is a paid add-on. The app can also send the `household` group
    (`ANALYTICS_HOUSEHOLD_GROUPS=true` as a build define); off now, the household metrics use the
    `household_id` property.
