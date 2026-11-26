@@ -156,30 +156,31 @@ re-render with `node marketing/videos/build.mjs` (marketing/videos/README.md).
 ## Release timeline (/history, /en/history)
 
 From `HISTORY_COPY` in `site/history.mjs` (job 105): every string of the release timeline and
-its footer link, new and waiting for the copy review (NEEDS_COPY_REVIEW). `{…}` is filled in at
-build time. Change the text there; this section follows.
+its footer link. Peter approved the existing strings on 2026-11-26 (H1, t1300u). `status` is
+`draft` until approved, then `reused`. `{…}` is filled in at build time. Change the text
+there; this section follows.
 
 | Id | Page / section | DE | EN | Why / source | Status |
 | --- | --- | --- | --- | --- | --- |
-| `history.footer` | Every page: footer link | Chronik | History | New: release timeline (job 105). | draft |
-| `history.title` | History: page title and h1 | Chronik | History | New: release timeline (job 105). | draft |
-| `history.description` | History: meta and og:description | Jede öffentliche Version von Snacklist: Datum, Projekttag, Commits, Mitwirkende und Codezeilen. | Every public version of Snacklist: date, project day, commits, contributors and lines of code. | New: release timeline (job 105). | draft |
-| `history.intro` | History: intro under the h1 | Jede öffentliche Version von Snacklist, die neueste zuerst, mit Zahlen aus dem Code. Tag 0 ist der {date}, der Tag des ersten Commits. | Every public version of Snacklist, newest first, with numbers from the code. Day 0 is {date}, the day of the first commit. | New: release timeline (job 105). | draft |
-| `history.empty` | History: empty state (no public release) | Noch ist keine Version von Snacklist öffentlich in den Stores. Sobald es so weit ist, steht hier jede Version mit Datum und Zahlen. | No version of Snacklist is public in the stores yet. Once one is, every version shows up here with its date and numbers. | New: release timeline (job 105). | draft |
-| `history.version` | History: entry heading | Version {version} | Version {version} | New: release timeline (job 105). | draft |
-| `history.day` | History: entry date line, after the date | Tag {day} | Day {day} | New: release timeline (job 105). | draft |
-| `history.commits-since` | History: entry stat label | Commits seit Version {version} | Commits since version {version} | New: release timeline (job 105). | draft |
-| `history.commits-first` | History: entry stat label, first release | Commits bis zu dieser Version | Commits up to this version | New: release timeline (job 105). | draft |
-| `history.contributors` | History: entry stat label (people, without bots) | Mitwirkende | Contributors | New: release timeline (job 105). | draft |
-| `history.loc` | History: entry stat label | Codezeilen | Lines of code | New: release timeline (job 105). | draft |
-| `history.top` | History: entry stat label | Am meisten beigetragen | Top contributors | New: release timeline (job 105). | draft |
-| `history.top-commits` | History: commits of a top contributor | {n} Commits | {n} commits | New: release timeline (job 105). | draft |
-| `history.top-commit` | History: commits of a top contributor, one | 1 Commit | 1 commit | New: release timeline (job 105). | draft |
-| `history.automation` | History: entry stat label, the one label for every bot | Bots und KI-Assistenten | Bots and AI assistants | New: release timeline (job 105). | draft |
-| `history.automation-commits` | History: bots and AI assistants value | an {n} von {total} Commits beteiligt | took part in {n} of {total} commits | New: release timeline (job 105). | draft |
-| `history.languages` | History: entry stat label | Codezeilen nach Sprache | Lines of code by language | New: release timeline (job 105). | draft |
-| `history.changelog-link` | History: entry link to the changelog | Neuigkeiten in Version {version} | What's new in version {version} | New: release timeline (job 105). | draft |
-| `history.note` | History: note under the entries | Commits zählen ab der vorigen Version. Codezeilen sind die nicht leeren Zeilen des Quelltexts dieser Version, ohne erzeugte Dateien, Lockfiles und Dokumentation. Bots und KI-Assistenten zählen nicht als Mitwirkende. | Commits count from the previous version. Lines of code are the non-blank lines of this version’s source code, without generated files, lockfiles and documentation. Bots and AI assistants do not count as contributors. | New: release timeline (job 105). | draft |
+| `history.footer` | Every page: footer link | Chronik | History | New: release timeline (job 105). Peter 2026-11-26 (H1). | reused |
+| `history.title` | History: page title and h1 | Chronik | History | New: release timeline (job 105). Peter 2026-11-26 (H1). | reused |
+| `history.description` | History: meta and og:description | Jede öffentliche Version von Snacklist: Datum, Projekttag, Commits, Mitwirkende und Codezeilen. | Every public version of Snacklist: date, project day, commits, contributors and lines of code. | New: release timeline (job 105). Peter 2026-11-26 (H1). | reused |
+| `history.intro` | History: intro under the h1 | Jede öffentliche Version von Snacklist, die neueste zuerst, mit Zahlen aus dem Code. Tag 0 ist der {date}, der Tag des ersten Commits. | Every public version of Snacklist, newest first, with numbers from the code. Day 0 is {date}, the day of the first commit. | New: release timeline (job 105). Peter 2026-11-26 (H1). | reused |
+| `history.empty` | History: empty state (no public release) | Noch ist keine Version von Snacklist öffentlich in den Stores. Sobald es so weit ist, steht hier jede Version mit Datum und Zahlen. | No version of Snacklist is public in the stores yet. Once one is, every version shows up here with its date and numbers. | New: release timeline (job 105). Peter 2026-11-26 (H1). | reused |
+| `history.version` | History: entry heading | Version {version} | Version {version} | New: release timeline (job 105). Peter 2026-11-26 (H1). | reused |
+| `history.day` | History: entry date line, after the date | Tag {day} | Day {day} | New: release timeline (job 105). Peter 2026-11-26 (H1). | reused |
+| `history.commits-since` | History: entry stat label | Commits seit Version {version} | Commits since version {version} | New: release timeline (job 105). Peter 2026-11-26 (H1). | reused |
+| `history.commits-first` | History: entry stat label, first release | Commits bis zu dieser Version | Commits up to this version | New: release timeline (job 105). Peter 2026-11-26 (H1). | reused |
+| `history.contributors` | History: entry stat label (people, without bots) | Mitwirkende | Contributors | New: release timeline (job 105). Peter 2026-11-26 (H1). | reused |
+| `history.loc` | History: entry stat label | Codezeilen | Lines of code | New: release timeline (job 105). Peter 2026-11-26 (H1). | reused |
+| `history.top` | History: entry stat label | Am meisten beigetragen | Top contributors | New: release timeline (job 105). Peter 2026-11-26 (H1). | reused |
+| `history.top-commits` | History: commits of a top contributor | {n} Commits | {n} commits | New: release timeline (job 105). Peter 2026-11-26 (H1). | reused |
+| `history.top-commit` | History: commits of a top contributor, one | 1 Commit | 1 commit | New: release timeline (job 105). Peter 2026-11-26 (H1). | reused |
+| `history.automation` | History: entry stat label, the one label for every bot | Bots und KI-Assistenten | Bots and AI assistants | New: release timeline (job 105). Peter 2026-11-26 (H1). | reused |
+| `history.automation-commits` | History: bots and AI assistants value | an {n} von {total} Commits beteiligt | took part in {n} of {total} commits | New: release timeline (job 105). Peter 2026-11-26 (H1). | reused |
+| `history.languages` | History: entry stat label | Codezeilen nach Sprache | Lines of code by language | New: release timeline (job 105). Peter 2026-11-26 (H1). | reused |
+| `history.changelog-link` | History: entry link to the changelog | Neuigkeiten in Version {version} | What's new in version {version} | New: release timeline (job 105). Peter 2026-11-26 (H1). | reused |
+| `history.note` | History: note under the entries | Commits zählen ab der vorigen Version. Codezeilen sind die nicht leeren Zeilen des Quelltexts dieser Version, ohne erzeugte Dateien, Lockfiles und Dokumentation. Bots und KI-Assistenten zählen nicht als Mitwirkende. | Commits count from the previous version. Lines of code are the non-blank lines of this version’s source code, without generated files, lockfiles and documentation. Bots and AI assistants do not count as contributors. | New: release timeline (job 105). Peter 2026-11-26 (H1). | reused |
 
 ## Voice replies (Siri, Alexa)
 

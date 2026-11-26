@@ -91,11 +91,12 @@ ${videoCopy.map(([id, e]) => `| \`${id}\` | Demo video ${id.split('.')[0]} | ${c
 ## Release timeline (/history, /en/history)
 
 From \`HISTORY_COPY\` in \`site/history.mjs\` (job 105): every string of the release timeline and
-its footer link, new and waiting for the copy review (NEEDS_COPY_REVIEW). \`{…}\` is filled in at
-build time. Change the text there; this section follows.
+its footer link. Peter approved the existing strings on 2026-11-26 (H1, t1300u). \`status\` is
+\`draft\` until approved, then \`reused\`. \`{…}\` is filled in at build time. Change the text
+there; this section follows.
 
 ${head}
-${historyCopy.map(([id, e]) => `| \`${id}\` | ${cell(e.where)} | ${cell(e.de)} | ${cell(e.en)} | New: release timeline (job 105). | draft |`).join('\n')}
+${historyCopy.map(([id, e]) => `| \`${id}\` | ${cell(e.where)} | ${cell(e.de)} | ${cell(e.en)} | New: release timeline (job 105). Peter 2026-11-26 (H1). | ${e.status ?? 'draft'} |`).join('\n')}
 ` : ''}${voiceCopy.length ? `
 ## Voice replies (Siri, Alexa)
 

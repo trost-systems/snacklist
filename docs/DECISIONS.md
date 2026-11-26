@@ -18367,4 +18367,4 @@ the research report's §3 and §4.A.
 
 ## Job 444: history page layout
 
-Fixed the 390 px wrapping with CSS and a bold/regular split of the top-contributor line instead of changing any copy. Kept the circle rail marks: they are not hexagons. Did not touch `releases.json` or the legal/ARB files.
+Fixed the 390 px wrapping with CSS and a bold/regular split of the top-contributor line instead of changing any copy. Kept the circle rail marks: they are not hexagons. Did not touch `releases.json` or the legal/ARB files. On 2026-11-26 Peter approved the 19 `history.*` strings (H1, t1300u); they are `status: reused` in `HISTORY_COPY`. The 1.0 changelog's Claude/ChatGPT store lines still need Legal's GO (H2, Addendum D) before merge.

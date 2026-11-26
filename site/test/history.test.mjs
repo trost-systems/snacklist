@@ -176,10 +176,13 @@ test('every history string has German and English, and the placeholders resolve'
       assert.doesNotMatch(t(id, locale, vars), /[{}]/, `${id}.${locale}`);
     }
     assert.deepEqual([...entry.de.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort(), [...entry.en.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort(), id);
+    assert.ok(entry.status === 'draft' || entry.status === 'reused', `${id}.status`);
   }
   assert.throws(() => t('history.version', 'de'), /needs \{version\}/);
   const copyNeeded = readFileSync(join(SITE_DIR, 'COPY_NEEDED.md'), 'utf8');
-  for (const id of Object.keys(HISTORY_COPY)) assert.match(copyNeeded, new RegExp(`\\| \`${id}\` \\|`), `${id} in COPY_NEEDED.md`);
+  for (const [id, entry] of Object.entries(HISTORY_COPY)) {
+    assert.match(copyNeeded, new RegExp(`\\| \`${id.replaceAll('.', '\\.')}\` \\|.*\\| ${entry.status} \\|`), `${id} in COPY_NEEDED.md as ${entry.status}`);
+  }
 });
 
 test('a top contributor is a bold name and a separate count span, so the count stays whole (job 444)', () => {

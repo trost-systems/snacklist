@@ -1,53 +1,58 @@
 // The release timeline, /history and /en/history (job 105): one entry per public release of
 // releases/releases.json, newest first, with the stats record.mjs computed when it was recorded.
 // The site never asks git (Vercel clones shallow). Every string is in HISTORY_COPY, which
-// scripts/copy-needed.mjs lists in COPY_NEEDED.md until it is reviewed.
+// scripts/copy-needed.mjs lists in COPY_NEEDED.md. status is `draft` until approved, then `reused`.
 
 export const HISTORY_ROUTES = { de: '/history', en: '/en/history' };
 const CHANGELOG_ROUTES = { de: '/de/changelog', en: '/en/changelog' };
 // How many people the entry names under "Top contributors".
 export const TOP_CONTRIBUTORS = 3;
 
-// `{name}` is filled in at build time. status: draft until the copy review approves it.
+// `{name}` is filled in at build time. status is `draft` until Peter approves the string, then `reused`.
 export const HISTORY_COPY = {
-  'history.footer': { de: 'Chronik', en: 'History', where: 'Every page: footer link' },
-  'history.title': { de: 'Chronik', en: 'History', where: 'History: page title and h1' },
+  'history.footer': { de: 'Chronik', en: 'History', where: 'Every page: footer link', status: 'reused' },
+  'history.title': { de: 'Chronik', en: 'History', where: 'History: page title and h1', status: 'reused' },
   'history.description': {
     de: 'Jede öffentliche Version von Snacklist: Datum, Projekttag, Commits, Mitwirkende und Codezeilen.',
     en: 'Every public version of Snacklist: date, project day, commits, contributors and lines of code.',
     where: 'History: meta and og:description',
+    status: 'reused',
   },
   'history.intro': {
     de: 'Jede öffentliche Version von Snacklist, die neueste zuerst, mit Zahlen aus dem Code. Tag 0 ist der {date}, der Tag des ersten Commits.',
     en: 'Every public version of Snacklist, newest first, with numbers from the code. Day 0 is {date}, the day of the first commit.',
     where: 'History: intro under the h1',
+    status: 'reused',
   },
   'history.empty': {
     de: 'Noch ist keine Version von Snacklist öffentlich in den Stores. Sobald es so weit ist, steht hier jede Version mit Datum und Zahlen.',
     en: 'No version of Snacklist is public in the stores yet. Once one is, every version shows up here with its date and numbers.',
     where: 'History: empty state (no public release)',
+    status: 'reused',
   },
-  'history.version': { de: 'Version {version}', en: 'Version {version}', where: 'History: entry heading' },
-  'history.day': { de: 'Tag {day}', en: 'Day {day}', where: 'History: entry date line, after the date' },
-  'history.commits-since': { de: 'Commits seit Version {version}', en: 'Commits since version {version}', where: 'History: entry stat label' },
-  'history.commits-first': { de: 'Commits bis zu dieser Version', en: 'Commits up to this version', where: 'History: entry stat label, first release' },
-  'history.contributors': { de: 'Mitwirkende', en: 'Contributors', where: 'History: entry stat label (people, without bots)' },
-  'history.loc': { de: 'Codezeilen', en: 'Lines of code', where: 'History: entry stat label' },
-  'history.top': { de: 'Am meisten beigetragen', en: 'Top contributors', where: 'History: entry stat label' },
-  'history.top-commits': { de: '{n} Commits', en: '{n} commits', where: 'History: commits of a top contributor' },
-  'history.top-commit': { de: '1 Commit', en: '1 commit', where: 'History: commits of a top contributor, one' },
-  'history.automation': { de: 'Bots und KI-Assistenten', en: 'Bots and AI assistants', where: 'History: entry stat label, the one label for every bot' },
+  'history.version': { de: 'Version {version}', en: 'Version {version}', where: 'History: entry heading', status: 'reused' },
+  'history.day': { de: 'Tag {day}', en: 'Day {day}', where: 'History: entry date line, after the date', status: 'reused' },
+  'history.commits-since': { de: 'Commits seit Version {version}', en: 'Commits since version {version}', where: 'History: entry stat label', status: 'reused' },
+  'history.commits-first': { de: 'Commits bis zu dieser Version', en: 'Commits up to this version', where: 'History: entry stat label, first release', status: 'reused' },
+  'history.contributors': { de: 'Mitwirkende', en: 'Contributors', where: 'History: entry stat label (people, without bots)', status: 'reused' },
+  'history.loc': { de: 'Codezeilen', en: 'Lines of code', where: 'History: entry stat label', status: 'reused' },
+  'history.top': { de: 'Am meisten beigetragen', en: 'Top contributors', where: 'History: entry stat label', status: 'reused' },
+  'history.top-commits': { de: '{n} Commits', en: '{n} commits', where: 'History: commits of a top contributor', status: 'reused' },
+  'history.top-commit': { de: '1 Commit', en: '1 commit', where: 'History: commits of a top contributor, one', status: 'reused' },
+  'history.automation': { de: 'Bots und KI-Assistenten', en: 'Bots and AI assistants', where: 'History: entry stat label, the one label for every bot', status: 'reused' },
   'history.automation-commits': {
     de: 'an {n} von {total} Commits beteiligt',
     en: 'took part in {n} of {total} commits',
     where: 'History: bots and AI assistants value',
+    status: 'reused',
   },
-  'history.languages': { de: 'Codezeilen nach Sprache', en: 'Lines of code by language', where: 'History: entry stat label' },
-  'history.changelog-link': { de: 'Neuigkeiten in Version {version}', en: "What's new in version {version}", where: 'History: entry link to the changelog' },
+  'history.languages': { de: 'Codezeilen nach Sprache', en: 'Lines of code by language', where: 'History: entry stat label', status: 'reused' },
+  'history.changelog-link': { de: 'Neuigkeiten in Version {version}', en: "What's new in version {version}", where: 'History: entry link to the changelog', status: 'reused' },
   'history.note': {
     de: 'Commits zählen ab der vorigen Version. Codezeilen sind die nicht leeren Zeilen des Quelltexts dieser Version, ohne erzeugte Dateien, Lockfiles und Dokumentation. Bots und KI-Assistenten zählen nicht als Mitwirkende.',
     en: 'Commits count from the previous version. Lines of code are the non-blank lines of this version’s source code, without generated files, lockfiles and documentation. Bots and AI assistants do not count as contributors.',
     where: 'History: note under the entries',
+    status: 'reused',
   },
 };
 
