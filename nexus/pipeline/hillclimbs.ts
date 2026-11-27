@@ -80,6 +80,13 @@ export const hillClimbDocs: readonly HillClimbDoc[] = [
     target: 0,
   },
   {
+    id: 'hc-tick-untick',
+    metric: 'n3000 tick + undo p50 (µs)',
+    direction: 'lower',
+    baseline: /^Baseline score \*\*([\d.]+)\*\*/m,
+    target: null,
+  },
+  {
     id: 'hc-tests',
     metric: 'coverage x mutation score per wall second',
     direction: 'higher',

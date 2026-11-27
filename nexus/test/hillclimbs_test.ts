@@ -21,6 +21,7 @@ Deno.test('every registered doc on main parses to its known numbers', async () =
     'hc-strictness': [1030, 2, 6],
     'hc-sync': [175.000509, 0.000491, 8],
     'hc-tests': [10.36, 19.2368, 2],
+    'hc-tick-untick': [22413, 12385, 2],
     'hc-ui-app': [6.5, 6.5, 0],
     'hc-ui-perf': [7.479, 6.598, 1],
     'hc-voice-perf': [51.5, 38.01, 1],
@@ -30,7 +31,10 @@ Deno.test('every registered doc on main parses to its known numbers', async () =
 Deno.test('every hc doc on main is registered', async () => {
   const onDisk: string[] = [];
   for await (const e of Deno.readDir(docsDir)) {
-    if (e.isFile && /^hc-.*\.md$/.test(e.name)) onDisk.push(e.name.replace(/\.md$/, ''));
+    // A climb's prototype candidates (`hc-<goal>-prototype-candidates.md`) have no score.
+    if (e.isFile && /^hc-.*\.md$/.test(e.name) && !e.name.endsWith('-prototype-candidates.md')) {
+      onDisk.push(e.name.replace(/\.md$/, ''));
+    }
   }
   assertEquals(onDisk.sort(), hillClimbDocs.map((d) => d.id).sort());
 });
