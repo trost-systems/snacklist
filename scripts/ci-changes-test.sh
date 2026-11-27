@@ -2,7 +2,9 @@
 # Tests which gates scripts/ci-changes.sh asks for, per changed path, in a scratch repository;
 # that a change to a gate's own script, or to a script it runs as "$REPO_ROOT/scripts/...",
 # turns on the switch of the ci.yml job that runs that gate; and that every file outside app/
-# the Flutter tests read turns on the app switch (job 309). Run by the lint gate.
+# the Flutter tests read turns on the app switch (job 309); and that a releases/flags.json change to
+# holds only the site reads runs no app or stack gate, with APP_HOLDS what the app reads (job 475).
+# Run by the lint gate.
 set -euo pipefail
 source "$(dirname "$0")/lib.sh"
 
@@ -190,6 +192,76 @@ for file in "$REPO_ROOT"/scripts/gates/*.sh; do
   job="$(job_of "$(basename "$file" .sh)")"
   [[ -z $job ]] || grep -q "^$job " <<<"$job_switches" || fail "the $job job runs a gate but has no switch in this test's job_switches"
 done
+
+# Job 475: a releases/flags.json change that touches only holds the app does not read counts like a
+# site file. The edit is JavaScript on `json`, the repo's real file (or sets `text`), next to these paths.
+expect_flags() {
+  local want="$1" edit="$2" from got on
+  shift 2
+  git checkout -q --detach "$base"
+  mkdir -p releases
+  cp "$REPO_ROOT/releases/flags.json" releases/flags.json
+  git add -A
+  git -c user.name=t -c user.email=t@t commit -q -m flags
+  from="$(git rev-parse HEAD)"
+  EDIT="$edit" node -e 'const fs = require("fs"); const json = JSON.parse(fs.readFileSync("releases/flags.json", "utf8")); let text;
+    eval(process.env.EDIT); fs.writeFileSync("releases/flags.json", text ?? JSON.stringify(json, null, 2) + "\n");'
+  for path in "$@"; do
+    mkdir -p "$(dirname "$path")"
+    echo x >"$path"
+  done
+  git add -A
+  git -c user.name=t -c user.email=t@t commit -q -m change
+  got="$("$REPO_ROOT/scripts/ci-changes.sh" "$from" HEAD | tr '\n' ' ' | sed 's/ $//')"
+  on="$(tr ' ' '\n' <<<"$got" | sed -n 's/=true$//p' | tr '\n' ' ' | sed 's/ $//')"
+  [[ ${on:-none} == "$want" ]] || fail "flags.json edit '$edit' with ${*:-no other file} turns on '${on:-none}', want '$want' ($got)"
+}
+flip='json.holds["push-notifications"].released = !json.holds["push-notifications"].released'
+expect_flags heavy "$flip"
+expect_flags heavy 'json.holds["push-notifications"].note += " (moved)"'
+expect_flags heavy 'text = JSON.stringify(json)'
+expect_flags heavy "$flip" site/content/legal/privacy.md site/content/legal/datenschutz.md docs/PUSH.md site/test/gates.test.mjs
+expect_flags "heavy stack app" "$flip" app/l10n/app_de.arb
+expect_flags "heavy stack app" "$flip" app/lib/main.dart
+expect_flags "heavy stack app native" "$flip" app/pubspec.yaml
+expect_flags "heavy stack app fastlane" "$flip" app/fastlane/Fastfile
+expect_flags "heavy stack app" "$flip; json.flags[Object.keys(json.flags)[0]].rollout = \"partial\""
+expect_flags "heavy stack app" "json.flags[Object.keys(json.flags)[0]].note = \"changed\""
+expect_flags "heavy stack app" 'json.holds["native-siri"].released = !json.holds["native-siri"].released'
+expect_flags "heavy stack app" 'json.holds["integration-lock"].released = !json.holds["integration-lock"].released'
+expect_flags "heavy stack app" 'json.holds["integration-lock"].note += " (moved)"'
+expect_flags "heavy stack app" 'json.holds["a-new-hold"] = { released: false, note: "new" }'
+expect_flags "heavy stack app" 'delete json.holds["push-notifications"]'
+expect_flags "heavy stack app" 'text = "{ not json"'
+expect_flags "heavy stack app" 'text = "[]"'
+expect_flags "heavy stack app" 'json.holds = []'
+# APP_HOLDS is exactly the holds read where a flip needs more than the site and the lint job: a quoted
+# hold key in a file under app/, scripts/, e2e/, supabase/, alexa/ or .github/ that reads flags.json's
+# holds. Left out: scripts/release/, the changelog gate and its tests, which run in the lint job, and
+# scripts/hold-flip-draft.sh, which runs after a merge on main; its test runs in the lint job too.
+app_holds="$(sed -n "s/^APP_HOLDS='\(.*\)'$/\1/p" "$REPO_ROOT/scripts/ci-changes.sh" | tr ' ' '\n' | sort)"
+[[ -n $app_holds ]] || fail "scripts/ci-changes.sh has no APP_HOLDS='...' line"
+# The hold keys the tracked files under $1 read, one per line; none when no file matches.
+holds_read() {
+  (cd "$1" \
+    && git grep -lE 'flags\.json|FLAGS_JSON' -- app/ scripts/ e2e/ supabase/ alexa/ .github/ ':!scripts/release/' ':!scripts/hold-flip-draft.sh' ':!scripts/hold-flip-draft-test.sh' ':!scripts/ci-changes*' \
+    | xargs -r grep -lE "holds[\"'\]]|\.holds\b|[\"']holds[\"']" \
+    | xargs -r grep -ohE "[\"']($(node -e 'console.log(Object.keys(require(process.argv[1]).holds).join("|"))' "$REPO_ROOT/releases/flags.json"))[\"']" \
+    | tr -d "\"'" | sort -u) || true
+}
+read_holds="$(holds_read "$REPO_ROOT")"
+[[ $read_holds == "$app_holds" ]] || fail "the holds read outside the site and the lint job are '$(tr '\n' ' ' <<<"$read_holds")', scripts/ci-changes.sh's APP_HOLDS says '$(tr '\n' ' ' <<<"$app_holds")': set APP_HOLDS to what the app reads"
+
+# The scan still finds a new reader outside the exclusions.
+git checkout -q --detach "$base"
+mkdir -p scripts
+cp "$REPO_ROOT"/scripts/hold-flip-draft.sh "$REPO_ROOT"/scripts/hold-flip-draft-test.sh scripts/
+printf '%s\n' "import flags from '../releases/flags.json' with { type: 'json' };" \
+  "console.log(flags.holds['push-notifications'].released);" >scripts/new-reader.mjs
+git add -A
+git -c user.name=t -c user.email=t@t commit -q -m readers
+got="$(holds_read . | tr '\n' ' ')"
+[[ $got == "push-notifications " ]] || fail "the scan over hold-flip-draft and a new reader of push-notifications finds '$got'"
 
 # A file moved out of a native path is a change there.
 git checkout -q --detach "$base"
