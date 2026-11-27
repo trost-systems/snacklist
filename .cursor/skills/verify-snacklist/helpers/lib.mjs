@@ -259,11 +259,15 @@ export async function answerShopAsk(page, L, key = 'shopAskNo', timeout = 3_000)
 export async function foldRecentlyUsed(page, L) {
   const section = page.getByRole('button', { name: L('recentlyUsed'), exact: true });
   const rows = page.getByRole('button', { name: new RegExp(` ${escape(L('readd'))}$`) });
-  await rows.first().waitFor({ state: 'attached', timeout: 5_000 }).catch(() => {});
-  if (!(await section.count()) || !(await rows.count())) return false;
-  await reveal(page, section);
+  // Below a few open rows the list has not built the section yet (vmaint-20261127: list-summary
+  // then found nothing to fold), so wheel to it first, and back to the top after.
+  if (!(await reveal(page, section).then(() => true, () => false))) return false;
+  await rows.first().waitFor({ state: 'attached', timeout: 2_000 }).catch(() => {});
+  if (!(await rows.count())) return false;
   await section.click();
   await rows.first().waitFor({ state: 'detached', timeout: 5_000 });
+  await page.mouse.wheel(0, -20_000);
+  await page.waitForTimeout(300);
   return true;
 }
 

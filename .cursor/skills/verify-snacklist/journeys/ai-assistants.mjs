@@ -53,7 +53,7 @@ try {
   await signIn(page, L, user);
   await openTab(page, L, 'tabMore');
   await page.getByRole('button', { name: new RegExp(`^${L('accessTitle')}`) }).first().click();
-  // The screen shows the token sections until the switch's answer arrives, so wait for the hint
+  // The screen shows a spinner until the switch's answer arrives (#720), so wait for the hint
   // the switch picks, and make sure the other one is gone.
   const unified = flagOn('unified-keys') && (await api.rpc('unified_keys')).data === true;
   const hint = unified ? 'accessKeysUnifiedHint' : flagOn('public-api') ? 'accessTokensHintWithApi' : 'accessTokensHint';
