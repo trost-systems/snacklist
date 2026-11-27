@@ -173,7 +173,7 @@ const appSettingsPath = '/more/settings';
 const languagePath = '/more/settings/language';
 
 /// More's Mitteilungen (job 463): the push switches and the shopping-day
-/// reminder, while a flag offers one of them ([notificationsShown]).
+/// reminder, while it has one of them to show ([notificationsShown]).
 const notificationsPath = '/more/notifications';
 
 /// More's Nutzungsdaten: the usage-data switch.

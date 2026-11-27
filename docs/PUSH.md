@@ -436,7 +436,10 @@ database (`supabase/migrations/20261122232004_push_household_add.sql`,
 - **Art. 21 (N-401).** `push_preferences.name_hidden`
   (`set_push_name_hidden`, the second switch): the member's name reads
   „Jemand“ / "Someone" in others' pushes, whether or not they switched the
-  alert on.
+  alert on. The switch has no flag (N-425, job 479): Mitteilungen lists it
+  in every build, with `push-household-add` off too, so the flag can reach
+  members in steps while every member whose name it may use can object.
+  Only the alert's own switch waits for the flag.
 - **Never my own adds, on any device.** Recipients are members of the
   household other than the adder; the push function picks tokens by recipient.
 - **What counts as an add.** An insert of an active item, and an item put back

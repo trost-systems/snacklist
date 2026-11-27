@@ -26,6 +26,9 @@ class FakePrefs() implements HouseholdAddPrefs {
 
   /// Set, a save waits for it.
   Completer<void>? hold;
+
+  /// Set, a read waits for it.
+  Completer<void>? loadHold;
   final saves = <String>[];
 
   @override
@@ -33,6 +36,7 @@ class FakePrefs() implements HouseholdAddPrefs {
     if (slow) {
       await pumpEventQueue();
     }
+    await loadHold?.future;
     if (offline) {
       throw Exception('offline');
     }
@@ -420,11 +424,107 @@ void main() {
 
   final tile = find.byKey(const ValueKey('settings-push-household-add'));
 
-  testWidgets('flag off: no switch', (tester) async {
-    await pump(tester, flags: const {});
+  final nameTile = find.byKey(const ValueKey('settings-push-name-hidden'));
+
+  // N-425: the flag may reach some members before others, and those may
+  // name this user; the objection to that never waits for the flag.
+  testWidgets('flag off: no alert switch, but the name switch, which saves', (
+    tester,
+  ) async {
+    prefs.row = (on: false, language: 'de', nameHidden: true);
+    await pump(tester, flags: const {}, deviceOn: true);
     await tester.pumpAndSettle();
     expect(tile, findsNothing);
-    expect(prefs.saves, isEmpty);
+    expect(find.text('Wenn jemand etwas hinzufügt'), findsNothing);
+    expect(nameTile, findsOneWidget);
+    expect(find.text('Meinen Namen in Mitteilungen weglassen'), findsOneWidget);
+    expect(tester.widget<HexSwitchTile>(nameTile).value, isTrue);
+    await tester.tap(nameTile);
+    await tester.pumpAndSettle();
+    expect(prefs.saves, ['hidden false']);
+    expect(alert.state?.nameHidden, isFalse);
+    expect(plugin.prompts, 0);
+  });
+
+  testWidgets('a choice the server cannot tell is no switch but a line to '
+      'try again, which then shows the saved name switch', (tester) async {
+    prefs
+      ..row = (on: false, language: 'de', nameHidden: true)
+      ..offline = true;
+    await pump(tester, flags: const {}, deviceOn: true);
+    await tester.pumpAndSettle();
+    expect(find.text('Konnte nicht geladen werden.'), findsOneWidget);
+    expect(find.byType(HexSwitch), findsNothing);
+
+    prefs.offline = false;
+    await tester.tap(find.text('Erneut versuchen'));
+    await tester.pumpAndSettle();
+    expect(find.text('Konnte nicht geladen werden.'), findsNothing);
+    expect(find.text('Erneut versuchen'), findsNothing);
+    expect(tile, findsNothing);
+    expect(tester.widget<HexSwitchTile>(nameTile).value, isTrue);
+  });
+
+  final loading = find.byKey(const ValueKey('settings-push-loading'));
+
+  testWidgets('while the choice is read, a spinner holds its place', (
+    tester,
+  ) async {
+    prefs.loadHold = Completer();
+    await pump(tester, flags: const {}, deviceOn: true);
+    await tester.pump();
+    expect(loading, findsOneWidget);
+    expect(find.bySemanticsLabel('Lädt …'), findsOneWidget);
+    expect(find.byType(HexSwitch), findsNothing);
+
+    prefs.loadHold!.complete();
+    await tester.pumpAndSettle();
+    expect(loading, findsNothing);
+    expect(nameTile, findsOneWidget);
+  });
+
+  testWidgets('during a retry the line stays, its button off until the '
+      'answer', (tester) async {
+    prefs.offline = true;
+    await pump(tester, flags: const {}, deviceOn: true);
+    await tester.pumpAndSettle();
+    prefs
+      ..offline = false
+      ..loadHold = Completer();
+    await tester.tap(find.text('Erneut versuchen'));
+    await tester.pump();
+    final retry = find.byKey(const ValueKey('settings-push-retry'));
+    expect(find.text('Konnte nicht geladen werden.'), findsOneWidget);
+    expect(tester.widget<TextButton>(retry).onPressed, isNull);
+    expect(loading, findsNothing);
+
+    prefs.loadHold!.complete();
+    await tester.pumpAndSettle();
+    expect(find.text('Konnte nicht geladen werden.'), findsNothing);
+    expect(nameTile, findsOneWidget);
+  });
+
+  testWidgets('a retry that fails again keeps the line', (tester) async {
+    prefs.offline = true;
+    await pump(tester, flags: const {pushHouseholdAddFlag}, deviceOn: true);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Erneut versuchen'));
+    await tester.pumpAndSettle();
+    expect(find.text('Konnte nicht geladen werden.'), findsOneWidget);
+    expect(find.byType(HexSwitch), findsNothing);
+  });
+
+  testWidgets('flag on: the alert switch, then the name switch', (
+    tester,
+  ) async {
+    await pump(tester, flags: const {pushHouseholdAddFlag}, deviceOn: true);
+    await tester.pumpAndSettle();
+    expect(tile, findsOneWidget);
+    expect(nameTile, findsOneWidget);
+    expect(
+      tester.getTopLeft(tile).dy,
+      lessThan(tester.getTopLeft(nameTile).dy),
+    );
   });
 
   testWidgets('flag on: an off switch with the example text; a tap asks the '

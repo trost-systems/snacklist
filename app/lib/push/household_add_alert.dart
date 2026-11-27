@@ -170,17 +170,20 @@ class HouseholdAddAlert(
   }
 
   /// Reads the setting, and writes [language] again when the app's language
-  /// changed since the alert was switched on, so the text follows it.
-  Future<void> refresh(String language) async {
+  /// changed since the alert was switched on, so the text follows it. False
+  /// when the setting could not be read.
+  Future<bool> refresh(String language) async {
     final user = _userId;
+    var read = false;
     try {
       if (user != null) {
         await _sendPendingOff(user);
       }
       await _push?.resume();
       final saved = await _prefs.load();
+      read = true;
       if (user != _userId) {
-        return;
+        return true;
       }
       final on = (saved?.on ?? false) && _deviceOptedIn;
       emit(HouseholdAddChoice(on: on, nameHidden: saved?.nameHidden ?? false));
@@ -188,8 +191,9 @@ class HouseholdAddAlert(
         await _prefs.save(on: true, language: language);
       }
     } on Object {
-      // Offline: the switch stays hidden until the next look.
+      // Offline: the settings offer to try again.
     }
+    return read;
   }
 
   Future<HouseholdAddResult> set({

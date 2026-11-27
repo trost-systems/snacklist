@@ -17,8 +17,9 @@ import '../settings/shopping_reminders_test.dart'
 import 'more_harness.dart';
 
 /// Job 463: the push switches and the shopping-day reminder left
-/// Einstellungen for their own More page, Mitteilungen, listed while a flag
-/// offers one of them.
+/// Einstellungen for their own More page, Mitteilungen, listed while it has
+/// one of them to show. The name switch has no flag (N-425), so an app with
+/// the household-add group always lists it.
 void main() {
   setUpAll(fakeSupabase);
 
@@ -111,16 +112,25 @@ void main() {
     expect(key('shopping-day-1'), findsNothing);
   });
 
-  testWidgets('with the reminder flag alone the page shows the reminder', (
-    tester,
-  ) async {
+  testWidgets('with the reminder flag alone the page shows the reminder and '
+      'the name switch', (tester) async {
     await pumpWith(
       tester,
       flags: const {shoppingDayFlag},
       location: notificationsPath,
     );
     expect(key('shopping-day-1'), findsOneWidget);
-    expect(key('settings-push-name-hidden'), findsNothing);
+    expect(key('settings-push-name-hidden'), findsOneWidget);
+  });
+
+  testWidgets('with no flag More lists Mitteilungen, which holds the name '
+      'switch alone', (tester) async {
+    final more = await pumpWith(tester, flags: const {});
+    await tapKey(tester, 'more-notifications');
+    expect(path(more), notificationsPath);
+    expect(key('settings-push-name-hidden'), findsOneWidget);
+    expect(key('settings-push-household-add'), findsNothing);
+    expect(key('shopping-day-1'), findsNothing);
   });
 
   testWidgets('with the alert flag alone the page shows the alert', (
@@ -136,12 +146,11 @@ void main() {
   });
 
   for (final (why, flags, alert, reminder) in [
-    ('no flag', const <String>{}, true, true),
-    // The web: no reminder without push, and the alert's flag is off.
+    ('no flag and no alert', const <String>{}, false, true),
     (
-      'the reminder flag in a build without push',
+      'the reminder flag in a build without push or alert',
       {shoppingDayFlag},
-      true,
+      false,
       false,
     ),
     ('the alert flag without the alert', {pushHouseholdAddFlag}, false, true),
