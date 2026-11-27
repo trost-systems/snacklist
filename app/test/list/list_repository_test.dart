@@ -553,6 +553,7 @@ void main() {
     SupabaseListRepository server(
       (int, Object?) Function(http.Request request) answer, {
       bool Function()? categoryStore,
+      String Function()? language,
     }) {
       sent = [];
       return SupabaseListRepository(
@@ -572,6 +573,7 @@ void main() {
         ),
         'household',
         categoryStore: categoryStore ?? () => false,
+        language: language ?? () => 'de',
       );
     }
 
@@ -1168,6 +1170,95 @@ void main() {
         });
       },
     );
+
+    test(
+      'suggestions ask for the catalog words of the app language, German '
+      'by default; an automatic add sends the device guess (job 470)',
+      () async {
+        var language = 'de';
+        final repo = server(
+          (r) => (
+            200,
+            switch (r.url.pathSegments.last) {
+              'put_item' => [row('i1')],
+              _ => [],
+            },
+          ),
+          language: () => language,
+        );
+        Map<String, Object?> asked() =>
+            params(sent.last)! as Map<String, Object?>;
+
+        await repo.suggest('mil');
+        expect(asked(), {'p_household': 'household', 'p_text': 'mil'});
+        language = 'en';
+        await repo.suggest('mil');
+        expect(asked(), {
+          'p_household': 'household',
+          'p_text': 'mil',
+          'p_lang': 'en',
+        });
+
+        AddItem adding(String? categoryId, {required bool auto}) => AddItem(
+          Item(
+            id: 'i1',
+            name: 'Zwurbelquix',
+            categoryId: categoryId,
+            status: ItemStatus.active,
+            createdAt: DateTime.utc(2026, 11, 26),
+            updatedAt: DateTime.utc(2026, 11, 26),
+          ),
+          autoCategory: auto,
+        );
+        await repo.send(adding('produce', auto: true));
+        expect(asked()['p_category'], isNull);
+        expect(asked()['p_category_guess'], 'produce');
+        await repo.send(adding(null, auto: true));
+        expect(asked().containsKey('p_category_guess'), isFalse);
+        await repo.send(adding('produce', auto: false));
+        expect(asked()['p_category'], 'produce');
+        expect(asked().containsKey('p_category_guess'), isFalse);
+      },
+    );
+
+    test('a server without p_category_guess (PGRST202) gets the add '
+        'again without it (job 470)', () async {
+      final repo = server(
+        (r) =>
+            (jsonDecode(r.body) as Map<String, Object?>).containsKey(
+              'p_category_guess',
+            )
+            ? (
+                404,
+                {
+                  'code': 'PGRST202',
+                  'message': 'Could not find the function public.put_item',
+                },
+              )
+            : (200, [row('i1')]),
+      );
+      final acked = await repo.send(
+        AddItem(
+          Item(
+            id: 'i1',
+            name: 'Zwurbelquix',
+            categoryId: 'produce',
+            status: ItemStatus.active,
+            createdAt: DateTime.utc(2026, 11, 27),
+            updatedAt: DateTime.utc(2026, 11, 27),
+          ),
+          autoCategory: true,
+        ),
+      );
+      expect(acked.keys, ['i1']);
+      expect(sent, hasLength(2));
+      expect(
+        (params(sent.last)! as Map<String, Object?>).containsKey(
+          'p_category_guess',
+        ),
+        isFalse,
+      );
+    });
 
     group('item ops', () {
       final at = DateTime.utc(2026, 10, 28, 9);

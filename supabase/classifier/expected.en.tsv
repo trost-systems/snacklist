@@ -1,0 +1,332 @@
+# English exam for public.classify_item (job 470). Format: text<TAB>seed_key, no header.
+# Everyday English shopping-list entries, as a US or UK household types them, and the aisle
+# (category seed key) each must land in. sweep.sh classifies every text and requires the
+# seed key; the app's unit tests read the same table.
+# Written independently of dictionary.en.tsv and synonyms.tsv, from general knowledge only
+# (no brand names, no medicines, nothing copied from Open Food Facts or Wikipedia, Legal N-215).
+# Not here: paprika. In German it is the bell pepper (produce), in English the spice (pantry);
+# the classifier reads every language's words the same way, so it stays produce (job 470 audit).
+# Placement follows the German dictionary's rules (dictionary.tsv header):
+# - Fish and seafood are meat; canned tuna is pantry.
+# - Dairy, eggs, butter, plant milks, fresh pasta, hummus and tofu are chilled.
+# - Coffee, tea, spreads (jam, jelly, honey, peanut butter), canned goods, coconut milk, pasta,
+#   rice, flour, spices, oils, sauces and cereal are pantry. Dried herbs (bay leaves) too.
+# - Ready-to-drink beverages, juice, water, soda, beer, wine and iced tea are drinks.
+# - Crisps and US chips, cookies and biscuits, candy, chocolate and snack nuts are sweets.
+# - Frozen goods, fish fingers, ice cream, oven chips and french fries are frozen.
+# - Cleaning, paper goods, bags, foil, batteries and pet food are household.
+# - Personal care, baby care, nappies, formula and tissues are drugstore.
+# - DIY items go to the DIY categories; light bulbs are electrical.
+# Rows cover US/UK pairs, singular and plural, common typos (one edit away for short words)
+# and typed quantities. An item whose aisle varies between stores is left out.
+
+# produce
+apple	produce
+apples	produce
+bananas	produce
+banana	produce
+oranges	produce
+lemons	produce
+lemon	produce
+limes	produce
+grapes	produce
+strawberries	produce
+blueberries	produce
+raspberries	produce
+berries	produce
+berry	produce
+cherries	produce
+cherry	produce
+peaches	produce
+peach	produce
+pears	produce
+mango	produce
+pineapple	produce
+watermelon	produce
+kiwi	produce
+avocado	produce
+avocados	produce
+tomato	produce
+tomatoes	produce
+cherry tomatoes	produce
+potato	produce
+potatoes	produce
+sweet potatoes	produce
+onions	produce
+red onions	produce
+garlic	produce
+carrots	produce
+celery	produce
+cucumber	produce
+lettuce	produce
+lettuce leaves	produce
+iceberg lettuce	produce
+spinach	produce
+baby spinach	produce
+kale	produce
+broccoli	produce
+cauliflower	produce
+cabbage	produce
+mushrooms	produce
+zucchini	produce
+courgette	produce
+courgettes	produce
+eggplant	produce
+aubergine	produce
+bell pepper	produce
+red pepper	produce
+green beans	produce
+brussels sprouts	produce
+asparagus	produce
+scallions	produce
+spring onions	produce
+leeks	produce
+ginger	produce
+cilantro	produce
+coriander	produce
+parsley	produce
+fresh basil	produce
+mint	produce
+arugula	produce
+rocket	produce
+beetroot	produce
+radishes	produce
+
+# bakery
+Bread	bakery
+white bread	bakery
+whole wheat bread	bakery
+loaf of bread	bakery
+loaves of bread	bakery
+bread rolls	bakery
+rolls	bakery
+bagels	bakery
+croissants	bakery
+baguette	bakery
+burger buns	bakery
+cake	bakery
+
+# chilled
+Milk	chilled
+whole milk	chilled
+semi skimmed milk	chilled
+oat milk	chilled
+soy milk	chilled
+almond milk	chilled
+Eggs	chilled
+egg	chilled
+butter	chilled
+cheese	chilled
+cheddar	chilled
+mozzarella	chilled
+parmesan	chilled
+feta	chilled
+cream cheese	chilled
+cottage cheese	chilled
+sour cream	chilled
+whipping cream	chilled
+heavy cream	chilled
+double cream	chilled
+yogurt	chilled
+yoghurt	chilled
+greek yogurt	chilled
+hummus	chilled
+tofu	chilled
+margarine	chilled
+fresh pasta	chilled
+
+# meat
+chicken	meat
+chicken breast	meat
+chicken thighs	meat
+chicken wings	meat
+ground beef	meat
+minced beef	meat
+mince	meat
+beef	meat
+steak	meat
+pork chops	meat
+bacon	meat
+sausage	meat
+sausages	meat
+salmon	meat
+smoked salmon	meat
+cod	meat
+lamb	meat
+
+# pantry
+rice	pantry
+pasta	pantry
+spaghetti	pantry
+noodles	pantry
+flour	pantry
+all purpose flour	pantry
+sugar	pantry
+brown sugar	pantry
+powdered sugar	pantry
+icing sugar	pantry
+salt	pantry
+black pepper	pantry
+olive oil	pantry
+vegetable oil	pantry
+vinegar	pantry
+soy sauce	pantry
+ketchup	pantry
+mayonnaise	pantry
+mustard	pantry
+peanut butter	pantry
+jam	pantry
+jelly	pantry
+strawberry jam	pantry
+honey	pantry
+maple syrup	pantry
+Coffee	pantry
+ground coffee	pantry
+coffee beans	pantry
+tea	pantry
+tea bags	pantry
+green tea	pantry
+cereal	pantry
+oats	pantry
+porridge oats	pantry
+canned tomatoes	pantry
+chopped tomatoes	pantry
+tomato paste	pantry
+chickpeas	pantry
+kidney beans	pantry
+black beans	pantry
+baked beans	pantry
+lentils	pantry
+coconut milk	pantry
+canned tuna	pantry
+stock cubes	pantry
+baking soda	pantry
+baking powder	pantry
+cinnamon	pantry
+bay leaves	pantry
+pasta sauce	pantry
+
+# drinks
+water	drinks
+sparkling water	drinks
+soda	drinks
+fizzy drink	drinks
+orange juice	drinks
+apple juice	drinks
+juice	drinks
+lemonade	drinks
+iced tea	drinks
+beer	drinks
+wine	drinks
+red wine	drinks
+white wine	drinks
+
+# sweets
+chips	sweets
+potato chips	sweets
+crisps	sweets
+cookies	sweets
+biscuits	sweets
+candy	sweets
+sweets	sweets
+chocolate	sweets
+dark chocolate	sweets
+gummy bears	sweets
+peanuts	sweets
+cashews	sweets
+
+# frozen
+frozen peas	frozen
+ice cream	frozen
+fish fingers	frozen
+fish sticks	frozen
+frozen pizza	frozen
+oven chips	frozen
+french fries	frozen
+frozen berries	frozen
+frozen vegetables	frozen
+frozen spinach	frozen
+
+# household
+Toilet paper	household
+kitchen roll	household
+paper towels	household
+bin bags	household
+garbage bags	household
+trash bags	household
+dish soap	household
+washing up liquid	household
+laundry detergent	household
+fabric softener	household
+dishwasher tablets	household
+sponges	household
+bleach	household
+aluminum foil	household
+tin foil	household
+cling film	household
+plastic wrap	household
+freezer bags	household
+napkins	household
+batteries	household
+cat food	household
+dog food	household
+cat litter	household
+
+# drugstore
+shampoo	drugstore
+conditioner	drugstore
+toothpaste	drugstore
+toothbrush	drugstore
+deodorant	drugstore
+razor blades	drugstore
+cotton pads	drugstore
+sunscreen	drugstore
+hand cream	drugstore
+hand soap	drugstore
+shower gel	drugstore
+dental floss	drugstore
+diapers	drugstore
+nappies	drugstore
+baby wipes	drugstore
+baby formula	drugstore
+tissues	drugstore
+
+# DIY
+light bulbs	electrical
+extension cord	electrical
+paint	paint
+paint roller	paint
+screws	fasteners
+drill	tools
+hose pipe	garden
+garden hose	garden
+potting soil	garden
+cement	building
+
+# typos
+brocoli	produce
+tomatos	produce
+potatos	produce
+strawberrys	produce
+bannanas	produce
+avacado	produce
+letuce	produce
+cucmber	produce
+spinnach	produce
+mozarella	chilled
+yougurt	chilled
+chiken	meat
+sausges	meat
+cerial	pantry
+tooth paste	drugstore
+toiletpaper	household
+
+# typed quantities
+2 apples	produce
+two bananas	produce
+3 onions	produce
+2x milk	chilled
+2 l milk	chilled
+6 eggs	chilled
+1 kg rice	pantry
+500g ground beef	meat

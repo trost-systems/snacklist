@@ -1,3 +1,11 @@
+# Job 470, EN6 (Peter, 26 Nov 2026 20:07 CET, t1388u): the English rows of this draft are dropped (199
+# rows: every word or form of supabase/classifier/dictionary.en.tsv, rows whose note names English, UK
+# or US, and "lamp oil"); English words live in dictionary.en.tsv. Its German terms stay, so once this
+# draft is accepted, point these English words at them as their concept: walnuts -> walnuss,
+# hazelnuts -> haselnuss, pumpkin seeds -> kürbiskerne, maple syrup -> ahornsirup, cereal bars ->
+# müsliriegel. salsa, matcha, sorbet, guacamole and pancetta are English concepts of their own now; to
+# offer them in the German catalog, add them as German terms and give the English rows that concept.
+# accept_drafts_test.ts checks that this draft, accepted whole, fits every language's words.
 # Catalog draft, 2026-11-16, drafted by Claude (job 279, S4). Waits for human review: see catalog/REVIEW.md.
 # Inputs: only supabase/classifier/*.tsv and general knowledge. No user data, no Open Food Facts, no
 # Wikipedia or Commons. No allergen, nutrition or health facts. One brand, as plain text: coke.
@@ -14,445 +22,250 @@ kind	term	value	source	confidence	review	note
 synonym	apfelsine	orange	claude-draft	high		north German for orange
 term	plätzchen	sweets	claude-draft	high		cookies; today it ends in lätzchen (bib) and lands in drugstore; Plätzchendose and Plätzchenausstecher go to sweets with it
 synonym	klorolle	toilettenpapier	claude-draft	high		DE colloquial
-synonym	eggplant	aubergine	claude-draft	high		US
 synonym	pampelmuse	grapefruit	claude-draft	high		common German for grapefruit
 term	pfeffernüsse	sweets	claude-draft	high		Christmas cookie; head nüsse would put it in pantry
 synonym	wc papier	toilettenpapier	claude-draft	high		CH
-synonym	courgette	zucchini	claude-draft	high		UK
 synonym	truthahn	pute	claude-draft	high		common German for turkey
 term	pfeffernuss	sweets	claude-draft	high		Christmas cookie, singular
 synonym	haushaltpapier	küchenrolle	claude-draft	high		CH
-synonym	courgettes	zucchini	claude-draft	high		UK plural
 synonym	hachse	haxe	claude-draft	high		southern spelling
 synonym	pfefferkuchen	lebkuchen	claude-draft	high		North/East Germany for Lebkuchen
 synonym	küchenkrepp	küchenrolle	claude-draft	high		DE
-synonym	plum	pflaume	claude-draft	high		
 synonym	stelze	haxe	claude-draft	high		AT pork knuckle
 term	zimtsterne	sweets	claude-draft	high		Christmas cookies
 synonym	klarsichtfolie	frischhaltefolie	claude-draft	high		AT/CH and DE
-synonym	plums	pflaume	claude-draft	high		plural
 synonym	ripperl	rippchen	claude-draft	high		Bavaria AT
 term	vanillekipferl	sweets	claude-draft	high		Christmas cookies
 synonym	gefriertüte	gefrierbeutel	claude-draft	high		DE
-synonym	cherry	kirsche	claude-draft	high		
 synonym	würstel	würstchen	claude-draft	high		AT
 term	kokosmakronen	sweets	claude-draft	high		cookies
 synonym	papiertaschentücher	taschentücher	claude-draft	high		long form plural
-synonym	blueberry	heidelbeere	claude-draft	high		
 synonym	würstl	würstchen	claude-draft	high		Bavaria
 term	makronen	sweets	claude-draft	high		cookies
 synonym	sackerl	tüte	claude-draft	high		AT bag
-synonym	pineapple	ananas	claude-draft	high		
 synonym	dorsch	kabeljau	claude-draft	high		Baltic name for cod
 term	spritzgebäck	sweets	claude-draft	high		packaged cookies, sweets aisle
 synonym	plastiksackerl	tüte	claude-draft	high		AT plastic bag
-synonym	fig	feige	claude-draft	high		
-synonym	figs	feige	opus-review	high		plural; other today, the singular row does not reach it
 term	dried figs	pantry	opus-review	high		dried fruit is pantry; pairs with figs, which would file it in produce
 synonym	gambas	garnele	claude-draft	high		Spanish loanword common in German
 term	marzipankartoffeln	sweets	claude-draft	high		confection; head kartoffel would say produce
 synonym	müllsackerl	müllbeutel	claude-draft	high		AT
-synonym	pomegranate	granatapfel	claude-draft	high		
 synonym	egerling	champignon	claude-draft	high		Bavaria
 term	mozartkugeln	sweets	claude-draft	high		AT confection
 synonym	nastuch	taschentuch	claude-draft	high		CH
-synonym	tangerines	mandarine	claude-draft	high		plural
 synonym	radi	rettich	claude-draft	high		Bavaria AT
 synonym	weingummi	fruchtgummi	claude-draft	high		common word
 synonym	damenbinde	binde	claude-draft	high		long form
-synonym	rhubarb	rhabarber	claude-draft	high		
 synonym	braunkohl	grünkohl	claude-draft	high		north German
 synonym	gummitiere	fruchtgummi	claude-draft	high		common word
 synonym	haarshampoo	shampoo	claude-draft	high		long form
-synonym	fruit	obst	claude-draft	medium		short head: fruit fly trap, fruit bowl, fruit knife and fruit gums go to produce with it
-synonym	dried fruit	trockenobst	claude-draft	high		pairs with fruit, which would file it in produce
 term	schwarzwurzel	produce	claude-draft	high		root vegetable
 term	brausepulver	sweets	claude-draft	high		candy powder; head pulver would say pantry
 synonym	haarspülung	spülung	claude-draft	high		long form
-synonym	vegetables	gemüse	claude-draft	high		
 term	passionsfrucht	produce	claude-draft	high		fruit
 term	schokobananen	sweets	claude-draft	high		candy; head bananen would say produce
 synonym	wimperntusche	mascara	claude-draft	high		DE word for mascara
-synonym	cabbage	kohl	claude-draft	high		
 synonym	gipfeli	croissant	claude-draft	high		CH
 synonym	schoki	schokolade	claude-draft	high		colloquial
 synonym	einwegrasierer	rasierer	claude-draft	high		DE
-synonym	red cabbage	rotkohl	claude-draft	high		
 term	gugelhupf	bakery	claude-draft	high		cake
 synonym	knabbersachen	knabberzeug	claude-draft	high		common word
 synonym	duschmittel	duschgel	claude-draft	high		CH
-synonym	kale	grünkohl	claude-draft	high		
 term	bienenstich	bakery	claude-draft	high		cake
 term	salzmandeln	sweets	claude-draft	high		snack nuts are sweets
 synonym	nuggi	schnuller	claude-draft	high		CH
-synonym	brussels sprouts	rosenkohl	claude-draft	high		
 term	windbeutel	bakery	claude-draft	high		ends beutel which is household
 term	knabbergebäck	sweets	claude-draft	high		snack; head gebäck would say bakery
 synonym	nuckel	schnuller	claude-draft	high		North DE
-synonym	leek	lauch	claude-draft	high		
 term	apfeltasche	bakery	claude-draft	high		pastry
 synonym	mostrich	senf	claude-draft	high		North/East Germany for Senf
 term	katzenmilch	household	claude-draft	high		pet food; milch would make it chilled
-synonym	leeks	lauch	claude-draft	high		plural
 term	nussecke	bakery	claude-draft	high		pastry
 term	puderzucker	pantry	claude-draft	high		canonical for Staubzucker (already pantry via zucker)
 term	hundekuchen	household	claude-draft	high		pet treat; kuchen would make it bakery
-synonym	spring onions	frühlingszwiebel	claude-draft	high		UK plural
 term	schweineohr	bakery	claude-draft	high		pastry not meat
 synonym	sultaninen	rosine	claude-draft	high		common word
 term	hundekekse	household	claude-draft	high		pet treat plural
-synonym	scallions	frühlingszwiebel	claude-draft	high		US plural
 synonym	sauerrahm	saure sahne	claude-draft	high		south and AT
 synonym	korinthen	rosine	claude-draft	high		common word
 term	hundekeks	household	claude-draft	high		pet treat; keks would make it sweets
-synonym	celery	staudensellerie	claude-draft	high		
 synonym	obatzter	obatzda	claude-draft	high		Bavaria
 synonym	backpflaumen	trockenpflaumen	claude-draft	high		common word
 synonym	katzensand	katzenstreu	claude-draft	high		common DE word for cat litter
-synonym	fennel	fenchel	claude-draft	medium		short head: fennel seeds goes to produce with it
 synonym	knöpfle	spätzle	claude-draft	high		Swabian
 term	pflaumenmus	pantry	claude-draft	high		canonical for Powidl (already pantry via mus)
 term	meisenknödel	household	claude-draft	high		bird food with the pet food; knödel is food
-synonym	radishes	radieschen	claude-draft	high		plural
 term	appenzeller	chilled	claude-draft	high		cheese
 term	linguine	pantry	claude-draft	high		pasta
 term	akku	household	claude-draft	high		batteries and Akkus stay Haushalt
-synonym	beetroot	rote bete	claude-draft	high		UK
 term	tilsiter	chilled	claude-draft	high		cheese
 term	orecchiette	pantry	claude-draft	high		pasta
 term	akkus	household	claude-draft	high		plural
-synonym	parsnips	pastinake	claude-draft	high		plural
 term	wurstsalat	chilled	claude-draft	high		deli salad; ends salat which is produce
 term	cannelloni	pantry	claude-draft	high		pasta
 term	bügelwasser	household	claude-draft	high		ironing water; wasser would make it drinks
-synonym	pumpkin	kürbis	claude-draft	medium		short head: pumpkin spice and pumpkin pie go to produce with it; pumpkin seeds paired below
 term	kürbiskerne	pantry	claude-draft	high		canonical for pumpkin seeds
-synonym	pumpkin seeds	kürbiskerne	claude-draft	high		pairs with pumpkin, which would file it in produce
 term	tafelspitz	meat	claude-draft	high		beef cut
 term	graupen	pantry	claude-draft	high		grain
 term	spülsalz	household	claude-draft	high		dishwasher salt; salz would make it pantry
-synonym	asparagus	spargel	claude-draft	high		
 term	schweinekamm	meat	claude-draft	high		kamm alone is a comb
 term	perlgraupen	pantry	claude-draft	high		grain
 term	brotdose	household	claude-draft	high		lunch box
-synonym	green beans	bohne	claude-draft	high		
 term	cordon bleu	meat	claude-draft	high		dish at the meat counter
 term	buchweizen	pantry	claude-draft	high		grain
 term	vorratsdose	household	claude-draft	high		storage tin
-synonym	peas	erbse	claude-draft	high		frozen by default like Erbsen
-synonym	sugar snap peas	zuckerschoten	opus-review	high		pairs with peas, which would file it in frozen
-synonym	snap peas	zuckerschoten	opus-review	high		US; pairs with peas, which would file it in frozen
-synonym	mangetout	zuckerschoten	opus-review	high		UK for Zuckerschoten; other today
-synonym	snow peas	zuckerschoten	opus-review	high		US for Zuckerschoten; pairs with peas, which would file it in frozen
-synonym	mangetout peas	zuckerschoten	opus-review	high		UK; pairs with peas, which would file it in frozen
 synonym	kaiserschoten	zuckerschoten	opus-review	medium		AT/CH for Zuckerschoten; other today
-term	split peas	pantry	opus-review	high		dried; pairs with peas, which would file it in frozen
 term	heilbutt	meat	claude-draft	high		fish
 synonym	klöße	knödel	opus-review	high		Kloß is the northern and central word for Knödel: one dish, one key (Opus review: was its own pantry term)
 term	schmierseife	household	claude-draft	high		cleaning soap; seife alone is drugstore
-synonym	sweetcorn	mais	claude-draft	high		UK
 term	wolfsbarsch	meat	claude-draft	high		fish
 term	kartoffelklöße	pantry	claude-draft	high		packet dumplings
 synonym	thüringer klöße	kartoffelklöße	opus-review	high		pairs with thüringer, which would file it in meat (the longest word of a phrase wins)
 term	wäschestärke	household	claude-draft	high		laundry starch; stärke would make it pantry
-synonym	rocket	rucola	claude-draft	high		UK
 term	meeresfrüchte	meat	claude-draft	high		seafood
 term	zitronat	pantry	claude-draft	high		baking
 term	waschnüsse	household	claude-draft	high		laundry nuts; nüsse would make it sweets
-synonym	arugula	rucola	claude-draft	high		US
 term	nusshörnchen	bakery	claude-draft	high		pastry; today pantry
 term	orangeat	pantry	claude-draft	high		baking
 term	waschkapseln	household	claude-draft	high		laundry pods; kapsel is coffee
-synonym	herbs	kräuter	claude-draft	medium		short head: herb pots goes to produce with it
 term	handkäse	chilled	claude-draft	high		Hesse cheese; today unmatched
 term	mandelstifte	pantry	claude-draft	high		baking
 term	putzessig	household	claude-draft	high		cleaning vinegar; essig would make it pantry
-synonym	parsley	petersilie	claude-draft	high		
 term	backtrennspray	pantry	claude-draft	high		baking; head spray is drugstore
 term	fleckenspray	household	claude-draft	high		stain spray; spray alone is drugstore
-synonym	basil	basilikum	claude-draft	high		
 term	walnussöl	pantry	claude-draft	high		oil
 term	backofenspray	household	claude-draft	high		oven cleaner spray
-synonym	cilantro	koriander	claude-draft	high		US
 term	kürbiskernöl	pantry	claude-draft	high		oil
 term	schimmelspray	household	claude-draft	high		mould spray
-synonym	chives	schnittlauch	claude-draft	high		
 term	erdnussöl	pantry	claude-draft	high		oil
 term	imprägnierspray	household	claude-draft	high		shoe and textile proofing
-synonym	mint	minze	claude-draft	medium		short head: breath mints and peppermint go to produce with it
 term	zuckerrübensirup	pantry	claude-draft	high		canonical for Rübensirup (already pantry via sirup)
 term	wc gel	household	claude-draft	high		toilet cleaner gel; gel alone is drugstore
-synonym	rosemary	rosmarin	claude-draft	high		
 term	nussnougatcreme	pantry	claude-draft	high		spread; head creme is drugstore
 term	urinsteinentferner	household	claude-draft	high		toilet cleaner; entferner alone is drugstore
-synonym	thyme	thymian	claude-draft	high		
 term	nougatcreme	pantry	claude-draft	high		spread; head creme is drugstore
 term	schimmelentferner	household	claude-draft	high		mould remover
-synonym	bread rolls	brötchen	claude-draft	high		
 term	balsamicocreme	pantry	claude-draft	high		dressing; head creme is drugstore
 term	fettlöser	household	claude-draft	high		degreaser
-synonym	burger buns	burgerbrötchen	claude-draft	high		
-synonym	burger bun	burgerbrötchen	opus-review	high		singular; burger alone is meat
-term	salsa	pantry	claude-draft	high		jar dip
 term	anzündgel	household	claude-draft	high		grill lighter gel
-synonym	sourdough	sauerteigbrot	claude-draft	high		
 term	chutney	pantry	claude-draft	high		condiment
 term	briketts	household	claude-draft	high		grill and stove fuel
-synonym	pretzel	brezel	claude-draft	high		soft pretzel from the bakery; pretzel sticks go to bakery with it
 term	mango chutney	pantry	claude-draft	high		condiment; head mango
 term	grablicht	household	claude-draft	high		grave candle
-synonym	cake	kuchen	claude-draft	medium		short head: candles for cake goes to bakery with it
-synonym	cake tin	kuchenform	claude-draft	high		pairs with cake, which would file it in bakery
-synonym	cake mix	backmischung	opus-review	high		pairs with cake, which would file it in bakery
 term	noriblätter	pantry	claude-draft	high		sushi; head blätter
 term	räucherstäbchen	household	claude-draft	high		incense sticks
-synonym	doughnuts	donut	claude-draft	high		UK plural
 term	perlzwiebeln	pantry	claude-draft	high		jar; head zwiebel is produce
 term	duftstäbchen	household	claude-draft	high		room fragrance
-synonym	pancakes	pfannkuchen	claude-draft	high		plural
-synonym	pancake mix	backmischung	opus-review	high		pairs with pancakes, which would file it in bakery
-term	pancake syrup	pantry	opus-review	medium		pairs with pancakes, which would file it in bakery
 term	artischockenherzen	pantry	claude-draft	high		jar
 term	mottenkugeln	household	claude-draft	high		pest control
-synonym	egg	ei	claude-draft	medium		short head: egg timer goes to chilled with it (Eierbecher is chilled on main already)
 term	rote bohnen	pantry	claude-draft	high		canned
 term	möbelpflege	household	claude-draft	high		furniture care
-synonym	puff pastry	blätterteig	claude-draft	high		
 term	dosenpfirsiche	pantry	claude-draft	high		canned fruit
 term	lederpflege	household	claude-draft	high		leather care
-synonym	pizza dough	pizzateig	claude-draft	high		
 term	fruchtcocktail	pantry	claude-draft	high		canned fruit; head cocktail
 term	schuhpflege	household	claude-draft	high		shoe care
-synonym	fresh pasta	frische pasta	claude-draft	high		chilled
 term	dosenfisch	pantry	claude-draft	high		canned fish
 term	edelstahlpflege	household	claude-draft	high		cleaning care; pflege alone is drugstore
-synonym	coleslaw	krautsalat	claude-draft	high		
 term	garam masala	pantry	claude-draft	high		spice
 term	schrubber	household	claude-draft	high		floor brush
-synonym	potato salad	kartoffelsalat	claude-draft	high		
 term	piment	pantry	claude-draft	high		spice
 term	einmachglas	household	claude-draft	high		preserving jar
-synonym	coconut milk	kokosmilch	claude-draft	high		pantry like Kokosmilch
 term	sternanis	pantry	claude-draft	high		spice
 term	plastikbecher	household	claude-draft	high		disposable cups
-synonym	condensed milk	kondensmilch	claude-draft	high		
 term	kardamom	pantry	claude-draft	high		spice
 term	küchengarn	household	claude-draft	high		kitchen twine
-synonym	mince	hackfleisch	claude-draft	high		UK
-term	mince pie	bakery	opus-review	medium		UK Christmas pastry; pairs with mince, which would file it in meat
-synonym	mince pies	mince pie	opus-review	medium		plural; the singular term does not reach it
 term	knoblauchgranulat	pantry	claude-draft	high		spice
 term	gummiband	household	claude-draft	high		rubber bands
-synonym	minced meat	hackfleisch	claude-draft	high		
 term	kräuter der provence	pantry	claude-draft	high		dried herbs
 term	radiergummi	household	claude-draft	high		eraser; gummi alone is sweets
-synonym	turkey	pute	claude-draft	high		
 term	wacholderbeeren	pantry	claude-draft	high		spice; head beere produce
 term	klebestift	household	claude-draft	high		glue stick; stift alone is drugstore
 term	safran	pantry	claude-draft	high		spice
 term	bleistift	household	claude-draft	high		stationery; stift alone is drugstore
-synonym	lamb	lamm	claude-draft	high		
 term	espressobohnen	pantry	claude-draft	high		espresso; head bohnen
 synonym	kluppe	klammer	claude-draft	high		AT clothes peg
-synonym	cold cuts	aufschnitt	claude-draft	high		US
 term	salbeitee	pantry	claude-draft	high		tea
 synonym	wäschekluppe	klammer	claude-draft	high		AT clothes peg
-synonym	liver	leber	claude-draft	high		
 term	hagebuttentee	pantry	claude-draft	high		tea
 synonym	zündholz	streichholz	claude-draft	high		AT/CH/South DE
-synonym	prawns	garnele	claude-draft	high		UK
 term	earl grey	pantry	claude-draft	high		tea
 synonym	zündhölzer	streichhölzer	claude-draft	high		AT/CH/South DE plural
-synonym	shrimp	garnele	claude-draft	high		US
 term	darjeeling	pantry	claude-draft	high		tea
 synonym	bartwisch	handfeger	claude-draft	high		AT
-synonym	mussels	muschel	claude-draft	high		
-term	matcha	pantry	claude-draft	high		tea
 synonym	handbesen	handfeger	claude-draft	high		DE/CH
-synonym	cod	kabeljau	claude-draft	high		
 term	haferbrei	pantry	claude-draft	high		porridge
 synonym	müllschippe	kehrschaufel	claude-draft	high		DE
-synonym	trout	forelle	claude-draft	high		
 synonym	o saft	orangensaft	claude-draft	high		colloquial O-Saft
 synonym	feudel	putzlappen	claude-draft	high		North DE floor cloth
-synonym	wild rice	wildreis	claude-draft	high		
 synonym	apfelwein	cider	claude-draft	high		Hesse; cider
 synonym	aufnehmer	putzlappen	claude-draft	high		West DE floor cloth
-synonym	baking powder	backpulver	claude-draft	high		
 synonym	sprudelwasser	mineralwasser	claude-draft	high		common word
 synonym	putzlumpen	putzlappen	claude-draft	high		CH/Southwest DE
-synonym	baking soda	natron	claude-draft	high		US
 synonym	alsterwasser	alster	claude-draft	high		North Germany
 synonym	javelwasser	bleiche	claude-draft	high		CH
-synonym	yeast	hefe	claude-draft	high		
 term	weinschorle	drinks	opus-review	high		wine spritzer; Schorle alone mostly means Apfelschorle (Opus review: was a synonym of schorle)
 term	säuglingsmilch	drugstore	claude-draft	high		formula is Drogerie; milch would make it chilled
-synonym	oil	öl	claude-draft	medium		short head: motor oil, bike oil and oil cloth go to pantry with it; paired with the body-care oils below
-synonym	baby oil	babyöl	claude-draft	high		pairs with oil, which would file it in pantry
-synonym	body oil	körperöl	claude-draft	high		pairs with oil
-synonym	hair oil	haaröl	claude-draft	high		pairs with oil
-synonym	massage oil	massageöl	claude-draft	high		tools today via massage
-synonym	lamp oil	lampenöl	claude-draft	high		electrical today via lamp
 synonym	helles	bier	claude-draft	high		Bavaria beer
 term	beikost	drugstore	claude-draft	high		baby food
-synonym	sunflower oil	sonnenblumenöl	claude-draft	high		
 synonym	kölsch	bier	claude-draft	high		Cologne beer
 term	wickelunterlage	drugstore	claude-draft	high		baby care
-synonym	rapeseed oil	rapsöl	claude-draft	high		UK
 synonym	weizenbier	weißbier	claude-draft	high		common word
 term	körperbutter	drugstore	claude-draft	high		skin care; butter would make it chilled
-synonym	vegetable oil	pflanzenöl	claude-draft	high		
 synonym	pilsener	pils	claude-draft	high		common word
 term	duschöl	drugstore	claude-draft	high		shower oil
-synonym	mustard	senf	claude-draft	high		
 synonym	pilsner	pils	claude-draft	high		common word
 term	badeöl	drugstore	claude-draft	high		bath oil
-synonym	stock cubes	brühwürfel	claude-draft	high		UK
 term	federweißer	drinks	claude-draft	high		seasonal wine
 term	sonnenöl	drugstore	claude-draft	high		sun care
-synonym	broth	brühe	claude-draft	high		
 synonym	schaumwein	sekt	claude-draft	high		common word
 term	bartöl	drugstore	claude-draft	high		beard care; öl would make it pantry
-synonym	soup	suppe	claude-draft	medium		short head: soup bowls goes to pantry with it
 term	obstler	drinks	claude-draft	high		South Germany/AT fruit brandy
 term	sonnenschutzmittel	drugstore	claude-draft	high		sun care; mittel would make it Haushalt
-synonym	tinned tomatoes	dosentomaten	claude-draft	high		UK
 term	doppelkorn	drinks	claude-draft	high		spirit
 term	abschminkmilch	drugstore	claude-draft	high		make-up remover
-synonym	canned tomatoes	dosentomaten	claude-draft	high		US
 term	grappa	drinks	claude-draft	high		spirit
 term	haarwasser	drugstore	claude-draft	high		hair tonic; wasser would make it drinks
-synonym	chopped tomatoes	stückige tomaten	claude-draft	high		
 term	ouzo	drinks	claude-draft	high		spirit
 term	eau de toilette	drugstore	claude-draft	high		perfume
-synonym	tomato paste	tomatenmark	claude-draft	high		US
 term	tequila	drinks	claude-draft	high		spirit
 term	gebissreiniger	drugstore	claude-draft	high		denture care; reiniger would make it Haushalt
-synonym	chickpeas	kichererbsen	claude-draft	high		
 term	cognac	drinks	claude-draft	high		spirit
 term	bimsstein	drugstore	claude-draft	high		foot care; stein would make it Haushalt
-synonym	lentils	linsen	claude-draft	high		
 term	brandy	drinks	claude-draft	high		spirit
 term	rasierapparat	drugstore	claude-draft	high		razor
-synonym	kidney beans	kidneybohnen	claude-draft	high		
 term	sangria	drinks	claude-draft	high		wine drink
 term	rasierhobel	drugstore	claude-draft	high		safety razor; hobel is DIY
-synonym	black beans	schwarze bohnen	claude-draft	high		
 term	bitter lemon	drinks	claude-draft	high		soft drink
 term	wachsstreifen	drugstore	claude-draft	high		hair removal
-synonym	gherkins	gewürzgurken	claude-draft	high		UK
 synonym	eis am stiel	stieleis	claude-draft	high		common phrase
 term	haarwachs	drugstore	claude-draft	high		hair styling
-synonym	pickles	gewürzgurken	claude-draft	high		US
 synonym	fritten	pommes	claude-draft	high		Rhineland/North for Pommes
 term	haarreif	drugstore	claude-draft	high		hair accessory
-synonym	peanut butter	erdnussbutter	claude-draft	high		
-term	sorbet	frozen	claude-draft	high		ice
 term	zopfgummi	drugstore	claude-draft	high		hair tie; gummi is sweets
 term	ahornsirup	pantry	claude-draft	high		canonical for maple syrup; today matched through its head only
-synonym	maple syrup	ahornsirup	claude-draft	high		
 term	dosenchampignons	pantry	claude-draft	high		canned mushrooms; head champignon is produce
 term	lockenwickler	drugstore	claude-draft	high		hair accessory
-synonym	chocolate spread	schokocreme	claude-draft	high		
 term	dosenananas	pantry	claude-draft	high		canned fruit; head ananas is produce
 term	schminkschwamm	drugstore	claude-draft	high		make-up sponge; schwamm alone is Haushalt
-synonym	black tea	schwarzer tee	claude-draft	high		
 term	dosenmandarinen	pantry	claude-draft	high		canned fruit; head mandarine is produce
 term	badeschwamm	drugstore	claude-draft	high		bath sponge
-synonym	cocoa	kakao	claude-draft	high		
 term	dosenerbsen	pantry	claude-draft	high		canned; erbse alone defaults to frozen
 term	peeling	drugstore	claude-draft	high		skin care
-synonym	hot chocolate	trinkschokolade	claude-draft	high		
 term	dosenbohnen	pantry	claude-draft	high		canned; head bohne is produce
 term	selbstbräuner	drugstore	claude-draft	high		tanning
-synonym	cinnamon	zimt	claude-draft	high		
 term	dosenravioli	pantry	claude-draft	high		canned; ravioli alone are chilled
 term	erfrischungstücher	drugstore	claude-draft	high		wet wipes; tücher alone is Haushalt
-synonym	nutmeg	muskat	claude-draft	medium		short head: nutmeg grinder goes to pantry with it
-synonym	breadcrumbs	paniermehl	claude-draft	high		
-synonym	almonds	mandel	claude-draft	high		baking nuts pantry
 term	walnuss	pantry	claude-draft	high		canonical for walnuts; today matched through its head only
-synonym	walnuts	walnuss	claude-draft	high		
 term	haselnuss	pantry	claude-draft	high		canonical for hazelnuts; today matched through its head only
-synonym	hazelnuts	haselnuss	claude-draft	high		
-synonym	raisins	rosine	claude-draft	high		
-synonym	lasagne sheets	lasagneplatten	claude-draft	high		
-synonym	chocolate chips	schokotropfen	claude-draft	high		
-synonym	crisps	chips	claude-draft	high		UK
-synonym	biscuits	keks	claude-draft	high		UK
-synonym	dog biscuits	hundekeks	opus-review	high		pet treat; pairs with biscuits, which would file it in sweets
-synonym	sweets	süßigkeiten	claude-draft	high		UK
-synonym	candy	süßigkeiten	claude-draft	high		US
-synonym	gummy bears	gummibärchen	claude-draft	high		
-synonym	wine gums	fruchtgummi	claude-draft	high		UK
-synonym	chewing gum	kaugummi	claude-draft	high		
-synonym	peanuts	erdnüsse	claude-draft	high		snack nuts sweets
 term	müsliriegel	sweets	claude-draft	high		canonical for cereal bars; today matched through its head only
-synonym	cereal bars	müsliriegel	claude-draft	high		
-synonym	gingerbread	lebkuchen	claude-draft	high		
-synonym	wheat beer	weißbier	claude-draft	high		
-synonym	orange juice	orangensaft	claude-draft	high		
 synonym	coke	cola	claude-draft	high		
-synonym	iced tea	eistee	claude-draft	high		
-synonym	iced coffee	eiskaffee	claude-draft	high		
-synonym	fish fingers	fischstäbchen	claude-draft	high		UK
-synonym	fish sticks	fischstäbchen	claude-draft	high		US
-synonym	ice cubes	eiswürfel	claude-draft	high		
-synonym	fries	pommes	claude-draft	high		
-synonym	oven chips	pommes	claude-draft	high		UK
-synonym	hash browns	rösti	claude-draft	high		
-synonym	spring rolls	frühlingsrolle	claude-draft	high		
-synonym	garlic bread	knoblauchbaguette	claude-draft	high		
-synonym	washing up liquid	spülmittel	claude-draft	high		UK
-synonym	dishwasher tablets	spülmaschinentabs	claude-draft	high		UK
-synonym	dishwasher salt	spülmaschinensalz	claude-draft	high		
-synonym	rinse aid	klarspüler	claude-draft	high		
-synonym	fabric softener	weichspüler	claude-draft	high		US
-synonym	bin bags	müllbeutel	claude-draft	high		UK
-synonym	sponges	schwamm	claude-draft	high		
-synonym	foil	alufolie	claude-draft	high		
-synonym	tin foil	alufolie	claude-draft	high		
-synonym	cling film	frischhaltefolie	claude-draft	high		UK
-synonym	plastic wrap	frischhaltefolie	claude-draft	high		US
-synonym	baking paper	backpapier	claude-draft	high		UK
-synonym	parchment paper	backpapier	claude-draft	high		US
-synonym	candles	kerze	claude-draft	high		
-synonym	tea lights	teelicht	claude-draft	high		
-synonym	napkins	servietten	claude-draft	high		US
-synonym	sanitary napkins	binde	opus-review	high		US; pairs with napkins, which would file it in household
-synonym	wrapping paper	geschenkpapier	claude-draft	high		
-synonym	cat food	katzenfutter	claude-draft	high		pet food is Haushalt
-synonym	dog food	hundefutter	claude-draft	high		pet food is Haushalt
-synonym	cat litter	katzenstreu	claude-draft	high		
-synonym	nappies	windel	claude-draft	high		UK
-synonym	baby wipes	feuchttücher	claude-draft	high		
-synonym	wet wipes	feuchttücher	claude-draft	high		
-synonym	conditioner	spülung	claude-draft	high		
-synonym	fabric conditioner	weichspüler	opus-review	high		UK; pairs with conditioner, which would file it in drugstore
-synonym	razor blades	rasierklinge	claude-draft	high		
-synonym	dental floss	zahnseide	claude-draft	high		
-synonym	mouthwash	mundspülung	claude-draft	high		
-synonym	cotton pads	wattepads	claude-draft	high		
-synonym	cotton buds	wattestäbchen	claude-draft	high		UK
-synonym	sunscreen	sonnencreme	claude-draft	high		
-synonym	sun cream	sonnencreme	claude-draft	high		UK
-synonym	hand cream	handcreme	claude-draft	high		
-synonym	nail polish	nagellack	claude-draft	high		
-synonym	baby food	babynahrung	claude-draft	high		drugstore like baby food
 synonym	karbonade	kotelett	claude-draft	medium		north and east German for chop
 synonym	platzerl	plätzchen	opus-review	medium		Bavaria/AT for Plätzchen (Opus review: was keks; Platzerl are Plätzchen, which the draft lists)
 term	anzünder	household	claude-draft	medium		firelighter; check compounds
 synonym	honigkuchen	lebkuchen	claude-draft	medium		North/West Germany for Lebkuchen
-synonym	red pepper	paprika	claude-draft	medium		UK bell pepper
 term	printen	sweets	opus-review	medium		Aachen's hard gingerbread, not Lebkuchen (Opus review: was a synonym of lebkuchen)
-synonym	green pepper	paprika	claude-draft	medium		UK bell pepper
-term	red pepper flakes	pantry	opus-review	high		dried chili; pairs with red pepper, which would file it in produce (pantry today)
-synonym	crushed red pepper	red pepper flakes	opus-review	high		US; pairs with red pepper, which would file it in produce (pantry today)
 term	magenbrot	sweets	claude-draft	medium		CH/South German spiced sweet; head brot would say bakery
-synonym	buns	brötchen	claude-draft	medium		
 term	baumkuchen	sweets	claude-draft	medium		packaged, sweets shelf
-synonym	meatballs	bällchen	claude-draft	medium		
-synonym	insect repellent	mückenschutz	claude-draft	medium		
 synonym	kalmar	tintenfisch	claude-draft	medium		squid
 synonym	klopse	frikadelle	claude-draft	medium		north and east German meatballs
 synonym	schoggi	schokolade	claude-draft	medium		CH for Schokolade
@@ -475,7 +288,6 @@ synonym	schwarzbeere	heidelbeere	claude-draft	medium		Bavaria AT
 synonym	powidl	pflaumenmus	claude-draft	medium		AT/Bavaria for Pflaumenmus
 synonym	sharonfrucht	kaki	claude-draft	medium		variety name
 synonym	teigwaren	nudel	claude-draft	medium		CH/AT for pasta
-synonym	lychee	litschi	claude-draft	medium		common spelling in German shops
 term	marone	produce	claude-draft	medium		fresh chestnut
 synonym	knöpfli	spätzle	claude-draft	medium		CH for Spätzle
 synonym	maroni	marone	claude-draft	medium		AT Bavaria
@@ -519,11 +331,9 @@ term	manchego	chilled	claude-draft	medium		cheese
 term	roquefort	chilled	claude-draft	medium		cheese
 synonym	süßmost	apfelsaft	claude-draft	medium		CH for apple juice
 term	krabbensalat	chilled	claude-draft	medium		deli salad
-term	guacamole	chilled	claude-draft	medium		dip
 term	apfelmost	drinks	opus-review	medium		South Germany/AT/CH; cider in some regions, apple juice in others, so its own key; pantry without the row (Opus review: was a synonym of cider)
 synonym	ebbelwoi	cider	claude-draft	medium		Hesse dialect
 term	medaillons	meat	claude-draft	medium		cut
-term	pancetta	meat	claude-draft	medium		cured belly
 term	dunkles	drinks	opus-review	medium		Bavarian dark beer, bought as its own kind next to plain beer (Opus review: was a synonym of bier)
 term	hirsch	meat	claude-draft	medium		game
 term	knacker	meat	claude-draft	medium		sausage
@@ -533,7 +343,6 @@ term	frizzante	drinks	opus-review	medium		semi-sparkling wine, often not Prosecc
 synonym	schampus	sekt	opus-review	medium		colloquial for sparkling wine, mostly Sekt (Opus review: was champagner)
 term	salsiccia	meat	claude-draft	medium		sausage
 term	sake	drinks	claude-draft	medium		rice wine
-term	ginger beer	drinks	claude-draft	medium		soft drink
 term	thüringer	meat	claude-draft	medium		sausage
 term	pinkel	meat	claude-draft	medium		north German sausage
 synonym	eislutscher	stieleis	claude-draft	medium		lolly-shaped ice; head lutscher is sweets

@@ -157,7 +157,8 @@ void main() {
           );
           final field = find.byKey(const ValueKey('add-item-field'));
           await tester.tap(field);
-          await tester.enterText(field, 'Milch');
+          // The catalog follows the app language (job 470).
+          await tester.enterText(field, lang == 'de' ? 'Milch' : 'Milk');
           await tester.pumpAndSettle();
         },
         'household-sheet': (tester, brightness, lang) async {

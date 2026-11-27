@@ -144,12 +144,21 @@ class _ListScopeState() extends State<ListScope> implements ListHolds {
 
   ListCubit _open(String userId, String householdId) {
     final flags = context.read<Flags?>();
+    // The language last shown, read while this scope is mounted; English
+    // before any read, as CatalogIndex.languageFor falls back.
+    String? shown;
     return ListCubit(
       widget.repositories?.call(householdId) ??
           SupabaseListRepository(
             Supabase.instance.client,
             householdId,
             categoryStore: () => flags?.isOn(inputStableRowsFlag) ?? false,
+            language: () {
+              if (mounted) {
+                shown = Localizations.localeOf(context).languageCode;
+              }
+              return shown ?? 'en';
+            },
           ),
       context.read<DeviceCache>().list(userId, householdId),
       userId: userId,

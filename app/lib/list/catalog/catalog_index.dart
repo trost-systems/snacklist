@@ -5,6 +5,18 @@ import 'package:flutter/foundation.dart';
 /// the seed key of its category.
 typedef CatalogTerm = ({String term, String key, String category});
 
+/// A row of public.catalog_words (job 470): a word another language's
+/// catalog offers, its item key, the seed key of its category, and whether
+/// it is a concept of its own (a public.classifier_terms row, which
+/// public.dictionary_hit reads like a German term).
+typedef CatalogWord = ({
+  String lang,
+  String word,
+  String key,
+  String category,
+  bool own,
+});
+
 /// A row of public.classifier_lexicon: a folded form public.classifier_words
 /// matches, the term it stands for, its category's seed key, and whether it
 /// came from a synonym.
@@ -46,7 +58,11 @@ final class CatalogIndex._(
   required Map<String, CatalogForm> forms,
   required Map<String, CatalogBrand> brands,
   required Map<String, List<CatalogHomograph>> homographs,
+  required Map<String, CatalogWord> words,
 }) {
+  /// The language of [terms], the classifier's own (job 470).
+  static const baseLanguage = 'de';
+
   /// The catalog the app was built with, made on first use.
   static final bundled = CatalogIndex._(
     catalogVersion,
@@ -68,6 +84,16 @@ final class CatalogIndex._(
         key: (key: key, brand: brand, product: product, storeSeed: storeSeed),
     },
     homographs: _byForm(catalogHomographs),
+    words: {
+      for (final (lang, word, key, category, own) in catalogWords)
+        _wordId(lang, word): (
+          lang: lang,
+          word: word,
+          key: key,
+          category: category,
+          own: own,
+        ),
+    },
   );
 
   /// By term.
@@ -83,6 +109,44 @@ final class CatalogIndex._(
   final Map<String, List<CatalogHomograph>> homographs = Map.unmodifiable(
     homographs,
   );
+
+  /// By `lang:word`, as public.catalog_rows lists them.
+  final Map<String, CatalogWord> words = _sorted(words);
+
+  /// The words the catalog offers in [language] ([languageFor]) as terms:
+  /// German offers its [terms].
+  Map<String, CatalogTerm> termsIn(String language) =>
+      language == baseLanguage ? terms : _wordTerms[language] ?? const {};
+
+  late final Map<String, Map<String, CatalogTerm>> _wordTerms = () {
+    final byLanguage = <String, Map<String, CatalogTerm>>{};
+    for (final (:lang, :word, :key, :category, own: _) in words.values) {
+      (byLanguage[lang] ??= {})[word] = (
+        term: word,
+        key: key,
+        category: category,
+      );
+    }
+    return {
+      for (final MapEntry(:key, :value) in byLanguage.entries)
+        key: _sorted(value),
+    };
+  }();
+
+  /// The catalog's language for an app in [language] (Peter, ML1): German
+  /// keeps German, another language its own words, else English.
+  String languageFor(String language) =>
+      language == baseLanguage || _wordTerms.containsKey(language)
+      ? language
+      : 'en';
+
+  /// public.classifier_terms: the German terms and every language's words
+  /// that are concepts of their own, which public.dictionary_hit reads.
+  late final List<CatalogTerm> classifierTerms = [
+    ...terms.values,
+    for (final w in words.values)
+      if (w.own) (term: w.word, key: w.key, category: w.category),
+  ];
 
   /// The forms of more than one word, which a name holds as a phrase.
   late final List<String> phraseForms = [
@@ -111,6 +175,15 @@ final class CatalogIndex._(
         final rows? => _byForm(rows),
         null => homographs,
       },
+      words: switch (delta.words) {
+        final changes? =>
+          {if (!delta.full) ...words}
+            ..removeWhere((key, _) => changes.drop.contains(key))
+            ..addAll({
+              for (final row in changes.put) _wordId(row.lang, row.word): row,
+            }),
+        null => words,
+      },
     );
   }
 
@@ -132,6 +205,8 @@ final class CatalogIndex._(
     };
   }
 
+  static String _wordId(String lang, String word) => '$lang:$word';
+
   /// In the order of collate "C" (code points), as public.catalog_rows
   /// lists them.
   static Map<String, T> _sorted<T>(Map<String, T> rows) => Map.unmodifiable({
@@ -143,7 +218,9 @@ final class CatalogIndex._(
 /// per table, from the version the device asked about to [version]. [full]:
 /// the server had no snapshot of that version; the puts are every row.
 /// [homographs] are every homograph row (form, surface, canonical,
-/// category, synonym); null from a server that sends none.
+/// category, synonym); null from a server that sends none. [words]: the
+/// other languages' words, null from a server that sends none (the device
+/// keeps its own then, also in a [full] answer).
 @immutable
 final class const CatalogDelta({
   required final String version,
@@ -152,6 +229,7 @@ final class const CatalogDelta({
   final CatalogChanges<CatalogForm> forms = const CatalogChanges(),
   final CatalogChanges<CatalogBrand> brands = const CatalogChanges(),
   final List<(String, String, String, String, bool)>? homographs,
+  final CatalogChanges<CatalogWord>? words,
 });
 
 @immutable
@@ -178,10 +256,14 @@ CatalogDelta? parseCatalogDelta(Object? json) {
     final forms = _changes(json['forms'], full, _form);
     final brands = _changes(json['brands'], full, _brand);
     final homographs = _homographs(json['homographs']);
+    final words = json['words'] == null
+        ? null
+        : _changes(json['words'], full, _word);
     if (terms == null ||
         forms == null ||
         brands == null ||
-        homographs == null) {
+        homographs == null ||
+        (json['words'] != null && words == null)) {
       return null;
     }
     return CatalogDelta(
@@ -191,6 +273,7 @@ CatalogDelta? parseCatalogDelta(Object? json) {
       forms: forms,
       brands: brands,
       homographs: homographs.rows,
+      words: words,
     );
   }
   return null;
@@ -294,5 +377,27 @@ CatalogBrand? _brand(List<Object?> row) => switch (row) {
           (product == null || _text(product)) &&
           (storeSeed == null || _text(storeSeed)) =>
     (key: key, brand: brand, product: product, storeSeed: storeSeed),
+  _ => null,
+};
+
+final _language = RegExp(r'^[a-z]{2}$');
+
+/// A row of `words`: `[lang:word, key, category, own]`, the first element
+/// being the key public.catalog_changes drops it by.
+CatalogWord? _word(List<Object?> row) => switch (row) {
+  [final String id, final String key, final String category, final bool own]
+      when _text(id) &&
+          _text(key) &&
+          _text(category) &&
+          _language.hasMatch(id.split(':').first) &&
+          id.indexOf(':') == 2 &&
+          id.length > 3 =>
+    (
+      lang: id.substring(0, 2),
+      word: id.substring(3),
+      key: key,
+      category: category,
+      own: own,
+    ),
   _ => null,
 };

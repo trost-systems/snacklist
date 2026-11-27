@@ -3365,3 +3365,38 @@ with no flag (the fix holds whatever the flags say). Details: [docs/done/460.md]
 ## Job 452 merge record
 
 Merge commits (job 452): #201 82b1b7d94, #658 52a4939d4, #756 0ea7ebe84. Review: VERDICT: PASS. #33 left open by design. The Dependabot PR body is the commit body of #201 and #658 (long, noisy).
+
+## Job 470: English is a catalog language
+
+With the app in English, the add sheet now offers English catalog words ("mil": Milk, Millet, Oat
+milk; no Milch), and 1,154 English words (US and UK, plurals, misspellings, every aisle) are filed
+by the server for every household. A language switch counts from the next key. The fallback is the
+user's language, then English, never German for someone else (ML1); German users keep German, and
+the German bundle's terms, brands and parser lists are byte-identical. The server is backward
+compatible: released apps get the same German catalog, `suggest_entries(p_lang)` and
+`put_item(p_category_guess)` take defaulted last parameters, and a contract test replays every
+parameter set the app has sent (passed). A word the server does not know keeps the app's guess
+(`device`, not learned), tested for a German, an English and an unknown word. One source: each
+language's `dictionary.<lang>.tsv` makes the server rows, and the db gate's `client_catalog.sh
+--check` keeps the app's bundle equal to them; `generate.ts` prints the coverage per language.
+Languages supported: de, en. Exam: 285/285 English entries on the server (main 183). Gates run
+here: db, functions, lint, full Flutter tests; live drive on the release web build PASS.
+The English rows were drafted and machine-reviewed (`catalog/REVIEW-en.md`); Peter reviewed and
+approved them on 26 Nov 20:07 CET (t1388u), which meets Legal N-215, with the suggested answers to
+EN1 to EN8 (EN6: the English rows of the unshipped German draft are dropped). The job merges the PR
+itself under merge-lock after a review PASS and ci-ok; the supabase deploy runs through CI.
+Audit, design, numbers, follow-ups and how to add Hungarian: `docs/done/470-english-catalog.md`.
+Ships with the next green main build after the merge (TestFlight/Play internal); no flag.
+Review 0 fixes: English phrases complete from their first words ("toilet p" → Toilet paper,
+"chicken br" → Chicken breast, no "Peanut buttermilk"), known words get no typo rows ("Milch" no
+longer offers Mulch), and the parity file has an English table the device and server rank alike.
+A new language is now data only: the classifier tables take the letters of other Latin alphabets
+and `item_key` folds them in SQL and the app (őszibarack, smør, Żółty), with a shared key table
+(`supabase/tests/item_keys.tsv`) and a pgTAP proof that Hungarian rows classify and suggest. Adds
+fall back without the new guess parameter on a server that lacks it. The contract test replays
+`catalog_delta` from all seven bundled catalog versions.
+Review 1 fixes: Addendum 3 applied. Peter's approval (t1388u) is recorded as the N-215 review in
+`catalog/REVIEW-en.md`, DECISIONS and the done doc, with his "yes" to EN1 to EN8. EN6: the unshipped
+German draft lost its 199 English rows (its German terms stay; five English words are noted to point
+at them once it ships), and `accept_drafts_test.ts` checks that it fits the English words. The add
+sheet falls back to the last language read (English before any read) instead of German.

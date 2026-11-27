@@ -3,8 +3,8 @@
 # canonical key (public.canonical_key), so Karotte, Mohrrübe and Möhre are one item for the
 # household's corrections, the store memory and the duplicate hint (job 32b).
 # A variant the dictionary lists too must have the canonical's category there.
-# Terms go through public.item_key like the dictionary; list English singular and plural when
-# the German stemmer reduces them differently (apple -> appl, apples -> apple).
+# Terms go through public.item_key like the dictionary. English words live in dictionary.en.tsv
+# (job 470), which writes their synonyms too.
 # Leave out variants that end other words with another meaning (Brause: Duschbrause; Kraut:
 # Sauerkraut; Rande: Girlande): a variant also matches as the end of a compound.
 
@@ -92,96 +92,3 @@ abwaschmittel	spülmittel
 geschirrspülmittel	spülmittel
 zahncreme	zahnpasta
 deo	deodorant
-
-# English
-apple	apfel
-apples	apfel
-banana	banane
-bananas	banane
-oranges	orange
-lemon	zitrone
-lemons	zitrone
-lime	limette
-limes	limette
-strawberry	erdbeere
-strawberries	erdbeere
-blueberries	heidelbeere
-raspberries	himbeere
-pear	birne
-pears	birne
-peach	pfirsich
-peaches	pfirsich
-cherries	kirsche
-grapes	weintrauben
-tomato	tomate
-tomatoes	tomate
-potato	kartoffel
-potatoes	kartoffel
-onion	zwiebel
-onions	zwiebel
-garlic	knoblauch
-carrot	möhre
-carrots	möhre
-cucumber	gurke
-cucumbers	gurke
-lettuce	salat
-spinach	spinat
-cauliflower	blumenkohl
-mushroom	pilz
-mushrooms	pilz
-ginger	ingwer
-bell pepper	paprika
-bell peppers	paprika
-bread	brot
-rolls	brötchen
-spring rolls	frühlingsrolle
-egg rolls	frühlingsrolle
-milk	milch
-cheese	käse
-yogurt	joghurt
-yoghurt	joghurt
-cream	sahne
-eggs	eier
-chicken	hähnchen
-beef	rind
-pork	schwein
-ham	schinken
-sausage	wurst
-sausages	wurst
-bacon	speck
-salmon	lachs
-fish	fisch
-tuna	thunfisch
-rice	reis
-noodles	nudel
-flour	mehl
-sugar	zucker
-salt	salz
-pepper	pfeffer
-sage	salbei
-olive oil	olivenöl
-vinegar	essig
-honey	honig
-jam	marmelade
-coffee	kaffee
-tea	tee
-tea light	teelicht
-tealight	teelicht
-chocolate	schokolade
-cereal	müsli
-oats	haferflocken
-water	wasser
-beer	bier
-juice	saft
-wine	wein
-ice cream	eis
-toilet paper	toilettenpapier
-paper towels	küchenrolle
-dish soap	spülmittel
-detergent	waschmittel
-trash bags	müllbeutel
-toothpaste	zahnpasta
-toothbrush	zahnbürste
-soap	seife
-diapers	windel
-tissues	taschentücher

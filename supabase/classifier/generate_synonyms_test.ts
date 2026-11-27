@@ -1,13 +1,7 @@
 import { assertEquals, assertThrows } from "@std/assert";
-import { dictionaryUrl, migrationsUrl, parseDictionary } from "./generate.ts";
-import {
-  parseSynonyms,
-  synonymsUrl,
-  toMigration,
-} from "./generate_synonyms.ts";
-
-const terms = async () =>
-  parseDictionary(await Deno.readTextFile(dictionaryUrl));
+import { readTables } from "./languages.ts";
+import { migrationsUrl, parseDictionary } from "./generate.ts";
+import { parseSynonyms, toMigration } from "./generate_synonyms.ts";
 
 Deno.test("the newest synonyms migration is generated from synonyms.tsv", async () => {
   const names: string[] = [];
@@ -19,9 +13,7 @@ Deno.test("the newest synonyms migration is generated from synonyms.tsv", async 
     throw new Error("no _classifier_synonyms migration");
   }
   const migration = await Deno.readTextFile(new URL(newest, migrationsUrl));
-  const expected = toMigration(
-    parseSynonyms(await Deno.readTextFile(synonymsUrl), await terms()),
-  );
+  const expected = toMigration((await readTables()).synonyms);
   assertEquals(
     migration,
     expected,
@@ -30,10 +22,7 @@ Deno.test("the newest synonyms migration is generated from synonyms.tsv", async 
 });
 
 Deno.test("the spec's regional pairs and English words are in", async () => {
-  const synonyms = parseSynonyms(
-    await Deno.readTextFile(synonymsUrl),
-    await terms(),
-  );
+  const { synonyms } = await readTables();
   const canonical = new Map(synonyms.map((s) => [s.variant, s.canonical]));
   for (
     const [variant, target] of [

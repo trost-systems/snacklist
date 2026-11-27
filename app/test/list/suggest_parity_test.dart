@@ -44,9 +44,7 @@ const _categoryExceptions = <String, String>{
   'Apfelsaf|Apfelsaf': _partial,
   'Bratschlau|Bratschlau': _partial,
   'Butternu|Butternu': _partial,
-  'Grapefr|Grapefr': _partial,
   'Hackfleis|Hackfleis': _partial,
-  'Plim|Plim': _partial,
   'Quarkbäl|Quarkbäl': _partial,
   'Quarkbäll|Quarkbäll': _partial,
   'Sham|Sham': _partial,
@@ -61,7 +59,6 @@ const _categoryExceptions = <String, String>{
   'Nagelkleb|Nagelkleb': _partial,
   'Nagelklebe|Nagelklebe': _partial,
   'Peperon|Peperon': _partial,
-  'Topf|Topf': _homograph,
   'Apfelmu|Apfelmu': _partial,
   'Butterschma|Butterschma': _partial,
   'Butterschmal|Butterschmal': _partial,
@@ -77,11 +74,8 @@ const _categoryExceptions = <String, String>{
   'Nagelflege|Nagelflege': _typo,
   'Nageleflege|Nageleflege': _typo,
   'Pomeär|Pomeär': _typo,
-  'Schnekel|Schnekel': _typo,
-  'To|Topf': _homograph,
   'Kohlenschauf|Kohlenschauf': _typo,
   'Kohlenschaufe|Kohlenschaufe': _typo,
-  'Schäufele|Schäufele': _homograph,
   'Mozzareleakugeln|Mozzareleakugeln': _typo,
   'Nagelinsel|Nagelinsel': _typo,
   'Nageleinsel|Nageleinsel': _typo,
@@ -103,12 +97,11 @@ const _categoryExceptions = <String, String>{
   'Kaiseremüse|Kaiseremüse': _typo,
   'Kaisegremüse|Kaisegremüse': _typo,
   'Kaisereemüse|Kaisereemüse': _typo,
-  'Catrice|Catrice': _brandAlone,
+  'Grapef|Grapef': _halfTypo,
+  'Grapefru|Grapefru': _halfTypo,
+  'Grapefrui|Grapefrui': _halfTypo,
 };
 
-const _homograph =
-    'a word the stemmer folds onto another word (Topf and Topfen): the server '
-    'reads the typed spelling (job 282), guessCategory has no homographs yet';
 const _tailGuard =
     'a word that only ends like a short term (ent, gel): the server ignores '
     'the tail unless the typed word spells it, guessCategory has no typed '
@@ -120,9 +113,9 @@ const _partial =
     'a word typed halfway: the server matches it against the unfolded '
     "terms, guessCategory against the lexicon's folded forms, and they "
     'end or start differently';
-const _brandAlone =
-    'a brand without a product: the server knows no item, guessCategory '
-    'finds a term the brand ends with (rice)';
+const _halfTypo =
+    'a word typed halfway that the server reads as a typo of a longer word '
+    '(lexicon_fuzzy); guessCategory has no typo path and makes no guess';
 
 /// The device's rows for every text of supabase/tests/suggest_parity.json
 /// are the server's (job 274): the same source, name, brand, details and
@@ -180,26 +173,41 @@ void main() {
     parseCatalogDelta(deltaTable['answer'])!,
   );
 
-  /// The three tables: the household as indexed; with items the index
-  /// has not seen yet; with a term the catalog gained since the build.
+  final english = casesOf(
+    (parity['english']! as Map<String, Object?>)['cases'],
+  );
+
+  /// The four tables: the household as indexed; with items the index
+  /// has not seen yet; with a term the catalog gained since the build; the
+  /// app in English (job 470).
   final tables = [
     (
       name: 'cases',
       cases: cases,
       catalog: CatalogIndex.bundled,
       pending: <HistoryRow>[],
+      language: 'de',
     ),
     (
       name: 'pending',
       cases: casesOf(pendingTable['cases']),
       catalog: CatalogIndex.bundled,
       pending: pending,
+      language: 'de',
     ),
     (
       name: 'delta',
       cases: casesOf(deltaTable['cases']),
       catalog: delta,
       pending: <HistoryRow>[],
+      language: 'de',
+    ),
+    (
+      name: 'english',
+      cases: english,
+      catalog: CatalogIndex.bundled,
+      pending: <HistoryRow>[],
+      language: 'en',
     ),
   ];
 
@@ -217,6 +225,7 @@ void main() {
             catalog: table.catalog,
             household: household,
             pending: table.pending,
+            language: table.language,
           ))
             [source.name, e.name, e.brand, e.properties, e.quantity],
         ];
@@ -242,13 +251,17 @@ void main() {
     var guessed = 0;
     var rows = 0;
     final differing = <String>[];
-    for (final (text, expected) in cases) {
+    for (final (text, expected, language) in [
+      for (final (text, rows) in cases) (text, rows, 'de'),
+      for (final (text, rows) in english) (text, rows, 'en'),
+    ]) {
       final actual = suggestEntries(
         text,
         catalog: CatalogIndex.bundled,
         household: household,
         categories: categories,
         known: known,
+        language: language,
       );
       for (final (i, row) in expected.indexed) {
         rows++;
@@ -304,6 +317,7 @@ void main() {
             known: known,
             pending: table.pending,
             categoryStore: categoryStore,
+            language: table.language,
           );
           for (final (i, row) in expected.indexed) {
             rows++;

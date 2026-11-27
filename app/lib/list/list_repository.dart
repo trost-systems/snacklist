@@ -224,15 +224,21 @@ Future<T> _refusable<T>(Future<T> Function() write) async {
 /// without a remembered store gets the household's usual store for its
 /// category, in the suggested rows, the parse of an add typed on the device
 /// and on the add. Off: the parameter is not
-/// sent, and the server answers as before.
+/// sent, and the server answers as before. `language`: the app's, whose
+/// catalog words `suggest_entries` offers (job 470); German is the
+/// server's default and not sent.
 class SupabaseListRepository(
   final SupabaseClient _client,
   final String householdId, {
   bool Function() categoryStore = _off,
+  String Function() language = _german,
 }) implements ListRepository {
   static bool _off() => false;
 
+  static String _german() => 'de';
+
   final _categoryStore = categoryStore;
+  final _language = language;
 
   static const _itemColumns =
       'id, name, quantity, brand, properties, category_id, store_id, '
@@ -488,6 +494,8 @@ class SupabaseListRepository(
         'p_household': householdId,
         'p_text': text,
         if (_categoryStore()) 'p_category_store': true,
+        if (_language() case final language when language != 'de')
+          'p_lang': language,
       },
     );
     return [
@@ -615,32 +623,45 @@ class SupabaseListRepository(
     final item = deviceParsed
         ? (await parse(op.item.name)).onto(op.item, noStore: noStore)
         : op.item;
-    final row = _singleRow(
-      await _client.rpc<dynamic>(
+    final params = <String, Object?>{
+      'p_id': item.id,
+      'p_household': householdId,
+      'p_name': item.name,
+      'p_quantity': item.quantity,
+      'p_brand': item.brand,
+      'p_properties': item.properties,
+      // None given: the server classifies the item.
+      'p_category': autoCategory ? null : item.categoryId,
+      // Job 470: the device's guess, which the server keeps for a word
+      // it does not know instead of filing it under Sonstiges.
+      if (autoCategory) 'p_category_guess': ?item.categoryId,
+      // None given: the server fills in the remembered store.
+      'p_store': item.storeId,
+      // A restored item keeps its place.
+      'p_sort_key': item.sortKey,
+      'p_status': item.status.name,
+      'p_no_store': noStore,
+      if (_categoryStore()) 'p_category_store': true,
+      // Job 324: next to the same open item.
+      if (separate) 'p_separate': true,
+      // None (an add queued before lists): the household's first list.
+      'p_list': ?item.listId,
+    };
+    Object? answer;
+    try {
+      answer = await _client.rpc<dynamic>('put_item', params: params);
+    } on PostgrestException catch (e) {
+      // A server without job 470's put_item knows no p_category_guess
+      // (PGRST202): the add goes without it, as before.
+      if (e.code != 'PGRST202' || !params.containsKey('p_category_guess')) {
+        rethrow;
+      }
+      answer = await _client.rpc<dynamic>(
         'put_item',
-        params: {
-          'p_id': item.id,
-          'p_household': householdId,
-          'p_name': item.name,
-          'p_quantity': item.quantity,
-          'p_brand': item.brand,
-          'p_properties': item.properties,
-          // None given: the server classifies the item.
-          'p_category': autoCategory ? null : item.categoryId,
-          // None given: the server fills in the remembered store.
-          'p_store': item.storeId,
-          // A restored item keeps its place.
-          'p_sort_key': item.sortKey,
-          'p_status': item.status.name,
-          'p_no_store': noStore,
-          if (_categoryStore()) 'p_category_store': true,
-          // Job 324: next to the same open item.
-          if (separate) 'p_separate': true,
-          // None (an add queued before lists): the household's first list.
-          'p_list': ?item.listId,
-        },
-      ),
-    );
+        params: {...params}..remove('p_category_guess'),
+      );
+    }
+    final row = _singleRow(answer);
     return switch (row == null ? null : Item.fromJson(row)) {
       null => {op.itemId: null},
       final own when own.id == op.itemId => {own.id: own},

@@ -4,7 +4,8 @@
 // p_category_store off and on; the index names stores and categories the same way, since their
 // ids differ per run. Two more tables: texts typed after items the index has not seen yet
 // (pending), and texts typed after a term the catalog gained since the app was built (delta, with
-// catalog_delta's answer for the bundled version). The app's port of the ranking (app/test/list/suggest_parity_test.dart)
+// catalog_delta's answer for the bundled version); and English texts with p_lang en (job 470).
+// The app's port of the ranking (app/test/list/suggest_parity_test.dart)
 // passes the same file, so the device shows what the server would. Seeds the household from
 // supabase/classifier/suggest_parity.ts in a transaction that is rolled back. After a deliberate
 // change to the ranking, the parser, the catalog or the texts: SUGGEST_PARITY_WRITE=1 rewrites the
@@ -15,6 +16,7 @@ import { asUserWithin, databaseUrl, type Tx } from './db.ts';
 import {
   deltaTerm,
   deltaTexts,
+  englishTexts,
   history,
   type HistoryItem,
   pending,
@@ -62,6 +64,7 @@ type Parity = {
   cases: Case[];
   pending: { items: IndexHistory[]; cases: Case[] };
   delta: { answer: unknown; cases: Case[] };
+  english: { cases: Case[] };
 };
 
 class Rollback extends Error {}
@@ -233,6 +236,7 @@ async function seedAndAsk(tx: Tx, all: string[]): Promise<Parity> {
     });
     return { answer, cases: await answers(tx, householdId, deltaTexts, named) };
   });
+  const english = { cases: await answers(tx, householdId, englishTexts, named, 'en') };
 
   return {
     now: fixtureNow,
@@ -261,6 +265,7 @@ async function seedAndAsk(tx: Tx, all: string[]): Promise<Parity> {
     cases,
     pending: pendingAnswer,
     delta: deltaAnswer,
+    english,
   };
 }
 
@@ -270,6 +275,7 @@ async function answers(
   householdId: string,
   texts: readonly string[],
   named: (id: string | null) => string | null,
+  lang = 'de',
 ): Promise<Case[]> {
   type Answer = {
     ord: string;
@@ -288,7 +294,7 @@ async function answers(
       from jsonb_array_elements_text(${
       JSON.stringify(texts)
     }::text::jsonb) with ordinality t (text, ord)
-      cross join lateral public.suggest_entries(${householdId}, t.text, 8, ${categoryStore})
+      cross join lateral public.suggest_entries(${householdId}, t.text, 8, ${categoryStore}, ${lang})
         with ordinality s (source, name, brand, properties, quantity, store_id, category_id, n)
       order by t.ord, s.n`;
   const off = await ask(false);
@@ -334,6 +340,7 @@ function format(parity: Parity): string {
     `"cases": ${rows(parity.pending.cases)}},`,
     `"delta": {"answer": ${JSON.stringify(parity.delta.answer)},`,
     `"cases": ${rows(parity.delta.cases)}},`,
+    `"english": {"cases": ${rows(parity.english.cases)}},`,
     `"cases": ${rows(parity.cases)}`,
     '}',
     '',
@@ -369,5 +376,6 @@ Deno.test({
     assertEquals(answer.index, expected.index);
     assertEquals(answer.pending, expected.pending);
     assertEquals(answer.delta, expected.delta);
+    assertEquals(answer.english, expected.english);
   },
 });

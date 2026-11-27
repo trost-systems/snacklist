@@ -105,6 +105,7 @@ const NO_ROW = [
   'app_switches',
   'brands',
   'catalog_snapshots',
+  'catalog_words',
   'classifier_lexicon',
   'classifier_synonyms',
   'classifier_terms',

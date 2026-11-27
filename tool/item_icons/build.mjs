@@ -193,6 +193,11 @@ const itemIconEntries = <String, String>${body};
 export function classifierNames(dir) {
   const names = new Map();
   const files = { brands: [0, 'brand'], dictionary: [0], sweep: [0], synonyms: [0, 1], wordlist: [0] };
+  // Every language's words and exam (job 470): dictionary.en.tsv, expected.en.tsv.
+  for (const file of readdirSync(dir).sort()) {
+    const language = /^((?:dictionary|expected)\.[a-z]{2})\.tsv$/.exec(file);
+    if (language) files[language[1]] = [0];
+  }
   for (const [file, columns] of Object.entries(files)) {
     for (const [, cols] of rows(join(dir, `${file}.tsv`))) {
       const found = columns.map((c) => c === 'brand' ? (cols[1] ? `${cols[0]} ${cols[1]}` : '') : cols[c] ?? '');

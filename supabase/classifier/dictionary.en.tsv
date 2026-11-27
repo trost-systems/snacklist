@@ -1,0 +1,1175 @@
+# English words of the catalog (job 470, languages.ts). Format: word<TAB>category[<TAB>concept[<TAB>forms]].
+# word: what the English catalog offers, lowercase, as an English list writes it (apples, milk).
+# category: one of dictionary.tsv's 17 seed keys; categories and stores are the same in every language.
+# concept: the dictionary.tsv term the word is (milk -> milch). The word then takes the concept's
+#   category and canonical key, so Milch and milk are one item for the duplicate hint, the
+#   household's corrections and the store memory. Empty: the word is a concept of its own
+#   (a classifier_terms row with lang en). A word that is a German term too names it as concept.
+# forms: other spellings, comma-separated: misspellings, irregular plurals, US/UK spellings that
+#   are no word of their own, and the plural of a singular word (avocado: avocados). The generator
+#   adds the singular of a plural word itself (languages.ts, englishInflections); a listed form
+#   beats a derived one.
+# A US/UK pair that both sides write (eggplant, aubergine) is two words on one concept.
+# Placement follows dictionary.tsv's header (spreads pantry, plant milks chilled, baby care drugstore,
+# pet food household). The classifier reads every language's forms, so an English name sorts the
+# same for every member of a household; the app offers the words of its language.
+
+# From synonyms.tsv's English section (job 51), the words Siri hears most
+apples	produce	apfel
+bananas	produce	banane
+oranges	produce	orange
+lemons	produce	zitrone
+limes	produce	limette
+strawberries	produce	erdbeere
+blueberries	produce	heidelbeere
+raspberries	produce	himbeere
+pears	produce	birne
+peaches	produce	pfirsich
+cherries	produce	kirsche
+grapes	produce	weintrauben
+tomatoes	produce	tomate
+potatoes	produce	kartoffel
+onions	produce	zwiebel
+garlic	produce	knoblauch
+carrots	produce	möhre
+cucumbers	produce	gurke
+lettuce	produce	salat
+spinach	produce	spinat
+cauliflower	produce	blumenkohl
+mushrooms	produce	pilz
+ginger	produce	ingwer
+bell peppers	produce	paprika
+bread	bakery	brot
+rolls	bakery	brötchen
+spring rolls	frozen	frühlingsrolle
+egg rolls	frozen	frühlingsrolle
+milk	chilled	milch
+cheese	chilled	käse
+yogurt	chilled	joghurt
+yoghurt	chilled	joghurt
+cream	chilled	sahne
+eggs	chilled	eier
+chicken	meat	hähnchen
+beef	meat	rind
+pork	meat	schwein
+ham	meat	schinken
+sausages	meat	wurst
+bacon	meat	speck
+salmon	meat	lachs
+fish	meat	fisch
+tuna	pantry	thunfisch
+rice	pantry	reis
+noodles	pantry	nudel
+flour	pantry	mehl
+sugar	pantry	zucker
+salt	pantry	salz
+pepper	pantry	pfeffer
+sage	produce	salbei
+olive oil	pantry	olivenöl
+vinegar	pantry	essig
+honey	pantry	honig
+jam	pantry	marmelade
+coffee	pantry	kaffee
+tea	pantry	tee
+tea light	household	teelicht
+tealight	household	teelicht
+chocolate	sweets	schokolade
+cereal	pantry	müsli
+oats	pantry	haferflocken
+water	drinks	wasser
+beer	drinks	bier
+juice	drinks	saft
+wine	drinks	wein
+ice cream	frozen	eis
+toilet paper	household	toilettenpapier	toiletpaper
+paper towels	household	küchenrolle
+dish soap	household	spülmittel
+detergent	household	waschmittel
+trash bags	household	müllbeutel
+toothpaste	drugstore	zahnpasta	tooth paste
+toothbrush	drugstore	zahnbürste
+soap	drugstore	seife
+diapers	drugstore	windel
+tissues	drugstore	taschentücher
+
+# Reviewed drafts from catalog/drafts/2026-11-26-en.tsv
+avocados	produce	avocado
+pineapple	produce	ananas	pineapples
+apricots	produce	aprikose
+blackberries	produce	brombeere
+blood oranges	produce	blutorange
+clementines	produce	clementine
+tangerines	produce	mandarine
+mandarins	produce	mandarine
+figs	produce	feige
+pomegranates	produce	granatapfel
+grapefruit	produce	grapefruit
+honeydew melon	produce	honigmelone	honeydew melons
+melon	produce	melone	melons
+watermelon	produce	wassermelone	watermelons
+redcurrants	produce	johannisbeere
+blackcurrants	produce
+persimmons	produce	kaki
+kiwis	produce	kiwi
+coconut	produce	kokosnuss	coconuts
+lychees	produce	litschi
+mangoes	produce	mango	mangos
+nectarines	produce	nektarine
+papayas	produce	papaya
+passion fruit	produce	maracuja
+plums	produce	pflaume
+gooseberries	produce	stachelbeere
+quinces	produce	quitte
+physalis	produce	physalis
+rhubarb	produce	rhabarber
+eggplant	produce	aubergine	eggplants
+aubergines	produce	aubergine
+zucchini	produce	zucchini	zucchinis
+courgettes	produce	zucchini
+artichokes	produce	artischocke
+baby spinach	produce	babyspinat
+wild garlic	produce	bärlauch
+broccoli	produce	broccoli
+watercress	produce	brunnenkresse
+butternut squash	produce	butternut	butternut squashes
+chicory	produce	chicoree
+chillies	produce	chili	chilies
+chili peppers	produce	chili
+chinese cabbage	produce	chinakohl
+napa cabbage	produce	chinakohl
+cherry tomatoes	produce	cherrytomate
+endive	produce	endivie	endives
+spring onions	produce	frühlingszwiebel
+scallions	produce	frühlingszwiebel
+green onions	produce	frühlingszwiebel
+kale	produce	grünkohl
+celeriac	produce	knollensellerie
+celery	produce	staudensellerie
+cabbage	produce	kohl	cabbages
+white cabbage	produce	weißkohl
+red cabbage	produce	rotkohl
+savoy cabbage	produce	wirsing
+kohlrabi	produce	kohlrabi
+cress	produce	kresse
+leeks	produce	lauch
+corn on the cob	produce	maiskolben
+chard	produce	mangold
+swiss chard	produce	mangold
+okra	produce	okra
+parsnips	produce	pastinake
+radishes	produce	radieschen
+radicchio	produce	radicchio
+beetroot	produce	rote bete
+beets	produce	rote bete
+turnips	produce	rübe
+rutabaga	produce	steckrübe
+arugula	produce	rucola
+romaine lettuce	produce	römersalat
+cos lettuce	produce	römersalat
+iceberg lettuce	produce	eisbergsalat
+brussels sprouts	produce	rosenkohl
+bean sprouts	produce	sprossen
+shallots	produce	schalotte
+asparagus	produce	spargel
+sweet potatoes	produce	süßkartoffel
+green beans	produce	bohne
+snap peas	produce	zuckerschoten
+sugar snap peas	produce	zuckerschoten
+mangetout	produce	zuckerschoten	mangetout peas
+vegetables	produce	gemüse
+button mushrooms	produce	champignon
+chanterelles	produce	pfifferling
+porcini	produce	steinpilz
+shiitake	produce	shiitake
+pak choi	produce	pak choi
+bok choy	produce	pak choi
+jerusalem artichokes	produce	topinambur
+basil	produce	basilikum
+parsley	produce	petersilie
+chives	produce	schnittlauch
+coriander	produce	koriander
+cilantro	produce	koriander
+dill	produce	dill
+rosemary	produce	rosmarin
+thyme	produce	thymian
+lemongrass	produce	zitronengras
+lemon balm	produce	melisse
+bread rolls	bakery	brötchen
+burger buns	bakery	burgerbrötchen
+hot dog buns	bakery
+bagels	bakery	bagel
+baguette	bakery	baguette	baguettes
+brioche	bakery	brioche
+croissants	bakery	croissant
+ciabatta	bakery	ciabatta
+focaccia	bakery	focaccia
+flatbread	bakery	fladenbrot	flatbreads
+pita bread	bakery	pita
+pitta bread	bakery	pita
+naan	bakery	naan
+naan bread	bakery	naan
+doughnuts	bakery	donut
+donuts	bakery	donut
+muffins	bakery	muffin
+cheesecake	bakery	käsekuchen	cheesecakes
+marble cake	bakery	marmorkuchen
+soft pretzels	bakery	brezel
+rye bread	bakery	roggenbrot
+wholemeal bread	bakery	vollkornbrot
+whole wheat bread	bakery	vollkornbrot
+sourdough bread	bakery	sauerteigbrot
+toast	bakery	toast
+sliced bread	bakery	toastbrot
+crispbread	bakery	knäckebrot
+rusks	bakery	zwieback
+wraps	bakery	wrap
+tortillas	bakery	tortilla
+danish pastries	bakery	plunder
+pumpernickel	bakery	pumpernickel
+stollen	bakery	stollen
+brownies	bakery	brownies
+butter	chilled	butter
+buttermilk	chilled	buttermilch
+whole milk	chilled	vollmilch
+skimmed milk	chilled		skim milk
+semi skimmed milk	chilled
+heavy cream	chilled	sahne
+whipping cream	chilled	schlagsahne
+whipped cream	chilled	schlagsahne
+double cream	chilled	creme double
+sour cream	chilled	saure sahne
+creme fraiche	chilled	creme fraiche
+margarine	chilled	margarine
+quark	chilled	quark
+skyr	chilled	skyr
+kefir	chilled	kefir
+greek yogurt	chilled		greek yoghurt
+natural yogurt	chilled	joghurt
+yogurt drinks	chilled	joghurtdrink
+cream cheese	chilled	frischkäse
+cottage cheese	chilled	hüttenkäse
+grated cheese	chilled	reibekäse
+shredded cheese	chilled	reibekäse
+sliced cheese	chilled	scheibenkäse
+cheese slices	chilled	scheibenkäse
+processed cheese	chilled	schmelzkäse
+goat cheese	chilled	ziegenkäse
+goats cheese	chilled	ziegenkäse
+sheep cheese	chilled	schafskäse
+blue cheese	chilled
+brie	chilled	brie
+camembert	chilled	camembert
+cheddar	chilled	cheddar
+feta	chilled	feta
+gouda	chilled	gouda
+edam	chilled	edamer
+emmental	chilled	emmentaler
+mozzarella	chilled	mozzarella
+parmesan	chilled	parmesan
+mascarpone	chilled	mascarpone
+ricotta	chilled	ricotta
+halloumi	chilled	halloumi
+gorgonzola	chilled	gorgonzola
+pecorino	chilled	pecorino
+burrata	chilled	burrata
+oat milk	chilled	hafermilch
+oat drink	chilled	haferdrink
+almond milk	chilled	mandelmilch
+soy milk	chilled	sojamilch
+soya milk	chilled	sojamilch
+soy yogurt	chilled	sojajoghurt
+soya yogurt	chilled	sojajoghurt
+tofu	chilled	tofu
+tempeh	chilled	tempeh
+seitan	chilled	seitan
+hummus	chilled	hummus	houmous
+tzatziki	chilled	tzatziki
+dips	chilled	dip
+fresh pasta	chilled	frische pasta
+gnocchi	chilled	gnocchi
+ravioli	chilled	ravioli
+tortellini	chilled	tortellini
+coleslaw	chilled	krautsalat
+potato salad	chilled	kartoffelsalat
+pasta salad	chilled	nudelsalat
+egg salad	chilled	eiersalat
+tuna salad	chilled	thunfischsalat
+herb butter	chilled	kräuterbutter
+puff pastry	chilled	blätterteig
+shortcrust pastry	chilled	mürbeteig
+pizza dough	chilled	pizzateig
+pizza base	chilled	pizzaboden
+filo pastry	chilled	strudelteig
+fresh yeast	chilled	hefewürfel
+antipasti	chilled	antipasti
+minced meat	meat	hackfleisch
+ground beef	meat	rinderhack
+minced beef	meat	rinderhack
+beef mince	meat	rinderhack
+chicken breast	meat	hähnchenbrust	chicken breasts
+chicken thighs	meat	schenkel
+chicken drumsticks	meat
+chicken wings	meat	wings
+whole chicken	meat	hähnchen	whole chickens
+turkey	meat	pute
+turkey breast	meat	putenbrust	turkey breasts
+lamb	meat	lamm
+lamb chops	meat
+veal	meat	kalb
+venison	meat	wild
+rabbit	meat	kaninchen
+steak	meat	steak	steaks
+roast beef	meat	roastbeef
+pork belly	meat	bauch
+pork chops	meat	kotelett
+pork tenderloin	meat	lende
+pork knuckle	meat	haxe
+spare ribs	meat	spareribs
+schnitzel	meat	schnitzel
+goulash	meat	gulasch
+liver	meat	leber
+burgers	meat	burger
+burger patties	meat	patties
+frankfurters	meat	wiener
+wieners	meat	wiener
+bratwurst	meat	bratwurst
+chorizo	meat	chorizo
+salami	meat	salami
+pepperoni	meat
+mortadella	meat	mortadella
+prosciutto	meat	prosciutto
+parma ham	meat	prosciutto
+pastrami	meat	pastrami
+corned beef	meat	corned beef
+pancetta	meat
+cold cuts	meat	aufschnitt
+lunch meat	meat	aufschnitt
+deli meat	meat	aufschnitt
+liver sausage	meat	leberwurst
+liverwurst	meat	leberwurst
+doner kebab	meat	döner	doner kebabs
+gyros	meat	gyros
+poultry	meat	geflügel
+cod	meat	kabeljau
+haddock	meat
+pollock	meat	seelachs
+coley	meat	seelachs
+trout	meat	forelle
+mackerel	meat	makrele
+herring	meat	hering
+sea bream	meat	dorade
+plaice	meat	scholle
+smoked salmon	meat	räucherlachs
+salmon fillets	meat	lachsfilet
+prawns	meat	garnele
+king prawns	meat	garnele
+shrimp	meat	shrimps
+crab	meat
+mussels	meat	muschel
+squid	meat	tintenfisch
+octopus	meat
+calamari	meat	calamari
+scallops	meat
+frozen peas	frozen	tiefkühlerbsen
+frozen pizza	frozen	tiefkühlpizza	frozen pizzas
+pizza	frozen	pizza	pizzas
+frozen berries	frozen	tiefkühlbeeren
+frozen vegetables	frozen	tiefkühlgemüse
+frozen fish	frozen	tiefkühlfisch
+frozen herbs	frozen	tiefkühlkräuter
+creamed spinach	frozen	rahmspinat
+fish fingers	frozen	fischstäbchen
+fish sticks	frozen	fischstäbchen
+french fries	frozen	pommes frites
+fries	frozen	pommes
+oven chips	frozen	pommes
+potato wedges	frozen	wedges
+croquettes	frozen	kroketten
+chicken nuggets	frozen	chicken nuggets
+ice cubes	frozen	eiswürfel
+ice lollies	frozen	stieleis
+popsicles	frozen	stieleis
+vanilla ice cream	frozen	vanilleeis
+chocolate ice cream	frozen	schokoeis
+strawberry ice cream	frozen	erdbeereis
+ice cream cake	frozen	eistorte
+stir fry vegetables	frozen	wokgemüse
+garlic bread	frozen	knoblauchbaguette
+edamame	frozen	edamame
+pasta	pantry	pasta
+spaghetti	pantry	spaghetti
+penne	pantry	penne
+fusilli	pantry	fusilli
+farfalle	pantry	farfalle
+rigatoni	pantry	rigatoni
+tagliatelle	pantry	tagliatelle
+macaroni	pantry	makkaroni
+lasagne sheets	pantry	lasagneplatten
+lasagna noodles	pantry	lasagneplatten
+egg noodles	pantry
+rice noodles	pantry
+basmati rice	pantry	basmati
+jasmine rice	pantry	jasminreis
+brown rice	pantry	vollkornreis
+wild rice	pantry	wildreis
+risotto rice	pantry	risottoreis
+arborio rice	pantry	risottoreis
+long grain rice	pantry	langkornreis
+couscous	pantry	couscous
+bulgur	pantry	bulgur
+quinoa	pantry	quinoa
+polenta	pantry	polenta
+millet	pantry	hirse
+semolina	pantry	grieß
+porridge oats	pantry	haferflocken
+rolled oats	pantry	haferflocken
+oatmeal	pantry	haferflocken
+porridge	pantry	porridge
+granola	pantry	granola
+muesli	pantry	müsli
+cornflakes	pantry	cornflakes
+peanut butter	pantry	erdnussbutter
+chocolate spread	pantry	schokocreme
+hazelnut spread	pantry	nusscreme
+marmalade	pantry
+maple syrup	pantry
+applesauce	pantry	apfelmus
+apple sauce	pantry	apfelmus
+ground coffee	pantry	kaffee
+coffee beans	pantry	kaffeebohnen
+coffee pods	pantry	kaffeepads
+coffee capsules	pantry	kaffeekapseln
+coffee filters	pantry	kaffeefilter
+espresso	pantry	espresso
+tea bags	pantry	teebeutel
+green tea	pantry	grüner tee
+black tea	pantry	schwarzer tee
+herbal tea	pantry	kräutertee
+peppermint tea	pantry	pfefferminztee
+chamomile tea	pantry	kamillentee
+fruit tea	pantry	früchtetee
+ginger tea	pantry	ingwertee
+rooibos	pantry	rooibostee
+chai	pantry	chai
+cocoa	pantry	kakao
+cocoa powder	pantry	kakao
+hot chocolate	pantry	trinkschokolade
+drinking chocolate	pantry	trinkschokolade
+canned tomatoes	pantry	dosentomaten
+tinned tomatoes	pantry	dosentomaten
+chopped tomatoes	pantry	stückige tomaten
+crushed tomatoes	pantry	passierte tomaten
+passata	pantry	passata
+tomato paste	pantry	tomatenmark
+tomato puree	pantry	tomatenmark
+sun dried tomatoes	pantry	getrocknete tomaten
+lentils	pantry	linsen
+red lentils	pantry
+chickpeas	pantry	kichererbsen
+kidney beans	pantry	kidneybohnen
+black beans	pantry	schwarze bohnen
+white beans	pantry	weiße bohnen
+cannellini beans	pantry	weiße bohnen
+baked beans	pantry	baked beans
+sardines	pantry	sardinen
+anchovies	pantry	sardellen
+olives	pantry	oliven
+capers	pantry	kapern
+pickles	pantry	essiggurken
+gherkins	pantry	gewürzgurken
+cornichons	pantry	cornichons
+sauerkraut	pantry	sauerkraut
+pickled onions	pantry	silberzwiebeln
+canned fruit	pantry	dosenobst
+tinned fruit	pantry	dosenobst
+canned food	pantry	konserve
+tinned food	pantry	konserve
+coconut milk	pantry	kokosmilch
+condensed milk	pantry
+evaporated milk	pantry	kondensmilch
+stock cubes	pantry	brühwürfel
+bouillon cubes	pantry	brühwürfel
+chicken stock	pantry		chicken broth
+vegetable stock	pantry		vegetable broth
+broth	pantry	brühe
+dried fruit	pantry	trockenobst
+dates	pantry	datteln
+raisins	pantry	rosine
+sultanas	pantry	rosine
+cranberries	pantry	cranberries
+prunes	pantry	trockenpflaumen
+ketchup	pantry	ketchup
+mayonnaise	pantry	mayonnaise
+mayo	pantry	mayo
+mustard	pantry	senf
+dijon mustard	pantry
+horseradish	pantry	meerrettich
+soy sauce	pantry
+hot sauce	pantry
+salad dressing	pantry	dressing
+pesto	pantry	pesto
+curry paste	pantry	currypaste
+curry powder	pantry	curry
+tahini	pantry	tahini
+sambal	pantry	sambal
+ajvar	pantry	ajvar
+remoulade	pantry	remoulade
+vegetable oil	pantry	pflanzenöl
+sunflower oil	pantry	sonnenblumenöl
+rapeseed oil	pantry	rapsöl
+canola oil	pantry	rapsöl
+coconut oil	pantry	kokosöl
+sesame oil	pantry	sesamöl
+cooking oil	pantry	speiseöl
+balsamic vinegar	pantry	balsamico
+lemon juice	pantry	zitronensaft
+lime juice	pantry	limettensaft
+spices	pantry	gewürz
+cinnamon	pantry	zimt
+turmeric	pantry	kurkuma
+oregano	pantry	oregano
+marjoram	pantry	majoran
+bay leaves	pantry	lorbeerblätter
+caraway seeds	pantry	kümmel
+cumin	pantry
+paprika powder	pantry	paprika edelsüß
+sweet paprika	pantry	paprika edelsüß
+peppercorns	pantry	pfeffer
+vanilla	pantry	vanille
+vanilla pods	pantry	vanilleschote
+sesame seeds	pantry	sesam
+poppy seeds	pantry	mohn
+sunflower seeds	pantry
+pumpkin seeds	pantry
+pine nuts	pantry
+baking powder	pantry	backpulver
+baking soda	pantry	natron
+bicarbonate of soda	pantry	natron
+dry yeast	pantry	hefe
+cornstarch	pantry	stärke
+cornflour	pantry	stärke
+gelatine	pantry	gelatine	gelatin
+icing sugar	pantry		powdered sugar,confectioners sugar
+brown sugar	pantry
+chocolate chips	pantry	schokotropfen
+cooking chocolate	pantry	kuvertüre
+baking chocolate	pantry	kuvertüre
+sprinkles	pantry	streusel
+almonds	pantry	mandel
+ground almonds	pantry
+flaked almonds	pantry	mandelblättchen
+sliced almonds	pantry	mandelblättchen
+walnuts	pantry
+hazelnuts	pantry
+desiccated coconut	pantry		shredded coconut
+marzipan	pantry	marzipan
+food coloring	pantry	lebensmittelfarbe	food colouring
+cake mix	pantry	backmischung
+pancake mix	pantry
+brownie mix	pantry
+breadcrumbs	pantry	paniermehl
+croutons	pantry	croutons
+popcorn kernels	pantry	popcornmais
+fried onions	pantry	röstzwiebeln
+crispy onions	pantry	röstzwiebeln
+taco shells	pantry	taco
+rice paper	pantry	reispapier
+chips	sweets	chips
+crisps	sweets	chips
+potato chips	sweets	chips
+tortilla chips	sweets	tortilla chips
+nachos	sweets	nachos
+popcorn	sweets	popcorn
+pretzels	sweets	salzbrezel
+pretzel sticks	sweets	salzstangen
+peanuts	sweets	erdnüsse
+cashews	sweets	cashew
+pistachios	sweets	pistazien
+mixed nuts	sweets	nussmischung
+trail mix	sweets	studentenfutter
+candy	sweets	süßigkeiten
+sweets	sweets	süßigkeiten
+gummy bears	sweets	gummibärchen
+wine gums	sweets	fruchtgummi
+fruit gums	sweets	fruchtgummi
+licorice	sweets	lakritz
+liquorice	sweets	lakritz
+lollipops	sweets	lolli
+marshmallows	sweets	marshmallow
+chewing gum	sweets	kaugummi
+cookies	sweets	cookies
+biscuits	sweets	keks
+crackers	sweets	cracker
+wafers	sweets	waffel
+cereal bars	sweets
+granola bars	sweets
+pralines	sweets	praline
+toffee	sweets	toffee
+fudge	sweets
+easter eggs	sweets	schokoeier
+chocolate eggs	sweets	schokoeier
+easter bunny	sweets	osterhase
+advent calendar	sweets	adventskalender
+gingerbread	sweets	lebkuchen
+ladyfingers	sweets	löffelbiskuit
+sponge fingers	sweets	löffelbiskuit
+shortbread	sweets
+cotton candy	sweets	zuckerwatte
+candy floss	sweets	zuckerwatte
+candy canes	sweets	zuckerstange
+snacks	sweets	snack
+orange juice	drinks	orangensaft
+apple juice	drinks	apfelsaft
+sparkling water	drinks	mineralwasser
+mineral water	drinks	mineralwasser
+soda water	drinks	mineralwasser
+tonic water	drinks	tonic
+ginger ale	drinks	ginger ale
+ginger beer	drinks
+cola	drinks	cola
+lemonade	drinks	limonade
+soft drinks	drinks	limo
+fizzy drinks	drinks	limo
+energy drinks	drinks	energydrink
+iced tea	drinks	eistee
+iced coffee	drinks	eiskaffee
+smoothies	drinks	smoothie
+kombucha	drinks	kombucha
+drinks	drinks	getränk
+red wine	drinks	rotwein
+white wine	drinks	weißwein
+sparkling wine	drinks	sekt
+prosecco	drinks	prosecco
+cider	drinks	cider
+wheat beer	drinks	weißbier
+gin	drinks	gin
+vodka	drinks	vodka
+rum	drinks	rum
+whisky	drinks	whisky	whiskey
+liqueur	drinks	likör
+schnapps	drinks	schnaps
+kitchen roll	household	küchenrolle	kitchen rolls
+napkins	household	servietten
+serviettes	household	servietten
+aluminum foil	household	alufolie
+aluminium foil	household	alufolie
+tin foil	household	alufolie
+plastic wrap	household	frischhaltefolie
+cling film	household	frischhaltefolie	clingfilm
+baking paper	household	backpapier
+parchment paper	household	backpapier
+freezer bags	household	gefrierbeutel
+sandwich bags	household
+bin bags	household	müllbeutel
+bin liners	household	müllbeutel
+garbage bags	household	müllbeutel
+paper plates	household	pappteller
+paper cups	household	pappbecher
+straws	household	strohhalm
+toothpicks	household	zahnstocher
+skewers	household	holzspieß
+all purpose cleaner	household	allzweckreiniger
+bathroom cleaner	household	badreiniger
+glass cleaner	household	glasreiniger
+window cleaner	household	glasreiniger
+oven cleaner	household	backofenreiniger
+toilet cleaner	household	wc reiniger
+drain cleaner	household	abflussreiniger
+descaler	household	entkalker
+limescale remover	household	kalkentferner
+bleach	household	bleiche
+disinfectant	household	desinfektionsmittel
+stain remover	household	fleckentferner
+furniture polish	household	möbelpolitur
+washing up liquid	household	spülmittel
+dishwasher tablets	household	spülmaschinentabs
+dishwasher salt	household	spülmaschinensalz
+rinse aid	household	klarspüler
+sponges	household	schwamm
+scourers	household	topfschwamm
+steel wool	household	stahlwolle
+cleaning cloths	household	putzlappen
+microfiber cloths	household	mikrofasertuch	microfibre cloths
+dish cloths	household	spültuch
+rubber gloves	household	gummihandschuhe
+mop	household	mopp	mops
+broom	household	besen
+dustpan	household	kehrschaufel
+bucket	household	eimer	buckets
+toilet brush	household	klobürste
+bottle brush	household	flaschenbürste
+dish brush	household	spülbürste
+laundry detergent	household	waschmittel
+washing powder	household	waschmittel
+fabric softener	household	weichspüler
+fabric conditioner	household	weichspüler
+clothes pegs	household	klammer
+clothespins	household	klammer
+clothesline	household	wäscheseil
+air freshener	household	lufterfrischer
+vacuum bags	household	staubsaugerbeutel
+distilled water	household	destilliertes wasser
+citric acid	household	zitronensäure
+shoe polish	household	schuhcreme
+batteries	household	batterie
+button cells	household	knopfzelle
+candles	household	kerze
+lighter	household	feuerzeug	lighters
+charcoal	household	grillkohle
+firelighters	household	grillanzünder
+frying pan	household	pfanne	frying pans
+saucepan	household	topf	saucepans
+wooden spoon	household	kochlöffel	wooden spoons
+spatula	household	spatel	spatulas
+cutting board	household	schneidebrett	cutting boards
+chopping board	household	schneidebrett	chopping boards
+mixing bowl	household	schüssel	mixing bowls
+plates	household	teller
+cutlery	household	besteck
+kitchen knife	household		kitchen knives
+rolling pin	household	nudelholz
+cake tin	household	kuchenform	cake tins
+springform pan	household	springform
+muffin tin	household	muffinform
+baking dish	household	auflaufform	baking dishes
+ice cube tray	household	eiswürfelform	ice cube trays
+kitchen tongs	household	küchenzange
+scissors	household	schere
+tablecloth	household	tischdecke
+water filter	household	wasserfilter
+mouse trap	household	mausefalle
+fly swatter	household	fliegenklatsche
+ant bait	household	ameisenköder
+insect spray	household	insektenspray
+birthday card	household	geburtstagskarte	birthday cards
+wrapping paper	household	geschenkpapier
+balloons	household	luftballon
+envelopes	household	briefumschlag
+glue	household	kleber
+sticky tape	household	klebeband
+ice packs	household	kühlakku
+cat food	household	katzenfutter
+dog food	household	hundefutter
+cat litter	household	katzenstreu
+kitty litter	household	katzenstreu
+dog treats	household	hundesnack
+dog biscuits	household	hundesnack
+cat treats	household	katzensnack
+dog chews	household	kauknochen
+pet food	household	futter
+bird seed	household
+shampoo	drugstore	shampoo
+conditioner	drugstore	spülung
+shower gel	drugstore	duschgel
+body wash	drugstore	duschgel
+bubble bath	drugstore	badezusatz
+bath salts	drugstore	badesalz
+hand soap	drugstore	handseife
+liquid soap	drugstore	flüssigseife
+body lotion	drugstore	bodylotion
+hand cream	drugstore	handcreme
+face cream	drugstore	gesichtscreme
+moisturizer	drugstore	gesichtscreme	moisturiser
+face wash	drugstore	gesichtsreiniger
+micellar water	drugstore	mizellenwasser
+body oil	drugstore	körperöl
+hair oil	drugstore	haaröl
+baby oil	drugstore	babyöl
+massage oil	drugstore	massageöl
+deodorant	drugstore	deodorant
+antiperspirant	drugstore	antitranspirant
+perfume	drugstore	parfüm
+aftershave	drugstore	aftershave
+sunscreen	drugstore	sonnencreme
+sun cream	drugstore	sonnencreme	suncream
+after sun	drugstore	after sun
+hairspray	drugstore	haarspray	hair spray
+hair gel	drugstore	haargel
+hair dye	drugstore	haarfarbe
+hair mask	drugstore	haarkur
+hairbrush	drugstore	haarbürste	hairbrushes
+comb	drugstore	kamm	combs
+hair ties	drugstore	haargummi
+hair clips	drugstore	haarklammer
+shower cap	drugstore	duschhaube
+dental floss	drugstore	zahnseide
+floss	drugstore	zahnseide
+mouthwash	drugstore	mundspülung
+interdental brushes	drugstore	interdentalbürste
+toothbrush heads	drugstore	aufsteckbürste
+razors	drugstore	rasierer
+razor blades	drugstore	rasierklinge
+shaving foam	drugstore	rasierschaum
+shaving cream	drugstore	rasierschaum
+shaving gel	drugstore	rasiergel
+shaving brush	drugstore	rasierpinsel
+makeup	drugstore	makeup
+lipstick	drugstore	lippenstift
+lip balm	drugstore	lippenpflege
+lip gloss	drugstore	lipgloss
+mascara	drugstore	mascara
+eyeliner	drugstore	eyeliner
+eyeshadow	drugstore	lidschatten
+concealer	drugstore	concealer
+blush	drugstore	rouge
+makeup brushes	drugstore	schminkpinsel
+makeup wipes	drugstore	abschminktücher
+cotton pads	drugstore	wattepads
+cotton wool	drugstore	watte
+cotton balls	drugstore	watte
+cotton buds	drugstore	wattestäbchen
+cotton swabs	drugstore	wattestäbchen
+nail polish	drugstore	nagellack
+nail varnish	drugstore	nagellack
+nail file	drugstore	nagelfeile	nail files
+nail clippers	drugstore	nagelknipser
+nail scissors	drugstore	nagelschere
+tweezers	drugstore	pinzette
+eyelash curler	drugstore	wimpernzange
+foot file	drugstore	hornhautfeile
+earplugs	drugstore	ohrstöpsel	ear plugs
+hand sanitizer	drugstore	handdesinfektion	hand sanitiser
+wet wipes	drugstore	feuchttücher
+pocket tissues	drugstore	taschentücher
+tampons	drugstore	tampon
+sanitary pads	drugstore	binde
+sanitary towels	drugstore	binde
+panty liners	drugstore	slipeinlage	pantyliners
+menstrual cup	drugstore	menstruationstasse
+condoms	drugstore	kondom
+nappies	drugstore	windel
+baby wipes	drugstore	babytücher
+baby food	drugstore	babynahrung
+baby formula	drugstore	babymilch
+baby bottles	drugstore	babyflasche
+pacifiers	drugstore	schnuller
+teething ring	drugstore	beißring
+bibs	drugstore	lätzchen
+baby shampoo	drugstore	babyshampoo
+baby powder	drugstore	babypuder
+nappy cream	drugstore	wundschutzcreme
+diaper cream	drugstore	wundschutzcreme
+nappy bags	drugstore	windelbeutel
+baby food pouches	drugstore	quetschie
+nursing pads	drugstore	stilleinlagen
+finger paint	drugstore	fingerfarbe
+wall paint	paint	wandfarbe
+emulsion paint	paint	dispersionsfarbe
+varnish	paint	klarlack
+lacquer	paint	lack
+wood stain	paint	beize
+wood preserver	paint	holzschutz
+wood oil	paint	holzöl
+decking oil	paint	terrassenöl
+paint roller	paint	farbrolle	paint rollers
+paint tray	paint	farbwanne
+paintbrush	paint	pinsel	paintbrushes
+masking tape	paint	abdeckband
+painters tape	paint	malerkrepp
+dust sheet	paint	abdeckfolie
+drop cloth	paint	abdeckvlies
+wallpaper	paint	tapete
+wallpaper paste	paint	tapetenkleister
+spackle	paint	spachtelmasse
+putty knife	paint	spachtel
+turpentine	paint	terpentin
+white spirit	paint	verdünner
+paint thinner	paint	verdünner
+spray paint	paint	farbspray
+radiator paint	paint	heizkörperlack
+acrylic paint	paint	acryl
+faucet	plumbing	wasserhahn	faucets
+kitchen tap	plumbing	wasserhahn
+shower head	plumbing	duschkopf
+shower hose	plumbing	duschschlauch
+shower curtain	plumbing	duschvorhang
+toilet seat	plumbing	klobrille
+plunger	plumbing	pümpel
+sink plug	plumbing	abflussstöpsel
+drain pipe	plumbing	abflussrohr
+silicone sealant	plumbing	sanitärsilikon
+plumbers tape	plumbing	teflonband
+tap aerator	plumbing	perlator
+mixer tap	plumbing	mischbatterie
+angle valve	plumbing	eckventil
+radiator thermostat	plumbing	thermostatkopf
+cistern	plumbing	spülkasten
+kitchen sink	plumbing	spülbecken
+washbasin	plumbing	waschbecken
+inlet hose	plumbing	zulaufschlauch
+drain hose	plumbing	abwasserschlauch
+light bulbs	electrical	glühbirne	lightbulbs
+led bulbs	electrical	led birne
+extension cord	electrical	verlängerungskabel	extension cords
+extension lead	electrical	verlängerungskabel	extension leads
+power strip	electrical	steckdosenleiste	power strips
+cable	electrical	kabel	cables
+cable ties	electrical	kabelbinder
+zip ties	electrical	kabelbinder
+fuses	electrical	sicherung
+light switch	electrical	schalter	light switches
+smoke detector	electrical	rauchmelder	smoke detectors
+smoke alarm	electrical	rauchmelder	smoke alarms
+motion sensor	electrical	bewegungsmelder
+timer switch	electrical	zeitschaltuhr
+dimmer switch	electrical	dimmer
+doorbell	electrical	klingel
+fairy lights	electrical	lichterkette
+string lights	electrical	lichterkette
+led strip	electrical	led streifen	led strips
+lamp	electrical	lampe	lamps
+power supply	electrical	netzteil
+electrical tape	electrical	isolierband
+cable reel	electrical	kabeltrommel
+junction box	electrical	abzweigdose
+fan heater	electrical	heizlüfter
+hammer	tools	hammer
+screwdriver	tools	schraubendreher
+drill	tools	bohrmaschine
+cordless drill	tools	akkuschrauber
+drill bits	tools	bohrer
+saw	tools	säge
+saw blade	tools	sägeblatt	saw blades
+pliers	tools	zange
+wrench	tools	schraubenschlüssel
+spanner	tools	schraubenschlüssel
+allen key	tools	inbusschlüssel
+socket wrench	tools	ratsche
+tape measure	tools	maßband
+folding rule	tools	zollstock
+spirit level	tools	wasserwaage
+utility knife	tools	cuttermesser
+sandpaper	tools	schleifpapier
+chisel	tools	meißel
+clamp	tools	zwinge	clamps
+vice	tools	schraubstock	vise
+ladder	tools	leiter
+toolbox	tools	werkzeugkasten
+safety glasses	tools	schutzbrille
+work gloves	tools	arbeitshandschuhe
+dust mask	tools	staubmaske
+glue gun	tools	heißklebepistole
+caulking gun	tools	kartuschenpistole
+soldering iron	tools	lötkolben
+angle grinder	tools	winkelschleifer
+sander	tools	schleifmaschine
+wire brush	tools	drahtbürste
+rust remover	tools	rostlöser
+screws	fasteners	schraube
+wood screws	fasteners	holzschraube
+wall plugs	fasteners	dübel
+drywall anchors	fasteners	hohlraumdübel
+washers	fasteners	unterlegscheibe
+hooks	fasteners	haken
+picture hooks	fasteners	bilderhaken
+adhesive hooks	fasteners	klebehaken
+hinges	fasteners	scharnier
+rivets	fasteners	niete
+drawing pins	fasteners	reißzwecke
+thumbtacks	fasteners	reißzwecke
+padlock	fasteners	vorhängeschloss	padlocks
+carabiner	fasteners	karabiner	carabiners
+rope	fasteners	seil
+wire	fasteners	draht
+duct tape	fasteners	panzertape
+gaffer tape	fasteners	gewebeband
+ratchet strap	fasteners	spanngurt	ratchet straps
+threaded rod	fasteners	gewindestange
+pipe clamp	fasteners	rohrschelle	pipe clamps
+construction adhesive	fasteners	montagekleber
+cement	building	zement
+concrete	building	beton
+mortar	building	mörtel
+plasterboard	building	gipskarton
+drywall	building	gipskarton
+tiles	building	fliese
+tile adhesive	building	fliesenkleber
+grout	building	fugenmasse
+insulation	building	dämmung
+expanding foam	building	bauschaum
+plywood	building	sperrholz
+chipboard	building	spanplatte
+particle board	building	spanplatte
+timber	building	holz
+lumber	building	holz
+laminate flooring	building	laminat
+parquet	building	parkett
+vinyl flooring	building	vinylboden
+gravel	building	kies
+play sand	building	spielsand
+bricks	building	ziegel
+paving stones	building	pflasterstein
+wood glue	building	holzleim
+roofing felt	building	dachpappe
+polystyrene	building	styropor
+skirting board	building	leiste
+baseboard	building	leiste
+potting soil	garden	blumenerde
+compost	garden	kompost
+soil	garden	erde
+fertilizer	garden	dünger	fertiliser
+lawn fertilizer	garden	rasendünger
+mulch	garden	mulch
+bark mulch	garden	rindenmulch
+flower seeds	garden	blumensamen
+grass seed	garden	rasensamen
+flower pots	garden	blumentopf
+plant pots	garden	blumentopf
+planter	garden	pflanzkübel	planters
+window box	garden	blumenkasten
+watering can	garden	gießkanne
+garden hose	garden	gartenschlauch	garden hoses
+hose reel	garden	schlauchtrommel
+sprinkler	garden	rasensprenger	sprinklers
+lawn mower	garden	rasenmäher	lawnmower
+strimmer	garden	rasentrimmer
+string trimmer	garden	rasentrimmer
+weed killer	garden	unkrautvernichter
+slug pellets	garden	schneckenkorn
+rake	garden	rechen
+spade	garden	spaten
+shovel	garden	schaufel
+secateurs	garden	gartenschere
+pruning shears	garden	gartenschere
+hedge trimmer	garden	heckenschere
+garden gloves	garden	gartenhandschuhe
+flower bulbs	garden	blumenzwiebel
+raised bed	garden	hochbeet
+seedlings	garden	setzling
+peat	garden	torf
+snow peas	produce	zuckerschoten
+sanitary napkins	drugstore	binde
+berries	produce	beere
+red peppers	produce	paprika
+green peppers	produce	paprika
+frozen spinach	frozen
+hose pipe	garden	gartenschlauch	hosepipe
+pancake syrup	pantry
+cantaloupe	produce		cantaloupes
+fruit	produce	obst
+plantains	produce
+fennel	produce	fenchel
+pumpkin	produce	kürbis	pumpkins
+swede	produce	steckrübe	swedes
+rocket	produce	rauke
+oyster mushrooms	produce
+salad	produce	salat
+mint	produce	minze
+herbs	produce	kräuter
+buns	bakery	brötchen
+cake	bakery	kuchen	cakes
+sourdough	bakery	sauerteigbrot
+sandwich bread	bakery	toastbrot
+cinnamon rolls	bakery
+pancakes	bakery	pfannkuchen
+sponge cake base	bakery	biskuitboden
+crumpets	bakery
+scones	bakery
+bread sticks	bakery
+coffee creamer	chilled	kaffeesahne
+half and half	chilled	kaffeesahne
+pudding	chilled	pudding
+custard	chilled	vanillecreme
+jello	chilled	götterspeise
+paneer	chilled
+guacamole	chilled
+pie crust	chilled	mürbeteig
+cookie dough	chilled
+mince	meat	hackfleisch
+goose	meat	gans
+ribs	meat	rippchen
+meatballs	meat	bällchen
+hot dogs	meat	wiener
+gammon	meat
+meat	meat	fleisch
+peas	frozen	erbse
+hash browns	frozen	rösti
+gelato	frozen	eis
+sorbet	frozen
+lasagne	frozen	lasagne
+lasagna	frozen	lasagne
+instant noodles	pantry
+golden syrup	pantry
+lemon curd	pantry
+instant coffee	pantry
+sweetcorn	pantry	zuckermais
+soup	pantry	suppe
+sweet chili sauce	pantry
+worcestershire sauce	pantry
+bbq sauce	pantry
+pasta sauce	pantry
+gravy	pantry
+salsa	pantry
+oil	pantry	öl
+nutmeg	pantry	muskat
+smoked paprika	pantry
+chili flakes	pantry		red pepper flakes,crushed red pepper
+chili powder	pantry
+vanilla extract	pantry		vanilla essence
+cardamom	pantry
+garlic powder	pantry
+chia seeds	pantry
+yeast	pantry	hefe
+nuts	pantry	nuss
+cordial	pantry	dicksaft
+chocolates	sweets	praline
+truffles	sweets	trüffel
+rice cakes	sweets
+soda	drinks	limo
+coconut water	drinks
+rose wine	drinks
+lager	drinks	bier
+kitchen towels	household	küchentücher
+tea towels	household
+matches	household	streichhölzer
+mason jars	household	schraubglas
+insect repellent	drugstore	mückenschutz
+nail polish remover	drugstore	entferner
+paint	paint	farbe
+primer	paint	grundierung
+filler	paint	spachtelmasse
+socket	electrical	steckdose	sockets
+plug	electrical	stecker	plugs
+nails	fasteners	nagel
+air conditioner	electrical
+breath mints	sweets
+fish cakes	meat
+mince pies	bakery
+mincemeat	pantry
+split peas	pantry
+mushy peas	pantry
+sourdough starter	pantry
+matcha	pantry
+jelly	pantry	gelee
+loaf	bakery	brot	loaves
+meatloaf	meat		meat loaf
+roasted red peppers	pantry
+toilet rolls	household	toilettenpapier
+loo roll	household	toilettenpapier	loo rolls
+tea lights	household	teelicht
+hamburger buns	bakery	burgerbrötchen
+yams	produce	süßkartoffel
+lambs lettuce	produce	feldsalat
+tomato sauce	pantry
+fish sauce	pantry
+phyllo dough	chilled	strudelteig
+beef stock	pantry		beef broth
+lard	meat	schmalz
+club soda	drinks	mineralwasser
+seltzer	drinks	mineralwasser
+root beer	drinks
+gift wrap	household	geschenkpapier
+hand wash	drugstore	handseife
+dishwasher detergent	household
+foil	household	alufolie
+mint sauce	pantry
+dryer sheets	household
+soda crystals	household		washing soda
+caustic soda	household
+peanut butter cups	sweets
+mixed herbs	pantry
+
+# Reviewed drafts from catalog/drafts/2026-11-26-en-phrases.tsv
+banana bread	bakery
+chicken soup	pantry
+pepperoni pizza	frozen		pepperoni pizzas
