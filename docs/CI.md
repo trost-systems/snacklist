@@ -496,7 +496,18 @@ After every merge, `scripts/merge-pr.sh` starts
 `lib.sh`) and returns. The child keeps none of the caller's files open, so
 the merge lock is free at once. The output goes to
 `.git/hold-flip-draft.log` in the clone. A failure there never changes the
-merge's exit code.
+merge's exit code. Instead, the script writes one line naming the merge and
+the rerun command to that log and to `.git/hold-flip-draft.failed`, and the
+next merge-pr.sh in the clone prints that file first. A run that gets
+through removes its line.
+
+Agents share one clone, and a plain `git fetch origin main` fails with
+`cannot lock ref 'refs/remotes/origin/main'` while another process updates
+that ref. The first run of the hook, after #755, hit this (job 483). The
+script therefore fetches into a ref of its own (`refs/hold-flip-run/<pid>/`,
+deleted again) and never updates `origin/*`. Each fetch is tried 3 times
+(`git_fetch` in `lib.sh`), and so are the fetches of push-pr.sh and
+merge-pr.sh.
 
 The script reads the lines the merge added or changed in
 `site/content/legal/*.md`. It acts when a line sits inside a
@@ -505,7 +516,7 @@ The script reads the lines the merge added or changed in
 still has `holds.<hold>.released` false in `releases/flags.json`. For each
 such hold without an open PR on `hold-flip/<hold>`, it:
 
-1. Branches from `origin/main` and makes the flip Legal reviewed in #710:
+1. Branches from main and makes the flip Legal reviewed in #710:
    `released` true (the note stays), and the date lines (front matter
    `updated:`, `Stand: <D>. <Monat> <YYYY>`, `Last updated: <D> <Month>
    <YYYY>`) set to today in Europe/Berlin. It changes only the legal files
@@ -525,10 +536,8 @@ refuses a PR labelled `do-not-merge`, and so does the box's
 `bin/legal-go-merge`. Remove the label by hand once Legal's GO and Peter's
 yes are recorded, then land the PR as usual.
 
-Only merges through merge-pr.sh start the script. Legal PRs that the box's
-`bin/legal-go-merge` merges (`gh pr merge`, since 26 November) open no flip
-until that script calls it too (NEEDS_LEAD, job 476). Until then, run it by
-hand after such a merge. Guides carry `::: once` blocks too; they are not
+The box's `bin/legal-go-merge` (`gh pr merge`, since 26 November) starts
+the script the same way after each Legal PR it merges. Guides carry `::: once` blocks too; they are not
 legal text and open no flip.
 
 By hand, for a merge made before this existed or a run that failed:

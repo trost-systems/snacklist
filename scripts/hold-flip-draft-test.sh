@@ -2,7 +2,8 @@
 # Tests scripts/hold-flip-draft.sh against a scratch remote, a fake gh and a stub push-pr.sh: legal
 # text behind an unreleased hold opens exactly one draft flip PR, with the enable checklist line once;
 # a rerun, a released hold and a merge without legal text open nothing; `until` blocks, heading
-# gates and two holds in one merge; a PR number for an old merge backfills. Also that run_detached
+# gates and two holds in one merge; a PR number for an old merge backfills; a fetch racing another
+# in the shared clone, and a failed run that says so with its rerun. Also that run_detached
 # (lib.sh), which merge-pr.sh starts it with, leaves no lock held. Run by the lint gate. No network.
 set -euo pipefail
 source "$(dirname "$0")/lib.sh"
@@ -285,6 +286,48 @@ run --dry-run 16
 expect_eq "a dry run calls no gh write and no push-pr.sh" "$(calls)" ""
 expect_eq "a dry run pushes nothing" "$(git --git-dir="$tmp/origin.git" for-each-ref --format='%(refname) %(objectname)')" "$before"
 [[ "$(cat "$tmp/out")" == *'+      "released": true,'* ]] || fail "the dry run prints the flip"
+
+# 8. Another process in the shared clone holds origin/main's lock (it is fetching too): the run
+# fetches into a ref of its own and opens the flip all the same, leaving origin/main and no ref behind.
+merge 18 's/^Notifications: newer\.$/Notifications: newest./' site/content/legal/privacy.md
+git update-ref refs/remotes/origin/main HEAD~1
+tracking="$(git rev-parse origin/main)"
+lock="$(git rev-parse --git-common-dir)/refs/remotes/origin/main.lock"
+touch "$lock"
+git fetch -q origin main 2>/dev/null && fail "the held lock does not stop a plain fetch, so case 8 proves nothing"
+reset_calls
+run 18
+run 18
+expect_eq "a held origin/main lock still opens the flip, once" "$(calls | cut -d' ' -f1-8)" \
+  "create pr create --draft --base main --head hold-flip/push-notifications
+push-pr hold-flip/push-notifications keep-draft=1 skip-checks=1"
+expect_eq "the run leaves origin/main alone" "$(git rev-parse origin/main)" "$tracking"
+expect_eq "the run deletes its private refs" "$(git for-each-ref refs/hold-flip-run)" ""
+rm "$lock"
+
+# 9. A fetch that keeps failing: exit non-zero with one line naming the rerun, on stderr and in
+# .git/hold-flip-draft.failed, which a later run that gets through clears.
+failed="$(git rev-parse --path-format=absolute --git-common-dir)/hold-flip-draft.failed"
+git remote set-url origin "$tmp/gone.git"
+if scripts/hold-flip-draft.sh 18 >"$tmp/out" 2>&1; then fail "a run whose fetch fails exits 0"; fi
+[[ "$(cat "$tmp/out")" == *"hold-flip-draft: FAILED for #18 (exit 1): a draft hold flip may be missing; rerun: scripts/hold-flip-draft.sh 18"* ]] ||
+  fail "a failed run names the rerun on stderr: $(cat "$tmp/out")"
+[[ "$(cat "$failed")" == *"FAILED for #18"*"rerun: scripts/hold-flip-draft.sh 18" ]] || fail "a failed run is recorded in $failed"
+git remote set-url origin "$tmp/origin.git"
+echo "[earlier] hold-flip-draft: FAILED for #5 (exit 1): a draft hold flip may be missing; rerun: scripts/hold-flip-draft.sh 5" >>"$failed"
+run 18
+expect_eq "a run that gets through clears only its own line" "$(cat "$failed")" \
+  "[earlier] hold-flip-draft: FAILED for #5 (exit 1): a draft hold flip may be missing; rerun: scripts/hold-flip-draft.sh 5"
+
+# git_fetch (push-pr.sh and merge-pr.sh fetch origin/main itself): a lock released a moment later
+# costs a retry, not the run.
+git update-ref refs/remotes/origin/main HEAD~1
+touch "$lock"
+(sleep 0.5; rm "$lock") &
+git_fetch -q origin main 2>"$tmp/out" || fail "git_fetch gave up on a lock held for half a second: $(cat "$tmp/out")"
+[[ "$(cat "$tmp/out")" == *"(try 1 of 3); retrying"* ]] || fail "git_fetch's first try met the lock: $(cat "$tmp/out")"
+expect_eq "git_fetch updated origin/main" "$(git rev-parse origin/main)" "$(git rev-parse HEAD)"
+wait
 
 # run_detached: the command outlives the call and keeps no descriptor of the caller's lock.
 if command -v flock >/dev/null; then
