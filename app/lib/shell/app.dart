@@ -8,6 +8,7 @@ import 'package:family_groceries/core/localizations.dart';
 import 'package:family_groceries/core/network.dart';
 import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/core/theme.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/feedback/feedback_context.dart';
 import 'package:family_groceries/feedback/feedback_cubit.dart';
 import 'package:family_groceries/feedback/feedback_inbox.dart';
@@ -436,19 +437,27 @@ class _AppState() extends State<App> {
           builder: (context, child) {
             setDocumentLanguage(Localizations.localeOf(context).languageCode);
             // What a feedback screenshot shows: the app, popups included.
+            // Tab scrolls a control into view above as well as below.
             return _capture.wrap(
-              NoticesHost(
-                popups: _popups,
-                child: RemovedNotices(
-                  router: _router,
-                  child: JoinDecisionNotices(
+              FocusTraversalGroup(
+                policy: ReadingOrderTraversalPolicy(
+                  requestFocusCallback: revealFocus,
+                ),
+                child: NoticesHost(
+                  popups: _popups,
+                  child: RemovedNotices(
                     router: _router,
-                    child: BlocBuilder<SessionCubit, Session>(
-                      builder: (context, session) => session is SessionLoading
-                          ? const Scaffold(
-                              body: Center(child: CircularProgressIndicator()),
-                            )
-                          : child!,
+                    child: JoinDecisionNotices(
+                      router: _router,
+                      child: BlocBuilder<SessionCubit, Session>(
+                        builder: (context, session) => session is SessionLoading
+                            ? const Scaffold(
+                                body: Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              )
+                            : child!,
+                      ),
                     ),
                   ),
                 ),

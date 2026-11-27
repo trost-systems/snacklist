@@ -1,4 +1,5 @@
 import 'package:family_groceries/design/field_border.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/section_label.dart';
 import 'package:family_groceries/design/tokens.g.dart';
@@ -251,14 +252,16 @@ class const _PickRow({
   super.key,
 }) extends StatelessWidget {
   @override
-  Widget build(BuildContext context) => ListTile(
-    minTileHeight: 52,
-    contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-    // The glyph is decoration: the row is named by its label alone.
-    leading: ExcludeSemantics(
-      child: SizedBox(width: 28, child: Center(child: leading)),
+  Widget build(BuildContext context) => FocusRingTile(
+    child: ListTile(
+      minTileHeight: 52,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+      // The glyph is decoration: the row is named by its label alone.
+      leading: ExcludeSemantics(
+        child: SizedBox(width: 28, child: Center(child: leading)),
+      ),
+      title: Text(label),
+      onTap: onTap,
     ),
-    title: Text(label),
-    onTap: onTap,
   );
 }

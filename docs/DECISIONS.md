@@ -19036,3 +19036,45 @@ CP4, ML1, Addendum 2 (26 Nov 2026); details in `docs/done/470-english-catalog.md
 - **`knownFill` lists fills only.** The add sheet's hidden „Schließen“ stop is a focus-order issue; the
   journey already logs it as "focus left the screen", and NEEDS_LEAD holds it.
 
+
+## Job 488: the focus ring on Material list tiles, and the add bar out of the Tab order (27 Nov 2026)
+
+- **A wrapper, `FocusRingTile(child: <tile>)`, not a `ListTile` subclass.** The tiles that need it
+  include `CheckboxListTile`, `RadioListTile` and an `ExpansionTile`, which build their `ListTile`
+  inside, out of reach of a subclass. Like `FocusRingChip`, the wrapper sets `ThemeData.focusColor`
+  transparent below it, not app-wide. That leaks to controls inside a tile. They are icon and text
+  buttons, which have their own ring, and the hex controls, which are `ExcludeFocus`.
+- **The ring follows the tile's own node: the first focus node under the wrapper.** The wrapper's
+  `Focus` (no semantics, never focused, skipped by Tab) is that node's parent. A control inside the tile
+  is one level deeper. An `ExpansionTile`'s rows sit beside its header but are not inside a `ListTile`,
+  so they do not count either. The ring is a rectangle inside the focused tile's own box: all of a
+  `ListTile`, only an `ExpansionTile`'s header. Each rule has a mutant that fails a test.
+- **Keys moved up to the wrapper.** In a `Column` with conditional rows, or the switcher's drag-ordered
+  lists, siblings reconcile by key. A key left one level down would rebuild a tile and drop its focus.
+  The tests that read a `ListTile` by key now read the tile under the keyed wrapper.
+- **Only focusable tiles are wrapped.** A `ListTile` without `onTap` or `onLongPress` takes no focus.
+  The premium screen's lifetime note was wrapped by the codemod (its `onTap` belongs to a link inside)
+  and was unwrapped.
+- **Lint `list-tile-focus-ring`.** It flags a focusable tile that is not the direct `child:` of
+  `FocusRingTile`. On main it finds 36 of the 37 tiles. The 37th, „Zuletzt verwendet“, sits in
+  `shopping_list_view.dart`, which ast-grep's Dart grammar cannot parse (`class const BehindSheet({...});`,
+  a body-less primary constructor, makes the whole file an ERROR node). The rule says so. The tile is
+  wrapped and pinned by its golden case.
+- **The add sheet's hidden stop was the add bar, not „Schließen“.** `_barFocus` in `list_screen.dart`
+  wraps the field to park focus on a close and to take Enter and Escape. It was a Tab stop that draws
+  nothing, between the last row and the field. It is now `skipTraversal`. `requestFocus` and the key
+  handling still work, and the next Tab stop after the last row is the field (caret only, Peter's call).
+  The compact add sheet test walks Tab and fails on main with an extra stop.
+- **In a rounded clip the ring follows the corners.** Mehr's and Einstellungen's rows sit in an `HlGroup`
+  card, whose `ClipRRect` cut a rectangle's corners off and left four loose bars. The ring is now the
+  tile's box intersected with the nearest `RenderClipRRect` above it, both inset. A test pins it as one
+  connected band, and fails without the clip (612 of 1520 px connected).
+- **Tab scrolls up too: `revealFocus`.** Flutter's request for a forward Tab reveals with
+  `keepVisibleAtEnd`, which never scrolls up. So Tab from the clear key to the add sheet's first row, once
+  that row was scrolled above the 3-row window, focused it unseen. The same happens on a scrolled page when
+  Tab wraps from the last control to the first. `revealFocus` reveals at whichever edge the node is past.
+  The list screen's `OrderedTraversalPolicy` and a `ReadingOrderTraversalPolicy` group in the app's
+  builder (around the navigator, where a route's Tab past its edge goes on) use it.
+- **The journey fails a stop that is not drawn.** `knownFill` is gone, and it walks Mehr as well. A stop
+  counts as the add field's caret only when focus is in a text input and nothing but a ≤ 3 px area gained
+  focus colour. The caret is drawn in the focus colour, and the row before loses its ring on the same Tab.

@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:family_groceries/design/hex_border.dart';
 import 'package:family_groceries/design/tokens.g.dart';
+import 'package:flutter/rendering.dart' show RenderClipRRect;
 import 'package:material_ui/material_ui.dart';
 
 /// How far the outer focus ring reached past a control before FH1 (a 2 px
@@ -33,6 +34,37 @@ void paintFocusRing(
     ..strokeWidth = HlFocus.ringWidth
     ..color = color,
 );
+
+/// Tab's focus request ([FocusTraversalPolicy.requestFocusCallback]): focuses
+/// [node] and scrolls it into view whichever side it is on. Flutter's own
+/// scrolls only down for Tab (`keepVisibleAtEnd`), so a Tab onto a control
+/// above the view (the add sheet's first row after the clear key, the first
+/// control of a scrolled page after the last) focused it out of sight.
+void revealFocus(
+  FocusNode node, {
+  ScrollPositionAlignmentPolicy? alignmentPolicy,
+  double? alignment,
+  Duration? duration,
+  Curve? curve,
+}) {
+  node.requestFocus();
+  final context = node.context;
+  if (context == null) {
+    return;
+  }
+  // Each moves only when the node is past its edge, so one of them at most.
+  for (final edge in [
+    ScrollPositionAlignmentPolicy.keepVisibleAtStart,
+    ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
+  ]) {
+    Scrollable.ensureVisible(
+      context,
+      alignmentPolicy: edge,
+      duration: duration ?? Duration.zero,
+      curve: curve ?? Curves.ease,
+    );
+  }
+}
 
 /// Whether a Material control in [states] shows its focus ring: when it has
 /// focus and the user moves focus with keys, as an [InkWell] decides for its
@@ -276,4 +308,150 @@ class const _InkWellRing(
       oldDelegate.color != color ||
       oldDelegate.contour != contour ||
       oldDelegate.outline != outline;
+}
+
+/// A Material list tile ([ListTile], or a tile built on one:
+/// [CheckboxListTile], [RadioListTile], [ExpansionTile]'s header) that shows
+/// keyboard focus as the inset ring instead of its grey focus fill. The
+/// tile's ink reads the fill from [ThemeData.focusColor], so this sets that
+/// transparent below it, as [FocusRingChip] does for a chip.
+///
+/// The ring follows the tile's own focus node: the first one under this
+/// widget. A control inside the tile (a trailing menu button) sits one
+/// level deeper and shows its own focus while the tile shows none; a node
+/// beside the tile's (an [ExpansionTile]'s rows) is not a tile's.
+class const FocusRingTile({required final Widget child, super.key})
+    extends StatefulWidget {
+  @override
+  State<FocusRingTile> createState() => _FocusRingTileState();
+}
+
+class _FocusRingTileState() extends State<FocusRingTile> {
+  final _scope = FocusNode(debugLabel: 'FocusRingTile');
+
+  /// The focused tile's box while it shows the ring, and the box it is
+  /// painted in.
+  (RenderBox, RenderBox)? _ring;
+
+  @override
+  void initState() {
+    super.initState();
+    FocusManager.instance
+      ..addListener(_update)
+      ..addHighlightModeListener(_onHighlightMode);
+  }
+
+  @override
+  void dispose() {
+    FocusManager.instance
+      ..removeListener(_update)
+      ..removeHighlightModeListener(_onHighlightMode);
+    _scope.dispose();
+    super.dispose();
+  }
+
+  void _onHighlightMode(FocusHighlightMode mode) => _update();
+
+  void _update() {
+    if (!mounted) {
+      return;
+    }
+    final focused = FocusManager.instance.primaryFocus;
+    final host = context.findRenderObject();
+    final ring =
+        focused != null &&
+            host is RenderBox &&
+            focused.parent == _scope &&
+            FocusManager.instance.highlightMode ==
+                FocusHighlightMode.traditional &&
+            focused.context?.findAncestorWidgetOfExactType<ListTile>() != null
+        ? switch (focused.context?.findRenderObject()) {
+            final RenderBox tile => (tile, host),
+            _ => null,
+          }
+        : null;
+    if (ring != _ring) {
+      setState(() => _ring = ring);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final ring = _ring;
+    return Focus(
+      focusNode: _scope,
+      canRequestFocus: false,
+      skipTraversal: true,
+      // A semantics node here would cover the tile on web and take its taps.
+      includeSemantics: false,
+      child: CustomPaint(
+        foregroundPainter: ring == null
+            ? null
+            : _TileRing(
+                ring.$1,
+                ring.$2,
+                focusRingColor(SnacklistColors.of(theme.brightness)),
+              ),
+        child: Theme(
+          data: theme.copyWith(focusColor: Colors.transparent),
+          child: widget.child,
+        ),
+      ),
+    );
+  }
+}
+
+/// The ring inside [tile]'s box, painted by [host], a box that holds it:
+/// all of it for a [ListTile], the top for an [ExpansionTile]'s header. In a
+/// rounded clip (an `HlGroup` card) it follows the clip's corners too.
+class const _TileRing(
+  final RenderBox tile,
+  final RenderBox host,
+  final Color color,
+) extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (!tile.attached || !tile.hasSize || !host.attached) {
+      return;
+    }
+    final box = tile.localToGlobal(Offset.zero, ancestor: host) & tile.size;
+    final clip = _roundedClip();
+    paintFocusRing(canvas, (outset) {
+      final rect = Path()
+        ..addRect(box.intersect(Offset.zero & size).inflate(outset));
+      return switch (clip) {
+        final rrect? => Path.combine(
+          PathOperation.intersect,
+          rect,
+          Path()..addRRect(rrect.inflate(outset)),
+        ),
+        null => rect,
+      };
+    }, color);
+  }
+
+  /// The nearest rounded clip above [host], in [host]'s coordinates.
+  RRect? _roundedClip() {
+    var above = host.parent;
+    while (above != null && above is! RenderClipRRect) {
+      above = above.parent;
+    }
+    if (above is! RenderClipRRect || !above.hasSize) {
+      return null;
+    }
+    final at = host.localToGlobal(Offset.zero, ancestor: above);
+    final shape =
+        above.clipper?.getClip(above.size) ??
+        above.borderRadius
+            .resolve(above.textDirection)
+            .toRRect(Offset.zero & above.size);
+    return shape.shift(-at);
+  }
+
+  @override
+  bool shouldRepaint(_TileRing oldDelegate) =>
+      oldDelegate.tile != tile ||
+      oldDelegate.host != host ||
+      oldDelegate.color != color;
 }

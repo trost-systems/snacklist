@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/notices.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/household/household_switcher.dart';
 import 'package:family_groceries/household/invite_repository.dart';
@@ -217,33 +218,39 @@ Widget _voiceRow(
   required VoidCallback onTap,
 }) {
   final t = SnacklistColors.of(Theme.of(context).brightness);
-  return ListTile(
+  return FocusRingTile(
     key: key,
-    minTileHeight: 56,
-    leading: sheetHex(context, icon, current ? t.accentSoft : t.surfaceSunken),
-    title: Text(name),
-    trailing: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (current)
-          Icon(
-            Icons.check,
-            key: const ValueKey('voice-current'),
-            color: t.text,
-          ),
-        if (busy)
-          const Padding(
-            padding: EdgeInsets.all(2),
-            child: SizedBox.square(
-              dimension: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
+    child: ListTile(
+      minTileHeight: 56,
+      leading: sheetHex(
+        context,
+        icon,
+        current ? t.accentSoft : t.surfaceSunken,
+      ),
+      title: Text(name),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (current)
+            Icon(
+              Icons.check,
+              key: const ValueKey('voice-current'),
+              color: t.text,
             ),
-          )
-        else if (more)
-          Icon(Icons.chevron_right, color: t.textMuted),
-      ],
+          if (busy)
+            const Padding(
+              padding: EdgeInsets.all(2),
+              child: SizedBox.square(
+                dimension: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            )
+          else if (more)
+            Icon(Icons.chevron_right, color: t.textMuted),
+        ],
+      ),
+      selected: current,
+      onTap: onTap,
     ),
-    selected: current,
-    onTap: onTap,
   );
 }

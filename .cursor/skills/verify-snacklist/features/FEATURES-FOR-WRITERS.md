@@ -649,15 +649,15 @@ The household picks its currency under „Währung“ (EN "Currency"): euro by d
 
 ## Keyboard focus
 
-**What it does.** When someone moves through the app with a keyboard (or a switch or remote), the control that has focus gets a blue outline drawn inside its own edge: the edge turns blue and a band grows inward from it. On yellow controls (the main button, a picked store chip, the selected tab) the outline is dark navy instead. Nothing around the control moves or gets covered, so spacing looks the same with or without focus. This works on buttons, text fields, chips, list rows, the suggestions while adding, the stores screen and most cards. A text field keeps the outline while you type in it, also after tapping it. Light and dark, with or without hexagons.
+**What it does.** When someone moves through the app with a keyboard (or a switch or remote), the control that has focus gets a blue outline drawn inside its own edge: the edge turns blue and a band grows inward from it. On yellow controls (the main button, a picked store chip, the selected tab) the outline is dark navy instead. Nothing around the control moves or gets covered, so spacing looks the same with or without focus. This works on buttons, text fields, chips, list rows, the suggestions while adding, the stores screen, the rows in „Mehr“ (EN "More"), „Einstellungen“ (EN "Settings") and the household pages, and most cards. A text field keeps the outline while you type in it, also after tapping it. Light and dark, with or without hexagons.
 
 **How to get there.** Nothing to do: press Tab on a keyboard (web, tablet with keyboard), or tap into a text field.
 
 **Never claim.**
-- That every control in the app has the new outline: rows in „Mehr“ (EN "More"), „Einstellungen“ (EN "Settings") and the household pages still show a grey tint when focused, and the „Was brauchst du?“ (EN "What do you need?") field on the list shows only its cursor.
+- That every control in the app has the new outline: the „Was brauchst du?“ (EN "What do you need?") field on the list shows only its cursor.
 - That it changes anything for touch use other than text fields.
 
-**Last verified.** 27 November 2026, code version 35ccf3e5, in the web app (German, light and dark): the guided start's „Wo kauft ihr ein?“ step with the own-store field open, the list, the add sheet, „Läden“ and „Einstellungen“, Tab by Tab; nothing drawn past a control, an outline at every stop except the rows and the field named above.
+**Last verified.** 27 November 2026, code version 1bf04921, in the web app (German, light and dark): the guided start's „Wo kauft ihr ein?“ step with the own-store field open, the list, the add sheet, „Läden“, „Mehr“ and „Einstellungen“, Tab by Tab; nothing drawn past a control, an outline at every stop except the „Was brauchst du?“ field (its cursor), and Tab never stops on something off screen. Earlier: 27 November 2026, code version 35ccf3e5 (rows in „Mehr“ and „Einstellungen“ still grey then).
 
 ## App icon
 

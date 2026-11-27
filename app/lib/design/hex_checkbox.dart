@@ -170,19 +170,21 @@ class const HexCheckboxListTile({
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MergeSemantics(
-    child: ListTile(
-      contentPadding: contentPadding,
-      // The row takes focus and taps; the box only shows the value.
-      leading: ExcludeFocus(
-        child: HexCheckbox(value: value, onChanged: onChanged),
+    child: FocusRingTile(
+      child: ListTile(
+        contentPadding: contentPadding,
+        // The row takes focus and taps; the box only shows the value.
+        leading: ExcludeFocus(
+          child: HexCheckbox(value: value, onChanged: onChanged),
+        ),
+        title: title,
+        subtitle: subtitle,
+        enabled: onChanged != null,
+        onTap: switch (onChanged) {
+          final changed? => () => changed(!value),
+          null => null,
+        },
       ),
-      title: title,
-      subtitle: subtitle,
-      enabled: onChanged != null,
-      onTap: switch (onChanged) {
-        final changed? => () => changed(!value),
-        null => null,
-      },
     ),
   );
 }

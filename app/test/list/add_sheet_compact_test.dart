@@ -5,12 +5,14 @@ import 'package:family_groceries/core/localizations.dart';
 import 'package:family_groceries/core/theme.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/add_sheet/add_sheet_cubit.dart';
+import 'package:family_groceries/list/add_sheet/suggestion.dart';
 import 'package:family_groceries/list/dictation.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_screen.dart';
 import 'package:family_groceries/list/list_view/item_row.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/store_name_field.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -133,6 +135,82 @@ void main() {
     expect(sheetCubit(tester).state.open, isFalse);
     expect(sheet(), findsNothing);
   }
+
+  // Job 488: Tab after the last row went to the add bar around the field, a
+  // stop that draws nothing, before it reached the field; and from the clear
+  // key to a first row scrolled out above the window, which stayed there.
+  testWidgets('Tab stops only on what is drawn: the rows, then the field', (
+    tester,
+  ) async {
+    const names = [
+      'Joghu',
+      'Joghurtdrink',
+      'Sojajoghurt',
+      'Joghurt griechisch',
+      'Trinkjoghurt',
+    ];
+    await pumpList(
+      tester,
+      seed: (r) => r.suggestions['Joghu'] = [
+        for (final (i, name) in names.indexed)
+          Suggestion(
+            i == 0 ? SuggestionSource.typed : SuggestionSource.catalog,
+            ParsedEntry(name: name),
+          ),
+      ],
+    );
+    await open(tester);
+    await tester.enterText(field(), 'Joghu');
+    await tester.pumpAndSettle();
+    final input = tester
+        .widget<EditableText>(find.byType(EditableText))
+        .focusNode;
+    final screen = Offset.zero & tester.view.physicalSize / 3;
+    final window = tester.getRect(key('add-suggestions'));
+    // Each stop: whether it is a row, after the scroll that showed it. Two
+    // rounds: in the second the first rows sit above the window.
+    final stops = <bool>[];
+    var rounds = 0;
+    for (var i = 0; i < 24; i++) {
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pumpAndSettle();
+      final node = FocusManager.instance.primaryFocus!;
+      if (node == input) {
+        if (++rounds == 2) {
+          break;
+        }
+        continue;
+      }
+      final box = node.context!.findRenderObject()! as RenderBox;
+      final rect = box.localToGlobal(Offset.zero) & box.size;
+      final row = find
+          .ancestor(
+            of: find.byElementPredicate(
+              (e) => e == node.context,
+              skipOffstage: false,
+            ),
+            matching: find.byKey(
+              const ValueKey('add-suggestions'),
+              skipOffstage: false,
+            ),
+          )
+          .evaluate()
+          .isNotEmpty;
+      expect(screen.intersect(rect), rect, reason: 'stop $i off screen');
+      if (row) {
+        expect(window.intersect(rect), rect, reason: 'stop $i clipped');
+      }
+      stops.add(row);
+    }
+    expect(FocusManager.instance.primaryFocus, input, reason: 'back at it');
+    // The clear key, every row, then the field: nothing in between.
+    expect(stops, [
+      for (var round = 0; round < 2; round++) ...[
+        false,
+        for (final _ in names) true,
+      ],
+    ]);
+  });
 
   group('after an add', () {
     testWidgets('no close key, no added note, no Rückgängig: one row of '

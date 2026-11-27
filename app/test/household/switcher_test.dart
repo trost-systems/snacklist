@@ -607,7 +607,11 @@ void main() {
         findsOneWidget,
       );
       expect(
-        tester.widget<ListTile>(row).textColor,
+        tester
+            .widget<ListTile>(
+              find.descendant(of: row, matching: find.byType(ListTile)),
+            )
+            .textColor,
         SnacklistColors.light.textMuted,
       );
       await tester.tap(row);

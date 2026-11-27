@@ -1,10 +1,11 @@
-// Theme `theme-focus`: the keyboard focus indicator (FH1, job 487). Tab walks the guided start's
-// stores step (chips, a picked chip, the own-store field, „Eigenen Laden hinzufügen“), the list,
-// the add sheet with „Joghu“ typed, Läden and Einstellungen; each stop is a PNG. The pixels that
+// Theme `theme-focus`: the keyboard focus indicator (FH1, jobs 487 and 488). Tab walks the guided
+// start's stores step (chips, a picked chip, the own-store field, „Eigenen Laden hinzufügen“), the
+// list, the add sheet with „Joghu“ typed, Läden, Mehr and Einstellungen (list tiles); each stop is a
+// PNG. The pixels that
 // changed from the stop before are split into areas and compared with the control under them:
 // FH1 paints only inside the control, so no area may reach past it (the outer ring before reached
 // 5 px), and each stop needs the focus colour (cobalt, navy on honey) come in a band at least
-// about 2 px wide (WCAG 2.4.13); `knownFill` lists the controls that still show a grey fill, with why.
+// about 2 px wide (WCAG 2.4.13). Every stop must be drawn: a Tab onto a control not on screen fails.
 // A step that scrolled is shown, not measured.
 //
 //   cd .cursor/skills/verify-snacklist && node journeys/theme-focus.mjs <evidence dir> [--lang de|en] [--dark] [--stops N]
@@ -22,10 +23,6 @@ if (!dir) throw new Error('usage: theme-focus.mjs <evidence dir> [--lang de|en] 
 // The focus colours of the theme: cobalt, and navy on a honey face (design/tokens).
 const tokens = JSON.parse(readFileSync(`${repo}/design/tokens/snacklist.tokens.json`, 'utf8'));
 const inks = ['accent', 'on-honey'].map((k) => tokens.color[dark ? 'dark' : 'light'][k].$value.components.map((c) => Math.round(c * 255)));
-// Controls that still show Material's grey focus fill, with the reason; a stop on one is logged, not failed.
-const knownFill = [
-  { name: /^(Sprache|Language)\b/, why: 'a ListTile row: the follow-up job in NEEDS_LEAD „Job 487“' },
-];
 
 const log = logger(dir);
 const inst = instance();
@@ -176,20 +173,19 @@ async function walk(screen) {
         const el = document.activeElement;
         return (el?.getAttribute('aria-label') || el?.textContent || '').trim().split('\n')[0] ?? '';
       });
-      const known = knownFill.find((k) => k.name.test(focused) || found.some((b) => k.name.test(owners(b, [...before, ...after])?.name ?? '')));
-      // Only a caret blinked: focus is in the add field, which has no ring (the open question in
-      // NEEDS_LEAD „Job 487“); a field with the ring changes more than its caret.
-      const caret = found.length > 0 && found.every((b) => b.w <= 3);
+      // Focus came to a text input and only its caret appeared (the control before may have lost
+      // its ring, a scrollbar may have faded): the add field, which keeps the caret and no ring
+      // (Peter, 27 Nov 2026); a field with the ring changes more than its caret.
+      const inField = await page.evaluate(() => ['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName ?? ''));
+      const caret = inField && found.some((b) => b.w <= 3) && found.every((b) => b.w <= 3 || b.ink < 4);
       // Every larger area only lost the focus colour: focus went to a control that is not on
-      // screen. Logged, not failed: no indicator design can show it.
+      // screen (job 488 took the add bar out of the Tab order for this).
       const away = found.some((b) => b.lost > 0) && found.every((b) => b.ink < 4 && (b.lost > 0 || b.w * b.h < 400));
       if (band < 1.5 && away) {
         log(`${step}: focus left the screen (a control not drawn took it)`);
         offscreen.push(step);
       } else if (band < 1.5 && caret) {
-        log(`${step}: only a caret changed: the add field, no ring (NEEDS_LEAD „Job 487“)`);
-      } else if (band < 1.5 && known) {
-        log(`${step}: no focus colour on ${JSON.stringify(focused)}, known: ${known.why}`);
+        log(`${step}: only a caret changed: the add field, caret only`);
       } else if (band < 1.5) {
         unseen.push(`${step} ${JSON.stringify(named || focused)} (${band.toFixed(1)} px)`);
       }
@@ -250,13 +246,14 @@ try {
 
   await openTab(page, L, 'tabMore');
   await page.waitForTimeout(600);
+  await walk('more');
   await page.getByRole('button', { name: L('settingsTitle'), exact: true }).first().click();
   await page.waitForTimeout(800);
   await walk('settings');
 
   const over = measured.filter((m) => m.past > 1);
   log(`measured ${measured.length} changed areas; the largest reaches ${Math.max(0, ...measured.map((m) => m.past)).toFixed(1)} px past its control`);
-  if (offscreen.length) log(`focus left the screen at: ${offscreen.join('; ')}`);
+  if (offscreen.length) throw new Error(`focus left the screen at: ${offscreen.join('; ')}`);
   if (unseen.length) throw new Error(`no focus indicator at: ${unseen.join('; ')}`);
   if (over.length) throw new Error(`focus paint past the control: ${over.map((m) => `${m.step} ${JSON.stringify(m.name)} ${m.past.toFixed(1)} px`).join('; ')}`);
   if (errors.length) throw new Error(`page errors: ${errors.join('; ')}`);

@@ -1,6 +1,7 @@
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/language.dart';
 import 'package:family_groceries/core/theme.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/group_card.dart';
 import 'package:family_groceries/design/hex_radio.dart';
 import 'package:family_groceries/design/hex_segmented.dart';
@@ -83,24 +84,26 @@ class const SettingsScreen({
         HlGroup(
           top: HlSpace.s2,
           children: [
-            ListTile(
+            FocusRingTile(
               key: const ValueKey('settings-language'),
-              minTileHeight: 56,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: HlSpace.s3,
-              ),
-              leading: HlRowHex(Icons.language, face: t.surfaceSunken),
-              title: HlWordWrapText(l10n.language),
-              subtitle: HlWordWrapText(switch (context
-                  .watch<LanguageCubit>()
-                  .state) {
-                final picked? => picked.nativeName,
-                null => l10n.languageSystemPicked(
-                  deviceLanguage(context).nativeName,
+              child: ListTile(
+                minTileHeight: 56,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: HlSpace.s3,
                 ),
-              }),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.go(languagePath),
+                leading: HlRowHex(Icons.language, face: t.surfaceSunken),
+                title: HlWordWrapText(l10n.language),
+                subtitle: HlWordWrapText(switch (context
+                    .watch<LanguageCubit>()
+                    .state) {
+                  final picked? => picked.nativeName,
+                  null => l10n.languageSystemPicked(
+                    deviceLanguage(context).nativeName,
+                  ),
+                }),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.go(languagePath),
+              ),
             ),
           ],
         ),

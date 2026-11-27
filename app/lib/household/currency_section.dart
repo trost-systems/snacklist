@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:family_groceries/analytics/flags.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/section_label.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/list_cubit.dart';
@@ -27,13 +28,15 @@ class const CurrencySection({super.key}) extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         HlSectionLabel(l10n.currencyTitle),
-        ListTile(
+        FocusRingTile(
           key: const ValueKey('household-currency'),
-          leading: const Icon(Icons.payments_outlined),
-          title: Text(_name(context, code)),
-          subtitle: Text(l10n.currencyHint),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => unawaited(_pick(context, cubit, code)),
+          child: ListTile(
+            leading: const Icon(Icons.payments_outlined),
+            title: Text(_name(context, code)),
+            subtitle: Text(l10n.currencyHint),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => unawaited(_pick(context, cubit, code)),
+          ),
         ),
       ],
     );
@@ -61,10 +64,12 @@ class const CurrencySection({super.key}) extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 for (final code in currencies)
-                  RadioListTile<String>(
+                  FocusRingTile(
                     key: ValueKey('currency-$code'),
-                    value: code,
-                    title: Text(_name(dialog, code)),
+                    child: RadioListTile<String>(
+                      value: code,
+                      title: Text(_name(dialog, code)),
+                    ),
                   ),
               ],
             ),

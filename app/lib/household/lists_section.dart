@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:family_groceries/core/theme.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/section_label.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/list_cubit.dart';
@@ -75,11 +76,13 @@ class const ListsSection({super.key}) extends StatelessWidget {
               ],
             ),
           ),
-        ListTile(
+        FocusRingTile(
           key: const ValueKey('list-new'),
-          leading: const Icon(Icons.add),
-          title: Text(l10n.listNew),
-          onTap: () => unawaited(addList(context)),
+          child: ListTile(
+            leading: const Icon(Icons.add),
+            title: Text(l10n.listNew),
+            onTap: () => unawaited(addList(context)),
+          ),
         ),
       ],
     );

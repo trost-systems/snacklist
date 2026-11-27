@@ -8,6 +8,7 @@ import 'package:family_groceries/core/guides.dart';
 import 'package:family_groceries/core/legal_links.dart';
 import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/design/count_badge.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/group_card.dart';
 import 'package:family_groceries/design/hex_switch.dart';
 import 'package:family_groceries/design/pointy_hex.dart';
@@ -598,36 +599,38 @@ class const _Row(
   @override
   Widget build(BuildContext context) {
     final t = SnacklistColors.of(Theme.of(context).brightness);
-    return ListTile(
+    return FocusRingTile(
       key: ValueKey(item.key),
-      minTileHeight: 52,
-      contentPadding: const EdgeInsets.symmetric(horizontal: HlSpace.s3),
-      leading: HlRowHex(
-        icon ?? item.icon,
-        face: switch (item.tint) {
-          _Tint.honey => t.honeySoft,
-          _Tint.cobalt => t.accentSoft,
-          _Tint.mint => t.mintSoft,
-          _Tint.plain => t.surfaceSunken,
-        },
-      ),
-      title: HlWordWrapText(label, semanticsLabel: semanticsLabel),
-      subtitle: switch (subtitle) {
-        final text? => HlWordWrapText(text),
-        null => null,
-      },
-      trailing: switch (trailing) {
-        _Trailing.chevron when badge != null => Row(
-          mainAxisSize: MainAxisSize.min,
-          spacing: HlSpace.s2,
-          children: [?badge, const Icon(Icons.chevron_right)],
+      child: ListTile(
+        minTileHeight: 52,
+        contentPadding: const EdgeInsets.symmetric(horizontal: HlSpace.s3),
+        leading: HlRowHex(
+          icon ?? item.icon,
+          face: switch (item.tint) {
+            _Tint.honey => t.honeySoft,
+            _Tint.cobalt => t.accentSoft,
+            _Tint.mint => t.mintSoft,
+            _Tint.plain => t.surfaceSunken,
+          },
         ),
-        _Trailing.chevron => const Icon(Icons.chevron_right),
-        _Trailing.external => const Icon(Icons.open_in_new, size: 18),
-        _Trailing.none => null,
-      },
-      selected: selected,
-      onTap: onTap,
+        title: HlWordWrapText(label, semanticsLabel: semanticsLabel),
+        subtitle: switch (subtitle) {
+          final text? => HlWordWrapText(text),
+          null => null,
+        },
+        trailing: switch (trailing) {
+          _Trailing.chevron when badge != null => Row(
+            mainAxisSize: MainAxisSize.min,
+            spacing: HlSpace.s2,
+            children: [?badge, const Icon(Icons.chevron_right)],
+          ),
+          _Trailing.chevron => const Icon(Icons.chevron_right),
+          _Trailing.external => const Icon(Icons.open_in_new, size: 18),
+          _Trailing.none => null,
+        },
+        selected: selected,
+        onTap: onTap,
+      ),
     );
   }
 }

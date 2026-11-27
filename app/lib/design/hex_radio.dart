@@ -153,15 +153,17 @@ class const HexRadioTile<T>({
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MergeSemantics(
-    child: ListTile(
-      // The row takes focus and taps; the radio only shows the pick.
-      leading: ExcludeFocus(
-        child: HexRadio<T>(value: value, enabled: enabled),
+    child: FocusRingTile(
+      child: ListTile(
+        // The row takes focus and taps; the radio only shows the pick.
+        leading: ExcludeFocus(
+          child: HexRadio<T>(value: value, enabled: enabled),
+        ),
+        title: title,
+        subtitle: subtitle,
+        enabled: enabled,
+        onTap: () => RadioGroup.maybeOf<T>(context)?.onChanged(value),
       ),
-      title: title,
-      subtitle: subtitle,
-      enabled: enabled,
-      onTap: () => RadioGroup.maybeOf<T>(context)?.onChanged(value),
     ),
   );
 }

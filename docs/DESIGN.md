@@ -173,9 +173,12 @@ because a button's text style replaces the theme's instead of merging.
   `FocusRingChip` and `RingHexBorder` do it for chips, `FocusRingInkWell`
   for InkWell rows and cards (the stores screen's pills, the list and add
   sheet rows, sticker cards with `HlSticker.innerOutline`). When it shows did not change: a text field keeps it after
-  a tap, the other controls show it for keyboard focus. `ListTile` rows (More,
-  settings, household) still show Material's grey focus fill, and the
-  list's add field shows only its caret (both open, `docs/done/487.md`).
+  a tap, the other controls show it for keyboard focus. `FocusRingTile`
+  does it for Material list tiles (`ListTile`, `CheckboxListTile`,
+  `RadioListTile`, an `ExpansionTile`'s header and the hex switch, check box
+  and radio tiles; lint `list-tile-focus-ring`, job 488): a rectangle inside
+  the tile while the tile itself has focus, not while a control inside it
+  does. The list's add field shows only its caret (Peter, 27 Nov 2026).
 - `tactile.dart`: `TactileFace` and `tactileButtonStyle`. The face rests on
   its edge, lifts 2 px on hover, sinks 4 px flush into the edge on press in
   70 ms, and springs back in 160 ms on the bounce curve. A disabled face sits

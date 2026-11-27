@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:family_groceries/core/environment.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/section_label.dart';
 import 'package:family_groceries/household/currency_section.dart';
 import 'package:family_groceries/household/default_list.dart';
@@ -151,13 +152,19 @@ class _HouseholdViewState() extends State<_HouseholdView> {
             ),
           },
         ),
-        ListTile(
+        FocusRingTile(
           key: const ValueKey('household-invite'),
-          leading: const Icon(Icons.person_add_outlined),
-          title: Text(l10n.inviteSheetTitle),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => unawaited(
-            showInviteSheet(context, household, from: InviteContext.household),
+          child: ListTile(
+            leading: const Icon(Icons.person_add_outlined),
+            title: Text(l10n.inviteSheetTitle),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => unawaited(
+              showInviteSheet(
+                context,
+                household,
+                from: InviteContext.household,
+              ),
+            ),
           ),
         ),
         const ListsSection(),
@@ -203,24 +210,32 @@ class _HouseholdViewState() extends State<_HouseholdView> {
           lists: context.select<ListCubit?, List<HouseholdList>>(
             (list) => list?.state.catalog.lists ?? const [],
           ),
-          builder: (context, list, pick) => ListTile(
+          builder: (context, list, pick) => FocusRingTile(
             key: const ValueKey('household-default-list'),
-            leading: const Icon(Icons.checklist),
-            title: Text(l10n.defaultListTitle),
-            subtitle: Text(list, maxLines: 1, overflow: TextOverflow.ellipsis),
-            trailing: const Icon(Icons.expand_more),
-            onTap: pick,
+            child: ListTile(
+              leading: const Icon(Icons.checklist),
+              title: Text(l10n.defaultListTitle),
+              subtitle: Text(
+                list,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              trailing: const Icon(Icons.expand_more),
+              onTap: pick,
+            ),
           ),
         ),
         const SizedBox(height: 16),
-        ListTile(
+        FocusRingTile(
           key: const ValueKey('household-leave'),
-          leading: const Icon(Icons.logout),
-          iconColor: theme.colorScheme.error,
-          textColor: theme.colorScheme.error,
-          title: Text(l10n.leaveHousehold),
-          enabled: !_busy,
-          onTap: () => unawaited(_leave()),
+          child: ListTile(
+            leading: const Icon(Icons.logout),
+            iconColor: theme.colorScheme.error,
+            textColor: theme.colorScheme.error,
+            title: Text(l10n.leaveHousehold),
+            enabled: !_busy,
+            onTap: () => unawaited(_leave()),
+          ),
         ),
       ],
     );

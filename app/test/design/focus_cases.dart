@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import 'package:family_groceries/core/localizations.dart';
 import 'package:family_groceries/core/theme.dart';
 import 'package:family_groceries/design/focus_ring.dart';
+import 'package:family_groceries/design/group_card.dart';
 import 'package:family_groceries/design/hex_checkbox.dart';
 import 'package:family_groceries/design/hex_pill.dart';
 import 'package:family_groceries/design/hex_radio.dart';
@@ -323,6 +324,143 @@ final focusCases = <FocusCase>[
       honey: picked,
       inkWell: false,
     ),
+  (
+    name: 'list tile',
+    build: () => SizedBox(
+      width: 300,
+      child: FocusRingTile(
+        child: ListTile(
+          title: const Text('Sprache'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () {},
+        ),
+      ),
+    ),
+    node: _above(find.text('Sprache')),
+    bounds: _rectOf(find.byType(ListTile)),
+    honey: false,
+    inkWell: true,
+  ),
+  for (final on in [false, true]) ...[
+    (
+      name: on ? 'switch tile on' : 'switch tile off',
+      build: () => SizedBox(
+        width: 300,
+        child: HexSwitchTile(
+          title: const Text('Erinnerungen'),
+          value: on,
+          onChanged: (_) {},
+        ),
+      ),
+      node: _above(find.text('Erinnerungen')),
+      bounds: _rectOf(find.byType(ListTile)),
+      honey: false,
+      inkWell: true,
+    ),
+    (
+      name: on ? 'checked check box tile' : 'check box tile',
+      build: () => SizedBox(
+        width: 300,
+        child: HexCheckboxListTile(
+          title: const Text('Preise'),
+          value: on,
+          onChanged: (_) {},
+        ),
+      ),
+      node: _above(find.text('Preise')),
+      bounds: _rectOf(find.byType(ListTile)),
+      honey: false,
+      inkWell: true,
+    ),
+    (
+      name: on ? 'picked radio tile' : 'radio tile',
+      build: () => SizedBox(
+        width: 300,
+        child: RadioGroup<int>(
+          groupValue: on ? 1 : 0,
+          onChanged: (_) {},
+          child: const HexRadioTile<int>(value: 1, title: Text('Euro')),
+        ),
+      ),
+      node: _above(find.text('Euro')),
+      bounds: _rectOf(find.byType(ListTile)),
+      honey: false,
+      inkWell: true,
+    ),
+  ],
+  (
+    name: 'tile in a group',
+    build: () => SizedBox(
+      width: 360,
+      child: HlGroup(
+        top: 0,
+        children: [
+          FocusRingTile(
+            child: ListTile(title: const Text('Konto'), onTap: () {}),
+          ),
+          FocusRingTile(
+            child: ListTile(title: const Text('Hilfe'), onTap: () {}),
+          ),
+        ],
+      ),
+    ),
+    node: _above(find.text('Konto')),
+    bounds: _rectOf(find.byType(ListTile).first),
+    honey: false,
+    inkWell: true,
+  ),
+  (
+    name: 'Material check box tile',
+    build: () => SizedBox(
+      width: 300,
+      child: FocusRingTile(
+        child: CheckboxListTile(
+          title: const Text('Verstanden'),
+          value: true,
+          onChanged: (_) {},
+        ),
+      ),
+    ),
+    node: _above(find.text('Verstanden')),
+    bounds: _rectOf(find.byType(ListTile)),
+    honey: false,
+    inkWell: true,
+  ),
+  (
+    name: 'Material radio tile',
+    build: () => SizedBox(
+      width: 300,
+      child: RadioGroup<int>(
+        groupValue: 1,
+        onChanged: (_) {},
+        child: const FocusRingTile(
+          child: RadioListTile<int>(value: 1, title: Text('Franken')),
+        ),
+      ),
+    ),
+    node: _above(find.text('Franken')),
+    bounds: _rectOf(find.byType(ListTile)),
+    honey: false,
+    inkWell: true,
+  ),
+  (
+    name: 'open expansion tile',
+    build: () => SizedBox(
+      width: 300,
+      child: FocusRingTile(
+        child: ExpansionTile(
+          title: const Text('Zuletzt benutzt'),
+          initiallyExpanded: true,
+          children: [InkWell(onTap: () {}, child: const Text('Butter'))],
+        ),
+      ),
+    ),
+    node: _above(find.text('Zuletzt benutzt')),
+    // The header only, not the rows below it.
+    bounds: _rectOf(find.byType(ListTile)),
+    honey: false,
+    inkWell: true,
+  ),
 ];
 
 extension on Rect {
