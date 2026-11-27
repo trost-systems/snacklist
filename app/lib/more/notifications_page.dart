@@ -35,12 +35,11 @@ class const NotificationsPage({super.key}) extends StatelessWidget {
 }
 
 /// Whether the page has a section to show under [flags]: the household-add
-/// alert with `push-household-add` (its name switch also on the web), the
-/// shopping reminders with `push-shopping-reminders` or the weekday chips
-/// with `push-shopping-day`, both in a build with push.
+/// group whenever the app has it, since its name switch is never flagged
+/// (N-425), the shopping reminders with `push-shopping-reminders` or the
+/// weekday chips with `push-shopping-day`, both in a build with push.
 bool notificationsShown(BuildContext context, Flags? flags) =>
-    ((flags?.isOn(pushHouseholdAddFlag) ?? false) &&
-        context.read<HouseholdAddAlert?>() != null) ||
+    context.read<HouseholdAddAlert?>() != null ||
     ((flags?.isOn(shoppingRemindersFlag) ?? false) &&
         context.read<ShoppingReminders?>() != null) ||
     ((flags?.isOn(shoppingDayFlag) ?? false) &&

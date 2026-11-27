@@ -13,10 +13,12 @@ import 'package:material_ui/material_ui.dart';
 
 /// Mitteilungen's household-add group (job 377, its own More page since job
 /// 463): the switch for the push when another member adds an item, shown on
-/// iOS and Android builds with push, and the switch that leaves the user's
-/// name out, everywhere; while the `push-household-add` flag is on. Off by
-/// default. A tap moves a switch at once; one the server or the OS refuses
-/// goes back, with a notice.
+/// iOS and Android builds with push while the `push-household-add` flag is
+/// on, and the switch that leaves the user's name out, always and everywhere:
+/// members the flag reaches first may name this user, so the objection (Art.
+/// 21, Legal N-425) cannot wait for it. Off by default. A tap moves a switch
+/// at once; one the server or the OS refuses goes back, with a notice. A
+/// choice the server could not tell is no switch but a line to try again.
 class const HouseholdAddSettings({super.key}) extends StatefulWidget {
   @override
   State<HouseholdAddSettings> createState() => _HouseholdAddSettingsState();
@@ -29,6 +31,12 @@ class _HouseholdAddSettingsState() extends State<HouseholdAddSettings> {
   bool? _nameHidden;
   var _onTaps = 0;
   var _nameHiddenTaps = 0;
+
+  /// The last read of the choice failed.
+  var _loadFailed = false;
+
+  /// A read of the choice is under way.
+  var _loading = true;
 
   /// Taps reach the alert one after another, so a quick on and off are
   /// saved in the order they were made.
@@ -45,9 +53,22 @@ class _HouseholdAddSettingsState() extends State<HouseholdAddSettings> {
       }
       final alert = context.read<HouseholdAddAlert?>();
       if (alert != null) {
-        unawaited(alert.refresh(Localizations.localeOf(context).languageCode));
+        unawaited(_load(alert));
       }
     });
+  }
+
+  Future<void> _load(HouseholdAddAlert alert) async {
+    setState(() => _loading = true);
+    final read = await alert.refresh(
+      Localizations.localeOf(context).languageCode,
+    );
+    if (mounted) {
+      setState(() {
+        _loading = false;
+        _loadFailed = !read;
+      });
+    }
   }
 
   Future<void> _tell(HouseholdAddResult result) async {
@@ -111,13 +132,55 @@ class _HouseholdAddSettingsState() extends State<HouseholdAddSettings> {
     );
     final alert = context.watch<HouseholdAddAlert?>();
     final choice = alert?.state;
-    if (!flag || alert == null || choice == null) {
+    if (alert == null) {
       return const SizedBox.shrink();
+    }
+    if (choice == null) {
+      // The name switch must not go missing unseen (N-425); it is never
+      // drawn from a guess, which could show off for an objection on file.
+      // A retry keeps the failure line, so the page is never blank.
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(
+          HlSpace.s5,
+          HlSpace.s4,
+          HlSpace.s4,
+          0,
+        ),
+        child: _loadFailed
+            ? Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: HlSpace.s2,
+                children: [
+                  Text(
+                    l10n.feedbackLoadFailed,
+                    key: const ValueKey('settings-push-load-failed'),
+                  ),
+                  TextButton(
+                    key: const ValueKey('settings-push-retry'),
+                    onPressed: _loading ? null : () => unawaited(_load(alert)),
+                    child: Text(l10n.retry),
+                  ),
+                ],
+              )
+            : Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: _loading
+                    ? SizedBox.square(
+                        key: const ValueKey('settings-push-loading'),
+                        dimension: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          semanticsLabel: l10n.loading,
+                        ),
+                      )
+                    : null,
+              ),
+      );
     }
     // The page's title says Mitteilungen; the group needs no label.
     return HlGroup(
       children: [
-        if (alert.canNotify)
+        if (flag && alert.canNotify)
           HexSwitchTile(
             key: const ValueKey('settings-push-household-add'),
             leading: HlRowHex(Icons.notifications_none, face: t.surfaceSunken),
