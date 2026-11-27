@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'dart:ui' show SemanticsHitTestBehavior, SemanticsRole;
 
 import 'package:family_groceries/analytics/flags.dart';
+import 'package:family_groceries/core/screen_reader.dart';
 import 'package:family_groceries/core/scroll_through.dart';
 import 'package:family_groceries/design/hex_border.dart';
 import 'package:family_groceries/design/motion.dart';
@@ -12,8 +13,12 @@ import 'package:family_groceries/feedback/feedback_inbox.dart';
 import 'package:family_groceries/feedback/screen_capture.dart';
 import 'package:family_groceries/feedback/shake.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
+import 'package:family_groceries/list/list_cubit.dart';
+import 'package:family_groceries/list/list_names.dart';
 import 'package:family_groceries/list/list_repository.dart';
+import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/log/trip_repository.dart';
+import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/shell/list_scope.dart';
 import 'package:family_groceries/trip/trip_repository.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -208,100 +213,148 @@ class _AppShellState() extends State<AppShell> {
       repositories: widget.repositories,
       trips: widget.trips,
       tripSessions: widget.tripSessions,
-      child: ShakeToFeedback(
-        enabled: shake,
-        samples: widget.shakeSamples,
-        child: SheetOpen(
-          notifier: _sheetOpen,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              if (constraints.maxWidth >= wideLayout) {
-                return Scaffold(
-                  body: Row(
-                    children: [
-                      NavigationRail(
-                        selectedIndex: switch (shown.indexWhere(
-                          (d) => d.branch == branch,
-                        )) {
-                          -1 => null,
-                          final i => i,
-                        },
-                        onDestinationSelected: (i) =>
-                            unawaited(_select(shown[i])),
-                        labelType: NavigationRailLabelType.all,
-                        backgroundColor: Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerLow,
-                        destinations: [
-                          for (final destination in shown)
-                            NavigationRailDestination(
-                              icon: Icon(
-                                destination.icon,
-                                key: destination.key,
+      child: _ListArrival(
+        branch: branch,
+        child: ShakeToFeedback(
+          enabled: shake,
+          samples: widget.shakeSamples,
+          child: SheetOpen(
+            notifier: _sheetOpen,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                if (constraints.maxWidth >= wideLayout) {
+                  return Scaffold(
+                    body: Row(
+                      children: [
+                        NavigationRail(
+                          selectedIndex: switch (shown.indexWhere(
+                            (d) => d.branch == branch,
+                          )) {
+                            -1 => null,
+                            final i => i,
+                          },
+                          onDestinationSelected: (i) =>
+                              unawaited(_select(shown[i])),
+                          labelType: NavigationRailLabelType.all,
+                          backgroundColor: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerLow,
+                          destinations: [
+                            for (final destination in shown)
+                              NavigationRailDestination(
+                                icon: Icon(
+                                  destination.icon,
+                                  key: destination.key,
+                                ),
+                                selectedIcon: Icon(destination.selectedIcon),
+                                label: Text(destination.label(l10n)),
                               ),
-                              selectedIcon: Icon(destination.selectedIcon),
-                              label: Text(destination.label(l10n)),
+                          ],
+                        ),
+                        const VerticalDivider(width: 1),
+                        Expanded(child: widget.shell),
+                      ],
+                    ),
+                  );
+                }
+                // Once the keyboard rises past the band, the band goes: no page
+                // gets an inset for a band under the keyboard. Below that the
+                // band stays, hidden, so the field above it never jumps.
+                final keyboard =
+                    MediaQuery.viewInsetsOf(context).bottom >
+                    _bandHeight(context);
+                final band = keyboard
+                    ? null
+                    : SheetOpen.of(context).value
+                    ? _Band.hint
+                    : _Band.tabs;
+                return Scaffold(
+                  // Every page runs on behind the pill; the band's height
+                  // reaches it as the bottom padding.
+                  extendBody: true,
+                  // A page's floating button keeps off the view padding,
+                  // which the Scaffold leaves at the system's: it covers the
+                  // band too.
+                  body: Builder(
+                    builder: (context) {
+                      final media = MediaQuery.of(context);
+                      return MediaQuery(
+                        key: _page,
+                        data: media.copyWith(
+                          viewPadding: media.viewPadding.copyWith(
+                            bottom: math.max(
+                              media.viewPadding.bottom,
+                              media.padding.bottom,
                             ),
-                        ],
-                      ),
-                      const VerticalDivider(width: 1),
-                      Expanded(child: widget.shell),
-                    ],
-                  ),
-                );
-              }
-              // Once the keyboard rises past the band, the band goes: no page
-              // gets an inset for a band under the keyboard. Below that the
-              // band stays, hidden, so the field above it never jumps.
-              final keyboard =
-                  MediaQuery.viewInsetsOf(context).bottom >
-                  _bandHeight(context);
-              final band = keyboard
-                  ? null
-                  : SheetOpen.of(context).value
-                  ? _Band.hint
-                  : _Band.tabs;
-              return Scaffold(
-                // Every page runs on behind the pill; the band's height
-                // reaches it as the bottom padding.
-                extendBody: true,
-                // A page's floating button keeps off the view padding, which
-                // the Scaffold leaves at the system's: it covers the band too.
-                body: Builder(
-                  builder: (context) {
-                    final media = MediaQuery.of(context);
-                    return MediaQuery(
-                      key: _page,
-                      data: media.copyWith(
-                        viewPadding: media.viewPadding.copyWith(
-                          bottom: math.max(
-                            media.viewPadding.bottom,
-                            media.padding.bottom,
                           ),
                         ),
-                      ),
-                      child: widget.shell,
-                    );
-                  },
-                ),
-                bottomNavigationBar: band == null
-                    ? null
-                    : ScrollThrough(
-                        under: _page,
-                        child: _TabBand(
-                          band: band,
-                          shown: shown,
-                          branch: branch,
-                          onSelect: (d) => unawaited(_select(d)),
+                        child: widget.shell,
+                      );
+                    },
+                  ),
+                  bottomNavigationBar: band == null
+                      ? null
+                      : ScrollThrough(
+                          under: _page,
+                          child: _TabBand(
+                            band: band,
+                            shown: shown,
+                            branch: branch,
+                            onSelect: (d) => unawaited(_select(d)),
+                          ),
                         ),
-                      ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
       ),
     );
   }
+}
+
+/// Says where the List tab opens as it becomes the shown tab (job 474):
+/// „Auf Liste Wocheneinkauf im Haushalt Zuhause, 3 offen“. The list has no
+/// title a screen reader would read on arrival, as it reads More's.
+class const _ListArrival({
+  required final int branch,
+  required final Widget child,
+}) extends StatefulWidget {
+  @override
+  State<_ListArrival> createState() => _ListArrivalState();
+}
+
+class _ListArrivalState() extends State<_ListArrival> {
+  @override
+  void didUpdateWidget(_ListArrival old) {
+    super.didUpdateWidget(old);
+    if (widget.branch != old.branch &&
+        widget.branch == _Destination.list.branch) {
+      _tell();
+    }
+  }
+
+  void _tell() {
+    final session = context.read<SessionCubit>().state;
+    final list = context.read<ListCubit?>()?.state;
+    if (session is! InHousehold || list == null || !list.loaded) {
+      return;
+    }
+    final l10n = AppLocalizations.of(context);
+    ScreenReader.of(context).announce(
+      l10n.listTabArrived(
+        list.items.values.where((i) => i.status == ItemStatus.active).length,
+        switch (list.shownList) {
+          final shown? => listName(shown, l10n),
+          null => l10n.listMain,
+        },
+        session.household.name,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 /// The bottom band: "Liste" and "Mehr" in a hex pill that floats over the

@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:family_groceries/analytics/flags.dart';
+import 'package:family_groceries/core/screen_reader.dart';
+import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_view/shopping_list_view.dart';
 import 'package:family_groceries/shell/router.dart' show tripSummaryPath;
@@ -57,6 +59,8 @@ class _TripOnListState() extends State<TripOnList> {
   }
 
   Future<void> _ask(TripCubit trips, Asking asking) async {
+    final reader = ScreenReader.of(context);
+    final l10n = AppLocalizations.of(context);
     final answer = await showTripAsk(
       context,
       itemName: asking.item.name,
@@ -72,6 +76,7 @@ class _TripOnListState() extends State<TripOnList> {
         trips.no();
       case AskAnswer.takeBack:
         trips.takeBack();
+        sayBackOnList(reader, l10n, asking.item);
     }
   }
 

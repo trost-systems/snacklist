@@ -211,7 +211,6 @@ class _SwitcherSheetState() extends State<SwitcherSheet> {
                     HouseholdsPage() => _HouseholdsView(
                       key: const ValueKey('switcher-households'),
                       session: session,
-                      held: _shownId,
                       open: (id) => _go(HouseholdListsPage(id)),
                       voiceDefault: () => _go(const VoiceHouseholdsPage()),
                     ),
@@ -272,10 +271,6 @@ Widget _topAligned(Widget? current, List<Widget> previous) =>
 /// orders the households.
 class const _HouseholdsView({
   required final InHousehold session,
-
-  /// The household whose list counts its open items better than the
-  /// server's last answer: shown when the sheet opened.
-  required final String? held,
   required final ValueChanged<String> open,
 
   /// Opens the pages for Siri, Alexa and AI.
@@ -288,16 +283,6 @@ class const _HouseholdsView({
     final t = SnacklistColors.of(Theme.of(context).brightness);
     final households = session.households;
     final shown = session.household.id;
-    // The shown household's open items now, pending changes included.
-    final openNow = context.select<ListCubit?, int?>(
-      (list) => switch (list?.state) {
-        final state? when state.loaded =>
-          state.allItems.values
-              .where((i) => i.status == ItemStatus.active)
-              .length,
-        _ => null,
-      },
-    );
     return CustomScrollView(
       shrinkWrap: true,
       slivers: [
@@ -326,9 +311,6 @@ class const _HouseholdsView({
                 context,
                 household: household,
                 shown: isShown,
-                open: household.id == held
-                    ? openNow ?? household.openCount
-                    : household.openCount,
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [

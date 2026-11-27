@@ -123,11 +123,16 @@ void main() {
         hasTapAction: true,
       ),
     );
+    expect(
+      tester.takeAnnouncements(),
+      isEmpty,
+      reason: 'said as the row leaves, not over its strike',
+    );
+    await tester.pumpAndSettle();
+    expect(ticked, hasLength(1));
     expect(tester.takeAnnouncements(), [
       isAccessibilityAnnouncement('Milch abgehakt'),
     ]);
-    await tester.pumpAndSettle();
-    expect(ticked, hasLength(1));
     handle.dispose();
   });
 
@@ -135,11 +140,10 @@ void main() {
     final handle = tester.ensureSemantics();
     await pumpRows(tester, [_item('Milk')], locale: const Locale('en'));
     await tester.tap(row('Milk'));
-    await tester.pump();
+    await tester.pumpAndSettle();
     expect(tester.takeAnnouncements(), [
       isAccessibilityAnnouncement('Milk ticked off'),
     ]);
-    await tester.pumpAndSettle();
     handle.dispose();
   });
 

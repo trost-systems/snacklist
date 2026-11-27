@@ -311,7 +311,8 @@ void main() {
       tester,
     ) async {
       await pumpMore(tester, language: AppLanguage.en);
-      expect(find.text('More'), findsOneWidget);
+      expect(find.text('Account'), findsOneWidget);
+      expect(find.text('Konto'), findsNothing);
     });
   });
 

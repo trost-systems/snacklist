@@ -57,8 +57,8 @@ export function flagOn(key) {
 /** The add field, found like a user finds it: by its hint. */
 export const addField = (page, L) => page.getByRole('textbox', { name: L('addFieldHint') });
 
-/** The add sheet (a group named like the add button). */
-export const addSheet = (page, L) => page.getByRole('group', { name: L('addButton'), exact: true });
+/** The add sheet: a node without a name (job 474), by its `Semantics.identifier`. */
+export const addSheet = (page) => page.locator('[flt-semantics-identifier="add-sheet"]');
 
 /** A list row by item name: a checkbox (since job 57) named by the item, then the quantity. */
 export const itemRow = (page, name) => page.getByRole('checkbox', { name: new RegExp(`^${escape(name)}( |$)`) });

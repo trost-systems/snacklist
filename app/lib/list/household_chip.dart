@@ -5,9 +5,7 @@ import 'dart:ui' show SemanticsHitTestBehavior;
 import 'package:family_groceries/design/measured_width.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
-import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/list_parts.dart';
-import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
@@ -91,25 +89,12 @@ class const HouseholdChip({
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    onPressed: () => unawaited(
-                      listParts(context)
-                          .openHouseholds(context, openNow: _openNow(context)),
-                    ),
+                    onPressed: () =>
+                        unawaited(listParts(context).openHouseholds(context)),
                   ),
                 ),
               ),
             ),
     );
-  }
-
-  /// The shown household's open items now, on every list, pending changes
-  /// included; null until it loaded.
-  static int? _openNow(BuildContext context) {
-    final state = context.read<ListCubit>().state;
-    return state.loaded
-        ? state.allItems.values
-              .where((i) => i.status == ItemStatus.active)
-              .length
-        : null;
   }
 }

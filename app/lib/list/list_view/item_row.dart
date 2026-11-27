@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:family_groceries/core/screen_reader.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/list_view/hold.dart';
@@ -102,17 +103,24 @@ class _ItemRowState()
     final item = widget.item;
     final onTick = widget.onTick;
     widget.onTickStart(item);
-    unawaited(
-      SemanticsService.sendAnnouncement(
-        View.of(context),
-        AppLocalizations.of(context).itemTicked(item.name),
-        Directionality.of(context),
-      ),
-    );
+    final reader = ScreenReader.of(context);
+    final ticked = AppLocalizations.of(context).itemTicked(item.name);
     final leave = AnimationController(vsync: this, duration: rowLeaveDuration);
     setState(() => _leave = leave);
     final reduced = MediaQuery.disableAnimationsOf(context);
-    _pending = () => onTick(item);
+    // Said as the row leaves; the focus stays among the rows instead of
+    // going back to the top of the screen.
+    _pending = () {
+      final next = reader.neighbourOf(
+        itemSemanticsId(item.id),
+        itemSemanticsId(''),
+      );
+      onTick(item);
+      if (next != null) {
+        reader.moveFocus([next]);
+      }
+      reader.announce(ticked);
+    };
     // A hidden app draws no frames, and may never come back.
     _lifecycle = AppLifecycleListener(onHide: _commit);
     if (reduced) {
@@ -181,6 +189,7 @@ class _ItemRowState()
     // With a price chip the row keeps its child nodes, so the chip stays
     // a button of its own; the tile leaves its text and ink out.
     return Semantics(
+      identifier: itemSemanticsId(item.id),
       container: true,
       button: true,
       checked: _leave != null,
@@ -203,6 +212,10 @@ class _ItemRowState()
 // rows below move up instead of jumping when the item goes. A category
 // divider whose rows all leave closes on the same curves.
 final rowLeaveDuration = HlDuration.short + HlDuration.medium;
+
+/// A list row's `Semantics.identifier`, where the screen reader's focus can
+/// be sent (`ScreenReader.moveFocus`).
+String itemSemanticsId(String id) => 'item-$id';
 
 /// Where the line is drawn and the close begins.
 final _struck =

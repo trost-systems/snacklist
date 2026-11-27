@@ -59,7 +59,7 @@ test('a second household from the switcher: its own list, kept apart, still show
   await expect(householdChip(page, 'Unser Haushalt'), 'the chip names the shown household').toBeVisible();
 
   await openHouseholds(page, 'Unser Haushalt');
-  await expect(householdRow(page, 'Unser Haushalt')).toHaveAccessibleName(/1 Mitglied · 1 offen/);
+  await expect(householdRow(page, 'Unser Haushalt')).toHaveAccessibleName(/^Unser Haushalt\s+1 Mitglied(\s+Angezeigt)?$/);
   await page.getByRole('button', { name: 'Neuer Haushalt', exact: true }).click();
   await expect(page).toHaveURL(/\/households\/new$/);
   await typeInto(page.getByRole('textbox', { name: 'Name des Haushalts' }), 'Ferienhaus');
@@ -105,8 +105,8 @@ test('joining by link adds the household: both in the switcher, the inviter\'s l
   await expect(itemRow(lea, 'Tee')).toHaveCount(0);
 
   await openHouseholds(lea, 'Familie Trost');
-  await expect(householdRow(lea, 'WG Lea'), 'her own household stays').toHaveAccessibleName(/^WG Lea\s+1 Mitglied · 1 offen/);
-  await expect(householdRow(lea, 'Familie Trost')).toHaveAccessibleName(/^Familie Trost\s+2 Mitglieder · 1 offen/);
+  await expect(householdRow(lea, 'WG Lea'), 'her own household stays').toHaveAccessibleName(/^WG Lea\s+1 Mitglied(\s+Angezeigt)?$/);
+  await expect(householdRow(lea, 'Familie Trost')).toHaveAccessibleName(/^Familie Trost\s+2 Mitglieder(\s+Angezeigt)?$/);
   await householdRow(lea, 'WG Lea').click();
   await expect(householdChip(lea, 'WG Lea')).toBeVisible();
   await expect(itemRow(lea, 'Tee')).toBeVisible();

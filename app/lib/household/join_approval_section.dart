@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/core/notices.dart';
+import 'package:family_groceries/core/screen_reader.dart';
 import 'package:family_groceries/design/count_badge.dart';
 import 'package:family_groceries/design/hex_switch.dart';
 import 'package:family_groceries/design/section_label.dart';
@@ -10,7 +11,6 @@ import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/onboarding_page.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/session/session_cubit.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -112,8 +112,7 @@ class _JoinApprovalSectionState() extends State<JoinApprovalSection> {
   Future<void> _decide(PendingJoin request, {required bool approve}) async {
     final session = context.read<SessionCubit>();
     final analytics = context.read<Analytics>();
-    final view = View.of(context);
-    final direction = Directionality.of(context);
+    final reader = ScreenReader.of(context);
     final full = AppLocalizations.of(context).joinRequestInviteFull;
     setState(() => _deciding.add(request.id));
     try {
@@ -123,7 +122,7 @@ class _JoinApprovalSectionState() extends State<JoinApprovalSection> {
       );
       if (decision == JoinRequestOutcome.inviteFull) {
         _full.add(request.id);
-        unawaited(SemanticsService.sendAnnouncement(view, full, direction));
+        reader.announce(full);
       } else {
         _full.remove(request.id);
       }
@@ -172,26 +171,17 @@ class _JoinApprovalSectionState() extends State<JoinApprovalSection> {
             _ => null,
           },
         ),
+        // The explainer is the switch's subtitle: one stop that reads both
+        // (job 474).
         HexSwitchTile(
           key: const ValueKey('join-approval-switch'),
           title: Text(l10n.joinApprovalToggle),
+          subtitle: Text(
+            l10n.joinApprovalHint,
+            style: theme.textTheme.bodySmall?.copyWith(color: t.textMuted),
+          ),
           value: on,
           onChanged: _turning == null ? (on) => unawaited(_turn(on)) : null,
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(
-            HlSpace.s4,
-            0,
-            HlSpace.s4,
-            HlSpace.s2,
-          ),
-          child: Semantics(
-            container: true,
-            child: Text(
-              l10n.joinApprovalHint,
-              style: theme.textTheme.bodySmall?.copyWith(color: t.textMuted),
-            ),
-          ),
         ),
         if (_failed)
           ListTile(

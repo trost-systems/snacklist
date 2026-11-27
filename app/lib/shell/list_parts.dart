@@ -9,8 +9,8 @@ import 'package:material_ui/material_ui.dart';
 /// The households and trip mode on the list screen.
 final class const ShellListParts() implements ListParts {
   @override
-  Future<void> openHouseholds(BuildContext context, {int? openNow}) =>
-      showHouseholdSheet(context, openNow: openNow);
+  Future<void> openHouseholds(BuildContext context) =>
+      showHouseholdSheet(context);
 
   @override
   Future<void> openSwitcher(BuildContext context) => showSwitcherSheet(context);

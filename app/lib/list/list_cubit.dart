@@ -1077,10 +1077,12 @@ class ListCubit(
   /// Writes only what [changes] holds; nothing when it holds nothing.
   /// A rename to an item that is open already merges into that item, as the
   /// duplicate hint's Zusammenführen does: it keeps its name, store and
-  /// category, and the quantities add up.
-  void edit(String id, ItemChanges changes) {
+  /// category, and the quantities add up. False when the edit did not stay
+  /// an edit of [id]: merged so, or refused because the merged quantity
+  /// would not fit; a snackbar says which.
+  bool edit(String id, ItemChanges changes) {
     if (changes.isEmpty) {
-      return;
+      return true;
     }
     final item = state.allItems[id];
     _tell(const ItemEdited());
@@ -1102,7 +1104,7 @@ class ListCubit(
           emit(state.copyWith(pending: [...state.pending, ...ops]));
           unawaited(_flush());
         }
-        return;
+        return false;
       }
     }
     _enqueue(
@@ -1113,6 +1115,7 @@ class ListCubit(
         deviceParsed: deviceParsed,
       ),
     );
+    return true;
   }
 
   /// The other open item of [items] on [item]'s list that [item] would be

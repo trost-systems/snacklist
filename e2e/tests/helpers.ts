@@ -805,7 +805,7 @@ export async function confirmJoin(page: Page, household?: string): Promise<void>
 export const householdChip = (page: Page, household: string): Locator =>
   page.getByRole('button', { name: new RegExp(`^${escape(household)}(\\s|$)`) });
 
-/** The switcher sheet's row of [household]: "Familie Trost 2 Mitglieder · 1 offen". */
+/** The switcher sheet's row of [household]: "Familie Trost 2 Mitglieder" (no open count, job 474). */
 export const householdRow = (page: Page, household: string): Locator =>
   page.getByRole('button', { name: new RegExp(`^${escape(household)}\\s+\\d+ Mitglied`) });
 
@@ -823,8 +823,15 @@ export async function switchHousehold(page: Page, shown: string, to: string): Pr
   await expect(householdChip(page, to)).toBeVisible();
 }
 
-/** The add sheet (job 17): a group whose rect is the sheet's content, open while adding. */
-export const addSheet = (page: Page): Locator => page.getByRole('group', { name: 'Hinzufügen', exact: true });
+/** A node by its `Semantics.identifier`, which Flutter web writes as `flt-semantics-identifier`. */
+export const bySemanticsId = (page: Page, identifier: string): Locator =>
+  page.locator(`[flt-semantics-identifier="${identifier}"]`);
+
+/**
+ * The add sheet (job 17): the node whose rect is the sheet's content, open while adding. It has no
+ * name of its own (job 474: a group „Hinzufügen“ was a screen reader stop before its buttons).
+ */
+export const addSheet = (page: Page): Locator => bySemanticsId(page, 'add-sheet');
 
 /**
  * The sheet's line about the last add, as shown: "✓ Hinzugefügt: Milch → Lidl" (with Rückgängig)

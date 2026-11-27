@@ -1,5 +1,6 @@
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/localizations.dart';
+import 'package:family_groceries/core/screen_reader.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/list_cache.dart' show recentlyUsedFoldKey;
 import 'package:family_groceries/list/list_cubit.dart';
@@ -10,6 +11,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../core/screen_reader_harness.dart';
 import 'fake_repository.dart';
 import 'memory_cache.dart';
 
@@ -24,6 +26,8 @@ void main() {
     WidgetTester tester, {
     required bool flag,
     bool fresh = true,
+    List<String> more = const [],
+    Locale locale = const Locale('de'),
   }) async {
     if (fresh) {
       cache = MemoryListCache();
@@ -36,13 +40,16 @@ void main() {
       repo = FakeRepository()
         ..remoteAdd('Erbsen', categoryId: 'produce')
         ..remoteAdd('Bohnen', categoryId: 'produce');
+      for (final name in more) {
+        repo.remoteAdd(name, categoryId: 'produce');
+      }
     }
     flags = Flags(forced: {if (flag) recentlyUsedOpenFlag});
     await tester.pumpWidget(
       MaterialApp(
         localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        locale: const Locale('de'),
+        locale: locale,
         home: MultiBlocProvider(
           providers: [
             BlocProvider.value(value: flags),
@@ -145,5 +152,72 @@ void main() {
     await tester.pumpAndSettle();
     expect(usedRow('Bohnen'), findsOneWidget);
     expect(cache.prefs?.folded, isNot(contains(recentlyUsedFoldKey)));
+  });
+
+  group('screen readers (job 474)', () {
+    testWidgets('a put-back says "<Name> wieder auf der Liste" and the focus '
+        'stays in Zuletzt verwendet, on its top row, never the top of the '
+        'screen; with the section gone it is on the row put back', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(accessibleNavigation: true);
+      addTearDown(
+        tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+      );
+      await pumpList(tester, flag: true, more: ['Milch', 'Brot', 'Äpfel']);
+      for (final name in ['Milch', 'Brot', 'Äpfel']) {
+        await tick(tester, name);
+      }
+      await tester.pump(announceSettle);
+      final log = screenReaderLog(tester);
+      List<String> stops() => tester.semantics
+          .simulatedAccessibilityTraversal()
+          .map((n) => n.identifier)
+          .where((id) => id.startsWith('used-'))
+          .toList();
+      expect(stops(), [
+        'used-${item('Äpfel').id}',
+        'used-${item('Brot').id}',
+        'used-${item('Milch').id}',
+      ], reason: 'newest first');
+
+      Future<void> putBack(String name) async {
+        await tester.tap(usedRow(name));
+        await tester.pumpAndSettle();
+        await tester.pump(announceSettle);
+      }
+
+      await putBack('Brot');
+      expect(log, [
+        'focus: Äpfel\nWieder auf die Liste',
+        'say: Brot wieder auf der Liste',
+      ]);
+      log.clear();
+      await putBack('Äpfel');
+      expect(log, [
+        'focus: Milch\nWieder auf die Liste',
+        'say: Äpfel wieder auf der Liste',
+      ]);
+      log.clear();
+      await putBack('Milch');
+      expect(find.text('Zuletzt verwendet'), findsNothing);
+      expect(log, ['focus: Milch', 'say: Milch wieder auf der Liste']);
+      semantics.dispose();
+    });
+
+    testWidgets('English: "<Name> back on the list"', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await pumpList(tester, flag: true, locale: const Locale('en'));
+      await tick(tester, 'Bohnen');
+      tester.takeAnnouncements();
+      await tester.tap(usedRow('Bohnen'));
+      await tester.pumpAndSettle();
+      expect(tester.takeAnnouncements(), [
+        isAccessibilityAnnouncement('Bohnen back on the list'),
+      ]);
+      semantics.dispose();
+    });
   });
 }

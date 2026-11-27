@@ -6,9 +6,8 @@ import 'package:material_ui/material_ui.dart';
 /// (`ShellListParts`). Without it (tests, Widgetbook) the list shows none
 /// of it ([listParts]).
 abstract interface class ListParts() {
-  /// Opens the households sheet; [openNow] counts the shown household's
-  /// open items.
-  Future<void> openHouseholds(BuildContext context, {int? openNow});
+  /// Opens the households sheet.
+  Future<void> openHouseholds(BuildContext context);
 
   /// Opens the switcher sheet (flag `list-declutter`).
   Future<void> openSwitcher(BuildContext context);
@@ -36,7 +35,7 @@ ListParts listParts(BuildContext context) =>
 
 final class const _NoParts() implements ListParts {
   @override
-  Future<void> openHouseholds(BuildContext context, {int? openNow}) async {}
+  Future<void> openHouseholds(BuildContext context) async {}
 
   @override
   Future<void> openSwitcher(BuildContext context) async {}

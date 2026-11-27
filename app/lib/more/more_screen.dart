@@ -115,22 +115,18 @@ class const MoreScreen({
     if (wide) {
       final shown = page ?? MorePage.access;
       return Scaffold(
-        // The pages sit below `/more`; beside the list there is nothing to
-        // go back to.
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: Text(l10n.tabMore),
-        ),
         body: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             SizedBox(
               width: 360,
-              child: _MoreList(
-                showHelp: showHelp,
-                showArchived: showArchived,
-                updates: updates,
-                selected: shown,
+              child: _MoreRoot(
+                child: _MoreList(
+                  showHelp: showHelp,
+                  showArchived: showArchived,
+                  updates: updates,
+                  selected: shown,
+                ),
               ),
             ),
             const VerticalDivider(width: 1),
@@ -178,11 +174,12 @@ class const MoreScreen({
       );
     }
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.tabMore)),
-      body: _MoreList(
-        showHelp: showHelp,
-        showArchived: showArchived,
-        updates: updates,
+      body: _MoreRoot(
+        child: _MoreList(
+          showHelp: showHelp,
+          showArchived: showArchived,
+          updates: updates,
+        ),
       ),
     );
   }
@@ -272,6 +269,34 @@ enum _Tint() {
   cobalt,
   mint,
   plain,
+}
+
+/// More's own page, its rows without a visible title (job 474). A screen
+/// reader still hears "Mehr" on arrival: a heading that names the page, as
+/// the app bar's title did, above the rows and below the status bar.
+class const _MoreRoot({required final Widget child}) extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => SafeArea(
+    bottom: false,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Semantics(
+          key: const ValueKey('more-heading'),
+          container: true,
+          header: true,
+          // As AppBar names its route: iOS reads the first element instead.
+          namesRoute: switch (defaultTargetPlatform) {
+            TargetPlatform.iOS || TargetPlatform.macOS => null,
+            _ => true,
+          },
+          label: AppLocalizations.of(context).tabMore,
+          child: const SizedBox(height: HlSpace.s3),
+        ),
+        Expanded(child: child),
+      ],
+    ),
+  );
 }
 
 class const _MoreList({

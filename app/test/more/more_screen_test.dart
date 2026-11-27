@@ -73,12 +73,39 @@ void main() {
   String path(More more) =>
       more.router.routerDelegate.currentConfiguration.uri.toString();
 
+  for (final (device, said) in [
+    (const [Locale('de', 'DE')], 'Mehr'),
+    (const [Locale('en', 'US')], 'More'),
+  ]) {
+    testWidgets('no visible title, yet a screen reader hears "$said" first: '
+        'a heading that names the page (job 474)', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await pumpMore(tester, device: device);
+      expect(find.text(said), findsNothing);
+      expect(find.byType(AppBar), findsNothing);
+      expect(
+        tester.getSemantics(key('more-heading')),
+        isSemantics(label: said, isHeader: true),
+      );
+      final first = tester.semantics
+          .simulatedAccessibilityTraversal()
+          .firstWhere((n) => n.label.isNotEmpty);
+      expect(first.label, said);
+      // The rows start right under it.
+      expect(
+        tester.getTopLeft(key('more-screen')).dy,
+        tester.getRect(key('more-heading')).bottom,
+      );
+      semantics.dispose();
+    });
+  }
+
   testWidgets('a phone shows the list alone, with the version at the end', (
     tester,
   ) async {
     await pumpMore(tester);
     expect(key('more-screen'), findsOneWidget);
-    expect(find.text('Mehr'), findsOneWidget);
+    expect(find.text('Mehr'), findsNothing, reason: 'no title (job 474)');
     // Job 78: stores and categories are the List tab's Anpassen now.
     expect(find.text('Kategorien verwalten'), findsNothing);
     expect(find.text('Läden'), findsNothing);

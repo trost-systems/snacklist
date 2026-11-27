@@ -6,6 +6,7 @@ import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/pricing.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/rendering.dart' show RenderAbstractViewport;
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -622,19 +623,31 @@ class const _Stepper({
           side: BorderSide(color: t.border, width: HlBorder.width),
         ),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            key: const ValueKey('price-count-less'),
-            tooltip: l10n.priceCountLess,
-            icon: const Icon(Icons.remove),
-            onPressed: count > 1 ? () => onChanged(count - 1) : null,
-          ),
-          Semantics(
-            label: l10n.priceCount(count),
-            excludeSemantics: true,
-            child: Text(
+      // One adjustable Menge for screen readers, as in the sheets
+      // (QuantitySemantics): the value first, − and + no stops of their own.
+      // On the web the buttons stay.
+      child: Semantics(
+        container: true,
+        identifier: 'price-count',
+        label: l10n.itemQuantity,
+        value: '$count',
+        increasedValue: !kIsWeb && count < _most ? '${count + 1}' : null,
+        decreasedValue: !kIsWeb && count > 1 ? '${count - 1}' : null,
+        onIncrease: !kIsWeb && count < _most
+            ? () => onChanged(count + 1)
+            : null,
+        onDecrease: !kIsWeb && count > 1 ? () => onChanged(count - 1) : null,
+        excludeSemantics: !kIsWeb,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              key: const ValueKey('price-count-less'),
+              tooltip: l10n.priceCountLess,
+              icon: const Icon(Icons.remove),
+              onPressed: count > 1 ? () => onChanged(count - 1) : null,
+            ),
+            Text(
               '$count',
               style: TextStyle(
                 fontSize: 17,
@@ -643,14 +656,14 @@ class const _Stepper({
                 fontFeatures: _figures,
               ),
             ),
-          ),
-          IconButton(
-            key: const ValueKey('price-count-more'),
-            tooltip: l10n.priceCountMore,
-            icon: const Icon(Icons.add),
-            onPressed: count < _most ? () => onChanged(count + 1) : null,
-          ),
-        ],
+            IconButton(
+              key: const ValueKey('price-count-more'),
+              tooltip: l10n.priceCountMore,
+              icon: const Icon(Icons.add),
+              onPressed: count < _most ? () => onChanged(count + 1) : null,
+            ),
+          ],
+        ),
       ),
     );
   }

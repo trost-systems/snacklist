@@ -50,15 +50,9 @@ const _home = Household(
   name: 'Zuhause',
   isDefault: true,
   memberCount: 3,
-  openCount: 9,
   role: HouseholdRole.owner,
 );
-const _club = Household(
-  id: 'club',
-  name: 'Sommerfest',
-  memberCount: 12,
-  openCount: 1,
-);
+const _club = Household(id: 'club', name: 'Sommerfest', memberCount: 12);
 
 const _weekly = HouseholdList(id: 'weekly', name: 'Wocheneinkauf', position: 0);
 const _drugstore = HouseholdList(id: 'dm', name: 'Drogerie', position: 1);
@@ -336,7 +330,17 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.text('2 offen'), findsOneWidget, reason: 'open items now');
+    expect(
+      find.descendant(
+        of: find.ancestor(
+          of: _key('switcher-household-name'),
+          matching: find.byType(Row),
+        ),
+        matching: find.textContaining('offen'),
+      ),
+      findsNothing,
+      reason: 'no count of open items for the household (job 474)',
+    );
     expect(
       find.descendant(
         of: _key('switcher-invite'),
@@ -959,6 +963,64 @@ void main() {
       await tester.tap(_key('household-row-club'));
       await tester.pumpAndSettle();
       expect(_key('join-approval-switch'), findsNothing);
+    });
+
+    for (final (locale, toggle, hint) in [
+      (
+        const Locale('de'),
+        'Beitritte bestätigen',
+        'Neue Leute warten, bis ein Admin sie aufnimmt.',
+      ),
+      (
+        const Locale('en'),
+        'Confirm new members',
+        'New people wait until an admin lets them in.',
+      ),
+    ]) {
+      testWidgets('join approval: the switch and its explainer are one stop '
+          '(job 474, $locale)', (tester) async {
+        final semantics = tester.ensureSemantics();
+        await _pump(tester, locale: locale);
+        await _open(tester);
+        await tester.ensureVisible(_key('join-approval-switch'));
+        await tester.pumpAndSettle();
+        expect(
+          tester.getSemantics(_key('join-approval-switch')),
+          isSemantics(
+            label: '$toggle\n$hint',
+            hasToggledState: true,
+            hasTapAction: true,
+          ),
+        );
+        expect(
+          find.semantics.byPredicate(
+            (n) => n.label.contains(hint) && !n.label.contains(toggle),
+          ),
+          findsNothing,
+          reason: 'no stop of its own for the explainer',
+        );
+        semantics.dispose();
+      });
+    }
+
+    testWidgets('the household reads without a count of open items; its '
+        'lists keep theirs (job 474)', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await _pump(tester);
+      await _open(tester);
+      final labels = tester.semantics
+          .simulatedAccessibilityTraversal()
+          .map((n) => n.label)
+          .toList();
+      final name = labels.indexOf('Zuhause');
+      expect(name, isNot(-1), reason: '$labels');
+      expect(labels[name + 1], isNot(contains('offen')), reason: '$labels');
+      expect(
+        labels.where((l) => RegExp(r'\n(\d+ offen|nichts offen)$').hasMatch(l)),
+        isNotEmpty,
+        reason: 'each list still says its open items: $labels',
+      );
+      semantics.dispose();
     });
 
     testWidgets('currency: shown with the prices flag, any member picks', (

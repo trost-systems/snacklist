@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:family_groceries/core/screen_reader.dart';
 import 'package:family_groceries/design/hex_border.dart';
 import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/sticker.dart';
@@ -165,8 +166,7 @@ class _ListTabsState() extends State<ListTabs> {
 Future<void> addList(BuildContext context) {
   final l10n = AppLocalizations.of(context);
   final cubit = context.read<ListCubit>();
-  final view = View.of(context);
-  final direction = Directionality.of(context);
+  final reader = ScreenReader.of(context);
   return showNameDialog(
     context,
     title: l10n.listNew,
@@ -177,13 +177,7 @@ Future<void> addList(BuildContext context) {
       if (list == null) {
         return false;
       }
-      unawaited(
-        SemanticsService.sendAnnouncement(
-          view,
-          l10n.listAdded(listName(list, l10n)),
-          direction,
-        ),
-      );
+      reader.announce(l10n.listAdded(listName(list, l10n)));
       return true;
     },
   );

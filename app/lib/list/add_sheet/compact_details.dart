@@ -11,6 +11,8 @@ import 'package:family_groceries/list/entry.dart' show stepQuantity;
 import 'package:family_groceries/list/foldout_chips.dart';
 import 'package:family_groceries/list/list_cubit.dart';
 import 'package:family_groceries/list/model.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
@@ -140,9 +142,9 @@ class _CompactDetailsState() extends State<CompactDetails> {
 }
 
 /// − Menge + in one hex (also the edit sheet's, job 340), 44 px high,
-/// without a label: the field is named Menge for screen readers. The
-/// steppers step a number in it (and its unit) and are off where it holds
-/// none.
+/// without a label: for screen readers one adjustable Menge
+/// ([QuantitySemantics]). The steppers step a number in it (and its unit)
+/// and are off where it holds none.
 class const QuantityGroup({
   required final TextEditingController controller,
   required final VoidCallback onStep,
@@ -172,84 +174,156 @@ class const QuantityGroup({
       }
     }
 
+    // Stepped with the group's adjust actions, not focused one by one; on
+    // the web they stay buttons (QuantitySemantics).
     Widget stepper(Key key, IconData icon, String label, VoidCallback? tap) =>
-        IconButton(
-          key: key,
-          onPressed: tap,
-          style: IconButton.styleFrom(
-            visualDensity: VisualDensity.standard,
-            minimumSize: Size(_stepperWidth, height),
-            fixedSize: Size(_stepperWidth, height),
-            padding: EdgeInsets.zero,
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ExcludeSemantics(
+          excluding: !kIsWeb,
+          child: IconButton(
+            key: key,
+            onPressed: tap,
+            style: IconButton.styleFrom(
+              visualDensity: VisualDensity.standard,
+              minimumSize: Size(_stepperWidth, height),
+              fixedSize: Size(_stepperWidth, height),
+              padding: EdgeInsets.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            // No tooltip: its overlay moves the web semantics tree (job 122).
+            icon: Icon(icon, size: 20, semanticLabel: label),
           ),
-          // No tooltip: its overlay moves the web semantics tree (job 122).
-          icon: Icon(icon, size: 20, semanticLabel: label),
         );
-    return Container(
-      key: ValueKey('$keyPrefix-quantity-group'),
-      height: height,
-      padding: const EdgeInsets.symmetric(horizontal: HlSpace.s1),
-      decoration: ShapeDecoration(
-        color: t.surfaceRaised,
-        shape: HexBorder(
-          side: BorderSide(color: t.border, width: HlBorder.width),
+    return QuantitySemantics(
+      controller: controller,
+      onStep: step,
+      identifier: '$keyPrefix-quantity-stepper',
+      child: Container(
+        key: ValueKey('$keyPrefix-quantity-group'),
+        height: height,
+        padding: const EdgeInsets.symmetric(horizontal: HlSpace.s1),
+        decoration: ShapeDecoration(
+          color: t.surfaceRaised,
+          shape: HexBorder(
+            side: BorderSide(color: t.border, width: HlBorder.width),
+          ),
         ),
-      ),
-      child: ValueListenableBuilder(
-        valueListenable: controller,
-        builder: (context, value, field) => Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            stepper(
-              ValueKey('$keyPrefix-quantity-minus'),
-              Icons.remove,
-              l10n.quantityMinus,
-              stepQuantity(value.text, up: false) == null
-                  ? null
-                  : () => step(up: false),
-            ),
-            SizedBox(
-              width: _fieldWidth(context, value.text, style),
-              child: field,
-            ),
-            stepper(
-              ValueKey('$keyPrefix-quantity-plus'),
-              Icons.add,
-              l10n.quantityPlus,
-              stepQuantity(value.text, up: true) == null
-                  ? null
-                  : () => step(up: true),
-            ),
-          ],
-        ),
-        child: Semantics(
-          label: l10n.itemQuantity,
-          // The hex around it draws the field; the app's field theme must
-          // not reach it (as the add bar's).
-          child: InputDecorationTheme(
-            data: const InputDecorationThemeData(),
-            child: TextField(
-              autofillHints: null,
-              key: ValueKey('$keyPrefix-quantity'),
-              controller: controller,
-              textAlign: TextAlign.center,
-              textInputAction: TextInputAction.done,
-              inputFormatters: [LengthLimitingTextInputFormatter(40)],
-              style: style,
-              decoration: InputDecoration(
-                // Empty is one, as the steppers count it.
-                hintText: '1',
-                hintStyle: TextStyle(color: scheme.onSurfaceVariant),
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
+        child: ValueListenableBuilder(
+          valueListenable: controller,
+          builder: (context, value, field) => Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              stepper(
+                ValueKey('$keyPrefix-quantity-minus'),
+                Icons.remove,
+                l10n.quantityMinus,
+                stepQuantity(value.text, up: false) == null
+                    ? null
+                    : () => step(up: false),
               ),
-              onSubmitted: (_) => onSubmitted(),
+              SizedBox(
+                width: _fieldWidth(context, value.text, style),
+                child: field,
+              ),
+              stepper(
+                ValueKey('$keyPrefix-quantity-plus'),
+                Icons.add,
+                l10n.quantityPlus,
+                stepQuantity(value.text, up: true) == null
+                    ? null
+                    : () => step(up: true),
+              ),
+            ],
+          ),
+          // Its own node, after the group's adjustable one: typed into,
+          // not stepped.
+          child: Semantics(
+            container: true,
+            label: l10n.itemQuantity,
+            // The hex around it draws the field; the app's field theme must
+            // not reach it (as the add bar's).
+            child: InputDecorationTheme(
+              data: const InputDecorationThemeData(),
+              child: TextField(
+                autofillHints: null,
+                key: ValueKey('$keyPrefix-quantity'),
+                controller: controller,
+                textAlign: TextAlign.center,
+                textInputAction: TextInputAction.done,
+                inputFormatters: [LengthLimitingTextInputFormatter(40)],
+                style: style,
+                decoration: InputDecoration(
+                  // Empty is one, as the steppers count it.
+                  hintText: '1',
+                  hintStyle: TextStyle(color: scheme.onSurfaceVariant),
+                  border: InputBorder.none,
+                  isDense: true,
+                  contentPadding: EdgeInsets.zero,
+                ),
+                onSubmitted: (_) => onSubmitted(),
+              ),
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Menge for a screen reader: one adjustable node that reads "Menge, 2"
+/// and steps with a swipe up or down (TalkBack: the volume keys), so the
+/// value comes first and − and + are no stops of their own: [child] has
+/// none. An empty Menge reads 1, as the steppers count it; one without a
+/// number („eine Packung“) only reads. The node lies under [child], beside
+/// the field, not around it. Not on the web, whose adjustable node is a range
+/// input that a pointer moves too: a click on + stepped up and back down, and
+/// a field inside it took no typing. There − and + stay buttons.
+class const QuantitySemantics({
+  required final TextEditingController controller,
+  required final void Function({required bool up}) onStep,
+  required final Widget child,
+
+  /// Where tests and the web's e2e find it.
+  final String? identifier,
+  super.key,
+}) extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    if (kIsWeb) {
+      return child;
+    }
+    final l10n = AppLocalizations.of(context);
+    return Stack(
+      fit: StackFit.passthrough,
+      children: [
+        Positioned.fill(
+          child: ValueListenableBuilder(
+            valueListenable: controller,
+            builder: (context, value, _) {
+              final text = value.text.trim();
+              final more = stepQuantity(text, up: true);
+              final less = stepQuantity(text, up: false);
+              return Semantics(
+                container: true,
+                sortKey: const OrdinalSortKey(0),
+                identifier: identifier,
+                label: l10n.itemQuantity,
+                value: text.isEmpty ? '1' : text,
+                increasedValue: more,
+                decreasedValue: less,
+                onIncrease: more == null ? null : () => onStep(up: true),
+                onDecrease: less == null ? null : () => onStep(up: false),
+                child: const SizedBox.expand(),
+              );
+            },
+          ),
+        ),
+        // After the value: their rects overlap, so the order is set.
+        Semantics(
+          container: true,
+          sortKey: const OrdinalSortKey(1),
+          child: child,
+        ),
+      ],
     );
   }
 }

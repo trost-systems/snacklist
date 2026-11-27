@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:family_groceries/analytics/analytics.dart';
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/localizations.dart';
+import 'package:family_groceries/core/screen_reader.dart';
 import 'package:family_groceries/design/sticker.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/list_cache.dart';
@@ -19,6 +20,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
+import '../core/screen_reader_harness.dart';
 import 'fake_repository.dart';
 import 'memory_cache.dart';
 
@@ -170,6 +172,73 @@ void main() {
     );
     await tester.pumpAndSettle();
   }
+
+  testWidgets('with VoiceOver the card is said as it comes and takes the '
+      'focus; a tick before it keeps the focus on the next row (job 474)', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(accessibleNavigation: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+    await pumpList(tester);
+    final log = screenReaderLog(tester);
+    await tick(tester, 'Milch');
+    await tester.pump(announceSettle);
+    expect(log, ['focus: Butter', 'say: Milch abgehakt']);
+    log.clear();
+    await tick(tester, 'Butter');
+    await tester.pump(announceSettle);
+    expect(card(), findsOneWidget);
+    expect(log, [
+      'focus: Lidl ist erledigt',
+      'say: Butter abgehakt. Lidl ist erledigt. Lidl Plus öffnen.',
+    ]);
+    log.clear();
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
+    expect(log, isEmpty, reason: 'said once, not on every build');
+    semantics.dispose();
+  });
+
+  testWidgets("with VoiceOver the card is said once when the server's answer "
+      'moves the tick time (job 474, review 1)', (tester) async {
+    final semantics = tester.ensureSemantics();
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(accessibleNavigation: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+    await pumpList(tester);
+    await tick(tester, 'Milch');
+    await tester.pump(announceSettle);
+    final log = screenReaderLog(tester);
+    await tester.tap(row('Butter'));
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
+    expect(card(), findsOneWidget);
+    // The server's echo of the tick, with its own time, inside the settle
+    // window and after it.
+    for (final later in [1, 2]) {
+      final id = idOf('Butter');
+      final echoed = repo.rows[id]!.copyWith(
+        status: ItemStatus.bought,
+        boughtAt: () => repo.rows[id]!.boughtAt!.add(Duration(seconds: later)),
+        boughtBy: () => 'peter',
+      );
+      repo.emitItem!(repo.rows[id] = echoed);
+      await tester.pump();
+      await tester.pumpAndSettle();
+      if (later == 1) {
+        await tester.pump(announceSettle);
+      }
+    }
+    await tester.pump(announceSettle);
+    expect(card(), findsOneWidget);
+    expect(log, [
+      'focus: Lidl ist erledigt',
+      'say: Butter abgehakt. Lidl ist erledigt. Lidl Plus öffnen.',
+    ]);
+    semantics.dispose();
+  });
 
   testWidgets('ticking the last item of a linked store shows the card at '
       "the list's top", (tester) async {

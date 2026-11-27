@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:family_groceries/core/screen_reader.dart';
 import 'package:family_groceries/design/field_border.dart';
 import 'package:family_groceries/design/hex_border.dart';
 import 'package:family_groceries/design/motion.dart';
@@ -13,7 +14,6 @@ import 'package:family_groceries/list/chain_suggestions.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/list/retailer.dart';
 import 'package:family_groceries/list/store_name_field.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -617,13 +617,7 @@ class _StoreOptionsState() extends State<_StoreOptions> {
         : null;
     final text = [?added, ?question].join(' ');
     if (text.isNotEmpty) {
-      unawaited(
-        SemanticsService.sendAnnouncement(
-          View.of(context),
-          text,
-          Directionality.of(context),
-        ),
-      );
+      ScreenReader.of(context).announce(text);
     }
   }
 

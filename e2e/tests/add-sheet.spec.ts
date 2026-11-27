@@ -1,11 +1,11 @@
 import { expect, test, type Locator, type Page } from './fixtures';
 import {
-  addField, adminClient, apiAs, boxOf, chainStores, holdFrames, itemRow, must, newEmail, nextFrames, screenshot, signUpWithHousehold, typeInto,
+  addField, addSheet, adminClient, apiAs, boxOf, chainStores, holdFrames, itemRow, must, newEmail, nextFrames, screenshot, signUpWithHousehold, typeInto,
 } from './helpers';
 import { watchBuild, withoutWasmGC } from './web-build';
 
-/** The open add sheet: a group whose rect is the sheet's content. */
-const sheet = (page: Page) => page.getByRole('group', { name: 'Hinzufügen', exact: true });
+/** The open add sheet: the node whose rect is the sheet's content. */
+const sheet = (page: Page) => addSheet(page);
 const SOURCES = 'Wie getippt|Schon mal gekauft|Andere Packung|Andere Sorte|Andere Größe|Andere Marke|Aus dem Katalog|Wieder fällig';
 /** The sheet's rows, first to last: "<qty> <name>, <source>, <brand>, <details…>, <store>". */
 const rows = (page: Page) => sheet(page).getByRole('button', { name: new RegExp(`, (${SOURCES})(,|$)`) });

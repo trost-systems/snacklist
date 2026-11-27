@@ -141,7 +141,6 @@ void main() {
       expect(state, _shows('home', households: ['home', 'club']));
       expect(state.defaultHousehold.id, 'home');
       expect(state.household.memberCount, 2);
-      expect(state.household.openCount, 3);
       expect(cache.households['peter']?.households, hasLength(2));
     });
 
