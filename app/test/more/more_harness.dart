@@ -31,6 +31,7 @@ import 'package:family_groceries/session/session_cubit.dart';
 import 'package:family_groceries/settings/account_repository.dart';
 import 'package:family_groceries/settings/integration_lock.dart';
 import 'package:family_groceries/settings/shopping_day.dart';
+import 'package:family_groceries/settings/shopping_reminders.dart';
 import 'package:family_groceries/shell/list_scope.dart';
 import 'package:family_groceries/shell/router.dart';
 import 'package:flutter/services.dart';
@@ -93,9 +94,20 @@ final serverTokens = <Map<String, Object?>>[];
 /// The OAuth grants (connected apps) the fake auth server answers.
 final serverGrants = <Map<String, Object?>>[];
 
+/// A [Text] showing [label], also when a word too wide for its line was
+/// hyphenated onto more lines (the test font's glyphs are wide:
+/// „Datenschutzerklärung“ does not fit a 390 px row): its screen-reader
+/// label is then [label].
+Finder findLabel(String label) => find.byWidgetPredicate(
+  (widget) =>
+      widget is Text &&
+      (widget.data == label || widget.semanticsLabel == label),
+);
+
 /// Supabase against a server that answers every request with `[]`, or
 /// [serverTokens] and [serverGrants]: More's access page builds its
 /// repository from the global client. Once per test file, in `setUpAll`.
+
 Future<void> fakeSupabase() async {
   // Supabase listens for deep links; with no plugin the listen fails late,
   // inside whichever test runs then.
@@ -238,6 +250,9 @@ Future<More> pumpMore(
   /// them; neither by default (a build without push, no alert).
   HouseholdAddAlert? householdAdd,
   ShoppingDayService? shoppingDay,
+
+  /// Shopping reminders SR1 (job 472); none by default.
+  ShoppingReminders? shoppingReminders,
 }) async {
   tester.view
     ..devicePixelRatio = 1
@@ -357,6 +372,7 @@ Future<More> pumpMore(
           value: storeApps ?? FakeStoreApps(),
         ),
         RepositoryProvider<ShoppingDayService?>.value(value: shoppingDay),
+        RepositoryProvider<ShoppingReminders?>.value(value: shoppingReminders),
       ],
       child: MultiBlocProvider(
         providers: [

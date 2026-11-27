@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { buildSite, guide, legal, record, REAL_FLAGS } from './helpers.mjs';
@@ -128,12 +129,88 @@ test('the privacy policies describe push notifications and Firebase Cloud Messag
   }
 });
 
+// Job 472 (Legal review 2026-11-26, M1-M3): the shopping-reminder paragraphs, byte for byte as
+// Legal hashed them, replace the 19:00 weekday ones only once shopping-reminders is released; the
+// page never shows both. The Art. 21 pointer names the renamed More item in both (LR-7).
+const SHOPPING_REMINDERS = {
+  '/datenschutz': {
+    before: [
+      'eine Erinnerung am Abend vor deinen Einkaufstagen',
+      'Wenn du unter „Einkaufstag-Erinnerung“ Wochentage auswählst',
+      'Wenn du Einkaufstage auswählst, speichern wir die gewählten Wochentage',
+      'und deine Einkaufstag-Erinnerung (Wochentage',
+      'die Erinnerung außerdem, sobald du keine Einkaufstage mehr auswählst',
+    ],
+    after: [
+      ["In der App für iPhone und Android kannst du Mitteilungen einschalten: wenn jemand etwas auf eine Liste setzt, und Erinnerungen zu deinen Einkaufstagen. Erst wenn du eine dieser Mitteilungen in der App einschaltest, fragt dein Smartphone, ob Snacklist dir Mitteilungen senden darf; beim ersten Start fragt die App nicht. Erlaubst du es, erhält die App über Firebase Cloud Messaging von Google eine Kennung für Mitteilungen (Token), die nur für Snacklist auf diesem Gerät gilt. Wir speichern den Token zu deinem Konto mit der Plattform (iOS oder Android) und den Zeitpunkten, zu denen er angelegt und zuletzt erneuert wurde, für höchstens 10 Geräte je Konto; auf dem Gerät merken wir uns, dass du Mitteilungen eingeschaltet hast. Im Browser gibt es keine Mitteilungen.", '3cd7dcaa32be7bbcb5b20f59acdd3b72ddb500e46dd0e1bc88be1997ed3c5673'],
+      ["Wenn du unter „Benachrichtigungen & Erinnerungen“ Erinnerungen anlegst, schicken wir dir zu jeder Erinnerung eine Mitteilung in der Zeitzone deines Geräts: am Tag davor oder am Einkaufstag selbst, zu der Uhrzeit, die du gewählt hast. Der Text nennt die Zahl der offenen Einträge auf deiner Standardliste, nie die Artikelnamen, zum Beispiel „Morgen ist Einkaufstag“ oder „Heute ist Einkaufstag“ und „3 Artikel stehen auf der Liste. Schau kurz rein.“ Diese Mitteilung verfällt, wenn sie nicht zugestellt werden kann, nach vier Stunden. Die Erinnerung geht an alle deine Geräte, auf denen du Mitteilungen eingeschaltet hast; deine Erinnerungen gelten nur für dich, andere Mitglieder deines Haushalts sehen sie nicht.", '717633ccf46f318fcb4c9632497258f7543c6399ab64cbd46305845f5c414a21'],
+      ["Wenn du Erinnerungen anlegst, speichern wir zu jeder Erinnerung den Einkaufstag, ob sie am Tag davor oder am selben Tag rausgeht, die Uhrzeit, die Zeitzone deines Geräts, die Sprache und das örtliche Datum, an dem diese Erinnerung zuletzt rausgegangen ist (damit sie an einem Tag nur einmal rausgeht), bis du die Erinnerung löschst oder dein Konto löschst.", '5a7c698fd811c8a849b35f0dae6f53d5968af649487461fc605c9134bdf55220'],
+      ["und deine Einkaufserinnerungen (jeweils Einkaufstag, Tag davor oder selber Tag, Uhrzeit, Zeitzone, Sprache und das Datum der letzten Erinnerung)", '906c60d94722876ee24926698ee3b52f75029793b3ded71e954765ef323520d8'],
+      ["Die Einstellungen zu Mitteilungen und die Einkaufserinnerungen löschen wir mit deinem Konto; eine Erinnerung außerdem, sobald du sie löschst, und alle, sobald keine mehr übrig sind.", 'edc859d56b3523e5934125d4800334d1409e2e002c680fdd1234d52a321085c0'],
+    ],
+    always: [
+      ["in der App unter „Benachrichtigungen & Erinnerungen“ weglassen", '0d063976d6070409f15a0026ef4c5526fe6a62fcc56d7059fa09446a8c628c42'],
+    ],
+  },
+  '/en/privacy': {
+    before: [
+      'and a reminder the evening before your shopping days',
+      'If you pick weekdays under "Shopping-day reminder"',
+      'If you pick shopping days, we store the chosen weekdays',
+      'and your shopping-day reminder (weekdays',
+      'we also delete the reminder as soon as you pick no shopping days',
+    ],
+    after: [
+      ["In the app for iPhone and Android you can turn on notifications: when someone puts something on a list, and reminders for your shopping days. Only when you turn one of these on in the app does your phone ask whether Snacklist may send you notifications; the app does not ask on first launch. If you allow it, the app receives an identifier for notifications (a token) from Google through Firebase Cloud Messaging, valid only for Snacklist on this device. We store the token with your account, along with the platform (iOS or Android) and when it was created and last renewed, for at most 10 devices per account; on the device we remember that you have turned notifications on. There are no notifications in the browser.", 'ced21fd3c78df21d67513b3ab892726e864800cb80aa95116600d5719275834c'],
+      ["If you add reminders under \"Notifications & Reminders\", we send you a notification for each reminder in your device's time zone: the day before or on the shopping day itself, at the time you chose. The text gives the number of open items on your default list, never the item names, for example \"Shopping day tomorrow\" or \"Shopping day today\" and \"3 items on the list. Have a quick look.\" If this notification cannot be delivered, it expires after four hours. The reminder goes to all your devices on which you have turned notifications on; your reminders are for you only, and other members of your household cannot see them.", '18952ebc60cc7b9f4b0f2e3834c6222069c4bd4252b97940302af64d3555ff7d'],
+      ["If you add reminders, we store for each reminder the shopping day, whether it goes out the day before or on the same day, the time, your device's time zone, the language and the local date on which that reminder last went out (so it goes out only once on that day), until you delete the reminder or delete your account.", '27328e1c0fe7f065b9da814b9c5660d98c4432dc911f817887a97492e0bc411c'],
+      ["and your shopping reminders (for each one: the shopping day, the day before or the same day, the time, time zone, language and the date of the last reminder)", '6a5a9f6a78da05c1c1b432dbc4d7c1733a2cacbd7d17c487dd36a77b859df9db'],
+      ["We delete your notification settings and the shopping reminders with your account; we also delete a reminder as soon as you delete it, and all of them once none are left.", '9131f4e4aa7ff6c93f6d6b69df1d54b85919efd8ef9ec471fa46eceac5d1c574'],
+    ],
+    always: [
+      ["you can leave it out in the app under \"Notifications & Reminders\"", 'f8620e0bb7f2224fd2203c6e4fb2c9ab9a4172e27c7f96526ed4db8492f0faa3'],
+    ],
+  },
+};
+
+test('job 472: the privacy policies describe shopping reminders, as hashed, only once shopping-reminders is released', () => {
+  const reminders = (released) => {
+    const data = JSON.parse(REAL_FLAGS);
+    data.holds['shopping-reminders'].released = released;
+    return JSON.stringify(data);
+  };
+  assert.equal(JSON.parse(REAL_FLAGS).holds['shopping-reminders'].released, false);
+  const held = buildSite({ env: PROD, repo: { flags: reminders(false) } });
+  const live = buildSite({ env: PROD, repo: { flags: reminders(true) } });
+  for (const [route, { before, after, always }] of Object.entries(SHOPPING_REMINDERS)) {
+    const text = (site) => site.page(route).querySelector('main').textContent;
+    for (const [wording, sha256] of after) {
+      assert.equal(createHash('sha256').update(wording, 'utf8').digest('hex'), sha256, wording);
+      assert.ok(!text(held).includes(wording), `${route} shows "${wording}" before the release`);
+      assert.equal(text(live).split(wording).length - 1, 1, `${route} shows "${wording}" once after it`);
+    }
+    for (const [wording, sha256] of always) {
+      assert.equal(createHash('sha256').update(wording, 'utf8').digest('hex'), sha256, wording);
+      for (const site of [held, live]) assert.equal(text(site).split(wording).length - 1, 1, `${route} shows "${wording}" once`);
+    }
+    for (const wording of before) {
+      assert.equal(text(held).split(wording).length - 1, 1, `${route} shows "${wording}" once before the release`);
+      assert.ok(!text(live).includes(wording), `${route} still shows "${wording}" after the release`);
+    }
+    for (const site of [held, live]) {
+      assert.equal((text(site).match(/Firebase Cloud Messaging/g) ?? []).length, 5);
+      assert.equal((text(site).match(/(vier Stunden|four hours)/g) ?? []).length, 1);
+    }
+  }
+});
+
 test("the privacy policies' expiry times are the ttl_seconds the senders use (Legal N-424)", () => {
   const repo = new URL('../../', import.meta.url);
   const read = (path) => readFileSync(new URL(path, repo), 'utf8');
   assert.match(read('supabase/functions/push/handler.ts'), /ttl_seconds: z\.int\(\)\.min\(60\)\.max\(86400\)/);
   assert.match(read('supabase/migrations/20261122232004_push_household_add.sql'), /'ttl_seconds', 3600\)/);
   assert.match(read('supabase/migrations/20261123000000_shopping_day_reminder.sql'), /'ttl_seconds', 14400\)/);
+  assert.match(read('supabase/migrations/20261127000000_shopping_reminders.sql'), /'ttl_seconds', 14400\)/);
   const de = read('site/content/legal/datenschutz.md');
   const en = read('site/content/legal/privacy.md');
   assert.match(de, /verfällt, wenn sie nicht zugestellt werden kann, nach einer Stunde/);

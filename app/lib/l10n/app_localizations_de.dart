@@ -4116,7 +4116,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get storeDoneOpen => 'App öffnen';
 
   @override
-  String get settingsPush => 'Mitteilungen';
+  String get settingsPush => 'Benachrichtigungen & Erinnerungen';
 
   @override
   String get pushHouseholdAdd => 'Wenn jemand etwas hinzufügt';
@@ -4160,4 +4160,72 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get guidesAll => 'Alle Anleitungen';
+
+  @override
+  String get remindersTitle => 'Einkaufserinnerungen';
+
+  @override
+  String get remindersHint =>
+      'Lege Erinnerungen für deine Einkaufstage an. Zur gewählten Uhrzeit in der Zeitzone deines Geräts schickt Snacklist dir einen Hinweis aufs Handy, mit der Zahl der offenen Einträge, nie mit Artikelnamen.';
+
+  @override
+  String get remindersEmpty => 'Noch keine Erinnerung.';
+
+  @override
+  String get reminderAdd => 'Erinnerung hinzufügen';
+
+  @override
+  String get reminderNew => 'Neue Erinnerung';
+
+  @override
+  String get reminderEdit => 'Erinnerung bearbeiten';
+
+  @override
+  String get reminderShoppingDay => 'Einkaufstag';
+
+  @override
+  String get reminderWhen => 'Wann';
+
+  @override
+  String get reminderDayBefore => 'Am Tag davor';
+
+  @override
+  String get reminderOnTheDay => 'Am Einkaufstag';
+
+  @override
+  String get reminderTime => 'Uhrzeit';
+
+  @override
+  String get reminderHour => 'Stunde';
+
+  @override
+  String get reminderMinute => 'Minute';
+
+  @override
+  String reminderLineDayBefore(String time) {
+    return 'Am Tag davor, $time';
+  }
+
+  @override
+  String reminderLineOnTheDay(String time) {
+    return 'Am Einkaufstag, $time';
+  }
+
+  @override
+  String reminderNext(String when) {
+    return 'Nächste: $when';
+  }
+
+  @override
+  String reminderSkipsToday(String time, String when) {
+    return 'Gespeichert. Heute ist $time schon vorbei, die erste Erinnerung kommt am $when.';
+  }
+
+  @override
+  String get reminderDuplicate => 'Diese Erinnerung hast du schon.';
+
+  @override
+  String reminderLimit(int count) {
+    return 'Das sind $count Erinnerungen, mehr geht nicht. Lösch eine, um eine neue anzulegen.';
+  }
 }

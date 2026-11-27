@@ -7,6 +7,7 @@ import 'package:family_groceries/design/hex_segmented.dart';
 import 'package:family_groceries/design/hex_switch.dart';
 import 'package:family_groceries/design/section_label.dart';
 import 'package:family_groceries/design/tokens.g.dart';
+import 'package:family_groceries/design/word_wrap.dart';
 import 'package:family_groceries/feedback/shake.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/shell/router.dart';
@@ -51,6 +52,7 @@ class const SettingsScreen({
               child: HexSegmented<ThemeMode>(
                 key: const ValueKey('theme-mode'),
                 label: l10n.appearance,
+                stackWhenTight: true,
                 value: theme.state,
                 onChanged: theme.pick,
                 segments: [
@@ -88,8 +90,10 @@ class const SettingsScreen({
                 horizontal: HlSpace.s3,
               ),
               leading: HlRowHex(Icons.language, face: t.surfaceSunken),
-              title: Text(l10n.language),
-              subtitle: Text(switch (context.watch<LanguageCubit>().state) {
+              title: HlWordWrapText(l10n.language),
+              subtitle: HlWordWrapText(switch (context
+                  .watch<LanguageCubit>()
+                  .state) {
                 final picked? => picked.nativeName,
                 null => l10n.languageSystemPicked(
                   deviceLanguage(context).nativeName,
@@ -109,8 +113,8 @@ class const SettingsScreen({
               HexSwitchTile(
                 key: const ValueKey('settings-shake'),
                 leading: HlRowHex(Icons.vibration, face: t.surfaceSunken),
-                title: Text(l10n.shakeToFeedback),
-                subtitle: Text(l10n.shakeToFeedbackHint),
+                title: HlWordWrapText(l10n.shakeToFeedback),
+                subtitle: HlWordWrapText(l10n.shakeToFeedbackHint),
                 isThreeLine: true,
                 value: shake.state,
                 onChanged: (on) => shake.set(on: on),
@@ -142,8 +146,8 @@ class const LanguageScreen({super.key}) extends StatelessWidget {
           HexRadioTile<AppLanguage?>(
             key: const ValueKey('language-system'),
             value: null,
-            title: Text(l10n.languageSystem),
-            subtitle: Text(
+            title: HlWordWrapText(l10n.languageSystem),
+            subtitle: HlWordWrapText(
               l10n.languageSystemNow(deviceLanguage(context).nativeName),
             ),
           ),
@@ -152,7 +156,7 @@ class const LanguageScreen({super.key}) extends StatelessWidget {
             HexRadioTile<AppLanguage?>(
               key: ValueKey('language-${language.code}'),
               value: language,
-              title: Text(language.nativeName),
+              title: HlWordWrapText(language.nativeName),
             ),
         ],
       ),

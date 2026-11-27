@@ -146,7 +146,7 @@ void main() {
     ];
     for (final (i, row) in menuRows.indexed) {
       expect(
-        find.descendant(of: key(row), matching: find.text(labels[i])),
+        find.descendant(of: key(row), matching: findLabel(labels[i])),
         findsOneWidget,
         reason: row,
       );
@@ -183,7 +183,7 @@ void main() {
     ];
     for (final (i, row) in menuRows.indexed) {
       expect(
-        find.descendant(of: key(row), matching: find.text(labels[i])),
+        find.descendant(of: key(row), matching: findLabel(labels[i])),
         findsOneWidget,
         reason: row,
       );
@@ -354,7 +354,7 @@ void main() {
       expect(
         find.descendant(
           of: key('more-privacy-policy'),
-          matching: find.text('Datenschutzerklärung'),
+          matching: findLabel('Datenschutzerklärung'),
         ),
         findsOneWidget,
       );

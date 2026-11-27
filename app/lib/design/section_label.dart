@@ -1,5 +1,6 @@
 import 'package:family_groceries/design/fonts.dart';
 import 'package:family_groceries/design/tokens.g.dart';
+import 'package:family_groceries/design/word_wrap.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// A section title in the list's category-label style (the site's `.cat`):
@@ -33,40 +34,47 @@ class const HlSectionLabel(
     return Padding(
       padding: padding,
       child: LayoutBuilder(
-        builder: (context, constraints) => Row(
-          spacing: HlSpace.s3,
-          children: [
-            // Large text wraps a long title instead of running it past
-            // the row. Not Flexible: that would split the row with the
-            // rule and cut the title at half.
-            ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth:
-                    (constraints.maxWidth -
-                            HlSpace.s3 -
-                            // A badge's room: a count of two digits.
-                            (badge == null ? 0 : _badgeRoom + HlSpace.s3))
-                        .clamp(0, 1e9),
-              ),
-              child: Semantics(
-                // Its own node in a column of other text too.
-                container: true,
-                header: true,
-                label: text,
-                excludeSemantics: true,
-                child: Text(
-                  // German capitals spell ß as SS (SÜSSES), as CSS does.
-                  text.toUpperCase().replaceAll('ß', 'SS'),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: overline(t.textMuted),
+        builder: (context, constraints) {
+          final width =
+              (constraints.maxWidth -
+                      HlSpace.s3 -
+                      // A badge's room: a count of two digits.
+                      (badge == null ? 0 : _badgeRoom + HlSpace.s3))
+                  .clamp(0.0, 1e9);
+          // German capitals spell ß as SS (SÜSSES), as CSS does.
+          final shown = text.toUpperCase().replaceAll('ß', 'SS');
+          final style = overline(t.textMuted);
+          return Row(
+            spacing: HlSpace.s3,
+            children: [
+              // Large text wraps a long title instead of running it past
+              // the row. Not Flexible: that would split the row with the
+              // rule and cut the title at half.
+              ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: width),
+                child: Semantics(
+                  // Its own node in a column of other text too.
+                  container: true,
+                  header: true,
+                  label: text,
+                  excludeSemantics: true,
+                  child: Text(
+                    hyphenateToFit(
+                      shown,
+                      style,
+                      MediaQuery.textScalerOf(context),
+                      width,
+                      Directionality.of(context),
+                    ),
+                    style: style,
+                  ),
                 ),
               ),
-            ),
-            ?badge,
-            Expanded(child: Container(height: 1, color: t.divider)),
-          ],
-        ),
+              ?badge,
+              Expanded(child: Container(height: 1, color: t.divider)),
+            ],
+          );
+        },
       ),
     );
   }

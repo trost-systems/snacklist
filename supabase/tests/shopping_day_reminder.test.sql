@@ -1,8 +1,11 @@
--- Job 378: the shopping-day reminder (20261123000000_shopping_day_reminder.sql, docs/PUSH.md).
+-- Job 378: the shopping-day reminder (20261123000000_shopping_day_reminder.sql, docs/PUSH.md), as
+-- job 472 keeps it for old app builds and the flag-off screen (20261127000000_shopping_reminders.sql):
+-- the view shopping_day_reminders and set_shopping_day_reminder over the new per-reminder rows.
 -- Off by default and per person; weekdays, zone and language saved through set_shopping_day_reminder
 -- only; due at 19:00 to 19:29 local the evening before a chosen weekday, once, in Europe/Berlin
 -- on both sides of a clock change and in another zone; the send goes through pg_net with the
--- open-item count; export and account deletion. Fictional people, no real ids.
+-- open-item count; export and account deletion. shopping_reminders.test.sql covers the new RPCs.
+-- Fictional people, no real ids.
 begin;
 select plan(61);
 
@@ -50,8 +53,8 @@ select is((select count(*)::int from public.shopping_day_reminders), 0, 'and cre
 select pg_temp.login(:anna);
 select throws_ok($$ insert into public.shopping_day_reminders (user_id, weekdays, time_zone, locale)
   values ('00000000-0000-4000-8000-000000378a01', array[1]::smallint[], 'Europe/Berlin', 'de') $$, '42501', null, 'no direct insert');
-select throws_ok($$ update public.shopping_day_reminders set weekdays = array[2]::smallint[] $$, '42501', null, 'no direct update');
-select throws_ok($$ delete from public.shopping_day_reminders $$, '42501', null, 'no direct delete');
+select throws_ok($$ update public.shopping_day_reminders set weekdays = array[2]::smallint[] $$, '55000', null, 'no direct update: the view takes none');
+select throws_ok($$ delete from public.shopping_day_reminders $$, '55000', null, 'no direct delete: the view takes none');
 select throws_ok($$ select public.set_shopping_day_reminder(array[8], 'Europe/Berlin', 'de') $$, '22023', 'invalid_weekdays', 'no weekday 8');
 select throws_ok($$ select public.set_shopping_day_reminder(array[0], 'Europe/Berlin', 'de') $$, '22023', 'invalid_weekdays', 'no weekday 0');
 select throws_ok($$ select public.set_shopping_day_reminder(array[1], 'Mars/Olympus', 'de') $$, '22023', 'invalid_time_zone', 'only IANA zones');
@@ -63,6 +66,9 @@ select throws_ok($$ select public.set_shopping_day_reminder(array[1], 'Europe/Be
 -- Weekday and 19:00 local, Europe/Berlin ------------------------------------------------------
 -- 2026-12-02 is a Wednesday, so Thursday's reminder; Berlin is UTC+1 in winter.
 select pg_temp.as_postgres();
+-- The save ran at the real now(), and an evening already past then counts as sent; the dates below
+-- include one before today, so start from nothing sent.
+update public.shopping_reminders set last_sent_on = null where user_id = :anna;
 select is(pg_temp.due('2026-12-02 18:00:00+00'), '00000000-0000-4000-8000-000000378a01', '19:00 local the evening before Thursday is due');
 select is(pg_temp.due('2026-12-02 17:59:59+00'), '', 'not a second before 19:00 local');
 select is(pg_temp.due('2026-12-02 18:29:59+00'), '00000000-0000-4000-8000-000000378a01', 'still due until 19:29:59, so a late run sends');
@@ -100,33 +106,34 @@ select public.set_shopping_day_reminder(array[4], 'Europe/Berlin', 'de');
 select pg_temp.as_postgres();
 insert into public.push_tokens (user_id, token, platform) values (:bruno, 'test-token-shopping-day-b', 'ios');
 select is(pg_temp.due('2026-12-02 18:00:00+00'), '00000000-0000-4000-8000-000000378a01', 'Bruno has devices but no household: not due');
-delete from public.shopping_day_reminders where user_id = :bruno;
+delete from public.shopping_reminders where user_id = :bruno;
 
--- Saving late counts as sent: a zone where it is 19:00 or later now, one where it is earlier.
+-- Saving late counts as sent: a zone where it is 19:00 or later now, one where it is earlier. The
+-- weekday is the one after today in the late zone, so today is its evening there.
+create temp table late as
+select name as zone, extract(isodow from (now() at time zone name)::date + 1)::int as weekday,
+       (now() at time zone name)::date as today
+from pg_catalog.pg_timezone_names where name like 'Etc/GMT%'
+  and (now() at time zone name)::time >= time '19:00' order by name limit 1;
+create temp table early as
+select name as zone from pg_catalog.pg_timezone_names where name like 'Etc/GMT%'
+  and (now() at time zone name)::time < time '19:00' order by name limit 1;
+grant select on late, early to authenticated;
 select pg_temp.login(:bruno);
-select public.set_shopping_day_reminder(array[1], z.name, 'de')
-from (select name from pg_catalog.pg_timezone_names where name like 'Etc/GMT%'
-        and (now() at time zone name)::time >= time '19:00' order by name limit 1) z;
-select is((select last_sent_on from public.shopping_day_reminders where user_id = :bruno),
-  (select (now() at time zone time_zone)::date from public.shopping_day_reminders where user_id = :bruno),
+select public.set_shopping_day_reminder(array[weekday], zone, 'de') from late;
+select is((select last_sent_on from public.shopping_day_reminders where user_id = :bruno), (select today from late),
   'saved at or after 19:00 local: that evening counts as sent');
-select public.set_shopping_day_reminder(array[1], z.name, 'de')
-from (select name from pg_catalog.pg_timezone_names where name like 'Etc/GMT%'
-        and (now() at time zone name)::time < time '19:00' order by name limit 1) z;
-select is((select last_sent_on from public.shopping_day_reminders where user_id = :bruno),
-  (select (now() at time zone z.name)::date from (select name from pg_catalog.pg_timezone_names where name like 'Etc/GMT%'
-        and (now() at time zone name)::time >= time '19:00' order by name limit 1) z),
+select public.set_shopping_day_reminder(array[l.weekday], e.zone, 'de') from late l, early e;
+select is((select last_sent_on from public.shopping_day_reminders where user_id = :bruno), (select today from late),
   'a save before 19:00 in a new zone keeps the date already sent');
 select pg_temp.as_postgres();
-delete from public.shopping_day_reminders where user_id = :bruno;
+delete from public.shopping_reminders where user_id = :bruno;
 select pg_temp.login(:bruno);
-select public.set_shopping_day_reminder(array[1], z.name, 'de')
-from (select name from pg_catalog.pg_timezone_names where name like 'Etc/GMT%'
-        and (now() at time zone name)::time < time '19:00' order by name limit 1) z;
+select public.set_shopping_day_reminder(array[extract(isodow from (now() at time zone zone)::date + 1)::int], zone, 'de') from early;
 select is((select last_sent_on from public.shopping_day_reminders where user_id = :bruno), null::date,
   'saved before 19:00 local: nothing marked sent');
 select pg_temp.as_postgres();
-delete from public.shopping_day_reminders where user_id = :bruno;
+delete from public.shopping_reminders where user_id = :bruno;
 
 -- Another zone: 19:00 in New York (UTC-5 in December) is 00:00 UTC the next day -------------
 select pg_temp.login(:carla);
@@ -156,22 +163,22 @@ select is((select convert_from(body, 'utf8')::jsonb ->> 'list_id' from net.http_
 select is((select headers ->> 'x-push-secret' from net.http_request_queue), 'test-secret-378', 'with the vault secret');
 select is(public.shopping_day_run('https://push.example.test/functions/v1/push', '2026-12-02 18:10:00+00'), 0, 'a second run the same evening sends nothing');
 select is((select last_sent_on from public.shopping_day_reminders where user_id = :anna), date '2026-12-02', 'the local date is remembered');
-select is(public.shopping_day_text('en', 0)::text, '{"body": "Have a quick look at the list.", "title": "Shopping day tomorrow"}', 'English without a count');
-select is(public.shopping_day_text('de', 1) ->> 'body', '1 Artikel steht auf der Liste. Schau kurz rein.', 'one item in German');
+select is(public.shopping_day_text('en', 0, -1)::text, '{"body": "Have a quick look at the list.", "title": "Shopping day tomorrow"}', 'English without a count');
+select is(public.shopping_day_text('de', 1, -1) ->> 'body', '1 Artikel steht auf der Liste. Schau kurz rein.', 'one item in German');
 select is(public.shopping_day_set(false), 'off', 'off');
 select is((select count(*)::int from cron.job where jobname = 'shopping-day-reminder'), 0, 'the job is gone');
 
 -- Export and deletion ---------------------------------------------------------------------------
 select pg_temp.login(:anna);
-select is(public.export_my_data() #>> '{shopping_day_reminder,time_zone}', 'Europe/Berlin', 'the export has the reminder');
+select is(public.export_my_data() #>> '{shopping_reminders,0,time_zone}', 'Europe/Berlin', 'the export has the reminders');
 -- Legal N-434: this migration replaces export_my_data after the household-add alert's one, and keeps its keys.
 select public.set_push_household_add(true, 'de');
 select is(public.export_my_data() #>> '{push_preferences,household_add}', 'true', 'the export keeps push_preferences');
 select ok(public.export_my_data() ? 'push_devices', 'the export keeps push_devices');
-select is(public.export_my_data() #>> '{shopping_day_reminder,time_zone}', 'Europe/Berlin', 'and the reminder is still in it');
+select is(public.export_my_data() #>> '{shopping_reminders,0,time_zone}', 'Europe/Berlin', 'and the reminders are still in it');
 select pg_temp.as_postgres();
 delete from auth.users where id = :anna;
-select is((select count(*)::int from public.shopping_day_reminders where user_id = :anna), 0, 'the reminder goes with the account');
+select is((select count(*)::int from public.shopping_reminders where user_id = :anna), 0, 'the reminders go with the account');
 
 select * from finish();
 rollback;

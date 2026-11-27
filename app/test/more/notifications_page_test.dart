@@ -1,13 +1,19 @@
 import 'package:family_groceries/analytics/flags.dart';
+import 'package:family_groceries/design/hex_switch.dart';
 import 'package:family_groceries/design/sticker.dart';
 import 'package:family_groceries/push/household_add_alert.dart';
+import 'package:family_groceries/push/push_registration.dart';
 import 'package:family_groceries/shell/router.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../push/household_add_alert_test.dart' show FakePrefs;
+import '../push/push_registration_test.dart'
+    show FakePushPlugin, FakePushTokens, MemoryPushStore, Sessions;
 import '../settings/shopping_day_test.dart'
     show FakePush, FakeShoppingDayServer;
+import '../settings/shopping_reminders_test.dart'
+    show FakeReminderPush, FakeRemindersServer;
 import 'more_harness.dart';
 
 /// Job 463: the push switches and the shopping-day reminder left
@@ -56,14 +62,13 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('More lists Mitteilungen below Einstellungen, in its group', (
-    tester,
-  ) async {
+  testWidgets('More lists Benachrichtigungen & Erinnerungen below '
+      'Einstellungen, in its group', (tester) async {
     await pumpWith(tester, flags: both);
     expect(
       find.descendant(
         of: key('more-notifications'),
-        matching: find.text('Mitteilungen'),
+        matching: findLabel('Benachrichtigungen & Erinnerungen'),
       ),
       findsOneWidget,
     );
@@ -84,7 +89,11 @@ void main() {
     await tapKey(tester, 'more-notifications');
     expect(path(more), notificationsPath);
     expect(key('notifications-page'), findsOneWidget);
-    expect(find.text('Mitteilungen'), findsOneWidget, reason: 'the title');
+    expect(
+      findLabel('Benachrichtigungen & Erinnerungen'),
+      findsOneWidget,
+      reason: 'the title',
+    );
     expect(key('settings-push-name-hidden'), findsOneWidget);
     expect(find.text('EINKAUFSTAG-ERINNERUNG'), findsOneWidget);
     expect(key('shopping-day-1'), findsOneWidget);
@@ -177,5 +186,122 @@ void main() {
           .selected,
       isTrue,
     );
+  });
+
+  group('job 472: shopping reminders SR1', () {
+    const sr1 = {pushHouseholdAddFlag, shoppingDayFlag, shoppingRemindersFlag};
+
+    testWidgets('English names the row and the page Notifications & '
+        'Reminders', (tester) async {
+      await pumpMore(
+        tester,
+        size: tall,
+        device: const [Locale('en')],
+        flags: both,
+        householdAdd: webAlert(),
+        shoppingDay: FakePush().service(FakeShoppingDayServer({})),
+      );
+      expect(
+        find.descendant(
+          of: key('more-notifications'),
+          matching: find.text('Notifications & Reminders'),
+        ),
+        findsOneWidget,
+      );
+      await tapKey(tester, 'more-notifications');
+      expect(find.text('Notifications & Reminders'), findsOneWidget);
+    });
+
+    testWidgets('with its flag, SR1 replaces the weekday chips, below the '
+        'name switch on the same page (Legal M2)', (tester) async {
+      final server = FakeRemindersServer();
+      await pumpMore(
+        tester,
+        size: tall,
+        location: notificationsPath,
+        flags: sr1,
+        householdAdd: webAlert(),
+        shoppingDay: FakePush().service(FakeShoppingDayServer({})),
+        shoppingReminders: FakeReminderPush().service(server),
+      );
+      expect(key('shopping-reminders'), findsOneWidget);
+      expect(key('shopping-day-1'), findsNothing);
+      expect(find.text('EINKAUFSTAG-ERINNERUNG'), findsNothing);
+      expect(
+        find.textContaining('Am Abend davor um 19 Uhr'),
+        findsNothing,
+        reason: 'the old hint stays on the flag-off path only (M4)',
+      );
+      expect(
+        tester.getRect(key('settings-push-name-hidden')).bottom,
+        lessThanOrEqualTo(tester.getRect(key('shopping-reminders')).top),
+      );
+    });
+
+    testWidgets('without it, the chips and their 19:00 hint stay', (
+      tester,
+    ) async {
+      final server = FakeRemindersServer();
+      await pumpMore(
+        tester,
+        size: tall,
+        location: notificationsPath,
+        flags: both,
+        householdAdd: webAlert(),
+        shoppingDay: FakePush().service(FakeShoppingDayServer({})),
+        shoppingReminders: FakeReminderPush().service(server),
+      );
+      expect(key('shopping-day-1'), findsOneWidget);
+      expect(find.textContaining('Am Abend davor um 19 Uhr'), findsOneWidget);
+      expect(key('shopping-reminders'), findsNothing);
+      expect(server.calls, isEmpty);
+    });
+
+    testWidgets('its flag alone lists the row', (tester) async {
+      await pumpMore(
+        tester,
+        size: tall,
+        flags: const {shoppingRemindersFlag},
+        shoppingReminders: FakeReminderPush().service(FakeRemindersServer()),
+      );
+      expect(key('more-notifications'), findsOneWidget);
+    });
+
+    testWidgets('the household-add switch alone creates no reminder (C2)', (
+      tester,
+    ) async {
+      final sessions = Sessions();
+      final plugin = FakePushPlugin();
+      final push = PushRegistration(
+        plugin,
+        MemoryPushStore(),
+        FakePushTokens(sessions),
+      );
+      final alert = HouseholdAddAlert(push, FakePrefs());
+      addTearDown(() async {
+        await alert.close();
+        await push.close();
+        await plugin.close();
+        await sessions.close();
+      });
+      final server = FakeRemindersServer();
+      final reminders = FakeReminderPush();
+      await pumpMore(
+        tester,
+        size: tall,
+        location: notificationsPath,
+        flags: sr1,
+        householdAdd: alert,
+        shoppingReminders: reminders.service(server),
+      );
+      await tapKey(tester, 'settings-push-household-add');
+      expect(
+        tester.widget<HexSwitchTile>(key('settings-push-household-add')).value,
+        isTrue,
+      );
+      expect(server.calls, ['read'], reason: 'no reminder row');
+      expect(server.rows, isEmpty);
+      expect(find.text('Noch keine Erinnerung.'), findsOneWidget);
+    });
   });
 }

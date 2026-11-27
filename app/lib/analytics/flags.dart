@@ -15,6 +15,14 @@ const unifiedKeysFlag = 'unified-keys';
 /// in the build (docs/PUSH.md) and stays off until Legal's GO.
 const shoppingDayFlag = 'push-shopping-day';
 
+/// The flag that offers shopping reminders SR1 (job 472): on More's
+/// Benachrichtigungen & Erinnerungen a list of reminders, each a shopping
+/// day, the day before or on the day, and a time, instead of
+/// [shoppingDayFlag]'s weekday chips. Sending still needs the server switch
+/// `push_shopping_day`; stays off until Legal has seen the policy text of
+/// the hold `shopping-reminders` live.
+const shoppingRemindersFlag = 'push-shopping-reminders';
+
 /// The flag that shows the Verlauf tab, the grocery log (job 199).
 const groceryLogFlag = 'grocery-log';
 

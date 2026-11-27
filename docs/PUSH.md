@@ -190,6 +190,12 @@ their own time zone the push function sends „Morgen ist Einkaufstag“ /
 "Shopping day tomorrow" to their devices. Server push, no local
 notifications.
 
+Since job 472 the weekdays are stored as shopping reminders (next
+section): each picked weekday is one day-before 19:00 reminder in
+`public.shopping_reminders`, and `public.shopping_day_reminders` is a
+read-only view over it. What follows still describes the weekday chips,
+the flag-off screen of SR1; where it names the table, read the view.
+
 - **Off by default, per person.** No row in `public.shopping_day_reminders`
   means off. The row is the person's, not a household's: weekdays (ISO,
   1 Monday to 7 Sunday), the device's IANA time zone, the language (`de` or
@@ -225,7 +231,7 @@ notifications.
   `PUSH_SEND_SECRET`: `select vault.create_secret('<secret>', 'push_send_secret')`);
   `shopping_day_set(false)` removes the job. Both are owner-only. Turn it on
   after Legal's GO and Ops' Firebase setup, together with the PostHog flag.
-- **Zone refresh.** Opening Mitteilungen with days saved and push on here calls
+- **Zone refresh.** Opening the page with days saved and push on here calls
   `refresh_shopping_day_reminder(zone, locale)`: zone and language only, never the days or
   `last_sent_on`, so it cannot cancel an evening's reminder. A device that reports a bare offset
   (`GMT+01:00`) sends the fixed zone `Etc/GMT-1` (`ianaZone`); an offset of no whole hour fails the save.
@@ -240,8 +246,8 @@ notifications.
   (`ShoppingDayService.hasDays`, unreadable counts as none).
   A clear the server did not take is kept on the device with its account
   (`DeviceCache.pendingShoppingDayClear`) and sent again at the next start or
-  sign-in of that account, or when Mitteilungen opens (N-439, as for the alert).
-- **App.** More's Mitteilungen page (`/more/notifications`, job 463) shows the section with the flag on, on iOS and
+  sign-in of that account, or when the page opens (N-439, as for the alert).
+- **App.** More's Benachrichtigungen & Erinnerungen page (`/more/notifications`, job 463; renamed in job 472) shows the section with the flag on, on iOS and
   Android in a build with push. Picking the first weekday asks for the OS
   permission (`PushRegistration.optIn`). With push off on this device the chips show off
   even if the server has days (no push, no reminder). Refused: nothing is saved and a
@@ -251,6 +257,106 @@ notifications.
   `shopping_day_reminder` (next to `push_devices` and `push_preferences`:
   this migration sorts after the household-add one and carries its
   `export_my_data`, N-434); the account's deletion removes the row.
+
+## Shopping reminders (job 472, SR1, flag `push-shopping-reminders`)
+
+Several reminders per person, each a shopping day, the day before or on the
+day, and a local time (Peter t1344u, SR1 with the SR-D defaults; Legal
+review 2026-11-26 with the SR-L2 addendum). Same push function, same cron
+job, same server switch `push_shopping_day`: the UI flag may go on only
+together with or after the P2 enable GO, and only once Legal has seen the
+policy text of the hold `shopping-reminders` live. Nothing under
+`supabase/functions/` changed (mcp freeze).
+
+- **One store (Legal C1).** `public.shopping_reminders`, one row per
+  reminder: `shopping_weekday` (ISO 1-7, the shopping day, not the fire
+  day), `offset_days` (-1 the day before, 0 on the day), `local_time`
+  (whole minutes; the app offers 5-minute steps), `time_zone`, `locale`,
+  `last_sent_on` (per reminder), `created_at`, `updated_at`. Unique per
+  person, day, offset and time (SR-Q6: two reminders for one shopping day
+  both fire, an exact duplicate is refused, `reminder_exists`, 23505). At
+  most 14 per person (SR-Q9): the RPCs refuse a 15th (`reminder_limit`,
+  54000) and a before-insert trigger enforces it for every writer. No
+  household id on the row. RLS: the owner selects; `revoke all` and
+  writes only through the RPCs; in no realtime publication. Migration
+  `20261127000000_shopping_reminders.sql`; tests
+  `supabase/tests/shopping_reminders.test.sql` (C1-C4) and
+  `shopping_day_reminder.test.sql` (the compatibility path).
+- **Migration (SR-Q5).** Every old weekday became one reminder, the day
+  before at 19:00, with the person's zone, language and `last_sent_on`;
+  no re-opt-in and nothing sent at migration time. The old table is
+  dropped; its name is now a `security_invoker` view (one row per person,
+  `weekdays` = the shopping days of all their reminders) that old builds
+  and the flag-off screen read. Its insert trigger does the same mapping
+  (superuser only, for fixtures and the frozen outsiders test).
+- **RPCs.** `add_shopping_reminder(p_weekday int, p_day_before bool,
+  p_minute int, p_time_zone text, p_locale text)` and
+  `update_shopping_reminder(p_id uuid, ...)` return the row;
+  `delete_shopping_reminder(p_id)` (an unknown id is a no-op, so a retry
+  is safe). Argument types are the ones the outsiders sweep knows (no
+  `smallint`, no `time`). Errors: `invalid_weekday`, `invalid_offset`,
+  `invalid_time`, `invalid_time_zone`, `invalid_locale` (22023),
+  `reminder_not_found` (P0002).
+- **Compatibility.** `set_shopping_day_reminder(p_weekdays, p_time_zone,
+  p_locale)` stays for old builds and the flag-off screen: it REPLACES all
+  of the person's reminders with one day-before 19:00 reminder per
+  weekday, so saving the chips deletes custom times and on-the-day
+  reminders made while SR1 was on (Legal F8; acceptable for a flag
+  rollback). No weekday deletes all, and with the household-add alert off
+  too the device forgets push (N-436 / N-439 unchanged).
+  `refresh_shopping_day_reminder` changes zone and language on all rows,
+  never days, offsets, times or `last_sent_on`.
+- **When it fires.** A reminder's fire date is its shopping date plus
+  `offset_days`; its instant is `(fire date + local_time) at time zone
+  time_zone`. `shopping_day_due` lists a reminder from that instant for 30
+  minutes, once per fire date (`last_sent_on < fire date`), with a push
+  token and a default household. Comparing instants keeps DST right: a time
+  in the spring gap fires at the shifted instant, one in the autumn overlap
+  once. A late-evening reminder catches up after midnight (fire date =
+  yesterday). A day-before reminder after midnight (Saturday's shop, the
+  day before at 00:30) fires Friday 00:30 (SR-Q11). With the 10-minute
+  cron, a reminder at 19:05 goes out with the 19:10 run.
+- **Saved late (SR-Q7).** Adding or editing at or after an occurrence's
+  instant marks that fire date as sent (`shopping_reminder_last_fire`, the
+  same helper `shopping_day_due` uses), so the first fire is the next
+  occurrence and the app says so in a snackbar (decided from the server's
+  answer, not the tap time). On the same shopping day and offset
+  `last_sent_on` never moves back, so moving a reminder that already went
+  out today to a later time today does not send it again; a new day or
+  offset drops the old date, so a reminder moved onto later today still
+  comes today, as the sheet shows.
+- **Sending.** `shopping_day_run` marks only the due reminder's
+  `last_sent_on` (by id) and posts one push per due reminder to the same
+  `/functions/v1/push` URL with `ttl_seconds` 14400; two due in one run
+  both go. Titles: „Morgen ist Einkaufstag“ / "Shopping day tomorrow" the
+  day before, „Heute ist Einkaufstag“ / "Shopping day today" on the day;
+  bodies unchanged (`shopping_day_text(p_locale, p_open, p_offset_days)`).
+  The 12 strings are frozen as Legal hashed them (C4): no Premium, offers,
+  "come back", partner or store content.
+- **Export.** `export_my_data()` key `shopping_reminders`: an array of every
+  column of every reminder; the old key `shopping_day_reminder` is gone.
+- **App** (`app/lib/settings/shopping_reminders.dart`). On the
+  Benachrichtigungen & Erinnerungen page, below the household-add switches
+  and the name switch (Legal M2: same page), with the flag on in a build
+  with push; it replaces the weekday chips. A list of reminders (shopping
+  day, „Am Tag davor, 19:00“, the next firing as a real date) and one add
+  button; the sheet has weekday chips (one day, none picked for a new
+  reminder), the day before / on the day, and hour plus 5-minute chips
+  (24 hours in German, the device setting in English). A new reminder
+  starts at the day before, 19:00; nothing is stored before Save (C2).
+  Opening the page asks nothing and writes nothing; with reminders saved
+  and push on here it refreshes zone and language. The first Save asks for
+  the OS permission (`PushRegistration.optIn`); refused, nothing reaches
+  the server and `shoppingDayBlocked` shows (SR-Q12). Saves show at once
+  and go back with a snackbar when the OS or the server refuses
+  (duplicate, cap, failure). Deleting the last reminder turns the feature
+  off (SR-Q4); with the household-add alert off too the device then
+  forgets push. Whether it was the last is read from the server after the
+  delete (the page's list only when that read fails). A chips clear still
+  waiting on the device (N-439) is sent before any SR1 read or write, and a
+  reminder saved since supersedes it. A delete the server refused brings the row back and
+  leaves push on (nothing changed anywhere). The hint is Legal's M4
+  wording; the old 19:00 hint stays on the chips.
 
 ## Native
 
@@ -309,7 +415,7 @@ nothing real goes in the repo):
 
 When another member adds an item, the members who switched the alert on get
 a push (flag `push-household-add`, off until Legal's GO). The app side is
-the switch on More's Mitteilungen page (job 463)
+the switch on More's Benachrichtigungen & Erinnerungen page (job 463)
 (`app/lib/push/household_add_settings.dart`); the decisions are in the
 database (`supabase/migrations/20261122232004_push_household_add.sql`,
 `supabase/tests/push_household_add.test.sql` and `..._privacy.test.sql`).

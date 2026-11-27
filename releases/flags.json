@@ -112,6 +112,10 @@
     "push-shopping-day": {
       "rollout": "off",
       "note": "the shopping-day reminder (Einstellungen > Einkaufstag-Erinnerung: weekdays, a push at 19:00 local the evening before; job 378, P2) shows only while the PostHog flag push-shopping-day is on, and the server sends only after the switch push_shopping_day is on (docs/PUSH.md); waits for Legal's GO on the new strings and privacy text and Ops' Firebase project, off for everyone including testers"
+    },
+    "push-shopping-reminders": {
+      "rollout": "off",
+      "note": "shopping reminders (SR1, job 472): on More's Benachrichtigungen & Erinnerungen page a list of reminders, each a shopping day, the day before or on the day, and a time, with an add sheet, instead of push-shopping-day's weekday chips; shows only while the PostHog flag push-shopping-reminders is on, and the server still sends only after the switch push_shopping_day is on (docs/PUSH.md). Stays off for everyone, testers included, until Legal has seen the hold shopping-reminders' policy text live and together with or after the P2 enable GO"
     }
   },
   "holds": {
@@ -156,6 +160,10 @@
     "push-notifications": {
       "released": true,
       "note": "the privacy policy's push sections go live with this hold (26 November 2026, Europe/Berlin); sending stays off until Legal's hash-bound enable GO: the server switches push_household_add and push_shopping_day stay off, and the PostHog flags push-household-add and push-shopping-day stay is_internal-only (push-household-add then goes straight to full, the Art. 21 name switch is gated on it)"
+    },
+    "shopping-reminders": {
+      "released": false,
+      "note": "the privacy policy's shopping-reminder paragraphs (several reminders per person, a time, the day before or on the day; job 472, Legal review 2026-11-26 M1-M3) replace the 19:00 weekday text once released; release it in its own small PR after Legal's hash-bound GO and bump updated/Stand/Last updated to the Europe/Berlin publish day there; the PostHog flag push-shopping-reminders stays off until Legal has seen this text live"
     },
     "unified-keys": {
       "released": true,

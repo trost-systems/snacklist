@@ -35,6 +35,7 @@ const sameInBothLanguages = {
   'siriHeader': 'product name',
   'syncOffline': '"Offline" is German too (job 161)',
   'priceUnitKg': 'the unit symbol kg (job 190)',
+  'reminderMinute': '"Minute" is English too (job 472 time chips)',
   'priceUnitLitre': 'the unit symbol l (job 190)',
   'feedbackWhen':
       'only the date and the time, formatted per language (job 268)',
