@@ -145,7 +145,7 @@ class PendingInvite(
     unawaited(_store.savePendingInvite(_invite));
   }
 
-  /// After a join, a cancel or an invalid code: the invite is answered.
+  /// After a join, a cancel or a refusal: the invite is answered.
   void clear() {
     if (_invite case (:final code, at: _, via: _)) {
       _answered.add(code);

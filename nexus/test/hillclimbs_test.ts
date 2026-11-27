@@ -16,6 +16,7 @@ Deno.test('every registered doc on main parses to its known numbers', async () =
     'hc-category-sorting': [217, 202, 1],
     'hc-design-v2-app': [4, 5, 11],
     'hc-design-v3-app': [5, 6, 10],
+    'hc-invite-join': [146, 6, 5],
     'hc-onboarding-enabled-flow': [4, 0, 4],
     'hc-size-start': [1, 1, 0],
     'hc-strictness': [1030, 2, 6],
