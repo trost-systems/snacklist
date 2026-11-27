@@ -8,6 +8,7 @@ import 'package:family_groceries/core/language.dart';
 import 'package:family_groceries/core/localizations.dart';
 import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/core/theme.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/household/invite_repository.dart';
 import 'package:family_groceries/household/invite_share.dart';
 import 'package:family_groceries/household/switcher_sheet.dart';
@@ -222,10 +223,10 @@ ListCubit _shownList(WidgetTester tester) =>
 /// The names of the switcher's rows of [prefix] (`switcher-list-`,
 /// `household-row-`), top to bottom.
 List<String> _rowTitles(WidgetTester tester, String prefix) {
-  final tiles = tester.widgetList<ListTile>(
+  final tiles = tester.widgetList<FocusRingTile>(
     find.byWidgetPredicate(
       (w) =>
-          w is ListTile &&
+          w is FocusRingTile &&
           w.key is ValueKey<String> &&
           (w.key! as ValueKey<String>).value.startsWith(prefix) &&
           !(w.key! as ValueKey<String>).value.endsWith('-new'),
@@ -233,7 +234,10 @@ List<String> _rowTitles(WidgetTester tester, String prefix) {
   );
   final rows = [
     for (final tile in tiles)
-      (tester.getTopLeft(find.byWidget(tile)).dy, (tile.title! as Text).data!),
+      (
+        tester.getTopLeft(find.byWidget(tile)).dy,
+        ((tile.child as ListTile).title! as Text).data!,
+      ),
   ]..sort((a, b) => a.$1.compareTo(b.$1));
   return [for (final r in rows) r.$2];
 }
@@ -1332,7 +1336,12 @@ void main() {
       await tester.tap(_key('household-default-row'));
       await tester.pumpAndSettle();
       bool selected(String key) =>
-          tester.getSemantics(_key(key)).flagsCollection.isSelected ==
+          tester
+              .getSemantics(
+                find.descendant(of: _key(key), matching: find.byType(ListTile)),
+              )
+              .flagsCollection
+              .isSelected ==
           Tristate.isTrue;
       expect(selected('voice-household-home'), isTrue);
       expect(selected('voice-household-club'), isFalse);
@@ -1409,7 +1418,14 @@ void main() {
       await tester.pump(const Duration(milliseconds: 30));
       // Mid-animation the row may be off its hit area: call its tap.
       tester
-          .widget<ListTile>(_key('household-default-row').first)
+          .widget<ListTile>(
+            find
+                .descendant(
+                  of: _key('household-default-row').first,
+                  matching: find.byType(ListTile),
+                )
+                .first,
+          )
           .onTap
           ?.call();
       await tester.pump(const Duration(milliseconds: 30));

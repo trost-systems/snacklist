@@ -258,17 +258,23 @@ class const _ListsView({
                 ],
               ),
             ),
-            ListTile(
+            FocusRingTile(
               key: const ValueKey('switcher-members'),
-              leading: sheetHex(context, Icons.group_outlined, t.surfaceSunken),
-              title: Text(
-                [
-                  l10n.householdMembers(household.memberCount),
-                  if (openInvites > 0) l10n.switcherOpenInvites(openInvites),
-                ].join(' · '),
+              child: ListTile(
+                leading: sheetHex(
+                  context,
+                  Icons.group_outlined,
+                  t.surfaceSunken,
+                ),
+                title: Text(
+                  [
+                    l10n.householdMembers(household.memberCount),
+                    if (openInvites > 0) l10n.switcherOpenInvites(openInvites),
+                  ].join(' · '),
+                ),
+                trailing: Icon(Icons.chevron_right, color: t.textMuted),
+                onTap: () => go(MembersPage(household.id)),
               ),
-              trailing: Icon(Icons.chevron_right, color: t.textMuted),
-              onTap: () => go(MembersPage(household.id)),
             ),
             HlSectionLabel(l10n.listsTitle),
             if (!state.loaded)
@@ -292,79 +298,93 @@ class const _ListsView({
               index: i,
               count: lists.length,
               move: (to) => unawaited(cubit.moveList(list.id, to)),
-              child: ListTile(
+              child: FocusRingTile(
                 key: ValueKey('switcher-list-${list.id}'),
-                minTileHeight: 56,
-                leading: sheetHex(
-                  context,
-                  Icons.checklist,
-                  on ? t.honeySoft : t.surfaceSunken,
-                ),
-                title: Text(name, maxLines: 2, overflow: TextOverflow.ellipsis),
-                subtitle: Text(l10n.householdOpenItems(open(list))),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (on)
-                      Icon(
-                        Icons.check,
-                        key: const ValueKey('switcher-list-current'),
-                        color: t.text,
-                        semanticLabel: l10n.householdCurrent,
-                      ),
-                    PopupMenuButton<_ListAction>(
-                      key: ValueKey('switcher-list-actions-${list.id}'),
-                      tooltip: l10n.listActions(name),
-                      useRootNavigator: true,
-                      onSelected: (action) => unawaited(switch (action) {
-                        _ListAction.rename => renameList(context, cubit, list),
-                        _ListAction.delete => deleteList(
-                          context,
-                          cubit,
-                          list,
-                          open: open(list),
+                child: ListTile(
+                  minTileHeight: 56,
+                  leading: sheetHex(
+                    context,
+                    Icons.checklist,
+                    on ? t.honeySoft : t.surfaceSunken,
+                  ),
+                  title: Text(
+                    name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  subtitle: Text(l10n.householdOpenItems(open(list))),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (on)
+                        Icon(
+                          Icons.check,
+                          key: const ValueKey('switcher-list-current'),
+                          color: t.text,
+                          semanticLabel: l10n.householdCurrent,
                         ),
-                      }),
-                      itemBuilder: (_) => [
-                        PopupMenuItem(
-                          key: const ValueKey('list-rename'),
-                          value: _ListAction.rename,
-                          child: Text(l10n.householdRename),
-                        ),
-                        if (lists.length > 1)
-                          PopupMenuItem(
-                            key: const ValueKey('list-delete'),
-                            value: _ListAction.delete,
-                            child: Text(l10n.delete),
+                      PopupMenuButton<_ListAction>(
+                        key: ValueKey('switcher-list-actions-${list.id}'),
+                        tooltip: l10n.listActions(name),
+                        useRootNavigator: true,
+                        onSelected: (action) => unawaited(switch (action) {
+                          _ListAction.rename => renameList(
+                            context,
+                            cubit,
+                            list,
                           ),
-                      ],
-                    ),
-                  ],
+                          _ListAction.delete => deleteList(
+                            context,
+                            cubit,
+                            list,
+                            open: open(list),
+                          ),
+                        }),
+                        itemBuilder: (_) => [
+                          PopupMenuItem(
+                            key: const ValueKey('list-rename'),
+                            value: _ListAction.rename,
+                            child: Text(l10n.householdRename),
+                          ),
+                          if (lists.length > 1)
+                            PopupMenuItem(
+                              key: const ValueKey('list-delete'),
+                              value: _ListAction.delete,
+                              child: Text(l10n.delete),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  selected: on,
+                  onTap: () => pick(list),
                 ),
-                selected: on,
-                onTap: () => pick(list),
               ),
             );
           },
         ),
         SliverList.list(
           children: [
-            ListTile(
+            FocusRingTile(
               key: const ValueKey('switcher-list-new'),
-              leading: sheetHex(context, Icons.add, t.surfaceSunken),
-              title: Text(l10n.listNew),
-              onTap: () => unawaited(addList(context)),
+              child: ListTile(
+                leading: sheetHex(context, Icons.add, t.surfaceSunken),
+                title: Text(l10n.listNew),
+                onTap: () => unawaited(addList(context)),
+              ),
             ),
             const CurrencySection(),
             JoinApprovalSection(household: household),
             const SizedBox(height: HlSpace.s3),
-            ListTile(
+            FocusRingTile(
               key: const ValueKey('switcher-leave'),
-              leading: const Icon(Icons.logout),
-              iconColor: theme.colorScheme.error,
-              textColor: theme.colorScheme.error,
-              title: Text(l10n.leaveHousehold),
-              onTap: () => unawaited(leave()),
+              child: ListTile(
+                leading: const Icon(Icons.logout),
+                iconColor: theme.colorScheme.error,
+                textColor: theme.colorScheme.error,
+                title: Text(l10n.leaveHousehold),
+                onTap: () => unawaited(leave()),
+              ),
             ),
             const SizedBox(height: HlSpace.s3),
           ],
@@ -445,16 +465,18 @@ class _MembersViewState() extends State<_MembersView> {
             ),
           },
         ),
-        ListTile(
+        FocusRingTile(
           key: const ValueKey('switcher-members-invite'),
-          leading: sheetHex(
-            context,
-            Icons.person_add_outlined,
-            t.surfaceSunken,
+          child: ListTile(
+            leading: sheetHex(
+              context,
+              Icons.person_add_outlined,
+              t.surfaceSunken,
+            ),
+            title: Text(l10n.inviteSheetTitle),
+            trailing: Icon(Icons.chevron_right, color: t.textMuted),
+            onTap: widget.invite,
           ),
-          title: Text(l10n.inviteSheetTitle),
-          trailing: Icon(Icons.chevron_right, color: t.textMuted),
-          onTap: widget.invite,
         ),
         if (invites.state.people case final people when people.isNotEmpty) ...[
           HlSectionLabel(l10n.switcherOpenInvitesTitle),

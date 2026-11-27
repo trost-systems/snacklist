@@ -1,0 +1,43 @@
+# A Material list tile's ink takes its focus fill from ThemeData.focusColor: 12 % grey, which fails
+# WCAG 2.4.13 (FH1; job 487 left 73 ListTile uses with it, job 488 wrapped the focusable ones).
+# FocusRingTile (app/lib/design/focus_ring.dart) takes the fill off and draws the inset ring. It must
+# be the tile's direct parent: the ring follows the first focus node under it. A ListTile without
+# onTap or onLongPress cannot take focus. The Dart grammar cannot parse a file with a body-less
+# primary constructor (`class const X(...);`), so such a file is not checked: today
+# list/list_view/shopping_list_view.dart, whose recently-used ExpansionTile is wrapped.
+id: list-tile-focus-ring
+language: dart
+severity: error
+files:
+  - app/lib/**
+ignores:
+  - app/lib/design/focus_ring.dart
+rule:
+  kind: call_expression
+  # The grammar parses `(context) => ListTile(...)` as `((context) => ListTile)(...)`, so the
+  # function field ends in the tile's name.
+  any:
+    - all:
+        - has:
+            field: function
+            regex: '(^|\W)ListTile$'
+        - has:
+            field: arguments
+            has:
+              kind: named_argument
+              regex: '^(onTap|onLongPress)\s*:'
+    - has:
+        field: function
+        regex: '(^|\W)(CheckboxListTile|RadioListTile|SwitchListTile|ExpansionTile)(<[^(]*>)?$'
+  not:
+    inside:
+      kind: named_argument
+      regex: '^child\s*:'
+      inside:
+        kind: arguments
+        inside:
+          kind: call_expression
+          has:
+            field: function
+            regex: '(^|\W)FocusRingTile$'
+message: 'A focusable Material list tile shows a grey focus fill: make it the child of FocusRingTile(child: ...), which draws the inset focus ring; app/lib/design/focus_ring.dart'

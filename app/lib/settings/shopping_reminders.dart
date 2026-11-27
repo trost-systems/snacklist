@@ -724,31 +724,33 @@ class const _ReminderRow(
     final t = SnacklistColors.of(Theme.of(context).brightness);
     final slot = reminder.slot;
     final time = format.time(slot.minute);
-    return ListTile(
+    return FocusRingTile(
       key: ValueKey('reminder-$slot'),
-      contentPadding: const EdgeInsets.symmetric(horizontal: HlSpace.s3),
-      leading: HlRowHex(switch (slot.offset) {
-        ReminderOffset.dayBefore => Icons.bedtime_outlined,
-        ReminderOffset.onTheDay => Icons.today_outlined,
-      }, face: t.mintSoft),
-      title: HlWordWrapText(format.weekday(slot.weekday)),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          HlWordWrapText(switch (slot.offset) {
-            ReminderOffset.dayBefore => l10n.reminderLineDayBefore(time),
-            ReminderOffset.onTheDay => l10n.reminderLineOnTheDay(time),
-          }),
-          HlWordWrapText(
-            l10n.reminderNext(
-              format.when(slot.nextFire(now, sentOn: reminder.sentOn)),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: HlSpace.s3),
+        leading: HlRowHex(switch (slot.offset) {
+          ReminderOffset.dayBefore => Icons.bedtime_outlined,
+          ReminderOffset.onTheDay => Icons.today_outlined,
+        }, face: t.mintSoft),
+        title: HlWordWrapText(format.weekday(slot.weekday)),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            HlWordWrapText(switch (slot.offset) {
+              ReminderOffset.dayBefore => l10n.reminderLineDayBefore(time),
+              ReminderOffset.onTheDay => l10n.reminderLineOnTheDay(time),
+            }),
+            HlWordWrapText(
+              l10n.reminderNext(
+                format.when(slot.nextFire(now, sentOn: reminder.sentOn)),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
+        isThreeLine: true,
+        trailing: const Icon(Icons.chevron_right),
+        onTap: onTap,
       ),
-      isThreeLine: true,
-      trailing: const Icon(Icons.chevron_right),
-      onTap: onTap,
     );
   }
 }

@@ -3442,3 +3442,23 @@ control (max 0.4 px; main 5.4 px). Not done: `ListTile` rows keep the grey fill 
 add field has no ring (a question for the lead), focus can go to a hidden control in the compact add sheet
 (before this job too); all three in NEEDS_LEAD. iOS and Android not driven. Ships with the next green main
 build after the merge.
+
+## Job 488: the FH1 focus ring on list tiles, and Tab only onto what is drawn
+
+Ships as a fix with no flag. Rows built on Material list tiles now show keyboard focus as the FH1 ring:
+a cobalt band, 3 px, inside the row, following a rounded group card's corners. Before, they showed a
+12 % grey fill that failed WCAG 2.4.13. This covers Mehr, Einstellungen („Sprache“), the household pages
+and switcher, the switch, check box and radio rows, dialog lists and the header of „Zuletzt verwendet“.
+A row shows no ring while a control inside it has focus. In the add sheet, Tab after the last row now
+goes to the field: the undrawn add bar is no longer a Tab stop. A Tab onto a control above the view
+scrolls it into view, so the first row comes back after the clear key. The add field stays caret only.
+Code: `FocusRingTile` and `revealFocus` in `app/lib/design/focus_ring.dart`, and the lint
+`list-tile-focus-ring`. Details and screenshots: [docs/done/488.md](docs/done/488.md).
+
+COPY-CHANGES: none. No ARB, legal or site text changed.
+
+Tests: `focus_ring_test.dart` adds 15 tile cases (each in both looks and both themes) and the
+one-ring and unbroken-ring tests. Also the add sheet's Tab walk, `reveal_focus_test.dart`, and the
+updated goldens. Full suite: 5202 passed, 0 failed. Lint passes. Web journey `theme-focus.mjs`, light and dark: PASS,
+with no `knownFill` exception and no off-screen stop. Not driven: iOS and Android. Ships with the next
+green main build after the merge, with no flag targeting needed.

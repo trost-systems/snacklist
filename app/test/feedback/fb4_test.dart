@@ -596,11 +596,31 @@ void main() {
       );
       expect(key('more-screen'), findsOneWidget);
       expect(key('feedback-hub'), findsOneWidget);
-      expect(tester.widget<ListTile>(key('more-feedback')).selected, isTrue);
+      expect(
+        tester
+            .widget<ListTile>(
+              find.descendant(
+                of: key('more-feedback'),
+                matching: find.byType(ListTile),
+              ),
+            )
+            .selected,
+        isTrue,
+      );
       await tapKey(tester, 'feedback-note-n-fixed');
       expect(location(more), '/more/feedback/n-fixed');
       expect(key('feedback-note-reply'), findsOneWidget);
-      expect(tester.widget<ListTile>(key('more-feedback')).selected, isTrue);
+      expect(
+        tester
+            .widget<ListTile>(
+              find.descendant(
+                of: key('more-feedback'),
+                matching: find.byType(ListTile),
+              ),
+            )
+            .selected,
+        isTrue,
+      );
       await tester.tap(find.byType(BackButton));
       await tester.pumpAndSettle();
       expect(location(more), feedbackPath);

@@ -4,6 +4,7 @@ import 'package:family_groceries/core/environment.dart';
 import 'package:family_groceries/core/pop_if_current.dart';
 import 'package:family_groceries/core/theme.dart';
 import 'package:family_groceries/design/field_border.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/purchases/premium_dialogs.dart';
 import 'package:family_groceries/purchases/premium_server.dart';
@@ -308,18 +309,20 @@ class const _PremiumWarning({
               key: const ValueKey('account-delete-refund-help'),
               label: l10n.joinLifetimeRefundLink,
             ),
-            CheckboxListTile(
+            FocusRingTile(
               key: const ValueKey('account-delete-premium-ack'),
-              contentPadding: EdgeInsets.zero,
-              controlAffinity: ListTileControlAffinity.leading,
-              value: acknowledged,
-              onChanged: onChanged == null
-                  ? null
-                  : (value) => onChanged!(value ?? false),
-              title: Text(
-                l10n.accountDeletePremiumAck,
-                style: Theme.of(context).textTheme.bodyMedium
-                    ?.copyWith(color: scheme.onErrorContainer),
+              child: CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                controlAffinity: ListTileControlAffinity.leading,
+                value: acknowledged,
+                onChanged: onChanged == null
+                    ? null
+                    : (value) => onChanged!(value ?? false),
+                title: Text(
+                  l10n.accountDeletePremiumAck,
+                  style: Theme.of(context).textTheme.bodyMedium
+                      ?.copyWith(color: scheme.onErrorContainer),
+                ),
               ),
             ),
           ],

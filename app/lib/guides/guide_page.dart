@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:family_groceries/core/legal_links.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/group_card.dart';
 import 'package:family_groceries/design/look.dart';
 import 'package:family_groceries/design/motion.dart';
@@ -168,15 +169,17 @@ class _GuidePageState() extends State<GuidePage> {
                 top: 0,
                 children: [
                   for (final entry in index.guides)
-                    ListTile(
+                    FocusRingTile(
                       key: ValueKey('guide-entry-${entry.slug}'),
-                      title: Text(entry.title),
-                      subtitle: entry.description.isEmpty
-                          ? null
-                          : Text(entry.description),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () => unawaited(
-                        context.push(GuideRef(index.locale, entry.slug).path),
+                      child: ListTile(
+                        title: Text(entry.title),
+                        subtitle: entry.description.isEmpty
+                            ? null
+                            : Text(entry.description),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => unawaited(
+                          context.push(GuideRef(index.locale, entry.slug).path),
+                        ),
                       ),
                     ),
                 ],

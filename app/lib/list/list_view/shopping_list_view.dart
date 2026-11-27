@@ -7,6 +7,7 @@ import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/core/open_app.dart';
 import 'package:family_groceries/core/screen_reader.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/section_label.dart';
 import 'package:family_groceries/design/tokens.g.dart';
@@ -944,20 +945,22 @@ class _ShoppingListViewState()
                     // the tile is built again and starts as the prefs say.
                     child: KeyedSubtree(
                       key: ValueKey(openByDefault),
-                      child: ExpansionTile(
+                      child: FocusRingTile(
                         key: const ValueKey('recently-used'),
-                        initiallyExpanded: openByDefault && !usedFolded,
-                        onExpansionChanged: openByDefault
-                            ? (expanded) => context.read<ListCubit>().setFold(
-                                recentlyUsedFoldKey,
-                                folded: !expanded,
-                              )
-                            : null,
-                        title: Text(l10n.recentlyUsed),
-                        children: [
-                          for (final (i, item) in used.indexed)
-                            _usedRow(state, item, last: i == used.length - 1),
-                        ],
+                        child: ExpansionTile(
+                          initiallyExpanded: openByDefault && !usedFolded,
+                          onExpansionChanged: openByDefault
+                              ? (expanded) => context.read<ListCubit>().setFold(
+                                  recentlyUsedFoldKey,
+                                  folded: !expanded,
+                                )
+                              : null,
+                          title: Text(l10n.recentlyUsed),
+                          children: [
+                            for (final (i, item) in used.indexed)
+                              _usedRow(state, item, last: i == used.length - 1),
+                          ],
+                        ),
                       ),
                     ),
                   ),

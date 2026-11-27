@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/core/pop_if_current.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/household/onboarding_page.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/session/your_name.dart';
@@ -54,21 +55,25 @@ class const AccountScreen({
                 ),
               ),
             Builder(
-              builder: (tile) => ListTile(
+              builder: (tile) => FocusRingTile(
                 key: const ValueKey('account-export'),
-                leading: const Icon(Icons.download),
-                title: Text(l10n.accountExport),
-                subtitle: Text(l10n.accountExportBody),
-                onTap: () => unawaited(_export(tile, saveExport)),
+                child: ListTile(
+                  leading: const Icon(Icons.download),
+                  title: Text(l10n.accountExport),
+                  subtitle: Text(l10n.accountExportBody),
+                  onTap: () => unawaited(_export(tile, saveExport)),
+                ),
               ),
             ),
-            ListTile(
+            FocusRingTile(
               key: const ValueKey('account-delete'),
-              leading: const Icon(Icons.delete_forever),
-              iconColor: Theme.of(context).colorScheme.error,
-              textColor: Theme.of(context).colorScheme.error,
-              title: Text(l10n.accountDelete),
-              onTap: () => unawaited(deleteAccount(context)),
+              child: ListTile(
+                leading: const Icon(Icons.delete_forever),
+                iconColor: Theme.of(context).colorScheme.error,
+                textColor: Theme.of(context).colorScheme.error,
+                title: Text(l10n.accountDelete),
+                onTap: () => unawaited(deleteAccount(context)),
+              ),
             ),
           ],
         ),
@@ -113,25 +118,29 @@ class const _NameRow() extends StatelessWidget {
     final name = context.watch<YourNameCubit?>()?.state;
     final l10n = AppLocalizations.of(context);
     if (on && name is NameUnread && name.failed) {
-      return ListTile(
+      return FocusRingTile(
         key: const ValueKey('account-name-failed'),
-        leading: const Icon(Icons.badge_outlined),
-        title: Text(l10n.yourNameLabel),
-        subtitle: Text(l10n.yourNameLoadFailed),
-        trailing: const Icon(Icons.refresh),
-        onTap: () => unawaited(context.read<YourNameCubit>().retry()),
+        child: ListTile(
+          leading: const Icon(Icons.badge_outlined),
+          title: Text(l10n.yourNameLabel),
+          subtitle: Text(l10n.yourNameLoadFailed),
+          trailing: const Icon(Icons.refresh),
+          onTap: () => unawaited(context.read<YourNameCubit>().retry()),
+        ),
       );
     }
     if (!on || name is! NameRead) {
       return const SizedBox.shrink();
     }
-    return ListTile(
+    return FocusRingTile(
       key: const ValueKey('account-name'),
-      leading: const Icon(Icons.badge_outlined),
-      title: Text(l10n.yourNameLabel),
-      subtitle: Text(name.fromEmail ? l10n.yourNameAdd : name.name),
-      trailing: const Icon(Icons.edit_outlined),
-      onTap: () => unawaited(_editName(context, name)),
+      child: ListTile(
+        leading: const Icon(Icons.badge_outlined),
+        title: Text(l10n.yourNameLabel),
+        subtitle: Text(name.fromEmail ? l10n.yourNameAdd : name.name),
+        trailing: const Icon(Icons.edit_outlined),
+        onTap: () => unawaited(_editName(context, name)),
+      ),
     );
   }
 }

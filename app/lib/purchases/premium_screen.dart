@@ -184,12 +184,14 @@ class const _PremiumView() extends StatelessWidget {
                 l10n.premiumTwoYearly,
               ),
             if (manage)
-              ListTile(
+              FocusRingTile(
                 key: const ValueKey('premium-manage'),
-                leading: const Icon(Icons.manage_accounts_outlined),
-                title: Text(l10n.premiumManage),
-                trailing: const Icon(Icons.open_in_new),
-                onTap: () => unawaited(openManageSubscriptions(context)),
+                child: ListTile(
+                  leading: const Icon(Icons.manage_accounts_outlined),
+                  title: Text(l10n.premiumManage),
+                  trailing: const Icon(Icons.open_in_new),
+                  onTap: () => unawaited(openManageSubscriptions(context)),
+                ),
               ),
             if (kIsWeb && yearlyRuns) _ManageOnWeb(language: language),
             if (entitlements.boughtLifetimeTwice)

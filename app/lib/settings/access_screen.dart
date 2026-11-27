@@ -6,6 +6,7 @@ import 'package:family_groceries/core/legal_links.dart';
 import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/core/pop_if_current.dart';
 import 'package:family_groceries/design/field_border.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/hex_radio.dart';
 import 'package:family_groceries/design/section_label.dart';
 import 'package:family_groceries/design/tokens.g.dart';
@@ -769,38 +770,40 @@ class const _AppTile({
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final lastUsed = app.lastUsedAt;
-    return ListTile(
+    return FocusRingTile(
       key: ValueKey('app-${app.clientId}'),
-      leading: const Icon(Icons.smart_toy_outlined),
-      title: Text(app.name),
-      subtitle: _Subtitle(
-        [
-          ?app.device,
-          l10n.connectedOn(app.grantedAt),
-          if (lastUsed != null) l10n.lastActiveOn(lastUsed),
-        ].join(' · '),
-        paused: paused,
-      ),
-      onTap: () => showModalBottomSheet<void>(
-        context: context,
-        // Above the tab bar, like a dialog.
-        useRootNavigator: true,
-        showDragHandle: true,
-        isScrollControlled: true,
-        useSafeArea: true,
-        builder: (_) => BlocProvider.value(
-          value: context.read<AccessCubit>(),
-          child: _AppDetails(
-            app: app,
-            paused: paused,
-            listsStores: context.read<AccessCubit>().state.listsStores,
+      child: ListTile(
+        leading: const Icon(Icons.smart_toy_outlined),
+        title: Text(app.name),
+        subtitle: _Subtitle(
+          [
+            ?app.device,
+            l10n.connectedOn(app.grantedAt),
+            if (lastUsed != null) l10n.lastActiveOn(lastUsed),
+          ].join(' · '),
+          paused: paused,
+        ),
+        onTap: () => showModalBottomSheet<void>(
+          context: context,
+          // Above the tab bar, like a dialog.
+          useRootNavigator: true,
+          showDragHandle: true,
+          isScrollControlled: true,
+          useSafeArea: true,
+          builder: (_) => BlocProvider.value(
+            value: context.read<AccessCubit>(),
+            child: _AppDetails(
+              app: app,
+              paused: paused,
+              listsStores: context.read<AccessCubit>().state.listsStores,
+            ),
           ),
         ),
-      ),
-      trailing: IconButton(
-        tooltip: l10n.disconnectApp(app.name),
-        icon: const Icon(Icons.link_off),
-        onPressed: () => unawaited(_disconnectApp(context, app)),
+        trailing: IconButton(
+          tooltip: l10n.disconnectApp(app.name),
+          icon: const Icon(Icons.link_off),
+          onPressed: () => unawaited(_disconnectApp(context, app)),
+        ),
       ),
     );
   }

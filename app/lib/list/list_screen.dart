@@ -7,6 +7,7 @@ import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/core/scroll_through.dart';
 import 'package:family_groceries/design/bottom_scroll_edge.dart';
 import 'package:family_groceries/design/field_border.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/hex_border.dart';
 import 'package:family_groceries/design/measured_width.dart';
 import 'package:family_groceries/design/motion.dart';
@@ -175,8 +176,9 @@ class _ShoppingListState() extends State<_ShoppingList> {
   /// sheet and the input's refocus, and after a close, and takes Escape
   /// there (job 64). An Escape right after a tap on a row closed nothing,
   /// and a focused row going with the closing sheet sent focus back to the
-  /// input, which opened it again.
-  final _barFocus = FocusNode();
+  /// input, which opened it again. Tab passes it by: it draws no focus of
+  /// its own, and a stop on it showed none (job 488).
+  final _barFocus = FocusNode(skipTraversal: true);
   RejectionNotices? _notices;
   SheetOpenNotifier? _sheetOpen;
   AddSheetRequest? _addSheetRequest;
@@ -582,7 +584,7 @@ class _ShoppingListState() extends State<_ShoppingList> {
         // Tab goes input, suggestions, chips, Schließen, then the bar's
         // buttons (DECISIONS, Job 17).
         child: FocusTraversalGroup(
-          policy: OrderedTraversalPolicy(),
+          policy: OrderedTraversalPolicy(requestFocusCallback: revealFocus),
           child: Scaffold(
             // The shell's scaffold makes room for the keyboard.
             resizeToAvoidBottomInset: false,

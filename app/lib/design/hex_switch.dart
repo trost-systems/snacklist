@@ -229,21 +229,23 @@ class const HexSwitchTile({
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MergeSemantics(
-    child: ListTile(
-      minTileHeight: 56,
-      leading: leading,
-      title: title,
-      subtitle: subtitle,
-      isThreeLine: isThreeLine,
-      enabled: onChanged != null,
-      // The row takes focus and taps; the switch only shows the value.
-      trailing: ExcludeFocus(
-        child: HexSwitch(value: value, onChanged: onChanged),
+    child: FocusRingTile(
+      child: ListTile(
+        minTileHeight: 56,
+        leading: leading,
+        title: title,
+        subtitle: subtitle,
+        isThreeLine: isThreeLine,
+        enabled: onChanged != null,
+        // The row takes focus and taps; the switch only shows the value.
+        trailing: ExcludeFocus(
+          child: HexSwitch(value: value, onChanged: onChanged),
+        ),
+        onTap: switch (onChanged) {
+          final changed? => () => changed(!value),
+          null => null,
+        },
       ),
-      onTap: switch (onChanged) {
-        final changed? => () => changed(!value),
-        null => null,
-      },
     ),
   );
 }

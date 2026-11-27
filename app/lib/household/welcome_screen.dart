@@ -100,13 +100,15 @@ class const _Choice({
   Widget build(BuildContext context) => HlSticker(
     child: Material(
       type: MaterialType.transparency,
-      child: ListTile(
-        minTileHeight: 72,
-        leading: Icon(icon),
-        title: Text(label),
-        subtitle: Text(hint),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: onTap,
+      child: FocusRingTile(
+        child: ListTile(
+          minTileHeight: 72,
+          leading: Icon(icon),
+          title: Text(label),
+          subtitle: Text(hint),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: onTap,
+        ),
       ),
     ),
   );

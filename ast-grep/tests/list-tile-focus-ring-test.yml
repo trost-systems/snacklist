@@ -1,0 +1,48 @@
+id: list-tile-focus-ring
+valid:
+  - |
+    final w = FocusRingTile(
+      key: k,
+      child: ListTile(title: t, onTap: f),
+    );
+  - |
+    final w = FocusRingTile(
+      child: RadioListTile<String>(value: v, title: t),
+    );
+  - |
+    final w = FocusRingTile(child: ExpansionTile(title: t, children: c));
+  - |
+    final w = Builder(
+      builder: (tile) => FocusRingTile(
+        key: k,
+        child: ListTile(title: t, onTap: f),
+      ),
+    );
+  # Without onTap or onLongPress a ListTile takes no focus.
+  - |
+    final w = ListTile(title: t, subtitle: s);
+invalid:
+  - |
+    final w = ListTile(title: t, onTap: f);
+  - |
+    final w = ListTile(title: t, onLongPress: f);
+  - |
+    final w = CheckboxListTile(value: v, onChanged: f, title: t);
+  - |
+    final w = RadioListTile<String>(value: v, title: t);
+  - |
+    final w = ExpansionTile(title: t, children: c);
+  - |
+    final w = Builder(builder: (context) => ListTile(title: t, onTap: f));
+  # The ring follows the first focus node under FocusRingTile: a tile deeper down is not covered.
+  - |
+    final w = FocusRingTile(
+      child: Column(children: [ListTile(title: t, onTap: f)]),
+    );
+  - |
+    final w = FocusRingTile(
+      child: ExpansionTile(
+        title: t,
+        children: [ListTile(title: r, onTap: f)],
+      ),
+    );

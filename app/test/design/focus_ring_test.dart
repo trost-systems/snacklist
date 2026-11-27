@@ -4,6 +4,7 @@
 // changes outside the control, and nothing moves.
 import 'dart:typed_data';
 
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/hex_pill.dart';
 import 'package:family_groceries/design/look.dart';
 import 'package:family_groceries/design/tokens.g.dart';
@@ -237,4 +238,120 @@ void main() {
       );
     });
   }
+
+  for (final brightness in Brightness.values) {
+    testWidgets('a tile shows no ring while its menu button has focus '
+        '(${brightness.name})', (tester) async {
+      final t = SnacklistColors.of(brightness);
+      FocusCase tile({required bool ring}) {
+        final listTile = ListTile(
+          title: const Text('Wocheneinkauf'),
+          trailing: IconButton(
+            icon: const Icon(Icons.more_vert),
+            tooltip: 'Mehr',
+            onPressed: () {},
+          ),
+          onTap: () {},
+        );
+        return (
+          name: ring ? 'tile with a menu button' : 'bare tile',
+          build: () => SizedBox(
+            width: 300,
+            child: ring ? FocusRingTile(child: listTile) : listTile,
+          ),
+          node: (tester) =>
+              Focus.of(tester.element(find.text('Wocheneinkauf'))),
+          bounds: (tester) => tester.getRect(find.byType(ListTile)),
+          honey: false,
+          inkWell: true,
+        );
+      }
+
+      int ringPixels(Uint8List image, Rect bounds) {
+        final width = tester.view.physicalSize.width.toInt();
+        var count = 0;
+        for (var i = 0; i < image.length; i += 4) {
+          final p = i ~/ 4;
+          final at = Offset((p % width) + 0.5, (p ~/ width) + 0.5);
+          if (bounds.contains(at) &&
+              near(
+                Color.fromARGB(
+                  image[i + 3],
+                  image[i],
+                  image[i + 1],
+                  image[i + 2],
+                ),
+                t.accent,
+              )) {
+            count++;
+          }
+        }
+        return count;
+      }
+
+      Future<void> focusButton() async {
+        Focus.of(tester.element(find.byIcon(Icons.more_vert))).requestFocus();
+        await tester.pumpAndSettle();
+      }
+
+      FocusManager.instance.highlightStrategy =
+          FocusHighlightStrategy.alwaysTraditional;
+      // The button's own ring, in a tile that draws none.
+      final bare = tile(ring: false);
+      await pumpFocusCase(tester, brightness, bare);
+      await focusButton();
+      final buttonOnly = ringPixels(await shoot(tester), bare.bounds(tester));
+      expect(buttonOnly, greaterThan(0), reason: 'the button shows its ring');
+
+      final ringed = tile(ring: true);
+      await pumpFocusCase(tester, brightness, ringed);
+      ringed.node(tester).requestFocus();
+      await tester.pumpAndSettle();
+      expect(
+        ringPixels(await shoot(tester), ringed.bounds(tester)),
+        greaterThan(buttonOnly + 300),
+        reason: 'the focused tile shows its ring',
+      );
+      await focusButton();
+      expect(
+        ringPixels(await shoot(tester), ringed.bounds(tester)),
+        // The bare tile's grey fill shifts a few edge pixels of the ring.
+        closeTo(buttonOnly, 20),
+        reason: 'only the menu button shows focus, not the tile around it',
+      );
+    });
+  }
+
+  testWidgets('a tile in a rounded group shows one unbroken ring along the '
+      "card's corners", (tester) async {
+    const t = SnacklistColors.light;
+    final tile = focusCases.singleWhere((c) => c.name == 'tile in a group');
+    await pumpFocusCase(tester, Brightness.light, tile);
+    final result = await focus(
+      tester,
+      tile,
+      FocusHighlightStrategy.alwaysTraditional,
+    );
+    final ring = {
+      for (final p in result.changed)
+        if (near(p.$3, t.accent)) (p.$1, p.$2),
+    };
+    expect(ring, isNotEmpty);
+    // One piece, 8-connected: a rectangle cut by the rounded clip falls
+    // apart into its four sides.
+    final seen = <(int, int)>{ring.first};
+    final todo = [ring.first];
+    while (todo.isNotEmpty) {
+      final (x, y) = todo.removeLast();
+      for (var dx = -1; dx <= 1; dx++) {
+        for (var dy = -1; dy <= 1; dy++) {
+          final next = (x + dx, y + dy);
+          if (ring.contains(next) && seen.add(next)) {
+            todo.add(next);
+          }
+        }
+      }
+    }
+    expect(seen.length, ring.length, reason: 'the ring is in pieces');
+  });
 }

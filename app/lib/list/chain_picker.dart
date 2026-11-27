@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:family_groceries/design/field_border.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/model.dart';
@@ -188,15 +189,17 @@ class const _ChainRow({
       label: l10n.chainWithCountry(retailer.name, country),
       onTap: onTap,
       excludeSemantics: true,
-      child: ListTile(
-        leading: Icon(Icons.storefront_outlined, color: t.textMuted),
-        title: Text(retailer.name),
-        subtitle: Text(
-          app == null ? country : '$country · ${app.name}',
-          style: TextStyle(color: t.textMuted),
+      child: FocusRingTile(
+        child: ListTile(
+          leading: Icon(Icons.storefront_outlined, color: t.textMuted),
+          title: Text(retailer.name),
+          subtitle: Text(
+            app == null ? country : '$country · ${app.name}',
+            style: TextStyle(color: t.textMuted),
+          ),
+          trailing: current ? Icon(Icons.check, color: t.accent) : null,
+          onTap: onTap,
         ),
-        trailing: current ? Icon(Icons.check, color: t.accent) : null,
-        onTap: onTap,
       ),
     );
   }

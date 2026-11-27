@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/core/pop_if_current.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/design/hex_radio.dart';
 import 'package:family_groceries/design/pointy_hex.dart';
 import 'package:family_groceries/design/tokens.g.dart';
@@ -131,19 +132,21 @@ Widget householdTile(
 }) {
   final l10n = AppLocalizations.of(context);
   final t = SnacklistColors.of(Theme.of(context).brightness);
-  return ListTile(
+  return FocusRingTile(
     key: ValueKey('household-row-${household.id}'),
-    minTileHeight: 64,
-    leading: sheetHex(
-      context,
-      Icons.home_outlined,
-      shown ? t.honeySoft : t.surfaceSunken,
+    child: ListTile(
+      minTileHeight: 64,
+      leading: sheetHex(
+        context,
+        Icons.home_outlined,
+        shown ? t.honeySoft : t.surfaceSunken,
+      ),
+      title: Text(household.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+      subtitle: Text(l10n.householdMembers(household.memberCount)),
+      trailing: trailing,
+      selected: shown,
+      onTap: onTap,
     ),
-    title: Text(household.name, maxLines: 1, overflow: TextOverflow.ellipsis),
-    subtitle: Text(l10n.householdMembers(household.memberCount)),
-    trailing: trailing,
-    selected: shown,
-    onTap: onTap,
   );
 }
 
@@ -170,137 +173,149 @@ List<Widget> householdSheetTail(
     // Asked to join, not in it yet (job 169b W3 M): greyed, no switching
     // into it; a tap offers to withdraw.
     for (final request in session.requests)
-      ListTile(
+      FocusRingTile(
         key: ValueKey('household-request-${request.householdId}'),
-        minTileHeight: 64,
-        textColor: t.textMuted,
-        leading: PointyHex(
-          face: t.surfaceSunken,
-          contour: t.divider,
-          size: 34,
-          child: Icon(
-            Icons.hourglass_top_outlined,
-            size: 18,
-            color: t.textMuted,
+        child: ListTile(
+          minTileHeight: 64,
+          textColor: t.textMuted,
+          leading: PointyHex(
+            face: t.surfaceSunken,
+            contour: t.divider,
+            size: 34,
+            child: Icon(
+              Icons.hourglass_top_outlined,
+              size: 18,
+              color: t.textMuted,
+            ),
           ),
-        ),
-        title: Text(
-          request.householdName,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        subtitle: Text(l10n.joinRequestPending),
-        onTap: () => unawaited(_offerWithdraw(context, request)),
-      ),
-    Divider(height: HlSpace.s4, indent: 72, color: t.divider),
-    ListTile(
-      key: const ValueKey('household-new'),
-      leading: sheetHex(context, Icons.add, t.surfaceSunken),
-      title: Text(l10n.newHousehold),
-      onTap: () => go(newHouseholdPath),
-    ),
-    ListTile(
-      key: const ValueKey('household-join'),
-      leading: sheetHex(context, Icons.group_add_outlined, t.surfaceSunken),
-      title: Text(l10n.joinWithCode),
-      onTap: () => go(joinCodePath),
-    ),
-    Divider(height: HlSpace.s4, indent: 72, color: t.divider),
-    if (voiceDefault case final open?)
-      ListTile(
-        key: const ValueKey('household-default-row'),
-        // The hex and the chevron sit beside the label only: the names
-        // below get the row's width, which large text needs, else a long
-        // word breaks mid-word.
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              spacing: HlSpace.s4,
-              children: [
-                sheetHex(
-                  context,
-                  Icons.record_voice_over_outlined,
-                  t.accentSoft,
-                ),
-                Expanded(
-                  child: Text(
-                    l10n.voiceDefaultLabel,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: t.textMuted,
-                    ),
-                  ),
-                ),
-                const Icon(Icons.chevron_right),
-              ],
-            ),
-            Padding(
-              // Under the label at normal sizes; from 150 % on, from the
-              // row's start.
-              padding: EdgeInsetsDirectional.only(
-                start: MediaQuery.textScalerOf(context).scale(1) < 1.5
-                    ? 34 * PointyHex.aspect + HlSpace.s4
-                    : 0,
-              ),
-              // No ellipsis, unlike the household rows: a cut name could
-              // name the wrong household or list.
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _voiceName(
-                    context,
-                    Icons.home_outlined,
-                    session.defaultHousehold.name,
-                    l10n.voiceDefaultHouseholdName(
-                      session.defaultHousehold.name,
-                    ),
-                  ),
-                  DefaultListPicker(
-                    householdId: session.defaultHousehold.id,
-                    single: true,
-                    builder: (context, list, _) => _voiceName(
-                      context,
-                      Icons.checklist,
-                      list,
-                      l10n.defaultListRow(list),
-                      key: const ValueKey('household-default-list-name'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        onTap: open,
-      )
-    else ...[
-      ListTile(
-        key: const ValueKey('household-default-row'),
-        leading: sheetHex(
-          context,
-          Icons.record_voice_over_outlined,
-          t.accentSoft,
-        ),
-        title: Text(
-          l10n.voiceDefaultRow(session.defaultHousehold.name),
-          style: theme.textTheme.bodyMedium,
-        ),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () => unawaited(showDefaultPicker(context)),
-      ),
-      DefaultListPicker(
-        householdId: session.defaultHousehold.id,
-        builder: (context, list, pick) => ListTile(
-          key: const ValueKey('household-default-list-row'),
-          leading: sheetHex(context, Icons.checklist, t.accentSoft),
           title: Text(
-            l10n.defaultListRow(list),
-            style: theme.textTheme.bodyMedium,
+            request.householdName,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          trailing: const Icon(Icons.expand_more),
-          onTap: pick,
+          subtitle: Text(l10n.joinRequestPending),
+          onTap: () => unawaited(_offerWithdraw(context, request)),
+        ),
+      ),
+    Divider(height: HlSpace.s4, indent: 72, color: t.divider),
+    FocusRingTile(
+      key: const ValueKey('household-new'),
+      child: ListTile(
+        leading: sheetHex(context, Icons.add, t.surfaceSunken),
+        title: Text(l10n.newHousehold),
+        onTap: () => go(newHouseholdPath),
+      ),
+    ),
+    FocusRingTile(
+      key: const ValueKey('household-join'),
+      child: ListTile(
+        leading: sheetHex(context, Icons.group_add_outlined, t.surfaceSunken),
+        title: Text(l10n.joinWithCode),
+        onTap: () => go(joinCodePath),
+      ),
+    ),
+    Divider(height: HlSpace.s4, indent: 72, color: t.divider),
+    if (voiceDefault case final open?)
+      FocusRingTile(
+        key: const ValueKey('household-default-row'),
+        child: ListTile(
+          // The hex and the chevron sit beside the label only: the names
+          // below get the row's width, which large text needs, else a long
+          // word breaks mid-word.
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                spacing: HlSpace.s4,
+                children: [
+                  sheetHex(
+                    context,
+                    Icons.record_voice_over_outlined,
+                    t.accentSoft,
+                  ),
+                  Expanded(
+                    child: Text(
+                      l10n.voiceDefaultLabel,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: t.textMuted,
+                      ),
+                    ),
+                  ),
+                  const Icon(Icons.chevron_right),
+                ],
+              ),
+              Padding(
+                // Under the label at normal sizes; from 150 % on, from the
+                // row's start.
+                padding: EdgeInsetsDirectional.only(
+                  start: MediaQuery.textScalerOf(context).scale(1) < 1.5
+                      ? 34 * PointyHex.aspect + HlSpace.s4
+                      : 0,
+                ),
+                // No ellipsis, unlike the household rows: a cut name could
+                // name the wrong household or list.
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _voiceName(
+                      context,
+                      Icons.home_outlined,
+                      session.defaultHousehold.name,
+                      l10n.voiceDefaultHouseholdName(
+                        session.defaultHousehold.name,
+                      ),
+                    ),
+                    DefaultListPicker(
+                      householdId: session.defaultHousehold.id,
+                      single: true,
+                      builder: (context, list, _) => _voiceName(
+                        context,
+                        Icons.checklist,
+                        list,
+                        l10n.defaultListRow(list),
+                        key: const ValueKey('household-default-list-name'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          onTap: open,
+        ),
+      )
+    else ...[
+      FocusRingTile(
+        key: const ValueKey('household-default-row'),
+        child: ListTile(
+          leading: sheetHex(
+            context,
+            Icons.record_voice_over_outlined,
+            t.accentSoft,
+          ),
+          title: Text(
+            l10n.voiceDefaultRow(session.defaultHousehold.name),
+            style: theme.textTheme.bodyMedium,
+          ),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => unawaited(showDefaultPicker(context)),
+        ),
+      ),
+      DefaultListPicker(
+        householdId: session.defaultHousehold.id,
+        builder: (context, list, pick) => FocusRingTile(
+          key: const ValueKey('household-default-list-row'),
+          child: ListTile(
+            leading: sheetHex(context, Icons.checklist, t.accentSoft),
+            title: Text(
+              l10n.defaultListRow(list),
+              style: theme.textTheme.bodyMedium,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            trailing: const Icon(Icons.expand_more),
+            onTap: pick,
+          ),
         ),
       ),
     ],

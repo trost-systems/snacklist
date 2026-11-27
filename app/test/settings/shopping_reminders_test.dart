@@ -7,6 +7,7 @@ import 'package:family_groceries/analytics/flags.dart';
 import 'package:family_groceries/core/localizations.dart';
 import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/core/theme.dart';
+import 'package:family_groceries/design/focus_ring.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/settings/shopping_reminders.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -443,7 +444,7 @@ void main() {
                     (w.key! as ValueKey<String>).value.startsWith(
                       'reminder-',
                     ) &&
-                    w is ListTile,
+                    w is FocusRingTile,
               )
               .evaluate())
         (element.widget.key! as ValueKey<String>).value,

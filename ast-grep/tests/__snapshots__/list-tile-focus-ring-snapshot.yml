@@ -1,0 +1,122 @@
+id: list-tile-focus-ring
+snapshots:
+  "final w = Builder(builder: (context) => ListTile(title: t, onTap: f));\n":
+    labels:
+    - source: "(context) => ListTile(title: t, onTap: f)"
+      style: primary
+      start: 27
+      end: 68
+    - source: (context) => ListTile
+      style: secondary
+      start: 27
+      end: 48
+    - source: "onTap: f"
+      style: secondary
+      start: 59
+      end: 67
+    - source: "onTap: f"
+      style: secondary
+      start: 59
+      end: 67
+  "final w = CheckboxListTile(value: v, onChanged: f, title: t);\n":
+    labels:
+    - source: "CheckboxListTile(value: v, onChanged: f, title: t)"
+      style: primary
+      start: 10
+      end: 60
+    - source: CheckboxListTile
+      style: secondary
+      start: 10
+      end: 26
+  "final w = ExpansionTile(title: t, children: c);\n":
+    labels:
+    - source: "ExpansionTile(title: t, children: c)"
+      style: primary
+      start: 10
+      end: 46
+    - source: ExpansionTile
+      style: secondary
+      start: 10
+      end: 23
+  "final w = FocusRingTile(\n  child: Column(children: [ListTile(title: t, onTap: f)]),\n);\n":
+    labels:
+    - source: "ListTile(title: t, onTap: f)"
+      style: primary
+      start: 52
+      end: 80
+    - source: ListTile
+      style: secondary
+      start: 52
+      end: 60
+    - source: "onTap: f"
+      style: secondary
+      start: 71
+      end: 79
+    - source: "onTap: f"
+      style: secondary
+      start: 71
+      end: 79
+  "final w = FocusRingTile(\n  child: ExpansionTile(\n    title: t,\n    children: [ListTile(title: r, onTap: f)],\n  ),\n);\n":
+    labels:
+    - source: "ListTile(title: r, onTap: f)"
+      style: primary
+      start: 78
+      end: 106
+    - source: ListTile
+      style: secondary
+      start: 78
+      end: 86
+    - source: "onTap: f"
+      style: secondary
+      start: 97
+      end: 105
+    - source: "onTap: f"
+      style: secondary
+      start: 97
+      end: 105
+  "final w = ListTile(title: t, onLongPress: f);\n":
+    labels:
+    - source: "ListTile(title: t, onLongPress: f)"
+      style: primary
+      start: 10
+      end: 44
+    - source: ListTile
+      style: secondary
+      start: 10
+      end: 18
+    - source: "onLongPress: f"
+      style: secondary
+      start: 29
+      end: 43
+    - source: "onLongPress: f"
+      style: secondary
+      start: 29
+      end: 43
+  "final w = ListTile(title: t, onTap: f);\n":
+    labels:
+    - source: "ListTile(title: t, onTap: f)"
+      style: primary
+      start: 10
+      end: 38
+    - source: ListTile
+      style: secondary
+      start: 10
+      end: 18
+    - source: "onTap: f"
+      style: secondary
+      start: 29
+      end: 37
+    - source: "onTap: f"
+      style: secondary
+      start: 29
+      end: 37
+  "final w = RadioListTile<String>(value: v, title: t);\n":
+    labels:
+    - source: "RadioListTile<String>(value: v, title: t)"
+      style: primary
+      start: 10
+      end: 51
+    - source: RadioListTile<String>
+      style: secondary
+      start: 10
+      end: 31
