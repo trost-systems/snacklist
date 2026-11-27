@@ -1,5 +1,6 @@
-// Feature more-help (vmaint-20261125): More's rows top to bottom on the users' build, the legal
-// rows' pages (Nutzungsbedingungen opens Snacklist's own terms since #695; the Apple EULA row is
+// Feature more-help (vmaint-20261125): More's rows top to bottom on the users' build, every button
+// from Konto to Abmelden so an unknown row fails („Mitteilungen“ only where the build has
+// push-household-add, which the web needs for it since #726; off for users), the legal rows' pages (Nutzungsbedingungen opens Snacklist's own terms since #695; the Apple EULA row is
 // iPhone-only, so the web has none) and the version line from app/pubspec.yaml. snacklist.app is
 // stubbed, so only the popup's URL is checked, never the live site.
 //
@@ -7,7 +8,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import process from 'node:process';
-import { accessibleName, capture, instance, logger, member, openApp, openTab, repo, signIn } from '../helpers/lib.mjs';
+import { accessibleName, capture, flagOn, instance, logger, member, openApp, openTab, repo, signIn } from '../helpers/lib.mjs';
 
 const [dir, ...rest] = process.argv.slice(2);
 const lang = rest.includes('--lang') ? rest[rest.indexOf('--lang') + 1] : 'de';
@@ -20,7 +21,8 @@ const { browser, context, page, L, errors } = await openApp(inst, { lang, videoD
 await context.route('https://snacklist.app/**', (route) => route.fulfill({ status: 200, contentType: 'text/html', body: '<p>stub</p>' }));
 const site = 'https://snacklist.app';
 const expected = [
-  L('account'), L('accessTitle'), L('settingsTitle'), L('analyticsSection'), L('hintsTitle'),
+  L('account'), L('accessTitle'), L('settingsTitle'), ...(flagOn('push-household-add') ? [L('settingsPush')] : []),
+  L('analyticsSection'), L('hintsTitle'),
   L('feedbackHubRow'), L('helpRow'), L('imprint'), L('privacyPolicy'), L('premiumTermsLink'),
   L('licenses'), L('signOut'),
 ];
@@ -39,7 +41,7 @@ try {
   await capture(page, dir, '01-more');
   const snapshot = await page.locator('body').ariaSnapshot();
   const buttons = snapshot.split('\n').filter((line) => /^\s*- button "/.test(line)).map(accessibleName);
-  const rows = buttons.filter((name) => expected.includes(name) || name === L('premiumTitle') || name === L('premiumAppleEulaLink'));
+  const rows = buttons.slice(buttons.indexOf(L('account')), buttons.indexOf(L('signOut')) + 1);
   log(`More's rows: ${rows.join(' | ')}`);
   const withoutPremium = rows.filter((name) => name !== L('premiumTitle'));
   if (withoutPremium.join('|') !== expected.join('|')) throw new Error(`rows differ from ${expected.join(' | ')}`);

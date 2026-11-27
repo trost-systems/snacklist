@@ -3,7 +3,8 @@
 // Schaufel gets none; a "Bier" renamed to "beer" (the items trigger's rename path) is not Beeren,
 // but adding "Bier" next to it is the same item and gets the hint (the control). On the users' build
 // (add-sheet-compact and add-match-rows, full) the hint is the merge row shown while the word is typed,
-// and the word is not added; with both off (VH_FLAGS_OFF=add-sheet-compact,add-match-rows), the note
+// keyed on the device, which reads homographs as the server does since #748 (before it, Schäufele
+// offered „Zusammenführen, 2× Schaufel“), and the word is not added; with both off (VH_FLAGS_OFF=add-sheet-compact,add-match-rows), the note
 // after Enter.
 //
 //   node journeys/classifier-homographs-dup-hint.mjs <evidence dir>

@@ -18,7 +18,7 @@ Every household starts with 11 categories (fruit and veg, bread, chilled, …, �
 
 ## How to get to it (user POV)
 
-- Users today: nowhere. „Anpassen“ top right opens „Läden“ without an „Ohne Laden“ row, and a store's screen shows only its name (`cat-hidden`).
+- Users today: nowhere. „Anpassen“ top right opens „Läden“ without an „Ohne Laden“ row, and a store's screen shows its name and, with `open-store-app` full, its chain line („Kette zuordnen“, or „Zugeordnet: <Kette> · <Land>“) and, for a chain with an app, the „App“ card; no categories (`cat-hidden`, `store_chain_section.dart`).
 - On a `VH_FLAGS_OFF=hide-categories` build: tap „Anpassen“ top right, then „Ohne Laden“ (the last row). A store's row opens the same actions in that store's order (per-store category order: Liste → „Anpassen“ → the store).
 - Holding or right clicking a divider on the list does nothing (flag-off build; users have no dividers).
 

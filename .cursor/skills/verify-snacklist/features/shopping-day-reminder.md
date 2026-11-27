@@ -1,6 +1,6 @@
 # Shopping-day reminder (flag `push-shopping-day`, off; job 378)
 
-Under Mehr → Mitteilungen (job 463; it was in Einstellungen before), in iPhone and Android builds with push, a section „Einkaufstag-Erinnerung“ / "Shopping-day reminder" shows one chip per weekday. The evening before each picked day, at 19:00 in the phone's time zone, the user gets the push „Morgen ist Einkaufstag“ / "Shopping day tomorrow" with „5 Artikel stehen auf der Liste. Schau kurz rein.“ / "5 items on the list. Have a quick look." (the open items of their default household's default list, never their names). The days belong to the person, not the household. No day picked means off, which is everyone's start. Today nobody sees it: the flag is off for everyone, and the server switch `push_shopping_day` is off too. Not on the web (no web push).
+Under Mehr → Mitteilungen (job 463; it was in Einstellungen before), in iPhone and Android builds with push, a section „Einkaufstag-Erinnerung“ / "Shopping-day reminder" shows one chip per weekday. The evening before each picked day, at 19:00 in the phone's time zone, the user gets the push „Morgen ist Einkaufstag“ / "Shopping day tomorrow" with „5 Artikel stehen auf der Liste. Schau kurz rein.“ / "5 items on the list. Have a quick look." (the open items of their default household's default list, never their names). A tap on the push opens that list. The days belong to the person, not the household. No day picked means off, which is everyone's start. Today nobody sees it: the flag is off for everyone, and the server switch `push_shopping_day` is off too. Not on the web (no web push).
 
 ## Sub-features
 
@@ -18,9 +18,9 @@ Under Mehr → Mitteilungen (job 463; it was in Einstellungen before), in iPhone
 
 ## Driving it with Playwright
 
-Preconditions: none on the web. The web build has no push service, so the section never shows there, even with `VH_DEFINES="FLAGS_ON=push-shopping-day"`.
+Preconditions: none on the web. The web build has no push service, so the section never shows there, even with `VH_DEFINES="FLAGS_ON=push-shopping-day"`: with only that flag More has no „Mitteilungen“ row and `/more/notifications` goes to `/more`.
 
-- Web control: on a plain launch, More has no „Mitteilungen“ row and Mehr → Einstellungen has no „Einkaufstag-Erinnerung“ (`getByText('Einkaufstag-Erinnerung')` count 0). Driven 2026-11-23 on d023441d, also with `FLAGS_ON=push-household-add,push-shopping-day`: Einstellungen showed Darstellung, Sprache and „Mitteilungen“ with only the name switch.
+- Web control: on a plain launch, More has no „Mitteilungen“ row and Mehr → Einstellungen has no „Einkaufstag-Erinnerung“ (`getByText('Einkaufstag-Erinnerung')` count 0). Driven 2026-11-27 on 72516831 on a plain launch (no row; `/more/notifications` opens Mehr) and with `FLAGS_ON=push-household-add` (the page holds only the name switch, no weekday chips). Earlier, 2026-11-23 on d023441d, also with `FLAGS_ON=push-household-add,push-shopping-day`, in the layout before #726: Einstellungen showed Darstellung, Sprache and „Mitteilungen“ with only the name switch (since #726 that switch is on More's own „Mitteilungen“ page).
 - The rules run in SQL: `supabase/tests/shopping_day_reminder.test.sql` (`supabase test db`: due window, DST, once per evening, the text). The section's widget: `app/test/settings/shopping_day_test.dart`.
 - The send path is `public.shopping_day_run` through pg_net to the `push` function, every 10 minutes by pg_cron once the switch is on (docs/PUSH.md, "Shopping-day reminder").
 
