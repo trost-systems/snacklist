@@ -3318,3 +3318,24 @@ A tap that ticks a row and its undo from „Zuletzt verwendet“ cost the UI iso
 Without a connection, dictation's message now says to tap Send on the keyboard instead of a
 „Hinzufügen“ button the add sheet doesn't show, and the sheet opens on the dictated text so Send
 really adds it (before, Send added nothing). Details: [docs/done/482.md](docs/done/482.md).
+
+## Job 475: a holds-only flags.json PR runs lint, deno and site (FL3)
+
+A PR that only flips or re-notes a hold in `releases/flags.json` (plus site, legal Markdown or docs)
+no longer runs db, e2e, flutter and web-prod. `scripts/ci-changes.sh` compares base and head
+flags.json with node; the file counts like a site file when only `holds` changed and none of the
+changed holds is in `APP_HOLDS` (`native-siri`, `integration-lock`: the Fastfile define and the
+store metadata check). A flags change, a new or removed hold, invalid JSON or an app file in the
+same PR runs everything as before. `scripts/ci-changes-test.sh` has the brief's cases (a)-(h) and
+a scan that fails when another file starts reading a hold `APP_HOLDS` lacks. #710 measured:
+before `heavy stack app`, after `heavy` only. Details and the reader table:
+[docs/done/475.md](docs/done/475.md). No app change, nothing ships to TestFlight for it.
+
+Times (Europe/Berlin, 26 Nov 2026): build 16:31-16:36.
+
+## Job 475b: APP_HOLDS scan leaves out hold-flip-draft (PR #752)
+
+After #755 the APP_HOLDS scan in `scripts/ci-changes-test.sh` found `scripts/hold-flip-draft.sh`
+and its test and failed lint on #752. The scan now leaves them out (they run after a merge and in
+the lint job), and a scratch-repo case proves a new unlisted reader still fails it. Details:
+`docs/done/475.md`.

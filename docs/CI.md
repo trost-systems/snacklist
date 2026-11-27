@@ -234,6 +234,22 @@ The `changes` job (`scripts/ci-changes.sh`) reads the PR's changed files:
   of them does not turn `app` on; a path built from a variable root is not
   seen, so write it as one literal.
   `docs/hillclimb/`, which the nexus tests read, turns `heavy` on.
+  `releases/flags.json` counts like a site file (`heavy`, not `stack` or
+  `app`) when only its `holds` change and none of them is in `APP_HOLDS`
+  (job 475). The filter compares the base and head JSON with `node`. A hold
+  flip or note edit for a hold that only the site and the changelog gate read
+  qualifies. A changed `flags` entry, a hold added or removed, invalid JSON
+  or an `APP_HOLDS` hold (`native-siri` for the Fastfile's `NATIVE_SIRI_LIVE`
+  define, `integration-lock` for the store metadata check) is code, as before.
+  Other files in the PR count by their own rules, so a hold flip next to
+  `app/` runs everything. `scripts/ci-changes-test.sh` fails when a file
+  under `app/`, `scripts/`, `e2e/`, `supabase/`, `alexa/` or `.github/` that
+  reads flags.json's holds names a hold `APP_HOLDS` lacks, or the other way
+  round. `scripts/release/` is left out of that scan because the changelog
+  gate runs in the lint job on every PR, and `scripts/hold-flip-draft.sh`
+  because it runs after a merge on main and its test runs in the lint job. For #710 (a hold flip with the
+  privacy policy) the filter said `stack` and `app` before and now says
+  neither: lint, deno and site instead of every gate.
   Every other path, `scripts/` included, runs everything.
   The job 309 brief also asked to skip e2e for DB-only PRs. That rule was not
   adopted. The e2e suite is the only test where the app, the migrated schema,

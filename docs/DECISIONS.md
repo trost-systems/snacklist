@@ -18742,3 +18742,29 @@ tests use.
 3. **The test lives in `add_sheet_compact_test.dart`.** The compact sheet needs a Router, which that
    file's harness has and `dictation_test.dart`'s doesn't. It runs both languages with the sheet open
    and closed before the tap; all four failed before the `list_screen.dart` change.
+
+## Job 475: holds-only releases/flags.json changes skip the app and stack gates
+
+- **APP_HOLDS lives in ci-changes.sh, the scan in its test.** The script stays a filter; the test
+  greps every file that reads flags.json's holds outside `site/` and `scripts/release/` and fails
+  unless the quoted hold keys there equal `APP_HOLDS`, both ways. The scan keys on a holds access
+  (`.holds`, `holds[`, `"holds"`), because `unified-keys` is also a flag the app names.
+- **scripts/release/ is out of the scan.** The changelog gate and the release tests read every
+  hold, and run in the lint job on every PR, so a hold flip reaches them anyway.
+- **heavy stays on.** The brief asks for "heavy per the existing site rule": a holds-only change
+  runs lint, deno and site. Dropping deno for site files would be a separate rule.
+- **Conservative compare.** Everything but `holds` must serialise identically after `JSON.parse`
+  (key order counts); a key reorder in `flags` runs everything, which is rare and safe.
+
+## Job 475b: hold-flip-draft is out of the APP_HOLDS scan
+
+- **One exclusion, `scripts/hold-flip-draft.sh` and its test, by exact path.** #755 (job 476) added `scripts/hold-flip-draft.sh`
+  and its test, which read flags.json's holds, and the scan in `scripts/ci-changes-test.sh` then
+  failed the lint job on #752. The script runs after a merge on main and its test runs in the lint
+  job on every PR, the same reason `scripts/release/` is out. Exact paths, not a prefix glob, so
+  a later `hold-flip-draft-lib.mjs` is still scanned. `APP_HOLDS` is unchanged.
+- **The scan is a function with a scratch-repo case.** `holds_read <root>` runs over the repo and
+  over a scratch repo holding copies of the excluded files and a new reader of
+  `push-notifications`; the case wants exactly that key, so a new unlisted reader still fails.
+  With no match the function prints nothing instead of ending the script through `set -e` without
+  a message.
