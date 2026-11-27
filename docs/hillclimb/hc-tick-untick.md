@@ -6,8 +6,9 @@ whichever comes first. The usage gate stops the climb at `weekly_util >= 0.93` (
 ## Scope
 
 A row's tick (`ListCubit.willTick` at the tap, `tick` once the row has closed), the undo from
-„Zuletzt verwendet“ (`readd` within `ListCubit.undoWindow`), and the offline queue of both. The
-"no undo snackbar on a tick" rule (job 29b) stays. Design changes go to
+„Zuletzt verwendet“ (`readd` within `ListCubit.undoWindow`), and the offline queue of both. CP1
+(Peter, 26 Nov 2026) decided on a snackbar with an Undo button after a tick, so the "no undo snackbar
+on a tick" rule (job 29b) no longer holds; job 471 (PR 765) implements it. Design changes go to
 `hc-tick-untick-prototype-candidates.md` and are not built.
 
 ## Frozen metric
