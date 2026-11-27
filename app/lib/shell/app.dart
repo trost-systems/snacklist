@@ -45,6 +45,7 @@ import 'package:family_groceries/session/your_name.dart';
 import 'package:family_groceries/settings/account_repository.dart';
 import 'package:family_groceries/settings/integration_lock.dart';
 import 'package:family_groceries/settings/shopping_day.dart';
+import 'package:family_groceries/settings/shopping_reminders.dart';
 import 'package:family_groceries/shell/push_taps.dart';
 import 'package:family_groceries/shell/router.dart';
 import 'package:family_groceries/shell/safe_back_dispatcher.dart';
@@ -151,6 +152,9 @@ class const App({
 
   /// The shopping-day reminder (job 378); none without push in the build.
   final ShoppingDayService? shoppingDay,
+
+  /// Shopping reminders SR1 (job 472); none without push in the build.
+  final ShoppingReminders? shoppingReminders,
 
   /// The OS's network, which the list follows; null where it is not
   /// watched.
@@ -384,6 +388,9 @@ class _AppState() extends State<App> {
       RepositoryProvider(
         create: (_) => GuideSource(http.Client()),
         dispose: (guides) => guides.client.close(),
+      ),
+      RepositoryProvider<ShoppingReminders?>.value(
+        value: widget.shoppingReminders,
       ),
       if (widget.homeWidgets case final homeWidgets?)
         RepositoryProvider.value(value: homeWidgets),

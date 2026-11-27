@@ -4094,7 +4094,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get storeDoneOpen => 'Open app';
 
   @override
-  String get settingsPush => 'Notifications';
+  String get settingsPush => 'Notifications & Reminders';
 
   @override
   String get pushHouseholdAdd => 'When someone adds something';
@@ -4136,4 +4136,72 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get guidesAll => 'All guides';
+
+  @override
+  String get remindersTitle => 'Shopping reminders';
+
+  @override
+  String get remindersHint =>
+      'Add reminders for your shopping days. At the time you choose, in your device\'s time zone, Snacklist sends a reminder to your phone with the number of open items, never item names.';
+
+  @override
+  String get remindersEmpty => 'No reminders yet.';
+
+  @override
+  String get reminderAdd => 'Add reminder';
+
+  @override
+  String get reminderNew => 'New reminder';
+
+  @override
+  String get reminderEdit => 'Edit reminder';
+
+  @override
+  String get reminderShoppingDay => 'Shopping day';
+
+  @override
+  String get reminderWhen => 'When';
+
+  @override
+  String get reminderDayBefore => 'The day before';
+
+  @override
+  String get reminderOnTheDay => 'On the day';
+
+  @override
+  String get reminderTime => 'Time';
+
+  @override
+  String get reminderHour => 'Hour';
+
+  @override
+  String get reminderMinute => 'Minute';
+
+  @override
+  String reminderLineDayBefore(String time) {
+    return 'The day before, $time';
+  }
+
+  @override
+  String reminderLineOnTheDay(String time) {
+    return 'On the day, $time';
+  }
+
+  @override
+  String reminderNext(String when) {
+    return 'Next: $when';
+  }
+
+  @override
+  String reminderSkipsToday(String time, String when) {
+    return 'Saved. $time has passed today, so the first reminder comes on $when.';
+  }
+
+  @override
+  String get reminderDuplicate => 'You already have this reminder.';
+
+  @override
+  String reminderLimit(int count) {
+    return 'That\'s $count reminders, the most you can have. Delete one to add another.';
+  }
 }

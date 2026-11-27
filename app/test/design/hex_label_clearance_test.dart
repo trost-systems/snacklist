@@ -3,12 +3,14 @@ import 'dart:math' as math;
 import 'package:family_groceries/core/localizations.dart';
 import 'package:family_groceries/core/theme.dart';
 import 'package:family_groceries/design/hex_border.dart';
+import 'package:family_groceries/design/hex_radio.dart';
 import 'package:family_groceries/design/tactile.dart';
 import 'package:family_groceries/design/tokens.g.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/list/foldout_chips.dart';
 import 'package:family_groceries/list/model.dart';
 import 'package:family_groceries/shell/router.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -72,30 +74,26 @@ void main() {
     );
   }
 
-  testWidgets('the settings segments keep their labels off the tips', (
+  testWidgets('the settings segments stack at large text, never shrunk', (
     tester,
   ) async {
+    // „System“, „Hell“, „Dunkel“ do not fit a third of the track each at
+    // 150 %: rather than shrink, they stack as radio rows (job 472b).
     large(tester);
     await pumpMore(tester, location: appSettingsPath, size: phone);
-    for (final (segment, label) in [
-      ('theme-system', 'System'),
-      ('theme-light', 'Hell'),
-      ('theme-dark', 'Dunkel'),
-    ]) {
-      // The honey indicator's hex fills the segment, inside the track's
-      // contour.
-      final slot = tester.getRect(key(segment));
-      final face = Rect.fromLTRB(
-        slot.left,
-        slot.top + HlBorder.width + 2,
-        slot.right,
-        slot.bottom - HlBorder.width - 2,
+    expect(find.byType(HexRadioTile<ThemeMode>), findsNWidgets(3));
+    for (final label in ['System', 'Hell', 'Dunkel']) {
+      final paragraph = tester.renderObject<RenderParagraph>(
+        find.descendant(
+          of: find.byType(HexRadioTile<ThemeMode>),
+          matching: find.text(label),
+        ),
       );
-      clear(
-        tester,
-        face,
-        find.descendant(of: key(segment), matching: find.text(label)),
-        label,
+      expect(paragraph.textScaler.scale(10), closeTo(10 * scale, 0.001));
+      expect(
+        tester.getSize(find.text(label)).height,
+        paragraph.size.height,
+        reason: '$label is not scaled down',
       );
     }
   });

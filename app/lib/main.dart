@@ -41,6 +41,7 @@ import 'package:family_groceries/session/your_name.dart';
 import 'package:family_groceries/settings/access_repository.dart';
 import 'package:family_groceries/settings/account_repository.dart';
 import 'package:family_groceries/settings/shopping_day.dart';
+import 'package:family_groceries/settings/shopping_reminders.dart';
 import 'package:family_groceries/shell/app.dart';
 import 'package:family_groceries/siri/siri_channel.dart';
 import 'package:family_groceries/siri/siri_credentials.dart';
@@ -214,6 +215,22 @@ Future<void> _main(WidgetsBinding Function() binding) async {
   if (shoppingDay != null) {
     pushAlerts.register(shoppingDay.hasDays);
   }
+  final shoppingReminders = switch (push) {
+    final push? => ShoppingReminders(
+      SupabaseShoppingRemindersRepository(client),
+      const FlutterDeviceTimeZone(),
+      push.optIn,
+      () async {
+        await push.resume();
+        return push.state is PushOn;
+      },
+      push.forget,
+      householdAdd.isOn,
+      settlePendingClear: shoppingDay?.retryPendingClear,
+      dropPendingClear: shoppingDay?.dropPendingClear,
+    ),
+    null => null,
+  };
   TesterGroupsSync(
     SupabaseTesterGroupsSource(client),
     cache,
@@ -287,6 +304,7 @@ Future<void> _main(WidgetsBinding Function() binding) async {
       pushTaps: push?.taps,
       householdAdd: householdAdd,
       shoppingDay: shoppingDay,
+      shoppingReminders: shoppingReminders,
       network: networkWatchFor(web: kIsWeb, platform: defaultTargetPlatform),
     ),
   );

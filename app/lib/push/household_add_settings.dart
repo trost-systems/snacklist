@@ -5,6 +5,7 @@ import 'package:family_groceries/core/notices.dart';
 import 'package:family_groceries/design/group_card.dart';
 import 'package:family_groceries/design/hex_switch.dart';
 import 'package:family_groceries/design/tokens.g.dart';
+import 'package:family_groceries/design/word_wrap.dart';
 import 'package:family_groceries/l10n/app_localizations.dart';
 import 'package:family_groceries/push/household_add_alert.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -120,8 +121,8 @@ class _HouseholdAddSettingsState() extends State<HouseholdAddSettings> {
           HexSwitchTile(
             key: const ValueKey('settings-push-household-add'),
             leading: HlRowHex(Icons.notifications_none, face: t.surfaceSunken),
-            title: Text(l10n.pushHouseholdAdd),
-            subtitle: Text(l10n.pushHouseholdAddHint),
+            title: HlWordWrapText(l10n.pushHouseholdAdd),
+            subtitle: HlWordWrapText(l10n.pushHouseholdAddHint),
             isThreeLine: true,
             value: _on ?? choice.on,
             onChanged: (value) => _setOn(alert, on: value),
@@ -132,8 +133,8 @@ class _HouseholdAddSettingsState() extends State<HouseholdAddSettings> {
             Icons.visibility_off_outlined,
             face: t.surfaceSunken,
           ),
-          title: Text(l10n.pushNameHidden),
-          subtitle: Text(l10n.pushNameHiddenHint),
+          title: HlWordWrapText(l10n.pushNameHidden),
+          subtitle: HlWordWrapText(l10n.pushNameHiddenHint),
           isThreeLine: true,
           value: _nameHidden ?? choice.nameHidden,
           onChanged: (value) => _setNameHidden(alert, hidden: value),

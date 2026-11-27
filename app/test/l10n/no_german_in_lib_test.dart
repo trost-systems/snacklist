@@ -21,6 +21,12 @@ const germanDataFiles = {
 
 /// Single German literals outside [germanDataFiles], each with its reason.
 const germanLiterals = {
+  ('lib/design/hyphenate.dart', "'aeiouyäöü'"):
+      'the vowels hyphenation finds syllables by',
+  ('lib/design/hyphenate.dart', "'datenschutzerklärung'"):
+      'a long label hyphenation matches, not shown text',
+  ('lib/design/hyphenate.dart', "'da-ten-schutz-er-klä-rung'"):
+      "that label's syllables, not shown text",
   ('lib/design/section_label.dart', "'ß'"): 'upper-casing rule for ß',
   ('lib/list/list_view/dividers.dart', "'ß'"): 'upper-casing rule for ß',
   ('lib/list/new_stores_picker.dart', "'Aldi Süd'"): 'a store name',

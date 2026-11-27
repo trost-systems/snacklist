@@ -202,6 +202,17 @@ class ShoppingDayService(
     await writePending?.call(null);
   }
 
+  /// Drops this account's clear still waiting on the device: a shopping
+  /// reminder saved since (SR1, job 472) is the newer choice, which the clear
+  /// must not delete at the next start.
+  Future<void> dropPendingClear() async {
+    final user = _userId;
+    final pending = await readPending?.call();
+    if (user != null && pending?.userId == user) {
+      await writePending?.call(null);
+    }
+  }
+
   /// The person's saved weekdays (they are per person, not per device) and
   /// whether this device gets pushes. With push off here (signed out and in
   /// again, notifications refused since) the section shows no days, so it

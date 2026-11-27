@@ -1,8 +1,10 @@
 import 'dart:math' as math;
 
 import 'package:family_groceries/design/hex_border.dart';
+import 'package:family_groceries/design/hex_radio.dart';
 import 'package:family_groceries/design/motion.dart';
 import 'package:family_groceries/design/tokens.g.dart';
+import 'package:family_groceries/design/word_wrap.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// One option of a [HexSegmented]: the [value] it picks, its [label] and
@@ -24,11 +26,20 @@ class const HexSegment<T>({
 /// its label, Space and Enter pick, the arrow keys move the pick and the
 /// focused segment gets the focus ring. [label] names the group for screen
 /// readers. Without [onChanged] the control is disabled.
+///
+/// When a label does not fit its share of the track at the full text size,
+/// with [stackWhenTight] the options stack instead, one [HexRadioTile] each,
+/// with labels that wrap at the full size; without it every label shrinks
+/// by the same factor.
 class const HexSegmented<T>({
   required final List<HexSegment<T>> segments,
   required final T value,
   required final ValueChanged<T>? onChanged,
   final String? label,
+
+  /// Whether the options stack when a label does not fit; without it the
+  /// labels shrink to fit the track, for a toolbar with no room to grow.
+  final bool stackWhenTight = false,
   super.key,
 }) extends StatelessWidget {
   /// Between the track's contour and the indicator's: the contour and 2 px.
@@ -81,48 +92,68 @@ class const HexSegmented<T>({
           }
         },
         child: LayoutBuilder(
-          builder: (context, constraints) => SizedBox(
-            height: HlSize.target,
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: DecoratedBox(
-                    decoration: ShapeDecoration(
-                      color: t.surfaceSunken,
-                      shape: HexBorder(
-                        side: BorderSide(
-                          color: enabled ? t.border : t.divider,
-                          width: HlBorder.width,
+          builder: (context, constraints) {
+            final share = (constraints.maxWidth - 2 * along) / segments.length;
+            final tight = widestLabel + 2 * inset > share;
+            if (tight && stackWhenTight) {
+              return ListTileTheme.merge(
+                contentPadding: EdgeInsets.zero,
+                child: Column(
+                  children: [
+                    for (final segment in segments)
+                      HexRadioTile<T>(
+                        key: segment.key,
+                        value: segment.value,
+                        enabled: enabled,
+                        title: HlWordWrapText(segment.label),
+                      ),
+                  ],
+                ),
+              );
+            }
+            return SizedBox(
+              height: HlSize.target,
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: DecoratedBox(
+                      decoration: ShapeDecoration(
+                        color: t.surfaceSunken,
+                        shape: HexBorder(
+                          side: BorderSide(
+                            color: enabled ? t.border : t.divider,
+                            width: HlBorder.width,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                Positioned.fill(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: along,
-                      vertical: _gap,
-                    ),
-                    child: AnimatedAlign(
-                      duration: slide,
-                      curve: HlEasing.standard,
-                      alignment: Alignment(
-                        segments.length == 1
-                            ? 0
-                            : -1 + 2 * picked / (segments.length - 1),
-                        0,
+                  Positioned.fill(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: along,
+                        vertical: _gap,
                       ),
-                      child: FractionallySizedBox(
-                        widthFactor: 1 / segments.length,
-                        heightFactor: 1,
-                        child: DecoratedBox(
-                          decoration: ShapeDecoration(
-                            color: enabled ? t.honey : t.honeySoft,
-                            shape: HexBorder(
-                              side: BorderSide(
-                                color: enabled ? t.edge : t.divider,
-                                width: HlBorder.width,
+                      child: AnimatedAlign(
+                        duration: slide,
+                        curve: HlEasing.standard,
+                        alignment: Alignment(
+                          segments.length == 1
+                              ? 0
+                              : -1 + 2 * picked / (segments.length - 1),
+                          0,
+                        ),
+                        child: FractionallySizedBox(
+                          widthFactor: 1 / segments.length,
+                          heightFactor: 1,
+                          child: DecoratedBox(
+                            decoration: ShapeDecoration(
+                              color: enabled ? t.honey : t.honeySoft,
+                              shape: HexBorder(
+                                side: BorderSide(
+                                  color: enabled ? t.edge : t.divider,
+                                  width: HlBorder.width,
+                                ),
                               ),
                             ),
                           ),
@@ -130,40 +161,32 @@ class const HexSegmented<T>({
                       ),
                     ),
                   ),
-                ),
-                Positioned.fill(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: along),
-                    child: Row(
-                      children: [
-                        for (final segment in segments)
-                          Expanded(
-                            child: _Segment<T>(
-                              key: segment.key,
-                              segment: segment,
-                              picked: segment.value == value,
-                              enabled: enabled,
-                              slide: slide,
-                              inset: inset,
-                              labelWidth:
-                                  widestLabel + 2 * inset >
-                                      (constraints.maxWidth - 2 * along) /
-                                          segments.length
-                                  ? widestLabel
-                                  : null,
-                              icon:
-                                  widest + 2 * inset <=
-                                  (constraints.maxWidth - 2 * along) /
-                                      segments.length,
+                  Positioned.fill(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: along),
+                      child: Row(
+                        children: [
+                          for (final segment in segments)
+                            Expanded(
+                              child: _Segment<T>(
+                                key: segment.key,
+                                segment: segment,
+                                picked: segment.value == value,
+                                enabled: enabled,
+                                slide: slide,
+                                inset: inset,
+                                labelWidth: tight ? widestLabel : null,
+                                icon: widest + 2 * inset <= share,
+                              ),
                             ),
-                          ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );

@@ -13,6 +13,7 @@ import 'package:family_groceries/design/hex_switch.dart';
 import 'package:family_groceries/design/pointy_hex.dart';
 import 'package:family_groceries/design/sticker.dart';
 import 'package:family_groceries/design/tokens.g.dart';
+import 'package:family_groceries/design/word_wrap.dart';
 import 'package:family_groceries/feedback/feedback_hub.dart';
 import 'package:family_groceries/feedback/feedback_inbox.dart';
 import 'package:family_groceries/feedback/feedback_sheet.dart';
@@ -149,7 +150,7 @@ class const MoreScreen({
                           BackButton(onPressed: () => context.go(feedbackPath)),
                         // Large text wraps a long title in the narrow pane.
                         Flexible(
-                          child: Text(
+                          child: HlWordWrapText(
                             _title(l10n, shown),
                             style: Theme.of(context).textTheme.titleLarge,
                           ),
@@ -169,7 +170,7 @@ class const MoreScreen({
       // Every page is a route below `/more`, so back (the app bar's or the
       // system's) pops to the list, also after a deep link.
       return Scaffold(
-        appBar: AppBar(title: Text(_title(l10n, page))),
+        appBar: hlWrappingAppBar(context, _title(l10n, page)),
         body: _Page(page, paywallEntry, noteId),
       );
     }
@@ -610,9 +611,9 @@ class const _Row(
           _Tint.plain => t.surfaceSunken,
         },
       ),
-      title: Text(label, semanticsLabel: semanticsLabel),
+      title: HlWordWrapText(label, semanticsLabel: semanticsLabel),
       subtitle: switch (subtitle) {
-        final text? => Text(text),
+        final text? => HlWordWrapText(text),
         null => null,
       },
       trailing: switch (trailing) {

@@ -6485,7 +6485,7 @@ abstract class AppLocalizations {
   /// Job 463: More row and page title of the push settings (household-add alert, shopping-day reminder); was the Einstellungen section label of job 377
   ///
   /// In de, this message translates to:
-  /// **'Mitteilungen'**
+  /// **'Benachrichtigungen & Erinnerungen'**
   String get settingsPush;
 
   /// Job 377 (flag push-household-add): Einstellungen switch, off by default; on, the user gets a push when another member adds an item
@@ -6559,6 +6559,120 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Alle Anleitungen'**
   String get guidesAll;
+
+  /// Job 472 (flag push-shopping-reminders): section label of SR1 on More › Benachrichtigungen & Erinnerungen
+  ///
+  /// In de, this message translates to:
+  /// **'Einkaufserinnerungen'**
+  String get remindersTitle;
+
+  /// Job 472: SR1 hint, Legal M4 wording (sha256 ada69d1c…4dbd); never edit without a new Legal hash check
+  ///
+  /// In de, this message translates to:
+  /// **'Lege Erinnerungen für deine Einkaufstage an. Zur gewählten Uhrzeit in der Zeitzone deines Geräts schickt Snacklist dir einen Hinweis aufs Handy, mit der Zahl der offenen Einträge, nie mit Artikelnamen.'**
+  String get remindersHint;
+
+  /// Job 472: SR1 empty state, above the add button
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Erinnerung.'**
+  String get remindersEmpty;
+
+  /// Job 472: SR1 button that opens the add sheet
+  ///
+  /// In de, this message translates to:
+  /// **'Erinnerung hinzufügen'**
+  String get reminderAdd;
+
+  /// Job 472: title of the add sheet
+  ///
+  /// In de, this message translates to:
+  /// **'Neue Erinnerung'**
+  String get reminderNew;
+
+  /// Job 472: title of the sheet for a saved reminder
+  ///
+  /// In de, this message translates to:
+  /// **'Erinnerung bearbeiten'**
+  String get reminderEdit;
+
+  /// Job 472: sheet label above the weekday chips (one day)
+  ///
+  /// In de, this message translates to:
+  /// **'Einkaufstag'**
+  String get reminderShoppingDay;
+
+  /// Job 472: sheet label above the day before / on the day control
+  ///
+  /// In de, this message translates to:
+  /// **'Wann'**
+  String get reminderWhen;
+
+  /// Job 472: segment; Legal M1: „am Tag davor“, never Vorabend
+  ///
+  /// In de, this message translates to:
+  /// **'Am Tag davor'**
+  String get reminderDayBefore;
+
+  /// Job 472: segment for a reminder on the shopping day itself
+  ///
+  /// In de, this message translates to:
+  /// **'Am Einkaufstag'**
+  String get reminderOnTheDay;
+
+  /// Job 472: sheet label above the hour and minute chips
+  ///
+  /// In de, this message translates to:
+  /// **'Uhrzeit'**
+  String get reminderTime;
+
+  /// Job 472: screen-reader name of the hour chips
+  ///
+  /// In de, this message translates to:
+  /// **'Stunde'**
+  String get reminderHour;
+
+  /// Job 472: screen-reader name of the minute chips
+  ///
+  /// In de, this message translates to:
+  /// **'Minute'**
+  String get reminderMinute;
+
+  /// Job 472: SR1 row under the shopping day, a reminder the day before (Legal M1)
+  ///
+  /// In de, this message translates to:
+  /// **'Am Tag davor, {time}'**
+  String reminderLineDayBefore(String time);
+
+  /// Job 472: SR1 row under the shopping day, a reminder on the day itself
+  ///
+  /// In de, this message translates to:
+  /// **'Am Einkaufstag, {time}'**
+  String reminderLineOnTheDay(String time);
+
+  /// Job 472: when a reminder comes next, a real date and time (SR-Q11)
+  ///
+  /// In de, this message translates to:
+  /// **'Nächste: {when}'**
+  String reminderNext(String when);
+
+  /// Job 472 (SR-Q7): snackbar after a save at or after today's time; today is skipped
+  ///
+  /// In de, this message translates to:
+  /// **'Gespeichert. Heute ist {time} schon vorbei, die erste Erinnerung kommt am {when}.'**
+  String reminderSkipsToday(String time, String when);
+
+  /// Job 472 (SR-Q6): same day, same day before / on the day and same time as a saved reminder; refused
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Erinnerung hast du schon.'**
+  String get reminderDuplicate;
+
+  /// Job 472 (SR-Q9): the cap of 14 per person, enforced on the server
+  ///
+  /// In de, this message translates to:
+  /// **'Das sind {count} Erinnerungen, mehr geht nicht. Lösch eine, um eine neue anzulegen.'**
+  String reminderLimit(int count);
 }
 
 class _AppLocalizationsDelegate
