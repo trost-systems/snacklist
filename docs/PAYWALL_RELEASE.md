@@ -429,6 +429,16 @@ item on main") replaces it, so the draft says only "Der Zugang für
 KI-Assistenten gehört jetzt zu Snacklist Premium; mit Premium nutzt du ihn
 in jedem deiner Haushalte." (per user since job 185; reworded in job 328) Check that line in the next draft before
 releasing the hold.
+The same PR changes the Play listing: `app/fastlane/metadata/check.mjs` then
+requires the AI assistants in the Premium paragraph of
+`app/fastlane/metadata/android/` (`docs/store/LISTING.md`, "Snacklist Premium
+in the listing"), and Legal owns those words. The listing on
+Play changes only with a second upload after the merge, on the after-publish
+path (without `with_held_release`):
+`gh workflow run play-listing.yml -f mode=upload -f published_version_code=<live production versionCode>`.
+Google must approve the change and someone publishes it in the Publishing
+overview; then `gh workflow run play-listing.yml -f mode=check` must pass
+(`docs/RELEASE.md`, "After the integration-lock hold flip").
 
 ## 7. After each step: what to watch
 

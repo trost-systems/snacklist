@@ -130,9 +130,14 @@ testers ([What to Test](#what-to-test)).
 ### After both stores have the build live
 
 - [ ] `gh workflow run play-listing.yml -f mode=check` passes once the listing change is published: Play's de-DE and en-US listing and the public store pages equal the repo files by sha256, and the de-DE page no longer has „Kostenlos, ohne Werbung, für den ganzen Haushalt.“ If only the store page part fails on the US runner, use the manual check in [Store listing upload](#store-listing-upload).
+- [ ] If the upload failed with `!!! NOT SENT FOR REVIEW !!!`, the listing is committed but not in review: send the changes for review in Play Console's Publishing overview, then wait for Google's approval before `check`.
 - [ ] Only after that check passes: the sale opens ([`PAYWALL_RELEASE.md`](PAYWALL_RELEASE.md) 5.4, `premium_offer`). Until the staged listing is live, nobody outside the internal testers may be able to buy Premium (Legal LK1).
 - [ ] Public release record workflow ran (see above).
 - [ ] Flag rollouts that wait for a live store build (list below): open each, refresh its dates, get Legal's hash GO, merge.
+
+### After the integration-lock hold flip (second Play listing upload)
+
+- [ ] Releasing the `integration-lock` hold ([`PAYWALL_RELEASE.md`](PAYWALL_RELEASE.md) 6.5) changes the repo listing: `app/fastlane/metadata/check.mjs` then requires the AI assistants in its Premium paragraph ([`store/LISTING.md`](store/LISTING.md), "Snacklist Premium in the listing"), so the flip PR carries new listing text. After it merges, upload again on the after-publish path, without `with_held_release`: `gh workflow run play-listing.yml -f mode=upload -f published_version_code=<live production versionCode>`. Google must approve the change, someone publishes it in the Publishing overview, then `gh workflow run play-listing.yml -f mode=check` must pass. Until then Play still shows the listing without them.
 
 ### Flag rollouts waiting for a live store build
 
@@ -404,7 +409,9 @@ it; the API cannot. So the listing gets its own edit, in one of two orders:
 
 1. **With the held release (default on 1 December).** From
    `held_release_from` (default 1 December 2026 00:00 Europe/Berlin), with
-   `with_held_release=true`. Google reviews the listing change. Once it is
+   `with_held_release=true`. `held_release_from` may only move that date later: an earlier
+   value (a typo such as `2026-11-01`) refuses the upload before any edit
+   opens. Google reviews the listing change. Once it is
    approved, one click in the Publishing overview publishes 1541 and the
    listing together.
 2. **After the publish.** Without `with_held_release`, once 1541 is published.
@@ -468,9 +475,12 @@ The hash is Legal's: sha256 of the file's text without its trailing newline,
 (each file ends in exactly one newline). The commit sends the listing to
 Google's review; with managed publishing on, Play holds the approved change
 until someone publishes it in the Publishing overview. If Play refuses to send
-changes for review from the API, supply commits them without review; Play
-Console then shows the change as not sent, and someone sends it in the
-Publishing overview. An upload whose read-back fails has still committed: the
+changes for review from the API ("Please set the query parameter
+changesNotSentForReview to true"), the lane commits the edit without review,
+reads it back, and fails with `!!! NOT SENT FOR REVIEW !!!`: Google will not
+review the change until Ops opens Play Console, Publishing overview, and
+sends the changes for review by hand. After Google approves and the change is
+published, run `check`. An upload whose read-back fails has still committed: the
 log says so, and running it again sends the same text. Until `check` passes, the Premium purchase screen stays off (Legal
 LK1, [Store release checklist](#store-release-checklist)). Play keeps one edit
 current: a Release run that commits its internal upload while the listing edit

@@ -501,8 +501,15 @@ platform :android do
     PlayListing.production_releases(Supply::Client.make_from_config(params: Supply.config).client, APP_ID)
   end
 
+  # supply's client without its changesNotSentForReview rescue: PlayListing.commit retries that
+  # commit itself and fails the run, since such a change waits for Ops to send it for review.
+  def listing_client
+    play_client(rescue_changes_not_sent_for_review: false).extend(PlayListing::SupplyCommit)
+  end
+
   # PLAY_LISTING_HELD_FROM (ISO 8601): when the held-release path opens. The Play listing workflow
-  # passes Peter K1's launch-day start unless the dispatch names another.
+  # passes Peter K1's launch-day start unless the dispatch names a later one (an earlier one refuses,
+  # PlayListing::HELD_FROM_FLOOR).
   def listing_held_from
     raw = ENV.fetch("PLAY_LISTING_HELD_FROM", "")
     raw.empty? ? nil : Time.iso8601(raw)
@@ -519,7 +526,7 @@ platform :android do
   lane :listing do
     texts = PlayListing.load(PLAY_METADATA)
     PlayListing.run(texts: texts, upload: upload?, version_code: ENV.fetch("PLAY_PUBLISHED_VERSION_CODE", ""),
-                    production_releases: production_releases, new_client: -> { play_client },
+                    production_releases: production_releases, new_client: -> { listing_client },
                     with_held_release: ENV.fetch("PLAY_LISTING_WITH_HELD_RELEASE", "false") == "true",
                     held_from: listing_held_from, log: ->(line) { UI.message(line) })
     UI.success(upload? ? "Play's listing equals the repo text in #{texts.keys.join(', ')}" : "Validated only")
