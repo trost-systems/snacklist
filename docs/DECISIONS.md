@@ -18683,3 +18683,29 @@ at one moment, as on the server; two equally tall column splits), where a test w
 arbitrary choice.
 No seam was needed; the fakes (`FakeRepository`, `FakeEntitlementsSource`) already had what the
 tests use.
+
+## Job 483: the hold-flip hook survives a concurrent fetch
+
+1. **Cause, verified.** The hook's first run, after #755, failed with `cannot lock ref
+   'refs/remotes/origin/main': is at e315d18c5 but expected 0ea7ebe84` (`.git/hold-flip-draft.log`
+   on hz). A plain `git fetch origin main` updates the shared remote-tracking ref, and another
+   process in the same clone updated it first.
+2. **Fix: a private ref, not only a retry.** hold-flip-draft.sh fetches `+refs/heads/<b>` into
+   `refs/hold-flip-run/<pid>/<b>`, reads the commit and deletes the ref. The EXIT trap also removes
+   any that a failure left. `--refmap=` is needed: without it, git still updates `origin/main`
+   as well, and the test's held lock fails the run. `--no-write-fetch-head` keeps the run off the
+   shared `FETCH_HEAD` too. With nothing shared, the race is gone rather than retried around.
+3. **Retry where origin/main must move.** push-pr.sh (the hook runs it) and merge-pr.sh need the
+   real `origin/main`, so they keep it. Their fetches go through `git_fetch` in lib.sh: 3 tries,
+   1 s and 3 s apart. hold-flip-draft.sh's private fetch uses it too, against network blips.
+4. **A failure is not silent.** On any non-zero exit, the script writes one line naming the merge
+   and `rerun: scripts/hold-flip-draft.sh <n>` to stderr, which goes to `.git/hold-flip-draft.log`,
+   and appends it to `.git/hold-flip-draft.failed`. merge-pr.sh prints that file at its start. Any
+   lander in the clone sees it on their next merge, while the log alone is read by no one. A run
+   that gets through removes its own line. The repo cannot write ops logs; the box's
+   `bin/legal-go-merge` runs the same script in a main checkout, and that checkout's file collects
+   its failures the same way.
+5. **No NEEDS_LEAD line for legal-go-merge.** The brief's optional step 4 assumed `bin/legal-go-merge`
+   still skips the hook. COMMON.md (26 Nov, FL7) says it now starts it, detached, after each
+   merge. docs/CI.md said otherwise and is corrected. The job 476 NEEDS_LEAD entry stays as
+   history; it is an append log.

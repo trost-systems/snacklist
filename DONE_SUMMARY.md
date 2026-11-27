@@ -3296,3 +3296,15 @@ were run again. Open for Peter, not blocking: whether the wide layout should spl
 columns the same way every time (now unspecified). Verify: `cd app && flutter test test/list
 test/purchases test/analytics` (2,151 passed, 78 skipped, rebased on main 4a3ceecba). Details:
 [docs/done/448.md](docs/done/448.md).
+
+## Job 483: the hold-flip hook survives a concurrent fetch
+
+The hook that opens a draft hold flip after each merge no longer fails when another process
+fetches in the shared clone. Its first run, after #755, failed that way with `cannot lock ref
+'refs/remotes/origin/main'`. `scripts/hold-flip-draft.sh` now fetches into a private ref
+(`--refmap=`) and never writes `origin/*`. push-pr.sh and merge-pr.sh retry their fetches 3 times
+(`git_fetch`, lib.sh). A run that still fails prints one line with the rerun command and records it
+in `.git/hold-flip-draft.failed`. The next merge-pr.sh in that clone prints that file. Tests:
+`scripts/hold-flip-draft-test.sh`, cases 8 and 9 and `git_fetch`. They fail with main's script.
+`scripts/landing-test.sh` passes. Details: [docs/done/483.md](docs/done/483.md). No app change;
+changelog `none`. Times (Europe/Berlin, 27 Nov): build 01:30-01:45.

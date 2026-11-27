@@ -34,7 +34,7 @@ if [[ -z ${pr:-} ]]; then
 fi
 subject="$title (#$pr)"
 
-git fetch -q origin main "$branch"
+git_fetch -q origin main "$branch"
 if [[ "$(git merge-base origin/main HEAD)" != "$(git rev-parse origin/main)" ]]; then
   log "rebasing $branch onto origin/main"
   rebase_onto_main

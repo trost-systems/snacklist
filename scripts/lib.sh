@@ -322,6 +322,21 @@ fg_on_repo_stack() {
   export FG_PORT_PREFIX FG_PROJECT_ID FG_STACK_WORKDIR FG_STATE_DIR
 }
 
+# git_fetch <git fetch args...>: git fetch, tried 3 times, 1 s and 3 s apart. Agents share one
+# clone; a fetch that updates a ref another fetch is updating fails ("cannot lock ref") and goes
+# through on the next try.
+git_fetch() {
+  local try
+  for try in 1 2 3; do
+    git fetch "$@" && return 0
+    if ((try < 3)); then
+      echo "git fetch $* failed (try $try of 3); retrying" >&2
+      sleep $((try * 2 - 1))
+    fi
+  done
+  return 1
+}
+
 # run_detached <log> <command...>: starts the command in the background, its output appended to
 # the log, with no file of the caller open, and returns at once. A command run under a lock
 # (merge-lock's flock, its ssh to the Mac) that left a child holding the lock's descriptor would

@@ -22,6 +22,7 @@
 #   Legal's GO and Peter's yes, job 476).
 #   After the merge it starts scripts/hold-flip-draft.sh for the PR in the background, with none of
 #   this process's files open, so the merge lock is released at once (log in .git/hold-flip-draft.log).
+#   A run of it that failed is shown at the start of the next merge-pr.sh, with its rerun command.
 #   A signal that ends only the wait's sleep (a kill by name elsewhere on the machine) does not
 #   end the wait: it is logged and the wait goes on, up to 20 times.
 set -euo pipefail
@@ -45,6 +46,11 @@ fi
 wait_minutes=$((10#$wait_minutes))
 
 cd "$REPO_ROOT"
+hold_flip_failed="$(git rev-parse --path-format=absolute --git-common-dir)/hold-flip-draft.failed"
+if [[ -s $hold_flip_failed ]]; then
+  echo "warning: a hold-flip-draft.sh run after an earlier merge failed, so a draft hold flip may be missing. Run the rerun it names (a run that gets through removes its line from $hold_flip_failed):" >&2
+  cat "$hold_flip_failed" >&2
+fi
 if gh pr view "$PR" --json labels -q '.labels[].name' | grep -qx do-not-merge; then
   echo "#$PR is labelled do-not-merge; not merging. Remove the label by hand once what it waits for is recorded (a hold flip: Legal's GO and Peter's yes), then rerun" >&2
   exit 1
@@ -52,8 +58,8 @@ fi
 branch="$(gh pr view "$PR" --json headRefName -q .headRefName)"
 title="$(gh pr view "$PR" --json title -q .title)"
 subject="$title (#$PR)"
-git fetch -q origin main
-git fetch -q origin "$branch"
+git_fetch -q origin main
+git_fetch -q origin "$branch"
 head="$(git rev-parse FETCH_HEAD)"
 # The head is what the branch holds. For some seconds after a push GitHub's record of the PR still
 # names the head before it, and the checks and the merge go by that record: wait until it follows.

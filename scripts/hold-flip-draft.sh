@@ -20,7 +20,7 @@
 #
 # Usage: scripts/hold-flip-draft.sh [--dry-run] [--base <rev>] <merged-PR-number-or-commit>
 #   --dry-run  prints the holds, the flip's diff and the PR body; pushes and opens nothing
-#   --base     the main to check the holds against and flip on (default origin/main, fetched)
+#   --base     the main to check the holds against and flip on (default main, fetched)
 # It reads the one commit main took for the PR (merge-pr.sh lands one per PR); a by-hand backfill of
 # an older PR landed as several commits sees only the last of them.
 set -euo pipefail
@@ -41,6 +41,44 @@ target="${1:?usage: scripts/hold-flip-draft.sh [--dry-run] [--base <rev>] <merge
 LEGAL_DIR=site/content/legal
 FLAGS=releases/flags.json
 
+# A failure says so in one line with the rerun, on stderr (merge-pr.sh's log) and in
+# $FAILED, which merge-pr.sh shows at its next run; a run that gets through clears its line.
+FAILED="$(git rev-parse --path-format=absolute --git-common-dir)/hold-flip-draft.failed"
+private_refs="refs/hold-flip-run/$$/"
+work=""
+# shellcheck disable=SC2317,SC2329 # only the EXIT trap calls it
+on_exit() {
+  local rc=$? line what
+  git for-each-ref --format='%(refname)' "$private_refs" | while read -r ref; do git update-ref -d "$ref"; done
+  if [[ -n $work ]]; then
+    git worktree remove --force "$work/flip" 2>/dev/null || true
+    rm -rf "$work"
+  fi
+  [[ $dry_run == 1 ]] && return
+  if [[ $rc != 0 ]]; then
+    what="${merged:-${pr:+#$pr}}"
+    line="[$(TZ=Europe/Berlin date '+%Y-%m-%d %H:%M %Z')] hold-flip-draft: FAILED for ${what:-$target} (exit $rc): a draft hold flip may be missing; rerun: scripts/hold-flip-draft.sh ${pr:-$target}"
+    echo "$line" >&2
+    echo "$line" >>"$FAILED"
+  elif [[ -s $FAILED ]]; then
+    awk -v s="rerun: scripts/hold-flip-draft.sh ${pr:-$target}" 'substr($0, length($0) - length(s) + 1) != s' "$FAILED" >"$FAILED.$$"
+    mv "$FAILED.$$" "$FAILED"
+  fi
+}
+trap on_exit EXIT
+
+# The tip of an origin branch, fetched into a ref of this run only. A fetch that updates origin/*
+# fails when another process in the shared clone fetches at the same moment ("cannot lock ref
+# 'refs/remotes/origin/main'", the first run after #755).
+fetch_tip() { # <branch>
+  local ref="$private_refs$1"
+  # set -e does not reach into the $(...) this runs in.
+  git_fetch -q --no-write-fetch-head --refmap= origin "+refs/heads/$1:$ref" || return 1
+  git rev-parse --verify "$ref" || return 1
+  git update-ref -d "$ref"
+}
+
+main_tip=""
 if [[ $target =~ ^#?[0-9]+$ && ${#target} -lt 7 ]]; then
   pr="${target#\#}"
   read -r state commit < <(gh pr view "$pr" --json state,mergeCommit -q '"\(.state) \(.mergeCommit.oid // "")"')
@@ -48,14 +86,13 @@ if [[ $target =~ ^#?[0-9]+$ && ${#target} -lt 7 ]]; then
     log "#$pr is ${state:-unknown}, not merged: nothing to flip"
     exit 0
   fi
-  git fetch -q origin main
+  main_tip="$(fetch_tip main)"
 else
   commit="$(git rev-parse --verify "$target^{commit}")"
   pr="$(git log -1 --format=%s "$commit" | sed -n 's/.*(#\([0-9]*\))$/\1/p')"
 fi
 if [[ -z $base ]]; then
-  git fetch -q origin main
-  base=origin/main
+  base="${main_tip:-$(fetch_tip main)}"
 fi
 base="$(git rev-parse --verify "$base^{commit}")"
 merged="${pr:+#$pr}"
@@ -159,7 +196,6 @@ if [[ ${#wanted[@]} == 0 ]]; then
 fi
 
 work="$(mktemp -d)"
-trap 'git worktree remove --force "$work/flip" 2>/dev/null || true; rm -rf "$work"' EXIT
 
 berlin() { TZ=Europe/Berlin date "$@"; }
 today_iso="$(berlin +%Y-%m-%d)"
@@ -278,8 +314,8 @@ flip_hold() {
       log "$hold: opened draft #$open"
     else
       [[ $dry_run == 1 ]] && exit 0
-      git fetch -q origin "$branch"
-      git checkout -q --detach FETCH_HEAD
+      remote_sha="$(fetch_tip "$branch")"
+      git checkout -q --detach "$remote_sha"
     fi
     git checkout -q -B "$branch"
     if git grep -q "Enable checklist for hold $hold:" HEAD -- docs/NEEDS_LEAD.md; then
