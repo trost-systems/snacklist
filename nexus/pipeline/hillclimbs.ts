@@ -52,6 +52,13 @@ export const hillClimbDocs: readonly HillClimbDoc[] = [
     target: null,
   },
   {
+    id: 'hc-onboarding-enabled-flow',
+    metric: 'onboarding dead-ends (10 per failing test)',
+    direction: 'lower',
+    baseline: /^Baseline \*\*([\d.]+)\*\*/m,
+    target: 0,
+  },
+  {
     id: 'hc-size-start',
     metric: 'download size and start time (1.0 = baseline)',
     direction: 'lower',

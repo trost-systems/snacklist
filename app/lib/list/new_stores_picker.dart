@@ -47,10 +47,10 @@ class const NewStoresPicker({
   super.key,
 }) extends StatefulWidget {
   @override
-  State<NewStoresPicker> createState() => _NewStoresPickerState();
+  State<NewStoresPicker> createState() => NewStoresPickerState();
 }
 
-class _NewStoresPickerState() extends State<NewStoresPicker> {
+class NewStoresPickerState() extends State<NewStoresPicker> {
   /// The own store being typed, and its text so far.
   var _naming = false;
   var _typed = '';
@@ -91,9 +91,17 @@ class _NewStoresPickerState() extends State<NewStoresPicker> {
     _typed = '';
   });
 
+  /// Adds the own store being typed, as its check does: the button that
+  /// goes on calls it, so a name typed without the check is not lost.
+  void addTyped() {
+    if (_naming && _typed.trim().isNotEmpty) {
+      _addOwn(_typed);
+    }
+  }
+
   /// A typed name of an offered chain ticks its chip; anything else is a
   /// store of its own, never asked about here (OB-Q6).
-  Future<bool> _addOwn(String name) async {
+  bool _addOwn(String name) {
     final typed = retailerKey(name);
     final chain = widget.linked
         ? registryChains(registryRegion())
@@ -198,11 +206,9 @@ class _NewStoresPickerState() extends State<NewStoresPicker> {
           const SizedBox(height: HlSpace.s2),
           StoreNameField(
             confirmLabel: l10n.storeAddOwn,
-            onConfirm: _addOwn,
+            onConfirm: (name) async => _addOwn(name),
             onCancel: _close,
-            onChanged: widget.linked
-                ? (text) => setState(() => _typed = text)
-                : null,
+            onChanged: (text) => setState(() => _typed = text),
           ),
           if (widget.linked) ...[
             const SizedBox(height: HlSpace.s2),

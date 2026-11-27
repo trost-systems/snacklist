@@ -3252,3 +3252,16 @@ PR #747. On TestFlight 1541 Siri answered "Snacklist hasn't added support for th
 - **Ship.** No flag; the `native-siri` hold is unchanged. The fix reaches the next green main build on TestFlight.
 - **Open.** Peter's device retest is `docs/NEEDS_PETER.md` "Job 467". Run it on that build, not 1541.
 - **Details.** [docs/done/467.md](docs/done/467.md).
+
+## Job 461: hill climb on the enabled onboarding flow
+
+PR #742. Four dead-ends of the guided start are fixed, one per step of the climb, and the score fell
+from 4 to 0 (`tool/hillclimb/hc-onboarding-enabled-flow/measure.sh`). „Was fehlt gerade?“ and the
+stores step keep text typed but not added when the user taps Weiter, and so does „Neuer Haushalt“.
+The name suggestion follows a kind changed on the way back. Household name fields stop at the
+server's 80 code points. There is no layout, motion or copy change, and no flag. It ships in the
+next green main build to TestFlight and Play internal. Verified with widget tests (each fails on main) and
+`journeys/onboarding-dead-ends.mjs` in the web app, German and English. Details:
+[docs/done/461.md](docs/done/461.md), including two copy notes for job 456 and three unbuilt
+prototype candidates.
+Land: the rebase onto #739 (which also registered a hill climb with nexus) needed `warnings.length` raised to 12 in `nexus/test/build_test.ts` (main registered other hill climbs meanwhile), so every doc is counted. That is the only change since review 0 passed on 7a496d989.

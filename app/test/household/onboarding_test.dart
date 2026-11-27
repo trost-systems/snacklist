@@ -446,6 +446,21 @@ void main() {
       expect(o.onboarding.state, isNull);
     });
 
+    testWidgets('an own store typed without the check is created too', (
+      tester,
+    ) async {
+      final o = await pumpOnboarding(
+        tester,
+        location: newHouseholdPath,
+        session: inHome,
+      );
+      await tester.enterText(key('household-name'), 'Ferienhaus');
+      await tapKey(tester, 'onboarding-store-own');
+      await tester.enterText(key('store-new-field'), 'Hofladen');
+      await tapKey(tester, 'create-household');
+      expect(o.session.creates, [('Ferienhaus', 'Hofladen')]);
+    });
+
     for (final (locale, message) in [
       (const Locale('de'), 'Gib einen Namen mit 1 bis 80 Zeichen ein.'),
       (const Locale('en'), 'Enter a name of 1 to 80 characters.'),

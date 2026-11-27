@@ -15,23 +15,13 @@ import 'package:family_groceries/onboarding/draft.dart';
 import 'package:family_groceries/onboarding/invite_step.dart';
 import 'package:family_groceries/onboarding/onboarding_cubit.dart';
 import 'package:family_groceries/onboarding/onboarding_frame.dart';
+import 'package:family_groceries/session/household_name.dart';
 import 'package:family_groceries/session/login_screen.dart';
 import 'package:family_groceries/session/session_cubit.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
-
-/// The longest household name, in characters (code points, as Postgres'
-/// char_length counts them).
-const maxHouseholdName = 80;
-
-/// Whether [name] is a household name the server takes: 1 to 80
-/// characters once trimmed.
-bool validHouseholdName(String name) {
-  final length = name.trim().runes.length;
-  return length >= 1 && length <= maxHouseholdName;
-}
 
 /// The screen of the guided start's [step]: the counted steps in their
 /// shared [OnboardingSteps], join and setup on their own.
@@ -215,6 +205,7 @@ class _WhoStepState() extends State<_WhoStep> {
               key: const ValueKey('onboarding-kind-other-text'),
               controller: _other,
               maxLength: maxHouseholdName,
+              inputFormatters: const [HouseholdNameLimit()],
               textCapitalization: TextCapitalization.sentences,
               decoration: InputDecoration(hintText: l10n.whoOtherHint),
               onChanged: (text) =>
@@ -271,6 +262,16 @@ class _NameStepState() extends State<_NameStep> {
     super.dispose();
   }
 
+  /// [text] as the draft keeps it: null while it is the suggestion, so a
+  /// kind changed on the way back suggests its own name.
+  String? _kept(String text) => switch (context.read<OnboardingCubit>().state) {
+    final draft?
+        when text.trim() ==
+            suggestedHouseholdName(AppLocalizations.of(context), draft) =>
+      null,
+    _ => text,
+  };
+
   void _next() {
     if (!validHouseholdName(_name.text)) {
       setState(() => _invalid = true);
@@ -278,7 +279,7 @@ class _NameStepState() extends State<_NameStep> {
     }
     context.read<OnboardingCubit>().update(
       (d) => d.copyWith(
-        name: () => _name.text.trim(),
+        name: () => _kept(_name.text.trim()),
         step: OnboardingStep.stores,
       ),
     );
@@ -321,6 +322,7 @@ class _NameStepState() extends State<_NameStep> {
               key: const ValueKey('household-name'),
               controller: _name,
               maxLength: maxHouseholdName,
+              inputFormatters: const [HouseholdNameLimit()],
               textCapitalization: TextCapitalization.sentences,
               decoration: InputDecoration(
                 error: _invalid ? FieldError(l10n.householdNameInvalid) : null,
@@ -330,7 +332,7 @@ class _NameStepState() extends State<_NameStep> {
                   setState(() => _invalid = false);
                 }
                 context.read<OnboardingCubit>().update(
-                  (d) => d.copyWith(name: () => text),
+                  (d) => d.copyWith(name: () => _kept(text)),
                 );
               },
               onSubmitted: (_) => _next(),
@@ -345,7 +347,14 @@ class _NameStepState() extends State<_NameStep> {
 /// The stores: [NewStoresPicker]. „Überspringen“ starts without stores.
 /// With the flag `open-store-app` the chips are the region's chains and
 /// both hints go (job 321 OB-Q1).
-class const _StoresStep() extends StatelessWidget {
+class const _StoresStep() extends StatefulWidget {
+  @override
+  State<_StoresStep> createState() => _StoresStepState();
+}
+
+class _StoresStepState() extends State<_StoresStep> {
+  final _picker = GlobalKey<NewStoresPickerState>();
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -363,7 +372,10 @@ class const _StoresStep() extends StatelessWidget {
         children: [
           _NextAndSkip(
             nextLabel: l10n.onboardingNext,
-            onNext: () => onboarding.at(OnboardingStep.need),
+            onNext: () {
+              _picker.currentState?.addTyped();
+              onboarding.at(OnboardingStep.need);
+            },
             onSkip: () => onboarding.update(
               (d) => d.copyWith(stores: const [], step: OnboardingStep.need),
             ),
@@ -384,6 +396,7 @@ class const _StoresStep() extends StatelessWidget {
           const SizedBox(height: HlSpace.s3),
         ],
         NewStoresPicker(
+          key: _picker,
           stores: _draft(context).stores,
           onChanged: (stores) =>
               onboarding.update((d) => d.copyWith(stores: stores)),
@@ -436,6 +449,16 @@ class _NeedStepState() extends State<_NeedStep> {
     });
   }
 
+  /// Weiter: what is still in the field goes on the list too, + or not.
+  /// Signed in already (a household created from „Willkommen“): no account
+  /// step.
+  void _next() {
+    final signedIn = context.read<SessionCubit>().state is! SignedOut;
+    context.read<OnboardingCubit>()
+      ..addItem(_field.text)
+      ..at(signedIn ? OnboardingStep.setup : OnboardingStep.account);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -443,7 +466,6 @@ class _NeedStepState() extends State<_NeedStep> {
     final t = SnacklistColors.of(theme.brightness);
     final items = _draft(context).items;
     final onboarding = context.read<OnboardingCubit>();
-    final signedIn = context.watch<SessionCubit>().state is! SignedOut;
     final staples = [
       for (final s in l10n.needStaples.split(','))
         if (s.trim().isNotEmpty) s.trim(),
@@ -453,11 +475,7 @@ class _NeedStepState() extends State<_NeedStep> {
       title: l10n.needTitle,
       footer: _NextAndSkip(
         nextLabel: l10n.needNext(items.length),
-        // Signed in already (a household created from „Willkommen“): no
-        // account step.
-        onNext: () => onboarding.at(
-          signedIn ? OnboardingStep.setup : OnboardingStep.account,
-        ),
+        onNext: _next,
       ),
       children: [
         Text(l10n.needBody),
