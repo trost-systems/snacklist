@@ -3361,3 +3361,7 @@ show. Five design ideas are written up as prototype candidates and not built. Co
 456 are in the done file. Ships with the next green main build to TestFlight and Play internal,
 with no flag (the fix holds whatever the flags say). Details: [docs/done/460.md](docs/done/460.md),
 `docs/hillclimb/hc-invite-join.md`.
+
+## Job 452 merge record
+
+Merge commits (job 452): #201 82b1b7d94, #658 52a4939d4, #756 0ea7ebe84. Review: VERDICT: PASS. #33 left open by design. The Dependabot PR body is the commit body of #201 and #658 (long, noisy).
